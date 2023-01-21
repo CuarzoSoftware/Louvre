@@ -1,0 +1,84 @@
+<doxygenlayout version="1.0">
+
+	<navindex>
+
+    <tab type="mainpage" title="Home" visible="yes" url="md_md__mainpage.html"></tab>
+      <tab type="usergroup" title="Tutorial">
+      <tab type="usergroup" title="01 - Introduction" url="md_md_tutorial_01.html"></tab>
+      <tab type="usergroup" title="02 - Installation" url="md_md_tutorial_02.html"></tab>
+      <tab type="usergroup" title="03 - Setting Up the Project" url="md_md_tutorial_03.html"></tab>
+      <tab type="usergroup" title="04 - Backends" url="md_md_tutorial_04.html"></tab>
+      <tab type="usergroup" title="05 - Resources Factory" url="md_md_tutorial_05.html"></tab>
+      <tab type="usergroup" title="06 - Outputs" url="md_md_tutorial_06.html"></tab>
+      <tab type="usergroup" title="07 - Rendering" url="md_md_tutorial_07.html"></tab>
+      <tab type="usergroup" title="08 - Toplevels" url="md_md_tutorial_08.html"></tab>
+    </tab>
+    
+    <tab type="namespaces" visible="no" title="">
+    	<tab type="namespacelist" visible="no" title="" intro=""/>
+    	<tab type="namespacemembers" visible="no" title="" intro=""/>
+  	</tab>
+    
+    <tab type="classes" visible="yes" title="API">
+    	<tab type="classes" visible="yes" title="Classes"/>
+    </tab>
+    
+    <tab type="usergroup" visible="yes" title="Downloads" url="md_md__downloads.html"/>
+    
+  </navindex>
+  
+    <!-- Layout definition for a class page -->
+  <class>
+  	<includes visible="$SHOW_INCLUDE_FILES"/>
+    <briefdescription visible="yes"/>
+    <detaileddescription title=""/>
+    <inheritancegraph visible="$CLASS_GRAPH"/>
+    <collaborationgraph visible="$COLLABORATION_GRAPH"/>
+    <allmemberslink visible="yes"/>
+    <memberdecl>
+      <nestedclasses visible="yes" title=""/>
+      <publictypes title=""/>
+      <publicslots title=""/>
+      <signals title=""/>
+      <publicmethods title=""/>
+      <publicstaticmethods title=""/>
+      <publicattributes title=""/>
+      <publicstaticattributes title=""/>
+      <protectedtypes title=""/>
+      <protectedslots title=""/>
+      <protectedmethods title=""/>
+      <protectedstaticmethods title=""/>
+      <protectedattributes title=""/>
+      <protectedstaticattributes title=""/>
+      <packagetypes title=""/>
+      <packagemethods title=""/>
+      <packagestaticmethods title=""/>
+      <packageattributes title=""/>
+      <packagestaticattributes title=""/>
+      <properties title=""/>
+      <events title=""/>
+      <privatetypes title=""/>
+      <privateslots title=""/>
+      <privatemethods title=""/>
+      <privatestaticmethods title=""/>
+      <privateattributes title=""/>
+      <privatestaticattributes title=""/>
+      <friends title=""/>
+      <related title="" subtitle=""/>
+      <membergroups visible="yes"/>
+    </memberdecl>
+    <memberdef>
+      <typedefs title=""/>
+      <enums title=""/>
+      <constructors title=""/>
+      <functions title=""/>
+      <related title=""/>
+      <variables title=""/>
+      <properties title=""/>
+      <events title=""/>
+    </memberdef>
+    <usedfiles visible="$SHOW_USED_FILES"/>
+    <authorsection visible="yes"/>
+  </class>
+
+</doxygenlayout>

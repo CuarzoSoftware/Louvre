@@ -1,0 +1,3 @@
+/usr/lib/libLouvre.so
+/usr/bin/louvre-default
+/usr/bin/louvre-weston-clone

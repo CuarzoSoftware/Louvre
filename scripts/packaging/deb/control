@@ -1,0 +1,10 @@
+Package: LOUVRE_PACKAGE_NAME
+Version: LOUVRE_VERSION-LOUVRE_BUILD
+Section: libdevel
+Priority: optional
+Architecture: amd64
+Installed-Size: LOUVRE_PACKAGE_SIZE
+Maintainer: Eduardo Hopperdietzel <ehopperdietzel@gmail.com>
+Description: This package contains the development library, backends, headers and examples of Louvre, a C++ library for developing Wayland compositors.
+Homepage: https://github.com/CuarzoSoftware/Louvre
+Depends: build-essential, libegl-dev, mesa-common-dev, libgles2-mesa-dev, libdrm-dev, libgbm-dev, libevdev-dev, libinput-dev, libxcursor-dev, libxkbcommon-dev, libxfixes-dev, libxrandr-dev, libpixman-1-dev, libwayland-dev, libseat-dev, meson, weston

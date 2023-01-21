@@ -1,0 +1,4 @@
+ Freq MHz      IRQ RC6     Power W           RCS/0           BCS/0           VCS/0 
+ req  act       /s   %   gpu   pkg       %  se  wa       %  se  wa       %  se  wa 
+   0    0        0 100  0.05  7.05    0.00   0   0    0.00   0   0    0.00   0   0 
+ 207  206      116  66  0.52  5.95    7.37   0   0    0.00   0   0    0.00   0   0 
