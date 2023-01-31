@@ -14,7 +14,7 @@ QMAKE_CXXFLAGS_RELEASE -= -O2
 QMAKE_CXXFLAGS_RELEASE *= -O3
 
 LIBS += -L/usr/local/lib/x86_64-linux-gnu -linput -ludev -lxkbcommon -lseat
-INCLUDEPATH += ../../../lib/classes ../../../lib ../ /usr/local/include
+INCLUDEPATH += ../../../lib/core ../../../lib ../ /usr/local/include
 
 # Default rules for deployment.
 unix {

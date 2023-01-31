@@ -19,12 +19,14 @@ cpp = meson.get_compiler('cpp')
 
 include_paths = [
     include_directories('./lib'),
-    include_directories('./lib/classes'),
-    include_directories('./lib/classes/private'),
-    include_directories('./lib/globals/Viewporter'),
-    include_directories('./lib/globals/Wayland'),
-    include_directories('./lib/globals/XdgShell'),
-    include_directories('./lib/globals/XdgDecoration')
+    include_directories('./lib/core'),
+    include_directories('./lib/core/private'),
+    include_directories('./lib/protocols/Viewporter'),
+    include_directories('./lib/protocols/Wayland'),
+    include_directories('./lib/protocols/XdgShell'),
+    include_directories('./lib/protocols/XdgDecoration'),
+    include_directories('./lib/protocols/PresentationTime'),
+    include_directories('./lib/protocols/DMABuffer')
 ]
 
 include_paths_sys = [
@@ -66,24 +68,31 @@ endforeach
 headers = run_command('find', './lib', '-type', 'f', '-name', '*.h').stdout().strip().split('\n')
 
 # Public and private API headers
-headers_classes = run_command('find', './lib/classes', '-type', 'f', '-name', '*.h', '-maxdepth', '1').stdout().strip().split('\n')
-headers_classes_private = run_command('find', './lib/classes/private', '-type', 'f', '-name', '*.h', '-maxdepth', '1').stdout().strip().split('\n')
+headers_classes = run_command('find', './lib/core', '-type', 'f', '-name', '*.h', '-maxdepth', '1').stdout().strip().split('\n')
+headers_classes_private = run_command('find', './lib/core/private', '-type', 'f', '-name', '*.h', '-maxdepth', '1').stdout().strip().split('\n')
 headers_other = run_command('find', './lib/other', '-type', 'f', '-name', '*.h', '-maxdepth', '1').stdout().strip().split('\n')
 install_headers(headers_classes, install_dir : INCLUDES_PATH)
 install_headers(headers_classes_private, install_dir : INCLUDES_PATH+'/private')
 install_headers(headers_other, install_dir : INCLUDES_PATH+'/other')
 
 globals = [
-	'LinuxDMA-BUF',
+	'DMABuffer',
 	'Viewporter',
 	'Wayland',
 	'XdgDecoration',
-	'XdgShell'
+	'XdgShell',
+	'PresentationTime'
 ]
 
 foreach g : globals
-    hs = run_command('find', './lib/globals/'+ g, '-type', 'f', '-name', '*.h', '-maxdepth', '1').stdout().strip().split('\n')
-    install_headers(hs, install_dir : INCLUDES_PATH+'/globals/' + g)
+    hs = run_command('find', './lib/protocols/' + g, '-type', 'f', '-name', '*.h', '-maxdepth', '1').stdout().strip().split('\n')
+    install_headers(hs, install_dir : INCLUDES_PATH+'/protocols/' + g)
+    
+    hs_p = run_command('find', './lib/protocols/' + g + '/private', '-type', 'f', '-name', '*.h', '-maxdepth', '1').stdout().strip().split('\n')
+
+    if hs_p[0] != ''
+    	install_headers(hs_p, install_dir : INCLUDES_PATH+'/protocols/' + g + '/private')
+    endif
 endforeach
 
 

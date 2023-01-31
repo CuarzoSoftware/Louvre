@@ -14,7 +14,7 @@ QMAKE_CXXFLAGS_RELEASE -= -O2
 QMAKE_CXXFLAGS_RELEASE *= -O3
 
 LIBS += -L/usr/local/lib/x86_64-linux-gnu -ldrm -lgbm -ludev
-INCLUDEPATH += /usr/include/libdrm ../../../lib ../../../lib/classes  ../ /usr/local/include /usr/include/pixman-1
+INCLUDEPATH += /usr/include/libdrm ../../../lib ../../../lib/core  ../ /usr/local/include /usr/include/pixman-1
 
 
 # Default rules for deployment.

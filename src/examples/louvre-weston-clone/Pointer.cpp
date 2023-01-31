@@ -6,13 +6,13 @@
 
 Pointer::Pointer(Params *params) : LPointer(params)
 {
-    timespec ts = LTime::us();
+    timespec ts = LTime::ns();
     lastEventMs = float(ts.tv_nsec)/100000.f + float(ts.tv_sec)*10000.f;
 }
 
 void Pointer::pointerMoveEvent(float dx, float dy)
 {
-    timespec ts = LTime::us();
+    timespec ts = LTime::ns();
     float ct = float(ts.tv_nsec)/100000.f + float(ts.tv_sec)*10000.f;
     float dt =  ct - lastEventMs;
     lastEventMs = ct;

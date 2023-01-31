@@ -13,7 +13,7 @@ QMAKE_CXXFLAGS_RELEASE *= -O3
 LIBS += -L$$PWD/../../build -lLouvre -lGLESv2
 INCLUDEPATH += /usr/include/drm
 INCLUDEPATH += ../../lib/
-INCLUDEPATH += ../../lib/classes/
+INCLUDEPATH += ../../lib/core/
 INCLUDEPATH += /usr/share/ /usr/include/pixman-1
 
 QMAKE_LFLAGS += -Wl,-rpath=.
