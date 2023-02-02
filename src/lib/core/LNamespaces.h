@@ -182,19 +182,29 @@ namespace Louvre
         void (*resume)(const LSeat *seat);
     };
 
+    namespace Protocols
+    {
+        namespace Wayland
+        {
+            class SeatGlobal;
+            class DataDeviceManagerGlobal;
+
+            class PointerResource;
+            class KeyboardResource;
+            class DataDeviceResource;
+            class DataSourceResource;
+            class DataOfferResource;
+        }
+    }
 
     // Wayland Globals
     namespace Globals
     {
         class Compositor;
         class Subcompositor;
-        class DataDeviceManager;
-        class DataDevice;
         class DataSource;
         class DataOffer;
-        class Keyboard;
         class Output;
-        class Pointer;
         class Region;
         class Surface;
         class Subsurface;

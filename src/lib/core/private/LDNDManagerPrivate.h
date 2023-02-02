@@ -24,8 +24,8 @@ public:
     LSurface *origin                                            = nullptr;
     LSurface *focus                                             = nullptr;
     LDataSource *source                                         = nullptr;
-    LDataOffer *offer                                           = nullptr;
     LSeat *seat                                                 = nullptr;
+    LClient *dstClient                                          = nullptr;
 
     bool dropped                                                = false;
     bool matchedMimeType                                        = false;

@@ -3,8 +3,8 @@
 #include <private/LPointerPrivate.h>
 #include <private/LToplevelRolePrivate.h>
 
-#include <protocols/Wayland/LWaylandSeatGlobal.h>
-#include <protocols/Wayland/LWaylandPointerResource.h>
+#include <protocols/Wayland/SeatGlobal.h>
+#include <protocols/Wayland/PointerResource.h>
 
 #include <LSeat.h>
 #include <LCompositor.h>
@@ -69,8 +69,7 @@ void LPointer::setFocusC(LSurface *surface, const LPoint &localPos)
         imp()->sendEnterEvent(surface, localPos);
 
         // Check if has a data device
-        if(surface->client()->dataDevice())
-            surface->client()->dataDevice()->imp()->sendDNDEnterEvent(surface,localPos.x(),localPos.y());
+        surface->client()->dataDevice().imp()->sendDNDEnterEvent(surface, localPos.x(), localPos.y());
 
     }
 
@@ -91,19 +90,19 @@ void LPointer::sendMoveEventC()
 
 void LPointer::sendMoveEventC(const LPoint &localPos)
 {
-    if(seat()->dndManager()->focus() && seat()->dndManager()->focus()->client()->dataDevice())
-        seat()->dndManager()->focus()->client()->dataDevice()->imp()->sendDNDMotionEvent(localPos.x(),localPos.y());
+    if(seat()->dndManager()->focus())
+        seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDMotionEvent(localPos.x(), localPos.y());
 
     // If no surface has focus surface
     if(!focusSurface())
         return;
 
-    for(LWaylandSeatGlobal *s : focusSurface()->client()->seatGlobals())
+    for(Protocols::Wayland::SeatGlobal *s : focusSurface()->client()->seatGlobals())
     {
-        for(LWaylandPointerResource *p : s->pointerResources())
+        if(s->pointerResource())
         {
-            p->sendMove(localPos);
-            p->sendFrame();
+            s->pointerResource()->sendMove(localPos);
+            s->pointerResource()->sendFrame();
         }
     }
 }
@@ -113,12 +112,12 @@ void LPointer::sendButtonEvent(Button button, ButtonState state)
     if(!focusSurface())
         return;
 
-    for(LWaylandSeatGlobal *s : focusSurface()->client()->seatGlobals())
+    for(Protocols::Wayland::SeatGlobal *s : focusSurface()->client()->seatGlobals())
     {
-        for(LWaylandPointerResource *p : s->pointerResources())
+        if(s->pointerResource())
         {
-            p->sendButton(button, state);
-            p->sendFrame();
+            s->pointerResource()->sendButton(button, state);
+            s->pointerResource()->sendFrame();
         }
     }
 }
@@ -321,9 +320,13 @@ void LPointer::sendAxisEvent(double x, double y, UInt32 source)
     if(!focusSurface())
         return;
 
-    for(LWaylandSeatGlobal *s : focusSurface()->client()->seatGlobals())
-        for(LWaylandPointerResource *p : s->pointerResources())
-            p->sendAxis(x, y, source);
+    for(Protocols::Wayland::SeatGlobal *s : focusSurface()->client()->seatGlobals())
+    {
+        if(s->pointerResource())
+        {
+            s->pointerResource()->sendAxis(x, y, source);
+        }
+    }
 }
 
 const LPoint &LPointer::scrollWheelStep() const
@@ -343,9 +346,13 @@ void LPointer::sendAxisEvent(double x, double y)
     if(!focusSurface())
         return;
 
-    for(LWaylandSeatGlobal *s : focusSurface()->client()->seatGlobals())
-        for(LWaylandPointerResource *p : s->pointerResources())
-            p->sendAxis(x, y);
+    for(SeatGlobal *s : focusSurface()->client()->seatGlobals())
+    {
+        if(s->pointerResource())
+        {
+            s->pointerResource()->sendAxis(x, y);
+        }
+    }
 }
 #endif
 
@@ -371,19 +378,19 @@ LSurface *LPointer::focusSurface() const
 
 void LPointer::LPointerPrivate::sendLeaveEvent(LSurface *surface)
 {
-    if(seat->dndManager()->focus() && seat->dndManager()->focus()->client()->dataDevice())
-        seat->dndManager()->focus()->client()->dataDevice()->imp()->sendDNDLeaveEvent();
+    if(seat->dndManager()->focus())
+        seat->dndManager()->focus()->client()->dataDevice().imp()->sendDNDLeaveEvent();
 
     // If surface is nullptr
     if(!surface)
         return;
 
-    for(LWaylandSeatGlobal *s : surface->client()->seatGlobals())
+    for(Protocols::Wayland::SeatGlobal *s : surface->client()->seatGlobals())
     {
-        for(LWaylandPointerResource *p : s->pointerResources())
+        if(s->pointerResource())
         {
-            p->sendLeave(surface);
-            p->sendFrame();
+            s->pointerResource()->sendLeave(surface);
+            s->pointerResource()->sendFrame();
         }
     }
 }
@@ -397,15 +404,13 @@ void LPointer::LPointerPrivate::sendEnterEvent(LSurface *surface, const LPoint &
 
     bool hasPointerResource = false;
 
-    for(LWaylandSeatGlobal *s : surface->client()->seatGlobals())
+    for(Protocols::Wayland::SeatGlobal *s : surface->client()->seatGlobals())
     {
-        if(!s->pointerResources().empty())
-            hasPointerResource = true;
-
-        for(LWaylandPointerResource *p : s->pointerResources())
+        if(s->pointerResource())
         {
-            p->sendEnter(surface, point);
-            p->sendFrame();
+            hasPointerResource = true;
+            s->pointerResource()->sendEnter(surface, point);
+            s->pointerResource()->sendFrame();
         }
     }
 

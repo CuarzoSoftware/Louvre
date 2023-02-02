@@ -99,21 +99,25 @@ HEADERS += \
     protocols/Viewporter/Viewporter.h \
     protocols/Viewporter/viewporter.h \
     protocols/Wayland/Compositor.h \
-    protocols/Wayland/DataDevice.h \
-    protocols/Wayland/DataDeviceManager.h \
-    protocols/Wayland/DataOffer.h \
-    protocols/Wayland/DataSource.h \
-    protocols/Wayland/LWaylandKeyboardResource.h \
-    protocols/Wayland/LWaylandPointerResource.h \
-    protocols/Wayland/LWaylandSeatGlobal.h \
+    protocols/Wayland/DataDeviceManagerGlobal.h \
+    protocols/Wayland/DataDeviceResource.h \
+    protocols/Wayland/DataOfferResource.h \
+    protocols/Wayland/DataSourceResource.h \
+    protocols/Wayland/KeyboardResource.h \
     protocols/Wayland/Output.h \
+    protocols/Wayland/PointerResource.h \
     protocols/Wayland/Region.h \
+    protocols/Wayland/SeatGlobal.h \
     protocols/Wayland/Subcompositor.h \
     protocols/Wayland/Subsurface.h \
     protocols/Wayland/Surface.h \
-    protocols/Wayland/private/LWaylandKeyboardResourcePrivate.h \
-    protocols/Wayland/private/LWaylandPointerResourcePrivate.h \
-    protocols/Wayland/private/LWaylandSeatGlobalPrivate.h \
+    protocols/Wayland/private/DataDeviceManagerGlobalPrivate.h \
+    protocols/Wayland/private/DataDeviceResourcePrivate.h \
+    protocols/Wayland/private/DataOfferResourcePrivate.h \
+    protocols/Wayland/private/DataSourceResourcePrivate.h \
+    protocols/Wayland/private/KeyboardResourcePrivate.h \
+    protocols/Wayland/private/PointerResourcePrivate.h \
+    protocols/Wayland/private/SeatGlobalPrivate.h \
     protocols/Wayland/wayland.h \
     protocols/XdgDecoration/XdgDecorationManager.h \
     protocols/XdgDecoration/XdgToplevelDecoration.h \
@@ -183,21 +187,25 @@ SOURCES += \
     protocols/Viewporter/Viewporter.cpp \
     protocols/Viewporter/viewporter.c \
     protocols/Wayland/Compositor.cpp \
-    protocols/Wayland/DataDevice.cpp \
-    protocols/Wayland/DataDeviceManager.cpp \
-    protocols/Wayland/DataOffer.cpp \
-    protocols/Wayland/DataSource.cpp \
-    protocols/Wayland/LWaylandKeyboardResource.cpp \
-    protocols/Wayland/LWaylandPointerResource.cpp \
-    protocols/Wayland/LWaylandSeatGlobal.cpp \
+    protocols/Wayland/DataDeviceManagerGlobal.cpp \
+    protocols/Wayland/DataDeviceResource.cpp \
+    protocols/Wayland/DataOfferResource.cpp \
+    protocols/Wayland/DataSourceResource.cpp \
+    protocols/Wayland/KeyboardResource.cpp \
     protocols/Wayland/Output.cpp \
+    protocols/Wayland/PointerResource.cpp \
     protocols/Wayland/Region.cpp \
+    protocols/Wayland/SeatGlobal.cpp \
     protocols/Wayland/Subcompositor.cpp \
     protocols/Wayland/Subsurface.cpp \
     protocols/Wayland/Surface.cpp \
-    protocols/Wayland/private/LWaylandKeyboardResourcePrivate.cpp \
-    protocols/Wayland/private/LWaylandPointerResourcePrivate.cpp \
-    protocols/Wayland/private/LWaylandSeatGlobalPrivate.cpp \
+    protocols/Wayland/private/DataDeviceManagerGlobalPrivate.cpp \
+    protocols/Wayland/private/DataDeviceResourcePrivate.cpp \
+    protocols/Wayland/private/DataOfferResourcePrivate.cpp \
+    protocols/Wayland/private/DataSourceResourcePrivate.cpp \
+    protocols/Wayland/private/KeyboardResourcePrivate.cpp \
+    protocols/Wayland/private/PointerResourcePrivate.cpp \
+    protocols/Wayland/private/SeatGlobalPrivate.cpp \
     protocols/Wayland/wayland.c \
     protocols/XdgDecoration/XdgDecorationManager.cpp \
     protocols/XdgDecoration/XdgToplevelDecoration.cpp \

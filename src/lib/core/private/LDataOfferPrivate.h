@@ -14,9 +14,7 @@ public:
     LDataOfferPrivate(const LDataOfferPrivate&)             = delete;
     LDataOfferPrivate &operator=(const LDataOfferPrivate&)  = delete;
 
-    wl_resource *resource                                   = nullptr;
-    LDataDevice *dataDevice                                 = nullptr;
-    LSeat *seat                                             = nullptr;
+    Protocols::Wayland::DataOfferResource *dataOfferResource = nullptr;
     bool hasFinished                                        = false;
     Usage usedFor                                           = Usage::Undefined;
 

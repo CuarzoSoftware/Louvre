@@ -1,18 +1,20 @@
+#include <protocols/Wayland/DataSourceResource.h>
+#include <protocols/Wayland/DataOfferResource.h>
+
 #include <private/LDataOfferPrivate.h>
 #include <private/LDataDevicePrivate.h>
 #include <private/LDNDManagerPrivate.h>
 #include <private/LDataSourcePrivate.h>
 
+#include <LClient.h>
 #include <LSeat.h>
 
 using namespace Louvre;
 
-LDataOffer::LDataOffer(wl_resource *resource, LDataDevice *dataDevice)
+LDataOffer::LDataOffer(Protocols::Wayland::DataOfferResource *dataOfferResource)
 {
     m_imp = new LDataOfferPrivate();
-    m_imp->resource = resource;
-    m_imp->dataDevice = dataDevice;
-    m_imp->seat = dataDevice->seat();
+    imp()->dataOfferResource = dataOfferResource;
 }
 
 LDataOffer::~LDataOffer()
@@ -20,24 +22,19 @@ LDataOffer::~LDataOffer()
     delete m_imp;
 }
 
-wl_resource *LDataOffer::resource() const
-{
-    return m_imp->resource;
-}
-
-LDataDevice *LDataOffer::dataDevice() const
-{
-    return m_imp->dataDevice;
-}
-
 LSeat *LDataOffer::seat() const
 {
-    return m_imp->seat;
+    return dataOfferResource()->client()->seat();
+}
+
+Protocols::Wayland::DataOfferResource *LDataOffer::dataOfferResource() const
+{
+    return imp()->dataOfferResource;
 }
 
 LDataOffer::Usage LDataOffer::usedFor() const
 {
-    return m_imp->usedFor;
+    return imp()->usedFor;
 }
 
 LDataOffer::LDataOfferPrivate *LDataOffer::imp() const
@@ -49,14 +46,16 @@ LDataOffer::LDataOfferPrivate *LDataOffer::imp() const
 
 void LDataOffer::LDataOfferPrivate::updateDNDAction()
 {
-    bool offerIsV3 = wl_resource_get_version(resource) >= 3;
-    UInt32 compositorAction = dataDevice->seat()->dndManager()->preferredAction();
+    LDNDManager *dndManager = dataOfferResource->client()->seat()->dndManager();
+
+    bool offerIsV3 = dataOfferResource->version() >= 3;
+    UInt32 compositorAction = dndManager->preferredAction();
     UInt32 final = 0;
 
     // If has source
-    if(dataDevice->seat()->dndManager()->source())
+    if(dndManager->source())
     {
-        bool sourceIsV3 = wl_resource_get_version(dataDevice->seat()->dndManager()->source()->resource()) >= 3;
+        bool sourceIsV3 = dndManager->source()->dataSourceResource()->version() >= 3;
 
         // If both are v3
         if(sourceIsV3 && offerIsV3)
@@ -65,7 +64,7 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
             if(preferredAction == DND_NO_ACTION_SET)
             {
                 caseA:
-                UInt32 both = dataDevice->seat()->dndManager()->source()->dndActions();
+                UInt32 both = dndManager->source()->dndActions();
 
                 final = both;
 
@@ -84,12 +83,12 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
                 else
                     final = LDNDManager::NoAction;
 
-                wl_data_source_send_action(dataDevice->seat()->dndManager()->source()->resource(),final);
+                dndManager->source()->dataSourceResource()->sendAction(final);
             }
             // Offer has set action
             else
             {
-                UInt32 both = dataDevice->seat()->dndManager()->source()->dndActions() & acceptedActions;
+                UInt32 both = dndManager->source()->dndActions() & acceptedActions;
 
                 final = both;
 
@@ -111,8 +110,8 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
                 else
                     final = LDNDManager::NoAction;
 
-                wl_data_offer_send_action(resource,final);
-                wl_data_source_send_action(dataDevice->seat()->dndManager()->source()->resource(),final);
+                dataOfferResource->sendAction(final);
+                dndManager->source()->dataSourceResource()->sendAction(final);
             }
 
         }
@@ -145,7 +144,7 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
                 else
                     final = LDNDManager::NoAction;
 
-                wl_data_offer_send_action(resource,final);
+                dataOfferResource->sendAction(final);
             }
         }
 
@@ -176,7 +175,7 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
             else
                 final = LDNDManager::NoAction;
 
-            wl_data_offer_send_action(resource,final);
+            dataOfferResource->sendAction(final);
         }
     }
 

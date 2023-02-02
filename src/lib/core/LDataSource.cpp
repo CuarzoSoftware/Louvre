@@ -1,12 +1,12 @@
 #include <private/LDataSourcePrivate.h>
+#include <protocols/Wayland/DataSourceResource.h>
 
 using namespace Louvre;
 
-LDataSource::LDataSource(wl_resource *resource, LClient *client)
+LDataSource::LDataSource(Protocols::Wayland::DataSourceResource *dataSourceResource)
 {
     m_imp = new LDataSourcePrivate();
-    m_imp->resource = resource;
-    m_imp->client = client;
+    imp()->dataSourceResource = dataSourceResource;
 }
 
 LDataSource::~LDataSource()
@@ -14,31 +14,30 @@ LDataSource::~LDataSource()
     delete m_imp;
 }
 
-wl_resource *LDataSource::resource() const
-{
-    return m_imp->resource;
-}
-
 LClient *LDataSource::client() const
 {
-    return m_imp->client;
+    return dataSourceResource()->client();
 }
 
 const std::list<LDataSource::LSource> &LDataSource::sources() const
 {
-    return m_imp->sources;
+    return imp()->sources;
 }
 
 #if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
 
     UInt32 LDataSource::dndActions() const
     {
-        return m_imp->dndActions;
+        return imp()->dndActions;
     }
-
 #endif
 
-LDataSource::LDataSourcePrivate *LDataSource::imp()
+Protocols::Wayland::DataSourceResource *LDataSource::dataSourceResource() const
+{
+    return imp()->dataSourceResource;
+}
+
+LDataSource::LDataSourcePrivate *LDataSource::imp() const
 {
     return m_imp;
 }

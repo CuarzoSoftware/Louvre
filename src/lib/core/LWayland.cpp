@@ -7,13 +7,13 @@
 #include <private/LDNDManagerPrivate.h>
 #include <private/LSeatPrivate.h>
 
-#include <protocols/Wayland/private/LWaylandSeatGlobalPrivate.h>
+#include <protocols/Wayland/private/SeatGlobalPrivate.h>
 
 #include <protocols/Wayland/Region.h>
 #include <protocols/Wayland/Compositor.h>
 #include <protocols/Wayland/Subcompositor.h>
 #include <protocols/Wayland/Surface.h>
-#include <protocols/Wayland/DataDeviceManager.h>
+#include <protocols/Wayland/DataDeviceManagerGlobal.h>
 #include <protocols/Wayland/Output.h>
 
 #include <protocols/XdgShell/XdgWmBase.h>
@@ -176,7 +176,7 @@ void removeFdListener(wl_event_source *source)
 void LWayland::setSeat(LSeat *seat)
 {
     // Create seat global
-    wl_global_create(display, &wl_seat_interface, LOUVRE_SEAT_VERSION, seat->compositor(), &LWaylandSeatGlobal::LWaylandSeatGlobalPrivate::bind);
+    wl_global_create(display, &wl_seat_interface, LOUVRE_SEAT_VERSION, seat->compositor(), &SeatGlobal::SeatGlobalPrivate::bind);
 }
 
 UInt32 LWayland::nextSerial()
@@ -249,7 +249,7 @@ int LWayland::initWayland(LCompositor *comp)
                      LOUVRE_SUBCOMPOSITOR_VERSION, comp, &Globals::Subcompositor::bind);
 
     wl_global_create(display, &wl_data_device_manager_interface,
-                     LOUVRE_DATA_DEVICE_MANAGER_VERSION, comp, &Globals::DataDeviceManager::bind);
+                     LOUVRE_DATA_DEVICE_MANAGER_VERSION, comp, &Protocols::Wayland::DataDeviceManagerGlobal::bind);
 
     wl_global_create(display, &xdg_wm_base_interface,
                      LOUVRE_XDG_WM_BASE_VERSION, comp, &Extensions::XdgShell::WmBase::bind);

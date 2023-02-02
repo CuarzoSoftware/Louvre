@@ -1,24 +1,24 @@
-#include "LWaylandPointerResourcePrivate.h"
+#include "PointerResourcePrivate.h"
 #include <private/LCursorRolePrivate.h>
 #include <private/LSurfacePrivate.h>
-#include <protocols/Wayland/LWaylandSeatGlobal.h>
+#include <protocols/Wayland/SeatGlobal.h>
 #include <LCompositor.h>
 #include <LClient.h>
 
 
 using namespace Louvre;
 
-void LWaylandPointerResource::LWaylandPointerResourcePrivate::resource_destroy(wl_resource *resource)
+void PointerResource::PointerResourcePrivate::resource_destroy(wl_resource *resource)
 {
-    LWaylandPointerResource *pointerResource = (LWaylandPointerResource*)wl_resource_get_user_data(resource);
+    PointerResource *pointerResource = (PointerResource*)wl_resource_get_user_data(resource);
     delete pointerResource;
 }
 
-void LWaylandPointerResource::LWaylandPointerResourcePrivate::set_cursor(wl_client *, wl_resource *resource, UInt32 serial, wl_resource *surface, Int32 hotspot_x, Int32 hotspot_y)
+void PointerResource::PointerResourcePrivate::set_cursor(wl_client *, wl_resource *resource, UInt32 serial, wl_resource *surface, Int32 hotspot_x, Int32 hotspot_y)
 {
-    LWaylandPointerResource *pointerResource = (LWaylandPointerResource*)wl_resource_get_user_data(resource);
+    PointerResource *pointerResource = (PointerResource*)wl_resource_get_user_data(resource);
 
-    if(serial != pointerResource->seatGlobal()->pointerSerials().enter)
+    if(serial != pointerResource->serials().enter)
         return;
 
     if(surface)
@@ -50,7 +50,7 @@ void LWaylandPointerResource::LWaylandPointerResourcePrivate::set_cursor(wl_clie
 }
 
 #if LOUVRE_SEAT_VERSION >= WL_POINTER_RELEASE_SINCE_VERSION
-    void LWaylandPointerResource::LWaylandPointerResourcePrivate::release(wl_client *, wl_resource *resource)
+    void PointerResource::PointerResourcePrivate::release(wl_client *, wl_resource *resource)
     {
         wl_resource_destroy(resource);
     }

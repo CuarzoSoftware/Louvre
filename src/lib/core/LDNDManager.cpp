@@ -1,3 +1,7 @@
+#include <protocols/Wayland/SeatGlobal.h>
+#include <protocols/Wayland/DataDeviceResource.h>
+#include <protocols/Wayland/DataSourceResource.h>
+
 #include <private/LDNDManagerPrivate.h>
 #include <private/LDataOfferPrivate.h>
 #include <private/LDataDevicePrivate.h>
@@ -13,7 +17,7 @@ using namespace Louvre;
 LDNDManager::LDNDManager(Params *params)
 {
     m_imp = new LDNDManagerPrivate();
-    m_imp->seat = params->seat;
+    imp()->seat = params->seat;
 }
 
 LDNDManager::~LDNDManager()
@@ -23,75 +27,75 @@ LDNDManager::~LDNDManager()
 
 LDNDIconRole *LDNDManager::icon() const
 {
-    return m_imp->icon;
+    return imp()->icon;
 }
 
 LSurface *LDNDManager::origin() const
 {
-    return m_imp->origin;
+    return imp()->origin;
 }
 
 LSurface *LDNDManager::focus() const
 {
-    return m_imp->focus;
+    return imp()->focus;
 }
 
 LDataSource *LDNDManager::source() const
 {
-    return m_imp->source;
+    return imp()->source;
 }
 
 LSeat *LDNDManager::seat() const
 {
-    return m_imp->seat;
+    return imp()->seat;
+}
+
+LClient *LDNDManager::dstClient() const
+{
+    return imp()->dstClient;
 }
 
 bool LDNDManager::dragging() const
 {
-    return m_imp->origin != nullptr;
+    return imp()->origin != nullptr;
 }
 
 #if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
 
 Louvre::LDNDManager::Action LDNDManager::preferredAction() const
 {
-    return m_imp->preferredAction;
+    return imp()->preferredAction;
 }
 
 #endif
 
 void LDNDManager::cancel()
 {
-    if(m_imp->focus && m_imp->focus->client()->dataDevice())
-        m_imp->focus->client()->dataDevice()->imp()->sendDNDLeaveEvent();
+    if(imp()->focus)
+        imp()->focus->client()->dataDevice().imp()->sendDNDLeaveEvent();
 
     if(source())
-        wl_data_source_send_cancelled(source()->resource());
+        source()->dataSourceResource()->sendCancelled();
 
-    m_imp->clear();
+    imp()->clear();
     seat()->pointer()->setFocusC(nullptr);
     cancelled();
 }
 
 void LDNDManager::drop()
 {
-    if(dragging() && !m_imp->dropped)
+    if(dragging() && !imp()->dropped)
     {
-        m_imp->dropped = true;
+        imp()->dropped = true;
 
-        if(m_imp->focus && m_imp->focus->client()->dataDevice())
+        if(imp()->focus)
         {
-            wl_data_device_send_drop(m_imp->focus->client()->dataDevice()->resource());
+            for(Protocols::Wayland::SeatGlobal *s : imp()->focus->client()->seatGlobals())
+                if(s->dataDeviceResource())
+                    s->dataDeviceResource()->sendDrop();
 
-            #if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
-            if(source() && wl_resource_get_version(source()->resource()) >= 3)
-            {
-                if(m_imp->matchedMimeType)
-                    wl_data_source_send_dnd_drop_performed(source()->resource());
-                else
-                    cancel();
-            }
-            #endif
+            if(source())
+                source()->dataSourceResource()->sendDNDDropPerformed();
         }
         else
         {
@@ -103,10 +107,16 @@ void LDNDManager::drop()
 #if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
 void LDNDManager::setPreferredAction(Louvre::LDNDManager::Action action)
 {
-    m_imp->preferredAction = action;
-    if(m_imp->offer)
-        m_imp->offer->imp()->updateDNDAction();
+    imp()->preferredAction = action;
 
+    if(imp()->dstClient)
+    {
+        for(Protocols::Wayland::SeatGlobal *s : dstClient()->seatGlobals())
+        {
+            if(s->dataDeviceResource() && s->dataDeviceResource()->dataOffered())
+                s->dataDeviceResource()->dataOffered()->imp()->updateDNDAction();
+        }
+    }
 }
 #endif
 
@@ -116,7 +126,7 @@ void LDNDManager::LDNDManagerPrivate::clear()
     source = nullptr;
     origin = nullptr;
     icon = nullptr;
-    offer = nullptr;
+    dstClient = nullptr;
     dropped = false;
     matchedMimeType = false;
     destDidNotRequestReceive = 0;

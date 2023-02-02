@@ -5,7 +5,7 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
 
-#include <protocols/Wayland/LWaylandSeatGlobal.h>
+#include <protocols/Wayland/SeatGlobal.h>
 
 #include <string.h>
 #include <stdio.h>
@@ -108,7 +108,7 @@ void LSeat::setCapabilities(UInt32 capabilitiesFlags)
 
     for(LClient *c : compositor()->clients())
     {
-        for(LWaylandSeatGlobal *s : (list<LWaylandSeatGlobal*>&)c->seatGlobals())
+        for(Protocols::Wayland::SeatGlobal *s : c->seatGlobals())
             s->sendCapabilities(capabilitiesFlags);
     }
 }

@@ -17,8 +17,7 @@ public:
 
     void remove();
 
-    LClient *client                                             = nullptr;
-    wl_resource *resource                                       = nullptr;
+    Protocols::Wayland::DataSourceResource *dataSourceResource  = nullptr;
     std::list<LSource>sources;
 
 #if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3

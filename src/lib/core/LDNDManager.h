@@ -103,6 +103,8 @@ public:
      */
     LSeat *seat() const;
 
+    LClient *dstClient() const;
+
     /*!
      * @brief Indicates if there is an ongoing drag & drop session.
      */

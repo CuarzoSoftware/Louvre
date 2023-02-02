@@ -2,6 +2,7 @@
 #define LCLIENTPRIVATE_H
 
 #include <LClient.h>
+#include <LDataDevice.h>
 
 struct Louvre::LClient::Params
 {
@@ -21,10 +22,12 @@ public:
     std::list<LSurface*> surfaces;
 
     LClient::Params     *params                         = nullptr;
-    LDataDevice         *dataDevice                     = nullptr;
+    LDataDevice dataDevice;
 
     list<wl_resource*>   outputResources;
-    list<LWaylandSeatGlobal*> seatGlobals;
+    list<Protocols::Wayland::SeatGlobal*> seatGlobals;
+    Protocols::Wayland::DataDeviceManagerGlobal *dataDeviceManagerGlobal = nullptr;
+
     wl_resource         *compositorResource             = nullptr;
     wl_resource         *touchResource                  = nullptr;
     wl_resource         *xdgWmBaseResource              = nullptr;

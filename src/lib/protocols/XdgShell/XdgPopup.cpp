@@ -1,4 +1,6 @@
-#include <protocols/Wayland/LWaylandSeatGlobal.h>
+#include <protocols/Wayland/KeyboardResource.h>
+#include <protocols/Wayland/PointerResource.h>
+#include <protocols/Wayland/SeatGlobal.h>
 #include <protocols/XdgShell/XdgPopup.h>
 #include <protocols/XdgShell/xdg-shell.h>
 
@@ -48,9 +50,10 @@ void Extensions::XdgShell::Popup::grab(wl_client *client, wl_resource *resource,
     L_UNUSED(client);
 
     LPopupRole *lPopup = (LPopupRole*)wl_resource_get_user_data(resource);
-    LWaylandSeatGlobal *lSeatGlobal = (LWaylandSeatGlobal*)wl_resource_get_user_data(seat);
+    Protocols::Wayland::SeatGlobal *lSeatGlobal = (Protocols::Wayland::SeatGlobal*)wl_resource_get_user_data(seat);
 
-    if(lSeatGlobal->pointerSerials().button == serial || lSeatGlobal->keyboardSerials().key == serial)
+    if(( lSeatGlobal->pointerResource() && lSeatGlobal->pointerResource()->serials().button == serial )
+            || ( lSeatGlobal->keyboardResource() && lSeatGlobal->keyboardResource()->serials().key == serial))
     {
 
         LSurface *parent = lPopup->surface()->parent();
@@ -69,6 +72,10 @@ void Extensions::XdgShell::Popup::grab(wl_client *client, wl_resource *resource,
 
 
         lPopup->grabSeatRequest();
+    }
+    else
+    {
+        lPopup->sendPopupDoneEvent();
     }
 }
 

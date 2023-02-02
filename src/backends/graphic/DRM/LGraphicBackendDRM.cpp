@@ -1398,9 +1398,14 @@ void LGraphicBackend::setCursorTexture(const LOutput *output, const LTexture *te
                 LRect(0,0,texture->sizeB().w(),-texture->sizeB().h()),
                 LRect(0,size));
 
+    // Si se invoca desde el hilo principal debemos llamar glFlush para sincronizar el cambio
+    if(std::this_thread::get_id() == output->compositor()->mainThreadId())
+        glFinish();
+
     if(data->cursor.isDumb)
     {
-        glReadPixels(0,0,64,64,GL_RGBA,GL_UNSIGNED_BYTE,data->cursor.buffer);
+        glReadPixels(0, 0, 64, 64, GL_RGBA ,GL_UNSIGNED_BYTE, data->cursor.buffer);
+
 
         if(!data->cursor.visible)
             drmModeSetCursor(data->drm.fds.fd, data->drm.crtc_id,
@@ -1417,10 +1422,6 @@ void LGraphicBackend::setCursorTexture(const LOutput *output, const LTexture *te
 
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // Si se invoca desde el hilo principal debemos llamar glFlush para sincronizar el cambio
-    if(std::this_thread::get_id() == output->compositor()->mainThreadId())
-        glFlush();
 
 }
 

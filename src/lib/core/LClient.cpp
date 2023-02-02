@@ -1,5 +1,5 @@
 #include <private/LClientPrivate.h>
-
+#include <private/LDataDevicePrivate.h>
 #include <LCompositor.h>
 #include <LClient.h>
 
@@ -8,7 +8,8 @@ using namespace Louvre;
 LClient::LClient(Params *params)
 {
     m_imp = new LClientPrivate();
-    m_imp->params = params;
+    imp()->params = params;
+    dataDevice().imp()->client = this;
 }
 
 LClient::~LClient()
@@ -32,9 +33,9 @@ wl_client *LClient::client() const
     return m_imp->params->client;
 }
 
-LDataDevice *LClient::dataDevice() const
+LDataDevice &LClient::dataDevice() const
 {
-    return m_imp->dataDevice;
+    return imp()->dataDevice;
 }
 
 const list<LSurface *> &LClient::surfaces() const
@@ -52,9 +53,14 @@ wl_resource *LClient::compositorResource() const
     return m_imp->compositorResource;
 }
 
-list<LWaylandSeatGlobal*> &LClient::seatGlobals() const
+list<Protocols::Wayland::SeatGlobal*> &LClient::seatGlobals() const
 {
     return imp()->seatGlobals;
+}
+
+Protocols::Wayland::DataDeviceManagerGlobal *LClient::dataDeviceManagerGlobal() const
+{
+    return imp()->dataDeviceManagerGlobal;
 }
 
 wl_resource *LClient::touchResource() const

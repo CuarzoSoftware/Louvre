@@ -1,9 +1,11 @@
-#ifndef LWAYLANDSEATGLOBALPRIVATE_H
-#define LWAYLANDSEATGLOBALPRIVATE_H
+#ifndef SEATGLOBALPRIVATE_H
+#define SEATGLOBALPRIVATE_H
 
-#include <protocols/Wayland/LWaylandSeatGlobal.h>
+#include <protocols/Wayland/SeatGlobal.h>
 
-LPRIVATE_CLASS(LWaylandSeatGlobal)
+using namespace Louvre::Protocols::Wayland;
+
+LPRIVATE_CLASS(SeatGlobal)
 
     // Implementation
     static void bind(wl_client *client, void *compositor, UInt32 version, UInt32 id);
@@ -15,13 +17,10 @@ LPRIVATE_CLASS(LWaylandSeatGlobal)
     static void release(wl_client *client, wl_resource *resource);
 #endif
 
-    std::list<LWaylandKeyboardResource*> keyboardResources;
-    LastKeyboardEventSerials keyboardSerials;
-
-    std::list<LWaylandPointerResource*> pointerResources;
-    LastPointerEventSerials pointerSerials;
-
-    std::list<LWaylandSeatGlobal*>::iterator clientLink;
+    KeyboardResource *keyboardResource = nullptr;
+    PointerResource *pointerResource = nullptr;
+    DataDeviceResource *dataDeviceResource = nullptr;
+    std::list<SeatGlobal*>::iterator clientLink;
 };
 
-#endif // LWAYLANDSEATGLOBALPRIVATE_H
+#endif // SEATGLOBALPRIVATE_H

@@ -1,5 +1,5 @@
-#include <protocols/Wayland/LWaylandSeatGlobal.h>
-#include <protocols/Wayland/LWaylandKeyboardResource.h>
+#include <protocols/Wayland/SeatGlobal.h>
+#include <protocols/Wayland/KeyboardResource.h>
 #include <private/LClientPrivate.h>
 #include <private/LDataDevicePrivate.h>
 #include <private/LKeyboardPrivate.h>
@@ -110,9 +110,13 @@ void LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
     imp()->xkbKeymapState = xkb_state_new(imp()->xkbKeymap);
 
     for(LClient *c : compositor()->clients())
-        for(LWaylandSeatGlobal *s : c->seatGlobals())
-            for(LWaylandKeyboardResource *k : s->keyboardResources())
-                k->sendKeymap(keymapFd(), keymapSize());
+    {
+        for(Protocols::Wayland::SeatGlobal *s : c->seatGlobals())
+        {
+            if(s->keyboardResource())
+                s->keyboardResource()->sendKeymap(keymapFd(), keymapSize());
+        }
+    }
 
 }
 
@@ -150,29 +154,25 @@ void LKeyboard::setFocus(LSurface *surface)
             // If another surface has focus
             if(focusSurface())
             {
-                for(LWaylandSeatGlobal *s : focusSurface()->client()->seatGlobals())
-                    for(LWaylandKeyboardResource *k : s->keyboardResources())
-                        k->sendLeave(focusSurface());
+                for(Protocols::Wayland::SeatGlobal *s : focusSurface()->client()->seatGlobals())
+                    if(s->keyboardResource())
+                        s->keyboardResource()->sendLeave(focusSurface());
             }
 
-            // Send clipboard selection event
-            if(surface->client()->dataDevice())
-            {
-                if(!focusSurface() || (focusSurface() && focusSurface()->client() != surface->client()))
-                    surface->client()->dataDevice()->sendSelectionEvent();
-            }
+
+            if(!focusSurface() || (focusSurface() && focusSurface()->client() != surface->client()))
+                surface->client()->dataDevice().sendSelectionEvent();
+
 
             bool hasKeyboardResource = false;
 
-            for(LWaylandSeatGlobal *s : surface->client()->seatGlobals())
+            for(Protocols::Wayland::SeatGlobal *s : surface->client()->seatGlobals())
             {
-                if(!s->keyboardResources().empty())
-                    hasKeyboardResource = true;
-
-                for(LWaylandKeyboardResource *k : s->keyboardResources())
+                if(s->keyboardResource())
                 {
-                    k->sendEnter(surface);
-                    k->sendModifiers(modifiersState().depressed, modifiersState().latched, modifiersState().locked, modifiersState().group);
+                    hasKeyboardResource = true;
+                    s->keyboardResource()->sendEnter(surface);
+                    s->keyboardResource()->sendModifiers(modifiersState().depressed, modifiersState().latched, modifiersState().locked, modifiersState().group);
                 }
             }
 
@@ -188,9 +188,9 @@ void LKeyboard::setFocus(LSurface *surface)
         // Remove focus from current surface
         if(focusSurface())
         {
-            for(LWaylandSeatGlobal *s : focusSurface()->client()->seatGlobals())
-                for(LWaylandKeyboardResource *k : s->keyboardResources())
-                    k->sendLeave(focusSurface());
+            for(Protocols::Wayland::SeatGlobal *s : focusSurface()->client()->seatGlobals())
+                if(s->keyboardResource())
+                    s->keyboardResource()->sendLeave(focusSurface());
         }
         imp()->keyboardFocusSurface = nullptr;
     }
@@ -202,9 +202,9 @@ void LKeyboard::sendKeyEvent(UInt32 keyCode, UInt32 keyState)
     if(!focusSurface())
         return;
 
-    for(LWaylandSeatGlobal *s : focusSurface()->client()->seatGlobals())
-        for(LWaylandKeyboardResource *k : s->keyboardResources())
-            k->sendKey(keyCode, keyState);
+    for(Protocols::Wayland::SeatGlobal *s : focusSurface()->client()->seatGlobals())
+        if(s->keyboardResource())
+            s->keyboardResource()->sendKey(keyCode, keyState);
 }
 
 void LKeyboard::sendModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
@@ -213,9 +213,9 @@ void LKeyboard::sendModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 lock
     if(!focusSurface())
         return;
 
-    for(LWaylandSeatGlobal *s : focusSurface()->client()->seatGlobals())
-        for(LWaylandKeyboardResource *k : s->keyboardResources())
-            k->sendModifiers(depressed, latched, locked, group);
+    for(Protocols::Wayland::SeatGlobal *s : focusSurface()->client()->seatGlobals())
+        if(s->keyboardResource())
+            s->keyboardResource()->sendModifiers(depressed, latched, locked, group);
 }
 
 void LKeyboard::sendModifiersEvent()
@@ -276,9 +276,9 @@ void LKeyboard::LKeyboardPrivate::updateModifiers()
 
         for(LClient *c : compositor()->clients())
         {
-            for(LWaylandSeatGlobal *s : c->seatGlobals())
-                for(LWaylandKeyboardResource *k : s->keyboardResources())
-                    k->sendRepeatInfo(rate, msDelay);
+            for(Protocols::Wayland::SeatGlobal *s : c->seatGlobals())
+                if(s->keyboardResource())
+                    s->keyboardResource()->sendRepeatInfo(rate, msDelay);
         }
     }
 
