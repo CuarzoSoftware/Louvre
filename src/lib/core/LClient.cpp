@@ -48,9 +48,9 @@ const list<wl_resource *> &LClient::outputs() const
     return m_imp->outputResources;
 }
 
-wl_resource *LClient::compositorResource() const
+Protocols::Wayland::CompositorGlobal *LClient::compositorGlobal() const
 {
-    return m_imp->compositorResource;
+    return imp()->compositorGlobal;
 }
 
 list<Protocols::Wayland::SeatGlobal*> &LClient::seatGlobals() const

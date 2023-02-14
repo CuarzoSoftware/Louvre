@@ -3,7 +3,7 @@
 #include <private/LSubsurfaceRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LCompositorPrivate.h>
-#include <protocols/Wayland/Surface.h>
+#include <protocols/Wayland/private/SurfaceResourcePrivate.h>
 
 using namespace Louvre;
 
@@ -40,12 +40,12 @@ LSubsurfaceRole::LSubsurfaceRolePrivate *LSubsurfaceRole::imp() const
     return m_imp;
 }
 
-bool LSubsurfaceRole::acceptCommitRequest(Globals::CommitOrigin origin)
+bool LSubsurfaceRole::acceptCommitRequest(Protocols::Wayland::SurfaceResource::CommitOrigin origin)
 {
     if(isSynced())
-        return origin == Globals::Parent;
+        return origin == Protocols::Wayland::SurfaceResource::Parent;
     else
-        return origin == Globals::Itself;  
+        return origin == Protocols::Wayland::SurfaceResource::Itself;
 }
 
 void insertSurfaceAfter(list<LSurface*>&surfaces,LSurface *prevSurface, LSurface *surfaceToInsert)
@@ -117,7 +117,7 @@ void LSubsurfaceRole::handleParentCommit()
         imp()->pendingPlaceBelow = nullptr;
     }
 
-    Globals::Surface::apply_commit(surface(), Globals::Parent);
+    Protocols::Wayland::SurfaceResource::SurfaceResourcePrivate::apply_commit(surface(), Protocols::Wayland::SurfaceResource::Parent);
 }
 
 void LSubsurfaceRole::handleParentChange()

@@ -57,7 +57,7 @@ void DataDeviceResource::sendEnter(LSurface *surface, Float64 x, Float64 y, Data
 {
     wl_data_device_send_enter(resource(),
                              LWayland::nextSerial(),
-                             surface->resource(),
+                             surface->surfaceResource()->resource(),
                              wl_fixed_from_double(x),
                              wl_fixed_from_double(y),
                              dataOfferResource->resource());

@@ -5,7 +5,6 @@
 #include <LCompositor.h>
 #include <LClient.h>
 
-
 using namespace Louvre;
 
 void PointerResource::PointerResourcePrivate::resource_destroy(wl_resource *resource)
@@ -23,7 +22,8 @@ void PointerResource::PointerResourcePrivate::set_cursor(wl_client *, wl_resourc
 
     if(surface)
     {
-        LSurface *lSurface = (LSurface*)wl_resource_get_user_data(surface);
+        Protocols::Wayland::SurfaceResource *lSurfaceResource = (Protocols::Wayland::SurfaceResource*)wl_resource_get_user_data(surface);
+        LSurface *lSurface = lSurfaceResource->surface();
 
         if(lSurface->roleId() != LSurface::Role::Undefined && lSurface->roleId() != LSurface::Role::Cursor)
         {

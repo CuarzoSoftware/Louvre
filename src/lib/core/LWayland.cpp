@@ -9,10 +9,10 @@
 
 #include <protocols/Wayland/private/SeatGlobalPrivate.h>
 
-#include <protocols/Wayland/Region.h>
-#include <protocols/Wayland/Compositor.h>
+#include <protocols/Wayland/RegionResource.h>
+#include <protocols/Wayland/CompositorGlobal.h>
 #include <protocols/Wayland/Subcompositor.h>
-#include <protocols/Wayland/Surface.h>
+#include <protocols/Wayland/SurfaceResource.h>
 #include <protocols/Wayland/DataDeviceManagerGlobal.h>
 #include <protocols/Wayland/Output.h>
 
@@ -243,7 +243,7 @@ int LWayland::initWayland(LCompositor *comp)
     // GLOBALS
 
     wl_global_create(display, &wl_compositor_interface,
-                     LOUVRE_COMPOSITOR_VERSION, comp, &Globals::Compositor::bind);
+                     LOUVRE_COMPOSITOR_VERSION, comp, &Protocols::Wayland::CompositorGlobal::bind);
 
     wl_global_create(display, &wl_subcompositor_interface,
                      LOUVRE_SUBCOMPOSITOR_VERSION, comp, &Globals::Subcompositor::bind);

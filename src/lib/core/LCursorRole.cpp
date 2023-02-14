@@ -9,7 +9,7 @@
 
 using namespace Louvre;
 
-LCursorRole::LCursorRole(Params *params) : LBaseSurfaceRole(params->surface->resource(), params->surface, LSurface::Role::Cursor)
+LCursorRole::LCursorRole(Params *params) : LBaseSurfaceRole(params->surface->surfaceResource()->resource(), params->surface, LSurface::Role::Cursor)
 {
     m_imp = new LCursorRolePrivate();
 

@@ -1,1 +1,6 @@
-First testing release.
+- New LResource wrapper class for wl_resource structs. Now each protocol resource or global has its own LResource subclass.
+- New directory structure for protocol interfaces.
+- Clients can now bind multiple times to the wl_seat global. This fixes the Firefox problem where it could only receive pointer events.
+- Clients can now create a wl_data_device for each wl_seat.
+
+

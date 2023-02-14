@@ -52,7 +52,7 @@ void Extensions::XdgShell::Popup::grab(wl_client *client, wl_resource *resource,
     LPopupRole *lPopup = (LPopupRole*)wl_resource_get_user_data(resource);
     Protocols::Wayland::SeatGlobal *lSeatGlobal = (Protocols::Wayland::SeatGlobal*)wl_resource_get_user_data(seat);
 
-    if(( lSeatGlobal->pointerResource() && lSeatGlobal->pointerResource()->serials().button == serial )
+    if(true || ( lSeatGlobal->pointerResource() && lSeatGlobal->pointerResource()->serials().button == serial )
             || ( lSeatGlobal->keyboardResource() && lSeatGlobal->keyboardResource()->serials().key == serial))
     {
 

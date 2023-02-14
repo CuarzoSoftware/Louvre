@@ -47,7 +47,7 @@ void PointerResource::sendEnter(LSurface *surface, const LPoint &point)
 
     wl_pointer_send_enter(resource(),
                           serials().enter,
-                          surface->resource(),
+                         surface->surfaceResource()->resource(),
                           wl_fixed_from_double(point.x()/compositor()->globalScale()),
                           wl_fixed_from_double(point.y()/compositor()->globalScale()));
 }
@@ -57,7 +57,7 @@ void PointerResource::sendLeave(LSurface *surface)
     imp()->serials.leave = LWayland::nextSerial();
     wl_pointer_send_leave(resource(),
                           serials().leave,
-                          surface->resource());
+                          surface->surfaceResource()->resource());
 }
 
 void PointerResource::sendFrame()

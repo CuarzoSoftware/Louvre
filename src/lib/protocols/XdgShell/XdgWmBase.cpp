@@ -95,7 +95,8 @@ void Extensions::XdgShell::WmBase::create_positioner(wl_client *client, wl_resou
 void Extensions::XdgShell::WmBase::get_xdg_surface(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface)
 {
     // Gets the LSurface from user data
-    LSurface *lSurface = (LSurface*)wl_resource_get_user_data(surface);
+    Protocols::Wayland::SurfaceResource *lSurfaceResource = (Protocols::Wayland::SurfaceResource*)wl_resource_get_user_data(surface);
+    LSurface *lSurface= lSurfaceResource->surface();
 
     // The surface should't have a previous role
     if(lSurface->role())

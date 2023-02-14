@@ -50,7 +50,8 @@ void DataDeviceResource::DataDeviceResourcePrivate::start_drag(wl_client *client
     // Check if there is an icon
     if(icon)
     {
-        LSurface *lIcon = (LSurface*)wl_resource_get_user_data(icon);
+        SurfaceResource *lSurfaceResource = (SurfaceResource*)wl_resource_get_user_data(icon);
+        LSurface *lIcon = lSurfaceResource->surface();
 
         if(!(lIcon->roleId() == LSurface::Role::Undefined || lIcon->roleId() == LSurface::Role::DNDIcon))
         {
@@ -73,7 +74,8 @@ void DataDeviceResource::DataDeviceResourcePrivate::start_drag(wl_client *client
         dndManager->imp()->icon = nullptr;
     }
 
-    LSurface *lOrigin = (LSurface*)wl_resource_get_user_data(origin);
+    SurfaceResource *lSurfaceResource = (SurfaceResource*)wl_resource_get_user_data(origin);
+    LSurface *lOrigin = lSurfaceResource->surface();
 
     dndManager->imp()->origin = lOrigin;
 

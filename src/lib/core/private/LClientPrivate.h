@@ -27,8 +27,8 @@ public:
     list<wl_resource*>   outputResources;
     list<Protocols::Wayland::SeatGlobal*> seatGlobals;
     Protocols::Wayland::DataDeviceManagerGlobal *dataDeviceManagerGlobal = nullptr;
+    Protocols::Wayland::CompositorGlobal *compositorGlobal = nullptr;
 
-    wl_resource         *compositorResource             = nullptr;
     wl_resource         *touchResource                  = nullptr;
     wl_resource         *xdgWmBaseResource              = nullptr;
     wl_resource         *xdgDecorationManagerResource   = nullptr;

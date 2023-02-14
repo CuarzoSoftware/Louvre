@@ -1,5 +1,5 @@
 #include "Subsurface.h"
-#include "Surface.h"
+#include <protocols/Wayland/private/SurfaceResourcePrivate.h>
 #include <private/LSubsurfaceRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <LCompositor.h>
@@ -31,7 +31,9 @@ void Louvre::Globals::Subsurface::place_above(wl_client *client, wl_resource *re
     L_UNUSED(client);
 
     LSubsurfaceRole *lSubsurface = (LSubsurfaceRole*)wl_resource_get_user_data(resource);
-    LSurface *lSibiling = (LSurface*)wl_resource_get_user_data(sibiling);
+
+    Protocols::Wayland::SurfaceResource *lSibilingResource = (Protocols::Wayland::SurfaceResource*)wl_resource_get_user_data(sibiling);
+    LSurface *lSibiling = lSibilingResource->surface();
 
     for(LSurface *sib : lSubsurface->surface()->parent()->children())
     {
@@ -50,7 +52,8 @@ void Louvre::Globals::Subsurface::place_below(wl_client *client, wl_resource *re
     L_UNUSED(client);
 
     LSubsurfaceRole *lSubsurface = (LSubsurfaceRole*)wl_resource_get_user_data(resource);
-    LSurface *lSibiling = (LSurface*)wl_resource_get_user_data(sibiling);
+    Protocols::Wayland::SurfaceResource *lSibilingResource = (Protocols::Wayland::SurfaceResource*)wl_resource_get_user_data(sibiling);
+    LSurface *lSibiling = lSibilingResource->surface();
 
     for(LSurface *sib : lSubsurface->surface()->parent()->children())
     {
@@ -78,5 +81,5 @@ void Louvre::Globals::Subsurface::set_desync(wl_client *client, wl_resource *res
     LSubsurfaceRole *lSubsurface = (LSubsurfaceRole*)wl_resource_get_user_data(resource);
     lSubsurface->imp()->isSynced = false;
     lSubsurface->syncModeChanged();
-    Louvre::Globals::Surface::apply_commit(lSubsurface->surface());
+    Protocols::Wayland::SurfaceResource::SurfaceResourcePrivate::apply_commit(lSubsurface->surface());
 }

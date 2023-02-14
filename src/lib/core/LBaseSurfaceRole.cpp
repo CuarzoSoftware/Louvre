@@ -62,7 +62,7 @@ void LBaseSurfaceRole::globalScaleChanged(Int32 oldScale, Int32 newScale)
     L_UNUSED(newScale);
 }
 
-bool LBaseSurfaceRole::acceptCommitRequest(Globals::CommitOrigin origin)
+bool LBaseSurfaceRole::acceptCommitRequest(Protocols::Wayland::SurfaceResource::CommitOrigin origin)
 {
     L_UNUSED(origin);
     return true;

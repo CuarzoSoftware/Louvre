@@ -9,7 +9,6 @@
 
 using namespace Louvre::Globals;
 
-
 void DataDeviceManagerGlobal::DataDeviceManagerGlobalPrivate::resource_destroy(wl_resource *resource)
 {
     DataDeviceManagerGlobal *lDataDeviceManagerGlobal = (DataDeviceManagerGlobal*)wl_resource_get_user_data(resource);

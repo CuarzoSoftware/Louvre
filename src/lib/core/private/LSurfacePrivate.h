@@ -5,8 +5,7 @@
 
 struct Louvre::LSurface::Params
 {
-    wl_resource *surface;
-    LClient *client;
+    Protocols::Wayland::SurfaceResource *surfaceResource;
 };
 
 class Louvre::LSurface::LSurfacePrivate
@@ -68,12 +67,10 @@ public:
     void setBufferScale(Int32 scale);
     void globalScaleChanged(Int32 oldScale, Int32 newScale);
 
-    LClient *client                                     = nullptr;
-    LSurface *surface                                   = nullptr;
     LSurface *parent                                    = nullptr;
     LSurface *pendingParent                             = nullptr;
 
-    wl_resource *resource = nullptr;
+    Protocols::Wayland::SurfaceResource *surfaceResource = nullptr;
     wl_resource *xdgSurfaceResource                     = nullptr;
 
     wl_resource* frameCallback                          = nullptr;

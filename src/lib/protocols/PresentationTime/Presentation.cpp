@@ -6,6 +6,7 @@
 #include <private/LSurfacePrivate.h>
 
 #include <LCompositor.h>
+#include <protocols/Wayland/SurfaceResource.h>
 
 struct wp_presentation_interface presentation_implementation =
 {
@@ -39,7 +40,8 @@ void Presentation::feedback(wl_client *client, wl_resource *resource, wl_resourc
     wl_resource_set_implementation(feedback, NULL, NULL,
             NULL);
 
-    LSurface *lSurface = (LSurface*)wl_resource_get_user_data(surface);
+    Protocols::Wayland::SurfaceResource *lSurfaceResource = (Protocols::Wayland::SurfaceResource*)wl_resource_get_user_data(surface);
+    LSurface *lSurface = lSurfaceResource->surface();
     lSurface->imp()->presentationFeedback.push_back(feedback);
 }
 

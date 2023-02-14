@@ -38,7 +38,8 @@ void Globals::Subcompositor::destroy(wl_client *, wl_resource *resource)
 
 void Globals::Subcompositor::get_subsurface(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface, wl_resource *parent)
 {
-    LSurface *lSurface = (LSurface*)wl_resource_get_user_data(surface);
+    Protocols::Wayland::SurfaceResource *lSurfaceResource = (Protocols::Wayland::SurfaceResource*)wl_resource_get_user_data(surface);
+    LSurface *lSurface = lSurfaceResource->surface();
 
     if(lSurface->role())
     {
@@ -57,7 +58,8 @@ void Globals::Subcompositor::get_subsurface(wl_client *client, wl_resource *reso
 
     LSubsurfaceRole *lSubsurface = lCompositor->createSubsurfaceRoleRequest(&subsurfaceRoleParams);
 
-    LSurface *lParent = (LSurface*)wl_resource_get_user_data(parent);
+    Protocols::Wayland::SurfaceResource *lParentResource = (Protocols::Wayland::SurfaceResource*)wl_resource_get_user_data(parent);
+    LSurface *lParent = lParentResource->surface();
     lParent->imp()->pendingChildren.push_back(lSurface);
     lSurface->imp()->pendingParent = lParent;
 

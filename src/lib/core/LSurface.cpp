@@ -5,9 +5,10 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
 
-#include <protocols//PresentationTime/presentation-time.h>
+#include <protocols/PresentationTime/presentation-time.h>
 #include <protocols/XdgShell/xdg-shell.h>
 #include <protocols/DMABuffer/DMA.h>
+#include <protocols/Wayland/SurfaceResource.h>
 
 #include <LCompositor.h>
 #include <LClient.h>
@@ -82,10 +83,8 @@ LSurface::LSurface(Louvre::LSurface::Params *params, GLuint textureUnit)
 {
     m_imp = new LSurfacePrivate();
     eglQueryWaylandBufferWL = (PFNEGLQUERYWAYLANDBUFFERWL) eglGetProcAddress ("eglQueryWaylandBufferWL");
-    imp()->surface = this;
     imp()->texture = new LTexture(textureUnit);
-    imp()->resource = params->surface;
-    imp()->client = params->client;
+    imp()->surfaceResource = params->surfaceResource;
 }
 
 LSurface::~LSurface()
@@ -267,7 +266,7 @@ void LSurface::sendOutputEnterEvent(LOutput *output)
     {
         if(wl_resource_get_user_data(r) == output)
         {
-            wl_surface_send_enter(resource(),r);
+            wl_surface_send_enter(surfaceResource()->resource(), r);
             return;
         }
     }
@@ -288,7 +287,7 @@ void LSurface::sendOutputLeaveEvent(LOutput *output)
             {
                 if(wl_resource_get_user_data(r) == output)
                 {
-                    wl_surface_send_leave(resource(),r);
+                    wl_surface_send_leave(surfaceResource()->resource(),r);
                     return;
                 }
             }
@@ -358,14 +357,14 @@ bool LSurface::mapped() const
     return imp()->mapped && roleId() != Undefined;
 }
 
+Protocols::Wayland::SurfaceResource *LSurface::surfaceResource() const
+{
+    return imp()->surfaceResource;
+}
+
 wl_buffer *LSurface::buffer() const
 {
     return (wl_buffer*)imp()->current.buffer;
-}
-
-wl_resource *LSurface::resource() const
-{
-    return imp()->resource;
 }
 
 wl_resource *LSurface::xdgSurfaceResource() const
@@ -375,13 +374,13 @@ wl_resource *LSurface::xdgSurfaceResource() const
 
 LClient *LSurface::client() const
 {
-    return imp()->client;
+    return surfaceResource()->client();
 }
 
 LCompositor *LSurface::compositor() const
 {
-    if(imp()->client != nullptr)
-        return imp()->client->compositor();
+    if(client() != nullptr)
+        return client()->compositor();
     else
         return nullptr;
 }
@@ -422,6 +421,7 @@ void LSurface::LSurfacePrivate::setParent(LSurface *parent)
     if(parent == this->parent)
         return;
 
+    LSurface *surface = surfaceResource->surface();
 
     if(parent == nullptr)
     {
@@ -457,6 +457,8 @@ void LSurface::LSurfacePrivate::removeChild(LSurface *child)
 
 void LSurface::LSurfacePrivate::setMapped(bool state)
 {
+    LSurface *surface = surfaceResource->surface();
+
     bool before = surface->mapped();
 
     mapped = state;
@@ -482,6 +484,7 @@ void LSurface::LSurfacePrivate::setPendingRole(LBaseSurfaceRole *role)
 
 void LSurface::LSurfacePrivate::applyPendingRole()
 {
+    LSurface *surface = surfaceResource->surface();
     current.role = pending.role;
     pending.role = nullptr;
     surface->roleChanged();
@@ -489,6 +492,8 @@ void LSurface::LSurfacePrivate::applyPendingRole()
 
 void LSurface::LSurfacePrivate::applyPendingChildren()
 {
+    LSurface *surface = surfaceResource->surface();
+
     while(!pendingChildren.empty())
     {
         LSurface *child = pendingChildren.front();
@@ -514,6 +519,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     Int32 width, height;
     EGLint texture_format;
     bool bufferScaleChanged = false;
+    LSurface *surface = surfaceResource->surface();
 
     /***********************************
      *********** BUFFER SCALE ***********
@@ -576,7 +582,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         {
             printf("Unsupported buffer format.\n");
             wl_shm_buffer_end_access(shm_buffer);
-            wl_client_destroy(client->client());
+            wl_client_destroy(surface->client()->client());
             return false;
         }
 
@@ -703,6 +709,8 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 void LSurface::LSurfacePrivate::globalScaleChanged(Int32 oldScale, Int32 newScale)
 {
     L_UNUSED(oldScale);
+
+    LSurface *surface = surfaceResource->surface();
 
     // Size
     currentSizeC = (currentSizeB*newScale)/current.bufferScale;

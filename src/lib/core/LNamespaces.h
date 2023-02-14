@@ -186,39 +186,29 @@ namespace Louvre
     {
         namespace Wayland
         {
+            class CompositorGlobal;
             class SeatGlobal;
             class DataDeviceManagerGlobal;
 
+            class SurfaceResource;
+            class RegionResource;
             class PointerResource;
             class KeyboardResource;
             class DataDeviceResource;
             class DataSourceResource;
             class DataOfferResource;
+
         }
     }
 
     // Wayland Globals
     namespace Globals
     {
-        class Compositor;
         class Subcompositor;
-        class DataSource;
-        class DataOffer;
         class Output;
-        class Region;
-        class Surface;
         class Subsurface;
 
-        /// @brief Commit origin
-        /// Indicates who requests to commit a surface
-        enum CommitOrigin
-        {
-            /// @brief The commit is requested by the surface itself
-            Itself,
 
-            /// @brief The commit is requested by the parent surface
-            Parent
-        };
     };
 
     // Extensions Globals

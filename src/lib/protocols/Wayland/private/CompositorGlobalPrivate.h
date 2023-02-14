@@ -1,16 +1,17 @@
-#ifndef COMPOSITOR_H
-#define COMPOSITOR_H
+#ifndef COMPOSITORGLOBALPRIVATE_H
+#define COMPOSITORGLOBALPRIVATE_H
 
-#include <LNamespaces.h>
+#include <protocols/Wayland/CompositorGlobal.h>
 
-class Louvre::Globals::Compositor
-{
-public:
+using namespace Louvre::Protocols::Wayland;
+
+LPRIVATE_CLASS(CompositorGlobal)
+
     static void resource_destroy(wl_resource *resource);
     static void create_surface(wl_client *client, wl_resource *resource, UInt32 id);
     static void create_region (wl_client *client, wl_resource *resource, UInt32 id);
     static void client_disconect(wl_resource *resource);
-    static void bind(wl_client *client, void *data, UInt32 version, UInt32 id);
 };
 
-#endif // COMPOSITOR_H
+
+#endif // COMPOSITORGLOBALPRIVATE_H

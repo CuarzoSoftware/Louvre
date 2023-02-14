@@ -54,13 +54,13 @@ void KeyboardResource::sendKeymap(Int32 fd, UInt32 size)
 void KeyboardResource::sendLeave(LSurface *surface)
 {
     imp()->serials.leave = LWayland::nextSerial();
-    wl_keyboard_send_leave(resource(), serials().leave, surface->resource());
+    wl_keyboard_send_leave(resource(), serials().leave, surface->surfaceResource()->resource());
 }
 
 void KeyboardResource::sendEnter(LSurface *surface)
 {
     imp()->serials.enter = LWayland::nextSerial();
-    wl_keyboard_send_enter(resource(), serials().enter, surface->resource(), &client()->seat()->keyboard()->imp()->keys);
+    wl_keyboard_send_enter(resource(), serials().enter, surface->surfaceResource()->resource(), &client()->seat()->keyboard()->imp()->keys);
 }
 
 void KeyboardResource::sendModifiers(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
