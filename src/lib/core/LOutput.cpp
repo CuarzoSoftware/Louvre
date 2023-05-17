@@ -54,17 +54,17 @@ LSeat *LOutput::seat() const
 
 const list<LOutputMode *> *LOutput::modes() const
 {
-    return compositor()->imp()->graphicBackend->getOutputModes(this);
+    return compositor()->imp()->graphicBackend->getOutputModes((LOutput*)this);
 }
 
 const LOutputMode *LOutput::preferredMode() const
 {
-    return compositor()->imp()->graphicBackend->getOutputPreferredMode(this);
+    return compositor()->imp()->graphicBackend->getOutputPreferredMode((LOutput*)this);
 }
 
 const LOutputMode *LOutput::currentMode() const
 {
-    return compositor()->imp()->graphicBackend->getOutputCurrentMode(this);
+    return compositor()->imp()->graphicBackend->getOutputCurrentMode((LOutput*)this);
 }
 
 void LOutput::setMode(const LOutputMode *mode)
@@ -89,15 +89,7 @@ void LOutput::setMode(const LOutputMode *mode)
 
 Int32 LOutput::currentBuffer() const
 {
-    return compositor()->imp()->graphicBackend->getOutputCurrentBufferIndex(this);
-}
-
-void LOutput::LOutputPrivate::setCompositor(LCompositor *comp)
-{
-    compositor = comp;
-    output->imp()->rectC.setBR((output->sizeB()*comp->globalScale())/output->scale());
-    output->setScale(output->scale());
-    renderThread = new std::thread(&LOutputPrivate::startRenderLoop, output);
+    return compositor()->imp()->graphicBackend->getOutputCurrentBufferIndex((LOutput*)this);
 }
 
 void LOutput::setScale(Int32 scale)
@@ -129,17 +121,27 @@ Int32 LOutput::scale() const
     return m_imp->outputScale;
 }
 
-void LOutput::LOutputPrivate::initialize()
+// This is called from LCompositor::addOutput()
+bool LOutput::LOutputPrivate::initialize(LCompositor *comp)
 {
-    // Initialize the backend
-    compositor->imp()->graphicBackend->initializeOutput(output);
-    compositor->imp()->graphicBackend->initializeCursor(output);
+    compositor = comp;
+    output->imp()->rectC.setBR((output->sizeB()*comp->globalScale())/output->scale());
+    output->setScale(output->scale());
 
-    renderPoll.fd = eventfd(0,EFD_SEMAPHORE);
-    renderPoll.revents = 0;
-    renderPoll.events = POLLIN;
+    // The backend must call LOutputPrivate::backendInitialized() before initializeGL()
+    return compositor->imp()->graphicBackend->initializeOutput(output);
+}
 
-    LWayland::bindEGLDisplay(compositor->imp()->graphicBackend->getOutputEGLDisplay(output));
+void LOutput::LOutputPrivate::globalScaleChanged(Int32 oldScale, Int32 newScale)
+{
+    L_UNUSED(oldScale);
+
+    rectC.setSize((output->currentMode()->sizeB()*newScale)/output->scale());
+}
+
+void LOutput::LOutputPrivate::backendInitialized()
+{
+    //LWayland::bindEGLDisplay(compositor->imp()->graphicBackend->getOutputEGLDisplay(output));
 
     painter = new LPainter();
     painter->imp()->output = output;
@@ -151,24 +153,32 @@ void LOutput::LOutputPrivate::initialize()
         compositor->cursorInitialized();
     }
 
-    output->initializeGL();
+    output->imp()->global = wl_global_create(LWayland::getDisplay(), &wl_output_interface, LOUVRE_OUTPUT_VERSION, output, &Louvre::Globals::Output::bind);
 
 }
 
-void LOutput::LOutputPrivate::globalScaleChanged(Int32 oldScale, Int32 newScale)
+void LOutput::LOutputPrivate::backendBeforePaint()
 {
-    L_UNUSED(oldScale);
-
-    rectC.setSize((output->currentMode()->sizeB()*newScale)/output->scale());
+    scheduledRepaint = false;
+    output->imp()->compositor->imp()->renderMutex.lock();
 }
 
-void LOutput::LOutputPrivate::startRenderLoop(void *data)
+void LOutput::LOutputPrivate::backendAfterPaint()
 {
-    LOutput *output = (LOutput*)data;
-    output->imp()->initialize();
-    output->imp()->renderLoop(data);
+    output->imp()->compositor->imp()->renderMutex.unlock();
+    LWayland::flushClients();
 }
 
+void LOutput::LOutputPrivate::backendPageFlipped()
+{
+    output->imp()->presentationSeq++;
+
+    // Send presentation time feedback
+    presentationTime = LTime::ns();
+    for(LSurface *surf : output->compositor()->surfaces())
+        surf->imp()->sendPresentationFeedback(output, presentationTime);
+}
+/*
 void LOutput::LOutputPrivate::renderLoop(void *data)
 {
     LOutput *output = (LOutput*)data;
@@ -206,28 +216,23 @@ void LOutput::LOutputPrivate::renderLoop(void *data)
 
         eventfd_read(output->imp()->renderPoll.fd, &output->imp()->renderValue);
 
-        output->imp()->compositor->imp()->renderMutex.lock();
         output->paintGL();
 
-        LWayland::flushClients();
+
 
         output->imp()->compositor->imp()->graphicBackend->flipOutputPage(output);
-        output->imp()->presentationSeq++;
 
-        // Send presentation time feedback
-        presentationTime = LTime::ns();
-        for(LSurface *surf : output->compositor()->surfaces())
-            surf->imp()->sendPresentationFeedback(output, presentationTime);
 
     }
 }
+*/
 
 void LOutput::repaint()
 {
     if(!imp()->scheduledRepaint)
     {
         imp()->scheduledRepaint = true;
-        eventfd_write(m_imp->renderPoll.fd, 1);
+        compositor()->imp()->graphicBackend->scheduleOutputRepaint(this);
     }
 }
 
@@ -246,7 +251,7 @@ Int32 LOutput::dpi()
 
 const LSize &LOutput::physicalSize() const
 {
-    return *m_imp->compositor->imp()->graphicBackend->getOutputPhysicalSize(this);
+    return *m_imp->compositor->imp()->graphicBackend->getOutputPhysicalSize((LOutput*)this);
 }
 
 const LSize &LOutput::sizeB() const
@@ -281,22 +286,22 @@ LOutput::State LOutput::state() const
 
 const char *LOutput::name() const
 {
-    return compositor()->imp()->graphicBackend->getOutputName(this);
+    return compositor()->imp()->graphicBackend->getOutputName((LOutput*)this);
 }
 
 const char *LOutput::model() const
 {
-    return compositor()->imp()->graphicBackend->getOutputModelName(this);
+    return compositor()->imp()->graphicBackend->getOutputModelName((LOutput*)this);
 }
 
 const char *LOutput::manufacturer() const
 {
-    return compositor()->imp()->graphicBackend->getOutputManufacturerName(this);
+    return compositor()->imp()->graphicBackend->getOutputManufacturerName((LOutput*)this);
 }
 
 const char *LOutput::description() const
 {
-    return compositor()->imp()->graphicBackend->getOutputDescription(this);
+    return compositor()->imp()->graphicBackend->getOutputDescription((LOutput*)this);
 }
 
 void LOutput::setPosC(const LPoint &posC)

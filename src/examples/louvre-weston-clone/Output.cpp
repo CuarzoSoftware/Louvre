@@ -1,4 +1,5 @@
 #include "Output.h"
+#include "LLog.h"
 #include <Compositor.h>
 #include <LPainter.h>
 #include <Surface.h>
@@ -20,6 +21,7 @@ void Output::initializeGL()
     fullRefresh = true;
     first[0] = true;
     first[1] = true;
+    paintGL();
 }
 
 void Output::paintGL()
@@ -155,7 +157,7 @@ void Output::paintGL()
     }
 
     // Si el cursor no soporta composición por HW, añadimos su recta a la región expuesta
-    if(!compositor()->cursor()->hasHardwareSupport())
+    if(!compositor()->cursor()->hasHardwareSupport(this))
     {
         exposedRegionG[currBuff].addRect(cursorRectG[currBuff]);
         exposedRegionG[currBuff].addRect(compositor()->cursor()->rectC());

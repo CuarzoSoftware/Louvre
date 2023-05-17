@@ -41,7 +41,6 @@ LCompositor::LCompositor()
 
 }
 
-
 bool LCompositor::graphicBackendInitialized() const
 {
     return imp()->graphicBackendInitialized;
@@ -150,7 +149,6 @@ int LCompositor::start()
         }
     }
 
-
     if(!imp()->inputBackend->initialize(seat()))
     {
         LLog::fatal("Failed to initialize input backend. Stopping compositor...");
@@ -159,6 +157,7 @@ int LCompositor::start()
 
     LLog::debug("Input backend initialized successfully.");
     imp()->inputBackendInitialized = true;
+
 
     seat()->initialized();
 
@@ -319,38 +318,27 @@ void LCompositor::repaintAllOutputs()
         (*it)->repaint();
 }
 
-void LCompositor::addOutput(LOutput *output)
+bool LCompositor::addOutput(LOutput *output)
 {
     // Verifica que no se haya añadido previamente
     for(LOutput *o : outputs())
         if(o == output)
-            return;
+            return true;
 
-    // Add the output to the compositor list
     imp()->outputs.push_back(output);
 
-    // This method inits the Output rendering thread and its OpenGL context
-    output->imp()->setCompositor(this);
-
-    // If the main thread has no OpenGL context yet
-    if(!LWayland::isGlContextInitialized())
+    if (!output->imp()->initialize(this))
     {
-        // Wait for the added output to create his OpenGL context in his own thread
-        while(output->state() != LOutput::Initialized)
-            usleep(100);
-
-        /* The next method creates a shared OpenGL context in the main thread.
-         * This context is used only to allow the library to copy the surfaces buffers
-         * into OpenGL textures from the main thread and release clients buffers
-         * immediatly to allow them to reuse it.
-         * This fix the Qt clients decoration bug while resizing. */
-        LWayland::initGLContext();
+        LLog::error("[Compositor] Failed to initialize output %s.", output->name());
+        imp()->outputs.remove(output);
+        return false;
     }
 
-    // Create output global
     output->imp()->global = wl_global_create(LWayland::getDisplay(), &wl_output_interface, LOUVRE_OUTPUT_VERSION, output, &Louvre::Globals::Output::bind);
 
     imp()->updateGlobalScale();
+
+    return true;
 }
 
 void LCompositor::removeOutput(LOutput *output)

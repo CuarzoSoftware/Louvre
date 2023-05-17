@@ -64,6 +64,7 @@ public:
     // Dylib
     void *graphicBackendHandle                                  = nullptr;
     void *inputBackendHandle                                    = nullptr;
+    void *graphicBackendData                                    = nullptr;
 
 
 

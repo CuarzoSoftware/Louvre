@@ -39,6 +39,7 @@ using namespace Louvre;
 
 void initSeat(LSeat *seat)
 {
+    return;
     seat->imp()->listener.enable_seat = &LSeat::LSeatPrivate::seatEnabled;
     seat->imp()->listener.disable_seat = &LSeat::LSeatPrivate::seatDisabled;
 
@@ -75,7 +76,6 @@ LSeat::~LSeat()
 {
     delete m_imp;
 }
-
 
 LCompositor *LSeat::compositor() const
 {
@@ -141,6 +141,7 @@ LDNDManager *LSeat::dndManager() const
 
 Int32 LSeat::setTTY(Int32 tty)
 {
+    return 0;
     if(imp()->libseatHandle)
     {
         Int32 ret = libseat_switch_session(libseatHandle(), tty);
@@ -153,6 +154,10 @@ Int32 LSeat::setTTY(Int32 tty)
 
 Int32 LSeat::openDevice(const char *path, Int32 *fd)
 {
+    *fd = open(path, O_CLOEXEC | O_RDWR);
+
+    return *fd;
+
     if(!imp()->libseatHandle)
         initSeat(this);
     return libseat_open_device(libseatHandle(), path, fd);
@@ -160,6 +165,7 @@ Int32 LSeat::openDevice(const char *path, Int32 *fd)
 
 Int32 LSeat::closeDevice(Int32 id)
 {
+    return 0;
     return libseat_close_device(libseatHandle(), id);
 }
 
@@ -177,6 +183,7 @@ bool LSeat::enabled() const
 
 int LSeat::LSeatPrivate::seatEvent(int, unsigned int, void *data)
 {
+    return 0;
     LSeat *seat = (LSeat*)data;
     libseat_dispatch(seat->libseatHandle(), 0);
     return 0;
@@ -193,6 +200,7 @@ bool outputsWithPendingState(LCompositor *compositor, LOutput::State state)
 
 void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
 {
+    return;
     LSeat *lseat = (LSeat*)data;
 
     lseat->imp()->enabled = true;
@@ -209,6 +217,7 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
 
 void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
 {
+    return;
     LSeat *lseat = (LSeat*)data;
 
     if(!lseat->imp()->enabled)
@@ -234,6 +243,7 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
 
 void LSeat::LSeatPrivate::dispatchSeat()
 {
+    return;
     if(libseatHandle)
         libseat_dispatch(libseatHandle, 0);
 }

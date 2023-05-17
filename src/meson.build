@@ -109,6 +109,7 @@ drm_dep             = cpp.find_library('drm', dirs: library_paths, required: tru
 gbm_dep             = cpp.find_library('gbm', dirs: library_paths, required: true)
 input_dep           = cpp.find_library('input', dirs: library_paths, required: true)
 libseat_dep         = cpp.find_library('libseat', dirs: library_paths, required: true)
+srm_dep             = cpp.find_library('SRM', dirs: library_paths, required: true)
 
 
 if get_option('build_drm_backend') or get_option('build_x11_backend')
@@ -154,11 +155,11 @@ if get_option('build_drm_backend')
 endif
 
 if get_option('build_x11_backend')
-    subdir('backends/graphic/X11')
+    #subdir('backends/graphic/X11')
 endif
 
 subdir('backends/input/Libinput')
-subdir('backends/input/X11')
+#subdir('backends/input/X11')
 
 if get_option('build_examples')
     subdir('examples/louvre-weston-clone')

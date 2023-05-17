@@ -25,13 +25,8 @@ public:
     void *graphicBackendData = nullptr;
 
     // Setup Methods
-    void setCompositor(LCompositor *compositor);
-    void initialize();
+    bool initialize(LCompositor *compositor);
     void globalScaleChanged(Int32 oldScale, Int32 newScale);
-
-    // Paint
-    static void startRenderLoop(void *data);
-    static void renderLoop(void *data);
 
     // Compositor
     LCompositor *compositor = nullptr;
@@ -40,15 +35,15 @@ public:
     // Params
     Int32 outputScale = 1;
 
-    // Render thread
-    eventfd_t renderValue = 1;
-    std::thread *renderThread;
-    pollfd renderPoll;
     bool scheduledRepaint = false;
     UInt64 presentationSeq = 0;
+    timespec presentationTime;
 
-
-
+    // Called by the backend
+    void backendInitialized();
+    void backendBeforePaint();
+    void backendAfterPaint();
+    void backendPageFlipped();
 };
 
 #endif // LOUTPUTPRIVATE_H

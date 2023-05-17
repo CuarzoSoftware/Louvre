@@ -66,10 +66,11 @@ void LCursor::setTextureB(LTexture *texture, const LPointF &hotspot)
     imp()->texture = texture;
     imp()->hotspotB = hotspot;
     imp()->update();
+    /* TODO:
     compositor()->imp()->graphicBackend->setCursorTexture(
                 imp()->output,
                 imp()->texture,
-                imp()->sizeS*output()->scale());
+                imp()->sizeS*output()->scale());*/
 }
 
 void LCursor::setOutput(LOutput *output)
@@ -150,11 +151,13 @@ void LCursor::setVisible(bool state)
     else if(texture())
     {
         imp()->update();
+        /* TODO:
         for(LOutput *o : compositor()->outputs())
+
         compositor()->imp()->graphicBackend->setCursorTexture(
                     o,
                     texture(),
-                    imp()->sizeS*o->scale());
+                    imp()->sizeS*o->scale());*/
     }
 
 }
@@ -170,9 +173,9 @@ bool LCursor::visible() const
     return imp()->isVisible;
 }
 
-bool LCursor::hasHardwareSupport() const
+bool LCursor::hasHardwareSupport(const LOutput *output) const
 {
-    return compositor()->imp()->graphicBackend->hasHardwareCursorSupport();
+    return compositor()->imp()->graphicBackend->hasHardwareCursorSupport((LOutput*)output);
 }
 
 const LPointF &LCursor::posC() const
@@ -240,10 +243,11 @@ void LCursor::LCursorPrivate::update()
             if(!found)
             {
                 intersectedOutputs.push_back(o);
+                /* TODO:
                 cursor->compositor()->imp()->graphicBackend->setCursorTexture(
                             o,
                             texture,
-                            sizeS*o->scale());
+                            sizeS*o->scale());*/
             }
         }
         else
@@ -255,10 +259,10 @@ void LCursor::LCursorPrivate::update()
                         sizeS);
         }
 
-        if(cursor->hasHardwareSupport())
+        if(cursor->hasHardwareSupport(o))
         {
             LPointF p = newPosG - o->posC();
-            output->compositor()->imp()->graphicBackend->setCursorPosition(o, (p*o->scale())/o->compositor()->globalScale());
+            /*TODO: output->compositor()->imp()->graphicBackend->setCursorPosition(o, (p*o->scale())/o->compositor()->globalScale());*/
         }
     }
 

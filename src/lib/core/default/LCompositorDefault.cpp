@@ -22,7 +22,7 @@ void LCompositor::initialized()
 {
 
     // Change the keyboard map to "latam"
-    seat()->keyboard()->setKeymap( "evdev", "pc105", "latam", "grp:win_space_toggle,terminate:ctrl_alt_bksp");
+    seat()->keyboard()->setKeymap( NULL, NULL, "latam", NULL);
 
     // Use the Output Manager to get avaliable outputs
     if(outputManager()->outputs()->empty())

@@ -59,7 +59,7 @@ void LOutput::paintGL()
     }
 
     // Manualy draw the cursor if hardware composition is not supported
-    if(!cursor()->hasHardwareSupport())
+    if(!cursor()->hasHardwareSupport(this))
     {
         p->drawTextureC(
             cursor()->texture(),                   

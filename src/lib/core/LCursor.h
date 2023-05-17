@@ -174,7 +174,7 @@ public:
      *
      * @returns True if the backend supports it and False otherwise.
      */
-    bool hasHardwareSupport() const;
+    bool hasHardwareSupport(const LOutput *output) const;
 
     /*!
      * @brief Returns the compositor's instance.

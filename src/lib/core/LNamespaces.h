@@ -146,29 +146,28 @@ namespace Louvre
     struct LGraphicBackendInterface
     {
         bool (*initialize)(LCompositor *compositor);
-        void (*uninitialize)(const LCompositor *compositor);
-        const std::list<LOutput*>*(*getAvaliableOutputs)(const LCompositor *compositor);
-        void (*initializeOutput)(const LOutput *output);
-        void (*uninitializeOutput)(const LOutput *output);
-        void (*flipOutputPage)(const LOutput *output);
-        EGLDisplay (*getOutputEGLDisplay)(const LOutput *output);
-        const LSize *(*getOutputPhysicalSize)(const LOutput *output);
-        Int32 (*getOutputCurrentBufferIndex)(const LOutput *output);
-        const char *(*getOutputName)(const LOutput *output);
-        const char *(*getOutputManufacturerName)(const LOutput *output);
-        const char *(*getOutputModelName)(const LOutput *output);
-        const char *(*getOutputDescription)(const LOutput *output);
-        const LOutputMode *(*getOutputPreferredMode)(const LOutput *output);
-        const LOutputMode *(*getOutputCurrentMode)(const LOutput *output);
-        const std::list<LOutputMode*> *(*getOutputModes)(const LOutput *output);
-        void (*setOutputMode)(const LOutput *output, const LOutputMode *mode);
-        const LSize *(*getOutputModeSize)(const LOutputMode *mode);
-        Int32 (*getOutputModeRefreshRate)(const LOutputMode *mode);
-        bool (*getOutputModeIsPreferred)(const LOutputMode *mode);
-        void (*initializeCursor)(const LOutput *output);
-        bool (*hasHardwareCursorSupport)();
-        void (*setCursorTexture)(const LOutput *output, const LTexture *texture, const LSizeF &size);
-        void (*setCursorPosition)(const LOutput *output, const LPoint &position);
+        bool (*scheduleOutputRepaint)(LOutput *output);
+        void (*uninitialize)(LCompositor *compositor);
+        const std::list<LOutput*>*(*getConnectedOutputs)(LCompositor *compositor);
+        bool (*initializeOutput)(LOutput *output);
+        void (*uninitializeOutput)(LOutput *output);
+        EGLDisplay (*getOutputEGLDisplay)(LOutput *output);
+        const LSize *(*getOutputPhysicalSize)(LOutput *output);
+        Int32 (*getOutputCurrentBufferIndex)(LOutput *output);
+        const char *(*getOutputName)(LOutput *output);
+        const char *(*getOutputManufacturerName)(LOutput *output);
+        const char *(*getOutputModelName)(LOutput *output);
+        const char *(*getOutputDescription)(LOutput *output);
+        const LOutputMode *(*getOutputPreferredMode)(LOutput *output);
+        const LOutputMode *(*getOutputCurrentMode)(LOutput *output);
+        const std::list<LOutputMode*> *(*getOutputModes)(LOutput *output);
+        bool (*setOutputMode)(LOutput *output, LOutputMode *mode);
+        const LSize *(*getOutputModeSize)(LOutputMode *mode);
+        Int32 (*getOutputModeRefreshRate)(LOutputMode *mode);
+        bool (*getOutputModeIsPreferred)(LOutputMode *mode);
+        bool (*hasHardwareCursorSupport)(LOutput *output);
+        void (*setCursorTexture)(LOutput *output, LTexture *texture, LSizeF &size);
+        void (*setCursorPosition)(LOutput *output, LPoint &position);
     };
 
     struct LInputBackendInterface

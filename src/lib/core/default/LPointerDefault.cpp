@@ -1,3 +1,4 @@
+#include "LLog.h"
 #include "LPointer.h"
 #include <LSeat.h>
 #include <LCompositor.h>
@@ -30,8 +31,11 @@ void LPointer::pointerPosChangeEvent(float x, float y)
     cursor()->setPosC(LPointF(x,y));
 
     // Repaint cursor outputs if hardware composition is not supported
-    if(!cursor()->hasHardwareSupport())
-        cursor()->repaintOutputs();
+    for(LOutput *output : cursor()->intersectedOutputs())
+    {
+        if(!cursor()->hasHardwareSupport(output))
+            output->repaint();
+    }
 
     // Update the drag & drop icon (if there was one)
     if(seat()->dndManager()->icon())

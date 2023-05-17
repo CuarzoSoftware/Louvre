@@ -451,7 +451,7 @@ public:
      *
      * @param output One of the outputs available on the outputs manager (outputManager()) through the LOutputManager::outputs() method.
      */
-    void addOutput(LOutput *output);
+    bool addOutput(LOutput *output);
 
     /*!
      * @brief Removes an output from the compositor.

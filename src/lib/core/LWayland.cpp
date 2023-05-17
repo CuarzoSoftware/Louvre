@@ -1,3 +1,4 @@
+#include "LLog.h"
 #include <fcntl.h>
 #include <gbm.h>
 #include <private/LCompositorPrivate.h>
@@ -257,8 +258,8 @@ int LWayland::initWayland(LCompositor *comp)
     wl_global_create(display, &zxdg_decoration_manager_v1_interface,
                      LOUVRE_XDG_DECORATION_MANAGER_VERSION, comp, &Extensions::XdgDecoration::Manager::bind);
 
-    wl_global_create(display, &zwp_linux_dmabuf_v1_interface,
-                     3, comp, &Extensions::LinuxDMABuffer::LinuxDMABuffer::bind);
+    /*wl_global_create(display, &zwp_linux_dmabuf_v1_interface,
+                     3, comp, &Extensions::LinuxDMABuffer::LinuxDMABuffer::bind);*/
 
     wl_global_create(display, &wp_presentation_interface,
                      1, comp, &Extensions::PresentationTime::Presentation::bind);
@@ -384,59 +385,7 @@ int drm_fd;
 
 void LWayland::bindEGLDisplay(EGLDisplay eglDisplay)
 {
-    eglBindWaylandDisplayWL(eglDisplay, display);
-
-    return;
-
-    EGLDeviceEXT egl_dev;
-
-    PFNEGLQUERYDISPLAYATTRIBEXTPROC queryDisplayAttrib = (PFNEGLQUERYDISPLAYATTRIBEXTPROC) eglGetProcAddress ("eglQueryDisplayAttribEXT");
-
-    queryDisplayAttrib(eglDisplay, EGL_DEVICE_EXT, (EGLAttribKHR*)&egl_dev);
-
-    PFNEGLQUERYDEVICESTRINGEXTPROC eglQueryDeviceStringEXT = (PFNEGLQUERYDEVICESTRINGEXTPROC)eglGetProcAddress("eglQueryDeviceStringEXT");
-
-    const char *dev = eglQueryDeviceStringEXT(egl_dev,EGL_DRM_DEVICE_FILE_EXT);
-
-    printf("DRM DEVICE %s\n", dev);
-
-    drm_fd = open(dev, O_RDWR);
-
-    printf("FD %d\n", drm_fd);
-
-    gbm_device *gbmDev = gbm_create_device(drm_fd);
-
-    printf("Device name %s\n", gbm_device_get_backend_name(gbmDev));
-
-    gbm_surface *surf = gbm_surface_create(gbmDev, 4, 4, GBM_FORMAT_ARGB8888, GBM_BO_USE_RENDERING);
-
-    if(!surf)
-    {
-        printf("No surface\n");
-        exit(1);
-    }
-
-    printf("Surface free buffers %d\n", gbm_surface_has_free_buffers(surf));
-
-    #ifdef LOUVRE_DMA_ENABLE
-
-    EGLDeviceEXT egl_dev;
-
-    PFNEGLQUERYDISPLAYATTRIBEXTPROC queryDisplayAttrib = (PFNEGLQUERYDISPLAYATTRIBEXTPROC) eglGetProcAddress ("eglQueryDisplayAttribEXT");
-
-    queryDisplayAttrib(eglDisplay, EGL_DEVICE_EXT, (EGLAttribKHR*)&egl_dev);
-
-    PFNEGLQUERYDEVICESTRINGEXTPROC eglQueryDeviceStringEXT = (PFNEGLQUERYDEVICESTRINGEXTPROC)eglGetProcAddress("eglQueryDeviceStringEXT");
-
-    const char *dev = eglQueryDeviceStringEXT(egl_dev,EGL_DRM_DEVICE_FILE_EXT);
-    printf("DRM DEVICE %s\n", dev);
-
-    drm_fd = open(dev, O_RDWR | O_NONBLOCK | O_CLOEXEC);
-
-    gbm_init(drm_fd);
-
-    #endif
-
+    //eglBindWaylandDisplayWL(eglDisplay, display);
 }
 
 pollfd fds[2];
@@ -463,7 +412,7 @@ void LWayland::runLoop()
 
     while(true)
     {
-        poll(fds, 2, 500);
+        poll(fds, 2, -1);
 
         compositor->imp()->renderMutex.lock();
 

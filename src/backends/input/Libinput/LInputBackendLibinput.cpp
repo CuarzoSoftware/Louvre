@@ -35,17 +35,20 @@ std::unordered_map<int,int>devices;
 int openRestricted(const char *path, int flags, void *data)
 {
     L_UNUSED(flags);
+    /*
     libseat *seat = (libseat*)data;
     int id,fd;
-
     id = libseat_open_device(seat, path, &fd);
     devices[fd] = id;
+*/
 
-    return fd;
+
+    return open(path, flags);
 }
 
 void closeRestricted(int fd, void *data)
 {
+    return;
     //printf("Libinput close\n");
     libseat *seat = (libseat*)data;
     libseat_close_device(seat, devices[fd]);
@@ -168,7 +171,7 @@ bool LInputBackend::initialize(const LSeat *seat)
     if(!data->li)
         goto fail;
 
-    libinput_udev_assign_seat(data->li, libseat_seat_name(seat->libseatHandle()));
+    libinput_udev_assign_seat(data->li, "seat0");//libseat_seat_name(seat->libseatHandle()));
     libinput_dispatch(data->li);
     LWayland::addFdListener(libinput_get_fd(data->li), (LSeat*)seat, &processInput);
 

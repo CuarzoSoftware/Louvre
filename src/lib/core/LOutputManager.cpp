@@ -23,6 +23,6 @@ LCompositor *LOutputManager::compositor() const
 
 const list<LOutput *> *LOutputManager::outputs() const
 {
-    return m_imp->compositor->imp()->graphicBackend->getAvaliableOutputs(m_imp->compositor);
+    return m_imp->compositor->imp()->graphicBackend->getConnectedOutputs(m_imp->compositor);
 }
 
