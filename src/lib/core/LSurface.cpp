@@ -83,7 +83,7 @@ LSurface::LSurface(Louvre::LSurface::Params *params, GLuint textureUnit)
 {
     m_imp = new LSurfacePrivate();
     eglQueryWaylandBufferWL = (PFNEGLQUERYWAYLANDBUFFERWL) eglGetProcAddress ("eglQueryWaylandBufferWL");
-    imp()->texture = new LTexture(textureUnit);
+    imp()->texture = new LTexture(params->surfaceResource->compositor(), textureUnit);
     imp()->surfaceResource = params->surfaceResource;
 }
 
@@ -533,6 +533,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     }
 
     // EGL
+    /*
     if(eglQueryWaylandBufferWL(LWayland::eglDisplay(), current.buffer, EGL_TEXTURE_FORMAT, &texture_format))
     {
         eglQueryWaylandBufferWL(LWayland::eglDisplay(), current.buffer, EGL_WIDTH, &width);
@@ -565,8 +566,9 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         eglDestroyImage(LWayland::eglDisplay(), image);
 
     }
+*/
     // SHM
-    else if(wl_shm_buffer_get(current.buffer))
+    if(wl_shm_buffer_get(current.buffer))
     {
 
         wl_shm_buffer *shm_buffer = wl_shm_buffer_get(current.buffer);
@@ -574,17 +576,17 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         width = wl_shm_buffer_get_width(shm_buffer);
         height = wl_shm_buffer_get_height(shm_buffer);
         void *data = wl_shm_buffer_get_data(shm_buffer);
-        UInt32 format =  wl_shm_buffer_get_format(shm_buffer);
+        UInt32 format =  LTexture::waylandFormatToDRM(wl_shm_buffer_get_format(shm_buffer));
+        Int32 stride = wl_shm_buffer_get_stride(shm_buffer);
 
-        GLenum bufferFormat, bufferType;
-
+        /*
         if(!LWayland::wlFormat2Gl(format, &bufferFormat, &bufferType))
         {
             printf("Unsupported buffer format.\n");
             wl_shm_buffer_end_access(shm_buffer);
             wl_client_destroy(surface->client()->client());
             return false;
-        }
+        }*/
 
         LSize newSize = LSize(width, height);
 
@@ -593,13 +595,13 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
 
         // Reemplaza toda la textura
-        if(!texture->initialized() || bufferSizeChanged || bufferFormat != texture->format() || bufferType != texture->type() || bufferScaleChanged)
+        if(!texture->initialized() || bufferSizeChanged || bufferScaleChanged)
         {
             currentDamagesB.clear();
             currentDamagesB.addRect(LRect(0,newSize));
             currentDamagesC = currentDamagesB;
             currentDamagesC.multiply(float(surface->compositor()->globalScale())/float(surface->bufferScale()));
-            texture->setDataB(width, height, data, bufferFormat, bufferType);
+            texture->setDataB(newSize, stride, format, data);
         }
 
         // Aplica daños
@@ -610,30 +612,8 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
             onlyPending.addRegion(pendingDamagesB);
             onlyPending.clip(LRect(0,texture->sizeB()));
 
-            glBindTexture(GL_TEXTURE_2D, texture->id());
-
             for(const LRect &r : onlyPending.rects())
-            {
-
-                glPixelStorei(GL_UNPACK_ROW_LENGTH,texture->sizeB().w());
-                glPixelStorei(GL_UNPACK_SKIP_PIXELS,(GLint)r.x());
-                glPixelStorei(GL_UNPACK_SKIP_ROWS,(GLint)r.y());
-
-
-                glTexSubImage2D(GL_TEXTURE_2D,
-                                0,
-                                (GLint)r.x(),
-                                (GLint)r.y(),
-                                (GLsizei)r.w(),
-                                (GLsizei)r.h(),
-                                texture->format(),
-                                texture->type(),
-                                data);
-            }
-
-            glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
-            glPixelStorei(GL_UNPACK_SKIP_PIXELS,0);
-            glPixelStorei(GL_UNPACK_SKIP_ROWS,0);
+                texture->updateRect(r, stride, data);
 
             currentDamagesB.addRegion(onlyPending);
             currentDamagesC = currentDamagesB;
@@ -648,6 +628,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
         wl_shm_buffer_end_access(shm_buffer);
     }
+    /*
     else if(wl_buffer_is_dmabuf(current.buffer))
     {
         LDMABuffer *dma = (LDMABuffer*)wl_resource_get_user_data(current.buffer);
@@ -681,7 +662,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         //eglDestroyImage(LWayland::eglDisplay(), image);
 
 
-    }
+    }*/
     else
     {
         printf("Unknown buffer type.\n");

@@ -20,8 +20,8 @@ LCursor::LCursor(LOutput *output)
     m_imp = new LCursorPrivate();
     imp()->cursor = this;
     setOutput(output);
-    imp()->defaultTexture = new LTexture(1);
-    imp()->defaultTexture->setDataB(64,64,louvre_default_cursor_data());
+    imp()->defaultTexture = new LTexture(output->compositor(), 1);
+    imp()->defaultTexture->setDataB(LSize(64,64), 64*4, DRM_FORMAT_ABGR8888, louvre_default_cursor_data());
     setSizeS(LSize(24));
     useDefault();
 }
@@ -33,6 +33,7 @@ LCursor::~LCursor()
 
 LXCursor *LCursor::loadXCursorB(const char *cursor, const char *theme, Int32 suggestedSize, GLuint textureUnit)
 {
+    return nullptr;
     XcursorImage *x11Cursor =  XcursorLibraryLoadImage(cursor,theme,suggestedSize);
 
     if(!x11Cursor)
@@ -41,8 +42,8 @@ LXCursor *LCursor::loadXCursorB(const char *cursor, const char *theme, Int32 sug
     LXCursor *newCursor = new LXCursor();
     newCursor->imp()->hotspotB.setX(x11Cursor->xhot);
     newCursor->imp()->hotspotB.setY(x11Cursor->yhot);
-    newCursor->imp()->texture = new LTexture(textureUnit);
-    newCursor->imp()->texture->setDataB(x11Cursor->width, x11Cursor->height, x11Cursor->pixels);
+    //newCursor->imp()->texture = new LTexture(output->compositor(),textureUnit);
+    //newCursor->imp()->texture->setDataB(x11Cursor->width, x11Cursor->height, x11Cursor->pixels);
 
     XcursorImageDestroy(x11Cursor);
 

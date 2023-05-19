@@ -3,6 +3,7 @@
 
 #include <LNamespaces.h>
 #include <GL/gl.h>
+#include <drm_fourcc.h>
 
 /*!
  * @brief Renderer compatible texture
@@ -20,18 +21,15 @@ public:
     enum BufferSourceType
     {
         /// Buffer
-        SHM = 0,
-
-        /// EGL Image
-        EGL = 1
+        CPU = 0,
     };
 
-    /*!
-     * @brief LTexture class constructor
-     *
-     * @param textureUnit Texture unit
-     */
-    LTexture(GLuint textureUnit = 1);
+    static UInt32 waylandFormatToDRM(UInt32 waylandFormat);
+
+    LTexture(LCompositor *compositor, GLuint textureUnit = 1);
+
+    bool setDataB(const LSize &size, UInt32 stride, UInt32 format, const void *buffer);
+    bool updateRect(const LRect &rect, UInt32 stride, const void *buffer);
 
     /// LTexture class destructor
     ~LTexture();
@@ -40,16 +38,9 @@ public:
     LTexture& operator= (const LTexture&) = delete;
 
     /*!
-     * @brief Assigns the texture's content
-     *
-     * @param width Width of the source in buffer coordinates
-     * @param height Height of the source in buffer coordinates
-     * @param data Pixel source (buffer or EGL image)
-     * @param format Pixel format
-     * @param type Pixel data type
-     * @param sourceType Source type (buffer or EGL image)
+     * @brief Compositor instance
      */
-    void setDataB(Int32 width, Int32 height, void *data, GLenum format = GL_BGRA, GLenum type = GL_UNSIGNED_BYTE, BufferSourceType sourceType = SHM);
+    LCompositor *compositor() const;
 
     /*!
      * @brief Texture size in buffer coordinates
@@ -67,17 +58,12 @@ public:
     /*!
      * @brief OpenGL texture ID.
      */
-    GLuint id();
+    GLuint id(LOutput *output);
 
     /*!
      * @brief OpenGL texture unit.
      */
     GLuint unit();
-
-    /*!
-     * @brief Pixels data type (e.g. GL_UNSIGNED_BYTE).
-     */
-    GLenum type();
 
     /*!
      * @brief Texture source.

@@ -23,6 +23,7 @@
 #include <private/LOutputModePrivate.h>
 #include <private/LOutputManagerPrivate.h>
 #include <private/LPainterPrivate.h>
+#include <private/LTexturePrivate.h>
 
 #include <LWayland.h>
 #include <LTime.h>
@@ -31,6 +32,7 @@
 #include <SRM/SRMDevice.h>
 #include <SRM/SRMConnector.h>
 #include <SRM/SRMConnectorMode.h>
+#include <SRM/SRMBuffer.h>
 
 #include <SRM/SRMList.h>
 
@@ -415,6 +417,51 @@ void LGraphicBackend::setCursorPosition(LOutput *output, LPoint &position)
 */
 }
 
+bool LGraphicBackend::createTextureFromCPUBuffer(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels)
+{
+    Backend *bknd = (Backend*)texture->compositor()->imp()->graphicBackendData;
+    SRMBuffer *bkndBuffer = srmBufferCreateFromCPU(bknd->core, size.w(), size.h(), stride, pixels, format);
+
+    if (bkndBuffer)
+    {
+        texture->imp()->graphicBackendData = bkndBuffer;
+        return true;
+    }
+
+    return false;
+}
+
+bool LGraphicBackend::updateTextureRect(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels)
+{
+    SRMBuffer *bkndBuffer = (SRMBuffer*)texture->imp()->graphicBackendData;
+    return srmBufferWrite(bkndBuffer, stride, dst.x(), dst.y(), dst.w(), dst.h(), pixels);
+}
+
+UInt32 LGraphicBackend::getTextureID(LOutput *output, LTexture *texture)
+{
+    SRMDevice *bkndRendererDevice;
+
+    if (output)
+    {
+        Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+        bkndRendererDevice = srmDeviceGetRendererDevice(srmConnectorGetDevice(bkndOutput->conn));
+    }
+    else
+    {
+        Backend *bknd = (Backend*)texture->compositor()->imp()->graphicBackendData;
+        bkndRendererDevice = srmCoreGetAllocatorDevice(bknd->core);
+    }
+
+    return srmBufferGetTextureID(bkndRendererDevice, (SRMBuffer*)texture->imp()->graphicBackendData);
+
+}
+
+void LGraphicBackend::destroyTexture(LTexture *texture)
+{
+    SRMBuffer *buffer = (SRMBuffer*)texture->imp()->graphicBackendData;
+    srmBufferDestroy(buffer);
+}
+
 LGraphicBackendInterface API;
 
 extern "C" LGraphicBackendInterface *getAPI()
@@ -442,6 +489,13 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.hasHardwareCursorSupport = &LGraphicBackend::hasHardwareCursorSupport;
     API.setCursorTexture = &LGraphicBackend::setCursorTexture;
     API.setCursorPosition = &LGraphicBackend::setCursorPosition;
+
+    // Buffers
+    API.createTextureFromCPUBuffer = &LGraphicBackend::createTextureFromCPUBuffer;
+    API.updateTextureRect = &LGraphicBackend::updateTextureRect;
+    API.getTextureID = &LGraphicBackend::getTextureID;
+    API.destroyTexture = &LGraphicBackend::destroyTexture;
+
     return &API;
 }
 

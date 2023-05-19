@@ -13,15 +13,14 @@ public:
     LTexturePrivate(const LTexturePrivate&)             = delete;
     LTexturePrivate& operator= (const LTexturePrivate&) = delete;
 
-    void deleteTexture();
+    void deleteTexture(LTexture *texture);
 
-    LSize sizeB;
-    GLuint id                                           = 0;
+    LCompositor *compositor                             = nullptr;
+    BufferSourceType sourceType                         = CPU;
     GLuint unit                                         = 0;
-    GLenum type                                         = GL_UNSIGNED_BYTE;
-    bool initialized                                    = false;
-    BufferSourceType sourceType                         = SHM;
-    GLenum format                                       = 0;
+    LSize sizeB;
+    UInt32 format                                       = 0;
+    void *graphicBackendData                            = nullptr;
 };
 
 #endif // LTEXTUREPRIVATE_H

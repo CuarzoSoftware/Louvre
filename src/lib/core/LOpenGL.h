@@ -50,7 +50,7 @@ public:
      * @param textureUnit Texture unit.
      * @returns A new texture or nullptr in case of error.
      */
-    static LTexture *loadTexture(const char *pngFile, GLuint textureUnit = 1);
+    static LTexture *loadTexture(LCompositor *compositor, const char *pngFile, GLuint textureUnit = 1);
 };
 
 #endif // LOPENGL_H

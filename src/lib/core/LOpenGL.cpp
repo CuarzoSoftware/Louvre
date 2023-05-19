@@ -95,7 +95,7 @@ GLuint LOpenGL::compileShader(GLenum type, const char *shaderString)
     return shader;
 }
 
-LTexture *LOpenGL::loadTexture(const char *pngFile, GLuint textureUnit)
+LTexture *LOpenGL::loadTexture(LCompositor *compositor, const char *pngFile, GLuint textureUnit)
 {
     unsigned int error;
     unsigned char *image;
@@ -110,8 +110,11 @@ LTexture *LOpenGL::loadTexture(const char *pngFile, GLuint textureUnit)
         return nullptr;
     }
 
-    LTexture *texture = new LTexture(textureUnit);
-    texture->setDataB(width,height,image,GL_RGBA);
+    LSize s;
+    s.setW(width);
+    s.setH(height);
+    LTexture *texture = new LTexture(compositor, textureUnit);
+    texture->setDataB(s, width*4, DRM_FORMAT_ABGR8888, image);
 
     free(image);
 

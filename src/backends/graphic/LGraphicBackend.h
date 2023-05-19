@@ -41,14 +41,26 @@ public:
 
     /* CURSOR */
 
-    // Indica si el backend soporta composición del cursor vía hardware
     static bool hasHardwareCursorSupport(LOutput *output);
-
-    // Asigna una textura al cursor
     static void setCursorTexture(LOutput *output, LTexture *texture, LSizeF &size);
-
-    // Asigna la posición del cursor
     static void setCursorPosition(LOutput *output, LPoint &position);
+
+    /* BUFFERS */
+
+    static bool createTextureFromCPUBuffer(LTexture *texture,
+                                           const LSize &size,
+                                           UInt32 stride,
+                                           UInt32 format,
+                                           const void *pixels);
+
+    static bool updateTextureRect(LTexture *texture,
+                                  UInt32 stride,
+                                  const LRect &dst,
+                                  const void *pixels);
+
+    static UInt32 getTextureID(LOutput *output, LTexture *texture);
+
+    static void destroyTexture(LTexture *texture);
 };
 
 

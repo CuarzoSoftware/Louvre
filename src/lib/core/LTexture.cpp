@@ -1,5 +1,5 @@
 #include <private/LTexturePrivate.h>
-
+#include <private/LCompositorPrivate.h>
 #include <LRect.h>
 
 #include <stdio.h>
@@ -10,54 +10,66 @@
 using namespace Louvre;
 using namespace std;
 
-static PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOES = NULL;
 
-LTexture::LTexture(GLuint textureUnit)
+UInt32 LTexture::waylandFormatToDRM(UInt32 waylandFormat)
+{
+    if (waylandFormat == WL_SHM_FORMAT_ARGB8888)
+        return DRM_FORMAT_ARGB8888;
+    else if (waylandFormat == WL_SHM_FORMAT_XRGB8888)
+        return DRM_FORMAT_XRGB8888;
+
+    return waylandFormat;
+}
+
+LTexture::LTexture(LCompositor *compositor, GLuint textureUnit)
 {
     m_imp = new LTexturePrivate();
+    imp()->compositor = compositor;
     imp()->unit = textureUnit;
-    glEGLImageTargetTexture2DOES = (PFNGLEGLIMAGETARGETTEXTURE2DOESPROC) eglGetProcAddress ("glEGLImageTargetTexture2DOES");
+}
+
+LCompositor *LTexture::compositor() const
+{
+    return imp()->compositor;
+}
+
+bool LTexture::setDataB(const LSize &size, UInt32 stride, UInt32 format, const void *buffer)
+{
+    imp()->deleteTexture(this);
+
+    if (compositor()->imp()->graphicBackend->createTextureFromCPUBuffer(this, size, stride, format, buffer))
+    {
+        imp()->format = format;
+        imp()->sizeB = size;
+        imp()->sourceType = CPU;
+        return true;
+    }
+
+    return false;
+}
+
+bool LTexture::updateRect(const LRect &rect, UInt32 stride, const void *buffer)
+{
+    if (initialized())
+        return compositor()->imp()->graphicBackend->updateTextureRect(this, stride, rect, buffer);
+
+    return false;
 }
 
 LTexture::~LTexture()
 {
-    imp()->deleteTexture();
+    imp()->deleteTexture(this);
     delete m_imp;
 }
 
-void LTexture::setDataB(Int32 width, Int32 height, void *data, GLenum format, GLenum type, Louvre::LTexture::BufferSourceType sourceType)
-{
-    imp()->deleteTexture();
-
-    imp()->format = format;
-
-    GLuint newTexture = 0;
-
-    imp()->sizeB.setW(width);
-    imp()->sizeB.setH(height);
-
-    glGenTextures(1, &newTexture);
-    glBindTexture (GL_TEXTURE_2D, newTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    imp()->id = newTexture;
-
-    // EGL
-    if(sourceType == BufferSourceType::EGL)
-        glEGLImageTargetTexture2DOES(GL_TEXTURE_2D,*(EGLImage*)data);
-    else
-        glTexImage2D(GL_TEXTURE_2D, 0, format, imp()->sizeB.w(), imp()->sizeB.h(), 0, format, type, data);
-
-    imp()->initialized = true;
-}
-
-void LTexture::LTexturePrivate::deleteTexture()
+void LTexture::LTexturePrivate::deleteTexture(LTexture *texture)
 {
     glActiveTexture(GL_TEXTURE0 + unit);
-    if(initialized)
+
+    if(graphicBackendData)
     {
-        glDeleteTextures(1, &id);
-        initialized = false;
+        compositor->imp()->graphicBackend->destroyTexture(texture);
+        graphicBackendData = nullptr;
     }
 }
 
@@ -68,22 +80,20 @@ const LSize &LTexture::sizeB() const
 
 bool LTexture::initialized()
 {
-    return imp()->initialized;
+    return imp()->graphicBackendData != nullptr;
 }
 
-GLuint LTexture::id()
+GLuint LTexture::id(LOutput *output)
 {
-    return imp()->id;
+    if (initialized())
+        return compositor()->imp()->graphicBackend->getTextureID(output, this);
+
+    return 0;
 }
 
 GLuint LTexture::unit()
 {
     return imp()->unit;
-}
-
-GLenum LTexture::type()
-{
-    return imp()->type;
 }
 
 LTexture::BufferSourceType LTexture::sourceType() const

@@ -126,7 +126,7 @@ void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src,
     glUniform1f(alphaUniform, 1.f);
     glUniform1i(modeUniform,0);
     glUniform1i(activeTextureUniform,texture->unit());
-    glBindTexture(GL_TEXTURE_2D,texture->id());
+    glBindTexture(GL_TEXTURE_2D,texture->id(output));
     glUniform2f(texSizeUniform,texture->sizeB().w(), texture->sizeB().h());
     glUniform4f(srcRectUniform,src.x(), src.y(), src.w(), src.h());
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -139,7 +139,7 @@ void LPainter::drawTextureC(LTexture *texture, const LRect &src, const LRect &ds
     glUniform1f(imp()->alphaUniform,alpha);
     glUniform1i(imp()->modeUniform,0);
     glUniform1i(imp()->activeTextureUniform,texture->unit());
-    glBindTexture(GL_TEXTURE_2D,texture->id());
+    glBindTexture(GL_TEXTURE_2D,texture->id(imp()->output));
     glUniform2f(imp()->texSizeUniform,texture->sizeB().w(), texture->sizeB().h());
     glUniform4f(imp()->srcRectUniform, src.x(), src.y(), src.w(), src.h());
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
