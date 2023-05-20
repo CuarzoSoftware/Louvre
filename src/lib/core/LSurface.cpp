@@ -515,11 +515,10 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
 
 bool LSurface::LSurfacePrivate::bufferToTexture()
 {
-
     Int32 width, height;
-    EGLint texture_format;
     bool bufferScaleChanged = false;
     LSurface *surface = surfaceResource->surface();
+    LSize prevSize = texture->sizeB();
 
     /***********************************
      *********** BUFFER SCALE ***********
@@ -630,6 +629,30 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
         wl_shm_buffer_end_access(shm_buffer);
     }
+    else if (texture->setData(current.buffer))
+    {
+        LSize newSize = texture->sizeB();
+        width = newSize.width();
+        height = newSize.height();
+
+        if(newSize != prevSize || bufferScaleChanged)
+        {
+            bufferSizeChanged = true;
+            currentDamagesB.clear();
+            currentDamagesB.addRect(LRect(0,newSize));
+            currentDamagesC = currentDamagesB;
+            currentDamagesC.multiply(float(surface->compositor()->globalScale())/float(surface->bufferScale()));
+        }
+        else if(!pendingDamagesB.empty() || !pendingDamagesS.empty())
+        {
+            pendingDamagesS.multiply(surface->bufferScale());
+            currentDamagesB.addRegion(pendingDamagesS);
+            currentDamagesB.addRegion(pendingDamagesB);
+            currentDamagesB.clip(LRect(0,newSize));
+            currentDamagesC = currentDamagesB;
+            currentDamagesC.multiply(float(surface->compositor()->globalScale())/float(surface->bufferScale()));
+        }
+    }
     /*
     else if(wl_buffer_is_dmabuf(current.buffer))
     {
@@ -668,6 +691,9 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     else
     {
         printf("Unknown buffer type.\n");
+        texture->setData(current.buffer);
+        exit(1);
+
         //wl_client_destroy(client->client());
         return false;
     }

@@ -385,7 +385,7 @@ int drm_fd;
 
 void LWayland::bindEGLDisplay(EGLDisplay eglDisplay)
 {
-    //eglBindWaylandDisplayWL(eglDisplay, display);
+    eglBindWaylandDisplayWL(eglDisplay, display);
 }
 
 pollfd fds[2];

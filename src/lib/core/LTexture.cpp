@@ -96,6 +96,19 @@ bool LTexture::setDataB(const LSize &size, UInt32 stride, UInt32 format, const v
     return false;
 }
 
+bool LTexture::setData(void *wlDRMBuffer)
+{
+    imp()->deleteTexture(this);
+
+    if (compositor()->imp()->graphicBackend->createTextureFromWaylandDRM(this, wlDRMBuffer))
+    {
+        imp()->sourceType = WL_DRM;
+        return true;
+    }
+
+    return false;
+}
+
 bool LTexture::updateRect(const LRect &rect, UInt32 stride, const void *buffer)
 {
     if (initialized())

@@ -133,6 +133,8 @@ int LCompositor::start()
     LLog::debug("Graphic backend initialized successfully.");
     imp()->graphicBackendInitialized = true;
 
+    LWayland::bindEGLDisplay(imp()->graphicBackend->getAllocatorEGLDisplay(this));
+
     LOutputManager::Params outputManagerParams;
     outputManagerParams.compositor = this;
     imp()->outputManager = createOutputManagerRequest(&outputManagerParams);

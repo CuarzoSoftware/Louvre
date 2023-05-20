@@ -19,7 +19,6 @@ public:
     static bool initializeOutput(LOutput *output);
     static bool scheduleOutputRepaint(LOutput *output);
     static void uninitializeOutput(LOutput *output);
-    static EGLDisplay getOutputEGLDisplay(LOutput *output);
 
     /* Connector physical size in mm */
     static const LSize *getOutputPhysicalSize(LOutput *output);
@@ -47,11 +46,16 @@ public:
 
     /* BUFFERS */
 
+    static EGLDisplay getAllocatorEGLDisplay(LCompositor *compositor);
+
     static bool createTextureFromCPUBuffer(LTexture *texture,
                                            const LSize &size,
                                            UInt32 stride,
                                            UInt32 format,
                                            const void *pixels);
+
+    static bool createTextureFromWaylandDRM(LTexture *texture,
+                                            void *wlBuffer);
 
     static bool updateTextureRect(LTexture *texture,
                                   UInt32 stride,

@@ -265,11 +265,6 @@ void LGraphicBackend::uninitializeOutput(LOutput *output)
     srmConnectorUninitialize(bkndOutput->conn);
 }
 
-EGLDisplay LGraphicBackend::getOutputEGLDisplay(LOutput *output)
-{
-    // Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-}
-
 const LSize *LGraphicBackend::getOutputPhysicalSize(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
@@ -417,6 +412,12 @@ void LGraphicBackend::setCursorPosition(LOutput *output, LPoint &position)
 */
 }
 
+EGLDisplay LGraphicBackend::getAllocatorEGLDisplay(LCompositor *compositor)
+{
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    return srmDeviceGetEGLDisplay(srmCoreGetAllocatorDevice(bknd->core));
+}
+
 bool LGraphicBackend::createTextureFromCPUBuffer(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels)
 {
     Backend *bknd = (Backend*)texture->compositor()->imp()->graphicBackendData;
@@ -425,6 +426,24 @@ bool LGraphicBackend::createTextureFromCPUBuffer(LTexture *texture, const LSize 
     if (bkndBuffer)
     {
         texture->imp()->graphicBackendData = bkndBuffer;
+        return true;
+    }
+
+    return false;
+}
+
+bool LGraphicBackend::createTextureFromWaylandDRM(LTexture *texture, void *wlBuffer)
+{
+    Backend *bknd = (Backend*)texture->compositor()->imp()->graphicBackendData;
+    SRMBuffer *bkndBuffer = srmBufferCreateFromWaylandDRM(bknd->core, wlBuffer);
+
+    if (bkndBuffer)
+    {
+        texture->imp()->graphicBackendData = bkndBuffer;
+        texture->imp()->format = srmBufferGetFormat(bkndBuffer);
+        texture->imp()->sizeB.setW(srmBufferGetWidth(bkndBuffer));
+        texture->imp()->sizeB.setH(srmBufferGetHeight(bkndBuffer));
+
         return true;
     }
 
@@ -472,7 +491,6 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.getConnectedOutputs = &LGraphicBackend::getConnectedOutputs;
     API.initializeOutput = &LGraphicBackend::initializeOutput;
     API.uninitializeOutput = &LGraphicBackend::uninitializeOutput;
-    API.getOutputEGLDisplay = &LGraphicBackend::getOutputEGLDisplay;
     API.getOutputPhysicalSize = &LGraphicBackend::getOutputPhysicalSize;
     API.getOutputCurrentBufferIndex = &LGraphicBackend::getOutputCurrentBufferIndex;
     API.getOutputName = &LGraphicBackend::getOutputName;
@@ -491,7 +509,9 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.setCursorPosition = &LGraphicBackend::setCursorPosition;
 
     // Buffers
+    API.getAllocatorEGLDisplay = &LGraphicBackend::getAllocatorEGLDisplay;
     API.createTextureFromCPUBuffer = &LGraphicBackend::createTextureFromCPUBuffer;
+    API.createTextureFromWaylandDRM = &LGraphicBackend::createTextureFromWaylandDRM;
     API.updateTextureRect = &LGraphicBackend::updateTextureRect;
     API.getTextureID = &LGraphicBackend::getTextureID;
     API.destroyTexture = &LGraphicBackend::destroyTexture;

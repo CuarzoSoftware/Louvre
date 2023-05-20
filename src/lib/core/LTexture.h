@@ -22,6 +22,7 @@ public:
     {
         /// Buffer
         CPU = 0,
+        WL_DRM = 1
     };
 
     static UInt32 waylandFormatToDRM(UInt32 waylandFormat);
@@ -30,6 +31,7 @@ public:
     LTexture(LCompositor *compositor, GLuint textureUnit = 1);
 
     bool setDataB(const LSize &size, UInt32 stride, UInt32 format, const void *buffer);
+    bool setData(void *wlDRMBuffer);
     bool updateRect(const LRect &rect, UInt32 stride, const void *buffer);
 
     /// LTexture class destructor

@@ -170,7 +170,9 @@ namespace Louvre
         void (*setCursorPosition)(LOutput *output, LPoint &position);
 
         // Buffers
+        EGLDisplay (*getAllocatorEGLDisplay)(LCompositor *compositor);
         bool (*createTextureFromCPUBuffer)(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels);
+        bool (*createTextureFromWaylandDRM)(LTexture *texture, void *wlBuffer);
         bool (*updateTextureRect)(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels);
         UInt32 (*getTextureID)(LOutput *output, LTexture *texture);
         void (*destroyTexture)(LTexture *texture);
