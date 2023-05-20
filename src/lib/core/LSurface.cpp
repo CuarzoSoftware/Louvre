@@ -611,9 +611,11 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
             onlyPending.multiply(current.bufferScale);
             onlyPending.addRegion(pendingDamagesB);
             onlyPending.clip(LRect(0,texture->sizeB()));
+            UInt32 pixelSize = LTexture::formatBytesPerPixel(format);
+            UChar8 *buff = (UChar8 *)data;
 
             for(const LRect &r : onlyPending.rects())
-                texture->updateRect(r, stride, data);
+                texture->updateRect(r, stride, &buff[r.x()*pixelSize +r.y()*stride]);
 
             currentDamagesB.addRegion(onlyPending);
             currentDamagesC = currentDamagesB;

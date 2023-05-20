@@ -21,6 +21,54 @@ UInt32 LTexture::waylandFormatToDRM(UInt32 waylandFormat)
     return waylandFormat;
 }
 
+UInt32 LTexture::formatBytesPerPixel(UInt32 format)
+{
+    switch (format)
+    {
+    case DRM_FORMAT_C8:
+    case DRM_FORMAT_RGB332:
+    case DRM_FORMAT_BGR233:
+        return 1;
+        break;
+    case DRM_FORMAT_XRGB1555:
+    case DRM_FORMAT_XBGR1555:
+    case DRM_FORMAT_RGBX5551:
+    case DRM_FORMAT_BGRX5551:
+    case DRM_FORMAT_ARGB1555:
+    case DRM_FORMAT_ABGR1555:
+    case DRM_FORMAT_RGBA5551:
+    case DRM_FORMAT_BGRA5551:
+    case DRM_FORMAT_RGB565:
+    case DRM_FORMAT_BGR565:
+        return 2;
+        break;
+    case DRM_FORMAT_RGB888:
+    case DRM_FORMAT_BGR888:
+        return 3;
+        break;
+    case DRM_FORMAT_XRGB8888:
+    case DRM_FORMAT_XBGR8888:
+    case DRM_FORMAT_RGBX8888:
+    case DRM_FORMAT_BGRX8888:
+    case DRM_FORMAT_XRGB2101010:
+    case DRM_FORMAT_XBGR2101010:
+    case DRM_FORMAT_RGBX1010102:
+    case DRM_FORMAT_BGRX1010102:
+    case DRM_FORMAT_ARGB2101010:
+    case DRM_FORMAT_ABGR2101010:
+    case DRM_FORMAT_RGBA1010102:
+    case DRM_FORMAT_BGRA1010102:
+    case DRM_FORMAT_ARGB8888:
+    case DRM_FORMAT_ABGR8888:
+    case DRM_FORMAT_RGBA8888:
+    case DRM_FORMAT_BGRA8888:
+        return 4;
+        break;
+    default:
+        return 0;
+    }
+}
+
 LTexture::LTexture(LCompositor *compositor, GLuint textureUnit)
 {
     m_imp = new LTexturePrivate();

@@ -460,8 +460,6 @@ void LWayland::runLoop()
         dispatchEvents();
         flushClients();
 
-        glFlush();
-
         compositor->imp()->renderMutex.unlock();
 
     }

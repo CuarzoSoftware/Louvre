@@ -25,6 +25,7 @@ public:
     };
 
     static UInt32 waylandFormatToDRM(UInt32 waylandFormat);
+    static UInt32 formatBytesPerPixel(UInt32 format);
 
     LTexture(LCompositor *compositor, GLuint textureUnit = 1);
 
