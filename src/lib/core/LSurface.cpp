@@ -513,8 +513,10 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
     }
 }
 
+
 bool LSurface::LSurfacePrivate::bufferToTexture()
 {
+    GLint texture_format;
     Int32 width, height;
     bool bufferScaleChanged = false;
     LSurface *surface = surfaceResource->surface();
@@ -629,11 +631,12 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
         wl_shm_buffer_end_access(shm_buffer);
     }
-    else if (texture->setData(current.buffer))
+    else if (eglQueryWaylandBufferWL(LWayland::eglDisplay(), current.buffer, EGL_TEXTURE_FORMAT, &texture_format))
     {
-        LSize newSize = texture->sizeB();
-        width = newSize.width();
-        height = newSize.height();
+        eglQueryWaylandBufferWL(LWayland::eglDisplay(), current.buffer, EGL_WIDTH, &width);
+        eglQueryWaylandBufferWL(LWayland::eglDisplay(), current.buffer, EGL_HEIGHT, &height);
+
+        LSize newSize = LSize(width, height);
 
         if(newSize != prevSize || bufferScaleChanged)
         {
@@ -652,6 +655,8 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
             currentDamagesC = currentDamagesB;
             currentDamagesC.multiply(float(surface->compositor()->globalScale())/float(surface->bufferScale()));
         }
+
+        texture->setData(current.buffer);
     }
     /*
     else if(wl_buffer_is_dmabuf(current.buffer))

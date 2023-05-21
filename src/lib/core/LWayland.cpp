@@ -385,6 +385,7 @@ int drm_fd;
 
 void LWayland::bindEGLDisplay(EGLDisplay eglDisplay)
 {
+    sharedDisplay = eglDisplay;
     eglBindWaylandDisplayWL(eglDisplay, display);
 }
 
@@ -449,6 +450,7 @@ void LWayland::runLoop()
                 (*g)->loopIterations++;
             }
         }
+
 
         // DND
         if(compositor->seat()->dndManager()->imp()->destDidNotRequestReceive >= 3)

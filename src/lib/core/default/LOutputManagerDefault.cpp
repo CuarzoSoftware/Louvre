@@ -9,6 +9,8 @@ using namespace Louvre;
 //! [outputPlugged]
 void LOutputManager::outputPlugged(LOutput *connectedOutput)
 {
+    LLog::debug("Output %s connected.", connectedOutput->name());
+
     connectedOutput->setScale(connectedOutput->dpi() >= 120 ? 2 : 1);
 
     compositor()->addOutput(connectedOutput);

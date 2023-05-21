@@ -348,25 +348,20 @@ void LCompositor::removeOutput(LOutput *output)
     // Iteramos para verificar si efectivamente la salida estaba añadida
     for(list<LOutput*>::iterator it = m_imp->outputs.begin(); it != m_imp->outputs.end(); it++)
     {
-        LOutput *o = *it;
-
-        if(o == output)
+        if(*it == output)
         {
+
             // Detenemos su hilo
             output->imp()->state = LOutput::PendingUninitialize;
-
-            while(output->state() != LOutput::Uninitialized)
-            {
-                output->repaint();
-                usleep(100);
-            }
+            imp()->graphicBackend->uninitializeOutput(output);
+            output->imp()->state = LOutput::Uninitialized;
 
             // La eliminamos de las listas de intersección de las superficies
             for(LSurface *s : surfaces())
-                s->sendOutputLeaveEvent(o);
+                s->sendOutputLeaveEvent(output);
 
             // La eliminamos de la lista de salidas añadidas
-            m_imp->outputs.erase(it);
+            m_imp->outputs.remove(output);
 
             // Definimos la proxima salida disponible como la principal
             if(!m_imp->outputs.empty() && output == LWayland::mainOutput())
@@ -389,6 +384,7 @@ void LCompositor::removeOutput(LOutput *output)
 
             // Hacemos esto para eliminar el global de forma segura (ver LWayland:loop)
             wl_global_remove(output->imp()->global);
+
             LCompositorPrivate::RemovedOutputGlobal *g = new LCompositorPrivate::RemovedOutputGlobal();
             g->global = output->imp()->global;
             g->loopIterations = 0;
@@ -396,15 +392,10 @@ void LCompositor::removeOutput(LOutput *output)
 
             imp()->updateGlobalScale();
 
-            cursor()->imp()->intersectedOutputs.remove(o);
+            cursor()->imp()->intersectedOutputs.remove(output);
 
-            if(cursor()->output() == o)
+            if(cursor()->output() == output)
                 cursor()->setPosC(outputs().front()->posC());
-
-
-            // La de-inicializamos
-            imp()->graphicBackend->uninitializeOutput(o);
-
 
             return;
         }

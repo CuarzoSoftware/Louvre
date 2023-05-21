@@ -33,7 +33,7 @@
 #include <SRM/SRMConnector.h>
 #include <SRM/SRMConnectorMode.h>
 #include <SRM/SRMBuffer.h>
-
+#include <SRM/SRMListener.h>
 #include <SRM/SRMList.h>
 
 using namespace Louvre;
@@ -85,19 +85,91 @@ static SRMInterface srmInterface =
     .closeRestricted = &closeRestricted
 };
 
-static void connectorPluggedEventHandler(SRMListener *listener, SRMConnector *connector)
+static void initConnector(Backend *bknd, SRMConnector *conn)
 {
-    SRM_UNUSED(listener);
+    if (srmConnectorGetUserData(conn))
+        return;
 
+    LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
+    LOutput *output = compositor->createOutputRequest();
+    output->imp()->compositor = compositor;
+    srmConnectorSetUserData(conn, output);
+
+    Output *bkndOutput = new Output();
+    output->imp()->graphicBackendData = bkndOutput;
+
+    bkndOutput->conn = conn;
+    bkndOutput->physicalSize.setW(srmConnectorGetmmWidth(conn));
+    bkndOutput->physicalSize.setH(srmConnectorGetmmHeight(conn));
+
+    SRMListForeach (modeIt, srmConnectorGetModes(conn))
+    {
+        SRMConnectorMode *mode = (SRMConnectorMode*)srmListItemGetData(modeIt);
+        LOutputMode *outputMode = new LOutputMode(output);
+        srmConnectorModeSetUserData(mode, outputMode);
+
+        OutputMode *bkndOutputMode = new OutputMode();
+        bkndOutputMode->mode = mode;
+        bkndOutputMode->size.setW(srmConnectorModeGetWidth(mode));
+        bkndOutputMode->size.setH(srmConnectorModeGetHeight(mode));
+
+        outputMode->imp()->graphicBackendData = bkndOutputMode;
+        bkndOutput->modes.push_back(outputMode);
+    }
+
+    bknd->connectedOutputs.push_back(output);
 }
 
-static void connectorUnpluggedEventHandler(SRMListener *listener, SRMConnector *connector)
+static void uninitConnector(Backend *bknd, SRMConnector *conn)
 {
-    SRM_UNUSED(listener);
-    SRM_UNUSED(connector);
+    LOutput *output = (LOutput*)srmConnectorGetUserData(conn);
 
-    /* The connnector is automatically uninitialized after this event (if connected)
-     * so there is no need to call srmConnectorUninitialize() */
+    if (!output)
+        return;
+
+    LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
+
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+
+    while (!bkndOutput->modes.empty())
+    {
+        LOutputMode *mode = bkndOutput->modes.back();
+        OutputMode *bkndMode = (OutputMode*)mode->imp()->graphicBackendData;
+        srmConnectorModeSetUserData(bkndMode->mode, NULL);
+        delete mode;
+        delete bkndMode;
+        bkndOutput->modes.pop_back();
+    }
+
+    compositor->destroyOutputRequest(output);
+    bknd->connectedOutputs.remove(output);
+    delete output;
+    delete bkndOutput;
+    srmConnectorSetUserData(conn, NULL);
+}
+
+static void connectorPluggedEventHandler(SRMListener *listener, SRMConnector *conn)
+{
+    Backend *bknd = (Backend*)srmListenerGetUserData(listener);
+    LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
+    compositor->imp()->renderMutex.unlock();
+    initConnector(bknd, conn);
+    LOutput *output = (LOutput*)srmConnectorGetUserData(conn);
+    bknd->connectedOutputs.push_back(output);
+    compositor->outputManager()->outputPlugged(output);
+    compositor->imp()->renderMutex.lock();
+}
+
+static void connectorUnpluggedEventHandler(SRMListener *listener, SRMConnector *conn)
+{
+    Backend *bknd = (Backend*)srmListenerGetUserData(listener);
+    LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
+    compositor->imp()->renderMutex.unlock();
+    LOutput *output = (LOutput*)srmConnectorGetUserData(conn);
+    compositor->outputManager()->outputUnplugged(output);
+    compositor->removeOutput(output);
+    uninitConnector(bknd, conn);
+    compositor->imp()->renderMutex.lock();
 }
 
 static int monitorEventHandler(Int32, UInt32, void *data)
@@ -183,37 +255,7 @@ bool LGraphicBackend::initialize(LCompositor *compositor)
             SRMConnector *conn = (SRMConnector*)srmListItemGetData(connIt);
 
             if (srmConnectorIsConnected(conn))
-            {
-                /* TODO: Free Output and OutputMode structs */
-
-                LOutput *output = compositor->createOutputRequest();
-                output->imp()->compositor = compositor;
-                srmConnectorSetUserData(conn, output);
-
-                Output *bkndOutput = new Output();
-                output->imp()->graphicBackendData = bkndOutput;
-
-                bkndOutput->conn = conn;
-                bkndOutput->physicalSize.setW(srmConnectorGetmmWidth(conn));
-                bkndOutput->physicalSize.setH(srmConnectorGetmmHeight(conn));
-
-                SRMListForeach (modeIt, srmConnectorGetModes(conn))
-                {
-                    SRMConnectorMode *mode = (SRMConnectorMode*)srmListItemGetData(modeIt);
-                    LOutputMode *outputMode = new LOutputMode(output);
-                    srmConnectorModeSetUserData(mode, outputMode);
-
-                    OutputMode *bkndOutputMode = new OutputMode();
-                    bkndOutputMode->mode = mode;
-                    bkndOutputMode->size.setW(srmConnectorModeGetWidth(mode));
-                    bkndOutputMode->size.setH(srmConnectorModeGetHeight(mode));
-
-                    outputMode->imp()->graphicBackendData = bkndOutputMode;
-                    bkndOutput->modes.push_back(outputMode);
-                }
-
-                bknd->connectedOutputs.push_back(output);
-            }
+                initConnector(bknd, conn);
         }
     }
 
@@ -261,6 +303,7 @@ bool LGraphicBackend::scheduleOutputRepaint(LOutput *output)
 
 void LGraphicBackend::uninitializeOutput(LOutput *output)
 {
+    Backend *bknd = (Backend*)output->compositor()->imp()->graphicBackendData;
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     srmConnectorUninitialize(bkndOutput->conn);
 }

@@ -141,8 +141,6 @@ void LOutput::LOutputPrivate::globalScaleChanged(Int32 oldScale, Int32 newScale)
 
 void LOutput::LOutputPrivate::backendInitialized()
 {
-    //LWayland::bindEGLDisplay(compositor->imp()->graphicBackend->getOutputEGLDisplay(output));
-
     painter = new LPainter();
     painter->imp()->output = output;
 
@@ -152,9 +150,6 @@ void LOutput::LOutputPrivate::backendInitialized()
         compositor->imp()->cursor = new LCursor(output);
         compositor->cursorInitialized();
     }
-
-    output->imp()->global = wl_global_create(LWayland::getDisplay(), &wl_output_interface, LOUVRE_OUTPUT_VERSION, output, &Louvre::Globals::Output::bind);
-
 }
 
 void LOutput::LOutputPrivate::backendBeforePaint()
