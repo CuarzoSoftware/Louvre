@@ -3,6 +3,7 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <private/LCursorPrivate.h>
 
 #include <protocols/Wayland/Output.h>
 
@@ -17,7 +18,6 @@
 #include <errno.h>
 
 #include <LWayland.h>
-#include <LCursor.h>
 #include <LToplevelRole.h>
 #include <LRegion.h>
 #include <LSeat.h>
@@ -125,8 +125,6 @@ Int32 LOutput::scale() const
 bool LOutput::LOutputPrivate::initialize(LCompositor *comp)
 {
     compositor = comp;
-    output->imp()->rectC.setBR((output->sizeB()*comp->globalScale())/output->scale());
-    output->setScale(output->scale());
 
     // The backend must call LOutputPrivate::backendInitialized() before initializeGL()
     return compositor->imp()->graphicBackend->initializeOutput(output);
@@ -144,17 +142,19 @@ void LOutput::LOutputPrivate::backendInitialized()
     painter = new LPainter();
     painter->imp()->output = output;
 
-    // Create cursor
-    if(!compositor->cursor())
-    {
-        compositor->imp()->cursor = new LCursor(output);
-        compositor->cursorInitialized();
-    }
+    output->imp()->global = wl_global_create(LWayland::getDisplay(), &wl_output_interface, LOUVRE_OUTPUT_VERSION, output, &Louvre::Globals::Output::bind);
+
+    output->setScale(output->scale());
+    output->imp()->rectC.setBR((output->sizeB()*compositor->globalScale())/output->scale());
+
+    compositor->cursor()->imp()->textureChanged = true;
+    compositor->cursor()->imp()->update();
+
+    compositor->imp()->updateGlobalScale();
 }
 
 void LOutput::LOutputPrivate::backendBeforePaint()
 {
-    scheduledRepaint = false;
     output->imp()->compositor->imp()->renderMutex.lock();
 }
 
@@ -173,62 +173,10 @@ void LOutput::LOutputPrivate::backendPageFlipped()
     for(LSurface *surf : output->compositor()->surfaces())
         surf->imp()->sendPresentationFeedback(output, presentationTime);
 }
-/*
-void LOutput::LOutputPrivate::renderLoop(void *data)
-{
-    LOutput *output = (LOutput*)data;
-    output->imp()->scheduledRepaint = false;
-    output->repaint();
-    timespec presentationTime;
-
-    while(true)
-    {
-        // Wait for a repaint request
-        poll(&output->imp()->renderPoll, 1, -1);
-
-        if(!output->compositor()->seat()->enabled())
-        {
-            output->imp()->scheduledRepaint = false;
-            eventfd_read(output->imp()->renderPoll.fd, &output->imp()->renderValue);
-            continue;
-        }
-        else if(output->imp()->state == LOutput::PendingUninitialize)
-        {
-            output->uninitializeGL();
-            output->imp()->state = LOutput::Uninitialized;
-            delete output->imp()->painter;
-            return;
-        }
-        else if(output->imp()->state == LOutput::ChangingMode)
-        {
-            output->compositor()->imp()->graphicBackend->setOutputMode(output, output->imp()->pendingMode);
-            output->imp()->state = LOutput::Initialized;
-            output->resizeGL();
-            continue;
-        }
-
-        output->imp()->scheduledRepaint = false;
-
-        eventfd_read(output->imp()->renderPoll.fd, &output->imp()->renderValue);
-
-        output->paintGL();
-
-
-
-        output->imp()->compositor->imp()->graphicBackend->flipOutputPage(output);
-
-
-    }
-}
-*/
 
 void LOutput::repaint()
 {
-    if(!imp()->scheduledRepaint)
-    {
-        imp()->scheduledRepaint = true;
-        compositor()->imp()->graphicBackend->scheduleOutputRepaint(this);
-    }
+    compositor()->imp()->graphicBackend->scheduleOutputRepaint(this);
 }
 
 Int32 LOutput::dpi()

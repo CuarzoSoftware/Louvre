@@ -118,15 +118,17 @@ void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src,
     glViewport(0,0,64,64);
     glClearColor(0,0,0,0);
     glClear(GL_COLOR_BUFFER_BIT);
-
     glScissor(dst.x(),dst.y(),dst.w(),dst.h());
     glViewport(dst.x(),dst.y(),dst.w(),dst.h());
-
     glActiveTexture(GL_TEXTURE0 + texture->unit());
     glUniform1f(alphaUniform, 1.f);
     glUniform1i(modeUniform,0);
     glUniform1i(activeTextureUniform,texture->unit());
     glBindTexture(GL_TEXTURE_2D,texture->id(output));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glUniform2f(texSizeUniform,texture->sizeB().w(), texture->sizeB().h());
     glUniform4f(srcRectUniform,src.x(), src.y(), src.w(), src.h());
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);

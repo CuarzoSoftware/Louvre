@@ -87,6 +87,7 @@ public:
      */
     LPainterPrivate *imp() const;
 private:
+    friend class LCompositor;
     friend class LWayland;
     friend class LOutput;
     LPainterPrivate *m_imp = nullptr;

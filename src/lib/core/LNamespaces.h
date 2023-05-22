@@ -166,11 +166,13 @@ namespace Louvre
         Int32 (*getOutputModeRefreshRate)(LOutputMode *mode);
         bool (*getOutputModeIsPreferred)(LOutputMode *mode);
         bool (*hasHardwareCursorSupport)(LOutput *output);
-        void (*setCursorTexture)(LOutput *output, LTexture *texture, LSizeF &size);
-        void (*setCursorPosition)(LOutput *output, LPoint &position);
+        void (*setCursorTexture)(LOutput *output, UChar8 *buffer);
+        void (*setCursorPosition)(LOutput *output, const LPoint &position);
 
         // Buffers
         EGLDisplay (*getAllocatorEGLDisplay)(LCompositor *compositor);
+        EGLContext (*getAllocatorEGLContext)(LCompositor *compositor);
+
         bool (*createTextureFromCPUBuffer)(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels);
         bool (*createTextureFromWaylandDRM)(LTexture *texture, void *wlBuffer);
         bool (*updateTextureRect)(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels);

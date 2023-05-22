@@ -31,6 +31,8 @@ void LCompositor::initialized()
         finish();
     }
 
+    LLog::debug("Outputs avaliable: %zu", outputManager()->outputs()->size());
+
     // Set double scale to outputs with DPI >= 120
     for(LOutput *output : *outputManager()->outputs())
     {
@@ -52,6 +54,7 @@ void LCompositor::initialized()
     {
         output->setPosC(LPoint(totalWidth,0));
         totalWidth += output->sizeC().w();
+        output->repaint();
     }
 
 }

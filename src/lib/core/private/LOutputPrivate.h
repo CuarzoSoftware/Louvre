@@ -35,7 +35,6 @@ public:
     // Params
     Int32 outputScale = 1;
 
-    bool scheduledRepaint = false;
     UInt64 presentationSeq = 0;
     timespec presentationTime;
 

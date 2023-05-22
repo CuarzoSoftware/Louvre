@@ -35,7 +35,7 @@ void Louvre::Globals::Output::resource_destroy(wl_resource *resource)
 
 void Louvre::Globals::Output::bind(wl_client *client, void *data, UInt32 version, UInt32 id)
 {
-    LOutput* output = (LOutput*)data;
+    LOutput *output = (LOutput*)data;
     LClient *lClient = nullptr;
 
     for(LClient *c : output->compositor()->clients())

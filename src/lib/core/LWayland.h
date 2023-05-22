@@ -13,7 +13,6 @@ public:
     static int processSeat(int, unsigned int, void*userData);
 
     static UInt32 nextSerial();
-    static bool wlFormat2Gl(UInt32 wlFormat, GLenum *glFormat, GLenum *glType);
     static int initWayland(LCompositor *comp);
     static void terminateDisplay();
     static void dispatchEvents();
@@ -21,7 +20,6 @@ public:
     static void scheduleDraw(LCompositor *comp);
     static void bindEGLDisplay(EGLDisplay eglDisplay);
     static void runLoop();
-    static int drmFd();
 
     static void clientConnectionEvent(wl_listener *listener, void *data);
     static void clientDisconnectionEvent(wl_listener *listener, void *data);
@@ -37,10 +35,7 @@ public:
     static void initGLContext();
     static bool isGlContextInitialized();
 
-    static void setContext(const LOutput *output, EGLDisplay sharedDisplay, EGLContext sharedContext);
     static void setMainOutput(LOutput *output);
-
-    static const LOutput *mainOutput();
 
     static LCompositor *bindedCompositor();
     static void forceUpdate();

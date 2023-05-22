@@ -13,21 +13,28 @@ public:
     LCursorPrivate &operator=(const LCursorPrivate&)    = delete;
 
     LCursor *cursor;
+    LCompositor *compositor;
     LRect rectC;
 
+    // Called once per main loop iteration
     void update();
+
     void globalScaleChanged(Int32 oldScale, Int32 newScale);
 
-    LTexture *texture                                   = nullptr;
-    LOutput *output                                     = nullptr;
     LPointF posC;
     LPointF hotspotB;
     LSizeF sizeS;
+    LOutput *output                                     = nullptr;
     std::list<LOutput*>intersectedOutputs;
-    LTexture *defaultTexture;
-
     bool isVisible                                      = true;
 
+
+    UInt32 lastTextureSerial                            = 0;
+    bool textureChanged                                 = false;
+    LTexture *texture                                   = nullptr;
+    LTexture *defaultTexture                            = nullptr;
+    GLuint glFramebuffer, glRenderbuffer;
+    UChar8 buffer[64*64*4];
 
 };
 

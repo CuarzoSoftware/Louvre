@@ -112,7 +112,10 @@ bool LTexture::setData(void *wlDRMBuffer)
 bool LTexture::updateRect(const LRect &rect, UInt32 stride, const void *buffer)
 {
     if (initialized())
+    {
+        imp()->increaseSerial();
         return compositor()->imp()->graphicBackend->updateTextureRect(this, stride, rect, buffer);
+    }
 
     return false;
 }
@@ -125,6 +128,8 @@ LTexture::~LTexture()
 
 void LTexture::LTexturePrivate::deleteTexture(LTexture *texture)
 {
+    increaseSerial();
+
     glActiveTexture(GL_TEXTURE0 + unit);
 
     if(graphicBackendData)
@@ -132,6 +137,11 @@ void LTexture::LTexturePrivate::deleteTexture(LTexture *texture)
         compositor->imp()->graphicBackend->destroyTexture(texture);
         graphicBackendData = nullptr;
     }
+}
+
+void LTexture::LTexturePrivate::increaseSerial()
+{
+    serial++;
 }
 
 const LSize &LTexture::sizeB() const

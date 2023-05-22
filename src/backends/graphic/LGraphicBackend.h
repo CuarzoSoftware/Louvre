@@ -41,12 +41,13 @@ public:
     /* CURSOR */
 
     static bool hasHardwareCursorSupport(LOutput *output);
-    static void setCursorTexture(LOutput *output, LTexture *texture, LSizeF &size);
-    static void setCursorPosition(LOutput *output, LPoint &position);
+    static void setCursorTexture(LOutput *output, UChar8 *buffer);
+    static void setCursorPosition(LOutput *output, const LPoint &position);
 
     /* BUFFERS */
 
     static EGLDisplay getAllocatorEGLDisplay(LCompositor *compositor);
+    static EGLContext getAllocatorEGLContext(LCompositor *compositor);
 
     static bool createTextureFromCPUBuffer(LTexture *texture,
                                            const LSize &size,

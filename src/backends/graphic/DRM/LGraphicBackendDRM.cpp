@@ -16,7 +16,6 @@
 #include <drm_fourcc.h>
 #include <unordered_map>
 
-
 #include <LGraphicBackend.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
@@ -24,6 +23,7 @@
 #include <private/LOutputManagerPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <private/LTexturePrivate.h>
+#include <private/LCursorPrivate.h>
 
 #include <LWayland.h>
 #include <LTime.h>
@@ -183,7 +183,6 @@ static void initializeGL(SRMConnector *connector, void *userData)
     SRM_UNUSED(connector);
     LOutput *output = (LOutput*)userData;
     output->imp()->backendInitialized();
-
     output->imp()->backendBeforePaint();
     output->initializeGL();
     output->imp()->backendAfterPaint();
@@ -303,7 +302,6 @@ bool LGraphicBackend::scheduleOutputRepaint(LOutput *output)
 
 void LGraphicBackend::uninitializeOutput(LOutput *output)
 {
-    Backend *bknd = (Backend*)output->compositor()->imp()->graphicBackendData;
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     srmConnectorUninitialize(bkndOutput->conn);
 }
@@ -391,74 +389,32 @@ bool LGraphicBackend::getOutputModeIsPreferred(LOutputMode *mode)
 
 bool LGraphicBackend::hasHardwareCursorSupport(LOutput *output)
 {
-    return false;
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     return srmConnectorHasHardwareCursor(bkndOutput->conn);
 }
 
-void LGraphicBackend::setCursorTexture(LOutput *output, LTexture *texture, LSizeF &size)
+void LGraphicBackend::setCursorTexture(LOutput *output, UChar8 *buffer)
 {
-    /*
-    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-
-    if(!texture)
-    {
-        drmModeSetCursor(data->drm.fds.fd, data->drm.crtc_id, 0, 0, 0);
-        data->cursor.visible = false;
-        return;
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, data->cursor.fb);
-
-    output->painter()->imp()->scaleCursor(
-                (LTexture*)texture,
-                LRect(0,0,texture->sizeB().w(),-texture->sizeB().h()),
-                LRect(0,size));
-
-    // Si se invoca desde el hilo principal debemos llamar glFlush para sincronizar el cambio
-    if(std::this_thread::get_id() == output->compositor()->mainThreadId())
-        glFinish();
-
-    if(data->cursor.isDumb)
-    {
-        glReadPixels(0, 0, 64, 64, GL_RGBA ,GL_UNSIGNED_BYTE, data->cursor.buffer);
-
-
-        if(!data->cursor.visible)
-            drmModeSetCursor(data->drm.fds.fd, data->drm.crtc_id,
-                             data->cursor.handle,
-                             64, 64);
-    }
-    else
-    {
-        if(!data->cursor.visible)
-            drmModeSetCursor(data->drm.fds.fd, data->drm.crtc_id,
-                             gbm_bo_get_handle(data->cursor.bo).u32,
-                             64, 64);
-    }
-
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-*/
-
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    srmConnectorSetCursor(bkndOutput->conn, buffer);
 }
 
-void LGraphicBackend::setCursorPosition(LOutput *output, LPoint &position)
+void LGraphicBackend::setCursorPosition(LOutput *output, const LPoint &position)
 {
-    /*
-    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-
-    drmModeMoveCursor(data->drm.fds.fd,
-                      data->drm.crtc_id,
-                      position.x(),
-                      position.y());
-*/
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    srmConnectorSetCursorPos(bkndOutput->conn, position.x(), position.y());
 }
 
 EGLDisplay LGraphicBackend::getAllocatorEGLDisplay(LCompositor *compositor)
 {
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
     return srmDeviceGetEGLDisplay(srmCoreGetAllocatorDevice(bknd->core));
+}
+
+EGLContext LGraphicBackend::getAllocatorEGLContext(LCompositor *compositor)
+{
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    return srmDeviceGetEGLContext(srmCoreGetAllocatorDevice(bknd->core));
 }
 
 bool LGraphicBackend::createTextureFromCPUBuffer(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels)
@@ -553,6 +509,7 @@ extern "C" LGraphicBackendInterface *getAPI()
 
     // Buffers
     API.getAllocatorEGLDisplay = &LGraphicBackend::getAllocatorEGLDisplay;
+    API.getAllocatorEGLContext = &LGraphicBackend::getAllocatorEGLContext;
     API.createTextureFromCPUBuffer = &LGraphicBackend::createTextureFromCPUBuffer;
     API.createTextureFromWaylandDRM = &LGraphicBackend::createTextureFromWaylandDRM;
     API.updateTextureRect = &LGraphicBackend::updateTextureRect;

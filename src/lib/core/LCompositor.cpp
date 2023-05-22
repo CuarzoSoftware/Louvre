@@ -1,3 +1,4 @@
+#include "LPainter.h"
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 #include <private/LOutputManagerPrivate.h>
@@ -133,12 +134,20 @@ int LCompositor::start()
     LLog::debug("Graphic backend initialized successfully.");
     imp()->graphicBackendInitialized = true;
 
+    eglMakeCurrent(imp()->graphicBackend->getAllocatorEGLDisplay(this),
+                   EGL_NO_SURFACE,
+                   EGL_NO_SURFACE,
+                   imp()->graphicBackend->getAllocatorEGLContext(this));
+
     LWayland::bindEGLDisplay(imp()->graphicBackend->getAllocatorEGLDisplay(this));
+
+    imp()->painter = new LPainter();
+    imp()->cursor = new LCursor(this);
+    cursorInitialized();
 
     LOutputManager::Params outputManagerParams;
     outputManagerParams.compositor = this;
     imp()->outputManager = createOutputManagerRequest(&outputManagerParams);
-
 
     if(!imp()->inputBackend)
     {
@@ -308,7 +317,6 @@ LCursor *LCompositor::cursor() const
     return m_imp->cursor;
 }
 
-
 LSeat *LCompositor::seat() const
 {
     return m_imp->seat;
@@ -336,10 +344,6 @@ bool LCompositor::addOutput(LOutput *output)
         return false;
     }
 
-    output->imp()->global = wl_global_create(LWayland::getDisplay(), &wl_output_interface, LOUVRE_OUTPUT_VERSION, output, &Louvre::Globals::Output::bind);
-
-    imp()->updateGlobalScale();
-
     return true;
 }
 
@@ -362,10 +366,6 @@ void LCompositor::removeOutput(LOutput *output)
 
             // La eliminamos de la lista de salidas añadidas
             m_imp->outputs.remove(output);
-
-            // Definimos la proxima salida disponible como la principal
-            if(!m_imp->outputs.empty() && output == LWayland::mainOutput())
-                LWayland::setMainOutput(m_imp->outputs.back());
 
             // Eliminamos los globals wl_output de cada cliente
             for(LClient *c : clients())
@@ -394,8 +394,8 @@ void LCompositor::removeOutput(LOutput *output)
 
             cursor()->imp()->intersectedOutputs.remove(output);
 
-            if(cursor()->output() == output)
-                cursor()->setPosC(outputs().front()->posC());
+            if (cursor()->imp()->output == output)
+                cursor()->imp()->output = nullptr;
 
             return;
         }

@@ -1,9 +1,11 @@
+#include "LLog.h"
 #include <private/LCursorPrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LXCursorPrivate.h>
+#include <private/LTexturePrivate.h>
+#include <private/LPainterPrivate.h>
 
-#include <LTexture.h>
 #include <LRect.h>
 #include <LPainter.h>
 
@@ -15,15 +17,47 @@
 
 using namespace Louvre;
 
-LCursor::LCursor(LOutput *output)
+#define L_CURSOR_WIDTH 64
+#define L_CURSOR_HEIGHT 64
+#define L_CURSOR_BPP 32
+#define L_CURSOR_STRIDE L_CURSOR_WIDTH*(L_CURSOR_BPP/8)
+
+LCursor::LCursor(LCompositor *compositor)
 {
     m_imp = new LCursorPrivate();
+    imp()->compositor = compositor;
     imp()->cursor = this;
-    setOutput(output);
-    imp()->defaultTexture = new LTexture(output->compositor(), 1);
-    imp()->defaultTexture->setDataB(LSize(64,64), 64*4, DRM_FORMAT_ABGR8888, louvre_default_cursor_data());
+    imp()->defaultTexture = new LTexture(compositor, 1);
+
+    if (!imp()->defaultTexture->setDataB(LSize(L_CURSOR_WIDTH, L_CURSOR_HEIGHT), L_CURSOR_STRIDE, DRM_FORMAT_ABGR8888, louvre_default_cursor_data()))
+        LLog::warning("[compositor] Could not create default cursor texture.");
+
+    glGenFramebuffers(1, &imp()->glFramebuffer);
+
+    if (imp()->glFramebuffer == 0)
+        LLog::error("[cursor] Could not create GL framebuffer.");
+
+    glBindFramebuffer(GL_FRAMEBUFFER, imp()->glFramebuffer);
+
+    glGenRenderbuffers(1, &imp()->glRenderbuffer);
+
+    if (imp()->glRenderbuffer == 0)
+        LLog::error("[cursor] Could not create GL renderbuffer.");
+
+    glBindRenderbuffer(GL_RENDERBUFFER, imp()->glRenderbuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, L_CURSOR_WIDTH, L_CURSOR_HEIGHT);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, imp()->glRenderbuffer);
+
+    // Check framebuffer completeness
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
+        LLog::error("[cursor] Framebuffer is not complete.");
+    }
+
     setSizeS(LSize(24));
     useDefault();
+    setVisible(true);
 }
 
 LCursor::~LCursor()
@@ -31,10 +65,9 @@ LCursor::~LCursor()
     delete m_imp;
 }
 
-LXCursor *LCursor::loadXCursorB(const char *cursor, const char *theme, Int32 suggestedSize, GLuint textureUnit)
+LXCursor *LCursor::loadXCursorB(LCompositor *compositor, const char *cursor, const char *theme, Int32 suggestedSize, GLuint textureUnit)
 {
-    return nullptr;
-    XcursorImage *x11Cursor =  XcursorLibraryLoadImage(cursor,theme,suggestedSize);
+    XcursorImage *x11Cursor =  XcursorLibraryLoadImage(cursor, theme, suggestedSize);
 
     if(!x11Cursor)
         return nullptr;
@@ -42,8 +75,11 @@ LXCursor *LCursor::loadXCursorB(const char *cursor, const char *theme, Int32 sug
     LXCursor *newCursor = new LXCursor();
     newCursor->imp()->hotspotB.setX(x11Cursor->xhot);
     newCursor->imp()->hotspotB.setY(x11Cursor->yhot);
-    //newCursor->imp()->texture = new LTexture(output->compositor(),textureUnit);
-    //newCursor->imp()->texture->setDataB(x11Cursor->width, x11Cursor->height, x11Cursor->pixels);
+    newCursor->imp()->texture = new LTexture(compositor, textureUnit);
+    newCursor->imp()->texture->setDataB(LSize((Int32)x11Cursor->width, (Int32)x11Cursor->height),
+                                        x11Cursor->width * 4,
+                                        DRM_FORMAT_ABGR8888,
+                                        x11Cursor->pixels);
 
     XcursorImageDestroy(x11Cursor);
 
@@ -52,38 +88,56 @@ LXCursor *LCursor::loadXCursorB(const char *cursor, const char *theme, Int32 sug
 
 void LCursor::useDefault()
 {
-    if(!output())
-        return;
-
-    if(texture() == imp()->defaultTexture)
-        return;
-
     setTextureB(imp()->defaultTexture, LPointF(9));
 }
 
+static void texture2Buffer(LCursor *cursor, const LSizeF &size)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, cursor->imp()->glFramebuffer);
+
+    cursor->compositor()->imp()->painter->imp()->scaleCursor(
+        cursor->texture(),
+        LRect(0, 0, cursor->texture()->sizeB().w(), -cursor->texture()->sizeB().h()),
+        LRect(0, size));
+
+    glFlush();
+
+    glReadPixels(0, 0, 64, 64, GL_RGBA , GL_UNSIGNED_BYTE, cursor->imp()->buffer);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
 
 void LCursor::setTextureB(LTexture *texture, const LPointF &hotspot)
 {
-    imp()->texture = texture;
+    if (!texture)
+        return;
+
+    if (imp()->texture != texture || imp()->lastTextureSerial != texture->imp()->serial)
+    {
+        imp()->texture = texture;
+        imp()->textureChanged = true;
+        imp()->lastTextureSerial = texture->imp()->serial;
+    }
+
     imp()->hotspotB = hotspot;
     imp()->update();
-    /* TODO:
-    compositor()->imp()->graphicBackend->setCursorTexture(
-                imp()->output,
-                imp()->texture,
-                imp()->sizeS*output()->scale());*/
 }
 
 void LCursor::setOutput(LOutput *output)
 {
-    if(output == imp()->output)
-        return;
+    bool update = false;
 
-    //if(imp()->output)
-        //setVisible(false);
+    if (!imp()->output)
+        update = true;
 
     imp()->output = output;
-    //setVisible(true);
+
+    if (update)
+    {
+        imp()->textureChanged = true;
+        imp()->update();
+    }
 }
 
 void LCursor::moveC(float x, float y)
@@ -93,14 +147,14 @@ void LCursor::moveC(float x, float y)
 
 void Louvre::LCursor::setPosC(const LPointF &pos)
 {
-    if(!output())
-        return;
-
     for(LOutput *output : compositor()->outputs())
     {
         if(output->rectC().containsPoint(pos) && output)
             setOutput(output);
     }
+
+    if(!output())
+        return;
 
     imp()->posC = pos;
 
@@ -115,23 +169,26 @@ void Louvre::LCursor::setPosC(const LPointF &pos)
     if(imp()->posC.y() < area.y())
         imp()->posC.setY(area.y());
 
-
     imp()->update();
 }
 
 void LCursor::setHotspotB(const LPointF &hotspot)
 {
-    imp()->hotspotB = hotspot;
-    imp()->update();
+    if (imp()->hotspotB != hotspot)
+    {
+        imp()->hotspotB = hotspot;
+        imp()->update();
+    }
 }
 
 void LCursor::setSizeS(const LSizeF &size)
-{
-    if(!imp()->output)
-        return;
-
-    imp()->sizeS = size;
-    imp()->update();
+{    
+    if (imp()->sizeS != size)
+    {
+        imp()->sizeS = size;
+        imp()->textureChanged = true;
+        imp()->update();
+    }
 }
 
 void LCursor::setVisible(bool state)
@@ -144,21 +201,14 @@ void LCursor::setVisible(bool state)
     if(!visible())
     {
         for(LOutput *o : compositor()->outputs())
-        compositor()->imp()->graphicBackend->setCursorTexture(
-                    o,
-                    nullptr,
-                    imp()->sizeS);
+            compositor()->imp()->graphicBackend->setCursorTexture(
+                        o,
+                        nullptr);
     }
     else if(texture())
     {
+        imp()->textureChanged = true;
         imp()->update();
-        /* TODO:
-        for(LOutput *o : compositor()->outputs())
-
-        compositor()->imp()->graphicBackend->setCursorTexture(
-                    o,
-                    texture(),
-                    imp()->sizeS*o->scale());*/
     }
 
 }
@@ -196,13 +246,20 @@ LTexture *LCursor::texture() const
 
 LCompositor *LCursor::compositor() const
 {
-    if(output())
-        return output()->compositor();
-    return nullptr;
+    return imp()->compositor;
 }
 
 LOutput *LCursor::output() const
 {
+    if (imp()->output)
+        return imp()->output;
+
+    if (!compositor()->outputs().empty())
+    {
+        imp()->output = compositor()->outputs().front();
+        imp()->textureChanged = true;
+    }
+
     return imp()->output;
 }
 
@@ -221,18 +278,17 @@ LCursor::LCursorPrivate *LCursor::imp() const
     return m_imp;
 }
 
-
 void LCursor::LCursorPrivate::update()
 {
-    if(!isVisible || !output || !texture)
+    if(!cursor->output())
         return;
 
     LPointF newHotspotS;
     newHotspotS = (hotspotB*sizeS)/LSizeF(texture->sizeB());
 
-    LPointF newPosG = posC - (newHotspotS * output->compositor()->globalScale());
+    LPointF newPosC = posC - (newHotspotS * compositor->globalScale());
 
-    rectC.setPos(newPosG);
+    rectC.setPos(newPosC);
     rectC.setSize(sizeS * output->compositor()->globalScale());
 
     for(LOutput *o : output->compositor()->outputs())
@@ -242,38 +298,42 @@ void LCursor::LCursorPrivate::update()
             bool found = (std::find(intersectedOutputs.begin(), intersectedOutputs.end(), o) != intersectedOutputs.end());
 
             if(!found)
-            {
                 intersectedOutputs.push_back(o);
-                /* TODO:
+
+            if (cursor->hasHardwareSupport(o) && (textureChanged || !found))
+            {
+                texture2Buffer(cursor, sizeS*o->scale());
                 cursor->compositor()->imp()->graphicBackend->setCursorTexture(
                             o,
-                            texture,
-                            sizeS*o->scale());*/
+                            buffer);
             }
+
         }
         else
         {
             intersectedOutputs.remove(o);
             cursor->compositor()->imp()->graphicBackend->setCursorTexture(
                         o,
-                        nullptr,
-                        sizeS);
+                        nullptr);
         }
 
         if(cursor->hasHardwareSupport(o))
         {
-            LPointF p = newPosG - o->posC();
-            /*TODO: output->compositor()->imp()->graphicBackend->setCursorPosition(o, (p*o->scale())/o->compositor()->globalScale());*/
+            LPointF p = newPosC - o->posC();
+            output->compositor()->imp()->graphicBackend->setCursorPosition(o, (p*o->scale())/o->compositor()->globalScale());
         }
     }
 
+    textureChanged = false;
 }
 
 void LCursor::LCursorPrivate::globalScaleChanged(Int32 oldScale, Int32 newScale)
 {
     posC = (posC*newScale)/oldScale;
 
-    if(!output)
+    textureChanged = true;
+
+    if(!cursor->output())
         return;
 
     update();

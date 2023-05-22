@@ -74,85 +74,6 @@ struct GLBufferType
     GLenum type;
 };
 
-unordered_map<UInt32, struct GLBufferType> shmFormats;
-
-void LWayland::initGLContext()
-{
-
-    if(contextInitialized == 1)
-        contextInitialized = 2;
-    else
-    {
-        return;
-    }
-
-    static const EGLint attribs[] = {
-        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-        EGL_RED_SIZE, 0,
-        EGL_GREEN_SIZE, 0,
-        EGL_BLUE_SIZE, 0,
-        EGL_ALPHA_SIZE, 0,
-        EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-        EGL_NONE
-    };
-
-    static const EGLint context_attribs[] = {
-        EGL_CONTEXT_CLIENT_VERSION, 2,
-        EGL_NONE
-    };
-
-    eglDpy = sharedDisplay;
-
-    EGLConfig config;
-    EGLint num_configs_returned;
-
-    eglChooseConfig(eglDpy, attribs, &config, 1, &num_configs_returned);
-
-    // EGL context and surface
-    if(!eglBindAPI(EGL_OPENGL_ES_API))
-    {
-        //printf("Failed to bind api EGL_OPENGL_ES_API\n");
-        exit(-1);
-    }
-
-    // 3. Create a context and make it current
-    eglCtx = eglCreateContext(eglDpy, config, sharedContext,context_attribs);
-
-    if(eglCtx == NULL)
-    {
-        //printf("CONTEXT ERROR %d\n",eglGetError());
-        exit(0);
-    }
-
-
-    eglMakeCurrent(eglDpy, EGL_NO_SURFACE, EGL_NO_SURFACE, eglCtx);
-
-    compositor->imp()->painter = new LPainter();
-    return;
-}
-
-bool LWayland::isGlContextInitialized()
-{
-    return contextInitialized == 2;
-}
-
-void LWayland::setContext(const LOutput *output, EGLDisplay sharedDisp, EGLContext sharedCont)
-{
-    m_mainOutput = output;
-    sharedDisplay = sharedDisp;
-    sharedContext = sharedCont;
-    contextInitialized = 1;
-}
-
-void LWayland::setMainOutput(LOutput *output)
-{
-    m_mainOutput = output;
-}
-
-const LOutput *LWayland::mainOutput()
-{
-    return m_mainOutput;
-}
 
 LCompositor *LWayland::bindedCompositor()
 {
@@ -185,27 +106,6 @@ UInt32 LWayland::nextSerial()
     return wl_display_next_serial(display);
 }
 
-bool LWayland::wlFormat2Gl(UInt32 wlFormat, GLenum *glFormat, GLenum *glType)
-{
-    if(shmFormats.find(wlFormat) == shmFormats.end())
-        return false;
-
-    auto data = shmFormats[wlFormat];
-
-    *glFormat = data.format;
-    *glType = data.type;
-    return true;
-}
-
-void addSHMFormat(wl_display *dpy, UInt32 wlFormat, GLenum glFormat, GLenum glType)
-{
-    wl_display_add_shm_format(dpy, wlFormat);
-    shmFormats[wlFormat] =
-    {
-        .format = glFormat,
-        .type = glType
-    };
-}
 int LWayland::initWayland(LCompositor *comp)
 {
     eglBindWaylandDisplayWL = (PFNEGLBINDWAYLANDDISPLAYWL) eglGetProcAddress ("eglBindWaylandDisplayWL");
@@ -266,93 +166,6 @@ int LWayland::initWayland(LCompositor *comp)
 
     wl_display_init_shm(display);
 
-    shmFormats[WL_SHM_FORMAT_ARGB8888] =
-    {
-        .format = GL_BGRA,
-        .type = GL_UNSIGNED_BYTE
-    };
-
-    shmFormats[WL_SHM_FORMAT_XRGB8888] =
-    {
-        .format = GL_BGRA,
-        .type = GL_UNSIGNED_BYTE
-    };
-
-    /*
-    addSHMFormat(display, WL_SHM_FORMAT_XBGR8888,       GL_RGBA,    GL_UNSIGNED_BYTE);
-    addSHMFormat(display, WL_SHM_FORMAT_ABGR8888,       GL_RGBA,    GL_UNSIGNED_BYTE);
-
-
-    addSHMFormat(display, WL_SHM_FORMAT_BGR888,         GL_RGB,     GL_UNSIGNED_BYTE);
-
-    addSHMFormat(display, WL_SHM_FORMAT_RGBX4444,       GL_RGBA,     GL_UNSIGNED_SHORT_4_4_4_4);
-    addSHMFormat(display, WL_SHM_FORMAT_RGBA4444,       GL_RGBA,    GL_UNSIGNED_SHORT_4_4_4_4);
-    addSHMFormat(display, WL_SHM_FORMAT_RGBX5551,       GL_RGBA,    GL_UNSIGNED_SHORT_5_5_5_1);
-    addSHMFormat(display, WL_SHM_FORMAT_RGBA5551,       GL_RGBA,    GL_UNSIGNED_SHORT_5_5_5_1);
-    addSHMFormat(display, WL_SHM_FORMAT_RGB565,         GL_RGB,     GL_UNSIGNED_SHORT_5_6_5);
-
-    addSHMFormat(display, WL_SHM_FORMAT_XBGR2101010,    GL_RGBA,    GL_UNSIGNED_INT_2_10_10_10_REV_EXT);
-    addSHMFormat(display, WL_SHM_FORMAT_ABGR2101010,    GL_RGBA,    GL_UNSIGNED_INT_2_10_10_10_REV_EXT);
-    addSHMFormat(display, WL_SHM_FORMAT_XBGR16161616F,  GL_RGBA,    GL_HALF_FLOAT_OES);
-    addSHMFormat(display, WL_SHM_FORMAT_ABGR16161616F,  GL_RGBA,    GL_HALF_FLOAT_OES);
-    */
-
-    /*
-
-    WL_SHM_FORMAT_BGRX4444
-    WL_SHM_FORMAT_ARGB4444
-    WL_SHM_FORMAT_ABGR4444
-    WL_SHM_FORMAT_RGBA4444
-    WL_SHM_FORMAT_BGRA4444
-    WL_SHM_FORMAT_XRGB1555
-    WL_SHM_FORMAT_XBGR1555
-    WL_SHM_FORMAT_RGBX5551
-    WL_SHM_FORMAT_BGRX5551
-    WL_SHM_FORMAT_ARGB1555
-    WL_SHM_FORMAT_ABGR1555
-    WL_SHM_FORMAT_RGBA5551
-    WL_SHM_FORMAT_BGRA5551
-    WL_SHM_FORMAT_RGB565
-    WL_SHM_FORMAT_BGR565
-    WL_SHM_FORMAT_BGR888
-    WL_SHM_FORMAT_XBGR8888
-    WL_SHM_FORMAT_RGBX8888
-    WL_SHM_FORMAT_BGRX8888
-    WL_SHM_FORMAT_ABGR8888
-    WL_SHM_FORMAT_RGBA8888
-    WL_SHM_FORMAT_BGRA8888
-    WL_SHM_FORMAT_XRGB2101010
-    WL_SHM_FORMAT_XBGR2101010
-    WL_SHM_FORMAT_RGBX1010102
-    WL_SHM_FORMAT_BGRX1010102
-    WL_SHM_FORMAT_ARGB2101010
-    WL_SHM_FORMAT_ABGR2101010
-    WL_SHM_FORMAT_RGBA1010102
-    WL_SHM_FORMAT_BGRA1010102
-    WL_SHM_FORMAT_R8
-    WL_SHM_FORMAT_R16
-    WL_SHM_FORMAT_RG88
-    WL_SHM_FORMAT_GR88
-    WL_SHM_FORMAT_RG1616
-    WL_SHM_FORMAT_GR1616
-    WL_SHM_FORMAT_XRGB16161616F
-    WL_SHM_FORMAT_XBGR16161616F
-    WL_SHM_FORMAT_ARGB16161616F
-    WL_SHM_FORMAT_ABGR16161616F
-    WL_SHM_FORMAT_XRGB8888_A8
-    WL_SHM_FORMAT_XBGR8888_A8
-    WL_SHM_FORMAT_RGBX8888_A8
-    WL_SHM_FORMAT_BGRX8888_A8
-    WL_SHM_FORMAT_RGB888_A8
-    WL_SHM_FORMAT_BGR888_A8
-    WL_SHM_FORMAT_RGB565_A8
-    WL_SHM_FORMAT_BGR565_A8
-    WL_SHM_FORMAT_XRGB16161616
-    WL_SHM_FORMAT_XBGR16161616
-    WL_SHM_FORMAT_ARGB16161616
-    WL_SHM_FORMAT_ABGR16161616
-    */
-
     event_loop = wl_display_get_event_loop(display);
     wayland_fd = wl_event_loop_get_fd(event_loop);
 
@@ -381,7 +194,6 @@ void LWayland::flushClients()
     wl_display_flush_clients(display);
 }
 
-int drm_fd;
 
 void LWayland::bindEGLDisplay(EGLDisplay eglDisplay)
 {
@@ -417,9 +229,7 @@ void LWayland::runLoop()
 
         compositor->imp()->renderMutex.lock();
 
-
         compositor->seat()->imp()->dispatchSeat();
-
 
         if(forcedUpdate)
         {
@@ -467,10 +277,6 @@ void LWayland::runLoop()
     }
 }
 
-int LWayland::drmFd()
-{
-    return drm_fd;
-}
 
 void LWayland::clientConnectionEvent(wl_listener *listener, void *data)
 {
