@@ -7,6 +7,8 @@
 #include <private/LToplevelRolePrivate.h>
 #include <private/LDNDManagerPrivate.h>
 #include <private/LSeatPrivate.h>
+#include <private/LCursorPrivate.h>
+
 
 #include <protocols/Wayland/private/SeatGlobalPrivate.h>
 
@@ -272,6 +274,7 @@ void LWayland::runLoop()
         dispatchEvents();
         flushClients();
 
+        compositor->cursor()->imp()->textureUpdate();
         compositor->imp()->renderMutex.unlock();
 
     }

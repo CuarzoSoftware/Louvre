@@ -16,8 +16,10 @@ public:
     LCompositor *compositor;
     LRect rectC;
 
-    // Called once per main loop iteration
     void update();
+
+    // Called once per main loop iteration
+    void textureUpdate();
 
     void globalScaleChanged(Int32 oldScale, Int32 newScale);
 

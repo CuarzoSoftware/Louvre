@@ -100,8 +100,6 @@ static void texture2Buffer(LCursor *cursor, const LSizeF &size)
         LRect(0, 0, cursor->texture()->sizeB().w(), -cursor->texture()->sizeB().h()),
         LRect(0, size));
 
-    glFlush();
-
     glReadPixels(0, 0, 64, 64, GL_RGBA , GL_UNSIGNED_BYTE, cursor->imp()->buffer);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -299,13 +297,52 @@ void LCursor::LCursorPrivate::update()
 
             if(!found)
                 intersectedOutputs.push_back(o);
+        }
+        else
+        {
+            intersectedOutputs.remove(o);
+        }
+
+        if(cursor->hasHardwareSupport(o))
+        {
+            LPointF p = newPosC - o->posC();
+            output->compositor()->imp()->graphicBackend->setCursorPosition(o, (p*o->scale())/o->compositor()->globalScale());
+        }
+    }
+
+}
+
+void LCursor::LCursorPrivate::textureUpdate()
+{
+    if(!cursor->output())
+        return;
+
+    if (!textureChanged)
+        return;
+
+    LPointF newHotspotS;
+    newHotspotS = (hotspotB*sizeS)/LSizeF(texture->sizeB());
+
+    LPointF newPosC = posC - (newHotspotS * compositor->globalScale());
+
+    rectC.setPos(newPosC);
+    rectC.setSize(sizeS * output->compositor()->globalScale());
+
+    for(LOutput *o : output->compositor()->outputs())
+    {
+        if(o->rectC().intersects(rectC))
+        {
+            bool found = (std::find(intersectedOutputs.begin(), intersectedOutputs.end(), o) != intersectedOutputs.end());
+
+            if(!found)
+                intersectedOutputs.push_back(o);
 
             if (cursor->hasHardwareSupport(o) && (textureChanged || !found))
             {
                 texture2Buffer(cursor, sizeS*o->scale());
                 cursor->compositor()->imp()->graphicBackend->setCursorTexture(
-                            o,
-                            buffer);
+                    o,
+                    buffer);
             }
 
         }
@@ -313,8 +350,8 @@ void LCursor::LCursorPrivate::update()
         {
             intersectedOutputs.remove(o);
             cursor->compositor()->imp()->graphicBackend->setCursorTexture(
-                        o,
-                        nullptr);
+                o,
+                nullptr);
         }
 
         if(cursor->hasHardwareSupport(o))
