@@ -78,7 +78,10 @@ void DataSourceResource::sendCancelled()
 
 void DataSourceResource::sendAction(UInt32 action)
 {
-    wl_data_source_send_action(resource(), action);
+#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
+    if(version() >= 3)
+        wl_data_source_send_action(resource(), action);
+#endif
 }
 
 void DataSourceResource::sendSend(const char *mimeType, Int32 fd)

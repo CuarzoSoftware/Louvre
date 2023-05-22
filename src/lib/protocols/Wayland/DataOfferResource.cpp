@@ -48,7 +48,10 @@ DataOfferResource::~DataOfferResource()
 
 void DataOfferResource::sendAction(UInt32 action)
 {
-    wl_data_offer_send_action(resource(), action);
+#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
+    if(version() >= 3)
+        wl_data_offer_send_action(resource(), action);
+#endif
 }
 
 void DataOfferResource::sendSourceActions(UInt32 actions)
