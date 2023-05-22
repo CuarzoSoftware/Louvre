@@ -296,7 +296,10 @@ void LCursor::LCursorPrivate::update()
             bool found = (std::find(intersectedOutputs.begin(), intersectedOutputs.end(), o) != intersectedOutputs.end());
 
             if(!found)
+            {
+                textureChanged = true;
                 intersectedOutputs.push_back(o);
+            }
         }
         else
         {
