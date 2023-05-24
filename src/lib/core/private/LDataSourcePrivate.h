@@ -17,7 +17,7 @@ public:
 
     void remove();
 
-    Protocols::Wayland::DataSourceResource *dataSourceResource  = nullptr;
+    Protocols::Wayland::RDataSource *dataSourceResource  = nullptr;
     std::list<LSource>sources;
 
 #if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3

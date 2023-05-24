@@ -26,7 +26,7 @@ void ToplevelRole::maximizedChanged()
     // Get the main output
     LOutput *output = compositor()->cursor()->output();
 
-    if(maximized())
+    if (maximized())
     {
         compositor()->raiseSurface(surface());
         surface()->setPosC(output->posC()+LPoint(0,32)*compositor()->globalScale());
@@ -42,7 +42,7 @@ void ToplevelRole::fullscreenChanged()
 
     LOutput *output = compositor()->cursor()->output();
 
-    if(fullscreen())
+    if (fullscreen())
     {
         surface()->setPosC(output->posC());
         comp->fullscreenSurface = surface();
@@ -50,7 +50,7 @@ void ToplevelRole::fullscreenChanged()
     }
     else
     {
-        if(comp->fullscreenSurface == surface())
+        if (comp->fullscreenSurface == surface())
         {
             comp->fullscreenSurface = nullptr;
         }

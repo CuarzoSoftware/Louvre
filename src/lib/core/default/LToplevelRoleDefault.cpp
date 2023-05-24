@@ -89,7 +89,7 @@ void LToplevelRole::appIdChanged()
 //! [geometryChanged]
 void LToplevelRole::geometryChanged()
 {
-    if(this == seat()->pointer()->resizingToplevel())
+    if (this == seat()->pointer()->resizingToplevel())
         seat()->pointer()->updateResizingToplevelPos();
 }
 //! [geometryChanged]
@@ -123,7 +123,7 @@ void LToplevelRole::maximizedChanged()
 {
     LOutput *output = compositor()->cursor()->output();
 
-    if(maximized())
+    if (maximized())
     {
         compositor()->raiseSurface(surface());
         surface()->setPosC(output->posC());
@@ -135,7 +135,7 @@ void LToplevelRole::maximizedChanged()
 //! [fullscreenChanged]
 void LToplevelRole::fullscreenChanged()
 {
-    if(fullscreen())
+    if (fullscreen())
     {
         surface()->setPosC(compositor()->cursor()->output()->posC());
         compositor()->raiseSurface(surface());
@@ -146,7 +146,7 @@ void LToplevelRole::fullscreenChanged()
 //! [activatedChanged]
 void LToplevelRole::activatedChanged()
 {
-    if(activated())
+    if (activated())
         seat()->keyboard()->setFocus(surface());
 }
 //! [activatedChanged]
@@ -170,16 +170,16 @@ void LToplevelRole::setMinimizedRequest()
 {
     surface()->setMinimized(true);
 
-    if(surface() == seat()->pointer()->focusSurface())
+    if (surface() == seat()->pointer()->focusSurface())
         seat()->pointer()->setFocusC(nullptr);
 
-    if(surface() == seat()->keyboard()->focusSurface())
+    if (surface() == seat()->keyboard()->focusSurface())
         seat()->keyboard()->setFocus(nullptr);
 
-    if(this == seat()->pointer()->movingToplevel())
+    if (this == seat()->pointer()->movingToplevel())
         seat()->pointer()->stopMovingToplevel();
 
-    if(this == seat()->pointer()->resizingToplevel())
+    if (this == seat()->pointer()->resizingToplevel())
         seat()->pointer()->stopResizingToplevel();
 }
 //! [setMinimizedRequest]
@@ -189,7 +189,7 @@ void LToplevelRole::setFullscreenRequest(LOutput *destOutput)
 {
     LOutput *output;
 
-    if(destOutput)
+    if (destOutput)
         output = destOutput;
     else
         output = compositor()->cursor()->output();

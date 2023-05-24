@@ -152,22 +152,22 @@ const LPoint &LPopupRole::rolePosC() const
     finalPos = parentPos + positioner().anchorRectC().pos() + anchorPos - popupOrigin + offset;// - m_imp->windowGeometry.topLeft();
 
     // If it is the first attempt, we save finalPos in m_rolePosC as a backup
-    if(xTry == 0 && yTry == 0)
+    if (xTry == 0 && yTry == 0)
         m_rolePosC = finalPos;
 
     /* The positionerBounds rect indicates the space in which the popup should be located and is assigned by the developer (the default library assigns the
      * size of the monitor in which the cursor is located */
 
     // If the popup exceeds the left border
-    if(finalPos.x() < positionerBoundsC().x())
+    if (finalPos.x() < positionerBoundsC().x())
     {
 
         // First try
-        if(xTry == 0)
+        if (xTry == 0)
         {
             xTry++;
 
-            if(positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::FlipX)
+            if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::FlipX)
             {
                 switch(anchor)
                 {
@@ -215,11 +215,11 @@ const LPoint &LPopupRole::rolePosC() const
             gravityAfterX = gravity;
         }
 
-        if(xTry == 1)
+        if (xTry == 1)
         {
             xTry++;
 
-            if(positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::SlideX)
+            if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::SlideX)
             {
                 offset.setX( offset.x() + (positionerBoundsC().x() - m_rolePosC.x()));
                 goto retry;
@@ -236,11 +236,11 @@ const LPoint &LPopupRole::rolePosC() const
     else if (finalPos.x() + popupSize.w() > positionerBoundsC().x() + positionerBoundsC().w())
     {
 
-        if(xTry == 0)
+        if (xTry == 0)
         {
             xTry++;
 
-            if(positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::FlipX)
+            if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::FlipX)
             {
                 switch(anchor)
                 {
@@ -288,11 +288,11 @@ const LPoint &LPopupRole::rolePosC() const
         }
 
         // Try slideX
-        if(xTry == 1)
+        if (xTry == 1)
         {
             xTry++;
 
-            if(positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::SlideX)
+            if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::SlideX)
             {
                 offset.setX( offset.x() - ( (m_rolePosC.x()+popupSize.w()) - (positionerBoundsC().x() + positionerBoundsC().w())));
                 goto retry;
@@ -305,15 +305,15 @@ const LPoint &LPopupRole::rolePosC() const
     }
 
     // If top border is constrained
-    if(finalPos.y() < positionerBoundsC().y())
+    if (finalPos.y() < positionerBoundsC().y())
     {
 
         // Flip gravity on the Y axis
-        if(yTry == 0)
+        if (yTry == 0)
         {
             yTry++;
 
-            if(positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::FlipY)
+            if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::FlipY)
             {
                 switch(anchor)
                 {
@@ -356,11 +356,11 @@ const LPoint &LPopupRole::rolePosC() const
             anchor = anchorAfterX;
         }
 
-        if(yTry == 1)
+        if (yTry == 1)
         {
             yTry++;
 
-            if(positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::SlideY)
+            if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::SlideY)
             {
                 offset.setY( offset.y() + (positionerBoundsC().y() - m_rolePosC.y()));
                 goto retry;
@@ -378,11 +378,11 @@ const LPoint &LPopupRole::rolePosC() const
     else if (finalPos.y() + popupSize.h() > positionerBoundsC().y() + positionerBoundsC().h())
     {
 
-        if(yTry == 0)
+        if (yTry == 0)
         {
             yTry++;
 
-            if(positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::FlipY)
+            if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::FlipY)
             {
                 switch(anchor)
                 {
@@ -425,11 +425,11 @@ const LPoint &LPopupRole::rolePosC() const
             anchor = anchorAfterX;
         }
 
-        if(yTry == 1)
+        if (yTry == 1)
         {
             yTry++;
 
-            if(positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::SlideY)
+            if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::SlideY)
             {
                 offset.setY( offset.y() - ( (m_rolePosC.y()+popupSize.h()) - (positionerBoundsC().y() + positionerBoundsC().h())));
                 goto retry;

@@ -1,3 +1,5 @@
+#ifdef nn
+
 #include "Params.h"
 #include "LLog.h"
 #include <protocols/DMABuffer/DMA.h>
@@ -47,9 +49,9 @@ void Extensions::LinuxDMABuffer::Params::add(wl_client *client, wl_resource *res
 {
     LDMAParams *lParams = (LDMAParams*)wl_resource_get_user_data(resource);
 
-    for(LDMAPlane &plane : lParams->planes)
+    for (LDMAPlane &plane : lParams->planes)
     {
-        if(plane.index == plane_idx)
+        if (plane.index == plane_idx)
         {
             wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_SET, "Plane index was already set.");
             return;
@@ -118,7 +120,7 @@ void create_(struct wl_client *client, struct wl_resource *resource, uint32_t bu
 
     lDMABuffer->eglImage = eglCreateImage(LWayland::eglDisplay(), EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, attribs);
 
-    if(lDMABuffer->eglImage == EGL_NO_IMAGE)
+    if (lDMABuffer->eglImage == EGL_NO_IMAGE)
     {
         LLog::log("FAILED EGL IMAGE");
         exit(1);
@@ -126,7 +128,7 @@ void create_(struct wl_client *client, struct wl_resource *resource, uint32_t bu
 
     wl_resource_set_implementation(buffer, &wl_buffer_implementation, lDMABuffer, &wl_buffer_resource_destroy);
 
-    if(buffer_id == 0)
+    if (buffer_id == 0)
         zwp_linux_buffer_params_v1_send_created(resource, buffer);
 
     LLog::log("DMA BUFFER CREATED\n");
@@ -234,3 +236,4 @@ void Extensions::LinuxDMABuffer::Params::create_immed(wl_client *client, wl_reso
     LLog::log("Create immed");
     create_(client, resource, buffer_id, width, height, format, flags);
 }
+#endif

@@ -3,7 +3,7 @@
 #include <private/LSubsurfaceRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LCompositorPrivate.h>
-#include <protocols/Wayland/private/SurfaceResourcePrivate.h>
+#include <protocols/Wayland/private/RSurfacePrivate.h>
 
 using namespace Louvre;
 
@@ -14,7 +14,7 @@ LSubsurfaceRole::LSubsurfaceRole(Params *params) : LBaseSurfaceRole(params->subs
 
 LSubsurfaceRole::~LSubsurfaceRole()
 {
-    if(surface())
+    if (surface())
         surface()->imp()->setMapped(false);
 
     delete m_imp;
@@ -40,23 +40,23 @@ LSubsurfaceRole::LSubsurfaceRolePrivate *LSubsurfaceRole::imp() const
     return m_imp;
 }
 
-bool LSubsurfaceRole::acceptCommitRequest(Protocols::Wayland::SurfaceResource::CommitOrigin origin)
+bool LSubsurfaceRole::acceptCommitRequest(Protocols::Wayland::RSurface::CommitOrigin origin)
 {
-    if(isSynced())
-        return origin == Protocols::Wayland::SurfaceResource::Parent;
+    if (isSynced())
+        return origin == Protocols::Wayland::RSurface::Parent;
     else
-        return origin == Protocols::Wayland::SurfaceResource::Itself;
+        return origin == Protocols::Wayland::RSurface::Itself;
 }
 
 void insertSurfaceAfter(list<LSurface*>&surfaces,LSurface *prevSurface, LSurface *surfaceToInsert)
 {
-    for(list<LSurface*>::iterator it = surfaces.begin(); it != surfaces.end(); it++)
+    for (list<LSurface*>::iterator it = surfaces.begin(); it != surfaces.end(); it++)
     {
-        if((*it) == prevSurface)
+        if ((*it) == prevSurface)
         {
             surfaces.remove(surfaceToInsert);
 
-            if(it++ == surfaces.end())
+            if (it++ == surfaces.end())
                 surfaces.push_back(surfaceToInsert);
             else
                 surfaces.insert((it++),surfaceToInsert);
@@ -67,9 +67,9 @@ void insertSurfaceAfter(list<LSurface*>&surfaces,LSurface *prevSurface, LSurface
 
 void insertSurfaceBefore(list<LSurface*>&surfaces,LSurface *nextSurface, LSurface *surfaceToInsert)
 {
-    for(list<LSurface*>::iterator it = surfaces.begin(); it != surfaces.end(); ++it)
+    for (list<LSurface*>::iterator it = surfaces.begin(); it != surfaces.end(); ++it)
     {
-        if((*it) == nextSurface)
+        if ((*it) == nextSurface)
         {
             surfaces.remove(surfaceToInsert);
             surfaces.insert(it,surfaceToInsert);
@@ -80,12 +80,12 @@ void insertSurfaceBefore(list<LSurface*>&surfaces,LSurface *nextSurface, LSurfac
 
 void LSubsurfaceRole::handleSurfaceCommit()
 {
-    if(!surface()->mapped() && surface()->imp()->current.buffer && surface()->parent() && ((surface()->parent()->mapped() && isSynced()) || !isSynced() ))
+    if (!surface()->mapped() && surface()->imp()->current.buffer && surface()->parent() && ((surface()->parent()->mapped() && isSynced()) || !isSynced() ))
     {
         surface()->imp()->setMapped(true);
     }
 
-    else if(surface()->mapped() && (!surface()->imp()->current.buffer || !surface()->parent() || (!surface()->parent()->mapped() && isSynced())))
+    else if (surface()->mapped() && (!surface()->imp()->current.buffer || !surface()->parent() || (!surface()->parent()->mapped() && isSynced())))
     {
         surface()->imp()->setMapped(false);
     }
@@ -93,7 +93,7 @@ void LSubsurfaceRole::handleSurfaceCommit()
 
 void LSubsurfaceRole::handleParentCommit()
 {
-    if(imp()->hasPendingLocalPos)
+    if (imp()->hasPendingLocalPos)
     {
         imp()->hasPendingLocalPos = false;
         imp()->currentLocalPosS = imp()->pendingLocalPosS;
@@ -101,7 +101,7 @@ void LSubsurfaceRole::handleParentCommit()
         localPosChanged();
     }
 
-    if(imp()->pendingPlaceAbove)
+    if (imp()->pendingPlaceAbove)
     {
         compositor()->imp()->insertSurfaceAfter(imp()->pendingPlaceAbove, surface());
         insertSurfaceAfter(surface()->imp()->children, imp()->pendingPlaceAbove, surface());
@@ -109,7 +109,7 @@ void LSubsurfaceRole::handleParentCommit()
         imp()->pendingPlaceAbove = nullptr;
     }
 
-    if(imp()->pendingPlaceBelow)
+    if (imp()->pendingPlaceBelow)
     {
         compositor()->imp()->insertSurfaceBefore(imp()->pendingPlaceBelow, surface());
         insertSurfaceBefore(surface()->imp()->children, imp()->pendingPlaceBelow, surface());
@@ -117,7 +117,7 @@ void LSubsurfaceRole::handleParentCommit()
         imp()->pendingPlaceBelow = nullptr;
     }
 
-    Protocols::Wayland::SurfaceResource::SurfaceResourcePrivate::apply_commit(surface(), Protocols::Wayland::SurfaceResource::Parent);
+    Protocols::Wayland::RSurface::RSurfacePrivate::apply_commit(surface(), Protocols::Wayland::RSurface::Parent);
 }
 
 void LSubsurfaceRole::handleParentChange()

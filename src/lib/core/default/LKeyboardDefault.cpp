@@ -35,11 +35,11 @@ void LKeyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
 
     bool mods = isModActive(XKB_MOD_NAME_ALT) && isModActive(XKB_MOD_NAME_CTRL);
 
-    if(keyState == LIBINPUT_KEY_STATE_RELEASED)
+    if (keyState == LIBINPUT_KEY_STATE_RELEASED)
     {
 
         // F1: Launches weston-terminal.
-        if(sym == XKB_KEY_F1 && !mods)
+        if (sym == XKB_KEY_F1 && !mods)
         {
             if (fork()==0)
             {
@@ -68,16 +68,16 @@ void LKeyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
         }
 
         // CTRL + SHIFT + ESC : Kils the compositor.
-        else if(sym == XKB_KEY_Escape && isModActive(XKB_MOD_NAME_CTRL) && isModActive(XKB_MOD_NAME_SHIFT))
+        else if (sym == XKB_KEY_Escape && isModActive(XKB_MOD_NAME_CTRL) && isModActive(XKB_MOD_NAME_SHIFT))
         {
             LLog::warning("Killing compositor.");
             compositor()->finish();
         }
 
         // F8 : Unminimize all surfaces.
-        else if(sym == XKB_KEY_F8 && !mods)
+        else if (sym == XKB_KEY_F8 && !mods)
         {
-            for(LSurface *surface : compositor()->surfaces())
+            for (LSurface *surface : compositor()->surfaces())
                 surface->setMinimized(false);
 
             compositor()->repaintAllOutputs();
@@ -86,16 +86,16 @@ void LKeyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
         #if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
 
         // CTRL: Unsets the **Copy** as the preferred action in drag & drop sesión
-        else if(sym == XKB_KEY_Control_L)
+        else if (sym == XKB_KEY_Control_L)
         {
-            if(seat()->dndManager()->preferredAction() == LDNDManager::Copy)
+            if (seat()->dndManager()->preferredAction() == LDNDManager::Copy)
                 seat()->dndManager()->setPreferredAction(LDNDManager::NoAction);
         }
 
         // SHIFT: Unsets the **Move** as the preferred action in drag & drop sesión
-        else if(sym == XKB_KEY_Shift_L)
+        else if (sym == XKB_KEY_Shift_L)
         {
-            if(seat()->dndManager()->preferredAction() == LDNDManager::Move)
+            if (seat()->dndManager()->preferredAction() == LDNDManager::Move)
                 seat()->dndManager()->setPreferredAction(LDNDManager::NoAction);
         }
 
@@ -110,13 +110,13 @@ void LKeyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
         #if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
 
         // CTRL: Sets the **Copy** as the preferred action in drag & drop sesión
-        if(sym == XKB_KEY_Control_L)
+        if (sym == XKB_KEY_Control_L)
         {
             seat()->dndManager()->setPreferredAction(LDNDManager::Copy);
         }
 
         // SHIFT: Sets the **Move** as the preferred action in drag & drop sesión
-        else if(sym == XKB_KEY_Shift_L)
+        else if (sym == XKB_KEY_Shift_L)
         {
             seat()->dndManager()->setPreferredAction(LDNDManager::Move);
         }

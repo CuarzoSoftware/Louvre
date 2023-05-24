@@ -1,5 +1,5 @@
-#include <protocols/Wayland/DataSourceResource.h>
-#include <protocols/Wayland/DataOfferResource.h>
+#include <protocols/Wayland/RDataSource.h>
+#include <protocols/Wayland/RDataOffer.h>
 
 #include <private/LDataOfferPrivate.h>
 #include <private/LDataDevicePrivate.h>
@@ -11,7 +11,7 @@
 
 using namespace Louvre;
 
-LDataOffer::LDataOffer(Protocols::Wayland::DataOfferResource *dataOfferResource)
+LDataOffer::LDataOffer(Protocols::Wayland::RDataOffer *dataOfferResource)
 {
     m_imp = new LDataOfferPrivate();
     imp()->dataOfferResource = dataOfferResource;
@@ -27,7 +27,7 @@ LSeat *LDataOffer::seat() const
     return dataOfferResource()->client()->seat();
 }
 
-Protocols::Wayland::DataOfferResource *LDataOffer::dataOfferResource() const
+Protocols::Wayland::RDataOffer *LDataOffer::dataOfferResource() const
 {
     return imp()->dataOfferResource;
 }
@@ -53,31 +53,31 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
     UInt32 final = 0;
 
     // If has source
-    if(dndManager->source())
+    if (dndManager->source())
     {
         bool sourceIsV3 = dndManager->source()->dataSourceResource()->version() >= 3;
 
         // If both are v3
-        if(sourceIsV3 && offerIsV3)
+        if (sourceIsV3 && offerIsV3)
         {
             // If offer has not sent preferred action
-            if(preferredAction == DND_NO_ACTION_SET)
+            if (preferredAction == DND_NO_ACTION_SET)
             {
                 caseA:
                 UInt32 both = dndManager->source()->dndActions();
 
                 final = both;
 
-                if(compositorAction != LDNDManager::NoAction)
+                if (compositorAction != LDNDManager::NoAction)
                     final = both & compositorAction;
 
-                if(final & LDNDManager::Copy)
+                if (final & LDNDManager::Copy)
                     final = LDNDManager::Copy;
 
-                else if(final & LDNDManager::Move)
+                else if (final & LDNDManager::Move)
                     final = LDNDManager::Move;
 
-                else if(final & LDNDManager::Ask)
+                else if (final & LDNDManager::Ask)
                     final = LDNDManager::Ask;
 
                 else
@@ -92,19 +92,19 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
 
                 final = both;
 
-                if(compositorAction != LDNDManager::NoAction)
+                if (compositorAction != LDNDManager::NoAction)
                     final = both & compositorAction;
 
-                if(final & preferredAction)
+                if (final & preferredAction)
                     final = preferredAction;
 
-                else if(final & LDNDManager::Copy)
+                else if (final & LDNDManager::Copy)
                     final = LDNDManager::Copy;
 
-                else if(final & LDNDManager::Move)
+                else if (final & LDNDManager::Move)
                     final = LDNDManager::Move;
 
-                else if(final & LDNDManager::Ask)
+                else if (final & LDNDManager::Ask)
                     final = LDNDManager::Ask;
 
                 else
@@ -115,31 +115,31 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
             }
 
         }
-        else if(sourceIsV3 && !offerIsV3)
+        else if (sourceIsV3 && !offerIsV3)
         {
             goto caseA;
         }
-        else if(!sourceIsV3 && offerIsV3)
+        else if (!sourceIsV3 && offerIsV3)
         {
-            if(preferredAction != DND_NO_ACTION_SET)
+            if (preferredAction != DND_NO_ACTION_SET)
             {
                 UInt32 both = acceptedActions;
 
                 final = both;
 
-                if(compositorAction != LDNDManager::NoAction)
+                if (compositorAction != LDNDManager::NoAction)
                     final = both & compositorAction;
 
-                if(final & preferredAction)
+                if (final & preferredAction)
                     final = preferredAction;
 
-                else if(final & LDNDManager::Copy)
+                else if (final & LDNDManager::Copy)
                     final = LDNDManager::Copy;
 
-                else if(final & LDNDManager::Move)
+                else if (final & LDNDManager::Move)
                     final = LDNDManager::Move;
 
-                else if(final & LDNDManager::Ask)
+                else if (final & LDNDManager::Ask)
                     final = LDNDManager::Ask;
                 else
                     final = LDNDManager::NoAction;
@@ -152,25 +152,25 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
     // If no source
     else
     {
-        if(offerIsV3 && preferredAction != DND_NO_ACTION_SET)
+        if (offerIsV3 && preferredAction != DND_NO_ACTION_SET)
         {
             UInt32 both = acceptedActions;
 
             final = both;
 
-            if(compositorAction != LDNDManager::NoAction)
+            if (compositorAction != LDNDManager::NoAction)
                 final = both & compositorAction;
 
-            if(final & preferredAction)
+            if (final & preferredAction)
                 final = preferredAction;
 
-            else if(final & LDNDManager::Copy)
+            else if (final & LDNDManager::Copy)
                 final = LDNDManager::Copy;
 
-            else if(final & LDNDManager::Move)
+            else if (final & LDNDManager::Move)
                 final = LDNDManager::Move;
 
-            else if(final & LDNDManager::Ask)
+            else if (final & LDNDManager::Ask)
                 final = LDNDManager::Ask;
             else
                 final = LDNDManager::NoAction;

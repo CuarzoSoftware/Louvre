@@ -1,11 +1,10 @@
-#include "LLog.h"
 #include <private/LOutputPrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LCursorPrivate.h>
 
-#include <protocols/Wayland/Output.h>
+#include <protocols/Wayland/private/GOutputPrivate.h>
 
 #include <string.h>
 #include <sys/types.h>
@@ -23,6 +22,7 @@
 #include <LSeat.h>
 #include <LOutputMode.h>
 #include <LTime.h>
+#include <LLog.h>
 
 using namespace Louvre;
 
@@ -69,7 +69,7 @@ const LOutputMode *LOutput::currentMode() const
 
 void LOutput::setMode(const LOutputMode *mode)
 {
-    if(mode == currentMode())
+    if (mode == currentMode())
         return;
 
     imp()->rectC.setW((mode->sizeB().w()*compositor()->globalScale())/scale());
@@ -94,20 +94,16 @@ Int32 LOutput::currentBuffer() const
 
 void LOutput::setScale(Int32 scale)
 {
-    m_imp->outputScale = scale;
+    imp()->outputScale = scale;
+    imp()->rectC.setBR((sizeB()*compositor()->globalScale())/scale);
 
-    m_imp->rectC.setBR((sizeB()*compositor()->globalScale())/scale);
-
-    // Notifica a los globals wl_output de cada cliente
-    for(LClient *c : compositor()->clients())
+    for (LClient *c : compositor()->clients())
     {
-        for(wl_resource *r : c->outputs())
+        for (Protocols::Wayland::GOutput *gOutput : c->outputGlobals())
         {
-            LOutput *o = (LOutput*)wl_resource_get_user_data(r);
-
-            if(this == o)
+            if (this == gOutput->output())
             {
-                Globals::Output::sendConfiguration(r,o);
+                gOutput->sendConfiguration();
                 break;
             }
         }
@@ -118,7 +114,7 @@ void LOutput::setScale(Int32 scale)
 
 Int32 LOutput::scale() const
 {
-    return m_imp->outputScale;
+    return imp()->outputScale;
 }
 
 // This is called from LCompositor::addOutput()
@@ -142,7 +138,11 @@ void LOutput::LOutputPrivate::backendInitialized()
     painter = new LPainter();
     painter->imp()->output = output;
 
-    output->imp()->global = wl_global_create(LWayland::getDisplay(), &wl_output_interface, LOUVRE_OUTPUT_VERSION, output, &Louvre::Globals::Output::bind);
+    output->imp()->global = wl_global_create(LWayland::getDisplay(),
+                                             &wl_output_interface,
+                                             LOUVRE_OUTPUT_VERSION,
+                                             output,
+                                             &Protocols::Wayland::GOutput::GOutputPrivate::bind);
 
     output->setScale(output->scale());
     output->imp()->rectC.setBR((output->sizeB()*compositor->globalScale())/output->scale());
@@ -170,7 +170,7 @@ void LOutput::LOutputPrivate::backendPageFlipped()
 
     // Send presentation time feedback
     presentationTime = LTime::ns();
-    for(LSurface *surf : output->compositor()->surfaces())
+    for (LSurface *surf : output->compositor()->surfaces())
         surf->imp()->sendPresentationFeedback(output, presentationTime);
 }
 

@@ -25,7 +25,7 @@ LPopupRole::LPopupRole(LPopupRole::Params *params) : LBaseSurfaceRole(params->po
 
 LPopupRole::~LPopupRole()
 {
-    if(surface())
+    if (surface())
         surface()->imp()->setMapped(false);
 
     compositor()->destroyPopupRoleRequest(this);
@@ -43,18 +43,18 @@ void LPopupRole::configureC(const LRect &r)
 {
     LRect rect = r/compositor()->globalScale();
     xdg_popup_send_configure(resource(), rect.x(), rect.y(), rect.w(), rect.h());
-    xdg_surface_send_configure(surface()->imp()->xdgSurfaceResource, LWayland::nextSerial());
+    xdg_surface_send_configure(surface()->imp()->xdgRSurface, LWayland::nextSerial());
 }
 
 void LPopupRole::sendPopupDoneEvent()
 {
-    if(m_imp->dismissed)
+    if (m_imp->dismissed)
         return;
 
     list<LSurface*>::const_reverse_iterator s = surface()->children().rbegin();
     for (; s!= surface()->children().rend(); s++)
     {
-        if((*s)->popup())
+        if ((*s)->popup())
             (*s)->popup()->sendPopupDoneEvent();
     }
 
@@ -68,7 +68,7 @@ void LPopupRole::sendPopupDoneEvent()
 #if LOUVRE_XDG_WM_BASE_VERSION >= 3
 void LPopupRole::sendRepositionedEvent(UInt32 token)
 {
-    if(wl_resource_get_version(resource()) >= 3)
+    if (wl_resource_get_version(resource()) >= 3)
         xdg_popup_send_repositioned(resource(),token);
 }
 #endif
@@ -106,7 +106,7 @@ void LPopupRole::handleSurfaceCommit()
             return;
         }
 
-        if(surface()->imp()->pendingParent)
+        if (surface()->imp()->pendingParent)
         {
 
             surface()->imp()->setParent(surface()->imp()->pendingParent);
@@ -155,7 +155,7 @@ void LPopupRole::handleSurfaceCommit()
     }
 
     // Si no estaba mapeada y añade buffer la mappeamos
-    if(!surface()->mapped() && surface()->buffer())
+    if (!surface()->mapped() && surface()->buffer())
         surface()->imp()->setMapped(true);
 }
 

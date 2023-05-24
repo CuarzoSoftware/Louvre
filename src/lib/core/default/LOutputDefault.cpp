@@ -27,10 +27,10 @@ void LOutput::paintGL()
     p->clearScreen();
 
     // Draws every surface
-    for(LSurface *s : compositor()->surfaces())
+    for (LSurface *s : compositor()->surfaces())
     {
         // Skip some surfaces
-        if(!s->mapped() || s->dndIcon() || s->cursor())
+        if (!s->mapped() || s->dndIcon() || s->cursor())
         {
             s->requestNextFrame();
             continue;
@@ -42,9 +42,9 @@ void LOutput::paintGL()
             s->sizeC());    // Surface size in compositor coords
 
         // Calc which outputs intersects the surface
-        for(LOutput *o : compositor()->outputs())
+        for (LOutput *o : compositor()->outputs())
         {
-            if(o->rectC().intersects(currentRect))
+            if (o->rectC().intersects(currentRect))
                 s->sendOutputEnterEvent(o);
             else
                 s->sendOutputLeaveEvent(o);
@@ -61,7 +61,7 @@ void LOutput::paintGL()
     }
 
     // Manualy draw the cursor if hardware composition is not supported
-    if(!cursor()->hasHardwareSupport(this))
+    if (!cursor()->hasHardwareSupport(this))
     {
         p->drawTextureC(
             cursor()->texture(),                   
@@ -70,11 +70,11 @@ void LOutput::paintGL()
     }
 
     // Check if there is a drag & drop session going on with icon
-    if(seat()->dndManager()->icon())
+    if (seat()->dndManager()->icon())
     {
         LSurface *s = seat()->dndManager()->icon()->surface();
 
-        if(!s->mapped())
+        if (!s->mapped())
             return;
 
         // Sets the position of the icon to be the same as the cursor's position

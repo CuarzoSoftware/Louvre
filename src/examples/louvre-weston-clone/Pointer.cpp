@@ -18,7 +18,7 @@ void Pointer::pointerMoveEvent(float dx, float dy)
     lastEventMs = ct;
     float speed = 1.4f;
 
-    if(dt >= 1.f)
+    if (dt >= 1.f)
         speed += 0.5f*sqrt(dx*dx + dy*dy)/dt;
 
     pointerPosChangeEvent(

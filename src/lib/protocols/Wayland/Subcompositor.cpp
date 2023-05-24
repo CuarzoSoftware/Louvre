@@ -38,10 +38,10 @@ void Globals::Subcompositor::destroy(wl_client *, wl_resource *resource)
 
 void Globals::Subcompositor::get_subsurface(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface, wl_resource *parent)
 {
-    Protocols::Wayland::SurfaceResource *lSurfaceResource = (Protocols::Wayland::SurfaceResource*)wl_resource_get_user_data(surface);
-    LSurface *lSurface = lSurfaceResource->surface();
+    Protocols::Wayland::RSurface *lRSurface = (Protocols::Wayland::RSurface*)wl_resource_get_user_data(surface);
+    LSurface *lSurface = lRSurface->surface();
 
-    if(lSurface->role())
+    if (lSurface->role())
     {
         wl_resource_post_error(resource, WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE, "Given wl_surface already has another role.");
         return;
@@ -58,7 +58,7 @@ void Globals::Subcompositor::get_subsurface(wl_client *client, wl_resource *reso
 
     LSubsurfaceRole *lSubsurface = lCompositor->createSubsurfaceRoleRequest(&subsurfaceRoleParams);
 
-    Protocols::Wayland::SurfaceResource *lParentResource = (Protocols::Wayland::SurfaceResource*)wl_resource_get_user_data(parent);
+    Protocols::Wayland::RSurface *lParentResource = (Protocols::Wayland::RSurface*)wl_resource_get_user_data(parent);
     LSurface *lParent = lParentResource->surface();
     lParent->imp()->pendingChildren.push_back(lSurface);
     lSurface->imp()->pendingParent = lParent;

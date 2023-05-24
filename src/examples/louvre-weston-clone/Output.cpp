@@ -29,7 +29,7 @@ void Output::paintGL()
     LLog::debug("Current buff %d", currentBuffer());
 
     // Si TRUE vuelve a pintar ambos buffers
-    if(fullRefresh)
+    if (fullRefresh)
     {
         fullRefresh = false;
         exposedRegionG[0].clear();
@@ -56,20 +56,20 @@ void Output::paintGL()
     bool passFullscreen = false;
 
     // Calcula los daños de las superficies
-    for(list<Surface*>::iterator it = surfaces.begin(); it != surfaces.end(); it++)
+    for (list<Surface*>::iterator it = surfaces.begin(); it != surfaces.end(); it++)
     {
         Surface *s = *it;
 
         // Saltamos superficies que no nos interesan
-        if(!s->mapped() || s->roleId() == LSurface::Role::Cursor || s->roleId() == LSurface::Role::Undefined || s->minimized())
+        if (!s->mapped() || s->roleId() == LSurface::Role::Cursor || s->roleId() == LSurface::Role::Undefined || s->minimized())
             continue;
 
         // Si se encontró la superficie fullscreen
-        if(s == c->fullscreenSurface)
+        if (s == c->fullscreenSurface)
             passFullscreen = true;
 
         // Si existe una sup fullscreen pero aún no se encuentra skip
-        if(c->fullscreenSurface && ! passFullscreen)
+        if (c->fullscreenSurface && ! passFullscreen)
             continue;
 
         // Calcula la recta actual de la superficie
@@ -78,14 +78,14 @@ void Output::paintGL()
         LRect rG = LRect(sp,s->sizeC());
 
         // Actualiza las salidas que intersecta
-        for(LOutput *o : compositor()->outputs())
+        for (LOutput *o : compositor()->outputs())
         {
-            if(o->rectC().intersects(rG))
+            if (o->rectC().intersects(rG))
             {
                 s->sendOutputEnterEvent(o);
 
                 // Añade la salida al hash si no existe
-                if(s->outputParams.find(this) == s->outputParams.end())
+                if (s->outputParams.find(this) == s->outputParams.end())
                     s->outputParams[this] = Surface::OutputParams();
             }
             else
@@ -109,7 +109,7 @@ void Output::paintGL()
         s->cp->changed[currBuff] = s->hasDamage();
 
         // Si cambió su tamaño, posición u orden en la lista
-        if(rectChanged || s->cp->changedOrder[currBuff])
+        if (rectChanged || s->cp->changedOrder[currBuff])
         {
 
             // Daña toda la superficie
@@ -120,7 +120,7 @@ void Output::paintGL()
             exposed.addRect(s->cp->rectC[currBuff]);
 
             // Si no cambió de orden se resta la recta actual de la superficie a la región temporal
-            if(!s->cp->changedOrder[currBuff])
+            if (!s->cp->changedOrder[currBuff])
                 exposed.subtractRect(rG);
 
             // Añade la región temporal a la región expuesta de este frame
@@ -159,7 +159,7 @@ void Output::paintGL()
     }
 
     // Si el cursor no soporta composición por HW, añadimos su recta a la región expuesta
-    if(!compositor()->cursor()->hasHardwareSupport(this))
+    if (!compositor()->cursor()->hasHardwareSupport(this))
     {
         exposedRegionG[currBuff].addRect(cursorRectG[currBuff]);
         exposedRegionG[currBuff].addRect(compositor()->cursor()->rectC());
@@ -172,12 +172,12 @@ void Output::paintGL()
     glDisable(GL_BLEND);
 
     // Renderizamos los daños opacos desde el frente al fondo
-    for(list<Surface*>::reverse_iterator it = surfaces.rbegin(); it != surfaces.rend(); it++)
+    for (list<Surface*>::reverse_iterator it = surfaces.rbegin(); it != surfaces.rend(); it++)
     {
         Surface *s = *it;
 
         // Saltamos superficies que no nos interesan
-        if(!s->mapped() || s->roleId() == LSurface::Role::Cursor || s->roleId() == LSurface::Role::Undefined || s->minimized())
+        if (!s->mapped() || s->roleId() == LSurface::Role::Cursor || s->roleId() == LSurface::Role::Undefined || s->minimized())
             continue;
 
         // Almacenamos recta actual de la superficie en una variable mas cortita
@@ -206,17 +206,17 @@ void Output::paintGL()
          UInt64 tot = s->allOutputsRequestedNewFrame();
 
         // [1] Le pedimos que renderice el prox frame solo si está visible y si otras superficies ya utilizaron sus daños
-        if(!hidden.empty() || (tot > 0 && compositor()->outputs().size() > 1))
+        if (!hidden.empty() || (tot > 0 && compositor()->outputs().size() > 1))
         {
             s->cp->requestedNewFrame = true;
         }
 
         tot = s->allOutputsRequestedNewFrame();
 
-        if(tot == s->outputs().size())
+        if (tot == s->outputs().size())
         {
             // Si todas las salidas ya ocuparon sus daños, las marcamos otra vez como false
-            for(LOutput *o : s->outputs())
+            for (LOutput *o : s->outputs())
             {
                 s->outputParams[o].requestedNewFrame = false;
             }
@@ -243,9 +243,9 @@ void Output::paintGL()
         // Dibujamos las zonas dañadas opacas
 
 
-        if(s->cp->bufferScaleMatchGlobalScale)
+        if (s->cp->bufferScaleMatchGlobalScale)
         {
-            for(const LRect &d : s->cp->totalOpaqueDamagesG.rects())
+            for (const LRect &d : s->cp->totalOpaqueDamagesG.rects())
             {
                 p->drawTextureC(
                             s->texture(),
@@ -256,7 +256,7 @@ void Output::paintGL()
 
         else
         {
-            for(const LRect &d : s->cp->totalOpaqueDamagesG.rects())
+            for (const LRect &d : s->cp->totalOpaqueDamagesG.rects())
             {
                 p->drawTextureC(
                             s->texture(),
@@ -267,7 +267,7 @@ void Output::paintGL()
 
 
         // Si se llega a la superficie fullscreen no hace falta calcular las demás superficies (están todas detrás)
-        if(s == c->fullscreenSurface)
+        if (s == c->fullscreenSurface)
             break;
 
     }
@@ -277,9 +277,9 @@ void Output::paintGL()
     exposedRegionG[currBuff].clip(rectC());
 
     // Dibujamos las partes expuestas del fondo
-    if(!c->fullscreenSurface)
+    if (!c->fullscreenSurface)
     {
-        for(const LRect &d : exposedRegionG[currBuff].rects())
+        for (const LRect &d : exposedRegionG[currBuff].rects())
         {
             //p->drawTexture(backgroundTexture,d*scale(),d);
             p->drawColorC(d,0.3,0.3,0.7,1);
@@ -296,15 +296,15 @@ void Output::paintGL()
 
     passFullscreen = false;
 
-    for(Surface *s : surfaces)
+    for (Surface *s : surfaces)
     {
-        if(!s->mapped() || s->roleId() == LSurface::Role::Cursor || s->roleId() == LSurface::Role::Undefined || s->minimized())
+        if (!s->mapped() || s->roleId() == LSurface::Role::Cursor || s->roleId() == LSurface::Role::Undefined || s->minimized())
             continue;
 
-        if(s == c->fullscreenSurface)
+        if (s == c->fullscreenSurface)
             passFullscreen = true;
 
-        if(c->fullscreenSurface && ! passFullscreen)
+        if (c->fullscreenSurface && ! passFullscreen)
             continue;
 
         s->cp->totalTranslucentDamagesG.addRegion(totalRenderedG);
@@ -314,9 +314,9 @@ void Output::paintGL()
 
 
         // Draw transulcent rects
-        if(s->cp->bufferScaleMatchGlobalScale)
+        if (s->cp->bufferScaleMatchGlobalScale)
         {
-            for(const LRect &d : s->cp->totalTranslucentDamagesG.rects())
+            for (const LRect &d : s->cp->totalTranslucentDamagesG.rects())
                 p->drawTextureC(
                             s->texture(),
                             LRect(d.pos() - s->cp->rectC[currBuff].pos(),d.size()),
@@ -324,7 +324,7 @@ void Output::paintGL()
         }
         else
         {
-            for(const LRect &d : s->cp->totalTranslucentDamagesG.rects())
+            for (const LRect &d : s->cp->totalTranslucentDamagesG.rects())
                 p->drawTextureC(
                             s->texture(),
                             (LRect(d.pos() - s->cp->rectC[currBuff].pos(),d.size())*s->bufferScale())/compositor()->globalScale(),
@@ -335,16 +335,16 @@ void Output::paintGL()
 
 
     // Dibujamos la barra superior
-    if(first[currBuff])
+    if (first[currBuff])
     {
         p->drawColorC(LRect(rectC().x(),rectC().y(),rectC().w(),32*compositor()->globalScale()),1,1,1,0.75);
         first[currBuff] = false;
     }
-    else if(!c->fullscreenSurface)
+    else if (!c->fullscreenSurface)
     {
         exposedRegionG[currBuff].subtractRect(LRect(rectC().x(),rectC().y() + 32*compositor()->globalScale(),rectC().w(),rectC().h()));
 
-        for(const LRect &d : exposedRegionG[currBuff].rects())
+        for (const LRect &d : exposedRegionG[currBuff].rects())
             p->drawColorC(d,1,1,1,0.75);
     }
 

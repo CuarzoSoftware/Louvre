@@ -1,3 +1,5 @@
+#ifdef nn
+
 #ifndef FEEDBACK_H
 #define FEEDBACK_H
 
@@ -11,3 +13,4 @@ public:
 };
 
 #endif // FEEDBACK_H
+#endif

@@ -5,7 +5,7 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
 
-#include <protocols/Wayland/SeatGlobal.h>
+#include <protocols/Wayland/GSeat.h>
 
 #include <string.h>
 #include <stdio.h>
@@ -106,9 +106,9 @@ void LSeat::setCapabilities(UInt32 capabilitiesFlags)
 {
     imp()->capabilities = capabilitiesFlags;
 
-    for(LClient *c : compositor()->clients())
+    for (LClient *c : compositor()->clients())
     {
-        for(Protocols::Wayland::SeatGlobal *s : c->seatGlobals())
+        for (Protocols::Wayland::GSeat *s : c->seatGlobals())
             s->sendCapabilities(capabilitiesFlags);
     }
 }
@@ -142,7 +142,7 @@ LDNDManager *LSeat::dndManager() const
 Int32 LSeat::setTTY(Int32 tty)
 {
     return 0;
-    if(imp()->libseatHandle)
+    if (imp()->libseatHandle)
     {
         Int32 ret = libseat_switch_session(libseatHandle(), tty);
         libseat_dispatch(libseatHandle(), -1);
@@ -158,7 +158,7 @@ Int32 LSeat::openDevice(const char *path, Int32 *fd)
 
     return *fd;
 
-    if(!imp()->libseatHandle)
+    if (!imp()->libseatHandle)
         initSeat(this);
     return libseat_open_device(libseatHandle(), path, fd);
 }
@@ -191,8 +191,8 @@ int LSeat::LSeatPrivate::seatEvent(int, unsigned int, void *data)
 
 bool outputsWithPendingState(LCompositor *compositor, LOutput::State state)
 {
-    for(LOutput *o : compositor->outputs())
-        if(o->state() != state)
+    for (LOutput *o : compositor->outputs())
+        if (o->state() != state)
             return false;
 
     return true;
@@ -206,7 +206,7 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
     lseat->imp()->enabled = true;
     lseat->compositor()->repaintAllOutputs();
 
-    if(lseat->compositor()->inputBackendInitialized())
+    if (lseat->compositor()->inputBackendInitialized())
         lseat->compositor()->imp()->inputBackend->resume(lseat);
 
     LLog::debug("Seat %s enabled.", libseat_seat_name(seat));
@@ -220,17 +220,17 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
     return;
     LSeat *lseat = (LSeat*)data;
 
-    if(!lseat->imp()->enabled)
+    if (!lseat->imp()->enabled)
         return;
 
     lseat->imp()->enabled = false;
 
-    if(lseat->compositor()->inputBackendInitialized())
+    if (lseat->compositor()->inputBackendInitialized())
         lseat->compositor()->imp()->inputBackend->suspend(lseat);
 
     libseat_disable_seat(seat);
 
-    for(LOutput *o : lseat->compositor()->outputs())
+    for (LOutput *o : lseat->compositor()->outputs())
     {
         o->imp()->state = LOutput::Suspended;
     }
@@ -244,7 +244,7 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
 void LSeat::LSeatPrivate::dispatchSeat()
 {
     return;
-    if(libseatHandle)
+    if (libseatHandle)
         libseat_dispatch(libseatHandle, 0);
 }
 

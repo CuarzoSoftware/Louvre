@@ -10,14 +10,14 @@
 #include <private/LCursorPrivate.h>
 
 
-#include <protocols/Wayland/private/SeatGlobalPrivate.h>
+#include <protocols/Wayland/private/GSeatPrivate.h>
+#include <protocols/Wayland/private/GCompositorPrivate.h>
+#include <protocols/Wayland/private/GDataDeviceManagerPrivate.h>
 
-#include <protocols/Wayland/RegionResource.h>
-#include <protocols/Wayland/CompositorGlobal.h>
+#include <protocols/Wayland/RRegion.h>
 #include <protocols/Wayland/Subcompositor.h>
-#include <protocols/Wayland/SurfaceResource.h>
-#include <protocols/Wayland/DataDeviceManagerGlobal.h>
-#include <protocols/Wayland/Output.h>
+#include <protocols/Wayland/RSurface.h>
+#include <protocols/Wayland/GOutput.h>
 
 #include <protocols/XdgShell/XdgWmBase.h>
 #include <protocols/XdgShell/xdg-shell.h>
@@ -25,7 +25,7 @@
 #include <protocols/XdgDecoration/XdgDecorationManager.h>
 #include <protocols/XdgDecoration/xdg-decoration-unstable-v1.h>
 
-#include <protocols/DMABuffer/LinuxDMABuffer.h>
+#include <protocols/DMABuffer/LinuxDMABuffGlobal.h>
 #include <protocols/DMABuffer/linux-dmabuf-unstable-v1.h>
 
 #include <protocols/PresentationTime/Presentation.h>
@@ -43,9 +43,6 @@
 #include <EGL/eglext.h>
 #include <unordered_map>
 #include <sys/eventfd.h>
-
-
-#include <protocols/DMABuffer/LGbm.h>
 
 
 using namespace std;
@@ -100,7 +97,7 @@ void removeFdListener(wl_event_source *source)
 void LWayland::setSeat(LSeat *seat)
 {
     // Create seat global
-    wl_global_create(display, &wl_seat_interface, LOUVRE_SEAT_VERSION, seat->compositor(), &SeatGlobal::SeatGlobalPrivate::bind);
+    wl_global_create(display, &wl_seat_interface, LOUVRE_SEAT_VERSION, seat->compositor(), &GSeat::GSeatPrivate::bind);
 }
 
 UInt32 LWayland::nextSerial()
@@ -125,7 +122,7 @@ int LWayland::initWayland(LCompositor *comp)
     }
     const char *socket = getenv("LOUVRE_WAYLAND_DISPLAY");
 
-    if(socket)
+    if (socket)
     {
         int socketFD = wl_display_add_socket(display, socket);
         wl_display_add_socket_fd(display, socketFD);
@@ -146,13 +143,13 @@ int LWayland::initWayland(LCompositor *comp)
     // GLOBALS
 
     wl_global_create(display, &wl_compositor_interface,
-                     LOUVRE_COMPOSITOR_VERSION, comp, &Protocols::Wayland::CompositorGlobal::bind);
+                     LOUVRE_COMPOSITOR_VERSION, comp, &Protocols::Wayland::GCompositor::GCompositorPrivate::bind);
 
     wl_global_create(display, &wl_subcompositor_interface,
                      LOUVRE_SUBCOMPOSITOR_VERSION, comp, &Globals::Subcompositor::bind);
 
     wl_global_create(display, &wl_data_device_manager_interface,
-                     LOUVRE_DATA_DEVICE_MANAGER_VERSION, comp, &Protocols::Wayland::DataDeviceManagerGlobal::bind);
+                     LOUVRE_DATA_DEVICE_MANAGER_VERSION, comp, &Protocols::Wayland::GDataDeviceManager::GDataDeviceManagerPrivate::bind);
 
     wl_global_create(display, &xdg_wm_base_interface,
                      LOUVRE_XDG_WM_BASE_VERSION, comp, &Extensions::XdgShell::WmBase::bind);
@@ -161,7 +158,7 @@ int LWayland::initWayland(LCompositor *comp)
                      LOUVRE_XDG_DECORATION_MANAGER_VERSION, comp, &Extensions::XdgDecoration::Manager::bind);
 
     /*wl_global_create(display, &zwp_linux_dmabuf_v1_interface,
-                     3, comp, &Extensions::LinuxDMABuffer::LinuxDMABuffer::bind);*/
+                     LOUVRE_LINUX_DMA_BUFF_VERSION, comp, &Extensions::LinuxDMABuffer::LinuxDMABuffer::bind);*/
 
     wl_global_create(display, &wp_presentation_interface,
                      1, comp, &Extensions::PresentationTime::Presentation::bind);
@@ -208,7 +205,7 @@ bool forcedUpdate = false;
 
 void LWayland::forceUpdate()
 {
-    if(!forcedUpdate)
+    if (!forcedUpdate)
     {
         eventfd_write(fds[1].fd, 1);
         forcedUpdate = true;
@@ -223,35 +220,36 @@ void LWayland::runLoop()
     fds[1].events = POLLIN;
     fds[1].fd = eventfd(0, EFD_CLOEXEC|EFD_NONBLOCK);
     fds[1].revents = 0;
-    eventfd_t val;
+    //eventfd_t val;
 
     while(true)
     {
-        poll(fds, 2, -1);
+        poll(fds, 1, -1);
 
         compositor->imp()->renderMutex.lock();
 
         compositor->seat()->imp()->dispatchSeat();
 
-        if(forcedUpdate)
+        /*
+        if (forcedUpdate)
         {
             eventfd_read(fds[1].fd, &val);
-            if(compositor->imp()->inputBackend)
+            if (compositor->imp()->inputBackend)
                 compositor->imp()->inputBackend->forceUpdate(compositor->seat());
             forcedUpdate = false;
-            if(!(fds[0].events & (POLLIN | POLLOUT | POLLHUP)))
+            if (!(fds[0].events & (POLLIN | POLLOUT | POLLHUP)))
             {
                 compositor->imp()->renderMutex.unlock();
                 continue;
             }
-        }
+        }*/
 
 
         // Espera 5 iteraciones para eliminar un global wl_output (ver documentación de wl_global_destroy)
-        for(list<LCompositor::LCompositorPrivate::RemovedOutputGlobal*>::iterator g = compositor->imp()->removedOutputGobals.begin();
+        for (list<LCompositor::LCompositorPrivate::RemovedOutputGlobal*>::iterator g = compositor->imp()->removedOutputGobals.begin();
             g != compositor->imp()->removedOutputGobals.end(); g++)
         {
-            if((*g)->loopIterations >= 5)
+            if ((*g)->loopIterations >= 5)
             {
                 wl_global_destroy((*g)->global);
                 delete (*g);
@@ -265,10 +263,10 @@ void LWayland::runLoop()
 
 
         // DND
-        if(compositor->seat()->dndManager()->imp()->destDidNotRequestReceive >= 3)
+        if (compositor->seat()->dndManager()->imp()->destDidNotRequestReceive >= 3)
             compositor->seat()->dndManager()->cancel();
 
-        if(compositor->seat()->dndManager()->imp()->dropped && compositor->seat()->dndManager()->imp()->destDidNotRequestReceive < 3)
+        if (compositor->seat()->dndManager()->imp()->dropped && compositor->seat()->dndManager()->imp()->destDidNotRequestReceive < 3)
             compositor->seat()->dndManager()->imp()->destDidNotRequestReceive++;
 
         dispatchEvents();
@@ -321,16 +319,16 @@ void LWayland::clientDisconnectionEvent(wl_listener *listener, void *data)
     LClient *disconnectedClient = nullptr;
 
     // Remove client from the compositor list
-    for(LClient *wClient: compositor->clients())
+    for (LClient *wClient: compositor->clients())
     {
-        if(wClient->client() == client)
+        if (wClient->client() == client)
         {
             disconnectedClient = wClient;
             break;
         }
     }
 
-    if(disconnectedClient == nullptr)
+    if (disconnectedClient == nullptr)
         return;
 
     compositor->destroyClientRequest(disconnectedClient);

@@ -3,8 +3,8 @@
 #include <private/LPointerPrivate.h>
 #include <private/LToplevelRolePrivate.h>
 
-#include <protocols/Wayland/SeatGlobal.h>
-#include <protocols/Wayland/PointerResource.h>
+#include <protocols/Wayland/GSeat.h>
+#include <protocols/Wayland/RPointer.h>
 
 #include <LSeat.h>
 #include <LCompositor.h>
@@ -46,7 +46,7 @@ LCursor *LPointer::cursor() const
 
 void LPointer::setFocusC(LSurface *surface)
 {
-    if(surface)
+    if (surface)
         setFocusC(surface, cursor()->posC() - surface->rolePosC());
     else
         setFocusC(nullptr, LPoint());
@@ -55,11 +55,11 @@ void LPointer::setFocusC(LSurface *surface)
 void LPointer::setFocusC(LSurface *surface, const LPoint &localPos)
 {
     // If surface is not nullptr
-    if(surface)
+    if (surface)
     {
 
         // If already has focus
-        if(focusSurface() == surface)
+        if (focusSurface() == surface)
             return;
 
         // Remove focus from focused surface
@@ -84,22 +84,22 @@ void LPointer::setFocusC(LSurface *surface, const LPoint &localPos)
 
 void LPointer::sendMoveEventC()
 {
-    if(focusSurface())
+    if (focusSurface())
         sendMoveEventC(cursor()->posC() - focusSurface()->rolePosC());
 }
 
 void LPointer::sendMoveEventC(const LPoint &localPos)
 {
-    if(seat()->dndManager()->focus())
+    if (seat()->dndManager()->focus())
         seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDMotionEvent(localPos.x(), localPos.y());
 
     // If no surface has focus surface
-    if(!focusSurface())
+    if (!focusSurface())
         return;
 
-    for(Protocols::Wayland::SeatGlobal *s : focusSurface()->client()->seatGlobals())
+    for (Protocols::Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
     {
-        if(s->pointerResource())
+        if (s->pointerResource())
         {
             s->pointerResource()->sendMove(localPos);
             s->pointerResource()->sendFrame();
@@ -109,12 +109,12 @@ void LPointer::sendMoveEventC(const LPoint &localPos)
 
 void LPointer::sendButtonEvent(Button button, ButtonState state)
 {
-    if(!focusSurface())
+    if (!focusSurface())
         return;
 
-    for(Protocols::Wayland::SeatGlobal *s : focusSurface()->client()->seatGlobals())
+    for (Protocols::Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
     {
-        if(s->pointerResource())
+        if (s->pointerResource())
         {
             s->pointerResource()->sendButton(button, state);
             s->pointerResource()->sendFrame();
@@ -125,7 +125,7 @@ void LPointer::sendButtonEvent(Button button, ButtonState state)
 
 void LPointer::startResizingToplevelC(LToplevelRole *toplevel, LToplevelRole::ResizeEdge edge, Int32 L, Int32 T, Int32 R, Int32 B)
 {
-    if(!toplevel)
+    if (!toplevel)
         return;
 
     imp()->resizingToplevelConstraintBounds = LRect(L,T,R,B);
@@ -134,10 +134,10 @@ void LPointer::startResizingToplevelC(LToplevelRole *toplevel, LToplevelRole::Re
     imp()->resizingToplevelInitWindowSize = toplevel->windowGeometryC().bottomRight();
     imp()->resizingToplevelInitCursorPos = cursor()->posC();
 
-    if(L != EdgeDisabled && toplevel->surface()->posC().x() < L)
+    if (L != EdgeDisabled && toplevel->surface()->posC().x() < L)
         toplevel->surface()->setXC(L);
 
-    if(T != EdgeDisabled && toplevel->surface()->posC().y() < T)
+    if (T != EdgeDisabled && toplevel->surface()->posC().y() < T)
         toplevel->surface()->setYC(T);
 
     imp()->resizingToplevelInitPos = toplevel->surface()->posC();
@@ -147,7 +147,7 @@ void LPointer::startResizingToplevelC(LToplevelRole *toplevel, LToplevelRole::Re
 
 void LPointer::updateResizingToplevelSize()
 {
-    if(resizingToplevel())
+    if (resizingToplevel())
     {
         LSize newSize = resizingToplevel()->calculateResizeSize(resizingToplevelInitCursorPos()-cursor()->posC(),
                                                                 imp()->resizingToplevelInitWindowSize,
@@ -159,29 +159,29 @@ void LPointer::updateResizingToplevelSize()
         LSize size = resizingToplevel()->windowGeometryC().bottomRight();
 
         // Top
-        if(bounds.y() != EdgeDisabled && (edge ==  LToplevelRole::Top || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::TopRight))
+        if (bounds.y() != EdgeDisabled && (edge ==  LToplevelRole::Top || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::TopRight))
         {
-            if(pos.y() - (newSize.y() - size.y()) < bounds.y())
+            if (pos.y() - (newSize.y() - size.y()) < bounds.y())
                 newSize.setH(pos.y() + size.h() - bounds.y());
         }
         // Bottom
-        else if(bounds.h() != EdgeDisabled && (edge ==  LToplevelRole::Bottom || edge ==  LToplevelRole::BottomLeft || edge ==  LToplevelRole::BottomRight))
+        else if (bounds.h() != EdgeDisabled && (edge ==  LToplevelRole::Bottom || edge ==  LToplevelRole::BottomLeft || edge ==  LToplevelRole::BottomRight))
         {
-            if(pos.y() + newSize.h() > bounds.h())
+            if (pos.y() + newSize.h() > bounds.h())
                 newSize.setH(bounds.h() - pos.y());
         }
 
 
         // Left
-        if( bounds.x() != EdgeDisabled && (edge ==  LToplevelRole::Left || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::BottomLeft))
+        if ( bounds.x() != EdgeDisabled && (edge ==  LToplevelRole::Left || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::BottomLeft))
         {
-            if(pos.x() - (newSize.x() - size.x()) < bounds.x())
+            if (pos.x() - (newSize.x() - size.x()) < bounds.x())
                 newSize.setW(pos.x() + size.w() - bounds.x());
         }
         // Right
-        else if( bounds.w() != EdgeDisabled && (edge ==  LToplevelRole::Right || edge ==  LToplevelRole::TopRight || edge ==  LToplevelRole::BottomRight))
+        else if ( bounds.w() != EdgeDisabled && (edge ==  LToplevelRole::Right || edge ==  LToplevelRole::TopRight || edge ==  LToplevelRole::BottomRight))
         {
-            if(pos.x() + newSize.w() > bounds.w())
+            if (pos.x() + newSize.w() > bounds.w())
                 newSize.setW(bounds.w() - pos.x());
         }
 
@@ -192,23 +192,23 @@ void LPointer::updateResizingToplevelSize()
 
 void LPointer::updateResizingToplevelPos()
 {
-    if(resizingToplevel())
+    if (resizingToplevel())
     {
         LSize s = resizingToplevelInitSize();
         LPoint p = resizingToplevelInitPos();
         LToplevelRole::ResizeEdge edge =  resizingToplevelEdge();
 
-        if(edge ==  LToplevelRole::Top || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::TopRight)
+        if (edge ==  LToplevelRole::Top || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::TopRight)
             resizingToplevel()->surface()->setYC(p.y() + (s.h() - resizingToplevel()->windowGeometryC().h()));
 
-        if(edge ==  LToplevelRole::Left || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::BottomLeft)
+        if (edge ==  LToplevelRole::Left || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::BottomLeft)
             resizingToplevel()->surface()->setXC(p.x() + (s.w() - resizingToplevel()->windowGeometryC().w()));
     }
 }
 
 void LPointer::stopResizingToplevel()
 {
-    if(resizingToplevel())
+    if (resizingToplevel())
     {
         updateResizingToplevelSize();
         updateResizingToplevelPos();
@@ -227,20 +227,20 @@ void LPointer::startMovingToplevelC(LToplevelRole *toplevel, Int32 L, Int32 T, I
 
 void LPointer::updateMovingToplevelPos()
 {
-    if(movingToplevel())
+    if (movingToplevel())
     {
         LPoint newPos = movingToplevelInitPos() - movingToplevelInitCursorPos() + cursor()->posC();
 
-        if(imp()->movingToplevelConstraintBounds.w() != EdgeDisabled && newPos.x() > imp()->movingToplevelConstraintBounds.w())
+        if (imp()->movingToplevelConstraintBounds.w() != EdgeDisabled && newPos.x() > imp()->movingToplevelConstraintBounds.w())
             newPos.setX(imp()->movingToplevelConstraintBounds.w());
 
-        if(imp()->movingToplevelConstraintBounds.x() != EdgeDisabled && newPos.x() < imp()->movingToplevelConstraintBounds.x())
+        if (imp()->movingToplevelConstraintBounds.x() != EdgeDisabled && newPos.x() < imp()->movingToplevelConstraintBounds.x())
             newPos.setX(imp()->movingToplevelConstraintBounds.x());
 
-        if(imp()->movingToplevelConstraintBounds.h() != EdgeDisabled && newPos.y() > imp()->movingToplevelConstraintBounds.h())
+        if (imp()->movingToplevelConstraintBounds.h() != EdgeDisabled && newPos.y() > imp()->movingToplevelConstraintBounds.h())
             newPos.setY(imp()->movingToplevelConstraintBounds.h());
 
-        if(imp()->movingToplevelConstraintBounds.y() != EdgeDisabled && newPos.y() < imp()->movingToplevelConstraintBounds.y())
+        if (imp()->movingToplevelConstraintBounds.y() != EdgeDisabled && newPos.y() < imp()->movingToplevelConstraintBounds.y())
             newPos.setY(imp()->movingToplevelConstraintBounds.y());
 
         movingToplevel()->surface()->setPosC(newPos);
@@ -262,7 +262,7 @@ void LPointer::dismissPopups()
     list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();
     for (; s!= compositor()->surfaces().rend(); s++)
     {
-        if((*s)->popup())
+        if ((*s)->popup())
             (*s)->popup()->sendPopupDoneEvent();
     }
 }
@@ -317,12 +317,12 @@ LToplevelRole::ResizeEdge LPointer::resizingToplevelEdge() const
 void LPointer::sendAxisEvent(double x, double y, UInt32 source)
 {
     // If no surface has focus
-    if(!focusSurface())
+    if (!focusSurface())
         return;
 
-    for(Protocols::Wayland::SeatGlobal *s : focusSurface()->client()->seatGlobals())
+    for (Protocols::Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
     {
-        if(s->pointerResource())
+        if (s->pointerResource())
         {
             s->pointerResource()->sendAxis(x, y, source);
         }
@@ -343,12 +343,12 @@ void LPointer::setScrollWheelStep(const LPoint &step)
 void LPointer::sendAxisEvent(double x, double y)
 {
     // If no surface has focus
-    if(!focusSurface())
+    if (!focusSurface())
         return;
 
-    for(SeatGlobal *s : focusSurface()->client()->seatGlobals())
+    for (GSeat *s : focusSurface()->client()->seatGlobals())
     {
-        if(s->pointerResource())
+        if (s->pointerResource())
         {
             s->pointerResource()->sendAxis(x, y);
         }
@@ -358,9 +358,9 @@ void LPointer::sendAxisEvent(double x, double y)
 
 LSurface *LPointer::surfaceAtC(const LPoint &point)
 {
-    for(list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin(); s != compositor()->surfaces().rend(); s++)
-        if((*s)->mapped() && !(*s)->minimized())
-            if((*s)->inputRegionC().containsPoint(point - (*s)->rolePosC()))
+    for (list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin(); s != compositor()->surfaces().rend(); s++)
+        if ((*s)->mapped() && !(*s)->minimized())
+            if ((*s)->inputRegionC().containsPoint(point - (*s)->rolePosC()))
                 return *s;
 
     return nullptr;
@@ -378,16 +378,16 @@ LSurface *LPointer::focusSurface() const
 
 void LPointer::LPointerPrivate::sendLeaveEvent(LSurface *surface)
 {
-    if(seat->dndManager()->focus())
+    if (seat->dndManager()->focus())
         seat->dndManager()->focus()->client()->dataDevice().imp()->sendDNDLeaveEvent();
 
     // If surface is nullptr
-    if(!surface)
+    if (!surface)
         return;
 
-    for(Protocols::Wayland::SeatGlobal *s : surface->client()->seatGlobals())
+    for (Protocols::Wayland::GSeat *s : surface->client()->seatGlobals())
     {
-        if(s->pointerResource())
+        if (s->pointerResource())
         {
             s->pointerResource()->sendLeave(surface);
             s->pointerResource()->sendFrame();
@@ -398,23 +398,23 @@ void LPointer::LPointerPrivate::sendLeaveEvent(LSurface *surface)
 void LPointer::LPointerPrivate::sendEnterEvent(LSurface *surface, const LPoint &point)
 {
     // If surface is nullptr
-    if(!surface)
+    if (!surface)
         return;
 
 
-    bool hasPointerResource = false;
+    bool hasRPointer = false;
 
-    for(Protocols::Wayland::SeatGlobal *s : surface->client()->seatGlobals())
+    for (Protocols::Wayland::GSeat *s : surface->client()->seatGlobals())
     {
-        if(s->pointerResource())
+        if (s->pointerResource())
         {
-            hasPointerResource = true;
+            hasRPointer = true;
             s->pointerResource()->sendEnter(surface, point);
             s->pointerResource()->sendFrame();
         }
     }
 
-    if(hasPointerResource)
+    if (hasRPointer)
         pointerFocusSurface = surface;
     else
         pointerFocusSurface = nullptr;

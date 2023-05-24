@@ -16,7 +16,7 @@ LDNDIconRole::LDNDIconRole(Louvre::LDNDIconRole::Params *params) : LBaseSurfaceR
 
 LDNDIconRole::~LDNDIconRole()
 {
-    if(surface())
+    if (surface())
         surface()->imp()->setMapped(false);
 
     delete m_imp;

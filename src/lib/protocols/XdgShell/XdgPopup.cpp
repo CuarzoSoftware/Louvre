@@ -1,6 +1,6 @@
-#include <protocols/Wayland/KeyboardResource.h>
-#include <protocols/Wayland/PointerResource.h>
-#include <protocols/Wayland/SeatGlobal.h>
+#include <protocols/Wayland/RKeyboard.h>
+#include <protocols/Wayland/RPointer.h>
+#include <protocols/Wayland/GSeat.h>
 #include <protocols/XdgShell/XdgPopup.h>
 #include <protocols/XdgShell/xdg-shell.h>
 
@@ -30,7 +30,7 @@ void Extensions::XdgShell::Popup::destroy(wl_client *client, wl_resource *resour
     LPopupRole *lPopup = (LPopupRole*)wl_resource_get_user_data(resource);
 
 
-    if(!lPopup->surface()->children().empty())
+    if (!lPopup->surface()->children().empty())
     {
 
         wl_resource_post_error(
@@ -50,18 +50,18 @@ void Extensions::XdgShell::Popup::grab(wl_client *client, wl_resource *resource,
     L_UNUSED(client);
 
     LPopupRole *lPopup = (LPopupRole*)wl_resource_get_user_data(resource);
-    Protocols::Wayland::SeatGlobal *lSeatGlobal = (Protocols::Wayland::SeatGlobal*)wl_resource_get_user_data(seat);
+    Protocols::Wayland::GSeat *lGSeat = (Protocols::Wayland::GSeat*)wl_resource_get_user_data(seat);
 
-    if(true || ( lSeatGlobal->pointerResource() && lSeatGlobal->pointerResource()->serials().button == serial )
-            || ( lSeatGlobal->keyboardResource() && lSeatGlobal->keyboardResource()->serials().key == serial))
+    if (true || ( lGSeat->pointerResource() && lGSeat->pointerResource()->serials().button == serial )
+            || ( lGSeat->keyboardResource() && lGSeat->keyboardResource()->serials().key == serial))
     {
 
         LSurface *parent = lPopup->surface()->parent();
 
-        if(!parent)
+        if (!parent)
             parent = lPopup->surface()->imp()->pendingParent;
 
-        if(!parent || (lPopup->compositor()->seat()->pointer()->focusSurface() != parent && lPopup->compositor()->seat()->keyboard()->focusSurface() != parent))
+        if (!parent || (lPopup->compositor()->seat()->pointer()->focusSurface() != parent && lPopup->compositor()->seat()->keyboard()->focusSurface() != parent))
         {
             wl_resource_post_error(
                         resource,

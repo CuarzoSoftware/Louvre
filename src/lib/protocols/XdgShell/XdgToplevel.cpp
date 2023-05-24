@@ -84,7 +84,7 @@ void Extensions::XdgShell::Toplevel::resize(wl_client *, wl_resource *resource, 
     L_UNUSED(seat);
     L_UNUSED(serial);
 
-    if(edges > 10)
+    if (edges > 10)
     {
         wl_resource_post_error(resource, XDG_TOPLEVEL_ERROR_INVALID_RESIZE_EDGE, "provided value is not a valid variant of the resize_edge enum.");
         return;
@@ -98,7 +98,7 @@ void Extensions::XdgShell::Toplevel::set_max_size(wl_client *client, wl_resource
 {
     L_UNUSED(client);
 
-    if(width < 0 || height < 0)
+    if (width < 0 || height < 0)
     {
         // Error enum not defined in protocol
         wl_resource_post_error(resource, XDG_TOPLEVEL_ERROR_INVALID_RESIZE_EDGE, "invalid toplevel max size");
@@ -115,7 +115,7 @@ void Extensions::XdgShell::Toplevel::set_min_size (wl_client *client, wl_resourc
 {
     L_UNUSED(client);
 
-    if(width < 0 || height < 0)
+    if (width < 0 || height < 0)
     {
         // Error enum not defined in protocol
         wl_resource_post_error(resource, XDG_TOPLEVEL_ERROR_INVALID_RESIZE_EDGE, "invalid toplevel min size");
@@ -149,7 +149,7 @@ void Extensions::XdgShell::Toplevel::set_fullscreen(wl_client *client, wl_resour
 
     LOutput *lOutput = nullptr;
 
-    if(output)
+    if (output)
         lOutput = (LOutput*)wl_resource_get_user_data(output);
 
     LToplevelRole *lToplevel = (LToplevelRole*)wl_resource_get_user_data(resource);

@@ -18,7 +18,7 @@ LCursorRole::LCursorRole(Params *params) : LBaseSurfaceRole(params->surface->sur
 
 LCursorRole::~LCursorRole()
 {
-    if(surface())
+    if (surface())
         surface()->imp()->setMapped(false);
 
     delete m_imp;
@@ -52,12 +52,12 @@ void LCursorRole::handleSurfaceCommit()
     imp()->currentHotspotB = imp()->currentHotspotS * surface()->bufferScale();
     hotspotChanged();
 
-    if(surface()->buffer())
+    if (surface()->buffer())
     {
         surface()->imp()->setMapped(true);
 
         // Notify that the cursor changed content
-        if(compositor()->cursor()->texture() == surface()->texture())
+        if (compositor()->cursor()->texture() == surface()->texture())
         {
             surface()->seat()->pointer()->setCursorRequest(this);
         }

@@ -7,8 +7,8 @@
 
 #include <protocols/PresentationTime/presentation-time.h>
 #include <protocols/XdgShell/xdg-shell.h>
-#include <protocols/DMABuffer/DMA.h>
-#include <protocols/Wayland/SurfaceResource.h>
+#include <protocols/Wayland/GOutput.h>
+#include <protocols/Wayland/RSurface.h>
 
 #include <LCompositor.h>
 #include <LClient.h>
@@ -30,13 +30,13 @@
 #include <LLog.h>
 #include <LTime.h>
 
-using namespace Louvre;
+using namespace Louvre::Protocols::Wayland;
 
 PFNEGLQUERYWAYLANDBUFFERWL eglQueryWaylandBufferWL = NULL;
 
 LCursorRole *LSurface::cursor() const
 {
-    if(roleId() == LSurface::Role::Cursor)
+    if (roleId() == LSurface::Role::Cursor)
         return (LCursorRole*)imp()->current.role;
     else
         return nullptr;
@@ -44,7 +44,7 @@ LCursorRole *LSurface::cursor() const
 
 LToplevelRole *LSurface::toplevel() const
 {
-    if(roleId() == LSurface::Role::Toplevel)
+    if (roleId() == LSurface::Role::Toplevel)
         return (LToplevelRole*)imp()->current.role;
     else
         return nullptr;
@@ -52,7 +52,7 @@ LToplevelRole *LSurface::toplevel() const
 
 LPopupRole *LSurface::popup() const
 {
-    if(roleId() == LSurface::Role::Popup)
+    if (roleId() == LSurface::Role::Popup)
         return (LPopupRole*)imp()->current.role;
     else
         return nullptr;
@@ -60,7 +60,7 @@ LPopupRole *LSurface::popup() const
 
 LSubsurfaceRole *LSurface::subsurface() const
 {
-    if(roleId() == LSurface::Role::Subsurface)
+    if (roleId() == LSurface::Role::Subsurface)
         return (LSubsurfaceRole*)imp()->current.role;
     else
         return nullptr;
@@ -68,7 +68,7 @@ LSubsurfaceRole *LSurface::subsurface() const
 
 LDNDIconRole *LSurface::dndIcon() const
 {
-    if(roleId() == LSurface::Role::DNDIcon)
+    if (roleId() == LSurface::Role::DNDIcon)
         return (LDNDIconRole*)imp()->current.role;
     else
         return nullptr;
@@ -177,7 +177,7 @@ void LSurface::setMinimized(bool state)
 
 void LSurface::repaintOutputs()
 {
-    for(LOutput *o : outputs())
+    for (LOutput *o : outputs())
         o->repaint();
 }
 
@@ -213,7 +213,7 @@ LSeat *LSurface::seat() const
 
 LSurface::Role LSurface::roleId() const
 {
-    if(role())
+    if (role())
         return (LSurface::Role)role()->roleId();
     else
         return Undefined;
@@ -226,11 +226,11 @@ const LPoint &LSurface::posC() const
 
 const LPoint &LSurface::rolePosC() const
 {
-    if(role())
+    if (role())
     {
         LPoint &sp = (LPoint&)role()->rolePosC();
 
-        if(compositor()->globalScale() != 1)
+        if (compositor()->globalScale() != 1)
         {
             imp()->posC.setX(imp()->posC.x() + sp.x() % compositor()->globalScale());
             imp()->posC.setY(imp()->posC.y() + sp.y() % compositor()->globalScale());
@@ -242,7 +242,7 @@ const LPoint &LSurface::rolePosC() const
 
     LPoint &sp = imp()->posC;
 
-    if(compositor()->globalScale() != 1)
+    if (compositor()->globalScale() != 1)
     {
         imp()->posC.setX(imp()->posC.x() + sp.x() % compositor()->globalScale());
         imp()->posC.setY(imp()->posC.y() + sp.y() % compositor()->globalScale());
@@ -253,46 +253,28 @@ const LPoint &LSurface::rolePosC() const
 
 void LSurface::sendOutputEnterEvent(LOutput *output)
 {
-    // Verfica si ya existe
-    list<LOutput*>::const_iterator o;
-    for(o = imp()->outputs.begin(); o != imp()->outputs.end(); o++)
-        if(*o == output)
+    // Check if already sent
+    for (LOutput *o : imp()->outputs)
+        if (o == output)
             return;
 
     imp()->outputs.push_back(output);
 
-    // Verifica que haya creado un recurso para la salida
-    for(wl_resource *r : client()->outputs())
-    {
-        if(wl_resource_get_user_data(r) == output)
-        {
-            wl_surface_send_enter(surfaceResource()->resource(), r);
-            return;
-        }
-    }
+    for (GOutput *g : client()->outputGlobals())
+        if (g->output() == output)
+            return wl_surface_send_enter(surfaceResource()->resource(), g->resource());
 }
 
 void LSurface::sendOutputLeaveEvent(LOutput *output)
 {
-    // Verfica si ya existe
-    list<LOutput*>::iterator o;
-    for(o = imp()->outputs.begin(); o != imp()->outputs.end(); o++)
+    for (list<LOutput*>::iterator o = imp()->outputs.begin(); o != imp()->outputs.end(); o++)
     {
-        if(*o == output)
+        if (*o == output)
         {
             imp()->outputs.erase(o);
-
-            // Verifica que haya creado un recurso para la salida
-            for(wl_resource *r : client()->outputs())
-            {
-                if(wl_resource_get_user_data(r) == output)
-                {
-                    wl_surface_send_leave(surfaceResource()->resource(),r);
-                    return;
-                }
-            }
-
-            return;
+            for (GOutput *g : client()->outputGlobals())
+                if (g->output() == output)
+                    return wl_surface_send_leave(surfaceResource()->resource(), g->resource());
         }
     }
 }
@@ -309,32 +291,32 @@ void LSurface::requestNextFrame(LOutput *output)
     imp()->currentDamagesC.clear();
     imp()->damaged = false;
 
-    if(imp()->frameCallback)
+    if (imp()->frameCallback)
     {
         wl_callback_send_done(imp()->frameCallback, LTime::ms());
         wl_resource_destroy(imp()->frameCallback);
         imp()->frameCallback = nullptr;
     }
 
-    if(!imp()->presentationOutputResources.empty())
+    if (!imp()->presentationOutputGlobals.empty())
         return;
 
     // If not specified, use the output where the largest area of the surface is visible
-    if(!output)
+    if (!output)
     {
         Int32 maxArea = 0;
         Int32 area;
 
-        for(LOutput *out : compositor()->outputs())
+        for (LOutput *out : compositor()->outputs())
         {
             LRegion reg;
             reg.addRect(out->rectC());
             reg.clip(LRect(rolePosC(), sizeC()));
-            if(reg.empty())
+            if (reg.empty())
                 continue;
             area = reg.rects().front().area();
 
-            if(area > maxArea)
+            if (area > maxArea)
             {
                 output = out;
                 maxArea = area;
@@ -342,12 +324,12 @@ void LSurface::requestNextFrame(LOutput *output)
         }
     }
 
-    if(!output)
+    if (!output)
         return;
 
-    for(wl_resource *out : client()->outputs())
-        if(wl_resource_get_user_data(out) == output)
-            imp()->presentationOutputResources.push_back(out);
+    for (GOutput *g : client()->outputGlobals())
+        if (g->output() == output)
+            imp()->presentationOutputGlobals.push_back(g);
 
     imp()->presentationOutput = output;
 }
@@ -357,7 +339,7 @@ bool LSurface::mapped() const
     return imp()->mapped && roleId() != Undefined;
 }
 
-Protocols::Wayland::SurfaceResource *LSurface::surfaceResource() const
+Protocols::Wayland::RSurface *LSurface::surfaceResource() const
 {
     return imp()->surfaceResource;
 }
@@ -367,9 +349,9 @@ wl_buffer *LSurface::buffer() const
     return (wl_buffer*)imp()->current.buffer;
 }
 
-wl_resource *LSurface::xdgSurfaceResource() const
+wl_resource *LSurface::xdgRSurface() const
 {
-    return imp()->xdgSurfaceResource;
+    return imp()->xdgRSurface;
 }
 
 LClient *LSurface::client() const
@@ -379,7 +361,7 @@ LClient *LSurface::client() const
 
 LCompositor *LSurface::compositor() const
 {
-    if(client() != nullptr)
+    if (client() != nullptr)
         return client()->compositor();
     else
         return nullptr;
@@ -392,14 +374,14 @@ Louvre::LSurface *LSurface::parent() const
 
 LSurface *findTopmostParent(LSurface *surface)
 {
-    if(surface->parent() == nullptr)
+    if (surface->parent() == nullptr)
         return surface;
 
     return findTopmostParent(surface->parent());
 }
 Louvre::LSurface *LSurface::topmostParent() const
 {
-    if(parent() == nullptr)
+    if (parent() == nullptr)
         return nullptr;
 
     return findTopmostParent(parent());
@@ -418,12 +400,12 @@ LSurface::LSurfacePrivate *LSurface::imp() const
 // Private
 void LSurface::LSurfacePrivate::setParent(LSurface *parent)
 {
-    if(parent == this->parent)
+    if (parent == this->parent)
         return;
 
     LSurface *surface = surfaceResource->surface();
 
-    if(parent == nullptr)
+    if (parent == nullptr)
     {
         this->parent->imp()->removeChild(surface);
         return;
@@ -432,7 +414,7 @@ void LSurface::LSurfacePrivate::setParent(LSurface *parent)
     this->parent = parent;
 
 
-    if(parent->children().empty())
+    if (parent->children().empty())
     {
         surface->compositor()->imp()->insertSurfaceAfter(parent, surface);
     }
@@ -444,7 +426,7 @@ void LSurface::LSurfacePrivate::setParent(LSurface *parent)
     parent->imp()->children.push_back(surface);
     surface->parentChanged();
 
-    if(surface->role())
+    if (surface->role())
         surface->role()->handleParentChange();
 }
 
@@ -463,15 +445,15 @@ void LSurface::LSurfacePrivate::setMapped(bool state)
 
     mapped = state;
 
-    if(before != surface->mapped())
+    if (before != surface->mapped())
     {
         surface->mappingChanged();
 
         list<LSurface*> childrenTmp = children;
 
-        for(LSurface *c : childrenTmp)
+        for (LSurface *c : childrenTmp)
         {
-            if(c->role())
+            if (c->role())
                 c->role()->handleParentMappingChange();
         }
     }
@@ -499,7 +481,7 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
         LSurface *child = pendingChildren.front();
         pendingChildren.pop_front();
 
-        if(surface->children().empty())
+        if (surface->children().empty())
             surface->compositor()->imp()->insertSurfaceAfter(surface,child);
         else
             surface->compositor()->imp()->insertSurfaceAfter(surface->children().back(),child);
@@ -508,7 +490,7 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
         child->imp()->pendingParent = nullptr;
         child->imp()->parent = surface;
         child->parentChanged();
-        if(child->role())
+        if (child->role())
             child->role()->handleParentChange();
     }
 }
@@ -526,7 +508,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
      *********** BUFFER SCALE ***********
      ***********************************/
 
-    if(surface->imp()->current.bufferScale != surface->imp()->pending.bufferScale)
+    if (surface->imp()->current.bufferScale != surface->imp()->pending.bufferScale)
     {
         surface->imp()->current.bufferScale = surface->imp()->pending.bufferScale;
         bufferScaleChanged = true;
@@ -535,14 +517,14 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
     // EGL
     /*
-    if(eglQueryWaylandBufferWL(LWayland::eglDisplay(), current.buffer, EGL_TEXTURE_FORMAT, &texture_format))
+    if (eglQueryWaylandBufferWL(LWayland::eglDisplay(), current.buffer, EGL_TEXTURE_FORMAT, &texture_format))
     {
         eglQueryWaylandBufferWL(LWayland::eglDisplay(), current.buffer, EGL_WIDTH, &width);
         eglQueryWaylandBufferWL(LWayland::eglDisplay(), current.buffer, EGL_HEIGHT, &height);
 
         LSize newSize = LSize(width, height);
 
-        if(texture->sizeB() != newSize || bufferScaleChanged)
+        if (texture->sizeB() != newSize || bufferScaleChanged)
         {
             bufferSizeChanged = true;
             currentDamagesB.clear();
@@ -550,7 +532,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
             currentDamagesC = currentDamagesB;
             currentDamagesC.multiply(float(surface->compositor()->globalScale())/float(surface->bufferScale()));
         }
-        else if(!pendingDamagesB.empty() || !pendingDamagesS.empty())
+        else if (!pendingDamagesB.empty() || !pendingDamagesS.empty())
         {
             pendingDamagesS.multiply(surface->bufferScale());
             currentDamagesB.addRegion(pendingDamagesS);
@@ -569,7 +551,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     }
 */
     // SHM
-    if(wl_shm_buffer_get(current.buffer))
+    if (wl_shm_buffer_get(current.buffer))
     {
 
         wl_shm_buffer *shm_buffer = wl_shm_buffer_get(current.buffer);
@@ -581,7 +563,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         Int32 stride = wl_shm_buffer_get_stride(shm_buffer);
 
         /*
-        if(!LWayland::wlFormat2Gl(format, &bufferFormat, &bufferType))
+        if (!LWayland::wlFormat2Gl(format, &bufferFormat, &bufferType))
         {
             printf("Unsupported buffer format.\n");
             wl_shm_buffer_end_access(shm_buffer);
@@ -591,12 +573,12 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
         LSize newSize = LSize(width, height);
 
-        if(texture->sizeB() != newSize)
+        if (texture->sizeB() != newSize)
             bufferSizeChanged = true;
 
 
         // Reemplaza toda la textura
-        if(!texture->initialized() || bufferSizeChanged || bufferScaleChanged)
+        if (!texture->initialized() || bufferSizeChanged || bufferScaleChanged)
         {
             currentDamagesB.clear();
             currentDamagesB.addRect(LRect(0,newSize));
@@ -606,7 +588,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         }
 
         // Aplica daños
-        else if(!pendingDamagesB.empty() || !pendingDamagesS.empty())
+        else if (!pendingDamagesB.empty() || !pendingDamagesS.empty())
         {
             LRegion onlyPending = pendingDamagesS;
             onlyPending.multiply(current.bufferScale);
@@ -615,7 +597,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
             UInt32 pixelSize = LTexture::formatBytesPerPixel(format);
             UChar8 *buff = (UChar8 *)data;
 
-            for(const LRect &r : onlyPending.rects())
+            for (const LRect &r : onlyPending.rects())
                 texture->updateRect(r, stride, &buff[r.x()*pixelSize +r.y()*stride]);
 
             currentDamagesB.addRegion(onlyPending);
@@ -638,7 +620,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
         LSize newSize = LSize(width, height);
 
-        if(newSize != prevSize || bufferScaleChanged)
+        if (newSize != prevSize || bufferScaleChanged)
         {
             bufferSizeChanged = true;
             currentDamagesB.clear();
@@ -646,7 +628,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
             currentDamagesC = currentDamagesB;
             currentDamagesC.multiply(float(surface->compositor()->globalScale())/float(surface->bufferScale()));
         }
-        else if(!pendingDamagesB.empty() || !pendingDamagesS.empty())
+        else if (!pendingDamagesB.empty() || !pendingDamagesS.empty())
         {
             pendingDamagesS.multiply(surface->bufferScale());
             currentDamagesB.addRegion(pendingDamagesS);
@@ -659,7 +641,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         texture->setData(current.buffer);
     }
     /*
-    else if(wl_buffer_is_dmabuf(current.buffer))
+    else if (wl_buffer_is_dmabuf(current.buffer))
     {
         LDMABuffer *dma = (LDMABuffer*)wl_resource_get_user_data(current.buffer);
         width = dma->width;
@@ -669,7 +651,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
         LSize newSize = LSize(width, height);
 
-        if(texture->sizeB() != newSize || bufferScaleChanged)
+        if (texture->sizeB() != newSize || bufferScaleChanged)
         {
             bufferSizeChanged = true;
             currentDamagesB.clear();
@@ -677,7 +659,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
             currentDamagesC = currentDamagesB;
             currentDamagesC.multiply(float(surface->compositor()->globalScale())/float(surface->bufferScale()));
         }
-        else if(!pendingDamagesB.empty() || !pendingDamagesS.empty())
+        else if (!pendingDamagesB.empty() || !pendingDamagesS.empty())
         {
             pendingDamagesS.multiply(surface->bufferScale());
             currentDamagesB.addRegion(pendingDamagesS);
@@ -707,7 +689,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     currentSizeS = texture->sizeB()/current.bufferScale;
     currentSizeC = (texture->sizeB()*surface->compositor()->globalScale())/current.bufferScale;
 
-    if(bufferSizeChanged)
+    if (bufferSizeChanged)
         surface->bufferSizeChanged();
 
     pendingDamagesB.clear();
@@ -746,30 +728,30 @@ void LSurface::LSurfacePrivate::globalScaleChanged(Int32 oldScale, Int32 newScal
     currentDamagesC.multiply(float(surface->compositor()->globalScale())/float(surface->bufferScale()));
 
     // Role
-    if(surface->role())
+    if (surface->role())
         surface->role()->globalScaleChanged(oldScale, newScale);
 }
 
 void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output, timespec &ns)
 {
-    if(output != presentationOutput)
+    if (output != presentationOutput)
         return;
 
-    if(presentationFeedback.empty())
+    if (presentationFeedback.empty())
         return;
 
-    if(presentationOutput)
+    if (presentationOutput)
     {
         UInt32 tv_sec_hi = ns.tv_sec >> 32;
         UInt32 tv_sec_lo = ns.tv_sec & 0xFFFFFFFF;
         UInt32 seq_hi = presentationOutput->imp()->presentationSeq >> 32;
         UInt32 seq_lo = presentationOutput->imp()->presentationSeq & 0xFFFFFFFF;
-        UInt32 refresh = 1000000000/(presentationOutput->currentMode()->refreshRate()/1000);
+        UInt32 refresh = 1000000000000/presentationOutput->currentMode()->refreshRate();
 
-        for(wl_resource *pres : presentationFeedback)
+        for (wl_resource *pres : presentationFeedback)
         {
-            for(wl_resource *out : presentationOutputResources)
-                wp_presentation_feedback_send_sync_output(pres, out);
+            for (GOutput *out : presentationOutputGlobals)
+                wp_presentation_feedback_send_sync_output(pres, out->resource());
 
             wp_presentation_feedback_send_presented(pres,
                                                     tv_sec_hi,
@@ -786,7 +768,7 @@ void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output, timesp
     }
     else
     {
-        for(wl_resource *pres : presentationFeedback)
+        for (wl_resource *pres : presentationFeedback)
         {
             wp_presentation_feedback_send_discarded(pres);
             wl_resource_destroy(pres);
@@ -794,7 +776,7 @@ void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output, timesp
     }
 
     presentationFeedback.clear();
-    presentationOutputResources.clear();
+    presentationOutputGlobals.clear();
     presentationOutput = nullptr;
 
 }

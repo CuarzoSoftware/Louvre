@@ -1,6 +1,6 @@
-#include <protocols/Wayland/SeatGlobal.h>
-#include <protocols/Wayland/DataDeviceResource.h>
-#include <protocols/Wayland/DataSourceResource.h>
+#include <protocols/Wayland/GSeat.h>
+#include <protocols/Wayland/RDataDevice.h>
+#include <protocols/Wayland/RDataSource.h>
 
 #include <private/LDNDManagerPrivate.h>
 #include <private/LDataOfferPrivate.h>
@@ -71,10 +71,10 @@ Louvre::LDNDManager::Action LDNDManager::preferredAction() const
 
 void LDNDManager::cancel()
 {
-    if(imp()->focus)
+    if (imp()->focus)
         imp()->focus->client()->dataDevice().imp()->sendDNDLeaveEvent();
 
-    if(source())
+    if (source())
         source()->dataSourceResource()->sendCancelled();
 
     imp()->clear();
@@ -84,17 +84,17 @@ void LDNDManager::cancel()
 
 void LDNDManager::drop()
 {
-    if(dragging() && !imp()->dropped)
+    if (dragging() && !imp()->dropped)
     {
         imp()->dropped = true;
 
-        if(imp()->focus)
+        if (imp()->focus)
         {
-            for(Protocols::Wayland::SeatGlobal *s : imp()->focus->client()->seatGlobals())
-                if(s->dataDeviceResource())
+            for (Protocols::Wayland::GSeat *s : imp()->focus->client()->seatGlobals())
+                if (s->dataDeviceResource())
                     s->dataDeviceResource()->sendDrop();
 
-            if(source())
+            if (source())
                 source()->dataSourceResource()->sendDNDDropPerformed();
         }
         else
@@ -109,11 +109,11 @@ void LDNDManager::setPreferredAction(Louvre::LDNDManager::Action action)
 {
     imp()->preferredAction = action;
 
-    if(imp()->dstClient)
+    if (imp()->dstClient)
     {
-        for(Protocols::Wayland::SeatGlobal *s : dstClient()->seatGlobals())
+        for (Protocols::Wayland::GSeat *s : dstClient()->seatGlobals())
         {
-            if(s->dataDeviceResource() && s->dataDeviceResource()->dataOffered())
+            if (s->dataDeviceResource() && s->dataDeviceResource()->dataOffered())
                 s->dataDeviceResource()->dataOffered()->imp()->updateDNDAction();
         }
     }

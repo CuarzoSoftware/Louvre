@@ -61,9 +61,9 @@ void Extensions::XdgShell::WmBase::destroy(wl_client *client, wl_resource *resou
     LClient *lClient = (LClient*)wl_resource_get_user_data(resource);
 
     // Check defunc surfaces error
-    for(LSurface *surface : lClient->compositor()->surfaces())
+    for (LSurface *surface : lClient->compositor()->surfaces())
     {
-        if(surface->imp()->xdgSurfaceResource)
+        if (surface->imp()->xdgRSurface)
         {
             wl_resource_post_error(resource, XDG_WM_BASE_ERROR_DEFUNCT_SURFACES, "xdg_wm_base was destroyed before children.");
             return;
@@ -95,11 +95,11 @@ void Extensions::XdgShell::WmBase::create_positioner(wl_client *client, wl_resou
 void Extensions::XdgShell::WmBase::get_xdg_surface(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface)
 {
     // Gets the LSurface from user data
-    Protocols::Wayland::SurfaceResource *lSurfaceResource = (Protocols::Wayland::SurfaceResource*)wl_resource_get_user_data(surface);
-    LSurface *lSurface= lSurfaceResource->surface();
+    Protocols::Wayland::RSurface *lRSurface = (Protocols::Wayland::RSurface*)wl_resource_get_user_data(surface);
+    LSurface *lSurface= lRSurface->surface();
 
     // The surface should't have a previous role
-    if(lSurface->role())
+    if (lSurface->role())
     {
         wl_resource_post_error(resource,XDG_WM_BASE_ERROR_ROLE,"Given wl_surface has another role.");
         return;
@@ -109,21 +109,21 @@ void Extensions::XdgShell::WmBase::get_xdg_surface(wl_client *client, wl_resourc
     Int32 version = wl_resource_get_version(resource);
 
     // Creates the XDG_SURFACE resource
-    lSurface->imp()->xdgSurfaceResource = wl_resource_create(client, &xdg_surface_interface, version, id);
+    lSurface->imp()->xdgRSurface = wl_resource_create(client, &xdg_surface_interface, version, id);
 
     // Binds the resource to the XDG_SURFACE interface and destructor
-    wl_resource_set_implementation(lSurface->imp()->xdgSurfaceResource, &xdg_surface_implementation, lSurface, &Louvre::Extensions::XdgShell::Surface::resource_destroy);
+    wl_resource_set_implementation(lSurface->imp()->xdgRSurface, &xdg_surface_implementation, lSurface, &Louvre::Extensions::XdgShell::Surface::resource_destroy);
 }
 
 void Extensions::XdgShell::WmBase::pong(wl_client *, wl_resource *resource, UInt32 serial)
 {
     LClient *lClient = (LClient*)wl_resource_get_user_data(resource);
 
-    for(LSurface *lSurface : lClient->surfaces())
+    for (LSurface *lSurface : lClient->surfaces())
     {
-        if(lSurface->toplevel())
+        if (lSurface->toplevel())
             lSurface->toplevel()->pong(serial);
-        else if(lSurface->popup())
+        else if (lSurface->popup())
             lSurface->popup()->pong(serial);
     }
 }
@@ -135,20 +135,20 @@ void Extensions::XdgShell::WmBase::bind (wl_client *client, void *data, UInt32 v
     LClient *lClient = nullptr;
 
     // Search for the client object
-    for(LClient *c : lCompositor->clients())
+    for (LClient *c : lCompositor->clients())
     {
-        if(c->client() == client)
+        if (c->client() == client)
         {
             lClient = c;
             break;
         }
     }
 
-    if(!lClient)
+    if (!lClient)
         return;
 
     // Si ya tiene un xdg_wm matamos a cliente, esta librería no soporta múltiples xdg_wm por cliente
-    if(lClient->imp()->xdgWmBaseResource)
+    if (lClient->imp()->xdgWmBaseResource)
     {
         wl_client_destroy(client);
         return;

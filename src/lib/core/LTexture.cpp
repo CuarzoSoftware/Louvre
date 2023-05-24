@@ -132,7 +132,7 @@ void LTexture::LTexturePrivate::deleteTexture(LTexture *texture)
 
     glActiveTexture(GL_TEXTURE0 + unit);
 
-    if(graphicBackendData)
+    if (graphicBackendData)
     {
         compositor->imp()->graphicBackend->destroyTexture(texture);
         graphicBackendData = nullptr;

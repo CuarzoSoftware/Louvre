@@ -42,7 +42,7 @@ bool LOpenGL::checkGLError(const char *msg)
 {
     GLenum errCode;
 
-    if((errCode = glGetError()) != GL_NO_ERROR)
+    if ((errCode = glGetError()) != GL_NO_ERROR)
     {
         LLog::error("GL ERROR: %i %s\n", errCode, msg);
         return true;
@@ -104,7 +104,7 @@ LTexture *LOpenGL::loadTexture(LCompositor *compositor, const char *pngFile, GLu
     // Load PNG
     error = lodepng_decode32_file(&image, &width, &height, pngFile);
 
-    if(error)
+    if (error)
     {
         LLog::error("LOpenGL::loadTexture() failed to load PNG file: %s.", pngFile);
         return nullptr;

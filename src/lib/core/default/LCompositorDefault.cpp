@@ -25,7 +25,7 @@ void LCompositor::initialized()
     seat()->keyboard()->setKeymap( NULL, NULL, "latam", NULL);
 
     // Use the Output Manager to get avaliable outputs
-    if(outputManager()->outputs()->empty())
+    if (outputManager()->outputs()->empty())
     {
         LLog::fatal("No output available.");
         finish();
@@ -34,12 +34,12 @@ void LCompositor::initialized()
     LLog::debug("Outputs avaliable: %zu", outputManager()->outputs()->size());
 
     // Set double scale to outputs with DPI >= 120
-    for(LOutput *output : *outputManager()->outputs())
+    for (LOutput *output : *outputManager()->outputs())
     {
         if (output->physicalSize().area() == 0)
             continue;
 
-        if(output->dpi() >= 120)
+        if (output->dpi() >= 120)
             output->setScale(2);
 
         addOutput(output);
@@ -50,7 +50,7 @@ void LCompositor::initialized()
 
     Int32 totalWidth = 0;
 
-    for(LOutput *output : outputs())
+    for (LOutput *output : outputs())
     {
         output->setPosC(LPoint(totalWidth,0));
         totalWidth += output->sizeC().w();
@@ -71,7 +71,7 @@ void LCompositor::cursorInitialized()
     LXCursor *handCursor = cursor()->loadXCursorB("hand1");
 
     // Returns nullptr if not found
-    if(handCursor)
+    if (handCursor)
     {
         // Set as the cursor texture
         cursor()->setTextureB(handCursor->texture(), handCursor->hotspotB());
@@ -214,7 +214,7 @@ void LCompositor::destroyToplevelRoleRequest(LToplevelRole *toplevel)
 void LCompositor::destroyPopupRoleRequest(LPopupRole *popup)
 {
     // Return implicit grab to parent
-    if(popup->surface()->parent() && (popup->surface() == seat()->keyboard()->focusSurface() || popup->surface() == seat()->pointer()->focusSurface()))
+    if (popup->surface()->parent() && (popup->surface() == seat()->keyboard()->focusSurface() || popup->surface() == seat()->pointer()->focusSurface()))
         seat()->keyboard()->setFocus(popup->surface()->parent());
     
     repaintAllOutputs();
@@ -224,7 +224,7 @@ void LCompositor::destroyPopupRoleRequest(LPopupRole *popup)
 //! [destroyCursorRoleRequest]
 void LCompositor::destroyCursorRoleRequest(LCursorRole *cursorRole)
 {
-    if(cursorRole->surface()->texture() == cursor()->texture())
+    if (cursorRole->surface()->texture() == cursor()->texture())
         cursor()->useDefault();
 }
 //! [destroyCursorRoleRequest]

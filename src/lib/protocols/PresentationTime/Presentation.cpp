@@ -6,7 +6,7 @@
 #include <private/LSurfacePrivate.h>
 
 #include <LCompositor.h>
-#include <protocols/Wayland/SurfaceResource.h>
+#include <protocols/Wayland/RSurface.h>
 
 struct wp_presentation_interface presentation_implementation =
 {
@@ -40,8 +40,8 @@ void Presentation::feedback(wl_client *client, wl_resource *resource, wl_resourc
     wl_resource_set_implementation(feedback, NULL, NULL,
             NULL);
 
-    Protocols::Wayland::SurfaceResource *lSurfaceResource = (Protocols::Wayland::SurfaceResource*)wl_resource_get_user_data(surface);
-    LSurface *lSurface = lSurfaceResource->surface();
+    Protocols::Wayland::RSurface *lRSurface = (Protocols::Wayland::RSurface*)wl_resource_get_user_data(surface);
+    LSurface *lSurface = lRSurface->surface();
     lSurface->imp()->presentationFeedback.push_back(feedback);
 }
 
@@ -51,10 +51,10 @@ void Presentation::bind(wl_client *client, void *data, UInt32 version, UInt32 id
 
     LClient *lClient = lCompositor->getClientFromNativeResource(client);
 
-    if(!lClient)
+    if (!lClient)
         return;
 
-    if(lClient->imp()->presentationTimeResource)
+    if (lClient->imp()->presentationTimeResource)
     {
         LLog::warning("Client already created a wp_presentation resource.");
         return;

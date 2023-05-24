@@ -98,29 +98,29 @@ HEADERS += \
     protocols/PresentationTime/presentation-time.h \
     protocols/Viewporter/Viewporter.h \
     protocols/Viewporter/viewporter.h \
-    protocols/Wayland/CompositorGlobal.h \
-    protocols/Wayland/DataDeviceManagerGlobal.h \
-    protocols/Wayland/DataDeviceResource.h \
-    protocols/Wayland/DataOfferResource.h \
-    protocols/Wayland/DataSourceResource.h \
-    protocols/Wayland/KeyboardResource.h \
+    protocols/Wayland/GCompositor.h \
+    protocols/Wayland/GDataDeviceManager.h \
+    protocols/Wayland/RDataDevice.h \
+    protocols/Wayland/RDataOffer.h \
+    protocols/Wayland/RDataSource.h \
+    protocols/Wayland/RKeyboard.h \
     protocols/Wayland/Output.h \
-    protocols/Wayland/PointerResource.h \
-    protocols/Wayland/RegionResource.h \
-    protocols/Wayland/SeatGlobal.h \
+    protocols/Wayland/RPointer.h \
+    protocols/Wayland/RRegion.h \
+    protocols/Wayland/GSeat.h \
     protocols/Wayland/Subcompositor.h \
     protocols/Wayland/Subsurface.h \
-    protocols/Wayland/SurfaceResource.h \
-    protocols/Wayland/private/CompositorGlobalPrivate.h \
-    protocols/Wayland/private/DataDeviceManagerGlobalPrivate.h \
-    protocols/Wayland/private/DataDeviceResourcePrivate.h \
-    protocols/Wayland/private/DataOfferResourcePrivate.h \
-    protocols/Wayland/private/DataSourceResourcePrivate.h \
-    protocols/Wayland/private/KeyboardResourcePrivate.h \
-    protocols/Wayland/private/PointerResourcePrivate.h \
-    protocols/Wayland/private/RegionResourcePrivate.h \
-    protocols/Wayland/private/SeatGlobalPrivate.h \
-    protocols/Wayland/private/SurfaceResourcePrivate.h \
+    protocols/Wayland/RSurface.h \
+    protocols/Wayland/private/GCompositorPrivate.h \
+    protocols/Wayland/private/GDataDeviceManagerPrivate.h \
+    protocols/Wayland/private/RDataDevicePrivate.h \
+    protocols/Wayland/private/RDataOfferPrivate.h \
+    protocols/Wayland/private/RDataSourcePrivate.h \
+    protocols/Wayland/private/RKeyboardPrivate.h \
+    protocols/Wayland/private/RPointerPrivate.h \
+    protocols/Wayland/private/RRegionPrivate.h \
+    protocols/Wayland/private/GSeatPrivate.h \
+    protocols/Wayland/private/RSurfacePrivate.h \
     protocols/Wayland/wayland.h \
     protocols/XdgDecoration/XdgDecorationManager.h \
     protocols/XdgDecoration/XdgToplevelDecoration.h \
@@ -189,29 +189,29 @@ SOURCES += \
     protocols/PresentationTime/presentation-time.c \
     protocols/Viewporter/Viewporter.cpp \
     protocols/Viewporter/viewporter.c \
-    protocols/Wayland/CompositorGlobal.cpp \
-    protocols/Wayland/DataDeviceManagerGlobal.cpp \
-    protocols/Wayland/DataDeviceResource.cpp \
-    protocols/Wayland/DataOfferResource.cpp \
-    protocols/Wayland/DataSourceResource.cpp \
-    protocols/Wayland/KeyboardResource.cpp \
+    protocols/Wayland/GCompositor.cpp \
+    protocols/Wayland/GDataDeviceManager.cpp \
+    protocols/Wayland/RDataDevice.cpp \
+    protocols/Wayland/RDataOffer.cpp \
+    protocols/Wayland/RDataSource.cpp \
+    protocols/Wayland/RKeyboard.cpp \
     protocols/Wayland/Output.cpp \
-    protocols/Wayland/PointerResource.cpp \
-    protocols/Wayland/RegionResource.cpp \
-    protocols/Wayland/SeatGlobal.cpp \
+    protocols/Wayland/RPointer.cpp \
+    protocols/Wayland/RRegion.cpp \
+    protocols/Wayland/GSeat.cpp \
     protocols/Wayland/Subcompositor.cpp \
     protocols/Wayland/Subsurface.cpp \
-    protocols/Wayland/SurfaceResource.cpp \
-    protocols/Wayland/private/CompositorGlobalPrivate.cpp \
-    protocols/Wayland/private/DataDeviceManagerGlobalPrivate.cpp \
-    protocols/Wayland/private/DataDeviceResourcePrivate.cpp \
-    protocols/Wayland/private/DataOfferResourcePrivate.cpp \
-    protocols/Wayland/private/DataSourceResourcePrivate.cpp \
-    protocols/Wayland/private/KeyboardResourcePrivate.cpp \
-    protocols/Wayland/private/PointerResourcePrivate.cpp \
-    protocols/Wayland/private/RegionResourcePrivate.cpp \
-    protocols/Wayland/private/SeatGlobalPrivate.cpp \
-    protocols/Wayland/private/SurfaceResourcePrivate.cpp \
+    protocols/Wayland/RSurface.cpp \
+    protocols/Wayland/private/GCompositorPrivate.cpp \
+    protocols/Wayland/private/GDataDeviceManagerPrivate.cpp \
+    protocols/Wayland/private/RDataDevicePrivate.cpp \
+    protocols/Wayland/private/RDataOfferPrivate.cpp \
+    protocols/Wayland/private/RDataSourcePrivate.cpp \
+    protocols/Wayland/private/RKeyboardPrivate.cpp \
+    protocols/Wayland/private/RPointerPrivate.cpp \
+    protocols/Wayland/private/RRegionPrivate.cpp \
+    protocols/Wayland/private/GSeatPrivate.cpp \
+    protocols/Wayland/private/RSurfacePrivate.cpp \
     protocols/Wayland/wayland.c \
     protocols/XdgDecoration/XdgDecorationManager.cpp \
     protocols/XdgDecoration/XdgToplevelDecoration.cpp \

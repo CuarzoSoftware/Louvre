@@ -11,9 +11,9 @@ Surface::Surface(LSurface::Params *params, GLuint textureUnit) : LSurface(params
 void Surface::repaint()
 {
 
-    for(LOutput *o : outputs())
+    for (LOutput *o : outputs())
     {
-        if(outputParams.find(o) != outputParams.end())
+        if (outputParams.find(o) != outputParams.end())
         {
             outputParams[o].changedOrder[0] = true;
             outputParams[o].changedOrder[1] = true;
@@ -25,9 +25,9 @@ void Surface::repaint()
 void Surface::mappingChanged()
 {
 
-    if(mapped())
+    if (mapped())
     {
-        if(firstMap)
+        if (firstMap)
         {
             firstMap = false;
 
@@ -36,9 +36,9 @@ void Surface::mappingChanged()
 
             setPosC(outputPosG + outputSizeG/2 - sizeC()/2);
 
-            if(posC().x() < outputPosG.x())
+            if (posC().x() < outputPosG.x())
                 setXC(outputPosG.x());
-            if(posC().y() < 32 * compositor()->globalScale())
+            if (posC().y() < 32 * compositor()->globalScale())
                 setYC(32 * compositor()->globalScale());
 
         }
@@ -48,7 +48,7 @@ void Surface::mappingChanged()
     }
     else
     {
-        for(Output *o : (list<Output*>&)outputs())
+        for (Output *o : (list<Output*>&)outputs())
         {
             o->addExposedRect(LRect(rolePosC(),sizeC()));
             o->repaint();
@@ -65,9 +65,9 @@ UInt64 Surface::allOutputsRequestedNewFrame()
 {
     UInt64 total = 0;
 
-    for(LOutput *o : outputs())
+    for (LOutput *o : outputs())
     {
-        if(outputParams[o].requestedNewFrame)
+        if (outputParams[o].requestedNewFrame)
             total++;
     }
 

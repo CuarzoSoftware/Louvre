@@ -6,7 +6,7 @@ void Louvre::Extensions::XdgDecoration::ToplevelDecoration::resource_destroy(wl_
 {
     LToplevelRole *lToplevel = (LToplevelRole*)wl_resource_get_user_data(resource);
 
-    if(lToplevel->decorationMode() == LToplevelRole::DecorationMode::ServerSide)
+    if (lToplevel->decorationMode() == LToplevelRole::DecorationMode::ServerSide)
     {
         lToplevel->imp()->decorationMode = LToplevelRole::DecorationMode::ClientSide;
         lToplevel->decorationModeChanged();

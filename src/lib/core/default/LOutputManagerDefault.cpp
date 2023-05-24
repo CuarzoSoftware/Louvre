@@ -19,7 +19,7 @@ void LOutputManager::outputPlugged(LOutput *connectedOutput)
 
     Int32 totalWidth = 0;
 
-    for(LOutput *output : compositor()->outputs())
+    for (LOutput *output : compositor()->outputs())
     {
         output->setPosC(LPoint(totalWidth,0));
 
@@ -39,9 +39,9 @@ void LOutputManager::outputUnplugged(LOutput *disconnectedOutput)
 
     Int32 totalWidth = 0;
 
-    if(!compositor()->outputManager()->outputs()->empty())
+    if (!compositor()->outputManager()->outputs()->empty())
     {
-        for(LOutput *output : compositor()->outputs())
+        for (LOutput *output : compositor()->outputs())
         {
             output->setPosC(LPoint(totalWidth,0));
             totalWidth += output->sizeC().w();

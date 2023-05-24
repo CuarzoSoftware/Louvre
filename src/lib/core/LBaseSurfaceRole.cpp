@@ -17,7 +17,7 @@ LBaseSurfaceRole::LBaseSurfaceRole(wl_resource *resource, LSurface *surface, UIn
 
 LBaseSurfaceRole::~LBaseSurfaceRole()
 {
-    if(m_baseImp->surface)
+    if (m_baseImp->surface)
     {
         m_baseImp->surface->imp()->setPendingRole(nullptr);
         m_baseImp->surface->imp()->applyPendingRole();
@@ -62,7 +62,7 @@ void LBaseSurfaceRole::globalScaleChanged(Int32 oldScale, Int32 newScale)
     L_UNUSED(newScale);
 }
 
-bool LBaseSurfaceRole::acceptCommitRequest(Protocols::Wayland::SurfaceResource::CommitOrigin origin)
+bool LBaseSurfaceRole::acceptCommitRequest(Protocols::Wayland::RSurface::CommitOrigin origin)
 {
     L_UNUSED(origin);
     return true;

@@ -40,9 +40,9 @@ LPainter::LPainter()
         varying vec2 v_texcoord;\
         void main()\
         {\
-          if(mode == 0)\
+          if (mode == 0)\
           {\
-            if(alpha == 1.0)\
+            if (alpha == 1.0)\
                 gl_FragColor = texture2D(tex, v_texcoord)*alpha;\
             else{\
                 vec4 color = texture2D(tex, v_texcoord);\
@@ -157,7 +157,7 @@ void LPainter::drawColorC(const LRect &dst, Float32 r, Float32 g, Float32 b, Flo
 
 void LPainter::setViewportC(const LRect &rect)
 {
-    if(imp()->output)
+    if (imp()->output)
     {
         LRect r = rect;
         r -= LRect(imp()->output->posC(), 0);

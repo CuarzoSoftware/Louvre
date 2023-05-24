@@ -72,9 +72,9 @@ int processInput(int, unsigned int, void *userData)
 
         eventType = libinput_event_get_type(ev);
 
-        if(eventType == LIBINPUT_EVENT_POINTER_MOTION)
+        if (eventType == LIBINPUT_EVENT_POINTER_MOTION)
         {
-            if(!seat->compositor()->cursor())
+            if (!seat->compositor()->cursor())
                 goto skip;
 
             pointerEvent = libinput_event_get_pointer_event(ev);
@@ -82,25 +82,25 @@ int processInput(int, unsigned int, void *userData)
             x = libinput_event_pointer_get_dx(pointerEvent);
             y = libinput_event_pointer_get_dy(pointerEvent);
 
-            if(seat->pointer())
+            if (seat->pointer())
                 seat->pointer()->pointerMoveEvent(x,y);
 
         }
-        else if(eventType == LIBINPUT_EVENT_POINTER_BUTTON)
+        else if (eventType == LIBINPUT_EVENT_POINTER_BUTTON)
         {
-            if(!seat->compositor()->cursor())
+            if (!seat->compositor()->cursor())
                 goto skip;
 
             pointerEvent = libinput_event_get_pointer_event(ev);
             button = libinput_event_pointer_get_button(pointerEvent);
             state = libinput_event_pointer_get_button_state(pointerEvent);
 
-            if(seat->pointer())
+            if (seat->pointer())
                 seat->pointer()->pointerButtonEvent((LPointer::Button)button,(LPointer::ButtonState)state);
         }
-        else if(eventType == LIBINPUT_EVENT_KEYBOARD_KEY)
+        else if (eventType == LIBINPUT_EVENT_KEYBOARD_KEY)
         {
-            if(seat->keyboard())
+            if (seat->keyboard())
             {
                 keyEv = libinput_event_get_keyboard_event(ev);
                 keyState = libinput_event_keyboard_get_key_state(keyEv);
@@ -114,7 +114,7 @@ int processInput(int, unsigned int, void *userData)
                 seat->keyboard()->imp()->updateModifiers();
 
                 // CTRL + ALT + (F1, F2, ..., F10) : Cambia de TTY.
-                if(keyCode >= KEY_F1 && keyCode <= KEY_F10 && seat->keyboard()->isModActive(XKB_MOD_NAME_ALT) && seat->keyboard()->isModActive(XKB_MOD_NAME_CTRL))
+                if (keyCode >= KEY_F1 && keyCode <= KEY_F10 && seat->keyboard()->isModActive(XKB_MOD_NAME_ALT) && seat->keyboard()->isModActive(XKB_MOD_NAME_CTRL))
                 {
                     seat->setTTY(keyCode - KEY_F1 + 1);
                     return 0;
@@ -122,19 +122,19 @@ int processInput(int, unsigned int, void *userData)
 
             }
         }
-        else if(eventType == LIBINPUT_EVENT_POINTER_AXIS)
+        else if (eventType == LIBINPUT_EVENT_POINTER_AXIS)
         {
-            if(!seat->compositor()->cursor())
+            if (!seat->compositor()->cursor())
                 goto skip;
 
-            if(seat->pointer())
+            if (seat->pointer())
             {
                 axisEvent = libinput_event_get_pointer_event(ev);
 
-                if(libinput_event_pointer_has_axis(axisEvent,LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL))
+                if (libinput_event_pointer_has_axis(axisEvent,LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL))
                     x = libinput_event_pointer_get_axis_value(axisEvent,LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL);
 
-                if(libinput_event_pointer_has_axis(axisEvent,LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL))
+                if (libinput_event_pointer_has_axis(axisEvent,LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL))
                     y = libinput_event_pointer_get_axis_value(axisEvent,LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
 
             #if LOUVRE_SEAT_VERSION >= 5
@@ -161,14 +161,14 @@ bool LInputBackend::initialize(const LSeat *seat)
     seat->imp()->inputBackendData = data;
     data->ud = udev_new();
 
-    if(!data->ud)
+    if (!data->ud)
         goto fail;
 
     data->libinputInterface.open_restricted = &openRestricted;
     data->libinputInterface.close_restricted = &closeRestricted;
     data->li = libinput_udev_create_context(&data->libinputInterface, seat->libseatHandle(), data->ud);
 
-    if(!data->li)
+    if (!data->li)
         goto fail;
 
     libinput_udev_assign_seat(data->li, "seat0");//libseat_seat_name(seat->libseatHandle()));

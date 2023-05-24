@@ -3,7 +3,7 @@
 
 #include <LNamespaces.h>
 #include <LPoint.h>
-#include <protocols/Wayland/SurfaceResource.h>
+#include <protocols/Wayland/RSurface.h>
 
  /*!
   * @brief Base class for surface roles.
@@ -90,7 +90,7 @@ public:
 
 protected:
 
-    friend class Protocols::Wayland::SurfaceResource;
+    friend class Protocols::Wayland::RSurface;
     friend class Louvre::LSurface;
 
     /*!
@@ -115,7 +115,7 @@ protected:
      * @param origin Origin of the request. In some protocols the commit is called by other surfaces. For example, surfaces the ***subsurface*** role only accept commits from their parent
      * if they are in synchronous mode.
      */
-    virtual bool acceptCommitRequest(Protocols::Wayland::SurfaceResource::CommitOrigin origin);
+    virtual bool acceptCommitRequest(Protocols::Wayland::RSurface::CommitOrigin origin);
 
     /*!
      * @brief Notifies a surface commit.

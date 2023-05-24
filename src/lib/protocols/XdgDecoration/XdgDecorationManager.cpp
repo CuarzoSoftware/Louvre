@@ -48,7 +48,7 @@ void Extensions::XdgDecoration::Manager::get_toplevel_decoration(wl_client *clie
 
     lToplevel->imp()->lastDecorationModeConfigureSerial = LWayland::nextSerial();
     zxdg_toplevel_decoration_v1_send_configure(lToplevel->imp()->xdgDecoration, lToplevel->imp()->pendingDecorationMode);
-    xdg_surface_send_configure(lToplevel->surface()->imp()->xdgSurfaceResource, lToplevel->imp()->lastDecorationModeConfigureSerial);
+    xdg_surface_send_configure(lToplevel->surface()->imp()->xdgRSurface, lToplevel->imp()->lastDecorationModeConfigureSerial);
 }
 
 void Extensions::XdgDecoration::Manager::bind(wl_client *client, void *data, UInt32 version, UInt32 id)
@@ -58,16 +58,16 @@ void Extensions::XdgDecoration::Manager::bind(wl_client *client, void *data, UIn
     LClient *lClient = nullptr;
 
     // Search for the client object
-    for(LClient *c : lCompositor->clients())
+    for (LClient *c : lCompositor->clients())
     {
-        if(c->client() == client)
+        if (c->client() == client)
         {
             lClient = c;
             break;
         }
     }
 
-    if(!lClient)
+    if (!lClient)
         return;
 
     lClient->imp()->xdgDecorationManagerResource = wl_resource_create (client, &zxdg_decoration_manager_v1_interface, version, id);

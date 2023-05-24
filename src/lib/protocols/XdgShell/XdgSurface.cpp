@@ -47,8 +47,8 @@ void Extensions::XdgShell::Surface::resource_destroy(wl_resource *resource)
 {
     LSurface *lSurface = (LSurface*)wl_resource_get_user_data(resource);
 
-    if(lSurface)
-        lSurface->imp()->xdgSurfaceResource = nullptr;
+    if (lSurface)
+        lSurface->imp()->xdgRSurface = nullptr;
 }
 
 void Extensions::XdgShell::Surface::destroy (wl_client *client, wl_resource *resource)
@@ -164,13 +164,13 @@ void Extensions::XdgShell::Surface::set_window_geometry(wl_client *client, wl_re
     }
 
 
-    if(surface->toplevel())
+    if (surface->toplevel())
     {
         surface->toplevel()->imp()->windowGeometrySet = true;
         surface->toplevel()->imp()->pendingWindowGeometryS = LRect(x, y, width, height);
         surface->toplevel()->imp()->hasPendingWindowGeometry = true;
     }
-    else if(surface->popup())
+    else if (surface->popup())
     {
         surface->popup()->imp()->windowGeometrySet = true;
         surface->popup()->imp()->pendingWindowGeometryS = LRect(x, y, width, height);
@@ -179,7 +179,7 @@ void Extensions::XdgShell::Surface::set_window_geometry(wl_client *client, wl_re
     else
     {
         wl_resource_post_error(
-                    surface->xdgSurfaceResource(),
+                    surface->xdgRSurface(),
                     XDG_SURFACE_ERROR_NOT_CONSTRUCTED,
                     "wl_surface does not have a role yet.");
     }
@@ -190,14 +190,14 @@ void Extensions::XdgShell::Surface::ack_configure(wl_client *client, wl_resource
 
     LSurface *surface = (LSurface*)wl_resource_get_user_data(resource);
 
-    if(surface->roleId() == LSurface::Role::Toplevel)
+    if (surface->roleId() == LSurface::Role::Toplevel)
     {
         LToplevelRole *toplevel = surface->toplevel();
 
 
         while(!toplevel->imp()->sentConfs.empty())
         {
-            if(toplevel->imp()->sentConfs.front().serial == serial)
+            if (toplevel->imp()->sentConfs.front().serial == serial)
             {
                 toplevel->imp()->currentConf = toplevel->imp()->sentConfs.front();
                 toplevel->imp()->sentConfs.pop_front();
@@ -208,7 +208,7 @@ void Extensions::XdgShell::Surface::ack_configure(wl_client *client, wl_resource
         }
 
 
-        if(toplevel->imp()->xdgDecoration && toplevel->imp()->pendingDecorationMode != 0 && toplevel->imp()->lastDecorationModeConfigureSerial == serial)
+        if (toplevel->imp()->xdgDecoration && toplevel->imp()->pendingDecorationMode != 0 && toplevel->imp()->lastDecorationModeConfigureSerial == serial)
         {
             toplevel->imp()->decorationMode = (LToplevelRole::DecorationMode)toplevel->imp()->pendingDecorationMode;
             toplevel->decorationModeChanged();
@@ -216,14 +216,14 @@ void Extensions::XdgShell::Surface::ack_configure(wl_client *client, wl_resource
             return;
         }
     }
-    else if(surface->roleId() == LSurface::Role::Popup)
+    else if (surface->roleId() == LSurface::Role::Popup)
     {
 
     }
     else
     {
         wl_resource_post_error(
-                    surface->xdgSurfaceResource(),
+                    surface->xdgRSurface(),
                     XDG_SURFACE_ERROR_NOT_CONSTRUCTED,
                     "wl_surface does not have a role yet.");
     }

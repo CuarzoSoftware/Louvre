@@ -11,9 +11,10 @@
 // Globals
 #define LOUVRE_COMPOSITOR_VERSION 5
 #define LOUVRE_SEAT_VERSION 7
-#define LOUVRE_OUTPUT_VERSION 3 // Last is 4
+#define LOUVRE_OUTPUT_VERSION 4
 #define LOUVRE_SUBCOMPOSITOR_VERSION 1
 #define LOUVRE_DATA_DEVICE_MANAGER_VERSION 3
+#define LOUVRE_LINUX_DMA_BUFF_VERSION 3
 
 #define LOUVRE_XDG_WM_BASE_VERSION 4
 #define LOUVRE_XDG_DECORATION_MANAGER_VERSION 1
@@ -33,7 +34,7 @@ public: \
 
 #define LPRIVATE_IMP(class_name) \
     class CAT(class_name,Private); \
-    CAT(class_name,Private) *imp() const; \
+    inline CAT(class_name,Private) *imp() const {return m_imp;}; \
     private: \
     CAT(class_name,Private) *m_imp = nullptr; \
 /*!
@@ -195,29 +196,33 @@ namespace Louvre
     {
         namespace Wayland
         {
-            class CompositorGlobal;
-            class SeatGlobal;
-            class DataDeviceManagerGlobal;
+            class GCompositor;
+            class GSeat;
+            class GDataDeviceManager;
+            class GOutput;
 
-            class SurfaceResource;
-            class RegionResource;
-            class PointerResource;
-            class KeyboardResource;
-            class DataDeviceResource;
-            class DataSourceResource;
-            class DataOfferResource;
-
+            class RSurface;
+            class RRegion;
+            class RPointer;
+            class RKeyboard;
+            class RDataDevice;
+            class RDataSource;
+            class RDataOffer;
         }
+
+        namespace LinuxDMABuff
+        {
+            class WGLinuxDMABuff;
+            class WRParams;
+            class WRFeedback;
+        };
     }
 
     // Wayland Globals
     namespace Globals
     {
         class Subcompositor;
-        class Output;
         class Subsurface;
-
-
     };
 
     // Extensions Globals
@@ -242,13 +247,6 @@ namespace Louvre
         {
             class Viewporter;
             class Viewport;
-        };
-
-        namespace LinuxDMABuffer
-        {
-            class LinuxDMABuffer;
-            class Params;
-            class Feedback;
         };
 
         namespace PresentationTime

@@ -18,7 +18,7 @@ void LSeat::initialized()
 bool LSeat::setSelectionRequest(LDataDevice *device)
 {
     // Let the client set the clipboard only one of its surfaces has pointer or keyboard focus
-    if((pointer()->focusSurface() && pointer()->focusSurface()->client() == device->client()) ||
+    if ((pointer()->focusSurface() && pointer()->focusSurface()->client() == device->client()) ||
        (keyboard()->focusSurface() && keyboard()->focusSurface()->client() == device->client()))
     {
         return true;
@@ -38,7 +38,7 @@ void LSeat::backendNativeEvent(void *event)
 //! [seatEnabled]
 void LSeat::seatEnabled()
 {
-    if(cursor())
+    if (cursor())
         cursor()->useDefault();
 }
 //! [seatEnabled]

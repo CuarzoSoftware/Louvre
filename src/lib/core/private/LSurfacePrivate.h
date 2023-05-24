@@ -5,7 +5,7 @@
 
 struct Louvre::LSurface::Params
 {
-    Protocols::Wayland::SurfaceResource *surfaceResource;
+    Protocols::Wayland::RSurface *surfaceResource;
 };
 
 class Louvre::LSurface::LSurfacePrivate
@@ -70,8 +70,8 @@ public:
     LSurface *parent                                    = nullptr;
     LSurface *pendingParent                             = nullptr;
 
-    Protocols::Wayland::SurfaceResource *surfaceResource = nullptr;
-    wl_resource *xdgSurfaceResource                     = nullptr;
+    Protocols::Wayland::RSurface *surfaceResource = nullptr;
+    wl_resource *xdgRSurface                     = nullptr;
 
     wl_resource* frameCallback                          = nullptr;
 
@@ -98,7 +98,7 @@ public:
 
     // Presentation feedback
     list<wl_resource*> presentationFeedback;
-    list<wl_resource*> presentationOutputResources;
+    list<Protocols::Wayland::GOutput*> presentationOutputGlobals;
     LOutput *presentationOutput = nullptr;
     void sendPresentationFeedback(LOutput *output, timespec &ns);
 

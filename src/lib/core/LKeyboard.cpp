@@ -1,5 +1,5 @@
-#include <protocols/Wayland/SeatGlobal.h>
-#include <protocols/Wayland/KeyboardResource.h>
+#include <protocols/Wayland/GSeat.h>
+#include <protocols/Wayland/RKeyboard.h>
 #include <private/LClientPrivate.h>
 #include <private/LDataDevicePrivate.h>
 #include <private/LKeyboardPrivate.h>
@@ -54,7 +54,7 @@ LCompositor *LKeyboard::compositor() const
 
 void LKeyboard::setKeymap(const char *rules, const char *model, const char *layout, const char *variant, const char *options)
 {
-    if(imp()->xkbKeymapFd != -1)
+    if (imp()->xkbKeymapFd != -1)
     {
          close(imp()->xkbKeymapFd);
     }
@@ -81,7 +81,7 @@ void LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
     // Get the XDG_RUNTIME_DIR env
     const char *xdgRuntimeDir = getenv("XDG_RUNTIME_DIR");
 
-    if(!xdgRuntimeDir)
+    if (!xdgRuntimeDir)
     {
         printf("Louvre error: XDG_RUNTIME_DIR env not set.\n");
         exit(EXIT_FAILURE);
@@ -90,7 +90,7 @@ void LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
     // Open and store the file descritor
     imp()->xkbKeymapFd = open(xdgRuntimeDir, O_TMPFILE|O_RDWR|O_EXCL, 0600);
 
-    if(imp()->xkbKeymapFd < 0)
+    if (imp()->xkbKeymapFd < 0)
     {
         printf("Error creating shared memory for keyboard layout.\n");
         exit(-1);
@@ -109,11 +109,11 @@ void LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
     // Create a xkb keyboard state to handle modifiers
     imp()->xkbKeymapState = xkb_state_new(imp()->xkbKeymap);
 
-    for(LClient *c : compositor()->clients())
+    for (LClient *c : compositor()->clients())
     {
-        for(Protocols::Wayland::SeatGlobal *s : c->seatGlobals())
+        for (Protocols::Wayland::GSeat *s : c->seatGlobals())
         {
-            if(s->keyboardResource())
+            if (s->keyboardResource())
                 s->keyboardResource()->sendKeymap(keymapFd(), keymapSize());
         }
     }
@@ -143,40 +143,40 @@ const LKeyboard::KeyboardModifiersState &LKeyboard::modifiersState() const
 void LKeyboard::setFocus(LSurface *surface)
 {
     // If surface is not nullptr
-    if(surface)
+    if (surface)
     {
 
         // If already has focus
-        if(focusSurface() == surface)
+        if (focusSurface() == surface)
             return;
         else
         {
             // If another surface has focus
-            if(focusSurface())
+            if (focusSurface())
             {
-                for(Protocols::Wayland::SeatGlobal *s : focusSurface()->client()->seatGlobals())
-                    if(s->keyboardResource())
+                for (Protocols::Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+                    if (s->keyboardResource())
                         s->keyboardResource()->sendLeave(focusSurface());
             }
 
 
-            if(!focusSurface() || (focusSurface() && focusSurface()->client() != surface->client()))
+            if (!focusSurface() || (focusSurface() && focusSurface()->client() != surface->client()))
                 surface->client()->dataDevice().sendSelectionEvent();
 
 
-            bool hasKeyboardResource = false;
+            bool hasRKeyboard = false;
 
-            for(Protocols::Wayland::SeatGlobal *s : surface->client()->seatGlobals())
+            for (Protocols::Wayland::GSeat *s : surface->client()->seatGlobals())
             {
-                if(s->keyboardResource())
+                if (s->keyboardResource())
                 {
-                    hasKeyboardResource = true;
+                    hasRKeyboard = true;
                     s->keyboardResource()->sendEnter(surface);
                     s->keyboardResource()->sendModifiers(modifiersState().depressed, modifiersState().latched, modifiersState().locked, modifiersState().group);
                 }
             }
 
-            if(hasKeyboardResource)
+            if (hasRKeyboard)
                 imp()->keyboardFocusSurface = surface;
             else
                 imp()->keyboardFocusSurface = nullptr;
@@ -186,10 +186,10 @@ void LKeyboard::setFocus(LSurface *surface)
     else
     {
         // Remove focus from current surface
-        if(focusSurface())
+        if (focusSurface())
         {
-            for(Protocols::Wayland::SeatGlobal *s : focusSurface()->client()->seatGlobals())
-                if(s->keyboardResource())
+            for (Protocols::Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+                if (s->keyboardResource())
                     s->keyboardResource()->sendLeave(focusSurface());
         }
         imp()->keyboardFocusSurface = nullptr;
@@ -199,22 +199,22 @@ void LKeyboard::setFocus(LSurface *surface)
 void LKeyboard::sendKeyEvent(UInt32 keyCode, UInt32 keyState)
 {
     // If no surface has focus
-    if(!focusSurface())
+    if (!focusSurface())
         return;
 
-    for(Protocols::Wayland::SeatGlobal *s : focusSurface()->client()->seatGlobals())
-        if(s->keyboardResource())
+    for (Protocols::Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+        if (s->keyboardResource())
             s->keyboardResource()->sendKey(keyCode, keyState);
 }
 
 void LKeyboard::sendModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
 {
     // If no surface has focus
-    if(!focusSurface())
+    if (!focusSurface())
         return;
 
-    for(Protocols::Wayland::SeatGlobal *s : focusSurface()->client()->seatGlobals())
-        if(s->keyboardResource())
+    for (Protocols::Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+        if (s->keyboardResource())
             s->keyboardResource()->sendModifiers(depressed, latched, locked, group);
 }
 
@@ -264,20 +264,20 @@ void LKeyboard::LKeyboardPrivate::updateModifiers()
 
     void LKeyboard::setRepeatInfo(Int32 rate, Int32 msDelay)
     {
-        if(rate < 0)
+        if (rate < 0)
             imp()->repeatRate = 0;
         else
             imp()->repeatRate = rate;
 
-        if(msDelay < 0)
+        if (msDelay < 0)
             imp()->repeatDelay = 0;
         else
             imp()->repeatDelay = msDelay;
 
-        for(LClient *c : compositor()->clients())
+        for (LClient *c : compositor()->clients())
         {
-            for(Protocols::Wayland::SeatGlobal *s : c->seatGlobals())
-                if(s->keyboardResource())
+            for (Protocols::Wayland::GSeat *s : c->seatGlobals())
+                if (s->keyboardResource())
                     s->keyboardResource()->sendRepeatInfo(rate, msDelay);
         }
     }

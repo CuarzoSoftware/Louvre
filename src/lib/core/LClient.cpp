@@ -43,22 +43,22 @@ const list<LSurface *> &LClient::surfaces() const
     return m_imp->surfaces;
 }
 
-const list<wl_resource *> &LClient::outputs() const
+const list<Protocols::Wayland::GOutput*> &LClient::outputGlobals() const
 {
-    return m_imp->outputResources;
+    return imp()->outputGlobals;
 }
 
-Protocols::Wayland::CompositorGlobal *LClient::compositorGlobal() const
+Protocols::Wayland::GCompositor *LClient::compositorGlobal() const
 {
     return imp()->compositorGlobal;
 }
 
-list<Protocols::Wayland::SeatGlobal*> &LClient::seatGlobals() const
+list<Protocols::Wayland::GSeat*> &LClient::seatGlobals() const
 {
     return imp()->seatGlobals;
 }
 
-Protocols::Wayland::DataDeviceManagerGlobal *LClient::dataDeviceManagerGlobal() const
+Protocols::Wayland::GDataDeviceManager *LClient::dataDeviceManagerGlobal() const
 {
     return imp()->dataDeviceManagerGlobal;
 }

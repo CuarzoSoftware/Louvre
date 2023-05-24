@@ -28,7 +28,7 @@ LSurface *Compositor::createSurfaceRequest(LSurface::Params *params)
 
 void Compositor::destroySurfaceRequest(LSurface *s)
 {
-    if(s == fullscreenSurface)
+    if (s == fullscreenSurface)
         fullscreenSurface = nullptr;
 }
 

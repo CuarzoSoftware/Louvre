@@ -142,7 +142,7 @@ public:
 
 private:
     LSubsurfaceRolePrivate *m_imp = nullptr;
-    bool acceptCommitRequest(Protocols::Wayland::SurfaceResource::CommitOrigin origin) override;
+    bool acceptCommitRequest(Protocols::Wayland::RSurface::CommitOrigin origin) override;
     void handleSurfaceCommit() override;
     void handleParentCommit() override;
     void handleParentChange() override;

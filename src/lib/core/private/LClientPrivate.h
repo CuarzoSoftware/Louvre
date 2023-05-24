@@ -24,10 +24,10 @@ public:
     LClient::Params     *params                         = nullptr;
     LDataDevice dataDevice;
 
-    list<wl_resource*>   outputResources;
-    list<Protocols::Wayland::SeatGlobal*> seatGlobals;
-    Protocols::Wayland::DataDeviceManagerGlobal *dataDeviceManagerGlobal = nullptr;
-    Protocols::Wayland::CompositorGlobal *compositorGlobal = nullptr;
+    list<Protocols::Wayland::GOutput*> outputGlobals;
+    list<Protocols::Wayland::GSeat*> seatGlobals;
+    Protocols::Wayland::GDataDeviceManager *dataDeviceManagerGlobal = nullptr;
+    Protocols::Wayland::GCompositor *compositorGlobal = nullptr;
 
     wl_resource         *touchResource                  = nullptr;
     wl_resource         *xdgWmBaseResource              = nullptr;

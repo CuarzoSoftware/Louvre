@@ -10,7 +10,7 @@ using namespace Louvre;
 void LDNDManager::startDragRequest()
 {
     // Let the client set the clipboard only if one of its surfaces has pointer or keyboard focus
-    if((seat()->pointer()->focusSurface() && seat()->pointer()->focusSurface()->client() == source()->client()) ||
+    if ((seat()->pointer()->focusSurface() && seat()->pointer()->focusSurface()->client() == source()->client()) ||
        (seat()->keyboard()->focusSurface() && seat()->keyboard()->focusSurface()->client() == source()->client()))
     {
         seat()->pointer()->setDragginSurface(nullptr);
@@ -25,7 +25,7 @@ void LDNDManager::startDragRequest()
 //! [cancelled]
 void LDNDManager::cancelled()
 {
-    if(icon())
+    if (icon())
         icon()->surface()->repaintOutputs();
 }
 //! [cancelled]

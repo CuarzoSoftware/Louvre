@@ -27,17 +27,7 @@ public:
     /// Hotspot
     const LPoint &hotspotB() const;
 
-    class LXCursorPrivate;
-
-    /*!
-     * @brief Access to the private API of LXCursor.
-     *
-     * Returns an instance of the LXCursorPrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LCursor.\n
-     * Used internally by the library.
-     */
-    LXCursorPrivate *imp() const;
-private:
-    LXCursorPrivate *m_imp = nullptr;
+    LPRIVATE_IMP(LXCursor)
 };
 
 #endif // LX11CURSOR_H

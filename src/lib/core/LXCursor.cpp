@@ -29,8 +29,3 @@ const LPoint &LXCursor::hotspotB() const
 {
     return imp()->hotspotB;
 }
-
-LXCursor::LXCursorPrivate *LXCursor::imp() const
-{
-    return m_imp;
-}

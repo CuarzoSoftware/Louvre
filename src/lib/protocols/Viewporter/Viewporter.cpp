@@ -38,16 +38,16 @@ void Extensions::Viewporter::Viewporter::bind(wl_client *client, void *data, UIn
     LClient *lClient = nullptr;
 
     // Search for the client object
-    for(LClient *c : lCompositor->clients())
+    for (LClient *c : lCompositor->clients())
     {
-        if(c->client() == client)
+        if (c->client() == client)
         {
             lClient = c;
             break;
         }
     }
 
-    if(!lClient)
+    if (!lClient)
         return;
 
     wl_resource *resource = wl_resource_create(client, &wp_viewporter_interface, version, id);

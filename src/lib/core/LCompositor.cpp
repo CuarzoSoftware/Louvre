@@ -7,7 +7,7 @@
 #include <private/LOutputPrivate.h>
 #include <private/LCursorPrivate.h>
 
-#include <protocols/Wayland/Output.h>
+#include <protocols/Wayland/GOutput.h>
 
 #include <LNamespaces.h>
 #include <LWayland.h>
@@ -27,7 +27,7 @@
 #include <LLog.h>
 
 
-using namespace Louvre;
+using namespace Louvre::Protocols::Wayland;
 
 LCompositor::LCompositor()
 {
@@ -74,7 +74,7 @@ LCompositor::~LCompositor()
 
 int LCompositor::start()
 {    
-    if(imp()->started)
+    if (imp()->started)
     {
         LLog::warning("Attempting to start a compositor already running. Ignoring...");
         return EXIT_FAILURE;
@@ -86,19 +86,19 @@ int LCompositor::start()
     imp()->seat = createSeatRequest(&seatParams);
     LWayland::setSeat(imp()->seat);
 
-    if(!imp()->graphicBackend)
+    if (!imp()->graphicBackend)
     {
         LLog::warning("User did not load a graphic backend. Trying the DRM backend...");
 
         testDRMBackend:
 
-        if(!loadGraphicBackend("/usr/etc/Louvre/backends/libLGraphicBackendDRM.so"))
+        if (!loadGraphicBackend("/usr/etc/Louvre/backends/libLGraphicBackendDRM.so"))
         {
             LLog::error("Failed to load the DRM backend. Trying the X11 backend...");
 
             testX11Backend:
 
-            if(!loadGraphicBackend("/usr/etc/Louvre/backends/libLGraphicBackendX11.so"))
+            if (!loadGraphicBackend("/usr/etc/Louvre/backends/libLGraphicBackendX11.so"))
             {
                 LLog::fatal("No graphic backend found. Stopping compositor...");
                 return EXIT_FAILURE;
@@ -107,7 +107,7 @@ int LCompositor::start()
         }
         else
         {
-            if(!imp()->graphicBackend->initialize(this))
+            if (!imp()->graphicBackend->initialize(this))
             {
                 dlclose(imp()->graphicBackendHandle);
                 imp()->graphicBackendHandle = nullptr;
@@ -120,7 +120,7 @@ int LCompositor::start()
     }
     else
     {
-        if(!imp()->graphicBackend->initialize(this))
+        if (!imp()->graphicBackend->initialize(this))
         {
             dlclose(imp()->graphicBackendHandle);
             imp()->graphicBackendHandle = nullptr;
@@ -149,18 +149,18 @@ int LCompositor::start()
     outputManagerParams.compositor = this;
     imp()->outputManager = createOutputManagerRequest(&outputManagerParams);
 
-    if(!imp()->inputBackend)
+    if (!imp()->inputBackend)
     {
         LLog::warning("User did not load an input backend. Trying the Libinput backend...");
 
-        if(!loadInputBackend("/usr/etc/Louvre/backends/libLInputBackendLibinput.so"))
+        if (!loadInputBackend("/usr/etc/Louvre/backends/libLInputBackendLibinput.so"))
         {
             LLog::fatal("No input backend found. Stopping compositor...");
             return EXIT_FAILURE;
         }
     }
 
-    if(!imp()->inputBackend->initialize(seat()))
+    if (!imp()->inputBackend->initialize(seat()))
     {
         LLog::fatal("Failed to initialize input backend. Stopping compositor...");
         return EXIT_FAILURE;
@@ -185,12 +185,12 @@ void LCompositor::finish()
 {
     abort();
 
-    if(imp()->started)
+    if (imp()->started)
     {
-        if(imp()->inputBackendInitialized)
+        if (imp()->inputBackendInitialized)
             imp()->inputBackend->uninitialize(seat());
 
-        if(imp()->graphicBackendInitialized)
+        if (imp()->graphicBackendInitialized)
             imp()->graphicBackend->uninitialize(this);
     }
 }
@@ -202,13 +202,13 @@ void LCompositor::LCompositorPrivate::raiseChildren(LSurface *surface)
     surface->raised();
 
     // Rise its children
-    for(LSurface *children : surface->children())
+    for (LSurface *children : surface->children())
         raiseChildren(children);
 }
 
 void LCompositor::raiseSurface(LSurface *surface)
 {
-    if(surface->subsurface())
+    if (surface->subsurface())
     {
         raiseSurface(surface->parent());
         return;
@@ -221,7 +221,7 @@ bool LCompositor::LCompositorPrivate::loadGraphicBackend(const char *path)
 {
     graphicBackendHandle = dlopen(path, RTLD_LAZY);
 
-    if(!graphicBackendHandle)
+    if (!graphicBackendHandle)
     {
         LLog::warning("No graphic backend found at (%s)\n",path);
         return false;
@@ -229,7 +229,7 @@ bool LCompositor::LCompositorPrivate::loadGraphicBackend(const char *path)
 
     LGraphicBackendInterface *(*getAPI)() = (LGraphicBackendInterface *(*)())dlsym(graphicBackendHandle, "getAPI");
 
-    if(!getAPI)
+    if (!getAPI)
     {
         LLog::warning("Failed to load graphic backend (%s)\n",path);
         dlclose(graphicBackendHandle);
@@ -238,7 +238,7 @@ bool LCompositor::LCompositorPrivate::loadGraphicBackend(const char *path)
 
     graphicBackend = getAPI();
 
-    if(graphicBackend)
+    if (graphicBackend)
         LLog::debug("Graphic backend loaded successfully (%s).", path);
 
     return true;
@@ -248,7 +248,7 @@ bool LCompositor::LCompositorPrivate::loadInputBackend(const char *path)
 {
     inputBackendHandle = dlopen(path, RTLD_LAZY);
 
-    if(!inputBackendHandle)
+    if (!inputBackendHandle)
     {
         LLog::warning("No input backend found at (%s).",path);
         return false;
@@ -256,7 +256,7 @@ bool LCompositor::LCompositorPrivate::loadInputBackend(const char *path)
 
     LInputBackendInterface *(*getAPI)() = (LInputBackendInterface *(*)())dlsym(inputBackendHandle, "getAPI");
 
-    if(!getAPI)
+    if (!getAPI)
     {
         LLog::warning("Failed to load input backend (%s).",path);
         dlclose(inputBackendHandle);
@@ -265,7 +265,7 @@ bool LCompositor::LCompositorPrivate::loadInputBackend(const char *path)
 
     inputBackend = getAPI();
 
-    if(inputBackend)
+    if (inputBackend)
         LLog::debug("Input backend loaded successfully (%s).", path);
 
 
@@ -286,26 +286,26 @@ void LCompositor::LCompositorPrivate::updateGlobalScale()
 {
     Int32 maxFound = 1;
 
-    for(LOutput *o : outputs)
+    for (LOutput *o : outputs)
     {
-        if(o->scale() > maxFound)
+        if (o->scale() > maxFound)
             maxFound = o->scale();
     }
 
-    if(maxFound != globalScale)
+    if (maxFound != globalScale)
     {
         Int32 oldScale = globalScale;
         globalScale = maxFound;
 
-        for(LOutput *o : outputs)
+        for (LOutput *o : outputs)
             o->imp()->globalScaleChanged(oldScale, globalScale);
 
-        for(LSurface *s : surfaces)
+        for (LSurface *s : surfaces)
             s->imp()->globalScaleChanged(oldScale, globalScale);
 
         compositor->globalScaleChanged(oldScale, globalScale);
 
-        if(cursor)
+        if (cursor)
             cursor->imp()->globalScaleChanged(oldScale, globalScale);
     }
 
@@ -324,15 +324,15 @@ LSeat *LCompositor::seat() const
 
 void LCompositor::repaintAllOutputs()
 {
-    for(list<LOutput*>::iterator it = imp()->outputs.begin(); it != imp()->outputs.end(); ++it)
+    for (list<LOutput*>::iterator it = imp()->outputs.begin(); it != imp()->outputs.end(); ++it)
         (*it)->repaint();
 }
 
 bool LCompositor::addOutput(LOutput *output)
 {
     // Verifica que no se haya añadido previamente
-    for(LOutput *o : outputs())
-        if(o == output)
+    for (LOutput *o : outputs())
+        if (o == output)
             return true;
 
     imp()->outputs.push_back(output);
@@ -350,33 +350,29 @@ bool LCompositor::addOutput(LOutput *output)
 void LCompositor::removeOutput(LOutput *output)
 {
     // Iteramos para verificar si efectivamente la salida estaba añadida
-    for(list<LOutput*>::iterator it = m_imp->outputs.begin(); it != m_imp->outputs.end(); it++)
+    for (list<LOutput*>::iterator it = m_imp->outputs.begin(); it != m_imp->outputs.end(); it++)
     {
-        if(*it == output)
+        if (*it == output)
         {
-
-            // Detenemos su hilo
             output->imp()->state = LOutput::PendingUninitialize;
             imp()->graphicBackend->uninitializeOutput(output);
             output->imp()->state = LOutput::Uninitialized;
 
             // La eliminamos de las listas de intersección de las superficies
-            for(LSurface *s : surfaces())
+            for (LSurface *s : surfaces())
                 s->sendOutputLeaveEvent(output);
 
             // La eliminamos de la lista de salidas añadidas
-            m_imp->outputs.remove(output);
+            imp()->outputs.remove(output);
 
             // Eliminamos los globals wl_output de cada cliente
-            for(LClient *c : clients())
+            for (LClient *c : clients())
             {
-                for(list<wl_resource*>::iterator r = c->imp()->outputResources.begin(); r != c->imp()->outputResources.end(); r++)
+                for (GOutput *g : c->outputGlobals())
                 {
-                    LOutput *o = (LOutput*)wl_resource_get_user_data(*r);
-
-                    if(output == o)
+                    if (output == g->output())
                     {
-                        wl_resource_destroy(*r);
+                        wl_resource_destroy(g->resource());
                         break;
                     }
                 }
@@ -426,9 +422,9 @@ LClient *LCompositor::getClientFromNativeResource(wl_client *client)
 {
     LClient *lClient = nullptr;
 
-    for(LClient *c : clients())
+    for (LClient *c : clients())
     {
-        if(c->client() == client)
+        if (c->client() == client)
         {
             lClient = c;
             break;

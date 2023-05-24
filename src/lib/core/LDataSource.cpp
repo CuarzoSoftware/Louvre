@@ -1,9 +1,9 @@
 #include <private/LDataSourcePrivate.h>
-#include <protocols/Wayland/DataSourceResource.h>
+#include <protocols/Wayland/RDataSource.h>
 
 using namespace Louvre;
 
-LDataSource::LDataSource(Protocols::Wayland::DataSourceResource *dataSourceResource)
+LDataSource::LDataSource(Protocols::Wayland::RDataSource *dataSourceResource)
 {
     m_imp = new LDataSourcePrivate();
     imp()->dataSourceResource = dataSourceResource;
@@ -32,7 +32,7 @@ const std::list<LDataSource::LSource> &LDataSource::sources() const
     }
 #endif
 
-Protocols::Wayland::DataSourceResource *LDataSource::dataSourceResource() const
+Protocols::Wayland::RDataSource *LDataSource::dataSourceResource() const
 {
     return imp()->dataSourceResource;
 }

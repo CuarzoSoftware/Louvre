@@ -1,5 +1,5 @@
 #include "Subsurface.h"
-#include <protocols/Wayland/private/SurfaceResourcePrivate.h>
+#include <protocols/Wayland/private/RSurfacePrivate.h>
 #include <private/LSubsurfaceRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <LCompositor.h>
@@ -32,12 +32,12 @@ void Louvre::Globals::Subsurface::place_above(wl_client *client, wl_resource *re
 
     LSubsurfaceRole *lSubsurface = (LSubsurfaceRole*)wl_resource_get_user_data(resource);
 
-    Protocols::Wayland::SurfaceResource *lSibilingResource = (Protocols::Wayland::SurfaceResource*)wl_resource_get_user_data(sibiling);
+    Protocols::Wayland::RSurface *lSibilingResource = (Protocols::Wayland::RSurface*)wl_resource_get_user_data(sibiling);
     LSurface *lSibiling = lSibilingResource->surface();
 
-    for(LSurface *sib : lSubsurface->surface()->parent()->children())
+    for (LSurface *sib : lSubsurface->surface()->parent()->children())
     {
-        if(sib == lSibiling)
+        if (sib == lSibiling)
         {
             lSubsurface->imp()->pendingPlaceAbove = sib;
             return;
@@ -52,12 +52,12 @@ void Louvre::Globals::Subsurface::place_below(wl_client *client, wl_resource *re
     L_UNUSED(client);
 
     LSubsurfaceRole *lSubsurface = (LSubsurfaceRole*)wl_resource_get_user_data(resource);
-    Protocols::Wayland::SurfaceResource *lSibilingResource = (Protocols::Wayland::SurfaceResource*)wl_resource_get_user_data(sibiling);
+    Protocols::Wayland::RSurface *lSibilingResource = (Protocols::Wayland::RSurface*)wl_resource_get_user_data(sibiling);
     LSurface *lSibiling = lSibilingResource->surface();
 
-    for(LSurface *sib : lSubsurface->surface()->parent()->children())
+    for (LSurface *sib : lSubsurface->surface()->parent()->children())
     {
-        if(sib == lSibiling)
+        if (sib == lSibiling)
         {
             lSubsurface->imp()->pendingPlaceBelow = sib;
             return;
@@ -81,5 +81,5 @@ void Louvre::Globals::Subsurface::set_desync(wl_client *client, wl_resource *res
     LSubsurfaceRole *lSubsurface = (LSubsurfaceRole*)wl_resource_get_user_data(resource);
     lSubsurface->imp()->isSynced = false;
     lSubsurface->syncModeChanged();
-    Protocols::Wayland::SurfaceResource::SurfaceResourcePrivate::apply_commit(lSubsurface->surface());
+    Protocols::Wayland::RSurface::RSurfacePrivate::apply_commit(lSubsurface->surface());
 }

@@ -24,7 +24,7 @@ void LLog::init()
 {
     char *env = getenv("LOUVRE_DEBUG");
 
-    if(env)
+    if (env)
         level = atoi(env);
     else
         level = 0;
@@ -33,7 +33,7 @@ void LLog::init()
 
 void LLog::fatal(const char *format, ...)
 {
-    if(level >= 1)
+    if (level >= 1)
     {
         printf("%sLouvre fatal:%s ", KRED, KNRM);
         va_list args;
@@ -46,7 +46,7 @@ void LLog::fatal(const char *format, ...)
 
 void LLog::error(const char *format, ...)
 {
-    if(level >= 2)
+    if (level >= 2)
     {
         printf("%sLouvre error:%s ", KRED, KNRM);
         va_list args;
@@ -59,7 +59,7 @@ void LLog::error(const char *format, ...)
 
 void LLog::warning(const char *format, ...)
 {
-    if(level >= 3)
+    if (level >= 3)
     {
         printf("%sLouvre warning:%s ", KYEL, KNRM);
         va_list args;
@@ -72,7 +72,7 @@ void LLog::warning(const char *format, ...)
 
 void LLog::debug(const char *format, ...)
 {
-    if(level >= 4)
+    if (level >= 4)
     {
         printf("%sLouvre debug:%s ", KGRN, KNRM);
         va_list args;

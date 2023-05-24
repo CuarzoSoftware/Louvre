@@ -71,7 +71,7 @@ void LRegion::intersectRegion(const LRegion &region)
 
 void LRegion::multiply(Float32 factor)
 {
-    if(factor == 1.f)
+    if (factor == 1.f)
         return;
 
     pixman_region32_t tmp;
@@ -80,9 +80,9 @@ void LRegion::multiply(Float32 factor)
     int n;
     pixman_box32_t *rects = pixman_region32_rectangles((pixman_region32_t*)m_region, &n);
 
-    if(factor == 2.f)
+    if (factor == 2.f)
     {
-        for(int i = 0; i < n; i++)
+        for (int i = 0; i < n; i++)
         {
             pixman_region32_union_rect(
                         &tmp,
@@ -95,7 +95,7 @@ void LRegion::multiply(Float32 factor)
     }
     else
     {
-        for(int i = 0; i < n; i++)
+        for (int i = 0; i < n; i++)
         {
             int x = rects[i].x1 * factor;
             int y = rects[i].y1 * factor;
@@ -132,7 +132,7 @@ void LRegion::copy(const LRegion &regionToCopy)
     m_changed = true;
     m_rects.clear();
 
-    if(!m_region)
+    if (!m_region)
     {
         m_region = malloc(sizeof(pixman_region32_t));
         pixman_region32_init((pixman_region32_t*)m_region);
@@ -166,14 +166,14 @@ void LRegion::clip(const LRect &rect)
 
 const vector<LRect> &LRegion::rects() const
 {
-    if(m_changed)
+    if (m_changed)
     {
         m_changed = false;
         int n;
         pixman_box32_t *rects = pixman_region32_rectangles((pixman_region32_t*)m_region, &n);
         m_rects.resize(n);
 
-        for(int i = 0; i < n; i++)
+        for (int i = 0; i < n; i++)
         {
             m_rects[i] = (LRect(rects[i].x1,
                                    rects[i].y1,

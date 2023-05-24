@@ -1,3 +1,5 @@
+#ifdef nn
+
 #ifndef PARAMS_H
 #define PARAMS_H
 
@@ -15,3 +17,4 @@ public:
 };
 
 #endif // PARAMS_H
+#endif
