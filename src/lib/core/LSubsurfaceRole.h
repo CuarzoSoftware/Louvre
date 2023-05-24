@@ -130,26 +130,14 @@ public:
     virtual void placedBelow(LSurface *sibiling);
 /// @}
 
-    class LSubsurfaceRolePrivate;
+    LPRIVATE_IMP(LSubsurfaceRole)
 
-    /*!
-     * @brief Access to the private API of LSubsurfaceRole.
-     *
-     * Returns an instance of the LSubsurfaceRolePrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LSubsurfaceRolePrivate.\n
-     * Used internally by the library.
-     */
-    LSubsurfaceRolePrivate *imp() const;
-
-private:
-    LSubsurfaceRolePrivate *m_imp = nullptr;
     bool acceptCommitRequest(Protocols::Wayland::RSurface::CommitOrigin origin) override;
     void handleSurfaceCommit() override;
     void handleParentCommit() override;
     void handleParentChange() override;
     void handleParentMappingChange() override;
     void globalScaleChanged(Int32 oldScale, Int32 newScale) override;
-
-
 };
 
 #endif // LSUBSURFACEROLE_H

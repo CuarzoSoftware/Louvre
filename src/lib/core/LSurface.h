@@ -539,19 +539,7 @@ public:
     virtual void raised();
 /// @}
 
-    class LSurfacePrivate;
-
-    /*!
-     * @brief Access to the private API of LSurface.
-     *
-     * Returns an instance of the LSurfacePrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LSurfacePrivate.\n
-     * Used internally by the library.
-     */
-    LSurfacePrivate *imp() const;
- private:
-
-    LSurfacePrivate *m_imp = nullptr;
-
+    LPRIVATE_IMP(LSurface)
 };
 
 #endif // LSURFACE_H

@@ -189,11 +189,6 @@ void LPainter::bindProgram()
     glUseProgram(imp()->programObject);
 }
 
-LPainter::LPainterPrivate *LPainter::imp() const
-{
-    return m_imp;
-}
-
 LPainter::~LPainter()
 {
     glDeleteProgram(imp()->programObject);
@@ -201,4 +196,3 @@ LPainter::~LPainter()
     glDeleteShader(imp()->vertexShader);
     delete m_imp;
 }
-

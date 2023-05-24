@@ -257,21 +257,7 @@ public:
 
 /// @}
 
-    class LSeatPrivate;
-
-    /*!
-     * @brief Access to the private API of LSeat.
-     *
-     * Returns an instance of the LSeatPrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LSeatPrivate.\n
-     * Used internally by the library.
-     */
-    LSeatPrivate *imp() const;
-
-private:
-
-    LSeatPrivate *m_imp = nullptr;
-
-
+    LPRIVATE_IMP(LSeat)
 };
 
 #endif // LSEAT_H

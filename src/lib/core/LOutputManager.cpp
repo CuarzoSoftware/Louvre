@@ -8,7 +8,7 @@ using namespace Louvre;
 LOutputManager::LOutputManager(Params *params)
 {
     m_imp = new LOutputManagerPrivate();
-    m_imp->compositor = params->compositor;
+    imp()->compositor = params->compositor;
 }
 
 LOutputManager::~LOutputManager()
@@ -18,11 +18,11 @@ LOutputManager::~LOutputManager()
 
 LCompositor *LOutputManager::compositor() const
 {
-    return m_imp->compositor;
+    return imp()->compositor;
 }
 
 const list<LOutput *> *LOutputManager::outputs() const
 {
-    return m_imp->compositor->imp()->graphicBackend->getConnectedOutputs(m_imp->compositor);
+    return imp()->compositor->imp()->graphicBackend->getConnectedOutputs(imp()->compositor);
 }
 

@@ -366,11 +366,6 @@ LSurface *LPointer::surfaceAtC(const LPoint &point)
     return nullptr;
 }
 
-LPointer::LPointerPrivate *LPointer::imp() const
-{
-    return m_imp;
-}
-
 LSurface *LPointer::focusSurface() const
 {
     return imp()->pointerFocusSurface;

@@ -283,9 +283,3 @@ void LKeyboard::LKeyboardPrivate::updateModifiers()
     }
 
 #endif
-
-
-LKeyboard::LKeyboardPrivate *LKeyboard::imp() const
-{
-    return m_imp;
-}

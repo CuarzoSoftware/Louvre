@@ -68,17 +68,8 @@ public:
      */
     const LPoint &hotspotB() const;
 
-    class LCursorRolePrivate;
+    LPRIVATE_IMP(LCursorRole)
 
-    /*!
-     * @brief Access to the private API of LCursorRole.
-     *
-     * Returns an instance of the LCursorRolePrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LCursorRole.\n
-     * Used internally by the library.
-     */
-    LCursorRolePrivate *imp() const;
-private:
-    LCursorRolePrivate *m_imp = nullptr;
     virtual void handleSurfaceCommit() override;
     virtual void handleSurfaceOffset(Int32 x, Int32 y) override;
     void globalScaleChanged(Int32 oldScale, Int32 newScale) override;

@@ -510,18 +510,7 @@ public:
       */
     std::thread::id mainThreadId() const;
 
-    class LCompositorPrivate;
-
-    /*!
-     * @brief Access to the private API of LCompositor.
-     *
-     * Returns an instance of the LCompositorPrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LCompositor.\n
-     * Used internally by the library.
-     */
-    LCompositorPrivate *imp() const;
-
-private:
-    mutable LCompositorPrivate *m_imp = nullptr;
+    LPRIVATE_IMP(LCompositor)
 };
 
 #endif // LCOMPOSITOR_H

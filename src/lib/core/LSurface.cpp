@@ -392,11 +392,6 @@ const list<Louvre::LSurface *> &LSurface::children() const
     return imp()->children;
 }
 
-LSurface::LSurfacePrivate *LSurface::imp() const
-{
-    return m_imp;
-}
-
 // Private
 void LSurface::LSurfacePrivate::setParent(LSurface *parent)
 {

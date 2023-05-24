@@ -13,7 +13,7 @@ using namespace Louvre;
 //! [rolePosC]
 const LPoint &LToplevelRole::rolePosC() const
 {
-    m_rolePosC = surface()->posC() - m_imp->currentWindowGeometryC.topLeft();
+    m_rolePosC = surface()->posC() - imp()->currentWindowGeometryC.topLeft();
     return m_rolePosC;
 }
 //! [rolePosC]

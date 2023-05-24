@@ -271,11 +271,6 @@ const LRect &LCursor::rectC() const
     return imp()->rectC;
 }
 
-LCursor::LCursorPrivate *LCursor::imp() const
-{
-    return m_imp;
-}
-
 void LCursor::LCursorPrivate::update()
 {
     if (!cursor->output())

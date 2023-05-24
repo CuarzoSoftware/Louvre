@@ -29,7 +29,7 @@ using namespace Louvre;
 LOutput::LOutput()
 {
     m_imp = new LOutputPrivate();
-    m_imp->output = this;
+    imp()->output = this;
 }
 
 LOutput::~LOutput()
@@ -39,7 +39,7 @@ LOutput::~LOutput()
 
 LCompositor *LOutput::compositor() const
 {
-    return m_imp->compositor;
+    return imp()->compositor;
 }
 
 LCursor *LOutput::cursor() const
@@ -194,7 +194,7 @@ Int32 LOutput::dpi()
 
 const LSize &LOutput::physicalSize() const
 {
-    return *m_imp->compositor->imp()->graphicBackend->getOutputPhysicalSize((LOutput*)this);
+    return *imp()->compositor->imp()->graphicBackend->getOutputPhysicalSize((LOutput*)this);
 }
 
 const LSize &LOutput::sizeB() const
@@ -204,7 +204,7 @@ const LSize &LOutput::sizeB() const
 
 const LRect &LOutput::rectC() const
 {
-    return m_imp->rectC;
+    return imp()->rectC;
 }
 
 const LPoint &LOutput::posC() const
@@ -224,7 +224,7 @@ EGLDisplay LOutput::eglDisplay()
 
 LOutput::State LOutput::state() const
 {
-    return m_imp->state;
+    return imp()->state;
 }
 
 const char *LOutput::name() const
@@ -249,18 +249,11 @@ const char *LOutput::description() const
 
 void LOutput::setPosC(const LPoint &posC)
 {
-    m_imp->rectC.setX(posC.x());
-    m_imp->rectC.setY(posC.y());
+    imp()->rectC.setX(posC.x());
+    imp()->rectC.setY(posC.y());
 }
 
 LPainter *LOutput::painter() const
 {
-    return m_imp->painter;
+    return imp()->painter;
 }
-
-LOutput::LOutputPrivate *LOutput::imp() const
-{
-    return m_imp;
-}
-
-

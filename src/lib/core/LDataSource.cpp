@@ -37,11 +37,6 @@ Protocols::Wayland::RDataSource *LDataSource::dataSourceResource() const
     return imp()->dataSourceResource;
 }
 
-LDataSource::LDataSourcePrivate *LDataSource::imp() const
-{
-    return m_imp;
-}
-
 /* PRIVATE */
 
 void Louvre::LDataSource::LDataSourcePrivate::remove()

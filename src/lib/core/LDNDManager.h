@@ -173,17 +173,7 @@ public:
      */
     virtual void cancelled();
 
-    class LDNDManagerPrivate;
-
-    /*!
-     * @brief Access to the private API of LDNDManager.
-     *
-     * Returns an instance of the LDNDManagerPrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LDNDManager.\n
-     * Used internally by the library.
-     */
-    LDNDManagerPrivate *imp() const;
-private:
-    LDNDManagerPrivate *m_imp = nullptr;
+    LPRIVATE_IMP(LDNDManager)
 };
 
 #endif // LDNDMANAGER_H

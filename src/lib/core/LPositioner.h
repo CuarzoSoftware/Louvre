@@ -255,21 +255,7 @@ public:
      */
     ConstraintAdjustments constraintAdjustment() const;
 
-    class LPositionerPrivate;
-
-    /*!
-     * @brief Access to the private API of LPositioner.
-     *
-     * Returns an instance of the LPositionerPrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LPositioner.\n
-     * Used internally by the library.
-     */
-    LPositionerPrivate *imp() const;
-private:
-
-    LPositionerPrivate *m_imp = nullptr;
-
-
-
+    LPRIVATE_IMP(LPositioner)
 };
 
 #endif // LPOSITIONER_H

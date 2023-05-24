@@ -191,21 +191,10 @@ public:
      */
     const std::list<LOutput*>&intersectedOutputs() const;
 
-    class LCursorPrivate;
-
-    /*!
-     * @brief Access to the private API of LCursor.
-     *
-     * Returns an instance of the LCursorPrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LCursor.\n
-     * Used internally by the library.
-     */
-    LCursorPrivate *imp() const;
-private:
+    LPRIVATE_IMP(LCursor)
 
     friend class Louvre::LCompositor;
     friend class Louvre::LOutput;
-
-    LCursorPrivate *m_imp = nullptr;
 
     /*!
      * @brief Constructor of the LCursor class.

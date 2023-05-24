@@ -247,11 +247,3 @@ void LSeat::LSeatPrivate::dispatchSeat()
     if (libseatHandle)
         libseat_dispatch(libseatHandle, 0);
 }
-
-
-LSeat::LSeatPrivate *LSeat::imp() const
-{
-    return m_imp;
-}
-
-

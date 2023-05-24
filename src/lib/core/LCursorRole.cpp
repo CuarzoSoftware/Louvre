@@ -26,22 +26,17 @@ LCursorRole::~LCursorRole()
 
 const LPoint &LCursorRole::hotspotS() const
 {
-    return m_imp->currentHotspotS;
+    return imp()->currentHotspotS;
 }
 
 const LPoint &LCursorRole::hotspotC() const
 {
-    return m_imp->currentHotspotC;
+    return imp()->currentHotspotC;
 }
 
 const LPoint &LCursorRole::hotspotB() const
 {
-    return m_imp->currentHotspotB;
-}
-
-LCursorRole::LCursorRolePrivate *LCursorRole::imp() const
-{
-    return m_imp;
+    return imp()->currentHotspotB;
 }
 
 void LCursorRole::handleSurfaceCommit()

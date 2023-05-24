@@ -17,81 +17,81 @@ LPositioner::~LPositioner()
 
 LClient *LPositioner::client() const
 {
-    return m_imp->data.client;
+    return imp()->data.client;
 }
 
 wl_resource *LPositioner::resource() const
 {
-    return m_imp->data.resource;
+    return imp()->data.resource;
 }
 
 const LSize &LPositioner::sizeS() const
 {
-    return m_imp->data.sizeS;
+    return imp()->data.sizeS;
 }
 
 const LSize &LPositioner::sizeC() const
 {
-    return m_imp->data.sizeC;
+    return imp()->data.sizeC;
 }
 
 const LRect &LPositioner::anchorRectS() const
 {
-    return m_imp->data.anchorRectS;
+    return imp()->data.anchorRectS;
 }
 
 const LRect &LPositioner::anchorRectC() const
 {
-    return m_imp->data.anchorRectC;
+    return imp()->data.anchorRectC;
 }
 
 const LPoint &LPositioner::offsetS() const
 {
-    return m_imp->data.offsetS;
+    return imp()->data.offsetS;
 }
 
 const LPoint &LPositioner::offsetC() const
 {
-    return m_imp->data.offsetC;
+    return imp()->data.offsetC;
 }
 
 UInt32 LPositioner::anchor() const
 {
-    return m_imp->data.anchor;
+    return imp()->data.anchor;
 }
 
 UInt32 LPositioner::gravity() const
 {
-    return m_imp->data.gravity;
+    return imp()->data.gravity;
 }
 
 #if LOUVRE_XDG_WM_BASE_VERSION >=3
 
     bool LPositioner::isReactive() const
     {
-        return m_imp->data.isReactive;
+        return imp()->data.isReactive;
     }
 
     const LSize &LPositioner::parentSizeS() const
     {
-        return m_imp->data.parentSizeS;
+        return imp()->data.parentSizeS;
     }
 
     const LSize &LPositioner::parentSizeC() const
     {
-        return m_imp->data.parentSizeC;
+        return imp()->data.parentSizeC;
     }
 
     UInt32 LPositioner::parentConfigureSerial() const
     {
-        return m_imp->data.parentConfigureSerial;
+        return imp()->data.parentConfigureSerial;
     }
 
 #endif
 
 Louvre::LPositioner::ConstraintAdjustments LPositioner::constraintAdjustment() const
 {
-    return m_imp->data.constraintAdjustment;
+    return imp()->data.constraintAdjustment;
 }
 
 void Louvre::LPositioner::LPositionerPrivate::updateGlobalScale()
@@ -101,9 +101,3 @@ void Louvre::LPositioner::LPositionerPrivate::updateGlobalScale()
     data.offsetC = data.offsetS * data.client->compositor()->globalScale();
     data.parentSizeC = data.parentSizeS * data.client->compositor()->globalScale();
 }
-
-LPositioner::LPositionerPrivate *LPositioner::imp() const
-{
-    return m_imp;
-}
-

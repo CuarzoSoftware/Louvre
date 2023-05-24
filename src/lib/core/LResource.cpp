@@ -57,8 +57,3 @@ Int32 LResource::version() const
 {
     return wl_resource_get_version(resource());
 }
-
-Louvre::LResource::LResourcePrivate *Louvre::LResource::imp() const
-{
-    return m_imp;
-}

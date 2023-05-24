@@ -131,8 +131,3 @@ void LDNDManager::LDNDManagerPrivate::clear()
     matchedMimeType = false;
     destDidNotRequestReceive = 0;
 }
-
-LDNDManager::LDNDManagerPrivate *LDNDManager::imp() const
-{
-    return m_imp;
-}

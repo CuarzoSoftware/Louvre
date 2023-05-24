@@ -212,24 +212,11 @@ public:
     virtual void repositionRequest(UInt32 token);
 #endif
 ///@}
-    class LPopupRolePrivate;
 
-    /*!
-     * @brief Access to the private API of LPopupRole.
-     *
-     * Returns an instance of the LPopupRolePrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LPopupRole.\n
-     * Used internally by the library.
-     */
-    LPopupRolePrivate *imp() const;
+    LPRIVATE_IMP(LPopupRole)
 
-private:
-    LPopupRolePrivate *m_imp = nullptr;
     void handleSurfaceCommit() override;
     void globalScaleChanged(Int32 oldScale, Int32 newScale) override;
-
-
-
-
 };
 
 #endif // LPOPUPROLE_H

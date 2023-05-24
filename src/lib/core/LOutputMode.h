@@ -48,19 +48,7 @@ public:
      */
     bool isPreferred() const;
 
-    class LOutputModePrivate;
-
-    /*!
-     * @brief Access to the private API of LOutputMode.
-     *
-     * Returns an instance of the LOutputModePrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LOutputMode.\n
-     * Used internally by the library.
-     */
-    LOutputModePrivate *imp() const;
-private:
-
-    LOutputModePrivate *m_imp = nullptr;
-
+    LPRIVATE_IMP(LOutputMode)
 };
 
 #endif // LOUTPUTMODE_H

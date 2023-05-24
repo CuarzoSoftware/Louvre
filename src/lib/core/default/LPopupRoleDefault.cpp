@@ -149,7 +149,7 @@ const LPoint &LPopupRole::rolePosC() const
     }
 
     // We calculate the initial position (we will be modifying finalPos if the position is restricted)
-    finalPos = parentPos + positioner().anchorRectC().pos() + anchorPos - popupOrigin + offset;// - m_imp->windowGeometry.topLeft();
+    finalPos = parentPos + positioner().anchorRectC().pos() + anchorPos - popupOrigin + offset;// - imp()->windowGeometry.topLeft();
 
     // If it is the first attempt, we save finalPos in m_rolePosC as a backup
     if (xTry == 0 && yTry == 0)

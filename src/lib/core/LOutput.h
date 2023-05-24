@@ -331,20 +331,7 @@ public:
 
 ///@}
 
-    class LOutputPrivate;
-
-    /*!
-     * @brief Access to the private API of LOutput.
-     *
-     * Returns an instance of the LOutputPrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LOutput.\n
-     * Used internally by the library.
-     */
-    LOutputPrivate *imp() const;
-private:
-
-    mutable LOutputPrivate *m_imp = nullptr;
-
-
+    LPRIVATE_IMP(LOutput)
 };
 
 #endif // LOUTPUT_H

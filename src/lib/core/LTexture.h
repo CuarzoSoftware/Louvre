@@ -78,19 +78,7 @@ public:
      */
     GLenum format() const;
 
-    class LTexturePrivate;
-
-    /*!
-     * @brief Access to the private API of LTexture.
-     *
-     * Returns an instance of the LTexturePrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LSurfacePrivate.\n
-     * Used internally by the library.
-     */
-    LTexturePrivate *imp() const;
-
-private:
-    LTexturePrivate *m_imp = nullptr;
-
+    LPRIVATE_IMP(LTexture)
 };
 
 #endif

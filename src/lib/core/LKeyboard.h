@@ -251,19 +251,7 @@ public:
      */
     virtual void keyEvent(UInt32 keyCode, UInt32 keyState);
 
-    class LKeyboardPrivate;
-
-    /*!
-     * @brief Access to the private API of LKeyboard.
-     *
-     * Returns an instance of the LKeyboardPrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LKeyboard.\n
-     * Used internally by the library.
-     */
-    LKeyboardPrivate *imp() const;
-
-private:
-    LKeyboardPrivate *m_imp = nullptr;
-
+    LPRIVATE_IMP(LKeyboard)
 };
 
 #endif // LKEYBOARD_H

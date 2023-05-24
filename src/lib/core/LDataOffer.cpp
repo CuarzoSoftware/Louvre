@@ -37,11 +37,6 @@ LDataOffer::Usage LDataOffer::usedFor() const
     return imp()->usedFor;
 }
 
-LDataOffer::LDataOfferPrivate *LDataOffer::imp() const
-{
-    return m_imp;
-}
-
 #if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
 
 void LDataOffer::LDataOfferPrivate::updateDNDAction()

@@ -73,19 +73,8 @@ public:
      */
     const LPoint &hotspotB() const;
 
+    LPRIVATE_IMP(LDNDIconRole)
 
-    class LDNDIconRolePrivate;
-
-    /*!
-     * @brief Access to the private API of LDNDIconRole.
-     *
-     * Returns an instance of the LDNDIconRolePrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LDNDIconRole.\n
-     * Used internally by the library.
-     */
-    LDNDIconRolePrivate *imp() const;
-
-private:
-    LDNDIconRolePrivate *m_imp = nullptr;
     virtual void handleSurfaceOffset(Int32 x, Int32 y) override;
     virtual void handleSurfaceCommit() override;
     void globalScaleChanged(Int32 oldScale, Int32 newScale) override;

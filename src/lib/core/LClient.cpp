@@ -14,23 +14,23 @@ LClient::LClient(Params *params)
 
 LClient::~LClient()
 {
-    delete m_imp->params;
+    delete imp()->params;
     delete m_imp;
 }
 
 LCompositor *LClient::compositor() const
 {
-    return m_imp->params->compositor;
+    return imp()->params->compositor;
 }
 
 LSeat *LClient::seat() const
 {
-    return m_imp->params->compositor->seat();
+    return imp()->params->compositor->seat();
 }
 
 wl_client *LClient::client() const
 {
-    return m_imp->params->client;
+    return imp()->params->client;
 }
 
 LDataDevice &LClient::dataDevice() const
@@ -40,7 +40,7 @@ LDataDevice &LClient::dataDevice() const
 
 const list<LSurface *> &LClient::surfaces() const
 {
-    return m_imp->surfaces;
+    return imp()->surfaces;
 }
 
 const list<Protocols::Wayland::GOutput*> &LClient::outputGlobals() const
@@ -65,21 +65,16 @@ Protocols::Wayland::GDataDeviceManager *LClient::dataDeviceManagerGlobal() const
 
 wl_resource *LClient::touchResource() const
 {
-    return m_imp->touchResource;
-}
-
-LClient::LClientPrivate *LClient::imp() const
-{
-    return m_imp;
+    return imp()->touchResource;
 }
 
 wl_resource *LClient::xdgWmBaseResource() const
 {
-    return m_imp->xdgWmBaseResource;
+    return imp()->xdgWmBaseResource;
 }
 
 wl_resource *LClient::xdgDecorationManagerResource() const
 {
-    return m_imp->xdgDecorationManagerResource;
+    return imp()->xdgDecorationManagerResource;
 }
 

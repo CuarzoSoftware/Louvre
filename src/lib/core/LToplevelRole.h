@@ -488,21 +488,11 @@ public:
     virtual void decorationModeChanged();
 /// @}
 
-    class LToplevelRolePrivate;
+    LPRIVATE_IMP(LToplevelRole)
 
-    /*!
-     * @brief Access to the private API of LToplevelRole.
-     *
-     * Returns an instance of the LToplevelRolePrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LToplevelRole.\n
-     * Used internally by the library.
-     */
-    LToplevelRolePrivate *imp() const;
-private:
-    LToplevelRolePrivate *m_imp = nullptr;
     void handleSurfaceCommit() override;
     void handleParentMappingChange() override;
     void globalScaleChanged(Int32 oldScale, Int32 newScale) override;
-
 };
 
 #endif // LTOPLEVELROLE_H

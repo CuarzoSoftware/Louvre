@@ -35,11 +35,6 @@ const LPoint &LSubsurfaceRole::localPosC() const
     return imp()->currentLocalPosC;
 }
 
-LSubsurfaceRole::LSubsurfaceRolePrivate *LSubsurfaceRole::imp() const
-{
-    return m_imp;
-}
-
 bool LSubsurfaceRole::acceptCommitRequest(Protocols::Wayland::RSurface::CommitOrigin origin)
 {
     if (isSynced())

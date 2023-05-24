@@ -48,7 +48,7 @@ void LPopupRole::configureC(const LRect &r)
 
 void LPopupRole::sendPopupDoneEvent()
 {
-    if (m_imp->dismissed)
+    if (imp()->dismissed)
         return;
 
     list<LSurface*>::const_reverse_iterator s = surface()->children().rbegin();
@@ -61,7 +61,7 @@ void LPopupRole::sendPopupDoneEvent()
     xdg_popup_send_popup_done(resource());
     surface()->imp()->mapped = false;
     surface()->mappingChanged();
-    m_imp->dismissed = true;
+    imp()->dismissed = true;
 }
 
 
@@ -85,12 +85,7 @@ const LRect &LPopupRole::windowGeometryC() const
 
 const LPositioner &LPopupRole::positioner() const
 {
-    return m_imp->positioner;
-}
-
-LPopupRole::LPopupRolePrivate *LPopupRole::imp() const
-{
-    return m_imp;
+    return imp()->positioner;
 }
 
 void LPopupRole::handleSurfaceCommit()
@@ -175,16 +170,16 @@ void LPopupRole::globalScaleChanged(Int32 oldScale, Int32 newScale)
 
 void LPopupRole::setPositionerBoundsC(const LRect &bounds)
 {
-    m_imp->positionerBoundsC = bounds;
-    m_imp->positionerBoundsS = bounds / compositor()->globalScale();
+    imp()->positionerBoundsC = bounds;
+    imp()->positionerBoundsS = bounds / compositor()->globalScale();
 }
 
 const LRect &LPopupRole::positionerBoundsC() const
 {
-    return m_imp->positionerBoundsC;
+    return imp()->positionerBoundsC;
 }
 
 const LRect &LPopupRole::positionerBoundsS() const
 {
-    return m_imp->positionerBoundsS;
+    return imp()->positionerBoundsS;
 }

@@ -42,22 +42,9 @@ public:
      */
     LSeat *seat() const;
 
-    class LDataDevicePrivate;
-
-    /*!
-     * @brief Access to the private API of LDataDevice.
-     *
-     * Returns an instance of the LDataDevicePrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LDataDevice.\n
-     * Used internally by the library.
-     */
-    LDataDevicePrivate *imp() const;
-
-private:
+    LPRIVATE_IMP(LDataDevice)
 
     friend class Louvre::LClient;
-
-    LDataDevicePrivate *m_imp = nullptr;
-
     LDataDevice();
     ~LDataDevice();
 };

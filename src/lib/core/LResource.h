@@ -19,11 +19,7 @@ public:
     LCompositor *compositor() const;
     Int32 version() const;
 
-    class LResourcePrivate;
-
-    LResourcePrivate *imp() const;
-private:
-    LResourcePrivate *m_imp = nullptr;
+    LPRIVATE_IMP(LResource)
 };
 
 #endif // LRESOURCE_H

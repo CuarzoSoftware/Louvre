@@ -63,21 +63,12 @@ public:
      */
     Protocols::Wayland::RDataSource *dataSourceResource() const;
 
-    class LDataSourcePrivate;
+    LPRIVATE_IMP(LDataSource)
 
-    /*!
-     * @brief Access to the private API of LDataSource.
-     *
-     * Returns an instance of the LDataSourcePrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LDataSource.\n
-     * Used internally by the library.
-     */
-    LDataSourcePrivate *imp() const;
-private:
     friend class Protocols::Wayland::RDataSource;
     friend class Protocols::Wayland::RDataDevice;
     LDataSource(Protocols::Wayland::RDataSource *dataSourceResource);
     ~LDataSource();
-    LDataSourcePrivate *m_imp = nullptr;
 };
 
 #endif // LDATASOURCE_H

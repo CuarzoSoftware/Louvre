@@ -28,7 +28,7 @@ LDataDevice::~LDataDevice()
 
 LClient *LDataDevice::client() const
 {
-    return m_imp->client;
+    return imp()->client;
 }
 
 LSeat *LDataDevice::seat() const
@@ -145,9 +145,3 @@ void LDataDevice::LDataDevicePrivate::sendDNDLeaveEvent()
     seat->dndManager()->imp()->matchedMimeType = false;
     seat->dndManager()->imp()->focus = nullptr;
 }
-
-LDataDevice::LDataDevicePrivate *LDataDevice::imp() const
-{
-    return m_imp;
-}
-

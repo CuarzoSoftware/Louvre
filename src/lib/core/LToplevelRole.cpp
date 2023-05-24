@@ -24,11 +24,11 @@ using namespace Louvre;
 LToplevelRole::LToplevelRole(Louvre::LToplevelRole::Params *params) : LBaseSurfaceRole(params->toplevel, params->surface, LSurface::Role::Toplevel)
 {
     m_imp = new LToplevelRolePrivate();
-    m_imp->toplevel = this;
-    m_imp->appId = new char[1];
-    m_imp->title = new char[1];
-    m_imp->appId[0] = '\0';
-    m_imp->title[0] = '\0';
+    imp()->toplevel = this;
+    imp()->appId = new char[1];
+    imp()->title = new char[1];
+    imp()->appId[0] = '\0';
+    imp()->title[0] = '\0';
 }
 
 LToplevelRole::~LToplevelRole()
@@ -49,19 +49,19 @@ LToplevelRole::~LToplevelRole()
     if (seat()->activeToplevel() == this)
         seat()->imp()->activeToplevel = nullptr;
 
-    delete []m_imp->appId;
-    delete []m_imp->title;
+    delete []imp()->appId;
+    delete []imp()->title;
     delete m_imp;
 }
 #if LOUVRE_XDG_WM_BASE_VERSION >= XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION
 UChar8 LToplevelRole::wmCapabilities() const
 {
-    return m_imp->wmCapabilities;
+    return imp()->wmCapabilities;
 }
 
 void LToplevelRole::setWmCapabilities(UChar8 capabilitiesFlags)
 {
-    m_imp->wmCapabilities = capabilitiesFlags;
+    imp()->wmCapabilities = capabilitiesFlags;
 
     if (wl_resource_get_version(resource()) < XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION)
         return;
@@ -71,28 +71,28 @@ void LToplevelRole::setWmCapabilities(UChar8 capabilitiesFlags)
     wl_array_init(&dummy);
     UInt32 index = 0;
 
-    if (m_imp->wmCapabilities & WmCapabilities::WmWindowMenu)
+    if (imp()->wmCapabilities & WmCapabilities::WmWindowMenu)
     {
         wl_array_add(&dummy, sizeof(UInt32));
         UInt32 *s = (UInt32*)dummy.data;
         s[index] = XDG_TOPLEVEL_WM_CAPABILITIES_WINDOW_MENU;
         index++;
     }
-    if (m_imp->wmCapabilities & WmCapabilities::WmMaximize)
+    if (imp()->wmCapabilities & WmCapabilities::WmMaximize)
     {
         wl_array_add(&dummy, sizeof(UInt32));
         UInt32 *s = (UInt32*)dummy.data;
         s[index] = XDG_TOPLEVEL_WM_CAPABILITIES_MAXIMIZE;
         index++;
     }
-    if (m_imp->wmCapabilities & WmCapabilities::WmFullscreen)
+    if (imp()->wmCapabilities & WmCapabilities::WmFullscreen)
     {
         wl_array_add(&dummy, sizeof(UInt32));
         UInt32 *s = (UInt32*)dummy.data;
         s[index] = XDG_TOPLEVEL_WM_CAPABILITIES_FULLSCREEN;
         index++;
     }
-    if (m_imp->wmCapabilities & WmCapabilities::WmMinimize)
+    if (imp()->wmCapabilities & WmCapabilities::WmMinimize)
     {
         wl_array_add(&dummy, sizeof(UInt32));
         UInt32 *s = (UInt32*)dummy.data;
@@ -114,22 +114,22 @@ void LToplevelRole::ping(UInt32 serial)
 
 bool LToplevelRole::maximized() const
 {
-    return bool(m_imp->stateFlags & LToplevelRole::Maximized);
+    return bool(imp()->stateFlags & LToplevelRole::Maximized);
 }
 
 bool LToplevelRole::fullscreen() const
 {
-    return m_imp->stateFlags & LToplevelRole::Fullscreen;
+    return imp()->stateFlags & LToplevelRole::Fullscreen;
 }
 
 bool LToplevelRole::activated() const
 {
-    return m_imp->stateFlags & LToplevelRole::Activated;
+    return imp()->stateFlags & LToplevelRole::Activated;
 }
 
 UInt32 LToplevelRole::states() const
 {
-    return m_imp->stateFlags;
+    return imp()->stateFlags;
 }
 
 void LToplevelRole::setDecorationMode(DecorationMode mode)
@@ -137,25 +137,19 @@ void LToplevelRole::setDecorationMode(DecorationMode mode)
     if (decorationMode() == mode)
         return;
 
-    m_imp->pendingDecorationMode = mode;
+    imp()->pendingDecorationMode = mode;
 
-    if (!m_imp->xdgDecoration)
+    if (!imp()->xdgDecoration)
         return;
 
-    m_imp->lastDecorationModeConfigureSerial = LWayland::nextSerial();
-    zxdg_toplevel_decoration_v1_send_configure(m_imp->xdgDecoration, mode);
+    imp()->lastDecorationModeConfigureSerial = LWayland::nextSerial();
+    zxdg_toplevel_decoration_v1_send_configure(imp()->xdgDecoration, mode);
 }
 
 LToplevelRole::DecorationMode LToplevelRole::decorationMode() const
 {
-    return m_imp->decorationMode;
+    return imp()->decorationMode;
 }
-
-LToplevelRole::LToplevelRolePrivate *LToplevelRole::imp() const
-{
-    return m_imp;
-}
-
 
 void LToplevelRole::handleSurfaceCommit()
 {
@@ -425,7 +419,7 @@ void LToplevelRole::configureC(Int32 width, Int32 height, UInt32 stateFlags)
     }
 #endif
 
-    m_imp->sentConfs.push_back(conf);
+    imp()->sentConfs.push_back(conf);
     xdg_toplevel_send_configure(resource(), conf.sizeS.w(), conf.sizeS.h(), &dummy);
     wl_array_release(&dummy);
 
@@ -454,27 +448,27 @@ const LRect &LToplevelRole::windowGeometryC() const
     void LToplevelRole::configureBoundsC(const LSize &bounds)
     {
 
-        m_imp->boundsC = bounds;
-        m_imp->boundsS = bounds/compositor()->globalScale();
+        imp()->boundsC = bounds;
+        imp()->boundsS = bounds/compositor()->globalScale();
 
         if (wl_resource_get_version(resource()) <= XDG_TOPLEVEL_CONFIGURE_BOUNDS_SINCE_VERSION)
             return;
 
         xdg_toplevel_send_configure_bounds(
                     resource(),
-                    m_imp->boundsS.w() / compositor()->globalScale(),
-                    m_imp->boundsS.h() / compositor()->globalScale());
+                    imp()->boundsS.w() / compositor()->globalScale(),
+                    imp()->boundsS.h() / compositor()->globalScale());
         configureC(states());
     }
 
     const LSize &LToplevelRole::boundsS() const
     {
-        return m_imp->boundsS;
+        return imp()->boundsS;
     }
 
     const LSize &LToplevelRole::boundsC() const
     {
-        return m_imp->boundsC;
+        return imp()->boundsC;
     }
 #endif
 

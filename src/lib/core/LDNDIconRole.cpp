@@ -24,22 +24,17 @@ LDNDIconRole::~LDNDIconRole()
 
 const LPoint &LDNDIconRole::hotspotS() const
 {
-    return m_imp->currentHotspotS;
+    return imp()->currentHotspotS;
 }
 
 const LPoint &LDNDIconRole::hotspotC() const
 {
-    return m_imp->currentHotspotC;
+    return imp()->currentHotspotC;
 }
 
 const LPoint &LDNDIconRole::hotspotB() const
 {
-    return m_imp->currentHotspotB;
-}
-
-LDNDIconRole::LDNDIconRolePrivate *LDNDIconRole::imp() const
-{
-    return m_imp;
+    return imp()->currentHotspotB;
 }
 
 void LDNDIconRole::handleSurfaceOffset(Int32 x, Int32 y)

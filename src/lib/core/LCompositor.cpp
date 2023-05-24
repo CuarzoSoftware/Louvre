@@ -33,12 +33,12 @@ LCompositor::LCompositor()
 {
     LLog::init();
     m_imp = new LCompositorPrivate();
-    m_imp->compositor = this;
+    imp()->compositor = this;
 
     LWayland::initWayland(this);
 
     // Store the main thread id for later use (in LCursor)
-    m_imp->threadId = std::this_thread::get_id();
+    imp()->threadId = std::this_thread::get_id();
 
 }
 
@@ -54,17 +54,17 @@ bool LCompositor::inputBackendInitialized() const
 
 bool LCompositor::loadGraphicBackend(const char *path)
 {
-    return m_imp->loadGraphicBackend(path);
+    return imp()->loadGraphicBackend(path);
 }
 
 bool LCompositor::loadInputBackend(const char *path)
 {
-    return m_imp->loadInputBackend(path);
+    return imp()->loadInputBackend(path);
 }
 
 Int32 LCompositor::globalScale() const
 {
-    return m_imp->globalScale;
+    return imp()->globalScale;
 }
 
 LCompositor::~LCompositor()
@@ -214,7 +214,7 @@ void LCompositor::raiseSurface(LSurface *surface)
         return;
     }
 
-    m_imp->raiseChildren(surface);
+    imp()->raiseChildren(surface);
 }
 
 bool LCompositor::LCompositorPrivate::loadGraphicBackend(const char *path)
@@ -314,12 +314,12 @@ void LCompositor::LCompositorPrivate::updateGlobalScale()
 
 LCursor *LCompositor::cursor() const
 {
-    return m_imp->cursor;
+    return imp()->cursor;
 }
 
 LSeat *LCompositor::seat() const
 {
-    return m_imp->seat;
+    return imp()->seat;
 }
 
 void LCompositor::repaintAllOutputs()
@@ -350,7 +350,7 @@ bool LCompositor::addOutput(LOutput *output)
 void LCompositor::removeOutput(LOutput *output)
 {
     // Iteramos para verificar si efectivamente la salida estaba añadida
-    for (list<LOutput*>::iterator it = m_imp->outputs.begin(); it != m_imp->outputs.end(); it++)
+    for (list<LOutput*>::iterator it = imp()->outputs.begin(); it != imp()->outputs.end(); it++)
     {
         if (*it == output)
         {
@@ -400,22 +400,22 @@ void LCompositor::removeOutput(LOutput *output)
 
 LOutputManager *LCompositor::outputManager() const
 {
-    return m_imp->outputManager;
+    return imp()->outputManager;
 }
 
 const list<LSurface *> &LCompositor::surfaces() const
 {
-    return m_imp->surfaces;
+    return imp()->surfaces;
 }
 
 const list<LOutput *> &LCompositor::outputs() const
 {
-    return m_imp->outputs;
+    return imp()->outputs;
 }
 
 const list<LClient *> &LCompositor::clients() const
 {
-    return m_imp->clients;
+    return imp()->clients;
 }
 
 LClient *LCompositor::getClientFromNativeResource(wl_client *client)
@@ -436,12 +436,5 @@ LClient *LCompositor::getClientFromNativeResource(wl_client *client)
 
 thread::id LCompositor::mainThreadId() const
 {
-    return m_imp->threadId;
+    return imp()->threadId;
 }
-
-LCompositor::LCompositorPrivate *LCompositor::imp() const
-{
-    return m_imp;
-}
-
-

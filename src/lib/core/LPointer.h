@@ -524,19 +524,7 @@ public:
     virtual void setCursorRequest(LCursorRole *cursorRole);
 ///@}
 
-    class LPointerPrivate;
-
-    /*!
-     * @brief Access to the private API of LPointer.
-     *
-     * Returns an instance of the LPointerPrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LPointer.\n
-     * Used internally by the library.
-     */
-    LPointerPrivate *imp() const;
-
-private:
-    LPointerPrivate *m_imp = nullptr;
-
+    LPRIVATE_IMP(LPointer)
 };
 
 

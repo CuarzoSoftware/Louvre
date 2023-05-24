@@ -176,9 +176,3 @@ GLenum LTexture::format() const
 {
     return imp()->format;
 }
-
-LTexture::LTexturePrivate *LTexture::imp() const
-{
-    return m_imp;
-}
-

@@ -77,23 +77,13 @@ public:
      */
     void bindProgram();
 
-    class LPainterPrivate;
+    LPRIVATE_IMP(LPainter)
 
-    /*!
-     * @brief Access to the private API of LPainter.
-     *
-     * Returns an instance of the LPainterPrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LPainter.\n
-     * Used internally by the library.
-     */
-    LPainterPrivate *imp() const;
-private:
     friend class LCompositor;
     friend class LWayland;
     friend class LOutput;
-    LPainterPrivate *m_imp = nullptr;
     LPainter();
     ~LPainter();
-
 };
 
 

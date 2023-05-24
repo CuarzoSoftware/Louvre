@@ -56,21 +56,11 @@ public:
      */
     Protocols::Wayland::RDataOffer *dataOfferResource() const;
 
+    LPRIVATE_IMP(LDataOffer)
 
-    class LDataOfferPrivate;
-
-    /*!
-     * @brief Access to the private API of LDataOffer.
-     *
-     * Returns an instance of the LDataOfferPrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LDataOffer.\n
-     * Used internally by the library.
-     */
-    LDataOfferPrivate *imp() const;
-private:
     friend class Protocols::Wayland::RDataOffer;
     LDataOffer(Protocols::Wayland::RDataOffer *dataOfferResource);
     ~LDataOffer();
-    LDataOfferPrivate *m_imp = nullptr;
 };
 
 #endif // LDATAOFFER_H

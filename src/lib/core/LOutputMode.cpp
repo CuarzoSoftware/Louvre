@@ -7,12 +7,12 @@ using namespace Louvre;
 LOutputMode::LOutputMode(const LOutput *output)
 {
     m_imp = new LOutputModePrivate();
-    m_imp->output = output;
+    imp()->output = output;
 }
 
 const LOutput *LOutputMode::output() const
 {
-    return m_imp->output;
+    return imp()->output;
 }
 
 LOutputMode::~LOutputMode()
@@ -33,9 +33,4 @@ UInt32 LOutputMode::refreshRate() const
 bool LOutputMode::isPreferred() const
 {
     return output()->compositor()->imp()->graphicBackend->getOutputModeIsPreferred((LOutputMode*)this);
-}
-
-LOutputMode::LOutputModePrivate *LOutputMode::imp() const
-{
-    return m_imp;
 }

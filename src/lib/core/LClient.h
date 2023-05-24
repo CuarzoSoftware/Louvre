@@ -122,17 +122,7 @@ public:
      */
     wl_resource *touchResource() const;
 
-    class LClientPrivate;
-
-    /*!
-     * @brief Access to the private API of LClient.
-     *
-     * Returns an instance of the LClientPrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LClient.\n
-     * Used internally by the library.
-     */
-    LClientPrivate *imp() const;
-private:
-    LClientPrivate *m_imp = nullptr;
+    LPRIVATE_IMP(LClient)
 
 };
 
