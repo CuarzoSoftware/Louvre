@@ -38,5 +38,5 @@ void RRegion::RRegionPrivate::subtract(wl_client *client, wl_resource *resource,
     if (height > MAX_SURFACE_SIZE)
         height = MAX_SURFACE_SIZE;
 
-    lRRegion->imp()->region.subtractRect(LRect(x,y,width,height));
+    lRRegion->imp()->region.subtractRect(LRect(x, y, width, height));
 }

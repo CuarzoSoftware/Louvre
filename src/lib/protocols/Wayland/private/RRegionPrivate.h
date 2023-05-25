@@ -1,8 +1,8 @@
 #ifndef REGIONRESOURCEPRIVATE_H
 #define REGIONRESOURCEPRIVATE_H
 
-#include <LRegion.h>
 #include <protocols/Wayland/RRegion.h>
+#include <LRegion.h>
 
 using namespace Louvre::Protocols::Wayland;
 
@@ -14,6 +14,5 @@ LPRIVATE_CLASS(RRegion)
 
     LRegion region;
 };
-
 
 #endif // REGIONRESOURCEPRIVATE_H

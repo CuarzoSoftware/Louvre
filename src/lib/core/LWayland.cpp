@@ -9,13 +9,13 @@
 #include <private/LSeatPrivate.h>
 #include <private/LCursorPrivate.h>
 
-
 #include <protocols/Wayland/private/GSeatPrivate.h>
 #include <protocols/Wayland/private/GCompositorPrivate.h>
+#include <protocols/Wayland/private/GSubcompositorPrivate.h>
 #include <protocols/Wayland/private/GDataDeviceManagerPrivate.h>
 
 #include <protocols/Wayland/RRegion.h>
-#include <protocols/Wayland/Subcompositor.h>
+#include <protocols/Wayland/GSubcompositor.h>
 #include <protocols/Wayland/RSurface.h>
 #include <protocols/Wayland/GOutput.h>
 
@@ -46,7 +46,7 @@
 
 
 using namespace std;
-using namespace Louvre;
+using namespace Louvre::Protocols::Wayland;
 
 PFNEGLBINDWAYLANDDISPLAYWL eglBindWaylandDisplayWL = NULL;
 
@@ -143,13 +143,13 @@ int LWayland::initWayland(LCompositor *comp)
     // GLOBALS
 
     wl_global_create(display, &wl_compositor_interface,
-                     LOUVRE_COMPOSITOR_VERSION, comp, &Protocols::Wayland::GCompositor::GCompositorPrivate::bind);
+                     LOUVRE_COMPOSITOR_VERSION, comp, &GCompositor::GCompositorPrivate::bind);
 
     wl_global_create(display, &wl_subcompositor_interface,
-                     LOUVRE_SUBCOMPOSITOR_VERSION, comp, &Globals::Subcompositor::bind);
+                     LOUVRE_SUBCOMPOSITOR_VERSION, comp, &GSubcompositor::GSubcompositorPrivate::bind);
 
     wl_global_create(display, &wl_data_device_manager_interface,
-                     LOUVRE_DATA_DEVICE_MANAGER_VERSION, comp, &Protocols::Wayland::GDataDeviceManager::GDataDeviceManagerPrivate::bind);
+                     LOUVRE_DATA_DEVICE_MANAGER_VERSION, comp, &GDataDeviceManager::GDataDeviceManagerPrivate::bind);
 
     wl_global_create(display, &xdg_wm_base_interface,
                      LOUVRE_XDG_WM_BASE_VERSION, comp, &Extensions::XdgShell::WmBase::bind);

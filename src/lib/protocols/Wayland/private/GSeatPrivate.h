@@ -6,8 +6,6 @@
 using namespace Louvre::Protocols::Wayland;
 
 LPRIVATE_CLASS(GSeat)
-
-    // Implementation
     static void bind(wl_client *client, void *compositor, UInt32 version, UInt32 id);
     static void resource_destroy(wl_resource *resource);
     static void get_pointer(wl_client *client, wl_resource *resource, UInt32 id);

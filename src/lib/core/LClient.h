@@ -85,6 +85,11 @@ public:
     Protocols::Wayland::GCompositor *compositorGlobal() const;
 
     /*!
+     * @brief List of resources generated when the client binds to the **wl_subcompositor** global of the Wayland protocol.
+     */
+    list<Protocols::Wayland::GSubcompositor*> &subcompositorGlobals() const;
+
+    /*!
      * @brief List of resources generated when the client binds to the **wl_seat** global of the Wayland protocol.
      */
     list<Protocols::Wayland::GSeat*> &seatGlobals() const;

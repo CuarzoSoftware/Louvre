@@ -197,6 +197,7 @@ namespace Louvre
         namespace Wayland
         {
             class GCompositor;
+            class GSubcompositor;
             class GSeat;
             class GDataDeviceManager;
             class GOutput;
@@ -208,6 +209,7 @@ namespace Louvre
             class RDataDevice;
             class RDataSource;
             class RDataOffer;
+            class RSubsurface;
         }
 
         namespace LinuxDMABuff
@@ -217,13 +219,6 @@ namespace Louvre
             class WRFeedback;
         };
     }
-
-    // Wayland Globals
-    namespace Globals
-    {
-        class Subcompositor;
-        class Subsurface;
-    };
 
     // Extensions Globals
     namespace Extensions

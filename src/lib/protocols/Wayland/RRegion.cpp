@@ -15,15 +15,20 @@ struct wl_region_interface region_implementation =
     .subtract = &RRegion::RRegionPrivate::subtract
 };
 
-Protocols::Wayland::RRegion::RRegion(GCompositor *compositorGlobal,
-                                                   UInt32 id) :
-    LResource(
+RRegion::RRegion
+(
+    GCompositor *compositorGlobal,
+    UInt32 id
+)
+    :LResource
+    (
         compositorGlobal->client(),
         &wl_region_interface,
         compositorGlobal->version(),
         id,
         &region_implementation,
-        &RRegion::RRegionPrivate::resource_destroy)
+        &RRegion::RRegionPrivate::resource_destroy
+)
 {
     m_imp = new RRegionPrivate();
 }
@@ -33,7 +38,7 @@ RRegion::~RRegion()
     delete m_imp;
 }
 
-const LRegion &Protocols::Wayland::RRegion::region() const
+const LRegion &RRegion::region() const
 {
     return imp()->region;
 }

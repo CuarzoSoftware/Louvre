@@ -1,11 +1,11 @@
-#ifndef SUBSURFACE_H
-#define SUBSURFACE_H
+#ifndef RSUBSURFACEPRIVATE_H
+#define RSUBSURFACEPRIVATE_H
 
-#include <LNamespaces.h>
+#include <protocols/Wayland/RSubsurface.h>
 
-class Louvre::Globals::Subsurface
-{
-public:
+using namespace Louvre::Protocols::Wayland;
+
+LPRIVATE_CLASS(RSubsurface)
     static void resource_destroy(wl_resource *resource);
     static void destroy(wl_client *client, wl_resource *resource);
     static void set_position(wl_client *client, wl_resource *resource, Int32 x, Int32 y);
@@ -14,7 +14,8 @@ public:
     static void set_sync(wl_client *client, wl_resource *resource);
     static void set_desync(wl_client *client, wl_resource *resource);
 
-    static void sync_all_children_surfaces(LSurface *surface);
+    LSubsurfaceRole *lSubsurfaceRole = nullptr;
 };
 
-#endif // SUBSURFACE_H
+
+#endif // RSUBSURFACEPRIVATE_H

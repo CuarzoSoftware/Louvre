@@ -34,6 +34,9 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
 {
     L_UNUSED(client);
 
+    /* TODO: Use serial. */
+    L_UNUSED(serial);
+
     RDataDevice *lRDataDevice = (RDataDevice*)wl_resource_get_user_data(resource);
     LDNDManager *dndManager = lRDataDevice->compositor()->seat()->dndManager();
 
@@ -112,6 +115,9 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
 
 void RDataDevice::RDataDevicePrivate::set_selection(wl_client *, wl_resource *resource, wl_resource *source, UInt32 serial)
 {
+    /* TODO: Use serial. */
+    L_UNUSED(serial);
+
     RDataDevice *lRDataDevice = (RDataDevice*)wl_resource_get_user_data(resource);
     LSeat *lSeat = lRDataDevice->client()->seat();
 

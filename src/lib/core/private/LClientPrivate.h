@@ -26,6 +26,8 @@ public:
 
     list<Protocols::Wayland::GOutput*> outputGlobals;
     list<Protocols::Wayland::GSeat*> seatGlobals;
+    list<Protocols::Wayland::GSubcompositor*> subcompositorGlobals;
+
     Protocols::Wayland::GDataDeviceManager *dataDeviceManagerGlobal = nullptr;
     Protocols::Wayland::GCompositor *compositorGlobal = nullptr;
 

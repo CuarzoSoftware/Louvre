@@ -53,6 +53,11 @@ Protocols::Wayland::GCompositor *LClient::compositorGlobal() const
     return imp()->compositorGlobal;
 }
 
+list<Protocols::Wayland::GSubcompositor *> &LClient::subcompositorGlobals() const
+{
+    return imp()->subcompositorGlobals;
+}
+
 list<Protocols::Wayland::GSeat*> &LClient::seatGlobals() const
 {
     return imp()->seatGlobals;

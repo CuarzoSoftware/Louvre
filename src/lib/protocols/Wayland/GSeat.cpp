@@ -2,11 +2,10 @@
 #include <protocols/Wayland/private/RPointerPrivate.h>
 #include <protocols/Wayland/private/RDataDevicePrivate.h>
 #include <protocols/Wayland/private/GSeatPrivate.h>
+
 #include <private/LClientPrivate.h>
+
 #include <LCompositor.h>
-
-using namespace Louvre::Globals;
-
 
 GSeat::GSeat(LCompositor *compositor,
                              wl_client *client,
@@ -73,4 +72,3 @@ RDataDevice *GSeat::dataDeviceResource() const
 {
     return imp()->dataDeviceResource;
 }
-

@@ -1,27 +1,26 @@
-#include "protocols/Wayland/GSeat.h"
-#include <cstring>
 #include <protocols/Wayland/private/RDataOfferPrivate.h>
 #include <protocols/Wayland/private/RDataSourcePrivate.h>
 #include <protocols/Wayland/private/RDataDevicePrivate.h>
 
-#include <LClient.h>
-#include <LSeat.h>
+#include <protocols/Wayland/GSeat.h>
+
 #include <private/LDNDManagerPrivate.h>
 #include <private/LDataOfferPrivate.h>
 #include <private/LDataDevicePrivate.h>
+
+#include <LClient.h>
+#include <LSeat.h>
+
 #include <unistd.h>
+#include <cstring>
 
 void RDataOffer::RDataOfferPrivate::resource_destroy(wl_resource *resource)
 {
     RDataOffer *lRDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
 
     for (Protocols::Wayland::GSeat *s : lRDataOffer->client()->seatGlobals())
-    {
         if (s->dataDeviceResource() && s->dataDeviceResource()->dataOffered() == lRDataOffer->dataOffer())
-        {
             s->dataDeviceResource()->imp()->dataOffered = nullptr;
-        }
-    }
 
     delete lRDataOffer;
 }
@@ -34,7 +33,9 @@ void RDataOffer::RDataOfferPrivate::destroy(wl_client *, wl_resource *resource)
 void RDataOffer::RDataOfferPrivate::accept(wl_client *client, wl_resource *resource, UInt32 serial, const char *mime_type)
 {
     L_UNUSED(client);
+    L_UNUSED(serial);
 
+    /* TODO: Use serial */
     RDataOffer *lRDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
 
 #if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
@@ -44,7 +45,6 @@ void RDataOffer::RDataOfferPrivate::accept(wl_client *client, wl_resource *resou
 
     if (mime_type != NULL)
         lRDataOffer->client()->seat()->dndManager()->imp()->matchedMimeType = true;
-
 }
 
 #if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
@@ -70,7 +70,6 @@ void RDataOffer::RDataOfferPrivate::finish(wl_client *client, wl_resource *resou
         lRDataOffer->client()->seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDLeaveEvent();
 
     lRDataOffer->client()->seat()->dndManager()->imp()->clear();
-
 }
 #endif
 
@@ -119,7 +118,6 @@ void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *reso
 }
 
 #if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
-
 void RDataOffer::RDataOfferPrivate::set_actions(wl_client *, wl_resource *resource, UInt32 dnd_actions, UInt32 preferred_action)
 {
     RDataOffer *lRDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);

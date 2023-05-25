@@ -12,5 +12,4 @@ public:
     LPRIVATE_IMP(GCompositor)
 };
 
-
 #endif // COMPOSITORGLOBAL_H

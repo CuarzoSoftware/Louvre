@@ -28,13 +28,20 @@ struct wl_data_offer_interface dataOffer_implementation =
 #endif
 };
 
-RDataOffer::RDataOffer(RDataDevice *dataDeviceResource, UInt32 id) :
-    LResource(dataDeviceResource->client(),
-              &wl_data_offer_interface,
-              dataDeviceResource->version(),
-              id,
-              &dataOffer_implementation,
-              &RDataOffer::RDataOfferPrivate::resource_destroy)
+RDataOffer::RDataOffer
+(
+    RDataDevice *dataDeviceResource,
+    UInt32 id
+)
+    :LResource
+    (
+        dataDeviceResource->client(),
+        &wl_data_offer_interface,
+        dataDeviceResource->version(),
+        id,
+        &dataOffer_implementation,
+        &RDataOffer::RDataOfferPrivate::resource_destroy
+    )
 {
     m_imp = new RDataOfferPrivate();
     imp()->dataDeviceResource = dataDeviceResource;
@@ -48,14 +55,15 @@ RDataOffer::~RDataOffer()
 
 void RDataOffer::sendAction(UInt32 action)
 {
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
-    if (version() >= 3)
+#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= WL_DATA_OFFER_ACTION_SINCE_VERSION
+    if (version() >= WL_DATA_OFFER_ACTION_SINCE_VERSION)
         wl_data_offer_send_action(resource(), action);
 #endif
 }
 
 void RDataOffer::sendSourceActions(UInt32 actions)
 {
+    L_UNUSED(actions);
 #if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
     if (version() >= 3 && client()->seat()->dndManager()->source()->dataSourceResource()->version() >= 3)
         wl_data_offer_send_source_actions(resource(), client()->seat()->dndManager()->source()->dndActions());
@@ -76,4 +84,3 @@ RDataDevice *RDataOffer::dataDeviceResource() const
 {
     return imp()->dataDeviceResource;
 }
-
