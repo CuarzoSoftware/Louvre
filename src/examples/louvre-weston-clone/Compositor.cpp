@@ -44,7 +44,7 @@ LPopupRole *Compositor::createPopupRoleRequest(LPopupRole::Params *params)
 
 LPointer *Compositor::createPointerRequest(LPointer::Params *params)
 {
-    return new Pointer(params);
+    return new LPointer(params);
 }
 
 

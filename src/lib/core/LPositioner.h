@@ -148,18 +148,9 @@ public:
     };
 
     /*!
-     * @brief Wayland client instance
-     *
-     * Pointer to the client that created the Popup.
+     * @brief Compositor instance
      */
-    LClient *client() const;
-
-    /*!
-     * @brief Wayland resource
-     *
-     * xdg_positioner resource from the XDG Shell protocol.
-     */
-    wl_resource *resource() const;
+    LCompositor *compositor() const;
 
     /*!
      * @brief Size in surface coordinates

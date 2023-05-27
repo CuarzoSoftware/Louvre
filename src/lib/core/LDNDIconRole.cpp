@@ -7,7 +7,7 @@
 
 using namespace Louvre;
 
-LDNDIconRole::LDNDIconRole(Louvre::LDNDIconRole::Params *params) : LBaseSurfaceRole(params->surface->surfaceResource()->resource(), params->surface, LSurface::Role::DNDIcon)
+LDNDIconRole::LDNDIconRole(Params *params) : LBaseSurfaceRole(params->surface->surfaceResource(), params->surface, LSurface::Role::DNDIcon)
 {
     m_imp = new LDNDIconRolePrivate();
 

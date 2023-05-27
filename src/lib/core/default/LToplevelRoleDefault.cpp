@@ -18,13 +18,6 @@ const LPoint &LToplevelRole::rolePosC() const
 }
 //! [rolePosC]
 
-//! [pong]
-void LToplevelRole::pong(UInt32)
-{
-    /* No default implementation */
-}
-//! [pong]
-
 //! [startMoveRequest]
 void LToplevelRole::startMoveRequest()
 {

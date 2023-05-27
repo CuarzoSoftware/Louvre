@@ -349,11 +349,6 @@ wl_buffer *LSurface::buffer() const
     return (wl_buffer*)imp()->current.buffer;
 }
 
-wl_resource *LSurface::xdgRSurface() const
-{
-    return imp()->xdgRSurface;
-}
-
 LClient *LSurface::client() const
 {
     return surfaceResource()->client();

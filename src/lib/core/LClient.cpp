@@ -1,15 +1,27 @@
+#include <protocols/XdgShell/GXdgWmBase.h>
+
 #include <private/LClientPrivate.h>
 #include <private/LDataDevicePrivate.h>
+
 #include <LCompositor.h>
 #include <LClient.h>
-
-using namespace Louvre;
 
 LClient::LClient(Params *params)
 {
     m_imp = new LClientPrivate();
     imp()->params = params;
     dataDevice().imp()->client = this;
+}
+
+void LClient::ping(UInt32 serial) const
+{
+    /* If the client is not bound to any xdg_wm_base global call pong
+     * immediatelly. (The user has no way to know if the
+     * client is frozen anyway). */
+    if (imp()->xdgWmBaseGlobals.empty())
+        pong(serial);
+    else
+        imp()->xdgWmBaseGlobals.front()->ping(serial);
 }
 
 LClient::~LClient()
@@ -43,43 +55,37 @@ const list<LSurface *> &LClient::surfaces() const
     return imp()->surfaces;
 }
 
-const list<Protocols::Wayland::GOutput*> &LClient::outputGlobals() const
+const list<Wayland::GOutput*> &LClient::outputGlobals() const
 {
     return imp()->outputGlobals;
 }
 
-Protocols::Wayland::GCompositor *LClient::compositorGlobal() const
+const Wayland::GCompositor *LClient::compositorGlobal() const
 {
     return imp()->compositorGlobal;
 }
 
-list<Protocols::Wayland::GSubcompositor *> &LClient::subcompositorGlobals() const
+const list<Wayland::GSubcompositor *> &LClient::subcompositorGlobals() const
 {
     return imp()->subcompositorGlobals;
 }
 
-list<Protocols::Wayland::GSeat*> &LClient::seatGlobals() const
+const list<Wayland::GSeat*> &LClient::seatGlobals() const
 {
     return imp()->seatGlobals;
 }
 
-Protocols::Wayland::GDataDeviceManager *LClient::dataDeviceManagerGlobal() const
+const Wayland::GDataDeviceManager *LClient::dataDeviceManagerGlobal() const
 {
     return imp()->dataDeviceManagerGlobal;
 }
 
-wl_resource *LClient::touchResource() const
+const list<XdgShell::GXdgWmBase *> &LClient::xdgWmBaseGlobals() const
 {
-    return imp()->touchResource;
+    return imp()->xdgWmBaseGlobals;
 }
 
-wl_resource *LClient::xdgWmBaseResource() const
+const list<XdgDecoration::GXdgDecorationManager *> &LClient::xdgDecorationManagerGlobals() const
 {
-    return imp()->xdgWmBaseResource;
+    return imp()->xdgDecorationManagerGlobals;
 }
-
-wl_resource *LClient::xdgDecorationManagerResource() const
-{
-    return imp()->xdgDecorationManagerResource;
-}
-

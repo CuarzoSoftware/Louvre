@@ -6,7 +6,7 @@
 
 using namespace Louvre;
 
-LBaseSurfaceRole::LBaseSurfaceRole(wl_resource *resource, LSurface *surface, UInt32 roleId)
+LBaseSurfaceRole::LBaseSurfaceRole(LResource *resource, LSurface *surface, UInt32 roleId)
 {
     m_baseImp = new LBaseSurfaceRolePrivate();
     m_baseImp->resource = resource;
@@ -46,7 +46,7 @@ LSeat *LBaseSurfaceRole::seat() const
     return compositor()->seat();
 }
 
-wl_resource *LBaseSurfaceRole::resource() const
+LResource *LBaseSurfaceRole::resource() const
 {
     return m_baseImp->resource;
 }

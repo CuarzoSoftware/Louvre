@@ -9,8 +9,7 @@ class LPositioner::LPositionerPrivate
 {
     struct PositionerData
     {
-        wl_resource *resource                                       = nullptr;
-        LClient *client                                             = nullptr;
+        LCompositor *compositor                                     = nullptr;
 
         LSize sizeS, sizeC;
         LRect anchorRectS, anchorRectC;
@@ -20,9 +19,7 @@ class LPositioner::LPositionerPrivate
         UInt32 gravity                                              = Gravity::NoGravity;
         UInt32 constraintAdjustment                                 = ConstraintAdjustment::NoAdjustment;
 
-        LSurface *linkedSurface                                     = nullptr;
-
-    #if LOUVRE_XDG_WM_BASE_VERSION >=3
+    #if LOUVRE_XDG_WM_BASE_VERSION >= 3
         bool isReactive                                             = false;
         LSize parentSizeS, parentSizeC;
         UInt32 parentConfigureSerial;
@@ -38,8 +35,6 @@ public:
     PositionerData data;
 
     void updateGlobalScale();
-
-
 };
 
 #endif // LPOSITIONERPRIVATE_H

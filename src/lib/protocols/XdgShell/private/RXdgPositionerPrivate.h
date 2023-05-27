@@ -1,11 +1,12 @@
-#ifndef XDGPOSITIONER_H
-#define XDGPOSITIONER_H
+#ifndef RXDGPOSITIONERPRIVATE_H
+#define RXDGPOSITIONERPRIVATE_H
 
-#include <LNamespaces.h>
+#include <protocols/XdgShell/RXdgPositioner.h>
+#include <LPositioner.h>
 
-class Louvre::Extensions::XdgShell::Positioner
-{
-public:
+using namespace Louvre::Protocols::XdgShell;
+
+LPRIVATE_CLASS(RXdgPositioner)
     static void destroy_resource(wl_resource *resource);
     static void destroy(wl_client *client, wl_resource *resource);
     static void set_size(wl_client *client, wl_resource *resource, Int32 width, Int32 height);
@@ -15,11 +16,13 @@ public:
     static void set_constraint_adjustment(wl_client *client, wl_resource *resource, UInt32 constraintAdjustment);
     static void set_offset(wl_client *client, wl_resource *resource, Int32 x, Int32 y);
 
-#if LOUVRE_XDG_WM_BASE_VERSION >=3
+#if LOUVRE_XDG_WM_BASE_VERSION >= 3
     static void set_reactive(wl_client *client, wl_resource *resource);
     static void set_parent_size(wl_client *client, wl_resource *resource, Int32 parent_width, Int32 parent_height);
     static void set_parent_configure(wl_client *client, wl_resource *resource, UInt32 serial);
 #endif
+
+    LPositioner lPositioner;
 };
 
-#endif // XDGPOSITIONER_H
+#endif // RXDGPOSITIONERPRIVATE_H

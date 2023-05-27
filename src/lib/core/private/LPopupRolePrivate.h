@@ -6,7 +6,7 @@
 
 struct Louvre::LPopupRole::Params
 {
-    wl_resource *popup;
+    LResource *popup;
     LSurface *surface;
     LPositioner *positioner;
 };

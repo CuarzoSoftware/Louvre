@@ -12,7 +12,7 @@ public:
     LBaseSurfaceRolePrivate(const LBaseSurfaceRolePrivate&)             = delete;
     LBaseSurfaceRolePrivate &operator=(const LBaseSurfaceRolePrivate&)  = delete;
 
-    wl_resource *resource                                               = nullptr;
+    LResource *resource                                                 = nullptr;
     LSurface *surface                                                   = nullptr;
     LCompositor *compositor                                             = nullptr;
     UInt32 roleId;

@@ -1,4 +1,3 @@
-#include "LLog.h"
 #include <fcntl.h>
 #include <gbm.h>
 #include <private/LCompositorPrivate.h>
@@ -19,10 +18,10 @@
 #include <protocols/Wayland/RSurface.h>
 #include <protocols/Wayland/GOutput.h>
 
-#include <protocols/XdgShell/XdgWmBase.h>
+#include <protocols/XdgShell/private/GXdgWmBasePrivate.h>
 #include <protocols/XdgShell/xdg-shell.h>
 
-#include <protocols/XdgDecoration/XdgDecorationManager.h>
+#include <protocols/XdgDecoration/private/GXdgDecorationManagerPrivate.h>
 #include <protocols/XdgDecoration/xdg-decoration-unstable-v1.h>
 
 #include <protocols/DMABuffer/LinuxDMABuffGlobal.h>
@@ -46,7 +45,7 @@
 
 
 using namespace std;
-using namespace Louvre::Protocols::Wayland;
+using namespace Louvre::Protocols;
 
 PFNEGLBINDWAYLANDDISPLAYWL eglBindWaylandDisplayWL = NULL;
 
@@ -152,10 +151,10 @@ int LWayland::initWayland(LCompositor *comp)
                      LOUVRE_DATA_DEVICE_MANAGER_VERSION, comp, &GDataDeviceManager::GDataDeviceManagerPrivate::bind);
 
     wl_global_create(display, &xdg_wm_base_interface,
-                     LOUVRE_XDG_WM_BASE_VERSION, comp, &Extensions::XdgShell::WmBase::bind);
+                     LOUVRE_XDG_WM_BASE_VERSION, comp, &XdgShell::GXdgWmBase::GXdgWmBasePrivate::bind);
 
     wl_global_create(display, &zxdg_decoration_manager_v1_interface,
-                     LOUVRE_XDG_DECORATION_MANAGER_VERSION, comp, &Extensions::XdgDecoration::Manager::bind);
+                     LOUVRE_XDG_DECORATION_MANAGER_VERSION, comp, &XdgDecoration::GXdgDecorationManager::GXdgDecorationManagerPrivate::bind);
 
     /*wl_global_create(display, &zwp_linux_dmabuf_v1_interface,
                      LOUVRE_LINUX_DMA_BUFF_VERSION, comp, &Extensions::LinuxDMABuffer::LinuxDMABuffer::bind);*/

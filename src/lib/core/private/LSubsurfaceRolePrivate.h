@@ -5,7 +5,7 @@
 
 struct Louvre::LSubsurfaceRole::Params
 {
-    wl_resource *subsurface;
+    LResource *subsurface;
     LSurface *surface;
 };
 

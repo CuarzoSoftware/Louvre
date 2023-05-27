@@ -1,11 +1,11 @@
-#ifndef XDGPOPUP_H
-#define XDGPOPUP_H
+#ifndef RXDGPOPUPPRIVATE_H
+#define RXDGPOPUPPRIVATE_H
 
-#include <LNamespaces.h>
+#include <protocols/XdgShell/RXdgPopup.h>
 
-class Louvre::Extensions::XdgShell::Popup
-{
-public:
+using namespace Louvre::Protocols::XdgShell;
+
+LPRIVATE_CLASS(RXdgPopup)
     static void destroy_resource(wl_resource *resource);
     static void destroy(wl_client *client, wl_resource *resource);
     static void grab(wl_client *client, wl_resource *resource, wl_resource *seat, UInt32 serial);
@@ -14,5 +14,7 @@ public:
     static void reposition(wl_client *client, wl_resource *resource, wl_resource *positioner, UInt32 token);
 #endif
 
+    RXdgSurface *rXdgSurface = nullptr;
+    LPopupRole *lPopupRole = nullptr;
 };
-#endif // XDGPOPUP_H
+#endif // RXDGPOPUPPRIVATE_H

@@ -30,7 +30,7 @@ public:
      *
      * @warning The ID range [0,1000] is reserved for roles offered by the library.
      */
-    LBaseSurfaceRole(wl_resource *resource, LSurface *surface, UInt32 roleId);
+    LBaseSurfaceRole(LResource *resource, LSurface *surface, UInt32 roleId);
 
     /*!
      * @brief The LBaseSurfaceRole class destructor.
@@ -76,7 +76,7 @@ public:
     /*!
      * @brief Returns the Wayland resource for this role given in the constructor.
      */
-    wl_resource *resource() const;
+    LResource *resource() const;
 
     class LBaseSurfaceRolePrivate;
 

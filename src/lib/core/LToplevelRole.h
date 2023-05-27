@@ -81,18 +81,20 @@ public:
         /// Activated (its decorations stand out from others)
         Activated   = 8,
 
-    #if LOUVRE_XDG_WM_BASE_VERSION >= 2
+        /// Tiled left (since 2)
         TiledLeft   = 16,
+
+        /// Tiled right (since 2)
         TiledRight  = 32,
+
+        /// Tiled top (since 2)
         TiledTop    = 64,
+
+        /// Tiled bottom (since 2)
         TiledBottom = 128
-    #endif
     };
 
-#if LOUVRE_XDG_WM_BASE_VERSION >= 5
-
-
-    /// Flags for Toplevel capabilities of the compositor
+    /// Flags for Toplevel capabilities of the compositor (since 5)
     enum WmCapabilities : UChar8
     {
         /// Can show custom menus (with options to minimize, maximize, etc)
@@ -108,15 +110,13 @@ public:
         WmMinimize = 8
     };
 
-    /// Compositor capabilities (WmCapabilities) set with setWmCapabilities()
+    /// Compositor capabilities (WmCapabilities) set with setWmCapabilities() (since 5)
     UChar8 wmCapabilities() const;
 
-    /*! Notifies the Toplevel of the compositor's capabilities
+    /*! Notifies the Toplevel of the compositor's capabilities (since 5)
      *  @param capabilitiesFlags Union of flags defined in #WmCapabilities
      */
     void setWmCapabilities(UChar8 capabilitiesFlags);
-
-#endif
 
     /// Decoration mode
     enum DecorationMode : UInt32
@@ -127,16 +127,6 @@ public:
         /// Decorations are drawn by the compositor
         ServerSide = 2
     };
-
-    /*!
-     * @brief Sends a Ping event to the client.
-     *
-     * Sends a Ping event to the client which should respond by invoking the virtual method pong().\n
-     * Used to detect if a client is still "alive".
-     *
-     * @param serial Serial that the client should return with pong().
-     */
-    void ping(UInt32 serial);
 
     /*!
      * @brief Configures the Toplevel.
@@ -175,9 +165,7 @@ public:
      *
      * Requests to close the Toplevel (equivalent to pressing the close button on the window).
      */
-    void close();
-
-    #if LOUVRE_XDG_WM_BASE_VERSION >= 4
+    void close() const;
 
     /*!
      * @brief Suggests a Toplevel size.
@@ -199,7 +187,6 @@ public:
      * Suggested size assigned with configureBoundsC().
      */
     const LSize &boundsC() const;
-    #endif
 
     /**
      * @brief Window geometry in surface coordinates
@@ -388,27 +375,13 @@ public:
     /*!
      * @brief Request to show a menu
      *
-     * Reimplement this virtual method if you want to be notified when the client requests the compositor to show a menu containing options
-     * to minimize, maximize and change to fullscreen mode.
+     * Reimplement this virtual method if you want to be notified when the client requests the compositor to show a menu
+     * containing options to minimize, maximize and change to fullscreen mode.
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp showWindowMenuRequestS
      */
     virtual void showWindowMenuRequestS(Int32 x, Int32 y);
-
-    /*!
-     * @brief Response to a Ping event.
-     *
-     * Client response to a ping() event.
-     *
-     * Reimplement this virtual method if you want to be notified when a client responds to a ping() event.
-     *
-     * @param serial The same serial passed in ping().
-     *
-     * #### Default Implementation
-     * @snippet LToplevelRoleDefault.cpp pong
-     */
-    virtual void pong(UInt32 serial);
 
     /*!
      * @brief Change of active state

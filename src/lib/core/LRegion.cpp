@@ -139,7 +139,6 @@ void LRegion::copy(const LRegion &regionToCopy)
     }
 
     pixman_region32_copy((pixman_region32_t*)m_region, (pixman_region32_t*)regionToCopy.m_region);
-
 }
 
 void LRegion::inverse(const LRect &rect)

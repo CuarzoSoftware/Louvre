@@ -1,3 +1,6 @@
+#include <protocols/XdgShell/RXdgPopup.h>
+#include <protocols/XdgShell/RXdgSurface.h>
+
 #include <private/LPopupRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LBaseSurfaceRolePrivate.h>
@@ -33,17 +36,16 @@ LPopupRole::~LPopupRole()
     delete m_imp;
 }
 
-
-void LPopupRole::ping(UInt32 serial)
-{
-    xdg_wm_base_send_ping(surface()->client()->xdgWmBaseResource(),serial);
-}
-
 void LPopupRole::configureC(const LRect &r)
 {
+    XdgShell::RXdgPopup *res = (XdgShell::RXdgPopup*)resource();
+
+    if (!res->rXdgSurface())
+        return;
+
     LRect rect = r/compositor()->globalScale();
-    xdg_popup_send_configure(resource(), rect.x(), rect.y(), rect.w(), rect.h());
-    xdg_surface_send_configure(surface()->imp()->xdgRSurface, LWayland::nextSerial());
+    res->configure(rect.x(), rect.y(), rect.w(), rect.h());
+    res->rXdgSurface()->configure(LWayland::nextSerial());
 }
 
 void LPopupRole::sendPopupDoneEvent()
@@ -58,20 +60,19 @@ void LPopupRole::sendPopupDoneEvent()
             (*s)->popup()->sendPopupDoneEvent();
     }
 
-    xdg_popup_send_popup_done(resource());
+    XdgShell::RXdgPopup *res = (XdgShell::RXdgPopup*)resource();
+
+    res->popup_done();
     surface()->imp()->mapped = false;
     surface()->mappingChanged();
     imp()->dismissed = true;
 }
 
-
-#if LOUVRE_XDG_WM_BASE_VERSION >= 3
 void LPopupRole::sendRepositionedEvent(UInt32 token)
 {
-    if (wl_resource_get_version(resource()) >= 3)
-        xdg_popup_send_repositioned(resource(),token);
+    XdgShell::RXdgPopup *res = (XdgShell::RXdgPopup*)resource();
+    res->repositioned(token);
 }
-#endif
 
 const LRect &LPopupRole::windowGeometryS() const
 {
@@ -90,14 +91,13 @@ const LPositioner &LPopupRole::positioner() const
 
 void LPopupRole::handleSurfaceCommit()
 {
-
     // Commit inicial para asignar rol y padre
     if (surface()->imp()->pending.role)
     {
 
         if (surface()->buffer())
         {
-            wl_resource_post_error(resource(), XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface already has a buffer attached.");
+            wl_resource_post_error(resource()->resource(), XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface already has a buffer attached.");
             return;
         }
 
@@ -109,7 +109,7 @@ void LPopupRole::handleSurfaceCommit()
         }
         else
         {
-            wl_resource_post_error(resource(), XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT, "xdg_surface.get_popup with invalid popup parent.");
+            wl_resource_post_error(resource()->resource(), XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT, "xdg_surface.get_popup with invalid popup parent.");
             return;
         }
 

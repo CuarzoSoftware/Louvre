@@ -90,6 +90,14 @@ RSurface::~RSurface()
     // Notify from client
     surface->compositor()->destroySurfaceRequest(surface);
 
+    /* TODO
+    // Safe Xdg shell removal
+    if (surface->popup())
+    {
+
+    }
+    */
+
     // Clear keyboard focus
     if (surface->seat()->keyboard()->focusSurface() == surface)
         surface->seat()->keyboard()->imp()->keyboardFocusSurface = nullptr;
@@ -132,7 +140,6 @@ RSurface::~RSurface()
         delete lCursor;
     }
 
-
     while(!surface->children().empty())
     {
         surface->imp()->removeChild(surface->imp()->children.back());
@@ -155,9 +162,6 @@ RSurface::~RSurface()
 
     if (surface->imp()->pending.role)
         surface->imp()->pending.role->baseImp()->surface = nullptr;
-
-    if (surface->imp()->xdgRSurface)
-        wl_resource_set_user_data(surface->imp()->xdgRSurface, nullptr);
 
     // Remove surface from its client list
     surface->client()->imp()->surfaces.erase(surface->imp()->clientLink);

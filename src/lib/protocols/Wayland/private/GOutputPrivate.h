@@ -7,7 +7,6 @@ using namespace Louvre::Protocols::Wayland;
 
 LPRIVATE_CLASS(GOutput)
 
-// Implementation
 static void bind(wl_client *client, void *output, UInt32 version, UInt32 id);
 static void resource_destroy(wl_resource *resource);
 
@@ -18,7 +17,5 @@ static void release(wl_client *client, wl_resource *resource);
 LOutput *output = nullptr;
 std::list<GOutput*>::iterator clientLink;
 };
-
-
 
 #endif // GOUTPUTPRIVATE_H

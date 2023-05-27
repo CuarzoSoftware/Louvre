@@ -3,9 +3,11 @@
 
 #include <LToplevelRole.h>
 
+using namespace Louvre::Protocols::XdgDecoration;
+
 struct Louvre::LToplevelRole::Params
 {
-    wl_resource *toplevel;
+    LResource *toplevel;
     LSurface *surface;
 };
 
@@ -32,7 +34,6 @@ public:
     ToplevelConfiguration currentConf;
     std::list<ToplevelConfiguration>sentConfs;
 
-
     void dispachLastConfiguration();
 
     bool hasPendingMinSize                                          = false;
@@ -52,15 +53,13 @@ public:
     char *appId = nullptr;
     char *title = nullptr;
 
-    #if LOUVRE_XDG_WM_BASE_VERSION >= 4
+    // Since 4
     LSize boundsC, boundsS;
-    #endif
 
-    #if LOUVRE_XDG_WM_BASE_VERSION >= 5
+    // Since 5
     UChar8 wmCapabilities                                           = 0;
-    #endif
 
-    wl_resource *xdgDecoration                                      = nullptr;
+    RXdgToplevelDecoration *xdgDecoration                           = nullptr;
     DecorationMode decorationMode                                   = ClientSide;
     UInt32 pendingDecorationMode                                    = ClientSide;
     UInt32 lastDecorationModeConfigureSerial                        = 0;

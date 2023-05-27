@@ -15,14 +15,9 @@ LPositioner::~LPositioner()
     delete m_imp;
 }
 
-LClient *LPositioner::client() const
+LCompositor *LPositioner::compositor() const
 {
-    return imp()->data.client;
-}
-
-wl_resource *LPositioner::resource() const
-{
-    return imp()->data.resource;
+    return imp()->data.compositor;
 }
 
 const LSize &LPositioner::sizeS() const
@@ -96,8 +91,8 @@ Louvre::LPositioner::ConstraintAdjustments LPositioner::constraintAdjustment() c
 
 void Louvre::LPositioner::LPositionerPrivate::updateGlobalScale()
 {
-    data.sizeC = data.sizeS * data.client->compositor()->globalScale();
-    data.anchorRectC = data.anchorRectS * data.client->compositor()->globalScale();
-    data.offsetC = data.offsetS * data.client->compositor()->globalScale();
-    data.parentSizeC = data.parentSizeS * data.client->compositor()->globalScale();
+    data.sizeC = data.sizeS * data.compositor->globalScale();
+    data.anchorRectC = data.anchorRectS * data.compositor->globalScale();
+    data.offsetC = data.offsetS * data.compositor->globalScale();
+    data.parentSizeC = data.parentSizeS * data.compositor->globalScale();
 }

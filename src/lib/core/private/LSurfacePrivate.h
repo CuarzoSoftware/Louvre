@@ -71,7 +71,6 @@ public:
     LSurface *pendingParent                             = nullptr;
 
     Protocols::Wayland::RSurface *surfaceResource = nullptr;
-    wl_resource *xdgRSurface                     = nullptr;
 
     wl_resource* frameCallback                          = nullptr;
 
@@ -94,14 +93,11 @@ public:
     // Indicates if the surface should be mapped (has a not null buffer)
     bool mapped                                         = false;
 
-
-
     // Presentation feedback
     list<wl_resource*> presentationFeedback;
     list<Protocols::Wayland::GOutput*> presentationOutputGlobals;
     LOutput *presentationOutput = nullptr;
     void sendPresentationFeedback(LOutput *output, timespec &ns);
-
 
 };
 

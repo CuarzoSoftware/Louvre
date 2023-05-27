@@ -212,6 +212,22 @@ namespace Louvre
             class RSubsurface;
         }
 
+        namespace XdgShell
+        {
+            class GXdgWmBase;
+
+            class RXdgPositioner;
+            class RXdgSurface;
+            class RXdgToplevel;
+            class RXdgPopup;
+        };
+
+        namespace XdgDecoration
+        {
+            class GXdgDecorationManager;
+            class RXdgToplevelDecoration;
+        };
+
         namespace LinuxDMABuff
         {
             class WGLinuxDMABuff;
@@ -223,20 +239,6 @@ namespace Louvre
     // Extensions Globals
     namespace Extensions
     {
-        namespace XdgShell
-        {
-            class Popup;
-            class Surface;
-            class Toplevel;
-            class WmBase;
-            class Positioner;
-        };
-
-        namespace XdgDecoration
-        {
-            class Manager;
-            class ToplevelDecoration;
-        };
 
         namespace Viewporter
         {

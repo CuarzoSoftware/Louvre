@@ -1,11 +1,12 @@
-#ifndef XDGTOPLEVEL_H
-#define XDGTOPLEVEL_H
+#ifndef RXDGTOPLEVELPRIVATE_H
+#define RXDGTOPLEVELPRIVATE_H
 
-#include <LNamespaces.h>
+#include <protocols/XdgShell/RXdgToplevel.h>
 
-class Louvre::Extensions::XdgShell::Toplevel
-{
-public:
+using namespace Louvre::Protocols::XdgShell;
+using namespace std;
+
+LPRIVATE_CLASS(RXdgToplevel)
     static void destroy_resource(wl_resource *resource);
     static void destroy(wl_client *client, wl_resource *resource);
     static void set_parent(wl_client *client, wl_resource *resource, wl_resource *parent);
@@ -21,6 +22,9 @@ public:
     static void set_fullscreen(wl_client *client, wl_resource *resource, wl_resource *output);
     static void unset_fullscreen(wl_client *client, wl_resource *resource);
     static void set_minimized(wl_client *client, wl_resource *resource);
+
+    RXdgSurface *rXdgSurface = nullptr;
+    LToplevelRole *lToplevelRole = nullptr;
 };
 
-#endif // XDGTOPLEVEL_H
+#endif // RXDGTOPLEVELPRIVATE_H

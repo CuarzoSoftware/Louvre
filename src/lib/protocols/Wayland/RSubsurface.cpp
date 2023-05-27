@@ -38,7 +38,7 @@ RSubsurface::RSubsurface
     m_imp = new RSubsurfacePrivate();
 
     LSubsurfaceRole::Params subsurfaceRoleParams;
-    subsurfaceRoleParams.subsurface = this->resource();
+    subsurfaceRoleParams.subsurface = this;
     subsurfaceRoleParams.surface = surface;
 
     imp()->lSubsurfaceRole = compositor()->createSubsurfaceRoleRequest(&subsurfaceRoleParams);
