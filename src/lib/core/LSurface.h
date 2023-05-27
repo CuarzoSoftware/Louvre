@@ -390,7 +390,7 @@ public:
      *
      * @warning This method clears the current damage region of the surface.
      */
-    void requestNextFrame(LOutput *output = nullptr);
+    void requestNextFrame();
 
     /*!
      * @brief Mapped property

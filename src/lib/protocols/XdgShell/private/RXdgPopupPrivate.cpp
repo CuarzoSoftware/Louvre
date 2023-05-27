@@ -10,8 +10,8 @@
 #include <private/LPositionerPrivate.h>
 
 #include <LCompositor.h>
-#include <RPointer.h>
-#include <RKeyboard.h>
+#include <protocols/Wayland/RPointer.h>
+#include <protocols/Wayland/RKeyboard.h>
 
 void RXdgPopup::RXdgPopupPrivate::destroy_resource(wl_resource *resource)
 {

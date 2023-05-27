@@ -130,6 +130,11 @@ public:
     const list<XdgShell::GXdgWmBase *> &xdgWmBaseGlobals() const;
 
     /*!
+     * @brief List of resources generated when the client binds to the **wp_presentation** global of the PresentationTime protocol.
+     */
+    const list<WpPresentationTime::GWpPresentation*> &wpPresentationTimeGlobals() const;
+
+    /*!
      * @brief List of resources generated when the client binds to the **zxdg_decoration_manager_v1** global of the XdgDecoration protocol.
      *
      * The **zxdg_decoration_manager_v1** interface allows the client to negotiate with the compositor who should

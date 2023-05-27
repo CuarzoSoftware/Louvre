@@ -27,8 +27,8 @@
 #include <protocols/DMABuffer/LinuxDMABuffGlobal.h>
 #include <protocols/DMABuffer/linux-dmabuf-unstable-v1.h>
 
-#include <protocols/PresentationTime/Presentation.h>
-#include <protocols/PresentationTime/presentation-time.h>
+#include <protocols/WpPresentationTime/private/GWpPresentationPrivate.h>
+#include <protocols/WpPresentationTime/presentation-time.h>
 
 #include <LTexture.h>
 #include <LWayland.h>
@@ -160,7 +160,7 @@ int LWayland::initWayland(LCompositor *comp)
                      LOUVRE_LINUX_DMA_BUFF_VERSION, comp, &Extensions::LinuxDMABuffer::LinuxDMABuffer::bind);*/
 
     wl_global_create(display, &wp_presentation_interface,
-                     1, comp, &Extensions::PresentationTime::Presentation::bind);
+                     LOUVRE_WP_PRESENTATION_VERSION, comp, &WpPresentationTime::GWpPresentation::GWpPresentationPrivate::bind);
 
     wl_display_init_shm(display);
 

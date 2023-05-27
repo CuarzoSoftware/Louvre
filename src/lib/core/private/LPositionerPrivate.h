@@ -19,11 +19,11 @@ class LPositioner::LPositionerPrivate
         UInt32 gravity                                              = Gravity::NoGravity;
         UInt32 constraintAdjustment                                 = ConstraintAdjustment::NoAdjustment;
 
-    #if LOUVRE_XDG_WM_BASE_VERSION >= 3
+        // Since 3
         bool isReactive                                             = false;
         LSize parentSizeS, parentSizeC;
         UInt32 parentConfigureSerial;
-    #endif
+
     };
 
 public:

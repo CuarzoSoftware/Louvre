@@ -3,12 +3,14 @@
 
 #include <LSurface.h>
 
-struct Louvre::LSurface::Params
+using namespace Louvre::Protocols;
+
+struct LSurface::Params
 {
-    Protocols::Wayland::RSurface *surfaceResource;
+    Wayland::RSurface *surfaceResource;
 };
 
-class Louvre::LSurface::LSurfacePrivate
+class LSurface::LSurfacePrivate
 {
 public:
 
@@ -94,11 +96,8 @@ public:
     bool mapped                                         = false;
 
     // Presentation feedback
-    list<wl_resource*> presentationFeedback;
-    list<Protocols::Wayland::GOutput*> presentationOutputGlobals;
-    LOutput *presentationOutput = nullptr;
+    list<WpPresentationTime::RWpPresentationFeedback*> wpPresentationFeedbackResources;
     void sendPresentationFeedback(LOutput *output, timespec &ns);
-
 };
 
 

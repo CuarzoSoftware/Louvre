@@ -7,12 +7,12 @@ class Louvre::Protocols::Wayland::GSeat : public LResource
 {
 public:
     GSeat(LCompositor *compositor,
-                  wl_client *client,
-                  const wl_interface *interface,
-                  Int32 version,
-                  UInt32 id,
-                  const void *implementation,
-                  wl_resource_destroy_func_t destroy);
+          wl_client *client,
+          const wl_interface *interface,
+          Int32 version,
+          UInt32 id,
+          const void *implementation,
+          wl_resource_destroy_func_t destroy);
 
     ~GSeat();
 

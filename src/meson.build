@@ -19,14 +19,7 @@ cpp = meson.get_compiler('cpp')
 
 include_paths = [
     include_directories('./lib'),
-    include_directories('./lib/core'),
-    include_directories('./lib/core/private'),
-    include_directories('./lib/protocols/Viewporter'),
-    include_directories('./lib/protocols/Wayland'),
-    include_directories('./lib/protocols/XdgShell'),
-    include_directories('./lib/protocols/XdgDecoration'),
-    include_directories('./lib/protocols/PresentationTime'),
-    include_directories('./lib/protocols/DMABuffer')
+    include_directories('./lib/core')
 ]
 
 include_paths_sys = [
@@ -81,7 +74,7 @@ globals = [
 	'Wayland',
 	'XdgDecoration',
 	'XdgShell',
-	'PresentationTime'
+        'WpPresentationTime'
 ]
 
 foreach g : globals

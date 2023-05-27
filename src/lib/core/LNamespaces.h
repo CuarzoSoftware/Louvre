@@ -16,8 +16,10 @@
 #define LOUVRE_DATA_DEVICE_MANAGER_VERSION 3
 #define LOUVRE_LINUX_DMA_BUFF_VERSION 3
 
-#define LOUVRE_XDG_WM_BASE_VERSION 4
+#define LOUVRE_XDG_WM_BASE_VERSION 2
 #define LOUVRE_XDG_DECORATION_MANAGER_VERSION 1
+
+#define LOUVRE_WP_PRESENTATION_VERSION 1
 
 #define L_UNUSED(object){(void)object;}
 
@@ -228,6 +230,12 @@ namespace Louvre
             class RXdgToplevelDecoration;
         };
 
+        namespace WpPresentationTime
+        {
+            class GWpPresentation;
+            class RWpPresentationFeedback;
+        };
+
         namespace LinuxDMABuff
         {
             class WGLinuxDMABuff;
@@ -235,23 +243,6 @@ namespace Louvre
             class WRFeedback;
         };
     }
-
-    // Extensions Globals
-    namespace Extensions
-    {
-
-        namespace Viewporter
-        {
-            class Viewporter;
-            class Viewport;
-        };
-
-        namespace PresentationTime
-        {
-            class Presentation;
-            class Feedback;
-        };
-    };
 
 };
 

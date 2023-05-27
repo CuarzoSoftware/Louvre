@@ -85,6 +85,11 @@ const list<XdgShell::GXdgWmBase *> &LClient::xdgWmBaseGlobals() const
     return imp()->xdgWmBaseGlobals;
 }
 
+const list<WpPresentationTime::GWpPresentation *> &LClient::wpPresentationTimeGlobals() const
+{
+    return imp()->wpPresentationTimeGlobals;
+}
+
 const list<XdgDecoration::GXdgDecorationManager *> &LClient::xdgDecorationManagerGlobals() const
 {
     return imp()->xdgDecorationManagerGlobals;

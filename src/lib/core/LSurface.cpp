@@ -5,7 +5,9 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
 
-#include <protocols/PresentationTime/presentation-time.h>
+#include <protocols/WpPresentationTime/private/RWpPresentationFeedbackPrivate.h>
+#include <protocols/WpPresentationTime/presentation-time.h>
+
 #include <protocols/XdgShell/xdg-shell.h>
 #include <protocols/Wayland/GOutput.h>
 #include <protocols/Wayland/RSurface.h>
@@ -285,7 +287,7 @@ const list<LOutput *> &LSurface::outputs() const
 }
 
 
-void LSurface::requestNextFrame(LOutput *output)
+void LSurface::requestNextFrame()
 {
     imp()->currentDamagesB.clear();
     imp()->currentDamagesC.clear();
@@ -297,41 +299,6 @@ void LSurface::requestNextFrame(LOutput *output)
         wl_resource_destroy(imp()->frameCallback);
         imp()->frameCallback = nullptr;
     }
-
-    if (!imp()->presentationOutputGlobals.empty())
-        return;
-
-    // If not specified, use the output where the largest area of the surface is visible
-    if (!output)
-    {
-        Int32 maxArea = 0;
-        Int32 area;
-
-        for (LOutput *out : compositor()->outputs())
-        {
-            LRegion reg;
-            reg.addRect(out->rectC());
-            reg.clip(LRect(rolePosC(), sizeC()));
-            if (reg.empty())
-                continue;
-            area = reg.rects().front().area();
-
-            if (area > maxArea)
-            {
-                output = out;
-                maxArea = area;
-            }
-        }
-    }
-
-    if (!output)
-        return;
-
-    for (GOutput *g : client()->outputGlobals())
-        if (g->output() == output)
-            imp()->presentationOutputGlobals.push_back(g);
-
-    imp()->presentationOutput = output;
 }
 
 bool LSurface::mapped() const
@@ -724,50 +691,49 @@ void LSurface::LSurfacePrivate::globalScaleChanged(Int32 oldScale, Int32 newScal
 
 void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output, timespec &ns)
 {
-    if (output != presentationOutput)
+    if (wpPresentationFeedbackResources.empty())
         return;
 
-    if (presentationFeedback.empty())
-        return;
-
-    if (presentationOutput)
+    // Check if the surface is visible in the given output
+    for (Wayland::GOutput *gOutput : surfaceResource->client()->outputGlobals())
     {
-        UInt32 tv_sec_hi = ns.tv_sec >> 32;
-        UInt32 tv_sec_lo = ns.tv_sec & 0xFFFFFFFF;
-        UInt32 seq_hi = presentationOutput->imp()->presentationSeq >> 32;
-        UInt32 seq_lo = presentationOutput->imp()->presentationSeq & 0xFFFFFFFF;
-        UInt32 refresh = 1000000000000/presentationOutput->currentMode()->refreshRate();
-
-        for (wl_resource *pres : presentationFeedback)
+        if (gOutput->output() == output)
         {
-            for (GOutput *out : presentationOutputGlobals)
-                wp_presentation_feedback_send_sync_output(pres, out->resource());
+            UInt32 tv_sec_hi = ns.tv_sec >> 32;
+            UInt32 tv_sec_lo = ns.tv_sec & 0xFFFFFFFF;
+            UInt32 seq_hi = output->imp()->presentationSeq >> 32;
+            UInt32 seq_lo = output->imp()->presentationSeq & 0xFFFFFFFF;
+            UInt32 refresh = 1000000000000/output->currentMode()->refreshRate();
 
-            wp_presentation_feedback_send_presented(pres,
-                                                    tv_sec_hi,
-                                                    tv_sec_lo,
-                                                    ns.tv_nsec,
-                                                    refresh,
-                                                    seq_hi,
-                                                    seq_lo,
-                                                    WP_PRESENTATION_FEEDBACK_KIND_VSYNC
-                                                    );
-            wl_resource_destroy(pres);
-
-        }
-    }
-    else
-    {
-        for (wl_resource *pres : presentationFeedback)
-        {
-            wp_presentation_feedback_send_discarded(pres);
-            wl_resource_destroy(pres);
+            while (!wpPresentationFeedbackResources.empty())
+            {
+                WpPresentationTime::RWpPresentationFeedback *rFeed = wpPresentationFeedbackResources.back();
+                rFeed->sync_output(gOutput);
+                rFeed->presented(tv_sec_hi,
+                                 tv_sec_lo,
+                                 ns.tv_nsec,
+                                 refresh,
+                                 seq_hi,
+                                 seq_lo,
+                                 WP_PRESENTATION_FEEDBACK_KIND_VSYNC);
+                rFeed->imp()->lSurface = nullptr;
+                wpPresentationFeedbackResources.pop_back();
+                wl_resource_destroy(rFeed->resource());
+            }
+            return;
         }
     }
 
-    presentationFeedback.clear();
-    presentationOutputGlobals.clear();
-    presentationOutput = nullptr;
-
+    if (outputs.empty())
+    {
+        while (!wpPresentationFeedbackResources.empty())
+        {
+            WpPresentationTime::RWpPresentationFeedback *rFeed = wpPresentationFeedbackResources.back();
+            rFeed->discarded();
+            rFeed->imp()->lSurface = nullptr;
+            wpPresentationFeedbackResources.pop_back();
+            wl_resource_destroy(rFeed->resource());
+        }
+    }
 }
 
