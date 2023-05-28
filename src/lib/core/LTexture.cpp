@@ -109,6 +109,19 @@ bool LTexture::setData(void *wlDRMBuffer)
     return false;
 }
 
+bool LTexture::setDataB(const LDMAPlanes *planes)
+{
+    imp()->deleteTexture(this);
+
+    if (compositor()->imp()->graphicBackend->createTextureFromDMA(this, planes))
+    {
+        imp()->sourceType = DMA;
+        return true;
+    }
+
+    return false;
+}
+
 bool LTexture::updateRect(const LRect &rect, UInt32 stride, const void *buffer)
 {
     if (initialized())

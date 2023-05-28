@@ -35,6 +35,7 @@
 #include <SRM/SRMBuffer.h>
 #include <SRM/SRMListener.h>
 #include <SRM/SRMList.h>
+#include <SRM/SRMFormat.h>
 
 using namespace Louvre;
 using namespace std;
@@ -46,6 +47,7 @@ struct Backend
     SRMCore *core;
     list<LOutput*>connectedOutputs;
     wl_event_source *monitor;
+    list<LDMAFormat*>dmaFormats;
 };
 
 struct Output
@@ -186,7 +188,6 @@ static void initializeGL(SRMConnector *connector, void *userData)
     output->imp()->backendBeforePaint();
     output->initializeGL();
     output->imp()->backendAfterPaint();
-
 }
 
 static void paintGL(SRMConnector *connector, void *userData)
@@ -242,6 +243,13 @@ bool LGraphicBackend::initialize(LCompositor *compositor)
     {
         LLog::fatal("[%] Failed to create SRM core.", BKND_NAME);
         goto fail;
+    }
+
+    // Fill DMA formats (LDMAFormat = SRMFormat)
+    SRMListForeach (fmtIt, srmCoreGetSharedDMATextureFormats(bknd->core))
+    {
+        SRMFormat *fmt = (SRMFormat*)srmListItemGetData(fmtIt);
+        bknd->dmaFormats.push_back((LDMAFormat*)fmt);
     }
 
     // Find connected outputs
@@ -405,6 +413,12 @@ void LGraphicBackend::setCursorPosition(LOutput *output, const LPoint &position)
     srmConnectorSetCursorPos(bkndOutput->conn, position.x(), position.y());
 }
 
+const list<LDMAFormat*> *LGraphicBackend::getDMAFormats(LCompositor *compositor)
+{
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    return &bknd->dmaFormats;
+}
+
 EGLDisplay LGraphicBackend::getAllocatorEGLDisplay(LCompositor *compositor)
 {
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
@@ -443,6 +457,23 @@ bool LGraphicBackend::createTextureFromWaylandDRM(LTexture *texture, void *wlBuf
         texture->imp()->sizeB.setW(srmBufferGetWidth(bkndBuffer));
         texture->imp()->sizeB.setH(srmBufferGetHeight(bkndBuffer));
 
+        return true;
+    }
+
+    return false;
+}
+
+bool LGraphicBackend::createTextureFromDMA(LTexture *texture, const LDMAPlanes *planes)
+{
+    Backend *bknd = (Backend*)texture->compositor()->imp()->graphicBackendData;
+    SRMBuffer *bkndBuffer = srmBufferCreateFromDMA(bknd->core, (SRMBufferDMAData*)planes);
+
+    if (bkndBuffer)
+    {
+        texture->imp()->graphicBackendData = bkndBuffer;
+        texture->imp()->format = srmBufferGetFormat(bkndBuffer);
+        texture->imp()->sizeB.setW(srmBufferGetWidth(bkndBuffer));
+        texture->imp()->sizeB.setH(srmBufferGetHeight(bkndBuffer));
         return true;
     }
 
@@ -508,10 +539,12 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.setCursorPosition = &LGraphicBackend::setCursorPosition;
 
     // Buffers
+    API.getDMAFormats = &LGraphicBackend::getDMAFormats;
     API.getAllocatorEGLDisplay = &LGraphicBackend::getAllocatorEGLDisplay;
     API.getAllocatorEGLContext = &LGraphicBackend::getAllocatorEGLContext;
     API.createTextureFromCPUBuffer = &LGraphicBackend::createTextureFromCPUBuffer;
     API.createTextureFromWaylandDRM = &LGraphicBackend::createTextureFromWaylandDRM;
+    API.createTextureFromDMA = &LGraphicBackend::createTextureFromDMA;
     API.updateTextureRect = &LGraphicBackend::updateTextureRect;
     API.getTextureID = &LGraphicBackend::getTextureID;
     API.destroyTexture = &LGraphicBackend::destroyTexture;

@@ -24,13 +24,12 @@ LPRIVATE_CLASS(LClient)
     list<XdgShell::GXdgWmBase*> xdgWmBaseGlobals;
     list<XdgDecoration::GXdgDecorationManager*> xdgDecorationManagerGlobals;
     list<WpPresentationTime::GWpPresentation*> wpPresentationTimeGlobals;
+    list<LinuxDMABuf::GLinuxDMABuf*> linuxDMABufGlobals;
 
     Wayland::GDataDeviceManager *dataDeviceManagerGlobal = nullptr;
     Wayland::GCompositor *compositorGlobal = nullptr;
 
-    wl_resource         *linuxDMABufResource            = nullptr;
+    wl_resource *linuxDMABufResource = nullptr;
 };
-
-
 
 #endif // LCLIENTPRIVATE_H

@@ -90,6 +90,11 @@ const list<WpPresentationTime::GWpPresentation *> &LClient::wpPresentationTimeGl
     return imp()->wpPresentationTimeGlobals;
 }
 
+const list<LinuxDMABuf::GLinuxDMABuf *> &LClient::linuxDMABufGlobals() const
+{
+    return imp()->linuxDMABufGlobals;
+}
+
 const list<XdgDecoration::GXdgDecorationManager *> &LClient::xdgDecorationManagerGlobals() const
 {
     return imp()->xdgDecorationManagerGlobals;

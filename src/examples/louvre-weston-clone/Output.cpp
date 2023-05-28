@@ -282,7 +282,7 @@ void Output::paintGL()
         for (const LRect &d : exposedRegionG[currBuff].rects())
         {
             //p->drawTexture(backgroundTexture,d*scale(),d);
-            p->drawColorC(d,0.3,0.3,0.7,1);
+            p->drawColorC(d,0.05,0.05,0.05,1);
         }
     }
 

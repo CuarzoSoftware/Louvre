@@ -166,12 +166,13 @@ void LOutput::LOutputPrivate::backendAfterPaint()
 
 void LOutput::LOutputPrivate::backendPageFlipped()
 {
-    output->imp()->presentationSeq++;
-
+    output->imp()->compositor->imp()->renderMutex.lock();
     // Send presentation time feedback
+    output->imp()->presentationSeq++;
     presentationTime = LTime::ns();
     for (LSurface *surf : compositor->surfaces())
         surf->imp()->sendPresentationFeedback(output, presentationTime);
+    output->imp()->compositor->imp()->renderMutex.unlock();
 }
 
 void LOutput::repaint()

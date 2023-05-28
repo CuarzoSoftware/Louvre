@@ -6,13 +6,15 @@
 #include <LNamespaces.h>
 #include <list>
 
+using namespace std;
+
 class Louvre::LGraphicBackend
 {
 public:
 
     static bool initialize(LCompositor *compositor);
     static void uninitialize(LCompositor *compositor);
-    static const std::list<LOutput*>*getConnectedOutputs(LCompositor *compositor);
+    static const list<LOutput*>*getConnectedOutputs(LCompositor *compositor);
 
     /* OUTPUTS */
 
@@ -29,7 +31,7 @@ public:
     static const char *getOutputDescription(LOutput *output);
     static const LOutputMode *getOutputPreferredMode(LOutput *output);
     static const LOutputMode *getOutputCurrentMode(LOutput *output);
-    static const std::list<LOutputMode*> *getOutputModes(LOutput *output);
+    static const list<LOutputMode*> *getOutputModes(LOutput *output);
     static bool setOutputMode(LOutput *output, LOutputMode *mode);
 
     /* OUTPUT MODES */
@@ -46,6 +48,7 @@ public:
 
     /* BUFFERS */
 
+    static const list<LDMAFormat *> *getDMAFormats(LCompositor *compositor);
     static EGLDisplay getAllocatorEGLDisplay(LCompositor *compositor);
     static EGLContext getAllocatorEGLContext(LCompositor *compositor);
 
@@ -57,6 +60,9 @@ public:
 
     static bool createTextureFromWaylandDRM(LTexture *texture,
                                             void *wlBuffer);
+
+    static bool createTextureFromDMA(LTexture *texture,
+                                     const LDMAPlanes *planes);
 
     static bool updateTextureRect(LTexture *texture,
                                   UInt32 stride,

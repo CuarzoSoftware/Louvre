@@ -7,7 +7,7 @@
 #include <private/LOutputPrivate.h>
 #include <private/LCursorPrivate.h>
 
-#include <protocols/Wayland/GOutput.h>
+#include <protocols/Wayland/private/GOutputPrivate.h>
 
 #include <LNamespaces.h>
 #include <LWayland.h>
@@ -372,7 +372,8 @@ void LCompositor::removeOutput(LOutput *output)
                 {
                     if (output == g->output())
                     {
-                        wl_resource_destroy(g->resource());
+                        g->client()->imp()->outputGlobals.erase(g->imp()->clientLink);
+                        g->imp()->output = nullptr;
                         break;
                     }
                 }

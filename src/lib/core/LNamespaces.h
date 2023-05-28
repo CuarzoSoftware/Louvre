@@ -14,12 +14,14 @@
 #define LOUVRE_OUTPUT_VERSION 4
 #define LOUVRE_SUBCOMPOSITOR_VERSION 1
 #define LOUVRE_DATA_DEVICE_MANAGER_VERSION 3
-#define LOUVRE_LINUX_DMA_BUFF_VERSION 3
 
 #define LOUVRE_XDG_WM_BASE_VERSION 2
+
 #define LOUVRE_XDG_DECORATION_MANAGER_VERSION 1
 
 #define LOUVRE_WP_PRESENTATION_VERSION 1
+
+#define LOUVRE_LINUX_DMA_BUF_VERSION 3
 
 #define L_UNUSED(object){(void)object;}
 
@@ -82,6 +84,9 @@ namespace Louvre
     class LKeyboard;
     class LCursor;
     class LXCursor;
+
+    // Other
+    class LDMABuffer;
 
     // Utils
     class LLog;
@@ -146,6 +151,25 @@ namespace Louvre
     typedef unsigned int GLuint;
     typedef unsigned int GLenum;
 
+    struct LDMAFormat
+    {
+        UInt32 format;
+        UInt64 modifier;
+    };
+
+    #define LOUVRE_MAX_DMA_PLANES 4
+    struct LDMAPlanes
+    {
+        UInt32 width;
+        UInt32 height;
+        UInt32 format;
+        UInt32 num_fds;
+        Int32 fds[LOUVRE_MAX_DMA_PLANES];
+        UInt32 strides[LOUVRE_MAX_DMA_PLANES];
+        UInt32 offsets[LOUVRE_MAX_DMA_PLANES];
+        UInt64 modifiers[LOUVRE_MAX_DMA_PLANES];
+    };
+
     struct LGraphicBackendInterface
     {
         bool (*initialize)(LCompositor *compositor);
@@ -173,11 +197,13 @@ namespace Louvre
         void (*setCursorPosition)(LOutput *output, const LPoint &position);
 
         // Buffers
+        const std::list<LDMAFormat*>*(*getDMAFormats)(LCompositor *compositor);
         EGLDisplay (*getAllocatorEGLDisplay)(LCompositor *compositor);
         EGLContext (*getAllocatorEGLContext)(LCompositor *compositor);
 
         bool (*createTextureFromCPUBuffer)(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels);
         bool (*createTextureFromWaylandDRM)(LTexture *texture, void *wlBuffer);
+        bool (*createTextureFromDMA)(LTexture *texture, const LDMAPlanes *planes);
         bool (*updateTextureRect)(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels);
         UInt32 (*getTextureID)(LOutput *output, LTexture *texture);
         void (*destroyTexture)(LTexture *texture);
@@ -227,23 +253,25 @@ namespace Louvre
         namespace XdgDecoration
         {
             class GXdgDecorationManager;
+
             class RXdgToplevelDecoration;
         };
 
         namespace WpPresentationTime
         {
             class GWpPresentation;
+
             class RWpPresentationFeedback;
         };
 
-        namespace LinuxDMABuff
+        namespace LinuxDMABuf
         {
-            class WGLinuxDMABuff;
-            class WRParams;
-            class WRFeedback;
+            class GLinuxDMABuf;
+
+            class RLinuxBufferParams;
+            class RLinuxDMABufFeedback;
         };
     }
-
 };
 
 #endif // LNAMESPACES_H

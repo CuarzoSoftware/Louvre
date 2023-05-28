@@ -61,6 +61,7 @@ public:
     LRegion currentDamagesC;
 
     LTexture *texture                                   = nullptr;
+    LTexture *textureBackup;
 
     list<LSurface*> children;
     list<LSurface*> pendingChildren;

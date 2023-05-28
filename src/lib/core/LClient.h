@@ -135,6 +135,11 @@ public:
     const list<WpPresentationTime::GWpPresentation*> &wpPresentationTimeGlobals() const;
 
     /*!
+     * @brief List of resources generated when the client binds to the **zwp_linux_dmabuf_v1** global of the LinuxDMA-BUF protocol.
+     */
+    const list<LinuxDMABuf::GLinuxDMABuf*> &linuxDMABufGlobals() const;
+
+    /*!
      * @brief List of resources generated when the client binds to the **zxdg_decoration_manager_v1** global of the XdgDecoration protocol.
      *
      * The **zxdg_decoration_manager_v1** interface allows the client to negotiate with the compositor who should

@@ -22,7 +22,8 @@ public:
     {
         /// Buffer
         CPU = 0,
-        WL_DRM = 1
+        WL_DRM = 1,
+        DMA = 2
     };
 
     static UInt32 waylandFormatToDRM(UInt32 waylandFormat);
@@ -32,6 +33,7 @@ public:
 
     bool setDataB(const LSize &size, UInt32 stride, UInt32 format, const void *buffer);
     bool setData(void *wlDRMBuffer);
+    bool setDataB(const LDMAPlanes *planes);
     bool updateRect(const LRect &rect, UInt32 stride, const void *buffer);
 
     /// LTexture class destructor

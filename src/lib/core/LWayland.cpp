@@ -24,8 +24,8 @@
 #include <protocols/XdgDecoration/private/GXdgDecorationManagerPrivate.h>
 #include <protocols/XdgDecoration/xdg-decoration-unstable-v1.h>
 
-#include <protocols/DMABuffer/LinuxDMABuffGlobal.h>
-#include <protocols/DMABuffer/linux-dmabuf-unstable-v1.h>
+#include <protocols/LinuxDMABuf/private/GLinuxDMABufPrivate.h>
+#include <protocols/LinuxDMABuf/linux-dmabuf-unstable-v1.h>
 
 #include <protocols/WpPresentationTime/private/GWpPresentationPrivate.h>
 #include <protocols/WpPresentationTime/presentation-time.h>
@@ -156,8 +156,8 @@ int LWayland::initWayland(LCompositor *comp)
     wl_global_create(display, &zxdg_decoration_manager_v1_interface,
                      LOUVRE_XDG_DECORATION_MANAGER_VERSION, comp, &XdgDecoration::GXdgDecorationManager::GXdgDecorationManagerPrivate::bind);
 
-    /*wl_global_create(display, &zwp_linux_dmabuf_v1_interface,
-                     LOUVRE_LINUX_DMA_BUFF_VERSION, comp, &Extensions::LinuxDMABuffer::LinuxDMABuffer::bind);*/
+    wl_global_create(display, &zwp_linux_dmabuf_v1_interface,
+                     LOUVRE_LINUX_DMA_BUF_VERSION, comp, &LinuxDMABuf::GLinuxDMABuf::GLinuxDMABufPrivate::bind);
 
     wl_global_create(display, &wp_presentation_interface,
                      LOUVRE_WP_PRESENTATION_VERSION, comp, &WpPresentationTime::GWpPresentation::GWpPresentationPrivate::bind);

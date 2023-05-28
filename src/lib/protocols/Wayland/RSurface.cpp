@@ -1,5 +1,6 @@
-#include <protocols/Wayland/GCompositor.h>
 #include <protocols/Wayland/private/RSurfacePrivate.h>
+#include <protocols/WpPresentationTime/private/RWpPresentationFeedbackPrivate.h>
+#include <protocols/Wayland/GCompositor.h>
 #include <protocols/XdgShell/xdg-shell.h>
 
 #include <private/LClientPrivate.h>
@@ -97,6 +98,9 @@ RSurface::~RSurface()
 
     }
     */
+
+    for (WpPresentationTime::RWpPresentationFeedback *wPf : surface->imp()->wpPresentationFeedbackResources)
+        wPf->imp()->lSurface = nullptr;
 
     // Clear keyboard focus
     if (surface->seat()->keyboard()->focusSurface() == surface)

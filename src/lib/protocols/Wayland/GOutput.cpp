@@ -34,7 +34,8 @@ GOutput::GOutput(LOutput *output,
 
 Louvre::Protocols::Wayland::GOutput::~GOutput()
 {
-    client()->imp()->outputGlobals.erase(imp()->clientLink);
+    if (output())
+        client()->imp()->outputGlobals.erase(imp()->clientLink);
     delete m_imp;
 }
 

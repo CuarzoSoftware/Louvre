@@ -69,8 +69,7 @@ install_headers(headers_classes_private, install_dir : INCLUDES_PATH+'/private')
 install_headers(headers_other, install_dir : INCLUDES_PATH+'/other')
 
 globals = [
-	'DMABuffer',
-	'Viewporter',
+        'LinuxDMABuf',
 	'Wayland',
 	'XdgDecoration',
 	'XdgShell',

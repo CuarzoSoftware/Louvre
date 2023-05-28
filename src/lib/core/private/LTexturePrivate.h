@@ -25,6 +25,8 @@ public:
     // Increases each time the texture is modified
     UInt32 serial                                       = 0;
     void increaseSerial();
+
+    bool pendingDelete = false;
 };
 
 #endif // LTEXTUREPRIVATE_H
