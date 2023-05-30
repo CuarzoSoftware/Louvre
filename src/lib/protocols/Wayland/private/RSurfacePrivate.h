@@ -37,5 +37,4 @@ LPRIVATE_CLASS(RSurface)
     LSurface *surface = nullptr;
 };
 
-
 #endif // SURFACERESOURCEPRIVATE_H

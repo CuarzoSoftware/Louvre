@@ -9,7 +9,6 @@ using namespace Louvre::Protocols;
 
 XdgShell::GXdgWmBase::GXdgWmBase
 (
-    LCompositor *compositor,
     wl_client *client,
     const wl_interface *interface,
     Int32 version,
@@ -19,7 +18,6 @@ XdgShell::GXdgWmBase::GXdgWmBase
 )
     :LResource
     (
-        compositor,
         client,
         interface,
         version,

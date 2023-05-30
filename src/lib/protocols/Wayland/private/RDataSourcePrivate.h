@@ -6,7 +6,6 @@
 using namespace Louvre::Protocols::Wayland;
 
 LPRIVATE_CLASS(RDataSource)
-
     static void resource_destroy(wl_resource *resource);
     static void destroy(wl_client *client, wl_resource *resource);
     static void offer(wl_client *client, wl_resource *resource, const char *mime_type);

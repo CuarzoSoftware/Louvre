@@ -53,18 +53,22 @@ struct wl_surface_interface surface_implementation =
 #if LOUVRE_COMPOSITOR_VERSION >= 5
     .offset                 = &RSurface::RSurfacePrivate::offset
 #endif
-
 };
 
-RSurface::RSurface(GCompositor *compositorGlobal,
-                                 UInt32 id) :
-    LResource(
+RSurface::RSurface
+(
+    GCompositor *compositorGlobal,
+    UInt32 id
+)
+    :LResource
+    (
         compositorGlobal->client(),
         &wl_surface_interface,
         compositorGlobal->version(),
         id,
         &surface_implementation,
-        &RSurface::RSurfacePrivate::resource_destroy)
+        &RSurface::RSurfacePrivate::resource_destroy
+    )
 {
     m_imp = new RSurfacePrivate();
 
@@ -78,7 +82,6 @@ RSurface::RSurface(GCompositor *compositorGlobal,
     surface()->imp()->clientLink = std::prev(client()->imp()->surfaces.end());
     compositor()->imp()->surfaces.push_back(surface());
     surface()->imp()->compositorLink = std::prev(compositor()->imp()->surfaces.end());
-
 }
 
 RSurface::~RSurface()
@@ -89,7 +92,7 @@ RSurface::~RSurface()
     surface->imp()->setMapped(false);
 
     // Notify from client
-    surface->compositor()->destroySurfaceRequest(surface);
+    compositor()->destroySurfaceRequest(surface);
 
     /* TODO
     // Safe Xdg shell removal
@@ -103,51 +106,49 @@ RSurface::~RSurface()
         wPf->imp()->lSurface = nullptr;
 
     // Clear keyboard focus
-    if (surface->seat()->keyboard()->focusSurface() == surface)
-        surface->seat()->keyboard()->imp()->keyboardFocusSurface = nullptr;
+    if (seat()->keyboard()->focusSurface() == surface)
+        seat()->keyboard()->imp()->keyboardFocusSurface = nullptr;
 
     // Clear pointer focus
-    if (surface->seat()->pointer()->imp()->pointerFocusSurface == surface)
-        surface->seat()->pointer()->imp()->pointerFocusSurface = nullptr;
+    if (seat()->pointer()->imp()->pointerFocusSurface == surface)
+        seat()->pointer()->imp()->pointerFocusSurface = nullptr;
 
     // Clear dragging surface
-    if (surface->seat()->pointer()->imp()->draggingSurface == surface)
-        surface->seat()->pointer()->imp()->draggingSurface = nullptr;
+    if (seat()->pointer()->imp()->draggingSurface == surface)
+        seat()->pointer()->imp()->draggingSurface = nullptr;
 
     // Clear active toplevel focus
-    if (surface->seat()->imp()->activeToplevel == surface->toplevel())
-        surface->seat()->imp()->activeToplevel = nullptr;
+    if (seat()->imp()->activeToplevel == surface->toplevel())
+        seat()->imp()->activeToplevel = nullptr;
 
     // Clear moving toplevel
-    if (surface->seat()->pointer()->imp()->movingToplevel == surface->toplevel())
-        surface->seat()->pointer()->imp()->movingToplevel = nullptr;
+    if (seat()->pointer()->imp()->movingToplevel == surface->toplevel())
+        seat()->pointer()->imp()->movingToplevel = nullptr;
 
     // Clear resizing toplevel
-    if (surface->seat()->pointer()->imp()->resizingToplevel == surface->toplevel())
-        surface->seat()->pointer()->imp()->resizingToplevel = nullptr;
+    if (seat()->pointer()->imp()->resizingToplevel == surface->toplevel())
+        seat()->pointer()->imp()->resizingToplevel = nullptr;
 
     // Clear drag
-    if (surface->seat()->dndManager()->icon() && surface->seat()->dndManager()->icon()->surface() == surface)
-        surface->seat()->dndManager()->imp()->icon = nullptr;
+    if (seat()->dndManager()->icon() && seat()->dndManager()->icon()->surface() == surface)
+        seat()->dndManager()->imp()->icon = nullptr;
 
     if (surface->dndIcon())
     {
         LDNDIconRole *ldndIcon = surface->dndIcon();
-        surface->compositor()->destroyDNDIconRoleRequest(ldndIcon);
+        compositor()->destroyDNDIconRoleRequest(ldndIcon);
         delete ldndIcon;
     }
 
-    if (surface->cursor())
+    if (surface->cursorRole())
     {
-        LCursorRole *lCursor = surface->cursor();
-        surface->compositor()->destroyCursorRoleRequest(lCursor);
+        LCursorRole *lCursor = surface->cursorRole();
+        compositor()->destroyCursorRoleRequest(lCursor);
         delete lCursor;
     }
 
     while(!surface->children().empty())
-    {
         surface->imp()->removeChild(surface->imp()->children.back());
-    }
 
     while(!surface->imp()->pendingChildren.empty())
     {
@@ -171,7 +172,7 @@ RSurface::~RSurface()
     surface->client()->imp()->surfaces.erase(surface->imp()->clientLink);
 
     // Remove the surface from the compositor list
-    surface->compositor()->imp()->surfaces.erase(surface->imp()->compositorLink);
+    compositor()->imp()->surfaces.erase(surface->imp()->compositorLink);
 
     delete surface;
 

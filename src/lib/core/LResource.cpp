@@ -10,8 +10,7 @@ LResource::LResource(wl_resource *resource)
     imp()->client = LCompositor::compositor()->getClientFromNativeResource(wl_resource_get_client(resource));
 }
 
-LResource::LResource(LCompositor *compositor,
-                     wl_client *client,
+LResource::LResource(wl_client *client,
                      const wl_interface *interface,
                      Int32 version,
                      UInt32 id,
@@ -20,7 +19,7 @@ LResource::LResource(LCompositor *compositor,
 {
     m_imp = new LResourcePrivate();
     imp()->resource = wl_resource_create(client, interface, version, id);
-    imp()->client = compositor->getClientFromNativeResource(client);
+    imp()->client = compositor()->getClientFromNativeResource(client);
     wl_resource_set_implementation(imp()->resource, implementation, this, destroy);
 }
 
@@ -45,11 +44,6 @@ wl_resource *LResource::resource() const
 LClient *LResource::client() const
 {
     return imp()->client;
-}
-
-LCompositor *LResource::compositor() const
-{
-    return client()->compositor();
 }
 
 Int32 LResource::version() const

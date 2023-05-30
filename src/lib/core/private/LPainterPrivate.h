@@ -4,14 +4,9 @@
 #include <LPainter.h>
 #include <GL/gl.h>
 
-class Louvre::LPainter::LPainterPrivate
-{
-public:
-    LPainterPrivate()                                   = default;
-    ~LPainterPrivate()                                  = default;
-    LPainterPrivate(const LPainterPrivate&)             = delete;
-    LPainterPrivate& operator= (const LPainterPrivate&) = delete;
+using namespace Louvre;
 
+LPRIVATE_CLASS(LPainter)
     GLuint vertexShader,fragmentShader;
 
     // Square (left for vertex, right for fragment)
@@ -37,7 +32,6 @@ public:
     LOutput *output                                     = nullptr;
 
     void scaleCursor(LTexture *texture, const LRect &src, const LRect &dst);
-
 };
 
 #endif // LPAINTERPRIVATE_H

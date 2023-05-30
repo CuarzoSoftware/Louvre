@@ -9,19 +9,25 @@
 using namespace Protocols::Wayland;
 using namespace std;
 
-GOutput::GOutput(LOutput *output,
-                 LClient *lClient,
-                 const wl_interface *interface,
-                 Int32 version,
-                 UInt32 id,
-                 const void *implementation,
-                 wl_resource_destroy_func_t destroy) :
-    LResource(lClient,
-              interface,
-              version,
-              id,
-              implementation,
-              destroy)
+GOutput::GOutput
+(
+    LOutput *output,
+    LClient *lClient,
+    const wl_interface *interface,
+    Int32 version,
+    UInt32 id,
+    const void *implementation,
+    wl_resource_destroy_func_t destroy
+)
+    :LResource
+    (
+        lClient,
+        interface,
+        version,
+        id,
+        implementation,
+        destroy
+    )
 {
     m_imp = new GOutputPrivate();
     imp()->output = output;

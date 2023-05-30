@@ -27,7 +27,6 @@
  * of the rect where the video is displayed.\n
  * The Subsurface role is part of the [Wayland protocol](https://wayland.app/protocols/wayland#wl_subsurface).
  */
-
 class Louvre::LSubsurfaceRole : public LBaseSurfaceRole
 {
 public:

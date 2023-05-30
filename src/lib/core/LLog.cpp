@@ -30,7 +30,6 @@ void LLog::init()
         level = 0;
 }
 
-
 void LLog::fatal(const char *format, ...)
 {
     if (level >= 1)

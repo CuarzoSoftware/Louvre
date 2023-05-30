@@ -3,24 +3,17 @@
 
 #include <LDNDIconRole.h>
 
-struct Louvre::LDNDIconRole::Params
+using namespace Louvre;
+
+struct LDNDIconRole::Params
 {
     LSurface *surface;
 };
 
-class Louvre::LDNDIconRole::LDNDIconRolePrivate
-{
-public:
-    LDNDIconRolePrivate()                                       = default;
-    ~LDNDIconRolePrivate()                                      = default;
-
-    LDNDIconRolePrivate(const LDNDIconRolePrivate&)             = delete;
-    LDNDIconRolePrivate &operator=(const LDNDIconRolePrivate&)  = delete;
-
+LPRIVATE_CLASS(LDNDIconRole)
     LPoint currentHotspotS, pendingHotspotOffsetS;
     LPoint currentHotspotC;
     LPoint currentHotspotB;
-
 };
 
 #endif // LDNDICONROLEPRIVATE_H

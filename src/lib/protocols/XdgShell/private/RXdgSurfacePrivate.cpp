@@ -111,12 +111,7 @@ void RXdgSurface::RXdgSurfacePrivate::set_window_geometry(wl_client *client, wl_
 
     if (width <= 0 || height <= 0)
     {
-
-        wl_resource_post_error(
-            resource,
-            0,
-            "Invalid window geometry size.");
-
+        wl_resource_post_error(resource, 0, "Invalid window geometry size.");
         return;
     }
 

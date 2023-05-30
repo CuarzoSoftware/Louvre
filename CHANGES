@@ -7,6 +7,7 @@
 - Developers can now modify the default compositor globals overriding the LCompositor::createGlobalsRequest() virtual method.
 - The LCompositor::start() function is now non-blocking. Developers can control the rate of the compositor events processing using the pollable LCompositor::fd() and LCompositor::processLoop() fuction.
 - The LOutputManager class has been eliminated, and its functionality has been integrated into the LSeat class.
+- Introduce LObject as the base class to facilitate sharing of future functionality among classes.
 
 
 

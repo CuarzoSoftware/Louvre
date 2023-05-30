@@ -1,7 +1,7 @@
 #ifndef LDATADEVICE_H
 #define LDATADEVICE_H
 
-#include <LNamespaces.h>
+#include <LObject.h>
 
 /*!
  * @brief Data exchanging device between clients
@@ -17,7 +17,7 @@
  * clipboard or start drag & drop sessions.\n
  * See the default implementation and documentation of LSeat::setSelectionRequest() and LDNDManager::startDragRequest() for more information.
  */
-class Louvre::LDataDevice
+class Louvre::LDataDevice : public LObject
 {
 public:
 
@@ -36,11 +36,6 @@ public:
      * @brief Client that owns the data device.
      */
     LClient *client() const;
-
-    /*!
-     * @brief Global seat's instance.
-     */
-    LSeat *seat() const;
 
     LPRIVATE_IMP(LDataDevice)
 

@@ -2,11 +2,11 @@
 #include <private/LClientPrivate.h>
 #include <private/LPointerPrivate.h>
 #include <private/LToplevelRolePrivate.h>
+#include <private/LSeatPrivate.h>
 
 #include <protocols/Wayland/GSeat.h>
 #include <protocols/Wayland/RPointer.h>
 
-#include <LSeat.h>
 #include <LCompositor.h>
 #include <LCursor.h>
 #include <LOutput.h>
@@ -19,28 +19,14 @@ using namespace Louvre;
 
 LPointer::LPointer(Params *params)
 {
+    L_UNUSED(params);
     m_imp = new LPointerPrivate();
-    imp()->seat = params->seat;
+    seat()->imp()->pointer = this;
 }
 
 LPointer::~LPointer()
 {
     delete m_imp;
-}
-
-LSeat *LPointer::seat() const
-{
-    return imp()->seat;
-}
-
-LCompositor *LPointer::compositor() const
-{
-    return seat()->compositor();
-}
-
-LCursor *LPointer::cursor() const
-{
-    return compositor()->cursor();
 }
 
 void LPointer::setFocusC(LSurface *surface)
@@ -372,8 +358,8 @@ LSurface *LPointer::focusSurface() const
 
 void LPointer::LPointerPrivate::sendLeaveEvent(LSurface *surface)
 {
-    if (seat->dndManager()->focus())
-        seat->dndManager()->focus()->client()->dataDevice().imp()->sendDNDLeaveEvent();
+    if (seat()->dndManager()->focus())
+        seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDLeaveEvent();
 
     // If surface is nullptr
     if (!surface)
@@ -395,7 +381,6 @@ void LPointer::LPointerPrivate::sendEnterEvent(LSurface *surface, const LPoint &
     if (!surface)
         return;
 
-
     bool hasRPointer = false;
 
     for (Protocols::Wayland::GSeat *s : surface->client()->seatGlobals())
@@ -412,11 +397,4 @@ void LPointer::LPointerPrivate::sendEnterEvent(LSurface *surface, const LPoint &
         pointerFocusSurface = surface;
     else
         pointerFocusSurface = nullptr;
-
 }
-
-
-
-
-
-

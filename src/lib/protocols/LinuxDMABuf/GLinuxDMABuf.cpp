@@ -8,7 +8,6 @@ using namespace Louvre::Protocols::LinuxDMABuf;
 
 GLinuxDMABuf::GLinuxDMABuf
 (
-    LCompositor *compositor,
     wl_client *client,
     const wl_interface *interface,
     Int32 version,
@@ -18,7 +17,6 @@ GLinuxDMABuf::GLinuxDMABuf
 )
     :LResource
     (
-        compositor,
         client,
         interface,
         version,
@@ -35,7 +33,7 @@ GLinuxDMABuf::GLinuxDMABuf
     {
         Int64 prevFormat = -1;
 
-        for (LDMAFormat *dmaFormat : *compositor->imp()->graphicBackend->getDMAFormats(compositor))
+        for (LDMAFormat *dmaFormat : *compositor()->imp()->graphicBackend->getDMAFormats(compositor()))
         {
             if (dmaFormat->format != prevFormat)
             {
@@ -46,7 +44,7 @@ GLinuxDMABuf::GLinuxDMABuf
     }
     else
     {
-        for (LDMAFormat *dmaFormat : *compositor->imp()->graphicBackend->getDMAFormats(compositor))
+        for (LDMAFormat *dmaFormat : *compositor()->imp()->graphicBackend->getDMAFormats(compositor()))
             modifier(dmaFormat->format,
                      dmaFormat->modifier >> 32,
                      dmaFormat->modifier & 0xffffffff);

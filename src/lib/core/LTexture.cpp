@@ -2,14 +2,12 @@
 #include <private/LCompositorPrivate.h>
 #include <LRect.h>
 
-#include <stdio.h>
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
 using namespace Louvre;
 using namespace std;
-
 
 UInt32 LTexture::waylandFormatToDRM(UInt32 waylandFormat)
 {
@@ -69,16 +67,10 @@ UInt32 LTexture::formatBytesPerPixel(UInt32 format)
     }
 }
 
-LTexture::LTexture(LCompositor *compositor, GLuint textureUnit)
+LTexture::LTexture(GLuint textureUnit)
 {
     m_imp = new LTexturePrivate();
-    imp()->compositor = compositor;
     imp()->unit = textureUnit;
-}
-
-LCompositor *LTexture::compositor() const
-{
-    return imp()->compositor;
 }
 
 bool LTexture::setDataB(const LSize &size, UInt32 stride, UInt32 format, const void *buffer)
@@ -142,12 +134,11 @@ LTexture::~LTexture()
 void LTexture::LTexturePrivate::deleteTexture(LTexture *texture)
 {
     increaseSerial();
-
     glActiveTexture(GL_TEXTURE0 + unit);
 
     if (graphicBackendData)
     {
-        compositor->imp()->graphicBackend->destroyTexture(texture);
+        compositor()->imp()->graphicBackend->destroyTexture(texture);
         graphicBackendData = nullptr;
     }
 }

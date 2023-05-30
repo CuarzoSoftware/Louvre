@@ -1,19 +1,17 @@
 #ifndef LOUTPUT_H
 #define LOUTPUT_H
 
-#include <LNamespaces.h>
-#include <thread>
-
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-
-#include <EGL/egl.h>
-
-#include <sys/eventfd.h>
-#include <sys/poll.h>
+#include <LObject.h>
 #include <LSize.h>
 #include <LRect.h>
 #include <LRegion.h>
+
+#include <thread>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#include <EGL/egl.h>
+#include <sys/eventfd.h>
+#include <sys/poll.h>
 
 /*!
  * @brief Representation of a graphical output (where rendering is performed).
@@ -69,9 +67,8 @@
  *
  */
 
-class Louvre::LOutput
+class Louvre::LOutput : public LObject
 {
-
 public:
     enum State
     {
@@ -97,21 +94,6 @@ public:
 
     LOutput(const LOutput&) = delete;
     LOutput& operator= (const LOutput&) = delete;
-
-    /*!
-     * @brief Global compositor instance.
-     */
-    LCompositor *compositor() const;
-
-    /*!
-     * @brief Global cursor instance.
-     */
-    LCursor *cursor() const;
-
-    /*!
-     * @brief Global seat instance.
-     */
-    LSeat *seat() const;
 
     /*!
      * @brief Modes list.
@@ -328,7 +310,6 @@ public:
      * @snippet LOutputDefault.cpp uninitializeGL
      */
     virtual void uninitializeGL();
-
 ///@}
 
     LPRIVATE_IMP(LOutput)

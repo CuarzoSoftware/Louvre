@@ -1,9 +1,10 @@
 #ifndef LBASESURFACEROLE_H
 #define LBASESURFACEROLE_H
 
-#include <LNamespaces.h>
-#include <LPoint.h>
 #include <protocols/Wayland/RSurface.h>
+
+#include <LObject.h>
+#include <LPoint.h>
 
  /*!
   * @brief Base class for surface roles.
@@ -38,7 +39,7 @@
   *
   * By following these steps, you can create a custom role and assign it to a surface dynamically during runtime.
   */
-class Louvre::LBaseSurfaceRole
+class Louvre::LBaseSurfaceRole : public LObject
 {
 public:
 
@@ -83,19 +84,9 @@ public:
     UInt32 roleId() const;
 
     /*!
-     * @brief Returns the compositor instance.
-     */
-    LCompositor *compositor() const;
-
-    /*!
      * @brief Returns the surface that has acquired the role provided in the constructor.
      */
     LSurface *surface() const;
-
-    /*!
-     * @brief Returns the seat instance.
-     */
-    LSeat *seat() const;
 
     /*!
      * @brief Returns the Wayland resource for this role given in the constructor.

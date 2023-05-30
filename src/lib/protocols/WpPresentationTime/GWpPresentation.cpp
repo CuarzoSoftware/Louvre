@@ -6,7 +6,6 @@ using namespace Louvre::Protocols::WpPresentationTime;
 
 GWpPresentation::GWpPresentation
 (
-    LCompositor *compositor,
     wl_client *client,
     const wl_interface *interface,
     Int32 version,
@@ -16,7 +15,6 @@ GWpPresentation::GWpPresentation
 )
     :LResource
     (
-        compositor,
         client,
         interface,
         version,

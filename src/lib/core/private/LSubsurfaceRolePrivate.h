@@ -3,20 +3,13 @@
 
 #include <LSubsurfaceRole.h>
 
-struct Louvre::LSubsurfaceRole::Params
+struct LSubsurfaceRole::Params
 {
     LResource *subsurface;
     LSurface *surface;
 };
 
-class Louvre::LSubsurfaceRole::LSubsurfaceRolePrivate
-{
-public:
-    LSubsurfaceRolePrivate()                                            = default;
-    ~LSubsurfaceRolePrivate()                                           = default;
-
-    LSubsurfaceRolePrivate(const LSubsurfaceRolePrivate&)               = delete;
-    LSubsurfaceRolePrivate& operator= (const LSubsurfaceRolePrivate&)   = delete;
+LPRIVATE_CLASS(LSubsurfaceRole)
 
     // Indicates the subsurface mode
     bool isSynced                                                       = true;
@@ -29,7 +22,6 @@ public:
     // Pending reordering
     LSurface *pendingPlaceAbove                                         = nullptr;
     LSurface *pendingPlaceBelow                                         = nullptr;
-
 };
 
 #endif // LSUBSURFACEROLEPRIVATE_H

@@ -5,7 +5,6 @@ using namespace Louvre::Protocols::Wayland;
 
 GSubcompositor::GSubcompositor
 (
-    LCompositor *compositor,
     wl_client *client,
     const wl_interface *interface,
     Int32 version,
@@ -15,7 +14,6 @@ GSubcompositor::GSubcompositor
 )
     :LResource
     (
-        compositor,
         client,
         interface,
         version,

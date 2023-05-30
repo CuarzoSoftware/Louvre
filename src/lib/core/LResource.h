@@ -1,14 +1,27 @@
 #ifndef LRESOURCE_H
 #define LRESOURCE_H
 
-#include <LNamespaces.h>
+#include <LObject.h>
 
-class Louvre::LResource
+class Louvre::LResource : public LObject
 {
 public:
     LResource(wl_resource *resource);
-    LResource(LCompositor *compositor, wl_client *client, const wl_interface *interface, Int32 version, UInt32 id, const void *implementation, wl_resource_destroy_func_t destroy);
-    LResource(LClient *client, const wl_interface *interface, Int32 version, UInt32 id, const void *implementation, wl_resource_destroy_func_t destroy);
+
+    LResource(wl_client *client,
+              const wl_interface *interface,
+              Int32 version,
+              UInt32 id,
+              const void *implementation,
+              wl_resource_destroy_func_t destroy);
+
+    LResource(LClient *client,
+              const wl_interface *interface,
+              Int32 version,
+              UInt32 id,
+              const void *implementation,
+              wl_resource_destroy_func_t destroy);
+
     ~LResource();
 
     LResource(const LResource&) = delete;
@@ -16,7 +29,6 @@ public:
 
     wl_resource *resource() const;
     LClient *client() const;
-    LCompositor *compositor() const;
     Int32 version() const;
 
     LPRIVATE_IMP(LResource)

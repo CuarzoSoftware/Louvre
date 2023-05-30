@@ -10,11 +10,11 @@ struct wl_subcompositor_interface subcompositor_implementation =
     .get_subsurface = &GSubcompositor::GSubcompositorPrivate::get_subsurface
 };
 
-void GSubcompositor::GSubcompositorPrivate::bind(wl_client *client, void *compositor, UInt32 version, UInt32 id)
+void GSubcompositor::GSubcompositorPrivate::bind(wl_client *client, void *data, UInt32 version, UInt32 id)
 {
-    LCompositor *lCompositor = (LCompositor*)compositor;
-    new GSubcompositor(lCompositor,
-                       client,
+    L_UNUSED(data);
+
+    new GSubcompositor(client,
                        &wl_subcompositor_interface,
                        version,
                        id,

@@ -9,10 +9,10 @@ public:
     RXdgToplevelDecoration(GXdgDecorationManager *gXdgDecorationManager,
                            LToplevelRole *lToplevelRole,
                            UInt32 id);
+
     ~RXdgToplevelDecoration();
 
     LToplevelRole *lToplevelRole() const;
-
     bool configure(UInt32 mode) const;
 
     LPRIVATE_IMP(RXdgToplevelDecoration)

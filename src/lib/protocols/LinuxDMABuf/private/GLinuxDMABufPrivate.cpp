@@ -12,10 +12,10 @@ static struct zwp_linux_dmabuf_v1_interface zwp_linux_dmabuf_v1_implementation =
 #endif
 };
 
-void GLinuxDMABuf::GLinuxDMABufPrivate::bind(wl_client *client, void *compositor, UInt32 version, UInt32 id)
+void GLinuxDMABuf::GLinuxDMABufPrivate::bind(wl_client *client, void *data, UInt32 version, UInt32 id)
 {
-    new GLinuxDMABuf((LCompositor*)compositor,
-                     client,
+    L_UNUSED(data);
+    new GLinuxDMABuf(client,
                      &zwp_linux_dmabuf_v1_interface,
                      version,
                      id,

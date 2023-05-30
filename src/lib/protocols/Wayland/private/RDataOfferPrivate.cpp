@@ -44,7 +44,7 @@ void RDataOffer::RDataOfferPrivate::accept(wl_client *client, wl_resource *resou
 #endif
 
     if (mime_type != NULL)
-        lRDataOffer->client()->seat()->dndManager()->imp()->matchedMimeType = true;
+        seat()->dndManager()->imp()->matchedMimeType = true;
 }
 
 #if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
@@ -62,14 +62,14 @@ void RDataOffer::RDataOfferPrivate::finish(wl_client *client, wl_resource *resou
 
     lRDataOffer->dataOffer()->imp()->hasFinished = true;
 
-    if (lRDataOffer->client()->seat()->dndManager()->source() &&
-            lRDataOffer->client()->seat()->dndManager()->source()->dataSourceResource()->version() >= 3)
-        wl_data_source_send_dnd_finished(lRDataOffer->client()->seat()->dndManager()->source()->dataSourceResource()->resource());
+    if (seat()->dndManager()->source() &&
+            seat()->dndManager()->source()->dataSourceResource()->version() >= 3)
+        wl_data_source_send_dnd_finished(seat()->dndManager()->source()->dataSourceResource()->resource());
 
-    if (lRDataOffer->client()->seat()->dndManager()->focus())
-        lRDataOffer->client()->seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDLeaveEvent();
+    if (seat()->dndManager()->focus())
+        seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDLeaveEvent();
 
-    lRDataOffer->client()->seat()->dndManager()->imp()->clear();
+    seat()->dndManager()->imp()->clear();
 }
 #endif
 
@@ -80,17 +80,17 @@ void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *reso
     RDataOffer *lRDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
 
     // If used in drag n drop
-    if (lRDataOffer->dataOffer()->usedFor() == LDataOffer::DND && lRDataOffer->client()->seat()->dndManager()->source())
+    if (lRDataOffer->dataOffer()->usedFor() == LDataOffer::DND && seat()->dndManager()->source())
     {
         // Ask the source client to write the data to the FD given the mime type
-        lRDataOffer->client()->seat()->dndManager()->source()->dataSourceResource()->sendSend(mime_type, fd);
+        seat()->dndManager()->source()->dataSourceResource()->sendSend(mime_type, fd);
     }
 
     // If used in clipboard
-    else if (lRDataOffer->dataOffer()->usedFor() == LDataOffer::Selection && lRDataOffer->client()->seat()->dataSelection())
+    else if (lRDataOffer->dataOffer()->usedFor() == LDataOffer::Selection && seat()->dataSelection())
     {
         // Louvre keeps a copy of the source clipboard for each mime type (so we don't ask the source client to write the data)
-        for (LDataSource::LSource &s : lRDataOffer->client()->seat()->dataSelection()->imp()->sources)
+        for (LDataSource::LSource &s : seat()->dataSelection()->imp()->sources)
         {
             if (strcmp(s.mimeType, mime_type) == 0)
             {

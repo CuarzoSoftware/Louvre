@@ -5,12 +5,10 @@
 
 using namespace Louvre;
 
-class LPositioner::LPositionerPrivate
-{
+LPRIVATE_CLASS(LPositioner)
+
     struct PositionerData
     {
-        LCompositor *compositor                                     = nullptr;
-
         LSize sizeS, sizeC;
         LRect anchorRectS, anchorRectC;
         LPoint offsetS, offsetC;
@@ -23,16 +21,7 @@ class LPositioner::LPositionerPrivate
         bool isReactive                                             = false;
         LSize parentSizeS, parentSizeC;
         UInt32 parentConfigureSerial;
-
-    };
-
-public:
-    LPositionerPrivate()                                        = default;
-    ~LPositionerPrivate()                                       = default;
-
-    LPositionerPrivate(const LPositionerPrivate&)               = delete;
-    LPositionerPrivate& operator= (const LPositionerPrivate&)   = delete;
-    PositionerData data;
+    } data;
 
     void updateGlobalScale();
 };

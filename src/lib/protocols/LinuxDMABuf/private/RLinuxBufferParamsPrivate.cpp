@@ -69,7 +69,13 @@ void RLinuxBufferParams::RLinuxBufferParamsPrivate::create(wl_client *client,
 }
 
 #if LOUVRE_LINUX_DMA_BUF_VERSION >= 2
-void RLinuxBufferParams::RLinuxBufferParamsPrivate::create_immed(wl_client *client, wl_resource *resource, UInt32 buffer_id, Int32 width, Int32 height, UInt32 format, UInt32 flags)
+void RLinuxBufferParams::RLinuxBufferParamsPrivate::create_immed(wl_client *client,
+                                                                 wl_resource *resource,
+                                                                 UInt32 buffer_id,
+                                                                 Int32 width,
+                                                                 Int32 height,
+                                                                 UInt32 format,
+                                                                 UInt32 flags)
 {
     RLinuxBufferParams *rLinuxBufferParams = (RLinuxBufferParams*)wl_resource_get_user_data(resource);
 

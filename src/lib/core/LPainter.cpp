@@ -163,7 +163,7 @@ void LPainter::setViewportC(const LRect &rect)
         r -= LRect(imp()->output->posC(), 0);
         r.setY(imp()->output->sizeC().h() - r.y() - r.h());
         r *= imp()->output->scale();
-        r /= imp()->output->compositor()->globalScale();
+        r /= compositor()->globalScale();
 
         glScissor(r.x(),r.y(),r.w(),r.h());
         glViewport(r.x(), r.y(),r.w(),r.h());

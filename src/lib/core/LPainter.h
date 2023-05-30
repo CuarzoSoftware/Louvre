@@ -1,10 +1,9 @@
 #ifndef LPAINTER_H
 #define LPAINTER_H
 
-#include <LNamespaces.h>
+#include <LObject.h>
 
 /*!
- *
  * @brief Renderer utilities.
  *
  * The LPainter class offers basic functions for 2D rendering without the need to use OpenGL directly. It can draw texture rects or solid colors, clear the screen and set the viewport.\n
@@ -13,7 +12,7 @@
  * Each LOutput has its own LPainter, which can be accessed from LOutput::painter().\n
  * @warning It is not mandatory to use LPainter's functions for rendering, the library allows the developer to use OpenGL functions directly if desired.
  */
-class Louvre::LPainter
+class Louvre::LPainter : LObject
 {
 public:
     LPainter(const LPainter&) = delete;
@@ -85,6 +84,5 @@ public:
     LPainter();
     ~LPainter();
 };
-
 
 #endif // LPAINTER_H

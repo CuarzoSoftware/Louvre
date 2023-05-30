@@ -9,7 +9,6 @@ LBaseSurfaceRole::LBaseSurfaceRole(LResource *resource, LSurface *surface, UInt3
     m_baseImp = new LBaseSurfaceRolePrivate();
     m_baseImp->resource = resource;
     m_baseImp->surface = surface;
-    m_baseImp->compositor = surface->compositor();
     m_baseImp->roleId = roleId;
 }
 
@@ -29,19 +28,9 @@ UInt32 LBaseSurfaceRole::roleId() const
     return m_baseImp->roleId;
 }
 
-LCompositor *LBaseSurfaceRole::compositor() const
-{
-    return m_baseImp->compositor;
-}
-
 LSurface *LBaseSurfaceRole::surface() const
 {
     return m_baseImp->surface;
-}
-
-LSeat *LBaseSurfaceRole::seat() const
-{
-    return compositor()->seat();
 }
 
 LResource *LBaseSurfaceRole::resource() const

@@ -38,7 +38,7 @@ using namespace Louvre::Protocols::Wayland;
 
 PFNEGLQUERYWAYLANDBUFFERWL eglQueryWaylandBufferWL = NULL;
 
-LCursorRole *LSurface::cursor() const
+LCursorRole *LSurface::cursorRole() const
 {
     if (roleId() == LSurface::Role::Cursor)
         return (LCursorRole*)imp()->current.role;
@@ -87,7 +87,7 @@ LSurface::LSurface(Louvre::LSurface::Params *params, GLuint textureUnit)
 {
     m_imp = new LSurfacePrivate();
     eglQueryWaylandBufferWL = (PFNEGLQUERYWAYLANDBUFFERWL) eglGetProcAddress ("eglQueryWaylandBufferWL");
-    imp()->texture = new LTexture(params->surfaceResource->compositor(), textureUnit);
+    imp()->texture = new LTexture(textureUnit);
     imp()->textureBackup = imp()->texture;
     imp()->surfaceResource = params->surfaceResource;
 }
@@ -213,11 +213,6 @@ bool LSurface::minimized() const
     return imp()->minimized;
 }
 
-LSeat *LSurface::seat() const
-{
-    return compositor()->seat();
-}
-
 LSurface::Role LSurface::roleId() const
 {
     if (role())
@@ -245,7 +240,6 @@ const LPoint &LSurface::rolePosC() const
 
         return role()->rolePosC();
     }
-
 
     LPoint &sp = imp()->posC;
 
@@ -333,15 +327,7 @@ LClient *LSurface::client() const
     return surfaceResource()->client();
 }
 
-LCompositor *LSurface::compositor() const
-{
-    if (client() != nullptr)
-        return client()->compositor();
-    else
-        return nullptr;
-}
-
-Louvre::LSurface *LSurface::parent() const
+LSurface *LSurface::parent() const
 {
     return imp()->parent;
 }
@@ -353,7 +339,8 @@ LSurface *findTopmostParent(LSurface *surface)
 
     return findTopmostParent(surface->parent());
 }
-Louvre::LSurface *LSurface::topmostParent() const
+
+LSurface *LSurface::topmostParent() const
 {
     if (parent() == nullptr)
         return nullptr;
@@ -361,7 +348,7 @@ Louvre::LSurface *LSurface::topmostParent() const
     return findTopmostParent(parent());
 }
 
-const list<Louvre::LSurface *> &LSurface::children() const
+const list<LSurface *> &LSurface::children() const
 {
     return imp()->children;
 }
@@ -384,13 +371,9 @@ void LSurface::LSurfacePrivate::setParent(LSurface *parent)
 
 
     if (parent->children().empty())
-    {
-        surface->compositor()->imp()->insertSurfaceAfter(parent, surface);
-    }
+        compositor()->imp()->insertSurfaceAfter(parent, surface);
     else
-    {
-        surface->compositor()->imp()->insertSurfaceAfter(parent->children().back(), surface);
-    }
+        compositor()->imp()->insertSurfaceAfter(parent->children().back(), surface);
 
     parent->imp()->children.push_back(surface);
     surface->parentChanged();
@@ -451,9 +434,9 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
         pendingChildren.pop_front();
 
         if (surface->children().empty())
-            surface->compositor()->imp()->insertSurfaceAfter(surface,child);
+            compositor()->imp()->insertSurfaceAfter(surface,child);
         else
-            surface->compositor()->imp()->insertSurfaceAfter(surface->children().back(),child);
+            compositor()->imp()->insertSurfaceAfter(surface->children().back(),child);
 
         children.push_back(child);
         child->imp()->pendingParent = nullptr;
@@ -508,7 +491,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
             currentDamagesB.clear();
             currentDamagesB.addRect(LRect(0,newSize));
             currentDamagesC = currentDamagesB;
-            currentDamagesC.multiply(float(surface->compositor()->globalScale())/float(surface->bufferScale()));
+            currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
             texture->setDataB(newSize, stride, format, data);
         }
 
@@ -527,7 +510,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
             currentDamagesB.addRegion(onlyPending);
             currentDamagesC = currentDamagesB;
-            currentDamagesC.multiply(float(surface->compositor()->globalScale())/float(surface->bufferScale()));
+            currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
         }
         else
         {
@@ -556,7 +539,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
             currentDamagesB.clear();
             currentDamagesB.addRect(LRect(0,newSize));
             currentDamagesC = currentDamagesB;
-            currentDamagesC.multiply(float(surface->compositor()->globalScale())/float(surface->bufferScale()));
+            currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
         }
         else if (!pendingDamagesB.empty() || !pendingDamagesS.empty())
         {
@@ -565,7 +548,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
             currentDamagesB.addRegion(pendingDamagesB);
             currentDamagesB.clip(LRect(0,newSize));
             currentDamagesC = currentDamagesB;
-            currentDamagesC.multiply(float(surface->compositor()->globalScale())/float(surface->bufferScale()));
+            currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
         }
 
         texture->setData(current.buffer);
@@ -578,7 +561,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
         if (!dmaBuffer->texture())
         {
-            dmaBuffer->imp()->texture = new LTexture(surface->compositor(), texture->unit());
+            dmaBuffer->imp()->texture = new LTexture(texture->unit());
             dmaBuffer->texture()->setDataB(dmaBuffer->planes());
         }
 
@@ -590,7 +573,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
             currentDamagesB.clear();
             currentDamagesB.addRect(LRect(0,newSize));
             currentDamagesC = currentDamagesB;
-            currentDamagesC.multiply(float(surface->compositor()->globalScale())/float(surface->bufferScale()));
+            currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
         }
         else if (!pendingDamagesB.empty() || !pendingDamagesS.empty())
         {
@@ -599,7 +582,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
             currentDamagesB.addRegion(pendingDamagesB);
             currentDamagesB.clip(LRect(0,newSize));
             currentDamagesC = currentDamagesB;
-            currentDamagesC.multiply(float(surface->compositor()->globalScale())/float(surface->bufferScale()));
+            currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
         }
 
         if (texture && texture != textureBackup && texture->imp()->pendingDelete)
@@ -619,7 +602,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
     currentSizeB = texture->sizeB();
     currentSizeS = texture->sizeB()/current.bufferScale;
-    currentSizeC = (texture->sizeB()*surface->compositor()->globalScale())/current.bufferScale;
+    currentSizeC = (texture->sizeB()*compositor()->globalScale())/current.bufferScale;
 
     if (bufferSizeChanged)
         surface->bufferSizeChanged();
@@ -657,7 +640,7 @@ void LSurface::LSurfacePrivate::globalScaleChanged(Int32 oldScale, Int32 newScal
 
     // Damages
     currentDamagesC = currentDamagesB;
-    currentDamagesC.multiply(float(surface->compositor()->globalScale())/float(surface->bufferScale()));
+    currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
 
     // Role
     if (surface->role())
@@ -711,4 +694,3 @@ void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output, timesp
         }
     }
 }
-

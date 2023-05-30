@@ -39,7 +39,6 @@ RXdgPositioner::RXdgPositioner
     )
 {
     m_imp = new RXdgPositionerPrivate();
-    imp()->lPositioner.imp()->data.compositor = compositor();
 }
 
 RXdgPositioner::~RXdgPositioner()

@@ -10,7 +10,6 @@
 
 using namespace Louvre;
 
-
 char *LOpenGL::openShader(const char *file)
 {
     FILE *fp;
@@ -95,7 +94,7 @@ GLuint LOpenGL::compileShader(GLenum type, const char *shaderString)
     return shader;
 }
 
-LTexture *LOpenGL::loadTexture(LCompositor *compositor, const char *pngFile, GLuint textureUnit)
+LTexture *LOpenGL::loadTexture(const char *pngFile, GLuint textureUnit)
 {
     unsigned int error;
     unsigned char *image;
@@ -113,14 +112,9 @@ LTexture *LOpenGL::loadTexture(LCompositor *compositor, const char *pngFile, GLu
     LSize s;
     s.setW(width);
     s.setH(height);
-    LTexture *texture = new LTexture(compositor, textureUnit);
+    LTexture *texture = new LTexture(textureUnit);
     texture->setDataB(s, width*4, DRM_FORMAT_ABGR8888, image);
-
     free(image);
 
     return texture;
 }
-
-
-
-

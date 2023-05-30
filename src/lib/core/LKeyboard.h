@@ -1,7 +1,7 @@
 #ifndef LKEYBOARD_H
 #define LKEYBOARD_H
 
-#include <LNamespaces.h>
+#include <LObject.h>
 #include <xkbcommon/xkbcommon.h>
 
 /*!
@@ -12,7 +12,7 @@
  * the repeat rate when holding down a key.\n
  * There is a single instance of LKeyboard, which can be accessed from LSeat::keyboard().
  */
-class Louvre::LKeyboard
+class Louvre::LKeyboard : public LObject
 {
 public:
 
@@ -75,16 +75,6 @@ public:
 
     LKeyboard(const LKeyboard&) = delete;
     LKeyboard& operator= (const LKeyboard&) = delete;
-
-    /*!
-     * @brief Global seat instance.
-     */
-    LSeat *seat() const;
-
-    /*!
-     * @brief Global compositor instance.
-     */
-    LCompositor *compositor() const;
 
     /*!
      * @brief Surface with keyboard focus.

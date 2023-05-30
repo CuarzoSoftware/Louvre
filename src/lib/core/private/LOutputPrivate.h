@@ -3,16 +3,7 @@
 
 #include <LOutput.h>
 
-class Louvre::LOutput::LOutputPrivate
-{
-
-public:
-    LOutputPrivate() = default;
-    ~LOutputPrivate() = default;
-
-    LOutputPrivate(const LOutputPrivate&) = delete;
-    LOutputPrivate& operator= (const LOutputPrivate&) = delete;
-
+LPRIVATE_CLASS(LOutput)
     LOutput *output;
     LRect rectC;
     LOutputMode *pendingMode = nullptr;
@@ -25,11 +16,10 @@ public:
     void *graphicBackendData = nullptr;
 
     // Setup Methods
-    bool initialize(LCompositor *compositor);
+    bool initialize();
     void globalScaleChanged(Int32 oldScale, Int32 newScale);
 
     // Compositor
-    LCompositor *compositor = nullptr;
     wl_global *global = nullptr;
 
     // Params

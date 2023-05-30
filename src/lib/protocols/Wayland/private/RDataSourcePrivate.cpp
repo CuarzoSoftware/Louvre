@@ -40,6 +40,5 @@ void RDataSource::RDataSourcePrivate::set_actions(wl_client *, wl_resource *reso
 
     RDataSource *lRDataSource = (RDataSource*)wl_resource_get_user_data(resource);
     lRDataSource->dataSource()->imp()->dndActions = dnd_actions;
-
 }
 #endif

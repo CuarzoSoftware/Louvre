@@ -17,5 +17,4 @@ LPRIVATE_CLASS(RSubsurface)
     LSubsurfaceRole *lSubsurfaceRole = nullptr;
 };
 
-
 #endif // RSUBSURFACEPRIVATE_H

@@ -6,8 +6,7 @@
 class Louvre::Protocols::Wayland::GSeat : public LResource
 {
 public:
-    GSeat(LCompositor *compositor,
-          wl_client *client,
+    GSeat(wl_client *client,
           const wl_interface *interface,
           Int32 version,
           UInt32 id,

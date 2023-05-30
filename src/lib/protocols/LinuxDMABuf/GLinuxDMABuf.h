@@ -6,8 +6,7 @@
 class Louvre::Protocols::LinuxDMABuf::GLinuxDMABuf : public LResource
 {
 public:
-    GLinuxDMABuf(LCompositor *compositor,
-                 wl_client *client,
+    GLinuxDMABuf(wl_client *client,
                  const wl_interface *interface,
                  Int32 version,
                  UInt32 id,

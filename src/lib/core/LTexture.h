@@ -1,7 +1,7 @@
 #ifndef LTEXTURE_H
 #define LTEXTURE_H
 
-#include <LNamespaces.h>
+#include <LObject.h>
 #include <GL/gl.h>
 #include <drm_fourcc.h>
 
@@ -11,7 +11,7 @@
  * The LTexture class is an abstraction of an OpenGL texture.\n
  * It allows for generating textures from buffers in main memory or EGL images.
  */
-class Louvre::LTexture
+class Louvre::LTexture : public LObject
 {
 public:
 
@@ -29,7 +29,7 @@ public:
     static UInt32 waylandFormatToDRM(UInt32 waylandFormat);
     static UInt32 formatBytesPerPixel(UInt32 format);
 
-    LTexture(LCompositor *compositor, GLuint textureUnit = 1);
+    LTexture(GLuint textureUnit = 1);
 
     bool setDataB(const LSize &size, UInt32 stride, UInt32 format, const void *buffer);
     bool setData(void *wlDRMBuffer);
@@ -41,11 +41,6 @@ public:
 
     LTexture(const LTexture&) = delete;
     LTexture& operator= (const LTexture&) = delete;
-
-    /*!
-     * @brief Compositor instance
-     */
-    LCompositor *compositor() const;
 
     /*!
      * @brief Texture size in buffer coordinates

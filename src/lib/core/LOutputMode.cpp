@@ -22,15 +22,15 @@ LOutputMode::~LOutputMode()
 
 const LSize &LOutputMode::sizeB() const
 {
-    return *output()->compositor()->imp()->graphicBackend->getOutputModeSize((LOutputMode*)this);
+    return *compositor()->imp()->graphicBackend->getOutputModeSize((LOutputMode*)this);
 }
 
 UInt32 LOutputMode::refreshRate() const
 {
-    return output()->compositor()->imp()->graphicBackend->getOutputModeRefreshRate((LOutputMode*)this);
+    return compositor()->imp()->graphicBackend->getOutputModeRefreshRate((LOutputMode*)this);
 }
 
 bool LOutputMode::isPreferred() const
 {
-    return output()->compositor()->imp()->graphicBackend->getOutputModeIsPreferred((LOutputMode*)this);
+    return compositor()->imp()->graphicBackend->getOutputModeIsPreferred((LOutputMode*)this);
 }

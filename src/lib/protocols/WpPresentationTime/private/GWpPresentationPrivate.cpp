@@ -9,11 +9,10 @@ struct wp_presentation_interface presentation_implementation =
     .feedback = &GWpPresentation::GWpPresentationPrivate::feedback
 };
 
-void GWpPresentation::GWpPresentationPrivate::bind(wl_client *client, void *compositor, UInt32 version, UInt32 id)
+void GWpPresentation::GWpPresentationPrivate::bind(wl_client *client, void *data, UInt32 version, UInt32 id)
 {
-    LCompositor *lCompositor = (LCompositor*)compositor;
-    new GWpPresentation(lCompositor,
-                        client,
+    L_UNUSED(data);
+    new GWpPresentation(client,
                         &wp_presentation_interface,
                         version,
                         id,

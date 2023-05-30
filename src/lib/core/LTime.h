@@ -26,7 +26,6 @@ public:
      */
     static timespec ns();
 
-
 private:
     LTime() = delete;
 };

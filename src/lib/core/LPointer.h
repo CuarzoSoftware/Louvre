@@ -1,7 +1,7 @@
 #ifndef LPOINTER_H
 #define LPOINTER_H
 
-#include <LNamespaces.h>
+#include <LObject.h>
 #include <LPoint.h>
 #include <LToplevelRole.h>
 #include <linux/input-event-codes.h>
@@ -14,7 +14,7 @@
  * the scroll wheel step value.\n
  * There is a single instance of LPointer, which can be accessed from LSeat::pointer().
  */
-class Louvre::LPointer
+class Louvre::LPointer : public LObject
 {
 public:
 
@@ -120,21 +120,6 @@ public:
 
     LPointer(const LPointer&) = delete;
     LPointer& operator= (const LPointer&) = delete;
-
-    /*!
-     * @brief Global seat instance.
-     */
-    LSeat *seat() const;
-
-    /*!
-     * @brief Global compositor instance.
-     */
-    LCompositor *compositor() const;
-
-    /*!
-     * @brief Global cursor instance.
-     */
-    LCursor *cursor() const;
 
     /*!
      * @brief Surface with pointer focus.
@@ -526,6 +511,5 @@ public:
 
     LPRIVATE_IMP(LPointer)
 };
-
 
 #endif // LPOINTER_H

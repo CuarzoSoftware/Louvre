@@ -56,8 +56,8 @@ void RXdgPopup::RXdgPopupPrivate::grab(wl_client *client, wl_resource *resource,
         if (!parent)
             parent = rXdgPopup->lPopupRole()->surface()->imp()->pendingParent;
 
-        if (!parent || (rXdgPopup->compositor()->seat()->pointer()->focusSurface()
-                            != parent && rXdgPopup->compositor()->seat()->keyboard()->focusSurface() != parent))
+        if (!parent || (compositor()->seat()->pointer()->focusSurface()
+                            != parent && compositor()->seat()->keyboard()->focusSurface() != parent))
         {
             wl_resource_post_error(
                 resource,
@@ -66,13 +66,10 @@ void RXdgPopup::RXdgPopupPrivate::grab(wl_client *client, wl_resource *resource,
             return;
         }
 
-
         rXdgPopup->lPopupRole()->grabSeatRequest();
     }
     else
-    {
         rXdgPopup->lPopupRole()->sendPopupDoneEvent();
-    }
 }
 
 #if LOUVRE_XDG_WM_BASE_VERSION >= 3

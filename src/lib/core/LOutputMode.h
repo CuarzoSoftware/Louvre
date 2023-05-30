@@ -1,7 +1,7 @@
 #ifndef LOUTPUTMODE_H
 #define LOUTPUTMODE_H
 
-#include <LNamespaces.h>
+#include <LObject.h>
 
 /*!
  * @brief Output resolution and refresh rate.
@@ -11,7 +11,7 @@
  * Each LOutput has one or more modes which can be accessed from LOutput::modes() and assigned to an output with LOutput::setMode().\n
  * This class does not have virtual methods and therefore it is not necessary to be reimplemented.
  */
-class Louvre::LOutputMode
+class Louvre::LOutputMode : LObject
 {
 public:
 

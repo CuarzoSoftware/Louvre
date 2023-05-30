@@ -21,13 +21,20 @@ static struct wl_pointer_interface pointer_implementation =
 #endif
 };
 
-RPointer::RPointer(GSeat *seatGlobal, Int32 id) :
-    LResource(seatGlobal->client(),
-              &wl_pointer_interface,
-              seatGlobal->version(),
-              id,
-              &pointer_implementation,
-              &RPointer::RPointerPrivate::resource_destroy)
+RPointer::RPointer
+(
+    GSeat *seatGlobal,
+    Int32 id
+)
+    :LResource
+    (
+        seatGlobal->client(),
+        &wl_pointer_interface,
+        seatGlobal->version(),
+        id,
+        &pointer_implementation,
+        &RPointer::RPointerPrivate::resource_destroy
+    )
 {
     m_imp = new RPointerPrivate();
     imp()->seatGlobal = seatGlobal;
@@ -77,7 +84,7 @@ void RPointer::sendAxis(double x, double y, UInt32 source)
         {
             wl_pointer_send_axis_discrete(resource(),
                 WL_POINTER_AXIS_HORIZONTAL_SCROLL,
-                compositor()->seat()->pointer()->scrollWheelStep().x());
+                seat()->pointer()->scrollWheelStep().x());
 
             wl_pointer_send_axis(resource(),
                 time,
@@ -86,7 +93,7 @@ void RPointer::sendAxis(double x, double y, UInt32 source)
 
             wl_pointer_send_axis_discrete(resource(),
                 WL_POINTER_AXIS_VERTICAL_SCROLL,
-                compositor()->seat()->pointer()->scrollWheelStep().y());
+                seat()->pointer()->scrollWheelStep().y());
 
             wl_pointer_send_axis(resource(),
                 time,
@@ -108,9 +115,7 @@ void RPointer::sendAxis(double x, double y, UInt32 source)
         sendFrame();
     }
     else
-    {
         sendAxis(x, y);
-    }
 }
 
 void RPointer::sendAxis(double x, double y)
@@ -136,7 +141,6 @@ void RPointer::sendButton(LPointer::Button button, LPointer::ButtonState state)
                            LTime::ms(),
                            button,
                            state);
-
 }
 
 GSeat *RPointer::seatGlobal() const
@@ -148,4 +152,3 @@ const RPointer::LastEventSerials &RPointer::serials() const
 {
     return imp()->serials;
 }
-

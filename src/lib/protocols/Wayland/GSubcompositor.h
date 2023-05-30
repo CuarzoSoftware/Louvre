@@ -6,8 +6,7 @@
 class Louvre::Protocols::Wayland::GSubcompositor : public LResource
 {
 public:
-    GSubcompositor(LCompositor *compositor,
-                   wl_client *client,
+    GSubcompositor(wl_client *client,
                    const wl_interface *interface,
                    Int32 version,
                    UInt32 id,

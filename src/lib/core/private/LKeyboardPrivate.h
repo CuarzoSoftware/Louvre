@@ -3,47 +3,35 @@
 
 #include <LKeyboard.h>
 
-struct Louvre::LKeyboard::Params
+using namespace Louvre;
+
+struct LKeyboard::Params
 {
-    LSeat *seat;
+    /* Add here any required constructor param */
 };
 
-class Louvre::LKeyboard::LKeyboardPrivate
-{
-public:
-    LKeyboardPrivate()                                      = default;
-    ~LKeyboardPrivate()                                     = default;
+LPRIVATE_CLASS(LKeyboard)
 
-    LKeyboardPrivate(const LKeyboardPrivate&)               = delete;
-    LKeyboardPrivate &operator=(const LKeyboardPrivate&)    = delete;
-
-    LKeyboard *keyboard                                     = nullptr;
-
-    LSeat *seat                                             = nullptr;
-
-    // Wayland
-    LSurface *keyboardFocusSurface                          = nullptr;
+    LSurface *keyboardFocusSurface = nullptr;
 
 #if LOUVRE_SEAT_VERSION >= 4
-    Int32 repeatRate                                        = 32;
-    Int32 repeatDelay                                       = 500;
+    Int32 repeatRate = 32;
+    Int32 repeatDelay = 500;
 #endif
 
     wl_array keys;
 
     // XKB
-    xkb_context *xkbContext                                 = nullptr;
-    xkb_keymap *xkbKeymap                                   = nullptr;
-    xkb_state *xkbKeymapState                               = nullptr;
+    xkb_context *xkbContext = nullptr;
+    xkb_keymap *xkbKeymap = nullptr;
+    xkb_state *xkbKeymapState = nullptr;
     xkb_rule_names xkbKeymapName;
     Int32 xkbKeymapSize;
-    Int32 xkbKeymapFd                                       = -1;
+    Int32 xkbKeymapFd = -1;
 
     void updateModifiers();
 
     KeyboardModifiersState modifiersState;
-
 };
-
 
 #endif // LKEYBOARDPRIVATE_H

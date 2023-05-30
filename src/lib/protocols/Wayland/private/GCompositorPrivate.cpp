@@ -13,9 +13,9 @@ struct wl_compositor_interface compositor_implementation =
 
 void GCompositor::GCompositorPrivate::bind(wl_client *client, void *data, UInt32 version, UInt32 id)
 {
-    LCompositor *lCompositor = (LCompositor*)data;
+    L_UNUSED(data);
 
-    LClient *lClient = lCompositor->getClientFromNativeResource(client);
+    LClient *lClient = compositor()->getClientFromNativeResource(client);
 
     if (lClient->compositorGlobal())
     {

@@ -7,25 +7,29 @@
 
 #include <LCompositor.h>
 
-GSeat::GSeat(LCompositor *compositor,
-                             wl_client *client,
-                             const wl_interface *interface,
-                             Int32 version,
-                             UInt32 id,
-                             const void *implementation,
-                             wl_resource_destroy_func_t destroy) :
-    LResource(compositor,
-              client,
-              interface,
-              version,
-              id,
-              implementation,
-              destroy)
+GSeat::GSeat
+(
+    wl_client *client,
+    const wl_interface *interface,
+    Int32 version,
+    UInt32 id,
+    const void *implementation,
+    wl_resource_destroy_func_t destroy
+)
+    :LResource
+    (
+        client,
+        interface,
+        version,
+        id,
+        implementation,
+        destroy
+    )
 {
     m_imp = new GSeatPrivate();
     this->client()->imp()->seatGlobals.push_back(this);
     imp()->clientLink = std::prev(this->client()->imp()->seatGlobals.end());
-    sendCapabilities(this->compositor()->seat()->capabilities());
+    sendCapabilities(seat()->capabilities());
     sendName("seat0");
 }
 

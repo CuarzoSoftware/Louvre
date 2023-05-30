@@ -1,7 +1,7 @@
 #ifndef LSEAT_H
 #define LSEAT_H
 
-#include <LNamespaces.h>
+#include <LObject.h>
 #include <LToplevelRole.h>
 #include <LSurface.h>
 
@@ -18,10 +18,9 @@ struct libseat;
  * The LSeat class also allows for changing sessions (TTY), accessing the clipboard, accessing instances of LPointer and LKeyboard, listening to native input backend events,
  * among other functions.
  */
-class Louvre::LSeat
+class Louvre::LSeat : public LObject
 {
 public:
-
     struct Params;
 
     /*!
@@ -61,21 +60,11 @@ public:
     LSeat& operator= (const LSeat&) = delete;
 
     /*!
-     * @brief Global compositor instance.
-     */
-    LCompositor *compositor() const;
-
-    /*!
      * @brief Available outputs.
      *
      * List of currently available outputs.
      */
     const list<LOutput*>*outputs() const;
-
-    /*!
-     * @brief Global cursor instance.
-     */
-    LCursor *cursor() const;
 
     /*!
      * @brief Handle to the native context used by the input backend.

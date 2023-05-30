@@ -22,11 +22,6 @@ LDataOffer::~LDataOffer()
     delete m_imp;
 }
 
-LSeat *LDataOffer::seat() const
-{
-    return dataOfferResource()->client()->seat();
-}
-
 Protocols::Wayland::RDataOffer *LDataOffer::dataOfferResource() const
 {
     return imp()->dataOfferResource;
@@ -41,7 +36,7 @@ LDataOffer::Usage LDataOffer::usedFor() const
 
 void LDataOffer::LDataOfferPrivate::updateDNDAction()
 {
-    LDNDManager *dndManager = dataOfferResource->client()->seat()->dndManager();
+    LDNDManager *dndManager = seat()->dndManager();
 
     bool offerIsV3 = dataOfferResource->version() >= 3;
     UInt32 compositorAction = dndManager->preferredAction();
@@ -173,7 +168,6 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
             dataOfferResource->sendAction(final);
         }
     }
-
 }
 
 #endif

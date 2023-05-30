@@ -14,22 +14,14 @@ extern "C" {
 }
 #endif
 
-struct Louvre::LSeat::Params
+struct LSeat::Params
 {
-    LCompositor *compositor;
+    /* Add here any required constructor param */
 };
 
-class Louvre::LSeat::LSeatPrivate
-{
-public:
-    LSeatPrivate()                                  = default;
-    ~LSeatPrivate()                                 = default;
-
-    LSeatPrivate(const LSeatPrivate&)               = delete;
-    LSeatPrivate& operator= (const LSeatPrivate&)   = delete;
+LPRIVATE_CLASS(LSeat)
 
     // Wayland
-    LCompositor *compositor                         = nullptr;
     LPointer *pointer                               = nullptr;
     LKeyboard *keyboard                             = nullptr;
 
@@ -50,7 +42,6 @@ public:
     static void seatEnabled(libseat *seat, void *data);
     static void seatDisabled(libseat *seat, void *data);
     void dispatchSeat();
-
 };
 
 #endif // LSEATPRIVATE_H

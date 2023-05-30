@@ -3,19 +3,11 @@
 
 #include <LOutputMode.h>
 
-class Louvre::LOutputMode::LOutputModePrivate
-{
+using namespace Louvre;
 
-public:
-    LOutputModePrivate() = default;
-    ~LOutputModePrivate() = default;
-
-    LOutputModePrivate(const LOutputModePrivate&) = delete;
-    LOutputModePrivate& operator= (const LOutputModePrivate&) = delete;
-
+LPRIVATE_CLASS(LOutputMode)
     const LOutput *output = nullptr;
     void *graphicBackendData = nullptr;
-
 };
 
 #endif // LOUTPUTMODEPRIVATE_H

@@ -6,7 +6,11 @@
 class Louvre::Protocols::XdgShell::RXdgPopup : public LResource
 {
 public:
-    RXdgPopup(RXdgSurface *rXdgSurface, RXdgSurface *rXdgParentSurface, RXdgPositioner *rXdgPositioner, UInt32 id);
+    RXdgPopup(RXdgSurface *rXdgSurface,
+              RXdgSurface *rXdgParentSurface,
+              RXdgPositioner *rXdgPositioner,
+              UInt32 id);
+
     ~RXdgPopup();
 
     RXdgSurface *rXdgSurface() const;

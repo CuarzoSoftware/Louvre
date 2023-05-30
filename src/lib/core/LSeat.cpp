@@ -52,20 +52,20 @@ void initSeat(LSeat *seat)
 }
 LSeat::LSeat(Louvre::LSeat::Params *params)
 {
+    L_UNUSED(params);
+
     m_imp = new LSeatPrivate();
+    compositor()->imp()->seat = this;
 
     LDNDManager::Params dndManagerParams;
     dndManagerParams.seat = this;
-    imp()->dndManager = params->compositor->createDNDManagerRequest(&dndManagerParams);
-    imp()->compositor = params->compositor;
+    imp()->dndManager = compositor()->createDNDManagerRequest(&dndManagerParams);
 
     LPointer::Params pointerParams;
-    pointerParams.seat = this;
-    imp()->pointer = params->compositor->createPointerRequest(&pointerParams);
+    imp()->pointer = compositor()->createPointerRequest(&pointerParams);
 
     LKeyboard::Params keyboardParams;
-    keyboardParams.seat = this;
-    imp()->keyboard = params->compositor->createKeyboardRequest(&keyboardParams);
+    imp()->keyboard = compositor()->createKeyboardRequest(&keyboardParams);
 
     imp()->enabled = true;
 }
@@ -75,19 +75,9 @@ LSeat::~LSeat()
     delete m_imp;
 }
 
-LCompositor *LSeat::compositor() const
-{
-    return imp()->compositor;
-}
-
 const list<LOutput *> *LSeat::outputs() const
 {
     return LCompositor::compositor()->imp()->graphicBackend->getConnectedOutputs(LCompositor::compositor());
-}
-
-LCursor *LSeat::cursor() const
-{
-    return compositor()->cursor();
 }
 
 UInt32 LSeat::backendCapabilities() const
@@ -171,7 +161,6 @@ Int32 LSeat::closeDevice(Int32 id)
     return libseat_close_device(libseatHandle(), id);
 }
 
-
 libseat *LSeat::libseatHandle() const
 {
     return imp()->libseatHandle;
@@ -205,10 +194,10 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
     LSeat *lseat = (LSeat*)data;
 
     lseat->imp()->enabled = true;
-    lseat->compositor()->repaintAllOutputs();
+    compositor()->repaintAllOutputs();
 
-    if (lseat->compositor()->isInputBackendInitialized())
-        lseat->compositor()->imp()->inputBackend->resume(lseat);
+    if (compositor()->isInputBackendInitialized())
+        compositor()->imp()->inputBackend->resume(lseat);
 
     LLog::debug("Seat %s enabled.", libseat_seat_name(seat));
 
@@ -226,15 +215,13 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
 
     lseat->imp()->enabled = false;
 
-    if (lseat->compositor()->isInputBackendInitialized())
-        lseat->compositor()->imp()->inputBackend->suspend(lseat);
+    if (compositor()->isInputBackendInitialized())
+        compositor()->imp()->inputBackend->suspend(lseat);
 
     libseat_disable_seat(seat);
 
-    for (LOutput *o : lseat->compositor()->outputs())
-    {
+    for (LOutput *o : compositor()->outputs())
         o->imp()->state = LOutput::Suspended;
-    }
 
     LLog::debug("Seat %s disabled.", libseat_seat_name(seat));
 

@@ -4,18 +4,9 @@
 #include <LXCursor.h>
 #include <LPoint.h>
 
-class Louvre::LXCursor::LXCursorPrivate
-{
-public:
-    LXCursorPrivate()                                         = default;
-    ~LXCursorPrivate()                                        = default;
-
-    LXCursorPrivate(const LXCursorPrivate&)                 = delete;
-    LXCursorPrivate& operator= (const LXCursorPrivate&)     = delete;
-
+LPRIVATE_CLASS(LXCursor)
     LPoint hotspotB;
     LTexture *texture;
-
 };
 
 #endif // LX11CURSORPRIVATE_H

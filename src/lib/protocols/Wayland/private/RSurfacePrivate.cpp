@@ -17,7 +17,6 @@ void RSurface::RSurfacePrivate::handleOffset(LSurface *lSurface, Int32 x, Int32 
         lSurface->role()->handleSurfaceOffset(x, y);
 }
 
-// SURFACE
 void RSurface::RSurfacePrivate::attach(wl_client *, wl_resource *resource, wl_resource *buffer, Int32 x, Int32 y)
 {
     RSurface *lRSurface = (RSurface*)wl_resource_get_user_data(resource);
@@ -35,14 +34,11 @@ void RSurface::RSurfacePrivate::attach(wl_client *, wl_resource *resource, wl_re
     if (wl_resource_get_version(resource) < 5)
         handleOffset(lSurface, x, y);
     else
-    {
         if (x != 0 || y != 0)
             wl_resource_post_error(resource, WL_SURFACE_ERROR_INVALID_OFFSET, "Buffer offset is invalid. Check wl_surface::offset (v5).");
-    }
 #else
     handleOffset(lSurface, x, y);
 #endif
-
 }
 
 void RSurface::RSurfacePrivate::frame(wl_client *client, wl_resource *resource, UInt32 callback)
@@ -55,6 +51,7 @@ void RSurface::RSurfacePrivate::frame(wl_client *client, wl_resource *resource, 
         wl_callback_send_done(lSurface->imp()->frameCallback, LTime::ms());
         wl_resource_destroy(lSurface->imp()->frameCallback);
     }
+
     lSurface->imp()->frameCallback = wl_resource_create(client, &wl_callback_interface, 1, callback);
 }
 
@@ -136,7 +133,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
                 surface->imp()->currentInputRegionS.clear();
                 surface->imp()->currentInputRegionS.addRect(LRect(0,surface->sizeS()));
                 surface->imp()->currentInputRegionC = surface->imp()->currentInputRegionS;
-                surface->imp()->currentInputRegionC.multiply(surface->compositor()->globalScale());
+                surface->imp()->currentInputRegionC.multiply(compositor()->globalScale());
             }
         }
         else if (surface->imp()->inputRegionChanged || surface->imp()->bufferSizeChanged)
@@ -144,7 +141,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
             surface->imp()->currentInputRegionS = surface->imp()->pendingInputRegionS;
             surface->imp()->currentInputRegionS.clip(LRect(0,surface->sizeS()));
             surface->imp()->currentInputRegionC = surface->imp()->currentInputRegionS;
-            surface->imp()->currentInputRegionC.multiply(surface->compositor()->globalScale());
+            surface->imp()->currentInputRegionC.multiply(compositor()->globalScale());
             surface->inputRegionChanged();
             surface->imp()->inputRegionChanged = false;
         }
@@ -166,7 +163,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
         surface->imp()->currentOpaqueRegionS = surface->imp()->pendingOpaqueRegionS;
         surface->imp()->currentOpaqueRegionS.clip(LRect(0,surface->sizeS()));
         surface->imp()->currentOpaqueRegionC = surface->imp()->currentOpaqueRegionS;
-        surface->imp()->currentOpaqueRegionC.multiply(surface->compositor()->globalScale());
+        surface->imp()->currentOpaqueRegionC.multiply(compositor()->globalScale());
         surface->imp()->opaqueRegionChanged = false;
         surface->opaqueRegionChanged();
 
@@ -176,7 +173,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
         surface->imp()->currentTranslucentRegionS = surface->imp()->currentOpaqueRegionS;
         surface->imp()->currentTranslucentRegionS.inverse(LRect(0,surface->sizeS()));
         surface->imp()->currentTranslucentRegionC = surface->imp()->currentTranslucentRegionS;
-        surface->imp()->currentTranslucentRegionC.multiply(surface->compositor()->globalScale());
+        surface->imp()->currentTranslucentRegionC.multiply(compositor()->globalScale());
 
     }
 
@@ -197,8 +194,7 @@ void RSurface::RSurfacePrivate::damage(wl_client *client, wl_resource *resource,
     if (height > MAX_SURFACE_SIZE)
         height = MAX_SURFACE_SIZE;
 
-
-    if (lSurface->compositor()->globalScale() != 1)
+    if (compositor()->globalScale() != 1)
     {
         x--;
         y--;
@@ -206,16 +202,15 @@ void RSurface::RSurfacePrivate::damage(wl_client *client, wl_resource *resource,
         width+=2;
         height+=2;
 
-        int modX = x % lSurface->compositor()->globalScale();
-        int modY = y % lSurface->compositor()->globalScale();
+        int modX = x % compositor()->globalScale();
+        int modY = y % compositor()->globalScale();
 
         x -= modX;
         y -= modY;
 
-        width += width % lSurface->compositor()->globalScale() + modX;
-        height += height % lSurface->compositor()->globalScale() + modY;
+        width += width % compositor()->globalScale() + modX;
+        height += height % compositor()->globalScale() + modY;
     }
-
 
     lSurface->imp()->pendingDamagesS.addRect(LRect(x, y, width, height));
     lSurface->imp()->damagesChanged = true;
@@ -302,12 +297,12 @@ void RSurface::RSurfacePrivate::damage_buffer(wl_client *client, wl_resource *re
     RSurface *lRSurface = (RSurface*)wl_resource_get_user_data(resource);
     LSurface *lSurface = lRSurface->surface();
 
-    if (lSurface->compositor()->globalScale() != 1)
+    if (compositor()->globalScale() != 1)
     {
-        x-=x%lSurface->compositor()->globalScale();
-        y-=y%lSurface->compositor()->globalScale();
-        width+=width%lSurface->compositor()->globalScale() + x%lSurface->compositor()->globalScale();
-        height+=height%lSurface->compositor()->globalScale() + y%lSurface->compositor()->globalScale();
+        x -= x % compositor()->globalScale();
+        y -= y % compositor()->globalScale();
+        width += width % compositor()->globalScale() + x % compositor()->globalScale();
+        height += height % compositor()->globalScale() + y % compositor()->globalScale();
     }
 
     lSurface->imp()->pendingDamagesB.addRect(LRect(x, y, width, height));

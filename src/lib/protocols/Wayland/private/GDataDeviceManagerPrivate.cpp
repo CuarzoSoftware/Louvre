@@ -16,11 +16,11 @@ struct wl_data_device_manager_interface dataDeviceManager_implementation =
     .get_data_device = &GDataDeviceManager::GDataDeviceManagerPrivate::get_data_device
 };
 
-void GDataDeviceManager::GDataDeviceManagerPrivate::bind(wl_client *client, void *compositor, UInt32 version, UInt32 id)
+void GDataDeviceManager::GDataDeviceManagerPrivate::bind(wl_client *client, void *data, UInt32 version, UInt32 id)
 {
-    LCompositor *lCompositor = (LCompositor*)compositor;
+    L_UNUSED(data);
 
-    LClient *lClient = lCompositor->getClientFromNativeResource(client);
+    LClient *lClient = compositor()->getClientFromNativeResource(client);
 
     if (lClient->dataDeviceManagerGlobal())
     {

@@ -1,7 +1,5 @@
 #include <protocols/XdgShell/private/RXdgPositionerPrivate.h>
-
 #include <private/LPositionerPrivate.h>
-
 #include <protocols/XdgShell/xdg-shell.h>
 
 void RXdgPositioner::RXdgPositionerPrivate::destroy_resource(wl_resource *resource)

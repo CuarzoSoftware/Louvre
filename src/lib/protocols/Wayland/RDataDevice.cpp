@@ -18,11 +18,9 @@
 #include <LPointer.h>
 #include <LTime.h>
 
-
 #include <stdio.h>
 
 using namespace Louvre::Protocols::Wayland;
-
 
 struct wl_data_device_interface dataDevice_implementation =
 {
@@ -33,13 +31,21 @@ struct wl_data_device_interface dataDevice_implementation =
 #endif
 };
 
-RDataDevice::RDataDevice(GDataDeviceManager *dataDeviceManagerGlobal, GSeat *seatGlobal, Int32 id) :
-LResource(seatGlobal->client(),
-          &wl_data_device_interface,
-          dataDeviceManagerGlobal->version(),
-          id,
-          &dataDevice_implementation,
-          &RDataDevice::RDataDevicePrivate::resource_destroy)
+RDataDevice::RDataDevice
+(
+    GDataDeviceManager *dataDeviceManagerGlobal,
+    GSeat *seatGlobal,
+    Int32 id
+)
+    :LResource
+    (
+        seatGlobal->client(),
+        &wl_data_device_interface,
+        dataDeviceManagerGlobal->version(),
+        id,
+        &dataDevice_implementation,
+        &RDataDevice::RDataDevicePrivate::resource_destroy
+    )
 {
     m_imp = new RDataDevicePrivate();
     seatGlobal->imp()->dataDeviceResource = this;

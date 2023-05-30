@@ -26,7 +26,3 @@ GDataDeviceManager::~GDataDeviceManager()
     client()->imp()->dataDeviceManagerGlobal = nullptr;
     delete m_imp;
 }
-
-
-
-

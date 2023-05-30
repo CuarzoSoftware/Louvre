@@ -92,7 +92,6 @@ static void initConnector(Backend *bknd, SRMConnector *conn)
 
     LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
     LOutput *output = compositor->createOutputRequest();
-    output->imp()->compositor = compositor;
     srmConnectorSetUserData(conn, output);
 
     Output *bkndOutput = new Output();
@@ -431,7 +430,7 @@ EGLContext LGraphicBackend::getAllocatorEGLContext(LCompositor *compositor)
 
 bool LGraphicBackend::createTextureFromCPUBuffer(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels)
 {
-    Backend *bknd = (Backend*)texture->compositor()->imp()->graphicBackendData;
+    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
     SRMBuffer *bkndBuffer = srmBufferCreateFromCPU(bknd->core, size.w(), size.h(), stride, pixels, format);
 
     if (bkndBuffer)
@@ -445,7 +444,7 @@ bool LGraphicBackend::createTextureFromCPUBuffer(LTexture *texture, const LSize 
 
 bool LGraphicBackend::createTextureFromWaylandDRM(LTexture *texture, void *wlBuffer)
 {
-    Backend *bknd = (Backend*)texture->compositor()->imp()->graphicBackendData;
+    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
     SRMBuffer *bkndBuffer = srmBufferCreateFromWaylandDRM(bknd->core, wlBuffer);
 
     if (bkndBuffer)
@@ -454,7 +453,6 @@ bool LGraphicBackend::createTextureFromWaylandDRM(LTexture *texture, void *wlBuf
         texture->imp()->format = srmBufferGetFormat(bkndBuffer);
         texture->imp()->sizeB.setW(srmBufferGetWidth(bkndBuffer));
         texture->imp()->sizeB.setH(srmBufferGetHeight(bkndBuffer));
-
         return true;
     }
 
@@ -463,7 +461,7 @@ bool LGraphicBackend::createTextureFromWaylandDRM(LTexture *texture, void *wlBuf
 
 bool LGraphicBackend::createTextureFromDMA(LTexture *texture, const LDMAPlanes *planes)
 {
-    Backend *bknd = (Backend*)texture->compositor()->imp()->graphicBackendData;
+    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
     SRMBuffer *bkndBuffer = srmBufferCreateFromDMA(bknd->core, (SRMBufferDMAData*)planes);
 
     if (bkndBuffer)
@@ -495,7 +493,7 @@ UInt32 LGraphicBackend::getTextureID(LOutput *output, LTexture *texture)
     }
     else
     {
-        Backend *bknd = (Backend*)texture->compositor()->imp()->graphicBackendData;
+        Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
         bkndRendererDevice = srmCoreGetAllocatorDevice(bknd->core);
     }
 

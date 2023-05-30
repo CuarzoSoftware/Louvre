@@ -77,7 +77,6 @@ static void clientConnectedEvent(wl_listener *listener, void *data)
 
     LClient::Params *params = new LClient::Params;
     params->client = client;
-    params->compositor = LCompositor::compositor();
 
     // Let the developer create his own client implementation
     LClient *newClient =  LCompositor::compositor()->createClientRequest(params);
@@ -229,7 +228,7 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
         eglBindWaylandDisplayWL(eglDisplay(), display);
 
     painter = new LPainter();
-    cursor = new LCursor(compositor);
+    cursor = new LCursor();
     compositor->cursorInitialized();
 
     return true;
@@ -269,7 +268,6 @@ bool LCompositor::LCompositorPrivate::initSeat()
 
     // Ask the developer to return a LSeat
     LSeat::Params seatParams;
-    seatParams.compositor = LCompositor::compositor();
     seat = LCompositor::compositor()->createSeatRequest(&seatParams);
     return true;
 }

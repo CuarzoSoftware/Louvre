@@ -6,7 +6,6 @@
 using namespace Louvre;
 
 LPRIVATE_CLASS(LBaseSurfaceRole)
-    LCompositor *compositor;
     LResource *resource;
     LSurface *surface;
     UInt32 roleId;

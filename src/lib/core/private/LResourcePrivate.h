@@ -5,9 +5,7 @@
 
 using namespace Louvre;
 
-class LResource::LResourcePrivate
-{
-public:
+LPRIVATE_CLASS(LResource)
     LClient *client = nullptr;
     wl_resource *resource = nullptr;
 };

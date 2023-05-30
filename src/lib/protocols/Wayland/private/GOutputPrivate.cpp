@@ -14,7 +14,7 @@ void GOutput::GOutputPrivate::bind(wl_client *client, void *output, UInt32 versi
 {
     LOutput *lOutput = (LOutput*)output;
 
-    LClient *lClient = lOutput->compositor()->getClientFromNativeResource(client);
+    LClient *lClient = compositor()->getClientFromNativeResource(client);
 
     if (!lClient)
         return;

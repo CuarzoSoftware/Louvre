@@ -34,19 +34,17 @@ void RPointer::RPointerPrivate::set_cursor(wl_client *, wl_resource *resource, U
         LCursorRole::Params cursorRoleParams;
         cursorRoleParams.surface = lSurface;
 
-        LCursorRole *lCursor = pointerResource->compositor()->createCursorRoleRequest(&cursorRoleParams);
+        LCursorRole *lCursor = compositor()->createCursorRoleRequest(&cursorRoleParams);
         lCursor->imp()->currentHotspotS.setX(hotspot_x);
         lCursor->imp()->currentHotspotS.setY(hotspot_y);
-        lCursor->imp()->currentHotspotC = lCursor->imp()->currentHotspotS*lSurface->compositor()->globalScale();
-        lCursor->imp()->currentHotspotB = lCursor->imp()->currentHotspotS*lSurface->bufferScale();
+        lCursor->imp()->currentHotspotC = lCursor->imp()->currentHotspotS * compositor()->globalScale();
+        lCursor->imp()->currentHotspotB = lCursor->imp()->currentHotspotS * lSurface->bufferScale();
         lSurface->imp()->setPendingRole(lCursor);
         lSurface->imp()->applyPendingRole();
-        pointerResource->compositor()->seat()->pointer()->setCursorRequest(lCursor);
+        seat()->pointer()->setCursorRequest(lCursor);
     }
     else
-    {
-        pointerResource->client()->seat()->pointer()->setCursorRequest(nullptr);
-    }
+        seat()->pointer()->setCursorRequest(nullptr);
 }
 
 #if LOUVRE_SEAT_VERSION >= WL_POINTER_RELEASE_SINCE_VERSION

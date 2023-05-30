@@ -24,13 +24,20 @@ struct wl_data_source_interface dataSource_implementation =
 #endif
 };
 
-RDataSource::RDataSource(GDataDeviceManager *dataDeviceManagerGlobal, UInt32 id) :
-    LResource(dataDeviceManagerGlobal->client(),
-              &wl_data_source_interface,
-              dataDeviceManagerGlobal->version(),
-              id,
-              &dataSource_implementation,
-              &RDataSource::RDataSourcePrivate::resource_destroy)
+RDataSource::RDataSource
+(
+    GDataDeviceManager *dataDeviceManagerGlobal,
+    UInt32 id
+)
+    :LResource
+    (
+        dataDeviceManagerGlobal->client(),
+        &wl_data_source_interface,
+        dataDeviceManagerGlobal->version(),
+        id,
+        &dataSource_implementation,
+        &RDataSource::RDataSourcePrivate::resource_destroy
+    )
 {
     m_imp = new RDataSourcePrivate();
     imp()->dataSource = new LDataSource(this);
@@ -39,21 +46,17 @@ RDataSource::RDataSource(GDataDeviceManager *dataDeviceManagerGlobal, UInt32 id)
 RDataSource::~RDataSource()
 {
     // Check if being used by a Drag & Drop
-    if (dataSource() == client()->seat()->dndManager()->source())
-    {
-        client()->seat()->dndManager()->cancel();
-    }
+    if (dataSource() == seat()->dndManager()->source())
+        seat()->dndManager()->cancel();
 
     // Check if used by clipboard
-    if (dataSource() != client()->seat()->dataSelection())
+    if (dataSource() != seat()->dataSelection())
     {
         dataSource()->imp()->remove();
         delete imp()->dataSource;
     }
     else
-    {
         dataSource()->imp()->dataSourceResource = nullptr;
-    }
 
     delete m_imp;
 }
@@ -63,10 +66,10 @@ void RDataSource::sendDNDDropPerformed()
     #if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
     if (version() >= 3)
     {
-        if (compositor()->seat()->dndManager()->imp()->matchedMimeType)
+        if (seat()->dndManager()->imp()->matchedMimeType)
             wl_data_source_send_dnd_drop_performed(resource());
         else
-            compositor()->seat()->dndManager()->cancel();
+            seat()->dndManager()->cancel();
     }
 #endif
 }
@@ -93,4 +96,3 @@ LDataSource *RDataSource::dataSource() const
 {
     return imp()->dataSource;
 }
-

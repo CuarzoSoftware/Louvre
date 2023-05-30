@@ -1,7 +1,7 @@
 #ifndef LPOSITIONER_H
 #define LPOSITIONER_H
 
-#include <LNamespaces.h>
+#include <LObject.h>
 #include <LRect.h>
 
 /*!
@@ -39,7 +39,7 @@
  * For more information on LPositioner rules, you can analyze the implementation of LPopupRole::rolePosC() or consult the documentation of the [xdg_shell::positioner](https://wayland.app/protocols/xdg-shell#xdg_positioner) interface.
  *
  */
-class Louvre::LPositioner
+class Louvre::LPositioner : public LObject
 {
 public:
     LPositioner();
@@ -146,11 +146,6 @@ public:
         /// Scale Popup vertically
         ResizeY         = 32
     };
-
-    /*!
-     * @brief Compositor instance
-     */
-    LCompositor *compositor() const;
 
     /*!
      * @brief Size in surface coordinates

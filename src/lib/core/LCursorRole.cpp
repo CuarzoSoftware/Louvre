@@ -53,14 +53,10 @@ void LCursorRole::handleSurfaceCommit()
 
         // Notify that the cursor changed content
         if (compositor()->cursor()->texture() == surface()->texture())
-        {
-            surface()->seat()->pointer()->setCursorRequest(this);
-        }
+            seat()->pointer()->setCursorRequest(this);
     }
     else
-    {
         surface()->imp()->setMapped(false);
-    }
 }
 
 void LCursorRole::handleSurfaceOffset(Int32 x, Int32 y)

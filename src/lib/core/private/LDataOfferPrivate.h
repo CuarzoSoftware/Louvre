@@ -5,16 +5,10 @@
 #include <LDNDManager.h>
 #include <private/LDataSourcePrivate.h>
 
-class Louvre::LDataOffer::LDataOfferPrivate
-{
-public:
-    LDataOfferPrivate()                                     = default;
-    ~LDataOfferPrivate()                                    = default;
+using namespace Louvre;
 
-    LDataOfferPrivate(const LDataOfferPrivate&)             = delete;
-    LDataOfferPrivate &operator=(const LDataOfferPrivate&)  = delete;
-
-    Protocols::Wayland::RDataOffer *dataOfferResource = nullptr;
+LPRIVATE_CLASS(LDataOffer)
+    Wayland::RDataOffer *dataOfferResource = nullptr;
     bool hasFinished                                        = false;
     Usage usedFor                                           = Usage::Undefined;
 
@@ -24,6 +18,5 @@ public:
     void updateDNDAction();
 #endif
 };
-
 
 #endif // LDATAOFFERPRIVATE_H

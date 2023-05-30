@@ -1,9 +1,10 @@
 #include <private/LDataSourcePrivate.h>
 #include <protocols/Wayland/RDataSource.h>
+#include <cstdio>
 
 using namespace Louvre;
 
-LDataSource::LDataSource(Protocols::Wayland::RDataSource *dataSourceResource)
+LDataSource::LDataSource(Wayland::RDataSource *dataSourceResource)
 {
     m_imp = new LDataSourcePrivate();
     imp()->dataSourceResource = dataSourceResource;
@@ -32,14 +33,14 @@ const std::list<LDataSource::LSource> &LDataSource::sources() const
     }
 #endif
 
-Protocols::Wayland::RDataSource *LDataSource::dataSourceResource() const
+Wayland::RDataSource *LDataSource::dataSourceResource() const
 {
     return imp()->dataSourceResource;
 }
 
 /* PRIVATE */
 
-void Louvre::LDataSource::LDataSourcePrivate::remove()
+void LDataSource::LDataSourcePrivate::remove()
 {
     while(!sources.empty())
     {

@@ -16,17 +16,24 @@ static struct wl_keyboard_interface keyboard_implementation =
 #endif
 };
 
-RKeyboard::RKeyboard(GSeat *seatGlobal, Int32 id) :
-    LResource(seatGlobal->client(),
-              &wl_keyboard_interface,
-              seatGlobal->version(),
-              id,
-              &keyboard_implementation,
-              &RKeyboard::RKeyboardPrivate::resource_destroy)
+RKeyboard::RKeyboard
+(
+    GSeat *seatGlobal,
+    Int32 id
+)
+    :LResource
+    (
+        seatGlobal->client(),
+        &wl_keyboard_interface,
+        seatGlobal->version(),
+        id,
+        &keyboard_implementation,
+        &RKeyboard::RKeyboardPrivate::resource_destroy
+    )
 {
     m_imp = new RKeyboardPrivate();
     imp()->seatGlobal = seatGlobal;
-    LKeyboard *lKeyboard = client()->seat()->keyboard();
+    LKeyboard *lKeyboard = seat()->keyboard();
     sendRepeatInfo(lKeyboard->repeatRate(), lKeyboard->repeatDelay());
     sendKeymap(lKeyboard->keymapFd(), lKeyboard->keymapSize());
     seatGlobal->imp()->keyboardResource = this;
@@ -61,7 +68,7 @@ void RKeyboard::sendLeave(LSurface *surface)
 void RKeyboard::sendEnter(LSurface *surface)
 {
     imp()->serials.enter = LCompositor::nextSerial();
-    wl_keyboard_send_enter(resource(), serials().enter, surface->surfaceResource()->resource(), &client()->seat()->keyboard()->imp()->keys);
+    wl_keyboard_send_enter(resource(), serials().enter, surface->surfaceResource()->resource(), &seat()->keyboard()->imp()->keys);
 }
 
 void RKeyboard::sendModifiers(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)

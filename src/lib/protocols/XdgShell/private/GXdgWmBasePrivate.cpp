@@ -16,12 +16,10 @@ static struct xdg_wm_base_interface xdg_wm_base_implementation =
     .pong = &GXdgWmBase::GXdgWmBasePrivate::pong
 };
 
-void GXdgWmBase::GXdgWmBasePrivate::bind(wl_client *client, void *compositor, UInt32 version, UInt32 id)
+void GXdgWmBase::GXdgWmBasePrivate::bind(wl_client *client, void *data, UInt32 version, UInt32 id)
 {
-    LCompositor *lCompositor = (LCompositor*)compositor;
-
-    new GXdgWmBase(lCompositor,
-                   client,
+    L_UNUSED(data);
+    new GXdgWmBase(client,
                    &xdg_wm_base_interface,
                    version,
                    id,

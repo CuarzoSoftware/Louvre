@@ -1,11 +1,10 @@
 #ifndef LCURSOR_H
 #define LCURSOR_H
 
-#include <LNamespaces.h>
+#include <LObject.h>
 #include <LPoint.h>
 #include <LTexture.h>
 #include <LRect.h>
-
 
 /*!
  * @brief Utility class for rendering cursors.
@@ -29,7 +28,7 @@
  * If hardware compositing is not supported, the cursor must be rendered using OpenGL. 
  * In this case, the cursor's position and size in compositor coordinates can be accessed using the rectC() method, and its texture with the texture() method.
 */
-class Louvre::LCursor
+class Louvre::LCursor : public LObject
 {
 public:
 
@@ -48,7 +47,7 @@ public:
      *
      * @returns If an XCursor matching the parameters is found, returns an instance of the LXCursor class, which stores the cursor's dimensions, hotspot, and texture. Otherwise, it returns nullptr. See the example available in LCompositor::cursorInitialized() for more information.
      */
-    LXCursor *loadXCursorB(LCompositor *compositor, const char *cursor, const char *theme = NULL, Int32 suggestedSize = 64, GLuint textureUnit = 1);
+    LXCursor *loadXCursorB(const char *cursor, const char *theme = NULL, Int32 suggestedSize = 64, GLuint textureUnit = 1);
 
     /*!
      * @brief Sets the library's default cursor.
@@ -177,11 +176,6 @@ public:
     bool hasHardwareSupport(const LOutput *output) const;
 
     /*!
-     * @brief Returns the compositor's instance.
-     */
-    LCompositor *compositor() const;
-
-    /*!
      * @brief Current cursor output.
      */
     LOutput *output() const;
@@ -200,7 +194,7 @@ public:
      * @brief Constructor of the LCursor class.
      * @param output The output on which the cursor is initialized.
      */
-    LCursor(LCompositor *compositor);
+    LCursor();
 
     /*!
      * @brief Desctructor of the LCursor class.

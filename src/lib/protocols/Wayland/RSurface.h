@@ -6,7 +6,6 @@
 class Louvre::Protocols::Wayland::RSurface : public LResource
 {
 public:
-
     RSurface(GCompositor *compositorGlobal, UInt32 id);
     ~RSurface();
 

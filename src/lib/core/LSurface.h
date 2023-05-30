@@ -1,12 +1,13 @@
 #ifndef LSURFACE_H
 #define LSURFACE_H
 
+#include <LObject.h>
 #include <LTexture.h>
-#include <LNamespaces.h>
-#include <list>
-#include <mutex>
 #include <LRegion.h>
 #include <LRect.h>
+
+#include <list>
+#include <mutex>
 
 using namespace std;
 
@@ -84,8 +85,7 @@ using namespace std;
  * In some cases, such as in the LPopupRole or LSubsurfaceRole role, the position given by the compositor is not taken into account.\n
  * You can see the positioning rules of each role in detail by viewing the documentation of rolePosC() for each one.
  */
-
-class Louvre::LSurface
+class Louvre::LSurface : public LObject
 {
 public:
 
@@ -136,7 +136,7 @@ public:
      *
      * @returns A pointer to an instance of LCursorRole or nullptr if it has a different role.
      */
-    LCursorRole *cursor() const;
+    LCursorRole *cursorRole() const;
 
     /*!
      * @brief Drag & Drop icon role
@@ -183,11 +183,6 @@ public:
 
     LSurface(const LSurface&) = delete;
     LSurface& operator= (const LSurface&) = delete;
-
-    /*!
-     * @brief Global seat instance*
-     */
-    LSeat *seat() const;
 
     /*!
      * @brief Position given by the compositor.
@@ -410,11 +405,6 @@ public:
      * @brief Client owner of the surface.
      */
     LClient *client() const;
-
-    /*!
-     * @brief Global compositor instance.
-     */
-    LCompositor *compositor() const;
 
     /*!
      * @brief Parent surface

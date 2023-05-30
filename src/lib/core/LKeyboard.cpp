@@ -1,29 +1,29 @@
 #include <protocols/Wayland/GSeat.h>
 #include <protocols/Wayland/RKeyboard.h>
+
+#include <private/LSeatPrivate.h>
 #include <private/LClientPrivate.h>
 #include <private/LDataDevicePrivate.h>
 #include <private/LKeyboardPrivate.h>
 
-#include <LTime.h>
+#include <LObject.h>
 #include <LCompositor.h>
-#include <LSeat.h>
 #include <LDNDManager.h>
 #include <LClient.h>
 #include <LCursor.h>
 #include <LOutput.h>
+#include <LTime.h>
 
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 
-using namespace Louvre;
-
 LKeyboard::LKeyboard(Params *params)
 {
+    L_UNUSED(params);
     m_imp = new LKeyboardPrivate();
-    imp()->keyboard = this;
-    imp()->seat = params->seat;
+    seat()->imp()->keyboard = this;
 
     // Create null keys
     wl_array_init(&imp()->keys);
@@ -41,26 +41,12 @@ LKeyboard::~LKeyboard()
     delete m_imp;
 }
 
-LSeat *LKeyboard::seat() const
-{
-    return imp()->seat;
-}
-
-LCompositor *LKeyboard::compositor() const
-{
-    return seat()->compositor();
-}
-
 void LKeyboard::setKeymap(const char *rules, const char *model, const char *layout, const char *variant, const char *options)
 {
     if (imp()->xkbKeymapFd != -1)
-    {
          close(imp()->xkbKeymapFd);
-    }
 
     char *keymapString,*map;
-
-    //const char *xdgRuntimeDir = "/run/user/1000";
 
     imp()->xkbKeymapName.rules = rules;
     imp()->xkbKeymapName.model = model;
@@ -109,14 +95,9 @@ void LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
     imp()->xkbKeymapState = xkb_state_new(imp()->xkbKeymap);
 
     for (LClient *c : compositor()->clients())
-    {
         for (Protocols::Wayland::GSeat *s : c->seatGlobals())
-        {
             if (s->keyboardResource())
                 s->keyboardResource()->sendKeymap(keymapFd(), keymapSize());
-        }
-    }
-
 }
 
 Int32 LKeyboard::keymapFd() const
@@ -144,7 +125,6 @@ void LKeyboard::setFocus(LSurface *surface)
     // If surface is not nullptr
     if (surface)
     {
-
         // If already has focus
         if (focusSurface() == surface)
             return;
@@ -158,10 +138,8 @@ void LKeyboard::setFocus(LSurface *surface)
                         s->keyboardResource()->sendLeave(focusSurface());
             }
 
-
             if (!focusSurface() || (focusSurface() && focusSurface()->client() != surface->client()))
                 surface->client()->dataDevice().sendSelectionEvent();
-
 
             bool hasRKeyboard = false;
 
@@ -179,7 +157,6 @@ void LKeyboard::setFocus(LSurface *surface)
                 imp()->keyboardFocusSurface = surface;
             else
                 imp()->keyboardFocusSurface = nullptr;
-
         }
     }
     else
@@ -246,7 +223,7 @@ void LKeyboard::LKeyboardPrivate::updateModifiers()
     modifiersState.latched = xkb_state_serialize_mods(xkbKeymapState, XKB_STATE_MODS_LATCHED);
     modifiersState.locked = xkb_state_serialize_mods(xkbKeymapState, XKB_STATE_MODS_LOCKED);
     modifiersState.group = xkb_state_serialize_layout(xkbKeymapState, XKB_STATE_LAYOUT_EFFECTIVE);
-    keyboard->keyModifiersEvent(modifiersState.depressed,modifiersState.latched,modifiersState.locked,modifiersState.group);
+    seat()->keyboard()->keyModifiersEvent(modifiersState.depressed,modifiersState.latched,modifiersState.locked,modifiersState.group);
 }
 
 #if LOUVRE_SEAT_VERSION >= 4

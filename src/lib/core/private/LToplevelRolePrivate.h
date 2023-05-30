@@ -5,21 +5,13 @@
 
 using namespace Louvre::Protocols::XdgDecoration;
 
-struct Louvre::LToplevelRole::Params
+struct LToplevelRole::Params
 {
     LResource *toplevel;
     LSurface *surface;
 };
 
-class Louvre::LToplevelRole::LToplevelRolePrivate
-{
-public:
-    LToplevelRolePrivate()                                          = default;
-    ~LToplevelRolePrivate()                                         = default;
-
-    LToplevelRolePrivate(const LToplevelRolePrivate&)               = delete;
-    LToplevelRolePrivate& operator= (const LToplevelRolePrivate&)   = delete;
-
+LPRIVATE_CLASS(LToplevelRole)
     struct ToplevelConfiguration
     {
         bool commited                                               = false;
@@ -63,7 +55,6 @@ public:
     DecorationMode decorationMode                                   = ClientSide;
     UInt32 pendingDecorationMode                                    = ClientSide;
     UInt32 lastDecorationModeConfigureSerial                        = 0;
-
 };
 
 #endif // LTOPLEVELROLEPRIVATE_H

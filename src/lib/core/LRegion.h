@@ -76,8 +76,6 @@ private:
     mutable bool m_changed = false;
     mutable vector<LRect>m_rects;
     mutable void *m_region = nullptr;
-
-
 };
 
 #endif // LREGION_H

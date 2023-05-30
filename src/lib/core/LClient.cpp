@@ -30,16 +30,6 @@ LClient::~LClient()
     delete m_imp;
 }
 
-LCompositor *LClient::compositor() const
-{
-    return imp()->params->compositor;
-}
-
-LSeat *LClient::seat() const
-{
-    return imp()->params->compositor->seat();
-}
-
 wl_client *LClient::client() const
 {
     return imp()->params->client;

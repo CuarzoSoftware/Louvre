@@ -26,19 +26,18 @@ void RDataDevice::RDataDevicePrivate::release(wl_client *client, wl_resource *re
 #endif
 
 void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
-                                                               wl_resource *resource,
-                                                               wl_resource *source,
-                                                               wl_resource *origin,
-                                                               wl_resource *icon,
-                                                               UInt32 serial)
+                                                 wl_resource *resource,
+                                                 wl_resource *source,
+                                                 wl_resource *origin,
+                                                 wl_resource *icon,
+                                                 UInt32 serial)
 {
     L_UNUSED(client);
 
     /* TODO: Use serial. */
     L_UNUSED(serial);
 
-    RDataDevice *lRDataDevice = (RDataDevice*)wl_resource_get_user_data(resource);
-    LDNDManager *dndManager = lRDataDevice->compositor()->seat()->dndManager();
+    LDNDManager *dndManager = seat()->dndManager();
 
     /*
     // Check grab serial and if there is a current dragging goin on
@@ -64,22 +63,16 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
 
         LDNDIconRole::Params dndIconRoleParams;
         dndIconRoleParams.surface = lIcon;
-
-        lIcon->imp()->setPendingRole(lIcon->compositor()->createDNDIconRoleRequest(&dndIconRoleParams));
+        lIcon->imp()->setPendingRole(compositor()->createDNDIconRoleRequest(&dndIconRoleParams));
         lIcon->imp()->applyPendingRole();
         lIcon->imp()->mapped = true;
-
         dndManager->imp()->icon = lIcon->dndIcon();
-
     }
     else
-    {
         dndManager->imp()->icon = nullptr;
-    }
 
     RSurface *lRSurface = (RSurface*)wl_resource_get_user_data(origin);
     LSurface *lOrigin = lRSurface->surface();
-
     dndManager->imp()->origin = lOrigin;
 
     // If source is null all drag events are sent only to the origin surface
@@ -99,17 +92,15 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
         dndManager->imp()->source = lRDataSource->dataSource();
     }
     else
-    {
         dndManager->imp()->source = nullptr;
-    }
 
     // Notify
     dndManager->startDragRequest();
 
-    if (dndManager->seat()->pointer()->focusSurface())
+    if (seat()->pointer()->focusSurface())
     {
-        dndManager->seat()->pointer()->focusSurface()->client()->dataDevice().imp()->sendDNDEnterEvent(
-                    dndManager->seat()->pointer()->focusSurface(),0,0);
+        seat()->pointer()->focusSurface()->client()->dataDevice().imp()->sendDNDEnterEvent(
+                    seat()->pointer()->focusSurface(),0,0);
     }
 }
 
@@ -119,14 +110,13 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *, wl_resource *re
     L_UNUSED(serial);
 
     RDataDevice *lRDataDevice = (RDataDevice*)wl_resource_get_user_data(resource);
-    LSeat *lSeat = lRDataDevice->client()->seat();
 
     if (source)
     {
         RDataSource *lRDataSource = (RDataSource*)wl_resource_get_user_data(source);
 
         // If this source is already used for clipboard
-        if (lRDataSource->dataSource() == lSeat->dataSelection())
+        if (lRDataSource->dataSource() == seat()->dataSelection())
             return;
 
         // Check if serial matches any event
@@ -135,7 +125,7 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *, wl_resource *re
             // return;
 
         // Ask the developer if the client should set the clipboard
-        if (!lSeat->setSelectionRequest(&lRDataDevice->client()->dataDevice()))
+        if (!seat()->setSelectionRequest(&lRDataDevice->client()->dataDevice()))
         {
             lRDataSource->sendCancelled();
             return;
@@ -151,31 +141,28 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *, wl_resource *re
 #endif
 
         // Delete previous selected data source if already destroyed by client
-        if (lSeat->dataSelection())
+        if (seat()->dataSelection())
         {
-            if (lSeat->dataSelection()->dataSourceResource())
-                lSeat->dataSelection()->dataSourceResource()->sendCancelled();
+            if (seat()->dataSelection()->dataSourceResource())
+                seat()->dataSelection()->dataSourceResource()->sendCancelled();
             else
             {
-                lSeat->dataSelection()->imp()->remove();
-                delete lSeat->imp()->dataSelection;
+                seat()->dataSelection()->imp()->remove();
+                delete seat()->imp()->dataSelection;
             }
         }
 
         // Mark current source as selected
-        lSeat->imp()->dataSelection = lRDataSource->dataSource();
+        seat()->imp()->dataSelection = lRDataSource->dataSource();
 
         // Ask client to write to the compositor fds
         for (const LDataSource::LSource &s : lRDataSource->dataSource()->sources())
             lRDataSource->sendSend(s.mimeType, fileno(s.tmp));
-
     }
 
     // A NULL source should unset the clipboard, but we keep a copy of the contents
 
     // If a client already has keyboard focus, send it the current clipboard
-    if (lSeat->keyboard()->focusSurface())
-    {
-        lSeat->keyboard()->focusSurface()->client()->dataDevice().sendSelectionEvent();
-    }
+    if (seat()->keyboard()->focusSurface())
+        seat()->keyboard()->focusSurface()->client()->dataDevice().sendSelectionEvent();
 }

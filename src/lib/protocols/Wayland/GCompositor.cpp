@@ -27,5 +27,3 @@ GCompositor::~GCompositor()
     delete m_imp;
     client()->imp()->compositorGlobal = nullptr;
 }
-
-

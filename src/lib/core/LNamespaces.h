@@ -53,6 +53,7 @@ namespace Louvre
     class LInputBackend;
     class LClient;
     class LCompositor;
+    class LObject;
     class LOutput;
     class LOutputManager;
     class LOutputMode;

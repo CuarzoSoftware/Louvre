@@ -36,21 +36,6 @@ LOutput::~LOutput()
     delete m_imp;
 }
 
-LCompositor *LOutput::compositor() const
-{
-    return imp()->compositor;
-}
-
-LCursor *LOutput::cursor() const
-{
-    return compositor()->cursor();
-}
-
-LSeat *LOutput::seat() const
-{
-    return compositor()->seat();
-}
-
 const list<LOutputMode *> *LOutput::modes() const
 {
     return compositor()->imp()->graphicBackend->getOutputModes((LOutput*)this);
@@ -117,18 +102,15 @@ Int32 LOutput::scale() const
 }
 
 // This is called from LCompositor::addOutput()
-bool LOutput::LOutputPrivate::initialize(LCompositor *comp)
+bool LOutput::LOutputPrivate::initialize()
 {
-    compositor = comp;
-
     // The backend must call LOutputPrivate::backendInitialized() before initializeGL()
-    return compositor->imp()->graphicBackend->initializeOutput(output);
+    return compositor()->imp()->graphicBackend->initializeOutput(output);
 }
 
 void LOutput::LOutputPrivate::globalScaleChanged(Int32 oldScale, Int32 newScale)
 {
     L_UNUSED(oldScale);
-
     rectC.setSize((output->currentMode()->sizeB()*newScale)/output->scale());
 }
 
@@ -137,41 +119,42 @@ void LOutput::LOutputPrivate::backendInitialized()
     painter = new LPainter();
     painter->imp()->output = output;
 
-    output->imp()->global = wl_global_create(LCompositor::compositor()->display(),
+    output->imp()->global = wl_global_create(compositor()->display(),
                                              &wl_output_interface,
                                              LOUVRE_OUTPUT_VERSION,
                                              output,
                                              &Protocols::Wayland::GOutput::GOutputPrivate::bind);
 
     output->setScale(output->scale());
-    output->imp()->rectC.setBR((output->sizeB()*compositor->globalScale())/output->scale());
+    output->imp()->rectC.setBR((output->sizeB()*compositor()->globalScale())/output->scale());
 
-    compositor->cursor()->imp()->textureChanged = true;
-    compositor->cursor()->imp()->update();
+    cursor()->imp()->textureChanged = true;
+    cursor()->imp()->update();
 
-    compositor->imp()->updateGlobalScale();
+    compositor()->imp()->updateGlobalScale();
 }
 
 void LOutput::LOutputPrivate::backendBeforePaint()
 {
-    output->imp()->compositor->imp()->renderMutex.lock();
+    compositor()->imp()->renderMutex.lock();
 }
 
 void LOutput::LOutputPrivate::backendAfterPaint()
 {
-    output->imp()->compositor->imp()->renderMutex.unlock();
-    LCompositor::flushClients();
+    compositor()->imp()->renderMutex.unlock();
+    compositor()->flushClients();
 }
 
 void LOutput::LOutputPrivate::backendPageFlipped()
 {
-    output->imp()->compositor->imp()->renderMutex.lock();
+    compositor()->imp()->renderMutex.lock();
+
     // Send presentation time feedback
     output->imp()->presentationSeq++;
     presentationTime = LTime::ns();
-    for (LSurface *surf : compositor->surfaces())
+    for (LSurface *surf : compositor()->surfaces())
         surf->imp()->sendPresentationFeedback(output, presentationTime);
-    output->imp()->compositor->imp()->renderMutex.unlock();
+    compositor()->imp()->renderMutex.unlock();
 }
 
 void LOutput::repaint()
@@ -194,7 +177,7 @@ Int32 LOutput::dpi()
 
 const LSize &LOutput::physicalSize() const
 {
-    return *imp()->compositor->imp()->graphicBackend->getOutputPhysicalSize((LOutput*)this);
+    return *compositor()->imp()->graphicBackend->getOutputPhysicalSize((LOutput*)this);
 }
 
 const LSize &LOutput::sizeB() const

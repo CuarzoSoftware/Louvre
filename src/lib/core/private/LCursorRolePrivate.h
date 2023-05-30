@@ -3,20 +3,14 @@
 
 #include <LCursorRole.h>
 
-struct Louvre::LCursorRole::Params
+using namespace Louvre;
+
+struct LCursorRole::Params
 {
     LSurface *surface;
 };
 
-class Louvre::LCursorRole::LCursorRolePrivate
-{
-public:
-    LCursorRolePrivate()                                        = default;
-    ~LCursorRolePrivate()                                       = default;
-
-    LCursorRolePrivate(const LCursorRolePrivate&)               = delete;
-    LCursorRolePrivate &operator=(const LCursorRolePrivate&)    = delete;
-
+LPRIVATE_CLASS(LCursorRole)
     LPoint currentHotspotS, pendingHotspotOffsetS;
     LPoint currentHotspotC;
     LPoint currentHotspotB;

@@ -6,7 +6,6 @@ using namespace Louvre::Protocols::XdgDecoration;
 
 GXdgDecorationManager::GXdgDecorationManager
 (
-    LCompositor *compositor,
     wl_client *client,
     const wl_interface *interface,
     Int32 version,
@@ -16,7 +15,6 @@ GXdgDecorationManager::GXdgDecorationManager
 )
     :LResource
     (
-        compositor,
         client,
         interface,
         version,
@@ -26,7 +24,6 @@ GXdgDecorationManager::GXdgDecorationManager
     )
 {
     m_imp = new GXdgDecorationManagerPrivate();
-
     this->client()->imp()->xdgDecorationManagerGlobals.push_back(this);
     imp()->clientLink = std::prev(this->client()->imp()->xdgDecorationManagerGlobals.end());
 }

@@ -1,7 +1,7 @@
 #ifndef LDNDMANAGER_H
 #define LDNDMANAGER_H
 
-#include <LNamespaces.h>
+#include <LObject.h>
 
 /*!
  * @brief Class for handling drag & drop sessions
@@ -10,7 +10,7 @@
  * It has virtual methods that notify when a client wants to start or cancel a session, methods for
  * "drop" or cancel a data offering, and so on...
  */
-class Louvre::LDNDManager
+class Louvre::LDNDManager : public LObject
 {
 public:
     struct Params;
@@ -97,11 +97,6 @@ public:
      * @returns nullptr if there is no session going on.
      */
     LDataSource *source() const;
-
-    /*!
-     * @brief Global seat instance.
-     */
-    LSeat *seat() const;
 
     LClient *dstClient() const;
 

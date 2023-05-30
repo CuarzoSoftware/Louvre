@@ -68,12 +68,11 @@ int processInput(int, unsigned int, void *userData)
 
     while ((ev = libinput_get_event(data->li)) != NULL)
     {
-
         eventType = libinput_event_get_type(ev);
 
         if (eventType == LIBINPUT_EVENT_POINTER_MOTION)
         {
-            if (!seat->compositor()->cursor())
+            if (!seat->cursor())
                 goto skip;
 
             pointerEvent = libinput_event_get_pointer_event(ev);
@@ -87,7 +86,7 @@ int processInput(int, unsigned int, void *userData)
         }
         else if (eventType == LIBINPUT_EVENT_POINTER_BUTTON)
         {
-            if (!seat->compositor()->cursor())
+            if (!seat->cursor())
                 goto skip;
 
             pointerEvent = libinput_event_get_pointer_event(ev);
@@ -123,7 +122,7 @@ int processInput(int, unsigned int, void *userData)
         }
         else if (eventType == LIBINPUT_EVENT_POINTER_AXIS)
         {
-            if (!seat->compositor()->cursor())
+            if (!seat->cursor())
                 goto skip;
 
             if (seat->pointer())
@@ -227,6 +226,5 @@ extern "C" LInputBackendInterface *getAPI()
     API.suspend = &LInputBackend::suspend;
     API.forceUpdate = &LInputBackend::forceUpdate;
     API.resume = &LInputBackend::resume;
-
     return &API;
 }

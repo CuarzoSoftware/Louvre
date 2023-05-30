@@ -8,8 +8,7 @@ using namespace std;
 class Louvre::Protocols::XdgShell::GXdgWmBase : public LResource
 {
 public:
-    GXdgWmBase(LCompositor *compositor,
-               wl_client *client,
+    GXdgWmBase(wl_client *client,
                const wl_interface *interface,
                Int32 version,
                UInt32 id,

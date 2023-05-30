@@ -28,7 +28,7 @@ RRegion::RRegion
         id,
         &region_implementation,
         &RRegion::RRegionPrivate::resource_destroy
-)
+    )
 {
     m_imp = new RRegionPrivate();
 }
@@ -42,4 +42,3 @@ const LRegion &RRegion::region() const
 {
     return imp()->region;
 }
-

@@ -10,16 +10,7 @@ struct LSurface::Params
     Wayland::RSurface *surfaceResource;
 };
 
-class LSurface::LSurfacePrivate
-{
-public:
-
-    LSurfacePrivate()                                   = default;
-    ~LSurfacePrivate()                                  = default;
-
-    LSurfacePrivate(const LSurfacePrivate&)             = delete;
-    LSurfacePrivate& operator= (const LSurfacePrivate&) = delete;
-
+LPRIVATE_CLASS(LSurface)
     void setParent(LSurface *parent);
     void removeChild(LSurface *child);
     void setMapped(bool state);
@@ -73,9 +64,9 @@ public:
     LSurface *parent                                    = nullptr;
     LSurface *pendingParent                             = nullptr;
 
-    Protocols::Wayland::RSurface *surfaceResource = nullptr;
+    Wayland::RSurface *surfaceResource = nullptr;
 
-    wl_resource* frameCallback                          = nullptr;
+    wl_resource *frameCallback                          = nullptr;
 
     State current, pending;
 
@@ -100,6 +91,5 @@ public:
     list<WpPresentationTime::RWpPresentationFeedback*> wpPresentationFeedbackResources;
     void sendPresentationFeedback(LOutput *output, timespec &ns);
 };
-
 
 #endif // LSURFACEPRIVATE_H

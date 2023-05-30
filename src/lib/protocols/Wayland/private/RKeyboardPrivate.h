@@ -6,7 +6,6 @@
 using namespace Louvre::Protocols::Wayland;
 
 LPRIVATE_CLASS(RKeyboard)
-
     static void resource_destroy(wl_resource *resource);
 #if LOUVRE_SEAT_VERSION >= WL_KEYBOARD_RELEASE_SINCE_VERSION
     static void release(wl_client *client, wl_resource *resource);

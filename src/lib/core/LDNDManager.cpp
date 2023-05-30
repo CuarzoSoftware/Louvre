@@ -17,7 +17,6 @@ using namespace Louvre;
 LDNDManager::LDNDManager(Params *params)
 {
     m_imp = new LDNDManagerPrivate();
-    imp()->seat = params->seat;
 }
 
 LDNDManager::~LDNDManager()
@@ -43,11 +42,6 @@ LSurface *LDNDManager::focus() const
 LDataSource *LDNDManager::source() const
 {
     return imp()->source;
-}
-
-LSeat *LDNDManager::seat() const
-{
-    return imp()->seat;
 }
 
 LClient *LDNDManager::dstClient() const

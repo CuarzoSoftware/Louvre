@@ -9,7 +9,6 @@ using namespace Louvre::Protocols;
 struct LClient::Params
 {
     wl_client *client;
-    LCompositor *compositor;
 };
 
 LPRIVATE_CLASS(LClient)

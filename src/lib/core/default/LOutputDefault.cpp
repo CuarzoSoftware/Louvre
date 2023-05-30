@@ -30,7 +30,7 @@ void LOutput::paintGL()
     for (LSurface *s : compositor()->surfaces())
     {
         // Skip some surfaces
-        if (!s->mapped() || s->dndIcon() || s->cursor())
+        if (!s->mapped() || s->dndIcon() || s->cursorRole())
         {
             s->requestNextFrame();
             continue;

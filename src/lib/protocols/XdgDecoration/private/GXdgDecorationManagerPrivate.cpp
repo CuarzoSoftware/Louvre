@@ -13,13 +13,12 @@ static struct zxdg_decoration_manager_v1_interface xdg_decoration_manager_implem
 };
 
 void GXdgDecorationManager::GXdgDecorationManagerPrivate::bind(wl_client *client,
-                                                               void *compositor,
+                                                               void *data,
                                                                UInt32 version,
                                                                UInt32 id)
 {
-    LCompositor *lCompositor = (LCompositor*)compositor;
-    new GXdgDecorationManager(lCompositor,
-                              client,
+    L_UNUSED(data);
+    new GXdgDecorationManager(client,
                               &zxdg_decoration_manager_v1_interface,
                               version,
                               id,

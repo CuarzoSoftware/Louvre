@@ -339,7 +339,7 @@ bool LCompositor::addOutput(LOutput *output)
 
     imp()->outputs.push_back(output);
 
-    if (!output->imp()->initialize(this))
+    if (!output->imp()->initialize())
     {
         LLog::error("[Compositor] Failed to initialize output %s.", output->name());
         imp()->outputs.remove(output);
