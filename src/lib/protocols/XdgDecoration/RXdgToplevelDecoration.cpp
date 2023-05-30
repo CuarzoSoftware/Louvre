@@ -4,8 +4,6 @@
 
 #include <private/LToplevelRolePrivate.h>
 
-#include <LWayland.h>
-
 using namespace Louvre;
 using namespace Louvre::Protocols::XdgDecoration;
 

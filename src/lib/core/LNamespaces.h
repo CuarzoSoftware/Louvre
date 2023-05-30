@@ -5,6 +5,8 @@
 #include <libinput.h>
 #include <list>
 
+#define LOUVRE_GLOBAL_ITERS_BEFORE_DESTROY 5
+
 #define MAX_SURFACE_SIZE 10000000
 #define LOUVRE_DEBUG 1
 

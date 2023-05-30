@@ -17,7 +17,6 @@
 
 #include <LCompositor.h>
 #include <LClient.h>
-#include <LWayland.h>
 #include <LSeat.h>
 #include <LToplevelRole.h>
 #include <LPopupRole.h>
@@ -539,15 +538,15 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         wl_shm_buffer_end_access(shm_buffer);
     }
     // WL_DRM
-    else if (eglQueryWaylandBufferWL(LWayland::eglDisplay(), current.buffer, EGL_TEXTURE_FORMAT, &texture_format))
+    else if (eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.buffer, EGL_TEXTURE_FORMAT, &texture_format))
     {
         if (texture && texture != textureBackup && texture->imp()->pendingDelete)
             delete texture;
 
         texture = textureBackup;
 
-        eglQueryWaylandBufferWL(LWayland::eglDisplay(), current.buffer, EGL_WIDTH, &width);
-        eglQueryWaylandBufferWL(LWayland::eglDisplay(), current.buffer, EGL_HEIGHT, &height);
+        eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.buffer, EGL_WIDTH, &width);
+        eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.buffer, EGL_HEIGHT, &height);
 
         LSize newSize = LSize(width, height);
 

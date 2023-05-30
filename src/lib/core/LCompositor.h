@@ -1,13 +1,6 @@
 #ifndef LCOMPOSITOR_H
 #define LCOMPOSITOR_H
 
-#include <libinput.h>
-#include <stdio.h>
-#include <GLES2/gl2.h>
-
-#include <list>
-#include <algorithm>
-
 #include <LClient.h>
 #include <LOutputManager.h>
 #include <LSeat.h>
@@ -19,50 +12,89 @@
 #include <LCursorRole.h>
 #include <LDNDIconRole.h>
 
-#include <LNamespaces.h>
-#include <condition_variable>
-#include <sys/eventfd.h>
-
-#include <mutex>
 #include <thread>
 
 using namespace std;
 
 /*!
- * @brief Main class and resources factory
+ * @brief Main class and Louvre's resources factory
  *
  * The LCompositor class is responsible for initializing the Wayland event loop and the input and graphic backend with the start() method.\n
  * The initialized() virtual method is called after start() to notify the correct initialization of the compositor.\n
  * Any initial configuration should be done within said method or later to avoid segmentation faults.
  *
  * LCompositor also follows the ***factory*** design pattern. It has virtual methods used
- * as virtual constructors and destructors of the many classes offered by the library. This allows the developer to override the virtual methods of those classes 
- * and change their default implementation.
+ * as virtual constructors and destructors of the many classes offered by the library.\n
+ * Each class in the library contains multiple virtual methods that are invoked when events occur.
+ * To change the default behavior of a class for a specific event, you must subclass it and override its corresponding
+ * virtual method. In addition, in order for the library to use your customized subclass, you need to override its virtual
+ * constructor in LCompositor.\n
+ *
+ * For example, let's consider the LOutput class, which is created within the LCompositor::createOutputRequest() virtual method.
+ * If you want to use your own subclass of LOutput, you need to override LCompositor::createOutputRequest() and return an instance
+ * of your customized LOutput subclass instead of a new LOutput instance. By doing so, the library will use your customized LOutput
+ * subclass to handle output related events.
  */
 class Louvre::LCompositor
 {
 public:
 
+    /// Possible compositor states
+    enum CompositorState
+    {
+        /// Uninitialized
+        Uninitialized,
+
+        /// Changing from uninitialized to initialized
+        Initializing,
+
+        /// Initialized
+        Initialized,
+
+        /// Changing from any state to uninitialized
+        Uninitializing,
+
+        /// Changing from initialized to paused
+        Pausing,
+
+        /// Idle state for example when changing session
+        Paused,
+
+        /// Changing from paused to initialized
+        Resuming
+    };
+
     /*!
-     * @brief Constructor of the LCompositor class.
+     * Constructor of the LCompositor class.
      */
     LCompositor();
 
     /*!
-     * @brief Destructor of the LCompositor class.
+     * Destructor of the LCompositor class.
      */
     virtual ~LCompositor();
 
     LCompositor(const LCompositor&) = delete;
     LCompositor& operator= (const LCompositor&) = delete;
 
-    bool graphicBackendInitialized() const;
-    bool inputBackendInitialized() const;
+    /*!
+     * Static LCompositor instance.
+     */
+    static LCompositor *compositor();
 
     /*!
-     * @brief Loads a graphic backend.
+     * Override this method if you want to add a custom global when initializing the compositor or if you
+     * want to modify the default globals or their versions.
      *
-     * Loads a graphic backend (dynamic library) used to display the compositor. If this method is not used, the library will use
+     * @returns Must return **true** on success and **false** on failure. Returning **false** prevents the compositor to start.
+     *
+     * #### Default implementation
+     * @snippet LCompositorDefault.cpp createGlobalsRequest
+     */
+    virtual bool createGlobalsRequest();
+
+    /*!
+     * Loads a graphic backend (dynamic library) used to display the compositor. If this method is not used, the library will load
      * the DRM backend by default located at ```/usr/etc/Louvre/backends/libLGraphicBackendDRM.so```.\n
      *
      * @param path Location of the backend's dynamic library.
@@ -72,9 +104,12 @@ public:
     bool loadGraphicBackend(const char *path);
 
     /*!
-     * @brief Loads an input backend.
-     *
-     * Loads an input backend (dynamic library) to access the events of input devices. If this method is not used, the library will use
+     * Indicates whether the graphics backend is initialized after the start() function is called.
+     */
+    bool isGraphicBackendInitialized() const;
+
+    /*!
+     * Loads an input backend (dynamic library) to access events of input devices. If this method is not used, the library will load
      * the Libinput backend by default located at ```/usr/etc/Louvre/backends/libLInputBackendLibinput.so```.
      *
      * @param path Location of the backend's dynamic library.
@@ -83,20 +118,47 @@ public:
      */
     bool loadInputBackend(const char *path);
 
+    /*!
+     * Indicates whether the graphics backend is initialized after the start() function is called.
+     */
+    bool isInputBackendInitialized() const;
 
     /*!
-     * @brief Compositor's global scale.
+     * Notifies the successful initialization of the Wayland event loop and backends after calling the start() method.\n
+     * This method should be used to perform the initial configuration of outputs as shown in the default implementation.
+     * The available outputs can be accessed from the LOutputManager class instance, accessible with outputManager().
+     * If you find an available output you can initialize it with the LCompositor::addOutput() method, and its own
+     * OpenGL context and rendering thread will start (check the LOutput virtual methods).
      *
-     * Returns the largest scale of the outputs added to the compositor. The value can change when adding or removing an output to the compositor or when any of the
-     * added ones are assigned a scale with the LOutput::setScale() method. The compositor calls the virtual method globalScaleChanged() when its value changes.
+     * #### Default implementation
+     * @snippet LCompositorDefault.cpp initialized
+     */
+    virtual void initialized();
+
+    /*!
+     * Notifies the successful initialization of the cursor.\n
+     * Within this method it is recommended to load cursor textures you may want to use. The LCursor class offers
+     * the LCursor::loadXCursorB() method for loading pixmaps of X cursors available on the system.\n
+     * The default implementation shows a commented example on how to load X cursors pixmaps and assign them to the cursor.
+     *
+     * #### Default implementation
+     * @snippet LCompositorDefault.cpp cursorInitialized
+     */
+    virtual void cursorInitialized();
+
+    /*!
+     * Returns the largest scale of the initialized outputs.
+     * The value can change when adding or removing an output to the compositor or when any of the
+     * initialized ones changes its scale with the LOutput::setScale() method.
+     * The compositor calls the globalScaleChanged() virtual method whenever this value changes.
      */
     Int32 globalScale() const;
 
     /*!
-     * @brief Notifies a compositor's global scale change.
-     *
-     * Called when the global scale of the compositor changes. Reimplement this method to update all variables defined in compositor coordinates.
-     * All classes with properties defined in compositor coordinates (terminated with the **C** suffix) automatically update their values.
+     * Called when the global scale of the compositor changes. Override this method if you need to
+     * update variables defined in compositor coordinates.
+     * All classes with properties defined in compositor coordinates (terminated with the **C** suffix)
+     * automatically update their values.
      *
      * @param oldScale Old scale.
      * @param newScale New scale.
@@ -107,32 +169,9 @@ public:
     virtual void globalScaleChanged(Int32 oldScale, Int32 newScale);
 
     /*!
-     * @brief Notifies the correct initialization of the compositor.
-     *
-     * Notifies the correct initialization of the Wayland event loop and backends after calling the start() method.\n
-     * This method should be used to perform the initial configuration of outputs (monitors) as shown in the default implementation. 
-     * The available outputs can be accessed from the LOutputManager class instance, accessible with outputManager().
-     * If you find an available output you can add it to the compositor with the addOutput() method, this will initialize its context 
-     * and rendering thread.
-     *
-     * #### Default implementation
-     * @snippet LCompositorDefault.cpp initialized
+     * Returns the current compositor state. Check the LCompositor::CompositorStates enum.
      */
-    virtual void initialized();
-
-
-    /*!
-     * @brief Reports the successful initialization of the cursor.
-     *
-     * Report correct initialization of the cursor after the first output is added to the compositor.\n
-     * Within this method it is recommended to load cursor textures you may want to use. The LCursor class offers
-     * the LCursor::loadXCursorB() method for loading pixmaps of X cursors available on the system.\n
-     * The default implementation shows a commented example on how to load X cursors pixmaps and assign them to the cursor.
-     *
-     * #### Default implementation
-     * @snippet LCompositorDefault.cpp cursorInitialized
-     */
-    virtual void cursorInitialized();
+    CompositorState state() const;
 
     /*!
      * @name Virtual Constructors
@@ -144,9 +183,7 @@ public:
 ///@{
 
     /*!
-     * @brief Virtual constructor of the LOutputManager class.
-     *
-     * Called by the graphic backend.\n
+     * Virtual constructor of the LOutputManager class. Called by the graphic backend.\n
      * The LOutputManager class has virtual methods that notify the hotplugging of GPU sockets.
      * For example, when connecting or disconnecting a monitor through a computer's HDMI port.\n
      * Must return an instance of LOutputManager or a subclass of LOutputManager.
@@ -157,8 +194,7 @@ public:
     virtual LOutputManager *createOutputManagerRequest(LOutputManager::Params *params);
 
     /*!
-      * @brief Virtual constructor of the LOutput class.
-      *
+      * Virtual constructor of the LOutput class.
       * Called by the graphic backend for each available output.\n
       * The LOutput class has virtual methods to initialize graphic contexts and do rendering.
       * See the LOutput::initializeGL() and LOutput::paintGL() methods for more information.\n
@@ -170,8 +206,7 @@ public:
     virtual LOutput *createOutputRequest();
 
     /*!
-     * @brief Virtual constructor of the LClient class.
-     *
+     * Virtual constructor of the LClient class.
      * Called when a new client establishes a connection with the compositor.\n
      * The LClient class does not have virtual methods, therefore its reimplementation is not necessary.
      * However you can use this method to know when a client connects to the compositor.\n
@@ -183,9 +218,7 @@ public:
     virtual LClient *createClientRequest(LClient::Params *params);
 
     /*!
-     * @brief Virtual constructor of the LSurface class
-     *
-     * Called when a client creates a new surface.\n
+     * Virtual constructor of the LSurface class. Called when a client creates a new surface.\n
      * The LSurface class has many virtual methods to notify changes of its role, size, mapping, etc.\n
      * Must return an instance of LSurface or a subclass of LSurface.
      *
@@ -195,9 +228,7 @@ public:
     virtual LSurface *createSurfaceRequest(LSurface::Params *params);
 
     /*!
-     * @brief Virtual constructor of the LSeat class.
-     *
-     * Called during the compositor initialization.\n
+     * Virtual constructor of the LSeat class. Called during the compositor initialization.\n
      * The LSeat class has virtual method to access all events generated by the input backend.\n
      * Must return an instance of LSeat or a subclass of LSeat.
      *
@@ -207,9 +238,7 @@ public:
     virtual LSeat *createSeatRequest(LSeat::Params *params);
 
     /*!
-     * @brief Virtual constructor of the LPointer class.
-     *
-     * Called during LSeat initialization.\n
+     * Virtual constructor of the LPointer class. Called during LSeat initialization.\n
      * The LPointer class has virtual methods to access pointer events generated by the input backend.\n
      * Must return an instance of LPointer or a subclass of LPointer.
      *
@@ -219,9 +248,7 @@ public:
     virtual LPointer *createPointerRequest(LPointer::Params *params);
 
     /*!
-     * @brief Virtual constructor of the LKeyboard class.
-     *
-     * Called during LSeat initialization.\n
+     * Virtual constructor of the LKeyboard class. Called during LSeat initialization.\n
      * The LKeyboard class has virtual methods to access keyboard events generated by the input backend.\n
      * Must return an instance of LKeyboard or a subclass of LKeyboard.
      *
@@ -231,9 +258,7 @@ public:
     virtual LKeyboard *createKeyboardRequest(LKeyboard::Params *params);
 
     /*!
-     * @brief Virtual constructor of the LDNDManager class.
-     *
-     * Called during LSeat initialization.\n
+     * Virtual constructor of the LDNDManager class. Called during LSeat initialization.\n
      * The LDNDManager class has virtual methods that notify the start and end of Drag & Drop sessions between clients.\n
      * Must return an instance of LDNDManager or a subclass of LDNDManager.
      *
@@ -243,8 +268,7 @@ public:
     virtual LDNDManager *createDNDManagerRequest(LDNDManager::Params *params);
 
     /*!
-     * @brief Virtual constructor of the LToplevelRole class.
-     *
+     * Virtual constructor of the LToplevelRole class.
      * Called when a client creates a Toplevel role for a surface.\n
      * The LToplevelRole class has virtual methods that notify,
      * its geometry change, state change (maximized, minimized, etc), the start
@@ -257,8 +281,7 @@ public:
     virtual LToplevelRole *createToplevelRoleRequest(LToplevelRole::Params *params);
 
     /*!
-     * @brief Virtual constructor of the LToplevelRole class.
-     *
+     * Virtual constructor of the LToplevelRole class.
      * Called when a client creates a Popup role for a surface.\n
      * The LPopupRole class has virtual methods that notify,
      * its geometry change, its repositioning based on its LPositioner, and so on.\n
@@ -270,8 +293,7 @@ public:
     virtual LPopupRole *createPopupRoleRequest(LPopupRole::Params *params);
 
     /*!
-     * @brief Virtual constructor of the LSubsurfaceRole class.
-     *
+     * Virtual constructor of the LSubsurfaceRole class.
      * Called when a client creates a Subsurface role for a surface.\n
      * The LSubsurfaceRole class has virtual methods that notify its local position change
      * relative to its parent, its rearrangement on the stack of neighboring surfaces, and more.\n
@@ -283,8 +305,7 @@ public:
     virtual LSubsurfaceRole *createSubsurfaceRoleRequest(LSubsurfaceRole::Params *params);
 
     /*!
-     * @brief Virtual constructor of the LCursorRole class.
-     *
+     * Virtual constructor of the LCursorRole class.
      * Called when a client wants to use a surface as a cursor.\n
      * The LCursorRole class has a virtual method that notifies the hotspot change
      * of the cursor being rendered.\n
@@ -296,8 +317,7 @@ public:
     virtual LCursorRole *createCursorRoleRequest(LCursorRole::Params *params);
 
     /*!
-     * @brief Virtual constructor of the LDNDIconRole class.
-     *
+     * Virtual constructor of the LDNDIconRole class.
      * Called when a client wants to use a surface as an icon for a Drag & Drop session.\n
      * Similar to LCursorRole, the LDNDIconRole class has a virtual method that notifies the hotspot change
      * of the icon being dragged.\n
@@ -322,8 +342,7 @@ public:
 ///@{
 
     /*!
-     * @brief Virtual destructor of the LOutput class.
-     *
+     * Virtual destructor of the LOutput class.
      * Invoked by the graphic backend when an output becomes unavailable.\n
      * The virtual method LOutputManager::unpluggedOutputRequest() and the removeOutput() 
      * method should be used to unlink the output from the compositor, stop its thread and render loop, 
@@ -334,8 +353,7 @@ public:
     virtual void destroyOutputRequest(LOutput *output);
 
     /*!
-     * @brief Virtual destructor of the LClient class.
-     *
+     * Virtual destructor of the LClient class.
      * Called when a client disconnects and after all its resources
      * have been released.\n
      * #### Default implementation
@@ -344,8 +362,7 @@ public:
     virtual void destroyClientRequest(LClient *client);
 
     /*!
-     * @brief Virtual destructor of the LSurface class.
-     *
+     * Virtual destructor of the LSurface class.
      * Called when a client requests to destroy one of its surfaces.\n
      * #### Default implementation
      * @snippet LCompositorDefault.cpp destroySurfaceRequest
@@ -353,8 +370,7 @@ public:
     virtual void destroySurfaceRequest(LSurface *surface);
 
     /*!
-     * @brief Virtual destructor of the LToplevelRole class.
-     *
+     * Virtual destructor of the LToplevelRole class.
      * Called when a client requests to destroy the Toplevel role of one of its surfaces.\n
      * #### Default implementation
      * @snippet LCompositorDefault.cpp destroyToplevelRoleRequest
@@ -362,8 +378,7 @@ public:
     virtual void destroyToplevelRoleRequest(LToplevelRole *toplevel);
 
     /*!
-     * @brief Virtual destructor of the LPopupRole class.
-     *
+     * Virtual destructor of the LPopupRole class.
      * Called when a client requests to destroy the Popup role of one of its surfaces.\n
      * #### Default implementation
      * @snippet LCompositorDefault.cpp destroyPopupRoleRequest
@@ -371,8 +386,7 @@ public:
     virtual void destroyPopupRoleRequest(LPopupRole *popup);
 
     /*!
-     * @brief Virtual destructor of the LCursorRole class.
-     *
+     * Virtual destructor of the LCursorRole class.
      * Invoked when a client requests to destroy the Cursor role of one of its surfaces.\n
      * #### Default implementation
      * @snippet LCompositorDefault.cpp destroyCursorRoleRequest
@@ -380,8 +394,7 @@ public:
     virtual void destroyCursorRoleRequest(LCursorRole *cursor);
 
     /*!
-     * @brief Virtual destructor of the LDNDIconRole class.
-     *
+     * Virtual destructor of the LDNDIconRole class.
      * Invoked when a client requests to destroy the DNDIcon role of one of its surfaces.\n
      * #### Default implementation
      * @snippet LCompositorDefault.cpp destroyDNDIconRoleRequest
@@ -391,22 +404,25 @@ public:
 ///@}
 
     /*!
-     * @brief Starts the compositor.
-     *
      * Starts the Wayland event loop and backends. After notifying its successful initialization with initialized(), the
      * compositor is able to receive connections from Wayland clients and initialize output rendering threads with the addOutput() method.\n
-     * @returns EXIT_FAILURE on failure and EXIT_SUCCESS otherwise.
+     *
+     * @returns **false** on failure and **true** otherwise.
      */
-    int start();
+    bool start();
 
     /*!
-     * @brief Ends the compositor process.
+     * Process the compositor's event loop.\n
+     * TODO: Complete doc.
+     */
+    Int32 processLoop(Int32 msTimeout);
+
+    /*!
+     * Ends the compositor process.
      */
     void finish();
 
     /*!
-     * @brief Raises a surface.
-     *
      * Places a surface at the end of the compositor's surfaces list (see surfaces()), which means it will be the last surface to be rendered in a frame, 
      * and therefore positioned in front of all others. If the surface being repositioned is a parent of other surfaces, these will also be elevated, 
      * maintaining the current hierarchical order required by certain protocols. Raising a surface that does not exist in the compositor's list, is a no-op.
@@ -416,8 +432,21 @@ public:
     void raiseSurface(LSurface *surface);
 
     /*!
-     * @brief Compositor's cursor
-     *
+     * Native wl_display used by the compositor.
+     */
+    static wl_display *display();
+
+    /*!
+     * Add a pollable FD to the compositor's event loop.
+     */
+    static wl_event_source *addFdListener(int fd, void *userData, int(*callback)(int,unsigned int,void*), UInt32 flags = WL_EVENT_READABLE);
+
+    /*!
+     * Remove a previously added pollable FD from the compositor's event loop.
+     */
+    static void removeFdListener(wl_event_source *source);
+
+    /*!
      * Returns a pointer to the cursor implementation provided by the library.\n
      * Must be accessed within or after the cursorInitialized() virtual method is invoked.\n
      * If the cursor has not yet been initialized, this method returns nullptr.
@@ -425,24 +454,18 @@ public:
     LCursor *cursor() const;
 
     /*!
-     * @brief Compositor's seat
-     *
      * Returns a pointer to the compositor seat from which the LPointer, LKeyboard and LTouch instances can be accessed.\n
      * Must be accessed after compositor initialization.
      */
     LSeat *seat() const;
 
     /*!
-     * @brief Schedules the next rendering frame of all outputs.
-     *
      * This function calls the LOutput::repaint() method of all outputs added to the compositor.\n
      * The order in which the outputs are rendered is undefined since each one works in its own thread.
      */
     void repaintAllOutputs();
 
     /*!
-     * @brief Adds an output to the compositor and initializes it.
-     *
      * Creates a new thread and render loop for the output and initializes it. Once initialized, the graphical backend invokes
      * the virtual method LOutput::initializeGL() to perform an initial setup and it is possible to call the
      * LOutput::repaint() method to schedule rendering frames.\n
@@ -454,8 +477,6 @@ public:
     bool addOutput(LOutput *output);
 
     /*!
-     * @brief Removes an output from the compositor.
-     *
      * Removes the output of the compositor, stopping its thread and rendering loop.
      *
      * @param output One of the outputs previously added to the compositor, accessible from outputs(). Removing an output that has not been added to the compositor is a no-op.
@@ -463,8 +484,6 @@ public:
     void removeOutput(LOutput *output);
 
     /*!
-     * @brief Output manager.
-     *
      * Returns the output manager created by the graphic backend.\n
      * The output manager provides access to the list of currently available outputs generated by the graphic backend.\n
      * Additionally, it has virtual methods that notify the connection and disconnection of these outputs, for example, 
@@ -475,40 +494,53 @@ public:
     LOutputManager *outputManager() const;
 
     /*!
-     * @brief List of surfaces.
-     *
      * List of all surfaces created by clients.\n
      * Use the LClient::surfaces() method to access surfaces created by a specific client.
      */
     const list<LSurface*>&surfaces() const;
 
     /*!
-     * @brief List of initialized outputs.
-     *
      * List of all initialized outputs with the addOutput() method.\n
      */
     const list<LOutput*>&outputs() const;
 
     /*!
-      * @brief Clients list.
-      *
-      * List of clients connected to the compositor.
-      */
+     * List of clients connected to the compositor.
+     */
     const list<LClient*>&clients() const;
 
     /*!
-      * @brief Client from native Wayland resource.
+     * Returns a new number incrementally.
+     */
+    static UInt32 nextSerial();
+
+    /*!
+     * Main EGL display.
+     */
+    static EGLDisplay eglDisplay();
+
+    /*!
+     * Main EGL context.
+     */
+    static EGLContext eglContext();
+
+    /*!
+     * Send all pending client events.
+     */
+    static void flushClients();
+
+    /*!
+      * Gets the LClient of a native Wayland wl_client resource.
       *
       * @returns The LClient instance for a **wl_client** resource or nullptr if not found.
       */
     LClient *getClientFromNativeResource(wl_client *client);
 
     /*!
-      * @brief ID of the main thread.
-      *
+      * ID of the main thread.
       * The main thread handles the Wayland and input backend event loop, while each output runs on its own thread.
       */
-    std::thread::id mainThreadId() const;
+    thread::id mainThreadId() const;
 
     LPRIVATE_IMP(LCompositor)
 };

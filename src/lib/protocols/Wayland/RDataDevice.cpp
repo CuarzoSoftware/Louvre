@@ -1,5 +1,3 @@
-#include "LTime.h"
-#include "LWayland.h"
 #include <protocols/Wayland/GDataDeviceManager.h>
 #include <protocols/Wayland/private/GSeatPrivate.h>
 #include <protocols/Wayland/private/RDataDevicePrivate.h>
@@ -18,6 +16,8 @@
 #include <LDataOffer.h>
 #include <LKeyboard.h>
 #include <LPointer.h>
+#include <LTime.h>
+
 
 #include <stdio.h>
 
@@ -56,7 +56,7 @@ RDataDevice::~RDataDevice()
 void RDataDevice::sendEnter(LSurface *surface, Float64 x, Float64 y, RDataOffer *dataOfferResource)
 {
     wl_data_device_send_enter(resource(),
-                             LWayland::nextSerial(),
+                             LCompositor::nextSerial(),
                              surface->surfaceResource()->resource(),
                              wl_fixed_from_double(x),
                              wl_fixed_from_double(y),

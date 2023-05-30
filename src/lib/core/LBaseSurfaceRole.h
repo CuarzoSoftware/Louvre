@@ -8,11 +8,35 @@
  /*!
   * @brief Base class for surface roles.
   *
-  * The LBaseSurfaceRole class provides a base interface for creating surface roles that are compatible with the library.\n
-  * It allows for implementing the logic of positioning the surface that will acquire the role, assigning the role ID,
-  * handling requests from the [wl_surface](https://wayland.app/protocols/wayland#wl_surface) interface, among other functionalities.
+  * A role defines the type and functionality of a surface. Some commonly known roles are Toplevel and Popup.
   *
-  * @warning Only use this class if you wish to create additional surface roles beyond those offered by the library.
+  * @warning This class is primarily for library maintainers or individuals who wish to implement additional roles beyond those provided by the library.
+  *
+  * This class is responsible, among other things, for:
+  *
+  * @li Creating the surface role (returned in LSurface::role()).
+  * @li Assigning the role's unique ID (returned in LSurface::roleId()).
+  * @li Assigning the surface position according to the role's protocol (returned in LSurface::rolePosC()).
+  * @li Providing access to native events of the [wl_surface](https://wayland.app/protocols/wayland#wl_surface) interface.
+  *
+  * @section role_creation Creating a Custom Role
+  *
+  * The steps for creating a custom role are as follows:
+  *
+  * @li Implement the native protocol interfaces of the role protocol.
+  * @li Create an LResource wrapper for the role's wl_resource, or use LSurface::resource() if the role does not have its own wl_resource.
+  * @li Create a subclass of LBaseSurfaceRole.
+  * @li Select a unique role ID.
+  * @li Override the LBaseSurfaceRole::rolePosC() method and implement the positioning logic of the role.
+  * @li Override any other protected methods in LBaseSurfaceRole to handle native events of the wl_surface interface.
+  *
+  * To assign the custom role to a surface at runtime, follow these steps:
+  *
+  * @li Create an instance of your custom LBaseSurfaceRole.
+  * @li Call the setPendingRole() method (private) on the target surface, passing the custom role instance.
+  * @li Call the applyPendingRole() method (private) to apply the pending role change. This will trigger the LSurface::roleChanged() event automatically.
+  *
+  * By following these steps, you can create a custom role and assign it to a surface dynamically during runtime.
   */
 class Louvre::LBaseSurfaceRole
 {
@@ -56,7 +80,7 @@ public:
      *
      * Returns the ID of the role given in the constructor argument. The LSurface class returns this value with the LSurface::roleId() method.
      */
-    UInt32 roleId();
+    UInt32 roleId() const;
 
     /*!
      * @brief Returns the compositor instance.
@@ -94,7 +118,7 @@ protected:
     friend class Louvre::LSurface;
 
     /*!
-     * @brief Variable that stores the position of the role.
+     * @brief Variable that stores the surface position given the role.
      *
      * Variable to store the position of the surface according to its role. It must be assigned and returned in the implementation of the LBaseSurfaceRole::rolePosC() method.
      */

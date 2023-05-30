@@ -1,3 +1,12 @@
+#include <protocols/Wayland/private/GSeatPrivate.h>
+#include <protocols/Wayland/private/GCompositorPrivate.h>
+#include <protocols/Wayland/private/GSubcompositorPrivate.h>
+#include <protocols/Wayland/private/GDataDeviceManagerPrivate.h>
+#include <protocols/XdgShell/private/GXdgWmBasePrivate.h>
+#include <protocols/XdgDecoration/private/GXdgDecorationManagerPrivate.h>
+#include <protocols/LinuxDMABuf/private/GLinuxDMABufPrivate.h>
+#include <protocols/WpPresentationTime/private/GWpPresentationPrivate.h>
+
 #include <LCompositor.h>
 #include <LToplevelRole.h>
 #include <LCursor.h>
@@ -17,10 +26,42 @@
 
 using namespace Louvre;
 
+//! [createGlobalsRequest]
+bool LCompositor::createGlobalsRequest()
+{
+    wl_global_create(display(), &wl_compositor_interface,
+                     LOUVRE_COMPOSITOR_VERSION, this, &GCompositor::GCompositorPrivate::bind);
+
+    wl_global_create(display(), &wl_seat_interface,
+                     LOUVRE_SEAT_VERSION, this, &GSeat::GSeatPrivate::bind);
+
+    wl_global_create(display(), &wl_subcompositor_interface,
+                     LOUVRE_SUBCOMPOSITOR_VERSION, this, &GSubcompositor::GSubcompositorPrivate::bind);
+
+    wl_global_create(display(), &wl_data_device_manager_interface,
+                     LOUVRE_DATA_DEVICE_MANAGER_VERSION, this, &GDataDeviceManager::GDataDeviceManagerPrivate::bind);
+
+    wl_global_create(display(), &xdg_wm_base_interface,
+                     LOUVRE_XDG_WM_BASE_VERSION, this, &XdgShell::GXdgWmBase::GXdgWmBasePrivate::bind);
+
+    wl_global_create(display(), &zxdg_decoration_manager_v1_interface,
+                     LOUVRE_XDG_DECORATION_MANAGER_VERSION, this, &XdgDecoration::GXdgDecorationManager::GXdgDecorationManagerPrivate::bind);
+
+    wl_global_create(display(), &zwp_linux_dmabuf_v1_interface,
+                     LOUVRE_LINUX_DMA_BUF_VERSION, this, &LinuxDMABuf::GLinuxDMABuf::GLinuxDMABufPrivate::bind);
+
+    wl_global_create(display(), &wp_presentation_interface,
+                     LOUVRE_WP_PRESENTATION_VERSION, this, &WpPresentationTime::GWpPresentation::GWpPresentationPrivate::bind);
+
+    wl_display_init_shm(display());
+
+    return true;
+}
+//! [createGlobalsRequest]
+
 //! [initialized]
 void LCompositor::initialized()
 {
-
     // Change the keyboard map to "latam"
     seat()->keyboard()->setKeymap( NULL, NULL, "latam", NULL);
 
@@ -30,8 +71,6 @@ void LCompositor::initialized()
         LLog::fatal("No output available.");
         finish();
     }
-
-    LLog::debug("Outputs avaliable: %zu", outputManager()->outputs()->size());
 
     // Set double scale to outputs with DPI >= 120
     for (LOutput *output : *outputManager()->outputs())
@@ -45,7 +84,6 @@ void LCompositor::initialized()
         addOutput(output);
     }
 
-
     // Organize outputs horizontally and sequentially.
 
     Int32 totalWidth = 0;
@@ -56,7 +94,6 @@ void LCompositor::initialized()
         totalWidth += output->sizeC().w();
         output->repaint();
     }
-
 }
 //! [initialized]
 
@@ -87,6 +124,7 @@ void LCompositor::globalScaleChanged(Int32 oldScale, Int32 newScale)
     L_UNUSED(oldScale);
     L_UNUSED(newScale);
 }
+
 //! [globalScaleChanged]
 
 //! [createOutputManagerRequest]
@@ -96,14 +134,12 @@ LOutputManager *LCompositor::createOutputManagerRequest(LOutputManager::Params *
 }
 //! [createOutputManagerRequest]
 
-
 //! [createOutputRequest]
 LOutput *LCompositor::createOutputRequest()
 {
     return new LOutput();
 }
 //! [createOutputRequest]
-
 
 //! [createClientRequest]
 LClient *LCompositor::createClientRequest(LClient::Params *params)

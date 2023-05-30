@@ -10,7 +10,6 @@
 #include <protocols/XdgShell/xdg-shell.h>
 
 #include <LCompositor.h>
-#include <LWayland.h>
 #include <LOutput.h>
 #include <LPoint.h>
 #include <LCursor.h>
@@ -348,7 +347,7 @@ void LToplevelRole::configureC(Int32 width, Int32 height, UInt32 stateFlags)
 
     LToplevelRolePrivate::ToplevelConfiguration conf;
 
-    conf.serial = LWayland::nextSerial();
+    conf.serial = LCompositor::nextSerial();
     conf.flags = stateFlags;
     conf.sizeS.setW(width);
     conf.sizeS.setH(height);

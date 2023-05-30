@@ -25,7 +25,6 @@
 #include <private/LTexturePrivate.h>
 #include <private/LCursorPrivate.h>
 
-#include <LWayland.h>
 #include <LTime.h>
 
 #include <SRM/SRMCore.h>
@@ -270,7 +269,7 @@ bool LGraphicBackend::initialize(LCompositor *compositor)
     srmCoreAddConnectorPluggedEventListener(bknd->core, &connectorPluggedEventHandler, bknd);
     srmCoreAddConnectorUnpluggedEventListener(bknd->core, &connectorUnpluggedEventHandler, bknd);
 
-    bknd->monitor = LWayland::addFdListener(srmCoreGetMonitorFD(bknd->core),
+    bknd->monitor = LCompositor::addFdListener(srmCoreGetMonitorFD(bknd->core),
                                             bknd,
                                             &monitorEventHandler);
 
@@ -285,7 +284,7 @@ bool LGraphicBackend::initialize(LCompositor *compositor)
 void LGraphicBackend::uninitialize(LCompositor *compositor)
 {
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
-    LWayland::removeFdListener(bknd->monitor);
+    LCompositor::removeFdListener(bknd->monitor);
     srmCoreDestroy(bknd->core);
     delete bknd;
 }

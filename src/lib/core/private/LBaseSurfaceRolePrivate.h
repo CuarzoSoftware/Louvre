@@ -3,20 +3,13 @@
 
 #include <LBaseSurfaceRole.h>
 
-class Louvre::LBaseSurfaceRole::LBaseSurfaceRolePrivate
-{
-public:
-    LBaseSurfaceRolePrivate()                                           = default;
-    ~LBaseSurfaceRolePrivate()                                          = default;
+using namespace Louvre;
 
-    LBaseSurfaceRolePrivate(const LBaseSurfaceRolePrivate&)             = delete;
-    LBaseSurfaceRolePrivate &operator=(const LBaseSurfaceRolePrivate&)  = delete;
-
-    LResource *resource                                                 = nullptr;
-    LSurface *surface                                                   = nullptr;
-    LCompositor *compositor                                             = nullptr;
+LPRIVATE_CLASS(LBaseSurfaceRole)
+    LCompositor *compositor;
+    LResource *resource;
+    LSurface *surface;
     UInt32 roleId;
-
 };
 
 #endif // LBASESURFACEROLEPRIVATE_H

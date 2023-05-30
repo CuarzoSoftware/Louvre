@@ -10,7 +10,6 @@
 #include <protocols/Wayland/private/GOutputPrivate.h>
 
 #include <LNamespaces.h>
-#include <LWayland.h>
 #include <LPopupRole.h>
 
 #include <stdio.h>
@@ -26,30 +25,30 @@
 #include <dlfcn.h>
 #include <LLog.h>
 
-
 using namespace Louvre::Protocols::Wayland;
+
+static LCompositor *s_compositor = nullptr;
 
 LCompositor::LCompositor()
 {
     LLog::init();
     m_imp = new LCompositorPrivate();
     imp()->compositor = this;
-
-    LWayland::initWayland(this);
-
-    // Store the main thread id for later use (in LCursor)
-    imp()->threadId = std::this_thread::get_id();
-
 }
 
-bool LCompositor::graphicBackendInitialized() const
+Louvre::LCompositor *LCompositor::compositor()
 {
-    return imp()->graphicBackendInitialized;
+    return s_compositor;
 }
 
-bool LCompositor::inputBackendInitialized() const
+bool LCompositor::isGraphicBackendInitialized() const
 {
-    return imp()->inputBackendInitialized;
+    return imp()->isGraphicBackendInitialized;
+}
+
+bool LCompositor::isInputBackendInitialized() const
+{
+    return imp()->isInputBackendInitialized;
 }
 
 bool LCompositor::loadGraphicBackend(const char *path)
@@ -67,24 +66,41 @@ Int32 LCompositor::globalScale() const
     return imp()->globalScale;
 }
 
+LCompositor::CompositorState LCompositor::state() const
+{
+    return imp()->state;
+}
+
 LCompositor::~LCompositor()
 {
     delete m_imp;
 }
 
-int LCompositor::start()
-{    
-    if (imp()->started)
+bool LCompositor::start()
+{
+    if (compositor())
+    {
+        LLog::warning("Compositor already running. Two Louvre compositors can not live in the same process.");
+        return false;
+    }
+
+    s_compositor = this;
+
+    if (state() != CompositorState::Uninitialized)
     {
         LLog::warning("Attempting to start a compositor already running. Ignoring...");
-        return EXIT_FAILURE;
+        return false;
     }
+
+    imp()->threadId = std::this_thread::get_id();
+    imp()->state = CompositorState::Initializing;
+
+    imp()->initWayland();
 
     // Ask the developer to return a LSeat
     LSeat::Params seatParams;
     seatParams.compositor = this;
     imp()->seat = createSeatRequest(&seatParams);
-    LWayland::setSeat(imp()->seat);
 
     if (!imp()->graphicBackend)
     {
@@ -101,7 +117,7 @@ int LCompositor::start()
             if (!loadGraphicBackend("/usr/etc/Louvre/backends/libLGraphicBackendX11.so"))
             {
                 LLog::fatal("No graphic backend found. Stopping compositor...");
-                return EXIT_FAILURE;
+                goto fail;
             }
 
         }
@@ -132,14 +148,18 @@ int LCompositor::start()
     }
 
     LLog::debug("Graphic backend initialized successfully.");
-    imp()->graphicBackendInitialized = true;
+    imp()->isGraphicBackendInitialized = true;
 
-    eglMakeCurrent(imp()->graphicBackend->getAllocatorEGLDisplay(this),
+    imp()->mainEGLDisplay = imp()->graphicBackend->getAllocatorEGLDisplay(this);
+    imp()->mainEGLContext = imp()->graphicBackend->getAllocatorEGLContext(this);
+
+    eglMakeCurrent(eglDisplay(),
                    EGL_NO_SURFACE,
                    EGL_NO_SURFACE,
-                   imp()->graphicBackend->getAllocatorEGLContext(this));
+                   eglContext());
 
-    LWayland::bindEGLDisplay(imp()->graphicBackend->getAllocatorEGLDisplay(this));
+    if (imp()->eglBindWaylandDisplayWL)
+        imp()->eglBindWaylandDisplayWL(eglDisplay(), display());
 
     imp()->painter = new LPainter();
     imp()->cursor = new LCursor(this);
@@ -156,43 +176,70 @@ int LCompositor::start()
         if (!loadInputBackend("/usr/etc/Louvre/backends/libLInputBackendLibinput.so"))
         {
             LLog::fatal("No input backend found. Stopping compositor...");
-            return EXIT_FAILURE;
+            goto fail;
         }
     }
 
     if (!imp()->inputBackend->initialize(seat()))
     {
         LLog::fatal("Failed to initialize input backend. Stopping compositor...");
-        return EXIT_FAILURE;
+        goto fail;
     }
 
     LLog::debug("Input backend initialized successfully.");
-    imp()->inputBackendInitialized = true;
-
+    imp()->isInputBackendInitialized = true;
 
     seat()->initialized();
 
+    imp()->state = CompositorState::Initialized;
     initialized();
 
-    // Init wayland
-    imp()->started = true;
-    LWayland::runLoop();
+    imp()->fdSet.events = POLLIN | POLLOUT | POLLHUP;
+    imp()->fdSet.revents = 0;
 
-    return EXIT_SUCCESS;
+    return true;
+
+    fail:
+    imp()->state = CompositorState::Uninitialized;
+    return false;
+}
+
+Int32 LCompositor::processLoop(Int32 msTimeout)
+{
+    poll(&imp()->fdSet, 1, msTimeout);
+
+    imp()->renderMutex.lock();
+    seat()->imp()->dispatchSeat();
+    imp()->processRemovedGlobals();
+
+    // DND
+    if (seat()->dndManager()->imp()->destDidNotRequestReceive >= 3)
+        seat()->dndManager()->cancel();
+
+    if (seat()->dndManager()->imp()->dropped && seat()->dndManager()->imp()->destDidNotRequestReceive < 3)
+        seat()->dndManager()->imp()->destDidNotRequestReceive++;
+
+    wl_event_loop_dispatch(imp()->eventLoop, 0);
+    flushClients();
+
+    cursor()->imp()->textureUpdate();
+    imp()->renderMutex.unlock();
 }
 
 void LCompositor::finish()
 {
     abort();
 
+    /* TODO:
     if (imp()->started)
     {
-        if (imp()->inputBackendInitialized)
+        if (imp()->isInputBackendInitialized)
             imp()->inputBackend->uninitialize(seat());
 
-        if (imp()->graphicBackendInitialized)
+        if (imp()->isGraphicBackendInitialized)
             imp()->graphicBackend->uninitialize(this);
     }
+    */
 }
 
 void LCompositor::LCompositorPrivate::raiseChildren(LSurface *surface)
@@ -215,6 +262,21 @@ void LCompositor::raiseSurface(LSurface *surface)
     }
 
     imp()->raiseChildren(surface);
+}
+
+wl_display *LCompositor::display()
+{
+    return LCompositor::compositor()->imp()->display;
+}
+
+wl_event_source *LCompositor::addFdListener(int fd, void *userData, int (*callback)(int, unsigned int, void *), UInt32 flags)
+{
+    return wl_event_loop_add_fd(LCompositor::compositor()->imp()->eventLoop, fd, flags, callback, userData);
+}
+
+void LCompositor::removeFdListener(wl_event_source *source)
+{
+    wl_event_source_remove(source);
 }
 
 bool LCompositor::LCompositorPrivate::loadGraphicBackend(const char *path)
@@ -379,14 +441,7 @@ void LCompositor::removeOutput(LOutput *output)
                 }
             }
 
-            // Hacemos esto para eliminar el global de forma segura (ver LWayland:loop)
-            wl_global_remove(output->imp()->global);
-
-            LCompositorPrivate::RemovedOutputGlobal *g = new LCompositorPrivate::RemovedOutputGlobal();
-            g->global = output->imp()->global;
-            g->loopIterations = 0;
-            imp()->removedOutputGobals.push_back(g);
-
+            imp()->removeGlobal(output->imp()->global);
             imp()->updateGlobalScale();
 
             cursor()->imp()->intersectedOutputs.remove(output);
@@ -417,6 +472,26 @@ const list<LOutput *> &LCompositor::outputs() const
 const list<LClient *> &LCompositor::clients() const
 {
     return imp()->clients;
+}
+
+UInt32 LCompositor::nextSerial()
+{
+    return wl_display_next_serial(LCompositor::compositor()->display());
+}
+
+EGLDisplay LCompositor::eglDisplay()
+{
+    return LCompositor::compositor()->imp()->mainEGLDisplay;
+}
+
+EGLContext LCompositor::eglContext()
+{
+    return LCompositor::compositor()->imp()->mainEGLContext;
+}
+
+void LCompositor::flushClients()
+{
+    wl_display_flush_clients(LCompositor::display());
 }
 
 LClient *LCompositor::getClientFromNativeResource(wl_client *client)

@@ -21,14 +21,14 @@ public:
     struct Params;
 
     /*!
-     * @brief Constructor of the LClient class.
+     * Constructor of the LClient class.
      *
-     * @param params Internal library parameters passed int the LCompositor::createClientRequest virtual constructor.
+     * @param params Internal library parameters passed in the LCompositor::createClientRequest() virtual constructor.
      */
     LClient(Params *params);
 
     /*!
-     * @brief Destructor de the LClient class.
+     * Destructor de the LClient class.
      */
     virtual ~LClient();
 
@@ -36,23 +36,18 @@ public:
     LClient& operator= (const LClient&) = delete;
 
     /*!
-     * @brief Sends a Ping event to the client.
-     *
-     * Sends a Ping event to the client which must ack by invoking the pong() virtual method.\n
+     * Sends a Ping event to the client which must ack by invoking the LClient::pong() virtual method.\n
      * Used to detect if a client is unresponsive.
      *
-     * @param serial Serial that the client must reply when calls pong().
+     * @param serial Serial that the client must reply when calls LCLient::pong().
      */
     void ping(UInt32 serial) const;
 
     /*!
-     * @brief Response to a Ping event.
+     * Client response to a LClient::ping() event.
+     * Reimplement this virtual method if you want to be notified when a client responds to a LClient::ping() event.
      *
-     * Client response to a ping() event.
-     *
-     * Reimplement this virtual method if you want to be notified when a client responds to a ping() event.
-     *
-     * @param serial The same serial passed in ping().
+     * @param serial The same serial passed in LClient::ping().
      *
      * #### Default Implementation
      * @snippet LClientDefault.cpp pong
@@ -60,92 +55,100 @@ public:
     virtual void pong(UInt32 serial) const;
 
     /*!
-     * @brief Returns a pointer to the compositor instance.
-     *
-     * This instance is the same for all clients. Not to be confused with the **wl_composer** interface resource
-     * of the Wayland protocol returned by LClient::composerResource() which is unique per client.
+     * This instance is the same for all clients. Not to be confused with the [wl_compositor](https://wayland.app/protocols/wayland#wl_compositor) interface resource
+     * of the Wayland protocol returned by LClient::compositorGlobal() which is unique per client.
      */
     LCompositor *compositor() const;
 
     /*!
-     * @brief Retorna un puntero al asiento de eventos del compositor.
-     *
-     * Retorna la instancia global LSeat creada durante la inicialización del compositor. No confundir con el recurso
-     * de la interfaz **wl_seat** del protocolo de Wayland retornado por LClient::seatResource() que sí es único por cliente.
+     * This instance is the same for all clients. Not to be confused with the [wl_seat](https://wayland.app/protocols/wayland#wl_seat) interface resource
+     * of the Wayland protocol returned by LClient::seatGlobals() which are unique per client.
      */
     LSeat *seat() const;
 
     /*!
-     * @brief Returns the **wl_client** interface of the client.
-     *
      * The **wl_client** interface is part of the original Wayland library.
      */
     wl_client *client() const;
 
     /*!
-     * @brief Client's data device.
-     *
-     * The LDataDevice class is a wrapper for the **wl_data_device** interface of the Wayland protocol
-     * , used by the clipboard mechanism and for drag & drop sessions.\n
+     * The LDataDevice class is a wrapper for the [wl_data_device](https://wayland.app/protocols/wayland#wl_data_device) interface of the Wayland protocol
+     * , used by the clipboard mechanism and for drag & drop sessions.
      */
     LDataDevice &dataDevice() const;
 
     /*!
-     * @brief List of surfaces created by the client.
+     * List of surfaces created by the client.
      */
     const list<LSurface*>&surfaces() const;
 
     /*!
-     * @brief List of **wl_output** resources.
-     *
-     * Returns a list of **wl_output** resources of the Wayland protocol.\n
-     * The library creates a **wl_output** resource for each output added to the composer in order to notify the client
-     * the available outputs and their attributes.
+     * Returns a list of [wl_output](https://wayland.app/protocols/wayland#wl_output)
+     * resources created when the client binds this global.\n
+     * The library creates a [wl_output](https://wayland.app/protocols/wayland#wl_output)
+     * global for each output added to the compositor in
+     * order to notify the client the available outputs and their properties.
      */
     const list<Wayland::GOutput*>&outputGlobals() const;
 
     /*!
-     * @brief Resource generated when the client binds to the **wl_compositor** singleton global of the Wayland protocol.
+     * Resource created when the client binds to
+     * the [wl_compositor](https://wayland.app/protocols/wayland#wl_compositor)
+     * singleton global of the Wayland protocol.
      */
     const Wayland::GCompositor *compositorGlobal() const;
 
     /*!
-     * @brief List of resources generated when the client binds to the **wl_subcompositor** global of the Wayland protocol.
+     * List of resources created when the client binds to
+     * the [wl_subcompositor](https://wayland.app/protocols/wayland#wl_subcompositor)
+     * global of the Wayland protocol.
      */
     const list<Wayland::GSubcompositor*> &subcompositorGlobals() const;
 
     /*!
-     * @brief List of resources generated when the client binds to the **wl_seat** global of the Wayland protocol.
+     * List of resources created when the client binds to
+     * the [wl_seat](https://wayland.app/protocols/wayland#wl_seat)
+     * global of the Wayland protocol.
      */
     const list<Wayland::GSeat*> &seatGlobals() const;
 
     /*!
-     * @brief Resource generated when the client binds to the **wl_data_device_manager** singleton global of the Wayland protocol.
+     * Resource created when the client binds to
+     * the [wl_data_device_manager](https://wayland.app/protocols/wayland#wl_data_device_manager)
+     * singleton global of the Wayland protocol.
      */
     const Wayland::GDataDeviceManager* dataDeviceManagerGlobal() const;
 
     /*!
-     * @brief List of resources generated when the client binds to the **xdg_wm_base** global of the XdgShell protocol.
+     * List of resources created when the client binds to the
+     * [xdg_wm_base](https://wayland.app/protocols/xdg-shell#xdg_wm_base) global of the XdgShell protocol.
      */
     const list<XdgShell::GXdgWmBase *> &xdgWmBaseGlobals() const;
 
     /*!
-     * @brief List of resources generated when the client binds to the **wp_presentation** global of the PresentationTime protocol.
+     * List of resources created when the client binds to the
+     * [zxdg_decoration_manager_v1](https://wayland.app/protocols/xdg-decoration-unstable-v1#zxdg_decoration_manager_v1) global
+     * of the XdgDecoration protocol.
+     *
+     * The [zxdg_decoration_manager_v1](https://wayland.app/protocols/xdg-decoration-unstable-v1#zxdg_decoration_manager_v1)
+     * interface allows the client and the compositor negotiate who should draw the decoration of
+     * Toplevel surfaces.
+     */
+    const list<XdgDecoration::GXdgDecorationManager*> &xdgDecorationManagerGlobals() const;
+
+    /*!
+     * List of resources created when the client binds to the
+     * [wp_presentation](https://wayland.app/protocols/presentation-time#wp_presentation) global of the
+     * PresentationTime protocol.
      */
     const list<WpPresentationTime::GWpPresentation*> &wpPresentationTimeGlobals() const;
 
     /*!
-     * @brief List of resources generated when the client binds to the **zwp_linux_dmabuf_v1** global of the LinuxDMA-BUF protocol.
+     * List of resources generated when the client binds to the
+     * [zwp_linux_dmabuf_v1](https://wayland.app/protocols/linux-dmabuf-unstable-v1#zwp_linux_dmabuf_v1) global
+     * of the LinuxDMA-BUF protocol.
      */
     const list<LinuxDMABuf::GLinuxDMABuf*> &linuxDMABufGlobals() const;
-
-    /*!
-     * @brief List of resources generated when the client binds to the **zxdg_decoration_manager_v1** global of the XdgDecoration protocol.
-     *
-     * The **zxdg_decoration_manager_v1** interface allows the client to negotiate with the compositor who should
-     * be in charge of rendering the decoration of a Toplevel surface.
-     */
-    const list<XdgDecoration::GXdgDecorationManager*> &xdgDecorationManagerGlobals() const;
 
     LPRIVATE_IMP(LClient)
 };

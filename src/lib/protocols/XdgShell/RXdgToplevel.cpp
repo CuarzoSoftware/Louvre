@@ -7,7 +7,6 @@
 #include <private/LSurfacePrivate.h>
 
 #include <LCompositor.h>
-#include <LWayland.h>
 
 static struct xdg_toplevel_interface xdg_toplevel_implementation =
 {

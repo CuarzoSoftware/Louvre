@@ -2,6 +2,7 @@
 #define GXDGWMBASEPRIVATE_H
 
 #include <protocols/XdgShell/GXdgWmBase.h>
+#include <protocols/XdgShell/xdg-shell.h>
 
 using namespace Louvre::Protocols::XdgShell;
 using namespace std;

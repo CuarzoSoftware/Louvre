@@ -2,6 +2,7 @@
 #define GXDGDECORATIONMANAGERPRIVATE_H
 
 #include <protocols/XdgDecoration/GXdgDecorationManager.h>
+#include <protocols/XdgDecoration/xdg-decoration-unstable-v1.h>
 
 using namespace Louvre::Protocols::XdgDecoration;
 using namespace std;

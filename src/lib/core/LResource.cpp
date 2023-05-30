@@ -1,5 +1,4 @@
 #include <private/LResourcePrivate.h>
-#include <LWayland.h>
 #include <LCompositor.h>
 
 using namespace Louvre;
@@ -8,7 +7,7 @@ LResource::LResource(wl_resource *resource)
 {
     m_imp = new LResourcePrivate();
     imp()->resource = resource;
-    imp()->client = LWayland::bindedCompositor()->getClientFromNativeResource(wl_resource_get_client(resource));
+    imp()->client = LCompositor::compositor()->getClientFromNativeResource(wl_resource_get_client(resource));
 }
 
 LResource::LResource(LCompositor *compositor,

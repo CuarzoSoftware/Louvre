@@ -1,4 +1,3 @@
-#include "LLog.h"
 #include <private/LCursorPrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LCompositorPrivate.h>
@@ -8,12 +7,15 @@
 
 #include <LRect.h>
 #include <LPainter.h>
+#include <LLog.h>
 
 #include <X11/Xcursor/Xcursor.h>
 #include <string.h>
 
 #include <other/cursor.h>
 #include <other/lodepng.h>
+
+#include <algorithm>
 
 using namespace Louvre;
 

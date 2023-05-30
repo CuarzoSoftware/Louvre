@@ -2,6 +2,7 @@
 #define GLINUXDMABUFPRIVATE_H
 
 #include <protocols/LinuxDMABuf/GLinuxDMABuf.h>
+#include <protocols/LinuxDMABuf/linux-dmabuf-unstable-v1.h>
 
 using namespace Louvre::Protocols::LinuxDMABuf;
 using namespace std;

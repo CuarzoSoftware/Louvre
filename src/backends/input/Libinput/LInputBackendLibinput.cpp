@@ -2,7 +2,6 @@
 #include <cstring>
 #include <fcntl.h>
 #include <unistd.h>
-#include <LWayland.h>
 #include <unordered_map>
 
 #include <private/LCompositorPrivate.h>
@@ -173,7 +172,7 @@ bool LInputBackend::initialize(const LSeat *seat)
 
     libinput_udev_assign_seat(data->li, "seat0");//libseat_seat_name(seat->libseatHandle()));
     libinput_dispatch(data->li);
-    LWayland::addFdListener(libinput_get_fd(data->li), (LSeat*)seat, &processInput);
+    LCompositor::addFdListener(libinput_get_fd(data->li), (LSeat*)seat, &processInput);
 
     return true;
 

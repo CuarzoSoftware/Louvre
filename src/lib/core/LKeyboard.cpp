@@ -5,7 +5,6 @@
 #include <private/LKeyboardPrivate.h>
 
 #include <LTime.h>
-#include <LWayland.h>
 #include <LCompositor.h>
 #include <LSeat.h>
 #include <LDNDManager.h>

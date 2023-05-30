@@ -2,29 +2,43 @@
 #define LCOMPOSITORPRIVATE_H
 
 #include <LCompositor.h>
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <sys/poll.h>
 
-class Louvre::LCompositor::LCompositorPrivate
-{
-public:
-    LCompositorPrivate()                                        = default;
-    ~LCompositorPrivate()                                       = default;
+LPRIVATE_CLASS(LCompositor)
 
-    LCompositorPrivate(const LCompositorPrivate&)               = delete;
-    LCompositorPrivate &operator=(const LCompositorPrivate&)    = delete;
-
-    struct RemovedOutputGlobal
+    /* We do not destroy globals immediatly as suggested here:
+     * https://wayland.freedesktop.org/docs/html/apc.html#Server-wayland-server_8c_1a7f93649ba31c12220ee77982a37aa270
+     * we wait some loop iterations (LOUVRE_GLOBAL_ITERS_BEFORE_DESTROY) before calling wl_global_destroy */
+    struct RemovedGlobal
     {
         wl_global *global;
-        UInt32 loopIterations                                   = 0;
+        UChar8 iters;
     };
+    list<RemovedGlobal*>removedGlobals;
+    void processRemovedGlobals();
+    void removeGlobal(wl_global *global);
 
-    LCompositor *compositor                                     = nullptr;
-    LCursor *cursor                                             = nullptr;
+    CompositorState state = CompositorState::Uninitialized;
+    LCompositor *compositor = nullptr;
+    wl_display *display = nullptr;
+    wl_event_loop *eventLoop = nullptr;
+    pollfd fdSet;
+    wl_listener clientConnectedListener;
+    wl_event_source *clientDisconnectedEventSource;
+    PFNEGLBINDWAYLANDDISPLAYWL eglBindWaylandDisplayWL = NULL;
+    EGLDisplay mainEGLDisplay = EGL_NO_DISPLAY;
+    EGLContext mainEGLContext = EGL_NO_CONTEXT;
+    bool initWayland();
+    void unitWayland();
+
+    LCursor *cursor = nullptr;
     LSeat *seat                                                 = nullptr;
     LSession *session                                           = nullptr;
     Int32 globalScale                                           = 1;
-    bool graphicBackendInitialized                              = false;
-    bool inputBackendInitialized                                = false;
+    bool isGraphicBackendInitialized                            = false;
+    bool isInputBackendInitialized                              = false;
 
 
     std::thread::id threadId;
@@ -34,8 +48,8 @@ public:
     bool loadInputBackend(const char *path);
 
     void raiseChildren(LSurface *surface);
-    void insertSurfaceAfter(LSurface *prevSurface,LSurface *surfaceToInsert);
-    void insertSurfaceBefore(LSurface *nextSurface,LSurface *surfaceToInsert);
+    void insertSurfaceAfter(LSurface *prevSurface, LSurface *surfaceToInsert);
+    void insertSurfaceBefore(LSurface *nextSurface, LSurface *surfaceToInsert);
     void updateGlobalScale();
 
     // Clients
@@ -50,14 +64,12 @@ public:
     // Output Manager
     LOutputManager *outputManager                               = nullptr;
 
-    // Removed Outputs
-    list<RemovedOutputGlobal*>removedOutputGobals;
+
 
     int waylandFd;
 
     LPainter *painter;
 
-    bool started                                                = false;
     LGraphicBackendInterface *graphicBackend                    = nullptr;
     LInputBackendInterface *inputBackend                        = nullptr;
 
@@ -65,8 +77,6 @@ public:
     void *graphicBackendHandle                                  = nullptr;
     void *inputBackendHandle                                    = nullptr;
     void *graphicBackendData                                    = nullptr;
-
-
 
 };
 

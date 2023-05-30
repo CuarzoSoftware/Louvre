@@ -1,10 +1,11 @@
 #include <LTime.h>
-#include <LWayland.h>
 #include <LSeat.h>
 #include <private/LKeyboardPrivate.h>
 #include <LClient.h>
 #include <protocols/Wayland/private/GSeatPrivate.h>
 #include <protocols/Wayland/private/RKeyboardPrivate.h>
+
+#include <LCompositor.h>
 
 using namespace Louvre;
 
@@ -53,25 +54,25 @@ void RKeyboard::sendKeymap(Int32 fd, UInt32 size)
 
 void RKeyboard::sendLeave(LSurface *surface)
 {
-    imp()->serials.leave = LWayland::nextSerial();
+    imp()->serials.leave = LCompositor::nextSerial();
     wl_keyboard_send_leave(resource(), serials().leave, surface->surfaceResource()->resource());
 }
 
 void RKeyboard::sendEnter(LSurface *surface)
 {
-    imp()->serials.enter = LWayland::nextSerial();
+    imp()->serials.enter = LCompositor::nextSerial();
     wl_keyboard_send_enter(resource(), serials().enter, surface->surfaceResource()->resource(), &client()->seat()->keyboard()->imp()->keys);
 }
 
 void RKeyboard::sendModifiers(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
 {
-    imp()->serials.modifiers = LWayland::nextSerial();
+    imp()->serials.modifiers = LCompositor::nextSerial();
     wl_keyboard_send_modifiers(resource(), serials().modifiers, depressed, latched, locked, group);
 }
 
 void RKeyboard::sendKey(UInt32 key, UInt32 state)
 {
-    imp()->serials.key = LWayland::nextSerial();
+    imp()->serials.key = LCompositor::nextSerial();
     wl_keyboard_send_key(resource(), serials().key, LTime::ms(), key, state);
 }
 

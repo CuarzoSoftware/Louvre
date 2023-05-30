@@ -25,7 +25,6 @@
 #include <sys/poll.h>
 #include <sys/eventfd.h>
 
-#include <LWayland.h>
 #include <LCursor.h>
 #include <LToplevelRole.h>
 #include <LSurface.h>
@@ -33,7 +32,6 @@
 #include <LOutput.h>
 #include <LPopupRole.h>
 #include <LLog.h>
-
 
 using namespace Louvre;
 
@@ -47,7 +45,7 @@ void initSeat(LSeat *seat)
 
     seat->imp()->dispatchSeat();
 
-    LWayland::addFdListener(
+    LCompositor::addFdListener(
                 libseat_get_fd(seat->libseatHandle()),
                 seat,
                 &LSeat::LSeatPrivate::seatEvent, POLLIN);
@@ -206,7 +204,7 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
     lseat->imp()->enabled = true;
     lseat->compositor()->repaintAllOutputs();
 
-    if (lseat->compositor()->inputBackendInitialized())
+    if (lseat->compositor()->isInputBackendInitialized())
         lseat->compositor()->imp()->inputBackend->resume(lseat);
 
     LLog::debug("Seat %s enabled.", libseat_seat_name(seat));
@@ -225,7 +223,7 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
 
     lseat->imp()->enabled = false;
 
-    if (lseat->compositor()->inputBackendInitialized())
+    if (lseat->compositor()->isInputBackendInitialized())
         lseat->compositor()->imp()->inputBackend->suspend(lseat);
 
     libseat_disable_seat(seat);

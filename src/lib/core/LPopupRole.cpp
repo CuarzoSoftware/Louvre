@@ -9,7 +9,6 @@
 #include <protocols/XdgShell/xdg-shell.h>
 
 #include <LRect.h>
-#include <LWayland.h>
 #include <LCompositor.h>
 #include <LOutput.h>
 #include <LSeat.h>
@@ -17,7 +16,6 @@
 #include <LKeyboard.h>
 
 using namespace Louvre;
-
 
 LPopupRole::LPopupRole(LPopupRole::Params *params) : LBaseSurfaceRole(params->popup, params->surface, LSurface::Role::Popup)
 {
@@ -45,7 +43,7 @@ void LPopupRole::configureC(const LRect &r)
 
     LRect rect = r/compositor()->globalScale();
     res->configure(rect.x(), rect.y(), rect.w(), rect.h());
-    res->rXdgSurface()->configure(LWayland::nextSerial());
+    res->rXdgSurface()->configure(LCompositor::nextSerial());
 }
 
 void LPopupRole::sendPopupDoneEvent()

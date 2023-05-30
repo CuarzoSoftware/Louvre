@@ -8,8 +8,18 @@ int main(int, char *[])
 {
     setenv("LOUVRE_WAYLAND_DISPLAY", "wayland-0", 1);
     setenv("WAYLAND_DISPLAY", "wayland-0", 1);
+    setenv("WAYLAND_DEBUG", "4", 1);
+
     LCompositor compositor;
-    // compositor.loadGraphicBackend("/usr/etc/Louvre/backends/libLGraphicBackendX11.so");
-    // compositor.loadInputBackend("/usr/etc/Louvre/backends/libLInputBackendX11.so");
-    return compositor.start();
+
+    if (!compositor.start())
+    {
+        LLog::fatal("Failed to start compositor.");
+        return 1;
+    }
+
+    while (compositor.state() != LCompositor::Uninitialized)
+        compositor.processLoop(-1);
+
+    return 0;
 }

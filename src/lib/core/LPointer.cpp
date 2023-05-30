@@ -8,7 +8,6 @@
 
 #include <LSeat.h>
 #include <LCompositor.h>
-#include <LWayland.h>
 #include <LCursor.h>
 #include <LOutput.h>
 #include <LPopupRole.h>

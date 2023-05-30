@@ -16,7 +16,6 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include <LWayland.h>
 #include <LToplevelRole.h>
 #include <LRegion.h>
 #include <LSeat.h>
@@ -138,7 +137,7 @@ void LOutput::LOutputPrivate::backendInitialized()
     painter = new LPainter();
     painter->imp()->output = output;
 
-    output->imp()->global = wl_global_create(LWayland::getDisplay(),
+    output->imp()->global = wl_global_create(LCompositor::compositor()->display(),
                                              &wl_output_interface,
                                              LOUVRE_OUTPUT_VERSION,
                                              output,
@@ -161,7 +160,7 @@ void LOutput::LOutputPrivate::backendBeforePaint()
 void LOutput::LOutputPrivate::backendAfterPaint()
 {
     output->imp()->compositor->imp()->renderMutex.unlock();
-    LWayland::flushClients();
+    LCompositor::flushClients();
 }
 
 void LOutput::LOutputPrivate::backendPageFlipped()

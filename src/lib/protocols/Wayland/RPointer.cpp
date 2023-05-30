@@ -5,7 +5,6 @@
 #include <private/LClientPrivate.h>
 #include <private/LSurfacePrivate.h>
 
-#include <LWayland.h>
 #include <LCompositor.h>
 #include <LSeat.h>
 #include <LPoint.h>
@@ -43,7 +42,7 @@ RPointer::~RPointer()
 
 void RPointer::sendEnter(LSurface *surface, const LPoint &point)
 {
-    imp()->serials.enter = LWayland::nextSerial();
+    imp()->serials.enter = LCompositor::nextSerial();
 
     wl_pointer_send_enter(resource(),
                           serials().enter,
@@ -54,7 +53,7 @@ void RPointer::sendEnter(LSurface *surface, const LPoint &point)
 
 void RPointer::sendLeave(LSurface *surface)
 {
-    imp()->serials.leave = LWayland::nextSerial();
+    imp()->serials.leave = LCompositor::nextSerial();
     wl_pointer_send_leave(resource(),
                           serials().leave,
                           surface->surfaceResource()->resource());
@@ -131,7 +130,7 @@ void RPointer::sendMove(const LPoint &localPos)
 
 void RPointer::sendButton(LPointer::Button button, LPointer::ButtonState state)
 {
-    imp()->serials.button = LWayland::nextSerial();
+    imp()->serials.button = LCompositor::nextSerial();
     wl_pointer_send_button(resource(),
                            serials().button,
                            LTime::ms(),

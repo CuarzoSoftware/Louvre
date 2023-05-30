@@ -18,6 +18,7 @@ LPRIVATE_CLASS(LClient)
     LClient::Params *params = nullptr;
     LDataDevice dataDevice;
 
+    // Globals
     list<Wayland::GOutput*> outputGlobals;
     list<Wayland::GSeat*> seatGlobals;
     list<Wayland::GSubcompositor*> subcompositorGlobals;
@@ -26,10 +27,9 @@ LPRIVATE_CLASS(LClient)
     list<WpPresentationTime::GWpPresentation*> wpPresentationTimeGlobals;
     list<LinuxDMABuf::GLinuxDMABuf*> linuxDMABufGlobals;
 
+    // Singleton Globals
     Wayland::GDataDeviceManager *dataDeviceManagerGlobal = nullptr;
     Wayland::GCompositor *compositorGlobal = nullptr;
-
-    wl_resource *linuxDMABufResource = nullptr;
 };
 
 #endif // LCLIENTPRIVATE_H

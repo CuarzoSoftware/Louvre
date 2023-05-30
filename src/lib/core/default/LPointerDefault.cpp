@@ -1,8 +1,7 @@
-#include "LLog.h"
-#include "LPointer.h"
+#include <LLog.h>
+#include <LPointer.h>
 #include <LSeat.h>
 #include <LCompositor.h>
-#include <LWayland.h>
 #include <LCursor.h>
 #include <LOutput.h>
 #include <LPopupRole.h>

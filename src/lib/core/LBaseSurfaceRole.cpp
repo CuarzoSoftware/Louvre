@@ -1,7 +1,5 @@
 #include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LSurfacePrivate.h>
-#include <LPoint.h>
-#include <LSurface.h>
 #include <LCompositor.h>
 
 using namespace Louvre;
@@ -26,7 +24,7 @@ LBaseSurfaceRole::~LBaseSurfaceRole()
     delete m_baseImp;
 }
 
-UInt32 LBaseSurfaceRole::roleId()
+UInt32 LBaseSurfaceRole::roleId() const
 {
     return m_baseImp->roleId;
 }
@@ -60,6 +58,8 @@ void LBaseSurfaceRole::globalScaleChanged(Int32 oldScale, Int32 newScale)
 {
     L_UNUSED(oldScale);
     L_UNUSED(newScale);
+
+    /* No default implementation */
 }
 
 bool LBaseSurfaceRole::acceptCommitRequest(Protocols::Wayland::RSurface::CommitOrigin origin)
@@ -70,7 +70,7 @@ bool LBaseSurfaceRole::acceptCommitRequest(Protocols::Wayland::RSurface::CommitO
 
 void LBaseSurfaceRole::handleSurfaceCommit()
 {
-    /* Empty */
+    /* No default implementation */
 }
 
 void LBaseSurfaceRole::handleSurfaceBufferAttach(wl_resource *buffer, Int32 x, Int32 y)
@@ -78,25 +78,29 @@ void LBaseSurfaceRole::handleSurfaceBufferAttach(wl_resource *buffer, Int32 x, I
     L_UNUSED(buffer);
     L_UNUSED(x);
     L_UNUSED(y);
+
+    /* No default implementation */
 }
 
 void LBaseSurfaceRole::handleSurfaceOffset(Int32 x, Int32 y)
 {
     L_UNUSED(x);
     L_UNUSED(y);
+
+    /* No default implementation */
 }
 
 void LBaseSurfaceRole::handleParentCommit()
 {
-
+    /* No default implementation */
 }
 
 void LBaseSurfaceRole::handleParentMappingChange()
 {
-    /* Empty */
+    /* No default implementation */
 }
 
 void LBaseSurfaceRole::handleParentChange()
 {
-
+    /* No default implementation */
 }

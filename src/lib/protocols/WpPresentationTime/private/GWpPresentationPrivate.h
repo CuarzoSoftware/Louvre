@@ -2,6 +2,7 @@
 #define GWPPRESENTATIONPRIVATE_H
 
 #include <protocols/WpPresentationTime/GWpPresentation.h>
+#include <protocols/WpPresentationTime/presentation-time.h>
 
 using namespace Louvre::Protocols::WpPresentationTime;
 using namespace std;

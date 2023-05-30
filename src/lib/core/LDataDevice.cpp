@@ -9,12 +9,9 @@
 #include <protocols/Wayland/GSeat.h>
 #include <protocols/Wayland/private/RDataDevicePrivate.h>
 
-
-#include <LWayland.h>
 #include <LTime.h>
 
 using namespace Louvre;
-
 
 LDataDevice::LDataDevice()
 {
