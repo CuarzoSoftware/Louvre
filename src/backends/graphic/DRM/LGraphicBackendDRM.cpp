@@ -20,7 +20,6 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LOutputModePrivate.h>
-#include <private/LOutputManagerPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <private/LTexturePrivate.h>
 #include <private/LCursorPrivate.h>
@@ -157,7 +156,7 @@ static void connectorPluggedEventHandler(SRMListener *listener, SRMConnector *co
     initConnector(bknd, conn);
     LOutput *output = (LOutput*)srmConnectorGetUserData(conn);
     bknd->connectedOutputs.push_back(output);
-    compositor->outputManager()->outputPlugged(output);
+    compositor->seat()->outputPlugged(output);
     compositor->imp()->renderMutex.lock();
 }
 
@@ -167,7 +166,7 @@ static void connectorUnpluggedEventHandler(SRMListener *listener, SRMConnector *
     LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
     compositor->imp()->renderMutex.unlock();
     LOutput *output = (LOutput*)srmConnectorGetUserData(conn);
-    compositor->outputManager()->outputUnplugged(output);
+    compositor->seat()->outputUnplugged(output);
     compositor->removeOutput(output);
     uninitConnector(bknd, conn);
     compositor->imp()->renderMutex.lock();

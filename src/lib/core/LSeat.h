@@ -20,7 +20,6 @@ struct libseat;
  */
 class Louvre::LSeat
 {
-
 public:
 
     struct Params;
@@ -30,7 +29,7 @@ public:
      *
      * Compositor input capabilities.\n
      */
-    enum Capabilities : UInt32
+    enum InputCapabilities : UInt32
     {
         /// Pointer events
         Pointer = 1,
@@ -65,6 +64,13 @@ public:
      * @brief Global compositor instance.
      */
     LCompositor *compositor() const;
+
+    /*!
+     * @brief Available outputs.
+     *
+     * List of currently available outputs.
+     */
+    const list<LOutput*>*outputs() const;
 
     /*!
      * @brief Global cursor instance.
@@ -254,6 +260,32 @@ public:
      * @snippet LSeatDefault.cpp seatEnabled
      */
     virtual void seatDisabled();
+
+    /*!
+     * @brief New available output.
+     *
+     * The outputPlugged() method is invoked by the graphic backend when a new output is available, for example when connecting an external monitor through a VGA or HDMI port.\n
+     * You can reimplement this method to be notified when a new output is available.\n
+     * The default implementation initializes the new output and positions it at the end of the already initialized outputs.
+     *
+     * ### Default Implementation
+     * @snippet LSeatDefault.cpp outputPlugged
+     */
+    virtual void outputPlugged(LOutput *output);
+
+    /*!
+     * @brief Disconnected output.
+     *
+     * The outputUnplugged() method is invoked by the graphical backend when an output is no longer available, for example when an external monitor connected to a VGA or HDMI port is disconnected.\n
+     * You can override this method to be notified when an output is no longer available.\n
+     *
+     * The default implementation removes the output from the compositor if it is initialized
+     * and re-arranges the ones already initialized.
+     *
+     * #### Default Implementation
+     * @snippet LSeatDefault.cpp outputUnplugged
+     */
+    virtual void outputUnplugged(LOutput *output);
 
 /// @}
 

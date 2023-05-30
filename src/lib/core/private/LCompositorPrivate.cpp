@@ -1,5 +1,9 @@
+#include "LCursor.h"
+#include "LPainter.h"
+#include <dlfcn.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
+#include <private/LSeatPrivate.h>
 #include <LLog.h>
 #include <EGL/egl.h>
 
@@ -87,7 +91,7 @@ static void clientConnectedEvent(wl_listener *listener, void *data)
 
 bool LCompositor::LCompositorPrivate::initWayland()
 {
-    eglBindWaylandDisplayWL = (PFNEGLBINDWAYLANDDISPLAYWL) eglGetProcAddress ("eglBindWaylandDisplayWL");
+    unitWayland();
 
     // Create a new Wayland display
     display = wl_display_create();
@@ -148,5 +152,133 @@ void LCompositor::LCompositorPrivate::unitWayland()
     {
         wl_display_destroy(display);
         display = nullptr;
+    }
+}
+
+void LCompositor::LCompositorPrivate::uinitCompositor()
+{
+    state = CompositorState::Uninitializing;
+    unitGraphicBackend();
+    unitSeat();
+    unitWayland();
+    state = CompositorState::Uninitialized;
+}
+
+bool LCompositor::LCompositorPrivate::initGraphicBackend()
+{
+    unitGraphicBackend();
+
+    eglBindWaylandDisplayWL = (PFNEGLBINDWAYLANDDISPLAYWL) eglGetProcAddress ("eglBindWaylandDisplayWL");
+
+    if (!graphicBackend)
+    {
+        LLog::warning("[compositor] User did not load a graphic backend. Trying the DRM backend...");
+
+        testDRMBackend:
+
+        if (!loadGraphicBackend("/usr/etc/Louvre/backends/libLGraphicBackendDRM.so"))
+        {
+            LLog::error("[compositor] Failed to load the DRM backend. Trying the X11 backend...");
+
+            testX11Backend:
+
+            if (!loadGraphicBackend("/usr/etc/Louvre/backends/libLGraphicBackendX11.so"))
+            {
+                LLog::fatal("[compositor] No graphic backend found. Stopping compositor...");
+                return false;
+            }
+        }
+        else
+        {
+            if (!graphicBackend->initialize(compositor))
+            {
+                dlclose(graphicBackendHandle);
+                graphicBackendHandle = nullptr;
+                graphicBackend = nullptr;
+
+                LLog::error("[compositor] Could not initialize the DRM backend. Trying the X11 backend...");
+                goto testX11Backend;
+            }
+        }
+    }
+    else
+    {
+        if (!graphicBackend->initialize(compositor))
+        {
+            dlclose(graphicBackendHandle);
+            graphicBackendHandle = nullptr;
+            graphicBackend = nullptr;
+
+            LLog::error("[compositor] Could not initialize the user defined backend. Trying the DRM backend...");
+            goto testDRMBackend;
+        }
+    }
+
+    LLog::debug("[compositor] Graphic backend initialized successfully.");
+    isGraphicBackendInitialized = true;
+
+    mainEGLDisplay = graphicBackend->getAllocatorEGLDisplay(compositor);
+    mainEGLContext = graphicBackend->getAllocatorEGLContext(compositor);
+
+    eglMakeCurrent(eglDisplay(),
+                   EGL_NO_SURFACE,
+                   EGL_NO_SURFACE,
+                   eglContext());
+
+    if (eglBindWaylandDisplayWL)
+        eglBindWaylandDisplayWL(eglDisplay(), display);
+
+    painter = new LPainter();
+    cursor = new LCursor(compositor);
+    compositor->cursorInitialized();
+
+    return true;
+}
+
+void LCompositor::LCompositorPrivate::unitGraphicBackend()
+{
+    if (cursor)
+    {
+        delete cursor;
+        cursor = nullptr;
+    }
+
+    if (painter)
+    {
+        delete painter;
+        painter = nullptr;
+    }
+
+    mainEGLDisplay = EGL_NO_DISPLAY;
+    mainEGLContext = EGL_NO_CONTEXT;
+
+    eglMakeCurrent(EGL_NO_DISPLAY,
+                   EGL_NO_SURFACE,
+                   EGL_NO_SURFACE,
+                   EGL_NO_CONTEXT);
+
+    if (isGraphicBackendInitialized && graphicBackend)
+        graphicBackend->uninitialize(compositor);
+
+    isGraphicBackendInitialized = false;
+}
+
+bool LCompositor::LCompositorPrivate::initSeat()
+{
+    unitSeat();
+
+    // Ask the developer to return a LSeat
+    LSeat::Params seatParams;
+    seatParams.compositor = LCompositor::compositor();
+    seat = LCompositor::compositor()->createSeatRequest(&seatParams);
+    return true;
+}
+
+void LCompositor::LCompositorPrivate::unitSeat()
+{
+    if (seat)
+    {
+        delete seat;
+        seat = nullptr;
     }
 }

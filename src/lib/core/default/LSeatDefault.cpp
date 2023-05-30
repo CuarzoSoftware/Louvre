@@ -1,9 +1,11 @@
+#include "LCompositor.h"
+#include "LLog.h"
+#include "LOutput.h"
 #include <LSeat.h>
 #include <LPointer.h>
 #include <LKeyboard.h>
 #include <LDataDevice.h>
 #include <LCursor.h>
-
 
 using namespace Louvre;
 
@@ -49,3 +51,49 @@ void LSeat::seatDisabled()
     /* No default implementation */
 }
 //! [seatDisabled]
+
+//! [outputPlugged]
+void LSeat::outputPlugged(LOutput *output)
+{
+    LLog::debug("Output %s connected.", output->name());
+
+    output->setScale(output->dpi() >= 120 ? 2 : 1);
+
+    LCompositor::compositor()->addOutput(output);
+
+    // Organize outputs horizontally and sequentially.
+
+    Int32 totalWidth = 0;
+
+    for (LOutput *o : compositor()->outputs())
+    {
+        o->setPosC(LPoint(totalWidth,0));
+
+        totalWidth += o->sizeC().w();
+    }
+
+    compositor()->repaintAllOutputs();
+}
+//! [outputPlugged]
+
+//! [outputUnplugged]
+void LSeat::outputUnplugged(LOutput *output)
+{
+    compositor()->removeOutput(output);
+
+    // Organize outputs horizontally and sequentially.
+
+    Int32 totalWidth = 0;
+
+    if (!outputs()->empty())
+    {
+        for (LOutput *o : compositor()->outputs())
+        {
+            o->setPosC(LPoint(totalWidth,0));
+            totalWidth += o->sizeC().w();
+        }
+
+        compositor()->repaintAllOutputs();
+    }
+}
+//! [outputUnplugged]

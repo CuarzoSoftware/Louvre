@@ -22,22 +22,36 @@ LPRIVATE_CLASS(LCompositor)
 
     CompositorState state = CompositorState::Uninitialized;
     LCompositor *compositor = nullptr;
-    wl_display *display = nullptr;
-    wl_event_loop *eventLoop = nullptr;
-    pollfd fdSet;
-    wl_listener clientConnectedListener;
-    wl_event_source *clientDisconnectedEventSource;
-    PFNEGLBINDWAYLANDDISPLAYWL eglBindWaylandDisplayWL = NULL;
-    EGLDisplay mainEGLDisplay = EGL_NO_DISPLAY;
-    EGLContext mainEGLContext = EGL_NO_CONTEXT;
+    void uinitCompositor();
+
     bool initWayland();
+        wl_display *display = nullptr;
+        wl_event_loop *eventLoop = nullptr;
+        pollfd fdSet;
+        wl_listener clientConnectedListener;
+        wl_event_source *clientDisconnectedEventSource;
     void unitWayland();
 
-    LCursor *cursor = nullptr;
-    LSeat *seat                                                 = nullptr;
-    LSession *session                                           = nullptr;
+    bool initSeat();
+        LSeat *seat = nullptr;
+        LSession *session = nullptr;
+    void unitSeat();
+
+    bool initGraphicBackend();
+        PFNEGLBINDWAYLANDDISPLAYWL eglBindWaylandDisplayWL = NULL;
+        EGLDisplay mainEGLDisplay = EGL_NO_DISPLAY;
+        EGLContext mainEGLContext = EGL_NO_CONTEXT;
+        LGraphicBackendInterface *graphicBackend = nullptr;
+        void *graphicBackendHandle = nullptr; // Dylib
+        void *graphicBackendData = nullptr;
+        LCursor *cursor = nullptr;
+        LPainter *painter;
+        bool isGraphicBackendInitialized = false;
+    void unitGraphicBackend();
+
+
+
     Int32 globalScale                                           = 1;
-    bool isGraphicBackendInitialized                            = false;
     bool isInputBackendInitialized                              = false;
 
 
@@ -61,22 +75,10 @@ LPRIVATE_CLASS(LCompositor)
     // Surfaces
     list<LSurface*>surfaces;
 
-    // Output Manager
-    LOutputManager *outputManager                               = nullptr;
-
-
-
-    int waylandFd;
-
-    LPainter *painter;
-
-    LGraphicBackendInterface *graphicBackend                    = nullptr;
     LInputBackendInterface *inputBackend                        = nullptr;
 
     // Dylib
-    void *graphicBackendHandle                                  = nullptr;
     void *inputBackendHandle                                    = nullptr;
-    void *graphicBackendData                                    = nullptr;
 
 };
 

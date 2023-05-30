@@ -1,11 +1,12 @@
-Version: 1.0.0
-
 - New LResource wrapper class for wl_resource structs. Now each protocol resource or global has its own LResource subclass.
 - New directory structure for protocol interfaces.
 - Clients can now bind multiple times to the wl_seat global. This fixes the Firefox problem where it could only receive pointer events.
 - Clients can now create a wl_data_device for each wl_seat.
 - Clients can now bind multiple times to the wl_subcompositor global.
 - Moved ping() and pong() functions to LClient class.
+- Developers can now modify the default compositor globals overriding the LCompositor::createGlobalsRequest() virtual method.
+- The LCompositor::start() function is now non-blocking. Developers can control the rate of the compositor events processing using the pollable LCompositor::fd() and LCompositor::processLoop() fuction.
+- The LOutputManager class has been eliminated, and its functionality has been integrated into the LSeat class.
 
 
 

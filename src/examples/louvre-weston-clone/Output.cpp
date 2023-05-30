@@ -25,9 +25,6 @@ void Output::initializeGL()
 
 void Output::paintGL()
 {
-
-    LLog::debug("Current buff %d", currentBuffer());
-
     // Si TRUE vuelve a pintar ambos buffers
     if (fullRefresh)
     {

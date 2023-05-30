@@ -80,6 +80,11 @@ LCompositor *LSeat::compositor() const
     return imp()->compositor;
 }
 
+const list<LOutput *> *LSeat::outputs() const
+{
+    return LCompositor::compositor()->imp()->graphicBackend->getConnectedOutputs(LCompositor::compositor());
+}
+
 LCursor *LSeat::cursor() const
 {
     return compositor()->cursor();
@@ -115,7 +120,6 @@ LToplevelRole *LSeat::activeToplevel() const
 {
     return imp()->activeToplevel;
 }
-
 
 LPointer *LSeat::pointer() const
 {
@@ -177,7 +181,6 @@ bool LSeat::enabled() const
 {
     return imp()->enabled;
 }
-
 
 int LSeat::LSeatPrivate::seatEvent(int, unsigned int, void *data)
 {

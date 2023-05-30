@@ -185,7 +185,7 @@ bool LInputBackend::initialize(const LSeat *seat)
 UInt32 LInputBackend::getCapabilities(const LSeat *seat)
 {
     L_UNUSED(seat);
-    return LSeat::Capabilities::Pointer | LSeat::Capabilities::Keyboard;
+    return LSeat::InputCapabilities::Pointer | LSeat::InputCapabilities::Keyboard;
 }
 
 void *LInputBackend::getContextHandle(const LSeat *seat)

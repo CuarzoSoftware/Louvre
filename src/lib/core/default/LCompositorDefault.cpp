@@ -15,7 +15,6 @@
 #include <LKeyboard.h>
 #include <LSurface.h>
 #include <LDNDManager.h>
-#include <LOutputManager.h>
 #include <LOutput.h>
 #include <LSeat.h>
 #include <LPopupRole.h>
@@ -66,14 +65,14 @@ void LCompositor::initialized()
     seat()->keyboard()->setKeymap( NULL, NULL, "latam", NULL);
 
     // Use the Output Manager to get avaliable outputs
-    if (outputManager()->outputs()->empty())
+    if (seat()->outputs()->empty())
     {
         LLog::fatal("No output available.");
         finish();
     }
 
     // Set double scale to outputs with DPI >= 120
-    for (LOutput *output : *outputManager()->outputs())
+    for (LOutput *output : *seat()->outputs())
     {
         if (output->physicalSize().area() == 0)
             continue;
@@ -126,13 +125,6 @@ void LCompositor::globalScaleChanged(Int32 oldScale, Int32 newScale)
 }
 
 //! [globalScaleChanged]
-
-//! [createOutputManagerRequest]
-LOutputManager *LCompositor::createOutputManagerRequest(LOutputManager::Params *params)
-{
-    return new LOutputManager(params);
-}
-//! [createOutputManagerRequest]
 
 //! [createOutputRequest]
 LOutput *LCompositor::createOutputRequest()

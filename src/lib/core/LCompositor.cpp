@@ -1,7 +1,6 @@
 #include "LPainter.h"
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
-#include <private/LOutputManagerPrivate.h>
 #include <private/LSeatPrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LOutputPrivate.h>
@@ -80,7 +79,7 @@ bool LCompositor::start()
 {
     if (compositor())
     {
-        LLog::warning("Compositor already running. Two Louvre compositors can not live in the same process.");
+        LLog::warning("[compositor] Compositor already running. Two Louvre compositors can not live in the same process.");
         return false;
     }
 
@@ -88,105 +87,49 @@ bool LCompositor::start()
 
     if (state() != CompositorState::Uninitialized)
     {
-        LLog::warning("Attempting to start a compositor already running. Ignoring...");
+        LLog::warning("[compositor] Attempting to start a compositor already running. Ignoring...");
         return false;
     }
 
     imp()->threadId = std::this_thread::get_id();
     imp()->state = CompositorState::Initializing;
 
-    imp()->initWayland();
-
-    // Ask the developer to return a LSeat
-    LSeat::Params seatParams;
-    seatParams.compositor = this;
-    imp()->seat = createSeatRequest(&seatParams);
-
-    if (!imp()->graphicBackend)
+    if (!imp()->initWayland())
     {
-        LLog::warning("User did not load a graphic backend. Trying the DRM backend...");
-
-        testDRMBackend:
-
-        if (!loadGraphicBackend("/usr/etc/Louvre/backends/libLGraphicBackendDRM.so"))
-        {
-            LLog::error("Failed to load the DRM backend. Trying the X11 backend...");
-
-            testX11Backend:
-
-            if (!loadGraphicBackend("/usr/etc/Louvre/backends/libLGraphicBackendX11.so"))
-            {
-                LLog::fatal("No graphic backend found. Stopping compositor...");
-                goto fail;
-            }
-
-        }
-        else
-        {
-            if (!imp()->graphicBackend->initialize(this))
-            {
-                dlclose(imp()->graphicBackendHandle);
-                imp()->graphicBackendHandle = nullptr;
-                imp()->graphicBackend = nullptr;
-
-                LLog::error("Could not initialize the DRM backend. Trying the X11 backend...");
-                goto testX11Backend;
-            }
-        }
-    }
-    else
-    {
-        if (!imp()->graphicBackend->initialize(this))
-        {
-            dlclose(imp()->graphicBackendHandle);
-            imp()->graphicBackendHandle = nullptr;
-            imp()->graphicBackend = nullptr;
-
-            LLog::error("Could not initialize the user defined backend. Trying the DRM backend...");
-            goto testDRMBackend;
-        }
+        LLog::fatal("[compositor] Failed to init Wayland.");
+        goto fail;
     }
 
-    LLog::debug("Graphic backend initialized successfully.");
-    imp()->isGraphicBackendInitialized = true;
+    if (!imp()->initSeat())
+    {
+        LLog::fatal("[compositor] Failed to init seat.");
+        goto fail;
+    }
 
-    imp()->mainEGLDisplay = imp()->graphicBackend->getAllocatorEGLDisplay(this);
-    imp()->mainEGLContext = imp()->graphicBackend->getAllocatorEGLContext(this);
-
-    eglMakeCurrent(eglDisplay(),
-                   EGL_NO_SURFACE,
-                   EGL_NO_SURFACE,
-                   eglContext());
-
-    if (imp()->eglBindWaylandDisplayWL)
-        imp()->eglBindWaylandDisplayWL(eglDisplay(), display());
-
-    imp()->painter = new LPainter();
-    imp()->cursor = new LCursor(this);
-    cursorInitialized();
-
-    LOutputManager::Params outputManagerParams;
-    outputManagerParams.compositor = this;
-    imp()->outputManager = createOutputManagerRequest(&outputManagerParams);
+    if (!imp()->initGraphicBackend())
+    {
+        LLog::fatal("[compositor] Failed to init Graphic backend.");
+        goto fail;
+    }
 
     if (!imp()->inputBackend)
     {
-        LLog::warning("User did not load an input backend. Trying the Libinput backend...");
+        LLog::warning("[compositor] User did not load an input backend. Trying the Libinput backend...");
 
         if (!loadInputBackend("/usr/etc/Louvre/backends/libLInputBackendLibinput.so"))
         {
-            LLog::fatal("No input backend found. Stopping compositor...");
+            LLog::fatal("[compositor] No input backend found. Stopping compositor...");
             goto fail;
         }
     }
 
     if (!imp()->inputBackend->initialize(seat()))
     {
-        LLog::fatal("Failed to initialize input backend. Stopping compositor...");
+        LLog::fatal("[compositor] Failed to initialize input backend. Stopping compositor...");
         goto fail;
     }
 
-    LLog::debug("Input backend initialized successfully.");
+    LLog::debug("[compositor] Input backend initialized successfully.");
     imp()->isInputBackendInitialized = true;
 
     seat()->initialized();
@@ -200,7 +143,7 @@ bool LCompositor::start()
     return true;
 
     fail:
-    imp()->state = CompositorState::Uninitialized;
+    imp()->uinitCompositor();
     return false;
 }
 
@@ -285,7 +228,7 @@ bool LCompositor::LCompositorPrivate::loadGraphicBackend(const char *path)
 
     if (!graphicBackendHandle)
     {
-        LLog::warning("No graphic backend found at (%s)\n",path);
+        LLog::warning("[compositor] No graphic backend found at (%s)\n",path);
         return false;
     }
 
@@ -293,7 +236,7 @@ bool LCompositor::LCompositorPrivate::loadGraphicBackend(const char *path)
 
     if (!getAPI)
     {
-        LLog::warning("Failed to load graphic backend (%s)\n",path);
+        LLog::error("[compositor] Failed to load graphic backend (%s)\n",path);
         dlclose(graphicBackendHandle);
         return false;
     }
@@ -301,7 +244,7 @@ bool LCompositor::LCompositorPrivate::loadGraphicBackend(const char *path)
     graphicBackend = getAPI();
 
     if (graphicBackend)
-        LLog::debug("Graphic backend loaded successfully (%s).", path);
+        LLog::debug("[compositor] Graphic backend loaded successfully (%s).", path);
 
     return true;
 }
@@ -312,7 +255,7 @@ bool LCompositor::LCompositorPrivate::loadInputBackend(const char *path)
 
     if (!inputBackendHandle)
     {
-        LLog::warning("No input backend found at (%s).",path);
+        LLog::warning("[compositor] No input backend found at (%s).",path);
         return false;
     }
 
@@ -320,7 +263,7 @@ bool LCompositor::LCompositorPrivate::loadInputBackend(const char *path)
 
     if (!getAPI)
     {
-        LLog::warning("Failed to load input backend (%s).",path);
+        LLog::warning("[compositor] Failed to load input backend (%s).",path);
         dlclose(inputBackendHandle);
         return false;
     }
@@ -328,8 +271,7 @@ bool LCompositor::LCompositorPrivate::loadInputBackend(const char *path)
     inputBackend = getAPI();
 
     if (inputBackend)
-        LLog::debug("Input backend loaded successfully (%s).", path);
-
+        LLog::debug("[compositor] Input backend loaded successfully (%s).", path);
 
     return true;
 }
@@ -370,9 +312,7 @@ void LCompositor::LCompositorPrivate::updateGlobalScale()
         if (cursor)
             cursor->imp()->globalScaleChanged(oldScale, globalScale);
     }
-
 }
-
 
 LCursor *LCompositor::cursor() const
 {
@@ -452,11 +392,6 @@ void LCompositor::removeOutput(LOutput *output)
             return;
         }
     }
-}
-
-LOutputManager *LCompositor::outputManager() const
-{
-    return imp()->outputManager;
 }
 
 const list<LSurface *> &LCompositor::surfaces() const

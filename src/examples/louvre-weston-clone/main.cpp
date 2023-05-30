@@ -4,6 +4,8 @@
 
 int main(int, char *[])
 {
+    setenv("LOUVRE_DEBUG", "4", 1);
+
     Compositor compositor;
 
     if (!compositor.start())

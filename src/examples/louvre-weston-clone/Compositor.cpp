@@ -1,7 +1,6 @@
 #include <Compositor.h>
 #include <LSeat.h>
 #include <LKeyboard.h>
-#include <LOutputManager.h>
 #include <LOutput.h>
 #include <LOutputMode.h>
 
