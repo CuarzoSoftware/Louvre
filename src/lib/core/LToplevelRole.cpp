@@ -275,14 +275,16 @@ void LToplevelRole::handleSurfaceCommit()
         if (imp()->currentConf.flags & LToplevelRole::Activated)
         {
             if (seat()->activeToplevel() && seat()->activeToplevel() != this)
-                seat()->activeToplevel()->configureC(0, seat()->activeToplevel()->imp()->currentConf.flags & ~LToplevelRole::Activated);
+            {
+                seat()->activeToplevel()->configureC(seat()->activeToplevel()->windowGeometryC().size(),
+                                                         seat()->activeToplevel()->states() & ~LToplevelRole::Activated);
+            }
 
             seat()->imp()->activeToplevel = this;
         }
 
         if ((prevState & LToplevelRole::Activated) != (imp()->currentConf.flags & LToplevelRole::Activated))
             activatedChanged();
-
     }
 
     // Si no estaba mapeada y añade buffer la mappeamos

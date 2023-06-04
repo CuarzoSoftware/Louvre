@@ -142,7 +142,7 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
         seat()->keyboard()->setFocus(focusSurface());
 
         if (focusSurface()->toplevel() && !focusSurface()->toplevel()->activated())
-            focusSurface()->toplevel()->configureC(0, focusSurface()->toplevel()->states() | LToplevelRole::Activated);
+            focusSurface()->toplevel()->configureC(focusSurface()->toplevel()->states() | LToplevelRole::Activated);
 
         // Raise surface
         if (focusSurface()->parent())
