@@ -152,7 +152,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
     poll(&imp()->fdSet, 1, msTimeout);
 
     imp()->renderMutex.lock();
-    seat()->imp()->dispatchSeat();
+
     imp()->processRemovedGlobals();
 
     // DND
@@ -166,7 +166,10 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
     flushClients();
 
     cursor()->imp()->textureUpdate();
+
     imp()->renderMutex.unlock();
+
+    return 1;
 }
 
 void LCompositor::finish()
@@ -342,7 +345,7 @@ bool LCompositor::addOutput(LOutput *output)
     if (!output->imp()->initialize())
     {
         LLog::error("[Compositor] Failed to initialize output %s.", output->name());
-        imp()->outputs.remove(output);
+        removeOutput(output);
         return false;
     }
 

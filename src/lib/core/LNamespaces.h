@@ -176,6 +176,8 @@ namespace Louvre
     struct LGraphicBackendInterface
     {
         bool (*initialize)(LCompositor *compositor);
+        void (*pause)(LCompositor *compositor);
+        void (*resume)(LCompositor *compositor);
         bool (*scheduleOutputRepaint)(LOutput *output);
         void (*uninitialize)(LCompositor *compositor);
         const std::list<LOutput*>*(*getConnectedOutputs)(LCompositor *compositor);

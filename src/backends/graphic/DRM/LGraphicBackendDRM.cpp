@@ -18,6 +18,7 @@
 
 #include <LGraphicBackend.h>
 #include <private/LCompositorPrivate.h>
+#include <private/LSeatPrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LOutputModePrivate.h>
 #include <private/LPainterPrivate.h>
@@ -46,6 +47,7 @@ struct Backend
     list<LOutput*>connectedOutputs;
     wl_event_source *monitor;
     list<LDMAFormat*>dmaFormats;
+    unordered_map<int,int>devices;
 };
 
 struct Output
@@ -66,17 +68,26 @@ static int openRestricted(const char *path, int flags, void *userData)
     L_UNUSED(flags);
 
     LCompositor *compositor = (LCompositor*)userData;
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
 
-    Int32 fd;
-    compositor->seat()->openDevice(path, &fd);
+    Int32 id, fd;
+    id = compositor->seat()->openDevice(path, &fd);
+
+    if (compositor->seat()->imp()->initLibseat())
+        bknd->devices[fd] = id;
 
     return fd;
 }
 
 static void closeRestricted(int fd, void *userData)
 {
-    SRM_UNUSED(userData);
-    close(fd);
+    LCompositor *compositor = (LCompositor*)userData;
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+
+    if (compositor->seat()->imp()->initLibseat())
+        compositor->seat()->closeDevice(bknd->devices[fd]);
+    else
+        compositor->seat()->closeDevice(fd);
 }
 
 static SRMInterface srmInterface =
@@ -232,8 +243,10 @@ static SRMConnectorInterface connectorInterface =
 
 bool LGraphicBackend::initialize(LCompositor *compositor)
 {
-    Backend *bknd = new Backend();
+    compositor->seat()->imp()->initLibseat();
 
+    Backend *bknd = new Backend();
+    compositor->imp()->graphicBackendData = bknd;
     bknd->core = srmCoreCreate(&srmInterface, compositor);
 
     if (!bknd->core)
@@ -285,6 +298,26 @@ void LGraphicBackend::uninitialize(LCompositor *compositor)
     LCompositor::removeFdListener(bknd->monitor);
     srmCoreDestroy(bknd->core);
     delete bknd;
+}
+
+void LGraphicBackend::pause(LCompositor *compositor)
+{
+    Output *bkndOutput;
+    for (LOutput *output : compositor->outputs())
+    {
+        bkndOutput = (Output*)output->imp()->graphicBackendData;
+        srmConnectorPause(bkndOutput->conn);
+    }
+}
+
+void LGraphicBackend::resume(LCompositor *compositor)
+{
+    Output *bkndOutput;
+    for (LOutput *output : compositor->outputs())
+    {
+        bkndOutput = (Output*)output->imp()->graphicBackendData;
+        srmConnectorResume(bkndOutput->conn);
+    }
 }
 
 const list<LOutput*> *LGraphicBackend::getConnectedOutputs(LCompositor *compositor)
@@ -512,6 +545,8 @@ LGraphicBackendInterface API;
 extern "C" LGraphicBackendInterface *getAPI()
 {
     API.initialize = &LGraphicBackend::initialize;
+    API.pause = &LGraphicBackend::pause;
+    API.resume = &LGraphicBackend::resume;
     API.scheduleOutputRepaint = &LGraphicBackend::scheduleOutputRepaint;
     API.uninitialize = &LGraphicBackend::uninitialize;
     API.getConnectedOutputs = &LGraphicBackend::getConnectedOutputs;

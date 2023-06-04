@@ -41,7 +41,12 @@ void LSeat::backendNativeEvent(void *event)
 void LSeat::seatEnabled()
 {
     if (cursor())
-        cursor()->useDefault();
+    {
+        cursor()->setVisible(false);
+        cursor()->setVisible(true);
+    }
+
+    compositor()->repaintAllOutputs();
 }
 //! [seatEnabled]
 

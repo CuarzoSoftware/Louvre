@@ -34,23 +34,25 @@ std::unordered_map<int,int>devices;
 int openRestricted(const char *path, int flags, void *data)
 {
     L_UNUSED(flags);
-    /*
-    libseat *seat = (libseat*)data;
-    int id,fd;
-    id = libseat_open_device(seat, path, &fd);
-    devices[fd] = id;
-*/
 
+    LSeat *seat = (LSeat*)data;
+    int id, fd;
 
-    return open(path, flags);
+    id = seat->openDevice(path, &fd);
+    if (seat->imp()->initLibseat())
+        devices[fd] = id;
+
+    return fd;
 }
 
 void closeRestricted(int fd, void *data)
 {
-    return;
-    //printf("Libinput close\n");
-    libseat *seat = (libseat*)data;
-    libseat_close_device(seat, devices[fd]);
+    LSeat *seat = (LSeat*)data;
+
+    if (seat->imp()->initLibseat())
+        seat->closeDevice(devices[fd]);
+    else
+        seat->closeDevice(fd);
 }
 
 int processInput(int, unsigned int, void *userData)
@@ -154,6 +156,8 @@ int processInput(int, unsigned int, void *userData)
 
 bool LInputBackend::initialize(const LSeat *seat)
 {
+    seat->imp()->initLibseat();
+
     BACKEND_DATA *data = new BACKEND_DATA;
     data->seat = (LSeat*)seat;
     seat->imp()->inputBackendData = data;
@@ -164,12 +168,16 @@ bool LInputBackend::initialize(const LSeat *seat)
 
     data->libinputInterface.open_restricted = &openRestricted;
     data->libinputInterface.close_restricted = &closeRestricted;
-    data->li = libinput_udev_create_context(&data->libinputInterface, seat->libseatHandle(), data->ud);
+    data->li = libinput_udev_create_context(&data->libinputInterface, data->seat, data->ud);
 
     if (!data->li)
         goto fail;
 
-    libinput_udev_assign_seat(data->li, "seat0");//libseat_seat_name(seat->libseatHandle()));
+    if (seat->imp()->initLibseat())
+        libinput_udev_assign_seat(data->li, libseat_seat_name(seat->libseatHandle()));
+    else
+        libinput_udev_assign_seat(data->li, "seat0");
+
     libinput_dispatch(data->li);
     LCompositor::addFdListener(libinput_get_fd(data->li), (LSeat*)seat, &processInput);
 

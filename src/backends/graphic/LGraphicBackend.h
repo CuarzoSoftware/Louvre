@@ -12,8 +12,15 @@ class Louvre::LGraphicBackend
 {
 public:
 
+    enum LOUVRE_GRAPHIC_BACKEND_CAP : UInt64
+    {
+        LOUVRE_GRAPHIC_BACKEND_CAP_SEAT = 1,
+    };
+
     static bool initialize(LCompositor *compositor);
     static void uninitialize(LCompositor *compositor);
+    static void pause(LCompositor *compositor);
+    static void resume(LCompositor *compositor);
     static const list<LOutput*>*getConnectedOutputs(LCompositor *compositor);
 
     /* OUTPUTS */
@@ -73,6 +80,5 @@ public:
 
     static void destroyTexture(LTexture *texture);
 };
-
 
 #endif // LGRAPHICBACKEND

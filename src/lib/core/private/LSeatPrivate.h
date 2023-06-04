@@ -38,6 +38,7 @@ LPRIVATE_CLASS(LSeat)
     libseat_seat_listener listener;
     bool enabled                                    = false;
 
+    bool initLibseat();
     static int seatEvent(int, unsigned int, void*data);
     static void seatEnabled(libseat *seat, void *data);
     static void seatDisabled(libseat *seat, void *data);

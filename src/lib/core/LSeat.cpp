@@ -35,22 +35,7 @@
 
 using namespace Louvre;
 
-void initSeat(LSeat *seat)
-{
-    return;
-    seat->imp()->listener.enable_seat = &LSeat::LSeatPrivate::seatEnabled;
-    seat->imp()->listener.disable_seat = &LSeat::LSeatPrivate::seatDisabled;
-
-    seat->imp()->libseatHandle = libseat_open_seat(&seat->imp()->listener, seat);
-
-    seat->imp()->dispatchSeat();
-
-    LCompositor::addFdListener(
-                libseat_get_fd(seat->libseatHandle()),
-                seat,
-                &LSeat::LSeatPrivate::seatEvent, POLLIN);
-}
-LSeat::LSeat(Louvre::LSeat::Params *params)
+LSeat::LSeat(Params *params)
 {
     L_UNUSED(params);
 
@@ -133,11 +118,9 @@ LDNDManager *LSeat::dndManager() const
 
 Int32 LSeat::setTTY(Int32 tty)
 {
-    return 0;
     if (imp()->libseatHandle)
     {
         Int32 ret = libseat_switch_session(libseatHandle(), tty);
-        libseat_dispatch(libseatHandle(), -1);
         return ret;
     }
 
@@ -146,18 +129,23 @@ Int32 LSeat::setTTY(Int32 tty)
 
 Int32 LSeat::openDevice(const char *path, Int32 *fd)
 {
-    *fd = open(path, O_CLOEXEC | O_RDWR);
-
-    return *fd;
-
     if (!imp()->libseatHandle)
-        initSeat(this);
+    {
+        *fd = open(path, O_CLOEXEC | O_RDWR);
+        return *fd;
+    }
+
     return libseat_open_device(libseatHandle(), path, fd);
 }
 
 Int32 LSeat::closeDevice(Int32 id)
 {
-    return 0;
+    if (!imp()->libseatHandle)
+    {
+        close(id);
+        return 0;
+    }
+
     return libseat_close_device(libseatHandle(), id);
 }
 
@@ -169,69 +157,4 @@ libseat *LSeat::libseatHandle() const
 bool LSeat::enabled() const
 {
     return imp()->enabled;
-}
-
-int LSeat::LSeatPrivate::seatEvent(int, unsigned int, void *data)
-{
-    return 0;
-    LSeat *seat = (LSeat*)data;
-    libseat_dispatch(seat->libseatHandle(), 0);
-    return 0;
-}
-
-bool outputsWithPendingState(LCompositor *compositor, LOutput::State state)
-{
-    for (LOutput *o : compositor->outputs())
-        if (o->state() != state)
-            return false;
-
-    return true;
-}
-
-void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
-{
-    return;
-    LSeat *lseat = (LSeat*)data;
-
-    lseat->imp()->enabled = true;
-    compositor()->repaintAllOutputs();
-
-    if (compositor()->isInputBackendInitialized())
-        compositor()->imp()->inputBackend->resume(lseat);
-
-    LLog::debug("Seat %s enabled.", libseat_seat_name(seat));
-
-    // Notifica
-    lseat->seatEnabled();
-}
-
-void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
-{
-    return;
-    LSeat *lseat = (LSeat*)data;
-
-    if (!lseat->imp()->enabled)
-        return;
-
-    lseat->imp()->enabled = false;
-
-    if (compositor()->isInputBackendInitialized())
-        compositor()->imp()->inputBackend->suspend(lseat);
-
-    libseat_disable_seat(seat);
-
-    for (LOutput *o : compositor()->outputs())
-        o->imp()->state = LOutput::Suspended;
-
-    LLog::debug("Seat %s disabled.", libseat_seat_name(seat));
-
-    // Notifica
-    lseat->seatDisabled();
-}
-
-void LSeat::LSeatPrivate::dispatchSeat()
-{
-    return;
-    if (libseatHandle)
-        libseat_dispatch(libseatHandle, 0);
 }
