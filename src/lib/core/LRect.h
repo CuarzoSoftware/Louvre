@@ -446,5 +446,4 @@ private:
     LPointTemplate<TA,TB> m_topLeft,m_bottomRight;
 };
 
-
 #endif // LRECT_H

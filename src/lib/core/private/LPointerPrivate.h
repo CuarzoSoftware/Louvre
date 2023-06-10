@@ -13,7 +13,6 @@ struct LPointer::Params
 LPRIVATE_CLASS(LPointer)
     // Events
     void sendLeaveEvent(LSurface *surface);
-    void sendEnterEvent(LSurface *surface, const LPoint &point);
 
     // Wayland
     LSurface *pointerFocusSurface = nullptr;
@@ -32,11 +31,6 @@ LPRIVATE_CLASS(LPointer)
     LSize resizingToplevelInitWindowSize;
     LToplevelRole::ResizeEdge resizingToplevelEdge;
     LRect resizingToplevelConstraintBounds;
-
-    // Axis
-#if LOUVRE_SEAT_VERSION >= 5
-    LPoint axisDiscreteStep = LPoint(15,15);
-#endif
 };
 
 #endif // LPOINTERPRIVATE_H

@@ -50,7 +50,7 @@ void LDataDevice::sendSelectionEvent()
     }
 }
 
-void LDataDevice::LDataDevicePrivate::sendDNDEnterEvent(LSurface *surface, Float64 x, Float64 y)
+void LDataDevice::LDataDevicePrivate::sendDNDEnterEventS(LSurface *surface, Float24 x, Float24 y)
 {
     if (seat()->dndManager()->dragging() && seat()->dndManager()->focus() != surface)
     {
@@ -72,8 +72,8 @@ void LDataDevice::LDataDevicePrivate::sendDNDEnterEvent(LSurface *surface, Float
                         lRDataOffer->sendOffer(s.mimeType);
 
                     d->dataDeviceResource()->sendEnter(surface,
-                                                       x / compositor()->globalScale(),
-                                                       y / compositor()->globalScale(),
+                                                       x,
+                                                       y,
                                                        lRDataOffer);
 
                     lRDataOffer->sendSourceActions(seat()->dndManager()->source()->dndActions());
@@ -91,8 +91,8 @@ void LDataDevice::LDataDevicePrivate::sendDNDEnterEvent(LSurface *surface, Float
                     if (d->dataDeviceResource())
                     {
                         d->dataDeviceResource()->sendEnter(surface,
-                                                           x / compositor()->globalScale(),
-                                                           y / compositor()->globalScale(),
+                                                           x,
+                                                           y,
                                                            NULL);
                     }
                 }
@@ -103,13 +103,13 @@ void LDataDevice::LDataDevicePrivate::sendDNDEnterEvent(LSurface *surface, Float
     }
 }
 
-void LDataDevice::LDataDevicePrivate::sendDNDMotionEvent(Float64 x, Float64 y)
+void LDataDevice::LDataDevicePrivate::sendDNDMotionEventS(Float24 x, Float24 y)
 {
     if (seat()->dndManager()->dragging() && seat()->dndManager()->focus())
         if (seat()->dndManager()->source() || (!seat()->dndManager()->source() && seat()->dndManager()->focus() == seat()->dndManager()->origin()))
             for (Protocols::Wayland::GSeat *d : client->seatGlobals())
                 if (d->dataDeviceResource())
-                    d->dataDeviceResource()->sendMotion(x / compositor()->globalScale(), y / compositor()->globalScale());
+                    d->dataDeviceResource()->sendMotion(x, y);
 }
 
 void LDataDevice::LDataDevicePrivate::sendDNDLeaveEvent()

@@ -25,9 +25,6 @@ LKeyboard::LKeyboard(Params *params)
     m_imp = new LKeyboardPrivate();
     seat()->imp()->keyboard = this;
 
-    // Create null keys
-    wl_array_init(&imp()->keys);
-
     // Create XKB context
     imp()->xkbContext = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
 
@@ -37,7 +34,6 @@ LKeyboard::LKeyboard(Params *params)
 
 LKeyboard::~LKeyboard()
 {
-    wl_array_release(&imp()->keys);
     delete m_imp;
 }
 
@@ -214,7 +210,27 @@ bool LKeyboard::isModActive(const char *name) const
     return xkb_state_mod_name_is_active(
                 imp()->xkbKeymapState,
                 name,
-                XKB_STATE_MODS_EFFECTIVE);
+        XKB_STATE_MODS_EFFECTIVE);
+}
+
+const std::list<UInt32> &LKeyboard::pressedKeys() const
+{
+    return imp()->pressedKeys;
+}
+
+void LKeyboard::LKeyboardPrivate::preKeyEvent(UInt32 keyCode, UInt32 keyState)
+{
+    xkb_state_update_key(xkbKeymapState,
+                         keyCode+8,
+                         (xkb_key_direction)keyState);
+
+    if (keyState == LKeyboard::Pressed)
+        pressedKeys.push_back(keyCode);
+    else
+        pressedKeys.remove(keyCode);
+
+    LCompositor::compositor()->seat()->keyboard()->keyEvent(keyCode, keyState);
+    LCompositor::compositor()->seat()->keyboard()->imp()->updateModifiers();
 }
 
 void LKeyboard::LKeyboardPrivate::updateModifiers()
@@ -226,7 +242,7 @@ void LKeyboard::LKeyboardPrivate::updateModifiers()
     seat()->keyboard()->keyModifiersEvent(modifiersState.depressed,modifiersState.latched,modifiersState.locked,modifiersState.group);
 }
 
-#if LOUVRE_SEAT_VERSION >= 4
+#if LOUVRE_WL_SEAT_VERSION >= 4
 
     Int32 LKeyboard::repeatRate() const
     {

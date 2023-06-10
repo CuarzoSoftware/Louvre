@@ -45,6 +45,11 @@ const list<LSurface *> &LClient::surfaces() const
     return imp()->surfaces;
 }
 
+void LClient::flush()
+{
+    wl_client_flush(client());
+}
+
 const list<Wayland::GOutput*> &LClient::outputGlobals() const
 {
     return imp()->outputGlobals;

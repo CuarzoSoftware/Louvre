@@ -1,12 +1,12 @@
-#ifndef SURFACERESOURCE_H
-#define SURFACERESOURCE_H
+#ifndef RSURFACE_H
+#define RSURFACE_H
 
 #include <LResource.h>
 
 class Louvre::Protocols::Wayland::RSurface : public LResource
 {
 public:
-    RSurface(GCompositor *compositorGlobal, UInt32 id);
+    RSurface(GCompositor *gCompositor, UInt32 id);
     ~RSurface();
 
     LSurface *surface() const;
@@ -22,7 +22,15 @@ public:
         Parent
     };
 
+    // Since 1
+    bool enter(GOutput *gOutput);
+    bool leave(GOutput *gOutput);
+
+    // Since 6
+    bool preferredBufferScale(Int32 scale);
+    bool preferredBufferTransform(UInt32 transform);
+
     LPRIVATE_IMP(RSurface)
 };
 
-#endif // SURFACERESOURCE_H
+#endif // RSURFACE_H

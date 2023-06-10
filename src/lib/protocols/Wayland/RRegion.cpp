@@ -1,10 +1,9 @@
 #include <protocols/Wayland/private/RRegionPrivate.h>
 #include <protocols/Wayland/GCompositor.h>
-
-#include <LRegion.h>
-#include <LClient.h>
-#include <stdio.h>
 #include <LCompositor.h>
+#include <LClient.h>
+#include <LRegion.h>
+#include <stdio.h>
 
 using namespace Louvre::Protocols::Wayland;
 
@@ -17,14 +16,14 @@ struct wl_region_interface region_implementation =
 
 RRegion::RRegion
 (
-    GCompositor *compositorGlobal,
+    GCompositor *gCompositor,
     UInt32 id
 )
     :LResource
     (
-        compositorGlobal->client(),
+        gCompositor->client(),
         &wl_region_interface,
-        compositorGlobal->version(),
+        gCompositor->version(),
         id,
         &region_implementation,
         &RRegion::RRegionPrivate::resource_destroy

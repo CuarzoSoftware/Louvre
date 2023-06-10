@@ -2,6 +2,7 @@
 #define LKEYBOARDPRIVATE_H
 
 #include <LKeyboard.h>
+#include <vector>
 
 using namespace Louvre;
 
@@ -14,13 +15,6 @@ LPRIVATE_CLASS(LKeyboard)
 
     LSurface *keyboardFocusSurface = nullptr;
 
-#if LOUVRE_SEAT_VERSION >= 4
-    Int32 repeatRate = 32;
-    Int32 repeatDelay = 500;
-#endif
-
-    wl_array keys;
-
     // XKB
     xkb_context *xkbContext = nullptr;
     xkb_keymap *xkbKeymap = nullptr;
@@ -29,9 +23,16 @@ LPRIVATE_CLASS(LKeyboard)
     Int32 xkbKeymapSize;
     Int32 xkbKeymapFd = -1;
 
+    void preKeyEvent(UInt32 keyCode, UInt32 keyState);
     void updateModifiers();
 
     KeyboardModifiersState modifiersState;
+
+    std::list<UInt32>pressedKeys;
+
+    // Since 4
+    Int32 repeatRate = 32;
+    Int32 repeatDelay = 500;
 };
 
 #endif // LKEYBOARDPRIVATE_H

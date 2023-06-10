@@ -85,6 +85,11 @@ public:
     UInt32 backendCapabilities() const;
 
     /*!
+     * Seat name (E.g. "seat0").
+     */
+    const char *name() const;
+
+    /*!
      * @brief Input capabilities of the compositor.
      *
      * Flags with the input capabilities of the compositor assigned with setCapabilities().\n

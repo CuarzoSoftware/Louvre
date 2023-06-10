@@ -1,7 +1,6 @@
 #include <protocols/Wayland/private/GCompositorPrivate.h>
 #include <protocols/Wayland/RSurface.h>
 #include <protocols/Wayland/RRegion.h>
-
 #include <LCompositor.h>
 #include <LLog.h>
 
@@ -34,19 +33,19 @@ void GCompositor::GCompositorPrivate::bind(wl_client *client, void *data, UInt32
 void GCompositor::GCompositorPrivate::create_surface(wl_client *client, wl_resource *resource, UInt32 id)
 {
     L_UNUSED(client);
-    GCompositor *lGCompositor = (GCompositor*)wl_resource_get_user_data(resource);
-    new RSurface(lGCompositor, id);
+    GCompositor *gCompositor = (GCompositor*)wl_resource_get_user_data(resource);
+    new RSurface(gCompositor, id);
 }
 
 void GCompositor::GCompositorPrivate::create_region (wl_client *client, wl_resource *resource, UInt32 id)
 {
     L_UNUSED(client);
-    GCompositor *lGCompositor = (GCompositor*)wl_resource_get_user_data(resource);
-    new RRegion(lGCompositor, id);
+    GCompositor *gCompositor = (GCompositor*)wl_resource_get_user_data(resource);
+    new RRegion(gCompositor, id);
 }
 
 void GCompositor::GCompositorPrivate::resource_destroy(wl_resource *resource)
 {
-    GCompositor *lGCompositor = (GCompositor*)wl_resource_get_user_data(resource);
-    delete lGCompositor;
+    GCompositor *gCompositor = (GCompositor*)wl_resource_get_user_data(resource);
+    delete gCompositor;
 }

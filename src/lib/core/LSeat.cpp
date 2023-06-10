@@ -70,6 +70,14 @@ UInt32 LSeat::backendCapabilities() const
     return compositor()->imp()->inputBackend->getCapabilities(this);
 }
 
+const char *LSeat::name() const
+{
+    if (imp()->libseatHandle)
+        return libseat_seat_name(imp()->libseatHandle);
+
+    return "seat0";
+}
+
 void *LSeat::backendContextHandle() const
 {
     return compositor()->imp()->inputBackend->getContextHandle(this);
@@ -87,7 +95,7 @@ void LSeat::setCapabilities(UInt32 capabilitiesFlags)
     for (LClient *c : compositor()->clients())
     {
         for (Protocols::Wayland::GSeat *s : c->seatGlobals())
-            s->sendCapabilities(capabilitiesFlags);
+            s->capabilities(capabilitiesFlags);
     }
 }
 

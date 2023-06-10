@@ -2,9 +2,7 @@
 #include <protocols/Wayland/private/RPointerPrivate.h>
 #include <protocols/Wayland/private/RDataDevicePrivate.h>
 #include <protocols/Wayland/private/GSeatPrivate.h>
-
 #include <private/LClientPrivate.h>
-
 #include <LCompositor.h>
 
 GSeat::GSeat
@@ -29,8 +27,8 @@ GSeat::GSeat
     m_imp = new GSeatPrivate();
     this->client()->imp()->seatGlobals.push_back(this);
     imp()->clientLink = std::prev(this->client()->imp()->seatGlobals.end());
-    sendCapabilities(seat()->capabilities());
-    sendName("seat0");
+    capabilities(seat()->capabilities());
+    name(seat()->name());
 }
 
 GSeat::~GSeat()
@@ -38,28 +36,15 @@ GSeat::~GSeat()
     client()->imp()->seatGlobals.erase(imp()->clientLink);
 
     if (keyboardResource())
-        keyboardResource()->imp()->seatGlobal = nullptr;
+        keyboardResource()->imp()->gSeat = nullptr;
 
     if (pointerResource())
-        pointerResource()->imp()->seatGlobal = nullptr;
+        pointerResource()->imp()->gSeat = nullptr;
 
     if (dataDeviceResource())
         dataDeviceResource()->imp()->seatGlobal = nullptr;
 
     delete m_imp;
-}
-
-void GSeat::sendCapabilities(UInt32 capabilities)
-{
-    wl_seat_send_capabilities(resource(), capabilities);
-}
-
-void GSeat::sendName(const char *name)
-{
-#if LOUVRE_SEAT_VERSION >= WL_SEAT_NAME_SINCE_VERSION
-    if (version() >= WL_SEAT_NAME_SINCE_VERSION)
-        wl_seat_send_name(resource(), name);
-#endif
 }
 
 RKeyboard *GSeat::keyboardResource() const
@@ -75,4 +60,23 @@ RPointer *GSeat::pointerResource() const
 RDataDevice *GSeat::dataDeviceResource() const
 {
     return imp()->dataDeviceResource;
+}
+
+bool GSeat::capabilities(UInt32 capabilities)
+{
+    wl_seat_send_capabilities(resource(), capabilities);
+    return true;
+}
+
+bool GSeat::name(const char *name)
+{
+#if LOUVRE_WL_SEAT_VERSION >= 2
+    if (version() >= 2)
+    {
+        wl_seat_send_name(resource(), name);
+        return true;
+    }
+#endif
+    L_UNUSED(name);
+    return false;
 }

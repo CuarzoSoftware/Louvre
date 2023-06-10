@@ -1,33 +1,32 @@
-#include "RPointerPrivate.h"
+#include <protocols/Wayland/private/RPointerPrivate.h>
 #include <private/LCursorRolePrivate.h>
 #include <private/LSurfacePrivate.h>
-#include <protocols/Wayland/GSeat.h>
 #include <LCompositor.h>
-#include <LClient.h>
 
 using namespace Louvre;
 
 void RPointer::RPointerPrivate::resource_destroy(wl_resource *resource)
 {
-    RPointer *pointerResource = (RPointer*)wl_resource_get_user_data(resource);
-    delete pointerResource;
+    RPointer *rPointer = (RPointer*)wl_resource_get_user_data(resource);
+    delete rPointer;
 }
 
-void RPointer::RPointerPrivate::set_cursor(wl_client *, wl_resource *resource, UInt32 serial, wl_resource *surface, Int32 hotspot_x, Int32 hotspot_y)
+void RPointer::RPointerPrivate::set_cursor(wl_client *client, wl_resource *resource, UInt32 serial, wl_resource *surface, Int32 hotspot_x, Int32 hotspot_y)
 {
-    RPointer *pointerResource = (RPointer*)wl_resource_get_user_data(resource);
+    L_UNUSED(client);
+    RPointer *rPointer = (RPointer*)wl_resource_get_user_data(resource);
 
-    if (serial != pointerResource->serials().enter)
+    if (serial != rPointer->serials().enter)
         return;
 
     if (surface)
     {
-        Protocols::Wayland::RSurface *lRSurface = (Protocols::Wayland::RSurface*)wl_resource_get_user_data(surface);
-        LSurface *lSurface = lRSurface->surface();
+        Wayland::RSurface *rSurface = (Wayland::RSurface*)wl_resource_get_user_data(surface);
+        LSurface *lSurface = rSurface->surface();
 
         if (lSurface->roleId() != LSurface::Role::Undefined && lSurface->roleId() != LSurface::Role::Cursor)
         {
-            wl_resource_post_error(resource,WL_POINTER_ERROR_ROLE,"Given wl_surface has another role.");
+            wl_resource_post_error(resource, WL_POINTER_ERROR_ROLE, "Given wl_surface has another role.");
             return;
         }
 
@@ -47,9 +46,10 @@ void RPointer::RPointerPrivate::set_cursor(wl_client *, wl_resource *resource, U
         seat()->pointer()->setCursorRequest(nullptr);
 }
 
-#if LOUVRE_SEAT_VERSION >= WL_POINTER_RELEASE_SINCE_VERSION
-    void RPointer::RPointerPrivate::release(wl_client *, wl_resource *resource)
-    {
-        wl_resource_destroy(resource);
-    }
+#if LOUVRE_WL_SEAT_VERSION >= 3
+void RPointer::RPointerPrivate::release(wl_client *client, wl_resource *resource)
+{
+    L_UNUSED(client);
+    wl_resource_destroy(resource);
+}
 #endif

@@ -1,14 +1,15 @@
-#include "protocols/Wayland/RRegion.h"
-#include <LBaseSurfaceRole.h>
 #include <protocols/Wayland/private/RSurfacePrivate.h>
+#include <protocols/Wayland/RRegion.h>
+#include <protocols/Wayland/RCallback.h>
 #include <private/LSurfacePrivate.h>
-#include <LTime.h>
+#include <LBaseSurfaceRole.h>
 #include <LCompositor.h>
+#include <LTime.h>
 
 void RSurface::RSurfacePrivate::resource_destroy(wl_resource *resource)
 {
-    RSurface *lRSurface = (RSurface*)wl_resource_get_user_data(resource);
-    delete lRSurface;
+    RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
+    delete rSurface;
 }
 
 void RSurface::RSurfacePrivate::handleOffset(LSurface *lSurface, Int32 x, Int32 y)
@@ -17,10 +18,11 @@ void RSurface::RSurfacePrivate::handleOffset(LSurface *lSurface, Int32 x, Int32 
         lSurface->role()->handleSurfaceOffset(x, y);
 }
 
-void RSurface::RSurfacePrivate::attach(wl_client *, wl_resource *resource, wl_resource *buffer, Int32 x, Int32 y)
+void RSurface::RSurfacePrivate::attach(wl_client *client, wl_resource *resource, wl_resource *buffer, Int32 x, Int32 y)
 {
-    RSurface *lRSurface = (RSurface*)wl_resource_get_user_data(resource);
-    LSurface *lSurface = lRSurface->surface();
+    L_UNUSED(client);
+    RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
+    LSurface *lSurface = rSurface->surface();
 
     if (lSurface->role())
         lSurface->role()->handleSurfaceBufferAttach(buffer, x, y);
@@ -30,8 +32,8 @@ void RSurface::RSurfacePrivate::attach(wl_client *, wl_resource *resource, wl_re
     if (buffer)
         lSurface->imp()->bufferReleased = false;
 
-#if LOUVRE_COMPOSITOR_VERSION >= 5
-    if (wl_resource_get_version(resource) < 5)
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 5
+    if (rSurface->version() < 5)
         handleOffset(lSurface, x, y);
     else
         if (x != 0 || y != 0)
@@ -43,16 +45,9 @@ void RSurface::RSurfacePrivate::attach(wl_client *, wl_resource *resource, wl_re
 
 void RSurface::RSurfacePrivate::frame(wl_client *client, wl_resource *resource, UInt32 callback)
 {
-    RSurface *lRSurface = (RSurface*)wl_resource_get_user_data(resource);
-    LSurface *lSurface = lRSurface->surface();
-
-    if (lSurface->imp()->frameCallback)
-    {
-        wl_callback_send_done(lSurface->imp()->frameCallback, LTime::ms());
-        wl_resource_destroy(lSurface->imp()->frameCallback);
-    }
-
-    lSurface->imp()->frameCallback = wl_resource_create(client, &wl_callback_interface, 1, callback);
+    RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
+    LSurface *lSurface = rSurface->surface();
+    new Wayland::RCallback(client, callback, &lSurface->imp()->frameCallbacks);
 }
 
 void RSurface::RSurfacePrivate::destroy(wl_client *, wl_resource *resource)
@@ -96,7 +91,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
     }
     else
     {
-        if (surface->imp()->frameCallback)
+        if (!surface->imp()->frameCallbacks.empty())
             surface->requestNextFrame();
     }
 
@@ -188,11 +183,15 @@ void RSurface::RSurfacePrivate::damage(wl_client *client, wl_resource *resource,
     RSurface *lRSurface = (RSurface*)wl_resource_get_user_data(resource);
     LSurface *lSurface = lRSurface->surface();
 
-    if (width > MAX_SURFACE_SIZE)
-        width = MAX_SURFACE_SIZE;
+    if (width > LOUVRE_MAX_SURFACE_SIZE)
+        width = LOUVRE_MAX_SURFACE_SIZE;
+    if (width <= 0)
+        return;
 
-    if (height > MAX_SURFACE_SIZE)
-        height = MAX_SURFACE_SIZE;
+    if (height > LOUVRE_MAX_SURFACE_SIZE)
+        height = LOUVRE_MAX_SURFACE_SIZE;
+    if (height <= 0)
+        return;
 
     if (compositor()->globalScale() != 1)
     {
@@ -220,13 +219,13 @@ void RSurface::RSurfacePrivate::set_opaque_region(wl_client *client, wl_resource
 {
     L_UNUSED(client);
 
-    RSurface *lRSurface = (RSurface*)wl_resource_get_user_data(resource);
-    LSurface *lSurface = lRSurface->surface();
+    RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
+    LSurface *lSurface = rSurface->surface();
 
     if (region)
     {
-        RRegion *lRRegion = (RRegion*)wl_resource_get_user_data(region);
-        lSurface->imp()->pendingOpaqueRegionS = lRRegion->region();
+        RRegion *rRegion = (RRegion*)wl_resource_get_user_data(region);
+        lSurface->imp()->pendingOpaqueRegionS = rRegion->region();
     }
     else
         lSurface->imp()->pendingOpaqueRegionS.clear();
@@ -238,8 +237,8 @@ void RSurface::RSurfacePrivate::set_input_region(wl_client *client, wl_resource 
 {
     L_UNUSED(client);
 
-    RSurface *lRSurface = (RSurface*)wl_resource_get_user_data(resource);
-    LSurface *lSurface = lRSurface->surface();
+    RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
+    LSurface *lSurface = rSurface->surface();
 
     if (region == NULL)
     {
@@ -256,7 +255,7 @@ void RSurface::RSurfacePrivate::set_input_region(wl_client *client, wl_resource 
     lSurface->imp()->inputRegionChanged = true;
 }
 
-#if LOUVRE_COMPOSITOR_VERSION >= 2
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 2
 void RSurface::RSurfacePrivate::set_buffer_transform(wl_client *client, wl_resource *resource, Int32 transform)
 {
     // TODO
@@ -266,7 +265,7 @@ void RSurface::RSurfacePrivate::set_buffer_transform(wl_client *client, wl_resou
 }
 #endif
 
-#if LOUVRE_COMPOSITOR_VERSION >= 3
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 3
 void RSurface::RSurfacePrivate::set_buffer_scale(wl_client *client, wl_resource *resource, Int32 scale)
 {
     L_UNUSED(client);
@@ -277,25 +276,29 @@ void RSurface::RSurfacePrivate::set_buffer_scale(wl_client *client, wl_resource 
         return;
     }
 
-    RSurface *lRSurface = (RSurface*)wl_resource_get_user_data(resource);
-    LSurface *lSurface = lRSurface->surface();
+    RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
+    LSurface *lSurface = rSurface->surface();
     lSurface->imp()->pending.bufferScale = scale;
 }
 #endif
 
-#if LOUVRE_COMPOSITOR_VERSION >= 4
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 4
 void RSurface::RSurfacePrivate::damage_buffer(wl_client *client, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height)
 {
     L_UNUSED(client);
 
-    if (width > MAX_SURFACE_SIZE)
-        width = MAX_SURFACE_SIZE;
+    if (width > LOUVRE_MAX_SURFACE_SIZE)
+        width = LOUVRE_MAX_SURFACE_SIZE;
+    if (width <= 0)
+        return;
 
-    if (height > MAX_SURFACE_SIZE)
-        height = MAX_SURFACE_SIZE;
+    if (height > LOUVRE_MAX_SURFACE_SIZE)
+        height = LOUVRE_MAX_SURFACE_SIZE;
+    if (height <= 0)
+        return;
 
-    RSurface *lRSurface = (RSurface*)wl_resource_get_user_data(resource);
-    LSurface *lSurface = lRSurface->surface();
+    RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
+    LSurface *lSurface = rSurface->surface();
 
     if (compositor()->globalScale() != 1)
     {
@@ -310,13 +313,12 @@ void RSurface::RSurfacePrivate::damage_buffer(wl_client *client, wl_resource *re
 }
 #endif
 
-#if LOUVRE_COMPOSITOR_VERSION >= 5
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 5
 void RSurface::RSurfacePrivate::offset(wl_client *client, wl_resource *resource, Int32 x, Int32 y)
 {
     L_UNUSED(client);
-
-    RSurface *lRSurface = (RSurface*)wl_resource_get_user_data(resource);
-    LSurface *lSurface = lRSurface->surface();
+    RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
+    LSurface *lSurface = rSurface->surface();
     handleOffset(lSurface, x, y);
 }
 #endif

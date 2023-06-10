@@ -7,12 +7,13 @@
 
 #define LOUVRE_GLOBAL_ITERS_BEFORE_DESTROY 5
 
-#define MAX_SURFACE_SIZE 10000000
+#define LOUVRE_MAX_SURFACE_SIZE 10000000
 #define LOUVRE_DEBUG 1
 
 // Globals
-#define LOUVRE_COMPOSITOR_VERSION 5
-#define LOUVRE_SEAT_VERSION 7
+#define LOUVRE_WL_COMPOSITOR_VERSION 6
+#define LOUVRE_WL_CALLBACK_VERSION 1
+#define LOUVRE_WL_SEAT_VERSION 9
 #define LOUVRE_OUTPUT_VERSION 4
 #define LOUVRE_SUBCOMPOSITOR_VERSION 1
 #define LOUVRE_DATA_DEVICE_MANAGER_VERSION 3
@@ -129,6 +130,9 @@ namespace Louvre
     /// @brief 32 bits float
     typedef float           Float32;
 
+    /// @brief 24 bits Wayland float
+    typedef wl_fixed_t      Float24;
+
     /// 2D vector of 32 bits integers
     typedef LPointTemplate<Int32,Float32> LPoint;
 
@@ -243,6 +247,7 @@ namespace Louvre
             class RDataSource;
             class RDataOffer;
             class RSubsurface;
+            class RCallback;
         }
 
         namespace XdgShell

@@ -71,6 +71,11 @@ public:
     const list<LSurface*>&surfaces() const;
 
     /*!
+     * Flush pending wl_client events.
+     */
+    void flush();
+
+    /*!
      * Returns a list of [wl_output](https://wayland.app/protocols/wayland#wl_output)
      * resources created when the client binds this global.\n
      * The library creates a [wl_output](https://wayland.app/protocols/wayland#wl_output)

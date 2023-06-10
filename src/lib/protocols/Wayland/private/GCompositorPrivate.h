@@ -1,5 +1,5 @@
-#ifndef COMPOSITORGLOBALPRIVATE_H
-#define COMPOSITORGLOBALPRIVATE_H
+#ifndef GCOMPOSITORPRIVATE_H
+#define GCOMPOSITORPRIVATE_H
 
 #include <protocols/Wayland/GCompositor.h>
 
@@ -10,8 +10,6 @@ LPRIVATE_CLASS(GCompositor)
     static void resource_destroy(wl_resource *resource);
     static void create_surface(wl_client *client, wl_resource *resource, UInt32 id);
     static void create_region (wl_client *client, wl_resource *resource, UInt32 id);
-    static void client_disconect(wl_resource *resource);
 };
 
-
-#endif // COMPOSITORGLOBALPRIVATE_H
+#endif // GCOMPOSITORPRIVATE_H

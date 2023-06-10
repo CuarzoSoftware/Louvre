@@ -1,5 +1,5 @@
-#ifndef SEATGLOBALPRIVATE_H
-#define SEATGLOBALPRIVATE_H
+#ifndef GSEATPRIVATE_H
+#define GSEATPRIVATE_H
 
 #include <protocols/Wayland/GSeat.h>
 
@@ -11,7 +11,7 @@ LPRIVATE_CLASS(GSeat)
     static void get_pointer(wl_client *client, wl_resource *resource, UInt32 id);
     static void get_keyboard(wl_client *client, wl_resource *resource, UInt32 id);
     static void get_touch(wl_client *client, wl_resource *resource, UInt32 id);
-#if LOUVRE_SEAT_VERSION >= WL_SEAT_RELEASE_SINCE_VERSION
+#if LOUVRE_WL_SEAT_VERSION >= 5
     static void release(wl_client *client, wl_resource *resource);
 #endif
 
@@ -21,4 +21,4 @@ LPRIVATE_CLASS(GSeat)
     std::list<GSeat*>::iterator clientLink;
 };
 
-#endif // SEATGLOBALPRIVATE_H
+#endif // GSEATPRIVATE_H

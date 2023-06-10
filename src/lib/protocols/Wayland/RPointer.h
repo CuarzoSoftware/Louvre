@@ -1,5 +1,5 @@
-#ifndef POINTERRESOURCE_H
-#define POINTERRESOURCE_H
+#ifndef RPOINTER_H
+#define RPOINTER_H
 
 #include <LResource.h>
 #include <LPointer.h>
@@ -7,7 +7,7 @@
 class Louvre::Protocols::Wayland::RPointer : public LResource
 {
 public:
-    RPointer(GSeat *seatGlobal, Int32 id);
+    RPointer(GSeat *gSeat, Int32 id);
     ~RPointer();
 
     struct LastEventSerials
@@ -17,17 +17,28 @@ public:
         UInt32 button = 0;
     };
 
-    void sendEnter(LSurface *surface, const LPoint &point);
-    void sendLeave(LSurface *surface);
-    void sendFrame();
-    void sendAxis(double x, double y, UInt32 source);
-    void sendAxis(double x, double y);
-    void sendMove(const LPoint &localPos);
-    void sendButton(LPointer::Button button, LPointer::ButtonState state);
-
     GSeat *seatGlobal() const;
     const LastEventSerials &serials() const;
 
+    // Since 1
+    bool enter(UInt32 serial, RSurface *rSurface, Float24 x, Float24 y);
+    bool leave(UInt32 serial, RSurface *rSurface);
+    bool motion(UInt32 time, Float24 x, Float24 y);
+    bool button(UInt32 serial, UInt32 time, UInt32 button, UInt32 state);
+    bool axis(UInt32 time, UInt32 axis, Float24 value);
+
+    // Since 5
+    bool frame();
+    bool axisSource(UInt32 axisSource);
+    bool axisStop(UInt32 time, UInt32 axis);
+    bool axisDiscrete(UInt32 axis, Int32 discrete);
+
+    // Since 8
+    bool axisValue120(UInt32 axis, Int32 value120);
+
+    // Since 9
+    bool axisRelativeDirection(UInt32 axis, UInt32 direction);
+
     LPRIVATE_IMP(RPointer);
 };
-#endif // POINTERRESOURCE_H
+#endif // RPOINTER_H

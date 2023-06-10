@@ -1,5 +1,5 @@
-#ifndef KEYBOARDRESOURCEPRIVATE_H
-#define KEYBOARDRESOURCEPRIVATE_H
+#ifndef RKEYBOARDPRIVATE_H
+#define RKEYBOARDPRIVATE_H
 
 #include <protocols/Wayland/RKeyboard.h>
 
@@ -7,12 +7,12 @@ using namespace Louvre::Protocols::Wayland;
 
 LPRIVATE_CLASS(RKeyboard)
     static void resource_destroy(wl_resource *resource);
-#if LOUVRE_SEAT_VERSION >= WL_KEYBOARD_RELEASE_SINCE_VERSION
+#if LOUVRE_WL_SEAT_VERSION >= WL_KEYBOARD_RELEASE_SINCE_VERSION
     static void release(wl_client *client, wl_resource *resource);
 #endif
 
-    GSeat *seatGlobal;
+    GSeat *gSeat;
     LastEventSerials serials;
 };
 
-#endif // KEYBOARDRESOURCEPRIVATE_H
+#endif // RKEYBOARDPRIVATE_H

@@ -10,8 +10,8 @@ LPRIVATE_CLASS(LDataDevice)
     LClient *client = nullptr;
 
     // Drag & Drop events
-    void sendDNDEnterEvent(LSurface *surface, Float64 x, Float64 y);
-    void sendDNDMotionEvent(Float64 x, Float64 y);
+    void sendDNDEnterEventS(LSurface *surface, Float24 x, Float24 y);
+    void sendDNDMotionEventS(Float24 x, Float24 y);
     void sendDNDLeaveEvent();
 };
 

@@ -29,10 +29,10 @@ using namespace Louvre;
 bool LCompositor::createGlobalsRequest()
 {
     wl_global_create(display(), &wl_compositor_interface,
-                     LOUVRE_COMPOSITOR_VERSION, this, &GCompositor::GCompositorPrivate::bind);
+                     LOUVRE_WL_COMPOSITOR_VERSION, this, &GCompositor::GCompositorPrivate::bind);
 
     wl_global_create(display(), &wl_seat_interface,
-                     LOUVRE_SEAT_VERSION, this, &GSeat::GSeatPrivate::bind);
+                     LOUVRE_WL_SEAT_VERSION, this, &GSeat::GSeatPrivate::bind);
 
     wl_global_create(display(), &wl_subcompositor_interface,
                      LOUVRE_SUBCOMPOSITOR_VERSION, this, &GSubcompositor::GSubcompositorPrivate::bind);

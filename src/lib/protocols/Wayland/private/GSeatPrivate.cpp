@@ -9,7 +9,7 @@ static struct wl_seat_interface seat_implementation =
     .get_pointer = &GSeat::GSeatPrivate::get_pointer,
     .get_keyboard = &GSeat::GSeatPrivate::get_keyboard,
     .get_touch = &GSeat::GSeatPrivate::get_touch,
-#if LOUVRE_SEAT_VERSION >= WL_SEAT_RELEASE_SINCE_VERSION
+#if LOUVRE_WL_SEAT_VERSION >= 5
     .release = &GSeat::GSeatPrivate::release
 #endif
 };
@@ -28,15 +28,15 @@ void GSeat::GSeatPrivate::bind(wl_client *client, void *data, UInt32 version, UI
 
 void GSeat::GSeatPrivate::resource_destroy(wl_resource *resource)
 {
-    GSeat *seatResource = (GSeat*)wl_resource_get_user_data(resource);
-    delete seatResource;
+    GSeat *gSeat = (GSeat*)wl_resource_get_user_data(resource);
+    delete gSeat;
 }
 
 void GSeat::GSeatPrivate::get_pointer(wl_client *client, wl_resource *resource, UInt32 id)
 {
     L_UNUSED(client);
 
-    GSeat *seatGlobal = (GSeat*)wl_resource_get_user_data(resource);
+    GSeat *gSeat = (GSeat*)wl_resource_get_user_data(resource);
 
     if (!(seat()->capabilities() & LSeat::Pointer))
     {
@@ -44,14 +44,14 @@ void GSeat::GSeatPrivate::get_pointer(wl_client *client, wl_resource *resource, 
         return;
     }
 
-    new RPointer(seatGlobal, id);
+    new RPointer(gSeat, id);
 }
 
 void GSeat::GSeatPrivate::get_keyboard(wl_client *client, wl_resource *resource, UInt32 id)
 {
     L_UNUSED(client);
 
-    GSeat *seatResource = (GSeat*)wl_resource_get_user_data(resource);
+    GSeat *gSeat = (GSeat*)wl_resource_get_user_data(resource);
 
     if (!(seat()->capabilities() & LSeat::Keyboard))
     {
@@ -59,7 +59,7 @@ void GSeat::GSeatPrivate::get_keyboard(wl_client *client, wl_resource *resource,
         return;
     }
 
-    new RKeyboard(seatResource, id);
+    new RKeyboard(gSeat, id);
 }
 
 void GSeat::GSeatPrivate::get_touch(wl_client *client, wl_resource *resource, UInt32 id)
@@ -74,7 +74,7 @@ void GSeat::GSeatPrivate::get_touch(wl_client *client, wl_resource *resource, UI
     }
 }
 
-#if LOUVRE_SEAT_VERSION >= WL_SEAT_RELEASE_SINCE_VERSION
+#if LOUVRE_WL_SEAT_VERSION >= 5
 void GSeat::GSeatPrivate::release(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);

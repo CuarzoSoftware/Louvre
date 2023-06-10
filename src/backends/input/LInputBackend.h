@@ -27,8 +27,6 @@ public:
 
     // De-inicializa el báckend
     static void uninitialize(const LSeat *seat);
-
 };
-
 
 #endif // LINPUTBACKEND

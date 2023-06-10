@@ -5,7 +5,7 @@
 #include <private/LSeatPrivate.h>
 
 #include <protocols/Wayland/GSeat.h>
-#include <protocols/Wayland/RPointer.h>
+#include <protocols/Wayland/private/RPointerPrivate.h>
 
 #include <LCompositor.h>
 #include <LCursor.h>
@@ -16,6 +16,7 @@
 #include <LDNDManager.h>
 
 using namespace Louvre;
+using namespace Louvre::Protocols;
 
 LPointer::LPointer(Params *params)
 {
@@ -32,33 +33,50 @@ LPointer::~LPointer()
 void LPointer::setFocusC(LSurface *surface)
 {
     if (surface)
-        setFocusC(surface, cursor()->posC() - surface->rolePosC());
+        setFocusS(surface, (cursor()->posC() - surface->rolePosC())/compositor()->globalScale());
     else
-        setFocusC(nullptr, LPoint());
+        setFocusS(nullptr, 0);
 }
 
-void LPointer::setFocusC(LSurface *surface, const LPoint &localPos)
+void LPointer::setFocusC(LSurface *surface, const LPoint &localPosC)
 {
-    // If surface is not nullptr
+    if (surface)
+        setFocusS(surface, localPosC/compositor()->globalScale());
+    else
+        setFocusS(nullptr, 0);
+}
+
+void LPointer::setFocusS(LSurface *surface, const LPoint &localPosS)
+{
     if (surface)
     {
-
-        // If already has focus
         if (focusSurface() == surface)
             return;
 
-        // Remove focus from focused surface
         imp()->sendLeaveEvent(focusSurface());
 
-        // Set focus
-        imp()->sendEnterEvent(surface, localPos);
+        Float24 x = wl_fixed_from_int(localPosS.x());
+        Float24 y = wl_fixed_from_int(localPosS.y());
+        UInt32 serial = LCompositor::nextSerial();
+        imp()->pointerFocusSurface = nullptr;
+
+        for (Wayland::GSeat *s : surface->client()->seatGlobals())
+        {
+            if (s->pointerResource())
+            {
+                imp()->pointerFocusSurface = surface;
+                s->pointerResource()->imp()->serials.enter = serial;
+                s->pointerResource()->enter(serial,
+                                            surface->surfaceResource(),
+                                            x,
+                                            y);
+                s->pointerResource()->frame();
+            }
+        }
 
         // Check if has a data device
-        surface->client()->dataDevice().imp()->sendDNDEnterEvent(surface, localPos.x(), localPos.y());
-
+        surface->client()->dataDevice().imp()->sendDNDEnterEventS(surface, x, y);
     }
-
-    // If surface is nullptr
     else
     {
         // Remove focus from focused surface
@@ -75,19 +93,28 @@ void LPointer::sendMoveEventC()
 
 void LPointer::sendMoveEventC(const LPoint &localPos)
 {
-    if (seat()->dndManager()->focus())
-        seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDMotionEvent(localPos.x(), localPos.y());
+    if (focusSurface())
+        sendMoveEventS(localPos/compositor()->globalScale());
+}
 
-    // If no surface has focus surface
+void LPointer::sendMoveEventS(const LPoint &localPosS)
+{
     if (!focusSurface())
         return;
 
-    for (Protocols::Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+    Float24 x = wl_fixed_from_int(localPosS.x());
+    Float24 y = wl_fixed_from_int(localPosS.y());
+    UInt32 ms = LTime::ms();
+
+    if (seat()->dndManager()->focus())
+        seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDMotionEventS(x, y);
+
+    for (Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
     {
         if (s->pointerResource())
         {
-            s->pointerResource()->sendMove(localPos);
-            s->pointerResource()->sendFrame();
+            s->pointerResource()->motion(ms, x, y);
+            s->pointerResource()->frame();
         }
     }
 }
@@ -97,16 +124,18 @@ void LPointer::sendButtonEvent(Button button, ButtonState state)
     if (!focusSurface())
         return;
 
-    for (Protocols::Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+    UInt32 serial = LCompositor::nextSerial();
+    UInt32 ms = LTime::ms();
+
+    for (Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
     {
         if (s->pointerResource())
         {
-            s->pointerResource()->sendButton(button, state);
-            s->pointerResource()->sendFrame();
+            s->pointerResource()->button(serial, ms, button, state);
+            s->pointerResource()->frame();
         }
     }
 }
-
 
 void LPointer::startResizingToplevelC(LToplevelRole *toplevel, LToplevelRole::ResizeEdge edge, Int32 L, Int32 T, Int32 R, Int32 B)
 {
@@ -297,49 +326,60 @@ LToplevelRole::ResizeEdge LPointer::resizingToplevelEdge() const
     return imp()->resizingToplevelEdge;
 }
 
-#if LOUVRE_SEAT_VERSION >= WL_POINTER_AXIS_SOURCE_SINCE_VERSION
-
-void LPointer::sendAxisEvent(double x, double y, UInt32 source)
+void LPointer::sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source)
 {
     // If no surface has focus
     if (!focusSurface())
         return;
+
+    UInt32 ms = LTime::ms();
+    Float24 aX = wl_fixed_from_double(axisX);
+    Float24 aY = wl_fixed_from_double(axisY);
+    Float24 dX = wl_fixed_from_int(discreteX);
+    Float24 dY = wl_fixed_from_int(discreteY);
 
     for (Protocols::Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
     {
         if (s->pointerResource())
         {
-            s->pointerResource()->sendAxis(x, y, source);
+            // Since 5
+            if (s->pointerResource()->axisSource(source))
+            {
+                s->pointerResource()->axisRelativeDirection(WL_POINTER_AXIS_HORIZONTAL_SCROLL, 0 /* 0 = IDENTICAL */);
+                s->pointerResource()->axisRelativeDirection(WL_POINTER_AXIS_VERTICAL_SCROLL, 0 /* 0 = IDENTICAL */);
+
+                if (source == LPointer::AxisSource::Wheel)
+                {
+                    if (!s->pointerResource()->axisValue120(WL_POINTER_AXIS_HORIZONTAL_SCROLL, dX))
+                    {
+                        s->pointerResource()->axisDiscrete(WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
+                        s->pointerResource()->axisDiscrete(WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
+                    }
+                    else
+                        s->pointerResource()->axisValue120(WL_POINTER_AXIS_VERTICAL_SCROLL, dY);
+                }
+
+                s->pointerResource()->axis(ms, WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
+                if (axisX == 0.0)
+                    s->pointerResource()->axisStop(ms, WL_POINTER_AXIS_HORIZONTAL_SCROLL);
+
+                s->pointerResource()->axis(ms, WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
+                if (axisY == 0.0)
+                    s->pointerResource()->axisStop(ms, WL_POINTER_AXIS_VERTICAL_SCROLL);
+
+                s->pointerResource()->frame();
+            }
+            // Since 1
+            else
+            {
+                s->pointerResource()->axis(
+                    ms,
+                    aX,
+                    aY);
+            }
         }
     }
 }
-
-const LPoint &LPointer::scrollWheelStep() const
-{
-    return imp()->axisDiscreteStep;
-}
-
-void LPointer::setScrollWheelStep(const LPoint &step)
-{
-    imp()->axisDiscreteStep = step;
-}
-
-#else
-void LPointer::sendAxisEvent(double x, double y)
-{
-    // If no surface has focus
-    if (!focusSurface())
-        return;
-
-    for (GSeat *s : focusSurface()->client()->seatGlobals())
-    {
-        if (s->pointerResource())
-        {
-            s->pointerResource()->sendAxis(x, y);
-        }
-    }
-}
-#endif
 
 LSurface *LPointer::surfaceAtC(const LPoint &point)
 {
@@ -361,40 +401,19 @@ void LPointer::LPointerPrivate::sendLeaveEvent(LSurface *surface)
     if (seat()->dndManager()->focus())
         seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDLeaveEvent();
 
-    // If surface is nullptr
     if (!surface)
         return;
 
-    for (Protocols::Wayland::GSeat *s : surface->client()->seatGlobals())
+    UInt32 serial = LCompositor::nextSerial();
+
+    for (Wayland::GSeat *s : surface->client()->seatGlobals())
     {
         if (s->pointerResource())
         {
-            s->pointerResource()->sendLeave(surface);
-            s->pointerResource()->sendFrame();
+            s->pointerResource()->imp()->serials.leave = serial;
+            s->pointerResource()->leave(serial,
+                                        surface->surfaceResource());
+            s->pointerResource()->frame();
         }
     }
-}
-
-void LPointer::LPointerPrivate::sendEnterEvent(LSurface *surface, const LPoint &point)
-{
-    // If surface is nullptr
-    if (!surface)
-        return;
-
-    bool hasRPointer = false;
-
-    for (Protocols::Wayland::GSeat *s : surface->client()->seatGlobals())
-    {
-        if (s->pointerResource())
-        {
-            hasRPointer = true;
-            s->pointerResource()->sendEnter(surface, point);
-            s->pointerResource()->sendFrame();
-        }
-    }
-
-    if (hasRPointer)
-        pointerFocusSurface = surface;
-    else
-        pointerFocusSurface = nullptr;
 }

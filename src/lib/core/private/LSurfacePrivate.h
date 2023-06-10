@@ -19,6 +19,7 @@ LPRIVATE_CLASS(LSurface)
     void applyPendingChildren();
     bool bufferToTexture();
     void notifyPosUpdateToChildren(LSurface *surface);
+    void sendPreferredScale();
 
     struct State
     {
@@ -66,7 +67,7 @@ LPRIVATE_CLASS(LSurface)
 
     Wayland::RSurface *surfaceResource = nullptr;
 
-    wl_resource *frameCallback                          = nullptr;
+    list<Wayland::RCallback*>frameCallbacks;
 
     State current, pending;
 

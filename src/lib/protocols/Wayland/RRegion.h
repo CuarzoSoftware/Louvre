@@ -1,12 +1,12 @@
-#ifndef REGIONRESOURCE_H
-#define REGIONRESOURCE_H
+#ifndef RREGION_H
+#define RREGION_H
 
 #include <LResource.h>
 
 class Louvre::Protocols::Wayland::RRegion : public LResource
 {
 public:
-    RRegion(GCompositor *compositorGlobal, UInt32 id);
+    RRegion(GCompositor *gCompositor, UInt32 id);
     ~RRegion();
 
     const LRegion &region() const;
@@ -14,4 +14,4 @@ public:
     LPRIVATE_IMP(RRegion)
 };
 
-#endif // REGIONRESOURCE_H
+#endif // RREGION_H

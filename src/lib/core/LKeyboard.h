@@ -105,7 +105,7 @@ public:
      */
     Int32 keymapSize() const;
 
-#if LOUVRE_SEAT_VERSION >= 4
+#if LOUVRE_WL_SEAT_VERSION >= 4
 
     /*!
      * @brief Repetition rate.
@@ -158,6 +158,11 @@ public:
      * @returns true if the switch is active, and false otherwise.
      */
     bool isModActive(const char *name) const;
+
+    /*!
+     * List of pressed key codes.
+     */
+    const std::list<UInt32>&pressedKeys() const;
 
     /*!
      * @brief Assign the keyboard layout.

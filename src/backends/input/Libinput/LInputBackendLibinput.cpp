@@ -1,12 +1,10 @@
-#include <LInputBackend.h>
-#include <cstring>
-#include <fcntl.h>
-#include <unistd.h>
-#include <unordered_map>
-
 #include <private/LCompositorPrivate.h>
 #include <private/LSeatPrivate.h>
 #include <private/LKeyboardPrivate.h>
+#include <LInputBackend.h>
+#include <LLog.h>
+#include <unordered_map>
+#include <cstring>
 
 using namespace Louvre;
 
@@ -18,20 +16,35 @@ struct BACKEND_DATA
     LSeat *seat;
 };
 
-double x = 0, y = 0;
-libinput_event *ev;
-libinput_event_type eventType;
-libinput_event_pointer *pointerEvent;
-uint32_t button;
-libinput_button_state state;
-libinput_event_keyboard *keyEv;
-libinput_key_state keyState;
-int keyCode;
-libinput_event_pointer *axisEvent;
-UInt32 source;
+// Libseat devices
 std::unordered_map<int,int>devices;
 
-int openRestricted(const char *path, int flags, void *data)
+// Event common
+static libinput_event *ev;
+static libinput_event_type eventType;
+
+// Keyboard related
+static libinput_event_keyboard *keyEvent;
+static libinput_key_state keyState;
+static Int32 keyCode;
+
+// Pointer related
+static libinput_event_pointer *pointerEvent;
+static libinput_button_state pointerButtonState;
+static UInt32 pointerButton;
+static Float64 x = 0.0, y = 0.0;
+
+// For any axis event
+static UInt32 axisSource;
+static Float64 axisX = 0.0, axisY = 0.0;
+
+// For discrete scroll events
+static Float64 discreteX = 0.0, discreteY = 0.0;
+
+// For 120 scroll events
+static Float64 d120X = 0.0, d120Y = 0.0;
+
+static Int32 openRestricted(const char *path, int flags, void *data)
 {
     L_UNUSED(flags);
 
@@ -45,7 +58,7 @@ int openRestricted(const char *path, int flags, void *data)
     return fd;
 }
 
-void closeRestricted(int fd, void *data)
+static void closeRestricted(int fd, void *data)
 {
     LSeat *seat = (LSeat*)data;
 
@@ -55,7 +68,7 @@ void closeRestricted(int fd, void *data)
         seat->closeDevice(fd);
 }
 
-int processInput(int, unsigned int, void *userData)
+static Int32 processInput(int, unsigned int, void *userData)
 {
     LSeat *seat = (LSeat*)userData;
     BACKEND_DATA *data = (BACKEND_DATA*)seat->imp()->inputBackendData;
@@ -64,7 +77,7 @@ int processInput(int, unsigned int, void *userData)
 
     if (ret != 0)
     {
-        printf("Failed to dispatch libinput: %s\n", strerror(-ret));
+        LLog::error("[Libinput Backend] Failed to dispatch libinput %s.", strerror(-ret));
         return 0;
     }
 
@@ -74,7 +87,7 @@ int processInput(int, unsigned int, void *userData)
 
         if (eventType == LIBINPUT_EVENT_POINTER_MOTION)
         {
-            if (!seat->cursor())
+            if (!(seat->capabilities() & LSeat::Pointer))
                 goto skip;
 
             pointerEvent = libinput_event_get_pointer_event(ev);
@@ -82,72 +95,84 @@ int processInput(int, unsigned int, void *userData)
             x = libinput_event_pointer_get_dx(pointerEvent);
             y = libinput_event_pointer_get_dy(pointerEvent);
 
-            if (seat->pointer())
-                seat->pointer()->pointerMoveEvent(x,y);
-
+            seat->pointer()->pointerMoveEvent(x, y);
         }
         else if (eventType == LIBINPUT_EVENT_POINTER_BUTTON)
         {
-            if (!seat->cursor())
+            if (!(seat->capabilities() & LSeat::Pointer))
                 goto skip;
 
             pointerEvent = libinput_event_get_pointer_event(ev);
-            button = libinput_event_pointer_get_button(pointerEvent);
-            state = libinput_event_pointer_get_button_state(pointerEvent);
+            pointerButton = libinput_event_pointer_get_button(pointerEvent);
+            pointerButtonState = libinput_event_pointer_get_button_state(pointerEvent);
 
-            if (seat->pointer())
-                seat->pointer()->pointerButtonEvent((LPointer::Button)button,(LPointer::ButtonState)state);
+            seat->pointer()->pointerButtonEvent(
+                (LPointer::Button)pointerButton,
+                (LPointer::ButtonState)pointerButtonState);
         }
         else if (eventType == LIBINPUT_EVENT_KEYBOARD_KEY)
         {
-            if (seat->keyboard())
+            if (!(seat->capabilities() & LSeat::Keyboard))
+                goto skip;
+
+            keyEvent = libinput_event_get_keyboard_event(ev);
+            keyState = libinput_event_keyboard_get_key_state(keyEvent);
+            keyCode = libinput_event_keyboard_get_key(keyEvent);
+            seat->keyboard()->imp()->preKeyEvent(keyCode, keyState);
+
+            // CTRL + ALT + (F1, F2, ..., F10) : Switch TTY.
+            if (keyCode >= KEY_F1 &&
+                keyCode <= KEY_F10 &&
+                seat->keyboard()->isModActive(XKB_MOD_NAME_ALT) &&
+                seat->keyboard()->isModActive(XKB_MOD_NAME_CTRL))
             {
-                keyEv = libinput_event_get_keyboard_event(ev);
-                keyState = libinput_event_keyboard_get_key_state(keyEv);
-                keyCode = libinput_event_keyboard_get_key(keyEv);
-
-                xkb_state_update_key(seat->keyboard()->imp()->xkbKeymapState,
-                                     keyCode+8,
-                                     (xkb_key_direction)keyState);
-
-                seat->keyboard()->keyEvent(keyCode, keyState);
-                seat->keyboard()->imp()->updateModifiers();
-
-                // CTRL + ALT + (F1, F2, ..., F10) : Cambia de TTY.
-                if (keyCode >= KEY_F1 && keyCode <= KEY_F10 && seat->keyboard()->isModActive(XKB_MOD_NAME_ALT) && seat->keyboard()->isModActive(XKB_MOD_NAME_CTRL))
-                {
-                    seat->setTTY(keyCode - KEY_F1 + 1);
-                    return 0;
-                }
-
+                seat->setTTY(keyCode - KEY_F1 + 1);
+                return 0;
             }
         }
         else if (eventType == LIBINPUT_EVENT_POINTER_AXIS)
         {
-            if (!seat->cursor())
+            if (!(seat->capabilities() & LSeat::Pointer))
                 goto skip;
 
-            if (seat->pointer())
+            pointerEvent = libinput_event_get_pointer_event(ev);
+            axisSource = libinput_event_pointer_get_axis_source(pointerEvent);
+
+            if (axisSource == LIBINPUT_POINTER_AXIS_SOURCE_WHEEL)
+                goto skip;
+
+            if (libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL))
+                axisX = libinput_event_pointer_get_axis_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL);
+
+            if (libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL))
+                axisY = libinput_event_pointer_get_axis_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
+
+            seat->pointer()->pointerAxisEvent(axisX, axisY, axisX, axisY, axisSource);
+        }
+        else if (eventType == LIBINPUT_EVENT_POINTER_SCROLL_WHEEL)
+        {
+            if (!(seat->capabilities() & LSeat::Pointer))
+                goto skip;
+
+            pointerEvent = libinput_event_get_pointer_event(ev);
+
+            if (libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL))
             {
-                axisEvent = libinput_event_get_pointer_event(ev);
-
-                if (libinput_event_pointer_has_axis(axisEvent,LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL))
-                    x = libinput_event_pointer_get_axis_value(axisEvent,LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL);
-
-                if (libinput_event_pointer_has_axis(axisEvent,LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL))
-                    y = libinput_event_pointer_get_axis_value(axisEvent,LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
-
-            #if LOUVRE_SEAT_VERSION >= 5
-                source = libinput_event_pointer_get_axis_source(axisEvent);
-                seat->pointer()->pointerAxisEvent(x,y,source);
-            #else
-                seat->pointer()->pointerAxisEvent(x,y);
-            #endif
+                discreteX = libinput_event_pointer_get_scroll_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL);
+                d120X = libinput_event_pointer_get_scroll_value_v120(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL);
             }
+
+            if (libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL))
+            {
+                discreteY = libinput_event_pointer_get_scroll_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
+                d120Y = libinput_event_pointer_get_scroll_value_v120(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
+            }
+
+            seat->pointer()->pointerAxisEvent(discreteX, discreteY, d120X, d120Y, LIBINPUT_POINTER_AXIS_SOURCE_WHEEL);
         }
 
-        seat->backendNativeEvent(ev);
         skip:
+        seat->backendNativeEvent(ev);
         libinput_event_destroy(ev);
         libinput_dispatch(data->li);
     }
@@ -184,8 +209,7 @@ bool LInputBackend::initialize(const LSeat *seat)
     return true;
 
     fail:
-    delete data;
-    seat->imp()->inputBackendData = nullptr;
+    uninitialize(seat);
     return false;
 }
 
@@ -220,7 +244,19 @@ void LInputBackend::resume(const LSeat *seat)
 
 void LInputBackend::uninitialize(const LSeat *seat)
 {
-    L_UNUSED(seat);
+    BACKEND_DATA *data = (BACKEND_DATA*)seat->imp()->inputBackendData;
+
+    if (!data)
+        return;
+
+    if (data->li)
+        libinput_unref(data->li);
+
+    if (data->ud)
+        udev_unref(data->ud);
+
+    delete data;
+    seat->imp()->inputBackendData = nullptr;
 }
 
 LInputBackendInterface API;

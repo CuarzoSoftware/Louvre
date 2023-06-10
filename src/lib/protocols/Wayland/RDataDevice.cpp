@@ -59,13 +59,13 @@ RDataDevice::~RDataDevice()
     delete m_imp;
 }
 
-void RDataDevice::sendEnter(LSurface *surface, Float64 x, Float64 y, RDataOffer *dataOfferResource)
+void RDataDevice::sendEnter(LSurface *surface, Float24 x, Float24 y, RDataOffer *dataOfferResource)
 {
     wl_data_device_send_enter(resource(),
                              LCompositor::nextSerial(),
                              surface->surfaceResource()->resource(),
-                             wl_fixed_from_double(x),
-                             wl_fixed_from_double(y),
+                             x,
+                             y,
                              dataOfferResource->resource());
 }
 
@@ -74,12 +74,12 @@ void RDataDevice::sendLeave()
     wl_data_device_send_leave(resource());
 }
 
-void RDataDevice::sendMotion(Float64 x, Float64 y)
+void RDataDevice::sendMotion(Float24 x, Float24 y)
 {
     wl_data_device_send_motion(resource(),
                                LTime::ms(),
-                               wl_fixed_from_double(x),
-                               wl_fixed_from_double(y));
+                               x,
+                               y);
 }
 
 void RDataDevice::sendDrop()

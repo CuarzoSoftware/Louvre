@@ -1,5 +1,4 @@
 #include "LOutputMode.h"
-#include "drm_fourcc.h"
 
 #include <private/LSurfacePrivate.h>
 #include <private/LCompositorPrivate.h>
@@ -14,6 +13,7 @@
 #include <protocols/XdgShell/xdg-shell.h>
 #include <protocols/Wayland/GOutput.h>
 #include <protocols/Wayland/RSurface.h>
+#include <protocols/Wayland/RCallback.h>
 
 #include <LCompositor.h>
 #include <LClient.h>
@@ -265,8 +265,14 @@ void LSurface::sendOutputEnterEvent(LOutput *output)
     imp()->outputs.push_back(output);
 
     for (GOutput *g : client()->outputGlobals())
+    {
         if (g->output() == output)
-            return wl_surface_send_enter(surfaceResource()->resource(), g->resource());
+        {
+            surfaceResource()->enter(g);
+            imp()->sendPreferredScale();
+            return;
+        }
+    }
 }
 
 void LSurface::sendOutputLeaveEvent(LOutput *output)
@@ -280,8 +286,14 @@ void LSurface::sendOutputLeaveEvent(LOutput *output)
         {
             imp()->outputs.erase(o);
             for (GOutput *g : client()->outputGlobals())
+            {
                 if (g->output() == output)
-                    return wl_surface_send_leave(surfaceResource()->resource(), g->resource());
+                {
+                    surfaceResource()->leave(g);
+                    imp()->sendPreferredScale();
+                    return;
+                }
+            }
             return;
         }
     }
@@ -299,12 +311,16 @@ void LSurface::requestNextFrame()
     imp()->currentDamagesC.clear();
     imp()->damaged = false;
 
-    if (imp()->frameCallback)
+    UInt32 ms = LTime::ms();
+
+    while (!imp()->frameCallbacks.empty())
     {
-        wl_callback_send_done(imp()->frameCallback, LTime::ms());
-        wl_resource_destroy(imp()->frameCallback);
-        imp()->frameCallback = nullptr;
+        Wayland::RCallback *rCallback = imp()->frameCallbacks.front();
+        rCallback->done(ms);
+        rCallback->destroy();
     }
+
+    client()->flush();
 }
 
 bool LSurface::mapped() const
@@ -693,4 +709,17 @@ void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output, timesp
             wl_resource_destroy(rFeed->resource());
         }
     }
+}
+
+void LSurface::LSurfacePrivate::sendPreferredScale()
+{
+    Int32 scale = 1;
+
+    for (LOutput *o : outputs)
+    {
+        if (o->scale() > scale)
+            scale = o->scale();
+    }
+
+    surfaceResource->preferredBufferScale(scale);
 }

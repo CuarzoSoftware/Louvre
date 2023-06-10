@@ -14,7 +14,7 @@
 using namespace Louvre;
 
 //! [pointerMoveEvent]
-void LPointer::pointerMoveEvent(float dx, float dy)
+void LPointer::pointerMoveEvent(Float32 dx, Float32 dy)
 {
     /* For simplification, we handle the event in pointerPosChangeEvent().
      * The input backends emit pointerMoveEvent() or pointerPosChangeEvent() but
@@ -25,7 +25,7 @@ void LPointer::pointerMoveEvent(float dx, float dy)
 //! [pointerMoveEvent]
 
 //! [pointerPosChangeEvent]
-void LPointer::pointerPosChangeEvent(float x, float y)
+void LPointer::pointerPosChangeEvent(Float32 x, Float32 y)
 {
     cursor()->setPosC(LPointF(x,y));
 
@@ -172,27 +172,13 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
 }
 //! [pointerButtonEvent]
 
-#if LOUVRE_SEAT_VERSION >= 5
-
 //! [pointerAxisEvent]
-void LPointer::pointerAxisEvent(double x, double y, UInt32 source)
+void LPointer::pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source)
 {
     // Inverts the scroll direction
-    sendAxisEvent(-x,-y,source);
+    sendAxisEvent(-axisX, -axisY, -discreteX, -discreteY, source);
 }
 //! [pointerAxisEvent]
-
-#else
-
-//! [pointerAxisEvent_less_5]
-void LPointer::pointerAxisEvent(double x, double y)
-{
-    // Inverts the scroll direction
-    sendAxisEvent(-x,-y);
-}
-//! [pointerAxisEvent_less_5]
-
-#endif
 
 //! [setCursorRequest]
 void LPointer::setCursorRequest(LCursorRole *cursorRole)

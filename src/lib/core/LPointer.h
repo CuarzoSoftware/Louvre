@@ -86,11 +86,9 @@ public:
 
         /// Continuous movement (with unspecified source)
         Continuous = 2,
-#if LOUVRE_SEAT_VERSION >= 6
 
-        /// Side movement of a mouse wheel
+        /// Side movement of a mouse wheel (since 6)
         WheelTilt = 3
-#endif
     };
 
     /*!
@@ -158,13 +156,24 @@ public:
     /*!
      * @brief Assigns the pointer focus.
      *
-     * Assigns the pointer focus to the specified surface at the given local position within the surface.\n
+     * Assigns the pointer focus to the specified surface at the given local compositor position within the surface.\n
      * If the surface is nullptr, pointer focus will be removed from all surfaces.
      *
      * @param surface Surface that will acquire the pointer focus or nullptr to remove focus
-     * @param localPosG Local position within the surface that the pointer enters.
+     * @param localPosC Local compositor position within the surface that the pointer enters.
      */
-    void setFocusC(LSurface *surface, const LPoint &localPosG);
+    void setFocusC(LSurface *surface, const LPoint &localPosC);
+
+    /*!
+     * @brief Assigns the pointer focus.
+     *
+     * Assigns the pointer focus to the specified surface at the given local surface position within the surface.\n
+     * If the surface is nullptr, pointer focus will be removed from all surfaces.
+     *
+     * @param surface Surface that will acquire the pointer focus or nullptr to remove focus
+     * @param localPosS Local surface position within the surface that the pointer enters.
+     */
+    void setFocusS(LSurface *surface, const LPoint &localPosS);
 
     /*!
      * @brief Sends the pointer position.
@@ -180,9 +189,18 @@ public:
      * Sends the current pointer position to the surface with focus.\n
      * If you want to use the cursor position as the pointer, you can use the variant of this method without arguments.
      *
-     * @param localPosG Pointer position relative to the top-left corner of the surface.
+     * @param localPosC Pointer position relative to the top-left corner of the surface in compositor coordinates.
      */
-    void sendMoveEventC(const LPoint &localPosG);
+    void sendMoveEventC(const LPoint &localPosC);
+
+    /*!
+     * @brief Sends the pointer position.
+     *
+     * Sends the current pointer position to the surface with focus.\n
+     *
+     * @param localPosS Pointer position relative to the top-left corner of the surface in surface coordinates.
+     */
+    void sendMoveEventS(const LPoint &localPosS);
 
     /*!
      * @brief Sends a pointer button state.
@@ -194,8 +212,6 @@ public:
      */
     void sendButtonEvent(Button button, ButtonState state);
 
-#if LOUVRE_SEAT_VERSION >= WL_POINTER_AXIS_SOURCE_SINCE_VERSION
-
     /*!
      * @brief Sends a scroll event.
      *
@@ -205,34 +221,7 @@ public:
      * @param y Direction and magnitude of the scroll on the vertical axis. 0 stops scrolling.
      * @param source One of the values from AxisSource.
      */
-    void sendAxisEvent(double x, double y, UInt32 source);
-
-    /*!
-     * @brief Size of the discrete scroll step
-     *
-     * Size of the discrete scroll step assigned with setScrollWheelStep().\n
-     * Its default value is (15,15).
-     */
-    const LPoint &scrollWheelStep() const;
-
-    /*!
-     * @brief Sets the size of the discrete scroll step
-     *
-     * @param step Value of the step for each axis (x,y).
-     */
-    void setScrollWheelStep(const LPoint &step);
-#else
-
-    /*!
-     * @brief Sends a scroll event.
-     *
-     * Sends a scrolling event to the surface with focus.\n
-     *
-     * @param x Direction and magnitude of the scroll on the horizontal axis. 0 stops scrolling.
-     * @param y Direction and magnitude of the scroll on the vertical axis. 0 stops scrolling.
-     */
-    void sendAxisEvent(double x, double y);
-#endif
+    void sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source);
 
     /*!
      * @brief Closes all popups.
@@ -430,7 +419,7 @@ public:
      * #### Default Implementation
      * @snippet LPointerDefault.cpp pointerMoveEvent
      */
-    virtual void pointerMoveEvent(float dx, float dy);
+    virtual void pointerMoveEvent(Float32 dx, Float32 dy);
 
     /*!
      * @brief Notifies a change in pointer position.
@@ -446,7 +435,7 @@ public:
      * #### Default implementation
      * @snippet LPointerDefault.cpp pointerPosChangeEvent
      */
-    virtual void pointerPosChangeEvent(float x, float y);
+    virtual void pointerPosChangeEvent(Float32 x, Float32 y);
 
     /*!
      * @brief Notifies a change of state of a pointer button.
@@ -461,7 +450,7 @@ public:
      * @snippet LPointerDefault.cpp pointerButtonEvent
      */
     virtual void pointerButtonEvent(Button button, ButtonState state);
-#if LOUVRE_SEAT_VERSION >= WL_POINTER_AXIS_SOURCE_SINCE_VERSION
+
     /*!
      * @brief Notifies a scroll event.
      *
@@ -476,23 +465,7 @@ public:
      * #### Default implementation
      * @snippet LPointerDefault.cpp pointerAxisEvent
      */
-    virtual void pointerAxisEvent(double x, double y, UInt32 source);
-#else
-
-    /*!
-     * @brief Notifies a scroll event.
-     *
-     * Notification of a pointer scroll event generated by the input backend.\n
-     * Reimplement this virtual method if you want to be notified when the pointer emits a scroll event.
-     *
-     * @param x Direction and magnitude of the scroll on the x-axis.
-     * @param y Direction and magnitude of the scroll on the y-axis.
-     *
-     * #### Default Implementation
-     * @snippet LPointerDefault.cpp pointerAxisEvent_less_5
-     */
-    virtual void pointerAxisEvent(double x, double y);
-#endif
+    virtual void pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source);
 
     /*!
      * @brief Request to assign the cursor.

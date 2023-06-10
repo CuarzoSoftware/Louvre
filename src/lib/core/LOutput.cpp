@@ -142,7 +142,6 @@ void LOutput::LOutputPrivate::backendBeforePaint()
 void LOutput::LOutputPrivate::backendAfterPaint()
 {
     compositor()->imp()->renderMutex.unlock();
-    compositor()->flushClients();
 }
 
 void LOutput::LOutputPrivate::backendPageFlipped()

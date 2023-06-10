@@ -1,30 +1,15 @@
-#include <protocols/Wayland/private/RSurfacePrivate.h>
 #include <protocols/WpPresentationTime/private/RWpPresentationFeedbackPrivate.h>
+#include <protocols/Wayland/private/RSurfacePrivate.h>
 #include <protocols/Wayland/GCompositor.h>
-#include <protocols/XdgShell/xdg-shell.h>
-
-#include <private/LClientPrivate.h>
+#include <protocols/Wayland/GOutput.h>
+#include <protocols/Wayland/RCallback.h>
+#include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LCompositorPrivate.h>
+#include <private/LClientPrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LSeatPrivate.h>
-#include <private/LDNDIconRolePrivate.h>
-#include <private/LCursorRolePrivate.h>
 #include <private/LPointerPrivate.h>
 #include <private/LKeyboardPrivate.h>
-#include <private/LSubsurfaceRolePrivate.h>
-#include <private/LBaseSurfaceRolePrivate.h>
-#include <private/LToplevelRolePrivate.h>
-
-#include <LPopupRole.h>
-#include <LCursor.h>
-#include <LTime.h>
-
-#include <GLES2/gl2.h>
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/eventfd.h>
 
 using namespace Protocols::Wayland;
 
@@ -38,33 +23,33 @@ struct wl_surface_interface surface_implementation =
     .set_input_region       = &RSurface::RSurfacePrivate::set_input_region,
     .commit                 = &RSurface::RSurfacePrivate::commit,
 
-#if LOUVRE_COMPOSITOR_VERSION >= 2
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 2
     .set_buffer_transform   = &RSurface::RSurfacePrivate::set_buffer_transform,
 #endif
 
-#if LOUVRE_COMPOSITOR_VERSION >= 3
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 3
     .set_buffer_scale       = &RSurface::RSurfacePrivate::set_buffer_scale,
 #endif
 
-#if LOUVRE_COMPOSITOR_VERSION >= 4
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 4
     .damage_buffer          = &RSurface::RSurfacePrivate::damage_buffer,
 #endif
 
-#if LOUVRE_COMPOSITOR_VERSION >= 5
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 5
     .offset                 = &RSurface::RSurfacePrivate::offset
 #endif
 };
 
 RSurface::RSurface
 (
-    GCompositor *compositorGlobal,
+    GCompositor *gCompositor,
     UInt32 id
 )
     :LResource
     (
-        compositorGlobal->client(),
+        gCompositor->client(),
         &wl_surface_interface,
-        compositorGlobal->version(),
+        gCompositor->version(),
         id,
         &surface_implementation,
         &RSurface::RSurfacePrivate::resource_destroy
@@ -75,7 +60,7 @@ RSurface::RSurface
     // Create surface
     LSurface::Params params;
     params.surfaceResource = this;
-    imp()->surface = compositor()->createSurfaceRequest(&params);
+    imp()->lSurface = compositor()->createSurfaceRequest(&params);
 
     // Append surface
     client()->imp()->surfaces.push_back(surface());
@@ -86,13 +71,13 @@ RSurface::RSurface
 
 RSurface::~RSurface()
 {
-    LSurface *surface = this->surface();
+    LSurface *lSurface = this->surface();
 
     // Unmap
-    surface->imp()->setMapped(false);
+    lSurface->imp()->setMapped(false);
 
     // Notify from client
-    compositor()->destroySurfaceRequest(surface);
+    compositor()->destroySurfaceRequest(lSurface);
 
     /* TODO
     // Safe Xdg shell removal
@@ -102,84 +87,128 @@ RSurface::~RSurface()
     }
     */
 
-    for (WpPresentationTime::RWpPresentationFeedback *wPf : surface->imp()->wpPresentationFeedbackResources)
+    for (WpPresentationTime::RWpPresentationFeedback *wPf : lSurface->imp()->wpPresentationFeedbackResources)
         wPf->imp()->lSurface = nullptr;
 
+    // Destroy pending frame callbacks
+    while (!lSurface->imp()->frameCallbacks.empty())
+    {
+        Wayland::RCallback *rCallback = lSurface->imp()->frameCallbacks.front();
+        rCallback->destroy();
+    }
+
     // Clear keyboard focus
-    if (seat()->keyboard()->focusSurface() == surface)
+    if (seat()->keyboard()->focusSurface() == lSurface)
         seat()->keyboard()->imp()->keyboardFocusSurface = nullptr;
 
     // Clear pointer focus
-    if (seat()->pointer()->imp()->pointerFocusSurface == surface)
+    if (seat()->pointer()->imp()->pointerFocusSurface == lSurface)
         seat()->pointer()->imp()->pointerFocusSurface = nullptr;
 
     // Clear dragging surface
-    if (seat()->pointer()->imp()->draggingSurface == surface)
+    if (seat()->pointer()->imp()->draggingSurface == lSurface)
         seat()->pointer()->imp()->draggingSurface = nullptr;
 
     // Clear active toplevel focus
-    if (seat()->imp()->activeToplevel == surface->toplevel())
+    if (seat()->imp()->activeToplevel == lSurface->toplevel())
         seat()->imp()->activeToplevel = nullptr;
 
     // Clear moving toplevel
-    if (seat()->pointer()->imp()->movingToplevel == surface->toplevel())
+    if (seat()->pointer()->imp()->movingToplevel == lSurface->toplevel())
         seat()->pointer()->imp()->movingToplevel = nullptr;
 
     // Clear resizing toplevel
-    if (seat()->pointer()->imp()->resizingToplevel == surface->toplevel())
+    if (seat()->pointer()->imp()->resizingToplevel == lSurface->toplevel())
         seat()->pointer()->imp()->resizingToplevel = nullptr;
 
     // Clear drag
-    if (seat()->dndManager()->icon() && seat()->dndManager()->icon()->surface() == surface)
+    if (seat()->dndManager()->icon() && seat()->dndManager()->icon()->surface() == lSurface)
         seat()->dndManager()->imp()->icon = nullptr;
 
-    if (surface->dndIcon())
+    if (lSurface->dndIcon())
     {
-        LDNDIconRole *ldndIcon = surface->dndIcon();
+        LDNDIconRole *ldndIcon = lSurface->dndIcon();
         compositor()->destroyDNDIconRoleRequest(ldndIcon);
         delete ldndIcon;
     }
 
-    if (surface->cursorRole())
+    if (lSurface->cursorRole())
     {
-        LCursorRole *lCursor = surface->cursorRole();
+        LCursorRole *lCursor = lSurface->cursorRole();
         compositor()->destroyCursorRoleRequest(lCursor);
         delete lCursor;
     }
 
-    while(!surface->children().empty())
-        surface->imp()->removeChild(surface->imp()->children.back());
+    while(!lSurface->children().empty())
+        lSurface->imp()->removeChild(lSurface->imp()->children.back());
 
-    while(!surface->imp()->pendingChildren.empty())
+    while(!lSurface->imp()->pendingChildren.empty())
     {
-        surface->imp()->pendingChildren.back()->imp()->pendingParent = nullptr;
-        surface->imp()->pendingChildren.pop_back();
+        lSurface->imp()->pendingChildren.back()->imp()->pendingParent = nullptr;
+        lSurface->imp()->pendingChildren.pop_back();
     }
 
     // Parent
-    surface->imp()->setParent(nullptr);
+    lSurface->imp()->setParent(nullptr);
 
-    if (surface->imp()->pendingParent)
-        surface->imp()->pendingParent->imp()->pendingChildren.remove(surface);
+    if (lSurface->imp()->pendingParent)
+        lSurface->imp()->pendingParent->imp()->pendingChildren.remove(lSurface);
 
-    if (surface->imp()->current.role)
-        surface->imp()->current.role->baseImp()->surface = nullptr;
+    if (lSurface->imp()->current.role)
+        lSurface->imp()->current.role->baseImp()->surface = nullptr;
 
-    if (surface->imp()->pending.role)
-        surface->imp()->pending.role->baseImp()->surface = nullptr;
+    if (lSurface->imp()->pending.role)
+        lSurface->imp()->pending.role->baseImp()->surface = nullptr;
 
     // Remove surface from its client list
-    surface->client()->imp()->surfaces.erase(surface->imp()->clientLink);
+    lSurface->client()->imp()->surfaces.erase(lSurface->imp()->clientLink);
 
     // Remove the surface from the compositor list
-    compositor()->imp()->surfaces.erase(surface->imp()->compositorLink);
+    compositor()->imp()->surfaces.erase(lSurface->imp()->compositorLink);
 
-    delete surface;
-
+    delete lSurface;
     delete m_imp;
 }
 
 LSurface *RSurface::surface() const
 {
-    return imp()->surface;
+    return imp()->lSurface;
+}
+
+bool RSurface::enter(GOutput *gOutput)
+{
+    wl_surface_send_enter(resource(), gOutput->resource());
+    return true;
+}
+
+bool RSurface::leave(GOutput *gOutput)
+{
+    wl_surface_send_leave(resource(), gOutput->resource());
+    return true;
+}
+
+bool RSurface::preferredBufferScale(Int32 scale)
+{
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 6
+    if (version() >= 6)
+    {
+        wl_surface_send_preferred_buffer_scale(resource(), scale);
+        return true;
+    }
+#endif
+    L_UNUSED(scale);
+    return false;
+}
+
+bool RSurface::preferredBufferTransform(UInt32 transform)
+{
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 6
+    if (version() >= 6)
+    {
+        wl_surface_send_preferred_buffer_transform(resource(), transform);
+        return true;
+    }
+#endif
+    L_UNUSED(transform);
+    return false;
 }

@@ -2,14 +2,13 @@
 
 void RRegion::RRegionPrivate::resource_destroy(wl_resource *resource)
 {
-    RRegion *lRRegion = (RRegion*)wl_resource_get_user_data(resource);
-    delete lRRegion;
+    RRegion *rRegion = (RRegion*)wl_resource_get_user_data(resource);
+    delete rRegion;
 }
 
 void RRegion::RRegionPrivate::destroy(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);
-
     wl_resource_destroy(resource);
 }
 
@@ -17,26 +16,36 @@ void RRegion::RRegionPrivate::add(wl_client *client, wl_resource *resource, Int3
 {
     L_UNUSED(client);
 
-    RRegion *lRRegion = (RRegion*)wl_resource_get_user_data(resource);
+    RRegion *rRegion = (RRegion*)wl_resource_get_user_data(resource);
 
-    if (width > MAX_SURFACE_SIZE)
-        width = MAX_SURFACE_SIZE;
-    if (height > MAX_SURFACE_SIZE)
-        height = MAX_SURFACE_SIZE;
+    if (width > LOUVRE_MAX_SURFACE_SIZE)
+        width = LOUVRE_MAX_SURFACE_SIZE;
+    else if (width <= 0)
+        return;
 
-    lRRegion->imp()->region.addRect(LRect(x,y,width,height));
+    if (height > LOUVRE_MAX_SURFACE_SIZE)
+        height = LOUVRE_MAX_SURFACE_SIZE;
+    else if (height <= 0)
+        return;
+
+    rRegion->imp()->region.addRect(LRect(x, y, width, height));
 }
 
 void RRegion::RRegionPrivate::subtract(wl_client *client, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height)
 {
     L_UNUSED(client);
 
-    RRegion *lRRegion = (RRegion*)wl_resource_get_user_data(resource);
+    RRegion *rRegion = (RRegion*)wl_resource_get_user_data(resource);
 
-    if (width > MAX_SURFACE_SIZE)
-        width = MAX_SURFACE_SIZE;
-    if (height > MAX_SURFACE_SIZE)
-        height = MAX_SURFACE_SIZE;
+    if (width > LOUVRE_MAX_SURFACE_SIZE)
+        width = LOUVRE_MAX_SURFACE_SIZE;
+    else if (width <= 0)
+        return;
 
-    lRRegion->imp()->region.subtractRect(LRect(x, y, width, height));
+    if (height > LOUVRE_MAX_SURFACE_SIZE)
+        height = LOUVRE_MAX_SURFACE_SIZE;
+    else if (height <= 0)
+        return;
+
+    rRegion->imp()->region.subtractRect(LRect(x, y, width, height));
 }

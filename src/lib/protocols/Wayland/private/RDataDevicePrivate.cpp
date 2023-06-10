@@ -99,8 +99,8 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
 
     if (seat()->pointer()->focusSurface())
     {
-        seat()->pointer()->focusSurface()->client()->dataDevice().imp()->sendDNDEnterEvent(
-                    seat()->pointer()->focusSurface(),0,0);
+        seat()->pointer()->focusSurface()->client()->dataDevice().imp()->sendDNDEnterEventS(
+            seat()->pointer()->focusSurface(),0,0);
     }
 }
 

@@ -1,5 +1,5 @@
-#ifndef REGIONRESOURCEPRIVATE_H
-#define REGIONRESOURCEPRIVATE_H
+#ifndef RREGIONPRIVATE_H
+#define RREGIONPRIVATE_H
 
 #include <protocols/Wayland/RRegion.h>
 #include <LRegion.h>
@@ -15,4 +15,4 @@ LPRIVATE_CLASS(RRegion)
     LRegion region;
 };
 
-#endif // REGIONRESOURCEPRIVATE_H
+#endif // RREGIONPRIVATE_H

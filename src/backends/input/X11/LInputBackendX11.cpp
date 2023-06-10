@@ -146,7 +146,7 @@ void LInputBackend::forceUpdate(const LSeat *seat)
         {
             axisEvent = false;
 
-            #if LOUVRE_SEAT_VERSION >= 5
+            #if LOUVRE_WL_SEAT_VERSION >= 5
                 seat->pointer()->pointerAxisEvent(axisX, axisY, WL_POINTER_AXIS_SOURCE_WHEEL);
             #else
                 seat->pointer()->pointerAxisEvent(axisX, axisY);

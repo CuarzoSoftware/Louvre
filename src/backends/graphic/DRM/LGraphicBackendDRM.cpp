@@ -377,7 +377,7 @@ const char *LGraphicBackend::getOutputModelName(LOutput *output)
 const char *LGraphicBackend::getOutputDescription(LOutput *output)
 {
     L_UNUSED(output);
-    return "DRM connector.";
+    return "DRM connector";
 }
 
 const LOutputMode *LGraphicBackend::getOutputPreferredMode(LOutput *output)

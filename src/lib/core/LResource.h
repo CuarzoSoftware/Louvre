@@ -30,6 +30,7 @@ public:
     wl_resource *resource() const;
     LClient *client() const;
     Int32 version() const;
+    void destroy();
 
     LPRIVATE_IMP(LResource)
 };

@@ -1,5 +1,5 @@
-#ifndef SEATGLOBAL_H
-#define SEATGLOBAL_H
+#ifndef GSEAT_H
+#define GSEAT_H
 
 #include <LResource.h>
 
@@ -15,15 +15,17 @@ public:
 
     ~GSeat();
 
-    // Events
-    void sendCapabilities(UInt32 capabilities);
-    void sendName(const char *name);
-
     RKeyboard *keyboardResource() const;
     RPointer  *pointerResource() const;
     RDataDevice *dataDeviceResource() const;
 
+    // Since 1
+    bool capabilities(UInt32 capabilities);
+
+    // Since 2
+    bool name(const char *name);
+
     LPRIVATE_IMP(GSeat)
 };
 
-#endif // SEATGLOBAL_H
+#endif // GSEAT_H

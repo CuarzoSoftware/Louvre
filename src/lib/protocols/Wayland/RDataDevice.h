@@ -9,9 +9,9 @@ public:
     RDataDevice(GDataDeviceManager *dataDeviceManagerGlobal, GSeat *seatGlobal, Int32 id);
     ~RDataDevice();
 
-    void sendEnter(LSurface *surface, Float64 x, Float64 y, RDataOffer *dataOfferResource);
+    void sendEnter(LSurface *surface, Float24 x, Float24 y, RDataOffer *dataOfferResource);
     void sendLeave();
-    void sendMotion(Float64 x, Float64 y);
+    void sendMotion(Float24 x, Float24 y);
     void sendDrop();
     void sendDataOffer(RDataOffer *dataOfferResource);
     void sendSelection(RDataOffer *dataOfferResource);
