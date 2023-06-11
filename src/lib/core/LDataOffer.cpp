@@ -32,8 +32,7 @@ LDataOffer::Usage LDataOffer::usedFor() const
     return imp()->usedFor;
 }
 
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
-
+// Since 3
 void LDataOffer::LDataOfferPrivate::updateDNDAction()
 {
     LDNDManager *dndManager = seat()->dndManager();
@@ -51,7 +50,7 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
         if (sourceIsV3 && offerIsV3)
         {
             // If offer has not sent preferred action
-            if (preferredAction == DND_NO_ACTION_SET)
+            if (preferredAction == LOUVRE_DND_NO_ACTION_SET)
             {
                 caseA:
                 UInt32 both = dndManager->source()->dndActions();
@@ -73,7 +72,7 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
                 else
                     final = LDNDManager::NoAction;
 
-                dndManager->source()->dataSourceResource()->sendAction(final);
+                dndManager->source()->dataSourceResource()->action(final);
             }
             // Offer has set action
             else
@@ -100,8 +99,8 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
                 else
                     final = LDNDManager::NoAction;
 
-                dataOfferResource->sendAction(final);
-                dndManager->source()->dataSourceResource()->sendAction(final);
+                dataOfferResource->action(final);
+                dndManager->source()->dataSourceResource()->action(final);
             }
 
         }
@@ -111,7 +110,7 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
         }
         else if (!sourceIsV3 && offerIsV3)
         {
-            if (preferredAction != DND_NO_ACTION_SET)
+            if (preferredAction != LOUVRE_DND_NO_ACTION_SET)
             {
                 UInt32 both = acceptedActions;
 
@@ -134,7 +133,7 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
                 else
                     final = LDNDManager::NoAction;
 
-                dataOfferResource->sendAction(final);
+                dataOfferResource->action(final);
             }
         }
 
@@ -142,7 +141,7 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
     // If no source
     else
     {
-        if (offerIsV3 && preferredAction != DND_NO_ACTION_SET)
+        if (offerIsV3 && preferredAction != LOUVRE_DND_NO_ACTION_SET)
         {
             UInt32 both = acceptedActions;
 
@@ -165,9 +164,7 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
             else
                 final = LDNDManager::NoAction;
 
-            dataOfferResource->sendAction(final);
+            dataOfferResource->action(final);
         }
     }
 }
-
-#endif

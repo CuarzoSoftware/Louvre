@@ -105,10 +105,15 @@ public:
      */
     Int32 keymapSize() const;
 
-#if LOUVRE_WL_SEAT_VERSION >= 4
+    /*!
+     * The keymap format can be either WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
+     * which indicates the presence of a valid XKB keymap set, or WL_KEYBOARD_KEYMAP_FORMAT_NO_KEYMAP,
+     * indicating an issue with the XKB system configuration.
+     */
+    UInt32 keymapFormat() const;
 
     /*!
-     * @brief Repetition rate.
+     * Repetition rate (since 4).\n\n
      *
      * Number of repetitions per second of a key when held down, assigned with setRepeatInfo().\n
      * The default value is 32.
@@ -116,7 +121,7 @@ public:
     Int32 repeatRate() const;
 
     /*!
-     * @brief Repeat delay.
+     * Repeat delay (since 4).\n\n
      *
      * Delay in milliseconds before triggering the repetition of a key by holding it down, assigned with setRepeatInfo().\n
      * The default value is 500 ms.
@@ -124,7 +129,7 @@ public:
     Int32 repeatDelay() const;
 
     /*!
-     * @brief Assigns the repeat rate and delay.
+     * Assigns the repeat rate and delay (since 4).\n\n
      *
      * Assigns the repeat rate and delay when holding down a key.\n
      * The library internally calls the [wl_keyboard::repeat_info](https://wayland.app/protocols/wayland#wl_keyboard:event:repeat_info) event
@@ -133,7 +138,6 @@ public:
      * @param msDelay Delay in milliseconds before triggering the replay.
      */
     void setRepeatInfo(Int32 rate, Int32 msDelay);
-#endif
 
     /*!
      * @brief Key symbol.
@@ -165,6 +169,11 @@ public:
     const std::list<UInt32>&pressedKeys() const;
 
     /*!
+     * Check if a key code is pressed.
+     */
+    bool isKeyCodePressed(UInt32 keyCode) const;
+
+    /*!
      * @brief Assign the keyboard layout.
      *
      * Find and assign a keyboard map that matches the parameters passed in the arguments.\n
@@ -180,7 +189,7 @@ public:
      * @param variant Variants of layouts. Can be NULL. [More information] (https://xkbcommon.org/doc/current/structxkb__rule__names.html#a0968f4602001f2306febd32c34bd2280).
      * @param options Preferences not related to layouts. Can be NULL. [More information] (https://xkbcommon.org/doc/current/structxkb__rule__names.html#a0968f4602001f2306febd32c34bd2280).
      */
-    void setKeymap(const char *rules = NULL, const char *model = NULL, const char *layout = NULL, const char *variant = NULL, const char *options = NULL);
+    bool setKeymap(const char *rules = NULL, const char *model = NULL, const char *layout = NULL, const char *variant = NULL, const char *options = NULL);
 
     /*!
      * @brief Assigns keyboard focus to a surface.

@@ -13,11 +13,11 @@
 
 void RDataDevice::RDataDevicePrivate::resource_destroy(wl_resource *resource)
 {
-    RDataDevice *lRDataDevice = (RDataDevice*)wl_resource_get_user_data(resource);
-    delete lRDataDevice;
+    RDataDevice *rDataDevice = (RDataDevice*)wl_resource_get_user_data(resource);
+    delete rDataDevice;
 }
 
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 2
+#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 2
 void RDataDevice::RDataDevicePrivate::release(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);
@@ -32,19 +32,19 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
                                                  wl_resource *icon,
                                                  UInt32 serial)
 {
-    L_UNUSED(client);
-
     /* TODO: Use serial. */
     L_UNUSED(serial);
+    L_UNUSED(client);
 
+    RDataDevice *rDataDevice = (RDataDevice*)wl_resource_get_user_data(resource);
+    RSurface *rOriginSurface = (RSurface*)wl_resource_get_user_data(origin);
+    LSurface *lOriginSurface = rOriginSurface->surface();
     LDNDManager *dndManager = seat()->dndManager();
 
-    /*
-    // Check grab serial and if there is a current dragging goin on
-    if (dndManager->dragging()
-            || !lRDataDevice->seatGlobal()->pointerResource()
-            || (lRDataDevice->seatGlobal()->pointerResource()->serials().button != serial))
-        return; */
+    // Cancel if there is dragging going on from another client or if there is no focused surface from this client
+    if ( (dndManager->dragging() && dndManager->source() && dndManager->source()->client() != rDataDevice->client()) ||
+        (seat()->pointer()->focusSurface() != lOriginSurface))
+        return;
 
     // Removes pevious data source if any
     dndManager->cancel();
@@ -52,14 +52,18 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
     // Check if there is an icon
     if (icon)
     {
-        RSurface *lRSurface = (RSurface*)wl_resource_get_user_data(icon);
-        LSurface *lIcon = lRSurface->surface();
+        RSurface *rSurface = (RSurface*)wl_resource_get_user_data(icon);
+        LSurface *lIcon = rSurface->surface();
 
         if (!(lIcon->roleId() == LSurface::Role::Undefined || lIcon->roleId() == LSurface::Role::DNDIcon))
         {
-            wl_resource_post_error(resource,WL_DATA_DEVICE_ERROR_ROLE,"Given wl_surface has another role.");
+            wl_resource_post_error(resource, WL_DATA_DEVICE_ERROR_ROLE, "Given wl_surface has another role.");
             return;
         }
+
+        for (LSurface *s : compositor()->surfaces())
+            if (s->dndIcon())
+                s->imp()->setMapped(false);
 
         LDNDIconRole::Params dndIconRoleParams;
         dndIconRoleParams.surface = lIcon;
@@ -71,25 +75,21 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
     else
         dndManager->imp()->icon = nullptr;
 
-    RSurface *lRSurface = (RSurface*)wl_resource_get_user_data(origin);
-    LSurface *lOrigin = lRSurface->surface();
-    dndManager->imp()->origin = lOrigin;
+    dndManager->imp()->origin = lOriginSurface;
 
     // If source is null all drag events are sent only to the origin surface
     if (source)
     {
-        RDataSource *lRDataSource = (RDataSource*)wl_resource_get_user_data(source);
+        RDataSource *rDataSource = (RDataSource*)wl_resource_get_user_data(source);
 
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
         // Check if DND action was set
-        if (lRDataSource->version() >= 3 && lRDataSource->dataSource()->dndActions() == DND_NO_ACTION_SET)
+        if (rDataSource->version() >= 3 && rDataSource->dataSource()->dndActions() == LOUVRE_DND_NO_ACTION_SET)
         {
-            dndManager->imp()->icon = nullptr;
+            dndManager->cancel();
             return;
         }
-#endif
 
-        dndManager->imp()->source = lRDataSource->dataSource();
+        dndManager->imp()->source = rDataSource->dataSource();
     }
     else
         dndManager->imp()->source = nullptr;
@@ -100,42 +100,36 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
     if (seat()->pointer()->focusSurface())
     {
         seat()->pointer()->focusSurface()->client()->dataDevice().imp()->sendDNDEnterEventS(
-            seat()->pointer()->focusSurface(),0,0);
+            seat()->pointer()->focusSurface(), 0, 0);
     }
 }
 
-void RDataDevice::RDataDevicePrivate::set_selection(wl_client *, wl_resource *resource, wl_resource *source, UInt32 serial)
+void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resource *resource, wl_resource *source, UInt32 serial)
 {
-    /* TODO: Use serial. */
-    L_UNUSED(serial);
+    L_UNUSED(client);
 
-    RDataDevice *lRDataDevice = (RDataDevice*)wl_resource_get_user_data(resource);
+    RDataDevice *rDataDevice = (RDataDevice*)wl_resource_get_user_data(resource);
 
     if (source)
     {
-        RDataSource *lRDataSource = (RDataSource*)wl_resource_get_user_data(source);
+        RDataSource *rDataSource = (RDataSource*)wl_resource_get_user_data(source);
 
         // If this source is already used for clipboard
-        if (lRDataSource->dataSource() == seat()->dataSelection())
+        if (rDataSource->dataSource() == seat()->dataSelection())
             return;
 
-        // Check if serial matches any event
-        // if (lRDataDevice->seatGlobal()->keyboardResource()->serials().key != serial &&
-                // lRDataDevice->seatGlobal()->pointerResource()->serials().button != serial)
-            // return;
-
         // Ask the developer if the client should set the clipboard
-        if (!seat()->setSelectionRequest(&lRDataDevice->client()->dataDevice()))
+        if (!seat()->setSelectionRequest(&rDataDevice->client()->dataDevice(), serial))
         {
-            lRDataSource->sendCancelled();
+            rDataSource->cancelled();
             return;
         }
 
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
+#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
         // Check if was prevously used for DND
-        if (lRDataSource->version() >= 3 && lRDataSource->dataSource()->dndActions() != DND_NO_ACTION_SET)
+        if (rDataSource->version() >= 3 && rDataSource->dataSource()->dndActions() != LOUVRE_DND_NO_ACTION_SET)
         {
-            wl_resource_post_error(lRDataSource->resource(), WL_DATA_SOURCE_ERROR_INVALID_SOURCE, "Source for selection was previusly used for DND.");
+            wl_resource_post_error(rDataSource->resource(), WL_DATA_SOURCE_ERROR_INVALID_SOURCE, "Source for selection was previusly used for DND.");
             return;
         }
 #endif
@@ -144,25 +138,27 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *, wl_resource *re
         if (seat()->dataSelection())
         {
             if (seat()->dataSelection()->dataSourceResource())
-                seat()->dataSelection()->dataSourceResource()->sendCancelled();
+                seat()->dataSelection()->dataSourceResource()->cancelled();
             else
             {
-                seat()->dataSelection()->imp()->remove();
                 delete seat()->imp()->dataSelection;
             }
         }
 
         // Mark current source as selected
-        seat()->imp()->dataSelection = lRDataSource->dataSource();
+        seat()->imp()->dataSelection = rDataSource->dataSource();
 
         // Ask client to write to the compositor fds
-        for (const LDataSource::LSource &s : lRDataSource->dataSource()->sources())
-            lRDataSource->sendSend(s.mimeType, fileno(s.tmp));
+        for (const LDataSource::LSource &s : rDataSource->dataSource()->sources())
+            rDataSource->send(s.mimeType, fileno(s.tmp));
+
+        // If a client already has keyboard focus, send it the current clipboard
+        if (seat()->keyboard()->focusSurface())
+            seat()->keyboard()->focusSurface()->client()->dataDevice().sendSelectionEvent();
     }
-
-    // A NULL source should unset the clipboard, but we keep a copy of the contents
-
-    // If a client already has keyboard focus, send it the current clipboard
-    if (seat()->keyboard()->focusSurface())
-        seat()->keyboard()->focusSurface()->client()->dataDevice().sendSelectionEvent();
+    else
+    {
+        /* A NULL source should unset the clipboard, but we keep a copy of the contents
+         * then we don't let clients unset the clipboard. */
+    }
 }

@@ -15,9 +15,9 @@ LPRIVATE_CLASS(GSeat)
     static void release(wl_client *client, wl_resource *resource);
 #endif
 
-    RKeyboard *keyboardResource = nullptr;
-    RPointer *pointerResource = nullptr;
-    RDataDevice *dataDeviceResource = nullptr;
+    RKeyboard *rKeyboard = nullptr;
+    RPointer *rPointer = nullptr;
+    RDataDevice *rDataDevice = nullptr;
     std::list<GSeat*>::iterator clientLink;
 };
 

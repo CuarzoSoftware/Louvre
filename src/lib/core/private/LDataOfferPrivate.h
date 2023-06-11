@@ -9,14 +9,13 @@ using namespace Louvre;
 
 LPRIVATE_CLASS(LDataOffer)
     Wayland::RDataOffer *dataOfferResource = nullptr;
-    bool hasFinished                                        = false;
-    Usage usedFor                                           = Usage::Undefined;
+    bool hasFinished = false;
+    Usage usedFor = Usage::Undefined;
 
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
-    UInt32 acceptedActions                                  = DND_NO_ACTION_SET;
-    UInt32 preferredAction                                  = DND_NO_ACTION_SET;
+    // Since 3
+    UInt32 acceptedActions = LOUVRE_DND_NO_ACTION_SET;
+    UInt32 preferredAction = LOUVRE_DND_NO_ACTION_SET;
     void updateDNDAction();
-#endif
 };
 
 #endif // LDATAOFFERPRIVATE_H

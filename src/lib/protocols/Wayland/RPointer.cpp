@@ -26,13 +26,13 @@ RPointer::RPointer
 {
     m_imp = new RPointerPrivate();
     imp()->gSeat = gSeat;
-    gSeat->imp()->pointerResource = this;
+    gSeat->imp()->rPointer = this;
 }
 
 RPointer::~RPointer()
 {
     if (seatGlobal())
-        seatGlobal()->imp()->pointerResource = nullptr;
+        seatGlobal()->imp()->rPointer = nullptr;
 
     delete m_imp;
 }

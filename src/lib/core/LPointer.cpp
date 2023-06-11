@@ -338,7 +338,7 @@ void LPointer::sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int3
     Float24 dX = wl_fixed_from_int(discreteX);
     Float24 dY = wl_fixed_from_int(discreteY);
 
-    for (Protocols::Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+    for (Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
     {
         if (s->pointerResource())
         {

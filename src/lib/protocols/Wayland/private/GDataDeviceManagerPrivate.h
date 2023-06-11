@@ -1,5 +1,5 @@
-#ifndef DATADEVICEMANAGERGLOBALPRIVATE_H
-#define DATADEVICEMANAGERGLOBALPRIVATE_H
+#ifndef GDATADEVICEMANAGERPRIVATE_H
+#define GDATADEVICEMANAGERPRIVATE_H
 
 #include <protocols/Wayland/GDataDeviceManager.h>
 
@@ -12,4 +12,4 @@ LPRIVATE_CLASS(GDataDeviceManager)
     static void get_data_device(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *seat);
 };
 
-#endif // DATADEVICEMANAGERGLOBALPRIVATE_H
+#endif // GDATADEVICEMANAGERPRIVATE_H

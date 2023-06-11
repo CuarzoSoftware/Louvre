@@ -1,11 +1,9 @@
 #include <protocols/Wayland/GSeat.h>
 #include <protocols/Wayland/RDataDevice.h>
 #include <protocols/Wayland/RDataSource.h>
-
 #include <private/LDNDManagerPrivate.h>
 #include <private/LDataOfferPrivate.h>
 #include <private/LDataDevicePrivate.h>
-
 #include <LSurface.h>
 #include <LClient.h>
 #include <LDataSource.h>
@@ -16,6 +14,7 @@ using namespace Louvre;
 
 LDNDManager::LDNDManager(Params *params)
 {
+    L_UNUSED(params);
     m_imp = new LDNDManagerPrivate();
 }
 
@@ -54,22 +53,13 @@ bool LDNDManager::dragging() const
     return imp()->origin != nullptr;
 }
 
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
-
-Louvre::LDNDManager::Action LDNDManager::preferredAction() const
-{
-    return imp()->preferredAction;
-}
-
-#endif
-
 void LDNDManager::cancel()
 {
     if (imp()->focus)
         imp()->focus->client()->dataDevice().imp()->sendDNDLeaveEvent();
 
     if (source())
-        source()->dataSourceResource()->sendCancelled();
+        source()->dataSourceResource()->cancelled();
 
     imp()->clear();
     seat()->pointer()->setFocusC(nullptr);
@@ -84,12 +74,12 @@ void LDNDManager::drop()
 
         if (imp()->focus)
         {
-            for (Protocols::Wayland::GSeat *s : imp()->focus->client()->seatGlobals())
+            for (Wayland::GSeat *s : imp()->focus->client()->seatGlobals())
                 if (s->dataDeviceResource())
-                    s->dataDeviceResource()->sendDrop();
+                    s->dataDeviceResource()->drop();
 
             if (source())
-                source()->dataSourceResource()->sendDNDDropPerformed();
+                source()->dataSourceResource()->dndDropPerformed();
         }
         else
         {
@@ -98,30 +88,23 @@ void LDNDManager::drop()
     }
 }
 
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
-void LDNDManager::setPreferredAction(Louvre::LDNDManager::Action action)
+// Since 3
+
+LDNDManager::Action LDNDManager::preferredAction() const
+{
+    return imp()->preferredAction;
+}
+
+void LDNDManager::setPreferredAction(LDNDManager::Action action)
 {
     imp()->preferredAction = action;
 
     if (imp()->dstClient)
     {
-        for (Protocols::Wayland::GSeat *s : dstClient()->seatGlobals())
+        for (Wayland::GSeat *s : dstClient()->seatGlobals())
         {
             if (s->dataDeviceResource() && s->dataDeviceResource()->dataOffered())
                 s->dataDeviceResource()->dataOffered()->imp()->updateDNDAction();
         }
     }
-}
-#endif
-
-void LDNDManager::LDNDManagerPrivate::clear()
-{
-    focus = nullptr;
-    source = nullptr;
-    origin = nullptr;
-    icon = nullptr;
-    dstClient = nullptr;
-    dropped = false;
-    matchedMimeType = false;
-    destDidNotRequestReceive = 0;
 }

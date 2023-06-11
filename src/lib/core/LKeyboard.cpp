@@ -1,5 +1,5 @@
+#include <protocols/Wayland/private/RKeyboardPrivate.h>
 #include <protocols/Wayland/GSeat.h>
-#include <protocols/Wayland/RKeyboard.h>
 
 #include <private/LSeatPrivate.h>
 #include <private/LClientPrivate.h>
@@ -13,6 +13,7 @@
 #include <LCursor.h>
 #include <LOutput.h>
 #include <LTime.h>
+#include <LLog.h>
 
 #include <string.h>
 #include <unistd.h>
@@ -37,12 +38,22 @@ LKeyboard::~LKeyboard()
     delete m_imp;
 }
 
-void LKeyboard::setKeymap(const char *rules, const char *model, const char *layout, const char *variant, const char *options)
+bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layout, const char *variant, const char *options)
 {
     if (imp()->xkbKeymapFd != -1)
-         close(imp()->xkbKeymapFd);
+    {
+        close(imp()->xkbKeymapFd);
+        imp()->xkbKeymapFd = -1;
+    }
+
+    if (imp()->xkbKeymapState)
+    {
+        xkb_state_unref(imp()->xkbKeymapState);
+        imp()->xkbKeymapState = nullptr;
+    }
 
     char *keymapString,*map;
+    const char *xdgRuntimeDir;
 
     imp()->xkbKeymapName.rules = rules;
     imp()->xkbKeymapName.model = model;
@@ -53,6 +64,14 @@ void LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
     // Find a keymap matching suggestions
     imp()->xkbKeymap = xkb_keymap_new_from_names(imp()->xkbContext, &imp()->xkbKeymapName, XKB_KEYMAP_COMPILE_NO_FLAGS);
 
+    if (!imp()->xkbKeymap)
+    {
+        LLog::error("[keyboard] Failed to set keymap with names Rules: %s, Model: %s, Layout: %s, Variant: %s, Opetions: %s. Restoring default keymap.",
+                    rules, model, layout, variant, options);
+
+        goto fail;
+    }
+
     // Get the keymap string
     keymapString = xkb_keymap_get_as_string(imp()->xkbKeymap, XKB_KEYMAP_FORMAT_TEXT_V1);
 
@@ -60,7 +79,7 @@ void LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
     imp()->xkbKeymapSize = strlen(keymapString) + 1;
 
     // Get the XDG_RUNTIME_DIR env
-    const char *xdgRuntimeDir = getenv("XDG_RUNTIME_DIR");
+    xdgRuntimeDir = getenv("XDG_RUNTIME_DIR");
 
     if (!xdgRuntimeDir)
     {
@@ -78,10 +97,9 @@ void LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
     }
 
     // Write the keymap string
-    int dummy = ftruncate(imp()->xkbKeymapFd, imp()->xkbKeymapSize);
-    L_UNUSED(dummy);
+    ftruncate(imp()->xkbKeymapFd, imp()->xkbKeymapSize);
     map = (char*)mmap(NULL, imp()->xkbKeymapSize, PROT_READ|PROT_WRITE, MAP_SHARED, imp()->xkbKeymapFd, 0);
-    memcpy(map,keymapString,imp()->xkbKeymapSize);
+    memcpy(map, keymapString, imp()->xkbKeymapSize);
     munmap(map, imp()->xkbKeymapSize);
 
     // Keymap string not needed anymore
@@ -90,10 +108,58 @@ void LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
     // Create a xkb keyboard state to handle modifiers
     imp()->xkbKeymapState = xkb_state_new(imp()->xkbKeymap);
 
+    if (!imp()->xkbKeymapState)
+    {
+        LLog::error("[keyboard] Failed to get keymap state with names Rules: %s, Model: %s, Layout: %s, Variant: %s, Opetions: %s. Restoring default keymap.",
+                    rules, model, layout, variant, options);
+        goto fail;
+    }
+
+    imp()->keymapFormat = WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1;
+
     for (LClient *c : compositor()->clients())
         for (Protocols::Wayland::GSeat *s : c->seatGlobals())
             if (s->keyboardResource())
-                s->keyboardResource()->sendKeymap(keymapFd(), keymapSize());
+                s->keyboardResource()->keymap(keymapFormat(), keymapFd(), keymapSize());
+
+    return true;
+
+    fail:
+
+    if (rules != NULL || model != NULL || layout != NULL || variant != NULL || options != NULL)
+    {
+        if (setKeymap())
+            return false;
+        else
+            LLog::error("[keyboard] Failed to set default keymap. Disabling keymap.");
+    }
+
+    // Worst case, disables keymap
+
+    imp()->xkbKeymapSize = 0;
+
+    if (imp()->xkbKeymapFd != -1)
+    {
+        close(imp()->xkbKeymapFd);
+        imp()->xkbKeymapFd = -1;
+    }
+
+    if (imp()->xkbKeymapState)
+    {
+        xkb_state_unref(imp()->xkbKeymapState);
+        imp()->xkbKeymapState = nullptr;
+    }
+
+    imp()->xkbKeymapFd = open("/dev/null", O_RDONLY);
+
+    imp()->keymapFormat = WL_KEYBOARD_KEYMAP_FORMAT_NO_KEYMAP;
+
+    for (LClient *c : compositor()->clients())
+        for (Protocols::Wayland::GSeat *s : c->seatGlobals())
+            if (s->keyboardResource())
+                s->keyboardResource()->keymap(keymapFormat(), keymapFd(), keymapSize());
+
+    return false;
 }
 
 Int32 LKeyboard::keymapFd() const
@@ -104,6 +170,11 @@ Int32 LKeyboard::keymapFd() const
 Int32 LKeyboard::keymapSize() const
 {
     return imp()->xkbKeymapSize;
+}
+
+UInt32 LKeyboard::keymapFormat() const
+{
+    return imp()->keymapFormat;
 }
 
 LSurface *LKeyboard::focusSurface() const
@@ -118,7 +189,6 @@ const LKeyboard::KeyboardModifiersState &LKeyboard::modifiersState() const
 
 void LKeyboard::setFocus(LSurface *surface)
 {
-    // If surface is not nullptr
     if (surface)
     {
         // If already has focus
@@ -129,30 +199,53 @@ void LKeyboard::setFocus(LSurface *surface)
             // If another surface has focus
             if (focusSurface())
             {
-                for (Protocols::Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+                UInt32 serial = LCompositor::nextSerial();
+                for (Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+                {
                     if (s->keyboardResource())
-                        s->keyboardResource()->sendLeave(focusSurface());
+                    {
+                        s->keyboardResource()->imp()->serials.leave = serial;
+                        s->keyboardResource()->leave(serial, focusSurface()->surfaceResource());
+                    }
+                }
             }
 
             if (!focusSurface() || (focusSurface() && focusSurface()->client() != surface->client()))
                 surface->client()->dataDevice().sendSelectionEvent();
 
-            bool hasRKeyboard = false;
+            // If the new surface has no wl_pointer then it is like calling setFocus(nullptr)
+            imp()->keyboardFocusSurface = nullptr;
 
-            for (Protocols::Wayland::GSeat *s : surface->client()->seatGlobals())
+            UInt32 serial = LCompositor::nextSerial();
+
+            // Pack currently pressed keys
+            wl_array keys;
+            wl_array_init(&keys);
+
+            for (UInt32 key : seat()->keyboard()->pressedKeys())
+            {
+                UInt32 *p = (UInt32*)wl_array_add(&keys, sizeof(UInt32));
+                *p = key;
+            }
+
+            for (Wayland::GSeat *s : surface->client()->seatGlobals())
             {
                 if (s->keyboardResource())
                 {
-                    hasRKeyboard = true;
-                    s->keyboardResource()->sendEnter(surface);
-                    s->keyboardResource()->sendModifiers(modifiersState().depressed, modifiersState().latched, modifiersState().locked, modifiersState().group);
+                    imp()->keyboardFocusSurface = surface;
+                    s->keyboardResource()->imp()->serials.enter = serial;
+                    s->keyboardResource()->enter(serial, surface->surfaceResource(), &keys);
+                    s->keyboardResource()->imp()->serials.modifiers = serial;
+                    s->keyboardResource()->modifiers(
+                        serial,
+                        modifiersState().depressed,
+                        modifiersState().latched,
+                        modifiersState().locked,
+                        modifiersState().group);
                 }
             }
 
-            if (hasRKeyboard)
-                imp()->keyboardFocusSurface = surface;
-            else
-                imp()->keyboardFocusSurface = nullptr;
+            wl_array_release(&keys);
         }
     }
     else
@@ -160,9 +253,15 @@ void LKeyboard::setFocus(LSurface *surface)
         // Remove focus from current surface
         if (focusSurface())
         {
-            for (Protocols::Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+            UInt32 serial = LCompositor::nextSerial();
+            for (Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+            {
                 if (s->keyboardResource())
-                    s->keyboardResource()->sendLeave(focusSurface());
+                {
+                    s->keyboardResource()->imp()->serials.leave = serial;
+                    s->keyboardResource()->leave(serial, focusSurface()->surfaceResource());
+                }
+            }
         }
         imp()->keyboardFocusSurface = nullptr;
     }
@@ -174,20 +273,34 @@ void LKeyboard::sendKeyEvent(UInt32 keyCode, UInt32 keyState)
     if (!focusSurface())
         return;
 
-    for (Protocols::Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+    UInt32 serial = LCompositor::nextSerial();
+    UInt32 ms = LTime::ms();
+
+    for (Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+    {
         if (s->keyboardResource())
-            s->keyboardResource()->sendKey(keyCode, keyState);
+        {
+            s->keyboardResource()->imp()->serials.key = serial;
+            s->keyboardResource()->key(serial, ms, keyCode, keyState);
+        }
+    }
 }
 
 void LKeyboard::sendModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
 {
-    // If no surface has focus
     if (!focusSurface())
         return;
 
-    for (Protocols::Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+    UInt32 serial = LCompositor::nextSerial();
+
+    for (Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+    {
         if (s->keyboardResource())
-            s->keyboardResource()->sendModifiers(depressed, latched, locked, group);
+        {
+            s->keyboardResource()->imp()->serials.modifiers = serial;
+            s->keyboardResource()->modifiers(serial, depressed, latched, locked, group);
+        }
+    }
 }
 
 void LKeyboard::sendModifiersEvent()
@@ -197,7 +310,10 @@ void LKeyboard::sendModifiersEvent()
 
 xkb_keysym_t LKeyboard::keySymbol(UInt32 keyCode)
 {
-    return xkb_state_key_get_one_sym(imp()->xkbKeymapState,keyCode+8);
+    if (!imp()->xkbKeymapState)
+        return keyCode;
+
+    return xkb_state_key_get_one_sym(imp()->xkbKeymapState, keyCode+8);
 }
 
 xkb_state *LKeyboard::keymapState() const
@@ -207,10 +323,13 @@ xkb_state *LKeyboard::keymapState() const
 
 bool LKeyboard::isModActive(const char *name) const
 {
+    if (!imp()->xkbKeymapState)
+        return false;
+
     return xkb_state_mod_name_is_active(
                 imp()->xkbKeymapState,
                 name,
-        XKB_STATE_MODS_EFFECTIVE);
+                XKB_STATE_MODS_EFFECTIVE);
 }
 
 const std::list<UInt32> &LKeyboard::pressedKeys() const
@@ -218,11 +337,22 @@ const std::list<UInt32> &LKeyboard::pressedKeys() const
     return imp()->pressedKeys;
 }
 
-void LKeyboard::LKeyboardPrivate::preKeyEvent(UInt32 keyCode, UInt32 keyState)
+bool LKeyboard::isKeyCodePressed(UInt32 keyCode) const
 {
-    xkb_state_update_key(xkbKeymapState,
-                         keyCode+8,
-                         (xkb_key_direction)keyState);
+    for (UInt32 key : pressedKeys())
+    {
+        if (key == keyCode)
+            return true;
+    }
+    return false;
+}
+
+bool LKeyboard::LKeyboardPrivate::backendKeyEvent(UInt32 keyCode, UInt32 keyState)
+{
+    if (xkbKeymapState)
+        xkb_state_update_key(xkbKeymapState,
+                             keyCode+8,
+                             (xkb_key_direction)keyState);
 
     if (keyState == LKeyboard::Pressed)
         pressedKeys.push_back(keyCode);
@@ -231,47 +361,71 @@ void LKeyboard::LKeyboardPrivate::preKeyEvent(UInt32 keyCode, UInt32 keyState)
 
     LCompositor::compositor()->seat()->keyboard()->keyEvent(keyCode, keyState);
     LCompositor::compositor()->seat()->keyboard()->imp()->updateModifiers();
+
+    // CTRL + ALT + (F1, F2, ..., F10) : Switch TTY.
+    if (LCompositor::compositor()->seat()->imp()->libseatHandle &&
+        keyCode >= KEY_F1 &&
+        keyCode <= KEY_F10 &&
+        (
+            LCompositor::compositor()->seat()->keyboard()->isModActive(XKB_MOD_NAME_CTRL) ||
+            LCompositor::compositor()->seat()->keyboard()->isKeyCodePressed(KEY_LEFTCTRL)
+        ) &&
+        (
+            LCompositor::compositor()->seat()->keyboard()->isModActive(XKB_MOD_NAME_ALT) ||
+            LCompositor::compositor()->seat()->keyboard()->isKeyCodePressed(KEY_LEFTALT)
+        )
+        )
+    {
+        LCompositor::compositor()->seat()->setTTY(keyCode - KEY_F1 + 1);
+        return true;
+    }
+
+    return false;
 }
 
 void LKeyboard::LKeyboardPrivate::updateModifiers()
 {
-    modifiersState.depressed = xkb_state_serialize_mods(xkbKeymapState, XKB_STATE_MODS_DEPRESSED);
-    modifiersState.latched = xkb_state_serialize_mods(xkbKeymapState, XKB_STATE_MODS_LATCHED);
-    modifiersState.locked = xkb_state_serialize_mods(xkbKeymapState, XKB_STATE_MODS_LOCKED);
-    modifiersState.group = xkb_state_serialize_layout(xkbKeymapState, XKB_STATE_LAYOUT_EFFECTIVE);
-    seat()->keyboard()->keyModifiersEvent(modifiersState.depressed,modifiersState.latched,modifiersState.locked,modifiersState.group);
+    if (xkbKeymapState)
+    {
+        modifiersState.depressed = xkb_state_serialize_mods(xkbKeymapState, XKB_STATE_MODS_DEPRESSED);
+        modifiersState.latched = xkb_state_serialize_mods(xkbKeymapState, XKB_STATE_MODS_LATCHED);
+        modifiersState.locked = xkb_state_serialize_mods(xkbKeymapState, XKB_STATE_MODS_LOCKED);
+        modifiersState.group = xkb_state_serialize_layout(xkbKeymapState, XKB_STATE_LAYOUT_EFFECTIVE);
+    }
+    seat()->keyboard()->keyModifiersEvent(modifiersState.depressed,
+                                          modifiersState.latched,
+                                          modifiersState.locked,
+                                          modifiersState.group);
 }
 
-#if LOUVRE_WL_SEAT_VERSION >= 4
+// Since 4
 
-    Int32 LKeyboard::repeatRate() const
+Int32 LKeyboard::repeatRate() const
+{
+    return imp()->repeatRate;
+}
+
+Int32 LKeyboard::repeatDelay() const
+{
+    return imp()->repeatDelay;
+}
+
+void LKeyboard::setRepeatInfo(Int32 rate, Int32 msDelay)
+{
+    if (rate < 0)
+        imp()->repeatRate = 0;
+    else
+        imp()->repeatRate = rate;
+
+    if (msDelay < 0)
+        imp()->repeatDelay = 0;
+    else
+        imp()->repeatDelay = msDelay;
+
+    for (LClient *c : compositor()->clients())
     {
-        return imp()->repeatRate;
+        for (Protocols::Wayland::GSeat *s : c->seatGlobals())
+            if (s->keyboardResource())
+                s->keyboardResource()->repeatInfo(rate, msDelay);
     }
-
-    Int32 LKeyboard::repeatDelay() const
-    {
-        return imp()->repeatDelay;
-    }
-
-    void LKeyboard::setRepeatInfo(Int32 rate, Int32 msDelay)
-    {
-        if (rate < 0)
-            imp()->repeatRate = 0;
-        else
-            imp()->repeatRate = rate;
-
-        if (msDelay < 0)
-            imp()->repeatDelay = 0;
-        else
-            imp()->repeatDelay = msDelay;
-
-        for (LClient *c : compositor()->clients())
-        {
-            for (Protocols::Wayland::GSeat *s : c->seatGlobals())
-                if (s->keyboardResource())
-                    s->keyboardResource()->sendRepeatInfo(rate, msDelay);
-        }
-    }
-
-#endif
+}

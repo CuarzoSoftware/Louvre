@@ -38,7 +38,7 @@ bool LCompositor::createGlobalsRequest()
                      LOUVRE_SUBCOMPOSITOR_VERSION, this, &GSubcompositor::GSubcompositorPrivate::bind);
 
     wl_global_create(display(), &wl_data_device_manager_interface,
-                     LOUVRE_DATA_DEVICE_MANAGER_VERSION, this, &GDataDeviceManager::GDataDeviceManagerPrivate::bind);
+                     LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION, this, &GDataDeviceManager::GDataDeviceManagerPrivate::bind);
 
     wl_global_create(display(), &xdg_wm_base_interface,
                      LOUVRE_XDG_WM_BASE_VERSION, this, &XdgShell::GXdgWmBase::GXdgWmBasePrivate::bind);

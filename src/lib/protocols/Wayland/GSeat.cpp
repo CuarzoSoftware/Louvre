@@ -42,24 +42,24 @@ GSeat::~GSeat()
         pointerResource()->imp()->gSeat = nullptr;
 
     if (dataDeviceResource())
-        dataDeviceResource()->imp()->seatGlobal = nullptr;
+        dataDeviceResource()->imp()->gSeat = nullptr;
 
     delete m_imp;
 }
 
 RKeyboard *GSeat::keyboardResource() const
 {
-    return imp()->keyboardResource;
+    return imp()->rKeyboard;
 }
 
 RPointer *GSeat::pointerResource() const
 {
-    return imp()->pointerResource;
+    return imp()->rPointer;
 }
 
 RDataDevice *GSeat::dataDeviceResource() const
 {
-    return imp()->dataDeviceResource;
+    return imp()->rDataDevice;
 }
 
 bool GSeat::capabilities(UInt32 capabilities)

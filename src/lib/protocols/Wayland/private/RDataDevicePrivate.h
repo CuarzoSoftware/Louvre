@@ -1,5 +1,5 @@
-#ifndef DATADEVICERESOURCEPRIVATE_H
-#define DATADEVICERESOURCEPRIVATE_H
+#ifndef RDATADEVICEPRIVATE_H
+#define RDATADEVICEPRIVATE_H
 
 #include <protocols/Wayland/RDataDevice.h>
 
@@ -10,12 +10,13 @@ LPRIVATE_CLASS(RDataDevice)
     static void start_drag(wl_client *client, wl_resource *resource, wl_resource *source, wl_resource *origin, wl_resource *icon, UInt32 serial);
     static void set_selection(wl_client *client, wl_resource *resource, wl_resource *source, UInt32 serial);
 
-    #if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= WL_DATA_DEVICE_RELEASE_SINCE_VERSION
+    #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 2
     static void release(wl_client *client, wl_resource *resource);
     #endif
 
-    GSeat *seatGlobal = nullptr;
+    GSeat *gSeat = nullptr;
     LDataOffer *dataOffered = nullptr;
+    LastEventSerials serials;
 };
 
-#endif // DATADEVICERESOURCEPRIVATE_H
+#endif // RDATADEVICEPRIVATE_H

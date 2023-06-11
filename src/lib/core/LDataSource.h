@@ -47,7 +47,7 @@ public:
      */
     const std::list<LSource>&sources() const;
 
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
+    // Since 3
 
     /*!
      * @brief Actions available for drag & drop sessions.
@@ -56,7 +56,6 @@ public:
      * Bitfield flags are described in LDNDManager::Action.
      */
     UInt32 dndActions() const;
-#endif
 
     /*!
      * @brief Wayland resource of the data source.

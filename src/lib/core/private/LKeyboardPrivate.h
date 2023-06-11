@@ -22,8 +22,9 @@ LPRIVATE_CLASS(LKeyboard)
     xkb_rule_names xkbKeymapName;
     Int32 xkbKeymapSize;
     Int32 xkbKeymapFd = -1;
+    UInt32 keymapFormat;
 
-    void preKeyEvent(UInt32 keyCode, UInt32 keyState);
+    bool backendKeyEvent(UInt32 keyCode, UInt32 keyState);
     void updateModifiers();
 
     KeyboardModifiersState modifiersState;

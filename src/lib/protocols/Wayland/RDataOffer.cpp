@@ -1,19 +1,6 @@
-#include <private/LDataOfferPrivate.h>
-#include <private/LDataSourcePrivate.h>
-#include <private/LDataDevicePrivate.h>
-#include <private/LDNDManagerPrivate.h>
-
 #include <protocols/Wayland/private/RDataOfferPrivate.h>
 #include <protocols/Wayland/RDataDevice.h>
-#include <protocols/Wayland/RDataSource.h>
-
-#include <LClient.h>
-#include <LCompositor.h>
-#include <LSeat.h>
-
-#include <cstring>
-#include <stdio.h>
-#include <unistd.h>
+#include <private/LDataOfferPrivate.h>
 
 using namespace Louvre::Protocols::Wayland;
 
@@ -22,7 +9,7 @@ struct wl_data_offer_interface dataOffer_implementation =
    .accept = &RDataOffer::RDataOfferPrivate::accept,
    .receive = &RDataOffer::RDataOfferPrivate::receive,
    .destroy = &RDataOffer::RDataOfferPrivate::destroy,
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
+#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
    .finish = &RDataOffer::RDataOfferPrivate::finish,
    .set_actions = &RDataOffer::RDataOfferPrivate::set_actions
 #endif
@@ -30,57 +17,68 @@ struct wl_data_offer_interface dataOffer_implementation =
 
 RDataOffer::RDataOffer
 (
-    RDataDevice *dataDeviceResource,
+    RDataDevice *rDataDevice,
     UInt32 id
 )
     :LResource
     (
-        dataDeviceResource->client(),
+        rDataDevice->client(),
         &wl_data_offer_interface,
-        dataDeviceResource->version(),
+        rDataDevice->version(),
         id,
         &dataOffer_implementation,
         &RDataOffer::RDataOfferPrivate::resource_destroy
     )
 {
     m_imp = new RDataOfferPrivate();
-    imp()->dataDeviceResource = dataDeviceResource;
-    imp()->dataOffer = new LDataOffer(this);
+    imp()->rDataDevice = rDataDevice;
+    imp()->lDataOffer = new LDataOffer(this);
 }
 
 RDataOffer::~RDataOffer()
 {
+    delete imp()->lDataOffer;
     delete m_imp;
-}
-
-void RDataOffer::sendAction(UInt32 action)
-{
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= WL_DATA_OFFER_ACTION_SINCE_VERSION
-    if (version() >= WL_DATA_OFFER_ACTION_SINCE_VERSION)
-        wl_data_offer_send_action(resource(), action);
-#endif
-}
-
-void RDataOffer::sendSourceActions(UInt32 actions)
-{
-    L_UNUSED(actions);
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
-    if (version() >= 3 && seat()->dndManager()->source()->dataSourceResource()->version() >= 3)
-        wl_data_offer_send_source_actions(resource(), seat()->dndManager()->source()->dndActions());
-#endif
-}
-
-void RDataOffer::sendOffer(const char *mimeType)
-{
-    wl_data_offer_send_offer(resource(), mimeType);
 }
 
 LDataOffer *RDataOffer::dataOffer() const
 {
-    return imp()->dataOffer;
+    return imp()->lDataOffer;
 }
 
 RDataDevice *RDataOffer::dataDeviceResource() const
 {
-    return imp()->dataDeviceResource;
+    return imp()->rDataDevice;
+}
+
+bool RDataOffer::offer(const char *mimeType)
+{
+    wl_data_offer_send_offer(resource(), mimeType);
+    return true;
+}
+
+bool RDataOffer::sourceActions(UInt32 sourceActions)
+{
+#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
+    if (version() >= 3)
+    {
+        wl_data_offer_send_source_actions(resource(), sourceActions);
+        return true;
+    }
+#endif
+    L_UNUSED(sourceActions);
+    return false;
+}
+
+bool RDataOffer::action(UInt32 dndAction)
+{
+#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
+    if (version() >= 3)
+    {
+        wl_data_offer_send_action(resource(), dndAction);
+        return true;
+    }
+#endif
+    L_UNUSED(dndAction);
+    return false;
 }

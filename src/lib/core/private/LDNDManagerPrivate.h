@@ -14,7 +14,9 @@ LPRIVATE_CLASS(LDNDManager)
 
     void clear();
 
+    // Since 3
     Action preferredAction                                      = NoAction;
+
     LDNDIconRole *icon                                          = nullptr;
     LSurface *origin                                            = nullptr;
     LSurface *focus                                             = nullptr;

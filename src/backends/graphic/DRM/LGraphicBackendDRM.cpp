@@ -531,7 +531,6 @@ UInt32 LGraphicBackend::getTextureID(LOutput *output, LTexture *texture)
     }
 
     return srmBufferGetTextureID(bkndRendererDevice, (SRMBuffer*)texture->imp()->graphicBackendData);
-
 }
 
 void LGraphicBackend::destroyTexture(LTexture *texture)

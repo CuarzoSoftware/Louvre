@@ -17,7 +17,7 @@ using namespace Louvre;
 void LPointer::pointerMoveEvent(Float32 dx, Float32 dy)
 {
     /* For simplification, we handle the event in pointerPosChangeEvent().
-     * The input backends emit pointerMoveEvent() or pointerPosChangeEvent() but
+     * An input backends emit pointerMoveEvent() or pointerPosChangeEvent() but
      * not both.*/
     pointerPosChangeEvent(cursor()->posC().x() + dx * 1.4f,
                           cursor()->posC().y() + dy * 1.4f);
@@ -38,7 +38,10 @@ void LPointer::pointerPosChangeEvent(Float32 x, Float32 y)
 
     // Update the drag & drop icon (if there was one)
     if (seat()->dndManager()->icon())
-        cursor()->repaintOutputs();
+    {
+        seat()->dndManager()->icon()->surface()->setPosC(cursor()->posC());
+        seat()->dndManager()->icon()->surface()->repaintOutputs();
+    }
 
     // Update the Toplevel size (if there was one being resized)
     if (resizingToplevel())

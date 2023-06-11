@@ -1,32 +1,29 @@
 #include <protocols/Wayland/private/RDataOfferPrivate.h>
 #include <protocols/Wayland/private/RDataSourcePrivate.h>
 #include <protocols/Wayland/private/RDataDevicePrivate.h>
-
 #include <protocols/Wayland/GSeat.h>
-
 #include <private/LDNDManagerPrivate.h>
 #include <private/LDataOfferPrivate.h>
 #include <private/LDataDevicePrivate.h>
-
 #include <LClient.h>
 #include <LSeat.h>
-
 #include <unistd.h>
 #include <cstring>
 
 void RDataOffer::RDataOfferPrivate::resource_destroy(wl_resource *resource)
 {
-    RDataOffer *lRDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
+    RDataOffer *rDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
 
-    for (Protocols::Wayland::GSeat *s : lRDataOffer->client()->seatGlobals())
-        if (s->dataDeviceResource() && s->dataDeviceResource()->dataOffered() == lRDataOffer->dataOffer())
+    for (GSeat *s : rDataOffer->client()->seatGlobals())
+        if (s->dataDeviceResource() && s->dataDeviceResource()->dataOffered() == rDataOffer->dataOffer())
             s->dataDeviceResource()->imp()->dataOffered = nullptr;
 
-    delete lRDataOffer;
+    delete rDataOffer;
 }
 
-void RDataOffer::RDataOfferPrivate::destroy(wl_client *, wl_resource *resource)
+void RDataOffer::RDataOfferPrivate::destroy(wl_client *client, wl_resource *resource)
 {
+    L_UNUSED(client);
     wl_resource_destroy(resource);
 }
 
@@ -38,7 +35,7 @@ void RDataOffer::RDataOfferPrivate::accept(wl_client *client, wl_resource *resou
     /* TODO: Use serial */
     RDataOffer *lRDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
 
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
+#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
     if (lRDataOffer->version() >= 3 && lRDataOffer->dataOffer()->imp()->hasFinished)
         wl_resource_post_error(resource, WL_DATA_OFFER_ERROR_INVALID_FINISH, "Invalid DND action mask.");
 #endif
@@ -47,7 +44,7 @@ void RDataOffer::RDataOfferPrivate::accept(wl_client *client, wl_resource *resou
         seat()->dndManager()->imp()->matchedMimeType = true;
 }
 
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
+#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
 void RDataOffer::RDataOfferPrivate::finish(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);
@@ -77,17 +74,17 @@ void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *reso
 {
     L_UNUSED(client);
 
-    RDataOffer *lRDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
+    RDataOffer *rDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
 
     // If used in drag n drop
-    if (lRDataOffer->dataOffer()->usedFor() == LDataOffer::DND && seat()->dndManager()->source())
+    if (rDataOffer->dataOffer()->usedFor() == LDataOffer::DND && seat()->dndManager()->source())
     {
         // Ask the source client to write the data to the FD given the mime type
-        seat()->dndManager()->source()->dataSourceResource()->sendSend(mime_type, fd);
+        seat()->dndManager()->source()->dataSourceResource()->send(mime_type, fd);
     }
 
     // If used in clipboard
-    else if (lRDataOffer->dataOffer()->usedFor() == LDataOffer::Selection && seat()->dataSelection())
+    else if (rDataOffer->dataOffer()->usedFor() == LDataOffer::Selection && seat()->dataSelection())
     {
         // Louvre keeps a copy of the source clipboard for each mime type (so we don't ask the source client to write the data)
         for (LDataSource::LSource &s : seat()->dataSelection()->imp()->sources)
@@ -117,17 +114,36 @@ void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *reso
     close(fd);
 }
 
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
-void RDataOffer::RDataOfferPrivate::set_actions(wl_client *, wl_resource *resource, UInt32 dnd_actions, UInt32 preferred_action)
+#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
+void RDataOffer::RDataOfferPrivate::set_actions(wl_client *client, wl_resource *resource, UInt32 dnd_actions, UInt32 preferred_action)
 {
-    RDataOffer *lRDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
+    L_UNUSED(client);
 
-    if (lRDataOffer->dataOffer()->imp()->acceptedActions == dnd_actions &&
-            lRDataOffer->dataOffer()->imp()->preferredAction == preferred_action)
+    RDataOffer *rDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
+
+    if (rDataOffer->dataOffer()->imp()->acceptedActions == dnd_actions && rDataOffer->dataOffer()->imp()->preferredAction == preferred_action)
         return;
 
-    lRDataOffer->dataOffer()->imp()->acceptedActions = dnd_actions;
-    lRDataOffer->dataOffer()->imp()->preferredAction = preferred_action;
-    lRDataOffer->dataOffer()->imp()->updateDNDAction();
+    if (rDataOffer->dataOffer()->usedFor() != LDataOffer::DND)
+    {
+        wl_resource_post_error(resource, -1, "Data offer not being used for DND.");
+        return;
+    }
+
+    if (dnd_actions > 8)
+    {
+        wl_resource_post_error(resource, WL_DATA_OFFER_ERROR_INVALID_ACTION, "Invalid dnd_actions.");
+        return;
+    }
+
+    if (preferred_action != 0 && preferred_action != 1 && preferred_action != 2 && preferred_action != 4)
+    {
+        wl_resource_post_error(resource, WL_DATA_OFFER_ERROR_INVALID_ACTION_MASK, "Invalid preferred_action.");
+        return;
+    }
+
+    rDataOffer->dataOffer()->imp()->acceptedActions = dnd_actions;
+    rDataOffer->dataOffer()->imp()->preferredAction = preferred_action;
+    rDataOffer->dataOffer()->imp()->updateDNDAction();
 }
 #endif

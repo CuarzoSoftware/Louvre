@@ -1,17 +1,7 @@
 #include <protocols/Wayland/private/RDataSourcePrivate.h>
 #include <protocols/Wayland/GDataDeviceManager.h>
-
 #include <private/LDataSourcePrivate.h>
 #include <private/LCompositorPrivate.h>
-#include <private/LDataOfferPrivate.h>
-#include <private/LDataDevicePrivate.h>
-#include <private/LDNDManagerPrivate.h>
-
-#include <LClient.h>
-#include <LSeat.h>
-
-#include <string.h>
-#include <unistd.h>
 
 using namespace Louvre::Protocols::Wayland;
 
@@ -19,28 +9,28 @@ struct wl_data_source_interface dataSource_implementation =
 {
     .offer = &RDataSource::RDataSourcePrivate::offer,
     .destroy = &RDataSource::RDataSourcePrivate::destroy,
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= WL_DATA_SOURCE_ACTION_SINCE_VERSION
+#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
     .set_actions = &RDataSource::RDataSourcePrivate::set_actions,
 #endif
 };
 
 RDataSource::RDataSource
 (
-    GDataDeviceManager *dataDeviceManagerGlobal,
+    GDataDeviceManager *gDataDeviceManager,
     UInt32 id
 )
     :LResource
     (
-        dataDeviceManagerGlobal->client(),
+        gDataDeviceManager->client(),
         &wl_data_source_interface,
-        dataDeviceManagerGlobal->version(),
+        gDataDeviceManager->version(),
         id,
         &dataSource_implementation,
         &RDataSource::RDataSourcePrivate::resource_destroy
     )
 {
     m_imp = new RDataSourcePrivate();
-    imp()->dataSource = new LDataSource(this);
+    imp()->lDataSource = new LDataSource(this);
 }
 
 RDataSource::~RDataSource()
@@ -51,48 +41,69 @@ RDataSource::~RDataSource()
 
     // Check if used by clipboard
     if (dataSource() != seat()->dataSelection())
-    {
-        dataSource()->imp()->remove();
-        delete imp()->dataSource;
-    }
+        delete imp()->lDataSource;
     else
         dataSource()->imp()->dataSourceResource = nullptr;
 
     delete m_imp;
 }
 
-void RDataSource::sendDNDDropPerformed()
-{
-    #if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
-    if (version() >= 3)
-    {
-        if (seat()->dndManager()->imp()->matchedMimeType)
-            wl_data_source_send_dnd_drop_performed(resource());
-        else
-            seat()->dndManager()->cancel();
-    }
-#endif
-}
-
-void RDataSource::sendCancelled()
-{
-    wl_data_source_send_cancelled(resource());
-}
-
-void RDataSource::sendAction(UInt32 action)
-{
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
-    if (version() >= 3)
-        wl_data_source_send_action(resource(), action);
-#endif
-}
-
-void RDataSource::sendSend(const char *mimeType, Int32 fd)
-{
-    wl_data_source_send_send(resource(), mimeType, fd);
-}
-
 LDataSource *RDataSource::dataSource() const
 {
-    return imp()->dataSource;
+    return imp()->lDataSource;
+}
+
+bool RDataSource::target(const char *mimeType)
+{
+    wl_data_source_send_target(resource(), mimeType);
+    return true;
+}
+
+bool RDataSource::send(const char *mimeType, Int32 fd)
+{
+    wl_data_source_send_send(resource(), mimeType, fd);
+    return true;
+}
+
+bool RDataSource::cancelled()
+{
+    wl_data_source_send_cancelled(resource());
+    return true;
+}
+
+bool RDataSource::dndDropPerformed()
+{
+#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
+    if (version() >= 3)
+    {
+        wl_data_source_send_dnd_drop_performed(resource());
+        return true;
+    }
+#endif
+    return false;
+}
+
+bool RDataSource::dndFinished()
+{
+#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
+    if (version() >= 3)
+    {
+        wl_data_source_send_dnd_finished(resource());
+        return true;
+    }
+#endif
+    return false;
+}
+
+bool RDataSource::action(UInt32 dndAction)
+{
+#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
+    if (version() >= 3)
+    {
+        wl_data_source_send_action(resource(), dndAction);
+        return true;
+    }
+#endif
+    L_UNUSED(dndAction);
+    return false;
 }

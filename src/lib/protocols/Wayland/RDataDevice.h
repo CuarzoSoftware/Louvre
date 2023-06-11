@@ -1,25 +1,32 @@
-#ifndef DATADEVICERESOURCE_H
-#define DATADEVICERESOURCE_H
+#ifndef RDATADEVICE_H
+#define RDATADEVICE_H
 
 #include <LResource.h>
 
 class Louvre::Protocols::Wayland::RDataDevice : public LResource
 {
 public:
-    RDataDevice(GDataDeviceManager *dataDeviceManagerGlobal, GSeat *seatGlobal, Int32 id);
+    RDataDevice(GDataDeviceManager *gDataDeviceManager, GSeat *gSeat, Int32 id);
     ~RDataDevice();
 
-    void sendEnter(LSurface *surface, Float24 x, Float24 y, RDataOffer *dataOfferResource);
-    void sendLeave();
-    void sendMotion(Float24 x, Float24 y);
-    void sendDrop();
-    void sendDataOffer(RDataOffer *dataOfferResource);
-    void sendSelection(RDataOffer *dataOfferResource);
+    struct LastEventSerials
+    {
+        UInt32 enter = 0;
+    };
 
     GSeat *seatGlobal() const;
     LDataOffer *dataOffered() const;
+    const LastEventSerials &serials() const;
+
+    // Since 1
+    bool dataOffer(RDataOffer *id);
+    bool enter(UInt32 serial, RSurface *surface, Float24 x, Float24 y, RDataOffer *id);
+    bool leave();
+    bool motion(UInt32 time, Float24 x, Float24 y);
+    bool drop();
+    bool selection(RDataOffer *id);
 
     LPRIVATE_IMP(RDataDevice)
 };
 
-#endif // DATADEVICERESOURCE_H
+#endif // RDATADEVICE_H

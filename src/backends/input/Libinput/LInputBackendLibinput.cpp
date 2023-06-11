@@ -118,15 +118,10 @@ static Int32 processInput(int, unsigned int, void *userData)
             keyEvent = libinput_event_get_keyboard_event(ev);
             keyState = libinput_event_keyboard_get_key_state(keyEvent);
             keyCode = libinput_event_keyboard_get_key(keyEvent);
-            seat->keyboard()->imp()->preKeyEvent(keyCode, keyState);
 
-            // CTRL + ALT + (F1, F2, ..., F10) : Switch TTY.
-            if (keyCode >= KEY_F1 &&
-                keyCode <= KEY_F10 &&
-                seat->keyboard()->isModActive(XKB_MOD_NAME_ALT) &&
-                seat->keyboard()->isModActive(XKB_MOD_NAME_CTRL))
+            if (seat->keyboard()->imp()->backendKeyEvent(keyCode, keyState))
             {
-                seat->setTTY(keyCode - KEY_F1 + 1);
+                libinput_event_destroy(ev);
                 return 0;
             }
         }

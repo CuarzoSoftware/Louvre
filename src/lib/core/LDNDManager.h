@@ -124,8 +124,6 @@ public:
      */
     void drop();
 
-#if LOUVRE_DATA_DEVICE_MANAGER_VERSION >= 3
-
     /*!
      * @brief Preferred actions of the destination client.
      *
@@ -142,7 +140,6 @@ public:
      * If the specified action is not supported by the source and destination client calling this method is a no-op.
      */
     void setPreferredAction(Action action);
-#endif
 
     /*!
      * @brief Request to start a drag & drop session

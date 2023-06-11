@@ -26,11 +26,14 @@ void LOutput::paintGL()
 
     p->clearScreen();
 
+    if (seat()->dndManager()->icon())
+        compositor()->raiseSurface(seat()->dndManager()->icon()->surface());
+
     // Draws every surface
     for (LSurface *s : compositor()->surfaces())
     {
         // Skip some surfaces
-        if (!s->mapped() || s->dndIcon() || s->cursorRole())
+        if (!s->mapped() || s->minimized() || s->cursorRole())
         {
             s->requestNextFrame();
             continue;
@@ -67,25 +70,6 @@ void LOutput::paintGL()
             cursor()->texture(),                   
             LRect(0,cursor()->texture()->sizeB()),
             cursor()->rectC());
-    }
-
-    // Check if there is a drag & drop session going on with icon
-    if (seat()->dndManager()->icon())
-    {
-        LSurface *s = seat()->dndManager()->icon()->surface();
-
-        if (!s->mapped())
-            return;
-
-        // Sets the position of the icon to be the same as the cursor's position
-        s->setPosC(cursor()->posC());
-
-        p->drawTextureC(
-                    s->texture(),
-                    LRect(0, s->sizeB()),
-                    LRect(s->rolePosC(),s->sizeC()));
-
-        s->requestNextFrame();
     }
 }
 //! [paintGL]

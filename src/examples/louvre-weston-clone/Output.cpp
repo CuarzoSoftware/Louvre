@@ -45,6 +45,9 @@ void Output::paintGL()
     Int32 currBuff = currentBuffer();
     Int32 prevBuff = 1 - currBuff;
 
+    if (seat()->dndManager()->icon())
+        compositor()->raiseSurface(seat()->dndManager()->icon()->surface());
+
     // Parsea la lista de superficies del compositor (LSurface -> Surface)
     list<Surface*> &surfaces = (list<Surface*>&)compositor()->surfaces();
 
@@ -58,7 +61,7 @@ void Output::paintGL()
         Surface *s = *it;
 
         // Saltamos superficies que no nos interesan
-        if (!s->mapped() || s->roleId() == LSurface::Role::Cursor || s->roleId() == LSurface::Role::Undefined || s->minimized())
+        if (!s->mapped() || s->cursorRole()|| s->roleId() == LSurface::Role::Undefined || s->minimized())
             continue;
 
         // Si se encontró la superficie fullscreen
@@ -330,7 +333,6 @@ void Output::paintGL()
 
     }  
 
-
     // Dibujamos la barra superior
     if (first[currBuff])
     {
@@ -347,6 +349,4 @@ void Output::paintGL()
 
 
     exposedRegionG[currBuff].clear();
-
-
 }

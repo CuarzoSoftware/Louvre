@@ -1,14 +1,12 @@
+#include <protocols/Wayland/private/RDataDevicePrivate.h>
+#include <protocols/Wayland/RDataOffer.h>
+#include <protocols/Wayland/GSeat.h>
 #include <private/LDataDevicePrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LDataOfferPrivate.h>
 #include <private/LDataSourcePrivate.h>
 #include <private/LSeatPrivate.h>
 #include <private/LDNDManagerPrivate.h>
-
-#include <protocols/Wayland/RDataOffer.h>
-#include <protocols/Wayland/GSeat.h>
-#include <protocols/Wayland/private/RDataDevicePrivate.h>
-
 #include <LTime.h>
 
 using namespace Louvre;
@@ -33,18 +31,18 @@ void LDataDevice::sendSelectionEvent()
     // Send data device selection first
     if (seat()->dataSelection())
     {
-        for (Protocols::Wayland::GSeat *d : client()->seatGlobals())
+        for (Wayland::GSeat *d : client()->seatGlobals())
         {
             if (d->dataDeviceResource())
             {
-                Protocols::Wayland::RDataOffer *lRDataOffer = new Protocols::Wayland::RDataOffer(d->dataDeviceResource(), 0);
-                lRDataOffer->dataOffer()->imp()->usedFor = LDataOffer::Selection;
-                d->dataDeviceResource()->sendDataOffer(lRDataOffer);
+                Wayland::RDataOffer *rDataOffer = new Wayland::RDataOffer(d->dataDeviceResource(), 0);
+                rDataOffer->dataOffer()->imp()->usedFor = LDataOffer::Selection;
+                d->dataDeviceResource()->dataOffer(rDataOffer);
 
                 for (const LDataSource::LSource &s : seat()->dataSelection()->sources())
-                    lRDataOffer->sendOffer(s.mimeType);
+                    rDataOffer->offer(s.mimeType);
 
-                d->dataDeviceResource()->sendSelection(lRDataOffer);
+                d->dataDeviceResource()->selection(rDataOffer);
             }
         }
     }
@@ -56,27 +54,31 @@ void LDataDevice::LDataDevicePrivate::sendDNDEnterEventS(LSurface *surface, Floa
     {
         sendDNDLeaveEvent();
 
+        UInt32 serial = LCompositor::nextSerial();
+
         if (seat()->dndManager()->source())
         {
-            for (Protocols::Wayland::GSeat *d : client->seatGlobals())
+            for (Wayland::GSeat *d : client->seatGlobals())
             {
                 if (d->dataDeviceResource())
                 {
-                    Protocols::Wayland::RDataOffer *lRDataOffer = new Protocols::Wayland::RDataOffer(d->dataDeviceResource(), 0);
+                    Wayland::RDataOffer *rDataOffer = new Wayland::RDataOffer(d->dataDeviceResource(), 0);
 
-                    lRDataOffer->dataOffer()->imp()->usedFor = LDataOffer::DND;
-                    d->dataDeviceResource()->imp()->dataOffered = lRDataOffer->dataOffer();
-                    d->dataDeviceResource()->sendDataOffer(lRDataOffer);
+                    rDataOffer->dataOffer()->imp()->usedFor = LDataOffer::DND;
+                    d->dataDeviceResource()->imp()->dataOffered = rDataOffer->dataOffer();
+                    d->dataDeviceResource()->dataOffer(rDataOffer);
 
                     for (const LDataSource::LSource &s : seat()->dndManager()->source()->sources())
-                        lRDataOffer->sendOffer(s.mimeType);
+                        rDataOffer->offer(s.mimeType);
 
-                    d->dataDeviceResource()->sendEnter(surface,
-                                                       x,
-                                                       y,
-                                                       lRDataOffer);
+                    d->dataDeviceResource()->imp()->serials.enter = serial;
+                    d->dataDeviceResource()->enter(serial,
+                                                   surface->surfaceResource(),
+                                                   x,
+                                                   y,
+                                                   rDataOffer);
 
-                    lRDataOffer->sendSourceActions(seat()->dndManager()->source()->dndActions());
+                    rDataOffer->sourceActions(seat()->dndManager()->source()->dndActions());
                 }
             }
 
@@ -86,14 +88,16 @@ void LDataDevice::LDataDevicePrivate::sendDNDEnterEventS(LSurface *surface, Floa
         {
             if (surface == seat()->dndManager()->origin())
             {
-                for (Protocols::Wayland::GSeat *d : client->seatGlobals())
+                for (Wayland::GSeat *d : client->seatGlobals())
                 {
                     if (d->dataDeviceResource())
                     {
-                        d->dataDeviceResource()->sendEnter(surface,
-                                                           x,
-                                                           y,
-                                                           NULL);
+                        d->dataDeviceResource()->imp()->serials.enter = serial;
+                        d->dataDeviceResource()->enter(serial,
+                                                       surface->surfaceResource(),
+                                                       x,
+                                                       y,
+                                                       NULL);
                     }
                 }
 
@@ -107,17 +111,20 @@ void LDataDevice::LDataDevicePrivate::sendDNDMotionEventS(Float24 x, Float24 y)
 {
     if (seat()->dndManager()->dragging() && seat()->dndManager()->focus())
         if (seat()->dndManager()->source() || (!seat()->dndManager()->source() && seat()->dndManager()->focus() == seat()->dndManager()->origin()))
-            for (Protocols::Wayland::GSeat *d : client->seatGlobals())
+        {
+            UInt32 ms = LTime::ms();
+            for (Wayland::GSeat *d : client->seatGlobals())
                 if (d->dataDeviceResource())
-                    d->dataDeviceResource()->sendMotion(x, y);
+                    d->dataDeviceResource()->motion(ms, x, y);
+        }
 }
 
 void LDataDevice::LDataDevicePrivate::sendDNDLeaveEvent()
 {
     if (seat()->dndManager()->dragging() && seat()->dndManager()->focus())
-        for (Protocols::Wayland::GSeat *d : client->seatGlobals())
+        for (Wayland::GSeat *d : client->seatGlobals())
             if (d->dataDeviceResource())
-                d->dataDeviceResource()->sendLeave();
+                d->dataDeviceResource()->leave();
 
     seat()->dndManager()->imp()->matchedMimeType = false;
     seat()->dndManager()->imp()->focus = nullptr;

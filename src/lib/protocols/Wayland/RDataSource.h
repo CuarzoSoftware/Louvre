@@ -1,24 +1,27 @@
-#ifndef DATASOURCERESOURCE_H
-#define DATASOURCERESOURCE_H
+#ifndef RDATASOURCE_H
+#define RDATASOURCE_H
 
 #include <LResource.h>
 
 class Louvre::Protocols::Wayland::RDataSource : public LResource
 {
 public:
-    RDataSource(GDataDeviceManager *dataDeviceManagerGlobal, UInt32 id);
+    RDataSource(GDataDeviceManager *gDataDeviceManager, UInt32 id);
     ~RDataSource();
 
-    // Events
-    void sendDNDDropPerformed();
-    void sendCancelled();
-    void sendAction(UInt32 action);
-    void sendSend(const char *mimeType, Int32 fd);
-
     LDataSource *dataSource() const;
+
+    // Since 1
+    bool target(const char *mimeType);
+    bool send(const char *mimeType, Int32 fd);
+    bool cancelled();
+
+    // Since 3
+    bool dndDropPerformed();
+    bool dndFinished();
+    bool action(UInt32 dndAction);
 
     LPRIVATE_IMP(RDataSource)
 };
 
-
-#endif // DATASOURCERESOURCE_H
+#endif // RDATASOURCE_H

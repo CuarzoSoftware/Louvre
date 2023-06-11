@@ -17,8 +17,10 @@ void LSeat::initialized()
 //! [initialized]
 
 //! [setSelectionRequest]
-bool LSeat::setSelectionRequest(LDataDevice *device)
+bool LSeat::setSelectionRequest(LDataDevice *device, UInt32 serial)
 {
+    L_UNUSED(serial);
+
     // Let the client set the clipboard only one of its surfaces has pointer or keyboard focus
     if ((pointer()->focusSurface() && pointer()->focusSurface()->client() == device->client()) ||
        (keyboard()->focusSurface() && keyboard()->focusSurface()->client() == device->client()))
