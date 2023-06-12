@@ -16,6 +16,13 @@ public:
     void initializeGL() override;
     void paintGL() override;
 
+
+    // If access to output textures
+    bool textureAccess = false;
+    void paintWithTextureAccess();
+    UInt32 getPrevBufferIndex();
+    LRegion damage, newDamage;
+
     // Si es true vuelve a repintar toda la salida en el prox frame
     bool fullRefresh = true;
 

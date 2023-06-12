@@ -12,6 +12,13 @@ class Surface : public LSurface
 public:
     Surface(LSurface::Params *params, GLuint textureUnit = 1);
 
+    LRect lastRect;
+    LRegion damage;
+    LRegion opaque;
+    bool bufferScaleMatchGlobalScale = false;
+    bool changedOrder = true;
+    bool occluded = false;
+
     void repaint();
 
     void mappingChanged() override;

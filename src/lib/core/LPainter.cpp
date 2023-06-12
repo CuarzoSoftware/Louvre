@@ -107,9 +107,7 @@ LPainter::LPainter()
     imp()->modeUniform = glGetUniformLocation(imp()->programObject, "mode");
     imp()->colorUniform = glGetUniformLocation(imp()->programObject, "colorRGBA");
     imp()->alphaUniform = glGetUniformLocation(imp()->programObject, "alpha");
-
 }
-
 
 void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src, const LRect &dst)
 {
@@ -138,11 +136,11 @@ void LPainter::drawTextureC(LTexture *texture, const LRect &src, const LRect &ds
 {
     setViewportC(dst);
     glActiveTexture(GL_TEXTURE0 + texture->unit());
-    glUniform1f(imp()->alphaUniform,alpha);
-    glUniform1i(imp()->modeUniform,0);
-    glUniform1i(imp()->activeTextureUniform,texture->unit());
-    glBindTexture(GL_TEXTURE_2D,texture->id(imp()->output));
-    glUniform2f(imp()->texSizeUniform,texture->sizeB().w(), texture->sizeB().h());
+    glUniform1f(imp()->alphaUniform, alpha);
+    glUniform1i(imp()->modeUniform, 0);
+    glUniform1i(imp()->activeTextureUniform, texture->unit());
+    glBindTexture(GL_TEXTURE_2D, texture->id(imp()->output));
+    glUniform2f(imp()->texSizeUniform, texture->sizeB().w(), texture->sizeB().h());
     glUniform4f(imp()->srcRectUniform, src.x(), src.y(), src.w(), src.h());
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }

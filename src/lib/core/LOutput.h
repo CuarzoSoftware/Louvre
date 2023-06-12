@@ -134,6 +134,9 @@ public:
      */
     Int32 currentBuffer() const;
 
+    UInt32 buffersCount() const;
+    LTexture *bufferTexture(UInt32 bufferIndex);
+
     /*!
      * @brief Sets the output scale.
      *

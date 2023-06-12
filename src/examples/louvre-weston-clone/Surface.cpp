@@ -10,7 +10,6 @@ Surface::Surface(LSurface::Params *params, GLuint textureUnit) : LSurface(params
 
 void Surface::repaint()
 {
-
     for (LOutput *o : outputs())
     {
         if (outputParams.find(o) != outputParams.end())
@@ -51,6 +50,7 @@ void Surface::mappingChanged()
         for (Output *o : (list<Output*>&)outputs())
         {
             o->addExposedRect(LRect(rolePosC(),sizeC()));
+            o->newDamage.addRect(LRect(rolePosC(),sizeC()));
             o->repaint();
         }
     }
@@ -58,6 +58,7 @@ void Surface::mappingChanged()
 
 void Surface::raised()
 {
+    changedOrder = true;
     repaint();
 }
 

@@ -192,6 +192,8 @@ namespace Louvre
         EGLDisplay (*getOutputEGLDisplay)(LOutput *output);
         const LSize *(*getOutputPhysicalSize)(LOutput *output);
         Int32 (*getOutputCurrentBufferIndex)(LOutput *output);
+        UInt32 (*getOutputBuffersCount)(LOutput *output);
+        LTexture *(*getOutputBuffer)(LOutput *output, UInt32 bufferIndex);
         const char *(*getOutputName)(LOutput *output);
         const char *(*getOutputManufacturerName)(LOutput *output);
         const char *(*getOutputModelName)(LOutput *output);

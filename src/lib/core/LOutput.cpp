@@ -76,6 +76,16 @@ Int32 LOutput::currentBuffer() const
     return compositor()->imp()->graphicBackend->getOutputCurrentBufferIndex((LOutput*)this);
 }
 
+UInt32 LOutput::buffersCount() const
+{
+    return compositor()->imp()->graphicBackend->getOutputBuffersCount((LOutput*)this);
+}
+
+LTexture *LOutput::bufferTexture(UInt32 bufferIndex)
+{
+    return compositor()->imp()->graphicBackend->getOutputBuffer((LOutput*)this, bufferIndex);
+}
+
 void LOutput::setScale(Int32 scale)
 {
     imp()->outputScale = scale;

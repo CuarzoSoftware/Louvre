@@ -55,6 +55,7 @@ struct Output
     SRMConnector *conn;
     LSize physicalSize;
     list<LOutputMode*>modes;
+    LTexture *textures[2];
 };
 
 struct OutputMode
@@ -107,6 +108,8 @@ static void initConnector(Backend *bknd, SRMConnector *conn)
 
     Output *bkndOutput = new Output();
     output->imp()->graphicBackendData = bkndOutput;
+    bkndOutput->textures[0] = nullptr;
+    bkndOutput->textures[1] = nullptr;
 
     bkndOutput->conn = conn;
     bkndOutput->physicalSize.setW(srmConnectorGetmmWidth(conn));
@@ -341,7 +344,20 @@ bool LGraphicBackend::scheduleOutputRepaint(LOutput *output)
 void LGraphicBackend::uninitializeOutput(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    UInt32 texturesCount = srmConnectorGetBuffersCount(bkndOutput->conn);
     srmConnectorUninitialize(bkndOutput->conn);
+
+    for (UInt32 i = 0; i < texturesCount; i++)
+    {
+        if (bkndOutput->textures[i])
+        {
+            // Do not destroy connectors native buffer
+            bkndOutput->textures[i]->imp()->graphicBackendData = nullptr;
+            delete bkndOutput->textures[i];
+            bkndOutput->textures[i] = nullptr;
+        }
+    }
+
 }
 
 const LSize *LGraphicBackend::getOutputPhysicalSize(LOutput *output)
@@ -354,6 +370,35 @@ Int32 LGraphicBackend::getOutputCurrentBufferIndex(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     return srmConnectorGetCurrentBufferIndex(bkndOutput->conn);
+}
+
+UInt32 LGraphicBackend::getOutputBuffersCount(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorGetBuffersCount(bkndOutput->conn);
+}
+
+LTexture *LGraphicBackend::getOutputBuffer(LOutput *output, UInt32 bufferIndex)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+
+    SRMBuffer *buffer = srmConnectorGetBuffer(bkndOutput->conn, bufferIndex);
+
+    if (!buffer)
+        return nullptr;
+
+    if (bkndOutput->textures[bufferIndex])
+        return bkndOutput->textures[bufferIndex];
+
+    LTexture *tex = new LTexture(0);
+
+    tex->imp()->graphicBackendData = buffer;
+    tex->imp()->format = srmBufferGetFormat(buffer);
+    tex->imp()->sizeB.setW(srmBufferGetWidth(buffer));
+    tex->imp()->sizeB.setH(srmBufferGetHeight(buffer));
+    bkndOutput->textures[bufferIndex] = tex;
+
+    return tex;
 }
 
 const char *LGraphicBackend::getOutputName(LOutput *output)
@@ -536,7 +581,9 @@ UInt32 LGraphicBackend::getTextureID(LOutput *output, LTexture *texture)
 void LGraphicBackend::destroyTexture(LTexture *texture)
 {
     SRMBuffer *buffer = (SRMBuffer*)texture->imp()->graphicBackendData;
-    srmBufferDestroy(buffer);
+
+    if (buffer)
+        srmBufferDestroy(buffer);
 }
 
 LGraphicBackendInterface API;
@@ -553,6 +600,8 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.uninitializeOutput = &LGraphicBackend::uninitializeOutput;
     API.getOutputPhysicalSize = &LGraphicBackend::getOutputPhysicalSize;
     API.getOutputCurrentBufferIndex = &LGraphicBackend::getOutputCurrentBufferIndex;
+    API.getOutputBuffersCount = &LGraphicBackend::getOutputBuffersCount;
+    API.getOutputBuffer = &LGraphicBackend::getOutputBuffer;
     API.getOutputName = &LGraphicBackend::getOutputName;
     API.getOutputManufacturerName = &LGraphicBackend::getOutputManufacturerName;
     API.getOutputModelName = &LGraphicBackend::getOutputModelName;

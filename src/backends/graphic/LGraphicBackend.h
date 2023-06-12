@@ -32,6 +32,8 @@ public:
     /* Connector physical size in mm */
     static const LSize *getOutputPhysicalSize(LOutput *output);
     static Int32 getOutputCurrentBufferIndex(LOutput *output);
+    static UInt32 getOutputBuffersCount(LOutput *output);
+    static LTexture *getOutputBuffer(LOutput *output, UInt32 bufferIndex);
     static const char *getOutputName(LOutput *output);
     static const char *getOutputManufacturerName(LOutput *output);
     static const char *getOutputModelName(LOutput *output);
