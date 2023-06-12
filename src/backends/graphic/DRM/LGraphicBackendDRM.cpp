@@ -509,7 +509,7 @@ EGLContext LGraphicBackend::getAllocatorEGLContext(LCompositor *compositor)
 bool LGraphicBackend::createTextureFromCPUBuffer(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels)
 {
     Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
-    SRMBuffer *bkndBuffer = srmBufferCreateFromCPU(bknd->core, size.w(), size.h(), stride, pixels, format);
+    SRMBuffer *bkndBuffer = srmBufferCreateFromCPU(bknd->core, NULL, size.w(), size.h(), stride, pixels, format);
 
     if (bkndBuffer)
     {
@@ -540,7 +540,7 @@ bool LGraphicBackend::createTextureFromWaylandDRM(LTexture *texture, void *wlBuf
 bool LGraphicBackend::createTextureFromDMA(LTexture *texture, const LDMAPlanes *planes)
 {
     Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
-    SRMBuffer *bkndBuffer = srmBufferCreateFromDMA(bknd->core, (SRMBufferDMAData*)planes);
+    SRMBuffer *bkndBuffer = srmBufferCreateFromDMA(bknd->core, NULL, (SRMBufferDMAData*)planes);
 
     if (bkndBuffer)
     {

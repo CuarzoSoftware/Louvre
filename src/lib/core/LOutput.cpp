@@ -158,8 +158,8 @@ void LOutput::LOutputPrivate::backendPageFlipped()
 {
     bool running = output->state() == LOutput::Initialized;
 
-    if (running)
-        compositor()->imp()->renderMutex.lock();
+    //if (running)
+        //compositor()->imp()->renderMutex.lock();
 
     // Send presentation time feedback
     output->imp()->presentationSeq++;
@@ -167,8 +167,8 @@ void LOutput::LOutputPrivate::backendPageFlipped()
     for (LSurface *surf : compositor()->surfaces())
         surf->imp()->sendPresentationFeedback(output, presentationTime);
 
-    if (running)
-        compositor()->imp()->renderMutex.unlock();
+    //if (running)
+        //compositor()->imp()->renderMutex.unlock();
 }
 
 void LOutput::repaint()

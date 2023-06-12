@@ -94,7 +94,7 @@ void LSeat::setCapabilities(UInt32 capabilitiesFlags)
 
     for (LClient *c : compositor()->clients())
     {
-        for (Protocols::Wayland::GSeat *s : c->seatGlobals())
+        for (Wayland::GSeat *s : c->seatGlobals())
             s->capabilities(capabilitiesFlags);
     }
 }

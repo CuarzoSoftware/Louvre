@@ -448,6 +448,7 @@ void Output::paintWithTextureAccess()
     oldDamage.subtractRegion(newDamage);
     damage = newDamage;
 
+    /*
     // Paint old damage
     for (const LRect &d : oldDamage.rects())
     {
@@ -456,6 +457,8 @@ void Output::paintWithTextureAccess()
             d,
             d);
     }
+*/
+    newDamage.addRegion(oldDamage);
 
     if (!passFullscreen)
         fullscreenIt = surfaces.begin();
