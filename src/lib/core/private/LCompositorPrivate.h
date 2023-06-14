@@ -49,11 +49,8 @@ LPRIVATE_CLASS(LCompositor)
         bool isGraphicBackendInitialized = false;
     void unitGraphicBackend();
 
-
-
     Int32 globalScale                                           = 1;
     bool isInputBackendInitialized                              = false;
-
 
     std::thread::id threadId;
     mutex renderMutex;
@@ -75,11 +72,10 @@ LPRIVATE_CLASS(LCompositor)
     // Surfaces
     list<LSurface*>surfaces;
 
-    LInputBackendInterface *inputBackend                        = nullptr;
+    LInputBackendInterface *inputBackend = nullptr;
 
     // Dylib
-    void *inputBackendHandle                                    = nullptr;
-
+    void *inputBackendHandle = nullptr;
 };
 
 

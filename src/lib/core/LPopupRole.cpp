@@ -5,6 +5,7 @@
 #include <private/LSurfacePrivate.h>
 #include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LPositionerPrivate.h>
+#include <private/LPointerPrivate.h>
 
 #include <protocols/XdgShell/xdg-shell.h>
 

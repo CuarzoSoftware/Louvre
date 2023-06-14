@@ -11,29 +11,18 @@ class Output : public LOutput
 public:
     Output();
 
-    void addExposedRect(const LRect &rect);
-
+    void fullDamage();
     void initializeGL() override;
+    void resizeGL() override;
     void paintGL() override;
 
-
-    // If access to output textures
-    bool textureAccess = false;
-    void paintWithTextureAccess();
-    UInt32 getPrevBufferIndex();
     LRegion damage, newDamage;
 
-    // Si es true vuelve a repintar toda la salida en el prox frame
-    bool fullRefresh = true;
-
-    // Regiones expuestas del FRONT y BACK buffer
-    LRegion exposedRegionG[2];
+    // Output rect since the last paintGL()
+    LRect lastRectC;
 
     // Almacena recta del cursor (si no es posible composición por hardware)
     LRect cursorRectG[2];
-
-    // Indica si es la primera vez que se renderiza luego de la inicialización
-    bool first[2];
 };
 
 #endif // OUTPUT_H

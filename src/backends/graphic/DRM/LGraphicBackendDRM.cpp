@@ -55,7 +55,7 @@ struct Output
     SRMConnector *conn;
     LSize physicalSize;
     list<LOutputMode*>modes;
-    LTexture *textures[2];
+    LTexture **textures = nullptr;
 };
 
 struct OutputMode
@@ -108,9 +108,7 @@ static void initConnector(Backend *bknd, SRMConnector *conn)
 
     Output *bkndOutput = new Output();
     output->imp()->graphicBackendData = bkndOutput;
-    bkndOutput->textures[0] = nullptr;
-    bkndOutput->textures[1] = nullptr;
-
+    bkndOutput->textures = nullptr;
     bkndOutput->conn = conn;
     bkndOutput->physicalSize.setW(srmConnectorGetmmWidth(conn));
     bkndOutput->physicalSize.setH(srmConnectorGetmmHeight(conn));
@@ -195,28 +193,21 @@ static void initializeGL(SRMConnector *connector, void *userData)
 {
     SRM_UNUSED(connector);
     LOutput *output = (LOutput*)userData;
-    output->imp()->backendInitialized();
-    output->imp()->backendBeforePaint();
-    output->initializeGL();
-    output->imp()->backendAfterPaint();
+    output->imp()->backendInitializeGL();
 }
 
 static void paintGL(SRMConnector *connector, void *userData)
 {
     SRM_UNUSED(connector);
     LOutput *output = (LOutput*)userData;
-    output->imp()->backendBeforePaint();
-    output->paintGL();
-    output->imp()->backendAfterPaint();
+    output->imp()->backendPaintGL();
 }
 
 static void resizeGL(SRMConnector *connector, void *userData)
 {
     SRM_UNUSED(connector);
     LOutput *output = (LOutput*)userData;
-    output->imp()->backendBeforePaint();
-    output->resizeGL();
-    output->imp()->backendAfterPaint();
+    output->imp()->backendResizeGL();
 }
 
 static void pageFlipped(SRMConnector *connector, void *userData)
@@ -230,9 +221,7 @@ static void uninitializeGL(SRMConnector *connector, void *userData)
 {
     SRM_UNUSED(connector);
     LOutput *output = (LOutput*)userData;
-    output->imp()->backendBeforePaint();
-    output->uninitializeGL();
-    output->imp()->backendAfterPaint();
+    output->imp()->backendUninitializeGL();
 }
 
 static SRMConnectorInterface connectorInterface =
@@ -347,17 +336,22 @@ void LGraphicBackend::uninitializeOutput(LOutput *output)
     UInt32 texturesCount = srmConnectorGetBuffersCount(bkndOutput->conn);
     srmConnectorUninitialize(bkndOutput->conn);
 
-    for (UInt32 i = 0; i < texturesCount; i++)
+    if (bkndOutput->textures)
     {
-        if (bkndOutput->textures[i])
+        for (UInt32 i = 0; i < texturesCount; i++)
         {
-            // Do not destroy connectors native buffer
-            bkndOutput->textures[i]->imp()->graphicBackendData = nullptr;
-            delete bkndOutput->textures[i];
-            bkndOutput->textures[i] = nullptr;
+            if (bkndOutput->textures[i])
+            {
+                // Do not destroy connectors native buffer
+                bkndOutput->textures[i]->imp()->graphicBackendData = nullptr;
+                delete bkndOutput->textures[i];
+                bkndOutput->textures[i] = nullptr;
+            }
         }
-    }
 
+        free(bkndOutput->textures);
+        bkndOutput->textures = nullptr;
+    }
 }
 
 const LSize *LGraphicBackend::getOutputPhysicalSize(LOutput *output)
@@ -383,21 +377,23 @@ LTexture *LGraphicBackend::getOutputBuffer(LOutput *output, UInt32 bufferIndex)
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
     SRMBuffer *buffer = srmConnectorGetBuffer(bkndOutput->conn, bufferIndex);
+    UInt32 buffersCount = srmConnectorGetBuffersCount(bkndOutput->conn);
 
-    if (!buffer)
+    if (!buffer || !buffersCount)
         return nullptr;
+
+    if (!bkndOutput->textures)
+        bkndOutput->textures = (LTexture**)calloc(buffersCount, sizeof(LTexture*));
 
     if (bkndOutput->textures[bufferIndex])
         return bkndOutput->textures[bufferIndex];
 
     LTexture *tex = new LTexture(0);
-
     tex->imp()->graphicBackendData = buffer;
     tex->imp()->format = srmBufferGetFormat(buffer);
     tex->imp()->sizeB.setW(srmBufferGetWidth(buffer));
     tex->imp()->sizeB.setH(srmBufferGetHeight(buffer));
     bkndOutput->textures[bufferIndex] = tex;
-
     return tex;
 }
 

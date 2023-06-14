@@ -1,8 +1,6 @@
 #include <protocols/XdgShell/private/GXdgWmBasePrivate.h>
 #include <protocols/XdgShell/private/RXdgSurfacePrivate.h>
-
 #include <protocols/XdgShell/xdg-shell.h>
-
 #include <private/LClientPrivate.h>
 
 using namespace Louvre::Protocols;
@@ -45,7 +43,8 @@ const list<RXdgSurface *> &GXdgWmBase::xdgSurfaces() const
     return imp()->xdgSurfaces;
 }
 
-void XdgShell::GXdgWmBase::ping(UInt32 serial) const
+bool XdgShell::GXdgWmBase::ping(UInt32 serial)
 {
     xdg_wm_base_send_ping(resource(), serial);
+    return true;
 }

@@ -1,10 +1,10 @@
 #include <protocols/XdgShell/GXdgWmBase.h>
-
-#include <private/LClientPrivate.h>
 #include <private/LDataDevicePrivate.h>
-
+#include <private/LClientPrivate.h>
 #include <LCompositor.h>
 #include <LClient.h>
+
+using namespace std;
 
 LClient::LClient(Params *params)
 {
@@ -55,12 +55,12 @@ const list<Wayland::GOutput*> &LClient::outputGlobals() const
     return imp()->outputGlobals;
 }
 
-const Wayland::GCompositor *LClient::compositorGlobal() const
+const list<Wayland::GCompositor*> &LClient::compositorGlobals() const
 {
-    return imp()->compositorGlobal;
+    return imp()->compositorGlobals;
 }
 
-const list<Wayland::GSubcompositor *> &LClient::subcompositorGlobals() const
+const list<Wayland::GSubcompositor*> &LClient::subcompositorGlobals() const
 {
     return imp()->subcompositorGlobals;
 }

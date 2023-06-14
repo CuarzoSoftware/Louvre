@@ -1,5 +1,5 @@
-#ifndef XDGWMBASE_H
-#define XDGWMBASE_H
+#ifndef GXDGWMBASE_H
+#define GXDGWMBASE_H
 
 #include <LResource.h>
 
@@ -18,9 +18,11 @@ public:
     ~GXdgWmBase();
 
     const list<RXdgSurface*> &xdgSurfaces() const;
-    void ping(UInt32 serial) const;
+
+    // Since 1
+    bool ping(UInt32 serial);
 
     LPRIVATE_IMP(GXdgWmBase)
 };
 
-#endif // XDGWMBASE_H
+#endif // GXDGWMBASE_H

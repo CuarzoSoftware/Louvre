@@ -4,6 +4,7 @@
 
 #include <protocols/XdgShell/xdg-shell.h>
 
+#include <private/LPointerPrivate.h>
 #include <private/LPopupRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 

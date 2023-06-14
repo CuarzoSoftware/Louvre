@@ -19,7 +19,6 @@ public:
     void destroySurfaceRequest(LSurface *surface) override;
 
     LSurface *fullscreenSurface = nullptr;
-
 };
 
 #endif // COMPOSITOR_H

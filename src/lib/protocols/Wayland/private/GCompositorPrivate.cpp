@@ -15,13 +15,6 @@ void GCompositor::GCompositorPrivate::bind(wl_client *client, void *data, UInt32
     L_UNUSED(data);
 
     LClient *lClient = compositor()->getClientFromNativeResource(client);
-
-    if (lClient->compositorGlobal())
-    {
-        LLog::warning("Client bound twice to the wl_compositor singleton global. Ignoring it.");
-        return;
-    }
-
     new GCompositor(lClient,
                     &wl_compositor_interface,
                     version,

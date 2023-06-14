@@ -19,6 +19,10 @@ void RPointer::RPointerPrivate::set_cursor(wl_client *client, wl_resource *resou
     if (serial != rPointer->serials().enter)
         return;
 
+    if (!seat()->pointer()->focusSurface() ||
+        seat()->pointer()->focusSurface()->client() != rPointer->client())
+        return;
+
     if (surface)
     {
         Wayland::RSurface *rSurface = (Wayland::RSurface*)wl_resource_get_user_data(surface);

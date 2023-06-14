@@ -22,7 +22,7 @@ public:
     void repaint();
 
     void mappingChanged() override;
-    void raised() override;
+    void orderChanged() override;
     UInt64 allOutputsRequestedNewFrame();
 
     // Indica si es la primera vez que se mapea desde su creación (utilizado en Surface::mappingChanged() para posicionarla centrada en pantalla)

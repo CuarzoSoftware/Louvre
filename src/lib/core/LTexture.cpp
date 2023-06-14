@@ -1,5 +1,6 @@
 #include <private/LTexturePrivate.h>
 #include <private/LCompositorPrivate.h>
+#include <private/LCursorPrivate.h>
 #include <LRect.h>
 
 #include <GLES2/gl2.h>
@@ -133,6 +134,9 @@ LTexture::~LTexture()
 
 void LTexture::LTexturePrivate::deleteTexture(LTexture *texture)
 {
+    if (texture == compositor()->cursor()->texture())
+        compositor()->cursor()->useDefault();
+
     increaseSerial();
     glActiveTexture(GL_TEXTURE0 + unit);
 

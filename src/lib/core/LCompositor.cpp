@@ -1,4 +1,3 @@
-#include "LPainter.h"
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 #include <private/LSeatPrivate.h>
@@ -31,11 +30,12 @@ static LCompositor *s_compositor = nullptr;
 LCompositor::LCompositor()
 {
     LLog::init();
+    LSurface::LSurfacePrivate::getEGLFunctions();
     m_imp = new LCompositorPrivate();
     imp()->compositor = this;
 }
 
-Louvre::LCompositor *LCompositor::compositor()
+LCompositor *LCompositor::compositor()
 {
     return s_compositor;
 }
@@ -150,9 +150,7 @@ bool LCompositor::start()
 Int32 LCompositor::processLoop(Int32 msTimeout)
 {
     poll(&imp()->fdSet, 1, msTimeout);
-
     imp()->renderMutex.lock();
-
     imp()->processRemovedGlobals();
 
     // DND
@@ -164,11 +162,8 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
 
     wl_event_loop_dispatch(imp()->eventLoop, 0);
     flushClients();
-
     cursor()->imp()->textureUpdate();
-
     imp()->renderMutex.unlock();
-
     return 1;
 }
 
@@ -193,6 +188,7 @@ void LCompositor::LCompositorPrivate::raiseChildren(LSurface *surface)
     surfaces.splice( surfaces.end(), surfaces, surface->imp()->compositorLink);
 
     surface->raised();
+    surface->orderChanged();
 
     // Rise its children
     for (LSurface *children : surface->children())
@@ -223,98 +219,6 @@ wl_event_source *LCompositor::addFdListener(int fd, void *userData, int (*callba
 void LCompositor::removeFdListener(wl_event_source *source)
 {
     wl_event_source_remove(source);
-}
-
-bool LCompositor::LCompositorPrivate::loadGraphicBackend(const char *path)
-{
-    graphicBackendHandle = dlopen(path, RTLD_LAZY);
-
-    if (!graphicBackendHandle)
-    {
-        LLog::warning("[compositor] No graphic backend found at (%s)\n",path);
-        return false;
-    }
-
-    LGraphicBackendInterface *(*getAPI)() = (LGraphicBackendInterface *(*)())dlsym(graphicBackendHandle, "getAPI");
-
-    if (!getAPI)
-    {
-        LLog::error("[compositor] Failed to load graphic backend (%s)\n",path);
-        dlclose(graphicBackendHandle);
-        return false;
-    }
-
-    graphicBackend = getAPI();
-
-    if (graphicBackend)
-        LLog::debug("[compositor] Graphic backend loaded successfully (%s).", path);
-
-    return true;
-}
-
-bool LCompositor::LCompositorPrivate::loadInputBackend(const char *path)
-{
-    inputBackendHandle = dlopen(path, RTLD_LAZY);
-
-    if (!inputBackendHandle)
-    {
-        LLog::warning("[compositor] No input backend found at (%s).",path);
-        return false;
-    }
-
-    LInputBackendInterface *(*getAPI)() = (LInputBackendInterface *(*)())dlsym(inputBackendHandle, "getAPI");
-
-    if (!getAPI)
-    {
-        LLog::warning("[compositor] Failed to load input backend (%s).",path);
-        dlclose(inputBackendHandle);
-        return false;
-    }
-
-    inputBackend = getAPI();
-
-    if (inputBackend)
-        LLog::debug("[compositor] Input backend loaded successfully (%s).", path);
-
-    return true;
-}
-
-void LCompositor::LCompositorPrivate::insertSurfaceAfter(LSurface *prevSurface, LSurface *surfaceToInsert)
-{
-    surfaces.splice(std::next(prevSurface->imp()->compositorLink), surfaces, surfaceToInsert->imp()->compositorLink);
-}
-
-void LCompositor::LCompositorPrivate::insertSurfaceBefore(LSurface *nextSurface, LSurface *surfaceToInsert)
-{
-    surfaces.splice(nextSurface->imp()->compositorLink, surfaces, surfaceToInsert->imp()->compositorLink);
-}
-
-void LCompositor::LCompositorPrivate::updateGlobalScale()
-{
-    Int32 maxFound = 1;
-
-    for (LOutput *o : outputs)
-    {
-        if (o->scale() > maxFound)
-            maxFound = o->scale();
-    }
-
-    if (maxFound != globalScale)
-    {
-        Int32 oldScale = globalScale;
-        globalScale = maxFound;
-
-        for (LOutput *o : outputs)
-            o->imp()->globalScaleChanged(oldScale, globalScale);
-
-        for (LSurface *s : surfaces)
-            s->imp()->globalScaleChanged(oldScale, globalScale);
-
-        compositor->globalScaleChanged(oldScale, globalScale);
-
-        if (cursor)
-            cursor->imp()->globalScaleChanged(oldScale, globalScale);
-    }
 }
 
 LCursor *LCompositor::cursor() const
@@ -354,23 +258,22 @@ bool LCompositor::addOutput(LOutput *output)
 
 void LCompositor::removeOutput(LOutput *output)
 {
-    // Iteramos para verificar si efectivamente la salida estaba añadida
+    // Loop to check if output was added (initialized)
     for (list<LOutput*>::iterator it = imp()->outputs.begin(); it != imp()->outputs.end(); it++)
     {
+        // Was initialized
         if (*it == output)
         {
             output->imp()->state = LOutput::PendingUninitialize;
             imp()->graphicBackend->uninitializeOutput(output);
             output->imp()->state = LOutput::Uninitialized;
 
-            // La eliminamos de las listas de intersección de las superficies
             for (LSurface *s : surfaces())
                 s->sendOutputLeaveEvent(output);
 
-            // La eliminamos de la lista de salidas añadidas
             imp()->outputs.remove(output);
 
-            // Eliminamos los globals wl_output de cada cliente
+            // Remove all wl_outputs from clients
             for (LClient *c : clients())
             {
                 for (GOutput *g : c->outputGlobals())
@@ -378,13 +281,18 @@ void LCompositor::removeOutput(LOutput *output)
                     if (output == g->output())
                     {
                         g->client()->imp()->outputGlobals.erase(g->imp()->clientLink);
-                        g->imp()->output = nullptr;
+                        g->imp()->lOutput = nullptr;
+
+                        // Break because clients can bind to to a wl_output global just once
                         break;
                     }
                 }
             }
 
+            // Safely remove global
             imp()->removeGlobal(output->imp()->global);
+
+            // Find the new greatest output scale
             imp()->updateGlobalScale();
 
             cursor()->imp()->intersectedOutputs.remove(output);
@@ -434,18 +342,10 @@ void LCompositor::flushClients()
 
 LClient *LCompositor::getClientFromNativeResource(wl_client *client)
 {
-    LClient *lClient = nullptr;
-
     for (LClient *c : clients())
-    {
         if (c->client() == client)
-        {
-            lClient = c;
-            break;
-        }
-    }
-
-    return lClient;
+            return c;
+    return nullptr;
 }
 
 thread::id LCompositor::mainThreadId() const

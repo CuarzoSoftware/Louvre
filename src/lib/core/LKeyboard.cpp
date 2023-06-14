@@ -196,8 +196,8 @@ void LKeyboard::setFocus(LSurface *surface)
             return;
         else
         {
-            // If another surface has focus
-            if (focusSurface())
+            // If another surface has focus (hack for firefox)
+            if (focusSurface() && focusSurface()->client() != surface->client())
             {
                 UInt32 serial = LCompositor::nextSerial();
                 for (Wayland::GSeat *s : focusSurface()->client()->seatGlobals())

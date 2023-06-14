@@ -42,9 +42,7 @@ RSubsurface::RSubsurface
     subsurfaceRoleParams.surface = surface;
 
     imp()->lSubsurfaceRole = compositor()->createSubsurfaceRoleRequest(&subsurfaceRoleParams);
-
-    parent->imp()->pendingChildren.push_back(surface);
-    surface->imp()->pendingParent = parent;
+    surface->imp()->setPendingParent(parent);
     surface->imp()->setPendingRole(imp()->lSubsurfaceRole);
     surface->imp()->applyPendingRole();
 }

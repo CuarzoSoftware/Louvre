@@ -11,6 +11,9 @@ struct LSurface::Params
 };
 
 LPRIVATE_CLASS(LSurface)
+    // Called from LCompositor constructor
+    static void getEGLFunctions();
+    void setPendingParent(LSurface *pendParent);
     void setParent(LSurface *parent);
     void removeChild(LSurface *child);
     void setMapped(bool state);
@@ -29,7 +32,7 @@ LPRIVATE_CLASS(LSurface)
     };
 
     // Link in LSurfaces compositor list
-    list<LSurface*>::iterator compositorLink, clientLink;
+    std::list<LSurface*>::iterator compositorLink, clientLink;
 
     LRegion pendingInputRegionS;
     LRegion currentInputRegionS;
@@ -55,8 +58,8 @@ LPRIVATE_CLASS(LSurface)
     LTexture *texture                                   = nullptr;
     LTexture *textureBackup;
 
-    list<LSurface*> children;
-    list<LSurface*> pendingChildren;
+    std::list<LSurface*> children;
+    std::list<LSurface*> pendingChildren;
 
     // Buffer
     void setBufferScale(Int32 scale);
@@ -64,14 +67,16 @@ LPRIVATE_CLASS(LSurface)
 
     LSurface *parent                                    = nullptr;
     LSurface *pendingParent                             = nullptr;
+    std::list<LSurface*>::iterator parentLink;
+    std::list<LSurface*>::iterator pendingParentLink;
 
     Wayland::RSurface *surfaceResource = nullptr;
 
-    list<Wayland::RCallback*>frameCallbacks;
+    std::list<Wayland::RCallback*>frameCallbacks;
 
     State current, pending;
 
-    list<LOutput*> outputs;
+    std::list<LOutput*> outputs;
 
     bool damaged                                        = false;
 
@@ -84,12 +89,12 @@ LPRIVATE_CLASS(LSurface)
     bool damagesChanged                                 = false;
     bool bufferSizeChanged                              = false;
     bool bufferReleased                                 = true;
-
+    bool atached                                        = false;
     // Indicates if the surface should be mapped (has a not null buffer)
     bool mapped                                         = false;
 
     // Presentation feedback
-    list<WpPresentationTime::RWpPresentationFeedback*> wpPresentationFeedbackResources;
+    std::list<WpPresentationTime::RWpPresentationFeedback*> wpPresentationFeedbackResources;
     void sendPresentationFeedback(LOutput *output, timespec &ns);
 };
 

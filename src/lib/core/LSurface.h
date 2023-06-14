@@ -519,6 +519,9 @@ public:
      * @snippet LSurfaceDefault.cpp inputRegionChanged
      */
     virtual void raised();
+
+    virtual void orderChanged();
+    virtual void commited();
 /// @}
 
     LPRIVATE_IMP(LSurface)

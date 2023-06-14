@@ -9,7 +9,6 @@
 #include <LPainter.h>
 #include <LLog.h>
 
-#include <X11/Xcursor/Xcursor.h>
 #include <string.h>
 
 #include <other/cursor.h>
@@ -66,25 +65,6 @@ LCursor::~LCursor()
     delete m_imp;
 }
 
-LXCursor *LCursor::loadXCursorB(const char *cursor, const char *theme, Int32 suggestedSize, GLuint textureUnit)
-{
-    XcursorImage *x11Cursor =  XcursorLibraryLoadImage(cursor, theme, suggestedSize);
-
-    if (!x11Cursor)
-        return nullptr;
-
-    LXCursor *newCursor = new LXCursor();
-    newCursor->imp()->hotspotB.setX(x11Cursor->xhot);
-    newCursor->imp()->hotspotB.setY(x11Cursor->yhot);
-    newCursor->imp()->texture = new LTexture(textureUnit);
-    newCursor->imp()->texture->setDataB(LSize((Int32)x11Cursor->width, (Int32)x11Cursor->height),
-                                        x11Cursor->width * 4,
-                                        DRM_FORMAT_ABGR8888,
-                                        x11Cursor->pixels);
-    XcursorImageDestroy(x11Cursor);
-    return newCursor;
-}
-
 void LCursor::useDefault()
 {
     setTextureB(imp()->defaultTexture, LPointF(9));
@@ -102,14 +82,14 @@ static void texture2Buffer(LCursor *cursor, const LSizeF &size)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void LCursor::setTextureB(LTexture *texture, const LPointF &hotspot)
+void LCursor::setTextureB(const LTexture *texture, const LPointF &hotspot)
 {
     if (!texture)
         return;
 
     if (imp()->texture != texture || imp()->lastTextureSerial != texture->imp()->serial)
     {
-        imp()->texture = texture;
+        imp()->texture = (LTexture*)texture;
         imp()->textureChanged = true;
         imp()->lastTextureSerial = texture->imp()->serial;
     }

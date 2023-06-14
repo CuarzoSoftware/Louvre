@@ -10,6 +10,7 @@
 #include <private/LSeatPrivate.h>
 #include <private/LPointerPrivate.h>
 #include <private/LKeyboardPrivate.h>
+#include <private/LSubsurfaceRolePrivate.h>
 
 using namespace Protocols::Wayland;
 
@@ -78,14 +79,6 @@ RSurface::~RSurface()
 
     // Notify from client
     compositor()->destroySurfaceRequest(lSurface);
-
-    /* TODO
-    // Safe Xdg shell removal
-    if (surface->popup())
-    {
-
-    }
-    */
 
     for (WpPresentationTime::RWpPresentationFeedback *wPf : lSurface->imp()->wpPresentationFeedbackResources)
         wPf->imp()->lSurface = nullptr;

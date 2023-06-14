@@ -1,11 +1,13 @@
-#include "LCursor.h"
-#include "LPainter.h"
-#include <dlfcn.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 #include <private/LSeatPrivate.h>
+#include <private/LSurfacePrivate.h>
+#include <private/LOutputPrivate.h>
+#include <private/LPainterPrivate.h>
+#include <private/LCursorPrivate.h>
 #include <LLog.h>
 #include <EGL/egl.h>
+#include <dlfcn.h>
 
 void LCompositor::LCompositorPrivate::processRemovedGlobals()
 {
@@ -43,49 +45,37 @@ static wl_iterator_result resourceDestroyIterator(wl_resource *resource, void*)
 static void clientDisconnectedEvent(wl_listener *listener, void *data)
 {
     L_UNUSED(listener);
-
+    LCompositor *compositor = LCompositor::compositor();
     wl_client *client = (wl_client*)data;
-
     wl_client_for_each_resource(client, resourceDestroyIterator, NULL);
 
-    LClient *disconnectedClient = nullptr;
-
-    // Remove client from the compositor list
-    for (LClient *wClient: LCompositor::compositor()->clients())
-    {
-        if (wClient->client() == client)
-        {
-            disconnectedClient = wClient;
-            break;
-        }
-    }
+    LClient *disconnectedClient = compositor->getClientFromNativeResource(client);
 
     if (disconnectedClient == nullptr)
         return;
 
-    LCompositor::compositor()->destroyClientRequest(disconnectedClient);
-    LCompositor::compositor()->imp()->clients.remove(disconnectedClient);
-
+    compositor->destroyClientRequest(disconnectedClient);
+    compositor->imp()->clients.erase(disconnectedClient->imp()->compositorLink);
     delete disconnectedClient;
 }
 
 static void clientConnectedEvent(wl_listener *listener, void *data)
 {
     L_UNUSED(listener);
-
+    LCompositor *compositor = LCompositor::compositor();
     wl_client *client = (wl_client*)data;
-
     LClient::Params *params = new LClient::Params;
     params->client = client;
 
     // Let the developer create his own client implementation
-    LClient *newClient =  LCompositor::compositor()->createClientRequest(params);
+    LClient *newClient =  compositor->createClientRequest(params);
 
     // Listen for client disconnection
     wl_client_get_destroy_listener(client, &clientDisconnectedEvent);
 
     // Append client to the compositor list
-    LCompositor::compositor()->imp()->clients.push_back(newClient);
+    compositor->imp()->clients.push_back(newClient);
+    newClient->imp()->compositorLink = std::prev(compositor->imp()->clients.end());
 }
 
 bool LCompositor::LCompositorPrivate::initWayland()
@@ -141,7 +131,6 @@ bool LCompositor::LCompositorPrivate::initWayland()
     // Listen for client connections
     clientConnectedListener.notify = &clientConnectedEvent;
     wl_display_add_client_created_listener(display, &clientConnectedListener);
-
     return true;
 }
 
@@ -278,5 +267,101 @@ void LCompositor::LCompositorPrivate::unitSeat()
     {
         delete seat;
         seat = nullptr;
+    }
+}
+
+bool LCompositor::LCompositorPrivate::loadGraphicBackend(const char *path)
+{
+    graphicBackendHandle = dlopen(path, RTLD_LAZY);
+
+    if (!graphicBackendHandle)
+    {
+        LLog::warning("[compositor] No graphic backend found at (%s)\n",path);
+        return false;
+    }
+
+    LGraphicBackendInterface *(*getAPI)() = (LGraphicBackendInterface *(*)())dlsym(graphicBackendHandle, "getAPI");
+
+    if (!getAPI)
+    {
+        LLog::error("[compositor] Failed to load graphic backend (%s)\n",path);
+        dlclose(graphicBackendHandle);
+        return false;
+    }
+
+    graphicBackend = getAPI();
+
+    if (graphicBackend)
+        LLog::debug("[compositor] Graphic backend loaded successfully (%s).", path);
+
+    return true;
+}
+
+bool LCompositor::LCompositorPrivate::loadInputBackend(const char *path)
+{
+    inputBackendHandle = dlopen(path, RTLD_LAZY);
+
+    if (!inputBackendHandle)
+    {
+        LLog::warning("[compositor] No input backend found at (%s).",path);
+        return false;
+    }
+
+    LInputBackendInterface *(*getAPI)() = (LInputBackendInterface *(*)())dlsym(inputBackendHandle, "getAPI");
+
+    if (!getAPI)
+    {
+        LLog::warning("[compositor] Failed to load input backend (%s).",path);
+        dlclose(inputBackendHandle);
+        return false;
+    }
+
+    inputBackend = getAPI();
+
+    if (inputBackend)
+        LLog::debug("[compositor] Input backend loaded successfully (%s).", path);
+
+    return true;
+}
+
+void LCompositor::LCompositorPrivate::insertSurfaceAfter(LSurface *prevSurface, LSurface *surfaceToInsert)
+{
+    surfaces.erase(surfaceToInsert->imp()->compositorLink);
+    surfaceToInsert->imp()->compositorLink = surfaces.insert(std::next(prevSurface->imp()->compositorLink), surfaceToInsert);
+    surfaceToInsert->orderChanged();
+}
+
+void LCompositor::LCompositorPrivate::insertSurfaceBefore(LSurface *nextSurface, LSurface *surfaceToInsert)
+{
+    surfaces.erase(surfaceToInsert->imp()->compositorLink);
+    surfaceToInsert->imp()->compositorLink = surfaces.insert(nextSurface->imp()->compositorLink, surfaceToInsert);
+    surfaceToInsert->orderChanged();
+}
+
+void LCompositor::LCompositorPrivate::updateGlobalScale()
+{
+    Int32 maxFound = 1;
+
+    for (LOutput *o : outputs)
+    {
+        if (o->scale() > maxFound)
+            maxFound = o->scale();
+    }
+
+    if (maxFound != globalScale)
+    {
+        Int32 oldScale = globalScale;
+        globalScale = maxFound;
+
+        for (LOutput *o : outputs)
+            o->imp()->globalScaleChanged(oldScale, globalScale);
+
+        for (LSurface *s : surfaces)
+            s->imp()->globalScaleChanged(oldScale, globalScale);
+
+        compositor->globalScaleChanged(oldScale, globalScale);
+
+        if (cursor)
+            cursor->imp()->globalScaleChanged(oldScale, globalScale);
     }
 }

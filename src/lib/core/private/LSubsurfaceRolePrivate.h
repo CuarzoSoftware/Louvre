@@ -21,7 +21,9 @@ LPRIVATE_CLASS(LSubsurfaceRole)
 
     // Pending reordering
     LSurface *pendingPlaceAbove                                         = nullptr;
+    wl_listener pendingPlaceAboveDestroyListener;
     LSurface *pendingPlaceBelow                                         = nullptr;
+    wl_listener pendingPlaceBelowDestroyListener;
 };
 
 #endif // LSUBSURFACEROLEPRIVATE_H

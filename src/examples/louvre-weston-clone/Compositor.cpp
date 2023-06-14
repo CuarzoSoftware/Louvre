@@ -12,7 +12,6 @@
 
 Compositor::Compositor():LCompositor(){}
 
-
 LOutput *Compositor::createOutputRequest()
 {
     return new Output();
@@ -45,5 +44,3 @@ LPointer *Compositor::createPointerRequest(LPointer::Params *params)
 {
     return new LPointer(params);
 }
-
-

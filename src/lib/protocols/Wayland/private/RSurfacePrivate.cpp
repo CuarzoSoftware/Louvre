@@ -1,3 +1,4 @@
+#include "LLog.h"
 #include <protocols/Wayland/private/RSurfacePrivate.h>
 #include <protocols/Wayland/RRegion.h>
 #include <protocols/Wayland/RCallback.h>
@@ -24,13 +25,12 @@ void RSurface::RSurfacePrivate::attach(wl_client *client, wl_resource *resource,
     RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
     LSurface *lSurface = rSurface->surface();
 
+    lSurface->imp()->atached = true;
+
     if (lSurface->role())
         lSurface->role()->handleSurfaceBufferAttach(buffer, x, y);
 
     lSurface->imp()->pending.buffer = buffer;
-
-    if (buffer)
-        lSurface->imp()->bufferReleased = false;
 
 #if LOUVRE_WL_COMPOSITOR_VERSION >= 5
     if (rSurface->version() < 5)
@@ -73,8 +73,15 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
     if (surface->role() && !surface->role()->acceptCommitRequest(origin))
         return;
 
-    // Asigna el buffer pendiente al actual
-    surface->imp()->current.buffer = surface->imp()->pending.buffer;
+    if (surface->imp()->atached)
+    {
+        surface->imp()->current.buffer = surface->imp()->pending.buffer;
+
+        if (surface->imp()->current.buffer)
+            surface->imp()->bufferReleased = false;
+
+        surface->imp()->atached = false;
+    }
 
     /*****************************************
      *********** BUFFER TO TEXTURE ***********
@@ -84,18 +91,10 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
     if (surface->imp()->current.buffer)
     {
         if (!surface->imp()->bufferReleased)
-        {
             if (!surface->imp()->bufferToTexture())
                 return;
-        }
-    }
-    else
-    {
-        if (!surface->imp()->frameCallbacks.empty())
-            surface->requestNextFrame();
     }
 
-    surface->repaintOutputs();
     /*******************************************
      *********** NOTIFY COMMIT TO ROLE *********
      *******************************************/
@@ -169,10 +168,10 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
         surface->imp()->currentTranslucentRegionS.inverse(LRect(0,surface->sizeS()));
         surface->imp()->currentTranslucentRegionC = surface->imp()->currentTranslucentRegionS;
         surface->imp()->currentTranslucentRegionC.multiply(compositor()->globalScale());
-
     }
 
     surface->imp()->bufferSizeChanged = false;
+    surface->commited();
 }
 
 

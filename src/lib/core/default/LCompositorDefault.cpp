@@ -6,7 +6,6 @@
 #include <protocols/XdgDecoration/private/GXdgDecorationManagerPrivate.h>
 #include <protocols/LinuxDMABuf/private/GLinuxDMABufPrivate.h>
 #include <protocols/WpPresentationTime/private/GWpPresentationPrivate.h>
-
 #include <LCompositor.h>
 #include <LToplevelRole.h>
 #include <LCursor.h>
@@ -20,7 +19,6 @@
 #include <LPopupRole.h>
 #include <LCursorRole.h>
 #include <LLog.h>
-
 #include <LXCursor.h>
 
 using namespace Louvre;
@@ -35,7 +33,7 @@ bool LCompositor::createGlobalsRequest()
                      LOUVRE_WL_SEAT_VERSION, this, &GSeat::GSeatPrivate::bind);
 
     wl_global_create(display(), &wl_subcompositor_interface,
-                     LOUVRE_SUBCOMPOSITOR_VERSION, this, &GSubcompositor::GSubcompositorPrivate::bind);
+                     LOUVRE_WL_SUBCOMPOSITOR_VERSION, this, &GSubcompositor::GSubcompositorPrivate::bind);
 
     wl_global_create(display(), &wl_data_device_manager_interface,
                      LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION, this, &GDataDeviceManager::GDataDeviceManagerPrivate::bind);
@@ -102,7 +100,6 @@ void LCompositor::cursorInitialized()
     // Example to load an XCursor
 
     /*
-
     // Loads the "hand1" cursor
     LXCursor *handCursor = cursor()->loadXCursorB("hand1");
 
@@ -112,7 +109,6 @@ void LCompositor::cursorInitialized()
         // Set as the cursor texture
         cursor()->setTextureB(handCursor->texture(), handCursor->hotspotB());
     }
-
     */
 }
 //! [cursorInitialized]

@@ -20,28 +20,25 @@ void Surface::repaint()
     }
 }
 
-
 void Surface::mappingChanged()
 {
-
     if (mapped())
     {
         if (firstMap)
         {
             firstMap = false;
 
-            LPoint outputPosG = compositor()->cursor()->output()->posC();
-            LSize outputSizeG = compositor()->cursor()->output()->sizeC();
+            Int32 barSize = 32 * compositor()->globalScale();
+            LPoint outputPosG = compositor()->cursor()->output()->posC() + LPoint(0, barSize);
+            LSize outputSizeG = compositor()->cursor()->output()->sizeC() - LSize(0,barSize);
 
             setPosC(outputPosG + outputSizeG/2 - sizeC()/2);
 
             if (posC().x() < outputPosG.x())
                 setXC(outputPosG.x());
-            if (posC().y() < 32 * compositor()->globalScale())
-                setYC(32 * compositor()->globalScale());
-
+            if (posC().y() < barSize)
+                setYC(barSize);
         }
-
         repaint();
         compositor()->repaintAllOutputs();
     }
@@ -49,14 +46,13 @@ void Surface::mappingChanged()
     {
         for (Output *o : (list<Output*>&)outputs())
         {
-            o->addExposedRect(LRect(rolePosC(),sizeC()));
             o->newDamage.addRect(LRect(rolePosC(),sizeC()));
             o->repaint();
         }
     }
 }
 
-void Surface::raised()
+void Surface::orderChanged()
 {
     changedOrder = true;
     repaint();

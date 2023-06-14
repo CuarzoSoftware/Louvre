@@ -1,12 +1,10 @@
+#include <protocols/Wayland/private/RPointerPrivate.h>
+#include <protocols/Wayland/GSeat.h>
 #include <private/LDataDevicePrivate.h>
 #include <private/LClientPrivate.h>
 #include <private/LPointerPrivate.h>
 #include <private/LToplevelRolePrivate.h>
 #include <private/LSeatPrivate.h>
-
-#include <protocols/Wayland/GSeat.h>
-#include <protocols/Wayland/private/RPointerPrivate.h>
-
 #include <LCompositor.h>
 #include <LCursor.h>
 #include <LOutput.h>
@@ -57,13 +55,13 @@ void LPointer::setFocusS(LSurface *surface, const LPoint &localPosS)
 
         Float24 x = wl_fixed_from_int(localPosS.x());
         Float24 y = wl_fixed_from_int(localPosS.y());
-        UInt32 serial = LCompositor::nextSerial();
         imp()->pointerFocusSurface = nullptr;
 
         for (Wayland::GSeat *s : surface->client()->seatGlobals())
         {
             if (s->pointerResource())
             {
+                UInt32 serial = LCompositor::nextSerial();
                 imp()->pointerFocusSurface = surface;
                 s->pointerResource()->imp()->serials.enter = serial;
                 s->pointerResource()->enter(serial,
@@ -104,7 +102,6 @@ void LPointer::sendMoveEventS(const LPoint &localPosS)
 
     Float24 x = wl_fixed_from_int(localPosS.x());
     Float24 y = wl_fixed_from_int(localPosS.y());
-    UInt32 ms = LTime::ms();
 
     if (seat()->dndManager()->focus())
         seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDMotionEventS(x, y);
@@ -113,10 +110,11 @@ void LPointer::sendMoveEventS(const LPoint &localPosS)
     {
         if (s->pointerResource())
         {
+            UInt32 ms = LTime::ms();
             s->pointerResource()->motion(ms, x, y);
             s->pointerResource()->frame();
         }
-    }
+    }    
 }
 
 void LPointer::sendButtonEvent(Button button, ButtonState state)
@@ -124,13 +122,12 @@ void LPointer::sendButtonEvent(Button button, ButtonState state)
     if (!focusSurface())
         return;
 
-    UInt32 serial = LCompositor::nextSerial();
-    UInt32 ms = LTime::ms();
-
     for (Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
     {
         if (s->pointerResource())
         {
+            UInt32 serial = LCompositor::nextSerial();
+            UInt32 ms = LTime::ms();
             s->pointerResource()->button(serial, ms, button, state);
             s->pointerResource()->frame();
         }
@@ -184,7 +181,6 @@ void LPointer::updateResizingToplevelSize()
             if (pos.y() + newSize.h() > bounds.h())
                 newSize.setH(bounds.h() - pos.y());
         }
-
 
         // Left
         if ( bounds.x() != EdgeDisabled && (edge ==  LToplevelRole::Left || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::BottomLeft))
@@ -332,7 +328,6 @@ void LPointer::sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int3
     if (!focusSurface())
         return;
 
-    UInt32 ms = LTime::ms();
     Float24 aX = wl_fixed_from_double(axisX);
     Float24 aY = wl_fixed_from_double(axisY);
     Float24 dX = wl_fixed_from_int(discreteX);
@@ -342,6 +337,8 @@ void LPointer::sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int3
     {
         if (s->pointerResource())
         {
+            UInt32 ms = LTime::ms();
+
             // Since 5
             if (s->pointerResource()->axisSource(source))
             {
@@ -404,12 +401,11 @@ void LPointer::LPointerPrivate::sendLeaveEvent(LSurface *surface)
     if (!surface)
         return;
 
-    UInt32 serial = LCompositor::nextSerial();
-
     for (Wayland::GSeat *s : surface->client()->seatGlobals())
     {
         if (s->pointerResource())
         {
+            UInt32 serial = LCompositor::nextSerial();
             s->pointerResource()->imp()->serials.leave = serial;
             s->pointerResource()->leave(serial,
                                         surface->surfaceResource());

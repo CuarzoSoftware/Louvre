@@ -29,6 +29,8 @@ LOutput::LOutput()
 {
     m_imp = new LOutputPrivate();
     imp()->output = this;
+    imp()->rectC.setX(0);
+    imp()->rectC.setY(0);
 }
 
 LOutput::~LOutput()
@@ -89,11 +91,14 @@ LTexture *LOutput::bufferTexture(UInt32 bufferIndex)
 void LOutput::setScale(Int32 scale)
 {
     imp()->outputScale = scale;
+
+    compositor()->imp()->updateGlobalScale();
+
     imp()->rectC.setBR((sizeB()*compositor()->globalScale())/scale);
 
     for (LClient *c : compositor()->clients())
     {
-        for (Protocols::Wayland::GOutput *gOutput : c->outputGlobals())
+        for (GOutput *gOutput : c->outputGlobals())
         {
             if (this == gOutput->output())
             {
@@ -102,73 +107,11 @@ void LOutput::setScale(Int32 scale)
             }
         }
     }
-
-    compositor()->imp()->updateGlobalScale();
 }
 
 Int32 LOutput::scale() const
 {
     return imp()->outputScale;
-}
-
-// This is called from LCompositor::addOutput()
-bool LOutput::LOutputPrivate::initialize()
-{
-    // The backend must call LOutputPrivate::backendInitialized() before initializeGL()
-    return compositor()->imp()->graphicBackend->initializeOutput(output);
-}
-
-void LOutput::LOutputPrivate::globalScaleChanged(Int32 oldScale, Int32 newScale)
-{
-    L_UNUSED(oldScale);
-    rectC.setSize((output->currentMode()->sizeB()*newScale)/output->scale());
-}
-
-void LOutput::LOutputPrivate::backendInitialized()
-{
-    painter = new LPainter();
-    painter->imp()->output = output;
-
-    output->imp()->global = wl_global_create(compositor()->display(),
-                                             &wl_output_interface,
-                                             LOUVRE_OUTPUT_VERSION,
-                                             output,
-                                             &Protocols::Wayland::GOutput::GOutputPrivate::bind);
-
-    output->setScale(output->scale());
-    output->imp()->rectC.setBR((output->sizeB()*compositor()->globalScale())/output->scale());
-
-    cursor()->imp()->textureChanged = true;
-    cursor()->imp()->update();
-
-    compositor()->imp()->updateGlobalScale();
-}
-
-void LOutput::LOutputPrivate::backendBeforePaint()
-{
-    compositor()->imp()->renderMutex.lock();
-}
-
-void LOutput::LOutputPrivate::backendAfterPaint()
-{
-    compositor()->imp()->renderMutex.unlock();
-}
-
-void LOutput::LOutputPrivate::backendPageFlipped()
-{
-    bool running = output->state() == LOutput::Initialized;
-
-    //if (running)
-        //compositor()->imp()->renderMutex.lock();
-
-    // Send presentation time feedback
-    output->imp()->presentationSeq++;
-    presentationTime = LTime::ns();
-    for (LSurface *surf : compositor()->surfaces())
-        surf->imp()->sendPresentationFeedback(output, presentationTime);
-
-    //if (running)
-        //compositor()->imp()->renderMutex.unlock();
 }
 
 void LOutput::repaint()

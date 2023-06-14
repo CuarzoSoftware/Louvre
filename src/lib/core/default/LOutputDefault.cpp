@@ -26,6 +26,12 @@ void LOutput::paintGL()
 
     p->clearScreen();
 
+    // Check if surface moved under cursor
+    if (seat()->pointer()->surfaceAtC(cursor()->posC()) != seat()->pointer()->focusSurface())
+        seat()->pointer()->pointerPosChangeEvent(
+            cursor()->posC().x(),
+            cursor()->posC().y());
+
     if (seat()->dndManager()->icon())
         compositor()->raiseSurface(seat()->dndManager()->icon()->surface());
 

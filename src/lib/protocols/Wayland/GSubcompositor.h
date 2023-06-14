@@ -1,5 +1,5 @@
-#ifndef SUBCOMPOSITOR_H
-#define SUBCOMPOSITOR_H
+#ifndef GSUBCOMPOSITOR_H
+#define GSUBCOMPOSITOR_H
 
 #include <LResource.h>
 
@@ -18,4 +18,4 @@ public:
     LPRIVATE_IMP(GSubcompositor)
 };
 
-#endif // SUBCOMPOSITOR_H
+#endif // GSUBCOMPOSITOR_H

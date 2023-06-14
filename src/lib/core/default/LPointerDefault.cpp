@@ -88,11 +88,7 @@ void LPointer::pointerPosChangeEvent(Float32 x, Float32 y)
         if (focusSurface() == surface)
             sendMoveEventC();
         else
-        {
-            cursor()->useDefault();
-            cursor()->setVisible(true);
             setFocusC(surface);
-        }
     }
 }
 //! [pointerPosChangeEvent]
@@ -166,7 +162,6 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
         if (!focusSurface()->inputRegionC().containsPoint(focusSurface()->rolePosC() - cursor()->posC()))
         {
             setFocusC(nullptr);
-
             cursor()->useDefault();
             cursor()->setVisible(true);
         }

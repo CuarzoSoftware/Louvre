@@ -12,14 +12,27 @@
 class Louvre::LXCursor
 {
 public:
-    LXCursor();
+    /*!
+     * @brief Loads an XCursor pixmap.
+     *
+     * Loads pixmaps of X cursors available in the system and converts them to a texture.
+     *
+     * @param cursor Name of the XCursor to load.
+     * @param theme Name of the cursor theme. You can enter NULL if you don't want to specify a theme.
+     * @param suggestedSize Suggested size of the pixmap in buffer coordinates. Returns the variant of the pixmap with closest dimensions to the specified one.
+     * @param textureUnit The OpenGL texture unit to use to render the pixmap.
+     *
+     * @returns If an XCursor matching the parameters is found, returns an instance of the LXCursor class, which stores the cursor's dimensions, hotspot, and texture. Otherwise, it returns nullptr. See the example available in LCompositor::cursorInitialized() for more information.
+     */
+    static LXCursor *loadXCursorB(const char *cursor, const char *theme = NULL, Int32 suggestedSize = 64, GLuint textureUnit = 1);
+
     ~LXCursor();
 
     LXCursor(const LXCursor&) = delete;
     LXCursor& operator= (const LXCursor&) = delete;
 
     /// Cursor texture
-    LTexture *texture() const;
+    const LTexture *texture() const;
 
     /// Cursor texture size
     const LSize &sizeB() const;
@@ -28,6 +41,7 @@ public:
     const LPoint &hotspotB() const;
 
     LPRIVATE_IMP(LXCursor)
+    LXCursor();
 };
 
 #endif // LX11CURSOR_H

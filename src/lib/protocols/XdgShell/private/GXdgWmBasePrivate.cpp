@@ -1,11 +1,7 @@
 #include <protocols/XdgShell/private/GXdgWmBasePrivate.h>
-
 #include <protocols/XdgShell/RXdgPositioner.h>
 #include <protocols/XdgShell/RXdgSurface.h>
 #include <protocols/Wayland/RSurface.h>
-
-#include <protocols/XdgShell/xdg-shell.h>
-
 #include <LClient.h>
 
 static struct xdg_wm_base_interface xdg_wm_base_implementation =
@@ -39,7 +35,7 @@ void GXdgWmBase::GXdgWmBasePrivate::destroy(wl_client *client, wl_resource *reso
 
     GXdgWmBase *gXdgWmBase = (GXdgWmBase*)wl_resource_get_user_data(resource);
 
-    if (gXdgWmBase->xdgSurfaces().empty())
+    if (!gXdgWmBase->xdgSurfaces().empty())
     {
         wl_resource_post_error(resource, XDG_WM_BASE_ERROR_DEFUNCT_SURFACES, "xdg_wm_base was destroyed before children.");
         return;
@@ -60,7 +56,7 @@ void GXdgWmBase::GXdgWmBasePrivate::get_xdg_surface(wl_client *client, wl_resour
     L_UNUSED(client);
     Wayland::RSurface *rSurface = (Wayland::RSurface*)wl_resource_get_user_data(surface);
 
-    if (rSurface->surface()->role())
+    if (rSurface->surface()->roleId() != LSurface::Undefined)
     {
         wl_resource_post_error(resource, XDG_WM_BASE_ERROR_ROLE, "Given wl_surface has another role.");
         return;

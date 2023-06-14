@@ -12,23 +12,24 @@ struct LClient::Params
 };
 
 LPRIVATE_CLASS(LClient)
-    std::list<LSurface*> surfaces;
 
     LClient::Params *params = nullptr;
+    std::list<LClient*>::iterator compositorLink;
     LDataDevice dataDevice;
+    std::list<LSurface*> surfaces;
 
     // Globals
-    list<Wayland::GOutput*> outputGlobals;
-    list<Wayland::GSeat*> seatGlobals;
-    list<Wayland::GSubcompositor*> subcompositorGlobals;
-    list<XdgShell::GXdgWmBase*> xdgWmBaseGlobals;
-    list<XdgDecoration::GXdgDecorationManager*> xdgDecorationManagerGlobals;
-    list<WpPresentationTime::GWpPresentation*> wpPresentationTimeGlobals;
-    list<LinuxDMABuf::GLinuxDMABuf*> linuxDMABufGlobals;
+    std::list<Wayland::GCompositor*> compositorGlobals;
+    std::list<Wayland::GOutput*> outputGlobals;
+    std::list<Wayland::GSeat*> seatGlobals;
+    std::list<Wayland::GSubcompositor*> subcompositorGlobals;
+    std::list<XdgShell::GXdgWmBase*> xdgWmBaseGlobals;
+    std::list<XdgDecoration::GXdgDecorationManager*> xdgDecorationManagerGlobals;
+    std::list<WpPresentationTime::GWpPresentation*> wpPresentationTimeGlobals;
+    std::list<LinuxDMABuf::GLinuxDMABuf*> linuxDMABufGlobals;
 
     // Singleton Globals
     Wayland::GDataDeviceManager *dataDeviceManagerGlobal = nullptr;
-    Wayland::GCompositor *compositorGlobal = nullptr;
 };
 
 #endif // LCLIENTPRIVATE_H

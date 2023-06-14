@@ -29,9 +29,10 @@ LPRIVATE_CLASS(LOutput)
     timespec presentationTime;
 
     // Called by the backend
-    void backendInitialized();
-    void backendBeforePaint();
-    void backendAfterPaint();
+    void backendInitializeGL();
+    void backendPaintGL();
+    void backendResizeGL();
+    void backendUninitializeGL();
     void backendPageFlipped();
 };
 

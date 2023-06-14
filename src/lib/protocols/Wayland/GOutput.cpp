@@ -1,13 +1,10 @@
 #include <protocols/Wayland/private/GOutputPrivate.h>
-
 #include <private/LClientPrivate.h>
-
 #include <LCompositor.h>
-#include <LOutput.h>
 #include <LOutputMode.h>
+#include <LOutput.h>
 
 using namespace Protocols::Wayland;
-using namespace std;
 
 GOutput::GOutput
 (
@@ -30,15 +27,13 @@ GOutput::GOutput
     )
 {
     m_imp = new GOutputPrivate();
-    imp()->output = output;
-
+    imp()->lOutput = output;
     this->client()->imp()->outputGlobals.push_back(this);
     imp()->clientLink = std::prev(this->client()->imp()->outputGlobals.end());
-
     sendConfiguration();
 }
 
-Louvre::Protocols::Wayland::GOutput::~GOutput()
+GOutput::~GOutput()
 {
     if (output())
         client()->imp()->outputGlobals.erase(imp()->clientLink);
@@ -47,13 +42,12 @@ Louvre::Protocols::Wayland::GOutput::~GOutput()
 
 LOutput *GOutput::output() const
 {
-    return imp()->output;
+    return imp()->lOutput;
 }
 
 void GOutput::sendConfiguration()
 {
-    wl_output_send_geometry(
-        resource(),
+    geometry(
         output()->rectC().x(),
         output()->rectC().y(),
         output()->physicalSize().w(),
@@ -63,26 +57,93 @@ void GOutput::sendConfiguration()
         output()->model(),
         WL_OUTPUT_TRANSFORM_NORMAL);
 
-    wl_output_send_mode(
-        resource(),
+    mode(
         wl_output_mode::WL_OUTPUT_MODE_CURRENT,
         output()->currentMode()->sizeB().w(),
         output()->currentMode()->sizeB().h(),
         output()->currentMode()->refreshRate());
 
-#if LOUVRE_OUTPUT_VERSION >= WL_OUTPUT_NAME_SINCE_VERSION
-    if (version() >= WL_OUTPUT_NAME_SINCE_VERSION)
+    if (scale(output()->scale()))
     {
-        wl_output_send_name(resource(), output()->name());
-        wl_output_send_description(resource(), output()->description());
+        if (name(output()->name()))
+            description(output()->description());
+        done();
     }
-#endif
+}
 
-#if LOUVRE_OUTPUT_VERSION >= WL_OUTPUT_DONE_SINCE_VERSION
-    if (version() >= WL_OUTPUT_DONE_SINCE_VERSION)
+bool GOutput::geometry(Int32 x, Int32 y, Int32 physicalWidth, Int32 physicalHeight,
+                       Int32 subpixel, const char *make, const char *model, Int32 transform)
+{
+    wl_output_send_geometry(
+        resource(),
+        x, y,
+        physicalWidth,
+        physicalHeight,
+        subpixel,
+        make,
+        model,
+        transform);
+    return true;
+}
+
+bool GOutput::mode(UInt32 flags, Int32 width, Int32 height, Int32 refresh)
+{
+    wl_output_send_mode(
+        resource(),
+        flags,
+        width,
+        height,
+        refresh);
+    return true;
+}
+
+bool GOutput::done()
+{
+#if LOUVRE_WL_OUTPUT_VERSION >= 2
+    if (version() >= 2)
     {
-        wl_output_send_scale(resource(), output()->scale());
         wl_output_send_done(resource());
+        return true;
     }
 #endif
+    return false;
+}
+
+bool GOutput::scale(Int32 factor)
+{
+#if LOUVRE_WL_OUTPUT_VERSION >= 2
+    if (version() >= 2)
+    {
+        wl_output_send_scale(resource(), factor);
+        return true;
+    }
+#endif
+    L_UNUSED(factor);
+    return false;
+}
+
+bool GOutput::name(const char *name)
+{
+#if LOUVRE_WL_OUTPUT_VERSION >= 4
+    if (version() >= 4)
+    {
+        wl_output_send_name(resource(), name);
+        return true;
+    }
+#endif
+    L_UNUSED(name);
+    return false;
+}
+
+bool GOutput::description(const char *description)
+{
+#if LOUVRE_WL_OUTPUT_VERSION >= 4
+    if (version() >= 4)
+    {
+        wl_output_send_description(resource(), description);
+        return true;
+    }
+#endif
+    L_UNUSED(description);
+    return false;
 }

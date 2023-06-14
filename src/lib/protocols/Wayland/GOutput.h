@@ -1,5 +1,5 @@
-#ifndef OUTPUT_H
-#define OUTPUT_H
+#ifndef GOUTPUT_H
+#define GOUTPUT_H
 
 #include <LResource.h>
 
@@ -18,10 +18,25 @@ public:
 
     LOutput *output() const;
 
-    // Events
+    // Send all events
     void sendConfiguration();
+
+    // Since 1
+    bool geometry(Int32 x, Int32 y,
+                  Int32 physicalWidth, Int32 physicalHeight,
+                  Int32 subpixel, const char *make,
+                  const char *model, Int32 transform);
+    bool mode(UInt32 flags, Int32 width, Int32 height, Int32 refresh);
+
+    // Since 2
+    bool done();
+    bool scale(Int32 factor);
+
+    // Since 4
+    bool name(const char *name);
+    bool description(const char *description);
 
     LPRIVATE_IMP(GOutput)
 };
 
-#endif // OUTPUT_H
+#endif // GOUTPUT_H

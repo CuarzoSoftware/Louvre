@@ -6,7 +6,6 @@
 #include <LSurface.h>
 
 using namespace Louvre::Protocols;
-using namespace std;
 
 /*!
  * @brief Representation of a Wayland client.
@@ -68,7 +67,7 @@ public:
     /*!
      * List of surfaces created by the client.
      */
-    const list<LSurface*>&surfaces() const;
+    const std::list<LSurface*>&surfaces() const;
 
     /*!
      * Flush pending wl_client events.
@@ -82,28 +81,28 @@ public:
      * global for each output added to the compositor in
      * order to notify the client the available outputs and their properties.
      */
-    const list<Wayland::GOutput*>&outputGlobals() const;
+    const std::list<Wayland::GOutput*>&outputGlobals() const;
 
     /*!
      * Resource created when the client binds to
      * the [wl_compositor](https://wayland.app/protocols/wayland#wl_compositor)
      * singleton global of the Wayland protocol.
      */
-    const Wayland::GCompositor *compositorGlobal() const;
+    const std::list<Wayland::GCompositor*>&compositorGlobals() const;
 
     /*!
      * List of resources created when the client binds to
      * the [wl_subcompositor](https://wayland.app/protocols/wayland#wl_subcompositor)
      * global of the Wayland protocol.
      */
-    const list<Wayland::GSubcompositor*> &subcompositorGlobals() const;
+    const std::list<Wayland::GSubcompositor*>&subcompositorGlobals() const;
 
     /*!
      * List of resources created when the client binds to
      * the [wl_seat](https://wayland.app/protocols/wayland#wl_seat)
      * global of the Wayland protocol.
      */
-    const list<Wayland::GSeat*> &seatGlobals() const;
+    const std::list<Wayland::GSeat*>&seatGlobals() const;
 
     /*!
      * Resource created when the client binds to
@@ -116,7 +115,7 @@ public:
      * List of resources created when the client binds to the
      * [xdg_wm_base](https://wayland.app/protocols/xdg-shell#xdg_wm_base) global of the XdgShell protocol.
      */
-    const list<XdgShell::GXdgWmBase *> &xdgWmBaseGlobals() const;
+    const std::list<XdgShell::GXdgWmBase *> &xdgWmBaseGlobals() const;
 
     /*!
      * List of resources created when the client binds to the
@@ -127,21 +126,21 @@ public:
      * interface allows the client and the compositor negotiate who should draw the decoration of
      * Toplevel surfaces.
      */
-    const list<XdgDecoration::GXdgDecorationManager*> &xdgDecorationManagerGlobals() const;
+    const std::list<XdgDecoration::GXdgDecorationManager*> &xdgDecorationManagerGlobals() const;
 
     /*!
      * List of resources created when the client binds to the
      * [wp_presentation](https://wayland.app/protocols/presentation-time#wp_presentation) global of the
      * PresentationTime protocol.
      */
-    const list<WpPresentationTime::GWpPresentation*> &wpPresentationTimeGlobals() const;
+    const std::list<WpPresentationTime::GWpPresentation*> &wpPresentationTimeGlobals() const;
 
     /*!
      * List of resources generated when the client binds to the
      * [zwp_linux_dmabuf_v1](https://wayland.app/protocols/linux-dmabuf-unstable-v1#zwp_linux_dmabuf_v1) global
      * of the LinuxDMA-BUF protocol.
      */
-    const list<LinuxDMABuf::GLinuxDMABuf*> &linuxDMABufGlobals() const;
+    const std::list<LinuxDMABuf::GLinuxDMABuf*> &linuxDMABufGlobals() const;
 
     LPRIVATE_IMP(LClient)
 };

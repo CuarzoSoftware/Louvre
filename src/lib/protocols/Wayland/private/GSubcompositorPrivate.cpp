@@ -1,8 +1,7 @@
 #include <protocols/Wayland/private/GSubcompositorPrivate.h>
 #include <protocols/Wayland/RSubsurface.h>
 #include <protocols/Wayland/RSurface.h>
-
-#include <LSurface.h>
+#include <private/LSurfacePrivate.h>
 
 struct wl_subcompositor_interface subcompositor_implementation =
 {
@@ -24,8 +23,8 @@ void GSubcompositor::GSubcompositorPrivate::bind(wl_client *client, void *data, 
 
 void GSubcompositor::GSubcompositorPrivate::resource_destroy(wl_resource *resource)
 {
-    GSubcompositor *lSubcompositor = (GSubcompositor*)wl_resource_get_user_data(resource);
-    delete lSubcompositor;
+    GSubcompositor *gSubcompositor = (GSubcompositor*)wl_resource_get_user_data(resource);
+    delete gSubcompositor;
 }
 
 void GSubcompositor::GSubcompositorPrivate::destroy(wl_client *client, wl_resource *resource)
@@ -34,18 +33,52 @@ void GSubcompositor::GSubcompositorPrivate::destroy(wl_client *client, wl_resour
     wl_resource_destroy(resource);
 }
 
+static bool isChild(LSurface *parent, LSurface *child)
+{
+    if (child->imp()->pendingParent)
+    {
+        if (isChild(parent, child->imp()->pendingParent))
+            return true;
+    }
+
+    for (LSurface *s : parent->children())
+    {
+        if (s == child)
+            return true;
+
+        if (isChild(s, child))
+            return true;
+    }
+
+    return false;
+}
+
 void GSubcompositor::GSubcompositorPrivate::get_subsurface(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface, wl_resource *parent)
 {
     L_UNUSED(client);
+
+    if (surface == parent)
+    {
+        wl_resource_post_error(resource, WL_SUBCOMPOSITOR_ERROR_BAD_PARENT, "Invalid wl_subsurface parent.");
+        return;
+    }
+
     RSurface *rSurface = (RSurface*)wl_resource_get_user_data(surface);
 
-    if (rSurface->surface()->role())
+    if (rSurface->surface()->roleId() != LSurface::Undefined)
     {
         wl_resource_post_error(resource, WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE, "Given wl_surface already has another role.");
         return;
     }
 
-    GSubcompositor *gSubcompositor = (GSubcompositor*)wl_resource_get_user_data(resource);
     RSurface *rParent = (RSurface*)wl_resource_get_user_data(parent);
+
+    if (isChild(rSurface->surface(), rParent->surface()))
+    {
+        wl_resource_post_error(resource, WL_SUBCOMPOSITOR_ERROR_BAD_PARENT, "Parent can not be child of surface.");
+        return;
+    }
+
+    GSubcompositor *gSubcompositor = (GSubcompositor*)wl_resource_get_user_data(resource);
     new RSubsurface(gSubcompositor, rSurface->surface(), rParent->surface(), id);
 }

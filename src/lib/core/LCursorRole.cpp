@@ -52,7 +52,8 @@ void LCursorRole::handleSurfaceCommit()
         surface()->imp()->setMapped(true);
 
         // Notify that the cursor changed content
-        if (compositor()->cursor()->texture() == surface()->texture())
+        if (seat()->pointer()->focusSurface() &&
+            seat()->pointer()->focusSurface()->client() == surface()->client())
             seat()->pointer()->setCursorRequest(this);
     }
     else

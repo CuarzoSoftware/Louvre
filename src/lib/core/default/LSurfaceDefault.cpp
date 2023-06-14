@@ -38,6 +38,9 @@ void LSurface::mappingChanged()
         setPosC(cursor()->output()->posC() + cursor()->output()->sizeC() / 2 - sizeC() / 2);
     }
 
+    if (mapped() && popup())
+        seat()->keyboard()->setFocus(this);
+
     compositor()->repaintAllOutputs();
 }
 //! [mappingChanged]
@@ -76,3 +79,13 @@ void LSurface::raised()
     repaintOutputs();
 }
 //! [raised]
+
+void LSurface::orderChanged()
+{
+    repaintOutputs();
+}
+
+void LSurface::commited()
+{
+    repaintOutputs();
+}

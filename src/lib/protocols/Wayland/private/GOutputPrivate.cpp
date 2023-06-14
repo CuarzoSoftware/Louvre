@@ -5,15 +5,14 @@
 
 static struct wl_output_interface output_implementation =
 {
-#if LOUVRE_OUTPUT_VERSION >= WL_OUTPUT_RELEASE_SINCE_VERSION
-    .release = &Louvre::Protocols::Wayland::GOutput::GOutputPrivate::release
+#if LOUVRE_WL_OUTPUT_VERSION >= 3
+    .release = &GOutput::GOutputPrivate::release
 #endif
 };
 
 void GOutput::GOutputPrivate::bind(wl_client *client, void *output, UInt32 version, UInt32 id)
 {
     LOutput *lOutput = (LOutput*)output;
-
     LClient *lClient = compositor()->getClientFromNativeResource(client);
 
     if (!lClient)
@@ -43,7 +42,7 @@ void GOutput::GOutputPrivate::resource_destroy(wl_resource *resource)
     delete gOutput;
 }
 
-#if LOUVRE_OUTPUT_VERSION >= WL_OUTPUT_RELEASE_SINCE_VERSION
+#if LOUVRE_WL_OUTPUT_VERSION >= 3
 void GOutput::GOutputPrivate::release(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);
