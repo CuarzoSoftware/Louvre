@@ -41,7 +41,7 @@ RXdgPopup::RXdgPopup
     imp()->rXdgSurface = rXdgSurface;
     rXdgSurface->imp()->rXdgPopup = this;
 
-    rXdgSurface->lSurface()->imp()->pendingParent = rXdgParentSurface->lSurface();
+    rXdgSurface->lSurface()->imp()->setPendingParent(rXdgParentSurface->lSurface());
 
     LPopupRole::Params popupRoleParams;
     popupRoleParams.popup = this;

@@ -13,12 +13,12 @@ LPRIVATE_CLASS(LPositioner)
         LRect anchorRectS, anchorRectC;
         LPoint offsetS, offsetC;
 
-        UInt32 anchor                                               = Anchor::NoAnchor;
-        UInt32 gravity                                              = Gravity::NoGravity;
-        UInt32 constraintAdjustment                                 = ConstraintAdjustment::NoAdjustment;
+        UInt32 anchor = Anchor::NoAnchor;
+        UInt32 gravity = Gravity::NoGravity;
+        UInt32 constraintAdjustment = ConstraintAdjustment::NoAdjustment;
 
         // Since 3
-        bool isReactive                                             = false;
+        bool isReactive = false;
         LSize parentSizeS, parentSizeC;
         UInt32 parentConfigureSerial;
     } data;

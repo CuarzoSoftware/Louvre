@@ -2,6 +2,7 @@
 #include <protocols/XdgShell/RXdgPositioner.h>
 #include <protocols/XdgShell/RXdgSurface.h>
 #include <protocols/Wayland/RSurface.h>
+#include <private/LSurfacePrivate.h>
 #include <LClient.h>
 
 static struct xdg_wm_base_interface xdg_wm_base_implementation =
@@ -56,7 +57,7 @@ void GXdgWmBase::GXdgWmBasePrivate::get_xdg_surface(wl_client *client, wl_resour
     L_UNUSED(client);
     Wayland::RSurface *rSurface = (Wayland::RSurface*)wl_resource_get_user_data(surface);
 
-    if (rSurface->surface()->roleId() != LSurface::Undefined)
+    if (rSurface->surface()->imp()->hasRoleOrPendingRole())
     {
         wl_resource_post_error(resource, XDG_WM_BASE_ERROR_ROLE, "Given wl_surface has another role.");
         return;

@@ -391,3 +391,36 @@ void LSurface::LSurfacePrivate::setPendingParent(LSurface *pendParent)
         pendingParentLink = std::prev(pendingParent->imp()->pendingChildren.end());
     }
 }
+
+bool LSurface::LSurfacePrivate::isInChildrenOrPendingChildren(LSurface *child)
+{
+    if (child == surfaceResource->surface())
+        return true;
+
+    if (child->imp()->pendingParent)
+    {
+        if (isInChildrenOrPendingChildren(child->imp()->pendingParent))
+            return true;
+    }
+
+    for (LSurface *s : children)
+    {
+        if (s == child)
+            return true;
+
+        if (s->imp()->isInChildrenOrPendingChildren(child))
+            return true;
+    }
+
+    return false;
+}
+
+bool LSurface::LSurfacePrivate::hasRoleOrPendingRole()
+{
+    return current.role != nullptr || pending.role != nullptr;
+}
+
+bool LSurface::LSurfacePrivate::hasBufferOrPendingBuffer()
+{
+    return current.buffer != nullptr || pending.buffer != nullptr;
+}

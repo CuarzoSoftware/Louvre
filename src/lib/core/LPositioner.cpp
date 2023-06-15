@@ -1,10 +1,5 @@
 #include <private/LPositionerPrivate.h>
 
-#include <LClient.h>
-#include <LCompositor.h>
-
-using namespace Louvre;
-
 LPositioner::LPositioner()
 {
     m_imp = new LPositionerPrivate();
@@ -55,39 +50,29 @@ UInt32 LPositioner::gravity() const
     return imp()->data.gravity;
 }
 
-#if LOUVRE_XDG_WM_BASE_VERSION >=3
-
-    bool LPositioner::isReactive() const
-    {
-        return imp()->data.isReactive;
-    }
-
-    const LSize &LPositioner::parentSizeS() const
-    {
-        return imp()->data.parentSizeS;
-    }
-
-    const LSize &LPositioner::parentSizeC() const
-    {
-        return imp()->data.parentSizeC;
-    }
-
-    UInt32 LPositioner::parentConfigureSerial() const
-    {
-        return imp()->data.parentConfigureSerial;
-    }
-
-#endif
-
-Louvre::LPositioner::ConstraintAdjustments LPositioner::constraintAdjustment() const
+LPositioner::ConstraintAdjustments LPositioner::constraintAdjustment() const
 {
     return imp()->data.constraintAdjustment;
 }
 
-void Louvre::LPositioner::LPositionerPrivate::updateGlobalScale()
+// Since 3
+
+bool LPositioner::isReactive() const
 {
-    data.sizeC = data.sizeS * compositor()->globalScale();
-    data.anchorRectC = data.anchorRectS * compositor()->globalScale();
-    data.offsetC = data.offsetS * compositor()->globalScale();
-    data.parentSizeC = data.parentSizeS * compositor()->globalScale();
+    return imp()->data.isReactive;
+}
+
+const LSize &LPositioner::parentSizeS() const
+{
+    return imp()->data.parentSizeS;
+}
+
+const LSize &LPositioner::parentSizeC() const
+{
+    return imp()->data.parentSizeC;
+}
+
+UInt32 LPositioner::parentConfigureSerial() const
+{
+    return imp()->data.parentConfigureSerial;
 }

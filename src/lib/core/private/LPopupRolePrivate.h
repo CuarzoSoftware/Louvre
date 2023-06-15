@@ -12,18 +12,12 @@ struct LPopupRole::Params
 };
 
 LPRIVATE_CLASS(LPopupRole)
-    bool hasPendingWindowGeometry                           = false;
-    bool windowGeometrySet                                  = false;
-    LRect currentWindowGeometryS, pendingWindowGeometryS;
-    LRect currentWindowGeometryC;
     LRect positionerBoundsS, positionerBoundsC;
-
-#if LOUVRE_XDG_WM_BASE_VERSION >= 3
-    UInt32 repositionSerial                                 = 0;
-#endif
-
     LPositioner positioner;
-    bool dismissed                                          = false;
+    bool dismissed = false;
+
+    // Since 3
+    UInt32 repositionSerial = 0;
 };
 
 #endif // LPOPUPROLEPRIVATE_H

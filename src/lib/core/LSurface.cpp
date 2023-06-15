@@ -337,3 +337,56 @@ const list<LSurface *> &LSurface::children() const
 {
     return imp()->children;
 }
+
+static bool isChildOfPopup(const LSurface *surface)
+{
+    if (surface->parent())
+    {
+        if (surface->parent()->popup())
+            return true;
+
+        return isChildOfPopup(surface->parent());
+    }
+    return false;
+}
+
+bool LSurface::isPopupSubchild() const
+{
+    return isChildOfPopup(this);
+}
+
+static bool hasPopupChildren(const LSurface *surface)
+{
+    for (LSurface *c : surface->children())
+    {
+        if (c->popup())
+            return true;
+
+        if (hasPopupChildren(c))
+            return true;
+    }
+
+    return false;
+}
+
+bool LSurface::hasPopupSubchild() const
+{
+    return hasPopupChildren(this);
+}
+
+bool LSurface::isSubchildOf(LSurface *parent) const
+{
+    if (!parent)
+        return false;
+
+    for (LSurface *c : parent->children())
+    {
+        if (c == this)
+            return true;
+
+        if (isSubchildOf(c))
+            return true;
+    }
+
+    return false;
+}

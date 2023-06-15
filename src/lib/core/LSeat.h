@@ -192,6 +192,8 @@ public:
      */
     bool enabled() const;
 
+    LPopupRole *topmostPopup() const;
+
 /// @}
 
 /// @name Virtual Methods

@@ -30,15 +30,11 @@ LPRIVATE_CLASS(LToplevelRole)
 
     bool hasPendingMinSize                                          = false;
     bool hasPendingMaxSize                                          = false;
-    bool hasPendingWindowGeometry                                   = false;
-    bool windowGeometrySet                                          = false;
 
     LSize currentMinSizeS, pendingMinSizeS;
     LSize currentMaxSizeS, pendingMaxSizeS;
     LSize currentMinSizeC;
     LSize currentMaxSizeC;
-    LRect currentWindowGeometryS, pendingWindowGeometryS;
-    LRect currentWindowGeometryC;
 
     void setAppId(const char *appId);
     void setTitle(const char *title);

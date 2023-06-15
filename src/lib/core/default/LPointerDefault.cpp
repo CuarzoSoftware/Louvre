@@ -107,10 +107,8 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
 
         if (surface)
         {
-
             seat()->keyboard()->setFocus(surface);
             setFocusC(surface);
-
             sendButtonEvent(button,state);
 
             if (surface->popup())
@@ -138,7 +136,9 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
          * is outside of it (while the left button is being held down)*/
         setDragginSurface(focusSurface());
 
-        seat()->keyboard()->setFocus(focusSurface());
+        /* This prevents firefox from closing popups before click */
+        if (!focusSurface()->isSubchildOf(seat()->keyboard()->focusSurface()))
+            seat()->keyboard()->setFocus(focusSurface());
 
         if (focusSurface()->toplevel() && !focusSurface()->toplevel()->activated())
             focusSurface()->toplevel()->configureC(focusSurface()->toplevel()->states() | LToplevelRole::Activated);
@@ -148,7 +148,6 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
             compositor()->raiseSurface(focusSurface()->topmostParent());
         else
             compositor()->raiseSurface(focusSurface());
-
     }
     // Left button released
     else

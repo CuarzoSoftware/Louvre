@@ -203,7 +203,14 @@ public:
      */
     UInt32 gravity() const;
 
-#if LOUVRE_XDG_WM_BASE_VERSION >=3
+    /*!
+     * @brief Constraint adjustment rules
+     *
+     * Flags with the rules to use in case the Popup is restricted, defined in ConstraintAdjustment.
+     */
+    ConstraintAdjustments constraintAdjustment() const;
+
+    // Since 3
 
     /*!
      * @brief Reactive repositioning
@@ -232,14 +239,6 @@ public:
      * Configuration serial of the parent to consider in positioning.
      */
     UInt32 parentConfigureSerial() const;
-#endif
-
-    /*!
-     * @brief Constraint adjustment rules
-     *
-     * Flags with the rules to use in case the Popup is restricted, defined in ConstraintAdjustment.
-     */
-    ConstraintAdjustments constraintAdjustment() const;
 
     LPRIVATE_IMP(LPositioner)
 };

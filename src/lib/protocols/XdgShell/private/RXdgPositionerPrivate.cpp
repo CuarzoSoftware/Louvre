@@ -17,13 +17,6 @@ void RXdgPositioner::RXdgPositionerPrivate::destroy(wl_client *client, wl_resour
 void RXdgPositioner::RXdgPositionerPrivate::set_size(wl_client *client, wl_resource *resource, Int32 width, Int32 height)
 {
     L_UNUSED(client);
-
-    if (width <= 0 || height <= 0)
-    {
-        wl_resource_post_error(resource, XDG_POSITIONER_ERROR_INVALID_INPUT, "xdg_positioner.set_size requested with non-positive dimensions");
-        return;
-    }
-
     RXdgPositioner *rXdgPositioner = (RXdgPositioner*)wl_resource_get_user_data(resource);
     rXdgPositioner->positioner().imp()->data.sizeS.setW(width);
     rXdgPositioner->positioner().imp()->data.sizeS.setH(height);
@@ -32,13 +25,6 @@ void RXdgPositioner::RXdgPositionerPrivate::set_size(wl_client *client, wl_resou
 void RXdgPositioner::RXdgPositionerPrivate::set_anchor_rect(wl_client *client, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height)
 {
     L_UNUSED(client);
-
-    if (width <= 0 || height <= 0)
-    {
-        wl_resource_post_error(resource, XDG_POSITIONER_ERROR_INVALID_INPUT, "xdg_positioner.set_anchor_rect requested with non-positive dimensions");
-        return;
-    }
-
     RXdgPositioner *rXdgPositioner = (RXdgPositioner*)wl_resource_get_user_data(resource);
     rXdgPositioner->positioner().imp()->data.anchorRectS.setX(x);
     rXdgPositioner->positioner().imp()->data.anchorRectS.setY(y);
@@ -93,9 +79,8 @@ void RXdgPositioner::RXdgPositionerPrivate::set_parent_size(wl_client *client, w
 
 void RXdgPositioner::RXdgPositionerPrivate::set_parent_configure(wl_client *client, wl_resource *resource, UInt32 serial)
 {
-    // TODO
     L_UNUSED(client);
-    L_UNUSED(resource);
-    L_UNUSED(serial);
+    RXdgPositioner *rXdgPositioner = (RXdgPositioner*)wl_resource_get_user_data(resource);
+    rXdgPositioner->positioner().imp()->data.parentConfigureSerial = serial;
 }
 #endif

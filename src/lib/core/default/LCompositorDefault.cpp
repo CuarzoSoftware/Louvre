@@ -237,7 +237,7 @@ void LCompositor::destroyToplevelRoleRequest(LToplevelRole *toplevel)
 //! [destroyPopupRoleRequest]
 void LCompositor::destroyPopupRoleRequest(LPopupRole *popup)
 {
-    // Return implicit grab to parent
+    // TODO: Return implicit grab to parent
     if (popup->surface()->parent() && (popup->surface() == seat()->keyboard()->focusSurface() || popup->surface() == seat()->pointer()->focusSurface()))
         seat()->keyboard()->setFocus(popup->surface()->parent());
     

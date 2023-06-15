@@ -333,12 +333,12 @@ void LPointer::sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int3
     Float24 dX = wl_fixed_from_int(discreteX);
     Float24 dY = wl_fixed_from_int(discreteY);
 
+    UInt32 ms = LTime::ms();
+
     for (Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
     {
         if (s->pointerResource())
         {
-            UInt32 ms = LTime::ms();
-
             // Since 5
             if (s->pointerResource()->axisSource(source))
             {
@@ -356,13 +356,15 @@ void LPointer::sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int3
                         s->pointerResource()->axisValue120(WL_POINTER_AXIS_VERTICAL_SCROLL, dY);
                 }
 
-                s->pointerResource()->axis(ms, WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
                 if (axisX == 0.0)
                     s->pointerResource()->axisStop(ms, WL_POINTER_AXIS_HORIZONTAL_SCROLL);
+                else
+                    s->pointerResource()->axis(ms, WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
 
-                s->pointerResource()->axis(ms, WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
                 if (axisY == 0.0)
                     s->pointerResource()->axisStop(ms, WL_POINTER_AXIS_VERTICAL_SCROLL);
+                else
+                    s->pointerResource()->axis(ms, WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
 
                 s->pointerResource()->frame();
             }
@@ -409,6 +411,7 @@ void LPointer::LPointerPrivate::sendLeaveEvent(LSurface *surface)
             s->pointerResource()->imp()->serials.leave = serial;
             s->pointerResource()->leave(serial,
                                         surface->surfaceResource());
+
             s->pointerResource()->frame();
         }
     }

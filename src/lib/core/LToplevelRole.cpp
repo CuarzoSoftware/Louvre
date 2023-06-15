@@ -1,14 +1,11 @@
 #include <protocols/XdgDecoration/private/RXdgToplevelDecorationPrivate.h>
-
+#include <protocols/XdgShell/private/RXdgSurfacePrivate.h>
 #include <protocols/XdgShell/RXdgToplevel.h>
-#include <protocols/XdgShell/RXdgSurface.h>
-
 #include <private/LToplevelRolePrivate.h>
 #include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LSeatPrivate.h>
 #include <protocols/XdgShell/xdg-shell.h>
-
 #include <LCompositor.h>
 #include <LOutput.h>
 #include <LPoint.h>
@@ -16,7 +13,6 @@
 #include <LPointer.h>
 #include <LKeyboard.h>
 #include <LTime.h>
-
 #include <string.h>
 
 #undef None
@@ -154,9 +150,18 @@ LToplevelRole::DecorationMode LToplevelRole::decorationMode() const
     return imp()->decorationMode;
 }
 
+RXdgToplevel *LToplevelRole::xdgToplevelResource() const
+{
+    return (RXdgToplevel*)resource();
+}
+
+RXdgSurface *LToplevelRole::xdgSurfaceResource() const
+{
+    return xdgToplevelResource()->rXdgSurface();
+}
+
 void LToplevelRole::handleSurfaceCommit()
 {
-
     // Commit inicial para asignar rol
     if (surface()->imp()->pending.role)
     {
@@ -206,16 +211,19 @@ void LToplevelRole::handleSurfaceCommit()
         imp()->sentConfs.clear();
         imp()->hasPendingMinSize = false;
         imp()->hasPendingMaxSize = false;
-        imp()->hasPendingWindowGeometry = false;
         imp()->currentMinSizeS = LSize();
         imp()->currentMinSizeC = LSize();
         imp()->pendingMinSizeS = LSize();
         imp()->currentMaxSizeS = LSize();
         imp()->currentMaxSizeC = LSize();
         imp()->pendingMaxSizeS = LSize();
-        imp()->currentWindowGeometryS = LRect();
-        imp()->currentWindowGeometryC = LRect();
-        imp()->pendingWindowGeometryS = LRect();
+
+        XdgShell::RXdgToplevel *rXdgToplevel = (XdgShell::RXdgToplevel*)resource();
+        rXdgToplevel->rXdgSurface()->imp()->hasPendingWindowGeometry = false;
+        rXdgToplevel->rXdgSurface()->imp()->windowGeometrySet = false;
+        rXdgToplevel->rXdgSurface()->imp()->pendingWindowGeometryS = LRect();
+        rXdgToplevel->rXdgSurface()->imp()->currentWindowGeometryS = LRect();
+        rXdgToplevel->rXdgSurface()->imp()->currentWindowGeometryC = LRect();
 
         // Since 4
         imp()->boundsC = LSize();
@@ -245,18 +253,19 @@ void LToplevelRole::handleSurfaceCommit()
         minSizeChanged();
     }
 
-    if (imp()->hasPendingWindowGeometry)
+    if (xdgSurfaceResource()->imp()->hasPendingWindowGeometry)
     {
-        imp()->hasPendingWindowGeometry = false;
-        imp()->currentWindowGeometryS = imp()->pendingWindowGeometryS;
-        imp()->currentWindowGeometryC = imp()->pendingWindowGeometryS * compositor()->globalScale();
+        xdgSurfaceResource()->imp()->hasPendingWindowGeometry = false;
+        xdgSurfaceResource()->imp()->currentWindowGeometryS = xdgSurfaceResource()->imp()->pendingWindowGeometryS;
+        xdgSurfaceResource()->imp()->currentWindowGeometryC = xdgSurfaceResource()->imp()->pendingWindowGeometryS * compositor()->globalScale();
         geometryChanged();
     }
     // Si nunca ha asignado la geometría, usa el tamaño de la superficie
-    else if (!imp()->windowGeometrySet && imp()->currentWindowGeometryC.bottomRight() != surface()->sizeC())
+    else if (!xdgSurfaceResource()->imp()->windowGeometrySet &&
+             xdgSurfaceResource()->imp()->currentWindowGeometryC.size() != surface()->sizeC())
     {
-        imp()->currentWindowGeometryS = LRect(0,surface()->sizeS());
-        imp()->currentWindowGeometryC = LRect(0,surface()->sizeC());
+        xdgSurfaceResource()->imp()->currentWindowGeometryS = LRect(0, surface()->sizeS());
+        xdgSurfaceResource()->imp()->currentWindowGeometryC = LRect(0, surface()->sizeC());
         geometryChanged();
     }
 
@@ -303,14 +312,10 @@ void LToplevelRole::handleParentMappingChange()
 void LToplevelRole::globalScaleChanged(Int32 oldScale, Int32 newScale)
 {
     L_UNUSED(oldScale);
-
     imp()->currentMinSizeC = imp()->currentMinSizeS * newScale;
     imp()->currentMaxSizeC = imp()->currentMaxSizeS * newScale;
-    imp()->currentWindowGeometryC = imp()->currentWindowGeometryS * newScale;
-
-    #if LOUVRE_XDG_WM_BASE_VERSION >= XDG_TOPLEVEL_CONFIGURE_BOUNDS_SINCE_VERSION
+    xdgSurfaceResource()->imp()->currentWindowGeometryC = xdgSurfaceResource()->imp()->currentWindowGeometryS * newScale;
     imp()->boundsC = imp()->boundsS * newScale;
-    #endif
 }
 
 const char *LToplevelRole::appId() const
@@ -442,12 +447,12 @@ void LToplevelRole::close() const
 
 const LRect &LToplevelRole::windowGeometryS() const
 {
-    return imp()->currentWindowGeometryS;
+    return xdgSurfaceResource()->imp()->currentWindowGeometryS;
 }
 
 const LRect &LToplevelRole::windowGeometryC() const
 {
-    return imp()->currentWindowGeometryC;
+    return xdgSurfaceResource()->imp()->currentWindowGeometryC;
 }
 
 void LToplevelRole::configureBoundsC(const LSize &bounds)

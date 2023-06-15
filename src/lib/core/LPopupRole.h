@@ -4,6 +4,8 @@
 #include <LBaseSurfaceRole.h>
 #include <LRect.h>
 
+using namespace Louvre::Protocols;
+
 /*!
  * @brief Popup role for surfaces
  *
@@ -85,6 +87,11 @@ public:
      */
     const LRect &positionerBoundsC() const;
 
+    /// xdg_popup resource
+    XdgShell::RXdgPopup *xdgPopupResource() const;
+
+    /// xdg_surface resource
+    XdgShell::RXdgSurface *xdgSurfaceResource() const;
 
 /// @name Events
 /// @{

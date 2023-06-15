@@ -427,6 +427,10 @@ public:
      */
     const list<LSurface*>&children() const;
 
+    bool isPopupSubchild() const;
+    bool hasPopupSubchild() const;
+    bool isSubchildOf(LSurface *parent) const;
+
 /// @name Virtual Methods
 /// @{
 

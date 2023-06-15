@@ -1,8 +1,6 @@
 #include <protocols/XdgShell/private/RXdgPositionerPrivate.h>
-
 #include <protocols/XdgShell/GXdgWmBase.h>
 #include <protocols/XdgShell/xdg-shell.h>
-
 #include <private/LPositionerPrivate.h>
 
 using namespace Louvre::Protocols::XdgShell;
@@ -46,7 +44,36 @@ RXdgPositioner::~RXdgPositioner()
     delete m_imp;
 }
 
-const LPositioner &Louvre::Protocols::XdgShell::RXdgPositioner::positioner() const
+const LPositioner &RXdgPositioner::positioner() const
 {
     return imp()->lPositioner;
+}
+
+bool RXdgPositioner::isValid()
+{
+    if (positioner().sizeS().w() <= 0 || positioner().sizeS().h() <= 0)
+    {
+        wl_resource_post_error(resource(),
+                               XDG_POSITIONER_ERROR_INVALID_INPUT,
+                               "xdg_positioner.set_size requested with non-positive dimensions");
+        return false;
+    }
+
+    if (positioner().anchorRectS().w() <= 0 || positioner().anchorRectS().h() <= 0)
+    {
+        wl_resource_post_error(resource(),
+                               XDG_POSITIONER_ERROR_INVALID_INPUT,
+                               "xdg_positioner.set_anchor_rect requested with non-positive dimensions");
+        return false;
+    }
+
+    if (positioner().gravity() > 8)
+    {
+        wl_resource_post_error(resource(),
+                               XDG_POSITIONER_ERROR_INVALID_INPUT,
+                               "xdg_positioner.set_anchor_rect requested with non-positive dimensions");
+        return false;
+    }
+
+    return true;
 }

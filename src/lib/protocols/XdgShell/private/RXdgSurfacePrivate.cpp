@@ -1,14 +1,11 @@
 #include <protocols/XdgShell/private/RXdgSurfacePrivate.h>
 #include <protocols/XdgShell/private/RXdgToplevelPrivate.h>
 #include <protocols/XdgShell/private/RXdgPopupPrivate.h>
-
 #include <protocols/XdgShell/xdg-shell.h>
 #include <protocols/XdgShell/RXdgPositioner.h>
-
 #include <private/LSurfacePrivate.h>
 #include <private/LToplevelRolePrivate.h>
 #include <private/LPopupRolePrivate.h>
-
 #include <LPositioner.h>
 #include <LLog.h>
 
@@ -38,15 +35,15 @@ void RXdgSurface::RXdgSurfacePrivate::get_toplevel(wl_client *client, wl_resourc
 
     RXdgSurface *rXdgSurface = (RXdgSurface*)wl_resource_get_user_data(resource);
 
-    if (rXdgSurface->lSurface()->imp()->pending.buffer || rXdgSurface->lSurface()->imp()->current.buffer)
+    if (rXdgSurface->lSurface()->imp()->hasBufferOrPendingBuffer())
     {
         wl_resource_post_error(resource, XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface already has a buffer attached.");
         return;
     }
 
-    if (rXdgSurface->lSurface()->role() )
+    if (rXdgSurface->lSurface()->imp()->hasRoleOrPendingRole())
     {
-        wl_resource_post_error(resource, XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "xdg_surface already has a role object.");
+        wl_resource_post_error(resource, XDG_WM_BASE_ERROR_ROLE, "Given wl_surface has another role.");
         return;
     }
 
@@ -57,46 +54,39 @@ void RXdgSurface::RXdgSurfacePrivate::get_popup(wl_client *client, wl_resource *
 {
     L_UNUSED(client);
 
+    RXdgPositioner *rXdgPositioner = (RXdgPositioner*)wl_resource_get_user_data(positioner);
+
+    if (!rXdgPositioner->isValid())
+        return;
+
     RXdgSurface *rXdgSurface = (RXdgSurface*)wl_resource_get_user_data(resource);
 
-    if (rXdgSurface->lSurface()->imp()->pending.buffer != nullptr ||
-        rXdgSurface->lSurface()->imp()->current.buffer != nullptr)
+    if (rXdgSurface->lSurface()->imp()->hasBufferOrPendingBuffer())
     {
         wl_resource_post_error(resource, XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface already has a buffer attached.");
         return;
     }
 
-    if (rXdgSurface->lSurface()->role())
+    if (rXdgSurface->lSurface()->imp()->hasRoleOrPendingRole())
     {
-        wl_resource_post_error(resource, XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "xdg_surface already has a role object.");
+        wl_resource_post_error(resource, XDG_WM_BASE_ERROR_ROLE, "Given wl_surface has another role.");
+        return;
+    }
+
+    if (!parent)
+    {
+        wl_resource_post_error(positioner, XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT, "xdg_popup's without parent not supported");
         return;
     }
 
     RXdgSurface *rXdgParentSurface = nullptr;
-
-    if (!parent)
-    {
-        wl_resource_post_error(
-            positioner,
-            XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT,
-            "xdg_popup's without parent not supported");
-        return;
-    }
-
     rXdgParentSurface = (RXdgSurface*)wl_resource_get_user_data(parent);
 
-    RXdgPositioner *rXdgPositioner = (RXdgPositioner*)wl_resource_get_user_data(positioner);
-
-    if (rXdgPositioner->positioner().sizeS().area() <= 0 || rXdgPositioner->positioner().anchorRectS().area() <= 0)
+    if (rXdgSurface->lSurface()->imp()->isInChildrenOrPendingChildren(rXdgParentSurface->lSurface()))
     {
-        wl_resource_post_error(
-            positioner,
-            XDG_WM_BASE_ERROR_INVALID_POSITIONER,
-            "xdg_surface.get_popup with invalid positioner (size: %dx%d, anchorRect: %dx%d)",
-            rXdgPositioner->positioner().sizeS().w(),
-            rXdgPositioner->positioner().sizeS().h(),
-            rXdgPositioner->positioner().anchorRectS().w(),
-            rXdgPositioner->positioner().anchorRectS().h());
+        wl_resource_post_error(positioner,
+                               XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT,
+                               "Parent can not be child or equal to surface.");
         return;
     }
 
@@ -109,31 +99,21 @@ void RXdgSurface::RXdgSurfacePrivate::set_window_geometry(wl_client *client, wl_
 
     RXdgSurface *rXdgSurface = (RXdgSurface*)wl_resource_get_user_data(resource);
 
+    if (!rXdgSurface->rXdgPopup() && !rXdgSurface->rXdgToplevel())
+    {
+        wl_resource_post_error(resource, 0, "Can not set window geometry with no role.");
+        return;
+    }
+
     if (width <= 0 || height <= 0)
     {
         wl_resource_post_error(resource, 0, "Invalid window geometry size.");
         return;
     }
 
-    if (rXdgSurface->lSurface()->toplevel())
-    {
-        rXdgSurface->lSurface()->toplevel()->imp()->windowGeometrySet = true;
-        rXdgSurface->lSurface()->toplevel()->imp()->pendingWindowGeometryS = LRect(x, y, width, height);
-        rXdgSurface->lSurface()->toplevel()->imp()->hasPendingWindowGeometry = true;
-    }
-    else if (rXdgSurface->lSurface()->popup())
-    {
-        rXdgSurface->lSurface()->popup()->imp()->windowGeometrySet = true;
-        rXdgSurface->lSurface()->popup()->imp()->pendingWindowGeometryS = LRect(x, y, width, height);
-        rXdgSurface->lSurface()->popup()->imp()->hasPendingWindowGeometry = true;
-    }
-    else
-    {
-        wl_resource_post_error(
-            rXdgSurface->resource(),
-            XDG_SURFACE_ERROR_NOT_CONSTRUCTED,
-            "wl_surface does not have a role yet.");
-    }
+    rXdgSurface->imp()->pendingWindowGeometryS = LRect(x, y, width, height);
+    rXdgSurface->imp()->windowGeometrySet = true;
+    rXdgSurface->imp()->hasPendingWindowGeometry = true;
 }
 
 void RXdgSurface::RXdgSurfacePrivate::ack_configure(wl_client *client, wl_resource *resource, UInt32 serial)
@@ -141,6 +121,12 @@ void RXdgSurface::RXdgSurfacePrivate::ack_configure(wl_client *client, wl_resour
     L_UNUSED(client);
 
     RXdgSurface *rXdgSurface = (RXdgSurface*)wl_resource_get_user_data(resource);
+
+    if (!rXdgSurface->rXdgPopup() && !rXdgSurface->rXdgToplevel())
+    {
+        wl_resource_post_error(resource, 0, "Can not ack xdg_surface with no role.");
+        return;
+    }
 
     if (rXdgSurface->lSurface()->roleId() == LSurface::Role::Toplevel)
     {

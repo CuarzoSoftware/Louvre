@@ -125,24 +125,35 @@ static Int32 processInput(int, unsigned int, void *userData)
                 return 0;
             }
         }
-        else if (eventType == LIBINPUT_EVENT_POINTER_AXIS)
+        else if (eventType == LIBINPUT_EVENT_POINTER_SCROLL_FINGER)
         {
             if (!(seat->capabilities() & LSeat::Pointer))
                 goto skip;
 
             pointerEvent = libinput_event_get_pointer_event(ev);
-            axisSource = libinput_event_pointer_get_axis_source(pointerEvent);
-
-            if (axisSource == LIBINPUT_POINTER_AXIS_SOURCE_WHEEL)
-                goto skip;
 
             if (libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL))
-                axisX = libinput_event_pointer_get_axis_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL);
+                axisX = libinput_event_pointer_get_scroll_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL);
 
             if (libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL))
-                axisY = libinput_event_pointer_get_axis_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
+                axisY = libinput_event_pointer_get_scroll_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
 
-            seat->pointer()->pointerAxisEvent(axisX, axisY, axisX, axisY, axisSource);
+            seat->pointer()->pointerAxisEvent(axisX, axisY, axisX, axisY, 1);
+        }
+        else if (eventType == LIBINPUT_EVENT_POINTER_SCROLL_CONTINUOUS)
+        {
+            if (!(seat->capabilities() & LSeat::Pointer))
+                goto skip;
+
+            pointerEvent = libinput_event_get_pointer_event(ev);
+
+            if (libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL))
+                axisX = libinput_event_pointer_get_scroll_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL);
+
+            if (libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL))
+                axisY = libinput_event_pointer_get_scroll_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
+
+            seat->pointer()->pointerAxisEvent(axisX, axisY, axisX, axisY, 2);
         }
         else if (eventType == LIBINPUT_EVENT_POINTER_SCROLL_WHEEL)
         {
@@ -163,7 +174,7 @@ static Int32 processInput(int, unsigned int, void *userData)
                 d120Y = libinput_event_pointer_get_scroll_value_v120(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
             }
 
-            seat->pointer()->pointerAxisEvent(discreteX, discreteY, d120X, d120Y, LIBINPUT_POINTER_AXIS_SOURCE_WHEEL);
+            seat->pointer()->pointerAxisEvent(discreteX, discreteY, d120X, d120Y, 0);
         }
 
         skip:

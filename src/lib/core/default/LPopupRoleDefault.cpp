@@ -461,7 +461,6 @@ void LPopupRole::pong(UInt32)
 //! [grabSeatRequest]
 void LPopupRole::grabSeatRequest()
 {
-    seat()->pointer()->setFocusC(surface());
     seat()->keyboard()->setFocus(surface());
 }
 //! [grabSeatRequest]

@@ -1,14 +1,11 @@
+#include <protocols/XdgShell/private/RXdgSurfacePrivate.h>
 #include <protocols/XdgShell/RXdgPopup.h>
-#include <protocols/XdgShell/RXdgSurface.h>
-
+#include <protocols/XdgShell/xdg-shell.h>
 #include <private/LPopupRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LPositionerPrivate.h>
 #include <private/LPointerPrivate.h>
-
-#include <protocols/XdgShell/xdg-shell.h>
-
 #include <LRect.h>
 #include <LCompositor.h>
 #include <LOutput.h>
@@ -75,12 +72,12 @@ void LPopupRole::sendRepositionedEvent(UInt32 token)
 
 const LRect &LPopupRole::windowGeometryS() const
 {
-    return imp()->currentWindowGeometryS;
+    return xdgSurfaceResource()->imp()->currentWindowGeometryS;
 }
 
 const LRect &LPopupRole::windowGeometryC() const
 {
-    return imp()->currentWindowGeometryC;
+    return xdgSurfaceResource()->imp()->currentWindowGeometryC;
 }
 
 const LPositioner &LPopupRole::positioner() const
@@ -93,24 +90,16 @@ void LPopupRole::handleSurfaceCommit()
     // Commit inicial para asignar rol y padre
     if (surface()->imp()->pending.role)
     {
-
-        if (surface()->buffer())
+        // Based on xdg_surface documentation
+        if (surface()->imp()->hasBufferOrPendingBuffer())
         {
-            wl_resource_post_error(resource()->resource(), XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface already has a buffer attached.");
-            return;
+            wl_resource_post_error(surface()->surfaceResource()->resource(),
+                                   0,
+                                   "wl_surface attach before first xdg_surface configure");
         }
 
         if (surface()->imp()->pendingParent)
-        {
-
-            surface()->imp()->setParent(surface()->imp()->pendingParent);
-            surface()->imp()->pendingParent = nullptr;
-        }
-        else
-        {
-            wl_resource_post_error(resource()->resource(), XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT, "xdg_surface.get_popup with invalid popup parent.");
-            return;
-        }
+            surface()->imp()->pendingParent->imp()->applyPendingChildren();
 
         surface()->imp()->applyPendingRole();
         surface()->popup()->configureRequest();
@@ -133,18 +122,19 @@ void LPopupRole::handleSurfaceCommit()
     }
 
     // Cambios double-buffered
-    if (imp()->hasPendingWindowGeometry)
+    if (xdgSurfaceResource()->imp()->hasPendingWindowGeometry)
     {
-        imp()->hasPendingWindowGeometry = false;
-        imp()->currentWindowGeometryS = imp()->pendingWindowGeometryS;
-        imp()->currentWindowGeometryC = imp()->pendingWindowGeometryS * compositor()->globalScale();
+        xdgSurfaceResource()->imp()->hasPendingWindowGeometry = false;
+        xdgSurfaceResource()->imp()->currentWindowGeometryS = xdgSurfaceResource()->imp()->pendingWindowGeometryS;
+        xdgSurfaceResource()->imp()->currentWindowGeometryC = xdgSurfaceResource()->imp()->pendingWindowGeometryS * compositor()->globalScale();
         geometryChanged();
     }
     // Si nunca ha asignado la geometría, usa el tamaño de la superficie
-    else if (!imp()->windowGeometrySet && imp()->currentWindowGeometryC.size() != surface()->sizeC())
+    else if (!xdgSurfaceResource()->imp()->windowGeometrySet &&
+             xdgSurfaceResource()->imp()->currentWindowGeometryC.size() != surface()->sizeC())
     {
-        imp()->currentWindowGeometryS = LRect(0, surface()->sizeS());
-        imp()->currentWindowGeometryC = LRect(0, surface()->sizeC());
+        xdgSurfaceResource()->imp()->currentWindowGeometryS = LRect(0, surface()->sizeS());
+        xdgSurfaceResource()->imp()->currentWindowGeometryC = LRect(0, surface()->sizeC());
         geometryChanged();
     }
 
@@ -158,7 +148,7 @@ void LPopupRole::globalScaleChanged(Int32 oldScale, Int32 newScale)
     L_UNUSED(oldScale);
 
     // Window geometry
-    imp()->currentWindowGeometryC = imp()->currentWindowGeometryS * newScale;
+    xdgSurfaceResource()->imp()->currentWindowGeometryC = xdgSurfaceResource()->imp()->currentWindowGeometryS * newScale;
 
     // Positioner bounds
     imp()->positionerBoundsC = imp()->positionerBoundsS * newScale;
@@ -176,6 +166,16 @@ void LPopupRole::setPositionerBoundsC(const LRect &bounds)
 const LRect &LPopupRole::positionerBoundsC() const
 {
     return imp()->positionerBoundsC;
+}
+
+XdgShell::RXdgPopup *LPopupRole::xdgPopupResource() const
+{
+    return (XdgShell::RXdgPopup*)resource();
+}
+
+XdgShell::RXdgSurface *LPopupRole::xdgSurfaceResource() const
+{
+    return xdgPopupResource()->rXdgSurface();
 }
 
 const LRect &LPopupRole::positionerBoundsS() const

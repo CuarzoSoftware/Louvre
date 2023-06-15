@@ -23,6 +23,9 @@ LPRIVATE_CLASS(LSurface)
     bool bufferToTexture();
     void notifyPosUpdateToChildren(LSurface *surface);
     void sendPreferredScale();
+    bool isInChildrenOrPendingChildren(LSurface *child);
+    bool hasRoleOrPendingRole();
+    bool hasBufferOrPendingBuffer();
 
     struct State
     {

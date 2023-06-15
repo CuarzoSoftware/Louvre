@@ -55,7 +55,8 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
         RSurface *rSurface = (RSurface*)wl_resource_get_user_data(icon);
         LSurface *lIcon = rSurface->surface();
 
-        if (!(lIcon->roleId() == LSurface::Role::Undefined || lIcon->roleId() == LSurface::Role::DNDIcon))
+        if (lIcon->imp()->pending.role ||
+            (lIcon->roleId() != LSurface::Role::Undefined && lIcon->roleId() != LSurface::Role::DNDIcon))
         {
             wl_resource_post_error(resource, WL_DATA_DEVICE_ERROR_ROLE, "Given wl_surface has another role.");
             return;

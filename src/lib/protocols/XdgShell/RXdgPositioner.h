@@ -1,5 +1,5 @@
-#ifndef XDGPOSITIONER_H
-#define XDGPOSITIONER_H
+#ifndef RXDGPOSITIONER_H
+#define RXDGPOSITIONER_H
 
 #include <LResource.h>
 
@@ -10,8 +10,9 @@ public:
     ~RXdgPositioner();
 
     const LPositioner &positioner() const;
+    bool isValid();
 
     LPRIVATE_IMP(RXdgPositioner)
 };
 
-#endif // XDGPOSITIONER_H
+#endif // RXDGPOSITIONER_H

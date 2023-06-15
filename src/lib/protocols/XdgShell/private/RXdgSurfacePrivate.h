@@ -2,6 +2,7 @@
 #define RXDGSURFACE_H
 
 #include <protocols/XdgShell/RXdgSurface.h>
+#include <LRect.h>
 
 using namespace Louvre::Protocols::XdgShell;
 using namespace std;
@@ -17,6 +18,12 @@ LPRIVATE_CLASS(RXdgSurface)
     GXdgWmBase *gXdgWmBase = nullptr;
     LSurface *lSurface = nullptr;
     list<RXdgSurface*>::iterator xdgWmBaseLink;
+
+    bool windowGeometrySet = false;
+    LRect pendingWindowGeometryS;
+    LRect currentWindowGeometryS;
+    LRect currentWindowGeometryC;
+    bool hasPendingWindowGeometry = false;
 
     RXdgPopup *rXdgPopup = nullptr;
     RXdgToplevel *rXdgToplevel = nullptr;

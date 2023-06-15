@@ -33,26 +33,6 @@ void GSubcompositor::GSubcompositorPrivate::destroy(wl_client *client, wl_resour
     wl_resource_destroy(resource);
 }
 
-static bool isChild(LSurface *parent, LSurface *child)
-{
-    if (child->imp()->pendingParent)
-    {
-        if (isChild(parent, child->imp()->pendingParent))
-            return true;
-    }
-
-    for (LSurface *s : parent->children())
-    {
-        if (s == child)
-            return true;
-
-        if (isChild(s, child))
-            return true;
-    }
-
-    return false;
-}
-
 void GSubcompositor::GSubcompositorPrivate::get_subsurface(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface, wl_resource *parent)
 {
     L_UNUSED(client);
@@ -65,7 +45,7 @@ void GSubcompositor::GSubcompositorPrivate::get_subsurface(wl_client *client, wl
 
     RSurface *rSurface = (RSurface*)wl_resource_get_user_data(surface);
 
-    if (rSurface->surface()->roleId() != LSurface::Undefined)
+    if (rSurface->surface()->imp()->hasRoleOrPendingRole())
     {
         wl_resource_post_error(resource, WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE, "Given wl_surface already has another role.");
         return;
@@ -73,7 +53,7 @@ void GSubcompositor::GSubcompositorPrivate::get_subsurface(wl_client *client, wl
 
     RSurface *rParent = (RSurface*)wl_resource_get_user_data(parent);
 
-    if (isChild(rSurface->surface(), rParent->surface()))
+    if (rSurface->surface()->imp()->isInChildrenOrPendingChildren(rParent->surface()))
     {
         wl_resource_post_error(resource, WL_SUBCOMPOSITOR_ERROR_BAD_PARENT, "Parent can not be child of surface.");
         return;

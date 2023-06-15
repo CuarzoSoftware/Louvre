@@ -1,6 +1,6 @@
-#include <private/LToplevelRolePrivate.h>
+#include <protocols/XdgShell/private/RXdgSurfacePrivate.h>
+#include <protocols/XdgShell/RXdgToplevel.h>
 #include <private/LBaseSurfaceRolePrivate.h>
-
 #include <LCompositor.h>
 #include <LCursor.h>
 #include <LOutput.h>
@@ -13,7 +13,7 @@ using namespace Louvre;
 //! [rolePosC]
 const LPoint &LToplevelRole::rolePosC() const
 {
-    m_rolePosC = surface()->posC() - imp()->currentWindowGeometryC.topLeft();
+    m_rolePosC = surface()->posC() - xdgSurfaceResource()->imp()->currentWindowGeometryC.topLeft();
     return m_rolePosC;
 }
 //! [rolePosC]
@@ -141,6 +141,8 @@ void LToplevelRole::activatedChanged()
 {
     if (activated())
         seat()->keyboard()->setFocus(surface());
+
+    surface()->repaintOutputs();
 }
 //! [activatedChanged]
 

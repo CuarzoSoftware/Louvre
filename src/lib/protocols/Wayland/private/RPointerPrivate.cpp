@@ -28,7 +28,8 @@ void RPointer::RPointerPrivate::set_cursor(wl_client *client, wl_resource *resou
         Wayland::RSurface *rSurface = (Wayland::RSurface*)wl_resource_get_user_data(surface);
         LSurface *lSurface = rSurface->surface();
 
-        if (lSurface->roleId() != LSurface::Role::Undefined && lSurface->roleId() != LSurface::Role::Cursor)
+        if (lSurface->imp()->pending.role ||
+            (lSurface->roleId() != LSurface::Role::Undefined && lSurface->roleId() != LSurface::Role::Cursor))
         {
             wl_resource_post_error(resource, WL_POINTER_ERROR_ROLE, "Given wl_surface has another role.");
             return;

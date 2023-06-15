@@ -6,6 +6,8 @@
 #include <LSize.h>
 #include <LRect.h>
 
+using namespace Louvre::Protocols;
+
 /*!
  * @brief Toplevel role for surfaces
  *
@@ -253,6 +255,12 @@ public:
 
     /// Current decoration mode
     DecorationMode decorationMode() const;
+
+    /// xdg_toplevel resource
+    XdgShell::RXdgToplevel *xdgToplevelResource() const;
+
+    /// xdg_surface resource
+    XdgShell::RXdgSurface *xdgSurfaceResource() const;
 
 /// @name Métodos virtuales
 /// @{

@@ -166,3 +166,15 @@ bool LSeat::enabled() const
 {
     return imp()->enabled;
 }
+
+LPopupRole *LSeat::topmostPopup() const
+{
+    for (std::list<LSurface*>::const_reverse_iterator it = compositor()->surfaces().crbegin();
+         it != compositor()->surfaces().crend(); it++)
+    {
+        if ((*it)->mapped() && (*it)->popup())
+            return (*it)->popup();
+    }
+
+    return nullptr;
+}
