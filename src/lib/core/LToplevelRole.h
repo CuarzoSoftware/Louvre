@@ -471,7 +471,7 @@ public:
 
     LPRIVATE_IMP(LToplevelRole)
 
-    void handleSurfaceCommit() override;
+    void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
     void handleParentMappingChange() override;
     void globalScaleChanged(Int32 oldScale, Int32 newScale) override;
 };

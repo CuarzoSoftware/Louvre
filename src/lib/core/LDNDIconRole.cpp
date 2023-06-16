@@ -42,7 +42,7 @@ void LDNDIconRole::handleSurfaceOffset(Int32 x, Int32 y)
     imp()->pendingHotspotOffsetS = LPoint(x,y);
 }
 
-void LDNDIconRole::handleSurfaceCommit()
+void LDNDIconRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin)
 {
     imp()->currentHotspotS -= imp()->pendingHotspotOffsetS;
     imp()->pendingHotspotOffsetS = LPoint();

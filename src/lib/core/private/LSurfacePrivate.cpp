@@ -8,6 +8,7 @@
 #include <private/LTexturePrivate.h>
 #include <private/LOutputPrivate.h>
 #include <LOutputMode.h>
+#include <LLog.h>
 
 static PFNEGLQUERYWAYLANDBUFFERWL eglQueryWaylandBufferWL = NULL;
 
@@ -63,7 +64,6 @@ void LSurface::LSurfacePrivate::setMapped(bool state)
     if (before != surface->mapped())
     {
         surface->mappingChanged();
-
         list<LSurface*> childrenTmp = children;
 
         for (LSurface *c : childrenTmp)
@@ -244,7 +244,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         {
             bufferSizeChanged = true;
             currentDamagesB.clear();
-            currentDamagesB.addRect(LRect(0,newSize));
+            currentDamagesB.addRect(LRect(0, newSize));
             currentDamagesC = currentDamagesB;
             currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
         }
@@ -265,7 +265,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     }
     else
     {
-        printf("Unknown buffer type.\n");
+        LLog::error("[surface] Unknown buffer type. Killing client.");
         wl_client_destroy(surface->client()->client());
         return false;
     }

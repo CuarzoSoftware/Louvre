@@ -132,7 +132,7 @@ public:
     LPRIVATE_IMP(LSubsurfaceRole)
 
     bool acceptCommitRequest(Protocols::Wayland::RSurface::CommitOrigin origin) override;
-    void handleSurfaceCommit() override;
+    void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
     void handleParentCommit() override;
     void handleParentChange() override;
     void handleParentMappingChange() override;

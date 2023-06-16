@@ -64,99 +64,117 @@ void Output::paintGL()
     Compositor *c = (Compositor*)compositor();
     LPainter *p = painter();
     list<Surface*> &surfaces = (list<Surface*>&)compositor()->surfaces();
-    bool passFullscreen = false;
 
     if (seat()->dndManager()->icon())
         compositor()->raiseSurface(seat()->dndManager()->icon()->surface());
 
-    // Calc surface damages
-    list<Surface*>::iterator fullscreenIt;
-    for (list<Surface*>::iterator it = surfaces.begin(); it != surfaces.end(); it++)
+    /* In this pass we:
+     * - 1. Calculate the new output damage.
+     * - 2. Mark each surface as ocludded by default.
+     * - 3. Update the outputs each surface intersects.
+     * - 4. Check if each surface scale matches the global scale.
+     * - 5. Check if each surface changed its position or size.
+     * - 3. Transpose each surface damage.
+     * - 4. Transpose each surface traslucent region.
+     * - 5. Transpose each surface opaque region.
+     * - 6. Sum the surfaces transposed opaque region. */
+    LRegion opaqueTransposedCSum;
+    for (list<Surface*>::reverse_iterator it = surfaces.rbegin(); it != surfaces.rend(); it++)
     {
         Surface *s = *it;
 
-        if (!s->mapped() || s->cursorRole()|| s->roleId() == LSurface::Role::Undefined || s->minimized())
+        s->isRenderable = s->mapped() && !s->cursorRole() && s->roleId() != LSurface::Role::Undefined && !s->minimized();
+
+        if (!s->isRenderable)
         {
             s->requestNextFrame();
             continue;
         }
 
-        s->occluded = true;
+        // 2. Store the current surface rect
+        s->currentRectC.setPos(s->rolePosC());
+        s->currentRectC.setSize(s->sizeC());
 
-        if (s == c->fullscreenSurface)
-        {
-            fullscreenIt = it;
-            passFullscreen = true;
-        }
-
-        // Skip until find fullscreen surface
-        if (c->fullscreenSurface && ! passFullscreen)
-            continue;
-
-        // Currrent surface rect
-        LPoint sp = s->rolePosC();
-        LRect rC = LRect(sp, s->sizeC());
-
-        // Update intersected outputs
+        // 3. Update the surface intersected outputs
         for (LOutput *o : compositor()->outputs())
         {
-            if (o->rectC().intersects(rC))
+            if (o->rectC().intersects(s->currentRectC))
                 s->sendOutputEnterEvent(o);
             else
                 s->sendOutputLeaveEvent(o);
         }
 
+        // 4. Check if each surface scale matches the global scale.
         s->bufferScaleMatchGlobalScale = s->bufferScale() == compositor()->globalScale();
 
-        bool rectChanged = rC != s->lastRect;
+        bool rectChanged = s->currentRectC!= s->previousRectC;
 
         // If changed rect or order (set current rect and prev rect as damage)
         if (rectChanged || s->changedOrder)
         {
-            newDamage.addRect(rC);
-            newDamage.addRect(s->lastRect);
+            s->currentDamageTransposedC.clear();
+            s->currentDamageTransposedC.addRect(s->currentRectC);
+            s->currentDamageTransposedC.addRect(s->previousRectC);
             s->changedOrder = false;
-            s->lastRect = rC;
+            s->previousRectC = s->currentRectC;
         }
         else
         {
-            s->damage = s->damagesC();
-            s->damage.offset(rC.pos());
-            newDamage.addRegion(s->damage);
+            s->currentDamageTransposedC = s->damagesC();
+            s->currentDamageTransposedC.offset(s->currentRectC.pos());
         }
+
+        // Remove previus opaque region to surface damage
+        s->currentDamageTransposedC.subtractRegion(opaqueTransposedCSum);
+
+        // Add clipped damage to new damage
+        newDamage.addRegion(s->currentDamageTransposedC);
+
+        // Store tansposed traslucent region
+        s->currentTraslucentTransposedC = s->translucentRegionC();
+        s->currentTraslucentTransposedC.offset(s->currentRectC.pos());
+
+        // Store tansposed opaque region
+        s->currentOpaqueTransposedC = s->opaqueRegionC();
+        s->currentOpaqueTransposedC.offset(s->currentRectC.pos());
+
+        // Store sum of previus opaque regions
+        s->currentOpaqueTransposedCSum = opaqueTransposedCSum;
+
+        // Check if surface is ocludded
+        LRegion ocluddedTest;
+        ocluddedTest.addRect(s->currentRectC);
+        ocluddedTest.subtractRegion(opaqueTransposedCSum);
+        s->occluded = ocluddedTest.empty();
+
+        if (!s->occluded)
+            s->requestNextFrame();
+
+        // Add current transposed opaque region to global sum
+        opaqueTransposedCSum.addRegion(s->currentOpaqueTransposedC);
     }
 
     glDisable(GL_BLEND);
 
+    // Save new damage for next frame and add old damage to current damage
     LRegion oldDamage = damage;
-    oldDamage.subtractRegion(newDamage);
     damage = newDamage;
     newDamage.addRegion(oldDamage);
-
-    if (!passFullscreen)
-        fullscreenIt = surfaces.begin();
-
-    LRegion opaqueMask = newDamage;
-    LRegion opaqueSum;
 
     for (list<Surface*>::reverse_iterator it = surfaces.rbegin(); it != surfaces.rend(); it++)
     {
         Surface *s = *it;
 
-        if (!s->mapped() || s->roleId() == LSurface::Role::Cursor || s->roleId() == LSurface::Role::Undefined || s->minimized())
+        if (!s->isRenderable || s->occluded)
             continue;
 
-        s->opaque = s->opaqueRegionC();
-        s->opaque.offset(s->rolePosC());
-        s->opaque.intersectRegion(opaqueMask);
-
-        if (!s->opaque.empty())
-            s->occluded = false;
+        s->currentOpaqueTransposedC.intersectRegion(newDamage);
+        s->currentOpaqueTransposedC.subtractRegion(s->currentOpaqueTransposedCSum);
 
         // Draw transulcent rects
         if (s->bufferScaleMatchGlobalScale)
         {
-            for (const LRect &d : s->opaque.rects())
+            for (const LRect &d : s->currentOpaqueTransposedC.rects())
                 p->drawTextureC(
                     s->texture(),
                     LRect(d.pos() - s->rolePosC(), d.size()),
@@ -164,54 +182,42 @@ void Output::paintGL()
         }
         else
         {
-            for (const LRect &d : s->opaque.rects())
+            for (const LRect &d : s->currentOpaqueTransposedC.rects())
                 p->drawTextureC(
                     s->texture(),
                     (LRect(d.pos() - s->rolePosC(), d.size())*s->bufferScale())/compositor()->globalScale(),
                     d);
         }
-
-        opaqueMask.subtractRegion(s->opaque);
-        opaqueSum.addRegion(s->opaque);
-        s->opaque = opaqueSum;
-
-        if (s == c->fullscreenSurface)
-            break;
     }
 
     // Background
 
-    if (!c->fullscreenSurface)
+    LRegion backgroundDamage = newDamage;
+    backgroundDamage.subtractRegion(opaqueTransposedCSum);
+
+    for (const LRect &d : backgroundDamage.rects())
     {
-        for (const LRect &d : opaqueMask.rects())
-        {
-            p->drawColorC(d, 0.05, 0.05, 0.05, 1);
-        }
+        p->drawColorC(d, 0.05, 0.05, 0.05, 1);
     }
 
     glEnable(GL_BLEND);
 
-    LRegion trans;
-
-    for (list<Surface*>::iterator it = fullscreenIt; it != surfaces.end(); it++)
+    for (list<Surface*>::iterator it = surfaces.begin(); it != surfaces.end(); it++)
     {
         Surface *s = *it;
 
-        if (!s->mapped() || s->cursorRole() || s->roleId() == LSurface::Role::Undefined || s->minimized())
+        if (!s->isRenderable || s->occluded)
             continue;
 
-        trans = s->translucentRegionC();
-        trans.offset(s->rolePosC());
-        trans.intersectRegion(newDamage);
-        trans.subtractRegion(s->opaque);
+        s->occluded = true;
 
-        if (!trans.empty())
-            s->occluded = false;
+        s->currentTraslucentTransposedC.intersectRegion(newDamage);
+        s->currentTraslucentTransposedC.subtractRegion(s->currentOpaqueTransposedCSum);
 
         // Draw transulcent rects
         if (s->bufferScaleMatchGlobalScale)
         {
-            for (const LRect &d : trans.rects())
+            for (const LRect &d : s->currentTraslucentTransposedC.rects())
                 p->drawTextureC(
                     s->texture(),
                     LRect(d.pos() - s->rolePosC(), d.size()),
@@ -219,15 +225,12 @@ void Output::paintGL()
         }
         else
         {
-            for (const LRect &d : trans.rects())
+            for (const LRect &d : s->currentTraslucentTransposedC.rects())
                 p->drawTextureC(
                     s->texture(),
                     (LRect(d.pos() - s->rolePosC(), d.size())*s->bufferScale())/compositor()->globalScale(),
                     d);
         }
-
-        if (!s->occluded || s->subsurface())
-            s->requestNextFrame();
     }
 
     if (!c->fullscreenSurface)
@@ -235,6 +238,7 @@ void Output::paintGL()
         LRegion topbarRegion;
         topbarRegion.addRect(LRect(rectC().x(),rectC().y(),rectC().w(),32*compositor()->globalScale()));
         topbarRegion.intersectRegion(newDamage);
+        topbarRegion.subtractRegion(opaqueTransposedCSum);
 
         for (const LRect &d : topbarRegion.rects())
             p->drawColorC(d,1,1,1,0.75);

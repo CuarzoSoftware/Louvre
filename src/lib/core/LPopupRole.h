@@ -210,7 +210,7 @@ public:
 
     LPRIVATE_IMP(LPopupRole)
 
-    void handleSurfaceCommit() override;
+    void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
     void globalScaleChanged(Int32 oldScale, Int32 newScale) override;
 };
 

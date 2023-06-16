@@ -14,7 +14,6 @@ LPainter::LPainter()
 {
     m_imp = new LPainterPrivate();
 
-
     // Open the vertex/fragment shaders
     GLchar vShaderStr[] =
        "precision lowp float;\

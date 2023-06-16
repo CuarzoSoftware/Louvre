@@ -160,7 +160,7 @@ RXdgSurface *LToplevelRole::xdgSurfaceResource() const
     return xdgToplevelResource()->rXdgSurface();
 }
 
-void LToplevelRole::handleSurfaceCommit()
+void LToplevelRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin)
 {
     // Commit inicial para asignar rol
     if (surface()->imp()->pending.role)

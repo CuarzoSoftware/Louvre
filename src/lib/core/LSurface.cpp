@@ -285,8 +285,13 @@ void LSurface::requestNextFrame()
     while (!imp()->frameCallbacks.empty())
     {
         Wayland::RCallback *rCallback = imp()->frameCallbacks.front();
-        rCallback->done(ms);
-        rCallback->destroy();
+        if (rCallback->commited)
+        {
+            rCallback->done(ms);
+            rCallback->destroy();
+        }
+        else
+            break;
     }
 
     client()->flush();

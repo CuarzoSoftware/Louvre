@@ -137,7 +137,7 @@ protected:
      *
      * Access to the **wl_surface::commit** request of the surface. It should be used by protocols that require atomic changes via commits.
      */
-    virtual void handleSurfaceCommit();
+    virtual void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin);
 
     /*!
      * @brief Notifies a new surface buffer attachment.

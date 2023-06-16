@@ -70,7 +70,7 @@ public:
 
     LPRIVATE_IMP(LCursorRole)
 
-    virtual void handleSurfaceCommit() override;
+    virtual void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
     virtual void handleSurfaceOffset(Int32 x, Int32 y) override;
     void globalScaleChanged(Int32 oldScale, Int32 newScale) override;
 

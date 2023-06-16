@@ -10,9 +10,8 @@ struct LSubsurfaceRole::Params
 };
 
 LPRIVATE_CLASS(LSubsurfaceRole)
-
-    // Indicates the subsurface mode
     bool isSynced                                                       = true;
+    bool hasCache = false;
 
     // Local pos
     LPoint currentLocalPosS,pendingLocalPosS;

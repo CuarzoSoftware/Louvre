@@ -51,13 +51,13 @@ void LBaseSurfaceRole::globalScaleChanged(Int32 oldScale, Int32 newScale)
     /* No default implementation */
 }
 
-bool LBaseSurfaceRole::acceptCommitRequest(Protocols::Wayland::RSurface::CommitOrigin origin)
+bool LBaseSurfaceRole::acceptCommitRequest(Wayland::RSurface::CommitOrigin origin)
 {
     L_UNUSED(origin);
     return true;
 }
 
-void LBaseSurfaceRole::handleSurfaceCommit()
+void LBaseSurfaceRole::handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin)
 {
     /* No default implementation */
 }

@@ -85,7 +85,7 @@ const LPositioner &LPopupRole::positioner() const
     return imp()->positioner;
 }
 
-void LPopupRole::handleSurfaceCommit()
+void LPopupRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin)
 {
     // Commit inicial para asignar rol y padre
     if (surface()->imp()->pending.role)

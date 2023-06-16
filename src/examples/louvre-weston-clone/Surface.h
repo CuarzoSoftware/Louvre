@@ -12,12 +12,19 @@ class Surface : public LSurface
 public:
     Surface(LSurface::Params *params, GLuint textureUnit = 1);
 
-    LRect lastRect;
-    LRegion damage;
-    LRegion opaque;
+    LRegion currentOpaqueTransposedC;
+    LRegion currentDamageTransposedC;
+    LRegion currentOpaqueTransposedCSum;
+
+    LRegion currentTraslucentTransposedC;
+
+    LRect currentRectC;
+    LRect previousRectC;
+
     bool bufferScaleMatchGlobalScale = false;
     bool changedOrder = true;
     bool occluded = false;
+    bool isRenderable = false;
 
     void repaint();
 

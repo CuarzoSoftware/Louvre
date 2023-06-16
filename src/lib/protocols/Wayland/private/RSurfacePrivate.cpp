@@ -1,4 +1,3 @@
-#include "LLog.h"
 #include <protocols/Wayland/private/RSurfacePrivate.h>
 #include <protocols/Wayland/RRegion.h>
 #include <protocols/Wayland/RCallback.h>
@@ -6,6 +5,7 @@
 #include <LBaseSurfaceRole.h>
 #include <LCompositor.h>
 #include <LTime.h>
+#include <LLog.h>
 
 void RSurface::RSurfacePrivate::resource_destroy(wl_resource *resource)
 {
@@ -64,14 +64,26 @@ void RSurface::RSurfacePrivate::commit(wl_client *, wl_resource *resource)
 
 void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin origin)
 {
+    // Verifica si el rol desea aplicar el commit
+    if (surface->role() && !surface->role()->acceptCommitRequest(origin))
+         return;
+
+    surface->imp()->bufferSizeChanged = false;
+
     /**************************************
      *********** PENDING CHILDREN *********
      **************************************/
     surface->imp()->applyPendingChildren();
 
-    // Verifica si el rol desea aplicar el commit
-    if (surface->role() && !surface->role()->acceptCommitRequest(origin))
-        return;
+    /********************************************
+     *********** NOTIFY PARENT COMMIT ***********
+     ********************************************/
+
+    for (LSurface *s : surface->children())
+    {
+        if (s->role())
+            s->role()->handleParentCommit();
+    }
 
     if (surface->imp()->atached)
     {
@@ -83,6 +95,28 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
         surface->imp()->atached = false;
     }
 
+    // Reply pending callbacks
+    UInt32 ms = LTime::ms();
+
+    while (!surface->imp()->frameCallbacks.empty())
+    {
+        Wayland::RCallback *rCallback = surface->imp()->frameCallbacks.front();
+        if (rCallback->commited)
+        {
+            rCallback->done(ms);
+            rCallback->destroy();
+        }
+        else
+            break;
+    }
+
+    if (!surface->imp()->frameCallbacks.empty())
+    {
+        surface->requestedRepaint();
+        for (RCallback *callback : surface->imp()->frameCallbacks)
+            callback->commited = true;
+    }
+
     /*****************************************
      *********** BUFFER TO TEXTURE ***********
      *****************************************/
@@ -91,28 +125,13 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
     if (surface->imp()->current.buffer)
     {
         if (!surface->imp()->bufferReleased)
+        {
             if (!surface->imp()->bufferToTexture())
+            {
+                LLog::error("[surface] Failed to convert buffer to OpenGL texture.");
                 return;
-    }
-
-    /*******************************************
-     *********** NOTIFY COMMIT TO ROLE *********
-     *******************************************/
-    if (surface->role())
-        surface->role()->handleSurfaceCommit();
-    else if (surface->imp()->pending.role)
-    {
-        surface->imp()->pending.role->handleSurfaceCommit();
-    }
-
-    /********************************************
-     *********** NOTIFY PARENT COMMIT ***********
-     ********************************************/
-
-    for (LSurface *s : surface->children())
-    {
-        if (s->role())
-            s->role()->handleParentCommit();
+            }
+        }
     }
 
     /************************************
@@ -170,10 +189,19 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
         surface->imp()->currentTranslucentRegionC.multiply(compositor()->globalScale());
     }
 
-    surface->imp()->bufferSizeChanged = false;
-    surface->commited();
-}
+    /*******************************************
+     *********** NOTIFY COMMIT TO ROLE *********
+     *******************************************/
+    if (surface->role())
+        surface->role()->handleSurfaceCommit(origin);
+    else if (surface->imp()->pending.role)
+    {
+        surface->imp()->pending.role->handleSurfaceCommit(origin);
+    }
+    return;
 
+    surface->imp()->bufferSizeChanged = false;
+}
 
 void RSurface::RSurfacePrivate::damage(wl_client *client, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height)
 {

@@ -39,8 +39,9 @@ const LPoint &LCursorRole::hotspotB() const
     return imp()->currentHotspotB;
 }
 
-void LCursorRole::handleSurfaceCommit()
+void LCursorRole::handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin)
 {
+    L_UNUSED(origin);
     imp()->currentHotspotS -= imp()->pendingHotspotOffsetS;
     imp()->pendingHotspotOffsetS = 0;
     imp()->currentHotspotC = imp()->currentHotspotS * compositor()->globalScale();

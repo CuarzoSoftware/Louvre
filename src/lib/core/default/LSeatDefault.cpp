@@ -1,11 +1,11 @@
-#include "LCompositor.h"
-#include "LLog.h"
-#include "LOutput.h"
+#include <LCompositor.h>
+#include <LOutput.h>
 #include <LSeat.h>
 #include <LPointer.h>
 #include <LKeyboard.h>
 #include <LDataDevice.h>
 #include <LCursor.h>
+#include <LLog.h>
 
 using namespace Louvre;
 

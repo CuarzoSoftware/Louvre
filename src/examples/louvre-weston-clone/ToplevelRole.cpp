@@ -14,7 +14,7 @@ void ToplevelRole::configureRequest()
     // Get the main output
     LOutput *output = compositor()->cursor()->output();
 
-    configureC(output->sizeC()*0.6f, LToplevelRole::Activated);
+    configureC(0/*output->sizeC()*0.6f*/, LToplevelRole::Activated);
 }
 
 void ToplevelRole::setMaximizedRequest()

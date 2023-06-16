@@ -103,19 +103,57 @@ void RSubsurface::RSubsurfacePrivate::place_below(wl_client *client, wl_resource
     wl_resource_post_error(resource, WL_SUBSURFACE_ERROR_BAD_SURFACE, "Subsurface is not sibling.");
 }
 
+static bool hasSyncParent(LSurface *surface)
+{
+    if (surface->parent())
+    {
+        if (surface->parent()->subsurface())
+            return surface->parent()->subsurface()->isSynced();
+        else
+            return hasSyncParent(surface->parent());
+    }
+
+    return false;
+}
+
+static void syncSubsurfaces(LSurface *surface)
+{
+    for (LSurface *c : surface->children())
+    {
+        if (c->subsurface())
+            RSubsurface::RSubsurfacePrivate::set_sync(c->client()->client(),
+                                                      c->subsurface()->resource()->resource());
+    }
+}
+
 void RSubsurface::RSubsurfacePrivate::set_sync(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);
     RSubsurface *rSubsurface = (RSubsurface*)wl_resource_get_user_data(resource);
-    rSubsurface->subsurfaceRole()->imp()->isSynced = true;
-    rSubsurface->subsurfaceRole()->syncModeChanged();
+
+    if (!rSubsurface->subsurfaceRole()->isSynced())
+    {
+        rSubsurface->subsurfaceRole()->imp()->isSynced = true;
+        rSubsurface->subsurfaceRole()->syncModeChanged();
+        syncSubsurfaces(rSubsurface->subsurfaceRole()->surface());
+    }
 }
 
 void RSubsurface::RSubsurfacePrivate::set_desync(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);
     RSubsurface *rSubsurface = (RSubsurface*)wl_resource_get_user_data(resource);
-    rSubsurface->subsurfaceRole()->imp()->isSynced = false;
-    rSubsurface->subsurfaceRole()->syncModeChanged();
-    RSurface::RSurfacePrivate::apply_commit(rSubsurface->subsurfaceRole()->surface());
+
+    if (rSubsurface->subsurfaceRole()->isSynced() && !hasSyncParent(rSubsurface->subsurfaceRole()->surface()))
+    {
+        rSubsurface->subsurfaceRole()->imp()->isSynced = false;
+
+        rSubsurface->subsurfaceRole()->syncModeChanged();
+
+        if (rSubsurface->subsurfaceRole()->imp()->hasCache)
+        {
+            rSubsurface->subsurfaceRole()->imp()->hasCache = false;
+            RSurface::RSurfacePrivate::apply_commit(rSubsurface->subsurfaceRole()->surface());
+        }
+    }
 }

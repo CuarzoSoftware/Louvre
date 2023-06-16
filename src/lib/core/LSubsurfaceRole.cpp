@@ -30,10 +30,7 @@ LSubsurfaceRole::~LSubsurfaceRole()
 
 bool LSubsurfaceRole::isSynced() const
 {
-    return imp()->isSynced ||
-           (surface()->parent() &&
-                surface()->parent()->subsurface() &&
-                surface()->parent()->subsurface()->isSynced());
+    return imp()->isSynced;
 }
 
 const LPoint &LSubsurfaceRole::localPosS() const
@@ -49,26 +46,26 @@ const LPoint &LSubsurfaceRole::localPosC() const
 bool LSubsurfaceRole::acceptCommitRequest(Wayland::RSurface::CommitOrigin origin)
 {
     if (isSynced())
+    {
+        imp()->hasCache = true;
         return origin == Wayland::RSurface::Parent;
+    }
     else
         return origin == Wayland::RSurface::Itself;
 }
 
-void LSubsurfaceRole::handleSurfaceCommit()
+static void checkMapping(LSurface *surface)
 {
-    if (!surface()->mapped() &&
-        surface()->imp()->current.buffer &&
-        surface()->parent() &&
-        ((surface()->parent()->mapped() && isSynced()) || !isSynced() ))
-    {
-        surface()->imp()->setMapped(true);
-    }
+    surface->imp()->setMapped(surface->parent() &&
+                                surface->parent()->mapped() &&
+                                surface->imp()->pending.buffer);
+}
 
-    else if (surface()->mapped() &&
-             (!surface()->imp()->current.buffer || !surface()->parent() || (!surface()->parent()->mapped() && isSynced())))
-    {
-        surface()->imp()->setMapped(false);
-    }
+void LSubsurfaceRole::handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin)
+{
+    L_UNUSED(origin);
+    imp()->hasCache = true;
+    checkMapping(surface());
 }
 
 void LSubsurfaceRole::handleParentCommit()
@@ -105,21 +102,18 @@ void LSubsurfaceRole::handleParentCommit()
         wl_list_remove(&imp()->pendingPlaceBelowDestroyListener.link);
     }
 
-    Wayland::RSurface::RSurfacePrivate::apply_commit(surface(), Wayland::RSurface::Parent);
+    if (isSynced() && imp()->hasCache)
+        Wayland::RSurface::RSurfacePrivate::apply_commit(surface(), Wayland::RSurface::Parent);
 }
 
 void LSubsurfaceRole::handleParentChange()
 {
-    surface()->imp()->setMapped(surface()->parent() &&
-                                surface()->parent()->mapped() &&
-                                surface()->imp()->pending.buffer);
+    checkMapping(surface());
 }
 
 void LSubsurfaceRole::handleParentMappingChange()
 {
-    surface()->imp()->setMapped(surface()->parent() &&
-                                surface()->parent()->mapped() &&
-                                surface()->imp()->pending.buffer);
+    checkMapping(surface());
 }
 
 void LSubsurfaceRole::globalScaleChanged(Int32 oldScale, Int32 newScale)

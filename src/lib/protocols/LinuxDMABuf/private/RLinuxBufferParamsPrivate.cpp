@@ -24,10 +24,16 @@ void RLinuxBufferParams::RLinuxBufferParamsPrivate::add(wl_client *client,
     RLinuxBufferParams *rLinuxBufferParams = (RLinuxBufferParams*)wl_resource_get_user_data(resource);
 
     if (!rLinuxBufferParams->planes())
+    {
+        exit(1);
         return;
+    }
 
     if (plane_idx > 3)
+    {
+        exit(1);
         return;
+    }
 
     UInt32 planeCount = plane_idx + 1;
     if (rLinuxBufferParams->planes()->num_fds < planeCount)
@@ -49,13 +55,22 @@ void RLinuxBufferParams::RLinuxBufferParamsPrivate::create(wl_client *client,
     L_UNUSED(client);
 
     if (flags)
+    {
+        exit(1);
         return;
+    }
 
     if (!rLinuxBufferParams->planes())
+    {
+        exit(1);
         return;
+    }
 
     if (width <= 0 || height <= 0)
+    {
+        exit(1);
         return;
+    }
 
     rLinuxBufferParams->imp()->planes->format = format;
     rLinuxBufferParams->imp()->planes->width = width;
@@ -82,13 +97,22 @@ void RLinuxBufferParams::RLinuxBufferParamsPrivate::create_immed(wl_client *clie
     L_UNUSED(client);
 
     if (flags)
+    {
+        exit(1);
         return;
+    }
 
     if (!rLinuxBufferParams->planes())
+    {
+        exit(1);
         return;
+    }
 
     if (width <= 0 || height <= 0)
+    {
+        exit(1);
         return;
+    }
 
     rLinuxBufferParams->imp()->planes->format = format;
     rLinuxBufferParams->imp()->planes->width = width;

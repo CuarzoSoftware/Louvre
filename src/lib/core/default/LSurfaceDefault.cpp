@@ -80,7 +80,7 @@ void LSurface::orderChanged()
     repaintOutputs();
 }
 
-void LSurface::commited()
+void LSurface::requestedRepaint()
 {
     repaintOutputs();
 }

@@ -13,8 +13,6 @@ public:
     ~RSubsurface();
 
     LSubsurfaceRole *subsurfaceRole() const;
-    void syncAllChildrenSurfaces();
-
     LPRIVATE_IMP(RSubsurface)
 };
 

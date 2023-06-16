@@ -76,7 +76,7 @@ public:
     LPRIVATE_IMP(LDNDIconRole)
 
     virtual void handleSurfaceOffset(Int32 x, Int32 y) override;
-    virtual void handleSurfaceCommit() override;
+    virtual void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
     void globalScaleChanged(Int32 oldScale, Int32 newScale) override;
 };
 
