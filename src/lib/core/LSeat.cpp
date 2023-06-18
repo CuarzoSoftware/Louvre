@@ -129,17 +129,26 @@ Int32 LSeat::setTTY(Int32 tty)
     if (imp()->libseatHandle)
     {
         Int32 ret = libseat_switch_session(libseatHandle(), tty);
+
+        if (ret != 0)
+            LLog::error("[seat] Failed to switch session.");
+        else
+        {
+            libseat_dispatch(imp()->libseatHandle, -1);
+            LLog::debug("[seat] Switching to tty %d.", tty);
+        }
+
         return ret;
     }
 
     return 0;
 }
 
-Int32 LSeat::openDevice(const char *path, Int32 *fd)
+Int32 LSeat::openDevice(const char *path, Int32 *fd, Int32 flags)
 {
     if (!imp()->libseatHandle)
     {
-        *fd = open(path, O_CLOEXEC | O_RDWR);
+        *fd = open(path, flags);
         return *fd;
     }
 

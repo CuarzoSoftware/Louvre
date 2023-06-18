@@ -25,7 +25,6 @@ LPRIVATE_CLASS(LOutput)
     // Params
     Int32 outputScale = 1;
 
-    UInt64 presentationSeq = 0;
     timespec presentationTime;
 
     // Called by the backend

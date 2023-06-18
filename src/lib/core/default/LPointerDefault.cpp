@@ -144,6 +144,9 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
             focusSurface()->toplevel()->configureC(focusSurface()->toplevel()->states() | LToplevelRole::Activated);
 
         // Raise surface
+        if (focusSurface() == compositor()->surfaces().back())
+            return;
+
         if (focusSurface()->parent())
             compositor()->raiseSurface(focusSurface()->topmostParent());
         else
@@ -158,13 +161,12 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
         // We stop sending events to the surface on which the left button was being held down
         setDragginSurface(nullptr);
 
-        if (!focusSurface()->inputRegionC().containsPoint(focusSurface()->rolePosC() - cursor()->posC()))
+        if (!focusSurface()->inputRegionC().containsPoint(cursor()->posC() - focusSurface()->rolePosC()))
         {
             setFocusC(nullptr);
             cursor()->useDefault();
             cursor()->setVisible(true);
         }
-
     }
 }
 //! [pointerButtonEvent]

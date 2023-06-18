@@ -17,7 +17,6 @@ public:
     LPointer *createPointerRequest(LPointer::Params *params) override;
 
     void destroySurfaceRequest(LSurface *surface) override;
-
     LSurface *fullscreenSurface = nullptr;
 };
 

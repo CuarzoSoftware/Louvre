@@ -81,6 +81,7 @@ void LPointer::setFocusS(LSurface *surface, const LPoint &localPosS)
         imp()->sendLeaveEvent(focusSurface());
         imp()->pointerFocusSurface = nullptr;
     }
+
 }
 
 void LPointer::sendMoveEventC()
@@ -132,6 +133,8 @@ void LPointer::sendButtonEvent(Button button, ButtonState state)
             s->pointerResource()->frame();
         }
     }
+
+    focusSurface()->client()->flush();
 }
 
 void LPointer::startResizingToplevelC(LToplevelRole *toplevel, LToplevelRole::ResizeEdge edge, Int32 L, Int32 T, Int32 R, Int32 B)

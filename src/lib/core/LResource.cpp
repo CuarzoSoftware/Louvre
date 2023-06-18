@@ -51,6 +51,11 @@ Int32 LResource::version() const
     return wl_resource_get_version(resource());
 }
 
+UInt32 LResource::id() const
+{
+    return wl_resource_get_id(resource());
+}
+
 void LResource::destroy()
 {
     wl_resource_destroy(resource());

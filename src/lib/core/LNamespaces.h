@@ -18,7 +18,7 @@
 #define LOUVRE_WL_OUTPUT_VERSION 4
 #define LOUVRE_WL_SUBCOMPOSITOR_VERSION 1
 
-#define LOUVRE_XDG_WM_BASE_VERSION 5
+#define LOUVRE_XDG_WM_BASE_VERSION 2
 
 #define LOUVRE_XDG_DECORATION_MANAGER_VERSION 1
 
@@ -152,11 +152,18 @@ namespace Louvre
     typedef LRectTemplate<Float32,Int32> LRectF;
 
     typedef UInt32 LKey;
-
     typedef void* EGLContext;
     typedef void* EGLDisplay;
     typedef unsigned int GLuint;
     typedef unsigned int GLenum;
+
+    struct LBox
+    {
+        Int32 x1;
+        Int32 y1;
+        Int32 x2;
+        Int32 y2;
+    };
 
     struct LDMAFormat
     {

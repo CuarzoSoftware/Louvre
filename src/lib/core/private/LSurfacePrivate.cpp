@@ -19,7 +19,12 @@ void LSurface::LSurfacePrivate::getEGLFunctions()
 
 void LSurface::LSurfacePrivate::setParent(LSurface *parent)
 {
-    pendingParent = nullptr;
+    if (pendingParent)
+    {
+        pendingParent->imp()->pendingChildren.erase(pendingParentLink);
+        pendingParent = nullptr;
+    }
+
     if (parent == this->parent)
         return;
 
@@ -91,7 +96,7 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
 {
     LSurface *surface = surfaceResource->surface();
 
-    while(!pendingChildren.empty())
+    while (!pendingChildren.empty())
     {
         LSurface *child = pendingChildren.front();
         pendingChildren.pop_front();
@@ -99,14 +104,16 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
         if (child->imp()->pendingParent != surface)
             continue;
 
+        // If the child already had a parent
+        if (child->imp()->parent)
+            child->imp()->parent->imp()->children.erase(child->imp()->parentLink);
+
         if (surface->children().empty())
             compositor()->imp()->insertSurfaceAfter(surface, child);
         else
+        {
             compositor()->imp()->insertSurfaceAfter(surface->children().back(), child);
-
-        // If the child already had a parent
-        if (child->imp()->parent && child->imp()->parent != surface)
-            child->imp()->parent->imp()->children.erase(child->imp()->parentLink);
+        }
 
         children.push_back(child);
         child->imp()->pendingParent = nullptr;
@@ -117,6 +124,8 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
 
         if (child->role())
             child->role()->handleParentChange();
+        else if (child->imp()->pending.role)
+            child->imp()->pending.role->handleParentChange();
     }
 }
 
@@ -171,17 +180,42 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         // Aplica daños
         else if (!pendingDamagesB.empty() || !pendingDamagesS.empty())
         {
-            LRegion onlyPending = pendingDamagesS;
-            onlyPending.multiply(current.bufferScale);
-            onlyPending.addRegion(pendingDamagesB);
-            onlyPending.clip(LRect(0,texture->sizeB()));
+            LRegion onlyPending;
+
+            while (!pendingDamagesS.empty())
+            {
+                onlyPending.addRect(pendingDamagesS.back()*surface->imp()->current.bufferScale);
+                pendingDamagesS.pop_back();
+            }
+
+            while (!pendingDamagesB.empty())
+            {
+                onlyPending.addRect(pendingDamagesB.back());
+                pendingDamagesB.pop_back();
+            }
+
+            onlyPending.clip(LRect(0, texture->sizeB()));
+
             UInt32 pixelSize = LTexture::formatBytesPerPixel(format);
             UChar8 *buff = (UChar8 *)data;
 
-            for (const LRect &r : onlyPending.rects())
-                texture->updateRect(r, stride, &buff[r.x()*pixelSize +r.y()*stride]);
+            Int32 n, w, h;
+            LBox *boxes = onlyPending.rects(&n);
+            for (Int32 i = 0; i < n; i++)
+            {
+                w = boxes->x2 - boxes->x1;
+                h = boxes->y2 - boxes->y1;
+                texture->updateRect(LRect(boxes->x1,
+                                          boxes->y1,
+                                          w,
+                                          h),
+                                    stride,
+                                    &buff[boxes->x1*pixelSize + boxes->y1*stride]);
 
-            currentDamagesB.addRegion(onlyPending);
+                currentDamagesB.addRect(boxes->x1, boxes->y1, w, h);
+                boxes++;
+            }
+
             currentDamagesC = currentDamagesB;
             currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
         }
@@ -210,16 +244,25 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         {
             bufferSizeChanged = true;
             currentDamagesB.clear();
-            currentDamagesB.addRect(LRect(0,newSize));
+            currentDamagesB.addRect(LRect(0, newSize));
             currentDamagesC = currentDamagesB;
             currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
         }
         else if (!pendingDamagesB.empty() || !pendingDamagesS.empty())
         {
-            pendingDamagesS.multiply(surface->bufferScale());
-            currentDamagesB.addRegion(pendingDamagesS);
-            currentDamagesB.addRegion(pendingDamagesB);
-            currentDamagesB.clip(LRect(0,newSize));
+            while (!pendingDamagesS.empty())
+            {
+                currentDamagesB.addRect(pendingDamagesS.back()*surface->imp()->current.bufferScale);
+                pendingDamagesS.pop_back();
+            }
+
+            while (!pendingDamagesB.empty())
+            {
+                currentDamagesB.addRect(pendingDamagesB.back());
+                pendingDamagesB.pop_back();
+            }
+
+            currentDamagesB.clip(LRect(0, newSize));
             currentDamagesC = currentDamagesB;
             currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
         }
@@ -250,10 +293,19 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         }
         else if (!pendingDamagesB.empty() || !pendingDamagesS.empty())
         {
-            pendingDamagesS.multiply(surface->bufferScale());
-            currentDamagesB.addRegion(pendingDamagesS);
-            currentDamagesB.addRegion(pendingDamagesB);
-            currentDamagesB.clip(LRect(0,newSize));
+            while (!pendingDamagesS.empty())
+            {
+                currentDamagesB.addRect(pendingDamagesS.back()*surface->imp()->current.bufferScale);
+                pendingDamagesS.pop_back();
+            }
+
+            while (!pendingDamagesB.empty())
+            {
+                currentDamagesB.addRect(pendingDamagesB.back());
+                pendingDamagesB.pop_back();
+            }
+
+            currentDamagesB.clip(LRect(0, newSize));
             currentDamagesC = currentDamagesB;
             currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
         }
@@ -282,6 +334,11 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
     wl_buffer_send_release(current.buffer);
     bufferReleased = true;
+
+    // Only increase serial if damage was cleared with requestNextFrame(true)
+    if (!damaged)
+        damageId = LCompositor::nextSerial();
+
     damaged = true;
     surface->damaged();
     return true;
@@ -323,45 +380,49 @@ void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output, timesp
         return;
 
     // Check if the surface is visible in the given output
-    for (Wayland::GOutput *gOutput : surfaceResource->client()->outputGlobals())
+    for (LOutput *lOutput : surfaceResource->surface()->outputs())
     {
-        if (gOutput->output() == output)
+        if (lOutput == output)
         {
-            UInt32 tv_sec_hi = ns.tv_sec >> 32;
-            UInt32 tv_sec_lo = ns.tv_sec & 0xFFFFFFFF;
-            UInt32 seq_hi = output->imp()->presentationSeq >> 32;
-            UInt32 seq_lo = output->imp()->presentationSeq & 0xFFFFFFFF;
-            UInt32 refresh = 1000000000000/output->currentMode()->refreshRate();
-
-            while (!wpPresentationFeedbackResources.empty())
+            for (Wayland::GOutput *gOutput : surfaceResource->client()->outputGlobals())
             {
-                WpPresentationTime::RWpPresentationFeedback *rFeed = wpPresentationFeedbackResources.back();
-                rFeed->sync_output(gOutput);
-                rFeed->presented(tv_sec_hi,
-                                 tv_sec_lo,
-                                 ns.tv_nsec,
-                                 refresh,
-                                 seq_hi,
-                                 seq_lo,
-                                 WP_PRESENTATION_FEEDBACK_KIND_VSYNC);
-                rFeed->imp()->lSurface = nullptr;
-                wpPresentationFeedbackResources.pop_back();
-                wl_resource_destroy(rFeed->resource());
+                if (gOutput->output() == output)
+                {
+                    UInt32 tv_sec_hi = ns.tv_sec >> 32;
+                    UInt32 tv_sec_lo = ns.tv_sec & 0xffffffff;
+                    UInt32 seq_hi = 0; /* >> 32; */
+                    UInt32 seq_lo = 0; /* & 0xFFFFFFFF; */
+                    UInt32 refresh = 0; // 1000000000/output->currentMode()->refreshRate();
+
+                    while (!wpPresentationFeedbackResources.empty())
+                    {
+                        WpPresentationTime::RWpPresentationFeedback *rFeed = wpPresentationFeedbackResources.back();
+                        rFeed->sync_output(gOutput);
+                        rFeed->presented(tv_sec_hi,
+                                         tv_sec_lo,
+                                         ns.tv_nsec,
+                                         refresh,
+                                         seq_hi,
+                                         seq_lo,
+                                         WP_PRESENTATION_FEEDBACK_KIND_VSYNC);
+                        rFeed->imp()->lSurface = nullptr;
+                        wpPresentationFeedbackResources.pop_back();
+                        wl_resource_destroy(rFeed->resource());
+                    }
+
+                    return;
+                }
             }
-            return;
         }
     }
 
-    if (outputs.empty())
+    while (!wpPresentationFeedbackResources.empty())
     {
-        while (!wpPresentationFeedbackResources.empty())
-        {
-            WpPresentationTime::RWpPresentationFeedback *rFeed = wpPresentationFeedbackResources.back();
-            rFeed->discarded();
-            rFeed->imp()->lSurface = nullptr;
-            wpPresentationFeedbackResources.pop_back();
-            wl_resource_destroy(rFeed->resource());
-        }
+        WpPresentationTime::RWpPresentationFeedback *rFeed = wpPresentationFeedbackResources.back();
+        rFeed->discarded();
+        rFeed->imp()->lSurface = nullptr;
+        wpPresentationFeedbackResources.pop_back();
+        wl_resource_destroy(rFeed->resource());
     }
 }
 

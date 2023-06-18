@@ -377,6 +377,8 @@ public:
      */
     bool hasDamage() const;
 
+    UInt32 damageId() const;
+
     /*!
      * @brief Returns the rendering callback
      *
@@ -385,7 +387,7 @@ public:
      *
      * @warning This method clears the current damage region of the surface.
      */
-    void requestNextFrame();
+    void requestNextFrame(bool clearDamage = true);
 
     /*!
      * @brief Mapped property

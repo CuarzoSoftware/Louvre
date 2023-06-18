@@ -66,13 +66,11 @@ struct OutputMode
 
 static int openRestricted(const char *path, int flags, void *userData)
 {
-    L_UNUSED(flags);
-
     LCompositor *compositor = (LCompositor*)userData;
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
 
     Int32 id, fd;
-    id = compositor->seat()->openDevice(path, &fd);
+    id = compositor->seat()->openDevice(path, &fd, flags);
 
     if (compositor->seat()->imp()->initLibseat())
         bknd->devices[fd] = id;

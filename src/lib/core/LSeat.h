@@ -168,7 +168,7 @@ public:
      * @param fd Stores the file descriptor.
      * @returns The ID of the device or -1 in case of an error.
      */
-    Int32 openDevice(const char *path, Int32 *fd);
+    Int32 openDevice(const char *path, Int32 *fd, Int32 flags = 0);
 
     /*!
      * @brief Closes a device.

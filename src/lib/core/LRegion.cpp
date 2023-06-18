@@ -39,6 +39,12 @@ void LRegion::addRect(const LRect &rect)
     m_changed = true;
 }
 
+void LRegion::addRect(Int32 x, Int32 y, Int32 w, Int32 h)
+{
+    pixman_region32_union_rect((pixman_region32_t*)m_region, (pixman_region32_t*)m_region, x, y, w, h);
+    m_changed = true;
+}
+
 void LRegion::addRegion(const LRegion &region)
 {
     m_changed = true;
@@ -181,4 +187,9 @@ const vector<LRect> &LRegion::rects() const
         }
     }
     return m_rects;
+}
+
+LBox *LRegion::rects(Int32 *n) const
+{
+    return (LBox*)pixman_region32_rectangles((pixman_region32_t*)m_region, n);
 }

@@ -178,6 +178,11 @@ bool LSurface::hasDamage() const
     return imp()->damaged;
 }
 
+UInt32 LSurface::damageId() const
+{
+    return imp()->damageId;
+}
+
 bool LSurface::minimized() const
 {
     return imp()->minimized;
@@ -200,17 +205,19 @@ const LPoint &LSurface::rolePosC() const
 {
     if (role())
     {
+        /*
         LPoint &sp = (LPoint&)role()->rolePosC();
 
         if (compositor()->globalScale() != 1)
         {
             imp()->posC.setX(imp()->posC.x() + sp.x() % compositor()->globalScale());
             imp()->posC.setY(imp()->posC.y() + sp.y() % compositor()->globalScale());
-        }
+        }*/
 
         return role()->rolePosC();
     }
 
+    /*
     LPoint &sp = imp()->posC;
 
     if (compositor()->globalScale() != 1)
@@ -218,6 +225,7 @@ const LPoint &LSurface::rolePosC() const
         imp()->posC.setX(imp()->posC.x() + sp.x() % compositor()->globalScale());
         imp()->posC.setY(imp()->posC.y() + sp.y() % compositor()->globalScale());
     }
+    */
 
     return imp()->posC;
 }
@@ -274,11 +282,14 @@ const list<LOutput *> &LSurface::outputs() const
     return imp()->outputs;
 }
 
-void LSurface::requestNextFrame()
+void LSurface::requestNextFrame(bool clearDamage)
 {
-    imp()->currentDamagesB.clear();
-    imp()->currentDamagesC.clear();
-    imp()->damaged = false;
+    if (clearDamage)
+    {
+        imp()->currentDamagesB.clear();
+        imp()->currentDamagesC.clear();
+        imp()->damaged = false;
+    }
 
     UInt32 ms = LTime::ms();
 

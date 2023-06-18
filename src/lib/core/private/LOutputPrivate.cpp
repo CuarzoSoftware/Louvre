@@ -1,3 +1,4 @@
+#include "LLog.h"
 #include <protocols/Wayland/private/GOutputPrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LOutputModePrivate.h>
@@ -11,6 +12,7 @@
 // This is called from LCompositor::addOutput()
 bool LOutput::LOutputPrivate::initialize()
 {
+    output->imp()->state = LOutput::PendingInitialize;
     // The backend must call LOutputPrivate::backendInitialized() before initializeGL()
     return compositor()->imp()->graphicBackend->initializeOutput(output);
 }
@@ -38,14 +40,15 @@ void LOutput::LOutputPrivate::backendInitializeGL()
     cursor()->imp()->textureChanged = true;
     cursor()->imp()->update();
     compositor()->imp()->updateGlobalScale();
-
-    compositor()->imp()->renderMutex.lock();
+    output->imp()->state = LOutput::Initialized;
     output->initializeGL();
-    compositor()->imp()->renderMutex.unlock();
 }
 
 void LOutput::LOutputPrivate::backendPaintGL()
 {
+    if (output->imp()->state != LOutput::Initialized)
+        return;
+
     compositor()->imp()->renderMutex.lock();
     output->paintGL();
     compositor()->imp()->renderMutex.unlock();
@@ -53,6 +56,9 @@ void LOutput::LOutputPrivate::backendPaintGL()
 
 void LOutput::LOutputPrivate::backendResizeGL()
 {
+    if (output->imp()->state != LOutput::Initialized)
+        return;
+
     compositor()->imp()->renderMutex.lock();
     output->resizeGL();
     compositor()->imp()->renderMutex.unlock();
@@ -60,6 +66,9 @@ void LOutput::LOutputPrivate::backendResizeGL()
 
 void LOutput::LOutputPrivate::backendUninitializeGL()
 {
+    if (output->imp()->state != LOutput::Initialized)
+        return;
+
     compositor()->imp()->renderMutex.lock();
     output->uninitializeGL();
     compositor()->imp()->renderMutex.unlock();
@@ -67,17 +76,15 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
 
 void LOutput::LOutputPrivate::backendPageFlipped()
 {
-    bool running = output->state() == LOutput::Initialized;
+    if (output->imp()->state != LOutput::Initialized)
+        return;
 
-    if (running)
-        compositor()->imp()->renderMutex.lock();
+    compositor()->imp()->renderMutex.lock();
 
     // Send presentation time feedback
-    output->imp()->presentationSeq++;
     presentationTime = LTime::ns();
     for (LSurface *surf : compositor()->surfaces())
         surf->imp()->sendPresentationFeedback(output, presentationTime);
 
-    if (running)
-        compositor()->imp()->renderMutex.unlock();
+    compositor()->imp()->renderMutex.unlock();
 }

@@ -28,7 +28,10 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
     LCompositor::compositor()->imp()->renderMutex.lock();
 
     for (LOutput *o : compositor()->outputs())
-        o->imp()->state = LOutput::Initialized;
+    {
+        if (o->state() == LOutput::Suspended)
+            o->imp()->state = LOutput::Initialized;
+    }
 
     LLog::debug("[%s] enabled.", libseat_seat_name(seat));
 
@@ -42,7 +45,10 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
     lseat->imp()->enabled = false;
 
     for (LOutput *o : compositor()->outputs())
-        o->imp()->state = LOutput::Suspended;
+    {
+        if (o->state() == LOutput::Initialized)
+            o->imp()->state = LOutput::Suspended;
+    }
 
     LCompositor::compositor()->imp()->renderMutex.unlock();
 
@@ -71,6 +77,11 @@ bool LSeat::LSeatPrivate::initLibseat()
 {
     if (libseatHandle)
         return true;
+
+    char *env = getenv("LOUVRE_ENABLE_LIBSEAT");
+
+    if (env && atoi(env) == 0)
+        return false;
 
     listener.enable_seat = &LSeat::LSeatPrivate::seatEnabled;
     listener.disable_seat = &LSeat::LSeatPrivate::seatDisabled;

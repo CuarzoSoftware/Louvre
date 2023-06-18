@@ -1,3 +1,4 @@
+#include "LLog.h"
 #include <private/LPainterPrivate.h>
 
 #include <GLES2/gl2.h>
@@ -24,9 +25,9 @@ LPainter::LPainter()
         varying vec2 v_texcoord;\
         void main()\
         {\
-            gl_Position = vec4(vertexPosition.xy,0.0,1.0);\
-            v_texcoord.x = (srcRect.x + vertexPosition.z*srcRect.z)/texSize.x;\
-            v_texcoord.y = (srcRect.y + srcRect.w - (vertexPosition.w*srcRect.w))/texSize.y;\
+            gl_Position = vec4(vertexPosition.xy, 0.0, 1.0);\
+            v_texcoord.x = (srcRect.x + vertexPosition.z*srcRect.z) / texSize.x;\
+            v_texcoord.y = (srcRect.y + srcRect.w - vertexPosition.w*srcRect.w) / texSize.y;\
         }";
 
     GLchar fShaderStr[] =
@@ -86,6 +87,11 @@ LPainter::LPainter()
     glEnable(GL_SCISSOR_TEST);
     glDisable(GL_CULL_FACE);
     glDisable(GL_LIGHTING);
+    glDisable(GL_DITHER);
+    glDisable(GL_POLYGON_OFFSET_FILL);
+    glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+    glDisable(GL_SAMPLE_COVERAGE);
+    glDisable(GL_SAMPLE_ALPHA_TO_ONE);
 
     // Set blend mode
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -131,40 +137,92 @@ void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src,
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void LPainter::drawTextureC(LTexture *texture, const LRect &src, const LRect &dst, Float32 alpha)
+void LPainter::drawTextureC(LTexture *texture, const LRect &src, const LRect &dst, Float32 srcScale, Float32 alpha)
 {
-    setViewportC(dst);
+    drawTextureC(texture,
+                 src.x(),
+                 src.y(),
+                 src.w(),
+                 src.h(),
+                 dst.x(),
+                 dst.y(),
+                 dst.w(),
+                 dst.h(),
+                 srcScale,
+                 alpha);
+}
+
+void LPainter::drawTextureC(LTexture *texture,
+                            Int32 srcX,
+                            Int32 srcY,
+                            Int32 srcW,
+                            Int32 srcH,
+                            Int32 dstX,
+                            Int32 dstY,
+                            Int32 dstW,
+                            Int32 dstH,
+                            Float32 srcScale,
+                            Float32 alpha)
+{
+
+    setViewportC(dstX, dstY, dstW, dstH);
     glActiveTexture(GL_TEXTURE0 + texture->unit());
     glUniform1f(imp()->alphaUniform, alpha);
     glUniform1i(imp()->modeUniform, 0);
     glUniform1i(imp()->activeTextureUniform, texture->unit());
     glBindTexture(GL_TEXTURE_2D, texture->id(imp()->output));
     glUniform2f(imp()->texSizeUniform, texture->sizeB().w(), texture->sizeB().h());
-    glUniform4f(imp()->srcRectUniform, src.x(), src.y(), src.w(), src.h());
+
+    if (srcScale == 0.0)
+        glUniform4f(imp()->srcRectUniform, srcX, srcY, srcW, srcH);
+    else
+    {
+        srcScale = srcScale / float(compositor()->globalScale());
+        glUniform4f(imp()->srcRectUniform,
+                    float(srcX) * srcScale,
+                    float(srcY) * srcScale,
+                    float(srcW) * srcScale,
+                    float(srcH) * srcScale);
+    }
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 void LPainter::drawColorC(const LRect &dst, Float32 r, Float32 g, Float32 b, Float32 a)
 {
-    setViewportC(dst);
-    glUniform4f(imp()->colorUniform,r,g,b,a);
-    glUniform1i(imp()->modeUniform,1);
+    drawColorC(dst.x(), dst.y(), dst.w(), dst.h(), r, g, b, a);
+}
+
+void LPainter::drawColorC(Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH, Float32 r, Float32 g, Float32 b, Float32 a)
+{
+    setViewportC(dstX, dstY, dstW, dstH);
+    glUniform4f(imp()->colorUniform, r, g, b, a);
+    glUniform1i(imp()->modeUniform, 1);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 void LPainter::setViewportC(const LRect &rect)
 {
-    if (imp()->output)
-    {
-        LRect r = rect;
-        r -= LRect(imp()->output->posC(), 0);
-        r.setY(imp()->output->sizeC().h() - r.y() - r.h());
-        r *= imp()->output->scale();
-        r /= compositor()->globalScale();
+    setViewportC(rect.x(), rect.y(), rect.w(), rect.h());
+}
 
-        glScissor(r.x(),r.y(),r.w(),r.h());
-        glViewport(r.x(), r.y(),r.w(),r.h());
-    }
+void LPainter::setViewportC(Int32 x, Int32 y, Int32 w, Int32 h)
+{
+    x -= imp()->output->posC().x();
+    y -= imp()->output->posC().y();
+    y = imp()->output->sizeC().h() - y - h;
+
+    x *= imp()->output->scale();
+    y *= imp()->output->scale();
+    w *= imp()->output->scale();
+    h *= imp()->output->scale();
+
+    x /= compositor()->globalScale();
+    y /= compositor()->globalScale();
+    w /= compositor()->globalScale();
+    h /= compositor()->globalScale();
+
+    glScissor(x, y, w, h);
+    glViewport(x, y, w, h);
 }
 
 void LPainter::setClearColor(Float32 r, Float32 g, Float32 b, Float32 a)

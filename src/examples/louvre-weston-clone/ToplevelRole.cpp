@@ -24,7 +24,6 @@ void ToplevelRole::setMaximizedRequest()
 
     // Tell the toplevel to maximize
     LSize size = output->sizeC()-LSize(0,32)*compositor()->globalScale();
-    configureC(size, LToplevelRole::Activated);
     configureC(size, LToplevelRole::Activated | LToplevelRole::Maximized);
 }
 
@@ -57,7 +56,6 @@ void ToplevelRole::maximizedChanged()
         compositor()->raiseSurface(surface());
         surface()->setPosC(output->posC()+LPoint(0,32)*compositor()->globalScale());
         surface()->setMinimized(false);
-        ((Surface*)(surface()))->repaint();
     }
 }
 

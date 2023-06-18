@@ -64,7 +64,7 @@ static void checkMapping(LSurface *surface)
 void LSubsurfaceRole::handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin)
 {
     L_UNUSED(origin);
-    imp()->hasCache = true;
+    imp()->hasCache = false;
     checkMapping(surface());
 }
 

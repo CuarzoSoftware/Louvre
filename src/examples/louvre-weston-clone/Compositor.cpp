@@ -20,7 +20,6 @@ LOutput *Compositor::createOutputRequest()
 LSurface *Compositor::createSurfaceRequest(LSurface::Params *params)
 {
     Surface *newSurface = new Surface(params);
-    newSurface->repaint();
     return newSurface;
 }
 

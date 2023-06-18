@@ -62,9 +62,10 @@ void RSurface::RSurfacePrivate::commit(wl_client *, wl_resource *resource)
     apply_commit(surface);
 }
 
+// The origin params indicates who requested the commit for this surface (itself or its parent surface)
 void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin origin)
 {
-    // Verifica si el rol desea aplicar el commit
+    // Check if the surface role wants to apply the commit
     if (surface->role() && !surface->role()->acceptCommitRequest(origin))
          return;
 
@@ -95,21 +96,10 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
         surface->imp()->atached = false;
     }
 
-    // Reply pending callbacks
-    UInt32 ms = LTime::ms();
+    // Send done to already commited callbacks
+    surface->requestNextFrame(false);
 
-    while (!surface->imp()->frameCallbacks.empty())
-    {
-        Wayland::RCallback *rCallback = surface->imp()->frameCallbacks.front();
-        if (rCallback->commited)
-        {
-            rCallback->done(ms);
-            rCallback->destroy();
-        }
-        else
-            break;
-    }
-
+    // If new callbacks
     if (!surface->imp()->frameCallbacks.empty())
     {
         surface->requestedRepaint();
@@ -121,7 +111,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
      *********** BUFFER TO TEXTURE ***********
      *****************************************/
 
-    // Convierte el buffer a una textura OpenGL o copia los daños
+    // Turn buffer into OpenGL texture and process damage
     if (surface->imp()->current.buffer)
     {
         if (!surface->imp()->bufferReleased)
@@ -219,8 +209,8 @@ void RSurface::RSurfacePrivate::damage(wl_client *client, wl_resource *resource,
         height = LOUVRE_MAX_SURFACE_SIZE;
     if (height <= 0)
         return;
-
-    if (compositor()->globalScale() != 1)
+    /*
+    if (compositor()->globalScale() != 1 || width <= compositor()->globalScale() || height <= compositor()->globalScale())
     {
         x--;
         y--;
@@ -236,9 +226,9 @@ void RSurface::RSurfacePrivate::damage(wl_client *client, wl_resource *resource,
 
         width += width % compositor()->globalScale() + modX;
         height += height % compositor()->globalScale() + modY;
-    }
+    }*/
 
-    lSurface->imp()->pendingDamagesS.addRect(LRect(x, y, width, height));
+    lSurface->imp()->pendingDamagesS.push_back(LRect(x, y, width, height));
     lSurface->imp()->damagesChanged = true;
 }
 
@@ -327,15 +317,16 @@ void RSurface::RSurfacePrivate::damage_buffer(wl_client *client, wl_resource *re
     RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
     LSurface *lSurface = rSurface->surface();
 
-    if (compositor()->globalScale() != 1)
+    /*
+    if (compositor()->globalScale() != 1 || width <= compositor()->globalScale() || height <= compositor()->globalScale())
     {
         x -= x % compositor()->globalScale();
         y -= y % compositor()->globalScale();
         width += width % compositor()->globalScale() + x % compositor()->globalScale();
         height += height % compositor()->globalScale() + y % compositor()->globalScale();
-    }
+    }*/
 
-    lSurface->imp()->pendingDamagesB.addRect(LRect(x, y, width, height));
+    lSurface->imp()->pendingDamagesB.push_back(LRect(x, y, width, height));
     lSurface->imp()->damagesChanged = true;
 }
 #endif

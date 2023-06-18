@@ -35,7 +35,6 @@ static UInt32 pointerButton;
 static Float64 x = 0.0, y = 0.0;
 
 // For any axis event
-static UInt32 axisSource;
 static Float64 axisX = 0.0, axisY = 0.0;
 
 // For discrete scroll events
@@ -51,7 +50,7 @@ static Int32 openRestricted(const char *path, int flags, void *data)
     LSeat *seat = (LSeat*)data;
     int id, fd;
 
-    id = seat->openDevice(path, &fd);
+    id = seat->openDevice(path, &fd, flags);
     if (seat->imp()->initLibseat())
         devices[fd] = id;
 

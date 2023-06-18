@@ -327,7 +327,15 @@ bool LCompositor::LCompositorPrivate::loadInputBackend(const char *path)
 void LCompositor::LCompositorPrivate::insertSurfaceAfter(LSurface *prevSurface, LSurface *surfaceToInsert)
 {
     surfaces.erase(surfaceToInsert->imp()->compositorLink);
-    surfaceToInsert->imp()->compositorLink = surfaces.insert(std::next(prevSurface->imp()->compositorLink), surfaceToInsert);
+
+    if (prevSurface == surfaces.back())
+    {
+        surfaces.push_back(surfaceToInsert);
+        surfaceToInsert->imp()->compositorLink = std::prev(surfaces.end());
+    }
+    else
+        surfaceToInsert->imp()->compositorLink = surfaces.insert(std::next(prevSurface->imp()->compositorLink), surfaceToInsert);
+
     surfaceToInsert->orderChanged();
 }
 

@@ -53,8 +53,8 @@ LPRIVATE_CLASS(LSurface)
     LSize currentSizeS;
     LSize currentSizeC;
 
-    LRegion pendingDamagesB;
-    LRegion pendingDamagesS;
+    std::vector<LRect> pendingDamagesB;
+    std::vector<LRect> pendingDamagesS;
     LRegion currentDamagesB;
     LRegion currentDamagesC;
 
@@ -82,7 +82,7 @@ LPRIVATE_CLASS(LSurface)
     std::list<LOutput*> outputs;
 
     bool damaged                                        = false;
-
+    UInt32 damageId;
     LPoint posC;
     bool minimized                                      = false;
     bool receiveInput                                   = true;

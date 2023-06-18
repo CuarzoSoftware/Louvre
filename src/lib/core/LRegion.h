@@ -36,6 +36,7 @@ public:
 
     /// Adds a rect (union)
     void addRect(const LRect &rect);
+    void addRect(Int32 x, Int32 y, Int32 w, Int32 h);
 
     /// Adds a region (union)
     void addRegion(const LRegion &region);
@@ -72,6 +73,9 @@ public:
 
     /// List of rects that make up the region
     const vector<LRect> &rects() const;
+
+    /// List of rects that make up the region
+    LBox *rects(Int32 *n) const;
 private:
     mutable bool m_changed = false;
     mutable vector<LRect>m_rects;

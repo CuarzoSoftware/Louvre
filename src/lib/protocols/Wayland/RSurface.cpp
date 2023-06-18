@@ -141,11 +141,8 @@ RSurface::~RSurface()
         lSurface->imp()->pendingChildren.pop_back();
     }
 
-    // Parent
+    // Clear parent and pending parent
     lSurface->imp()->setParent(nullptr);
-
-    if (lSurface->imp()->pendingParent)
-        lSurface->imp()->pendingParent->imp()->pendingChildren.remove(lSurface);
 
     if (lSurface->imp()->current.role)
         lSurface->imp()->current.role->baseImp()->surface = nullptr;

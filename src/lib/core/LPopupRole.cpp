@@ -96,6 +96,7 @@ void LPopupRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin 
             wl_resource_post_error(surface()->surfaceResource()->resource(),
                                    0,
                                    "wl_surface attach before first xdg_surface configure");
+            return;
         }
 
         if (surface()->imp()->pendingParent)
@@ -104,6 +105,22 @@ void LPopupRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin 
         surface()->imp()->applyPendingRole();
         surface()->popup()->configureRequest();
         return;
+    }
+
+    // Cambios double-buffered
+    if (xdgSurfaceResource()->imp()->hasPendingWindowGeometry)
+    {
+        xdgSurfaceResource()->imp()->hasPendingWindowGeometry = false;
+        xdgSurfaceResource()->imp()->currentWindowGeometryS = xdgSurfaceResource()->imp()->pendingWindowGeometryS;
+        xdgSurfaceResource()->imp()->currentWindowGeometryC = xdgSurfaceResource()->imp()->pendingWindowGeometryS * compositor()->globalScale();
+        geometryChanged();
+    }
+    // Si nunca ha asignado la geometría, usa el tamaño de la superficie
+    else if (!xdgSurfaceResource()->imp()->windowGeometrySet)
+    {
+        xdgSurfaceResource()->imp()->currentWindowGeometryS = LRect(0, surface()->sizeS());
+        xdgSurfaceResource()->imp()->currentWindowGeometryC = LRect(0, surface()->sizeC());
+        geometryChanged();
     }
 
     // Solicita volver a mapear
@@ -119,23 +136,6 @@ void LPopupRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin 
         surface()->imp()->setMapped(false);
         surface()->imp()->setParent(nullptr);
         return;
-    }
-
-    // Cambios double-buffered
-    if (xdgSurfaceResource()->imp()->hasPendingWindowGeometry)
-    {
-        xdgSurfaceResource()->imp()->hasPendingWindowGeometry = false;
-        xdgSurfaceResource()->imp()->currentWindowGeometryS = xdgSurfaceResource()->imp()->pendingWindowGeometryS;
-        xdgSurfaceResource()->imp()->currentWindowGeometryC = xdgSurfaceResource()->imp()->pendingWindowGeometryS * compositor()->globalScale();
-        geometryChanged();
-    }
-    // Si nunca ha asignado la geometría, usa el tamaño de la superficie
-    else if (!xdgSurfaceResource()->imp()->windowGeometrySet &&
-             xdgSurfaceResource()->imp()->currentWindowGeometryC.size() != surface()->sizeC())
-    {
-        xdgSurfaceResource()->imp()->currentWindowGeometryS = LRect(0, surface()->sizeS());
-        xdgSurfaceResource()->imp()->currentWindowGeometryC = LRect(0, surface()->sizeC());
-        geometryChanged();
     }
 
     // Si no estaba mapeada y añade buffer la mappeamos

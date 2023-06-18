@@ -162,6 +162,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
 
     wl_event_loop_dispatch(imp()->eventLoop, 0);
     flushClients();
+
     cursor()->imp()->textureUpdate();
     imp()->renderMutex.unlock();
     return 1;
