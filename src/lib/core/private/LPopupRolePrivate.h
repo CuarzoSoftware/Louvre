@@ -15,9 +15,6 @@ LPRIVATE_CLASS(LPopupRole)
     LRect positionerBoundsS, positionerBoundsC;
     LPositioner positioner;
     bool dismissed = false;
-
-    // Since 3
-    UInt32 repositionSerial = 0;
 };
 
 #endif // LPOPUPROLEPRIVATE_H

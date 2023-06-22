@@ -4,7 +4,6 @@
 #include <protocols/XdgShell/RXdgToplevel.h>
 
 using namespace Louvre::Protocols::XdgShell;
-using namespace std;
 
 LPRIVATE_CLASS(RXdgToplevel)
     static void destroy_resource(wl_resource *resource);

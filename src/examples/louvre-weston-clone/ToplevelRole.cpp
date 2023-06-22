@@ -1,4 +1,5 @@
 #include "ToplevelRole.h"
+#include "Output.h"
 #include <LCursor.h>
 #include <Compositor.h>
 #include <Surface.h>
@@ -14,7 +15,14 @@ void ToplevelRole::configureRequest()
     // Get the main output
     LOutput *output = compositor()->cursor()->output();
 
-    configureC(0/*output->sizeC()*0.6f*/, LToplevelRole::Activated);
+    // Notifies the compositor's capabilities
+    setWmCapabilities(WmCapabilities::WmWindowMenu | WmCapabilities::WmMinimize | WmCapabilities::WmMaximize | WmCapabilities::WmFullscreen);
+
+    // Suggests to the Toplevel not to use a size larger than the output where the cursor is located
+    configureBoundsC(output->sizeC() - LPoint(0, 32 * compositor()->globalScale()));
+
+    // Adding the resize flag fixes Google Chrome window geometry bug
+    configureC(0, Activated | Resizing);
 }
 
 void ToplevelRole::setMaximizedRequest()
@@ -61,21 +69,19 @@ void ToplevelRole::maximizedChanged()
 
 void ToplevelRole::fullscreenChanged()
 {
-    Compositor *comp = (Compositor*)compositor();
-
-    LOutput *output = compositor()->cursor()->output();
+    Output *output = (Output*)compositor()->cursor()->output();
 
     if (fullscreen())
     {
         surface()->setPosC(output->posC());
-        comp->fullscreenSurface = surface();
+        output->fullscreenSurface = surface();
         compositor()->raiseSurface(surface());
     }
     else
     {
         surface()->setPosC(rectBeforeFullscreen.pos());
-        if (comp->fullscreenSurface == surface())
-            comp->fullscreenSurface = nullptr;
+        if (output->fullscreenSurface == surface())
+           output->fullscreenSurface = nullptr;
     }
 }
 

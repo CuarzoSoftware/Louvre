@@ -135,13 +135,13 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
         /* We save the pointer focus surface in order to continue sending events to it even when the cursor 
          * is outside of it (while the left button is being held down)*/
         setDragginSurface(focusSurface());
-
-        /* This prevents firefox from closing popups before click */
-        if (!focusSurface()->isSubchildOf(seat()->keyboard()->focusSurface()))
-            seat()->keyboard()->setFocus(focusSurface());
+        seat()->keyboard()->setFocus(focusSurface());
 
         if (focusSurface()->toplevel() && !focusSurface()->toplevel()->activated())
             focusSurface()->toplevel()->configureC(focusSurface()->toplevel()->states() | LToplevelRole::Activated);
+
+        if (!focusSurface()->popup())
+            dismissPopups();
 
         // Raise surface
         if (focusSurface() == compositor()->surfaces().back())

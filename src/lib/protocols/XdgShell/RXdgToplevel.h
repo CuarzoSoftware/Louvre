@@ -1,5 +1,5 @@
-#ifndef XDGTOPLEVEL_H
-#define XDGTOPLEVEL_H
+#ifndef RXDGTOPLEVEL_H
+#define RXDGTOPLEVEL_H
 
 #include <LResource.h>
 
@@ -9,19 +9,20 @@ public:
     RXdgToplevel(RXdgSurface *rXdgSurface, UInt32 id);
     ~RXdgToplevel();
 
-    RXdgSurface *rXdgSurface() const;
-    LToplevelRole *lToplevelRole() const;
+    RXdgSurface *xdgSurfaceResource() const;
+    LToplevelRole *toplevelRole() const;
 
-    bool configure(Int32 width, Int32 height, wl_array *states) const;
-    bool close() const;
+    // Since 1
+    bool configure(Int32 width, Int32 height, wl_array *states);
+    bool close();
 
     // Since 4
-    bool configure_bounds(Int32 width, Int32 height) const;
+    bool configureBounds(Int32 width, Int32 height);
 
     // Since 5
-    bool wm_capabilities(wl_array *capabilities) const;
+    bool wmCapabilities(wl_array *capabilities);
 
     LPRIVATE_IMP(RXdgToplevel)
 };
 
-#endif // XDGTOPLEVEL_H
+#endif // RXDGTOPLEVEL_H

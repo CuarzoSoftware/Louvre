@@ -1,11 +1,8 @@
 #include <protocols/XdgShell/private/RXdgToplevelPrivate.h>
 #include <protocols/XdgShell/private/RXdgSurfacePrivate.h>
-
 #include <protocols/XdgShell/xdg-shell.h>
-
 #include <private/LToplevelRolePrivate.h>
 #include <private/LSurfacePrivate.h>
-
 #include <LCompositor.h>
 
 static struct xdg_toplevel_interface xdg_toplevel_implementation =
@@ -47,43 +44,43 @@ RXdgToplevel::RXdgToplevel
 
     LToplevelRole::Params toplevelRoleParams;
     toplevelRoleParams.toplevel = this;
-    toplevelRoleParams.surface = rXdgSurface->lSurface();
+    toplevelRoleParams.surface = rXdgSurface->surface();
     imp()->lToplevelRole = compositor()->createToplevelRoleRequest(&toplevelRoleParams);
-    rXdgSurface->lSurface()->imp()->setPendingRole(imp()->lToplevelRole);
+    rXdgSurface->surface()->imp()->setPendingRole(imp()->lToplevelRole);
 }
 
 RXdgToplevel::~RXdgToplevel()
 {
-    if (rXdgSurface())
-        rXdgSurface()->imp()->rXdgToplevel = nullptr;
+    if (xdgSurfaceResource())
+        xdgSurfaceResource()->imp()->rXdgToplevel = nullptr;
 
     delete imp()->lToplevelRole;
     delete m_imp;
 }
 
-RXdgSurface *RXdgToplevel::rXdgSurface() const
+RXdgSurface *RXdgToplevel::xdgSurfaceResource() const
 {
     return imp()->rXdgSurface;
 }
 
-LToplevelRole *RXdgToplevel::lToplevelRole() const
+LToplevelRole *RXdgToplevel::toplevelRole() const
 {
     return imp()->lToplevelRole;
 }
 
-bool RXdgToplevel::configure(Int32 width, Int32 height, wl_array *states) const
+bool RXdgToplevel::configure(Int32 width, Int32 height, wl_array *states)
 {
     xdg_toplevel_send_configure(resource(), width, height, states);
     return true;
 }
 
-bool RXdgToplevel::close() const
+bool RXdgToplevel::close()
 {
     xdg_toplevel_send_close(resource());
     return true;
 }
 
-bool RXdgToplevel::configure_bounds(Int32 width, Int32 height) const
+bool RXdgToplevel::configureBounds(Int32 width, Int32 height)
 {
 #if LOUVRE_XDG_WM_BASE_VERSION >= 4
     if (version() >= 4)
@@ -92,10 +89,12 @@ bool RXdgToplevel::configure_bounds(Int32 width, Int32 height) const
         return true;
     }
 #endif
+    L_UNUSED(width);
+    L_UNUSED(height);
     return false;
 }
 
-bool RXdgToplevel::wm_capabilities(wl_array *capabilities) const
+bool RXdgToplevel::wmCapabilities(wl_array *capabilities)
 {
 #if LOUVRE_XDG_WM_BASE_VERSION >= 5
     if (version() >= 5)

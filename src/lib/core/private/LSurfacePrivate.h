@@ -92,8 +92,7 @@ LPRIVATE_CLASS(LSurface)
     bool damagesChanged                                 = false;
     bool bufferSizeChanged                              = false;
     bool bufferReleased                                 = true;
-    bool atached                                        = false;
-    // Indicates if the surface should be mapped (has a not null buffer)
+    bool attached                                       = false;
     bool mapped                                         = false;
 
     // Presentation feedback

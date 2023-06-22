@@ -42,6 +42,8 @@ RSubsurface::RSubsurface
     subsurfaceRoleParams.surface = surface;
 
     imp()->lSubsurfaceRole = compositor()->createSubsurfaceRoleRequest(&subsurfaceRoleParams);
+
+    // Based on wl_subsurface doc, parent should be applied when parent commits
     surface->imp()->setPendingParent(parent);
     surface->imp()->setPendingRole(imp()->lSubsurfaceRole);
     surface->imp()->applyPendingRole();

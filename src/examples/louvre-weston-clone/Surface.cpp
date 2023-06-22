@@ -17,25 +17,34 @@ void Surface::mappingChanged()
         {
             firstMap = false;
 
-            Int32 barSize = 32 * compositor()->globalScale();
-            LPoint outputPosG = compositor()->cursor()->output()->posC() + LPoint(0, barSize);
-            LSize outputSizeG = compositor()->cursor()->output()->sizeC() - LSize(0,barSize);
+            if (toplevel())
+            {
+                Int32 barSize = 32 * compositor()->globalScale();
+                LPoint outputPosG = compositor()->cursor()->output()->posC() + LPoint(0, barSize);
+                LSize outputSizeG = compositor()->cursor()->output()->sizeC() - LSize(0, barSize);
 
-            setPosC(outputPosG + outputSizeG/2 - sizeC()/2);
+                setPosC(outputPosG + outputSizeG/2 - toplevel()->windowGeometryC().size()/2);
 
-            if (posC().x() < outputPosG.x())
-                setXC(outputPosG.x());
-            if (posC().y() < barSize)
-                setYC(barSize);
+                if (posC().x() < outputPosG.x())
+                    setXC(outputPosG.x());
+
+                if (posC().y() < barSize)
+                    setYC(barSize);
+
+                toplevel()->configureC(LToplevelRole::Activated);
+            }
         }
+
         compositor()->repaintAllOutputs();
     }
     else
     {
         for (Output *o : (list<Output*>&)outputs())
         {
-            o->newDamage.addRect(LRect(rolePosC(), sizeC()));
+            o->newDamage.addRect(outputsMap[o].previousRectC);
             o->repaint();
+            if (this == o->fullscreenSurface)
+                o->fullscreenSurface = nullptr;
         }
     }
 }
@@ -46,4 +55,30 @@ void Surface::orderChanged()
         pair.second.changedOrder = true;
 
     repaintOutputs();
+}
+
+void Surface::minimizedChanged()
+{
+    if (minimized())
+    {
+        for (Output *o : (list<Output*>&)outputs())
+        {
+            o->newDamage.addRect(outputsMap[o].previousRectC);
+            o->repaint();
+
+            if (this == o->fullscreenSurface)
+                o->fullscreenSurface = nullptr;
+        }
+
+        if (toplevel())
+            toplevel()->configureC(toplevel()->states() &~ LToplevelRole::Activated);
+    }
+    else
+    {
+        requestNextFrame(false);
+        compositor()->raiseSurface(this);
+
+        if (toplevel())
+            toplevel()->configureC(LToplevelRole::Activated);
+    }
 }

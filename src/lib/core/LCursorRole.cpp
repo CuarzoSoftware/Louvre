@@ -1,7 +1,6 @@
 #include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LCursorRolePrivate.h>
 #include <private/LSurfacePrivate.h>
-
 #include <LCursorRole.h>
 #include <LSurface.h>
 #include <LCompositor.h>
@@ -42,10 +41,12 @@ const LPoint &LCursorRole::hotspotB() const
 void LCursorRole::handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin)
 {
     L_UNUSED(origin);
+
     imp()->currentHotspotS -= imp()->pendingHotspotOffsetS;
     imp()->pendingHotspotOffsetS = 0;
     imp()->currentHotspotC = imp()->currentHotspotS * compositor()->globalScale();
     imp()->currentHotspotB = imp()->currentHotspotS * surface()->bufferScale();
+
     hotspotChanged();
 
     if (surface()->buffer())

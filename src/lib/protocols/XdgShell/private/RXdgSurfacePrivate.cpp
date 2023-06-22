@@ -7,7 +7,6 @@
 #include <private/LToplevelRolePrivate.h>
 #include <private/LPopupRolePrivate.h>
 #include <LPositioner.h>
-#include <LLog.h>
 
 void RXdgSurface::RXdgSurfacePrivate::resource_destroy(wl_resource *resource)
 {
@@ -20,9 +19,10 @@ void RXdgSurface::RXdgSurfacePrivate::destroy(wl_client *client, wl_resource *re
     L_UNUSED(client);
     RXdgSurface *rXdgSurface = (RXdgSurface*)wl_resource_get_user_data(resource);
 
-    if (rXdgSurface->lSurface()->role())
+    if (rXdgSurface->surface()->role())
     {
-        wl_resource_post_error(resource, 0, "xdg_surface must be destroyed after its specific role");
+        // TODO: Update XML and replace by DEFUNC_ROLE_OBJECT error
+        wl_resource_post_error(resource, XDG_WM_BASE_ERROR_DEFUNCT_SURFACES, "xdg_surface must be destroyed after its specific role");
         return;
     }
 
@@ -35,13 +35,13 @@ void RXdgSurface::RXdgSurfacePrivate::get_toplevel(wl_client *client, wl_resourc
 
     RXdgSurface *rXdgSurface = (RXdgSurface*)wl_resource_get_user_data(resource);
 
-    if (rXdgSurface->lSurface()->imp()->hasBufferOrPendingBuffer())
+    if (rXdgSurface->surface()->imp()->hasBufferOrPendingBuffer())
     {
         wl_resource_post_error(resource, XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface already has a buffer attached.");
         return;
     }
 
-    if (rXdgSurface->lSurface()->imp()->hasRoleOrPendingRole())
+    if (rXdgSurface->surface()->imp()->hasRoleOrPendingRole())
     {
         wl_resource_post_error(resource, XDG_WM_BASE_ERROR_ROLE, "Given wl_surface has another role.");
         return;
@@ -61,13 +61,13 @@ void RXdgSurface::RXdgSurfacePrivate::get_popup(wl_client *client, wl_resource *
 
     RXdgSurface *rXdgSurface = (RXdgSurface*)wl_resource_get_user_data(resource);
 
-    if (rXdgSurface->lSurface()->imp()->hasBufferOrPendingBuffer())
+    if (rXdgSurface->surface()->imp()->hasBufferOrPendingBuffer())
     {
         wl_resource_post_error(resource, XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface already has a buffer attached.");
         return;
     }
 
-    if (rXdgSurface->lSurface()->imp()->hasRoleOrPendingRole())
+    if (rXdgSurface->surface()->imp()->hasRoleOrPendingRole())
     {
         wl_resource_post_error(resource, XDG_WM_BASE_ERROR_ROLE, "Given wl_surface has another role.");
         return;
@@ -82,7 +82,7 @@ void RXdgSurface::RXdgSurfacePrivate::get_popup(wl_client *client, wl_resource *
     RXdgSurface *rXdgParentSurface = nullptr;
     rXdgParentSurface = (RXdgSurface*)wl_resource_get_user_data(parent);
 
-    if (rXdgSurface->lSurface()->imp()->isInChildrenOrPendingChildren(rXdgParentSurface->lSurface()))
+    if (rXdgSurface->surface()->imp()->isInChildrenOrPendingChildren(rXdgParentSurface->surface()))
     {
         wl_resource_post_error(positioner,
                                XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT,
@@ -99,7 +99,7 @@ void RXdgSurface::RXdgSurfacePrivate::set_window_geometry(wl_client *client, wl_
 
     RXdgSurface *rXdgSurface = (RXdgSurface*)wl_resource_get_user_data(resource);
 
-    if (!rXdgSurface->rXdgPopup() && !rXdgSurface->rXdgToplevel())
+    if (!rXdgSurface->xdgPopupResource() && !rXdgSurface->xdgToplevelResource())
     {
         wl_resource_post_error(resource, 0, "Can not set window geometry with no role.");
         return;
@@ -122,40 +122,44 @@ void RXdgSurface::RXdgSurfacePrivate::ack_configure(wl_client *client, wl_resour
 
     RXdgSurface *rXdgSurface = (RXdgSurface*)wl_resource_get_user_data(resource);
 
-    if (!rXdgSurface->rXdgPopup() && !rXdgSurface->rXdgToplevel())
+    if (!rXdgSurface->xdgPopupResource() && !rXdgSurface->xdgToplevelResource())
     {
         wl_resource_post_error(resource, 0, "Can not ack xdg_surface with no role.");
         return;
     }
 
-    if (rXdgSurface->lSurface()->roleId() == LSurface::Role::Toplevel)
+    if (rXdgSurface->surface()->roleId() == LSurface::Role::Toplevel)
     {
-        LToplevelRole *toplevel = rXdgSurface->lSurface()->toplevel();
+        LToplevelRole *toplevel = rXdgSurface->surface()->toplevel();
 
-        while(!toplevel->imp()->sentConfs.empty())
+        while (!toplevel->imp()->sentConfs.empty())
         {
             if (toplevel->imp()->sentConfs.front().serial == serial)
             {
                 toplevel->imp()->currentConf = toplevel->imp()->sentConfs.front();
                 toplevel->imp()->sentConfs.pop_front();
-                break;
+                return;
             }
 
             toplevel->imp()->sentConfs.pop_front();
         }
 
+        wl_resource_post_error(
+            rXdgSurface->resource(),
+            0,
+            "invalid xdg_surface serial ack.");
+
         if (toplevel->imp()->xdgDecoration && toplevel->imp()->pendingDecorationMode != 0 && toplevel->imp()->lastDecorationModeConfigureSerial <= serial)
         {
-            LLog::debug("DECORATION CHANGED");
             toplevel->imp()->decorationMode = (LToplevelRole::DecorationMode)toplevel->imp()->pendingDecorationMode;
             toplevel->decorationModeChanged();
             toplevel->imp()->pendingDecorationMode = 0;
             return;
         }
     }
-    else if (rXdgSurface->lSurface()->roleId() == LSurface::Role::Popup)
+    else if (rXdgSurface->surface()->roleId() == LSurface::Role::Popup)
     {
-
+        /* TODO: Do popups ACK really matter? We only care about their window geometry. */
     }
     else
     {

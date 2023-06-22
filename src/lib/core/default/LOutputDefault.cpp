@@ -14,8 +14,7 @@ void LOutput::initializeGL()
 {
     // Sets the background color to white
     painter()->setClearColor(1.f, 1.f, 1.f, 1.f);
-
-    paintGL();
+    repaint();
 }
 //! [initializeGL]
 

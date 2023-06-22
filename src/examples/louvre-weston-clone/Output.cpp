@@ -1,4 +1,5 @@
 #include "Output.h"
+#include "TerminalIcon.h"
 #include <Compositor.h>
 #include <LPainter.h>
 #include <Surface.h>
@@ -11,22 +12,40 @@ Output::Output():LOutput(){}
 
 void Output::fullDamage()
 {
+    Compositor *c = (Compositor*)compositor();
+
+    if (!c->clock)
+        c->clock = new Clock();
+
+    topbarHeight = 32 * compositor()->globalScale();
+    terminalIconRectC.setPos(LPoint(9*compositor()->globalScale(), 4*compositor()->globalScale()));
+    terminalIconRectC.setSize(LSize(topbarHeight) - LSize(2*terminalIconRectC.pos().y()));
+    terminalIconRectC.setPos(rectC().pos() + terminalIconRectC.pos());
+
     damage.clear();
-    damage.addRect(rectC());
     newDamage.clear();
     newDamage.addRect(rectC());
 }
 
 void Output::initializeGL()
 {
+    terminalIconTexture = new LTexture(0);
+
+    if (!terminalIconTexture->setDataB(LSize(64,64), 64*4, DRM_FORMAT_ABGR8888, terminalIconPixels()))
+    {
+        LLog::error("Failed to create terminal icon.");
+        delete terminalIconTexture;
+        terminalIconTexture = nullptr;
+    }
+
     fullDamage();
-    paintGL();
+    repaint();
 }
 
 void Output::resizeGL()
 {
     fullDamage();
-    paintGL();
+    repaint();
 }
 
 void repaintParent(LSurface *s)
@@ -69,6 +88,17 @@ void Output::paintGL()
     LPainter *p = painter();
     list<Surface*> &surfaces = (list<Surface*>&)compositor()->surfaces();
 
+    if (c->clock && c->clock->texture && redrawClock)
+    {
+        redrawClock = false;
+        newDamage.addRect(dstClockRect);
+        dstClockRect.setH(c->clock->texture->sizeB().h() / c->globalScale());
+        dstClockRect.setW(c->clock->texture->sizeB().w() / c->globalScale());
+        dstClockRect.setY(rectC().y() + 3.5f*c->globalScale());
+        dstClockRect.setX(rectC().x() + rectC().w() - dstClockRect.w() - 14*c->globalScale());
+        newDamage.addRect(dstClockRect);
+    }
+
     if (seat()->dndManager()->icon())
         compositor()->raiseSurface(seat()->dndManager()->icon()->surface());
 
@@ -91,12 +121,25 @@ void Output::paintGL()
         s->currentOutputData = &s->outputsMap[this];
 
         // Check if meets conditions to be rendered
-        s->isRenderable = s->mapped() && !s->cursorRole() && s->roleId() != LSurface::Role::Undefined && !s->minimized();
+        s->isRenderable = s->mapped() && !s->minimized() && !s->cursorRole();
 
         // Allow client to update cursor
         if (!s->isRenderable)
         {
-            s->requestNextFrame();
+            if (s->cursorRole())
+            {
+                s->setPosC(cursor()->posC());
+                for (LOutput *o : compositor()->outputs())
+                {
+                    if (o->rectC().intersects(s->currentRectC))
+                        s->sendOutputEnterEvent(o);
+                    else
+                        s->sendOutputLeaveEvent(o);
+                }
+
+                s->requestNextFrame(false);
+            }
+
             continue;
         }
 
@@ -105,6 +148,13 @@ void Output::paintGL()
 
         // 2. Store the current surface rect
         s->currentRectC.setPos(s->rolePosC());
+
+        if (scale() != compositor()->globalScale())
+        {
+            s->currentRectC.setX(s->currentRectC.x() - s->currentRectC.x() % compositor()->globalScale());
+            s->currentRectC.setY(s->currentRectC.y() - s->currentRectC.y() % compositor()->globalScale());
+        }
+
         s->currentRectC.setSize(s->sizeC());
 
         // We clear damage only
@@ -113,7 +163,7 @@ void Output::paintGL()
         // 3. Update the surface intersected outputs
         for (LOutput *o : compositor()->outputs())
         {
-            if (o->rectC().intersects(s->currentRectC))
+            if (o->rectC().intersects(s->currentRectC, false))
             {
                 s->sendOutputEnterEvent(o);
 
@@ -183,6 +233,20 @@ void Output::paintGL()
     damage = newDamage;
     newDamage.addRegion(oldDamage);
 
+    bool drawClock = false;
+    if (c->clock && c->clock->texture)
+    {
+        LRegion clockRegion;
+        clockRegion.addRect(dstClockRect);
+        clockRegion.intersectRegion(newDamage);
+
+        if (!clockRegion.empty())
+        {
+            drawClock = true;
+            newDamage.addRect(dstClockRect);
+        }
+    }
+
     for (list<Surface*>::reverse_iterator it = surfaces.rbegin(); it != surfaces.rend(); it++)
     {
         Surface *s = *it;
@@ -195,66 +259,7 @@ void Output::paintGL()
 
         boxes = s->currentOpaqueTransposedC.rects(&n);
 
-        // Draw transulcent rects
-        if (s->bufferScaleMatchGlobalScale)
-        {
-            for (Int32 i = 0; i < n; i++)
-            {
-                w = boxes->x2 - boxes->x1;
-                h = boxes->y2 - boxes->y1;
-
-                p->drawTextureC(
-                    s->texture(),
-                    boxes->x1 - s->currentRectC.x(),
-                    boxes->y1 - s->currentRectC.y(),
-                    w,
-                    h,
-                    boxes->x1,
-                    boxes->y1,
-                    w,
-                    h,
-                    s->bufferScaleMatchGlobalScale ? 0.0 : s->bufferScale());
-
-                boxes++;
-            }
-        }
-    }
-
-    // Background
-
-    LRegion backgroundDamage = newDamage;
-    backgroundDamage.subtractRegion(opaqueTransposedCSum);
-    boxes = backgroundDamage.rects(&n);
-
-    for (Int32 i = 0; i < n; i++)
-    {
-        p->drawColorC(boxes->x1,
-                      boxes->y1,
-                      boxes->x2 - boxes->x1,
-                      boxes->y2 - boxes->y1,
-                      0.05f,
-                      0.05f,
-                      0.05f,
-                      1.f);
-        boxes++;
-    }
-
-    glEnable(GL_BLEND);
-
-    for (list<Surface*>::iterator it = surfaces.begin(); it != surfaces.end(); it++)
-    {
-        Surface *s = *it;
-
-        if (!s->isRenderable || s->occluded)
-            continue;
-
-        s->occluded = true;
-        s->currentTraslucentTransposedC.intersectRegion(newDamage);
-        s->currentTraslucentTransposedC.subtractRegion(s->currentOpaqueTransposedCSum);
-
-        boxes = s->currentTraslucentTransposedC.rects(&n);
-
-        // Draw transulcent rects
+        // Draw opaque rects
         for (Int32 i = 0; i < n; i++)
         {
             w = boxes->x2 - boxes->x1;
@@ -276,12 +281,74 @@ void Output::paintGL()
         }
     }
 
+    // Background
+
+    LRegion backgroundDamage = newDamage;
+    backgroundDamage.subtractRegion(opaqueTransposedCSum);
+    boxes = backgroundDamage.rects(&n);
+
+    for (Int32 i = 0; i < n; i++)
+    {
+        p->drawColorC(boxes->x1,
+                      boxes->y1,
+                      boxes->x2 - boxes->x1,
+                      boxes->y2 - boxes->y1,
+                      0.15f,
+                      0.25f,
+                      0.35f,
+                      1.f);
+        boxes++;
+    }
+
+    glEnable(GL_BLEND);
+
+    // Traslucent
+
+    for (list<Surface*>::iterator it = surfaces.begin(); it != surfaces.end(); it++)
+    {
+        Surface *s = *it;
+
+        if (!s->isRenderable || s->occluded)
+            continue;
+
+        s->occluded = true;
+        s->currentTraslucentTransposedC.intersectRegion(newDamage);
+        s->currentTraslucentTransposedC.subtractRegion(s->currentOpaqueTransposedCSum);
+
+        boxes = s->currentTraslucentTransposedC.rects(&n);
+
+        // Draw transulcent rects
+
+        for (Int32 i = 0; i < n; i++)
+        {
+            w = boxes->x2 - boxes->x1;
+            h = boxes->y2 - boxes->y1;
+
+            p->drawTextureC(
+                s->texture(),
+                boxes->x1 - s->currentRectC.x(),
+                boxes->y1 - s->currentRectC.y(),
+                w,
+                h,
+                boxes->x1 ,
+                boxes->y1,
+                w,
+                h,
+                s->bufferScaleMatchGlobalScale ? 0.0 : s->bufferScale());
+
+            boxes++;
+        }
+    }
+
     // Topbar
 
-    if (!c->fullscreenSurface)
+    if (!fullscreenSurface)
     {
         LRegion topbarRegion;
-        topbarRegion.addRect(LRect(rectC().x(),rectC().y(),rectC().w(),32*compositor()->globalScale()));
+        topbarRegion.addRect(LRect(rectC().x(),
+                                   rectC().y(),
+                                   rectC().w(),
+                                   topbarHeight));
         topbarRegion.intersectRegion(newDamage);
         boxes = topbarRegion.rects(&n);
 
@@ -294,8 +361,31 @@ void Output::paintGL()
                           1.0f,
                           1.0f,
                           1.0f,
-                          0.75f);
+                          0.8f);
             boxes++;
+        }
+
+        if (terminalIconTexture)
+        {
+            LRegion terminalIconRegion;
+            terminalIconRegion.addRect(terminalIconRectC);
+            terminalIconRegion.intersectRegion(topbarRegion);
+
+            if (!terminalIconRegion.empty())
+            {
+                p->drawTextureC(terminalIconTexture,
+                                LRect(0, terminalIconTexture->sizeB()),
+                                terminalIconRectC,
+                                0.f,
+                                terminalIconAlpha);
+            }
+        }
+
+        if (drawClock)
+        {
+            p->drawTextureC(c->clock->texture,
+                            LRect(0, c->clock->texture->sizeB()),
+                            dstClockRect);
         }
     }
 

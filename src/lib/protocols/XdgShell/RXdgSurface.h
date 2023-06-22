@@ -1,5 +1,5 @@
-#ifndef XDGSURFACE_H
-#define XDGSURFACE_H
+#ifndef RXDGSURFACE_H
+#define RXDGSURFACE_H
 
 #include <LResource.h>
 
@@ -9,14 +9,15 @@ public:
     RXdgSurface(GXdgWmBase *gXdgWmBase, LSurface *lSurface, UInt32 id);
     ~RXdgSurface();
 
-    GXdgWmBase *gXdgWmBase() const;
-    LSurface *lSurface() const;
-    RXdgToplevel *rXdgToplevel() const;
-    RXdgPopup *rXdgPopup() const;
+    GXdgWmBase *xdgWmBaseGlobal() const;
+    LSurface *surface() const;
+    RXdgToplevel *xdgToplevelResource() const;
+    RXdgPopup *xdgPopupResource() const;
 
-    void configure(UInt32 serial) const;
+    // Since 1
+    bool configure(UInt32 serial) const;
 
     LPRIVATE_IMP(RXdgSurface)
 };
 
-#endif // XDGSURFACE_H
+#endif // RXDGSURFACE_H

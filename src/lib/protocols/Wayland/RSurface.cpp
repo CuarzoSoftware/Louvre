@@ -74,11 +74,11 @@ RSurface::~RSurface()
 {
     LSurface *lSurface = this->surface();
 
-    // Unmap
-    lSurface->imp()->setMapped(false);
-
     // Notify from client
     compositor()->destroySurfaceRequest(lSurface);
+
+    // Unmap
+    lSurface->imp()->setMapped(false);
 
     for (WpPresentationTime::RWpPresentationFeedback *wPf : lSurface->imp()->wpPresentationFeedbackResources)
         wPf->imp()->lSurface = nullptr;

@@ -1,3 +1,4 @@
+#include <csignal>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 #include <private/LSeatPrivate.h>
@@ -170,7 +171,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
 
 void LCompositor::finish()
 {
-    abort();
+    exit(0);
 
     /* TODO:
     if (imp()->started)
@@ -185,8 +186,10 @@ void LCompositor::finish()
 }
 
 void LCompositor::LCompositorPrivate::raiseChildren(LSurface *surface)
-{            
-    surfaces.splice( surfaces.end(), surfaces, surface->imp()->compositorLink);
+{
+    surfaces.erase(surface->imp()->compositorLink);
+    surfaces.push_back(surface);
+    surface->imp()->compositorLink = std::prev(surfaces.end());
 
     surface->raised();
     surface->orderChanged();
@@ -210,6 +213,11 @@ void LCompositor::raiseSurface(LSurface *surface)
 wl_display *LCompositor::display()
 {
     return LCompositor::compositor()->imp()->display;
+}
+
+wl_event_loop *LCompositor::eventLoop()
+{
+    return LCompositor::compositor()->imp()->eventLoop;
 }
 
 wl_event_source *LCompositor::addFdListener(int fd, void *userData, int (*callback)(int, unsigned int, void *), UInt32 flags)

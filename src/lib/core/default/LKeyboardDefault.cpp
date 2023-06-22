@@ -46,6 +46,14 @@ void LKeyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
             }
         }
 
+        if (L_CTRL && keySymbol(keyCode) == XKB_KEY_q)
+        {
+            if (focusSurface())
+            {
+                wl_client_destroy(focusSurface()->client()->client());
+            }
+        }
+
         // CTRL + SHIFT + ESC : Kils the compositor.
         else if (keyCode == KEY_ESC && L_CTRL && L_SHIFT)
         {
@@ -56,7 +64,8 @@ void LKeyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
         // F8 : Unminimize all surfaces.
         else if (keyCode == KEY_F8 && !mods)
         {
-            for (LSurface *surface : compositor()->surfaces())
+            std::list<LSurface*>surfaces = compositor()->surfaces();
+            for (LSurface *surface : surfaces)
                 surface->setMinimized(false);
 
             compositor()->repaintAllOutputs();

@@ -2,9 +2,7 @@
 #include <protocols/XdgShell/private/GXdgWmBasePrivate.h>
 #include <protocols/XdgShell/private/RXdgPopupPrivate.h>
 #include <protocols/XdgShell/private/RXdgToplevelPrivate.h>
-
 #include <protocols/XdgShell/GXdgWmBase.h>
-
 #include <protocols/XdgShell/xdg-shell.h>
 
 using namespace Louvre::Protocols::XdgShell;
@@ -37,17 +35,14 @@ RXdgSurface::RXdgSurface
     m_imp = new RXdgSurfacePrivate();
     imp()->gXdgWmBase = gXdgWmBase;
     imp()->lSurface = lSurface;
-
-    /* TODO: Can imp()->gXdgWmBase be NULL here? */
-
-    this->gXdgWmBase()->imp()->xdgSurfaces.push_back(this);
-    imp()->xdgWmBaseLink = std::prev(this->gXdgWmBase()->imp()->xdgSurfaces.end());
+    xdgWmBaseGlobal()->imp()->xdgSurfaces.push_back(this);
+    imp()->xdgWmBaseLink = std::prev(xdgWmBaseGlobal()->imp()->xdgSurfaces.end());
 }
 
 RXdgSurface::~RXdgSurface()
 {
-    if (gXdgWmBase())
-        gXdgWmBase()->imp()->xdgSurfaces.erase(imp()->xdgWmBaseLink);
+    if (xdgWmBaseGlobal())
+        xdgWmBaseGlobal()->imp()->xdgSurfaces.erase(imp()->xdgWmBaseLink);
 
     if (imp()->rXdgPopup)
         imp()->rXdgPopup->imp()->rXdgSurface = nullptr;
@@ -57,27 +52,28 @@ RXdgSurface::~RXdgSurface()
     delete m_imp;
 }
 
-GXdgWmBase *RXdgSurface::gXdgWmBase() const
+GXdgWmBase *RXdgSurface::xdgWmBaseGlobal() const
 {
     return imp()->gXdgWmBase;
 }
 
-Louvre::LSurface *RXdgSurface::lSurface() const
+Louvre::LSurface *RXdgSurface::surface() const
 {
     return imp()->lSurface;
 }
 
-RXdgToplevel *RXdgSurface::rXdgToplevel() const
+RXdgToplevel *RXdgSurface::xdgToplevelResource() const
 {
     return imp()->rXdgToplevel;
 }
 
-RXdgPopup *RXdgSurface::rXdgPopup() const
+RXdgPopup *RXdgSurface::xdgPopupResource() const
 {
     return imp()->rXdgPopup;
 }
 
-void RXdgSurface::configure(UInt32 serial) const
+bool RXdgSurface::configure(UInt32 serial) const
 {
     xdg_surface_send_configure(resource(), serial);
+    return true;
 }

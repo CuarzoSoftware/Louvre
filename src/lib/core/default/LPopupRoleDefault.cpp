@@ -1,7 +1,7 @@
+#include "LLog.h"
 #include <private/LPopupRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LBaseSurfaceRolePrivate.h>
-
 #include <LPositioner.h>
 #include <LSeat.h>
 #include <LKeyboard.h>
@@ -15,6 +15,9 @@ using namespace Louvre;
 //! [rolePosC]
 const LPoint &LPopupRole::rolePosC() const
 {
+    if (!surface()->parent())
+        return m_rolePosC;
+
     // Final position of the popup that we will change if it is restricted
     LPoint finalPos;
 
@@ -43,12 +46,12 @@ const LPoint &LPopupRole::rolePosC() const
     UInt32 gravityAfterX = positioner().gravity();
 
     // Stores the repositioning attempts of each axis (0, 1, 2, ...) in each phase, another way of repositioning is attempted
+    // 0 = flip | 1 = slide | 2 = resize
     UInt32 xTry = 0;
     UInt32 yTry = 0;
 
     // We come back here in case the position is restricted
     retry:
-
     anchorPos = LPoint();
     popupOrigin = LPoint();
 
@@ -149,7 +152,7 @@ const LPoint &LPopupRole::rolePosC() const
     }
 
     // We calculate the initial position (we will be modifying finalPos if the position is restricted)
-    finalPos = parentPos + positioner().anchorRectC().pos() + anchorPos - popupOrigin + offset;// - imp()->windowGeometry.topLeft();
+    finalPos = parentPos + positioner().anchorRectC().pos() + anchorPos - popupOrigin + offset;
 
     // If it is the first attempt, we save finalPos in m_rolePosC as a backup
     if (xTry == 0 && yTry == 0)
@@ -161,8 +164,7 @@ const LPoint &LPopupRole::rolePosC() const
     // If the popup exceeds the left border
     if (finalPos.x() < positionerBoundsC().x())
     {
-
-        // First try
+        // First try (flip)
         if (xTry == 0)
         {
             xTry++;
@@ -201,12 +203,12 @@ const LPoint &LPopupRole::rolePosC() const
                     }break;
                 }
 
-
                 anchorAfterX = anchor;
                 gravityAfterX = gravity;
                 goto retry;
             }
         }
+        // If not the 0 case, reset vars
         else
         {
             gravity = positioner().gravity();
@@ -215,6 +217,7 @@ const LPoint &LPopupRole::rolePosC() const
             gravityAfterX = gravity;
         }
 
+        // Seccond try (slide)
         if (xTry == 1)
         {
             xTry++;
@@ -229,13 +232,10 @@ const LPoint &LPopupRole::rolePosC() const
         {
             offset.setX(positioner().offsetC().x());
         }
-
-
     }
     // If right side is constrained
     else if (finalPos.x() + popupSize.w() > positionerBoundsC().x() + positionerBoundsC().w())
     {
-
         if (xTry == 0)
         {
             xTry++;
@@ -307,7 +307,6 @@ const LPoint &LPopupRole::rolePosC() const
     // If top border is constrained
     if (finalPos.y() < positionerBoundsC().y())
     {
-
         // Flip gravity on the Y axis
         if (yTry == 0)
         {
@@ -370,14 +369,11 @@ const LPoint &LPopupRole::rolePosC() const
         {
             offset.setY(positioner().offsetC().y());
         }
-
-
     }
 
     // If bottom border is constrained
     else if (finalPos.y() + popupSize.h() > positionerBoundsC().y() + positionerBoundsC().h())
     {
-
         if (yTry == 0)
         {
             yTry++;
@@ -441,11 +437,21 @@ const LPoint &LPopupRole::rolePosC() const
         }
     }
 
-
     m_rolePosC = finalPos;
     surface()->setPosC(m_rolePosC);
-
     m_rolePosC = finalPos - windowGeometryC().topLeft();
+
+    // Finally check if popup size is out of bounds
+    LSize finalSize = popupSize;
+
+    if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::ResizeY && finalSize.h() > positionerBoundsC().h())
+        finalSize.setH(positionerBoundsC().h());
+
+    if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::ResizeX && finalSize.w() > positionerBoundsC().w())
+        finalSize.setW(positionerBoundsC().w());
+
+    if (finalSize != popupSize)
+        configureC(LRect(m_rolePosC - parentPos, finalSize));
 
     return m_rolePosC;
 }
@@ -461,35 +467,31 @@ void LPopupRole::pong(UInt32)
 //! [grabSeatRequest]
 void LPopupRole::grabSeatRequest()
 {
-    seat()->keyboard()->setFocus(surface());
+    /* This is only called if the parent surface has keyboard or pointer focus.
+     * Otherwise the popup is dismissed.*/
+    if (surface()  && surface()->parent() && surface()->parent()->popup())
+        seat()->keyboard()->setFocus(surface());
 }
 //! [grabSeatRequest]
 
 //! [configureRequest]
 void LPopupRole::configureRequest()
 {
-    setPositionerBoundsC(compositor()->cursor()->output()->rectC());
-
+    setPositionerBoundsC(cursor()->output()->rectC());
     LPoint p = rolePosC() - surface()->parent()->posC();
-
     configureC(LRect(p, positioner().sizeC()));
-
-    compositor()->raiseSurface(surface());
 }
 //! [configureRequest]
 
-#if LOUVRE_XDG_WM_BASE_VERSION >= 3
+// Since 3
+
 //! [repositionRequest]
 void LPopupRole::repositionRequest(UInt32 token)
 {
-    LPoint p = rolePosC() - surface()->parent()->posC();
-
     sendRepositionedEvent(token);
-
-    configureC(LRect(p,positioner().sizeC()));
+    configureRequest();
 }
 //! [repositionRequest]
-#endif
 
 //! [geometryChanged]
 void LPopupRole::geometryChanged()
@@ -497,4 +499,3 @@ void LPopupRole::geometryChanged()
     /* No default implementation */
 }
 //! [geometryChanged]
-

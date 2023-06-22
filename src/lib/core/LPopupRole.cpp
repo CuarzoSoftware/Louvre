@@ -15,6 +15,19 @@
 
 using namespace Louvre;
 
+bool LPopupRole::isTopmostPopup() const
+{
+    if (!surface())
+        return false;
+
+    list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();
+    for (; s!= compositor()->surfaces().rend(); s++)
+        if ((*s)->popup() && (*s)->client() == surface()->client())
+                return (*s)->popup() == this;
+
+    return false;
+}
+
 LPopupRole::LPopupRole(LPopupRole::Params *params) : LBaseSurfaceRole(params->popup, params->surface, LSurface::Role::Popup)
 {
    m_imp = new LPopupRolePrivate();
@@ -24,44 +37,45 @@ LPopupRole::LPopupRole(LPopupRole::Params *params) : LBaseSurfaceRole(params->po
 
 LPopupRole::~LPopupRole()
 {
+    compositor()->destroyPopupRoleRequest(this);
+
     if (surface())
         surface()->imp()->setMapped(false);
-
-    compositor()->destroyPopupRoleRequest(this);
 
     delete m_imp;
 }
 
-void LPopupRole::configureC(const LRect &r)
+void LPopupRole::configureC(const LRect &r) const
 {
     XdgShell::RXdgPopup *res = (XdgShell::RXdgPopup*)resource();
 
-    if (!res->rXdgSurface())
+    if (!res->xdgSurfaceResource())
         return;
 
     LRect rect = r/compositor()->globalScale();
     res->configure(rect.x(), rect.y(), rect.w(), rect.h());
-    res->rXdgSurface()->configure(LCompositor::nextSerial());
+    res->xdgSurfaceResource()->configure(LCompositor::nextSerial());
 }
 
 void LPopupRole::sendPopupDoneEvent()
 {
-    if (imp()->dismissed)
-        return;
-
-    list<LSurface*>::const_reverse_iterator s = surface()->children().rbegin();
-    for (; s!= surface()->children().rend(); s++)
+    list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();
+    for (; s!= compositor()->surfaces().rend(); s++)
     {
-        if ((*s)->popup())
-            (*s)->popup()->sendPopupDoneEvent();
+        if ((*s)->popup() && (*s)->client() == surface()->client())
+        {
+            if (!imp()->dismissed)
+            {
+                XdgShell::RXdgPopup *res = (XdgShell::RXdgPopup*)resource();
+                res->popupDone();
+                surface()->imp()->setMapped(false);
+                imp()->dismissed = true;
+            }
+
+            if ((*s) == surface())
+                return;
+        }
     }
-
-    XdgShell::RXdgPopup *res = (XdgShell::RXdgPopup*)resource();
-
-    res->popup_done();
-    surface()->imp()->mapped = false;
-    surface()->mappingChanged();
-    imp()->dismissed = true;
 }
 
 void LPopupRole::sendRepositionedEvent(UInt32 token)
@@ -87,6 +101,8 @@ const LPositioner &LPopupRole::positioner() const
 
 void LPopupRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin)
 {
+    L_UNUSED(origin);
+
     // Commit inicial para asignar rol y padre
     if (surface()->imp()->pending.role)
     {
@@ -123,14 +139,14 @@ void LPopupRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin 
         geometryChanged();
     }
 
-    // Solicita volver a mapear
+    // Request configure
     if (!surface()->mapped() && !surface()->buffer())
     {
         configureRequest();
         return;
     }
 
-    // Solicita desmapear
+    // Request unmap
     if (surface()->mapped() && !surface()->buffer())
     {
         surface()->imp()->setMapped(false);
@@ -138,8 +154,8 @@ void LPopupRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin 
         return;
     }
 
-    // Si no estaba mapeada y añade buffer la mappeamos
-    if (!surface()->mapped() && surface()->buffer())
+    // Request map
+    if (!surface()->mapped() && surface()->buffer() && surface()->parent())
         surface()->imp()->setMapped(true);
 }
 
@@ -175,7 +191,7 @@ XdgShell::RXdgPopup *LPopupRole::xdgPopupResource() const
 
 XdgShell::RXdgSurface *LPopupRole::xdgSurfaceResource() const
 {
-    return xdgPopupResource()->rXdgSurface();
+    return xdgPopupResource()->xdgSurfaceResource();
 }
 
 const LRect &LPopupRole::positionerBoundsS() const

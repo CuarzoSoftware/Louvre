@@ -171,18 +171,18 @@ void LPainter::drawTextureC(LTexture *texture,
     glUniform1i(imp()->modeUniform, 0);
     glUniform1i(imp()->activeTextureUniform, texture->unit());
     glBindTexture(GL_TEXTURE_2D, texture->id(imp()->output));
-    glUniform2f(imp()->texSizeUniform, texture->sizeB().w(), texture->sizeB().h());
+    glUniform4f(imp()->srcRectUniform, srcX, srcY, srcW, srcH);
 
     if (srcScale == 0.0)
-        glUniform4f(imp()->srcRectUniform, srcX, srcY, srcW, srcH);
+    {
+        glUniform2f(imp()->texSizeUniform, texture->sizeB().w(), texture->sizeB().h());
+    }
     else
     {
-        srcScale = srcScale / float(compositor()->globalScale());
-        glUniform4f(imp()->srcRectUniform,
-                    float(srcX) * srcScale,
-                    float(srcY) * srcScale,
-                    float(srcW) * srcScale,
-                    float(srcH) * srcScale);
+        srcScale = float(compositor()->globalScale()) / srcScale;
+        glUniform2f(imp()->texSizeUniform,
+                    texture->sizeB().w()*srcScale,
+                    texture->sizeB().h()*srcScale);
     }
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
@@ -211,15 +211,18 @@ void LPainter::setViewportC(Int32 x, Int32 y, Int32 w, Int32 h)
     y -= imp()->output->posC().y();
     y = imp()->output->sizeC().h() - y - h;
 
-    x *= imp()->output->scale();
-    y *= imp()->output->scale();
-    w *= imp()->output->scale();
-    h *= imp()->output->scale();
+    if (imp()->output->scale() != compositor()->globalScale())
+    {
+        x *= imp()->output->scale();
+        y *= imp()->output->scale();
+        w *= imp()->output->scale();
+        h *= imp()->output->scale();
 
-    x /= compositor()->globalScale();
-    y /= compositor()->globalScale();
-    w /= compositor()->globalScale();
-    h /= compositor()->globalScale();
+        x /= compositor()->globalScale();
+        y /= compositor()->globalScale();
+        w /= compositor()->globalScale();
+        h /= compositor()->globalScale();
+    }
 
     glScissor(x, y, w, h);
     glViewport(x, y, w, h);

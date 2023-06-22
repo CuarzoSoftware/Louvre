@@ -425,6 +425,11 @@ public:
     static wl_display *display();
 
     /*!
+     * Main wl_event_loop used by the compositor.
+     */
+    static wl_event_loop *eventLoop();
+
+    /*!
      * Add a pollable FD to the compositor's event loop.
      */
     static wl_event_source *addFdListener(int fd, void *userData, int(*callback)(int,unsigned int,void*), UInt32 flags = WL_EVENT_READABLE);

@@ -3,6 +3,8 @@
 
 #include <LBaseSurfaceRole.h>
 
+using namespace Protocols;
+
 /*!
  * @brief Cursor role for surfaces
  *
@@ -70,7 +72,7 @@ public:
 
     LPRIVATE_IMP(LCursorRole)
 
-    virtual void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
+    virtual void handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin) override;
     virtual void handleSurfaceOffset(Int32 x, Int32 y) override;
     void globalScaleChanged(Int32 oldScale, Int32 newScale) override;
 

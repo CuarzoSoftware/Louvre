@@ -149,7 +149,14 @@ const LRegion &LSurface::damagesC() const
 
 void LSurface::setMinimized(bool state)
 {
-    imp()->minimized = state;
+    if (state != minimized())
+    {
+        imp()->minimized = state;
+        minimizedChanged();
+
+        for (LSurface *child : children())
+            child->setMinimized(state);
+    }
 }
 
 void LSurface::repaintOutputs()
@@ -204,28 +211,7 @@ const LPoint &LSurface::posC() const
 const LPoint &LSurface::rolePosC() const
 {
     if (role())
-    {
-        /*
-        LPoint &sp = (LPoint&)role()->rolePosC();
-
-        if (compositor()->globalScale() != 1)
-        {
-            imp()->posC.setX(imp()->posC.x() + sp.x() % compositor()->globalScale());
-            imp()->posC.setY(imp()->posC.y() + sp.y() % compositor()->globalScale());
-        }*/
-
         return role()->rolePosC();
-    }
-
-    /*
-    LPoint &sp = imp()->posC;
-
-    if (compositor()->globalScale() != 1)
-    {
-        imp()->posC.setX(imp()->posC.x() + sp.x() % compositor()->globalScale());
-        imp()->posC.setY(imp()->posC.y() + sp.y() % compositor()->globalScale());
-    }
-    */
 
     return imp()->posC;
 }
@@ -310,7 +296,7 @@ void LSurface::requestNextFrame(bool clearDamage)
 
 bool LSurface::mapped() const
 {
-    return imp()->mapped && roleId() != Undefined && imp()->current.buffer != NULL;
+    return imp()->mapped;
 }
 
 Wayland::RSurface *LSurface::surfaceResource() const

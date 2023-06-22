@@ -174,7 +174,7 @@ public:
      *
      * Optional. Sent before initial configuration.
      */
-    void configureBoundsC(const LSize &bounds);
+    bool configureBoundsC(const LSize &bounds);
 
     /*!
      * @brief Suggested size in surface coordinates.
@@ -472,7 +472,6 @@ public:
     LPRIVATE_IMP(LToplevelRole)
 
     void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
-    void handleParentMappingChange() override;
     void globalScaleChanged(Int32 oldScale, Int32 newScale) override;
 };
 

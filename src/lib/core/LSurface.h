@@ -335,7 +335,7 @@ public:
     /*!
      * @brief Sets the minimized property
      *
-     * Minimize or de-minimize the surface.
+     * Minimize or de-minimize the surface and all its children.
      */
     void setMinimized(bool state);
 
@@ -527,6 +527,7 @@ public:
     virtual void raised();
     virtual void orderChanged();
     virtual void requestedRepaint();
+    virtual void minimizedChanged();
 /// @}
 
     LPRIVATE_IMP(LSurface)

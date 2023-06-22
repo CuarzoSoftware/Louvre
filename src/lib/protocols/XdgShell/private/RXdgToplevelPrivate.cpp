@@ -1,8 +1,6 @@
 #include <protocols/XdgShell/private/RXdgToplevelPrivate.h>
-
 #include <protocols/Wayland/GOutput.h>
 #include <protocols/XdgShell/xdg-shell.h>
-
 #include <private/LToplevelRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 
@@ -25,15 +23,28 @@ void RXdgToplevel::RXdgToplevelPrivate::set_parent(wl_client *client, wl_resourc
 
     if (parent == NULL)
     {
-        if (rXdgToplevel->lToplevelRole()->surface()->parent())
-            rXdgToplevel->lToplevelRole()->surface()->parent()->imp()->removeChild(rXdgToplevel->lToplevelRole()->surface());
+        if (rXdgToplevel->toplevelRole()->surface()->parent())
+            rXdgToplevel->toplevelRole()->surface()->imp()->setParent(nullptr);
     }
     else
     {
         RXdgToplevel *rXdgParentToplevel = (RXdgToplevel*)wl_resource_get_user_data(parent);
 
-        if (rXdgParentToplevel->lToplevelRole()->surface()->mapped())
-            rXdgToplevel->lToplevelRole()->surface()->imp()->setParent(rXdgParentToplevel->lToplevelRole()->surface());
+        // Setting a parent surface that is not mapped = setting null parent
+        if (!rXdgParentToplevel->toplevelRole()->surface()->mapped())
+        {
+            rXdgToplevel->toplevelRole()->surface()->imp()->setParent(nullptr);
+            return;
+        }
+
+        if (rXdgToplevel->toplevelRole()->surface()->imp()->isInChildrenOrPendingChildren(
+                rXdgParentToplevel->toplevelRole()->surface()))
+        {
+            wl_resource_post_error(resource, 0, "Invalid xdg_toplevel parent.");
+            return;
+        }
+
+        rXdgToplevel->toplevelRole()->surface()->imp()->setParent(rXdgParentToplevel->toplevelRole()->surface());
     }
 }
 
@@ -41,14 +52,14 @@ void RXdgToplevel::RXdgToplevelPrivate::set_title(wl_client *client, wl_resource
 {
     L_UNUSED(client);
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
-    rXdgToplevel->lToplevelRole()->imp()->setTitle(title);
+    rXdgToplevel->toplevelRole()->imp()->setTitle(title);
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::set_app_id(wl_client *client, wl_resource *resource, const char *app_id)
 {
     L_UNUSED(client);
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
-    rXdgToplevel->lToplevelRole()->imp()->setAppId(app_id);
+    rXdgToplevel->toplevelRole()->imp()->setAppId(app_id);
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::show_window_menu(wl_client *client, wl_resource *resource, wl_resource *seat, UInt32 serial, Int32 x, Int32 y)
@@ -57,7 +68,7 @@ void RXdgToplevel::RXdgToplevelPrivate::show_window_menu(wl_client *client, wl_r
     L_UNUSED(seat);
     L_UNUSED(serial);
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
-    rXdgToplevel->lToplevelRole()->showWindowMenuRequestS(x, y);
+    rXdgToplevel->toplevelRole()->showWindowMenuRequestS(x, y);
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::move(wl_client *client, wl_resource *resource, wl_resource *seat, UInt32 serial)
@@ -66,7 +77,7 @@ void RXdgToplevel::RXdgToplevelPrivate::move(wl_client *client, wl_resource *res
     L_UNUSED(seat);
     L_UNUSED(serial);
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
-    rXdgToplevel->lToplevelRole()->startMoveRequest();
+    rXdgToplevel->toplevelRole()->startMoveRequest();
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::resize(wl_client *client, wl_resource *resource, wl_resource *seat, UInt32 serial, UInt32 edges)
@@ -82,7 +93,7 @@ void RXdgToplevel::RXdgToplevelPrivate::resize(wl_client *client, wl_resource *r
     }
 
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
-    rXdgToplevel->lToplevelRole()->startResizeRequest((LToplevelRole::ResizeEdge)edges);
+    rXdgToplevel->toplevelRole()->startResizeRequest((LToplevelRole::ResizeEdge)edges);
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::set_max_size(wl_client *client, wl_resource *resource, Int32 width, Int32 height)
@@ -97,9 +108,9 @@ void RXdgToplevel::RXdgToplevelPrivate::set_max_size(wl_client *client, wl_resou
     }
 
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
-    rXdgToplevel->lToplevelRole()->imp()->pendingMaxSizeS.setW(width);
-    rXdgToplevel->lToplevelRole()->imp()->pendingMaxSizeS.setH(height);
-    rXdgToplevel->lToplevelRole()->imp()->hasPendingMaxSize = true;
+    rXdgToplevel->toplevelRole()->imp()->pendingMaxSizeS.setW(width);
+    rXdgToplevel->toplevelRole()->imp()->pendingMaxSizeS.setH(height);
+    rXdgToplevel->toplevelRole()->imp()->hasPendingMaxSize = true;
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::set_min_size(wl_client *client, wl_resource *resource, Int32 width, Int32 height)
@@ -114,23 +125,23 @@ void RXdgToplevel::RXdgToplevelPrivate::set_min_size(wl_client *client, wl_resou
     }
 
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
-    rXdgToplevel->lToplevelRole()->imp()->pendingMinSizeS.setW(width);
-    rXdgToplevel->lToplevelRole()->imp()->pendingMinSizeS.setH(height);
-    rXdgToplevel->lToplevelRole()->imp()->hasPendingMinSize = true;
+    rXdgToplevel->toplevelRole()->imp()->pendingMinSizeS.setW(width);
+    rXdgToplevel->toplevelRole()->imp()->pendingMinSizeS.setH(height);
+    rXdgToplevel->toplevelRole()->imp()->hasPendingMinSize = true;
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::set_maximized(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
-    rXdgToplevel->lToplevelRole()->setMaximizedRequest();
+    rXdgToplevel->toplevelRole()->setMaximizedRequest();
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::unset_maximized(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
-    rXdgToplevel->lToplevelRole()->unsetMaximizedRequest();
+    rXdgToplevel->toplevelRole()->unsetMaximizedRequest();
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::set_fullscreen(wl_client *client, wl_resource *resource, wl_resource *output)
@@ -143,19 +154,19 @@ void RXdgToplevel::RXdgToplevelPrivate::set_fullscreen(wl_client *client, wl_res
     if (output)
         lOutput = ((Wayland::GOutput*)wl_resource_get_user_data(output))->output();
 
-    rXdgToplevel->lToplevelRole()->setFullscreenRequest(lOutput);
+    rXdgToplevel->toplevelRole()->setFullscreenRequest(lOutput);
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::unset_fullscreen(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
-    rXdgToplevel->lToplevelRole()->unsetFullscreenRequest();
+    rXdgToplevel->toplevelRole()->unsetFullscreenRequest();
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::set_minimized(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
-    rXdgToplevel->lToplevelRole()->setMinimizedRequest();
+    rXdgToplevel->toplevelRole()->setMinimizedRequest();
 }

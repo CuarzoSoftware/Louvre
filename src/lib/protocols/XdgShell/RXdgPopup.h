@@ -1,5 +1,5 @@
-#ifndef XDGPOPUP_H
-#define XDGPOPUP_H
+#ifndef RXDGPOPUP_H
+#define RXDGPOPUP_H
 
 #include <LResource.h>
 
@@ -10,19 +10,19 @@ public:
               RXdgSurface *rXdgParentSurface,
               RXdgPositioner *rXdgPositioner,
               UInt32 id);
-
     ~RXdgPopup();
 
-    RXdgSurface *rXdgSurface() const;
-    LPopupRole *lPopupRole() const;
+    RXdgSurface *xdgSurfaceResource() const;
+    LPopupRole *popupRole() const;
 
-    bool configure(Int32 x, Int32 y, Int32 width, Int32 height) const;
-    bool popup_done() const;
+    // Since 1
+    bool configure(Int32 x, Int32 y, Int32 width, Int32 height);
+    bool popupDone();
 
     // Since 3
-    bool repositioned(UInt32 token) const;
+    bool repositioned(UInt32 token);
 
     LPRIVATE_IMP(RXdgPopup)
 };
 
-#endif // XDGPOPUP_H
+#endif // RXDGPOPUP_H

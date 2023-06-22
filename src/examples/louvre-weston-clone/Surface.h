@@ -13,6 +13,7 @@ public:
     Surface(LSurface::Params *params, GLuint textureUnit = 1);
     void mappingChanged() override;
     void orderChanged() override;
+    void minimizedChanged() override;
 
     // Temp variables used in paintGL()
     bool firstMap = true;

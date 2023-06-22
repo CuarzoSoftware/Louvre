@@ -62,19 +62,23 @@ void LSurface::LSurfacePrivate::setMapped(bool state)
 {
     LSurface *surface = surfaceResource->surface();
 
-    bool before = surface->mapped();
-
-    mapped = state;
-
-    if (before != surface->mapped())
+    if (mapped != state)
     {
+        mapped = state;
+
         surface->mappingChanged();
+
+        /* We create a copy of the childrens list
+         * because a child could be removed
+         * when handleParentMappingChange() is called */
         list<LSurface*> childrenTmp = children;
 
         for (LSurface *c : childrenTmp)
         {
             if (c->role())
                 c->role()->handleParentMappingChange();
+            else if (c->imp()->pending.role)
+                c->imp()->pending.role->handleParentMappingChange();
         }
     }
 }
@@ -182,16 +186,37 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         {
             LRegion onlyPending;
 
-            while (!pendingDamagesS.empty())
+            if (surface->imp()->current.bufferScale != compositor()->globalScale())
             {
-                onlyPending.addRect(pendingDamagesS.back()*surface->imp()->current.bufferScale);
-                pendingDamagesS.pop_back();
-            }
+                while (!pendingDamagesS.empty())
+                {
+                    pendingDamagesS.back().setPos(pendingDamagesS.back().pos() - LPoint(surface->imp()->current.bufferScale));
+                    pendingDamagesS.back().setSize(pendingDamagesS.back().size() + LPoint(2*surface->imp()->current.bufferScale));
+                    onlyPending.addRect(pendingDamagesS.back()*surface->imp()->current.bufferScale);
+                    pendingDamagesS.pop_back();
+                }
 
-            while (!pendingDamagesB.empty())
+                while (!pendingDamagesB.empty())
+                {
+                    pendingDamagesB.back().setPos(pendingDamagesB.back().pos() - LPoint(surface->imp()->current.bufferScale));
+                    pendingDamagesB.back().setSize(pendingDamagesB.back().size() + LPoint(2*surface->imp()->current.bufferScale));
+                    onlyPending.addRect(pendingDamagesB.back());
+                    pendingDamagesB.pop_back();
+                }
+            }
+            else
             {
-                onlyPending.addRect(pendingDamagesB.back());
-                pendingDamagesB.pop_back();
+                while (!pendingDamagesS.empty())
+                {
+                    onlyPending.addRect(pendingDamagesS.back()*surface->imp()->current.bufferScale);
+                    pendingDamagesS.pop_back();
+                }
+
+                while (!pendingDamagesB.empty())
+                {
+                    onlyPending.addRect(pendingDamagesB.back());
+                    pendingDamagesB.pop_back();
+                }
             }
 
             onlyPending.clip(LRect(0, texture->sizeB()));

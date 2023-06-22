@@ -24,6 +24,8 @@ class Louvre::LPopupRole : public LBaseSurfaceRole
 public:
     struct Params;
 
+    bool isTopmostPopup() const;
+
     /*!
      * @brief Constructor for LPopupRole class.
      * @param params Internal library parameters provided in the virtual LCompositor::createPopupRoleRequest() constructor.
@@ -104,7 +106,7 @@ public:
      *
      * @param rect Suggested position and size.
      */
-    void configureC(const LRect &rect);
+    void configureC(const LRect &rect) const;
 
     /*!
      * @brief Dimisses the Popup.
@@ -192,10 +194,8 @@ public:
      */
     virtual void configureRequest();
 
-#if LOUVRE_XDG_WM_BASE_VERSION >= 3
-
     /*!
-     * @brief Repositioning request.
+     * @brief Repositioning request (since 3).
      *
      * Request from a Popup for the compositor to reposition it using a new LPositioner.
      * Once repositioned, the sendRepositionedEvent() event should be sent, passing the same token given in the argument.
@@ -205,7 +205,6 @@ public:
      * @snippet LPopupRoleDefault.cpp repositionRequest
      */
     virtual void repositionRequest(UInt32 token);
-#endif
 ///@}
 
     LPRIVATE_IMP(LPopupRole)

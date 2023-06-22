@@ -11,6 +11,12 @@ class Output : public LOutput
 public:
     Output();
 
+    Int32 topbarHeight;
+    LTexture *terminalIconTexture = nullptr;
+    LRect terminalIconRectC;
+    Float32 terminalIconAlpha = 1.0f;
+    Float32 terminalIconAlphaPrev = 1.0f;
+
     void fullDamage();
     void initializeGL() override;
     void resizeGL() override;
@@ -23,6 +29,10 @@ public:
 
     // Almacena recta del cursor (si no es posible composición por hardware)
     LRect cursorRectG[2];
+
+    LSurface *fullscreenSurface = nullptr;
+    bool redrawClock = true;
+    LRect dstClockRect;
 };
 
 #endif // OUTPUT_H

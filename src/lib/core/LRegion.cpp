@@ -1,5 +1,4 @@
-#include "LRegion.h"
-#include <stdio.h>
+#include <LRegion.h>
 #include <pixman.h>
 
 using namespace Louvre;
@@ -93,27 +92,25 @@ void LRegion::multiply(Float32 factor)
             pixman_region32_union_rect(
                         &tmp,
                         &tmp,
-                        rects[i].x1 << 1,
-                        rects[i].y1 << 1,
-                        (rects[i].x2 - rects[i].x1) << 1,
-                        (rects[i].y2 - rects[i].y1) << 1);
+                        rects->x1 << 1,
+                        rects->y1 << 1,
+                        (rects->x2 - rects->x1) << 1,
+                        (rects->y2 - rects->y1) << 1);
+            rects++;
         }
     }
     else
     {
         for (int i = 0; i < n; i++)
         {
-            int x = rects[i].x1 * factor;
-            int y = rects[i].y1 * factor;
-            int w = (rects[i].x2 - rects[i].x1) * factor;
-            int h = (rects[i].y2 - rects[i].y1) * factor;
             pixman_region32_union_rect(
-                        &tmp,
-                        &tmp,
-                        x,
-                        y,
-                        w,
-                        h);
+                &tmp,
+                &tmp,
+                floor(float(rects->x1) * factor),
+                floor(float(rects->y1) * factor),
+                ceil(float(rects->x2 - rects->x1) * factor),
+                ceil(float(rects->y2 - rects->y1) * factor));
+            rects++;
         }
     }
 

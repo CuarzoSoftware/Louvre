@@ -129,6 +129,7 @@ void LPointer::sendButtonEvent(Button button, ButtonState state)
         {
             UInt32 serial = LCompositor::nextSerial();
             UInt32 ms = LTime::ms();
+            s->pointerResource()->imp()->serials.button = serial;
             s->pointerResource()->button(serial, ms, button, state);
             s->pointerResource()->frame();
         }

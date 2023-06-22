@@ -25,7 +25,7 @@ void RSurface::RSurfacePrivate::attach(wl_client *client, wl_resource *resource,
     RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
     LSurface *lSurface = rSurface->surface();
 
-    lSurface->imp()->atached = true;
+    lSurface->imp()->attached = true;
 
     if (lSurface->role())
         lSurface->role()->handleSurfaceBufferAttach(buffer, x, y);
@@ -86,14 +86,14 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
             s->role()->handleParentCommit();
     }
 
-    if (surface->imp()->atached)
+    if (surface->imp()->attached)
     {
         surface->imp()->current.buffer = surface->imp()->pending.buffer;
 
         if (surface->imp()->current.buffer)
             surface->imp()->bufferReleased = false;
 
-        surface->imp()->atached = false;
+        surface->imp()->attached = false;
     }
 
     // Send done to already commited callbacks
@@ -116,6 +116,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
     {
         if (!surface->imp()->bufferReleased)
         {
+            // Returns false on wl_client destroy
             if (!surface->imp()->bufferToTexture())
             {
                 LLog::error("[surface] Failed to convert buffer to OpenGL texture.");
@@ -200,6 +201,8 @@ void RSurface::RSurfacePrivate::damage(wl_client *client, wl_resource *resource,
     RSurface *lRSurface = (RSurface*)wl_resource_get_user_data(resource);
     LSurface *lSurface = lRSurface->surface();
 
+    // Ignore rects with invalid or insane sizes
+
     if (width > LOUVRE_MAX_SURFACE_SIZE)
         width = LOUVRE_MAX_SURFACE_SIZE;
     if (width <= 0)
@@ -209,24 +212,6 @@ void RSurface::RSurfacePrivate::damage(wl_client *client, wl_resource *resource,
         height = LOUVRE_MAX_SURFACE_SIZE;
     if (height <= 0)
         return;
-    /*
-    if (compositor()->globalScale() != 1 || width <= compositor()->globalScale() || height <= compositor()->globalScale())
-    {
-        x--;
-        y--;
-
-        width+=2;
-        height+=2;
-
-        int modX = x % compositor()->globalScale();
-        int modY = y % compositor()->globalScale();
-
-        x -= modX;
-        y -= modY;
-
-        width += width % compositor()->globalScale() + modX;
-        height += height % compositor()->globalScale() + modY;
-    }*/
 
     lSurface->imp()->pendingDamagesS.push_back(LRect(x, y, width, height));
     lSurface->imp()->damagesChanged = true;
@@ -304,6 +289,8 @@ void RSurface::RSurfacePrivate::damage_buffer(wl_client *client, wl_resource *re
 {
     L_UNUSED(client);
 
+    // Ignore rects with invalid or insane sizes
+
     if (width > LOUVRE_MAX_SURFACE_SIZE)
         width = LOUVRE_MAX_SURFACE_SIZE;
     if (width <= 0)
@@ -316,16 +303,6 @@ void RSurface::RSurfacePrivate::damage_buffer(wl_client *client, wl_resource *re
 
     RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
     LSurface *lSurface = rSurface->surface();
-
-    /*
-    if (compositor()->globalScale() != 1 || width <= compositor()->globalScale() || height <= compositor()->globalScale())
-    {
-        x -= x % compositor()->globalScale();
-        y -= y % compositor()->globalScale();
-        width += width % compositor()->globalScale() + x % compositor()->globalScale();
-        height += height % compositor()->globalScale() + y % compositor()->globalScale();
-    }*/
-
     lSurface->imp()->pendingDamagesB.push_back(LRect(x, y, width, height));
     lSurface->imp()->damagesChanged = true;
 }

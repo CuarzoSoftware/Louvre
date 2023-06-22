@@ -16,8 +16,11 @@ LBaseSurfaceRole::~LBaseSurfaceRole()
 {
     if (m_baseImp->surface)
     {
-        m_baseImp->surface->imp()->setPendingRole(nullptr);
-        m_baseImp->surface->imp()->applyPendingRole();
+        LSurface *surface = m_baseImp->surface;
+        m_baseImp->surface = nullptr;
+        surface->imp()->setPendingRole(nullptr);
+        surface->imp()->applyPendingRole();
+        surface->imp()->setMapped(false);
     }
 
     delete m_baseImp;
@@ -59,6 +62,8 @@ bool LBaseSurfaceRole::acceptCommitRequest(Wayland::RSurface::CommitOrigin origi
 
 void LBaseSurfaceRole::handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin)
 {
+    L_UNUSED(origin);
+
     /* No default implementation */
 }
 

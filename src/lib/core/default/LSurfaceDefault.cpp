@@ -84,3 +84,8 @@ void LSurface::requestedRepaint()
 {
     repaintOutputs();
 }
+
+void LSurface::minimizedChanged()
+{
+    repaintOutputs();
+}

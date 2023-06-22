@@ -58,7 +58,7 @@ static void checkMapping(LSurface *surface)
 {
     surface->imp()->setMapped(surface->parent() &&
                                 surface->parent()->mapped() &&
-                                surface->imp()->pending.buffer);
+                                surface->buffer());
 }
 
 void LSubsurfaceRole::handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin)

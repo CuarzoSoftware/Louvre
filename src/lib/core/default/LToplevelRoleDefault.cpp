@@ -21,14 +21,16 @@ const LPoint &LToplevelRole::rolePosC() const
 //! [startMoveRequest]
 void LToplevelRole::startMoveRequest()
 {
-    seat()->pointer()->startMovingToplevelC(this);
+    if (seat()->pointer()->focusSurface() == surface())
+        seat()->pointer()->startMovingToplevelC(this);
 }
 //! [startMoveRequest]
 
 //! [startResizeRequest]
 void LToplevelRole::startResizeRequest(ResizeEdge edge)
 {
-    seat()->pointer()->startResizingToplevelC(this, edge);
+    if (seat()->pointer()->focusSurface() == surface())
+        seat()->pointer()->startResizingToplevelC(this, edge);
 }
 //! [startResizeRequest]
 
@@ -37,19 +39,11 @@ void LToplevelRole::configureRequest()
 {
     LOutput *output = compositor()->cursor()->output();
 
-    #if LOUVRE_XDG_WM_BASE_VERSION >= 5
-
     // Notifies the compositor's capabilities
     setWmCapabilities(WmCapabilities::WmWindowMenu | WmCapabilities::WmMinimize | WmCapabilities::WmMaximize | WmCapabilities::WmFullscreen);
 
-    #endif
-
-    #if LOUVRE_XDG_WM_BASE_VERSION >= 4
-
     // Suggests to the Toplevel not to use a size larger than the output where the cursor is located
     configureBoundsC(output->sizeC());
-
-    #endif
 
     // Activates the Toplevel with size (0,0) so that the client can decide the size
     configureC(LSize(0,0), states() | LToplevelRole::Activated);
@@ -189,7 +183,6 @@ void LToplevelRole::setFullscreenRequest(LOutput *destOutput)
     else
         output = compositor()->cursor()->output();
 
-
     configureC(output->sizeC(), LToplevelRole::Activated | LToplevelRole::Fullscreen);
 }
 //! [setFullscreenRequest]
@@ -199,5 +192,8 @@ void LToplevelRole::showWindowMenuRequestS(Int32 x, Int32 y)
 {
     L_UNUSED(x);
     L_UNUSED(y);
+
+    /* Here the compositor should render a context menu showing
+     * the minimize, maximize and fullscreen options */
 }
 //! [showWindowMenuRequestS]

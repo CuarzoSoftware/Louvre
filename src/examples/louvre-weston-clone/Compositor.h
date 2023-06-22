@@ -2,6 +2,8 @@
 #define COMPOSITOR_H
 
 #include <LCompositor.h>
+#include <LXCursor.h>
+#include "Clock.h"
 
 using namespace Louvre;
 
@@ -17,7 +19,11 @@ public:
     LPointer *createPointerRequest(LPointer::Params *params) override;
 
     void destroySurfaceRequest(LSurface *surface) override;
-    LSurface *fullscreenSurface = nullptr;
+
+    void cursorInitialized() override;
+
+    LXCursor *pointerCursor = nullptr;
+    Clock *clock = nullptr;
 };
 
 #endif // COMPOSITOR_H

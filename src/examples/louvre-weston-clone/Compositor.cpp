@@ -25,8 +25,14 @@ LSurface *Compositor::createSurfaceRequest(LSurface::Params *params)
 
 void Compositor::destroySurfaceRequest(LSurface *s)
 {
-    if (s == fullscreenSurface)
-        fullscreenSurface = nullptr;
+    for (Output *output : (std::list<Output*>&)outputs())
+        if (s == output->fullscreenSurface)
+            output->fullscreenSurface = nullptr;
+}
+
+void Compositor::cursorInitialized()
+{
+    pointerCursor = LXCursor::loadXCursorB("hand2");
 }
 
 LToplevelRole *Compositor::createToplevelRoleRequest(LToplevelRole::Params *params)
@@ -41,5 +47,5 @@ LPopupRole *Compositor::createPopupRoleRequest(LPopupRole::Params *params)
 
 LPointer *Compositor::createPointerRequest(LPointer::Params *params)
 {
-    return new LPointer(params);
+    return new Pointer(params);
 }

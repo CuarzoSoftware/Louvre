@@ -1,3 +1,4 @@
+#include "LLog.h"
 #include <private/LXCursorPrivate.h>
 #include <LTexture.h>
 #include <X11/Xcursor/Xcursor.h>
@@ -9,16 +10,28 @@ LXCursor *LXCursor::loadXCursorB(const char *cursor, const char *theme, Int32 su
     XcursorImage *x11Cursor =  XcursorLibraryLoadImage(cursor, theme, suggestedSize);
 
     if (!x11Cursor)
+    {
+        LLog::error("Failed to load X Cursor.");
         return nullptr;
+    }
 
     LXCursor *newCursor = new LXCursor();
-    newCursor->imp()->hotspotB.setX(x11Cursor->xhot);
-    newCursor->imp()->hotspotB.setY(x11Cursor->yhot);
+    newCursor->imp()->hotspotB.setX((Int32)x11Cursor->xhot);
+    newCursor->imp()->hotspotB.setY((Int32)x11Cursor->yhot);
     newCursor->imp()->texture = new LTexture(textureUnit);
-    newCursor->imp()->texture->setDataB(LSize((Int32)x11Cursor->width, (Int32)x11Cursor->height),
-                                        x11Cursor->width * 4,
-                                        DRM_FORMAT_ABGR8888,
-                                        x11Cursor->pixels);
+
+    if (!newCursor->imp()->texture->setDataB(LSize((Int32)x11Cursor->width,
+                                                   (Int32)x11Cursor->height),
+                                                    x11Cursor->width * 4,
+                                                    DRM_FORMAT_ABGR8888,
+                                                    x11Cursor->pixels))
+    {
+        LLog::error("Failed to create texture from X Cursor.");
+        delete newCursor;
+        XcursorImageDestroy(x11Cursor);
+        return nullptr;
+    }
+
     XcursorImageDestroy(x11Cursor);
     return newCursor;
 }

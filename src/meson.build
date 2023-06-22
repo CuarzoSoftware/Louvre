@@ -26,7 +26,8 @@ include_paths_sys = [
     '/usr/local/include',
     '/usr/include/drm',
     '/usr/include/libdrm',
-    '/usr/include/pixman-1'
+    '/usr/include/pixman-1',
+    '/usr/include/freetype2'
 ]
 
 foreach p : include_paths_sys

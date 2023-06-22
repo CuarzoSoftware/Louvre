@@ -44,11 +44,15 @@ void LDNDIconRole::handleSurfaceOffset(Int32 x, Int32 y)
 
 void LDNDIconRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin)
 {
+    L_UNUSED(origin);
+
     imp()->currentHotspotS -= imp()->pendingHotspotOffsetS;
     imp()->pendingHotspotOffsetS = LPoint();
     imp()->currentHotspotC = imp()->currentHotspotS * compositor()->globalScale();
     imp()->currentHotspotB = imp()->currentHotspotS * surface()->bufferScale();
     hotspotChanged();
+
+    surface()->imp()->setMapped(surface()->buffer() != nullptr);
 }
 
 void LDNDIconRole::globalScaleChanged(Int32 oldScale, Int32 newScale)

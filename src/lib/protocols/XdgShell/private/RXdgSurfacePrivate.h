@@ -1,11 +1,10 @@
-#ifndef RXDGSURFACE_H
-#define RXDGSURFACE_H
+#ifndef RXDGSURFACEPRIVATE_H
+#define RXDGSURFACEPRIVATE_H
 
 #include <protocols/XdgShell/RXdgSurface.h>
 #include <LRect.h>
 
 using namespace Louvre::Protocols::XdgShell;
-using namespace std;
 
 LPRIVATE_CLASS(RXdgSurface)
     static void resource_destroy(wl_resource *resource);
@@ -17,7 +16,7 @@ LPRIVATE_CLASS(RXdgSurface)
 
     GXdgWmBase *gXdgWmBase = nullptr;
     LSurface *lSurface = nullptr;
-    list<RXdgSurface*>::iterator xdgWmBaseLink;
+    std::list<RXdgSurface*>::iterator xdgWmBaseLink;
 
     bool windowGeometrySet = false;
     LRect pendingWindowGeometryS;
@@ -29,4 +28,4 @@ LPRIVATE_CLASS(RXdgSurface)
     RXdgToplevel *rXdgToplevel = nullptr;
 };
 
-#endif // RXDGSURFACE_H
+#endif // RXDGSURFACEPRIVATE_H

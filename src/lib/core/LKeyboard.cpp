@@ -1,11 +1,9 @@
 #include <protocols/Wayland/private/RKeyboardPrivate.h>
 #include <protocols/Wayland/GSeat.h>
-
 #include <private/LSeatPrivate.h>
 #include <private/LClientPrivate.h>
 #include <private/LDataDevicePrivate.h>
 #include <private/LKeyboardPrivate.h>
-
 #include <LObject.h>
 #include <LCompositor.h>
 #include <LDNDManager.h>
@@ -14,7 +12,6 @@
 #include <LOutput.h>
 #include <LTime.h>
 #include <LLog.h>
-
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -267,6 +264,7 @@ void LKeyboard::setFocus(LSurface *surface)
         }
         imp()->keyboardFocusSurface = nullptr;
     }
+
 }
 
 void LKeyboard::sendKeyEvent(UInt32 keyCode, UInt32 keyState)

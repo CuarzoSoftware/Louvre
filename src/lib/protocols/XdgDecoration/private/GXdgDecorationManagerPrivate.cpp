@@ -48,9 +48,9 @@ void GXdgDecorationManager
     XdgShell::RXdgToplevel *rXdgToplevelRole = (XdgShell::RXdgToplevel*)wl_resource_get_user_data(toplevel);
 
     // Prevent client from creating more than one resource for a given Toplevel
-    if (rXdgToplevelRole->lToplevelRole()->imp()->xdgDecoration)
+    if (rXdgToplevelRole->toplevelRole()->imp()->xdgDecoration)
         return;
 
     GXdgDecorationManager *gXdgDecorationManager = (GXdgDecorationManager*)wl_resource_get_user_data(resource);
-    new RXdgToplevelDecoration(gXdgDecorationManager, rXdgToplevelRole->lToplevelRole(), id);
+    new RXdgToplevelDecoration(gXdgDecorationManager, rXdgToplevelRole->toplevelRole(), id);
 }

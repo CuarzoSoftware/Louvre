@@ -104,9 +104,7 @@ void LToplevelRole::setWmCapabilities(UChar8 capabilitiesFlags)
     }
 #endif
 
-    if (res->wm_capabilities(&dummy))
-        configureC(states());
-
+    res->wmCapabilities(&dummy);
     wl_array_release(&dummy);
 }
 
@@ -139,7 +137,7 @@ void LToplevelRole::setDecorationMode(DecorationMode mode)
 
     XdgShell::RXdgToplevel *res = (XdgShell::RXdgToplevel*)resource();
 
-    if (!imp()->xdgDecoration || !res->rXdgSurface())
+    if (!imp()->xdgDecoration || !res->xdgSurfaceResource())
         return;
 
     imp()->xdgDecoration->configure(mode);
@@ -157,83 +155,12 @@ RXdgToplevel *LToplevelRole::xdgToplevelResource() const
 
 RXdgSurface *LToplevelRole::xdgSurfaceResource() const
 {
-    return xdgToplevelResource()->rXdgSurface();
+    return xdgToplevelResource()->xdgSurfaceResource();
 }
 
 void LToplevelRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin)
 {
-    // Commit inicial para asignar rol
-    if (surface()->imp()->pending.role)
-    {
-        if (surface()->buffer())
-        {
-            wl_resource_post_error(resource()->resource(), XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface already has a buffer attached.");
-            return;
-        }
-
-        surface()->imp()->applyPendingRole();
-        configureRequest();
-        return;
-    }
-
-    // Solicita volver a mapear
-    if (!surface()->mapped() && !surface()->buffer())
-    {
-        configureRequest();
-        return;
-    }
-
-    // Solicita desmapear
-    if (surface()->mapped() && !surface()->buffer())
-    {
-
-        surface()->imp()->setMapped(false);
-
-        surface()->imp()->setParent(nullptr);
-
-        if (seat()->pointer()->movingToplevel() == this)
-            seat()->pointer()->stopMovingToplevel();
-
-        if (seat()->pointer()->resizingToplevel() == this)
-            seat()->pointer()->stopResizingToplevel();
-
-        if (seat()->activeToplevel() == this)
-            seat()->imp()->activeToplevel = nullptr;
-
-        // Clean Up
-        imp()->setAppId("");
-        imp()->setTitle("");
-        imp()->stateFlags = NoState;
-        imp()->currentConf.commited = false;
-        imp()->currentConf.sizeS = LSize();
-        imp()->currentConf.flags = NoState;
-        imp()->currentConf.serial = 0;
-        imp()->sentConfs.clear();
-        imp()->hasPendingMinSize = false;
-        imp()->hasPendingMaxSize = false;
-        imp()->currentMinSizeS = LSize();
-        imp()->currentMinSizeC = LSize();
-        imp()->pendingMinSizeS = LSize();
-        imp()->currentMaxSizeS = LSize();
-        imp()->currentMaxSizeC = LSize();
-        imp()->pendingMaxSizeS = LSize();
-
-        XdgShell::RXdgToplevel *rXdgToplevel = (XdgShell::RXdgToplevel*)resource();
-        rXdgToplevel->rXdgSurface()->imp()->hasPendingWindowGeometry = false;
-        rXdgToplevel->rXdgSurface()->imp()->windowGeometrySet = false;
-        rXdgToplevel->rXdgSurface()->imp()->pendingWindowGeometryS = LRect();
-        rXdgToplevel->rXdgSurface()->imp()->currentWindowGeometryS = LRect();
-        rXdgToplevel->rXdgSurface()->imp()->currentWindowGeometryC = LRect();
-
-        // Since 4
-        imp()->boundsC = LSize();
-        imp()->boundsS = LSize();
-
-        // Since 5
-        imp()->wmCapabilities = 0;
-
-        return;
-    }
+    L_UNUSED(origin);
 
     // Cambios double-buffered
 
@@ -286,7 +213,7 @@ void LToplevelRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrig
             if (seat()->activeToplevel() && seat()->activeToplevel() != this)
             {
                 seat()->activeToplevel()->configureC(seat()->activeToplevel()->windowGeometryC().size(),
-                                                         seat()->activeToplevel()->states() & ~LToplevelRole::Activated);
+                                                     seat()->activeToplevel()->states() & ~LToplevelRole::Activated);
             }
 
             seat()->imp()->activeToplevel = this;
@@ -295,18 +222,88 @@ void LToplevelRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrig
         if ((prevState & LToplevelRole::Activated) != (imp()->currentConf.flags & LToplevelRole::Activated))
             activatedChanged();
     }
+    // Commit inicial para asignar rol
+    if (surface()->imp()->pending.role)
+    {
+        if (surface()->buffer())
+        {
+            wl_resource_post_error(resource()->resource(), XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface already has a buffer attached.");
+            return;
+        }
 
-    // Si no estaba mapeada y añade buffer la mappeamos
+        surface()->imp()->applyPendingRole();
+        configureRequest();
+        return;
+    }
+
+    // Request configure
+    if (!surface()->mapped() && !surface()->buffer())
+    {
+        configureRequest();
+        return;
+    }
+
+    // Request unmap
+    if (surface()->mapped() && !surface()->buffer())
+    {
+        surface()->imp()->setMapped(false);
+
+        // If a surface becomes unmapped, its children's parent is set to the parent of the now-unmapped surface
+        for (LSurface *c : surface()->children())
+            c->imp()->setParent(surface()->parent());
+
+        surface()->imp()->setParent(nullptr);
+
+        if (seat()->pointer()->movingToplevel() == this)
+            seat()->pointer()->stopMovingToplevel();
+
+        if (seat()->pointer()->resizingToplevel() == this)
+            seat()->pointer()->stopResizingToplevel();
+
+        if (seat()->activeToplevel() == this)
+            seat()->imp()->activeToplevel = nullptr;
+
+        // Clean Up
+        imp()->setAppId("");
+        imp()->setTitle("");
+        imp()->stateFlags = NoState;
+        imp()->currentConf.commited = false;
+        imp()->currentConf.sizeS = LSize();
+        imp()->currentConf.flags = NoState;
+        imp()->currentConf.serial = 0;
+        imp()->sentConfs.clear();
+        imp()->hasPendingMinSize = false;
+        imp()->hasPendingMaxSize = false;
+        imp()->currentMinSizeS = LSize();
+        imp()->currentMinSizeC = LSize();
+        imp()->pendingMinSizeS = LSize();
+        imp()->currentMaxSizeS = LSize();
+        imp()->currentMaxSizeC = LSize();
+        imp()->pendingMaxSizeS = LSize();
+
+        XdgShell::RXdgToplevel *rXdgToplevel = (XdgShell::RXdgToplevel*)resource();
+        rXdgToplevel->xdgSurfaceResource()->imp()->hasPendingWindowGeometry = false;
+        rXdgToplevel->xdgSurfaceResource()->imp()->windowGeometrySet = false;
+        rXdgToplevel->xdgSurfaceResource()->imp()->pendingWindowGeometryS = LRect();
+        rXdgToplevel->xdgSurfaceResource()->imp()->currentWindowGeometryS = LRect();
+        rXdgToplevel->xdgSurfaceResource()->imp()->currentWindowGeometryC = LRect();
+
+        // Since 4
+        imp()->boundsC = LSize();
+        imp()->boundsS = LSize();
+
+        // Since 5
+        imp()->wmCapabilities = 0;
+
+        return;
+    }
+
+    // Request map
     if (!surface()->mapped() && surface()->buffer())
+    {
         surface()->imp()->setMapped(true);
-}
-
-void LToplevelRole::handleParentMappingChange()
-{
-    // Si el padre deja de estar mapeado, pasamos a ser hijos de su padre o de nullptr
-    if (!surface()->parent()->mapped())
-        surface()->imp()->setParent(surface()->parent()->parent());
-
+        return;
+    }
 }
 
 void LToplevelRole::globalScaleChanged(Int32 oldScale, Int32 newScale)
@@ -432,10 +429,10 @@ void LToplevelRole::configureC(Int32 width, Int32 height, UInt32 stateFlags)
     res->configure(conf.sizeS.w(), conf.sizeS.h(), &dummy);
     wl_array_release(&dummy);
 
-    if (res->rXdgSurface())
+    if (res->xdgSurfaceResource())
     {
         imp()->lastDecorationModeConfigureSerial = conf.serial;
-        res->rXdgSurface()->configure(conf.serial);
+        res->xdgSurfaceResource()->configure(conf.serial);
     }
 }
 
@@ -455,18 +452,14 @@ const LRect &LToplevelRole::windowGeometryC() const
     return xdgSurfaceResource()->imp()->currentWindowGeometryC;
 }
 
-void LToplevelRole::configureBoundsC(const LSize &bounds)
+bool LToplevelRole::configureBoundsC(const LSize &bounds)
 {
     XdgShell::RXdgToplevel *res = (XdgShell::RXdgToplevel*)resource();
 
     imp()->boundsC = bounds;
     imp()->boundsS = bounds/compositor()->globalScale();
 
-    if (res->configure_bounds(imp()->boundsS.w() / compositor()->globalScale(),
-                              imp()->boundsS.h() / compositor()->globalScale()))
-    {
-        configureC(states());
-    }
+    return res->configureBounds(imp()->boundsS.w(), imp()->boundsS.h());
 }
 
 const LSize &LToplevelRole::boundsS() const
