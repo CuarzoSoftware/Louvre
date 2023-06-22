@@ -92,9 +92,9 @@ void Output::paintGL()
     {
         redrawClock = false;
         newDamage.addRect(dstClockRect);
-        dstClockRect.setH(c->clock->texture->sizeB().h() / c->globalScale());
-        dstClockRect.setW(c->clock->texture->sizeB().w() / c->globalScale());
-        dstClockRect.setY(rectC().y() + 3.5f*c->globalScale());
+        dstClockRect.setH((32 - 16) * c->globalScale());
+        dstClockRect.setW( float(c->clock->texture->sizeB().w()) * float(dstClockRect.h()) / float(c->clock->texture->sizeB().h()));
+        dstClockRect.setY(rectC().y() + 9*c->globalScale());
         dstClockRect.setX(rectC().x() + rectC().w() - dstClockRect.w() - 14*c->globalScale());
         newDamage.addRect(dstClockRect);
     }

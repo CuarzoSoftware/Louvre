@@ -193,13 +193,12 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
         /* We save the pointer focus surface in order to continue sending events to it even when the cursor
          * is outside of it (while the left button is being held down)*/
         setDragginSurface(focusSurface());
-        seat()->keyboard()->setFocus(focusSurface());
+
+        if (!seat()->keyboard()->focusSurface() || (focusSurface()->client() != seat()->keyboard()->focusSurface()->client()))
+            seat()->keyboard()->setFocus(focusSurface());
 
         if (focusSurface()->toplevel() && !focusSurface()->toplevel()->activated())
             focusSurface()->toplevel()->configureC(focusSurface()->toplevel()->states() | LToplevelRole::Activated);
-
-        if (!focusSurface()->popup())
-            dismissPopups();
 
         // Raise surface
         if (focusSurface() == compositor()->surfaces().back())

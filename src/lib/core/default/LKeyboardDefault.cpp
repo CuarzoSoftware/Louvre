@@ -46,7 +46,23 @@ void LKeyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
             }
         }
 
-        if (L_CTRL && keySymbol(keyCode) == XKB_KEY_q)
+        else if (L_SHIFT + L_CTRL && keySymbol(keyCode) == XKB_KEY_Down)
+        {
+            const LOutputMode *mode = cursor()->output()->currentMode();
+            bool found = false;
+            for (LOutputMode *m : *cursor()->output()->modes())
+            {
+                if (found)
+                {
+                    cursor()->output()->setMode(m);
+                    break;
+                }
+                if (mode == m)
+                    found = true;
+            }
+        }
+
+        else if (L_CTRL && keySymbol(keyCode) == XKB_KEY_q)
         {
             if (focusSurface())
             {
@@ -54,7 +70,7 @@ void LKeyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
             }
         }
 
-        // CTRL + SHIFT + ESC : Kils the compositor.
+        // CTRL + SHIFT + ESC : Kills the compositor.
         else if (keyCode == KEY_ESC && L_CTRL && L_SHIFT)
         {
             LLog::warning("Killing compositor.");

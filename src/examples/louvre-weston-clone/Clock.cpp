@@ -9,7 +9,7 @@
 
 Clock::Clock()
 {
-    loadedFont = loadFont("Consolas");
+    loadedFont = loadFont("Arial");
 
     if (loadedFont)
     {
@@ -78,12 +78,11 @@ void Clock::updateClockTexture()
     if (!texture)
         texture = new LTexture();
 
-    Int32 fontSize = (32 - 6) * LCompositor::compositor()->globalScale();
+    Int32 fontSize = 2*(32 - 16) * LCompositor::compositor()->globalScale();
     updateClockText();
 
     FT_UInt charIndex;
 
-    Int64 bbox_ymax;
     Int64 glyph_width;
     Int64 advance;
     Int64 x_off;
@@ -103,7 +102,6 @@ void Clock::updateClockTexture()
     }
 
     bufferHeight = (face->size->metrics.ascender >> 6) - (face->size->metrics.descender >> 6);
-    bufferHeight += face->size->metrics.height >> 6;
 
     // Calc buffer width
     char *character = text;
@@ -132,7 +130,9 @@ void Clock::updateClockTexture()
     }
 
     if (bufferHeight*bufferWidth > 0)
+    {
         buffer = (UChar8*)calloc(1, bufferWidth*bufferHeight*4);
+    }
     else
     {
         delete texture;
@@ -165,11 +165,10 @@ void Clock::updateClockTexture()
             return;
         }
 
-        bbox_ymax = face->bbox.yMax / 64;
         glyph_width = face->glyph->metrics.width / 64;
         advance = face->glyph->metrics.horiAdvance / 64;
         x_off = (advance - glyph_width) / 2;
-        y_off = bbox_ymax - face->glyph->metrics.horiBearingY/64 + (face->size->metrics.ascender >> 6);
+        y_off = face->size->metrics.ascender/64 - face->glyph->metrics.horiBearingY/64;
 
         FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
 
