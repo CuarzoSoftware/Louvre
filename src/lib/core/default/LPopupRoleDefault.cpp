@@ -1,4 +1,4 @@
-#include "LLog.h"
+#include <protocols/Wayland/GSeat.h>
 #include <private/LPopupRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LBaseSurfaceRolePrivate.h>
@@ -465,12 +465,11 @@ void LPopupRole::pong(UInt32)
 //! [pong]
 
 //! [grabSeatRequest]
-void LPopupRole::grabSeatRequest()
+void LPopupRole::grabSeatRequest(Wayland::GSeat *seatGlobal)
 {
-    /* This is only called if the parent surface has keyboard or pointer focus.
-     * Otherwise the popup is dismissed.*/
-    if (surface()  && surface()->parent() && surface()->parent()->popup())
-        seat()->keyboard()->setFocus(surface());
+    /* The library internally verifies that this request has been
+     * originated from some client event, such as a click or key press*/
+    seat()->keyboard()->setGrabbingSurface(surface(), seatGlobal->keyboardResource());
 }
 //! [grabSeatRequest]
 

@@ -4,7 +4,6 @@
 #include <protocols/LinuxDMABuf/RLinuxBufferParams.h>
 
 using namespace Louvre::Protocols::LinuxDMABuf;
-using namespace std;
 
 LPRIVATE_CLASS(RLinuxBufferParams)
     static void resource_destroy(wl_resource *resource);

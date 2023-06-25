@@ -150,6 +150,7 @@ void LPopupRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin 
     if (surface()->mapped() && !surface()->buffer())
     {
         surface()->imp()->setMapped(false);
+        surface()->imp()->setKeyboardGrabToParent();
         surface()->imp()->setParent(nullptr);
         return;
     }

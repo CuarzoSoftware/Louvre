@@ -1,5 +1,4 @@
 #include <protocols/XdgDecoration/private/GXdgDecorationManagerPrivate.h>
-
 #include <private/LClientPrivate.h>
 
 using namespace Louvre::Protocols::XdgDecoration;

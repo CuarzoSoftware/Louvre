@@ -17,6 +17,28 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 
+void LKeyboard::setGrabbingSurface(LSurface *surface, Wayland::RKeyboard *keyboardResource)
+{
+    imp()->grabbingSurface = nullptr;
+    imp()->grabbingKeyboardResource = nullptr;
+
+    if (surface)
+    {
+        imp()->grabbingSurface = surface;
+        imp()->grabbingKeyboardResource = keyboardResource;
+    }
+}
+
+LSurface *LKeyboard::grabbingSurface() const
+{
+    return imp()->grabbingSurface;
+}
+
+RKeyboard *LKeyboard::grabbingKeyboardResource() const
+{
+    return imp()->grabbingKeyboardResource;
+}
+
 LKeyboard::LKeyboard(Params *params)
 {
     L_UNUSED(params);
@@ -186,6 +208,9 @@ const LKeyboard::KeyboardModifiersState &LKeyboard::modifiersState() const
 
 void LKeyboard::setFocus(LSurface *surface)
 {
+    if (grabbingSurface())
+        return;
+
     if (surface)
     {
         // If already has focus
@@ -276,6 +301,13 @@ void LKeyboard::sendKeyEvent(UInt32 keyCode, UInt32 keyState)
     UInt32 serial = LCompositor::nextSerial();
     UInt32 ms = LTime::ms();
 
+    if (grabbingSurface())
+    {
+        grabbingKeyboardResource()->imp()->serials.key = serial;
+        grabbingKeyboardResource()->key(serial, ms, keyCode, keyState);
+        return;
+    }
+
     for (Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
     {
         if (s->keyboardResource())
@@ -292,6 +324,13 @@ void LKeyboard::sendModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 lock
         return;
 
     UInt32 serial = LCompositor::nextSerial();
+
+    if (grabbingSurface())
+    {
+        grabbingKeyboardResource()->imp()->serials.modifiers = serial;
+        grabbingKeyboardResource()->modifiers(serial, depressed, latched, locked, group);
+        return;
+    }
 
     for (Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
     {

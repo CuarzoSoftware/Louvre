@@ -27,6 +27,9 @@ LPRIVATE_CLASS(LSurface)
     bool hasRoleOrPendingRole();
     bool hasBufferOrPendingBuffer();
 
+    // Input
+    void setKeyboardGrabToParent();
+
     struct State
     {
         LBaseSurfaceRole *role                          = nullptr;

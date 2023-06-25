@@ -250,7 +250,9 @@ public:
     /// Flags with the current states of the Toplevel (#States)
     States states() const;
 
-    /// Assigns the decoration mode (the client could ignore the request)
+    /*!
+     * Requests the client to change its decoration mode (the client may ignore the request).\n
+     * Must be followed by a configureC() event. */
     void setDecorationMode(DecorationMode mode);
 
     /// Current decoration mode

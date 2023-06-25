@@ -41,6 +41,9 @@ RKeyboard::RKeyboard
 
 RKeyboard::~RKeyboard()
 {
+    if (seat()->keyboard()->grabbingKeyboardResource() == this)
+        seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
+
     if (seatGlobal())
         seatGlobal()->imp()->rKeyboard = nullptr;
 

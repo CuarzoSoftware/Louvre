@@ -11,8 +11,9 @@ public:
 
     const LDMAPlanes *planes() const;
 
-    bool created(wl_resource *buffer) const;
-    bool failed() const;
+    // Since 1
+    bool created(wl_resource *buffer);
+    bool failed();
 
     LPRIVATE_IMP(RLinuxBufferParams)
 };

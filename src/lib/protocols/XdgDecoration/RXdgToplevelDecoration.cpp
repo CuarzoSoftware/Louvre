@@ -33,32 +33,31 @@ RXdgToplevelDecoration::RXdgToplevelDecoration
     m_imp = new RXdgToplevelDecorationPrivate();
     imp()->lToplevelRole = lToplevelRole;
     lToplevelRole->imp()->xdgDecoration = this;
-    configure(lToplevelRole->imp()->pendingDecorationMode);
 }
 
 RXdgToplevelDecoration::~RXdgToplevelDecoration()
 {
-    if (lToplevelRole())
+    if (toplevelRole())
     {
-        if (lToplevelRole()->decorationMode() == LToplevelRole::DecorationMode::ServerSide)
+        if (toplevelRole()->decorationMode() == LToplevelRole::DecorationMode::ServerSide)
         {
-            lToplevelRole()->imp()->pendingDecorationMode = LToplevelRole::DecorationMode::ClientSide;
-            lToplevelRole()->imp()->decorationMode = LToplevelRole::DecorationMode::ClientSide;
-            lToplevelRole()->decorationModeChanged();
+            toplevelRole()->imp()->pendingDecorationMode = LToplevelRole::DecorationMode::ClientSide;
+            toplevelRole()->imp()->decorationMode = LToplevelRole::DecorationMode::ClientSide;
+            toplevelRole()->decorationModeChanged();
         }
 
-        lToplevelRole()->imp()->xdgDecoration = nullptr;
+        toplevelRole()->imp()->xdgDecoration = nullptr;
     }
 
     delete m_imp;
 }
 
-LToplevelRole *RXdgToplevelDecoration::lToplevelRole() const
+LToplevelRole *RXdgToplevelDecoration::toplevelRole() const
 {
     return imp()->lToplevelRole;
 }
 
-bool RXdgToplevelDecoration::configure(UInt32 mode) const
+bool RXdgToplevelDecoration::configure(UInt32 mode)
 {
     zxdg_toplevel_decoration_v1_send_configure(resource(), mode);
     return true;

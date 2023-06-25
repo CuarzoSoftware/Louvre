@@ -100,7 +100,7 @@ public:
      *
      * List of avaliable modes of the output.
      */
-    const list<LOutputMode *> *modes() const;
+    const list<LOutputMode *> &modes() const;
 
     /*!
      * @brief Preferred mode.

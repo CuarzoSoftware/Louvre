@@ -45,6 +45,9 @@ void LToplevelRole::configureRequest()
     // Suggests to the Toplevel not to use a size larger than the output where the cursor is located
     configureBoundsC(output->sizeC());
 
+    // Request the client to draw its own window decorations
+    setDecorationMode(ClientSide);
+
     // Activates the Toplevel with size (0,0) so that the client can decide the size
     configureC(LSize(0,0), states() | LToplevelRole::Activated);
 }

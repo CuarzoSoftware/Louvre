@@ -5,6 +5,7 @@
 #include <vector>
 
 using namespace Louvre;
+using namespace Louvre::Protocols;
 
 struct LKeyboard::Params
 {
@@ -34,6 +35,10 @@ LPRIVATE_CLASS(LKeyboard)
     // Since 4
     Int32 repeatRate = 32;
     Int32 repeatDelay = 500;
+
+    // Grab
+    LSurface *grabbingSurface = nullptr;
+    Wayland::RKeyboard *grabbingKeyboardResource = nullptr;
 };
 
 #endif // LKEYBOARDPRIVATE_H

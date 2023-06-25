@@ -132,6 +132,16 @@ void RXdgSurface::RXdgSurfacePrivate::ack_configure(wl_client *client, wl_resour
     {
         LToplevelRole *toplevel = rXdgSurface->surface()->toplevel();
 
+        if (toplevel->imp()->xdgDecoration && toplevel->imp()->pendingDecorationMode != 0 && toplevel->imp()->lastDecorationModeConfigureSerial == serial)
+        {
+            if (toplevel->imp()->decorationMode != toplevel->imp()->pendingDecorationMode)
+            {
+                toplevel->imp()->decorationMode = (LToplevelRole::DecorationMode)toplevel->imp()->pendingDecorationMode;
+                toplevel->decorationModeChanged();
+            }
+            toplevel->imp()->pendingDecorationMode = 0;
+        }
+
         while (!toplevel->imp()->sentConfs.empty())
         {
             if (toplevel->imp()->sentConfs.front().serial == serial)
@@ -148,14 +158,6 @@ void RXdgSurface::RXdgSurfacePrivate::ack_configure(wl_client *client, wl_resour
             rXdgSurface->resource(),
             0,
             "invalid xdg_surface serial ack.");
-
-        if (toplevel->imp()->xdgDecoration && toplevel->imp()->pendingDecorationMode != 0 && toplevel->imp()->lastDecorationModeConfigureSerial <= serial)
-        {
-            toplevel->imp()->decorationMode = (LToplevelRole::DecorationMode)toplevel->imp()->pendingDecorationMode;
-            toplevel->decorationModeChanged();
-            toplevel->imp()->pendingDecorationMode = 0;
-            return;
-        }
     }
     else if (rXdgSurface->surface()->roleId() == LSurface::Role::Popup)
     {

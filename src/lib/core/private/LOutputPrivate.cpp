@@ -56,12 +56,16 @@ void LOutput::LOutputPrivate::backendPaintGL()
 
 void LOutput::LOutputPrivate::backendResizeGL()
 {
+    while(output->imp()->state == LOutput::ChangingMode)
+    {
+        output->imp()->state = LOutput::Initialized;
+        output->setScale(output->scale());
+    }
+
     if (output->imp()->state != LOutput::Initialized)
         return;
 
-    compositor()->imp()->renderMutex.lock();
     output->resizeGL();
-    compositor()->imp()->renderMutex.unlock();
 }
 
 void LOutput::LOutputPrivate::backendUninitializeGL()

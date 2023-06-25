@@ -1,5 +1,5 @@
-#ifndef XDGDECORATIONMANAGER_H
-#define XDGDECORATIONMANAGER_H
+#ifndef GXDGDECORATIONMANAGER_H
+#define GXDGDECORATIONMANAGER_H
 
 #include <LResource.h>
 
@@ -18,4 +18,4 @@ public:
     LPRIVATE_IMP(GXdgDecorationManager)
 };
 
-#endif // XDGDECORATIONMANAGER_H
+#endif // GXDGDECORATIONMANAGER_H

@@ -179,7 +179,7 @@ public:
      * #### Default implementation
      * @snippet LPopupRoleDefault.cpp grabSeatRequest
      */
-    virtual void grabSeatRequest();
+    virtual void grabSeatRequest(Wayland::GSeat *seatGlobal);
 
     /*!
      * @brief Configuration request.

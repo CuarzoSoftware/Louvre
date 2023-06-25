@@ -47,13 +47,13 @@ const LDMAPlanes *RLinuxBufferParams::planes() const
     return imp()->planes;
 }
 
-bool RLinuxBufferParams::created(wl_resource *buffer) const
+bool RLinuxBufferParams::created(wl_resource *buffer)
 {
     zwp_linux_buffer_params_v1_send_created(resource(), buffer);
     return true;
 }
 
-bool RLinuxBufferParams::failed() const
+bool RLinuxBufferParams::failed()
 {
     zwp_linux_buffer_params_v1_send_failed(resource());
     return true;

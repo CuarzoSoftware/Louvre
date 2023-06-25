@@ -16,6 +16,8 @@ void Output::fullDamage()
 
     if (!c->clock)
         c->clock = new Clock();
+    else
+        redrawClock = true;
 
     topbarHeight = 32 * compositor()->globalScale();
     terminalIconRectC.setPos(LPoint(9*compositor()->globalScale(), 4*compositor()->globalScale()));
@@ -23,6 +25,7 @@ void Output::fullDamage()
     terminalIconRectC.setPos(rectC().pos() + terminalIconRectC.pos());
 
     damage.clear();
+    damage.addRect(rectC());
     newDamage.clear();
     newDamage.addRect(rectC());
 }
@@ -44,8 +47,20 @@ void Output::initializeGL()
 
 void Output::resizeGL()
 {
-    fullDamage();
-    repaint();
+    Int32 x = 0;
+    // Set double scale to outputs with DPI >= 120
+    for (Output *output : (std::list<Output*>&)compositor()->outputs())
+    {
+        if (output->dpi() >= 120)
+            output->setScale(2);
+        else
+            output->setScale(1);
+
+        output->setPosC(LPoint(x, 0));
+        output->fullDamage();
+        output->repaint();
+        x += output->rectC().w();
+    }
 }
 
 void repaintParent(LSurface *s)

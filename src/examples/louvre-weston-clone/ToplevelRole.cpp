@@ -21,6 +21,8 @@ void ToplevelRole::configureRequest()
     // Suggests to the Toplevel not to use a size larger than the output where the cursor is located
     configureBoundsC(output->sizeC() - LPoint(0, 32 * compositor()->globalScale()));
 
+    setDecorationMode(ClientSide);
+
     // Adding the resize flag fixes Google Chrome window geometry bug
     configureC(0, Activated | Resizing);
 }

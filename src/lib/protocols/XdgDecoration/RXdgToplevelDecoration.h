@@ -1,5 +1,5 @@
-#ifndef XDGTOPLEVELDECORATION_H
-#define XDGTOPLEVELDECORATION_H
+#ifndef RXDGTOPLEVELDECORATION_H
+#define RXDGTOPLEVELDECORATION_H
 
 #include <LResource.h>
 
@@ -12,10 +12,12 @@ public:
 
     ~RXdgToplevelDecoration();
 
-    LToplevelRole *lToplevelRole() const;
-    bool configure(UInt32 mode) const;
+    LToplevelRole *toplevelRole() const;
+
+    // Since 1
+    bool configure(UInt32 mode);
 
     LPRIVATE_IMP(RXdgToplevelDecoration)
 };
 
-#endif // XDGTOPLEVELDECORATION_H
+#endif // RXDGTOPLEVELDECORATION_H

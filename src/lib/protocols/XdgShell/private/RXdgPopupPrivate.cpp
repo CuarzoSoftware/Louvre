@@ -34,6 +34,8 @@ void RXdgPopup::RXdgPopupPrivate::destroy(wl_client *client, wl_resource *resour
                     "The client tried to map or destroy a non-topmost popup.");
             }
         }
+
+        rXdgPopup->popupRole()->surface()->imp()->setKeyboardGrabToParent();
     }
 
     wl_resource_destroy(resource);
@@ -65,7 +67,7 @@ void RXdgPopup::RXdgPopupPrivate::grab(wl_client *client, wl_resource *resource,
             return;
         }
 
-        rXdgPopup->popupRole()->grabSeatRequest();
+        rXdgPopup->popupRole()->grabSeatRequest(lGSeat);
     }
     else
         rXdgPopup->popupRole()->sendPopupDoneEvent();

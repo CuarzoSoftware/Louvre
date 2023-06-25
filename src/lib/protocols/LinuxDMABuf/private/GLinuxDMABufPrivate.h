@@ -5,7 +5,6 @@
 #include <protocols/LinuxDMABuf/linux-dmabuf-unstable-v1.h>
 
 using namespace Louvre::Protocols::LinuxDMABuf;
-using namespace std;
 
 LPRIVATE_CLASS(GLinuxDMABuf)
     static void bind(wl_client *client, void *data, UInt32 version, UInt32 id);
@@ -18,7 +17,7 @@ LPRIVATE_CLASS(GLinuxDMABuf)
     static void get_surface_feedback(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface);
 #endif
 
-    list<GLinuxDMABuf*>::iterator clientLink;
+    std::list<GLinuxDMABuf*>::iterator clientLink;
 };
 
 #endif // GLINUXDMABUFPRIVATE_H

@@ -177,11 +177,11 @@ namespace Louvre
         UInt32 width;
         UInt32 height;
         UInt32 format;
-        UInt32 num_fds;
-        Int32 fds[LOUVRE_MAX_DMA_PLANES];
-        UInt32 strides[LOUVRE_MAX_DMA_PLANES];
-        UInt32 offsets[LOUVRE_MAX_DMA_PLANES];
-        UInt64 modifiers[LOUVRE_MAX_DMA_PLANES];
+        UInt32 num_fds = 0;
+        Int32 fds[LOUVRE_MAX_DMA_PLANES]        = {-1, -1, -1, -1};
+        UInt32 strides[LOUVRE_MAX_DMA_PLANES]   = {0, 0, 0, 0};
+        UInt32 offsets[LOUVRE_MAX_DMA_PLANES]   = {0, 0, 0, 0};
+        UInt64 modifiers[LOUVRE_MAX_DMA_PLANES] = {0, 0, 0, 0};
     };
 
     struct LGraphicBackendInterface

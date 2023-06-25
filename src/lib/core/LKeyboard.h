@@ -4,6 +4,8 @@
 #include <LObject.h>
 #include <xkbcommon/xkbcommon.h>
 
+using namespace Louvre::Protocols;
+
 /*!
  * @brief Class for handling keyboard events.
  *
@@ -56,6 +58,10 @@ public:
         /// The key is pressed
         Pressed = 1
     };
+
+    void setGrabbingSurface(LSurface *surface, Wayland::RKeyboard *keyboardResource);
+    LSurface *grabbingSurface() const;
+    Wayland::RKeyboard *grabbingKeyboardResource() const;
 
     /*!
      * @brief Constructor of the LKeyboard class.

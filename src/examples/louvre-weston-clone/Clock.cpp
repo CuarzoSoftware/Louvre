@@ -101,9 +101,9 @@ void Clock::updateClockTexture()
         return;
     }
 
-    bufferHeight = (face->size->metrics.ascender >> 6) - (face->size->metrics.descender >> 6);
+    bufferHeight = (face->size->metrics.ascender - face->size->metrics.descender) >> 6;
 
-    // Calc buffer width
+    // Calc min buffer width and height to fit all characters
     char *character = text;
     while (*character != '\0')
     {
@@ -125,9 +125,12 @@ void Clock::updateClockTexture()
             return;
         }
 
-        bufferWidth += face->glyph->metrics.horiAdvance / 64;
+        bufferWidth += face->glyph->metrics.horiAdvance >> 6;
+
         character++;
     }
+
+    LLog::debug("Buffer height %d", bufferHeight);
 
     if (bufferHeight*bufferWidth > 0)
     {

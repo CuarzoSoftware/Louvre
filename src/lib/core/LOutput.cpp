@@ -38,9 +38,9 @@ LOutput::~LOutput()
     delete m_imp;
 }
 
-const list<LOutputMode *> *LOutput::modes() const
+const list<LOutputMode *> &LOutput::modes() const
 {
-    return compositor()->imp()->graphicBackend->getOutputModes((LOutput*)this);
+    return *compositor()->imp()->graphicBackend->getOutputModes((LOutput*)this);
 }
 
 const LOutputMode *LOutput::preferredMode() const
@@ -58,19 +58,10 @@ void LOutput::setMode(const LOutputMode *mode)
     if (mode == currentMode())
         return;
 
-    imp()->rectC.setW((mode->sizeB().w()*compositor()->globalScale())/scale());
-    imp()->rectC.setH((mode->sizeB().h()*compositor()->globalScale())/scale());
-
-    setScale(scale());
-
     imp()->pendingMode = (LOutputMode*)mode;
     imp()->state = ChangingMode;
-
-    while(imp()->state != Initialized)
-    {
-        repaint();
-        usleep(100);
-    }
+    compositor()->imp()->graphicBackend->setOutputMode(this, (LOutputMode*)mode);
+    imp()->state = Initialized;
 }
 
 Int32 LOutput::currentBuffer() const

@@ -1,3 +1,4 @@
+#include <protocols/LinuxDMABuf/linux-dmabuf-unstable-v1.h>
 #include <protocols/LinuxDMABuf/private/RLinuxBufferParamsPrivate.h>
 #include <protocols/LinuxDMABuf/private/LDMABufferPrivate.h>
 #include <LTexture.h>
@@ -25,13 +26,24 @@ void RLinuxBufferParams::RLinuxBufferParamsPrivate::add(wl_client *client,
 
     if (!rLinuxBufferParams->planes())
     {
-        exit(1);
+        wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_ALREADY_USED,
+                               "The dmabuf_batch object has already been used to create a wl_buffer.");
         return;
     }
 
-    if (plane_idx > 3)
+    if (plane_idx >= LOUVRE_MAX_DMA_PLANES)
     {
-        exit(1);
+        wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_IDX,
+                               "Invalid DMA plane index. Max number of planes is %d.",
+                                LOUVRE_MAX_DMA_PLANES);
+        return;
+    }
+
+    if (plane_idx >= LOUVRE_MAX_DMA_PLANES)
+    {
+        wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_IDX,
+                               "Invalid DMA plane index. Max number of planes is %d.",
+                               LOUVRE_MAX_DMA_PLANES);
         return;
     }
 
@@ -54,21 +66,25 @@ void RLinuxBufferParams::RLinuxBufferParamsPrivate::create(wl_client *client,
 
     L_UNUSED(client);
 
-    if (flags)
+    if (!rLinuxBufferParams->planes())
     {
-        exit(1);
+        wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_ALREADY_USED,
+                               "The dmabuf_batch object has already been used to create a wl_buffer.");
         return;
     }
 
-    if (!rLinuxBufferParams->planes())
+    if (flags)
     {
-        exit(1);
+        rLinuxBufferParams->failed();
+        delete rLinuxBufferParams->imp()->planes;
+        rLinuxBufferParams->imp()->planes = nullptr;
         return;
     }
 
     if (width <= 0 || height <= 0)
     {
-        exit(1);
+        wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_DIMENSIONS,
+                               "Invalid wl_buffer size.");
         return;
     }
 
@@ -96,21 +112,25 @@ void RLinuxBufferParams::RLinuxBufferParamsPrivate::create_immed(wl_client *clie
 
     L_UNUSED(client);
 
-    if (flags)
+    if (!rLinuxBufferParams->planes())
     {
-        exit(1);
+        wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_ALREADY_USED,
+                               "The dmabuf_batch object has already been used to create a wl_buffer.");
         return;
     }
 
-    if (!rLinuxBufferParams->planes())
+    if (flags)
     {
-        exit(1);
+        rLinuxBufferParams->failed();
+        delete rLinuxBufferParams->imp()->planes;
+        rLinuxBufferParams->imp()->planes = nullptr;
         return;
     }
 
     if (width <= 0 || height <= 0)
     {
-        exit(1);
+        wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_DIMENSIONS,
+                               "Invalid wl_buffer size.");
         return;
     }
 
@@ -121,7 +141,5 @@ void RLinuxBufferParams::RLinuxBufferParamsPrivate::create_immed(wl_client *clie
     new LDMABuffer(rLinuxBufferParams, buffer_id);
 
     rLinuxBufferParams->imp()->planes = nullptr;
-
-    //rLinuxBufferParams->created(buffer->resource());
 }
 #endif

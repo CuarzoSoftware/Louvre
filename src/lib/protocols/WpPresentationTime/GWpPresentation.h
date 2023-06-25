@@ -15,7 +15,8 @@ public:
 
     ~GWpPresentation();
 
-    bool clock_id(UInt32 clockId) const;
+    // Since 1
+    bool clockId(UInt32 clockId);
 
     LPRIVATE_IMP(GWpPresentation)
 };

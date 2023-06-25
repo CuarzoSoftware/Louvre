@@ -157,16 +157,21 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
 
         if (surface)
         {
-            seat()->keyboard()->setFocus(surface);
-            setFocusC(surface);
-            sendButtonEvent(button,state);
-
-            if (surface->popup())
+            if (seat()->keyboard()->grabbingSurface() && seat()->keyboard()->grabbingSurface()->client() != surface->client())
+            {
+                seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
                 dismissPopups();
+            }
+
+            if (!seat()->keyboard()->focusSurface() || !surface->isSubchildOf(seat()->keyboard()->focusSurface()))
+                seat()->keyboard()->setFocus(surface);
+            setFocusC(surface);
+            sendButtonEvent(button, state);
         }
         // If no surface under the cursor
         else
         {
+            seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
             seat()->keyboard()->setFocus(nullptr);
             dismissPopups();
         }
@@ -194,7 +199,13 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
          * is outside of it (while the left button is being held down)*/
         setDragginSurface(focusSurface());
 
-        if (!seat()->keyboard()->focusSurface() || (focusSurface()->client() != seat()->keyboard()->focusSurface()->client()))
+        if (seat()->keyboard()->grabbingSurface() && seat()->keyboard()->grabbingSurface()->client() != focusSurface()->client())
+        {
+            seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
+            dismissPopups();
+        }
+
+        if (!seat()->keyboard()->focusSurface() || !focusSurface()->isSubchildOf(seat()->keyboard()->focusSurface()))
             seat()->keyboard()->setFocus(focusSurface());
 
         if (focusSurface()->toplevel() && !focusSurface()->toplevel()->activated())
@@ -228,6 +239,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
 
         if (!focusSurface()->inputRegionC().containsPoint(cursor()->posC() - focusSurface()->rolePosC()))
         {
+            seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
             setFocusC(nullptr);
             cursor()->useDefault();
             cursor()->setVisible(true);

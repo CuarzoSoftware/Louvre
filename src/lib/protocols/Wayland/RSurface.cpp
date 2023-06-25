@@ -74,6 +74,8 @@ RSurface::~RSurface()
 {
     LSurface *lSurface = this->surface();
 
+    lSurface->imp()->setKeyboardGrabToParent();
+
     // Notify from client
     compositor()->destroySurfaceRequest(lSurface);
 

@@ -26,7 +26,7 @@ GWpPresentation::GWpPresentation
     m_imp = new GWpPresentationPrivate();
     this->client()->imp()->wpPresentationTimeGlobals.push_back(this);
     imp()->clientLink = std::prev(this->client()->imp()->wpPresentationTimeGlobals.end());
-    clock_id(CLOCK_MONOTONIC);
+    clockId(CLOCK_MONOTONIC);
 }
 
 GWpPresentation::~GWpPresentation()
@@ -35,7 +35,7 @@ GWpPresentation::~GWpPresentation()
     delete m_imp;
 }
 
-bool GWpPresentation::clock_id(UInt32 clockId) const
+bool GWpPresentation::clockId(UInt32 clockId)
 {
     wp_presentation_send_clock_id(resource(), clockId);
     return true;

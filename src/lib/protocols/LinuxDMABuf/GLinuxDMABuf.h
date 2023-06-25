@@ -15,10 +15,11 @@ public:
 
     ~GLinuxDMABuf();
 
-    bool format(UInt32 format) const;
+    // Since 1
+    bool format(UInt32 format);
 
     // Since 3
-    bool modifier(UInt32 format, UInt32 mod_hi, UInt32 mod_lo) const;
+    bool modifier(UInt32 format, UInt32 mod_hi, UInt32 mod_lo);
 
     LPRIVATE_IMP(GLinuxDMABuf)
 };

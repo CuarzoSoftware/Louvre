@@ -1,3 +1,4 @@
+#include "LOutputMode.h"
 #include <private/LClientPrivate.h>
 #include <private/LDataDevicePrivate.h>
 
@@ -48,17 +49,16 @@ void LKeyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
 
         else if (L_SHIFT + L_CTRL && keySymbol(keyCode) == XKB_KEY_Down)
         {
-            const LOutputMode *mode = cursor()->output()->currentMode();
-            bool found = false;
-            for (LOutputMode *m : *cursor()->output()->modes())
+            int i = 0;
+            for (LOutputMode *m : cursor()->output()->modes())
             {
-                if (found)
+                LLog::debug("Mode %d (%d, %d)", i, m->sizeB().w(), m->sizeB().h());
+                if (i == 17)
                 {
                     cursor()->output()->setMode(m);
                     break;
                 }
-                if (mode == m)
-                    found = true;
+                i++;
             }
         }
 

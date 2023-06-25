@@ -134,13 +134,6 @@ void LToplevelRole::setDecorationMode(DecorationMode mode)
         return;
 
     imp()->pendingDecorationMode = mode;
-
-    XdgShell::RXdgToplevel *res = (XdgShell::RXdgToplevel*)resource();
-
-    if (!imp()->xdgDecoration || !res->xdgSurfaceResource())
-        return;
-
-    imp()->xdgDecoration->configure(mode);
 }
 
 LToplevelRole::DecorationMode LToplevelRole::decorationMode() const
@@ -431,7 +424,12 @@ void LToplevelRole::configureC(Int32 width, Int32 height, UInt32 stateFlags)
 
     if (res->xdgSurfaceResource())
     {
-        imp()->lastDecorationModeConfigureSerial = conf.serial;
+        if (imp()->pendingDecorationMode != 0 && imp()->xdgDecoration)
+        {
+            imp()->xdgDecoration->configure(imp()->pendingDecorationMode);
+            imp()->lastDecorationModeConfigureSerial = conf.serial;
+        }
+
         res->xdgSurfaceResource()->configure(conf.serial);
     }
 }

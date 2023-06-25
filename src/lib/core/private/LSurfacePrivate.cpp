@@ -7,6 +7,7 @@
 #include <private/LSurfacePrivate.h>
 #include <private/LTexturePrivate.h>
 #include <private/LOutputPrivate.h>
+#include <private/LKeyboardPrivate.h>
 #include <LOutputMode.h>
 #include <LLog.h>
 
@@ -509,4 +510,18 @@ bool LSurface::LSurfacePrivate::hasRoleOrPendingRole()
 bool LSurface::LSurfacePrivate::hasBufferOrPendingBuffer()
 {
     return current.buffer != nullptr || pending.buffer != nullptr;
+}
+
+void LSurface::LSurfacePrivate::setKeyboardGrabToParent()
+{
+    if (seat()->keyboard()->grabbingSurface() && surfaceResource->surface() == seat()->keyboard()->grabbingSurface() && surfaceResource->surface()->parent())
+    {
+        if (surfaceResource->surface()->parent()->popup())
+            seat()->keyboard()->setGrabbingSurface(surfaceResource->surface()->parent(), seat()->keyboard()->grabbingKeyboardResource());
+        else
+        {
+            seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
+            seat()->keyboard()->setFocus(surfaceResource->surface()->parent());
+        }
+    }
 }

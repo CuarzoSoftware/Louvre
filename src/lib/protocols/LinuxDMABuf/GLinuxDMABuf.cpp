@@ -1,8 +1,7 @@
 #include <protocols/LinuxDMABuf/private/GLinuxDMABufPrivate.h>
 #include <protocols/LinuxDMABuf/linux-dmabuf-unstable-v1.h>
-
-#include <private/LClientPrivate.h>
 #include <private/LCompositorPrivate.h>
+#include <private/LClientPrivate.h>
 
 using namespace Louvre::Protocols::LinuxDMABuf;
 
@@ -57,13 +56,13 @@ GLinuxDMABuf::~GLinuxDMABuf()
     delete m_imp;
 }
 
-bool GLinuxDMABuf::format(UInt32 format) const
+bool GLinuxDMABuf::format(UInt32 format)
 {
     zwp_linux_dmabuf_v1_send_format(resource(), format);
     return true;
 }
 
-bool GLinuxDMABuf::modifier(UInt32 format, UInt32 mod_hi, UInt32 mod_lo) const
+bool GLinuxDMABuf::modifier(UInt32 format, UInt32 mod_hi, UInt32 mod_lo)
 {
 #if LOUVRE_LINUX_DMA_BUF_VERSION >= 3
     if (version() >= 3)
