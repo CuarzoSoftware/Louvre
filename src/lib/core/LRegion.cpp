@@ -126,6 +126,8 @@ bool LRegion::containsPoint(const LPoint &point) const
 
 void LRegion::offset(const LPoint &offset)
 {
+    if (offset == LPoint(0,0))
+        return;
     pixman_region32_translate((pixman_region32_t*)m_region, offset.x(), offset.y());
     m_changed = true;
 }

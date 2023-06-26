@@ -136,6 +136,8 @@ public:
 
     UInt32 buffersCount() const;
     LTexture *bufferTexture(UInt32 bufferIndex);
+    bool hasBufferDamageSupport() const;
+    void setBufferDamageC(const LRegion &damage);
 
     /*!
      * @brief Sets the output scale.

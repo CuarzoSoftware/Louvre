@@ -199,6 +199,8 @@ namespace Louvre
         Int32 (*getOutputCurrentBufferIndex)(LOutput *output);
         UInt32 (*getOutputBuffersCount)(LOutput *output);
         LTexture *(*getOutputBuffer)(LOutput *output, UInt32 bufferIndex);
+        bool (*hasBufferDamageSupport)(LOutput *output);
+        void (*setOutputBufferDamage)(LOutput *output, LRegion &region);
         const char *(*getOutputName)(LOutput *output);
         const char *(*getOutputManufacturerName)(LOutput *output);
         const char *(*getOutputModelName)(LOutput *output);

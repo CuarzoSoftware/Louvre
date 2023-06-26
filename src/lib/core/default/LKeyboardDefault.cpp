@@ -53,7 +53,7 @@ void LKeyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
             for (LOutputMode *m : cursor()->output()->modes())
             {
                 LLog::debug("Mode %d (%d, %d)", i, m->sizeB().w(), m->sizeB().h());
-                if (i == 17)
+                if (i == 19)
                 {
                     cursor()->output()->setMode(m);
                     break;

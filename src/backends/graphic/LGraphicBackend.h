@@ -28,6 +28,8 @@ public:
     static bool initializeOutput(LOutput *output);
     static bool scheduleOutputRepaint(LOutput *output);
     static void uninitializeOutput(LOutput *output);
+    static bool hasBufferDamageSupport(LOutput *output);
+    static void setOutputBufferDamage(LOutput *output, LRegion &region);
 
     /* Connector physical size in mm */
     static const LSize *getOutputPhysicalSize(LOutput *output);

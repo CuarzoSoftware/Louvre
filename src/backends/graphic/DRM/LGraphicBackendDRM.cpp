@@ -352,6 +352,35 @@ void LGraphicBackend::uninitializeOutput(LOutput *output)
     }
 }
 
+bool LGraphicBackend::hasBufferDamageSupport(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorHasBufferDamageSupport(bkndOutput->conn);
+}
+
+void LGraphicBackend::setOutputBufferDamage(LOutput *output, LRegion &region)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+
+    if (!srmConnectorHasBufferDamageSupport(bkndOutput->conn) || srmConnectorGetState(bkndOutput->conn) != SRM_CONNECTOR_STATE_INITIALIZED)
+        return;
+
+    Int32 n;
+    LBox *boxes = region.rects(&n);
+
+    SRMRect rects[n];
+
+    for (Int32 i = 0; i < n; i++)
+    {
+        rects[i].x = boxes[i].x1;
+        rects[i].y = boxes[i].y1;
+        rects[i].width = boxes[i].x2 - boxes[i].x1;
+        rects[i].height = boxes[i].y2 - boxes[i].y1;
+    }
+
+    srmConnectorSetBufferDamage(bkndOutput->conn, rects, n);
+}
+
 const LSize *LGraphicBackend::getOutputPhysicalSize(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
@@ -592,6 +621,8 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.getConnectedOutputs = &LGraphicBackend::getConnectedOutputs;
     API.initializeOutput = &LGraphicBackend::initializeOutput;
     API.uninitializeOutput = &LGraphicBackend::uninitializeOutput;
+    API.hasBufferDamageSupport = &LGraphicBackend::hasBufferDamageSupport;
+    API.setOutputBufferDamage = &LGraphicBackend::setOutputBufferDamage;
     API.getOutputPhysicalSize = &LGraphicBackend::getOutputPhysicalSize;
     API.getOutputCurrentBufferIndex = &LGraphicBackend::getOutputCurrentBufferIndex;
     API.getOutputBuffersCount = &LGraphicBackend::getOutputBuffersCount;
@@ -624,4 +655,3 @@ extern "C" LGraphicBackendInterface *getAPI()
 
     return &API;
 }
-

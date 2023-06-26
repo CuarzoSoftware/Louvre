@@ -404,5 +404,6 @@ void Output::paintGL()
         }
     }
 
+    setBufferDamageC(newDamage);
     newDamage.clear();
 }

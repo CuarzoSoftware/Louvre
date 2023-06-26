@@ -79,6 +79,23 @@ LTexture *LOutput::bufferTexture(UInt32 bufferIndex)
     return compositor()->imp()->graphicBackend->getOutputBuffer((LOutput*)this, bufferIndex);
 }
 
+bool LOutput::hasBufferDamageSupport() const
+{
+    return compositor()->imp()->graphicBackend->hasBufferDamageSupport((LOutput*)this);
+}
+
+void LOutput::setBufferDamageC(const LRegion &damage)
+{
+    if (!hasBufferDamageSupport())
+        return;
+
+    LRegion region = damage;
+    region.offset(LPoint(-posC().x(), -posC().y()));
+    region.multiply(float(scale())/float(compositor()->globalScale()));
+    region.clip(LRect(LSize(0,0), sizeB()));
+    compositor()->imp()->graphicBackend->setOutputBufferDamage((LOutput*)this, region);
+}
+
 void LOutput::setScale(Int32 scale)
 {
     imp()->outputScale = scale;
