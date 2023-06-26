@@ -21,7 +21,7 @@ const LPoint &LToplevelRole::rolePosC() const
 //! [startMoveRequest]
 void LToplevelRole::startMoveRequest()
 {
-    if (seat()->pointer()->focusSurface() == surface())
+    if (!fullscreen() && seat()->pointer()->focusSurface() == surface())
         seat()->pointer()->startMovingToplevelC(this);
 }
 //! [startMoveRequest]
@@ -29,7 +29,7 @@ void LToplevelRole::startMoveRequest()
 //! [startResizeRequest]
 void LToplevelRole::startResizeRequest(ResizeEdge edge)
 {
-    if (seat()->pointer()->focusSurface() == surface())
+    if (!fullscreen() && seat()->pointer()->focusSurface() == surface())
         seat()->pointer()->startResizingToplevelC(this, edge);
 }
 //! [startResizeRequest]
