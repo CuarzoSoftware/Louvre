@@ -24,8 +24,12 @@ void Output::fullDamage()
     terminalIconRectC.setSize(LSize(topbarHeight) - LSize(2*terminalIconRectC.pos().y()));
     terminalIconRectC.setPos(rectC().pos() + terminalIconRectC.pos());
 
-    damage.clear();
-    damage.addRect(rectC());
+    if (buffersCount() > 1)
+    {
+        damage.clear();
+        damage.addRect(rectC());
+    }
+
     newDamage.clear();
     newDamage.addRect(rectC());
 }
@@ -244,9 +248,12 @@ void Output::paintGL()
     glDisable(GL_BLEND);
 
     // Save new damage for next frame and add old damage to current damage
-    LRegion oldDamage = damage;
-    damage = newDamage;
-    newDamage.addRegion(oldDamage);
+    if (buffersCount() > 1)
+    {
+        LRegion oldDamage = damage;
+        damage = newDamage;
+        newDamage.addRegion(oldDamage);
+    }
 
     bool drawClock = false;
     if (c->clock && c->clock->texture)
