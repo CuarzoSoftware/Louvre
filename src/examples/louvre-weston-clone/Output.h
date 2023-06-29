@@ -11,6 +11,8 @@ class Output : public LOutput
 public:
     Output();
 
+    LTexture *backgroundTexture = nullptr;
+
     Int32 topbarHeight;
     LTexture *terminalIconTexture = nullptr;
     LRect terminalIconRectC;

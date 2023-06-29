@@ -32,6 +32,7 @@ RDataDevice::RDataDevice
     )
 {
     m_imp = new RDataDevicePrivate();
+    imp()->gSeat = gSeat;
     gSeat->imp()->rDataDevice = this;
 }
 

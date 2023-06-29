@@ -7,6 +7,7 @@ LPRIVATE_CLASS(LOutput)
     LOutput *output;
     LRect rectC;
     LOutputMode *pendingMode = nullptr;
+    std::thread::id threadId;
 
     // Painter
     LPainter *painter = nullptr;

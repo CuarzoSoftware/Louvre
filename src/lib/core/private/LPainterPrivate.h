@@ -32,6 +32,7 @@ LPRIVATE_CLASS(LPainter)
     LOutput *output                                     = nullptr;
 
     void scaleCursor(LTexture *texture, const LRect &src, const LRect &dst);
+    void scaleTexture(LTexture *texture, const LRect &src, const LSize &dst);
 };
 
 #endif // LPAINTERPRIVATE_H

@@ -7,6 +7,7 @@
 #include <LTime.h>
 #include <LCursor.h>
 #include <LLog.h>
+#include <LOpenGL.h>
 
 Output::Output():LOutput(){}
 
@@ -45,6 +46,17 @@ void Output::initializeGL()
         terminalIconTexture = nullptr;
     }
 
+    char wallpaperPath[256];
+    sprintf(wallpaperPath, "%s/.config/louvre-weston-clone/wallpaper.png", getenv("HOME"));
+    LTexture *background = LOpenGL::loadTexture(wallpaperPath);
+
+    if (background)
+    {
+        backgroundTexture = background->copyB(sizeB());
+        LLog::debug("Background texture size %d %d", backgroundTexture->sizeB().w(), backgroundTexture->sizeB().h());
+        delete background;
+    }
+
     fullDamage();
     repaint();
 }
@@ -64,6 +76,23 @@ void Output::resizeGL()
         output->fullDamage();
         output->repaint();
         x += output->rectC().w();
+    }
+
+    if (backgroundTexture)
+    {
+        delete backgroundTexture;
+        backgroundTexture = nullptr;
+    }
+
+    char wallpaperPath[256];
+    sprintf(wallpaperPath, "%s/.config/louvre-weston-clone/wallpaper.png", getenv("HOME"));
+    LTexture *background = LOpenGL::loadTexture(wallpaperPath);
+
+    if (background)
+    {
+        backgroundTexture = background->copyB(sizeB());
+        LLog::debug("Background texture size %d %d", backgroundTexture->sizeB().w(), backgroundTexture->sizeB().h());
+        delete background;
     }
 }
 
@@ -309,17 +338,40 @@ void Output::paintGL()
     backgroundDamage.subtractRegion(opaqueTransposedCSum);
     boxes = backgroundDamage.rects(&n);
 
-    for (Int32 i = 0; i < n; i++)
+    if (backgroundTexture)
     {
-        p->drawColorC(boxes->x1,
-                      boxes->y1,
-                      boxes->x2 - boxes->x1,
-                      boxes->y2 - boxes->y1,
-                      0.15f,
-                      0.25f,
-                      0.35f,
-                      1.f);
-        boxes++;
+        for (Int32 i = 0; i < n; i++)
+        {
+            w = boxes->x2 - boxes->x1;
+            h = boxes->y2 - boxes->y1;
+
+            p->drawTextureC(backgroundTexture,
+                            boxes->x1 - posC().x(),
+                            boxes->y1 - posC().y(),
+                            w,
+                            h,
+                            boxes->x1,
+                            boxes->y1,
+                            w,
+                            h,
+                            scale());
+            boxes++;
+        }
+    }
+    else
+    {
+        for (Int32 i = 0; i < n; i++)
+        {
+            p->drawColorC(boxes->x1,
+                          boxes->y1,
+                          boxes->x2 - boxes->x1,
+                          boxes->y2 - boxes->y1,
+                          0.15f,
+                          0.25f,
+                          0.35f,
+                          1.f);
+            boxes++;
+        }
     }
 
     glEnable(GL_BLEND);

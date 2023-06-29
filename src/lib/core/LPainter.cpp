@@ -137,6 +137,23 @@ void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src,
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
+void LPainter::LPainterPrivate::scaleTexture(LTexture *texture, const LRect &src, const LSize &dst)
+{
+    glEnable(GL_BLEND);
+    glScissor(0, 0, dst.w(), dst.h());
+    glViewport(0, 0, dst.w(), dst.h());
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glActiveTexture(GL_TEXTURE0 + texture->unit());
+    glUniform1f(alphaUniform, 1.f);
+    glUniform1i(modeUniform, 0);
+    glUniform1i(activeTextureUniform, texture->unit());
+    glBindTexture(GL_TEXTURE_2D, texture->id(output));
+    glUniform2f(texSizeUniform, texture->sizeB().w(), texture->sizeB().h());
+    glUniform4f(srcRectUniform, src.x(), src.y() + src.h(), src.w(), -src.h());
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
 void LPainter::drawTextureC(LTexture *texture, const LRect &src, const LRect &dst, Float32 srcScale, Float32 alpha)
 {
     drawTextureC(texture,
@@ -164,7 +181,6 @@ void LPainter::drawTextureC(LTexture *texture,
                             Float32 srcScale,
                             Float32 alpha)
 {
-
     setViewportC(dstX, dstY, dstW, dstH);
     glActiveTexture(GL_TEXTURE0 + texture->unit());
     glUniform1f(imp()->alphaUniform, alpha);

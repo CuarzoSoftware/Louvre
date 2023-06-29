@@ -165,6 +165,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
 
             if (!seat()->keyboard()->focusSurface() || !surface->isSubchildOf(seat()->keyboard()->focusSurface()))
                 seat()->keyboard()->setFocus(surface);
+
             setFocusC(surface);
             sendButtonEvent(button, state);
         }
@@ -204,6 +205,9 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
             seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
             dismissPopups();
         }
+
+        if (!focusSurface()->popup())
+            dismissPopups();
 
         if (!seat()->keyboard()->focusSurface() || !focusSurface()->isSubchildOf(seat()->keyboard()->focusSurface()))
             seat()->keyboard()->setFocus(focusSurface());

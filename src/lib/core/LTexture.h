@@ -4,6 +4,7 @@
 #include <LObject.h>
 #include <GL/gl.h>
 #include <drm_fourcc.h>
+#include <LRect.h>
 
 /*!
  * @brief Renderer compatible texture
@@ -36,6 +37,8 @@ public:
     bool setDataB(const LDMAPlanes *planes);
     bool updateRect(const LRect &rect, UInt32 stride, const void *buffer);
 
+    LTexture *copyB(const LSize &dst = LSize(), const LRect &src = LRect()) const;
+
     /// LTexture class destructor
     ~LTexture();
 
@@ -53,7 +56,7 @@ public:
      * A texture is initialized when content has been assigned to it with setDataB().
      * @returns true if the texture has been initialized, false otherwise.
      */
-    bool initialized();
+    bool initialized() const;
 
     /*!
      * @brief OpenGL texture ID.

@@ -1,4 +1,6 @@
 #include <csignal>
+#include <iostream>
+#include <ostream>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 #include <private/LSeatPrivate.h>

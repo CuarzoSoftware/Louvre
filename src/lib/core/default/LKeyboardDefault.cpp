@@ -42,7 +42,7 @@ void LKeyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
         {
             if (fork() == 0)
             {
-                system("weston-terminal");
+                execl("/usr/bin/weston-terminal", "weston-terminal", NULL);
                 exit(0);
             }
         }
@@ -88,17 +88,10 @@ void LKeyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
         }
 
         // CTRL: Unsets the **Copy** as the preferred action in drag & drop sesión
-        else if (L_CTRL)
-        {
-            if (seat()->dndManager()->preferredAction() == LDNDManager::Copy)
-                seat()->dndManager()->setPreferredAction(LDNDManager::NoAction);
-        }
-
         // SHIFT: Unsets the **Move** as the preferred action in drag & drop sesión
-        else if (L_SHIFT)
+        else if (L_CTRL || L_SHIFT)
         {
-            if (seat()->dndManager()->preferredAction() == LDNDManager::Move)
-                seat()->dndManager()->setPreferredAction(LDNDManager::NoAction);
+            seat()->dndManager()->setPreferredAction(LDNDManager::NoAction);
         }
     }
     // Key press

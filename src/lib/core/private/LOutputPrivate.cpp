@@ -1,4 +1,5 @@
 #include "LLog.h"
+#include <iostream>
 #include <protocols/Wayland/private/GOutputPrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LOutputModePrivate.h>
@@ -25,6 +26,7 @@ void LOutput::LOutputPrivate::globalScaleChanged(Int32 oldScale, Int32 newScale)
 
 void LOutput::LOutputPrivate::backendInitializeGL()
 {
+    threadId = std::this_thread::get_id();
     painter = new LPainter();
     painter->imp()->output = output;
 
