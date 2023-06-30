@@ -7,6 +7,7 @@
 #include <other/lodepng.h>
 #include <LOutput.h>
 #include <LLog.h>
+#include <FreeImage.h>
 
 using namespace Louvre;
 
@@ -94,27 +95,43 @@ GLuint LOpenGL::compileShader(GLenum type, const char *shaderString)
     return shader;
 }
 
-LTexture *LOpenGL::loadTexture(const char *pngFile, GLuint textureUnit)
+LTexture *LOpenGL::loadTexture(const char *file, GLuint textureUnit)
 {
-    unsigned int error;
-    unsigned char *image;
-    unsigned int width, height;
+    FREE_IMAGE_FORMAT format = FreeImage_GetFileType(file);
 
-    // Load PNG
-    error = lodepng_decode32_file(&image, &width, &height, pngFile);
-
-    if (error)
+    if (format == FIF_UNKNOWN)
     {
-        LLog::error("LOpenGL::loadTexture() failed to load PNG file: %s.", pngFile);
+        LLog::error("Failed to load image %s. Unknown format.", file);
         return nullptr;
     }
 
-    LSize s;
-    s.setW(width);
-    s.setH(height);
+    FIBITMAP *bitmap = FreeImage_Load(format, file);
+
+    if (!bitmap)
+    {
+        LLog::error("Failed to load image %s.", file);
+        return nullptr;
+    }
+
+    FreeImage_FlipVertical(bitmap);
+    FIBITMAP *convertedBitmap = FreeImage_ConvertTo32Bits(bitmap);
+    FreeImage_Unload(bitmap);
+
+    if (!convertedBitmap)
+    {
+        LLog::error("Failed to convert image %s to 32 bit format.", file);
+        return nullptr;
+    }
+
+    LSize size;
+    size.setW(FreeImage_GetWidth(convertedBitmap));
+    size.setH(FreeImage_GetHeight(convertedBitmap));
+    UInt32 pitch = FreeImage_GetPitch(convertedBitmap);
+    UChar8 *pixels = (UChar8*)FreeImage_GetBits(convertedBitmap);
     LTexture *texture = new LTexture(textureUnit);
-    texture->setDataB(s, width*4, DRM_FORMAT_ABGR8888, image);
-    free(image);
+    texture->setDataB(size, pitch, DRM_FORMAT_ARGB8888, pixels);
+
+    FreeImage_Unload(convertedBitmap);
 
     return texture;
 }

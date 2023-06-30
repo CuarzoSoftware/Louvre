@@ -7,6 +7,14 @@
 
 using namespace Louvre;
 
+struct DestroyedToplevel
+{
+    LTexture *texture;
+    Int32 ms;
+    LRect rect;
+    std::list<LOutput*>outputs;
+};
+
 class Compositor : public LCompositor
 {
 public:
@@ -18,12 +26,15 @@ public:
     LPopupRole *createPopupRoleRequest(LPopupRole::Params *params) override;
     LPointer *createPointerRequest(LPointer::Params *params) override;
 
+
     void destroySurfaceRequest(LSurface *surface) override;
 
     void cursorInitialized() override;
 
     LXCursor *pointerCursor = nullptr;
     Clock *clock = nullptr;
+
+    std::list<DestroyedToplevel>destroyedToplevels;
 };
 
 #endif // COMPOSITOR_H

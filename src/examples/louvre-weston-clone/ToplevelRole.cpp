@@ -39,6 +39,7 @@ void ToplevelRole::setMaximizedRequest()
 
 void ToplevelRole::setFullscreenRequest(LOutput *output)
 {
+    statesBeforeFullscreen = states();
     rectBeforeFullscreen = LRect(surface()->posC(), windowGeometryC().size());
 
     if (output)
@@ -53,7 +54,7 @@ void ToplevelRole::setFullscreenRequest(LOutput *output)
 
 void ToplevelRole::unsetFullscreenRequest()
 {
-    configureC(rectBeforeFullscreen.size(), LToplevelRole::Activated);
+    configureC(rectBeforeFullscreen.size(), statesBeforeFullscreen);
 }
 
 void ToplevelRole::maximizedChanged()

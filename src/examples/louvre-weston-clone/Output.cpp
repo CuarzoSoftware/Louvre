@@ -47,7 +47,7 @@ void Output::initializeGL()
     }
 
     char wallpaperPath[256];
-    sprintf(wallpaperPath, "%s/.config/louvre-weston-clone/wallpaper.png", getenv("HOME"));
+    sprintf(wallpaperPath, "%s/.config/louvre-weston-clone/a.jpg", getenv("HOME"));
     LTexture *background = LOpenGL::loadTexture(wallpaperPath);
 
     if (background)
@@ -274,6 +274,14 @@ void Output::paintGL()
         s->currentOutputData->lastRenderedDamageId = s->damageId();
     }
 
+    for (DestroyedToplevel &destroyed : c->destroyedToplevels)
+    {
+        newDamage.addRect(destroyed.rect);
+
+        for (LOutput *o : destroyed.outputs)
+            o->repaint();
+    }
+
     glDisable(GL_BLEND);
 
     // Save new damage for next frame and add old damage to current damage
@@ -435,7 +443,7 @@ void Output::paintGL()
                           1.0f,
                           1.0f,
                           1.0f,
-                          0.8f);
+                          0.9f);
             boxes++;
         }
 
@@ -460,6 +468,26 @@ void Output::paintGL()
             p->drawTextureC(c->clock->texture,
                             LRect(0, c->clock->texture->sizeB()),
                             dstClockRect);
+        }
+    }
+
+    for (std::list<DestroyedToplevel>::iterator it = c->destroyedToplevels.begin(); it != c->destroyedToplevels.end(); it++)
+    {
+        float alpha = (256.f - ((float)LTime::ms() - (float)(*it).ms))/256.f;
+
+        if (alpha < 0.f)
+            alpha = 0.f;
+
+        p->drawTextureC((*it).texture,
+                        LRect(0, (*it).texture->sizeB()),
+                        (*it).rect,
+                        0.f,
+                        alpha);
+
+        if (alpha == 0.f)
+        {
+            delete (*it).texture;
+            it = c->destroyedToplevels.erase(it);
         }
     }
 

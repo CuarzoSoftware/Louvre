@@ -44,13 +44,13 @@ public:
     static GLuint compileShader(GLenum type, const char *shaderString);
 
     /*!
-     * @brief Creates a texture from a PNG image.
+     * @brief Creates a texture from an image file.
      *
-     * @param pngFile Path to the PNG file.
+     * @param file Path to the image file. Must be an image format supported by FreeImage (JPEG, PNG, BMP, etc).
      * @param textureUnit Texture unit.
      * @returns A new texture or nullptr in case of error.
      */
-    static LTexture *loadTexture(const char *pngFile, GLuint textureUnit = 1);
+    static LTexture *loadTexture(const char *file, GLuint textureUnit = 1);
 };
 
 #endif // LOPENGL_H

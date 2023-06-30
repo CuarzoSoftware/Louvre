@@ -1,3 +1,4 @@
+#include "LTime.h"
 #include <Compositor.h>
 #include <LSeat.h>
 #include <LKeyboard.h>

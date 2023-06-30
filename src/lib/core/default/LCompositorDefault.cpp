@@ -41,8 +41,8 @@ bool LCompositor::createGlobalsRequest()
     wl_global_create(display(), &xdg_wm_base_interface,
                      LOUVRE_XDG_WM_BASE_VERSION, this, &XdgShell::GXdgWmBase::GXdgWmBasePrivate::bind);
 
-    //wl_global_create(display(), &zxdg_decoration_manager_v1_interface,
-    //                 LOUVRE_XDG_DECORATION_MANAGER_VERSION, this, &XdgDecoration::GXdgDecorationManager::GXdgDecorationManagerPrivate::bind);
+    wl_global_create(display(), &zxdg_decoration_manager_v1_interface,
+                     LOUVRE_XDG_DECORATION_MANAGER_VERSION, this, &XdgDecoration::GXdgDecorationManager::GXdgDecorationManagerPrivate::bind);
 
     wl_global_create(display(), &zwp_linux_dmabuf_v1_interface,
                      LOUVRE_LINUX_DMA_BUF_VERSION, this, &LinuxDMABuf::GLinuxDMABuf::GLinuxDMABufPrivate::bind);

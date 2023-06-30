@@ -102,6 +102,7 @@ drm_dep             = cpp.find_library('drm', dirs: library_paths, required: tru
 gbm_dep             = cpp.find_library('gbm', dirs: library_paths, required: true)
 input_dep           = cpp.find_library('input', dirs: library_paths, required: true)
 libseat_dep         = cpp.find_library('libseat', dirs: library_paths, required: true)
+freeimage_dep       = cpp.find_library('freeimage', dirs: library_paths, required: true)
 srm_dep             = cpp.find_library('SRM', dirs: library_paths, required: true)
 
 
@@ -132,7 +133,8 @@ Louvre = library(
         dl_dep,
         drm_dep,
         gbm_dep,
-        libseat_dep
+        libseat_dep,
+        freeimage_dep
     ],
     install : true, 
     install_dir : LIBRARY_PATH)

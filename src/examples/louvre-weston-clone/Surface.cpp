@@ -1,5 +1,6 @@
 #include <LCompositor.h>
 #include "Compositor.h"
+#include "LTime.h"
 #include "Surface.h"
 #include "LCursor.h"
 #include "Output.h"
@@ -39,12 +40,33 @@ void Surface::mappingChanged()
     }
     else
     {
-        for (Output *o : (list<Output*>&)outputs())
+        if (toplevel())
         {
-            o->newDamage.addRect(outputsMap[o].previousRectC);
-            o->repaint();
-            if (this == o->fullscreenSurface)
-                o->fullscreenSurface = nullptr;
+            Compositor *c = (Compositor*)compositor();
+            DestroyedToplevel destroyed;
+            destroyed.texture = texture()->copyB();
+            destroyed.rect = LRect(rolePosC(), sizeC());
+            destroyed.ms = LTime::ms();
+
+            for (LOutput *o : outputs())
+            {
+                if (o->rectC().intersects(destroyed.rect))
+                {
+                    destroyed.outputs.push_back(o);
+                    o->repaint();
+                }
+            }
+            c->destroyedToplevels.push_back(destroyed);
+        }
+        else
+        {
+            for (Output *o : (list<Output*>&)outputs())
+            {
+                o->newDamage.addRect(outputsMap[o].previousRectC);
+                o->repaint();
+                if (this == o->fullscreenSurface)
+                    o->fullscreenSurface = nullptr;
+            }
         }
     }
 }
