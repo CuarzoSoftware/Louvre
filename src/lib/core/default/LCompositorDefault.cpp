@@ -72,9 +72,6 @@ void LCompositor::initialized()
     // Set double scale to outputs with DPI >= 120
     for (LOutput *output : *seat()->outputs())
     {
-        if (output->physicalSize().area() == 0)
-            continue;
-
         if (output->dpi() >= 120)
             output->setScale(2);
 

@@ -1,10 +1,9 @@
-#include "LOpenGL.h"
+#include <LOpenGL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <GLES2/gl2.h>
 #include <LRect.h>
 #include <LTexture.h>
-#include <other/lodepng.h>
 #include <LOutput.h>
 #include <LLog.h>
 #include <FreeImage.h>

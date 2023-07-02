@@ -12,7 +12,6 @@
 #include <string.h>
 
 #include <other/cursor.h>
-#include <other/lodepng.h>
 
 #include <algorithm>
 
