@@ -50,6 +50,7 @@ public: \
 namespace Louvre
 {
     // API Classes
+    class LAnimation;
     class LGraphicBackend;
     class LInputBackend;
     class LClient;
@@ -67,6 +68,12 @@ namespace Louvre
     class LSession;
     class LTexture;
     class LWayland;
+
+    // Views
+    class LScene;
+    class LView;
+    class LLayerView;
+    class LSurfaceView;
 
     // Data
     class LDataDevice;

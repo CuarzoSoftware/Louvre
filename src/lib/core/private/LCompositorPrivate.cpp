@@ -5,6 +5,8 @@
 #include <private/LOutputPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <private/LCursorPrivate.h>
+#include <private/LAnimationPrivate.h>
+#include <LTime.h>
 #include <LLog.h>
 #include <EGL/egl.h>
 #include <dlfcn.h>
@@ -371,5 +373,61 @@ void LCompositor::LCompositorPrivate::updateGlobalScale()
 
         if (cursor)
             cursor->imp()->globalScaleChanged(oldScale, globalScale);
+    }
+}
+
+bool LCompositor::LCompositorPrivate::runningAnimations()
+{
+    for (LAnimation *anim : animations)
+    {
+        if (anim->imp()->running)
+            return true;
+    }
+    return false;
+}
+
+void LCompositor::LCompositorPrivate::processAnimations()
+{
+    auto it = animations.begin();
+
+    while (it != animations.end())
+    {
+        LAnimation *a = *it;
+
+        if (!a->imp()->running)
+        {
+            it++;
+            continue;
+        }
+
+        Int64 elapsed = (Int64)LTime::ms() - (Int64)a->imp()->beginTime;
+
+        if (elapsed > (Int64)a->imp()->duration)
+            elapsed = a->imp()->duration;
+
+        a->imp()->value = (Float32)elapsed/(Float32)a->imp()->duration;
+
+        if (a->imp()->onUpdate)
+        {
+            if (!a->imp()->onUpdate(a))
+                elapsed = a->imp()->duration;
+        }
+
+        if (elapsed == a->imp()->duration)
+        {
+            if (a->imp()->onFinish)
+                a->imp()->onFinish(a);
+
+            a->imp()->running = false;
+
+            if (a->imp()->deleteOnFinish)
+            {
+                it = animations.erase(a->imp()->compositorLink);
+                delete a;
+                continue;
+            }
+        }
+
+        it++;
     }
 }

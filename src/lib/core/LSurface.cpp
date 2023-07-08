@@ -392,3 +392,19 @@ bool LSurface::isSubchildOf(LSurface *parent) const
 
     return false;
 }
+
+Louvre::LSurface *LSurface::prevSurface() const
+{
+    if (this == compositor()->surfaces().front())
+        return nullptr;
+    else
+        return *std::prev(imp()->compositorLink);
+}
+
+Louvre::LSurface *LSurface::nextSurface() const
+{
+    if (this == compositor()->surfaces().back())
+        return nullptr;
+    else
+        return *std::next(imp()->compositorLink);
+}

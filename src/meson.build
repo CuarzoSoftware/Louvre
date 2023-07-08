@@ -159,5 +159,6 @@ subdir('backends/input/Libinput')
 if get_option('build_examples')
     subdir('examples/louvre-weston-clone')
     subdir('examples/louvre-default')
+    subdir('examples/louvre-views')
 endif
 

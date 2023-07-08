@@ -3,8 +3,8 @@
 
 #include <LObject.h>
 #include <GL/gl.h>
-#include <drm_fourcc.h>
 #include <LRect.h>
+#include <drm_fourcc.h>
 
 /*!
  * @brief Renderer compatible texture

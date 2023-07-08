@@ -7,6 +7,7 @@
 #include <private/LSurfacePrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LCursorPrivate.h>
+#include <private/LAnimationPrivate.h>
 
 #include <protocols/Wayland/private/GOutputPrivate.h>
 
@@ -25,6 +26,7 @@
 #include <LDNDManager.h>
 #include <dlfcn.h>
 #include <LLog.h>
+
 
 using namespace Louvre::Protocols::Wayland;
 
@@ -152,8 +154,13 @@ bool LCompositor::start()
 
 Int32 LCompositor::processLoop(Int32 msTimeout)
 {
+    if (imp()->runningAnimations())
+        msTimeout = 1;
+
     poll(&imp()->fdSet, 1, msTimeout);
+
     imp()->renderMutex.lock();
+
     imp()->processRemovedGlobals();
 
     // DND
@@ -164,9 +171,11 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         seat()->dndManager()->imp()->destDidNotRequestReceive++;
 
     wl_event_loop_dispatch(imp()->eventLoop, 0);
+
     flushClients();
 
     cursor()->imp()->textureUpdate();
+    imp()->processAnimations();
     imp()->renderMutex.unlock();
     return 1;
 }

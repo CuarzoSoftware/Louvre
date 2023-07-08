@@ -433,6 +433,20 @@ public:
     bool hasPopupSubchild() const;
     bool isSubchildOf(LSurface *parent) const;
 
+    /*!
+     * Prev surface in the compositor surfaces list (LCompositor::surfaces()).
+     *
+     * @returns a pointer to the prev LSurface or nullptr if is the first in the list.
+     */
+    LSurface *prevSurface() const;
+
+    /*!
+     * Next surface in the compositor surfaces list (LCompositor::surfaces()).
+     *
+     * @returns a pointer to the next LSurface or nullptr if it is the last in the list.
+     */
+    LSurface *nextSurface() const;
+
 /// @name Virtual Methods
 /// @{
 

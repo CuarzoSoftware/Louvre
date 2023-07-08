@@ -72,6 +72,11 @@ LPRIVATE_CLASS(LCompositor)
     // Surfaces
     list<LSurface*>surfaces;
 
+    // Animations
+    list<LAnimation*>animations;
+    bool runningAnimations();
+    void processAnimations();
+
     LInputBackendInterface *inputBackend = nullptr;
 
     // Dylib
