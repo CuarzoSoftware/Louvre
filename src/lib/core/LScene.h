@@ -17,7 +17,9 @@ public:
     void handleUninitializeGL(LOutput *output);
 
     LLayerView &mainView() const;
-
+    const LRGBF &clearColor() const;
+    void setClearColor(Float32 r, Float32 g, Float32 b);
+    void setClearColor(const LRGBF &color);
     LView *viewAtC(const LPoint &pos);
 
 LPRIVATE_IMP(LScene)

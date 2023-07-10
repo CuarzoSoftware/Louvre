@@ -181,7 +181,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
         // We stop sending events to the surface on which the left button was being held down
         setDragginSurface(nullptr);
 
-        if (!focus()->view.inputRegionC().containsPoint(cursor()->posC() - focusSurface()->rolePosC()))
+        if (!focus()->view.inputRegionC()->containsPoint(cursor()->posC() - focusSurface()->rolePosC()))
         {
             seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
             setFocusC(nullptr);

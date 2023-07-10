@@ -14,7 +14,7 @@ public:
     virtual void setCustomSize(const LSize &size);
     virtual void setInputRegionC(const LRegion &region) const;
 
-    virtual const LRegion &inputRegionC() const override;
+    virtual const LRegion *inputRegionC() const override;
     virtual bool mapped() const override;
     virtual const LPoint &posC() const override;
     virtual const LSize &sizeC() const override;
@@ -29,6 +29,13 @@ public:
     virtual const LRegion *damageC() const override;
     virtual const LRegion *translucentRegionC() const override;
     virtual const LRegion *opaqueRegionC() const override;
+    virtual void paintRect(LPainter *p,
+                           Int32 srcX, Int32 srcY,
+                           Int32 srcW, Int32 srcH,
+                           Int32 dstX, Int32 dstY,
+                           Int32 dstW, Int32 dstH,
+                           Float32 scale,
+                           Float32 alpha) override;
 
 LPRIVATE_IMP(LLayerView)
 };

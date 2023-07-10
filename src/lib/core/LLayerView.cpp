@@ -35,9 +35,9 @@ void LLayerView::setInputRegionC(const LRegion &region) const
     imp()->inputRegionC = region;
 }
 
-const LRegion &Louvre::LLayerView::inputRegionC() const
+const LRegion *Louvre::LLayerView::inputRegionC() const
 {
-    return imp()->inputRegionC;
+    return &imp()->inputRegionC;
 }
 
 bool LLayerView::mapped() const
@@ -115,4 +115,9 @@ const LRegion *LLayerView::translucentRegionC() const
 const LRegion *LLayerView::opaqueRegionC() const
 {
     return nullptr;
+}
+
+void LLayerView::paintRect(LPainter *, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Float32, Float32)
+{
+
 }

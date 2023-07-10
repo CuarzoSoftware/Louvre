@@ -15,7 +15,7 @@ public:
         Layer = 0,
         Surface = 1,
         Texture = 2,
-        Solid = 3
+        SolidColor = 3
     };
 
     LScene *scene() const;
@@ -43,8 +43,8 @@ public:
 
     Float32 opacity() const;
     void setOpacity(Float32 opacity);
+    Float32 multipliedOpacity() const;
 
-    virtual const LRegion &inputRegionC() const = 0;
     virtual bool mapped() const = 0;
     virtual const LPoint &posC() const = 0;
     virtual const LSize &sizeC() const = 0;
@@ -59,6 +59,14 @@ public:
     virtual const LRegion *damageC() const = 0;
     virtual const LRegion *translucentRegionC() const = 0;
     virtual const LRegion *opaqueRegionC() const = 0;
+    virtual const LRegion *inputRegionC() const = 0;
+    virtual void paintRect(LPainter *p,
+                           Int32 srcX, Int32 srcY,
+                           Int32 srcW, Int32 srcH,
+                           Int32 dstX, Int32 dstY,
+                           Int32 dstW, Int32 dstH,
+                           Float32 scale,
+                           Float32 alpha) = 0;
 
 LPRIVATE_IMP(LView)
 };

@@ -7,7 +7,8 @@
 
 Compositor::Compositor():LCompositor()
 {
-
+    scene.setClearColor(0.1f, 0.1f, 0.5f);
+    scene.mainView().enableClipping(true);
 }
 
 LOutput *Compositor::createOutputRequest()

@@ -7,6 +7,7 @@
 
 Surface::Surface(LSurface::Params *params, GLuint textureUnit) : LSurface(params, textureUnit)
 {
+    //view.enableScaling(true);
 }
 
 Surface::~Surface()
@@ -20,8 +21,6 @@ Compositor *Surface::compositor() const
 
 void Surface::mappingChanged()
 {
-    compositor()->repaintAllOutputs();
-    return;
     if (mapped())
     {
         if (firstMap)
@@ -48,6 +47,10 @@ void Surface::mappingChanged()
 
         compositor()->repaintAllOutputs();
     }
+    else
+    {
+        view.repaint();
+    }
 }
 
 void Surface::orderChanged()
@@ -67,4 +70,9 @@ void Surface::roleChanged()
         view.enableForceRequestNextFrame(true);
         view.setVisible(false);
     }
+}
+
+void Surface::bufferSizeChanged()
+{
+    //view.setScaledSizeC(sizeB()*0.75f);
 }

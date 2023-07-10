@@ -1,27 +1,19 @@
-#ifndef LSURFACEVIEW_H
-#define LSURFACEVIEW_H
+#ifndef LSOLIDCOLORVIEW_H
+#define LSOLIDCOLORVIEW_H
 
 #include <LView.h>
 
-class Louvre::LSurfaceView : public LView
+class Louvre::LSolidColorView : public LView
 {
 public:
-    LSurfaceView(LSurface *surface, bool primary = true, bool useCustomPos = false, LView *parent = nullptr);
-    ~LSurfaceView();
+    LSolidColorView(LView *parent);
+    LSolidColorView(Float32 r = 0.f, Float32 g = 0.f, Float32 b = 0.f, Float32 a = 1.f, LView *parent = nullptr);
+    LSolidColorView(const LRGBF &color, Float32 a = 1.f, LView *parent = nullptr);
 
-    LSurface *surface() const;
+    void setColor(const LRGBF &color);
+    void setColor(Float32 r, Float32 g, Float32 b);
+    const LRGBF &color() const;
 
-    bool primary() const;
-    void setPrimary(bool primary) const;
-
-    bool customPosEnabled() const;
-    void enableCustomPos(bool enable) const;
-
-    // LSurfaceView
-    virtual void setCustomPosC(const LPoint &customPosC);
-    virtual const LPoint &customPosC();
-
-    // LView
     virtual bool mapped() const override;
     virtual const LPoint &posC() const override;
     virtual const LSize &sizeC() const override;
@@ -45,8 +37,7 @@ public:
                            Float32 scale,
                            Float32 alpha) override;
 
-
-LPRIVATE_IMP(LSurfaceView)
+LPRIVATE_IMP(LSolidColorView)
 };
 
-#endif // LSURFACEVIEW_H
+#endif // LSOLIDCOLORVIEW_H

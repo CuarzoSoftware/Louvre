@@ -22,17 +22,20 @@ LPRIVATE_CLASS(LScene)
         LRegion opaqueTransposedCSum;
     };
 
+    LRGBF clearColor = {0,0,0};
     std::map<LOutput*, OutputData>outputsMap;
     LLayerView mainView;
 
     void clearTmpVariables(OutputData &oD);
     void damageAll(OutputData &oD);
     void checkRectChange(OutputData &oD);
-    void calcNewDamage(LView *view, OutputData &oD, bool force = false);
+    void calcNewDamage(LView *view, OutputData &oD, bool force = false, LRegion *opacity = nullptr);
     void drawOpaqueDamage(LView *view, OutputData &oD, bool force = false);
     void drawBackground(OutputData &oD);
-    void drawTranslucentDamage(LView *view, OutputData &oD, bool force = false);
+    void drawTranslucentDamage(LView *view, OutputData &oD, bool force = false, LRegion *opacity = nullptr);
 
+    void parentClipping(LView *parent, LRegion *region);
+    bool pointClippedByParent(LView *parent, const LPoint &point);
     LView *viewAtC(LView *view, const LPoint &pos);
 };
 

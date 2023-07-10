@@ -73,6 +73,21 @@ LLayerView &LScene::mainView() const
     return imp()->mainView;
 }
 
+const LRGBF &LScene::clearColor() const
+{
+    return imp()->clearColor;
+}
+
+void LScene::setClearColor(const LRGBF &color)
+{
+    imp()->clearColor = color;
+}
+
+void LScene::setClearColor(Float32 r, Float32 g, Float32 b)
+{
+    imp()->clearColor = {r, g, b};
+}
+
 LView *LScene::viewAtC(const LPoint &pos)
 {
     return imp()->viewAtC(&mainView(), pos);

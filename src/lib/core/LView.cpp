@@ -65,6 +65,8 @@ void LView::setParent(LView *view)
         {
             for (auto &pair : imp()->outputsMap)
             {
+                if (!pair.second.prevMapped)
+                    continue;
                 LScene::LScenePrivate::OutputData &data = s->imp()->outputsMap[pair.first];
                 data.newDamageC.addRect(pair.second.previousRectC);
             }
@@ -126,6 +128,9 @@ bool LView::clippingEnabled() const
 
 void LView::enableClipping(bool enabled)
 {
+    if (mapped() && enabled != imp()->clippingEnabled)
+        repaint();
+
     imp()->clippingEnabled = enabled;
 }
 
@@ -146,22 +151,23 @@ bool LView::scalingEnabled() const
 
 void LView::enableScaling(bool enabled)
 {
+    if (mapped() && enabled != imp()->scalingEnabled)
+        repaint();
+
     imp()->scalingEnabled = enabled;
 }
 
 void LView::setScaledSizeC(const LSize &size)
 {
     imp()->scaledSizeC = size;
+
+    if (mapped() && scalingEnabled())
+        repaint();
 }
 
 const LSize &LView::scaledSizeC() const
 {
     return imp()->scaledSizeC;
-}
-
-bool LView::mapped() const
-{
-    return imp()->interface.mapped(this);
 }
 
 bool LView::visible() const
@@ -171,18 +177,29 @@ bool LView::visible() const
 
 void LView::setVisible(bool visible)
 {
+    bool prev = mapped();
     imp()->visible = visible;
+
+    if (prev != mapped())
+        repaint();
 }
 
 Float32 LView::opacity() const
 {
-    if (parent())
-        return parent()->opacity() * imp()->opacity;
-
     return imp()->opacity;
 }
 
 void LView::setOpacity(Float32 opacity)
 {
+    if (mapped() && opacity != imp()->opacity)
+        repaint();
     imp()->opacity = opacity;
+}
+
+Float32 LView::multipliedOpacity() const
+{
+    if (parent())
+        return parent()->multipliedOpacity() * imp()->opacity;
+
+    return imp()->opacity;
 }

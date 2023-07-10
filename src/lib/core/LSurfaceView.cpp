@@ -2,6 +2,7 @@
 #include <private/LViewPrivate.h>
 #include <LSurface.h>
 #include <LOutput.h>
+#include <LPainter.h>
 
 using namespace Louvre;
 
@@ -54,9 +55,20 @@ const LPoint &LSurfaceView::customPosC()
     return imp()->customPosC;
 }
 
-const LRegion &LSurfaceView::inputRegionC() const
+const LRegion *LSurfaceView::inputRegionC() const
 {
-    return surface()->inputRegionC();
+    return &surface()->inputRegionC();
+}
+
+void LSurfaceView::paintRect(LPainter *p, Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH, Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH, Float32 scale, Float32 alpha)
+{
+    p->drawTextureC(surface()->texture(),
+                    srcX, srcY,
+                    srcW, srcH,
+                    dstX, dstY,
+                    dstW, dstH,
+                    scale,
+                    alpha);
 }
 
 bool LSurfaceView::mapped() const
@@ -89,8 +101,6 @@ const LPoint &LSurfaceView::posC() const
 
 const LSize &LSurfaceView::sizeC() const
 {
-    if (scalingEnabled())
-        return scaledSizeC();
     return surface()->sizeC();
 }
 

@@ -74,6 +74,8 @@ namespace Louvre
     class LView;
     class LLayerView;
     class LSurfaceView;
+    class LTextureView;
+    class LSolidColorView;
 
     // Data
     class LDataDevice;
@@ -189,6 +191,13 @@ namespace Louvre
         UInt32 strides[LOUVRE_MAX_DMA_PLANES]   = {0, 0, 0, 0};
         UInt32 offsets[LOUVRE_MAX_DMA_PLANES]   = {0, 0, 0, 0};
         UInt64 modifiers[LOUVRE_MAX_DMA_PLANES] = {0, 0, 0, 0};
+    };
+
+    struct LRGBF
+    {
+        Float32 r;
+        Float32 g;
+        Float32 b;
     };
 
     struct LGraphicBackendInterface

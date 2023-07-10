@@ -4,6 +4,7 @@
 #include <LAnimation.h>
 #include <LLayerView.h>
 #include <LSurfaceView.h>
+#include <LPainter.h>
 #include <LLog.h>
 
 Output::Output():LOutput(){}
@@ -15,25 +16,26 @@ Compositor *Output::compositor() const
 
 void Output::initializeGL()
 {
+    compositor()->scene.mainView().setCustomSize(LSize(500,500));
+    topBar.setScaledSizeC(LSize(sizeC().w(), 32*compositor()->globalScale()));
+    topBar.setParent(&compositor()->overlayLayer);
     compositor()->scene.handleInitializeGL(this);
 
     LAnimation *anim = new LAnimation(
-        5000,
+        10000,
         [](LAnimation *anim)->bool
         {
             LScene *scene = (LScene*)anim->data();
-            scene->mainView().setCustomPosC(LPoint(
-                                                (Int32)(100*(1.f + sinf(anim->value()*10))),
-                                                (Int32)(100*(1.f + cosf(anim->value()*10)))
-                                            ));
-            LLog::debug("Anim %f", anim->value());
-            LCompositor::compositor()->repaintAllOutputs();
+            Int32 size = 100 + (1.f + sinf(anim->value()*20)) * 1000;
+            scene->mainView().setCustomSize(size);
+            //scene->mainView().setOpacity(anim->value());
             return true;
         },
         [](LAnimation *anim)
         {
             LScene *scene = (LScene*)anim->data();
-            scene->mainView().setCustomPosC(LPoint(200, 200));
+            scene->mainView().setCustomPosC(LPoint(0, 0));
+            scene->mainView().setOpacity(1.f);
         },
         &compositor()->scene);
 
@@ -48,6 +50,8 @@ void Output::resizeGL()
 
 void Output::paintGL()
 {
+    //painter()->clearScreen();
+
     // Some times a surface may move under the cursor so we call this to update the cursor
     LSurfaceView *view = (LSurfaceView*)compositor()->scene.viewAtC(cursor()->posC());
     if (view && view->type() == LView::Surface && view->surface() != seat()->pointer()->focusSurface())

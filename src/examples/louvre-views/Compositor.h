@@ -1,6 +1,7 @@
 #ifndef COMPOSITOR_H
 #define COMPOSITOR_H
 
+#include <LLayerView.h>
 #include <LCompositor.h>
 #include <LScene.h>
 #include <LView.h>
@@ -17,6 +18,10 @@ public:
     LPointer *createPointerRequest(LPointer::Params *params) override;
 
     LScene scene;
+    LLayerView backgroundLayer = LLayerView((LView*)&scene.mainView());
+    LLayerView surfacesLayer = LLayerView((LView*)&scene.mainView());
+    LLayerView overlayLayer = LLayerView((LView*)&scene.mainView());
+
 };
 
 #endif // COMPOSITOR_H

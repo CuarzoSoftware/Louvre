@@ -10,47 +10,21 @@ using namespace Louvre;
 
 LPRIVATE_CLASS(LView)
 
-    struct ViewInterface
-    {
-        void (*unref)(const LView *view);
-        bool (*mapped)(const LView *view);
-
-        LTexture *(*texture)(const LView *view);
-        void (*setTexture)(const LView *view, LTexture *texture);
-
-        const LRegion &(*damageC)(const LView *view);
-        void (*setDamageC)(const LView *view, const LRegion &region);
-
-        const LRegion &(*inputRegionC)(const LView *view);
-        void (*setInputRegionC)(const LView *view, const LRegion &region);
-
-        const LRegion &(*opaqueRegionC)(const LView *view);
-        void (*setOpaqueRegionC)(const LView *view, const LRegion &region);
-
-        const LRegion &(*translucentRegionC)(const LView *view);
-        void (*setTranslucentRegionC)(const LView *view, const LRegion &region);
-
-        const LPoint &(*posC)(const LView *view);
-        void (*setPosC)(const LView *view, const LPoint &pos);
-
-        const LPoint &(*sizeC)(const LView *view);
-        void (*setSizeC)(const LView *view, const LSize &size);
-
-        Int32 (*scale)(const LView *view);
-    } interface;
-
     LScene *scene = nullptr;
     bool clippingEnabled = false;
     bool visible = true;
     bool inputEnabled = false;
     bool scalingEnabled = false;
+    bool cacheScalingEnabled;
     LSize scaledSizeC;
     LView *parent = nullptr;
     std::list<LView*>::iterator parentLink;
     std::list<LView*>children;
     UInt32 type;
     Float32 opacity = 1.f;
+    Float32 cachedMultipliedOpacity;
     void *backendData = nullptr;
+    LPointF axisScalig;
 
     /* TMP paintGL() vars */
 
@@ -64,15 +38,17 @@ LPRIVATE_CLASS(LView)
     bool bufferScaleMatchGlobalScale = false;
 
     // Cache rect (posC(), sizeC())
-    LRect currentRectC;
+    LRect currentRectC = LRect(-1,-1,-1,-1);
 
     // Cached data for each output
     struct ViewOutputData
     {
+        Float32 prevMultipliedOpacity = 1.f;
         UInt32 lastRenderedDamageId;
         LRect previousRectC;
         bool changedOrder = true;
         bool prevMapped = false;
+        LRegion prevParentClippingC;
     };
 
     std::map<LOutput*,ViewOutputData>outputsMap;
@@ -84,6 +60,7 @@ LPRIVATE_CLASS(LView)
     LRegion currentDamageTransposedC;
     LRegion currentOpaqueTransposedCSum;
     LRegion currentTraslucentTransposedC;
+    LRegion childrenOpaqueTransposedCSum;
 };
 
 #endif // LVIEWPRIVATE_H
