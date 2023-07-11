@@ -69,10 +69,16 @@ void Surface::roleChanged()
     {
         view.enableForceRequestNextFrame(true);
         view.setVisible(false);
+        view.setParent(&compositor()->cursorsLayer);
     }
 }
 
 void Surface::bufferSizeChanged()
 {
     //view.setScaledSizeC(sizeB()*0.75f);
+}
+
+void Surface::minimizedChanged()
+{
+    view.repaint();
 }

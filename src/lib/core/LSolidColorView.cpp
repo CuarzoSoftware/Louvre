@@ -22,6 +22,11 @@ LSolidColorView::LSolidColorView(const LRGBF &color, Float32 a, LView *parent) :
     setOpacity(a);
 }
 
+LSolidColorView::~LSolidColorView()
+{
+    delete m_imp;
+}
+
 void LSolidColorView::setColor(const LRGBF &color)
 {
     imp()->color = color;
@@ -37,6 +42,14 @@ void LSolidColorView::setColor(Float32 r, Float32 g, Float32 b)
 const LRGBF &LSolidColorView::color() const
 {
     return imp()->color;
+}
+
+void LSolidColorView::setPosC(const LPoint &pos)
+{
+    if (mapped() && pos != imp()->posC)
+        repaint();
+
+    imp()->posC = pos;
 }
 
 bool LSolidColorView::mapped() const

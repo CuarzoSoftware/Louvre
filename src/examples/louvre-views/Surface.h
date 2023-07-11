@@ -18,6 +18,8 @@ public:
     void orderChanged() override;
     void roleChanged() override;
     void bufferSizeChanged() override;
+    void minimizedChanged() override;
+
     bool firstMap = true;
     LSurfaceView view = LSurfaceView(this, true, false, (LView*)&compositor()->surfacesLayer);
 };

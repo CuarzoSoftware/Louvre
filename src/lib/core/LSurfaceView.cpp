@@ -161,7 +161,10 @@ void LSurfaceView::requestNextFrame(LOutput *output)
             o->repaint();
         }
     }
-    surface()->requestNextFrame(clearDamage);
+
+    if (clearDamage)
+        surface()->requestNextFrame();
+
     view->imp()->outputsMap[output].lastRenderedDamageId = surface()->damageId();
 }
 

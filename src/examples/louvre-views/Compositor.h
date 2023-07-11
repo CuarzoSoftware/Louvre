@@ -21,6 +21,7 @@ public:
     LLayerView backgroundLayer = LLayerView((LView*)&scene.mainView());
     LLayerView surfacesLayer = LLayerView((LView*)&scene.mainView());
     LLayerView overlayLayer = LLayerView((LView*)&scene.mainView());
+    LLayerView cursorsLayer = LLayerView((LView*)&scene.mainView());
 
 };
 

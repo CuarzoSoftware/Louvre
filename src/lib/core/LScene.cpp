@@ -32,6 +32,7 @@ void LScene::handlePaintGL(LOutput *output)
 {
     LScenePrivate::OutputData &oD = imp()->outputsMap[output];
     imp()->clearTmpVariables(oD);
+    imp()->checkOutputsScale(oD);
     imp()->checkRectChange(oD);
     imp()->calcNewDamage(&mainView(), oD);
 

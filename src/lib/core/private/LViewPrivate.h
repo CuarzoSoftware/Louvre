@@ -60,7 +60,6 @@ LPRIVATE_CLASS(LView)
     LRegion currentDamageTransposedC;
     LRegion currentOpaqueTransposedCSum;
     LRegion currentTraslucentTransposedC;
-    LRegion childrenOpaqueTransposedCSum;
 };
 
 #endif // LVIEWPRIVATE_H

@@ -20,6 +20,8 @@ LPRIVATE_CLASS(LScene)
         Int32 n, w, h;
         LBox *boxes;
         LRegion opaqueTransposedCSum;
+        bool allOutputsMatchGlobalScale;
+        bool outputMatchGlobalScale;
     };
 
     LRGBF clearColor = {0,0,0};
@@ -27,12 +29,13 @@ LPRIVATE_CLASS(LScene)
     LLayerView mainView;
 
     void clearTmpVariables(OutputData &oD);
+    void checkOutputsScale(OutputData &oD);
     void damageAll(OutputData &oD);
     void checkRectChange(OutputData &oD);
-    void calcNewDamage(LView *view, OutputData &oD, bool force = false, LRegion *opacity = nullptr);
+    void calcNewDamage(LView *view, OutputData &oD, bool force = false);
     void drawOpaqueDamage(LView *view, OutputData &oD, bool force = false);
     void drawBackground(OutputData &oD);
-    void drawTranslucentDamage(LView *view, OutputData &oD, bool force = false, LRegion *opacity = nullptr);
+    void drawTranslucentDamage(LView *view, OutputData &oD, bool force = false);
 
     void parentClipping(LView *parent, LRegion *region);
     bool pointClippedByParent(LView *parent, const LPoint &point);

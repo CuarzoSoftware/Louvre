@@ -7,7 +7,10 @@
 #include <LPainter.h>
 #include <LLog.h>
 
-Output::Output():LOutput(){}
+Output::Output():LOutput()
+{
+    topBar.setVisible(false);
+}
 
 Compositor *Output::compositor() const
 {
@@ -15,20 +18,26 @@ Compositor *Output::compositor() const
 }
 
 void Output::initializeGL()
-{
-    compositor()->scene.mainView().setCustomSize(LSize(500,500));
+{    
+    /*
+    compositor()->scene.mainView().enableClipping(false);
+    compositor()->scene.mainView().setCustomPosC(posC());
+    compositor()->scene.mainView().setCustomSize(sizeC());*/
+    topBar.setPosC(rectC().pos());
     topBar.setScaledSizeC(LSize(sizeC().w(), 32*compositor()->globalScale()));
     topBar.setParent(&compositor()->overlayLayer);
+    topBar.setVisible(true);
     compositor()->scene.handleInitializeGL(this);
 
+    /*
     LAnimation *anim = new LAnimation(
         10000,
         [](LAnimation *anim)->bool
         {
             LScene *scene = (LScene*)anim->data();
             Int32 size = 100 + (1.f + sinf(anim->value()*20)) * 1000;
-            scene->mainView().setCustomSize(size);
-            //scene->mainView().setOpacity(anim->value());
+            //scene->mainView().setCustomSize(size);
+            scene->mainView().setOpacity(sinf(anim->value()*30));
             return true;
         },
         [](LAnimation *anim)
@@ -39,12 +48,16 @@ void Output::initializeGL()
         },
         &compositor()->scene);
 
-    anim->start();
+    anim->start();*/
 
 }
 
 void Output::resizeGL()
 {
+    /*compositor()->scene.mainView().setCustomPosC(posC());
+    compositor()->scene.mainView().setCustomSize(sizeC());*/
+    topBar.setPosC(rectC().pos());
+    topBar.setScaledSizeC(LSize(sizeC().w(), 32*compositor()->globalScale()));
     compositor()->scene.handleResizeGL(this);
 }
 

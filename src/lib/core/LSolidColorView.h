@@ -9,10 +9,13 @@ public:
     LSolidColorView(LView *parent);
     LSolidColorView(Float32 r = 0.f, Float32 g = 0.f, Float32 b = 0.f, Float32 a = 1.f, LView *parent = nullptr);
     LSolidColorView(const LRGBF &color, Float32 a = 1.f, LView *parent = nullptr);
+    ~LSolidColorView();
 
     void setColor(const LRGBF &color);
     void setColor(Float32 r, Float32 g, Float32 b);
     const LRGBF &color() const;
+
+    virtual void setPosC(const LPoint &pos);
 
     virtual bool mapped() const override;
     virtual const LPoint &posC() const override;

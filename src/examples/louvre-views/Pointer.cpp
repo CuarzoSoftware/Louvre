@@ -28,6 +28,9 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
 {
     cursor()->setPosC(LPointF(x,y));
 
+    for (LSurfaceView *cursorView : (std::list<LSurfaceView*>&)compositor()->cursorsLayer.children())
+        cursorView->surface()->setPosC(cursor()->posC());
+
     // Repaint cursor outputs if hardware composition is not supported
     for (LOutput *output : cursor()->intersectedOutputs())
     {
