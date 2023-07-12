@@ -7,8 +7,21 @@
 
 Compositor::Compositor():LCompositor()
 {
-    scene.setClearColor(0.1f, 0.1f, 0.5f);
-    scene.mainView().enableClipping(false);
+    scene = new LScene();
+    scene->setClearColor(0.1f, 0.1f, 0.5f);
+    backgroundLayer = new LLayerView(&scene->mainView());
+    surfacesLayer = new LLayerView(&scene->mainView());
+    overlayLayer = new LLayerView(&scene->mainView());
+    hiddenCursorsLayer = new LLayerView(&scene->mainView());
+}
+
+Compositor::~Compositor()
+{
+    delete hiddenCursorsLayer;
+    delete overlayLayer;
+    delete surfacesLayer;
+    delete scene;
+    delete backgroundLayer;
 }
 
 LOutput *Compositor::createOutputRequest()

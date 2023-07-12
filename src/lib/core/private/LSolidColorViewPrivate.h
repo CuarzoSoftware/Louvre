@@ -8,13 +8,14 @@ using namespace Louvre;
 
 LPRIVATE_CLASS(LSolidColorView)
     LRGBF color;
-    LPoint posC;
+    LPoint nativePos;
+    LSize nativeSize;
+    LRegion *inputRegion = nullptr;
+    LRegion opaqueRegion;
+    LRegion emptyRegion;
+    std::list<LOutput *>outputs;
+
     LPoint tmpPos;
-    LRegion inputRegionC;
-    LRegion opaqueRegionC;
-    LRegion translucentRegionC;
-    LRegion damageC;
-    std::list<LOutput*>outputs;
 };
 
 #endif // LSOLIDCOLORVIEWPRIVATE_H

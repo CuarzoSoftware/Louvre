@@ -12,17 +12,17 @@ class Compositor : public LCompositor
 {
 public:
     Compositor();
+    ~Compositor();
 
     LOutput *createOutputRequest() override;
     LSurface *createSurfaceRequest(LSurface::Params *params) override;
     LPointer *createPointerRequest(LPointer::Params *params) override;
 
-    LScene scene;
-    LLayerView backgroundLayer = LLayerView((LView*)&scene.mainView());
-    LLayerView surfacesLayer = LLayerView((LView*)&scene.mainView());
-    LLayerView overlayLayer = LLayerView((LView*)&scene.mainView());
-    LLayerView cursorsLayer = LLayerView((LView*)&scene.mainView());
-
+    LScene *scene;
+    LLayerView *backgroundLayer;
+    LLayerView *surfacesLayer;
+    LLayerView *overlayLayer;
+    LLayerView *hiddenCursorsLayer;
 };
 
 #endif // COMPOSITOR_H

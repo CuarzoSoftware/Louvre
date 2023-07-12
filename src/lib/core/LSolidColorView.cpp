@@ -44,45 +44,77 @@ const LRGBF &LSolidColorView::color() const
     return imp()->color;
 }
 
-void LSolidColorView::setPosC(const LPoint &pos)
+void LSolidColorView::setNativePosC(const LPoint &pos)
 {
-    if (mapped() && pos != imp()->posC)
+    if (mapped() && pos != imp()->nativePos)
         repaint();
 
-    imp()->posC = pos;
+    imp()->nativePos = pos;
 }
 
-bool LSolidColorView::mapped() const
+void LSolidColorView::setNativeSizeC(const LSize &size)
 {
-    return visible();
-}
-
-const LPoint &LSolidColorView::posC() const
-{
-    if (parent())
+    if (size != imp()->nativeSize)
     {
-        imp()->tmpPos = imp()->posC + parent()->posC();
-        return imp()->tmpPos;
+        imp()->nativeSize = size;
+
+        imp()->opaqueRegion.clear();
+        imp()->opaqueRegion.addRect(LRect(LPoint(0,0), imp()->nativeSize));
+
+        if (mapped())
+            repaint();
     }
-    return imp()->posC;
 }
 
-const LSize &LSolidColorView::sizeC() const
+void LSolidColorView::setInputRegionC(const LRegion *region) const
 {
-    return scaledSizeC();
+    if (region)
+    {
+        if (imp()->inputRegion)
+            *imp()->inputRegion = *region;
+        else
+        {
+            imp()->inputRegion = new LRegion();
+            *imp()->inputRegion = *region;
+        }
+    }
+    else
+    {
+        if (imp()->inputRegion)
+        {
+            delete imp()->inputRegion;
+            imp()->inputRegion = nullptr;
+        }
+    }
 }
 
-Int32 LSolidColorView::scale() const
+bool LSolidColorView::nativeMapped() const
 {
-    return 1;
+    return true;
 }
 
-void LSolidColorView::enterOutput(LOutput *output)
+const LPoint &LSolidColorView::nativePosC() const
 {
+    return imp()->nativePos;
+}
+
+const LSize &LSolidColorView::nativeSizeC() const
+{
+    return imp()->nativeSize;
+}
+
+Int32 LSolidColorView::bufferScale() const
+{
+    return 0;
+}
+
+void LSolidColorView::enteredOutput(LOutput *output)
+{
+    imp()->outputs.remove(output);
     imp()->outputs.push_back(output);
 }
 
-void LSolidColorView::leaveOutput(LOutput *output)
+void LSolidColorView::leftOutput(LOutput *output)
 {
     imp()->outputs.remove(output);
 }
@@ -97,16 +129,6 @@ bool LSolidColorView::isRenderable() const
     return true;
 }
 
-bool LSolidColorView::forceRequestNextFrameEnabled() const
-{
-    return false;
-}
-
-void LSolidColorView::enableForceRequestNextFrame(bool enabled)
-{
-    L_UNUSED(enabled)
-}
-
 void LSolidColorView::requestNextFrame(LOutput *output)
 {
     L_UNUSED(output);
@@ -114,35 +136,25 @@ void LSolidColorView::requestNextFrame(LOutput *output)
 
 const LRegion *LSolidColorView::damageC() const
 {
-    return &imp()->damageC;
+    return &imp()->emptyRegion;
 }
 
 const LRegion *LSolidColorView::translucentRegionC() const
 {
-    imp()->translucentRegionC.clear();
-
-    if (opacity() <= 1.f)
-        imp()->translucentRegionC.addRect(0 ,0, sizeC().w(), sizeC().h());
-
-    return &imp()->translucentRegionC;
+    return &imp()->emptyRegion;
 }
 
 const LRegion *LSolidColorView::opaqueRegionC() const
 {
-    imp()->opaqueRegionC.clear();
-
-    if (opacity() >= 1.f)
-        imp()->opaqueRegionC.addRect(0 ,0, sizeC().w(), sizeC().h());
-
-    return &imp()->opaqueRegionC;
+    return &imp()->opaqueRegion;
 }
 
 const LRegion *LSolidColorView::inputRegionC() const
 {
-    return &imp()->inputRegionC;
+    return imp()->inputRegion;
 }
 
-void LSolidColorView::paintRect(LPainter *p, Int32, Int32, Int32, Int32, Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH, Float32, Float32 alpha)
+void LSolidColorView::paintRectC(LPainter *p, Int32, Int32, Int32, Int32, Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH, Float32, Float32 alpha)
 {
     p->drawColorC(dstX, dstY, dstW, dstH,
                   color().r, color().g, color().b,

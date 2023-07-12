@@ -7,11 +7,13 @@
 using namespace Louvre;
 
 LPRIVATE_CLASS(LLayerView)
-    LPoint customPosC;
-    LSize customSizeC;
-    LRegion inputRegionC;
-    LPoint tmpPosC;
+    LPoint nativePos;
+    LSize nativeSize = LSize(256, 256);
+    LRegion *inputRegion = nullptr;
+    LRegion dummyRegion;
     std::list<LOutput *>outputs;
+
+    LPoint tmpPos;
 };
 
 #endif // LLAYERVIEWPRIVATE_H

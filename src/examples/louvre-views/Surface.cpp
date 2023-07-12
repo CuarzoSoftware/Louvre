@@ -7,11 +7,12 @@
 
 Surface::Surface(LSurface::Params *params, GLuint textureUnit) : LSurface(params, textureUnit)
 {
-    //view.enableScaling(true);
+   view = new LSurfaceView(this, compositor()->surfacesLayer);
 }
 
 Surface::~Surface()
 {
+    delete view;
 }
 
 Compositor *Surface::compositor() const
@@ -49,7 +50,7 @@ void Surface::mappingChanged()
     }
     else
     {
-        view.repaint();
+        view->repaint();
     }
 }
 
@@ -58,27 +59,37 @@ void Surface::orderChanged()
     Surface *prev = (Surface*)prevSurface();
 
     if (prev)
-        view.insertAfter(&prev->view);
+        view->insertAfter(prev->view, false);
     else
-        view.insertAfter(nullptr);
+        view->insertAfter(nullptr, false);
 }
 
 void Surface::roleChanged()
 {
     if (roleId() == LSurface::Cursor)
     {
-        view.enableForceRequestNextFrame(true);
-        view.setVisible(false);
-        view.setParent(&compositor()->cursorsLayer);
+        view->enableForceRequestNextFrame(true);
+        view->setVisible(false);
+        view->setParent(compositor()->hiddenCursorsLayer);
     }
 }
 
 void Surface::bufferSizeChanged()
 {
-    //view.setScaledSizeC(sizeB()*0.75f);
+    view->repaint();
 }
 
 void Surface::minimizedChanged()
 {
-    view.repaint();
+    if (minimized())
+    {
+        if (toplevel())
+            toplevel()->configureC(0);
+    }
+    else
+    {
+        compositor()->raiseSurface(this);
+        if (toplevel())
+            toplevel()->configureC(LToplevelRole::Activated);
+    }
 }

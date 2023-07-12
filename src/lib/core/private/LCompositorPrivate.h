@@ -63,17 +63,12 @@ LPRIVATE_CLASS(LCompositor)
     void insertSurfaceBefore(LSurface *nextSurface, LSurface *surfaceToInsert);
     void updateGlobalScale();
 
-    // Clients
     list<LClient*>clients;
-
-    // Outputs
     list<LOutput*>outputs;
-
-    // Surfaces
     list<LSurface*>surfaces;
-
-    // Animations
+    list<LView*>views;
     list<LAnimation*>animations;
+
     bool runningAnimations();
     void processAnimations();
 

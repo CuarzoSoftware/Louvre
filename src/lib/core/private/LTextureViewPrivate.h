@@ -1,11 +1,12 @@
 #ifndef LTEXTUREVIEWPRIVATE_H
 #define LTEXTUREVIEWPRIVATE_H
 
+#include <LTextureView.h>
 
-class LTextureViewPrivate
-{
-public:
-    LTextureViewPrivate();
+using namespace Louvre;
+
+LPRIVATE_CLASS(LTextureView)
+
 };
 
 #endif // LTEXTUREVIEWPRIVATE_H

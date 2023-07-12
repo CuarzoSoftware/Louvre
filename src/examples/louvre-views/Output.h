@@ -18,7 +18,7 @@ public:
     void paintGL() override;
     void uninitializeGL() override;
 
-    LSolidColorView topBar = LSolidColorView(1.f, 1.f, 1.f, 0.5);
+    LSolidColorView *topBar;
 };
 
 #endif // OUTPUT_H

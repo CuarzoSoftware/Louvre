@@ -1,6 +1,8 @@
+#include <private/LCompositorPrivate.h>
 #include <private/LViewPrivate.h>
 #include <private/LScenePrivate.h>
 #include <LOutput.h>
+#include <LLog.h>
 
 using namespace Louvre;
 
@@ -8,17 +10,26 @@ LView::LView(UInt32 type, LView *parent)
 {
     m_imp = new LViewPrivate();
     imp()->type = type;
+    compositor()->imp()->views.push_back(this);
+    imp()->compositorLink = std::prev(compositor()->imp()->views.end());
     setParent(parent);
 }
 
 LView::~LView()
 {
     setParent(nullptr);
+
+    while (!children().empty())
+        children().front()->setParent(nullptr);
+
+    compositor()->imp()->views.erase(imp()->compositorLink);
+
     delete m_imp;
 }
 
 LScene *LView::scene() const
 {
+    // Only the LScene mainView has this variable assigned
     if (imp()->scene)
         return imp()->scene;
 
@@ -67,8 +78,9 @@ void LView::setParent(LView *view)
             {
                 if (!pair.second.prevMapped)
                     continue;
+
                 LScene::LScenePrivate::OutputData &data = s->imp()->outputsMap[pair.first];
-                data.newDamageC.addRect(pair.second.previousRectC);
+                data.newDamageC.addRegion(pair.second.prevParentClipping);
             }
         }
     }
@@ -76,13 +88,22 @@ void LView::setParent(LView *view)
     imp()->parent = view;
 }
 
-void LView::insertAfter(LView *prev)
+void LView::insertAfter(LView *prev, bool switchParent)
 {
-    if (!parent() || prev == this)
+    if (prev == this)
         return;
 
+    // If prev == nullptr, insert to the front of current parent children list
     if (!prev)
     {
+        // If no parent, is a no-op
+        if (!parent())
+            return;
+
+        // Already in front
+        if (parent()->children().front() == this)
+            return;
+
         parent()->imp()->children.erase(imp()->parentLink);
         parent()->imp()->children.push_front(this);
         imp()->parentLink = parent()->imp()->children.begin();
@@ -94,7 +115,22 @@ void LView::insertAfter(LView *prev)
     }
     else
     {
-        if (!prev->parent() || prev->parent() != parent())
+        if (switchParent)
+        {
+            setParent(prev->parent());
+        }
+        else
+        {
+            if (prev->parent() != parent())
+                return;
+        }
+
+        for (auto &pair : imp()->outputsMap)
+            pair.second.changedOrder = true;
+
+        repaint();
+
+        if (!parent())
             return;
 
         if (prev == parent()->children().back())
@@ -108,11 +144,6 @@ void LView::insertAfter(LView *prev)
             parent()->imp()->children.erase(imp()->parentLink);
             imp()->parentLink = parent()->imp()->children.insert(std::next(prev->imp()->parentLink), this);
         }
-
-        for (auto &pair : imp()->outputsMap)
-            pair.second.changedOrder = true;
-
-        repaint();
     }
 }
 
@@ -121,17 +152,59 @@ std::list<Louvre::LView *> &LView::children() const
     return imp()->children;
 }
 
-bool LView::clippingEnabled() const
+bool LView::parentOffsetEnabled() const
 {
-    return imp()->clippingEnabled;
+    return imp()->parentOffsetEnabled;
 }
 
-void LView::enableClipping(bool enabled)
+void LView::enableParentOffset(bool enabled)
 {
-    if (mapped() && enabled != imp()->clippingEnabled)
+    if (mapped() && enabled != parentOffsetEnabled())
         repaint();
 
-    imp()->clippingEnabled = enabled;
+    imp()->parentOffsetEnabled = enabled;
+}
+
+const LPoint &LView::posC() const
+{
+    imp()->tmpPos = nativePosC();
+
+    if (parent())
+    {
+        if (parentOffsetEnabled())
+            imp()->tmpPos += parent()->posC();
+
+        if (parentScalingEnabled())
+            imp()->tmpPos *= parent()->scalingVector();
+    }
+
+    return imp()->tmpPos;
+}
+
+const LSize &LView::sizeC() const
+{
+    imp()->tmpSize = nativeSizeC();
+
+    if (scalingEnabled())
+        imp()->tmpSize *= scalingVector(true);
+
+    if (parent() && parentScalingEnabled())
+        imp()->tmpSize *= parent()->scalingVector();
+
+    return imp()->tmpSize;
+}
+
+bool LView::parentClippingEnabled() const
+{
+    return imp()->parentClippingEnabled;
+}
+
+void LView::enableParentClipping(bool enabled)
+{
+    if (mapped() && enabled != imp()->parentClippingEnabled)
+        repaint();
+
+    imp()->parentClippingEnabled = enabled;
 }
 
 bool LView::inputEnabled() const
@@ -157,17 +230,38 @@ void LView::enableScaling(bool enabled)
     imp()->scalingEnabled = enabled;
 }
 
-void LView::setScaledSizeC(const LSize &size)
+bool LView::parentScalingEnabled() const
 {
-    imp()->scaledSizeC = size;
-
-    if (mapped() && scalingEnabled())
-        repaint();
+    return imp()->parentScalingEnabled;
 }
 
-const LSize &LView::scaledSizeC() const
+void LView::enableParentScaling(bool enabled)
 {
-    return imp()->scaledSizeC;
+    if (mapped() && enabled != imp()->parentScalingEnabled)
+        repaint();
+
+    imp()->parentScalingEnabled = enabled;
+}
+
+const LSizeF &LView::scalingVector(bool forceIgnoreParent) const
+{
+    if (forceIgnoreParent)
+        return imp()->scalingVector;
+
+    imp()->tmpScalingVector = imp()->scalingVector;
+
+    if (parent() && parentScalingEnabled())
+        imp()->tmpScalingVector *= parent()->scalingVector();
+
+    return imp()->tmpScalingVector;
+}
+
+void LView::setScalingVector(const LSizeF &scalingVector)
+{
+    if (mapped() && scalingVector != imp()->scalingVector)
+        repaint();
+
+    imp()->scalingVector = scalingVector;
 }
 
 bool LView::visible() const
@@ -184,22 +278,57 @@ void LView::setVisible(bool visible)
         repaint();
 }
 
-Float32 LView::opacity() const
+bool LView::mapped() const
 {
+    if (imp()->scene)
+        return visible();
+
+    return visible() && nativeMapped() && parent() && parent()->mapped();
+}
+
+Float32 LView::opacity(bool forceIgnoreParent) const
+{
+    if (forceIgnoreParent)
+        return imp()->opacity;
+
+    if (parentOpacityEnabled() && parent())
+        return imp()->opacity * parent()->opacity();
+
     return imp()->opacity;
 }
 
 void LView::setOpacity(Float32 opacity)
 {
+    if (opacity < 0.f)
+        opacity = 0.f;
+    else if(opacity > 1.f)
+        opacity = 1.f;
+
     if (mapped() && opacity != imp()->opacity)
         repaint();
+
     imp()->opacity = opacity;
 }
 
-Float32 LView::multipliedOpacity() const
+bool LView::parentOpacityEnabled() const
 {
-    if (parent())
-        return parent()->multipliedOpacity() * imp()->opacity;
+    return imp()->parentOpacityEnabled;
+}
 
-    return imp()->opacity;
+void LView::enableParentOpacity(bool enabled)
+{
+    if (mapped() && imp()->parentOpacityEnabled != enabled)
+        repaint();
+
+    imp()->parentOpacityEnabled = enabled;
+}
+
+bool LView::forceRequestNextFrameEnabled() const
+{
+    return imp()->forceRequestNextFrameEnabled;
+}
+
+void LView::enableForceRequestNextFrame(bool enabled) const
+{
+    imp()->forceRequestNextFrameEnabled = enabled;
 }

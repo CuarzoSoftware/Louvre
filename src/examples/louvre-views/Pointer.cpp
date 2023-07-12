@@ -24,12 +24,20 @@ Surface *Pointer::focus()
     return (Surface*)focusSurface();
 }
 
+LPoint Pointer::viewLocalPos(LView *view)
+{
+    if ((view->scalingEnabled() || view->parentScalingEnabled()) && view->scalingVector().area() != 0.f)
+        return (cursor()->posC() - view->posC()) / view->scalingVector();
+    else
+        return cursor()->posC() - view->posC();
+}
+
 void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
 {
     cursor()->setPosC(LPointF(x,y));
 
-    for (LSurfaceView *cursorView : (std::list<LSurfaceView*>&)compositor()->cursorsLayer.children())
-        cursorView->surface()->setPosC(cursor()->posC());
+    for (LView *sv : compositor()->hiddenCursorsLayer->children())
+        ((LSurfaceView*)sv)->surface()->setPosC(cursor()->posC());
 
     // Repaint cursor outputs if hardware composition is not supported
     for (LOutput *output : cursor()->intersectedOutputs())
@@ -72,13 +80,13 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
     // If there was a surface holding the left pointer button
     if (draggingSurface())
     {
-        sendMoveEventC(cursor()->posC() - focus()->view.posC());
+        sendMoveEventC(viewLocalPos(focus()->view));
         return;
     }
 
     // Find the first surface under the cursor
     LSurface *surface = nullptr;
-    LView *view = compositor()->scene.viewAtC(cursor()->posC());
+    LView *view = compositor()->scene->viewAtC(cursor()->posC());
 
     if (view && view->type() == LView::Surface)
     {
@@ -95,9 +103,9 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
     else
     {
         if (focusSurface() == surface)
-            sendMoveEventC(cursor()->posC() - view->posC());
+            sendMoveEventC(viewLocalPos(view));
         else
-            setFocusC(surface, cursor()->posC() - view->posC());
+            setFocusC(surface, viewLocalPos(view));
     }
 }
 
@@ -106,7 +114,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
     if (!focusSurface())
     {
         LSurface *surface = nullptr;
-        LView *view = compositor()->scene.viewAtC(cursor()->posC());
+        LView *view = compositor()->scene->viewAtC(cursor()->posC());
 
         if (view && view->type() == LView::Surface)
         {
@@ -125,7 +133,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
             if (!seat()->keyboard()->focusSurface() || !surface->isSubchildOf(seat()->keyboard()->focusSurface()))
                 seat()->keyboard()->setFocus(surface);
 
-            setFocusC(surface, cursor()->posC() - view->posC());
+            setFocusC(surface, viewLocalPos(view));
             sendButtonEvent(button, state);
         }
         // If no surface under the cursor
@@ -184,7 +192,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
         // We stop sending events to the surface on which the left button was being held down
         setDragginSurface(nullptr);
 
-        if (!focus()->view.inputRegionC()->containsPoint(cursor()->posC() - focusSurface()->rolePosC()))
+        if (!focus()->view->inputRegionC()->containsPoint(viewLocalPos(focus()->view)))
         {
             seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
             setFocusC(nullptr);

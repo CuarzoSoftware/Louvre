@@ -8,6 +8,7 @@
 #include <private/LOutputPrivate.h>
 #include <private/LCursorPrivate.h>
 #include <private/LAnimationPrivate.h>
+#include <private/LViewPrivate.h>
 
 #include <protocols/Wayland/private/GOutputPrivate.h>
 
@@ -34,6 +35,9 @@ static LCompositor *s_compositor = nullptr;
 
 LCompositor::LCompositor()
 {
+    if (!s_compositor)
+        s_compositor = this;
+
     LLog::init();
     LSurface::LSurfacePrivate::getEGLFunctions();
     m_imp = new LCompositorPrivate();
@@ -82,7 +86,7 @@ LCompositor::~LCompositor()
 
 bool LCompositor::start()
 {
-    if (compositor())
+    if (compositor() != this)
     {
         LLog::warning("[compositor] Compositor already running. Two Louvre compositors can not live in the same process.");
         return false;
@@ -290,6 +294,9 @@ void LCompositor::removeOutput(LOutput *output)
 
             for (LSurface *s : surfaces())
                 s->sendOutputLeaveEvent(output);
+
+            for (LView *v : imp()->views)
+                v->imp()->removeOutput(v, output);
 
             imp()->outputs.remove(output);
 

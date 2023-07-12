@@ -21,7 +21,7 @@ public:
     void minimizedChanged() override;
 
     bool firstMap = true;
-    LSurfaceView view = LSurfaceView(this, true, false, (LView*)&compositor()->surfacesLayer);
+    LSurfaceView *view = nullptr;
 };
 
 #endif // SURFACE_H

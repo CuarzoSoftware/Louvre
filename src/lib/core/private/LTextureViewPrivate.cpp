@@ -1,6 +1,1 @@
-#include "LTextureViewPrivate.h"
-
-LTextureViewPrivate::LTextureViewPrivate()
-{
-
-}
+#include <private/LTextureViewPrivate.h>

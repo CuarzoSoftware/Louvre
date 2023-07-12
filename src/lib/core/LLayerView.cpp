@@ -4,80 +4,87 @@
 LLayerView::LLayerView(LView *parent) : LView(LView::Layer, parent)
 {
     m_imp = new LLayerViewPrivate();
+    enableInput(false);
 }
 
 LLayerView::~LLayerView()
 {
+    if (imp()->inputRegion)
+        delete imp()->inputRegion;
+
     delete m_imp;
 }
 
-const LPoint &LLayerView::customPosC() const
+void LLayerView::setNativePosC(const LPoint &pos)
 {
-    return imp()->customPosC;
-}
-
-void LLayerView::setCustomSize(const LSize &size)
-{
-    imp()->customSizeC = size;
-
-    if (clippingEnabled())
+    if (mapped() && pos != imp()->nativePos)
         repaint();
+
+    imp()->nativePos = pos;
 }
 
-void LLayerView::setCustomPosC(const LPoint &pos)
+void LLayerView::setNativeSizeC(const LSize &size)
 {
-    imp()->customPosC = pos;
-    repaint();
+    if (mapped() && size != imp()->nativeSize)
+        repaint();
+
+    imp()->nativeSize = size;
 }
 
-void LLayerView::setInputRegionC(const LRegion &region) const
+void LLayerView::setInputRegionC(const LRegion *region) const
 {
-    imp()->inputRegionC = region;
-}
-
-const LRegion *Louvre::LLayerView::inputRegionC() const
-{
-    return &imp()->inputRegionC;
-}
-
-bool LLayerView::mapped() const
-{
-    if (parent())
-        return parent()->mapped() && visible();
-    return visible();
-}
-
-const LPoint &LLayerView::posC() const
-{
-    if (parent())
+    if (region)
     {
-        imp()->tmpPosC = parent()->posC() + imp()->customPosC;
-        return imp()->tmpPosC;
+        if (imp()->inputRegion)
+            *imp()->inputRegion = *region;
+        else
+        {
+            imp()->inputRegion = new LRegion();
+            *imp()->inputRegion = *region;
+        }
     }
-    return imp()->customPosC;
+    else
+    {
+        if (imp()->inputRegion)
+        {
+            delete imp()->inputRegion;
+            imp()->inputRegion = nullptr;
+        }
+    }
 }
 
-const LSize &LLayerView::sizeC() const
+bool LLayerView::nativeMapped() const
 {
-    return imp()->customSizeC;
+    return true;
 }
 
-Int32 LLayerView::scale() const
+const LPoint &LLayerView::nativePosC() const
 {
-    return LCompositor::compositor()->globalScale();
+    return imp()->nativePos;
 }
 
-void LLayerView::enterOutput(LOutput *output)
+const LSize &LLayerView::nativeSizeC() const
 {
+    return imp()->nativeSize;
+}
+
+Int32 LLayerView::bufferScale() const
+{
+    return 0;
+}
+
+void LLayerView::enteredOutput(LOutput *output)
+{
+    imp()->outputs.remove(output);
     imp()->outputs.push_back(output);
 }
 
-void LLayerView::leaveOutput(LOutput *output)
+void LLayerView::leftOutput(LOutput *output)
 {
     imp()->outputs.remove(output);
 }
 
-const std::list<LOutput *> &LLayerView::outputs() const
+const std::list<LOutput*> &LLayerView::outputs() const
 {
     return imp()->outputs;
 }
@@ -87,16 +94,6 @@ bool LLayerView::isRenderable() const
     return false;
 }
 
-bool LLayerView::forceRequestNextFrameEnabled() const
-{
-    return false;
-}
-
-void LLayerView::enableForceRequestNextFrame(bool enabled)
-{
-    L_UNUSED(enabled)
-}
-
 void LLayerView::requestNextFrame(LOutput *output)
 {
     L_UNUSED(output);
@@ -104,20 +101,25 @@ void LLayerView::requestNextFrame(LOutput *output)
 
 const LRegion *LLayerView::damageC() const
 {
-    return nullptr;
+    return &imp()->dummyRegion;
 }
 
 const LRegion *LLayerView::translucentRegionC() const
 {
-    return nullptr;
+    return &imp()->dummyRegion;
 }
 
 const LRegion *LLayerView::opaqueRegionC() const
 {
-    return nullptr;
+    return &imp()->dummyRegion;
 }
 
-void LLayerView::paintRect(LPainter *, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Float32, Float32)
+const LRegion *LLayerView::inputRegionC() const
 {
+    return imp()->inputRegion;
+}
 
+void LLayerView::paintRectC(LPainter *, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Float32, Float32)
+{
+    /* It is not renderable */
 }

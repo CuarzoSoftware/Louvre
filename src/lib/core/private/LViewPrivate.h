@@ -10,56 +10,59 @@ using namespace Louvre;
 
 LPRIVATE_CLASS(LView)
 
+    void removeOutput(Louvre::LView *view, LOutput *output);
+
+    UInt32 type;
     LScene *scene = nullptr;
-    bool clippingEnabled = false;
+    LView *parent = nullptr;
+    std::list<LView*>children;
+    std::list<LView*>::iterator parentLink;
+    std::list<LView*>::iterator compositorLink;
+
+    Float32 opacity = 1.f;
+    LSizeF scalingVector = LSizeF(1.f, 1.f);
+
     bool visible = true;
     bool inputEnabled = false;
     bool scalingEnabled = false;
-    bool cacheScalingEnabled;
-    LSize scaledSizeC;
-    LView *parent = nullptr;
-    std::list<LView*>::iterator parentLink;
-    std::list<LView*>children;
-    UInt32 type;
-    Float32 opacity = 1.f;
-    Float32 cachedMultipliedOpacity;
-    void *backendData = nullptr;
-    LPointF axisScalig;
+    bool parentScalingEnabled = false;
+    bool parentOffsetEnabled = true;
+    bool parentClippingEnabled = false;
+    bool parentOpacityEnabled = true;
+    bool forceRequestNextFrameEnabled = false;
 
-    /* TMP paintGL() vars */
-
-    // If completly occluded by other views
-    bool occluded = false;
-
-    // Cache of mapped() call
-    bool currentMapped = false;
-
-    // Cache scale() == Global Scale
-    bool bufferScaleMatchGlobalScale = false;
-
-    // Cache rect (posC(), sizeC())
-    LRect currentRectC = LRect(-1,-1,-1,-1);
+    LPoint tmpPos;
+    LSize tmpSize;
+    LSizeF tmpScalingVector;
 
     // Cached data for each output
     struct ViewOutputData
     {
-        Float32 prevMultipliedOpacity = 1.f;
+        Float32 prevOpacity = 1.f;
         UInt32 lastRenderedDamageId;
-        LRect previousRectC;
+        LRect prevRect;
         bool changedOrder = true;
         bool prevMapped = false;
-        LRegion prevParentClippingC;
+        LRegion prevParentClipping;
     };
 
+    struct ViewCache
+    {
+        ViewOutputData *voD;
+        LRect rect;
+        LRegion damage;
+        LRegion translucent;
+        LRegion opaque;
+        LRegion opaqueOverlay;
+        Float32 opacity;
+        LSizeF scalingVector;
+        bool mapped = false;
+        bool occluded = false;
+        bool bufferScaleMatchGlobalScale = false;
+        bool scalingEnabled;
+    } cache;
+
     std::map<LOutput*,ViewOutputData>outputsMap;
-
-    // Handle to prevent looking in the map each time
-    ViewOutputData *currentOutputData;
-
-    LRegion currentOpaqueTransposedC;
-    LRegion currentDamageTransposedC;
-    LRegion currentOpaqueTransposedCSum;
-    LRegion currentTraslucentTransposedC;
 };
 
 #endif // LVIEWPRIVATE_H

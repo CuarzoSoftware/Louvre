@@ -8,10 +8,13 @@ using namespace Louvre;
 
 LPRIVATE_CLASS(LSurfaceView)
     LSurface *surface;
-    bool primary;
-    bool customPosEnabled;
-    bool forceRequestNextFrameEnabled = false;
-    LPoint customPosC;
+    LRegion *customInputRegion = nullptr;
+    LPoint customPos;
+
+    bool primary = true;
+    bool customPosEnabled = false;
+    bool customInputRegionEnabled = false;
+
     LPoint tmpPosC;
 };
 
