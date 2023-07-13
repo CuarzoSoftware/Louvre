@@ -1,11 +1,15 @@
 #include <Output.h>
 #include <Compositor.h>
+#include <Dock.h>
 #include <LCursor.h>
 #include <LAnimation.h>
 #include <LLayerView.h>
 #include <LSurfaceView.h>
 #include <LPainter.h>
 #include <LLog.h>
+#include <LOpenGL.h>
+#include <LTextureView.h>
+#include <Shared.h>
 
 Output::Output():LOutput() {}
 
@@ -14,43 +18,45 @@ Compositor *Output::compositor() const
     return (Compositor*)LCompositor::compositor();
 }
 
+void Output::loadWallpaper()
+{
+    if (wallpaperView)
+    {
+        if (wallpaperView->texture())
+        {
+            delete wallpaperView->texture();
+            wallpaperView->setTexture(nullptr);
+        }
+    }
+    else
+    {
+        wallpaperView = new LTextureView(nullptr, comp()->backgroundLayer);
+    }
+
+    char wallpaperPath[256];
+    sprintf(wallpaperPath, "%s/.config/louvre-weston-clone/wallpaper.jpg", getenv("HOME"));
+    LTexture *tmpWallpaper = LOpenGL::loadTexture(wallpaperPath);
+
+    if (tmpWallpaper)
+    {
+        wallpaperView->setTexture(tmpWallpaper->copyB(sizeB()));
+        wallpaperView->setBufferScale(scale());
+        delete tmpWallpaper;
+    }
+
+    wallpaperView->setNativePosC(posC());
+}
+
 void Output::initializeGL()
 {    
-    topBar = new LSolidColorView(1.f, 1.f, 1.f, 0.5);
-    topBar->setNativePosC(rectC().pos());
-    topBar->setNativeSizeC(LSize(sizeC().w(), 32*compositor()->globalScale()));
-    topBar->setParent(compositor()->overlayLayer);
-    topBar->setVisible(true);
-    topBar->enableParentClipping(false);
+    dock = new Dock(this);
+    loadWallpaper();
     compositor()->scene->handleInitializeGL(this);
-
-    /*
-    LAnimation *anim = new LAnimation(
-        10000,
-        [](LAnimation *anim)->bool
-        {
-            LLayerView *layer= (LLayerView*)anim->data();
-            //Int32 size = 100 + (1.f + sinf(anim->value()*20)) * 1000;
-            //layer->setNativeSizeC(size);
-            layer->setScalingVector(LPointF(1.f - anim->value()));
-            layer->parent()->setOpacity(anim->value()+0.5);
-            return true;
-        },
-        [](LAnimation *anim)
-        {
-            LLayerView *layer= (LLayerView*)anim->data();
-            layer->setScalingVector(0.75f);
-        },
-        compositor()->surfacesLayer);
-
-    anim->start();
-    */
 }
 
 void Output::resizeGL()
 {
-    topBar->setNativePosC(rectC().pos());
-    topBar->setNativeSizeC(LSize(sizeC().w(), 32*compositor()->globalScale()));
+    loadWallpaper();
     compositor()->scene->handleResizeGL(this);
 }
 
@@ -69,5 +75,6 @@ void Output::paintGL()
 void Output::uninitializeGL()
 {
     compositor()->scene->handleUninitializeGL(this);
-    delete topBar;
+    delete dock;
+    dock = nullptr;
 }

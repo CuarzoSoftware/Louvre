@@ -92,7 +92,7 @@ void LScene::LScenePrivate::calcNewDamage(LView *view, OutputData &oD, bool forc
         bool rectChanged = cache.rect != cache.voD->prevRect;
 
         // If rect or order changed (set current rect and prev rect as damage)
-        if (mappingChanged || rectChanged || cache.voD->changedOrder || opacityChanged || cache.scalingEnabled)
+        if (mappingChanged || rectChanged || cache.voD->changedOrder || opacityChanged || cache.scalingEnabled || !view->damageC())
         {
             cache.damage.addRect(cache.rect);
             cache.voD->changedOrder = false;
@@ -108,29 +108,8 @@ void LScene::LScenePrivate::calcNewDamage(LView *view, OutputData &oD, bool forc
         }
         else
         {
-            if (cache.scalingEnabled)
-            {
-                // TODO: add this method to LRegion
-
-                LRegion copy = *view->damageC();
-                cache.damage.clear();
-                oD.boxes = copy.rects(&oD.n);
-
-                for (Int32 i = 0; i < oD.n; i++)
-                {
-                    cache.damage.addRect(
-                    cache.scalingVector.x()*(oD.boxes->x1) + cache.rect.x(),
-                    cache.scalingVector.y()*(oD.boxes->y1) + cache.rect.y(),
-                    cache.scalingVector.x()*(oD.boxes->x2 - oD.boxes->x1),
-                    cache.scalingVector.y()*(oD.boxes->y2 - oD.boxes->y1));
-                    oD.boxes++;
-                }
-            }
-            else
-            {
-                cache.damage = *view->damageC();
-                cache.damage.offset(cache.rect.pos());
-            }
+            cache.damage = *view->damageC();
+            cache.damage.offset(cache.rect.pos());
         }
 
         // Calculates the current rect intersected with parents rects (when clipping enabled)
@@ -169,47 +148,28 @@ void LScene::LScenePrivate::calcNewDamage(LView *view, OutputData &oD, bool forc
         }
         else
         {
-            if (cache.scalingEnabled)
+            // Store tansposed traslucent region
+            if (view->translucentRegionC())
             {
-                LRegion copy = *view->translucentRegionC();
-                cache.translucent.clear();
-                oD.boxes = copy.rects(&oD.n);
-
-                for (Int32 i = 0; i < oD.n; i++)
-                {
-                    cache.translucent.addRect(
-                        cache.scalingVector.x()*(oD.boxes->x1) + cache.rect.x(),
-                        cache.scalingVector.y()*(oD.boxes->y1) + cache.rect.y(),
-                        cache.scalingVector.x()*(oD.boxes->x2 - oD.boxes->x1),
-                        cache.scalingVector.y()*(oD.boxes->y2 - oD.boxes->y1));
-                    oD.boxes++;
-                }
-
-                copy = *view->opaqueRegionC();
-                cache.opaque.clear();
-                oD.boxes = copy.rects(&oD.n);
-
-                for (Int32 i = 0; i < oD.n; i++)
-                {
-                    cache.opaque.addRect(
-                        cache.scalingVector.x()*(oD.boxes->x1) + cache.rect.x(),
-                        cache.scalingVector.y()*(oD.boxes->y1) + cache.rect.y(),
-                        cache.scalingVector.x()*(oD.boxes->x2 - oD.boxes->x1),
-                        cache.scalingVector.y()*(oD.boxes->y2 - oD.boxes->y1));
-                    oD.boxes++;
-                }
+                cache.translucent = *view->translucentRegionC();
+                cache.translucent.offset(cache.rect.pos());
             }
             else
             {
-                // TODO: add offsetCopy method to LRegion
+                cache.translucent.clear();
+                cache.translucent.addRect(cache.rect);
+            }
 
-                // Store tansposed traslucent region
-                cache.translucent = *view->translucentRegionC();
-                cache.translucent.offset(cache.rect.pos());
-
-                // Store tansposed opaque region
+            // Store tansposed opaque region
+            if (view->opaqueRegionC())
+            {
                 cache.opaque = *view->opaqueRegionC();
                 cache.opaque.offset(cache.rect.pos());
+            }
+            else
+            {
+                cache.opaque = cache.translucent;
+                cache.opaque.inverse(cache.rect);
             }
         }
 

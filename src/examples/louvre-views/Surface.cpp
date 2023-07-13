@@ -4,6 +4,10 @@
 #include "Surface.h"
 #include "LCursor.h"
 #include "Output.h"
+#include <Shared.h>
+#include <LTextureView.h>
+#include <Dock.h>
+#include <LAnimation.h>
 
 Surface::Surface(LSurface::Params *params, GLuint textureUnit) : LSurface(params, textureUnit)
 {
@@ -83,6 +87,55 @@ void Surface::minimizedChanged()
 {
     if (minimized())
     {
+        minimizedTexture = texture()->copyB(LSize((minimizedItemHeight()*texture()->sizeB().w())/texture()->sizeB().h(), minimizedItemHeight()));
+
+        for (Output *o : outps())
+        {
+            LTextureView *minView = new LTextureView(minimizedTexture, &o->dock->background);
+            minView->setBufferScale(comp()->globalScale());
+            minView->enableScaling(true);
+            minView->enableParentOpacity(false);
+            minimizedViews.push_back(minView);
+
+            posBeforeMinimized = rolePosC();
+            view->enableScaling(true);
+
+            struct AnimData
+            {
+                Surface *surface;
+                LTextureView *minView;
+                Dock *dock;
+            };
+
+            AnimData *animData = new AnimData();
+            animData->minView = minView;
+            animData->surface = this;
+            animData->dock = o->dock;
+
+            (new LAnimation(200,
+            [](LAnimation *anim)->bool
+            {
+                AnimData *animData = (AnimData*)anim->data();
+                animData->minView->setScalingVector(anim->value());
+                animData->surface->view->setScalingVector(1.f - anim->value());
+                animData->surface->setPosC((animData->minView->posC() + animData->minView->sizeC())*anim->value() +
+                                           animData->surface->posBeforeMinimized * (1.f - anim->value()));
+                animData->dock->update();
+                return true;
+            },
+            [](LAnimation *anim)
+            {
+                AnimData *animData = (AnimData*)anim->data();
+                animData->minView->setScalingVector(anim->value());
+                animData->minView->enableScaling(false);
+                animData->dock->update();
+                animData->surface->view->setVisible(false);
+                animData->surface->view->enableScaling(false);
+                delete animData;
+            },
+            animData))->start();
+        }
+
         if (toplevel())
             toplevel()->configureC(0);
     }

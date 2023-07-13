@@ -7,18 +7,21 @@
 using namespace Louvre;
 
 class Compositor;
+class Dock;
 
 class Output : public LOutput
 {
 public:
     Output();
     Compositor *compositor() const;
+    void loadWallpaper();
     void initializeGL() override;
     void resizeGL() override;
     void paintGL() override;
     void uninitializeGL() override;
 
-    LSolidColorView *topBar;
+    LTextureView *wallpaperView = nullptr;
+    Dock *dock = nullptr;
 };
 
 #endif // OUTPUT_H

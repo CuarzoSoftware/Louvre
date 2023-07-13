@@ -22,6 +22,10 @@ public:
 
     bool firstMap = true;
     LSurfaceView *view = nullptr;
+
+    LPoint posBeforeMinimized;
+    LTexture *minimizedTexture;
+    std::list<LTextureView*>minimizedViews;
 };
 
 #endif // SURFACE_H

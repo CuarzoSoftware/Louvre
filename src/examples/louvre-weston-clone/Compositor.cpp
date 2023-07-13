@@ -1,4 +1,5 @@
 #include "LTime.h"
+#include "Seat.h"
 #include <Compositor.h>
 #include <LSeat.h>
 #include <LKeyboard.h>
@@ -12,6 +13,11 @@
 #include <Pointer.h>
 
 Compositor::Compositor():LCompositor(){}
+
+LSeat *Compositor::createSeatRequest(LSeat::Params *params)
+{
+    return new Seat(params);
+}
 
 LOutput *Compositor::createOutputRequest()
 {

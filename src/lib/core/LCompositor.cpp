@@ -158,7 +158,7 @@ bool LCompositor::start()
 
 Int32 LCompositor::processLoop(Int32 msTimeout)
 {
-    if (imp()->runningAnimations())
+    if (imp()->runningAnimations() && seat()->enabled())
         msTimeout = 1;
 
     poll(&imp()->fdSet, 1, msTimeout);
@@ -176,10 +176,13 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
 
     wl_event_loop_dispatch(imp()->eventLoop, 0);
 
-    flushClients();
+    if (seat()->enabled())
+    {
+        flushClients();
+        cursor()->imp()->textureUpdate();
+        imp()->processAnimations();
+    }
 
-    cursor()->imp()->textureUpdate();
-    imp()->processAnimations();
     imp()->renderMutex.unlock();
     return 1;
 }

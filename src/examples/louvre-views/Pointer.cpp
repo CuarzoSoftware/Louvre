@@ -11,6 +11,8 @@
 #include <unistd.h>
 #include <LSurfaceView.h>
 #include "Surface.h"
+#include <Shared.h>
+#include <Dock.h>
 
 Pointer::Pointer(Params *params) : LPointer(params) {}
 
@@ -35,6 +37,12 @@ LPoint Pointer::viewLocalPos(LView *view)
 void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
 {
     cursor()->setPosC(LPointF(x,y));
+
+    for (Output *o : outps())
+    {
+        if (o->dock)
+            o->dock->handleCursorMovement();
+    }
 
     for (LView *sv : compositor()->hiddenCursorsLayer->children())
         ((LSurfaceView*)sv)->surface()->setPosC(cursor()->posC());

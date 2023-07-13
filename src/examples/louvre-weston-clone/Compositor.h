@@ -20,6 +20,7 @@ class Compositor : public LCompositor
 public:
     Compositor();
 
+    LSeat *createSeatRequest(LSeat::Params *params) override;
     LOutput *createOutputRequest() override;
     LSurface *createSurfaceRequest(LSurface::Params *params) override;
     LToplevelRole *createToplevelRoleRequest(LToplevelRole::Params *params) override;

@@ -2,7 +2,7 @@ sources = run_command('find', '.', '-type', 'f', '-name', '*[.c,.cpp,.h,.hpp]').
 
 executable(
     'louvre-views',
-    sources : sources,
+    sources,
     dependencies : [
         Louvre_dep,
         wayland_server_dep

@@ -7,30 +7,35 @@ class Louvre::LTextureView : public LView
 {
 public:
     LTextureView(LTexture *texture = nullptr, LView *parent = nullptr);
+    ~LTextureView();
 
-    /*
-    virtual bool mapped() const = 0;
-    virtual const LPoint &posC() const = 0;
-    virtual const LSize &sizeC() const = 0;
-    virtual Int32 scale() const = 0;
-    virtual void enterOutput(LOutput *output) = 0;
-    virtual void leaveOutput(LOutput *output) = 0;
-    virtual const std::list<LOutput*> &outputs() const = 0;
-    virtual bool isRenderable() const = 0;
-    virtual bool forceRequestNextFrameEnabled() const = 0;
-    virtual void enableForceRequestNextFrame(bool enabled) = 0;
-    virtual void requestNextFrame(LOutput *output) = 0;
-    virtual const LRegion *damageC() const = 0;
-    virtual const LRegion *translucentRegionC() const = 0;
-    virtual const LRegion *opaqueRegionC() const = 0;
-    virtual const LRegion *inputRegionC() const = 0;
-    virtual void paintRect(LPainter *p,
+    virtual void setNativePosC(const LPoint &pos);
+    virtual void setInputRegionC(const LRegion *region);
+    virtual void setTranslucentRegionC(const LRegion *region);
+    virtual void setBufferScale(Int32 scale);
+    virtual void setTexture(LTexture *texture);
+    virtual LTexture *texture() const;
+
+    virtual bool nativeMapped() const override;
+    virtual const LPoint &nativePosC() const override;
+    virtual const LSize &nativeSizeC() const override;
+    virtual Int32 bufferScale() const override;
+    virtual void enteredOutput(LOutput *output) override;
+    virtual void leftOutput(LOutput *output) override;
+    virtual const std::list<LOutput*> &outputs() const override;
+    virtual bool isRenderable() const override;
+    virtual void requestNextFrame(LOutput *output) override;
+    virtual const LRegion *damageC() const override;
+    virtual const LRegion *translucentRegionC() const override;
+    virtual const LRegion *opaqueRegionC() const override;
+    virtual const LRegion *inputRegionC() const override;
+    virtual void paintRectC(LPainter *p,
                            Int32 srcX, Int32 srcY,
                            Int32 srcW, Int32 srcH,
                            Int32 dstX, Int32 dstY,
                            Int32 dstW, Int32 dstH,
                            Float32 scale,
-                           Float32 alpha) = 0;*/
+                           Float32 alpha) override;
 
     LPRIVATE_IMP(LTextureView)
 };

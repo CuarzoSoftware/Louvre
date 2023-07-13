@@ -15,9 +15,3 @@ executable(
     ],
     install : true, 
     install_dir : EXAMPLES_PATH)
-
-#wallpaper = 'louvre-wallpaper.png'
-#configure_file(
-#    input : wallpaper,
-#    output : wallpaper,
-#    copy : true)
