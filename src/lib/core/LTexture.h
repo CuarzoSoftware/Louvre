@@ -30,7 +30,7 @@ public:
     static UInt32 waylandFormatToDRM(UInt32 waylandFormat);
     static UInt32 formatBytesPerPixel(UInt32 format);
 
-    LTexture(GLuint textureUnit = 1);
+    LTexture(GLuint textureUnit = 0);
 
     bool setDataB(const LSize &size, UInt32 stride, UInt32 format, const void *buffer);
     bool setData(void *wlDRMBuffer);

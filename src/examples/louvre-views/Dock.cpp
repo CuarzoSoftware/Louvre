@@ -10,13 +10,10 @@ Dock::Dock(Output *output) : LLayerView(comp()->overlayLayer)
     m_output = output;
     update();
 
-    LAnimation *anim = new LAnimation(1000, nullptr, [](LAnimation *anim)
+    LAnimation::oneShot(1000, nullptr, [this](LAnimation *)
     {
-        Dock *dock = (Dock*)anim->data();
-        dock->hide();
-    }, this);
-
-    anim->start();
+        hide();
+    });
 }
 
 void Dock::update()
@@ -51,18 +48,13 @@ void Dock::show()
     if (m_visiblePercent != 0.f)
         return;
 
-    LAnimation *anim = new LAnimation(100,
-    [](LAnimation *anim)->bool
+    LAnimation::oneShot(100,
+    [this](LAnimation *anim)
     {
-        Dock *dock = (Dock*)anim->data();
-        dock->m_visiblePercent = anim->value();
-        dock->update();
-        dock->m_output->repaint();
-        return true;
-    },
-    nullptr, this);
-
-    anim->start();
+        m_visiblePercent = anim->value();
+        update();
+        m_output->repaint();
+    });
 }
 
 void Dock::hide()
@@ -70,18 +62,14 @@ void Dock::hide()
     if (m_visiblePercent != 1.f)
         return;
 
-    LAnimation *anim = new LAnimation(100,
-    [](LAnimation *anim)->bool
+    LAnimation::oneShot(100,
+    [this](LAnimation *anim)
     {
-        Dock *dock = (Dock*)anim->data();
-        dock->m_visiblePercent = 1.f - anim->value();
-        dock->update();
-        dock->m_output->repaint();
+        m_visiblePercent = 1.f - anim->value();
+        update();
+        m_output->repaint();
         return true;
-    },
-    nullptr, this);
-
-    anim->start();
+    });
 }
 
 void Dock::handleCursorMovement()

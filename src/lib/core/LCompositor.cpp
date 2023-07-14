@@ -159,7 +159,7 @@ bool LCompositor::start()
 Int32 LCompositor::processLoop(Int32 msTimeout)
 {
     if (imp()->runningAnimations() && seat()->enabled())
-        msTimeout = 1;
+        msTimeout = 2;
 
     poll(&imp()->fdSet, 1, msTimeout);
 

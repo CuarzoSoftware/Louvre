@@ -70,6 +70,12 @@ void LKeyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
             }
         }
 
+        else if (L_CTRL && keySymbol(keyCode) == XKB_KEY_m)
+        {
+            if (focusSurface())
+                focusSurface()->setMinimized(true);
+        }
+
         // CTRL + SHIFT + ESC : Kills the compositor.
         else if (keyCode == KEY_ESC && L_CTRL && L_SHIFT)
         {

@@ -14,6 +14,7 @@ public:
     Surface(LSurface::Params *params, GLuint textureUnit = 1);
     ~Surface();
     Compositor *compositor() const;
+
     void mappingChanged() override;
     void orderChanged() override;
     void roleChanged() override;
@@ -26,6 +27,8 @@ public:
     LPoint posBeforeMinimized;
     LTexture *minimizedTexture;
     std::list<LTextureView*>minimizedViews;
+
+    LAnimation *minimizeAnim = nullptr;
 };
 
 #endif // SURFACE_H

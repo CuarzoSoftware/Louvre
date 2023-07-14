@@ -2,24 +2,29 @@
 #define LANIMATION_H
 
 #include <LObject.h>
+#include <functional>
 
 class Louvre::LAnimation : public LObject
 {
 public:
-    LAnimation(UInt32 durationMs,
-               bool (*onUpdate)(LAnimation *animation) = nullptr,
-               void (*onFinish)(LAnimation *animation) = nullptr,
-               void *data = nullptr);
+    using Callback = std::function<void(LAnimation*)>;
     ~LAnimation();
-    void onUpdate(bool (*onUpdate)(LAnimation *animation));
-    void onFinish(void (*onFinish)(LAnimation *animation));
+
+    static void oneShot(UInt32 durationMs, Callback onUpdate = nullptr, Callback onFinish = nullptr);
+    static LAnimation *create(UInt32 durationMs, Callback onUpdate = nullptr, Callback onFinish = nullptr);
+
+    void setOnUpdateCallback(Callback onUpdate);
+    void setOnFinishCallback(Callback onFinish);
     void setDuration(UInt32 durationMs);
+
     UInt32 duration() const;
-    void setData(void *data);
-    void *data();
     Float32 value() const;
+
     void start(bool destroyOnFinish = true);
+    void stop();
+
 LPRIVATE_IMP(LAnimation)
+    LAnimation();
 };
 
 #endif // LANIMATION_H

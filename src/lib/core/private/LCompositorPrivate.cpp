@@ -408,19 +408,16 @@ void LCompositor::LCompositorPrivate::processAnimations()
         a->imp()->value = (Float32)elapsed/(Float32)a->imp()->duration;
 
         if (a->imp()->onUpdate)
-        {
-            if (!a->imp()->onUpdate(a))
-                elapsed = a->imp()->duration;
-        }
+            a->imp()->onUpdate(a);
 
-        if (elapsed == a->imp()->duration)
+        if (a->imp()->value == 1.f)
         {
             if (a->imp()->onFinish)
                 a->imp()->onFinish(a);
 
             a->imp()->running = false;
 
-            if (a->imp()->deleteOnFinish)
+            if (a->imp()->destroyOnFinish)
             {
                 it = animations.erase(a->imp()->compositorLink);
                 delete a;
