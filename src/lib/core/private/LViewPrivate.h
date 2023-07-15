@@ -5,6 +5,7 @@
 #include <LView.h>
 #include <LRect.h>
 #include <map>
+#include <LPainter.h>
 
 using namespace Louvre;
 
@@ -63,6 +64,8 @@ LPRIVATE_CLASS(LView)
     } cache;
 
     std::map<LOutput*,ViewOutputData>outputsMap;
+
+    LPainterMask *masks[LPAINTER_MAX_MASKS];
 };
 
 #endif // LVIEWPRIVATE_H

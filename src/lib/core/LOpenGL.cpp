@@ -53,7 +53,7 @@ bool LOpenGL::checkGLError(const char *msg)
 GLuint LOpenGL::maxTextureUnits()
 {
     GLint maxUnits = 0;
-    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS,&maxUnits);
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxUnits);
     return maxUnits;
 }
 

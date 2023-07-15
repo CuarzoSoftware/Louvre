@@ -154,9 +154,14 @@ const LRegion *LSolidColorView::inputRegionC() const
     return imp()->inputRegion;
 }
 
-void LSolidColorView::paintRectC(LPainter *p, Int32, Int32, Int32, Int32, Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH, Float32, Float32 alpha)
+void LSolidColorView::paintRectC(LPainter *p,
+                                 Int32, Int32, Int32, Int32,
+                                 Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
+                                 Float32, Float32 alpha,
+                                 Int32 containerX, Int32 containerY)
 {
     p->drawColorC(dstX, dstY, dstW, dstH,
                   color().r, color().g, color().b,
-                  alpha);
+                  alpha,
+                  containerX, containerY);
 }

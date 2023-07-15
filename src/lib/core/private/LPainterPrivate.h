@@ -25,14 +25,37 @@ LPRIVATE_CLASS(LPainter)
     activeTextureUniform,       // glActiveTexture
     modeUniform,
     colorUniform,
-    alphaUniform;
+    alphaUniform,
+    masksCountUniform,
+    masksTypesUniform,
+    masksRectsUniform,
+    masksModesUniform,
+    masksSamplesUniform,
+    masksColorsUniform;
+
+    struct LGLVec4F
+    {
+        GLfloat x, y, w, h;
+    };
+
+    LPainterMask *masks[LPAINTER_MAX_MASKS];
+    GLint masksTypes[LPAINTER_MAX_MASKS];
+    GLint masksModes[LPAINTER_MAX_MASKS];
+    GLint masksSamples[LPAINTER_MAX_MASKS];
+    LGLVec4F masksRects[LPAINTER_MAX_MASKS];
+    LGLVec4F masksColors[LPAINTER_MAX_MASKS];
+    GLint masksCount = 0;
 
     // Program
     GLuint programObject;
     LOutput *output                                     = nullptr;
 
+    LPainter *painter;
+
     void scaleCursor(LTexture *texture, const LRect &src, const LRect &dst);
     void scaleTexture(LTexture *texture, const LRect &src, const LSize &dst);
+    void bindMasks(Float32 dstX, Float32 dstY, Float32 dstW, Float32 dstH,
+                   Float32 containerPosX, Float32 containerPosY);
 };
 
 #endif // LPAINTERPRIVATE_H

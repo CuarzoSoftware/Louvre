@@ -12,6 +12,10 @@
 Surface::Surface(LSurface::Params *params, GLuint textureUnit) : LSurface(params, textureUnit)
 {
     view = new LSurfaceView(this, compositor()->surfacesLayer);
+    view->setMask(0, &mask0);
+    view->setMask(1, &mask1);
+    view->setMask(2, &mask2);
+    view->setMask(3, &mask3);
 }
 
 Surface::~Surface()
@@ -83,6 +87,11 @@ void Surface::roleChanged()
 
 void Surface::bufferSizeChanged()
 {
+    Int32 a = 200;
+    mask0.setRectC(LRect(0, 0, a, a));
+    mask1.setRectC(LRect(sizeC().w() - a, 0, a, a));
+    mask2.setRectC(LRect(sizeC().w() - a, sizeC().h() - a, a, a));
+    mask3.setRectC(LRect(0, sizeC().h() - a, a, a));
     view->repaint();
 }
 
@@ -113,10 +122,11 @@ void Surface::minimizedChanged()
             minimizeAnim = LAnimation::create(300,
             [this, minView, o](LAnimation *anim)
             {
-                minView->setScalingVector(anim->value());
-                view->setScalingVector(1.f - anim->value());
-                setPosC((minView->posC() + minView->sizeC())*anim->value() +
-                         posBeforeMinimized * (1.f - anim->value()));
+                Float32 expVal = anim->value()*anim->value();
+                minView->setScalingVector(expVal);
+                view->setScalingVector(1.f - expVal);
+                setPosC((minView->posC() + minView->sizeC()) * expVal +
+                         posBeforeMinimized * (1.f - expVal));
                 o->dock->update();
                 return true;
             },

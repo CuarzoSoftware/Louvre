@@ -60,7 +60,6 @@ namespace Louvre
     class LOutputManager;
     class LOutputMode;
     class LOpenGL;
-    class LPainter;
     class LPositioner;
     class LRegion;
     class LResource;
@@ -68,6 +67,12 @@ namespace Louvre
     class LSession;
     class LTexture;
     class LWayland;
+
+    // Painter
+    class LPainter;
+    class LPainterMask;
+    class LSolidColorPainterMask;
+    class LTexturePainterMask;
 
     // Views
     class LScene;
@@ -198,6 +203,14 @@ namespace Louvre
         Float32 r;
         Float32 g;
         Float32 b;
+    };
+
+    struct LRGBAF
+    {
+        Float32 r;
+        Float32 g;
+        Float32 b;
+        Float32 a;
     };
 
     struct LGraphicBackendInterface

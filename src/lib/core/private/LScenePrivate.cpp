@@ -5,6 +5,7 @@
 #include <LPainter.h>
 #include <LSurfaceView.h>
 #include <LLog.h>
+#include <LPainterMask.h>
 
 void LScene::LScenePrivate::clearTmpVariables(OutputData &oD)
 {
@@ -173,6 +174,18 @@ void LScene::LScenePrivate::calcNewDamage(LView *view, OutputData &oD, bool forc
             }
         }
 
+        LRegion masksRegion;
+        LPainterMask *mask;
+        for (UInt32 i = 0; i < 7; i++)
+            if ((mask = view->getMask(i)))
+                masksRegion.addRect(mask->rectC());
+        masksRegion.offset(cache.rect.pos());
+        masksRegion.clip(cache.rect);
+
+        // Apply masks region
+        cache.opaque.subtractRegion(masksRegion);
+        cache.translucent.addRegion(masksRegion);
+
         // Clip opaque and translucent regions to current visible region
         cache.opaque.intersectRegion(currentParentClipping);
         cache.translucent.intersectRegion(currentParentClipping);
@@ -239,7 +252,8 @@ void LScene::LScenePrivate::drawOpaqueDamage(LView *view, OutputData &oD, bool f
                     sX, sY, sW, sH,
                     dX, dY, dW, dH,
                     cache.bufferScaleMatchGlobalScale ? 0.0 : view->bufferScale(),
-                    1.f);
+                    1.f,
+                    cache.rect.x(), cache.rect.y());
 
                 oD.boxes++;
             }
@@ -265,7 +279,8 @@ void LScene::LScenePrivate::drawOpaqueDamage(LView *view, OutputData &oD, bool f
                         oD.w,
                         oD.h,
                         cache.bufferScaleMatchGlobalScale ? 0.0 : view->bufferScale(),
-                        1.f);
+                        1.f,
+                        cache.rect.x(), cache.rect.y());
 
                     oD.boxes++;
                 }
@@ -295,7 +310,8 @@ void LScene::LScenePrivate::drawOpaqueDamage(LView *view, OutputData &oD, bool f
                         oD.w,
                         oD.h,
                         cache.bufferScaleMatchGlobalScale ? 0.0 : view->bufferScale(),
-                        1.f);
+                        1.f,
+                        cache.rect.x(), cache.rect.y());
 
                     oD.boxes++;
                 }
@@ -316,6 +332,9 @@ void LScene::LScenePrivate::drawBackground(OutputData &oD)
     LRegion backgroundDamage = oD.newDamageC;
     backgroundDamage.subtractRegion(oD.opaqueTransposedCSum);
     oD.boxes = backgroundDamage.rects(&oD.n);
+
+    for (UInt32 i = 0; i < 7; i++)
+        oD.p->setMask(i, nullptr);
 
     for (Int32 i = 0; i < oD.n; i++)
     {
@@ -339,6 +358,9 @@ void LScene::LScenePrivate::drawTranslucentDamage(LView *view, OutputData &oD, b
 
         if (!view->isRenderable() || !cache.mapped || cache.occluded)
             return;
+
+        for (UInt32 i = 0; i < 7; i++)
+            oD.p->setMask(i, view->getMask(i));
 
         cache.occluded = true;
         cache.translucent.intersectRegion(oD.newDamageC);
@@ -373,7 +395,8 @@ void LScene::LScenePrivate::drawTranslucentDamage(LView *view, OutputData &oD, b
                     sX, sY, sW, sH,
                     dX, dY, dW, dH,
                     cache.bufferScaleMatchGlobalScale ? 0.0 : view->bufferScale(),
-                    cache.opacity);
+                    cache.opacity,
+                    cache.rect.x(), cache.rect.y());
 
                 oD.boxes++;
             }
@@ -398,7 +421,8 @@ void LScene::LScenePrivate::drawTranslucentDamage(LView *view, OutputData &oD, b
                         oD.w,
                         oD.h,
                         cache.bufferScaleMatchGlobalScale ? 0.0 : view->bufferScale(),
-                        cache.opacity);
+                        cache.opacity,
+                        cache.rect.x(), cache.rect.y());
 
                     oD.boxes++;
                 }
@@ -428,7 +452,8 @@ void LScene::LScenePrivate::drawTranslucentDamage(LView *view, OutputData &oD, b
                         oD.w,
                         oD.h,
                         cache.bufferScaleMatchGlobalScale ? 0.0 : view->bufferScale(),
-                        cache.opacity);
+                        cache.opacity,
+                        cache.rect.x(), cache.rect.y());
 
                     oD.boxes++;
                 }
@@ -441,7 +466,6 @@ void LScene::LScenePrivate::drawTranslucentDamage(LView *view, OutputData &oD, b
 
     for (LView *child : view->children())
         drawTranslucentDamage(child, oD, false);
-
 }
 
 LView *LScene::LScenePrivate::viewAtC(LView *view, const LPoint &pos)

@@ -19,6 +19,9 @@ public:
         SolidColor = 3
     };
 
+    LPainterMask *getMask(UInt32 slot) const;
+    void setMask(UInt32 slot, LPainterMask *mask);
+
     /*!
      * Scene in which this view is currently embedded.
      * @returns nullptr if the view is not a child or subchild of an LScene
@@ -295,7 +298,8 @@ public:
                            Int32 dstX, Int32 dstY,
                            Int32 dstW, Int32 dstH,
                            Float32 scale,
-                           Float32 alpha) = 0;
+                           Float32 alpha,
+                           Int32 containerX, Int32 containerY) = 0;
 
 LPRIVATE_IMP(LView)
 };
