@@ -94,7 +94,7 @@ GLuint LOpenGL::compileShader(GLenum type, const char *shaderString)
     return shader;
 }
 
-LTexture *LOpenGL::loadTexture(const char *file, GLuint textureUnit)
+LTexture *LOpenGL::loadTexture(const char *file)
 {
     FREE_IMAGE_FORMAT format = FreeImage_GetFileType(file);
 
@@ -127,7 +127,7 @@ LTexture *LOpenGL::loadTexture(const char *file, GLuint textureUnit)
     size.setH(FreeImage_GetHeight(convertedBitmap));
     UInt32 pitch = FreeImage_GetPitch(convertedBitmap);
     UChar8 *pixels = (UChar8*)FreeImage_GetBits(convertedBitmap);
-    LTexture *texture = new LTexture(textureUnit);
+    LTexture *texture = new LTexture();
     texture->setDataB(size, pitch, DRM_FORMAT_ARGB8888, pixels);
 
     FreeImage_Unload(convertedBitmap);

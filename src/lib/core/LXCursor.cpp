@@ -5,7 +5,7 @@
 
 using namespace Louvre;
 
-LXCursor *LXCursor::loadXCursorB(const char *cursor, const char *theme, Int32 suggestedSize, GLuint textureUnit)
+LXCursor *LXCursor::loadXCursorB(const char *cursor, const char *theme, Int32 suggestedSize)
 {
     XcursorImage *x11Cursor =  XcursorLibraryLoadImage(cursor, theme, suggestedSize);
 
@@ -18,7 +18,7 @@ LXCursor *LXCursor::loadXCursorB(const char *cursor, const char *theme, Int32 su
     LXCursor *newCursor = new LXCursor();
     newCursor->imp()->hotspotB.setX((Int32)x11Cursor->xhot);
     newCursor->imp()->hotspotB.setY((Int32)x11Cursor->yhot);
-    newCursor->imp()->texture = new LTexture(textureUnit);
+    newCursor->imp()->texture = new LTexture();
 
     if (!newCursor->imp()->texture->setDataB(LSize((Int32)x11Cursor->width,
                                                    (Int32)x11Cursor->height),

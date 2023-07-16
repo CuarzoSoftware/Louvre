@@ -10,7 +10,6 @@ using namespace Louvre;
 LView::LView(UInt32 type, LView *parent)
 {
     m_imp = new LViewPrivate();
-    memset(&imp()->masks, 0, sizeof(imp()->masks));
     imp()->type = type;
     compositor()->imp()->views.push_back(this);
     imp()->compositorLink = std::prev(compositor()->imp()->views.end());
@@ -27,23 +26,6 @@ LView::~LView()
     compositor()->imp()->views.erase(imp()->compositorLink);
 
     delete m_imp;
-}
-
-LPainterMask *LView::getMask(UInt32 slot) const
-{
-    if (slot > LPAINTER_MAX_MASKS - 1)
-        return nullptr;
-
-    return imp()->masks[slot];
-}
-
-void LView::setMask(UInt32 slot, LPainterMask *mask)
-{
-    if (slot > LPAINTER_MAX_MASKS - 1)
-        return;
-
-    imp()->masks[slot] = mask;
-    repaint();
 }
 
 LScene *LView::scene() const
@@ -65,8 +47,13 @@ UInt32 LView::type() const
 
 void LView::repaint()
 {
-    for (LOutput *o : outputs())
-        o->repaint();
+    if (imp()->repaintCalled)
+        return;
+
+    for (std::list<LOutput*>::const_iterator it = outputs().cbegin(); it != outputs().cend(); it++)
+        (*it)->repaint();
+
+    imp()->repaintCalled = true;
 }
 
 LView *LView::parent() const

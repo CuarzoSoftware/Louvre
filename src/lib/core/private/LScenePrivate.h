@@ -28,14 +28,14 @@ LPRIVATE_CLASS(LScene)
     std::map<LOutput*, OutputData>outputsMap;
     LLayerView mainView;
 
-    void clearTmpVariables(OutputData &oD);
-    void checkOutputsScale(OutputData &oD);
-    void damageAll(OutputData &oD);
-    void checkRectChange(OutputData &oD);
-    void calcNewDamage(LView *view, OutputData &oD, bool force = false);
-    void drawOpaqueDamage(LView *view, OutputData &oD, bool force = false);
-    void drawBackground(OutputData &oD);
-    void drawTranslucentDamage(LView *view, OutputData &oD, bool force = false);
+    void clearTmpVariables(OutputData *oD);
+    void checkOutputsScale(OutputData *oD);
+    void damageAll(OutputData *oD);
+    void checkRectChange(OutputData *oD);
+    void calcNewDamage(LView *view, OutputData *oD);
+    void drawOpaqueDamage(LView *view, OutputData *oD);
+    void drawBackground(OutputData *oD);
+    void drawTranslucentDamage(LView *view, OutputData *oD);
 
     void parentClipping(LView *parent, LRegion *region);
     bool pointClippedByParent(LView *parent, const LPoint &point);

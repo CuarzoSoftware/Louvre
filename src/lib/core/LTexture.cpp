@@ -71,10 +71,9 @@ UInt32 LTexture::formatBytesPerPixel(UInt32 format)
     }
 }
 
-LTexture::LTexture(GLuint textureUnit)
+LTexture::LTexture()
 {
     m_imp = new LTexturePrivate();
-    imp()->unit = textureUnit;
 }
 
 bool LTexture::setDataB(const LSize &size, UInt32 stride, UInt32 format, const void *buffer)
@@ -253,7 +252,7 @@ void LTexture::LTexturePrivate::deleteTexture(LTexture *texture)
         compositor()->cursor()->useDefault();
 
     increaseSerial();
-    glActiveTexture(GL_TEXTURE0 + unit);
+    glActiveTexture(GL_TEXTURE0);
 
     if (graphicBackendData)
     {
@@ -283,11 +282,6 @@ GLuint LTexture::id(LOutput *output)
         return compositor()->imp()->graphicBackend->getTextureID(output, this);
 
     return 0;
-}
-
-GLuint LTexture::unit()
-{
-    return imp()->unit;
 }
 
 LTexture::BufferSourceType LTexture::sourceType() const

@@ -4,8 +4,6 @@
 #include <LObject.h>
 #include <LPoint.h>
 
-#define LPAINTER_MAX_MASKS 4
-
 /*!
  * @brief Renderer utilities.
  *
@@ -32,14 +30,12 @@ public:
      * @param alpha Value of the alpha component (range [0.0, 1.0]).
      */
     void drawTextureC(LTexture *texture, const LRect &srcB, const LRect &dstG,
-                      Float32 srcScale = 0.f, Float32 alpha = 1.f,
-                      const LPoint &containerPos = LPoint());
+                      Float32 srcScale = 0.f, Float32 alpha = 1.f);
 
     void drawTextureC(LTexture *texture,
                       Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
                       Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                      Float32 srcScale = 0.f, Float32 alpha = 1.0f,
-                      Int32 containerPosX = 0, Int32 containerPosY = 0);
+                      Float32 srcScale = 0.f, Float32 alpha = 1.0f);
 
     /*!
      * @brief Draws a solid color.
@@ -53,12 +49,10 @@ public:
      * @param a Value of the alpha component (range [0.0, 1.0]).
      */
     void drawColorC(const LRect &dst,
-                    Float32 r, Float32 g, Float32 b, Float32 a,
-                    const LPoint &containerPos = LPoint());
+                    Float32 r, Float32 g, Float32 b, Float32 a);
 
     void drawColorC(Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                    Float32 r, Float32 g, Float32 b, Float32 a,
-                    Int32 containerPosX = 0, Int32 containerPosY = 0);
+                    Float32 r, Float32 g, Float32 b, Float32 a);
 
     /*!
      * @brief Sets the viewport.
@@ -94,12 +88,9 @@ public:
      */
     void bindProgram();
 
-    void setMask(UInt32 slot, LPainterMask *mask);
-
     LPRIVATE_IMP(LPainter)
 
     friend class LCompositor;
-    friend class LWayland;
     friend class LOutput;
     LPainter();
     ~LPainter();

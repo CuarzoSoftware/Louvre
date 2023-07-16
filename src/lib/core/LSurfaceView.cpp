@@ -199,8 +199,7 @@ const LRegion *LSurfaceView::inputRegionC() const
 void LSurfaceView::paintRectC(LPainter *p,
                               Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
                               Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                              Float32 scale, Float32 alpha,
-                              Int32 containerX, Int32 containerY)
+                              Float32 scale, Float32 alpha)
 {
     p->drawTextureC(surface()->texture(),
                     srcX, srcY,
@@ -208,6 +207,5 @@ void LSurfaceView::paintRectC(LPainter *p,
                     dstX, dstY,
                     dstW, dstH,
                     scale,
-                    alpha,
-                    containerX, containerY);
+                    alpha);
 }

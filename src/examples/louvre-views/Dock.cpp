@@ -8,6 +8,7 @@
 Dock::Dock(Output *output) : LLayerView(comp()->overlayLayer)
 {
     m_output = output;
+
     update();
 
     LAnimation::oneShot(1000, nullptr, [this](LAnimation *)
@@ -37,10 +38,13 @@ void Dock::update()
             backgroundWidth += m_spacing*gs;
     }
 
+    if (background.children().empty())
+        backgroundWidth += 128;
+
     backgroundWidth += m_padding*gs;
 
     background.setNativeSizeC(LSize(backgroundWidth, backgroundHeight));
-    background.setNativePosC(LPoint(sizeC().w()/2 - backgroundWidth/2, 10));
+    background.setNativePosC(LPoint(sizeC().w()/2 - backgroundWidth/2, 0));
 }
 
 void Dock::show()

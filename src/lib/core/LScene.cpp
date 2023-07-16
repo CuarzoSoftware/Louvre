@@ -30,7 +30,7 @@ void LScene::handleInitializeGL(LOutput *output)
 
 void LScene::handlePaintGL(LOutput *output)
 {
-    LScenePrivate::OutputData &oD = imp()->outputsMap[output];
+    LScenePrivate::OutputData *oD = &imp()->outputsMap[output];
     imp()->clearTmpVariables(oD);
     imp()->checkOutputsScale(oD);
     imp()->checkRectChange(oD);
@@ -39,9 +39,9 @@ void LScene::handlePaintGL(LOutput *output)
     // Save new damage for next frame and add old damage to current damage
     if (output->buffersCount() > 1)
     {
-        LRegion oldDamage = oD.prevDamageC;
-        oD.prevDamageC = oD.newDamageC;
-        oD.newDamageC.addRegion(oldDamage);
+        LRegion oldDamage = oD->prevDamageC;
+        oD->prevDamageC = oD->newDamageC;
+        oD->newDamageC.addRegion(oldDamage);
     }
 
     glDisable(GL_BLEND);
@@ -51,13 +51,13 @@ void LScene::handlePaintGL(LOutput *output)
     glEnable(GL_BLEND);
     imp()->drawTranslucentDamage(&mainView(), oD);
 
-    oD.o->setBufferDamageC(oD.newDamageC);
-    oD.newDamageC.clear();
+    oD->o->setBufferDamageC(oD->newDamageC);
+    oD->newDamageC.clear();
 }
 
 void LScene::handleResizeGL(LOutput *output)
 {
-    LScenePrivate::OutputData &oD = imp()->outputsMap[output];
+    LScenePrivate::OutputData *oD = &imp()->outputsMap[output];
     imp()->damageAll(oD);
 }
 

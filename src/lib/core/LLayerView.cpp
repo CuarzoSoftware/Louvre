@@ -122,8 +122,7 @@ const LRegion *LLayerView::inputRegionC() const
 void LLayerView::paintRectC(LPainter *,
                             Int32, Int32, Int32, Int32,
                             Int32, Int32, Int32, Int32,
-                            Float32, Float32,
-                            Int32, Int32)
+                            Float32, Float32)
 {
     /* It is not renderable */
 }

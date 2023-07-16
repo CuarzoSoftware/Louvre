@@ -165,7 +165,7 @@ const LRegion *LTextureView::translucentRegionC() const
 
 const LRegion *LTextureView::opaqueRegionC() const
 {
-    return &imp()->emptyRegion;
+    return nullptr;
 }
 
 const LRegion *LTextureView::inputRegionC() const
@@ -176,8 +176,7 @@ const LRegion *LTextureView::inputRegionC() const
 void LTextureView::paintRectC(LPainter *p,
                               Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
                               Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                              Float32 scale, Float32 alpha,
-                              Int32 containerX, Int32 containerY)
+                              Float32 scale, Float32 alpha)
 {
     if (!imp()->texture)
         return;
@@ -185,6 +184,5 @@ void LTextureView::paintRectC(LPainter *p,
     p->drawTextureC(imp()->texture,
                     srcX, srcY, srcW, srcH,
                     dstX, dstY, dstW, dstH,
-                    scale, alpha,
-                    containerX, containerY);
+                    scale, alpha);
 }

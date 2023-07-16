@@ -70,9 +70,6 @@ namespace Louvre
 
     // Painter
     class LPainter;
-    class LPainterMask;
-    class LSolidColorPainterMask;
-    class LTexturePainterMask;
 
     // Views
     class LScene;

@@ -9,13 +9,9 @@
 #include <Dock.h>
 #include <LAnimation.h>
 
-Surface::Surface(LSurface::Params *params, GLuint textureUnit) : LSurface(params, textureUnit)
+Surface::Surface(LSurface::Params *params) : LSurface(params)
 {
     view = new LSurfaceView(this, compositor()->surfacesLayer);
-    view->setMask(0, &mask0);
-    view->setMask(1, &mask1);
-    view->setMask(2, &mask2);
-    view->setMask(3, &mask3);
 }
 
 Surface::~Surface()
@@ -87,11 +83,6 @@ void Surface::roleChanged()
 
 void Surface::bufferSizeChanged()
 {
-    Int32 a = 200;
-    mask0.setRectC(LRect(0, 0, a, a));
-    mask1.setRectC(LRect(sizeC().w() - a, 0, a, a));
-    mask2.setRectC(LRect(sizeC().w() - a, sizeC().h() - a, a, a));
-    mask3.setRectC(LRect(0, sizeC().h() - a, a, a));
     view->repaint();
 }
 

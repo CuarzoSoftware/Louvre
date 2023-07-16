@@ -8,7 +8,6 @@ LPRIVATE_CLASS(LTexture)
     void deleteTexture(LTexture *texture);
 
     BufferSourceType sourceType                         = CPU;
-    GLuint unit                                         = 0;
     LSize sizeB;
     UInt32 format                                       = 0;
     void *graphicBackendData                            = nullptr;

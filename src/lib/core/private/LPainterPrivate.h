@@ -3,11 +3,12 @@
 
 #include <LPainter.h>
 #include <GL/gl.h>
+#include <GLES2/gl2.h>
 
 using namespace Louvre;
 
 LPRIVATE_CLASS(LPainter)
-    GLuint vertexShader,fragmentShader;
+    GLuint vertexShader, fragmentShader;
 
     // Square (left for vertex, right for fragment)
     GLfloat square[16] =
@@ -25,37 +26,122 @@ LPRIVATE_CLASS(LPainter)
     activeTextureUniform,       // glActiveTexture
     modeUniform,
     colorUniform,
-    alphaUniform,
-    masksCountUniform,
-    masksTypesUniform,
-    masksRectsUniform,
-    masksModesUniform,
-    masksSamplesUniform,
-    masksColorsUniform;
+    alphaUniform;
 
     struct LGLVec4F
     {
         GLfloat x, y, w, h;
     };
 
-    LPainterMask *masks[LPAINTER_MAX_MASKS];
-    GLint masksTypes[LPAINTER_MAX_MASKS];
-    GLint masksModes[LPAINTER_MAX_MASKS];
-    GLint masksSamples[LPAINTER_MAX_MASKS];
-    LGLVec4F masksRects[LPAINTER_MAX_MASKS];
-    LGLVec4F masksColors[LPAINTER_MAX_MASKS];
-    GLint masksCount = 0;
+    struct LGLColor
+    {
+        GLfloat r, g, b, a;
+    };
+
+    struct LGLPoint
+    {
+        Int32 x, y;
+    };
+
+    struct LGLSize
+    {
+        Int32 w, h;
+    };
+
+    union LGLRect
+    {
+        Int32 x, y, w, h;
+    };
+
+    struct ShaderState
+    {
+        LGLSize texSize;
+        LGLRect srcRect;
+        GLuint activeTexture;
+        GLint mode;
+        LGLColor color;
+        GLfloat alpha;
+    };
+
+    ShaderState state;
 
     // Program
     GLuint programObject;
-    LOutput *output                                     = nullptr;
+    LOutput *output = nullptr;
 
     LPainter *painter;
 
     void scaleCursor(LTexture *texture, const LRect &src, const LRect &dst);
     void scaleTexture(LTexture *texture, const LRect &src, const LSize &dst);
-    void bindMasks(Float32 dstX, Float32 dstY, Float32 dstW, Float32 dstH,
-                   Float32 containerPosX, Float32 containerPosY);
+
+    // Shader state update
+
+    inline void shaderSetTexSize(Int32 w, Int32 h)
+    {
+        if (state.texSize.w != w || state.texSize.h != h)
+        {
+            state.texSize.w = w;
+            state.texSize.h = h;
+            glUniform2f(texSizeUniform, w, h);
+        }
+    }
+
+    inline void shaderSetSrcRect(Int32 x, Int32 y, Int32 w, Int32 h)
+    {
+        if (state.srcRect.x != x ||
+            state.srcRect.y != y ||
+            state.srcRect.w != w ||
+            state.srcRect.h != h)
+        {
+            state.srcRect.x = x;
+            state.srcRect.y = y;
+            state.srcRect.w = w;
+            state.srcRect.h = h;
+            glUniform4f(srcRectUniform, x, y, w, h);
+        }
+    }
+
+    inline void shaderSetActiveTexture(GLuint unit)
+    {
+        if (state.activeTexture != unit)
+        {
+            state.activeTexture = unit;
+            glUniform1i(activeTextureUniform, unit);
+        }
+    }
+
+    inline void shaderSetMode(GLint mode)
+    {
+        if (state.mode != mode)
+        {
+            state.mode = mode;
+            glUniform1i(modeUniform, mode);
+        }
+    }
+
+    inline void shaderSetColor(Float32 r, Float32 g, Float32 b, Float32 a)
+    {
+        if (state.color.r != r ||
+            state.color.g != g ||
+            state.color.b != b ||
+            state.color.a != a)
+        {
+            state.color.r = r;
+            state.color.g = g;
+            state.color.b = b;
+            state.color.a = a;
+            glUniform4f(colorUniform, r, g, b, a);
+        }
+    }
+
+    inline void shaderSetAlpha(Float32 a)
+    {
+        if (state.alpha != a)
+        {
+            state.alpha = a;
+            glUniform1f(alphaUniform, a);
+        }
+    }
 };
 
 #endif // LPAINTERPRIVATE_H

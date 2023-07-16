@@ -30,7 +30,7 @@ public:
     static UInt32 waylandFormatToDRM(UInt32 waylandFormat);
     static UInt32 formatBytesPerPixel(UInt32 format);
 
-    LTexture(GLuint textureUnit = 0);
+    LTexture();
 
     bool setDataB(const LSize &size, UInt32 stride, UInt32 format, const void *buffer);
     bool setData(void *wlDRMBuffer);
@@ -62,11 +62,6 @@ public:
      * @brief OpenGL texture ID.
      */
     GLuint id(LOutput *output);
-
-    /*!
-     * @brief OpenGL texture unit.
-     */
-    GLuint unit();
 
     /*!
      * @brief Texture source.

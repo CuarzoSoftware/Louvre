@@ -54,10 +54,10 @@ LBaseSurfaceRole *LSurface::role() const
     return imp()->current.role;
 }
 
-LSurface::LSurface(LSurface::Params *params, GLuint textureUnit)
+LSurface::LSurface(LSurface::Params *params)
 {
     m_imp = new LSurfacePrivate();
-    imp()->texture = new LTexture(textureUnit);
+    imp()->texture = new LTexture();
     imp()->textureBackup = imp()->texture;
     imp()->surfaceResource = params->surfaceResource;
 }

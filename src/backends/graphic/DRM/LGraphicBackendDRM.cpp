@@ -415,7 +415,7 @@ LTexture *LGraphicBackend::getOutputBuffer(LOutput *output, UInt32 bufferIndex)
     if (bkndOutput->textures[bufferIndex])
         return bkndOutput->textures[bufferIndex];
 
-    LTexture *tex = new LTexture(0);
+    LTexture *tex = new LTexture();
     tex->imp()->graphicBackendData = buffer;
     tex->imp()->format = srmBufferGetFormat(buffer);
     tex->imp()->sizeB.setW(srmBufferGetWidth(buffer));

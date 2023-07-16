@@ -14,6 +14,8 @@ public:
     Compositor();
     ~Compositor();
 
+    void initialized() override;
+
     LOutput *createOutputRequest() override;
     LSurface *createSurfaceRequest(LSurface::Params *params) override;
     LPointer *createPointerRequest(LPointer::Params *params) override;

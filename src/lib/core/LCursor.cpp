@@ -26,7 +26,7 @@ LCursor::LCursor()
 {
     m_imp = new LCursorPrivate();
     compositor()->imp()->cursor = this;
-    imp()->defaultTexture = new LTexture(1);
+    imp()->defaultTexture = new LTexture();
 
     if (!imp()->defaultTexture->setDataB(LSize(L_CURSOR_WIDTH, L_CURSOR_HEIGHT), L_CURSOR_STRIDE, DRM_FORMAT_ABGR8888, louvre_default_cursor_data()))
         LLog::warning("[compositor] Could not create default cursor texture.");
@@ -66,10 +66,10 @@ LCursor::~LCursor()
 
 void LCursor::useDefault()
 {
-    setTextureB(imp()->defaultTexture, LPointF(9));
+    setTextureB(imp()->defaultTexture, LPoint(9));
 }
 
-static void texture2Buffer(LCursor *cursor, const LSizeF &size)
+static void texture2Buffer(LCursor *cursor, const LSize &size)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, cursor->imp()->glFramebuffer);
     cursor->compositor()->imp()->painter->imp()->scaleCursor(
@@ -81,7 +81,7 @@ static void texture2Buffer(LCursor *cursor, const LSizeF &size)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void LCursor::setTextureB(const LTexture *texture, const LPointF &hotspot)
+void LCursor::setTextureB(const LTexture *texture, const LPoint &hotspot)
 {
     if (!texture)
         return;
@@ -118,7 +118,7 @@ void LCursor::moveC(float x, float y)
     setPosC(imp()->posC + LPointF(x,y));
 }
 
-void Louvre::LCursor::setPosC(const LPointF &pos)
+void Louvre::LCursor::setPosC(const LPoint &pos)
 {
     for (LOutput *output : compositor()->outputs())
         if (output->rectC().containsPoint(pos) && output)
@@ -143,7 +143,7 @@ void Louvre::LCursor::setPosC(const LPointF &pos)
     imp()->update();
 }
 
-void LCursor::setHotspotB(const LPointF &hotspot)
+void LCursor::setHotspotB(const LPoint &hotspot)
 {
     if (imp()->hotspotB != hotspot)
     {
@@ -152,7 +152,7 @@ void LCursor::setHotspotB(const LPointF &hotspot)
     }
 }
 
-void LCursor::setSizeS(const LSizeF &size)
+void LCursor::setSizeS(const LSize &size)
 {    
     if (imp()->sizeS != size)
     {
@@ -199,12 +199,12 @@ bool LCursor::hasHardwareSupport(const LOutput *output) const
     return compositor()->imp()->graphicBackend->hasHardwareCursorSupport((LOutput*)output);
 }
 
-const LPointF &LCursor::posC() const
+const LPoint &LCursor::posC() const
 {
     return imp()->posC;
 }
 
-const LPointF &LCursor::hotspotB() const
+const LPoint &LCursor::hotspotB() const
 {
     return imp()->hotspotB;
 }
@@ -244,7 +244,7 @@ void LCursor::LCursorPrivate::update()
         return;
 
     LPointF newHotspotS;
-    newHotspotS = (hotspotB*sizeS)/LSizeF(texture->sizeB());
+    newHotspotS = LPointF(hotspotB*sizeS)/texture->sizeB();
 
     LPointF newPosC = posC - (newHotspotS * compositor()->globalScale());
 
@@ -283,7 +283,7 @@ void LCursor::LCursorPrivate::textureUpdate()
         return;
 
     LPointF newHotspotS;
-    newHotspotS = (hotspotB*sizeS)/LSizeF(texture->sizeB());
+    newHotspotS = LPointF(hotspotB*sizeS)/texture->sizeB();
 
     LPointF newPosC = posC - (newHotspotS * compositor()->globalScale());
     rectC.setPos(newPosC);

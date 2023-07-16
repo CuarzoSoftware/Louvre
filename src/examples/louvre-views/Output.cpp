@@ -44,7 +44,9 @@ void Output::loadWallpaper()
         delete tmpWallpaper;
     }
 
+    LRegion trans;
     wallpaperView->setNativePosC(posC());
+    wallpaperView->setTranslucentRegionC(&trans);
 }
 
 void Output::initializeGL()
@@ -62,13 +64,6 @@ void Output::resizeGL()
 
 void Output::paintGL()
 {
-    //painter()->clearScreen();
-
-    // Some times a surface may move under the cursor so we call this to update the cursor
-    LSurfaceView *view = (LSurfaceView*)compositor()->scene->viewAtC(cursor()->posC());
-    if (view && view->type() == LView::Surface && view->surface() != seat()->pointer()->focusSurface())
-        seat()->pointer()->pointerPosChangeEvent(cursor()->posC().x(), cursor()->posC().y());
-
     compositor()->scene->handlePaintGL(this);
 }
 

@@ -47,10 +47,9 @@ public:
      * @brief Creates a texture from an image file.
      *
      * @param file Path to the image file. Must be an image format supported by FreeImage (JPEG, PNG, BMP, etc).
-     * @param textureUnit Texture unit.
      * @returns A new texture or nullptr in case of error.
      */
-    static LTexture *loadTexture(const char *file, GLuint textureUnit = 1);
+    static LTexture *loadTexture(const char *file);
 };
 
 #endif // LOPENGL_H

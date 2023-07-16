@@ -27,7 +27,7 @@ void LPointer::pointerMoveEvent(Float32 dx, Float32 dy)
 //! [pointerPosChangeEvent]
 void LPointer::pointerPosChangeEvent(Float32 x, Float32 y)
 {
-    cursor()->setPosC(LPointF(x,y));
+    cursor()->setPosC(LPoint(x,y));
 
     // Repaint cursor outputs if hardware composition is not supported
     for (LOutput *output : cursor()->intersectedOutputs())

@@ -24,7 +24,7 @@ public:
      *
      * @returns If an XCursor matching the parameters is found, returns an instance of the LXCursor class, which stores the cursor's dimensions, hotspot, and texture. Otherwise, it returns nullptr. See the example available in LCompositor::cursorInitialized() for more information.
      */
-    static LXCursor *loadXCursorB(const char *cursor, const char *theme = NULL, Int32 suggestedSize = 64, GLuint textureUnit = 1);
+    static LXCursor *loadXCursorB(const char *cursor, const char *theme = NULL, Int32 suggestedSize = 64);
 
     ~LXCursor();
 

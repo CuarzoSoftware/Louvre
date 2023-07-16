@@ -172,7 +172,7 @@ public:
      * @param params Internal parameters of the library provided in the virtual constructor LCompositor::createSurfaceRequest().
      * @param textureUnit OpenGL texture unit.
      */
-    LSurface(Params *params, GLuint textureUnit = 0);
+    LSurface(Params *params);
 
     /*!
      * @brief Destructor of the LSurface class.

@@ -35,8 +35,7 @@ public:
                            Int32 dstX, Int32 dstY,
                            Int32 dstW, Int32 dstH,
                            Float32 scale,
-                           Float32 alpha,
-                           Int32 containerX, Int32 containerY) override;
+                           Float32 alpha) override;
 
     LPRIVATE_IMP(LTextureView)
 };

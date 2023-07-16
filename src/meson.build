@@ -10,6 +10,10 @@ project(
 	]
 )
 
+if get_option('buildtype') == 'custom'
+    add_project_arguments('-Ofast', '-g3',  language : 'cpp')
+endif
+
 LIBRARY_PATH = '/usr/lib'
 INCLUDES_PATH = '/usr/include/Louvre'
 EXAMPLES_PATH = '/usr/bin'

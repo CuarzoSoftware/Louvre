@@ -8,7 +8,6 @@
 #include <LOutput.h>
 #include <cstdio>
 #include <LCompositor.h>
-#include <LPainterMask.h>
 #include <string.h>
 
 using namespace Louvre;
@@ -19,90 +18,46 @@ LPainter::LPainter()
 
     imp()->painter = this;
 
-    memset(&imp()->masks, 0, sizeof(imp()->masks));
-    memset(&imp()->masksColors, 0, sizeof(imp()->masksColors));
-    memset(&imp()->masksModes, 0, sizeof(imp()->masksModes));
-    memset(&imp()->masksRects, 0, sizeof(imp()->masksRects));
-    memset(&imp()->masksTypes, 0, sizeof(imp()->masksTypes));
-
     // Open the vertex/fragment shaders
-    GLchar vShaderStr[] =
-       "precision lowp float;\
-        precision lowp int;\
-        uniform vec2 texSize;\
-        uniform vec4 srcRect;\
-        uniform vec4 masksRects[4];\
-        uniform int masksTypes[4];\
-        uniform int masksCount;\
-        attribute vec4 vertexPosition;\
-        varying vec2 v_texcoord;\
-        varying vec2 masks_texcoords[4];\
-        void main()\
-        {\
-            gl_Position = vec4(vertexPosition.xy, 0.0, 1.0);\
-            v_texcoord.x = (srcRect.x + vertexPosition.z*srcRect.z) / texSize.x;\
-            v_texcoord.y = (srcRect.y + srcRect.w - vertexPosition.w*srcRect.w) / texSize.y;\
-            if (masksCount > 0)\
-            {\
-                for (int i = 0; i < 4; i++)\
-                {\
-                    if (masksTypes[i] != -1)\
-                    {\
-                        masks_texcoords[i] = masksRects[i].xy + masksRects[i].zw * vec2(vertexPosition.z, 1.0 - vertexPosition.w);\
-                    }\
-                }\
-            }\
-        }";
+    GLchar vShaderStr[] = R"(
+        precision lowp float;
+        precision lowp int;
+        uniform lowp vec2 texSize;
+        uniform lowp vec4 srcRect;
+        attribute lowp vec4 vertexPosition;
+        varying lowp vec2 v_texcoord;
+        void main()
+        {
+            gl_Position = vec4(vertexPosition.xy, 0.0, 1.0);
+            v_texcoord.x = (srcRect.x + vertexPosition.z*srcRect.z) / texSize.x;
+            v_texcoord.y = (srcRect.y + srcRect.w - vertexPosition.w*srcRect.w) / texSize.y;
+        }
+        )";
 
-    GLchar fShaderStr[] =
-       "precision lowp float;\
-        precision lowp int;\
-        uniform sampler2D tex;\
-        uniform int mode;\
-        uniform float alpha;\
-        uniform vec4 colorRGBA;\
-        uniform int masksCount;\
-        uniform int masksTypes[4];\
-        uniform int masksModes[4];\
-        uniform vec4 masksColors[4];\
-        varying vec2 v_texcoord;\
-        varying vec2 masks_texcoords[4];\
-        void main()\
-        {\
-          vec4 color;\
-          if (mode == 0)\
-          {\
-            if (alpha == 1.0)\
-                color = texture2D(tex, v_texcoord)*alpha;\
-            else{\
-                color = texture2D(tex, v_texcoord);\
-                color.w *= alpha;\
-            }\
-          }\
-          else\
-            color = colorRGBA;\
-\
-          if (masksCount > 0)\
-          {\
-              int pendingMasks = masksCount;\
-              for (int i = 0; i < 4; i++)\
-              {\
-                  if (masksTypes[i] == -1 || masks_texcoords[i].x < 0.0 || masks_texcoords[i].x > 1.0 || masks_texcoords[i].y < 0.0 || masks_texcoords[i].y > 1.0)\
-                    continue;\
-\
-                  if(masksTypes[i] == 0)\
-                    color.w = masksColors[i].w;\
-                  else\
-                    color = vec4(0.0);\
-\
-                  pendingMasks--;\
-\
-                  if (pendingMasks == 0)\
-                    break;\
-              }\
-          }\
-          gl_FragColor = color;\
-        }";
+    GLchar fShaderStr[] =R"(
+        precision lowp float;
+        precision lowp int;
+        uniform lowp sampler2D tex;
+        uniform lowp int mode;
+        uniform lowp float alpha;
+        uniform lowp vec4 colorRGBA;
+        varying lowp vec2 v_texcoord;
+
+        void main()
+        {
+            vec4 color;
+
+            if (mode == 0)
+            {
+                color = texture2D(tex, v_texcoord);
+                color.w *= alpha;
+            }
+            else
+                color = colorRGBA;
+
+            gl_FragColor = color;
+        }
+        )";
 
     // Load the vertex/fragment shaders
     imp()->vertexShader = LOpenGL::compileShader(GL_VERTEX_SHADER, vShaderStr);
@@ -163,12 +118,6 @@ LPainter::LPainter()
     imp()->modeUniform = glGetUniformLocation(imp()->programObject, "mode");
     imp()->colorUniform = glGetUniformLocation(imp()->programObject, "colorRGBA");
     imp()->alphaUniform = glGetUniformLocation(imp()->programObject, "alpha");
-    imp()->masksColorsUniform = glGetUniformLocation(imp()->programObject, "masksColors");
-    imp()->masksCountUniform = glGetUniformLocation(imp()->programObject, "masksCount");
-    imp()->masksTypesUniform = glGetUniformLocation(imp()->programObject, "masksTypes");
-    imp()->masksRectsUniform = glGetUniformLocation(imp()->programObject, "masksRects");
-    imp()->masksModesUniform = glGetUniformLocation(imp()->programObject, "masksModes");
-    imp()->masksSamplesUniform = glGetUniformLocation(imp()->programObject, "masksSamples");
 }
 
 void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src, const LRect &dst)
@@ -180,18 +129,17 @@ void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src,
     glClear(GL_COLOR_BUFFER_BIT);
     glScissor(dst.x(),dst.y(),dst.w(),dst.h());
     glViewport(dst.x(),dst.y(),dst.w(),dst.h());
-    glActiveTexture(GL_TEXTURE0 + texture->unit());
-    glUniform1f(alphaUniform, 1.f);
-    glUniform1i(modeUniform,0);
-    glUniform1i(activeTextureUniform, texture->unit());
-    glBindTexture(GL_TEXTURE_2D,texture->id(output));
+    glActiveTexture(GL_TEXTURE0);
+    shaderSetAlpha(1.f);
+    shaderSetMode(0);
+    shaderSetActiveTexture(0);
+    glBindTexture(GL_TEXTURE_2D, texture->id(output));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glUniform2f(texSizeUniform,texture->sizeB().w(), texture->sizeB().h());
-    glUniform4f(srcRectUniform,src.x(), src.y(), src.w(), src.h());
-    glUniform1i(masksCountUniform, 0);
+    shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
+    shaderSetSrcRect(src.x(), src.y(), src.w(), src.h());
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
@@ -202,58 +150,26 @@ void LPainter::LPainterPrivate::scaleTexture(LTexture *texture, const LRect &src
     glViewport(0, 0, dst.w(), dst.h());
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT);
-    glActiveTexture(GL_TEXTURE0 + texture->unit());
-    glUniform1f(alphaUniform, 1.f);
-    glUniform1i(modeUniform, 0);
-    glUniform1i(activeTextureUniform, texture->unit());
+    glActiveTexture(GL_TEXTURE0);
+
+    shaderSetAlpha(1.f);
+    shaderSetMode(0);
+    shaderSetActiveTexture(0);
+    shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
+    shaderSetSrcRect(src.x(), src.y() + src.h(), src.w(), -src.h());
+
     glBindTexture(GL_TEXTURE_2D, texture->id(output));
-    glUniform2f(texSizeUniform, texture->sizeB().w(), texture->sizeB().h());
-    glUniform4f(srcRectUniform, src.x(), src.y() + src.h(), src.w(), -src.h());
-    glUniform1i(masksCountUniform, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-}
-
-void LPainter::LPainterPrivate::bindMasks(Float32 dstX, Float32 dstY, Float32 dstW, Float32 dstH,
-                                          Float32 containerPosX, Float32 containerPosY)
-{
-    masksCount = 0;
-    UInt32 maxUnit = 0;
-    for (UInt32 i = 0; i < LPAINTER_MAX_MASKS; i++)
-    {
-        if (masks[i])
-        {
-            masks[i]->bind(painter, i);
-            Float32 x = (dstX - containerPosX - masksRects[i].x)/masksRects[i].w;
-            Float32 y = (dstY - containerPosY - masksRects[i].y)/masksRects[i].h;
-            masksRects[i].w = dstW/masksRects[i].w;
-            masksRects[i].h = dstH/masksRects[i].h;
-            masksRects[i].x = x;
-            masksRects[i].y = y;
-            masksCount++;
-
-            if (i + 1 > maxUnit)
-                maxUnit = i + 1;
-        }
-        else
-            masksTypes[i] = -1;
-    }
-
-    glUniform1i(masksCountUniform, masksCount);
-    glUniform1iv(masksTypesUniform, LPAINTER_MAX_MASKS, masksTypes);
-
-    if (maxUnit)
-    {
-        glUniform4fv(masksRectsUniform, maxUnit, (GLfloat*)masksRects);
-        glUniform1iv(masksModesUniform, maxUnit, masksModes);
-        glUniform4fv(masksColorsUniform, maxUnit, (GLfloat*)masksColors);
-        glUniform1iv(masksSamplesUniform, maxUnit, masksSamples);
-    }
 }
 
 void LPainter::drawTextureC(LTexture *texture,
                             const LRect &src, const LRect &dst,
-                            Float32 srcScale, Float32 alpha,
-                            const LPoint &containerPos)
+                            Float32 srcScale, Float32 alpha)
 {
     drawTextureC(texture,
                  src.x(),
@@ -265,9 +181,7 @@ void LPainter::drawTextureC(LTexture *texture,
                  dst.w(),
                  dst.h(),
                  srcScale,
-                 alpha,
-                 containerPos.x(),
-                 containerPos.y());
+                 alpha);
 }
 
 void LPainter::drawTextureC(LTexture *texture,
@@ -280,53 +194,44 @@ void LPainter::drawTextureC(LTexture *texture,
                             Int32 dstW,
                             Int32 dstH,
                             Float32 srcScale,
-                            Float32 alpha,
-                            Int32 containerPosX,
-                            Int32 containerPosY)
+                            Float32 alpha)
 {
     setViewportC(dstX, dstY, dstW, dstH);
-    glActiveTexture(GL_TEXTURE0 + texture->unit());
-    glUniform1f(imp()->alphaUniform, alpha);
-    glUniform1i(imp()->modeUniform, 0);
-    glUniform1i(imp()->activeTextureUniform, texture->unit());
+    glActiveTexture(GL_TEXTURE0);
+
+    imp()->shaderSetAlpha(alpha);
+    imp()->shaderSetMode(0);
+    imp()->shaderSetActiveTexture(0);
+    imp()->shaderSetSrcRect(srcX, srcY, srcW, srcH);
+
     glBindTexture(GL_TEXTURE_2D, texture->id(imp()->output));
-    glUniform4f(imp()->srcRectUniform, srcX, srcY, srcW, srcH);
 
     if (srcScale == 0.0)
-    {
-        glUniform2f(imp()->texSizeUniform, texture->sizeB().w(), texture->sizeB().h());
-    }
+        imp()->shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
     else
     {
         srcScale = float(compositor()->globalScale()) / srcScale;
-        glUniform2f(imp()->texSizeUniform,
+        imp()->shaderSetTexSize(
                     texture->sizeB().w()*srcScale,
                     texture->sizeB().h()*srcScale);
     }
 
-    imp()->bindMasks(dstX, dstY, dstW, dstH,
-                     containerPosX, containerPosY);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 void LPainter::drawColorC(const LRect &dst,
-                          Float32 r, Float32 g, Float32 b, Float32 a,
-                          const LPoint &containerPos)
+                          Float32 r, Float32 g, Float32 b, Float32 a)
 {
     drawColorC(dst.x(), dst.y(), dst.w(), dst.h(),
-               r, g, b, a,
-               containerPos.x(), containerPos.y());
+               r, g, b, a);
 }
 
 void LPainter::drawColorC(Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                          Float32 r, Float32 g, Float32 b, Float32 a,
-                          Int32 containerPosX, Int32 containerPosY)
+                          Float32 r, Float32 g, Float32 b, Float32 a)
 {
     setViewportC(dstX, dstY, dstW, dstH);
-    glUniform4f(imp()->colorUniform, r, g, b, a);
-    glUniform1i(imp()->modeUniform, 1);
-    imp()->bindMasks(dstX, dstY, dstW, dstH,
-                     containerPosX, containerPosY);
+    imp()->shaderSetColor(r, g, b, a);
+    imp()->shaderSetMode(1);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
@@ -375,14 +280,6 @@ void LPainter::clearScreen()
 void LPainter::bindProgram()
 {
     glUseProgram(imp()->programObject);
-}
-
-void LPainter::setMask(UInt32 slot, LPainterMask *mask)
-{
-    if (slot > LPAINTER_MAX_MASKS - 1)
-        return;
-
-    imp()->masks[slot] = mask;
 }
 
 LPainter::~LPainter()

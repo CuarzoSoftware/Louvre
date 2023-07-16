@@ -157,11 +157,9 @@ const LRegion *LSolidColorView::inputRegionC() const
 void LSolidColorView::paintRectC(LPainter *p,
                                  Int32, Int32, Int32, Int32,
                                  Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                                 Float32, Float32 alpha,
-                                 Int32 containerX, Int32 containerY)
+                                 Float32, Float32 alpha)
 {
     p->drawColorC(dstX, dstY, dstW, dstH,
                   color().r, color().g, color().b,
-                  alpha,
-                  containerX, containerY);
+                  alpha);
 }

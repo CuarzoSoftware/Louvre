@@ -10,7 +10,7 @@ using namespace std;
 class Surface : public LSurface
 {
 public:
-    Surface(LSurface::Params *params, GLuint textureUnit = 1);
+    Surface(LSurface::Params *params);
     void mappingChanged() override;
     void orderChanged() override;
     void minimizedChanged() override;

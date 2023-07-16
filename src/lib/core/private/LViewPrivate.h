@@ -19,6 +19,7 @@ LPRIVATE_CLASS(LView)
     std::list<LView*>children;
     std::list<LView*>::iterator parentLink;
     std::list<LView*>::iterator compositorLink;
+    bool repaintCalled = false;
 
     Float32 opacity = 1.f;
     LSizeF scalingVector = LSizeF(1.f, 1.f);
@@ -64,8 +65,6 @@ LPRIVATE_CLASS(LView)
     } cache;
 
     std::map<LOutput*,ViewOutputData>outputsMap;
-
-    LPainterMask *masks[LPAINTER_MAX_MASKS];
 };
 
 #endif // LVIEWPRIVATE_H

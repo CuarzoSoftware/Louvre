@@ -36,7 +36,7 @@ LPoint Pointer::viewLocalPos(LView *view)
 
 void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
 {
-    cursor()->setPosC(LPointF(x,y));
+    cursor()->setPosC(LPoint(x,y));
 
     for (Output *o : outps())
     {

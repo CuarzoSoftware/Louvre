@@ -37,7 +37,7 @@ void Output::fullDamage()
 
 void Output::initializeGL()
 {
-    terminalIconTexture = new LTexture(0);
+    terminalIconTexture = new LTexture();
 
     if (!terminalIconTexture->setDataB(LSize(64,64), 64*4, DRM_FORMAT_ABGR8888, terminalIconPixels()))
     {

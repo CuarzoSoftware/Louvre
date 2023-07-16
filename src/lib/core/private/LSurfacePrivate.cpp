@@ -303,7 +303,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
         if (!dmaBuffer->texture())
         {
-            dmaBuffer->imp()->texture = new LTexture(texture->unit());
+            dmaBuffer->imp()->texture = new LTexture();
             dmaBuffer->texture()->setDataB(dmaBuffer->planes());
         }
 

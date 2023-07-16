@@ -5,7 +5,7 @@
 #include "LCursor.h"
 #include "Output.h"
 
-Surface::Surface(LSurface::Params *params, GLuint textureUnit) : LSurface(params, textureUnit)
+Surface::Surface(LSurface::Params *params) : LSurface(params)
 {
 
 }
