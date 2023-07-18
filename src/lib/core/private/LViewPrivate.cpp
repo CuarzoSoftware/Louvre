@@ -1,5 +1,6 @@
 #include <private/LViewPrivate.h>
 #include <private/LScenePrivate.h>
+#include <private/LSceneViewPrivate.h>
 
 void LView::LViewPrivate::removeOutput(LView *view, LOutput *output)
 {
@@ -10,11 +11,13 @@ void LView::LViewPrivate::removeOutput(LView *view, LOutput *output)
     if (it != outputsMap.end())
         outputsMap.erase(it);
 
-    if (!scene)
+    if (view->type() != Scene)
         return;
 
-    auto sit = scene->imp()->outputsMap.find(output);
+    LSceneView *sceneView = (LSceneView*)view;
 
-    if (sit != scene->imp()->outputsMap.end())
-        scene->imp()->outputsMap.erase(sit);
+    auto sit = sceneView->imp()->outputsMap.find(output);
+
+    if (sit != sceneView->imp()->outputsMap.end())
+        sceneView->imp()->outputsMap.erase(sit);
 }

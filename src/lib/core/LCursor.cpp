@@ -66,10 +66,10 @@ LCursor::~LCursor()
 
 void LCursor::useDefault()
 {
-    setTextureB(imp()->defaultTexture, LPoint(9));
+    setTextureB(imp()->defaultTexture, LPointF(9));
 }
 
-static void texture2Buffer(LCursor *cursor, const LSize &size)
+static void texture2Buffer(LCursor *cursor, const LSizeF &size)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, cursor->imp()->glFramebuffer);
     cursor->compositor()->imp()->painter->imp()->scaleCursor(
@@ -81,7 +81,7 @@ static void texture2Buffer(LCursor *cursor, const LSize &size)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void LCursor::setTextureB(const LTexture *texture, const LPoint &hotspot)
+void LCursor::setTextureB(const LTexture *texture, const LPointF &hotspot)
 {
     if (!texture)
         return;
@@ -118,7 +118,7 @@ void LCursor::moveC(float x, float y)
     setPosC(imp()->posC + LPointF(x,y));
 }
 
-void Louvre::LCursor::setPosC(const LPoint &pos)
+void Louvre::LCursor::setPosC(const LPointF &pos)
 {
     for (LOutput *output : compositor()->outputs())
         if (output->rectC().containsPoint(pos) && output)
@@ -143,7 +143,7 @@ void Louvre::LCursor::setPosC(const LPoint &pos)
     imp()->update();
 }
 
-void LCursor::setHotspotB(const LPoint &hotspot)
+void LCursor::setHotspotB(const LPointF &hotspot)
 {
     if (imp()->hotspotB != hotspot)
     {
@@ -152,8 +152,8 @@ void LCursor::setHotspotB(const LPoint &hotspot)
     }
 }
 
-void LCursor::setSizeS(const LSize &size)
-{    
+void LCursor::setSizeS(const LSizeF &size)
+{
     if (imp()->sizeS != size)
     {
         imp()->sizeS = size;
@@ -199,12 +199,12 @@ bool LCursor::hasHardwareSupport(const LOutput *output) const
     return compositor()->imp()->graphicBackend->hasHardwareCursorSupport((LOutput*)output);
 }
 
-const LPoint &LCursor::posC() const
+const LPointF &LCursor::posC() const
 {
     return imp()->posC;
 }
 
-const LPoint &LCursor::hotspotB() const
+const LPointF &LCursor::hotspotB() const
 {
     return imp()->hotspotB;
 }
@@ -244,7 +244,7 @@ void LCursor::LCursorPrivate::update()
         return;
 
     LPointF newHotspotS;
-    newHotspotS = LPointF(hotspotB*sizeS)/texture->sizeB();
+    newHotspotS = (hotspotB*sizeS)/LSizeF(texture->sizeB());
 
     LPointF newPosC = posC - (newHotspotS * compositor()->globalScale());
 
@@ -283,7 +283,7 @@ void LCursor::LCursorPrivate::textureUpdate()
         return;
 
     LPointF newHotspotS;
-    newHotspotS = LPointF(hotspotB*sizeS)/texture->sizeB();
+    newHotspotS = (hotspotB*sizeS)/LSizeF(texture->sizeB());
 
     LPointF newPosC = posC - (newHotspotS * compositor()->globalScale());
     rectC.setPos(newPosC);

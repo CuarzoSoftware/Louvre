@@ -22,6 +22,7 @@
 #include <LOutputMode.h>
 #include <LTime.h>
 #include <LLog.h>
+#include <LOutputFramebuffer.h>
 
 using namespace Louvre;
 
@@ -31,10 +32,17 @@ LOutput::LOutput()
     imp()->output = this;
     imp()->rectC.setX(0);
     imp()->rectC.setY(0);
+    imp()->fb = new LOutputFramebuffer(this);
+}
+
+LFramebuffer *LOutput::framebuffer() const
+{
+    return imp()->fb;
 }
 
 LOutput::~LOutput()
 {
+    delete imp()->fb;
     delete m_imp;
 }
 

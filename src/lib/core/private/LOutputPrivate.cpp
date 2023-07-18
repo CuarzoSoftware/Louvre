@@ -29,6 +29,7 @@ void LOutput::LOutputPrivate::backendInitializeGL()
     threadId = std::this_thread::get_id();
     painter = new LPainter();
     painter->imp()->output = output;
+    painter->bindFramebuffer(output->framebuffer());
 
     output->imp()->global = wl_global_create(compositor()->display(),
                                              &wl_output_interface,
@@ -53,6 +54,7 @@ void LOutput::LOutputPrivate::backendPaintGL()
 
     compositor()->imp()->renderMutex.lock();
     output->paintGL();
+    destroyPendingFramebuffers();
     compositor()->imp()->renderMutex.unlock();
 }
 
@@ -77,6 +79,7 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
 
     compositor()->imp()->renderMutex.lock();
     output->uninitializeGL();
+    destroyPendingFramebuffers();
     compositor()->imp()->renderMutex.unlock();
 }
 
@@ -93,4 +96,14 @@ void LOutput::LOutputPrivate::backendPageFlipped()
         surf->imp()->sendPresentationFeedback(output, presentationTime);
 
     compositor()->imp()->renderMutex.unlock();
+}
+
+void LOutput::LOutputPrivate::destroyPendingFramebuffers()
+{
+    while (!framebuffersToDestroy.empty())
+    {
+        glDeleteTextures(1, &framebuffersToDestroy.back().textureId);
+        glDeleteFramebuffers(1, &framebuffersToDestroy.back().framebufferId);
+        framebuffersToDestroy.pop_back();
+    }
 }

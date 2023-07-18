@@ -2,8 +2,10 @@
 #define LOUTPUTPRIVATE_H
 
 #include <LOutput.h>
+#include <private/LRenderBufferPrivate.h>
 
 LPRIVATE_CLASS(LOutput)
+    LOutputFramebuffer *fb;
     LOutput *output;
     LRect rectC;
     LOutputMode *pendingMode = nullptr;
@@ -34,6 +36,10 @@ LPRIVATE_CLASS(LOutput)
     void backendResizeGL();
     void backendUninitializeGL();
     void backendPageFlipped();
+
+    // RenderBuffers
+    std::list<LRenderBuffer::LRenderBufferPrivate::OutputData> framebuffersToDestroy;
+    void destroyPendingFramebuffers();
 };
 
 #endif // LOUTPUTPRIVATE_H

@@ -1,6 +1,7 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LViewPrivate.h>
 #include <private/LScenePrivate.h>
+#include <private/LSceneViewPrivate.h>
 #include <LOutput.h>
 #include <LLog.h>
 #include <string.h>
@@ -40,6 +41,18 @@ LScene *LView::scene() const
     return nullptr;
 }
 
+LSceneView *LView::parentSceneView() const
+{
+    if (parent())
+    {
+        if (parent()->type() == Scene)
+            return (LSceneView*)parent();
+
+        return parent()->parentSceneView();
+    }
+    return nullptr;
+}
+
 UInt32 LView::type() const
 {
     return imp()->type;
@@ -76,7 +89,7 @@ void LView::setParent(LView *view)
     }
     else
     {
-        LScene *s = scene();
+        LSceneView *s = parentSceneView();
 
         if (s)
         {
@@ -85,8 +98,7 @@ void LView::setParent(LView *view)
                 if (!pair.second.prevMapped)
                     continue;
 
-                LScene::LScenePrivate::OutputData &data = s->imp()->outputsMap[pair.first];
-                data.newDamageC.addRegion(pair.second.prevParentClipping);
+                s->addDamageC(pair.first, pair.second.prevParentClipping);
             }
         }
     }
@@ -286,7 +298,7 @@ void LView::setVisible(bool visible)
 
 bool LView::mapped() const
 {
-    if (imp()->scene)
+    if (type() == Scene)
         return visible();
 
     return visible() && nativeMapped() && parent() && parent()->mapped();
@@ -337,4 +349,14 @@ bool LView::forceRequestNextFrameEnabled() const
 void LView::enableForceRequestNextFrame(bool enabled) const
 {
     imp()->forceRequestNextFrameEnabled = enabled;
+}
+
+void LView::setBlendFunc(GLenum sFactor, GLenum dFactor)
+{
+    if (imp()->sFactor != sFactor || imp()->dFactor != dFactor)
+    {
+        imp()->sFactor = sFactor;
+        imp()->dFactor = dFactor;
+        repaint();
+    }
 }

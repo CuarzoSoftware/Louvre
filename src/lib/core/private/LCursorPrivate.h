@@ -13,9 +13,9 @@ LPRIVATE_CLASS(LCursor)
 
     void globalScaleChanged(Int32 oldScale, Int32 newScale);
 
-    LPoint posC;
-    LPoint hotspotB;
-    LSize sizeS;
+    LPointF posC;
+    LPointF hotspotB;
+    LSizeF sizeS;
     LOutput *output                                     = nullptr;
     std::list<LOutput*>intersectedOutputs;
     bool isVisible                                      = true;

@@ -9,12 +9,15 @@ Dock::Dock(Output *output) : LLayerView(comp()->overlayLayer)
 {
     m_output = output;
 
+    background.setOpacity(0.1);
+
     update();
 
     LAnimation::oneShot(1000, nullptr, [this](LAnimation *)
     {
         hide();
     });
+
 }
 
 void Dock::update()
@@ -52,10 +55,10 @@ void Dock::show()
     if (m_visiblePercent != 0.f)
         return;
 
-    LAnimation::oneShot(100,
+    LAnimation::oneShot(200,
     [this](LAnimation *anim)
     {
-        m_visiblePercent = anim->value();
+        m_visiblePercent = 1.f - powf(1.f - anim->value(), 2.f);
         update();
         m_output->repaint();
     });
@@ -66,10 +69,10 @@ void Dock::hide()
     if (m_visiblePercent != 1.f)
         return;
 
-    LAnimation::oneShot(100,
+    LAnimation::oneShot(200,
     [this](LAnimation *anim)
     {
-        m_visiblePercent = 1.f - anim->value();
+        m_visiblePercent = 1.f - anim->value()*anim->value();
         update();
         m_output->repaint();
         return true;

@@ -70,6 +70,9 @@ namespace Louvre
 
     // Painter
     class LPainter;
+    class LRenderBuffer;
+    class LFramebuffer;
+    class LOutputFramebuffer;
 
     // Views
     class LScene;
@@ -78,6 +81,7 @@ namespace Louvre
     class LSurfaceView;
     class LTextureView;
     class LSolidColorView;
+    class LSceneView;
 
     // Data
     class LDataDevice;

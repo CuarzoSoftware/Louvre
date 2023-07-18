@@ -54,7 +54,7 @@ public:
      * @param texture Texture to assign.
      * @param hotspot Cursor hotspot in buffer coordinates.
      */
-    void setTextureB(const LTexture *texture, const LPoint &hotspot);
+    void setTextureB(const LTexture *texture, const LPointF &hotspot);
 
     /*!
      * @brief Current texture.
@@ -87,14 +87,14 @@ public:
      *
      * @param pos Cursor position in compositor coordinates.
      */
-    void setPosC(const LPoint &pos);
+    void setPosC(const LPointF &pos);
 
     /*!
      * @brief Cursor position.
      *
      * Cursor position in compositor coordinates.
      */
-    const LPoint &posC() const;
+    const LPointF &posC() const;
 
     /*!
      * @brief Cursor rect on screen.
@@ -112,14 +112,14 @@ public:
      *
      * @param Hotspot hotspot in buffer coordinates.
      */
-    void setHotspotB(const LPoint &hotspot);
+    void setHotspotB(const LPointF &hotspot);
 
     /*!
      * @brief Cursor hotspot.
      *
      * Current hotspot in buffer coordinates.
      */
-    const LPoint &hotspotB()  const;
+    const LPointF &hotspotB()  const;
 
     /*!
      * @brief Assigns the cursor size.
@@ -129,7 +129,7 @@ public:
      *
      * @param size Cursor size in surface coordinates.
      */
-    void setSizeS(const LSize &size);
+    void setSizeS(const LSizeF &size);
 
     /*!
      * @brief Change cursor visibility.

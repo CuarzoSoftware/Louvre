@@ -16,7 +16,8 @@ public:
         Layer = 0,
         Surface = 1,
         Texture = 2,
-        SolidColor = 3
+        SolidColor = 3,
+        Scene = 4
     };
 
     /*!
@@ -24,6 +25,12 @@ public:
      * @returns nullptr if the view is not a child or subchild of an LScene
      */
     LScene *scene() const;
+
+    /*!
+     * LSceneView in which this view is currently embedded.
+     * @returns nullptr if the view is not a child or subchild of an LSceneView
+     */
+    LSceneView *parentSceneView() const;
 
     /*!
      * A number used to identify the type of view, passed in the LView constructor.
@@ -194,6 +201,12 @@ public:
      * is not mapped or occluded.
      */
     void enableForceRequestNextFrame(bool enabled) const;
+
+    /*!
+     * Sets the alpha blending function.\n
+     * Google glBlendFunc() for more information.
+     */
+    void setBlendFunc(GLenum sFactor, GLenum dFactor);
 
     /*!
      * Indicates whether the view should be rendered without taking

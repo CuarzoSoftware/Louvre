@@ -3,6 +3,8 @@
 
 #include <LOutput.h>
 #include <LSolidColorView.h>
+#include <LRenderBuffer.h>
+#include <LSceneView.h>
 
 using namespace Louvre;
 
@@ -22,6 +24,8 @@ public:
 
     LTextureView *wallpaperView = nullptr;
     Dock *dock = nullptr;
+    LSceneView *sView = nullptr;
+
 };
 
 #endif // OUTPUT_H

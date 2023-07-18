@@ -24,7 +24,12 @@ public:
     void resizeGL() override;
     void paintGL() override;
 
-    LRegion damage, newDamage;
+    // List of new damage calculated in prev frames
+    bool damageListCreated = false;
+    std::list<LRegion*>prevDamageList;
+
+    // New damage calculated on this frame
+    LRegion newDamage;
 
     // Output rect since the last paintGL()
     LRect lastRectC;

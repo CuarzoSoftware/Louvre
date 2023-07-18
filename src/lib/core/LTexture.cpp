@@ -1,10 +1,11 @@
-#include "LLog.h"
 #include <private/LPainterPrivate.h>
 #include <private/LTexturePrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LCursorPrivate.h>
 #include <private/LOutputPrivate.h>
+#include <private/LRenderBufferPrivate.h>
 #include <LRect.h>
+#include <LLog.h>
 
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
@@ -78,6 +79,9 @@ LTexture::LTexture()
 
 bool LTexture::setDataB(const LSize &size, UInt32 stride, UInt32 format, const void *buffer)
 {
+    if (imp()->sourceType == Framebuffer)
+        return false;
+
     imp()->deleteTexture(this);
 
     if (compositor()->imp()->graphicBackend->createTextureFromCPUBuffer(this, size, stride, format, buffer))
@@ -93,6 +97,9 @@ bool LTexture::setDataB(const LSize &size, UInt32 stride, UInt32 format, const v
 
 bool LTexture::setData(void *wlDRMBuffer)
 {
+    if (imp()->sourceType == Framebuffer)
+        return false;
+
     imp()->deleteTexture(this);
 
     if (compositor()->imp()->graphicBackend->createTextureFromWaylandDRM(this, wlDRMBuffer))
@@ -106,6 +113,9 @@ bool LTexture::setData(void *wlDRMBuffer)
 
 bool LTexture::setDataB(const LDMAPlanes *planes)
 {
+    if (imp()->sourceType == Framebuffer)
+        return false;
+
     imp()->deleteTexture(this);
 
     if (compositor()->imp()->graphicBackend->createTextureFromDMA(this, planes))
@@ -119,7 +129,8 @@ bool LTexture::setDataB(const LDMAPlanes *planes)
 
 bool LTexture::updateRect(const LRect &rect, UInt32 stride, const void *buffer)
 {
-    if (initialized())
+
+    if (initialized() && imp()->sourceType != Framebuffer)
     {
         imp()->increaseSerial();
         return compositor()->imp()->graphicBackend->updateTextureRect(this, stride, rect, buffer);
@@ -247,12 +258,15 @@ LTexture::~LTexture()
 }
 
 void LTexture::LTexturePrivate::deleteTexture(LTexture *texture)
-{
+{    
     if (texture == compositor()->cursor()->texture())
         compositor()->cursor()->useDefault();
 
     increaseSerial();
     glActiveTexture(GL_TEXTURE0);
+
+    if (texture->sourceType() == Framebuffer)
+        return;
 
     if (graphicBackendData)
     {
@@ -276,10 +290,18 @@ bool LTexture::initialized() const
     return imp()->graphicBackendData != nullptr;
 }
 
-GLuint LTexture::id(LOutput *output)
+GLuint LTexture::id(LOutput *output) const
 {
     if (initialized())
-        return compositor()->imp()->graphicBackend->getTextureID(output, this);
+    {
+        if (sourceType() == Framebuffer)
+        {
+            LRenderBuffer *fb = (LRenderBuffer*)imp()->graphicBackendData;
+            return fb->imp()->getTextureId(output);
+        }
+        else
+            return compositor()->imp()->graphicBackend->getTextureID(output, (LTexture*)this);
+    }
 
     return 0;
 }

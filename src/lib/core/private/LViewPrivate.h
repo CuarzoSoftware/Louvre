@@ -6,6 +6,7 @@
 #include <LRect.h>
 #include <map>
 #include <LPainter.h>
+#include <GL/gl.h>
 
 using namespace Louvre;
 
@@ -20,6 +21,8 @@ LPRIVATE_CLASS(LView)
     std::list<LView*>::iterator parentLink;
     std::list<LView*>::iterator compositorLink;
     bool repaintCalled = false;
+    GLenum sFactor = GL_SRC_ALPHA;
+    GLenum dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
     Float32 opacity = 1.f;
     LSizeF scalingVector = LSizeF(1.f, 1.f);

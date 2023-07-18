@@ -25,18 +25,13 @@ void Output::fullDamage()
     terminalIconRectC.setSize(LSize(topbarHeight) - LSize(2*terminalIconRectC.pos().y()));
     terminalIconRectC.setPos(rectC().pos() + terminalIconRectC.pos());
 
-    if (buffersCount() > 1)
-    {
-        damage.clear();
-        damage.addRect(rectC());
-    }
-
     newDamage.clear();
     newDamage.addRect(rectC());
 }
 
 void Output::initializeGL()
 {
+
     terminalIconTexture = new LTexture();
 
     if (!terminalIconTexture->setDataB(LSize(64,64), 64*4, DRM_FORMAT_ABGR8888, terminalIconPixels()))
@@ -90,7 +85,7 @@ void Output::resizeGL()
 
     if (background)
     {
-        backgroundTexture = background->copyB(sizeB());
+        backgroundTexture = background->copyB(sizeB()/50);
         LLog::debug("Background texture size %d %d", backgroundTexture->sizeB().w(), backgroundTexture->sizeB().h());
         delete background;
     }
@@ -116,6 +111,14 @@ void repaintChildren(LSurface *s)
 
 void Output::paintGL()
 {
+    if (!damageListCreated)
+    {
+        for (UInt32 i = 0; i < buffersCount() - 1; i++)
+            prevDamageList.push_back(new LRegion());
+
+        damageListCreated = true;
+    }
+
     Int32 n, w, h;
     LRect rect;
     LBox *boxes;
@@ -287,8 +290,16 @@ void Output::paintGL()
     // Save new damage for next frame and add old damage to current damage
     if (buffersCount() > 1)
     {
-        LRegion oldDamage = damage;
-        damage = newDamage;
+        LRegion oldDamage = *prevDamageList.front();
+
+        for (std::list<LRegion*>::iterator it = std::next(prevDamageList.begin()); it != prevDamageList.end(); it++)
+            oldDamage.addRegion(*(*it));
+
+        LRegion *front = prevDamageList.front();
+        prevDamageList.pop_front();
+        prevDamageList.push_back(front);
+
+        *front = newDamage;
         newDamage.addRegion(oldDamage);
     }
 

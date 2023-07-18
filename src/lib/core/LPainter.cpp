@@ -1,5 +1,5 @@
-#include "LLog.h"
 #include <private/LPainterPrivate.h>
+#include <private/LOutputFramebufferPrivate.h>
 
 #include <GLES2/gl2.h>
 #include <LOpenGL.h>
@@ -38,24 +38,20 @@ LPainter::LPainter()
         precision lowp float;
         precision lowp int;
         uniform lowp sampler2D tex;
-        uniform lowp int mode;
+        uniform bool mode;
         uniform lowp float alpha;
         uniform lowp vec4 colorRGBA;
         varying lowp vec2 v_texcoord;
 
         void main()
         {
-            vec4 color;
-
-            if (mode == 0)
-            {
-                color = texture2D(tex, v_texcoord);
-                color.w *= alpha;
-            }
+            if (mode)
+                gl_FragColor = colorRGBA;
             else
-                color = colorRGBA;
-
-            gl_FragColor = color;
+            {
+                gl_FragColor = texture2D(tex, v_texcoord);
+                gl_FragColor.w *= alpha;
+            }
         }
         )";
 
@@ -120,6 +116,13 @@ LPainter::LPainter()
     imp()->alphaUniform = glGetUniformLocation(imp()->programObject, "alpha");
 }
 
+void LPainter::bindFramebuffer(LFramebuffer *framebuffer)
+{
+    imp()->fbId = framebuffer->id(imp()->output);
+    glBindFramebuffer(GL_FRAMEBUFFER, imp()->fbId);
+    imp()->fb = framebuffer;
+}
+
 void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src, const LRect &dst)
 {
     glEnable(GL_BLEND);
@@ -167,7 +170,7 @@ void LPainter::LPainterPrivate::scaleTexture(LTexture *texture, const LRect &src
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void LPainter::drawTextureC(LTexture *texture,
+void LPainter::drawTextureC(const LTexture *texture,
                             const LRect &src, const LRect &dst,
                             Float32 srcScale, Float32 alpha)
 {
@@ -184,7 +187,7 @@ void LPainter::drawTextureC(LTexture *texture,
                  alpha);
 }
 
-void LPainter::drawTextureC(LTexture *texture,
+void LPainter::drawTextureC(const LTexture *texture,
                             Int32 srcX,
                             Int32 srcY,
                             Int32 srcW,
@@ -202,7 +205,11 @@ void LPainter::drawTextureC(LTexture *texture,
     imp()->shaderSetAlpha(alpha);
     imp()->shaderSetMode(0);
     imp()->shaderSetActiveTexture(0);
-    imp()->shaderSetSrcRect(srcX, srcY, srcW, srcH);
+
+    if (imp()->fbId != 0)
+        imp()->shaderSetSrcRect(srcX, srcY + srcH, srcW, -srcH);
+    else
+        imp()->shaderSetSrcRect(srcX, srcY, srcW, srcH);
 
     glBindTexture(GL_TEXTURE_2D, texture->id(imp()->output));
 
@@ -242,16 +249,18 @@ void LPainter::setViewportC(const LRect &rect)
 
 void LPainter::setViewportC(Int32 x, Int32 y, Int32 w, Int32 h)
 {
-    x -= imp()->output->posC().x();
-    y -= imp()->output->posC().y();
-    y = imp()->output->sizeC().h() - y - h;
+    x -= imp()->fb->rectC().x();
+    y -= imp()->fb->rectC().y();
 
-    if (imp()->output->scale() != compositor()->globalScale())
+    if (imp()->fbId == 0)
+        y = imp()->output->sizeC().h() - y - h;
+
+    if (imp()->fb->scale() != compositor()->globalScale())
     {
-        x *= imp()->output->scale();
-        y *= imp()->output->scale();
-        w *= imp()->output->scale();
-        h *= imp()->output->scale();
+        x *= imp()->fb->scale();
+        y *= imp()->fb->scale();
+        w *= imp()->fb->scale();
+        h *= imp()->fb->scale();
 
         x /= compositor()->globalScale();
         y /= compositor()->globalScale();
@@ -271,8 +280,8 @@ void LPainter::setClearColor(Float32 r, Float32 g, Float32 b, Float32 a)
 void LPainter::clearScreen()
 {
     glDisable(GL_BLEND);
-    glScissor(0,0,imp()->output->sizeB().w(),imp()->output->sizeB().h());
-    glViewport(0,0,imp()->output->sizeB().w(),imp()->output->sizeB().h());
+    glScissor(0, 0, imp()->fb->sizeB().w(), imp()->fb->sizeB().h());
+    glViewport(0, 0, imp()->fb->sizeB().w(), imp()->fb->sizeB().h());
     glClear(GL_COLOR_BUFFER_BIT);
     glEnable(GL_BLEND);
 }

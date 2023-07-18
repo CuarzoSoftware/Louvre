@@ -19,6 +19,8 @@ public:
     LPainter(const LPainter&) = delete;
     LPainter& operator= (const LPainter&) = delete;
 
+    void bindFramebuffer(LFramebuffer *framebuffer);
+
     /*!
      * @brief Draws a texture.
      *
@@ -29,10 +31,10 @@ public:
      * @param dstG The portion of the screen where the texture will be drawn (specified in compositor coordinates).
      * @param alpha Value of the alpha component (range [0.0, 1.0]).
      */
-    void drawTextureC(LTexture *texture, const LRect &srcB, const LRect &dstG,
+    void drawTextureC(const LTexture *texture, const LRect &srcB, const LRect &dstG,
                       Float32 srcScale = 0.f, Float32 alpha = 1.f);
 
-    void drawTextureC(LTexture *texture,
+    void drawTextureC(const LTexture *texture,
                       Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
                       Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                       Float32 srcScale = 0.f, Float32 alpha = 1.0f);

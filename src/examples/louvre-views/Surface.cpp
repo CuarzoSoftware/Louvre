@@ -113,7 +113,7 @@ void Surface::minimizedChanged()
             minimizeAnim = LAnimation::create(300,
             [this, minView, o](LAnimation *anim)
             {
-                Float32 expVal = anim->value()*anim->value();
+                Float32 expVal = 1.f - powf(1.f - anim->value(), 2.f);
                 minView->setScalingVector(expVal);
                 view->setScalingVector(1.f - expVal);
                 setPosC((minView->posC() + minView->sizeC()) * expVal +

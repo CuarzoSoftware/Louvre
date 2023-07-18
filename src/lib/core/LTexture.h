@@ -24,7 +24,8 @@ public:
         /// Buffer
         CPU = 0,
         WL_DRM = 1,
-        DMA = 2
+        DMA = 2,
+        Framebuffer = 3
     };
 
     static UInt32 waylandFormatToDRM(UInt32 waylandFormat);
@@ -61,7 +62,7 @@ public:
     /*!
      * @brief OpenGL texture ID.
      */
-    GLuint id(LOutput *output);
+    GLuint id(LOutput *output) const;
 
     /*!
      * @brief Texture source.

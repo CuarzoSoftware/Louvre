@@ -14,7 +14,7 @@ class Dock : public LLayerView
 {
 public:
     Dock(Output *output);
-    LSolidColorView background = LSolidColorView(1.f, 1.f, 1.f, 0.8f, this);
+    LSolidColorView background = LSolidColorView(1.f, 1.f, 1.f, 0.2f, this);
     void update();
     void show();
     void hide();

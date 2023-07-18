@@ -95,6 +95,8 @@ public:
     LOutput(const LOutput&) = delete;
     LOutput& operator= (const LOutput&) = delete;
 
+    LFramebuffer *framebuffer() const;
+
     /*!
      * @brief Modes list.
      *

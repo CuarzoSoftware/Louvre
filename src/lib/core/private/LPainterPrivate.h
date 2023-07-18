@@ -142,6 +142,9 @@ LPRIVATE_CLASS(LPainter)
             glUniform1f(alphaUniform, a);
         }
     }
+
+    LFramebuffer *fb = nullptr;
+    GLuint fbId = 0;
 };
 
 #endif // LPAINTERPRIVATE_H
