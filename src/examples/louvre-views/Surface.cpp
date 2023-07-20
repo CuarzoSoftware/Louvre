@@ -4,7 +4,7 @@
 #include "Surface.h"
 #include "LCursor.h"
 #include "Output.h"
-#include <Shared.h>
+#include <Global.h>
 #include <LTextureView.h>
 #include <Dock.h>
 #include <LAnimation.h>
@@ -37,19 +37,19 @@ void Surface::mappingChanged()
 
             if (toplevel())
             {
-                Int32 barSize = 0 * compositor()->globalScale();
-                LPoint outputPosG = compositor()->cursor()->output()->posC() + LPoint(0, barSize);
-                LSize outputSizeG = compositor()->cursor()->output()->sizeC() - LSize(0, barSize);
+                Int32 barSize = 0;
+                LPoint outputPosG = compositor()->cursor()->output()->pos() + LPoint(0, barSize);
+                LSize outputSizeG = compositor()->cursor()->output()->size() - LSize(0, barSize);
 
-                setPosC(outputPosG + outputSizeG/2 - toplevel()->windowGeometryC().size()/2);
+                setPos(outputPosG + outputSizeG/2 - toplevel()->windowGeometry().size()/2);
 
-                if (posC().x() < outputPosG.x())
-                    setXC(outputPosG.x());
+                if (pos().x() < outputPosG.x())
+                    setX(outputPosG.x());
 
-                if (posC().y() < barSize)
-                    setYC(barSize);
+                if (pos().y() < barSize)
+                    setY(barSize);
 
-                toplevel()->configureC(LToplevelRole::Activated);
+                toplevel()->configure(LToplevelRole::Activated);
             }
         }
 
@@ -97,17 +97,19 @@ void Surface::minimizedChanged()
         }
 
         view->enableInput(false);
-        minimizedTexture = texture()->copyB(LSize((minimizedItemHeight()*texture()->sizeB().w())/texture()->sizeB().h(), minimizedItemHeight()));
 
-        for (Output *o : outps())
+        minimizedTexture = texture()->copyB(
+            LSize((DOCK_ITEM_HEIGHT * texture()->sizeB().w()) / texture()->sizeB().h(), DOCK_ITEM_HEIGHT) * 2);
+
+        for (Output *o : G::outputs())
         {
-            LTextureView *minView = new LTextureView(minimizedTexture, &o->dock->background);
-            minView->setBufferScale(comp()->globalScale());
+            LTextureView *minView = new LTextureView(minimizedTexture, o->dock->itemsContainer);
+            minView->setBufferScale(2);
             minView->enableScaling(true);
             minView->enableParentOpacity(false);
             minimizedViews.push_back(minView);
 
-            posBeforeMinimized = posC();
+            posBeforeMinimized = pos();
             view->enableScaling(true);
 
             minimizeAnim = LAnimation::create(300,
@@ -116,7 +118,7 @@ void Surface::minimizedChanged()
                 Float32 expVal = 1.f - powf(1.f - anim->value(), 2.f);
                 minView->setScalingVector(expVal);
                 view->setScalingVector(1.f - expVal);
-                setPosC((minView->posC() + minView->sizeC()) * expVal +
+                setPos((minView->pos() + minView->size()) * expVal +
                          posBeforeMinimized * (1.f - expVal));
                 o->dock->update();
                 return true;
@@ -135,12 +137,12 @@ void Surface::minimizedChanged()
         }
 
         if (toplevel())
-            toplevel()->configureC(0);
+            toplevel()->configure(0);
     }
     else
     {
         compositor()->raiseSurface(this);
         if (toplevel())
-            toplevel()->configureC(LToplevelRole::Activated);
+            toplevel()->configure(LToplevelRole::Activated);
     }
 }

@@ -46,6 +46,7 @@ LPRIVATE_CLASS(LView)
         Float32 prevOpacity = 1.f;
         UInt32 lastRenderedDamageId;
         LRect prevRect;
+        LRect prevLocalRect;
         bool changedOrder = true;
         bool prevMapped = false;
         LRegion prevParentClipping;
@@ -55,6 +56,7 @@ LPRIVATE_CLASS(LView)
     {
         ViewOutputData *voD;
         LRect rect;
+        LRect localRect;
         LRegion damage;
         LRegion translucent;
         LRegion opaque;
@@ -63,7 +65,6 @@ LPRIVATE_CLASS(LView)
         LSizeF scalingVector;
         bool mapped = false;
         bool occluded = false;
-        bool bufferScaleMatchGlobalScale = false;
         bool scalingEnabled;
     } cache;
 

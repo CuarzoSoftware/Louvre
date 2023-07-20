@@ -9,7 +9,7 @@ public:
     virtual ~LFramebuffer(){};
     virtual Int32 scale() const = 0;
     virtual const LSize &sizeB() const = 0;
-    virtual const LRect &rectC() const = 0;
+    virtual const LRect &rect() const = 0;
     virtual GLuint id(LOutput *output) const = 0;
     virtual Int32 buffersCount() const = 0;
     virtual Int32 currentBufferIndex() const = 0;

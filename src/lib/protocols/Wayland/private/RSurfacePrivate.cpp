@@ -134,18 +134,14 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
         {
             if (surface->imp()->bufferSizeChanged)
             {
-                surface->imp()->currentInputRegionS.clear();
-                surface->imp()->currentInputRegionS.addRect(LRect(0,surface->sizeS()));
-                surface->imp()->currentInputRegionC = surface->imp()->currentInputRegionS;
-                surface->imp()->currentInputRegionC.multiply(compositor()->globalScale());
+                surface->imp()->currentInputRegion.clear();
+                surface->imp()->currentInputRegion.addRect(LRect(0, surface->size()));
             }
         }
         else if (surface->imp()->inputRegionChanged || surface->imp()->bufferSizeChanged)
         {
-            surface->imp()->currentInputRegionS = surface->imp()->pendingInputRegionS;
-            surface->imp()->currentInputRegionS.clip(LRect(0,surface->sizeS()));
-            surface->imp()->currentInputRegionC = surface->imp()->currentInputRegionS;
-            surface->imp()->currentInputRegionC.multiply(compositor()->globalScale());
+            surface->imp()->currentInputRegion = surface->imp()->pendingInputRegion;
+            surface->imp()->currentInputRegion.clip(LRect(0, surface->size()));
             surface->inputRegionChanged();
             surface->imp()->inputRegionChanged = false;
         }
@@ -155,8 +151,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
         /******************************************
          *********** CLEAR INPUT REGION ***********
          ******************************************/
-        surface->imp()->currentInputRegionS.clear();
-        surface->imp()->currentInputRegionC.clear();
+        surface->imp()->currentInputRegion.clear();
     }
 
     /************************************
@@ -164,20 +159,16 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
      ************************************/
     if (surface->imp()->opaqueRegionChanged || surface->imp()->bufferSizeChanged)
     {
-        surface->imp()->currentOpaqueRegionS = surface->imp()->pendingOpaqueRegionS;
-        surface->imp()->currentOpaqueRegionS.clip(LRect(0,surface->sizeS()));
-        surface->imp()->currentOpaqueRegionC = surface->imp()->currentOpaqueRegionS;
-        surface->imp()->currentOpaqueRegionC.multiply(compositor()->globalScale());
+        surface->imp()->currentOpaqueRegion = surface->imp()->pendingOpaqueRegion;
+        surface->imp()->currentOpaqueRegion.clip(LRect(0, surface->size()));
         surface->imp()->opaqueRegionChanged = false;
         surface->opaqueRegionChanged();
 
         /*****************************************
          ********** TRANSLUCENT REGION ***********
          *****************************************/
-        surface->imp()->currentTranslucentRegionS = surface->imp()->currentOpaqueRegionS;
-        surface->imp()->currentTranslucentRegionS.inverse(LRect(0,surface->sizeS()));
-        surface->imp()->currentTranslucentRegionC = surface->imp()->currentTranslucentRegionS;
-        surface->imp()->currentTranslucentRegionC.multiply(compositor()->globalScale());
+        surface->imp()->currentTranslucentRegion = surface->imp()->currentOpaqueRegion;
+        surface->imp()->currentTranslucentRegion.inverse(LRect(0, surface->size()));
     }
 
     /*******************************************
@@ -213,7 +204,7 @@ void RSurface::RSurfacePrivate::damage(wl_client *client, wl_resource *resource,
     if (height <= 0)
         return;
 
-    lSurface->imp()->pendingDamagesS.push_back(LRect(x, y, width, height));
+    lSurface->imp()->pendingDamage.push_back(LRect(x, y, width, height));
     lSurface->imp()->damagesChanged = true;
 }
 
@@ -227,10 +218,10 @@ void RSurface::RSurfacePrivate::set_opaque_region(wl_client *client, wl_resource
     if (region)
     {
         RRegion *rRegion = (RRegion*)wl_resource_get_user_data(region);
-        lSurface->imp()->pendingOpaqueRegionS = rRegion->region();
+        lSurface->imp()->pendingOpaqueRegion = rRegion->region();
     }
     else
-        lSurface->imp()->pendingOpaqueRegionS.clear();
+        lSurface->imp()->pendingOpaqueRegion.clear();
 
     lSurface->imp()->opaqueRegionChanged = true;
 }
@@ -244,13 +235,13 @@ void RSurface::RSurfacePrivate::set_input_region(wl_client *client, wl_resource 
 
     if (region == NULL)
     {
-        lSurface->imp()->pendingInputRegionS.clear();
+        lSurface->imp()->pendingInputRegion.clear();
         lSurface->imp()->inputRegionIsInfinite = true;
     }
     else
     {
         RRegion *lRRegion = (RRegion*)wl_resource_get_user_data(region);
-        lSurface->imp()->pendingInputRegionS = lRRegion->region();
+        lSurface->imp()->pendingInputRegion = lRRegion->region();
         lSurface->imp()->inputRegionIsInfinite = false;
     }
 
@@ -303,7 +294,7 @@ void RSurface::RSurfacePrivate::damage_buffer(wl_client *client, wl_resource *re
 
     RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
     LSurface *lSurface = rSurface->surface();
-    lSurface->imp()->pendingDamagesB.push_back(LRect(x, y, width, height));
+    lSurface->imp()->pendingDamageB.push_back(LRect(x, y, width, height));
     lSurface->imp()->damagesChanged = true;
 }
 #endif

@@ -98,7 +98,7 @@ void LView::setParent(LView *view)
                 if (!pair.second.prevMapped)
                     continue;
 
-                s->addDamageC(pair.first, pair.second.prevParentClipping);
+                s->addDamage(pair.first, pair.second.prevParentClipping);
             }
         }
     }
@@ -183,31 +183,31 @@ void LView::enableParentOffset(bool enabled)
     imp()->parentOffsetEnabled = enabled;
 }
 
-const LPoint &LView::posC() const
+const LPoint &LView::pos() const
 {
-    imp()->tmpPos = nativePosC();
+    imp()->tmpPos = nativePos();
 
     if (parent())
     {
         if (parentOffsetEnabled())
-            imp()->tmpPos += parent()->posC();
+            imp()->tmpPos += parent()->pos();
 
         if (parentScalingEnabled())
-            imp()->tmpPos *= parent()->scalingVector();
+            imp()->tmpPos *= parent()->scalingVector(parent()->type() == Scene);
     }
 
     return imp()->tmpPos;
 }
 
-const LSize &LView::sizeC() const
+const LSize &LView::size() const
 {
-    imp()->tmpSize = nativeSizeC();
+    imp()->tmpSize = nativeSize();
 
     if (scalingEnabled())
         imp()->tmpSize *= scalingVector(true);
 
     if (parent() && parentScalingEnabled())
-        imp()->tmpSize *= parent()->scalingVector();
+            imp()->tmpSize *= parent()->scalingVector(parent()->type() == Scene);
 
     return imp()->tmpSize;
 }
@@ -269,7 +269,7 @@ const LSizeF &LView::scalingVector(bool forceIgnoreParent) const
     imp()->tmpScalingVector = imp()->scalingVector;
 
     if (parent() && parentScalingEnabled())
-        imp()->tmpScalingVector *= parent()->scalingVector();
+        imp()->tmpScalingVector *= parent()->scalingVector(parent()->type() == Scene);
 
     return imp()->tmpScalingVector;
 }
@@ -310,7 +310,7 @@ Float32 LView::opacity(bool forceIgnoreParent) const
         return imp()->opacity;
 
     if (parentOpacityEnabled() && parent())
-        return imp()->opacity * parent()->opacity();
+        return imp()->opacity * parent()->opacity(parent()->type() == Scene);
 
     return imp()->opacity;
 }

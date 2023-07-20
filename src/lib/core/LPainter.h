@@ -31,13 +31,13 @@ public:
      * @param dstG The portion of the screen where the texture will be drawn (specified in compositor coordinates).
      * @param alpha Value of the alpha component (range [0.0, 1.0]).
      */
-    void drawTextureC(const LTexture *texture, const LRect &srcB, const LRect &dstG,
-                      Float32 srcScale = 0.f, Float32 alpha = 1.f);
+    void drawTexture(const LTexture *texture, const LRect &src, const LRect &dst,
+                      Float32 srcScale = 1.f, Float32 alpha = 1.f);
 
-    void drawTextureC(const LTexture *texture,
+    void drawTexture(const LTexture *texture,
                       Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
                       Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                      Float32 srcScale = 0.f, Float32 alpha = 1.0f);
+                      Float32 srcScale = 1.f, Float32 alpha = 1.0f);
 
     /*!
      * @brief Draws a solid color.
@@ -50,10 +50,10 @@ public:
      * @param b Value of the blue component (range [0.0, 1.0]).
      * @param a Value of the alpha component (range [0.0, 1.0]).
      */
-    void drawColorC(const LRect &dst,
+    void drawColor(const LRect &dst,
                     Float32 r, Float32 g, Float32 b, Float32 a);
 
-    void drawColorC(Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
+    void drawColor(Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                     Float32 r, Float32 g, Float32 b, Float32 a);
 
     /*!
@@ -61,8 +61,8 @@ public:
      *
      * @param rect Viewport rect specified in compositor coordinates.
      */
-    void setViewportC(const LRect &rect);
-    void setViewportC(Int32 x, Int32 y, Int32 w, Int32 h);
+    void setViewport(const LRect &rect);
+    void setViewport(Int32 x, Int32 y, Int32 w, Int32 h);
 
     /*!
      * @brief Sets the clear color.

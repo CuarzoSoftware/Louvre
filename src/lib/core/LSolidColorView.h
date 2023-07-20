@@ -15,24 +15,24 @@ public:
     void setColor(Float32 r, Float32 g, Float32 b);
     const LRGBF &color() const;
 
-    virtual void setNativePosC(const LPoint &pos);
-    virtual void setNativeSizeC(const LSize &size);
-    virtual void setInputRegionC(const LRegion *region) const;
+    virtual void setPos(const LPoint &pos);
+    virtual void setSize(const LSize &size);
+    virtual void setInputRegion(const LRegion *region) const;
 
     virtual bool nativeMapped() const override;
-    virtual const LPoint &nativePosC() const override;
-    virtual const LSize &nativeSizeC() const override;
+    virtual const LPoint &nativePos() const override;
+    virtual const LSize &nativeSize() const override;
     virtual Int32 bufferScale() const override;
     virtual void enteredOutput(LOutput *output) override;
     virtual void leftOutput(LOutput *output) override;
     virtual const std::list<LOutput*> &outputs() const override;
     virtual bool isRenderable() const override;
     virtual void requestNextFrame(LOutput *output) override;
-    virtual const LRegion *damageC() const override;
-    virtual const LRegion *translucentRegionC() const override;
-    virtual const LRegion *opaqueRegionC() const override;
-    virtual const LRegion *inputRegionC() const override;
-    virtual void paintRectC(LPainter *p,
+    virtual const LRegion *damage() const override;
+    virtual const LRegion *translucentRegion() const override;
+    virtual const LRegion *opaqueRegion() const override;
+    virtual const LRegion *inputRegion() const override;
+    virtual void paintRect(LPainter *p,
                            Int32 srcX, Int32 srcY,
                            Int32 srcW, Int32 srcH,
                            Int32 dstX, Int32 dstY,

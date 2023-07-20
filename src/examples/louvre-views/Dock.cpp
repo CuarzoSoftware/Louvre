@@ -1,15 +1,37 @@
 #include "Dock.h"
-#include "Shared.h"
+#include "Global.h"
 #include "Compositor.h"
 #include "Output.h"
 #include <LTextureView.h>
 #include <LCursor.h>
+#include <LLog.h>
 
-Dock::Dock(Output *output) : LLayerView(comp()->overlayLayer)
+Dock::Dock(Output *output) : LLayerView(G::compositor()->overlayLayer)
 {
     m_output = output;
+    enableParentOffset(false);
+    dockScene = new LSceneView(LSize(1,1), output->scale(), &dockClipping);
+    dockScene->enableParentClipping(true);
+    dockScene->setClearColor(0.f, 0.f, 0.f, 0.0f);
 
-    background.setOpacity(0.1);
+    dockBackground = new LSolidColorView(1.f, 1.f, 1.f, 0.8f, dockScene);
+
+    borderRadiusTL = new LTextureView(G::borderRadius()->TL, dockBackground);
+    borderRadiusTR = new LTextureView(G::borderRadius()->TR, dockBackground);
+    borderRadiusBR = new LTextureView(G::borderRadius()->BR, dockBackground);
+    borderRadiusBL = new LTextureView(G::borderRadius()->BL, dockBackground);
+
+    borderRadiusTL->setBlendFunc(GL_ZERO, GL_SRC_ALPHA);
+    borderRadiusTR->setBlendFunc(GL_ZERO, GL_SRC_ALPHA);
+    borderRadiusBR->setBlendFunc(GL_ZERO, GL_SRC_ALPHA);
+    borderRadiusBL->setBlendFunc(GL_ZERO, GL_SRC_ALPHA);
+
+    borderRadiusTL->enableParentOpacity(false);
+    borderRadiusTR->enableParentOpacity(false);
+    borderRadiusBR->enableParentOpacity(false);
+    borderRadiusBL->enableParentOpacity(false);
+
+    itemsContainer = new LLayerView(dockBackground);
 
     update();
 
@@ -17,37 +39,69 @@ Dock::Dock(Output *output) : LLayerView(comp()->overlayLayer)
     {
         hide();
     });
-
 }
 
 void Dock::update()
 {
-    Int32 gs = comp()->globalScale();
-    Int32 backgroundHeight = 2*m_padding*gs + minimizedItemHeight();
+    Int32 backgroundHeight = 2 * DOCK_PADDING + DOCK_ITEM_HEIGHT;
 
-    setNativeSizeC(LSize(m_output->sizeC().w(), 75*gs));
-    setNativePosC(LPoint(m_output->posC().x(), (Int32)(m_output->sizeC().h() - 5 - (sizeC().h() - 5)*m_visiblePercent)));
+    // Add 5 so it can be detected by cursor
+    setSize(LSize(output()->size().w(), backgroundHeight + 5));
 
-    Int32 backgroundWidth = m_padding*gs;
+    setPos(LPoint(output()->pos().x(),
+                         output()->size().h() -  Int32(size().h() * m_visiblePercent)));
 
-    for (LView *it : background.children())
+    Int32 backgroundWidth = DOCK_PADDING;
+
+    for (LView *it : itemsContainer->children())
     {
         LTextureView *item = (LTextureView*)it;
-        Int32 itemY = backgroundHeight/2 - item->sizeC().h()/2;
-        item->setNativePosC(LPoint(backgroundWidth, itemY));
-        backgroundWidth += item->sizeC().w();
+        Int32 itemY = (backgroundHeight - item->size().h()) / 2;
+        item->setPos(LPoint(backgroundWidth, itemY));
+        backgroundWidth += item->size().w();
 
-        if (it != background.children().back())
-            backgroundWidth += m_spacing*gs;
+        if (it != itemsContainer->children().back())
+            backgroundWidth += DOCK_SPACING;
     }
 
-    if (background.children().empty())
+    // Default size if no minimized views
+    if (itemsContainer->children().empty())
         backgroundWidth += 128;
 
-    backgroundWidth += m_padding*gs;
+    backgroundWidth += DOCK_PADDING;
 
-    background.setNativeSizeC(LSize(backgroundWidth, backgroundHeight));
-    background.setNativePosC(LPoint(sizeC().w()/2 - backgroundWidth/2, 0));
+    LSize dockSize = LSize(backgroundWidth, backgroundHeight);
+
+    // Set clipping size and center
+    dockClipping.setSize(dockSize);
+    dockClipping.setPos(LPoint((size().w() - dockClipping.size().w()) / 2, 0));
+
+    // Set the dock scene buffer size and center
+    dockScene->setSizeB(LSize(output()->sizeB().w(), dockSize.h() * output()->scale()));
+    dockScene->setScale(output()->scale());
+    dockScene->setPos(LPoint((dockClipping.size().w() - dockScene->size().w()) / 2,
+                              0));
+
+    dockBackground->setSize(dockSize);
+    dockBackground->setPos(LPoint( (dockScene->size().w() - dockBackground->size().w()) / 2,
+                                   0));
+
+    borderRadiusTL->setBufferScale(2);
+    borderRadiusTL->setPos(LPoint(0, 0));
+
+    borderRadiusTR->setBufferScale(2);
+    borderRadiusTR->setPos(LPoint(dockBackground->size().w() - borderRadiusTR->size().w(),
+                                  0));
+
+    borderRadiusBR->setBufferScale(2);
+    borderRadiusBR->setPos(LPoint(dockBackground->size().w() - borderRadiusBR->size().w(),
+                                  dockBackground->size().h() - borderRadiusBR->size().h()));
+
+    borderRadiusBL->setBufferScale(2);
+    borderRadiusBL->setPos(LPoint(0,
+                                  dockBackground->size().h() - borderRadiusBR->size().h()));
+
+    itemsContainer->setPos(0);
 }
 
 void Dock::show()
@@ -81,10 +135,15 @@ void Dock::hide()
 
 void Dock::handleCursorMovement()
 {
-    LRect r = LRect(posC(), sizeC());
+    LRect r = LRect(pos(), size());
 
-    if (r.containsPoint(cursor()->posC()))
+    if (r.containsPoint(cursor()->pos()))
         show();
     else
         hide();
+}
+
+Output *Dock::output() const
+{
+    return m_output;
 }

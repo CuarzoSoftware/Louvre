@@ -78,7 +78,7 @@ void Clock::updateClockTexture()
     if (!texture)
         texture = new LTexture();
 
-    Int32 fontSize = 2*(32 - 16) * LCompositor::compositor()->globalScale();
+    Int32 fontSize = 2 * (32 - 16);
     updateClockText();
 
     FT_UInt charIndex;

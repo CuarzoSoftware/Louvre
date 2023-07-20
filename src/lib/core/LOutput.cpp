@@ -30,8 +30,8 @@ LOutput::LOutput()
 {
     m_imp = new LOutputPrivate();
     imp()->output = this;
-    imp()->rectC.setX(0);
-    imp()->rectC.setY(0);
+    imp()->rect.setX(0);
+    imp()->rect.setY(0);
     imp()->fb = new LOutputFramebuffer(this);
 }
 
@@ -92,25 +92,26 @@ bool LOutput::hasBufferDamageSupport() const
     return compositor()->imp()->graphicBackend->hasBufferDamageSupport((LOutput*)this);
 }
 
-void LOutput::setBufferDamageC(const LRegion &damage)
+void LOutput::setBufferDamage(const LRegion &damage)
 {
     if (!hasBufferDamageSupport())
         return;
 
     LRegion region = damage;
-    region.offset(LPoint(-posC().x(), -posC().y()));
-    region.multiply(float(scale())/float(compositor()->globalScale()));
+    region.offset(LPoint(-pos().x(), -pos().y()));
+    region.multiply(scale());
     region.clip(LRect(LSize(0,0), sizeB()));
     compositor()->imp()->graphicBackend->setOutputBufferDamage((LOutput*)this, region);
 }
 
 void LOutput::setScale(Int32 scale)
 {
+    if (scale == imp()->outputScale)
+        return;
+
     imp()->outputScale = scale;
 
-    compositor()->imp()->updateGlobalScale();
-
-    imp()->rectC.setBR((sizeB()*compositor()->globalScale())/scale);
+    imp()->rect.setBR(sizeB()/scale);
 
     for (LClient *c : compositor()->clients())
     {
@@ -158,19 +159,19 @@ const LSize &LOutput::sizeB() const
     return currentMode()->sizeB();
 }
 
-const LRect &LOutput::rectC() const
+const LRect &LOutput::rect() const
 {
-    return imp()->rectC;
+    return imp()->rect;
 }
 
-const LPoint &LOutput::posC() const
+const LPoint &LOutput::pos() const
 {
-    return rectC().topLeft();
+    return rect().pos();
 }
 
-const LSize &LOutput::sizeC() const
+const LSize &LOutput::size() const
 {
-    return rectC().bottomRight();
+    return rect().size();
 }
 
 EGLDisplay LOutput::eglDisplay()
@@ -203,10 +204,9 @@ const char *LOutput::description() const
     return compositor()->imp()->graphicBackend->getOutputDescription((LOutput*)this);
 }
 
-void LOutput::setPosC(const LPoint &posC)
+void LOutput::setPos(const LPoint &pos)
 {
-    imp()->rectC.setX(posC.x());
-    imp()->rectC.setY(posC.y());
+    imp()->rect.setPos(pos);
 }
 
 LPainter *LOutput::painter() const

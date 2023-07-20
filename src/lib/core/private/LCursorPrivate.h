@@ -4,18 +4,16 @@
 #include <LCursor.h>
 
 LPRIVATE_CLASS(LCursor)
-    LRect rectC;
+    LRect rect;
 
     void update();
 
     // Called once per main loop iteration
     void textureUpdate();
 
-    void globalScaleChanged(Int32 oldScale, Int32 newScale);
-
-    LPointF posC;
+    LPointF pos;
     LPointF hotspotB;
-    LSizeF sizeS;
+    LSizeF size;
     LOutput *output                                     = nullptr;
     std::list<LOutput*>intersectedOutputs;
     bool isVisible                                      = true;

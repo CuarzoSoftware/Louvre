@@ -20,19 +20,19 @@ void Surface::mappingChanged()
 
             if (toplevel())
             {
-                Int32 barSize = 32 * compositor()->globalScale();
-                LPoint outputPosG = compositor()->cursor()->output()->posC() + LPoint(0, barSize);
-                LSize outputSizeG = compositor()->cursor()->output()->sizeC() - LSize(0, barSize);
+                Int32 barSize = 32;
+                LPoint outputPosG = cursor()->output()->pos() + LPoint(0, barSize);
+                LSize outputSizeG = cursor()->output()->size() - LSize(0, barSize);
 
-                setPosC(outputPosG + outputSizeG/2 - toplevel()->windowGeometryC().size()/2);
+                setPos(outputPosG + (outputSizeG - toplevel()->windowGeometry().size())/2);
 
-                if (posC().x() < outputPosG.x())
-                    setXC(outputPosG.x());
+                if (pos().x() < outputPosG.x())
+                    setX(outputPosG.x());
 
-                if (posC().y() < barSize)
-                    setYC(barSize);
+                if (pos().y() < barSize)
+                    setY(barSize);
 
-                toplevel()->configureC(LToplevelRole::Activated);
+                toplevel()->configure(LToplevelRole::Activated);
             }
         }
 
@@ -45,12 +45,12 @@ void Surface::mappingChanged()
             Compositor *c = (Compositor*)compositor();
             DestroyedToplevel destroyed;
             destroyed.texture = texture()->copyB();
-            destroyed.rect = LRect(rolePosC(), sizeC());
+            destroyed.rect = LRect(rolePos(), size());
             destroyed.ms = LTime::ms();
 
             for (LOutput *o : outputs())
             {
-                if (o->rectC().intersects(destroyed.rect))
+                if (o->rect().intersects(destroyed.rect))
                 {
                     destroyed.outputs.push_back(o);
                     o->repaint();
@@ -93,7 +93,7 @@ void Surface::minimizedChanged()
         }
 
         if (toplevel())
-            toplevel()->configureC(toplevel()->states() &~ LToplevelRole::Activated);
+            toplevel()->configure(toplevel()->states() &~ LToplevelRole::Activated);
     }
     else
     {
@@ -101,6 +101,6 @@ void Surface::minimizedChanged()
         compositor()->raiseSurface(this);
 
         if (toplevel())
-            toplevel()->configureC(LToplevelRole::Activated);
+            toplevel()->configure(LToplevelRole::Activated);
     }
 }

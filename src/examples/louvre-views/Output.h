@@ -19,13 +19,12 @@ public:
     void loadWallpaper();
     void initializeGL() override;
     void resizeGL() override;
+    void moveGL() override;
     void paintGL() override;
     void uninitializeGL() override;
 
     LTextureView *wallpaperView = nullptr;
     Dock *dock = nullptr;
-    LSceneView *sView = nullptr;
-
 };
 
 #endif // OUTPUT_H

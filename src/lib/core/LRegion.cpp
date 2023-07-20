@@ -85,7 +85,21 @@ void LRegion::multiply(Float32 factor)
     int n;
     pixman_box32_t *rects = pixman_region32_rectangles((pixman_region32_t*)m_region, &n);
 
-    if (factor == 2.f)
+    if (factor == 0.5f)
+    {
+        for (int i = 0; i < n; i++)
+        {
+            pixman_region32_union_rect(
+                        &tmp,
+                        &tmp,
+                        rects->x1 >> 1,
+                        rects->y1 >> 1,
+                        (rects->x2 - rects->x1) >> 1,
+                        (rects->y2 - rects->y1) >> 1);
+            rects++;
+        }
+    }
+    else if (factor == 2.f)
     {
         for (int i = 0; i < n; i++)
         {

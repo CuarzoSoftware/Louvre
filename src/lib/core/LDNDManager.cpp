@@ -62,7 +62,7 @@ void LDNDManager::cancel()
         source()->dataSourceResource()->cancelled();
 
     imp()->clear();
-    seat()->pointer()->setFocusC(nullptr);
+    seat()->pointer()->setFocus(nullptr);
     cancelled();
 }
 

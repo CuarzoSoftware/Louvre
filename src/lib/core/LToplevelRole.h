@@ -96,30 +96,6 @@ public:
         TiledBottom = 128
     };
 
-    /// Flags for Toplevel capabilities of the compositor (since 5)
-    enum WmCapabilities : UChar8
-    {
-        /// Can show custom menus (with options to minimize, maximize, etc)
-        WmWindowMenu = 1,
-
-        /// Can show maximized Toplevels
-        WmMaximize = 2,
-
-        /// Can show Toplevels in fullscreen mode
-        WmFullscreen = 4,
-
-        /// Can minimize Toplevels
-        WmMinimize = 8
-    };
-
-    /// Compositor capabilities (WmCapabilities) set with setWmCapabilities() (since 5)
-    UChar8 wmCapabilities() const;
-
-    /*! Notifies the Toplevel of the compositor's capabilities (since 5)
-     *  @param capabilitiesFlags Union of flags defined in #WmCapabilities
-     */
-    void setWmCapabilities(UChar8 capabilitiesFlags);
-
     /// Decoration mode
     enum DecorationMode : UInt32
     {
@@ -137,7 +113,7 @@ public:
      *
      * @param stateFlags Union of Toplevel states defined in #States.
      */
-    void configureC(States stateFlags);
+    void configure(States stateFlags);
 
     /*!
      * @brief Configures the Toplevel.
@@ -148,7 +124,7 @@ public:
      * @param size Requested size. Passing (0,0) allows the client to decide the size.
      * @param stateFlags Union of Toplevel states defined in #States.
      */
-    void configureC(const LSize &size, States stateFlags);
+    void configure(const LSize &size, States stateFlags);
 
     /*!
      * @brief Configures the Toplevel.
@@ -160,7 +136,7 @@ public:
      * @param height Suggested height. Passing (0,0) allows the client to decide the size.
      * @param stateFlags Union of Toplevel states defined in #States.
      */
-    void configureC(Int32 width, Int32 height, States stateFlags);
+    void configure(Int32 width, Int32 height, States stateFlags);
 
     /*!
      * @brief Closes the Toplevel.
@@ -169,43 +145,12 @@ public:
      */
     void close() const;
 
-    /*!
-     * @brief Suggests a Toplevel size.
-     *
-     * Optional. Sent before initial configuration.
-     */
-    bool configureBoundsC(const LSize &bounds);
-
-    /*!
-     * @brief Suggested size in surface coordinates.
-     *
-     * Suggested size assigned with configureBoundsC().
-     */
-    const LSize &boundsS() const;
-
-    /*!
-     * @brief Suggested size in compositor coordinates.
-     *
-     * Suggested size assigned with configureBoundsC().
-     */
-    const LSize &boundsC() const;
-
     /**
      * @brief Window geometry in surface coordinates
      *
      * The window geometry is a Toplevel rectangle that excludes its decorations (typically shadows).
      */
-    const LRect &windowGeometryS() const;
-
-    /**
-     * @brief Window geometry in compositor coordinates
-     *
-     * The window geometry is a Toplevel rectangle that excludes its decorations (typically shadows).\n
-     * Its components (x,y,width,height) are given by:
-     *
-     * <center><img src="https://lh3.googleusercontent.com/qYH--yLCkb39PBCqAGqNC8l-jL8YuDPCIcUOTaqXyvp0hUr8Rj6Ug8MS7Fb68-XuWOyhsmsOYb5rKaph3hO40w-3J9zRzISuvCRfU5pFf6dVJ8lgbH_JJ2FpkAYijbH0POUyiB7xDw=w2400" width="512px"></center>
-     */
-    const LRect &windowGeometryC() const;
+    const LRect &windowGeometry() const;
 
     /**
      * @brief Size during a resizing session
@@ -227,16 +172,10 @@ public:
     const char *title() const;
 
     /// Minimum size of the window geometry in surface coordinates
-    const LSize &minSizeS() const;
+    const LSize &minSize() const;
 
     /// Maximum size of the window geometry in surface coordinates
-    const LSize &maxSizeS() const;
-
-    /// Minimum size of the window geometry in compositor coordinates
-    const LSize &minSizeC() const;
-
-    /// Maximum size of the window geometry in compositor coordinates
-    const LSize &maxSizeC() const;
+    const LSize &maxSize() const;
 
     /// Indicates if the Toplevel is maximized
     bool maximized() const;
@@ -277,7 +216,7 @@ public:
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp rolePosC
      */
-    virtual const LPoint &rolePosC() const override;
+    virtual const LPoint &rolePos() const override;
 
     /*!
      * @brief Request to start an interactive move session
@@ -474,7 +413,6 @@ public:
     LPRIVATE_IMP(LToplevelRole)
 
     void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
-    void globalScaleChanged(Int32 oldScale, Int32 newScale) override;
 };
 
 #endif // LTOPLEVELROLE_H

@@ -62,14 +62,7 @@ public:
     *
     * The offset relative to the top-left corner of the parent surface in surface coordinates.
     */
-    const LPoint &localPosS() const;
-
-    /*!
-    * @brief Offset in compositor coordinates.
-    *
-    * The offset relative to the top-left corner of the parent surface in compositor coordinates.
-    */
-    const LPoint &localPosC() const;
+    const LPoint &localPos() const;
 
 /// @name Virtual Methods
 /// @{
@@ -84,7 +77,7 @@ public:
      * ### Default implementation
      * @snippet LSubsurfaceRoleDefault.cpp rolePosC
      */
-    virtual const LPoint &rolePosC() const override;
+    virtual const LPoint &rolePos() const override;
 
     /*!
      * @brief Change of offset.
@@ -136,7 +129,6 @@ public:
     void handleParentCommit() override;
     void handleParentChange() override;
     void handleParentMappingChange() override;
-    void globalScaleChanged(Int32 oldScale, Int32 newScale) override;
 };
 
 #endif // LSUBSURFACEROLE_H

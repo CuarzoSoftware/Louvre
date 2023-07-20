@@ -189,42 +189,42 @@ public:
      *
      * Position of the surface assigned with setPosC(), setXC() or setYC().
      */
-    const LPoint &posC() const;
+    const LPoint &pos() const;
 
     /*!
      * @brief Assigns the position.
      *
      * Assigns the position of the surface.
      */
-    void setPosC(const LPoint &newPos);
+    void setPos(const LPoint &newPos);
 
     /*!
      * @brief Assigns the position.
      *
      * Assigns the position of the surface.
      */
-    void setPosC(Int32 x, Int32 y);
+    void setPos(Int32 x, Int32 y);
 
     /*!
      * @brief Assigns the x component of the position.
      *
      * Assigns the x component of the position of the surface.
      */
-    void setXC(Int32 x);
+    void setX(Int32 x);
 
     /*!
      * @brief Assigns the y component of the position.
      *
      * Assigns the y component of the position of the surface.
      */
-    void setYC(Int32 y);
+    void setY(Int32 y);
 
     /*!
     * @brief Role position.
     *
     * Role position in compositor coordinates. If the surface has no role, the same value as posC() is returned.
     */
-    const LPoint &rolePosC() const;
+    const LPoint &rolePos() const;
 
     /*!
      * @brief Surface size in buffer coordinates.
@@ -234,60 +234,36 @@ public:
     /*!
      * @brief Surface size in surface coordinates.
      */
-    const LSize &sizeS() const;
-
-    /*!
-     * @brief Surface size in compositor coordinates.
-     */
-    const LSize &sizeC() const;
+    const LSize &size() const;
 
     /*!
      * @brief Input region in surface coordinates.
      *
      * Region of the surface that is capable of receiving input, in surface coordinates.
      */
-    const LRegion &inputRegionS() const;
-
-    /*!
-     * @brief Input region in compositor coordinates.
-     *
-     * Region of the surface that is capable of receiving input, in compositor coordinates.
-     */
-    const LRegion &inputRegionC() const;
+    const LRegion &inputRegion() const;
 
     /*!
      * @brief Opaque region in surface coordinates.
      */
-    const LRegion &opaqueRegionS() const;
-
-    /*!
-     * @brief Opaque region in compositor coordinates.
-     */
-    const LRegion &opaqueRegionC() const;
+    const LRegion &opaqueRegion() const;
 
     /*!
      * @brief Translucent region in surface coordinates.
      *
      * Translucent region in surface coordinates (inverted opaque region).
      */
-    const LRegion &translucentRegionS() const;
-
-    /*!
-     * @brief Translucent region in compositor coordinates.
-     *
-     * Translucent region in compositor coordinates (inverted opaque region).
-     */
-    const LRegion &translucentRegionC() const;
+    const LRegion &translucentRegion() const;
 
     /*!
      * @brief Damaged region in buffer coordinates.
      */
-    const LRegion &damagesB() const;
+    const LRegion &damage() const;
 
     /*!
      * @brief Damaged region in compositor coordinates.
      */
-    const LRegion &damagesC() const;
+    const LRegion &damageB() const;
 
     /*!
      * @brief Enters an output

@@ -12,19 +12,10 @@ ToplevelRole::ToplevelRole(Params *params) : LToplevelRole(params)
 
 void ToplevelRole::configureRequest()
 {
-    // Get the main output
-    LOutput *output = compositor()->cursor()->output();
-
-    // Notifies the compositor's capabilities
-    setWmCapabilities(WmCapabilities::WmWindowMenu | WmCapabilities::WmMinimize | WmCapabilities::WmMaximize | WmCapabilities::WmFullscreen);
-
-    // Suggests to the Toplevel not to use a size larger than the output where the cursor is located
-    configureBoundsC(output->sizeC() - LPoint(0, 32 * compositor()->globalScale()));
-
     setDecorationMode(ClientSide);
 
     // Adding the resize flag fixes Google Chrome window geometry bug
-    configureC(0, Activated | Resizing);
+    configure(0, Activated | Resizing);
 }
 
 void ToplevelRole::setMaximizedRequest()
@@ -33,28 +24,28 @@ void ToplevelRole::setMaximizedRequest()
     LOutput *output = compositor()->cursor()->output();
 
     // Tell the toplevel to maximize
-    LSize size = output->sizeC()-LSize(0,32)*compositor()->globalScale();
-    configureC(size, LToplevelRole::Activated | LToplevelRole::Maximized);
+    LSize size = output->size() - LSize(0, 32);
+    configure(size, LToplevelRole::Activated | LToplevelRole::Maximized);
 }
 
 void ToplevelRole::setFullscreenRequest(LOutput *output)
 {
     statesBeforeFullscreen = states();
-    rectBeforeFullscreen = LRect(surface()->posC(), windowGeometryC().size());
+    rectBeforeFullscreen = LRect(surface()->pos(), windowGeometry().size());
 
     if (output)
-        configureC(output->sizeC(), LToplevelRole::Activated | LToplevelRole::Fullscreen);
+        configure(output->size(), LToplevelRole::Activated | LToplevelRole::Fullscreen);
     else
     {
         // Get the main output
         LOutput *output = compositor()->cursor()->output();
-        configureC(output->sizeC(), LToplevelRole::Activated | LToplevelRole::Fullscreen);
+        configure(output->size(), LToplevelRole::Activated | LToplevelRole::Fullscreen);
     }
 }
 
 void ToplevelRole::unsetFullscreenRequest()
 {
-    configureC(rectBeforeFullscreen.size(), statesBeforeFullscreen);
+    configure(rectBeforeFullscreen.size(), statesBeforeFullscreen);
 }
 
 void ToplevelRole::maximizedChanged()
@@ -65,7 +56,7 @@ void ToplevelRole::maximizedChanged()
     if (maximized())
     {
         compositor()->raiseSurface(surface());
-        surface()->setPosC(output->posC()+LPoint(0,32)*compositor()->globalScale());
+        surface()->setPos(output->pos() + LPoint(0, 32));
         surface()->setMinimized(false);
     }
 }
@@ -76,13 +67,13 @@ void ToplevelRole::fullscreenChanged()
 
     if (fullscreen())
     {
-        surface()->setPosC(output->posC());
+        surface()->setPos(output->pos());
         output->fullscreenSurface = surface();
         compositor()->raiseSurface(surface());
     }
     else
     {
-        surface()->setPosC(rectBeforeFullscreen.pos());
+        surface()->setPos(rectBeforeFullscreen.pos());
         if (output->fullscreenSurface == surface())
            output->fullscreenSurface = nullptr;
     }
@@ -91,11 +82,11 @@ void ToplevelRole::fullscreenChanged()
 void ToplevelRole::startMoveRequest()
 {
     if (!fullscreen())
-        seat()->pointer()->startMovingToplevelC(this, LPointer::EdgeDisabled, 32 * compositor()->globalScale());
+        seat()->pointer()->startMovingToplevel(this, LPointer::EdgeDisabled, 32);
 }
 
 void ToplevelRole::startResizeRequest(ResizeEdge edge)
 {
     if (!fullscreen())
-        seat()->pointer()->startResizingToplevelC(this, edge, LPointer::EdgeDisabled, 32 * compositor()->globalScale());
+        seat()->pointer()->startResizingToplevel(this, edge, LPointer::EdgeDisabled, 32);
 }

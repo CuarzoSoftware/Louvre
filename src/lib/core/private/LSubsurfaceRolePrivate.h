@@ -14,8 +14,7 @@ LPRIVATE_CLASS(LSubsurfaceRole)
     bool hasCache = true;
 
     // Local pos
-    LPoint currentLocalPosS,pendingLocalPosS;
-    LPoint currentLocalPosC;
+    LPoint currentLocalPos, pendingLocalPos;
     bool hasPendingLocalPos                                             = true;
 
     // Pending reordering

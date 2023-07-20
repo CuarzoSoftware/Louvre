@@ -11,8 +11,7 @@ struct LCursorRole::Params
 };
 
 LPRIVATE_CLASS(LCursorRole)
-    LPoint currentHotspotS, pendingHotspotOffsetS;
-    LPoint currentHotspotC;
+    LPoint currentHotspot, pendingHotspotOffset;
     LPoint currentHotspotB;
 };
 

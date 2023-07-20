@@ -4,7 +4,7 @@
 #include <LSurface.h>
 #include <LSurfaceView.h>
 #include <Compositor.h>
-#include <Shared.h>
+#include <Global.h>
 
 using namespace Louvre;
 using namespace std;

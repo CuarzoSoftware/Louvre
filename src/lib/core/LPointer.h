@@ -137,7 +137,7 @@ public:
      * @param point Point in compositor coordinates.
      * @returns Returns the first surface that contains the point or nullptr if no surface is found.
      */
-    LSurface *surfaceAtC(const LPoint &point);
+    LSurface *surfaceAt(const LPoint &point);
 
     /*!
      * @name Client events
@@ -151,18 +151,7 @@ public:
      * Once assigned, the surface that previously had it loses pointer focus.\n
      * Passing nullptr as an argument removes pointer focus from all surfaces.
      */
-    void setFocusC(LSurface *surface);
-
-    /*!
-     * @brief Assigns the pointer focus.
-     *
-     * Assigns the pointer focus to the specified surface at the given local compositor position within the surface.\n
-     * If the surface is nullptr, pointer focus will be removed from all surfaces.
-     *
-     * @param surface Surface that will acquire the pointer focus or nullptr to remove focus
-     * @param localPosC Local compositor position within the surface that the pointer enters.
-     */
-    void setFocusC(LSurface *surface, const LPoint &localPosC);
+    void setFocus(LSurface *surface);
 
     /*!
      * @brief Assigns the pointer focus.
@@ -173,7 +162,7 @@ public:
      * @param surface Surface that will acquire the pointer focus or nullptr to remove focus
      * @param localPosS Local surface position within the surface that the pointer enters.
      */
-    void setFocusS(LSurface *surface, const LPoint &localPosS);
+    void setFocus(LSurface *surface, const LPoint &localPos);
 
     /*!
      * @brief Sends the pointer position.
@@ -181,17 +170,7 @@ public:
      * Sends the current cursor position to the surface with focus.\n
      * The library internally transforms the cursor position to the surface's local coordinates.
      */
-    void sendMoveEventC();
-
-    /*!
-     * @brief Sends the pointer position.
-     *
-     * Sends the current pointer position to the surface with focus.\n
-     * If you want to use the cursor position as the pointer, you can use the variant of this method without arguments.
-     *
-     * @param localPosC Pointer position relative to the top-left corner of the surface in compositor coordinates.
-     */
-    void sendMoveEventC(const LPoint &localPosC);
+    void sendMoveEvent();
 
     /*!
      * @brief Sends the pointer position.
@@ -200,7 +179,7 @@ public:
      *
      * @param localPosS Pointer position relative to the top-left corner of the surface in surface coordinates.
      */
-    void sendMoveEventS(const LPoint &localPosS);
+    void sendMoveEvent(const LPoint &localPos);
 
     /*!
      * @brief Sends a pointer button state.
@@ -259,7 +238,10 @@ public:
      * @param R Restriction of the right edge.
      * @param B Restriction of the bottom edge.
      */
-    void startResizingToplevelC(LToplevelRole *toplevel, LToplevelRole::ResizeEdge edge, Int32 L = EdgeDisabled, Int32 T = EdgeDisabled, Int32 R = EdgeDisabled, Int32 B = EdgeDisabled);
+    void startResizingToplevel(LToplevelRole *toplevel,
+                               LToplevelRole::ResizeEdge edge,
+                               Int32 L = EdgeDisabled, Int32 T = EdgeDisabled,
+                               Int32 R = EdgeDisabled, Int32 B = EdgeDisabled);
 
     /*!
      * @brief Updates the size of a Toplevel during an interactive resizing session.
@@ -341,7 +323,9 @@ public:
      * @param R Restriction of the right edge.
      * @param B Restriction of the bottom edge.
      */
-    void startMovingToplevelC(LToplevelRole *toplevel, Int32 L = EdgeDisabled, Int32 T = EdgeDisabled, Int32 R = EdgeDisabled, Int32 B = EdgeDisabled);
+    void startMovingToplevel(LToplevelRole *toplevel,
+                             Int32 L = EdgeDisabled, Int32 T = EdgeDisabled,
+                             Int32 R = EdgeDisabled, Int32 B = EdgeDisabled);
 
     /*!
      * @brief Updates the position of a Toplevel during an interactive moving session.

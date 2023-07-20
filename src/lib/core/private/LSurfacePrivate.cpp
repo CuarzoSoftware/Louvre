@@ -175,48 +175,80 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         // Reemplaza toda la textura
         if (!texture->initialized() || bufferSizeChanged || bufferScaleChanged)
         {
-            currentDamagesB.clear();
-            currentDamagesB.addRect(LRect(0,newSize));
-            currentDamagesC = currentDamagesB;
-            currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
+            currentDamageB.clear();
+            currentDamageB.addRect(LRect(0, newSize));
+            currentDamage.clear();
+            currentDamage.addRect(LRect(0, newSize / current.bufferScale));
             texture->setDataB(newSize, stride, format, data);
         }
 
         // Aplica daños
-        else if (!pendingDamagesB.empty() || !pendingDamagesS.empty())
+        else if (!pendingDamageB.empty() || !pendingDamage.empty())
         {
             LRegion onlyPending;
 
-            if (surface->imp()->current.bufferScale != compositor()->globalScale())
+            if (current.bufferScale == 1)
             {
-                while (!pendingDamagesS.empty())
+                while (!pendingDamage.empty())
                 {
-                    pendingDamagesS.back().setPos(pendingDamagesS.back().pos() - LPoint(surface->imp()->current.bufferScale));
-                    pendingDamagesS.back().setSize(pendingDamagesS.back().size() + LPoint(2*surface->imp()->current.bufferScale));
-                    onlyPending.addRect(pendingDamagesS.back()*surface->imp()->current.bufferScale);
-                    pendingDamagesS.pop_back();
+                    LRect &r = pendingDamage.back();
+                    onlyPending.addRect(r.x() - 1,
+                                           r.y() - 1 ,
+                                           r.w() + 2,
+                                           r.h() + 2);
+                    pendingDamage.pop_back();
                 }
-
-                while (!pendingDamagesB.empty())
+            }
+            else if (current.bufferScale == 2)
+            {
+                while (!pendingDamage.empty())
                 {
-                    pendingDamagesB.back().setPos(pendingDamagesB.back().pos() - LPoint(surface->imp()->current.bufferScale));
-                    pendingDamagesB.back().setSize(pendingDamagesB.back().size() + LPoint(2*surface->imp()->current.bufferScale));
-                    onlyPending.addRect(pendingDamagesB.back());
-                    pendingDamagesB.pop_back();
+                    LRect &r = pendingDamage.back();
+                    onlyPending.addRect((r.x() - 1 ) << 1,
+                                           (r.y() - 1 ) << 1,
+                                           (r.w() + 2 ) << 1,
+                                           (r.h() + 2 ) << 1),
+                    pendingDamage.pop_back();
                 }
             }
             else
             {
-                while (!pendingDamagesS.empty())
+                while (!pendingDamage.empty())
                 {
-                    onlyPending.addRect(pendingDamagesS.back()*surface->imp()->current.bufferScale);
-                    pendingDamagesS.pop_back();
+                    LRect &r = pendingDamage.back();
+                    onlyPending.addRect((r.x() - 1 )*current.bufferScale,
+                                        (r.y() - 1 )*current.bufferScale,
+                                        (r.w() + 2 )*current.bufferScale,
+                                        (r.h() + 2 )*current.bufferScale);
+                    pendingDamage.pop_back();
                 }
+            }
 
-                while (!pendingDamagesB.empty())
+            if (current.bufferScale > 1)
+            {
+                Int32 modX, modY, modW, modH;
+                while (!pendingDamageB.empty())
                 {
-                    onlyPending.addRect(pendingDamagesB.back());
-                    pendingDamagesB.pop_back();
+                    LRect &r = pendingDamageB.back();
+                    modX = r.x() % current.bufferScale;
+                    modY = r.y() % current.bufferScale;
+                    modW = r.w() % current.bufferScale;
+                    modH = r.h() % current.bufferScale;
+                    currentDamageB.addRect(
+                                r.x() - modX,
+                                r.y() - modY,
+                                r.w() + modW + (modX << 1),
+                                r.h() + modH + (modY << 1));
+                    pendingDamageB.pop_back();
+                }
+            }
+            else
+            {
+                while (!pendingDamageB.empty())
+                {
+
+                    currentDamageB.addRect(pendingDamageB.back());
+                    pendingDamageB.pop_back();
                 }
             }
 
@@ -238,12 +270,12 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
                                     stride,
                                     &buff[boxes->x1*pixelSize + boxes->y1*stride]);
 
-                currentDamagesB.addRect(boxes->x1, boxes->y1, w, h);
+                currentDamageB.addRect(boxes->x1, boxes->y1, w, h);
                 boxes++;
             }
 
-            currentDamagesC = currentDamagesB;
-            currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
+            currentDamage = currentDamageB;
+            currentDamage.multiply(1.f/float(current.bufferScale));
         }
         else
         {
@@ -269,28 +301,81 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         if (newSize != prevSize || bufferScaleChanged)
         {
             bufferSizeChanged = true;
-            currentDamagesB.clear();
-            currentDamagesB.addRect(LRect(0, newSize));
-            currentDamagesC = currentDamagesB;
-            currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
+            currentDamageB.clear();
+            currentDamageB.addRect(LRect(0, newSize));
+            currentDamage.clear();
+            currentDamage.addRect(LRect(0, newSize / current.bufferScale));
         }
-        else if (!pendingDamagesB.empty() || !pendingDamagesS.empty())
+        else if (!pendingDamageB.empty() || !pendingDamage.empty())
         {
-            while (!pendingDamagesS.empty())
+            if (current.bufferScale == 1)
             {
-                currentDamagesB.addRect(pendingDamagesS.back()*surface->imp()->current.bufferScale);
-                pendingDamagesS.pop_back();
+                while (!pendingDamage.empty())
+                {
+                    LRect &r = pendingDamage.back();
+                    currentDamageB.addRect(r.x() - 1,
+                                           r.y() - 1 ,
+                                           r.w() + 2,
+                                           r.h() + 2);
+                    pendingDamage.pop_back();
+                }
+            }
+            else if (current.bufferScale == 2)
+            {
+                while (!pendingDamage.empty())
+                {
+                    LRect &r = pendingDamage.back();
+                    currentDamageB.addRect((r.x() - 1 ) << 1,
+                                           (r.y() - 1 ) << 1,
+                                           (r.w() + 2 ) << 1,
+                                           (r.h() + 2 ) << 1),
+                    pendingDamage.pop_back();
+                }
+            }
+            else
+            {
+                while (!pendingDamage.empty())
+                {
+                    LRect &r = pendingDamage.back();
+                    currentDamageB.addRect((r.x() - 1 )*current.bufferScale,
+                                        (r.y() - 1 )*current.bufferScale,
+                                        (r.w() + 2 )*current.bufferScale,
+                                        (r.h() + 2 )*current.bufferScale);
+                    pendingDamage.pop_back();
+                }
             }
 
-            while (!pendingDamagesB.empty())
+            if (current.bufferScale > 1)
             {
-                currentDamagesB.addRect(pendingDamagesB.back());
-                pendingDamagesB.pop_back();
+                Int32 modX, modY, modW, modH;
+                while (!pendingDamageB.empty())
+                {
+                    LRect &r = pendingDamageB.back();
+                    modX = r.x() % current.bufferScale;
+                    modY = r.y() % current.bufferScale;
+                    modW = r.w() % current.bufferScale;
+                    modH = r.h() % current.bufferScale;
+                    currentDamageB.addRect(
+                                r.x() - modX,
+                                r.y() - modY,
+                                r.w() + modW + (modX << 1),
+                                r.h() + modH + (modY << 1));
+                    pendingDamageB.pop_back();
+                }
+            }
+            else
+            {
+                while (!pendingDamageB.empty())
+                {
+
+                    currentDamageB.addRect(pendingDamageB.back());
+                    pendingDamageB.pop_back();
+                }
             }
 
-            currentDamagesB.clip(LRect(0, newSize));
-            currentDamagesC = currentDamagesB;
-            currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
+            currentDamageB.clip(LRect(0, newSize));
+            currentDamage = currentDamageB;
+            currentDamage.multiply(1.f/float(current.bufferScale));
         }
 
         texture->setData(current.buffer);
@@ -312,28 +397,82 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         if (newSize != prevSize || bufferScaleChanged || !texture->initialized())
         {
             bufferSizeChanged = true;
-            currentDamagesB.clear();
-            currentDamagesB.addRect(LRect(0, newSize));
-            currentDamagesC = currentDamagesB;
-            currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
+            currentDamageB.clear();
+            currentDamageB.addRect(LRect(0, newSize));
+            currentDamage.clear();
+            currentDamage.addRect(LRect(0, newSize / current.bufferScale));
         }
-        else if (!pendingDamagesB.empty() || !pendingDamagesS.empty())
+        else if (!pendingDamageB.empty() || !pendingDamage.empty())
         {
-            while (!pendingDamagesS.empty())
+            if (current.bufferScale == 1)
             {
-                currentDamagesB.addRect(pendingDamagesS.back()*surface->imp()->current.bufferScale);
-                pendingDamagesS.pop_back();
+                while (!pendingDamage.empty())
+                {
+                    LRect &r = pendingDamage.back();
+                    currentDamageB.addRect(r.x() - 1,
+                                           r.y() - 1 ,
+                                           r.w() + 2,
+                                           r.h() + 2);
+                    pendingDamage.pop_back();
+                }
+            }
+            else if (current.bufferScale == 2)
+            {
+                while (!pendingDamage.empty())
+                {
+                    LRect &r = pendingDamage.back();
+                    currentDamageB.addRect((r.x() - 1 ) << 1,
+                                           (r.y() - 1 ) << 1,
+                                           (r.w() + 2 ) << 1,
+                                           (r.h() + 2 ) << 1),
+                    pendingDamage.pop_back();
+                }
+            }
+            else
+            {
+                while (!pendingDamage.empty())
+                {
+                    LRect &r = pendingDamage.back();
+                    currentDamageB.addRect((r.x() - 1 )*current.bufferScale,
+                                        (r.y() - 1 )*current.bufferScale,
+                                        (r.w() + 2 )*current.bufferScale,
+                                        (r.h() + 2 )*current.bufferScale);
+                    pendingDamage.pop_back();
+                }
             }
 
-            while (!pendingDamagesB.empty())
+
+            if (current.bufferScale > 1)
             {
-                currentDamagesB.addRect(pendingDamagesB.back());
-                pendingDamagesB.pop_back();
+                Int32 modX, modY, modW, modH;
+                while (!pendingDamageB.empty())
+                {
+                    LRect &r = pendingDamageB.back();
+                    modX = r.x() % current.bufferScale;
+                    modY = r.y() % current.bufferScale;
+                    modW = r.w() % current.bufferScale;
+                    modH = r.h() % current.bufferScale;
+                    currentDamageB.addRect(
+                                r.x() - modX,
+                                r.y() - modY,
+                                r.w() + modW +  (modX << 1),
+                                r.h() + modH +  (modY << 1));
+                    pendingDamageB.pop_back();
+                }
+            }
+            else
+            {
+                while (!pendingDamageB.empty())
+                {
+
+                    currentDamageB.addRect(pendingDamageB.back());
+                    pendingDamageB.pop_back();
+                }
             }
 
-            currentDamagesB.clip(LRect(0, newSize));
-            currentDamagesC = currentDamagesB;
-            currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
+            currentDamageB.clip(LRect(0, newSize));
+            currentDamage = currentDamageB;
+            currentDamage.multiply(1.f/float(current.bufferScale));
         }
 
         if (texture && texture != textureBackup && texture->imp()->pendingDelete)
@@ -349,14 +488,13 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     }
 
     currentSizeB = texture->sizeB();
-    currentSizeS = texture->sizeB()/current.bufferScale;
-    currentSizeC = (texture->sizeB()*compositor()->globalScale())/current.bufferScale;
+    currentSize = texture->sizeB()/current.bufferScale;
 
     if (bufferSizeChanged)
         surface->bufferSizeChanged();
 
-    pendingDamagesB.clear();
-    pendingDamagesS.clear();
+    pendingDamageB.clear();
+    pendingDamage.clear();
 
     wl_buffer_send_release(current.buffer);
     bufferReleased = true;
@@ -368,36 +506,6 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     damaged = true;
     surface->damaged();
     return true;
-}
-
-void LSurface::LSurfacePrivate::globalScaleChanged(Int32 oldScale, Int32 newScale)
-{
-    L_UNUSED(oldScale);
-
-    LSurface *surface = surfaceResource->surface();
-
-    // Size
-    currentSizeC = (currentSizeB*newScale)/current.bufferScale;
-
-    // Input region
-    currentInputRegionC = currentInputRegionS;
-    currentInputRegionC.multiply(newScale);
-
-    // Opaque region
-    surface->imp()->currentOpaqueRegionC = surface->imp()->currentOpaqueRegionS;
-    surface->imp()->currentOpaqueRegionC.multiply(newScale);
-
-    // Translucent region
-    surface->imp()->currentTranslucentRegionC = surface->imp()->currentTranslucentRegionS;
-    surface->imp()->currentTranslucentRegionC.multiply(newScale);
-
-    // Damages
-    currentDamagesC = currentDamagesB;
-    currentDamagesC.multiply(float(compositor()->globalScale())/float(surface->bufferScale()));
-
-    // Role
-    if (surface->role())
-        surface->role()->globalScaleChanged(oldScale, newScale);
 }
 
 void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output, timespec &ns)

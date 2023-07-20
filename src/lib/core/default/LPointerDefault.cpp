@@ -19,15 +19,15 @@ void LPointer::pointerMoveEvent(Float32 dx, Float32 dy)
     /* For simplification, we handle the event in pointerPosChangeEvent().
      * An input backends emit pointerMoveEvent() or pointerPosChangeEvent() but
      * not both.*/
-    pointerPosChangeEvent(cursor()->posC().x() + dx * 1.4f,
-                          cursor()->posC().y() + dy * 1.4f);
+    pointerPosChangeEvent(cursor()->pos().x() + dx,
+                          cursor()->pos().y() + dy);
 }
 //! [pointerMoveEvent]
 
 //! [pointerPosChangeEvent]
 void LPointer::pointerPosChangeEvent(Float32 x, Float32 y)
 {
-    cursor()->setPosC(LPoint(x,y));
+    cursor()->setPos(LPointF(x, y));
 
     // Repaint cursor outputs if hardware composition is not supported
     for (LOutput *output : cursor()->intersectedOutputs())
@@ -39,7 +39,7 @@ void LPointer::pointerPosChangeEvent(Float32 x, Float32 y)
     // Update the drag & drop icon (if there was one)
     if (seat()->dndManager()->icon())
     {
-        seat()->dndManager()->icon()->surface()->setPosC(cursor()->posC());
+        seat()->dndManager()->icon()->surface()->setPos(cursor()->pos());
         seat()->dndManager()->icon()->surface()->repaintOutputs();
     }
 
@@ -58,7 +58,7 @@ void LPointer::pointerPosChangeEvent(Float32 x, Float32 y)
         movingToplevel()->surface()->repaintOutputs();
 
         if (movingToplevel()->maximized())
-            movingToplevel()->configureC(movingToplevel()->states() &~ LToplevelRole::Maximized);
+            movingToplevel()->configure(movingToplevel()->states() &~ LToplevelRole::Maximized);
 
         return;
     }
@@ -70,25 +70,25 @@ void LPointer::pointerPosChangeEvent(Float32 x, Float32 y)
     // If there was a surface holding the left pointer button
     if (draggingSurface())
     {
-        sendMoveEventC();
+        sendMoveEvent();
         return;
     }
 
     // Find the first surface under the cursor
-    LSurface *surface = surfaceAtC(cursor()->posC());
+    LSurface *surface = surfaceAt(cursor()->pos());
 
     if (!surface)
     {
-        setFocusC(nullptr);
+        setFocus(nullptr);
         cursor()->useDefault();
         cursor()->setVisible(true);
     }
     else
     {
         if (focusSurface() == surface)
-            sendMoveEventC();
+            sendMoveEvent();
         else
-            setFocusC(surface);
+            setFocus(surface);
     }
 }
 //! [pointerPosChangeEvent]
@@ -103,12 +103,12 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
 
     if (!focusSurface())
     {
-        LSurface *surface = surfaceAtC(cursor()->posC());
+        LSurface *surface = surfaceAt(cursor()->pos());
 
         if (surface)
         {
             seat()->keyboard()->setFocus(surface);
-            setFocusC(surface);
+            setFocus(surface);
             sendButtonEvent(button,state);
 
             if (surface->popup())
@@ -138,7 +138,7 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
         seat()->keyboard()->setFocus(focusSurface());
 
         if (focusSurface()->toplevel() && !focusSurface()->toplevel()->activated())
-            focusSurface()->toplevel()->configureC(focusSurface()->toplevel()->states() | LToplevelRole::Activated);
+            focusSurface()->toplevel()->configure(focusSurface()->toplevel()->states() | LToplevelRole::Activated);
 
         if (!focusSurface()->popup())
             dismissPopups();
@@ -161,9 +161,9 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
         // We stop sending events to the surface on which the left button was being held down
         setDragginSurface(nullptr);
 
-        if (!focusSurface()->inputRegionC().containsPoint(cursor()->posC() - focusSurface()->rolePosC()))
+        if (!focusSurface()->inputRegion().containsPoint(cursor()->pos() - focusSurface()->rolePos()))
         {
-            setFocusC(nullptr);
+            setFocus(nullptr);
             cursor()->useDefault();
             cursor()->setVisible(true);
         }

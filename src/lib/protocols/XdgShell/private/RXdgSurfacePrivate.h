@@ -19,9 +19,8 @@ LPRIVATE_CLASS(RXdgSurface)
     std::list<RXdgSurface*>::iterator xdgWmBaseLink;
 
     bool windowGeometrySet = false;
-    LRect pendingWindowGeometryS;
-    LRect currentWindowGeometryS;
-    LRect currentWindowGeometryC;
+    LRect pendingWindowGeometry;
+    LRect currentWindowGeometry;
     bool hasPendingWindowGeometry = false;
 
     RXdgPopup *rXdgPopup = nullptr;

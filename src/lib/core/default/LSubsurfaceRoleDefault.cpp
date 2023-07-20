@@ -5,12 +5,12 @@
 using namespace Louvre;
 
 //! [rolePosC]
-const LPoint &LSubsurfaceRole::rolePosC() const
+const LPoint &LSubsurfaceRole::rolePos() const
 {
     if (surface()->parent())
-        m_rolePosC = localPosC() + surface()->parent()->rolePosC();
+        m_rolePos = localPos() + surface()->parent()->rolePos();
 
-    return m_rolePosC;
+    return m_rolePos;
 }
 //! [rolePosC]
 

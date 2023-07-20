@@ -1,8 +1,10 @@
 #include <private/LSceneViewPrivate.h>
+#include <private/LViewPrivate.h>
 #include <LFramebuffer.h>
 #include <LRenderBuffer.h>
 #include <LPainter.h>
 #include <LOutput.h>
+#include <LCompositor.h>
 
 LSceneView::LSceneView(LFramebuffer *framebuffer, LView *parent) : LView(Scene, parent)
 {
@@ -10,19 +12,29 @@ LSceneView::LSceneView(LFramebuffer *framebuffer, LView *parent) : LView(Scene, 
     imp()->fb = framebuffer;
 }
 
-const LRGBF &LSceneView::clearColor() const
+LSceneView::LSceneView(const LSize &sizeB, Int32 bufferScale, LView *parent) : LView(Scene, parent)
+{
+    m_imp = new LSceneViewPrivate();
+    imp()->fb = new LRenderBuffer(sizeB);
+    LRenderBuffer *rb = (LRenderBuffer*)imp()->fb;
+    rb->setScale(bufferScale);
+}
+
+const LRGBAF &LSceneView::clearColor() const
 {
     return imp()->clearColor;
 }
 
-void LSceneView::setClearColor(Float32 r, Float32 g, Float32 b)
+void LSceneView::setClearColor(Float32 r, Float32 g, Float32 b, Float32 a)
 {
-    imp()->clearColor = {r, g, b};
+    imp()->clearColor = {r, g, b, a};
+    repaint();
 }
 
-void LSceneView::setClearColor(const LRGBF &color)
+void LSceneView::setClearColor(const LRGBAF &color)
 {
     imp()->clearColor = color;
+    repaint();
 }
 
 void LSceneView::damageAll(LOutput *output)
@@ -34,16 +46,14 @@ void LSceneView::damageAll(LOutput *output)
 
     if (oD->o)
     {
-        LView *baseView = this;
-
-        if (baseView->scene())
-            oD->manuallyAddedDamage.addRect(oD->o->rectC());
+        if (isLScene())
+            oD->manuallyAddedDamage.addRect(oD->o->rect());
         else
-            oD->manuallyAddedDamage.addRect(imp()->fb->rectC());
+            oD->manuallyAddedDamage.addRect(LRect(pos(), size()));
     }
 }
 
-void LSceneView::addDamageC(LOutput *output, const LRegion &damage)
+void LSceneView::addDamage(LOutput *output, const LRegion &damage)
 {
     if (!output)
         return;
@@ -54,14 +64,27 @@ void LSceneView::addDamageC(LOutput *output, const LRegion &damage)
         oD->manuallyAddedDamage.addRegion(damage);
 }
 
-void LSceneView::render(LOutput *output)
+bool LSceneView::isLScene() const
+{
+    LView *nativeView = (LSceneView*)this;
+    return nativeView->imp()->scene != nullptr;
+}
+
+void LSceneView::render(LOutput *output, const LRegion *exclude)
 {
     if (!output)
         return;
 
     output->painter()->bindFramebuffer(imp()->fb);
 
+    if (!isLScene())
+    {
+        LRenderBuffer *rb = (LRenderBuffer*)imp()->fb;
+        rb->setPos(pos());
+    }
+
     LSceneViewPrivate::OutputData *oD = &imp()->outputsMap[output];
+    imp()->currentOutputData = oD;
 
     // If output was not cached
     if (!oD->o)
@@ -75,12 +98,28 @@ void LSceneView::render(LOutput *output)
     }
 
     imp()->clearTmpVariables(oD);
-    imp()->checkOutputsScale(oD);
     imp()->checkRectChange(oD);
 
     // Add manual damage
     oD->newDamage.addRegion(oD->manuallyAddedDamage);
     oD->manuallyAddedDamage.clear();
+
+    // If extra opaque
+    if (exclude)
+    {
+        oD->prevExternalExclude.subtractRegion(*exclude);
+        oD->newDamage.addRegion(oD->prevExternalExclude);
+        oD->prevExternalExclude = *exclude;
+        oD->opaqueTransposedSum.addRegion(*exclude);
+    }
+    else
+    {
+        oD->newDamage.addRegion(oD->prevExternalExclude);
+        oD->prevExternalExclude.clear();
+    }
+
+    for (list<LView*>::const_iterator it = children().cbegin(); it != children().cend(); it++)
+        imp()->cachePass(*it, oD);
 
     for (list<LView*>::const_reverse_iterator it = children().crbegin(); it != children().crend(); it++)
         imp()->calcNewDamage(*it, oD);
@@ -106,43 +145,58 @@ void LSceneView::render(LOutput *output)
     for (list<LView*>::const_reverse_iterator it = children().crbegin(); it != children().crend(); it++)
         imp()->drawOpaqueDamage(*it, oD);
 
-    imp()->drawBackground(oD);
+    imp()->drawBackground(oD, !isLScene() && imp()->clearColor.a >= 1.f);
 
     glEnable(GL_BLEND);
 
     for (list<LView*>::const_iterator it = children().cbegin(); it != children().cend(); it++)
         imp()->drawTranslucentDamage(*it, oD);
 
-    imp()->fb->setFramebufferDamageC(&oD->newDamage);
+    if (!isLScene())
+    {
+        oD->opaqueTransposedSum.clip(imp()->fb->rect());
+        oD->translucentTransposedSum = oD->opaqueTransposedSum;
+        oD->translucentTransposedSum.inverse(imp()->fb->rect());
+    }
+    else
+    {
+        imp()->fb->setFramebufferDamageC(&oD->newDamage);
+    }
 
     output->painter()->bindFramebuffer(output->framebuffer());
 }
 
-bool LSceneView::customPosEnabled() const
+void LSceneView::setPos(const LPoint &pos)
 {
-    return imp()->customPosEnabled;
-}
-
-void LSceneView::enableCustomPos(bool enabled)
-{
-    if (imp()->customPosEnabled != enabled)
+    if (pos != imp()->customPos)
     {
-        imp()->customPosEnabled = enabled;
+        imp()->customPos = pos;
         repaint();
     }
 }
 
-void LSceneView::setCustomPosC(const LPoint &pos)
+void LSceneView::setSizeB(const LSize &size)
 {
-    if (customPosEnabled() && pos != imp()->customPos)
+    if (!isLScene() && size != imp()->fb->sizeB())
+    {
+        LRenderBuffer *rb = (LRenderBuffer*)imp()->fb;
+        rb->setSizeB(size);
+        for (LOutput *o : compositor()->outputs())
+            damageAll(o);
         repaint();
-
-    imp()->customPos = pos;
+    }
 }
 
-const LPoint &LSceneView::customPosC() const
+void LSceneView::setScale(Int32 scale)
 {
-    return imp()->customPos;
+    if (!isLScene() && bufferScale() != scale)
+    {
+        LRenderBuffer *rb = (LRenderBuffer*)imp()->fb;
+        rb->setScale(scale);
+        for (LOutput *o : compositor()->outputs())
+            damageAll(o);
+        repaint();
+    }
 }
 
 bool LSceneView::nativeMapped() const
@@ -150,17 +204,14 @@ bool LSceneView::nativeMapped() const
     return true;
 }
 
-const LPoint &LSceneView::nativePosC() const
+const LPoint &LSceneView::nativePos() const
 {
-    if (customPosEnabled())
-        return imp()->customPos;
-
-    return imp()->fb->rectC().pos();
+    return imp()->customPos;
 }
 
-const LSize &LSceneView::nativeSizeC() const
+const LSize &LSceneView::nativeSize() const
 {
-    return imp()->fb->rectC().size();
+    return imp()->fb->rect().size();
 }
 
 Int32 LSceneView::bufferScale() const
@@ -194,29 +245,32 @@ void LSceneView::requestNextFrame(LOutput *output)
     L_UNUSED(output);
 }
 
-const LRegion *LSceneView::damageC() const
+const LRegion *LSceneView::damage() const
 {
-    return nullptr;//&imp()->damage;
+    return &imp()->currentOutputData->newDamage;
 }
 
-const LRegion *LSceneView::translucentRegionC() const
+const LRegion *LSceneView::translucentRegion() const
 {
-    return nullptr;//&imp()->translucent;
+    return &imp()->currentOutputData->translucentTransposedSum;
 }
 
-const LRegion *LSceneView::opaqueRegionC() const
+const LRegion *LSceneView::opaqueRegion() const
 {
-    return nullptr;//&imp()->opaque;
+    return &imp()->currentOutputData->opaqueTransposedSum;
 }
 
-const LRegion *LSceneView::inputRegionC() const
+const LRegion *LSceneView::inputRegion() const
 {
     return &imp()->input;
 }
 
-void LSceneView::paintRectC(LPainter *p, Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH, Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH, Float32 scale, Float32 alpha)
+void LSceneView::paintRect(LPainter *p,
+                            Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
+                            Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
+                            Float32 scale, Float32 alpha)
 {
-    p->drawTextureC(imp()->fb->texture(imp()->fb->currentBufferIndex()),
+    p->drawTexture(imp()->fb->texture(imp()->fb->currentBufferIndex()),
                     srcX, srcY, srcW, srcH,
                     dstX, dstY, dstW, dstH,
                     scale, alpha);

@@ -15,7 +15,7 @@ LPRIVATE_CLASS(LSurfaceView)
     bool customPosEnabled = false;
     bool customInputRegionEnabled = false;
 
-    LPoint tmpPosC;
+    LPoint tmpPos;
 };
 
 #endif // LSURFACEVIEWPRIVATE_H

@@ -54,7 +54,7 @@ LCursor::LCursor()
         LLog::error("[cursor] Framebuffer is not complete.");
     }
 
-    setSizeS(LSize(24));
+    setSize(LSize(24));
     useDefault();
     setVisible(true);
 }
@@ -113,32 +113,32 @@ void LCursor::setOutput(LOutput *output)
     }
 }
 
-void LCursor::moveC(float x, float y)
+void LCursor::move(float x, float y)
 {
-    setPosC(imp()->posC + LPointF(x,y));
+    setPos(imp()->pos + LPointF(x,y));
 }
 
-void Louvre::LCursor::setPosC(const LPointF &pos)
+void Louvre::LCursor::setPos(const LPointF &pos)
 {
     for (LOutput *output : compositor()->outputs())
-        if (output->rectC().containsPoint(pos) && output)
+        if (output->rect().containsPoint(pos) && output)
             setOutput(output);
 
     if (!output())
         return;
 
-    imp()->posC = pos;
+    imp()->pos = pos;
 
-    LRect area = output()->rectC();
-    if (imp()->posC.x() > area.x() + area.w())
-        imp()->posC.setX(area.x() + area.w());
-    if (imp()->posC.x() < area.x())
-        imp()->posC.setX(area.x());
+    LRect area = output()->rect();
+    if (imp()->pos.x() > area.x() + area.w())
+        imp()->pos.setX(area.x() + area.w());
+    if (imp()->pos.x() < area.x())
+        imp()->pos.setX(area.x());
 
-    if (imp()->posC.y() > area.y() + area.h())
-        imp()->posC.setY(area.y() + area.h());
-    if (imp()->posC.y() < area.y())
-        imp()->posC.setY(area.y());
+    if (imp()->pos.y() > area.y() + area.h())
+        imp()->pos.setY(area.y() + area.h());
+    if (imp()->pos.y() < area.y())
+        imp()->pos.setY(area.y());
 
     imp()->update();
 }
@@ -152,11 +152,11 @@ void LCursor::setHotspotB(const LPointF &hotspot)
     }
 }
 
-void LCursor::setSizeS(const LSizeF &size)
+void LCursor::setSize(const LSizeF &size)
 {
-    if (imp()->sizeS != size)
+    if (imp()->size != size)
     {
-        imp()->sizeS = size;
+        imp()->size = size;
         imp()->textureChanged = true;
         imp()->update();
     }
@@ -199,9 +199,9 @@ bool LCursor::hasHardwareSupport(const LOutput *output) const
     return compositor()->imp()->graphicBackend->hasHardwareCursorSupport((LOutput*)output);
 }
 
-const LPointF &LCursor::posC() const
+const LPointF &LCursor::pos() const
 {
-    return imp()->posC;
+    return imp()->pos;
 }
 
 const LPointF &LCursor::hotspotB() const
@@ -233,9 +233,9 @@ const std::list<LOutput *> &LCursor::intersectedOutputs() const
     return imp()->intersectedOutputs;
 }
 
-const LRect &LCursor::rectC() const
+const LRect &LCursor::rect() const
 {
-    return imp()->rectC;
+    return imp()->rect;
 }
 
 void LCursor::LCursorPrivate::update()
@@ -244,16 +244,16 @@ void LCursor::LCursorPrivate::update()
         return;
 
     LPointF newHotspotS;
-    newHotspotS = (hotspotB*sizeS)/LSizeF(texture->sizeB());
+    newHotspotS = (hotspotB*size)/LSizeF(texture->sizeB());
 
-    LPointF newPosC = posC - (newHotspotS * compositor()->globalScale());
+    LPointF newPosS = pos - newHotspotS;
 
-    rectC.setPos(newPosC);
-    rectC.setSize(sizeS * compositor()->globalScale());
+    rect.setPos(newPosS);
+    rect.setSize(size);
 
     for (LOutput *o : compositor()->outputs())
     {
-        if (o->rectC().intersects(rectC))
+        if (o->rect().intersects(rect))
         {
             bool found = (std::find(intersectedOutputs.begin(), intersectedOutputs.end(), o) != intersectedOutputs.end());
 
@@ -268,8 +268,8 @@ void LCursor::LCursorPrivate::update()
 
         if (cursor()->hasHardwareSupport(o))
         {
-            LPointF p = newPosC - o->posC();
-            compositor()->imp()->graphicBackend->setCursorPosition(o, (p*o->scale())/compositor()->globalScale());
+            LPointF p = newPosS - LPointF(o->pos());
+            compositor()->imp()->graphicBackend->setCursorPosition(o, p*o->scale());
         }
     }
 }
@@ -283,15 +283,15 @@ void LCursor::LCursorPrivate::textureUpdate()
         return;
 
     LPointF newHotspotS;
-    newHotspotS = (hotspotB*sizeS)/LSizeF(texture->sizeB());
+    newHotspotS = (hotspotB*size)/LSizeF(texture->sizeB());
 
-    LPointF newPosC = posC - (newHotspotS * compositor()->globalScale());
-    rectC.setPos(newPosC);
-    rectC.setSize(sizeS * compositor()->globalScale());
+    LPointF newPosS = pos - newHotspotS;
+    rect.setPos(newPosS);
+    rect.setSize(size);
 
     for (LOutput *o : compositor()->outputs())
     {
-        if (o->rectC().intersects(rectC))
+        if (o->rect().intersects(rect))
         {
             bool found = (std::find(intersectedOutputs.begin(), intersectedOutputs.end(), o) != intersectedOutputs.end());
 
@@ -300,7 +300,7 @@ void LCursor::LCursorPrivate::textureUpdate()
 
             if (cursor()->hasHardwareSupport(o) && (textureChanged || !found))
             {
-                texture2Buffer(cursor(), sizeS*o->scale());
+                texture2Buffer(cursor(), size*o->scale());
                 compositor()->imp()->graphicBackend->setCursorTexture(o, buffer);
             }
         }
@@ -312,22 +312,10 @@ void LCursor::LCursorPrivate::textureUpdate()
 
         if (cursor()->hasHardwareSupport(o))
         {
-            LPointF p = newPosC - o->posC();
-            compositor()->imp()->graphicBackend->setCursorPosition(o, (p*o->scale())/compositor()->globalScale());
+            LPointF p = newPosS - LPointF(o->pos());
+            compositor()->imp()->graphicBackend->setCursorPosition(o, p*o->scale());
         }
     }
 
     textureChanged = false;
-}
-
-void LCursor::LCursorPrivate::globalScaleChanged(Int32 oldScale, Int32 newScale)
-{
-    posC = (posC*newScale)/oldScale;
-
-    textureChanged = true;
-
-    if (!cursor()->output())
-        return;
-
-    update();
 }

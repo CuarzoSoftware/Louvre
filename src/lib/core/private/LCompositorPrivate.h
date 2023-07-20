@@ -49,7 +49,6 @@ LPRIVATE_CLASS(LCompositor)
         bool isGraphicBackendInitialized = false;
     void unitGraphicBackend();
 
-    Int32 globalScale                                           = 1;
     bool isInputBackendInitialized                              = false;
 
     std::thread::id threadId;
@@ -61,13 +60,13 @@ LPRIVATE_CLASS(LCompositor)
     void raiseChildren(LSurface *surface);
     void insertSurfaceAfter(LSurface *prevSurface, LSurface *surfaceToInsert);
     void insertSurfaceBefore(LSurface *nextSurface, LSurface *surfaceToInsert);
-    void updateGlobalScale();
 
     list<LClient*>clients;
     list<LOutput*>outputs;
     list<LSurface*>surfaces;
     list<LView*>views;
     list<LAnimation*>animations;
+    list<LRenderBuffer*>renderBuffers;
 
     bool runningAnimations();
     void processAnimations();

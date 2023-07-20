@@ -4,7 +4,7 @@
 #include <LLayerView.h>
 #include <LSolidColorView.h>
 #include <LAnimation.h>
-#include <Shared.h>
+#include <Global.h>
 
 using namespace Louvre;
 
@@ -14,11 +14,23 @@ class Dock : public LLayerView
 {
 public:
     Dock(Output *output);
-    LSolidColorView background = LSolidColorView(1.f, 1.f, 1.f, 0.2f, this);
+
     void update();
     void show();
     void hide();
     void handleCursorMovement();
+
+    Output *output() const;
+
+    LLayerView dockClipping = LLayerView(this);
+    LSceneView *dockScene;
+    LSolidColorView *dockBackground;
+    LLayerView *itemsContainer;
+
+    LTextureView *borderRadiusTL;
+    LTextureView *borderRadiusTR;
+    LTextureView *borderRadiusBR;
+    LTextureView *borderRadiusBL;
 
 private:
     Output *m_output;

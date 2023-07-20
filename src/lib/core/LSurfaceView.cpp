@@ -59,7 +59,7 @@ void LSurfaceView::enableCustomInputRegion(bool enabled)
     imp()->customInputRegionEnabled = enabled;
 }
 
-void LSurfaceView::setCustomPosC(const LPoint &pos)
+void LSurfaceView::setCustomPos(const LPoint &pos)
 {
     if (customPosEnabled() && pos != imp()->customPos && mapped())
         repaint();
@@ -67,12 +67,12 @@ void LSurfaceView::setCustomPosC(const LPoint &pos)
     imp()->customPos = pos;
 }
 
-const LPoint &LSurfaceView::customPosC() const
+const LPoint &LSurfaceView::customPos() const
 {
     return imp()->customPos;
 }
 
-void LSurfaceView::setCustomInputRegionC(const LRegion *region)
+void LSurfaceView::setCustomInputRegion(const LRegion *region)
 {
     if (region)
     {
@@ -94,7 +94,7 @@ void LSurfaceView::setCustomInputRegionC(const LRegion *region)
     }
 }
 
-const LRegion *LSurfaceView::customInputRegionC() const
+const LRegion *LSurfaceView::customInputRegion() const
 {
     return imp()->customInputRegion;
 }
@@ -104,17 +104,17 @@ bool LSurfaceView::nativeMapped() const
     return surface()->mapped();
 }
 
-const LPoint &LSurfaceView::nativePosC() const
+const LPoint &LSurfaceView::nativePos() const
 {
     if (customPosEnabled())
         return imp()->customPos;
 
-    return surface()->rolePosC();
+    return surface()->rolePos();
 }
 
-const LSize &LSurfaceView::nativeSizeC() const
+const LSize &LSurfaceView::nativeSize() const
 {
-    return surface()->sizeC();
+    return surface()->size();
 }
 
 Int32 LSurfaceView::bufferScale() const
@@ -173,35 +173,35 @@ void LSurfaceView::requestNextFrame(LOutput *output)
     view->imp()->outputsMap[output].lastRenderedDamageId = surface()->damageId();
 }
 
-const LRegion *LSurfaceView::damageC() const
+const LRegion *LSurfaceView::damage() const
 {
-    return &surface()->damagesC();
+    return &surface()->damage();
 }
 
-const LRegion *LSurfaceView::translucentRegionC() const
+const LRegion *LSurfaceView::translucentRegion() const
 {
-    return &surface()->translucentRegionC();
+    return &surface()->translucentRegion();
 }
 
-const LRegion *LSurfaceView::opaqueRegionC() const
+const LRegion *LSurfaceView::opaqueRegion() const
 {
-    return &surface()->opaqueRegionC();
+    return &surface()->opaqueRegion();
 }
 
-const LRegion *LSurfaceView::inputRegionC() const
+const LRegion *LSurfaceView::inputRegion() const
 {
     if (customInputRegionEnabled())
         return imp()->customInputRegion;
 
-    return &surface()->inputRegionC();
+    return &surface()->inputRegion();
 }
 
-void LSurfaceView::paintRectC(LPainter *p,
+void LSurfaceView::paintRect(LPainter *p,
                               Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
                               Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                               Float32 scale, Float32 alpha)
 {
-    p->drawTextureC(surface()->texture(),
+    p->drawTexture(surface()->texture(),
                     srcX, srcY,
                     srcW, srcH,
                     dstX, dstY,

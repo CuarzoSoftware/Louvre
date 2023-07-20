@@ -10,29 +10,30 @@
 void LSceneView::LSceneViewPrivate::clearTmpVariables(OutputData *oD)
 {
     oD->newDamage.clear();
-    oD->opaqueTransposedCSum.clear();
+    oD->opaqueTransposedSum.clear();
+    oD->foundRenderableSaledView = false;
 }
 
 void LSceneView::LSceneViewPrivate::damageAll(OutputData *oD)
 {
     oD->newDamage.clear();
-    oD->newDamage.addRect(fb->rectC());
+    oD->newDamage.addRect(fb->rect());
 }
 
 void LSceneView::LSceneViewPrivate::checkRectChange(OutputData *oD)
 {
-    if (oD->prevRectC.size() != fb->rectC().size())
+    if (oD->prevRect.size() != fb->rect().size())
     {
         damageAll(oD);
-        oD->prevRectC.setSize(fb->rectC().size());
+        oD->prevRect.setSize(fb->rect().size());
     }
 }
 
-void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, OutputData *oD)
+void LSceneView::LSceneViewPrivate::cachePass(LView *view, OutputData *oD)
 {
-    // Children first
-    for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
-        calcNewDamage(*it, oD);
+    if (view->type() != Scene)
+        for (list<LView*>::const_iterator it = view->children().cbegin(); it != view->children().cend(); it++)
+            cachePass(*it, oD);
 
     // Quick view cache handle to reduce verbosity
     LView::LViewPrivate::ViewCache *cache = &view->imp()->cache;
@@ -45,29 +46,42 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, OutputData *oD)
     // Cache mapped call
     cache->mapped = view->mapped();
 
-    // If the scale is equal to the global scale, we avoid performing transformations later
-    cache->bufferScaleMatchGlobalScale = view->bufferScale() == compositor()->globalScale();
-
     // Cache view rect
-    cache->rect.setPos(view->posC());
-    cache->rect.setSize(view->sizeC());
+    cache->rect.setPos(view->pos());
+    cache->rect.setSize(view->size());
 
     cache->scalingVector = view->scalingVector();
     cache->scalingEnabled = (view->scalingEnabled() || view->parentScalingEnabled()) && cache->scalingVector != LSizeF(1.f, 1.f);
 
-    // Make view pos fit output pixels grid
-    if (!oD->allOutputsMatchGlobalScale || cache->scalingEnabled)
+    if (cache->mapped && cache->scalingEnabled)
+        oD->foundRenderableSaledView = true;
+}
+
+
+void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, OutputData *oD)
+{
+    // Children first
+    if (view->type() == Scene)
     {
-        cache->rect.setX(cache->rect.x() - (cache->rect.x() % compositor()->globalScale()));
-        cache->rect.setY(cache->rect.y() - (cache->rect.y() % compositor()->globalScale()));
-        cache->rect.setW(cache->rect.w() + (cache->rect.w() % compositor()->globalScale()));
-        cache->rect.setH(cache->rect.h() + (cache->rect.h() % compositor()->globalScale()));
+        LSceneView *sceneView = (LSceneView*)view;
+        if (view->imp()->cache.scalingEnabled)
+            sceneView->render(oD->o, nullptr);
+        else
+            sceneView->render(oD->o, &oD->opaqueTransposedSum);
     }
+    else
+    {
+        for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
+            calcNewDamage(*it, oD);
+    }
+
+    // Quick view cache handle to reduce verbosity
+    LView::LViewPrivate::ViewCache *cache = &view->imp()->cache;
 
     // Update view intersected outputs
     for (list<LOutput*>::const_iterator it = compositor()->outputs().cbegin(); it != compositor()->outputs().cend(); it++)
     {
-        if ((*it)->rectC().intersects(cache->rect, false))
+        if ((*it)->rect().intersects(cache->rect, false))
             view->enteredOutput(*it);
         else
            view->leftOutput(*it);
@@ -92,7 +106,9 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, OutputData *oD)
 
     bool opacityChanged = cache->opacity != cache->voD->prevOpacity;
 
-    bool rectChanged = cache->rect != cache->voD->prevRect;
+    cache->localRect = LRect(cache->rect.pos() - fb->rect().pos(), cache->rect.size());
+
+    bool rectChanged = cache->localRect != cache->voD->prevLocalRect;
 
     // If rect or order changed (set current rect and prev rect as damage)
     if (mappingChanged || rectChanged || cache->voD->changedOrder || opacityChanged || cache->scalingEnabled)
@@ -102,6 +118,7 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, OutputData *oD)
         cache->voD->prevMapped = cache->mapped;
         cache->voD->prevRect = cache->rect;
         cache->voD->prevOpacity = cache->opacity;
+        cache->voD->prevLocalRect = cache->localRect;
 
         if (!cache->mapped)
         {
@@ -109,10 +126,13 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, OutputData *oD)
             return;
         }
     }
-    else if (view->damageC())
+    else if (view->damage())
     {
-        cache->damage = *view->damageC();
-        cache->damage.offset(cache->rect.pos());
+        cache->damage = *view->damage();
+
+        // Scene views already have their damage transposed
+        if (view->type() != Scene)
+            cache->damage.offset(cache->rect.pos());
     }
     else
     {
@@ -143,7 +163,7 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, OutputData *oD)
     cache->damage.intersectRegion(currentParentClipping);
 
     // Remove previus opaque region to view damage
-    cache->damage.subtractRegion(oD->opaqueTransposedCSum);
+    cache->damage.subtractRegion(oD->opaqueTransposedSum);
 
     // Add clipped damage to new damage
     oD->newDamage.addRegion(cache->damage);
@@ -157,10 +177,12 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, OutputData *oD)
     else
     {
         // Store tansposed traslucent region
-        if (view->translucentRegionC())
+        if (view->translucentRegion())
         {
-            cache->translucent = *view->translucentRegionC();
-            cache->translucent.offset(cache->rect.pos());
+            cache->translucent = *view->translucentRegion();
+
+            if (view->type() != Scene)
+                cache->translucent.offset(cache->rect.pos());
         }
         else
         {
@@ -169,10 +191,12 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, OutputData *oD)
         }
 
         // Store tansposed opaque region
-        if (view->opaqueRegionC())
+        if (view->opaqueRegion())
         {
-            cache->opaque = *view->opaqueRegionC();
-            cache->opaque.offset(cache->rect.pos());
+            cache->opaque = *view->opaqueRegion();
+
+            if (view->type() != Scene)
+                cache->opaque.offset(cache->rect.pos());
         }
         else
         {
@@ -186,7 +210,7 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, OutputData *oD)
     cache->translucent.intersectRegion(currentParentClipping);
 
     // Check if view is ocludded
-    currentParentClipping.subtractRegion(oD->opaqueTransposedCSum);
+    currentParentClipping.subtractRegion(oD->opaqueTransposedSum);
 
     cache->occluded = currentParentClipping.empty();
 
@@ -194,15 +218,16 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, OutputData *oD)
         view->requestNextFrame(oD->o);
 
     // Store sum of previus opaque regions (this will later be clipped when painting opaque and translucent regions)
-    cache->opaqueOverlay = oD->opaqueTransposedCSum;
-    oD->opaqueTransposedCSum.addRegion(cache->opaque);
+    cache->opaqueOverlay = oD->opaqueTransposedSum;
+    oD->opaqueTransposedSum.addRegion(cache->opaque);
 }
 
 void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view, OutputData *oD)
 {
     // Children first
-    for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
-        drawOpaqueDamage(*it, oD);
+    if (view->type() != Scene)
+        for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
+            drawOpaqueDamage(*it, oD);
 
     LView::LViewPrivate::ViewCache *cache = &view->imp()->cache;
 
@@ -216,31 +241,22 @@ void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view, OutputData *oD
 
     if (cache->scalingEnabled)
     {
-        Int32 sX,sY,sW,sH,dX,dY,dW,dH;
-
         for (Int32 i = 0; i < oD->n; i++)
         {
-            dX = oD->boxes->x1 - (oD->boxes->x1 % compositor()->globalScale());
-            dY = oD->boxes->y1 - (oD->boxes->y1 % compositor()->globalScale());
-            dW = oD->boxes->x2 - oD->boxes->x1;
-            dW += dW % compositor()->globalScale();
-            dH = oD->boxes->y2 - oD->boxes->y1;
-            dH += dH % compositor()->globalScale();
+            oD->w = oD->boxes->x2 - oD->boxes->x1;
+            oD->h = oD->boxes->y2 - oD->boxes->y1;
 
-            sX = (oD->boxes->x1  - cache->rect.x())/cache->scalingVector.x();
-            sX -= sX % compositor()->globalScale();
-            sY = (oD->boxes->y1  - cache->rect.y())/cache->scalingVector.y();
-            sY -= sY % compositor()->globalScale();
-            sW = (oD->boxes->x2 - oD->boxes->x1)/cache->scalingVector.x();
-            sW -= sW % compositor()->globalScale();
-            sH = (oD->boxes->y2 - oD->boxes->y1)/cache->scalingVector.y();
-            sH -= sH % compositor()->globalScale();
-
-            view->paintRectC(
+            view->paintRect(
                 oD->p,
-                sX, sY, sW, sH,
-                dX, dY, dW, dH,
-                cache->bufferScaleMatchGlobalScale ? 0.0 : view->bufferScale(),
+                (oD->boxes->x1 - cache->rect.x()) / cache->scalingVector.x(),
+                (oD->boxes->y1  - cache->rect.y()) / cache->scalingVector.y(),
+                oD->w / cache->scalingVector.x(),
+                oD->h / cache->scalingVector.y(),
+                oD->boxes->x1,
+                oD->boxes->y1,
+                oD->w,
+                oD->h,
+                view->bufferScale(),
                 1.f);
 
             oD->boxes++;
@@ -248,81 +264,50 @@ void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view, OutputData *oD
     }
     else
     {
-        // Draw opaque rects
-        if (oD->outputMatchGlobalScale)
+        for (Int32 i = 0; i < oD->n; i++)
         {
-            for (Int32 i = 0; i < oD->n; i++)
-            {
-                oD->w = oD->boxes->x2 - oD->boxes->x1;
-                oD->h = oD->boxes->y2 - oD->boxes->y1;
+            oD->w = oD->boxes->x2 - oD->boxes->x1;
+            oD->h = oD->boxes->y2 - oD->boxes->y1;
 
-                view->paintRectC(
-                    oD->p,
-                    oD->boxes->x1 - cache->rect.x(),
-                    oD->boxes->y1 - cache->rect.y(),
-                    oD->w,
-                    oD->h,
-                    oD->boxes->x1,
-                    oD->boxes->y1,
-                    oD->w,
-                    oD->h,
-                    cache->bufferScaleMatchGlobalScale ? 0.0 : view->bufferScale(),
-                    1.f);
+            view->paintRect(
+                oD->p,
+                oD->boxes->x1 - cache->rect.x(),
+                oD->boxes->y1 - cache->rect.y(),
+                oD->w,
+                oD->h,
+                oD->boxes->x1,
+                oD->boxes->y1,
+                oD->w,
+                oD->h,
+                view->bufferScale(),
+                1.f);
 
-                oD->boxes++;
-            }
-        }
-        else
-        {
-            Int32 x, y;
-            for (Int32 i = 0; i < oD->n; i++)
-            {
-                x = oD->boxes->x1 - (oD->boxes->x1 % compositor()->globalScale());
-                y = oD->boxes->y1 - (oD->boxes->y1 % compositor()->globalScale());
-
-                oD->w = oD->boxes->x2 - x;
-                oD->h = oD->boxes->y2 - y;
-
-                oD->w += oD->w % compositor()->globalScale();
-                oD->h += oD->h % compositor()->globalScale();
-
-                view->paintRectC(
-                    oD->p,
-                    x - cache->rect.x(),
-                    y - cache->rect.y(),
-                    oD->w,
-                    oD->h,
-                    x,
-                    y,
-                    oD->w,
-                    oD->h,
-                    cache->bufferScaleMatchGlobalScale ? 0.0 : view->bufferScale(),
-                    1.f);
-
-                oD->boxes++;
-            }
+            oD->boxes++;
         }
     }
 }
 
-void LSceneView::LSceneViewPrivate::drawBackground(OutputData *oD)
+void LSceneView::LSceneViewPrivate::drawBackground(OutputData *oD, bool addToOpaqueSum)
 {
     LRegion backgroundDamage = oD->newDamage;
-    backgroundDamage.subtractRegion(oD->opaqueTransposedCSum);
+    backgroundDamage.subtractRegion(oD->opaqueTransposedSum);
     oD->boxes = backgroundDamage.rects(&oD->n);
 
     for (Int32 i = 0; i < oD->n; i++)
     {
-        oD->p->drawColorC(oD->boxes->x1,
+        oD->p->drawColor(oD->boxes->x1,
                       oD->boxes->y1,
                       oD->boxes->x2 - oD->boxes->x1,
                       oD->boxes->y2 - oD->boxes->y1,
                       clearColor.r,
                       clearColor.g,
                       clearColor.b,
-                      1.f);
+                      clearColor.a);
         oD->boxes++;
     }
+
+    if (addToOpaqueSum)
+        oD->opaqueTransposedSum.addRegion(backgroundDamage);
 }
 
 void LSceneView::LSceneViewPrivate::drawTranslucentDamage(LView *view, OutputData *oD)
@@ -340,34 +325,24 @@ void LSceneView::LSceneViewPrivate::drawTranslucentDamage(LView *view, OutputDat
 
     oD->boxes = cache->translucent.rects(&oD->n);
 
-    // Draw transulcent rects
     if (cache->scalingEnabled)
     {
-        Int32 sX,sY,sW,sH,dX,dY,dW,dH;
-
         for (Int32 i = 0; i < oD->n; i++)
         {
-            dX = oD->boxes->x1 - (oD->boxes->x1 % compositor()->globalScale());
-            dY = oD->boxes->y1 - (oD->boxes->y1 % compositor()->globalScale());
-            dW = oD->boxes->x2 - oD->boxes->x1;
-            dW += dW % compositor()->globalScale();
-            dH = oD->boxes->y2 - oD->boxes->y1;
-            dH += dH % compositor()->globalScale();
+            oD->w = oD->boxes->x2 - oD->boxes->x1;
+            oD->h = oD->boxes->y2 - oD->boxes->y1;
 
-            sX = (oD->boxes->x1  - cache->rect.x())/cache->scalingVector.x();
-            sX -= sX % compositor()->globalScale();
-            sY = (oD->boxes->y1  - cache->rect.y())/cache->scalingVector.y();
-            sY -= sY % compositor()->globalScale();
-            sW = (oD->boxes->x2 - oD->boxes->x1)/cache->scalingVector.x();
-            sW -= sW % compositor()->globalScale();
-            sH = (oD->boxes->y2 - oD->boxes->y1)/cache->scalingVector.y();
-            sH -= sH % compositor()->globalScale();
-
-            view->paintRectC(
+            view->paintRect(
                 oD->p,
-                sX, sY, sW, sH,
-                dX, dY, dW, dH,
-                cache->bufferScaleMatchGlobalScale ? 0.0 : view->bufferScale(),
+                (oD->boxes->x1 - cache->rect.x()) / cache->scalingVector.x(),
+                (oD->boxes->y1  - cache->rect.y()) / cache->scalingVector.y(),
+                oD->w / cache->scalingVector.x(),
+                oD->h / cache->scalingVector.y(),
+                oD->boxes->x1,
+                oD->boxes->y1,
+                oD->w,
+                oD->h,
+                view->bufferScale(),
                 cache->opacity);
 
             oD->boxes++;
@@ -375,64 +350,32 @@ void LSceneView::LSceneViewPrivate::drawTranslucentDamage(LView *view, OutputDat
     }
     else
     {
-        if (oD->outputMatchGlobalScale)
+        for (Int32 i = 0; i < oD->n; i++)
         {
-            for (Int32 i = 0; i < oD->n; i++)
-            {
-                oD->w = oD->boxes->x2 - oD->boxes->x1;
-                oD->h = oD->boxes->y2 - oD->boxes->y1;
+            oD->w = oD->boxes->x2 - oD->boxes->x1;
+            oD->h = oD->boxes->y2 - oD->boxes->y1;
 
-                view->paintRectC(
-                    oD->p,
-                    oD->boxes->x1 - cache->rect.x(),
-                    oD->boxes->y1 - cache->rect.y(),
-                    oD->w,
-                    oD->h,
-                    oD->boxes->x1,
-                    oD->boxes->y1,
-                    oD->w,
-                    oD->h,
-                    cache->bufferScaleMatchGlobalScale ? 0.0 : view->bufferScale(),
-                    cache->opacity);
+            view->paintRect(
+                oD->p,
+                oD->boxes->x1 - cache->rect.x(),
+                oD->boxes->y1 - cache->rect.y(),
+                oD->w,
+                oD->h,
+                oD->boxes->x1,
+                oD->boxes->y1,
+                oD->w,
+                oD->h,
+                view->bufferScale(),
+                cache->opacity);
 
-                oD->boxes++;
-            }
-        }
-        else
-        {
-            Int32 x, y;
-            for (Int32 i = 0; i < oD->n; i++)
-            {
-                x = oD->boxes->x1 - (oD->boxes->x1 % compositor()->globalScale());
-                y = oD->boxes->y1 - (oD->boxes->y1 % compositor()->globalScale());
-
-                oD->w = oD->boxes->x2 - x;
-                oD->h = oD->boxes->y2 - y;
-
-                oD->w += oD->w % compositor()->globalScale();
-                oD->h += oD->h % compositor()->globalScale();
-
-                view->paintRectC(
-                    oD->p,
-                    x - cache->rect.x(),
-                    y - cache->rect.y(),
-                    oD->w,
-                    oD->h,
-                    x,
-                    y,
-                    oD->w,
-                    oD->h,
-                    cache->bufferScaleMatchGlobalScale ? 0.0 : view->bufferScale(),
-                    cache->opacity);
-
-                oD->boxes++;
-            }
+            oD->boxes++;
         }
     }
 
     drawChildrenOnly:
-    for (list<LView*>::const_iterator it = view->children().cbegin(); it != view->children().cend(); it++)
-        drawTranslucentDamage(*it, oD);
+    if (view->type() != Scene)
+        for (list<LView*>::const_iterator it = view->children().cbegin(); it != view->children().cend(); it++)
+            drawTranslucentDamage(*it, oD);
 }
 
 void LSceneView::LSceneViewPrivate::parentClipping(LView *parent, LRegion *region)
@@ -440,23 +383,8 @@ void LSceneView::LSceneViewPrivate::parentClipping(LView *parent, LRegion *regio
     if (!parent)
         return;
 
-    region->clip(LRect(parent->posC(), parent->sizeC()));
+    region->clip(LRect(parent->pos(), parent->size()));
 
     if (parent->parentClippingEnabled())
         parentClipping(parent->parent(), region);
-}
-
-void LSceneView::LSceneViewPrivate::checkOutputsScale(OutputData *oD)
-{
-    oD->outputMatchGlobalScale = oD->o->scale() == compositor()->globalScale();
-    oD->allOutputsMatchGlobalScale = true;
-
-    for (LOutput *o : compositor()->outputs())
-    {
-        if (o->scale() != compositor()->globalScale())
-        {
-            oD->allOutputsMatchGlobalScale = false;
-            return;
-        }
-    }
 }

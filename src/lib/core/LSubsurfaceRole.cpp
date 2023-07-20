@@ -33,14 +33,9 @@ bool LSubsurfaceRole::isSynced() const
     return imp()->isSynced;
 }
 
-const LPoint &LSubsurfaceRole::localPosS() const
+const LPoint &LSubsurfaceRole::localPos() const
 {
-    return imp()->currentLocalPosS;
-}
-
-const LPoint &LSubsurfaceRole::localPosC() const
-{
-    return imp()->currentLocalPosC;
+    return imp()->currentLocalPos;
 }
 
 bool LSubsurfaceRole::acceptCommitRequest(Wayland::RSurface::CommitOrigin origin)
@@ -73,8 +68,7 @@ void LSubsurfaceRole::handleParentCommit()
     if (imp()->hasPendingLocalPos)
     {
         imp()->hasPendingLocalPos = false;
-        imp()->currentLocalPosS = imp()->pendingLocalPosS;
-        imp()->currentLocalPosC = imp()->pendingLocalPosS * compositor()->globalScale();
+        imp()->currentLocalPos = imp()->pendingLocalPos;
         localPosChanged();
     }
 
@@ -114,12 +108,4 @@ void LSubsurfaceRole::handleParentChange()
 void LSubsurfaceRole::handleParentMappingChange()
 {
     checkMapping(surface());
-}
-
-void LSubsurfaceRole::globalScaleChanged(Int32 oldScale, Int32 newScale)
-{
-    L_UNUSED(oldScale);
-
-    // Local pos
-    imp()->currentLocalPosC = imp()->pendingLocalPosS * newScale;
 }

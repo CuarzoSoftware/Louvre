@@ -9,9 +9,9 @@ LPRIVATE_CLASS(LPositioner)
 
     struct PositionerData
     {
-        LSize sizeS, sizeC;
-        LRect anchorRectS, anchorRectC;
-        LPoint offsetS, offsetC;
+        LSize size;
+        LRect anchorRect;
+        LPoint offset;
 
         UInt32 anchor = Anchor::NoAnchor;
         UInt32 gravity = Gravity::NoGravity;
@@ -19,7 +19,7 @@ LPRIVATE_CLASS(LPositioner)
 
         // Since 3
         bool isReactive = false;
-        LSize parentSizeS, parentSizeC;
+        LSize parentSize;
         UInt32 parentConfigureSerial;
     } data;
 

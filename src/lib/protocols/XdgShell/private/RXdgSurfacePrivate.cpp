@@ -111,7 +111,7 @@ void RXdgSurface::RXdgSurfacePrivate::set_window_geometry(wl_client *client, wl_
         return;
     }
 
-    rXdgSurface->imp()->pendingWindowGeometryS = LRect(x, y, width, height);
+    rXdgSurface->imp()->pendingWindowGeometry = LRect(x, y, width, height);
     rXdgSurface->imp()->windowGeometrySet = true;
     rXdgSurface->imp()->hasPendingWindowGeometry = true;
 }

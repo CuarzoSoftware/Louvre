@@ -28,23 +28,15 @@ LPointer::~LPointer()
     delete m_imp;
 }
 
-void LPointer::setFocusC(LSurface *surface)
+void LPointer::setFocus(LSurface *surface)
 {
     if (surface)
-        setFocusS(surface, (cursor()->posC() - surface->rolePosC())/compositor()->globalScale());
+        setFocus(surface, cursor()->pos() - surface->rolePos());
     else
-        setFocusS(nullptr, 0);
+        setFocus(nullptr, 0);
 }
 
-void LPointer::setFocusC(LSurface *surface, const LPoint &localPosC)
-{
-    if (surface)
-        setFocusS(surface, localPosC/compositor()->globalScale());
-    else
-        setFocusS(nullptr, 0);
-}
-
-void LPointer::setFocusS(LSurface *surface, const LPoint &localPosS)
+void LPointer::setFocus(LSurface *surface, const LPoint &localPos)
 {
     if (surface)
     {
@@ -53,8 +45,8 @@ void LPointer::setFocusS(LSurface *surface, const LPoint &localPosS)
 
         imp()->sendLeaveEvent(focusSurface());
 
-        Float24 x = wl_fixed_from_int(localPosS.x());
-        Float24 y = wl_fixed_from_int(localPosS.y());
+        Float24 x = wl_fixed_from_int(localPos.x());
+        Float24 y = wl_fixed_from_int(localPos.y());
         imp()->pointerFocusSurface = nullptr;
 
         for (Wayland::GSeat *s : surface->client()->seatGlobals())
@@ -84,25 +76,19 @@ void LPointer::setFocusS(LSurface *surface, const LPoint &localPosS)
 
 }
 
-void LPointer::sendMoveEventC()
+void LPointer::sendMoveEvent()
 {
     if (focusSurface())
-        sendMoveEventC(cursor()->posC() - focusSurface()->rolePosC());
+        sendMoveEvent(cursor()->pos() - focusSurface()->rolePos());
 }
 
-void LPointer::sendMoveEventC(const LPoint &localPos)
-{
-    if (focusSurface())
-        sendMoveEventS(localPos/compositor()->globalScale());
-}
-
-void LPointer::sendMoveEventS(const LPoint &localPosS)
+void LPointer::sendMoveEvent(const LPoint &localPos)
 {
     if (!focusSurface())
         return;
 
-    Float24 x = wl_fixed_from_int(localPosS.x());
-    Float24 y = wl_fixed_from_int(localPosS.y());
+    Float24 x = wl_fixed_from_int(localPos.x());
+    Float24 y = wl_fixed_from_int(localPos.y());
 
     if (seat()->dndManager()->focus())
         seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDMotionEventS(x, y);
@@ -138,7 +124,7 @@ void LPointer::sendButtonEvent(Button button, ButtonState state)
     focusSurface()->client()->flush();
 }
 
-void LPointer::startResizingToplevelC(LToplevelRole *toplevel, LToplevelRole::ResizeEdge edge, Int32 L, Int32 T, Int32 R, Int32 B)
+void LPointer::startResizingToplevel(LToplevelRole *toplevel, LToplevelRole::ResizeEdge edge, Int32 L, Int32 T, Int32 R, Int32 B)
 {
     if (!toplevel)
         return;
@@ -146,32 +132,32 @@ void LPointer::startResizingToplevelC(LToplevelRole *toplevel, LToplevelRole::Re
     imp()->resizingToplevelConstraintBounds = LRect(L,T,R,B);
     imp()->resizingToplevel = toplevel;
     imp()->resizingToplevelEdge = edge;
-    imp()->resizingToplevelInitWindowSize = toplevel->windowGeometryC().bottomRight();
-    imp()->resizingToplevelInitCursorPos = cursor()->posC();
+    imp()->resizingToplevelInitWindowSize = toplevel->windowGeometry().size();
+    imp()->resizingToplevelInitCursorPos = cursor()->pos();
 
-    if (L != EdgeDisabled && toplevel->surface()->posC().x() < L)
-        toplevel->surface()->setXC(L);
+    if (L != EdgeDisabled && toplevel->surface()->pos().x() < L)
+        toplevel->surface()->setX(L);
 
-    if (T != EdgeDisabled && toplevel->surface()->posC().y() < T)
-        toplevel->surface()->setYC(T);
+    if (T != EdgeDisabled && toplevel->surface()->pos().y() < T)
+        toplevel->surface()->setY(T);
 
-    imp()->resizingToplevelInitPos = toplevel->surface()->posC();
+    imp()->resizingToplevelInitPos = toplevel->surface()->pos();
 
-    resizingToplevel()->configureC(resizingToplevel()->states() | LToplevelRole::Resizing);
+    resizingToplevel()->configure(resizingToplevel()->states() | LToplevelRole::Resizing);
 }
 
 void LPointer::updateResizingToplevelSize()
 {
     if (resizingToplevel())
     {
-        LSize newSize = resizingToplevel()->calculateResizeSize(resizingToplevelInitCursorPos()-cursor()->posC(),
+        LSize newSize = resizingToplevel()->calculateResizeSize(resizingToplevelInitCursorPos() - cursor()->pos(),
                                                                 imp()->resizingToplevelInitWindowSize,
                                                                 resizingToplevelEdge());
         // Con restricciones
         LToplevelRole::ResizeEdge edge =  resizingToplevelEdge();
-        LPoint pos = resizingToplevel()->surface()->posC();
+        LPoint pos = resizingToplevel()->surface()->pos();
         LRect bounds = imp()->resizingToplevelConstraintBounds;
-        LSize size = resizingToplevel()->windowGeometryC().bottomRight();
+        LSize size = resizingToplevel()->windowGeometry().size();
 
         // Top
         if (bounds.y() != EdgeDisabled && (edge ==  LToplevelRole::Top || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::TopRight))
@@ -200,7 +186,7 @@ void LPointer::updateResizingToplevelSize()
         }
 
 
-        resizingToplevel()->configureC(newSize ,resizingToplevel()->states() | LToplevelRole::Resizing);
+        resizingToplevel()->configure(newSize ,resizingToplevel()->states() | LToplevelRole::Resizing);
     }
 }
 
@@ -213,10 +199,10 @@ void LPointer::updateResizingToplevelPos()
         LToplevelRole::ResizeEdge edge =  resizingToplevelEdge();
 
         if (edge ==  LToplevelRole::Top || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::TopRight)
-            resizingToplevel()->surface()->setYC(p.y() + (s.h() - resizingToplevel()->windowGeometryC().h()));
+            resizingToplevel()->surface()->setY(p.y() + (s.h() - resizingToplevel()->windowGeometry().h()));
 
         if (edge ==  LToplevelRole::Left || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::BottomLeft)
-            resizingToplevel()->surface()->setXC(p.x() + (s.w() - resizingToplevel()->windowGeometryC().w()));
+            resizingToplevel()->surface()->setX(p.x() + (s.w() - resizingToplevel()->windowGeometry().w()));
     }
 }
 
@@ -226,16 +212,16 @@ void LPointer::stopResizingToplevel()
     {
         updateResizingToplevelSize();
         updateResizingToplevelPos();
-        resizingToplevel()->configureC(0, resizingToplevel()->states() &~ LToplevelRole::Resizing);
+        resizingToplevel()->configure(0, resizingToplevel()->states() &~ LToplevelRole::Resizing);
         imp()->resizingToplevel = nullptr;
     }
 }
 
-void LPointer::startMovingToplevelC(LToplevelRole *toplevel, Int32 L, Int32 T, Int32 R, Int32 B)
+void LPointer::startMovingToplevel(LToplevelRole *toplevel, Int32 L, Int32 T, Int32 R, Int32 B)
 {
     imp()->movingToplevelConstraintBounds = LRect(L,T,B,R);
-    imp()->movingToplevelInitPos = toplevel->surface()->posC();
-    imp()->movingToplevelInitCursorPos = cursor()->posC();
+    imp()->movingToplevelInitPos = toplevel->surface()->pos();
+    imp()->movingToplevelInitCursorPos = cursor()->pos();
     imp()->movingToplevel = toplevel;
 }
 
@@ -243,7 +229,7 @@ void LPointer::updateMovingToplevelPos()
 {
     if (movingToplevel())
     {
-        LPoint newPos = movingToplevelInitPos() - movingToplevelInitCursorPos() + cursor()->posC();
+        LPoint newPos = movingToplevelInitPos() - movingToplevelInitCursorPos() + cursor()->pos();
 
         if (imp()->movingToplevelConstraintBounds.w() != EdgeDisabled && newPos.x() > imp()->movingToplevelConstraintBounds.w())
             newPos.setX(imp()->movingToplevelConstraintBounds.w());
@@ -257,7 +243,7 @@ void LPointer::updateMovingToplevelPos()
         if (imp()->movingToplevelConstraintBounds.y() != EdgeDisabled && newPos.y() < imp()->movingToplevelConstraintBounds.y())
             newPos.setY(imp()->movingToplevelConstraintBounds.y());
 
-        movingToplevel()->surface()->setPosC(newPos);
+        movingToplevel()->surface()->setPos(newPos);
     }
 }
 
@@ -384,11 +370,11 @@ void LPointer::sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int3
     }
 }
 
-LSurface *LPointer::surfaceAtC(const LPoint &point)
+LSurface *LPointer::surfaceAt(const LPoint &point)
 {
     for (list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin(); s != compositor()->surfaces().rend(); s++)
         if ((*s)->mapped() && !(*s)->minimized())
-            if ((*s)->inputRegionC().containsPoint(point - (*s)->rolePosC()))
+            if ((*s)->inputRegion().containsPoint(point - (*s)->rolePos()))
                 return *s;
 
     return nullptr;

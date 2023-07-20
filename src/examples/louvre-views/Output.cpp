@@ -9,7 +9,7 @@
 #include <LLog.h>
 #include <LOpenGL.h>
 #include <LTextureView.h>
-#include <Shared.h>
+#include <Global.h>
 
 Output::Output():LOutput() {}
 
@@ -30,7 +30,8 @@ void Output::loadWallpaper()
     }
     else
     {
-        wallpaperView = new LTextureView(nullptr, comp()->backgroundLayer);
+        wallpaperView = new LTextureView(nullptr, G::compositor()->backgroundLayer);
+        wallpaperView->enableParentOffset(false);
     }
 
     char wallpaperPath[256];
@@ -45,8 +46,7 @@ void Output::loadWallpaper()
     }
 
     LRegion trans;
-    wallpaperView->setNativePosC(posC());
-    wallpaperView->setTranslucentRegionC(&trans);
+    wallpaperView->setTranslucentRegion(&trans);
 }
 
 void Output::initializeGL()
@@ -58,8 +58,15 @@ void Output::initializeGL()
 
 void Output::resizeGL()
 {
+    dock->update();
     loadWallpaper();
     compositor()->scene->handleResizeGL(this);
+}
+
+void Output::moveGL()
+{
+    dock->update();
+    wallpaperView->setPos(pos());
 }
 
 void Output::paintGL()

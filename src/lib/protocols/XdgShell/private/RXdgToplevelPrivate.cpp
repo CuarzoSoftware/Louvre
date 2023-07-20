@@ -108,8 +108,8 @@ void RXdgToplevel::RXdgToplevelPrivate::set_max_size(wl_client *client, wl_resou
     }
 
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
-    rXdgToplevel->toplevelRole()->imp()->pendingMaxSizeS.setW(width);
-    rXdgToplevel->toplevelRole()->imp()->pendingMaxSizeS.setH(height);
+    rXdgToplevel->toplevelRole()->imp()->pendingMaxSize.setW(width);
+    rXdgToplevel->toplevelRole()->imp()->pendingMaxSize.setH(height);
     rXdgToplevel->toplevelRole()->imp()->hasPendingMaxSize = true;
 }
 
@@ -125,8 +125,8 @@ void RXdgToplevel::RXdgToplevelPrivate::set_min_size(wl_client *client, wl_resou
     }
 
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
-    rXdgToplevel->toplevelRole()->imp()->pendingMinSizeS.setW(width);
-    rXdgToplevel->toplevelRole()->imp()->pendingMinSizeS.setH(height);
+    rXdgToplevel->toplevelRole()->imp()->pendingMinSize.setW(width);
+    rXdgToplevel->toplevelRole()->imp()->pendingMinSize.setH(height);
     rXdgToplevel->toplevelRole()->imp()->hasPendingMinSize = true;
 }
 

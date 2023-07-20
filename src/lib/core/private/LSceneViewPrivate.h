@@ -9,14 +9,10 @@ using namespace Louvre;
 
 LPRIVATE_CLASS(LSceneView)
     LPoint customPos;
-    bool customPosEnabled = false;
 
     LFramebuffer *fb = nullptr;
     std::list<LOutput*>outputs;
     LRegion input;
-    LRegion damage;
-    LRegion opaque;
-    LRegion translucent;
 
     struct OutputData
     {
@@ -29,27 +25,34 @@ LPRIVATE_CLASS(LSceneView)
         // Manually added damage
         LRegion manuallyAddedDamage;
 
-        LRect prevRectC;
+        LRect prevRect;
         LCompositor *c;
         LPainter *p;
         LOutput *o = nullptr;
         Int32 n, w, h;
         LBox *boxes;
-        LRegion opaqueTransposedCSum;
-        bool allOutputsMatchGlobalScale;
-        bool outputMatchGlobalScale;
+        LRegion opaqueTransposedSum;
+        LRegion prevExternalExclude;
+
+        bool foundRenderableSaledView;
+
+        // Only for non LScene
+        LRegion translucentTransposedSum;
     };
 
-    LRGBF clearColor = {0,0,0};
-    std::map<LOutput*, OutputData>outputsMap;
+    LRGBAF clearColor = {0,0,0,0};
+    std::map<LOutput*, OutputData> outputsMap;
+
+    // Quck handle to current output data
+    OutputData *currentOutputData;
 
     void clearTmpVariables(OutputData *oD);
-    void checkOutputsScale(OutputData *oD);
     void damageAll(OutputData *oD);
     void checkRectChange(OutputData *oD);
+    void cachePass(LView *view, OutputData *oD);
     void calcNewDamage(LView *view, OutputData *oD);
     void drawOpaqueDamage(LView *view, OutputData *oD);
-    void drawBackground(OutputData *oD);
+    void drawBackground(OutputData *oD, bool addToOpaqueSum);
     void drawTranslucentDamage(LView *view, OutputData *oD);
 
     void parentClipping(LView *parent, LRegion *region);

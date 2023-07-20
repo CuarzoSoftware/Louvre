@@ -47,17 +47,8 @@ public:
      *
      * The window geometry is a rectangle of the Popup that excludes its decorations (typically shadows).
      */
-    const LRect &windowGeometryS() const;
+    const LRect &windowGeometry() const;
 
-    /*!
-     * @brief Window geometry in compositor coordinates.
-     *
-     * The window geometry is a rectangle of the Popup that excludes its decorations (typically shadows).\n
-     * Its components (x,y,width,height) are given by:
-     *
-     * <center><img src="https://lh3.googleusercontent.com/qYH--yLCkb39PBCqAGqNC8l-jL8YuDPCIcUOTaqXyvp0hUr8Rj6Ug8MS7Fb68-XuWOyhsmsOYb5rKaph3hO40w-3J9zRzISuvCRfU5pFf6dVJ8lgbH_JJ2FpkAYijbH0POUyiB7xDw=w2400" width="512px"></center>
-     */
-    const LRect &windowGeometryC() const;
 
     /*!
      * @brief Positioning rules.
@@ -73,21 +64,14 @@ public:
      *
      * @param bounds Constraint rectangle (x,y,w,h). Passing a rectangle with area 0 deactivates the constraint.
      */
-    void setPositionerBoundsC(const LRect &bounds);
-
-    /*!
-     * @brief Constraint area for the Popup's position in surface coordinates.
-     *
-     * The constraint area for the Popup's position, set using setPositionerBoundsC().
-     */
-    const LRect &positionerBoundsS() const;
+    void setPositionerBounds(const LRect &bounds);
 
     /*!
      * @brief Popup position constraint area in compositor coordinates.
      *
      * Constraint area of the Popup in compositor coordinates, assigned with setPositionerBoundsC().
      */
-    const LRect &positionerBoundsC() const;
+    const LRect &positionerBounds() const;
 
     /// xdg_popup resource
     XdgShell::RXdgPopup *xdgPopupResource() const;
@@ -106,7 +90,7 @@ public:
      *
      * @param rect Suggested position and size.
      */
-    void configureC(const LRect &rect) const;
+    void configure(const LRect &rect) const;
 
     /*!
      * @brief Dimisses the Popup.
@@ -139,7 +123,7 @@ public:
      * #### Default implementation
      * @snippet LPopupRoleDefault.cpp rolePosC
      */
-    virtual const LPoint &rolePosC() const override;
+    virtual const LPoint &rolePos() const override;
 
     /*!
      * @brief Response to a Ping event.
@@ -193,24 +177,11 @@ public:
      * @snippet LPopupRoleDefault.cpp configureRequest
      */
     virtual void configureRequest();
-
-    /*!
-     * @brief Repositioning request (since 3).
-     *
-     * Request from a Popup for the compositor to reposition it using a new LPositioner.
-     * Once repositioned, the sendRepositionedEvent() event should be sent, passing the same token given in the argument.
-     * Reimplement this virtual method if you want to be notified when the Popup requests to be repositioned.
-     *
-     * #### Default implementation
-     * @snippet LPopupRoleDefault.cpp repositionRequest
-     */
-    virtual void repositionRequest(UInt32 token);
 ///@}
 
     LPRIVATE_IMP(LPopupRole)
 
     void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
-    void globalScaleChanged(Int32 oldScale, Int32 newScale) override;
 };
 
 #endif // LPOPUPROLE_H

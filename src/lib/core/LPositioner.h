@@ -152,42 +152,21 @@ public:
      *
      * Size of the Popup to be positioned (window geometry) in surface coordinates.
      */
-    const LSize &sizeS() const;
-
-    /*!
-     * @brief Size in compositor coordinates
-     *
-     * Size of the Popup to be positioned (window geometry) in compositor coordinates.
-     */
-    const LSize &sizeC() const;
+    const LSize &size() const;
 
     /*!
      * @brief Anchor rectangle in surface coordinates
      *
      * Anchor rectangle relative to the parent's geometry origin in surface coordinates.
      */
-    const LRect &anchorRectS() const;
-
-    /*!
-     * @brief Anchor rectangle in compositor coordinates
-     *
-     * Anchor rectangle relative to the parent's geometry origin in compositor coordinates.
-     */
-    const LRect &anchorRectC() const;
+    const LRect &anchorRect() const;
 
     /*!
      * @brief Additional offset in surface coordinates
      *
      * Additional offset in surface coordinates added to the Popup's position calculated by the rules.
      */
-    const LPoint &offsetS() const;
-
-    /*!
-     * @brief Additional offset in compositor coordinates
-     *
-     * Additional offset in compositor coordinates added to the Popup's position calculated by the rules.
-     */
-    const LPoint &offsetC() const;
+    const LPoint &offset() const;
 
     /*!
      * @brief Anchor point
@@ -209,36 +188,6 @@ public:
      * Flags with the rules to use in case the Popup is restricted, defined in ConstraintAdjustment.
      */
     ConstraintAdjustments constraintAdjustment() const;
-
-    // Since 3
-
-    /*!
-     * @brief Reactive repositioning
-     *
-     * If true, the Popup's position should be recalculated every time the initial conditions change, for example when the position of the parent changes.
-     */
-    bool isReactive() const;
-
-    /*!
-     * @brief Parent surface size in surface coordinates
-     *
-     * Size of the window geometry of the parent surface in surface coordinates.
-     */
-    const LSize &parentSizeS() const;
-
-    /*!
-     * @brief Parent surface size in compositor coordinates
-     *
-     * Size of the window geometry of the parent surface in compositor coordinates.
-     */
-    const LSize &parentSizeC() const;
-
-    /*!
-     * @brief Configuration serial of the parent
-     *
-     * Configuration serial of the parent to consider in positioning.
-     */
-    UInt32 parentConfigureSerial() const;
 
     LPRIVATE_IMP(LPositioner)
 };

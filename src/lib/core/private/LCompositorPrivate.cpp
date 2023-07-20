@@ -6,6 +6,7 @@
 #include <private/LPainterPrivate.h>
 #include <private/LCursorPrivate.h>
 #include <private/LAnimationPrivate.h>
+//#include <LView.h>
 #include <LTime.h>
 #include <LLog.h>
 #include <EGL/egl.h>
@@ -346,34 +347,6 @@ void LCompositor::LCompositorPrivate::insertSurfaceBefore(LSurface *nextSurface,
     surfaces.erase(surfaceToInsert->imp()->compositorLink);
     surfaceToInsert->imp()->compositorLink = surfaces.insert(nextSurface->imp()->compositorLink, surfaceToInsert);
     surfaceToInsert->orderChanged();
-}
-
-void LCompositor::LCompositorPrivate::updateGlobalScale()
-{
-    Int32 maxFound = 1;
-
-    for (LOutput *o : outputs)
-    {
-        if (o->scale() > maxFound)
-            maxFound = o->scale();
-    }
-
-    if (maxFound != globalScale)
-    {
-        Int32 oldScale = globalScale;
-        globalScale = maxFound;
-
-        for (LOutput *o : outputs)
-            o->imp()->globalScaleChanged(oldScale, globalScale);
-
-        for (LSurface *s : surfaces)
-            s->imp()->globalScaleChanged(oldScale, globalScale);
-
-        compositor->globalScaleChanged(oldScale, globalScale);
-
-        if (cursor)
-            cursor->imp()->globalScaleChanged(oldScale, globalScale);
-    }
 }
 
 bool LCompositor::LCompositorPrivate::runningAnimations()

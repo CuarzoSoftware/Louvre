@@ -146,28 +146,6 @@ public:
     virtual void cursorInitialized();
 
     /*!
-     * Returns the largest scale of the initialized outputs.
-     * The value can change when adding or removing an output to the compositor or when any of the
-     * initialized ones changes its scale with the LOutput::setScale() method.
-     * The compositor calls the globalScaleChanged() virtual method whenever this value changes.
-     */
-    Int32 globalScale() const;
-
-    /*!
-     * Called when the global scale of the compositor changes. Override this method if you need to
-     * update variables defined in compositor coordinates.
-     * All classes with properties defined in compositor coordinates (terminated with the **C** suffix)
-     * automatically update their values.
-     *
-     * @param oldScale Old scale.
-     * @param newScale New scale.
-     *
-     * #### Default implementation
-     * @snippet LCompositorDefault.cpp globalScaleChanged
-     */
-    virtual void globalScaleChanged(Int32 oldScale, Int32 newScale);
-
-    /*!
      * Returns the current compositor state. Check the LCompositor::CompositorStates enum.
      */
     CompositorState state() const;

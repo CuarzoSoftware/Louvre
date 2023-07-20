@@ -11,10 +11,10 @@
 using namespace Louvre;
 
 //! [rolePosC]
-const LPoint &LToplevelRole::rolePosC() const
+const LPoint &LToplevelRole::rolePos() const
 {
-    m_rolePosC = surface()->posC() - xdgSurfaceResource()->imp()->currentWindowGeometryC.topLeft();
-    return m_rolePosC;
+    m_rolePos = surface()->pos() - xdgSurfaceResource()->imp()->currentWindowGeometry.topLeft();
+    return m_rolePos;
 }
 //! [rolePosC]
 
@@ -22,7 +22,7 @@ const LPoint &LToplevelRole::rolePosC() const
 void LToplevelRole::startMoveRequest()
 {
     if (!fullscreen() && seat()->pointer()->focusSurface() == surface())
-        seat()->pointer()->startMovingToplevelC(this);
+        seat()->pointer()->startMovingToplevel(this);
 }
 //! [startMoveRequest]
 
@@ -30,26 +30,18 @@ void LToplevelRole::startMoveRequest()
 void LToplevelRole::startResizeRequest(ResizeEdge edge)
 {
     if (!fullscreen() && seat()->pointer()->focusSurface() == surface())
-        seat()->pointer()->startResizingToplevelC(this, edge);
+        seat()->pointer()->startResizingToplevel(this, edge);
 }
 //! [startResizeRequest]
 
 //! [configureRequest]
 void LToplevelRole::configureRequest()
 {
-    LOutput *output = compositor()->cursor()->output();
-
-    // Notifies the compositor's capabilities
-    setWmCapabilities(WmCapabilities::WmWindowMenu | WmCapabilities::WmMinimize | WmCapabilities::WmMaximize | WmCapabilities::WmFullscreen);
-
-    // Suggests to the Toplevel not to use a size larger than the output where the cursor is located
-    configureBoundsC(output->sizeC());
-
     // Request the client to draw its own window decorations
     setDecorationMode(ClientSide);
 
     // Activates the Toplevel with size (0,0) so that the client can decide the size
-    configureC(LSize(0,0), states() | LToplevelRole::Activated);
+    configure(LSize(0,0), states() | LToplevelRole::Activated);
 }
 //! [configureRequest]
 
@@ -57,7 +49,7 @@ void LToplevelRole::configureRequest()
 //! [unsetFullscreenRequest]
 void LToplevelRole::unsetFullscreenRequest()
 {
-    configureC(states() &~ LToplevelRole::Fullscreen);
+    configure(states() &~ LToplevelRole::Fullscreen);
 }
 //! [unsetFullscreenRequest]
 
@@ -96,27 +88,27 @@ void LToplevelRole::decorationModeChanged()
 void LToplevelRole::setMaximizedRequest()
 {
     LOutput *output = compositor()->cursor()->output();
-    configureC(output->sizeC(), LToplevelRole::Activated);
-    configureC(output->sizeC(), LToplevelRole::Activated | LToplevelRole::Maximized);
+    configure(output->size(), LToplevelRole::Activated);
+    configure(output->size(), LToplevelRole::Activated | LToplevelRole::Maximized);
 }
 //! [setMaximizedRequest]
 
 //! [unsetMaximizedRequest]
 void LToplevelRole::unsetMaximizedRequest()
 {
-    configureC(states() &~ LToplevelRole::Maximized);
+    configure(states() &~ LToplevelRole::Maximized);
 }
 //! [unsetMaximizedRequest]
 
 //! [maximizedChanged]
 void LToplevelRole::maximizedChanged()
 {
-    LOutput *output = compositor()->cursor()->output();
+    LOutput *output = cursor()->output();
 
     if (maximized())
     {
         compositor()->raiseSurface(surface());
-        surface()->setPosC(output->posC());
+        surface()->setPos(output->pos());
         surface()->setMinimized(false);
     }
 }
@@ -127,7 +119,7 @@ void LToplevelRole::fullscreenChanged()
 {
     if (fullscreen())
     {
-        surface()->setPosC(compositor()->cursor()->output()->posC());
+        surface()->setPos(cursor()->output()->pos());
         compositor()->raiseSurface(surface());
     }
 }
@@ -163,7 +155,7 @@ void LToplevelRole::setMinimizedRequest()
     surface()->setMinimized(true);
 
     if (surface() == seat()->pointer()->focusSurface())
-        seat()->pointer()->setFocusC(nullptr);
+        seat()->pointer()->setFocus(nullptr);
 
     if (surface() == seat()->keyboard()->focusSurface())
         seat()->keyboard()->setFocus(nullptr);
@@ -184,9 +176,9 @@ void LToplevelRole::setFullscreenRequest(LOutput *destOutput)
     if (destOutput)
         output = destOutput;
     else
-        output = compositor()->cursor()->output();
+        output = cursor()->output();
 
-    configureC(output->sizeC(), LToplevelRole::Activated | LToplevelRole::Fullscreen);
+    configure(output->size(), LToplevelRole::Activated | LToplevelRole::Fullscreen);
 }
 //! [setFullscreenRequest]
 

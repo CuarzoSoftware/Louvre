@@ -18,12 +18,6 @@ bool LOutput::LOutputPrivate::initialize()
     return compositor()->imp()->graphicBackend->initializeOutput(output);
 }
 
-void LOutput::LOutputPrivate::globalScaleChanged(Int32 oldScale, Int32 newScale)
-{
-    L_UNUSED(oldScale);
-    rectC.setSize((output->sizeB()*newScale)/output->scale());
-}
-
 void LOutput::LOutputPrivate::backendInitializeGL()
 {
     threadId = std::this_thread::get_id();
@@ -38,11 +32,10 @@ void LOutput::LOutputPrivate::backendInitializeGL()
                                              &Protocols::Wayland::GOutput::GOutputPrivate::bind);
 
     output->setScale(output->scale());
-    output->imp()->rectC.setBR((output->sizeB()*compositor()->globalScale())/output->scale());
+    output->imp()->rect.setBR(output->sizeB()/output->scale());
 
     cursor()->imp()->textureChanged = true;
     cursor()->imp()->update();
-    compositor()->imp()->updateGlobalScale();
     output->imp()->state = LOutput::Initialized;
     output->initializeGL();
 }
@@ -51,6 +44,12 @@ void LOutput::LOutputPrivate::backendPaintGL()
 {
     if (output->imp()->state != LOutput::Initialized)
         return;
+
+    if (lastPos != rect.pos())
+    {
+        output->moveGL();
+        lastPos = rect.pos();
+    }
 
     compositor()->imp()->renderMutex.lock();
     output->paintGL();
@@ -70,6 +69,12 @@ void LOutput::LOutputPrivate::backendResizeGL()
         return;
 
     output->resizeGL();
+
+    if (lastPos != rect.pos())
+    {
+        output->moveGL();
+        lastPos = rect.pos();
+    }
 }
 
 void LOutput::LOutputPrivate::backendUninitializeGL()

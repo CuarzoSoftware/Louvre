@@ -69,29 +69,16 @@ void LCompositor::initialized()
         finish();
     }
 
-    Int32 futureGlobalScale = 1;
+    Int32 totalWidth = 0;
 
     // Set double scale to outputs with DPI >= 120
     for (LOutput *output : *seat()->outputs())
     {
         if (output->dpi() >= 120)
-        {
             output->setScale(2);
-            futureGlobalScale = 2;
-        }
-    }
 
-    Int32 totalWidth = 0;
-
-    // Organize outputs horizontally and sequentially.
-    for (LOutput *output : *seat()->outputs())
-    {
-        output->setPosC(LPoint(totalWidth, 0));
-
-        if (output->scale() == futureGlobalScale)
-            totalWidth += output->sizeB().w();
-        else
-            totalWidth += output->sizeB().w()*futureGlobalScale;
+        output->setPos(LPoint(totalWidth, 0));
+        totalWidth += output->size().w();
 
         addOutput(output);
         output->repaint();
@@ -117,15 +104,6 @@ void LCompositor::cursorInitialized()
     */
 }
 //! [cursorInitialized]
-
-//! [globalScaleChanged]
-void LCompositor::globalScaleChanged(Int32 oldScale, Int32 newScale)
-{
-    L_UNUSED(oldScale);
-    L_UNUSED(newScale);
-}
-
-//! [globalScaleChanged]
 
 //! [createOutputRequest]
 LOutput *LCompositor::createOutputRequest()

@@ -18,18 +18,18 @@ void RXdgPositioner::RXdgPositionerPrivate::set_size(wl_client *client, wl_resou
 {
     L_UNUSED(client);
     RXdgPositioner *rXdgPositioner = (RXdgPositioner*)wl_resource_get_user_data(resource);
-    rXdgPositioner->positioner().imp()->data.sizeS.setW(width);
-    rXdgPositioner->positioner().imp()->data.sizeS.setH(height);
+    rXdgPositioner->positioner().imp()->data.size.setW(width);
+    rXdgPositioner->positioner().imp()->data.size.setH(height);
 }
 
 void RXdgPositioner::RXdgPositionerPrivate::set_anchor_rect(wl_client *client, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height)
 {
     L_UNUSED(client);
     RXdgPositioner *rXdgPositioner = (RXdgPositioner*)wl_resource_get_user_data(resource);
-    rXdgPositioner->positioner().imp()->data.anchorRectS.setX(x);
-    rXdgPositioner->positioner().imp()->data.anchorRectS.setY(y);
-    rXdgPositioner->positioner().imp()->data.anchorRectS.setW(width);
-    rXdgPositioner->positioner().imp()->data.anchorRectS.setH(height);
+    rXdgPositioner->positioner().imp()->data.anchorRect.setX(x);
+    rXdgPositioner->positioner().imp()->data.anchorRect.setY(y);
+    rXdgPositioner->positioner().imp()->data.anchorRect.setW(width);
+    rXdgPositioner->positioner().imp()->data.anchorRect.setH(height);
 }
 
 void RXdgPositioner::RXdgPositionerPrivate::set_anchor(wl_client *client, wl_resource *resource, UInt32 anchor)
@@ -57,30 +57,6 @@ void RXdgPositioner::RXdgPositionerPrivate::set_offset(wl_client *client, wl_res
 {
     L_UNUSED(client);
     RXdgPositioner *rXdgPositioner = (RXdgPositioner*)wl_resource_get_user_data(resource);
-    rXdgPositioner->positioner().imp()->data.offsetS.setX(x);
-    rXdgPositioner->positioner().imp()->data.offsetS.setY(y);
+    rXdgPositioner->positioner().imp()->data.offset.setX(x);
+    rXdgPositioner->positioner().imp()->data.offset.setY(y);
 }
-
-#if LOUVRE_XDG_WM_BASE_VERSION >=3
-void RXdgPositioner::RXdgPositionerPrivate::set_reactive(wl_client *client, wl_resource *resource)
-{
-    L_UNUSED(client);
-    RXdgPositioner *rXdgPositioner = (RXdgPositioner*)wl_resource_get_user_data(resource);
-    rXdgPositioner->positioner().imp()->data.isReactive = true;
-}
-
-void RXdgPositioner::RXdgPositionerPrivate::set_parent_size(wl_client *client, wl_resource *resource, Int32 parent_width, Int32 parent_height)
-{
-    L_UNUSED(client);
-    RXdgPositioner *rXdgPositioner = (RXdgPositioner*)wl_resource_get_user_data(resource);
-    rXdgPositioner->positioner().imp()->data.parentSizeS.setW(parent_width);
-    rXdgPositioner->positioner().imp()->data.parentSizeS.setH(parent_height);
-}
-
-void RXdgPositioner::RXdgPositionerPrivate::set_parent_configure(wl_client *client, wl_resource *resource, UInt32 serial)
-{
-    L_UNUSED(client);
-    RXdgPositioner *rXdgPositioner = (RXdgPositioner*)wl_resource_get_user_data(resource);
-    rXdgPositioner->positioner().imp()->data.parentConfigureSerial = serial;
-}
-#endif

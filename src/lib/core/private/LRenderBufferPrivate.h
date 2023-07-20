@@ -20,6 +20,8 @@ LPRIVATE_CLASS(LRenderBuffer)
 
     GLuint getTextureId(LOutput *output);
     std::map<LOutput*, OutputData>outputsMap;
+
+    std::list<LRenderBuffer*>::iterator compositorLink;
 };
 
 #endif // LRENDERBUFFERPRIVATE_H

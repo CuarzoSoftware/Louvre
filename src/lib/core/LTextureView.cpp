@@ -20,7 +20,7 @@ LTextureView::~LTextureView()
     delete m_imp;
 }
 
-void LTextureView::setNativePosC(const LPoint &pos)
+void LTextureView::setPos(const LPoint &pos)
 {
     if (mapped() && pos != imp()->nativePos)
         repaint();
@@ -28,7 +28,7 @@ void LTextureView::setNativePosC(const LPoint &pos)
     imp()->nativePos = pos;
 }
 
-void LTextureView::setInputRegionC(const LRegion *region)
+void LTextureView::setInputRegion(const LRegion *region)
 {
     if (region)
     {
@@ -50,7 +50,7 @@ void LTextureView::setInputRegionC(const LRegion *region)
     }
 }
 
-void LTextureView::setTranslucentRegionC(const LRegion *region)
+void LTextureView::setTranslucentRegion(const LRegion *region)
 {
     if (region)
     {
@@ -101,19 +101,19 @@ bool LTextureView::nativeMapped() const
     return imp()->texture != nullptr;
 }
 
-const LPoint &LTextureView::nativePosC() const
+const LPoint &LTextureView::nativePos() const
 {
     return imp()->nativePos;
 }
 
-const LSize &LTextureView::nativeSizeC() const
+const LSize &LTextureView::nativeSize() const
 {
     if (imp()->texture)
     {
         imp()->tmpSize = imp()->texture->sizeB();
 
         if (imp()->bufferScale)
-            imp()->tmpSize = (imp()->tmpSize*compositor()->globalScale())/imp()->bufferScale;
+            imp()->tmpSize = imp()->tmpSize/imp()->bufferScale;
 
         return imp()->tmpSize;
     }
@@ -153,27 +153,27 @@ void LTextureView::requestNextFrame(LOutput *output)
     L_UNUSED(output);
 }
 
-const LRegion *LTextureView::damageC() const
+const LRegion *LTextureView::damage() const
 {
     return &imp()->emptyRegion;
 }
 
-const LRegion *LTextureView::translucentRegionC() const
+const LRegion *LTextureView::translucentRegion() const
 {
     return imp()->translucentRegion;
 }
 
-const LRegion *LTextureView::opaqueRegionC() const
+const LRegion *LTextureView::opaqueRegion() const
 {
     return nullptr;
 }
 
-const LRegion *LTextureView::inputRegionC() const
+const LRegion *LTextureView::inputRegion() const
 {
     return imp()->inputRegion;
 }
 
-void LTextureView::paintRectC(LPainter *p,
+void LTextureView::paintRect(LPainter *p,
                               Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
                               Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                               Float32 scale, Float32 alpha)
@@ -181,7 +181,7 @@ void LTextureView::paintRectC(LPainter *p,
     if (!imp()->texture)
         return;
 
-    p->drawTextureC(imp()->texture,
+    p->drawTexture(imp()->texture,
                     srcX, srcY, srcW, srcH,
                     dstX, dstY, dstW, dstH,
                     scale, alpha);

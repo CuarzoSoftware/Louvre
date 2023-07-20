@@ -8,7 +8,7 @@
 #include <private/LOutputPrivate.h>
 #include <private/LCursorPrivate.h>
 #include <private/LAnimationPrivate.h>
-#include <private/LViewPrivate.h>
+//#include <private/LViewPrivate.h>
 
 #include <protocols/Wayland/private/GOutputPrivate.h>
 
@@ -67,11 +67,6 @@ bool LCompositor::loadGraphicBackend(const char *path)
 bool LCompositor::loadInputBackend(const char *path)
 {
     return imp()->loadInputBackend(path);
-}
-
-Int32 LCompositor::globalScale() const
-{
-    return imp()->globalScale;
 }
 
 LCompositor::CompositorState LCompositor::state() const
@@ -298,8 +293,8 @@ void LCompositor::removeOutput(LOutput *output)
             for (LSurface *s : surfaces())
                 s->sendOutputLeaveEvent(output);
 
-            for (LView *v : imp()->views)
-                v->imp()->removeOutput(v, output);
+            //for (LView *v : imp()->views)
+            //    v->imp()->removeOutput(v, output);
 
             imp()->outputs.remove(output);
 
@@ -321,9 +316,6 @@ void LCompositor::removeOutput(LOutput *output)
 
             // Safely remove global
             imp()->removeGlobal(output->imp()->global);
-
-            // Find the new greatest output scale
-            imp()->updateGlobalScale();
 
             cursor()->imp()->intersectedOutputs.remove(output);
 

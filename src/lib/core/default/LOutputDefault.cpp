@@ -26,10 +26,10 @@ void LOutput::paintGL()
     p->clearScreen();
 
     // Check if surface moved under cursor
-    if (seat()->pointer()->surfaceAtC(cursor()->posC()) != seat()->pointer()->focusSurface())
+    if (seat()->pointer()->surfaceAt(cursor()->pos()) != seat()->pointer()->focusSurface())
         seat()->pointer()->pointerPosChangeEvent(
-            cursor()->posC().x(),
-            cursor()->posC().y());
+            cursor()->pos().x(),
+            cursor()->pos().y());
 
     if (seat()->dndManager()->icon())
         compositor()->raiseSurface(seat()->dndManager()->icon()->surface());
@@ -46,22 +46,22 @@ void LOutput::paintGL()
 
         // Current surface rect
         LRect currentRect = LRect(
-            s->rolePosC(),  // Role pos in compositor coords
-            s->sizeC());    // Surface size in compositor coords
+            s->rolePos(),  // Role pos in compositor coords
+            s->size());    // Surface size in compositor coords
 
         // Calc which outputs intersects the surface
         for (LOutput *o : compositor()->outputs())
         {
-            if (o->rectC().intersects(currentRect))
+            if (o->rect().intersects(currentRect))
                 s->sendOutputEnterEvent(o);
             else
                 s->sendOutputLeaveEvent(o);
         }
 
         // Draws the surface
-        p->drawTextureC(
+        p->drawTexture(
             s->texture(),        // Surface texture
-            LRect(0,s->sizeB()), // The entire texture size
+            LRect(0, s->sizeB()),// The entire texture size
             currentRect);        // The destination rect on screen
 
         // Notifies the client that it can render the next frame 
@@ -71,10 +71,10 @@ void LOutput::paintGL()
     // Manualy draw the cursor if hardware composition is not supported
     if (!cursor()->hasHardwareSupport(this))
     {
-        p->drawTextureC(
+        p->drawTexture(
             cursor()->texture(),                   
-            LRect(0,cursor()->texture()->sizeB()),
-            cursor()->rectC());
+            LRect(0, cursor()->texture()->sizeB()),
+            cursor()->rect());
     }
 }
 //! [paintGL]
@@ -85,6 +85,11 @@ void LOutput::resizeGL()
     repaint();
 }
 //! [resizeGL]
+
+void LOutput::moveGL()
+{
+    repaint();
+}
 
 //! [uninitializeGL]
 void LOutput::uninitializeGL()

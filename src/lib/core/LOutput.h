@@ -139,7 +139,7 @@ public:
     UInt32 buffersCount() const;
     LTexture *bufferTexture(UInt32 bufferIndex);
     bool hasBufferDamageSupport() const;
-    void setBufferDamageC(const LRegion &damage);
+    void setBufferDamage(const LRegion &damage);
 
     /*!
      * @brief Sets the output scale.
@@ -182,6 +182,13 @@ public:
     const LSize &physicalSize() const;
 
     /*!
+     * @brief Output size in compositor coordinates.
+     *
+     * Size of the output given its current mode in compositor coordinates. Equivalent to the size given by rectC().
+     */
+    const LSize &size() const;
+
+    /*!
      * @brief Output size in buffer coordinates.
      *
      * Size of the output given its current mode in buffer coordinates.
@@ -189,32 +196,25 @@ public:
     const LSize &sizeB() const;
 
     /*!
-     * @brief Output size in compositor coordinates.
-     *
-     * Size of the output given its current mode in compositor coordinates. Equivalent to the size given by rectC().
-     */
-    const LSize &sizeC() const;
-
-    /*!
      * @brief Output rect.
      *
      * Position and size of the output in compositor coordinates.
      */
-    const LRect &rectC() const;
+    const LRect &rect() const;
 
     /*!
      * @brief Output position in compositor coordinates.
      *
      * Position of the output in compositor coordinates. Equivalent to the position given by rectC().
      */
-    const LPoint &posC() const;
+    const LPoint &pos() const;
 
     /*!
      * @brief Assigns the position of the output.
      *
      * Sets the position of the output in compositor coordinates, with the upper-left corner as the origin.
      */
-    void setPosC(const LPoint &posC);
+    void setPos(const LPoint &posC);
 
     /*!
      * @brief EGLDisplay handle.
@@ -306,6 +306,8 @@ public:
      * @snippet LOutputDefault.cpp resizeGL
      */
     virtual void resizeGL();
+
+    virtual void moveGL();
 
     /*!
      * @brief OpenGL context deinitialization.

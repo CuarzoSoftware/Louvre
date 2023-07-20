@@ -1,12 +1,16 @@
 #include <private/LRenderBufferPrivate.h>
 #include <private/LTexturePrivate.h>
 #include <private/LOutputPrivate.h>
+#include <private/LCompositorPrivate.h>
 #include <LCompositor.h>
 #include <GLES2/gl2.h>
+#include <LLog.h>
 
 LRenderBuffer::LRenderBuffer(const LSize &sizeB)
 {
     m_imp = new LRenderBufferPrivate();
+    compositor()->imp()->renderBuffers.push_back(this);
+    imp()->compositorLink = std::prev(compositor()->imp()->renderBuffers.end());
     imp()->texture.imp()->sourceType = LTexture::Framebuffer;
     imp()->texture.imp()->format = DRM_FORMAT_ARGB8888;
     imp()->texture.imp()->graphicBackendData = this;
@@ -21,6 +25,8 @@ LRenderBuffer::~LRenderBuffer()
             pair.first->imp()->framebuffersToDestroy.push_back(pair.second);
     }
 
+    compositor()->imp()->renderBuffers.erase(imp()->compositorLink);
+
     delete m_imp;
 }
 
@@ -30,7 +36,7 @@ void LRenderBuffer::setSizeB(const LSize &sizeB)
     {
         imp()->texture.imp()->sizeB = sizeB;
 
-        imp()->rect.setSize((sizeB*compositor()->globalScale())/imp()->scale);
+        imp()->rect.setSize(sizeB/imp()->scale);
 
         for (auto &pair : imp()->outputsMap)
         {
@@ -57,12 +63,12 @@ void LRenderBuffer::setScale(Int32 scale) const
 {
     if (imp()->scale != scale)
     {
-        imp()->rect.setSize((sizeB()*compositor()->globalScale())/scale);
+        imp()->rect.setSize(sizeB()/scale);
         imp()->scale = scale;
     }
 }
 
-void LRenderBuffer::setPosC(const LPoint &pos)
+void LRenderBuffer::setPos(const LPoint &pos)
 {
     imp()->rect.setPos(pos);
 }
@@ -77,7 +83,7 @@ const LSize &LRenderBuffer::sizeB() const
     return imp()->texture.sizeB();
 }
 
-const LRect &LRenderBuffer::rectC() const
+const LRect &LRenderBuffer::rect() const
 {
     return imp()->rect;
 }

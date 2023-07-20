@@ -19,7 +19,6 @@ public:
     bool firstMap = true;
     bool occluded = false;
     bool isRenderable = false;
-    bool bufferScaleMatchGlobalScale = false;
     LRect currentRectC;
     LRegion currentOpaqueTransposedC;
     LRegion currentDamageTransposedC;

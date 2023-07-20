@@ -28,25 +28,25 @@ void Pointer::pointerMoveEvent(float dx, float dy)
         speed += 0.5f*sqrt(dx*dx + dy*dy)/dt;
 
     pointerPosChangeEvent(
-        cursor()->posC().x() + dx*speed,
-        cursor()->posC().y() + dy*speed);
+        cursor()->pos().x() + dx * speed,
+        cursor()->pos().y() + dy * speed);
 }
 
 void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
 {
-    cursor()->setPosC(LPointF(x,y));
+    cursor()->setPos(LPointF(x, y));
 
     Output *cursorOutput = (Output*)cursor()->output();
     Compositor *c = (Compositor*)compositor();
 
-    bool pointerOverTerminalIcon = cursorOutput->terminalIconRectC.containsPoint(cursor()->posC());
+    bool pointerOverTerminalIcon = cursorOutput->terminalIconRect.containsPoint(cursor()->pos());
 
     if (pointerOverTerminalIcon)
     {
         if (cursorOutput->terminalIconAlpha == 1.0f)
         {
-            cursorOutput->terminalIconRectC += LRect(-1,-1, 2, 2);
-            cursorOutput->newDamage.addRect(cursorOutput->terminalIconRectC);
+            cursorOutput->terminalIconRect += LRect(-1,-1, 2, 2);
+            cursorOutput->newDamage.addRect(cursorOutput->terminalIconRect);
             cursorOutput->terminalIconAlpha = 0.9f;
             cursorOutput->repaint();
         }
@@ -58,8 +58,8 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
     {
         if (cursorOutput->terminalIconAlpha != 1.0f)
         {
-            cursorOutput->newDamage.addRect(cursorOutput->terminalIconRectC);
-            cursorOutput->terminalIconRectC += LRect(1, 1, -2, -2);
+            cursorOutput->newDamage.addRect(cursorOutput->terminalIconRect);
+            cursorOutput->terminalIconRect += LRect(1, 1, -2, -2);
             cursorOutput->terminalIconAlpha = 1.0f;
             cursorOutput->repaint();
         }
@@ -75,7 +75,7 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
     // Update the drag & drop icon (if there was one)
     if (seat()->dndManager()->icon())
     {
-        seat()->dndManager()->icon()->surface()->setPosC(cursor()->posC());
+        seat()->dndManager()->icon()->surface()->setPos(cursor()->pos());
         seat()->dndManager()->icon()->surface()->repaintOutputs();
     }
 
@@ -94,7 +94,7 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
         movingToplevel()->surface()->repaintOutputs();
 
         if (movingToplevel()->maximized())
-            movingToplevel()->configureC(movingToplevel()->states() &~ LToplevelRole::Maximized);
+            movingToplevel()->configure(movingToplevel()->states() &~ LToplevelRole::Maximized);
 
         return;
     }
@@ -106,16 +106,16 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
     // If there was a surface holding the left pointer button
     if (draggingSurface())
     {
-        sendMoveEventC();
+        sendMoveEvent();
         return;
     }
 
     // Find the first surface under the cursor
-    LSurface *surface = surfaceAtC(cursor()->posC());
+    LSurface *surface = surfaceAt(cursor()->pos());
 
     if (!surface)
     {
-        setFocusC(nullptr);
+        setFocus(nullptr);
 
         if (!pointerOverTerminalIcon)
             cursor()->useDefault();
@@ -125,9 +125,9 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
     else
     {
         if (focusSurface() == surface)
-            sendMoveEventC();
+            sendMoveEvent();
         else
-            setFocusC(surface);
+            setFocus(surface);
     }
 }
 
@@ -135,7 +135,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
 {
     Output *cursorOutput = (Output*)cursor()->output();
 
-    bool pointerOverTerminalIcon = cursorOutput->terminalIconRectC.containsPoint(cursor()->posC());
+    bool pointerOverTerminalIcon = cursorOutput->terminalIconRect.containsPoint(cursor()->pos());
 
     if (state == Released && button == Left)
     {
@@ -153,7 +153,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
 
     if (!focusSurface() && !pointerOverTerminalIcon)
     {
-        LSurface *surface = surfaceAtC(cursor()->posC());
+        LSurface *surface = surfaceAt(cursor()->pos());
 
         if (surface)
         {
@@ -166,7 +166,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
             if (!seat()->keyboard()->focusSurface() || !surface->isSubchildOf(seat()->keyboard()->focusSurface()))
                 seat()->keyboard()->setFocus(surface);
 
-            setFocusC(surface);
+            setFocus(surface);
             sendButtonEvent(button, state);
         }
         // If no surface under the cursor
@@ -190,7 +190,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
     {
         if (pointerOverTerminalIcon)
         {
-            cursorOutput->newDamage.addRect(cursorOutput->terminalIconRectC);
+            cursorOutput->newDamage.addRect(cursorOutput->terminalIconRect);
             cursorOutput->terminalIconAlpha = 0.6f;
             cursorOutput->repaint();
             return;
@@ -213,7 +213,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
             seat()->keyboard()->setFocus(focusSurface());
 
         if (focusSurface()->toplevel() && !focusSurface()->toplevel()->activated())
-            focusSurface()->toplevel()->configureC(focusSurface()->toplevel()->states() | LToplevelRole::Activated);
+            focusSurface()->toplevel()->configure(focusSurface()->toplevel()->states() | LToplevelRole::Activated);
 
         // Raise surface
         if (focusSurface() == compositor()->surfaces().back())
@@ -229,7 +229,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
     {
         if (pointerOverTerminalIcon)
         {
-            cursorOutput->newDamage.addRect(cursorOutput->terminalIconRectC);
+            cursorOutput->newDamage.addRect(cursorOutput->terminalIconRect);
             cursorOutput->terminalIconAlpha = 0.9f;
             cursorOutput->repaint();
             return;
@@ -241,10 +241,10 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
         // We stop sending events to the surface on which the left button was being held down
         setDragginSurface(nullptr);
 
-        if (!focusSurface()->inputRegionC().containsPoint(cursor()->posC() - focusSurface()->rolePosC()))
+        if (!focusSurface()->inputRegion().containsPoint(cursor()->pos() - focusSurface()->rolePos()))
         {
             seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
-            setFocusC(nullptr);
+            setFocus(nullptr);
             cursor()->useDefault();
             cursor()->setVisible(true);
         }

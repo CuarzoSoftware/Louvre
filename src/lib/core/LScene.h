@@ -17,7 +17,7 @@ public:
     void handleUninitializeGL(LOutput *output);
 
     LSceneView *mainView() const;
-    LView *viewAtC(const LPoint &pos);
+    LView *viewAt(const LPoint &pos);
 
 LPRIVATE_IMP(LScene)
 };

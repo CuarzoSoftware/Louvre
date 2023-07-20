@@ -13,16 +13,16 @@
 using namespace Louvre;
 
 //! [rolePosC]
-const LPoint &LPopupRole::rolePosC() const
+const LPoint &LPopupRole::rolePos() const
 {
     if (!surface()->parent())
-        return m_rolePosC;
+        return m_rolePos;
 
     // Final position of the popup that we will change if it is restricted
     LPoint finalPos;
 
     // Position of the parent (without the role option, we will assign it at the end)
-    LPoint parentPos = surface()->parent()->posC();
+    LPoint parentPos = surface()->parent()->pos();
 
     // Point within the anchor rectangle
     LPoint anchorPos;
@@ -31,10 +31,10 @@ const LPoint &LPopupRole::rolePosC() const
     LPoint popupOrigin;
 
     // Additional offset of the popup given by the positioner
-    LPoint offset = positioner().offsetC();
+    LPoint offset = positioner().offset();
 
     // Size of the popup (equivalent to its geometry without decorations)
-    LSize popupSize = positioner().sizeC();
+    LSize popupSize = positioner().size();
 
     // Anchor type flags
     UInt32 anchor = positioner().anchor();
@@ -63,27 +63,27 @@ const LPoint &LPopupRole::rolePosC() const
         // Center of the rect
         case LPositioner::Anchor::NoAnchor:
         {
-            anchorPos = positioner().anchorRectC().size()/2;
+            anchorPos = positioner().anchorRect().size()/2;
         }break;
         // Center of the top edge
         case LPositioner::AnchorTop:
         {
-            anchorPos.setX(positioner().anchorRectC().w()/2);
+            anchorPos.setX(positioner().anchorRect().w()/2);
         }break;
         // Center of the bottom edge ...
         case LPositioner::AnchorBottom:
         {
-            anchorPos.setX(positioner().anchorRectC().w()/2);
-            anchorPos.setY(positioner().anchorRectC().h());
+            anchorPos.setX(positioner().anchorRect().w()/2);
+            anchorPos.setY(positioner().anchorRect().h());
         }break;
         case LPositioner::AnchorLeft:
         {
-            anchorPos.setY(positioner().anchorRectC().h()/2);
+            anchorPos.setY(positioner().anchorRect().h()/2);
         }break;
         case LPositioner::AnchorRight:
         {
-            anchorPos.setX(positioner().anchorRectC().w());
-            anchorPos.setY(positioner().anchorRectC().h()/2);
+            anchorPos.setX(positioner().anchorRect().w());
+            anchorPos.setY(positioner().anchorRect().h()/2);
         }break;
         case LPositioner::AnchorTopLeft:
         {
@@ -91,15 +91,15 @@ const LPoint &LPopupRole::rolePosC() const
         }break;
         case LPositioner::AnchorBottomLeft:
         {
-            anchorPos.setY(positioner().anchorRectC().h());
+            anchorPos.setY(positioner().anchorRect().h());
         }break;
         case LPositioner::AnchorTopRight:
         {
-            anchorPos.setX(positioner().anchorRectC().w());
+            anchorPos.setX(positioner().anchorRect().w());
         }break;
         case LPositioner::AnchorBottomRight:
         {
-            anchorPos = positioner().anchorRectC().size();
+            anchorPos = positioner().anchorRect().size();
         }break;
     }
 
@@ -152,17 +152,17 @@ const LPoint &LPopupRole::rolePosC() const
     }
 
     // We calculate the initial position (we will be modifying finalPos if the position is restricted)
-    finalPos = parentPos + positioner().anchorRectC().pos() + anchorPos - popupOrigin + offset;
+    finalPos = parentPos + positioner().anchorRect().pos() + anchorPos - popupOrigin + offset;
 
     // If it is the first attempt, we save finalPos in m_rolePosC as a backup
     if (xTry == 0 && yTry == 0)
-        m_rolePosC = finalPos;
+        m_rolePos = finalPos;
 
     /* The positionerBounds rect indicates the space in which the popup should be located and is assigned by the developer (the default library assigns the
      * size of the monitor in which the cursor is located */
 
     // If the popup exceeds the left border
-    if (finalPos.x() < positionerBoundsC().x())
+    if (finalPos.x() < positionerBounds().x())
     {
         // First try (flip)
         if (xTry == 0)
@@ -224,17 +224,17 @@ const LPoint &LPopupRole::rolePosC() const
 
             if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::SlideX)
             {
-                offset.setX( offset.x() + (positionerBoundsC().x() - m_rolePosC.x()));
+                offset.setX( offset.x() + (positionerBounds().x() - m_rolePos.x()));
                 goto retry;
             }
         }
         else
         {
-            offset.setX(positioner().offsetC().x());
+            offset.setX(positioner().offset().x());
         }
     }
     // If right side is constrained
-    else if (finalPos.x() + popupSize.w() > positionerBoundsC().x() + positionerBoundsC().w())
+    else if (finalPos.x() + popupSize.w() > positionerBounds().x() + positionerBounds().w())
     {
         if (xTry == 0)
         {
@@ -294,18 +294,18 @@ const LPoint &LPopupRole::rolePosC() const
 
             if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::SlideX)
             {
-                offset.setX( offset.x() - ( (m_rolePosC.x()+popupSize.w()) - (positionerBoundsC().x() + positionerBoundsC().w())));
+                offset.setX( offset.x() - ( (m_rolePos.x()+popupSize.w()) - (positionerBounds().x() + positionerBounds().w())));
                 goto retry;
             }
         }
         else
         {
-            offset.setX(positioner().offsetC().x());
+            offset.setX(positioner().offset().x());
         }
     }
 
     // If top border is constrained
-    if (finalPos.y() < positionerBoundsC().y())
+    if (finalPos.y() < positionerBounds().y())
     {
         // Flip gravity on the Y axis
         if (yTry == 0)
@@ -361,18 +361,18 @@ const LPoint &LPopupRole::rolePosC() const
 
             if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::SlideY)
             {
-                offset.setY( offset.y() + (positionerBoundsC().y() - m_rolePosC.y()));
+                offset.setY( offset.y() + (positionerBounds().y() - m_rolePos.y()));
                 goto retry;
             }
         }
         else
         {
-            offset.setY(positioner().offsetC().y());
+            offset.setY(positioner().offset().y());
         }
     }
 
     // If bottom border is constrained
-    else if (finalPos.y() + popupSize.h() > positionerBoundsC().y() + positionerBoundsC().h())
+    else if (finalPos.y() + popupSize.h() > positionerBounds().y() + positionerBounds().h())
     {
         if (yTry == 0)
         {
@@ -427,33 +427,33 @@ const LPoint &LPopupRole::rolePosC() const
 
             if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::SlideY)
             {
-                offset.setY( offset.y() - ( (m_rolePosC.y()+popupSize.h()) - (positionerBoundsC().y() + positionerBoundsC().h())));
+                offset.setY( offset.y() - ( (m_rolePos.y()+popupSize.h()) - (positionerBounds().y() + positionerBounds().h())));
                 goto retry;
             }
         }
         else
         {
-            offset.setY(positioner().offsetC().y());
+            offset.setY(positioner().offset().y());
         }
     }
 
-    m_rolePosC = finalPos;
-    surface()->setPosC(m_rolePosC);
-    m_rolePosC = finalPos - windowGeometryC().topLeft();
+    m_rolePos = finalPos;
+    surface()->setPos(m_rolePos);
+    m_rolePos = finalPos - windowGeometry().topLeft();
 
     // Finally check if popup size is out of bounds
     LSize finalSize = popupSize;
 
-    if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::ResizeY && finalSize.h() > positionerBoundsC().h())
-        finalSize.setH(positionerBoundsC().h());
+    if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::ResizeY && finalSize.h() > positionerBounds().h())
+        finalSize.setH(positionerBounds().h());
 
-    if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::ResizeX && finalSize.w() > positionerBoundsC().w())
-        finalSize.setW(positionerBoundsC().w());
+    if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::ResizeX && finalSize.w() > positionerBounds().w())
+        finalSize.setW(positionerBounds().w());
 
     if (finalSize != popupSize)
-        configureC(LRect(m_rolePosC - parentPos, finalSize));
+        configure(LRect(m_rolePos - parentPos, finalSize));
 
-    return m_rolePosC;
+    return m_rolePos;
 }
 //! [rolePosC]
 
@@ -476,21 +476,11 @@ void LPopupRole::grabSeatRequest(Wayland::GSeat *seatGlobal)
 //! [configureRequest]
 void LPopupRole::configureRequest()
 {
-    setPositionerBoundsC(cursor()->output()->rectC());
-    LPoint p = rolePosC() - surface()->parent()->posC();
-    configureC(LRect(p, positioner().sizeC()));
+    setPositionerBounds(cursor()->output()->rect());
+    LPoint p = rolePos() - surface()->parent()->pos();
+    configure(LRect(p, positioner().size()));
 }
 //! [configureRequest]
-
-// Since 3
-
-//! [repositionRequest]
-void LPopupRole::repositionRequest(UInt32 token)
-{
-    sendRepositionedEvent(token);
-    configureRequest();
-}
-//! [repositionRequest]
 
 //! [geometryChanged]
 void LPopupRole::geometryChanged()

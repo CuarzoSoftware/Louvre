@@ -39,10 +39,9 @@ void RPointer::RPointerPrivate::set_cursor(wl_client *client, wl_resource *resou
         cursorRoleParams.surface = lSurface;
 
         LCursorRole *lCursor = compositor()->createCursorRoleRequest(&cursorRoleParams);
-        lCursor->imp()->currentHotspotS.setX(hotspot_x);
-        lCursor->imp()->currentHotspotS.setY(hotspot_y);
-        lCursor->imp()->currentHotspotC = lCursor->imp()->currentHotspotS * compositor()->globalScale();
-        lCursor->imp()->currentHotspotB = lCursor->imp()->currentHotspotS * lSurface->bufferScale();
+        lCursor->imp()->currentHotspot.setX(hotspot_x);
+        lCursor->imp()->currentHotspot.setY(hotspot_y);
+        lCursor->imp()->currentHotspotB = lCursor->imp()->currentHotspot * lSurface->bufferScale();
         lSurface->imp()->setPendingRole(lCursor);
         lSurface->imp()->applyPendingRole();
         seat()->pointer()->setCursorRequest(lCursor);

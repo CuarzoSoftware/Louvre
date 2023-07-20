@@ -6,10 +6,10 @@
 using namespace Louvre;
 
 //! [rolePosC]
-const LPoint &LCursorRole::rolePosC() const
+const LPoint &LCursorRole::rolePos() const
 {
-   m_rolePosC = surface()->posC() - hotspotC();
-   return m_rolePosC;
+   m_rolePos = surface()->pos() - hotspot();
+   return m_rolePos;
 }
 //! [rolePosC]
 

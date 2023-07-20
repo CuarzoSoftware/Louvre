@@ -86,12 +86,12 @@ public:
     /*!
      * The current view position.
      */
-    const LPoint &posC() const;
+    const LPoint &pos() const;
 
     /*!
      * The current view size.
      */
-    const LSize &sizeC() const;
+    const LSize &size() const;
 
     /*!
      * If true, child views will be clipped to the current view rectangle (posC(), sizeC()).
@@ -126,12 +126,12 @@ public:
     void enableScaling(bool enabled);
 
     /*!
-    * If enabled, children views will also be scaled with the scalingVector().
+    * If enabled, the size and position will be scalled by the parent scalingVector().
     */
     bool parentScalingEnabled() const;
 
     /*!
-    * If enabled, children views will also be scaled with the scalingVector().
+    * If enabled, the size and position will be scalled by the parent scalingVector().
     */
     void enableParentScaling(bool enabled);
 
@@ -217,12 +217,12 @@ public:
     /*!
      * Position of the view without any transformations applied.
      */
-    virtual const LPoint &nativePosC() const = 0;
+    virtual const LPoint &nativePos() const = 0;
 
     /*!
      * Size of the view without any transformations applied.
      */
-    virtual const LSize &nativeSizeC() const = 0;
+    virtual const LSize &nativeSize() const = 0;
 
     /*!
      * Scale of the view buffer content.
@@ -271,7 +271,7 @@ public:
      * If nullptr is returned, the entire view rect will be
      * considered damaged.
      */
-    virtual const LRegion *damageC() const = 0;
+    virtual const LRegion *damage() const = 0;
 
     /*!
      * Returns the translucent region within the view rectangle.\n
@@ -280,7 +280,7 @@ public:
      * If nullptr is returned, the entire view rect will be
      * considered translucent.
      */
-    virtual const LRegion *translucentRegionC() const = 0;
+    virtual const LRegion *translucentRegion() const = 0;
 
     /*!
      * Returns the opaque region within the view rectangle.
@@ -289,7 +289,7 @@ public:
      * If nullptr is returned, the inverse of the translucent
      * region will be considered opaque.
      */
-    virtual const LRegion *opaqueRegionC() const = 0;
+    virtual const LRegion *opaqueRegion() const = 0;
 
     /*!
      * Region within the view rect that can receive input events (when the input property is enabled).\n
@@ -297,12 +297,12 @@ public:
      * without any scaling, clipping, or offset transformations.\n
      * If nullptr is returned, the entire view rect will receive input.
      */
-    virtual const LRegion *inputRegionC() const = 0;
+    virtual const LRegion *inputRegion() const = 0;
 
     /*!
      * Request to paint a rect of the view to the current output.
      */
-    virtual void paintRectC(LPainter *p,
+    virtual void paintRect(LPainter *p,
                            Int32 srcX, Int32 srcY,
                            Int32 srcW, Int32 srcH,
                            Int32 dstX, Int32 dstY,

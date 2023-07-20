@@ -23,9 +23,9 @@ const LSize &LOutputFramebuffer::sizeB() const
     return imp()->output->sizeB();
 }
 
-const LRect &LOutputFramebuffer::rectC() const
+const LRect &LOutputFramebuffer::rect() const
 {
-    return imp()->output->rectC();
+    return imp()->output->rect();
 }
 
 GLuint LOutputFramebuffer::id(LOutput *output) const
@@ -51,5 +51,5 @@ const LTexture *LOutputFramebuffer::texture(Int32 index) const
 
 void LOutputFramebuffer::setFramebufferDamageC(const LRegion *damage)
 {
-    imp()->output->setBufferDamageC(*damage);
+    imp()->output->setBufferDamage(*damage);
 }

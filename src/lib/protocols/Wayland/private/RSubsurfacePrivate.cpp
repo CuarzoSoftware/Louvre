@@ -20,7 +20,7 @@ void RSubsurface::RSubsurfacePrivate::set_position(wl_client *client, wl_resourc
 {
     L_UNUSED(client);
     RSubsurface *rSubsurface = (RSubsurface*)wl_resource_get_user_data(resource);
-    rSubsurface->subsurfaceRole()->imp()->pendingLocalPosS = LPoint(x,y);
+    rSubsurface->subsurfaceRole()->imp()->pendingLocalPos = LPoint(x,y);
     rSubsurface->subsurfaceRole()->imp()->hasPendingLocalPos = true;
 }
 

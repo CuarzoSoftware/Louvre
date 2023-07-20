@@ -22,14 +22,9 @@ LDNDIconRole::~LDNDIconRole()
     delete m_imp;
 }
 
-const LPoint &LDNDIconRole::hotspotS() const
+const LPoint &LDNDIconRole::hotspot() const
 {
-    return imp()->currentHotspotS;
-}
-
-const LPoint &LDNDIconRole::hotspotC() const
-{
-    return imp()->currentHotspotC;
+    return imp()->currentHotspot;
 }
 
 const LPoint &LDNDIconRole::hotspotB() const
@@ -39,27 +34,17 @@ const LPoint &LDNDIconRole::hotspotB() const
 
 void LDNDIconRole::handleSurfaceOffset(Int32 x, Int32 y)
 {
-    imp()->pendingHotspotOffsetS = LPoint(x,y);
+    imp()->pendingHotspotOffset = LPoint(x,y);
 }
 
 void LDNDIconRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin)
 {
     L_UNUSED(origin);
 
-    imp()->currentHotspotS -= imp()->pendingHotspotOffsetS;
-    imp()->pendingHotspotOffsetS = LPoint();
-    imp()->currentHotspotC = imp()->currentHotspotS * compositor()->globalScale();
-    imp()->currentHotspotB = imp()->currentHotspotS * surface()->bufferScale();
+    imp()->currentHotspot -= imp()->pendingHotspotOffset;
+    imp()->pendingHotspotOffset = LPoint();
+    imp()->currentHotspotB = imp()->currentHotspot * surface()->bufferScale();
     hotspotChanged();
 
     surface()->imp()->setMapped(surface()->buffer() != nullptr);
 }
-
-void LDNDIconRole::globalScaleChanged(Int32 oldScale, Int32 newScale)
-{
-    L_UNUSED(oldScale);
-
-    // Hotspot
-    imp()->currentHotspotC = imp()->currentHotspotS * newScale;
-}
-

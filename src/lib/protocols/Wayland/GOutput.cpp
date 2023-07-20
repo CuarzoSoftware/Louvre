@@ -47,9 +47,10 @@ LOutput *GOutput::output() const
 
 void GOutput::sendConfiguration()
 {
+    // TODO: Replace pos by mmPos
     geometry(
-        output()->rectC().x(),
-        output()->rectC().y(),
+        output()->pos().x(),
+        output()->pos().y(),
         output()->physicalSize().w(),
         output()->physicalSize().h(),
         WL_OUTPUT_SUBPIXEL_HORIZONTAL_RGB,

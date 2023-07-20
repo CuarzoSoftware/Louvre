@@ -80,28 +80,28 @@ public:
      * @param dx Delta x in compositor coordinates.
      * @param dy Delta y in compositor coordinates.
      */
-    void moveC(float dx, float dy);
+    void move(float dx, float dy);
 
     /*!
      * @brief Assigns the cursor position.
      *
      * @param pos Cursor position in compositor coordinates.
      */
-    void setPosC(const LPointF &pos);
+    void setPos(const LPointF &pos);
 
     /*!
      * @brief Cursor position.
      *
      * Cursor position in compositor coordinates.
      */
-    const LPointF &posC() const;
+    const LPointF &pos() const;
 
     /*!
      * @brief Cursor rect on screen.
      *
      * Returns the cursor rect on screen in compositor coordinates LRect(posC - hotspotG, sizeC). It may be used to render the cursor with LPainter when hardware compositing is not available.
      */
-    const LRect &rectC() const;
+    const LRect &rect() const;
 
     /*!
      * @brief Assigns the cursor hotspot.
@@ -129,7 +129,7 @@ public:
      *
      * @param size Cursor size in surface coordinates.
      */
-    void setSizeS(const LSizeF &size);
+    void setSize(const LSizeF &size);
 
     /*!
      * @brief Change cursor visibility.

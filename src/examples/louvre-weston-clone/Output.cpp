@@ -20,13 +20,13 @@ void Output::fullDamage()
     else
         redrawClock = true;
 
-    topbarHeight = 32 * compositor()->globalScale();
-    terminalIconRectC.setPos(LPoint(9*compositor()->globalScale(), 4*compositor()->globalScale()));
-    terminalIconRectC.setSize(LSize(topbarHeight) - LSize(2*terminalIconRectC.pos().y()));
-    terminalIconRectC.setPos(rectC().pos() + terminalIconRectC.pos());
+    topbarHeight = 32;
+    terminalIconRect.setPos(LPoint(9, 4));
+    terminalIconRect.setSize(LSize(topbarHeight) - LSize(2*terminalIconRect.pos().y()));
+    terminalIconRect.setPos(rect().pos() + terminalIconRect.pos());
 
     newDamage.clear();
-    newDamage.addRect(rectC());
+    newDamage.addRect(rect());
 }
 
 void Output::initializeGL()
@@ -42,7 +42,7 @@ void Output::initializeGL()
     }
 
     char wallpaperPath[256];
-    sprintf(wallpaperPath, "%s/.config/louvre-weston-clone/wallpaper.jpg", getenv("HOME"));
+    sprintf(wallpaperPath, "%s/.config/louvre-weston-clones/wallpaper.jpg", getenv("HOME"));
     LTexture *background = LOpenGL::loadTexture(wallpaperPath);
 
     if (background)
@@ -67,10 +67,10 @@ void Output::resizeGL()
         else
             output->setScale(1);
 
-        output->setPosC(LPoint(x, 0));
+        output->setPos(LPoint(x, 0));
         output->fullDamage();
         output->repaint();
-        x += output->rectC().w();
+        x += output->rect().w();
     }
 
     if (backgroundTexture)
@@ -89,6 +89,11 @@ void Output::resizeGL()
         LLog::debug("Background texture size %d %d", backgroundTexture->sizeB().w(), backgroundTexture->sizeB().h());
         delete background;
     }
+}
+
+void Output::moveGL()
+{
+    fullDamage();
 }
 
 void repaintParent(LSurface *s)
@@ -120,20 +125,19 @@ void Output::paintGL()
     }
 
     Int32 n, w, h;
-    LRect rect;
     LBox *boxes;
 
-    if (lastRectC != rectC())
+    if (lastRect != rect())
     {
         fullDamage();
-        lastRectC = rectC();
+        lastRect = rect();
     }
 
     // Check if surface moved under cursor
-    if (seat()->pointer()->surfaceAtC(cursor()->posC()) != seat()->pointer()->focusSurface())
+    if (seat()->pointer()->surfaceAt(cursor()->pos()) != seat()->pointer()->focusSurface())
         seat()->pointer()->pointerPosChangeEvent(
-            cursor()->posC().x(),
-            cursor()->posC().y());
+            cursor()->pos().x(),
+            cursor()->pos().y());
 
     Compositor *c = (Compositor*)compositor();
     LPainter *p = painter();
@@ -143,10 +147,10 @@ void Output::paintGL()
     {
         redrawClock = false;
         newDamage.addRect(dstClockRect);
-        dstClockRect.setH((32 - 16) * c->globalScale());
+        dstClockRect.setH(32 - 16);
         dstClockRect.setW( float(c->clock->texture->sizeB().w()) * float(dstClockRect.h()) / float(c->clock->texture->sizeB().h()));
-        dstClockRect.setY(rectC().y() + 9*c->globalScale());
-        dstClockRect.setX(rectC().x() + rectC().w() - dstClockRect.w() - 14*c->globalScale());
+        dstClockRect.setY(rect().y() + 9);
+        dstClockRect.setX(rect().x() + rect().w() - dstClockRect.w() - 14);
         newDamage.addRect(dstClockRect);
     }
 
@@ -179,10 +183,10 @@ void Output::paintGL()
         {
             if (s->cursorRole())
             {
-                s->setPosC(cursor()->posC());
+                s->setPos(cursor()->pos());
                 for (LOutput *o : compositor()->outputs())
                 {
-                    if (o->rectC().intersects(s->currentRectC))
+                    if (o->rect().intersects(s->currentRectC))
                         s->sendOutputEnterEvent(o);
                     else
                         s->sendOutputLeaveEvent(o);
@@ -195,18 +199,11 @@ void Output::paintGL()
         }
 
         // If the scale is equal to the global scale, we avoid performing transformations later
-        s->bufferScaleMatchGlobalScale = s->bufferScale() == compositor()->globalScale();
+        //s->bufferScaleMatchGlobalScale = s->bufferScale() == compositor()->globalScale();
 
         // 2. Store the current surface rect
-        s->currentRectC.setPos(s->rolePosC());
-
-        if (scale() != compositor()->globalScale())
-        {
-            s->currentRectC.setX(s->currentRectC.x() - s->currentRectC.x() % compositor()->globalScale());
-            s->currentRectC.setY(s->currentRectC.y() - s->currentRectC.y() % compositor()->globalScale());
-        }
-
-        s->currentRectC.setSize(s->sizeC());
+        s->currentRectC.setPos(s->rolePos());
+        s->currentRectC.setSize(s->size());
 
         // We clear damage only
         bool clearDamage = true;
@@ -214,7 +211,7 @@ void Output::paintGL()
         // 3. Update the surface intersected outputs
         for (LOutput *o : compositor()->outputs())
         {
-            if (o->rectC().intersects(s->currentRectC, false))
+            if (o->rect().intersects(s->currentRectC, false))
             {
                 s->sendOutputEnterEvent(o);
 
@@ -241,7 +238,7 @@ void Output::paintGL()
         }
         else
         {
-            s->currentDamageTransposedC = s->damagesC();
+            s->currentDamageTransposedC = s->damage();
             s->currentDamageTransposedC.offset(s->currentRectC.pos());
         }
 
@@ -252,11 +249,11 @@ void Output::paintGL()
         newDamage.addRegion(s->currentDamageTransposedC);
 
         // Store tansposed traslucent region
-        s->currentTraslucentTransposedC = s->translucentRegionC();
+        s->currentTraslucentTransposedC = s->translucentRegion();
         s->currentTraslucentTransposedC.offset(s->currentRectC.pos());
 
         // Store tansposed opaque region
-        s->currentOpaqueTransposedC = s->opaqueRegionC();
+        s->currentOpaqueTransposedC = s->opaqueRegion();
         s->currentOpaqueTransposedC.offset(s->currentRectC.pos());
 
         // Store sum of previus opaque regions
@@ -335,7 +332,7 @@ void Output::paintGL()
             w = boxes->x2 - boxes->x1;
             h = boxes->y2 - boxes->y1;
 
-            p->drawTextureC(
+            p->drawTexture(
                 s->texture(),
                 boxes->x1 - s->currentRectC.x(),
                 boxes->y1 - s->currentRectC.y(),
@@ -345,7 +342,7 @@ void Output::paintGL()
                 boxes->y1,
                 w,
                 h,
-                s->bufferScaleMatchGlobalScale ? 0.0 : s->bufferScale());
+                s->bufferScale());
 
             boxes++;
         }
@@ -364,9 +361,9 @@ void Output::paintGL()
             w = boxes->x2 - boxes->x1;
             h = boxes->y2 - boxes->y1;
 
-            p->drawTextureC(backgroundTexture,
-                            boxes->x1 - posC().x(),
-                            boxes->y1 - posC().y(),
+            p->drawTexture(backgroundTexture,
+                            boxes->x1 - pos().x(),
+                            boxes->y1 - pos().y(),
                             w,
                             h,
                             boxes->x1,
@@ -381,7 +378,7 @@ void Output::paintGL()
     {
         for (Int32 i = 0; i < n; i++)
         {
-            p->drawColorC(boxes->x1,
+            p->drawColor(boxes->x1,
                           boxes->y1,
                           boxes->x2 - boxes->x1,
                           boxes->y2 - boxes->y1,
@@ -417,7 +414,7 @@ void Output::paintGL()
             w = boxes->x2 - boxes->x1;
             h = boxes->y2 - boxes->y1;
 
-            p->drawTextureC(
+            p->drawTexture(
                 s->texture(),
                 boxes->x1 - s->currentRectC.x(),
                 boxes->y1 - s->currentRectC.y(),
@@ -427,7 +424,7 @@ void Output::paintGL()
                 boxes->y1,
                 w,
                 h,
-                s->bufferScaleMatchGlobalScale ? 0.0 : s->bufferScale());
+                s->bufferScale());
 
             boxes++;
         }
@@ -438,16 +435,16 @@ void Output::paintGL()
     if (!fullscreenSurface)
     {
         LRegion topbarRegion;
-        topbarRegion.addRect(LRect(rectC().x(),
-                                   rectC().y(),
-                                   rectC().w(),
+        topbarRegion.addRect(LRect(rect().x(),
+                                   rect().y(),
+                                   rect().w(),
                                    topbarHeight));
         topbarRegion.intersectRegion(newDamage);
         boxes = topbarRegion.rects(&n);
 
         for (Int32 i = 0; i < n; i++)
         {
-            p->drawColorC(boxes->x1,
+            p->drawColor(boxes->x1,
                           boxes->y1,
                           boxes->x2 - boxes->x1,
                           boxes->y2 - boxes->y1,
@@ -461,22 +458,22 @@ void Output::paintGL()
         if (terminalIconTexture)
         {
             LRegion terminalIconRegion;
-            terminalIconRegion.addRect(terminalIconRectC);
+            terminalIconRegion.addRect(terminalIconRect);
             terminalIconRegion.intersectRegion(topbarRegion);
 
             if (!terminalIconRegion.empty())
             {
-                p->drawTextureC(terminalIconTexture,
+                p->drawTexture(terminalIconTexture,
                                 LRect(0, terminalIconTexture->sizeB()),
-                                terminalIconRectC,
-                                0.f,
+                                terminalIconRect,
+                                1.f,
                                 terminalIconAlpha);
             }
         }
 
         if (drawClock)
         {
-            p->drawTextureC(c->clock->texture,
+            p->drawTexture(c->clock->texture,
                             LRect(0, c->clock->texture->sizeB()),
                             dstClockRect);
         }
@@ -489,10 +486,10 @@ void Output::paintGL()
         if (alpha < 0.f)
             alpha = 0.f;
 
-        p->drawTextureC((*it).texture,
+        p->drawTexture((*it).texture,
                         LRect(0, (*it).texture->sizeB()),
                         (*it).rect,
-                        0.f,
+                        1.f,
                         alpha);
 
         if (alpha == 0.f)
@@ -500,8 +497,12 @@ void Output::paintGL()
             delete (*it).texture;
             it = c->destroyedToplevels.erase(it);
         }
+        else
+        {
+            repaint();
+        }
     }
 
-    setBufferDamageC(newDamage);
+    setBufferDamage(newDamage);
     newDamage.clear();
 }

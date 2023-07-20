@@ -44,7 +44,7 @@ const LRGBF &LSolidColorView::color() const
     return imp()->color;
 }
 
-void LSolidColorView::setNativePosC(const LPoint &pos)
+void LSolidColorView::setPos(const LPoint &pos)
 {
     if (mapped() && pos != imp()->nativePos)
         repaint();
@@ -52,7 +52,7 @@ void LSolidColorView::setNativePosC(const LPoint &pos)
     imp()->nativePos = pos;
 }
 
-void LSolidColorView::setNativeSizeC(const LSize &size)
+void LSolidColorView::setSize(const LSize &size)
 {
     if (size != imp()->nativeSize)
     {
@@ -66,7 +66,7 @@ void LSolidColorView::setNativeSizeC(const LSize &size)
     }
 }
 
-void LSolidColorView::setInputRegionC(const LRegion *region) const
+void LSolidColorView::setInputRegion(const LRegion *region) const
 {
     if (region)
     {
@@ -93,12 +93,12 @@ bool LSolidColorView::nativeMapped() const
     return true;
 }
 
-const LPoint &LSolidColorView::nativePosC() const
+const LPoint &LSolidColorView::nativePos() const
 {
     return imp()->nativePos;
 }
 
-const LSize &LSolidColorView::nativeSizeC() const
+const LSize &LSolidColorView::nativeSize() const
 {
     return imp()->nativeSize;
 }
@@ -134,32 +134,32 @@ void LSolidColorView::requestNextFrame(LOutput *output)
     L_UNUSED(output);
 }
 
-const LRegion *LSolidColorView::damageC() const
+const LRegion *LSolidColorView::damage() const
 {
     return &imp()->emptyRegion;
 }
 
-const LRegion *LSolidColorView::translucentRegionC() const
+const LRegion *LSolidColorView::translucentRegion() const
 {
     return &imp()->emptyRegion;
 }
 
-const LRegion *LSolidColorView::opaqueRegionC() const
+const LRegion *LSolidColorView::opaqueRegion() const
 {
     return &imp()->opaqueRegion;
 }
 
-const LRegion *LSolidColorView::inputRegionC() const
+const LRegion *LSolidColorView::inputRegion() const
 {
     return imp()->inputRegion;
 }
 
-void LSolidColorView::paintRectC(LPainter *p,
+void LSolidColorView::paintRect(LPainter *p,
                                  Int32, Int32, Int32, Int32,
                                  Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                                  Float32, Float32 alpha)
 {
-    p->drawColorC(dstX, dstY, dstW, dstH,
+    p->drawColor(dstX, dstY, dstW, dstH,
                   color().r, color().g, color().b,
                   alpha);
 }

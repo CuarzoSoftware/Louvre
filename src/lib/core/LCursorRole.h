@@ -43,7 +43,7 @@ public:
      * #### Default implementation
      * @snippet LCursorRoleDefault.cpp rolePosC
      */
-    virtual const LPoint &rolePosC() const override;
+    virtual const LPoint &rolePos() const override;
 
     /*!
      * @brief Notifies a hotspot change.
@@ -58,12 +58,7 @@ public:
     /*!
      * @brief Cursor hotspot in surface coordinates.
      */
-    const LPoint &hotspotS() const;
-
-    /*!
-     * @brief Cursor hotspot in compositor coordinates.
-     */
-    const LPoint &hotspotC() const;
+    const LPoint &hotspot() const;
 
     /*!
      * @brief Cursor hotspot in buffer coordinates.
@@ -74,8 +69,6 @@ public:
 
     virtual void handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin) override;
     virtual void handleSurfaceOffset(Int32 x, Int32 y) override;
-    void globalScaleChanged(Int32 oldScale, Int32 newScale) override;
-
 };
 
 #endif // LCURSORROLE_H

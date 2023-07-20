@@ -15,7 +15,7 @@ LPRIVATE_CLASS(LToplevelRole)
     struct ToplevelConfiguration
     {
         bool commited                                               = false;
-        LSize sizeS                                                 = LSize();
+        LSize size                                                  = LSize();
         States flags                                                = NoState;
         UInt32 serial                                               = 0;
     };
@@ -31,21 +31,13 @@ LPRIVATE_CLASS(LToplevelRole)
     bool hasPendingMinSize                                          = false;
     bool hasPendingMaxSize                                          = false;
 
-    LSize currentMinSizeS, pendingMinSizeS;
-    LSize currentMaxSizeS, pendingMaxSizeS;
-    LSize currentMinSizeC;
-    LSize currentMaxSizeC;
+    LSize currentMinSize, pendingMinSize;
+    LSize currentMaxSize, pendingMaxSize;
 
     void setAppId(const char *appId);
     void setTitle(const char *title);
     char *appId = nullptr;
     char *title = nullptr;
-
-    // Since 4
-    LSize boundsC, boundsS;
-
-    // Since 5
-    UChar8 wmCapabilities                                           = 0;
 
     RXdgToplevelDecoration *xdgDecoration                           = nullptr;
     DecorationMode decorationMode                                   = ClientSide;

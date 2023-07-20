@@ -12,7 +12,7 @@ LScene::LScene()
 {
     m_imp = new LScenePrivate();
     imp()->view = new LSceneView();
-    imp()->view->enableCustomPos(true);
+    imp()->view->setPos(0);
 
     LView *baseView = imp()->view;
     baseView->imp()->scene = this;
@@ -42,9 +42,7 @@ void LScene::handlePaintGL(LOutput *output)
 
 void LScene::handleResizeGL(LOutput *output)
 {
-    /*
-    LSceneView::LSceneViewPrivate::OutputData *oD = &imp()->view->imp()->outputsMap[output];
-    imp()->view->imp()->damageAll(oD);*/
+    imp()->view->damageAll(output);
 }
 
 void LScene::handleUninitializeGL(LOutput *output)
@@ -60,7 +58,7 @@ LSceneView *LScene::mainView() const
     return imp()->view;
 }
 
-LView *LScene::viewAtC(const LPoint &pos)
+LView *LScene::viewAt(const LPoint &pos)
 {
-    return imp()->viewAtC(mainView(), pos);
+    return imp()->viewAt(mainView(), pos);
 }

@@ -23,14 +23,9 @@ LCursorRole::~LCursorRole()
     delete m_imp;
 }
 
-const LPoint &LCursorRole::hotspotS() const
+const LPoint &LCursorRole::hotspot() const
 {
-    return imp()->currentHotspotS;
-}
-
-const LPoint &LCursorRole::hotspotC() const
-{
-    return imp()->currentHotspotC;
+    return imp()->currentHotspot;
 }
 
 const LPoint &LCursorRole::hotspotB() const
@@ -42,10 +37,9 @@ void LCursorRole::handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin)
 {
     L_UNUSED(origin);
 
-    imp()->currentHotspotS -= imp()->pendingHotspotOffsetS;
-    imp()->pendingHotspotOffsetS = 0;
-    imp()->currentHotspotC = imp()->currentHotspotS * compositor()->globalScale();
-    imp()->currentHotspotB = imp()->currentHotspotS * surface()->bufferScale();
+    imp()->currentHotspot -= imp()->pendingHotspotOffset;
+    imp()->pendingHotspotOffset = 0;
+    imp()->currentHotspotB = imp()->currentHotspot * surface()->bufferScale();
 
     hotspotChanged();
 
@@ -64,13 +58,5 @@ void LCursorRole::handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin)
 
 void LCursorRole::handleSurfaceOffset(Int32 x, Int32 y)
 {
-    imp()->pendingHotspotOffsetS = LPoint(x,y);
-}
-
-void LCursorRole::globalScaleChanged(Int32 oldScale, Int32 newScale)
-{
-    L_UNUSED(oldScale);
-
-    // Hotspot
-    imp()->currentHotspotC = imp()->currentHotspotS * newScale;
+    imp()->pendingHotspotOffset = LPoint(x,y);
 }

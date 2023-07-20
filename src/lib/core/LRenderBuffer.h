@@ -11,13 +11,13 @@ public:
 
     void setSizeB(const LSize &sizeB);
     void setScale(Int32 scale) const;
-    const LSize &sizeC() const;
-    const LPoint &posC() const;
-    void setPosC(const LPoint &pos);
+    const LSize &size() const;
+    const LPoint &pos() const;
+    void setPos(const LPoint &pos);
 
     Int32 scale() const override;
     const LSize &sizeB() const override;
-    const LRect &rectC() const override;
+    const LRect &rect() const override;
     GLuint id(LOutput *output) const override;
     Int32 buffersCount() const override;
     Int32 currentBufferIndex() const override;

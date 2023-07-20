@@ -50,27 +50,27 @@ public:
      */
     virtual void enableCustomInputRegion(bool enabled);
 
-    virtual void setCustomPosC(const LPoint &pos);
-    virtual const LPoint &customPosC() const;
+    virtual void setCustomPos(const LPoint &pos);
+    virtual const LPoint &customPos() const;
 
-    virtual void setCustomInputRegionC(const LRegion *region);
-    virtual const LRegion *customInputRegionC() const;
+    virtual void setCustomInputRegion(const LRegion *region);
+    virtual const LRegion *customInputRegion() const;
 
     // LView
     virtual bool nativeMapped() const override;
-    virtual const LPoint &nativePosC() const override;
-    virtual const LSize &nativeSizeC() const override;
+    virtual const LPoint &nativePos() const override;
+    virtual const LSize &nativeSize() const override;
     virtual Int32 bufferScale() const override;
     virtual void enteredOutput(LOutput *output) override;
     virtual void leftOutput(LOutput *output) override;
     virtual const std::list<LOutput*> &outputs() const override;
     virtual bool isRenderable() const override;
     virtual void requestNextFrame(LOutput *output) override;
-    virtual const LRegion *damageC() const override;
-    virtual const LRegion *translucentRegionC() const override;
-    virtual const LRegion *opaqueRegionC() const override;
-    virtual const LRegion *inputRegionC() const override;
-    virtual void paintRectC(LPainter *p,
+    virtual const LRegion *damage() const override;
+    virtual const LRegion *translucentRegion() const override;
+    virtual const LRegion *opaqueRegion() const override;
+    virtual const LRegion *inputRegion() const override;
+    virtual void paintRect(LPainter *p,
                            Int32 srcX, Int32 srcY,
                            Int32 srcW, Int32 srcH,
                            Int32 dstX, Int32 dstY,

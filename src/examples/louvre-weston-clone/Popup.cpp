@@ -5,10 +5,7 @@
 #include "LPositioner.h"
 #include "Output.h"
 
-Popup::Popup(Params *params) : LPopupRole(params)
-{
-
-}
+Popup::Popup(Params *params) : LPopupRole(params) {}
 
 void Popup::configureRequest()
 {
@@ -16,19 +13,19 @@ void Popup::configureRequest()
 
     if (output->fullscreenSurface)
     {
-        setPositionerBoundsC(cursor()->output()->rectC());
+        setPositionerBounds(output->rect());
     }
     else
     {
-        setPositionerBoundsC(LRect(
-            cursor()->output()->rectC().x(),
-            cursor()->output()->rectC().y() + 32 * compositor()->globalScale(),
-            cursor()->output()->rectC().w(),
-            cursor()->output()->rectC().h() - 32 * compositor()->globalScale()
+        setPositionerBounds(LRect(
+            output->rect().x(),
+            output->rect().y() + 32,
+            output->rect().w(),
+            output->rect().h() - 32
             ));
     }
 
-    LPoint p = rolePosC() - surface()->parent()->posC();
-    configureC(LRect(p, positioner().sizeC()));
+    LPoint p = rolePos() - surface()->parent()->pos();
+    configure(LRect(p, positioner().size()));
     compositor()->raiseSurface(surface());
 }

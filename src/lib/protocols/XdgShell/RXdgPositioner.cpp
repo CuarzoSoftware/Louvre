@@ -51,7 +51,7 @@ const LPositioner &RXdgPositioner::positioner() const
 
 bool RXdgPositioner::isValid()
 {
-    if (positioner().sizeS().w() <= 0 || positioner().sizeS().h() <= 0)
+    if (positioner().size().w() <= 0 || positioner().size().h() <= 0)
     {
         wl_resource_post_error(resource(),
                                XDG_POSITIONER_ERROR_INVALID_INPUT,
@@ -59,7 +59,7 @@ bool RXdgPositioner::isValid()
         return false;
     }
 
-    if (positioner().anchorRectS().w() <= 0 || positioner().anchorRectS().h() <= 0)
+    if (positioner().anchorRect().w() <= 0 || positioner().anchorRect().h() <= 0)
     {
         wl_resource_post_error(resource(),
                                XDG_POSITIONER_ERROR_INVALID_INPUT,

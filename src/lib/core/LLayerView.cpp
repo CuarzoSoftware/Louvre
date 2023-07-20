@@ -15,7 +15,7 @@ LLayerView::~LLayerView()
     delete m_imp;
 }
 
-void LLayerView::setNativePosC(const LPoint &pos)
+void LLayerView::setPos(const LPoint &pos)
 {
     if (mapped() && pos != imp()->nativePos)
         repaint();
@@ -23,7 +23,7 @@ void LLayerView::setNativePosC(const LPoint &pos)
     imp()->nativePos = pos;
 }
 
-void LLayerView::setNativeSizeC(const LSize &size)
+void LLayerView::setSize(const LSize &size)
 {
     if (mapped() && size != imp()->nativeSize)
         repaint();
@@ -31,7 +31,7 @@ void LLayerView::setNativeSizeC(const LSize &size)
     imp()->nativeSize = size;
 }
 
-void LLayerView::setInputRegionC(const LRegion *region) const
+void LLayerView::setInputRegion(const LRegion *region) const
 {
     if (region)
     {
@@ -58,12 +58,12 @@ bool LLayerView::nativeMapped() const
     return true;
 }
 
-const LPoint &LLayerView::nativePosC() const
+const LPoint &LLayerView::nativePos() const
 {
     return imp()->nativePos;
 }
 
-const LSize &LLayerView::nativeSizeC() const
+const LSize &LLayerView::nativeSize() const
 {
     return imp()->nativeSize;
 }
@@ -99,27 +99,27 @@ void LLayerView::requestNextFrame(LOutput *output)
     L_UNUSED(output);
 }
 
-const LRegion *LLayerView::damageC() const
+const LRegion *LLayerView::damage() const
 {
     return &imp()->dummyRegion;
 }
 
-const LRegion *LLayerView::translucentRegionC() const
+const LRegion *LLayerView::translucentRegion() const
 {
     return &imp()->dummyRegion;
 }
 
-const LRegion *LLayerView::opaqueRegionC() const
+const LRegion *LLayerView::opaqueRegion() const
 {
     return &imp()->dummyRegion;
 }
 
-const LRegion *LLayerView::inputRegionC() const
+const LRegion *LLayerView::inputRegion() const
 {
     return imp()->inputRegion;
 }
 
-void LLayerView::paintRectC(LPainter *,
+void LLayerView::paintRect(LPainter *,
                             Int32, Int32, Int32, Int32,
                             Int32, Int32, Int32, Int32,
                             Float32, Float32)

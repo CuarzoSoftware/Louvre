@@ -11,8 +11,7 @@ struct LDNDIconRole::Params
 };
 
 LPRIVATE_CLASS(LDNDIconRole)
-    LPoint currentHotspotS, pendingHotspotOffsetS;
-    LPoint currentHotspotC;
+    LPoint currentHotspot, pendingHotspotOffset;
     LPoint currentHotspotB;
 };
 

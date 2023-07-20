@@ -56,17 +56,12 @@ public:
      * #### Default implementation
      * @snippet LDNDIconRoleDefault.cpp rolePosC
      */
-    virtual const LPoint &rolePosC() const override;
+    virtual const LPoint &rolePos() const override;
 
     /*!
      * @brief Hotspot of the drag & drop icon in surface coordinates.
      */
-    const LPoint &hotspotS() const;
-
-    /*!
-     * @brief Hotspot of the drag & drop icon in compositor coordinates.
-     */
-    const LPoint &hotspotC() const;
+    const LPoint &hotspot() const;
 
     /*!
      * @brief Hotspot of the drag & drop icon in buffer coordinates.
@@ -77,7 +72,6 @@ public:
 
     virtual void handleSurfaceOffset(Int32 x, Int32 y) override;
     virtual void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
-    void globalScaleChanged(Int32 oldScale, Int32 newScale) override;
 };
 
 #endif // LDNDICONROLE_H

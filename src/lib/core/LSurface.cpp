@@ -71,25 +71,25 @@ LSurface::~LSurface()
     delete m_imp;
 }
 
-void LSurface::setPosC(const LPoint &newPos)
+void LSurface::setPos(const LPoint &newPos)
 {
-    imp()->posC = newPos;
+    imp()->pos = newPos;
 }
 
-void LSurface::setPosC(Int32 x, Int32 y)
+void LSurface::setPos(Int32 x, Int32 y)
 {
-    imp()->posC.setX(x);
-    imp()->posC.setY(y);
+    imp()->pos.setX(x);
+    imp()->pos.setY(y);
 }
 
-void LSurface::setXC(Int32 x)
+void LSurface::setX(Int32 x)
 {
-    imp()->posC.setX(x);
+    imp()->pos.setX(x);
 }
 
-void LSurface::setYC(Int32 y)
+void LSurface::setY(Int32 y)
 {
-    imp()->posC.setY(y);
+    imp()->pos.setY(y);
 }
 
 const LSize &LSurface::sizeB() const
@@ -97,54 +97,34 @@ const LSize &LSurface::sizeB() const
     return imp()->currentSizeB;
 }
 
-const LSize &LSurface::sizeS() const
+const LSize &LSurface::size() const
 {
-    return imp()->currentSizeS;
+    return imp()->currentSize;
 }
 
-const LSize &LSurface::sizeC() const
+const LRegion &LSurface::inputRegion() const
 {
-    return imp()->currentSizeC;
+    return imp()->currentInputRegion;
 }
 
-const LRegion &LSurface::inputRegionS() const
+const LRegion &LSurface::opaqueRegion() const
 {
-    return imp()->currentInputRegionS;
+    return imp()->currentOpaqueRegion;
 }
 
-const LRegion &LSurface::inputRegionC() const
+const LRegion &LSurface::translucentRegion() const
 {
-    return imp()->currentInputRegionC;
+    return imp()->currentTranslucentRegion;
 }
 
-const LRegion &LSurface::opaqueRegionS() const
+const LRegion &LSurface::damageB() const
 {
-    return imp()->currentOpaqueRegionS;
+    return imp()->currentDamageB;
 }
 
-const LRegion &LSurface::opaqueRegionC() const
+const LRegion &LSurface::damage() const
 {
-    return imp()->currentOpaqueRegionC;
-}
-
-const LRegion &LSurface::translucentRegionS() const
-{
-    return imp()->currentTranslucentRegionS;
-}
-
-const LRegion &LSurface::translucentRegionC() const
-{
-    return imp()->currentTranslucentRegionC;
-}
-
-const LRegion &LSurface::damagesB() const
-{
-    return imp()->currentDamagesB;
-}
-
-const LRegion &LSurface::damagesC() const
-{
-    return imp()->currentDamagesC;
+    return imp()->currentDamage;
 }
 
 void LSurface::setMinimized(bool state)
@@ -203,17 +183,17 @@ LSurface::Role LSurface::roleId() const
         return Undefined;
 }
 
-const LPoint &LSurface::posC() const
+const LPoint &LSurface::pos() const
 {
-    return imp()->posC;
+    return imp()->pos;
 }
 
-const LPoint &LSurface::rolePosC() const
+const LPoint &LSurface::rolePos() const
 {
     if (role())
-        return role()->rolePosC();
+        return role()->rolePos();
 
-    return imp()->posC;
+    return imp()->pos;
 }
 
 void LSurface::sendOutputEnterEvent(LOutput *output)
@@ -272,8 +252,8 @@ void LSurface::requestNextFrame(bool clearDamage)
 {
     if (clearDamage)
     {
-        imp()->currentDamagesB.clear();
-        imp()->currentDamagesC.clear();
+        imp()->currentDamageB.clear();
+        imp()->currentDamage.clear();
         imp()->damaged = false;
     }
 

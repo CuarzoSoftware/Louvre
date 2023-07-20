@@ -46,14 +46,6 @@ LBaseSurfaceRole::LBaseSurfaceRolePrivate *LBaseSurfaceRole::baseImp() const
     return m_baseImp;
 }
 
-void LBaseSurfaceRole::globalScaleChanged(Int32 oldScale, Int32 newScale)
-{
-    L_UNUSED(oldScale);
-    L_UNUSED(newScale);
-
-    /* No default implementation */
-}
-
 bool LBaseSurfaceRole::acceptCommitRequest(Wayland::RSurface::CommitOrigin origin)
 {
     L_UNUSED(origin);

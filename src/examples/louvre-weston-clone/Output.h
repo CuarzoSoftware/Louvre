@@ -15,13 +15,14 @@ public:
 
     Int32 topbarHeight;
     LTexture *terminalIconTexture = nullptr;
-    LRect terminalIconRectC;
+    LRect terminalIconRect;
     Float32 terminalIconAlpha = 1.0f;
     Float32 terminalIconAlphaPrev = 1.0f;
 
     void fullDamage();
     void initializeGL() override;
     void resizeGL() override;
+    void moveGL() override;
     void paintGL() override;
 
     // List of new damage calculated in prev frames
@@ -32,10 +33,10 @@ public:
     LRegion newDamage;
 
     // Output rect since the last paintGL()
-    LRect lastRectC;
+    LRect lastRect;
 
     // Almacena recta del cursor (si no es posible composición por hardware)
-    LRect cursorRectG[2];
+    LRect cursorRect[2];
 
     LSurface *fullscreenSurface = nullptr;
     bool redrawClock = true;

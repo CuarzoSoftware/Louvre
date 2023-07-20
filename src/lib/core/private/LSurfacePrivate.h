@@ -40,26 +40,22 @@ LPRIVATE_CLASS(LSurface)
     // Link in LSurfaces compositor list
     std::list<LSurface*>::iterator compositorLink, clientLink;
 
-    LRegion pendingInputRegionS;
-    LRegion currentInputRegionS;
-    LRegion currentInputRegionC;
+    LRegion pendingInputRegion;
+    LRegion currentInputRegion;
 
-    LRegion pendingOpaqueRegionS;
-    LRegion currentOpaqueRegionS;
-    LRegion currentOpaqueRegionC;
+    LRegion pendingOpaqueRegion;
+    LRegion currentOpaqueRegion;
 
-    LRegion pendingTranslucentRegionS;
-    LRegion currentTranslucentRegionS;
-    LRegion currentTranslucentRegionC;
+    LRegion pendingTranslucentRegion;
+    LRegion currentTranslucentRegion;
 
     LSize currentSizeB;
-    LSize currentSizeS;
-    LSize currentSizeC;
+    LSize currentSize;
 
-    std::vector<LRect> pendingDamagesB;
-    std::vector<LRect> pendingDamagesS;
-    LRegion currentDamagesB;
-    LRegion currentDamagesC;
+    std::vector<LRect> pendingDamageB;
+    std::vector<LRect> pendingDamage;
+    LRegion currentDamageB;
+    LRegion currentDamage;
 
     LTexture *texture                                   = nullptr;
     LTexture *textureBackup;
@@ -69,7 +65,6 @@ LPRIVATE_CLASS(LSurface)
 
     // Buffer
     void setBufferScale(Int32 scale);
-    void globalScaleChanged(Int32 oldScale, Int32 newScale);
 
     LSurface *parent                                    = nullptr;
     LSurface *pendingParent                             = nullptr;
@@ -86,7 +81,7 @@ LPRIVATE_CLASS(LSurface)
 
     bool damaged                                        = false;
     UInt32 damageId;
-    LPoint posC;
+    LPoint pos;
     bool minimized                                      = false;
     bool receiveInput                                   = true;
     bool opaqueRegionChanged                            = false;

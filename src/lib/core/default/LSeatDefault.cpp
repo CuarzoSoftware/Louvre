@@ -64,27 +64,17 @@ void LSeat::outputPlugged(LOutput *output)
 {
     LLog::debug("Output %s connected.", output->name());
 
-    Int32 futureGlobalScale = compositor()->globalScale();
-
     output->setScale(output->dpi() >= 120 ? 2 : 1);
-
-    if (output->scale() > futureGlobalScale)
-        futureGlobalScale = output->scale();
+    compositor()->addOutput(output);
 
     Int32 totalWidth = 0;
 
-    for (LOutput *o : *outputs())
+    for (LOutput *o : compositor()->outputs())
     {
         // Organize outputs horizontally and sequentially.
-        o->setPosC(LPoint(totalWidth,0));
-
-        if (o->scale() == futureGlobalScale)
-            totalWidth += o->sizeB().w();
-        else
-            totalWidth += o->sizeB().w()*futureGlobalScale;
+        o->setPos(LPoint(totalWidth,0));
+        totalWidth += o->size().w();
     }
-
-    compositor()->addOutput(output);
 
     compositor()->repaintAllOutputs();
 }
@@ -103,8 +93,8 @@ void LSeat::outputUnplugged(LOutput *output)
     {
         for (LOutput *o : compositor()->outputs())
         {
-            o->setPosC(LPoint(totalWidth,0));
-            totalWidth += o->sizeC().w();
+            o->setPos(LPoint(totalWidth, 0));
+            totalWidth += o->size().w();
         }
 
         compositor()->repaintAllOutputs();

@@ -74,7 +74,7 @@ public:
      *
      * See the default implementation of this method in the roles offered by the library for more information.
      */
-    virtual const LPoint &rolePosC() const = 0;
+    virtual const LPoint &rolePos() const = 0;
 
     /*!
      * @brief Role ID.
@@ -113,14 +113,7 @@ protected:
      *
      * Variable to store the position of the surface according to its role. It must be assigned and returned in the implementation of the LBaseSurfaceRole::rolePosC() method.
      */
-    mutable LPoint m_rolePosC;
-
-    /*!
-     * @brief Notifies a change of the global scale of the compositor.
-     *
-     * Called when the compositor changes its global scale. It should be used to update role variables that use compositor coordinates.
-     */
-    virtual void globalScaleChanged(Int32 oldScale, Int32 newScale);
+    mutable LPoint m_rolePos;
 
     /*!
      * @brief Asks if the surface commit should be processed.

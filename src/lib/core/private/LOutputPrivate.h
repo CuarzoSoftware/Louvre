@@ -7,7 +7,8 @@
 LPRIVATE_CLASS(LOutput)
     LOutputFramebuffer *fb;
     LOutput *output;
-    LRect rectC;
+    LRect rect;
+    LPoint lastPos;
     LOutputMode *pendingMode = nullptr;
     std::thread::id threadId;
 
@@ -20,7 +21,6 @@ LPRIVATE_CLASS(LOutput)
 
     // Setup Methods
     bool initialize();
-    void globalScaleChanged(Int32 oldScale, Int32 newScale);
 
     // Compositor
     wl_global *global = nullptr;
