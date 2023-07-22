@@ -1,10 +1,12 @@
 #ifndef LCOMPOSITORPRIVATE_H
 #define LCOMPOSITORPRIVATE_H
 
+#include <private/LRenderBufferPrivate.h>
 #include <LCompositor.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <sys/poll.h>
+#include <map>
 
 LPRIVATE_CLASS(LCompositor)
 
@@ -66,7 +68,6 @@ LPRIVATE_CLASS(LCompositor)
     list<LSurface*>surfaces;
     list<LView*>views;
     list<LAnimation*>animations;
-    list<LRenderBuffer*>renderBuffers;
 
     bool runningAnimations();
     void processAnimations();
@@ -75,6 +76,17 @@ LPRIVATE_CLASS(LCompositor)
 
     // Dylib
     void *inputBackendHandle = nullptr;
+
+    // Thread specific data
+    struct ThreadData
+    {
+        LPainter *painter = nullptr;
+        std::list<LRenderBuffer::LRenderBufferPrivate::ThreadData> renderBuffersToDestroy;
+    };
+
+    std::map<std::thread::id, ThreadData> threadsMap;
+    void destroyPendingRenderBuffers();
+    void addRenderBufferToDestroy(LRenderBuffer::LRenderBufferPrivate::ThreadData &data);
 };
 
 

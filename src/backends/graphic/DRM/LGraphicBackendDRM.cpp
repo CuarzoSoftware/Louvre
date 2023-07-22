@@ -98,7 +98,7 @@ static SRMInterface srmInterface =
 static void initConnector(Backend *bknd, SRMConnector *conn)
 {
     if (srmConnectorGetUserData(conn))
-        return;
+       return;
 
     LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
     LOutput *output = compositor->createOutputRequest();
@@ -164,7 +164,6 @@ static void connectorPluggedEventHandler(SRMListener *listener, SRMConnector *co
     compositor->imp()->renderMutex.unlock();
     initConnector(bknd, conn);
     LOutput *output = (LOutput*)srmConnectorGetUserData(conn);
-    bknd->connectedOutputs.push_back(output);
     compositor->seat()->outputPlugged(output);
     compositor->imp()->renderMutex.lock();
 }

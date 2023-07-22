@@ -5,6 +5,7 @@
 #include <LView.h>
 #include <LRect.h>
 #include <map>
+#include <thread>
 #include <LPainter.h>
 #include <GL/gl.h>
 
@@ -12,7 +13,7 @@ using namespace Louvre;
 
 LPRIVATE_CLASS(LView)
 
-    void removeOutput(Louvre::LView *view, LOutput *output);
+    void removeThread(Louvre::LView *view, thread::id thread);
 
     UInt32 type;
     LScene *scene = nullptr;
@@ -41,8 +42,9 @@ LPRIVATE_CLASS(LView)
     LSizeF tmpScalingVector;
 
     // Cached data for each output
-    struct ViewOutputData
+    struct ViewThreadData
     {
+        LOutput *o = nullptr;
         Float32 prevOpacity = 1.f;
         UInt32 lastRenderedDamageId;
         LRect prevRect;
@@ -54,7 +56,7 @@ LPRIVATE_CLASS(LView)
 
     struct ViewCache
     {
-        ViewOutputData *voD;
+        ViewThreadData *voD;
         LRect rect;
         LRect localRect;
         LRegion damage;
@@ -68,7 +70,10 @@ LPRIVATE_CLASS(LView)
         bool scalingEnabled;
     } cache;
 
-    std::map<LOutput*,ViewOutputData>outputsMap;
+    std::map<std::thread::id,ViewThreadData>threadsMap;
+
+    // Input related
+    bool pointerIsOver = false;
 };
 
 #endif // LVIEWPRIVATE_H

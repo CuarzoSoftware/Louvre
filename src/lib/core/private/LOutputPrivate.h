@@ -9,6 +9,7 @@ LPRIVATE_CLASS(LOutput)
     LOutput *output;
     LRect rect;
     LPoint lastPos;
+    LSize lastSize;
     LOutputMode *pendingMode = nullptr;
     std::thread::id threadId;
 
@@ -36,10 +37,6 @@ LPRIVATE_CLASS(LOutput)
     void backendResizeGL();
     void backendUninitializeGL();
     void backendPageFlipped();
-
-    // RenderBuffers
-    std::list<LRenderBuffer::LRenderBufferPrivate::OutputData> framebuffersToDestroy;
-    void destroyPendingFramebuffers();
 };
 
 #endif // LOUTPUTPRIVATE_H

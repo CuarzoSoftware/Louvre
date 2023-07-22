@@ -20,6 +20,7 @@ public:
     LPainter& operator= (const LPainter&) = delete;
 
     void bindFramebuffer(LFramebuffer *framebuffer);
+    LFramebuffer *boundFramebuffer() const;
 
     /*!
      * @brief Draws a texture.

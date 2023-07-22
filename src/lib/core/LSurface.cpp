@@ -64,6 +64,8 @@ LSurface::LSurface(LSurface::Params *params)
 
 LSurface::~LSurface()
 {
+    imp()->lastPointerEventView = nullptr;
+
     if (imp()->texture && imp()->texture != imp()->textureBackup && imp()->texture->imp()->pendingDelete)
         delete imp()->texture;
 

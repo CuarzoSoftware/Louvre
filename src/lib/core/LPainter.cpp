@@ -1,5 +1,6 @@
 #include <private/LPainterPrivate.h>
 #include <private/LOutputFramebufferPrivate.h>
+#include <private/LCompositorPrivate.h>
 
 #include <GLES2/gl2.h>
 #include <LOpenGL.h>
@@ -7,7 +8,6 @@
 #include <LTexture.h>
 #include <LOutput.h>
 #include <cstdio>
-#include <LCompositor.h>
 #include <string.h>
 
 using namespace Louvre;
@@ -17,6 +17,8 @@ LPainter::LPainter()
     m_imp = new LPainterPrivate();
 
     imp()->painter = this;
+
+    compositor()->imp()->threadsMap[std::this_thread::get_id()].painter = this;
 
     // Open the vertex/fragment shaders
     GLchar vShaderStr[] = R"(
@@ -118,9 +120,17 @@ LPainter::LPainter()
 
 void LPainter::bindFramebuffer(LFramebuffer *framebuffer)
 {
-    imp()->fbId = framebuffer->id(imp()->output);
+    if (!framebuffer)
+        return;
+
+    imp()->fbId = framebuffer->id();
     glBindFramebuffer(GL_FRAMEBUFFER, imp()->fbId);
     imp()->fb = framebuffer;
+}
+
+LFramebuffer *LPainter::boundFramebuffer() const
+{
+    return imp()->fb;
 }
 
 void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src, const LRect &dst)

@@ -14,13 +14,11 @@ class Dock : public LLayerView
 {
 public:
     Dock(Output *output);
+    ~Dock();
 
     void update();
     void show();
     void hide();
-    void handleCursorMovement();
-
-    Output *output() const;
 
     LLayerView dockClipping = LLayerView(this);
     LSceneView *dockScene;
@@ -32,11 +30,12 @@ public:
     LTextureView *borderRadiusBR;
     LTextureView *borderRadiusBL;
 
-private:
-    Output *m_output;
-    Float32 m_visiblePercent = 1.f;
-    Int32 m_padding = 10;
-    Int32 m_spacing = 10;
+    void pointerEnterEvent(const LPoint &localPos) override;
+    void pointerLeaveEvent() override;
+
+    Output *output = nullptr;
+    Float32 visiblePercent = 0.f;
+    LAnimation *anim = nullptr;
 };
 
 #endif // DOCK_H

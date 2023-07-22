@@ -234,7 +234,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
                     modY = r.y() % current.bufferScale;
                     modW = r.w() % current.bufferScale;
                     modH = r.h() % current.bufferScale;
-                    currentDamageB.addRect(
+                    onlyPending.addRect(
                                 r.x() - modX,
                                 r.y() - modY,
                                 r.w() + modW + (modX << 1),
@@ -247,7 +247,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
                 while (!pendingDamageB.empty())
                 {
 
-                    currentDamageB.addRect(pendingDamageB.back());
+                    onlyPending.addRect(pendingDamageB.back());
                     pendingDamageB.pop_back();
                 }
             }
@@ -464,7 +464,6 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
             {
                 while (!pendingDamageB.empty())
                 {
-
                     currentDamageB.addRect(pendingDamageB.back());
                     pendingDamageB.pop_back();
                 }

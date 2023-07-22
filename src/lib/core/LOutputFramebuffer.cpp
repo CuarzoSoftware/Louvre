@@ -28,9 +28,8 @@ const LRect &LOutputFramebuffer::rect() const
     return imp()->output->rect();
 }
 
-GLuint LOutputFramebuffer::id(LOutput *output) const
+GLuint LOutputFramebuffer::id() const
 {
-    L_UNUSED(output);
     return 0;
 }
 

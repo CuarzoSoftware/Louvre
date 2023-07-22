@@ -13,17 +13,18 @@
 
 Output::Output():LOutput() {}
 
-Compositor *Output::compositor() const
-{
-    return (Compositor*)LCompositor::compositor();
-}
-
 void Output::loadWallpaper()
 {
     if (wallpaperView)
     {
         if (wallpaperView->texture())
         {
+            if (sizeB() == wallpaperView->texture()->sizeB())
+            {
+                wallpaperView->setBufferScale(scale());
+                return;
+            }
+
             delete wallpaperView->texture();
             wallpaperView->setTexture(nullptr);
         }
@@ -44,39 +45,57 @@ void Output::loadWallpaper()
         wallpaperView->setBufferScale(scale());
         delete tmpWallpaper;
     }
+    else
+    {
+        wallpaperView->setVisible(false);
+    }
 
     LRegion trans;
     wallpaperView->setTranslucentRegion(&trans);
 }
 
+void Output::updateTopBar()
+{
+    topBarView->setPos(pos());
+    topBarView->setSize(LSize(size().w(), 24));
+}
+
 void Output::initializeGL()
 {    
+    topBarView = new LSolidColorView(1.f, 1.f, 1.f, 0.6f, G::compositor()->overlayLayer);
+    topBarView->enableParentOffset(false);
+    updateTopBar();
     dock = new Dock(this);
     loadWallpaper();
-    compositor()->scene->handleInitializeGL(this);
+    G::compositor()->scene->handleInitializeGL(this);
 }
 
 void Output::resizeGL()
 {
+    updateTopBar();
     dock->update();
     loadWallpaper();
-    compositor()->scene->handleResizeGL(this);
+    G::compositor()->scene->handleResizeGL(this);
 }
 
 void Output::moveGL()
 {
+    updateTopBar();
     dock->update();
     wallpaperView->setPos(pos());
+    G::compositor()->scene->handleMoveGL(this);
 }
 
 void Output::paintGL()
 {
-    compositor()->scene->handlePaintGL(this);
+    G::compositor()->scene->handlePaintGL(this);
 }
 
 void Output::uninitializeGL()
 {
-    compositor()->scene->handleUninitializeGL(this);
     delete dock;
     dock = nullptr;
+    delete topBarView;
+    topBarView = nullptr;
+    G::compositor()->scene->handleUninitializeGL(this);
 }

@@ -93,12 +93,13 @@ void LView::setParent(LView *view)
 
         if (s)
         {
-            for (auto &pair : imp()->outputsMap)
+            for (auto &pair : imp()->threadsMap)
             {
                 if (!pair.second.prevMapped)
                     continue;
 
-                s->addDamage(pair.first, pair.second.prevParentClipping);
+                if (pair.second.o)
+                    s->addDamage(pair.second.o, pair.second.prevParentClipping);
             }
         }
     }
@@ -126,7 +127,7 @@ void LView::insertAfter(LView *prev, bool switchParent)
         parent()->imp()->children.push_front(this);
         imp()->parentLink = parent()->imp()->children.begin();
 
-        for (auto &pair : imp()->outputsMap)
+        for (auto &pair : imp()->threadsMap)
             pair.second.changedOrder = true;
 
         repaint();
@@ -143,7 +144,7 @@ void LView::insertAfter(LView *prev, bool switchParent)
                 return;
         }
 
-        for (auto &pair : imp()->outputsMap)
+        for (auto &pair : imp()->threadsMap)
             pair.second.changedOrder = true;
 
         repaint();
@@ -359,4 +360,38 @@ void LView::setBlendFunc(GLenum sFactor, GLenum dFactor)
         imp()->dFactor = dFactor;
         repaint();
     }
+}
+
+bool LView::pointerIsOver() const
+{
+    return imp()->pointerIsOver;
+}
+
+void LView::pointerEnterEvent(const LPoint &localPos)
+{
+    L_UNUSED(localPos);
+}
+
+void LView::pointerMoveEvent(const LPoint &localPos)
+{
+    L_UNUSED(localPos);
+}
+
+void LView::pointerLeaveEvent()
+{
+}
+
+void LView::pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state)
+{
+    L_UNUSED(button);
+    L_UNUSED(state);
+}
+
+void LView::pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source)
+{
+    L_UNUSED(axisX);
+    L_UNUSED(axisY);
+    L_UNUSED(discreteX);
+    L_UNUSED(discreteY);
+    L_UNUSED(source);
 }

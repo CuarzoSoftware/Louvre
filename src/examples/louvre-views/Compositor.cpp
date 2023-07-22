@@ -6,6 +6,9 @@
 #include <LAnimation.h>
 #include <Global.h>
 #include <LLog.h>
+#include <LTextureView.h>
+
+#include "Toplevel.h"
 
 Compositor::Compositor():LCompositor()
 {
@@ -38,6 +41,8 @@ void Compositor::initialized()
 
     // Arrange outputs from left to right
     G::arrangeOutputs();
+
+    G::loadCursors();
 }
 
 LOutput *Compositor::createOutputRequest()
@@ -53,4 +58,9 @@ LSurface *Compositor::createSurfaceRequest(LSurface::Params *params)
 LPointer *Compositor::createPointerRequest(LPointer::Params *params)
 {
     return new Pointer(params);
+}
+
+LToplevelRole *Compositor::createToplevelRoleRequest(LToplevelRole::Params *params)
+{
+    return new Toplevel(params);
 }

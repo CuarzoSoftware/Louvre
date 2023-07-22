@@ -106,12 +106,12 @@ void LOutput::setBufferDamage(const LRegion &damage)
 
 void LOutput::setScale(Int32 scale)
 {
-    if (scale == imp()->outputScale)
-        return;
-
     imp()->outputScale = scale;
 
-    imp()->rect.setBR(sizeB()/scale);
+    imp()->rect.setSize(sizeB()/scale);
+
+    if (scale == imp()->outputScale)
+        return;
 
     for (LClient *c : compositor()->clients())
     {
@@ -212,4 +212,9 @@ void LOutput::setPos(const LPoint &pos)
 LPainter *LOutput::painter() const
 {
     return imp()->painter;
+}
+
+const thread::id &LOutput::threadId() const
+{
+    return imp()->threadId;
 }

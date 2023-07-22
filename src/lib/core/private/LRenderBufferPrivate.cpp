@@ -1,9 +1,6 @@
 #include <private/LRenderBufferPrivate.h>
 
-GLuint LRenderBuffer::LRenderBufferPrivate::getTextureId(LOutput *output)
+GLuint LRenderBuffer::LRenderBufferPrivate::getTextureId()
 {
-    if (!output)
-        return 0;
-
-    return outputsMap[output].textureId;
+    return threadsMap[std::this_thread::get_id()].textureId;
 }

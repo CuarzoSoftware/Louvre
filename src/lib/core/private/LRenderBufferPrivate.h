@@ -4,6 +4,7 @@
 #include <LRenderBuffer.h>
 #include <LTexture.h>
 #include <map>
+#include <thread>
 
 using namespace Louvre;
 
@@ -12,16 +13,15 @@ LPRIVATE_CLASS(LRenderBuffer)
     Int32 scale = 1;
     LRect rect;
 
-    struct OutputData
+    struct ThreadData
     {
         GLuint textureId = 0;
         GLuint framebufferId = 0;
     };
 
-    GLuint getTextureId(LOutput *output);
-    std::map<LOutput*, OutputData>outputsMap;
+    GLuint getTextureId();
+    std::map<std::thread::id, ThreadData>threadsMap;
 
-    std::list<LRenderBuffer*>::iterator compositorLink;
 };
 
 #endif // LRENDERBUFFERPRIVATE_H

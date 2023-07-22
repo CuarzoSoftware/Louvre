@@ -8,7 +8,7 @@
 #include <private/LOutputPrivate.h>
 #include <private/LCursorPrivate.h>
 #include <private/LAnimationPrivate.h>
-//#include <private/LViewPrivate.h>
+#include <private/LViewPrivate.h>
 
 #include <protocols/Wayland/private/GOutputPrivate.h>
 
@@ -171,6 +171,8 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
 
     wl_event_loop_dispatch(imp()->eventLoop, 0);
 
+    imp()->destroyPendingRenderBuffers();
+
     if (seat()->enabled())
     {
         flushClients();
@@ -293,10 +295,10 @@ void LCompositor::removeOutput(LOutput *output)
             for (LSurface *s : surfaces())
                 s->sendOutputLeaveEvent(output);
 
-            //for (LView *v : imp()->views)
-            //    v->imp()->removeOutput(v, output);
+            for (LView *v : imp()->views)
+                v->imp()->removeThread(v, (*it)->threadId());
 
-            imp()->outputs.remove(output);
+            imp()->outputs.erase(it);
 
             // Remove all wl_outputs from clients
             for (LClient *c : clients())

@@ -4,7 +4,6 @@
 LLayerView::LLayerView(LView *parent) : LView(LView::Layer, parent)
 {
     m_imp = new LLayerViewPrivate();
-    enableInput(false);
 }
 
 LLayerView::~LLayerView()

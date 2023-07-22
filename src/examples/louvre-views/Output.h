@@ -15,14 +15,17 @@ class Output : public LOutput
 {
 public:
     Output();
-    Compositor *compositor() const;
+
     void loadWallpaper();
+    void updateTopBar();
+
     void initializeGL() override;
     void resizeGL() override;
     void moveGL() override;
     void paintGL() override;
     void uninitializeGL() override;
 
+    LSolidColorView *topBarView = nullptr;
     LTextureView *wallpaperView = nullptr;
     Dock *dock = nullptr;
 };

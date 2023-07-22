@@ -151,7 +151,7 @@ void LSurfaceView::requestNextFrame(LOutput *output)
     if (forceRequestNextFrameEnabled())
     {
         surface()->requestNextFrame();
-        view->imp()->outputsMap[output].lastRenderedDamageId = surface()->damageId();
+        view->imp()->threadsMap[output->threadId()].lastRenderedDamageId = surface()->damageId();
         return;
     }
 
@@ -160,7 +160,7 @@ void LSurfaceView::requestNextFrame(LOutput *output)
     {
         // If the view is visible on another output and has not rendered the new damage
         // prevent clearing the damage immediately
-        if (o != output && (view->imp()->outputsMap[o].lastRenderedDamageId < surface()->damageId()))
+        if (o != output && (view->imp()->threadsMap[o->threadId()].lastRenderedDamageId < surface()->damageId()))
         {
             clearDamage = false;
             o->repaint();
@@ -170,7 +170,7 @@ void LSurfaceView::requestNextFrame(LOutput *output)
     if (clearDamage)
         surface()->requestNextFrame();
 
-    view->imp()->outputsMap[output].lastRenderedDamageId = surface()->damageId();
+    view->imp()->threadsMap[output->threadId()].lastRenderedDamageId = surface()->damageId();
 }
 
 const LRegion *LSurfaceView::damage() const

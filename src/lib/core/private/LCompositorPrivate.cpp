@@ -401,3 +401,21 @@ void LCompositor::LCompositorPrivate::processAnimations()
         it++;
     }
 }
+
+void LCompositor::LCompositorPrivate::destroyPendingRenderBuffers()
+{
+    ThreadData &threadData = threadsMap[std::this_thread::get_id()];
+
+    while (!threadData.renderBuffersToDestroy.empty())
+    {
+        glDeleteTextures(1, &threadData.renderBuffersToDestroy.back().textureId);
+        glDeleteFramebuffers(1, &threadData.renderBuffersToDestroy.back().framebufferId);
+        threadData.renderBuffersToDestroy.pop_back();
+    }
+}
+
+void LCompositor::LCompositorPrivate::addRenderBufferToDestroy(LRenderBuffer::LRenderBufferPrivate::ThreadData &data)
+{
+    ThreadData &threadData = threadsMap[std::this_thread::get_id()];
+    threadData.renderBuffersToDestroy.push_back(data);
+}

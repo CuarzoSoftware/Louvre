@@ -297,7 +297,7 @@ GLuint LTexture::id(LOutput *output) const
         if (sourceType() == Framebuffer)
         {
             LRenderBuffer *fb = (LRenderBuffer*)imp()->graphicBackendData;
-            return fb->imp()->getTextureId(output);
+            return fb->imp()->getTextureId();
         }
         else
             return compositor()->imp()->graphicBackend->getTextureID(output, (LTexture*)this);

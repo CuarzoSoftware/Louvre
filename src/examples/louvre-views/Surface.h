@@ -3,8 +3,10 @@
 
 #include <LSurface.h>
 #include <LSurfaceView.h>
-#include <Compositor.h>
-#include <Global.h>
+
+#include "Compositor.h"
+#include "Global.h"
+#include "DockItem.h"
 
 using namespace Louvre;
 using namespace std;
@@ -14,7 +16,6 @@ class Surface : public LSurface
 public:
     Surface(LSurface::Params *params);
     ~Surface();
-    Compositor *compositor() const;
 
     void mappingChanged() override;
     void orderChanged() override;
@@ -22,12 +23,16 @@ public:
     void bufferSizeChanged() override;
     void minimizedChanged() override;
 
+    LTexture *renderThumbnail();
+    void unminimize(DockItem *clickedItem);
+
     bool firstMap = true;
     LSurfaceView *view = nullptr;
 
-    LPoint posBeforeMinimized;
-    LTexture *minimizedTexture;
-    std::list<LTextureView*>minimizedViews;
+    LTextureView *thumbnailFullsizeView = nullptr;
+    LTexture *thumbnailFullSizeTex = nullptr;
+    LTexture *thumbnailTex = nullptr;
+    std::list<DockItem*>minimizedViews;
 
     LAnimation *minimizeAnim = nullptr;
 };

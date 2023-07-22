@@ -260,6 +260,8 @@ public:
      */
     LPainter *painter() const;
 
+    const std::thread::id &threadId() const;
+
     /*!
      * @name Métodos Virtuales
      */

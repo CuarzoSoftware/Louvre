@@ -7,20 +7,21 @@
 #include <LLog.h>
 #include <LFramebuffer.h>
 
-void LSceneView::LSceneViewPrivate::clearTmpVariables(OutputData *oD)
+void LSceneView::LSceneViewPrivate::clearTmpVariables(ThreadData *oD)
 {
     oD->newDamage.clear();
     oD->opaqueTransposedSum.clear();
     oD->foundRenderableSaledView = false;
 }
 
-void LSceneView::LSceneViewPrivate::damageAll(OutputData *oD)
+void LSceneView::LSceneViewPrivate::damageAll(ThreadData *oD)
 {
     oD->newDamage.clear();
     oD->newDamage.addRect(fb->rect());
+    oD->newDamage.addRect(fb->rect());
 }
 
-void LSceneView::LSceneViewPrivate::checkRectChange(OutputData *oD)
+void LSceneView::LSceneViewPrivate::checkRectChange(ThreadData *oD)
 {
     if (oD->prevRect.size() != fb->rect().size())
     {
@@ -29,7 +30,7 @@ void LSceneView::LSceneViewPrivate::checkRectChange(OutputData *oD)
     }
 }
 
-void LSceneView::LSceneViewPrivate::cachePass(LView *view, OutputData *oD)
+void LSceneView::LSceneViewPrivate::cachePass(LView *view, ThreadData *oD)
 {
     if (view->type() != Scene)
         for (list<LView*>::const_iterator it = view->children().cbegin(); it != view->children().cend(); it++)
@@ -41,7 +42,8 @@ void LSceneView::LSceneViewPrivate::cachePass(LView *view, OutputData *oD)
     view->imp()->repaintCalled = false;
 
     // Quick output data handle
-    cache->voD = &view->imp()->outputsMap[oD->o];
+    cache->voD = &view->imp()->threadsMap[std::this_thread::get_id()];
+    cache->voD->o = oD->o;
 
     // Cache mapped call
     cache->mapped = view->mapped();
@@ -58,16 +60,16 @@ void LSceneView::LSceneViewPrivate::cachePass(LView *view, OutputData *oD)
 }
 
 
-void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, OutputData *oD)
+void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
 {
     // Children first
     if (view->type() == Scene)
     {
         LSceneView *sceneView = (LSceneView*)view;
         if (view->imp()->cache.scalingEnabled)
-            sceneView->render(oD->o, nullptr);
+            sceneView->render(nullptr);
         else
-            sceneView->render(oD->o, &oD->opaqueTransposedSum);
+            sceneView->render(&oD->opaqueTransposedSum);
     }
     else
     {
@@ -97,7 +99,7 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, OutputData *oD)
 
     bool mappingChanged = cache->mapped != cache->voD->prevMapped;
 
-    if (!mappingChanged && !cache->mapped)
+    if (oD->o && !mappingChanged && !cache->mapped)
     {
         if (view->forceRequestNextFrameEnabled())
             view->requestNextFrame(oD->o);
@@ -214,7 +216,7 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, OutputData *oD)
 
     cache->occluded = currentParentClipping.empty();
 
-    if (!cache->occluded || view->forceRequestNextFrameEnabled())
+    if (oD->o && (!cache->occluded || view->forceRequestNextFrameEnabled()))
         view->requestNextFrame(oD->o);
 
     // Store sum of previus opaque regions (this will later be clipped when painting opaque and translucent regions)
@@ -222,7 +224,7 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, OutputData *oD)
     oD->opaqueTransposedSum.addRegion(cache->opaque);
 }
 
-void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view, OutputData *oD)
+void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view, ThreadData *oD)
 {
     // Children first
     if (view->type() != Scene)
@@ -287,7 +289,7 @@ void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view, OutputData *oD
     }
 }
 
-void LSceneView::LSceneViewPrivate::drawBackground(OutputData *oD, bool addToOpaqueSum)
+void LSceneView::LSceneViewPrivate::drawBackground(ThreadData *oD, bool addToOpaqueSum)
 {
     LRegion backgroundDamage = oD->newDamage;
     backgroundDamage.subtractRegion(oD->opaqueTransposedSum);
@@ -310,7 +312,7 @@ void LSceneView::LSceneViewPrivate::drawBackground(OutputData *oD, bool addToOpa
         oD->opaqueTransposedSum.addRegion(backgroundDamage);
 }
 
-void LSceneView::LSceneViewPrivate::drawTranslucentDamage(LView *view, OutputData *oD)
+void LSceneView::LSceneViewPrivate::drawTranslucentDamage(LView *view, ThreadData *oD)
 {
     LView::LViewPrivate::ViewCache *cache = &view->imp()->cache;
 

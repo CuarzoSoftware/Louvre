@@ -1,10 +1,11 @@
+#include <private/LCompositorPrivate.h>
 #include <private/LSceneViewPrivate.h>
 #include <private/LViewPrivate.h>
+#include <private/LPainterPrivate.h>
 #include <LFramebuffer.h>
 #include <LRenderBuffer.h>
 #include <LPainter.h>
 #include <LOutput.h>
-#include <LCompositor.h>
 
 LSceneView::LSceneView(LFramebuffer *framebuffer, LView *parent) : LView(Scene, parent)
 {
@@ -18,6 +19,14 @@ LSceneView::LSceneView(const LSize &sizeB, Int32 bufferScale, LView *parent) : L
     imp()->fb = new LRenderBuffer(sizeB);
     LRenderBuffer *rb = (LRenderBuffer*)imp()->fb;
     rb->setScale(bufferScale);
+}
+
+LSceneView::~LSceneView()
+{
+    // Need to remove children before LView destructor
+    // or compositor crashes when children add damage
+    while (!children().empty())
+        children().front()->setParent(nullptr);
 }
 
 const LRGBAF &LSceneView::clearColor() const
@@ -42,15 +51,13 @@ void LSceneView::damageAll(LOutput *output)
     if (!output)
         return;
 
-    LSceneViewPrivate::OutputData *oD = &imp()->outputsMap[output];
+    LSceneViewPrivate::ThreadData *oD = &imp()->threadsMap[output->threadId()];
 
-    if (oD->o)
-    {
-        if (isLScene())
-            oD->manuallyAddedDamage.addRect(oD->o->rect());
-        else
-            oD->manuallyAddedDamage.addRect(LRect(pos(), size()));
-    }
+    if (isLScene())
+        oD->manuallyAddedDamage.addRect(output->rect());
+    else
+        oD->manuallyAddedDamage.addRect(LRect(pos(), size()));
+
 }
 
 void LSceneView::addDamage(LOutput *output, const LRegion &damage)
@@ -58,7 +65,7 @@ void LSceneView::addDamage(LOutput *output, const LRegion &damage)
     if (!output)
         return;
 
-    LSceneViewPrivate::OutputData *oD = &imp()->outputsMap[output];
+    LSceneViewPrivate::ThreadData *oD = &imp()->threadsMap[output->threadId()];
 
     if (oD->o)
         oD->manuallyAddedDamage.addRegion(damage);
@@ -70,12 +77,16 @@ bool LSceneView::isLScene() const
     return nativeView->imp()->scene != nullptr;
 }
 
-void LSceneView::render(LOutput *output, const LRegion *exclude)
+void LSceneView::render(const LRegion *exclude)
 {
-    if (!output)
+    LPainter *painter = compositor()->imp()->threadsMap[std::this_thread::get_id()].painter;
+
+    if (!painter)
         return;
 
-    output->painter()->bindFramebuffer(imp()->fb);
+    LFramebuffer *prevFb = painter->boundFramebuffer();
+
+    painter->bindFramebuffer(imp()->fb);
 
     if (!isLScene())
     {
@@ -83,18 +94,18 @@ void LSceneView::render(LOutput *output, const LRegion *exclude)
         rb->setPos(pos());
     }
 
-    LSceneViewPrivate::OutputData *oD = &imp()->outputsMap[output];
-    imp()->currentOutputData = oD;
+    LSceneViewPrivate::ThreadData *oD = &imp()->threadsMap[std::this_thread::get_id()];
+    imp()->currentThreadData = oD;
 
-    // If output was not cached
-    if (!oD->o)
+    // If painter was not cached
+    if (!oD->p)
     {
         for (Int32 i = 0; i < imp()->fb->buffersCount() - 1; i++)
             oD->prevDamageList.push_back(new LRegion());
 
         oD->c = compositor();
-        oD->p = output->painter();
-        oD->o = output;
+        oD->p = painter;
+        oD->o = painter->imp()->output;
     }
 
     imp()->clearTmpVariables(oD);
@@ -163,7 +174,12 @@ void LSceneView::render(LOutput *output, const LRegion *exclude)
         imp()->fb->setFramebufferDamageC(&oD->newDamage);
     }
 
-    output->painter()->bindFramebuffer(output->framebuffer());
+    painter->bindFramebuffer(prevFb);
+}
+
+const LTexture *LSceneView::texture(Int32 index) const
+{
+    return imp()->fb->texture(index);
 }
 
 void LSceneView::setPos(const LPoint &pos)
@@ -247,17 +263,17 @@ void LSceneView::requestNextFrame(LOutput *output)
 
 const LRegion *LSceneView::damage() const
 {
-    return &imp()->currentOutputData->newDamage;
+    return &imp()->currentThreadData->newDamage;
 }
 
 const LRegion *LSceneView::translucentRegion() const
 {
-    return &imp()->currentOutputData->translucentTransposedSum;
+    return &imp()->currentThreadData->translucentTransposedSum;
 }
 
 const LRegion *LSceneView::opaqueRegion() const
 {
-    return &imp()->currentOutputData->opaqueTransposedSum;
+    return &imp()->currentThreadData->opaqueTransposedSum;
 }
 
 const LRegion *LSceneView::inputRegion() const

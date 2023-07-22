@@ -2,6 +2,7 @@
 #define LVIEW_H
 
 #include <LObject.h>
+#include <LPointer.h>
 
 class Louvre::LView : public LObject
 {
@@ -208,6 +209,8 @@ public:
      */
     void setBlendFunc(GLenum sFactor, GLenum dFactor);
 
+    bool pointerIsOver() const;
+
     /*!
      * Indicates whether the view should be rendered without taking
      * the visible() property into consideration.
@@ -309,6 +312,13 @@ public:
                            Int32 dstW, Int32 dstH,
                            Float32 scale,
                            Float32 alpha) = 0;
+
+    // Input
+    virtual void pointerEnterEvent(const LPoint &localPos);
+    virtual void pointerMoveEvent(const LPoint &localPos);
+    virtual void pointerLeaveEvent();
+    virtual void pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state);
+    virtual void pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source);
 
 LPRIVATE_IMP(LView)
 };

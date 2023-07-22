@@ -349,7 +349,6 @@ void Output::paintGL()
     }
 
     // Background
-
     LRegion backgroundDamage = newDamage;
     backgroundDamage.subtractRegion(opaqueTransposedCSum);
     boxes = backgroundDamage.rects(&n);

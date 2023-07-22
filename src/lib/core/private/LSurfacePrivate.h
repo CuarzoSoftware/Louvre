@@ -96,6 +96,8 @@ LPRIVATE_CLASS(LSurface)
     // Presentation feedback
     std::list<WpPresentationTime::RWpPresentationFeedback*> wpPresentationFeedbackResources;
     void sendPresentationFeedback(LOutput *output, timespec &ns);
+
+    LSurfaceView *lastPointerEventView = nullptr;
 };
 
 #endif // LSURFACEPRIVATE_H

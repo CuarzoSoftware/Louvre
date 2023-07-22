@@ -54,7 +54,7 @@ LView *LScene::LScenePrivate::viewAt(LView *view, const LPoint &pos)
         }
         else
         {
-            if (LRect(view->pos(), view->size()).containsPoint(pos - view->pos()))
+            if (LRect(view->pos(), view->size()).containsPoint(pos))
                 v = view;
         }
     }
@@ -90,4 +90,106 @@ bool LScene::LScenePrivate::pointClippedByParentScene(LView *view, const LPoint 
         return true;
 
     return pointClippedByParentScene(parentScene, point);
+}
+
+bool LScene::LScenePrivate::pointerIsOverView(LView *view, const LPoint &pos)
+{
+    if (!view->mapped() || !view->inputEnabled())
+        return false;
+
+    if (pointClippedByParent(view, pos))
+        return false;
+
+    if (pointClippedByParentScene(view, pos))
+        return false;
+
+    if ((view->scalingEnabled() || view->parentScalingEnabled()) && view->scalingVector() != LSizeF(1.f,1.f))
+    {
+        if (view->scalingVector().area() == 0.f)
+            return false;
+
+        if (view->inputRegion())
+        {
+            if (view->inputRegion()->containsPoint((pos - view->pos())/view->scalingVector()))
+                return true;
+        }
+        else
+        {
+            if (LRect(view->pos(), view->size()).containsPoint((pos - view->pos())/view->scalingVector()))
+                return true;
+        }
+    }
+    else
+    {
+        if (view->inputRegion())
+        {
+            if (view->inputRegion()->containsPoint(pos - view->pos()))
+                return true;
+        }
+        else
+        {
+            if (LRect(view->pos(), view->size()).containsPoint(pos))
+                return true;
+        }
+    }
+
+    return false;
+}
+
+void LScene::LScenePrivate::handlePointerMove(LView *view, const LPoint &pos, LView **firstViewFound)
+{
+    for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
+        handlePointerMove(*it, pos, firstViewFound);
+
+    if (pointerIsOverView(view, pos))
+    {
+        if (!(*firstViewFound))
+            *firstViewFound = view;
+
+        if (view->pointerIsOver())
+            view->pointerMoveEvent(viewLocalPos(view, pos));
+        else
+        {
+            view->imp()->pointerIsOver = true;
+            view->pointerEnterEvent(viewLocalPos(view, pos));
+        }
+    }
+    else
+    {
+        if (view->pointerIsOver())
+        {
+            view->imp()->pointerIsOver = false;
+            view->pointerLeaveEvent();
+        }
+    }
+
+    // Hides unused warning
+    (void)firstViewFound;
+}
+
+
+LPoint LScene::LScenePrivate::viewLocalPos(LView *view, const LPoint &pos)
+{
+    if ((view->scalingEnabled() || view->parentScalingEnabled()) && view->scalingVector().area() != 0.f)
+        return (pos - view->pos()) / view->scalingVector();
+    else
+        return pos - view->pos();
+}
+
+void LScene::LScenePrivate::handlePointerButton(LView *view, LPointer::Button button, LPointer::ButtonState state)
+{
+    for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
+        handlePointerButton(*it, button, state);
+
+    if (view->imp()->pointerIsOver)
+        view->pointerButtonEvent(button, state);
+}
+
+void LScene::LScenePrivate::handlePointerAxisEvent(LView *view, Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source)
+{
+    for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
+        handlePointerAxisEvent(*it, axisX, axisY, discreteX, discreteY, source);
+
+    if (view->imp()->pointerIsOver)
+        view->pointerAxisEvent(axisX, axisY, discreteX, discreteY, source);
 }

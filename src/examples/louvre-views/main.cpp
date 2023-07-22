@@ -6,7 +6,7 @@ int main(int, char *[])
 {
     setenv("WAYLAND_DISPLAY", "wayland-0", 1);
     setenv("MOZ_ENABLE_WAYLAND", "1", 1);
-    setenv("LOUVRE_DEBUG", "1", 1);
+    setenv("LOUVRE_DEBUG", "2", 1);
     setenv("SRM_DEBUG", "0", 1);
 
     Compositor compositor;

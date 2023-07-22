@@ -4,6 +4,7 @@
 #include <LSceneView.h>
 #include <LRegion.h>
 #include <map>
+#include <thread>
 
 using namespace Louvre;
 
@@ -14,7 +15,7 @@ LPRIVATE_CLASS(LSceneView)
     std::list<LOutput*>outputs;
     LRegion input;
 
-    struct OutputData
+    struct ThreadData
     {
         // List of new damage calculated in prev frames
         std::list<LRegion*>prevDamageList;
@@ -41,19 +42,19 @@ LPRIVATE_CLASS(LSceneView)
     };
 
     LRGBAF clearColor = {0,0,0,0};
-    std::map<LOutput*, OutputData> outputsMap;
+    std::map<std::thread::id, ThreadData> threadsMap;
 
     // Quck handle to current output data
-    OutputData *currentOutputData;
+    ThreadData *currentThreadData;
 
-    void clearTmpVariables(OutputData *oD);
-    void damageAll(OutputData *oD);
-    void checkRectChange(OutputData *oD);
-    void cachePass(LView *view, OutputData *oD);
-    void calcNewDamage(LView *view, OutputData *oD);
-    void drawOpaqueDamage(LView *view, OutputData *oD);
-    void drawBackground(OutputData *oD, bool addToOpaqueSum);
-    void drawTranslucentDamage(LView *view, OutputData *oD);
+    void clearTmpVariables(ThreadData *oD);
+    void damageAll(ThreadData *oD);
+    void checkRectChange(ThreadData *oD);
+    void cachePass(LView *view, ThreadData *oD);
+    void calcNewDamage(LView *view, ThreadData *oD);
+    void drawOpaqueDamage(LView *view, ThreadData *oD);
+    void drawBackground(ThreadData *oD, bool addToOpaqueSum);
+    void drawTranslucentDamage(LView *view, ThreadData *oD);
 
     void parentClipping(LView *parent, LRegion *region);
 };

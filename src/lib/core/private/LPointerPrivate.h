@@ -31,6 +31,11 @@ LPRIVATE_CLASS(LPointer)
     LSize resizingToplevelInitWindowSize;
     LToplevelRole::ResizeEdge resizingToplevelEdge;
     LRect resizingToplevelConstraintBounds;
+
+    Float64 axisXprev;
+    Float64 axisYprev;
+    Int32 discreteXprev;
+    Int32 discreteYprev;
 };
 
 #endif // LPOINTERPRIVATE_H

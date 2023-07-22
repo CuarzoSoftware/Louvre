@@ -9,8 +9,6 @@
 LRenderBuffer::LRenderBuffer(const LSize &sizeB)
 {
     m_imp = new LRenderBufferPrivate();
-    compositor()->imp()->renderBuffers.push_back(this);
-    imp()->compositorLink = std::prev(compositor()->imp()->renderBuffers.end());
     imp()->texture.imp()->sourceType = LTexture::Framebuffer;
     imp()->texture.imp()->format = DRM_FORMAT_ARGB8888;
     imp()->texture.imp()->graphicBackendData = this;
@@ -19,13 +17,9 @@ LRenderBuffer::LRenderBuffer(const LSize &sizeB)
 
 LRenderBuffer::~LRenderBuffer()
 {
-    for (auto &pair : imp()->outputsMap)
-    {
+    for (auto &pair : imp()->threadsMap)
         if (pair.second.textureId)
-            pair.first->imp()->framebuffersToDestroy.push_back(pair.second);
-    }
-
-    compositor()->imp()->renderBuffers.erase(imp()->compositorLink);
+            compositor()->imp()->addRenderBufferToDestroy(pair.second);
 
     delete m_imp;
 }
@@ -38,13 +32,12 @@ void LRenderBuffer::setSizeB(const LSize &sizeB)
 
         imp()->rect.setSize(sizeB/imp()->scale);
 
-        for (auto &pair : imp()->outputsMap)
-        {
+        for (auto &pair : imp()->threadsMap)
             if (pair.second.textureId)
-                pair.first->imp()->framebuffersToDestroy.push_back(pair.second);
-        }
+                compositor()->imp()->addRenderBufferToDestroy(pair.second);
 
-        imp()->outputsMap.clear();
+        imp()->threadsMap.clear();
+
     }
 }
 
@@ -88,12 +81,9 @@ const LRect &LRenderBuffer::rect() const
     return imp()->rect;
 }
 
-GLuint LRenderBuffer::id(LOutput *output) const
+GLuint LRenderBuffer::id() const
 {
-    if (!output)
-        return 0;
-
-    LRenderBufferPrivate::OutputData &data = imp()->outputsMap[output];
+    LRenderBufferPrivate::ThreadData &data = imp()->threadsMap[std::this_thread::get_id()];
 
     if (!data.textureId)
     {

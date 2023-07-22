@@ -7,6 +7,7 @@ class Louvre::LSceneView : public LView
 {
 public:
     LSceneView(const LSize &sizeB, Int32 bufferScale, LView *parent = nullptr);
+    ~LSceneView();
 
     const LRGBAF &clearColor() const;
     void setClearColor(Float32 r, Float32 g, Float32 b, Float32 a);
@@ -16,7 +17,8 @@ public:
 
     bool isLScene() const;
 
-    virtual void render(LOutput *output, const LRegion *exclude = nullptr);
+    virtual void render(const LRegion *exclude = nullptr);
+    virtual const LTexture *texture(Int32 index = 0) const;
 
     // Render buffer
     void setPos(const LPoint &pos);

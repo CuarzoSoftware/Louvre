@@ -1,213 +1,28 @@
-#include "Pointer.h"
-#include "Compositor.h"
-#include "Output.h"
-#include <LDNDIconRole.h>
-#include <LDNDManager.h>
-#include <LSeat.h>
-#include <LTime.h>
+#include <LScene.h>
 #include <LCursor.h>
-#include <cstdio>
-#include <math.h>
-#include <unistd.h>
-#include <LSurfaceView.h>
-#include "Surface.h"
-#include <Global.h>
-#include <Dock.h>
+#include <LXCursor.h>
+
+#include "Global.h"
+#include "Pointer.h"
 
 Pointer::Pointer(Params *params) : LPointer(params) {}
 
-Compositor *Pointer::compositor() const
+void Pointer::pointerMoveEvent(Float32 dx, Float32 dy)
 {
-    return (Compositor*)LCompositor::compositor();
-}
-
-Surface *Pointer::focus()
-{
-    return (Surface*)focusSurface();
-}
-
-LPoint Pointer::viewLocalPos(LView *view)
-{
-    if ((view->scalingEnabled() || view->parentScalingEnabled()) && view->scalingVector().area() != 0.f)
-        return (cursor()->pos() - view->pos()) / view->scalingVector();
-    else
-        return cursor()->pos() - view->pos();
+    G::scene()->handlePointerMoveEvent(dx, dy);
 }
 
 void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
 {
-    cursor()->setPos(LPointF(x,y));
-
-    //comp()->sceneView->setNativePosC(cursor()->posC());
-
-    for (Output *o : G::outputs())
-    {
-        if (o->dock)
-            o->dock->handleCursorMovement();
-    }
-
-    for (LView *sv : compositor()->hiddenCursorsLayer->children())
-        ((LSurfaceView*)sv)->surface()->setPos(cursor()->pos());
-
-    // Repaint cursor outputs if hardware composition is not supported
-    for (LOutput *output : cursor()->intersectedOutputs())
-    {
-        if (!cursor()->hasHardwareSupport(output))
-            output->repaint();
-    }
-
-    // Update the drag & drop icon (if there was one)
-    if (seat()->dndManager()->icon())
-    {
-        seat()->dndManager()->icon()->surface()->setPos(cursor()->pos());
-        seat()->dndManager()->icon()->surface()->repaintOutputs();
-    }
-
-    // Update the Toplevel size (if there was one being resized)
-    if (resizingToplevel())
-    {
-        updateResizingToplevelSize();
-        return;
-    }
-
-    // Update the Toplevel pos (if there was one being moved interactively)
-    if (movingToplevel())
-    {
-        updateMovingToplevelPos();
-
-        movingToplevel()->surface()->repaintOutputs();
-
-        if (movingToplevel()->maximized())
-            movingToplevel()->configure(movingToplevel()->states() &~ LToplevelRole::Maximized);
-
-        return;
-    }
-
-    // DO NOT GET CONFUSED! If we are in a drag & drop session, we call setDragginSurface(NULL) in case there is a surface being dragged.
-    if (seat()->dndManager()->dragging())
-        setDragginSurface(nullptr);
-
-    // If there was a surface holding the left pointer button
-    if (draggingSurface())
-    {
-        sendMoveEvent(viewLocalPos(focus()->view));
-        return;
-    }
-
-    // Find the first surface under the cursor
-    LSurface *surface = nullptr;
-    LView *view = compositor()->scene->viewAt(cursor()->pos());
-
-    if (view && view->type() == LView::Surface)
-    {
-        LSurfaceView *surfaceView = (LSurfaceView*)view;
-        surface = surfaceView->surface();
-    }
-
-    if (!surface)
-    {
-        setFocus(nullptr);
-        cursor()->useDefault();
-        cursor()->setVisible(true);
-    }
-    else
-    {
-        if (focusSurface() == surface)
-            sendMoveEvent(viewLocalPos(view));
-        else
-            setFocus(surface, viewLocalPos(view));
-    }
+    G::scene()->handlePointerPosChangeEvent(x, y);
 }
 
 void Pointer::pointerButtonEvent(Button button, ButtonState state)
 {
-    if (!focusSurface())
-    {
-        LSurface *surface = nullptr;
-        LView *view = compositor()->scene->viewAt(cursor()->pos());
+    G::scene()->handlePointerButtonEvent(button, state);
+}
 
-        if (view && view->type() == LView::Surface)
-        {
-            LSurfaceView *surfaceView = (LSurfaceView*)view;
-            surface = surfaceView->surface();
-        }
-
-        if (surface)
-        {
-            if (seat()->keyboard()->grabbingSurface() && seat()->keyboard()->grabbingSurface()->client() != surface->client())
-            {
-                seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
-                dismissPopups();
-            }
-
-            if (!seat()->keyboard()->focusSurface() || !surface->isSubchildOf(seat()->keyboard()->focusSurface()))
-                seat()->keyboard()->setFocus(surface);
-
-            setFocus(surface, viewLocalPos(view));
-            sendButtonEvent(button, state);
-        }
-        // If no surface under the cursor
-        else
-        {
-            seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
-            seat()->keyboard()->setFocus(nullptr);
-            dismissPopups();
-        }
-
-        return;
-    }
-
-    sendButtonEvent(button, state);
-
-    if (button != Left)
-        return;
-
-    // Left button pressed
-    if (state == Pressed)
-    {
-        /* We save the pointer focus surface in order to continue sending events to it even when the cursor
-         * is outside of it (while the left button is being held down)*/
-        setDragginSurface(focusSurface());
-
-        if (seat()->keyboard()->grabbingSurface() && seat()->keyboard()->grabbingSurface()->client() != focusSurface()->client())
-        {
-            seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
-            dismissPopups();
-        }
-
-        if (!focusSurface()->popup())
-            dismissPopups();
-
-        if (!seat()->keyboard()->focusSurface() || !focusSurface()->isSubchildOf(seat()->keyboard()->focusSurface()))
-            seat()->keyboard()->setFocus(focusSurface());
-
-        if (focusSurface()->toplevel() && !focusSurface()->toplevel()->activated())
-            focusSurface()->toplevel()->configure(focusSurface()->toplevel()->states() | LToplevelRole::Activated);
-
-        // Raise surface
-        if (focusSurface() == compositor()->surfaces().back())
-            return;
-
-        if (focusSurface()->parent())
-            compositor()->raiseSurface(focusSurface()->topmostParent());
-        else
-            compositor()->raiseSurface(focusSurface());
-    }
-    // Left button released
-    else
-    {
-        stopResizingToplevel();
-        stopMovingToplevel();
-
-        // We stop sending events to the surface on which the left button was being held down
-        setDragginSurface(nullptr);
-
-        if (!focus()->view->inputRegion()->containsPoint(viewLocalPos(focus()->view)))
-        {
-            seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
-            setFocus(nullptr);
-            cursor()->useDefault();
-            cursor()->setVisible(true);
-        }
-    }
+void Pointer::pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source)
+{
+    G::scene()->handlePointerAxisEvent(-axisX, -axisY, -discreteX, -discreteY, source);
 }

@@ -57,13 +57,13 @@ void RXdgPopup::RXdgPopupPrivate::grab(wl_client *client, wl_resource *resource,
         if (!parent)
             parent = rXdgPopup->popupRole()->surface()->imp()->pendingParent;
 
-        if (!parent || (compositor()->seat()->pointer()->focusSurface()
-                            != parent && compositor()->seat()->keyboard()->focusSurface() != parent))
+        if (!parent || (compositor()->seat()->pointer()->focusSurface() != parent && compositor()->seat()->keyboard()->focusSurface() != parent))
         {
+            /* TODO: Fix grab.
             wl_resource_post_error(
                 resource,
                 XDG_POPUP_ERROR_INVALID_GRAB,
-                "Invalid grab. Popup parent did not have an implicit grab.");
+                "Invalid grab. Popup parent did not have an implicit grab."); */
             return;
         }
 

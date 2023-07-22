@@ -31,9 +31,9 @@ void LOutput::LOutputPrivate::backendInitializeGL()
                                              output,
                                              &Protocols::Wayland::GOutput::GOutputPrivate::bind);
 
+    lastPos = rect.pos();
+    lastSize = rect.size();
     output->setScale(output->scale());
-    output->imp()->rect.setBR(output->sizeB()/output->scale());
-
     cursor()->imp()->textureChanged = true;
     cursor()->imp()->update();
     output->imp()->state = LOutput::Initialized;
@@ -51,15 +51,21 @@ void LOutput::LOutputPrivate::backendPaintGL()
         lastPos = rect.pos();
     }
 
+    if (lastSize != rect.size())
+    {
+        output->resizeGL();
+        lastSize = rect.size();
+    }
+
     compositor()->imp()->renderMutex.lock();
     output->paintGL();
-    destroyPendingFramebuffers();
+    compositor()->imp()->destroyPendingRenderBuffers();
     compositor()->imp()->renderMutex.unlock();
 }
 
 void LOutput::LOutputPrivate::backendResizeGL()
 {
-    while(output->imp()->state == LOutput::ChangingMode)
+    if (output->imp()->state == LOutput::ChangingMode)
     {
         output->imp()->state = LOutput::Initialized;
         output->setScale(output->scale());
@@ -79,12 +85,12 @@ void LOutput::LOutputPrivate::backendResizeGL()
 
 void LOutput::LOutputPrivate::backendUninitializeGL()
 {
-    if (output->imp()->state != LOutput::Initialized)
+    if (output->imp()->state != LOutput::PendingUninitialize)
         return;
 
     compositor()->imp()->renderMutex.lock();
     output->uninitializeGL();
-    destroyPendingFramebuffers();
+    compositor()->imp()->destroyPendingRenderBuffers();
     compositor()->imp()->renderMutex.unlock();
 }
 
@@ -101,14 +107,4 @@ void LOutput::LOutputPrivate::backendPageFlipped()
         surf->imp()->sendPresentationFeedback(output, presentationTime);
 
     compositor()->imp()->renderMutex.unlock();
-}
-
-void LOutput::LOutputPrivate::destroyPendingFramebuffers()
-{
-    while (!framebuffersToDestroy.empty())
-    {
-        glDeleteTextures(1, &framebuffersToDestroy.back().textureId);
-        glDeleteFramebuffers(1, &framebuffersToDestroy.back().framebufferId);
-        framebuffersToDestroy.pop_back();
-    }
 }

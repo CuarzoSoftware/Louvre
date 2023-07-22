@@ -346,13 +346,13 @@ void LPointer::sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int3
                         s->pointerResource()->axisValue120(WL_POINTER_AXIS_VERTICAL_SCROLL, dY);
                 }
 
-                if (axisX == 0.0)
+                if (axisX == 0.0 && imp()->axisXprev != 0.0)
                     s->pointerResource()->axisStop(ms, WL_POINTER_AXIS_HORIZONTAL_SCROLL);
                 else
                     s->pointerResource()->axis(ms, WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
 
-                if (axisY == 0.0)
-                    s->pointerResource()->axisStop(ms, WL_POINTER_AXIS_VERTICAL_SCROLL);
+                if (axisY == 0.0 && imp()->axisYprev != 0.0)
+                   s->pointerResource()->axisStop(ms, WL_POINTER_AXIS_VERTICAL_SCROLL);
                 else
                     s->pointerResource()->axis(ms, WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
 
@@ -368,6 +368,9 @@ void LPointer::sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int3
             }
         }
     }
+
+    imp()->axisXprev = axisX;
+    imp()->axisYprev = axisY;
 }
 
 LSurface *LPointer::surfaceAt(const LPoint &point)
