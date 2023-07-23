@@ -121,7 +121,11 @@ LPainter::LPainter()
 void LPainter::bindFramebuffer(LFramebuffer *framebuffer)
 {
     if (!framebuffer)
+    {
+        imp()->fbId = 0;
+        imp()->fb = nullptr;
         return;
+    }
 
     imp()->fbId = framebuffer->id();
     glBindFramebuffer(GL_FRAMEBUFFER, imp()->fbId);

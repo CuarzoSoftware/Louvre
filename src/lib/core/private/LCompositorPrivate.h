@@ -86,7 +86,7 @@ LPRIVATE_CLASS(LCompositor)
 
     std::map<std::thread::id, ThreadData> threadsMap;
     void destroyPendingRenderBuffers();
-    void addRenderBufferToDestroy(LRenderBuffer::LRenderBufferPrivate::ThreadData &data);
+    void addRenderBufferToDestroy(thread::id thread, LRenderBuffer::LRenderBufferPrivate::ThreadData &data);
 };
 
 

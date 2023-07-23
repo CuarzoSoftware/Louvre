@@ -27,6 +27,11 @@ LSceneView::~LSceneView()
     // or compositor crashes when children add damage
     while (!children().empty())
         children().front()->setParent(nullptr);
+
+    if (!isLScene())
+        delete imp()->fb;
+
+    delete m_imp;
 }
 
 const LRGBAF &LSceneView::clearColor() const

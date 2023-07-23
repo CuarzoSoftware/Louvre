@@ -19,7 +19,7 @@ LRenderBuffer::~LRenderBuffer()
 {
     for (auto &pair : imp()->threadsMap)
         if (pair.second.textureId)
-            compositor()->imp()->addRenderBufferToDestroy(pair.second);
+            compositor()->imp()->addRenderBufferToDestroy(pair.first, pair.second);
 
     delete m_imp;
 }
@@ -34,7 +34,7 @@ void LRenderBuffer::setSizeB(const LSize &sizeB)
 
         for (auto &pair : imp()->threadsMap)
             if (pair.second.textureId)
-                compositor()->imp()->addRenderBufferToDestroy(pair.second);
+                compositor()->imp()->addRenderBufferToDestroy(pair.first, pair.second);
 
         imp()->threadsMap.clear();
 

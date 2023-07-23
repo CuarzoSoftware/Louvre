@@ -414,8 +414,8 @@ void LCompositor::LCompositorPrivate::destroyPendingRenderBuffers()
     }
 }
 
-void LCompositor::LCompositorPrivate::addRenderBufferToDestroy(LRenderBuffer::LRenderBufferPrivate::ThreadData &data)
+void LCompositor::LCompositorPrivate::addRenderBufferToDestroy(std::thread::id thread, LRenderBuffer::LRenderBufferPrivate::ThreadData &data)
 {
-    ThreadData &threadData = threadsMap[std::this_thread::get_id()];
+    ThreadData &threadData = threadsMap[thread];
     threadData.renderBuffersToDestroy.push_back(data);
 }

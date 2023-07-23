@@ -50,7 +50,7 @@ void G::createBorderRadiusTextures()
             if (rad <= circleRadius)
                 circleBuffer[x*4 + y*circleRadius*4 + 3] = 255;
             else if (rad > circleRadius &&  rad <= circleRadius + 10)
-                circleBuffer[x*4 + y*circleRadius*4 + 3] = 200;
+                circleBuffer[x*4 + y*circleRadius*4 + 3] = 50;
             else
                 circleBuffer[x*4 + y*circleRadius*4 + 3] = 0;
         }
