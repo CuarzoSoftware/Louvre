@@ -26,8 +26,6 @@ LPRIVATE_CLASS(LToplevelRole)
     ToplevelConfiguration currentConf;
     std::list<ToplevelConfiguration>sentConfs;
 
-    void dispachLastConfiguration();
-
     bool hasPendingMinSize                                          = false;
     bool hasPendingMaxSize                                          = false;
 
@@ -43,6 +41,9 @@ LPRIVATE_CLASS(LToplevelRole)
     DecorationMode decorationMode                                   = ClientSide;
     UInt32 pendingDecorationMode                                    = ClientSide;
     UInt32 lastDecorationModeConfigureSerial                        = 0;
+    UInt32 preferredDecorationMode                                  = 0;
+
+    void applyPendingChanges();
 };
 
 #endif // LTOPLEVELROLEPRIVATE_H

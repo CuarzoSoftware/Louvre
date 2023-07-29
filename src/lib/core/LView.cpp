@@ -89,21 +89,10 @@ void LView::setParent(LView *view)
     }
     else
     {
-        LSceneView *s = parentSceneView();
-
-        if (s)
-        {
-            for (auto &pair : imp()->threadsMap)
-            {
-                if (!pair.second.prevMapped)
-                    continue;
-
-                if (pair.second.o)
-                    s->addDamage(pair.second.o, pair.second.prevParentClipping);
-            }
-        }
+        imp()->damageScene(parentSceneView());
     }
 
+    imp()->markAsChangedOrder();
     imp()->parent = view;
 }
 
@@ -127,8 +116,7 @@ void LView::insertAfter(LView *prev, bool switchParent)
         parent()->imp()->children.push_front(this);
         imp()->parentLink = parent()->imp()->children.begin();
 
-        for (auto &pair : imp()->threadsMap)
-            pair.second.changedOrder = true;
+        imp()->markAsChangedOrder();
 
         repaint();
     }
@@ -144,8 +132,7 @@ void LView::insertAfter(LView *prev, bool switchParent)
                 return;
         }
 
-        for (auto &pair : imp()->threadsMap)
-            pair.second.changedOrder = true;
+        imp()->markAsChangedOrder();
 
         repaint();
 
@@ -299,7 +286,7 @@ void LView::setVisible(bool visible)
 
 bool LView::mapped() const
 {
-    if (type() == Scene)
+    if (type() == Scene && !parent())
         return visible();
 
     return visible() && nativeMapped() && parent() && parent()->mapped();

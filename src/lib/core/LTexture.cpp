@@ -229,14 +229,14 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src) const
     glPixelStorei(GL_PACK_ROW_LENGTH, dstSize.w());
     glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
     glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-    glReadPixels(0, 0, dstSize.w(), dstSize.h(), GL_RGBA, GL_UNSIGNED_BYTE, cpuBuffer);
+    glReadPixels(0, 0, dstSize.w(), dstSize.h(), GL_BGRA, GL_UNSIGNED_BYTE, cpuBuffer);
     glPixelStorei(GL_PACK_ALIGNMENT, 4);
     glPixelStorei(GL_PACK_ROW_LENGTH, 0);
     glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
     glPixelStorei(GL_PACK_SKIP_ROWS, 0);
 
     LTexture *textureCopy = new LTexture();
-    bool ret = textureCopy->setDataB(dstSize, dstSize.w()*4, DRM_FORMAT_ABGR8888, cpuBuffer);
+    bool ret = textureCopy->setDataB(dstSize, dstSize.w()*4, DRM_FORMAT_ARGB8888, cpuBuffer);
 
     free(cpuBuffer);
     glDeleteRenderbuffers(1, &renderbuffer);

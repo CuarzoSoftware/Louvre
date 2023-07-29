@@ -46,7 +46,7 @@ LPRIVATE_CLASS(LView)
     {
         LOutput *o = nullptr;
         Float32 prevOpacity = 1.f;
-        UInt32 lastRenderedDamageId;
+        UInt32 lastRenderedDamageId = 0;
         LRect prevRect;
         LRect prevLocalRect;
         bool changedOrder = true;
@@ -74,6 +74,9 @@ LPRIVATE_CLASS(LView)
 
     // Input related
     bool pointerIsOver = false;
+
+    void markAsChangedOrder(bool includeChildren = true);
+    void damageScene(LSceneView *s);
 };
 
 #endif // LVIEWPRIVATE_H

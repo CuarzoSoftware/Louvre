@@ -157,16 +157,15 @@ void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src,
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
     shaderSetSrcRect(src.x(), src.y(), src.w(), src.h());
+    glBlendFunc(GL_ONE, GL_ZERO);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 void LPainter::LPainterPrivate::scaleTexture(LTexture *texture, const LRect &src, const LSize &dst)
 {
-    glEnable(GL_BLEND);
+    glDisable(GL_BLEND);
     glScissor(0, 0, dst.w(), dst.h());
     glViewport(0, 0, dst.w(), dst.h());
-    glClearColor(0, 0, 0, 0);
-    glClear(GL_COLOR_BUFFER_BIT);
     glActiveTexture(GL_TEXTURE0);
 
     shaderSetAlpha(1.f);
@@ -226,6 +225,9 @@ void LPainter::drawTexture(const LTexture *texture,
         imp()->shaderSetSrcRect(srcX, srcY, srcW, srcH);
 
     glBindTexture(GL_TEXTURE_2D, texture->id(imp()->output));
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     if (srcScale == 1.f)
         imp()->shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());

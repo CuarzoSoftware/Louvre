@@ -180,7 +180,6 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
     {
         surface->imp()->pending.role->handleSurfaceCommit(origin);
     }
-    return;
 
     surface->imp()->bufferSizeChanged = false;
 }

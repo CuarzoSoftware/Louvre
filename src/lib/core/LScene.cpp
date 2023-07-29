@@ -29,7 +29,7 @@ LScene::~LScene()
 
 void LScene::handleInitializeGL(LOutput *output)
 {
-    L_UNUSED(output);
+    imp()->view->imp()->fb = output->framebuffer();
 }
 
 void LScene::handlePaintGL(LOutput *output)
@@ -165,6 +165,9 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
 
     if (!handleWaylandPointerEventsEnabled())
         return;
+
+    if (button == LPointer::Left && state == LPointer::Released)
+        seat()->dndManager()->drop();
 
     if (!seat()->pointer()->focusSurface())
     {

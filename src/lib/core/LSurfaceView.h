@@ -56,6 +56,10 @@ public:
     virtual void setCustomInputRegion(const LRegion *region);
     virtual const LRegion *customInputRegion() const;
 
+    virtual void enableCustomTranslucentRegion(bool enabled);
+    virtual bool customTranslucenRegionEnabled() const;
+    virtual void setCustomTranslucentRegion(const LRegion *region);
+
     // LView
     virtual bool nativeMapped() const override;
     virtual const LPoint &nativePos() const override;

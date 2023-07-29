@@ -52,6 +52,7 @@ void Output::loadWallpaper()
 
     LRegion trans;
     wallpaperView->setTranslucentRegion(&trans);
+    wallpaperView->setPos(pos());
 }
 
 void Output::updateTopBar()

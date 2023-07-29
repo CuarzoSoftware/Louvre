@@ -4,8 +4,10 @@
 #include <Compositor.h>
 #include <string.h>
 #include <LXCursor.h>
+#include <LOpenGL.h>
 
-static G::BorderRadiusTextures borderRadiusTextures;
+static G::DockTextures _dockTextures;
+static G::ToplevelTextures _toplevelTextures;
 static G::Cursors xCursors;
 
 Compositor *G::compositor()
@@ -23,61 +25,101 @@ std::list<Output *> &G::outputs()
     return (std::list<Output*>&)compositor()->outputs();
 }
 
-void G::arrangeOutputs()
+void G::loadDockTextures()
 {
-    Int32 totalWidth = 0;
+    _dockTextures.left = LOpenGL::loadTexture("/usr/etc/Louvre/assets/dock_side.png");
 
-    for (Output *output : G::outputs())
+    if (!_dockTextures.left)
     {
-        output->setScale(output->dpi() >= 120 ? 2 : 1);
-        output->setPos(LPoint(totalWidth, 0));
-        totalWidth += output->size().w();
-        output->repaint();
+        LLog::fatal("[louvre-views] Failed to load dock_side.png texture.");
+        exit(1);
     }
+
+    _dockTextures.center = LOpenGL::loadTexture("/usr/etc/Louvre/assets/dock_clamp.png");
+
+    if (!_dockTextures.center)
+    {
+        LLog::fatal("[louvre-views] Failed to load dock_center.png texture.");
+        exit(1);
+    }
+
+    _dockTextures.right = _dockTextures.left->copyB(_dockTextures.left->sizeB(),
+                                                    LRect(0,
+                                                          0,
+                                                          - _dockTextures.left->sizeB().w(),
+                                                          _dockTextures.left->sizeB().h()));
 }
 
-void G::createBorderRadiusTextures()
+G::DockTextures &G::dockTextures()
 {
-    Int32 circleRadius = 256;
-    UChar8 circleBuffer[circleRadius*circleRadius*4];
-    memset(circleBuffer, 0, sizeof(circleBuffer));
-
-    for (Int32 x = 0; x < circleRadius; x++)
-        for (Int32 y = 0; y < circleRadius; y++)
-        {
-            Float32 rad = sqrtf(x*x + y*y);
-
-            if (rad <= circleRadius)
-                circleBuffer[x*4 + y*circleRadius*4 + 3] = 255;
-            else if (rad > circleRadius &&  rad <= circleRadius + 10)
-                circleBuffer[x*4 + y*circleRadius*4 + 3] = 50;
-            else
-                circleBuffer[x*4 + y*circleRadius*4 + 3] = 0;
-        }
-
-
-    LTexture *circleTexture = new LTexture();
-    circleTexture->setDataB(LSize(circleRadius, circleRadius), circleRadius*4, DRM_FORMAT_ARGB8888, circleBuffer);
-
-    borderRadiusTextures.TL = circleTexture->copyB(32, LRect(0, 0, -circleRadius, -circleRadius));
-    borderRadiusTextures.TR = circleTexture->copyB(32, LRect(0, 0,  circleRadius, -circleRadius));
-    borderRadiusTextures.BR = circleTexture->copyB(32, LRect(0, 0,  circleRadius,  circleRadius));
-    borderRadiusTextures.BL = circleTexture->copyB(32, LRect(0, 0, -circleRadius,  circleRadius));
-
-    delete circleTexture;
-}
-
-G::BorderRadiusTextures *G::borderRadius()
-{
-    return &borderRadiusTextures;
+    return _dockTextures;
 }
 
 void G::loadCursors()
 {
-    xCursors.handCursor = LXCursor::loadXCursorB("hand2");
+    xCursors.hand2 = LXCursor::loadXCursorB("hand2");
 }
 
 G::Cursors &G::cursors()
 {
     return xCursors;
+}
+
+void G::loadToplevelTextures()
+{
+    _toplevelTextures.activeTL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_upper_corner.png");
+    _toplevelTextures.activeT = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_topbar_clamp.png");
+    _toplevelTextures.activeTR = _toplevelTextures.activeTL->copyB(_toplevelTextures.activeTL->sizeB(),
+                                                                  LRect(0,
+                                                                        0,
+                                                                        -_toplevelTextures.activeTL->sizeB().w(),
+                                                                        _toplevelTextures.activeTL->sizeB().h()));
+    _toplevelTextures.activeL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_side_clamp.png");
+    _toplevelTextures.activeR = _toplevelTextures.activeL->copyB(_toplevelTextures.activeL->sizeB(),
+                                                                  LRect(0,
+                                                                        0,
+                                                                        -_toplevelTextures.activeL->sizeB().w(),
+                                                                        _toplevelTextures.activeL->sizeB().h()));
+    _toplevelTextures.activeBL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_lower_corner.png");
+    _toplevelTextures.activeB = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_lower_clamp.png");
+    _toplevelTextures.activeBR = _toplevelTextures.activeBL->copyB(_toplevelTextures.activeBL->sizeB(),
+                                                                  LRect(0,
+                                                                        0,
+                                                                        -_toplevelTextures.activeBL->sizeB().w(),
+                                                                        _toplevelTextures.activeBL->sizeB().h()));
+
+    _toplevelTextures.inactiveTL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_upper_corner.png");
+    _toplevelTextures.inactiveT = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_topbar_clamp.png");
+    _toplevelTextures.inactiveTR = _toplevelTextures.inactiveTL->copyB(_toplevelTextures.inactiveTL->sizeB(),
+                                                                  LRect(0,
+                                                                        0,
+                                                                        -_toplevelTextures.inactiveTL->sizeB().w(),
+                                                                        _toplevelTextures.inactiveTL->sizeB().h()));
+    _toplevelTextures.inactiveL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_side_clamp.png");
+    _toplevelTextures.inactiveR = _toplevelTextures.inactiveL->copyB(_toplevelTextures.inactiveL->sizeB(),
+                                                                  LRect(0,
+                                                                        0,
+                                                                        -_toplevelTextures.inactiveL->sizeB().w(),
+                                                                        _toplevelTextures.inactiveL->sizeB().h()));
+    _toplevelTextures.inactiveBL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_lower_corner.png");
+    _toplevelTextures.inactiveB = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_lower_clamp.png");
+    _toplevelTextures.inactiveBR = _toplevelTextures.inactiveBL->copyB(_toplevelTextures.inactiveBL->sizeB(),
+                                                                  LRect(0,
+                                                                        0,
+                                                                        -_toplevelTextures.inactiveBL->sizeB().w(),
+                                                                        _toplevelTextures.inactiveBL->sizeB().h()));
+
+
+    _toplevelTextures.maskBL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_border_radius_mask.png");
+    _toplevelTextures.maskBR = _toplevelTextures.maskBL->copyB(_toplevelTextures.maskBL->sizeB(),
+                                                                  LRect(0,
+                                                                        0,
+                                                                        -_toplevelTextures.maskBL->sizeB().w(),
+                                                                        _toplevelTextures.maskBL->sizeB().h()));
+
+}
+
+G::ToplevelTextures &G::toplevelTextures()
+{
+    return _toplevelTextures;
 }

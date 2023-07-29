@@ -15,6 +15,9 @@ LPRIVATE_CLASS(LTextureView)
     Int32 bufferScale = 1;
     std::list<LOutput*> outputs;
 
+    bool dstSizeEnabled = false;
+    LSize dstSize = LSize(1);
+
     LSize tmpSize;
 };
 

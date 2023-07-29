@@ -20,15 +20,9 @@ public:
     void show();
     void hide();
 
-    LLayerView dockClipping = LLayerView(this);
-    LSceneView *dockScene;
-    LSolidColorView *dockBackground;
+    LLayerView *dockContainer;
+    LTextureView *dockLeft, *dockCenter, *dockRight;
     LLayerView *itemsContainer;
-
-    LTextureView *borderRadiusTL;
-    LTextureView *borderRadiusTR;
-    LTextureView *borderRadiusBR;
-    LTextureView *borderRadiusBL;
 
     void pointerEnterEvent(const LPoint &localPos) override;
     void pointerLeaveEvent() override;

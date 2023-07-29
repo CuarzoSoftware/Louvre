@@ -197,6 +197,9 @@ public:
     /// Current decoration mode
     DecorationMode decorationMode() const;
 
+    /// Preferred decoration mode by the client. If 0 is returned means the client has no preferred mode.
+    UInt32 preferredDecorationMode() const;
+
     /// xdg_toplevel resource
     XdgShell::RXdgToplevel *xdgToplevelResource() const;
 
@@ -408,6 +411,15 @@ public:
      * @snippet LToplevelRoleDefault.cpp decorationModeChanged
      */
     virtual void decorationModeChanged();
+
+    /**
+     * Reimplement this virtual method if you want to be notified when the Toplevel changes its preferred decoration mode.
+     * You can access the Toplevel's preferred decoration mode with preferredDecorationMode().
+     *
+     * #### Default implementation
+     * @snippet LToplevelRoleDefault.cpp preferredDecorationModeChanged
+     */
+    virtual void preferredDecorationModeChanged();
 /// @}
 
     LPRIVATE_IMP(LToplevelRole)

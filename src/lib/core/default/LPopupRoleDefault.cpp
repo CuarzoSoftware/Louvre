@@ -22,7 +22,12 @@ const LPoint &LPopupRole::rolePos() const
     LPoint finalPos;
 
     // Position of the parent (without the role option, we will assign it at the end)
-    LPoint parentPos = surface()->parent()->pos();
+    LPoint parentPos = surface()->parent()->rolePos();
+
+    if (surface()->parent()->toplevel())
+        parentPos += surface()->parent()->toplevel()->windowGeometry().topLeft();
+    else if (surface()->parent()->popup())
+        parentPos += surface()->parent()->popup()->windowGeometry().topLeft();
 
     // Point within the anchor rectangle
     LPoint anchorPos;

@@ -17,6 +17,8 @@ public:
     Surface(LSurface::Params *params);
     ~Surface();
 
+    LView *getView() const;
+
     void mappingChanged() override;
     void orderChanged() override;
     void roleChanged() override;

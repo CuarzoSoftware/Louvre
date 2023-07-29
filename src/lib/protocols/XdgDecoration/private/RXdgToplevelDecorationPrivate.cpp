@@ -1,5 +1,6 @@
 #include <protocols/XdgDecoration/private/RXdgToplevelDecorationPrivate.h>
 #include <protocols/XdgDecoration/xdg-decoration-unstable-v1.h>
+#include <private/LToplevelRolePrivate.h>
 
 void RXdgToplevelDecoration::RXdgToplevelDecorationPrivate::resource_destroy(wl_resource *resource)
 {
@@ -24,17 +25,32 @@ void RXdgToplevelDecoration::RXdgToplevelDecorationPrivate::destroy(wl_client *c
 
 void RXdgToplevelDecoration::RXdgToplevelDecorationPrivate::set_mode(wl_client *client, wl_resource *resource, UInt32 mode)
 {
-    /* Does it really matter what the client wants? */
-
     L_UNUSED(client);
-    L_UNUSED(resource);
-    L_UNUSED(mode);
+
+    RXdgToplevelDecoration *rXdgToplevelDecoration = (RXdgToplevelDecoration*)wl_resource_get_user_data(resource);
+
+    if (!rXdgToplevelDecoration->toplevelRole())
+        return;
+
+    if (rXdgToplevelDecoration->toplevelRole()->preferredDecorationMode() != mode)
+    {
+        rXdgToplevelDecoration->toplevelRole()->imp()->preferredDecorationMode = mode;
+        rXdgToplevelDecoration->toplevelRole()->preferredDecorationModeChanged();
+    }
 }
 
 void RXdgToplevelDecoration::RXdgToplevelDecorationPrivate::unset_mode(wl_client *client, wl_resource *resource)
 {
-    /* Does it really matter what the client wants? */
-
     L_UNUSED(client);
-    L_UNUSED(resource);
+
+    RXdgToplevelDecoration *rXdgToplevelDecoration = (RXdgToplevelDecoration*)wl_resource_get_user_data(resource);
+
+    if (!rXdgToplevelDecoration->toplevelRole())
+        return;
+
+    if (rXdgToplevelDecoration->toplevelRole()->preferredDecorationMode() != 0)
+    {
+        rXdgToplevelDecoration->toplevelRole()->imp()->preferredDecorationMode = 0;
+        rXdgToplevelDecoration->toplevelRole()->preferredDecorationModeChanged();
+    }
 }

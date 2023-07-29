@@ -498,9 +498,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     wl_buffer_send_release(current.buffer);
     bufferReleased = true;
 
-    // Only increase serial if damage was cleared with requestNextFrame(true)
-    if (!damaged)
-        damageId = LCompositor::nextSerial();
+    damageId = LCompositor::nextSerial();
 
     damaged = true;
     surface->damaged();

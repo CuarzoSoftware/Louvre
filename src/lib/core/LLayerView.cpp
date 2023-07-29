@@ -14,20 +14,32 @@ LLayerView::~LLayerView()
     delete m_imp;
 }
 
-void LLayerView::setPos(const LPoint &pos)
+void LLayerView::setPos(Int32 x, Int32 y)
 {
-    if (mapped() && pos != imp()->nativePos)
+    if (mapped() && (x != imp()->nativePos.x() || y != imp()->nativePos.y()))
         repaint();
 
-    imp()->nativePos = pos;
+    imp()->nativePos.setX(x);
+    imp()->nativePos.setY(y);
+}
+
+void LLayerView::setSize(Int32 w, Int32 h)
+{
+    if (mapped() && (w != imp()->nativeSize.w() || h != imp()->nativeSize.h()))
+        repaint();
+
+    imp()->nativeSize.setW(w);
+    imp()->nativeSize.setH(h);
+}
+
+void LLayerView::setPos(const LPoint &pos)
+{
+    setPos(pos.x(), pos.y());
 }
 
 void LLayerView::setSize(const LSize &size)
 {
-    if (mapped() && size != imp()->nativeSize)
-        repaint();
-
-    imp()->nativeSize = size;
+    setSize(size.w(), size.h());
 }
 
 void LLayerView::setInputRegion(const LRegion *region) const

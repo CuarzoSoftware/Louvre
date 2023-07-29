@@ -60,7 +60,6 @@ void LToplevelRole::titleChanged()
 }
 //! [titleChanged]
 
-
 //! [appIdChanged]
 void LToplevelRole::appIdChanged()
 {
@@ -83,6 +82,12 @@ void LToplevelRole::decorationModeChanged()
 }
 //! [decorationModeChanged]
 
+//! [preferredDecorationModeChanged]
+void LToplevelRole::preferredDecorationModeChanged()
+{
+    /* No default implementation */
+}
+//! [preferredDecorationModeChanged]
 
 //! [setMaximizedRequest]
 void LToplevelRole::setMaximizedRequest()

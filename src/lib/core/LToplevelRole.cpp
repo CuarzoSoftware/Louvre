@@ -88,6 +88,11 @@ LToplevelRole::DecorationMode LToplevelRole::decorationMode() const
     return imp()->decorationMode;
 }
 
+UInt32 LToplevelRole::preferredDecorationMode() const
+{
+    return imp()->preferredDecorationMode;
+}
+
 RXdgToplevel *LToplevelRole::xdgToplevelResource() const
 {
     return (RXdgToplevel*)resource();
@@ -101,8 +106,6 @@ RXdgSurface *LToplevelRole::xdgSurfaceResource() const
 void LToplevelRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin)
 {
     L_UNUSED(origin);
-
-    // Cambios double-buffered
 
     if (imp()->hasPendingMaxSize)
     {
@@ -132,32 +135,8 @@ void LToplevelRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrig
         geometryChanged();
     }
 
-    if (!imp()->currentConf.commited)
-    {
-        imp()->currentConf.commited = true;
+    imp()->applyPendingChanges();
 
-        UInt32 prevState = imp()->stateFlags;
-        imp()->stateFlags = imp()->currentConf.flags;
-
-        if ((prevState & LToplevelRole::Maximized) != (imp()->currentConf.flags & LToplevelRole::Maximized))
-            maximizedChanged();
-        if ((prevState & LToplevelRole::Fullscreen) != (imp()->currentConf.flags & LToplevelRole::Fullscreen))
-            fullscreenChanged();
-
-        if (imp()->currentConf.flags & LToplevelRole::Activated)
-        {
-            if (seat()->activeToplevel() && seat()->activeToplevel() != this)
-            {
-                seat()->activeToplevel()->configure(seat()->activeToplevel()->windowGeometry().size(),
-                                                     seat()->activeToplevel()->states() & ~LToplevelRole::Activated);
-            }
-
-            seat()->imp()->activeToplevel = this;
-        }
-
-        if ((prevState & LToplevelRole::Activated) != (imp()->currentConf.flags & LToplevelRole::Activated))
-            activatedChanged();
-    }
     // Commit inicial para asignar rol
     if (surface()->imp()->pending.role)
     {
@@ -431,4 +410,33 @@ void LToplevelRole::LToplevelRolePrivate::setTitle(const char *newTitle)
     title = new char[strlen(newTitle)+1];
     strcpy(title, newTitle);
     toplevel->titleChanged();
+}
+
+void LToplevelRole::LToplevelRolePrivate::applyPendingChanges()
+{
+    if (!currentConf.commited)
+    {
+        currentConf.commited = true;
+
+        UInt32 prevState = stateFlags;
+        stateFlags = currentConf.flags;
+
+        if ((prevState & LToplevelRole::Maximized) != (currentConf.flags & LToplevelRole::Maximized))
+            toplevel->maximizedChanged();
+        if ((prevState & LToplevelRole::Fullscreen) != (currentConf.flags & LToplevelRole::Fullscreen))
+            toplevel->fullscreenChanged();
+
+        if (currentConf.flags & LToplevelRole::Activated)
+        {
+            if (seat()->activeToplevel() && seat()->activeToplevel() != toplevel)
+            {
+                seat()->activeToplevel()->configure(seat()->activeToplevel()->states() & ~LToplevelRole::Activated);
+            }
+
+            seat()->imp()->activeToplevel = toplevel;
+        }
+
+        if ((prevState & LToplevelRole::Activated) != (currentConf.flags & LToplevelRole::Activated))
+            toplevel->activatedChanged();
+    }
 }

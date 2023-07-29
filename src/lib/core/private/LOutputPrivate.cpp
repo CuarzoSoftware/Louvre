@@ -31,9 +31,9 @@ void LOutput::LOutputPrivate::backendInitializeGL()
                                              output,
                                              &Protocols::Wayland::GOutput::GOutputPrivate::bind);
 
+    output->setScale(output->scale());
     lastPos = rect.pos();
     lastSize = rect.size();
-    output->setScale(output->scale());
     cursor()->imp()->textureChanged = true;
     cursor()->imp()->update();
     output->imp()->state = LOutput::Initialized;

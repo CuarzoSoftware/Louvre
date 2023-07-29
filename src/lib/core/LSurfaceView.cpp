@@ -18,6 +18,9 @@ LSurfaceView::~LSurfaceView()
     if (imp()->customInputRegion)
         delete imp()->customInputRegion;
 
+    if (imp()->customTranslucentRegion)
+        delete imp()->customTranslucentRegion;
+
     delete m_imp;
 }
 
@@ -99,6 +102,45 @@ const LRegion *LSurfaceView::customInputRegion() const
     return imp()->customInputRegion;
 }
 
+void LSurfaceView::enableCustomTranslucentRegion(bool enabled)
+{
+    if (enabled != imp()->customTranslucentRegionEnabled)
+    {
+        imp()->customTranslucentRegionEnabled = enabled;
+        repaint();
+    }
+}
+
+bool LSurfaceView::customTranslucenRegionEnabled() const
+{
+    return imp()->customTranslucentRegionEnabled;
+}
+
+void LSurfaceView::setCustomTranslucentRegion(const LRegion *region)
+{
+    if (imp()->customTranslucentRegionEnabled)
+        repaint();
+
+    if (region)
+    {
+        if (imp()->customTranslucentRegion)
+            *imp()->customTranslucentRegion = *region;
+        else
+        {
+            imp()->customTranslucentRegion = new LRegion();
+            *imp()->customTranslucentRegion = *region;
+        }
+    }
+    else
+    {
+        if (imp()->customTranslucentRegion)
+        {
+            delete imp()->customTranslucentRegion;
+            imp()->customTranslucentRegion = nullptr;
+        }
+    }
+}
+
 bool LSurfaceView::nativeMapped() const
 {
     return surface()->mapped();
@@ -126,17 +168,27 @@ void LSurfaceView::enteredOutput(LOutput *output)
 {
     if (primary())
         surface()->sendOutputEnterEvent(output);
+    else
+    {
+        imp()->nonPrimaryOutputs.remove(output);
+        imp()->nonPrimaryOutputs.push_back(output);
+    }
 }
 
 void LSurfaceView::leftOutput(LOutput *output)
 {
     if (primary())
         surface()->sendOutputLeaveEvent(output);
+    else
+        imp()->nonPrimaryOutputs.remove(output);
 }
 
 const std::list<LOutput *> &LSurfaceView::outputs() const
 {
-    return surface()->outputs();
+    if (primary())
+        return surface()->outputs();
+    else
+        return imp()->nonPrimaryOutputs;
 }
 
 bool LSurfaceView::isRenderable() const
@@ -144,6 +196,7 @@ bool LSurfaceView::isRenderable() const
     return true;
 }
 
+#include <LLog.h>
 void LSurfaceView::requestNextFrame(LOutput *output)
 {
     LView *view = this;
@@ -154,6 +207,9 @@ void LSurfaceView::requestNextFrame(LOutput *output)
         view->imp()->threadsMap[output->threadId()].lastRenderedDamageId = surface()->damageId();
         return;
     }
+
+    if (!primary())
+        return;
 
     bool clearDamage = true;
     for (LOutput *o : surface()->outputs())
@@ -168,9 +224,12 @@ void LSurfaceView::requestNextFrame(LOutput *output)
     }
 
     if (clearDamage)
+    {
         surface()->requestNextFrame();
+    }
 
     view->imp()->threadsMap[output->threadId()].lastRenderedDamageId = surface()->damageId();
+
 }
 
 const LRegion *LSurfaceView::damage() const
@@ -180,11 +239,17 @@ const LRegion *LSurfaceView::damage() const
 
 const LRegion *LSurfaceView::translucentRegion() const
 {
+    if (imp()->customTranslucentRegionEnabled)
+        return imp()->customTranslucentRegion;
+
     return &surface()->translucentRegion();
 }
 
 const LRegion *LSurfaceView::opaqueRegion() const
 {
+    if (imp()->customTranslucentRegionEnabled)
+        return nullptr;
+
     return &surface()->opaqueRegion();
 }
 

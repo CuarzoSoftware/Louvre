@@ -1,4 +1,5 @@
 #include <private/LTextureViewPrivate.h>
+#include <private/LViewPrivate.h>
 #include <LTexture.h>
 #include <LCompositor.h>
 #include <LPainter.h>
@@ -20,12 +21,18 @@ LTextureView::~LTextureView()
     delete m_imp;
 }
 
-void LTextureView::setPos(const LPoint &pos)
+void LTextureView::setPos(Int32 x, Int32 y)
 {
-    if (mapped() && pos != imp()->nativePos)
+    if (mapped() && (x != imp()->nativePos.x() || y != imp()->nativePos.y()))
         repaint();
 
-    imp()->nativePos = pos;
+    imp()->nativePos.setX(x);
+    imp()->nativePos.setY(y);
+}
+
+void LTextureView::setPos(const LPoint &pos)
+{
+    setPos(pos.x(), pos.y());
 }
 
 void LTextureView::setInputRegion(const LRegion *region)
@@ -85,15 +92,56 @@ void LTextureView::setBufferScale(Int32 scale)
 
 void LTextureView::setTexture(LTexture *texture)
 {
-    if (mapped() && texture != imp()->texture)
-        repaint();
+    if (texture != imp()->texture)
+    {
+        imp()->texture = texture;
 
-    imp()->texture = texture;
+        LView *nativeView = this;
+
+        nativeView->imp()->markAsChangedOrder(false);
+
+        if (mapped())
+            repaint();
+    }
 }
 
 LTexture *LTextureView::texture() const
 {
     return imp()->texture;
+}
+
+void LTextureView::enableDstSize(bool enabled)
+{
+    if (enabled != imp()->dstSizeEnabled)
+    {
+        imp()->dstSizeEnabled = enabled;
+        repaint();
+    }
+}
+
+bool LTextureView::dstSizeEnabled() const
+{
+    return imp()->dstSizeEnabled;
+}
+
+void LTextureView::setDstSize(Int32 w, Int32 h)
+{
+    if (w < 0)
+        w = 0;
+
+    if (h < 0)
+        h = 0;
+
+    if (imp()->dstSizeEnabled && (w != imp()->dstSize.w() || h != imp()->dstSize.h()))
+        repaint();
+
+    imp()->dstSize.setW(w);
+    imp()->dstSize.setH(h);
+}
+
+void LTextureView::setDstSize(const LSize &dstSize)
+{
+    setDstSize(dstSize.w(), dstSize.h());
 }
 
 bool LTextureView::nativeMapped() const
@@ -110,6 +158,9 @@ const LSize &LTextureView::nativeSize() const
 {
     if (imp()->texture)
     {
+        if (imp()->dstSizeEnabled)
+            return imp()->dstSize;
+
         imp()->tmpSize = imp()->texture->sizeB();
 
         if (imp()->bufferScale)
@@ -181,8 +232,27 @@ void LTextureView::paintRect(LPainter *p,
     if (!imp()->texture)
         return;
 
-    p->drawTexture(imp()->texture,
-                    srcX, srcY, srcW, srcH,
-                    dstX, dstY, dstW, dstH,
-                    scale, alpha);
+    if (imp()->dstSizeEnabled)
+    {
+        LSizeF scaling = LSizeF(imp()->texture->sizeB())/float(bufferScale());
+        scaling = LSizeF(imp()->dstSize)/scaling;
+
+        p->drawTexture(imp()->texture,
+            srcX * scaling.x(),
+            srcY * scaling.y(),
+            srcW * scaling.x(),
+            srcH * scaling.y(),
+            dstX,
+            dstY,
+            dstW,
+            dstH,
+            scale, alpha);
+    }
+    else
+    {
+        p->drawTexture(imp()->texture,
+                        srcX, srcY, srcW, srcH,
+                        dstX, dstY, dstW, dstH,
+                        scale, alpha);
+    }
 }

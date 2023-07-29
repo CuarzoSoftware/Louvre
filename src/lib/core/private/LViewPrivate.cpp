@@ -23,3 +23,31 @@ void LView::LViewPrivate::removeThread(LView *view, std::thread::id thread)
     if (sit != sceneView->imp()->threadsMap.end())
         sceneView->imp()->threadsMap.erase(sit);
 }
+
+void LView::LViewPrivate::markAsChangedOrder(bool includeChildren)
+{
+    for (auto &pair : threadsMap)
+        pair.second.changedOrder = true;
+
+    if (includeChildren)
+        for (LView *child : children)
+            child->imp()->markAsChangedOrder();
+}
+
+void LView::LViewPrivate::damageScene(LSceneView *s)
+{
+    if (s)
+    {
+        for (auto &pair : threadsMap)
+        {
+            if (!pair.second.prevMapped)
+                continue;
+
+            if (pair.second.o)
+                s->addDamage(pair.second.o, pair.second.prevParentClipping);
+        }
+
+        for (LView *child : children)
+            child->imp()->damageScene(child->parentSceneView());
+    }
+}

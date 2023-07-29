@@ -3,6 +3,8 @@
 #include "Surface.h"
 #include "LCursor.h"
 #include "Output.h"
+#include "Toplevel.h"
+#include "ToplevelView.h"
 #include <Global.h>
 #include <LTextureView.h>
 #include <Dock.h>
@@ -31,6 +33,17 @@ Surface::~Surface()
         delete thumbnailTex;
 
     delete view;
+}
+
+LView *Surface::getView() const
+{
+    if (toplevel() && toplevel()->decorationMode() == LToplevelRole::ServerSide)
+    {
+        class Toplevel *tl = (class Toplevel*)toplevel();
+        return tl->decoratedView;
+    }
+
+    return view;
 }
 
 void Surface::mappingChanged()
@@ -70,10 +83,12 @@ void Surface::orderChanged()
 {
     Surface *prev = (Surface*)prevSurface();
 
+    LView *v = getView();
+
     if (prev)
-        view->insertAfter(prev->view, false);
+        v->insertAfter(prev->getView(), false);
     else
-        view->insertAfter(nullptr, false);
+        v->insertAfter(nullptr, false);
 }
 
 void Surface::roleChanged()
@@ -116,7 +131,7 @@ void Surface::minimizedChanged()
         thumbnailFullsizeView->setPos(rolePos());
 
         // Hide the surface as we will show thumbnailFullsizeView instead
-        view->setVisible(false);
+        getView()->setVisible(false);
 
         // We will move the fullsize view to the dock where the cursor is currently at
         DockItem *dstDockItem;
@@ -176,8 +191,8 @@ void Surface::minimizedChanged()
         if (toplevel())
             toplevel()->configure(LToplevelRole::Activated);
 
-        view->setVisible(true);
-        view->enableInput(true);
+        getView()->setVisible(true);
+        getView()->enableInput(true);
     }
 }
 
@@ -185,8 +200,8 @@ LTexture *Surface::renderThumbnail()
 {
     LSceneView tmpView = LSceneView(view->size()*view->bufferScale(), view->bufferScale());
     tmpView.setPos(rolePos());
-    LView *prevParent = view->parent();
-    view->setParent(&tmpView);
+
+    getView()->setParent(&tmpView);
 
     std::list<LSurfaceView*>tmpChildren;
 
@@ -201,16 +216,17 @@ LTexture *Surface::renderThumbnail()
         }
     }
 
-    view->enableParentOffset(false);
+    getView()->enableParentOffset(false);
     tmpView.render();
+
     LTexture *renderedThumbnail = tmpView.texture()->copyB();
-    view->enableParentOffset(true);
-    view->setParent(prevParent);
+    getView()->enableParentOffset(true);
+    getView()->setParent(G::compositor()->surfacesLayer);
 
     while (!tmpChildren.empty())
     {
-        tmpChildren.front()->enableParentOffset(false);
-        tmpChildren.front()->setParent(prevParent);
+        tmpChildren.front()->enableParentOffset(true);
+        tmpChildren.front()->setParent(G::compositor()->surfacesLayer);
         tmpChildren.pop_front();
     }
 

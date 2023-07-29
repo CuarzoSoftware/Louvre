@@ -9,9 +9,12 @@ public:
     LLayerView(LView *parent = nullptr);
     ~LLayerView();
 
-    virtual void setPos(const LPoint &pos);
-    virtual void setSize(const LSize &size);
+    virtual void setPos(Int32 x, Int32 y);
+    virtual void setSize(Int32 w, Int32 h);
     virtual void setInputRegion(const LRegion *region) const;
+
+    void setPos(const LPoint &pos);
+    void setSize(const LSize &size);
 
     virtual bool nativeMapped() const override;
     virtual const LPoint &nativePos() const override;

@@ -34,15 +34,19 @@ void Compositor::initialized()
     // Change the keyboard map to "latam"
     seat()->keyboard()->setKeymap(NULL, NULL, "latam", NULL);
 
-    G::createBorderRadiusTextures();
-
-    for (LOutput *output : *seat()->outputs())
-        compositor()->addOutput(output);
-
-    // Arrange outputs from left to right
-    G::arrangeOutputs();
-
+    G::loadDockTextures();
     G::loadCursors();
+    G::loadToplevelTextures();
+
+    Int32 totalWidth = 0;
+    for (LOutput *output : *seat()->outputs())
+    {
+        output->setScale(output->dpi() >= 120 ? 2 : 1);
+        output->setPos(LPoint(totalWidth, 0));
+        totalWidth += output->size().w();
+        compositor()->addOutput(output);
+        output->repaint();
+    }
 }
 
 LOutput *Compositor::createOutputRequest()

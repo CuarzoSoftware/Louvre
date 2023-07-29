@@ -13,7 +13,7 @@ DockItem::DockItem(class Surface *surface, Dock *dock) : LTextureView(surface->t
     surface->minimizedViews.push_back(this);
     this->dock = dock;
     this->surface = surface;
-    setBufferScale(surface->view->bufferScale());
+    setBufferScale(surface->bufferScale());
     enableScaling(true);
     enableParentOpacity(false);
     enableInput(true);
@@ -29,9 +29,9 @@ void DockItem::pointerEnterEvent(const LPoint &localPos)
     L_UNUSED(localPos);
     setOpacity(0.9f);
 
-    if (G::cursors().handCursor != nullptr)
-        cursor()->setTextureB(G::cursors().handCursor->texture(),
-                              G::cursors().handCursor->hotspotB());
+    if (G::cursors().hand2)
+        cursor()->setTextureB(G::cursors().hand2->texture(),
+                              G::cursors().hand2->hotspotB());
 
     G::scene()->enableHandleWaylandPointerEvents(false);
 }
