@@ -1,6 +1,3 @@
-#include <Output.h>
-#include <Compositor.h>
-#include <Dock.h>
 #include <LCursor.h>
 #include <LAnimation.h>
 #include <LLayerView.h>
@@ -9,7 +6,11 @@
 #include <LLog.h>
 #include <LOpenGL.h>
 #include <LTextureView.h>
-#include <Global.h>
+
+#include "Global.h"
+#include "Output.h"
+#include "Compositor.h"
+#include "Dock.h"
 
 Output::Output():LOutput() {}
 

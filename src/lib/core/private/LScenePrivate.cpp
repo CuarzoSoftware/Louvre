@@ -141,7 +141,7 @@ void LScene::LScenePrivate::handlePointerMove(LView *view, const LPoint &pos, LV
     for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
         handlePointerMove(*it, pos, firstViewFound);
 
-    if (pointerIsOverView(view, pos))
+    if (!pointerIsBlocked && pointerIsOverView(view, pos))
     {
         if (!(*firstViewFound))
             *firstViewFound = view;
@@ -153,6 +153,9 @@ void LScene::LScenePrivate::handlePointerMove(LView *view, const LPoint &pos, LV
             view->imp()->pointerIsOver = true;
             view->pointerEnterEvent(viewLocalPos(view, pos));
         }
+
+        if (view->blockPointerEnabled())
+            pointerIsBlocked = true;
     }
     else
     {

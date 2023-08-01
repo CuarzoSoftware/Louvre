@@ -8,6 +8,7 @@ using namespace Louvre;
 LPRIVATE_CLASS(LScene)
     LSceneView *view;
     bool handleWaylandPointerEvents = true;
+    bool pointerIsBlocked = false;
     bool pointClippedByParent(LView *parent, const LPoint &point);
     bool pointClippedByParentScene(LView *view, const LPoint &point);
     LView *viewAt(LView *view, const LPoint &pos);

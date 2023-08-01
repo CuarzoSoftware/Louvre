@@ -74,6 +74,7 @@ LPRIVATE_CLASS(LView)
 
     // Input related
     bool pointerIsOver = false;
+    bool blockPointerEnabled = true;
 
     void markAsChangedOrder(bool includeChildren = true);
     void damageScene(LSceneView *s);

@@ -22,6 +22,7 @@ public:
 
     // Render buffer
     void setPos(const LPoint &pos);
+    void setPos(Int32 x, Int32 y);
     void setSizeB(const LSize &size);
     void setScale(Int32 scale);
 

@@ -13,8 +13,11 @@ Toplevel::Toplevel(Params *params) : LToplevelRole(params) {}
 
 Toplevel::~Toplevel()
 {
-    if (topBar)
-        delete topBar;
+    if (decoratedView)
+    {
+        delete decoratedView;
+        decoratedView = nullptr;
+    }
 }
 
 const LPoint &Toplevel::rolePos() const
@@ -64,30 +67,22 @@ void Toplevel::decorationModeChanged()
 {
     if (decorationMode() == ClientSide)
     {
-        delete topBar;
-        topBar = nullptr;
         delete decoratedView;
         decoratedView = nullptr;
     }
     else
     {
-        topBar = new ToplevelTopbar(this);
         decoratedView = new ToplevelView(this);
     }
 }
 
 void Toplevel::geometryChanged()
 {
-    if (topBar)
-    {
-        topBar->setVisible(false);
-        topBar->update();
-        decoratedView->updateGeometry();
-    }
-
-
     if (this == seat()->pointer()->resizingToplevel())
         seat()->pointer()->updateResizingToplevelPos();
+
+    if (decoratedView)
+        decoratedView->updateGeometry();
 }
 
 void Toplevel::activatedChanged()

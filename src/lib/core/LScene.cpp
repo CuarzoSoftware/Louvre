@@ -72,6 +72,7 @@ LView *LScene::handlePointerPosChangeEvent(Float32 x, Float32 y, LPoint *outLoca
 
     cursor()->setPos(LPointF(x, y));
 
+    imp()->pointerIsBlocked = false;
     imp()->handlePointerMove(mainView(), cursor()->pos(), &view);
 
     if (view)
@@ -143,8 +144,8 @@ LView *LScene::handlePointerPosChangeEvent(Float32 x, Float32 y, LPoint *outLoca
     if (!surface)
     {
         seat()->pointer()->setFocus(nullptr);
-        cursor()->useDefault();
-        cursor()->setVisible(true);
+        //cursor()->useDefault();
+        //cursor()->setVisible(true);
     }
     else
     {
@@ -256,8 +257,8 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
             {
                 seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
                 seat()->pointer()->setFocus(nullptr);
-                cursor()->useDefault();
-                cursor()->setVisible(true);
+                //cursor()->useDefault();
+                //cursor()->setVisible(true);
             }
         }
         else
@@ -266,8 +267,8 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
             {
                 seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
                 seat()->pointer()->setFocus(nullptr);
-                cursor()->useDefault();
-                cursor()->setVisible(true);
+                //cursor()->useDefault();
+                //cursor()->setVisible(true);
             }
         }
     }

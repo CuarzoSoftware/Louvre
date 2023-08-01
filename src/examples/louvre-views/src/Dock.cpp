@@ -12,6 +12,7 @@ Dock::Dock(Output *output) : LLayerView(G::compositor()->overlayLayer)
     this->output = output;
     enableParentOffset(false);
     enableInput(true);
+    enableBlockPointer(false);
 
     dockContainer = new LLayerView(this);
 

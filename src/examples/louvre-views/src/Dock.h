@@ -4,7 +4,8 @@
 #include <LLayerView.h>
 #include <LSolidColorView.h>
 #include <LAnimation.h>
-#include <Global.h>
+
+#include "Global.h"
 
 using namespace Louvre;
 

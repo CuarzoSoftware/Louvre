@@ -2,7 +2,6 @@
 #define TOPLEVEL_H
 
 #include <LToplevelRole.h>
-#include "ToplevelTopbar.h"
 
 class ToplevelView;
 
@@ -24,10 +23,7 @@ public:
     void activatedChanged() override;
     void preferredDecorationModeChanged() override;
 
-    ToplevelTopbar *topBar = nullptr;
-
     ToplevelView *decoratedView = nullptr;
-
 };
 
 #endif // TOPLEVEL_H

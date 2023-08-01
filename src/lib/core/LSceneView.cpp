@@ -189,9 +189,15 @@ const LTexture *LSceneView::texture(Int32 index) const
 
 void LSceneView::setPos(const LPoint &pos)
 {
-    if (pos != imp()->customPos)
+    setPos(pos.x(), pos.y());
+}
+
+void LSceneView::setPos(Int32 x, Int32 y)
+{
+    if (x != imp()->customPos.x() || y != imp()->customPos.y())
     {
-        imp()->customPos = pos;
+        imp()->customPos.setX(x);
+        imp()->customPos.setY(y);
         repaint();
     }
 }

@@ -211,6 +211,9 @@ public:
 
     bool pointerIsOver() const;
 
+    void enableBlockPointer(bool enabled);
+    bool blockPointerEnabled() const;
+
     /*!
      * Indicates whether the view should be rendered without taking
      * the visible() property into consideration.

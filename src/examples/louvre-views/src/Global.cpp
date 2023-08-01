@@ -1,10 +1,11 @@
-#include <Output.h>
 #include <LLog.h>
-#include <Global.h>
-#include <Compositor.h>
 #include <string.h>
 #include <LXCursor.h>
 #include <LOpenGL.h>
+
+#include "Global.h"
+#include "Compositor.h"
+#include "Output.h"
 
 static G::DockTextures _dockTextures;
 static G::ToplevelTextures _toplevelTextures;
@@ -58,6 +59,14 @@ G::DockTextures &G::dockTextures()
 void G::loadCursors()
 {
     xCursors.hand2 = LXCursor::loadXCursorB("hand2");
+    xCursors.top_left_corner = LXCursor::loadXCursorB("top_left_corner");
+    xCursors.top_right_corner= LXCursor::loadXCursorB("top_right_corner");
+    xCursors.bottom_left_corner = LXCursor::loadXCursorB("bottom_left_corner");
+    xCursors.bottom_right_corner = LXCursor::loadXCursorB("bottom_right_corner");
+    xCursors.left_side = LXCursor::loadXCursorB("left_side");
+    xCursors.top_side = LXCursor::loadXCursorB("top_side");
+    xCursors.right_side = LXCursor::loadXCursorB("right_side");
+    xCursors.bottom_side = LXCursor::loadXCursorB("bottom_side");
 }
 
 G::Cursors &G::cursors()
@@ -67,8 +76,8 @@ G::Cursors &G::cursors()
 
 void G::loadToplevelTextures()
 {
-    _toplevelTextures.activeTL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_upper_corner.png");
-    _toplevelTextures.activeT = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_topbar_clamp.png");
+    _toplevelTextures.activeTL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_top_left.png");
+    _toplevelTextures.activeT = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_top_clamp.png");
     _toplevelTextures.activeTR = _toplevelTextures.activeTL->copyB(_toplevelTextures.activeTL->sizeB(),
                                                                   LRect(0,
                                                                         0,
@@ -80,16 +89,16 @@ void G::loadToplevelTextures()
                                                                         0,
                                                                         -_toplevelTextures.activeL->sizeB().w(),
                                                                         _toplevelTextures.activeL->sizeB().h()));
-    _toplevelTextures.activeBL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_lower_corner.png");
-    _toplevelTextures.activeB = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_lower_clamp.png");
+    _toplevelTextures.activeBL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_bottom_left.png");
+    _toplevelTextures.activeB = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_bottom_clamp.png");
     _toplevelTextures.activeBR = _toplevelTextures.activeBL->copyB(_toplevelTextures.activeBL->sizeB(),
                                                                   LRect(0,
                                                                         0,
                                                                         -_toplevelTextures.activeBL->sizeB().w(),
                                                                         _toplevelTextures.activeBL->sizeB().h()));
 
-    _toplevelTextures.inactiveTL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_upper_corner.png");
-    _toplevelTextures.inactiveT = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_topbar_clamp.png");
+    _toplevelTextures.inactiveTL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_top_left.png");
+    _toplevelTextures.inactiveT = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_top_clamp.png");
     _toplevelTextures.inactiveTR = _toplevelTextures.inactiveTL->copyB(_toplevelTextures.inactiveTL->sizeB(),
                                                                   LRect(0,
                                                                         0,
@@ -101,8 +110,8 @@ void G::loadToplevelTextures()
                                                                         0,
                                                                         -_toplevelTextures.inactiveL->sizeB().w(),
                                                                         _toplevelTextures.inactiveL->sizeB().h()));
-    _toplevelTextures.inactiveBL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_lower_corner.png");
-    _toplevelTextures.inactiveB = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_lower_clamp.png");
+    _toplevelTextures.inactiveBL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_bottom_left.png");
+    _toplevelTextures.inactiveB = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_bottom_clamp.png");
     _toplevelTextures.inactiveBR = _toplevelTextures.inactiveBL->copyB(_toplevelTextures.inactiveBL->sizeB(),
                                                                   LRect(0,
                                                                         0,
@@ -117,6 +126,26 @@ void G::loadToplevelTextures()
                                                                         -_toplevelTextures.maskBL->sizeB().w(),
                                                                         _toplevelTextures.maskBL->sizeB().h()));
 
+    LRect activeTransRectsTL[] = TOPLEVEL_ACTIVE_TOP_LEFT_TRANS_REGION;
+
+    for (UInt64 i = 0; i < sizeof(activeTransRectsTL)/sizeof(LRect); i++)
+        _toplevelTextures.activeTransRegionTL.addRect(activeTransRectsTL[i]);
+
+    LRect activeTransRectsTR[] = TOPLEVEL_ACTIVE_TOP_RIGHT_TRANS_REGION;
+
+    for (UInt64 i = 0; i < sizeof(activeTransRectsTR)/sizeof(LRect); i++)
+        _toplevelTextures.activeTransRegionTR.addRect(activeTransRectsTR[i]);
+
+
+    LRect inactiveTransRectsTL[] = TOPLEVEL_INACTIVE_TOP_LEFT_TRANS_REGION;
+
+    for (UInt64 i = 0; i < sizeof(inactiveTransRectsTL)/sizeof(LRect); i++)
+        _toplevelTextures.inactiveTransRegionTL.addRect(inactiveTransRectsTL[i]);
+
+    LRect inactiveTransRectsTR[] = TOPLEVEL_INACTIVE_TOP_RIGHT_TRANS_REGION;
+
+    for (UInt64 i = 0; i < sizeof(inactiveTransRectsTR)/sizeof(LRect); i++)
+        _toplevelTextures.inactiveTransRegionTR.addRect(inactiveTransRectsTR[i]);
 }
 
 G::ToplevelTextures &G::toplevelTextures()

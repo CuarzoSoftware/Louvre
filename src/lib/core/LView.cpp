@@ -354,6 +354,16 @@ bool LView::pointerIsOver() const
     return imp()->pointerIsOver;
 }
 
+void LView::enableBlockPointer(bool enabled)
+{
+    imp()->blockPointerEnabled = enabled;
+}
+
+bool LView::blockPointerEnabled() const
+{
+    return imp()->blockPointerEnabled;
+}
+
 void LView::pointerEnterEvent(const LPoint &localPos)
 {
     L_UNUSED(localPos);

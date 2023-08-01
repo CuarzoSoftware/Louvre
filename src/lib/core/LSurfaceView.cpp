@@ -64,10 +64,16 @@ void LSurfaceView::enableCustomInputRegion(bool enabled)
 
 void LSurfaceView::setCustomPos(const LPoint &pos)
 {
-    if (customPosEnabled() && pos != imp()->customPos && mapped())
+    setCustomPos(pos.x(), pos.y());
+}
+
+void LSurfaceView::setCustomPos(Int32 x, Int32 y)
+{
+    if (customPosEnabled() && (x != imp()->customPos.x() || y != imp()->customPos.y()) && mapped())
         repaint();
 
-    imp()->customPos = pos;
+    imp()->customPos.setX(x);
+    imp()->customPos.setY(y);
 }
 
 const LPoint &LSurfaceView::customPos() const

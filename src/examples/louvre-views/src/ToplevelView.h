@@ -9,7 +9,9 @@ class ToplevelView : public LLayerView
 {
 public:
     ToplevelView(Toplevel *toplevel);
+    ~ToplevelView();
 
+    bool lastActiveState = false;
     Toplevel *toplevel = nullptr;
 
     LLayerView *clipTop = nullptr;
@@ -35,9 +37,13 @@ public:
     LSurfaceView *surfBR = nullptr;
 
     void updateGeometry();
+
     void pointerEnterEvent(const LPoint &localPos) override;
+    void pointerLeaveEvent() override;
+    void pointerMoveEvent(const LPoint &localPos) override;
     void pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state) override;
 
+    bool nativeMapped() const override;
     const LPoint &nativePos() const override;
 };
 

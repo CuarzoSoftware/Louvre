@@ -1,3 +1,6 @@
+#include <LTextureView.h>
+#include <LAnimation.h>
+
 #include "Compositor.h"
 #include "LTime.h"
 #include "Surface.h"
@@ -5,10 +8,8 @@
 #include "Output.h"
 #include "Toplevel.h"
 #include "ToplevelView.h"
-#include <Global.h>
-#include <LTextureView.h>
-#include <Dock.h>
-#include <LAnimation.h>
+#include "Global.h"
+#include "Dock.h"
 
 Surface::Surface(LSurface::Params *params) : LSurface(params)
 {
@@ -17,6 +18,17 @@ Surface::Surface(LSurface::Params *params) : LSurface(params)
 
 Surface::~Surface()
 {
+    if (toplevel())
+    {
+        class Toplevel *tl = (class Toplevel*)toplevel();
+
+        if (tl->decoratedView)
+        {
+            delete tl->decoratedView;
+            tl->decoratedView = nullptr;
+        }
+    }
+
     if (minimizeAnim)
         minimizeAnim->stop();
 
@@ -37,11 +49,10 @@ Surface::~Surface()
 
 LView *Surface::getView() const
 {
-    if (toplevel() && toplevel()->decorationMode() == LToplevelRole::ServerSide)
-    {
-        class Toplevel *tl = (class Toplevel*)toplevel();
+    class Toplevel *tl = (class Toplevel*)toplevel();
+
+    if (tl && tl->decoratedView)
         return tl->decoratedView;
-    }
 
     return view;
 }
@@ -187,6 +198,26 @@ void Surface::minimizedChanged()
     }
     else
     {
+        // Destroy minimized views
+        while (!minimizedViews.empty())
+        {
+            Dock *dock = minimizedViews.back()->dock;
+            delete minimizedViews.back();
+            dock->update();
+        }
+
+        // Destroy the resized fullsize view
+        delete thumbnailFullsizeView;
+        thumbnailFullsizeView = nullptr;
+
+        // Destroy textures
+        delete thumbnailFullSizeTex;
+        thumbnailFullSizeTex = nullptr;
+        delete thumbnailTex;
+        thumbnailTex = nullptr;
+
+        minimizeAnim = nullptr;
+
         compositor()->raiseSurface(this);
         if (toplevel())
             toplevel()->configure(LToplevelRole::Activated);
@@ -203,16 +234,22 @@ LTexture *Surface::renderThumbnail()
 
     getView()->setParent(&tmpView);
 
-    std::list<LSurfaceView*>tmpChildren;
+    struct TMPList
+    {
+        LSurfaceView *view;
+        LView *parent;
+    };
+
+    std::list<TMPList>tmpChildren;
 
     Surface *next = this;
     while ((next = (Surface*)next->nextSurface()))
     {
-        if (next->parent() == this)
+        if (next->parent() == this && next->subsurface())
         {
             next->view->enableParentOffset(false);
             next->view->setParent(&tmpView);
-            tmpChildren.push_back(next->view);
+            tmpChildren.push_back({next->view, next->view->parent()});
         }
     }
 
@@ -225,8 +262,8 @@ LTexture *Surface::renderThumbnail()
 
     while (!tmpChildren.empty())
     {
-        tmpChildren.front()->enableParentOffset(true);
-        tmpChildren.front()->setParent(G::compositor()->surfacesLayer);
+        tmpChildren.front().view->enableParentOffset(true);
+        tmpChildren.front().view->setParent(tmpChildren.front().parent);
         tmpChildren.pop_front();
     }
 
@@ -270,26 +307,6 @@ void Surface::unminimize(DockItem *clickedItem)
     },
     [this](LAnimation *)
     {
-        // Destroy minimized views
-        while (!minimizedViews.empty())
-        {
-            Dock *dock = minimizedViews.back()->dock;
-            delete minimizedViews.back();
-            dock->update();
-        }
-
-        // Destroy the resized fullsize view
-        delete thumbnailFullsizeView;
-        thumbnailFullsizeView = nullptr;
-
-        // Destroy textures
-        delete thumbnailFullSizeTex;
-        thumbnailFullSizeTex = nullptr;
-        delete thumbnailTex;
-        thumbnailTex = nullptr;
-
-        minimizeAnim = nullptr;
-
         setMinimized(false);
     });
 

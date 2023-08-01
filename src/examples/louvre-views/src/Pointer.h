@@ -13,6 +13,10 @@ public:
     void pointerPosChangeEvent(Float32 x, Float32 y) override;
     void pointerButtonEvent(Button button, ButtonState state) override;
     void pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source) override;
+
+    void setCursorRequest(LCursorRole *cursorRole) override;
+
+    bool restoreCursor = true;
 };
 
 #endif // POINTER_H

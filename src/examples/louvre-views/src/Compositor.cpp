@@ -1,13 +1,13 @@
-#include <Compositor.h>
-#include <Output.h>
-#include <Surface.h>
-#include <Pointer.h>
 #include <LLayerView.h>
 #include <LAnimation.h>
-#include <Global.h>
 #include <LLog.h>
 #include <LTextureView.h>
 
+#include "Global.h"
+#include "Compositor.h"
+#include "Output.h"
+#include "Surface.h"
+#include "Pointer.h"
 #include "Toplevel.h"
 
 Compositor::Compositor():LCompositor()

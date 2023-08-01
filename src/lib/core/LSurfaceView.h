@@ -50,7 +50,8 @@ public:
      */
     virtual void enableCustomInputRegion(bool enabled);
 
-    virtual void setCustomPos(const LPoint &pos);
+    void setCustomPos(const LPoint &pos);
+    virtual void setCustomPos(Int32 x, Int32 y);
     virtual const LPoint &customPos() const;
 
     virtual void setCustomInputRegion(const LRegion *region);

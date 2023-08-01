@@ -17,6 +17,7 @@ DockItem::DockItem(class Surface *surface, Dock *dock) : LTextureView(surface->t
     enableScaling(true);
     enableParentOpacity(false);
     enableInput(true);
+    enableBlockPointer(false);
 }
 
 DockItem::~DockItem()
