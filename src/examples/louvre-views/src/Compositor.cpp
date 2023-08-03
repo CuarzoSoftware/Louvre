@@ -1,13 +1,14 @@
 #include <LLayerView.h>
 #include <LAnimation.h>
-#include <LLog.h>
 #include <LTextureView.h>
+#include <LLog.h>
 
 #include "Global.h"
 #include "Compositor.h"
 #include "Output.h"
 #include "Surface.h"
 #include "Pointer.h"
+#include "Keyboard.h"
 #include "Toplevel.h"
 
 Compositor::Compositor():LCompositor()
@@ -17,12 +18,10 @@ Compositor::Compositor():LCompositor()
     backgroundLayer = new LLayerView(scene->mainView());
     surfacesLayer = new LLayerView(scene->mainView());
     overlayLayer = new LLayerView(scene->mainView());
-    hiddenCursorsLayer = new LLayerView(scene->mainView());
 }
 
 Compositor::~Compositor()
 {
-    delete hiddenCursorsLayer;
     delete overlayLayer;
     delete surfacesLayer;
     delete scene;
@@ -62,6 +61,11 @@ LSurface *Compositor::createSurfaceRequest(LSurface::Params *params)
 LPointer *Compositor::createPointerRequest(LPointer::Params *params)
 {
     return new Pointer(params);
+}
+
+LKeyboard *Compositor::createKeyboardRequest(LKeyboard::Params *params)
+{
+    return new Keyboard(params);
 }
 
 LToplevelRole *Compositor::createToplevelRoleRequest(LToplevelRole::Params *params)

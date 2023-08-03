@@ -50,6 +50,11 @@ void LClient::flush()
     wl_client_flush(client());
 }
 
+void LClient::destroy()
+{
+    wl_client_destroy(client());
+}
+
 const list<Wayland::GOutput*> &LClient::outputGlobals() const
 {
     return imp()->outputGlobals;

@@ -25,6 +25,8 @@ public:
      */
     struct Params;
 
+    LCursorRole *lastCursorRequest() const;
+
     /*!
      * @brief Pointer buttons.
      *

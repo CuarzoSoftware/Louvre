@@ -170,7 +170,6 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         seat()->dndManager()->imp()->destDidNotRequestReceive++;
 
     wl_event_loop_dispatch(imp()->eventLoop, 0);
-
     imp()->destroyPendingRenderBuffers();
 
     if (seat()->enabled())

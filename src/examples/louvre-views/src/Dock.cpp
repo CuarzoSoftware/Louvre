@@ -20,9 +20,9 @@ Dock::Dock(Output *output) : LLayerView(G::compositor()->overlayLayer)
     dockCenter = new LTextureView(G::dockTextures().center, dockContainer);
     dockRight = new LTextureView(G::dockTextures().right, dockContainer);
 
-    dockLeft->setBufferScale(DOCK_BUFFER_SCALE);
-    dockCenter->setBufferScale(DOCK_BUFFER_SCALE);
-    dockRight->setBufferScale(DOCK_BUFFER_SCALE);
+    dockLeft->setBufferScale(2);
+    dockCenter->setBufferScale(2);
+    dockRight->setBufferScale(2);
 
     dockCenter->enableDstSize(true);
 
@@ -58,7 +58,7 @@ Dock::~Dock()
 void Dock::update()
 {
     setSize(output->size().w(),
-            DOCK_HEIGHT + 5);
+            DOCK_HEIGHT + 4);
 
     setPos(output->rect().x(),
            output->rect().h() - size().h() * visiblePercent);
@@ -69,7 +69,7 @@ void Dock::update()
     {
         LTextureView *item = (LTextureView*)it;
 
-        item->setPos(dockWidth, DOCK_PADDING);
+        item->setPos(dockWidth, DOCK_PADDING + (DOCK_ITEM_HEIGHT - item->size().h())/2);
         dockWidth += item->size().w();
 
         if (it != itemsContainer->children().back())
@@ -78,23 +78,14 @@ void Dock::update()
 
     dockWidth += DOCK_PADDING;
 
-    dockLeft->setPos(-DOCK_SHADOW_SIZE,
-                     -DOCK_SHADOW_SIZE);
-
-    dockCenter->setPos(dockLeft->nativePos().x() + dockLeft->size().w(),
-                       -DOCK_SHADOW_SIZE);
-
+    dockLeft->setPos(0, 0);
+    dockCenter->setPos(dockLeft->nativePos().x() + dockLeft->size().w(), 0);
     dockCenter->setDstSize(dockWidth - 2 * DOCK_BORDER_RADIUS,
                            dockCenter->texture()->sizeB().h() / dockCenter->bufferScale());
-
-    dockRight->setPos(dockCenter->nativePos().x() + dockCenter->size().w(),
-                      -DOCK_SHADOW_SIZE);
-
-
-    dockContainer->setSize(dockWidth, DOCK_HEIGHT);
-    dockContainer->setPos((size().w() - dockContainer->size().w()) / 2,
-                          0);
-    itemsContainer->setPos(0, 0);
+    dockRight->setPos(dockCenter->nativePos().x() + dockCenter->size().w(), 0);
+    dockContainer->setSize(dockLeft->size().w() + dockCenter->size().w() + dockRight->size().w(), DOCK_HEIGHT);
+    dockContainer->setPos((size().w() - dockContainer->size().w()) / 2, - DOCK_SHADOW_SIZE);
+    itemsContainer->setPos(DOCK_SHADOW_SIZE, DOCK_SHADOW_SIZE);
 }
 
 void Dock::show()
@@ -102,7 +93,9 @@ void Dock::show()
     if (anim || visiblePercent != 0.f)
         return;
 
-    anim = LAnimation::create(200,
+    dockContainer->setVisible(true);
+
+    anim = LAnimation::create(250,
     [this](LAnimation *anim)
     {
         visiblePercent = 1.f - powf(1.f - anim->value(), 2.f);
@@ -112,6 +105,9 @@ void Dock::show()
     [this](LAnimation *)
     {
         anim = nullptr;
+
+        if (!pointerIsOver())
+            LAnimation::oneShot(100, nullptr, [this](LAnimation*){hide();});
     });
 
     anim->start();
@@ -122,7 +118,7 @@ void Dock::hide()
     if (anim || visiblePercent != 1.f)
         return;
 
-    anim = LAnimation::create(200,
+    anim = LAnimation::create(250,
     [this](LAnimation *anim)
     {
         visiblePercent = 1.f - powf(anim->value(), 2.f);
@@ -132,6 +128,7 @@ void Dock::hide()
     [this](LAnimation *)
     {
         anim = nullptr;
+        dockContainer->setVisible(false);
     });
 
     anim->start();
@@ -140,10 +137,21 @@ void Dock::hide()
 void Dock::pointerEnterEvent(const LPoint &localPos)
 {
     L_UNUSED(localPos);
-    show();
+    showResistanceCount = 0;
+}
+
+void Dock::pointerMoveEvent(const LPoint &localPos)
+{
+    L_UNUSED(localPos);
+
+    if (showResistanceCount > showResistance)
+        show();
+    else
+        showResistanceCount++;
 }
 
 void Dock::pointerLeaveEvent()
 {
+    showResistanceCount = 0;
     hide();
 }

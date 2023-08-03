@@ -21,6 +21,7 @@ LPRIVATE_CLASS(LCursor)
 
     UInt32 lastTextureSerial                            = 0;
     bool textureChanged                                 = false;
+    bool posChanged                                     = false;
     LTexture *texture                                   = nullptr;
     LTexture *defaultTexture                            = nullptr;
     GLuint glFramebuffer, glRenderbuffer;

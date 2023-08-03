@@ -19,13 +19,15 @@ public:
     LOutput *createOutputRequest() override;
     LSurface *createSurfaceRequest(LSurface::Params *params) override;
     LPointer *createPointerRequest(LPointer::Params *params) override;
+    LKeyboard *createKeyboardRequest(LKeyboard::Params *params) override;
     LToplevelRole *createToplevelRoleRequest(LToplevelRole::Params *params) override;
 
     LScene *scene;
     LLayerView *backgroundLayer;
     LLayerView *surfacesLayer;
     LLayerView *overlayLayer;
-    LLayerView *hiddenCursorsLayer;
+
+    bool updatePointerBeforePaint = false;
 };
 
 #endif // COMPOSITOR_H

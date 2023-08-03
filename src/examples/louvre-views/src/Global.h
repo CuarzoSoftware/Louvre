@@ -9,7 +9,6 @@ class Output;
 
 using namespace Louvre;
 
-#define DOCK_BUFFER_SCALE 2
 #define DOCK_SHADOW_SIZE 40
 #define DOCK_HEIGHT 53
 #define DOCK_SPACING 8
@@ -18,37 +17,35 @@ using namespace Louvre;
 #define DOCK_BORDER_RADIUS 16
 #define DOCK_ITEM_HEIGHT (DOCK_HEIGHT - (2 * DOCK_PADDING))
 
-
-#define TOPLEVEL_RESIZE_INPUT_MARGIN 4
-
 #define TOPBAR_HEIGHT 24
 
-#define TOPLEVEL_TOPBAR_BUTTON_SIZE 12
-
-#define TOPLEVEL_ACTIVE_TOP_LEFT_OFFSET_X -41
-#define TOPLEVEL_ACTIVE_TOP_LEFT_OFFSET_Y -56
+#define TOPLEVEL_ACTIVE_TOP_LEFT_OFFSET_X -48
+#define TOPLEVEL_ACTIVE_TOP_LEFT_OFFSET_Y -61
 #define TOPLEVEL_ACTIVE_TOP_CLAMP_OFFSET_Y 1
-#define TOPLEVEL_ACTIVE_BOTTOM_LEFT_OFFSET_X -41
-#define TOPLEVEL_ACTIVE_BOTTOM_LEFT_OFFSET_Y -15
-#define TOPLEVEL_ACTIVE_MIN_WIDTH 60
-#define TOPLEVEL_ACTIVE_MIN_WIDTH_TOP 30
-#define TOPLEVEL_ACTIVE_MIN_WIDTH_BOTTOM 60
-#define TOPLEVEL_ACTIVE_MIN_HEIGHT 23
-#define TOPLEVEL_ACTIVE_TOP_LEFT_TRANS_REGION {LRect(0,0,41,64),LRect(41,0,15,27),LRect(41,27,11,11),LRect(41,56,15,8)}
-#define TOPLEVEL_ACTIVE_TOP_RIGHT_TRANS_REGION {LRect(15,0,41,64),LRect(0,0,15,27),LRect(4,27,11,11),LRect(0,56,15,8)}
-#define TOPLEVEL_INACTIVE_TOP_LEFT_OFFSET_X -37
-#define TOPLEVEL_INACTIVE_TOP_LEFT_OFFSET_Y -53
+#define TOPLEVEL_ACTIVE_BOTTOM_LEFT_OFFSET_X -48
+#define TOPLEVEL_ACTIVE_BOTTOM_LEFT_OFFSET_Y -21
+#define TOPLEVEL_ACTIVE_MIN_WIDTH 68
+#define TOPLEVEL_ACTIVE_MIN_WIDTH_TOP 44
+#define TOPLEVEL_ACTIVE_MIN_WIDTH_BOTTOM 68
+#define TOPLEVEL_ACTIVE_MIN_HEIGHT 34
+#define TOPLEVEL_ACTIVE_TOP_LEFT_TRANS_REGION {LRect(0,0,48,74),LRect(48,0,22,32),LRect(48,32,11,11),LRect(48,61,22,13)}
+#define TOPLEVEL_ACTIVE_TOP_RIGHT_TRANS_REGION {LRect(22,0,48,74),LRect(0,0,22,32),LRect(11,32,11,11),LRect(0,61,22,13)}
+#define TOPLEVEL_INACTIVE_TOP_LEFT_OFFSET_X -41
+#define TOPLEVEL_INACTIVE_TOP_LEFT_OFFSET_Y -56
 #define TOPLEVEL_INACTIVE_TOP_CLAMP_OFFSET_Y 1
-#define TOPLEVEL_INACTIVE_BOTTOM_LEFT_OFFSET_X -37
-#define TOPLEVEL_INACTIVE_BOTTOM_LEFT_OFFSET_Y -12
-#define TOPLEVEL_INACTIVE_MIN_WIDTH 46
-#define TOPLEVEL_INACTIVE_MIN_WIDTH_TOP 22
-#define TOPLEVEL_INACTIVE_MIN_WIDTH_BOTTOM 46
-#define TOPLEVEL_INACTIVE_MIN_HEIGHT 14
-#define TOPLEVEL_INACTIVE_TOP_LEFT_TRANS_REGION {LRect(0,0,37,55),LRect(37,0,11,24),LRect(37,24,11,11),LRect(37,53,11,2)}
-#define TOPLEVEL_INACTIVE_TOP_RIGHT_TRANS_REGION {LRect(11,0,37,55),LRect(0,0,11,24),LRect(0,24,11,11),LRect(0,53,11,2)}
+#define TOPLEVEL_INACTIVE_BOTTOM_LEFT_OFFSET_X -41
+#define TOPLEVEL_INACTIVE_BOTTOM_LEFT_OFFSET_Y -14
+#define TOPLEVEL_INACTIVE_MIN_WIDTH 60
+#define TOPLEVEL_INACTIVE_MIN_WIDTH_TOP 30
+#define TOPLEVEL_INACTIVE_MIN_WIDTH_BOTTOM 60
+#define TOPLEVEL_INACTIVE_MIN_HEIGHT 21
+#define TOPLEVEL_INACTIVE_TOP_LEFT_TRANS_REGION {LRect(0,0,41,63),LRect(41,0,15,27),LRect(41,27,11,11),LRect(41,56,15,7)}
+#define TOPLEVEL_INACTIVE_TOP_RIGHT_TRANS_REGION {LRect(15,0,41,63),LRect(0,0,15,27),LRect(4,27,11,11),LRect(0,56,15,7)}
 #define TOPLEVEL_TOPBAR_HEIGHT 29
 #define TOPLEVEL_BORDER_RADIUS 11
+#define TOPLEVEL_BUTTON_SIZE 12
+#define TOPLEVEL_BUTTON_SPACING 8
+#define TOPLEVEL_RESIZE_INPUT_MARGIN 4
 
 class G
 {
@@ -96,6 +93,21 @@ public:
 
         LTexture *maskBL = nullptr;
         LTexture *maskBR = nullptr;
+
+        LTexture *inactiveButton = nullptr;
+        LTexture *activeCloseButton = nullptr;
+        LTexture *activeCloseButtonHover = nullptr;
+        LTexture *activeCloseButtonPressed = nullptr;
+        LTexture *activeMinimizeButton = nullptr;
+        LTexture *activeMinimizeButtonHover = nullptr;
+        LTexture *activeMinimizeButtonPressed = nullptr;
+        LTexture *activeMaximizeButton = nullptr;
+        LTexture *activeMaximizeButtonHover = nullptr;
+        LTexture *activeMaximizeButtonPressed = nullptr;
+        LTexture *activeFullscreenButtonHover = nullptr;
+        LTexture *activeFullscreenButtonPressed = nullptr;
+        LTexture *activeUnfullscreenButtonHover = nullptr;
+        LTexture *activeUnfullscreenButtonPressed = nullptr;
 
         LRegion activeTransRegionTL;
         LRegion activeTransRegionTR;

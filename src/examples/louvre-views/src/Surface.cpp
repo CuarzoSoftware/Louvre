@@ -70,7 +70,7 @@ void Surface::mappingChanged()
                 LPoint outputPosG = compositor()->cursor()->output()->pos() + LPoint(0, TOPBAR_HEIGHT);
                 LSize outputSizeG = compositor()->cursor()->output()->size() - LSize(0, TOPBAR_HEIGHT);
 
-                setPos(outputPosG + outputSizeG/2 - toplevel()->windowGeometry().size()/2);
+                setPos(outputPosG + (outputSizeG - toplevel()->windowGeometry().size())/2);
 
                 if (pos().x() < outputPosG.x())
                     setX(outputPosG.x());
@@ -105,11 +105,7 @@ void Surface::orderChanged()
 void Surface::roleChanged()
 {
     if (roleId() == LSurface::Cursor)
-    {
-        view->enableForceRequestNextFrame(true);
         view->setVisible(false);
-        view->setParent(G::compositor()->hiddenCursorsLayer);
-    }
 }
 
 void Surface::bufferSizeChanged()
@@ -172,7 +168,7 @@ void Surface::minimizedChanged()
             // Scale and move fullsize view to the dock
             thumbnailFullsizeView->setScalingVector(1.f - easeOut);
             thumbnailFullsizeView->setPos((dstDockItem->pos() + dstDockItem->size()) * easeOut +
-                     rolePos() * (1.f - easeOut));
+                     minimizeStartRect.pos() * (1.f - easeOut));
 
             return true;
         },
@@ -194,7 +190,7 @@ void Surface::minimizedChanged()
         minimizeAnim->start();
 
         if (toplevel())
-            toplevel()->configure(0);
+            toplevel()->configure(toplevel()->states() &~LToplevelRole::Activated);
     }
     else
     {
@@ -207,20 +203,24 @@ void Surface::minimizedChanged()
         }
 
         // Destroy the resized fullsize view
-        delete thumbnailFullsizeView;
-        thumbnailFullsizeView = nullptr;
+        if (thumbnailFullsizeView)
+        {
+            delete thumbnailFullsizeView;
+            thumbnailFullsizeView = nullptr;
 
-        // Destroy textures
-        delete thumbnailFullSizeTex;
-        thumbnailFullSizeTex = nullptr;
-        delete thumbnailTex;
-        thumbnailTex = nullptr;
+            // Destroy textures
+            delete thumbnailFullSizeTex;
+            thumbnailFullSizeTex = nullptr;
+            delete thumbnailTex;
+            thumbnailTex = nullptr;
 
-        minimizeAnim = nullptr;
+            minimizeAnim = nullptr;
+        }
 
         compositor()->raiseSurface(this);
+
         if (toplevel())
-            toplevel()->configure(LToplevelRole::Activated);
+            toplevel()->configure(toplevel()->states() | LToplevelRole::Activated);
 
         getView()->setVisible(true);
         getView()->enableInput(true);
@@ -229,8 +229,12 @@ void Surface::minimizedChanged()
 
 LTexture *Surface::renderThumbnail()
 {
-    LSceneView tmpView = LSceneView(view->size()*view->bufferScale(), view->bufferScale());
-    tmpView.setPos(rolePos());
+    LBox box = getView()->boundingBox();
+
+    minimizeStartRect = LRect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+
+    LSceneView tmpView = LSceneView(minimizeStartRect.size() * view->bufferScale(), view->bufferScale());
+    tmpView.setPos(minimizeStartRect.pos());
 
     getView()->setParent(&tmpView);
 
@@ -247,9 +251,9 @@ LTexture *Surface::renderThumbnail()
     {
         if (next->parent() == this && next->subsurface())
         {
+            tmpChildren.push_back({next->view, next->view->parent()});
             next->view->enableParentOffset(false);
             next->view->setParent(&tmpView);
-            tmpChildren.push_back({next->view, next->view->parent()});
         }
     }
 
@@ -301,7 +305,7 @@ void Surface::unminimize(DockItem *clickedItem)
         // Scale and move fullsize view to the dock
         thumbnailFullsizeView->setScalingVector(exp);
         thumbnailFullsizeView->setPos((clickedItem->pos() + clickedItem->size()) * (1.f - exp) +
-                 rolePos() * exp);
+                 minimizeStartRect.pos() * exp);
 
         return true;
     },

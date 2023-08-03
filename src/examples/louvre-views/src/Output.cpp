@@ -90,6 +90,14 @@ void Output::moveGL()
 
 void Output::paintGL()
 {
+    //painter()->clearScreen();
+
+    if (G::compositor()->updatePointerBeforePaint)
+    {
+        seat()->pointer()->pointerMoveEvent(0, 0);
+        G::compositor()->updatePointerBeforePaint = false;
+    }
+
     G::compositor()->scene->handlePaintGL(this);
 }
 

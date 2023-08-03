@@ -1,6 +1,7 @@
 #include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LCursorRolePrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <private/LPointerPrivate.h>
 #include <LCursorRole.h>
 #include <LSurface.h>
 #include <LCompositor.h>
@@ -17,6 +18,9 @@ LCursorRole::LCursorRole(Params *params) : LBaseSurfaceRole(params->surface->sur
 
 LCursorRole::~LCursorRole()
 {
+    if (seat()->pointer()->imp()->lastCursorRequest == this)
+        seat()->pointer()->imp()->lastCursorRequest = nullptr;
+
     if (surface())
         surface()->imp()->setMapped(false);
 
@@ -50,7 +54,10 @@ void LCursorRole::handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin)
         // Notify that the cursor changed content
         if (seat()->pointer()->focusSurface() &&
             seat()->pointer()->focusSurface()->client() == surface()->client())
+        {
+            seat()->pointer()->imp()->lastCursorRequest = this;
             seat()->pointer()->setCursorRequest(this);
+        }
     }
     else
         surface()->imp()->setMapped(false);

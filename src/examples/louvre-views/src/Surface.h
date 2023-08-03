@@ -36,6 +36,7 @@ public:
     LTexture *thumbnailTex = nullptr;
     std::list<DockItem*>minimizedViews;
 
+    LRect minimizeStartRect;
     LAnimation *minimizeAnim = nullptr;
 };
 

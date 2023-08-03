@@ -14,7 +14,20 @@ void Pointer::pointerMoveEvent(Float32 dx, Float32 dy)
 {
     LView *view = G::scene()->handlePointerMoveEvent(dx, dy);
 
-    if (restoreCursor && !view)
+    if (resizingToplevel() || cursorOwner)
+        return;
+
+    if (view)
+    {
+        if (lastCursorRequest() && view->type() == LView::Surface)
+        {
+            LSurfaceView *surfView = (LSurfaceView*)view;
+
+            if (surfView->surface() == lastCursorRequestFocusedSurface)
+                cursor()->setTextureB(lastCursorRequest()->surface()->texture(), lastCursorRequest()->hotspotB());
+        }
+    }
+    else
     {
         cursor()->useDefault();
         cursor()->setVisible(true);
@@ -25,7 +38,20 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
 {
     LView *view = G::scene()->handlePointerPosChangeEvent(x, y);
 
-    if (restoreCursor && !view)
+    if (resizingToplevel() || cursorOwner)
+        return;
+
+    if (view)
+    {
+        if (lastCursorRequest() && view->type() == LView::Surface)
+        {
+            LSurfaceView *surfView = (LSurfaceView*)view;
+
+            if (surfView->surface() == lastCursorRequestFocusedSurface)
+                cursor()->setTextureB(lastCursorRequest()->surface()->texture(), lastCursorRequest()->hotspotB());
+        }
+    }
+    else
     {
         cursor()->useDefault();
         cursor()->setVisible(true);
@@ -34,6 +60,9 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
 
 void Pointer::pointerButtonEvent(Button button, ButtonState state)
 {
+    if (button == LPointer::Left && state == LPointer::Released)
+        G::compositor()->updatePointerBeforePaint = true;
+
     G::scene()->handlePointerButtonEvent(button, state);
 }
 
@@ -44,7 +73,9 @@ void Pointer::pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, In
 
 void Pointer::setCursorRequest(LCursorRole *cursorRole)
 {
-    if (resizingToplevel() || !restoreCursor)
+    lastCursorRequestFocusedSurface = focusSurface();
+
+    if (resizingToplevel() || cursorOwner)
         return;
 
     if (cursorRole)
@@ -54,15 +85,6 @@ void Pointer::setCursorRequest(LCursorRole *cursorRole)
                     cursorRole->hotspotB());
 
         cursor()->setVisible(true);
-
-        // We notify the outputs that the cursor intersects for the current surface to update its scale
-        for (LOutput *o : compositor()->outputs())
-        {
-            if (o == cursor()->output())
-                cursorRole->surface()->sendOutputEnterEvent(o);
-            else
-                cursorRole->surface()->sendOutputLeaveEvent(o);
-        }
     }
     // If nullptr means the client wants to hide the cursor
     else

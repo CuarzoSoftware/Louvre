@@ -148,7 +148,10 @@ void RXdgSurface::RXdgSurfacePrivate::ack_configure(wl_client *client, wl_resour
             {
                 toplevel->imp()->currentConf = toplevel->imp()->sentConfs.front();
                 toplevel->imp()->sentConfs.pop_front();
-                toplevel->imp()->applyPendingChanges();
+
+                if (toplevel->surface() && toplevel->surface()->mapped() && toplevel->imp()->currentConf.size == toplevel->windowGeometry().size())
+                    toplevel->imp()->applyPendingChanges();
+
                 return;
             }
 

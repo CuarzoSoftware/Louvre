@@ -16,6 +16,11 @@
 using namespace Louvre;
 using namespace Louvre::Protocols;
 
+LCursorRole *LPointer::lastCursorRequest() const
+{
+    return imp()->lastCursorRequest;
+}
+
 LPointer::LPointer(Params *params)
 {
     L_UNUSED(params);
@@ -143,7 +148,7 @@ void LPointer::startResizingToplevel(LToplevelRole *toplevel, LToplevelRole::Res
 
     imp()->resizingToplevelInitPos = toplevel->surface()->pos();
 
-    resizingToplevel()->configure(resizingToplevel()->states() | LToplevelRole::Resizing);
+    resizingToplevel()->configure(LToplevelRole::Activated | LToplevelRole::Resizing);
 }
 
 void LPointer::updateResizingToplevelSize()
@@ -186,7 +191,7 @@ void LPointer::updateResizingToplevelSize()
         }
 
 
-        resizingToplevel()->configure(newSize ,resizingToplevel()->states() | LToplevelRole::Resizing);
+        resizingToplevel()->configure(newSize, LToplevelRole::Activated | LToplevelRole::Resizing);
     }
 }
 

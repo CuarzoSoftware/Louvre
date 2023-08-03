@@ -4,6 +4,8 @@
 #include <LLayerView.h>
 
 class Toplevel;
+class InputRect;
+class ToplevelButton;
 
 class ToplevelView : public LLayerView
 {
@@ -36,15 +38,29 @@ public:
     LSurfaceView *surfBL = nullptr;
     LSurfaceView *surfBR = nullptr;
 
-    void updateGeometry();
+    InputRect *resizeTL = nullptr;
+    InputRect *resizeTR = nullptr;
+    InputRect *resizeBL = nullptr;
+    InputRect *resizeBR = nullptr;
+    InputRect *resizeT = nullptr;
+    InputRect *resizeB = nullptr;
+    InputRect *resizeL = nullptr;
+    InputRect *resizeR = nullptr;
+    InputRect *topbarInput = nullptr;
 
-    void pointerEnterEvent(const LPoint &localPos) override;
-    void pointerLeaveEvent() override;
-    void pointerMoveEvent(const LPoint &localPos) override;
-    void pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state) override;
+    InputRect *buttonsContainer = nullptr;
+    ToplevelButton *closeButton = nullptr;
+    ToplevelButton *minimizeButton = nullptr;
+    ToplevelButton *maximizeButton = nullptr;
+
+    UInt32 lastTopbarClickMs = 0;
+
+    void updateGeometry();
 
     bool nativeMapped() const override;
     const LPoint &nativePos() const override;
+
+    void keyEvent(UInt32 keyCode, UInt32 keyState) override;
 };
 
 #endif // TOPLEVELVIEW_H

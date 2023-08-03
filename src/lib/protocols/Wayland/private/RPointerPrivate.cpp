@@ -1,6 +1,7 @@
 #include <protocols/Wayland/private/RPointerPrivate.h>
 #include <private/LCursorRolePrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <private/LPointerPrivate.h>
 #include <LCompositor.h>
 
 using namespace Louvre;
@@ -44,10 +45,14 @@ void RPointer::RPointerPrivate::set_cursor(wl_client *client, wl_resource *resou
         lCursor->imp()->currentHotspotB = lCursor->imp()->currentHotspot * lSurface->bufferScale();
         lSurface->imp()->setPendingRole(lCursor);
         lSurface->imp()->applyPendingRole();
+        seat()->pointer()->imp()->lastCursorRequest = lCursor;
         seat()->pointer()->setCursorRequest(lCursor);
     }
     else
+    {
+        seat()->pointer()->imp()->lastCursorRequest = nullptr;
         seat()->pointer()->setCursorRequest(nullptr);
+    }
 }
 
 #if LOUVRE_WL_SEAT_VERSION >= 3

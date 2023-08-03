@@ -64,6 +64,11 @@ public:
     LTexture *texture() const;
 
     /*!
+     * Default cursor texture.
+     */
+    LTexture *defaultTexture() const;
+
+    /*!
      * @brief Assigns the current output.
      *
      * The library automatically assigns the current output based on the cursor position.\n

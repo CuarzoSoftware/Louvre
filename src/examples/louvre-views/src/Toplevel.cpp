@@ -1,5 +1,5 @@
+#include <LAnimation.h>
 #include <LCursor.h>
-#include <LOutput.h>
 #include <LSurface.h>
 #include <LLog.h>
 
@@ -8,11 +8,15 @@
 #include "Global.h"
 #include "Surface.h"
 #include "ToplevelView.h"
+#include "Output.h"
 
 Toplevel::Toplevel(Params *params) : LToplevelRole(params) {}
 
 Toplevel::~Toplevel()
 {
+    if (anim)
+        anim->stop();
+
     if (decoratedView)
     {
         delete decoratedView;
@@ -37,7 +41,12 @@ void Toplevel::configureRequest()
     else
         setDecorationMode((DecorationMode) preferredDecorationMode());
 
-    configure(0, states() | Activated);
+    Surface *surf = (Surface*) surface();
+
+    if (surf->firstMap)
+        configure(0, Activated);
+    else
+        configure(0, states() | Activated);
 }
 
 void Toplevel::startResizeRequest(ResizeEdge edge)
@@ -52,15 +61,48 @@ void Toplevel::startMoveRequest()
 
 void Toplevel::setMaximizedRequest()
 {
-    configure(cursor()->output()->size().w(),
-              cursor()->output()->size().h() - TOPBAR_HEIGHT,
-              states() | Maximized);
+    if (anim)
+        return;
+
+    Output *output = (Output*)cursor()->output();
+
+    prevRect = LRect(surface()->pos(), windowGeometry().size());
+
+    if (maxSize().w() == 0 || maxSize().w() >= output->rect().w())
+        dstRect.setW(output->rect().w());
+    else
+        dstRect.setW(maxSize().w());
+
+    if (maxSize().h() == 0 || maxSize().h() >= output->rect().h() - TOPBAR_HEIGHT)
+        dstRect.setH(output->rect().h() - TOPBAR_HEIGHT);
+    else
+        dstRect.setH(maxSize().h());
+
+    dstRect.setPos(output->pos() + LPoint(0, TOPBAR_HEIGHT) + (output->size() - LSize(0, TOPBAR_HEIGHT) - dstRect.size()) / 2);
+
+    if (decoratedView)
+        dstRect.setSize(dstRect.size() + LSize(2, 2 - TOPLEVEL_TOPBAR_HEIGHT));
+
+    configure(dstRect.size(), Activated | Maximized);
+}
+
+void Toplevel::unsetMaximizedRequest()
+{
+    configure(prevRect.size(), states() & ~Maximized);
 }
 
 void Toplevel::maximizedChanged()
 {
     if (maximized())
-        surface()->setPos(cursor()->output()->pos() + LPoint(0, TOPBAR_HEIGHT));
+        surface()->setPos(dstRect.pos());
+    else
+    {
+        if (!seat()->pointer()->movingToplevel() && !seat()->pointer()->resizingToplevel())
+            surface()->setPos(prevRect.pos());
+    }
+
+    compositor()->raiseSurface(surface());
+    G::compositor()->updatePointerBeforePaint = true;
 }
 
 void Toplevel::decorationModeChanged()

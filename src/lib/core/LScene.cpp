@@ -11,6 +11,8 @@
 #include <LPointer.h>
 #include <LCompositor.h>
 
+#include <unistd.h>
+
 LScene::LScene()
 {
     m_imp = new LScenePrivate();
@@ -99,6 +101,17 @@ LView *LScene::handlePointerPosChangeEvent(Float32 x, Float32 y, LPoint *outLoca
             output->repaint();
     }
 
+    if (seat()->pointer()->lastCursorRequest())
+    {
+        for (LOutput *output : compositor()->outputs())
+        {
+            if (output == cursor()->output())
+                seat()->pointer()->lastCursorRequest()->surface()->sendOutputEnterEvent(output);
+            else
+                seat()->pointer()->lastCursorRequest()->surface()->sendOutputLeaveEvent(output);
+        }
+    }
+
     // Update the drag & drop icon (if there was one)
     if (seat()->dndManager()->icon())
     {
@@ -144,8 +157,6 @@ LView *LScene::handlePointerPosChangeEvent(Float32 x, Float32 y, LPoint *outLoca
     if (!surface)
     {
         seat()->pointer()->setFocus(nullptr);
-        //cursor()->useDefault();
-        //cursor()->setVisible(true);
     }
     else
     {
@@ -257,8 +268,6 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
             {
                 seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
                 seat()->pointer()->setFocus(nullptr);
-                //cursor()->useDefault();
-                //cursor()->setVisible(true);
             }
         }
         else
@@ -267,8 +276,6 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
             {
                 seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
                 seat()->pointer()->setFocus(nullptr);
-                //cursor()->useDefault();
-                //cursor()->setVisible(true);
             }
         }
     }
@@ -292,6 +299,99 @@ bool LScene::handleWaylandPointerEventsEnabled() const
 void LScene::enableHandleWaylandPointerEvents(bool enabled)
 {
     imp()->handleWaylandPointerEvents = enabled;
+}
+
+void LScene::handleKeyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
+{
+    imp()->handleKeyModifiersEvent(mainView(), depressed, latched, locked, group);
+
+    if (handleWaylandKeyboardEventsEnabled())
+        seat()->keyboard()->sendModifiersEvent(depressed, latched, locked, group);
+}
+
+void LScene::handleKeyEvent(UInt32 keyCode, UInt32 keyState)
+{
+    imp()->handleKeyEvent(mainView(), keyCode, keyState);
+
+    if (handleWaylandKeyboardEventsEnabled())
+        seat()->keyboard()->sendKeyEvent(keyCode, keyState);
+
+    if (!auxKeyboardImplementationEnabled())
+        return;
+
+    bool L_CTRL = seat()->keyboard()->isKeyCodePressed(KEY_LEFTCTRL);
+    bool L_SHIFT = seat()->keyboard()->isKeyCodePressed(KEY_LEFTSHIFT);
+    bool mods = seat()->keyboard()->isKeyCodePressed(KEY_LEFTALT) && L_CTRL;
+
+    if (keyState == LKeyboard::Released)
+    {
+        // Launches weston-terminal
+        if (keyCode == KEY_F1 && !mods)
+        {
+            if (fork() == 0)
+            {
+                execl("/usr/bin/weston-terminal", "weston-terminal", NULL);
+                exit(0);
+            }
+        }
+
+        // Terminates client connection
+        else if (L_CTRL && seat()->keyboard()->keySymbol(keyCode) == XKB_KEY_q)
+        {
+            if (seat()->keyboard()->focusSurface())
+                seat()->keyboard()->focusSurface()->client()->destroy();
+        }
+
+        // Minimizes currently focused surface
+        else if (L_CTRL && seat()->keyboard()->keySymbol(keyCode) == XKB_KEY_m)
+        {
+            if (seat()->keyboard()->focusSurface())
+                seat()->keyboard()->focusSurface()->setMinimized(true);
+        }
+
+        // Terminates the compositor
+        else if (keyCode == KEY_ESC && L_CTRL && L_SHIFT)
+            compositor()->finish();
+
+        else if (L_CTRL && !L_SHIFT)
+            seat()->dndManager()->setPreferredAction(LDNDManager::Copy);
+        else if (!L_CTRL && L_SHIFT)
+            seat()->dndManager()->setPreferredAction(LDNDManager::Move);
+        else if (!L_CTRL && !L_SHIFT)
+            seat()->dndManager()->setPreferredAction(LDNDManager::NoAction);
+    }
+
+    // Key press
+    else
+    {
+        // CTRL sets Copy as the preferred action in drag & drop sesión
+        if (L_CTRL)
+            seat()->dndManager()->setPreferredAction(LDNDManager::Copy);
+
+        // SHIFT sets the Move as the preferred action in drag & drop sesión
+        else if (L_SHIFT)
+            seat()->dndManager()->setPreferredAction(LDNDManager::Move);
+    }
+}
+
+bool LScene::handleWaylandKeyboardEventsEnabled() const
+{
+    return imp()->handleWaylandKeyboardEvents;
+}
+
+void LScene::enableHandleWaylandKeyboardEvents(bool enabled)
+{
+    imp()->handleWaylandKeyboardEvents = enabled;
+}
+
+bool LScene::auxKeyboardImplementationEnabled() const
+{
+    return imp()->auxKeyboardImplementationEnabled;
+}
+
+void LScene::enableAuxKeyboardImplementation(bool enabled)
+{
+    imp()->auxKeyboardImplementationEnabled = enabled;
 }
 
 LSceneView *LScene::mainView() const

@@ -177,11 +177,11 @@ const LPoint &LView::pos() const
 
     if (parent())
     {
-        if (parentOffsetEnabled())
-            imp()->tmpPos += parent()->pos();
-
         if (parentScalingEnabled())
             imp()->tmpPos *= parent()->scalingVector(parent()->type() == Scene);
+
+        if (parentOffsetEnabled())
+            imp()->tmpPos += parent()->pos();
     }
 
     return imp()->tmpPos;
@@ -364,6 +364,41 @@ bool LView::blockPointerEnabled() const
     return imp()->blockPointerEnabled;
 }
 
+LBox LView::boundingBox() const
+{
+    LBox box =
+    {
+        pos().x(),
+        pos().y(),
+        pos().x() + size().w(),
+        pos().y() + size().h(),
+    };
+
+    LBox childBox;
+
+    for (LView *child : children())
+    {
+        if (!child->mapped())
+            continue;
+
+        childBox = child->boundingBox();
+
+        if (childBox.x1 < box.x1)
+            box.x1 = childBox.x1;
+
+        if (childBox.y1 < box.y1)
+            box.y1 = childBox.y1;
+
+        if (childBox.x2 > box.x2)
+            box.x2 = childBox.x2;
+
+        if (childBox.y2 > box.y2)
+            box.y2 = childBox.y2;
+    }
+
+    return box;
+}
+
 void LView::pointerEnterEvent(const LPoint &localPos)
 {
     L_UNUSED(localPos);
@@ -391,4 +426,18 @@ void LView::pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int3
     L_UNUSED(discreteX);
     L_UNUSED(discreteY);
     L_UNUSED(source);
+}
+
+void LView::keyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
+{
+    L_UNUSED(depressed);
+    L_UNUSED(latched);
+    L_UNUSED(locked);
+    L_UNUSED(group);
+}
+
+void LView::keyEvent(UInt32 keyCode, UInt32 keyState)
+{
+    L_UNUSED(keyCode);
+    L_UNUSED(keyState);
 }

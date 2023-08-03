@@ -215,6 +215,11 @@ public:
     bool blockPointerEnabled() const;
 
     /*!
+     * Box containing the view and all its mapped children.
+     */
+    LBox boundingBox() const;
+
+    /*!
      * Indicates whether the view should be rendered without taking
      * the visible() property into consideration.
      */
@@ -322,6 +327,9 @@ public:
     virtual void pointerLeaveEvent();
     virtual void pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state);
     virtual void pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source);
+
+    virtual void keyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group);
+    virtual void keyEvent(UInt32 keyCode, UInt32 keyState);
 
 LPRIVATE_IMP(LView)
 };

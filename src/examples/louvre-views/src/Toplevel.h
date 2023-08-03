@@ -16,6 +16,7 @@ public:
     void startResizeRequest(ResizeEdge edge) override;
     void startMoveRequest() override;
     void setMaximizedRequest() override;
+    void unsetMaximizedRequest() override;
     void maximizedChanged() override;
 
     void decorationModeChanged() override;
@@ -24,6 +25,10 @@ public:
     void preferredDecorationModeChanged() override;
 
     ToplevelView *decoratedView = nullptr;
+
+    // Animations
+    LAnimation *anim = nullptr;
+    LRect prevRect, dstRect;
 };
 
 #endif // TOPLEVEL_H

@@ -36,6 +36,9 @@ LPRIVATE_CLASS(LPointer)
     Float64 axisYprev;
     Int32 discreteXprev;
     Int32 discreteYprev;
+
+    // Cursor
+    LCursorRole *lastCursorRequest = nullptr;
 };
 
 #endif // LPOINTERPRIVATE_H

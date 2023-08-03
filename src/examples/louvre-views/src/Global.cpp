@@ -146,6 +146,21 @@ void G::loadToplevelTextures()
 
     for (UInt64 i = 0; i < sizeof(inactiveTransRectsTR)/sizeof(LRect); i++)
         _toplevelTextures.inactiveTransRegionTR.addRect(inactiveTransRectsTR[i]);
+
+    _toplevelTextures.inactiveButton = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_inactive.png");
+    _toplevelTextures.activeCloseButton = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_close.png");
+    _toplevelTextures.activeCloseButtonHover = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_close_hover.png");
+    _toplevelTextures.activeCloseButtonPressed = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_close_pressed.png");
+    _toplevelTextures.activeMinimizeButton = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_minimize.png");
+    _toplevelTextures.activeMinimizeButtonHover = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_minimize_hover.png");
+    _toplevelTextures.activeMinimizeButtonPressed = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_minimize_pressed.png");
+    _toplevelTextures.activeMaximizeButton = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_maximize.png");
+    _toplevelTextures.activeMaximizeButtonHover = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_maximize_hover.png");
+    _toplevelTextures.activeMaximizeButtonPressed = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_maximize_pressed.png");
+    _toplevelTextures.activeFullscreenButtonHover = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_fullscreen_hover.png");
+    _toplevelTextures.activeFullscreenButtonPressed = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_fullscreen_pressed.png");
+    _toplevelTextures.activeUnfullscreenButtonHover = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_unfullscreen_hover.png");
+    _toplevelTextures.activeUnfullscreenButtonPressed = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_unfullscreen_pressed.png");
 }
 
 G::ToplevelTextures &G::toplevelTextures()

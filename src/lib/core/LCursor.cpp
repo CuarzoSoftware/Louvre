@@ -66,6 +66,9 @@ LCursor::~LCursor()
 
 void LCursor::useDefault()
 {
+    if (imp()->texture == imp()->defaultTexture && imp()->hotspotB == LPointF(9))
+        return;
+
     setTextureB(imp()->defaultTexture, LPointF(9));
 }
 
@@ -84,6 +87,9 @@ static void texture2Buffer(LCursor *cursor, const LSizeF &size)
 void LCursor::setTextureB(const LTexture *texture, const LPointF &hotspot)
 {
     if (!texture)
+        return;
+
+    if (imp()->texture == texture && imp()->lastTextureSerial == texture->imp()->serial && hotspot == imp()->hotspotB)
         return;
 
     if (imp()->texture != texture || imp()->lastTextureSerial != texture->imp()->serial)
@@ -214,6 +220,11 @@ LTexture *LCursor::texture() const
     return imp()->texture;
 }
 
+LTexture *LCursor::defaultTexture() const
+{
+    return imp()->defaultTexture;
+}
+
 LOutput *LCursor::output() const
 {
     if (imp()->output)
@@ -243,6 +254,9 @@ void LCursor::LCursorPrivate::update()
     if (!cursor()->output())
         return;
 
+    posChanged = true;
+    return;
+
     LPointF newHotspotS;
     newHotspotS = (hotspotB*size)/LSizeF(texture->sizeB());
 
@@ -250,6 +264,9 @@ void LCursor::LCursorPrivate::update()
 
     rect.setPos(newPosS);
     rect.setSize(size);
+
+
+
 
     for (LOutput *o : compositor()->outputs())
     {
@@ -266,11 +283,12 @@ void LCursor::LCursorPrivate::update()
         else
             intersectedOutputs.remove(o);
 
+        /*
         if (cursor()->hasHardwareSupport(o))
         {
             LPointF p = newPosS - LPointF(o->pos());
             compositor()->imp()->graphicBackend->setCursorPosition(o, p*o->scale());
-        }
+        }*/
     }
 }
 
@@ -279,7 +297,7 @@ void LCursor::LCursorPrivate::textureUpdate()
     if (!cursor()->output())
         return;
 
-    if (!textureChanged)
+    if (!textureChanged && !posChanged)
         return;
 
     LPointF newHotspotS;
@@ -318,4 +336,5 @@ void LCursor::LCursorPrivate::textureUpdate()
     }
 
     textureChanged = false;
+    posChanged = false;
 }

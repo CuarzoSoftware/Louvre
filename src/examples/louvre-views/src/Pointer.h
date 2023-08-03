@@ -16,7 +16,8 @@ public:
 
     void setCursorRequest(LCursorRole *cursorRole) override;
 
-    bool restoreCursor = true;
+    LView *cursorOwner = nullptr;
+    LSurface *lastCursorRequestFocusedSurface = nullptr;
 };
 
 #endif // POINTER_H

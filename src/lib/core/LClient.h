@@ -75,6 +75,11 @@ public:
     void flush();
 
     /*!
+     * Terminates the client connection with the compositor, equivalent to invoking wl_client_destroy().
+     */
+    void destroy();
+
+    /*!
      * Returns a list of [wl_output](https://wayland.app/protocols/wayland#wl_output)
      * resources created when the client binds this global.\n
      * The library creates a [wl_output](https://wayland.app/protocols/wayland#wl_output)

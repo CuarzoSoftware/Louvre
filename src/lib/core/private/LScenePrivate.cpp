@@ -196,3 +196,19 @@ void LScene::LScenePrivate::handlePointerAxisEvent(LView *view, Float64 axisX, F
     if (view->imp()->pointerIsOver)
         view->pointerAxisEvent(axisX, axisY, discreteX, discreteY, source);
 }
+
+void LScene::LScenePrivate::handleKeyModifiersEvent(LView *view, UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
+{
+    for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
+        handleKeyModifiersEvent(*it, depressed, latched, locked, group);
+
+    view->keyModifiersEvent(depressed, latched, locked, group);
+}
+
+void LScene::LScenePrivate::handleKeyEvent(LView *view, UInt32 keyCode, UInt32 keyState)
+{
+    for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
+        handleKeyEvent(*it, keyCode, keyState);
+
+    view->keyEvent(keyCode, keyState);
+}

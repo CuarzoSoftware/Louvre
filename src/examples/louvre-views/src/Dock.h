@@ -26,11 +26,15 @@ public:
     LLayerView *itemsContainer;
 
     void pointerEnterEvent(const LPoint &localPos) override;
+    void pointerMoveEvent(const LPoint &localPos) override;
     void pointerLeaveEvent() override;
 
     Output *output = nullptr;
     Float32 visiblePercent = 0.f;
     LAnimation *anim = nullptr;
+
+    UInt32 showResistance = 20;
+    UInt32 showResistanceCount = 0;
 };
 
 #endif // DOCK_H
