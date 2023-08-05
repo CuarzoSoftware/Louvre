@@ -57,6 +57,33 @@ LView *Surface::getView() const
     return view;
 }
 
+static LView *searchFullscreenParent(Surface *parent)
+{
+    if (!parent)
+        return nullptr;
+
+    if (parent->toplevel() && parent->toplevel()->fullscreen())
+    {
+        Toplevel *tl = (Toplevel*)parent->toplevel();
+        return tl->fullscreenOutput->fullscreenView;
+    }
+
+    return searchFullscreenParent((Surface*)parent->parent());
+}
+void Surface::parentChanged()
+{
+    if (parent())
+    {
+        LView *fullscreenView = searchFullscreenParent((Surface*)parent());
+
+        if (fullscreenView)
+        {
+            getView()->setParent(fullscreenView);
+            compositor()->raiseSurface(parent());
+        }
+    }
+}
+
 void Surface::mappingChanged()
 {
     if (mapped())
@@ -86,6 +113,12 @@ void Surface::mappingChanged()
     }
     else
     {
+        if (seat()->pointer()->focusSurface() == this)
+            seat()->pointer()->setFocus(nullptr);
+
+        if (toplevel() && toplevel()->fullscreen())
+            toplevel()->configure(toplevel()->states() &~LToplevelRole::Fullscreen);
+
         view->repaint();
     }
 }
@@ -131,7 +164,7 @@ void Surface::minimizedChanged()
         thumbnailTex = thumbnailFullSizeTex->copyB(LSize((DOCK_ITEM_HEIGHT * thumbnailFullSizeTex->sizeB().w()) /thumbnailFullSizeTex->sizeB().h(), DOCK_ITEM_HEIGHT) * view->bufferScale());
 
         // Create a view for thumbnailFullSizeTex (we only need one)
-        thumbnailFullsizeView = new LTextureView(thumbnailFullSizeTex, G::compositor()->surfacesLayer);
+        thumbnailFullsizeView = new LTextureView(thumbnailFullSizeTex, getView()->parent());
         thumbnailFullsizeView->setBufferScale(view->bufferScale());
         thumbnailFullsizeView->enableScaling(true);
         thumbnailFullsizeView->enableParentOpacity(false);
@@ -236,6 +269,7 @@ LTexture *Surface::renderThumbnail()
     LSceneView tmpView = LSceneView(minimizeStartRect.size() * view->bufferScale(), view->bufferScale());
     tmpView.setPos(minimizeStartRect.pos());
 
+    LView *prevParent = getView()->parent();
     getView()->setParent(&tmpView);
 
     struct TMPList
@@ -262,7 +296,7 @@ LTexture *Surface::renderThumbnail()
 
     LTexture *renderedThumbnail = tmpView.texture()->copyB();
     getView()->enableParentOffset(true);
-    getView()->setParent(G::compositor()->surfacesLayer);
+    getView()->setParent(prevParent);
 
     while (!tmpChildren.empty())
     {
@@ -278,7 +312,7 @@ void Surface::unminimize(DockItem *clickedItem)
 {
     // Show the resized fullsize view
     thumbnailFullsizeView->setVisible(true);
-    thumbnailFullsizeView->insertAfter(G::compositor()->surfacesLayer->children().back());
+    thumbnailFullsizeView->insertAfter(getView()->parent()->children().back());
 
     // Setup dock items
     for (DockItem *item : minimizedViews)

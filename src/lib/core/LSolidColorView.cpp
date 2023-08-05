@@ -46,17 +46,29 @@ const LRGBF &LSolidColorView::color() const
 
 void LSolidColorView::setPos(const LPoint &pos)
 {
-    if (mapped() && pos != imp()->nativePos)
+    setPos(pos.x(), pos.y());
+}
+
+void LSolidColorView::setPos(Int32 x, Int32 y)
+{
+    if (mapped() && (x != imp()->nativePos.x() || y != imp()->nativePos.y()))
         repaint();
 
-    imp()->nativePos = pos;
+    imp()->nativePos.setX(x);
+    imp()->nativePos.setY(y);
 }
 
 void LSolidColorView::setSize(const LSize &size)
 {
-    if (size != imp()->nativeSize)
+    setSize(size.w(), size.h());
+}
+
+void LSolidColorView::setSize(Int32 w, Int32 h)
+{
+    if (w != imp()->nativeSize.w() || h != imp()->nativeSize.h())
     {
-        imp()->nativeSize = size;
+        imp()->nativeSize.setW(w);
+        imp()->nativeSize.setH(h);
 
         imp()->opaqueRegion.clear();
         imp()->opaqueRegion.addRect(LRect(LPoint(0,0), imp()->nativeSize));

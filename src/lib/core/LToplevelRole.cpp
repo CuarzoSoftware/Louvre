@@ -62,7 +62,7 @@ bool LToplevelRole::maximized() const
 
 bool LToplevelRole::fullscreen() const
 {
-    return imp()->stateFlags & LToplevelRole::Fullscreen;
+    return bool(imp()->stateFlags & LToplevelRole::Fullscreen);
 }
 
 bool LToplevelRole::activated() const
@@ -78,6 +78,9 @@ UInt32 LToplevelRole::states() const
 void LToplevelRole::setDecorationMode(DecorationMode mode)
 {
     if (decorationMode() == mode)
+        return;
+
+    if (mode != DecorationMode::ClientSide && mode != DecorationMode::ServerSide)
         return;
 
     imp()->pendingDecorationMode = mode;

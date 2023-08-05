@@ -94,11 +94,11 @@ RSurface::~RSurface()
 
     // Clear keyboard focus
     if (seat()->keyboard()->focusSurface() == lSurface)
-        seat()->keyboard()->imp()->keyboardFocusSurface = nullptr;
+        seat()->keyboard()->setFocus(nullptr);
 
     // Clear pointer focus
     if (seat()->pointer()->imp()->pointerFocusSurface == lSurface)
-        seat()->pointer()->imp()->pointerFocusSurface = nullptr;
+        seat()->pointer()->setFocus(nullptr);
 
     // Clear dragging surface
     if (seat()->pointer()->imp()->draggingSurface == lSurface)

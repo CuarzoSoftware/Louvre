@@ -4,6 +4,7 @@
 #include <LToplevelRole.h>
 
 class ToplevelView;
+class Output;
 
 class Toplevel : public LToplevelRole
 {
@@ -13,22 +14,33 @@ public:
 
     const LPoint &rolePos() const override;
     void configureRequest() override;
+
     void startResizeRequest(ResizeEdge edge) override;
     void startMoveRequest() override;
+
     void setMaximizedRequest() override;
     void unsetMaximizedRequest() override;
     void maximizedChanged() override;
 
+    void setFullscreenRequest(LOutput *output) override;
+    void unsetFullscreenRequest() override;
+    void fullscreenChanged() override;
+
+    void setMinimizedRequest() override;
+
     void decorationModeChanged() override;
-    void geometryChanged() override;
-    void activatedChanged() override;
     void preferredDecorationModeChanged() override;
+
+    void geometryChanged() override;
+
+    void activatedChanged() override;
+
+    void unsetFullscreen();
 
     ToplevelView *decoratedView = nullptr;
 
-    // Animations
-    LAnimation *anim = nullptr;
     LRect prevRect, dstRect;
+    Output *fullscreenOutput = nullptr;
 };
 
 #endif // TOPLEVEL_H

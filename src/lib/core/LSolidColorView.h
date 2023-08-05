@@ -15,8 +15,10 @@ public:
     void setColor(Float32 r, Float32 g, Float32 b);
     const LRGBF &color() const;
 
-    virtual void setPos(const LPoint &pos);
-    virtual void setSize(const LSize &size);
+    void setPos(const LPoint &pos);
+    virtual void setPos(Int32 x, Int32 y);
+    void setSize(const LSize &size);
+    virtual void setSize(Int32 w, Int32 h);
     virtual void setInputRegion(const LRegion *region) const;
 
     virtual bool nativeMapped() const override;

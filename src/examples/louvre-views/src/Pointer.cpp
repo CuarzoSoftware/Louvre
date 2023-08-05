@@ -19,19 +19,27 @@ void Pointer::pointerMoveEvent(Float32 dx, Float32 dy)
 
     if (view)
     {
-        if (lastCursorRequest() && view->type() == LView::Surface)
+        if (view->type() == LView::Surface)
         {
             LSurfaceView *surfView = (LSurfaceView*)view;
 
             if (surfView->surface() == lastCursorRequestFocusedSurface)
-                cursor()->setTextureB(lastCursorRequest()->surface()->texture(), lastCursorRequest()->hotspotB());
+            {
+                if (lastCursorRequest())
+                {
+                    cursor()->setTextureB(lastCursorRequest()->surface()->texture(), lastCursorRequest()->hotspotB());
+                    cursor()->setVisible(true);
+                }
+                else
+                    cursor()->setVisible(false);
+            }
         }
+
+        return;
     }
-    else
-    {
-        cursor()->useDefault();
-        cursor()->setVisible(true);
-    }
+
+    cursor()->useDefault();
+    cursor()->setVisible(true);
 }
 
 void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
@@ -43,19 +51,27 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
 
     if (view)
     {
-        if (lastCursorRequest() && view->type() == LView::Surface)
+        if (view->type() == LView::Surface)
         {
             LSurfaceView *surfView = (LSurfaceView*)view;
 
             if (surfView->surface() == lastCursorRequestFocusedSurface)
-                cursor()->setTextureB(lastCursorRequest()->surface()->texture(), lastCursorRequest()->hotspotB());
+            {
+                if (lastCursorRequest())
+                {
+                    cursor()->setTextureB(lastCursorRequest()->surface()->texture(), lastCursorRequest()->hotspotB());
+                    cursor()->setVisible(true);
+                }
+                else
+                    cursor()->setVisible(false);
+            }
         }
+
+        return;
     }
-    else
-    {
-        cursor()->useDefault();
-        cursor()->setVisible(true);
-    }
+
+    cursor()->useDefault();
+    cursor()->setVisible(true);
 }
 
 void Pointer::pointerButtonEvent(Button button, ButtonState state)

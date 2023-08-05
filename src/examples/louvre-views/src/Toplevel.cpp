@@ -9,13 +9,13 @@
 #include "Surface.h"
 #include "ToplevelView.h"
 #include "Output.h"
+#include "Topbar.h"
 
 Toplevel::Toplevel(Params *params) : LToplevelRole(params) {}
 
 Toplevel::~Toplevel()
 {
-    if (anim)
-        anim->stop();
+    unsetFullscreen();
 
     if (decoratedView)
     {
@@ -26,10 +26,10 @@ Toplevel::~Toplevel()
 
 const LPoint &Toplevel::rolePos() const
 {
-    if (decorationMode() == ClientSide)
-        m_rolePos = surface()->pos() - windowGeometry().topLeft();
-    else
+    if (decoratedView && !fullscreen())
         m_rolePos = surface()->pos() + LPoint(0, TOPLEVEL_TOPBAR_HEIGHT);
+    else
+        m_rolePos = surface()->pos() - windowGeometry().topLeft();
 
     return m_rolePos;
 }
@@ -51,22 +51,32 @@ void Toplevel::configureRequest()
 
 void Toplevel::startResizeRequest(ResizeEdge edge)
 {
+    // Disable interactive resizing in fullscreen mode
+    if (fullscreen())
+        return;
+
     seat()->pointer()->startResizingToplevel(this, edge, LPointer::EdgeDisabled, TOPBAR_HEIGHT);
 }
 
 void Toplevel::startMoveRequest()
 {
+    // Disable interactive moving in fullscreen mode
+    if (fullscreen())
+        return;
+
     seat()->pointer()->startMovingToplevel(this, LPointer::EdgeDisabled, TOPBAR_HEIGHT);
 }
 
 void Toplevel::setMaximizedRequest()
 {
-    if (anim)
+    // Already in maximized mode
+    if (maximized())
         return;
 
     Output *output = (Output*)cursor()->output();
 
-    prevRect = LRect(surface()->pos(), windowGeometry().size());
+    if (!fullscreen())
+        prevRect = LRect(surface()->pos(), windowGeometry().size());
 
     if (maxSize().w() == 0 || maxSize().w() >= output->rect().w())
         dstRect.setW(output->rect().w());
@@ -88,6 +98,9 @@ void Toplevel::setMaximizedRequest()
 
 void Toplevel::unsetMaximizedRequest()
 {
+    if (!maximized())
+        return;
+
     configure(prevRect.size(), states() & ~Maximized);
 }
 
@@ -103,6 +116,87 @@ void Toplevel::maximizedChanged()
 
     compositor()->raiseSurface(surface());
     G::compositor()->updatePointerBeforePaint = true;
+}
+
+void Toplevel::setFullscreenRequest(LOutput *output)
+{
+    Surface *surf = (Surface*)surface();
+
+    // Already in fullscreen mode
+    if (fullscreen() || !surf || surf->firstMap)
+        return;
+
+    Output *dstOutput;
+
+    // Clients can request to maximize a toplevel on a specific output
+    if (output)
+        dstOutput = (Output*)output;
+
+    // If no output is specified we use the output where the cursor is located
+    else
+        dstOutput = (Output*)cursor()->output();
+
+    // If there is already another fullscreen toplevel on that output we reject the request
+    if (dstOutput->fullscreenToplevel)
+        return;
+
+    prevRect = LRect(surface()->pos(), windowGeometry().size());
+    dstRect = LRect(dstOutput->pos(), dstOutput->size());
+
+    fullscreenOutput = dstOutput;
+    configure(dstRect.size(), Activated | Fullscreen);
+}
+
+void Toplevel::unsetFullscreenRequest()
+{
+    if (!fullscreen())
+        return;
+
+    configure(prevRect.size(), Activated);
+}
+
+void Toplevel::fullscreenChanged()
+{
+    Surface *surf = (Surface*)surface();
+
+    if (fullscreen())
+    {
+        fullscreenOutput->fullscreenToplevel = this;
+        fullscreenOutput->fullscreenView->setVisible(true);
+        fullscreenOutput->fullscreenView->setPos(fullscreenOutput->pos());
+        fullscreenOutput->fullscreenView->setSize(fullscreenOutput->size());
+        surf->getView()->setParent(fullscreenOutput->fullscreenView);
+        surface()->setPos(dstRect.pos());
+        fullscreenOutput->topbar->hide();
+        fullscreenOutput->topbar->update();
+
+        LSurface *ls = surface();
+        while ((ls = ls->nextSurface()))
+        {
+            if (ls->parent() == surface())
+            {
+                Surface *s = (Surface*)ls;
+                s->getView()->setParent(fullscreenOutput->fullscreenView);
+            }
+        }
+
+        compositor()->raiseSurface(surface());
+    }
+    else
+    {
+        unsetFullscreen();
+    }
+
+    if (decoratedView)
+        decoratedView->updateGeometry();
+}
+
+void Toplevel::setMinimizedRequest()
+{
+    if (fullscreen() || surface()->minimized())
+        return;
+
+    surface()->setMinimized(true);
 }
 
 void Toplevel::decorationModeChanged()
@@ -131,6 +225,24 @@ void Toplevel::activatedChanged()
 {
     if (decoratedView)
         decoratedView->updateGeometry();
+}
+
+void Toplevel::unsetFullscreen()
+{
+    if (!fullscreenOutput)
+        return;
+
+    Surface *surf = (Surface*)surface();
+
+    while (!fullscreenOutput->fullscreenView->children().empty())
+        fullscreenOutput->fullscreenView->children().back()->setParent(G::compositor()->surfacesLayer);
+
+    compositor()->raiseSurface(surface());
+    surf->setPos(prevRect.pos());
+    fullscreenOutput->fullscreenView->setVisible(false);
+    fullscreenOutput->fullscreenToplevel = nullptr;
+    fullscreenOutput->topbar->update();
+    fullscreenOutput = nullptr;
 }
 
 void Toplevel::preferredDecorationModeChanged()

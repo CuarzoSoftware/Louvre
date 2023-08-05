@@ -52,10 +52,9 @@ void LCursorRole::handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin)
         surface()->imp()->setMapped(true);
 
         // Notify that the cursor changed content
-        if (seat()->pointer()->focusSurface() &&
+        if (seat()->pointer()->imp()->lastCursorRequest == this && seat()->pointer()->focusSurface() &&
             seat()->pointer()->focusSurface()->client() == surface()->client())
         {
-            seat()->pointer()->imp()->lastCursorRequest = this;
             seat()->pointer()->setCursorRequest(this);
         }
     }

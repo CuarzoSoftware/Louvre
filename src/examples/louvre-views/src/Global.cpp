@@ -21,6 +21,11 @@ LScene *G::scene()
     return compositor()->scene;
 }
 
+Pointer *G::pointer()
+{
+    return (Pointer*)compositor()->seat()->pointer();
+}
+
 std::list<Output *> &G::outputs()
 {
     return (std::list<Output*>&)compositor()->outputs();

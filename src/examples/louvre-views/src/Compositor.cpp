@@ -14,18 +14,25 @@
 Compositor::Compositor():LCompositor()
 {
     scene = new LScene();
-    scene->mainView()->setClearColor(0.1f, 0.1f, 0.5f, 1.f);
+
+    // Set black as tue clear color which will be visible if
+    // no wallpaper is loaded
+    scene->mainView()->setClearColor(0.f, 0.f, 0.f, 1.f);
+
+    // Add layers to the scene in the correct order
     backgroundLayer = new LLayerView(scene->mainView());
     surfacesLayer = new LLayerView(scene->mainView());
+    fullscreenLayer = new LLayerView(scene->mainView());
     overlayLayer = new LLayerView(scene->mainView());
 }
 
 Compositor::~Compositor()
 {
     delete overlayLayer;
+    delete fullscreenLayer;
     delete surfacesLayer;
-    delete scene;
     delete backgroundLayer;
+    delete scene;
 }
 
 void Compositor::initialized()
@@ -38,8 +45,11 @@ void Compositor::initialized()
     G::loadToplevelTextures();
 
     Int32 totalWidth = 0;
+
+    // Initialize and arrange outputs (screens) left to right
     for (LOutput *output : *seat()->outputs())
     {
+        // Set scale 2 to HiDPI screens
         output->setScale(output->dpi() >= 120 ? 2 : 1);
         output->setPos(LPoint(totalWidth, 0));
         totalWidth += output->size().w();

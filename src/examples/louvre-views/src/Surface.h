@@ -19,6 +19,7 @@ public:
 
     LView *getView() const;
 
+    void parentChanged() override;
     void mappingChanged() override;
     void orderChanged() override;
     void roleChanged() override;

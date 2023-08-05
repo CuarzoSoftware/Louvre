@@ -11,6 +11,7 @@
 #include "Output.h"
 #include "Compositor.h"
 #include "Dock.h"
+#include "Topbar.h"
 
 Output::Output():LOutput() {}
 
@@ -56,25 +57,24 @@ void Output::loadWallpaper()
     wallpaperView->setPos(pos());
 }
 
-void Output::updateTopBar()
-{
-    topBarView->setPos(pos());
-    topBarView->setSize(LSize(size().w(), 24));
-}
-
 void Output::initializeGL()
-{    
-    topBarView = new LSolidColorView(1.f, 1.f, 1.f, 0.6f, G::compositor()->overlayLayer);
-    topBarView->enableParentOffset(false);
-    updateTopBar();
-    dock = new Dock(this);
+{
+    new Topbar(this);
+    topbar->update();
+
+    fullscreenView = new LSolidColorView(0.f, 0.f, 0.f, 1.f, G::compositor()->fullscreenLayer);
+    fullscreenView->setVisible(false);
+    fullscreenView->enableInput(true);
+    fullscreenView->enableBlockPointer(true);
+
+    new Dock(this);
     loadWallpaper();
     G::compositor()->scene->handleInitializeGL(this);
 }
 
 void Output::resizeGL()
 {
-    updateTopBar();
+    topbar->update();
     dock->update();
     loadWallpaper();
     G::compositor()->scene->handleResizeGL(this);
@@ -82,7 +82,7 @@ void Output::resizeGL()
 
 void Output::moveGL()
 {
-    updateTopBar();
+    topbar->update();
     dock->update();
     wallpaperView->setPos(pos());
     G::compositor()->scene->handleMoveGL(this);
@@ -104,8 +104,6 @@ void Output::paintGL()
 void Output::uninitializeGL()
 {
     delete dock;
-    dock = nullptr;
-    delete topBarView;
-    topBarView = nullptr;
+    delete topbar;
     G::compositor()->scene->handleUninitializeGL(this);
 }

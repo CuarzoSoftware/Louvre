@@ -3,6 +3,7 @@
 
 class Compositor;
 class Output;
+class Pointer;
 
 #include <LNamespaces.h>
 #include <LRegion.h>
@@ -118,6 +119,7 @@ public:
     // Quick handles
     static Compositor *compositor();
     static LScene *scene();
+    static Pointer *pointer();
     static std::list<Output*>&outputs();
 
     // Dock

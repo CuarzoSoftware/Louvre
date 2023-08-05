@@ -12,6 +12,8 @@
 #include "Global.h"
 #include "Pointer.h"
 #include "InputRect.h"
+#include "Output.h"
+#include "Topbar.h"
 
 static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &)
 {
@@ -19,7 +21,7 @@ static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &
     Pointer *pointer = (Pointer*)view->seat()->pointer();
     LXCursor *cursor = (LXCursor*)data;
 
-    if (pointer->resizingToplevel())
+    if (pointer->resizingToplevel() || pointer->movingToplevel())
         return;
 
     if (data)
@@ -96,6 +98,7 @@ ToplevelView::ToplevelView(Toplevel *toplevel) : LLayerView(G::compositor()->sur
     clipTop = new LLayerView(this);
     clipTop->setPos(0, 0);
     class Surface *surf = (class Surface*)toplevel->surface();
+    setParent(surf->view->parent());
     surf->view->setPrimary(true);
     surf->view->enableCustomPos(true);
     surf->view->enableParentClipping(true);
@@ -385,125 +388,210 @@ void ToplevelView::updateGeometry()
     maximizeButton->update();
     lastActiveState = toplevel->activated();
 
-    Int32 clip = 1;
 
-    setSize(
-        toplevel->windowGeometry().size().w() - 2 * clip,
-        toplevel->windowGeometry().size().h() - 2 * clip);
+    if (toplevel->fullscreen())
+    {
+        if (!lastFullscreenState)
+        {
+            surf->view->setCustomPos(0, 0);
+            clipBottom->setVisible(false);
+            sceneBL->setVisible(false);
+            sceneBR->setVisible(false);
+            maskBL->setVisible(false);
+            maskBR->setVisible(false);
+            decoTL->setVisible(false);
+            decoTR->setVisible(false);
+            decoL->setVisible(false);
+            decoR->setVisible(false);
+            decoBL->setVisible(false);
+            decoBR->setVisible(false);
+            decoB->setVisible(false);
+            resizeT->setVisible(false);
+            resizeB->setVisible(false);
+            resizeL->setVisible(false);
+            resizeR->setVisible(false);
+            resizeTL->setVisible(false);
+            resizeTR->setVisible(false);
+            resizeBL->setVisible(false);
+            resizeBR->setVisible(false);
+        }
 
-    LSize size = nativeSize();
+        setSize(toplevel->windowGeometry().size());
 
-    // Upper surface view
-    clipTop->setSize(
-        size.w(),
-        size.h() - TOPLEVEL_BORDER_RADIUS);
-    surf->view->setCustomPos(- clip, - clip);
+        LSize size = nativeSize();
 
-    // Lower surface view (without border radius rects)
-    clipBottom->setPos(
-        TOPLEVEL_BORDER_RADIUS,
-        size.h() - TOPLEVEL_BORDER_RADIUS);
-    clipBottom->setSize(
-        size.w() - 2 * TOPLEVEL_BORDER_RADIUS,
-        TOPLEVEL_BORDER_RADIUS);
-    surfB->setCustomPos(
-        - TOPLEVEL_BORDER_RADIUS - clip,
-        TOPLEVEL_BORDER_RADIUS - size.h() - clip);
+        clipTop->setSize(size);
 
-    // Bottom left / right surfaces views
-    sceneBL->setPos(
-        0,
-        size.h() - TOPLEVEL_BORDER_RADIUS);
-    sceneBR->setPos(
-        size.w() - TOPLEVEL_BORDER_RADIUS,
-        size.h() - TOPLEVEL_BORDER_RADIUS);
-    surfBL->setCustomPos(
-        - clip,
-        TOPLEVEL_BORDER_RADIUS - size.h() - clip);
-    surfBR->setCustomPos(
-        TOPLEVEL_BORDER_RADIUS - size.w() - clip,
-        TOPLEVEL_BORDER_RADIUS - size.h() - clip);
+        decoT->setDstSize(size.w(), decoT->texture()->sizeB().h() / 2);
+        decoT->setPos(0, -decoT->nativeSize().h() + (TOPLEVEL_TOPBAR_HEIGHT + TOPLEVEL_TOP_CLAMP_OFFSET_Y) * toplevel->fullscreenOutput->topbar->visiblePercent);
+        buttonsContainer->setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT * (1.f - toplevel->fullscreenOutput->topbar->visiblePercent));
 
-    // Decorations
-    decoTL->setPos(
-        TOPLEVEL_TOP_LEFT_OFFSET_X,
-        TOPLEVEL_TOP_LEFT_OFFSET_Y);
-    decoT->setDstSize(
-        size.w() - TOPLEVEL_MIN_WIDTH_TOP,
-        decoT->texture()->sizeB().h() / 2);
-    decoT->setPos(
-        decoTL->nativePos().x() + decoTL->nativeSize().w(),
-        -decoT->nativeSize().h() + TOPLEVEL_TOP_CLAMP_OFFSET_Y);
-    decoTR->setPos(
-        size.w() - decoTR->nativeSize().w() - TOPLEVEL_TOP_LEFT_OFFSET_X,
-        TOPLEVEL_TOP_LEFT_OFFSET_Y);
-    decoL->setDstSize(
-        decoL->texture()->sizeB().w() / 2,
-        size.h() - TOPLEVEL_MIN_HEIGHT);
-    decoL->setPos(
-        -decoL->nativeSize().w(),
-        decoTL->nativePos().y() + decoTL->nativeSize().h());
-    decoR->setDstSize(
-        decoR->texture()->sizeB().w() / 2,
-        size.h() - TOPLEVEL_MIN_HEIGHT);
-    decoR->setPos(
-        size.w(),
-        decoTL->nativePos().y() + decoTL->nativeSize().h());
-    decoBL->setPos(
-        TOPLEVEL_BOTTOM_LEFT_OFFSET_X,
-        size.h() + TOPLEVEL_BOTTOM_LEFT_OFFSET_Y);
-    decoBR->setPos(
-        size.w() - decoBR->nativeSize().w() - TOPLEVEL_BOTTOM_LEFT_OFFSET_X,
-        size.h() + TOPLEVEL_BOTTOM_LEFT_OFFSET_Y);
-    decoB->setDstSize(
-        size.w() - TOPLEVEL_MIN_WIDTH_BOTTOM,
-        decoB->texture()->sizeB().h() / 2);
-    decoB->setPos(
-        decoBL->nativePos().x() + decoBL->nativeSize().w(),
-        size.h());
+        // Set topbar center translucent regions
+        LRegion transT;
+        transT.addRect(
+            0,
+            0,
+            decoT->size().w(),
+            decoT->size().h() - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_TOP_CLAMP_OFFSET_Y);
+        transT.addRect(
+            0,
+            decoT->size().h() - TOPLEVEL_TOP_CLAMP_OFFSET_Y,
+            decoT->size().w(),
+            TOPLEVEL_TOP_CLAMP_OFFSET_Y);
+        decoT->setTranslucentRegion(&transT);
 
-    // Set topbar center translucent regions
-    LRegion transT;
-    transT.addRect(
-        0,
-        0,
-        decoT->size().w(),
-        decoT->size().h() - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_TOP_CLAMP_OFFSET_Y);
-    transT.addRect(
-        0,
-        decoT->size().h() - TOPLEVEL_TOP_CLAMP_OFFSET_Y,
-        decoT->size().w(),
-        TOPLEVEL_TOP_CLAMP_OFFSET_Y);
-    decoT->setTranslucentRegion(&transT);
+        topbarInput->setPos(0, - TOPLEVEL_TOPBAR_HEIGHT);
+        topbarInput->setSize(size.w(), TOPLEVEL_TOPBAR_HEIGHT);
+    }
+    else
+    {
+        if (lastFullscreenState)
+        {
+            buttonsContainer->setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT);
+            surf->view->setCustomPos(0, 0);
+            clipBottom->setVisible(true);
+            sceneBL->setVisible(true);
+            sceneBR->setVisible(true);
+            maskBL->setVisible(true);
+            maskBR->setVisible(true);
+            decoTL->setVisible(true);
+            decoTR->setVisible(true);
+            decoL->setVisible(true);
+            decoR->setVisible(true);
+            decoBL->setVisible(true);
+            decoBR->setVisible(true);
+            decoB->setVisible(true);
+            resizeT->setVisible(true);
+            resizeB->setVisible(true);
+            resizeL->setVisible(true);
+            resizeR->setVisible(true);
+            resizeTL->setVisible(true);
+            resizeTR->setVisible(true);
+            resizeBL->setVisible(true);
+            resizeBR->setVisible(true);
+        }
 
-    // Update input rects
-    resizeT->setPos(0, - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_RESIZE_INPUT_MARGIN);
-    resizeT->setSize(size.w(), TOPLEVEL_RESIZE_INPUT_MARGIN * 2);
+        Int32 clip = 1;
 
-    resizeB->setPos(0, size.h() - TOPLEVEL_RESIZE_INPUT_MARGIN);
-    resizeB->setSize(size.w(), TOPLEVEL_RESIZE_INPUT_MARGIN * 2);
+        setSize(
+            toplevel->windowGeometry().size().w() - 2 * clip,
+            toplevel->windowGeometry().size().h() - 2 * clip);
 
-    resizeL->setPos(-TOPLEVEL_RESIZE_INPUT_MARGIN, - TOPLEVEL_TOPBAR_HEIGHT);
-    resizeL->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN * 2, size.h() + TOPLEVEL_TOPBAR_HEIGHT);
+        LSize size = nativeSize();
 
-    resizeR->setPos(size.w() - TOPLEVEL_RESIZE_INPUT_MARGIN, - TOPLEVEL_TOPBAR_HEIGHT);
-    resizeR->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN * 2, size.h() + TOPLEVEL_TOPBAR_HEIGHT);
+        // Upper surface view
+        clipTop->setSize(
+            size.w(),
+            size.h() - TOPLEVEL_BORDER_RADIUS);
+        surf->view->setCustomPos(- clip, - clip);
 
-    resizeTL->setPos(-TOPLEVEL_RESIZE_INPUT_MARGIN, - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_RESIZE_INPUT_MARGIN);
-    resizeTL->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS, TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS);
+        // Lower surface view (without border radius rects)
+        clipBottom->setPos(
+            TOPLEVEL_BORDER_RADIUS,
+            size.h() - TOPLEVEL_BORDER_RADIUS);
+        clipBottom->setSize(
+            size.w() - 2 * TOPLEVEL_BORDER_RADIUS,
+            TOPLEVEL_BORDER_RADIUS);
+        surfB->setCustomPos(
+            - TOPLEVEL_BORDER_RADIUS - clip,
+            TOPLEVEL_BORDER_RADIUS - size.h() - clip);
 
-    resizeTR->setPos(size.w() - TOPLEVEL_BORDER_RADIUS, - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_RESIZE_INPUT_MARGIN);
-    resizeTR->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS, TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS);
+        // Bottom left / right surfaces views
+        sceneBL->setPos(
+            0,
+            size.h() - TOPLEVEL_BORDER_RADIUS);
+        sceneBR->setPos(
+            size.w() - TOPLEVEL_BORDER_RADIUS,
+            size.h() - TOPLEVEL_BORDER_RADIUS);
+        surfBL->setCustomPos(
+            - clip,
+            TOPLEVEL_BORDER_RADIUS - size.h() - clip);
+        surfBR->setCustomPos(
+            TOPLEVEL_BORDER_RADIUS - size.w() - clip,
+            TOPLEVEL_BORDER_RADIUS - size.h() - clip);
 
-    resizeBL->setPos(-TOPLEVEL_RESIZE_INPUT_MARGIN, size.h() - TOPLEVEL_BORDER_RADIUS);
-    resizeBL->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS, TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS);
+        // Decorations
+        decoTL->setPos(
+            TOPLEVEL_TOP_LEFT_OFFSET_X,
+            TOPLEVEL_TOP_LEFT_OFFSET_Y);
+        decoT->setDstSize(
+            size.w() - TOPLEVEL_MIN_WIDTH_TOP,
+            decoT->texture()->sizeB().h() / 2);
+        decoT->setPos(
+            decoTL->nativePos().x() + decoTL->nativeSize().w(),
+            -decoT->nativeSize().h() + TOPLEVEL_TOP_CLAMP_OFFSET_Y);
+        decoTR->setPos(
+            size.w() - decoTR->nativeSize().w() - TOPLEVEL_TOP_LEFT_OFFSET_X,
+            TOPLEVEL_TOP_LEFT_OFFSET_Y);
+        decoL->setDstSize(
+            decoL->texture()->sizeB().w() / 2,
+            size.h() - TOPLEVEL_MIN_HEIGHT);
+        decoL->setPos(
+            -decoL->nativeSize().w(),
+            decoTL->nativePos().y() + decoTL->nativeSize().h());
+        decoR->setDstSize(
+            decoR->texture()->sizeB().w() / 2,
+            size.h() - TOPLEVEL_MIN_HEIGHT);
+        decoR->setPos(
+            size.w(),
+            decoTL->nativePos().y() + decoTL->nativeSize().h());
+        decoBL->setPos(
+            TOPLEVEL_BOTTOM_LEFT_OFFSET_X,
+            size.h() + TOPLEVEL_BOTTOM_LEFT_OFFSET_Y);
+        decoBR->setPos(
+            size.w() - decoBR->nativeSize().w() - TOPLEVEL_BOTTOM_LEFT_OFFSET_X,
+            size.h() + TOPLEVEL_BOTTOM_LEFT_OFFSET_Y);
+        decoB->setDstSize(
+            size.w() - TOPLEVEL_MIN_WIDTH_BOTTOM,
+            decoB->texture()->sizeB().h() / 2);
+        decoB->setPos(
+            decoBL->nativePos().x() + decoBL->nativeSize().w(),
+            size.h());
 
-    resizeBR->setPos(size.w() - TOPLEVEL_BORDER_RADIUS, size.h() - TOPLEVEL_BORDER_RADIUS);
-    resizeBR->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS, TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS);
+        // Set topbar center translucent regions
+        LRegion transT;
+        transT.addRect(
+            0,
+            0,
+            decoT->size().w(),
+            decoT->size().h() - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_TOP_CLAMP_OFFSET_Y);
+        transT.addRect(
+            0,
+            decoT->size().h() - TOPLEVEL_TOP_CLAMP_OFFSET_Y,
+            decoT->size().w(),
+            TOPLEVEL_TOP_CLAMP_OFFSET_Y);
+        decoT->setTranslucentRegion(&transT);
 
-    topbarInput->setPos(0, - TOPLEVEL_TOPBAR_HEIGHT);
-    topbarInput->setSize(size.w(), TOPLEVEL_TOPBAR_HEIGHT);
+        // Update input rects
+        resizeT->setPos(0, - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_RESIZE_INPUT_MARGIN);
+        resizeT->setSize(size.w(), TOPLEVEL_RESIZE_INPUT_MARGIN * 2);
 
+        resizeB->setPos(0, size.h() - TOPLEVEL_RESIZE_INPUT_MARGIN);
+        resizeB->setSize(size.w(), TOPLEVEL_RESIZE_INPUT_MARGIN * 2);
+
+        resizeL->setPos(-TOPLEVEL_RESIZE_INPUT_MARGIN, - TOPLEVEL_TOPBAR_HEIGHT);
+        resizeL->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN * 2, size.h() + TOPLEVEL_TOPBAR_HEIGHT);
+
+        resizeR->setPos(size.w() - TOPLEVEL_RESIZE_INPUT_MARGIN, - TOPLEVEL_TOPBAR_HEIGHT);
+        resizeR->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN * 2, size.h() + TOPLEVEL_TOPBAR_HEIGHT);
+
+        resizeTL->setPos(-TOPLEVEL_RESIZE_INPUT_MARGIN, - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_RESIZE_INPUT_MARGIN);
+        resizeTL->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS, TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS);
+
+        resizeTR->setPos(size.w() - TOPLEVEL_BORDER_RADIUS, - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_RESIZE_INPUT_MARGIN);
+        resizeTR->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS, TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS);
+
+        resizeBL->setPos(-TOPLEVEL_RESIZE_INPUT_MARGIN, size.h() - TOPLEVEL_BORDER_RADIUS);
+        resizeBL->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS, TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS);
+
+        resizeBR->setPos(size.w() - TOPLEVEL_BORDER_RADIUS, size.h() - TOPLEVEL_BORDER_RADIUS);
+        resizeBR->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS, TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS);
+
+        topbarInput->setPos(0, - TOPLEVEL_TOPBAR_HEIGHT);
+        topbarInput->setSize(size.w(), TOPLEVEL_TOPBAR_HEIGHT);
+    }
+
+    lastFullscreenState = toplevel->fullscreen();
 }
 
 bool ToplevelView::nativeMapped() const

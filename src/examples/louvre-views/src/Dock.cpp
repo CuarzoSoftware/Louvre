@@ -7,11 +7,19 @@
 #include <LCursor.h>
 #include <LLog.h>
 
+// Add it to the overlayLayer so it is always on top
 Dock::Dock(Output *output) : LLayerView(G::compositor()->overlayLayer)
 {
     this->output = output;
+    output->dock = this;
+
+    // Detach it from the overlay layer just in case we want to move in the future
     enableParentOffset(false);
+
+    // Enable input so it shows/hides when the cursor is over
     enableInput(true);
+
+    // Allow views behind to get pointer events
     enableBlockPointer(false);
 
     dockContainer = new LLayerView(this);
@@ -24,6 +32,7 @@ Dock::Dock(Output *output) : LLayerView(G::compositor()->overlayLayer)
     dockCenter->setBufferScale(2);
     dockRight->setBufferScale(2);
 
+    // Enable dst size so we can use clamping
     dockCenter->enableDstSize(true);
 
     itemsContainer = new LLayerView(dockContainer);
@@ -53,6 +62,8 @@ Dock::~Dock()
 
     while (!itemsContainer->children().empty())
         delete itemsContainer->children().back();
+
+    output->dock = nullptr;
 }
 
 void Dock::update()

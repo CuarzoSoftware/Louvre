@@ -36,19 +36,26 @@ void ToplevelButton::update()
     }
     else if (buttonType == Minimize)
     {
-        if (toplevelView->buttonsContainer->pointerIsOver())
+        if (toplevelView->toplevel->fullscreen())
         {
-            if (pressed)
-                setTexture(G::toplevelTextures().activeMinimizeButtonPressed);
-            else
-                setTexture(G::toplevelTextures().activeMinimizeButtonHover);
+            setTexture(G::toplevelTextures().inactiveButton);
         }
         else
         {
-            if (toplevelView->toplevel->activated())
-                setTexture(G::toplevelTextures().activeMinimizeButton);
+            if (toplevelView->buttonsContainer->pointerIsOver())
+            {
+                if (pressed)
+                    setTexture(G::toplevelTextures().activeMinimizeButtonPressed);
+                else
+                    setTexture(G::toplevelTextures().activeMinimizeButtonHover);
+            }
             else
-                setTexture(G::toplevelTextures().inactiveButton);
+            {
+                if (toplevelView->toplevel->activated())
+                    setTexture(G::toplevelTextures().activeMinimizeButton);
+                else
+                    setTexture(G::toplevelTextures().inactiveButton);
+            }
         }
     }
     else
@@ -106,16 +113,31 @@ void ToplevelButton::pointerButtonEvent(LPointer::Button button, LPointer::Butto
         }
         else if (buttonType == Minimize)
         {
-            toplevelView->toplevel->setMinimizedRequest();
+            if (!toplevelView->toplevel->fullscreen())
+                toplevelView->toplevel->setMinimizedRequest();
         }
         else
         {
-            bool altMode = seat()->keyboard()->isKeyCodePressed(KEY_LEFTALT) || toplevelView->toplevel->fullscreen();
-
-            if (toplevelView->toplevel->maximized())
-                toplevelView->toplevel->unsetMaximizedRequest();
+            if (toplevelView->toplevel->fullscreen())
+            {
+                toplevelView->toplevel->unsetFullscreenRequest();
+            }
             else
-                toplevelView->toplevel->setMaximizedRequest();
+            {
+                bool altMode = seat()->keyboard()->isKeyCodePressed(KEY_LEFTALT);
+
+                if (altMode)
+                {
+                    toplevelView->toplevel->setFullscreenRequest(nullptr);
+                }
+                else
+                {
+                    if (toplevelView->toplevel->maximized())
+                        toplevelView->toplevel->unsetMaximizedRequest();
+                    else
+                        toplevelView->toplevel->setMaximizedRequest();
+                }
+            }
         }
     }
 

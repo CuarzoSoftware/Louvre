@@ -10,6 +10,8 @@ using namespace Louvre;
 
 class Compositor;
 class Dock;
+class Toplevel;
+class Topbar;
 
 class Output : public LOutput
 {
@@ -17,7 +19,6 @@ public:
     Output();
 
     void loadWallpaper();
-    void updateTopBar();
 
     void initializeGL() override;
     void resizeGL() override;
@@ -25,9 +26,20 @@ public:
     void paintGL() override;
     void uninitializeGL() override;
 
-    LSolidColorView *topBarView = nullptr;
+    // Topbar for this output
+    Topbar *topbar = nullptr;
+
+    // Wallpaper for this output
     LTextureView *wallpaperView = nullptr;
+
+    // Dock for this output
     Dock *dock = nullptr;
+
+    // Current fullscreen toplevel on this output
+    Toplevel *fullscreenToplevel = nullptr;
+
+    // Black view used as background for fullscreen Toplevels
+    LSolidColorView *fullscreenView = nullptr;
 };
 
 #endif // OUTPUT_H

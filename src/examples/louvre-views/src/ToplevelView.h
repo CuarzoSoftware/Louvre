@@ -14,6 +14,7 @@ public:
     ~ToplevelView();
 
     bool lastActiveState = false;
+    bool lastFullscreenState = false;
     Toplevel *toplevel = nullptr;
 
     LLayerView *clipTop = nullptr;
