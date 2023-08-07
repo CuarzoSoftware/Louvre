@@ -10,6 +10,8 @@
 #include "Pointer.h"
 #include "Keyboard.h"
 #include "Toplevel.h"
+#include "TextRenderer.h"
+#include "Topbar.h"
 
 Compositor::Compositor():LCompositor()
 {
@@ -43,6 +45,10 @@ void Compositor::initialized()
     G::loadDockTextures();
     G::loadCursors();
     G::loadToplevelTextures();
+    G::loadFonts();
+
+    clockTimer = wl_event_loop_add_timer(LCompositor::eventLoop(), &Compositor::timerCallback, this);
+    wl_event_source_timer_update(clockTimer, 1);
 
     Int32 totalWidth = 0;
 
@@ -81,4 +87,60 @@ LKeyboard *Compositor::createKeyboardRequest(LKeyboard::Params *params)
 LToplevelRole *Compositor::createToplevelRoleRequest(LToplevelRole::Params *params)
 {
     return new Toplevel(params);
+}
+
+Int32 Compositor::timerCallback(void *)
+{
+    if (G::font()->regular)
+    {
+        char text[128];
+        time_t rawtime;
+        struct tm *timeinfo;
+        time(&rawtime);
+        timeinfo = localtime(&rawtime);
+        strftime(text, sizeof(text), "%a %b %d, %I:%M %p", timeinfo);
+
+        LTexture *newClockTexture = G::font()->regular->renderText(text, 22);
+
+        if (newClockTexture)
+        {
+            for (Output *o : G::outputs())
+            {
+                if (o->topbar && o->topbar->clock)
+                {
+                    o->topbar->clock->setTexture(newClockTexture);
+                    o->topbar->update();
+                }
+            }
+
+            if (G::compositor()->clockTexture)
+            {
+                delete G::compositor()->clockTexture;
+                G::compositor()->clockTexture = newClockTexture;
+            }
+        }
+    }
+
+    wl_event_source_timer_update(G::compositor()->clockTimer, millisecondsUntilNextMinute() + 1500);
+    return 0;
+}
+
+Int32 Compositor::millisecondsUntilNextMinute()
+{
+    time_t rawtime;
+    struct tm *timeinfo;
+    struct timespec spec;
+
+    // Get the current time
+    clock_gettime(CLOCK_REALTIME, &spec);
+    rawtime = spec.tv_sec;
+    timeinfo = localtime(&rawtime);
+
+    // Calculate the number of seconds until the next minute
+    int secondsUntilNextMinute = 60 - timeinfo->tm_sec;
+
+    // Calculate the number of milliseconds until the next minute
+    int msUntilNextMinute = secondsUntilNextMinute * 1000 - spec.tv_nsec / 1000000;
+
+    return msUntilNextMinute;
 }

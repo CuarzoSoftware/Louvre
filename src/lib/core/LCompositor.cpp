@@ -183,6 +183,11 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
     return 1;
 }
 
+Int32 LCompositor::fd() const
+{
+    return imp()->fdSet.fd;
+}
+
 void LCompositor::finish()
 {
     exit(0);

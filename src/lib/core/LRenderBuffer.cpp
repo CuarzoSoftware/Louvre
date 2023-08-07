@@ -47,7 +47,7 @@ const LTexture *LRenderBuffer::texture(Int32 index) const
     return &imp()->texture;
 }
 
-void LRenderBuffer::setFramebufferDamageC(const LRegion *damage)
+void LRenderBuffer::setFramebufferDamage(const LRegion *damage)
 {
     L_UNUSED(damage);
 }

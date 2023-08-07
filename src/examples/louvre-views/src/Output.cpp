@@ -66,6 +66,8 @@ void Output::initializeGL()
     fullscreenView->setVisible(false);
     fullscreenView->enableInput(true);
     fullscreenView->enableBlockPointer(true);
+    fullscreenView->setPos(pos());
+    fullscreenView->setSize(size());
 
     new Dock(this);
     loadWallpaper();
@@ -74,6 +76,7 @@ void Output::initializeGL()
 
 void Output::resizeGL()
 {
+    fullscreenView->setSize(size());
     topbar->update();
     dock->update();
     loadWallpaper();
@@ -82,6 +85,7 @@ void Output::resizeGL()
 
 void Output::moveGL()
 {
+    fullscreenView->setPos(pos());
     topbar->update();
     dock->update();
     wallpaperView->setPos(pos());

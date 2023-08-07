@@ -1,4 +1,5 @@
 #include <LAnimation.h>
+#include <LTextureView.h>
 #include "LCursor.h"
 #include "Topbar.h"
 #include "Global.h"
@@ -20,6 +21,10 @@ Topbar::Topbar(Output *output) : LLayerView(G::compositor()->overlayLayer)
     background->enableInput(false);
     background->enableBlockPointer(false);
     background->setPos(0, 0);
+
+    clock = new LTextureView(nullptr, background);
+    clock->enableInput(false);
+    clock->setBufferScale(2);
 }
 
 Topbar::~Topbar()
@@ -29,13 +34,13 @@ Topbar::~Topbar()
 
     output->topbar = nullptr;
     delete background;
+    delete clock;
 }
 
 void Topbar::show()
 {
     if (anim || visiblePercent != 0.f)
         return;
-
 
     anim = LAnimation::create(
         128,
@@ -104,6 +109,9 @@ void Topbar::update()
         setSize(output->size().w(), TOPBAR_HEIGHT);
         background->setVisible(true);
     }
+
+    clock->setPos(size().w() - clock->size().w() - 8,
+                 1 + (size().h() - clock->size().h()) / 2);
 }
 
 void Topbar::pointerEnterEvent(const LPoint &localPos)

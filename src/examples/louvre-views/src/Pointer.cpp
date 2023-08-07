@@ -3,6 +3,8 @@
 #include <LXCursor.h>
 #include <LView.h>
 #include <LCursorRole.h>
+#include <LLog.h>
+#include <LTime.h>
 
 #include "Global.h"
 #include "Pointer.h"
@@ -12,7 +14,19 @@ Pointer::Pointer(Params *params) : LPointer(params) {}
 
 void Pointer::pointerMoveEvent(Float32 dx, Float32 dy)
 {
-    LView *view = G::scene()->handlePointerMoveEvent(dx, dy);
+    if (LTime::ms() - lastEventMS > 40)
+        velocity = 0.f;
+
+    lastEventMS = LTime::ms();
+
+    if (velocity.x() < 5.f)
+        velocity.setX(velocity.x() + fabs(dx) * acelerationFactor);
+
+    if (velocity.y() < 5.f)
+        velocity.setY(velocity.y() + fabs(dy) * acelerationFactor);
+
+    LView *view = G::scene()->handlePointerMoveEvent(dx + (velocity.x() * dx) / (fabs(dx) + 0.000001),
+                                                     dy + (velocity.y() * dy) / (fabs(dy) + 0.000001));
 
     if (resizingToplevel() || cursorOwner)
         return;
@@ -77,7 +91,10 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
 void Pointer::pointerButtonEvent(Button button, ButtonState state)
 {
     if (button == LPointer::Left && state == LPointer::Released)
+    {
+        G::enableDocks(true);
         G::compositor()->updatePointerBeforePaint = true;
+    }
 
     G::scene()->handlePointerButtonEvent(button, state);
 }

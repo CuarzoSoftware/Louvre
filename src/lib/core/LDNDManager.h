@@ -6,7 +6,7 @@
 /*!
  * @brief Class for handling drag & drop sessions
  *
- * The LDNDManager class provides control over drag & drop sessions and can be accessed with LSeat::dndManager().\n
+ * The LDNDManager class provides control over drag & drop sessions and its unique instance can be accessed with LSeat::dndManager().\n
  * It has virtual methods that notify when a client wants to start or cancel a session, methods for
  * "drop" or cancel a data offering, and so on...
  */
@@ -98,6 +98,13 @@ public:
      */
     LDataSource *source() const;
 
+    /*!
+     * @brief Get the destination client for the current data offer.
+     *
+     * This function returns the client to whom the current data offer is being made.
+     *
+     * @returns A pointer to the destination client, or nullptr if there is no current destination client.
+     */
     LClient *dstClient() const;
 
     /*!

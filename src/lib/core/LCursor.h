@@ -12,21 +12,17 @@
  * The LCursor class is designed to make cursor rendering easier and take advantage of compositing properties of 
  * certain graphics backends to improve performance.\n
  *
- * @subsection init Initialization
- *
- * There is a single instance of LCursor accessible with LCompositor::cursor() which is created during initialization
- * of the first output (LOutput) added to the compositor with LCompositor::addOutput() and notified with LCompositor::cursorInitialized().\n
  * The cursor must always be part of at least one output. To select the current output the setOutput() method must be used.\n
  *
- * @warning The library automatically sets the current output of the cursor based on its position, so it is not necessary to use the setOutput() method directly unless you are rendering the cursor in a coordinate system other than compositor space.
+ * @warning The library automatically sets the current output of the cursor based on its position, so it is not necessary to use the setOutput() method directly unless you are rendering the cursor in an unusual coordinate system.
  *
  * @subsection hw_composition Hardware Composition
  *
  * Some graphics backends, such as DRM, allow for hardware cursor compositing, which can improve performance by reducing the need to repaint 
  * an output every time the cursor changes position.\n
- * To check if a backend supports hardware cursor compositing, use the hasHardwareSupport() method.\n
- * If hardware compositing is not supported, the cursor must be rendered using OpenGL. 
- * In this case, the cursor's position and size in compositor coordinates can be accessed using the rectC() method, and its texture with the texture() method.
+ * To check if an output supports hardware cursor compositing, use the hasHardwareSupport() method.\n
+ * If hardware compositing is not supported, the cursor needs to be rendered using OpenGL.
+ * In this case, the cursor's position (with hotspot included) and size can be accessed using the rect() method, and its texture with the texture() method.
 */
 class Louvre::LCursor : public LObject
 {
@@ -49,7 +45,7 @@ public:
     /*!
      * @brief Sets the cursor texture.
      *
-     * Assigns the texture and hotspot of the cursor. The texture size does not necessarily define the cursor size, setSizeS() must be used to assign the cursor size.\n 
+     * Assigns the texture and hotspot of the cursor. The texture size does not necessarily define the cursor size, setSize() must be used to assign the cursor size.\n
      *
      * @param texture Texture to assign.
      * @param hotspot Cursor hotspot in buffer coordinates.
@@ -97,14 +93,15 @@ public:
     /*!
      * @brief Cursor position.
      *
-     * Cursor position in compositor coordinates.
+     * Current cursor position.
      */
     const LPointF &pos() const;
 
     /*!
      * @brief Cursor rect on screen.
      *
-     * Returns the cursor rect on screen in compositor coordinates LRect(posC - hotspotG, sizeC). It may be used to render the cursor with LPainter when hardware compositing is not available.
+     * Returns the cursor rect on screen LRect(pos - hotspot, size).
+     * It may be used to render the cursor with LPainter when hardware compositing is not available.
      */
     const LRect &rect() const;
 
@@ -112,8 +109,8 @@ public:
      * @brief Assigns the cursor hotspot.
      *
      * The cursor hotspot are coordinates relative to the origin of its buffer (upper left corner) used to position it correctly on the screen.\n
-     * For example, if the texture was a cross with size (64,64), the hotspot would be in the center (32.32). Therefore, if the position of the cursor
-     * is (x,y), its final location on screen would be (x - 32, y - 32).
+     * For example, if the texture was a cross with size (64, 64), the hotspot would be in the center (32, 32). Therefore, if the position of the cursor
+     * is (x, y), its final location on screen would be (x - 32, y - 32).
      *
      * @param Hotspot hotspot in buffer coordinates.
      */
@@ -141,28 +138,29 @@ public:
      *
      * Shows or hides the cursor. If the cursor does not support hardware composition it is the developer's responsibility to avoid rendering it when it is hidden.\n
      * You can use visible() to know if it is visible.
-     * @param state True makes the cursor visible and False hides it.
+     * @param state true makes the cursor visible and false hides it.
      */
     void setVisible(bool state);
 
     /*!
      * @brief Indicates whether the cursor is visible.
      *
-     * @returns True if visible and False if hidden.
+     * @returns true if visible and false if hidden.
      */
     bool visible() const;
 
     /*!
      * @brief Repaints the outputs.
      *
-     * Invokes the LOutput::repaint() method on all outputs where the cursor is currently visible.
+     * Invokes the LOutput::repaint() method on all outputs where the cursor is currently visible.\n
+     * May be called when the cursor moves and hardware composition is not supported.
      */
     void repaintOutputs();
 
     /*!
-     * @brief Indicates whether the backend supports hardware compositing.
+     * @brief Indicates whether the output/backend supports hardware compositing.
      *
-     * @returns True if the backend supports it and False otherwise.
+     * @returns true if the backend supports it and false otherwise.
      */
     bool hasHardwareSupport(const LOutput *output) const;
 

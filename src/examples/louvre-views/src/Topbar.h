@@ -23,6 +23,9 @@ public:
     // White bar
     LSolidColorView *background;
 
+    // Clock
+    LTextureView *clock = nullptr;
+
     // SHOW/HIDE animation
     LAnimation *anim = nullptr;
 

@@ -29,18 +29,11 @@ void DockItem::pointerEnterEvent(const LPoint &localPos)
 {
     L_UNUSED(localPos);
     setOpacity(0.9f);
-
-    if (G::cursors().hand2)
-        cursor()->setTextureB(G::cursors().hand2->texture(),
-                              G::cursors().hand2->hotspotB());
-
-    G::scene()->enableHandleWaylandPointerEvents(false);
 }
 
 void DockItem::pointerLeaveEvent()
 {
     setOpacity(1.f);
-    G::scene()->enableHandleWaylandPointerEvents(true);
 }
 
 void DockItem::pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state)
@@ -49,12 +42,7 @@ void DockItem::pointerButtonEvent(LPointer::Button button, LPointer::ButtonState
         return;
 
     if (state == LPointer::Pressed)
-    {
         setOpacity(0.85f);
-    }
     else
-    {
-        G::scene()->enableHandleWaylandPointerEvents(true);
         surface->unminimize(this);
-    }
 }

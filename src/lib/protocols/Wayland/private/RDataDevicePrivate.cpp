@@ -1,4 +1,5 @@
 #include "RDataDevicePrivate.h"
+#include "LLog.h"
 #include <private/LDataSourcePrivate.h>
 #include <LCompositor.h>
 #include <private/LDNDIconRolePrivate.h>
@@ -44,7 +45,10 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
     // Cancel if there is dragging going on from another client or if there is no focused surface from this client
     if ( (dndManager->dragging() && dndManager->source() && dndManager->source()->client() != rDataDevice->client()) ||
         (seat()->pointer()->focusSurface() != lOriginSurface))
+    {
+        LLog::debug("[data device] Invalid DND drag request.");
         return;
+    }
 
     // Removes pevious data source if any
     dndManager->cancel();

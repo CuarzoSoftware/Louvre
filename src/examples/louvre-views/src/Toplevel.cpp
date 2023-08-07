@@ -55,6 +55,7 @@ void Toplevel::startResizeRequest(ResizeEdge edge)
     if (fullscreen())
         return;
 
+    G::enableDocks(false);
     seat()->pointer()->startResizingToplevel(this, edge, LPointer::EdgeDisabled, TOPBAR_HEIGHT);
 }
 
@@ -64,6 +65,7 @@ void Toplevel::startMoveRequest()
     if (fullscreen())
         return;
 
+    G::enableDocks(false);
     seat()->pointer()->startMovingToplevel(this, LPointer::EdgeDisabled, TOPBAR_HEIGHT);
 }
 
@@ -166,6 +168,7 @@ void Toplevel::fullscreenChanged()
         fullscreenOutput->fullscreenView->setPos(fullscreenOutput->pos());
         fullscreenOutput->fullscreenView->setSize(fullscreenOutput->size());
         surf->getView()->setParent(fullscreenOutput->fullscreenView);
+        surf->getView()->enableParentOffset(false);
         surface()->setPos(dstRect.pos());
         fullscreenOutput->topbar->hide();
         fullscreenOutput->topbar->update();

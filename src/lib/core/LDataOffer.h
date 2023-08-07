@@ -40,7 +40,7 @@ public:
     /*!
      * @brief Usage of a data offer.
      *
-     * Indicates the context in which the data offer is used.n
+     * Indicates the context in which the data offer is used.\n
      * It can be used by the clipboard, in drag & drop sessions or have an indefinite use.
      */
     Usage usedFor() const;

@@ -18,6 +18,10 @@ public:
 
     LView *cursorOwner = nullptr;
     LSurface *lastCursorRequestFocusedSurface = nullptr;
+
+    UInt32 lastEventMS = 0;
+    Float32 acelerationFactor = 0.001f;
+    LPointF velocity = 0.f;
 };
 
 #endif // POINTER_H

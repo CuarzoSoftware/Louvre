@@ -4,6 +4,7 @@
 class Compositor;
 class Output;
 class Pointer;
+class TextRenderer;
 
 #include <LNamespaces.h>
 #include <LRegion.h>
@@ -116,6 +117,12 @@ public:
         LRegion inactiveTransRegionTR;
     };
 
+    struct Fonts
+    {
+        TextRenderer *regular = nullptr;
+        TextRenderer *semibold = nullptr;
+    };
+
     // Quick handles
     static Compositor *compositor();
     static LScene *scene();
@@ -125,6 +132,7 @@ public:
     // Dock
     static void loadDockTextures();
     static DockTextures &dockTextures();
+    static void enableDocks(bool enabled);
 
     // Cursors
     static void loadCursors();
@@ -133,6 +141,10 @@ public:
     // Toplevel
     static void loadToplevelTextures();
     static ToplevelTextures &toplevelTextures();
+
+    // Fonts
+    static void loadFonts();
+    static Fonts *font();
 };
 
 #endif // SHARED_H

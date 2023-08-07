@@ -41,7 +41,7 @@ public:
      *
      * This method can be reimplemented to change the positioning logic of the surface given the role.
      * #### Default implementation
-     * @snippet LCursorRoleDefault.cpp rolePosC
+     * @snippet LCursorRoleDefault.cpp rolePos
      */
     virtual const LPoint &rolePos() const override;
 

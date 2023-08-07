@@ -6,10 +6,13 @@
 #include "Global.h"
 #include "Compositor.h"
 #include "Output.h"
+#include "Dock.h"
+#include "TextRenderer.h"
 
 static G::DockTextures _dockTextures;
 static G::ToplevelTextures _toplevelTextures;
 static G::Cursors xCursors;
+static G::Fonts _fonts;
 
 Compositor *G::compositor()
 {
@@ -59,6 +62,13 @@ void G::loadDockTextures()
 G::DockTextures &G::dockTextures()
 {
     return _dockTextures;
+}
+
+void G::enableDocks(bool enabled)
+{
+    for (Output *o : outputs())
+        if (o->dock)
+            o->dock->setVisible(enabled);
 }
 
 void G::loadCursors()
@@ -171,4 +181,15 @@ void G::loadToplevelTextures()
 G::ToplevelTextures &G::toplevelTextures()
 {
     return _toplevelTextures;
+}
+
+void G::loadFonts()
+{
+    _fonts.regular = TextRenderer::loadFont("Inter");
+    _fonts.semibold = TextRenderer::loadFont("Inter Semi Bold");
+}
+
+G::Fonts *G::font()
+{
+    return &_fonts;
 }

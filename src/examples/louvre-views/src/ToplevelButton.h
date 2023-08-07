@@ -25,6 +25,7 @@ public:
 
     void pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state) override;
     void pointerLeaveEvent() override;
+    void pointerMoveEvent(const LPoint &) override;
 };
 
 #endif // TOPLEVELBUTTON_H

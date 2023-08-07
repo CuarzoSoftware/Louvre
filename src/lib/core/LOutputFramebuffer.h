@@ -15,7 +15,7 @@ public:
     Int32 buffersCount() const override;
     Int32 currentBufferIndex() const override;
     const LTexture *texture(Int32 index = 0) const override;
-    void setFramebufferDamageC(const LRegion *damage) override;
+    void setFramebufferDamage(const LRegion *damage) override;
 
 LPRIVATE_IMP(LOutputFramebuffer)
 };

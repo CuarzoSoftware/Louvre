@@ -48,7 +48,7 @@ const LTexture *LOutputFramebuffer::texture(Int32 index) const
     return imp()->output->bufferTexture(index);
 }
 
-void LOutputFramebuffer::setFramebufferDamageC(const LRegion *damage)
+void LOutputFramebuffer::setFramebufferDamage(const LRegion *damage)
 {
     imp()->output->setBufferDamage(*damage);
 }

@@ -59,9 +59,38 @@ public:
         Pressed = 1
     };
 
-    void setGrabbingSurface(LSurface *surface, Wayland::RKeyboard *keyboardResource);
-    LSurface *grabbingSurface() const;
-    Wayland::RKeyboard *grabbingKeyboardResource() const;
+    /*!
+     * @brief Set the surface that grabs keyboard events.
+     *
+     * This function redirects all keyboard events to the given surface.
+     * For example, a LPopupRole can request to make a keyboard grab (see LPopupRole::grabRequest()).
+     * If 'surface' is set to nullptr, the keyboard grab is disabled.
+     *
+     * @param surface The surface that will grab the keyboard events.
+     * @param keyboardResource The specific wl_keyboard resource created by the client to which events must be sent.
+     *        Clients may bind multiple times to the wl_seat interface.
+     */
+    void setGrabbingSurface(LSurface* surface, Wayland::RKeyboard* keyboardResource);
+
+    /*!
+     * @brief Get the current surface that is grabbing the keyboard events.
+     *
+     * This function returns the surface that is currently grabbing the keyboard events.
+     * If no grab is active, it returns nullptr.
+     *
+     * @returns The surface that is grabbing keyboard events, or nullptr if no grab is active.
+     */
+    LSurface* grabbingSurface() const;
+
+    /*!
+     * @brief Get the current wl_keyboard resource used during the keyboard grab.
+     *
+     * This function returns the wl_keyboard resource to which keyboard events are sent during the grab.
+     * If no grab is active, it returns nullptr.
+     *
+     * @returns The wl_keyboard resource used during the keyboard grab, or nullptr if no grab is active.
+     */
+    Wayland::RKeyboard* grabbingKeyboardResource() const;
 
     /*!
      * @brief Constructor of the LKeyboard class.
@@ -118,8 +147,10 @@ public:
      */
     UInt32 keymapFormat() const;
 
+    // Since 4
+
     /*!
-     * Repetition rate (since 4).\n\n
+     * Repetition rate.\n\n
      *
      * Number of repetitions per second of a key when held down, assigned with setRepeatInfo().\n
      * The default value is 32.
@@ -127,7 +158,7 @@ public:
     Int32 repeatRate() const;
 
     /*!
-     * Repeat delay (since 4).\n\n
+     * Repeat delay.\n\n
      *
      * Delay in milliseconds before triggering the repetition of a key by holding it down, assigned with setRepeatInfo().\n
      * The default value is 500 ms.
@@ -135,7 +166,7 @@ public:
     Int32 repeatDelay() const;
 
     /*!
-     * Assigns the repeat rate and delay (since 4).\n\n
+     * Assigns the repeat rate and delay.\n\n
      *
      * Assigns the repeat rate and delay when holding down a key.\n
      * The library internally calls the [wl_keyboard::repeat_info](https://wayland.app/protocols/wayland#wl_keyboard:event:repeat_info) event
@@ -155,9 +186,9 @@ public:
     xkb_keysym_t keySymbol(UInt32 keyCode);
 
     /*!
-     * @brief Keyboard status.
+     * @brief Keyboard state.
      *
-     * Keyboard map status.
+     * XKB keyboard map state.
      */
     xkb_state *keymapState() const;
 

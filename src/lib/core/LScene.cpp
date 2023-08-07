@@ -345,8 +345,8 @@ void LScene::handleKeyEvent(UInt32 keyCode, UInt32 keyState)
         // Minimizes currently focused surface
         else if (L_CTRL && seat()->keyboard()->keySymbol(keyCode) == XKB_KEY_m)
         {
-            if (seat()->keyboard()->focusSurface())
-                seat()->keyboard()->focusSurface()->setMinimized(true);
+            if (seat()->keyboard()->focusSurface() && seat()->keyboard()->focusSurface()->toplevel())
+                seat()->keyboard()->focusSurface()->toplevel()->setMinimizedRequest();
         }
 
         // Terminates the compositor

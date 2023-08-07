@@ -17,8 +17,8 @@
   *
   * @li Creating the surface role (returned in LSurface::role()).
   * @li Assigning the role's unique ID (returned in LSurface::roleId()).
-  * @li Assigning the surface position according to the role's protocol (returned in LSurface::rolePosC()).
-  * @li Providing access to native events of the [wl_surface](https://wayland.app/protocols/wayland#wl_surface) interface.
+  * @li Assigning the surface position according to the role's protocol (returned in LSurface::rolePos()).
+  * @li Providing access to native requests of the [wl_surface](https://wayland.app/protocols/wayland#wl_surface) interface.
   *
   * @section role_creation Creating a Custom Role
   *
@@ -28,8 +28,8 @@
   * @li Create an LResource wrapper for the role's wl_resource, or use LSurface::resource() if the role does not have its own wl_resource.
   * @li Create a subclass of LBaseSurfaceRole.
   * @li Select a unique role ID.
-  * @li Override the LBaseSurfaceRole::rolePosC() method and implement the positioning logic of the role.
-  * @li Override any other protected methods in LBaseSurfaceRole to handle native events of the wl_surface interface.
+  * @li Override the LBaseSurfaceRole::rolePos() method and implement the positioning logic of the role.
+  * @li Override any other protected methods in LBaseSurfaceRole to handle native requests of the wl_surface interface.
   *
   * To assign the custom role to a surface at runtime, follow these steps:
   *
@@ -45,9 +45,6 @@ public:
 
     /*!
      * @brief Constructor of LBaseSurfaceRole class.
-     *
-     * Once initialization is complete, the surface provided in the second argument acquires the role and the virtual method LSurface::roleChanged()
-     * is invoked. The role can later be accessed with the LSurface::role() method.
      *
      * @param resource Resource granted by the role's protocol interface. If the role does not have a resource, the one accessible with LSurface::resource() should be passed.
      * @param surface Surface that will acquire the role.
@@ -68,9 +65,9 @@ public:
     /*!
      * @brief Position of the surface given its role.
      *
-     * This method must return the **m_rolePosC** variable. It should be overridden to return the position of the surface according to the
+     * This method must return the **m_rolePos** variable. It should be overridden to return the position of the surface according to the
      * logic given by the role protocol.\n
-     * The LSurface class returns the position given by this method when calling LSurface::rolePosC().
+     * The LSurface class returns the position given by this method when calling LSurface::rolePos().
      *
      * See the default implementation of this method in the roles offered by the library for more information.
      */
@@ -111,7 +108,7 @@ protected:
     /*!
      * @brief Variable that stores the surface position given the role.
      *
-     * Variable to store the position of the surface according to its role. It must be assigned and returned in the implementation of the LBaseSurfaceRole::rolePosC() method.
+     * Variable to store the position of the surface according to its role. It must be assigned and returned in the implementation of the LBaseSurfaceRole::rolePos() method.
      */
     mutable LPoint m_rolePos;
 
@@ -120,7 +117,7 @@ protected:
      *
      * The commit is processed only if **true** is returned.
      *
-     * @param origin Origin of the request. In some protocols the commit is called by other surfaces. For example, surfaces the ***subsurface*** role only accept commits from their parent
+     * @param origin Origin of the request. In some protocols the commit is called by other surfaces. For example, surfaces with the ***subsurface*** role only accept commits from their parent
      * if they are in synchronous mode.
      */
     virtual bool acceptCommitRequest(Protocols::Wayland::RSurface::CommitOrigin origin);

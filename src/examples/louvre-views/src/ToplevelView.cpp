@@ -393,7 +393,6 @@ void ToplevelView::updateGeometry()
     {
         if (!lastFullscreenState)
         {
-            surf->view->setCustomPos(0, 0);
             clipBottom->setVisible(false);
             sceneBL->setVisible(false);
             sceneBR->setVisible(false);
@@ -416,7 +415,10 @@ void ToplevelView::updateGeometry()
             resizeBR->setVisible(false);
         }
 
-        setSize(toplevel->windowGeometry().size());
+        setSize(toplevel->fullscreenOutput->size());
+
+        surf->view->setCustomPos((toplevel->fullscreenOutput->size() - toplevel->windowGeometry().size()) / 2);
+
 
         LSize size = nativeSize();
 

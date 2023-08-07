@@ -37,11 +37,18 @@ public:
     // Layer for views that are always at the top like the dock, topbar or DND icons
     LLayerView *overlayLayer;
 
+    // Timer for updating the clock every minute
+    wl_event_source *clockTimer = nullptr;
+    static Int32 timerCallback(void *data);
+    static Int32 millisecondsUntilNextMinute();
+
+    // Shared texture used in all clock views
+    LTexture *clockTexture = nullptr;
 
     // If true, we call scene->handlePointerEvent() once before scene->handlePaintGL().
     // The reason for this is that pointer events are only emitted when the pointer itself moves,
     // and they do not trigger when, for example, a view moves and positions itself under the cursor.
-    // As a result, this call updates focus, cursor texture and so on...
+    // As a result, this call updates focus, cursor texture and so on...in those cases
     bool updatePointerBeforePaint = false;
 };
 

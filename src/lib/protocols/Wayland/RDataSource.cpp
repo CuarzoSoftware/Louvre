@@ -33,6 +33,7 @@ RDataSource::RDataSource
     imp()->lDataSource = new LDataSource(this);
 }
 
+#include <LLog.h>
 RDataSource::~RDataSource()
 {
     // Check if being used by a Drag & Drop

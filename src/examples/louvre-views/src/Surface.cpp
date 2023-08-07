@@ -107,6 +107,9 @@ void Surface::mappingChanged()
 
                 toplevel()->configure(LToplevelRole::Activated);
             }
+
+            if (dndIcon())
+                setPos(cursor()->pos());
         }
 
         compositor()->repaintAllOutputs();
@@ -139,6 +142,8 @@ void Surface::roleChanged()
 {
     if (roleId() == LSurface::Cursor)
         view->setVisible(false);
+    if (roleId() == LSurface::DNDIcon)
+        setPos(cursor()->pos());
 }
 
 void Surface::bufferSizeChanged()

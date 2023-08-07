@@ -3,8 +3,10 @@
 #include "ToplevelView.h"
 #include "Global.h"
 #include "InputRect.h"
+#include "Pointer.h"
 #include <LKeyboard.h>
 #include <LSeat.h>
+#include <LCursor.h>
 
 ToplevelButton::ToplevelButton(LView *parent, ToplevelView *toplevelView, ButtonType type) : LTextureView(nullptr, parent)
 {
@@ -153,4 +155,10 @@ void ToplevelButton::pointerLeaveEvent()
 
     pressed = false;
     update();
+}
+
+void ToplevelButton::pointerMoveEvent(const LPoint &)
+{
+    if (!G::pointer()->resizingToplevel() && !G::pointer()->movingToplevel())
+        cursor()->useDefault();
 }

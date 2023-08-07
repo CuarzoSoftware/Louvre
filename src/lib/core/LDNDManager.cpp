@@ -4,7 +4,8 @@
 #include <private/LDNDManagerPrivate.h>
 #include <private/LDataOfferPrivate.h>
 #include <private/LDataDevicePrivate.h>
-#include <LSurface.h>
+#include <private/LSurfacePrivate.h>
+#include <LDNDIconRole.h>
 #include <LClient.h>
 #include <LDataSource.h>
 #include <LSeat.h>
@@ -72,6 +73,9 @@ void LDNDManager::drop()
     {
         imp()->dropped = true;
 
+        if (icon() && icon()->surface())
+            icon()->surface()->imp()->setMapped(false);
+
         if (imp()->focus)
         {
             for (Wayland::GSeat *s : imp()->focus->client()->seatGlobals())
@@ -79,10 +83,18 @@ void LDNDManager::drop()
                     s->dataDeviceResource()->drop();
 
             if (source())
+            {
                 source()->dataSourceResource()->dndDropPerformed();
+            }
         }
         else
         {
+            if (source())
+            {
+                source()->dataSourceResource()->dndDropPerformed();
+                source()->dataSourceResource()->dndFinished();
+            }
+
             cancel();
         }
     }

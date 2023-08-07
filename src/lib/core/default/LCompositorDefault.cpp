@@ -93,7 +93,7 @@ void LCompositor::cursorInitialized()
 
     /*
     // Loads the "hand1" cursor
-    LXCursor *handCursor = cursor()->loadXCursorB("hand1");
+    LXCursor *handCursor = LXCursor::loadXCursorB("hand1");
 
     // Returns nullptr if not found
     if (handCursor)

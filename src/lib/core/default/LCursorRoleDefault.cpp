@@ -5,13 +5,13 @@
 
 using namespace Louvre;
 
-//! [rolePosC]
+//! [rolePos]
 const LPoint &LCursorRole::rolePos() const
 {
    m_rolePos = surface()->pos() - hotspot();
    return m_rolePos;
 }
-//! [rolePosC]
+//! [rolePos]
 
 //! [hotspotChanged]
 void LCursorRole::hotspotChanged()

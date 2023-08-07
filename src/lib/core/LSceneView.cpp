@@ -176,7 +176,7 @@ void LSceneView::render(const LRegion *exclude)
     }
     else
     {
-        imp()->fb->setFramebufferDamageC(&oD->newDamage);
+        imp()->fb->setFramebufferDamage(&oD->newDamage);
     }
 
     painter->bindFramebuffer(prevFb);
