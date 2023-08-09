@@ -398,15 +398,6 @@ public:
     void finish();
 
     /*!
-     * Places a surface at the end of the compositor's surfaces list (see surfaces()), which means it will be the last surface to be rendered in a frame, 
-     * and therefore positioned in front of all others. If the surface being repositioned and is a parent of other surfaces, these will also be elevated,
-     * maintaining the current hierarchical order required by certain protocols. Raising a surface that does not exist in the compositor's list, is a no-op.
-     *
-     * @param surface Surface to be raised.
-     */
-    void raiseSurface(LSurface *surface);
-
-    /*!
      * Native wl_display used by the compositor.
      */
     static wl_display *display();

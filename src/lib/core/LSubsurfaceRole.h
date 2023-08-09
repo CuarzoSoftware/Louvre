@@ -8,7 +8,7 @@
  * 
  * The LSubsurfaceRole class is a role for surfaces that allows them to be positioned relatively to their parents.\n
  * Subsurfaces are always children of other surfaces.\n
- * Their position is given by that of their parent plus the offset given by localPosS() or localPosC().\n
+ * Their position is given by that of their parent plus the offset given by localPos().\n
  *
  * @section Modes
  *
@@ -16,9 +16,9 @@
  *
  * ### Synchronous Mode
  *
- * In this mode, changes to the subsurface, such as its position or commit, are applied exclusively when its parent performs a commit.\n
+ * In this mode, changes to the subsurface, such as its position, are applied exclusively when its parent performs a commit.\n
  * This mode is used by clients to synchronize the animation or movement of multiple subsurfaces.\n
- * The default library keeps track of changes and applies them when the parent performs a commit.\n
+ * The library keeps track of changes and applies them when the parent performs a commit.\n
  *
  * ### Asynchronous Mode
  *
@@ -70,19 +70,19 @@ public:
     /*!
      * @brief Position of the subsurface according to the role.
      *
-     * The default implementation of rolePosC() positions the subsurface relative to its parent by adding the offset
-     * given by localPosC().\n
+     * The default implementation of rolePos() positions the subsurface relative to its parent by adding the offset
+     * given by localPos().\n
      * Reimplement this virtual method if you want to define your own logic for positioning the subsurface.
      *
      * ### Default implementation
-     * @snippet LSubsurfaceRoleDefault.cpp rolePosC
+     * @snippet LSubsurfaceRoleDefault.cpp rolePos
      */
     virtual const LPoint &rolePos() const override;
 
     /*!
      * @brief Change of offset.
      *
-     * Reimplement this virtual method if you want to be notified when the offset changes.
+     * Reimplement this virtual method if you want to be notified when the local position changes.
      *
      * #### Default implementation
      * @snippet LSubsurfaceRoleDefault.cpp localPosChanged
@@ -92,7 +92,7 @@ public:
     /*!
      * @brief Change of mode.
      *
-     * Reimplement this virtual method if you want to be notified when the subsurface changes mode.
+     * Reimplement this virtual method if you want to be notified when the subsurface changes its sync mode.
      *
      * ### Default implementation
      * @snippet LSubsurfaceRoleDefault.cpp syncModeChanged
@@ -102,7 +102,7 @@ public:
     /*!
      * @brief Place above.
      *
-     * Reimplement this virtual method if you want to be notified when the sub-surface requests to be placed above the **sibling** surface.\n
+     * Reimplement this virtual method if you want to be notified when the sub-surface is placed above the **sibling** surface.\n
      * The library automatically maintains the hierarchical order in the list of surfaces of the compositor (LCompositor::surfaces()).
      *
      * #### Default Implementation
@@ -113,7 +113,7 @@ public:
     /*!
      * @brief Place below.
      *
-     * Reimplement this virtual method if you want to be notified when the subsurface requests to be placed below the **sibling** surface.\n
+     * Reimplement this virtual method if you want to be notified when the subsurface is placed below the **sibling** surface.\n
      * The library automatically maintains the hierarchical order in the list of surfaces of the compositor (LCompositor::surfaces()).
      *
      * ### Default Implementation

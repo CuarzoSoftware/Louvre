@@ -154,7 +154,7 @@ void Output::paintGL()
     }
 
     if (seat()->dndManager()->icon())
-        compositor()->raiseSurface(seat()->dndManager()->icon()->surface());
+        seat()->dndManager()->icon()->surface()->raise();
 
     /* In this pass we:
      * - 1. Calculate the new output damage.

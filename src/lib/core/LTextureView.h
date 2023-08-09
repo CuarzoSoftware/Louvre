@@ -3,23 +3,116 @@
 
 #include <LView.h>
 
+/*!
+ * @brief View for displaying textures
+ *
+ * The LTextureView allows you to use an LTexture as a view in a scene.
+ * The used LTexture must remain valid while set. The same LTexture can be used in multiple views at a time.\n
+ * To unset the texture, nullptr must be passed to setTexture(), which also unmaps the view.\n
+ * LTextureViews can also have a custom destination size, which can differ from its buffer size. In that case, damage, input, translucent and opaque rigions
+ * must be defined based on the dst size.\n
+ * To enable a custom destination size, use the enableDstSize() and setDstSize() methods.\n
+ * Using a custom dstSize() is recommended instead of using the scalingVector() option as damage tracking can still be used by the scene.\n
+ * If dst size is disabled, the view size is equal to the texture size divided by its buffer scale.
+ *
+ * Please refer to the documentation of the LView class for additional methods and properties avaliable.
+ */
 class Louvre::LTextureView : public LView
 {
 public:
+    LTextureView(const LTextureView&) = delete;
+    LTextureView& operator= (const LTextureView&) = delete;
+
+    /**
+     * @brief Construct an LTextureView with an optional LTexture and parent LView.
+     *
+     * @param texture The LTexture to be used as the view's texture. Default is nullptr.
+     * @param parent The parent LView of the LTextureView. Default is nullptr.
+     */
     LTextureView(LTexture *texture = nullptr, LView *parent = nullptr);
+
+    /**
+     * @brief Destructor for the LTextureView.
+     */
     ~LTextureView();
 
+    /**
+     * @brief Set the position of the LTextureView.
+     *
+     * @param x The x-coordinate of the position.
+     * @param y The y-coordinate of the position.
+     */
     virtual void setPos(Int32 x, Int32 y);
+
+    /**
+     * @brief Set the position of the LTextureView using an LPoint object.
+     *
+     * @param pos The position as an LPoint object.
+     */
     void setPos(const LPoint &pos);
+
+    /**
+     * @brief Set the input region of the LTextureView.
+     *
+     * @param region The input region as an LRegion object.
+     */
     virtual void setInputRegion(const LRegion *region);
+
+    /**
+     * @brief Set the translucent region of the LTextureView.
+     *
+     * @param region The translucent region as an LRegion object.
+     */
     virtual void setTranslucentRegion(const LRegion *region);
+
+    /**
+     * @brief Set the buffer scale of the LTextureView.
+     *
+     * @param scale The buffer scale as an Int32 value.
+     */
     virtual void setBufferScale(Int32 scale);
+
+    /**
+     * @brief Set the LTexture for the LTextureView.
+     *
+     * @param texture The LTexture to be used as the view's texture.
+     */
     virtual void setTexture(LTexture *texture);
+
+    /**
+     * @brief Get the current LTexture used by the LTextureView.
+     *
+     * @return A pointer to the current LTexture used by the view.
+     */
     virtual LTexture *texture() const;
 
+    /**
+     * @brief Enable or disable the custom destination size for the LTextureView.
+     *
+     * @param enabled True to enable custom destination size, false to disable.
+     */
     virtual void enableDstSize(bool enabled);
+
+    /**
+     * @brief Check if the custom destination size is enabled for the LTextureView.
+     *
+     * @return True if custom destination size is enabled, false otherwise.
+     */
     virtual bool dstSizeEnabled() const;
+
+    /**
+     * @brief Set the custom destination size of the LTextureView.
+     *
+     * @param w The width of the custom destination size.
+     * @param h The height of the custom destination size.
+     */
     virtual void setDstSize(Int32 w, Int32 h);
+
+    /**
+     * @brief Set the custom destination size of the LTextureView using an LSize object.
+     *
+     * @param dstSize The custom destination size as an LSize object.
+     */
     void setDstSize(const LSize &dstSize);
 
     virtual bool nativeMapped() const override;

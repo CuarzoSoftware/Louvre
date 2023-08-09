@@ -17,13 +17,9 @@
 #define LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION 3
 #define LOUVRE_WL_OUTPUT_VERSION 4
 #define LOUVRE_WL_SUBCOMPOSITOR_VERSION 1
-
 #define LOUVRE_XDG_WM_BASE_VERSION 2
-
 #define LOUVRE_XDG_DECORATION_MANAGER_VERSION 1
-
 #define LOUVRE_WP_PRESENTATION_VERSION 1
-
 #define LOUVRE_LINUX_DMA_BUF_VERSION 3
 
 #define L_UNUSED(object){(void)object;}
@@ -114,7 +110,6 @@ namespace Louvre
     template <class TA, class TB> class LRectTemplate;
 
     // Types
-
     /// @brief 64 bits unsigned integer
     typedef uint64_t        UInt64;
 
@@ -172,45 +167,118 @@ namespace Louvre
     typedef unsigned int GLuint;
     typedef unsigned int GLenum;
 
+    /**
+     * @brief Structure representing a 2D box.
+     *
+     * The LBox struct defines a 2D box using four integer coordinates (x1, y1, x2, y2).
+     * It is typically used to represent bounding boxes or rectangular regions in 2D space.
+     */
     struct LBox
     {
+        /// The x-coordinate of the top-left corner of the box.
         Int32 x1;
+
+        /// The y-coordinate of the top-left corner of the box.
         Int32 y1;
+
+        /// The x-coordinate of the bottom-right corner of the box.
         Int32 x2;
+
+        /// The y-coordinate of the bottom-right corner of the box.
         Int32 y2;
     };
 
+    /**
+     * @brief Structure representing DMA format and modifier.
+     *
+     * The LDMAFormat struct contains information about DMA format and modifier.
+     * It is used to describe the format and memory layout of DMA planes used for texture generation.
+     * Each LDMAFormat instance includes a format value and a modifier value.
+     */
     struct LDMAFormat
     {
+        /// The format of the DMA plane.
         UInt32 format;
+
+        /// The modifier value specifying the memory layout.
         UInt64 modifier;
     };
 
     #define LOUVRE_MAX_DMA_PLANES 4
+
+    /**
+     * @brief Structure representing DMA planes.
+     *
+     * The LDMAPlanes struct contains information about DMA planes used for texture generation.
+     * DMA planes are memory regions that can be used to create textures. Each plane is associated
+     * with a file descriptor (fd) and contains additional properties like modifier, stride, and offset.
+     */
     struct LDMAPlanes
     {
+        /// Width of the buffer in pixels.
         UInt32 width;
+
+        /// Height of the buffer in pixels.
         UInt32 height;
+
+        /// Format of the buffer.
         UInt32 format;
+
+        /// Number of file descriptors (fds) in the plane.
         UInt32 num_fds = 0;
-        Int32 fds[LOUVRE_MAX_DMA_PLANES]        = {-1, -1, -1, -1};
-        UInt32 strides[LOUVRE_MAX_DMA_PLANES]   = {0, 0, 0, 0};
-        UInt32 offsets[LOUVRE_MAX_DMA_PLANES]   = {0, 0, 0, 0};
-        UInt64 modifiers[LOUVRE_MAX_DMA_PLANES] = {0, 0, 0, 0};
+
+        /// Array of file descriptors (fds) associated with the DMA plane.
+        Int32 fds[LOUVRE_MAX_DMA_PLANES] = {-1};
+
+        /// Array of strides for each DMA plane.
+        UInt32 strides[LOUVRE_MAX_DMA_PLANES] = {0};
+
+        /// Array of offsets for each DMA plane.
+        UInt32 offsets[LOUVRE_MAX_DMA_PLANES] = {0};
+
+        /// Array of modifiers for each DMA plane.
+        UInt64 modifiers[LOUVRE_MAX_DMA_PLANES] = {0};
     };
 
+    /**
+     * @brief Structure representing an RGB color with floating-point components.
+     *
+     * The LRGBF struct defines an RGB color with three floating-point components (r, g, b).
+     * Each component ranges from 0.0 to 1.0, where 0.0 represents no intensity and 1.0 represents full intensity.
+     * This structure is typically used to represent colors in a normalized format.
+     */
     struct LRGBF
     {
+        /// The red component of the RGB color (range: 0.0 to 1.0).
         Float32 r;
+
+        /// The green component of the RGB color (range: 0.0 to 1.0).
         Float32 g;
+
+        /// The blue component of the RGB color (range: 0.0 to 1.0).
         Float32 b;
     };
 
+    /**
+     * @brief Structure representing an RGBA color with floating-point components.
+     *
+     * The LRGBAF struct defines an RGBA color with four floating-point components (r, g, b, a).
+     * Each RGB component ranges from 0.0 to 1.0, where 0.0 represents no intensity and 1.0 represents full intensity.
+     * The alpha component (a) also ranges from 0.0 to 1.0, where 0.0 represents full transparency and 1.0 represents full opacity.
+     * This structure is typically used to represent colors with transparency in a normalized format.
+     */
     struct LRGBAF
     {
+        /// The red component of the RGBA color (range: 0.0 to 1.0).
         Float32 r;
+
+        /// The green component of the RGBA color (range: 0.0 to 1.0).
         Float32 g;
+
+        /// The blue component of the RGBA color (range: 0.0 to 1.0).
         Float32 b;
+
+        /// The alpha component of the RGBA color (range: 0.0 to 1.0).
         Float32 a;
     };
 

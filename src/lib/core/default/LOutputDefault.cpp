@@ -32,7 +32,7 @@ void LOutput::paintGL()
             cursor()->pos().y());
 
     if (seat()->dndManager()->icon())
-        compositor()->raiseSurface(seat()->dndManager()->icon()->surface());
+        seat()->dndManager()->icon()->surface()->raise();
 
     // Draws every surface
     for (LSurface *s : compositor()->surfaces())

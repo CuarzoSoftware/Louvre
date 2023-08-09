@@ -75,17 +75,23 @@ void LSurface::raised()
 }
 //! [raised]
 
+//! [orderChanged]
 void LSurface::orderChanged()
 {
     repaintOutputs();
 }
+//! [orderChanged]
 
+//! [requestedRepaint]
 void LSurface::requestedRepaint()
 {
     repaintOutputs();
 }
+//! [requestedRepaint]
 
+//! [minimizedChanged]
 void LSurface::minimizedChanged()
 {
     repaintOutputs();
 }
+//! [minimizedChanged]

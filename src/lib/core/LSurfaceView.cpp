@@ -117,7 +117,7 @@ void LSurfaceView::enableCustomTranslucentRegion(bool enabled)
     }
 }
 
-bool LSurfaceView::customTranslucenRegionEnabled() const
+bool LSurfaceView::customTranslucentRegionEnabled() const
 {
     return imp()->customTranslucentRegionEnabled;
 }

@@ -68,7 +68,7 @@ void RXdgToplevel::RXdgToplevelPrivate::show_window_menu(wl_client *client, wl_r
     L_UNUSED(seat);
     L_UNUSED(serial);
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
-    rXdgToplevel->toplevelRole()->showWindowMenuRequestS(x, y);
+    rXdgToplevel->toplevelRole()->showWindowMenuRequest(x, y);
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::move(wl_client *client, wl_resource *resource, wl_resource *seat, UInt32 serial)

@@ -10,13 +10,13 @@
 
 using namespace Louvre;
 
-//! [rolePosC]
+//! [rolePos]
 const LPoint &LToplevelRole::rolePos() const
 {
     m_rolePos = surface()->pos() - xdgSurfaceResource()->imp()->currentWindowGeometry.topLeft();
     return m_rolePos;
 }
-//! [rolePosC]
+//! [rolePos]
 
 //! [startMoveRequest]
 void LToplevelRole::startMoveRequest()
@@ -112,7 +112,7 @@ void LToplevelRole::maximizedChanged()
 
     if (maximized())
     {
-        compositor()->raiseSurface(surface());
+        surface()->raise();
         surface()->setPos(output->pos());
         surface()->setMinimized(false);
     }
@@ -125,7 +125,7 @@ void LToplevelRole::fullscreenChanged()
     if (fullscreen())
     {
         surface()->setPos(cursor()->output()->pos());
-        compositor()->raiseSurface(surface());
+        surface()->raise();
     }
 }
 //! [fullscreenChanged]
@@ -187,8 +187,8 @@ void LToplevelRole::setFullscreenRequest(LOutput *destOutput)
 }
 //! [setFullscreenRequest]
 
-//! [showWindowMenuRequestS]
-void LToplevelRole::showWindowMenuRequestS(Int32 x, Int32 y)
+//! [showWindowMenuRequest]
+void LToplevelRole::showWindowMenuRequest(Int32 x, Int32 y)
 {
     L_UNUSED(x);
     L_UNUSED(y);
@@ -196,4 +196,4 @@ void LToplevelRole::showWindowMenuRequestS(Int32 x, Int32 y)
     /* Here the compositor should render a context menu showing
      * the minimize, maximize and fullscreen options */
 }
-//! [showWindowMenuRequestS]
+//! [showWindowMenuRequest]

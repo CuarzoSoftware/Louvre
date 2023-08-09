@@ -55,7 +55,7 @@ void ToplevelRole::maximizedChanged()
 
     if (maximized())
     {
-        compositor()->raiseSurface(surface());
+        surface()->raise();
         surface()->setPos(output->pos() + LPoint(0, 32));
         surface()->setMinimized(false);
     }
@@ -69,7 +69,7 @@ void ToplevelRole::fullscreenChanged()
     {
         surface()->setPos(output->pos());
         output->fullscreenSurface = surface();
-        compositor()->raiseSurface(surface());
+        surface()->raise();
     }
     else
     {

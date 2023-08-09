@@ -249,9 +249,9 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
             return;
 
         if (seat()->pointer()->focusSurface()->parent())
-            compositor()->raiseSurface(seat()->pointer()->focusSurface()->topmostParent());
+            seat()->pointer()->focusSurface()->topmostParent()->raise();
         else
-            compositor()->raiseSurface(seat()->pointer()->focusSurface());
+            seat()->pointer()->focusSurface()->raise();
     }
     // Left button released
     else

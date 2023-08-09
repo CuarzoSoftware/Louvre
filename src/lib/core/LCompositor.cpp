@@ -218,17 +218,6 @@ void LCompositor::LCompositorPrivate::raiseChildren(LSurface *surface)
         raiseChildren(children);
 }
 
-void LCompositor::raiseSurface(LSurface *surface)
-{
-    if (surface->subsurface())
-    {
-        raiseSurface(surface->parent());
-        return;
-    }
-
-    imp()->raiseChildren(surface);
-}
-
 wl_display *LCompositor::display()
 {
     return LCompositor::compositor()->imp()->display;

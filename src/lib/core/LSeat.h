@@ -8,15 +8,23 @@
 struct libseat;
 
 /*!
- * @brief Group of input and output devices
+ * @brief Group of input and output devices.
  *
- * The LSeat class represents a compositor seat. A seat is a group of input and output devices such as mouse, keyboard,
- * a GPU, etc used in a session. Typically, permission to access these devices is limited to a single process per session,
- * which is usually a Wayland or X11 compositor.\n
- * To allow the compositor to control the devices in the seat without needing to be a superuser, the DRM and Libinput backends use the openDevice()
- * method to open the devices, which internally implements libseat to request seat permissions.\n
- * The LSeat class also allows for changing sessions (TTY), accessing the clipboard, accessing instances of LPointer and LKeyboard, listening to native input backend events,
- * among other functions.
+ * The LSeat class represents a collection of input and output devices such as a mouse, keyboard,
+ * and outputs (screens). These devices are used within a session. Typically, access to these devices is restricted to a single process per session,
+ * often a Wayland or X11 compositor.\n
+ *
+ * To enable input and graphics backends to manage seat devices without requiring superuser privileges, the openDevice()
+ * method can be used to obtain device file descriptors. This method internally employs libseat to request seat permissions.\n
+ *
+ * By setting the environment variable **LOUVRE_ENABLE_LIBSEAT** to 0, Libseat can be disabled, causing the compositor to launch without multi-seat support.
+ * Consequently, certain features such as switching to another TTY may become unavailable.\n
+ * Disabling Libseat may be necessary in scenarios where the compositor needs to be started remotely via SSH.\n
+ *
+ * The LSeat class also facilitates tasks such as session (TTY) switching, clipboard access, interaction with instances of LPointer and LKeyboard, as well as native events
+ * monitoring from the input backend.
+ *
+ * @warning Touch events have not been implemented yet.
  */
 class Louvre::LSeat : public LObject
 {
@@ -60,11 +68,15 @@ public:
     LSeat& operator= (const LSeat&) = delete;
 
     /*!
-     * @brief Available outputs.
+     * @brief List of available outputs.
      *
-     * List of currently available outputs.
+     * This function provides a list of currently available outputs. The list includes connected outputs that can be initialized
+     * as well as those that are already initialized.
+     * To obtain a list of only initialized connectors, refer to LCompositor::outputs().
+     *
+     * @return A pointer to a list of available outputs.
      */
-    const list<LOutput*>*outputs() const;
+    const list<LOutput*>* outputs() const;
 
     /*!
      * @brief Handle to the native context used by the input backend.
@@ -99,7 +111,7 @@ public:
     /*!
      * @brief Assigns the input capabilities of the compositor.
      *
-     * Notifies clients of the compositor's input capabilities.\n
+     * Notifies clients the compositor's input capabilities.\n
      * Clients will only listen to events specified in the capabilities.\n
      * The default implementation of initialized() sets the compositor's capabilities to those of the input backend.\n
      *
@@ -110,8 +122,8 @@ public:
     /*!
      * @brief Active Toplevel surface.
      *
-     * Pointer to the active LToplevelRole role assigned by passing the flag LToplevelRole::Active in LToplevelRole::confgureC().\n
-     * Only one Toplevel surface can be active, the library automatically deactivates other Toplevels when one is activated.
+     * Pointer to the active LToplevelRole role assigned by passing the flag LToplevelRole::Active in LToplevelRole::confgure().\n
+     * Only one Toplevel surface can be active at a time, the library automatically deactivates other Toplevels when one is activated.
      *
      * @returns nullptr if no Toplevel is active.
      */
@@ -151,7 +163,7 @@ public:
     /*!
      * @brief Switch session.
      *
-     * Switch session (TTY). The default implementation of LKeyboard::keyEvent() allows switching sessions
+     * Switch session (TTY). Louvre also allows switching sessions
      * using the shortcuts \n```Ctrl + Alt + (F1, F2, ..., F10)```.
      * @param tty TTY number.
      *
@@ -163,8 +175,8 @@ public:
      * @brief Opens a device.
      *
      * Opens a device on the seat, returning its ID and storing its file descriptor in **fd**.\n
-     * The DRM graphic backend and the Libinput input backend use this function to open GPUs and input devices respectively.
-     * @param path Location of the device.
+     * The DRM graphics backend and the Libinput input backend use this function to open GPUs and input devices respectively.
+     * @param path Location of the device (E.g. "/dev/dri/card0")
      * @param fd Stores the file descriptor.
      * @returns The ID of the device or -1 in case of an error.
      */
@@ -186,12 +198,21 @@ public:
     libseat *libseatHandle() const;
 
     /*!
-     * @brief State of the seat.
+     * @brief Check the session state.
      *
-     * @returns true if the seat is active and false otherwise.
+     * The session is considered disabled if the user is engaged in another active session (TTY).
+     *
+     * @return True if the seat is active, false otherwise.
      */
     bool enabled() const;
 
+    /*!
+     * @brief Retrieve the topmost popup role.
+     *
+     * This function returns a pointer to the topmost popupt.
+     *
+     * @return A pointer to the topmost LPopupRole or nullptr if there is no popup.
+     */
     LPopupRole *topmostPopup() const;
 
 /// @}
@@ -201,7 +222,8 @@ public:
     /*!
      * @brief Seat initialization.
      *
-     * Reimplement this virtual method if you want to be notified when the seat is initialized.\n
+     * Reimplement this virtual method if you want to be notified when the seat is initialized.
+     *
      * #### Default implementation
      * @snippet LSeatDefault.cpp initialized
      */
@@ -260,9 +282,9 @@ public:
     /*!
      * @brief New available output.
      *
-     * The outputPlugged() method is invoked by the graphic backend when a new output is available, for example when connecting an external monitor through a VGA or HDMI port.\n
+     * The outputPlugged() method is invoked by the graphic backend when a new output is available, for example when connecting an external monitor through an HDMI port.\n
      * You can reimplement this method to be notified when a new output is available.\n
-     * The default implementation initializes the new output and positions it at the end of the already initialized outputs.
+     * The default implementation initializes the new output and positions it at the end (right) of the already initialized outputs.
      *
      * ### Default Implementation
      * @snippet LSeatDefault.cpp outputPlugged
@@ -272,7 +294,7 @@ public:
     /*!
      * @brief Disconnected output.
      *
-     * The outputUnplugged() method is invoked by the graphical backend when an output is no longer available, for example when an external monitor connected to a VGA or HDMI port is disconnected.\n
+     * The outputUnplugged() method is invoked by the graphical backend when an output is no longer available, for example when an external monitor connected to an HDMI port is disconnected.\n
      * You can override this method to be notified when an output is no longer available.\n
      *
      * The default implementation removes the output from the compositor if it is initialized

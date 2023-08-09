@@ -79,7 +79,7 @@ void Surface::parentChanged()
         if (fullscreenView)
         {
             getView()->setParent(fullscreenView);
-            compositor()->raiseSurface(parent());
+            parent()->raise();
         }
     }
 }
@@ -255,7 +255,7 @@ void Surface::minimizedChanged()
             minimizeAnim = nullptr;
         }
 
-        compositor()->raiseSurface(this);
+        raise();
 
         if (toplevel())
             toplevel()->configure(toplevel()->states() | LToplevelRole::Activated);
@@ -271,7 +271,7 @@ LTexture *Surface::renderThumbnail()
 
     minimizeStartRect = LRect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 
-    LSceneView tmpView = LSceneView(minimizeStartRect.size() * view->bufferScale(), view->bufferScale());
+    LSceneView tmpView(minimizeStartRect.size() * view->bufferScale(), view->bufferScale());
     tmpView.setPos(minimizeStartRect.pos());
 
     LView *prevParent = getView()->parent();

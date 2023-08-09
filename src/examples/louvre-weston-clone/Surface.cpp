@@ -98,7 +98,7 @@ void Surface::minimizedChanged()
     else
     {
         requestNextFrame(false);
-        compositor()->raiseSurface(this);
+        raise();
 
         if (toplevel())
             toplevel()->configure(LToplevelRole::Activated);

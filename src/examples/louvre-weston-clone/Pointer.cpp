@@ -220,9 +220,9 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
             return;
 
         if (focusSurface()->parent())
-            compositor()->raiseSurface(focusSurface()->topmostParent());
+            focusSurface()->topmostParent()->raise();
         else
-            compositor()->raiseSurface(focusSurface());
+            focusSurface()->raise();
     }
     // Left button released
     else

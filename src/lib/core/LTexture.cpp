@@ -311,7 +311,7 @@ LTexture::BufferSourceType LTexture::sourceType() const
     return imp()->sourceType;
 }
 
-GLenum LTexture::format() const
+UInt32 LTexture::format() const
 {
     return imp()->format;
 }

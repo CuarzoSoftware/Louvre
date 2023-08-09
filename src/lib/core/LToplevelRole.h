@@ -47,14 +47,31 @@ public:
      */
     enum ResizeEdge : UInt32
     {
+        /// No edge
         NoEdge = 0,
+
+        /// Top edge
         Top = 1,
+
+        /// Bottom edge
         Bottom = 2,
+
+        /// Left edge
         Left = 4,
+
+        /// Top left corner
         TopLeft = 5,
+
+        /// Bottom left corner
         BottomLeft = 6,
+
+        /// Right edge
         Right = 8,
+
+        /// Top right corner
         TopRight = 9,
+
+        /// Bottom right corner
         BottomRight = 10
     };
 
@@ -165,59 +182,117 @@ public:
      */
     LSize calculateResizeSize(const LPoint &cursorPosDelta, const LSize &initialSize, ResizeEdge edge);
 
-    /// String with the application ID
+    /*!
+     * @brief Get the application ID associated with the toplevel window.
+     *
+     * @return A string containing the application ID (e.g., "com.cuarzosoftware.Desk"), can be nullptr.
+     */
     const char *appId() const;
 
-    /// Window title
+    /*!
+     * @brief Get the window title of the toplevel.
+     *
+     * @return A string representing the window title, or nullptr.
+     */
     const char *title() const;
 
-    /// Minimum size of the window geometry in surface coordinates
+    /*!
+     * @brief Get the minimum size of the window geometry in surface coordinates.
+     *
+     * If one of the axis is 0, it means it has no minimum size.
+     *
+     * @return The minimum size as an LSize object.
+     */
     const LSize &minSize() const;
 
-    /// Maximum size of the window geometry in surface coordinates
+    /*!
+     * @brief Get the maximum size of the window geometry in surface coordinates.
+     *
+     * If one of the axis is 0, it means it has no maximum size.
+     *
+     * @return The maximum size as an LSize object.
+     */
     const LSize &maxSize() const;
 
-    /// Indicates if the Toplevel is maximized
+    /*!
+     * @brief Check if the toplevel window is maximized.
+     *
+     * @return True if the toplevel is maximized; otherwise, false.
+     */
     bool maximized() const;
 
-    /// Indicates if the Toplevel is in fullscreen mode
+    /*!
+     * @brief Check if the toplevel window is in fullscreen mode.
+     *
+     * @return True if the toplevel is in fullscreen mode; otherwise, false.
+     */
     bool fullscreen() const;
 
-    /// Indicates if the Toplevel is active
+    /*!
+     * @brief Check if the toplevel window is currently active.
+     *
+     * @return True if the toplevel is active; otherwise, false.
+     */
     bool activated() const;
 
-    /// Flags with the current states of the Toplevel (#States)
+    /*!
+     * @brief Get the flags representing the current states of the toplevel window.
+     *
+     * @return The states of the toplevel window as a #States bitfield.
+     */
     States states() const;
 
     /*!
-     * Requests the client to change its decoration mode (the client may ignore the request).\n
-     * Must be followed by a configureC() event. */
+     * @brief Request the client to change its decoration mode.
+     *
+     * The client may choose to ignore the request. Must be followed by a configure() event.
+     *
+     * @param mode The desired decoration mode for the toplevel window.
+     */
     void setDecorationMode(DecorationMode mode);
 
-    /// Current decoration mode
+    /*!
+     * @brief Get the current decoration mode of the toplevel window.
+     *
+     * @return The current decoration mode.
+     */
     DecorationMode decorationMode() const;
 
-    /// Preferred decoration mode by the client. If 0 is returned means the client has no preferred mode.
+    /*!
+     * @brief Get the preferred decoration mode set by the client.
+     *
+     * If 0 is returned, it means the client has no preferred mode.
+     *
+     * @return The preferred decoration mode as a UInt32 value.
+     */
     UInt32 preferredDecorationMode() const;
 
-    /// xdg_toplevel resource
+    /*!
+     * @brief Get the xdg_toplevel resource associated with the toplevel window.
+     *
+     * @return A pointer to the xdg_toplevel resource.
+     */
     XdgShell::RXdgToplevel *xdgToplevelResource() const;
 
-    /// xdg_surface resource
+    /*!
+     * @brief Get the xdg_surface resource associated with the toplevel window.
+     *
+     * @return A pointer to the xdg_surface resource.
+     */
     XdgShell::RXdgSurface *xdgSurfaceResource() const;
 
-/// @name Métodos virtuales
+/// @name Virtual Methods
 /// @{
     /*!
      * @brief Position of the surface according to the role.
      *
-     * The default implementation of rolePosC() positions the Toplevel at the position assigned by the compositor
-     * with LSurface::setPosC() minus the (x,y) vector of its window geometry.
+     * The default implementation of rolePos() positions the Toplevel at the position assigned by the compositor
+     * with LSurface::setPos() minus the (x, y) coords of its window geometry.
      *
      * Reimplement this virtual method if you wish to define your own logic for positioning the Toplevel.
      *
      * #### Default Implementation
-     * @snippet LToplevelRoleDefault.cpp rolePosC
+     * @snippet LToplevelRoleDefault.cpp rolePos
      */
     virtual const LPoint &rolePos() const override;
 
@@ -293,9 +368,9 @@ public:
     virtual void setMinimizedRequest();
 
     /*!
-     * @brief Request to activate fullscreen mode
+     * @brief Request to set fullscreen mode
      *
-     * Reimplement this virtual method if you want to be notified when the client wants to show the Toplevel in fullscreen.
+     * Reimplement this virtual method if you want to be notified when the client wants to show the Toplevel in fullscreen mode.
      *
      * @param destOutput Output on which the Toplevel should be shown. If it is nullptr the compositor should choose the output.
      * #### Default implementation
@@ -304,7 +379,7 @@ public:
     virtual void setFullscreenRequest(LOutput *destOutput);
 
     /*!
-     * @brief Request to deactivate fullscreen mode
+     * @brief Request to unset fullscreen mode
      *
      * Reimplement this virtual method if you want to be notified when the client wants to deactivate fullscreen mode.
      *
@@ -331,9 +406,9 @@ public:
      * containing options to minimize, maximize and change to fullscreen mode.
      *
      * #### Default Implementation
-     * @snippet LToplevelRoleDefault.cpp showWindowMenuRequestS
+     * @snippet LToplevelRoleDefault.cpp showWindowMenuRequest
      */
-    virtual void showWindowMenuRequestS(Int32 x, Int32 y);
+    virtual void showWindowMenuRequest(Int32 x, Int32 y);
 
     /*!
      * @brief Change of active state
@@ -350,7 +425,7 @@ public:
      * @brief Change of maximum size
      *
      * Reimplement this virtual method if you want to be notified when the Toplevel changes its maximum size.\n
-     * You can access the maximum size with maxSizeS() or maxSizeC().
+     * You can access the maximum size with maxSize().
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp maxSizeChanged
@@ -361,7 +436,7 @@ public:
      * @brief Change of minimum size
      *
      * Reimplement this virtual method if you want to be notified when the Toplevel changes its minimum size.\n
-     * You can access the minimum size with minSizeS() or minSizeC().
+     * You can access the minimum size with minSize().
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp minSizeChanged
@@ -394,7 +469,7 @@ public:
      * @brief Window geometry change
      *
      * Reimplement this virtual method if you want to be notified when the Toplevel changes its window geometry.
-     * You can access the Toplevel's window geometry with windowGeometryS() or windowGeometryC().
+     * You can access the Toplevel's window geometry with windowGeometry().
      *
      * #### Default implementation
      * @snippet LToplevelRoleDefault.cpp geometryChanged

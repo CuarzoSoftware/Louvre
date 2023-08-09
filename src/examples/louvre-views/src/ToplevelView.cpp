@@ -63,7 +63,7 @@ static void onPointerButtonResizeArea(InputRect *rect, void *data, LPointer::But
 
         if (!toplevel->activated())
             toplevel->configure(toplevel->states() | LToplevelRole::Activated);
-        G::compositor()->raiseSurface(toplevel->surface());
+        toplevel->surface()->raise();
 
         if (data)
             toplevel->startResizeRequest((LToplevelRole::ResizeEdge)rect->id);

@@ -116,7 +116,7 @@ void Toplevel::maximizedChanged()
             surface()->setPos(prevRect.pos());
     }
 
-    compositor()->raiseSurface(surface());
+    surface()->raise();
     G::compositor()->updatePointerBeforePaint = true;
 }
 
@@ -183,7 +183,7 @@ void Toplevel::fullscreenChanged()
             }
         }
 
-        compositor()->raiseSurface(surface());
+        surface()->raise();
     }
     else
     {
@@ -240,7 +240,7 @@ void Toplevel::unsetFullscreen()
     while (!fullscreenOutput->fullscreenView->children().empty())
         fullscreenOutput->fullscreenView->children().back()->setParent(G::compositor()->surfacesLayer);
 
-    compositor()->raiseSurface(surface());
+    surface()->raise();
     surf->setPos(prevRect.pos());
     fullscreenOutput->fullscreenView->setVisible(false);
     fullscreenOutput->fullscreenToplevel = nullptr;

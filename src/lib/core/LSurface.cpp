@@ -375,6 +375,17 @@ bool LSurface::isSubchildOf(LSurface *parent) const
     return false;
 }
 
+void LSurface::raise()
+{
+    if (parent())
+    {
+        parent()->raise();
+        return;
+    }
+
+    compositor()->imp()->raiseChildren(this);
+}
+
 Louvre::LSurface *LSurface::prevSurface() const
 {
     if (this == compositor()->surfaces().front())

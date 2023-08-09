@@ -15,7 +15,7 @@
  * * LLayerView: This view is used only as a container for other views and is not renderable on its own.
  * * LSurfaceView: This view can be used to display client surfaces.
  * * LTextureView: This view can be used to display textures.
- * * LSolidColor: This view can be used to display solid color rectangles.
+ * * LSolidColorView: This view can be used to display solid color rectangles.
  * * LSceneView: This view is a scene on its own, and its content is rendered in its own framebuffer.
  *
  * ## Stacking
@@ -63,7 +63,7 @@
  *
  * If the view is renderable, the paintRect() method must be implemented.\n
  * This method provides the src rect within the view and the dst rect within the destination framebuffer to render in surface coordinates, along with
- * the scale that must be used and the LPainter that must be used.
+ * the scale that must be used and LPainter.
  *
  * ### Damage
  *
@@ -90,14 +90,17 @@
  *
  * ## Input events
  *
- * Scenes can trigger specific input events on views through the pointerEnteredEvent(), pointerMovedEvent(), keyEvent(), and other related methods.
+ * Scenes can trigger specific input events on views through the pointerEnterEvent(), pointerMoveEvent(), keyEvent(), and other related methods.
  * Implement these virtual methods to listen and respond to those events if needed.
  */
 class Louvre::LView : public LObject
 {
 public:
-
     LView(UInt32 type, LView *parent = nullptr);
+
+    LView(const LView&) = delete;
+    LView& operator= (const LView&) = delete;
+
     virtual ~LView();
 
     /// Types of views included with Louvre
@@ -210,68 +213,68 @@ public:
     void enableParentOffset(bool enabled);
 
     /*!
- * @brief Get the current position of the view with applied transformations.
- *
- * This method returns the current position of the view with any applied transformations.
- *
- * @returns The position of the view.
- */
+     * @brief Get the current position of the view with applied transformations.
+     *
+     * This method returns the current position of the view with any applied transformations.
+     *
+     * @returns The position of the view.
+     */
     const LPoint& pos() const;
 
     /*!
- * @brief Get the current size of the view with applied transformations.
- *
- * This method returns the current size of the view with any applied transformations.
- *
- * @returns The size of the view.
- */
+     * @brief Get the current size of the view with applied transformations.
+     *
+     * This method returns the current size of the view with any applied transformations.
+     *
+     * @returns The size of the view.
+     */
     const LSize& size() const;
 
     /*!
- * @brief Check if the view is clipped to the current parent view rect.
- *
- * This function returns true if the view is clipped to the current parent view rect, false otherwise.
- *
- * @returns True if the view is clipped to the current parent view rect, false otherwise.
- */
+     * @brief Check if the view is clipped to the current parent view rect.
+     *
+     * This function returns true if the view is clipped to the current parent view rect, false otherwise.
+     *
+     * @returns True if the view is clipped to the current parent view rect, false otherwise.
+     */
     bool parentClippingEnabled() const;
 
     /*!
- * @brief Enable or disable clipping of the view to the current parent view rect.
- *
- * If enabled, the view will be clipped to the current parent view rect.
- *
- * @param enabled If true, the view will be clipped to the current parent view rect.
- */
+     * @brief Enable or disable clipping of the view to the current parent view rect.
+     *
+     * If enabled, the view will be clipped to the current parent view rect.
+     *
+     * @param enabled If true, the view will be clipped to the current parent view rect.
+     */
     void enableParentClipping(bool enabled);
 
     /*!
- * @brief Check if the view receives pointer and touch events.
- *
- * This function returns true if the view receives pointer and touch events.
- * However, keyboard events are always received regardless of this setting.
- *
- * @returns True if the view receives pointer and touch events, false otherwise.
- */
+     * @brief Check if the view receives pointer and touch events.
+     *
+     * This function returns true if the view receives pointer and touch events.
+     * However, keyboard events are always received regardless of this setting.
+     *
+     * @returns True if the view receives pointer and touch events, false otherwise.
+     */
     bool inputEnabled() const;
 
     /*!
- * @brief Enable or disable pointer and touch events for the view.
- *
- * If enabled, the view will receive pointer and touch events.
- * However, keyboard events are always received regardless of this setting.
- *
- * @param enabled If true, the view will receive pointer and touch events.
- */
+     * @brief Enable or disable pointer and touch events for the view.
+     *
+     * If enabled, the view will receive pointer and touch events.
+     * However, keyboard events are always received regardless of this setting.
+     *
+     * @param enabled If true, the view will receive pointer and touch events.
+     */
     void enableInput(bool enabled);
 
     /*!
- * @brief Check if scaling is enabled for the view's size.
- *
- * This function returns true if the view's size is scaled using the scaling vector, false otherwise.
- *
- * @returns True if the view's size is scaled, false otherwise.
- */
+     * @brief Check if scaling is enabled for the view's size.
+     *
+     * This function returns true if the view's size is scaled using the scaling vector, false otherwise.
+     *
+     * @returns True if the view's size is scaled, false otherwise.
+     */
     bool scalingEnabled() const;
 
     /*!
@@ -587,6 +590,8 @@ public:
      * This function is used by LSceneView to request the view to paint a specified rectangular area
      * on the current framebuffer. The painting is performed using the provided LPainter object
      * with the specified source and destination surface coordinates, size, scaling, and alpha value.
+     *
+    * @note Alternatively, you have the option to use your own custom OpenGL shaders/program for rendering, in place of the provided LPainter.
      *
      * @param p The LPainter object to perform the painting.
      * @param srcX The source x-coordinate within the view to copy from.
