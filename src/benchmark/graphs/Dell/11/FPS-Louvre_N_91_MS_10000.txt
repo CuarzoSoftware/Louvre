@@ -1,6 +1,0 @@
-RESULTS
-Output Scale: 1
-Maximized Surface Size: 1366 x 736
-Total Frames: 508
-Milisegundos: 10028
-FPS: 50.658157
