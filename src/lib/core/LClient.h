@@ -38,7 +38,7 @@ public:
      * Sends a Ping event to the client which must ack by invoking the LClient::pong() virtual method.\n
      * Used to detect if a client is unresponsive.
      *
-     * @param serial Serial that the client must reply when calls LCLient::pong().
+     * @param serial Serial that the client must reply when calls LClient::pong().
      */
     void ping(UInt32 serial) const;
 

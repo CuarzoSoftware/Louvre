@@ -70,7 +70,7 @@ using namespace std;
  * @section Order
  *
  * The library uses a list to keep track of all the surfaces created by clients, which is accessible through LCompositor::surfaces().\n
- * This list maintains the order of the surfaces on the Z-axis defined by the protocols of their roles. Nevertheless, it is possible to reorder the surfaces respecting these hierarchies with LCompositor::raiseSurface().\n
+ * This list maintains the order of the surfaces on the Z-axis defined by the protocols of their roles. Nevertheless, it is possible to reorder the surfaces respecting these hierarchies with the raise() method.\n
  * The surfaces are rendered by default following the order of the list, so the first ones are located in the background and the last ones in the front.\n
  * If you want to use your own list, you can make use of the virtual constructor and destructor of LSurface (LCompositor::createSurfaceRequest() and LCompositor::destroySurfaceRequest() respectively)
  * to listen when clients create or delete a surface.\n

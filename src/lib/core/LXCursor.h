@@ -6,7 +6,7 @@
 /**
  * @brief Representation of an XCursor
  *
- * The LXCursor class represents a [XCursor](https://www.x.org/archive/X11R7.7/doc/man/man3/Xcursor.3.xhtml) loaded with the LCursor::loadXCursorB() method.
+ * The LXCursor class represents a [XCursor](https://www.x.org/archive/X11R7.7/doc/man/man3/Xcursor.3.xhtml) loaded with the loadXCursorB() method.
  * It provides access to its OpenGL texture and hotspot.
  */
 class Louvre::LXCursor

@@ -11,7 +11,7 @@
   *
   * A role defines the type and functionality of a surface. Some commonly known roles are Toplevel and Popup.
   *
-  * @warning This class is primarily for library maintainers or individuals who wish to implement additional roles beyond those provided by the library.
+  * @note This class is primarily for library maintainers or individuals who wish to implement additional roles beyond those provided by the library.
   *
   * This class is responsible, among other things, for:
   *

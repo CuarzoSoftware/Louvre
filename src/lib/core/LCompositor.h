@@ -146,7 +146,7 @@ public:
     virtual void cursorInitialized();
 
     /*!
-     * Returns the current compositor state. Check the LCompositor::CompositorStates enum.
+     * Returns the current compositor state. Check the LCompositor::CompositorState enum.
      */
     CompositorState state() const;
 
