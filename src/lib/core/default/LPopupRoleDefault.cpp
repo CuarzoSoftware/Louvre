@@ -12,7 +12,7 @@
 
 using namespace Louvre;
 
-//! [rolePosC]
+//! [rolePos]
 const LPoint &LPopupRole::rolePos() const
 {
     if (!surface()->parent())
@@ -460,14 +460,7 @@ const LPoint &LPopupRole::rolePos() const
 
     return m_rolePos;
 }
-//! [rolePosC]
-
-//! [pong]
-void LPopupRole::pong(UInt32)
-{
-    /* No default implementation */
-}
-//! [pong]
+//! [rolePos]
 
 //! [grabSeatRequest]
 void LPopupRole::grabSeatRequest(Wayland::GSeat *seatGlobal)

@@ -76,12 +76,6 @@ void LPopupRole::sendPopupDoneEvent()
     }
 }
 
-void LPopupRole::sendRepositionedEvent(UInt32 token)
-{
-    XdgShell::RXdgPopup *res = (XdgShell::RXdgPopup*)resource();
-    res->repositioned(token);
-}
-
 const LRect &LPopupRole::windowGeometry() const
 {
     return xdgSurfaceResource()->imp()->currentWindowGeometry;

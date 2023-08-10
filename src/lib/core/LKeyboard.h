@@ -13,6 +13,13 @@ using namespace Louvre::Protocols;
  * Allows you to assign the keyboard map, send events to client surfaces and configure parameters such as
  * the repeat rate when holding down a key.\n
  * There is a single instance of LKeyboard, which can be accessed from LSeat::keyboard().
+ *
+ * ### Wayland Events
+ *
+ * To send keyboard events to clients, you must first assign focus to a surface using one of the setFocus() variants.\n
+ * This process entails removing focus from any previously focused surface. As a result, all subsequent keyboard events will be directed to the currently focused surface.
+ *
+ * @note It's important to note that only one surface can be focused at a time to receive keyboard input.
  */
 class Louvre::LKeyboard : public LObject
 {

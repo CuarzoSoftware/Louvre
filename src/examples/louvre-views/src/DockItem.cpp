@@ -28,7 +28,7 @@ DockItem::~DockItem()
 void DockItem::pointerEnterEvent(const LPoint &localPos)
 {
     L_UNUSED(localPos);
-    setOpacity(0.9f);
+    setOpacity(0.8f);
 }
 
 void DockItem::pointerLeaveEvent()
@@ -42,7 +42,7 @@ void DockItem::pointerButtonEvent(LPointer::Button button, LPointer::ButtonState
         return;
 
     if (state == LPointer::Pressed)
-        setOpacity(0.85f);
+        setOpacity(0.7f);
     else
         surface->unminimize(this);
 }

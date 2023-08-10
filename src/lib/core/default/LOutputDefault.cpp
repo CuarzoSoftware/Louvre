@@ -86,10 +86,12 @@ void LOutput::resizeGL()
 }
 //! [resizeGL]
 
+//! [moveGL]
 void LOutput::moveGL()
 {
     repaint();
 }
+//! [moveGL]
 
 //! [uninitializeGL]
 void LOutput::uninitializeGL()

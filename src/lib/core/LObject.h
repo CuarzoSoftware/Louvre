@@ -4,9 +4,8 @@
 #include <LNamespaces.h>
 
 /*!
- * @brief Base class.
+ * @brief Base class for Louvre objects.
  */
-
 class Louvre::LObject
 {
 public:
@@ -24,7 +23,7 @@ public:
 
     /*!
      * Returns a pointer to the cursor implementation provided by the library.\n
-     * Must be accessed within or after the cursorInitialized() virtual method is invoked.\n
+     * Must be accessed within or after the LCompositor::initialized() or LCompositor::cursorInitialized() virtual methods are invoked.\n
      * If the cursor has not yet been initialized, this method returns nullptr.
      */
     static LCursor *cursor();

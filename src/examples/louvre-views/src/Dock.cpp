@@ -3,6 +3,7 @@
 #include "Compositor.h"
 #include "Output.h"
 #include "DockItem.h"
+#include "Pointer.h"
 #include <LTextureView.h>
 #include <LCursor.h>
 #include <LLog.h>
@@ -154,6 +155,9 @@ void Dock::pointerEnterEvent(const LPoint &localPos)
 void Dock::pointerMoveEvent(const LPoint &localPos)
 {
     L_UNUSED(localPos);
+
+    if (visiblePercent == 1.f && !G::pointer()->cursorOwner)
+        cursor()->useDefault();
 
     if (showResistanceCount > showResistance)
         show();

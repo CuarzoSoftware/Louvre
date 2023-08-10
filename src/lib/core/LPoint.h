@@ -8,86 +8,85 @@ using namespace Louvre;
 /*!
  * @brief Template for 2D vectors
  *
- * La clase LPointTemplate es un template para crear vectores de dos dimensiones.\n
- * La librería utiliza este template para generar las clases Louvre::LPoint y Louvre::LSize las cuales trabajan con
- * enteros de 32 bits y Louvre::LPointF y Louvre::LSizeF que trabajan con flotantes de 32 bits.
- *
+ * The LPointTemplate class is a template for creating two-dimensional vectors.\n
+ * The library uses this template to generate the classes Louvre::LPoint and Louvre::LSize, which work with
+ * 32-bit integers, and Louvre::LPointF and Louvre::LSizeF, which work with 32-bit floating-point numbers.
  */
 template <class TA, class TB>
 class Louvre::LPointTemplate
 {
 public:
 
-    /// Inicializa el vector con (0,0).
+    /// Initializes the vector with (0,0).
     inline LPointTemplate() : m_x(0), m_y(0) {}
 
-    /// Inicializa el vector con (x,y).
-    inline LPointTemplate(TA x, TA y) : m_x(x), m_y(y){}
+    /// Initializes the vector with (x,y).
+    inline LPointTemplate(TA x, TA y) : m_x(x), m_y(y) {}
 
-    /// Inicializa el vector con (x,y).
-    inline LPointTemplate(TB x, TB y) : m_x(x), m_y(y){}
+    /// Initializes the vector with (x,y).
+    inline LPointTemplate(TB x, TB y) : m_x(x), m_y(y) {}
 
-    /// Inicializa el vector con (n,n).
-    inline LPointTemplate(TA n) : m_x(n), m_y(n){}
+    /// Initializes the vector with (n,n).
+    inline LPointTemplate(TA n) : m_x(n), m_y(n) {}
 
-    /// Inicializa el vector con (n,n)
-    inline LPointTemplate(TB n) : m_x(n), m_y(n){}
+    /// Initializes the vector with (n,n).
+    inline LPointTemplate(TB n) : m_x(n), m_y(n) {}
 
-    /// Constructor de copia
+    /// Copy constructor
     inline LPointTemplate(const LPointTemplate<TB,TA> &point)
     {
         m_x = point.m_x;
         m_y = point.m_y;
     }
 
-    /// Primera componente del vector
-    inline TA x()       const   {return m_x;}
+    /// First component of the vector
+    inline TA x() const { return m_x; }
 
-    /// Segunda componente del vector
-    inline TA y()       const   {return m_y;}
+    /// Second component of the vector
+    inline TA y() const { return m_y; }
 
-    /// Primera componente del vector (equivalente a x())
-    inline TA w()       const   {return m_x;}
+    /// First component of the vector (equivalent to x())
+    inline TA w() const { return m_x; }
 
-    /// Segunda componente del vector (equivalente a y())
-    inline TA h()       const   {return m_y;}
+    /// Second component of the vector (equivalent to y())
+    inline TA h() const { return m_y; }
 
-    /// Primera componente del vector (equivalente a x())
-    inline TA width()   const   {return m_x;}
+    /// First component of the vector (equivalent to x())
+    inline TA width() const { return m_x; }
 
-    /// Segunda componente del vector (equivalente a y())
-    inline TA height()  const   {return m_y;}
+    /// Second component of the vector (equivalent to y())
+    inline TA height() const { return m_y; }
 
-    /// Multiplicación de las componentes (x*y)
-    inline TA area()    const   {return m_x*m_y;}
+    /// Product of the components (x*y)
+    inline TA area() const { return m_x * m_y; }
 
-    /// Asigna la primera componente del vector
-    inline void setX(TA x){m_x = x;}
+    /// Assigns the value to the first component of the vector
+    inline void setX(TA x) { m_x = x; }
 
-    /// Asigna la segunda componente del vector
-    inline void setY(TA y){m_y = y;}
+    /// Assigns the value to the second component of the vector
+    inline void setY(TA y) { m_y = y; }
 
-    /// Asigna la primera componente del vector (equivalente a setX())
-    inline void setW(TA x){m_x = x;}
+    /// Assigns the value to the first component of the vector (equivalent to setX())
+    inline void setW(TA x) { m_x = x; }
 
-    /// Asigna la segunda componente del vector (equivalente a setY())
-    inline void setH(TA y){m_y = y;}
+    /// Assigns the value to the second component of the vector (equivalent to setY())
+    inline void setH(TA y) { m_y = y; }
 
-    /// Asigna la primera componente del vector (equivalente a setX())
-    inline void setWidth(TA x){m_x = x;}
+    /// Assigns the value to the first component of the vector (equivalent to setX())
+    inline void setWidth(TA x) { m_x = x; }
 
-    /// Asigna la segunda componente del vector (equivalente a setY())
-    inline void setHeight(TA y){m_y = y;}
+    /// Assigns the value to the second component of the vector (equivalent to setY())
+    inline void setHeight(TA y) { m_y = y; }
 
-    /// Asigna la segunda componente manteniendo la proporción con la primera
-    inline LPointTemplate<TA,TB> constrainedToHeight(TA size) const
+    /// Assigns the second component while maintaining proportion with the first
+    inline LPointTemplate<TA, TB> constrainedToHeight(TA size) const
     {
         LPointTemplate point;
 
-        if(size == 0 || h() == 0)
+        if (size == 0 || h() == 0)
             return point;
 
-        point.setW((w()*size)/h());
+        point.setW((w() * size) / h());
         point.setH(size);
 
         return point;

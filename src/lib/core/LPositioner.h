@@ -9,15 +9,15 @@
  *
  * The LPositioner class defines the rules by which a Popup should be positioned relative to the anchor point of its parent.\n
  * Each LPopupRole has its own LPositioner accessible through LPopupRole::positioner().\n
- * The library implements the default LPositioner rules in LPopupRole::rolePosC(), therefore this section
+ * The library implements the default LPositioner rules in LPopupRole::rolePos(), therefore this section
  * is for educational purposes only.
  *
  * @section Anchor-Rect
  *
- * The anchor rectangle (accessible through anchorRectS() or anchorRectC()) is a sub-rectangle of the window geometry of the Popup's parent surface.\n
+ * The anchor rectangle (accessible through anchorRect()) is a sub-rectangle of the window geometry of the Popup's parent surface.\n
  * Within this rectangle, an anchor point (accessible through anchor()) is defined, which the Popup uses as a reference to position itself.\n
  * The anchor point can be located at the center, corners, or midpoint of the edges of the anchor rectangle (gray and blue points).\n
- * For example, in the following image, a Popup is positioned using the anchor point Anchor::AnchorRight and Anchor::AnchorBottomLeft.\n
+ * For example, in the following image, a Popup is positioned using the anchor point LPositioner::AnchorRight and LPositioner::AnchorBottomLeft.\n
  *
  * <IMG SRC="https://lh3.googleusercontent.com/dCpt0Kl2MBnwpxf7VUiphJ28Tdrxh-3jmNIG-9GyK9nt_-3vCMuj1vgmYajPnYd9CH51fIBYocCUlBKsdXAGqQnufFxYZ1whQ0T6pIfCO1E6NHJj-ii2phQY-kRdUe2lZAnqF0mvyA=w2400">
  *
@@ -36,8 +36,7 @@
  * Specific rules to adjust the position of Popups when they are restricted are defined by the client in constraintAdjustment().\n
  * Typically, it first tries to invert the gravity and anchor point on the axes where the restriction occurs (for example, in nested context menus), if the Popup is still restricted, it tries to slide it along the relevant axes,
  * if this still doesn't solve the problem, the Popup is configured to adjust its size and if finally none of these options work, the original position is used.\n
- * For more information on LPositioner rules, you can analyze the implementation of LPopupRole::rolePosC() or consult the documentation of the [xdg_shell::positioner](https://wayland.app/protocols/xdg-shell#xdg_positioner) interface.
- *
+ * For more information on LPositioner rules, you can analyze the implementation of LPopupRole::rolePos() or consult the documentation of the [xdg_shell::positioner](https://wayland.app/protocols/xdg-shell#xdg_positioner) interface.
  */
 class Louvre::LPositioner : public LObject
 {

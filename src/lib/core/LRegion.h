@@ -8,73 +8,158 @@
 using namespace std;
 
 /*!
- * @brief Group of non overlapping rectangles
+ * @brief Collection of non-overlapping rectangles
  *
- * The LRegion class offers an efficient way to create sets of rectangles without overlapping their geometries.\n
- * It has methods for performing additions, subtractions, intersections, etc of rectangles.\n
- * It is used by the library to calculate the damage of surfaces, define their opaque, translucent, and input regions.\n
- * Internally, it uses the algorithm and methods of the [Pixman](http://www.pixman.org/) library.
+ * The LRegion class provides an efficient mechanism for creating sets of rectangles that do not overlap in their geometries.
+ * It offers methods for performing operations such as additions, subtractions, intersections, and more on rectangles.
+ * This class is extensively used by the library for tasks like calculating surface damage, defining opaque, translucent, and input regions, among others.
+ * Internally, LRegion employs the algorithm and methods from the [Pixman](http://www.pixman.org/) library.
  */
 class Louvre::LRegion
 {
 public:
-
-    /// Constructor
+    /**
+     * @brief Constructor for creating an empty LRegion.
+     */
     LRegion();
 
-    /// Destructor
+    /**
+     * @brief Destructor for freeing resources associated with LRegion.
+     */
     ~LRegion();
 
-    /// Copy constructor
-    LRegion(const LRegion &);
+    /**
+     * @brief Copy constructor for creating an LRegion by copying another LRegion.
+     *
+     * @param other The LRegion to copy from.
+     */
+    LRegion(const LRegion &other);
 
-    /// The assignment operator
-    LRegion &operator=( const LRegion &);
+    /**
+     * @brief Assignment operator for assigning the content of one LRegion to another.
+     *
+     * @param other The LRegion to assign from.
+     * @return A reference to the modified LRegion.
+     */
+    LRegion &operator=(const LRegion &other);
 
-    /// Deletes all rects
+    /**
+     * @brief Clears the LRegion, deleting all rectangles.
+     */
     void clear();
 
-    /// Adds a rect (union)
+    /**
+     * @brief Adds a rectangle to the LRegion (union operation).
+     *
+     * @param rect The rectangle to add.
+     */
     void addRect(const LRect &rect);
+
+    /**
+     * @brief Adds a rectangle to the LRegion (union operation).
+     *
+     * @param x The x-coordinate of the rectangle's top-left corner.
+     * @param y The y-coordinate of the rectangle's top-left corner.
+     * @param w The width of the rectangle.
+     * @param h The height of the rectangle.
+     */
     void addRect(Int32 x, Int32 y, Int32 w, Int32 h);
 
-    /// Adds a region (union)
+    /**
+     * @brief Adds the content of another LRegion to this LRegion (union operation).
+     *
+     * @param region The LRegion to add.
+     */
     void addRegion(const LRegion &region);
 
-    /// Subtracts a rect
+    /**
+     * @brief Subtracts a rectangle from the LRegion.
+     *
+     * @param rect The rectangle to subtract.
+     */
     void subtractRect(const LRect &rect);
 
-    /// Subtracts a region
+    /**
+     * @brief Subtracts another LRegion from this LRegion.
+     *
+     * @param region The LRegion to subtract.
+     */
     void subtractRegion(const LRegion &region);
 
-    /// Intersects a region
+    /**
+     * @brief Intersects this LRegion with another LRegion.
+     *
+     * @param region The LRegion to intersect with.
+     */
     void intersectRegion(const LRegion &region);
 
-    /// Multiplies the components of each rectangle by the factor
+    /**
+     * @brief Multiplies the components of each rectangle in the LRegion by the given factor.
+     *
+     * @param factor The factor to multiply by.
+     */
     void multiply(Float32 factor);
 
-    /// @returns true if the region containts the point
+    /**
+    * @brief Check if the LRegion contains a specific point.
+     *
+     * @param point The point to check.
+     * @return true if the region contains the point, false otherwise.
+     */
     bool containsPoint(const LPoint &point) const;
 
-    /// Traslates each rect by the offset
+    /**
+     * @brief Offset each rectangle in the LRegion by the specified offset.
+     *
+     * @param offset The offset to apply.
+     */
     void offset(const LPoint &offset);
 
-    /// Relaces the current region by **regionToCopy**
+    /**
+     * @brief Replace the current LRegion with the content of another LRegion.
+     *
+     * @param regionToCopy The LRegion to copy from.
+     */
     void copy(const LRegion &regionToCopy);
 
-    /// Inverts the region contained within rect
+    /**
+     * @brief Invert the region contained within the specified rectangle.
+     *
+     * @param rect The rectangle to define the area of inversion.
+     */
     void inverse(const LRect &rect);
 
-    /// @returns true if the region has zero rects
+    /**
+     * @brief Check if the LRegion is empty (contains no rectangles).
+     *
+     * @return true if the region is empty, false otherwise.
+     */
     bool empty() const;
 
-    /// Clips the region to the area given by the rect
+    /**
+     * @brief Clips the LRegion to the area defined by the specified rectangle.
+     *
+     * @param rect The rectangle used for clipping.
+     */
     void clip(const LRect &rect);
 
-    /// List of rects that make up the region
+    /**
+     * @brief Retrieves the list of rectangles that form the LRegion.
+     *
+     * @return A reference to a vector containing LRect objects.
+     *
+     * @note If performance is a concern, consider using the other rects() variant that allows you to access the rectangles using the native Pixman method.
+     */
     const vector<LRect> &rects() const;
 
-    /// List of rects that make up the region
+    /**
+     * @brief Retrieves the list of rectangles that form the LRegion.
+     *
+     * @param n A pointer to an integer that will be set to the number of rectangles.
+     * @return A pointer to an array of LBox objects representing the rectangles.
+     *
+     * @note This variant allows you to access the rectangles using the native Pixman method, which is considerably faster.
+     */
     LBox *rects(Int32 *n) const;
 private:
     mutable bool m_changed = false;
