@@ -44,7 +44,7 @@ void LView::LViewPrivate::damageScene(LSceneView *s)
                 continue;
 
             if (pair.second.o)
-                s->addDamage(pair.second.o, pair.second.prevParentClipping);
+                s->addDamage(pair.second.o, pair.second.prevClipping);
         }
 
         for (LView *child : children)

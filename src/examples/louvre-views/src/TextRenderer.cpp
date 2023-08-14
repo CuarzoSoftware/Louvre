@@ -66,12 +66,51 @@ TextRenderer::~TextRenderer()
     }
 }
 
-LTexture *TextRenderer::renderText(const char *text, Int32 fontSize, UChar8 r, UChar8 g, UChar8 b)
+LTexture *TextRenderer::renderText(const char *text, Int32 fontSize, Int32 maxWidth, UChar8 r, UChar8 g, UChar8 b)
 {
+    char *clippedText = nullptr;
+
     LSize bufferSize = calculateTextureSize(text, fontSize);
 
     if (bufferSize.area() == 0)
         return nullptr;
+
+    if (maxWidth != -1 && bufferSize.w() > maxWidth)
+    {
+        Float32 textLen = strlen(text);
+        Int32 newLen =  Float32(maxWidth * textLen) / Float32(bufferSize.w()) - 4.f;
+
+        if (newLen < 4)
+            return nullptr;
+
+        clippedText = new char[newLen + 4];
+
+        memcpy((void*)clippedText, text, newLen);
+        clippedText[newLen + 0] = '.';
+        clippedText[newLen + 1] = '.';
+        clippedText[newLen + 2] = '.';
+        clippedText[newLen + 3] = '\0';
+
+        bufferSize = calculateTextureSize(clippedText, fontSize);
+    }
+    else
+    {
+        clippedText = (char*)text;
+    }
+
+    bufferSize.setW(bufferSize.w() + (bufferSize.w() % 2));
+    bufferSize.setH(bufferSize.h() + (bufferSize.h() % 2));
+
+    UChar32 *utf32 = toUTF32(clippedText);
+    UChar32 *character = utf32;
+
+    if (!character)
+    {
+        if (clippedText != text)
+            delete[] clippedText;
+
+        return nullptr;
+    }
 
     FT_UInt charIndex;
 
@@ -80,28 +119,27 @@ LTexture *TextRenderer::renderText(const char *text, Int32 fontSize, UChar8 r, U
     Int64 x_off;
     Int64 y_off;
 
-    UChar8 *buffer = (UChar8*)calloc(1, bufferSize.area()*4);
-
     // Draw glyps to buffer
     UInt32 totalAdvanceX = 0;
-    const char *character = text;
 
-    while (*character != '\0')
+    UChar8 *buffer = (UChar8*)calloc(1, bufferSize.area() * 4);
+
+    while (*character != 0)
     {
         charIndex = FT_Get_Char_Index(face, (FT_ULong)*character);
 
         if (charIndex == 0)
         {
             LLog::error("Failed to get FT_Face char index.");
-            free(buffer);
-            return nullptr;
+            character++;
+            continue;
         }
 
         if (FT_Load_Glyph(face, charIndex, FT_LOAD_DEFAULT) != 0)
         {
             LLog::error("Failed to load FT_Face default.");
-            free(buffer);
-            return nullptr;
+            character++;
+            continue;
         }
 
         glyph_width = face->glyph->metrics.width / 64;
@@ -127,16 +165,24 @@ LTexture *TextRenderer::renderText(const char *text, Int32 fontSize, UChar8 r, U
         character++;
     }
 
+    free(utf32);
+
     LTexture *texture = new LTexture();
 
     if (!texture->setDataB(bufferSize, bufferSize.w()*4, DRM_FORMAT_ABGR8888, buffer))
     {
+        if (clippedText != text)
+            delete[] clippedText;
+
         free(buffer);
         delete texture;
         return nullptr;
     }
 
     free(buffer);
+
+    if (clippedText != text)
+        delete[] clippedText;
 
     return texture;
 }
@@ -156,21 +202,28 @@ LSize TextRenderer::calculateTextureSize(const char *text, Int32 fontSize)
     bufferSize.setH((face->size->metrics.ascender - face->size->metrics.descender) >> 6);
 
     // Calc min buffer width and height to fit all characters
-    const char *character = text;
-    while (*character != '\0')
+    UChar32 *utf32 = toUTF32(text);
+    UChar32 *character = utf32;
+
+    if (!character)
+        return 0;
+
+    while (*character != 0)
     {
         charIndex = FT_Get_Char_Index(face, (FT_ULong)*character);
 
         if (charIndex == 0)
         {
             LLog::error("Failed to get FT_Face char index.");
-            return bufferSize;
+            character++;
+            continue;
         }
 
         if (FT_Load_Glyph(face, charIndex, FT_LOAD_ADVANCE_ONLY) != 0)
         {
             LLog::error("Failed to load FT_Face advance.");
-            return bufferSize;
+            character++;
+            continue;
         }
 
         bufferSize.setW(bufferSize.w() + (face->glyph->metrics.horiAdvance >> 6));
@@ -178,5 +231,60 @@ LSize TextRenderer::calculateTextureSize(const char *text, Int32 fontSize)
         character++;
     }
 
+    free(utf32);
+
     return bufferSize;
+}
+
+UChar32 *TextRenderer::toUTF32(const char *utf8Str)
+{
+    if (!utf8Str)
+        return nullptr;
+
+    if (*utf8Str == '\0')
+        return nullptr;
+
+    UErrorCode errorCode = U_ZERO_ERROR;
+
+    Int32 utf8Len = strlen(utf8Str) + 1;
+    Int32 str16Capacity = utf8Len;
+    UChar utf16Str[str16Capacity * 2];
+    Int32 utf16Len = 0;
+
+    // Convert UTF-8 to UTF-16
+    u_strFromUTF8(utf16Str,
+                  str16Capacity,
+                  &utf16Len,
+                  utf8Str,
+                  utf8Len,
+                  &errorCode);
+
+    if (U_FAILURE(errorCode))
+    {
+        LLog::error("Error converting UTF-8 to UTF-32: %s\n", u_errorName(errorCode));
+        return nullptr;
+    }
+
+    Int32 str32Capacity = utf16Len + 1;
+
+    UChar32 *utf32Str = (UChar32*)malloc(str32Capacity * 4);
+    Int32 utf32Len = 0;
+
+    u_strToUTF32(utf32Str,
+                 str32Capacity,
+                 &utf32Len,
+                 utf16Str,
+                 utf16Len,
+                 &errorCode);
+
+    if (U_FAILURE(errorCode))
+    {
+        LLog::error("Error converting UTF-8 to UTF-32: %s\n", u_errorName(errorCode));
+        free(utf32Str);
+        return nullptr;
+    }
+
+    utf32Str[utf32Len - 1] = 0;
+
+    return utf32Str;
 }

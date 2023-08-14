@@ -181,7 +181,7 @@ static Int32 processInput(int, unsigned int, void *userData)
         libinput_event_destroy(ev);
         libinput_dispatch(data->li);
     }
-    return 0;
+    return 1;
 }
 
 bool LInputBackend::initialize(const LSeat *seat)

@@ -106,6 +106,7 @@ namespace Louvre
     // Utils
     class LLog;
     class LTime;
+    class LTimer;
     template <class TA, class TB> class LPointTemplate;
     template <class TA, class TB> class LRectTemplate;
 

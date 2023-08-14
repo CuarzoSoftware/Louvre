@@ -22,6 +22,11 @@ Topbar::Topbar(Output *output) : LLayerView(G::compositor()->overlayLayer)
     background->enableBlockPointer(false);
     background->setPos(0, 0);
 
+    // Todo USE textures of another topbar if exists
+
+    appName = new LTextureView(G::toplevelTextures().defaultTopbarAppName, background);
+    appName->setBufferScale(2);
+
     clock = new LTextureView(nullptr, background);
     clock->enableInput(false);
     clock->setBufferScale(2);
@@ -35,6 +40,7 @@ Topbar::~Topbar()
     output->topbar = nullptr;
     delete background;
     delete clock;
+    delete appName;
 }
 
 void Topbar::show()
@@ -108,6 +114,7 @@ void Topbar::update()
         background->setSize(output->size().w(), TOPBAR_HEIGHT);
         setSize(output->size().w(), TOPBAR_HEIGHT);
         background->setVisible(true);
+        appName->setPos(20, (background ->size().h() - appName->size().h()) / 2);
     }
 
     clock->setPos(size().w() - clock->size().w() - 8,

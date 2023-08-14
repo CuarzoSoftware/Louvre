@@ -210,7 +210,7 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
         else
         {
             seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
-            seat()->keyboard()->setFocus(nullptr);
+            //seat()->keyboard()->setFocus(nullptr);
             seat()->pointer()->dismissPopups();
         }
 

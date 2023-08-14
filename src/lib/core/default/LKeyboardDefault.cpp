@@ -74,3 +74,10 @@ void LKeyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
     }
 }
 //! [keyEvent]
+
+//! [focusChanged]
+void LKeyboard::focusChanged()
+{
+    /* No default implementation. */
+}
+//! [focusChanged]

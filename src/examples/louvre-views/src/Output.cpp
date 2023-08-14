@@ -38,12 +38,31 @@ void Output::loadWallpaper()
     }
 
     char wallpaperPath[256];
-    sprintf(wallpaperPath, "%s/.config/louvre-weston-clone/wallpaper.jpg", getenv("HOME"));
+    sprintf(wallpaperPath, "%s/.config/Louvre/wallpaper.jpg", getenv("HOME"));
     LTexture *tmpWallpaper = LOpenGL::loadTexture(wallpaperPath);
 
     if (tmpWallpaper)
     {
-        wallpaperView->setTexture(tmpWallpaper->copyB(sizeB()));
+        // Clip and scale wallpaper so that it covers the entire screen
+
+        LRect srcB;
+        float w = float(size().w() * tmpWallpaper->sizeB().h()) / float(size().h());
+
+        if (w >= tmpWallpaper->sizeB().w())
+        {
+            srcB.setX(0);
+            srcB.setW(tmpWallpaper->sizeB().w());
+            srcB.setH((tmpWallpaper->sizeB().w() * size().h()) / size().w());
+            srcB.setY((tmpWallpaper->sizeB().h() - srcB.h()) / 2);
+        }
+        else
+        {
+            srcB.setY(0);
+            srcB.setH(tmpWallpaper->sizeB().h());
+            srcB.setW((tmpWallpaper->sizeB().h() * size().w()) / size().h());
+            srcB.setX((tmpWallpaper->sizeB().w() - srcB.w()) / 2);
+        }
+        wallpaperView->setTexture(tmpWallpaper->copyB(sizeB(), srcB));
         wallpaperView->setBufferScale(scale());
         delete tmpWallpaper;
     }

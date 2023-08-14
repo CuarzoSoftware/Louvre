@@ -33,9 +33,12 @@ LPRIVATE_CLASS(LView)
     bool scalingEnabled = false;
     bool parentScalingEnabled = false;
     bool parentOffsetEnabled = true;
+    bool clippingEnabled = false;
     bool parentClippingEnabled = false;
     bool parentOpacityEnabled = true;
     bool forceRequestNextFrameEnabled = false;
+
+    LRect clippingRect;
 
     LPoint tmpPos;
     LSize tmpSize;
@@ -51,7 +54,7 @@ LPRIVATE_CLASS(LView)
         LRect prevLocalRect;
         bool changedOrder = true;
         bool prevMapped = false;
-        LRegion prevParentClipping;
+        LRegion prevClipping;
     };
 
     struct ViewCache

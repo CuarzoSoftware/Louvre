@@ -34,10 +34,14 @@ public:
     void geometryChanged() override;
 
     void activatedChanged() override;
+    void appIdChanged() override;
+    void titleChanged() override;
+
 
     void unsetFullscreen();
 
     ToplevelView *decoratedView = nullptr;
+    bool changingState = false;
 
     LRect prevRect, dstRect;
     Output *fullscreenOutput = nullptr;

@@ -5,6 +5,7 @@ class Compositor;
 class Output;
 class Pointer;
 class TextRenderer;
+class App;
 
 #include <LNamespaces.h>
 #include <LRegion.h>
@@ -13,11 +14,12 @@ using namespace Louvre;
 
 #define DOCK_SHADOW_SIZE 40
 #define DOCK_HEIGHT 53
-#define DOCK_SPACING 8
-#define DOCK_PADDING 8
+#define DOCK_SPACING 4
+#define DOCK_PADDING 4
 #define DOCK_MARGIN 8
 #define DOCK_BORDER_RADIUS 16
 #define DOCK_ITEM_HEIGHT (DOCK_HEIGHT - (2 * DOCK_PADDING))
+#define DOCK_APP_DOT_SIZE 5
 
 #define TOPBAR_HEIGHT 24
 
@@ -71,6 +73,8 @@ public:
         LTexture *left = nullptr;
         LTexture *center = nullptr;
         LTexture *right = nullptr;
+        LTexture *defaultApp = nullptr;
+        LTexture *dot = nullptr;
     };
 
     struct ToplevelTextures
@@ -115,6 +119,8 @@ public:
         LRegion activeTransRegionTR;
         LRegion inactiveTransRegionTL;
         LRegion inactiveTransRegionTR;
+
+        LTexture *defaultTopbarAppName = nullptr; // Louvre
     };
 
     struct Fonts
@@ -133,6 +139,8 @@ public:
     static void loadDockTextures();
     static DockTextures &dockTextures();
     static void enableDocks(bool enabled);
+    static void loadApps();
+    static std::list<App*>&apps();
 
     // Cursors
     static void loadCursors();

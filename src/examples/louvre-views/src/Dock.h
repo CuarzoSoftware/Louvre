@@ -5,8 +5,6 @@
 #include <LSolidColorView.h>
 #include <LAnimation.h>
 
-#include "Global.h"
-
 using namespace Louvre;
 
 class Output;
@@ -27,7 +25,9 @@ public:
     // Dock textures container
     LLayerView *dockContainer;
 
-    // Container for minimized windows
+    // Container for apps and minimized windows
+    LLayerView *appsContainer;
+    LSolidColorView *separator;
     LLayerView *itemsContainer;
 
     void pointerEnterEvent(const LPoint &localPos) override;
@@ -44,7 +44,7 @@ public:
     LAnimation *anim = nullptr;
 
     // Number of pointerMoveEvent() calls before show() is called
-    UInt32 showResistance = 20;
+    UInt32 showResistance = 6;
     UInt32 showResistanceCount = 0;
 };
 

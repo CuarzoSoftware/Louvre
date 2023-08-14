@@ -200,6 +200,34 @@ const LSize &LView::size() const
     return imp()->tmpSize;
 }
 
+bool LView::clippingEnabled() const
+{
+    return imp()->clippingEnabled;
+}
+
+void LView::enableClipping(bool enabled)
+{
+    if (imp()->clippingEnabled != enabled)
+    {
+        imp()->clippingEnabled = enabled;
+        repaint();
+    }
+}
+
+const LRect &LView::clippingRect() const
+{
+    return imp()->clippingRect;
+}
+
+void LView::setClippingRect(const LRect &rect)
+{
+    if (rect != imp()->clippingRect)
+    {
+        imp()->clippingRect = rect;
+        repaint();
+    }
+}
+
 bool LView::parentClippingEnabled() const
 {
     return imp()->parentClippingEnabled;

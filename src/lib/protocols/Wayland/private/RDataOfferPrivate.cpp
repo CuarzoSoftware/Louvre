@@ -31,9 +31,10 @@ void RDataOffer::RDataOfferPrivate::accept(wl_client *client, wl_resource *resou
 {
     L_UNUSED(client);
     L_UNUSED(serial);
+    L_UNUSED(resource);
 
     /* TODO: Use serial */
-    RDataOffer *lRDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
+    // RDataOffer *lRDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
 
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
     //if (lRDataOffer->version() >= 3 && lRDataOffer->dataOffer()->imp()->hasFinished)

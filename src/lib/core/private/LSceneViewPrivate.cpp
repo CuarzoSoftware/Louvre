@@ -94,7 +94,7 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
 
     cache->opacity = view->opacity();
 
-    if (cache->rect.size().area() == 0 || cache->opacity <= 0.f || cache->scalingVector.w() == 0.f || cache->scalingVector.y() == 0.f)
+    if (cache->rect.size().area() == 0 || cache->opacity <= 0.f || cache->scalingVector.w() == 0.f || cache->scalingVector.y() == 0.f || (view->clippingEnabled() && view->clippingRect().area() == 0))
         cache->mapped = false;
 
     bool mappingChanged = cache->mapped != cache->voD->prevMapped;
@@ -124,7 +124,7 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
 
         if (!cache->mapped)
         {
-            oD->newDamage.addRegion(cache->voD->prevParentClipping);
+            oD->newDamage.addRegion(cache->voD->prevClipping);
             return;
         }
     }
@@ -141,28 +141,31 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
         cache->damage.clear();
     }
 
-    // Calculates the current rect intersected with parents rects (when clipping enabled)
+    // Calculates the non clipped region
 
-    LRegion currentParentClipping;
-    currentParentClipping.addRect(cache->rect);
+    LRegion currentClipping;
+    currentClipping.addRect(cache->rect);
 
     if (view->parentClippingEnabled())
-        parentClipping(view->parent(), &currentParentClipping);
+        parentClipping(view->parent(), &currentClipping);
 
-    // Calculates the new exposed view region if parent clipping has grown
-    LRegion newExposedParentClipping = currentParentClipping;
-    newExposedParentClipping.subtractRegion(cache->voD->prevParentClipping);
-    cache->damage.addRegion(newExposedParentClipping);
+    if (view->clippingEnabled())
+        currentClipping.clip(view->clippingRect());
+
+    // Calculates the new exposed view region if parent clipping or clipped region has grown
+    LRegion newExposedClipping = currentClipping;
+    newExposedClipping.subtractRegion(cache->voD->prevClipping);
+    cache->damage.addRegion(newExposedClipping);
 
     // Add exposed now non clipped region to new output damage
-    cache->voD->prevParentClipping.subtractRegion(currentParentClipping);
-    oD->newDamage.addRegion(cache->voD->prevParentClipping);
+    cache->voD->prevClipping.subtractRegion(currentClipping);
+    oD->newDamage.addRegion(cache->voD->prevClipping);
 
     // Saves current clipped region for next frame
-    cache->voD->prevParentClipping = currentParentClipping;
+    cache->voD->prevClipping = currentClipping;
 
     // Clip current damage to current visible region
-    cache->damage.intersectRegion(currentParentClipping);
+    cache->damage.intersectRegion(currentClipping);
 
     // Remove previus opaque region to view damage
     cache->damage.subtractRegion(oD->opaqueTransposedSum);
@@ -208,13 +211,13 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
     }
 
     // Clip opaque and translucent regions to current visible region
-    cache->opaque.intersectRegion(currentParentClipping);
-    cache->translucent.intersectRegion(currentParentClipping);
+    cache->opaque.intersectRegion(currentClipping);
+    cache->translucent.intersectRegion(currentClipping);
 
     // Check if view is ocludded
-    currentParentClipping.subtractRegion(oD->opaqueTransposedSum);
+    currentClipping.subtractRegion(oD->opaqueTransposedSum);
 
-    cache->occluded = currentParentClipping.empty();
+    cache->occluded = currentClipping.empty();
 
     if (oD->o && (!cache->occluded || view->forceRequestNextFrameEnabled()))
         view->requestNextFrame(oD->o);

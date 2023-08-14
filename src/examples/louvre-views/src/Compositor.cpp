@@ -3,10 +3,12 @@
 #include <LTextureView.h>
 #include <LLog.h>
 
+#include "Client.h"
 #include "Global.h"
 #include "Compositor.h"
 #include "Output.h"
 #include "Surface.h"
+#include "Seat.h"
 #include "Pointer.h"
 #include "Keyboard.h"
 #include "Toplevel.h"
@@ -46,6 +48,7 @@ void Compositor::initialized()
     G::loadCursors();
     G::loadToplevelTextures();
     G::loadFonts();
+    G::loadApps();
 
     clockTimer = wl_event_loop_add_timer(LCompositor::eventLoop(), &Compositor::timerCallback, this);
     wl_event_source_timer_update(clockTimer, 1);
@@ -64,6 +67,11 @@ void Compositor::initialized()
     }
 }
 
+LClient *Compositor::createClientRequest(LClient::Params *params)
+{
+    return new Client(params);
+}
+
 LOutput *Compositor::createOutputRequest()
 {
     return new Output();
@@ -72,6 +80,11 @@ LOutput *Compositor::createOutputRequest()
 LSurface *Compositor::createSurfaceRequest(LSurface::Params *params)
 {
     return new Surface(params);
+}
+
+LSeat *Compositor::createSeatRequest(LSeat::Params *params)
+{
+    return new Seat(params);
 }
 
 LPointer *Compositor::createPointerRequest(LPointer::Params *params)

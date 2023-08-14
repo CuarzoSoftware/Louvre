@@ -14,6 +14,9 @@ Pointer::Pointer(Params *params) : LPointer(params) {}
 
 void Pointer::pointerMoveEvent(Float32 dx, Float32 dy)
 {
+    dx *= 0.5f;
+    dy *= 0.5f;
+
     if (LTime::ms() - lastEventMS > 40)
         velocity = 0.f;
 

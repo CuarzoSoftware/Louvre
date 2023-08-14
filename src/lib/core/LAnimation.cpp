@@ -7,7 +7,7 @@ LAnimation::~LAnimation()
     delete m_imp;
 }
 
-void LAnimation::oneShot(UInt32 durationMs, Callback onUpdate, Callback onFinish)
+void LAnimation::oneShot(UInt32 durationMs, const Callback &onUpdate, const Callback &onFinish)
 {
     LAnimation *anim = new LAnimation();
     anim->imp()->duration = durationMs;
@@ -16,7 +16,7 @@ void LAnimation::oneShot(UInt32 durationMs, Callback onUpdate, Callback onFinish
     anim->start();
 }
 
-LAnimation *LAnimation::create(UInt32 durationMs, Callback onUpdate, Callback onFinish)
+LAnimation *LAnimation::create(UInt32 durationMs, const Callback &onUpdate, const Callback &onFinish)
 {
     LAnimation *anim = new LAnimation();
     anim->imp()->duration = durationMs;
@@ -25,7 +25,7 @@ LAnimation *LAnimation::create(UInt32 durationMs, Callback onUpdate, Callback on
     return anim;
 }
 
-void LAnimation::setOnUpdateCallback(Callback onUpdate)
+void LAnimation::setOnUpdateCallback(const Callback &onUpdate)
 {
     if (imp()->running)
         return;
@@ -33,7 +33,7 @@ void LAnimation::setOnUpdateCallback(Callback onUpdate)
     imp()->onUpdate = onUpdate;
 }
 
-void LAnimation::setOnFinishCallback(Callback onFinish)
+void LAnimation::setOnFinishCallback(const Callback &onFinish)
 {
     if (imp()->running)
         return;

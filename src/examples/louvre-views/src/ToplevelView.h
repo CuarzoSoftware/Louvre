@@ -54,8 +54,12 @@ public:
     ToplevelButton *minimizeButton = nullptr;
     ToplevelButton *maximizeButton = nullptr;
 
+    LTextureView *title = nullptr;
+
     UInt32 lastTopbarClickMs = 0;
 
+    Int32 titleWidth = 0;
+    void updateTitle();
     void updateGeometry();
 
     bool nativeMapped() const override;

@@ -4,8 +4,7 @@
 
     <tab type="mainpage" title="Home" visible="yes" url="md_md__mainpage.html"></tab>
       <tab type="usergroup" title="Tutorial">
-      <tab type="usergroup" title="01 - Introduction" url="md_md_tutorial_01.html"></tab>
-      <tab type="usergroup" title="02 - Installation" url="md_md_tutorial_02.html"></tab>
+      <tab type="usergroup" title="01 - Quick Overview" url="md_md_tutorial_02_overview.html"></tab>
       <tab type="usergroup" title="03 - Setting Up the Project" url="md_md_tutorial_03.html"></tab>
       <tab type="usergroup" title="04 - Backends" url="md_md_tutorial_04.html"></tab>
       <tab type="usergroup" title="05 - Resources Factory" url="md_md_tutorial_05.html"></tab>
@@ -23,7 +22,7 @@
     	<tab type="classes" visible="yes" title="Classes"/>
     </tab>
     
-    <tab type="usergroup" visible="yes" title="Downloads" url="md_md__downloads.html"/>
+    <tab type="usergroup" visible="yes" title="Installation" url="md_md_tutorial_01_installation.html"/>
     
   </navindex>
   

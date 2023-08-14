@@ -231,6 +231,53 @@ public:
     const LSize& size() const;
 
     /*!
+     * @brief Check if the view is currently being clipped to the clippingRect() property.
+     *
+     * This function returns true if the view is currently being clipped to the specified
+     * clipping rectangle, which is defined by the clippingRect() property. If the view is not
+     * clipped to the clipping rectangle, the function returns false.
+     *
+     * @returns True if the view is being clipped to the clipping rectangle, false otherwise.
+     */
+    bool clippingEnabled() const;
+
+    /*!
+     * @brief Enable or disable clipping of the view to the clippingRect() property.
+     *
+     * If enabled, the view will be clipped to the current clipping rectangle defined by the
+     * clippingRect() property. If disabled, the view will not be clipped, allowing its entire
+     * content to be visible.
+     *
+     * @param enabled If true, the view will be clipped to the clippingRect() property.
+     *                If false, clipping will be disabled, and the full view will be visible.
+     */
+    void enableClipping(bool enabled);
+
+    /*!
+     * @brief Get the current clipping rectangle defined by the clippingRect() property.
+     *
+     * This function returns a constant reference to the current clipping rectangle
+     * that is being used to clip the view. The clipping rectangle is defined by the
+     * clippingRect() property.
+     *
+     * @returns A constant reference to the current clipping rectangle.
+     */
+    const LRect &clippingRect() const;
+
+    /*!
+     * @brief Set the clipping rectangle for the view using the clippingRect() property.
+     *
+     * This function sets the clipping rectangle for the view using the clippingRect() property.
+     * When clipping is enabled, the view's content outside this rectangle will be clipped
+     * (not visible).
+     *
+     * @note The rect is not local to the view's position, if you need to clip the view without having to update the rect pos each time the view moves, use parent clipping instead.
+     *
+     * @param rect The clipping rectangle to set for the view using the clippingRect() property.
+     */
+    void setClippingRect(const LRect &rect);
+
+    /*!
      * @brief Check if the view is clipped to the current parent view rect.
      *
      * This function returns true if the view is clipped to the current parent view rect, false otherwise.

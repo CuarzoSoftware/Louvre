@@ -41,7 +41,7 @@ void Output::initializeGL()
     }
 
     char wallpaperPath[256];
-    sprintf(wallpaperPath, "%s/.config/louvre-weston-clones/wallpaper.jpg", getenv("HOME"));
+    sprintf(wallpaperPath, "%s/.config/Louvre/wallpaper.jpg", getenv("HOME"));
     LTexture *background = LOpenGL::loadTexture(wallpaperPath);
 
     if (background)
@@ -79,7 +79,7 @@ void Output::resizeGL()
     }
 
     char wallpaperPath[256];
-    sprintf(wallpaperPath, "%s/.config/louvre-weston-clone/wallpaper.jpg", getenv("HOME"));
+    sprintf(wallpaperPath, "%s/.config/Louvre/wallpaper.jpg", getenv("HOME"));
     LTexture *background = LOpenGL::loadTexture(wallpaperPath);
 
     if (background)

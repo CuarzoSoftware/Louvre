@@ -35,7 +35,7 @@ LPRIVATE_CLASS(LPainter)
 
     struct LGLColor
     {
-        GLfloat r, g, b, a;
+        GLfloat r, g, b;
     };
 
     struct LGLPoint
@@ -119,18 +119,16 @@ LPRIVATE_CLASS(LPainter)
         }
     }
 
-    inline void shaderSetColor(Float32 r, Float32 g, Float32 b, Float32 a)
+    inline void shaderSetColor(Float32 r, Float32 g, Float32 b)
     {
         if (state.color.r != r ||
             state.color.g != g ||
-            state.color.b != b ||
-            state.color.a != a)
+            state.color.b != b)
         {
             state.color.r = r;
             state.color.g = g;
             state.color.b = b;
-            state.color.a = a;
-            glUniform4f(colorUniform, r, g, b, a);
+            glUniform3f(colorUniform, r, g, b);
         }
     }
 

@@ -13,6 +13,8 @@ static struct xdg_popup_interface xdg_popup_implementation =
     .grab = &RXdgPopup::RXdgPopupPrivate::grab,
 #if LOUVRE_XDG_WM_BASE_VERSION >= 3
     .reposition = &RXdgPopup::RXdgPopupPrivate::reposition
+#else
+    .reposition = NULL
 #endif
 };
 

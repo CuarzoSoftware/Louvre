@@ -2,17 +2,20 @@
 #include <string.h>
 #include <LXCursor.h>
 #include <LOpenGL.h>
+#include <stdio.h>
 
 #include "Global.h"
 #include "Compositor.h"
 #include "Output.h"
 #include "Dock.h"
 #include "TextRenderer.h"
+#include "App.h"
 
 static G::DockTextures _dockTextures;
 static G::ToplevelTextures _toplevelTextures;
 static G::Cursors xCursors;
 static G::Fonts _fonts;
+static std::list<App*>_apps;
 
 Compositor *G::compositor()
 {
@@ -57,6 +60,28 @@ void G::loadDockTextures()
                                                           0,
                                                           - _dockTextures.left->sizeB().w(),
                                                           _dockTextures.left->sizeB().h()));
+
+    LTexture *tmp = LOpenGL::loadTexture("/usr/etc/Louvre/assets/dock_app.png");
+
+    if (tmp)
+    {
+        _dockTextures.defaultApp = tmp->copyB(LSize(DOCK_ITEM_HEIGHT * 4));
+        delete tmp;
+    }
+
+    if (!_dockTextures.defaultApp)
+    {
+        LLog::fatal("[louvre-views] Failed to load dock_app.png texture.");
+        exit(1);
+    }
+
+    _dockTextures.dot = LOpenGL::loadTexture("/usr/etc/Louvre/assets/dock_app_dot.png");
+
+    if (!_dockTextures.dot)
+    {
+        LLog::fatal("[louvre-views] Failed to load dock_dot.png texture.");
+        exit(1);
+    }
 }
 
 G::DockTextures &G::dockTextures()
@@ -69,6 +94,80 @@ void G::enableDocks(bool enabled)
     for (Output *o : outputs())
         if (o->dock)
             o->dock->setVisible(enabled);
+}
+
+void G::loadApps()
+{
+    FILE *file = NULL;
+
+    char appList[256];
+    char appName[256];
+    char appExec[256];
+    char appIcon[256];
+
+    const char *home = getenv("HOME");
+
+    if (!home)
+        goto error;
+
+    sprintf(appList, "%s/.config/Louvre/apps.list", home);
+
+    file = fopen(appList, "r");
+
+    if (file == NULL)
+        goto error;
+
+    int len;
+
+     // Buffer to hold each line
+    while (true)
+    {
+        if (!fgets(appName, sizeof(appName), file))
+            break;
+
+        len = strlen(appName);
+
+        if (len > 0)
+            appName[len - 1] = '\0';
+        else
+            break;
+
+        if (!fgets(appExec, sizeof(appExec), file))
+            break;
+
+        len = strlen(appExec);
+
+        if (len > 0)
+            appExec[len - 1] = '\0';
+        else
+            break;
+
+        if (!fgets(appIcon, sizeof(appIcon), file))
+            break;
+
+        len = strlen(appIcon);
+
+        if (len > 0)
+            appIcon[len - 1] = '\0';
+        else
+            break;
+
+        new App(appName, appExec, appIcon);
+    }
+
+    fclose(file);
+    return;
+
+    error:
+    LLog::error("[louvre-views] Failed to read apps.list");
+
+    if (file)
+        fclose(file);
+}
+
+std::list<App *> &G::apps()
+{
+    return _apps;
 }
 
 void G::loadCursors()
@@ -187,6 +286,9 @@ void G::loadFonts()
 {
     _fonts.regular = TextRenderer::loadFont("Inter");
     _fonts.semibold = TextRenderer::loadFont("Inter Semi Bold");
+
+    if (_fonts.semibold)
+        G::toplevelTextures().defaultTopbarAppName = G::font()->semibold->renderText("Louvre", 24);
 }
 
 G::Fonts *G::font()

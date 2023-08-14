@@ -13,7 +13,7 @@ DockItem::DockItem(class Surface *surface, Dock *dock) : LTextureView(surface->t
     surface->minimizedViews.push_back(this);
     this->dock = dock;
     this->surface = surface;
-    setBufferScale(surface->bufferScale());
+    setBufferScale(4);
     enableScaling(true);
     enableParentOpacity(false);
     enableInput(true);

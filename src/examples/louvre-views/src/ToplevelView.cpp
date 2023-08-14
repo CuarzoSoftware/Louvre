@@ -14,6 +14,7 @@
 #include "InputRect.h"
 #include "Output.h"
 #include "Topbar.h"
+#include "TextRenderer.h"
 
 static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &)
 {
@@ -75,7 +76,7 @@ static void onPointerButtonResizeArea(InputRect *rect, void *data, LPointer::But
     {
         UInt32 now = LTime::ms();
 
-        if (now  - view->lastTopbarClickMs < 220)
+        if (now  - view->lastTopbarClickMs < 300)
         {
             if (view->toplevel->maximized())
                 view->toplevel->unsetMaximizedRequest();
@@ -185,6 +186,12 @@ ToplevelView::ToplevelView(Toplevel *toplevel) : LLayerView(G::compositor()->sur
     resizeBL = new InputRect(this, G::cursors().bottom_left_corner, LToplevelRole::ResizeEdge::BottomLeft);
     resizeBR = new InputRect(this, G::cursors().bottom_right_corner, LToplevelRole::ResizeEdge::BottomRight);
 
+    // Title label
+    title = new LTextureView(nullptr, topbarInput);
+    title->setBufferScale(2);
+    title->setCustomColor(0.1f, 0.1f, 0.1f);
+    title->enableCustomColor(true);
+
     resizeTL->onPointerEnter = &onPointerEnterResizeArea;
     resizeTR->onPointerEnter = &onPointerEnterResizeArea;
     resizeBL->onPointerEnter = &onPointerEnterResizeArea;
@@ -272,6 +279,10 @@ ToplevelView::~ToplevelView()
         cursor()->useDefault();
     }
 
+    if (title->texture())
+        delete title->texture();
+
+    delete title;
     delete clipTop;
     delete clipBottom;
     delete surfB;
@@ -304,6 +315,32 @@ ToplevelView::~ToplevelView()
     delete closeButton;
     delete minimizeButton;
     delete maximizeButton;
+}
+
+void ToplevelView::updateTitle()
+{
+    if (!G::font()->semibold)
+        return;
+
+    Int32 maxWidth = (toplevel->windowGeometry().w() - 128) * 2;
+
+    if (title->texture())
+    {
+        titleWidth = G::font()->semibold->calculateTextureSize(toplevel->title(), 28).w();
+
+        if (titleWidth != title->texture()->sizeB().w() || titleWidth > maxWidth)
+        {
+            LTexture *oldTexture = title->texture();
+            title->setTexture(G::font()->semibold->renderText(toplevel->title(), 28, maxWidth));
+            delete oldTexture;
+        }
+    }
+    else
+    {
+        title->setTexture(G::font()->semibold->renderText(toplevel->title(), 28, maxWidth));
+    }
+
+    updateGeometry();
 }
 
 void ToplevelView::updateGeometry()
@@ -341,6 +378,8 @@ void ToplevelView::updateGeometry()
 
         if (lastActiveState != toplevel->activated())
         {
+            title->setCustomColor(0.1f, 0.1f, 0.1f);
+
             decoTL->setTexture(G::toplevelTextures().activeTL);
             decoT->setTexture(G::toplevelTextures().activeT);
             decoTR->setTexture(G::toplevelTextures().activeTR);
@@ -368,6 +407,8 @@ void ToplevelView::updateGeometry()
 
         if (lastActiveState != toplevel->activated())
         {
+            title->setCustomColor(0.7f, 0.7f, 0.7f);
+
             decoTL->setTexture(G::toplevelTextures().inactiveTL);
             decoT->setTexture(G::toplevelTextures().inactiveT);
             decoTR->setTexture(G::toplevelTextures().inactiveTR);
@@ -383,11 +424,11 @@ void ToplevelView::updateGeometry()
         }
     }
 
+    // Update titlebar button icons
     closeButton->update();
     minimizeButton->update();
     maximizeButton->update();
     lastActiveState = toplevel->activated();
-
 
     if (toplevel->fullscreen())
     {
@@ -442,7 +483,7 @@ void ToplevelView::updateGeometry()
             TOPLEVEL_TOP_CLAMP_OFFSET_Y);
         decoT->setTranslucentRegion(&transT);
 
-        topbarInput->setPos(0, - TOPLEVEL_TOPBAR_HEIGHT);
+        topbarInput->setPos(0, - TOPLEVEL_TOPBAR_HEIGHT * (1.f - toplevel->fullscreenOutput->topbar->visiblePercent));
         topbarInput->setSize(size.w(), TOPLEVEL_TOPBAR_HEIGHT);
     }
     else
@@ -591,6 +632,18 @@ void ToplevelView::updateGeometry()
 
         topbarInput->setPos(0, - TOPLEVEL_TOPBAR_HEIGHT);
         topbarInput->setSize(size.w(), TOPLEVEL_TOPBAR_HEIGHT);
+    }
+
+    // Update title pos
+    if (title->texture())
+    {
+        Int32 px = (topbarInput->size().w() - title->size().w()) / 2;
+
+        if (titleWidth > (topbarInput->size().w() - 128) * 2)
+            px = 64;
+
+        title->setPos(px, topbarInput->size().h() - (TOPLEVEL_TOPBAR_HEIGHT + title->size().h()) / 2 );
+
     }
 
     lastFullscreenState = toplevel->fullscreen();

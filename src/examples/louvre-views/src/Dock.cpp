@@ -4,6 +4,9 @@
 #include "Output.h"
 #include "DockItem.h"
 #include "Pointer.h"
+#include "App.h"
+#include "DockApp.h"
+
 #include <LTextureView.h>
 #include <LCursor.h>
 #include <LLog.h>
@@ -36,7 +39,14 @@ Dock::Dock(Output *output) : LLayerView(G::compositor()->overlayLayer)
     // Enable dst size so we can use clamping
     dockCenter->enableDstSize(true);
 
+    appsContainer = new LLayerView(dockContainer);
+    separator = new LSolidColorView(0.f, 0.f, 0.f, 0.2f, appsContainer);
+    separator->setSize(1, DOCK_ITEM_HEIGHT);
     itemsContainer = new LLayerView(dockContainer);
+
+    // Create app items
+    for (App *app : G::apps())
+        new DockApp(app, this);
 
     // Clone items from another already existing dock
     for (Output *o : G::outputs())
@@ -70,12 +80,35 @@ Dock::~Dock()
 void Dock::update()
 {
     setSize(output->size().w(),
-            DOCK_HEIGHT + 4);
+            DOCK_HEIGHT + 6);
 
     setPos(output->rect().x(),
            output->rect().h() - size().h() * visiblePercent);
 
     Int32 dockWidth = DOCK_PADDING;
+
+    if (appsContainer->children().empty() || appsContainer->children().size() == 1 || itemsContainer->children().empty())
+        separator->setParent(nullptr);
+    else
+        separator->insertAfter(appsContainer->children().back());
+
+    for (LView *it : appsContainer->children())
+    {
+        DockApp *item = (DockApp*)it;
+
+        if ((LSolidColorView*)item == separator)
+            item->setPos(dockWidth, DOCK_PADDING + (DOCK_ITEM_HEIGHT - item->size().h())/2);
+        else
+        {
+            item->setPos(dockWidth, - 2 - item->app->dockAppsAnimationOffset.y() + DOCK_PADDING + (DOCK_ITEM_HEIGHT - item->size().h())/2);
+
+            if (item->dot)
+                item->dot->setVisible(item->app->state == App::Running && item->app->dockAppsAnimationOffset.y() == 0);
+        }
+
+        dockWidth += item->size().w();
+        dockWidth += DOCK_SPACING;
+    }
 
     for (LView *it : itemsContainer->children())
     {
@@ -97,6 +130,7 @@ void Dock::update()
     dockRight->setPos(dockCenter->nativePos().x() + dockCenter->size().w(), 0);
     dockContainer->setSize(dockLeft->size().w() + dockCenter->size().w() + dockRight->size().w(), DOCK_HEIGHT);
     dockContainer->setPos((size().w() - dockContainer->size().w()) / 2, - DOCK_SHADOW_SIZE);
+    appsContainer->setPos(DOCK_SHADOW_SIZE, DOCK_SHADOW_SIZE);
     itemsContainer->setPos(DOCK_SHADOW_SIZE, DOCK_SHADOW_SIZE);
 }
 

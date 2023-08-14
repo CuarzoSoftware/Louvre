@@ -26,6 +26,9 @@ public:
     // Clock
     LTextureView *clock = nullptr;
 
+    // Current app title
+    LTextureView *appName = nullptr;
+
     // SHOW/HIDE animation
     LAnimation *anim = nullptr;
 

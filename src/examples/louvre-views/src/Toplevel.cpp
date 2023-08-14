@@ -10,6 +10,7 @@
 #include "ToplevelView.h"
 #include "Output.h"
 #include "Topbar.h"
+#include "TextRenderer.h"
 
 Toplevel::Toplevel(Params *params) : LToplevelRole(params) {}
 
@@ -151,18 +152,25 @@ void Toplevel::setFullscreenRequest(LOutput *output)
 
 void Toplevel::unsetFullscreenRequest()
 {
-    if (!fullscreen())
+    if (!fullscreen() || changingState)
         return;
 
-    configure(prevRect.size(), Activated);
+    changingState = true;
+    configure(prevRect.size(), states() &~ Fullscreen);
 }
 
 void Toplevel::fullscreenChanged()
 {
     Surface *surf = (Surface*)surface();
+    changingState = false;
 
     if (fullscreen())
     {
+        if (!fullscreenOutput)
+        {
+            configure(prevRect.size(), states() &~ Fullscreen);
+            return;
+        }
         fullscreenOutput->fullscreenToplevel = this;
         fullscreenOutput->fullscreenView->setVisible(true);
         fullscreenOutput->fullscreenView->setPos(fullscreenOutput->pos());
@@ -221,13 +229,30 @@ void Toplevel::geometryChanged()
         seat()->pointer()->updateResizingToplevelPos();
 
     if (decoratedView)
+    {
+        decoratedView->updateTitle();
         decoratedView->updateGeometry();
+    }
 }
 
 void Toplevel::activatedChanged()
 {
     if (decoratedView)
         decoratedView->updateGeometry();
+
+    if (activated())
+        seat()->keyboard()->setFocus(surface());
+}
+
+void Toplevel::appIdChanged()
+{
+    LLog::debug("APP ID %s", appId());
+}
+
+void Toplevel::titleChanged()
+{
+    if (decoratedView)
+        decoratedView->updateTitle();
 }
 
 void Toplevel::unsetFullscreen()
@@ -240,7 +265,6 @@ void Toplevel::unsetFullscreen()
     while (!fullscreenOutput->fullscreenView->children().empty())
         fullscreenOutput->fullscreenView->children().back()->setParent(G::compositor()->surfacesLayer);
 
-    surface()->raise();
     surf->setPos(prevRect.pos());
     fullscreenOutput->fullscreenView->setVisible(false);
     fullscreenOutput->fullscreenToplevel = nullptr;

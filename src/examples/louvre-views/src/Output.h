@@ -12,19 +12,23 @@ class Compositor;
 class Dock;
 class Toplevel;
 class Topbar;
+class Workspace;
 
 class Output : public LOutput
 {
 public:
     Output();
 
-    void loadWallpaper();
-
     void initializeGL() override;
     void resizeGL() override;
     void moveGL() override;
     void paintGL() override;
     void uninitializeGL() override;
+
+    void loadWallpaper();
+
+    // Main workspace and one for each fullscreen toplevel
+    std::list<Workspace*>workspaces;
 
     // Topbar for this output
     Topbar *topbar = nullptr;

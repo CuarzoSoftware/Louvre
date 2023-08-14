@@ -94,6 +94,7 @@ endforeach
 
 
 wayland_server_dep  = cpp.find_library('wayland-server', dirs: library_paths, required: true)
+gl_dep              = cpp.find_library('GL', dirs: library_paths, required: true)
 egl_dep             = cpp.find_library('EGL', dirs: library_paths, required: true)
 glesv2_dep          = cpp.find_library('GLESv2', dirs: library_paths, required: true)
 udev_dep            = cpp.find_library('udev', dirs: library_paths, required: true)
@@ -109,16 +110,7 @@ libseat_dep         = cpp.find_library('libseat', dirs: library_paths, required:
 freeimage_dep       = cpp.find_library('freeimage', dirs: library_paths, required: true)
 srm_dep             = cpp.find_library('SRM', dirs: library_paths, required: true)
 
-
-if get_option('build_drm_backend') or get_option('build_x11_backend')
-    gl_dep = cpp.find_library('GL', dirs: library_paths, required: true)
-endif
-
-if get_option('build_x11_backend')
-    x11_dep = cpp.find_library('X11', dirs: library_paths, required: true)
-    xfixes_dep = cpp.find_library('Xfixes', dirs: library_paths, required: true)
-    xrandr_dep = cpp.find_library('Xrandr', dirs: library_paths, required: true)
-endif
+icuuc_dep           = cpp.find_library('icuuc', dirs: library_paths, required: true)
 
 Louvre = library(
     'Louvre',
@@ -148,17 +140,11 @@ Louvre_dep = declare_dependency(
     include_directories : include_paths,
     link_with : Louvre)
 
-
 if get_option('build_drm_backend')
     subdir('backends/graphic/DRM')
 endif
 
-if get_option('build_x11_backend')
-    #subdir('backends/graphic/X11')
-endif
-
 subdir('backends/input/Libinput')
-#subdir('backends/input/X11')
 
 if get_option('build_examples')
     subdir('examples/louvre-weston-clone')

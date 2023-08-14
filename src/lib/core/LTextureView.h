@@ -115,6 +115,55 @@ public:
      */
     void setDstSize(const LSize &dstSize);
 
+    /*!
+     * @brief Enable or disable custom coloring for texture rendering.
+     *
+     * This function enables or disables custom coloring for the texture rendering process.
+     * When custom coloring is enabled, the texture color is replaced by a custom color while preserving the texture's alpha channel.
+     *
+     * @param enabled A boolean value indicating whether custom coloring should be enabled (true) or disabled (false).
+     */
+    void enableCustomColor(bool enabled);
+
+    /*!
+     * @brief Check if custom coloring for texture rendering is enabled.
+     *
+     * This function returns a boolean value indicating whether custom coloring is currently enabled for the texture rendering process.
+     *
+     * @return `true` if custom coloring is enabled, `false` otherwise.
+     */
+    bool customColorEnabled() const;
+
+    /*!
+     * @brief Set a custom color for texture rendering while preserving the texture's alpha channel.
+     *
+     * This function sets a custom color for the texture rendering process, replacing the original texture color while keeping the texture's alpha channel intact.
+     *
+     * @param r The red component of the custom color (0.0 to 1.0).
+     * @param g The green component of the custom color (0.0 to 1.0).
+     * @param b The blue component of the custom color (0.0 to 1.0).
+     */
+    void setCustomColor(Float32 r, Float32 g, Float32 b);
+
+    /*!
+     * @brief Set a custom color for texture rendering using an LRGBF object.
+     *
+     * This function sets a custom color for the texture rendering process, replacing the original texture color while keeping the texture's alpha channel intact.
+     *
+     * @param color The LRGBF object representing the custom color.
+     */
+    void setCustomColor(const LRGBF &color);
+
+    /*!
+     * @brief Get the current custom color used for texture rendering.
+     *
+     * This function retrieves the current custom color that is being used for the texture rendering process. The custom color
+     * replaces the original texture color while keeping the texture's alpha channel intact.
+     *
+     * @return A constant reference to the LRGBF object representing the current custom color.
+     */
+    const LRGBF &customColor() const;
+
     virtual bool nativeMapped() const override;
     virtual const LPoint &nativePos() const override;
     virtual const LSize &nativeSize() const override;

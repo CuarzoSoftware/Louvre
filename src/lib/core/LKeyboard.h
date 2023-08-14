@@ -299,6 +299,27 @@ public:
      */
     virtual void keyEvent(UInt32 keyCode, UInt32 keyState);
 
+    /**
+     * @brief Invoked when the current keyboard focused surface is reassigned with setFocus().
+     *
+     * This virtual method is called when the keyboard focus is changed to a new surface
+     * using the setFocus() method. To retrieve the currently focused surface, you can use
+     * the focusSurface() method.
+     *
+     * This method provides a way for subclasses or implementors to respond to changes in
+     * keyboard focus and perform necessary actions when the focus is switched to a different
+     * surface.
+     *
+     * @note This method should be overridden in subclasses to provide custom behavior.
+     *
+     * @see setFocus()
+     * @see focusSurface()
+     *
+     * #### Default implementation
+     * @snippet LKeyboardDefault.cpp focusChanged
+     */
+    virtual void focusChanged();
+
     LPRIVATE_IMP(LKeyboard)
 };
 

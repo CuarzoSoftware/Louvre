@@ -399,19 +399,40 @@ LSize LToplevelRole::calculateResizeSize(const LPoint &cursorPosDelta, const LSi
     return newSize;
 }
 
+static char *trim(char *s)
+{
+    char *ptr;
+    if (!s)
+            return NULL;   // handle NULL string
+    if (!*s)
+            return s;      // handle empty string
+    for (ptr = s + strlen(s) - 1; (ptr >= s) && isspace(*ptr); --ptr);
+    ptr[1] = '\0';
+    return s;
+}
 void LToplevelRole::LToplevelRolePrivate::setAppId(const char *newAppId)
 {
+    char *text = trim((char*)newAppId);
+
+    if (strcmp(appId, text) == 0)
+        return;
+
     delete []appId;
-    appId = new char[strlen(newAppId)+1];
-    strcpy(appId, newAppId);
+    appId = new char[strlen(text)+1];
+    strcpy(appId, text);
     toplevel->appIdChanged();
 }
 
 void LToplevelRole::LToplevelRolePrivate::setTitle(const char *newTitle)
 {
+    char *text = trim((char*)newTitle);
+
+    if (strcmp(title, text) == 0)
+        return;
+
     delete []title;
-    title = new char[strlen(newTitle)+1];
-    strcpy(title, newTitle);
+    title = new char[strlen(text)+1];
+    strcpy(title, text);
     toplevel->titleChanged();
 }
 

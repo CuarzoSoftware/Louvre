@@ -9,6 +9,9 @@ static struct zwp_linux_dmabuf_v1_interface zwp_linux_dmabuf_v1_implementation =
 #if LOUVRE_LINUX_DMA_BUF_VERSION >= 4
     .get_default_feedback = &GLinuxDMABuf::GLinuxDMABufPrivate::get_default_feedback,
     .get_surface_feedback = &GLinuxDMABuf::GLinuxDMABufPrivate::get_surface_feedback
+#else
+    .get_default_feedback = NULL,
+    .get_surface_feedback = NULL
 #endif
 };
 

@@ -145,7 +145,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
         {
             if (fork() == 0)
             {
-                system("weston-terminal");
+                (void)system("weston-terminal");
                 exit(0);
             }
         }

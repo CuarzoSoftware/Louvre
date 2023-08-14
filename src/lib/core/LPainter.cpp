@@ -40,20 +40,29 @@ LPainter::LPainter()
         precision lowp float;
         precision lowp int;
         uniform lowp sampler2D tex;
-        uniform bool mode;
+        uniform int mode;
         uniform lowp float alpha;
-        uniform lowp vec4 colorRGBA;
+        uniform lowp vec3 color;
         varying lowp vec2 v_texcoord;
 
         void main()
         {
-            if (mode)
-                gl_FragColor = colorRGBA;
-            else
+            if (mode == 0)
             {
                 gl_FragColor = texture2D(tex, v_texcoord);
                 gl_FragColor.w *= alpha;
+                return;
             }
+
+            if (mode == 1)
+            {
+                gl_FragColor.xyz = color;
+                gl_FragColor.w = alpha;
+                return;
+            }
+
+            gl_FragColor.xyz = color;
+            gl_FragColor.w = texture2D(tex, v_texcoord).w * alpha;
         }
         )";
 
@@ -89,6 +98,7 @@ LPainter::LPainter()
     glEnable(GL_BLEND);
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_SCISSOR_TEST);
+
     glDisable(GL_CULL_FACE);
     glDisable(GL_LIGHTING);
     glDisable(GL_DITHER);
@@ -114,7 +124,7 @@ LPainter::LPainter()
     imp()->srcRectUniform = glGetUniformLocation(imp()->programObject, "srcRect");
     imp()->activeTextureUniform = glGetUniformLocation(imp()->programObject, "tex");
     imp()->modeUniform = glGetUniformLocation(imp()->programObject, "mode");
-    imp()->colorUniform = glGetUniformLocation(imp()->programObject, "colorRGBA");
+    imp()->colorUniform = glGetUniformLocation(imp()->programObject, "color");
     imp()->alphaUniform = glGetUniformLocation(imp()->programObject, "alpha");
 }
 
@@ -246,6 +256,63 @@ void LPainter::drawTexture(const LTexture *texture,
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
+void LPainter::drawColorTexture(const LTexture *texture, const LRGBF &color, const LRect &src, const LRect &dst, Float32 srcScale, Float32 alpha)
+{
+    drawColorTexture(texture,
+                     color.r, color.g, color.b,
+                     src.x(),
+                     src.y(),
+                     src.w(),
+                     src.h(),
+                     dst.x(),
+                     dst.y(),
+                     dst.w(),
+                     dst.h(),
+                     srcScale,
+                     alpha);
+}
+
+void LPainter::drawColorTexture(const LTexture *texture,
+                                Float32 r, Float32 g, Float32 b,
+                                Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
+                                Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
+                                Float32 srcScale, Float32 alpha)
+{
+    setViewport(dstX, dstY, dstW, dstH);
+    glActiveTexture(GL_TEXTURE0);
+
+    imp()->shaderSetAlpha(alpha);
+    imp()->shaderSetColor(r, g, b);
+    imp()->shaderSetMode(2);
+    imp()->shaderSetActiveTexture(0);
+
+    if (imp()->fbId != 0)
+        imp()->shaderSetSrcRect(srcX, srcY + srcH, srcW, -srcH);
+    else
+        imp()->shaderSetSrcRect(srcX, srcY, srcW, srcH);
+
+    glBindTexture(GL_TEXTURE_2D, texture->id(imp()->output));
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    if (srcScale == 1.f)
+        imp()->shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
+    else if (srcScale == 2.f)
+    {
+        imp()->shaderSetTexSize(texture->sizeB().w() >> 1,
+                                texture->sizeB().h() >> 1);
+    }
+    else
+    {
+        imp()->shaderSetTexSize(
+            texture->sizeB().w()/srcScale,
+            texture->sizeB().h()/srcScale);
+    }
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
 void LPainter::drawColor(const LRect &dst,
                           Float32 r, Float32 g, Float32 b, Float32 a)
 {
@@ -257,7 +324,8 @@ void LPainter::drawColor(Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                           Float32 r, Float32 g, Float32 b, Float32 a)
 {
     setViewport(dstX, dstY, dstW, dstH);
-    imp()->shaderSetColor(r, g, b, a);
+    imp()->shaderSetAlpha(a);
+    imp()->shaderSetColor(r, g, b);
     imp()->shaderSetMode(1);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }

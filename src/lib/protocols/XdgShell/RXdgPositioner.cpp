@@ -18,6 +18,10 @@ static struct xdg_positioner_interface xdg_positioner_implementation =
     .set_reactive = &RXdgPositioner::RXdgPositionerPrivate::set_reactive,
     .set_parent_size = &RXdgPositioner::RXdgPositionerPrivate::set_parent_size,
     .set_parent_configure = &RXdgPositioner::RXdgPositionerPrivate::set_parent_configure
+#else
+    .set_reactive = NULL,
+    .set_parent_size = NULL,
+    .set_parent_configure = NULL
 #endif
 };
 

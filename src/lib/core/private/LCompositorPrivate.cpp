@@ -47,7 +47,7 @@ static wl_iterator_result resourceDestroyIterator(wl_resource *resource, void*)
 
 static void clientDisconnectedEvent(wl_listener *listener, void *data)
 {
-    L_UNUSED(listener);
+    delete listener;
     LCompositor *compositor = LCompositor::compositor();
     wl_client *client = (wl_client*)data;
     wl_client_for_each_resource(client, resourceDestroyIterator, NULL);
@@ -70,11 +70,14 @@ static void clientConnectedEvent(wl_listener *listener, void *data)
     LClient::Params *params = new LClient::Params;
     params->client = client;
 
-    // Let the developer create his own client implementation
-    LClient *newClient =  compositor->createClientRequest(params);
+    wl_listener *destroyListener = new wl_listener();
+    destroyListener->notify = clientDisconnectedEvent;
 
     // Listen for client disconnection
-    wl_client_get_destroy_listener(client, &clientDisconnectedEvent);
+    wl_client_add_destroy_listener(client, destroyListener);
+
+    // Let the developer create his own client implementation
+    LClient *newClient =  compositor->createClientRequest(params);
 
     // Append client to the compositor list
     compositor->imp()->clients.push_back(newClient);

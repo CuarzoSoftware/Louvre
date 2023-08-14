@@ -23,6 +23,9 @@ LView *LScene::LScenePrivate::viewAt(LView *view, const LPoint &pos)
     if (!view->mapped() || !view->inputEnabled())
         return nullptr;
 
+    if (view->clippingEnabled() && !view->clippingRect().containsPoint(pos))
+        return nullptr;
+
     if (pointClippedByParent(view, pos))
         return nullptr;
 
@@ -95,6 +98,9 @@ bool LScene::LScenePrivate::pointClippedByParentScene(LView *view, const LPoint 
 bool LScene::LScenePrivate::pointerIsOverView(LView *view, const LPoint &pos)
 {
     if (!view->mapped() || !view->inputEnabled())
+        return false;
+
+    if (view->clippingEnabled() && !view->clippingRect().containsPoint(pos))
         return false;
 
     if (pointClippedByParent(view, pos))

@@ -9,8 +9,10 @@ executable(
     dependencies : [
         Louvre_dep,
         wayland_server_dep,
+        input_dep,
         fontconfig_dep,
-        freetype_dep
+        freetype_dep,
+        icuuc_dep
     ],
     install : true, 
     install_dir : EXAMPLES_PATH)

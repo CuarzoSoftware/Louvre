@@ -73,6 +73,7 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
 
     char *keymapString,*map;
     const char *xdgRuntimeDir;
+    int res;
 
     imp()->xkbKeymapName.rules = rules;
     imp()->xkbKeymapName.model = model;
@@ -116,7 +117,8 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
     }
 
     // Write the keymap string
-    ftruncate(imp()->xkbKeymapFd, imp()->xkbKeymapSize);
+    res = ftruncate(imp()->xkbKeymapFd, imp()->xkbKeymapSize);
+    L_UNUSED(res);
     map = (char*)mmap(NULL, imp()->xkbKeymapSize, PROT_READ|PROT_WRITE, MAP_SHARED, imp()->xkbKeymapFd, 0);
     memcpy(map, keymapString, imp()->xkbKeymapSize);
     munmap(map, imp()->xkbKeymapSize);
@@ -218,7 +220,7 @@ void LKeyboard::setFocus(LSurface *surface)
             return;
         else
         {
-            // If another surface has focus (hack for firefox)
+            // If another surface has focus
             if (focusSurface())
             {
                 UInt32 serial = LCompositor::nextSerial();
@@ -290,6 +292,7 @@ void LKeyboard::setFocus(LSurface *surface)
         imp()->keyboardFocusSurface = nullptr;
     }
 
+    focusChanged();
 }
 
 void LKeyboard::sendKeyEvent(UInt32 keyCode, UInt32 keyState)

@@ -74,6 +74,49 @@ public:
                      Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
 
     /*!
+     * @brief Draws a solid color using a texture's alpha channel, with support for HiDPI scaling.
+     *
+     * This function draws a rectangle or sub-rectangle of a texture on the screen, while maintaining its alpha channel,
+     * and replaces the original color with a solid color specified by the user.
+     *
+     * @param texture A pointer to the texture to be drawn.
+     * @param color The solid color (LRGBF format) that will replace the original texture color.
+     * @param src The source rectangle within the texture that defines the region to be drawn.
+     * @param dst The destination rectangle on the screen where the texture will be drawn.
+     * @param srcScale Scale of the texture buffer.
+     * @param alpha The alpha (transparency) value of the texture (default is 1.0f, fully opaque).
+     */
+    void drawColorTexture(const LTexture *texture, const LRGBF &color, const LRect &src, const LRect &dst,
+                          Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
+
+    /*!
+     * @brief Draws a solid color using a texture's alpha channel, with support for HiDPI scaling.
+     *
+     * This function draws a rectangle or sub-rectangle of a texture on the screen, while maintaining its alpha channel,
+     * and replaces the original color with a solid color specified by the user. It also provides support for HiDPI scaling,
+     * allowing the user to control the scaling of the source rectangle when rendering on HiDPI (High-DPI) buffers.
+     *
+     * @param texture A pointer to the texture to be drawn.
+     * @param r The red component of the solid color (0.0 to 1.0).
+     * @param g The green component of the solid color (0.0 to 1.0).
+     * @param b The blue component of the solid color (0.0 to 1.0).
+     * @param srcX The x-coordinate of the top-left corner of the source rectangle in the texture.
+     * @param srcY The y-coordinate of the top-left corner of the source rectangle in the texture.
+     * @param srcW The width of the source rectangle in the texture.
+     * @param srcH The height of the source rectangle in the texture.
+     * @param dstX The x-coordinate of the top-left corner of the destination rectangle on the screen.
+     * @param dstY The y-coordinate of the top-left corner of the destination rectangle on the screen.
+     * @param dstW The width of the destination rectangle on the screen.
+     * @param dstH The height of the destination rectangle on the screen.
+     * @param srcScale The scaling factor applied to the source rectangle, useful for HiDPI buffers (default is 1.0f, no scaling).
+     * @param alpha The alpha (transparency) value of the texture (default is 1.0f, fully opaque).
+     */
+    void drawColorTexture(const LTexture *texture, Float32 r, Float32 g, Float32 b,
+                          Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
+                          Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
+                          Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
+
+    /*!
      * @brief Draws a solid color.
      *
      * Draws a colored rectangle on the screen.
@@ -108,7 +151,7 @@ public:
      *
      * @param rect Viewport rectangle specified in compositor coordinates.
      */
-        void setViewport(const LRect &rect);
+    void setViewport(const LRect &rect);
 
     /*!
      * @brief Sets the viewport.

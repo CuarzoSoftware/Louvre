@@ -144,6 +144,56 @@ void LTextureView::setDstSize(const LSize &dstSize)
     setDstSize(dstSize.w(), dstSize.h());
 }
 
+void LTextureView::enableCustomColor(bool enabled)
+{
+    if (imp()->customColorEnabled != enabled)
+    {
+        imp()->customColorEnabled = enabled;
+
+        LView *nativeView = this;
+
+        nativeView->imp()->markAsChangedOrder(false);
+
+        if (mapped())
+            repaint();
+    }
+}
+
+bool LTextureView::customColorEnabled() const
+{
+    return imp()->customColorEnabled;
+}
+
+void LTextureView::setCustomColor(Float32 r, Float32 g, Float32 b)
+{
+    if (imp()->customColorEnabled)
+    {
+        if (imp()->customColor.r != r || imp()->customColor.g != g || imp()->customColor.b != b)
+        {
+            LView *nativeView = this;
+
+            nativeView->imp()->markAsChangedOrder(false);
+
+            if (mapped())
+                repaint();
+        }
+    }
+
+    imp()->customColor.r = r;
+    imp()->customColor.g = g;
+    imp()->customColor.b = b;
+}
+
+void LTextureView::setCustomColor(const LRGBF &color)
+{
+    setCustomColor(color.r, color.g, color.b);
+}
+
+const LRGBF &LTextureView::customColor() const
+{
+    return imp()->customColor;
+}
+
 bool LTextureView::nativeMapped() const
 {
     return imp()->texture != nullptr;
@@ -237,22 +287,54 @@ void LTextureView::paintRect(LPainter *p,
         LSizeF scaling = LSizeF(imp()->texture->sizeB())/float(bufferScale());
         scaling = LSizeF(imp()->dstSize)/scaling;
 
-        p->drawTexture(imp()->texture,
-            srcX * scaling.x(),
-            srcY * scaling.y(),
-            srcW * scaling.x(),
-            srcH * scaling.y(),
-            dstX,
-            dstY,
-            dstW,
-            dstH,
-            scale, alpha);
+        if (imp()->customColorEnabled)
+        {
+            p->drawColorTexture(imp()->texture,
+                                imp()->customColor.r,
+                                imp()->customColor.g,
+                                imp()->customColor.b,
+                                srcX * scaling.x(),
+                                srcY * scaling.y(),
+                                srcW * scaling.x(),
+                                srcH * scaling.y(),
+                                dstX,
+                                dstY,
+                                dstW,
+                                dstH,
+                                scale, alpha);
+        }
+        else
+        {
+            p->drawTexture(imp()->texture,
+                           srcX * scaling.x(),
+                           srcY * scaling.y(),
+                           srcW * scaling.x(),
+                           srcH * scaling.y(),
+                           dstX,
+                           dstY,
+                           dstW,
+                           dstH,
+                           scale, alpha);
+        }
     }
     else
     {
-        p->drawTexture(imp()->texture,
-                        srcX, srcY, srcW, srcH,
-                        dstX, dstY, dstW, dstH,
-                        scale, alpha);
+        if (imp()->customColorEnabled)
+        {
+            p->drawColorTexture(imp()->texture,
+                                imp()->customColor.r,
+                                imp()->customColor.g,
+                                imp()->customColor.b,
+                                srcX, srcY, srcW, srcH,
+                                dstX, dstY, dstW, dstH,
+                                scale, alpha);
+        }
+        else
+        {
+            p->drawTexture(imp()->texture,
+                           srcX, srcY, srcW, srcH,
+                           dstX, dstY, dstW, dstH,
+                           scale, alpha);
+        }
     }
 }

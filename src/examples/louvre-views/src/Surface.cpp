@@ -10,6 +10,8 @@
 #include "ToplevelView.h"
 #include "Global.h"
 #include "Dock.h"
+#include "Client.h"
+#include "App.h"
 
 Surface::Surface(LSurface::Params *params) : LSurface(params)
 {
@@ -92,6 +94,21 @@ void Surface::mappingChanged()
         {
             firstMap = false;
 
+            // Stop dock App icon animation
+            Client *cli = (Client*)client();
+
+            if (cli->app)
+            {
+                if (cli->app->state != App::Running)
+                    cli->app->state = App::Running;
+            }
+            // If no App then is a non pinned dock App
+            else
+            {
+                cli->createNonPinnedApp();
+                seat()->keyboard()->focusChanged();
+            }
+
             if (toplevel())
             {
                 LPoint outputPosG = compositor()->cursor()->output()->pos() + LPoint(0, TOPBAR_HEIGHT);
@@ -166,7 +183,8 @@ void Surface::minimizedChanged()
         thumbnailFullSizeTex = renderThumbnail();
 
         // Create a smaller scaled version for the dock
-        thumbnailTex = thumbnailFullSizeTex->copyB(LSize((DOCK_ITEM_HEIGHT * thumbnailFullSizeTex->sizeB().w()) /thumbnailFullSizeTex->sizeB().h(), DOCK_ITEM_HEIGHT) * view->bufferScale());
+        Float32 s = float(DOCK_ITEM_HEIGHT);
+        thumbnailTex = thumbnailFullSizeTex->copyB(LSize((s * thumbnailFullSizeTex->sizeB().w()) /thumbnailFullSizeTex->sizeB().h(), s) * 3.5f);
 
         // Create a view for thumbnailFullSizeTex (we only need one)
         thumbnailFullsizeView = new LTextureView(thumbnailFullSizeTex, getView()->parent());

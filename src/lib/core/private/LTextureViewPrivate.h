@@ -18,6 +18,9 @@ LPRIVATE_CLASS(LTextureView)
     bool dstSizeEnabled = false;
     LSize dstSize = LSize(1);
 
+    LRGBF customColor;
+    bool customColorEnabled = false;
+
     LSize tmpSize;
 };
 

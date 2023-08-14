@@ -82,7 +82,7 @@ public:
      * @param onUpdate A callback function triggered each time the value() property changes. nullptr can be passed if not used.
      * @param onFinish A callback function triggered once the value() property reaches 1.f. nullptr can be passed if not used.
      */
-    static void oneShot(UInt32 durationMs, Callback onUpdate = nullptr, Callback onFinish = nullptr);
+    static void oneShot(UInt32 durationMs, const Callback &onUpdate = nullptr, const Callback &onFinish = nullptr);
 
     /*!
      * The create() method creates an animation without starting it immediately.
@@ -91,17 +91,17 @@ public:
      * @param onUpdate A callback function triggered each time the value() property changes. nullptr can be passed if not used.
      * @param onFinish A callback function triggered once the value() property reaches 1.f. nullptr can be passed if not used.
      */
-    static LAnimation *create(UInt32 durationMs, Callback onUpdate = nullptr, Callback onFinish = nullptr);
+    static LAnimation *create(UInt32 durationMs, const Callback &onUpdate = nullptr, const Callback &onFinish = nullptr);
 
     /*!
      * Sets the onUpdate callback handler function. nullptr can be passed to disable it.
      */
-    void setOnUpdateCallback(Callback onUpdate);
+    void setOnUpdateCallback(const Callback &onUpdate);
 
     /*!
      * Sets the onFinish callback handler function. nullptr can be passed to disable it.
      */
-    void setOnFinishCallback(Callback onFinish);
+    void setOnFinishCallback(const Callback &onFinish);
 
     /*!
      * Sets the duration of the animation in milliseconds.
