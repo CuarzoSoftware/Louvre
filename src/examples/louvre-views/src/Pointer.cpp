@@ -5,10 +5,12 @@
 #include <LCursorRole.h>
 #include <LLog.h>
 #include <LTime.h>
+#include <LSurfaceView.h>
+#include <LSurface.h>
 
 #include "Global.h"
 #include "Pointer.h"
-#include "Surface.h"
+#include "Compositor.h"
 
 Pointer::Pointer(Params *params) : LPointer(params) {}
 

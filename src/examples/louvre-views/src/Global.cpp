@@ -10,12 +10,17 @@
 #include "Dock.h"
 #include "TextRenderer.h"
 #include "App.h"
+#include "Tooltip.h"
 
 static G::DockTextures _dockTextures;
 static G::ToplevelTextures _toplevelTextures;
+static G::TooltipTextures _tooltipTextures;
+
 static G::Cursors xCursors;
 static G::Fonts _fonts;
 static std::list<App*>_apps;
+
+static Tooltip *_tooltip;
 
 Compositor *G::compositor()
 {
@@ -24,7 +29,7 @@ Compositor *G::compositor()
 
 LScene *G::scene()
 {
-    return compositor()->scene;
+    return &compositor()->scene;
 }
 
 Pointer *G::pointer()
@@ -170,6 +175,56 @@ std::list<App *> &G::apps()
     return _apps;
 }
 
+void G::createTooltip()
+{
+    _tooltipTextures.decoration[TL] = LOpenGL::loadTexture("/usr/etc/Louvre/assets/container_top_left.png");
+    _tooltipTextures.decoration[T]= LOpenGL::loadTexture("/usr/etc/Louvre/assets/container_clamp_top.png");
+    _tooltipTextures.decoration[L] = LOpenGL::loadTexture("/usr/etc/Louvre/assets/container_clamp_side.png");
+    _tooltipTextures.arrow = LOpenGL::loadTexture("/usr/etc/Louvre/assets/container_arrow.png");
+
+
+    _tooltipTextures.decoration[TR] = _tooltipTextures.decoration[TL]->copyB(_tooltipTextures.decoration[TL]->sizeB(),
+                                                                LRect(0,
+                                                                      0,
+                                                                      - _tooltipTextures.decoration[TL]->sizeB().w(),
+                                                                      _tooltipTextures.decoration[TL]->sizeB().h()));
+
+    _tooltipTextures.decoration[R] = _tooltipTextures.decoration[L]->copyB(_tooltipTextures.decoration[L]->sizeB(),
+                                                                LRect(0,
+                                                                      0,
+                                                                      - _tooltipTextures.decoration[L]->sizeB().w(),
+                                                                      _tooltipTextures.decoration[L]->sizeB().h()));
+
+    _tooltipTextures.decoration[BR] = _tooltipTextures.decoration[TL]->copyB(_tooltipTextures.decoration[TL]->sizeB(),
+                                                                LRect(0,
+                                                                      0,
+                                                                      - _tooltipTextures.decoration[TL]->sizeB().w(),
+                                                                      - _tooltipTextures.decoration[TL]->sizeB().h()));
+
+    _tooltipTextures.decoration[B] = _tooltipTextures.decoration[T]->copyB(_tooltipTextures.decoration[T]->sizeB(),
+                                                          LRect(0,
+                                                                0,
+                                                                _tooltipTextures.decoration[T]->sizeB().w(),
+                                                                - _tooltipTextures.decoration[T]->sizeB().h()));
+
+    _tooltipTextures.decoration[BL] = _tooltipTextures.decoration[TL]->copyB(_tooltipTextures.decoration[TL]->sizeB(),
+                                                                   LRect(0,
+                                                                         0,
+                                                                         _tooltipTextures.decoration[TL]->sizeB().w(),
+                                                                         - _tooltipTextures.decoration[TL]->sizeB().h()));
+    _tooltip = new Tooltip();
+}
+
+G::TooltipTextures &G::tooltipTextures()
+{
+    return _tooltipTextures;
+}
+
+Tooltip *G::tooltip()
+{
+    return _tooltip;
+}
+
 void G::loadCursors()
 {
     xCursors.hand2 = LXCursor::loadXCursorB("hand2");
@@ -275,6 +330,9 @@ void G::loadToplevelTextures()
     _toplevelTextures.activeFullscreenButtonPressed = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_fullscreen_pressed.png");
     _toplevelTextures.activeUnfullscreenButtonHover = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_unfullscreen_hover.png");
     _toplevelTextures.activeUnfullscreenButtonPressed = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_unfullscreen_pressed.png");
+
+    _toplevelTextures.logo = LOpenGL::loadTexture("/usr/etc/Louvre/assets/logo.png");
+
 }
 
 G::ToplevelTextures &G::toplevelTextures()

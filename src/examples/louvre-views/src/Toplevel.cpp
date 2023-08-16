@@ -81,6 +81,9 @@ void Toplevel::setMaximizedRequest()
     if (!fullscreen())
         prevRect = LRect(surface()->pos(), windowGeometry().size());
 
+    if (prevRect.y() < TOPBAR_HEIGHT)
+        prevRect.setY(TOPBAR_HEIGHT);
+
     if (maxSize().w() == 0 || maxSize().w() >= output->rect().w())
         dstRect.setW(output->rect().w());
     else
@@ -221,6 +224,17 @@ void Toplevel::decorationModeChanged()
     {
         decoratedView = new ToplevelView(this);
     }
+
+    Surface *surf = (Surface*)surface();
+
+    if (surf->mapped() && surf->firstMap)
+    {
+        surf->firstMap = false;
+        surf->view->setVisible(true);
+    }
+
+    if (!fullscreen() && rolePos().y() < TOPBAR_HEIGHT)
+        surface()->setY(TOPBAR_HEIGHT);
 }
 
 void Toplevel::geometryChanged()
@@ -263,7 +277,7 @@ void Toplevel::unsetFullscreen()
     Surface *surf = (Surface*)surface();
 
     while (!fullscreenOutput->fullscreenView->children().empty())
-        fullscreenOutput->fullscreenView->children().back()->setParent(G::compositor()->surfacesLayer);
+        fullscreenOutput->fullscreenView->children().back()->setParent(&G::compositor()->surfacesLayer);
 
     surf->setPos(prevRect.pos());
     fullscreenOutput->fullscreenView->setVisible(false);

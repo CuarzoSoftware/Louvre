@@ -23,7 +23,10 @@ public:
     // White bar
     LSolidColorView *background;
 
-    // Clock
+    // Louvre logo
+    LTextureView *logo = nullptr;
+
+    // Clock text
     LTextureView *clock = nullptr;
 
     // Current app title

@@ -1,6 +1,7 @@
 #include <LLayerView.h>
 #include <LAnimation.h>
 #include <LTextureView.h>
+#include <LTimer.h>
 #include <LLog.h>
 
 #include "Client.h"
@@ -15,29 +16,20 @@
 #include "TextRenderer.h"
 #include "Topbar.h"
 
-Compositor::Compositor():LCompositor()
+Compositor::Compositor() : LCompositor(),
+    scene(),
+    backgroundLayer(scene.mainView()),
+    surfacesLayer(scene.mainView()),
+    fullscreenLayer(scene.mainView()),
+    overlayLayer(scene.mainView()),
+    tooltipsLayer(scene.mainView())
 {
-    scene = new LScene();
-
     // Set black as tue clear color which will be visible if
     // no wallpaper is loaded
-    scene->mainView()->setClearColor(0.f, 0.f, 0.f, 1.f);
-
-    // Add layers to the scene in the correct order
-    backgroundLayer = new LLayerView(scene->mainView());
-    surfacesLayer = new LLayerView(scene->mainView());
-    fullscreenLayer = new LLayerView(scene->mainView());
-    overlayLayer = new LLayerView(scene->mainView());
+    scene.mainView()->setClearColor(0.f, 0.f, 0.f, 1.f);
 }
 
-Compositor::~Compositor()
-{
-    delete overlayLayer;
-    delete fullscreenLayer;
-    delete surfacesLayer;
-    delete backgroundLayer;
-    delete scene;
-}
+Compositor::~Compositor() {}
 
 void Compositor::initialized()
 {
@@ -48,10 +40,46 @@ void Compositor::initialized()
     G::loadCursors();
     G::loadToplevelTextures();
     G::loadFonts();
+    G::createTooltip();
     G::loadApps();
 
-    clockTimer = wl_event_loop_add_timer(LCompositor::eventLoop(), &Compositor::timerCallback, this);
-    wl_event_source_timer_update(clockTimer, 1);
+    clockMinuteTimer = new LTimer([](LTimer *timer)
+    {
+        if (G::font()->regular)
+        {
+            char text[128];
+            time_t rawtime;
+            struct tm *timeinfo;
+            time(&rawtime);
+            timeinfo = localtime(&rawtime);
+            strftime(text, sizeof(text), "%a %b %d, %I:%M %p", timeinfo);
+
+            LTexture *newClockTexture = G::font()->regular->renderText(text, 22);
+
+            if (newClockTexture)
+            {
+                for (Output *o : G::outputs())
+                {
+                    if (o->topbar && o->topbar->clock)
+                    {
+                        o->topbar->clock->setTexture(newClockTexture);
+                        o->topbar->update();
+                    }
+                }
+
+                if (G::compositor()->clockTexture)
+                {
+                    delete G::compositor()->clockTexture;
+                    G::compositor()->clockTexture = newClockTexture;
+                }
+            }
+        }
+
+        timer->start(millisecondsUntilNextMinute() + 1500);
+    });
+
+    // Start the timer right on to setup the clock texture
+    clockMinuteTimer->start(1);
 
     Int32 totalWidth = 0;
 
@@ -100,42 +128,6 @@ LKeyboard *Compositor::createKeyboardRequest(LKeyboard::Params *params)
 LToplevelRole *Compositor::createToplevelRoleRequest(LToplevelRole::Params *params)
 {
     return new Toplevel(params);
-}
-
-Int32 Compositor::timerCallback(void *)
-{
-    if (G::font()->regular)
-    {
-        char text[128];
-        time_t rawtime;
-        struct tm *timeinfo;
-        time(&rawtime);
-        timeinfo = localtime(&rawtime);
-        strftime(text, sizeof(text), "%a %b %d, %I:%M %p", timeinfo);
-
-        LTexture *newClockTexture = G::font()->regular->renderText(text, 22);
-
-        if (newClockTexture)
-        {
-            for (Output *o : G::outputs())
-            {
-                if (o->topbar && o->topbar->clock)
-                {
-                    o->topbar->clock->setTexture(newClockTexture);
-                    o->topbar->update();
-                }
-            }
-
-            if (G::compositor()->clockTexture)
-            {
-                delete G::compositor()->clockTexture;
-                G::compositor()->clockTexture = newClockTexture;
-            }
-        }
-    }
-
-    wl_event_source_timer_update(G::compositor()->clockTimer, millisecondsUntilNextMinute() + 1500);
-    return 0;
 }
 
 Int32 Compositor::millisecondsUntilNextMinute()

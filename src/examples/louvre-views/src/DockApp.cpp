@@ -2,6 +2,7 @@
 #include "App.h"
 #include "Dock.h"
 #include "Global.h"
+#include "Tooltip.h"
 
 DockApp::DockApp(App *app, Dock *dock) : LTextureView()
 {
@@ -28,6 +29,13 @@ DockApp::~DockApp()
     dot = nullptr;
     setParent(nullptr);
     app->dockApps.erase(appLink);
+    dock->update();
+}
+
+void DockApp::pointerEnterEvent(const LPoint &)
+{
+    G::tooltip()->setText(app->name);
+    G::tooltip()->targetView = this;
     dock->update();
 }
 

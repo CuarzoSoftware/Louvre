@@ -7,6 +7,7 @@
 #include "Global.h"
 #include "Output.h"
 #include "Dock.h"
+#include "Tooltip.h"
 
 DockItem::DockItem(class Surface *surface, Dock *dock) : LTextureView(surface->thumbnailTex, dock->itemsContainer)
 {
@@ -29,6 +30,15 @@ void DockItem::pointerEnterEvent(const LPoint &localPos)
 {
     L_UNUSED(localPos);
     setOpacity(0.8f);
+
+    if (surface->toplevel())
+    {
+        G::tooltip()->setText(surface->toplevel()->title());
+        G::tooltip()->targetView = this;
+        dock->update();
+    }
+    else
+        G::tooltip()->hide();
 }
 
 void DockItem::pointerLeaveEvent()

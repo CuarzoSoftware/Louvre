@@ -9,7 +9,7 @@
 #include "src/Pointer.h"
 #include "src/ToplevelView.h"
 
-Topbar::Topbar(Output *output) : LLayerView(G::compositor()->overlayLayer)
+Topbar::Topbar(Output *output) : LLayerView(&G::compositor()->overlayLayer)
 {
     this->output = output;
     output->topbar = this;
@@ -21,6 +21,12 @@ Topbar::Topbar(Output *output) : LLayerView(G::compositor()->overlayLayer)
     background->enableInput(false);
     background->enableBlockPointer(false);
     background->setPos(0, 0);
+
+    logo = new LTextureView(G::toplevelTextures().logo, background);
+    logo->setBufferScale(2);
+    logo->enableCustomColor(true);
+    logo->setCustomColor(0.1f, 0.1f, 0.1f);
+    logo->setPos(12, 5);
 
     // Todo USE textures of another topbar if exists
 
@@ -114,7 +120,7 @@ void Topbar::update()
         background->setSize(output->size().w(), TOPBAR_HEIGHT);
         setSize(output->size().w(), TOPBAR_HEIGHT);
         background->setVisible(true);
-        appName->setPos(20, (background ->size().h() - appName->size().h()) / 2);
+        appName->setPos(42, 1 + (background ->size().h() - appName->size().h()) / 2);
     }
 
     clock->setPos(size().w() - clock->size().w() - 8,

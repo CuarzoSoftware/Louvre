@@ -15,7 +15,8 @@
 
 Surface::Surface(LSurface::Params *params) : LSurface(params)
 {
-    view = new LSurfaceView(this, G::compositor()->surfacesLayer);
+    view = new LSurfaceView(this, &G::compositor()->surfacesLayer);
+    view->setVisible(false);
 }
 
 Surface::~Surface()
@@ -92,8 +93,6 @@ void Surface::mappingChanged()
     {
         if (firstMap)
         {
-            firstMap = false;
-
             // Stop dock App icon animation
             Client *cli = (Client*)client();
 
@@ -123,10 +122,18 @@ void Surface::mappingChanged()
                     setY(TOPBAR_HEIGHT);
 
                 toplevel()->configure(LToplevelRole::Activated);
+
+                if (!client()->xdgDecorationManagerGlobals().empty() && toplevel()->preferredDecorationMode() == 0 && toplevel()->decorationMode() != LToplevelRole::ServerSide)
+                    return;
             }
 
             if (dndIcon())
                 setPos(cursor()->pos());
+
+            firstMap = false;
+
+            view->setVisible(true);
+            requestNextFrame(false);
         }
 
         compositor()->repaintAllOutputs();

@@ -17,8 +17,8 @@ public:
     bool lastFullscreenState = false;
     Toplevel *toplevel = nullptr;
 
-    LLayerView *clipTop = nullptr;
-    LLayerView *clipBottom = nullptr;
+    LLayerView clipTop;
+    LLayerView clipBottom;
     LSurfaceView *surfB = nullptr;
 
     LTextureView *decoTL = nullptr;

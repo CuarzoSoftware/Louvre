@@ -6,13 +6,14 @@
 #include "Pointer.h"
 #include "App.h"
 #include "DockApp.h"
+#include "src/Tooltip.h"
 
 #include <LTextureView.h>
 #include <LCursor.h>
 #include <LLog.h>
 
 // Add it to the overlayLayer so it is always on top
-Dock::Dock(Output *output) : LLayerView(G::compositor()->overlayLayer)
+Dock::Dock(Output *output) : LLayerView(&G::compositor()->overlayLayer)
 {
     this->output = output;
     output->dock = this;
@@ -79,12 +80,6 @@ Dock::~Dock()
 
 void Dock::update()
 {
-    setSize(output->size().w(),
-            DOCK_HEIGHT + 6);
-
-    setPos(output->rect().x(),
-           output->rect().h() - size().h() * visiblePercent);
-
     Int32 dockWidth = DOCK_PADDING;
 
     if (appsContainer->children().empty() || appsContainer->children().size() == 1 || itemsContainer->children().empty())
@@ -99,15 +94,20 @@ void Dock::update()
         if ((LSolidColorView*)item == separator)
             item->setPos(dockWidth, DOCK_PADDING + (DOCK_ITEM_HEIGHT - item->size().h())/2);
         else
-        {
+        {                
             item->setPos(dockWidth, - 2 - item->app->dockAppsAnimationOffset.y() + DOCK_PADDING + (DOCK_ITEM_HEIGHT - item->size().h())/2);
 
             if (item->dot)
                 item->dot->setVisible(item->app->state == App::Running && item->app->dockAppsAnimationOffset.y() == 0);
+
+            if (pointerIsOver() && G::tooltip()->targetView == item)
+                G::tooltip()->show(item->pos().x() + item->size().w() / 2, item->pos().y());
         }
 
         dockWidth += item->size().w();
-        dockWidth += DOCK_SPACING;
+
+        if (it != itemsContainer->children().back() || separator->mapped())
+            dockWidth += DOCK_SPACING;
     }
 
     for (LView *it : itemsContainer->children())
@@ -119,9 +119,18 @@ void Dock::update()
 
         if (it != itemsContainer->children().back())
             dockWidth += DOCK_SPACING;
+
+        if (pointerIsOver() && G::tooltip()->targetView == item)
+            G::tooltip()->show(item->pos().x() + item->size().w() / 2, item->pos().y() - 8);
     }
 
     dockWidth += DOCK_PADDING;
+
+    setSize(dockWidth,
+            DOCK_HEIGHT + 6);
+
+    setPos(output->rect().x() + (output->rect().w() - size().w()) / 2,
+           output->rect().h() - size().h() * visiblePercent);
 
     dockLeft->setPos(0, 0);
     dockCenter->setPos(dockLeft->nativePos().x() + dockLeft->size().w(), 0);
@@ -175,6 +184,8 @@ void Dock::hide()
     {
         anim = nullptr;
         dockContainer->setVisible(false);
+        G::tooltip()->hide();
+        G::tooltip()->targetView = nullptr;
     });
 
     anim->start();
@@ -191,16 +202,20 @@ void Dock::pointerMoveEvent(const LPoint &localPos)
     L_UNUSED(localPos);
 
     if (visiblePercent == 1.f && !G::pointer()->cursorOwner)
+    {
         cursor()->useDefault();
+        update();
+    }
 
     if (showResistanceCount > showResistance)
         show();
     else
-        showResistanceCount++;
+        showResistanceCount++;    
 }
 
 void Dock::pointerLeaveEvent()
 {
+    G::tooltip()->hide();
     showResistanceCount = 0;
     hide();
 }

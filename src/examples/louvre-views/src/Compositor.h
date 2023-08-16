@@ -8,6 +8,8 @@
 
 using namespace Louvre;
 
+class Tooltip;
+
 class Compositor : public LCompositor
 {
 public:
@@ -25,23 +27,25 @@ public:
     LToplevelRole *createToplevelRoleRequest(LToplevelRole::Params *params) override;
 
     // Global scene used to render all outputs
-    LScene *scene;
+    LScene scene;
 
     // Layer for views that are always at the bottom like wallpapers
-    LLayerView *backgroundLayer;
+    LLayerView backgroundLayer;
 
     // Layer where client windows are stacked
-    LLayerView *surfacesLayer;
+    LLayerView surfacesLayer;
 
     // Layer for fullscreen toplevels
-    LLayerView *fullscreenLayer;
+    LLayerView fullscreenLayer;
 
     // Layer for views that are always at the top like the dock, topbar or DND icons
-    LLayerView *overlayLayer;
+    LLayerView overlayLayer;
+
+    // Layer for tooltips and non client popups
+    LLayerView tooltipsLayer;
 
     // Timer for updating the clock every minute
-    wl_event_source *clockTimer = nullptr;
-    static Int32 timerCallback(void *data);
+    LTimer *clockMinuteTimer;
     static Int32 millisecondsUntilNextMinute();
 
     // Shared texture used in all clock views

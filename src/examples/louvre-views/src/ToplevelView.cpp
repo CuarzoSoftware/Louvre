@@ -91,23 +91,23 @@ static void onPointerButtonResizeArea(InputRect *rect, void *data, LPointer::But
         pointer->cursorOwner = nullptr;
 }
 
-ToplevelView::ToplevelView(Toplevel *toplevel) : LLayerView(G::compositor()->surfacesLayer)
+ToplevelView::ToplevelView(Toplevel *toplevel) :
+    LLayerView(&G::compositor()->surfacesLayer),
+    clipTop(this),
+    clipBottom(this)
 {
     this->toplevel = toplevel;
     toplevel->decoratedView = this;
 
-    clipTop = new LLayerView(this);
-    clipTop->setPos(0, 0);
     class Surface *surf = (class Surface*)toplevel->surface();
     setParent(surf->view->parent());
     surf->view->setPrimary(true);
     surf->view->enableCustomPos(true);
     surf->view->enableParentClipping(true);
-    surf->view->setParent(clipTop);
+    surf->view->setParent(&clipTop);
     surf->view->setCustomPos(LPoint(0, 0));
 
-    clipBottom = new LLayerView(this);
-    surfB = new LSurfaceView(toplevel->surface(), clipBottom);
+    surfB = new LSurfaceView(toplevel->surface(), &clipBottom);
     surfB->setPrimary(false);
     surfB->enableParentClipping(true);
     surfB->enableCustomPos(true);
@@ -283,8 +283,6 @@ ToplevelView::~ToplevelView()
         delete title->texture();
 
     delete title;
-    delete clipTop;
-    delete clipBottom;
     delete surfB;
     delete decoTL;
     delete decoT;
@@ -347,9 +345,9 @@ void ToplevelView::updateGeometry()
 {
     class Surface *surf = (class Surface *)toplevel->surface();
 
-    if (surf->view->parent() != clipTop)
+    if (surf->view->parent() != &clipTop)
     {
-        surf->view->setParent(clipTop);
+        surf->view->setParent(&clipTop);
         surf->view->insertAfter(nullptr);
     }
 
@@ -434,7 +432,7 @@ void ToplevelView::updateGeometry()
     {
         if (!lastFullscreenState)
         {
-            clipBottom->setVisible(false);
+            clipBottom.setVisible(false);
             sceneBL->setVisible(false);
             sceneBR->setVisible(false);
             maskBL->setVisible(false);
@@ -463,7 +461,7 @@ void ToplevelView::updateGeometry()
 
         LSize size = nativeSize();
 
-        clipTop->setSize(size);
+        clipTop.setSize(size);
 
         decoT->setDstSize(size.w(), decoT->texture()->sizeB().h() / 2);
         decoT->setPos(0, -decoT->nativeSize().h() + (TOPLEVEL_TOPBAR_HEIGHT + TOPLEVEL_TOP_CLAMP_OFFSET_Y) * toplevel->fullscreenOutput->topbar->visiblePercent);
@@ -492,7 +490,7 @@ void ToplevelView::updateGeometry()
         {
             buttonsContainer->setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT);
             surf->view->setCustomPos(0, 0);
-            clipBottom->setVisible(true);
+            clipBottom.setVisible(true);
             sceneBL->setVisible(true);
             sceneBR->setVisible(true);
             maskBL->setVisible(true);
@@ -523,16 +521,16 @@ void ToplevelView::updateGeometry()
         LSize size = nativeSize();
 
         // Upper surface view
-        clipTop->setSize(
+        clipTop.setSize(
             size.w(),
             size.h() - TOPLEVEL_BORDER_RADIUS);
         surf->view->setCustomPos(- clip, - clip);
 
         // Lower surface view (without border radius rects)
-        clipBottom->setPos(
+        clipBottom.setPos(
             TOPLEVEL_BORDER_RADIUS,
             size.h() - TOPLEVEL_BORDER_RADIUS);
-        clipBottom->setSize(
+        clipBottom.setSize(
             size.w() - 2 * TOPLEVEL_BORDER_RADIUS,
             TOPLEVEL_BORDER_RADIUS);
         surfB->setCustomPos(
@@ -597,8 +595,8 @@ void ToplevelView::updateGeometry()
             0,
             0,
             decoT->size().w(),
-            decoT->size().h() - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_TOP_CLAMP_OFFSET_Y);
-        transT.addRect(
+            decoT->size().h() - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_TOP_CLAMP_OFFSET_Y + 1);
+        transT.addRect( // Bottom line
             0,
             decoT->size().h() - TOPLEVEL_TOP_CLAMP_OFFSET_Y,
             decoT->size().w(),

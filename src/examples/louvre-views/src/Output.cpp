@@ -33,7 +33,7 @@ void Output::loadWallpaper()
     }
     else
     {
-        wallpaperView = new LTextureView(nullptr, G::compositor()->backgroundLayer);
+        wallpaperView = new LTextureView(nullptr, &G::compositor()->backgroundLayer);
         wallpaperView->enableParentOffset(false);
     }
 
@@ -81,7 +81,7 @@ void Output::initializeGL()
     new Topbar(this);
     topbar->update();
 
-    fullscreenView = new LSolidColorView(0.f, 0.f, 0.f, 1.f, G::compositor()->fullscreenLayer);
+    fullscreenView = new LSolidColorView(0.f, 0.f, 0.f, 1.f, &G::compositor()->fullscreenLayer);
     fullscreenView->setVisible(false);
     fullscreenView->enableInput(true);
     fullscreenView->enableBlockPointer(true);
@@ -90,7 +90,7 @@ void Output::initializeGL()
 
     new Dock(this);
     loadWallpaper();
-    G::compositor()->scene->handleInitializeGL(this);
+    G::compositor()->scene.handleInitializeGL(this);
 }
 
 void Output::resizeGL()
@@ -99,7 +99,7 @@ void Output::resizeGL()
     topbar->update();
     dock->update();
     loadWallpaper();
-    G::compositor()->scene->handleResizeGL(this);
+    G::compositor()->scene.handleResizeGL(this);
 }
 
 void Output::moveGL()
@@ -108,7 +108,7 @@ void Output::moveGL()
     topbar->update();
     dock->update();
     wallpaperView->setPos(pos());
-    G::compositor()->scene->handleMoveGL(this);
+    G::compositor()->scene.handleMoveGL(this);
 }
 
 void Output::paintGL()
@@ -121,12 +121,12 @@ void Output::paintGL()
         G::compositor()->updatePointerBeforePaint = false;
     }
 
-    G::compositor()->scene->handlePaintGL(this);
+    G::compositor()->scene.handlePaintGL(this);
 }
 
 void Output::uninitializeGL()
 {
     delete dock;
     delete topbar;
-    G::compositor()->scene->handleUninitializeGL(this);
+    G::compositor()->scene.handleUninitializeGL(this);
 }
