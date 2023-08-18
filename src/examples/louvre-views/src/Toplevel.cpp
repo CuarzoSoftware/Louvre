@@ -9,10 +9,14 @@
 #include "Surface.h"
 #include "ToplevelView.h"
 #include "Output.h"
+#include "Workspace.h"
 #include "Topbar.h"
 #include "TextRenderer.h"
 
-Toplevel::Toplevel(Params *params) : LToplevelRole(params) {}
+Toplevel::Toplevel(Params *params) : LToplevelRole(params),
+    blackFullscreenBackground(0.f, 0.f, 0.f, 1.f),
+    capture()
+{}
 
 Toplevel::~Toplevel()
 {
@@ -142,15 +146,28 @@ void Toplevel::setFullscreenRequest(LOutput *output)
     else
         dstOutput = (Output*)cursor()->output();
 
-    // If there is already another fullscreen toplevel on that output we reject the request
-    if (dstOutput->fullscreenToplevel)
-        return;
-
     prevRect = LRect(surface()->pos(), windowGeometry().size());
     dstRect = LRect(dstOutput->pos(), dstOutput->size());
 
     fullscreenOutput = dstOutput;
     configure(dstRect.size(), Activated | Fullscreen);
+
+    LBox box = surf->getView()->boundingBox();
+    prevBoundingRect = LRect(box.x1,
+                             box.y1,
+                             box.x2 - box.x1,
+                             box.y2 - box.y1);
+
+    LTexture *captureTexture = surf->renderThumbnail();
+
+    LTexture *old = capture.texture();
+
+    capture.setTexture(captureTexture);
+    capture.setBufferScale(1);
+    capture.setPos(- windowGeometry().pos().x(), - windowGeometry().pos().y());
+
+    if (old)
+        delete old;
 }
 
 void Toplevel::unsetFullscreenRequest()
@@ -174,27 +191,53 @@ void Toplevel::fullscreenChanged()
             configure(prevRect.size(), states() &~ Fullscreen);
             return;
         }
-        fullscreenOutput->fullscreenToplevel = this;
-        fullscreenOutput->fullscreenView->setVisible(true);
-        fullscreenOutput->fullscreenView->setPos(fullscreenOutput->pos());
-        fullscreenOutput->fullscreenView->setSize(fullscreenOutput->size());
-        surf->getView()->setParent(fullscreenOutput->fullscreenView);
-        surf->getView()->enableParentOffset(false);
-        surface()->setPos(dstRect.pos());
-        fullscreenOutput->topbar->hide();
-        fullscreenOutput->topbar->update();
 
-        LSurface *ls = surface();
-        while ((ls = ls->nextSurface()))
+        surf->getView()->setOpacity(0.f);
+        capture.setParent(&blackFullscreenBackground);
+        capture.enableParentOffset(true);
+        capture.enableParentOpacity(false);
+        capture.enableParentScaling(true);
+        capture.enableDstSize(true);
+        capture.setDstSize(fullscreenOutput->size() + (capture.nativePos() * - 2));
+        capture.setOpacity(1.f);
+        capture.setVisible(true);
+
+        blackFullscreenBackground.setPos(prevBoundingRect.pos());
+        blackFullscreenBackground.setSize(fullscreenOutput->size());
+        blackFullscreenBackground.setOpacity(0.01f);
+
+        blackFullscreenBackground.setParent(&G::compositor()->overlayLayer);
+        blackFullscreenBackground.enableParentOffset(false);
+        blackFullscreenBackground.setVisible(true);
+        blackFullscreenBackground.enableScaling(true);
+
+        LSizeF sVector;
+        sVector.setW(Float32(prevBoundingRect.size().w()) / Float32(fullscreenOutput->size().w()));
+        sVector.setH(Float32(prevBoundingRect.size().h()) / Float32(fullscreenOutput->size().h()));
+
+        blackFullscreenBackground.setScalingVector(sVector);
+        animatingFullscreen = true;
+
+        surf->getView()->setParent(&blackFullscreenBackground);
+        surf->getView()->enableParentOffset(true);
+        surf->setPos(0, 0);
+        surf->getView()->setVisible(true);
+
+        for (Surface *s : G::surfaces())
         {
-            if (ls->parent() == surface())
-            {
-                Surface *s = (Surface*)ls;
-                s->getView()->setParent(fullscreenOutput->fullscreenView);
-            }
+            if (s->parent() == surface() && s->subsurface())
+                s->getView()->setParent(&blackFullscreenBackground);
         }
 
-        surface()->raise();
+        G::enableParentScalingChildren(&blackFullscreenBackground, true);
+
+        Workspace *workspace = new Workspace(fullscreenOutput, this);
+
+        // If the current workspace is the desktop, move the desktop views into it
+        if (fullscreenOutput->currentWorkspace == fullscreenOutput->workspaces.front())
+            fullscreenOutput->currentWorkspace->stealChildren();
+
+        fullscreenOutput->setWorkspace(workspace, 600, 3.f);
     }
     else
     {
@@ -274,6 +317,7 @@ void Toplevel::unsetFullscreen()
     if (!fullscreenOutput)
         return;
 
+    /*
     Surface *surf = (Surface*)surface();
 
     while (!fullscreenOutput->fullscreenView->children().empty())
@@ -283,7 +327,7 @@ void Toplevel::unsetFullscreen()
     fullscreenOutput->fullscreenView->setVisible(false);
     fullscreenOutput->fullscreenToplevel = nullptr;
     fullscreenOutput->topbar->update();
-    fullscreenOutput = nullptr;
+    fullscreenOutput = nullptr;*/
 }
 
 void Toplevel::preferredDecorationModeChanged()

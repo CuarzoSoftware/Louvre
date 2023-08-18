@@ -51,6 +51,8 @@ Topbar::~Topbar()
 
 void Topbar::show()
 {
+    return;
+
     if (anim || visiblePercent != 0.f)
         return;
 
@@ -67,8 +69,8 @@ void Topbar::show()
             update();
             anim = nullptr;
 
-            if (!pointerIsOver() && output->fullscreenToplevel)
-                LAnimation::oneShot(100, nullptr, [this](LAnimation *){hide();});
+            //if (!pointerIsOver() && output->fullscreenToplevel)
+            //    LAnimation::oneShot(100, nullptr, [this](LAnimation *){hide();});
         });
 
     anim->start();
@@ -98,8 +100,9 @@ void Topbar::hide()
 
 void Topbar::update()
 {
-    if (output->fullscreenToplevel)
+    if (false)//output->fullscreenToplevel)
     {
+        /*
         if (output->fullscreenToplevel->decoratedView)
         {
             setVisible(true);
@@ -111,7 +114,7 @@ void Topbar::update()
         else
         {
             setVisible(false);
-        }
+        }*/
     }
     else
     {
@@ -134,8 +137,8 @@ void Topbar::pointerEnterEvent(const LPoint &localPos)
     if (!G::pointer()->resizingToplevel() && !G::pointer()->movingToplevel() && !G::pointer()->cursorOwner)
         cursor()->useDefault();
 
-    if (output->fullscreenToplevel && output->fullscreenToplevel->decoratedView)
-        show();
+    //if (output->fullscreenToplevel && output->fullscreenToplevel->decoratedView)
+    //    show();
 }
 
 void Topbar::pointerMoveEvent(const LPoint &)
@@ -146,6 +149,6 @@ void Topbar::pointerMoveEvent(const LPoint &)
 
 void Topbar::pointerLeaveEvent()
 {
-    if (output->fullscreenToplevel)
-        hide();
+    //if (output->fullscreenToplevel)
+    //    hide();
 }

@@ -1,6 +1,7 @@
 #include <LTextureView.h>
 #include <LAnimation.h>
 
+#include "Workspace.h"
 #include "Compositor.h"
 #include "LTime.h"
 #include "Surface.h"
@@ -60,7 +61,7 @@ LView *Surface::getView() const
     return view;
 }
 
-static LView *searchFullscreenParent(Surface *parent)
+static class Toplevel *searchFullscreenParent(Surface *parent)
 {
     if (!parent)
         return nullptr;
@@ -68,22 +69,27 @@ static LView *searchFullscreenParent(Surface *parent)
     if (parent->toplevel() && parent->toplevel()->fullscreen())
     {
         Toplevel *tl = (Toplevel*)parent->toplevel();
-        return tl->fullscreenOutput->fullscreenView;
+        return tl;
     }
 
     return searchFullscreenParent((Surface*)parent->parent());
 }
+
 void Surface::parentChanged()
 {
     if (parent())
     {
-        LView *fullscreenView = searchFullscreenParent((Surface*)parent());
+        class Toplevel *tl = searchFullscreenParent((Surface*)parent());
 
-        if (fullscreenView)
+        if (tl)
         {
-            getView()->setParent(fullscreenView);
-            parent()->raise();
+            getView()->setParent(&tl->blackFullscreenBackground);
+
+            for (Workspace *ws : tl->fullscreenOutput->workspaces)
+                ws->clipChildren();
         }
+
+        parent()->raise();
     }
 }
 
@@ -166,8 +172,15 @@ void Surface::roleChanged()
 {
     if (roleId() == LSurface::Cursor)
         view->setVisible(false);
-    if (roleId() == LSurface::DNDIcon)
+    else if (roleId() == LSurface::DNDIcon)
+    {
         setPos(cursor()->pos());
+        getView()->setParent(&G::compositor()->overlayLayer);
+        getView()->enableClipping(false);
+        getView()->setVisible(true);
+        getView()->enableParentOffset(false);
+        raise();
+    }
 }
 
 void Surface::bufferSizeChanged()

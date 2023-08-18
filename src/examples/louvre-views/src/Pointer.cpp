@@ -7,6 +7,7 @@
 #include <LTime.h>
 #include <LSurfaceView.h>
 #include <LSurface.h>
+#include <LOutput.h>
 
 #include "Global.h"
 #include "Pointer.h"
@@ -30,40 +31,19 @@ void Pointer::pointerMoveEvent(Float32 dx, Float32 dy)
     if (velocity.y() < 5.f)
         velocity.setY(velocity.y() + fabs(dy) * acelerationFactor);
 
-    LView *view = G::scene()->handlePointerMoveEvent(dx + (velocity.x() * dx) / (fabs(dx) + 0.000001),
-                                                     dy + (velocity.y() * dy) / (fabs(dy) + 0.000001));
-
-    if (resizingToplevel() || cursorOwner)
-        return;
-
-    if (view)
-    {
-        if (view->type() == LView::Surface)
-        {
-            LSurfaceView *surfView = (LSurfaceView*)view;
-
-            if (surfView->surface() == lastCursorRequestFocusedSurface)
-            {
-                if (lastCursorRequest())
-                {
-                    cursor()->setTextureB(lastCursorRequest()->surface()->texture(), lastCursorRequest()->hotspotB());
-                    cursor()->setVisible(true);
-                }
-                else
-                    cursor()->setVisible(false);
-            }
-        }
-
-        return;
-    }
-
-    cursor()->useDefault();
-    cursor()->setVisible(true);
+    pointerPosChangeEvent(cursor()->pos().x() + dx + (velocity.x() * dx) / (fabs(dx) + 0.000001),
+                          cursor()->pos().y() + dy + (velocity.y() * dy) / (fabs(dy) + 0.000001));
 }
 
 void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
 {
     LView *view = G::scene()->handlePointerPosChangeEvent(x, y);
+
+    if (movingToplevel() || resizingToplevel())
+    {
+        for (LOutput *o : cursor()->intersectedOutputs())
+            o->repaint();
+    }
 
     if (resizingToplevel() || cursorOwner)
         return;

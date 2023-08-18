@@ -284,8 +284,9 @@ void LTextureView::paintRect(LPainter *p,
 
     if (imp()->dstSizeEnabled)
     {
-        LSizeF scaling = LSizeF(imp()->texture->sizeB())/float(bufferScale());
-        scaling = LSizeF(imp()->dstSize)/scaling;
+        LSizeF scaling;
+        scaling.setW(Float32(imp()->texture->sizeB().w()) / Float32(imp()->dstSize.w() * bufferScale()));
+        scaling.setH(Float32(imp()->texture->sizeB().h()) / Float32(imp()->dstSize.h() * bufferScale()));
 
         if (imp()->customColorEnabled)
         {

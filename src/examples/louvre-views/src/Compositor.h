@@ -35,6 +35,8 @@ public:
     // Layer where client windows are stacked
     LLayerView surfacesLayer;
 
+    LLayerView workspacesLayer;
+
     // Layer for fullscreen toplevels
     LLayerView fullscreenLayer;
 

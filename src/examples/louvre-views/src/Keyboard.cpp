@@ -1,4 +1,5 @@
 #include <LSurface.h>
+#include <LCursor.h>
 #include "Keyboard.h"
 #include "Global.h"
 #include <LScene.h>
@@ -7,6 +8,7 @@
 #include "Topbar.h"
 #include "App.h"
 #include "Client.h"
+#include "Workspace.h"
 
 Keyboard::Keyboard(Params *params) : LKeyboard(params) {}
 
@@ -17,6 +19,22 @@ void Keyboard::keyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked
 
 void Keyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
 {
+    Output *output = (Output*)cursor()->output();
+
+    if (output && output->currentWorkspace && keyState == Pressed && isKeyCodePressed(KEY_LEFTALT) && isKeyCodePressed(KEY_LEFTCTRL))
+    {
+        if (keyCode == KEY_RIGHT && std::next(output->currentWorkspace->outputLink) != output->workspaces.end())
+        {
+            output->setWorkspace(*std::next(output->currentWorkspace->outputLink), 512);
+            return;
+        }
+        else if (keyCode == KEY_LEFT && output->currentWorkspace != output->workspaces.front())
+        {
+            output->setWorkspace(*std::prev(output->currentWorkspace->outputLink), 512);
+            return;
+        }
+    }
+
     G::scene()->handleKeyEvent(keyCode, keyState);
 }
 

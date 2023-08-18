@@ -27,8 +27,28 @@ public:
 
     void loadWallpaper();
 
+    void setWorkspace(Workspace *ws, UInt32 animMs, Float32 curve = 2.f, Float32 start = 0.f);
+    void updateWorkspacesPos();
+
+    // Current workspace
+    Workspace *currentWorkspace = nullptr;
+
+    // Workspace switch/restore animation
+    LAnimation *workspaceAnim;
+    Float32 easingCurve = 2.f;
+    Float32 animStart = 0.f;
+
+    // X workspaces offset
+    Float32 workspaceOffset = 0.f;
+
+    // True if 3 finger swipe
+    bool swippingWorkspace = false;
+
     // Main workspace and one for each fullscreen toplevel
     std::list<Workspace*>workspaces;
+
+    // Container to move workspaces
+    LLayerView *workspacesContainer = nullptr;
 
     // Topbar for this output
     Topbar *topbar = nullptr;
@@ -38,12 +58,6 @@ public:
 
     // Dock for this output
     Dock *dock = nullptr;
-
-    // Current fullscreen toplevel on this output
-    Toplevel *fullscreenToplevel = nullptr;
-
-    // Black view used as background for fullscreen Toplevels
-    LSolidColorView *fullscreenView = nullptr;
 };
 
 #endif // OUTPUT_H

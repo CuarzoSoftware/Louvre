@@ -265,9 +265,6 @@ void LCursor::LCursorPrivate::update()
     rect.setPos(newPosS);
     rect.setSize(size);
 
-
-
-
     for (LOutput *o : compositor()->outputs())
     {
         if (o->rect().intersects(rect))

@@ -86,5 +86,3 @@ jobs:
           asset_path: ../louvre_tmp/packages/${{ steps.set-env.outputs.LOUVRE_RPM_PACKAGE_NAME }}-${{ steps.set-env.outputs.LOUVRE_VERSION }}-${{ steps.set-env.outputs.LOUVRE_BUILD }}.${{ steps.set-env.outputs.LOUVRE_RPM_PACKAGE_ARCH }}.rpm
           asset_name: ${{ steps.set-env.outputs.LOUVRE_RPM_PACKAGE_NAME }}-${{ steps.set-env.outputs.LOUVRE_VERSION }}-${{ steps.set-env.outputs.LOUVRE_BUILD }}.${{ steps.set-env.outputs.LOUVRE_RPM_PACKAGE_ARCH }}.rpm
           asset_content_type: application/x-rpm
-      
-

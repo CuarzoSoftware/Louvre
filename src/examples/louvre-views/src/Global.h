@@ -7,6 +7,7 @@ class Pointer;
 class TextRenderer;
 class App;
 class Tooltip;
+class Surface;
 
 #include <LNamespaces.h>
 #include <LRegion.h>
@@ -159,6 +160,7 @@ public:
     static LScene *scene();
     static Pointer *pointer();
     static std::list<Output*>&outputs();
+    static std::list<Surface*>&surfaces();
 
     // Dock
     static void loadDockTextures();
@@ -183,6 +185,10 @@ public:
     // Fonts
     static void loadFonts();
     static Fonts *font();
+
+    // Utils
+    static void enableParentScalingChildren(LView *parent, bool enabled);
+    static void enableClippingChildren(LView *parent, bool enabled);
 };
 
 #endif // SHARED_H

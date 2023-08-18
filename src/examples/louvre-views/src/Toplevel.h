@@ -1,7 +1,9 @@
 #ifndef TOPLEVEL_H
 #define TOPLEVEL_H
 
+#include <LTextureView.h>
 #include <LToplevelRole.h>
+#include <LSolidColorView.h>
 
 class ToplevelView;
 class Output;
@@ -37,13 +39,18 @@ public:
     void appIdChanged() override;
     void titleChanged() override;
 
-
     void unsetFullscreen();
+
+    LSolidColorView blackFullscreenBackground;
+
+    // Rendered view for fullscreen animation
+    LTextureView capture;
+    bool animatingFullscreen = false;
 
     ToplevelView *decoratedView = nullptr;
     bool changingState = false;
 
-    LRect prevRect, dstRect;
+    LRect prevRect, dstRect, prevBoundingRect;
     Output *fullscreenOutput = nullptr;
 };
 

@@ -20,12 +20,12 @@ Compositor::Compositor() : LCompositor(),
     scene(),
     backgroundLayer(scene.mainView()),
     surfacesLayer(scene.mainView()),
+    workspacesLayer(scene.mainView()),
     fullscreenLayer(scene.mainView()),
     overlayLayer(scene.mainView()),
     tooltipsLayer(scene.mainView())
 {
-    // Set black as tue clear color which will be visible if
-    // no wallpaper is loaded
+    // Set black as default background color
     scene.mainView()->setClearColor(0.f, 0.f, 0.f, 1.f);
 }
 

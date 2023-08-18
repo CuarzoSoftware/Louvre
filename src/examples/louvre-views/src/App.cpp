@@ -138,8 +138,8 @@ void App::clicked()
                     {
                         if (it->dock->output == cursor()->output())
                         {
-                            if (it->dock->output->fullscreenToplevel && it->dock->output->fullscreenToplevel->surface() != surf)
-                                it->dock->output->fullscreenToplevel->unsetFullscreenRequest();
+                            //if (it->dock->output->fullscreenToplevel && it->dock->output->fullscreenToplevel->surface() != surf)
+                                //it->dock->output->fullscreenToplevel->unsetFullscreenRequest();
 
                             surf->unminimize(it);
                             return;
@@ -150,8 +150,8 @@ void App::clicked()
                 else if (surf->toplevel())
                 {
                     Output *o = (Output*)cursor()->output();
-                    if (o->fullscreenToplevel && o->fullscreenToplevel->surface() != surf)
-                        o->fullscreenToplevel->unsetFullscreenRequest();
+                    //if (o->fullscreenToplevel && o->fullscreenToplevel->surface() != surf)
+                        //o->fullscreenToplevel->unsetFullscreenRequest();
 
                     surf->toplevel()->configure(surf->toplevel()->states() | LToplevelRole::Activated);
                     surf->raise();

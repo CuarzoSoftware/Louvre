@@ -42,6 +42,11 @@ std::list<Output *> &G::outputs()
     return (std::list<Output*>&)compositor()->outputs();
 }
 
+std::list<Surface *> &G::surfaces()
+{
+    return (std::list<Surface*>&)compositor()->surfaces();
+}
+
 void G::loadDockTextures()
 {
     _dockTextures.left = LOpenGL::loadTexture("/usr/etc/Louvre/assets/dock_side.png");
@@ -332,7 +337,6 @@ void G::loadToplevelTextures()
     _toplevelTextures.activeUnfullscreenButtonPressed = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_unfullscreen_pressed.png");
 
     _toplevelTextures.logo = LOpenGL::loadTexture("/usr/etc/Louvre/assets/logo.png");
-
 }
 
 G::ToplevelTextures &G::toplevelTextures()
@@ -352,4 +356,22 @@ void G::loadFonts()
 G::Fonts *G::font()
 {
     return &_fonts;
+}
+
+void G::enableParentScalingChildren(LView *parent, bool enabled)
+{
+    for (LView *child : parent->children())
+    {
+        child->enableParentScaling(enabled);
+        enableParentScalingChildren(child, enabled);
+    }
+}
+
+void G::enableClippingChildren(LView *parent, bool enabled)
+{
+    for (LView *child : parent->children())
+    {
+        child->enableClipping(enabled);
+        enableClippingChildren(child, enabled);
+    }
 }

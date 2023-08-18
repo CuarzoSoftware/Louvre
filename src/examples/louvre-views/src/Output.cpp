@@ -12,8 +12,12 @@
 #include "Compositor.h"
 #include "Dock.h"
 #include "Topbar.h"
+#include "Workspace.h"
+#include "Toplevel.h"
+#include "Surface.h"
+#include "ToplevelView.h"
 
-Output::Output():LOutput() {}
+Output::Output() : LOutput() {}
 
 void Output::loadWallpaper()
 {
@@ -76,17 +80,119 @@ void Output::loadWallpaper()
     wallpaperView->setPos(pos());
 }
 
+void Output::setWorkspace(Workspace *ws, UInt32 animMs, Float32 curve, Float32 start)
+{
+    animStart = start;
+    easingCurve = curve;
+    workspaceAnim->stop();
+    workspaceAnim->setDuration(animMs);
+    currentWorkspace = ws;
+    workspaceAnim->start(false);
+}
+
+void Output::updateWorkspacesPos()
+{
+    Int32 offset = 0;
+    Int32 spacing = 64;
+
+    for (Workspace *ws : workspaces)
+    {
+        ws->setPos(offset, 0);
+        offset += size().w() + spacing;
+    }
+}
+
 void Output::initializeGL()
 {
+    workspaceAnim = LAnimation::create(400,
+        [this](LAnimation *anim)
+        {
+            for (Workspace *ws : workspaces)
+                ws->setVisible(LRect(ws->pos(), size()).intersects(rect()));
+
+            if (swippingWorkspace)
+            {
+                anim->stop();
+                return;
+            }
+
+            Float32 ease = 1.f - powf(animStart + (1.f - animStart) * anim->value(), easingCurve);
+
+            workspaceOffset = workspaceOffset * ease + Float32( - currentWorkspace->nativePos().x()) * (1.f - ease);
+
+            if (abs(workspaceOffset - currentWorkspace->nativePos().x()) < 2)
+            {
+                anim->stop();
+                workspaceOffset = currentWorkspace->nativePos().x();
+            }
+
+            workspacesContainer->setPos(workspaceOffset, 0);
+
+            for (Workspace *ws : workspaces)
+                ws->clipChildren();
+
+            if (currentWorkspace->toplevel && currentWorkspace->toplevel->animatingFullscreen)
+            {
+                Toplevel *tl = currentWorkspace->toplevel;
+                tl->blackFullscreenBackground.setOpacity(anim->value());
+                tl->blackFullscreenBackground.setPos((pos() * anim->value()) + (tl->prevBoundingRect.pos() * (1.f - anim->value())));
+
+                Float32 exp = anim->value();
+
+                LSize cSize = (size() * exp) + (tl->prevBoundingRect.size() * (1.f - exp));
+
+                LSizeF sVector;
+                sVector.setW(Float32(cSize.w()) / Float32(size().w()));
+                sVector.setH(Float32(cSize.h()) / Float32(size().h()));
+
+                tl->blackFullscreenBackground.setScalingVector(sVector);
+                tl->capture.setOpacity(1.f - exp);
+
+                Surface *surf = (Surface*)tl->surface();
+                surf->getView()->enableParentScaling(true);
+                surf->getView()->setOpacity(1.f);
+                surf->getView()->setVisible(true);
+                surf->getView()->setParent(&tl->blackFullscreenBackground);
+                surf->setPos(0,0);
+                surf->raise();
+
+                if (tl->decoratedView)
+                    tl->decoratedView->updateGeometry();
+            }
+
+            repaint();
+        },
+        [this](LAnimation *anim)
+        {
+            if (currentWorkspace->toplevel)
+            {
+                Toplevel *tl = currentWorkspace->toplevel;
+
+                if (tl->animatingFullscreen)
+                {
+                    tl->blackFullscreenBackground.setParent(&currentWorkspace->surfaces);
+                    tl->blackFullscreenBackground.enableParentOffset(true);
+                    tl->blackFullscreenBackground.setPos(0,0);
+                    tl->animatingFullscreen = false;
+                    delete tl->capture.texture();
+                    tl->capture.setTexture(nullptr);
+                }
+
+                seat()->pointer()->setFocus(tl->surface());
+                seat()->keyboard()->setFocus(tl->surface());
+                tl->configure(tl->states() | LToplevelRole::Activated);
+            }
+            else if(currentWorkspace == workspaces.front())
+            {
+                currentWorkspace->returnChildren();
+            }
+        });
+
+    workspacesContainer = new LLayerView(&G::compositor()->workspacesLayer);
+    currentWorkspace = new Workspace(this);
+
     new Topbar(this);
     topbar->update();
-
-    fullscreenView = new LSolidColorView(0.f, 0.f, 0.f, 1.f, &G::compositor()->fullscreenLayer);
-    fullscreenView->setVisible(false);
-    fullscreenView->enableInput(true);
-    fullscreenView->enableBlockPointer(true);
-    fullscreenView->setPos(pos());
-    fullscreenView->setSize(size());
 
     new Dock(this);
     loadWallpaper();
@@ -95,7 +201,7 @@ void Output::initializeGL()
 
 void Output::resizeGL()
 {
-    fullscreenView->setSize(size());
+    updateWorkspacesPos();
     topbar->update();
     dock->update();
     loadWallpaper();
@@ -104,7 +210,7 @@ void Output::resizeGL()
 
 void Output::moveGL()
 {
-    fullscreenView->setPos(pos());
+    updateWorkspacesPos();
     topbar->update();
     dock->update();
     wallpaperView->setPos(pos());

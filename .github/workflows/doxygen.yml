@@ -30,6 +30,3 @@ jobs:
           git add .
           git commit -m "Doxygen"
           git push -f --set-upstream origin docs
-
-      
-

@@ -12,6 +12,9 @@ public:
 
     void seatEnabled() override;
     void backendNativeEvent(void *event) override;
+
+    // Last swipe dx
+    Float32 dx = 0.f;
 };
 
 #endif // SEAT_H
