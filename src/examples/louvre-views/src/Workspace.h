@@ -12,6 +12,7 @@ class Workspace : public LLayerView
 {
 public:
     Workspace(Output *output, Toplevel *toplevel = nullptr);
+    ~Workspace();
 
     Output *output = nullptr;
     std::list<Workspace*>::iterator outputLink;

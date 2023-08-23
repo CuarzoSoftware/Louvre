@@ -10,7 +10,7 @@ DockApp::DockApp(App *app, Dock *dock) : LTextureView()
     this->dock = dock;
     setParent(dock->appsContainer);
     setTexture(app->texture);
-    setBufferScale(4);
+    setBufferScale(2);
     enableInput(true);
     enableBlockPointer(false);
 

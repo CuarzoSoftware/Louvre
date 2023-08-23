@@ -1,5 +1,6 @@
 #include <LTextureView.h>
 #include <LSceneView.h>
+#include <LAnimation.h>
 #include <LCursor.h>
 #include <LXCursor.h>
 #include <LTime.h>
@@ -13,7 +14,6 @@
 #include "Pointer.h"
 #include "InputRect.h"
 #include "Output.h"
-#include "Topbar.h"
 #include "TextRenderer.h"
 
 static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &)
@@ -30,8 +30,30 @@ static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &
         G::compositor()->cursor()->setTextureB(cursor->texture(), cursor->hotspotB());
         pointer->cursorOwner = view;
     }
+    // Topbar input
     else
+    {
         G::compositor()->cursor()->useDefault();
+
+        if (view->toplevel->fullscreen() && !view->fullscreenTopbarAnim && view->fullscreenTopbarVisibility == 0.f)
+        {
+            view->fullscreenTopbarAnim =
+                LAnimation::create(100,
+                [view](LAnimation *anim)
+                {
+                    view->fullscreenTopbarVisibility = anim->value();
+                    view->updateGeometry();
+                },
+                [view](LAnimation *anim)
+                {
+                    view->fullscreenTopbarVisibility = anim->value();
+                    view->updateGeometry();
+                    view->fullscreenTopbarAnim = nullptr;
+                });
+
+            view->fullscreenTopbarAnim->start();
+        }
+    }
 
     G::compositor()->cursor()->setVisible(true);
 }
@@ -41,10 +63,34 @@ static void onPointerLeaveResizeArea(InputRect *rect, void *data)
     ToplevelView *view = (ToplevelView*)rect->parent();
     Pointer *pointer = (Pointer*)view->seat()->pointer();
 
-    if (data && pointer->cursorOwner == view)
+    if (data)
     {
-        pointer->cursorOwner = nullptr;
-        G::compositor()->updatePointerBeforePaint = true;
+        if (pointer->cursorOwner == view)
+        {
+            pointer->cursorOwner = nullptr;
+            G::compositor()->updatePointerBeforePaint = true;
+        }
+    }
+    else
+    {
+        if (view->toplevel->fullscreen() && !view->fullscreenTopbarAnim && view->fullscreenTopbarVisibility == 1.f)
+        {
+            view->fullscreenTopbarAnim =
+                LAnimation::create(100,
+                    [view](LAnimation *anim)
+                    {
+                        view->fullscreenTopbarVisibility = 1.f - anim->value();
+                        view->updateGeometry();
+                    },
+                    [view](LAnimation *anim)
+                    {
+                        view->fullscreenTopbarVisibility = 1.f -anim->value();
+                        view->updateGeometry();
+                        view->fullscreenTopbarAnim = nullptr;
+                    });
+
+            view->fullscreenTopbarAnim->start();
+        }
     }
 }
 
@@ -53,6 +99,9 @@ static void onPointerButtonResizeArea(InputRect *rect, void *data, LPointer::But
     ToplevelView *view = (ToplevelView*)rect->parent();
     Pointer *pointer = (Pointer*)view->seat()->pointer();
     Toplevel *toplevel = view->toplevel;
+
+    if (toplevel->fullscreen())
+        return;
 
     if (button != LPointer::Left)
         return;
@@ -271,6 +320,9 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
 
 ToplevelView::~ToplevelView()
 {
+    if (fullscreenTopbarAnim)
+        fullscreenTopbarAnim->stop();
+
     Pointer *pointer = (Pointer*)seat()->pointer();
 
     if (pointer->cursorOwner == this)
@@ -452,6 +504,7 @@ void ToplevelView::updateGeometry()
             resizeTR->setVisible(false);
             resizeBL->setVisible(false);
             resizeBR->setVisible(false);
+            buttonsContainer->enableBlockPointer(false);
         }
 
         setSize(toplevel->fullscreenOutput->size());
@@ -464,8 +517,8 @@ void ToplevelView::updateGeometry()
         clipTop.setSize(size);
 
         decoT->setDstSize(size.w(), decoT->texture()->sizeB().h() / 2);
-        decoT->setPos(0, -decoT->nativeSize().h() + (TOPLEVEL_TOPBAR_HEIGHT + TOPLEVEL_TOP_CLAMP_OFFSET_Y) * toplevel->fullscreenOutput->topbar->visiblePercent);
-        buttonsContainer->setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT * (1.f - toplevel->fullscreenOutput->topbar->visiblePercent));
+        decoT->setPos(0, -decoT->nativeSize().h() + (TOPLEVEL_TOPBAR_HEIGHT + TOPLEVEL_TOP_CLAMP_OFFSET_Y) * fullscreenTopbarVisibility);
+        buttonsContainer->setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT * (1.f - fullscreenTopbarVisibility));
 
         // Set topbar center translucent regions
         LRegion transT;
@@ -481,8 +534,8 @@ void ToplevelView::updateGeometry()
             TOPLEVEL_TOP_CLAMP_OFFSET_Y);
         decoT->setTranslucentRegion(&transT);
 
-        topbarInput->setPos(0, - TOPLEVEL_TOPBAR_HEIGHT * (1.f - toplevel->fullscreenOutput->topbar->visiblePercent));
-        topbarInput->setSize(size.w(), TOPLEVEL_TOPBAR_HEIGHT);
+        topbarInput->setPos(0, - TOPLEVEL_TOPBAR_HEIGHT * (1.f - fullscreenTopbarVisibility));
+        topbarInput->setSize(size.w(), TOPLEVEL_TOPBAR_HEIGHT + 1);
     }
     else
     {
@@ -510,6 +563,7 @@ void ToplevelView::updateGeometry()
             resizeTR->setVisible(true);
             resizeBL->setVisible(true);
             resizeBR->setVisible(true);
+            buttonsContainer->enableBlockPointer(true);
         }
 
         Int32 clip = 1;

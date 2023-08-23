@@ -83,7 +83,8 @@ void Surface::parentChanged()
 
         if (tl)
         {
-            getView()->setParent(&tl->blackFullscreenBackground);
+            getView()->setParent(((Surface*)tl->surface())->getView()->parent());
+            getView()->enableParentOffset(true);
 
             for (Workspace *ws : tl->fullscreenOutput->workspaces)
                 ws->clipChildren();
@@ -181,6 +182,10 @@ void Surface::roleChanged()
         getView()->enableParentOffset(false);
         raise();
     }
+    else if (roleId() == LSurface::Toplevel || roleId() == LSurface::Popup)
+    {
+        sendOutputEnterEvent(cursor()->output());
+    }
 }
 
 void Surface::bufferSizeChanged()
@@ -208,7 +213,7 @@ void Surface::minimizedChanged()
 
         // Create a view for thumbnailFullSizeTex (we only need one)
         thumbnailFullsizeView = new LTextureView(thumbnailFullSizeTex, getView()->parent());
-        thumbnailFullsizeView->setBufferScale(view->bufferScale());
+        thumbnailFullsizeView->setBufferScale(2);
         thumbnailFullsizeView->enableScaling(true);
         thumbnailFullsizeView->enableParentOpacity(false);
         thumbnailFullsizeView->setPos(rolePos());
@@ -309,7 +314,7 @@ LTexture *Surface::renderThumbnail()
 
     minimizeStartRect = LRect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 
-    LSceneView tmpView(minimizeStartRect.size() * view->bufferScale(), view->bufferScale());
+    LSceneView tmpView(minimizeStartRect.size() * 2, 2);
     tmpView.setPos(minimizeStartRect.pos());
 
     LView *prevParent = getView()->parent();

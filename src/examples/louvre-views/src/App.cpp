@@ -39,7 +39,9 @@ App::App(const char *name, const char *exec, const char *iconPath)
 
     if (tmp)
     {
-        texture = tmp->copyB(LSize(DOCK_ITEM_HEIGHT * 4));
+        LTexture *hires = tmp->copyB(LSize(DOCK_ITEM_HEIGHT * 4));
+        texture = hires->copyB(LSize(DOCK_ITEM_HEIGHT * 2));
+        delete hires;
         delete tmp;
     }
 

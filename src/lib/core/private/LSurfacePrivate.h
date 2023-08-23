@@ -98,6 +98,8 @@ LPRIVATE_CLASS(LSurface)
     void sendPresentationFeedback(LOutput *output, timespec &ns);
 
     LSurfaceView *lastPointerEventView = nullptr;
+
+    Int32 lastSentPreferredBufferScale = -1;
 };
 
 #endif // LSURFACEPRIVATE_H

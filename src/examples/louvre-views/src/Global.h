@@ -189,6 +189,8 @@ public:
     // Utils
     static void enableParentScalingChildren(LView *parent, bool enabled);
     static void enableClippingChildren(LView *parent, bool enabled);
+    static Output *mostIntersectedOuput(LView *view);
+    static void reparentWithSubsurfaces(Surface *surf, LView *newParent);
 };
 
 #endif // SHARED_H

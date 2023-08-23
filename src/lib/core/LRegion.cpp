@@ -6,7 +6,7 @@ using namespace Louvre;
 LRegion::LRegion()
 {
     m_region = malloc(sizeof(pixman_region32_t));
-    pixman_region32_init((pixman_region32_t*)m_region);
+    pixman_region32_init((pixman_region32_t*)m_region);    
 }
 
 LRegion::~LRegion()
@@ -180,6 +180,11 @@ void LRegion::clip(const LRect &rect)
 {
     pixman_region32_intersect_rect((pixman_region32_t*)m_region, (pixman_region32_t*)m_region, rect.x(), rect.y(), rect.w(), rect.h());
     m_changed = true;
+}
+
+const LBox &LRegion::extents() const
+{
+    return *(LBox*)pixman_region32_extents((pixman_region32_t*)m_region);
 }
 
 const vector<LRect> &LRegion::rects() const

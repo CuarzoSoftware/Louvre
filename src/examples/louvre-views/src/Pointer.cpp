@@ -40,10 +40,7 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
     LView *view = G::scene()->handlePointerPosChangeEvent(x, y);
 
     if (movingToplevel() || resizingToplevel())
-    {
-        for (LOutput *o : cursor()->intersectedOutputs())
-            o->repaint();
-    }
+        cursor()->output()->repaint();
 
     if (resizingToplevel() || cursorOwner)
         return;
@@ -86,7 +83,12 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
 
 void Pointer::pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source)
 {
-    G::scene()->handlePointerAxisEvent(-axisX, -axisY, -discreteX, -discreteY, source);
+    Float32 speed = 0.6f;
+    G::scene()->handlePointerAxisEvent(-axisX * speed,
+                                       -axisY * speed,
+                                       -discreteX * speed,
+                                       -discreteY * speed,
+                                       source);
 }
 
 void Pointer::setCursorRequest(LCursorRole *cursorRole)

@@ -15,6 +15,7 @@ public:
 
     // Last swipe dx
     Float32 dx = 0.f;
+    Float32 swipeMargin = 275.f;
 };
 
 #endif // SEAT_H

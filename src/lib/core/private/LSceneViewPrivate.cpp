@@ -59,7 +59,6 @@ void LSceneView::LSceneViewPrivate::cachePass(LView *view, ThreadData *oD)
         oD->foundRenderableSaledView = true;
 }
 
-
 void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
 {
     // Children first
@@ -80,10 +79,22 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
     // Quick view cache handle to reduce verbosity
     LView::LViewPrivate::ViewCache *cache = &view->imp()->cache;
 
+    LRegion vRegion;
+    vRegion.addRect(cache->rect);
+
+    if (view->clippingEnabled())
+        vRegion.clip(view->clippingRect());
+
+    if (view->parent() && view->parentClippingEnabled())
+        vRegion.clip(LRect(view->parent()->pos(),view->parent()->size()));
+
     // Update view intersected outputs
     for (list<LOutput*>::const_iterator it = compositor()->outputs().cbegin(); it != compositor()->outputs().cend(); it++)
     {
-        if ((*it)->rect().intersects(cache->rect, false))
+        LRegion r = vRegion;
+        r.clip((*it)->rect());
+
+        if (!r.empty())
             view->enteredOutput(*it);
         else
            view->leftOutput(*it);

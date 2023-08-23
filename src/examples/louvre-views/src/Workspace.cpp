@@ -27,6 +27,11 @@ Workspace::Workspace(Output *output, Toplevel *toplevel) : LLayerView(output->wo
     output->updateWorkspacesPos();
 }
 
+Workspace::~Workspace()
+{
+    output->workspaces.erase(outputLink);
+}
+
 void Workspace::stealChildren()
 {
     if (output->workspaces.front() == this)
@@ -38,7 +43,6 @@ void Workspace::stealChildren()
         }
 
         LView *surfView;
-        LBox box;
 
         for (class Surface *surf : G::surfaces())
         {
@@ -46,9 +50,7 @@ void Workspace::stealChildren()
 
             if (surfView && surfView->parent() == &G::compositor()->surfacesLayer)
             {
-                box = surfView->boundingBox();
-
-                if (LRect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1).intersects(output->rect()))
+                if (G::mostIntersectedOuput(surfView) == output)
                 {
                     surfView->setParent(&surfaces);
                     surfView->enableParentOffset(true);
@@ -107,8 +109,31 @@ static void clipChildrenViews(LView *view, const LRect &rect)
 
 void Workspace::clipChildren()
 {
+    LRect rect;
+
+    rect.setY(0);
+    rect.setH(output->size().h());
+
+    if (pos().x() + output->pos().x() < output->pos().x())
+    {
+        rect.setX(output->pos().x());
+        rect.setW(output->size().w() + pos().x());
+        if (rect.w() < 0)
+            rect.setWidth(0);
+    }
+    else if (pos().x() + output->pos().x() > output->pos().x() + output->size().w())
+    {
+        rect.setX(output->size().w());
+        rect.setW(0);
+    }
+    else
+    {
+        rect.setX(output->pos().x() + pos().x());
+        rect.setW(output->size().w() - pos().x());
+    }
+
     setSize(output->size());
-    LRect rect = LRect(pos(), size());
+
     clipChildrenViews(this, rect);
 }
 

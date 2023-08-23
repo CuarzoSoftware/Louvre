@@ -7,6 +7,7 @@
 
 class ToplevelView;
 class Output;
+class Workspace;
 
 class Toplevel : public LToplevelRole
 {
@@ -41,17 +42,19 @@ public:
 
     void unsetFullscreen();
 
+    bool destructorCalled = false;
+
+    ToplevelView *decoratedView = nullptr;
+
     LSolidColorView blackFullscreenBackground;
 
     // Rendered view for fullscreen animation
-    LTextureView capture;
-    bool animatingFullscreen = false;
+    LTextureView capture, captureUnfullscreen;
 
-    ToplevelView *decoratedView = nullptr;
-    bool changingState = false;
-
+    // Rects for fullscreen animation
     LRect prevRect, dstRect, prevBoundingRect;
     Output *fullscreenOutput = nullptr;
+    Workspace *fullscreenWorkspace = nullptr;
 };
 
 #endif // TOPLEVEL_H

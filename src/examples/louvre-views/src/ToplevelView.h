@@ -57,6 +57,8 @@ public:
     LTextureView *title = nullptr;
 
     UInt32 lastTopbarClickMs = 0;
+    Float32 fullscreenTopbarVisibility = 0.f;
+    LAnimation *fullscreenTopbarAnim = nullptr;
 
     Int32 titleWidth = 0;
     void updateTitle();

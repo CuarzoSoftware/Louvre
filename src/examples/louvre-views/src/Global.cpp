@@ -11,6 +11,7 @@
 #include "TextRenderer.h"
 #include "App.h"
 #include "Tooltip.h"
+#include "Surface.h"
 
 static G::DockTextures _dockTextures;
 static G::ToplevelTextures _toplevelTextures;
@@ -75,7 +76,9 @@ void G::loadDockTextures()
 
     if (tmp)
     {
-        _dockTextures.defaultApp = tmp->copyB(LSize(DOCK_ITEM_HEIGHT * 4));
+        LTexture *hires = tmp->copyB(LSize(DOCK_ITEM_HEIGHT * 4));
+        _dockTextures.defaultApp = hires->copyB(LSize(DOCK_ITEM_HEIGHT * 2));
+        delete hires;
         delete tmp;
     }
 
@@ -373,5 +376,42 @@ void G::enableClippingChildren(LView *parent, bool enabled)
     {
         child->enableClipping(enabled);
         enableClippingChildren(child, enabled);
+    }
+}
+
+Output *G::mostIntersectedOuput(LView *view)
+{
+    LBox box = view->boundingBox();
+    LRect rect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+    Output *bestOutput = nullptr;
+    Int32 bestArea = 0;
+    LBox extents;
+
+    for (Output *o : outputs())
+    {
+        LRegion reg;
+        reg.addRect(rect);
+        reg.clip(o->rect());
+        extents = reg.extents();
+        Int32 area = (extents.x2 - extents.x1) * (extents.y2 - extents.y1);
+
+        if (area > bestArea)
+        {
+            bestArea = area;
+            bestOutput = o;
+        }
+    }
+
+    return bestOutput;
+}
+
+void G::reparentWithSubsurfaces(Surface *surf, LView *newParent)
+{
+    surf->getView()->setParent(newParent);
+
+    for (Surface *s : surfaces())
+    {
+        if (s->parent() == surf && s->subsurface())
+            G::reparentWithSubsurfaces(s, newParent);
     }
 }

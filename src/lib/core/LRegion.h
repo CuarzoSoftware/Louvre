@@ -144,6 +144,16 @@ public:
     void clip(const LRect &rect);
 
     /**
+     * @brief Get the extents of the LRegion.
+     *
+     * This function returns a pointer to an LBox that represents the bounding box of the LRegion.
+     * The LBox contains the minimum and maximum coordinates that enclose the LRegion.
+     *
+     * @return A pointer to the extents of the LRegion as an LBox.
+     */
+    const LBox &extents() const;
+
+    /**
      * @brief Retrieves the list of rectangles that form the LRegion.
      *
      * @return A reference to a vector containing LRect objects.

@@ -346,7 +346,10 @@ void LToplevelRole::configure(const LSize &size, UInt32 stateFlags)
 
 void LToplevelRole::configure(UInt32 stateFlags)
 {
-    configure(windowGeometry().size(), stateFlags);
+    if (imp()->sentConfs.empty())
+        configure(windowGeometry().size(), stateFlags);
+    else
+        configure(imp()->sentConfs.back().size, stateFlags);
 }
 
 LSize LToplevelRole::calculateResizeSize(const LPoint &cursorPosDelta, const LSize &initialSize, ResizeEdge edge)

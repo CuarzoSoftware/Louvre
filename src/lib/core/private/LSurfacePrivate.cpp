@@ -567,6 +567,10 @@ void LSurface::LSurfacePrivate::sendPreferredScale()
             scale = o->scale();
     }
 
+    if (lastSentPreferredBufferScale == scale)
+        return;
+
+    lastSentPreferredBufferScale = scale;
     surfaceResource->preferredBufferScale(scale);
 }
 

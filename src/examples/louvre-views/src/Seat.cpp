@@ -12,12 +12,15 @@ Seat::Seat(Params *params) : LSeat(params)
 {
 }
 
-// This is called the TTY session is restored
+// This is called when the TTY session is restored
 void Seat::seatEnabled()
 {
     // Damage all as a there may be missing pageflips
     for (Output *output : G::outputs())
+    {
         G::scene()->mainView()->damageAll(output);
+        output->repaint();
+    }
 
     // The HW cursor may have changed in another session
     if (cursor())
@@ -36,12 +39,16 @@ void Seat::backendNativeEvent(void *event)
     {
         libinput_event_gesture *gev = libinput_event_get_gesture_event(ev);
 
-        if (libinput_event_gesture_get_finger_count(gev) == 3)
+        if (libinput_event_gesture_get_finger_count(gev) > 2)
         {
+            if (output->animatedFullscreenToplevel)
+                return;
+
             output->swippingWorkspace = true;
-            output->workspaceAnim->stop();
             output->workspaceOffset = output->workspacesContainer->pos().x();
-            output->workspaces.front()->stealChildren();
+
+            for (Output *o : G::outputs())
+                o->workspaces.front()->stealChildren();
         }
     }
 
@@ -49,26 +56,39 @@ void Seat::backendNativeEvent(void *event)
     {
         libinput_event_gesture *gev = libinput_event_get_gesture_event(ev);
 
-        if (libinput_event_gesture_get_finger_count(gev) != 3)
+        if (libinput_event_gesture_get_finger_count(gev) < 3)
             return;
 
-        output->workspaceAnim->stop();
-        dx = libinput_event_gesture_get_dx(gev) * 0.2f;
-        Float32 maxOffset = 128.f;
-        Float32 offset = fabs(output->currentWorkspace->pos().x() - output->pos().x());
-        Float32 weight = powf(1.f - offset/maxOffset, 3.f);
+        dx = libinput_event_gesture_get_dx(gev);
 
-        if (dx < 0.f && output->currentWorkspace->pos().x() < output->pos().x())
-            dx *= weight;
+        if (dx > 50.f)
+            dx = 50.f;
+        else if (dx < -50.f)
+            dx = -50.f;
 
-        else if (dx > 0.f && output->currentWorkspace->pos().x() > output->pos().x())
-            dx *= weight;
+        if (output->animatedFullscreenToplevel)
+            return;
+
+        Float32 offset = fabs(output->currentWorkspace->pos().x());
+        Float32 weight = powf(1.f - offset/swipeMargin, 3.f);
+
+        // Slow down swipping if there is no workspace in that direction
+        if (output->workspaceOffset > 0.f)
+            dx *= weight * 0.2f;
+        else if (output->workspaceOffset < - output->workspaces.back()->nativePos().x())
+            dx *= weight * 0.2f;
 
         output->workspaceOffset += dx;
         output->workspacesContainer->setPos(output->workspaceOffset, 0);
 
-        for (Workspace *workspace : output->workspaces)
-            workspace->clipChildren();
+        for (Output *o : G::outputs())
+        {
+            for (Workspace *ws : o->workspaces)
+            {
+                ws->clipChildren();
+                ws->setVisible(LRect(ws->pos() + o->pos(), o->size()).intersects(o->rect()));
+            }
+        }
 
         output->repaint();
     }
@@ -77,43 +97,29 @@ void Seat::backendNativeEvent(void *event)
     {
         libinput_event_gesture *gev = libinput_event_get_gesture_event(ev);
 
-        if (libinput_event_gesture_get_finger_count(gev) == 3)
+        if (libinput_event_gesture_get_finger_count(gev) > 2)
         {
             output->swippingWorkspace = false;
 
+            if (output->animatedFullscreenToplevel)
+                return;
+
             Workspace *targetWorkspace = output->currentWorkspace;
 
-            if (fabs(dx) > 0.1f)
+            // Switch to right ws
+            if (std::next(targetWorkspace->outputLink) != output->workspaces.end() &&
+                (dx < - 5.2 || output->currentWorkspace->pos().x() + output->pos().x() < output->pos().x() - swipeMargin))
             {
-                // Switch to right ws
-                if (output->currentWorkspace->pos().x() < output->pos().x() - 16
-                    && dx < 0.f
-                    && std::next(targetWorkspace->outputLink) != output->workspaces.end())
-                {
-                    targetWorkspace = *std::next(targetWorkspace->outputLink);
-                }
-                // Switch to left ws
-                else if (output->currentWorkspace->pos().x() > output->pos().x() + 16
-                           && dx > 0.f
-                           && targetWorkspace != output->workspaces.front())
-                {
-                    targetWorkspace = *std::prev(targetWorkspace->outputLink);
-                }
+                targetWorkspace = *std::next(targetWorkspace->outputLink);
+            }
+            // Switch to left ws
+            else if (targetWorkspace != output->workspaces.front() &&
+                    (  dx > 5.2 || output->currentWorkspace->pos().x() + output->pos().x() > output->pos().x() + swipeMargin))
+            {
+                targetWorkspace = *std::prev(targetWorkspace->outputLink);
             }
 
-            Float32 easing = fabs(dx);
-
-            if (easing > 16.f)
-                easing = 1.0f;
-            else
-                easing = 2.f - easing/16.f;
-
-            Int32 ms = 480;
-
-            if (targetWorkspace == output->currentWorkspace)
-                ms = 250;
-
-            output->setWorkspace(targetWorkspace, ms, 2.5f, (2.f - easing) * 0.65f);
+            output->setWorkspace(targetWorkspace, 600, 3.5f, 0.15f + (0.3f * fabs(dx)) / 50.f);
         }
     }
 }

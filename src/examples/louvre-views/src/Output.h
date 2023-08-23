@@ -37,6 +37,7 @@ public:
     LAnimation *workspaceAnim;
     Float32 easingCurve = 2.f;
     Float32 animStart = 0.f;
+    Toplevel *animatedFullscreenToplevel = nullptr;
 
     // X workspaces offset
     Float32 workspaceOffset = 0.f;
