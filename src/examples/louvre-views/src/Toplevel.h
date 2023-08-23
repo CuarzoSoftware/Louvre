@@ -15,6 +15,9 @@ public:
     Toplevel(Params *params);
     ~Toplevel();
 
+    // Quick parse handles
+    inline class Surface *surf() const {return (Surface*)surface();};
+
     const LPoint &rolePos() const override;
     void configureRequest() override;
 
@@ -37,7 +40,6 @@ public:
     void geometryChanged() override;
 
     void activatedChanged() override;
-    void appIdChanged() override;
     void titleChanged() override;
 
     void unsetFullscreen();

@@ -204,6 +204,8 @@ void Surface::minimizedChanged()
             return;
         }
 
+        minimizedOutput = (Output*)cursor()->output();
+
         // Render the surface, all its decorations and subsurfaces into a texture
         thumbnailFullSizeTex = renderThumbnail();
 
@@ -275,6 +277,12 @@ void Surface::minimizedChanged()
     }
     else
     {
+        if (minimizedOutput)
+        {
+            minimizedOutput->setWorkspace(minimizedOutput->workspaces.front(), 600, 4.f);
+            minimizedOutput = nullptr;
+        }
+
         // Destroy minimized views
         while (!minimizedViews.empty())
         {

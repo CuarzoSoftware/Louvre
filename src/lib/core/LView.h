@@ -199,6 +199,8 @@ public:
      *
      * If this function returns true, the position returned by pos() includes the parent's offset (parent()->pos()).
      *
+     * The default value is **true**.
+     *
      * @returns True if the parent's offset is applied to the view position, false otherwise.
      */
     bool parentOffsetEnabled() const;
@@ -207,6 +209,8 @@ public:
      * @brief Enable or disable the parent's offset for the view position.
      *
      * If enabled, the position returned by pos() will include the parent's offset (parent()->pos()).
+     *
+     * The default value is **true**.
      *
      * @param enabled If true, the parent's offset will be applied to the view position.
      */
@@ -237,6 +241,8 @@ public:
      * clipping rectangle, which is defined by the clippingRect() property. If the view is not
      * clipped to the clipping rectangle, the function returns false.
      *
+     * The default value is **false**.
+     *
      * @returns True if the view is being clipped to the clipping rectangle, false otherwise.
      */
     bool clippingEnabled() const;
@@ -247,6 +253,8 @@ public:
      * If enabled, the view will be clipped to the current clipping rectangle defined by the
      * clippingRect() property. If disabled, the view will not be clipped, allowing its entire
      * content to be visible.
+     *
+     * The default value is **false**.
      *
      * @param enabled If true, the view will be clipped to the clippingRect() property.
      *                If false, clipping will be disabled, and the full view will be visible.
@@ -282,6 +290,8 @@ public:
      *
      * This function returns true if the view is clipped to the current parent view rect, false otherwise.
      *
+     * The default value is **false**.
+     *
      * @returns True if the view is clipped to the current parent view rect, false otherwise.
      */
     bool parentClippingEnabled() const;
@@ -290,6 +300,8 @@ public:
      * @brief Enable or disable clipping of the view to the current parent view rect.
      *
      * If enabled, the view will be clipped to the current parent view rect.
+     *
+     * The default value is **false**.
      *
      * @param enabled If true, the view will be clipped to the current parent view rect.
      */
@@ -338,6 +350,8 @@ public:
      *
      * This function returns true if the view's size and position are scaled by the parent's scaling vector, false otherwise.
      *
+     * The default value is **false**.
+     *
      * @returns True if the size and position are scaled by the parent's scaling vector, false otherwise.
      */
     bool parentScalingEnabled() const;
@@ -346,6 +360,8 @@ public:
      * @brief Enable or disable scaling of the size and position by the parent's scaling vector.
      *
      * If enabled, the view's size and position will be scaled by the parent's scaling vector.
+     *
+     * The default value is **false**.
      *
      * @param enabled If true, the view's size and position will be scaled by the parent's scaling vector.
      */
@@ -428,6 +444,8 @@ public:
      *
      * This function returns true if the view's opacity is multiplied by its parent's opacity, false otherwise.
      *
+     * The default value is **true**.
+     *
      * @returns True if the view's opacity is multiplied by its parent's opacity, false otherwise.
      */
     bool parentOpacityEnabled() const;
@@ -436,6 +454,8 @@ public:
      * @brief Enable or disable the view's opacity being multiplied by its parent's opacity.
      *
      * If enabled, the view's opacity will be multiplied by its parent's opacity.
+     *
+     * The default value is **true**.
      *
      * @param enabled If true, the view's opacity will be multiplied by its parent's opacity; if false, it will not be affected by the parent's opacity.
      */

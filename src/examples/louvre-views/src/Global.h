@@ -191,6 +191,7 @@ public:
     static void enableClippingChildren(LView *parent, bool enabled);
     static Output *mostIntersectedOuput(LView *view);
     static void reparentWithSubsurfaces(Surface *surf, LView *newParent);
+    static void setViewTextureAndDestroyPrev(LTextureView *view, LTexture *newTexture);
 };
 
 #endif // SHARED_H

@@ -39,6 +39,7 @@ public:
 
     LRect minimizeStartRect;
     LAnimation *minimizeAnim = nullptr;
+    Output *minimizedOutput = nullptr;
 };
 
 #endif // SURFACE_H

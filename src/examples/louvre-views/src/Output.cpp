@@ -97,7 +97,7 @@ void Output::setWorkspace(Workspace *ws, UInt32 animMs, Float32 curve, Float32 s
 void Output::updateWorkspacesPos()
 {
     Int32 offset = 0;
-    Int32 spacing = 64;
+    Int32 spacing = 128;
 
     for (Workspace *ws : workspaces)
     {
@@ -111,25 +111,19 @@ void Output::initializeGL()
     workspaceAnim = LAnimation::create(400,
         [this](LAnimation *anim)
         {
-            for (Workspace *ws : workspaces)
-                ws->setVisible(LRect(ws->pos() + pos(), size()).intersects(rect()));
-
             if (swippingWorkspace)
             {
                 anim->stop();
                 return;
             }
 
+            // Hide non visible workspaces
+            for (Workspace *ws : workspaces)
+                ws->setVisible(LRect(ws->pos() + pos(), size()).intersects(rect()));
+
             Float32 ease = 1.f - powf(animStart + (1.f - animStart) * anim->value(), easingCurve);
 
             workspaceOffset = workspaceOffset * ease + Float32( - currentWorkspace->nativePos().x()) * (1.f - ease);
-
-            if (abs(workspaceOffset - (currentWorkspace->nativePos().x())) < 2)
-            {
-                //anim->stop();
-                //workspaceOffset = currentWorkspace->nativePos().x();
-            }
-
             workspacesContainer->setPos(workspaceOffset, 0);
 
             for (Output *o : G::outputs())
@@ -140,57 +134,55 @@ void Output::initializeGL()
             {
                 Toplevel *tl = animatedFullscreenToplevel;
 
+                if (tl->destructorCalled)
+                {
+                    anim->stop();
+                    return;
+                }
+
+                // Current fullscreen size
+                LSize cSize;
+
+                // Scaling vector for the black toplevel background container so it matches cSize
+                LSizeF sVector;
+
                 if (tl->fullscreen())
                 {
+                    // Fades in black background
                     tl->blackFullscreenBackground.setOpacity(anim->value());
+
+                    // Moves the black background from the toplevel pos to the output pos
                     tl->blackFullscreenBackground.setPos((pos() * anim->value()) + (tl->prevBoundingRect.pos() * (1.f - anim->value())));
 
-                    Float32 exp = anim->value();
-
-                    LSize cSize = (size() * exp) + (tl->prevBoundingRect.size() * (1.f - exp));
-
-                    LSizeF sVector;
+                    // Scale black background
+                    cSize = (size() * anim->value()) + (tl->prevBoundingRect.size() * (1.f - anim->value()));
                     sVector.setW(Float32(cSize.w()) / Float32(size().w()));
                     sVector.setH(Float32(cSize.h()) / Float32(size().h()));
-
                     tl->blackFullscreenBackground.setScalingVector(sVector);
-                    tl->capture.setOpacity(1.f - exp);
 
-                    Surface *surf = (Surface*)tl->surface();
-                    surf->getView()->enableParentScaling(true);
-                    surf->getView()->setOpacity(1.f);
-                    surf->getView()->setVisible(true);
-                    surf->getView()->setParent(&tl->blackFullscreenBackground);
-                    surf->setPos(0,0);
-                    surf->raise();
-
-                    if (tl->decoratedView)
-                        tl->decoratedView->updateGeometry();
+                    // Fades out the unfullscreen toplevel capture
+                    tl->capture.setOpacity(1.f - anim->value());
                 }
                 else
                 {
-                    G::enableClippingChildren(&tl->blackFullscreenBackground, false);
-                    tl->blackFullscreenBackground.setSize(size());
-                    tl->blackFullscreenBackground.setOpacity(1.f - anim->value());
+                    // Fades out black background
+                    tl->blackFullscreenBackground.setOpacity((1.f - anim->value()) * 0.8f);
+
+                    // Moves the black background from the output pos to the toplevel prev pos
                     tl->blackFullscreenBackground.setPos((pos() * (1.f - anim->value())) + (tl->prevBoundingRect.pos() * anim->value()));
 
-                    Float32 exp = anim->value();
-
-                    LSize cSize = (size() * (1.f - exp)) + (tl->prevBoundingRect.size() * exp);
-
-                    LSizeF sVector;
+                    // Scale black background
+                    cSize = (size() * (1.f - anim->value())) + (tl->prevBoundingRect.size() * anim->value());
                     sVector.setW(Float32(cSize.w()) / Float32(size().w()));
                     sVector.setH(Float32(cSize.h()) / Float32(size().h()));
-
                     tl->blackFullscreenBackground.setScalingVector(sVector);
 
-                    tl->captureUnfullscreen.setOpacity(exp);
-                    tl->capture.setVisible(true);
-                    tl->capture.enableParentScaling(true);
-
-                    if (tl->decoratedView)
-                        tl->decoratedView->updateGeometry();
+                    // Fade in the target unfullscreen toplevel capture
+                    tl->captureUnfullscreen.setOpacity(anim->value());
                 }
+
+                if (tl->decoratedView)
+                    tl->decoratedView->updateGeometry();
             }
 
             repaint();
@@ -218,20 +210,18 @@ void Output::initializeGL()
 
                 if (tl->fullscreen())
                 {
-                    Surface *surf = (Surface*)tl->surface();
-                    surf->setPos(pos().x(), 0);
-                    G::reparentWithSubsurfaces(surf, &currentWorkspace->surfaces);
+                    tl->surf()->setPos(pos().x(), 0);
+                    G::reparentWithSubsurfaces(tl->surf(), &currentWorkspace->surfaces);
                     tl->blackFullscreenBackground.setVisible(false);
                     delete tl->capture.texture();
                     tl->capture.setTexture(nullptr);
                 }
                 else
                 {
-                    Surface *surf = (Surface*)tl->surface();
-                    surf->getView()->setScalingVector(LSizeF(1.f, 1.f));
-                    surf->setPos(tl->prevRect.pos());
-                    G::reparentWithSubsurfaces(surf, &currentWorkspace->surfaces);
-                    surf->getView()->setVisible(true);
+                    tl->surf()->getView()->setScalingVector(LSizeF(1.f, 1.f));
+                    tl->surf()->setPos(tl->prevRect.pos());
+                    G::reparentWithSubsurfaces(tl->surf(), &currentWorkspace->surfaces);
+                    tl->surf()->getView()->setVisible(true);
                     tl->blackFullscreenBackground.setVisible(false);
                     delete tl->capture.texture();
                     tl->capture.setTexture(nullptr);
@@ -248,7 +238,7 @@ void Output::initializeGL()
 
             for (Output *o : G::outputs())
             {
-                if (o->currentWorkspace ==  o->workspaces.front())
+                if (!o->swippingWorkspace && o->currentWorkspace ==  o->workspaces.front())
                     o->currentWorkspace->returnChildren();
             }
         });
@@ -286,7 +276,7 @@ void Output::moveGL()
 
 void Output::paintGL()
 {
-    //painter()->clearScreen();
+    // painter()->clearScreen();
 
     if (G::compositor()->updatePointerBeforePaint)
     {

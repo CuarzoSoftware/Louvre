@@ -415,3 +415,11 @@ void G::reparentWithSubsurfaces(Surface *surf, LView *newParent)
             G::reparentWithSubsurfaces(s, newParent);
     }
 }
+
+void G::setViewTextureAndDestroyPrev(LTextureView *view, LTexture *newTexture)
+{
+    LTexture *prevTexture = view->texture();
+    view->setTexture(newTexture);
+    if (prevTexture)
+        delete prevTexture;
+}

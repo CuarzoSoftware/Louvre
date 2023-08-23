@@ -44,8 +44,9 @@ void Seat::backendNativeEvent(void *event)
             if (output->animatedFullscreenToplevel)
                 return;
 
+            output->workspaceAnim->stop();
             output->swippingWorkspace = true;
-            output->workspaceOffset = output->workspacesContainer->pos().x();
+            output->workspaceOffset = output->workspacesContainer->nativePos().x();
 
             for (Output *o : G::outputs())
                 o->workspaces.front()->stealChildren();
@@ -68,6 +69,8 @@ void Seat::backendNativeEvent(void *event)
 
         if (output->animatedFullscreenToplevel)
             return;
+
+        output->workspaceAnim->stop();
 
         Float32 offset = fabs(output->currentWorkspace->pos().x());
         Float32 weight = powf(1.f - offset/swipeMargin, 3.f);

@@ -39,9 +39,10 @@ void LCompositor::LCompositorPrivate::removeGlobal(wl_global *global)
     removedGlobals.push_back(rg);
 }
 
-static wl_iterator_result resourceDestroyIterator(wl_resource *resource, void*)
+static wl_iterator_result resourceDestroyIterator(wl_resource *resource, void *data)
 {
-    wl_resource_destroy(resource);
+    wl_resource **lastCreatedResource = (wl_resource **)data;
+    *lastCreatedResource = resource;
     return WL_ITERATOR_CONTINUE;
 }
 
@@ -50,7 +51,19 @@ static void clientDisconnectedEvent(wl_listener *listener, void *data)
     delete listener;
     LCompositor *compositor = LCompositor::compositor();
     wl_client *client = (wl_client*)data;
-    wl_client_for_each_resource(client, resourceDestroyIterator, NULL);
+
+    wl_resource *lastCreatedResource = NULL;
+
+    while (1)
+    {
+        lastCreatedResource = NULL;
+        wl_client_for_each_resource(client, resourceDestroyIterator, &lastCreatedResource);
+
+        if (lastCreatedResource == NULL)
+            break;
+        else
+            wl_resource_destroy(lastCreatedResource);
+    }
 
     LClient *disconnectedClient = compositor->getClientFromNativeResource(client);
 

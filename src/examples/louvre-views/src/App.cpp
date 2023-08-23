@@ -11,6 +11,7 @@
 #include "Dock.h"
 #include "Toplevel.h"
 #include "TextRenderer.h"
+#include "Workspace.h"
 
 App::App(const char *name, const char *exec, const char *iconPath)
 {
@@ -140,9 +141,6 @@ void App::clicked()
                     {
                         if (it->dock->output == cursor()->output())
                         {
-                            //if (it->dock->output->fullscreenToplevel && it->dock->output->fullscreenToplevel->surface() != surf)
-                                //it->dock->output->fullscreenToplevel->unsetFullscreenRequest();
-
                             surf->unminimize(it);
                             return;
                         }
@@ -151,12 +149,34 @@ void App::clicked()
                 }
                 else if (surf->toplevel())
                 {
-                    Output *o = (Output*)cursor()->output();
-                    //if (o->fullscreenToplevel && o->fullscreenToplevel->surface() != surf)
-                        //o->fullscreenToplevel->unsetFullscreenRequest();
+                    if (surf->toplevel()->fullscreen())
+                    {
+                        Toplevel *tl = (Toplevel*)surf->toplevel();
 
-                    surf->toplevel()->configure(surf->toplevel()->states() | LToplevelRole::Activated);
-                    surf->raise();
+                        if (tl->fullscreenOutput)
+                            tl->fullscreenOutput->setWorkspace(tl->fullscreenWorkspace, 600, 4.f);
+                    }
+                    else
+                    {
+                        surf->toplevel()->configure(surf->toplevel()->states() | LToplevelRole::Activated);
+                        surf->raise();
+
+                        if (surf->getView()->parent() != &G::compositor()->surfacesLayer)
+                        {
+                            for (Output *o : G::outputs())
+                            {
+                                for (Workspace *ws : o->workspaces)
+                                {
+                                    if (&ws->surfaces == surf->getView()->parent())
+                                    {
+                                        o->setWorkspace(ws, 600, 4.f);
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     return;
                 }
             }
