@@ -1,6 +1,7 @@
 #ifndef LANIMATION_H
 #define LANIMATION_H
 
+#include <LCompositor.h>
 #include <LObject.h>
 #include <functional>
 
@@ -71,11 +72,6 @@ public:
     LAnimation& operator= (const LAnimation&) = delete;
 
     /*!
-     * Destructor of the LAnimation class.
-     */
-    ~LAnimation();
-
-    /*!
      * The oneShot() method creates and starts an animation immediately, and it is automatically destroyed once finished.
      *
      * @param durationMs The duration of the animation in milliseconds.
@@ -133,8 +129,15 @@ public:
      */
     void stop();
 
+    /*!
+     * Destroys the animation without invoking the onFinish callback.
+     */
+    void destroy();
+
 LPRIVATE_IMP(LAnimation)
+    friend class Louvre::LCompositor::LCompositorPrivate;
     LAnimation();
+    ~LAnimation();
 };
 
 #endif // LANIMATION_H

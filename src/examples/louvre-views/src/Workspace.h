@@ -11,7 +11,7 @@ using namespace Louvre;
 class Workspace : public LLayerView
 {
 public:
-    Workspace(Output *output, Toplevel *toplevel = nullptr);
+    Workspace(Output *output, Toplevel *toplevel = nullptr, Workspace *prev = nullptr);
     ~Workspace();
 
     Output *output = nullptr;

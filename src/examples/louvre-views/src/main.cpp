@@ -8,16 +8,9 @@
 
 int main(int, char *[])
 {
-    long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
-    if (num_cores <= 0) {
-        perror("Error getting number of CPU cores");
-        return 1;
-    }
-    printf("CORES %ld", num_cores);
-
     setenv("WAYLAND_DISPLAY", "wayland-0", 1);
     setenv("MOZ_ENABLE_WAYLAND", "1", 1);
-    setenv("LOUVRE_DEBUG", "4", 1);
+    setenv("LOUVRE_DEBUG", "2", 1);
     setenv("SRM_DEBUG", "2", 1);
     setenv("MESA_NO_ERROR", "1", 1);
     setenv("MESA_GLTHREAD", "1", 1);

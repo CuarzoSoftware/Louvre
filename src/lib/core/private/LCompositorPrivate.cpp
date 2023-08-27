@@ -369,7 +369,7 @@ bool LCompositor::LCompositorPrivate::runningAnimations()
 {
     for (LAnimation *anim : animations)
     {
-        if (anim->imp()->running)
+        if (anim->imp()->running || anim->imp()->pendingDestroy)
             return true;
     }
     return false;
@@ -382,6 +382,13 @@ void LCompositor::LCompositorPrivate::processAnimations()
     while (it != animations.end())
     {
         LAnimation *a = *it;
+
+        if (a->imp()->pendingDestroy)
+        {
+            it = animations.erase(it);
+            delete a;
+            continue;
+        }
 
         if (!a->imp()->running)
         {
@@ -408,7 +415,7 @@ void LCompositor::LCompositorPrivate::processAnimations()
 
             if (a->imp()->destroyOnFinish)
             {
-                it = animations.erase(a->imp()->compositorLink);
+                it = animations.erase(it);
                 delete a;
                 continue;
             }
@@ -418,9 +425,14 @@ void LCompositor::LCompositorPrivate::processAnimations()
     }
 }
 
-void LCompositor::LCompositorPrivate::destroyPendingRenderBuffers()
+void LCompositor::LCompositorPrivate::destroyPendingRenderBuffers(std::thread::id *id)
 {
-    ThreadData &threadData = threadsMap[std::this_thread::get_id()];
+    std::thread::id threadId = std::this_thread::get_id();
+
+    if (id != nullptr)
+        threadId = *id;
+
+    ThreadData &threadData = threadsMap[threadId];
 
     while (!threadData.renderBuffersToDestroy.empty())
     {

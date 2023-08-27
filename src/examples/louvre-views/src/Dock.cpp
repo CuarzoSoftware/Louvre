@@ -75,6 +75,9 @@ Dock::~Dock()
     while (!itemsContainer->children().empty())
         delete itemsContainer->children().back();
 
+    while (!appsContainer->children().empty())
+        delete appsContainer->children().back();
+
     output->dock = nullptr;
 }
 

@@ -45,6 +45,7 @@ public:
     void unsetFullscreen();
 
     bool destructorCalled = false;
+    bool quickUnfullscreen = false;
 
     ToplevelView *decoratedView = nullptr;
 
@@ -57,6 +58,7 @@ public:
     LRect prevRect, dstRect, prevBoundingRect;
     Output *fullscreenOutput = nullptr;
     Workspace *fullscreenWorkspace = nullptr;
+    UInt32 prevStates = 0;
 };
 
 #endif // TOPLEVEL_H

@@ -6,7 +6,7 @@
 #include <LTextureView.h>
 #include "Surface.h"
 
-Workspace::Workspace(Output *output, Toplevel *toplevel) : LLayerView(output->workspacesContainer),
+Workspace::Workspace(Output *output, Toplevel *toplevel, Workspace *prev) : LLayerView(output->workspacesContainer),
     background(this),
     surfaces(this),
     overlay(this)
@@ -22,8 +22,12 @@ Workspace::Workspace(Output *output, Toplevel *toplevel) : LLayerView(output->wo
         return;
     }
 
-    // If fullscreen toplevel, inster right after desktop
-    outputLink = output->workspaces.insert(std::next(output->workspaces.begin()), this);
+    // If fullscreen toplevel
+    if (prev)
+        outputLink = output->workspaces.insert(std::next(prev->outputLink), this);
+    else
+        outputLink = output->workspaces.insert(std::next(output->workspaces.begin()), this);
+
     output->updateWorkspacesPos();
 }
 
@@ -87,13 +91,18 @@ void Workspace::returnChildren()
             v->enableParentOffset(false);
         }
 
+        std::list<class Surface*>surfaces = G::surfaces();
+
+        for (class Surface *s : surfaces)
+            s->raise();
+
         if (output->topbar)
         {
             output->topbar->setParent(&G::compositor()->overlayLayer);
             output->topbar->enableParentOffset(false);
         }
 
-        output->moveGL();
+        output->repaint();
     }
 }
 

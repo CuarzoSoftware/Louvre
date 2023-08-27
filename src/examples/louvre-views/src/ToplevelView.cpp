@@ -482,6 +482,9 @@ void ToplevelView::updateGeometry()
 
     if (toplevel->fullscreen())
     {
+        if (!toplevel->fullscreenOutput)
+            return;
+
         if (!lastFullscreenState)
         {
             clipBottom.setVisible(false);

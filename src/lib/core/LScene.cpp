@@ -31,34 +31,43 @@ LScene::~LScene()
 
 void LScene::handleInitializeGL(LOutput *output)
 {
+    imp()->mutex.lock();
     imp()->view->imp()->fb = output->framebuffer();
+    imp()->mutex.unlock();
 }
 
 void LScene::handlePaintGL(LOutput *output)
 {
+    imp()->mutex.lock();
     imp()->view->imp()->fb = output->framebuffer();
     imp()->view->render();
+    imp()->mutex.unlock();
 }
 
 void LScene::handleMoveGL(LOutput *output)
 {
+    imp()->mutex.lock();
     imp()->view->imp()->fb = output->framebuffer();
     imp()->view->damageAll(output);
+    imp()->mutex.unlock();
 }
 
 void LScene::handleResizeGL(LOutput *output)
 {
+    imp()->mutex.lock();
     imp()->view->damageAll(output);
+    imp()->mutex.unlock();
 }
 
 void LScene::handleUninitializeGL(LOutput *output)
 {
     L_UNUSED(output);
-
-    auto it = imp()->view->imp()->threadsMap.find(std::this_thread::get_id());
+    imp()->mutex.lock();
+    auto it = imp()->view->imp()->threadsMap.find(output->threadId());
 
     if (it != imp()->view->imp()->threadsMap.end())
         imp()->view->imp()->threadsMap.erase(it);
+    imp()->mutex.unlock();
 }
 
 LView *LScene::handlePointerMoveEvent(Float32 dx, Float32 dy, LPoint *outLocalPos)

@@ -131,7 +131,7 @@ void Surface::mappingChanged()
                 toplevel()->configure(LToplevelRole::Activated);
 
                 if (!client()->xdgDecorationManagerGlobals().empty() && toplevel()->preferredDecorationMode() == 0 && toplevel()->decorationMode() != LToplevelRole::ServerSide)
-                    return;
+                    return;                
             }
 
             if (dndIcon())
@@ -141,6 +141,7 @@ void Surface::mappingChanged()
 
             view->setVisible(true);
             requestNextFrame(false);
+
         }
 
         compositor()->repaintAllOutputs();
@@ -162,6 +163,14 @@ void Surface::orderChanged()
     Surface *prev = (Surface*)prevSurface();
 
     LView *v = getView();
+
+    while (prev != nullptr)
+    {
+        if (prev->getView()->parent() == v->parent())
+            break;
+
+        prev = (Surface*)prev->prevSurface();
+    }
 
     if (prev)
         v->insertAfter(prev->getView(), false);

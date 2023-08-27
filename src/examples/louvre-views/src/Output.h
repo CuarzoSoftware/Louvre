@@ -34,7 +34,7 @@ public:
     Workspace *currentWorkspace = nullptr;
 
     // Workspace switch/restore animation
-    LAnimation *workspaceAnim;
+    LAnimation *workspaceAnim = nullptr;
     Float32 easingCurve = 2.f;
     Float32 animStart = 0.f;
     Toplevel *animatedFullscreenToplevel = nullptr;

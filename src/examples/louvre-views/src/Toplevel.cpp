@@ -169,6 +169,7 @@ void Toplevel::setFullscreenRequest(LOutput *output)
     dstRect = LRect(dstOutput->pos(), dstOutput->size());
 
     fullscreenOutput = dstOutput;
+    prevStates = states();
     configure(dstRect.size(), Activated | Fullscreen);
 
     LBox box = surf->getView()->boundingBox();
@@ -202,13 +203,17 @@ void Toplevel::unsetFullscreenRequest()
     if (old)
         delete old;
 
-    configure(prevRect.size(), NoState);
+    configure(prevRect.size(), prevStates);
 }
 
 void Toplevel::fullscreenChanged()
 {
     if (fullscreen())
     {
+        if (!fullscreenOutput)
+            return;
+
+        quickUnfullscreen = false;
         fullscreenOutput->animatedFullscreenToplevel = this;
 
         surf()->sendOutputEnterEvent(fullscreenOutput);
@@ -221,7 +226,7 @@ void Toplevel::fullscreenChanged()
         blackFullscreenBackground.setParent(&G::compositor()->overlayLayer);
         blackFullscreenBackground.setPos(prevBoundingRect.pos());
         blackFullscreenBackground.setSize(fullscreenOutput->size());
-        blackFullscreenBackground.setOpacity(0.01f);
+        blackFullscreenBackground.setOpacity(0.0001f);
         blackFullscreenBackground.setVisible(true);
 
         LSizeF sVector;
@@ -233,11 +238,12 @@ void Toplevel::fullscreenChanged()
         G::reparentWithSubsurfaces(surf(), &blackFullscreenBackground);
         G::enableParentScalingChildren(&blackFullscreenBackground, true);
         surf()->getView()->enableParentScaling(true);
+        surf()->getView()->enableParentOpacity(true);
         surf()->getView()->setOpacity(1.f);
         surf()->getView()->setVisible(true);
         surf()->setPos(0, 0);
 
-        fullscreenWorkspace = new Workspace(fullscreenOutput, this);
+        fullscreenWorkspace = new Workspace(fullscreenOutput, this, fullscreenOutput->currentWorkspace);
 
         // If the current workspace is the desktop, move the desktop views into it
         if (fullscreenOutput->currentWorkspace == fullscreenOutput->workspaces.front())
@@ -305,7 +311,17 @@ void Toplevel::activatedChanged()
         decoratedView->updateGeometry();
 
     if (activated())
+    {
         seat()->keyboard()->setFocus(surface());
+
+        if (!fullscreen() && !surf()->parent())
+        {
+            Output *o = (Output*)cursor()->output();
+
+            if (o->currentWorkspace != o->workspaces.front())
+                o->setWorkspace(o->workspaces.front(), 560, 4.f);
+        }
+    }
 }
 
 void Toplevel::titleChanged()
@@ -319,7 +335,7 @@ void Toplevel::unsetFullscreen()
     if (!fullscreenOutput)
         return;
 
-    if (destructorCalled)
+    if (destructorCalled || quickUnfullscreen)
     {
         if (fullscreenWorkspace)
         {
@@ -329,6 +345,7 @@ void Toplevel::unsetFullscreen()
             delete fullscreenWorkspace;
             fullscreenWorkspace = nullptr;
             fullscreenOutput->setWorkspace(prev, 560);
+            fullscreenOutput = nullptr;
         }
         return;
     }

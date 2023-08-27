@@ -101,7 +101,14 @@ void Output::updateWorkspacesPos()
 
     for (Workspace *ws : workspaces)
     {
-        ws->setPos(offset, 0);
+        if (ws->nativePos().x() != offset)
+        {
+            ws->setPos(offset, 0);
+
+            if (ws->toplevel)
+                ws->toplevel->configure(size(), ws->toplevel->states());
+        }
+
         offset += size().w() + spacing;
     }
 }
@@ -134,7 +141,7 @@ void Output::initializeGL()
             {
                 Toplevel *tl = animatedFullscreenToplevel;
 
-                if (tl->destructorCalled)
+                if (tl->destructorCalled || tl->quickUnfullscreen)
                 {
                     anim->stop();
                     return;
@@ -193,8 +200,8 @@ void Output::initializeGL()
             {
                 Toplevel *tl = currentWorkspace->toplevel;
 
-                if (tl->destructorCalled)
-                    return;
+                if (tl->destructorCalled || tl->quickUnfullscreen)
+                    goto returnChildren;
 
                 seat()->pointer()->setFocus(tl->surface());
                 seat()->keyboard()->setFocus(tl->surface());
@@ -205,22 +212,23 @@ void Output::initializeGL()
             {
                 Toplevel *tl = animatedFullscreenToplevel;
 
-                if (tl->destructorCalled)
-                    return;
+                if (tl->destructorCalled || tl->quickUnfullscreen)
+                    goto returnChildren;
 
                 if (tl->fullscreen())
                 {
                     tl->surf()->setPos(pos().x(), 0);
-                    G::reparentWithSubsurfaces(tl->surf(), &currentWorkspace->surfaces);
+                    G::reparentWithSubsurfaces(tl->surf(), &tl->fullscreenWorkspace->surfaces);
                     tl->blackFullscreenBackground.setVisible(false);
                     delete tl->capture.texture();
                     tl->capture.setTexture(nullptr);
+                    currentWorkspace->clipChildren();
                 }
                 else
                 {
                     tl->surf()->getView()->setScalingVector(LSizeF(1.f, 1.f));
                     tl->surf()->setPos(tl->prevRect.pos());
-                    G::reparentWithSubsurfaces(tl->surf(), &currentWorkspace->surfaces);
+                    G::reparentWithSubsurfaces(tl->surf(), &workspaces.front()->surfaces);
                     tl->surf()->getView()->setVisible(true);
                     tl->blackFullscreenBackground.setVisible(false);
                     delete tl->capture.texture();
@@ -236,11 +244,13 @@ void Output::initializeGL()
                     tl->decoratedView->updateGeometry();
             }
 
+            returnChildren:
             for (Output *o : G::outputs())
-            {
-                if (!o->swippingWorkspace && o->currentWorkspace ==  o->workspaces.front())
+                if (!o->swippingWorkspace)
                     o->currentWorkspace->returnChildren();
-            }
+
+            G::scene()->mainView()->damageAll(this);
+            repaint();
         });
 
     workspacesContainer = new LLayerView(&G::compositor()->workspacesLayer);
@@ -259,6 +269,7 @@ void Output::initializeGL()
 void Output::resizeGL()
 {
     updateWorkspacesPos();
+    setWorkspace(currentWorkspace, 1);
     topbar->update();
     dock->update();
     loadWallpaper();
@@ -271,6 +282,7 @@ void Output::moveGL()
     topbar->update();
     dock->update();
     wallpaperView->setPos(pos());
+    setWorkspace(currentWorkspace, 1);
     G::compositor()->scene.handleMoveGL(this);
 }
 
@@ -289,7 +301,78 @@ void Output::paintGL()
 
 void Output::uninitializeGL()
 {
+    Output *aliveOutput = nullptr;
+
+    for (Output *o : G::outputs())
+    {
+        if (o != this)
+        {
+            aliveOutput = o;
+            break;
+        }
+    }
+
+    while (workspaces.size() != 1)
+    {
+        Toplevel *tl = workspaces.back()->toplevel;
+        tl->prevStates = LToplevelRole::NoState;
+        tl->prevRect.setPos(LPoint(0, TOPBAR_HEIGHT));
+        tl->configure(tl->prevRect.size(), LToplevelRole::Activated);
+        tl->quickUnfullscreen = true;
+        tl->unsetFullscreen();
+        workspaceAnim->stop();
+        tl->surface()->setPos(LPoint(rand() % 128, TOPBAR_HEIGHT + (rand() % 128)));
+        G::reparentWithSubsurfaces(tl->surf(), &G::compositor()->surfacesLayer);
+    }
+
+    for (Surface *s : G::surfaces())
+    {
+        if (G::mostIntersectedOuput(s->getView()) == this)
+        {
+            if (s->toplevel())
+            {
+                Toplevel *tl = (Toplevel*)s->toplevel();
+                tl->prevStates = LToplevelRole::NoState;
+                tl->prevRect.setPos(LPoint(0, TOPBAR_HEIGHT));
+                tl->configure(tl->prevRect.size(), LToplevelRole::Activated);
+            }
+
+            G::reparentWithSubsurfaces(s, &G::compositor()->surfacesLayer);
+            s->setPos(rand() % 128, TOPBAR_HEIGHT + (rand() % 128));
+        }
+
+        if (s->minimizedOutput == this)
+        {
+            s->minimizedOutput = aliveOutput;
+            s->minimizeStartRect.setPos(LPoint(rand() % 128, TOPBAR_HEIGHT + (rand() % 128)));
+
+            if (s->minimizeAnim)
+                s->minimizeAnim->stop();
+        }
+    }
+
     delete dock;
+    dock = nullptr;
     delete topbar;
+    topbar = nullptr;
+
+    G::setViewTextureAndDestroyPrev(wallpaperView, nullptr);
+
+    delete wallpaperView;
+    wallpaperView = nullptr;
+
+    while (!workspaces.empty())
+        delete workspaces.back();
+
+    workspaceAnim->stop();
+    workspaceAnim->destroy();
+    workspaceAnim = nullptr;
+
+    delete workspacesContainer;
+    workspacesContainer = nullptr;
+
+    currentWorkspace = nullptr;
+    animatedFullscreenToplevel = nullptr;
+
     G::compositor()->scene.handleUninitializeGL(this);
 }

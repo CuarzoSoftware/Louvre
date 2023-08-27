@@ -7,6 +7,7 @@
 #include "Global.h"
 #include "Output.h"
 #include "Workspace.h"
+#include "Surface.h"
 
 Seat::Seat(Params *params) : LSeat(params)
 {
@@ -125,4 +126,40 @@ void Seat::backendNativeEvent(void *event)
             output->setWorkspace(targetWorkspace, 600, 3.5f, 0.15f + (0.3f * fabs(dx)) / 50.f);
         }
     }
+}
+
+void Seat::outputUnplugged(LOutput *output)
+{
+    compositor()->removeOutput(output);
+
+    Int32 x = 0;
+
+    for (Output *o : G::outputs())
+    {
+        o->setPos(x);
+        o->updateWorkspacesPos();
+        G::scene()->mainView()->damageAll(o);
+        o->repaint();
+        x += o->size().w();
+    }
+
+    Output *firstOutput = G::outputs().front();
+
+    std::list<Surface*> surfs = G::surfaces();
+
+    for (Surface *s : surfs)
+    {
+        if (LRect(s->getView()->pos(), s->getView()->size()).intersects(firstOutput->rect()))
+        {
+            s->sendOutputEnterEvent(firstOutput);
+            s->requestNextFrame(false);
+            s->getView()->repaint();
+            s->raise();
+
+            if (s->toplevel())
+                s->toplevel()->configure(s->toplevel()->windowGeometry().size() - LSize(1, 1), LToplevelRole::Activated);
+        }
+    }
+
+    firstOutput->setWorkspace(firstOutput->workspaces.front(), 560, 4.f);
 }

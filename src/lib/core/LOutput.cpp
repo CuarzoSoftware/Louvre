@@ -33,6 +33,7 @@ LOutput::LOutput()
     imp()->rect.setX(0);
     imp()->rect.setY(0);
     imp()->fb = new LOutputFramebuffer(this);
+    imp()->callLock.store(true);
 }
 
 LFramebuffer *LOutput::framebuffer() const
@@ -66,7 +67,13 @@ void LOutput::setMode(const LOutputMode *mode)
     if (mode == currentMode())
         return;
 
-    imp()->pendingMode = (LOutputMode*)mode;
+    // Setting output mode from a rendering thread is not allowed
+    for (LOutput *o : compositor()->outputs())
+    {
+        if (o->threadId() == std::this_thread::get_id())
+            return;
+    }
+
     imp()->state = ChangingMode;
     compositor()->imp()->graphicBackend->setOutputMode(this, (LOutputMode*)mode);
     imp()->state = Initialized;

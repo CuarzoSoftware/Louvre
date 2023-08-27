@@ -161,23 +161,29 @@ static void connectorPluggedEventHandler(SRMListener *listener, SRMConnector *co
 {
     Backend *bknd = (Backend*)srmListenerGetUserData(listener);
     LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
-    compositor->imp()->renderMutex.unlock();
     initConnector(bknd, conn);
     LOutput *output = (LOutput*)srmConnectorGetUserData(conn);
-    compositor->seat()->outputPlugged(output);
+    output->imp()->callLock.store(false);
+    compositor->imp()->renderMutex.unlock();
     compositor->imp()->renderMutex.lock();
+    compositor->seat()->outputPlugged(output);
+    output->imp()->callLock.store(true);
 }
 
 static void connectorUnpluggedEventHandler(SRMListener *listener, SRMConnector *conn)
 {
     Backend *bknd = (Backend*)srmListenerGetUserData(listener);
     LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
-    compositor->imp()->renderMutex.unlock();
+
     LOutput *output = (LOutput*)srmConnectorGetUserData(conn);
+    output->imp()->callLock.store(false);
+    compositor->imp()->renderMutex.unlock();
+    compositor->imp()->renderMutex.lock();
     compositor->seat()->outputUnplugged(output);
     compositor->removeOutput(output);
     uninitConnector(bknd, conn);
-    compositor->imp()->renderMutex.lock();
+    output->imp()->callLock.store(true);
+
 }
 
 static int monitorEventHandler(Int32, UInt32, void *data)
@@ -471,7 +477,16 @@ bool LGraphicBackend::setOutputMode(LOutput *output, LOutputMode *mode)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     OutputMode *bkndOutputMode = (OutputMode*)mode->imp()->graphicBackendData;
-    return srmConnectorSetMode(bkndOutput->conn, bkndOutputMode->mode);
+
+    output->imp()->callLock.store(false);
+    output->compositor()->imp()->renderMutex.unlock();
+    output->compositor()->imp()->renderMutex.lock();
+
+    bool ret = srmConnectorSetMode(bkndOutput->conn, bkndOutputMode->mode);
+
+    output->imp()->callLock.store(true);
+
+    return ret;
 }
 
 const LSize *LGraphicBackend::getOutputModeSize(LOutputMode *mode)

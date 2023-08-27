@@ -153,8 +153,10 @@ bool LCompositor::start()
 
 Int32 LCompositor::processLoop(Int32 msTimeout)
 {
+    imp()->renderMutex.lock();
     if (imp()->runningAnimations() && seat()->enabled())
         msTimeout = 2;
+    imp()->renderMutex.unlock();
 
     poll(&imp()->fdSet, 1, msTimeout);
 
@@ -170,7 +172,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         seat()->dndManager()->imp()->destDidNotRequestReceive++;
 
     wl_event_loop_dispatch(imp()->eventLoop, 0);
-    imp()->destroyPendingRenderBuffers();
+    imp()->destroyPendingRenderBuffers(nullptr);
 
     if (seat()->enabled())
     {
@@ -180,6 +182,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
     }
 
     imp()->renderMutex.unlock();
+
     return 1;
 }
 

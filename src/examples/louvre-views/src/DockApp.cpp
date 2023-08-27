@@ -25,6 +25,9 @@ DockApp::DockApp(App *app, Dock *dock) : LTextureView()
 
 DockApp::~DockApp()
 {
+    if (app->launchAnimation)
+        app->launchAnimation->stop();
+
     delete dot;
     dot = nullptr;
     setParent(nullptr);

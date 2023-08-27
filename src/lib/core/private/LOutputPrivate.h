@@ -3,6 +3,7 @@
 
 #include <LOutput.h>
 #include <private/LRenderBufferPrivate.h>
+#include <atomic>
 
 LPRIVATE_CLASS(LOutput)
     LOutputFramebuffer *fb;
@@ -10,7 +11,7 @@ LPRIVATE_CLASS(LOutput)
     LRect rect;
     LPoint lastPos;
     LSize lastSize;
-    LOutputMode *pendingMode = nullptr;
+    std::atomic<bool> callLock;
     std::thread::id threadId;
 
     // Painter

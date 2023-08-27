@@ -45,6 +45,11 @@ void LOutput::LOutputPrivate::backendPaintGL()
     if (output->imp()->state != LOutput::Initialized)
         return;
 
+    bool callLock = output->imp()->callLock.load();
+
+    if (callLock)
+        compositor()->imp()->renderMutex.lock();
+
     if (lastPos != rect.pos())
     {
         output->moveGL();
@@ -57,10 +62,11 @@ void LOutput::LOutputPrivate::backendPaintGL()
         lastSize = rect.size();
     }
 
-    compositor()->imp()->renderMutex.lock();
     output->paintGL();
-    compositor()->imp()->destroyPendingRenderBuffers();
-    compositor()->imp()->renderMutex.unlock();
+    compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
+
+    if (callLock)
+        compositor()->imp()->renderMutex.unlock();
 }
 
 void LOutput::LOutputPrivate::backendResizeGL()
@@ -74,6 +80,11 @@ void LOutput::LOutputPrivate::backendResizeGL()
     if (output->imp()->state != LOutput::Initialized)
         return;
 
+    bool callLock = output->imp()->callLock.load();
+
+    if (callLock)
+        compositor()->imp()->renderMutex.lock();
+
     output->resizeGL();
 
     if (lastPos != rect.pos())
@@ -81,17 +92,26 @@ void LOutput::LOutputPrivate::backendResizeGL()
         output->moveGL();
         lastPos = rect.pos();
     }
+
+    if (callLock)
+        compositor()->imp()->renderMutex.unlock();
 }
 
 void LOutput::LOutputPrivate::backendUninitializeGL()
 {
     if (output->imp()->state != LOutput::PendingUninitialize)
-        return;
+       return;
 
-    compositor()->imp()->renderMutex.lock();
+    bool callLock = output->imp()->callLock.load();
+
+    if (callLock)
+        compositor()->imp()->renderMutex.lock();
     output->uninitializeGL();
-    compositor()->imp()->destroyPendingRenderBuffers();
-    compositor()->imp()->renderMutex.unlock();
+    output->imp()->state = LOutput::Uninitialized;
+    compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
+
+    if (callLock)
+        compositor()->imp()->renderMutex.unlock();
 }
 
 void LOutput::LOutputPrivate::backendPageFlipped()
@@ -99,12 +119,16 @@ void LOutput::LOutputPrivate::backendPageFlipped()
     if (output->imp()->state != LOutput::Initialized)
         return;
 
-    compositor()->imp()->renderMutex.lock();
+    bool callLock = output->imp()->callLock.load();
+
+    if (callLock)
+        compositor()->imp()->renderMutex.lock();
 
     // Send presentation time feedback
     presentationTime = LTime::ns();
     for (LSurface *surf : compositor()->surfaces())
         surf->imp()->sendPresentationFeedback(output, presentationTime);
 
-    compositor()->imp()->renderMutex.unlock();
+    if (callLock)
+        compositor()->imp()->renderMutex.unlock();
 }

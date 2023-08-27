@@ -411,7 +411,7 @@ void G::reparentWithSubsurfaces(Surface *surf, LView *newParent)
 
     for (Surface *s : surfaces())
     {
-        if (s->parent() == surf && s->subsurface())
+        if (s->parent() == surf)
             G::reparentWithSubsurfaces(s, newParent);
     }
 }

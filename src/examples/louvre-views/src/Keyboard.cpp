@@ -21,17 +21,53 @@ void Keyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
 {
     Output *output = (Output*)cursor()->output();
 
-    if (output && output->currentWorkspace && keyState == Pressed && isKeyCodePressed(KEY_LEFTALT) && isKeyCodePressed(KEY_LEFTCTRL))
+    if (keyState == Pressed)
     {
-        if (keyCode == KEY_RIGHT && std::next(output->currentWorkspace->outputLink) != output->workspaces.end())
+        if (isKeyCodePressed(KEY_LEFTCTRL))
         {
-            output->setWorkspace(*std::next(output->currentWorkspace->outputLink), 512);
-            return;
-        }
-        else if (keyCode == KEY_LEFT && output->currentWorkspace != output->workspaces.front())
-        {
-            output->setWorkspace(*std::prev(output->currentWorkspace->outputLink), 512);
-            return;
+            // Switch workspace
+            if (output && output->currentWorkspace && isKeyCodePressed(KEY_LEFTALT))
+            {
+                if (keyCode == KEY_RIGHT && std::next(output->currentWorkspace->outputLink) != output->workspaces.end())
+                {
+                    output->setWorkspace(*std::next(output->currentWorkspace->outputLink), 512);
+                    return;
+                }
+                else if (keyCode == KEY_LEFT && output->currentWorkspace != output->workspaces.front())
+                {
+                    output->setWorkspace(*std::prev(output->currentWorkspace->outputLink), 512);
+                    return;
+                }
+            }
+
+            // Change output mode
+            if (isKeyCodePressed(KEY_LEFTSHIFT) && keyCode == KEY_M)
+            {
+                const LOutputMode *mode = cursor()->output()->currentMode();
+
+                if (mode == cursor()->output()->modes().back())
+                {
+                    cursor()->output()->setMode(cursor()->output()->modes().front());
+                }
+                else
+                {
+                    bool found = false;
+
+                    for (LOutputMode *om : cursor()->output()->modes())
+                    {
+                        if (found)
+                        {
+                            mode = om;
+                            break;
+                        }
+
+                        if (om == mode)
+                            found = true;
+                    }
+
+                    cursor()->output()->setMode(mode);
+                }
+            }
         }
     }
 
