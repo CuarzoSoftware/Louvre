@@ -63,7 +63,7 @@ void ToplevelButton::update()
     else
     {
 
-        bool altMode = seat()->keyboard()->isKeyCodePressed(KEY_LEFTALT) || toplevelView->toplevel->fullscreen();
+        bool altMode = !seat()->keyboard()->isKeyCodePressed(KEY_LEFTALT) || toplevelView->toplevel->fullscreen();
 
         if (toplevelView->buttonsContainer->pointerIsOver())
         {
@@ -128,7 +128,7 @@ void ToplevelButton::pointerButtonEvent(LPointer::Button button, LPointer::Butto
             {
                 bool altMode = seat()->keyboard()->isKeyCodePressed(KEY_LEFTALT);
 
-                if (altMode)
+                if (!altMode)
                 {
                     toplevelView->toplevel->setFullscreenRequest(nullptr);
                 }

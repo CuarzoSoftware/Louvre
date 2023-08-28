@@ -411,7 +411,7 @@ void G::reparentWithSubsurfaces(Surface *surf, LView *newParent)
 
     for (Surface *s : surfaces())
     {
-        if (s->parent() == surf)
+        if (s->parent() == surf && !s->cursorRole())
             G::reparentWithSubsurfaces(s, newParent);
     }
 }
@@ -422,4 +422,16 @@ void G::setViewTextureAndDestroyPrev(LTextureView *view, LTexture *newTexture)
     view->setTexture(newTexture);
     if (prevTexture)
         delete prevTexture;
+}
+
+void G::arrangeOutputs()
+{
+    Int32 x = 0;
+
+    for (Output *o : outputs())
+    {
+        o->setPos(LPoint(x, 0));
+        x += o->size().w();
+        o->repaint();
+    }
 }

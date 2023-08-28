@@ -83,6 +83,8 @@ LView *LScene::handlePointerPosChangeEvent(Float32 x, Float32 y, LPoint *outLoca
 
     cursor()->setPos(LPointF(x, y));
 
+    imp()->pointerMoveSerial++;
+    imp()->listChanged = false;
     imp()->pointerIsBlocked = false;
     imp()->handlePointerMove(mainView(), cursor()->pos(), &view);
 
@@ -182,6 +184,8 @@ LView *LScene::handlePointerPosChangeEvent(Float32 x, Float32 y, LPoint *outLoca
 
 void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonState state)
 {
+    imp()->pointerButtonSerial++;
+    imp()->listChanged = false;
     imp()->handlePointerButton(mainView(), button, state);
 
     if (!handleWaylandPointerEventsEnabled())
@@ -292,6 +296,8 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
 
 void LScene::handlePointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source)
 {
+    imp()->pointerAxisSerial++;
+    imp()->listChanged = false;
     imp()->handlePointerAxisEvent(mainView(), axisX, axisY, discreteX, discreteY, source);
 
     if (!handleWaylandPointerEventsEnabled())
@@ -312,6 +318,8 @@ void LScene::enableHandleWaylandPointerEvents(bool enabled)
 
 void LScene::handleKeyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
 {
+    imp()->keyModifiersSerial++;
+    imp()->listChanged = false;
     imp()->handleKeyModifiersEvent(mainView(), depressed, latched, locked, group);
 
     if (handleWaylandKeyboardEventsEnabled())
@@ -320,6 +328,8 @@ void LScene::handleKeyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 lo
 
 void LScene::handleKeyEvent(UInt32 keyCode, UInt32 keyState)
 {
+    imp()->keySerial++;
+    imp()->listChanged = false;
     imp()->handleKeyEvent(mainView(), keyCode, keyState);
 
     if (handleWaylandKeyboardEventsEnabled())

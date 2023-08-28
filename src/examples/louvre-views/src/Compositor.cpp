@@ -15,6 +15,7 @@
 #include "Toplevel.h"
 #include "TextRenderer.h"
 #include "Topbar.h"
+#include "src/ToplevelView.h"
 
 Compositor::Compositor() : LCompositor(),
     scene(),
@@ -148,4 +149,58 @@ Int32 Compositor::millisecondsUntilNextMinute()
     int msUntilNextMinute = secondsUntilNextMinute * 1000 - spec.tv_nsec / 1000000;
 
     return msUntilNextMinute;
+}
+
+bool Compositor::checkUpdateOutputUnplug()
+{
+    if (!outputUnplugHandled)
+    {
+        outputUnplugHandled = true;
+
+        for (Surface *s : G::surfaces())
+        {
+            if (!s->outputUnplugHandled)
+            {
+                if (s->toplevel())
+                {
+                    Toplevel *tl = (Toplevel*) s->toplevel();
+
+                    if (tl->fullscreen() || tl->maximized())
+                    {
+                        outputUnplugHandled = false;
+
+                        if (tl->outputUnplugConfigureCount > 128)
+                        {
+                            tl->surf()->client()->destroy();
+                            return outputUnplugHandled;
+                        }
+                        tl->configure(LToplevelRole::Activated);
+                        tl->surf()->client()->flush();
+                        tl->surf()->requestNextFrame(false);
+                        tl->outputUnplugConfigureCount++;
+                    }
+                    else
+                        s->outputUnplugHandled = true;
+
+                    if (tl->decoratedView)
+                        tl->decoratedView->updateGeometry();
+                }
+                else
+                {
+                    s->outputUnplugHandled = true;
+                }
+            }
+        }
+
+        if (outputUnplugHandled)
+        {
+            for (Output *o : G::outputs())
+                G::scene()->mainView()->damageAll(o);
+        }
+    }
+
+    for (Output *o : G::outputs())
+        G::scene()->mainView()->damageAll(o);
+
+    return outputUnplugHandled;
 }

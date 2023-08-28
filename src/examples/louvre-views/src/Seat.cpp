@@ -8,6 +8,8 @@
 #include "Output.h"
 #include "Workspace.h"
 #include "Surface.h"
+#include "src/Toplevel.h"
+#include "src/ToplevelView.h"
 
 Seat::Seat(Params *params) : LSeat(params)
 {
@@ -138,7 +140,6 @@ void Seat::outputUnplugged(LOutput *output)
     {
         o->setPos(x);
         o->updateWorkspacesPos();
-        G::scene()->mainView()->damageAll(o);
         o->repaint();
         x += o->size().w();
     }
@@ -149,15 +150,21 @@ void Seat::outputUnplugged(LOutput *output)
 
     for (Surface *s : surfs)
     {
-        if (LRect(s->getView()->pos(), s->getView()->size()).intersects(firstOutput->rect()))
+        if (!s->outputUnplugHandled)
         {
+            s->setPos(50 + (rand() % (firstOutput->size().w()/4)),
+                      50 + (rand() % (firstOutput->size().h()/4)));
             s->sendOutputEnterEvent(firstOutput);
             s->requestNextFrame(false);
-            s->getView()->repaint();
-            s->raise();
+            G::reparentWithSubsurfaces(s, &firstOutput->workspaces.front()->surfaces);
 
             if (s->toplevel())
-                s->toplevel()->configure(s->toplevel()->windowGeometry().size() - LSize(1, 1), LToplevelRole::Activated);
+            {
+                Toplevel *tl = (Toplevel*)s->toplevel();
+                tl->configure(tl->prevRect.size(), LToplevelRole::Activated);
+                tl->quickUnfullscreen = false;
+                tl->surf()->client()->flush();
+            }
         }
     }
 

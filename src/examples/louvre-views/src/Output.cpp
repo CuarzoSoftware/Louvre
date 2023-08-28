@@ -268,6 +268,7 @@ void Output::initializeGL()
 
 void Output::resizeGL()
 {
+    G::arrangeOutputs();
     updateWorkspacesPos();
     setWorkspace(currentWorkspace, 1);
     topbar->update();
@@ -288,7 +289,12 @@ void Output::moveGL()
 
 void Output::paintGL()
 {
-    // painter()->clearScreen();
+    if (!G::compositor()->checkUpdateOutputUnplug())
+    {
+        painter()->clearScreen();
+        repaint();
+        return;
+    }
 
     if (G::compositor()->updatePointerBeforePaint)
     {
@@ -301,6 +307,9 @@ void Output::paintGL()
 
 void Output::uninitializeGL()
 {
+    G::compositor()->outputUnplugHandled = false;
+
+    // Find another output
     Output *aliveOutput = nullptr;
 
     for (Output *o : G::outputs())
@@ -312,42 +321,52 @@ void Output::uninitializeGL()
         }
     }
 
+    // Unfullscreen toplevels
     while (workspaces.size() != 1)
     {
         Toplevel *tl = workspaces.back()->toplevel;
-        tl->prevStates = LToplevelRole::NoState;
+        tl->surf()->sendOutputEnterEvent(aliveOutput);
+        tl->outputUnplugConfigureCount = 0;
+        tl->prevStates = LToplevelRole::Activated;
         tl->prevRect.setPos(LPoint(0, TOPBAR_HEIGHT));
         tl->configure(tl->prevRect.size(), LToplevelRole::Activated);
         tl->quickUnfullscreen = true;
         tl->unsetFullscreen();
+        tl->surf()->localOutputPos = tl->prevRect.pos() - pos();
+        tl->surf()->localOutputSize = size();
+        tl->surf()->outputUnplugHandled = false;
         workspaceAnim->stop();
-        tl->surface()->setPos(LPoint(rand() % 128, TOPBAR_HEIGHT + (rand() % 128)));
-        G::reparentWithSubsurfaces(tl->surf(), &G::compositor()->surfacesLayer);
     }
+
+    workspacesContainer->setPos(0, 0);
 
     for (Surface *s : G::surfaces())
     {
-        if (G::mostIntersectedOuput(s->getView()) == this)
-        {
-            if (s->toplevel())
-            {
-                Toplevel *tl = (Toplevel*)s->toplevel();
-                tl->prevStates = LToplevelRole::NoState;
-                tl->prevRect.setPos(LPoint(0, TOPBAR_HEIGHT));
-                tl->configure(tl->prevRect.size(), LToplevelRole::Activated);
-            }
+        if (s->cursorRole() || (s->toplevel() && s->toplevel()->fullscreen()))
+            continue;
 
-            G::reparentWithSubsurfaces(s, &G::compositor()->surfacesLayer);
-            s->setPos(rand() % 128, TOPBAR_HEIGHT + (rand() % 128));
+        Output *intersectedOutput = G::mostIntersectedOuput(s->getView());
+
+        if (intersectedOutput == this)
+        {
+            s->localOutputPos = s->pos() - pos();
+            s->localOutputSize = size();
+            s->outputUnplugHandled = false;
+        }
+        else if (!intersectedOutput)
+        {
+            s->localOutputPos = LPoint(200, 200);
+            s->localOutputSize = size();
+            s->outputUnplugHandled = false;
         }
 
         if (s->minimizedOutput == this)
         {
-            s->minimizedOutput = aliveOutput;
-            s->minimizeStartRect.setPos(LPoint(rand() % 128, TOPBAR_HEIGHT + (rand() % 128)));
-
             if (s->minimizeAnim)
                 s->minimizeAnim->stop();
+
+            s->minimizedOutput = aliveOutput;
+            s->minimizeStartRect.setPos(LPoint(rand() % 128, TOPBAR_HEIGHT + (rand() % 128)));
         }
     }
 

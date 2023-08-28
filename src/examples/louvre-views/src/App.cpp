@@ -12,6 +12,7 @@
 #include "Toplevel.h"
 #include "TextRenderer.h"
 #include "Workspace.h"
+#include "src/Compositor.h"
 
 App::App(const char *name, const char *exec, const char *iconPath)
 {

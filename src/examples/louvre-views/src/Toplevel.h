@@ -59,6 +59,7 @@ public:
     Output *fullscreenOutput = nullptr;
     Workspace *fullscreenWorkspace = nullptr;
     UInt32 prevStates = 0;
+    UInt32 outputUnplugConfigureCount = 0;
 };
 
 #endif // TOPLEVEL_H

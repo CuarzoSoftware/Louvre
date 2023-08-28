@@ -192,6 +192,7 @@ public:
     static Output *mostIntersectedOuput(LView *view);
     static void reparentWithSubsurfaces(Surface *surf, LView *newParent);
     static void setViewTextureAndDestroyPrev(LTextureView *view, LTexture *newTexture);
+    static void arrangeOutputs();
 };
 
 #endif // SHARED_H

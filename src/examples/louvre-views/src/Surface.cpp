@@ -3,7 +3,6 @@
 
 #include "Workspace.h"
 #include "Compositor.h"
-#include "LTime.h"
 #include "Surface.h"
 #include "LCursor.h"
 #include "Output.h"
@@ -181,7 +180,10 @@ void Surface::orderChanged()
 void Surface::roleChanged()
 {
     if (roleId() == LSurface::Cursor)
+    {
         view->setVisible(false);
+        view->setParent(&G::compositor()->backgroundLayer);
+    }
     else if (roleId() == LSurface::DNDIcon)
     {
         setPos(cursor()->pos());
@@ -261,8 +263,6 @@ void Surface::minimizedChanged()
             thumbnailFullsizeView->setScalingVector(1.f - easeOut);
             thumbnailFullsizeView->setPos((dstDockItem->pos() + dstDockItem->size()) * easeOut +
                      minimizeStartRect.pos() * (1.f - easeOut));
-
-            return true;
         },
         [this](LAnimation *)
         {

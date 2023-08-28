@@ -165,6 +165,7 @@ static void connectorPluggedEventHandler(SRMListener *listener, SRMConnector *co
     LOutput *output = (LOutput*)srmConnectorGetUserData(conn);
     output->imp()->callLock.store(false);
     compositor->imp()->renderMutex.unlock();
+    usleep(1000000);
     compositor->imp()->renderMutex.lock();
     compositor->seat()->outputPlugged(output);
     output->imp()->callLock.store(true);
@@ -178,6 +179,7 @@ static void connectorUnpluggedEventHandler(SRMListener *listener, SRMConnector *
     LOutput *output = (LOutput*)srmConnectorGetUserData(conn);
     output->imp()->callLock.store(false);
     compositor->imp()->renderMutex.unlock();
+    usleep(1000000);
     compositor->imp()->renderMutex.lock();
     compositor->seat()->outputUnplugged(output);
     compositor->removeOutput(output);
@@ -480,6 +482,7 @@ bool LGraphicBackend::setOutputMode(LOutput *output, LOutputMode *mode)
 
     output->imp()->callLock.store(false);
     output->compositor()->imp()->renderMutex.unlock();
+    usleep(1000000);
     output->compositor()->imp()->renderMutex.lock();
 
     bool ret = srmConnectorSetMode(bkndOutput->conn, bkndOutputMode->mode);

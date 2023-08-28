@@ -14,6 +14,12 @@ using namespace Louvre;
 LPRIVATE_CLASS(LView)
 
     void removeThread(Louvre::LView *view, thread::id thread);
+    UInt32 pointerMoveSerial = 0;
+    UInt32 pointerButtonSerial = 0;
+    UInt32 pointerAxisSerial = 0;
+    UInt32 keyModifiersSerial = 0;
+    UInt32 keySerial = 0;
+
 
     UInt32 type;
     LScene *scene = nullptr;

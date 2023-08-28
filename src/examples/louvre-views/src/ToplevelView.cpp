@@ -6,6 +6,7 @@
 #include <LTime.h>
 #include <LLog.h>
 
+#include "Compositor.h"
 #include "ToplevelButton.h"
 #include "ToplevelView.h"
 #include "Toplevel.h"

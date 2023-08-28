@@ -58,6 +58,10 @@ public:
     // and they do not trigger when, for example, a view moves and positions itself under the cursor.
     // As a result, this call updates focus, cursor texture and so on...in those cases
     bool updatePointerBeforePaint = false;
+
+    // Turns black all outputs until an output unplug is finished
+    bool outputUnplugHandled = true;
+    bool checkUpdateOutputUnplug();
 };
 
 #endif // COMPOSITOR_H

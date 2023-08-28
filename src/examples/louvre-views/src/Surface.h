@@ -4,7 +4,6 @@
 #include <LSurface.h>
 #include <LSurfaceView.h>
 
-#include "Compositor.h"
 #include "Global.h"
 #include "DockItem.h"
 
@@ -40,6 +39,10 @@ public:
     LRect minimizeStartRect;
     LAnimation *minimizeAnim = nullptr;
     Output *minimizedOutput = nullptr;
+
+    LPoint localOutputPos;
+    LSize localOutputSize;
+    bool outputUnplugHandled = true;
 };
 
 #endif // SURFACE_H

@@ -69,6 +69,8 @@ Dock::Dock(Output *output) : LLayerView(&G::compositor()->overlayLayer)
 
 Dock::~Dock()
 {
+    alive = false;
+
     if (anim)
         anim->stop();
 
@@ -76,13 +78,31 @@ Dock::~Dock()
         delete itemsContainer->children().back();
 
     while (!appsContainer->children().empty())
+    {
+        if (appsContainer->children().back() == separator)
+            separator = nullptr;
+
         delete appsContainer->children().back();
+    }
+
+    if (separator)
+        delete separator;
+
+    delete itemsContainer;
+    delete appsContainer;
+    delete dockCenter;
+    delete dockLeft;
+    delete dockRight;
+    delete dockContainer;
 
     output->dock = nullptr;
 }
 
 void Dock::update()
 {
+    if (!alive)
+        return;
+
     Int32 dockWidth = DOCK_PADDING;
 
     if (appsContainer->children().empty() || appsContainer->children().size() == 1 || itemsContainer->children().empty())

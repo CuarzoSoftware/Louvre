@@ -142,22 +142,36 @@ bool LScene::LScenePrivate::pointerIsOverView(LView *view, const LPoint &pos)
     return false;
 }
 
-void LScene::LScenePrivate::handlePointerMove(LView *view, const LPoint &pos, LView **firstViewFound)
+bool LScene::LScenePrivate::handlePointerMove(LView *view, const LPoint &pos, LView **firstViewFound)
 {
+    // If a list was modified, start again, serials are used to prevent resend events
+    if (listChanged)
+    {
+        listChanged = false;
+        handlePointerMove(this->view, pos, nullptr);
+        return false;
+    }
+
     for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
-        handlePointerMove(*it, pos, firstViewFound);
+        if (!handlePointerMove(*it, pos, firstViewFound))
+            return false;
 
     if (!pointerIsBlocked && pointerIsOverView(view, pos))
     {
         if (!(*firstViewFound))
             *firstViewFound = view;
 
-        if (view->pointerIsOver())
-            view->pointerMoveEvent(viewLocalPos(view, pos));
-        else
+        if (pointerMoveSerial != view->imp()->pointerMoveSerial)
         {
-            view->imp()->pointerIsOver = true;
-            view->pointerEnterEvent(viewLocalPos(view, pos));
+            view->imp()->pointerMoveSerial = pointerMoveSerial;
+
+            if (view->pointerIsOver())
+                view->pointerMoveEvent(viewLocalPos(view, pos));
+            else
+            {
+                view->imp()->pointerIsOver = true;
+                view->pointerEnterEvent(viewLocalPos(view, pos));
+            }
         }
 
         if (view->blockPointerEnabled())
@@ -165,15 +179,22 @@ void LScene::LScenePrivate::handlePointerMove(LView *view, const LPoint &pos, LV
     }
     else
     {
-        if (view->pointerIsOver())
+        if (pointerMoveSerial != view->imp()->pointerMoveSerial)
         {
-            view->imp()->pointerIsOver = false;
-            view->pointerLeaveEvent();
+            view->imp()->pointerMoveSerial = pointerMoveSerial;
+
+            if (view->pointerIsOver())
+            {
+                view->imp()->pointerIsOver = false;
+                view->pointerLeaveEvent();
+            }
         }
     }
 
     // Hides unused warning
     (void)firstViewFound;
+
+    return true;
 }
 
 
@@ -185,36 +206,100 @@ LPoint LScene::LScenePrivate::viewLocalPos(LView *view, const LPoint &pos)
         return pos - view->pos();
 }
 
-void LScene::LScenePrivate::handlePointerButton(LView *view, LPointer::Button button, LPointer::ButtonState state)
+bool LScene::LScenePrivate::handlePointerButton(LView *view, LPointer::Button button, LPointer::ButtonState state)
 {
+    // If a list was modified, start again, serials are used to prevent resend events
+    if (listChanged)
+    {
+        listChanged = false;
+        handlePointerButton(this->view, button, state);
+        return false;
+    }
+
     for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
-        handlePointerButton(*it, button, state);
+        if (!handlePointerButton(*it, button, state))
+            return false;
+
+    if (view->imp()->pointerButtonSerial == pointerButtonSerial)
+        return true;
 
     if (view->imp()->pointerIsOver)
         view->pointerButtonEvent(button, state);
+
+    view->imp()->pointerButtonSerial = pointerButtonSerial;
+
+    return true;
 }
 
-void LScene::LScenePrivate::handlePointerAxisEvent(LView *view, Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source)
+bool LScene::LScenePrivate::handlePointerAxisEvent(LView *view, Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source)
 {
+    // If a list was modified, start again, serials are used to prevent resend events
+    if (listChanged)
+    {
+        listChanged = false;
+        handlePointerAxisEvent(this->view, axisX, axisY, discreteX, discreteY, source);
+        return false;
+    }
+
     for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
-        handlePointerAxisEvent(*it, axisX, axisY, discreteX, discreteY, source);
+        if (!handlePointerAxisEvent(*it, axisX, axisY, discreteX, discreteY, source))
+            return false;
+
+    if (view->imp()->pointerAxisSerial == pointerAxisSerial)
+        return true;
 
     if (view->imp()->pointerIsOver)
         view->pointerAxisEvent(axisX, axisY, discreteX, discreteY, source);
+
+    view->imp()->pointerAxisSerial = pointerAxisSerial;
+
+    return true;
 }
 
-void LScene::LScenePrivate::handleKeyModifiersEvent(LView *view, UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
+bool LScene::LScenePrivate::handleKeyModifiersEvent(LView *view, UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
 {
+    // If a list was modified, start again, serials are used to prevent resend events
+    if (listChanged)
+    {
+        listChanged = false;
+        handleKeyModifiersEvent(this->view, depressed, latched, locked, group);
+        return false;
+    }
+
     for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
-        handleKeyModifiersEvent(*it, depressed, latched, locked, group);
+        if (!handleKeyModifiersEvent(*it, depressed, latched, locked, group))
+            return false;
+
+    if (view->imp()->keyModifiersSerial == keyModifiersSerial)
+        return true;
 
     view->keyModifiersEvent(depressed, latched, locked, group);
+
+    view->imp()->keyModifiersSerial = keyModifiersSerial;
+
+    return true;
 }
 
-void LScene::LScenePrivate::handleKeyEvent(LView *view, UInt32 keyCode, UInt32 keyState)
+bool LScene::LScenePrivate::handleKeyEvent(LView *view, UInt32 keyCode, UInt32 keyState)
 {
+    // If a list was modified, start again, serials are used to prevent resend events
+    if (listChanged)
+    {
+        listChanged = false;
+        handleKeyEvent(this->view, keyCode, keyState);
+        return false;
+    }
+
     for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
-        handleKeyEvent(*it, keyCode, keyState);
+        if (!handleKeyEvent(*it, keyCode, keyState))
+            return false;
+
+    if (view->imp()->keySerial == keySerial)
+        return true;
 
     view->keyEvent(keyCode, keyState);
+
+    view->imp()->keySerial = keySerial;
+
+    return true;
 }

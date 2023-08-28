@@ -46,6 +46,8 @@ public:
     // Number of pointerMoveEvent() calls before show() is called
     UInt32 showResistance = 6;
     UInt32 showResistanceCount = 0;
+
+    bool alive = true;
 };
 
 #endif // DOCK_H
