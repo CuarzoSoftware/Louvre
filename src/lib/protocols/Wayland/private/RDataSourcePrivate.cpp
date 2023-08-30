@@ -1,6 +1,13 @@
 #include <protocols/Wayland/private/RDataSourcePrivate.h>
+#include <protocols/Wayland/RDataOffer.h>
+#include <protocols/Wayland/RDataDevice.h>
+#include <protocols/Wayland/GSeat.h>
+#include <private/LDataOfferPrivate.h>
 #include <private/LDataSourcePrivate.h>
+#include <private/LDataDevicePrivate.h>
+#include <LDNDManager.h>
 #include <LSeat.h>
+#include <LClient.h>
 #include <cstring>
 
 void RDataSource::RDataSourcePrivate::resource_destroy(wl_resource *resource)
@@ -19,12 +26,9 @@ void RDataSource::RDataSourcePrivate::offer(wl_client *client, wl_resource *reso
 {
     L_UNUSED(client);
     LDataSource::LSource source;
-    int len = strlen(mime_type)+1;
-    source.mimeType = new char[len];
-    memcpy(source.mimeType, mime_type, len);
-
+    source.mimeType = strdup(mime_type);
     RDataSource *rDataSource = (RDataSource*)wl_resource_get_user_data(resource);
-    source.tmp = tmpfile();
+    source.tmp = NULL;
     rDataSource->dataSource()->imp()->sources.push_back(source);
 }
 
@@ -40,6 +44,19 @@ void RDataSource::RDataSourcePrivate::set_actions(wl_client *client, wl_resource
     }
 
     RDataSource *rDataSource = (RDataSource*)wl_resource_get_user_data(resource);
+
+    if (rDataSource->dataSource()->imp()->dndActions == dnd_actions)
+        return;
+
     rDataSource->dataSource()->imp()->dndActions = dnd_actions;
+
+    if (seat()->dndManager()->dstClient())
+        for (GSeat *s : seat()->dndManager()->dstClient()->seatGlobals())
+            if (s->dataDeviceResource() && s->dataDeviceResource()->dataOffered())
+            {
+                s->dataDeviceResource()->dataOffered()->dataOfferResource()->sourceActions(dnd_actions);
+                s->dataDeviceResource()->dataOffered()->imp()->updateDNDAction();
+            }
+
 }
 #endif

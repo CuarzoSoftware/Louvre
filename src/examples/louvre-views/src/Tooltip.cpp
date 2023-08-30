@@ -62,6 +62,7 @@ void Tooltip::show(Int32 x, Int32 y)
 void Tooltip::hide()
 {
     setVisible(false);
+    label.setTexture(nullptr);
 }
 
 void Tooltip::update()
@@ -95,4 +96,9 @@ void Tooltip::update()
     arrow.setPos((size().w() - arrow.size().w()) / 2, size().h());
 
     setPos(point.x() - (size().w() / 2), point.y() - size().h() - arrow.size().h());
+}
+
+bool Tooltip::nativeMapped() const
+{
+    return label.texture() != nullptr;
 }

@@ -37,6 +37,12 @@ void LDataOffer::LDataOfferPrivate::updateDNDAction()
 {
     LDNDManager *dndManager = seat()->dndManager();
 
+    if (!dndManager->focus())
+        return;
+
+    if (dndManager->focus()->client() != dataOfferResource->client())
+        return;
+
     bool offerIsV3 = dataOfferResource->version() >= 3;
     UInt32 compositorAction = dndManager->preferredAction();
     UInt32 final = 0;

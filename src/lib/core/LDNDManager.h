@@ -99,6 +99,11 @@ public:
     LDataSource *source() const;
 
     /*!
+     * @brief Data device that started the drag & drop session.
+     */
+    Protocols::Wayland::RDataDevice *srcDataDevice() const;
+
+    /*!
      * @brief Get the destination client for the current data offer.
      *
      * This function returns the client to whom the current data offer is being made.

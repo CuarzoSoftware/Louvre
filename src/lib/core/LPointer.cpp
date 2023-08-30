@@ -69,7 +69,6 @@ void LPointer::setFocus(LSurface *surface, const LPoint &localPos)
             }
         }
 
-        // Check if has a data device
         surface->client()->dataDevice().imp()->sendDNDEnterEventS(surface, x, y);
     }
     else
@@ -395,7 +394,7 @@ LSurface *LPointer::focusSurface() const
 
 void LPointer::LPointerPrivate::sendLeaveEvent(LSurface *surface)
 {
-    if (seat()->dndManager()->focus())
+    if (seat()->dndManager()->focus() && seat()->dndManager()->focus() == surface)
         seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDLeaveEvent();
 
     if (!surface)

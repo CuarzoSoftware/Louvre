@@ -5,8 +5,11 @@ void LDataSource::LDataSourcePrivate::removeSources()
 {
     while(!sources.empty())
     {
-        delete []sources.back().mimeType;
-        fclose(sources.back().tmp);
+        free(sources.back().mimeType);
+
+        if (sources.back().tmp)
+            fclose(sources.back().tmp);
+
         sources.pop_back();
     }
 }

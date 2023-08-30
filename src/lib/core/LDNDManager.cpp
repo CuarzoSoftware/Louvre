@@ -10,6 +10,7 @@
 #include <LDataSource.h>
 #include <LSeat.h>
 #include <LPointer.h>
+#include <LTimer.h>
 
 using namespace Louvre;
 
@@ -44,6 +45,11 @@ LDataSource *LDNDManager::source() const
     return imp()->source;
 }
 
+Wayland::RDataDevice *LDNDManager::srcDataDevice() const
+{
+    return imp()->srcDataDevice;
+}
+
 LClient *LDNDManager::dstClient() const
 {
     return imp()->dstClient;
@@ -60,11 +66,14 @@ void LDNDManager::cancel()
         imp()->focus->client()->dataDevice().imp()->sendDNDLeaveEvent();
 
     if (source())
+    {
+        source()->dataSourceResource()->dndFinished();
         source()->dataSourceResource()->cancelled();
+    }
 
     imp()->clear();
-    seat()->pointer()->setFocus(nullptr);
     cancelled();
+    seat()->pointer()->setFocus(nullptr);
 }
 
 void LDNDManager::drop()
@@ -73,27 +82,40 @@ void LDNDManager::drop()
     {
         imp()->dropped = true;
 
+        LTimer::oneShot(500, [this](LTimer *)
+        {
+            if (source() && imp()->dropped)
+                cancel();
+        });
+
         if (icon() && icon()->surface())
             icon()->surface()->imp()->setMapped(false);
 
         if (imp()->focus)
         {
             for (Wayland::GSeat *s : imp()->focus->client()->seatGlobals())
+            {
                 if (s->dataDeviceResource())
+                {
+                    if (!imp()->matchedMimeType && s->dataDeviceResource()->version() >= 3)
+                    {
+                        cancel();
+                        return;
+                    }
+
                     s->dataDeviceResource()->drop();
+                }
+            }
 
             if (source())
-            {
                 source()->dataSourceResource()->dndDropPerformed();
-            }
+
+            seat()->pointer()->setFocus(nullptr);
         }
         else
         {
             if (source())
-            {
                 source()->dataSourceResource()->dndDropPerformed();
-                source()->dataSourceResource()->dndFinished();
-            }
 
             cancel();
         }
@@ -109,6 +131,9 @@ LDNDManager::Action LDNDManager::preferredAction() const
 
 void LDNDManager::setPreferredAction(LDNDManager::Action action)
 {
+    if (imp()->preferredAction == action)
+        return;
+
     imp()->preferredAction = action;
 
     if (imp()->dstClient)

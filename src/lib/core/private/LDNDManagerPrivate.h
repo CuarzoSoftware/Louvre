@@ -22,10 +22,11 @@ LPRIVATE_CLASS(LDNDManager)
     LSurface *focus                                             = nullptr;
     LDataSource *source                                         = nullptr;
     LClient *dstClient                                          = nullptr;
+    Protocols::Wayland::RDataDevice *srcDataDevice              = nullptr;
 
     bool dropped                                                = false;
     bool matchedMimeType                                        = false;
-    UInt32 destDidNotRequestReceive                             = 0;
+    //UInt32 destDidNotRequestReceive                             = 0;
 };
 
 #endif // LDNDMANAGERPRIVATE_H

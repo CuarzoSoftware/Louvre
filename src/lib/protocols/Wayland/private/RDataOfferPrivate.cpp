@@ -1,3 +1,4 @@
+#include "LLog.h"
 #include <protocols/Wayland/private/RDataOfferPrivate.h>
 #include <protocols/Wayland/private/RDataSourcePrivate.h>
 #include <protocols/Wayland/private/RDataDevicePrivate.h>
@@ -31,18 +32,20 @@ void RDataOffer::RDataOfferPrivate::accept(wl_client *client, wl_resource *resou
 {
     L_UNUSED(client);
     L_UNUSED(serial);
-    L_UNUSED(resource);
 
-    /* TODO: Use serial */
-    // RDataOffer *lRDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
+    RDataOffer *lRDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
 
-#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
-    //if (lRDataOffer->version() >= 3 && lRDataOffer->dataOffer()->imp()->hasFinished)
-        //wl_resource_post_error(resource, WL_DATA_OFFER_ERROR_INVALID_FINISH, "Invalid DND action mask.");
-#endif
+    if (!seat()->dndManager()->focus())
+        return;
 
-    if (mime_type != NULL)
-        seat()->dndManager()->imp()->matchedMimeType = true;
+    if (seat()->dndManager()->focus()->client() != lRDataOffer->client())
+        return;
+
+    if (seat()->dndManager()->source())
+    {
+        seat()->dndManager()->source()->dataSourceResource()->target(mime_type);
+        seat()->dndManager()->imp()->matchedMimeType = mime_type != NULL;
+    }
 }
 
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
@@ -54,15 +57,20 @@ void RDataOffer::RDataOfferPrivate::finish(wl_client *client, wl_resource *resou
 
     if (lRDataOffer->dataOffer()->usedFor() != LDataOffer::DND)
     {
-        wl_resource_post_error(resource,WL_DATA_OFFER_ERROR_INVALID_FINISH,"Data offer not used for DND.");
+        wl_resource_post_error(resource, WL_DATA_OFFER_ERROR_INVALID_FINISH, "Data offer not used for DND.");
         return;
     }
 
+    if (!seat()->dndManager()->focus())
+        return;
+
+    if (seat()->dndManager()->focus()->client() != lRDataOffer->client())
+        return;
+
     lRDataOffer->dataOffer()->imp()->hasFinished = true;
 
-    if (seat()->dndManager()->source() &&
-            seat()->dndManager()->source()->dataSourceResource()->version() >= 3)
-        wl_data_source_send_dnd_finished(seat()->dndManager()->source()->dataSourceResource()->resource());
+    if (seat()->dndManager()->source())
+        seat()->dndManager()->source()->dataSourceResource()->dndFinished();
 
     if (seat()->dndManager()->focus())
         seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDLeaveEvent();
@@ -90,7 +98,7 @@ void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *reso
         // Louvre keeps a copy of the source clipboard for each mime type (so we don't ask the source client to write the data)
         for (LDataSource::LSource &s : seat()->dataSelection()->imp()->sources)
         {
-            if (strcmp(s.mimeType, mime_type) == 0)
+            if (strcmp(s.mimeType, mime_type) == 0 && s.tmp)
             {
                 fseek(s.tmp, 0L, SEEK_END);
 
@@ -142,6 +150,12 @@ void RDataOffer::RDataOfferPrivate::set_actions(wl_client *client, wl_resource *
         wl_resource_post_error(resource, WL_DATA_OFFER_ERROR_INVALID_ACTION_MASK, "Invalid preferred_action.");
         return;
     }
+
+    if (!seat()->dndManager()->focus())
+        return;
+
+    if (seat()->dndManager()->focus()->client() != rDataOffer->client())
+        return;
 
     rDataOffer->dataOffer()->imp()->acceptedActions = dnd_actions;
     rDataOffer->dataOffer()->imp()->preferredAction = preferred_action;

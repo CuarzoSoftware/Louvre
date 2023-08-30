@@ -50,14 +50,18 @@ void LDataDevice::sendSelectionEvent()
 
 void LDataDevice::LDataDevicePrivate::sendDNDEnterEventS(LSurface *surface, Float24 x, Float24 y)
 {
+    if (!surface)
+        return;
+
     if (seat()->dndManager()->dragging() && seat()->dndManager()->focus() != surface)
     {
-        sendDNDLeaveEvent();
-
-        UInt32 serial = LCompositor::nextSerial();
+        if (seat()->dndManager()->focus())
+            seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDLeaveEvent();
 
         if (seat()->dndManager()->source())
         {
+            seat()->dndManager()->imp()->focus = surface;
+
             for (Wayland::GSeat *d : client->seatGlobals())
             {
                 if (d->dataDeviceResource())
@@ -71,6 +75,8 @@ void LDataDevice::LDataDevicePrivate::sendDNDEnterEventS(LSurface *surface, Floa
                     for (const LDataSource::LSource &s : seat()->dndManager()->source()->sources())
                         rDataOffer->offer(s.mimeType);
 
+                    UInt32 serial = LCompositor::nextSerial();
+
                     d->dataDeviceResource()->imp()->serials.enter = serial;
                     d->dataDeviceResource()->enter(serial,
                                                    surface->surfaceResource(),
@@ -82,14 +88,18 @@ void LDataDevice::LDataDevicePrivate::sendDNDEnterEventS(LSurface *surface, Floa
                 }
             }
 
-            seat()->dndManager()->imp()->focus = surface;
+            sendDNDMotionEventS(x, y);
         }
+        // If source is NULL, enter, leave and motion events are sent only to the client that
+        // initiated the drag and the client is expected to handle the data passing internally
         else
         {
-            if (surface == seat()->dndManager()->origin())
+            if (surface && surface->client() == client)
             {
                 for (Wayland::GSeat *d : client->seatGlobals())
                 {
+                    UInt32 serial = LCompositor::nextSerial();
+
                     if (d->dataDeviceResource())
                     {
                         d->dataDeviceResource()->imp()->serials.enter = serial;
@@ -105,12 +115,14 @@ void LDataDevice::LDataDevicePrivate::sendDNDEnterEventS(LSurface *surface, Floa
             }
         }
     }
+
+    surface->client()->flush();
 }
 
 void LDataDevice::LDataDevicePrivate::sendDNDMotionEventS(Float24 x, Float24 y)
 {
-    if (seat()->dndManager()->dragging() && seat()->dndManager()->focus())
-        if (seat()->dndManager()->source() || (!seat()->dndManager()->source() && seat()->dndManager()->focus() == seat()->dndManager()->origin()))
+    if (seat()->dndManager()->dragging() && seat()->dndManager()->focus() && seat()->dndManager()->focus() == seat()->pointer()->focusSurface())
+        if (seat()->dndManager()->source() || (!seat()->dndManager()->source() && seat()->dndManager()->srcDataDevice()->client()  && seat()->dndManager()->srcDataDevice()->client() == client))
         {
             UInt32 ms = LTime::ms();
             for (Wayland::GSeat *d : client->seatGlobals())

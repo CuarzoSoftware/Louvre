@@ -33,22 +33,31 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
                                                  wl_resource *icon,
                                                  UInt32 serial)
 {
-    /* TODO: Use serial. */
-    L_UNUSED(serial);
     L_UNUSED(client);
+    L_UNUSED(serial);
 
     RDataDevice *rDataDevice = (RDataDevice*)wl_resource_get_user_data(resource);
+
+    /* TODO: Use serial
+    if (!rDataDevice->seatGlobal()->pointerResource() || rDataDevice->seatGlobal()->pointerResource()->serials().button != serial)
+    {
+        LLog::debug("[data device] Start drag request without input grab. Ignoring it.");
+        return;
+    }*/
+
     RSurface *rOriginSurface = (RSurface*)wl_resource_get_user_data(origin);
     LSurface *lOriginSurface = rOriginSurface->surface();
     LDNDManager *dndManager = seat()->dndManager();
 
-    // Cancel if there is dragging going on from another client or if there is no focused surface from this client
-    if ( (dndManager->dragging() && dndManager->source() && dndManager->source()->client() != rDataDevice->client()) ||
-        (seat()->pointer()->focusSurface() != lOriginSurface))
+    // Cancel if there is dragging going on or if there is no focused surface from this client
+    if (dndManager->dragging() || seat()->pointer()->focusSurface() != lOriginSurface)
     {
-        LLog::debug("[data device] Invalid DND drag request.");
+        LLog::debug("[data device] Invalid start drag request. Ignoring it.");
         return;
     }
+
+    seat()->pointer()->setDragginSurface(nullptr);
+    dndManager->imp()->dropped = false;
 
     // Removes pevious data source if any
     dndManager->cancel();
@@ -59,8 +68,7 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
         RSurface *rSurface = (RSurface*)wl_resource_get_user_data(icon);
         LSurface *lIcon = rSurface->surface();
 
-        if (lIcon->imp()->pending.role ||
-            (lIcon->roleId() != LSurface::Role::Undefined && lIcon->roleId() != LSurface::Role::DNDIcon))
+        if (lIcon->imp()->pending.role || (lIcon->roleId() != LSurface::Role::Undefined && lIcon->roleId() != LSurface::Role::DNDIcon))
         {
             wl_resource_post_error(resource, WL_DATA_DEVICE_ERROR_ROLE, "Given wl_surface has another role.");
             return;
@@ -99,14 +107,14 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
     else
         dndManager->imp()->source = nullptr;
 
+    dndManager->imp()->srcDataDevice = rDataDevice;
+
     // Notify
     dndManager->startDragRequest();
 
-    if (seat()->pointer()->focusSurface())
-    {
+    if (dndManager->imp()->origin && seat()->pointer()->focusSurface())
         seat()->pointer()->focusSurface()->client()->dataDevice().imp()->sendDNDEnterEventS(
             seat()->pointer()->focusSurface(), 0, 0);
-    }
 }
 
 void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resource *resource, wl_resource *source, UInt32 serial)
@@ -154,8 +162,13 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resour
         seat()->imp()->dataSelection = rDataSource->dataSource();
 
         // Ask client to write to the compositor fds
-        for (const LDataSource::LSource &s : rDataSource->dataSource()->sources())
+        for (LDataSource::LSource &s : rDataSource->dataSource()->imp()->sources)
+        {
+            if (!s.tmp)
+                s.tmp = tmpfile();
+
             rDataSource->send(s.mimeType, fileno(s.tmp));
+        }
 
         // If a client already has keyboard focus, send it the current clipboard
         if (seat()->keyboard()->focusSurface())

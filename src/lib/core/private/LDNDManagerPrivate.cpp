@@ -6,8 +6,7 @@ void LDNDManager::LDNDManagerPrivate::clear()
     source = nullptr;
     origin = nullptr;
     icon = nullptr;
+    srcDataDevice = nullptr;
     dstClient = nullptr;
-    dropped = false;
     matchedMimeType = false;
-    destDidNotRequestReceive = 0;
 }

@@ -5,7 +5,6 @@
 #include "Surface.h"
 #include "DockItem.h"
 #include "Global.h"
-#include "Output.h"
 #include "Dock.h"
 #include "Tooltip.h"
 
@@ -54,5 +53,8 @@ void DockItem::pointerButtonEvent(LPointer::Button button, LPointer::ButtonState
     if (state == LPointer::Pressed)
         setOpacity(0.7f);
     else
+    {
         surface->unminimize(this);
+        G::tooltip()->hide();
+    }
 }

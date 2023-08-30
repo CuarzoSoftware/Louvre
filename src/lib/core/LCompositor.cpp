@@ -28,7 +28,6 @@
 #include <dlfcn.h>
 #include <LLog.h>
 
-
 using namespace Louvre::Protocols::Wayland;
 
 static LCompositor *s_compositor = nullptr;
@@ -163,13 +162,6 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
     imp()->renderMutex.lock();
 
     imp()->processRemovedGlobals();
-
-    // DND
-    if (seat()->dndManager()->imp()->destDidNotRequestReceive >= 3)
-        seat()->dndManager()->cancel();
-
-    if (seat()->dndManager()->imp()->dropped && seat()->dndManager()->imp()->destDidNotRequestReceive < 3)
-        seat()->dndManager()->imp()->destDidNotRequestReceive++;
 
     wl_event_loop_dispatch(imp()->eventLoop, 0);
     imp()->destroyPendingRenderBuffers(nullptr);

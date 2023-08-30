@@ -26,6 +26,8 @@ public:
     LPoint point;
 
     void update();
+
+    bool nativeMapped() const override;
 };
 
 #endif // TOOLTIP_H
