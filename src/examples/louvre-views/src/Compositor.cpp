@@ -88,7 +88,7 @@ void Compositor::initialized()
     for (LOutput *output : *seat()->outputs())
     {
         // Set scale 2 to HiDPI screens
-        output->setScale(output->dpi() >= 120 ? 2 : 1);
+        output->setScale(output->dpi() >= 200 ? 2 : 1);
         output->setPos(LPoint(totalWidth, 0));
         totalWidth += output->size().w();
         compositor()->addOutput(output);

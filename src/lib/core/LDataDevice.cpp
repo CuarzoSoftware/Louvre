@@ -53,6 +53,9 @@ void LDataDevice::LDataDevicePrivate::sendDNDEnterEventS(LSurface *surface, Floa
     if (!surface)
         return;
 
+    if (seat()->dndManager()->imp()->dropped)
+        return;
+
     if (seat()->dndManager()->dragging() && seat()->dndManager()->focus() != surface)
     {
         if (seat()->dndManager()->focus())

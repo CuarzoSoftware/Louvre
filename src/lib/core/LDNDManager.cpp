@@ -73,7 +73,6 @@ void LDNDManager::cancel()
 
     imp()->clear();
     cancelled();
-    seat()->pointer()->setFocus(nullptr);
 }
 
 void LDNDManager::drop()
@@ -110,7 +109,9 @@ void LDNDManager::drop()
             if (source())
                 source()->dataSourceResource()->dndDropPerformed();
 
+            LSurface *focus = seat()->pointer()->focusSurface();
             seat()->pointer()->setFocus(nullptr);
+            seat()->pointer()->setFocus(focus);
         }
         else
         {

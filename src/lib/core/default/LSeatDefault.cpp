@@ -64,7 +64,7 @@ void LSeat::outputPlugged(LOutput *output)
 {
     LLog::debug("Output %s connected.", output->name());
 
-    output->setScale(output->dpi() >= 120 ? 2 : 1);
+    output->setScale(output->dpi() >= 200 ? 2 : 1);
     compositor()->addOutput(output);
 
     Int32 totalWidth = 0;

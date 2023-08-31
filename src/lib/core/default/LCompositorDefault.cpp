@@ -71,10 +71,10 @@ void LCompositor::initialized()
 
     Int32 totalWidth = 0;
 
-    // Set double scale to outputs with DPI >= 120
+    // Set double scale to outputs with DPI >= 200
     for (LOutput *output : *seat()->outputs())
     {
-        if (output->dpi() >= 120)
+        if (output->dpi() >= 200)
             output->setScale(2);
 
         output->setPos(LPoint(totalWidth, 0));

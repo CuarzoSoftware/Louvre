@@ -58,10 +58,10 @@ void Output::initializeGL()
 void Output::resizeGL()
 {
     Int32 x = 0;
-    // Set double scale to outputs with DPI >= 120
+    // Set double scale to outputs with DPI >= 200
     for (Output *output : (std::list<Output*>&)compositor()->outputs())
     {
-        if (output->dpi() >= 120)
+        if (output->dpi() >= 200)
             output->setScale(2);
         else
             output->setScale(1);
