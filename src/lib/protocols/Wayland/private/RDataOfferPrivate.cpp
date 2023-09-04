@@ -1,4 +1,3 @@
-#include "LLog.h"
 #include <protocols/Wayland/private/RDataOfferPrivate.h>
 #include <protocols/Wayland/private/RDataSourcePrivate.h>
 #include <protocols/Wayland/private/RDataDevicePrivate.h>
@@ -10,6 +9,7 @@
 #include <LSeat.h>
 #include <unistd.h>
 #include <cstring>
+#include <stdio.h>
 
 void RDataOffer::RDataOfferPrivate::resource_destroy(wl_resource *resource)
 {

@@ -1,6 +1,7 @@
 #include <LLog.h>
 #include <unistd.h>
 #include <string.h>
+#include <cstdio>
 #include "Client.h"
 #include "App.h"
 #include "Global.h"

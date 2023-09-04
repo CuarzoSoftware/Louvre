@@ -14,6 +14,7 @@
 #include <LKeyboard.h>
 #include <LTime.h>
 #include <string.h>
+#include <ctype.h>
 
 #undef None
 
