@@ -6,6 +6,8 @@ Louvre is a C++ library that aims to simplify the process of creating Wayland co
 
 [**Louvre Web Site**](https://cuarzosoftware.github.io/Louvre/index.html)
 
+>:warning: **Attention:** This branch is significantly outdated. The latest changes can be found in the `/devel` branch.
+
 ## 💻 Graphic Backends
 
 * DRM/KMS
