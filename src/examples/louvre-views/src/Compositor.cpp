@@ -2,6 +2,7 @@
 #include <LAnimation.h>
 #include <LTextureView.h>
 #include <LTimer.h>
+#include <LCursor.h>
 #include <LLog.h>
 
 #include "Client.h"
@@ -24,10 +25,15 @@ Compositor::Compositor() : LCompositor(),
     workspacesLayer(scene.mainView()),
     fullscreenLayer(scene.mainView()),
     overlayLayer(scene.mainView()),
-    tooltipsLayer(scene.mainView())
+    tooltipsLayer(scene.mainView()),
+    cursorLayer(scene.mainView()),
+    softwareCursor(nullptr, &cursorLayer)
 {
     // Set black as default background color
     scene.mainView()->setClearColor(0.f, 0.f, 0.f, 1.f);
+
+    // Setup software cursor
+    softwareCursor.enableDstSize(true);
 }
 
 Compositor::~Compositor() {}
@@ -198,9 +204,6 @@ bool Compositor::checkUpdateOutputUnplug()
                 G::scene()->mainView()->damageAll(o);
         }
     }
-
-    for (Output *o : G::outputs())
-        G::scene()->mainView()->damageAll(o);
 
     return outputUnplugHandled;
 }

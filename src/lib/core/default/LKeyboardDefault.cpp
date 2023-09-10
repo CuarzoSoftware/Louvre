@@ -3,6 +3,8 @@
 #include <LSeat.h>
 #include <LDNDManager.h>
 #include <LClient.h>
+#include <LCursor.h>
+#include <LOutput.h>
 #include <unistd.h>
 
 using namespace Louvre;
@@ -47,6 +49,32 @@ void LKeyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
         {
             if (focusSurface())
                 focusSurface()->setMinimized(true);
+        }
+
+        // Screenshot
+        else if (L_CTRL && L_SHIFT && keyCode == KEY_3)
+        {
+            if (cursor()->output()->bufferTexture(0))
+            {
+                const char *user = getenv("HOME");
+
+                if (!user)
+                    return;
+
+                char path[128];
+                char timeString[32];
+
+                time_t currentTime;
+                struct tm *timeInfo;
+
+                time(&currentTime);
+                timeInfo = localtime(&currentTime);
+                strftime(timeString, sizeof(timeString), "%Y-%m-%d %H:%M:%S", timeInfo);
+
+                sprintf(path, "%s/Desktop/Louvre_Screenshoot_%s.png", user, timeString);
+
+                cursor()->output()->bufferTexture(0)->save(path);
+            }
         }
 
         // Terminates the compositor

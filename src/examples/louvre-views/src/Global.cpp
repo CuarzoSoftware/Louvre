@@ -405,14 +405,17 @@ Output *G::mostIntersectedOuput(LView *view)
     return bestOutput;
 }
 
-void G::reparentWithSubsurfaces(Surface *surf, LView *newParent)
+void G::reparentWithSubsurfaces(Surface *surf, LView *newParent, bool onlySubsurfaces)
 {
     surf->getView()->setParent(newParent);
 
     for (Surface *s : surfaces())
     {
         if (s->parent() == surf && !s->cursorRole())
-            G::reparentWithSubsurfaces(s, newParent);
+        {
+            if ((onlySubsurfaces && s->subsurface()) || !onlySubsurfaces)
+                G::reparentWithSubsurfaces(s, newParent);
+        }
     }
 }
 
@@ -433,5 +436,36 @@ void G::arrangeOutputs()
         o->setPos(LPoint(x, 0));
         x += o->size().w();
         o->repaint();
+    }
+}
+
+Toplevel *G::searchFullscreenParent(Surface *parent)
+{
+    if (!parent)
+        return nullptr;
+
+    if (parent->toplevel() && parent->toplevel()->fullscreen())
+    {
+        Toplevel *tl = (Toplevel*)parent->toplevel();
+        return tl;
+    }
+
+    return searchFullscreenParent((Surface*)parent->parent());
+}
+
+void G::repositionNonVisibleToplevelChildren(Output *target, Surface *toplevel)
+{
+    for (Surface *s : (std::list<Surface*>&)toplevel->children())
+    {
+        if (!s->toplevel())
+            continue;
+
+        LBox box = s->getView()->boundingBox();
+
+        if (!LRect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1).intersects(target->rect()))
+            s->setPos(target->pos().x() + 200 + rand() % 200,
+                      target->pos().y() + 200 + rand() % 200);
+
+        G::repositionNonVisibleToplevelChildren(target, s);
     }
 }

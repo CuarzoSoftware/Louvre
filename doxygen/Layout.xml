@@ -18,11 +18,11 @@
     	<tab type="namespacemembers" visible="no" title="" intro=""/>
   	</tab>
     
-    <tab type="classes" visible="yes" title="API">
-    	<tab type="classes" visible="yes" title="Classes"/>
-    </tab>
-    
-    <tab type="usergroup" visible="yes" title="Installation" url="md_md_tutorial_01_installation.html"/>
+    <tab type="classes" visible="yes" title="API"/>
+    <tab type="usergroup" visible="yes" title="Examples" url="md_md__examples.html"/>
+    <tab type="usergroup" visible="yes" title="Downloads" url="md_md__downloads.html"/>
+    <tab type="usergroup" visible="yes" title="Environment" url="md_md__environment.html"/>
+
     
   </navindex>
   

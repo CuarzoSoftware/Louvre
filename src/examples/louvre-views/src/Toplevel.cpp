@@ -252,7 +252,7 @@ void Toplevel::fullscreenChanged()
         if (decoratedView)
             decoratedView->fullscreenTopbarVisibility = 0.f;
 
-        fullscreenOutput->setWorkspace(fullscreenWorkspace, 560, 8.f);
+        fullscreenOutput->setWorkspace(fullscreenWorkspace, 560, 4.f);
     }
     else
     {
@@ -374,7 +374,7 @@ void Toplevel::unsetFullscreen()
     blackFullscreenBackground.setVisible(true);
     blackFullscreenBackground.setScalingVector(LSizeF(1.f, 1.f));
 
-    G::reparentWithSubsurfaces(surf(), &blackFullscreenBackground);
+    G::reparentWithSubsurfaces(surf(), &blackFullscreenBackground, false);
 
     fullscreenOutput->setWorkspace(fullscreenOutput->workspaces.front(), 560, 8.f);
 }

@@ -27,6 +27,7 @@
 #include <LDNDManager.h>
 #include <dlfcn.h>
 #include <LLog.h>
+#include <sys/eventfd.h>
 
 using namespace Louvre::Protocols::Wayland;
 
@@ -140,8 +141,12 @@ bool LCompositor::start()
     imp()->state = CompositorState::Initialized;
     initialized();
 
-    imp()->fdSet.events = POLLIN | POLLOUT | POLLHUP;
-    imp()->fdSet.revents = 0;
+    imp()->fdSet[0].events = POLLIN | POLLOUT | POLLHUP;
+    imp()->fdSet[0].revents = 0;
+
+    imp()->fdSet[1].fd = eventfd(0, EFD_NONBLOCK);
+    imp()->fdSet[1].events = POLLIN;
+    imp()->fdSet[1].revents = 0;
 
     return true;
 
@@ -152,14 +157,17 @@ bool LCompositor::start()
 
 Int32 LCompositor::processLoop(Int32 msTimeout)
 {
-    imp()->renderMutex.lock();
-    if (imp()->runningAnimations() && seat()->enabled())
-        msTimeout = 2;
-    imp()->renderMutex.unlock();
+    poll(imp()->fdSet, 2, msTimeout);
 
-    poll(&imp()->fdSet, 1, msTimeout);
+    imp()->lock();
 
-    imp()->renderMutex.lock();
+    if (imp()->fdSet[1].events & POLLIN)
+    {
+        UInt64 eventValue;
+        ssize_t n = read(imp()->fdSet[1].fd, &eventValue, sizeof(eventValue));
+        L_UNUSED(n);
+        imp()->pollUnlocked = false;
+    }
 
     imp()->processRemovedGlobals();
 
@@ -173,14 +181,14 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         imp()->processAnimations();
     }
 
-    imp()->renderMutex.unlock();
+    imp()->unlock();
 
     return 1;
 }
 
 Int32 LCompositor::fd() const
 {
-    return imp()->fdSet.fd;
+    return imp()->fdSet[0].fd;
 }
 
 void LCompositor::finish()

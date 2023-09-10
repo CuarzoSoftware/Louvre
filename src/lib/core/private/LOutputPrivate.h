@@ -20,6 +20,7 @@ LPRIVATE_CLASS(LOutput)
     State state = Uninitialized;
 
     void *graphicBackendData = nullptr;
+    bool pendingRepaint = false;
 
     // Setup Methods
     bool initialize();

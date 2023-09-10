@@ -4,6 +4,7 @@
 #include <private/LCursorPrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LRenderBufferPrivate.h>
+#include <FreeImage.h>
 #include <LRect.h>
 #include <LLog.h>
 
@@ -249,6 +250,116 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src) const
     LLog::error("Failed to create texture. Graphical backend error.");
     delete textureCopy;
     return nullptr;
+}
+
+bool LTexture::save(const char *path) const
+{
+    if (!initialized())
+    {
+        LLog::error("Failed to save texture. Uninitialized texture.");
+        return false;
+    }
+
+    if (!path)
+    {
+        LLog::error("Failed to save texture. Invalid path.");
+        return false;
+    }
+
+    LPainter *painter = nullptr;
+    std::thread::id threadId = std::this_thread::get_id();
+
+    if (threadId == LCompositor::compositor()->mainThreadId())
+        painter = LCompositor::compositor()->imp()->painter;
+    else
+    {
+        for (LOutput *o : LCompositor::compositor()->outputs())
+        {
+            if (o->state() == LOutput::Initialized && o->imp()->threadId == threadId)
+            {
+                painter = o->painter();
+                break;
+            }
+        }
+    }
+
+    if (!painter)
+    {
+        LLog::error("Failed to save texture. No painter found.");
+        return false;
+    }
+
+    GLuint framebuffer;
+    glGenFramebuffers(1, &framebuffer);
+
+    if (framebuffer == 0)
+    {
+        LLog::error("Failed to save texture. Could not create framebuffer.");
+        return false;
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+    GLuint renderbuffer;
+    glGenRenderbuffers(1, &renderbuffer);
+
+    if (renderbuffer == 0)
+    {
+        LLog::error("Failed to save texture. Could not create renderbuffer.");
+        glDeleteFramebuffers(1, &framebuffer);
+        return false;
+    }
+
+    glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, sizeB().w(), sizeB().h());
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, renderbuffer);
+
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
+        LLog::error("Failed to save texture. Incomplete framebuffer.");
+        glDeleteRenderbuffers(1, &renderbuffer);
+        glDeleteFramebuffers(1, &framebuffer);
+        return false;
+    }
+
+    painter->imp()->scaleTexture((LTexture*)this, LSize(sizeB().w(), -sizeB().h()), sizeB());
+
+    UChar8 *cpuBuffer = (UChar8 *)malloc(sizeB().w()*sizeB().h()*4);
+
+    glPixelStorei(GL_PACK_ALIGNMENT, 4);
+    glPixelStorei(GL_PACK_ROW_LENGTH, sizeB().w());
+    glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
+    glPixelStorei(GL_PACK_SKIP_ROWS, 0);
+    glReadPixels(0, 0, sizeB().w(), sizeB().h(), GL_BGRA, GL_UNSIGNED_BYTE, cpuBuffer);
+    glPixelStorei(GL_PACK_ALIGNMENT, 4);
+    glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+    glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
+    glPixelStorei(GL_PACK_SKIP_ROWS, 0);
+
+    FIBITMAP *image = FreeImage_ConvertFromRawBits(cpuBuffer,
+                                                   sizeB().w(),
+                                                   sizeB().h(),
+                                                   4 * sizeB().w(),
+                                                   32,
+                                                   0xFF0000, 0x00FF00, 0x0000FF,
+                                                   false);
+
+    bool ret = FreeImage_Save(FIF_PNG, image, path, PNG_DEFAULT);
+
+
+    FreeImage_Unload(image);
+    free(cpuBuffer);
+    glDeleteRenderbuffers(1, &renderbuffer);
+    glDeleteFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    if (ret)
+        return true;
+
+    LLog::error("Failed to copy texture. FreeImage error.");
+    return false;
 }
 
 LTexture::~LTexture()

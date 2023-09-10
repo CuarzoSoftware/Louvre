@@ -164,6 +164,7 @@ void Dock::update()
     dockContainer->setPos((size().w() - dockContainer->size().w()) / 2, - DOCK_SHADOW_SIZE);
     appsContainer->setPos(DOCK_SHADOW_SIZE, DOCK_SHADOW_SIZE);
     itemsContainer->setPos(DOCK_SHADOW_SIZE, DOCK_SHADOW_SIZE);
+    output->repaint();
 }
 
 void Dock::show()

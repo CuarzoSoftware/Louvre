@@ -88,7 +88,7 @@ public:
      */
     bool setDataB(const LDMAPlanes *planes);
 
-        /**
+    /**
      * @brief Update a specific rectangular area of the texture with the passed buffer.
      *
      * The passed buffer must contain the same format as the texture. If invalid parameters are passed or if the texture is not modifiable, false is returned.
@@ -100,7 +100,7 @@ public:
      */
      bool updateRect(const LRect &rect, UInt32 stride, const void *buffer);
 
-        /**
+    /**
      * @brief Create a copy of the texture.
      *
      * The destination size (dst) is the size of the copied texture, and the source (src) is the rectangular area within the texture to be copied.
@@ -112,6 +112,16 @@ public:
      * @return A pointer to the copied LTexture object.
      */
     LTexture *copyB(const LSize &dst = LSize(), const LRect &src = LRect()) const;
+
+    /**
+     * @brief Saves the texture as a PNG file.
+     *
+     * This function allows you to save the texture as a PNG image file at the specified @p path.
+     *
+     * @param path The file path where the PNG image will be saved.
+     * @return true if the save operation is successful, false otherwise.
+     */
+    bool save(const char *path) const;
 
     /**
      * @brief The LTexture class destructor.

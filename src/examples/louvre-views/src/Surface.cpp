@@ -60,25 +60,11 @@ LView *Surface::getView() const
     return view;
 }
 
-static class Toplevel *searchFullscreenParent(Surface *parent)
-{
-    if (!parent)
-        return nullptr;
-
-    if (parent->toplevel() && parent->toplevel()->fullscreen())
-    {
-        Toplevel *tl = (Toplevel*)parent->toplevel();
-        return tl;
-    }
-
-    return searchFullscreenParent((Surface*)parent->parent());
-}
-
 void Surface::parentChanged()
 {
     if (parent())
     {
-        class Toplevel *tl = searchFullscreenParent((Surface*)parent());
+        class Toplevel *tl = G::searchFullscreenParent((Surface*)parent());
 
         if (tl)
         {

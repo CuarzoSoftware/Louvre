@@ -7,6 +7,7 @@
 #include <EGL/eglext.h>
 #include <sys/poll.h>
 #include <map>
+#include <unistd.h>
 
 LPRIVATE_CLASS(LCompositor)
 
@@ -29,7 +30,7 @@ LPRIVATE_CLASS(LCompositor)
     bool initWayland();
         wl_display *display = nullptr;
         wl_event_loop *eventLoop = nullptr;
-        pollfd fdSet;
+        pollfd fdSet[2];
         wl_listener clientConnectedListener;
         wl_event_source *clientDisconnectedEventSource;
     void unitWayland();
@@ -53,8 +54,17 @@ LPRIVATE_CLASS(LCompositor)
 
     bool isInputBackendInitialized                              = false;
 
+    // Event FD to force unlock main loop poll
+    bool pollUnlocked = false;
+    void unlockPoll();
+
+    // Threads sync
     std::thread::id threadId;
     mutex renderMutex;
+    mutex queueMutex;
+    std::list<std::thread::id>threadsQueue;
+    void lock();
+    void unlock();
 
     bool loadGraphicBackend(const char *path);
     bool loadInputBackend(const char *path);

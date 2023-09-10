@@ -118,6 +118,8 @@ void Output::initializeGL()
     workspaceAnim = LAnimation::create(400,
         [this](LAnimation *anim)
         {
+            repaint();
+
             if (swippingWorkspace)
             {
                 anim->stop();
@@ -191,8 +193,6 @@ void Output::initializeGL()
                 if (tl->decoratedView)
                     tl->decoratedView->updateGeometry();
             }
-
-            repaint();
         },
         [this](LAnimation *)
         {
@@ -228,7 +228,8 @@ void Output::initializeGL()
                 {
                     tl->surf()->getView()->setScalingVector(LSizeF(1.f, 1.f));
                     tl->surf()->setPos(tl->prevRect.pos());
-                    G::reparentWithSubsurfaces(tl->surf(), &workspaces.front()->surfaces);
+                    G::reparentWithSubsurfaces(tl->surf(), &workspaces.front()->surfaces, false);
+                    G::repositionNonVisibleToplevelChildren(this, tl->surf());
                     tl->surf()->getView()->setVisible(true);
                     tl->blackFullscreenBackground.setVisible(false);
                     delete tl->capture.texture();
@@ -249,6 +250,7 @@ void Output::initializeGL()
                 if (!o->swippingWorkspace)
                     o->currentWorkspace->returnChildren();
 
+            updateWorkspacesPos();
             G::scene()->mainView()->damageAll(this);
             repaint();
         });
@@ -289,6 +291,7 @@ void Output::moveGL()
 
 void Output::paintGL()
 {
+    // Show black screen during output removal
     if (!G::compositor()->checkUpdateOutputUnplug())
     {
         painter()->clearScreen();
@@ -296,10 +299,21 @@ void Output::paintGL()
         return;
     }
 
+    // Check pointer events before painting
     if (G::compositor()->updatePointerBeforePaint)
     {
         seat()->pointer()->pointerMoveEvent(0, 0);
         G::compositor()->updatePointerBeforePaint = false;
+    }
+
+    // Check if hw cursor is supported
+    if (cursor()->hasHardwareSupport(this))
+        G::compositor()->softwareCursor.setTexture(nullptr);
+    else
+    {
+        G::compositor()->softwareCursor.setTexture(cursor()->texture());
+        G::compositor()->softwareCursor.setPos(cursor()->rect().pos());
+        G::compositor()->softwareCursor.setDstSize(cursor()->rect().size());
     }
 
     G::compositor()->scene.handlePaintGL(this);

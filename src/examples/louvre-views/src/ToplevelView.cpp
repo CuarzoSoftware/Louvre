@@ -16,6 +16,7 @@
 #include "InputRect.h"
 #include "Output.h"
 #include "TextRenderer.h"
+#include "Workspace.h"
 
 static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &)
 {
@@ -82,6 +83,8 @@ static void onPointerLeaveResizeArea(InputRect *rect, void *data)
                     {
                         view->fullscreenTopbarVisibility = 1.f - anim->value();
                         view->updateGeometry();
+                        if (view->toplevel->fullscreenOutput)
+                            view->toplevel->fullscreenOutput->repaint();
                     },
                     [view](LAnimation *anim)
                     {
@@ -315,6 +318,21 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
         view->minimizeButton->update();
         view->maximizeButton->update();
     };
+
+    // Clip to workspace if parent is fullscreen
+    if (parent())
+    {
+        class Toplevel *tl = G::searchFullscreenParent((class Surface*)toplevel->surface()->parent());
+
+        if (tl)
+        {
+            setParent(((class Surface*)tl->surface())->getView()->parent());
+            enableParentOffset(true);
+
+            for (Workspace *ws : tl->fullscreenOutput->workspaces)
+                ws->clipChildren();
+        }
+    }
 
     updateGeometry();
 }
@@ -699,7 +717,6 @@ void ToplevelView::updateGeometry()
             px = 64;
 
         title->setPos(px, topbarInput->size().h() - (TOPLEVEL_TOPBAR_HEIGHT + title->size().h()) / 2 );
-
     }
 
     lastFullscreenState = toplevel->fullscreen();

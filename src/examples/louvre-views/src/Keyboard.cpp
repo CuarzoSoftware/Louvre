@@ -1,9 +1,12 @@
 #include <LSurface.h>
 #include <LCursor.h>
-#include "Keyboard.h"
-#include "Global.h"
+
 #include <LScene.h>
 #include <unistd.h>
+#include <time.h>
+
+#include "Keyboard.h"
+#include "Global.h"
 #include "Output.h"
 #include "Topbar.h"
 #include "App.h"
@@ -40,32 +43,61 @@ void Keyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
                 }
             }
 
-            // Change output mode
-            if (isKeyCodePressed(KEY_LEFTSHIFT) && keyCode == KEY_M)
+            if (isKeyCodePressed(KEY_LEFTSHIFT))
             {
-                const LOutputMode *mode = cursor()->output()->currentMode();
-
-                if (mode == cursor()->output()->modes().back())
+                // Change output mode
+                if (keyCode == KEY_M)
                 {
-                    cursor()->output()->setMode(cursor()->output()->modes().front());
-                }
-                else
-                {
-                    bool found = false;
+                    const LOutputMode *mode = cursor()->output()->currentMode();
 
-                    for (LOutputMode *om : cursor()->output()->modes())
+                    if (mode == cursor()->output()->modes().back())
                     {
-                        if (found)
+                        cursor()->output()->setMode(cursor()->output()->modes().front());
+                    }
+                    else
+                    {
+                        bool found = false;
+
+                        for (LOutputMode *om : cursor()->output()->modes())
                         {
-                            mode = om;
-                            break;
+                            if (found)
+                            {
+                                mode = om;
+                                break;
+                            }
+
+                            if (om == mode)
+                                found = true;
                         }
 
-                        if (om == mode)
-                            found = true;
+                        cursor()->output()->setMode(mode);
                     }
+                }
 
-                    cursor()->output()->setMode(mode);
+                // Screenshot
+                else if (keyCode == KEY_3)
+                {
+                    if (cursor()->output()->bufferTexture(0))
+                    {
+                        const char *user = getenv("HOME");
+
+                        if (!user)
+                            return;
+
+                        char path[128];
+                        char timeString[32];
+
+                        time_t currentTime;
+                        struct tm *timeInfo;
+
+                        time(&currentTime);
+                        timeInfo = localtime(&currentTime);
+                        strftime(timeString, sizeof(timeString), "%Y-%m-%d %H:%M:%S", timeInfo);
+
+                        sprintf(path, "%s/Desktop/LouvreViews_Screenshoot_%s.png", user, timeString);
+
+                        cursor()->output()->bufferTexture(0)->save(path);
+                    }
                 }
             }
         }

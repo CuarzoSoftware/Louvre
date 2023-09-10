@@ -139,7 +139,8 @@ Int32 LOutput::scale() const
 
 void LOutput::repaint()
 {
-    compositor()->imp()->graphicBackend->scheduleOutputRepaint(this);
+    if (compositor()->imp()->graphicBackend->scheduleOutputRepaint(this))
+        imp()->pendingRepaint = true;
 }
 
 Int32 LOutput::dpi()

@@ -17,7 +17,7 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
 
     lseat->imp()->enabled = true;
 
-    LCompositor::compositor()->imp()->renderMutex.unlock();
+    LCompositor::compositor()->imp()->unlock();
 
     if (compositor()->isGraphicBackendInitialized())
         compositor()->imp()->graphicBackend->resume(compositor());
@@ -25,7 +25,7 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
     if (compositor()->isInputBackendInitialized())
         compositor()->imp()->inputBackend->resume(lseat);
 
-    LCompositor::compositor()->imp()->renderMutex.lock();
+    LCompositor::compositor()->imp()->lock();
 
     for (LOutput *o : compositor()->outputs())
     {
@@ -50,7 +50,7 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
             o->imp()->state = LOutput::Suspended;
     }
 
-    LCompositor::compositor()->imp()->renderMutex.unlock();
+    LCompositor::compositor()->imp()->unlock();
 
     if (compositor()->isGraphicBackendInitialized())
         compositor()->imp()->graphicBackend->pause(compositor());
@@ -58,7 +58,7 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
     if (compositor()->isInputBackendInitialized())
         compositor()->imp()->inputBackend->suspend(lseat);
 
-    LCompositor::compositor()->imp()->renderMutex.lock();
+    LCompositor::compositor()->imp()->lock();
 
     libseat_disable_seat(seat);
 
@@ -104,9 +104,9 @@ bool LSeat::LSeatPrivate::initLibseat()
         LCompositor::compositor()->seat(),
         &LSeat::LSeatPrivate::seatEvent);
 
-    LCompositor::compositor()->imp()->renderMutex.lock();
+    LCompositor::compositor()->imp()->lock();
     dispatchSeat();
-    LCompositor::compositor()->imp()->renderMutex.unlock();
+    LCompositor::compositor()->imp()->unlock();
 
     LLog::debug("[compositor] Using libseat.");
     return true;

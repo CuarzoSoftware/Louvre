@@ -110,8 +110,6 @@ libseat_dep         = cpp.find_library('libseat', dirs: library_paths, required:
 freeimage_dep       = cpp.find_library('freeimage', dirs: library_paths, required: true)
 srm_dep             = cpp.find_library('SRM', dirs: library_paths, required: true)
 
-icuuc_dep           = cpp.find_library('icuuc', dirs: library_paths, required: true)
-
 Louvre = library(
     'Louvre',
     sources : run_command('find', './lib', '-type', 'f', '-name', '*[.cpp,.c]').stdout().strip().split('\n'),
@@ -140,13 +138,11 @@ Louvre_dep = declare_dependency(
     include_directories : include_paths,
     link_with : Louvre)
 
-if get_option('build_drm_backend')
-    subdir('backends/graphic/DRM')
-endif
-
+subdir('backends/graphic/DRM')
 subdir('backends/input/Libinput')
 
 if get_option('build_examples')
+    icuuc_dep = cpp.find_library('icuuc', dirs: library_paths, required: true)
     subdir('examples/louvre-weston-clone')
     subdir('examples/louvre-default')
     subdir('examples/louvre-views')

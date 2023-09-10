@@ -56,11 +56,14 @@ Float32 LAnimation::value() const
 
 void LAnimation::start(bool destroyOnFinish)
 {
+    if (imp()->running)
+        return;
+
     imp()->value = 0.f;
     imp()->beginTime = LTime::ms();
     imp()->destroyOnFinish = destroyOnFinish;
     imp()->running = true;
-    compositor()->repaintAllOutputs();
+    compositor()->imp()->unlockPoll();
 }
 
 void LAnimation::stop()

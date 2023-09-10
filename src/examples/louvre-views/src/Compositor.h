@@ -1,6 +1,7 @@
 #ifndef COMPOSITOR_H
 #define COMPOSITOR_H
 
+#include "LTextureView.h"
 #include <LLayerView.h>
 #include <LCompositor.h>
 #include <LScene.h>
@@ -45,6 +46,10 @@ public:
 
     // Layer for tooltips and non client popups
     LLayerView tooltipsLayer;
+
+    // Layer for the cursor (when hw comp is not avalaible)
+    LLayerView cursorLayer;
+    LTextureView softwareCursor;
 
     // Timer for updating the clock every minute
     LTimer *clockMinuteTimer;

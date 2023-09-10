@@ -68,7 +68,7 @@ class YourCustomCompositor : public LCompositor
 
 As you might deduce, each virtual constructor/destructor has a default implementation provided by the library as well. For example, the default implementation of Louvre::LCompositor::createSurfaceRequest() returns a new LSurface instance, rather than an instance of the YourCustomSurface class.
 
-Therefore, if you intend to use your own classes, you should override their respective virtual constructors.
+Therefore, if you intend to use your own classes, you should override their respective virtual constructors in Louvre::LCompositor.
 
 It's essential to note that not all classes need to be created in this manner; this approach is specifically applicable to client, backend, and internal compositor resources.
 

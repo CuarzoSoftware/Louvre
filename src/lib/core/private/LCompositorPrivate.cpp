@@ -145,7 +145,7 @@ bool LCompositor::LCompositorPrivate::initWayland()
     }
 
     eventLoop = wl_display_get_event_loop(display);
-    fdSet.fd = wl_event_loop_get_fd(eventLoop);
+    fdSet[0].fd = wl_event_loop_get_fd(eventLoop);
 
     // Listen for client connections
     clientConnectedListener.notify = &clientConnectedEvent;
@@ -368,10 +368,9 @@ void LCompositor::LCompositorPrivate::insertSurfaceBefore(LSurface *nextSurface,
 bool LCompositor::LCompositorPrivate::runningAnimations()
 {
     for (LAnimation *anim : animations)
-    {
         if (anim->imp()->running || anim->imp()->pendingDestroy)
             return true;
-    }
+
     return false;
 }
 
@@ -446,4 +445,43 @@ void LCompositor::LCompositorPrivate::addRenderBufferToDestroy(std::thread::id t
 {
     ThreadData &threadData = threadsMap[thread];
     threadData.renderBuffersToDestroy.push_back(data);
+}
+
+void LCompositor::LCompositorPrivate::lock()
+{
+    queueMutex.lock();
+    threadsQueue.push_back(std::this_thread::get_id());
+    queueMutex.unlock();
+
+retry:
+    renderMutex.lock();
+
+    queueMutex.lock();
+    if (threadsQueue.front() != std::this_thread::get_id())
+    {
+        renderMutex.unlock();
+        queueMutex.unlock();
+        goto retry;
+    }
+    queueMutex.unlock();
+}
+
+void LCompositor::LCompositorPrivate::unlock()
+{
+    renderMutex.unlock();
+
+    queueMutex.lock();
+    threadsQueue.pop_front();
+    queueMutex.unlock();
+}
+
+void LCompositor::LCompositorPrivate::unlockPoll()
+{
+    if (pollUnlocked)
+        return;
+
+    pollUnlocked = true;
+    uint64_t event_value = 1;
+    ssize_t n = write(fdSet[1].fd, &event_value, sizeof(event_value));
+    L_UNUSED(n);
 }
