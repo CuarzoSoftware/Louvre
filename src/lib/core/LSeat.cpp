@@ -60,9 +60,9 @@ LSeat::~LSeat()
     delete m_imp;
 }
 
-const list<LOutput *> *LSeat::outputs() const
+const list<LOutput *> &LSeat::outputs() const
 {
-    return LCompositor::compositor()->imp()->graphicBackend->getConnectedOutputs(LCompositor::compositor());
+    return *LCompositor::compositor()->imp()->graphicBackend->getConnectedOutputs(LCompositor::compositor());
 }
 
 UInt32 LSeat::backendCapabilities() const

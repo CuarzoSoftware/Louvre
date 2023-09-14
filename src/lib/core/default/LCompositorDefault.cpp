@@ -63,7 +63,7 @@ void LCompositor::initialized()
     seat()->keyboard()->setKeymap( NULL, NULL, "latam", NULL);
 
     // Use the Output Manager to get avaliable outputs
-    if (seat()->outputs()->empty())
+    if (seat()->outputs().empty())
     {
         LLog::fatal("No output available.");
         finish();
@@ -72,7 +72,7 @@ void LCompositor::initialized()
     Int32 totalWidth = 0;
 
     // Set double scale to outputs with DPI >= 200
-    for (LOutput *output : *seat()->outputs())
+    for (LOutput *output : seat()->outputs())
     {
         if (output->dpi() >= 200)
             output->setScale(2);

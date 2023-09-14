@@ -72,11 +72,11 @@ public:
      *
      * This function provides a list of currently available outputs. The list includes connected outputs that can be initialized
      * as well as those that are already initialized.
-     * To obtain a list of only initialized connectors, refer to LCompositor::outputs().
+     * To obtain a list of only initialized outputs, refer to LCompositor::outputs().
      *
-     * @return A pointer to a list of available outputs.
+     * @return A reference to a list of available outputs.
      */
-    const list<LOutput*>* outputs() const;
+    const list<LOutput *> &outputs() const;
 
     /*!
      * @brief Handle to the native context used by the input backend.

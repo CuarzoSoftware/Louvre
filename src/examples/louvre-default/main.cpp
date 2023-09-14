@@ -6,11 +6,6 @@ using namespace Louvre;
 
 int main(int, char *[])
 {
-    /*
-    setenv("LOUVRE_WAYLAND_DISPLAY", "wayland-0", 1);
-    setenv("WAYLAND_DISPLAY", "wayland-0", 1);
-    setenv("WAYLAND_DEBUG", "1", 1);*/
-
     LCompositor compositor;
 
     if (!compositor.start())

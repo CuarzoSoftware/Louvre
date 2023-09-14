@@ -4,12 +4,13 @@
 
     <tab type="mainpage" title="Home" visible="yes" url="md_md__mainpage.html"></tab>
       <tab type="usergroup" title="Tutorial">
-      <tab type="usergroup" title="01 - Quick Overview" url="md_md_tutorial_02_overview.html"></tab>
+      <tab type="usergroup" title="01 - Introduction" url="md_md_tutorial_01.html"></tab>
+      <tab type="usergroup" title="02 - Quick Overview" url="md_md_tutorial_02.html"></tab>
       <tab type="usergroup" title="03 - Setting Up the Project" url="md_md_tutorial_03.html"></tab>
-      <tab type="usergroup" title="04 - Backends" url="md_md_tutorial_04.html"></tab>
-      <tab type="usergroup" title="05 - Resources Factory" url="md_md_tutorial_05.html"></tab>
-      <tab type="usergroup" title="06 - Outputs" url="md_md_tutorial_06.html"></tab>
-      <tab type="usergroup" title="07 - Rendering" url="md_md_tutorial_07.html"></tab>
+      <tab type="usergroup" title="04 - Compositor Initialization" url="md_md_tutorial_04.html"></tab>
+      <tab type="usergroup" title="05 - Rendering with LPainter" url="md_md_tutorial_05.html"></tab>
+      <tab type="usergroup" title="06 - Rendering with LScene and LViews" url="md_md_tutorial_06.html"></tab>
+      <tab type="usergroup" title="07 - Surfaces" url="md_md_tutorial_07.html"></tab>
       <tab type="usergroup" title="08 - Toplevels" url="md_md_tutorial_08.html"></tab>
     </tab>
     
@@ -18,7 +19,11 @@
     	<tab type="namespacemembers" visible="no" title="" intro=""/>
   	</tab>
     
-    <tab type="classes" visible="yes" title="API"/>
+    <tab type="classes" visible="no" title="API">
+      <tab type="classes" visible="yes" title="Classes"/>
+    </tab>
+
+    <tab type="usergroup" visible="yes" title="API" url="annotated.html"/>
     <tab type="usergroup" visible="yes" title="Examples" url="md_md__examples.html"/>
     <tab type="usergroup" visible="yes" title="Downloads" url="md_md__downloads.html"/>
     <tab type="usergroup" visible="yes" title="Environment" url="md_md__environment.html"/>
@@ -79,5 +84,4 @@
     <usedfiles visible="$SHOW_USED_FILES"/>
     <authorsection visible="yes"/>
   </class>
-
 </doxygenlayout>

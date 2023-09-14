@@ -388,7 +388,7 @@ public:
     Int32 processLoop(Int32 msTimeout);
 
     /*!
-     * Pollable file descriptor of the main events loop.
+     * Pollable file descriptor of the main event loop.
      */
     Int32 fd() const;
 
@@ -463,7 +463,7 @@ public:
 
     /*!
      * List of all initialized outputs with the addOutput() method.\n
-     * @warning This list only contains initialized outputs. To get a list of all outputs avaliable use LSeat::outputs() instead.
+     * @note This list only contains initialized outputs. To get a list of all outputs avaliable use LSeat::outputs() instead.
      */
     const list<LOutput*>&outputs() const;
 

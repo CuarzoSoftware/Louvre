@@ -91,7 +91,7 @@ void Compositor::initialized()
     Int32 totalWidth = 0;
 
     // Initialize and arrange outputs (screens) left to right
-    for (LOutput *output : *seat()->outputs())
+    for (LOutput *output : seat()->outputs())
     {
         // Set scale 2 to HiDPI screens
         output->setScale(output->dpi() >= 200 ? 2 : 1);

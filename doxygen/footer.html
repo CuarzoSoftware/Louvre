@@ -1,0 +1,14 @@
+<script>
+window.onload = function () 
+{
+    // Get all <a> tags with the "el" class
+    var elLinks = document.querySelectorAll('a.el');
+
+    // Loop through the matched elements
+    elLinks.forEach(function(link) 
+    {
+        // Replace "Louvre::" with an empty string in the text content
+        link.textContent = link.textContent.replace(/Louvre::/g, '');
+    });
+};
+</script>

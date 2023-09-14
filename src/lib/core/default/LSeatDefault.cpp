@@ -89,7 +89,7 @@ void LSeat::outputUnplugged(LOutput *output)
 
     Int32 totalWidth = 0;
 
-    if (!outputs()->empty())
+    if (!outputs().empty())
     {
         for (LOutput *o : compositor()->outputs())
         {
