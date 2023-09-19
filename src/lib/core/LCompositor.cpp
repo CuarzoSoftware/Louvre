@@ -259,7 +259,7 @@ void LCompositor::repaintAllOutputs()
 
 bool LCompositor::addOutput(LOutput *output)
 {
-    // Verifica que no se haya añadido previamente
+    // Check if already initialized
     for (LOutput *o : outputs())
         if (o == output)
             return true;
@@ -284,6 +284,10 @@ void LCompositor::removeOutput(LOutput *output)
         // Was initialized
         if (*it == output)
         {
+            // Uninitializing outputs from their own thread is not allowed
+            if (output->threadId() == std::this_thread::get_id())
+                return;
+
             output->imp()->state = LOutput::PendingUninitialize;
             imp()->graphicBackend->uninitializeOutput(output);
             output->imp()->state = LOutput::Uninitialized;

@@ -72,6 +72,10 @@ void LAnimation::stop()
         return;
 
     imp()->value = 1.f;
+
+    if (std::this_thread::get_id() != compositor()->mainThreadId())
+        return;
+
     imp()->running = false;
 
     if (imp()->onFinish)

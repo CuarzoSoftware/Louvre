@@ -40,11 +40,12 @@ static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &
         if (view->toplevel->fullscreen() && !view->fullscreenTopbarAnim && view->fullscreenTopbarVisibility == 0.f)
         {
             view->fullscreenTopbarAnim =
-                LAnimation::create(100,
+                LAnimation::create(256,
                 [view](LAnimation *anim)
                 {
-                    view->fullscreenTopbarVisibility = anim->value();
+                    view->fullscreenTopbarVisibility = 1.f - powf(1.f - anim->value(), 2.f);
                     view->updateGeometry();
+                    G::compositor()->repaintAllOutputs();
                 },
                 [view](LAnimation *anim)
                 {
@@ -78,10 +79,10 @@ static void onPointerLeaveResizeArea(InputRect *rect, void *data)
         if (view->toplevel->fullscreen() && !view->fullscreenTopbarAnim && view->fullscreenTopbarVisibility == 1.f)
         {
             view->fullscreenTopbarAnim =
-                LAnimation::create(100,
+                LAnimation::create(256,
                     [view](LAnimation *anim)
                     {
-                        view->fullscreenTopbarVisibility = 1.f - anim->value();
+                        view->fullscreenTopbarVisibility = powf(1.f - anim->value(), 2.f);
                         view->updateGeometry();
                         if (view->toplevel->fullscreenOutput)
                             view->toplevel->fullscreenOutput->repaint();

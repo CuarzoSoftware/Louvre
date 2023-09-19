@@ -93,6 +93,11 @@ void Compositor::initialized()
     // Initialize and arrange outputs (screens) left to right
     for (LOutput *output : seat()->outputs())
     {
+        //if (strcmp("eDP-0", output->name()) == 0)
+            //continue;
+
+        LLog::fatal("%s", output->name());
+
         // Set scale 2 to HiDPI screens
         output->setScale(output->dpi() >= 200 ? 2 : 1);
         output->setPos(LPoint(totalWidth, 0));

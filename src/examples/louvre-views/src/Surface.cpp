@@ -57,11 +57,20 @@ LView *Surface::getView() const
     if (tl && tl->decoratedView)
         return tl->decoratedView;
 
+    if (cursorRole())
+        view->setVisible(false);
+
     return view;
 }
 
 void Surface::parentChanged()
 {
+    if (cursorRole())
+    {
+        getView()->setVisible(false);
+        return;
+    }
+
     if (parent())
     {
         class Toplevel *tl = G::searchFullscreenParent((Surface*)parent());
@@ -400,4 +409,14 @@ void Surface::unminimize(DockItem *clickedItem)
     });
 
     minimizeAnim->start();
+}
+
+void Surface::damaged()
+{
+    if (cursorRole())
+    {
+        getView()->setVisible(false);
+        return;
+    }
+    repaintOutputs();
 }

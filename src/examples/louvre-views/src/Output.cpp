@@ -231,6 +231,7 @@ void Output::initializeGL()
                     G::reparentWithSubsurfaces(tl->surf(), &workspaces.front()->surfaces, false);
                     G::repositionNonVisibleToplevelChildren(this, tl->surf());
                     tl->surf()->getView()->setVisible(true);
+                    tl->surf()->raise();
                     tl->blackFullscreenBackground.setVisible(false);
                     delete tl->capture.texture();
                     tl->capture.setTexture(nullptr);

@@ -12,7 +12,7 @@ public:
     void pointerMoveEvent(Float32 dx, Float32 dy) override;
     void pointerPosChangeEvent(Float32 x, Float32 y) override;
     void pointerButtonEvent(Button button, ButtonState state) override;
-    void pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source) override;
+    void pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, AxisSource source) override;
 
     void setCursorRequest(LCursorRole *cursorRole) override;
 

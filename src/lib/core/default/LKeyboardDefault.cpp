@@ -17,7 +17,7 @@ void LKeyboard::keyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locke
 //! [keyModifiersEvent]
 
 //! [keyEvent]
-void LKeyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
+void LKeyboard::keyEvent(UInt32 keyCode, KeyState keyState)
 {
     sendKeyEvent(keyCode, keyState);
 

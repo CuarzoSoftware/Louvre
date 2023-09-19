@@ -52,7 +52,7 @@ void Workspace::stealChildren()
         {
             surfView = surf->getView();
 
-            if (surfView && surfView->parent() == &G::compositor()->surfacesLayer)
+            if (surfView && surfView->parent() == &G::compositor()->surfacesLayer && !surf->cursorRole())
             {
                 if (G::mostIntersectedOuput(surfView) == output)
                 {

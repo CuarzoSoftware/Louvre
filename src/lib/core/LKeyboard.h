@@ -297,7 +297,7 @@ public:
      * #### Default implementation
      * @snippet LKeyboardDefault.cpp keyEvent
      */
-    virtual void keyEvent(UInt32 keyCode, UInt32 keyState);
+    virtual void keyEvent(UInt32 keyCode, KeyState keyState);
 
     /**
      * @brief Invoked when the current keyboard focused surface is reassigned with setFocus().

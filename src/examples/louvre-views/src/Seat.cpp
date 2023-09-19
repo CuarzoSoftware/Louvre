@@ -8,8 +8,7 @@
 #include "Output.h"
 #include "Workspace.h"
 #include "Surface.h"
-#include "src/Toplevel.h"
-#include "src/ToplevelView.h"
+#include "Toplevel.h"
 
 Seat::Seat(Params *params) : LSeat(params)
 {

@@ -64,6 +64,7 @@ void LOutput::LOutputPrivate::backendPaintGL()
         lastSize = rect.size();
     }
 
+    compositor()->imp()->processAnimations(true);
     pendingRepaint = false;
     output->paintGL();
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);

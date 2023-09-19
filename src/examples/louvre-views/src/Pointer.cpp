@@ -81,7 +81,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
     G::scene()->handlePointerButtonEvent(button, state);
 }
 
-void Pointer::pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source)
+void Pointer::pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, AxisSource source)
 {
     Float32 speed = 0.6f;
     G::scene()->handlePointerAxisEvent(-axisX * speed,

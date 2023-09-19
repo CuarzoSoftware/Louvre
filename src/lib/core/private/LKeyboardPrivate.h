@@ -25,7 +25,7 @@ LPRIVATE_CLASS(LKeyboard)
     Int32 xkbKeymapFd = -1;
     UInt32 keymapFormat;
 
-    bool backendKeyEvent(UInt32 keyCode, UInt32 keyState);
+    bool backendKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState);
     void updateModifiers();
 
     KeyboardModifiersState modifiersState;

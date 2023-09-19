@@ -80,7 +80,7 @@ LPRIVATE_CLASS(LCompositor)
     list<LAnimation*>animations;
 
     bool runningAnimations();
-    void processAnimations();
+    void processAnimations(bool updateOnly = false);
 
     LInputBackendInterface *inputBackend = nullptr;
 

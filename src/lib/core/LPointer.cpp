@@ -256,7 +256,7 @@ void LPointer::stopMovingToplevel()
     imp()->movingToplevel = nullptr;
 }
 
-void LPointer::setDragginSurface(LSurface *surface)
+void LPointer::setDraggingSurface(LSurface *surface)
 {
     imp()->draggingSurface = surface;
 }
@@ -316,7 +316,7 @@ LToplevelRole::ResizeEdge LPointer::resizingToplevelEdge() const
     return imp()->resizingToplevelEdge;
 }
 
-void LPointer::sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source)
+void LPointer::sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, AxisSource source)
 {
     // If no surface has focus
     if (!focusSurface())

@@ -186,7 +186,7 @@ public:
      * @param discreteY The discrete value on the y-axis.
      * @param source The source of the event.
      */
-    void handlePointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source);
+    void handlePointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, LPointer::AxisSource source);
 
     /**
      * @brief Check if handling of Wayland pointer events is enabled.

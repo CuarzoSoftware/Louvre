@@ -20,7 +20,7 @@ void Keyboard::keyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked
     G::scene()->handleKeyModifiersEvent(depressed, latched, locked, group);
 }
 
-void Keyboard::keyEvent(UInt32 keyCode, UInt32 keyState)
+void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
 {
     Output *output = (Output*)cursor()->output();
 

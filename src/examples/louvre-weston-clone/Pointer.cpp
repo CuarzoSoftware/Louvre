@@ -101,7 +101,7 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
 
     // DO NOT GET CONFUSED! If we are in a drag & drop session, we call setDragginSurface(NULL) in case there is a surface being dragged.
     if (seat()->dndManager()->dragging())
-        setDragginSurface(nullptr);
+        setDraggingSurface(nullptr);
 
     // If there was a surface holding the left pointer button
     if (draggingSurface())
@@ -198,7 +198,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
 
         /* We save the pointer focus surface in order to continue sending events to it even when the cursor
          * is outside of it (while the left button is being held down)*/
-        setDragginSurface(focusSurface());
+        setDraggingSurface(focusSurface());
 
         if (seat()->keyboard()->grabbingSurface() && seat()->keyboard()->grabbingSurface()->client() != focusSurface()->client())
         {
@@ -239,7 +239,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
         stopMovingToplevel();
 
         // We stop sending events to the surface on which the left button was being held down
-        setDragginSurface(nullptr);
+        setDraggingSurface(nullptr);
 
         if (!focusSurface()->inputRegion().containsPoint(cursor()->pos() - focusSurface()->rolePos()))
         {

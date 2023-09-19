@@ -152,7 +152,7 @@ LView *LScene::handlePointerPosChangeEvent(Float32 x, Float32 y, LPoint *outLoca
 
     // DO NOT GET CONFUSED! If we are in a drag & drop session, we call setDragginSurface(NULL) in case there is a surface being dragged.
     if (seat()->dndManager()->dragging())
-        seat()->pointer()->setDragginSurface(nullptr);
+        seat()->pointer()->setDraggingSurface(nullptr);
 
     // If there was a surface holding the left pointer button
     if (seat()->pointer()->draggingSurface())
@@ -240,7 +240,7 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
     {
         /* We save the pointer focus surface in order to continue sending events to it even when the cursor
          * is outside of it (while the left button is being held down)*/
-        seat()->pointer()->setDragginSurface(seat()->pointer()->focusSurface());
+        seat()->pointer()->setDraggingSurface(seat()->pointer()->focusSurface());
 
         if (seat()->keyboard()->grabbingSurface() && seat()->keyboard()->grabbingSurface()->client() != seat()->pointer()->focusSurface()->client())
         {
@@ -273,7 +273,7 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
         seat()->pointer()->stopMovingToplevel();
 
         // We stop sending events to the surface on which the left button was being held down
-        seat()->pointer()->setDragginSurface(nullptr);
+        seat()->pointer()->setDraggingSurface(nullptr);
 
         if (seat()->pointer()->focusSurface()->imp()->lastPointerEventView)
         {
@@ -294,7 +294,7 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
     }
 }
 
-void LScene::handlePointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source)
+void LScene::handlePointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, LPointer::AxisSource source)
 {
     imp()->pointerAxisSerial++;
     imp()->listChanged = false;
@@ -371,6 +371,32 @@ void LScene::handleKeyEvent(UInt32 keyCode, UInt32 keyState)
         // Terminates the compositor
         else if (keyCode == KEY_ESC && L_CTRL && L_SHIFT)
             compositor()->finish();
+
+        // Screenshot
+        else if (L_CTRL && L_SHIFT && keyCode == KEY_3)
+        {
+            if (cursor()->output()->bufferTexture(0))
+            {
+                const char *user = getenv("HOME");
+
+                if (!user)
+                    return;
+
+                char path[128];
+                char timeString[32];
+
+                time_t currentTime;
+                struct tm *timeInfo;
+
+                time(&currentTime);
+                timeInfo = localtime(&currentTime);
+                strftime(timeString, sizeof(timeString), "%Y-%m-%d %H:%M:%S", timeInfo);
+
+                sprintf(path, "%s/Desktop/Louvre_Screenshoot_%s.png", user, timeString);
+
+                cursor()->output()->bufferTexture(0)->save(path);
+            }
+        }
 
         else if (L_CTRL && !L_SHIFT)
             seat()->dndManager()->setPreferredAction(LDNDManager::Copy);

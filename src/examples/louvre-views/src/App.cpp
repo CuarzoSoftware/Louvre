@@ -68,24 +68,26 @@ App::~App()
         delete nameTexture;
 }
 
-static Float32 easeIn(Float32 t, Float32 exponent)
-{
-    return pow(t, exponent);
-}
-
-static Float32 easeOut(Float32 t, Float32 exponent)
+static Float64 easeIn(Float64 t, Float64 exponent)
 {
     return 1.0 - pow(1.0 - t, exponent);
 }
 
-static Float32 periodic_easing_function(Float32 t, Float32 period, Float32 exponent_in, Float32 exponent_out)
+static Float64 easeOut(Float64 t, Float64 exponent)
 {
-    Float32 normalized_t = fmod(t, period) / period;
+    return 1.0 - pow(t, exponent);
+}
 
-    if (fmod(truncf(t), 2.f) == 0.f)
-        return easeIn(sinf(normalized_t * M_PI), exponent_in);
+static Float64 periodic_easing_function(Float64 t, Float64 exponent_in, Float64 exponent_out)
+{
+    Float64 floo = floor(t);
+    Float64 norm = t - floo;
+    Float64 floo2 = floo/2.0;
+
+    if (floo2 - floor(floo2) == 0.0)
+        return easeIn(norm, exponent_in);
     else
-        return easeOut(sinf(normalized_t * M_PI), exponent_out);
+        return easeOut(norm, exponent_out);
 }
 
 void App::clicked()
@@ -95,7 +97,7 @@ void App::clicked()
         launchAnimation = LAnimation::create(15000,
         [this](LAnimation *anim)
         {
-            Float32 offsetY = periodic_easing_function(anim->value() * 38.f, 2.f, 2.f, 2.f);
+            Float32 offsetY = periodic_easing_function(anim->value() * 37.0, 2.0, 1.6);
 
             if (state == Running && offsetY < 0.08f)
             {
@@ -103,8 +105,8 @@ void App::clicked()
                 return;
             }
 
-            offsetY = 18.f * offsetY;
-            dockAppsAnimationOffset.setY(roundf(offsetY));
+            offsetY = 22.f * offsetY;
+            dockAppsAnimationOffset.setY(round(offsetY));
             for (DockApp *dapp : dockApps)
                 dapp->dock->update();
         },

@@ -411,10 +411,10 @@ void G::reparentWithSubsurfaces(Surface *surf, LView *newParent, bool onlySubsur
 
     for (Surface *s : surfaces())
     {
-        if (s->parent() == surf && !s->cursorRole())
+        if (s->parent() == surf && s->roleId() != LSurface::Undefined && !s->cursorRole())
         {
             if ((onlySubsurfaces && s->subsurface()) || !onlySubsurfaces)
-                G::reparentWithSubsurfaces(s, newParent);
+                G::reparentWithSubsurfaces(s, newParent, onlySubsurfaces);
         }
     }
 }

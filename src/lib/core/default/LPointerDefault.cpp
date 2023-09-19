@@ -65,7 +65,7 @@ void LPointer::pointerPosChangeEvent(Float32 x, Float32 y)
 
     // DO NOT GET CONFUSED! If we are in a drag & drop session, we call setDragginSurface(NULL) in case there is a surface being dragged.
     if (seat()->dndManager()->dragging())
-        setDragginSurface(nullptr);
+        setDraggingSurface(nullptr);
 
     // If there was a surface holding the left pointer button
     if (draggingSurface())
@@ -134,7 +134,7 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
     {
         /* We save the pointer focus surface in order to continue sending events to it even when the cursor 
          * is outside of it (while the left button is being held down)*/
-        setDragginSurface(focusSurface());
+        setDraggingSurface(focusSurface());
         seat()->keyboard()->setFocus(focusSurface());
 
         if (focusSurface()->toplevel() && !focusSurface()->toplevel()->activated())
@@ -159,7 +159,7 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
         stopMovingToplevel();
 
         // We stop sending events to the surface on which the left button was being held down
-        setDragginSurface(nullptr);
+        setDraggingSurface(nullptr);
 
         if (!focusSurface()->inputRegion().containsPoint(cursor()->pos() - focusSurface()->rolePos()))
         {
@@ -172,7 +172,7 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
 //! [pointerButtonEvent]
 
 //! [pointerAxisEvent]
-void LPointer::pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source)
+void LPointer::pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, AxisSource source)
 {
     // Inverts the scroll direction
     sendAxisEvent(-axisX, -axisY, -discreteX, -discreteY, source);

@@ -56,7 +56,7 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
         return;
     }
 
-    seat()->pointer()->setDragginSurface(nullptr);
+    seat()->pointer()->setDraggingSurface(nullptr);
     dndManager->imp()->dropped = false;
 
     // Removes pevious data source if any

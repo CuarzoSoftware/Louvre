@@ -118,7 +118,7 @@ static Int32 processInput(int, unsigned int, void *userData)
             keyState = libinput_event_keyboard_get_key_state(keyEvent);
             keyCode = libinput_event_keyboard_get_key(keyEvent);
 
-            if (seat->keyboard()->imp()->backendKeyEvent(keyCode, keyState))
+            if (seat->keyboard()->imp()->backendKeyEvent(keyCode, (LKeyboard::KeyState)keyState))
             {
                 libinput_event_destroy(ev);
                 return 0;
@@ -137,7 +137,7 @@ static Int32 processInput(int, unsigned int, void *userData)
             if (libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL))
                 axisY = libinput_event_pointer_get_scroll_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
 
-            seat->pointer()->pointerAxisEvent(axisX, axisY, axisX, axisY, 1);
+            seat->pointer()->pointerAxisEvent(axisX, axisY, axisX, axisY, LPointer::AxisSource::Finger);
         }
         else if (eventType == LIBINPUT_EVENT_POINTER_SCROLL_CONTINUOUS)
         {
@@ -152,7 +152,7 @@ static Int32 processInput(int, unsigned int, void *userData)
             if (libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL))
                 axisY = libinput_event_pointer_get_scroll_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
 
-            seat->pointer()->pointerAxisEvent(axisX, axisY, axisX, axisY, 2);
+            seat->pointer()->pointerAxisEvent(axisX, axisY, axisX, axisY, LPointer::AxisSource::Continuous);
         }
         else if (eventType == LIBINPUT_EVENT_POINTER_SCROLL_WHEEL)
         {
@@ -173,7 +173,7 @@ static Int32 processInput(int, unsigned int, void *userData)
                 d120Y = libinput_event_pointer_get_scroll_value_v120(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
             }
 
-            seat->pointer()->pointerAxisEvent(discreteX, discreteY, d120X, d120Y, 0);
+            seat->pointer()->pointerAxisEvent(discreteX, discreteY, d120X, d120Y, LPointer::AxisSource::Wheel);
         }
 
         skip:

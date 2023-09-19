@@ -13,7 +13,7 @@ void LDNDManager::startDragRequest()
     if ((seat()->pointer()->focusSurface() && seat()->pointer()->focusSurface()->client() == source()->client()) ||
        (seat()->keyboard()->focusSurface() && seat()->keyboard()->focusSurface()->client() == source()->client()))
     {
-        seat()->pointer()->setDragginSurface(nullptr);
+        seat()->pointer()->setDraggingSurface(nullptr);
     }
     else
     {

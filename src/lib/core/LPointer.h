@@ -205,7 +205,7 @@ public:
      * @param y Direction and magnitude of the scroll on the vertical axis. 0 stops scrolling.
      * @param source One of the values from AxisSource.
      */
-    void sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source);
+    void sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, AxisSource source);
 
     /*!
      * @brief Closes all popups.
@@ -378,7 +378,7 @@ public:
      *
      * @param surface Surface being pressed or nullptr.
      */
-    void setDragginSurface(LSurface *surface);
+    void setDraggingSurface(LSurface *surface);
 
     /*!
      * @brief Surface that maintains pointer focus.
@@ -464,7 +464,7 @@ public:
      * #### Default Implementation
      * @snippet LPointerDefault.cpp pointerAxisEvent
      */
-    virtual void pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source);
+    virtual void pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, AxisSource source);
 
     /*!
      * @brief Request to assign the cursor.

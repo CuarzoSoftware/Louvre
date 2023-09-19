@@ -24,6 +24,7 @@ public:
     void roleChanged() override;
     void bufferSizeChanged() override;
     void minimizedChanged() override;
+    void damaged() override;
 
     LTexture *renderThumbnail();
     void unminimize(DockItem *clickedItem);

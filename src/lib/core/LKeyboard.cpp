@@ -389,7 +389,7 @@ bool LKeyboard::isKeyCodePressed(UInt32 keyCode) const
     return false;
 }
 
-bool LKeyboard::LKeyboardPrivate::backendKeyEvent(UInt32 keyCode, UInt32 keyState)
+bool LKeyboard::LKeyboardPrivate::backendKeyEvent(UInt32 keyCode, KeyState keyState)
 {
     if (xkbKeymapState)
         xkb_state_update_key(xkbKeymapState,
