@@ -326,7 +326,7 @@ void LScene::handleKeyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 lo
         seat()->keyboard()->sendModifiersEvent(depressed, latched, locked, group);
 }
 
-void LScene::handleKeyEvent(UInt32 keyCode, UInt32 keyState)
+void LScene::handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState)
 {
     imp()->keySerial++;
     imp()->listChanged = false;

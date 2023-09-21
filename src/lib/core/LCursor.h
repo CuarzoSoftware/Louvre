@@ -14,15 +14,15 @@
  *
  * The cursor must always be part of at least one output. To select the current output the setOutput() method must be used.\n
  *
- * @warning The library automatically sets the current output of the cursor based on its position, so it is not necessary to use the setOutput() method directly unless you are rendering the cursor in an unusual coordinate system.
+ * @note The library automatically sets the current output of the cursor based on its position, so it is not necessary to use the setOutput() method directly unless you are rendering the cursor in an unusual coordinate system.
  *
  * @subsection hw_composition Hardware Composition
  *
- * Some graphics backends, such as DRM, allow for hardware cursor compositing, which can improve performance by reducing the need to repaint 
+ * Some graphical backends, such as DRM, allow for hardware cursor compositing, which can improve performance by reducing the need to repaint
  * an output every time the cursor changes position.\n
  * To check if an output supports hardware cursor compositing, use the hasHardwareSupport() method.\n
  * If hardware compositing is not supported, the cursor needs to be rendered using OpenGL.
- * In this case, the cursor's position (with hotspot included) and size can be accessed using the rect() method, and its texture with the texture() method.
+ * In that case, the cursor's position (with the hotspot offset included) and size can be accessed using the rect() method, and its current texture with the texture() method.
 */
 class Louvre::LCursor : public LObject
 {
@@ -60,7 +60,7 @@ public:
     LTexture *texture() const;
 
     /*!
-     * Default cursor texture.
+     * @brief Default cursor texture.
      */
     LTexture *defaultTexture() const;
 
@@ -68,7 +68,7 @@ public:
      * @brief Assigns the current output.
      *
      * The library automatically assigns the current output based on the cursor position.\n
-     * The cursor must always have an assigned output so that the library can communicate correctly with the graphic backend in
+     * The cursor must always have an assigned output so that the library can communicate correctly with the graphical backend in
      * cases where hardware composition is available.\n
      */
     void setOutput(LOutput *output);
@@ -81,7 +81,7 @@ public:
      * @param dx Delta x in compositor coordinates.
      * @param dy Delta y in compositor coordinates.
      */
-    void move(float dx, float dy);
+    void move(Float32 dx, Float32 dy);
 
     /*!
      * @brief Assigns the cursor position.
@@ -100,8 +100,8 @@ public:
     /*!
      * @brief Cursor rect on screen.
      *
-     * Returns the cursor rect on screen LRect(pos - hotspot, size).
-     * It may be used to render the cursor with LPainter when hardware compositing is not available.
+     * Returns the cursor rect LRect(pos - hotspot, size).
+     * It should be used to render the cursor with OpenGL when hardware compositing is not available.
      */
     const LRect &rect() const;
 
@@ -136,31 +136,32 @@ public:
     /*!
      * @brief Change cursor visibility.
      *
-     * Shows or hides the cursor. If the cursor does not support hardware composition it is the developer's responsibility to avoid rendering it when it is hidden.\n
-     * You can use visible() to know if it is visible.
-     * @param state true makes the cursor visible and false hides it.
+     * Shows or hides the cursor. If an output does not support hardware composition it is the developer's responsibility to avoid rendering it when it is hidden.\n
+     * You can use the visible() property to know if it is visible.
+     *
+     * @param state `true` makes the cursor visible and `false` hides it.
      */
     void setVisible(bool state);
 
     /*!
      * @brief Indicates whether the cursor is visible.
      *
-     * @returns true if visible and false if hidden.
+     * @returns `true` if visible and `false` if hidden.
      */
     bool visible() const;
 
     /*!
-     * @brief Repaints the outputs.
+     * @brief Repaints the intersected outputs.
      *
      * Invokes the LOutput::repaint() method on all outputs where the cursor is currently visible.\n
-     * May be called when the cursor moves and hardware composition is not supported.
+     * Should be called when the cursor moves and hardware composition is not supported.
      */
     void repaintOutputs();
 
     /*!
      * @brief Indicates whether the output/backend supports hardware compositing.
      *
-     * @returns true if the backend supports it and false otherwise.
+     * @returns `true` if the backend supports it and `false` otherwise.
      */
     bool hasHardwareSupport(const LOutput *output) const;
 

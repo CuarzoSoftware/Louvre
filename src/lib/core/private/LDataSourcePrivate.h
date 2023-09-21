@@ -11,7 +11,7 @@ LPRIVATE_CLASS(LDataSource)
 
     void removeSources();
 
-    Wayland::RDataSource *dataSourceResource  = nullptr;
+    Protocols::Wayland::RDataSource *dataSourceResource  = nullptr;
     std::list<LSource>sources;
 
     // Since 3

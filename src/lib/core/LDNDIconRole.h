@@ -7,10 +7,9 @@
  * @brief Drag & drop icon role for surfaces
  *
  * The LDNDIconRole class is a role for surfaces that allows the compositor to use them as icons for drag & drop sessions.\n
- * Clients create the role through the **start_drag** request from the Wayland **wl_data_device** protocol interface.\n
+ * Clients create the role through the [start_drag](https://wayland.app/protocols/wayland#wl_data_device:request:start_drag)
+ * request from the Wayland [wl_data_device](https://wayland.app/protocols/wayland#wl_data_device) protocol interface.\n
  * The LDNDIconRole role used in a drag & drop session can be accessed from LDNDManager::icon().\n
- * See the default implementation and documentation of LPointer::pointerPosChangeEvent() to see how to assign its position and LOutput::paintGL()
- * to see how it is rendered on screen.
  *
  * <center><IMG SRC="https://lh3.googleusercontent.com/evKJ2MbTJ42-qFYSP02NPxUULSFpTz3oBSqn6RvR20u_r5wvgJpHF6o-3Zg7aWgNBhrkIsM8iNWiQQHxPjvGml9zDB2wwNwWK0scqTsHpLIbxMqYv60afSruzbWNBCDZaGI_y77eRA=w2400"></center>
  */
@@ -42,6 +41,7 @@ public:
      * @brief Notify a hotspot change.
      *
      * Reimplement this virtual method if you want to be notified when the icon hotspot changes.
+     *
      * #### Default implementation
      * @snippet LDNDIconRoleDefault.cpp hotspotChanged
      */
@@ -53,6 +53,7 @@ public:
      * The position of the icon given the role is calculated by subtracting the hotspot from the surface position.\n
      *
      * This method can be reimplemented to change the positioning logic of the surface given the role.
+     *
      * #### Default implementation
      * @snippet LDNDIconRoleDefault.cpp rolePos
      */

@@ -144,10 +144,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
         if (pointerOverTerminalIcon)
         {
             if (fork() == 0)
-            {
-                (void)system("weston-terminal");
-                exit(0);
-            }
+                exit(system("weston-terminal"));
         }
     }
 

@@ -8,7 +8,7 @@
  *
  * The LFramebuffer abstract class provides an interface for creating framebuffers or "groups of framebuffers" that can be used with LPainter.\n
  * Framebuffers serve as destinations where rendering can be performed and stored.\n
- * Refer to LPainter::bindFramebuffer() for usage details.\n\n
+ * Refer to LPainter::bindFramebuffer() for usage details.\n
  *
  * For example, each LOutput have one, two, or more framebuffers (LOutputFramebuffer) that are displayed on screen, or each LSceneView also have its own framebuffer.\n
  * If you need to render into a framebuffer and then use it as a texture, consider using the LRenderBuffer class instead.

@@ -3,6 +3,7 @@
 
 #include <LObject.h>
 #include <LPointer.h>
+#include <LKeyboard.h>
 
 /**
  * The LScene class is an optional utility that significantly simplifies rendering.
@@ -226,7 +227,7 @@ public:
      * @param keyCode The code of the key involved in the event.
      * @param keyState The state of the key (pressed or released).
      */
-    void handleKeyEvent(UInt32 keyCode, UInt32 keyState);
+    void handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState);
 
     /**
      * @brief Check if handling of Wayland keyboard events is enabled.

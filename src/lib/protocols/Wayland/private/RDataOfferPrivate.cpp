@@ -111,7 +111,11 @@ void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *reso
 
                 while(!feof(s.tmp))
                 {
-                    write(fd, &byte, 1);
+                    Int32 writen = write(fd, &byte, 1);
+
+                    if (writen != 1)
+                        break;
+
                     byte = fgetc(s.tmp);
                 }
 

@@ -123,10 +123,7 @@ void App::clicked()
         pid = fork();
 
         if (pid == 0)
-        {
-            system(exec);
-            abort();
-        }
+            exit(system(exec));
 
         state = Launching;
     }

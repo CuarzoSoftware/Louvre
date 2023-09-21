@@ -1,11 +1,16 @@
 #include <LCompositor.h>
-#include <unistd.h>
 #include <LLog.h>
+#include <unistd.h>
 
 using namespace Louvre;
 
 int main(int, char *[])
 {
+    setenv("MOZ_ENABLE_WAYLAND", "1", 1);
+    setenv("QT_QPA_PLATFORM", "wayland-egl", 1);
+    setenv("MESA_NO_ERROR", "1", 1);
+    setenv("MESA_GLTHREAD", "1", 1);
+
     LCompositor compositor;
 
     if (!compositor.start())

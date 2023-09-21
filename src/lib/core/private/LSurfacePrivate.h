@@ -79,6 +79,7 @@ LPRIVATE_CLASS(LSurface)
 
     std::list<LOutput*> outputs;
 
+    bool destroyed                                      = false;
     bool damaged                                        = false;
     UInt32 damageId;
     LPoint pos;

@@ -230,7 +230,7 @@ void Surface::minimizedChanged()
         getView()->setVisible(false);
 
         // We will move the fullsize view to the dock where the cursor is currently at
-        DockItem *dstDockItem;
+        DockItem *dstDockItem = nullptr;
 
         // Create a dock item for each output dock
         for (Output *o : G::outputs())
@@ -400,12 +400,11 @@ void Surface::unminimize(DockItem *clickedItem)
         thumbnailFullsizeView->setScalingVector(exp);
         thumbnailFullsizeView->setPos((clickedItem->pos() + clickedItem->size()) * (1.f - exp) +
                  minimizeStartRect.pos() * exp);
-
-        return true;
     },
     [this](LAnimation *)
     {
         setMinimized(false);
+        minimizeAnim = nullptr;
     });
 
     minimizeAnim->start();

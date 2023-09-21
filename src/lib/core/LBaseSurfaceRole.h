@@ -9,7 +9,7 @@
  /*!
   * @brief Base class for surface roles.
   *
-  * A role defines the type and functionality of a surface. Some commonly known roles are Toplevel and Popup.
+  * A role defines the type and functionality of a surface. Some commonly known roles are LToplevelRole and LPopupRole.
   *
   * @note This class is primarily for library maintainers or individuals who wish to implement additional roles beyond those provided by the library.
   *
@@ -25,17 +25,17 @@
   * The steps for creating a custom role are as follows:
   *
   * @li Implement the native protocol interfaces of the role protocol.
-  * @li Create an LResource wrapper for the role's wl_resource, or use LSurface::resource() if the role does not have its own wl_resource.
+  * @li Create an LResource wrapper for the role's `wl_resource`, or use LSurface::surfaceResource() if the role does not have its own `wl_resource`.
   * @li Create a subclass of LBaseSurfaceRole.
   * @li Select a unique role ID.
   * @li Override the LBaseSurfaceRole::rolePos() method and implement the positioning logic of the role.
-  * @li Override any other protected methods in LBaseSurfaceRole to handle native requests of the wl_surface interface.
+  * @li Override any other protected methods in LBaseSurfaceRole to handle native requests of the `wl_surface` interface.
   *
   * To assign the custom role to a surface at runtime, follow these steps:
   *
   * @li Create an instance of your custom LBaseSurfaceRole.
-  * @li Call the setPendingRole() method (private) on the target surface, passing the custom role instance.
-  * @li Call the applyPendingRole() method (private) to apply the pending role change. This will trigger the LSurface::roleChanged() event automatically.
+  * @li Call the `setPendingRole()` method (private) on the target surface, passing the custom role instance.
+  * @li Call the `applyPendingRole()` method (private) to apply the pending role change. This will trigger the LSurface::roleChanged() event automatically.
   *
   * By following these steps, you can create a custom role and assign it to a surface dynamically during runtime.
   */
@@ -50,7 +50,7 @@ public:
      * @param surface Surface that will acquire the role.
      * @param roleId ID of the role, later accessible with the LSurface::roleId() method. Must be a value greater than 1000.
      *
-     * @warning The ID range [0,1000] is reserved for roles offered by the library.
+     * @note The ID range [0,1000] is reserved for roles offered by the library.
      */
     LBaseSurfaceRole(LResource *resource, LSurface *surface, UInt32 roleId);
 

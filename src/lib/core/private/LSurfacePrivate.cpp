@@ -20,6 +20,9 @@ void LSurface::LSurfacePrivate::getEGLFunctions()
 
 void LSurface::LSurfacePrivate::setParent(LSurface *parent)
 {
+    if (destroyed)
+        return;
+
     if (pendingParent)
     {
         pendingParent->imp()->pendingChildren.erase(pendingParentLink);
@@ -54,6 +57,9 @@ void LSurface::LSurfacePrivate::setParent(LSurface *parent)
 
 void LSurface::LSurfacePrivate::removeChild(LSurface *child)
 {
+    if (destroyed)
+        return;
+
     children.erase(child->imp()->parentLink);
     child->imp()->parent = nullptr;
     child->parentChanged();
@@ -61,6 +67,9 @@ void LSurface::LSurfacePrivate::removeChild(LSurface *child)
 
 void LSurface::LSurfacePrivate::setMapped(bool state)
 {
+    if (destroyed)
+        return;
+
     LSurface *surface = surfaceResource->surface();
 
     if (mapped != state)

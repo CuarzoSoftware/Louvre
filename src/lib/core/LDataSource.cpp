@@ -3,7 +3,7 @@
 
 using namespace Louvre;
 
-LDataSource::LDataSource(Wayland::RDataSource *dataSourceResource)
+LDataSource::LDataSource(Protocols::Wayland::RDataSource *dataSourceResource)
 {
     m_imp = new LDataSourcePrivate();
     imp()->dataSourceResource = dataSourceResource;
@@ -26,12 +26,13 @@ const std::list<LDataSource::LSource> &LDataSource::sources() const
 }
 
 // Since 3
+
 UInt32 LDataSource::dndActions() const
 {
     return imp()->dndActions;
 }
 
-Wayland::RDataSource *LDataSource::dataSourceResource() const
+Protocols::Wayland::RDataSource *LDataSource::dataSourceResource() const
 {
     return imp()->dataSourceResource;
 }

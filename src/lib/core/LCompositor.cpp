@@ -178,7 +178,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
     {
         flushClients();
         cursor()->imp()->textureUpdate();
-        imp()->processAnimations();
+        //imp()->processAnimations();
     }
 
     imp()->unlock();

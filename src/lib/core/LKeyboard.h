@@ -4,8 +4,6 @@
 #include <LObject.h>
 #include <xkbcommon/xkbcommon.h>
 
-using namespace Louvre::Protocols;
-
 /*!
  * @brief Class for handling keyboard events.
  *
@@ -17,7 +15,8 @@ using namespace Louvre::Protocols;
  * ### Wayland Events
  *
  * To send keyboard events to clients, you must first assign focus to a surface using one of the setFocus() variants.\n
- * This process entails removing focus from any previously focused surface. As a result, all subsequent keyboard events will be directed to the currently focused surface.
+ * This process entails removing focus from any previously focused surface.
+ * As a result, all subsequent keyboard events will be directed to the currently focused surface.
  *
  * @note It's important to note that only one surface can be focused at a time to receive keyboard input.
  */
@@ -67,39 +66,6 @@ public:
     };
 
     /*!
-     * @brief Set the surface that grabs keyboard events.
-     *
-     * This function redirects all keyboard events to the given surface.
-     * For example, a LPopupRole can request to make a keyboard grab (see LPopupRole::grabRequest()).
-     * If 'surface' is set to nullptr, the keyboard grab is disabled.
-     *
-     * @param surface The surface that will grab the keyboard events.
-     * @param keyboardResource The specific wl_keyboard resource created by the client to which events must be sent.
-     *        Clients may bind multiple times to the wl_seat interface.
-     */
-    void setGrabbingSurface(LSurface* surface, Wayland::RKeyboard* keyboardResource);
-
-    /*!
-     * @brief Get the current surface that is grabbing the keyboard events.
-     *
-     * This function returns the surface that is currently grabbing the keyboard events.
-     * If no grab is active, it returns nullptr.
-     *
-     * @returns The surface that is grabbing keyboard events, or nullptr if no grab is active.
-     */
-    LSurface* grabbingSurface() const;
-
-    /*!
-     * @brief Get the current wl_keyboard resource used during the keyboard grab.
-     *
-     * This function returns the wl_keyboard resource to which keyboard events are sent during the grab.
-     * If no grab is active, it returns nullptr.
-     *
-     * @returns The wl_keyboard resource used during the keyboard grab, or nullptr if no grab is active.
-     */
-    Wayland::RKeyboard* grabbingKeyboardResource() const;
-
-    /*!
      * @brief Constructor of the LKeyboard class.
      *
      * There is a single instance of LKeyboard, which can be accessed from LSeat::keyboard().
@@ -122,9 +88,41 @@ public:
      * @brief Surface with keyboard focus.
      *
      * Pointer to the surface with keyboard focus assigned with setFocus(). Only surfaces with keyboard focus can receive keyboard events.\n
-     * @returns nullptr if no surface has keyboard focus.
+     * @returns `nullptr` if no surface has keyboard focus.
      */
     LSurface *focusSurface() const;
+
+    /*!
+     * @brief Set the surface that grabs keyboard events.
+     *
+     * This function redirects all keyboard events to the given surface.
+     * For example, an LPopupRole can request to make a keyboard grab (see LPopupRole::grabRequest()).
+     * If 'surface' is set to `nullptr`, the keyboard grab is disabled.
+     *
+     * @param surface The surface that will grab the keyboard events.
+     * @param keyboardResource The specific `wl_keyboard` resource created by the client to which events must be sent.
+     */
+    void setGrabbingSurface(LSurface* surface, Protocols::Wayland::RKeyboard* keyboardResource);
+
+    /*!
+     * @brief Get the current surface that is grabbing the keyboard events.
+     *
+     * This function returns the surface that is currently grabbing the keyboard events.
+     * If no grab is active, it returns `nullptr`.
+     *
+     * @returns The surface that is grabbing keyboard events, or `nullptr` if no grab is active.
+     */
+    LSurface* grabbingSurface() const;
+
+    /*!
+     * @brief Get the current `wl_keyboard` resource used during the keyboard grab.
+     *
+     * This function returns the `wl_keyboard` resource to which keyboard events are sent during the grab.
+     * If no grab is active, it returns `nullptr`.
+     *
+     * @returns The `wl_keyboard` resource used during the keyboard grab, or `nullptr` if no grab is active.
+     */
+    Protocols::Wayland::RKeyboard* grabbingKeyboardResource() const;
 
     /*!
      * @brief State of the keyboard modifiers.
@@ -148,6 +146,8 @@ public:
     Int32 keymapSize() const;
 
     /*!
+     * @brief Keymap format.
+     *
      * The keymap format can be either WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
      * which indicates the presence of a valid XKB keymap set, or WL_KEYBOARD_KEYMAP_FORMAT_NO_KEYMAP,
      * indicating an issue with the XKB system configuration.
@@ -157,7 +157,7 @@ public:
     // Since 4
 
     /*!
-     * Repetition rate.\n\n
+     * @brief Repetition rate.
      *
      * Number of repetitions per second of a key when held down, assigned with setRepeatInfo().\n
      * The default value is 32.
@@ -165,7 +165,7 @@ public:
     Int32 repeatRate() const;
 
     /*!
-     * Repeat delay.\n\n
+     * @brief Repeat delay.
      *
      * Delay in milliseconds before triggering the repetition of a key by holding it down, assigned with setRepeatInfo().\n
      * The default value is 500 ms.
@@ -173,7 +173,7 @@ public:
     Int32 repeatDelay() const;
 
     /*!
-     * Assigns the repeat rate and delay.\n\n
+     * @brief Assigns the repeat rate and delay.
      *
      * Assigns the repeat rate and delay when holding down a key.\n
      * The library internally calls the [wl_keyboard::repeat_info](https://wayland.app/protocols/wayland#wl_keyboard:event:repeat_info) event
@@ -241,7 +241,10 @@ public:
      * Assigns the keyboard focus to the surface passed in the argument. The library automatically removes keyboard focus from the surface
      * that currently owns it (only one surface can have keyboard focus at a time).\n
      * Having keyboard focus is required for a surface to receive events sent with sendKeyEvent() and sendModifiersEvent().\n
-     * Passing nullptr as argument removes the keyboard focus from all surfaces.\n
+     * Passing `nullptr` as argument removes the keyboard focus from all surfaces.\n
+     *
+     * @note Calling this function while there is a surface with a keyboard grab is a no-op.
+     *
      * The library internally calls the [wl_keyboard::enter](https://wayland.app/protocols/wayland#wl_keyboard:event:enter) and 
      * [wl_keyboard::leave](https://wayland.app/protocols/wayland#wl_keyboard:event:leave) events of the Wayland protocol.
      */
@@ -255,7 +258,7 @@ public:
      * @param keyCode Key identifier (generated by the input backend).
      * @param keyState Key state (KeyState::Pressed or KeyState::Released).
      */
-    void sendKeyEvent(UInt32 keyCode, UInt32 keyState);
+    void sendKeyEvent(UInt32 keyCode, KeyState keyState);
 
     /*!
      * @brief Sends modifiers states.
@@ -305,13 +308,7 @@ public:
      * This virtual method is called when the keyboard focus is changed to a new surface
      * using the setFocus() method. To retrieve the currently focused surface, you can use
      * the focusSurface() method.
-     *
-     * This method provides a way for subclasses or implementors to respond to changes in
-     * keyboard focus and perform necessary actions when the focus is switched to a different
-     * surface.
-     *
-     * @note This method should be overridden in subclasses to provide custom behavior.
-     *
+     *     *
      * @see setFocus()
      * @see focusSurface()
      *

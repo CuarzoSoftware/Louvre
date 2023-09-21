@@ -161,6 +161,8 @@ RSurface::~RSurface()
     // Remove the surface from the compositor list
     compositor()->imp()->surfaces.erase(lSurface->imp()->compositorLink);
 
+    lSurface->imp()->destroyed = true;
+
     delete lSurface;
     delete m_imp;
 }

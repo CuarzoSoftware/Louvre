@@ -9,7 +9,8 @@ using namespace Protocols;
  * @brief Cursor role for surfaces
  *
  * The LCursorRole class is a role for surfaces that allows the compositor to use them as cursors.\n
- * Clients create the role by requesting **set_cursor** from the **wl_pointer** interface of the Wayland protocol.\n
+ * Clients create the role by requesting [set_cursor](https://wayland.app/protocols/wayland#wl_pointer:request:set_cursor)
+ * from the [wl_pointer](https://wayland.app/protocols/wayland#wl_pointer) interface of the Wayland protocol.\n
  * The library automatically invokes the LPointer::setCursorRequest() method when a client with pointer focus wants to assign an LCursorRole as a cursor.\n
  * The LPointer::setCursorRequest() method is also invoked when the role hotspot changes, so it is not necessary to reimplement this class to handle these changes.\n
  * For more information see the default implementation and documentation of LPointer::setCursorRequest().

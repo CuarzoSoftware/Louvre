@@ -200,6 +200,9 @@ const LPoint &LSurface::rolePos() const
 
 void LSurface::sendOutputEnterEvent(LOutput *output)
 {
+    if (imp()->destroyed)
+        return;
+
     if (!output)
         return;
 
@@ -223,6 +226,9 @@ void LSurface::sendOutputEnterEvent(LOutput *output)
 
 void LSurface::sendOutputLeaveEvent(LOutput *output)
 {
+    if (imp()->destroyed)
+        return;
+
     if (!output)
         return;
 
@@ -252,6 +258,9 @@ const list<LOutput *> &LSurface::outputs() const
 
 void LSurface::requestNextFrame(bool clearDamage)
 {
+    if (imp()->destroyed)
+        return;
+
     if (clearDamage)
     {
         imp()->currentDamageB.clear();
@@ -301,7 +310,7 @@ LSurface *LSurface::parent() const
     return imp()->parent;
 }
 
-LSurface *findTopmostParent(LSurface *surface)
+static LSurface *findTopmostParent(LSurface *surface)
 {
     if (surface->parent() == nullptr)
         return surface;
@@ -377,6 +386,9 @@ bool LSurface::isSubchildOf(LSurface *parent) const
 
 void LSurface::raise()
 {
+    if (imp()->destroyed)
+        return;
+
     if (parent())
     {
         parent()->raise();
@@ -388,7 +400,7 @@ void LSurface::raise()
 
 Louvre::LSurface *LSurface::prevSurface() const
 {
-    if (this == compositor()->surfaces().front())
+    if (imp()->destroyed || this == compositor()->surfaces().front())
         return nullptr;
     else
         return *std::prev(imp()->compositorLink);
@@ -396,7 +408,7 @@ Louvre::LSurface *LSurface::prevSurface() const
 
 Louvre::LSurface *LSurface::nextSurface() const
 {
-    if (this == compositor()->surfaces().back())
+    if (imp()->destroyed || this == compositor()->surfaces().back())
         return nullptr;
     else
         return *std::next(imp()->compositorLink);

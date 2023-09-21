@@ -63,7 +63,7 @@ void LAnimation::start(bool destroyOnFinish)
     imp()->beginTime = LTime::ms();
     imp()->destroyOnFinish = destroyOnFinish;
     imp()->running = true;
-    compositor()->imp()->unlockPoll();
+    compositor()->repaintAllOutputs();
 }
 
 void LAnimation::stop()
@@ -72,9 +72,6 @@ void LAnimation::stop()
         return;
 
     imp()->value = 1.f;
-
-    if (std::this_thread::get_id() != compositor()->mainThreadId())
-        return;
 
     imp()->running = false;
 

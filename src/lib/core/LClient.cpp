@@ -13,15 +13,13 @@ LClient::LClient(Params *params)
     dataDevice().imp()->client = this;
 }
 
-void LClient::ping(UInt32 serial) const
+bool LClient::ping(UInt32 serial) const
 {
-    /* If the client is not bound to any xdg_wm_base global call pong
-     * immediatelly. (The user has no way to know if the
-     * client is frozen anyway). */
     if (imp()->xdgWmBaseGlobals.empty())
-        pong(serial);
-    else
-        imp()->xdgWmBaseGlobals.front()->ping(serial);
+        return false;
+
+    imp()->xdgWmBaseGlobals.front()->ping(serial);
+    return true;
 }
 
 LClient::~LClient()

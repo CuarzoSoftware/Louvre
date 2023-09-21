@@ -8,7 +8,7 @@
  *
  * The LDNDManager class provides control over drag & drop sessions and its unique instance can be accessed with LSeat::dndManager().\n
  * It has virtual methods that notify when a client wants to start or cancel a session, methods for
- * "drop" or cancel a data offering, and so on...
+ * "drop" or cancel a data offering, and more.
  */
 class Louvre::LDNDManager : public LObject
 {
@@ -42,7 +42,8 @@ public:
      * move or copy the file.\n
      * The library by default performs a match of actions supported by the source and destination client, giving preference
      * to the first one listed in the enum, except for NoAction.\n
-     * You can also select a different preferred action using the LDNDManager::setPreferredAction() method.
+     * You can also select a different preferred action using the LDNDManager::setPreferredAction() method as exemplified in the
+     * default implementation of LKeyboard::keyEvent().
      */
     enum Action : UInt32
     {
@@ -64,7 +65,7 @@ public:
      *
      * LDNDIconRole of the surface used as drag & drop icon.\n
      *
-     * @warning Not all drag & drop sessions use an icon.
+     * @note Not all drag & drop sessions use an icon.
      *
      * @returns nullptr if there is no session going on, or if the source client did not assign an icon.
      */

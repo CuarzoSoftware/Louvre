@@ -119,7 +119,7 @@ void LCursor::setOutput(LOutput *output)
     }
 }
 
-void LCursor::move(float x, float y)
+void LCursor::move(Float32 x, Float32 y)
 {
     setPos(imp()->pos + LPointF(x,y));
 }

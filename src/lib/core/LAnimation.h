@@ -8,12 +8,19 @@
 /*!
  * @brief Time-based animations.
  *
- * An LAnimation can be used to animate object positions, colors, opacity, etc. It has a fixed duration in milliseconds.
- * Once started, an onUpdate callback is triggered,
- * allowing you to access the value() property, which is a 32-bit floating-point number linearly interpolated from 0.f to 1.f.\n
- * After the animation finishes, the onFinish callback is triggered, and the value() property is set to 1.f.\n
+ * An LAnimation can be used for creating graphical animations. It has a fixed duration in milliseconds, and is synchronized
+ * with each output's refresh rate.\n
+ * After started, the `onUpdate()` callback is triggered before each LOutput::paintGL() call, allowing you to
+ * access the value() property, which is a 32-bit floating-point number linearly interpolated from 0.f to 1.f,
+ * indicating the completion percentage of the animation.
+ *
+ * @note It is essential to manually invoke LOutput::repaint() on the outputs you are animating; otherwise, the `onUpdate()` callback may not be invoked.
+ *
+ * After the animation finishes, the `onFinish()` callback is triggered, and the value() property has a value of 1.f.\n
+ *
  * To create an LAnimation, you can use the oneShot() or create() methods.\n
- * The oneShot() method creates and starts an animation immediately, and it is automatically destroyed once finished.\n
+ *
+ * The oneShot() method creates and starts an animation immediately, and it is automatically destroyed once finished.
  *
  * #### Example using oneShot()
  * \code{.cpp}
@@ -32,9 +39,9 @@
  *   });
  * \endcode
  *
- * On the other hand, the create() method generates an LAnimation that can be reused multiple times.
- * You need to call the start() method to initiate it. By passing 'true' to start(), the animation is automatically
- * destroyed upon completion, whereas passing 'false' keeps the animation intact for potential reuse.
+ * On the other hand, the create() method generates an LAnimation that can be reused multiple times.\n
+ * You need to call the start() method to initiate it. By passing `true` to start(), the animation is automatically
+ * destroyed upon completion, whereas passing `false` keeps the animation intact for potential reuse.
  *
  * #### Example using create()
  * \code{.cpp}
@@ -56,8 +63,8 @@
  * animation->start(false);
  * \endcode
  *
- * #### Common mistakes
- * @warning Always ensure that the objects you animate remain valid during the animation to avoid potential segmentation faults. A recommended practice is to use the create() method and call stop() if the object is destroyed before the animation finishes.
+ * ### Common Mistakes
+ * @warning Always ensure that the objects you animate remain valid during the animation to avoid potential segmentation faults. A recommended practice is to use the create() method and call stop() if an animated object is destroyed before it finishes.
  */
 class Louvre::LAnimation : public LObject
 {
@@ -72,65 +79,93 @@ public:
     LAnimation& operator= (const LAnimation&) = delete;
 
     /*!
+     * @brief Creates and launches a one-time animation with automatic cleanup.
+     *
      * The oneShot() method creates and starts an animation immediately, and it is automatically destroyed once finished.
      *
      * @param durationMs The duration of the animation in milliseconds.
-     * @param onUpdate A callback function triggered each time the value() property changes. nullptr can be passed if not used.
-     * @param onFinish A callback function triggered once the value() property reaches 1.f. nullptr can be passed if not used.
+     * @param onUpdate A callback function triggered each time the value() property changes. `nullptr` can be passed if not used.
+     * @param onFinish A callback function triggered once the value() property reaches 1.f. `nullptr` can be passed if not used.
      */
     static void oneShot(UInt32 durationMs, const Callback &onUpdate = nullptr, const Callback &onFinish = nullptr);
 
     /*!
+     * @brief Creates a reusable animation.
+     *
      * The create() method creates an animation without starting it immediately.
      *
      * @param durationMs The duration of the animation in milliseconds.
-     * @param onUpdate A callback function triggered each time the value() property changes. nullptr can be passed if not used.
-     * @param onFinish A callback function triggered once the value() property reaches 1.f. nullptr can be passed if not used.
+     * @param onUpdate A callback function triggered each time the value() property changes. `nullptr` can be passed if not used.
+     * @param onFinish A callback function triggered once the value() property reaches 1.f. `nullptr` can be passed if not used.
      */
     static LAnimation *create(UInt32 durationMs, const Callback &onUpdate = nullptr, const Callback &onFinish = nullptr);
 
     /*!
-     * Sets the onUpdate callback handler function. nullptr can be passed to disable it.
+     * @brief Sets the `onUpdate()` callback handler function.
+     *
+     * This function allows you to set the callback function that will be called when an update event occurs.
+     *
+     * @param onUpdate A reference to the callback function. Pass `nullptr` to disable the callback.
      */
     void setOnUpdateCallback(const Callback &onUpdate);
 
     /*!
-     * Sets the onFinish callback handler function. nullptr can be passed to disable it.
+     * @brief Sets the `onFinish()` callback handler function.
+     *
+     * This function allows you to set the callback function that will be called when the animaion finishes or stop() is called.
+     *
+     * @param onFinish A reference to the callback function. Pass `nullptr` to disable the callback.
      */
     void setOnFinishCallback(const Callback &onFinish);
 
     /*!
-     * Sets the duration of the animation in milliseconds.
-     * This method should not be called while the animation is running.
+     * @brief Sets the duration of the animation in milliseconds.
+     *
+     * Use this method to specify the duration of the animation in milliseconds. It's important to note that this method
+     * should not be called while the animation is running.
      * If called while the animation is running, it will have no effect (no-op).
+     *
+     * @param durationMs The duration of the animation in milliseconds.
      */
     void setDuration(UInt32 durationMs);
 
     /*!
-     * Returns the duration of the animation in milliseconds.
+     * @brief Returns the duration of the animation in milliseconds.
+     *
+     * Use this function to retrieve the duration of the animation in milliseconds.
+     *
+     * @return The duration of the animation in milliseconds.
      */
     UInt32 duration() const;
 
     /*!
-     * Returns a number linearly interpolated from 0 to 1, indicating the percentage of completion of the animation.
+     * @brief Returns a number linearly interpolated from 0 to 1.
+     *
+     * This function returns a value indicating the percentage of completion of the animation. The value is linearly interpolated between 0 (start of the animation) and 1 (end of the animation).
+     *
+     * @return The interpolated completion value ranging from 0 to 1.
      */
     Float32 value() const;
 
     /*!
-     * Starts the animation.
+     * @brief Starts the animation.
      *
-     * @param destroyOnFinish If set to true, the animation is destroyed after onFinish() is called.
+     * Use this function to initiate the animation. You can also specify whether to destroy the animation object after the `onFinish` callback is called by providing a boolean parameter.
+     *
+     * @param destroyOnFinish If set to true, the animation is destroyed after `onFinish()` is called. Default is true.
      */
     void start(bool destroyOnFinish = true);
 
     /*!
-     * The stop method can be used to halt the animation before its duration is reached.\n
-     * If called before the animation finishes, the onFinish callback is triggered immediately, and the value() property is set to 1.
+     * @brief Halts the animation before its duration is reached.
+     *
+     * The stop() method can be used to stop the animation before its duration is reached.
+     * If called before the animation finishes, the `onFinish()` callback is triggered immediately, and the value() property is set to 1.
      */
     void stop();
 
     /*!
-     * Destroys the animation without invoking the onFinish callback.
+     * @brief Destroys the animation without invoking `onFinish()`.
      */
     void destroy();
 

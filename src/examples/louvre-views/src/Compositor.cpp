@@ -16,7 +16,7 @@
 #include "Toplevel.h"
 #include "TextRenderer.h"
 #include "Topbar.h"
-#include "src/ToplevelView.h"
+#include "ToplevelView.h"
 
 Compositor::Compositor() : LCompositor(),
     scene(),

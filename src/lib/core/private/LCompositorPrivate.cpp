@@ -6,7 +6,6 @@
 #include <private/LPainterPrivate.h>
 #include <private/LCursorPrivate.h>
 #include <private/LAnimationPrivate.h>
-//#include <LView.h>
 #include <LTime.h>
 #include <LLog.h>
 #include <EGL/egl.h>
@@ -374,7 +373,7 @@ bool LCompositor::LCompositorPrivate::runningAnimations()
     return false;
 }
 
-void LCompositor::LCompositorPrivate::processAnimations(bool updateOnly)
+void LCompositor::LCompositorPrivate::processAnimations()
 {
     auto it = animations.begin();
 
@@ -397,9 +396,6 @@ void LCompositor::LCompositorPrivate::processAnimations(bool updateOnly)
 
         Int64 elapsed;
 
-        if (a->imp()->value == 1.f)
-            goto skipTimeCheck;
-
         elapsed = (Int64)LTime::ms() - (Int64)a->imp()->beginTime;
 
         if (elapsed > (Int64)a->imp()->duration)
@@ -409,15 +405,6 @@ void LCompositor::LCompositorPrivate::processAnimations(bool updateOnly)
 
         if (a->imp()->onUpdate)
             a->imp()->onUpdate(a);
-
-        skipTimeCheck:
-
-        if (updateOnly)
-        {
-            unlockPoll();
-            it++;
-            continue;
-        }
 
         if (a->imp()->value == 1.f)
         {

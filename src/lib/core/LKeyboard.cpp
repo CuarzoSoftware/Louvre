@@ -295,7 +295,7 @@ void LKeyboard::setFocus(LSurface *surface)
     focusChanged();
 }
 
-void LKeyboard::sendKeyEvent(UInt32 keyCode, UInt32 keyState)
+void LKeyboard::sendKeyEvent(UInt32 keyCode, KeyState keyState)
 {
     // If no surface has focus
     if (!focusSurface())

@@ -4,10 +4,10 @@
 
 int main(int, char *[])
 {
-    setenv("WAYLAND_DISPLAY", "wayland-0", 1);
     setenv("MOZ_ENABLE_WAYLAND", "1", 1);
-    setenv("LOUVRE_DEBUG", "0", 1);
-    setenv("SRM_DEBUG", "0", 1);
+    setenv("QT_QPA_PLATFORM", "wayland-egl", 1);
+    setenv("MESA_NO_ERROR", "1", 1);
+    setenv("MESA_GLTHREAD", "1", 1);
 
     Compositor compositor;
 

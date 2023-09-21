@@ -8,7 +8,7 @@
 using namespace Louvre;
 
 LPRIVATE_CLASS(LDataOffer)
-    Wayland::RDataOffer *dataOfferResource = nullptr;
+    Protocols::Wayland::RDataOffer *dataOfferResource = nullptr;
     bool hasFinished = false;
     Usage usedFor = Usage::Undefined;
 
