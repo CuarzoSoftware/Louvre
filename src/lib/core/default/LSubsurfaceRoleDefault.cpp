@@ -29,15 +29,15 @@ void LSubsurfaceRole::syncModeChanged()
 //! [syncModeChanged]
 
 //! [placedAbove]
-void LSubsurfaceRole::placedAbove(LSurface *sibiling)
+void LSubsurfaceRole::placedAbove(LSurface *sibling)
 {
-    L_UNUSED(sibiling);
+    L_UNUSED(sibling);
 }
 //! [placedAbove]
 
 //! [placedBelow]
-void LSubsurfaceRole::placedBelow(LSurface *sibiling)
+void LSubsurfaceRole::placedBelow(LSurface *sibling)
 {
-    L_UNUSED(sibiling);
+    L_UNUSED(sibling);
 }
 //! [placedBelow]

@@ -140,6 +140,13 @@ void LToplevelRole::activatedChanged()
 }
 //! [activatedChanged]
 
+//! [statesChanged]
+void LToplevelRole::statesChanged()
+{
+    /* No default implementation */
+}
+//! [statesChanged]
+
 //! [maxSizeChanged]
 void LToplevelRole::maxSizeChanged()
 {

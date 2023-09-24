@@ -64,8 +64,10 @@ public:
      */
     virtual ~LSeat();
 
+    /// @cond OMIT
     LSeat(const LSeat&) = delete;
     LSeat& operator= (const LSeat&) = delete;
+    /// @endcond
 
     /*!
      * @brief List of available outputs.
@@ -76,7 +78,7 @@ public:
      *
      * @return A reference to a list of available outputs.
      */
-    const list<LOutput *> &outputs() const;
+    const std::list<LOutput *> &outputs() const;
 
     /*!
      * @brief Handle to the native context used by the input backend.

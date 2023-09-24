@@ -5,8 +5,6 @@
 #include <LRect.h>
 #include <vector>
 
-using namespace std;
-
 /*!
  * @brief Collection of non-overlapping rectangles
  *
@@ -160,7 +158,7 @@ public:
      *
      * @note If performance is a concern, consider using the other rects() variant that allows you to access the rectangles using the native Pixman method.
      */
-    const vector<LRect> &rects() const;
+    const std::vector<LRect> &rects() const;
 
     /**
      * @brief Retrieves the list of rectangles that form the LRegion.
@@ -172,9 +170,11 @@ public:
      */
     LBox *rects(Int32 *n) const;
 private:
+    /// @cond OMIT
     mutable bool m_changed = false;
-    mutable vector<LRect>m_rects;
+    mutable std::vector<LRect>m_rects;
     mutable void *m_region = nullptr;
+    /// @endcond
 };
 
 #endif // LREGION_H

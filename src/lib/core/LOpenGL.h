@@ -14,19 +14,21 @@ public:
     /*!
      * @brief Opens a GLSL shader file.
      *
-
      * @warning The returned string must be manually freed when no longer used.
      * @param fileName Path to the shader file.
-     * @returns A string with the contents of the shader or nullptr in case of error.
+     * @returns A string with the contents of the shader or `nullptr` in case of error.
      */
     static char *openShader(const char *fileName);
 
     /*!
-     * @brief Checks for an OpenGL error.
-     * @param msg Message to log if there is an error.
-     * @returns true if an error exists (printing the error code and the message passed in the argument) or false if there is no error.
+     * @brief Get a string representation of an OpenGL error code.
+     *
+     * This function converts an OpenGL error code obtained from glGetError() into a human-readable string.
+     *
+     * @param error The OpenGL error code returned by glGetError().
+     * @return A const char pointer containing the error message.
      */
-    static bool checkGLError(const char *msg);
+    static const char* glErrorString(GLenum error);
 
     /*!
      * @brief Maximum number of texture units.
@@ -46,8 +48,8 @@ public:
     /*!
      * @brief Creates a texture from an image file.
      *
-     * @param file Path to the image file. Must be an image format supported by FreeImage (JPEG, PNG, BMP, etc).
-     * @returns A new texture or nullptr in case of error.
+     * @param file Path to the image file. Must be an image format supported by [FreeImage](https://freeimage.sourceforge.io/features.html) (JPEG, PNG, BMP, etc).
+     * @returns A new texture or `nullptr` in case of error.
      */
     static LTexture *loadTexture(const char *file);
 };

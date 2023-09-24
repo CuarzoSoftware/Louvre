@@ -39,16 +39,16 @@ bool LCompositor::createGlobalsRequest()
                      LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION, this, &GDataDeviceManager::GDataDeviceManagerPrivate::bind);
 
     wl_global_create(display(), &xdg_wm_base_interface,
-                     LOUVRE_XDG_WM_BASE_VERSION, this, &XdgShell::GXdgWmBase::GXdgWmBasePrivate::bind);
+                     LOUVRE_XDG_WM_BASE_VERSION, this, &Protocols::XdgShell::GXdgWmBase::GXdgWmBasePrivate::bind);
 
     wl_global_create(display(), &zxdg_decoration_manager_v1_interface,
-                     LOUVRE_XDG_DECORATION_MANAGER_VERSION, this, &XdgDecoration::GXdgDecorationManager::GXdgDecorationManagerPrivate::bind);
+                     LOUVRE_XDG_DECORATION_MANAGER_VERSION, this, &Protocols::XdgDecoration::GXdgDecorationManager::GXdgDecorationManagerPrivate::bind);
 
     wl_global_create(display(), &zwp_linux_dmabuf_v1_interface,
-                     LOUVRE_LINUX_DMA_BUF_VERSION, this, &LinuxDMABuf::GLinuxDMABuf::GLinuxDMABufPrivate::bind);
+                     LOUVRE_LINUX_DMA_BUF_VERSION, this, &Protocols::LinuxDMABuf::GLinuxDMABuf::GLinuxDMABufPrivate::bind);
 
     wl_global_create(display(), &wp_presentation_interface,
-                     LOUVRE_WP_PRESENTATION_VERSION, this, &WpPresentationTime::GWpPresentation::GWpPresentationPrivate::bind);
+                     LOUVRE_WP_PRESENTATION_VERSION, this, &Protocols::WpPresentationTime::GWpPresentation::GWpPresentationPrivate::bind);
 
     wl_display_init_shm(display());
 
@@ -223,6 +223,13 @@ void LCompositor::destroyPopupRoleRequest(LPopupRole *popup)
     L_UNUSED(popup);
 }
 //! [destroyPopupRoleRequest]
+
+//! [destroySubsurfaceRoleRequest]
+void LCompositor::destroySubsurfaceRoleRequest(LSubsurfaceRole *subsurface)
+{
+    L_UNUSED(subsurface);
+}
+//! [destroySubsurfaceRoleRequest]
 
 //! [destroyCursorRoleRequest]
 void LCompositor::destroyCursorRoleRequest(LCursorRole *cursorRole)

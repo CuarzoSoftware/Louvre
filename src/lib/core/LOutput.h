@@ -14,20 +14,20 @@
 #include <sys/poll.h>
 
 /*!
- * @brief Representation of a display.
+ * @brief Representation of a screen.
  *
- * The LOutput class represents a display where part of the compositor can be displayed. It is typically associated with a computer screen but
- * could also be a window of an X11 or Wayland desktop depending on the selected graphics backend.\n
+ * The LOutput class represents a screen where part of the compositor can be displayed. It is typically associated with a computer monitor but
+ * could also be a window of an X11 or Wayland desktop depending on the selected graphical backend.\n
  *
  * <center><IMG height="250px" SRC="https://lh3.googleusercontent.com/4lV1LTHBmO-eFywBrL4UhYIRcQbV5bjGB_17FdWFCzjGvnklxwBnXz5hQKOrkRCOegsn6PjnYZNCWk1SjFjwh9t8olEzr3Uwzd3saEt8EKRbbqX0n1f5R7q6r6V9u1t0PUk7BB0teA"></center>
  *
- * It has virtual methods used to initialize graphical contexts, rendering frames, and adjusting the dimensions of the framebuffer.\n
+ * It has virtual methods used to initialize graphical contexts, rendering frames, adjusting the viewport, and more.\n
  *
  * @section Access
  *
- * The graphic backend is responsible for creating each LOutput making a request to the compositor through LCompositor::createOutputRequest().\n
- * You can reimplement that virtual constructor to use your own LOutput subclass.\n
- * The LSeat class grants access to all outputs created by the graphic backend through the LSeat::outputs() list and notifies
+ * The graphical backend is responsible for creating each LOutput making a request to the compositor through LCompositor::createOutputRequest().\n
+ * You can reimplement that virtual constructor to use your own LOutput subclasses.\n
+ * The LSeat class grants access to all outputs created by the graphical backend through the LSeat::outputs() list and it also notifies you of
  * hotplugging events (e.g. when connecting or disconnecting a monitor through an HDMI port).\n
  *
  * @section Initialization
@@ -37,7 +37,7 @@
  * repaint() method is called, the next rendering frame will be scheduled and the paintGL() method will be invoked within which you can define your own rendering logic.\n
  * By default, the library initializes all available outputs once the compositor is started in the LCompositor::initialized() virtual method.
  *
- * @warning The library internally invokes virtual methods defined in LOutput (such as initializeGL(), paintGL(), resizeGL(), etc). To schedule a new frame, use the repaint() method, which will eventually trigger paintGL() asynchronously. It's important to note that making multiple calls to repaint() within the same frame does not result in multiple invocations of paintGL(). Instead, it ensures that paintGL() is invoked once, right after the subsequent paintGL(), repaint() should be called again in order to schedule another frame.
+ * @note The library internally handles the invocation of certain virtual methods: initializeGL(), moveGL(), resizeGL(), paintGL(), and uninitializeGL(). These methods are not intended to be called directly by you. To schedule a new frame, use the repaint() method, which will eventually trigger paintGL() asynchronously. It's important to note that making multiple calls to repaint() within the same frame does not result in multiple invocations of paintGL(). Instead, it ensures that paintGL() is invoked once, right after the subsequent paintGL(), repaint() should be called again in order to schedule another frame.
  *
  * @section Modes
  *
@@ -50,16 +50,17 @@
  *
  * Each output has its own OpenGL context and its own instance of LPainter, which can be accessed with the painter() method.\n
  * You can use the functions provided by LPainter to render colored rects or textures.\n
- * You can also use OpenGL functions and your own shaders/programs if you wish.
+ *
+ * @note You can also use the native OpenGL functions and your own shaders/programs if you wish.
  *
  * @section Layout
  *
  * Outputs, like surfaces, have a position and dimensions that allow them to be logically organized in a similar way to how a system settings panel does.\n
- * You can set the position of an output using the setPos() method.
+ * You can adjust the position of an output using the setPos() method, which will, in turn, trigger the moveGL() function if the position changed.
  *
  * <center><IMG height="350px" SRC="https://lh3.googleusercontent.com/VOWUX4iiqYMF_bIrBP3xMyaiydv_e_ZKznCIJlRLaEA0CtBLMuU4h41R3D4Xm-7krk8jFGZrQGb_SS7hlIFUY9E5dVbQqs0Q3NIBXvRFrGs_cukqOmbCv1ExN9fG3BDdj4Yz45xIkQ=w2400"></center>
  *
- * @note In order for the LCursor class to smoothly transition between different LOutputs, the outputs must be arranged side by side.
+ * @note In order for the LCursor class to smoothly transition across different LOutputs, the outputs must be arranged side by side.
  *
  * @section Uninitialization
  *
@@ -105,8 +106,10 @@ public:
      */
     virtual ~LOutput();
 
+    /// @cond OMIT
     LOutput(const LOutput&) = delete;
     LOutput& operator= (const LOutput&) = delete;
+    /// @endcond
 
     /**
      * @brief Returns a pointer to the associated framebuffer.
@@ -118,11 +121,11 @@ public:
     /**
      * @brief Returns the index of the current buffer.
      *
-     * Compositors commonly employ double buffering to ensure smooth graphics rendering. This involves rendering to one buffer while displaying another, reducing visual artifacts like glitches and tearing.
+     * Compositors commonly employ double or triple buffering to ensure smooth graphics rendering. This involves rendering to one buffer while displaying another, reducing visual artifacts like glitches and tearing.
      *
      * @image html https://lh3.googleusercontent.com/2ousoWwxnVGvFX5bT6ual2G8UUbhUOJ21mK1UQmthPNM-7XfracRlL5GCYBQTzt4Os28eKO_FzC6BS-rasiNngvTMI9lEdET0ItKrI2wK_9IwSDaF-hNGkTMI6gVlL0m4ENDJYbckw
      *
-     * @return The current buffer index. Typically alternates between 0 and 1, although some backends may employ more than 2 framebuffers.
+     * @return The current buffer index. Typically alternates between 0 and 1, although some backends may employ less or more than 2 framebuffers.
      */
     Int32 currentBuffer() const;
 
@@ -148,11 +151,11 @@ public:
     LTexture *bufferTexture(UInt32 bufferIndex);
 
     /**
-     * @brief Checks if the graphics backend supports buffer damage tracking.
+     * @brief Checks if the graphical backend supports buffer damage tracking.
      *
-     * Some graphics backends / hardware can benefit from knowing which regions of the framebuffer have changed after a paintGL() call. This method indicates whether buffer damage support is available.
+     * Some graphical backends / hardware can benefit from knowing which regions of the framebuffer have changed after a paintGL() call. This method indicates whether buffer damage support is available.
      *
-     * @return true if the graphics backend supports buffer damage tracking, false otherwise.
+     * @return true if the graphical backend supports buffer damage tracking, false otherwise.
      */
     bool hasBufferDamageSupport() const;
 
@@ -174,7 +177,7 @@ public:
      *
      * @return A list of pointers to LOutputMode instances representing the available modes of the output.
      */
-    const list<LOutputMode *> &modes() const;
+    const std::list<LOutputMode *> &modes() const;
 
     /*!
      * @brief Preferred mode.
@@ -186,7 +189,7 @@ public:
     /*!
      * @brief Current mode.
      *
-     * The graphic backend assigns the preferred mode by default.
+     * The graphical backend assigns the preferred mode by default.
      */
     const LOutputMode *currentMode() const;
 
@@ -276,35 +279,35 @@ public:
     /*!
      * @brief EGLDisplay handle.
      *
-     * Handle to the EGLDisplay of the output created by the graphic backend.
+     * Handle to the EGLDisplay of the output created by the graphical backend.
      */
     EGLDisplay eglDisplay();
 
     /*!
      * @brief Output name.
      *
-     * Name of the output given by the graphic backend (e.g HDMI-2).
+     * Name of the output given by the graphical backend (e.g HDMI-A-2).
      */
     const char *name() const;
 
     /*!
      * @brief Output model
      *
-     * Model name of the output given by the graphics backend.
+     * Model name of the output given by the graphical backend.
      */
     const char *model() const;
 
     /*!
      * @brief Manufacturer of the output.
      *
-     * Manufacturer name of the output given by the graphic backend.
+     * Manufacturer name of the output given by the graphical backend.
      */
     const char *manufacturer() const;
 
     /*!
      * @brief Description of the output.
      *
-     * Description of the output given by the graphic backend.
+     * Description of the output given by the graphical backend.
      */
     const char *description() const;
 
@@ -347,7 +350,7 @@ public:
      * Reimplement this method to define your own rendering logic.
      *
      * The default implementation clears the screen, draws the surfaces following the order of the surface list
-     * of the compositor, draws the cursor if the graphic backend does not support cursor composition via hardware and
+     * of the compositor, draws the cursor if the graphical backend does not support cursor composition via hardware and
      * finally draws the icon of a drag & drop session if there was one.
      *
      * @warning The default implementation provides a basic rendering method that is quite inefficient since it redraws the entire screen every frame. Check the code of the **louvre-weston-clone** example compositor to see how to render efficiently with LPainter or consider using the LScene rendering system.

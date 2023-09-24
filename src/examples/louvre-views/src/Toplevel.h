@@ -9,6 +9,8 @@ class ToplevelView;
 class Output;
 class Workspace;
 
+using namespace Louvre;
+
 class Toplevel : public LToplevelRole
 {
 public:

@@ -31,11 +31,11 @@ void LDataDevice::sendSelectionEvent()
     // Send data device selection first
     if (seat()->dataSelection())
     {
-        for (Wayland::GSeat *d : client()->seatGlobals())
+        for (Protocols::Wayland::GSeat *d : client()->seatGlobals())
         {
             if (d->dataDeviceResource())
             {
-                Wayland::RDataOffer *rDataOffer = new Wayland::RDataOffer(d->dataDeviceResource(), 0);
+                Protocols::Wayland::RDataOffer *rDataOffer = new Protocols::Wayland::RDataOffer(d->dataDeviceResource(), 0);
                 rDataOffer->dataOffer()->imp()->usedFor = LDataOffer::Selection;
                 d->dataDeviceResource()->dataOffer(rDataOffer);
 
@@ -65,11 +65,11 @@ void LDataDevice::LDataDevicePrivate::sendDNDEnterEventS(LSurface *surface, Floa
         {
             seat()->dndManager()->imp()->focus = surface;
 
-            for (Wayland::GSeat *d : client->seatGlobals())
+            for (Protocols::Wayland::GSeat *d : client->seatGlobals())
             {
                 if (d->dataDeviceResource())
                 {
-                    Wayland::RDataOffer *rDataOffer = new Wayland::RDataOffer(d->dataDeviceResource(), 0);
+                    Protocols::Wayland::RDataOffer *rDataOffer = new Protocols::Wayland::RDataOffer(d->dataDeviceResource(), 0);
 
                     rDataOffer->dataOffer()->imp()->usedFor = LDataOffer::DND;
                     d->dataDeviceResource()->imp()->dataOffered = rDataOffer->dataOffer();
@@ -99,7 +99,7 @@ void LDataDevice::LDataDevicePrivate::sendDNDEnterEventS(LSurface *surface, Floa
         {
             if (surface && surface->client() == client)
             {
-                for (Wayland::GSeat *d : client->seatGlobals())
+                for (Protocols::Wayland::GSeat *d : client->seatGlobals())
                 {
                     UInt32 serial = LCompositor::nextSerial();
 
@@ -128,7 +128,7 @@ void LDataDevice::LDataDevicePrivate::sendDNDMotionEventS(Float24 x, Float24 y)
         if (seat()->dndManager()->source() || (!seat()->dndManager()->source() && seat()->dndManager()->srcDataDevice()->client()  && seat()->dndManager()->srcDataDevice()->client() == client))
         {
             UInt32 ms = LTime::ms();
-            for (Wayland::GSeat *d : client->seatGlobals())
+            for (Protocols::Wayland::GSeat *d : client->seatGlobals())
                 if (d->dataDeviceResource())
                     d->dataDeviceResource()->motion(ms, x, y);
         }
@@ -137,7 +137,7 @@ void LDataDevice::LDataDevicePrivate::sendDNDMotionEventS(Float24 x, Float24 y)
 void LDataDevice::LDataDevicePrivate::sendDNDLeaveEvent()
 {
     if (seat()->dndManager()->dragging() && seat()->dndManager()->focus())
-        for (Wayland::GSeat *d : client->seatGlobals())
+        for (Protocols::Wayland::GSeat *d : client->seatGlobals())
             if (d->dataDeviceResource())
                 d->dataDeviceResource()->leave();
 

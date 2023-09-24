@@ -11,6 +11,12 @@
 class Louvre::LSolidColorView : public LView
 {
 public:
+
+    /// @cond OMIT
+    LSolidColorView(const LSolidColorView&) = delete;
+    LSolidColorView& operator= (const LSolidColorView&) = delete;
+    /// @endcond
+
     /**
      * @brief Construct a solid color view as a child of another view.
      *

@@ -6,8 +6,6 @@
 #include <LSize.h>
 #include <LRect.h>
 
-using namespace Louvre::Protocols;
-
 /*!
  * @brief Toplevel role for surfaces
  *
@@ -39,8 +37,10 @@ public:
      */
     virtual ~LToplevelRole();
 
+    /// @cond OMIT
     LToplevelRole(const LToplevelRole&) = delete;
     LToplevelRole& operator= (const LToplevelRole&) = delete;
+    /// @endcond
 
     /*!
      * @brief Resizing border/corner.
@@ -116,6 +116,9 @@ public:
     /// Decoration mode
     enum DecorationMode : UInt32
     {
+        /// The client has no preferred mode
+        NoPreferredMode = 0,
+
         /// Decorations are drawn by the client
         ClientSide = 1,
 
@@ -165,7 +168,9 @@ public:
     /**
      * @brief Window geometry in surface coordinates
      *
-     * The window geometry is a Toplevel rectangle that excludes its decorations (typically shadows).
+     * <center><img height="300px" src="https://lh3.googleusercontent.com/pw/AIL4fc_le5DeTa6b-yBnChX6YPbkr12gAp38ghVyvsv4SjHCd2L4fTL8agYls0AcGlBeplJyc0FNQCIeb6sR4WbSUyAHM4_LrKLNjhZ0SniRdaSUsjS9IGQ=w2400"></center>
+     *
+     * The window geometry is a Toplevel rectangle that excludes its decorations (typically shadows).     *
      */
     const LRect &windowGeometry() const;
 
@@ -185,14 +190,14 @@ public:
     /*!
      * @brief Get the application ID associated with the toplevel window.
      *
-     * @return A string containing the application ID (e.g., "com.cuarzosoftware.Desk"), can be nullptr.
+     * @return A string containing the application ID (e.g., "com.cuarzosoftware.Desk"), can be `nullptr`.
      */
     const char *appId() const;
 
     /*!
      * @brief Get the window title of the toplevel.
      *
-     * @return A string representing the window title, or nullptr.
+     * @return A string representing the window title, or `nullptr`.
      */
     const char *title() const;
 
@@ -201,7 +206,7 @@ public:
      *
      * If one of the axis is 0, it means it has no minimum size.
      *
-     * @return The minimum size as an LSize object.
+     * @return The minimum size as a Louvre::LSize object.
      */
     const LSize &minSize() const;
 
@@ -210,28 +215,28 @@ public:
      *
      * If one of the axis is 0, it means it has no maximum size.
      *
-     * @return The maximum size as an LSize object.
+     * @return The maximum size as a Louvre::LSize object.
      */
     const LSize &maxSize() const;
 
     /*!
      * @brief Check if the toplevel window is maximized.
      *
-     * @return True if the toplevel is maximized; otherwise, false.
+     * @return `true` if the toplevel is maximized; otherwise, `false`.
      */
     bool maximized() const;
 
     /*!
      * @brief Check if the toplevel window is in fullscreen mode.
      *
-     * @return True if the toplevel is in fullscreen mode; otherwise, false.
+     * @return `true` if the toplevel is in fullscreen mode; otherwise, `false`.
      */
     bool fullscreen() const;
 
     /*!
      * @brief Check if the toplevel window is currently active.
      *
-     * @return True if the toplevel is active; otherwise, false.
+     * @return `true` if the toplevel is active; otherwise, `false`.
      */
     bool activated() const;
 
@@ -247,6 +252,8 @@ public:
      *
      * The client may choose to ignore the request. Must be followed by a configure() event.
      *
+     * @note LToplevelRole::NoPreferredMode is not a valid decoration mode.
+     *
      * @param mode The desired decoration mode for the toplevel window.
      */
     void setDecorationMode(DecorationMode mode);
@@ -261,25 +268,19 @@ public:
     /*!
      * @brief Get the preferred decoration mode set by the client.
      *
-     * If 0 is returned, it means the client has no preferred mode.
-     *
-     * @return The preferred decoration mode as a UInt32 value.
+     * @return The preferred decoration mode value.
      */
-    UInt32 preferredDecorationMode() const;
+    DecorationMode preferredDecorationMode() const;
 
-    /*!
-     * @brief Get the xdg_toplevel resource associated with the toplevel window.
-     *
-     * @return A pointer to the xdg_toplevel resource.
+    /**
+     *  @brief [xdg_toplevel](https://wayland.app/protocols/xdg-shell#xdg_toplevel) resource from the [XDG Shell](https://wayland.app/protocols/xdg-shell) protocol.
      */
-    XdgShell::RXdgToplevel *xdgToplevelResource() const;
+    Protocols::XdgShell::RXdgToplevel *xdgToplevelResource() const;
 
-    /*!
-     * @brief Get the xdg_surface resource associated with the toplevel window.
-     *
-     * @return A pointer to the xdg_surface resource.
+    /**
+     *  @brief [xdg_surface](https://wayland.app/protocols/xdg-shell#xdg_surface) resource from the [XDG Shell](https://wayland.app/protocols/xdg-shell) protocol.
      */
-    XdgShell::RXdgSurface *xdgSurfaceResource() const;
+    Protocols::XdgShell::RXdgSurface *xdgSurfaceResource() const;
 
 /// @name Virtual Methods
 /// @{
@@ -372,7 +373,7 @@ public:
      *
      * Reimplement this virtual method if you want to be notified when the client wants to show the Toplevel in fullscreen mode.
      *
-     * @param destOutput Output on which the Toplevel should be shown. If it is nullptr the compositor should choose the output.
+     * @param destOutput Output on which the Toplevel should be shown. If it is `nullptr` the compositor should choose the output.
      * #### Default implementation
      * @snippet LToplevelRoleDefault.cpp setFullscreenRequest
      */
@@ -420,6 +421,18 @@ public:
      * @snippet LToplevelRoleDefault.cpp activatedChanged
      */
     virtual void activatedChanged();
+
+    /**
+     * @brief Notification of State Changes
+     *
+     * Reimplement this virtual method if you wish to receive notifications when the Toplevel's states flags change.
+     *
+     * You can access the Toplevel's state flags using the states() property.
+     *
+     * #### Default Implementation
+     * @snippet LToplevelRoleDefault.cpp statesChanged
+     */
+    virtual void statesChanged();
 
     /*!
      * @brief Change of maximum size
@@ -499,7 +512,9 @@ public:
 
     LPRIVATE_IMP(LToplevelRole)
 
+    /// @cond OMIT
     void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
+    /// @endcond
 };
 
 #endif // LTOPLEVELROLE_H

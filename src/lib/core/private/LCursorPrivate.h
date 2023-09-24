@@ -3,6 +3,8 @@
 
 #include <LCursor.h>
 
+using namespace Louvre;
+
 LPRIVATE_CLASS(LCursor)
     LRect rect;
 

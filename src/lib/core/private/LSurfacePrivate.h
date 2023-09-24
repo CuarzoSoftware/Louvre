@@ -3,6 +3,7 @@
 
 #include <LSurface.h>
 
+using namespace Louvre;
 using namespace Louvre::Protocols;
 
 struct LSurface::Params

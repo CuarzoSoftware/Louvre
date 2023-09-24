@@ -4,6 +4,8 @@
 #include <LXCursor.h>
 #include <LPoint.h>
 
+using namespace Louvre;
+
 LPRIVATE_CLASS(LXCursor)
     LPoint hotspotB;
     LTexture *texture;

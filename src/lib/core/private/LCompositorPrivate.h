@@ -19,7 +19,7 @@ LPRIVATE_CLASS(LCompositor)
         wl_global *global;
         UChar8 iters;
     };
-    list<RemovedGlobal*>removedGlobals;
+    std::list<RemovedGlobal*>removedGlobals;
     void processRemovedGlobals();
     void removeGlobal(wl_global *global);
 
@@ -60,8 +60,8 @@ LPRIVATE_CLASS(LCompositor)
 
     // Threads sync
     std::thread::id threadId;
-    mutex renderMutex;
-    mutex queueMutex;
+    std::mutex renderMutex;
+    std::mutex queueMutex;
     std::list<std::thread::id>threadsQueue;
     void lock();
     void unlock();
@@ -73,11 +73,11 @@ LPRIVATE_CLASS(LCompositor)
     void insertSurfaceAfter(LSurface *prevSurface, LSurface *surfaceToInsert);
     void insertSurfaceBefore(LSurface *nextSurface, LSurface *surfaceToInsert);
 
-    list<LClient*>clients;
-    list<LOutput*>outputs;
-    list<LSurface*>surfaces;
-    list<LView*>views;
-    list<LAnimation*>animations;
+    std::list<LClient*>clients;
+    std::list<LOutput*>outputs;
+    std::list<LSurface*>surfaces;
+    std::list<LView*>views;
+    std::list<LAnimation*>animations;
 
     bool runningAnimations();
     void processAnimations();
@@ -96,7 +96,7 @@ LPRIVATE_CLASS(LCompositor)
 
     std::map<std::thread::id, ThreadData> threadsMap;
     void destroyPendingRenderBuffers(std::thread::id *id);
-    void addRenderBufferToDestroy(thread::id thread, LRenderBuffer::LRenderBufferPrivate::ThreadData &data);
+    void addRenderBufferToDestroy(std::thread::id thread, LRenderBuffer::LRenderBufferPrivate::ThreadData &data);
 };
 
 

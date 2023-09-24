@@ -4,8 +4,6 @@
 #include <LObject.h>
 #include <functional>
 
-using namespace Louvre;
-
 /**
  * @brief Delayed callbacks
  *
@@ -35,8 +33,10 @@ public:
      */
     static void oneShot(UInt32 intervalMs, const Callback &onTimeout);
 
+    /// @cond OMIT
     LTimer(const LTimer&) = delete;
     LTimer& operator= (const LTimer&) = delete;
+    /// @endcond
 
     /**
      * @brief Destructor for the LTimer class.

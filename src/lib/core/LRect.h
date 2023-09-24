@@ -4,14 +4,12 @@
 #include <LNamespaces.h>
 #include <LPoint.h>
 
-using namespace Louvre;
-
 /*!
  * @brief Template for 4D vectors
  *
  * The LRectTemplate class is a template for creating four-dimensional vectors.\n
- * The library uses this template to generate the classes Louvre::LRect which works with
- * 32-bit integers and Louvre::LRectF which works with 32-bit floats.
+ * The library uses this template to generate the classes LRect which works with
+ * 32-bit integers and LRectF which works with 32-bit floats.
 */
 template <class TA, class TB>
 class Louvre::LRectTemplate

@@ -41,7 +41,9 @@ public: \
     private: \
     CAT(class_name,Private) *m_imp = nullptr; \
 /*!
+ * @namespace Louvre
  * @brief Namespaces
+ * @page Namespaces
  */
 namespace Louvre
 {
@@ -145,22 +147,22 @@ namespace Louvre
     typedef wl_fixed_t      Float24;
 
     /// 2D vector of 32 bits integers
-    typedef LPointTemplate<Int32,Float32> LPoint;
+    using LPoint = LPointTemplate<Int32,Float32>;
 
     /// 2D vector of 32 bits integers
-    typedef LPoint LSize;
+    using LSize = LPoint;
 
     /// 2D vector of 32 bits floats
-    typedef LPointTemplate<Float32,Int32> LPointF;
+    using LPointF = LPointTemplate<Float32,Int32>;
 
     /// 2D vector of 32 bits floats
-    typedef LPointF LSizeF;
+    using LSizeF = LPointF;
 
     /// 4D vector of 32 bits integers
-    typedef LRectTemplate<Int32,Float32> LRect;
+    using LRect = LRectTemplate<Int32,Float32>;
 
     /// 4D vector of 32 bits floats
-    typedef LRectTemplate<Float32,Int32> LRectF;
+    using LRectF = LRectTemplate<Float32,Int32>;
 
     typedef UInt32 LKey;
     typedef void* EGLContext;
@@ -283,6 +285,11 @@ namespace Louvre
         Float32 a;
     };
 
+    /**
+     * @brief Graphical Backend Interface
+     *
+     * @note This documentation is intended for library maintainers and individuals interested in developing their own graphical backends.
+     */
     struct LGraphicBackendInterface
     {
         bool (*initialize)(LCompositor *compositor);
@@ -328,6 +335,11 @@ namespace Louvre
         void (*destroyTexture)(LTexture *texture);
     };
 
+    /**
+     * @brief Input Backend Interface
+     *
+     * @note This documentation is intended for library maintainers and individuals interested in developing their own input backends.
+     */
     struct LInputBackendInterface
     {
         bool (*initialize)(const LSeat *seat);

@@ -15,7 +15,7 @@
  *
  * The main view of the LScene class (LScene::mainView()) is a unique LSceneView designed to render its content onto one or more LOutputs instead of using its own framebuffer.\n
  *
- * @warning Use LSceneViews judiciously. When nested within another scene, they are rendered twice: first, the scene renders itself to its framebuffer, and then its parent scene renders that to itself or into an LOutput.
+ * @warning Use LSceneViews judiciously. When nested within another scene, they are rendered twice: first, the scene renders itself to its framebuffer, and then its parent scene renders that to itself as well or into an LOutput framebuffer.
  */
 class Louvre::LSceneView : public LView
 {
@@ -29,8 +29,10 @@ public:
      */
     LSceneView(const LSize &sizeB, Int32 bufferScale, LView *parent = nullptr);
 
+    /// @cond OMIT
     LSceneView(const LSceneView&) = delete;
     LSceneView& operator= (const LSceneView&) = delete;
+    /// @endcond
 
     /**
      * @brief Destructor for the LSceneView.
@@ -161,8 +163,10 @@ public:
                            Float32 alpha) override;
 
 LPRIVATE_IMP(LSceneView)
-friend class LScene;
-LSceneView(LFramebuffer *framebuffer = nullptr, LView *parent = nullptr);
+    /// @cond OMIT
+    friend class LScene;
+    LSceneView(LFramebuffer *framebuffer = nullptr, LView *parent = nullptr);
+    /// @endcond
 };
 
 #endif // LSCENEVIEW_H

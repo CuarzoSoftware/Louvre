@@ -6,19 +6,19 @@
 /*!
  * @brief Output resolution and refresh rate.
  *
- * The LOutputMode class represents a possible configuration in which an output (LOutput) can operate, specifically
+ * The LOutputMode class represents a possible configuration in which an LOutput can operate, specifically
  * the refresh rate and resolution.\n
- * Each LOutput has one or more modes which can be accessed from LOutput::modes() and assigned to an output with LOutput::setMode().\n
- * This class does not have virtual methods and therefore it is not necessary to be reimplemented.
+ * Each LOutput has one or more modes which can be accessed from LOutput::modes() and assigned with LOutput::setMode().\n
  */
 class Louvre::LOutputMode : LObject
 {
 public:
-
+    /// @cond OMIT
     LOutputMode(const LOutput *output);
     ~LOutputMode();
     LOutputMode(const LOutputMode&) = delete;
     LOutputMode& operator= (const LOutputMode&) = delete;
+    /// @endcond
 
     /*!
      * @brief Mode output.

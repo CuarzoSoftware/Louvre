@@ -3,6 +3,8 @@
 
 #include <LSeat.h>
 
+using namespace Louvre;
+
 class Seat : public LSeat
 {
 public:

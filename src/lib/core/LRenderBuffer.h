@@ -24,8 +24,10 @@ public:
      */
     LRenderBuffer(const LSize &sizeB);
 
+    /// @cond OMIT
     LRenderBuffer(const LRenderBuffer&) = delete;
     LRenderBuffer& operator= (const LRenderBuffer&) = delete;
+    /// @endcond
 
     /**
      * @brief Destructor for LRenderBuffer.

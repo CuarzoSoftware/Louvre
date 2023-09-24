@@ -2,21 +2,35 @@
 <img style="position:relative;margin:0px;padding:0;top:40px" src="https://i.imgur.com/cCT9KwN.png" width="104"/>
 <h1 style="margin-top:0px;padding-top:0px">Louvre</h1>
 
+
+<p align="left">
+  <a href="https://github.com/CuarzoSoftware/SRM/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/license-GPL_v3.0-blue.svg" alt="Louvre is released under the GPL v3.0 license." />
+  </a>
+  <a href="https://github.com/CuarzoSoftware/SRM">
+    <img src="https://img.shields.io/badge/version-1.0.0-brightgreen" alt="Current Louvre version." />
+  </a>
+</p>
+
 Louvre is a C++ library that aims to simplify the process of creating Wayland compositors by reducing its learning curve and thus allowing developers to focus on the creative and unique features of their compositors.
 
-The API documentation, installation guide, and tutorial can be found [**here**](https://cuarzosoftware.github.io/Louvre/index.html).
+<img src="https://lh3.googleusercontent.com/pw/AIL4fc9VCmbRMl7f4ibvQqDrWpmLkXJ9W3MHHWKKE7g5oKcYSIrOut0mQEb1sDoblm9h35zUXk5zhwOwlWnM-soCtjeznhmA7yfRNqo-5a3PdwNYapM1vn4=w2400"/>
 
-## Contact
+## Links
 
-If you come across any bugs or have questions or suggestions, please feel free to email me at <ehopperdietzel@gmail.com>.
+* [📖 C++ API Documentation](https://cuarzosoftware.github.io/annotated.html)
+* [🎓 Tutorial](https://cuarzosoftware.github.io/SRM/md_md_tutorial_01.html)
+* [🕹️ Examples](https://cuarzosoftware.github.io/SRM/md_md__examples.html)
+* [📦 Downloads](https://cuarzosoftware.github.io/SRM/md_md__downloads.html)
+* [💬 Contact](https://cuarzosoftware.github.io/SRM/md_md__contact.html)
 
 ## ⏲️ Performance
 
 Louvre offers excellent performance. A benchmark consisting of rendering numerous moving wl_subsurfaces (opaque and translucent), in which the **louvre-weston-clone** example compositor was tested, shows that Louvre can maintain a high FPS rate even in complex scenarios. Furthermore, it uses fewer CPU and GPU resources than popular compositors like Weston and Sway.
 
-*The code of the benchmark can be found in ```Louvre/src/benchmark```*.
+> The source code of the benchmark can be found in ```Louvre/src/benchmark```
 
-Here is a graph illustrating the benchmark results. It displays the average FPS of each compositor rendering 1 to 50 moving surfaces.
+Here is a graph illustrating the benchmark results. It displays the average FPS of each compositor rendering 1 to 50 moving surfaces using double buffering.
 
 ### FPS
 
@@ -73,7 +87,7 @@ Please be aware that specific older nouveau drivers, due to their absence of mul
 * SDL
 * EFL
 
-## 💻 Graphic Backends
+## 💻 Graphical Backends
 
 * DRM/KMS
 * X11 (removed since version 1.0.0)

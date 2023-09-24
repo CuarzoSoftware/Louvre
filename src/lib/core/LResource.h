@@ -68,8 +68,10 @@ public:
      */
     ~LResource();
 
+    /// @cond OMIT
     LResource(const LResource&) = delete;
     LResource& operator= (const LResource&) = delete;
+    /// @endcond
 
     /**
      * @brief Retrieve the wrapped **wl_resource** pointer.

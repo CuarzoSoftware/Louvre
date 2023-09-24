@@ -253,7 +253,7 @@ LSeat *LCompositor::seat() const
 
 void LCompositor::repaintAllOutputs()
 {
-    for (list<LOutput*>::iterator it = imp()->outputs.begin(); it != imp()->outputs.end(); ++it)
+    for (std::list<LOutput*>::iterator it = imp()->outputs.begin(); it != imp()->outputs.end(); ++it)
         (*it)->repaint();
 }
 
@@ -279,7 +279,7 @@ bool LCompositor::addOutput(LOutput *output)
 void LCompositor::removeOutput(LOutput *output)
 {
     // Loop to check if output was added (initialized)
-    for (list<LOutput*>::iterator it = imp()->outputs.begin(); it != imp()->outputs.end(); it++)
+    for (std::list<LOutput*>::iterator it = imp()->outputs.begin(); it != imp()->outputs.end(); it++)
     {
         // Was initialized
         if (*it == output)
@@ -329,17 +329,17 @@ void LCompositor::removeOutput(LOutput *output)
     }
 }
 
-const list<LSurface *> &LCompositor::surfaces() const
+const std::list<LSurface *> &LCompositor::surfaces() const
 {
     return imp()->surfaces;
 }
 
-const list<LOutput *> &LCompositor::outputs() const
+const std::list<LOutput *> &LCompositor::outputs() const
 {
     return imp()->outputs;
 }
 
-const list<LClient *> &LCompositor::clients() const
+const std::list<LClient *> &LCompositor::clients() const
 {
     return imp()->clients;
 }
@@ -372,7 +372,7 @@ LClient *LCompositor::getClientFromNativeResource(wl_client *client)
     return nullptr;
 }
 
-thread::id LCompositor::mainThreadId() const
+std::thread::id LCompositor::mainThreadId() const
 {
     return imp()->threadId;
 }

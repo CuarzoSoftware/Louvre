@@ -47,7 +47,7 @@ LOutput::~LOutput()
     delete m_imp;
 }
 
-const list<LOutputMode *> &LOutput::modes() const
+const std::list<LOutputMode *> &LOutput::modes() const
 {
     return *compositor()->imp()->graphicBackend->getOutputModes((LOutput*)this);
 }
@@ -221,7 +221,7 @@ LPainter *LOutput::painter() const
     return imp()->painter;
 }
 
-const thread::id &LOutput::threadId() const
+const std::thread::id &LOutput::threadId() const
 {
     return imp()->threadId;
 }

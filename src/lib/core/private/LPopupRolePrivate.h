@@ -4,6 +4,8 @@
 #include <LPositioner.h>
 #include <LPopupRole.h>
 
+using namespace Louvre;
+
 struct LPopupRole::Params
 {
     LResource *popup;

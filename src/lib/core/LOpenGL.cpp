@@ -37,17 +37,39 @@ char *LOpenGL::openShader(const char *file)
     return data;
 }
 
-bool LOpenGL::checkGLError(const char *msg)
+const char *LOpenGL::glErrorString(GLenum error)
 {
-    GLenum errCode;
-
-    if ((errCode = glGetError()) != GL_NO_ERROR)
+    switch (error)
     {
-        LLog::error("GL ERROR: %i %s\n", errCode, msg);
-        return true;
-    }
+    case GL_NO_ERROR:
+        return "GL_NO_ERROR";
 
-    return false;
+    case GL_INVALID_ENUM:
+        return "GL_INVALID_ENUM";
+
+    case GL_INVALID_VALUE:
+        return "GL_INVALID_VALUE";
+
+    case GL_INVALID_OPERATION:
+        return "GL_INVALID_OPERATION";
+
+    case GL_STACK_OVERFLOW:
+        return "GL_STACK_OVERFLOW";
+
+    case GL_STACK_UNDERFLOW:
+        return "GL_STACK_UNDERFLOW";
+
+    case GL_OUT_OF_MEMORY:
+        return "GL_OUT_OF_MEMORY";
+
+    case GL_TABLE_TOO_LARGE:
+        return "GL_TABLE_TOO_LARGE";
+
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+        return "GL_INVALID_FRAMEBUFFER_OPERATION";
+    default:
+        return "GL_UNKNOWN_ERROR";
+    }
 }
 
 GLuint LOpenGL::maxTextureUnits()
@@ -84,7 +106,7 @@ GLuint LOpenGL::compileShader(GLenum type, const char *shaderString)
 
         glGetShaderInfoLog(shader, infoLen, &infoLen, errorLog);
 
-        LLog::error("%s",errorLog);
+        LLog::error("%s", errorLog);
 
         glDeleteShader(shader);
 

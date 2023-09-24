@@ -40,8 +40,10 @@ public:
      */
     LTexture();
 
+    /// @cond OMIT
     LTexture(const LTexture&) = delete;
     LTexture& operator= (const LTexture&) = delete;
+    /// @endcond
 
     /**
      * @brief Get the equivalent DRM buffer format from a Wayland buffer format.

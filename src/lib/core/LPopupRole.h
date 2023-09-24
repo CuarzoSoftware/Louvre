@@ -4,8 +4,6 @@
 #include <LBaseSurfaceRole.h>
 #include <LRect.h>
 
-using namespace Louvre::Protocols;
-
 /*!
  * @brief Popup role for surfaces
  *
@@ -24,8 +22,6 @@ class Louvre::LPopupRole : public LBaseSurfaceRole
 public:
     struct Params;
 
-    bool isTopmostPopup() const;
-
     /*!
      * @brief Constructor for LPopupRole class.
      * @param params Internal library parameters provided in the virtual LCompositor::createPopupRoleRequest() constructor.
@@ -35,15 +31,19 @@ public:
     /*!
      * @brief Destructor of LPopupRole class.
      *
-     * Invoked after LCompositor::destroyPopupRequest().
+     * Invoked after LCompositor::destroyPopupRoleRequest().
      */
     virtual ~LPopupRole();
 
+    /// @cond OMIT
     LPopupRole(const LPopupRole&) = delete;
     LPopupRole& operator= (const LPopupRole&) = delete;
+    /// @endcond
 
     /*!
      * @brief Window geometry in surface coordinates.
+     *
+     * <center><img height="300px" src="https://lh3.googleusercontent.com/pw/AIL4fc_le5DeTa6b-yBnChX6YPbkr12gAp38ghVyvsv4SjHCd2L4fTL8agYls0AcGlBeplJyc0FNQCIeb6sR4WbSUyAHM4_LrKLNjhZ0SniRdaSUsjS9IGQ=w2400"></center>
      *
      * The window geometry is a rectangle of the Popup that excludes its decorations (typically shadows).
      */
@@ -72,11 +72,15 @@ public:
      */
     const LRect &positionerBounds() const;
 
-    /// xdg_popup resource
-    XdgShell::RXdgPopup *xdgPopupResource() const;
+    /**
+     *  @brief [xdg_popup](https://wayland.app/protocols/xdg-shell#xdg_popup) resource from the [XDG Shell](https://wayland.app/protocols/xdg-shell) protocol.
+     */
+    Protocols::XdgShell::RXdgPopup *xdgPopupResource() const;
 
-    /// xdg_surface resource
-    XdgShell::RXdgSurface *xdgSurfaceResource() const;
+    /**
+     *  @brief [xdg_surface](https://wayland.app/protocols/xdg-shell#xdg_surface) resource from the [XDG Shell](https://wayland.app/protocols/xdg-shell) protocol.
+     */
+    Protocols::XdgShell::RXdgSurface *xdgSurfaceResource() const;
 
 /// @name Events
 /// @{
@@ -91,12 +95,20 @@ public:
      */
     void configure(const LRect &rect) const;
 
-    /*!
-     * @brief Dimisses the Popup.
+    /**
+     * @brief Dismisses the popup and its children.
      *
-     * Dismisses the Popup.
+     * This function destroys the popup and all its children, starting from the topmost and proceeding downward.
      */
     void sendPopupDoneEvent();
+
+    /**
+     * @brief Checks if this popup is the topmost one within a client.
+     *
+     * @return `true` if it's the topmost popup, otherwise `false`.
+     */
+    bool isTopmostPopup() const;
+
 ///@}
 
 /// @name Virtual Methods
@@ -138,7 +150,7 @@ public:
      * #### Default implementation
      * @snippet LPopupRoleDefault.cpp grabSeatRequest
      */
-    virtual void grabSeatRequest(Wayland::GSeat *seatGlobal);
+    virtual void grabSeatRequest(Protocols::Wayland::GSeat *seatGlobal);
 
     /*!
      * @brief Configuration request.
@@ -156,7 +168,9 @@ public:
 
     LPRIVATE_IMP(LPopupRole)
 
+    /// @cond OMIT
     void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
+    /// @endcond
 };
 
 #endif // LPOPUPROLE_H

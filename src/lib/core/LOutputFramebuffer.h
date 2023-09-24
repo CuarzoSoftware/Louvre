@@ -3,6 +3,11 @@
 
 #include <LFramebuffer.h>
 
+/**
+ * @brief Output Framebuffer
+ *
+ * @note This class is primarily used internally by Louvre and may have limited utility for library users.
+ */
 class Louvre::LOutputFramebuffer : public LFramebuffer
 {
 public:

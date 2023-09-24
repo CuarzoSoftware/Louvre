@@ -5,10 +5,11 @@
 
 /*!
  * @brief Subsurface role for surfaces
- * 
- * The LSubsurfaceRole class is a role for surfaces that allows them to be positioned relatively to their parents.\n
- * Subsurfaces are always children of other surfaces.\n
- * Their position is given by that of their parent plus the offset given by localPos().\n
+ *
+ * The LSubsurfaceRole class defines a role for surfaces that allows them to be positioned relative to their parent surfaces.
+ * They are always children of other surfaces and get their position based on their parent's position plus an offset defined by the localPos() function.
+ *
+ * The Subsurface role is part of the [Wayland protocol](https://wayland.app/protocols/wayland#wl_subsurface).
  *
  * @section Modes
  *
@@ -25,7 +26,7 @@
  * In this mode, subsurface changes are applied independently of the commits of its parent.\n
  * This mode is useful for example to perform efficient composition in video players where the user interface is independent
  * of the rect where the video is displayed.\n
- * The Subsurface role is part of the [Wayland protocol](https://wayland.app/protocols/wayland#wl_subsurface).
+ *
  */
 class Louvre::LSubsurfaceRole : public LBaseSurfaceRole
 {
@@ -47,13 +48,15 @@ public:
      */
     virtual ~LSubsurfaceRole();
 
+    /// @cond OMIT
     LSubsurfaceRole(const LSubsurfaceRole&) = delete;
     LSubsurfaceRole& operator= (const LSubsurfaceRole&) = delete;
+    /// @endcond
 
     /*!
      * @brief Current mode.
      *
-     * @returns true if in synchronous mode, false otherwise.
+     * @returns `true` if in synchronous mode, `false` otherwise.
      */
     bool isSynced() const;
 
@@ -103,32 +106,36 @@ public:
      * @brief Place above.
      *
      * Reimplement this virtual method if you want to be notified when the sub-surface is placed above the **sibling** surface.\n
-     * The library automatically maintains the hierarchical order in the list of surfaces of the compositor (LCompositor::surfaces()).
+     *
+     * @note The library automatically maintains the hierarchical order in the list of surfaces of the compositor (LCompositor::surfaces()).
      *
      * #### Default Implementation
      * @snippet LSubsurfaceRoleDefault.cpp placedAbove
      */
-    virtual void placedAbove(LSurface *sibiling);
+    virtual void placedAbove(LSurface *sibling);
 
     /*!
      * @brief Place below.
      *
      * Reimplement this virtual method if you want to be notified when the subsurface is placed below the **sibling** surface.\n
-     * The library automatically maintains the hierarchical order in the list of surfaces of the compositor (LCompositor::surfaces()).
+     *
+     * @note The library automatically maintains the hierarchical order in the list of surfaces of the compositor (LCompositor::surfaces()).
      *
      * ### Default Implementation
      * @snippet LSubsurfaceRoleDefault.cpp placedAbove
      */
-    virtual void placedBelow(LSurface *sibiling);
+    virtual void placedBelow(LSurface *sibling);
 /// @}
 
     LPRIVATE_IMP(LSubsurfaceRole)
 
+    /// @cond OMIT
     bool acceptCommitRequest(Protocols::Wayland::RSurface::CommitOrigin origin) override;
     void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
     void handleParentCommit() override;
     void handleParentChange() override;
     void handleParentMappingChange() override;
+    /// @endcond
 };
 
 #endif // LSUBSURFACEROLE_H

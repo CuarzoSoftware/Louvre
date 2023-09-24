@@ -34,8 +34,10 @@ public:
      */
     virtual ~LDNDIconRole();
 
+    /// @cond OMIT
     LDNDIconRole(const LDNDIconRole&) = delete;
     LDNDIconRole& operator= (const LDNDIconRole&) = delete;
+    /// @endcond
 
     /*!
      * @brief Notify a hotspot change.
@@ -71,8 +73,10 @@ public:
 
     LPRIVATE_IMP(LDNDIconRole)
 
+    /// @cond OMIT
     virtual void handleSurfaceOffset(Int32 x, Int32 y) override;
     virtual void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
+    /// @endcond
 };
 
 #endif // LDNDICONROLE_H

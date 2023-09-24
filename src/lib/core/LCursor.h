@@ -9,8 +9,8 @@
 /*!
  * @brief Utility class for rendering cursors.
  *
- * The LCursor class is designed to make cursor rendering easier and take advantage of compositing properties of 
- * certain graphics backends to improve performance.\n
+ * The LCursor class is designed to make cursor rendering easier and take advantage of compositing properties of
+ * certain graphical backends to improve performance.\n
  *
  * The cursor must always be part of at least one output. To select the current output the setOutput() method must be used.\n
  *
@@ -28,8 +28,10 @@ class Louvre::LCursor : public LObject
 {
 public:
 
+    /// @cond OMIT
     LCursor(const LCursor&) = delete;
     LCursor& operator= (const LCursor&) = delete;
+    /// @endcond
 
     /*!
      * @brief Sets the library's default cursor.
@@ -177,6 +179,7 @@ public:
 
     LPRIVATE_IMP(LCursor)
 
+    /// @cond OMIT
     friend class Louvre::LCompositor;
     friend class Louvre::LOutput;
 
@@ -190,6 +193,7 @@ public:
      * @brief Desctructor of the LCursor class.
      */
     ~LCursor();
+    /// @endcond
 };
 
 #endif // LCURSOR_H

@@ -20,7 +20,7 @@ bool LPopupRole::isTopmostPopup() const
     if (!surface())
         return false;
 
-    list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();
+    std::list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();
     for (; s!= compositor()->surfaces().rend(); s++)
         if ((*s)->popup() && (*s)->client() == surface()->client())
                 return (*s)->popup() == this;
@@ -57,7 +57,7 @@ void LPopupRole::configure(const LRect &rect) const
 
 void LPopupRole::sendPopupDoneEvent()
 {
-    list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();
+    std::list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();
     for (; s!= compositor()->surfaces().rend(); s++)
     {
         if ((*s)->popup() && (*s)->client() == surface()->client())

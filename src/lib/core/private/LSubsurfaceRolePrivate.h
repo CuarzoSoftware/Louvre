@@ -3,6 +3,8 @@
 
 #include <LSubsurfaceRole.h>
 
+using namespace Louvre;
+
 struct LSubsurfaceRole::Params
 {
     LResource *subsurface;

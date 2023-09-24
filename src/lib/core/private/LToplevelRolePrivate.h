@@ -3,6 +3,7 @@
 
 #include <LToplevelRole.h>
 
+using namespace Louvre;
 using namespace Louvre::Protocols::XdgDecoration;
 
 struct LToplevelRole::Params
@@ -41,7 +42,7 @@ LPRIVATE_CLASS(LToplevelRole)
     DecorationMode decorationMode                                   = ClientSide;
     UInt32 pendingDecorationMode                                    = ClientSide;
     UInt32 lastDecorationModeConfigureSerial                        = 0;
-    UInt32 preferredDecorationMode                                  = 0;
+    LToplevelRole::DecorationMode preferredDecorationMode           = NoPreferredMode;
 
     void applyPendingChanges();
 };

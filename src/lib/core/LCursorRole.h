@@ -3,8 +3,6 @@
 
 #include <LBaseSurfaceRole.h>
 
-using namespace Protocols;
-
 /*!
  * @brief Cursor role for surfaces
  *
@@ -30,8 +28,10 @@ public:
      */
     virtual ~LCursorRole();
 
+    /// @cond OMIT
     LCursorRole(const LCursorRole&) = delete;
     LCursorRole& operator= (const LCursorRole&) = delete;
+    /// @endcond
 
     /*!
      * @brief Position of the surface given the role.
@@ -68,8 +68,10 @@ public:
 
     LPRIVATE_IMP(LCursorRole)
 
-    virtual void handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin) override;
+    /// @cond OMIT
+    virtual void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
     virtual void handleSurfaceOffset(Int32 x, Int32 y) override;
+    /// @endcond
 };
 
 #endif // LCURSORROLE_H

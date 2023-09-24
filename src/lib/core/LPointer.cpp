@@ -262,8 +262,8 @@ void LPointer::setDraggingSurface(LSurface *surface)
 }
 
 void LPointer::dismissPopups()
-{    
-    list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();
+{
+    std::list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();
     for (; s!= compositor()->surfaces().rend(); s++)
     {
         if ((*s)->popup())
@@ -379,7 +379,7 @@ void LPointer::sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int3
 
 LSurface *LPointer::surfaceAt(const LPoint &point)
 {
-    for (list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin(); s != compositor()->surfaces().rend(); s++)
+    for (std::list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin(); s != compositor()->surfaces().rend(); s++)
         if ((*s)->mapped() && !(*s)->minimized())
             if ((*s)->inputRegion().containsPoint(point - (*s)->rolePos()))
                 return *s;

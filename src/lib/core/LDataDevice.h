@@ -21,8 +21,10 @@ class Louvre::LDataDevice : public LObject
 {
 public:
 
+    /// @cond OMIT
     LDataDevice(const LDataDevice&) = delete;
     LDataDevice& operator= (const LDataDevice&) = delete;
+    /// @endcond
 
     /*!
      * @brief Notifies the clipboard characteristics to a client.
@@ -39,9 +41,11 @@ public:
 
     LPRIVATE_IMP(LDataDevice)
 
+    /// @cond OMIT
     friend class Louvre::LClient;
     LDataDevice();
     ~LDataDevice();
+    /// @endcond
 };
 
 #endif // LDATADEVICE_H

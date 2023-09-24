@@ -7,18 +7,21 @@
 /*!
  * @brief Renderer painting functions
  *
- * The LPainter class offers basic functions for 2D rendering without the need to use OpenGL directly. It can draw texture rects or solid colors, clear the screen and set the viewport.\n
+ * The LPainter class offers basic functions for 2D rendering without the need to use OpenGL functions directly. It can draw texture rects or solid colors, clear the screen and set the viewport.\n
  * Its goal is to abstract the rendering API, allowing for portable compositors, independent of the renderer used.\n
  * Currently, the library only offers the OpenGL ES 2.0 renderer, but in the future others such as Vulkan, Pixman, etc. could be incorporated.\n
  * Each LOutput has its own LPainter, which can be accessed from LOutput::painter().\n
  *
- * @note It is not mandatory to use LPainter functions for rendering, the library allows the developer to use OpenGL functions directly if desired.
+ * @note It is not mandatory to use LPainter functions for rendering, you can use OpenGL functions and your own shaders if desired.
  */
 class Louvre::LPainter : LObject
 {
 public:
+    /// @cond OMIT
     LPainter(const LPainter&) = delete;
     LPainter& operator= (const LPainter&) = delete;
+    /// @endcond
+
     /**
      * @brief Binds the specified framebuffer for rendering.
      *
@@ -40,7 +43,9 @@ public:
     /*!
      * @brief Draws a texture.
      *
-     * Draws a rectangle or sub-rectangle of a texture on the screen.
+     * Draws a texture or sub-rect of a texture on the screen.
+     *
+     * @note Using 1 as the `srcScale` allows you to define the `src` rect in buffer coordinates.
      *
      * @param texture Texture to draw.
      * @param src The portion of the texture to draw (specified in surface coordinates).
@@ -55,6 +60,8 @@ public:
      * @brief Draws a texture.
      *
      * Draws a portion of a texture onto the screen at a specific position and size.
+     *
+     * @note Using 1 as the `srcScale` allows you to define the source rect in buffer coordinates.
      *
      * @param texture Texture to draw.
      * @param srcX X-coordinate of the source rectangle.
@@ -79,6 +86,8 @@ public:
      * This function draws a rectangle or sub-rectangle of a texture on the screen, while maintaining its alpha channel,
      * and replaces the original color with a solid color specified by the user.
      *
+     * @note Using 1 as the `srcScale` allows you to define the `src` rect in buffer coordinates.
+     *
      * @param texture A pointer to the texture to be drawn.
      * @param color The solid color (LRGBF format) that will replace the original texture color.
      * @param src The source rectangle within the texture that defines the region to be drawn.
@@ -95,6 +104,8 @@ public:
      * This function draws a rectangle or sub-rectangle of a texture on the screen, while maintaining its alpha channel,
      * and replaces the original color with a solid color specified by the user. It also provides support for HiDPI scaling,
      * allowing the user to control the scaling of the source rectangle when rendering on HiDPI (High-DPI) buffers.
+     *
+     * @note Using 1 as the `srcScale` allows you to define the source rect in buffer coordinates.
      *
      * @param texture A pointer to the texture to be drawn.
      * @param r The red component of the solid color (0.0 to 1.0).
@@ -149,12 +160,16 @@ public:
     /*!
      * @brief Sets the viewport.
      *
+     * @note This function should only be used if you are working with your own shaders/programs.
+     *
      * @param rect Viewport rectangle specified in compositor coordinates.
      */
     void setViewport(const LRect &rect);
 
     /*!
      * @brief Sets the viewport.
+     *
+     * @note This function should only be used if you are working with your own shaders/programs.
      *
      * @param x X-coordinate of the viewport rectangle.
      * @param y Y-coordinate of the viewport rectangle.
@@ -191,10 +206,12 @@ public:
 
     LPRIVATE_IMP(LPainter)
 
+    /// @cond OMIT
     friend class LCompositor;
     friend class LOutput;
     LPainter();
     ~LPainter();
+    /// @endcond
 };
 
 #endif // LPAINTER_H

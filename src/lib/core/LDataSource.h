@@ -30,8 +30,10 @@ public:
         char *mimeType;
     };
 
+    /// @cond OMIT
     LDataSource(const LDataSource&) = delete;
     LDataSource& operator= (const LDataSource&) = delete;
+    /// @endcond
 
     /*!
      * @brief Client owner of the data source.

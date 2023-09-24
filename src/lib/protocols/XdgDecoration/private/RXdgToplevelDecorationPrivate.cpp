@@ -34,7 +34,7 @@ void RXdgToplevelDecoration::RXdgToplevelDecorationPrivate::set_mode(wl_client *
 
     if (rXdgToplevelDecoration->toplevelRole()->preferredDecorationMode() != mode)
     {
-        rXdgToplevelDecoration->toplevelRole()->imp()->preferredDecorationMode = mode;
+        rXdgToplevelDecoration->toplevelRole()->imp()->preferredDecorationMode = (LToplevelRole::DecorationMode)mode;
         rXdgToplevelDecoration->toplevelRole()->preferredDecorationModeChanged();
     }
 }
@@ -50,7 +50,7 @@ void RXdgToplevelDecoration::RXdgToplevelDecorationPrivate::unset_mode(wl_client
 
     if (rXdgToplevelDecoration->toplevelRole()->preferredDecorationMode() != 0)
     {
-        rXdgToplevelDecoration->toplevelRole()->imp()->preferredDecorationMode = 0;
+        rXdgToplevelDecoration->toplevelRole()->imp()->preferredDecorationMode = LToplevelRole::NoPreferredMode;
         rXdgToplevelDecoration->toplevelRole()->preferredDecorationModeChanged();
     }
 }

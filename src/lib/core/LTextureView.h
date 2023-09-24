@@ -20,8 +20,10 @@
 class Louvre::LTextureView : public LView
 {
 public:
+    /// @cond OMIT
     LTextureView(const LTextureView&) = delete;
     LTextureView& operator= (const LTextureView&) = delete;
+    /// @endcond
 
     /**
      * @brief Construct an LTextureView with an optional LTexture and parent LView.

@@ -6,11 +6,18 @@
 /*!
  * @brief Container of views
  *
- * The LLayerView serves as a non-renderable LView. Unlike other views, it doesn't have content to render on its own. Instead, it functions as a versatile container for other views, allowing you to stack a group of views together or apply clipping to them.
+ * The LLayerView is a non-renderable LView. Unlike other views, it doesn't have content to render on its own.
+ * Instead, it functions as a container for other views, allowing you to stack a group of views together or apply clipping to them.
  */
 class Louvre::LLayerView : public LView
 {
 public:
+
+    /// @cond OMIT
+    LLayerView(const LLayerView&) = delete;
+    LLayerView& operator= (const LLayerView&) = delete;
+    /// @endcond
+
     /*!
      * @brief Constructor for LLayerView.
      *

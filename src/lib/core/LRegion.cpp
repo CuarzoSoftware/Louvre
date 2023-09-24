@@ -187,7 +187,7 @@ const LBox &LRegion::extents() const
     return *(LBox*)pixman_region32_extents((pixman_region32_t*)m_region);
 }
 
-const vector<LRect> &LRegion::rects() const
+const std::vector<LRect> &LRegion::rects() const
 {
     if (m_changed)
     {

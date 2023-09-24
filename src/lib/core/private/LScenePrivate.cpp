@@ -12,7 +12,7 @@ LView *LScene::LScenePrivate::viewAt(LView *view, const LPoint &pos)
 {
     LView *v = nullptr;
 
-    for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
+    for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
     {
         v = viewAt(*it, pos);
 
@@ -152,7 +152,7 @@ bool LScene::LScenePrivate::handlePointerMove(LView *view, const LPoint &pos, LV
         return false;
     }
 
-    for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
+    for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
         if (!handlePointerMove(*it, pos, firstViewFound))
             return false;
 
@@ -216,7 +216,7 @@ bool LScene::LScenePrivate::handlePointerButton(LView *view, LPointer::Button bu
         return false;
     }
 
-    for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
+    for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
         if (!handlePointerButton(*it, button, state))
             return false;
 
@@ -241,7 +241,7 @@ bool LScene::LScenePrivate::handlePointerAxisEvent(LView *view, Float64 axisX, F
         return false;
     }
 
-    for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
+    for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
         if (!handlePointerAxisEvent(*it, axisX, axisY, discreteX, discreteY, source))
             return false;
 
@@ -266,7 +266,7 @@ bool LScene::LScenePrivate::handleKeyModifiersEvent(LView *view, UInt32 depresse
         return false;
     }
 
-    for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
+    for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
         if (!handleKeyModifiersEvent(*it, depressed, latched, locked, group))
             return false;
 
@@ -290,7 +290,7 @@ bool LScene::LScenePrivate::handleKeyEvent(LView *view, UInt32 keyCode, UInt32 k
         return false;
     }
 
-    for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
+    for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
         if (!handleKeyEvent(*it, keyCode, keyState))
             return false;
 

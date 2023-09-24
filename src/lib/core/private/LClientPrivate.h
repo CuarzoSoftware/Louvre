@@ -4,6 +4,7 @@
 #include <LClient.h>
 #include <LDataDevice.h>
 
+using namespace Louvre;
 using namespace Louvre::Protocols;
 
 struct LClient::Params

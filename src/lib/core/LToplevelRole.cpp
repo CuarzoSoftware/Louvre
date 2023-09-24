@@ -92,7 +92,7 @@ LToplevelRole::DecorationMode LToplevelRole::decorationMode() const
     return imp()->decorationMode;
 }
 
-UInt32 LToplevelRole::preferredDecorationMode() const
+LToplevelRole::DecorationMode LToplevelRole::preferredDecorationMode() const
 {
     return imp()->preferredDecorationMode;
 }
@@ -449,6 +449,8 @@ void LToplevelRole::LToplevelRolePrivate::applyPendingChanges()
         UInt32 prevState = stateFlags;
         stateFlags = currentConf.flags;
 
+        if (prevState != currentConf.flags)
+            toplevel->statesChanged();
         if ((prevState & LToplevelRole::Maximized) != (currentConf.flags & LToplevelRole::Maximized))
             toplevel->maximizedChanged();
         if ((prevState & LToplevelRole::Fullscreen) != (currentConf.flags & LToplevelRole::Fullscreen))
@@ -457,9 +459,7 @@ void LToplevelRole::LToplevelRolePrivate::applyPendingChanges()
         if (currentConf.flags & LToplevelRole::Activated)
         {
             if (seat()->activeToplevel() && seat()->activeToplevel() != toplevel)
-            {
                 seat()->activeToplevel()->configure(seat()->activeToplevel()->states() & ~LToplevelRole::Activated);
-            }
 
             seat()->imp()->activeToplevel = toplevel;
         }

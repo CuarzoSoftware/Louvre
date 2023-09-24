@@ -75,8 +75,10 @@ public:
      */
     using Callback = std::function<void(LAnimation*)>;
 
+    /// @cond OMIT
     LAnimation(const LAnimation&) = delete;
     LAnimation& operator= (const LAnimation&) = delete;
+    /// @endcond
 
     /*!
      * @brief Creates and launches a one-time animation with automatic cleanup.
@@ -170,9 +172,11 @@ public:
     void destroy();
 
 LPRIVATE_IMP(LAnimation)
+    /// @cond OMIT
     friend class Louvre::LCompositor::LCompositorPrivate;
     LAnimation();
     ~LAnimation();
+    /// @endcond
 };
 
 #endif // LANIMATION_H

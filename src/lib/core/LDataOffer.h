@@ -33,8 +33,10 @@ public:
         DND = 2
     };
 
+    /// @cond OMIT
     LDataOffer(const LDataOffer&) = delete;
     LDataOffer& operator= (const LDataOffer&) = delete;
+    /// @endcond
 
     /*!
      * @brief Usage of a data offer.
@@ -53,9 +55,11 @@ public:
 
     LPRIVATE_IMP(LDataOffer)
 
+    /// @cond OMIT
     friend class Protocols::Wayland::RDataOffer;
     LDataOffer(Protocols::Wayland::RDataOffer *dataOfferResource);
     ~LDataOffer();
+    /// @endcond
 };
 
 #endif // LDATAOFFER_H

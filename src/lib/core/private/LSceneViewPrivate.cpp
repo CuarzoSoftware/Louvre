@@ -33,7 +33,7 @@ void LSceneView::LSceneViewPrivate::checkRectChange(ThreadData *oD)
 void LSceneView::LSceneViewPrivate::cachePass(LView *view, ThreadData *oD)
 {
     if (view->type() != Scene)
-        for (list<LView*>::const_iterator it = view->children().cbegin(); it != view->children().cend(); it++)
+        for (std::list<LView*>::const_iterator it = view->children().cbegin(); it != view->children().cend(); it++)
             cachePass(*it, oD);
 
     // Quick view cache handle to reduce verbosity
@@ -72,7 +72,7 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
     }
     else
     {
-        for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
+        for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
             calcNewDamage(*it, oD);
     }
 
@@ -89,7 +89,7 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
         vRegion.clip(LRect(view->parent()->pos(),view->parent()->size()));
 
     // Update view intersected outputs
-    for (list<LOutput*>::const_iterator it = compositor()->outputs().cbegin(); it != compositor()->outputs().cend(); it++)
+    for (std::list<LOutput*>::const_iterator it = compositor()->outputs().cbegin(); it != compositor()->outputs().cend(); it++)
     {
         LRegion r = vRegion;
         r.clip((*it)->rect());
@@ -242,7 +242,7 @@ void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view, ThreadData *oD
 {
     // Children first
     if (view->type() != Scene)
-        for (list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
+        for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
             drawOpaqueDamage(*it, oD);
 
     LView::LViewPrivate::ViewCache *cache = &view->imp()->cache;
@@ -390,7 +390,7 @@ void LSceneView::LSceneViewPrivate::drawTranslucentDamage(LView *view, ThreadDat
 
     drawChildrenOnly:
     if (view->type() != Scene)
-        for (list<LView*>::const_iterator it = view->children().cbegin(); it != view->children().cend(); it++)
+        for (std::list<LView*>::const_iterator it = view->children().cbegin(); it != view->children().cend(); it++)
             drawTranslucentDamage(*it, oD);
 }
 

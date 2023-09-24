@@ -89,8 +89,10 @@ public:
      */
     LScene();
 
+    /// @cond OMIT
     LScene(const LScene&) = delete;
     LScene& operator= (const LScene&) = delete;
+    /// @endcond
 
     /**
      * @brief Destructor for LScene.

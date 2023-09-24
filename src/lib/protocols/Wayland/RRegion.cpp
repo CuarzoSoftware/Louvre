@@ -5,6 +5,7 @@
 #include <LRegion.h>
 #include <stdio.h>
 
+using namespace Louvre;
 using namespace Louvre::Protocols::Wayland;
 
 struct wl_region_interface region_implementation =

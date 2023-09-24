@@ -16,8 +16,8 @@
 /*!
  * @brief Louvre's primary class and resource factory.
  *
- * The LCompositor class initializes Louvre's Wayland event loop and backend systems.
- * After calling start(), the initialized() virtual method is called to indicate successful initialization.
+ * The LCompositor class initializes Louvre's Wayland event loop and backend systems.\n
+ * After calling start(), the initialized() virtual method is invoked to indicate successful initialization.
  * Any initial setup should be done there or later to prevent issues.
  *
  * LCompositor also follows the factory design pattern, using virtual methods as constructors and destructors for various library classes.
@@ -59,17 +59,19 @@ public:
     };
 
     /*!
-     * Constructor of the LCompositor class.
+     * @brief Constructor of the LCompositor class.
      */
     LCompositor();
 
     /*!
-     * Destructor of the LCompositor class.
+     * @brief Destructor of the LCompositor class.
      */
     virtual ~LCompositor();
 
+    /// @cond OMIT
     LCompositor(const LCompositor&) = delete;
     LCompositor& operator= (const LCompositor&) = delete;
+    /// @endcond
 
     /*!
      * @brief Get the static LCompositor instance.
@@ -277,7 +279,7 @@ public:
      * @brief Virtual constructor for creating LToplevelRole instances when a client creates a Toplevel role for a surface.
      *
      * This method is called when a client creates a Toplevel role for a surface.
-     * The LToplevelRole class provides virtual methods to notify changes in geometry, state (maximized, minimized, etc.),
+     * The LToplevelRole class provides virtual methods to notify changes in geometry, state (activated, maximized, fullscreen, etc.),
      * the start of interactive moving and resizing sessions, and more.
      *
      * @param params Internal Louvre parameters for creating the Toplevel role.
@@ -425,6 +427,18 @@ public:
      * @snippet LCompositorDefault.cpp destroyPopupRoleRequest
      */
     virtual void destroyPopupRoleRequest(LPopupRole *popup);
+
+    /*!
+     * @brief Virtual destructor for the LSubsurfaceRole class.
+     *
+     * This method is called when a client requests to destroy the Subsurface role of one of its surfaces.
+     *
+     * @param subsurface The LSubsurfaceRole instance to be destroyed.
+     *
+     * @par Default Implementation
+     * @snippet LCompositorDefault.cpp destroySubsurfaceRoleRequest
+     */
+    virtual void destroySubsurfaceRoleRequest(LSubsurfaceRole *subsurface);
 
     /*!
      * @brief Virtual destructor for the LCursorRole class.
@@ -581,7 +595,7 @@ public:
      *
      * @return A list of LSurface objects representing the surfaces.
      */
-    const list<LSurface*> &surfaces() const;
+    const std::list<LSurface*> &surfaces() const;
 
     /*!
      * @brief Get a list of all initialized outputs.
@@ -592,7 +606,7 @@ public:
      *
      * @return A list of LOutput objects representing the initialized outputs.
      */
-    const list<LOutput*>& outputs() const;
+    const std::list<LOutput*>& outputs() const;
 
     /*!
      * @brief Get a list of clients connected to the compositor.
@@ -601,7 +615,7 @@ public:
      *
      * @return A list of LClient objects representing the connected clients.
      */
-    const list<LClient*>& clients() const;
+    const std::list<LClient*>& clients() const;
 
     /*!
      * @brief Get the next positive integer number in sequence.
@@ -652,7 +666,7 @@ public:
      *
      * @return The identifier of the main thread.
      */
-    thread::id mainThreadId() const;
+    std::thread::id mainThreadId() const;
 
     LPRIVATE_IMP(LCompositor)
 };

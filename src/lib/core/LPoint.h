@@ -3,14 +3,12 @@
 
 #include <LNamespaces.h>
 
-using namespace Louvre;
-
 /*!
  * @brief Template for 2D vectors
  *
  * The LPointTemplate class is a template for creating two-dimensional vectors.\n
- * The library uses this template to generate the classes Louvre::LPoint and Louvre::LSize, which work with
- * 32-bit integers, and Louvre::LPointF and Louvre::LSizeF, which work with 32-bit floating-point numbers.
+ * The library uses this template to generate the LPoint and LSize classes, which work with
+ * 32-bit integers, and LPointF and LSizeF, which work with 32-bit floating-point numbers.
  */
 template <class TA, class TB>
 class Louvre::LPointTemplate
@@ -309,42 +307,42 @@ private:
     TA m_y = 0;
 };
 
-inline LPoint operator+(Int32 i, LPoint p)
+inline Louvre::LPoint operator+(Louvre::Int32 i, Louvre::LPoint p)
 {
     p.setX(p.x()+i);
     p.setY(p.y()+i);
     return p;
 }
 
-inline LPoint operator-(Int32 i, LPoint p)
+inline Louvre::LPoint operator-(Louvre::Int32 i, Louvre::LPoint p)
 {
     p.setX(p.x()-i);
     p.setY(p.y()-i);
     return p;
 }
 
-inline LPoint operator*(Int32 i, LPoint p)
+inline Louvre::LPoint operator*(Louvre::Int32 i, Louvre::LPoint p)
 {
     p.setX(p.x()*i);
     p.setY(p.y()*i);
     return p;
 }
 
-inline LPointF operator+(Int32 i, LPointF p)
+inline Louvre::LPointF operator+(Louvre::Int32 i, Louvre::LPointF p)
 {
     p.setX(p.x()+i);
     p.setY(p.y()+i);
     return p;
 }
 
-inline LPointF operator-(Int32 i, LPointF p)
+inline Louvre::LPointF operator-(Louvre::Int32 i, Louvre::LPointF p)
 {
     p.setX(p.x()-i);
     p.setY(p.y()-i);
     return p;
 }
 
-inline LPointF operator*(Int32 i, LPointF p)
+inline Louvre::LPointF operator*(Louvre::Int32 i, Louvre::LPointF p)
 {
     p.setX(p.x()*i);
     p.setY(p.y()*i);

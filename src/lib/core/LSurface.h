@@ -9,8 +9,6 @@
 #include <list>
 #include <mutex>
 
-using namespace std;
-
 /*!
  * @brief A client "Window"
  *
@@ -41,8 +39,8 @@ using namespace std;
  * @section Mapping
  *
  * In order to render a surface, several conditions must be met, such as having an assigned role and a non-null buffer.\n
- * To determine if a surface is renderable, you can use the mapped() property. 
- * This property is false when the client wants to hide it through some rule of its role, or when 
+ * To determine if a surface is renderable, you can use the mapped() property.
+ * This property is `false` when the client wants to hide it through some rule of its role, or when
  * the necessary conditions for it to be rendered are not met.\n
  *
  * @section Callbacks
@@ -63,7 +61,7 @@ using namespace std;
  * @section Damage
  *
  * To avoid the compositor redrawing the entire area of a surface on each frame, clients notify which regions have changed on their
- * buffers, known as damage. You can access this region with damage() or damageB() and be notified when it changes with damaged().\n
+ * buffers, known as damage. You can access this region with damage() or damageB() and be notified when it changes with the damaged() event.\n
  * The default implementation of LOutput::paintGL() does not take into account the damage of surfaces, and therefore it renders in an inefficient way.
  * If you want to see an example of efficient rendering, check the **louvre-views** or **louvre-weston-clone** examples.
  *
@@ -73,9 +71,9 @@ using namespace std;
  * This list maintains the order of the surfaces on the Z-axis defined by the protocols of their roles. Nevertheless, it is possible to reorder the surfaces respecting these hierarchies with the raise() method.\n
  * The surfaces are rendered by default following the order of the list, so the first ones are located in the background and the last ones in the front.\n
  * If you want to use your own list, you can make use of the virtual constructor and destructor of LSurface (LCompositor::createSurfaceRequest() and LCompositor::destroySurfaceRequest() respectively)
- * to listen when clients create or delete a surface.\n
+ * to listen when clients create or destroys a surface.\n
  *
- * @warning If you want to use your own list of surfaces, you should keep in mind that some roles require a specific order to be able to function, so you may need to study the rules of their protocols.
+ * @note If you want to use your own list of surfaces, you should keep in mind that some roles require a specific order to be able to function, so you may need to study the rules of their protocols.
  *
  * @section Position
  *
@@ -122,49 +120,49 @@ public:
     /*!
      * @brief ID of the role
      *
-     * @returns The ID of the surface's role or Role::Undefined if it does not have a role.
+     * @returns The ID of the surface's role or LSurface::Undefined if it does not have a role.
      */
     Role roleId() const;
 
     /*!
      * @brief Surface role
      *
-     * @returns A pointer to the surface's role or nullptr if it does not have a role.
+     * @returns A pointer to the surface's role or `nullptr` if it does not have a role.
      */
     LBaseSurfaceRole *role() const;
 
     /*!
      * @brief Cursor role
      *
-     * @returns A pointer to an instance of LCursorRole or nullptr if it has a different role.
+     * @returns A pointer to an instance of LCursorRole or `nullptr` if it has a different role.
      */
     LCursorRole *cursorRole() const;
 
     /*!
      * @brief Drag & Drop icon role
      *
-     * @returns A pointer to an instance of LDNDIconRole or nullptr if it has a different role.
+     * @returns A pointer to an instance of LDNDIconRole or `nullptr` if it has a different role.
      */
     LDNDIconRole *dndIcon() const;
 
     /*!
      * @brief Toplevel role
      *
-     * @returns A pointer to an instance of LToplevelRole or nullptr if it has a different role.
+     * @returns A pointer to an instance of LToplevelRole or `nullptr` if it has a different role.
      */
     LToplevelRole *toplevel() const;
 
     /*!
      * @brief Popup role
      *
-     * @returns A pointer to an instance of LPopupRole or nullptr if it has a different role.
+     * @returns A pointer to an instance of LPopupRole or `nullptr` if it has a different role.
      */
     LPopupRole *popup() const;
 
     /*!
      * @brief Subsurface role
      *
-     * @returns A pointer to an instance of LSubsurfaceRole or nullptr if it has a different role.
+     * @returns A pointer to an instance of LSubsurfaceRole or `nullptr` if it has a different role.
      */
     LSubsurfaceRole *subsurface() const;
 
@@ -182,8 +180,10 @@ public:
      */
     virtual ~LSurface();
 
+    /// @cond OMIT
     LSurface(const LSurface&) = delete;
     LSurface& operator= (const LSurface&) = delete;
+    /// @endcond
 
     /*!
      * @brief Position given by the compositor.
@@ -292,7 +292,7 @@ public:
      *
      * List of outputs in which the surface is visible, modifiable with the sendOutputEnterEvent() and sendOutputLeaveEvent() methods.
      */
-    const list<LOutput*>&outputs() const;
+    const std::list<LOutput*>&outputs() const;
 
     /*!
      * @brief Repaints the intersected outputs
@@ -306,7 +306,7 @@ public:
      *
      * Stores the minimized state of the surface set with setMinimized().
      *
-     * @returns true if the surface is minimized and false otherwise.
+     * @returns `true` if the surface is minimized and `false` otherwise.
      */
     bool minimized() const;
 
@@ -320,14 +320,14 @@ public:
     /*!
      * @brief Input capability
      *
-     * Indicates whether the surface is able to receive input.
+     * Indicates whether the surface is able to receive pointer or touch input events.
      */
     bool receiveInput() const;
 
     /*!
      * @brief Buffer scale
      *
-     * Scale of the surface buffer. You can listen for changes to this property with scaleChanged().
+     * Scale of the surface buffer. You can listen for changes to this property with the bufferScaleChanged() event.
      */
     Int32 bufferScale() const;
 
@@ -336,14 +336,14 @@ public:
      *
      * Representation of the surface's buffer as an OpenGL texture.\n
      *
-     * @warning It could return nullptr if the surface is not currently mapped.
+     * @warning It could return `nullptr` if the surface is not currently mapped.
      */
     LTexture *texture() const;
 
     /*!
      * @brief Native wl_buffer handle
      *
-     * Handle to the Wayland buffer of the surface.
+     * Handle to the last commited Wayland buffer of the surface.
      */
     wl_buffer *buffer() const;
 
@@ -356,7 +356,7 @@ public:
     bool hasDamage() const;
 
     /*!
-     * @brief Get the ID that increments with each commit and new damage addition.
+     * @brief Get an ID that increments with each commit and new damage addition.
      *
      * The ID increments every time the surface is committed and new damage is added.
      *
@@ -365,10 +365,10 @@ public:
     UInt32 damageId() const;
 
     /*!
-     * @brief Returns the rendering callback
+     * @brief ACK the frame callback
      *
      * Notifies the surface that it's time for it to draw its next frame.\n
-     * If not called, the given surface will not update its content.
+     * If not called, the given surface should not update its content.
      *
      * @warning This method clears the current damage region of the surface.
      */
@@ -396,14 +396,14 @@ public:
     /*!
      * @brief Parent surface
      *
-     * @returns A pointer to the parent surface or nullptr if it does not have a parent.
+     * @returns A pointer to the parent surface or `nullptr` if it does not have a parent.
      */
     LSurface *parent() const;
 
     /*!
      * @brief Topmost parent of the surface.
      *
-     * @returns A pointer to the topmost parent of the surface, or nullptr if it does not have a parent.
+     * @returns A pointer to the topmost parent of the surface, or `nullptr` if it does not have a parent.
      */
     LSurface *topmostParent() const;
 
@@ -412,15 +412,15 @@ public:
      *
      * List of child surfaces.
      */
-    const list<LSurface*>&children() const;
+    const std::list<LSurface*>&children() const;
 
     /*!
      * @brief Check if the surface is a subchild of a popup.
      *
      * This function determines whether the surface is a subchild of a popup surface.
-     * It returns true if the surface is a subchild of a popup surface in the hierarchy; otherwise, it returns false.
+     * It returns `true` if the surface is a subchild of a popup surface in the hierarchy; otherwise, it returns `false`.
      *
-     * @return True if the surface is a subchild of a popup surface, false otherwise.
+     * @return `true` if the surface is a subchild of a popup surface, `false` otherwise.
      */
     bool isPopupSubchild() const;
 
@@ -428,9 +428,9 @@ public:
      * @brief Check if the surface has a subchild popup.
      *
      * This function checks whether the surface has a subchild popup surface.
-     * It returns true if the surface has a popup subchild; otherwise, it returns false.
+     * It returns `true` if the surface has a popup subchild; otherwise, it returns `false`.
      *
-     * @return True if the surface has a subchild popup, false otherwise.
+     * @return `true` if the surface has a subchild popup, `false` otherwise.
      */
     bool hasPopupSubchild() const;
 
@@ -438,10 +438,9 @@ public:
      * @brief Check if the surface is a subchild of the specified parent surface.
      *
      * This function checks whether the surface is a subchild of the provided parent surface.
-     * It returns true if the surface is indeed a subchild of the specified parent surface; otherwise, it returns false.
      *
      * @param parent A pointer to the potential parent LSurface to check against.
-     * @return True if the surface is a subchild of the provided parent surface, false otherwise.
+     * @return `true` if the surface is a subchild of the provided parent surface, `false` otherwise.
      */
     bool isSubchildOf(LSurface *parent) const;
 
@@ -449,8 +448,8 @@ public:
      * @brief Moves a surface to the top of the compositor's surfaces list
      *
      * This function repositions the specified surface at the end of the surfaces list managed by the compositor.
-     * As a result, the surface will be rendered last in a frame, effectively placing it in front of all other surfaces.
-     * If the surface being raised is a parent of other surfaces, those child surfaces will also be elevated,
+     * As a result, the surface should be rendered last in a frame, effectively placing it in front of all other surfaces.
+     * If the surface being raised is a parent of other surfaces, those child surfaces will also be raised,
      * ensuring that the existing hierarchical order required by certain protocols is maintained.
      */
     void raise();
@@ -459,9 +458,9 @@ public:
      * @brief Retrieve the previous surface in the compositor surfaces list (LCompositor::surfaces()).
      *
      * This function returns a pointer to the surface that precedes the current surface in the compositor's surfaces list.
-     * If the current surface is the first one in the list, the function returns nullptr.
+     * If the current surface is the first one in the list, the function returns `nullptr`.
      *
-     * @return A pointer to the previous LSurface or nullptr if the current surface is the first in the list.
+     * @return A pointer to the previous LSurface or `nullptr` if the current surface is the first in the list.
      */
     LSurface *prevSurface() const;
 
@@ -469,9 +468,9 @@ public:
      * @brief Retrieve the next surface in the compositor surfaces list (LCompositor::surfaces()).
      *
      * This function returns a pointer to the surface that follows the current surface in the compositor's surfaces list.
-     * If the current surface is the last one in the list, the function returns nullptr.
+     * If the current surface is the last one in the list, the function returns `nullptr`.
      *
-     * @return A pointer to the next LSurface or nullptr if the current surface is the last in the list.
+     * @return A pointer to the next LSurface or `nullptr` if the current surface is the last in the list.
      */
     LSurface *nextSurface() const;
 

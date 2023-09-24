@@ -6,6 +6,8 @@
 
 class Output;
 
+using namespace Louvre;
+
 class Topbar : public LLayerView
 {
 public:

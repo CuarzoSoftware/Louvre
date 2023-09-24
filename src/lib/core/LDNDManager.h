@@ -31,8 +31,10 @@ public:
      */
     virtual ~LDNDManager();
 
+    /// @cond OMIT
     LDNDManager(const LDNDManager&) = delete;
     LDNDManager& operator= (const LDNDManager&) = delete;
+    /// @endcond
 
     /*!
      * @brief Action flags for drag & drop sessions.

@@ -9,8 +9,10 @@
 class Louvre::LTime
 {
 public:
+    /// @cond OMIT
     LTime(const LTime&) = delete;
     LTime& operator= (const LTime&) = delete;
+    /// @endcond
 
     /*!
      * @brief Milliseconds
@@ -27,7 +29,9 @@ public:
     static timespec ns();
 
 private:
+    /// @cond OMIT
     LTime() = delete;
+    /// @endcond
 };
 
 #endif // LTIME_H

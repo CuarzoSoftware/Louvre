@@ -24,6 +24,12 @@
 class Louvre::LSurfaceView : public LView
 {
 public:
+
+    /// @cond OMIT
+    LSurfaceView(const LSurfaceView&) = delete;
+    LSurfaceView& operator= (const LSurfaceView&) = delete;
+    /// @endcond
+
     /**
      * @brief LSurfaceView class constructor.
      *

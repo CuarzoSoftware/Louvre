@@ -9,8 +9,8 @@
  *
  * The LPositioner class defines the rules by which a Popup should be positioned relative to the anchor point of its parent.\n
  * Each LPopupRole has its own LPositioner accessible through LPopupRole::positioner().\n
- * The library implements the default LPositioner rules in LPopupRole::rolePos(), therefore this section
- * is for educational purposes only.
+ *
+ * @note The library implements the default LPositioner rules in LPopupRole::rolePos(), therefore this section is for educational purposes only.
  *
  * @section Anchor-Rect
  *
@@ -26,7 +26,7 @@
  * The gravity of the Popup, accessible through gravity(), indicates the direction that the Popup tries to move to.\n
  * You can consider the anchor point as a "nail" and the Popup as a frame composed only of edges. If the gravity is down,
  * the top edge of the Popup will collide with the nail, preventing it from moving further.\n
- * In the following image, a Popup with gravity Gravity::GravityBottomRight and Gravity::GravityTopLeft is shown.\n
+ * In the following image, a Popup with gravity LPositioner::GravityBottomRight and LPositioner::GravityTopLeft is shown.\n
  * 
  * <IMG SRC="https://lh3.googleusercontent.com/92DINcYGHOAothPGrLctUtN7mCKRpqESPh4vRA8XN--IehoprgWKYn74myk1CsjXMR_IcaLM7kJZWny7rvytDRr-nXzljMA-W0LWtQ4neu-HGxpT8V2P0blWg5zYymbGQ8vja5Rx6w=w2400">
  *
@@ -41,8 +41,10 @@
 class Louvre::LPositioner : public LObject
 {
 public:
+    /// @cond OMIT
     LPositioner();
     ~LPositioner();
+    /// @endcond
 
     /// Constraint Adjustments
     typedef UInt32 ConstraintAdjustments;
@@ -170,21 +172,21 @@ public:
     /*!
      * @brief Anchor point
      *
-     * Point on the anchor rectangle defined by Anchor enum.
+     * Point on the anchor rectangle defined by LPositioner::Anchor enum.
      */
     UInt32 anchor() const;
 
     /*!
      * @brief Popup gravity
      *
-     * Direction in which the Popup is trying to move, defined in Gravity.
+     * Direction in which the Popup is trying to move, defined in LPositioner::Gravity.
      */
     UInt32 gravity() const;
 
     /*!
      * @brief Constraint adjustment rules
      *
-     * Flags with the rules to use in case the Popup is restricted, defined in ConstraintAdjustment.
+     * Flags with the rules to use in case the Popup is restricted, defined in LPositioner::ConstraintAdjustment.
      */
     ConstraintAdjustments constraintAdjustment() const;
 

@@ -13,7 +13,7 @@
 
 void LCompositor::LCompositorPrivate::processRemovedGlobals()
 {
-    list<RemovedGlobal*>::iterator it;
+    std::list<RemovedGlobal*>::iterator it;
     for (it = removedGlobals.begin(); it != removedGlobals.end(); it++)
     {
         RemovedGlobal *rg = *it;

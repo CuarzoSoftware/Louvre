@@ -60,7 +60,7 @@ LSeat::~LSeat()
     delete m_imp;
 }
 
-const list<LOutput *> &LSeat::outputs() const
+const std::list<LOutput *> &LSeat::outputs() const
 {
     return *LCompositor::compositor()->imp()->graphicBackend->getConnectedOutputs(LCompositor::compositor());
 }

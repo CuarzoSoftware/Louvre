@@ -134,10 +134,10 @@ void LSceneView::render(const LRegion *exclude)
         oD->prevExternalExclude.clear();
     }
 
-    for (list<LView*>::const_iterator it = children().cbegin(); it != children().cend(); it++)
+    for (std::list<LView*>::const_iterator it = children().cbegin(); it != children().cend(); it++)
         imp()->cachePass(*it, oD);
 
-    for (list<LView*>::const_reverse_iterator it = children().crbegin(); it != children().crend(); it++)
+    for (std::list<LView*>::const_reverse_iterator it = children().crbegin(); it != children().crend(); it++)
         imp()->calcNewDamage(*it, oD);
 
     // Save new damage for next frame and add old damage to current damage
@@ -158,14 +158,14 @@ void LSceneView::render(const LRegion *exclude)
 
     glDisable(GL_BLEND);
 
-    for (list<LView*>::const_reverse_iterator it = children().crbegin(); it != children().crend(); it++)
+    for (std::list<LView*>::const_reverse_iterator it = children().crbegin(); it != children().crend(); it++)
         imp()->drawOpaqueDamage(*it, oD);
 
     imp()->drawBackground(oD, !isLScene() && imp()->clearColor.a >= 1.f);
 
     glEnable(GL_BLEND);
 
-    for (list<LView*>::const_iterator it = children().cbegin(); it != children().cend(); it++)
+    for (std::list<LView*>::const_iterator it = children().cbegin(); it != children().cend(); it++)
         imp()->drawTranslucentDamage(*it, oD);
 
     if (!isLScene())

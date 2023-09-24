@@ -25,6 +25,9 @@ LSubsurfaceRole::~LSubsurfaceRole()
     if (surface())
         surface()->imp()->setMapped(false);
 
+    // Notify
+    compositor()->destroySubsurfaceRoleRequest(this);
+
     delete m_imp;
 }
 

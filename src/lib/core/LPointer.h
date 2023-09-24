@@ -121,8 +121,10 @@ public:
      */
     virtual ~LPointer();
 
+    /// @cond OMIT
     LPointer(const LPointer&) = delete;
     LPointer& operator= (const LPointer&) = delete;
+    /// @endcond
 
     /*!
      * @brief Surface with pointer focus.
@@ -135,9 +137,9 @@ public:
     /*!
      * @brief Look for a surface.
      *
-     * Looks for the first surface that contains the point given by the *point* parameter.\n
-     * To do this, it takes into account the input region of the surfaces (LSurface::inputRegion()) and the order given by the list of surfaces of the compositor (LCompositor::surfaces()).\n
-     * Some surface roles do not have an input region such as the cursor role or drag & drop icon, so these surfaces are ignored.
+     * Looks for the first mapped surface that contains the point given by the `point` parameter.\n
+     * It takes into account the input region of the surfaces (LSurface::inputRegion()) and the order given by the list of surfaces of the compositor (LCompositor::surfaces()).\n
+     * Some surface roles do not have an input region such as LCursorRole or LDNDIconRole so these surfaces are ignored.
      *
      * @param point Point in compositor coordinates.
      * @returns Returns the first surface that contains the point or nullptr if no surface is found.
@@ -154,7 +156,7 @@ public:
      *
      * Assigns the pointer focus to the surface passed in the argument using the cursor position.\n
      * Once assigned, the surface that previously had it loses pointer focus.\n
-     * Passing nullptr as an argument removes pointer focus from all surfaces.
+     * Passing `nullptr` as an argument removes pointer focus from all surfaces.
      */
     void setFocus(LSurface *surface);
 
@@ -162,9 +164,9 @@ public:
      * @brief Assigns the pointer focus.
      *
      * Assigns the pointer focus to the specified surface at the given local surface position within the surface.\n
-     * If the surface is nullptr, pointer focus will be removed from all surfaces.
+     * If the surface is `nullptr`, pointer focus will be removed from all surfaces.
      *
-     * @param surface Surface that will acquire the pointer focus or nullptr to remove focus
+     * @param surface Surface that will acquire the pointer focus or `nullptr` to remove focus
      * @param localPosS Local surface position within the surface that the pointer enters.
      */
     void setFocus(LSurface *surface, const LPoint &localPos);
@@ -197,13 +199,15 @@ public:
     void sendButtonEvent(Button button, ButtonState state);
 
     /*!
-     * @brief Sends a scroll event.
+     * @brief Send a scroll event to the focused surface.
      *
-     * Sends a scroll event to the surface with focus.\n
+     * This function sends a scroll event to the currently focused surface.
      *
-     * @param x Direction and magnitude of the scroll on the horizontal axis. 0 stops scrolling.
-     * @param y Direction and magnitude of the scroll on the vertical axis. 0 stops scrolling.
-     * @param source One of the values from AxisSource.
+     * @param axisX The horizontal continous scroll axis value.
+     * @param axisY The vertical continous scroll axis value.
+     * @param discreteX The discrete horizontal scroll value.
+     * @param discreteY The discrete vertical scroll value.
+     * @param source The source of the scroll event (one of the values from AxisSource).
      */
     void sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, AxisSource source);
 
@@ -232,7 +236,7 @@ public:
      * If you do not want to restrict any of the edges, assign its value to EdgeDisabled.
      *
      * To update the position and size of the Toplevel, call the methods updateResizingToplevelSize() and updateResizingToplevelPos().\n
-     * Once the size change is made, call the method stopResizingToplevel() to end the session.
+     * Once finished, call the method stopResizingToplevel() to end the session.
      *
      * You can see an example of its use in LToplevelRole::startResizeRequest().
      *
@@ -372,11 +376,12 @@ public:
     /*!
      * @brief Keeps pointer focus.
      *
-     * Utility function to keep the pointer focus on the surface being pressed (by the left mouse button for example)
+     * Utility function to keep the pointer focus on a surface being pressed (by the left mouse button for example)
      * even when the pointer is outside of it.\n
-     * @warning Do not confuse with the icon role of a drag & drop session.
      *
-     * @param surface Surface being pressed or nullptr.
+     * @note Do not confuse with the icon role of a drag & drop session.
+     *
+     * @param surface Surface being pressed or `nullptr`.
      */
     void setDraggingSurface(LSurface *surface);
 
@@ -385,16 +390,16 @@ public:
      *
      * Surface being pressed.
      *
-     * @returns The surface being pressed or nullptr.
+     * @returns The surface being pressed or `nullptr`.
      */
     LSurface *draggingSurface() const;
 
     /**
      * @brief Retrieves the last LCursorRole that was passed in the most recent setCursorRequest() call.
      *
-     * If the cursor role has been destroyed or if a client has requested to hide the cursor, a nullptr is returned.
+     * If the cursor role has been destroyed or if a client has requested to hide the cursor, a `nullptr` is returned.
      *
-     * @return A pointer to the last LCursorRole or nullptr if the cursor role has been destroyed or hidden by client request.
+     * @return A pointer to the last LCursorRole or `nullptr` if the cursor role has been destroyed or hidden by client request.
      */
     LCursorRole *lastCursorRequest() const;
 
@@ -473,7 +478,7 @@ public:
      * Only clients that have a surface with pointer focus can request to assign the cursor texture.\n
      * Reimplement this virtual method if you want to assign the cursor texture requested by the client.
      *
-     * @param cursorRole Surface role to use as cursor. If it is nullptr, it means that the client wants to hide the cursor.
+     * @param cursorRole Surface role to use as cursor. If it is `nullptr`, it means that the client wants to hide the cursor.
      *
      * #### Default Implementation
      * @snippet LPointerDefault.cpp setCursorRequest

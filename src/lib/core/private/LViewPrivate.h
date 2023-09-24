@@ -13,7 +13,7 @@ using namespace Louvre;
 
 LPRIVATE_CLASS(LView)
 
-    void removeThread(Louvre::LView *view, thread::id thread);
+    void removeThread(Louvre::LView *view, std::thread::id thread);
     UInt32 pointerMoveSerial = 0;
     UInt32 pointerButtonSerial = 0;
     UInt32 pointerAxisSerial = 0;

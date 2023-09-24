@@ -45,12 +45,12 @@
  * To tell a scene if the view is visible, the nativeMapped() bool method must be implemented.
  * This is then returned by the mapped() method, which may differ from nativeMapped() if the visible() property is different, or if the
  * view has no parent, or if its parent is mapped.
- * In summary, a view can only be mapped if nativeMapped() is true, the visible() property is true, it has a parent, and the parent is also mapped.
+ * In summary, a view can only be mapped if nativeMapped() is `true`, the visible() property is `true`, it has a parent, and the parent is also mapped.
  *
  * ### Renderable
  *
- * If the view has content that can be rendered, for example, a texture, then the isRenderable() method must return true. On the other hand, if
- * the view is simply a container for other views and is not renderable on its own, then it should return false.
+ * If the view has content that can be rendered, for example, a texture, then the isRenderable() method must return `true`. On the other hand, if
+ * the view is simply a container for other views and is not renderable on its own, then it should return `false`.
  *
  * ### Intersected Outputs
  *
@@ -68,7 +68,7 @@
  * ### Damage
  *
  * To inform the scene about which rects within the view must be re-rendered (due to changes), the damage() virtual method must return an LRegion containing
- * the damaged rects. If nullptr is returned, the entire view is considered damaged.\n
+ * the damaged rects. If `nullptr` is returned, the entire view is considered damaged.\n
  * The scene automatically damages the entire view if its position, size, or stacking order changes from one frame to another, so it's not necessary to
  * add damage in those cases.
  * Usually, the damage should be cleared once the view has been rendered. To determine if a view was rendered on a specific output, the requestNextFrame() method
@@ -78,7 +78,7 @@
  *
  * To prevent the scene view from rendering views occluded by opaque regions, the translucentRegion() and opaqueRegion() must be implemented.
  * They must return an LRegion with the translucent and opaque regions, respectively, in surface coordinates.\n
- * If translucentRegion() returns nullptr, the entire view is considered translucent. On the other hand, if opaqueRegion is nullptr,
+ * If translucentRegion() returns `nullptr`, the entire view is considered translucent. On the other hand, if opaqueRegion is `nullptr`,
  * the opaque region is considered the inverse of the translucentRegion().
  * So normally, it's only needed to specify the translucent region. The opaque region must be specified if it has been calculated before
  * so that the scene can use that information and prevent re-calculating the inverse translucent region.
@@ -86,7 +86,7 @@
  * ### Input region
  *
  * To define which parts of the view can receive pointer or touch events, the inputRegion() must be implemented.
- * If nullptr is returned, the entire view is considered capable of receiving events.
+ * If `nullptr` is returned, the entire view is considered capable of receiving events.
  *
  * ## Input events
  *
@@ -125,14 +125,14 @@ public:
     /*!
      * @brief Get the scene in which this view is currently embedded.
      *
-     * @returns A pointer to the scene that contains this view, or nullptr if the view is not part of any scene.
+     * @returns A pointer to the scene that contains this view, or `nullptr` if the view is not part of any scene.
      */
     LScene* scene() const;
 
     /*!
      * @brief Get the LSceneView in which this view is currently embedded.
      *
-     * @returns A pointer to the LSceneView that contains this view, or nullptr if the view is not part of any LSceneView.
+     * @returns A pointer to the LSceneView that contains this view, or `nullptr` if the view is not part of any LSceneView.
      */
     LSceneView* parentSceneView() const;
 
@@ -157,7 +157,7 @@ public:
     /*!
      * @brief Get the parent of the view.
      *
-     * @returns A pointer to the parent view, or nullptr if no parent is assigned to the view.
+     * @returns A pointer to the parent view, or `nullptr` if no parent is assigned to the view.
      */
     LView* parent() const;
 
@@ -165,7 +165,7 @@ public:
      * @brief Set the new parent for the view and insert it at the end of its children list.
      *
      * This function sets the new parent for the view and inserts it at the end of its parent's children list.
-     * If 'view' is set to nullptr, the parent is unset, and the view is unmapped.
+     * If 'view' is set to `nullptr`, the parent is unset, and the view is unmapped.
      *
      * @param view The new parent view to be set.
      */
@@ -175,13 +175,13 @@ public:
      * @brief Insert the view after the 'prev' view.
      *
      * This function inserts the view after the 'prev' view in the parent's children list.
-     * If 'switchParent' is true, the view will be assigned the same parent as the 'prev' view.
-     * If 'switchParent' is false, the view will only be reinserted if it shares the same parent with the 'prev' view.
-     * If 'prev' is set to nullptr, the view will be inserted at the beginning of its current parent's children list,
+     * If 'switchParent' is `true`, the view will be assigned the same parent as the 'prev' view.
+     * If 'switchParent' is `false`, the view will only be reinserted if it shares the same parent with the 'prev' view.
+     * If 'prev' is set to `nullptr`, the view will be inserted at the beginning of its current parent's children list,
      * regardless of the value of 'switchParent'.
      *
      * @param prev The view after which this view will be inserted.
-     * @param switchParent If true, the view will be assigned the same parent as the 'prev' view.
+     * @param switchParent If `true`, the view will be assigned the same parent as the 'prev' view.
      */
     void insertAfter(LView* prev, bool switchParent = true);
 
@@ -197,11 +197,11 @@ public:
     /*!
      * @brief Check if the parent's offset is applied to the view position.
      *
-     * If this function returns true, the position returned by pos() includes the parent's offset (parent()->pos()).
+     * If this function returns `true`, the position returned by pos() includes the parent's offset (parent()->pos()).
      *
-     * The default value is **true**.
+     * The default value is `true`.
      *
-     * @returns True if the parent's offset is applied to the view position, false otherwise.
+     * @returns `true` if the parent's offset is applied to the view position, `false` otherwise.
      */
     bool parentOffsetEnabled() const;
 
@@ -210,9 +210,9 @@ public:
      *
      * If enabled, the position returned by pos() will include the parent's offset (parent()->pos()).
      *
-     * The default value is **true**.
+     * The default value is `true`.
      *
-     * @param enabled If true, the parent's offset will be applied to the view position.
+     * @param enabled If `true`, the parent's offset will be applied to the view position.
      */
     void enableParentOffset(bool enabled);
 
@@ -237,13 +237,13 @@ public:
     /*!
      * @brief Check if the view is currently being clipped to the clippingRect() property.
      *
-     * This function returns true if the view is currently being clipped to the specified
+     * This function returns `true` if the view is currently being clipped to the specified
      * clipping rectangle, which is defined by the clippingRect() property. If the view is not
-     * clipped to the clipping rectangle, the function returns false.
+     * clipped to the clipping rectangle, the function returns `false`.
      *
-     * The default value is **false**.
+     * The default value is `false`.
      *
-     * @returns True if the view is being clipped to the clipping rectangle, false otherwise.
+     * @returns `true` if the view is being clipped to the clipping rectangle, `false` otherwise.
      */
     bool clippingEnabled() const;
 
@@ -254,10 +254,10 @@ public:
      * clippingRect() property. If disabled, the view will not be clipped, allowing its entire
      * content to be visible.
      *
-     * The default value is **false**.
+     * The default value is `false`.
      *
-     * @param enabled If true, the view will be clipped to the clippingRect() property.
-     *                If false, clipping will be disabled, and the full view will be visible.
+     * @param enabled If `true`, the view will be clipped to the clippingRect() property.
+     *                If `false`, clipping will be disabled, and the full view will be visible.
      */
     void enableClipping(bool enabled);
 
@@ -288,11 +288,11 @@ public:
     /*!
      * @brief Check if the view is clipped to the current parent view rect.
      *
-     * This function returns true if the view is clipped to the current parent view rect, false otherwise.
+     * This function returns `true` if the view is clipped to the current parent view rect, `false` otherwise.
      *
-     * The default value is **false**.
+     * The default value is `false`.
      *
-     * @returns True if the view is clipped to the current parent view rect, false otherwise.
+     * @returns `true` if the view is clipped to the current parent view rect, `false` otherwise.
      */
     bool parentClippingEnabled() const;
 
@@ -301,19 +301,19 @@ public:
      *
      * If enabled, the view will be clipped to the current parent view rect.
      *
-     * The default value is **false**.
+     * The default value is `false`.
      *
-     * @param enabled If true, the view will be clipped to the current parent view rect.
+     * @param enabled If `true`, the view will be clipped to the current parent view rect.
      */
     void enableParentClipping(bool enabled);
 
     /*!
      * @brief Check if the view receives pointer and touch events.
      *
-     * This function returns true if the view receives pointer and touch events.
+     * This function returns `true` if the view receives pointer and touch events.
      * However, keyboard events are always received regardless of this setting.
      *
-     * @returns True if the view receives pointer and touch events, false otherwise.
+     * @returns `true` if the view receives pointer and touch events, `false` otherwise.
      */
     bool inputEnabled() const;
 
@@ -323,16 +323,16 @@ public:
      * If enabled, the view will receive pointer and touch events.
      * However, keyboard events are always received regardless of this setting.
      *
-     * @param enabled If true, the view will receive pointer and touch events.
+     * @param enabled If `true`, the view will receive pointer and touch events.
      */
     void enableInput(bool enabled);
 
     /*!
      * @brief Check if scaling is enabled for the view's size.
      *
-     * This function returns true if the view's size is scaled using the scaling vector, false otherwise.
+     * This function returns `true` if the view's size is scaled using the scaling vector, `false` otherwise.
      *
-     * @returns True if the view's size is scaled, false otherwise.
+     * @returns `true` if the view's size is scaled, `false` otherwise.
      */
     bool scalingEnabled() const;
 
@@ -341,18 +341,18 @@ public:
      *
      * If enabled, the view's size will be scaled using the scaling vector.
      *
-     * @param enabled If true, the view's size will be scaled.
+     * @param enabled If `true`, the view's size will be scaled.
      */
     void enableScaling(bool enabled);
 
     /*!
      * @brief Check if the size and position are scaled by the parent scaling vector.
      *
-     * This function returns true if the view's size and position are scaled by the parent's scaling vector, false otherwise.
+     * This function returns `true` if the view's size and position are scaled by the parent's scaling vector, `false` otherwise.
      *
-     * The default value is **false**.
+     * The default value is `false`.
      *
-     * @returns True if the size and position are scaled by the parent's scaling vector, false otherwise.
+     * @returns `true` if the size and position are scaled by the parent's scaling vector, `false` otherwise.
      */
     bool parentScalingEnabled() const;
 
@@ -361,9 +361,9 @@ public:
      *
      * If enabled, the view's size and position will be scaled by the parent's scaling vector.
      *
-     * The default value is **false**.
+     * The default value is `false`.
      *
-     * @param enabled If true, the view's size and position will be scaled by the parent's scaling vector.
+     * @param enabled If `true`, the view's size and position will be scaled by the parent's scaling vector.
      */
     void enableParentScaling(bool enabled);
 
@@ -372,7 +372,7 @@ public:
      *
      * This function returns the scaling vector for the view's size.
      *
-     * @param forceIgnoreParent If set to false, the vector is multiplied by the parent scaling vector.
+     * @param forceIgnoreParent If set to `false`, the vector is multiplied by the parent scaling vector.
      * @returns The scaling vector for the view's size.
      */
     const LSizeF& scalingVector(bool forceIgnoreParent = false) const;
@@ -380,7 +380,7 @@ public:
     /*!
      * @brief Set the scaling vector for the view's size.
      *
-     * If scalingEnabled() returns true, the view's size will be scaled using the provided scaling vector (nativeSize() * scalingVector()).
+     * If scalingEnabled() returns `true`, the view's size will be scaled using the provided scaling vector (nativeSize() * scalingVector()).
      * Setting a value to 1 disables scaling for that axis.
      *
      * @param scalingVector The (width, height) scaling vector for the view's size.
@@ -395,17 +395,17 @@ public:
      * This function indicates whether the view is marked as visible. However, it does not directly indicate if the view will be rendered.
      * To check if the view will be rendered, use the mapped() property instead.
      *
-     * @returns True if the view is marked as visible, false otherwise.
+     * @returns `true` if the view is marked as visible, `false` otherwise.
      */
     bool visible() const;
 
     /*!
      * @brief Toggle the view visibility.
      *
-     * Enabling visibility does not guarantee that the view will be rendered; the nativeMapped() property must return true for it to be considered mapped().
+     * Enabling visibility does not guarantee that the view will be rendered; the nativeMapped() property must return `true` for it to be considered mapped().
      * Disabling visibility, on the other hand, directly indicates that it is not mapped and will not be rendered.
      *
-     * @param visible If true, the view will be marked as visible; if false, it will be marked as not visible.
+     * @param visible If `true`, the view will be marked as visible; if `false`, it will be marked as not visible.
      */
     void setVisible(bool visible);
 
@@ -414,7 +414,7 @@ public:
      *
      * This function indicates whether the view should be rendered, considering the nativeMapped() && visible() && parent() && parent()->mapped() boolean operation.
      *
-     * @returns True if the view should be rendered, false otherwise.
+     * @returns `true` if the view should be rendered, `false` otherwise.
      */
     bool mapped() const;
 
@@ -423,7 +423,7 @@ public:
      *
      * This function returns the current view opacity.
      *
-     * @param forceIgnoreParent If set to false, the opacity is multiplied by the parent's opacity.
+     * @param forceIgnoreParent If set to `false`, the opacity is multiplied by the parent's opacity.
      * @returns The view's opacity value in the range [0.0, 1.0].
      */
     Float32 opacity(bool forceIgnoreParent = false) const;
@@ -442,11 +442,11 @@ public:
     /*!
      * @brief Check if the view's opacity is multiplied by its parent's opacity.
      *
-     * This function returns true if the view's opacity is multiplied by its parent's opacity, false otherwise.
+     * This function returns `true` if the view's opacity is multiplied by its parent's opacity, `false` otherwise.
      *
-     * The default value is **true**.
+     * The default value is `true`.
      *
-     * @returns True if the view's opacity is multiplied by its parent's opacity, false otherwise.
+     * @returns `true` if the view's opacity is multiplied by its parent's opacity, `false` otherwise.
      */
     bool parentOpacityEnabled() const;
 
@@ -455,29 +455,29 @@ public:
      *
      * If enabled, the view's opacity will be multiplied by its parent's opacity.
      *
-     * The default value is **true**.
+     * The default value is `true`.
      *
-     * @param enabled If true, the view's opacity will be multiplied by its parent's opacity; if false, it will not be affected by the parent's opacity.
+     * @param enabled If `true`, the view's opacity will be multiplied by its parent's opacity; if `false`, it will not be affected by the parent's opacity.
      */
     void enableParentOpacity(bool enabled);
 
     /*!
-     * @brief Check if the `requestNextFrame()` is enabled.
+     * @brief Check if the requestNextFrame() is enabled.
      *
-     * If this function returns true, `requestNextFrame()` will be called even if the view
+     * If this function returns `true`, requestNextFrame() will be called even if the view
      * is not mapped or occluded.
      *
-     * @return True if `requestNextFrame()` is forced to be called; otherwise, false.
+     * @return `true` if requestNextFrame() is forced to be called; otherwise, `false`.
      */
     bool forceRequestNextFrameEnabled() const;
 
     /*!
-     * @brief Enable or disable the `requestNextFrame()` to be called always.
+     * @brief Enable or disable the requestNextFrame() to be called always.
      *
-     * When enabled, `requestNextFrame()` will be called even if the view
+     * When enabled, requestNextFrame() will be called even if the view
      * is not mapped or occluded.
      *
-     * @param enabled True to enable `requestNextFrame()`; false to disable.
+     * @param enabled `true` to enable requestNextFrame(); `false` to disable.
      */
     void enableForceRequestNextFrame(bool enabled) const;
 
@@ -485,7 +485,7 @@ public:
      * @brief Sets the alpha blending function for the view.
      *
      * This function sets the OpenGL blend function for the view. Refer to the documentation
-     * of `glBlendFunc()` for more information.
+     * of glBlendFunc() for more information.
      *
      * @param sFactor Source factor for blending.
      * @param dFactor Destination factor for blending.
@@ -495,25 +495,25 @@ public:
     /*!
      * @brief Checks if the pointer/cursor is inside the view's input region.
      *
-     * @warning Even if the pointer is over the input region it may return false if another view with block pointer enabled is in front.\n
+     * @warning Even if the pointer is over the input region it may return `false` if another view with block pointer enabled is in front.\n
      *
-     * @return True if the pointer/cursor is inside the input region; otherwise, false.
+     * @return `true` if the pointer/cursor is inside the input region; otherwise, `false`.
      */
     bool pointerIsOver() const;
 
     /*!
      * @brief Enable or disable blocking of pointer or touch events to views behind the view's input region.
      *
-     * If set to true, pointer or touch events will not be sent to views behind the view's input region.
+     * If set to `true`, pointer or touch events will not be sent to views behind the view's input region.
      *
-     * @param enabled True to enable blocking; false to disable.
+     * @param enabled `true` to enable blocking; `false` to disable.
      */
     void enableBlockPointer(bool enabled);
 
     /*!
      * @brief Checks if blocking of pointer or touch events to views behind the view's input region is enabled.
      *
-     * @return True if blocking is enabled; otherwise, false.
+     * @return `true` if blocking is enabled; otherwise, `false`.
      */
     bool blockPointerEnabled() const;
 
@@ -530,7 +530,7 @@ public:
     /*!
      * @brief Tells whether the view should be rendered.
      *
-     * @return True if the view should be rendered without considering `visible()`, otherwise false.
+     * @return `true` if the view should be rendered without considering visible(), otherwise `false`.
      */
     virtual bool nativeMapped() const = 0;
 
@@ -597,7 +597,7 @@ public:
      * except for LLayerView, which serves as a container for other views
      * but does not produce any output by itself.
      *
-     * @return True if the view is renderable; otherwise, false.
+     * @return `true` if the view is renderable; otherwise, `false`.
      */
     virtual bool isRenderable() const = 0;
 
@@ -605,7 +605,7 @@ public:
      * @brief Notify that the view has been rendered on the given output.
      *
      * This method is called by LScene and should be used to clear the previous view damage or update its content.
-     * If `forceRequestNextFrameEnabled()` is true, this method is always called.
+     * If forceRequestNextFrameEnabled() is `true`, this method is always called.
      *
      * @param output The LOutput on which the view is rendered.
      */
@@ -616,12 +616,12 @@ public:
      *
      * The region rects are specified in surface coordinates within the view,
      * without any scaling, clipping, or offset transformations applied.
-     * The damage may be cleared after `requestNextFrame()` is called.
-     * If nullptr is returned, the entire view rect will be considered damaged.
-     * If the view has no damage, simply pass an empty LRegion (not nullptr).
+     * The damage may be cleared after requestNextFrame() is called.
+     * If `nullptr` is returned, the entire view rect will be considered damaged.
+     * If the view has no damage, simply pass an empty LRegion (not `nullptr`).
      *
      * @return A pointer to the LRegion specifying the damaged area within the view,
-     *         or nullptr if the entire view rect is damaged.
+     *         or `nullptr` if the entire view rect is damaged.
      */
     virtual const LRegion *damage() const = 0;
 
@@ -629,7 +629,7 @@ public:
      * Returns the translucent region within the view rectangle.\n
      * The region rects are specified in surface coordinates within the view,
      * without any scaling, clipping, or offset transformations.\n
-     * If nullptr is returned, the entire view rect will be
+     * If `nullptr` is returned, the entire view rect will be
      * considered translucent.
      */
     virtual const LRegion *translucentRegion() const = 0;
@@ -638,7 +638,7 @@ public:
      * Returns the opaque region within the view rectangle.
      * The region rects are specified in surface coordinates within the view,
      * without any scaling, clipping, or offset transformations.\n
-     * If nullptr is returned, the inverse of the translucent
+     * If `nullptr` is returned, the inverse of the translucent
      * region will be considered opaque.
      */
     virtual const LRegion *opaqueRegion() const = 0;
@@ -647,7 +647,7 @@ public:
      * Region within the view rect that can receive input events (when the inputEnabled() property is enabled).\n
      * The region rects are specified in surface coordinates within the view,
      * without any scaling, clipping, or offset transformations.\n
-     * If nullptr is returned, the entire view rect will receive input.
+     * If `nullptr` is returned, the entire view rect will receive input.
      */
     virtual const LRegion *inputRegion() const = 0;
 
@@ -690,7 +690,7 @@ public:
     /*!
      * @brief Handle the pointer move event within the view.
      *
-     * This event is only called if pointerEnterEvent() was called before, and therefore when pointerIsOver() returns true.
+     * This event is only called if pointerEnterEvent() was called before, and therefore when pointerIsOver() returns `true`.
      *
      * @param localPos The local position of the pointer within the view.
      */
@@ -704,7 +704,7 @@ public:
     /*!
      * @brief Handle the pointer button event within the view.
      *
-     * This event is only called if pointerEnterEvent() was called before, and therefore when pointerIsOver() returns true.
+     * This event is only called if pointerEnterEvent() was called before, and therefore when pointerIsOver() returns `true`.
      *
      * @param button The button that triggered the event (e.g., left button, right button, etc.).
      * @param state The state of the button (e.g., pressed, released, etc.).
@@ -714,7 +714,7 @@ public:
     /*!
      * @brief Handle the pointer axis event within the view.
      *
-     * This event is only called if pointerEnterEvent() was called before, and therefore when pointerIsOver() returns true.
+     * This event is only called if pointerEnterEvent() was called before, and therefore when pointerIsOver() returns `true`.
      *
      * @param axisX The x-coordinate of the axis movement.
      * @param axisY The y-coordinate of the axis movement.
@@ -727,7 +727,7 @@ public:
     /*!
      * @brief Handle the key modifiers event within the view.
      *
-     * Keyboard events are allways called, even if inputEnabled() is set to false.
+     * Keyboard events are allways called, even if inputEnabled() is set to `false`.
      *
      * @param depressed The state of the depressed key modifiers.
      * @param latched The state of the latched key modifiers.
@@ -739,7 +739,7 @@ public:
     /*!
      * @brief Handle the key event within the view.
      *
-     * Keyboard events are allways called, even if inputEnabled() is set to false.
+     * Keyboard events are allways called, even if inputEnabled() is set to `false`.
      *
      * @param keyCode The code of the key that triggered the event.
      * @param keyState The state of the key (e.g., pressed, released, etc.).
