@@ -191,7 +191,7 @@ static void connectorUnpluggedEventHandler(SRMListener *listener, SRMConnector *
 static int monitorEventHandler(Int32, UInt32, void *data)
 {
     Backend *bknd = (Backend*)data;
-    return srmCoreProccessMonitor(bknd->core, 0);
+    return srmCoreProcessMonitor(bknd->core, 0);
 }
 
 static void initializeGL(SRMConnector *connector, void *userData)

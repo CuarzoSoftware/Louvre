@@ -19,10 +19,10 @@ Louvre is a C++ library that aims to simplify the process of creating Wayland co
 ## Links
 
 * [📖 C++ API Documentation](https://cuarzosoftware.github.io/annotated.html)
-* [🎓 Tutorial](https://cuarzosoftware.github.io/SRM/md_md_tutorial_01.html)
-* [🕹️ Examples](https://cuarzosoftware.github.io/SRM/md_md__examples.html)
-* [📦 Downloads](https://cuarzosoftware.github.io/SRM/md_md__downloads.html)
-* [💬 Contact](https://cuarzosoftware.github.io/SRM/md_md__contact.html)
+* [🎓 Tutorial](https://cuarzosoftware.github.io/md_md_tutorial_01.html)
+* [🕹️ Examples](https://cuarzosoftware.github.io/md_md__examples.html)
+* [📦 Downloads](https://cuarzosoftware.github.io/md_md__downloads.html)
+* [💬 Contact](https://cuarzosoftware.github.io/md_md__contact.html)
 
 ## ⏲️ Performance
 
