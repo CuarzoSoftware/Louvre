@@ -76,6 +76,8 @@ UInt32 LTexture::formatBytesPerPixel(UInt32 format)
 LTexture::LTexture()
 {
     m_imp = new LTexturePrivate();
+    compositor()->imp()->textures.push_back(this);
+    imp()->compositorLink = std::prev(compositor()->imp()->textures.end());
 }
 
 bool LTexture::setDataB(const LSize &size, UInt32 stride, UInt32 format, const void *buffer)
@@ -140,7 +142,7 @@ bool LTexture::updateRect(const LRect &rect, UInt32 stride, const void *buffer)
     return false;
 }
 
-Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src) const
+Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQualityScaling) const
 {
     if (!initialized())
         return nullptr;
@@ -174,27 +176,6 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src) const
         return nullptr;
     }
 
-    GLuint framebuffer;
-    glGenFramebuffers(1, &framebuffer);
-
-    if (framebuffer == 0)
-    {
-        LLog::error("Failed to copy texture. Could not create framebuffer.");
-        return nullptr;
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-
-    GLuint renderbuffer;
-    glGenRenderbuffers(1, &renderbuffer);
-
-    if (renderbuffer == 0)
-    {
-        LLog::error("Failed to copy texture. Could not create renderbuffer.");
-        glDeleteFramebuffers(1, &framebuffer);
-        return nullptr;
-    }
-
     LRect srcRect;
     LSize dstSize;
 
@@ -208,6 +189,70 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src) const
     else
         dstSize = dst;
 
+    LTexture *scaled = nullptr;
+
+    subscale:
+    if (highQualityScaling)
+    {
+        Float32 diffW = abs(srcRect.w() / dstSize.w());
+        Float32 diffH = abs(srcRect.h() / dstSize.h());
+        LSize halfDst = dstSize;
+
+        if (diffW > 2.f)
+            halfDst.setW(abs(srcRect.w()) / 2.f);
+
+        if (diffH > 2.f)
+            halfDst.setH(abs(srcRect.h()) / 2.f);
+
+        if (dstSize != halfDst)
+        {
+            if (scaled)
+            {
+                LTexture *newScaled = scaled->copyB(halfDst, srcRect, false);
+                delete scaled;
+                scaled = newScaled;
+            }
+            else
+                scaled = this->copyB(halfDst, srcRect, false);
+
+            if (!scaled)
+                return nullptr;
+
+            srcRect = LRect(0, scaled->sizeB());
+
+            goto subscale;
+        }
+    }
+
+    GLuint framebuffer;
+    glGenFramebuffers(1, &framebuffer);
+
+    if (framebuffer == 0)
+    {
+        LLog::error("Failed to copy texture. Could not create framebuffer.");
+
+        if (scaled)
+            delete scaled;
+
+        return nullptr;
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+    GLuint renderbuffer;
+    glGenRenderbuffers(1, &renderbuffer);
+
+    if (renderbuffer == 0)
+    {
+        LLog::error("Failed to copy texture. Could not create renderbuffer.");
+        glDeleteFramebuffers(1, &framebuffer);
+
+        if (scaled)
+            delete scaled;
+
+        return nullptr;
+    }
+
     glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, dstSize.w(), dstSize.h());
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, renderbuffer);
@@ -219,12 +264,19 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src) const
         LLog::error("Failed to copy texture. Incomplete framebuffer.");
         glDeleteRenderbuffers(1, &renderbuffer);
         glDeleteFramebuffers(1, &framebuffer);
+
+        if (scaled)
+            delete scaled;
+
         return nullptr;
     }
 
-    painter->imp()->scaleTexture((LTexture*)this, srcRect, dstSize);
+    if (scaled)
+        painter->imp()->scaleTexture(scaled, srcRect, dstSize);
+    else
+        painter->imp()->scaleTexture((LTexture*)this, srcRect, dstSize);
 
-    UChar8 *cpuBuffer = (UChar8 *)malloc(dstSize.w()*dstSize.h()*4);
+    UChar8 *cpuBuffer = (UChar8*)malloc(dstSize.w() * dstSize.h() * 4);
 
     glPixelStorei(GL_PACK_ALIGNMENT, 4);
     glPixelStorei(GL_PACK_ROW_LENGTH, dstSize.w());
@@ -237,12 +289,15 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src) const
     glPixelStorei(GL_PACK_SKIP_ROWS, 0);
 
     LTexture *textureCopy = new LTexture();
-    bool ret = textureCopy->setDataB(dstSize, dstSize.w()*4, DRM_FORMAT_ARGB8888, cpuBuffer);
+    bool ret = textureCopy->setDataB(dstSize, dstSize.w() * 4, DRM_FORMAT_ARGB8888, cpuBuffer);
 
     free(cpuBuffer);
     glDeleteRenderbuffers(1, &renderbuffer);
     glDeleteFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    if (scaled)
+        delete scaled;
 
     if (ret)
         return textureCopy;
@@ -365,11 +420,15 @@ bool LTexture::save(const char *path) const
 LTexture::~LTexture()
 {
     imp()->deleteTexture(this);
+    compositor()->imp()->textures.erase(imp()->compositorLink);
     delete m_imp;
 }
 
 void LTexture::LTexturePrivate::deleteTexture(LTexture *texture)
-{    
+{
+    if (texture == compositor()->cursor()->imp()->defaultTexture)
+        compositor()->cursor()->replaceDefaultB(nullptr, 0);
+
     if (texture == compositor()->cursor()->texture())
         compositor()->cursor()->useDefault();
 

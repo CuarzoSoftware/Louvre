@@ -4,7 +4,7 @@
 #include <LObject.h>
 #include <LPointer.h>
 
-/*!
+/**
  * @brief Base class for LScene views.
  *
  * The LView class provides a base interface for creating views that can be shown in an LScene.\n
@@ -122,21 +122,21 @@ public:
         Scene = 4
     };
 
-    /*!
+    /**
      * @brief Get the scene in which this view is currently embedded.
      *
      * @returns A pointer to the scene that contains this view, or `nullptr` if the view is not part of any scene.
      */
     LScene* scene() const;
 
-    /*!
+    /**
      * @brief Get the LSceneView in which this view is currently embedded.
      *
      * @returns A pointer to the LSceneView that contains this view, or `nullptr` if the view is not part of any LSceneView.
      */
     LSceneView* parentSceneView() const;
 
-    /*!
+    /**
      * @brief Get the identifier for the type of view.
      *
      * This method returns a number used to identify the type of view that was passed in the LView constructor.\n
@@ -146,7 +146,7 @@ public:
      */
     UInt32 type() const;
 
-    /*!
+    /**
      * @brief Schedule a repaint for all outputs where this view is currently visible.
      *
      * This function triggers a repaint for all outputs where this view is currently visible.\n
@@ -154,14 +154,14 @@ public:
      */
     void repaint();
 
-    /*!
+    /**
      * @brief Get the parent of the view.
      *
      * @returns A pointer to the parent view, or `nullptr` if no parent is assigned to the view.
      */
     LView* parent() const;
 
-    /*!
+    /**
      * @brief Set the new parent for the view and insert it at the end of its children list.
      *
      * This function sets the new parent for the view and inserts it at the end of its parent's children list.
@@ -171,7 +171,7 @@ public:
      */
     void setParent(LView* view);
 
-    /*!
+    /**
      * @brief Insert the view after the 'prev' view.
      *
      * This function inserts the view after the 'prev' view in the parent's children list.
@@ -185,7 +185,7 @@ public:
      */
     void insertAfter(LView* prev, bool switchParent = true);
 
-    /*!
+    /**
      * @brief Get the list of child views.
      *
      * This method returns a reference to the list of child views of the current view.
@@ -194,7 +194,7 @@ public:
      */
     std::list<LView*>& children() const;
 
-    /*!
+    /**
      * @brief Check if the parent's offset is applied to the view position.
      *
      * If this function returns `true`, the position returned by pos() includes the parent's offset (parent()->pos()).
@@ -205,7 +205,7 @@ public:
      */
     bool parentOffsetEnabled() const;
 
-    /*!
+    /**
      * @brief Enable or disable the parent's offset for the view position.
      *
      * If enabled, the position returned by pos() will include the parent's offset (parent()->pos()).
@@ -216,7 +216,7 @@ public:
      */
     void enableParentOffset(bool enabled);
 
-    /*!
+    /**
      * @brief Get the current position of the view with applied transformations.
      *
      * This method returns the current position of the view with any applied transformations.
@@ -225,7 +225,7 @@ public:
      */
     const LPoint& pos() const;
 
-    /*!
+    /**
      * @brief Get the current size of the view with applied transformations.
      *
      * This method returns the current size of the view with any applied transformations.
@@ -234,7 +234,7 @@ public:
      */
     const LSize& size() const;
 
-    /*!
+    /**
      * @brief Check if the view is currently being clipped to the clippingRect() property.
      *
      * This function returns `true` if the view is currently being clipped to the specified
@@ -247,7 +247,7 @@ public:
      */
     bool clippingEnabled() const;
 
-    /*!
+    /**
      * @brief Enable or disable clipping of the view to the clippingRect() property.
      *
      * If enabled, the view will be clipped to the current clipping rectangle defined by the
@@ -261,7 +261,7 @@ public:
      */
     void enableClipping(bool enabled);
 
-    /*!
+    /**
      * @brief Get the current clipping rectangle defined by the clippingRect() property.
      *
      * This function returns a constant reference to the current clipping rectangle
@@ -272,7 +272,7 @@ public:
      */
     const LRect &clippingRect() const;
 
-    /*!
+    /**
      * @brief Set the clipping rectangle for the view using the clippingRect() property.
      *
      * This function sets the clipping rectangle for the view using the clippingRect() property.
@@ -285,7 +285,7 @@ public:
      */
     void setClippingRect(const LRect &rect);
 
-    /*!
+    /**
      * @brief Check if the view is clipped to the current parent view rect.
      *
      * This function returns `true` if the view is clipped to the current parent view rect, `false` otherwise.
@@ -296,7 +296,7 @@ public:
      */
     bool parentClippingEnabled() const;
 
-    /*!
+    /**
      * @brief Enable or disable clipping of the view to the current parent view rect.
      *
      * If enabled, the view will be clipped to the current parent view rect.
@@ -307,7 +307,7 @@ public:
      */
     void enableParentClipping(bool enabled);
 
-    /*!
+    /**
      * @brief Check if the view receives pointer and touch events.
      *
      * This function returns `true` if the view receives pointer and touch events.
@@ -317,7 +317,7 @@ public:
      */
     bool inputEnabled() const;
 
-    /*!
+    /**
      * @brief Enable or disable pointer and touch events for the view.
      *
      * If enabled, the view will receive pointer and touch events.
@@ -327,7 +327,7 @@ public:
      */
     void enableInput(bool enabled);
 
-    /*!
+    /**
      * @brief Check if scaling is enabled for the view's size.
      *
      * This function returns `true` if the view's size is scaled using the scaling vector, `false` otherwise.
@@ -336,7 +336,7 @@ public:
      */
     bool scalingEnabled() const;
 
-    /*!
+    /**
      * @brief Enable or disable scaling for the view's size.
      *
      * If enabled, the view's size will be scaled using the scaling vector.
@@ -345,7 +345,7 @@ public:
      */
     void enableScaling(bool enabled);
 
-    /*!
+    /**
      * @brief Check if the size and position are scaled by the parent scaling vector.
      *
      * This function returns `true` if the view's size and position are scaled by the parent's scaling vector, `false` otherwise.
@@ -356,7 +356,7 @@ public:
      */
     bool parentScalingEnabled() const;
 
-    /*!
+    /**
      * @brief Enable or disable scaling of the size and position by the parent's scaling vector.
      *
      * If enabled, the view's size and position will be scaled by the parent's scaling vector.
@@ -367,7 +367,7 @@ public:
      */
     void enableParentScaling(bool enabled);
 
-    /*!
+    /**
      * @brief Get the scaling vector for the view's size.
      *
      * This function returns the scaling vector for the view's size.
@@ -377,7 +377,7 @@ public:
      */
     const LSizeF& scalingVector(bool forceIgnoreParent = false) const;
 
-    /*!
+    /**
      * @brief Set the scaling vector for the view's size.
      *
      * If scalingEnabled() returns `true`, the view's size will be scaled using the provided scaling vector (nativeSize() * scalingVector()).
@@ -389,7 +389,7 @@ public:
      */
     void setScalingVector(const LSizeF& scalingVector);
 
-    /*!
+    /**
      * @brief Check if the view is marked as visible.
      *
      * This function indicates whether the view is marked as visible. However, it does not directly indicate if the view will be rendered.
@@ -399,7 +399,7 @@ public:
      */
     bool visible() const;
 
-    /*!
+    /**
      * @brief Toggle the view visibility.
      *
      * Enabling visibility does not guarantee that the view will be rendered; the nativeMapped() property must return `true` for it to be considered mapped().
@@ -409,7 +409,7 @@ public:
      */
     void setVisible(bool visible);
 
-    /*!
+    /**
      * @brief Check if the view should be rendered, taking into consideration several boolean conditions.
      *
      * This function indicates whether the view should be rendered, considering the nativeMapped() && visible() && parent() && parent()->mapped() boolean operation.
@@ -418,7 +418,7 @@ public:
      */
     bool mapped() const;
 
-    /*!
+    /**
      * @brief Get the current view opacity.
      *
      * This function returns the current view opacity.
@@ -428,7 +428,7 @@ public:
      */
     Float32 opacity(bool forceIgnoreParent = false) const;
 
-    /*!
+    /**
      * @brief Set the view opacity.
      *
      * This function sets the view's opacity. Setting the value to 1.0 disables opacity.
@@ -439,7 +439,7 @@ public:
      */
     void setOpacity(Float32 opacity);
 
-    /*!
+    /**
      * @brief Check if the view's opacity is multiplied by its parent's opacity.
      *
      * This function returns `true` if the view's opacity is multiplied by its parent's opacity, `false` otherwise.
@@ -450,7 +450,7 @@ public:
      */
     bool parentOpacityEnabled() const;
 
-    /*!
+    /**
      * @brief Enable or disable the view's opacity being multiplied by its parent's opacity.
      *
      * If enabled, the view's opacity will be multiplied by its parent's opacity.
@@ -461,7 +461,7 @@ public:
      */
     void enableParentOpacity(bool enabled);
 
-    /*!
+    /**
      * @brief Check if the requestNextFrame() is enabled.
      *
      * If this function returns `true`, requestNextFrame() will be called even if the view
@@ -471,7 +471,7 @@ public:
      */
     bool forceRequestNextFrameEnabled() const;
 
-    /*!
+    /**
      * @brief Enable or disable the requestNextFrame() to be called always.
      *
      * When enabled, requestNextFrame() will be called even if the view
@@ -481,7 +481,7 @@ public:
      */
     void enableForceRequestNextFrame(bool enabled) const;
 
-    /*!
+    /**
      * @brief Sets the alpha blending function for the view.
      *
      * This function sets the OpenGL blend function for the view. Refer to the documentation
@@ -492,7 +492,7 @@ public:
      */
     void setBlendFunc(GLenum sFactor, GLenum dFactor);
 
-    /*!
+    /**
      * @brief Checks if the pointer/cursor is inside the view's input region.
      *
      * @warning Even if the pointer is over the input region it may return `false` if another view with block pointer enabled is in front.\n
@@ -501,7 +501,7 @@ public:
      */
     bool pointerIsOver() const;
 
-    /*!
+    /**
      * @brief Enable or disable blocking of pointer or touch events to views behind the view's input region.
      *
      * If set to `true`, pointer or touch events will not be sent to views behind the view's input region.
@@ -510,14 +510,14 @@ public:
      */
     void enableBlockPointer(bool enabled);
 
-    /*!
+    /**
      * @brief Checks if blocking of pointer or touch events to views behind the view's input region is enabled.
      *
      * @return `true` if blocking is enabled; otherwise, `false`.
      */
     bool blockPointerEnabled() const;
 
-    /*!
+    /**
      * @brief Get the bounding box of the view and all its mapped children.
      *
      * This function returns a box containing the view and all its mapped children, even if the children
@@ -527,14 +527,14 @@ public:
      */
     LBox boundingBox() const;
 
-    /*!
+    /**
      * @brief Tells whether the view should be rendered.
      *
      * @return `true` if the view should be rendered without considering visible(), otherwise `false`.
      */
     virtual bool nativeMapped() const = 0;
 
-    /*!
+    /**
      * @brief Get the position of the view without any transformations applied.
      *
      * Must return the position of the view in surface coordinates.
@@ -543,7 +543,7 @@ public:
      */
     virtual const LPoint &nativePos() const = 0;
 
-    /*!
+    /**
      * @brief Get the size of the view without any transformations applied.
      *
      * Must return the size of the view in surface coordinates.
@@ -552,7 +552,7 @@ public:
      */
     virtual const LSize &nativeSize() const = 0;
 
-    /*!
+    /**
      * @brief Get the scale of the view buffer content.
      *
      * This property is primarily used by views that contain a buffer like for example the LSceneView, LSurfaceView and LTextureView types.
@@ -561,7 +561,7 @@ public:
      */
     virtual Int32 bufferScale() const = 0;
 
-    /*!
+    /**
      * @brief Indicate that the view is visible on the given output.
      *
      * This method is invoked by a LScene when the view's rect intersects an output.
@@ -570,7 +570,7 @@ public:
      */
     virtual void enteredOutput(LOutput *output) = 0;
 
-    /*!
+    /**
      * @brief Indicate that the view is no longer visible on the given output.
      *
      * This method is invoked by a LScene when the view's rect no longer intersects an output.
@@ -579,7 +579,7 @@ public:
      */
     virtual void leftOutput(LOutput *output) = 0;
 
-    /*!
+    /**
      * @brief Get a list of outputs on which the view is currently visible.
      *
      * Must return a list of outputs where the view is currently visible.
@@ -589,7 +589,7 @@ public:
      */
     virtual const std::list<LOutput*> &outputs() const = 0;
 
-    /*!
+    /**
      * @brief Check if the view is itself renderable.
      *
      * This property indicates whether the view is capable of rendering its content (check paintRect()).
@@ -601,7 +601,7 @@ public:
      */
     virtual bool isRenderable() const = 0;
 
-    /*!
+    /**
      * @brief Notify that the view has been rendered on the given output.
      *
      * This method is called by LScene and should be used to clear the previous view damage or update its content.
@@ -611,7 +611,7 @@ public:
      */
     virtual void requestNextFrame(LOutput *output) = 0;
 
-    /*!
+    /**
      * @brief Get the region within the view rect that needs to be repainted.
      *
      * The region rects are specified in surface coordinates within the view,
@@ -625,7 +625,7 @@ public:
      */
     virtual const LRegion *damage() const = 0;
 
-    /*!
+    /**
      * Returns the translucent region within the view rectangle.\n
      * The region rects are specified in surface coordinates within the view,
      * without any scaling, clipping, or offset transformations.\n
@@ -634,7 +634,7 @@ public:
      */
     virtual const LRegion *translucentRegion() const = 0;
 
-    /*!
+    /**
      * Returns the opaque region within the view rectangle.
      * The region rects are specified in surface coordinates within the view,
      * without any scaling, clipping, or offset transformations.\n
@@ -643,7 +643,7 @@ public:
      */
     virtual const LRegion *opaqueRegion() const = 0;
 
-    /*!
+    /**
      * Region within the view rect that can receive input events (when the inputEnabled() property is enabled).\n
      * The region rects are specified in surface coordinates within the view,
      * without any scaling, clipping, or offset transformations.\n
@@ -651,7 +651,7 @@ public:
      */
     virtual const LRegion *inputRegion() const = 0;
 
-    /*!
+    /**
      * @brief Request to paint a rectangle of the view to the current framebuffer.
      *
      * This function is used by LSceneView to request the view to paint a specified rectangular area
@@ -680,14 +680,14 @@ public:
                            Float32 scale,
                            Float32 alpha) = 0;
 
-    /*!
+    /**
      * @brief Handle the pointer enter event within the view.
      *
      * @param localPos The local position of the pointer within the view.
      */
     virtual void pointerEnterEvent(const LPoint &localPos);
 
-    /*!
+    /**
      * @brief Handle the pointer move event within the view.
      *
      * This event is only called if pointerEnterEvent() was called before, and therefore when pointerIsOver() returns `true`.
@@ -696,12 +696,12 @@ public:
      */
     virtual void pointerMoveEvent(const LPoint &localPos);
 
-    /*!
+    /**
      * @brief Handle the pointer leave event within the view.
      */
     virtual void pointerLeaveEvent();
 
-    /*!
+    /**
      * @brief Handle the pointer button event within the view.
      *
      * This event is only called if pointerEnterEvent() was called before, and therefore when pointerIsOver() returns `true`.
@@ -711,7 +711,7 @@ public:
      */
     virtual void pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state);
 
-    /*!
+    /**
      * @brief Handle the pointer axis event within the view.
      *
      * This event is only called if pointerEnterEvent() was called before, and therefore when pointerIsOver() returns `true`.
@@ -724,7 +724,7 @@ public:
      */
     virtual void pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source);
 
-    /*!
+    /**
      * @brief Handle the key modifiers event within the view.
      *
      * Keyboard events are allways called, even if inputEnabled() is set to `false`.
@@ -736,7 +736,7 @@ public:
      */
     virtual void keyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group);
 
-    /*!
+    /**
      * @brief Handle the key event within the view.
      *
      * Keyboard events are allways called, even if inputEnabled() is set to `false`.

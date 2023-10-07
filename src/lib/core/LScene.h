@@ -7,9 +7,8 @@
 
 /**
  * The LScene class is an optional utility that significantly simplifies rendering.
- * It encompasses a primary LSceneView which can host multiple children and even nested Scenes.
- * A single LScene can drive multiple LOutputs (screens) and also manage pointer and keyboard events for Wayland clients,
- * while also providing per-view input events.
+ * It encompasses a primary LSceneView which can host multiple children and even nested scenes.
+ * A single LScene can drive multiple outputs and also manage pointer and keyboard Wayland events, while also providing per-view input events.
  * You might opt to leverage LScene for rendering instead of relying solely on the basic rendering functions from the LPainter class or your custom OpenGL shaders.
  * LScene achieves high efficiency by rendering only damaged regions and avoiding rendering content obscured by opaque areas.
  * Alternatively, you can still use your own OpenGL shaders or LPainter functions for rendering, either in conjunction with LScene or independently.

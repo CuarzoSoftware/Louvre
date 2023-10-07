@@ -1,15 +1,9 @@
+#include <cstring>
 #include <private/LSeatPrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
 #include <LLog.h>
 #include <unistd.h>
-
-int LSeat::LSeatPrivate::seatEvent(int, unsigned int, void *data)
-{
-    LSeat *seat = (LSeat*)data;
-    libseat_dispatch(seat->libseatHandle(), 0);
-    return 0;
-}
 
 void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
 {
@@ -17,21 +11,21 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
 
     lseat->imp()->enabled = true;
 
-    LCompositor::compositor()->imp()->unlock();
+    compositor()->imp()->unlock();
 
     if (compositor()->isGraphicBackendInitialized())
-        compositor()->imp()->graphicBackend->resume(compositor());
+        compositor()->imp()->graphicBackend->resume();
+
+    compositor()->imp()->lock();
 
     if (compositor()->isInputBackendInitialized())
-        compositor()->imp()->inputBackend->resume(lseat);
+        compositor()->imp()->inputBackend->resume();
 
-    LCompositor::compositor()->imp()->lock();
-
-    for (LOutput *o : compositor()->outputs())
-    {
-        if (o->state() == LOutput::Suspended)
-            o->imp()->state = LOutput::Initialized;
-    }
+    // Restore Wayland events
+    epoll_ctl(compositor()->imp()->epollFd,
+              EPOLL_CTL_ADD,
+              compositor()->imp()->events[2].data.fd,
+              &compositor()->imp()->events[2]);
 
     LLog::debug("[%s] enabled.", libseat_seat_name(seat));
 
@@ -42,25 +36,28 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
 {
     LSeat *lseat = (LSeat*)data;
 
+    if (!lseat->imp()->enabled)
+        return;
+
     lseat->imp()->enabled = false;
 
-    for (LOutput *o : compositor()->outputs())
-    {
-        if (o->state() == LOutput::Initialized)
-            o->imp()->state = LOutput::Suspended;
-    }
-
-    LCompositor::compositor()->imp()->unlock();
+    compositor()->imp()->unlock();
 
     if (compositor()->isGraphicBackendInitialized())
-        compositor()->imp()->graphicBackend->pause(compositor());
+        compositor()->imp()->graphicBackend->pause();
+
+    compositor()->imp()->lock();
 
     if (compositor()->isInputBackendInitialized())
-        compositor()->imp()->inputBackend->suspend(lseat);
-
-    LCompositor::compositor()->imp()->lock();
+        compositor()->imp()->inputBackend->suspend();
 
     libseat_disable_seat(seat);
+
+    // Disable Wayland events
+    epoll_ctl(compositor()->imp()->epollFd,
+              EPOLL_CTL_DEL,
+              compositor()->imp()->events[2].data.fd,
+              NULL);
 
     LLog::debug("[%s] disabled.", libseat_seat_name(seat));
 
@@ -99,10 +96,13 @@ bool LSeat::LSeatPrivate::initLibseat()
         return false;
     }
 
-    LCompositor::addFdListener(
-        libseat_get_fd(libseatHandle),
-        LCompositor::compositor()->seat(),
-        &LSeat::LSeatPrivate::seatEvent);
+    compositor()->imp()->events[1].events = EPOLLIN;
+    compositor()->imp()->events[1].data.fd = fd;
+
+    epoll_ctl(compositor()->imp()->epollFd,
+              EPOLL_CTL_ADD,
+              compositor()->imp()->events[1].data.fd,
+              &compositor()->imp()->events[1]);
 
     LCompositor::compositor()->imp()->lock();
     dispatchSeat();
@@ -110,4 +110,16 @@ bool LSeat::LSeatPrivate::initLibseat()
 
     LLog::debug("[compositor] Using libseat.");
     return true;
+}
+
+void LSeat::LSeatPrivate::backendOutputPlugged(LOutput *output)
+{
+    if (enabled)
+        seat()->outputPlugged(output);
+}
+
+void LSeat::LSeatPrivate::backendOutputUnplugged(LOutput *output)
+{
+    if (enabled)
+        seat()->outputUnplugged(output);
 }

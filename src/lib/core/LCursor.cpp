@@ -26,10 +26,13 @@ LCursor::LCursor()
 {
     m_imp = new LCursorPrivate();
     compositor()->imp()->cursor = this;
-    imp()->defaultTexture = new LTexture();
+    imp()->louvreTexture = new LTexture();
 
-    if (!imp()->defaultTexture->setDataB(LSize(L_CURSOR_WIDTH, L_CURSOR_HEIGHT), L_CURSOR_STRIDE, DRM_FORMAT_ABGR8888, louvre_default_cursor_data()))
+    if (!imp()->louvreTexture->setDataB(LSize(L_CURSOR_WIDTH, L_CURSOR_HEIGHT), L_CURSOR_STRIDE, DRM_FORMAT_ABGR8888, louvre_default_cursor_data()))
         LLog::warning("[compositor] Could not create default cursor texture.");
+
+    imp()->defaultTexture = imp()->louvreTexture;
+    imp()->defaultHotspotB = LPointF(9);
 
     glGenFramebuffers(1, &imp()->glFramebuffer);
 
@@ -66,10 +69,29 @@ LCursor::~LCursor()
 
 void LCursor::useDefault()
 {
-    if (imp()->texture == imp()->defaultTexture && imp()->hotspotB == LPointF(9))
+    if (imp()->texture == imp()->defaultTexture && imp()->hotspotB == imp()->defaultHotspotB)
         return;
 
-    setTextureB(imp()->defaultTexture, LPointF(9));
+    setTextureB(imp()->defaultTexture, imp()->defaultHotspotB);
+}
+
+void LCursor::replaceDefaultB(const LTexture *texture, const LPointF &hotspot)
+{
+    bool update = imp()->defaultTexture == imp()->texture;
+
+    if (!texture)
+    {
+        imp()->defaultTexture = imp()->louvreTexture;
+        imp()->defaultHotspotB = LPointF(9);
+    }
+    else
+    {
+        imp()->defaultTexture = (LTexture*)texture;
+        imp()->defaultHotspotB = hotspot;
+    }
+
+    if (update)
+        useDefault();
 }
 
 static void texture2Buffer(LCursor *cursor, const LSizeF &size)
@@ -103,22 +125,6 @@ void LCursor::setTextureB(const LTexture *texture, const LPointF &hotspot)
     imp()->update();
 }
 
-void LCursor::setOutput(LOutput *output)
-{
-    bool update = false;
-
-    if (!imp()->output)
-        update = true;
-
-    imp()->output = output;
-
-    if (update)
-    {
-        imp()->textureChanged = true;
-        imp()->update();
-    }
-}
-
 void LCursor::move(Float32 x, Float32 y)
 {
     setPos(imp()->pos + LPointF(x,y));
@@ -128,7 +134,7 @@ void Louvre::LCursor::setPos(const LPointF &pos)
 {
     for (LOutput *output : compositor()->outputs())
         if (output->rect().containsPoint(pos) && output)
-            setOutput(output);
+            imp()->setOutput(output);
 
     if (!output())
         return;
@@ -189,10 +195,11 @@ void LCursor::setVisible(bool state)
     }
 }
 
-void LCursor::repaintOutputs()
+void LCursor::repaintOutputs(bool softwareOnly)
 {
     for (LOutput *o : intersectedOutputs())
-        o->repaint();
+        if (!softwareOnly || !hasHardwareSupport(o))
+            o->repaint();
 }
 
 bool LCursor::visible() const
@@ -223,6 +230,16 @@ LTexture *LCursor::texture() const
 LTexture *LCursor::defaultTexture() const
 {
     return imp()->defaultTexture;
+}
+
+const LPointF &LCursor::defaultHotspotB() const
+{
+    return imp()->defaultHotspotB;
+}
+
+LTexture *LCursor::defaultLouvreTexture() const
+{
+    return imp()->louvreTexture;
 }
 
 LOutput *LCursor::output() const
@@ -279,13 +296,6 @@ void LCursor::LCursorPrivate::update()
         }
         else
             intersectedOutputs.remove(o);
-
-        /*
-        if (cursor()->hasHardwareSupport(o))
-        {
-            LPointF p = newPosS - LPointF(o->pos());
-            compositor()->imp()->graphicBackend->setCursorPosition(o, p*o->scale());
-        }*/
     }
 }
 
@@ -334,4 +344,21 @@ void LCursor::LCursorPrivate::textureUpdate()
 
     textureChanged = false;
     posChanged = false;
+}
+
+
+void LCursor::LCursorPrivate::setOutput(LOutput *out)
+{
+    bool up = false;
+
+    if (!output)
+        up = true;
+
+    output = out;
+
+    if (up)
+    {
+        textureChanged = true;
+        update();
+    }
 }

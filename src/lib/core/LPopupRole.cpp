@@ -36,8 +36,6 @@ LPopupRole::LPopupRole(LPopupRole::Params *params) : LBaseSurfaceRole(params->po
 
 LPopupRole::~LPopupRole()
 {
-    compositor()->destroyPopupRoleRequest(this);
-
     if (surface())
         surface()->imp()->setMapped(false);
 
@@ -66,7 +64,6 @@ void LPopupRole::sendPopupDoneEvent()
             {
                 XdgShell::RXdgPopup *res = (XdgShell::RXdgPopup*)resource();
                 res->popupDone();
-                surface()->imp()->setMapped(false);
                 imp()->dismissed = true;
             }
 

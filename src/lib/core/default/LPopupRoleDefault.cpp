@@ -450,10 +450,16 @@ const LPoint &LPopupRole::rolePos() const
     LSize finalSize = popupSize;
 
     if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::ResizeY && finalSize.h() > positionerBounds().h())
+    {
         finalSize.setH(positionerBounds().h());
+        m_rolePos.setY(positionerBounds().y());
+    }
 
     if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::ResizeX && finalSize.w() > positionerBounds().w())
+    {
         finalSize.setW(positionerBounds().w());
+        m_rolePos.setX(positionerBounds().x());
+    }
 
     if (finalSize != popupSize)
         configure(LRect(m_rolePos - parentPos, finalSize));

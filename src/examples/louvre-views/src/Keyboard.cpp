@@ -1,5 +1,6 @@
 #include <LSurface.h>
 #include <LCursor.h>
+#include <LCompositor.h>
 
 #include <LScene.h>
 #include <unistd.h>

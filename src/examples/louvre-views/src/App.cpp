@@ -6,6 +6,7 @@
 #include "Global.h"
 #include "App.h"
 #include "DockApp.h"
+#include "Client.h"
 #include "Surface.h"
 #include "Output.h"
 #include "Dock.h"
@@ -129,9 +130,7 @@ void App::clicked()
     }
     else if (state == Running)
     {
-        std::list<Surface*> surfaces = (std::list<Surface*>&)compositor()->surfaces();
-
-        for (Surface *surf : surfaces)
+        for (Surface *surf : (std::list<Surface*>&)client->surfaces())
         {
             if ((Client*)surf->client() == client)
             {
@@ -145,7 +144,6 @@ void App::clicked()
                             return;
                         }
                     }
-                    return;
                 }
                 else if (surf->toplevel())
                 {
@@ -153,8 +151,11 @@ void App::clicked()
                     {
                         Toplevel *tl = (Toplevel*)surf->toplevel();
 
-                        if (tl->fullscreenOutput)
+                        if (tl->fullscreenOutput && tl->fullscreenWorkspace)
+                        {
                             tl->fullscreenOutput->setWorkspace(tl->fullscreenWorkspace, 600, 4.f);
+                            return;
+                        }
                     }
                     else
                     {
@@ -175,6 +176,7 @@ void App::clicked()
                                 }
                             }
                         }
+                        return;
                     }
 
                     return;

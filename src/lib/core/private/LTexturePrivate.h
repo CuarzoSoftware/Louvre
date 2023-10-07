@@ -4,6 +4,8 @@
 #include <LTexture.h>
 #include <LSize.h>
 
+using namespace Louvre;
+
 LPRIVATE_CLASS(LTexture)
     void deleteTexture(LTexture *texture);
 
@@ -16,6 +18,8 @@ LPRIVATE_CLASS(LTexture)
     UInt32 serial                                       = 0;
     void increaseSerial();
     bool pendingDelete = false;
+
+    std::list<LTexture*>::iterator compositorLink;
 };
 
 #endif // LTEXTUREPRIVATE_H

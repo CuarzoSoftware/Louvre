@@ -1,4 +1,4 @@
-sources = run_command('find', '.', '-type', 'f', '-name', '*[.c,.cpp,.h,.hpp]').stdout().strip().split('\n')
+sources = run_command('find', '.', '-type', 'f', '-name', '*[.c,.cpp,.h,.hpp]', check : true).stdout().strip().split('\n')
 
 executable(
     'louvre-default',
@@ -7,7 +7,6 @@ executable(
         Louvre_dep,
         gl_dep,
     ],
-    install : true, 
-    install_dir : EXAMPLES_PATH)
+    install : true)
 
 

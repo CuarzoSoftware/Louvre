@@ -12,6 +12,7 @@ LPRIVATE_CLASS(LOutput)
     LPoint lastPos;
     LSize lastSize;
     std::atomic<bool> callLock;
+    std::atomic<bool> callLockACK;
     std::thread::id threadId;
 
     // Painter

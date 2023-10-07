@@ -3,7 +3,7 @@
 
 #include <LView.h>
 
-/*!
+/**
  * @brief View for displaying textures
  *
  * The LTextureView allows you to use an LTexture as a view in a scene.
@@ -117,7 +117,7 @@ public:
      */
     void setDstSize(const LSize &dstSize);
 
-    /*!
+    /**
      * @brief Enable or disable custom coloring for texture rendering.
      *
      * This function enables or disables custom coloring for the texture rendering process.
@@ -127,7 +127,7 @@ public:
      */
     void enableCustomColor(bool enabled);
 
-    /*!
+    /**
      * @brief Check if custom coloring for texture rendering is enabled.
      *
      * This function returns a boolean value indicating whether custom coloring is currently enabled for the texture rendering process.
@@ -136,7 +136,7 @@ public:
      */
     bool customColorEnabled() const;
 
-    /*!
+    /**
      * @brief Set a custom color for texture rendering while preserving the texture's alpha channel.
      *
      * This function sets a custom color for the texture rendering process, replacing the original texture color while keeping the texture's alpha channel intact.
@@ -147,7 +147,7 @@ public:
      */
     void setCustomColor(Float32 r, Float32 g, Float32 b);
 
-    /*!
+    /**
      * @brief Set a custom color for texture rendering using an LRGBF object.
      *
      * This function sets a custom color for the texture rendering process, replacing the original texture color while keeping the texture's alpha channel intact.
@@ -156,7 +156,7 @@ public:
      */
     void setCustomColor(const LRGBF &color);
 
-    /*!
+    /**
      * @brief Get the current custom color used for texture rendering.
      *
      * This function retrieves the current custom color that is being used for the texture rendering process. The custom color

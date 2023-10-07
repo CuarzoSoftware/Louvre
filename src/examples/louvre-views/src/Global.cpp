@@ -1,6 +1,7 @@
 #include <LLog.h>
 #include <string.h>
 #include <LXCursor.h>
+#include <LCursor.h>
 #include <LOpenGL.h>
 #include <stdio.h>
 
@@ -235,6 +236,11 @@ Tooltip *G::tooltip()
 
 void G::loadCursors()
 {
+    xCursors.arrow = LXCursor::loadXCursorB("arrow");
+
+    if (xCursors.arrow)
+        LCompositor::compositor()->cursor()->replaceDefaultB(xCursors.arrow->texture(), xCursors.arrow->hotspotB());
+
     xCursors.hand2 = LXCursor::loadXCursorB("hand2");
     xCursors.top_left_corner = LXCursor::loadXCursorB("top_left_corner");
     xCursors.top_right_corner= LXCursor::loadXCursorB("top_right_corner");

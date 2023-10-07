@@ -3,7 +3,7 @@
 
 #include <LObject.h>
 
-/*!
+/**
  * @brief Output resolution and refresh rate.
  *
  * The LOutputMode class represents a possible configuration in which an LOutput can operate, specifically
@@ -20,28 +20,28 @@ public:
     LOutputMode& operator= (const LOutputMode&) = delete;
     /// @endcond
 
-    /*!
+    /**
      * @brief Mode output.
      *
      * Output to which the mode belongs.
      */
     const LOutput *output() const;
 
-    /*!
+    /**
      * @brief Mode resolution.
      *
      * Dimensions of the output when using this mode in buffer coordinates.
      */
     const LSize &sizeB() const;
 
-    /*!
+    /**
      * @brief Refresh rate.
      *
      * Refresh rate of the mode in mHz.
      */
     UInt32 refreshRate() const;
 
-    /*!
+    /**
      * @brief Preferred mode.
      *
      * Indicates if the mode is the preferred one by the output.

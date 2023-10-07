@@ -1,7 +1,4 @@
-sources = run_command('find', './src', '-type', 'f', '-name', '*[.c,.cpp,.h,.hpp]').stdout().strip().split('\n')
-
-fontconfig_dep = cpp.find_library('fontconfig', dirs: library_paths, required: true)
-freetype_dep = cpp.find_library('freetype', dirs: library_paths, required: true)
+sources = run_command('find', './src', '-type', 'f', '-name', '*[.c,.cpp,.h,.hpp]', check : true).stdout().strip().split('\n')
 
 executable(
     'louvre-views',
@@ -14,12 +11,11 @@ executable(
         freetype_dep,
         icuuc_dep
     ],
-    install : true, 
-    install_dir : EXAMPLES_PATH)
+    install : true)
 
-assets = run_command('find', './assets', '-type', 'f', '-name', '*[.png]').stdout().strip().split('\n')
+assets = run_command('find', './assets', '-type', 'f', '-name', '*[.png]', check : true).stdout().strip().split('\n')
 
 install_data(
     assets,
-    install_dir: '/usr/etc/Louvre/assets'
+    install_dir: ASSETS_PATH
 )

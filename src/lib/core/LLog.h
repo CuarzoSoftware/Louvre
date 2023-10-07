@@ -3,7 +3,7 @@
 
 #include <LNamespaces.h>
 
-/*!
+/**
  * @brief Debugging information
  *
  * The LLog class provides an output stream for debugging information.\n

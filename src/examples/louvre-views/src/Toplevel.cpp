@@ -10,6 +10,7 @@
 #include "ToplevelView.h"
 #include "Output.h"
 #include "Workspace.h"
+#include "Client.h"
 
 Toplevel::Toplevel(Params *params) : LToplevelRole(params),
     blackFullscreenBackground(0.f, 0.f, 0.f, 1.f),

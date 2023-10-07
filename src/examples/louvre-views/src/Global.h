@@ -76,6 +76,7 @@ public:
 
     struct Cursors
     {
+        LXCursor *arrow = nullptr;
         LXCursor *hand2 = nullptr;
         LXCursor *top_left_corner = nullptr;
         LXCursor *top_right_corner = nullptr;

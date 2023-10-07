@@ -6,7 +6,7 @@
 #include <LRect.h>
 #include <drm_fourcc.h>
 
-/*!
+/**
  * @brief OpenGL texture abstraction
  *
  * The LTexture class is an abstraction of an OpenGL texture.
@@ -111,9 +111,10 @@ public:
      *
      * @param dst The destination size of the copied texture. Default is an empty LSize.
      * @param src The rectangular area within the texture to be copied. Default is an empty LRect.
+     * @param highQualityScaling Set this value to true to enable high-quality scaling, which produces better results when resizing to a significantly different size from the original.
      * @return A pointer to the copied LTexture object.
      */
-    LTexture *copyB(const LSize &dst = LSize(), const LRect &src = LRect()) const;
+    LTexture *copyB(const LSize &dst = LSize(), const LRect &src = LRect(), bool highQualityScaling = true) const;
 
     /**
      * @brief Saves the texture as a PNG file.

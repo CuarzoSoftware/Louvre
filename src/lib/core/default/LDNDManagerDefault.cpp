@@ -9,16 +9,14 @@ using namespace Louvre;
 //! [startDragRequest]
 void LDNDManager::startDragRequest()
 {
-    // Let the client set the clipboard only if one of its surfaces has pointer or keyboard focus
-    if ((seat()->pointer()->focusSurface() && seat()->pointer()->focusSurface()->client() == source()->client()) ||
-       (seat()->keyboard()->focusSurface() && seat()->keyboard()->focusSurface()->client() == source()->client()))
+    // Let the client start the session only if one of its surfaces has pointer or keyboard focus
+    if ((seat()->pointer()->focusSurface()  && seat()->pointer()->focusSurface()->client()  == source()->client()) ||
+        (seat()->keyboard()->focusSurface() && seat()->keyboard()->focusSurface()->client() == source()->client()))
     {
         seat()->pointer()->setDraggingSurface(nullptr);
     }
     else
-    {
         cancel();
-    }
 }
 //! [startDragRequest]
 

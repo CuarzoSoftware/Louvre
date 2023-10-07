@@ -11,17 +11,13 @@ using namespace std;
 class Louvre::LGraphicBackend
 {
 public:
-
-    enum LOUVRE_GRAPHIC_BACKEND_CAP : UInt64
-    {
-        LOUVRE_GRAPHIC_BACKEND_CAP_SEAT = 1,
-    };
-
-    static bool initialize(LCompositor *compositor);
-    static void uninitialize(LCompositor *compositor);
-    static void pause(LCompositor *compositor);
-    static void resume(LCompositor *compositor);
-    static const list<LOutput*>*getConnectedOutputs(LCompositor *compositor);
+    static UInt32 id();
+    static void *getContextHandle();
+    static bool initialize();
+    static void uninitialize();
+    static void pause();
+    static void resume();
+    static const list<LOutput*>*getConnectedOutputs();
 
     /* OUTPUTS */
 
@@ -59,9 +55,9 @@ public:
 
     /* BUFFERS */
 
-    static const list<LDMAFormat *> *getDMAFormats(LCompositor *compositor);
-    static EGLDisplay getAllocatorEGLDisplay(LCompositor *compositor);
-    static EGLContext getAllocatorEGLContext(LCompositor *compositor);
+    static const list<LDMAFormat *> *getDMAFormats();
+    static EGLDisplay getAllocatorEGLDisplay();
+    static EGLContext getAllocatorEGLContext();
 
     static bool createTextureFromCPUBuffer(LTexture *texture,
                                            const LSize &size,

@@ -510,7 +510,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     damageId = LCompositor::nextSerial();
 
     damaged = true;
-    surface->damaged();
+    surface->damageChanged();
     return true;
 }
 

@@ -3,7 +3,7 @@
 
 #include <LNamespaces.h>
 
-/*!
+/**
  * @brief Template for 2D vectors
  *
  * The LPointTemplate class is a template for creating two-dimensional vectors.\n

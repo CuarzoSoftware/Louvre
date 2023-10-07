@@ -52,6 +52,8 @@ RXdgPopup::RXdgPopup
 
 RXdgPopup::~RXdgPopup()
 {
+    compositor()->destroyPopupRoleRequest(imp()->lPopupRole);
+
     if (xdgSurfaceResource())
         xdgSurfaceResource()->imp()->rXdgPopup = nullptr;
 

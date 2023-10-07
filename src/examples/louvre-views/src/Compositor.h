@@ -18,6 +18,7 @@ public:
     ~Compositor();
 
     void initialized() override;
+    void uninitialized() override;
 
     LClient *createClientRequest(LClient::Params *params) override;
     LOutput *createOutputRequest() override;
@@ -26,6 +27,12 @@ public:
     LPointer *createPointerRequest(LPointer::Params *params) override;
     LKeyboard *createKeyboardRequest(LKeyboard::Params *params) override;
     LToplevelRole *createToplevelRoleRequest(LToplevelRole::Params *params) override;
+
+    // Virtual destructors
+    void destroyClientRequest(LClient *client) override;
+    void destroyPopupRoleRequest(LPopupRole *popup) override;
+
+    void fadeOutSurface(LBaseSurfaceRole *role, UInt32 ms);
 
     // Global scene used to render all outputs
     LScene scene;

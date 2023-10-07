@@ -3,7 +3,7 @@
 
 #include <LBaseSurfaceRole.h>
 
-/*!
+/**
  * @brief Drag & drop icon role for surfaces
  *
  * The LDNDIconRole class is a role for surfaces that allows the compositor to use them as icons for drag & drop sessions.\n
@@ -11,7 +11,9 @@
  * request from the Wayland [wl_data_device](https://wayland.app/protocols/wayland#wl_data_device) protocol interface.\n
  * The LDNDIconRole role used in a drag & drop session can be accessed from LDNDManager::icon().\n
  *
- * <center><IMG SRC="https://lh3.googleusercontent.com/evKJ2MbTJ42-qFYSP02NPxUULSFpTz3oBSqn6RvR20u_r5wvgJpHF6o-3Zg7aWgNBhrkIsM8iNWiQQHxPjvGml9zDB2wwNwWK0scqTsHpLIbxMqYv60afSruzbWNBCDZaGI_y77eRA=w2400"></center>
+ * <center><IMG WIDTH="250px" SRC="https://lh3.googleusercontent.com/evKJ2MbTJ42-qFYSP02NPxUULSFpTz3oBSqn6RvR20u_r5wvgJpHF6o-3Zg7aWgNBhrkIsM8iNWiQQHxPjvGml9zDB2wwNwWK0scqTsHpLIbxMqYv60afSruzbWNBCDZaGI_y77eRA=w2400"></center>
+ *
+ * @see LDNDManager::startDragRequest()
  */
 
 class Louvre::LDNDIconRole : public LBaseSurfaceRole
@@ -20,14 +22,14 @@ public:
 
     struct Params;
 
-    /*!
+    /**
      * @brief Constructor of the LDNDIconRole class.
      *
      * @param params Internal library parameters passed in the LCompositor::createDNDIconRoleRequest() virtual constructor.
      */
     LDNDIconRole(Params *params);
 
-    /*!
+    /**
      * @brief Destructor of the LDNDIconRole class.
      *
      * Invoked internally by the library after LCompositor::destroyDNDIconRoleRequest() is called.
@@ -39,7 +41,7 @@ public:
     LDNDIconRole& operator= (const LDNDIconRole&) = delete;
     /// @endcond
 
-    /*!
+    /**
      * @brief Notify a hotspot change.
      *
      * Reimplement this virtual method if you want to be notified when the icon hotspot changes.
@@ -49,7 +51,7 @@ public:
      */
     virtual void hotspotChanged() const;
 
-    /*!
+    /**
      * @brief Position of the surface given the role.
      *
      * The position of the icon given the role is calculated by subtracting the hotspot from the surface position.\n
@@ -61,12 +63,12 @@ public:
      */
     virtual const LPoint &rolePos() const override;
 
-    /*!
+    /**
      * @brief Hotspot of the drag & drop icon in surface coordinates.
      */
     const LPoint &hotspot() const;
 
-    /*!
+    /**
      * @brief Hotspot of the drag & drop icon in buffer coordinates.
      */
     const LPoint &hotspotB() const;

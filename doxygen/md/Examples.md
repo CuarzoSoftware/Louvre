@@ -1,4 +1,4 @@
-# Examples
+# 🕹️ Examples
 
 Louvre provides three illustrative examples that demonstrate its capabilities and various usage scenarios:
 
@@ -45,10 +45,10 @@ Here's an example format for apps.list:
 
 ```
 App 1 Name
-/path/to/app1
+app1-run-command
 /full/path/to/app1_icon.png
 App 2 Name
-/path/to/app2
+app2-run-command
 /full/path/to/app2_icon.png
 ```
 
@@ -58,7 +58,7 @@ Ensure that there are no empty lines between entries or at the begining/end of t
 
 ## louvre-weston-clone {#weston}
 
-The louvre-weston-clone example resembles a Weston-like compositor, showcasing the efficient use of LPainter. It optimally repaints only the content that requires updating, taking surface damage and opaque/translucent regions into consideration. 
+The louvre-weston-clone example resembles a Weston-like compositor, showcasing the efficient use of Louvre::LPainter. It optimally repaints only the content that requires updating, taking surface damage and opaque/translucent regions into consideration. 
 
 ### Screenshot
 
@@ -77,7 +77,7 @@ To set the background wallpaper, simply place an image in the following director
 
 ## louvre-default {#default}
 
-This example demonstrates Louvre's default behavior: a basic compositor with a white background for user interaction with applications. It uses LPainter for rendering but in a non-efficient way as it clears and repaints the entire screen each frame.
+This example demonstrates Louvre's default behavior: a basic compositor with a white background for user interaction with applications. It uses Louvre::LPainter for rendering but in a non-efficient way as it clears and repaints the entire screen each frame.
 
 ### Screenshot
 

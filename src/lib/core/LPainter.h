@@ -4,7 +4,7 @@
 #include <LObject.h>
 #include <LPoint.h>
 
-/*!
+/**
  * @brief Renderer painting functions
  *
  * The LPainter class offers basic functions for 2D rendering without the need to use OpenGL functions directly. It can draw texture rects or solid colors, clear the screen and set the viewport.\n
@@ -40,7 +40,7 @@ public:
      */
     LFramebuffer *boundFramebuffer() const;
 
-    /*!
+    /**
      * @brief Draws a texture.
      *
      * Draws a texture or sub-rect of a texture on the screen.
@@ -56,7 +56,7 @@ public:
     void drawTexture(const LTexture *texture, const LRect &src, const LRect &dst,
                      Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
 
-    /*!
+    /**
      * @brief Draws a texture.
      *
      * Draws a portion of a texture onto the screen at a specific position and size.
@@ -80,7 +80,7 @@ public:
                      Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                      Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
 
-    /*!
+    /**
      * @brief Draws a solid color using a texture's alpha channel, with support for HiDPI scaling.
      *
      * This function draws a rectangle or sub-rectangle of a texture on the screen, while maintaining its alpha channel,
@@ -98,7 +98,7 @@ public:
     void drawColorTexture(const LTexture *texture, const LRGBF &color, const LRect &src, const LRect &dst,
                           Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
 
-    /*!
+    /**
      * @brief Draws a solid color using a texture's alpha channel, with support for HiDPI scaling.
      *
      * This function draws a rectangle or sub-rectangle of a texture on the screen, while maintaining its alpha channel,
@@ -127,7 +127,7 @@ public:
                           Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                           Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
 
-    /*!
+    /**
      * @brief Draws a solid color.
      *
      * Draws a colored rectangle on the screen.
@@ -140,7 +140,7 @@ public:
      */
     void drawColor(const LRect &dst, Float32 r, Float32 g, Float32 b, Float32 a);
 
-    /*!
+    /**
      * @brief Draws a solid color.
      *
      * Draws a colored rectangle on the screen.
@@ -157,7 +157,7 @@ public:
     void drawColor(Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                    Float32 r, Float32 g, Float32 b, Float32 a);
 
-    /*!
+    /**
      * @brief Sets the viewport.
      *
      * @note This function should only be used if you are working with your own shaders/programs.
@@ -166,7 +166,7 @@ public:
      */
     void setViewport(const LRect &rect);
 
-    /*!
+    /**
      * @brief Sets the viewport.
      *
      * @note This function should only be used if you are working with your own shaders/programs.
@@ -178,7 +178,7 @@ public:
      */
     void setViewport(Int32 x, Int32 y, Int32 w, Int32 h);
 
-    /*!
+    /**
      * @brief Sets the clear color.
      *
      * Sets the clear color used when calling clearScreen().
@@ -190,14 +190,14 @@ public:
      */
     void setClearColor(Float32 r, Float32 g, Float32 b, Float32 a);
 
-    /*!
+    /**
      * @brief Clears the screen.
      *
      * Clears the screen using the color defined by setClearColor().
      */
     void clearScreen();
 
-    /*!
+    /**
      * @brief Uses LPainter's program.
      *
      * If you are using your own OpenGL programs, remember to call this method before using LPainter functions.

@@ -44,6 +44,10 @@ LPRIVATE_CLASS(LToplevelRole)
     UInt32 lastDecorationModeConfigureSerial                        = 0;
     LToplevelRole::DecorationMode preferredDecorationMode           = NoPreferredMode;
 
+    // Request before the role is applied
+    States prevRoleRequest = 0;
+    LOutput *prevRoleFullscreenRequestOutput = nullptr;
+
     void applyPendingChanges();
 };
 

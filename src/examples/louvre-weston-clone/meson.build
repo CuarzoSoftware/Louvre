@@ -1,7 +1,4 @@
-sources = run_command('find', '.', '-type', 'f', '-name', '*[.c,.cpp,.h,.hpp]').stdout().strip().split('\n')
-
-fontconfig_dep = cpp.find_library('fontconfig', dirs: library_paths, required: true)
-freetype_dep = cpp.find_library('freetype', dirs: library_paths, required: true)
+sources = run_command('find', '.', '-type', 'f', '-name', '*[.c,.cpp,.h,.hpp]', check : true).stdout().strip().split('\n')
 
 executable(
     'louvre-weston-clone',
@@ -13,5 +10,4 @@ executable(
         fontconfig_dep,
         freetype_dep
     ],
-    install : true, 
-    install_dir : EXAMPLES_PATH)
+    install : true)

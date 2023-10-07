@@ -6,7 +6,7 @@
 #include <LSize.h>
 #include <LRect.h>
 
-/*!
+/**
  * @brief Toplevel role for surfaces
  *
  * The LToplevelRole class is a role for surfaces used by clients to display application windows that have
@@ -23,14 +23,14 @@ public:
 
     struct Params;
 
-    /*!
+    /**
      * @brief LToplevelRole class constructor.
      *
      * @param params Internal library parameters provided in the virtual LCompositor::createToplevelRoleRequest() constructor.
      */
     LToplevelRole(Params *params);
 
-    /*!
+    /**
      * @brief LToplevelRole class destructor.
      *
      * Invoked after LCompositor::destroyToplevelRoleRequest().
@@ -42,7 +42,7 @@ public:
     LToplevelRole& operator= (const LToplevelRole&) = delete;
     /// @endcond
 
-    /*!
+    /**
      * @brief Resizing border/corner.
      */
     enum ResizeEdge : UInt32
@@ -75,12 +75,12 @@ public:
         BottomRight = 10
     };
 
-    /*!
+    /**
      * @brief Toplevel states bitfield
      */
     typedef UInt32 States;
 
-    /*!
+    /**
      * @brief Flags indicating the possible states of a Toplevel.
      */
     enum State : States
@@ -126,7 +126,7 @@ public:
         ServerSide = 2
     };
 
-    /*!
+    /**
      * @brief Configures the Toplevel.
      *
      * Requests to change the states of the Toplevel while keeping its current size.\n
@@ -135,7 +135,7 @@ public:
      */
     void configure(States stateFlags);
 
-    /*!
+    /**
      * @brief Configures the Toplevel.
      *
      * Requests to change the size and states of the Toplevel.\n
@@ -146,7 +146,7 @@ public:
      */
     void configure(const LSize &size, States stateFlags);
 
-    /*!
+    /**
      * @brief Configures the Toplevel.
      *
      * Requests to change the size and states of the Toplevel.\n
@@ -158,7 +158,7 @@ public:
      */
     void configure(Int32 width, Int32 height, States stateFlags);
 
-    /*!
+    /**
      * @brief Closes the Toplevel.
      *
      * Requests to close the Toplevel (equivalent to pressing the close button on the window).
@@ -187,21 +187,21 @@ public:
      */
     LSize calculateResizeSize(const LPoint &cursorPosDelta, const LSize &initialSize, ResizeEdge edge);
 
-    /*!
+    /**
      * @brief Get the application ID associated with the toplevel window.
      *
      * @return A string containing the application ID (e.g., "com.cuarzosoftware.Desk"), can be `nullptr`.
      */
     const char *appId() const;
 
-    /*!
+    /**
      * @brief Get the window title of the toplevel.
      *
      * @return A string representing the window title, or `nullptr`.
      */
     const char *title() const;
 
-    /*!
+    /**
      * @brief Get the minimum size of the window geometry in surface coordinates.
      *
      * If one of the axis is 0, it means it has no minimum size.
@@ -210,7 +210,7 @@ public:
      */
     const LSize &minSize() const;
 
-    /*!
+    /**
      * @brief Get the maximum size of the window geometry in surface coordinates.
      *
      * If one of the axis is 0, it means it has no maximum size.
@@ -219,35 +219,35 @@ public:
      */
     const LSize &maxSize() const;
 
-    /*!
+    /**
      * @brief Check if the toplevel window is maximized.
      *
      * @return `true` if the toplevel is maximized; otherwise, `false`.
      */
     bool maximized() const;
 
-    /*!
+    /**
      * @brief Check if the toplevel window is in fullscreen mode.
      *
      * @return `true` if the toplevel is in fullscreen mode; otherwise, `false`.
      */
     bool fullscreen() const;
 
-    /*!
+    /**
      * @brief Check if the toplevel window is currently active.
      *
      * @return `true` if the toplevel is active; otherwise, `false`.
      */
     bool activated() const;
 
-    /*!
+    /**
      * @brief Get the flags representing the current states of the toplevel window.
      *
      * @return The states of the toplevel window as a #States bitfield.
      */
     States states() const;
 
-    /*!
+    /**
      * @brief Request the client to change its decoration mode.
      *
      * The client may choose to ignore the request. Must be followed by a configure() event.
@@ -258,14 +258,14 @@ public:
      */
     void setDecorationMode(DecorationMode mode);
 
-    /*!
+    /**
      * @brief Get the current decoration mode of the toplevel window.
      *
      * @return The current decoration mode.
      */
     DecorationMode decorationMode() const;
 
-    /*!
+    /**
      * @brief Get the preferred decoration mode set by the client.
      *
      * @return The preferred decoration mode value.
@@ -284,7 +284,7 @@ public:
 
 /// @name Virtual Methods
 /// @{
-    /*!
+    /**
      * @brief Position of the surface according to the role.
      *
      * The default implementation of rolePos() positions the Toplevel at the position assigned by the compositor
@@ -297,7 +297,7 @@ public:
      */
     virtual const LPoint &rolePos() const override;
 
-    /*!
+    /**
      * @brief Request to start an interactive move session
      *
      * Reimplement this virtual method if you wish to be notified when the client wishes to start an interactive move session.
@@ -307,7 +307,7 @@ public:
      */
     virtual void startMoveRequest();
 
-    /*!
+    /**
      * @brief Request to start an interactive resize session
      *
      * Reimplement this virtual method if you want to be notified when the client wants to start an interactive resize session.
@@ -317,7 +317,7 @@ public:
      */
     virtual void startResizeRequest(ResizeEdge edge);
 
-    /*!
+    /**
      * @brief Request for configuration
      *
      * Reimplement this virtual method if you want to be notified when the client wants the compositor to configure the Toplevel.
@@ -327,7 +327,7 @@ public:
      */
     virtual void configureRequest();
 
-    /*!
+    /**
      * @brief Request to maximize
      *
      * Reimplement this virtual method if you want to be notified when the client wants to maximize the Toplevel.
@@ -337,7 +337,7 @@ public:
      */
     virtual void setMaximizedRequest();
 
-    /*!
+    /**
      * @brief Request to unmaximize
      *
      * Reimplement this virtual method if you want to be notified when the client wants to unmaximize the Toplevel.
@@ -347,7 +347,7 @@ public:
      */
     virtual void unsetMaximizedRequest();
 
-    /*!
+    /**
      * @brief Maximized state change
      *
      * Reimplement this virtual method if you want to be notified when the Toplevel changes its maximized state.\n
@@ -358,7 +358,7 @@ public:
      */
     virtual void maximizedChanged();
 
-    /*!
+    /**
      * @brief Request to minimize
      *
      * Reimplement this virtual method if you want to be notified when the client wants to minimize the Toplevel.
@@ -368,7 +368,7 @@ public:
      */
     virtual void setMinimizedRequest();
 
-    /*!
+    /**
      * @brief Request to set fullscreen mode
      *
      * Reimplement this virtual method if you want to be notified when the client wants to show the Toplevel in fullscreen mode.
@@ -379,7 +379,7 @@ public:
      */
     virtual void setFullscreenRequest(LOutput *destOutput);
 
-    /*!
+    /**
      * @brief Request to unset fullscreen mode
      *
      * Reimplement this virtual method if you want to be notified when the client wants to deactivate fullscreen mode.
@@ -389,7 +389,7 @@ public:
      */
     virtual void unsetFullscreenRequest();
 
-    /*!
+    /**
      * @brief Change in fullscreen mode state
      *
      * Reimplement this virtual method if you want to be notified when the Toplevel changes its fullscreen mode state.\n
@@ -400,7 +400,7 @@ public:
      */
     virtual void fullscreenChanged();
 
-    /*!
+    /**
      * @brief Request to show a menu
      *
      * Reimplement this virtual method if you want to be notified when the client requests the compositor to show a menu
@@ -411,7 +411,7 @@ public:
      */
     virtual void showWindowMenuRequest(Int32 x, Int32 y);
 
-    /*!
+    /**
      * @brief Change of active state
      *
      * Reimplement this virtual method if you want to be notified when the Toplevel changes its active state.\n
@@ -434,7 +434,7 @@ public:
      */
     virtual void statesChanged();
 
-    /*!
+    /**
      * @brief Change of maximum size
      *
      * Reimplement this virtual method if you want to be notified when the Toplevel changes its maximum size.\n
@@ -445,7 +445,7 @@ public:
      */
     virtual void maxSizeChanged();
 
-    /*!
+    /**
      * @brief Change of minimum size
      *
      * Reimplement this virtual method if you want to be notified when the Toplevel changes its minimum size.\n

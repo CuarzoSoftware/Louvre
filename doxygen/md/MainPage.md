@@ -1,3 +1,4 @@
+# 🏠 Home
 
 Louvre is a C++ library that aims to simplify the process of creating Wayland compositors by reducing its learning curve and thus allowing developers to focus on the creative and unique features of their compositors.
 
@@ -5,7 +6,7 @@ Louvre is a C++ library that aims to simplify the process of creating Wayland co
 
 ## ⏲️ Performance
 
-Louvre offers excellent performance. A benchmark consisting of rendering numerous moving wl_subsurfaces (opaque and translucent), in which the **louvre-weston-clone** example compositor was tested, shows that Louvre can maintain a high FPS rate even in complex scenarios. Furthermore, it uses fewer CPU and GPU resources than popular compositors like Weston and Sway.
+Louvre offers excellent performance. A benchmark consisting of rendering numerous moving wl_subsurfaces (opaque and translucent), in which the [louvre-weston-clone](md_md__examples.html#weston) example compositor was tested, shows that Louvre can maintain a high FPS rate even in complex scenarios. Furthermore, it uses fewer CPU and GPU resources than popular compositors like Weston and Sway.
 
 > The source code of the benchmark can be found in ```Louvre/src/benchmark```
 
@@ -15,14 +16,14 @@ Here is a graph illustrating the benchmark results. It displays the average FPS 
 
 <img src="https://lh3.googleusercontent.com/pw/AIL4fc_fcGPw-Yh1zkqxKdfEQucQVXH853Py1YXtTk7jHVACzIaYmYCId07D0hsdJ-FArkERPjJQR2shCc4swA7b1cy9X9EhvFPqLOR_kxV-C1eVQHey2m8=w2400"/>
 
-Most Wayland compositors use a single thread, which drastically slows down their performance when rendering complex scenarios. The reason for this is due to **vertical sync**, where the compositor must wait a few milliseconds before it can swap the framebuffer it just rendered with the one being displayed on screen. This is done in order to synchronize the swapping with the monitor refresh rate (*vblank*) and avoid the **tearing effect**. When working with a single thread, compositors have "dead times" that prevent them from processing and rendering the content in time for the next frame. That's why they end up skipping one frame, causing their refresh rate to drop in half.
-To avoid this problem, Louvre works with multiple threads. Each output (monitor) renders its content on its own thread, allowing the compositor to continue processing requests and render to other outputs while one is busy. This prevents the compositor from having dead times and therefore allows it to maintain a high refresh rate.
+Most Wayland compositors use a single thread, which drastically slows down their performance when rendering complex scenarios. The reason for this is due to **vertical sync**, where the compositor must wait a few milliseconds before it can swap the framebuffer it just rendered with the one being displayed on screen. This is done in order to synchronize the swapping with the display refresh rate (*vblank*) and avoid the **tearing effect**. When working with a single thread, compositors have "dead times" that prevent them from processing and rendering the content in time for the next frame. That's why they end up skipping one frame, causing their refresh rate to drop in half.
+To avoid this problem, Louvre works with multiple threads. Each output (display) renders its content on its own thread, allowing the compositor to continue processing requests and render to other outputs while one is waiting for a vblank. This prevent Louvre compositors from having "dead times" and therefore allows them to maintain a high refresh rate.
 
 ### CPU Consumption
 
 <img src="https://lh3.googleusercontent.com/pw/AIL4fc9YhNEf4Rjsqsz49aFtMjyjifDxE9aKgxoOLsfTdJwIu-CqEJr3MJHALX9pgJp05kYJY1z1YBTZjUCQcIAf-gjvRAsumqzEyDm88t1E9SL4aCzaZBo=w2400"/>
 
-On the left are the raw CPU consumption results, which seemingly indicate that Louvre uses more CPU (which is obvious, given its higher FPS rendering). However, when we normalize it to the FPS (graph on the right), we can observe that, in fact, it employs less CPU than the other compositors (relative to FPS).
+On the left are the raw CPU consumption results, which seemingly indicate that Louvre uses more CPU (which is obvious, given its higher refresh rate). However, when we normalize it to the FPS (graph on the right), we can observe that, in fact, it employs less CPU than the other compositors (relative to FPS).
 
 ### GPU Consumption
 
@@ -32,7 +33,7 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 
 ## 🖌️ Renderering
 
-Within Louvre, you have the flexibility to either employ your own OpenGL ES 2.0 shaders/programs, use the LPainter class for fundamental 2D rendering, or leverage the scene and views system, which manages buffer damage and can also handle input events for you. Additionally, it's possible to combine these three approaches as needed.
+Within Louvre, you have the flexibility to either employ your own OpenGL ES 2.0 shaders/programs, use the Louvre::LPainter class for fundamental 2D rendering, or leverage the Louvre::LScene and Louvre::LView system, which manages buffer damage and can also handle input events for you. Additionally, it's possible to combine these three approaches as needed.
 
 ## 🔲 Tested Hardware
 
@@ -47,15 +48,14 @@ Please be aware that specific older nouveau drivers, due to their absence of mul
 
 * Wayland
 * XDG Shell
-* XDG Decoration Manager
+* XDG Decoration
 * Presentation Time
 * Linux DMA-Buf
-* WP Pointer Gestures (WIP)
 
 ## 💬 Buffer Sharing
 
 * Shared Memory
-* Wayland EGL (GEM flinks are supported)
+* Wayland EGL (DMA and GEM flinks)
 * Linux DMA-Buff
 
 ## 👴 Compatible Clients
@@ -75,4 +75,3 @@ Please be aware that specific older nouveau drivers, due to their absence of mul
 
 * Libinput
 * X11 (removed since version 1.0.0)
-

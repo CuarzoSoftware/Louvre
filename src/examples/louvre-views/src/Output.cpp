@@ -395,12 +395,12 @@ void Output::uninitializeGL()
     delete wallpaperView;
     wallpaperView = nullptr;
 
-    while (!workspaces.empty())
-        delete workspaces.back();
-
     workspaceAnim->stop();
     workspaceAnim->destroy();
     workspaceAnim = nullptr;
+
+    while (!workspaces.empty())
+        delete workspaces.back();
 
     delete workspacesContainer;
     workspacesContainer = nullptr;

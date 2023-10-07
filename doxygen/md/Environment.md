@@ -1,4 +1,4 @@
-# Environment Variables
+# ⚙️ Environment Variables
 
 ## Debugging
 

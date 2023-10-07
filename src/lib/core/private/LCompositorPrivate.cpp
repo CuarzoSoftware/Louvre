@@ -51,6 +51,9 @@ static void clientDisconnectedEvent(wl_listener *listener, void *data)
     LCompositor *compositor = LCompositor::compositor();
     wl_client *client = (wl_client*)data;
 
+    LClient *disconnectedClient = compositor->getClientFromNativeResource(client);
+    compositor->destroyClientRequest(disconnectedClient);
+
     wl_resource *lastCreatedResource = NULL;
 
     while (1)
@@ -64,12 +67,6 @@ static void clientDisconnectedEvent(wl_listener *listener, void *data)
             wl_resource_destroy(lastCreatedResource);
     }
 
-    LClient *disconnectedClient = compositor->getClientFromNativeResource(client);
-
-    if (disconnectedClient == nullptr)
-        return;
-
-    compositor->destroyClientRequest(disconnectedClient);
     compositor->imp()->clients.erase(disconnectedClient->imp()->compositorLink);
     delete disconnectedClient;
 }
@@ -144,7 +141,14 @@ bool LCompositor::LCompositorPrivate::initWayland()
     }
 
     eventLoop = wl_display_get_event_loop(display);
-    fdSet[0].fd = wl_event_loop_get_fd(eventLoop);
+
+    compositor->imp()->events[2].events = EPOLLIN | EPOLLOUT;
+    compositor->imp()->events[2].data.fd = wl_event_loop_get_fd(eventLoop);
+
+    epoll_ctl(compositor->imp()->epollFd,
+              EPOLL_CTL_ADD,
+              compositor->imp()->events[2].data.fd,
+              &compositor->imp()->events[2]);
 
     // Listen for client connections
     clientConnectedListener.notify = &clientConnectedEvent;
@@ -161,18 +165,23 @@ void LCompositor::LCompositorPrivate::unitWayland()
     }
 }
 
-void LCompositor::LCompositorPrivate::uinitCompositor()
+void LCompositor::LCompositorPrivate::unitCompositor()
 {
     state = CompositorState::Uninitializing;
-    unitGraphicBackend();
+    unitInputBackend(true);
+    unitGraphicBackend(true);
     unitSeat();
     unitWayland();
+
+    if (epollFd != -1)
+        close(epollFd);
+
     state = CompositorState::Uninitialized;
 }
 
 bool LCompositor::LCompositorPrivate::initGraphicBackend()
 {
-    unitGraphicBackend();
+    unitGraphicBackend(false);
 
     eglBindWaylandDisplayWL = (PFNEGLBINDWAYLANDDISPLAYWL) eglGetProcAddress ("eglBindWaylandDisplayWL");
 
@@ -196,7 +205,7 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
         }
         else
         {
-            if (!graphicBackend->initialize(compositor))
+            if (!graphicBackend->initialize())
             {
                 dlclose(graphicBackendHandle);
                 graphicBackendHandle = nullptr;
@@ -209,7 +218,7 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
     }
     else
     {
-        if (!graphicBackend->initialize(compositor))
+        if (!graphicBackend->initialize())
         {
             dlclose(graphicBackendHandle);
             graphicBackendHandle = nullptr;
@@ -223,8 +232,8 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
     LLog::debug("[compositor] Graphic backend initialized successfully.");
     isGraphicBackendInitialized = true;
 
-    mainEGLDisplay = graphicBackend->getAllocatorEGLDisplay(compositor);
-    mainEGLContext = graphicBackend->getAllocatorEGLContext(compositor);
+    mainEGLDisplay = graphicBackend->getAllocatorEGLDisplay();
+    mainEGLContext = graphicBackend->getAllocatorEGLContext();
 
     eglMakeCurrent(eglDisplay(),
                    EGL_NO_SURFACE,
@@ -241,7 +250,50 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
     return true;
 }
 
-void LCompositor::LCompositorPrivate::unitGraphicBackend()
+bool LCompositor::LCompositorPrivate::initInputBackend()
+{
+    unitInputBackend(false);
+
+    if (!inputBackend)
+    {
+        LLog::warning("[compositor] User did not load an input backend. Trying the Libinput backend...");
+
+        if (!loadInputBackend("/usr/etc/Louvre/backends/libLInputBackendLibinput.so"))
+        {
+            LLog::fatal("[compositor] No input backend found. Stopping compositor...");
+            return false;
+        }
+    }
+
+    if (!inputBackend->initialize())
+    {
+        LLog::fatal("[compositor] Failed to initialize input backend. Stopping compositor...");
+        return false;
+    }
+
+    LLog::debug("[compositor] Input backend initialized successfully.");
+    isInputBackendInitialized = true;
+    return true;
+}
+
+void LCompositor::LCompositorPrivate::unitInputBackend(bool closeLib)
+{
+    if (inputBackend && isInputBackendInitialized)
+        inputBackend->uninitialize();
+
+    isInputBackendInitialized = false;
+
+    if (closeLib)
+    {
+        if (inputBackendHandle)
+            dlclose(inputBackendHandle);
+
+        inputBackendHandle = nullptr;
+        inputBackend = nullptr;
+    }
+}
+
+void LCompositor::LCompositorPrivate::unitGraphicBackend(bool closeLib)
 {
     if (cursor)
     {
@@ -264,9 +316,18 @@ void LCompositor::LCompositorPrivate::unitGraphicBackend()
                    EGL_NO_CONTEXT);
 
     if (isGraphicBackendInitialized && graphicBackend)
-        graphicBackend->uninitialize(compositor);
+        graphicBackend->uninitialize();
 
     isGraphicBackendInitialized = false;
+
+    if (closeLib)
+    {
+        if (graphicBackendHandle)
+            dlclose(graphicBackendHandle);
+
+        graphicBackendHandle = nullptr;
+        graphicBackend = nullptr;
+    }
 }
 
 bool LCompositor::LCompositorPrivate::initSeat()
@@ -283,6 +344,39 @@ void LCompositor::LCompositorPrivate::unitSeat()
 {
     if (seat)
     {
+        // Notify first
+
+        if (seat->keyboard())
+            LCompositor::compositor()->destroyKeyboardRequest(seat->keyboard());
+
+        if (seat->pointer())
+            LCompositor::compositor()->destroyPointerRequest(seat->pointer());
+
+        if (seat->dndManager())
+            LCompositor::compositor()->destroyDNDManagerRequest(seat->dndManager());
+
+        LCompositor::compositor()->destroySeatRequest(seat);
+
+        // Then destroy
+
+        if (seat->keyboard())
+        {
+            delete seat->imp()->keyboard;
+            seat->imp()->keyboard = nullptr;
+        }
+
+        if (seat->pointer())
+        {
+            delete seat->imp()->pointer;
+            seat->imp()->pointer = nullptr;
+        }
+
+        if (seat->dndManager())
+        {
+            delete seat->imp()->dndManager;
+            seat->imp()->dndManager = nullptr;
+        }
+
         delete seat;
         seat = nullptr;
     }
@@ -290,6 +384,9 @@ void LCompositor::LCompositorPrivate::unitSeat()
 
 bool LCompositor::LCompositorPrivate::loadGraphicBackend(const char *path)
 {
+    if (graphicBackendHandle)
+        dlclose(graphicBackendHandle);
+
     graphicBackendHandle = dlopen(path, RTLD_LAZY);
 
     if (!graphicBackendHandle)
@@ -317,6 +414,9 @@ bool LCompositor::LCompositorPrivate::loadGraphicBackend(const char *path)
 
 bool LCompositor::LCompositorPrivate::loadInputBackend(const char *path)
 {
+    if (inputBackendHandle)
+        dlclose(inputBackendHandle);
+
     inputBackendHandle = dlopen(path, RTLD_LAZY);
 
     if (!inputBackendHandle)
@@ -483,6 +583,6 @@ void LCompositor::LCompositorPrivate::unlockPoll()
 
     pollUnlocked = true;
     uint64_t event_value = 1;
-    ssize_t n = write(fdSet[1].fd, &event_value, sizeof(event_value));
+    ssize_t n = write(events[0].data.fd, &event_value, sizeof(event_value));
     L_UNUSED(n);
 }

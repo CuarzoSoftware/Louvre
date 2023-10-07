@@ -3,7 +3,7 @@
 
 #include <LView.h>
 
-/*!
+/**
  * @brief Container of views
  *
  * The LLayerView is a non-renderable LView. Unlike other views, it doesn't have content to render on its own.
@@ -18,19 +18,19 @@ public:
     LLayerView& operator= (const LLayerView&) = delete;
     /// @endcond
 
-    /*!
+    /**
      * @brief Constructor for LLayerView.
      *
      * @param parent The parent view, if any.
      */
     LLayerView(LView *parent = nullptr);
 
-    /*!
+    /**
      * @brief Destructor for LLayerView.
      */
     ~LLayerView();
 
-    /*!
+    /**
      * @brief Set the position of the view.
      *
      * @param x The x-coordinate in surface coordinates.
@@ -38,7 +38,7 @@ public:
      */
     virtual void setPos(Int32 x, Int32 y);
 
-    /*!
+    /**
      * @brief Set the size of the view.
      *
      * @param w The width in surface coordinates.
@@ -46,21 +46,21 @@ public:
      */
     virtual void setSize(Int32 w, Int32 h);
 
-    /*!
+    /**
      * @brief Set the input region for the view.
      *
      * @param region The input region to be set.
      */
     virtual void setInputRegion(const LRegion *region) const;
 
-    /*!
+    /**
      * @brief Set the position of the view.
      *
      * @param pos The position as an LPoint in surface coordinates.
      */
     void setPos(const LPoint &pos);
 
-    /*!
+    /**
      * @brief Set the size of the view.
      *
      * @param size The size as an LSize in surface coordinates.

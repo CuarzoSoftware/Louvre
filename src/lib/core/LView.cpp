@@ -25,7 +25,6 @@ LView::~LView()
         children().front()->setParent(nullptr);
 
     compositor()->imp()->views.erase(imp()->compositorLink);
-
     delete m_imp;
 }
 

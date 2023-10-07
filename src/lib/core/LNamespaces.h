@@ -40,7 +40,7 @@ public: \
     inline CAT(class_name,Private) *imp() const {return m_imp;}; \
     private: \
     CAT(class_name,Private) *m_imp = nullptr; \
-/*!
+/**
  * @namespace Louvre
  * @brief Namespaces
  * @page Namespaces
@@ -286,18 +286,37 @@ namespace Louvre
     };
 
     /**
+     * @brief ID values for the graphic backends shipped with Louvre.
+     *
+     * These IDs are returned by LCompositor::graphicBackendID() to identify
+     * the currently loaded backend.
+     *
+     * The range [0, 1000] is reserved for Louvre graphic backends only. If you wish to create
+     * your custom graphic backends, use an ID out of that range.
+     *
+     * @enum LGraphicBackendID
+     */
+    enum LGraphicBackendID : UInt32
+    {
+        LGraphicBackendDRM = 0,     ///< ID for the DRM graphic backend.
+        LGraphicBackendX11 = 1      ///< ID for the X11 graphic backend.
+    };
+
+    /**
      * @brief Graphical Backend Interface
      *
      * @note This documentation is intended for library maintainers and individuals interested in developing their own graphical backends.
      */
     struct LGraphicBackendInterface
     {
-        bool (*initialize)(LCompositor *compositor);
-        void (*pause)(LCompositor *compositor);
-        void (*resume)(LCompositor *compositor);
+        UInt32 (*id)();
+        void *(*getContextHandle)();
+        bool (*initialize)();
+        void (*pause)();
+        void (*resume)();
         bool (*scheduleOutputRepaint)(LOutput *output);
-        void (*uninitialize)(LCompositor *compositor);
-        const std::list<LOutput*>*(*getConnectedOutputs)(LCompositor *compositor);
+        void (*uninitialize)();
+        const std::list<LOutput*>*(*getConnectedOutputs)();
         bool (*initializeOutput)(LOutput *output);
         void (*uninitializeOutput)(LOutput *output);
         EGLDisplay (*getOutputEGLDisplay)(LOutput *output);
@@ -323,9 +342,9 @@ namespace Louvre
         void (*setCursorPosition)(LOutput *output, const LPoint &position);
 
         // Buffers
-        const std::list<LDMAFormat*>*(*getDMAFormats)(LCompositor *compositor);
-        EGLDisplay (*getAllocatorEGLDisplay)(LCompositor *compositor);
-        EGLContext (*getAllocatorEGLContext)(LCompositor *compositor);
+        const std::list<LDMAFormat*>*(*getDMAFormats)();
+        EGLDisplay (*getAllocatorEGLDisplay)();
+        EGLContext (*getAllocatorEGLContext)();
 
         bool (*createTextureFromCPUBuffer)(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels);
         bool (*createTextureFromWaylandDRM)(LTexture *texture, void *wlBuffer);
@@ -336,19 +355,37 @@ namespace Louvre
     };
 
     /**
+     * @brief ID values for the input backends included with Louvre.
+     *
+     * These IDs are returned by LCompositor::inputBackendID() to identify the currently
+     * loaded input backend.
+     *
+     * The range [0, 1000] is reserved exclusively for Louvre's built-in input backends. If
+     * you intend to create custom input backends, please use an ID outside of this range.
+     *
+     * @enum LInputBackendID
+     */
+    enum LInputBackendID : UInt32
+    {
+        LInputBackendLibinput = 0, ///< ID for the Libinput input backend.
+        LInputBackendX11 = 1       ///< ID for the X11 input backend.
+    };
+
+    /**
      * @brief Input Backend Interface
      *
      * @note This documentation is intended for library maintainers and individuals interested in developing their own input backends.
      */
     struct LInputBackendInterface
     {
-        bool (*initialize)(const LSeat *seat);
-        UInt32 (*getCapabilities)(const LSeat *seat);
-        void *(*getContextHandle)(const LSeat *seat);
-        void (*uninitialize)(const LSeat *seat);
-        void (*suspend)(const LSeat *seat);
-        void (*forceUpdate)(const LSeat *seat);
-        void (*resume)(const LSeat *seat);
+        UInt32 (*id)();
+        bool (*initialize)();
+        UInt32 (*getCapabilities)();
+        void *(*getContextHandle)();
+        void (*uninitialize)();
+        void (*suspend)();
+        void (*forceUpdate)();
+        void (*resume)();
     };
 
     namespace Protocols

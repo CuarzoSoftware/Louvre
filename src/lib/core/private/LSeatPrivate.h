@@ -26,7 +26,7 @@ LPRIVATE_CLASS(LSeat)
     LKeyboard *keyboard                             = nullptr;
 
     LToplevelRole *activeToplevel                   = nullptr;
-    UInt32 capabilities                             = Pointer | Keyboard;
+    InputCapabilitiesFlags capabilities             = Pointer | Keyboard;
 
     // Data device
     LDataSource *dataSelection                      = nullptr;
@@ -39,10 +39,12 @@ LPRIVATE_CLASS(LSeat)
     bool enabled                                    = false;
 
     bool initLibseat();
-    static int seatEvent(int, unsigned int, void*data);
     static void seatEnabled(libseat *seat, void *data);
     static void seatDisabled(libseat *seat, void *data);
     void dispatchSeat();
+
+    void backendOutputPlugged(LOutput *output);
+    void backendOutputUnplugged(LOutput *output);
 };
 
 #endif // LSEATPRIVATE_H

@@ -41,10 +41,13 @@ void LOutput::LOutputPrivate::backendInitializeGL()
 
 void LOutput::LOutputPrivate::backendPaintGL()
 {
+    bool callLock = output->imp()->callLock.load();
+
+    if (!callLock)
+        callLockACK.store(true);
+
     if (output->imp()->state != LOutput::Initialized)
         return;
-
-    bool callLock = output->imp()->callLock.load();
 
     if (callLock)
         compositor()->imp()->lock();
@@ -75,6 +78,11 @@ void LOutput::LOutputPrivate::backendPaintGL()
 
 void LOutput::LOutputPrivate::backendResizeGL()
 {
+    bool callLock = output->imp()->callLock.load();
+
+    if (!callLock)
+        callLockACK.store(true);
+
     if (output->imp()->state == LOutput::ChangingMode)
     {
         output->imp()->state = LOutput::Initialized;
@@ -83,8 +91,6 @@ void LOutput::LOutputPrivate::backendResizeGL()
 
     if (output->imp()->state != LOutput::Initialized)
         return;
-
-    bool callLock = output->imp()->callLock.load();
 
     if (callLock)
         compositor()->imp()->lock();
@@ -103,13 +109,17 @@ void LOutput::LOutputPrivate::backendResizeGL()
 
 void LOutput::LOutputPrivate::backendUninitializeGL()
 {
+    bool callLock = output->imp()->callLock.load();
+
+    if (!callLock)
+        callLockACK.store(true);
+
     if (output->imp()->state != LOutput::PendingUninitialize)
        return;
 
-    bool callLock = output->imp()->callLock.load();
-
     if (callLock)
-        compositor()->imp()->lock();
+       compositor()->imp()->lock();
+
     output->uninitializeGL();
     output->imp()->state = LOutput::Uninitialized;
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
@@ -120,10 +130,13 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
 
 void LOutput::LOutputPrivate::backendPageFlipped()
 {
+    bool callLock = output->imp()->callLock.load();
+
+    if (!callLock)
+        callLockACK.store(true);
+
     if (output->imp()->state != LOutput::Initialized)
         return;
-
-    bool callLock = output->imp()->callLock.load();
 
     if (callLock)
         compositor()->imp()->lock();

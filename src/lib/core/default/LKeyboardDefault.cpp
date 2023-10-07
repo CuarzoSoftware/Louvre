@@ -31,10 +31,7 @@ void LKeyboard::keyEvent(UInt32 keyCode, KeyState keyState)
         if (keyCode == KEY_F1 && !mods)
         {
             if (fork() == 0)
-            {
-                execl("/usr/bin/weston-terminal", "weston-terminal", NULL);
-                exit(0);
-            }
+                exit(system("weston-terminal"));
         }
 
         // Terminates client connection
@@ -80,7 +77,6 @@ void LKeyboard::keyEvent(UInt32 keyCode, KeyState keyState)
         // Terminates the compositor
         else if (keyCode == KEY_ESC && L_CTRL && L_SHIFT)
             compositor()->finish();
-
         else if (L_CTRL && !L_SHIFT)
             seat()->dndManager()->setPreferredAction(LDNDManager::Copy);
         else if (!L_CTRL && L_SHIFT)

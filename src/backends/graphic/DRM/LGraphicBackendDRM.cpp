@@ -163,12 +163,7 @@ static void connectorPluggedEventHandler(SRMListener *listener, SRMConnector *co
     LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
     initConnector(bknd, conn);
     LOutput *output = (LOutput*)srmConnectorGetUserData(conn);
-    output->imp()->callLock.store(false);
-    compositor->imp()->unlock();
-    usleep(1000000);
-    compositor->imp()->lock();
-    compositor->seat()->outputPlugged(output);
-    output->imp()->callLock.store(true);
+    compositor->seat()->imp()->backendOutputPlugged(output);
 }
 
 static void connectorUnpluggedEventHandler(SRMListener *listener, SRMConnector *conn)
@@ -177,15 +172,9 @@ static void connectorUnpluggedEventHandler(SRMListener *listener, SRMConnector *
     LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
 
     LOutput *output = (LOutput*)srmConnectorGetUserData(conn);
-    output->imp()->callLock.store(false);
-    compositor->imp()->unlock();
-    usleep(1000000);
-    compositor->imp()->lock();
-    compositor->seat()->outputUnplugged(output);
+    compositor->seat()->imp()->backendOutputUnplugged(output);
     compositor->removeOutput(output);
     uninitConnector(bknd, conn);
-    output->imp()->callLock.store(true);
-
 }
 
 static int monitorEventHandler(Int32, UInt32, void *data)
@@ -238,8 +227,20 @@ static SRMConnectorInterface connectorInterface =
     .uninitializeGL = &uninitializeGL
 };
 
-bool LGraphicBackend::initialize(LCompositor *compositor)
+UInt32 LGraphicBackend::id()
 {
+    return LGraphicBackendDRM;
+}
+
+void *LGraphicBackend::getContextHandle()
+{
+    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
+    return bknd->core;
+}
+
+bool LGraphicBackend::initialize()
+{
+    LCompositor *compositor = LCompositor::compositor();
     compositor->seat()->imp()->initLibseat();
 
     Backend *bknd = new Backend();
@@ -289,36 +290,32 @@ bool LGraphicBackend::initialize(LCompositor *compositor)
     return false;
 }
 
-void LGraphicBackend::uninitialize(LCompositor *compositor)
+void LGraphicBackend::uninitialize()
 {
+    LCompositor *compositor = LCompositor::compositor();
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
     LCompositor::removeFdListener(bknd->monitor);
     srmCoreDestroy(bknd->core);
     delete bknd;
 }
 
-void LGraphicBackend::pause(LCompositor *compositor)
+void LGraphicBackend::pause()
 {
-    Output *bkndOutput;
-    for (LOutput *output : compositor->outputs())
-    {
-        bkndOutput = (Output*)output->imp()->graphicBackendData;
-        srmConnectorPause(bkndOutput->conn);
-    }
+    LCompositor *compositor = LCompositor::compositor();
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    srmCoreSuspend(bknd->core);
 }
 
-void LGraphicBackend::resume(LCompositor *compositor)
+void LGraphicBackend::resume()
 {
-    Output *bkndOutput;
-    for (LOutput *output : compositor->outputs())
-    {
-        bkndOutput = (Output*)output->imp()->graphicBackendData;
-        srmConnectorResume(bkndOutput->conn);
-    }
+    LCompositor *compositor = LCompositor::compositor();
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    srmCoreResume(bknd->core);
 }
 
-const list<LOutput*> *LGraphicBackend::getConnectedOutputs(LCompositor *compositor)
+const list<LOutput*> *LGraphicBackend::getConnectedOutputs()
 {
+    LCompositor *compositor = LCompositor::compositor();
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
     return &bknd->connectedOutputs;
 }
@@ -479,17 +476,7 @@ bool LGraphicBackend::setOutputMode(LOutput *output, LOutputMode *mode)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     OutputMode *bkndOutputMode = (OutputMode*)mode->imp()->graphicBackendData;
-
-    output->imp()->callLock.store(false);
-    output->compositor()->imp()->unlock();
-    usleep(1000000);
-    output->compositor()->imp()->lock();
-
-    bool ret = srmConnectorSetMode(bkndOutput->conn, bkndOutputMode->mode);
-
-    output->imp()->callLock.store(true);
-
-    return ret;
+    return srmConnectorSetMode(bkndOutput->conn, bkndOutputMode->mode);
 }
 
 const LSize *LGraphicBackend::getOutputModeSize(LOutputMode *mode)
@@ -528,20 +515,23 @@ void LGraphicBackend::setCursorPosition(LOutput *output, const LPoint &position)
     srmConnectorSetCursorPos(bkndOutput->conn, position.x(), position.y());
 }
 
-const list<LDMAFormat*> *LGraphicBackend::getDMAFormats(LCompositor *compositor)
+const list<LDMAFormat*> *LGraphicBackend::getDMAFormats()
 {
+    LCompositor *compositor = LCompositor::compositor();
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
     return &bknd->dmaFormats;
 }
 
-EGLDisplay LGraphicBackend::getAllocatorEGLDisplay(LCompositor *compositor)
+EGLDisplay LGraphicBackend::getAllocatorEGLDisplay()
 {
+    LCompositor *compositor = LCompositor::compositor();
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
     return srmDeviceGetEGLDisplay(srmCoreGetAllocatorDevice(bknd->core));
 }
 
-EGLContext LGraphicBackend::getAllocatorEGLContext(LCompositor *compositor)
+EGLContext LGraphicBackend::getAllocatorEGLContext()
 {
+    LCompositor *compositor = LCompositor::compositor();
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
     return srmDeviceGetEGLContext(srmCoreGetAllocatorDevice(bknd->core));
 }
@@ -626,10 +616,12 @@ void LGraphicBackend::destroyTexture(LTexture *texture)
         srmBufferDestroy(buffer);
 }
 
-LGraphicBackendInterface API;
+static LGraphicBackendInterface API;
 
 extern "C" LGraphicBackendInterface *getAPI()
 {
+    API.id = &LGraphicBackend::id;
+    API.getContextHandle = &LGraphicBackend::getContextHandle;
     API.initialize = &LGraphicBackend::initialize;
     API.pause = &LGraphicBackend::pause;
     API.resume = &LGraphicBackend::resume;

@@ -24,7 +24,7 @@ public:
     void roleChanged() override;
     void bufferSizeChanged() override;
     void minimizedChanged() override;
-    void damaged() override;
+    void damageChanged() override;
 
     LTexture *renderThumbnail();
     void unminimize(DockItem *clickedItem);
@@ -44,6 +44,8 @@ public:
     LPoint localOutputPos;
     LSize localOutputSize;
     bool outputUnplugHandled = true;
+
+    bool fadedOut = false;
 };
 
 #endif // SURFACE_H

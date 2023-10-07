@@ -31,10 +31,8 @@ void LPointer::pointerPosChangeEvent(Float32 x, Float32 y)
 
     // Repaint cursor outputs if hardware composition is not supported
     for (LOutput *output : cursor()->intersectedOutputs())
-    {
         if (!cursor()->hasHardwareSupport(output))
             output->repaint();
-    }
 
     // Update the drag & drop icon (if there was one)
     if (seat()->dndManager()->icon())
@@ -97,9 +95,7 @@ void LPointer::pointerPosChangeEvent(Float32 x, Float32 y)
 void LPointer::pointerButtonEvent(Button button, ButtonState state)
 {
     if (state == Released && button == Left)
-    {
         seat()->dndManager()->drop();
-    }
 
     if (!focusSurface())
     {

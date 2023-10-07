@@ -12,7 +12,7 @@
 class Louvre::LXCursor
 {
 public:
-    /*!
+    /**
      * @brief Loads an XCursor pixmap.
      *
      * Loads pixmaps of X cursors available in the system and converts them to a texture.
@@ -25,7 +25,7 @@ public:
      */
     static LXCursor *loadXCursorB(const char *cursor, const char *theme = NULL, Int32 suggestedSize = 64);
 
-    /*!
+    /**
      * @brief Destructor for LXCursor.
      *
      * @warning The destructor releases any resources associated with an LXCursor instance, including its texture.
@@ -37,21 +37,21 @@ public:
     LXCursor& operator= (const LXCursor&) = delete;
     /// @endcond
 
-    /*!
+    /**
      * @brief Get the cursor texture.
      *
      * @return A pointer to the cursor's texture.
      */
     const LTexture* texture() const;
 
-    /*!
+    /**
      * @brief Get the cursor texture size in buffer coordinates.
      *
      * @return The size of the cursor's texture.
      */
     const LSize& sizeB() const;
 
-    /*!
+    /**
      * @brief Get the cursor hotspot in buffer coordinates.
      *
      * @return The hotspot of the cursor.

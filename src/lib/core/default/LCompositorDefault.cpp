@@ -59,32 +59,30 @@ bool LCompositor::createGlobalsRequest()
 //! [initialized]
 void LCompositor::initialized()
 {
-    // Change the keyboard map to "latam"
-    seat()->keyboard()->setKeymap( NULL, NULL, "latam", NULL);
-
-    // Use the Output Manager to get avaliable outputs
-    if (seat()->outputs().empty())
-    {
-        LLog::fatal("No output available.");
-        finish();
-    }
+    // Set a keyboard map with "latam" layout
+    seat()->keyboard()->setKeymap(nullptr, nullptr, "latam", nullptr);
 
     Int32 totalWidth = 0;
 
-    // Set double scale to outputs with DPI >= 200
+    // Initialize and arrange outputs from left to right
     for (LOutput *output : seat()->outputs())
     {
-        if (output->dpi() >= 200)
-            output->setScale(2);
-
+        // Set scale 2 to outputs with DPI >= 200
+        output->setScale(output->dpi() >= 200 ? 2 : 1);
         output->setPos(LPoint(totalWidth, 0));
         totalWidth += output->size().w();
-
         addOutput(output);
         output->repaint();
     }
 }
 //! [initialized]
+
+//! [uninitialized]
+void LCompositor::uninitialized()
+{
+    /* No default implementation */
+}
+//! [uninitialized]
 
 //! [cursorInitialized]
 void LCompositor::cursorInitialized()
@@ -209,6 +207,34 @@ void LCompositor::destroySurfaceRequest(LSurface *surface)
     L_UNUSED(surface);
 }
 //! [destroySurfaceRequest]
+
+//! [destroySeatRequest]
+void LCompositor::destroySeatRequest(LSeat *seat)
+{
+    L_UNUSED(seat);
+}
+//! [destroySeatRequest]
+
+//! [destroyPointerRequest]
+void LCompositor::destroyPointerRequest(LPointer *pointer)
+{
+    L_UNUSED(pointer);
+}
+//! [destroyPointerRequest]
+
+//! [destroyKeyboardRequest]
+void LCompositor::destroyKeyboardRequest(LKeyboard *keyboard)
+{
+    L_UNUSED(keyboard);
+}
+//! [destroyKeyboardRequest]
+
+//! [destroyDNDManagerRequest]
+void LCompositor::destroyDNDManagerRequest(LDNDManager *dndManager)
+{
+    L_UNUSED(dndManager);
+}
+//! [destroyDNDManagerRequest]
 
 //! [destroyToplevelRoleRequest]
 void LCompositor::destroyToplevelRoleRequest(LToplevelRole *toplevel)

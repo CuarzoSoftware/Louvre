@@ -77,6 +77,10 @@ LView *LScene::handlePointerMoveEvent(Float32 dx, Float32 dy, LPoint *outLocalPo
 
 LView *LScene::handlePointerPosChangeEvent(Float32 x, Float32 y, LPoint *outLocalPos)
 {
+    // Prevent recursive calls
+    if (imp()->handlingPointerMove)
+        return nullptr;
+
     LSurface *surface = nullptr;
     LView *view = nullptr;
     LPoint localPos;
@@ -86,7 +90,10 @@ LView *LScene::handlePointerPosChangeEvent(Float32 x, Float32 y, LPoint *outLoca
     imp()->pointerMoveSerial++;
     imp()->listChanged = false;
     imp()->pointerIsBlocked = false;
+
+    imp()->handlingPointerMove = true;
     imp()->handlePointerMove(mainView(), cursor()->pos(), &view);
+    imp()->handlingPointerMove = false;
 
     if (view)
     {
@@ -184,9 +191,16 @@ LView *LScene::handlePointerPosChangeEvent(Float32 x, Float32 y, LPoint *outLoca
 
 void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonState state)
 {
+    // Prevent recursive calls
+    if (imp()->handlingPointerButton)
+        return;
+
     imp()->pointerButtonSerial++;
     imp()->listChanged = false;
+
+    imp()->handlingPointerButton = true;
     imp()->handlePointerButton(mainView(), button, state);
+    imp()->handlingPointerButton = false;
 
     if (!handleWaylandPointerEventsEnabled())
         return;
@@ -296,9 +310,16 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
 
 void LScene::handlePointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, LPointer::AxisSource source)
 {
+    // Prevent recursive calls
+    if (imp()->handlingPointerAxisEvent)
+        return;
+
     imp()->pointerAxisSerial++;
     imp()->listChanged = false;
+
+    imp()->handlingPointerAxisEvent = true;
     imp()->handlePointerAxisEvent(mainView(), axisX, axisY, discreteX, discreteY, source);
+    imp()->handlingPointerAxisEvent = false;
 
     if (!handleWaylandPointerEventsEnabled())
         return;
@@ -318,9 +339,16 @@ void LScene::enableHandleWaylandPointerEvents(bool enabled)
 
 void LScene::handleKeyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
 {
+    // Prevent recursive calls
+    if (imp()->handlingKeyModifiersEvent)
+        return;
+
     imp()->keyModifiersSerial++;
     imp()->listChanged = false;
+
+    imp()->handlingKeyModifiersEvent = true;
     imp()->handleKeyModifiersEvent(mainView(), depressed, latched, locked, group);
+    imp()->handlingKeyModifiersEvent = false;
 
     if (handleWaylandKeyboardEventsEnabled())
         seat()->keyboard()->sendModifiersEvent(depressed, latched, locked, group);
@@ -328,9 +356,16 @@ void LScene::handleKeyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 lo
 
 void LScene::handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState)
 {
+    // Prevent recursive calls
+    if (imp()->handlingKeyEvent)
+        return;
+
     imp()->keySerial++;
     imp()->listChanged = false;
+
+    imp()->handlingKeyEvent = true;
     imp()->handleKeyEvent(mainView(), keyCode, keyState);
+    imp()->handlingKeyEvent = false;
 
     if (handleWaylandKeyboardEventsEnabled())
         seat()->keyboard()->sendKeyEvent(keyCode, keyState);

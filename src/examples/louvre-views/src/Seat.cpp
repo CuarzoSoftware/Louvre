@@ -32,8 +32,11 @@ void Seat::seatEnabled()
     }
 }
 
-void Seat::backendNativeEvent(void *event)
+void Seat::nativeInputEvent(void *event)
 {
+    if (inputBackendId() != LInputBackendLibinput)
+        return;
+
     libinput_event *ev = (libinput_event*)event;
     Output *output = (Output*)cursor()->output();
 

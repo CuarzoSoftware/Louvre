@@ -4,7 +4,7 @@
 #include <LNamespaces.h>
 #include <LPoint.h>
 
-/*!
+/**
  * @brief Template for 4D vectors
  *
  * The LRectTemplate class is a template for creating four-dimensional vectors.\n
@@ -71,7 +71,7 @@ public:
     /// The multiplication of the third and fourth component (width*height)
     inline TA area()    const   {return m_bottomRight.m_x*m_bottomRight.m_y;}
 
-    /*!
+    /**
      * Returns true if the rectangle contains the point.
      *
      * @param point The 2D vector to check
@@ -93,7 +93,7 @@ public:
                point.m_y < m_topLeft.m_y + m_bottomRight.m_y;
     }
 
-    /*!
+    /**
      * Returns true if the rectangles intersect.
      *
      * @param rect Rectangle to intersect

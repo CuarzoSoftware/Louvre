@@ -51,6 +51,8 @@ RSubsurface::RSubsurface
 
 RSubsurface::~RSubsurface()
 {
+    // Notify
+    compositor()->destroySubsurfaceRoleRequest(imp()->lSubsurfaceRole);
     delete imp()->lSubsurfaceRole;
     delete m_imp;
 }

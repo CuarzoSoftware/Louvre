@@ -8,12 +8,12 @@
 
 using namespace Louvre;
 
-//! [damaged]
-void LSurface::damaged()
+//! [damageChanged]
+void LSurface::damageChanged()
 {
     repaintOutputs();
 }
-//! [damaged]
+//! [damageChanged]
 
 //! [roleChanged]
 void LSurface::roleChanged()
@@ -32,11 +32,11 @@ void LSurface::parentChanged()
 //! [mappingChanged]
 void LSurface::mappingChanged()
 {
-    // If the surface is a Toplevel, we place it in the center of the screen
+    // If the surface is a toplevel, we place it at the center of the screen
     if (mapped() && toplevel())
         setPos(cursor()->output()->pos() + (cursor()->output()->size() - size()) / 2);
 
-    compositor()->repaintAllOutputs();
+    cursor()->output()->repaint();
 }
 //! [mappingChanged]
 

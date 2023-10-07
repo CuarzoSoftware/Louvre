@@ -3,7 +3,7 @@
 
 #include <LNamespaces.h>
 
-/*!
+/**
  * @brief OpenGL utility functions.
  *
  * Set of OpenGL ES 2.0 utility functions.
@@ -11,7 +11,7 @@
 class Louvre::LOpenGL
 {
 public:
-    /*!
+    /**
      * @brief Opens a GLSL shader file.
      *
      * @warning The returned string must be manually freed when no longer used.
@@ -20,7 +20,7 @@ public:
      */
     static char *openShader(const char *fileName);
 
-    /*!
+    /**
      * @brief Get a string representation of an OpenGL error code.
      *
      * This function converts an OpenGL error code obtained from glGetError() into a human-readable string.
@@ -30,13 +30,13 @@ public:
      */
     static const char* glErrorString(GLenum error);
 
-    /*!
+    /**
      * @brief Maximum number of texture units.
      * @returns An integer with the maximum number of texture units supported by the machine.
      */
     static GLuint maxTextureUnits();
 
-    /*!
+    /**
      * @brief Builds a shader.
      *
      * @param type Type of shader (GL_VERTEX_SHADER or GL_FRAGMENT_SHADER).
@@ -45,7 +45,7 @@ public:
      */
     static GLuint compileShader(GLenum type, const char *shaderString);
 
-    /*!
+    /**
      * @brief Creates a texture from an image file.
      *
      * @param file Path to the image file. Must be an image format supported by [FreeImage](https://freeimage.sourceforge.io/features.html) (JPEG, PNG, BMP, etc).

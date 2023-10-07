@@ -7,7 +7,7 @@ using namespace Louvre;
 
 struct LDNDManager::Params
 {
-    LSeat *seat;
+    /* Add here any required constructor param */
 };
 
 LPRIVATE_CLASS(LDNDManager)

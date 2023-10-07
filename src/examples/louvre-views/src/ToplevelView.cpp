@@ -37,8 +37,13 @@ static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &
     {
         G::compositor()->cursor()->useDefault();
 
+        // Hide / show title bar when fullscreen
         if (view->toplevel->fullscreen() && !view->fullscreenTopbarAnim && view->fullscreenTopbarVisibility == 0.f)
         {
+            // Stop if the user is interacting with a popup
+            if (view->seat()->keyboard()->grabbingSurface())
+                return;
+
             view->fullscreenTopbarAnim =
                 LAnimation::create(256,
                 [view](LAnimation *anim)

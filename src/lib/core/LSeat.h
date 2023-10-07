@@ -7,19 +7,20 @@
 
 struct libseat;
 
-/*!
+/**
  * @brief Group of input and output devices.
  *
  * The LSeat class represents a collection of input and output devices such as a mouse, keyboard,
  * and outputs (screens). These devices are used within a session. Typically, access to these devices is restricted to a single process per session,
- * often a Wayland or X11 compositor.\n
+ * often a Wayland or X11 compositor.
  *
  * To enable input and graphics backends to manage seat devices without requiring superuser privileges, the openDevice()
- * method can be used to obtain device file descriptors. This method internally employs libseat to request seat permissions.\n
+ * method can be used to obtain device file descriptors. This method internally employs [libseat](https://github.com/kennylevinsen/seatd) to request seat permissions.
  *
- * By setting the environment variable **LOUVRE_ENABLE_LIBSEAT** to 0, Libseat can be disabled, causing the compositor to launch without multi-seat support.
+ * By setting the environment variable **LOUVRE_ENABLE_LIBSEAT** to 0, [libseat](https://github.com/kennylevinsen/seatd) can be disabled, causing the compositor to launch without multi-seat support.
  * Consequently, certain features such as switching to another TTY may become unavailable.\n
- * Disabling Libseat may be necessary in scenarios where the compositor needs to be started remotely via SSH.\n
+ *
+ * @note Disabling [libseat](https://github.com/kennylevinsen/seatd) may be necessary in scenarios where the compositor needs to be started remotely via SSH.
  *
  * The LSeat class also facilitates tasks such as session (TTY) switching, clipboard access, interaction with instances of LPointer and LKeyboard, as well as native events
  * monitoring from the input backend.
@@ -31,12 +32,14 @@ class Louvre::LSeat : public LObject
 public:
     struct Params;
 
-    /*!
+    using InputCapabilitiesFlags = UInt32;
+
+    /**
      * @brief Input capabilities
      *
      * Compositor input capabilities.\n
      */
-    enum InputCapabilities : UInt32
+    enum InputCapabilities : InputCapabilitiesFlags
     {
         /// Pointer events
         Pointer = 1,
@@ -48,7 +51,7 @@ public:
         Touch = 4
     };
 
-    /*!
+    /**
      * @brief LSeat class constructor.
      *
      * There is only one instance of LSeat, which can be accessed from LCompositor::seat().
@@ -57,7 +60,7 @@ public:
      */
     LSeat(Params *params);
 
-    /*!
+    /**
      * @brief LSeat class destructor.
      *
      * Invoked after LCompositor::destroySeatRequest().
@@ -69,7 +72,7 @@ public:
     LSeat& operator= (const LSeat&) = delete;
     /// @endcond
 
-    /*!
+    /**
      * @brief List of available outputs.
      *
      * This function provides a list of currently available outputs. The list includes connected outputs that can be initialized
@@ -80,37 +83,72 @@ public:
      */
     const std::list<LOutput *> &outputs() const;
 
-    /*!
-     * @brief Handle to the native context used by the input backend.
+    /**
+     * @brief Handle to the native context used by the graphic backend.
      *
-     * This opaque handle is unique to each input backend.\n
-     * In the case of the Libinput backend, it is equivalent to a pointer to a [struct libinput](https://wayland.freedesktop.org/libinput/doc/latest/api/structlibinput.html).\n
-     * In the case of the X11 backend, it is equivalent to a pointer to a [struct Display](https://www.x.org/releases/X11R7.6/doc/libX11/specs/libX11/libX11.html).\n\n
+     * This opaque handle is unique to each graphic backend.\n
+     * In the case of the DRM backend, it returns a pointer to a [SRMCore](https://cuarzosoftware.github.io/SRM/group___s_r_m_core.html) struct.\n
+     * In the case of the X11 backend, it returns a pointer to a [Display](https://www.x.org/releases/X11R7.6/doc/libX11/specs/libX11/libX11.html) struct.\n
      *
      * You can use this handle to configure specific aspects of each backend.
      */
-    void *backendContextHandle() const;
+    void *graphicBackendContextHandle() const;
 
-    /*!
+    /**
+     * @brief Get the ID of the current graphic backend.
+     *
+     * Each graphic backend is assigned a unique UInt32 ID. You can use this function to retrieve the
+     * ID of the current graphic backend in use.
+     *
+     * The IDs of graphic backends shipped with Louvre are listed in the LGraphicBackendID enum.
+     *
+     * @return The ID of the graphic backend.
+     */
+    UInt32 graphicBackendId() const;
+
+    /**
+     * @brief Handle to the native context used by the input backend.
+     *
+     * This opaque handle is unique to each input backend.\n
+     * In the case of the Libinput backend, it returns a pointer to a [libinput](https://wayland.freedesktop.org/libinput/doc/latest/api/structlibinput.html) struct.\n
+     * In the case of the X11 backend, it returns a pointer to a [Display](https://www.x.org/releases/X11R7.6/doc/libX11/specs/libX11/libX11.html) struct.\n
+     *
+     * You can use this handle to configure specific aspects of each backend.
+     */
+    void *inputBackendContextHandle() const;
+
+    /**
+     * @brief Get the ID of the current input backend.
+     *
+     * Each input backend is assigned a unique UInt32 ID. You can use this function to retrieve the
+     * ID of the current input backend in use.
+     *
+     * The IDs of input backends shipped with Louvre are listed in the LInputBackendID enum.
+     *
+     * @return The ID of the input backend.
+     */
+    UInt32 inputBackendId() const;
+
+    /**
      * @brief Input Backend Capabilities
      *
      * Flags representing the input capabilities of the backend, defined in #Capabilities.
      */
-    UInt32 backendCapabilities() const;
+    InputCapabilitiesFlags inputBackendCapabilities() const;
 
-    /*!
+    /**
      * Seat name (E.g. "seat0").
      */
     const char *name() const;
 
-    /*!
+    /**
      * @brief Input capabilities of the compositor.
      *
      * Flags with the input capabilities of the compositor assigned with setCapabilities().\n
      */
-    UInt32 capabilities() const;
+    InputCapabilitiesFlags capabilities() const;
 
-    /*!
+    /**
      * @brief Assigns the input capabilities of the compositor.
      *
      * Notifies clients the compositor's input capabilities.\n
@@ -119,9 +157,9 @@ public:
      *
      * @param capabilitiesFlags Flags with the input capabilities of the compositor defined in #Capabilities. They may differ from the input capabilities of the backend.
      */
-    void setCapabilities(UInt32 capabilitiesFlags);
+    void setInputCapabilities(InputCapabilitiesFlags capabilitiesFlags);
 
-    /*!
+    /**
      * @brief Active Toplevel surface.
      *
      * Pointer to the active LToplevelRole role assigned by passing the flag LToplevelRole::Active in LToplevelRole::confgure().\n
@@ -131,28 +169,28 @@ public:
      */
     LToplevelRole *activeToplevel() const;
 
-    /*!
+    /**
      * @brief Access to pointer events.
      *
      * Access to the LPointer instance used to receive pointer events from the backend and redirect them to clients.
      */
     LPointer *pointer() const;
 
-    /*!
+    /**
      * @brief Access to keyboard events.
      *
      * Access to the LKeyboard instance used to receive keyboard events from the backend and redirect them to clients.
      */
     LKeyboard *keyboard() const;
 
-    /*!
+    /**
      * @brief Access to the drag & drop session manager.
      *
      * Access to the LDNDManager instance used to handle drag & drop sessions.
      */
     LDNDManager *dndManager() const;
 
-    /*!
+    /**
      * @brief Access to the clipboard.
      *
      * Access to the clipboard (data source) assigned by the last client.\n
@@ -162,7 +200,7 @@ public:
 
 /// @name Session
 /// @{
-    /*!
+    /**
      * @brief Switch session.
      *
      * Switch session (TTY). Louvre also allows switching sessions
@@ -173,7 +211,7 @@ public:
      */
     Int32 setTTY(Int32 tty);
 
-    /*!
+    /**
      * @brief Opens a device.
      *
      * Opens a device on the seat, returning its ID and storing its file descriptor in **fd**.\n
@@ -184,7 +222,7 @@ public:
      */
     Int32 openDevice(const char *path, Int32 *fd, Int32 flags = 0);
 
-    /*!
+    /**
      * @brief Closes a device.
      *
      * @param id The id returned by openDevice().
@@ -192,14 +230,14 @@ public:
      */
     Int32 closeDevice(Int32 id);
 
-    /*!
+    /**
      * @brief Libseat handle.
      *
      * [struct libseat](https://github.com/kennylevinsen/seatd/blob/master/include/libseat.h) handle.
      */
     libseat *libseatHandle() const;
 
-    /*!
+    /**
      * @brief Check the session state.
      *
      * The session is considered disabled if the user is engaged in another active session (TTY).
@@ -208,7 +246,7 @@ public:
      */
     bool enabled() const;
 
-    /*!
+    /**
      * @brief Retrieve the topmost popup role.
      *
      * This function returns a pointer to the topmost popupt.
@@ -221,7 +259,7 @@ public:
 
 /// @name Virtual Methods
 /// @{
-    /*!
+    /**
      * @brief Seat initialization.
      *
      * Reimplement this virtual method if you want to be notified when the seat is initialized.
@@ -231,7 +269,7 @@ public:
      */
     virtual void initialized();
 
-    /*!
+    /**
      * @brief Request to set the clipboard.
      *
      * Reimplement this virtual method if you want to control which clients can set the clipboard.\n
@@ -246,7 +284,7 @@ public:
      */
     virtual bool setSelectionRequest(LDataDevice *device, UInt32 serial);
 
-    /*!
+    /**
      * @brief Native input backend events
      *
      * Reimplement this virtual method if you want to access all events generated by the input backend.\n
@@ -257,9 +295,9 @@ public:
      * #### Default implementation
      * @snippet LSeatDefault.cpp backendNativeEvent
      */
-    virtual void backendNativeEvent(void *event);
+    virtual void nativeInputEvent(void *event);
 
-    /*!
+    /**
      * @brief Enabled seat
      *
      * Reimplement this virtual method if you want to be notified when the seat is enabled.\n
@@ -270,7 +308,7 @@ public:
      */
     virtual void seatEnabled();
 
-    /*!
+    /**
      * @brief Disabled seat
      *
      * Reimplement this virtual method if you want to be notified when the seat is disabled.\n
@@ -281,7 +319,7 @@ public:
      */
     virtual void seatDisabled();
 
-    /*!
+    /**
      * @brief New available output.
      *
      * The outputPlugged() method is invoked by the graphic backend when a new output is available, for example when connecting an external monitor through an HDMI port.\n
@@ -293,7 +331,7 @@ public:
      */
     virtual void outputPlugged(LOutput *output);
 
-    /*!
+    /**
      * @brief Disconnected output.
      *
      * The outputUnplugged() method is invoked by the graphical backend when an output is no longer available, for example when an external monitor connected to an HDMI port is disconnected.\n

@@ -4,6 +4,7 @@
 #include <LTimer.h>
 #include <LCursor.h>
 #include <LLog.h>
+#include <signal.h>
 
 #include "Client.h"
 #include "Global.h"
@@ -93,11 +94,6 @@ void Compositor::initialized()
     // Initialize and arrange outputs (screens) left to right
     for (LOutput *output : seat()->outputs())
     {
-        //if (strcmp("eDP-0", output->name()) == 0)
-            //continue;
-
-        LLog::fatal("%s", output->name());
-
         // Set scale 2 to HiDPI screens
         output->setScale(output->dpi() >= 200 ? 2 : 1);
         output->setPos(LPoint(totalWidth, 0));
@@ -105,6 +101,19 @@ void Compositor::initialized()
         compositor()->addOutput(output);
         output->repaint();
     }
+}
+
+void Compositor::uninitialized()
+{
+    for (Output *o : G::outputs())
+    {
+        if (o->workspaceAnim)
+            o->workspaceAnim->stop();
+    }
+
+    for (Client *c : (std::list<Client*>&)clients())
+        if (c->pid != -1)
+            kill(c->pid, SIGKILL);
 }
 
 LClient *Compositor::createClientRequest(LClient::Params *params)
@@ -140,6 +149,49 @@ LKeyboard *Compositor::createKeyboardRequest(LKeyboard::Params *params)
 LToplevelRole *Compositor::createToplevelRoleRequest(LToplevelRole::Params *params)
 {
     return new Toplevel(params);
+}
+
+void Compositor::destroyClientRequest(LClient *client)
+{
+    Client *c = (Client*)client;
+    c->destroyed = true;
+}
+
+void Compositor::destroyPopupRoleRequest(LPopupRole *popup)
+{
+    fadeOutSurface(popup, 50);
+}
+
+void Compositor::fadeOutSurface(LBaseSurfaceRole *role, UInt32 ms)
+{
+    if (role->surface() && role->surface()->mapped())
+    {
+        Surface *surf = (Surface*)role->surface();
+
+        if (surf->fadedOut)
+            return;
+
+        surf->fadedOut = true;
+
+        LTextureView *fadeOutView = new LTextureView(surf->renderThumbnail(), &overlayLayer);
+        fadeOutView->setPos(surf->rolePos());
+        fadeOutView->setBufferScale(2);
+
+        LAnimation::oneShot(ms,
+            [fadeOutView](LAnimation *anim)
+            {
+                fadeOutView->setOpacity(1.f - anim->value());
+                G::compositor()->repaintAllOutputs();
+            },
+            [fadeOutView](LAnimation *)
+            {
+                fadeOutView->repaint();
+                delete fadeOutView->texture();
+                fadeOutView->setTexture(nullptr);
+                delete fadeOutView;
+                G::compositor()->repaintAllOutputs();
+            });
+    }
 }
 
 Int32 Compositor::millisecondsUntilNextMinute()

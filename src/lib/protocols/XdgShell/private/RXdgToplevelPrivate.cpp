@@ -77,6 +77,10 @@ void RXdgToplevel::RXdgToplevelPrivate::move(wl_client *client, wl_resource *res
     L_UNUSED(seat);
     L_UNUSED(serial);
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
+
+    if (!rXdgToplevel->toplevelRole()->surface()->toplevel())
+        return;
+
     rXdgToplevel->toplevelRole()->startMoveRequest();
 }
 
@@ -93,6 +97,10 @@ void RXdgToplevel::RXdgToplevelPrivate::resize(wl_client *client, wl_resource *r
     }
 
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
+
+    if (!rXdgToplevel->toplevelRole()->surface()->toplevel())
+        return;
+
     rXdgToplevel->toplevelRole()->startResizeRequest((LToplevelRole::ResizeEdge)edges);
 }
 
@@ -134,6 +142,18 @@ void RXdgToplevel::RXdgToplevelPrivate::set_maximized(wl_client *client, wl_reso
 {
     L_UNUSED(client);
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
+    LToplevelRole *lToplevel = rXdgToplevel->toplevelRole();
+
+    // Cache until role is applied
+    if (lToplevel->surface()->imp()->pending.role)
+    {
+        lToplevel->imp()->prevRoleRequest = LToplevelRole::Maximized;
+        return;
+    }
+
+    if (rXdgToplevel->toplevelRole()->maximized())
+        return;
+
     rXdgToplevel->toplevelRole()->setMaximizedRequest();
 }
 
@@ -141,6 +161,20 @@ void RXdgToplevel::RXdgToplevelPrivate::unset_maximized(wl_client *client, wl_re
 {
     L_UNUSED(client);
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
+    LToplevelRole *lToplevel = rXdgToplevel->toplevelRole();
+
+    // Cache until role is applied
+    if (lToplevel->surface()->imp()->pending.role)
+    {
+        if (lToplevel->imp()->prevRoleRequest == LToplevelRole::Maximized)
+            lToplevel->imp()->prevRoleRequest = 0;
+
+        return;
+    }
+
+    if (!rXdgToplevel->toplevelRole()->maximized())
+        return;
+
     rXdgToplevel->toplevelRole()->unsetMaximizedRequest();
 }
 
@@ -148,11 +182,23 @@ void RXdgToplevel::RXdgToplevelPrivate::set_fullscreen(wl_client *client, wl_res
 {
     L_UNUSED(client);
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
+    LToplevelRole *lToplevel = rXdgToplevel->toplevelRole();
 
     LOutput *lOutput = nullptr;
 
     if (output)
         lOutput = ((Wayland::GOutput*)wl_resource_get_user_data(output))->output();
+
+    // Cache until role is applied
+    if (lToplevel->surface()->imp()->pending.role)
+    {
+        lToplevel->imp()->prevRoleRequest = LToplevelRole::Fullscreen;
+        lToplevel->imp()->prevRoleFullscreenRequestOutput = lOutput;
+        return;
+    }
+
+    if (rXdgToplevel->toplevelRole()->fullscreen())
+        return;
 
     rXdgToplevel->toplevelRole()->setFullscreenRequest(lOutput);
 }
@@ -161,6 +207,23 @@ void RXdgToplevel::RXdgToplevelPrivate::unset_fullscreen(wl_client *client, wl_r
 {
     L_UNUSED(client);
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
+    LToplevelRole *toplevel = rXdgToplevel->toplevelRole();
+
+    // Cache until role is applied
+    if (toplevel->surface()->imp()->pending.role)
+    {
+        if (toplevel->imp()->prevRoleRequest == LToplevelRole::Fullscreen)
+        {
+            toplevel->imp()->prevRoleRequest = 0;
+            toplevel->imp()->prevRoleFullscreenRequestOutput = nullptr;
+        }
+
+        return;
+    }
+
+    if (!rXdgToplevel->toplevelRole()->fullscreen())
+        return;
+
     rXdgToplevel->toplevelRole()->unsetFullscreenRequest();
 }
 
@@ -168,5 +231,10 @@ void RXdgToplevel::RXdgToplevelPrivate::set_minimized(wl_client *client, wl_reso
 {
     L_UNUSED(client);
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
+
+    // Ignore if role not yet applied
+    if (rXdgToplevel->toplevelRole()->surface()->imp()->pending.role)
+        return;
+
     rXdgToplevel->toplevelRole()->setMinimizedRequest();
 }

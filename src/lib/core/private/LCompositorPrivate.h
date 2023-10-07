@@ -5,7 +5,7 @@
 #include <LCompositor.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-#include <sys/poll.h>
+#include <sys/epoll.h>
 #include <map>
 #include <unistd.h>
 
@@ -25,12 +25,13 @@ LPRIVATE_CLASS(LCompositor)
 
     CompositorState state = CompositorState::Uninitialized;
     LCompositor *compositor = nullptr;
-    void uinitCompositor();
+    void unitCompositor();
 
     bool initWayland();
         wl_display *display = nullptr;
         wl_event_loop *eventLoop = nullptr;
-        pollfd fdSet[2];
+        epoll_event events[3];
+        Int32 epollFd;
         wl_listener clientConnectedListener;
         wl_event_source *clientDisconnectedEventSource;
     void unitWayland();
@@ -50,9 +51,13 @@ LPRIVATE_CLASS(LCompositor)
         LCursor *cursor = nullptr;
         LPainter *painter;
         bool isGraphicBackendInitialized = false;
-    void unitGraphicBackend();
+    void unitGraphicBackend(bool closeLib);
 
-    bool isInputBackendInitialized                              = false;
+    bool initInputBackend();
+        void *inputBackendHandle = nullptr;
+        LInputBackendInterface *inputBackend = nullptr;
+        bool isInputBackendInitialized = false;
+    void unitInputBackend(bool closeLib);
 
     // Event FD to force unlock main loop poll
     bool pollUnlocked = false;
@@ -78,14 +83,10 @@ LPRIVATE_CLASS(LCompositor)
     std::list<LSurface*>surfaces;
     std::list<LView*>views;
     std::list<LAnimation*>animations;
+    std::list<LTexture*>textures;
 
     bool runningAnimations();
     void processAnimations();
-
-    LInputBackendInterface *inputBackend = nullptr;
-
-    // Dylib
-    void *inputBackendHandle = nullptr;
 
     // Thread specific data
     struct ThreadData
@@ -98,6 +99,5 @@ LPRIVATE_CLASS(LCompositor)
     void destroyPendingRenderBuffers(std::thread::id *id);
     void addRenderBufferToDestroy(std::thread::id thread, LRenderBuffer::LRenderBufferPrivate::ThreadData &data);
 };
-
 
 #endif // LCOMPOSITORPRIVATE_H

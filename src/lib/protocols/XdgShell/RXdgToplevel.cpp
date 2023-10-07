@@ -51,6 +51,9 @@ RXdgToplevel::RXdgToplevel
 
 RXdgToplevel::~RXdgToplevel()
 {
+    // Notify
+    compositor()->destroyToplevelRoleRequest(imp()->lToplevelRole);
+
     if (xdgSurfaceResource())
         xdgSurfaceResource()->imp()->rXdgToplevel = nullptr;
 

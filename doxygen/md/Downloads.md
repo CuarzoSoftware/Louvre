@@ -1,4 +1,4 @@
-# Downloads
+# 📦 Downloads
 
 Louvre relies on the following libraries:
 
@@ -40,9 +40,9 @@ If the [hwinfo](https://github.com/vcrhonek/hwdata) or [libdisplay-info](https:/
 2. [libdisplay-info0](https://packages.ubuntu.com/lunar/libdisplay-info0)
 3. [libdisplay-info-dev](https://packages.ubuntu.com/lunar/libdisplay-info-dev)
 
-To install SRM, follow the instructions [here](https://cuarzosoftware.github.io/SRM/md_md__downloads.html).
+To install SRM, follow the instructions provided [here](https://cuarzosoftware.github.io/SRM/md_md__downloads.html).
 
-It is also recommended to install **weston-terminal**, which is compatible with Wayland and is used throughout the tutorial and the examples.
+It is also recommended to install [weston-terminal](https://gitlab.freedesktop.org/wayland/weston), which is compatible with Wayland and is used throughout the tutorial and the examples.
 
 ```
 $ sudo apt install weston
@@ -57,9 +57,9 @@ $ sudo dnf update
 $ sudo dnf install @development-tools make automake gcc gcc-c++ meson libwayland-server wayland-devel libinput-devel libevdev-devel libudev-devel mesa-libEGL-devel libxkbcommon-devel libXcursor-devel pixman-devel libdrm-devel libgbm-devel libseat-devel libfreeimage-devel fontconfig-devel freetype-devel libicu-devel
 ```
 
-To install SRM, follow the instructions [here](https://cuarzosoftware.github.io/SRM/md_md__downloads.html).
+To install SRM, follow the instructions provided [here](https://cuarzosoftware.github.io/SRM/md_md__downloads.html).
 
-It is also recommended to install **weston-terminal**, which is compatible with Wayland and is used throughout the tutorial and the examples.
+It is also recommended to install [weston-terminal](https://gitlab.freedesktop.org/wayland/weston) which is compatible with Wayland and is used throughout the tutorial and the examples.
 
 ```
 $ sudo dnf install weston

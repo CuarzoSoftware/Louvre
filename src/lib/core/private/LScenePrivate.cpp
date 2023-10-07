@@ -230,13 +230,13 @@ bool LScene::LScenePrivate::handlePointerButton(LView *view, LPointer::Button bu
     if (view->imp()->pointerButtonSerial == pointerButtonSerial)
         return true;
 
+    view->imp()->pointerButtonSerial = pointerButtonSerial;
+
     if (view->imp()->pointerIsOver)
         view->pointerButtonEvent(button, state);
 
     if (listChanged)
         goto listChangedErr;
-
-    view->imp()->pointerButtonSerial = pointerButtonSerial;
 
     return true;
 
@@ -259,13 +259,13 @@ bool LScene::LScenePrivate::handlePointerAxisEvent(LView *view, Float64 axisX, F
     if (view->imp()->pointerAxisSerial == pointerAxisSerial)
         return true;
 
+    view->imp()->pointerAxisSerial = pointerAxisSerial;
+
     if (view->imp()->pointerIsOver)
         view->pointerAxisEvent(axisX, axisY, discreteX, discreteY, source);
 
     if (listChanged)
         goto listChangedErr;
-
-    view->imp()->pointerAxisSerial = pointerAxisSerial;
 
     return true;
 
@@ -288,12 +288,12 @@ bool LScene::LScenePrivate::handleKeyModifiersEvent(LView *view, UInt32 depresse
     if (view->imp()->keyModifiersSerial == keyModifiersSerial)
         return true;
 
+    view->imp()->keyModifiersSerial = keyModifiersSerial;
+
     view->keyModifiersEvent(depressed, latched, locked, group);
 
     if (listChanged)
         goto listChangedErr;
-
-    view->imp()->keyModifiersSerial = keyModifiersSerial;
 
     return true;
 
@@ -316,12 +316,12 @@ bool LScene::LScenePrivate::handleKeyEvent(LView *view, UInt32 keyCode, UInt32 k
     if (view->imp()->keySerial == keySerial)
         return true;
 
+    view->imp()->keySerial = keySerial;
+
     view->keyEvent(keyCode, keyState);
 
     if (listChanged)
         goto listChangedErr;
-
-    view->imp()->keySerial = keySerial;
 
     return true;
 

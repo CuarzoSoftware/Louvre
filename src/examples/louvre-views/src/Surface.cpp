@@ -410,12 +410,13 @@ void Surface::unminimize(DockItem *clickedItem)
     minimizeAnim->start();
 }
 
-void Surface::damaged()
+void Surface::damageChanged()
 {
     if (cursorRole())
     {
         getView()->setVisible(false);
         return;
     }
+
     repaintOutputs();
 }

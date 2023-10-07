@@ -4,6 +4,7 @@
 #include "Global.h"
 #include "InputRect.h"
 #include "Pointer.h"
+#include "src/Compositor.h"
 #include <LKeyboard.h>
 #include <LSeat.h>
 #include <LCursor.h>

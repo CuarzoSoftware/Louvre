@@ -23,6 +23,7 @@ using namespace Louvre;
 LToplevelRole::LToplevelRole(Louvre::LToplevelRole::Params *params) : LBaseSurfaceRole(params->toplevel, params->surface, LSurface::Role::Toplevel)
 {
     m_imp = new LToplevelRolePrivate();
+    imp()->currentConf.commited = true;
     imp()->toplevel = this;
     imp()->appId = new char[1];
     imp()->title = new char[1];
@@ -34,9 +35,6 @@ LToplevelRole::~LToplevelRole()
 {
     if (surface())
         surface()->imp()->setMapped(false);
-
-    // Notify
-    compositor()->destroyToplevelRoleRequest(this);
 
     // Remove focus
     if (seat()->pointer()->resizingToplevel() == this)
@@ -58,12 +56,12 @@ LToplevelRole::~LToplevelRole()
 
 bool LToplevelRole::maximized() const
 {
-    return bool(imp()->stateFlags & LToplevelRole::Maximized);
+    return imp()->stateFlags & LToplevelRole::Maximized;
 }
 
 bool LToplevelRole::fullscreen() const
 {
-    return bool(imp()->stateFlags & LToplevelRole::Fullscreen);
+    return imp()->stateFlags & LToplevelRole::Fullscreen;
 }
 
 bool LToplevelRole::activated() const
@@ -111,6 +109,69 @@ void LToplevelRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrig
 {
     L_UNUSED(origin);
 
+    // Apply pending role
+    if (surface()->imp()->pending.role)
+    {
+        if (imp()->hasPendingMaxSize)
+        {
+            imp()->hasPendingMaxSize = false;
+            imp()->currentMaxSize = imp()->pendingMaxSize;
+        }
+
+        if (imp()->hasPendingMinSize)
+        {
+            imp()->hasPendingMinSize = false;
+            imp()->currentMinSize = imp()->pendingMinSize;
+        }
+
+        if (xdgSurfaceResource()->imp()->hasPendingWindowGeometry)
+        {
+            xdgSurfaceResource()->imp()->hasPendingWindowGeometry = false;
+            xdgSurfaceResource()->imp()->currentWindowGeometry = xdgSurfaceResource()->imp()->pendingWindowGeometry;
+        }
+        // Si nunca ha asignado la geometría, usa el tamaño de la superficie
+        else if (!xdgSurfaceResource()->imp()->windowGeometrySet &&
+                 xdgSurfaceResource()->imp()->currentWindowGeometry.size() != surface()->size())
+        {
+            xdgSurfaceResource()->imp()->currentWindowGeometry = LRect(0, surface()->size());
+        }
+
+        if (surface()->buffer())
+        {
+            wl_resource_post_error(resource()->resource(), XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface already has a buffer attached.");
+            return;
+        }
+
+        surface()->imp()->applyPendingRole();
+        configureRequest();
+
+        // Fake set maximized or fullscreen request if called before the role was applied
+        if (imp()->prevRoleRequest == LToplevelRole::Maximized)
+            setMaximizedRequest();
+        else if (imp()->prevRoleRequest == LToplevelRole::Fullscreen)
+        {
+            // Validate the output is still initialized
+            if (imp()->prevRoleFullscreenRequestOutput)
+            {
+                for (LOutput *output : compositor()->outputs())
+                {
+                    if (output == imp()->prevRoleFullscreenRequestOutput)
+                        goto skipUnsetOutput;
+                }
+
+                imp()->prevRoleFullscreenRequestOutput = nullptr;
+            }
+
+            skipUnsetOutput:
+            setFullscreenRequest(imp()->prevRoleFullscreenRequestOutput);
+        }
+
+        imp()->prevRoleRequest = 0;
+        imp()->prevRoleFullscreenRequestOutput = nullptr;
+
+        return;
+    }
+
     if (imp()->hasPendingMaxSize)
     {
         imp()->hasPendingMaxSize = false;
@@ -141,20 +202,6 @@ void LToplevelRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrig
 
     imp()->applyPendingChanges();
 
-    // Commit inicial para asignar rol
-    if (surface()->imp()->pending.role)
-    {
-        if (surface()->buffer())
-        {
-            wl_resource_post_error(resource()->resource(), XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface already has a buffer attached.");
-            return;
-        }
-
-        surface()->imp()->applyPendingRole();
-        configureRequest();
-        return;
-    }
-
     // Request configure
     if (!surface()->mapped() && !surface()->buffer())
     {
@@ -168,8 +215,13 @@ void LToplevelRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrig
         surface()->imp()->setMapped(false);
 
         // If a surface becomes unmapped, its children's parent is set to the parent of the now-unmapped surface
-        for (LSurface *c : surface()->children())
-            c->imp()->setParent(surface()->parent());
+        while (!surface()->children().empty())
+        {
+            if (surface()->children().front()->subsurface())
+                surface()->children().front()->imp()->setMapped(false);
+
+            surface()->children().front()->imp()->setParent(surface()->parent());
+        }
 
         surface()->imp()->setParent(nullptr);
 
@@ -447,14 +499,20 @@ void LToplevelRole::LToplevelRolePrivate::applyPendingChanges()
         currentConf.commited = true;
 
         UInt32 prevState = stateFlags;
-        stateFlags = currentConf.flags;
 
-        if (prevState != currentConf.flags)
-            toplevel->statesChanged();
         if ((prevState & LToplevelRole::Maximized) != (currentConf.flags & LToplevelRole::Maximized))
+        {
+            stateFlags = (stateFlags & ~LToplevelRole::Maximized) | (currentConf.flags & LToplevelRole::Maximized);
             toplevel->maximizedChanged();
+        }
+
         if ((prevState & LToplevelRole::Fullscreen) != (currentConf.flags & LToplevelRole::Fullscreen))
+        {
+            stateFlags = (stateFlags & ~LToplevelRole::Fullscreen) | (currentConf.flags & LToplevelRole::Fullscreen);
             toplevel->fullscreenChanged();
+        }
+
+        stateFlags = currentConf.flags;
 
         if (currentConf.flags & LToplevelRole::Activated)
         {
@@ -466,5 +524,8 @@ void LToplevelRole::LToplevelRolePrivate::applyPendingChanges()
 
         if ((prevState & LToplevelRole::Activated) != (currentConf.flags & LToplevelRole::Activated))
             toplevel->activatedChanged();
+
+        if (prevState != currentConf.flags)
+            toplevel->statesChanged();
     }
 }

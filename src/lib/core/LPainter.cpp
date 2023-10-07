@@ -177,19 +177,16 @@ void LPainter::LPainterPrivate::scaleTexture(LTexture *texture, const LRect &src
     glScissor(0, 0, dst.w(), dst.h());
     glViewport(0, 0, dst.w(), dst.h());
     glActiveTexture(GL_TEXTURE0);
-
     shaderSetAlpha(1.f);
     shaderSetMode(0);
     shaderSetActiveTexture(0);
     shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
     shaderSetSrcRect(src.x(), src.y() + src.h(), src.w(), -src.h());
-
     glBindTexture(GL_TEXTURE_2D, texture->id(output));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 

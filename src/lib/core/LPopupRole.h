@@ -4,7 +4,7 @@
 #include <LBaseSurfaceRole.h>
 #include <LRect.h>
 
-/*!
+/**
  * @brief Popup role for surfaces
  *
  * The LPopupRole class is a role for surfaces commonly used by clients to display context menus and tooltips.\n
@@ -22,13 +22,13 @@ class Louvre::LPopupRole : public LBaseSurfaceRole
 public:
     struct Params;
 
-    /*!
+    /**
      * @brief Constructor for LPopupRole class.
      * @param params Internal library parameters provided in the virtual LCompositor::createPopupRoleRequest() constructor.
      */
     LPopupRole(Params *params);
 
-    /*!
+    /**
      * @brief Destructor of LPopupRole class.
      *
      * Invoked after LCompositor::destroyPopupRoleRequest().
@@ -40,7 +40,7 @@ public:
     LPopupRole& operator= (const LPopupRole&) = delete;
     /// @endcond
 
-    /*!
+    /**
      * @brief Window geometry in surface coordinates.
      *
      * <center><img height="300px" src="https://lh3.googleusercontent.com/pw/AIL4fc_le5DeTa6b-yBnChX6YPbkr12gAp38ghVyvsv4SjHCd2L4fTL8agYls0AcGlBeplJyc0FNQCIeb6sR4WbSUyAHM4_LrKLNjhZ0SniRdaSUsjS9IGQ=w2400"></center>
@@ -49,14 +49,14 @@ public:
      */
     const LRect &windowGeometry() const;
 
-    /*!
+    /**
      * @brief Positioning rules.
      *
      * Rules for positioning the Popup.
      */
     const LPositioner &positioner() const;
 
-    /*!
+    /**
      * @brief Constraints the positioning area of the Popup.
      *
      * Constraints the area where the Popup can be positioned.
@@ -65,7 +65,7 @@ public:
      */
     void setPositionerBounds(const LRect &bounds);
 
-    /*!
+    /**
      * @brief Popup position constraint area in compositor coordinates.
      *
      * Constraint area of the Popup in compositor coordinates, assigned with setPositionerBounds().
@@ -85,7 +85,7 @@ public:
 /// @name Events
 /// @{
 
-    /*!
+    /**
      * @brief Configures the Popup.
      *
      * Suggests a size and position for the Popup relative to its parent position.\n
@@ -113,7 +113,7 @@ public:
 
 /// @name Virtual Methods
 /// @{
-    /*!
+    /**
      * @brief Position of the Popup surface according to the role.
      *
      * The default implementation of rolePos() positions the Popup following the rules of its LPositioner and
@@ -126,7 +126,7 @@ public:
      */
     virtual const LPoint &rolePos() const override;
 
-    /*!
+    /**
      * @brief Geometry change.
      *
      * Change in the geometry of the Popup window accessible with windowGeometry().
@@ -139,7 +139,7 @@ public:
      */
     virtual void geometryChanged();
 
-    /*!
+    /**
      * @brief Request to acquire keyboard focus.
      *
      * Request from the Popup for its surface to acquire keyboard focus.
@@ -152,7 +152,7 @@ public:
      */
     virtual void grabSeatRequest(Protocols::Wayland::GSeat *seatGlobal);
 
-    /*!
+    /**
      * @brief Configuration request.
      *
      * Request from a Popup for the compositor to suggest its position and size relative to its parent

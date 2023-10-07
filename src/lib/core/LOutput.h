@@ -13,7 +13,7 @@
 #include <sys/eventfd.h>
 #include <sys/poll.h>
 
-/*!
+/**
  * @brief Representation of a screen.
  *
  * The LOutput class represents a screen where part of the compositor can be displayed. It is typically associated with a computer monitor but
@@ -94,12 +94,12 @@ public:
      */
     State state() const;
 
-    /*!
+    /**
      * @brief Constructor of the LOutput class.
      */
     LOutput();
 
-    /*!
+    /**
      * @brief Destructor of the LOutput class.
      *
      * Invoked internally by the library after LCompositor::destroyOutputRequest() is called.
@@ -179,21 +179,21 @@ public:
      */
     const std::list<LOutputMode *> &modes() const;
 
-    /*!
+    /**
      * @brief Preferred mode.
      *
      * Preferred mode for the output. It is generally the mode with the highest refresh rate and resolution.
      */
     const LOutputMode *preferredMode() const;
 
-    /*!
+    /**
      * @brief Current mode.
      *
      * The graphical backend assigns the preferred mode by default.
      */
     const LOutputMode *currentMode() const;
 
-    /*!
+    /**
      * @brief Sets an output mode.
      *
      * Assigns a mode to the output. It must be one of the modes available in the modes().\n
@@ -201,7 +201,7 @@ public:
      */
     void setMode(const LOutputMode *mode);
 
-    /*!
+    /**
      * @brief Sets the output scale.
      *
      * Some monitors have a high pixel density, which means that applications need to render their content at a higher resolution in order to be viewed in high definition. 
@@ -211,14 +211,14 @@ public:
      */
     void setScale(Int32 scale);
 
-    /*!
+    /**
      * @brief Current scale.
      *
      * @returns the current scale of the output assigned with setScale(). The default scale is 1.
      */
     Int32 scale() const;
 
-    /*!
+    /**
      * @brief Schedules the next rendering frame.
      *
      * This method requests the compositor to schedule the next rendering frame for this output.\n
@@ -227,108 +227,108 @@ public:
      */
     void repaint();
 
-    /*!
+    /**
      * @brief Dots per inch.
      *
      * Dots per inch of the output, taking into account its physical dimensions and the resolution given by its current mode.
      */
     Int32 dpi();
 
-    /*!
+    /**
      * @brief Physical dimensions of the output.
      *
      * Physical dimensions of the output in millimeters.
      */
     const LSize &physicalSize() const;
 
-    /*!
+    /**
      * @brief Output size in compositor coordinates.
      *
      * Size of the output given its current mode in surface coordinates. Equivalent to the size given by rect().
      */
     const LSize &size() const;
 
-    /*!
+    /**
      * @brief Output size in buffer coordinates.
      *
      * Size of the output given its current mode in buffer coordinates.
      */
     const LSize &sizeB() const;
 
-    /*!
+    /**
      * @brief Output rect.
      *
      * Position and size of the output in surface coordinates.
      */
     const LRect &rect() const;
 
-    /*!
+    /**
      * @brief Output position in surface coordinates.
      *
      * Position of the output in surface coordinates. Equivalent to the position given by rect().
      */
     const LPoint &pos() const;
 
-    /*!
+    /**
      * @brief Assigns the position of the output.
      *
      * Sets the position of the output in surface coordinates, with the upper-left corner as the origin.
      */
     void setPos(const LPoint &pos);
 
-    /*!
+    /**
      * @brief EGLDisplay handle.
      *
      * Handle to the EGLDisplay of the output created by the graphical backend.
      */
     EGLDisplay eglDisplay();
 
-    /*!
+    /**
      * @brief Output name.
      *
      * Name of the output given by the graphical backend (e.g HDMI-A-2).
      */
     const char *name() const;
 
-    /*!
+    /**
      * @brief Output model
      *
      * Model name of the output given by the graphical backend.
      */
     const char *model() const;
 
-    /*!
+    /**
      * @brief Manufacturer of the output.
      *
      * Manufacturer name of the output given by the graphical backend.
      */
     const char *manufacturer() const;
 
-    /*!
+    /**
      * @brief Description of the output.
      *
      * Description of the output given by the graphical backend.
      */
     const char *description() const;
 
-    /*!
+    /**
      * @brief Renderer
      *
      * Access to render functions.
      */
     LPainter *painter() const;
 
-    /*!
+    /**
      * @brief Rendering thread ID
      */
     const std::thread::id &threadId() const;
 
-    /*!
+    /**
      * @name Métodos Virtuales
      */
 ///@{
 
-    /*!
+    /**
      * @brief Initialization of the OpenGL context.
      *
      * The initializeGL() method is invoked by the library after the output is properly initialized.\n
@@ -343,7 +343,7 @@ public:
      */
     virtual void initializeGL();
 
-    /*!
+    /**
      * @brief Renders a frame.
      *
      * The paintGL() method is invoked by the library after calling the repaint() method.\n
@@ -360,7 +360,7 @@ public:
      */
     virtual void paintGL();
 
-    /*!
+    /**
      * @brief Framebuffer dimensions change.
      *
      * The resizeGL() method is invoked by the library when the output scale or mode changes.\n
@@ -388,7 +388,7 @@ public:
      */
     virtual void moveGL();
 
-    /*!
+    /**
      * @brief OpenGL context deinitialization.
      *
      * The uninitializeGL() method is invoked by the library after the output is correctly removed from the compositor with LCompositor::removeOutput().\n

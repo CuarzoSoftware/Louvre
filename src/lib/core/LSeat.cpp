@@ -14,7 +14,6 @@
 #include <fcntl.h>
 #include <libudev.h>
 #include <libinput.h>
-#include <signal.h>
 
 #include <xkbcommon/xkbcommon-compat.h>
 #include <xkbcommon/xkbcommon-compose.h>
@@ -43,7 +42,6 @@ LSeat::LSeat(Params *params)
     compositor()->imp()->seat = this;
 
     LDNDManager::Params dndManagerParams;
-    dndManagerParams.seat = this;
     imp()->dndManager = compositor()->createDNDManagerRequest(&dndManagerParams);
 
     LPointer::Params pointerParams;
@@ -57,17 +55,30 @@ LSeat::LSeat(Params *params)
 
 LSeat::~LSeat()
 {
+    if (imp()->libseatHandle)
+        libseat_close_seat(imp()->libseatHandle);
+
     delete m_imp;
 }
 
 const std::list<LOutput *> &LSeat::outputs() const
 {
-    return *LCompositor::compositor()->imp()->graphicBackend->getConnectedOutputs(LCompositor::compositor());
+    return *compositor()->imp()->graphicBackend->getConnectedOutputs();
 }
 
-UInt32 LSeat::backendCapabilities() const
+void *LSeat::graphicBackendContextHandle() const
 {
-    return compositor()->imp()->inputBackend->getCapabilities(this);
+    return compositor()->imp()->graphicBackend->getContextHandle();
+}
+
+UInt32 LSeat::graphicBackendId() const
+{
+    return compositor()->imp()->graphicBackend->id();
+}
+
+LSeat::InputCapabilitiesFlags LSeat::inputBackendCapabilities() const
+{
+    return compositor()->imp()->inputBackend->getCapabilities();
 }
 
 const char *LSeat::name() const
@@ -78,17 +89,22 @@ const char *LSeat::name() const
     return "seat0";
 }
 
-void *LSeat::backendContextHandle() const
+void *LSeat::inputBackendContextHandle() const
 {
-    return compositor()->imp()->inputBackend->getContextHandle(this);
+    return compositor()->imp()->inputBackend->getContextHandle();
 }
 
-UInt32 LSeat::capabilities() const
+UInt32 LSeat::inputBackendId() const
+{
+    return compositor()->imp()->inputBackend->id();
+}
+
+LSeat::InputCapabilitiesFlags LSeat::capabilities() const
 {
     return imp()->capabilities;
 }
 
-void LSeat::setCapabilities(UInt32 capabilitiesFlags)
+void LSeat::setInputCapabilities(LSeat::InputCapabilitiesFlags capabilitiesFlags)
 {
     imp()->capabilities = capabilitiesFlags;
 
@@ -128,17 +144,8 @@ Int32 LSeat::setTTY(Int32 tty)
 {
     if (imp()->libseatHandle)
     {
-        Int32 ret = libseat_switch_session(libseatHandle(), tty);
-
-        if (ret != 0)
-            LLog::error("[seat] Failed to switch session.");
-        else
-        {
-            libseat_dispatch(imp()->libseatHandle, -1);
-            LLog::debug("[seat] Switching to tty %d.", tty);
-        }
-
-        return ret;
+        compositor()->imp()->unlockPoll();
+        return libseat_switch_session(libseatHandle(), tty);
     }
 
     return 0;

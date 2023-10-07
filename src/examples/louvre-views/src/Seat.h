@@ -11,7 +11,7 @@ public:
     Seat(LSeat::Params *params);
 
     void seatEnabled() override;
-    void backendNativeEvent(void *event) override;
+    void nativeInputEvent(void *event) override;
 
     void outputUnplugged(LOutput *output) override;
 

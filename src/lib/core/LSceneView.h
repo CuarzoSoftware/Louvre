@@ -3,7 +3,7 @@
 
 #include <LView.h>
 
-/*!
+/**
  * @brief View for rendering other views
  *
  * An LSceneView is a unique type of view. Instead of rendering its content directly into an LOutput,

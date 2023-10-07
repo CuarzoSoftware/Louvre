@@ -13,6 +13,8 @@ LPRIVATE_CLASS(LCursor)
     // Called once per main loop iteration
     void textureUpdate();
 
+    void setOutput(LOutput *output);
+
     LPointF pos;
     LPointF hotspotB;
     LSizeF size;
@@ -25,7 +27,9 @@ LPRIVATE_CLASS(LCursor)
     bool textureChanged                                 = false;
     bool posChanged                                     = false;
     LTexture *texture                                   = nullptr;
+    LPointF defaultHotspotB;
     LTexture *defaultTexture                            = nullptr;
+    LTexture *louvreTexture                             = nullptr;
     GLuint glFramebuffer, glRenderbuffer;
     UChar8 buffer[64*64*4];
 };

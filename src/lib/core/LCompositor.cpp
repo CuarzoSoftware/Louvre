@@ -98,6 +98,9 @@ bool LCompositor::start()
     imp()->threadId = std::this_thread::get_id();
     imp()->state = CompositorState::Initializing;
 
+    compositor()->imp()->epollFd = epoll_create1(0);
+    compositor()->imp()->events[1].data.fd = -1;
+
     if (!imp()->initWayland())
     {
         LLog::fatal("[compositor] Failed to init Wayland.");
@@ -112,73 +115,114 @@ bool LCompositor::start()
 
     if (!imp()->initGraphicBackend())
     {
-        LLog::fatal("[compositor] Failed to init Graphic backend.");
+        LLog::fatal("[compositor] Failed to init graphic backend.");
         goto fail;
     }
 
-    if (!imp()->inputBackend)
+    if (!imp()->initInputBackend())
     {
-        LLog::warning("[compositor] User did not load an input backend. Trying the Libinput backend...");
-
-        if (!loadInputBackend("/usr/etc/Louvre/backends/libLInputBackendLibinput.so"))
-        {
-            LLog::fatal("[compositor] No input backend found. Stopping compositor...");
-            goto fail;
-        }
-    }
-
-    if (!imp()->inputBackend->initialize(seat()))
-    {
-        LLog::fatal("[compositor] Failed to initialize input backend. Stopping compositor...");
+        LLog::fatal("[compositor] Failed to init input backend.");
         goto fail;
     }
-
-    LLog::debug("[compositor] Input backend initialized successfully.");
-    imp()->isInputBackendInitialized = true;
 
     seat()->initialized();
 
     imp()->state = CompositorState::Initialized;
     initialized();
 
-    imp()->fdSet[0].events = POLLIN | POLLOUT | POLLHUP;
-    imp()->fdSet[0].revents = 0;
+    imp()->events[0].events = EPOLLIN;
+    imp()->events[0].data.fd = eventfd(0, EFD_NONBLOCK);
 
-    imp()->fdSet[1].fd = eventfd(0, EFD_NONBLOCK);
-    imp()->fdSet[1].events = POLLIN;
-    imp()->fdSet[1].revents = 0;
+    epoll_ctl(compositor()->imp()->epollFd,
+              EPOLL_CTL_ADD,
+              compositor()->imp()->events[0].data.fd,
+              &compositor()->imp()->events[0]);
 
     return true;
 
     fail:
-    imp()->uinitCompositor();
+    imp()->unitCompositor();
     return false;
 }
 
 Int32 LCompositor::processLoop(Int32 msTimeout)
 {
-    poll(imp()->fdSet, 2, msTimeout);
+    if (state() == CompositorState::Uninitialized)
+        return 0;
+
+    epoll_event events[3];
+
+    Int32 nEvents = epoll_wait(imp()->epollFd,
+                         events,
+                         3,
+                         msTimeout);
 
     imp()->lock();
 
-    if (imp()->fdSet[1].events & POLLIN)
-    {
-        UInt64 eventValue;
-        ssize_t n = read(imp()->fdSet[1].fd, &eventValue, sizeof(eventValue));
-        L_UNUSED(n);
-        imp()->pollUnlocked = false;
-    }
-
     imp()->processRemovedGlobals();
 
-    wl_event_loop_dispatch(imp()->eventLoop, 0);
-    imp()->destroyPendingRenderBuffers(nullptr);
+    /* In certain older libseat versions, a POLLIN event may not be generated
+     * during session switching. To ensure stability, we always dispatch
+     * events; otherwise, the compositor might crash when a user is in a different
+     * session and a new DRM connector is plugged in. */
+    seat()->imp()->dispatchSeat();
+
+    for (Int32 i = 0; i < nEvents; i++)
+    {
+        // Wayland
+        if (events[i].data.fd == imp()->events[2].data.fd)
+        {
+            if (seat()->enabled())
+            {
+                wl_event_loop_dispatch(imp()->eventLoop, 0);
+                flushClients();
+                cursor()->imp()->textureUpdate();
+            }
+        }
+        // Event fd
+        else if (events[i].data.fd == imp()->events[0].data.fd)
+        {
+            UInt64 eventValue;
+            ssize_t n = read(imp()->events[0].data.fd, &eventValue, sizeof(eventValue));
+            L_UNUSED(n);
+            imp()->pollUnlocked = false;
+        }
+    }
 
     if (seat()->enabled())
+        imp()->destroyPendingRenderBuffers(nullptr);
+
+    if (state() == CompositorState::Uninitializing)
     {
-        flushClients();
-        cursor()->imp()->textureUpdate();
-        //imp()->processAnimations();
+        uninitialized();
+
+        imp()->processAnimations();
+
+        while (!clients().empty())
+            clients().back()->destroy();
+
+        while (!outputs().empty())
+            removeOutput(outputs().back());
+
+        imp()->unitInputBackend(true);
+
+        while (!imp()->textures.empty())
+            delete imp()->textures.back();
+
+        imp()->unitGraphicBackend(true);
+        imp()->unitSeat();
+        imp()->unitWayland();
+
+        while (!imp()->animations.empty())
+        {
+            delete imp()->animations.back();
+            imp()->animations.pop_back();
+        }
+
+        if (imp()->epollFd != -1)
+            close(imp()->epollFd);
+
+        imp()->state = CompositorState::Uninitialized;
     }
 
     imp()->unlock();
@@ -188,23 +232,16 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
 
 Int32 LCompositor::fd() const
 {
-    return imp()->fdSet[0].fd;
+    return imp()->epollFd;
 }
 
 void LCompositor::finish()
 {
-    exit(0);
+    if (state() == CompositorState::Uninitialized)
+        return;
 
-    /* TODO:
-    if (imp()->started)
-    {
-        if (imp()->isInputBackendInitialized)
-            imp()->inputBackend->uninitialize(seat());
-
-        if (imp()->isGraphicBackendInitialized)
-            imp()->graphicBackend->uninitialize(this);
-    }
-    */
+    imp()->state = CompositorState::Uninitializing;
+    imp()->unlockPoll();
 }
 
 void LCompositor::LCompositorPrivate::raiseChildren(LSurface *surface)
@@ -266,6 +303,9 @@ bool LCompositor::addOutput(LOutput *output)
 
     imp()->outputs.push_back(output);
 
+    if (imp()->outputs.size() == 1)
+        cursor()->imp()->setOutput(output);
+
     if (!output->imp()->initialize())
     {
         LLog::error("[Compositor] Failed to initialize output %s.", output->name());
@@ -288,9 +328,27 @@ void LCompositor::removeOutput(LOutput *output)
             if (output->threadId() == std::this_thread::get_id())
                 return;
 
+            output->imp()->callLockACK.store(false);
+            output->imp()->callLock.store(false);
+            output->repaint();
             output->imp()->state = LOutput::PendingUninitialize;
+            imp()->unlock();
+
+            Int32 waitLimit = 0;
+
+            while (!output->imp()->callLockACK.load() && waitLimit < 1000)
+            {
+                usleep(1000);
+                waitLimit++;
+            }
+
+            imp()->lock();
             imp()->graphicBackend->uninitializeOutput(output);
-            output->imp()->state = LOutput::Uninitialized;
+
+            while (output->imp()->state != LOutput::Uninitialized)
+                usleep(1000);
+
+            output->imp()->callLock.store(true);
 
             for (LSurface *s : surfaces())
                 s->sendOutputLeaveEvent(output);

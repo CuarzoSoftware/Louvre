@@ -3,7 +3,7 @@
 
 #include <LBaseSurfaceRole.h>
 
-/*!
+/**
  * @brief Subsurface role for surfaces
  *
  * The LSubsurfaceRole class defines a role for surfaces that allows them to be positioned relative to their parent surfaces.
@@ -34,14 +34,14 @@ public:
 
     struct Params;
 
-    /*!
+    /**
      * @brief Constructor for the LSubsurfaceRole class.
      *
      * @param params Internal parameters of the library passed in the virtual constructor LCompositor::createSubsurfaceRoleRequest().
      */
     LSubsurfaceRole(Params *params);
 
-    /*!
+    /**
      * @brief Destructor for the LSubsurfaceRole class.
      *
      * Invoked after LCompositor::destroySubsurfaceRoleRequest().
@@ -53,14 +53,14 @@ public:
     LSubsurfaceRole& operator= (const LSubsurfaceRole&) = delete;
     /// @endcond
 
-    /*!
+    /**
      * @brief Current mode.
      *
      * @returns `true` if in synchronous mode, `false` otherwise.
      */
     bool isSynced() const;
 
-    /*!
+    /**
     * @brief Offset in surface coordinates.
     *
     * The offset relative to the top-left corner of the parent surface in surface coordinates.
@@ -70,7 +70,7 @@ public:
 /// @name Virtual Methods
 /// @{
 
-    /*!
+    /**
      * @brief Position of the subsurface according to the role.
      *
      * The default implementation of rolePos() positions the subsurface relative to its parent by adding the offset
@@ -82,7 +82,7 @@ public:
      */
     virtual const LPoint &rolePos() const override;
 
-    /*!
+    /**
      * @brief Change of offset.
      *
      * Reimplement this virtual method if you want to be notified when the local position changes.
@@ -92,7 +92,7 @@ public:
      */
     virtual void localPosChanged();
 
-    /*!
+    /**
      * @brief Change of mode.
      *
      * Reimplement this virtual method if you want to be notified when the subsurface changes its sync mode.
@@ -102,7 +102,7 @@ public:
      */
     virtual void syncModeChanged();
 
-    /*!
+    /**
      * @brief Place above.
      *
      * Reimplement this virtual method if you want to be notified when the sub-surface is placed above the **sibling** surface.\n
@@ -114,7 +114,7 @@ public:
      */
     virtual void placedAbove(LSurface *sibling);
 
-    /*!
+    /**
      * @brief Place below.
      *
      * Reimplement this virtual method if you want to be notified when the subsurface is placed below the **sibling** surface.\n

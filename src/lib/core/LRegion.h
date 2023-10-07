@@ -5,7 +5,7 @@
 #include <LRect.h>
 #include <vector>
 
-/*!
+/**
  * @brief Collection of non-overlapping rectangles
  *
  * The LRegion class provides an efficient mechanism for creating sets of rectangles that do not overlap in their geometries.

@@ -54,6 +54,24 @@ LKeyboard::LKeyboard(Params *params)
 
 LKeyboard::~LKeyboard()
 {
+    if (imp()->xkbKeymapFd != -1)
+    {
+        close(imp()->xkbKeymapFd);
+        imp()->xkbKeymapFd = -1;
+    }
+
+    if (imp()->xkbKeymapState)
+    {
+        xkb_state_unref(imp()->xkbKeymapState);
+        imp()->xkbKeymapState = nullptr;
+    }
+
+    if (imp()->xkbContext)
+    {
+        xkb_context_unref(imp()->xkbContext);
+        imp()->xkbContext = nullptr;
+    }
+
     delete m_imp;
 }
 

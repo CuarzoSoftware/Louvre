@@ -177,15 +177,21 @@ static Int32 processInput(int, unsigned int, void *userData)
         }
 
         skip:
-        seat->backendNativeEvent(ev);
+        seat->nativeInputEvent(ev);
         libinput_event_destroy(ev);
         libinput_dispatch(data->li);
     }
     return 0;
 }
 
-bool LInputBackend::initialize(const LSeat *seat)
+UInt32 LInputBackend::id()
 {
+    return LInputBackendLibinput;
+}
+
+bool LInputBackend::initialize()
+{
+    LSeat *seat = LCompositor::compositor()->seat();
     seat->imp()->initLibseat();
 
     BACKEND_DATA *data = new BACKEND_DATA;
@@ -214,41 +220,45 @@ bool LInputBackend::initialize(const LSeat *seat)
     return true;
 
     fail:
-    uninitialize(seat);
+    uninitialize();
     return false;
 }
 
-UInt32 LInputBackend::getCapabilities(const LSeat *seat)
+UInt32 LInputBackend::getCapabilities()
 {
-    L_UNUSED(seat);
     return LSeat::InputCapabilities::Pointer | LSeat::InputCapabilities::Keyboard;
 }
 
-void *LInputBackend::getContextHandle(const LSeat *seat)
+void *LInputBackend::getContextHandle()
 {
+    LSeat *seat = LCompositor::compositor()->seat();
     BACKEND_DATA *data = (BACKEND_DATA*)seat->imp()->inputBackendData;
     return data->li;
 }
 
-void LInputBackend::suspend(const LSeat *seat)
+void LInputBackend::suspend()
 {
+    LSeat *seat = LCompositor::compositor()->seat();
     BACKEND_DATA *data = (BACKEND_DATA*)seat->imp()->inputBackendData;
     libinput_suspend(data->li);
 }
 
-void LInputBackend::forceUpdate(const LSeat *seat)
+void LInputBackend::forceUpdate()
 {
+    LSeat *seat = LCompositor::compositor()->seat();
     processInput(0, 0, (LSeat*)seat);
 }
 
-void LInputBackend::resume(const LSeat *seat)
+void LInputBackend::resume()
 {
+    LSeat *seat = LCompositor::compositor()->seat();
     BACKEND_DATA *data = (BACKEND_DATA*)seat->imp()->inputBackendData;
     libinput_resume(data->li);
 }
 
-void LInputBackend::uninitialize(const LSeat *seat)
+void LInputBackend::uninitialize()
 {
+    LSeat *seat = LCompositor::compositor()->seat();
     BACKEND_DATA *data = (BACKEND_DATA*)seat->imp()->inputBackendData;
 
     if (!data)
@@ -268,6 +278,7 @@ LInputBackendInterface API;
 
 extern "C" LInputBackendInterface *getAPI()
 {
+    API.id = &LInputBackend::id;
     API.initialize = &LInputBackend::initialize;
     API.uninitialize = &LInputBackend::uninitialize;
     API.getCapabilities = &LInputBackend::getCapabilities;

@@ -5,7 +5,7 @@
 #include <LObject.h>
 #include <functional>
 
-/*!
+/**
  * @brief Time-based animations.
  *
  * An LAnimation can be used for creating graphical animations. It has a fixed duration in milliseconds, and is synchronized
@@ -70,8 +70,8 @@ class Louvre::LAnimation : public LObject
 {
 public:
 
-    /*!
-     * Callback function type used in "onUpdate" and "onFinish".
+    /**
+     * Callback function type used to handle the `onUpdate()` and `onFinish()` events.
      */
     using Callback = std::function<void(LAnimation*)>;
 
@@ -80,7 +80,15 @@ public:
     LAnimation& operator= (const LAnimation&) = delete;
     /// @endcond
 
-    /*!
+    /**
+     * @name Constructors
+     *
+     * Methods for creating an LAnimation.
+     */
+
+    ///@{
+
+    /**
      * @brief Creates and launches a one-time animation with automatic cleanup.
      *
      * The oneShot() method creates and starts an animation immediately, and it is automatically destroyed once finished.
@@ -91,7 +99,7 @@ public:
      */
     static void oneShot(UInt32 durationMs, const Callback &onUpdate = nullptr, const Callback &onFinish = nullptr);
 
-    /*!
+    /**
      * @brief Creates a reusable animation.
      *
      * The create() method creates an animation without starting it immediately.
@@ -102,63 +110,65 @@ public:
      */
     static LAnimation *create(UInt32 durationMs, const Callback &onUpdate = nullptr, const Callback &onFinish = nullptr);
 
-    /*!
+    ///@}
+
+    /**
      * @brief Sets the `onUpdate()` callback handler function.
      *
-     * This function allows you to set the callback function that will be called when an update event occurs.
+     * This method allows you to set the callback function that will be called when an update event occurs.
      *
      * @param onUpdate A reference to the callback function. Pass `nullptr` to disable the callback.
      */
     void setOnUpdateCallback(const Callback &onUpdate);
 
-    /*!
+    /**
      * @brief Sets the `onFinish()` callback handler function.
      *
-     * This function allows you to set the callback function that will be called when the animaion finishes or stop() is called.
+     * This method allows you to set the callback function that will be called when the animaion finishes or stop() is called.
      *
      * @param onFinish A reference to the callback function. Pass `nullptr` to disable the callback.
      */
     void setOnFinishCallback(const Callback &onFinish);
 
-    /*!
+    /**
      * @brief Sets the duration of the animation in milliseconds.
      *
-     * Use this method to specify the duration of the animation in milliseconds. It's important to note that this method
-     * should not be called while the animation is running.
-     * If called while the animation is running, it will have no effect (no-op).
+     * Use this method to specify the duration of the animation in milliseconds.
+     *
+     * @note It is not permissible to invoke this method while the animation is in progress, and attempting to do so will yield no results.
      *
      * @param durationMs The duration of the animation in milliseconds.
      */
     void setDuration(UInt32 durationMs);
 
-    /*!
+    /**
      * @brief Returns the duration of the animation in milliseconds.
      *
-     * Use this function to retrieve the duration of the animation in milliseconds.
+     * Use this method to retrieve the duration of the animation in milliseconds.
      *
      * @return The duration of the animation in milliseconds.
      */
     UInt32 duration() const;
 
-    /*!
+    /**
      * @brief Returns a number linearly interpolated from 0 to 1.
      *
-     * This function returns a value indicating the percentage of completion of the animation. The value is linearly interpolated between 0 (start of the animation) and 1 (end of the animation).
+     * This method returns a value indicating the percentage of completion of the animation. The value is linearly interpolated between 0 (start of the animation) and 1 (end of the animation).
      *
      * @return The interpolated completion value ranging from 0 to 1.
      */
     Float32 value() const;
 
-    /*!
+    /**
      * @brief Starts the animation.
      *
-     * Use this function to initiate the animation. You can also specify whether to destroy the animation object after the `onFinish` callback is called by providing a boolean parameter.
+     * Use this method to initiate the animation. You can also specify whether to destroy the animation object after the `onFinish()` callback is called by providing a boolean parameter.
      *
-     * @param destroyOnFinish If set to true, the animation is destroyed after `onFinish()` is called. Default is true.
+     * @param destroyOnFinish If set to true, the animation is destroyed after `onFinish()` is called. Default is `true`.
      */
     void start(bool destroyOnFinish = true);
 
-    /*!
+    /**
      * @brief Halts the animation before its duration is reached.
      *
      * The stop() method can be used to stop the animation before its duration is reached.
@@ -166,14 +176,14 @@ public:
      */
     void stop();
 
-    /*!
+    /**
      * @brief Destroys the animation without invoking `onFinish()`.
      */
     void destroy();
 
 LPRIVATE_IMP(LAnimation)
     /// @cond OMIT
-    friend class Louvre::LCompositor::LCompositorPrivate;
+    friend class Louvre::LCompositor;
     LAnimation();
     ~LAnimation();
     /// @endcond

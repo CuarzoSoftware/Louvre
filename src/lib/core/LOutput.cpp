@@ -69,14 +69,26 @@ void LOutput::setMode(const LOutputMode *mode)
 
     // Setting output mode from a rendering thread is not allowed
     for (LOutput *o : compositor()->outputs())
-    {
         if (o->threadId() == std::this_thread::get_id())
             return;
+
+    imp()->callLockACK.store(false);
+    imp()->callLock.store(false);
+    compositor()->imp()->unlock();
+
+    Int32 waitLimit = 0;
+
+    while (!imp()->callLockACK.load() && waitLimit < 1000)
+    {
+        usleep(1000);
+        waitLimit++;
     }
 
+    compositor()->imp()->lock();
     imp()->state = ChangingMode;
     compositor()->imp()->graphicBackend->setOutputMode(this, (LOutputMode*)mode);
     imp()->state = Initialized;
+    imp()->callLock.store(true);
 }
 
 Int32 LOutput::currentBuffer() const

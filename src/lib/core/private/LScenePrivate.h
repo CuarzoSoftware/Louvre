@@ -21,6 +21,13 @@ LPRIVATE_CLASS(LScene)
     UInt32 keyModifiersSerial = 0;
     UInt32 keySerial = 0;
 
+    // Prevent recursive calls
+    bool handlingPointerMove = false;
+    bool handlingPointerButton = false;
+    bool handlingPointerAxisEvent = false;
+    bool handlingKeyModifiersEvent = false;
+    bool handlingKeyEvent = false;
+
     bool pointClippedByParent(LView *parent, const LPoint &point);
     bool pointClippedByParentScene(LView *view, const LPoint &point);
     LView *viewAt(LView *view, const LPoint &pos);

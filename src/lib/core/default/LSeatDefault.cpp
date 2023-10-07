@@ -12,7 +12,7 @@ using namespace Louvre;
 //! [initialized]
 void LSeat::initialized()
 {
-    setCapabilities(backendCapabilities());
+    setInputCapabilities(inputBackendCapabilities());
 }
 //! [initialized]
 
@@ -32,12 +32,12 @@ bool LSeat::setSelectionRequest(LDataDevice *device, UInt32 serial)
 }
 //! [setSelectionRequest]
 
-//! [backendNativeEvent]
-void LSeat::backendNativeEvent(void *event)
+//! [nativeInputEvent]
+void LSeat::nativeInputEvent(void *event)
 {
     L_UNUSED(event);
 }
-//! [backendNativeEvent]
+//! [nativeInputEvent]
 
 //! [seatEnabled]
 void LSeat::seatEnabled()
@@ -62,20 +62,14 @@ void LSeat::seatDisabled()
 //! [outputPlugged]
 void LSeat::outputPlugged(LOutput *output)
 {
-    LLog::debug("Output %s connected.", output->name());
-
     output->setScale(output->dpi() >= 200 ? 2 : 1);
+
+    if (compositor()->outputs().empty())
+        output->setPos(0);
+    else
+        output->setPos(compositor()->outputs().back()->pos() + LPoint(compositor()->outputs().back()->size().w(), 0));
+
     compositor()->addOutput(output);
-
-    Int32 totalWidth = 0;
-
-    for (LOutput *o : compositor()->outputs())
-    {
-        // Organize outputs horizontally and sequentially.
-        o->setPos(LPoint(totalWidth,0));
-        totalWidth += o->size().w();
-    }
-
     compositor()->repaintAllOutputs();
 }
 //! [outputPlugged]
@@ -89,15 +83,12 @@ void LSeat::outputUnplugged(LOutput *output)
 
     Int32 totalWidth = 0;
 
-    if (!outputs().empty())
+    for (LOutput *o : compositor()->outputs())
     {
-        for (LOutput *o : compositor()->outputs())
-        {
-            o->setPos(LPoint(totalWidth, 0));
-            totalWidth += o->size().w();
-        }
-
-        compositor()->repaintAllOutputs();
+        o->setPos(LPoint(totalWidth, 0));
+        totalWidth += o->size().w();
     }
+
+    compositor()->repaintAllOutputs();
 }
 //! [outputUnplugged]

@@ -32,7 +32,7 @@ GLinuxDMABuf::GLinuxDMABuf
     {
         Int64 prevFormat = -1;
 
-        for (LDMAFormat *dmaFormat : *compositor()->imp()->graphicBackend->getDMAFormats(compositor()))
+        for (LDMAFormat *dmaFormat : *compositor()->imp()->graphicBackend->getDMAFormats())
         {
             if (dmaFormat->format != prevFormat)
             {
@@ -43,7 +43,7 @@ GLinuxDMABuf::GLinuxDMABuf
     }
     else
     {
-        for (LDMAFormat *dmaFormat : *compositor()->imp()->graphicBackend->getDMAFormats(compositor()))
+        for (LDMAFormat *dmaFormat : *compositor()->imp()->graphicBackend->getDMAFormats())
             modifier(dmaFormat->format,
                      dmaFormat->modifier >> 32,
                      dmaFormat->modifier & 0xffffffff);

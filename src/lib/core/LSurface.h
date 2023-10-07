@@ -9,8 +9,8 @@
 #include <list>
 #include <mutex>
 
-/*!
- * @brief A client "Window"
+/**
+ * @brief A client "window"
  *
  * In the context of Wayland, surfaces can be thought of as analogous to "application windows."
  * Each surface possesses attributes including position, size, buffer, input region, opaque region, damage region, and a designated role.
@@ -61,28 +61,30 @@
  * @section Damage
  *
  * To avoid the compositor redrawing the entire area of a surface on each frame, clients notify which regions have changed on their
- * buffers, known as damage. You can access this region with damage() or damageB() and be notified when it changes with the damaged() event.\n
- * The default implementation of LOutput::paintGL() does not take into account the damage of surfaces, and therefore it renders in an inefficient way.
- * If you want to see an example of efficient rendering, check the **louvre-views** or **louvre-weston-clone** examples.
+ * buffers, known as damage. You can access this region with damage() or damageB() and be notified when it changes with the damageChanged() event.\n
+ *
+ * @note The default implementation of LOutput::paintGL() does not take into account the damage of surfaces, and therefore it renders in an inefficient way. If you want to see an example of efficient rendering, check the [louvre-views](md_md__examples.html#views) or [louvre-weston-clone](md_md__examples.html#weston) examples.
  *
  * @section Order
  *
- * The library uses a list to keep track of all the surfaces created by clients, which is accessible through LCompositor::surfaces().\n
- * This list maintains the order of the surfaces on the Z-axis defined by the protocols of their roles. Nevertheless, it is possible to reorder the surfaces respecting these hierarchies with the raise() method.\n
- * The surfaces are rendered by default following the order of the list, so the first ones are located in the background and the last ones in the front.\n
- * If you want to use your own list, you can make use of the virtual constructor and destructor of LSurface (LCompositor::createSurfaceRequest() and LCompositor::destroySurfaceRequest() respectively)
- * to listen when clients create or destroys a surface.\n
+ * The library maintains a list to keep track of all the surfaces created by clients, which can be accessed via LCompositor::surfaces().
+ * This list adheres to the order of surfaces on the Z-axis as defined by the protocols of their respective roles.
+ * However, it is possible to modify the order of surfaces within these hierarchies using the raise() method.
+ * Additionally, you can receive notifications when the order changes by implementing the raised() and orderChanged() virtual methods.\n
+ * To navigate through the list, you can utilize prevSurface() and nextSurface().
+ * Keep in mind that these functions may return `nullptr` if a surface is at the beginning or end of the list.\n
+ * Surfaces should be rendered in the order they appear in the list. This means that the first surfaces should be located in the background, while the last ones in the foreground.
  *
- * @note If you want to use your own list of surfaces, you should keep in mind that some roles require a specific order to be able to function, so you may need to study the rules of their protocols.
+ * @note If you wish to use a custom list, you can leverage the virtual constructor and destructor of LSurface (LCompositor::createSurfaceRequest() and LCompositor::destroySurfaceRequest() respectively) to listen for when clients create or destroy a surface, allowing you to manage your own custom list of surfaces.
  *
  * @section Position
  *
  * One of the characteristics of Wayland is that clients have very little information and control over how their surfaces are positioned on the screen.\n
  * For this reason, the rules of their roles generally define it based on an offset relative to another surface or a position given by
- * the compositor itself.\n
- * The library simplifies this problem by allowing you to assign the position of the surfaces with setPos() and access the position suggested by its role with
+ * you.\n
+ * The library simplifies this by allowing you to assign the position of the surfaces with setPos() and access the position suggested by its role with
  * rolePos().\n
- * In some cases, such as in the LPopupRole or LSubsurfaceRole role, the position given by the compositor is not taken into account.\n
+ * In some cases, such as in the LPopupRole or LSubsurfaceRole role, the position set with setPos() is not taken into account.\n
  * You can see the positioning rules of each role in detail by viewing the documentation of rolePos() for each one.
  */
 class Louvre::LSurface : public LObject
@@ -91,7 +93,7 @@ public:
 
     struct Params;
 
-    /*!
+    /**
      * @brief ID of library roles
      *
      * ID of the current role of the surface accessible with roleId()
@@ -117,63 +119,63 @@ public:
         DNDIcon = 5
     };
 
-    /*!
+    /**
      * @brief ID of the role
      *
      * @returns The ID of the surface's role or LSurface::Undefined if it does not have a role.
      */
     Role roleId() const;
 
-    /*!
+    /**
      * @brief Surface role
      *
      * @returns A pointer to the surface's role or `nullptr` if it does not have a role.
      */
     LBaseSurfaceRole *role() const;
 
-    /*!
+    /**
      * @brief Cursor role
      *
      * @returns A pointer to an instance of LCursorRole or `nullptr` if it has a different role.
      */
     LCursorRole *cursorRole() const;
 
-    /*!
+    /**
      * @brief Drag & Drop icon role
      *
      * @returns A pointer to an instance of LDNDIconRole or `nullptr` if it has a different role.
      */
     LDNDIconRole *dndIcon() const;
 
-    /*!
+    /**
      * @brief Toplevel role
      *
      * @returns A pointer to an instance of LToplevelRole or `nullptr` if it has a different role.
      */
     LToplevelRole *toplevel() const;
 
-    /*!
+    /**
      * @brief Popup role
      *
      * @returns A pointer to an instance of LPopupRole or `nullptr` if it has a different role.
      */
     LPopupRole *popup() const;
 
-    /*!
+    /**
      * @brief Subsurface role
      *
      * @returns A pointer to an instance of LSubsurfaceRole or `nullptr` if it has a different role.
      */
     LSubsurfaceRole *subsurface() const;
 
-    /*!
+    /**
      * @brief Constructor of the LSurface class.
      *
      * @param params Internal parameters of the library provided in the virtual constructor LCompositor::createSurfaceRequest().
      */
     LSurface(Params *params);
 
-    /*!
+    /**
      * @brief Destructor of the LSurface class.
      *
      * Invoked after LCompositor::destroySurfaceRequest().
@@ -185,123 +187,127 @@ public:
     LSurface& operator= (const LSurface&) = delete;
     /// @endcond
 
-    /*!
-     * @brief Position given by the compositor.
-     *
-     * Position of the surface assigned with setPos(), setX() or setY().
-     */
-    const LPoint &pos() const;
-
-    /*!
+    /**
      * @brief Assigns the position.
      *
      * Assigns the position of the surface.
      */
     void setPos(const LPoint &newPos);
 
-    /*!
+    /**
      * @brief Assigns the position.
      *
      * Assigns the position of the surface.
      */
     void setPos(Int32 x, Int32 y);
 
-    /*!
+    /**
      * @brief Assigns the x component of the position.
      *
      * Assigns the x component of the position of the surface.
      */
     void setX(Int32 x);
 
-    /*!
+    /**
      * @brief Assigns the y component of the position.
      *
      * Assigns the y component of the position of the surface.
      */
     void setY(Int32 y);
 
-    /*!
+    /**
+     * @brief Position given by the compositor.
+     *
+     * Position of the surface assigned with setPos(), setX() or setY().
+     */
+    const LPoint &pos() const;
+
+    /**
     * @brief Role position.
     *
     * Role position in surface coordinates. If the surface has no role, the same value as pos() is returned.
     */
     const LPoint &rolePos() const;
 
-    /*!
+    /**
      * @brief Surface size in buffer coordinates.
      */
     const LSize &sizeB() const;
 
-    /*!
+    /**
      * @brief Surface size in surface coordinates.
      */
     const LSize &size() const;
 
-    /*!
+    /**
      * @brief Input region in surface coordinates.
      *
      * Region of the surface that is capable of receiving input, in surface coordinates.
      */
     const LRegion &inputRegion() const;
 
-    /*!
+    /**
      * @brief Opaque region in surface coordinates.
      */
     const LRegion &opaqueRegion() const;
 
-    /*!
+    /**
      * @brief Translucent region in surface coordinates.
      *
      * Translucent region in surface coordinates (inverted opaque region).
      */
     const LRegion &translucentRegion() const;
 
-    /*!
+    /**
      * @brief Damaged region in surface coordinates.
      */
     const LRegion &damage() const;
 
-    /*!
+    /**
      * @brief Damaged region in buffer coordinates.
      */
     const LRegion &damageB() const;
 
-    /*!
-     * @brief Notify when the surface enters an output
+    /**
+     * @brief Notify the client when the surface enters an output
      *
      * This function notifies the surface's client that the surface has become visible within the display area of a specific output.
      * The client application can use this information to synchronize the surface's scale with that of the output.
      * You can access the list of outputs where the surface is visible using the outputs() method.
      *
+     * @note This function can be safely called multiple times with the same output as an argument because it internally checks whether the client has already been notified.
+     *
      * @param output The output into which the surface has entered.
      */
     void sendOutputEnterEvent(LOutput *output);
 
-    /*!
-     * @brief Notify when the surface leaves an output
+    /**
+     * @brief Notify the client when the surface leaves an output
      *
      * This function informs the surface's client application that the surface is no longer visible on a particular output.
      * You can access the list of outputs where the surface is still visible using the outputs() method.
+     *
+     * @note This function can be safely called multiple times with the same output as an argument because it internally checks whether the client has already been notified.
      *
      * @param output The output from which the surface is no longer visible.
      */
     void sendOutputLeaveEvent(LOutput *output);
 
-    /*!
+    /**
      * @brief Surface intersected outputs
      *
      * List of outputs in which the surface is visible, modifiable with the sendOutputEnterEvent() and sendOutputLeaveEvent() methods.
      */
     const std::list<LOutput*>&outputs() const;
 
-    /*!
+    /**
      * @brief Repaints the intersected outputs
      *
      * Invokes the LOutput::repaint() method on all outputs listed in outputs().
      */
     void repaintOutputs();
 
-    /*!
+    /**
      * @brief Minimized property
      *
      * Stores the minimized state of the surface set with setMinimized().
@@ -310,28 +316,28 @@ public:
      */
     bool minimized() const;
 
-    /*!
+    /**
      * @brief Sets the minimized property
      *
      * Minimize/unminimize the surface and all its children.
      */
     void setMinimized(bool state);
 
-    /*!
+    /**
      * @brief Input capability
      *
      * Indicates whether the surface is able to receive pointer or touch input events.
      */
     bool receiveInput() const;
 
-    /*!
+    /**
      * @brief Buffer scale
      *
      * Scale of the surface buffer. You can listen for changes to this property with the bufferScaleChanged() event.
      */
     Int32 bufferScale() const;
 
-    /*!
+    /**
      * @brief OpenGL texture
      *
      * Representation of the surface's buffer as an OpenGL texture.\n
@@ -340,14 +346,16 @@ public:
      */
     LTexture *texture() const;
 
-    /*!
-     * @brief Native wl_buffer handle
+    /**
+     * @brief Native [wl_buffer](https://wayland.app/protocols/wayland#wl_buffer) handle
      *
      * Handle to the last commited Wayland buffer of the surface.
+     *
+     * @warning It could return `nullptr` if the surface is not currently mapped.
      */
     wl_buffer *buffer() const;
 
-    /*!
+    /**
      * @brief Presence of damage
      *
      * Indicates if the surface has new damage since the last time the requestNextFrame() method was called.\n
@@ -355,7 +363,7 @@ public:
      */
     bool hasDamage() const;
 
-    /*!
+    /**
      * @brief Get an ID that increments with each commit and new damage addition.
      *
      * The ID increments every time the surface is committed and new damage is added.
@@ -364,7 +372,7 @@ public:
      */
     UInt32 damageId() const;
 
-    /*!
+    /**
      * @brief ACK the frame callback
      *
      * Notifies the surface that it's time for it to draw its next frame.\n
@@ -374,47 +382,47 @@ public:
      */
     void requestNextFrame(bool clearDamage = true);
 
-    /*!
+    /**
      * @brief Mapped property
      *
      * Indicates if the surface can be rendered.
      */
     bool mapped() const;
 
-    /*!
+    /**
      * @brief Wayland surface resource
      *
      * Returns the resource generated by the [wl_surface](https://wayland.app/protocols/wayland#wl_surface) interface of the Wayland protocol.
      */
     Protocols::Wayland::RSurface *surfaceResource() const;
 
-    /*!
+    /**
      * @brief Client owner of the surface.
      */
     LClient *client() const;
 
-    /*!
+    /**
      * @brief Parent surface
      *
      * @returns A pointer to the parent surface or `nullptr` if it does not have a parent.
      */
     LSurface *parent() const;
 
-    /*!
+    /**
      * @brief Topmost parent of the surface.
      *
      * @returns A pointer to the topmost parent of the surface, or `nullptr` if it does not have a parent.
      */
     LSurface *topmostParent() const;
 
-    /*!
+    /**
      * @brief Child surfaces.
      *
      * List of child surfaces.
      */
     const std::list<LSurface*>&children() const;
 
-    /*!
+    /**
      * @brief Check if the surface is a subchild of a popup.
      *
      * This function determines whether the surface is a subchild of a popup surface.
@@ -424,7 +432,7 @@ public:
      */
     bool isPopupSubchild() const;
 
-    /*!
+    /**
      * @brief Check if the surface has a subchild popup.
      *
      * This function checks whether the surface has a subchild popup surface.
@@ -434,7 +442,7 @@ public:
      */
     bool hasPopupSubchild() const;
 
-    /*!
+    /**
      * @brief Check if the surface is a subchild of the specified parent surface.
      *
      * This function checks whether the surface is a subchild of the provided parent surface.
@@ -444,7 +452,7 @@ public:
      */
     bool isSubchildOf(LSurface *parent) const;
 
-    /*!
+    /**
      * @brief Moves a surface to the top of the compositor's surfaces list
      *
      * This function repositions the specified surface at the end of the surfaces list managed by the compositor.
@@ -454,7 +462,7 @@ public:
      */
     void raise();
 
-    /*!
+    /**
      * @brief Retrieve the previous surface in the compositor surfaces list (LCompositor::surfaces()).
      *
      * This function returns a pointer to the surface that precedes the current surface in the compositor's surfaces list.
@@ -464,7 +472,7 @@ public:
      */
     LSurface *prevSurface() const;
 
-    /*!
+    /**
      * @brief Retrieve the next surface in the compositor surfaces list (LCompositor::surfaces()).
      *
      * This function returns a pointer to the surface that follows the current surface in the compositor's surfaces list.
@@ -477,17 +485,17 @@ public:
 /// @name Virtual Methods
 /// @{
 
-    /*!
+    /**
      * @brief Notifies about new damages on the surface
      *
-     * Reimplement this virtual method if you want to be notified when the surface has new damages.
+     * Reimplement this virtual method if you want to be notified when the surface has new damage.
      *
      * #### Default Implementation
-     * @snippet LSurfaceDefault.cpp damaged
+     * @snippet LSurfaceDefault.cpp damageChanged
      */
-    virtual void damaged();
+    virtual void damageChanged();
 
-    /*!
+    /**
      * @brief Notifies a change of role
      *
      * Reimplement this virtual method if you want to be notified when the surface changes its role.
@@ -497,7 +505,7 @@ public:
      */
     virtual void roleChanged();
 
-    /*!
+    /**
      * @brief Notifies a change of parent
      *
      * Reimplement this virtual method if you want to be notified when the surface changes its parent.
@@ -507,7 +515,7 @@ public:
      */
     virtual void parentChanged();
 
-    /*!
+    /**
      * @brief Notifies a change in the mapping state
      *
      * Reimplement this virtual method if you want to be notified when the surface changes its mapping state.
@@ -517,7 +525,7 @@ public:
      */
     virtual void mappingChanged();
 
-    /*!
+    /**
      * @brief Notifies a change in buffer scale
      *
      * Reimplement this virtual method if you want to be notified when the surface's buffer scale changes.
@@ -527,7 +535,7 @@ public:
      */
     virtual void bufferScaleChanged();
 
-    /*!
+    /**
      * @brief Notifies a change in buffer dimensions
      *
      * Reimplement this virtual method if you want to be notified when the buffer of the surface changes in size.
@@ -537,7 +545,7 @@ public:
      */
     virtual void bufferSizeChanged();
 
-    /*!
+    /**
      * @brief Notifies of a change in the opaque region
      *
      * Reimplement this virtual method if you wish to be notified when the surface changes its opaque region.
@@ -547,7 +555,7 @@ public:
      */
     virtual void opaqueRegionChanged();
 
-    /*!
+    /**
      * @brief Notifies of a change in the input region
      *
      * Reimplement this virtual method if you want to be notified when the surface changes its input region.
@@ -557,7 +565,7 @@ public:
      */
     virtual void inputRegionChanged();
 
-    /*!
+    /**
      * @brief Notifies when the surface is elevated
      *
      * If you want to receive notifications when the surface is repositioned to the top of the compositor's list of surfaces,
@@ -568,7 +576,7 @@ public:
      */
     virtual void raised();
 
-    /*!
+    /**
      * @brief Notifies when the surface changes its position in the surfaces list
      *
      * Override this virtual method if you wish to be informed about changes in the order of the surface within
@@ -579,7 +587,7 @@ public:
      */
     virtual void orderChanged();
 
-    /*!
+    /**
      * @brief Request a repaint of the surface
      *
      * This request can be initiated either by the library or by the client, serving as an explicit command to repaint the surface.
@@ -589,7 +597,7 @@ public:
      */
     virtual void requestedRepaint();
 
-    /*!
+    /**
      * @brief Notifies about changes in the minimized state of the surface
      *
      * This method is called to signal changes in the minimized state of the surface.

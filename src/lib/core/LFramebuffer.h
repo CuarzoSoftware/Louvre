@@ -3,26 +3,30 @@
 
 #include <LObject.h>
 
-/*!
+/**
  * @brief Base class for creating framebuffers.
  *
- * The LFramebuffer abstract class provides an interface for creating framebuffers or "groups of framebuffers" that can be used with LPainter.\n
- * Framebuffers serve as destinations where rendering can be performed and stored.\n
- * Refer to LPainter::bindFramebuffer() for usage details.\n
+ * @note This class is primarily intended for internal use by Louvre and may not be directly useful to you.
  *
- * For example, each LOutput have one, two, or more framebuffers (LOutputFramebuffer) that are displayed on screen, or each LSceneView also have its own framebuffer.\n
+ * The LFramebuffer abstract class provides an interface for creating framebuffers or "groups of framebuffers" that can be used with LPainter.\n
+ * Framebuffers serve as destinations where rendering can be performed and stored.
+ *
+ * For example, each LOutput can have one, two, or more framebuffers (LOutputFramebuffer) that are displayed on screen, or each LSceneView also have its own framebuffer.
+ *
  * If you need to render into a framebuffer and then use it as a texture, consider using the LRenderBuffer class instead.
+ *
+ * @see LPainter::bindFramebuffer() for usage details.
  */
 class Louvre::LFramebuffer : public LObject
 {
 public:
 
-    /*!
+    /**
      * @brief Destructor for the LFramebuffer class.
      */
     virtual ~LFramebuffer() {};
 
-    /*!
+    /**
      * @brief Get the scale by which the framebuffer dimensions must be interpreted.
      *
      * This method must return the scale factor used to interpret the dimensions of the framebuffer.
@@ -32,7 +36,7 @@ public:
      */
     virtual Int32 scale() const = 0;
 
-    /*!
+    /**
      * @brief Get the size of the framebuffer in buffer coordinates.
      *
      * This method must return the size of the framebuffer in buffer coordinates.
@@ -41,7 +45,7 @@ public:
      */
     virtual const LSize& sizeB() const = 0;
 
-    /*!
+    /**
      * @brief Get the position and size of the framebuffer in surface coordinates.
      *
      * This method must return the position and size of the framebuffer in surface coordinates.
@@ -50,7 +54,7 @@ public:
      */
     virtual const LRect& rect() const = 0;
 
-    /*!
+    /**
      * @brief Get the OpenGL framebuffer ID.
      *
      * This method must return the current OpenGL framebuffer ID associated with the instance.
@@ -59,7 +63,7 @@ public:
      */
     virtual GLuint id() const = 0;
 
-    /*!
+    /**
      * @brief Get the number of framebuffers represented by this instance.
      *
      * This method must return the number of framebuffers represented by this instance.
@@ -68,7 +72,7 @@ public:
      */
     virtual Int32 buffersCount() const = 0;
 
-    /*!
+    /**
      * @brief Get the index of the framebuffer where the rendering is stored.
      *
      * This method must return the index of the framebuffer where rendering must be performed/stored.
@@ -77,7 +81,7 @@ public:
      */
     virtual Int32 currentBufferIndex() const = 0;
 
-    /*!
+    /**
      * @brief Get the OpenGL texture ID of a specific framebuffer index.
      *
      * This method must return the OpenGL texture ID associated with the specified framebuffer index.
@@ -87,7 +91,7 @@ public:
      */
     virtual const LTexture* texture(Int32 index = 0) const = 0;
 
-    /*!
+    /**
      * @brief Set the damaged region
      *
      * This method sets the region in surface coordinates that indicates the parts of the framebuffer

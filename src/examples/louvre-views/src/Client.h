@@ -17,6 +17,7 @@ public:
 
     App *app = nullptr;
     Int32 pid = -1;
+    bool destroyed = false;
 };
 
 #endif // CLIENT_H
