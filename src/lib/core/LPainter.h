@@ -5,14 +5,28 @@
 #include <LPoint.h>
 
 /**
- * @brief Renderer painting functions
+ * @brief Utility for Painting Operations
  *
- * The LPainter class offers basic functions for 2D rendering without the need to use OpenGL functions directly. It can draw texture rects or solid colors, clear the screen and set the viewport.\n
+ * The LPainter class offers basic methods for 2D rendering without the need to use OpenGL functions directly.
+ * It can draw texture rects or solid colors, clear the screen and set the viewport.\n
  * Its goal is to abstract the rendering API, allowing for portable compositors, independent of the renderer used.\n
  * Currently, the library only offers the OpenGL ES 2.0 renderer, but in the future others such as Vulkan, Pixman, etc. could be incorporated.\n
  * Each LOutput has its own LPainter, which can be accessed from LOutput::painter().\n
  *
- * @note It is not mandatory to use LPainter functions for rendering, you can use OpenGL functions and your own shaders if desired.
+ * @note You are not obligated to use LPainter methods for rendering. You have the flexibility to use OpenGL functions and your
+ *       custom shaders if preferred, or leverage the LScene and LView classes for efficient rendering.
+ *
+ * ## Coordinate System
+ *
+ * When specifying the destination rect for your painting operations, you must use surface coordinates.
+ * LPainter automatically scales the content for you, taking into account the scale factor of the texture you are
+ * drawing and the scale factor of the destination framebuffer.
+ *
+ * The coordinate space in which the content is rendered is the same as that used to arrange the outputs.
+ * For instance, if you want to paint something in the upper-left corner of an LOutput, you must consider
+ * the LOutput's position.
+ *
+ * @note When rendering into an LRenderBuffer, you should also consider its position, similar to how you do with outputs.
  */
 class Louvre::LPainter : LObject
 {
@@ -23,33 +37,35 @@ public:
     /// @endcond
 
     /**
-     * @brief Binds the specified framebuffer for rendering.
+     * @brief Bind the specified framebuffer for rendering.
      *
-     * This function binds the provided framebuffer for rendering, allowing subsequent rendering operations to be performed on it.
+     * This method binds the provided framebuffer for rendering, allowing subsequent rendering operations to be performed on it.
+     *
+     * @note Output framebuffers are automatically bound prior a LOutput::paintGL() event.
      *
      * @param framebuffer The framebuffer to be bound.
      */
     void bindFramebuffer(LFramebuffer *framebuffer);
 
     /**
-     * @brief Retrieves the currently bound framebuffer.
+     * @brief Retrieve the currently bound framebuffer.
      *
-     * This function returns a pointer to the currently bound framebuffer for rendering.
+     * This method returns a pointer to the currently bound framebuffer for rendering.
      *
      * @return A pointer to the currently bound framebuffer.
      */
     LFramebuffer *boundFramebuffer() const;
 
     /**
-     * @brief Draws a texture.
+     * @brief Draw a texture.
      *
-     * Draws a texture or sub-rect of a texture on the screen.
+     * This method allows you to draw a texture or sub-rect of a texture on the bound frambuffer.
      *
-     * @note Using 1 as the `srcScale` allows you to define the `src` rect in buffer coordinates.
+     * @note Using 1 as the `srcScale` means that the `src` rect is in buffer coordinates.
      *
      * @param texture Texture to draw.
-     * @param src The portion of the texture to draw (specified in surface coordinates).
-     * @param dst The portion of the screen/framebuffer where the texture will be drawn (specified in surface coordinates).
+     * @param src The portion of the texture to draw specified in surface coordinates.
+     * @param dst The destination rect where the texture will be drawn specified in surface coordinates.
      * @param srcScale Scaling factor for the source texture (default is 1.0).
      * @param alpha Alpha value for blending the texture (range [0.0, 1.0]).
      */
@@ -57,21 +73,21 @@ public:
                      Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
 
     /**
-     * @brief Draws a texture.
+     * @brief Draw a texture.
      *
-     * Draws a portion of a texture onto the screen at a specific position and size.
+     * This method allows you to draw a texture or sub-rect of a texture on the bound frambuffer.
      *
-     * @note Using 1 as the `srcScale` allows you to define the source rect in buffer coordinates.
+     * @note Using 1 as the `srcScale` means that the `src` rect is in buffer coordinates.
      *
      * @param texture Texture to draw.
-     * @param srcX X-coordinate of the source rectangle.
-     * @param srcY Y-coordinate of the source rectangle.
-     * @param srcW Width of the source rectangle.
-     * @param srcH Height of the source rectangle.
-     * @param dstX X-coordinate of the destination rectangle.
-     * @param dstY Y-coordinate of the destination rectangle.
-     * @param dstW Width of the destination rectangle.
-     * @param dstH Height of the destination rectangle.
+     * @param srcX X-coordinate of the source rect.
+     * @param srcY Y-coordinate of the source rect.
+     * @param srcW Width of the source rect.
+     * @param srcH Height of the source rect.
+     * @param dstX X-coordinate of the destination rect.
+     * @param dstY Y-coordinate of the destination rect.
+     * @param dstW Width of the destination rect.
+     * @param dstH Height of the destination rect.
      * @param srcScale Scaling factor for the source texture (default is 1.0).
      * @param alpha Alpha value for blending the texture (range [0.0, 1.0]).
      */
@@ -81,46 +97,43 @@ public:
                      Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
 
     /**
-     * @brief Draws a solid color using a texture's alpha channel, with support for HiDPI scaling.
+     * @brief Draw a texture with a custom solid color.
      *
-     * This function draws a rectangle or sub-rectangle of a texture on the screen, while maintaining its alpha channel,
-     * and replaces the original color with a solid color specified by the user.
+     * This method draws a rect or sub-rect of a texture, replacing its original color while maintaining its alpha channel.
      *
-     * @note Using 1 as the `srcScale` allows you to define the `src` rect in buffer coordinates.
+     * @note Using 1 as the `srcScale` means that the `src` rect is in buffer coordinates.
      *
-     * @param texture A pointer to the texture to be drawn.
-     * @param color The solid color (LRGBF format) that will replace the original texture color.
-     * @param src The source rectangle within the texture that defines the region to be drawn.
-     * @param dst The destination rectangle on the screen where the texture will be drawn.
-     * @param srcScale Scale of the texture buffer.
-     * @param alpha The alpha (transparency) value of the texture (default is 1.0f, fully opaque).
+     * @param texture Texture to draw.
+     * @param color The solid color that will replace the original texture color.
+     * @param src The portion of the texture to draw specified in surface coordinates.
+     * @param dst The destination rect where the texture will be drawn specified in surface coordinates.
+     * @param srcScale Scaling factor for the source texture (default is 1.0).
+     * @param alpha Alpha value for blending the texture (range [0.0, 1.0]).
      */
     void drawColorTexture(const LTexture *texture, const LRGBF &color, const LRect &src, const LRect &dst,
                           Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
 
     /**
-     * @brief Draws a solid color using a texture's alpha channel, with support for HiDPI scaling.
+     * @brief Draw a texture with a custom solid color.
      *
-     * This function draws a rectangle or sub-rectangle of a texture on the screen, while maintaining its alpha channel,
-     * and replaces the original color with a solid color specified by the user. It also provides support for HiDPI scaling,
-     * allowing the user to control the scaling of the source rectangle when rendering on HiDPI (High-DPI) buffers.
+     * This method draws a rect or sub-rect of a texture, replacing its original color while maintaining its alpha channel.
      *
-     * @note Using 1 as the `srcScale` allows you to define the source rect in buffer coordinates.
+     * @note Using 1 as the `srcScale` means that the `src` rect is in buffer coordinates.
      *
-     * @param texture A pointer to the texture to be drawn.
+     * @param texture Texture to draw.
      * @param r The red component of the solid color (0.0 to 1.0).
      * @param g The green component of the solid color (0.0 to 1.0).
      * @param b The blue component of the solid color (0.0 to 1.0).
-     * @param srcX The x-coordinate of the top-left corner of the source rectangle in the texture.
-     * @param srcY The y-coordinate of the top-left corner of the source rectangle in the texture.
-     * @param srcW The width of the source rectangle in the texture.
-     * @param srcH The height of the source rectangle in the texture.
-     * @param dstX The x-coordinate of the top-left corner of the destination rectangle on the screen.
-     * @param dstY The y-coordinate of the top-left corner of the destination rectangle on the screen.
-     * @param dstW The width of the destination rectangle on the screen.
-     * @param dstH The height of the destination rectangle on the screen.
-     * @param srcScale The scaling factor applied to the source rectangle, useful for HiDPI buffers (default is 1.0f, no scaling).
-     * @param alpha The alpha (transparency) value of the texture (default is 1.0f, fully opaque).
+     * @param srcX X-coordinate of the source rect.
+     * @param srcY Y-coordinate of the source rect.
+     * @param srcW Width of the source rect.
+     * @param srcH Height of the source rect.
+     * @param dstX X-coordinate of the destination rect.
+     * @param dstY Y-coordinate of the destination rect.
+     * @param dstW Width of the destination rect.
+     * @param dstH Height of the destination rect.
+     * @param srcScale Scaling factor for the source texture (default is 1.0).
+     * @param alpha Alpha value for blending the texture (range [0.0, 1.0]).
      */
     void drawColorTexture(const LTexture *texture, Float32 r, Float32 g, Float32 b,
                           Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
@@ -128,11 +141,11 @@ public:
                           Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
 
     /**
-     * @brief Draws a solid color.
+     * @brief Draw a solid color rect.
      *
-     * Draws a colored rectangle on the screen.
+     * This method draws a solid colored rect.
      *
-     * @param dst The portion of the screen where the rectangle will be drawn (specified in surface coordinates).
+     * @param dst The destination rect where the color will be drawn specified in surface coordinates.
      * @param r Red component value (range [0.0, 1.0]).
      * @param g Green component value (range [0.0, 1.0]).
      * @param b Blue component value (range [0.0, 1.0]).
@@ -141,14 +154,14 @@ public:
     void drawColor(const LRect &dst, Float32 r, Float32 g, Float32 b, Float32 a);
 
     /**
-     * @brief Draws a solid color.
+     * @brief Draw a solid color rect.
      *
-     * Draws a colored rectangle on the screen.
+     * This method draws a solid colored rect.
      *
-     * @param dstX X-coordinate of the destination rectangle.
-     * @param dstY Y-coordinate of the destination rectangle.
-     * @param dstW Width of the destination rectangle.
-     * @param dstH Height of the destination rectangle.
+     * @param dstX X-coordinate of the destination rect.
+     * @param dstY Y-coordinate of the destination rect.
+     * @param dstW Width of the destination rect.
+     * @param dstH Height of the destination rect.
      * @param r Red component value (range [0.0, 1.0]).
      * @param g Green component value (range [0.0, 1.0]).
      * @param b Blue component value (range [0.0, 1.0]).
@@ -158,30 +171,23 @@ public:
                    Float32 r, Float32 g, Float32 b, Float32 a);
 
     /**
-     * @brief Sets the viewport.
+     * @brief Set the viewport.
      *
-     * @note This function should only be used if you are working with your own shaders/programs.
-     *
-     * @param rect Viewport rectangle specified in compositor coordinates.
+     * @note This method should be used if you are working with your own shaders/programs.
      */
     void setViewport(const LRect &rect);
 
     /**
      * @brief Sets the viewport.
      *
-     * @note This function should only be used if you are working with your own shaders/programs.
-     *
-     * @param x X-coordinate of the viewport rectangle.
-     * @param y Y-coordinate of the viewport rectangle.
-     * @param w Width of the viewport rectangle.
-     * @param h Height of the viewport rectangle.
+     * @note This method should be used if you are working with your own shaders/programs.
      */
     void setViewport(Int32 x, Int32 y, Int32 w, Int32 h);
 
     /**
-     * @brief Sets the clear color.
+     * @brief Set the clear color.
      *
-     * Sets the clear color used when calling clearScreen().
+     * This method sets the clear color used when calling clearScreen().
      *
      * @param r Value of the red component (range [0.0, 1.0]).
      * @param g Value of the green component (range [0.0, 1.0]).
@@ -191,16 +197,16 @@ public:
     void setClearColor(Float32 r, Float32 g, Float32 b, Float32 a);
 
     /**
-     * @brief Clears the screen.
+     * @brief Clear the framebuffer.
      *
-     * Clears the screen using the color defined by setClearColor().
+     * This method clears the bound framebuffer using the color set with setClearColor().
      */
     void clearScreen();
 
     /**
-     * @brief Uses LPainter's program.
+     * @brief Bind the internal LPainter program.
      *
-     * If you are using your own OpenGL programs, remember to call this method before using LPainter functions.
+     * @note This method should be used if you are working with your own OpenGL programs and want to use the LPainter methods again.
      */
     void bindProgram();
 

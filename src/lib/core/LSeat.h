@@ -334,11 +334,14 @@ public:
     /**
      * @brief Disconnected output.
      *
-     * The outputUnplugged() method is invoked by the graphical backend when an output is no longer available, for example when an external monitor connected to an HDMI port is disconnected.\n
+     * The outputUnplugged() method is invoked by the graphic backend when an output is no longer available, for example when an
+     * external monitor connected to an HDMI port is disconnected.\n
      * You can override this method to be notified when an output is no longer available.\n
      *
      * The default implementation removes the output from the compositor if it is initialized
      * and re-arranges the ones already initialized.
+     *
+     * @note Louvre automatically calls LCompositor::removeOutput() after this event, so calling it directly is not mandatory.
      *
      * #### Default Implementation
      * @snippet LSeatDefault.cpp outputUnplugged

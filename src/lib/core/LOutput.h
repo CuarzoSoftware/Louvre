@@ -14,7 +14,7 @@
 #include <sys/poll.h>
 
 /**
- * @brief A display used for rendering.
+ * @brief A display rendering interface.
  *
  * The LOutput class is responsible for rendering content to a display. It is typically associated with a computer screen, but could also
  * represent a window within an X11 or Wayland desktop, depending on the selected graphic backend.
@@ -64,7 +64,7 @@
  * @note Consider leveraging the LScene and LView classes for rendering, as they automatically calculate and repaint only the
  *       portions of an output that require updates. This can significantly enhance the performance of your compositor.
  *
- * @section Layout
+ * @section Arrangement
  *
  * Outputs, like surfaces, have a position and dimensions that allow them to be logically organized in a similar way to how a system settings panel does.\n
  * You can adjust the position of an output using the setPos() method, which will, in turn, trigger the moveGL() function when the position changes.
@@ -75,8 +75,8 @@
  *
  * @section Uninitialization
  *
- * If an LOutput is no longer available, or you no longer wish to use it, you must call the LCompositor::removeOutput() method to
- * remove it from the compositor. This will only uninitialize its rendering thread, making it possible to re-initialize it later.\n
+ * If you no longer wish to use an output, call the LCompositor::removeOutput() method to
+ * remove it from the compositor. This will only uninitialize it, making it possible to re-initialize it later.\n
  * An LOutput is no longer available when its virtual destructor is invoked (LCompositor::destroyOutputRequest()).
  */
 class Louvre::LOutput : public LObject
@@ -432,6 +432,7 @@ public:
      * @brief Uninitialize Event.
      *
      * The uninitializeGL() event is invoked by the library after the output is removed from the compositor with LCompositor::removeOutput().\n
+     * This event is also automatically invoked when the output is unplugged, check the LSeat::outputUnplugged() event.\n
      * Override this method to free your shaders, programs, textures, etc.
      *
      * @note Avoid performing any painting operations here, as they won't be visible on the screen.

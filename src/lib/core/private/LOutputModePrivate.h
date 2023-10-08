@@ -6,7 +6,7 @@
 using namespace Louvre;
 
 LPRIVATE_CLASS(LOutputMode)
-    const LOutput *output = nullptr;
+    LOutput *output = nullptr;
     void *graphicBackendData = nullptr;
 };
 

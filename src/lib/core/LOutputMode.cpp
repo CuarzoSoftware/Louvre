@@ -4,13 +4,13 @@
 
 using namespace Louvre;
 
-LOutputMode::LOutputMode(const LOutput *output)
+LOutputMode::LOutputMode(LOutput *output)
 {
     m_imp = new LOutputModePrivate();
     imp()->output = output;
 }
 
-const LOutput *LOutputMode::output() const
+LOutput *LOutputMode::output() const
 {
     return imp()->output;
 }

@@ -219,6 +219,12 @@ void LPainter::drawTexture(const LTexture *texture,
                             Float32 srcScale,
                             Float32 alpha)
 {
+    if (!texture || srcScale <= 0.f)
+        return;
+
+    if (alpha < 0.f)
+        alpha = 0.f;
+
     setViewport(dstX, dstY, dstW, dstH);
     glActiveTexture(GL_TEXTURE0);
 

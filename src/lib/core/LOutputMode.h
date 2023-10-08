@@ -14,37 +14,41 @@ class Louvre::LOutputMode : LObject
 {
 public:
     /// @cond OMIT
-    LOutputMode(const LOutput *output);
+    LOutputMode(LOutput *output);
     ~LOutputMode();
     LOutputMode(const LOutputMode&) = delete;
     LOutputMode& operator= (const LOutputMode&) = delete;
     /// @endcond
 
     /**
-     * @brief Mode output.
+     * @brief Get the output associated with this mode.
      *
-     * Output to which the mode belongs.
+     * This method retrieves the output to which the mode belongs.
      */
-    const LOutput *output() const;
+    LOutput *output() const;
 
     /**
-     * @brief Mode resolution.
+     * @brief Get the resolution of the mode.
      *
-     * Dimensions of the output when using this mode in buffer coordinates.
+     * This method returns the dimensions of the output when using this mode, represented in buffer coordinates.
      */
     const LSize &sizeB() const;
 
     /**
-     * @brief Refresh rate.
+     * @brief Get the refresh rate of the mode.
      *
-     * Refresh rate of the mode in mHz.
+     * This method returns the refresh rate of the mode in Hertz (Hz) multiplied by 1000.
+     *
+     * @return The refresh rate of the mode, expressed in Hz * 1000.
      */
     UInt32 refreshRate() const;
 
     /**
-     * @brief Preferred mode.
+     * @brief Check if this mode is the preferred mode for the output.
      *
-     * Indicates if the mode is the preferred one by the output.
+     * This method indicates whether the mode is the preferred choice for the output.
+     *
+     * @return `true` if this mode is preferred and `false` otherwise.
      */
     bool isPreferred() const;
 
