@@ -1,6 +1,7 @@
 #include <LOpenGL.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <GL/gl.h>
 #include <GLES2/gl2.h>
 #include <LRect.h>
 #include <LTexture.h>

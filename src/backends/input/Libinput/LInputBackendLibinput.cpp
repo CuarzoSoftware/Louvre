@@ -5,6 +5,7 @@
 #include <LLog.h>
 #include <unordered_map>
 #include <cstring>
+#include <libinput.h>
 
 using namespace Louvre;
 

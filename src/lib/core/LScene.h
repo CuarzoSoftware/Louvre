@@ -24,6 +24,9 @@
  * - handleResizeGL()       -> LOutput::resizeGL()
  * - handleUninitializeGL() -> LOutput::uninitializeGL()
  *
+ * @warning Make sure to "plug" the scene to all the output events mentioned earlier.
+ *          Failing to do so may result in scene initialization issues, memory leaks, and potential compositor crashes.
+ *
  * For example, like this:
  *
  * @code

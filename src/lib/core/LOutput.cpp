@@ -125,6 +125,9 @@ void LOutput::setBufferDamage(const LRegion &damage)
 
 void LOutput::setScale(Int32 scale)
 {
+    if (scale < 1 || scale > 3)
+        return;
+
     imp()->outputScale = scale;
     imp()->rect.setSize(sizeB()/scale);
 

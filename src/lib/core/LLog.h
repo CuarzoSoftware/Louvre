@@ -29,6 +29,9 @@
 class Louvre::LLog
 {
 public:
+    /**
+     * Call this method to print messages before creating an LCompositor instance.
+     */
     static void init();
 
     /// Prints general messages independent of the value of **LOUVRE_DEBUG**.

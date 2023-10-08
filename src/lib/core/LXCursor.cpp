@@ -52,11 +52,6 @@ const LTexture *LXCursor::texture() const
     return imp()->texture;
 }
 
-const LSize &LXCursor::sizeB() const
-{
-    return imp()->texture->sizeB();
-}
-
 const LPoint &LXCursor::hotspotB() const
 {
     return imp()->hotspotB;

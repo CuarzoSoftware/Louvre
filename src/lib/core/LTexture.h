@@ -2,7 +2,6 @@
 #define LTEXTURE_H
 
 #include <LObject.h>
-#include <GL/gl.h>
 #include <LRect.h>
 #include <drm_fourcc.h>
 
@@ -10,8 +9,10 @@
  * @brief OpenGL texture abstraction
  *
  * The LTexture class is an abstraction of an OpenGL texture.
- * It provides a unified interface for generating and updating textures from buffers in main memory, WL_DRM buffers, and DMA buffers.
+ * It provides a unified interface for generating and updating textures from buffers in main memory, `wl_drm` buffers, and DMA buffers.
  * The current texture buffer content is destroyed and replaced every time any of the setData() variants is used.
+ *
+ * @see To create a texture from an image file use LOpenGL::loadTexture().
  */
 class Louvre::LTexture : public LObject
 {
@@ -22,16 +23,16 @@ public:
      */
     enum BufferSourceType
     {
-        /// Buffer sourced from CPU
+        /// Buffer sourced from main memory
         CPU = 0,
 
-        /// Buffer sourced from WL_DRM buffers
+        /// Buffer sourced from `wl_drm` buffers
         WL_DRM = 1,
 
-        /// Buffer sourced from DMA plane buffers
+        /// Buffer sourced from DMA planes
         DMA = 2,
 
-        /// Indicates the texture is from a framebuffer, like an LOutput, LRenderBuffer or an LSceneView
+        /// Indicates the texture is from an LFramebuffer.
         Framebuffer = 3
     };
 
@@ -46,12 +47,17 @@ public:
     /// @endcond
 
     /**
+     * @brief The LTexture class destructor.
+     */
+    ~LTexture();
+
+    /**
      * @brief Get the equivalent DRM buffer format from a Wayland buffer format.
      *
-     * DRM formats are listed in drm_fourcc.h
+     * DRM formats are listed in [`drm_fourcc.h`](https://github.com/torvalds/linux/blob/master/include/uapi/drm/drm_fourcc.h).
      *
      * @param waylandFormat The Wayland buffer format to convert.
-     * @return The equivalent DRM buffer format as a UInt32 value.
+     * @return The equivalent DRM buffer format.
      */
     static UInt32 waylandFormatToDRM(UInt32 waylandFormat);
 
@@ -59,26 +65,26 @@ public:
      * @brief Get the number of bytes (not bits) per pixel of a DRM format.
      *
      * @param format The DRM format to get the bytes per pixel for.
-     * @return The number of bytes per pixel as a UInt32 value.
+     * @return The number of bytes per pixel.
      */
     static UInt32 formatBytesPerPixel(UInt32 format);
 
     /**
-     * @brief Set the data of the texture from a CPU buffer.
+     * @brief Set the data of the texture from a buffer in main memory.
      *
      * @param size The size of the texture in buffer coordinates.
      * @param stride The stride of the buffer.
-     * @param format The DRM format of the buffer.
-     * @param buffer The pointer to the CPU buffer.
-     * @return True if the data was successfully set, false otherwise.
+     * @param format The DRM format of the buffer (defined in [`drm_fourcc.h`](https://github.com/torvalds/linux/blob/master/include/uapi/drm/drm_fourcc.h)).
+     * @param buffer The pointer to the main memory buffer.
+     * @return `true` if the data was successfully set, `false` otherwise.
      */
     bool setDataB(const LSize &size, UInt32 stride, UInt32 format, const void *buffer);
 
     /**
-     * @brief Set the data of the texture from a WL_DRM buffer.
+     * @brief Set the data of the texture from a `wl_drm` buffer.
      *
-     * @param wlDRMBuffer The pointer to the WL_DRM buffer.
-     * @return True if the data was successfully set, false otherwise.
+     * @param wlDRMBuffer The pointer to the `wl_drm` buffer.
+     * @return `true` if the data was successfully set, `false` otherwise.
      */
     bool setData(void *wlDRMBuffer);
 
@@ -86,21 +92,22 @@ public:
      * @brief Set the data of the texture from DMA planes.
      *
      * @param planes The pointer to the DMA planes struct.
-     * @return True if the data was successfully set, false otherwise.
+     * @return `true` if the data was successfully set, `false` otherwise.
      */
     bool setDataB(const LDMAPlanes *planes);
 
     /**
-     * @brief Update a specific rectangular area of the texture with the passed buffer.
+     * @brief Update a specific area of the texture with the provided buffer.
      *
-     * The passed buffer must contain the same format as the texture. If invalid parameters are passed or if the texture is not modifiable, false is returned.
+     * To successfully update the texture, the provided buffer must have the same format as the texture.
+     * If invalid parameters are passed or if the texture cannot be modified, this function returns `false`.
      *
-     * @param rect The rectangular area to update.
-     * @param stride The stride of the buffer.
-     * @param buffer The pointer to the buffer.
-     * @return True if the update was successful, false otherwise.
+     * @param rect The rect within the texture to update, specified in buffer coordinates with the top-left corner as the origin.
+     * @param stride The stride of the main memory buffer.
+     * @param buffer A pointer to the main memory buffer.
+     * @return `true` if the update was successful; otherwise, `false`.
      */
-     bool updateRect(const LRect &rect, UInt32 stride, const void *buffer);
+    bool updateRect(const LRect &rect, UInt32 stride, const void *buffer);
 
     /**
      * @brief Create a copy of the texture.
@@ -109,32 +116,29 @@ public:
      * Using both parameters, a clipped and scaled copy version can be created from the texture.\n
      * Using negative values for the source rect size (srcW and srcH) causes the texture to be mirrored along the given axis.
      *
-     * @param dst The destination size of the copied texture. Default is an empty LSize.
-     * @param src The rectangular area within the texture to be copied. Default is an empty LRect.
-     * @param highQualityScaling Set this value to true to enable high-quality scaling, which produces better results when resizing to a significantly different size from the original.
+     * @note The resulting texture is independent of the original and must be freed separately.
+     *
+     * @param dst The destination size of the copied texture. Passing an empty Louvre::LSize means the same texture size is used.
+     * @param src The rectangular area within the texture to be copied. Passing an empty Louvre::LRect means the entire texture is used.
+     * @param highQualityScaling Set this value to `true` to enable high-quality scaling, which produces better results when resizing to a significantly different size from the original.
      * @return A pointer to the copied LTexture object.
      */
     LTexture *copyB(const LSize &dst = LSize(), const LRect &src = LRect(), bool highQualityScaling = true) const;
 
     /**
-     * @brief Saves the texture as a PNG file.
+     * @brief Save the texture as a PNG file.
      *
      * This function allows you to save the texture as a PNG image file at the specified @p path.
      *
      * @param path The file path where the PNG image will be saved.
-     * @return true if the save operation is successful, false otherwise.
+     * @return `true` if the save operation is successful, `false` otherwise.
      */
     bool save(const char *path) const;
 
     /**
-     * @brief The LTexture class destructor.
-     */
-    ~LTexture();
-
-    /**
      * @brief Get the size of the texture in buffer coordinates.
      *
-     * @return The size of the texture as an LSize object.
+     * @return The size of the texture.
      */
     const LSize &sizeB() const;
 
@@ -143,7 +147,7 @@ public:
      *
      * A texture is considered initialized when content has been assigned to it using any setData() variant.
      *
-     * @return True if the texture has been initialized, false otherwise.
+     * @return `true` if the texture has been initialized, `false` otherwise.
      */
     bool initialized() const;
 
@@ -153,23 +157,23 @@ public:
      * If nullptr is passed as output, a texture for the main thread is returned.
      *
      * @param output The specific output for which to get the texture ID.
-     * @return The OpenGL texture ID as a GLuint value or 0 if fails.
+     * @return The OpenGL texture ID or 0 if fails.
      */
     GLuint id(LOutput *output) const;
 
     /**
      * @brief Get the texture source type.
      *
-     * @return The texture source type as a BufferSourceType enumeration value.
+     * @return The texture source type as an LTexture::BufferSourceType enum value.
      */
     BufferSourceType sourceType() const;
 
     /**
      * @brief Get the DRM format of the texture.
      *
-     * See drm_fourc.h for more information on DRM formats.
+     * @see [`drm_fourcc.h`](https://github.com/torvalds/linux/blob/master/include/uapi/drm/drm_fourcc.h) for more information on DRM formats.
      *
-     * @return The DRM format of the texture as a UInt32 value.
+     * @return The DRM format of the texture.
      */
     UInt32 format() const;
 

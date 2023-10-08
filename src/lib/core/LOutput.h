@@ -14,53 +14,64 @@
 #include <sys/poll.h>
 
 /**
- * @brief Representation of a screen.
+ * @brief A display used for rendering.
  *
- * The LOutput class represents a screen where part of the compositor can be displayed. It is typically associated with a computer monitor but
- * could also be a window of an X11 or Wayland desktop depending on the selected graphical backend.\n
+ * The LOutput class is responsible for rendering content to a display. It is typically associated with a computer screen, but could also
+ * represent a window within an X11 or Wayland desktop, depending on the selected graphic backend.
  *
  * <center><IMG height="250px" SRC="https://lh3.googleusercontent.com/4lV1LTHBmO-eFywBrL4UhYIRcQbV5bjGB_17FdWFCzjGvnklxwBnXz5hQKOrkRCOegsn6PjnYZNCWk1SjFjwh9t8olEzr3Uwzd3saEt8EKRbbqX0n1f5R7q6r6V9u1t0PUk7BB0teA"></center>
  *
- * It has virtual methods used to initialize graphical contexts, rendering frames, adjusting the viewport, and more.\n
- *
  * @section Access
  *
- * The graphical backend is responsible for creating each LOutput making a request to the compositor through LCompositor::createOutputRequest().\n
- * You can reimplement that virtual constructor to use your own LOutput subclasses.\n
- * The LSeat class grants access to all outputs created by the graphical backend through the LSeat::outputs() list and it also notifies you of
- * hotplugging events (e.g. when connecting or disconnecting a monitor through an HDMI port).\n
+ * The graphic backend is responsible for creating each LOutput making a request to the compositor through LCompositor::createOutputRequest().\n
+ * You can override that virtual constructor to use your own LOutput subclasses.\n
+ * The LSeat class grants access to all outputs created by the graphic backend through the LSeat::outputs() list and it also notifies you of
+ * hotplugging events (e.g. when connecting or disconnecting a display through an HDMI port).
+ *
+ * @see LSeat::outputPlugged() and LSeat::outputUnplugged()
  *
  * @section Initialization
  *
- * By default, outputs are inactive and therefore it is not possible to render on them. To activate an output, it must be added to the compositor
- * using the LCompositor::addOutput() method, this will initialize its rendering thread, graphical context, and invoke the initializeGL() method. Then, every time the
- * repaint() method is called, the next rendering frame will be scheduled and the paintGL() method will be invoked within which you can define your own rendering logic.\n
- * By default, the library initializes all available outputs once the compositor is started in the LCompositor::initialized() virtual method.
+ * By default, outputs are inactive and cannot be rendered on. To activate an output, use the LCompositor::addOutput() method.
+ * This initializes its rendering thread, graphic context, and triggers the initializeGL() event.
+ * Subsequently, whenever the repaint() method is called, the rendering thread unblocks, and the paintGL() event is invoked,
+ * allowing you perform painting operations.
  *
- * @note The library internally handles the invocation of certain virtual methods: initializeGL(), moveGL(), resizeGL(), paintGL(), and uninitializeGL(). These methods are not intended to be called directly by you. To schedule a new frame, use the repaint() method, which will eventually trigger paintGL() asynchronously. It's important to note that making multiple calls to repaint() within the same frame does not result in multiple invocations of paintGL(). Instead, it ensures that paintGL() is invoked once, right after the subsequent paintGL(), repaint() should be called again in order to schedule another frame.
+ * @note Louvre by default initializes all available outputs once the compositor is started within the LCompositor::initialized() event.
+ *
+ * @section Rendering
+ *
+ * Painting operations must exclusively take place within a paintGL() event, as rendering elsewhere won't be visible on the screen.\n
+ * When you call repaint(), Louvre unlocks the output rendering thread and invokes paintGL() just once, regardless of the number of
+ * repaint() calls during a frame.\n
+ * To unlock the rendering thread again, you must call repaint() within or after the last paintGL() event.\n
+ * The library is in charge of triggering the initializeGL(), moveGL(), resizeGL(), paintGL(), and uninitializeGL() events,
+ * so you must avoid calling them directly.
  *
  * @section Modes
  *
  * Each LOutput can have multiple modes. An LOutputMode contains information about the resolution and refresh rate that the output can operate at.\n 
- * You can access the modes of an output with the modes() method and set the desired mode with setMode().\n
- * Generally, outputs use the mode with the highest refresh rate and resolution by default.\n
- * If you change to a mode with a different resolution and the output is initialized, the resizeGL() method will be invoked.
+ * You can access the modes of an output with modes() and set the desired one with setMode().\n
+ * Outputs by default use the preferredMode(), which typically has the highest refresh rate and resolution.\n
+ * If you change an output's mode or scale while it's initialized, the resizeGL() event is triggered.
  *
  * @section Context
  *
  * Each output has its own OpenGL context and its own instance of LPainter, which can be accessed with the painter() method.\n
- * You can use the functions provided by LPainter to render colored rects or textures.\n
+ * You can use the functions provided by LPainter to render colored rects or textures, or use the native OpenGL functions and your
+ * own shaders/programs if you wish.
  *
- * @note You can also use the native OpenGL functions and your own shaders/programs if you wish.
+ * @note Consider leveraging the LScene and LView classes for rendering, as they automatically calculate and repaint only the
+ *       portions of an output that require updates. This can significantly enhance the performance of your compositor.
  *
  * @section Layout
  *
  * Outputs, like surfaces, have a position and dimensions that allow them to be logically organized in a similar way to how a system settings panel does.\n
- * You can adjust the position of an output using the setPos() method, which will, in turn, trigger the moveGL() function if the position changed.
+ * You can adjust the position of an output using the setPos() method, which will, in turn, trigger the moveGL() function when the position changes.
  *
  * <center><IMG height="350px" SRC="https://lh3.googleusercontent.com/VOWUX4iiqYMF_bIrBP3xMyaiydv_e_ZKznCIJlRLaEA0CtBLMuU4h41R3D4Xm-7krk8jFGZrQGb_SS7hlIFUY9E5dVbQqs0Q3NIBXvRFrGs_cukqOmbCv1ExN9fG3BDdj4Yz45xIkQ=w2400"></center>
  *
- * @note In order for the LCursor class to smoothly transition across different LOutputs, the outputs must be arranged side by side.
+ * @note To enable LCursor to transition across different LOutputs, ensure that the outputs are closely arranged side by side.
  *
  * @section Uninitialization
  *
@@ -86,15 +97,6 @@ public:
     };
 
     /**
-     * @brief Get the current state of the LOutput.
-     *
-     * This method returns the current state of the output.
-     *
-     * @return The state of the output as a member of the State enumeration.
-     */
-    State state() const;
-
-    /**
      * @brief Constructor of the LOutput class.
      */
     LOutput();
@@ -112,59 +114,72 @@ public:
     /// @endcond
 
     /**
-     * @brief Returns a pointer to the associated framebuffer.
+     * @brief Get the current state of the LOutput.
+     *
+     * This method returns the current state of the output.
+     */
+    State state() const;
+
+    /**
+     * @brief Return a pointer to the associated framebuffer.
      *
      * @return A pointer to the LFramebuffer instance associated with the output.
      */
     LFramebuffer *framebuffer() const;
 
     /**
-     * @brief Returns the index of the current buffer.
+     * @brief Return the index of the current buffer.
      *
      * Compositors commonly employ double or triple buffering to ensure smooth graphics rendering. This involves rendering to one buffer while displaying another, reducing visual artifacts like glitches and tearing.
      *
      * @image html https://lh3.googleusercontent.com/2ousoWwxnVGvFX5bT6ual2G8UUbhUOJ21mK1UQmthPNM-7XfracRlL5GCYBQTzt4Os28eKO_FzC6BS-rasiNngvTMI9lEdET0ItKrI2wK_9IwSDaF-hNGkTMI6gVlL0m4ENDJYbckw
      *
-     * @return The current buffer index. Typically alternates between 0 and 1, although some backends may employ less or more than 2 framebuffers.
+     * @return The current buffer index. Alternates between [0], [0, 1] or [0, 1, 2] depending on the graphic backend configuration.
+     *
+     * @see [Graphic Backend Configuration](md_md__environment.html#graphic)
      */
     Int32 currentBuffer() const;
 
     /**
-     * @brief Returns the count of available buffers.
+     * @brief Return the count of available buffers.
      *
-     * This method provides the number of available buffers in the output, which are used for double buffering and rendering optimizations.
+     * This method returns the number of buffers used by the output. It can be 1, 2 or 3 depending on the graphic backend configuration.
      *
-     * @return The count of available buffers.
+     * @see [Graphic Backend Configuration](md_md__environment.html#graphic)
      */
     UInt32 buffersCount() const;
 
     /**
-     * @brief Accesses the texture of a specific buffer.
+     * @brief Access the texture of a specific buffer.
      *
      * This method allows access to the texture associated with a particular buffer index.
      *
      * @param bufferIndex The index of the buffer for which the texture is to be accessed.
-     * @return A pointer to the texture associated with the specified buffer index, or nullptr if texture access is not supported.
+     * @return A pointer to the texture associated with the specified buffer index, or `nullptr` if texture access is not supported.
      *
-     * @warning Some hardware may not support accessing textures, so you should always check if nullptr is returned.
+     * @warning Some hardware/backends may not support accessing outputs textures, so you should always check if `nullptr` is returned.
      */
     LTexture *bufferTexture(UInt32 bufferIndex);
 
     /**
-     * @brief Checks if the graphical backend supports buffer damage tracking.
+     * @brief Check if the output supports buffer damage tracking.
      *
-     * Some graphical backends / hardware can benefit from knowing which regions of the framebuffer have changed after a paintGL() call. This method indicates whether buffer damage support is available.
+     * Some graphic backends/hardware can benefit from knowing which regions of the framebuffer have changed within a paintGL() event.
+     * This method indicates whether buffer damage support is available.
      *
-     * @return true if the graphical backend supports buffer damage tracking, false otherwise.
+     * @see setBufferDamage()
+     *
+     * @return `true` if the graphical backend supports buffer damage tracking, `false` otherwise.
      */
     bool hasBufferDamageSupport() const;
 
     /**
-     * @brief Sets the damaged region of the framebuffer.
+     * @brief Set the damaged region of the framebuffer.
      *
-     * This method is used to specify which region of the framebuffer has been damaged after a paintGL() call. The damage region is cleared after the subsequent paintGL() call.
+     * This method is used to specify which region of the framebuffer has been damaged within a paintGL() call.
+     * The damage region is cleared after the subsequent paintGL() call.
      *
-     * @note Calling this method is not mandatory, but it could considerably improve performance on certain hardware.
+     * @note Calling this method is not mandatory, but it could considerably improve performance on certain graphic backends/hardware.
      *
      * @param damage The damaged region of the framebuffer.
      */
@@ -180,163 +195,184 @@ public:
     const std::list<LOutputMode *> &modes() const;
 
     /**
-     * @brief Preferred mode.
+     * @brief Get the preferred mode.
      *
-     * Preferred mode for the output. It is generally the mode with the highest refresh rate and resolution.
+     * This method returns the preferred mode for the output. It is generally the mode with the highest refresh rate and resolution.
      */
     const LOutputMode *preferredMode() const;
 
     /**
-     * @brief Current mode.
+     * @brief Get the current mode.
      *
-     * The graphical backend assigns the preferred mode by default.
+     * This method returns the current output mode.
      */
     const LOutputMode *currentMode() const;
 
     /**
-     * @brief Sets an output mode.
+     * @brief Set the output mode.
      *
-     * Assigns a mode to the output. It must be one of the modes available in the modes().\n
-     * If the output is initialized and the new mode has a different resolution than the current one, the resizeGL() method is invoked.
+     * Use this method to assign a mode to the output, which must be one of the available modes listed in modes().
+     * If the mode changes and the output is already initialized the resizeGL() event is triggered.
+     *
+     * @note Calling this method from any of the `GL` events is not allowed, as it could potentially lead to a deadlock.
+     *       In such cases, the method is simply ignored to prevent issues.
      */
     void setMode(const LOutputMode *mode);
 
     /**
-     * @brief Sets the output scale.
+     * @brief Set the output scale factor.
      *
-     * Some monitors have a high pixel density, which means that applications need to render their content at a higher resolution in order to be viewed in high definition. 
-     * Typically, a dpi() value greater than 120 is considered high definition, and in such cases, it is recommended to use a scale factor of 2. 
-     * Clients automatically adjusts the scale of their surfaces to match the output on which they are visible.\n
-     * For more information, you can refer to the default implementation of the LCompositor::initialized() method.
+     * Use this method to adjust the scale factor of the output. By default, outputs have a scale factor of 1.
+     * Increasing the scale factor, such as setting it to 2, is often suitable for high-definition displays (when dpi() >= 200).
+     * It's common for clients to adapt their surface scales to match the scale of the output where they are displayed.
+     * If the scale changes and the output is already initialized, the resizeGL() event will be triggered.
+     *
+     * @param scale The desired scale factor to set.
+     *
+     * @see See an example of its use in the default implementation of LCompositor::initialized().
      */
     void setScale(Int32 scale);
 
     /**
-     * @brief Current scale.
+     * @brief Retrieve the current output scale factor.
      *
-     * @returns the current scale of the output assigned with setScale(). The default scale is 1.
+     * This function returns the current scale factor assigned to the output using setScale(). The default scale factor is 1.
      */
     Int32 scale() const;
 
     /**
-     * @brief Schedules the next rendering frame.
+     * @brief Schedule the next rendering frame.
      *
-     * This method requests the compositor to schedule the next rendering frame for this output.\n
-     * The compositor will then invoke the paintGL() method during the next frame.\n
-     * Calling this method multiple times during the same frame does not result in multiple invocations of the paintGL() method, it only ensures that it will be invoked once in the next frame.
+     * Calling this method unlocks the output rendering thread, triggering a subsequent paintGL() event.
+     * Regardless of the number of repaint() calls within the same frame, paintGL() is invoked only once.\n
+     * To unlock the rendering thread again, repaint() must be called within or after a paintGL() event.
      */
     void repaint();
 
     /**
-     * @brief Dots per inch.
+     * @brief Get the dots per inch (DPI) of the output.
      *
-     * Dots per inch of the output, taking into account its physical dimensions and the resolution given by its current mode.
+     * This method calculates and returns the dots per inch (DPI) of the output, considering its physical
+     * dimensions and the resolution provided by its current mode.
      */
     Int32 dpi();
 
     /**
-     * @brief Physical dimensions of the output.
+     * @brief Get the physical dimensions of the output.
      *
-     * Physical dimensions of the output in millimeters.
+     * This method retrieves the physical dimensions of the output in millimeters.
+     *
+     * @note In some cases, such as when the compositor is running inside a virtual machine, the physical size may be (0,0).
      */
     const LSize &physicalSize() const;
 
     /**
-     * @brief Output size in compositor coordinates.
+     * @brief Get the output size in compositor coordinates.
      *
-     * Size of the output given its current mode in surface coordinates. Equivalent to the size given by rect().
+     * This method provides the size of the output in surface coordinates, based on its current mode and scale.
+     * It is equivalent to the size given by the rect() method.
      */
     const LSize &size() const;
 
     /**
-     * @brief Output size in buffer coordinates.
+     * @brief Get the output size in buffer coordinates.
      *
-     * Size of the output given its current mode in buffer coordinates.
+     * This method returns the size of the output in buffer coordinates, based on its current mode.
+     *
+     * @note Since the dimensions provided by this method are in buffer coordinates, they are not affected by the output scale.
      */
     const LSize &sizeB() const;
 
     /**
-     * @brief Output rect.
+     * @brief Get the output rect.
      *
-     * Position and size of the output in surface coordinates.
+     * This method provides the position and size of the output in surface coordinates (pos(), size()).
      */
     const LRect &rect() const;
 
     /**
-     * @brief Output position in surface coordinates.
+     * @brief Get the output position in surface coordinates.
      *
-     * Position of the output in surface coordinates. Equivalent to the position given by rect().
+     * This method retrieves the position of the output in surface coordinates assigned with setPos().
+     * It is equivalent to the position given by the rect() method.
      */
     const LPoint &pos() const;
 
     /**
-     * @brief Assigns the position of the output.
+     * @brief Set the position of the output.
      *
-     * Sets the position of the output in surface coordinates, with the upper-left corner as the origin.
+     * This method allows you to assign the position of the output in surface coordinates, with the upper-left corner as the origin.
+     * If the position changes while the output is initialized, it will trigger the moveGL() event.
+     *
+     * @param pos The new position of the output.
      */
     void setPos(const LPoint &pos);
 
     /**
-     * @brief EGLDisplay handle.
+     * @brief Get the EGLDisplay handle.
      *
-     * Handle to the EGLDisplay of the output created by the graphical backend.
+     * This method retrieves the EGLDisplay of the output created by the graphic backend.
      */
     EGLDisplay eglDisplay();
 
     /**
-     * @brief Output name.
+     * @brief Get the output name.
      *
-     * Name of the output given by the graphical backend (e.g HDMI-A-2).
+     * This function retrieves the name of the output provided by the graphic backend, such as "HDMI-A-2."
+     *
+     * @note Output names are always unique, even if they belong to different GPUs.
      */
     const char *name() const;
 
     /**
-     * @brief Output model
+     * @brief Get the output model name.
      *
-     * Model name of the output given by the graphical backend.
+     * This function retrieves the model name of the output provided by the graphic backend.
      */
     const char *model() const;
 
     /**
-     * @brief Manufacturer of the output.
+     * @brief Get the manufacturer name of the output.
      *
-     * Manufacturer name of the output given by the graphical backend.
+     * This function retrieves the manufacturer name of the output provided by the graphic backend.
      */
     const char *manufacturer() const;
 
     /**
-     * @brief Description of the output.
+     * @brief Get the description of the output.
      *
-     * Description of the output given by the graphical backend.
+     * This function retrieves the description of the output provided by the graphic backend.
      */
     const char *description() const;
 
     /**
-     * @brief Renderer
+     * @brief Get access to the associated LPainter.
      *
-     * Access to render functions.
+     * This function provides access to the LPainter associated with this output.
      */
     LPainter *painter() const;
 
     /**
-     * @brief Rendering thread ID
+     * @brief Get the ID of the rendering thread.
+     *
+     * This function retrieves the ID of the output rendering thread.
      */
     const std::thread::id &threadId() const;
 
     /**
-     * @name Métodos Virtuales
+     * @name Virtual Methods
      */
 ///@{
 
     /**
-     * @brief Initialization of the OpenGL context.
+     * @brief Initialize Event.
      *
-     * The initializeGL() method is invoked by the library after the output is properly initialized.\n
-     * You can reimplement this method to initialize your shaders, programs, textures, etc.\n
+     * The initializeGL() event is invoked by the library after the output is properly initialized.\n
+     * You can override this method to initialize your shaders, programs, textures, etc.
      *
      * The default implementation assigns the white color to clear the screen.
      *
-     * @note You should avoid performing any painting operations here, as they won't be visible on the screen. Instead, perform painting tasks in the paintGL() method.
+     * @note Avoid performing painting operations here, as they won't be visible on the screen. Instead, perform painting tasks in the paintGL() event.
      *
      * #### Default Implementation
      * @snippet LOutputDefault.cpp initializeGL
@@ -344,16 +380,18 @@ public:
     virtual void initializeGL();
 
     /**
-     * @brief Renders a frame.
+     * @brief Paint Event.
      *
-     * The paintGL() method is invoked by the library after calling the repaint() method.\n
-     * Reimplement this method to define your own rendering logic.
+     * The paintGL() event is invoked by the library after calling the repaint() method.\n
+     * Override this method to perform your painting operations.
      *
-     * The default implementation clears the screen, draws the surfaces following the order of the surface list
-     * of the compositor, draws the cursor if the graphical backend does not support cursor composition via hardware and
+     * The default implementation clears the screen, draws the surfaces following the order of the LCompositor::surfaces() list,
+     * draws the cursor if the graphic backend does not support cursor composition via hardware, and
      * finally draws the icon of a drag & drop session if there was one.
      *
-     * @warning The default implementation provides a basic rendering method that is quite inefficient since it redraws the entire screen every frame. Check the code of the **louvre-weston-clone** example compositor to see how to render efficiently with LPainter or consider using the LScene rendering system.
+     * @note The default implementation provides a basic rendering method that is quite inefficient since it redraws the entire screen every frame.
+     *       Check the code of the [louvre-weston-clone](md_md__examples.html#weston) example compositor to see how to render efficiently with LPainter
+     *       or consider using the LScene and LView rendering system.
      *
      * #### Default Implementation
      * @snippet LOutputDefault.cpp paintGL
@@ -361,14 +399,15 @@ public:
     virtual void paintGL();
 
     /**
-     * @brief Framebuffer dimensions change.
+     * @brief Resize Event.
      *
-     * The resizeGL() method is invoked by the library when the output scale or mode changes.\n
-     * You can reimplement this method to readjust your graphical interfaces.\n
+     * The resizeGL() event is invoked by the library when the output scale or mode changes.\n
+     * Override this method to readjust your graphical interfaces.
      *
-     * @note You should avoid performing any painting operations here, as they won't be visible on the screen. Instead, perform painting tasks in the paintGL() method.
+     * @note Avoid performing any painting operations here, as they won't be visible on the screen.
+     *       Instead, perform painting tasks in the paintGL() event.
      *
-     * The default implementation schedules a new rendering frame.
+     * The default implementation simply schedules a new rendering frame with repaint().
      *
      * #### Default Implementation
      * @snippet LOutputDefault.cpp resizeGL
@@ -376,12 +415,13 @@ public:
     virtual void resizeGL();
 
     /**
-     * @brief Invoked when the output position changes.
+     * @brief Move Event.
      *
-     * This method is called when the output's position changes, such as when the setPos() method is called.
-     * You can reimplement this method to readjust your graphical interfaces or perform necessary updates in response to position changes.
+     * This event is triggered when the output's position changes, such as when the setPos() method is called.\n
+     * Override this method to readjust your graphical interfaces.
      *
-     * @note You should avoid performing any painting operations here, as they won't be visible on the screen. Instead, perform painting tasks in the paintGL() method.
+     * @note Avoid performing any painting operations here, as they won't be visible on the screen.
+     *       Instead, perform painting tasks in the paintGL() event.
      *
      * #### Default Implementation
      * @snippet LOutputDefault.cpp moveGL
@@ -389,17 +429,19 @@ public:
     virtual void moveGL();
 
     /**
-     * @brief OpenGL context deinitialization.
+     * @brief Uninitialize Event.
      *
-     * The uninitializeGL() method is invoked by the library after the output is correctly removed from the compositor with LCompositor::removeOutput().\n
-     * You can reimplement this method to deinitialize your shaders, programs, textures, etc.\n
+     * The uninitializeGL() event is invoked by the library after the output is removed from the compositor with LCompositor::removeOutput().\n
+     * Override this method to free your shaders, programs, textures, etc.
      *
-     * @note You should avoid performing any painting operations here, as they won't be visible on the screen. Instead, perform painting tasks in the paintGL() method.
+     * @note Avoid performing any painting operations here, as they won't be visible on the screen.
+     *       Instead, perform painting tasks in the paintGL() event.
      *
      * #### Default Implementation
      * @snippet LOutputDefault.cpp uninitializeGL
      */
     virtual void uninitializeGL();
+
 ///@}
 
     LPRIVATE_IMP(LOutput)

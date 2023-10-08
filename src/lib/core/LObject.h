@@ -9,26 +9,29 @@
 class Louvre::LObject
 {
 public:
+    /**
+     * @brief Constructor of the LObject class.
+     */
     LObject();
 
     /**
-     * The global compositor instance.
+     * @brief Quick access to the global compositor instance.
      */
     static LCompositor *compositor();
 
     /**
-     * The global seat instance.
+     * @brief Quick access to the global seat instance.
      */
     static LSeat *seat();
 
     /**
-     * Returns a pointer to the cursor implementation provided by the library.\n
-     * Must be accessed within or after the LCompositor::initialized() or LCompositor::cursorInitialized() virtual methods are invoked.\n
-     * If the cursor has not yet been initialized, this method returns nullptr.
+     * @brief Quick access to the global cursor instance.
      */
     static LCursor *cursor();
 
+    /// @cond OMIT
     LPRIVATE_IMP(LObject);
+    /// @endcond
 };
 
 #endif // LOBJECT_H

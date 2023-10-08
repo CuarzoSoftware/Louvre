@@ -4,29 +4,35 @@
 #include <LNamespaces.h>
 
 /**
- * @brief Representation of an XCursor
+ * @brief Cursor Icons and Themes
  *
- * The LXCursor class represents an [XCursor](https://www.x.org/archive/X11R7.7/doc/man/man3/Xcursor.3.xhtml) loaded using the loadXCursorB() method.
- * It offers access to its OpenGL texture and hotspot.
+ * The LXCursor class enables the search and loading of [XCursor](https://www.x.org/archive/X11R7.7/doc/man/man3/Xcursor.3.xhtml)
+ * icons from installed themes on your machine.
+ * It provides functionality to retrieve the icon's texture and hotspot, making it suitable for use with LCursor.
+ *
+ * @see LCompositor::cursorInitialized()
  */
 class Louvre::LXCursor
 {
 public:
     /**
-     * @brief Loads an XCursor pixmap.
+     * @brief Load an XCursor pixmap.
      *
-     * Loads pixmaps of X cursors available in the system and converts them to a texture.
+     * Loads an XCursor that matches the specified name and theme.
      *
      * @param cursor Name of the XCursor to load.
-     * @param theme Name of the cursor theme. You can enter `NULL` if you don't want to specify a theme.
-     * @param suggestedSize Suggested size of the pixmap in buffer coordinates. Returns the variant of the pixmap with closest dimensions to the specified one.
+     * @param theme Name of the cursor theme. Pass `NULL` if you don't want to specify a theme.
+     * @param suggestedSize Suggested size of the pixmap in buffer coordinates.
+     *        Returns the variant of the pixmap with closest dimensions to the specified one.
      *
-     * @returns If an XCursor matching the parameters is found, returns an instance of the LXCursor class, which stores the cursor's dimensions, hotspot, and texture. Otherwise, it returns `nullptr`. See the example available in LCompositor::cursorInitialized() for more information.
+     * @returns If an XCursor matching the parameters is found, returns an instance of the LXCursor class,
+     *          which stores the cursor's hotspot, and texture.
+     *          Otherwise, it returns `nullptr`.
      */
     static LXCursor *loadXCursorB(const char *cursor, const char *theme = NULL, Int32 suggestedSize = 64);
 
     /**
-     * @brief Destructor for LXCursor.
+     * @brief Destructor of the LXCursor class.
      *
      * @warning The destructor releases any resources associated with an LXCursor instance, including its texture.
      */
@@ -38,25 +44,14 @@ public:
     /// @endcond
 
     /**
-     * @brief Get the cursor texture.
-     *
-     * @return A pointer to the cursor's texture.
+     * @brief Get the texture.
      */
-    const LTexture* texture() const;
+    const LTexture *texture() const;
 
     /**
-     * @brief Get the cursor texture size in buffer coordinates.
-     *
-     * @return The size of the cursor's texture.
+     * @brief Get the hotspot in buffer coordinates.
      */
-    const LSize& sizeB() const;
-
-    /**
-     * @brief Get the cursor hotspot in buffer coordinates.
-     *
-     * @return The hotspot of the cursor.
-     */
-    const LPoint& hotspotB() const;
+    const LPoint &hotspotB() const;
 
     LPRIVATE_IMP(LXCursor)
     /// @cond OMIT

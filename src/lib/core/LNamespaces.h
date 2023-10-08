@@ -2,13 +2,11 @@
 #define LNAMESPACES_H
 
 #include <protocols/Wayland/wayland.h>
-#include <libinput.h>
 #include <list>
 
-#define LOUVRE_GLOBAL_ITERS_BEFORE_DESTROY 5
-
 #define LOUVRE_MAX_SURFACE_SIZE 10000000
-#define LOUVRE_DEBUG 1
+#define LOUVRE_GLOBAL_ITERS_BEFORE_DESTROY 5
+#define LOUVRE_MAX_DMA_PLANES 4
 
 // Globals
 #define LOUVRE_WL_COMPOSITOR_VERSION 6
@@ -164,7 +162,6 @@ namespace Louvre
     /// 4D vector of 32 bits floats
     using LRectF = LRectTemplate<Float32,Int32>;
 
-    typedef UInt32 LKey;
     typedef void* EGLContext;
     typedef void* EGLDisplay;
     typedef unsigned int GLuint;
@@ -192,6 +189,7 @@ namespace Louvre
     };
 
     /**
+     * @cond OMIT
      * @brief Structure representing DMA format and modifier.
      *
      * The LDMAFormat struct contains information about DMA format and modifier.
@@ -207,14 +205,12 @@ namespace Louvre
         UInt64 modifier;
     };
 
-    #define LOUVRE_MAX_DMA_PLANES 4
+    /// @endcond
 
     /**
-     * @brief Structure representing DMA planes.
+     * @brief Direct Memory Access (DMA) planes.
      *
-     * The LDMAPlanes struct contains information about DMA planes used for texture generation.
-     * DMA planes are memory regions that can be used to create textures. Each plane is associated
-     * with a file descriptor (fd) and contains additional properties like modifier, stride, and offset.
+     * Use this struct to import DMA buffers with LTexture.
      */
     struct LDMAPlanes
     {
@@ -224,13 +220,13 @@ namespace Louvre
         /// Height of the buffer in pixels.
         UInt32 height;
 
-        /// Format of the buffer.
+        /// DRM format of the buffer.
         UInt32 format;
 
-        /// Number of file descriptors (fds) in the plane.
+        /// Number of file descriptors.
         UInt32 num_fds = 0;
 
-        /// Array of file descriptors (fds) associated with the DMA plane.
+        /// Array of file descriptors associated with each DMA plane.
         Int32 fds[LOUVRE_MAX_DMA_PLANES] = {-1};
 
         /// Array of strides for each DMA plane.
@@ -244,11 +240,10 @@ namespace Louvre
     };
 
     /**
-     * @brief Structure representing an RGB color with floating-point components.
+     * @brief RGB color with floating-point components.
      *
-     * The LRGBF struct defines an RGB color with three floating-point components (r, g, b).
-     * Each component ranges from 0.0 to 1.0, where 0.0 represents no intensity and 1.0 represents full intensity.
-     * This structure is typically used to represent colors in a normalized format.
+     * The LRGBF struct defines an RGB color with three floating-point components (r, g, b).\n
+     * Each component ranges from 0.0 to 1.0.
      */
     struct LRGBF
     {
@@ -263,12 +258,10 @@ namespace Louvre
     };
 
     /**
-     * @brief Structure representing an RGBA color with floating-point components.
+     * @brief RGBA color with floating-point components.
      *
-     * The LRGBAF struct defines an RGBA color with four floating-point components (r, g, b, a).
-     * Each RGB component ranges from 0.0 to 1.0, where 0.0 represents no intensity and 1.0 represents full intensity.
-     * The alpha component (a) also ranges from 0.0 to 1.0, where 0.0 represents full transparency and 1.0 represents full opacity.
-     * This structure is typically used to represent colors with transparency in a normalized format.
+     * The LRGBAF struct defines an RGBA color with four floating-point components (r, g, b, a).\n
+     * Each component ranges from 0.0 to 1.0.
      */
     struct LRGBAF
     {
@@ -288,7 +281,7 @@ namespace Louvre
     /**
      * @brief ID values for the graphic backends shipped with Louvre.
      *
-     * These IDs are returned by LCompositor::graphicBackendID() to identify
+     * These IDs are returned by LSeat::graphicBackendId() to identify
      * the currently loaded backend.
      *
      * The range [0, 1000] is reserved for Louvre graphic backends only. If you wish to create
@@ -302,11 +295,7 @@ namespace Louvre
         LGraphicBackendX11 = 1      ///< ID for the X11 graphic backend.
     };
 
-    /**
-     * @brief Graphical Backend Interface
-     *
-     * @note This documentation is intended for library maintainers and individuals interested in developing their own graphical backends.
-     */
+    /// @cond OMIT
     struct LGraphicBackendInterface
     {
         UInt32 (*id)();
@@ -353,11 +342,12 @@ namespace Louvre
         UInt32 (*getTextureID)(LOutput *output, LTexture *texture);
         void (*destroyTexture)(LTexture *texture);
     };
+    /// @endcond
 
     /**
      * @brief ID values for the input backends included with Louvre.
      *
-     * These IDs are returned by LCompositor::inputBackendID() to identify the currently
+     * These IDs are returned by LSeat::inputBackendId() to identify the currently
      * loaded input backend.
      *
      * The range [0, 1000] is reserved exclusively for Louvre's built-in input backends. If
@@ -371,11 +361,7 @@ namespace Louvre
         LInputBackendX11 = 1       ///< ID for the X11 input backend.
     };
 
-    /**
-     * @brief Input Backend Interface
-     *
-     * @note This documentation is intended for library maintainers and individuals interested in developing their own input backends.
-     */
+    /// @cond OMIT
     struct LInputBackendInterface
     {
         UInt32 (*id)();
@@ -387,6 +373,7 @@ namespace Louvre
         void (*forceUpdate)();
         void (*resume)();
     };
+    /// @endcond
 
     namespace Protocols
     {

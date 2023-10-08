@@ -96,11 +96,22 @@
 class Louvre::LView : public LObject
 {
 public:
+    /**
+     * @brief Construct an LView object.
+     *
+     * @param type Type ID of the view, such as those listed in LView::Type.
+     * @param parent Parent view.
+     */
     LView(UInt32 type, LView *parent = nullptr);
 
+    /// @cond OMIT
     LView(const LView&) = delete;
     LView& operator= (const LView&) = delete;
+    /// @endcond
 
+    /**
+     * @brief Destructor for the LView class.
+     */
     virtual ~LView();
 
     /// Types of views included with Louvre

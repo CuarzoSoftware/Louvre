@@ -12,9 +12,10 @@ class Louvre::LOpenGL
 {
 public:
     /**
-     * @brief Opens a GLSL shader file.
+     * @brief Open a GLSL shader file.
      *
-     * @warning The returned string must be manually freed when no longer used.
+     * @note The returned string must be manually freed when no longer used.
+     *
      * @param fileName Path to the shader file.
      * @returns A string with the contents of the shader or `nullptr` in case of error.
      */
@@ -32,12 +33,12 @@ public:
 
     /**
      * @brief Maximum number of texture units.
-     * @returns An integer with the maximum number of texture units supported by the machine.
+     * @returns An integer with the maximum number of texture units supported by OpenGL.
      */
     static GLuint maxTextureUnits();
 
     /**
-     * @brief Builds a shader.
+     * @brief Compile a shader.
      *
      * @param type Type of shader (GL_VERTEX_SHADER or GL_FRAGMENT_SHADER).
      * @param shaderString String with the shader source code.
@@ -46,7 +47,11 @@ public:
     static GLuint compileShader(GLenum type, const char *shaderString);
 
     /**
-     * @brief Creates a texture from an image file.
+     * @brief Create a texture from an image file.
+     *
+     * Loads and creates a texture from an image file.
+     *
+     * @note The image is always converted to the `DRM_FORMAT_ARGB8888` format.
      *
      * @param file Path to the image file. Must be an image format supported by [FreeImage](https://freeimage.sourceforge.io/features.html) (JPEG, PNG, BMP, etc).
      * @returns A new texture or `nullptr` in case of error.

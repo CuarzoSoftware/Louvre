@@ -12,7 +12,6 @@ using namespace Louvre;
 //! [initializeGL]
 void LOutput::initializeGL()
 {
-    // Sets the background color to white
     painter()->setClearColor(1.f, 1.f, 1.f, 1.f);
 }
 //! [initializeGL]
@@ -24,7 +23,7 @@ void LOutput::paintGL()
 
     p->clearScreen();
 
-    // Check if surface moved under cursor
+    // Check if a surface moved under cursor (simulating a pointer move event)
     if (seat()->pointer()->surfaceAt(cursor()->pos()) != seat()->pointer()->focusSurface())
         seat()->pointer()->pointerPosChangeEvent(
             cursor()->pos().x(),
@@ -33,7 +32,7 @@ void LOutput::paintGL()
     if (seat()->dndManager()->icon())
         seat()->dndManager()->icon()->surface()->raise();
 
-    // Draws every surface
+    // Draw every surface
     for (LSurface *s : compositor()->surfaces())
     {
         // Skip some surfaces
@@ -45,10 +44,10 @@ void LOutput::paintGL()
 
         // Current surface rect
         LRect currentRect = LRect(
-            s->rolePos(),  // Role pos in compositor coords
-            s->size());    // Surface size in compositor coords
+            s->rolePos(),  // Role pos in surface coords
+            s->size());    // Surface size in surface coords
 
-        // Calc which outputs intersects the surface
+        // Calc which outputs intersect the surface
         for (LOutput *o : compositor()->outputs())
         {
             if (o->rect().intersects(currentRect))
@@ -57,13 +56,13 @@ void LOutput::paintGL()
                 s->sendOutputLeaveEvent(o);
         }
 
-        // Draws the surface
+        // Draw the surface
         p->drawTexture(
             s->texture(),        // Surface texture
             LRect(0, s->sizeB()),// The entire texture size
             currentRect);        // The destination rect on screen
 
-        // Notifies the client that it can render the next frame 
+        // Notify the client it can now render a new surface frame
         s->requestNextFrame();
     }
 
