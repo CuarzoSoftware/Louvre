@@ -15,6 +15,16 @@ const LSize &LPositioner::size() const
     return imp()->data.size;
 }
 
+const LSize &LPositioner::unconstrainedSize() const
+{
+    return imp()->unconstrainedSize;
+}
+
+void LPositioner::setUnconstrainedSize(const LSize &size) const
+{
+    imp()->unconstrainedSize = size;
+}
+
 const LRect &LPositioner::anchorRect() const
 {
     return imp()->data.anchorRect;

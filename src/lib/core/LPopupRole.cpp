@@ -32,6 +32,7 @@ LPopupRole::LPopupRole(LPopupRole::Params *params) : LBaseSurfaceRole(params->po
 {
    m_imp = new LPopupRolePrivate();
    imp()->positioner.imp()->data = params->positioner->imp()->data;
+   imp()->positioner.setUnconstrainedSize(imp()->positioner.size());
 }
 
 LPopupRole::~LPopupRole()

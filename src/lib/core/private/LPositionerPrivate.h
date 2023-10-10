@@ -23,6 +23,8 @@ LPRIVATE_CLASS(LPositioner)
         UInt32 parentConfigureSerial;
     } data;
 
+    LSize unconstrainedSize;
+
     void updateGlobalScale();
 };
 

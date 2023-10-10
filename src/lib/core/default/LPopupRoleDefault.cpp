@@ -18,7 +18,7 @@ const LPoint &LPopupRole::rolePos() const
     if (!surface()->parent())
         return m_rolePos;
 
-    // Final position of the popup that we will change if it is restricted
+    // Final position of the popup that we will change if it is constrained
     LPoint finalPos;
 
     // Position of the parent (without the role option, we will assign it at the end)
@@ -55,7 +55,7 @@ const LPoint &LPopupRole::rolePos() const
     UInt32 xTry = 0;
     UInt32 yTry = 0;
 
-    // We come back here in case the position is restricted
+    // We come back here in case the position is constrained
     retry:
     anchorPos = LPoint();
     popupOrigin = LPoint();
@@ -156,15 +156,15 @@ const LPoint &LPopupRole::rolePos() const
         }break;
     }
 
-    // We calculate the initial position (we will be modifying finalPos if the position is restricted)
+    // We calculate the initial position (we will be modifying finalPos if the position is constrained)
     finalPos = parentPos + positioner().anchorRect().pos() + anchorPos - popupOrigin + offset;
 
     // If it is the first attempt, we save finalPos in m_rolePosC as a backup
     if (xTry == 0 && yTry == 0)
         m_rolePos = finalPos;
 
-    /* The positionerBounds rect indicates the space in which the popup should be located and is assigned by the developer (the default library assigns the
-     * size of the monitor in which the cursor is located */
+    /* The positionerBounds rect indicates the space in which the popup should be located and it is assigned by you (Louvre by default assigns the
+     * rect of the output in which the cursor is located */
 
     // If the popup exceeds the left border
     if (finalPos.x() < positionerBounds().x())
@@ -461,6 +461,8 @@ const LPoint &LPopupRole::rolePos() const
         m_rolePos.setX(positionerBounds().x());
     }
 
+    positioner().setUnconstrainedSize(finalSize);
+
     if (finalSize != popupSize)
         configure(LRect(m_rolePos - parentPos, finalSize));
 
@@ -471,8 +473,8 @@ const LPoint &LPopupRole::rolePos() const
 //! [grabSeatRequest]
 void LPopupRole::grabSeatRequest(Wayland::GSeat *seatGlobal)
 {
-    /* The library internally verifies that this request has been
-     * originated from some client event, such as a click or key press*/
+    /* The grabSeatRequest() is only triggered if the request has been
+     * originated from some client event, such as a pointer click or key press*/
     seat()->keyboard()->setGrabbingSurface(surface(), seatGlobal->keyboardResource());
 }
 //! [grabSeatRequest]
@@ -480,15 +482,21 @@ void LPopupRole::grabSeatRequest(Wayland::GSeat *seatGlobal)
 //! [configureRequest]
 void LPopupRole::configureRequest()
 {
+    // Ensure the Popup stays within the boundaries of the current output where the cursor is positioned
     setPositionerBounds(cursor()->output()->rect());
-    LPoint p = rolePos() - surface()->parent()->pos();
-    configure(LRect(p, positioner().size()));
+
+    // Calculate the relative position of the Popup with respect to its parent position,
+    // calling rolePos() also determines LPositioner::unconstrainedSize().
+    LPoint relativePosition = rolePos() - surface()->parent()->pos();
+
+    // Configure the Popup using the calculated relative position and unconstrained size.
+    configure(LRect(relativePosition, positioner().unconstrainedSize()));
 }
 //! [configureRequest]
 
 //! [geometryChanged]
 void LPopupRole::geometryChanged()
 {
-    /* No default implementation */
+    surface()->repaintOutputs();
 }
 //! [geometryChanged]

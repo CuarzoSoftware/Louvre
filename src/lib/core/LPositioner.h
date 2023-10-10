@@ -10,13 +10,13 @@
  * The LPositioner class defines the rules by which a Popup should be positioned relative to the anchor point of its parent.\n
  * Each LPopupRole has its own LPositioner accessible through LPopupRole::positioner().\n
  *
- * @note The library implements the default LPositioner rules in LPopupRole::rolePos(), therefore this section is for educational purposes only.
+ * @note Louvre implements the default LPositioner rules in LPopupRole::rolePos(), therefore this section is for educational purposes only.
  *
  * @section Anchor-Rect
  *
- * The anchor rectangle (accessible through anchorRect()) is a sub-rectangle of the window geometry of the Popup's parent surface.\n
- * Within this rectangle, an anchor point (accessible through anchor()) is defined, which the Popup uses as a reference to position itself.\n
- * The anchor point can be located at the center, corners, or midpoint of the edges of the anchor rectangle (gray and blue points).\n
+ * The anchor rect (accessible through anchorRect()) is a sub-rect of the window geometry of the Popup's parent surface.\n
+ * Within this rect, an anchor point (accessible through anchor()) is defined, which the Popup uses as a reference to position itself.\n
+ * The anchor point can be located at the center, corners, or midpoint of the edges of the anchor rect (gray and blue points).\n
  * For example, in the following image, a Popup is positioned using the anchor point LPositioner::AnchorRight and LPositioner::AnchorBottomLeft.\n
  *
  * <IMG SRC="https://lh3.googleusercontent.com/dCpt0Kl2MBnwpxf7VUiphJ28Tdrxh-3jmNIG-9GyK9nt_-3vCMuj1vgmYajPnYd9CH51fIBYocCUlBKsdXAGqQnufFxYZ1whQ0T6pIfCO1E6NHJj-ii2phQY-kRdUe2lZAnqF0mvyA=w2400">
@@ -32,9 +32,9 @@
  *
  * @section Constraint-Adjustments
  *
- * You might be wondering why use such complex rules to position Popups? The answer is that they make it easier to reposition them in cases when their position causes them to be restricted (for example, when they are shown outside the visible area of the screen).\n
- * Specific rules to adjust the position of Popups when they are restricted are defined by the client in constraintAdjustment().\n
- * Typically, it first tries to invert the gravity and anchor point on the axes where the restriction occurs (for example, in nested context menus), if the Popup is still restricted, it tries to slide it along the relevant axes,
+ * You might be wondering why use such complex rules to position Popups? The answer is that they make it easier to reposition them in cases when their position causes them to be constrained (for example, when they are shown outside the visible area of the screen).\n
+ * Specific rules to adjust the position of Popups when they are constrained are defined by the client in constraintAdjustment().\n
+ * Typically, it first tries to invert the gravity and anchor point on the axes where the constraint occurs (for example, in nested context menus), if the Popup is still constrained, it tries to slide it along the relevant axes,
  * if this still doesn't solve the problem, the Popup is configured to adjust its size and if finally none of these options work, the original position is used.\n
  * For more information on LPositioner rules, you can analyze the implementation of LPopupRole::rolePos() or consult the documentation of the [xdg_shell::positioner](https://wayland.app/protocols/xdg-shell#xdg_positioner) interface.
  */
@@ -46,17 +46,17 @@ public:
     ~LPositioner();
     /// @endcond
 
-    /// Constraint Adjustments
+    /// Constraint Adjustments.
     typedef UInt32 ConstraintAdjustments;
 
     /*!
-     * @brief Anchor point
+     * @brief Anchor point.
      *
-     * Possible locations of the anchor point within the anchor rectangle.
+     * Possible locations of the anchor point within the anchor rect.
      */
     enum Anchor : UInt32
     {
-        /// Center of the anchor rectangle
+        /// Center of the anchor rect
         NoAnchor = 0,
 
         /// Center of the top edge
@@ -85,13 +85,13 @@ public:
     };
 
     /*!
-     * @brief Popup gravity
+     * @brief Popup gravity.
      *
      * The direction in which the Popup tries to move.
      */
     enum Gravity : UInt32
     {
-        /// Center of the Popup
+        /// Centered
         NoGravity = 0,
 
         /// Upwards
@@ -120,9 +120,9 @@ public:
     };
 
     /*!
-     * @brief Constraint adjustment
+     * @brief Constraint adjustment.
      *
-     * Rules for removing restriction from a Popup.
+     * Rules for handling a constrained Popup.
      */
     enum ConstraintAdjustment : ConstraintAdjustments
     {
@@ -149,44 +149,59 @@ public:
     };
 
     /*!
-     * @brief Size in surface coordinates
+     * @brief Size in surface coordinates.
      *
      * Size of the Popup to be positioned (window geometry) in surface coordinates.
      */
     const LSize &size() const;
 
     /*!
-     * @brief Anchor rectangle in surface coordinates
+     * @brief Unconstrained size in surface coordinates.
      *
-     * Anchor rectangle relative to the parent's geometry origin in surface coordinates.
+     * This method returns the unconstrained size of the Popup calculated in the last LPopupRole::rolePos() call.\n
+     * It initial value matches the size() property provided by the client.
+     */
+    const LSize &unconstrainedSize() const;
+
+    /*!
+     * @brief Set the unconstrained size in surface coordinates.
+     *
+     * This method is used in LPopupRole::rolePos() to store the resulting Popup unconstrained size.
+     */
+    void setUnconstrainedSize(const LSize &size) const;
+
+    /*!
+     * @brief Anchor rect in surface coordinates.
+     *
+     * Anchor rect relative to the parent's geometry origin in surface coordinates.
      */
     const LRect &anchorRect() const;
 
     /*!
-     * @brief Additional offset in surface coordinates
+     * @brief Additional offset in surface coordinates.
      *
      * Additional offset in surface coordinates added to the Popup's position calculated by the rules.
      */
     const LPoint &offset() const;
 
     /*!
-     * @brief Anchor point
+     * @brief Anchor point.
      *
-     * Point on the anchor rectangle defined by LPositioner::Anchor enum.
+     * Point on the anchor rect defined by LPositioner::Anchor enum.
      */
     UInt32 anchor() const;
 
     /*!
-     * @brief Popup gravity
+     * @brief Popup gravity.
      *
      * Direction in which the Popup is trying to move, defined in LPositioner::Gravity.
      */
     UInt32 gravity() const;
 
     /*!
-     * @brief Constraint adjustment rules
+     * @brief Constraint adjustment rules.
      *
-     * Flags with the rules to use in case the Popup is restricted, defined in LPositioner::ConstraintAdjustment.
+     * Flags with the rules to use in case the Popup is constrained, defined in LPositioner::ConstraintAdjustment.
      */
     ConstraintAdjustments constraintAdjustment() const;
 
