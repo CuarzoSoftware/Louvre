@@ -51,15 +51,20 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
         {
             LSurfaceView *surfView = (LSurfaceView*)view;
 
-            if (surfView->surface() == lastCursorRequestFocusedSurface)
+            if (lastCursorRequest() && lastCursorRequest()->surface()->client() == surfView->surface()->client())
             {
-                if (lastCursorRequest())
-                {
-                    cursor()->setTextureB(lastCursorRequest()->surface()->texture(), lastCursorRequest()->hotspotB());
-                    cursor()->setVisible(true);
-                }
-                else
+                cursor()->setTextureB(lastCursorRequest()->surface()->texture(), lastCursorRequest()->hotspotB());
+                cursor()->setVisible(true);
+            }
+            else
+            {
+                if (lastCursorRequestWasHide())
                     cursor()->setVisible(false);
+                else
+                {
+                    cursor()->setVisible(true);
+                    cursor()->useDefault();
+                }
             }
         }
 

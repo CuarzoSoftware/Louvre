@@ -82,14 +82,14 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
     // Update the Toplevel size (if there was one being resized)
     if (resizingToplevel())
     {
-        updateResizingToplevelSize();
+        updateResizingToplevelSize(cursor()->pos());
         return;
     }
 
     // Update the Toplevel pos (if there was one being moved interactively)
     if (movingToplevel())
     {
-        updateMovingToplevelPos();
+        updateMovingToplevelPos(cursor()->pos());
 
         movingToplevel()->surface()->repaintOutputs();
 

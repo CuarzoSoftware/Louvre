@@ -195,10 +195,10 @@ void LCursor::setVisible(bool state)
     }
 }
 
-void LCursor::repaintOutputs(bool softwareOnly)
+void LCursor::repaintOutputs(bool nonHardwareOnly)
 {
     for (LOutput *o : intersectedOutputs())
-        if (!softwareOnly || !hasHardwareSupport(o))
+        if (!nonHardwareOnly || !hasHardwareSupport(o))
             o->repaint();
 }
 

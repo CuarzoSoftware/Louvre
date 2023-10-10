@@ -5,10 +5,7 @@
 #include <Surface.h>
 #include <LOutput.h>
 
-ToplevelRole::ToplevelRole(Params *params) : LToplevelRole(params)
-{
-
-}
+ToplevelRole::ToplevelRole(Params *params) : LToplevelRole(params) {}
 
 void ToplevelRole::configureRequest()
 {
@@ -82,11 +79,15 @@ void ToplevelRole::fullscreenChanged()
 void ToplevelRole::startMoveRequest()
 {
     if (!fullscreen())
-        seat()->pointer()->startMovingToplevel(this, LPointer::EdgeDisabled, 32);
+        seat()->pointer()->startMovingToplevel(this, cursor()->pos(), LPointer::EdgeDisabled, 32);
 }
 
 void ToplevelRole::startResizeRequest(ResizeEdge edge)
 {
     if (!fullscreen())
-        seat()->pointer()->startResizingToplevel(this, edge, LPointer::EdgeDisabled, 32);
+        seat()->pointer()->startResizingToplevel(this,
+                                                 edge,
+                                                 cursor()->pos(),
+                                                 LSize(0, 0),
+                                                 LPointer::EdgeDisabled, 32);
 }

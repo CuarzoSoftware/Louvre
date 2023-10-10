@@ -78,7 +78,12 @@ void Toplevel::startResizeRequest(ResizeEdge edge)
         return;
 
     G::enableDocks(false);
-    seat()->pointer()->startResizingToplevel(this, edge, LPointer::EdgeDisabled, TOPBAR_HEIGHT);
+    seat()->pointer()->startResizingToplevel(this,
+                                             edge,
+                                             cursor()->pos(),
+                                             LSize(128, 128),
+                                             LPointer::EdgeDisabled,
+                                             TOPBAR_HEIGHT);
 }
 
 void Toplevel::startMoveRequest()
@@ -88,7 +93,7 @@ void Toplevel::startMoveRequest()
         return;
 
     G::enableDocks(false);
-    seat()->pointer()->startMovingToplevel(this, LPointer::EdgeDisabled, TOPBAR_HEIGHT);
+    seat()->pointer()->startMovingToplevel(this, cursor()->pos(), LPointer::EdgeDisabled, TOPBAR_HEIGHT);
 }
 
 void Toplevel::setMaximizedRequest()

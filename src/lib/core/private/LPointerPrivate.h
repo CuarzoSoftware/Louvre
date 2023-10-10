@@ -22,13 +22,15 @@ LPRIVATE_CLASS(LPointer)
 
     // Toplevel Moving
     LPoint movingToplevelInitPos;
-    LPoint movingToplevelInitCursorPos;
+    LPoint movingToplevelInitPointerPos;
     LRect movingToplevelConstraintBounds;
 
     // Resizing
     LPoint resizingToplevelInitPos;
-    LPoint resizingToplevelInitCursorPos;
+    LPoint resizingToplevelInitPointerPos;
+    LPoint resizingToplevelCurrentPointerPos;
     LSize resizingToplevelInitWindowSize;
+    LSize resizingToplevelMinSize;
     LToplevelRole::ResizeEdge resizingToplevelEdge;
     LRect resizingToplevelConstraintBounds;
 
@@ -39,6 +41,7 @@ LPRIVATE_CLASS(LPointer)
 
     // Cursor
     LCursorRole *lastCursorRequest = nullptr;
+    bool lastCursorRequestWasHide = false;
 };
 
 #endif // LPOINTERPRIVATE_H

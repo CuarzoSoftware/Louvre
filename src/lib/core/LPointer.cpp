@@ -21,6 +21,11 @@ LCursorRole *LPointer::lastCursorRequest() const
     return imp()->lastCursorRequest;
 }
 
+bool LPointer::lastCursorRequestWasHide() const
+{
+    return imp()->lastCursorRequestWasHide;
+}
+
 LPointer::LPointer(Params *params)
 {
     L_UNUSED(params);
@@ -128,16 +133,22 @@ void LPointer::sendButtonEvent(Button button, ButtonState state)
     focusSurface()->client()->flush();
 }
 
-void LPointer::startResizingToplevel(LToplevelRole *toplevel, LToplevelRole::ResizeEdge edge, Int32 L, Int32 T, Int32 R, Int32 B)
+void LPointer::startResizingToplevel(LToplevelRole *toplevel,
+                                     LToplevelRole::ResizeEdge edge,
+                                     const LPoint &pointerPos,
+                                     const LSize &minSize,
+                                     Int32 L, Int32 T, Int32 R, Int32 B)
 {
     if (!toplevel)
         return;
 
+    imp()->resizingToplevelMinSize = minSize;
     imp()->resizingToplevelConstraintBounds = LRect(L,T,R,B);
     imp()->resizingToplevel = toplevel;
     imp()->resizingToplevelEdge = edge;
     imp()->resizingToplevelInitWindowSize = toplevel->windowGeometry().size();
-    imp()->resizingToplevelInitCursorPos = cursor()->pos();
+    imp()->resizingToplevelInitPointerPos = pointerPos;
+    imp()->resizingToplevelCurrentPointerPos = pointerPos;
 
     if (L != EdgeDisabled && toplevel->surface()->pos().x() < L)
         toplevel->surface()->setX(L);
@@ -150,11 +161,12 @@ void LPointer::startResizingToplevel(LToplevelRole *toplevel, LToplevelRole::Res
     resizingToplevel()->configure(LToplevelRole::Activated | LToplevelRole::Resizing);
 }
 
-void LPointer::updateResizingToplevelSize()
+void LPointer::updateResizingToplevelSize(const LPoint &pointerPos)
 {
     if (resizingToplevel())
     {
-        LSize newSize = resizingToplevel()->calculateResizeSize(resizingToplevelInitCursorPos() - cursor()->pos(),
+        imp()->resizingToplevelCurrentPointerPos = pointerPos;
+        LSize newSize = resizingToplevel()->calculateResizeSize(resizingToplevelInitPointerPos() - pointerPos,
                                                                 imp()->resizingToplevelInitWindowSize,
                                                                 resizingToplevelEdge());
         // Con restricciones
@@ -189,6 +201,11 @@ void LPointer::updateResizingToplevelSize()
                 newSize.setW(bounds.w() - pos.x());
         }
 
+        if (newSize.w() < imp()->resizingToplevelMinSize.w())
+            newSize.setW(imp()->resizingToplevelMinSize.w());
+
+        if (newSize.h() < imp()->resizingToplevelMinSize.h())
+            newSize.setH(imp()->resizingToplevelMinSize.h());
 
         resizingToplevel()->configure(newSize, LToplevelRole::Activated | LToplevelRole::Resizing);
     }
@@ -214,26 +231,26 @@ void LPointer::stopResizingToplevel()
 {
     if (resizingToplevel())
     {
-        updateResizingToplevelSize();
+        updateResizingToplevelSize(imp()->resizingToplevelCurrentPointerPos);
         updateResizingToplevelPos();
         resizingToplevel()->configure(0, resizingToplevel()->states() &~ LToplevelRole::Resizing);
         imp()->resizingToplevel = nullptr;
     }
 }
 
-void LPointer::startMovingToplevel(LToplevelRole *toplevel, Int32 L, Int32 T, Int32 R, Int32 B)
+void LPointer::startMovingToplevel(LToplevelRole *toplevel, const LPoint &pointerPos, Int32 L, Int32 T, Int32 R, Int32 B)
 {
     imp()->movingToplevelConstraintBounds = LRect(L,T,B,R);
     imp()->movingToplevelInitPos = toplevel->surface()->pos();
-    imp()->movingToplevelInitCursorPos = cursor()->pos();
+    imp()->movingToplevelInitPointerPos = pointerPos;
     imp()->movingToplevel = toplevel;
 }
 
-void LPointer::updateMovingToplevelPos()
+void LPointer::updateMovingToplevelPos(const LPoint &pointerPos)
 {
     if (movingToplevel())
     {
-        LPoint newPos = movingToplevelInitPos() - movingToplevelInitCursorPos() + cursor()->pos();
+        LPoint newPos = movingToplevelInitPos() - movingToplevelInitPointerPos() + pointerPos;
 
         if (imp()->movingToplevelConstraintBounds.w() != EdgeDisabled && newPos.x() > imp()->movingToplevelConstraintBounds.w())
             newPos.setX(imp()->movingToplevelConstraintBounds.w());
@@ -291,9 +308,9 @@ const LPoint &LPointer::movingToplevelInitPos() const
     return imp()->movingToplevelInitPos;
 }
 
-const LPoint &LPointer::movingToplevelInitCursorPos() const
+const LPoint &LPointer::movingToplevelInitPointerPos() const
 {
-    return imp()->movingToplevelInitCursorPos;
+    return imp()->movingToplevelInitPointerPos;
 }
 
 const LPoint &LPointer::resizingToplevelInitPos() const
@@ -301,9 +318,9 @@ const LPoint &LPointer::resizingToplevelInitPos() const
     return imp()->resizingToplevelInitPos;
 }
 
-const LPoint &LPointer::resizingToplevelInitCursorPos() const
+const LPoint &LPointer::resizingToplevelInitPointerPos() const
 {
-    return imp()->resizingToplevelInitCursorPos;
+    return imp()->resizingToplevelInitPointerPos;
 }
 
 const LSize &LPointer::resizingToplevelInitSize() const

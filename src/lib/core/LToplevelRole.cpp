@@ -292,6 +292,12 @@ void LToplevelRole::configure(Int32 width, Int32 height, UInt32 stateFlags)
 
     LToplevelRolePrivate::ToplevelConfiguration conf;
 
+    if (width < 0)
+        width = 0;
+
+    if (height < 0)
+        height = 0;
+
     conf.serial = LCompositor::nextSerial();
     conf.flags = stateFlags;
     conf.size.setW(width);

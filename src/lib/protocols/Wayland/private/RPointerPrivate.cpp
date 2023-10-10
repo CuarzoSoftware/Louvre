@@ -46,10 +46,12 @@ void RPointer::RPointerPrivate::set_cursor(wl_client *client, wl_resource *resou
         lSurface->imp()->setPendingRole(lCursor);
         lSurface->imp()->applyPendingRole();
         seat()->pointer()->imp()->lastCursorRequest = lCursor;
+        seat()->pointer()->imp()->lastCursorRequestWasHide = false;
         seat()->pointer()->setCursorRequest(lCursor);
     }
     else
     {
+        seat()->pointer()->imp()->lastCursorRequestWasHide = true;
         seat()->pointer()->imp()->lastCursorRequest = nullptr;
         seat()->pointer()->setCursorRequest(nullptr);
     }

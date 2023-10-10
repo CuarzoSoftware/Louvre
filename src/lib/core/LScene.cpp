@@ -113,11 +113,7 @@ LView *LScene::handlePointerPosChangeEvent(Float32 x, Float32 y, LPoint *outLoca
         return view;
 
     // Repaint cursor outputs if hardware composition is not supported
-    for (LOutput *output : cursor()->intersectedOutputs())
-    {
-        if (!cursor()->hasHardwareSupport(output))
-            output->repaint();
-    }
+    cursor()->repaintOutputs(true);
 
     if (seat()->pointer()->lastCursorRequest())
     {
@@ -140,14 +136,14 @@ LView *LScene::handlePointerPosChangeEvent(Float32 x, Float32 y, LPoint *outLoca
     // Update the Toplevel size (if there was one being resized)
     if (seat()->pointer()->resizingToplevel())
     {
-        seat()->pointer()->updateResizingToplevelSize();
+        seat()->pointer()->updateResizingToplevelSize(cursor()->pos());
         return view;
     }
 
     // Update the Toplevel pos (if there was one being moved interactively)
     if (seat()->pointer()->movingToplevel())
     {
-        seat()->pointer()->updateMovingToplevelPos();
+        seat()->pointer()->updateMovingToplevelPos(cursor()->pos());
 
         seat()->pointer()->movingToplevel()->surface()->repaintOutputs();
 

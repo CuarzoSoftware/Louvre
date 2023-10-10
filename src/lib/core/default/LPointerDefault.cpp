@@ -16,9 +16,9 @@ using namespace Louvre;
 //! [pointerMoveEvent]
 void LPointer::pointerMoveEvent(Float32 dx, Float32 dy)
 {
-    /* For simplification, we handle the event in pointerPosChangeEvent().
-     * An input backends emit pointerMoveEvent() or pointerPosChangeEvent() but
-     * not both.*/
+    /* For simplification, we manage the event in pointerPosChangeEvent().
+     * Input backends emit either pointerMoveEvent() or pointerPosChangeEvent(),
+     * but not both. */
     pointerPosChangeEvent(cursor()->pos().x() + dx,
                           cursor()->pos().y() + dy);
 }
@@ -29,29 +29,25 @@ void LPointer::pointerPosChangeEvent(Float32 x, Float32 y)
 {
     cursor()->setPos(LPointF(x, y));
 
-    // Repaint cursor outputs if hardware composition is not supported
-    for (LOutput *output : cursor()->intersectedOutputs())
-        if (!cursor()->hasHardwareSupport(output))
-            output->repaint();
+    // Repaint outputs that intersect with the cursor if hardware composition is not supported.
+    cursor()->repaintOutputs(true);
 
-    // Update the drag & drop icon (if there was one)
+    // Update the drag & drop icon position
     if (seat()->dndManager()->icon())
     {
         seat()->dndManager()->icon()->surface()->setPos(cursor()->pos());
         seat()->dndManager()->icon()->surface()->repaintOutputs();
     }
 
-    // Update the Toplevel size (if there was one being resized)
     if (resizingToplevel())
     {
-        updateResizingToplevelSize();
+        updateResizingToplevelSize(cursor()->pos());
         return;
     }
 
-    // Update the Toplevel pos (if there was one being moved interactively)
     if (movingToplevel())
     {
-        updateMovingToplevelPos();
+        updateMovingToplevelPos(cursor()->pos());
 
         movingToplevel()->surface()->repaintOutputs();
 
@@ -61,11 +57,12 @@ void LPointer::pointerPosChangeEvent(Float32 x, Float32 y)
         return;
     }
 
-    // DO NOT GET CONFUSED! If we are in a drag & drop session, we call setDragginSurface(NULL) in case there is a surface being dragged.
+    // If we are in a drag & drop session, we call setDraggingSurface(nullptr)
+    // to prevent the current surface from retaining focus.
     if (seat()->dndManager()->dragging())
         setDraggingSurface(nullptr);
 
-    // If there was a surface holding the left pointer button
+    // If a surface had the left pointer button held down
     if (draggingSurface())
     {
         sendMoveEvent();
@@ -105,12 +102,11 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
         {
             seat()->keyboard()->setFocus(surface);
             setFocus(surface);
-            sendButtonEvent(button,state);
+            sendButtonEvent(button, state);
 
             if (surface->popup())
                 dismissPopups();
         }
-        // If no surface under the cursor
         else
         {
             seat()->keyboard()->setFocus(nullptr);
@@ -120,7 +116,7 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
         return;
     }
 
-    sendButtonEvent(button,state);
+    sendButtonEvent(button, state);
 
     if (button != Left)
         return;
@@ -128,9 +124,10 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
     // Left button pressed
     if (state == Pressed)
     {
-        /* We save the pointer focus surface in order to continue sending events to it even when the cursor 
-         * is outside of it (while the left button is being held down)*/
+        // We save the pointer focus surface to continue sending events to it even when the cursor
+        // is outside of it (while the left button is being held down)
         setDraggingSurface(focusSurface());
+
         seat()->keyboard()->setFocus(focusSurface());
 
         if (focusSurface()->toplevel() && !focusSurface()->toplevel()->activated())
@@ -139,7 +136,6 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
         if (!focusSurface()->popup())
             dismissPopups();
 
-        // Raise surface
         if (focusSurface() == compositor()->surfaces().back())
             return;
 
@@ -170,7 +166,7 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
 //! [pointerAxisEvent]
 void LPointer::pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, AxisSource source)
 {
-    // Inverts the scroll direction
+    // Invert the scroll axis for natural scrolling
     sendAxisEvent(-axisX, -axisY, -discreteX, -discreteY, source);
 }
 //! [pointerAxisEvent]
@@ -185,19 +181,9 @@ void LPointer::setCursorRequest(LCursorRole *cursorRole)
                     cursorRole->hotspotB());
 
         cursor()->setVisible(true);
-
-        // We notify the outputs that the cursor intersects for the current surface to update its scale
-        for (LOutput *o : compositor()->outputs())
-        {
-            if (o == cursor()->output())
-                cursorRole->surface()->sendOutputEnterEvent(o);
-            else
-                cursorRole->surface()->sendOutputLeaveEvent(o);
-        }
     }
-    // If nullptr means the client wants to hide the cursor
+    // If `nullptr` is provided, it indicates that the client intends to hide the cursor.
     else
         cursor()->setVisible(false);
-
 }
 //! [setCursorRequest]

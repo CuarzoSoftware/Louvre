@@ -200,9 +200,9 @@ public:
      *
      * Invokes LOutput::repaint() for each output in the list of intersected outputs.
      *
-     * @param softwareOnly If true, only repaints outputs that do not support hardware compositing.
+     * @param nonHardwareOnly If true, only repaints outputs that do not support hardware compositing.
      */
-    void repaintOutputs(bool softwareOnly = true);
+    void repaintOutputs(bool nonHardwareOnly = true);
 
     /**
      * @brief Check for hardware compositing support.

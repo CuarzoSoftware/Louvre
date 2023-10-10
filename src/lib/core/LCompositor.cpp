@@ -150,6 +150,9 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
     if (state() == CompositorState::Uninitialized)
         return 0;
 
+    if (!seat()->enabled())
+        msTimeout = 1000;
+
     epoll_event events[3];
 
     Int32 nEvents = epoll_wait(imp()->epollFd,
