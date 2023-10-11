@@ -9,7 +9,6 @@ int main(int, char *[])
     setenv("MESA_NO_ERROR", "1", 1);
     setenv("MESA_GLTHREAD", "1", 1);
     setenv("SRM_RENDER_MODE_ITSELF_FB_COUNT", "3", 0);
-    setenv("SRM_FORCE_LEGACY_API", "1", 0);
 
     Compositor compositor;
 

@@ -1,4 +1,4 @@
-sources = run_command('find', './src', '-type', 'f', '-name', '*[.c,.cpp,.h,.hpp]', check : true).stdout().strip().split('\n')
+sources = run_command('find', './src', '-type', 'f', '-name', '*[.c,.cpp,.h,.hpp]', check : false).stdout().strip().split('\n')
 
 executable(
     'louvre-views',
@@ -13,7 +13,7 @@ executable(
     ],
     install : true)
 
-assets = run_command('find', './assets', '-type', 'f', '-name', '*[.png]', check : true).stdout().strip().split('\n')
+assets = run_command('find', './assets', '-type', 'f', '-name', '*[.png]', check : false).stdout().strip().split('\n')
 
 install_data(
     assets,

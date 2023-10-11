@@ -1,2 +1,0 @@
-/usr/etc/Louvre
-/usr/include/Louvre
