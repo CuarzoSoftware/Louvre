@@ -37,7 +37,6 @@ void LRenderBuffer::setSizeB(const LSize &sizeB)
                 compositor()->imp()->addRenderBufferToDestroy(pair.first, pair.second);
 
         imp()->threadsMap.clear();
-
     }
 }
 
@@ -54,6 +53,9 @@ void LRenderBuffer::setFramebufferDamage(const LRegion *damage)
 
 void LRenderBuffer::setScale(Int32 scale) const
 {
+    if (scale <= 0)
+        return;
+
     if (imp()->scale != scale)
     {
         imp()->rect.setSize(sizeB()/scale);

@@ -102,7 +102,7 @@ public:
     /**
      * @brief Retrieve the position and size of the framebuffer in surface coordinates.
      *
-     * The size provided by this rectangle is equal to sizeB() divided by the buffer scale.
+     * The size provided by this rect is equal to size().
      *
      * @return The position and size of the framebuffer in surface coordinates.
      */

@@ -95,8 +95,9 @@ public:
     /**
      * @brief Access to the private API of LBaseSurfaceRole.
      *
-     * Returns an instance of the LBaseSurfaceRolePrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LBaseSurfaceRole.\n
-     * Used internally by the library.
+     * Returns an instance of the LBaseSurfaceRolePrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LBaseSurfaceRole.
+     *
+     * @note This method is used internally by the library for accessing private members.
      */
     LBaseSurfaceRolePrivate *baseImp() const;
 
@@ -133,6 +134,10 @@ protected:
      * @brief Notifies a new surface buffer attachment.
      *
      * Access to the **wl_surface::attach** request of the surface.
+     *
+     * @param buffer The Wayland buffer resource.
+     * @param x X-coordinate offset.
+     * @param y Y-coordinate offset.
      */
     virtual void handleSurfaceBufferAttach(wl_resource *buffer, Int32 x, Int32 y);
 

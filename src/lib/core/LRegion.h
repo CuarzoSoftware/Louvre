@@ -11,7 +11,7 @@
  * The LRegion class provides an efficient mechanism for creating sets of rectangles that do not overlap in their geometries.
  * It offers methods for performing operations such as additions, subtractions, intersections, and more on rectangles.
  * This class is extensively used by the library for tasks like calculating surface damage, defining opaque, translucent, and input regions, among others.
- * Internally, LRegion employs the algorithm and methods from the [Pixman](http://www.pixman.org/) library.
+ * Internally, LRegion employs the algorithm and functions from the [Pixman](http://www.pixman.org/) library.
  */
 class Louvre::LRegion
 {

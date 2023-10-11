@@ -38,7 +38,8 @@ public:
     /**
      * @brief Sends a Ping event to the client for responsiveness detection.
      *
-     * This method sends a Ping event to the client, which is expected to acknowledge it by invoking the `pong()` virtual method. It is primarily used to detect if a client is unresponsive.
+     * This method sends a Ping event to the client, which is expected to acknowledge it by invoking the `pong()` virtual method.
+     * It is primarily used to detect if a client is unresponsive.
      *
      * @note Not all clients may support this mechanism. If the client does not support it, this method returns `false`, and you should not wait for a pong() response.
      *

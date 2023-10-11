@@ -10,11 +10,13 @@
  * It encompasses a primary LSceneView which can host multiple children and even nested scenes.
  * A single LScene can drive multiple outputs and also manage pointer and keyboard Wayland events, while also providing per-view input events.
  * You might opt to leverage LScene for rendering instead of relying solely on the basic rendering functions from the LPainter class or your custom OpenGL shaders.
+ *
  * LScene achieves high efficiency by rendering only damaged regions and avoiding rendering content obscured by opaque areas.
+ *
  * Alternatively, you can still use your own OpenGL shaders or LPainter functions for rendering, either in conjunction with LScene or independently.
  * These approaches can be applied before or after handlePaintGL() is invoked, or by creating your custom LView that overrides the LView::paintRect() virtual method.
  *
- * ### Rendeing
+ * ### Rendering
  *
  * For proper rendering with LScene, you need to "plug" the following methods into each LOutput you intend to manage with LScene:
  *

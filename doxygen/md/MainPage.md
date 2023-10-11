@@ -74,4 +74,13 @@ Please be aware that specific older nouveau drivers, due to their absence of mul
 ## 🕹️ Input Backends
 
 * Libinput
-* X11 (removed since version 1.0.0)
+* X11 (removed since version 1.0.0)    /**
+     * @brief Update the position of a Toplevel during an interactive moving session.
+     *
+     * This method should be called when the pointer position changes.
+     *
+     * @see An example of its use in the default implementation of pointerPosChangeEvent().
+     *
+     * @param pointerPos Current pointer position.
+     */
+    void updateMovingToplevelPos(const LPoint &pointerPos);

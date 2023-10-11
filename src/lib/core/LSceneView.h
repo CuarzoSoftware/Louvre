@@ -7,7 +7,8 @@
  * @brief View for rendering other views
  *
  * An LSceneView is a unique type of view. Instead of rendering its content directly into an LOutput,
- * it possesses its own framebuffer. This capability allows for advanced blending effects, such as applying masks.\n
+ * it possesses its own framebuffer. This capability allows for advanced blending effects, such as applying masks (check LView::setBlendFunc()).
+ *
  * Unlike other Views, child views of an LSceneView are always clipped to the boundaries of the LSceneView rectangle.
  * LSceneViews can function as children of other views or LSceneViews (just like any other view), but they can also operate independently.
  * For example, you might create an LSceneView, populate it with arranged views, execute the render() function,

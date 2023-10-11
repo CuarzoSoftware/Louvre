@@ -4,10 +4,10 @@
 #include <LNamespaces.h>
 
 /**
- * @brief Cursor Icons and Themes
+ * @brief XCursor Icons and Themes
  *
  * The LXCursor class enables the search and loading of [XCursor](https://www.x.org/archive/X11R7.7/doc/man/man3/Xcursor.3.xhtml)
- * icons from installed themes on your machine.
+ * icons from installed themes on your machine.\n
  * It provides functionality to retrieve the icon's texture and hotspot, making it suitable for use with LCursor.
  *
  * @see LCompositor::cursorInitialized()
@@ -44,12 +44,12 @@ public:
     /// @endcond
 
     /**
-     * @brief Get the texture.
+     * @brief Get the cursor's texture.
      */
     const LTexture *texture() const;
 
     /**
-     * @brief Get the hotspot in buffer coordinates.
+     * @brief Get the cursor's hotspot in buffer coordinates.
      */
     const LPoint &hotspotB() const;
 
