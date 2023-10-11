@@ -260,8 +260,7 @@ void LCompositor::destroySubsurfaceRoleRequest(LSubsurfaceRole *subsurface)
 //! [destroyCursorRoleRequest]
 void LCompositor::destroyCursorRoleRequest(LCursorRole *cursorRole)
 {
-    if (cursorRole->surface()->texture() == cursor()->texture())
-        cursor()->useDefault();
+     L_UNUSED(cursorRole);
 }
 //! [destroyCursorRoleRequest]
 

@@ -84,7 +84,10 @@ static void closeRestricted(int fd, void *userData)
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
 
     if (compositor->seat()->imp()->initLibseat())
-        compositor->seat()->closeDevice(bknd->devices[fd]);
+    {
+        if (compositor->seat()->closeDevice(bknd->devices[fd]))
+            close(fd);
+    }
     else
         compositor->seat()->closeDevice(fd);
 }

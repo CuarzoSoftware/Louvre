@@ -76,7 +76,10 @@ void LKeyboard::keyEvent(UInt32 keyCode, KeyState keyState)
 
         // Terminates the compositor
         else if (keyCode == KEY_ESC && L_CTRL && L_SHIFT)
+        {
             compositor()->finish();
+            return;
+        }
         else if (L_CTRL && !L_SHIFT)
             seat()->dndManager()->setPreferredAction(LDNDManager::Copy);
         else if (!L_CTRL && L_SHIFT)

@@ -212,8 +212,17 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         while (!imp()->textures.empty())
             delete imp()->textures.back();
 
+        usleep(10000);
+
         imp()->unitGraphicBackend(true);
         imp()->unitSeat();
+
+        if (imp()->cursor)
+        {
+            delete imp()->cursor;
+            imp()->cursor = nullptr;
+        }
+
         imp()->unitWayland();
 
         while (!imp()->animations.empty())
@@ -222,10 +231,12 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
             imp()->animations.pop_back();
         }
 
+        imp()->state = CompositorState::Uninitialized;
+
         if (imp()->epollFd != -1)
             close(imp()->epollFd);
 
-        imp()->state = CompositorState::Uninitialized;
+        return 1;
     }
 
     imp()->unlock();

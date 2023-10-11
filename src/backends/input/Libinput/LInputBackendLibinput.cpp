@@ -18,7 +18,8 @@ struct BACKEND_DATA
 };
 
 // Libseat devices
-std::unordered_map<int,int>devices;
+static std::unordered_map<int,int>devices;
+static wl_event_source *eventSource = nullptr;
 
 // Event common
 static libinput_event *ev;
@@ -63,7 +64,10 @@ static void closeRestricted(int fd, void *data)
     LSeat *seat = (LSeat*)data;
 
     if (seat->imp()->initLibseat())
-        seat->closeDevice(devices[fd]);
+    {
+        if (seat->closeDevice(devices[fd]))
+            close(fd);
+    }
     else
         seat->closeDevice(fd);
 }
@@ -216,7 +220,7 @@ bool LInputBackend::initialize()
         libinput_udev_assign_seat(data->li, "seat0");
 
     libinput_dispatch(data->li);
-    LCompositor::addFdListener(libinput_get_fd(data->li), (LSeat*)seat, &processInput);
+    eventSource = LCompositor::addFdListener(libinput_get_fd(data->li), (LSeat*)seat, &processInput);
 
     return true;
 
@@ -264,6 +268,12 @@ void LInputBackend::uninitialize()
 
     if (!data)
         return;
+
+    if (eventSource)
+    {
+        LCompositor::removeFdListener(eventSource);
+        eventSource = nullptr;
+    }
 
     if (data->li)
         libinput_unref(data->li);

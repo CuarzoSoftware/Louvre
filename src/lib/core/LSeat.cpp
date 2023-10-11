@@ -56,7 +56,10 @@ LSeat::LSeat(Params *params)
 LSeat::~LSeat()
 {
     if (imp()->libseatHandle)
+    {
         libseat_close_seat(imp()->libseatHandle);
+        imp()->libseatHandle = nullptr;
+    }
 
     delete m_imp;
 }

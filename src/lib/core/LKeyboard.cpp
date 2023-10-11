@@ -66,6 +66,12 @@ LKeyboard::~LKeyboard()
         imp()->xkbKeymapState = nullptr;
     }
 
+    if (imp()->xkbKeymap)
+    {
+        xkb_keymap_unref(imp()->xkbKeymap);
+        imp()->xkbKeymap = nullptr;
+    }
+
     if (imp()->xkbContext)
     {
         xkb_context_unref(imp()->xkbContext);
@@ -87,6 +93,12 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
     {
         xkb_state_unref(imp()->xkbKeymapState);
         imp()->xkbKeymapState = nullptr;
+    }
+
+    if (imp()->xkbKeymap)
+    {
+        xkb_keymap_unref(imp()->xkbKeymap);
+        imp()->xkbKeymap = nullptr;
     }
 
     char *keymapString,*map;
@@ -187,6 +199,12 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
     {
         xkb_state_unref(imp()->xkbKeymapState);
         imp()->xkbKeymapState = nullptr;
+    }
+
+    if (imp()->xkbKeymap)
+    {
+        xkb_keymap_unref(imp()->xkbKeymap);
+        imp()->xkbKeymap = nullptr;
     }
 
     imp()->xkbKeymapFd = open("/dev/null", O_RDONLY);

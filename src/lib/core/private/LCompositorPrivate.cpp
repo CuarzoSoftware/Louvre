@@ -171,6 +171,13 @@ void LCompositor::LCompositorPrivate::unitCompositor()
     unitInputBackend(true);
     unitGraphicBackend(true);
     unitSeat();
+
+    if (cursor)
+    {
+        delete cursor;
+        cursor = nullptr;
+    }
+
     unitWayland();
 
     if (epollFd != -1)
@@ -279,7 +286,10 @@ bool LCompositor::LCompositorPrivate::initInputBackend()
 void LCompositor::LCompositorPrivate::unitInputBackend(bool closeLib)
 {
     if (inputBackend && isInputBackendInitialized)
+    {
         inputBackend->uninitialize();
+        LLog::debug("[compositor] Input backend uninitialized successfully.");
+    }
 
     isInputBackendInitialized = false;
 
@@ -295,16 +305,16 @@ void LCompositor::LCompositorPrivate::unitInputBackend(bool closeLib)
 
 void LCompositor::LCompositorPrivate::unitGraphicBackend(bool closeLib)
 {
-    if (cursor)
-    {
-        delete cursor;
-        cursor = nullptr;
-    }
-
     if (painter)
     {
         delete painter;
         painter = nullptr;
+    }
+
+    if (isGraphicBackendInitialized && graphicBackend)
+    {
+        graphicBackend->uninitialize();
+        LLog::debug("[compositor] Graphic backend uninitialized successfully.");
     }
 
     mainEGLDisplay = EGL_NO_DISPLAY;
@@ -314,9 +324,6 @@ void LCompositor::LCompositorPrivate::unitGraphicBackend(bool closeLib)
                    EGL_NO_SURFACE,
                    EGL_NO_SURFACE,
                    EGL_NO_CONTEXT);
-
-    if (isGraphicBackendInitialized && graphicBackend)
-        graphicBackend->uninitialize();
 
     isGraphicBackendInitialized = false;
 
@@ -363,22 +370,27 @@ void LCompositor::LCompositorPrivate::unitSeat()
         {
             delete seat->imp()->keyboard;
             seat->imp()->keyboard = nullptr;
+            LLog::debug("[compositor] Keyboard uninitialized successfully.");
         }
 
         if (seat->pointer())
         {
             delete seat->imp()->pointer;
             seat->imp()->pointer = nullptr;
+            LLog::debug("[compositor] Pointer uninitialized successfully.");
         }
 
         if (seat->dndManager())
         {
             delete seat->imp()->dndManager;
             seat->imp()->dndManager = nullptr;
+            LLog::debug("[compositor] DND Manager uninitialized successfully.");
         }
 
         delete seat;
         seat = nullptr;
+
+        LLog::debug("[compositor] Seat uninitialized successfully.");
     }
 }
 

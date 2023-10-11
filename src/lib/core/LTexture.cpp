@@ -433,7 +433,6 @@ void LTexture::LTexturePrivate::deleteTexture(LTexture *texture)
         compositor()->cursor()->useDefault();
 
     increaseSerial();
-    glActiveTexture(GL_TEXTURE0);
 
     if (texture->sourceType() == Framebuffer)
         return;

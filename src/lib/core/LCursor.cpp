@@ -69,6 +69,9 @@ LCursor::~LCursor()
 
 void LCursor::useDefault()
 {
+    if (compositor()->state() == LCompositor::Uninitializing)
+        return;
+
     if (imp()->texture == imp()->defaultTexture && imp()->hotspotB == imp()->defaultHotspotB)
         return;
 
@@ -77,6 +80,9 @@ void LCursor::useDefault()
 
 void LCursor::replaceDefaultB(const LTexture *texture, const LPointF &hotspot)
 {
+    if (compositor()->state() == LCompositor::Uninitializing)
+        return;
+
     bool update = imp()->defaultTexture == imp()->texture;
 
     if (!texture)
