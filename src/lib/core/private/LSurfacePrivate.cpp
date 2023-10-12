@@ -450,7 +450,6 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
                 }
             }
 
-
             if (current.bufferScale > 1)
             {
                 Int32 modX, modY, modW, modH;

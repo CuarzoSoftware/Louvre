@@ -17,7 +17,7 @@ void RLinuxBufferParams::RLinuxBufferParamsPrivate::destroy(wl_client *client, w
 
 void RLinuxBufferParams::RLinuxBufferParamsPrivate::add(wl_client *client,
                                                         wl_resource *resource,
-                                                        int fd, UInt32 plane_idx,
+                                                        Int32 fd, UInt32 plane_idx,
                                                         UInt32 offset, UInt32 stride,
                                                         UInt32 modifier_hi, UInt32 modifier_lo)
 {
