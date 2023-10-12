@@ -340,6 +340,7 @@ namespace Louvre
         bool (*createTextureFromDMA)(LTexture *texture, const LDMAPlanes *planes);
         bool (*updateTextureRect)(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels);
         UInt32 (*getTextureID)(LOutput *output, LTexture *texture);
+        GLenum (*getTextureTarget)(LTexture *texture);
         void (*destroyTexture)(LTexture *texture);
     };
     /// @endcond

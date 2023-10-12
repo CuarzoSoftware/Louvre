@@ -611,6 +611,12 @@ UInt32 LGraphicBackend::getTextureID(LOutput *output, LTexture *texture)
     return srmBufferGetTextureID(bkndRendererDevice, (SRMBuffer*)texture->imp()->graphicBackendData);
 }
 
+GLenum LGraphicBackend::getTextureTarget(LTexture *texture)
+{
+    SRMBuffer *bkndBuffer = (SRMBuffer*)texture->imp()->graphicBackendData;
+    return srmBufferGetTextureTarget(bkndBuffer);
+}
+
 void LGraphicBackend::destroyTexture(LTexture *texture)
 {
     SRMBuffer *buffer = (SRMBuffer*)texture->imp()->graphicBackendData;
@@ -663,6 +669,7 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.createTextureFromDMA = &LGraphicBackend::createTextureFromDMA;
     API.updateTextureRect = &LGraphicBackend::updateTextureRect;
     API.getTextureID = &LGraphicBackend::getTextureID;
+    API.getTextureTarget = &LGraphicBackend::getTextureTarget;
     API.destroyTexture = &LGraphicBackend::destroyTexture;
 
     return &API;

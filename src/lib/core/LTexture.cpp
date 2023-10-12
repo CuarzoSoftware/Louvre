@@ -475,6 +475,14 @@ GLuint LTexture::id(LOutput *output) const
     return 0;
 }
 
+GLenum LTexture::target() const
+{
+    if (initialized() && sourceType() != Framebuffer)
+        return compositor()->imp()->graphicBackend->getTextureTarget((LTexture*)this);
+
+    return GL_TEXTURE_2D;
+}
+
 LTexture::BufferSourceType LTexture::sourceType() const
 {
     return imp()->sourceType;

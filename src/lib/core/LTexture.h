@@ -162,6 +162,13 @@ public:
     GLuint id(LOutput *output) const;
 
     /**
+     * @brief Get the OpenGL texture target.
+     *
+     * @return The OpenGL texture target.
+     */
+    GLenum target() const;
+
+    /**
      * @brief Get the texture source type.
      *
      * @return The texture source type as an LTexture::BufferSourceType enum value.

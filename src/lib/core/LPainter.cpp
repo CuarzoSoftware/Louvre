@@ -160,11 +160,12 @@ void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src,
     shaderSetAlpha(1.f);
     shaderSetMode(0);
     shaderSetActiveTexture(0);
-    glBindTexture(GL_TEXTURE_2D, texture->id(output));
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    GLenum target = texture->target();
+    glBindTexture(target, texture->id(output));
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
     shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
     shaderSetSrcRect(src.x(), src.y(), src.w(), src.h());
     glBlendFunc(GL_ONE, GL_ZERO);
@@ -182,11 +183,12 @@ void LPainter::LPainterPrivate::scaleTexture(LTexture *texture, const LRect &src
     shaderSetActiveTexture(0);
     shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
     shaderSetSrcRect(src.x(), src.y() + src.h(), src.w(), -src.h());
-    glBindTexture(GL_TEXTURE_2D, texture->id(output));
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    GLenum target = texture->target();
+    glBindTexture(target, texture->id(output));
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
@@ -237,10 +239,10 @@ void LPainter::drawTexture(const LTexture *texture,
     else
         imp()->shaderSetSrcRect(srcX, srcY, srcW, srcH);
 
-    glBindTexture(GL_TEXTURE_2D, texture->id(imp()->output));
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    GLenum target = texture->target();
+    glBindTexture(target, texture->id(imp()->output));
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     if (srcScale == 1.f)
         imp()->shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
@@ -294,10 +296,10 @@ void LPainter::drawColorTexture(const LTexture *texture,
     else
         imp()->shaderSetSrcRect(srcX, srcY, srcW, srcH);
 
-    glBindTexture(GL_TEXTURE_2D, texture->id(imp()->output));
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    GLenum target = texture->target();
+    glBindTexture(target, texture->id(imp()->output));
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     if (srcScale == 1.f)
         imp()->shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());

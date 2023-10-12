@@ -77,6 +77,7 @@ public:
                                   const void *pixels);
 
     static UInt32 getTextureID(LOutput *output, LTexture *texture);
+    static GLenum getTextureTarget(LTexture *texture);
 
     static void destroyTexture(LTexture *texture);
 };
