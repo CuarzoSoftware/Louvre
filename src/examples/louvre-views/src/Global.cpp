@@ -122,11 +122,15 @@ void G::loadApps()
     const char *home = getenv("HOME");
 
     if (!home)
-        goto error;
+        goto default_app;
 
     sprintf(appList, "%s/.config/Louvre/apps.list", home);
 
     file = fopen(appList, "r");
+
+    default_app:
+    if (file == NULL)
+        file = fopen("/usr/etc/Louvre/assets/apps.list", "r");
 
     if (file == NULL)
         goto error;

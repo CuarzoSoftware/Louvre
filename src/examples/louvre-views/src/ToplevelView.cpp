@@ -18,6 +18,8 @@
 #include "TextRenderer.h"
 #include "Workspace.h"
 
+static void onPointerLeaveResizeArea(InputRect *rect, void *data);
+
 static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &)
 {
     ToplevelView *view = (ToplevelView*)rect->parent();
@@ -57,6 +59,9 @@ static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &
                     view->fullscreenTopbarVisibility = anim->value();
                     view->updateGeometry();
                     view->fullscreenTopbarAnim = nullptr;
+
+                    if (!view->topbarInput->pointerIsOver())
+                        onPointerLeaveResizeArea(view->topbarInput, nullptr);
                 });
 
             view->fullscreenTopbarAnim->start();
@@ -97,6 +102,9 @@ static void onPointerLeaveResizeArea(InputRect *rect, void *data)
                         view->fullscreenTopbarVisibility = 1.f -anim->value();
                         view->updateGeometry();
                         view->fullscreenTopbarAnim = nullptr;
+
+                        if (view->topbarInput->pointerIsOver())
+                            onPointerEnterResizeArea(view->topbarInput, nullptr, LPoint());
                     });
 
             view->fullscreenTopbarAnim->start();

@@ -8,6 +8,7 @@
 #include "DockApp.h"
 #include "src/Tooltip.h"
 
+#include <LTimer.h>
 #include <LTextureView.h>
 #include <LCursor.h>
 #include <LLog.h>
@@ -105,7 +106,7 @@ void Dock::update()
 
     Int32 dockWidth = DOCK_PADDING;
 
-    if (appsContainer->children().empty() || appsContainer->children().size() == 1 || itemsContainer->children().empty())
+    if (itemsContainer->children().empty())
         separator->setParent(nullptr);
     else
         separator->insertAfter(appsContainer->children().back());
@@ -115,7 +116,10 @@ void Dock::update()
         DockApp *item = (DockApp*)it;
 
         if ((LSolidColorView*)item == separator)
+        {
             item->setPos(dockWidth, DOCK_PADDING + (DOCK_ITEM_HEIGHT - item->size().h())/2);
+            dockWidth += DOCK_SPACING;
+        }
         else
         {                
             item->setPos(dockWidth, - 2 - item->app->dockAppsAnimationOffset.y() + DOCK_PADDING + (DOCK_ITEM_HEIGHT - item->size().h())/2);
@@ -129,7 +133,7 @@ void Dock::update()
 
         dockWidth += item->size().w();
 
-        if (it != itemsContainer->children().back() || separator->mapped())
+        if (it != appsContainer->children().back())
             dockWidth += DOCK_SPACING;
     }
 
@@ -149,11 +153,11 @@ void Dock::update()
 
     dockWidth += DOCK_PADDING;
 
-    setSize(dockWidth,
+    setSize(output->rect().w(),
             DOCK_HEIGHT + 6);
 
     setPos(output->rect().x() + (output->rect().w() - size().w()) / 2,
-           output->rect().h() - size().h() * visiblePercent);
+           output->rect().h() - (size().h() - 1) * visiblePercent);
 
     dockLeft->setPos(0, 0);
     dockCenter->setPos(dockLeft->nativePos().x() + dockLeft->size().w(), 0);
@@ -186,7 +190,18 @@ void Dock::show()
         anim = nullptr;
 
         if (!pointerIsOver())
-            LAnimation::oneShot(100, nullptr, [this](LAnimation*){hide();});
+        {
+            hide();
+            return;
+        }
+
+        LRegion input;
+        input.addRect(0, size().h()/2, size().w(), DOCK_HEIGHT + 32);
+        input.addRect(dockContainer->nativePos().x() + DOCK_SHADOW_SIZE / 2,
+                      0,
+                      dockContainer->size().w() - DOCK_SHADOW_SIZE,
+                      DOCK_HEIGHT + 32);
+        setInputRegion(&input);
     });
 
     anim->start();
@@ -210,6 +225,7 @@ void Dock::hide()
         dockContainer->setVisible(false);
         G::tooltip()->hide();
         G::tooltip()->targetView = nullptr;
+        setInputRegion(nullptr);
     });
 
     anim->start();

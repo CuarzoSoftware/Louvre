@@ -44,6 +44,9 @@ void Output::initializeGL()
     sprintf(wallpaperPath, "%s/.config/Louvre/wallpaper.jpg", getenv("HOME"));
     LTexture *background = LOpenGL::loadTexture(wallpaperPath);
 
+    if (!background)
+        background = LOpenGL::loadTexture("/usr/etc/Louvre/assets/wallpaper.jpg");
+
     if (background)
     {
         backgroundTexture = background->copyB(sizeB());

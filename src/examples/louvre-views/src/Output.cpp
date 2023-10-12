@@ -45,6 +45,9 @@ void Output::loadWallpaper()
     sprintf(wallpaperPath, "%s/.config/Louvre/wallpaper.jpg", getenv("HOME"));
     LTexture *tmpWallpaper = LOpenGL::loadTexture(wallpaperPath);
 
+    if (!tmpWallpaper)
+        tmpWallpaper = LOpenGL::loadTexture("/usr/etc/Louvre/assets/wallpaper.jpg");
+
     if (tmpWallpaper)
     {
         // Clip and scale wallpaper so that it covers the entire screen
@@ -170,7 +173,7 @@ void Output::initializeGL()
                     tl->blackFullscreenBackground.setScalingVector(sVector);
 
                     // Fades out the unfullscreen toplevel capture
-                    tl->capture.setOpacity(1.f - anim->value());
+                    tl->capture.setOpacity(1.f - anim->value() * anim->value());
                 }
                 else
                 {

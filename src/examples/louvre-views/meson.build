@@ -13,7 +13,7 @@ executable(
     ],
     install : true)
 
-assets = run_command('find', './assets', '-type', 'f', '-name', '*[.png]', check : false).stdout().strip().split('\n')
+assets = run_command('find', './assets', '-type', 'f', '-name', '*[.png, .list]', check : false).stdout().strip().split('\n')
 
 install_data(
     assets,
