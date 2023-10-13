@@ -54,7 +54,7 @@ public:
     LSolidColorView blackFullscreenBackground;
 
     // Rendered view for fullscreen animation
-    LTextureView capture, captureUnfullscreen;
+    LTextureView capture;
 
     // Rects for fullscreen animation
     LRect prevRect, dstRect, prevBoundingRect;
@@ -62,6 +62,9 @@ public:
     Workspace *fullscreenWorkspace = nullptr;
     UInt32 prevStates = 0;
     UInt32 outputUnplugConfigureCount = 0;
+
+    LTextureView animView;
+    LSceneView *animScene = nullptr;
 };
 
 #endif // TOPLEVEL_H

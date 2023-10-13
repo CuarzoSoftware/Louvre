@@ -96,9 +96,9 @@ LPainter::LPainter()
 
     // Enable alpha blending
     glEnable(GL_BLEND);
-    glDisable(GL_DEPTH_TEST);
     glEnable(GL_SCISSOR_TEST);
 
+    glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glDisable(GL_LIGHTING);
     glDisable(GL_DITHER);

@@ -8,7 +8,7 @@ Louvre is a C++ library that aims to simplify the process of creating Wayland co
 
 Louvre offers excellent performance. A benchmark consisting of rendering numerous moving wl_subsurfaces (opaque and translucent), in which the [louvre-weston-clone](md_md__examples.html#weston) example compositor was tested, shows that Louvre can maintain a high FPS rate even in complex scenarios. Furthermore, it uses fewer CPU and GPU resources than popular compositors like Weston and Sway.
 
-> The source code of the benchmark can be found in ```Louvre/src/benchmark```
+> The source code of the benchmark can be found in `Louvre/src/benchmark`
 
 Here is a graph illustrating the benchmark results. It displays the average FPS of each compositor rendering 1 to 50 moving surfaces using double buffering.
 
@@ -74,13 +74,4 @@ Please be aware that specific older nouveau drivers, due to their absence of mul
 ## 🕹️ Input Backends
 
 * Libinput
-* X11 (removed since version 1.0.0)    /**
-     * @brief Update the position of a Toplevel during an interactive moving session.
-     *
-     * This method should be called when the pointer position changes.
-     *
-     * @see An example of its use in the default implementation of pointerPosChangeEvent().
-     *
-     * @param pointerPos Current pointer position.
-     */
-    void updateMovingToplevelPos(const LPoint &pointerPos);
+* X11 (removed since version 1.0.0)

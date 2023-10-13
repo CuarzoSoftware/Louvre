@@ -2,6 +2,7 @@
 #include <LCursor.h>
 #include <LSurface.h>
 #include <LLog.h>
+#include <unistd.h>
 
 #include "Compositor.h"
 #include "Toplevel.h"
@@ -10,26 +11,18 @@
 #include "ToplevelView.h"
 #include "Output.h"
 #include "Workspace.h"
-#include "Client.h"
 
 Toplevel::Toplevel(Params *params) : LToplevelRole(params),
     blackFullscreenBackground(0.f, 0.f, 0.f, 1.f),
     capture(nullptr, &blackFullscreenBackground),
-    captureUnfullscreen(nullptr, &blackFullscreenBackground)
+    animView(nullptr, &G::compositor()->overlayLayer)
 {
     blackFullscreenBackground.enableParentOffset(false);
-    blackFullscreenBackground.enableScaling(true);
     blackFullscreenBackground.setVisible(false);
 
     capture.setBufferScale(2);
     capture.enableParentOpacity(false);
-    capture.enableParentScaling(true);
     capture.enableDstSize(true);
-
-    captureUnfullscreen.setBufferScale(2);
-    captureUnfullscreen.enableParentOpacity(false);
-    captureUnfullscreen.enableParentScaling(true);
-    captureUnfullscreen.enableDstSize(true);
 }
 
 Toplevel::~Toplevel()
@@ -39,7 +32,6 @@ Toplevel::~Toplevel()
     unsetFullscreen();
 
     G::setViewTextureAndDestroyPrev(&capture, nullptr);
-    G::setViewTextureAndDestroyPrev(&captureUnfullscreen, nullptr);
 
     if (decoratedView)
     {
@@ -196,15 +188,13 @@ void Toplevel::unsetFullscreenRequest()
     if (fullscreenOutput->animatedFullscreenToplevel)
         return;
 
-    Surface *surf = (Surface*)surface();
-
-    LTexture *captureTexture = surf->renderThumbnail();
+    LTexture *captureTexture = surf()->renderThumbnail();
 
     LTexture *old = capture.texture();
 
     capture.setVisible(false);
     capture.setTexture(captureTexture);
-    capture.setPos(surf->getView()->pos() - fullscreenOutput->pos());
+    capture.setPos(surf()->getView()->pos() - fullscreenOutput->pos());
 
     if (old)
         delete old;
@@ -219,31 +209,25 @@ void Toplevel::fullscreenChanged()
         if (!fullscreenOutput)
             return;
 
+        if (animScene)
+            delete animScene;
+
+        animScene = new LSceneView(fullscreenOutput->sizeB(), fullscreenOutput->scale());
         quickUnfullscreen = false;
         fullscreenOutput->animatedFullscreenToplevel = this;
-
         surf()->sendOutputEnterEvent(fullscreenOutput);
 
-        surf()->getView()->setOpacity(0.f);
         capture.setDstSize(fullscreenOutput->size() + (capture.nativePos() * - 2));
         capture.setOpacity(1.f);
         capture.setVisible(true);
 
-        blackFullscreenBackground.setParent(&G::compositor()->overlayLayer);
-        blackFullscreenBackground.setPos(prevBoundingRect.pos());
+        blackFullscreenBackground.setParent(animScene);
+        blackFullscreenBackground.setPos(0);
         blackFullscreenBackground.setSize(fullscreenOutput->size());
         blackFullscreenBackground.setOpacity(0.0001f);
         blackFullscreenBackground.setVisible(true);
 
-        LSizeF sVector;
-        sVector.setW(Float32(prevBoundingRect.size().w()) / Float32(fullscreenOutput->size().w()));
-        sVector.setH(Float32(prevBoundingRect.size().h()) / Float32(fullscreenOutput->size().h()));
-
-        blackFullscreenBackground.setScalingVector(sVector);
-
         G::reparentWithSubsurfaces(surf(), &blackFullscreenBackground);
-        G::enableParentScalingChildren(&blackFullscreenBackground, true);
-        surf()->getView()->enableParentScaling(true);
         surf()->getView()->enableParentOpacity(true);
         surf()->getView()->setOpacity(1.f);
         surf()->getView()->setVisible(true);
@@ -258,7 +242,7 @@ void Toplevel::fullscreenChanged()
         if (decoratedView)
             decoratedView->fullscreenTopbarVisibility = 0.f;
 
-        fullscreenOutput->setWorkspace(fullscreenWorkspace, 560, 4.f);
+        fullscreenOutput->setWorkspace(fullscreenWorkspace, 800, 3.f);
     }
     else
     {
@@ -325,7 +309,7 @@ void Toplevel::activatedChanged()
             Output *o = (Output*)cursor()->output();
 
             if (o->currentWorkspace != o->workspaces.front())
-                o->setWorkspace(o->workspaces.front(), 560, 4.f);
+                o->setWorkspace(o->workspaces.front(), 800, 4.f);
         }
     }
 }
@@ -350,7 +334,7 @@ void Toplevel::unsetFullscreen()
             fullscreenOutput->animatedFullscreenToplevel = nullptr;
             delete fullscreenWorkspace;
             fullscreenWorkspace = nullptr;
-            fullscreenOutput->setWorkspace(prev, 560);
+            fullscreenOutput->setWorkspace(prev, 800);
             fullscreenOutput = nullptr;
         }
         return;
@@ -359,14 +343,18 @@ void Toplevel::unsetFullscreen()
     if (decoratedView)
         decoratedView->updateGeometry();
 
-    G::setViewTextureAndDestroyPrev(&captureUnfullscreen, surf()->renderThumbnail());
-    captureUnfullscreen.setDstSize(fullscreenOutput->size());
-    captureUnfullscreen.setPos(0, 0);
-    captureUnfullscreen.setOpacity(0.f);
+    LBox box = surf()->getView()->boundingBox();
+    LSize sizeB = LSize(box.x2 - box.x1, box.y2 - box.y1) * 2;
 
+    if (animScene)
+        delete animScene;
+
+    animScene = new LSceneView(sizeB, 2);
+    animScene->setPos(fullscreenOutput->pos());
+    surf()->setPos(fullscreenOutput->pos());
+    G::reparentWithSubsurfaces(surf(), animScene, true);
     fullscreenOutput->animatedFullscreenToplevel = this;
 
-    surf()->getView()->setVisible(false);
     capture.enableDstSize(true);
     capture.setDstSize(fullscreenOutput->size());
     capture.setOpacity(1.f);
@@ -378,11 +366,8 @@ void Toplevel::unsetFullscreen()
     blackFullscreenBackground.setOpacity(1.f);
     blackFullscreenBackground.setParent(&G::compositor()->overlayLayer);
     blackFullscreenBackground.setVisible(true);
-    blackFullscreenBackground.setScalingVector(LSizeF(1.f, 1.f));
 
-    G::reparentWithSubsurfaces(surf(), &blackFullscreenBackground, false);
-
-    fullscreenOutput->setWorkspace(fullscreenOutput->workspaces.front(), 560, 8.f);
+    fullscreenOutput->setWorkspace(fullscreenOutput->workspaces.front(), 800, 4.f);
 }
 
 void Toplevel::preferredDecorationModeChanged()

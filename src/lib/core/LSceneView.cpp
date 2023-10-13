@@ -182,9 +182,9 @@ void LSceneView::render(const LRegion *exclude)
     painter->bindFramebuffer(prevFb);
 }
 
-const LTexture *LSceneView::texture(Int32 index) const
+LTexture *LSceneView::texture(Int32 index) const
 {
-    return imp()->fb->texture(index);
+    return (LTexture*)imp()->fb->texture(index);
 }
 
 void LSceneView::setPos(const LPoint &pos)
@@ -198,6 +198,12 @@ void LSceneView::setPos(Int32 x, Int32 y)
     {
         imp()->customPos.setX(x);
         imp()->customPos.setY(y);
+
+        if (!isLScene())
+        {
+            LRenderBuffer *rb = (LRenderBuffer*)imp()->fb;
+            rb->setPos(imp()->customPos);
+        }
         repaint();
     }
 }

@@ -107,7 +107,7 @@ public:
      * @param index The index of the texture to retrieve (default is 0).
      * @return A pointer to the texture associated with the view.
      */
-    virtual const LTexture *texture(Int32 index = 0) const;
+    virtual LTexture *texture(Int32 index = 0) const;
 
     /**
      * @brief Set the position of the scene.
