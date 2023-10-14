@@ -37,11 +37,7 @@ Tooltip::Tooltip()
 void Tooltip::setText(const char *text)
 {
     if (label.texture())
-    {
-        LTexture *oldTexture = label.texture();
-        label.setTexture(nullptr);
-        delete oldTexture;
-    }
+        delete label.texture();
 
     label.setTexture(G::font()->semibold->renderText(text, 22, 256));
     update();

@@ -413,9 +413,8 @@ void ToplevelView::updateTitle()
 
         if (titleWidth != title->texture()->sizeB().w() || titleWidth > maxWidth)
         {
-            LTexture *oldTexture = title->texture();
+            delete title->texture();
             title->setTexture(G::font()->semibold->renderText(toplevel->title(), 28, maxWidth));
-            delete oldTexture;
         }
     }
     else

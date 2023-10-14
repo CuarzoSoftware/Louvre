@@ -4,6 +4,7 @@
 #include <private/LCursorPrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LRenderBufferPrivate.h>
+#include <LTextureView.h>
 #include <FreeImage.h>
 #include <LRect.h>
 #include <LLog.h>
@@ -419,6 +420,9 @@ bool LTexture::save(const char *path) const
 
 LTexture::~LTexture()
 {
+    while (!imp()->textureViews.empty())
+        imp()->textureViews.back()->setTexture(nullptr);
+
     imp()->deleteTexture(this);
     compositor()->imp()->textures.erase(imp()->compositorLink);
     delete m_imp;

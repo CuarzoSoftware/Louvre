@@ -187,7 +187,6 @@ void Compositor::fadeOutSurface(LBaseSurfaceRole *role, UInt32 ms)
             {
                 fadeOutView->repaint();
                 delete fadeOutView->texture();
-                fadeOutView->setTexture(nullptr);
                 delete fadeOutView;
                 G::compositor()->repaintAllOutputs();
             });

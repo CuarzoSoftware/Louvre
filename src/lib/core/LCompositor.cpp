@@ -150,8 +150,8 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
     if (state() == CompositorState::Uninitialized)
         return 0;
 
-    if (!seat()->enabled())
-        msTimeout = 1000;
+    //if (!seat()->enabled())
+    //    msTimeout = 1000;
 
     epoll_event events[3];
 
@@ -168,7 +168,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
      * during session switching. To ensure stability, we always dispatch
      * events; otherwise, the compositor might crash when a user is in a different
      * session and a new DRM connector is plugged in. */
-    seat()->imp()->dispatchSeat();
+    // seat()->imp()->dispatchSeat();
 
     for (Int32 i = 0; i < nEvents; i++)
     {
@@ -190,10 +190,13 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
             L_UNUSED(n);
             imp()->pollUnlocked = false;
         }
+        else if (events[i].data.fd == imp()->events[1].data.fd)
+        {
+            seat()->imp()->dispatchSeat();
+        }
     }
 
-    if (seat()->enabled())
-        imp()->destroyPendingRenderBuffers(nullptr);
+    imp()->destroyPendingRenderBuffers(nullptr);
 
     if (state() == CompositorState::Uninitializing)
     {

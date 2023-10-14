@@ -423,18 +423,10 @@ void G::reparentWithSubsurfaces(Surface *surf, LView *newParent, bool onlySubsur
     {
         if (s->parent() == surf && s->roleId() != LSurface::Undefined && !s->cursorRole())
         {
-            if ((onlySubsurfaces && s->subsurface()) || !onlySubsurfaces)
+            if ((onlySubsurfaces && s->subsurface()) || !onlySubsurfaces || s->popup())
                 G::reparentWithSubsurfaces(s, newParent, onlySubsurfaces);
         }
     }
-}
-
-void G::setViewTextureAndDestroyPrev(LTextureView *view, LTexture *newTexture)
-{
-    LTexture *prevTexture = view->texture();
-    view->setTexture(newTexture);
-    if (prevTexture)
-        delete prevTexture;
 }
 
 void G::arrangeOutputs()

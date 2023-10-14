@@ -19,13 +19,11 @@
  *
  * In this mode, changes to the subsurface, such as its position, are applied exclusively when its parent performs a commit.\n
  * This mode is used by clients to synchronize the animation or movement of multiple subsurfaces.\n
- * The library keeps track of changes and applies them when the parent performs a commit.\n
+ * The library keeps track of changes and applies them when the parent performs a commit.
  *
  * ### Asynchronous Mode
  *
- * In this mode, subsurface changes are applied independently of the commits of its parent.\n
- * This mode is useful for example to perform efficient composition in video players where the user interface is independent
- * of the rect where the video is displayed.\n
+ * In this mode, subsurface changes are applied independently of the commits of its parent.
  *
  */
 class Louvre::LSubsurfaceRole : public LBaseSurfaceRole

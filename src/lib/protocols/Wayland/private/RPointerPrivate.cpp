@@ -15,7 +15,16 @@ void RPointer::RPointerPrivate::resource_destroy(wl_resource *resource)
 void RPointer::RPointerPrivate::set_cursor(wl_client *client, wl_resource *resource, UInt32 serial, wl_resource *surface, Int32 hotspot_x, Int32 hotspot_y)
 {
     L_UNUSED(client);
+
     RPointer *rPointer = (RPointer*)wl_resource_get_user_data(resource);
+
+    if (seat()->dndManager()->origin())
+    {
+        if (rPointer->client() == seat()->dndManager()->origin()->client())
+            goto skipCheck;
+
+        return;
+    }
 
     if (serial != rPointer->serials().enter)
         return;
@@ -23,6 +32,8 @@ void RPointer::RPointerPrivate::set_cursor(wl_client *client, wl_resource *resou
     if (!seat()->pointer()->focusSurface() ||
         seat()->pointer()->focusSurface()->client() != rPointer->client())
         return;
+
+    skipCheck:
 
     if (surface)
     {

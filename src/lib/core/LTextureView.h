@@ -6,16 +6,21 @@
 /**
  * @brief View for displaying textures
  *
- * The LTextureView allows you to use an LTexture as a view in a scene.
- * The used LTexture must remain valid while set. The same LTexture can be used in multiple views at a time.\n
- * To unset the texture, nullptr must be passed to setTexture(), which also unmaps the view.\n
- * LTextureViews can also have a custom destination size, which can differ from its buffer size. In that case, damage, input, translucent and opaque rigions
- * must be defined based on the dst size.\n
- * To enable a custom destination size, use the enableDstSize() and setDstSize() methods.\n
- * Using a custom dstSize() is recommended instead of using the scalingVector() option as damage tracking can still be used by the scene.\n
- * If dst size is disabled, the view size is equal to the texture size divided by its buffer scale.
+ * The LTextureView class enables you to use an LTexture as a view within a scene.\n
+ * You can set the view's texture using setTexture(), and passing `nullptr` unsets the texture, effectively unmapping the view.\n
+ * Multiple texture views can share the same LTexture, and if the texture is destroyed, their texture() property is automatically set to `nullptr`.
  *
- * Please refer to the documentation of the LView class for additional methods and properties avaliable.
+ * Texture views can also have a custom destination size, which may differ from their buffer size. In such cases, regions for damage, input, translucent,
+ * and opaque must be defined based on the destination size.\n
+ * To enable a custom destination size, utilize the enableDstSize() and setDstSize() methods.\n
+ *
+ * @note Using a custom destination size is recommended instead of relying on the scalingVector() option, as it allows for continued damage tracking
+ *       within the scene.
+ *
+ * When destination size is disabled, the view size is by default equal to the texture size divided by its buffer scale if no other transformations
+ * are applied.
+ *
+ * For additional methods and properties available, please refer to the documentation of the `LView` class.
  */
 class Louvre::LTextureView : public LView
 {
@@ -63,6 +68,10 @@ public:
     /**
      * @brief Set the translucent region of the LTextureView.
      *
+     * Passing `nullptr` as the region means that the entire view is considered translucent,
+     * which is the default value.
+     * Passing an empty LRegion (not `nullptr`), on the other hand, means the entire view is opaque.
+     *
      * @param region The translucent region as an LRegion object.
      */
     virtual void setTranslucentRegion(const LRegion *region);
@@ -77,9 +86,11 @@ public:
     /**
      * @brief Set the LTexture for the LTextureView.
      *
+     * @note If the current texture is destroyed, this property is automatically set to `nullptr`.
+     *
      * @param texture The LTexture to be used as the view's texture.
      */
-    virtual void setTexture(LTexture *texture);
+    void setTexture(LTexture *texture);
 
     /**
      * @brief Get the current LTexture used by the LTextureView.

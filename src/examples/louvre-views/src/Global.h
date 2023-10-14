@@ -192,7 +192,6 @@ public:
     static void enableClippingChildren(LView *parent, bool enabled);
     static Output *mostIntersectedOuput(LView *view);
     static void reparentWithSubsurfaces(Surface *surf, LView *newParent, bool onlySubsurfaces = true);
-    static void setViewTextureAndDestroyPrev(LTextureView *view, LTexture *newTexture);
     static void arrangeOutputs();
     static class Toplevel *searchFullscreenParent(Surface *parent);
     static void repositionNonVisibleToplevelChildren(Output *target, Surface *toplevel);

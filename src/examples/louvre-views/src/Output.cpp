@@ -32,7 +32,6 @@ void Output::loadWallpaper()
             }
 
             delete wallpaperView->texture();
-            wallpaperView->setTexture(nullptr);
         }
     }
     else
@@ -161,11 +160,7 @@ void Output::initializeGL()
                 if (tl->fullscreen())
                 {
                     // Fades in black background
-                    tl->blackFullscreenBackground.setOpacity(anim->value() * anim->value());
-
-                    // Fades out the unfullscreen toplevel capture
-                    tl->capture.setOpacity(1.f - anim->value());
-                    tl->capture.enableParentOpacity(false);
+                    tl->blackFullscreenBackground.setOpacity(anim->value());
                     tl->animScene->render();
                     tl->animView.setTexture(tl->animScene->texture());
                     tl->animView.enableDstSize(true);
@@ -218,10 +213,7 @@ void Output::initializeGL()
                 tl->blackFullscreenBackground.setVisible(false);
 
                 if (tl->capture.texture())
-                {
                     delete tl->capture.texture();
-                    tl->capture.setTexture(nullptr);
-                }
 
                 tl->animView.setTexture(nullptr);
 
@@ -246,10 +238,7 @@ void Output::initializeGL()
                 tl->blackFullscreenBackground.setVisible(false);
 
                 if (tl->capture.texture())
-                {
                     delete tl->capture.texture();
-                    tl->capture.setTexture(nullptr);
-                }
 
                 tl->animView.setTexture(nullptr);
 
@@ -428,7 +417,8 @@ void Output::uninitializeGL()
     delete topbar;
     topbar = nullptr;
 
-    G::setViewTextureAndDestroyPrev(wallpaperView, nullptr);
+    if (wallpaperView->texture())
+        delete wallpaperView->texture();
 
     delete wallpaperView;
     wallpaperView = nullptr;

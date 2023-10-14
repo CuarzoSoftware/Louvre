@@ -1,4 +1,5 @@
 #include <private/LTextureViewPrivate.h>
+#include <private/LTexturePrivate.h>
 #include <private/LViewPrivate.h>
 #include <LTexture.h>
 #include <LCompositor.h>
@@ -7,11 +8,14 @@
 LTextureView::LTextureView(LTexture *texture, LView *parent) : LView(LView::Texture, parent)
 {
     m_imp = new LTextureViewPrivate();
-    imp()->texture = texture;
+    setTexture(texture);
 }
 
 LTextureView::~LTextureView()
 {
+    if (imp()->texture)
+        imp()->texture->imp()->textureViews.erase(imp()->textureLink);
+
     if (imp()->inputRegion)
         delete imp()->inputRegion;
 
@@ -94,7 +98,16 @@ void LTextureView::setTexture(LTexture *texture)
 {
     if (texture != imp()->texture)
     {
+        if (imp()->texture)
+            imp()->texture->imp()->textureViews.erase(imp()->textureLink);
+
         imp()->texture = texture;
+
+        if (imp()->texture)
+        {
+            imp()->texture->imp()->textureViews.push_back(this);
+            imp()->textureLink = std::prev(imp()->texture->imp()->textureViews.end());
+        }
 
         LView *nativeView = this;
 

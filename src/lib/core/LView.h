@@ -160,7 +160,7 @@ public:
     /**
      * @brief Schedule a repaint for all outputs where this view is currently visible.
      *
-     * This function triggers a repaint for all outputs where this view is currently visible.\n
+     * This method triggers a repaint for all outputs where this view is currently visible.\n
      * Outputs are those returned by the LView::outputs() method.
      */
     void repaint();
@@ -175,7 +175,7 @@ public:
     /**
      * @brief Set the new parent for the view and insert it at the end of its children list.
      *
-     * This function sets the new parent for the view and inserts it at the end of its parent's children list.
+     * This method sets the new parent for the view and inserts it at the end of its parent's children list.
      * If 'view' is set to `nullptr`, the parent is unset, and the view is unmapped.
      *
      * @param view The new parent view to be set.
@@ -185,7 +185,7 @@ public:
     /**
      * @brief Insert the view after the 'prev' view.
      *
-     * This function inserts the view after the 'prev' view in the parent's children list.
+     * This method inserts the view after the 'prev' view in the parent's children list.
      * If 'switchParent' is `true`, the view will be assigned the same parent as the 'prev' view.
      * If 'switchParent' is `false`, the view will only be reinserted if it shares the same parent with the 'prev' view.
      * If 'prev' is set to `nullptr`, the view will be inserted at the beginning of its current parent's children list,
@@ -208,7 +208,7 @@ public:
     /**
      * @brief Check if the parent's offset is applied to the view position.
      *
-     * If this function returns `true`, the position returned by pos() includes the parent's offset (parent()->pos()).
+     * If this method returns `true`, the position returned by pos() includes the parent's offset (parent()->pos()).
      *
      * The default value is `true`.
      *
@@ -248,9 +248,9 @@ public:
     /**
      * @brief Check if the view is currently being clipped to the clippingRect() property.
      *
-     * This function returns `true` if the view is currently being clipped to the specified
+     * This method returns `true` if the view is currently being clipped to the specified
      * clipping rectangle, which is defined by the clippingRect() property. If the view is not
-     * clipped to the clipping rectangle, the function returns `false`.
+     * clipped to the clipping rectangle, the method returns `false`.
      *
      * The default value is `false`.
      *
@@ -275,7 +275,7 @@ public:
     /**
      * @brief Get the current clipping rectangle defined by the clippingRect() property.
      *
-     * This function returns a constant reference to the current clipping rectangle
+     * This method returns a constant reference to the current clipping rectangle
      * that is being used to clip the view. The clipping rectangle is defined by the
      * clippingRect() property.
      *
@@ -286,7 +286,7 @@ public:
     /**
      * @brief Set the clipping rectangle for the view using the clippingRect() property.
      *
-     * This function sets the clipping rectangle for the view using the clippingRect() property.
+     * This method sets the clipping rectangle for the view using the clippingRect() property.
      * When clipping is enabled, the view's content outside this rectangle will be clipped
      * (not visible).
      *
@@ -299,7 +299,7 @@ public:
     /**
      * @brief Check if the view is clipped to the current parent view rect.
      *
-     * This function returns `true` if the view is clipped to the current parent view rect, `false` otherwise.
+     * This method returns `true` if the view is clipped to the current parent view rect, `false` otherwise.
      *
      * The default value is `false`.
      *
@@ -321,7 +321,7 @@ public:
     /**
      * @brief Check if the view receives pointer and touch events.
      *
-     * This function returns `true` if the view receives pointer and touch events.
+     * This method returns `true` if the view receives pointer and touch events.
      * However, keyboard events are always received regardless of this setting.
      *
      * @returns `true` if the view receives pointer and touch events, `false` otherwise.
@@ -341,7 +341,7 @@ public:
     /**
      * @brief Check if scaling is enabled for the view's size.
      *
-     * This function returns `true` if the view's size is scaled using the scaling vector, `false` otherwise.
+     * This method returns `true` if the view's size is scaled using the scaling vector, `false` otherwise.
      *
      * @returns `true` if the view's size is scaled, `false` otherwise.
      */
@@ -359,7 +359,7 @@ public:
     /**
      * @brief Check if the size and position are scaled by the parent scaling vector.
      *
-     * This function returns `true` if the view's size and position are scaled by the parent's scaling vector, `false` otherwise.
+     * This method returns `true` if the view's size and position are scaled by the parent's scaling vector, `false` otherwise.
      *
      * The default value is `false`.
      *
@@ -381,7 +381,7 @@ public:
     /**
      * @brief Get the scaling vector for the view's size.
      *
-     * This function returns the scaling vector for the view's size.
+     * This method returns the scaling vector for the view's size.
      *
      * @param forceIgnoreParent If set to `false`, the vector is multiplied by the parent scaling vector.
      * @returns The scaling vector for the view's size.
@@ -403,7 +403,7 @@ public:
     /**
      * @brief Check if the view is marked as visible.
      *
-     * This function indicates whether the view is marked as visible. However, it does not directly indicate if the view will be rendered.
+     * This method indicates whether the view is marked as visible. However, it does not directly indicate if the view will be rendered.
      * To check if the view will be rendered, use the mapped() property instead.
      *
      * @returns `true` if the view is marked as visible, `false` otherwise.
@@ -413,8 +413,9 @@ public:
     /**
      * @brief Toggle the view visibility.
      *
-     * Enabling visibility does not guarantee that the view will be rendered; the nativeMapped() property must return `true` for it to be considered mapped().
-     * Disabling visibility, on the other hand, directly indicates that it is not mapped and will not be rendered.
+     * Enabling visibility does not guarantee that the view will be rendered. On the other hand, disabling it directly indicates that it is not mapped and will not be rendered.
+     *
+     * @see mapped()
      *
      * @param visible If `true`, the view will be marked as visible; if `false`, it will be marked as not visible.
      */
@@ -423,7 +424,7 @@ public:
     /**
      * @brief Check if the view should be rendered, taking into consideration several boolean conditions.
      *
-     * This function indicates whether the view should be rendered, considering the nativeMapped() && visible() && parent() && parent()->mapped() boolean operation.
+     * This method indicates whether the view should be rendered, considering the nativeMapped() && visible() && parent() && parent()->mapped() boolean operation.
      *
      * @returns `true` if the view should be rendered, `false` otherwise.
      */
@@ -432,7 +433,7 @@ public:
     /**
      * @brief Get the current view opacity.
      *
-     * This function returns the current view opacity.
+     * This method returns the current view opacity.
      *
      * @param forceIgnoreParent If set to `false`, the opacity is multiplied by the parent's opacity.
      * @returns The view's opacity value in the range [0.0, 1.0].
@@ -442,7 +443,7 @@ public:
     /**
      * @brief Set the view opacity.
      *
-     * This function sets the view's opacity. Setting the value to 1.0 disables opacity.
+     * This method sets the view's opacity. Setting the value to 1.0 disables opacity.
      *
      * @warning Opacity should be used with moderation, for example, only on animations, as the opaqueRegion() is not considered in the scenario, so the content behind the view is always repainted when the view changes.
      *
@@ -453,7 +454,7 @@ public:
     /**
      * @brief Check if the view's opacity is multiplied by its parent's opacity.
      *
-     * This function returns `true` if the view's opacity is multiplied by its parent's opacity, `false` otherwise.
+     * This method returns `true` if the view's opacity is multiplied by its parent's opacity, `false` otherwise.
      *
      * The default value is `true`.
      *
@@ -475,7 +476,7 @@ public:
     /**
      * @brief Check if the requestNextFrame() is enabled.
      *
-     * If this function returns `true`, requestNextFrame() will be called even if the view
+     * If this method returns `true`, requestNextFrame() will be called even if the view
      * is not mapped or occluded.
      *
      * @return `true` if requestNextFrame() is forced to be called; otherwise, `false`.
@@ -495,7 +496,7 @@ public:
     /**
      * @brief Sets the alpha blending function for the view.
      *
-     * This function sets the OpenGL blend function for the view. Refer to the documentation
+     * This method sets the OpenGL blend function for the view. Refer to the documentation
      * of glBlendFunc() for more information.
      *
      * @param sFactor Source factor for blending.
@@ -531,7 +532,7 @@ public:
     /**
      * @brief Get the bounding box of the view and all its mapped children.
      *
-     * This function returns a box containing the view and all its mapped children, even if the children
+     * This method returns a box containing the view and all its mapped children, even if the children
      * are outside or clipped by the view's rect.
      *
      * @return The bounding box of the view and its mapped children.
@@ -665,7 +666,7 @@ public:
     /**
      * @brief Request to paint a rectangle of the view to the current framebuffer.
      *
-     * This function is used by LSceneView to request the view to paint a specified rectangular area
+     * This method is used by LSceneView to request the view to paint a specified rectangular area
      * on the current framebuffer. The painting is performed using the provided LPainter object
      * with the specified source and destination surface coordinates, size, scaling, and alpha value.
      *

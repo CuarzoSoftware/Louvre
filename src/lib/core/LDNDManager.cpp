@@ -137,12 +137,8 @@ void LDNDManager::setPreferredAction(LDNDManager::Action action)
 
     imp()->preferredAction = action;
 
-    if (imp()->dstClient)
-    {
-        for (Wayland::GSeat *s : dstClient()->seatGlobals())
-        {
+    if (focus())
+        for (Wayland::GSeat *s : focus()->client()->seatGlobals())
             if (s->dataDeviceResource() && s->dataDeviceResource()->dataOffered())
                 s->dataDeviceResource()->dataOffered()->imp()->updateDNDAction();
-        }
-    }
 }

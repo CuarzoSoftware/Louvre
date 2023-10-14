@@ -20,6 +20,9 @@ LPRIVATE_CLASS(LTexture)
     bool pendingDelete = false;
 
     std::list<LTexture*>::iterator compositorLink;
+
+    // List of texture views using it
+    std::list<LTextureView*> textureViews;
 };
 
 #endif // LTEXTUREPRIVATE_H
