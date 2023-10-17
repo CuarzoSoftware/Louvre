@@ -521,37 +521,31 @@ void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output, timesp
     // Check if the surface is visible in the given output
     for (LOutput *lOutput : surfaceResource->surface()->outputs())
     {
-        if (lOutput == output)
+        if (lOutput != output)
+            continue;
+
+        for (Wayland::GOutput *gOutput : surfaceResource->client()->outputGlobals())
         {
-            for (Wayland::GOutput *gOutput : surfaceResource->client()->outputGlobals())
+            if (gOutput->output() != output)
+                continue;
+
+            while (!wpPresentationFeedbackResources.empty())
             {
-                if (gOutput->output() == output)
-                {
-                    UInt32 tv_sec_hi = ns.tv_sec >> 32;
-                    UInt32 tv_sec_lo = ns.tv_sec & 0xffffffff;
-                    UInt32 seq_hi = 0; /* >> 32; */
-                    UInt32 seq_lo = 0; /* & 0xFFFFFFFF; */
-                    UInt32 refresh = 0; // 1000000000/output->currentMode()->refreshRate();
-
-                    while (!wpPresentationFeedbackResources.empty())
-                    {
-                        WpPresentationTime::RWpPresentationFeedback *rFeed = wpPresentationFeedbackResources.back();
-                        rFeed->sync_output(gOutput);
-                        rFeed->presented(tv_sec_hi,
-                                         tv_sec_lo,
-                                         ns.tv_nsec,
-                                         refresh,
-                                         seq_hi,
-                                         seq_lo,
-                                         WP_PRESENTATION_FEEDBACK_KIND_VSYNC);
-                        rFeed->imp()->lSurface = nullptr;
-                        wpPresentationFeedbackResources.pop_back();
-                        wl_resource_destroy(rFeed->resource());
-                    }
-
-                    return;
-                }
+                WpPresentationTime::RWpPresentationFeedback *rFeed = wpPresentationFeedbackResources.back();
+                rFeed->sync_output(gOutput);
+                rFeed->presented(ns.tv_sec >> 32,
+                                 ns.tv_sec & 0xffffffff,
+                                 ns.tv_nsec,
+                                 0,
+                                 0,
+                                 0,
+                                 WP_PRESENTATION_FEEDBACK_KIND_VSYNC);
+                rFeed->imp()->lSurface = nullptr;
+                wpPresentationFeedbackResources.pop_back();
+                wl_resource_destroy(rFeed->resource());
             }
+
+            return;
         }
     }
 

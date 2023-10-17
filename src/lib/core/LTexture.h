@@ -70,6 +70,14 @@ public:
     static UInt32 formatBytesPerPixel(UInt32 format);
 
     /**
+     * @brief Get the number of planes of a DRM format.
+     *
+     * @param format The DRM format.
+     * @return The number of planes of the format.
+     */
+    static UInt32 formatPlanes(UInt32 format);
+
+    /**
      * @brief Set the data of the texture from a buffer in main memory.
      *
      * @param size The size of the texture in buffer coordinates.

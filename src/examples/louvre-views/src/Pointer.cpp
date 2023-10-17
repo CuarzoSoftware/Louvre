@@ -17,22 +17,8 @@ Pointer::Pointer(Params *params) : LPointer(params) {}
 
 void Pointer::pointerMoveEvent(Float32 dx, Float32 dy)
 {
-    dx *= 0.5f;
-    dy *= 0.5f;
-
-    if (LTime::ms() - lastEventMS > 40)
-        velocity = 0.f;
-
-    lastEventMS = LTime::ms();
-
-    if (velocity.x() < 5.f)
-        velocity.setX(velocity.x() + fabs(dx) * acelerationFactor);
-
-    if (velocity.y() < 5.f)
-        velocity.setY(velocity.y() + fabs(dy) * acelerationFactor);
-
-    pointerPosChangeEvent(cursor()->pos().x() + dx + (velocity.x() * dx) / (fabs(dx) + 0.000001),
-                          cursor()->pos().y() + dy + (velocity.y() * dy) / (fabs(dy) + 0.000001));
+    pointerPosChangeEvent(cursor()->pos().x() + dx,
+                          cursor()->pos().y() + dy);
 }
 
 void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
@@ -43,6 +29,10 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
         cursor()->output()->repaint();
 
     if (resizingToplevel() || cursorOwner)
+        return;
+
+    // Let the client set the cursor during DND
+    if (seat()->dndManager()->dragging())
         return;
 
     if (view)
@@ -98,8 +88,6 @@ void Pointer::pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, In
 
 void Pointer::setCursorRequest(LCursorRole *cursorRole)
 {
-    lastCursorRequestFocusedSurface = focusSurface();
-
     if (resizingToplevel() || cursorOwner)
         return;
 

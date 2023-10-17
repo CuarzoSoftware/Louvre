@@ -1,3 +1,4 @@
+#include "LLog.h"
 #include <private/LPainterPrivate.h>
 #include <private/LOutputFramebufferPrivate.h>
 #include <private/LCompositorPrivate.h>
@@ -37,46 +38,82 @@ LPainter::LPainter()
         )";
 
     GLchar fShaderStr[] =R"(
+        #extension GL_OES_EGL_image_external : require
         precision lowp float;
         precision lowp int;
         uniform lowp sampler2D tex;
-        uniform int mode;
+        uniform lowp int mode;
         uniform lowp float alpha;
         uniform lowp vec3 color;
+        uniform lowp vec4 colorFactor;
         varying lowp vec2 v_texcoord;
 
         void main()
         {
+            // Texture
             if (mode == 0)
             {
                 gl_FragColor = texture2D(tex, v_texcoord);
                 gl_FragColor.w *= alpha;
-                return;
             }
 
-            if (mode == 1)
+            // Solid color
+            else if (mode == 1)
             {
                 gl_FragColor.xyz = color;
                 gl_FragColor.w = alpha;
-                return;
             }
 
-            gl_FragColor.xyz = color;
-            gl_FragColor.w = texture2D(tex, v_texcoord).w * alpha;
+            // Colored texture
+            else
+            {
+                gl_FragColor.xyz = color;
+                gl_FragColor.w = texture2D(tex, v_texcoord).w * alpha;
+            }
+
+            gl_FragColor *= colorFactor;
+        }
+        )";
+
+    GLchar fShaderStrExternal[] =R"(
+        #extension GL_OES_EGL_image_external : require
+        precision lowp float;
+        precision lowp int;
+        uniform lowp samplerExternalOES tex;
+        uniform lowp int mode;
+        uniform lowp float alpha;
+        uniform lowp vec3 color;
+        uniform lowp vec4 colorFactor;
+        varying lowp vec2 v_texcoord;
+
+        void main()
+        {
+            // Texture
+            if (mode == 0)
+            {
+                gl_FragColor = texture2D(tex, v_texcoord);
+                gl_FragColor.w *= alpha;
+            }
+            // Colored texture
+            else
+            {
+                gl_FragColor.xyz = color;
+                gl_FragColor.w = texture2D(tex, v_texcoord).w * alpha;
+            }
+
+            gl_FragColor *= colorFactor;
         }
         )";
 
     // Load the vertex/fragment shaders
     imp()->vertexShader = LOpenGL::compileShader(GL_VERTEX_SHADER, vShaderStr);
     imp()->fragmentShader = LOpenGL::compileShader(GL_FRAGMENT_SHADER, fShaderStr);
+    imp()->fragmentShaderExternal = LOpenGL::compileShader(GL_FRAGMENT_SHADER, fShaderStrExternal);
 
     // Create the program object
     imp()->programObject = glCreateProgram();
     glAttachShader(imp()->programObject, imp()->vertexShader);
     glAttachShader(imp()->programObject, imp()->fragmentShader);
-
-    // Bind vPosition to attribute 0
-    glBindAttribLocation(imp()->programObject, 0, "vertexPosition");
 
     // Link the program
     glLinkProgram(imp()->programObject);
@@ -94,10 +131,41 @@ LPainter::LPainter()
         exit(-1);
     }
 
-    // Enable alpha blending
+    // Create the program object
+    imp()->programObjectExternal = glCreateProgram();
+    glAttachShader(imp()->programObjectExternal, imp()->vertexShader);
+    glAttachShader(imp()->programObjectExternal, imp()->fragmentShaderExternal);
+
+    // Link the program
+    glLinkProgram(imp()->programObjectExternal);
+
+    // Check the link status
+    glGetProgramiv(imp()->programObjectExternal, GL_LINK_STATUS, &linked);
+
+    if (!linked)
+    {
+        GLint infoLen = 0;
+        glGetProgramiv(imp()->programObjectExternal, GL_INFO_LOG_LENGTH, &infoLen);
+        glDeleteProgram(imp()->programObjectExternal);
+        LLog::error("[LPainter] Failed to compile external OES shader.");
+    }
+    else
+    {
+        imp()->currentProgram = imp()->programObjectExternal;
+        imp()->currentState = &imp()->stateExternal;
+        imp()->currentUniforms = &imp()->uniformsExternal;
+        imp()->setupProgram();
+    }
+
+    imp()->currentProgram = imp()->programObject;
+    imp()->currentState = &imp()->state;
+    imp()->currentUniforms = &imp()->uniforms;
+    imp()->setupProgram();
+
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     glEnable(GL_BLEND);
     glEnable(GL_SCISSOR_TEST);
-
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glDisable(GL_LIGHTING);
@@ -107,25 +175,7 @@ LPainter::LPainter()
     glDisable(GL_SAMPLE_COVERAGE);
     glDisable(GL_SAMPLE_ALPHA_TO_ONE);
 
-    // Set blend mode
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // Use the program object
-    glUseProgram(imp()->programObject);
-
-    // Load the vertex data
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, imp()->square);
-
-    // Enables the vertex array
-    glEnableVertexAttribArray(0);
-
-    // Get Uniform Variables
-    imp()->texSizeUniform = glGetUniformLocation(imp()->programObject, "texSize");
-    imp()->srcRectUniform = glGetUniformLocation(imp()->programObject, "srcRect");
-    imp()->activeTextureUniform = glGetUniformLocation(imp()->programObject, "tex");
-    imp()->modeUniform = glGetUniformLocation(imp()->programObject, "mode");
-    imp()->colorUniform = glGetUniformLocation(imp()->programObject, "color");
-    imp()->alphaUniform = glGetUniformLocation(imp()->programObject, "alpha");
+    imp()->shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
 }
 
 void LPainter::bindFramebuffer(LFramebuffer *framebuffer)
@@ -147,8 +197,33 @@ LFramebuffer *LPainter::boundFramebuffer() const
     return imp()->fb;
 }
 
+void LPainter::LPainterPrivate::setupProgram()
+{
+    glBindAttribLocation(currentProgram, 0, "vertexPosition");
+
+    // Use the program object
+    glUseProgram(currentProgram);
+
+    // Load the vertex data
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, square);
+
+    // Enables the vertex array
+    glEnableVertexAttribArray(0);
+
+    // Get Uniform Variables
+    currentUniforms->texSize = glGetUniformLocation(currentProgram, "texSize");
+    currentUniforms->srcRect = glGetUniformLocation(currentProgram, "srcRect");
+    currentUniforms->activeTexture = glGetUniformLocation(currentProgram, "tex");
+    currentUniforms->mode = glGetUniformLocation(currentProgram, "mode");
+    currentUniforms->color= glGetUniformLocation(currentProgram, "color");
+    currentUniforms->colorFactor = glGetUniformLocation(currentProgram, "colorFactor");
+    currentUniforms->alpha = glGetUniformLocation(currentProgram, "alpha");
+}
+
 void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src, const LRect &dst)
 {
+    GLenum target = texture->target();
+    switchTarget(target);
     glEnable(GL_BLEND);
     glScissor(0,0,64,64);
     glViewport(0,0,64,64);
@@ -160,7 +235,6 @@ void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src,
     shaderSetAlpha(1.f);
     shaderSetMode(0);
     shaderSetActiveTexture(0);
-    GLenum target = texture->target();
     glBindTexture(target, texture->id(output));
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -174,6 +248,8 @@ void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src,
 
 void LPainter::LPainterPrivate::scaleTexture(LTexture *texture, const LRect &src, const LSize &dst)
 {
+    GLenum target = texture->target();
+    switchTarget(target);
     glDisable(GL_BLEND);
     glScissor(0, 0, dst.w(), dst.h());
     glViewport(0, 0, dst.w(), dst.h());
@@ -183,7 +259,6 @@ void LPainter::LPainterPrivate::scaleTexture(LTexture *texture, const LRect &src
     shaderSetActiveTexture(0);
     shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
     shaderSetSrcRect(src.x(), src.y() + src.h(), src.w(), -src.h());
-    GLenum target = texture->target();
     glBindTexture(target, texture->id(output));
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -227,6 +302,9 @@ void LPainter::drawTexture(const LTexture *texture,
     if (alpha < 0.f)
         alpha = 0.f;
 
+    GLenum target = texture->target();
+    imp()->switchTarget(target);
+
     setViewport(dstX, dstY, dstW, dstH);
     glActiveTexture(GL_TEXTURE0);
 
@@ -239,7 +317,6 @@ void LPainter::drawTexture(const LTexture *texture,
     else
         imp()->shaderSetSrcRect(srcX, srcY, srcW, srcH);
 
-    GLenum target = texture->target();
     glBindTexture(target, texture->id(imp()->output));
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -283,6 +360,9 @@ void LPainter::drawColorTexture(const LTexture *texture,
                                 Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                                 Float32 srcScale, Float32 alpha)
 {
+    GLenum target = texture->target();
+    imp()->switchTarget(target);
+
     setViewport(dstX, dstY, dstW, dstH);
     glActiveTexture(GL_TEXTURE0);
 
@@ -296,7 +376,6 @@ void LPainter::drawColorTexture(const LTexture *texture,
     else
         imp()->shaderSetSrcRect(srcX, srcY, srcW, srcH);
 
-    GLenum target = texture->target();
     glBindTexture(target, texture->id(imp()->output));
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -328,6 +407,7 @@ void LPainter::drawColor(const LRect &dst,
 void LPainter::drawColor(Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                           Float32 r, Float32 g, Float32 b, Float32 a)
 {
+    imp()->switchTarget(GL_TEXTURE_2D);
     setViewport(dstX, dstY, dstW, dstH);
     imp()->shaderSetAlpha(a);
     imp()->shaderSetColor(r, g, b);
@@ -372,6 +452,11 @@ void LPainter::setClearColor(Float32 r, Float32 g, Float32 b, Float32 a)
     glClearColor(r,g,b,a);
 }
 
+void LPainter::setColorFactor(Float32 r, Float32 g, Float32 b, Float32 a)
+{
+    imp()->shaderSetColorFactor(r, g, b, a);
+}
+
 void LPainter::clearScreen()
 {
     glDisable(GL_BLEND);
@@ -389,6 +474,8 @@ void LPainter::bindProgram()
 LPainter::~LPainter()
 {
     glDeleteProgram(imp()->programObject);
+    glDeleteProgram(imp()->programObjectExternal);
+    glDeleteShader(imp()->fragmentShaderExternal);
     glDeleteShader(imp()->fragmentShader);
     glDeleteShader(imp()->vertexShader);
     delete m_imp;

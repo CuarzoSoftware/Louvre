@@ -30,6 +30,7 @@ LPRIVATE_CLASS(LView)
     bool repaintCalled = false;
     GLenum sFactor = GL_SRC_ALPHA;
     GLenum dFactor = GL_ONE_MINUS_SRC_ALPHA;
+    LRGBAF colorFactor = {1.f, 1.f, 1.f, 1.f};
 
     Float32 opacity = 1.f;
     LSizeF scalingVector = LSizeF(1.f, 1.f);
@@ -50,7 +51,7 @@ LPRIVATE_CLASS(LView)
     LSize tmpSize;
     LSizeF tmpScalingVector;
 
-    // Cached data for each output
+    // This is used for detecting changes on a view since the last time it was drawn on a specific output
     struct ViewThreadData
     {
         LOutput *o = nullptr;
@@ -61,8 +62,10 @@ LPRIVATE_CLASS(LView)
         bool changedOrder = true;
         bool prevMapped = false;
         LRegion prevClipping;
+        LRGBAF prevColorFactor;
     };
 
+    // This is used to prevent invoking heavy methods
     struct ViewCache
     {
         ViewThreadData *voD;

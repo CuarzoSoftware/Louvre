@@ -25,15 +25,6 @@ LPRIVATE_CLASS(LPointer)
     LPoint movingToplevelInitPointerPos;
     LRect movingToplevelConstraintBounds;
 
-    // Resizing
-    LPoint resizingToplevelInitPos;
-    LPoint resizingToplevelInitPointerPos;
-    LPoint resizingToplevelCurrentPointerPos;
-    LSize resizingToplevelInitWindowSize;
-    LSize resizingToplevelMinSize;
-    LToplevelRole::ResizeEdge resizingToplevelEdge;
-    LRect resizingToplevelConstraintBounds;
-
     Float64 axisXprev;
     Float64 axisYprev;
     Int32 discreteXprev;

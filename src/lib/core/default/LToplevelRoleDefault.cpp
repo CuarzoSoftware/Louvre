@@ -34,6 +34,13 @@ void LToplevelRole::startResizeRequest(ResizeEdge edge)
 }
 //! [startResizeRequest]
 
+//! [resizingChanged]
+void LToplevelRole::resizingChanged()
+{
+
+}
+//! [resizingChanged]
+
 //! [configureRequest]
 void LToplevelRole::configureRequest()
 {
@@ -69,8 +76,8 @@ void LToplevelRole::appIdChanged()
 //! [geometryChanged]
 void LToplevelRole::geometryChanged()
 {
-    if (this == seat()->pointer()->resizingToplevel())
-        seat()->pointer()->updateResizingToplevelPos();
+    if (resizing())
+        updateResizingPos();
 }
 //! [geometryChanged]
 

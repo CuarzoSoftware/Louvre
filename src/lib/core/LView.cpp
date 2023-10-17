@@ -381,6 +381,23 @@ void LView::setBlendFunc(GLenum sFactor, GLenum dFactor)
     }
 }
 
+void LView::setColorFactor(Float32 r, Float32 g, Float32 b, Float32 a)
+{
+    if (imp()->colorFactor.r != r ||
+        imp()->colorFactor.g != g ||
+        imp()->colorFactor.b != b ||
+        imp()->colorFactor.a != a)
+    {
+        imp()->colorFactor = {r, g, b, a};
+        repaint();
+    }
+}
+
+const LRGBAF &LView::colorFactor()
+{
+    return imp()->colorFactor;
+}
+
 bool LView::pointerIsOver() const
 {
     return imp()->pointerIsOver;

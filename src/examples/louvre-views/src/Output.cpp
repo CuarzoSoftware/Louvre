@@ -151,6 +151,8 @@ void Output::initializeGL()
                     return;
                 }
 
+                tl->surface()->requestNextFrame(false);
+
                 // Current fullscreen size
                 LSize cSize;
 
@@ -161,6 +163,10 @@ void Output::initializeGL()
                 {
                     // Fades in black background
                     tl->blackFullscreenBackground.setOpacity(anim->value());
+
+                    Float32 inv = 1.f - anim->value();
+                    tl->capture.setColorFactor(inv, inv, inv, 1.f);
+
                     tl->animScene->render();
                     tl->animView.setTexture(tl->animScene->texture());
                     tl->animView.enableDstSize(true);

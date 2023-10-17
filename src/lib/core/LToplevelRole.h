@@ -187,6 +187,8 @@ public:
      */
     LSize calculateResizeSize(const LPoint &cursorPosDelta, const LSize &initialSize, ResizeEdge edge);
 
+    void updateResizingPos();
+
     /**
      * @brief Get the application ID associated with the toplevel window.
      *
@@ -218,6 +220,13 @@ public:
      * @return The maximum size as a Louvre::LSize object.
      */
     const LSize &maxSize() const;
+
+    /**
+     * @brief Check if the toplevel window is being resized.
+     *
+     * @return `true` if the toplevel is being resized; otherwise, `false`.
+     */
+    bool resizing() const;
 
     /**
      * @brief Check if the toplevel window is maximized.
@@ -316,6 +325,17 @@ public:
      * @snippet LToplevelRoleDefault.cpp startResizeRequest
      */
     virtual void startResizeRequest(ResizeEdge edge);
+
+    /**
+     * @brief Resizing state change
+     *
+     * Reimplement this virtual method if you want to be notified when the Toplevel changes its resizing state.\n
+     * You can know if the Toplevel is being resized with resizing().
+     *
+     * #### Default implementation
+     * @snippet LToplevelRoleDefault.cpp resizingChanged
+     */
+    virtual void resizingChanged();
 
     /**
      * @brief Request for configuration

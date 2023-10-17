@@ -281,6 +281,11 @@ const LSize &LToplevelRole::maxSize() const
     return imp()->currentMaxSize;
 }
 
+bool LToplevelRole::resizing() const
+{
+    return imp()->stateFlags & LToplevelRole::Resizing;
+}
+
 const LSize &LToplevelRole::minSize() const
 {
     return imp()->currentMinSize;
@@ -291,6 +296,8 @@ void LToplevelRole::configure(Int32 width, Int32 height, UInt32 stateFlags)
     XdgShell::RXdgToplevel *res = (XdgShell::RXdgToplevel*)resource();
 
     LToplevelRolePrivate::ToplevelConfiguration conf;
+
+    surface()->requestNextFrame(false);
 
     if (width < 0)
         width = 0;
@@ -458,7 +465,20 @@ LSize LToplevelRole::calculateResizeSize(const LPoint &cursorPosDelta, const LSi
         }break;
     }
 
-    return newSize;
+        return newSize;
+}
+
+void LToplevelRole::updateResizingPos()
+{
+    LSize s = imp()->resizingInitWindowSize;
+    LPoint p = imp()->resizingInitPos;
+    LToplevelRole::ResizeEdge edge =  imp()->resizingEdge;
+
+    if (edge ==  LToplevelRole::Top || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::TopRight)
+        surface()->setY(p.y() + (s.h() - windowGeometry().h()));
+
+    if (edge ==  LToplevelRole::Left || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::BottomLeft)
+        surface()->setX(p.x() + (s.w() - windowGeometry().w()));
 }
 
 static char *trim(char *s)
@@ -530,6 +550,9 @@ void LToplevelRole::LToplevelRolePrivate::applyPendingChanges()
 
         if ((prevState & LToplevelRole::Activated) != (currentConf.flags & LToplevelRole::Activated))
             toplevel->activatedChanged();
+
+        if ((prevState & LToplevelRole::Resizing) != (currentConf.flags & LToplevelRole::Resizing))
+            toplevel->resizingChanged();
 
         if (prevState != currentConf.flags)
             toplevel->statesChanged();

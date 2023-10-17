@@ -142,13 +142,14 @@ void LPointer::startResizingToplevel(LToplevelRole *toplevel,
     if (!toplevel)
         return;
 
-    imp()->resizingToplevelMinSize = minSize;
-    imp()->resizingToplevelConstraintBounds = LRect(L,T,R,B);
     imp()->resizingToplevel = toplevel;
-    imp()->resizingToplevelEdge = edge;
-    imp()->resizingToplevelInitWindowSize = toplevel->windowGeometry().size();
-    imp()->resizingToplevelInitPointerPos = pointerPos;
-    imp()->resizingToplevelCurrentPointerPos = pointerPos;
+
+    toplevel->imp()->resizingMinSize = minSize;
+    toplevel->imp()->resizingConstraintBounds = LRect(L,T,R,B);
+    toplevel->imp()->resizingEdge = edge;
+    toplevel->imp()->resizingInitWindowSize = toplevel->windowGeometry().size();
+    toplevel->imp()->resizingInitPointerPos = pointerPos;
+    toplevel->imp()->resizingCurrentPointerPos = pointerPos;
 
     if (L != EdgeDisabled && toplevel->surface()->pos().x() < L)
         toplevel->surface()->setX(L);
@@ -156,7 +157,7 @@ void LPointer::startResizingToplevel(LToplevelRole *toplevel,
     if (T != EdgeDisabled && toplevel->surface()->pos().y() < T)
         toplevel->surface()->setY(T);
 
-    imp()->resizingToplevelInitPos = toplevel->surface()->pos();
+    toplevel->imp()->resizingInitPos = toplevel->surface()->pos();
 
     resizingToplevel()->configure(LToplevelRole::Activated | LToplevelRole::Resizing);
 }
@@ -165,14 +166,14 @@ void LPointer::updateResizingToplevelSize(const LPoint &pointerPos)
 {
     if (resizingToplevel())
     {
-        imp()->resizingToplevelCurrentPointerPos = pointerPos;
-        LSize newSize = resizingToplevel()->calculateResizeSize(resizingToplevelInitPointerPos() - pointerPos,
-                                                                imp()->resizingToplevelInitWindowSize,
-                                                                resizingToplevelEdge());
+        resizingToplevel()->imp()->resizingCurrentPointerPos = pointerPos;
+        LSize newSize = resizingToplevel()->calculateResizeSize(resizingToplevel()->imp()->resizingInitPointerPos - pointerPos,
+                                                                resizingToplevel()->imp()->resizingInitWindowSize,
+                                                                resizingToplevel()->imp()->resizingEdge);
         // Con restricciones
-        LToplevelRole::ResizeEdge edge =  resizingToplevelEdge();
+        LToplevelRole::ResizeEdge edge =  resizingToplevel()->imp()->resizingEdge;
         LPoint pos = resizingToplevel()->surface()->pos();
-        LRect bounds = imp()->resizingToplevelConstraintBounds;
+        LRect bounds = resizingToplevel()->imp()->resizingConstraintBounds;
         LSize size = resizingToplevel()->windowGeometry().size();
 
         // Top
@@ -201,11 +202,11 @@ void LPointer::updateResizingToplevelSize(const LPoint &pointerPos)
                 newSize.setW(bounds.w() - pos.x());
         }
 
-        if (newSize.w() < imp()->resizingToplevelMinSize.w())
-            newSize.setW(imp()->resizingToplevelMinSize.w());
+        if (newSize.w() < resizingToplevel()->imp()->resizingMinSize.w())
+            newSize.setW(resizingToplevel()->imp()->resizingMinSize.w());
 
-        if (newSize.h() < imp()->resizingToplevelMinSize.h())
-            newSize.setH(imp()->resizingToplevelMinSize.h());
+        if (newSize.h() < resizingToplevel()->imp()->resizingMinSize.h())
+            newSize.setH(resizingToplevel()->imp()->resizingMinSize.h());
 
         resizingToplevel()->configure(newSize, LToplevelRole::Activated | LToplevelRole::Resizing);
     }
@@ -214,24 +215,14 @@ void LPointer::updateResizingToplevelSize(const LPoint &pointerPos)
 void LPointer::updateResizingToplevelPos()
 {
     if (resizingToplevel())
-    {
-        LSize s = resizingToplevelInitSize();
-        LPoint p = resizingToplevelInitPos();
-        LToplevelRole::ResizeEdge edge =  resizingToplevelEdge();
-
-        if (edge ==  LToplevelRole::Top || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::TopRight)
-            resizingToplevel()->surface()->setY(p.y() + (s.h() - resizingToplevel()->windowGeometry().h()));
-
-        if (edge ==  LToplevelRole::Left || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::BottomLeft)
-            resizingToplevel()->surface()->setX(p.x() + (s.w() - resizingToplevel()->windowGeometry().w()));
-    }
+        resizingToplevel()->updateResizingPos();
 }
 
 void LPointer::stopResizingToplevel()
 {
-    if (resizingToplevel())
+    if(resizingToplevel())
     {
-        updateResizingToplevelSize(imp()->resizingToplevelCurrentPointerPos);
+        updateResizingToplevelSize(cursor()->pos());
         updateResizingToplevelPos();
         resizingToplevel()->configure(0, resizingToplevel()->states() &~ LToplevelRole::Resizing);
         imp()->resizingToplevel = nullptr;
@@ -311,26 +302,6 @@ const LPoint &LPointer::movingToplevelInitPos() const
 const LPoint &LPointer::movingToplevelInitPointerPos() const
 {
     return imp()->movingToplevelInitPointerPos;
-}
-
-const LPoint &LPointer::resizingToplevelInitPos() const
-{
-    return imp()->resizingToplevelInitPos;
-}
-
-const LPoint &LPointer::resizingToplevelInitPointerPos() const
-{
-    return imp()->resizingToplevelInitPointerPos;
-}
-
-const LSize &LPointer::resizingToplevelInitSize() const
-{
-    return imp()->resizingToplevelInitWindowSize;
-}
-
-LToplevelRole::ResizeEdge LPointer::resizingToplevelEdge() const
-{
-    return imp()->resizingToplevelEdge;
 }
 
 void LPointer::sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, AxisSource source)

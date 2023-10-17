@@ -1,6 +1,7 @@
 #include <LTextureView.h>
 #include <LAnimation.h>
 
+#include "LTimer.h"
 #include "Workspace.h"
 #include "Compositor.h"
 #include "Surface.h"
@@ -21,6 +22,9 @@ Surface::Surface(LSurface::Params *params) : LSurface(params)
 
 Surface::~Surface()
 {
+    if (firstMapTimer)
+        firstMapTimer->cancel();
+
     if (toplevel())
     {
         class Toplevel *tl = (class Toplevel*)toplevel();
@@ -111,31 +115,59 @@ void Surface::mappingChanged()
 
             if (toplevel())
             {
-                LPoint outputPosG = compositor()->cursor()->output()->pos() + LPoint(0, TOPBAR_HEIGHT);
-                LSize outputSizeG = compositor()->cursor()->output()->size() - LSize(0, TOPBAR_HEIGHT);
+                if (!firstMapTimer)
+                {
+                    firstMapTimer = new LTimer([this](LTimer*)
+                    {
+                        firstMapTimer = nullptr;
 
-                setPos(outputPosG + (outputSizeG - toplevel()->windowGeometry().size())/2);
+                        if (!toplevel() || !mapped() || minimized())
+                            return;
 
-                if (pos().x() < outputPosG.x())
-                    setX(outputPosG.x());
+                        LPoint outputPosG = compositor()->cursor()->output()->pos() + LPoint(0, TOPBAR_HEIGHT);
+                        LSize outputSizeG = compositor()->cursor()->output()->size() - LSize(0, TOPBAR_HEIGHT);
 
-                if (pos().y() < TOPBAR_HEIGHT)
-                    setY(TOPBAR_HEIGHT);
+                        setPos(outputPosG + (outputSizeG - toplevel()->windowGeometry().size())/2);
+
+                        if (pos().x() < outputPosG.x())
+                            setX(outputPosG.x());
+
+                        if (pos().y() < TOPBAR_HEIGHT)
+                            setY(TOPBAR_HEIGHT);
+
+                        Surface *next = (Surface*)nextSurface();
+
+                        view->setVisible(true);
+                        getView()->setVisible(true);
+
+                        while (next)
+                        {
+                            if (next->isSubchildOf(this) && !next->minimized())
+                            {
+                                view->setVisible(true);
+                                next->getView()->setVisible(true);
+                            }
+
+                            next = (Surface*)next->nextSurface();
+                        }
+                    });
+
+                    firstMapTimer->start(200, true);
+                }
 
                 toplevel()->configure(LToplevelRole::Activated);
-
-                if (!client()->xdgDecorationManagerGlobals().empty() && toplevel()->preferredDecorationMode() == 0 && toplevel()->decorationMode() != LToplevelRole::ServerSide)
-                    return;                
             }
 
             if (dndIcon())
                 setPos(cursor()->pos());
 
             firstMap = false;
-
-            view->setVisible(true);
             requestNextFrame(false);
 
+            Surface *par = (Surface*)parent();
+
+            if ((!dndIcon() && !toplevel() && !subsurface()) || (subsurface() && par && par->view->visible()))
+                getView()->setVisible(true);
         }
 
         compositor()->repaintAllOutputs();

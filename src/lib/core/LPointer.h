@@ -371,42 +371,6 @@ public:
      */
     LToplevelRole *resizingToplevel() const;
 
-    /**
-     * @brief Get the initial position of a Toplevel in an interactive resizing session.
-     *
-     * This method returns the initial position of a Toplevel at the beginning of an interactive resizing session.
-     *
-     * @return A reference to the initial position of the Toplevel surface.
-     */
-    const LPoint &resizingToplevelInitPos() const;
-
-    /**
-     * @brief Get the initial size of a Toplevel in an interactive resizing session.
-     *
-     * This method returns the initial size of a Toplevel at the beginning of an interactive resizing session.
-     *
-     * @return A reference to the initial size of the Toplevel.
-     *
-     * @see LToplevelRole::windowGeometry()
-     */
-    const LSize &resizingToplevelInitSize() const;
-
-    /**
-     * @brief Get the initial pointer position in an interactive resizing session.
-     *
-     * This method returns the initial pointer position at the beginning of an interactive resizing session.
-     *
-     * @return A reference to the initial pointer position.
-     */
-    const LPoint &resizingToplevelInitPointerPos() const;
-
-    /**
-     * @brief Retrieve the edge or corner of a Toplevel during an interactive resizing session.
-     *
-     * This method returns the edge or corner from which the Toplevel resizing is carried out.
-     */
-    LToplevelRole::ResizeEdge resizingToplevelEdge() const;
-
 ///@}
 
     /**

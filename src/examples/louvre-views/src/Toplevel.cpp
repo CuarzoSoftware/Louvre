@@ -192,17 +192,11 @@ void Toplevel::setFullscreenRequest(LOutput *output)
 
 void Toplevel::unsetFullscreenRequest()
 {
-    if (animScene)
+    if (!fullscreen() || !fullscreenOutput || fullscreenOutput->animatedFullscreenToplevel)
     {
-        configure(states());
+        configure(prevRect.size(), prevStates);
         return;
     }
-
-    if (!fullscreen() || !fullscreenOutput)
-        return;
-
-    if (fullscreenOutput->animatedFullscreenToplevel)
-        return;
 
     if (capture.texture())
         delete capture.texture();
@@ -285,12 +279,7 @@ void Toplevel::decorationModeChanged()
     else
     {
         decoratedView = new ToplevelView(this);
-    }
-
-    if (surf()->mapped() && surf()->firstMap)
-    {
-        surf()->firstMap = false;
-        surf()->view->setVisible(true);
+        decoratedView->setVisible(surf()->view->visible());
     }
 
     if (!fullscreen() && rolePos().y() < TOPBAR_HEIGHT)
@@ -299,8 +288,8 @@ void Toplevel::decorationModeChanged()
 
 void Toplevel::geometryChanged()
 {
-    if (this == seat()->pointer()->resizingToplevel())
-        seat()->pointer()->updateResizingToplevelPos();
+    if (resizing())
+        updateResizingPos();
 
     if (decoratedView)
     {
@@ -376,6 +365,7 @@ void Toplevel::unsetFullscreen()
     capture.enableParentOpacity(true);
     capture.setBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     capture.setParent(&blackFullscreenBackground);
+    capture.setColorFactor(1.f, 1.f, 1.f, 1.f);
 
     blackFullscreenBackground.setPos(fullscreenOutput->pos());
     blackFullscreenBackground.setSize(fullscreenOutput->size());

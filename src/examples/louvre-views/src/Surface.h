@@ -46,6 +46,8 @@ public:
     bool outputUnplugHandled = true;
 
     bool fadedOut = false;
+
+    LTimer *firstMapTimer = nullptr;
 };
 
 #endif // SURFACE_H

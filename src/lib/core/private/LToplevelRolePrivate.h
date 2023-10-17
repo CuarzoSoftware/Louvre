@@ -48,6 +48,15 @@ LPRIVATE_CLASS(LToplevelRole)
     States prevRoleRequest = 0;
     LOutput *prevRoleFullscreenRequestOutput = nullptr;
 
+    // Resizing
+    LPoint resizingInitPos;
+    LPoint resizingInitPointerPos;
+    LPoint resizingCurrentPointerPos;
+    LSize resizingInitWindowSize;
+    LSize resizingMinSize;
+    LToplevelRole::ResizeEdge resizingEdge;
+    LRect resizingConstraintBounds;
+
     void applyPendingChanges();
 };
 

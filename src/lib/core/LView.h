@@ -505,6 +505,26 @@ public:
     void setBlendFunc(GLenum sFactor, GLenum dFactor);
 
     /**
+     * @brief Set the color factor.
+     *
+     * This method allows you to set a color factor that influences the resulting color of every painting operation.
+     * By default, the color factor is (1.0, 1.0, 1.0, 1.0), which has no effect on the colors.
+     *
+     * @param r Value of the red component (range [0.0, 1.0]).
+     * @param g Value of the green component (range [0.0, 1.0]).
+     * @param b Value of the blue component (range [0.0, 1.0]).
+     * @param a Value of the alpha component (range [0.0, 1.0]).
+     */
+    void setColorFactor(Float32 r, Float32 g, Float32 b, Float32 a);
+
+    /**
+     * @brief Get the color factor.
+     *
+     * This method returns the current color factor of the view set with setColorFactor().
+     */
+    const LRGBAF &colorFactor();
+
+    /**
      * @brief Checks if the pointer/cursor is inside the view's input region.
      *
      * @warning Even if the pointer is over the input region it may return `false` if another view with block pointer enabled is in front.\n

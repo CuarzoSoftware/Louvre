@@ -197,6 +197,19 @@ public:
     void setClearColor(Float32 r, Float32 g, Float32 b, Float32 a);
 
     /**
+     * @brief Set the color factor.
+     *
+     * This method allows you to set a color factor that influences the resulting color of every painting operation.
+     * By default, the color factor is (1.0, 1.0, 1.0, 1.0), which has no effect on the colors.
+     *
+     * @param r Value of the red component (range [0.0, 1.0]).
+     * @param g Value of the green component (range [0.0, 1.0]).
+     * @param b Value of the blue component (range [0.0, 1.0]).
+     * @param a Value of the alpha component (range [0.0, 1.0]).
+     */
+    void setColorFactor(Float32 r, Float32 g, Float32 b, Float32 a);
+
+    /**
      * @brief Clear the framebuffer.
      *
      * This method clears the bound framebuffer using the color set with setClearColor().
