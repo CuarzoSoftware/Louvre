@@ -38,7 +38,6 @@ LPainter::LPainter()
         )";
 
     GLchar fShaderStr[] =R"(
-        #extension GL_OES_EGL_image_external : require
         precision lowp float;
         precision lowp int;
         uniform lowp sampler2D tex;
