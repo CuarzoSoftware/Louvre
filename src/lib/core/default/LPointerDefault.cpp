@@ -104,7 +104,7 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
             setFocus(surface);
             sendButtonEvent(button, state);
 
-            if (surface->popup())
+            if (!surface->popup())
                 dismissPopups();
         }
         else
@@ -128,7 +128,8 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
         // is outside of it (while the left button is being held down)
         setDraggingSurface(focusSurface());
 
-        seat()->keyboard()->setFocus(focusSurface());
+        if (!seat()->keyboard()->focusSurface() || !focusSurface()->isSubchildOf(seat()->keyboard()->focusSurface()))
+            seat()->keyboard()->setFocus(focusSurface());
 
         if (focusSurface()->toplevel() && !focusSurface()->toplevel()->activated())
             focusSurface()->toplevel()->configure(focusSurface()->toplevel()->states() | LToplevelRole::Activated);

@@ -6,7 +6,7 @@ Louvre relies on the following libraries:
 * **EGL** >= 1.5.0
 * **GLES 2.0** >= 13.0.6
 * **DRM** >= 2.4.85
-* **SRM** >= 0.1.0
+* **SRM** >= 0.3.0
 * **GBM** >= 22.2.0
 * **Evdev** >= 1.5.6
 * **Libinput** >= 1.6.3

@@ -293,13 +293,13 @@ public:
     virtual LDNDManager *createDNDManagerRequest(LDNDManager::Params *params);
 
     /**
-     * @brief Virtual constructor for creating LToplevelRole instances when a client creates a Toplevel role for a surface.
+     * @brief Virtual constructor for creating LToplevelRole instances when a client creates a toplevel role for a surface.
      *
-     * This method is called when a client creates a Toplevel role for a surface.
+     * This method is called when a client creates a toplevel role for a surface.
      * The LToplevelRole class provides virtual methods to notify changes in geometry, state (activated, maximized, fullscreen, etc.),
      * the start of interactive moving and resizing sessions, and more.
      *
-     * @param params Internal Louvre parameters for creating the Toplevel role.
+     * @param params Internal Louvre parameters for creating the toplevel role.
      *
      * @return An instance of LToplevelRole or a subclass of LToplevelRole.
      *
@@ -470,7 +470,7 @@ public:
     /**
      * @brief Virtual destructor for the LToplevelRole class.
      *
-     * This method is called when a client requests to destroy the Toplevel role of one of its surfaces.
+     * This method is called when a client requests to destroy the toplevel role of one of its surfaces.
      *
      * @param toplevel The LToplevelRole instance to be destroyed.
      *

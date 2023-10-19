@@ -82,6 +82,7 @@ LPRIVATE_CLASS(LPainter)
     void setupProgram();
     void scaleCursor(LTexture *texture, const LRect &src, const LRect &dst);
     void scaleTexture(LTexture *texture, const LRect &src, const LSize &dst);
+    void scaleTexture(GLuint textureId, GLenum textureTarget, GLuint framebufferId, GLint minFilter, const LSize &texSize, const LRect &src, const LSize &dst);
 
     // Shader state update
 

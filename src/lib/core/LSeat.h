@@ -97,10 +97,10 @@ public:
     /**
      * @brief Get the ID of the current graphic backend.
      *
-     * Each graphic backend is assigned a unique UInt32 ID. You can use this function to retrieve the
+     * Each graphic backend is assigned a unique Louvre::UInt32 ID. You can use this function to retrieve the
      * ID of the current graphic backend in use.
      *
-     * The IDs of graphic backends shipped with Louvre are listed in the LGraphicBackendID enum.
+     * The IDs of graphic backends shipped with Louvre are listed in the Louvre::LGraphicBackendID enum.
      *
      * @return The ID of the graphic backend.
      */
@@ -120,10 +120,10 @@ public:
     /**
      * @brief Get the ID of the current input backend.
      *
-     * Each input backend is assigned a unique UInt32 ID. You can use this function to retrieve the
+     * Each input backend is assigned a unique Louvre::UInt32 ID. You can use this function to retrieve the
      * ID of the current input backend in use.
      *
-     * The IDs of input backends shipped with Louvre are listed in the LInputBackendID enum.
+     * The IDs of input backends shipped with Louvre are listed in the Louvre::LInputBackendID enum.
      *
      * @return The ID of the input backend.
      */
@@ -132,40 +132,42 @@ public:
     /**
      * @brief Input Backend Capabilities
      *
-     * Flags representing the input capabilities of the backend, defined in #Capabilities.
+     * Flags representing the input capabilities of the input backend, defined in Louvre::LSeat::InputCapabilities.
      */
     InputCapabilitiesFlags inputBackendCapabilities() const;
 
     /**
-     * Seat name (E.g. "seat0").
+     * @brief The seat name
+     *
+     * This method returns the name of the seat (E.g. "seat0").
      */
     const char *name() const;
 
     /**
      * @brief Input capabilities of the compositor.
      *
-     * Flags with the input capabilities of the compositor assigned with setCapabilities().\n
+     * Flags with the input capabilities of the compositor assigned with setInputCapabilities().
      */
-    InputCapabilitiesFlags capabilities() const;
+    InputCapabilitiesFlags inputCapabilities() const;
 
     /**
      * @brief Assigns the input capabilities of the compositor.
      *
-     * Notifies clients the compositor's input capabilities.\n
-     * Clients will only listen to events specified in the capabilities.\n
+     * This method notifies clients about the compositor's input capabilities.\n
+     * Clients will only listen to events specified in the capabilities flags.\n
      * The default implementation of initialized() sets the compositor's capabilities to those of the input backend.\n
      *
-     * @param capabilitiesFlags Flags with the input capabilities of the compositor defined in #Capabilities. They may differ from the input capabilities of the backend.
+     * @param capabilitiesFlags Flags with the input capabilities of the compositor defined in Louvre::LSeat::InputCapabilities. They may differ from the input capabilities of the input backend.
      */
     void setInputCapabilities(InputCapabilitiesFlags capabilitiesFlags);
 
     /**
-     * @brief Active Toplevel surface.
+     * @brief Active toplevel surface.
      *
-     * Pointer to the active LToplevelRole role assigned by passing the flag LToplevelRole::Active in LToplevelRole::confgure().\n
-     * Only one Toplevel surface can be active at a time, the library automatically deactivates other Toplevels when one is activated.
+     * This method returns the active LToplevelRole role assigned by passing the flag Louvre::LToplevelRole::Activated in Louvre::LToplevelRole::confgure().\n
+     * Only one toplevel surface can be active at a time, the library automatically deactivates other Toplevels when one is activated.
      *
-     * @returns nullptr if no Toplevel is active.
+     * @return The currently active LToplevelRole instance or `nullptr` if no toplevel is active.
      */
     LToplevelRole *activeToplevel() const;
 
@@ -194,7 +196,7 @@ public:
      * @brief Access to the clipboard.
      *
      * Access to the clipboard (data source) assigned by the last client.\n
-     * @returns nullptr if the clipboard has not been assigned.
+     * @returns `nullptr` if the clipboard has not been assigned.
      */
     LDataSource *dataSelection() const;
 
@@ -203,8 +205,9 @@ public:
     /**
      * @brief Switch session.
      *
-     * Switch session (TTY). Louvre also allows switching sessions
-     * using the shortcuts \n```Ctrl + Alt + (F1, F2, ..., F10)```.
+     * This method allows you to switch to another session (TTY). Louvre also allows switching sessions
+     * using the shortcuts ```Ctrl + Alt + [F1, F2, ..., F10]```.
+     *
      * @param tty TTY number.
      *
      * @returns 0 if the session is successfully switched and -1 in case of error.
@@ -212,10 +215,11 @@ public:
     Int32 setTTY(Int32 tty);
 
     /**
-     * @brief Opens a device.
+     * @brief Open a device.
      *
      * Opens a device on the seat, returning its ID and storing its file descriptor in **fd**.\n
-     * The DRM graphics backend and the Libinput input backend use this function to open GPUs and input devices respectively.
+     * The DRM graphic backend and the Libinput input backend use this function to open GPUs and input devices respectively.
+     *
      * @param path Location of the device (E.g. "/dev/dri/card0")
      * @param fd Stores the file descriptor.
      * @returns The ID of the device or -1 in case of an error.
@@ -223,7 +227,9 @@ public:
     Int32 openDevice(const char *path, Int32 *fd, Int32 flags = 0);
 
     /**
-     * @brief Closes a device.
+     * @brief Close a device.
+     *
+     * This method is used by the input and graphic backends to close devices.
      *
      * @param id The id returned by openDevice().
      * @returns 0 if the device is closed successfully and -1 in case of error.
@@ -242,16 +248,16 @@ public:
      *
      * The session is considered disabled if the user is engaged in another active session (TTY).
      *
-     * @return True if the seat is active, false otherwise.
+     * @return `true` if the seat is active, `false` otherwise.
      */
     bool enabled() const;
 
     /**
      * @brief Retrieve the topmost popup role.
      *
-     * This function returns a pointer to the topmost popupt.
+     * This function returns a pointer to the topmost popup.
      *
-     * @return A pointer to the topmost LPopupRole or nullptr if there is no popup.
+     * @return A pointer to the topmost LPopupRole or `nullptr` if there is no popup.
      */
     LPopupRole *topmostPopup() const;
 
@@ -262,7 +268,8 @@ public:
     /**
      * @brief Seat initialization.
      *
-     * Reimplement this virtual method if you want to be notified when the seat is initialized.
+     * Reimplement this virtual method if you want to be notified when the seat is initialized.\n
+     * The seat is initialized during the compositor's initialization process.
      *
      * #### Default implementation
      * @snippet LSeatDefault.cpp initialized
@@ -275,7 +282,7 @@ public:
      * Reimplement this virtual method if you want to control which clients can set the clipboard.\n
      * The default implementation allows clients to set the clipboard only if one of their surfaces has pointer or keyboard focus.\n
      *
-     * Returning true grants the client permission to set the clipboard and false prohibits it.\n
+     * Returning `true` grants the client permission to set the clipboard and `false` prohibits it.\n
      *
      * @param device Data device that makes the request.
      *
@@ -322,7 +329,7 @@ public:
     /**
      * @brief New available output.
      *
-     * The outputPlugged() method is invoked by the graphic backend when a new output is available, for example when connecting an external monitor through an HDMI port.\n
+     * This event is invoked by the graphic backend when a new output is available, for example when connecting an external monitor through an HDMI port.\n
      * You can reimplement this method to be notified when a new output is available.\n
      * The default implementation initializes the new output and positions it at the end (right) of the already initialized outputs.
      *
@@ -334,7 +341,7 @@ public:
     /**
      * @brief Disconnected output.
      *
-     * The outputUnplugged() method is invoked by the graphic backend when an output is no longer available, for example when an
+     * This event is invoked by the graphic backend when an output is no longer available, for example when an
      * external monitor connected to an HDMI port is disconnected.\n
      * You can override this method to be notified when an output is no longer available.\n
      *

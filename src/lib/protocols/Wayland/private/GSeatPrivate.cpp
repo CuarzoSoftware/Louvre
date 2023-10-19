@@ -38,7 +38,7 @@ void GSeat::GSeatPrivate::get_pointer(wl_client *client, wl_resource *resource, 
 
     GSeat *gSeat = (GSeat*)wl_resource_get_user_data(resource);
 
-    if (!(seat()->capabilities() & LSeat::Pointer))
+    if (!(seat()->inputCapabilities() & LSeat::Pointer))
     {
         wl_resource_post_error(resource,WL_SEAT_ERROR_MISSING_CAPABILITY,"get_pointer called on seat without the matching capability.");
         return;
@@ -53,7 +53,7 @@ void GSeat::GSeatPrivate::get_keyboard(wl_client *client, wl_resource *resource,
 
     GSeat *gSeat = (GSeat*)wl_resource_get_user_data(resource);
 
-    if (!(seat()->capabilities() & LSeat::Keyboard))
+    if (!(seat()->inputCapabilities() & LSeat::Keyboard))
     {
         wl_resource_post_error(resource, WL_SEAT_ERROR_MISSING_CAPABILITY, "get_keyboard called on seat without the matching capability.");
         return;
@@ -67,7 +67,7 @@ void GSeat::GSeatPrivate::get_touch(wl_client *client, wl_resource *resource, UI
     L_UNUSED(client);
     L_UNUSED(id);
 
-    if (!(seat()->capabilities() & LSeat::Touch))
+    if (!(seat()->inputCapabilities() & LSeat::Touch))
     {
         wl_resource_post_error(resource, WL_SEAT_ERROR_MISSING_CAPABILITY, "get_touch called on seat without the matching capability.");
         return;

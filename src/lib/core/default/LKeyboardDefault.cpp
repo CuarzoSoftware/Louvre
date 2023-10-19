@@ -24,6 +24,7 @@ void LKeyboard::keyEvent(UInt32 keyCode, KeyState keyState)
     bool L_CTRL = isKeyCodePressed(KEY_LEFTCTRL);
     bool L_SHIFT = isKeyCodePressed(KEY_LEFTSHIFT);
     bool mods = isKeyCodePressed(KEY_LEFTALT) && L_CTRL;
+    xkb_keysym_t sym = keySymbol(keyCode);
 
     if (keyState == Released)
     {
@@ -35,16 +36,16 @@ void LKeyboard::keyEvent(UInt32 keyCode, KeyState keyState)
         }
 
         // Terminates client connection
-        else if (L_CTRL && keySymbol(keyCode) == XKB_KEY_q)
+        else if (L_CTRL && (sym == XKB_KEY_q || sym == XKB_KEY_Q))
         {
             if (focusSurface())
                 focusSurface()->client()->destroy();
         }
 
         // Minimizes currently focused surface
-        else if (L_CTRL && keySymbol(keyCode) == XKB_KEY_m)
+        else if (L_CTRL && (sym == XKB_KEY_m || sym == XKB_KEY_M))
         {
-            if (focusSurface())
+            if (focusSurface() && focusSurface()->toplevel() && !focusSurface()->toplevel()->fullscreen())
                 focusSurface()->setMinimized(true);
         }
 
@@ -91,11 +92,11 @@ void LKeyboard::keyEvent(UInt32 keyCode, KeyState keyState)
     // Key press
     else
     {
-        // CTRL sets Copy as the preferred action in drag & drop sesión
+        // CTRL sets Copy as the preferred action in drag & drop session
         if (L_CTRL)
             seat()->dndManager()->setPreferredAction(LDNDManager::Copy);
 
-        // SHIFT sets the Move as the preferred action in drag & drop sesión
+        // SHIFT sets the Move as the preferred action in drag & drop session
         else if (L_SHIFT)
             seat()->dndManager()->setPreferredAction(LDNDManager::Move);
     }

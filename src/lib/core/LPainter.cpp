@@ -241,15 +241,17 @@ void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src,
     glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
     shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
     shaderSetSrcRect(src.x(), src.y(), src.w(), src.h());
+    shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
     glBlendFunc(GL_ONE, GL_ZERO);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void LPainter::LPainterPrivate::scaleTexture(LTexture *texture, const LRect &src, const LSize &dst)
 {
     GLenum target = texture->target();
     switchTarget(target);
-    glDisable(GL_BLEND);
+    glEnable(GL_BLEND);
     glScissor(0, 0, dst.w(), dst.h());
     glViewport(0, 0, dst.w(), dst.h());
     glActiveTexture(GL_TEXTURE0);
@@ -258,12 +260,40 @@ void LPainter::LPainterPrivate::scaleTexture(LTexture *texture, const LRect &src
     shaderSetActiveTexture(0);
     shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
     shaderSetSrcRect(src.x(), src.y() + src.h(), src.w(), -src.h());
+    shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
     glBindTexture(target, texture->id(output));
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glBlendFunc(GL_ONE, GL_ZERO);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void LPainter::LPainterPrivate::scaleTexture(GLuint textureId, GLenum textureTarget, GLuint framebufferId, GLint minFilter, const LSize &texSize, const LRect &src, const LSize &dst)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
+    switchTarget(textureTarget);
+    glEnable(GL_BLEND);
+    glScissor(0, 0, dst.w(), dst.h());
+    glViewport(0, 0, dst.w(), dst.h());
+    glActiveTexture(GL_TEXTURE0);
+    shaderSetAlpha(1.f);
+    shaderSetMode(0);
+    shaderSetActiveTexture(0);
+    shaderSetTexSize(texSize.w(), texSize.h());
+    shaderSetSrcRect(src.x(), src.y() + src.h(), src.w(), -src.h());
+    shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
+    glBindTexture(textureTarget, textureId);
+    glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, minFilter);
+    glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, minFilter);
+    glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glBlendFunc(GL_ONE, GL_ZERO);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void LPainter::drawTexture(const LTexture *texture,

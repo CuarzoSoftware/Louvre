@@ -115,17 +115,6 @@ LView *LScene::handlePointerPosChangeEvent(Float32 x, Float32 y, LPoint *outLoca
     // Repaint cursor outputs if hardware composition is not supported
     cursor()->repaintOutputs(true);
 
-    if (seat()->pointer()->lastCursorRequest())
-    {
-        for (LOutput *output : compositor()->outputs())
-        {
-            if (output == cursor()->output())
-                seat()->pointer()->lastCursorRequest()->surface()->sendOutputEnterEvent(output);
-            else
-                seat()->pointer()->lastCursorRequest()->surface()->sendOutputLeaveEvent(output);
-        }
-    }
-
     // Update the drag & drop icon (if there was one)
     if (seat()->dndManager()->icon())
     {
@@ -133,14 +122,14 @@ LView *LScene::handlePointerPosChangeEvent(Float32 x, Float32 y, LPoint *outLoca
         seat()->dndManager()->icon()->surface()->repaintOutputs();
     }
 
-    // Update the Toplevel size (if there was one being resized)
+    // Update the toplevel size (if there was one being resized)
     if (seat()->pointer()->resizingToplevel())
     {
         seat()->pointer()->updateResizingToplevelSize(cursor()->pos());
         return view;
     }
 
-    // Update the Toplevel pos (if there was one being moved interactively)
+    // Update the toplevel pos (if there was one being moved interactively)
     if (seat()->pointer()->movingToplevel())
     {
         seat()->pointer()->updateMovingToplevelPos(cursor()->pos());
@@ -233,7 +222,6 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
         else
         {
             seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
-            //seat()->keyboard()->setFocus(nullptr);
             seat()->pointer()->dismissPopups();
         }
 
@@ -379,10 +367,7 @@ void LScene::handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState)
         if (keyCode == KEY_F1 && !mods)
         {
             if (fork() == 0)
-            {
-                execl("/usr/bin/weston-terminal", "weston-terminal", NULL);
-                exit(0);
-            }
+                exit(system("weston-terminal"));
         }
 
         // Terminates client connection
@@ -395,7 +380,7 @@ void LScene::handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState)
         // Minimizes currently focused surface
         else if (L_CTRL && seat()->keyboard()->keySymbol(keyCode) == XKB_KEY_m)
         {
-            if (seat()->keyboard()->focusSurface() && seat()->keyboard()->focusSurface()->toplevel())
+            if (seat()->keyboard()->focusSurface() && seat()->keyboard()->focusSurface()->toplevel() && !seat()->keyboard()->focusSurface()->toplevel()->fullscreen())
                 seat()->keyboard()->focusSurface()->toplevel()->setMinimizedRequest();
         }
 

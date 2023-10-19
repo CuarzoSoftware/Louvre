@@ -79,14 +79,14 @@ void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
         seat()->dndManager()->icon()->surface()->repaintOutputs();
     }
 
-    // Update the Toplevel size (if there was one being resized)
+    // Update the toplevel size (if there was one being resized)
     if (resizingToplevel())
     {
         updateResizingToplevelSize(cursor()->pos());
         return;
     }
 
-    // Update the Toplevel pos (if there was one being moved interactively)
+    // Update the toplevel pos (if there was one being moved interactively)
     if (movingToplevel())
     {
         updateMovingToplevelPos(cursor()->pos());

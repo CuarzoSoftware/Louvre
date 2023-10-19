@@ -206,6 +206,17 @@ void LCursor::repaintOutputs(bool nonHardwareOnly)
     for (LOutput *o : intersectedOutputs())
         if (!nonHardwareOnly || !hasHardwareSupport(o))
             o->repaint();
+
+    if (seat()->pointer()->lastCursorRequest())
+    {
+        for (LOutput *output : compositor()->outputs())
+        {
+            if (output == cursor()->output())
+                seat()->pointer()->lastCursorRequest()->surface()->sendOutputEnterEvent(output);
+            else
+                seat()->pointer()->lastCursorRequest()->surface()->sendOutputLeaveEvent(output);
+        }
+    }
 }
 
 bool LCursor::visible() const

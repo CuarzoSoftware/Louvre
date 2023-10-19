@@ -155,8 +155,7 @@ public:
      * of the XdgDecoration protocol.
      *
      * The [zxdg_decoration_manager_v1](https://wayland.app/protocols/xdg-decoration-unstable-v1#zxdg_decoration_manager_v1)
-     * interface allows the client and the compositor negotiate who should draw the decoration of
-     * Toplevel surfaces.
+     * interface allows the client and the compositor negotiate who should draw the decoration of toplevel surfaces.
      */
     const std::list<Protocols::XdgDecoration::GXdgDecorationManager*> &xdgDecorationManagerGlobals() const;
 

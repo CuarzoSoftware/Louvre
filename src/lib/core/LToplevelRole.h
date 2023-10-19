@@ -14,8 +14,8 @@
  *
  * <center><img height="250px" src="https://lh3.googleusercontent.com/PvNaxLgkjaPryJ8W_P3bDOccQu1m-zNEcI7aH_R8WggzylV5LQZtuzLTUSImThDI8IVsAI9DERF4cwvSqPAEAyjsihHuPCQlZAbvu33iMC2iXvpTswZC3RBNDyKm1YEWDnnKeCn2Qw=w2400"></center>
  *
- * The Toplevel role is part of the [XDG Shell](https://wayland.app/protocols/xdg-shell#xdg_toplevel) protocol.
- * The Wayland protocol also provides its own Toplevel role but it is considered obsolete and therefore not included in the library.
+ * The toplevel role is part of the [XDG Shell](https://wayland.app/protocols/xdg-shell#xdg_toplevel) protocol.
+ * The Wayland protocol also provides its own toplevel role but it is considered obsolete and therefore not included in the library.
  */
 class Louvre::LToplevelRole : public LBaseSurfaceRole
 {
@@ -129,9 +129,9 @@ public:
     /**
      * @brief Configures the Toplevel.
      *
-     * Requests to change the states of the Toplevel while keeping its current size.\n
+     * Requests to change the states of the toplevel while keeping its current size.\n
      *
-     * @param stateFlags Union of Toplevel states defined in #States.
+     * @param stateFlags Union of toplevel states defined in #States.
      */
     void configure(States stateFlags);
 
@@ -142,7 +142,7 @@ public:
      * The size refers to its window geometry (ignoring its decoration).
      *
      * @param size Requested size. Passing (0,0) allows the client to decide the size.
-     * @param stateFlags Union of Toplevel states defined in #States.
+     * @param stateFlags Union of toplevel states defined in #States.
      */
     void configure(const LSize &size, States stateFlags);
 
@@ -154,14 +154,14 @@ public:
      *
      * @param width Suggested width. Passing (0,0) allows the client to decide the size.
      * @param height Suggested height. Passing (0,0) allows the client to decide the size.
-     * @param stateFlags Union of Toplevel states defined in #States.
+     * @param stateFlags Union of toplevel states defined in #States.
      */
     void configure(Int32 width, Int32 height, States stateFlags);
 
     /**
      * @brief Closes the Toplevel.
      *
-     * Requests to close the Toplevel (equivalent to pressing the close button on the window).
+     * Requests to close the toplevel (equivalent to pressing the close button on the window).
      */
     void close() const;
 
@@ -170,20 +170,20 @@ public:
      *
      * <center><img height="300px" src="https://lh3.googleusercontent.com/pw/AIL4fc_le5DeTa6b-yBnChX6YPbkr12gAp38ghVyvsv4SjHCd2L4fTL8agYls0AcGlBeplJyc0FNQCIeb6sR4WbSUyAHM4_LrKLNjhZ0SniRdaSUsjS9IGQ=w2400"></center>
      *
-     * The window geometry is a Toplevel rectangle that excludes its decorations (typically shadows).     *
+     * The window geometry is a toplevel rectangle that excludes its decorations (typically shadows).     *
      */
     const LRect &windowGeometry() const;
 
     /**
      * @brief Size during a resizing session
      *
-     * Utility function to calculate the Toplevel size during an interactive resizing session.\n
+     * Utility function to calculate the toplevel size during an interactive resizing session.\n
      *
      * @param cursorPosDelta Initial pointer position minus the current one
-     * @param initialSize Initial Toplevel position
+     * @param initialSize Initial toplevel position
      * @param edge Edge or corner used in the resizing
      *
-     * @returns The Toplevel size given the current parameters
+     * @returns The toplevel size given the current parameters
      */
     LSize calculateResizeSize(const LPoint &cursorPosDelta, const LSize &initialSize, ResizeEdge edge);
 
@@ -296,7 +296,7 @@ public:
     /**
      * @brief Position of the surface according to the role.
      *
-     * The default implementation of rolePos() positions the Toplevel at the position assigned by the compositor
+     * The default implementation of rolePos() positions the toplevel at the position assigned by the compositor
      * with LSurface::setPos() minus the (x, y) coords of its window geometry.
      *
      * Reimplement this virtual method if you wish to define your own logic for positioning the Toplevel.
@@ -329,8 +329,8 @@ public:
     /**
      * @brief Resizing state change
      *
-     * Reimplement this virtual method if you want to be notified when the Toplevel changes its resizing state.\n
-     * You can know if the Toplevel is being resized with resizing().
+     * Reimplement this virtual method if you want to be notified when the toplevel changes its resizing state.\n
+     * You can know if the toplevel is being resized with resizing().
      *
      * #### Default implementation
      * @snippet LToplevelRoleDefault.cpp resizingChanged
@@ -370,8 +370,8 @@ public:
     /**
      * @brief Maximized state change
      *
-     * Reimplement this virtual method if you want to be notified when the Toplevel changes its maximized state.\n
-     * You can know if the Toplevel is maximized with maximized().
+     * Reimplement this virtual method if you want to be notified when the toplevel changes its maximized state.\n
+     * You can know if the toplevel is maximized with maximized().
      *
      * #### Default implementation
      * @snippet LToplevelRoleDefault.cpp maximizedChanged
@@ -391,9 +391,9 @@ public:
     /**
      * @brief Request to set fullscreen mode
      *
-     * Reimplement this virtual method if you want to be notified when the client wants to show the Toplevel in fullscreen mode.
+     * Reimplement this virtual method if you want to be notified when the client wants to show the toplevel in fullscreen mode.
      *
-     * @param destOutput Output on which the Toplevel should be shown. If it is `nullptr` the compositor should choose the output.
+     * @param destOutput Output on which the toplevel should be shown. If it is `nullptr` the compositor should choose the output.
      * #### Default implementation
      * @snippet LToplevelRoleDefault.cpp setFullscreenRequest
      */
@@ -412,8 +412,8 @@ public:
     /**
      * @brief Change in fullscreen mode state
      *
-     * Reimplement this virtual method if you want to be notified when the Toplevel changes its fullscreen mode state.\n
-     * You can know if the Toplevel is in fullscreen mode with fullscreen().
+     * Reimplement this virtual method if you want to be notified when the toplevel changes its fullscreen mode state.\n
+     * You can know if the toplevel is in fullscreen mode with fullscreen().
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp fullscreenChanged
@@ -434,8 +434,8 @@ public:
     /**
      * @brief Change of active state
      *
-     * Reimplement this virtual method if you want to be notified when the Toplevel changes its active state.\n
-     * You can check if the Toplevel is active with activated().
+     * Reimplement this virtual method if you want to be notified when the toplevel changes its active state.\n
+     * You can check if the toplevel is active with activated().
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp activatedChanged
@@ -457,7 +457,7 @@ public:
     /**
      * @brief Change of maximum size
      *
-     * Reimplement this virtual method if you want to be notified when the Toplevel changes its maximum size.\n
+     * Reimplement this virtual method if you want to be notified when the toplevel changes its maximum size.\n
      * You can access the maximum size with maxSize().
      *
      * #### Default Implementation
@@ -468,7 +468,7 @@ public:
     /**
      * @brief Change of minimum size
      *
-     * Reimplement this virtual method if you want to be notified when the Toplevel changes its minimum size.\n
+     * Reimplement this virtual method if you want to be notified when the toplevel changes its minimum size.\n
      * You can access the minimum size with minSize().
      *
      * #### Default Implementation
@@ -479,7 +479,7 @@ public:
     /**
      * @brief Title change
      *
-     * Reimplement this virtual method if you want to be notified when the Toplevel changes its title.
+     * Reimplement this virtual method if you want to be notified when the toplevel changes its title.
      * You can access the Toplevel's title with title().
      *
      * #### Default implementation
@@ -501,7 +501,7 @@ public:
     /**
      * @brief Window geometry change
      *
-     * Reimplement this virtual method if you want to be notified when the Toplevel changes its window geometry.
+     * Reimplement this virtual method if you want to be notified when the toplevel changes its window geometry.
      * You can access the Toplevel's window geometry with windowGeometry().
      *
      * #### Default implementation
@@ -512,7 +512,7 @@ public:
     /**
      * @brief Decoration mode change
      *
-     * Reimplement this virtual method if you want to be notified when the Toplevel changes its decoration mode.
+     * Reimplement this virtual method if you want to be notified when the toplevel changes its decoration mode.
      * You can access the Toplevel's decoration mode with decorationMode().
      *
      * #### Default implementation
@@ -521,7 +521,7 @@ public:
     virtual void decorationModeChanged();
 
     /**
-     * Reimplement this virtual method if you want to be notified when the Toplevel changes its preferred decoration mode.
+     * Reimplement this virtual method if you want to be notified when the toplevel changes its preferred decoration mode.
      * You can access the Toplevel's preferred decoration mode with preferredDecorationMode().
      *
      * #### Default implementation

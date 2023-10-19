@@ -102,7 +102,7 @@ UInt32 LSeat::inputBackendId() const
     return compositor()->imp()->inputBackend->id();
 }
 
-LSeat::InputCapabilitiesFlags LSeat::capabilities() const
+LSeat::InputCapabilitiesFlags LSeat::inputCapabilities() const
 {
     return imp()->capabilities;
 }

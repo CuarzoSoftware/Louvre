@@ -27,7 +27,7 @@ GSeat::GSeat
     m_imp = new GSeatPrivate();
     this->client()->imp()->seatGlobals.push_back(this);
     imp()->clientLink = std::prev(this->client()->imp()->seatGlobals.end());
-    capabilities(seat()->capabilities());
+    capabilities(seat()->inputCapabilities());
     name(seat()->name());
 }
 

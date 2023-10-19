@@ -23,7 +23,7 @@ The louvre-views example replicates the appearance of macOS X. It showcases the 
 * `F1` : Launches weston-terminal.
 * `Ctrl + Alt + [F1,...,F10]` : Switches to another TTY.
 * `Ctrl + Alt + [Left/Right arrow keys]` : Navigates to the left or right workspace. If supported, you can use three or more fingers on your touchpad.
-* `Alt + [mouse over maximize button]` : While hovering the cursor over a server-side decorated Toplevel window, press `Alt` to maximize the window instead of setting it to fullscreen mode.
+* `Alt + [mouse over maximize button]` : While hovering the cursor over a server-side decorated toplevel window, press `Alt` to maximize the window instead of setting it to fullscreen mode.
 
 ### Wallpaper
 

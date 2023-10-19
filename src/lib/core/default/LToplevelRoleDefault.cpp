@@ -47,7 +47,7 @@ void LToplevelRole::configureRequest()
     // Request the client to draw its own window decorations
     setDecorationMode(ClientSide);
 
-    // Activates the Toplevel with size (0,0) so that the client can decide the size
+    // Activates the toplevel with size (0,0) so that the client can decide the size
     configure(LSize(0,0), states() | Activated);
 }
 //! [configureRequest]

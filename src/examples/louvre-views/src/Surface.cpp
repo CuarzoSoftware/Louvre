@@ -94,6 +94,9 @@ void Surface::parentChanged()
 
 void Surface::mappingChanged()
 {
+    if (cursorRole())
+        view->setVisible(false);
+
     if (mapped())
     {
         if (firstMap)
