@@ -67,7 +67,7 @@
  * @section Arrangement
  *
  * Outputs, like surfaces, have a position and dimensions that allow them to be logically organized in a similar way to how a system settings panel does.\n
- * You can adjust the position of an output using the setPos() method, which will, in turn, trigger the moveGL() function when the position changes.
+ * You can adjust the position of an output using the setPos() method, which will, in turn, trigger the moveGL() event when the position changes.
  *
  * <center><IMG height="350px" SRC="https://lh3.googleusercontent.com/VOWUX4iiqYMF_bIrBP3xMyaiydv_e_ZKznCIJlRLaEA0CtBLMuU4h41R3D4Xm-7krk8jFGZrQGb_SS7hlIFUY9E5dVbQqs0Q3NIBXvRFrGs_cukqOmbCv1ExN9fG3BDdj4Yz45xIkQ=w2400"></center>
  *
@@ -236,7 +236,7 @@ public:
     /**
      * @brief Retrieve the current output scale factor.
      *
-     * This function returns the current scale factor assigned to the output using setScale(). The default scale factor is 1.
+     * This method returns the current scale factor assigned to the output using setScale(). The default scale factor is 1.
      */
     Int32 scale() const;
 
@@ -318,7 +318,7 @@ public:
     /**
      * @brief Get the output name.
      *
-     * This function retrieves the name of the output provided by the graphic backend, such as "HDMI-A-2."
+     * This method retrieves the name of the output provided by the graphic backend, such as "HDMI-A-2."
      *
      * @note Output names are always unique, even if they belong to different GPUs.
      */
@@ -327,35 +327,35 @@ public:
     /**
      * @brief Get the output model name.
      *
-     * This function retrieves the model name of the output provided by the graphic backend.
+     * This method retrieves the model name of the output provided by the graphic backend.
      */
     const char *model() const;
 
     /**
      * @brief Get the manufacturer name of the output.
      *
-     * This function retrieves the manufacturer name of the output provided by the graphic backend.
+     * This method retrieves the manufacturer name of the output provided by the graphic backend.
      */
     const char *manufacturer() const;
 
     /**
      * @brief Get the description of the output.
      *
-     * This function retrieves the description of the output provided by the graphic backend.
+     * This method retrieves the description of the output provided by the graphic backend.
      */
     const char *description() const;
 
     /**
      * @brief Get access to the associated LPainter.
      *
-     * This function provides access to the LPainter associated with this output.
+     * This method provides access to the LPainter associated with this output.
      */
     LPainter *painter() const;
 
     /**
      * @brief Get the ID of the rendering thread.
      *
-     * This function retrieves the ID of the output rendering thread.
+     * This method retrieves the ID of the output rendering thread.
      */
     const std::thread::id &threadId() const;
 

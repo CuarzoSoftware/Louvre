@@ -52,7 +52,7 @@ public:
     /**
      * @brief Get Positioning Rules for the Popup.
      *
-     * This function returns the positioning rules for the Popup.
+     * This method returns the positioning rules for the Popup.
      *
      * @return The rules governing the Popup's positioning.
      */
@@ -61,7 +61,7 @@ public:
     /**
      * @brief Set Positioning Constraints for the Popup.
      *
-     * This function is used to define the area within which the Popup can be positioned.
+     * This method is used to define the area within which the Popup can be positioned.
      *
      * @param bounds The constraint rect (x, y, width, height). Providing a rect with zero area deactivates the constraint.
      */
@@ -92,7 +92,7 @@ public:
     /**
      * @brief Configure the Popup.
      *
-     * This function instructs the client to set the size and position of the Popup.\n
+     * This method instructs the client to set the size and position of the Popup.\n
      * The position is relative to its parent's position, and the size refers to the window geometry of the Popup, excluding its decoration.
      *
      * @param rect The suggested position and size for the configuration.

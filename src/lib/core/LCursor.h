@@ -131,6 +131,18 @@ public:
     void setPos(const LPointF &pos);
 
     /**
+     * @brief Set the cursor position.
+     *
+     * Sets the cursor position in surface coordinates.
+     *
+     * @param x The desired x cursor position.
+     * @param y The desired y cursor position.
+     *
+     * @note Louvre automatically repositions the cursor if the specified position is not within any output.
+     */
+    void setPos(Float32 x, Float32 y);
+
+    /**
      * @brief Get the current cursor position.
      *
      * Returns the current cursor position.

@@ -17,12 +17,18 @@ LTimer::~LTimer()
 
 void LTimer::oneShot(UInt32 intervalMs, const Callback &onTimeout)
 {
+    if (!onTimeout)
+        return;
+
     LTimer *tmpTimer = new LTimer(onTimeout);
     tmpTimer->start(intervalMs, true);
 }
 
 void LTimer::setCallback(const Callback &onTimeout)
 {
+    if (running())
+        return;
+
     imp()->onTimeoutCallback = onTimeout;
 }
 
@@ -50,10 +56,13 @@ void LTimer::cancel()
     }
 }
 
-void LTimer::start(UInt32 intervalMs, bool destroyOnTimout)
+bool LTimer::start(UInt32 intervalMs, bool destroyOnTimout)
 {
     if (running())
-        return;
+        return false;
+
+    if (!imp()->onTimeoutCallback)
+        return false;
 
     imp()->interval = intervalMs;
     imp()->running = true;
@@ -62,7 +71,7 @@ void LTimer::start(UInt32 intervalMs, bool destroyOnTimout)
     if (intervalMs > 0)
         wl_event_source_timer_update(imp()->waylandEventSource, intervalMs);
     else
-    {
         imp()->waylandTimeoutCallback(this);
-    }
+
+    return true;
 }

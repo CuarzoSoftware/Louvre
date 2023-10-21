@@ -9,7 +9,7 @@ class Seat : public LSeat
 {
 public:
     Seat(Params *params);
-    void seatEnabled() override;
+    void enabledChanged() override;
 };
 
 #endif // SEAT_H

@@ -96,7 +96,7 @@ static Int32 processInput(int, unsigned int, void *userData)
             x = libinput_event_pointer_get_dx(pointerEvent);
             y = libinput_event_pointer_get_dy(pointerEvent);
 
-            seat->pointer()->pointerMoveEvent(x, y);
+            seat->pointer()->pointerMoveEvent(x, y, false);
         }
         else if (eventType == LIBINPUT_EVENT_POINTER_BUTTON)
         {

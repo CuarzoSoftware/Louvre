@@ -153,24 +153,13 @@ public:
      *
      * This method should be integrated into LPointer::pointerMoveEvent() to effectively manage pointer movement events.
      *
-     * @param dx The change in x-coordinate of the pointer.
-     * @param dy The change in y-coordinate of the pointer.
+     * @param x The x-component of the new pointer position or delta from its previous position.
+     * @param y The y-component of the new pointer position or delta from its previous position.
+     * @param absolute If `true`, the (x, y) values represent absolute coordinates; if `false`, they are deltas from the previous position.
      * @param localPos Local pos of the first view found under the cursor.
      * @return The first LView found under the cursor.
      */
-    LView *handlePointerMoveEvent(Float32 dx, Float32 dy, LPoint *localPos = nullptr);
-
-    /**
-     * @brief Handle pointer position change event.
-     *
-     * This method should be integrated into LPointer::pointerMoveEvent() to properly handle pointer position changes.
-     *
-     * @param x The new x-coordinate of the pointer.
-     * @param y The new y-coordinate of the pointer.
-     * @param localPos Local pos of the first view found under the cursor.
-     * @return The first LView found under the cursor.
-     */
-    LView *handlePointerPosChangeEvent(Float32 x, Float32 y, LPoint *localPos = nullptr);
+    LView *handlePointerMoveEvent(Float32 x, Float32 y, bool absolute, LPoint *localPos = nullptr);
 
     /**
      * @brief Handle pointer button event.
@@ -275,7 +264,7 @@ public:
     /**
      * @brief Retrieve the main view of the scene.
      *
-     * This function returns the main LSceneView associated with the LScene.
+     * This method returns the main LSceneView associated with the LScene.
      *
      * @return A pointer to the main LSceneView of the scene.
      */
@@ -284,7 +273,7 @@ public:
     /**
      * @brief Retrieve the view located at the specified position.
      *
-     * This function returns the LView instance that occupies the given position within the scene.
+     * This method returns the LView instance that occupies the given position within the scene.
      *
      * @param pos The position to query.
      * @return A pointer to the LView at the specified position, or nullptr if no view is found.

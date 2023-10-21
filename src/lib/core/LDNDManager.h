@@ -111,7 +111,7 @@ public:
     /**
      * @brief Get the destination client for the current data offer.
      *
-     * This function returns the client to whom the current data offer is being made.
+     * This method returns the client to whom the current data offer is being made.
      *
      * @returns A pointer to the destination client, or `nullptr` if there is no current destination client.
      */

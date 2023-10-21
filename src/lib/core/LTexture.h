@@ -108,7 +108,7 @@ public:
      * @brief Update a specific area of the texture with the provided buffer.
      *
      * To successfully update the texture, the provided buffer must have the same format as the texture.
-     * If invalid parameters are passed or if the texture cannot be modified, this function returns `false`.
+     * If invalid parameters are passed or if the texture cannot be modified, this method returns `false`.
      *
      * @param rect The rect within the texture to update, specified in buffer coordinates with the top-left corner as the origin.
      * @param stride The stride of the main memory buffer.
@@ -136,7 +136,7 @@ public:
     /**
      * @brief Save the texture as a PNG file.
      *
-     * This function allows you to save the texture as a PNG image file at the specified @p path.
+     * This method allows you to save the texture as a PNG image file at the specified @p path.
      *
      * @param path The file path where the PNG image will be saved.
      * @return `true` if the save operation is successful, `false` otherwise.

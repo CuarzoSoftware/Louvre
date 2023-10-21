@@ -10,13 +10,13 @@
 #include "Surface.h"
 #include "Toplevel.h"
 
-Seat::Seat(Params *params) : LSeat(params)
-{
-}
+Seat::Seat(Params *params) : LSeat(params) {}
 
-// This is called when the TTY session is restored
-void Seat::seatEnabled()
+void Seat::enabledChanged()
 {
+    if (!enabled())
+        return;
+
     // Damage all as a there may be missing pageflips
     for (Output *output : G::outputs())
     {
@@ -29,6 +29,7 @@ void Seat::seatEnabled()
     {
         cursor()->setVisible(false);
         cursor()->setVisible(true);
+        cursor()->move(1, 1);
     }
 }
 

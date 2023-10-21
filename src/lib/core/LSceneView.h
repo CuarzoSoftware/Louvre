@@ -89,7 +89,7 @@ public:
     /**
      * @brief Render the scene.
      *
-     * This function initiates rendering for the view, excluding specified regions if provided.
+     * This method initiates rendering for the view, excluding specified regions if provided.
      *
      * @note The rendered content can be accessed as a texture using the texture() method.
      *
@@ -100,7 +100,7 @@ public:
     /**
      * @brief Retrieve the texture associated with the view.
      *
-     * This function returns the texture linked to the view at a specified index.\n
+     * This method returns the texture linked to the view at a specified index.\n
      * LSceneViews always have a single texture, with the exception of the main view of an LScene. The main view may possess
      * multiple textures, depending on the current LOutput thread and hardware configuration.
      *

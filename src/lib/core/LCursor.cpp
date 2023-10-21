@@ -161,6 +161,11 @@ void Louvre::LCursor::setPos(const LPointF &pos)
     imp()->update();
 }
 
+void LCursor::setPos(Float32 x, Float32 y)
+{
+    setPos(LPointF(x, y));
+}
+
 void LCursor::setHotspotB(const LPointF &hotspot)
 {
     if (imp()->hotspotB != hotspot)

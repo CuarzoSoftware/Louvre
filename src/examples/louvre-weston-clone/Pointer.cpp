@@ -10,31 +10,14 @@
 #include <math.h>
 #include <unistd.h>
 
-Pointer::Pointer(Params *params) : LPointer(params)
+Pointer::Pointer(Params *params) : LPointer(params) {}
+
+void Pointer::pointerMoveEvent(Float32 x, Float32 y, bool absolute)
 {
-    timespec ts = LTime::ns();
-    lastEventMs = float(ts.tv_nsec)/100000.f + float(ts.tv_sec)*10000.f;
-}
-
-void Pointer::pointerMoveEvent(float dx, float dy)
-{
-    timespec ts = LTime::ns();
-    float ct = float(ts.tv_nsec)/100000.f + float(ts.tv_sec)*10000.f;
-    float dt =  ct - lastEventMs;
-    lastEventMs = ct;
-    float speed = 1.4f;
-
-    if (dt >= 1.f)
-        speed += 0.5f*sqrt(dx*dx + dy*dy)/dt;
-
-    pointerPosChangeEvent(
-        cursor()->pos().x() + dx * speed,
-        cursor()->pos().y() + dy * speed);
-}
-
-void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
-{
-    cursor()->setPos(LPointF(x, y));
+    if (absolute)
+        cursor()->setPos(x, y);
+    else
+        cursor()->move(x, y);
 
     Output *cursorOutput = (Output*)cursor()->output();
     Compositor *c = (Compositor*)compositor();

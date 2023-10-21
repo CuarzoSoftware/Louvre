@@ -399,6 +399,8 @@ void LCompositor::removeOutput(LOutput *output)
             if (cursor()->imp()->output == output)
                 cursor()->imp()->output = nullptr;
 
+            cursor()->move(1.f, 1.f);
+
             return;
         }
     }

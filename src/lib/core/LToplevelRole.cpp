@@ -172,35 +172,45 @@ void LToplevelRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrig
         return;
     }
 
+    /* First apply all changes */
+
     if (imp()->hasPendingMaxSize)
-    {
-        imp()->hasPendingMaxSize = false;
         imp()->currentMaxSize = imp()->pendingMaxSize;
-        maxSizeChanged();
+
+    if (imp()->hasPendingMinSize)
+        imp()->currentMinSize = imp()->pendingMinSize;
+
+    if (xdgSurfaceResource()->imp()->hasPendingWindowGeometry)
+        xdgSurfaceResource()->imp()->currentWindowGeometry = xdgSurfaceResource()->imp()->pendingWindowGeometry;
+    // If never assigned, use the surface size
+    else if (!xdgSurfaceResource()->imp()->windowGeometrySet &&
+             xdgSurfaceResource()->imp()->currentWindowGeometry.size() != surface()->size())
+    {
+        xdgSurfaceResource()->imp()->hasPendingWindowGeometry = true;
+        xdgSurfaceResource()->imp()->currentWindowGeometry = LRect(0, surface()->size());
     }
+
+    /* Then notify all changes */
+
+    imp()->applyPendingChanges();
 
     if (imp()->hasPendingMinSize)
     {
         imp()->hasPendingMinSize = false;
-        imp()->currentMinSize = imp()->pendingMinSize;
         minSizeChanged();
+    }
+
+    if (imp()->hasPendingMaxSize)
+    {
+        imp()->hasPendingMaxSize = false;
+        maxSizeChanged();
     }
 
     if (xdgSurfaceResource()->imp()->hasPendingWindowGeometry)
     {
         xdgSurfaceResource()->imp()->hasPendingWindowGeometry = false;
-        xdgSurfaceResource()->imp()->currentWindowGeometry = xdgSurfaceResource()->imp()->pendingWindowGeometry;
         geometryChanged();
     }
-    // Si nunca ha asignado la geometría, usa el tamaño de la superficie
-    else if (!xdgSurfaceResource()->imp()->windowGeometrySet &&
-             xdgSurfaceResource()->imp()->currentWindowGeometry.size() != surface()->size())
-    {
-        xdgSurfaceResource()->imp()->currentWindowGeometry = LRect(0, surface()->size());
-        geometryChanged();
-    }
-
-    imp()->applyPendingChanges();
 
     // Request configure
     if (!surface()->mapped() && !surface()->buffer())
@@ -525,20 +535,13 @@ void LToplevelRole::LToplevelRolePrivate::applyPendingChanges()
         currentConf.commited = true;
 
         UInt32 prevState = stateFlags;
-
-        if ((prevState & LToplevelRole::Maximized) != (currentConf.flags & LToplevelRole::Maximized))
-        {
-            stateFlags = (stateFlags & ~LToplevelRole::Maximized) | (currentConf.flags & LToplevelRole::Maximized);
-            toplevel->maximizedChanged();
-        }
-
-        if ((prevState & LToplevelRole::Fullscreen) != (currentConf.flags & LToplevelRole::Fullscreen))
-        {
-            stateFlags = (stateFlags & ~LToplevelRole::Fullscreen) | (currentConf.flags & LToplevelRole::Fullscreen);
-            toplevel->fullscreenChanged();
-        }
-
         stateFlags = currentConf.flags;
+
+        if ((prevState & LToplevelRole::Maximized) != (stateFlags & LToplevelRole::Maximized))
+            toplevel->maximizedChanged();
+
+        if ((prevState & LToplevelRole::Fullscreen) != (stateFlags & LToplevelRole::Fullscreen))
+            toplevel->fullscreenChanged();
 
         if (currentConf.flags & LToplevelRole::Activated)
         {

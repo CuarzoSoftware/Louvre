@@ -39,25 +39,21 @@ void LSeat::nativeInputEvent(void *event)
 }
 //! [nativeInputEvent]
 
-//! [seatEnabled]
-void LSeat::seatEnabled()
+//! [enabledChanged]
+void LSeat::enabledChanged()
 {
-    if (cursor())
+    if (enabled())
     {
-        cursor()->setVisible(false);
-        cursor()->setVisible(true);
+        if (cursor())
+        {
+            cursor()->setVisible(false);
+            cursor()->setVisible(true);
+        }
+
+        compositor()->repaintAllOutputs();
     }
-
-    compositor()->repaintAllOutputs();
 }
-//! [seatEnabled]
-
-//! [seatDisabled]
-void LSeat::seatDisabled()
-{
-    /* No default implementation */
-}
-//! [seatDisabled]
+//! [enabledChanged]
 
 //! [outputPlugged]
 void LSeat::outputPlugged(LOutput *output)

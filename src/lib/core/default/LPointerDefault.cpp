@@ -14,20 +14,12 @@
 using namespace Louvre;
 
 //! [pointerMoveEvent]
-void LPointer::pointerMoveEvent(Float32 dx, Float32 dy)
+void LPointer::pointerMoveEvent(Float32 x, Float32 y, bool absolute)
 {
-    /* For simplification, we manage the event in pointerPosChangeEvent().
-     * Input backends emit either pointerMoveEvent() or pointerPosChangeEvent(),
-     * but not both. */
-    pointerPosChangeEvent(cursor()->pos().x() + dx,
-                          cursor()->pos().y() + dy);
-}
-//! [pointerMoveEvent]
-
-//! [pointerPosChangeEvent]
-void LPointer::pointerPosChangeEvent(Float32 x, Float32 y)
-{
-    cursor()->setPos(LPointF(x, y));
+    if (absolute)
+        cursor()->setPos(x, y);
+    else
+        cursor()->move(x, y);
 
     // Repaint outputs that intersect with the cursor if hardware composition is not supported.
     cursor()->repaintOutputs(true);
@@ -86,7 +78,7 @@ void LPointer::pointerPosChangeEvent(Float32 x, Float32 y)
             setFocus(surface);
     }
 }
-//! [pointerPosChangeEvent]
+//! [pointerMoveEvent]
 
 //! [pointerButtonEvent]
 void LPointer::pointerButtonEvent(Button button, ButtonState state)

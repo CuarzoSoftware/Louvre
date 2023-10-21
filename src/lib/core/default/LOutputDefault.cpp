@@ -25,9 +25,10 @@ void LOutput::paintGL()
 
     // Check if a surface moved under cursor (simulating a pointer move event)
     if (seat()->pointer()->surfaceAt(cursor()->pos()) != seat()->pointer()->focusSurface())
-        seat()->pointer()->pointerPosChangeEvent(
+        seat()->pointer()->pointerMoveEvent(
             cursor()->pos().x(),
-            cursor()->pos().y());
+            cursor()->pos().y(),
+            true);
 
     if (seat()->dndManager()->icon())
         seat()->dndManager()->icon()->surface()->raise();

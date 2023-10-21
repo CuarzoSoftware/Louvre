@@ -75,7 +75,7 @@ public:
     /**
      * @brief List of available outputs.
      *
-     * This function provides a list of currently available outputs. The list includes connected outputs that can be initialized
+     * This method provides a list of currently available outputs. The list includes connected outputs that can be initialized
      * as well as those that are already initialized.
      * To obtain a list of only initialized outputs, refer to LCompositor::outputs().
      *
@@ -97,7 +97,7 @@ public:
     /**
      * @brief Get the ID of the current graphic backend.
      *
-     * Each graphic backend is assigned a unique Louvre::UInt32 ID. You can use this function to retrieve the
+     * Each graphic backend is assigned a unique Louvre::UInt32 ID. You can use this method to retrieve the
      * ID of the current graphic backend in use.
      *
      * The IDs of graphic backends shipped with Louvre are listed in the Louvre::LGraphicBackendID enum.
@@ -120,7 +120,7 @@ public:
     /**
      * @brief Get the ID of the current input backend.
      *
-     * Each input backend is assigned a unique Louvre::UInt32 ID. You can use this function to retrieve the
+     * Each input backend is assigned a unique Louvre::UInt32 ID. You can use this method to retrieve the
      * ID of the current input backend in use.
      *
      * The IDs of input backends shipped with Louvre are listed in the Louvre::LInputBackendID enum.
@@ -218,7 +218,7 @@ public:
      * @brief Open a device.
      *
      * Opens a device on the seat, returning its ID and storing its file descriptor in **fd**.\n
-     * The DRM graphic backend and the Libinput input backend use this function to open GPUs and input devices respectively.
+     * The DRM graphic backend and the Libinput input backend use this method to open GPUs and input devices respectively.
      *
      * @param path Location of the device (E.g. "/dev/dri/card0")
      * @param fd Stores the file descriptor.
@@ -255,7 +255,7 @@ public:
     /**
      * @brief Retrieve the topmost popup role.
      *
-     * This function returns a pointer to the topmost popup.
+     * This method returns a pointer to the topmost popup.
      *
      * @return A pointer to the topmost LPopupRole or `nullptr` if there is no popup.
      */
@@ -305,26 +305,18 @@ public:
     virtual void nativeInputEvent(void *event);
 
     /**
-     * @brief Enabled seat
+     * @brief Notify a change in the enabled() property
      *
-     * Reimplement this virtual method if you want to be notified when the seat is enabled.\n
-     * The seat is enabled when the session (TTY) in which the compositor is running is resumed.
+     * Reimplement this virtual method if you want to be notified when the seat is enabled or disabled.\n
+     * The seat is enabled when the user is in the session (TTY) in which the compositor is running,
+     * and disabled when switching to a different session.
+     *
+     * @see setTTY()
      *
      * #### Default implementation
-     * @snippet LSeatDefault.cpp seatEnabled
+     * @snippet LSeatDefault.cpp enabledChanged
      */
-    virtual void seatEnabled();
-
-    /**
-     * @brief Disabled seat
-     *
-     * Reimplement this virtual method if you want to be notified when the seat is disabled.\n
-     * The seat is disabled when switching to a different session (TTY) with setTTY().
-     *
-     * #### Default Implementation
-     * @snippet LSeatDefault.cpp seatEnabled
-     */
-    virtual void seatDisabled();
+    virtual void enabledChanged();
 
     /**
      * @brief New available output.

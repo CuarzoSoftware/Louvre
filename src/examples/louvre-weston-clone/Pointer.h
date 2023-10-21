@@ -9,9 +9,7 @@ class Pointer : public LPointer
 {
 public:
     Pointer(Params *params);
-    float lastEventMs;
-    void pointerMoveEvent(float dx, float dy) override;
-    void pointerPosChangeEvent(Float32 x, Float32 y) override;
+    void pointerMoveEvent(Float32 x, Float32 y, bool absolute) override;
     void pointerButtonEvent(Button button, ButtonState state) override;
 };
 

@@ -29,7 +29,7 @@
  * - LPopupRole (derived from the XDG Shell protocol)
  * - LToplevelRole (derived from the XDG Shell protocol)
  *
- * The surface's role can be accessed using the role() function or, if you already know the role in advance or wish to verify whether it matches one of them,
+ * The surface's role can be accessed using the role() method or, if you already know the role in advance or wish to verify whether it matches one of them,
  * through the dedicated functions: cursorRole(), dndIcon(), popup(), toplevel(), and subsurface().\n
  * Typically, once a role is assigned, it remains consistent throughout the surface's entire lifecycle.\n
  * You have the option to monitor changes in the surface's role by utilizing the roleChanged() event.\n
@@ -271,11 +271,11 @@ public:
     /**
      * @brief Notify the client when the surface enters an output
      *
-     * This function notifies the surface's client that the surface has become visible within the display area of a specific output.
+     * This method notifies the surface's client that the surface has become visible within the display area of a specific output.
      * The client application can use this information to synchronize the surface's scale with that of the output.
      * You can access the list of outputs where the surface is visible using the outputs() method.
      *
-     * @note This function can be safely called multiple times with the same output as an argument because it internally checks whether the client has already been notified.
+     * @note This method can be safely called multiple times with the same output as an argument because it internally checks whether the client has already been notified.
      *
      * @param output The output into which the surface has entered.
      */
@@ -284,10 +284,10 @@ public:
     /**
      * @brief Notify the client when the surface leaves an output
      *
-     * This function informs the surface's client application that the surface is no longer visible on a particular output.
+     * This method informs the surface's client application that the surface is no longer visible on a particular output.
      * You can access the list of outputs where the surface is still visible using the outputs() method.
      *
-     * @note This function can be safely called multiple times with the same output as an argument because it internally checks whether the client has already been notified.
+     * @note This method can be safely called multiple times with the same output as an argument because it internally checks whether the client has already been notified.
      *
      * @param output The output from which the surface is no longer visible.
      */
@@ -336,6 +336,20 @@ public:
      * Scale of the surface buffer. You can listen for changes to this property with the bufferScaleChanged() event.
      */
     Int32 bufferScale() const;
+
+    /**
+     * @brief Check if the surface has pointer focus
+     *
+     * @return `true` if the surface has pointer focus, `false` otherwise.
+     */
+    bool hasPointerFocus() const;
+
+    /**
+     * @brief Check if the surface has keyboard focus
+     *
+     * @return `true` if the surface has keyboard focus, `false` otherwise.
+     */
+    bool hasKeyboardFocus() const;
 
     /**
      * @brief OpenGL texture
@@ -425,7 +439,7 @@ public:
     /**
      * @brief Check if the surface is a subchild of a popup.
      *
-     * This function determines whether the surface is a subchild of a popup surface.
+     * This method determines whether the surface is a subchild of a popup surface.
      * It returns `true` if the surface is a subchild of a popup surface in the hierarchy; otherwise, it returns `false`.
      *
      * @return `true` if the surface is a subchild of a popup surface, `false` otherwise.
@@ -435,7 +449,7 @@ public:
     /**
      * @brief Check if the surface has a subchild popup.
      *
-     * This function checks whether the surface has a subchild popup surface.
+     * This method checks whether the surface has a subchild popup surface.
      * It returns `true` if the surface has a popup subchild; otherwise, it returns `false`.
      *
      * @return `true` if the surface has a subchild popup, `false` otherwise.
@@ -445,7 +459,7 @@ public:
     /**
      * @brief Check if the surface is a subchild of the specified parent surface.
      *
-     * This function checks whether the surface is a subchild of the provided parent surface.
+     * This method checks whether the surface is a subchild of the provided parent surface.
      *
      * @param parent A pointer to the potential parent LSurface to check against.
      * @return `true` if the surface is a subchild of the provided parent surface, `false` otherwise.
@@ -455,7 +469,7 @@ public:
     /**
      * @brief Moves a surface to the top of the compositor's surfaces list
      *
-     * This function repositions the specified surface at the end of the surfaces list managed by the compositor.
+     * This method repositions the specified surface at the end of the surfaces list managed by the compositor.
      * As a result, the surface should be rendered last in a frame, effectively placing it in front of all other surfaces.
      * If the surface being raised is a parent of other surfaces, those child surfaces will also be raised,
      * ensuring that the existing hierarchical order required by certain protocols is maintained.
@@ -465,8 +479,8 @@ public:
     /**
      * @brief Retrieve the previous surface in the compositor surfaces list (LCompositor::surfaces()).
      *
-     * This function returns a pointer to the surface that precedes the current surface in the compositor's surfaces list.
-     * If the current surface is the first one in the list, the function returns `nullptr`.
+     * This method returns a pointer to the surface that precedes the current surface in the compositor's surfaces list.
+     * If the current surface is the first one in the list, the method returns `nullptr`.
      *
      * @return A pointer to the previous LSurface or `nullptr` if the current surface is the first in the list.
      */
@@ -475,8 +489,8 @@ public:
     /**
      * @brief Retrieve the next surface in the compositor surfaces list (LCompositor::surfaces()).
      *
-     * This function returns a pointer to the surface that follows the current surface in the compositor's surfaces list.
-     * If the current surface is the last one in the list, the function returns `nullptr`.
+     * This method returns a pointer to the surface that follows the current surface in the compositor's surfaces list.
+     * If the current surface is the last one in the list, the method returns `nullptr`.
      *
      * @return A pointer to the next LSurface or `nullptr` if the current surface is the last in the list.
      */

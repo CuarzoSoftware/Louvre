@@ -177,7 +177,7 @@ public:
     /**
      * @brief Size during a resizing session
      *
-     * Utility function to calculate the toplevel size during an interactive resizing session.\n
+     * Utility method to calculate the toplevel size during an interactive resizing session.\n
      *
      * @param cursorPosDelta Initial pointer position minus the current one
      * @param initialSize Initial toplevel position
@@ -187,6 +187,13 @@ public:
      */
     LSize calculateResizeSize(const LPoint &cursorPosDelta, const LSize &initialSize, ResizeEdge edge);
 
+    /**
+     * @brief Update the position of the toplevel during an interactive resizing session.
+     *
+     * This method should be called each time the toplevel size changes during a resizing session.
+     *
+     * @see See an example of its use in the default implementation of LToplevelRole::geometryChanged().
+     */
     void updateResizingPos();
 
     /**

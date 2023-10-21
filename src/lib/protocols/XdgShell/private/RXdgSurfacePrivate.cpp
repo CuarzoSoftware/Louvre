@@ -149,6 +149,7 @@ void RXdgSurface::RXdgSurfacePrivate::ack_configure(wl_client *client, wl_resour
                 toplevel->imp()->currentConf = toplevel->imp()->sentConfs.front();
                 toplevel->imp()->sentConfs.pop_front();
 
+                // Some clients don't invoke wl_surface_commit when their toplevel states change, so we apply it here if the geometry size hasn't changed
                 if (toplevel->surface() && toplevel->surface()->mapped() && toplevel->imp()->currentConf.size == toplevel->windowGeometry().size())
                     toplevel->imp()->applyPendingChanges();
 

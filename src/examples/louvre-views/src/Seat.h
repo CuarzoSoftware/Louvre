@@ -10,9 +10,8 @@ class Seat : public LSeat
 public:
     Seat(LSeat::Params *params);
 
-    void seatEnabled() override;
+    void enabledChanged() override;
     void nativeInputEvent(void *event) override;
-
     void outputUnplugged(LOutput *output) override;
 
     // Last swipe dx

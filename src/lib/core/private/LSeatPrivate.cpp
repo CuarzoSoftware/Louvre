@@ -29,7 +29,7 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
 
     LLog::debug("[%s] enabled.", libseat_seat_name(seat));
 
-    lseat->seatEnabled();
+    lseat->enabledChanged();
 }
 
 void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
@@ -61,7 +61,7 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
 
     LLog::debug("[%s] disabled.", libseat_seat_name(seat));
 
-    lseat->seatDisabled();
+    lseat->enabledChanged();
 }
 
 void LSeat::LSeatPrivate::dispatchSeat()

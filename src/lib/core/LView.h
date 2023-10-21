@@ -494,7 +494,7 @@ public:
     void enableForceRequestNextFrame(bool enabled) const;
 
     /**
-     * @brief Sets the alpha blending function for the view.
+     * @brief Set the alpha blending function for the view.
      *
      * This method sets the OpenGL blend function for the view. Refer to the documentation
      * of glBlendFunc() for more information.

@@ -1,13 +1,16 @@
-#include "Seat.h"
-#include "Output.h"
-#include "Compositor.h"
 #include <LLog.h>
 #include <LCursor.h>
+#include <LCompositor.h>
+#include "Seat.h"
+#include "Output.h"
 
 Seat::Seat(Params *params) : LSeat(params){}
 
-void Seat::seatEnabled()
+void Seat::enabledChanged()
 {
+    if (!enabled())
+        return;
+
     for (Output *o : (std::list<Output*>&)compositor()->outputs())
     {
         o->fullDamage();

@@ -15,15 +15,9 @@
 
 Pointer::Pointer(Params *params) : LPointer(params) {}
 
-void Pointer::pointerMoveEvent(Float32 dx, Float32 dy)
+void Pointer::pointerMoveEvent(Float32 x, Float32 y, bool absolute)
 {
-    pointerPosChangeEvent(cursor()->pos().x() + dx,
-                          cursor()->pos().y() + dy);
-}
-
-void Pointer::pointerPosChangeEvent(Float32 x, Float32 y)
-{
-    LView *view = G::scene()->handlePointerPosChangeEvent(x, y);
+    LView *view = G::scene()->handlePointerMoveEvent(x, y, absolute);
 
     if (movingToplevel() || resizingToplevel())
         cursor()->output()->repaint();

@@ -70,12 +70,7 @@ void LScene::handleUninitializeGL(LOutput *output)
     imp()->mutex.unlock();
 }
 
-LView *LScene::handlePointerMoveEvent(Float32 dx, Float32 dy, LPoint *outLocalPos)
-{
-    return handlePointerPosChangeEvent(cursor()->pos().x() + dx, cursor()->pos().y() + dy, outLocalPos);
-}
-
-LView *LScene::handlePointerPosChangeEvent(Float32 x, Float32 y, LPoint *outLocalPos)
+LView *LScene::handlePointerMoveEvent(Float32 x, Float32 y, bool absolute, LPoint *outLocalPos)
 {
     // Prevent recursive calls
     if (imp()->handlingPointerMove)
@@ -85,7 +80,10 @@ LView *LScene::handlePointerPosChangeEvent(Float32 x, Float32 y, LPoint *outLoca
     LView *view = nullptr;
     LPoint localPos;
 
-    cursor()->setPos(LPointF(x, y));
+    if (absolute)
+        cursor()->setPos(x, y);
+    else
+        cursor()->move(x, y);
 
     imp()->pointerMoveSerial++;
     imp()->listChanged = false;

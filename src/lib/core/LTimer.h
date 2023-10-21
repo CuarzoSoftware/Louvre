@@ -21,13 +21,13 @@ public:
     using Callback = std::function<void(LTimer*)>;
 
     /**
-     * @brief Constructs a re-usable LTimer instance with the provided timeout callback.
+     * @brief Construct a re-usable LTimer instance with the provided timeout callback.
      * @param onTimeout The callback function to be executed when the timer expires.
      */
-    LTimer(const Callback &onTimeout);
+    LTimer(const Callback &onTimeout = nullptr);
 
     /**
-     * @brief Creates a one-shot timer that is automatically started and destroyed on timeout or cancellation.
+     * @brief Create a one-shot timer that is automatically started and destroyed on timeout or cancellation.
      * @param intervalMs The interval for the timer in milliseconds.
      * @param onTimeout The callback function to be executed when the timer expires.
      */
@@ -40,11 +40,16 @@ public:
 
     /**
      * @brief Destructor for the LTimer class.
+     *
+     * Destroying a timer while it's running will not trigger its on timout callback.
      */
     ~LTimer();
 
     /**
-     * @brief Sets the callback function to be executed when the timer expires.
+     * @brief Set the callback function to be executed when the timer expires.
+     *
+     * @note The callback can't be changed while the timer is running.
+     *
      * @param onTimeout The callback function to be executed when the timer expires.
      */
     void setCallback(const Callback &onTimeout);
@@ -66,7 +71,7 @@ public:
      *
      * If the timer is running and was created with oneShot() or started with destroyOnTimeout enabled,
      * the timer is destroyed and the onTimeout callback is not called. If the timer was started without
-     * destroyOnTimeout, it can be safely started again.
+     * destroyOnTimeout, it can be safely started again and the onTimeout callback is also not called.
      */
     void cancel();
 
@@ -76,12 +81,16 @@ public:
      * If the timer was created with destroyOnTimeout disabled, it is safe to call start() again within
      * the onTimeout callback.
      *
-     * @note Calling start() on a already started timer is a no-op.
+     * @note Calling start() on an already started timer is a no-op. If no callback function is set before calling
+     *       this method the timer doesn't start, this method returns `false` and the timer is not destroyed if destroyOnTimeout
+     *       was enabled.
      *
      * @param intervalMs The interval for the timer in milliseconds.
-     * @param destroyOnTimeout If true, the timer will be destroyed after the timeout callback.
+     * @param destroyOnTimeout If  `true `, the timer will be destroyed after the timeout callback.
+     *
+     * @return `true` if the timer successfully started, `false` otherwise.
      */
-    void start(UInt32 intervalMs, bool destroyOnTimeout = false);
+    bool start(UInt32 intervalMs, bool destroyOnTimeout = false);
 
 LPRIVATE_IMP(LTimer)
 };
