@@ -11,6 +11,9 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
 
     lseat->imp()->enabled = true;
 
+    if (compositor()->state() != LCompositor::Initialized)
+        return;
+
     compositor()->imp()->unlock();
 
     if (compositor()->isGraphicBackendInitialized())
@@ -41,15 +44,18 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
 
     lseat->imp()->enabled = false;
 
+    if (compositor()->state() != LCompositor::Initialized)
+        return;
+
+    if (compositor()->isInputBackendInitialized())
+        compositor()->imp()->inputBackend->suspend();
+
     compositor()->imp()->unlock();
 
     if (compositor()->isGraphicBackendInitialized())
         compositor()->imp()->graphicBackend->pause();
 
     compositor()->imp()->lock();
-
-    if (compositor()->isInputBackendInitialized())
-        compositor()->imp()->inputBackend->suspend();
 
     libseat_disable_seat(seat);
 

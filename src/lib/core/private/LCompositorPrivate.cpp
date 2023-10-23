@@ -562,6 +562,9 @@ void LCompositor::LCompositorPrivate::addRenderBufferToDestroy(std::thread::id t
 
 void LCompositor::LCompositorPrivate::lock()
 {
+    renderMutex.lock();
+
+    /*
     queueMutex.lock();
     threadsQueue.push_back(std::this_thread::get_id());
     queueMutex.unlock();
@@ -576,16 +579,17 @@ retry:
         queueMutex.unlock();
         goto retry;
     }
-    queueMutex.unlock();
+    queueMutex.unlock();*/
 }
 
 void LCompositor::LCompositorPrivate::unlock()
 {
     renderMutex.unlock();
 
+    /*
     queueMutex.lock();
     threadsQueue.pop_front();
-    queueMutex.unlock();
+    queueMutex.unlock();*/
 }
 
 void LCompositor::LCompositorPrivate::unlockPoll()

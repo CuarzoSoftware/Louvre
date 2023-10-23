@@ -389,7 +389,7 @@ LTexture *Surface::renderThumbnail()
     getView()->enableParentOffset(false);
     tmpView.render();
 
-    LTexture *renderedThumbnail = tmpView.texture()->copyB();
+    LTexture *renderedThumbnail = tmpView.texture()->copyB(LSize(), LRect(), false);
     getView()->enableParentOffset(true);
     getView()->setParent(prevParent);
 

@@ -237,9 +237,33 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
 
     if (highQualityScaling)
     {
+        Float32 wScale = abs(srcRect.w() / dstSize.w());
+        Float32 hScale = abs(srcRect.h() / dstSize.h());
+
         // Check if downscaling is needed
-        if (abs(srcRect.w() / dstSize.w()) <= 2.f && abs(srcRect.h() / dstSize.h()) <= 2.f)
+        if (wScale <= 2.f && hScale <= 2.f)
             goto skipDownscaling;
+
+        GLint mipLevel = 0;
+
+        if (wScale < hScale)
+        {
+            wScale = srcRect.w() / 2.f;
+            while (wScale > dstSize.w())
+            {
+                wScale /= 2.f;
+                mipLevel++;
+            }
+        }
+        else
+        {
+            hScale = srcRect.h() / 2.f;
+            while (hScale > dstSize.h())
+            {
+                hScale /= 2.f;
+                mipLevel++;
+            }
+        }
 
         GLuint texFb, texId, rndFb, rndId;
         glGenFramebuffers(1, &texFb);
@@ -251,6 +275,7 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
         painter->imp()->scaleTexture(id(painter->imp()->output), target(), texFb, GL_LINEAR, sizeB(), LRect(0, sizeB()), sizeB());
         glBindTexture(GL_TEXTURE_2D, texId);
         glGenerateMipmap(GL_TEXTURE_2D);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, mipLevel);
 
         glGenFramebuffers(1, &rndFb);
         glBindFramebuffer(GL_FRAMEBUFFER, rndFb);

@@ -148,10 +148,15 @@ Int32 LSeat::setTTY(Int32 tty)
     if (imp()->libseatHandle)
     {
         compositor()->imp()->unlockPoll();
-        return libseat_switch_session(libseatHandle(), tty);
+        int ret = libseat_switch_session(libseatHandle(), tty);
+
+        if (ret == 0)
+            imp()->dispatchSeat();
+
+        return ret;
     }
 
-    return 0;
+    return -1;
 }
 
 Int32 LSeat::openDevice(const char *path, Int32 *fd, Int32 flags)

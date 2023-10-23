@@ -45,7 +45,7 @@ void Output::loadWallpaper()
     LTexture *tmpWallpaper = LOpenGL::loadTexture(wallpaperPath);
 
     if (!tmpWallpaper)
-        tmpWallpaper = LOpenGL::loadTexture("/usr/etc/Louvre/assets/wallpaper.jpg");
+        tmpWallpaper = LOpenGL::loadTexture("/usr/etc/Louvre/assets/wallpaper.png");
 
     if (tmpWallpaper)
     {

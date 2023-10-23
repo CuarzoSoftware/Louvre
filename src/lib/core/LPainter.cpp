@@ -29,6 +29,7 @@ LPainter::LPainter()
         uniform lowp vec4 srcRect;
         attribute lowp vec4 vertexPosition;
         varying lowp vec2 v_texcoord;
+
         void main()
         {
             gl_Position = vec4(vertexPosition.xy, 0.0, 1.0);

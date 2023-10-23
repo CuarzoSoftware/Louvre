@@ -24,6 +24,7 @@
 #include <private/LPainterPrivate.h>
 #include <private/LTexturePrivate.h>
 #include <private/LCursorPrivate.h>
+#include <private/LSeatPrivate.h>
 
 #include <LTime.h>
 
@@ -83,9 +84,20 @@ static void closeRestricted(int fd, void *userData)
     LCompositor *compositor = (LCompositor*)userData;
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
 
+    int id = -1;
+
+    for (auto &pair : bknd->devices)
+    {
+        if (pair.first == fd)
+        {
+            id = pair.second;
+            break;
+        }
+    }
+
     if (compositor->seat()->imp()->initLibseat())
     {
-        if (compositor->seat()->closeDevice(bknd->devices[fd]))
+        if (id != -1 && compositor->seat()->closeDevice(id))
             close(fd);
     }
     else

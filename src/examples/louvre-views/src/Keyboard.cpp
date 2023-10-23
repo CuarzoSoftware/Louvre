@@ -1,7 +1,7 @@
 #include <LSurface.h>
 #include <LCursor.h>
 #include <LCompositor.h>
-
+#include <private/LCompositorPrivate.h>
 #include <LScene.h>
 #include <unistd.h>
 #include <time.h>
@@ -100,6 +100,21 @@ void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
                         cursor()->output()->bufferTexture(0)->save(path);
                     }
                 }
+                /*
+                // Pause graphic backend
+                else if (keyCode == KEY_P)
+                {
+                    compositor()->imp()->unlock();
+                    compositor()->imp()->graphicBackend->pause();
+                    compositor()->imp()->lock();
+                }
+                // Resume graphic backend
+                else if (keyCode == KEY_R)
+                {
+                    compositor()->imp()->unlock();
+                    compositor()->imp()->graphicBackend->resume();
+                    compositor()->imp()->lock();
+                }*/
             }
         }
     }

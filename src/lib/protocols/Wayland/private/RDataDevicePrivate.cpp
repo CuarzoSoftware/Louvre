@@ -120,6 +120,7 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
 void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resource *resource, wl_resource *source, UInt32 serial)
 {
     L_UNUSED(client);
+    L_UNUSED(serial);
 
     RDataDevice *rDataDevice = (RDataDevice*)wl_resource_get_user_data(resource);
 
@@ -132,7 +133,7 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resour
             return;
 
         // Ask the developer if the client should set the clipboard
-        if (!seat()->setSelectionRequest(&rDataDevice->client()->dataDevice(), serial))
+        if (!seat()->setSelectionRequest(&rDataDevice->client()->dataDevice()))
         {
             rDataSource->cancelled();
             return;

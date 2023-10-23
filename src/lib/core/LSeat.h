@@ -289,7 +289,7 @@ public:
      * #### Default Implementation
      * @snippet LSeatDefault.cpp setSelectionRequest
      */
-    virtual bool setSelectionRequest(LDataDevice *device, UInt32 serial);
+    virtual bool setSelectionRequest(LDataDevice *device);
 
     /**
      * @brief Native input backend events

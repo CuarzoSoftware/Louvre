@@ -17,18 +17,11 @@ void LSeat::initialized()
 //! [initialized]
 
 //! [setSelectionRequest]
-bool LSeat::setSelectionRequest(LDataDevice *device, UInt32 serial)
+bool LSeat::setSelectionRequest(LDataDevice *device)
 {
-    L_UNUSED(serial);
-
-    // Let the client set the clipboard only one of its surfaces has pointer or keyboard focus
-    if ((pointer()->focusSurface() && pointer()->focusSurface()->client() == device->client()) ||
-       (keyboard()->focusSurface() && keyboard()->focusSurface()->client() == device->client()))
-    {
-        return true;
-    }
-
-    return false;
+    // Let the client set the clipboard only if one of its surfaces has pointer or keyboard focus
+    return (pointer()->focusSurface() && pointer()->focusSurface()->client() == device->client()) ||
+           (keyboard()->focusSurface() && keyboard()->focusSurface()->client() == device->client());
 }
 //! [setSelectionRequest]
 
@@ -42,16 +35,13 @@ void LSeat::nativeInputEvent(void *event)
 //! [enabledChanged]
 void LSeat::enabledChanged()
 {
-    if (enabled())
-    {
-        if (cursor())
-        {
-            cursor()->setVisible(false);
-            cursor()->setVisible(true);
-        }
+    if (!enabled())
+        return;
 
-        compositor()->repaintAllOutputs();
-    }
+    cursor()->setVisible(false);
+    cursor()->setVisible(true);
+    cursor()->move(1, 1);
+    compositor()->repaintAllOutputs();
 }
 //! [enabledChanged]
 

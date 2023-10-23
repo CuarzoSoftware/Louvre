@@ -63,9 +63,20 @@ static void closeRestricted(int fd, void *data)
 {
     LSeat *seat = (LSeat*)data;
 
+    int id = -1;
+
+    for (auto &pair : devices)
+    {
+        if (pair.first == fd)
+        {
+            id = pair.second;
+            break;
+        }
+    }
+
     if (seat->imp()->initLibseat())
     {
-        if (seat->closeDevice(devices[fd]))
+        if (id != -1 && seat->closeDevice(devices[fd]))
             close(fd);
     }
     else
@@ -226,7 +237,14 @@ void LInputBackend::suspend()
 {
     LSeat *seat = LCompositor::compositor()->seat();
     BACKEND_DATA *data = (BACKEND_DATA*)seat->imp()->inputBackendData;
+    LCompositor::removeFdListener(eventSource);
     libinput_suspend(data->li);
+
+    if (data->li)
+        libinput_unref(data->li);
+
+    if (data->ud)
+        udev_unref(data->ud);
 }
 
 void LInputBackend::forceUpdate()
@@ -239,7 +257,19 @@ void LInputBackend::resume()
 {
     LSeat *seat = LCompositor::compositor()->seat();
     BACKEND_DATA *data = (BACKEND_DATA*)seat->imp()->inputBackendData;
-    libinput_resume(data->li);
+
+    data->ud = udev_new();
+    data->libinputInterface.open_restricted = &openRestricted;
+    data->libinputInterface.close_restricted = &closeRestricted;
+    data->li = libinput_udev_create_context(&data->libinputInterface, data->seat, data->ud);
+
+    if (seat->imp()->initLibseat())
+        libinput_udev_assign_seat(data->li, libseat_seat_name(seat->libseatHandle()));
+    else
+        libinput_udev_assign_seat(data->li, "seat0");
+
+    libinput_dispatch(data->li);
+    eventSource = LCompositor::addFdListener(libinput_get_fd(data->li), (LSeat*)seat, &processInput);
 }
 
 void LInputBackend::uninitialize()
