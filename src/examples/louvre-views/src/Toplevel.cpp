@@ -93,7 +93,10 @@ void Toplevel::setMaximizedRequest()
 {
     // Already in maximized mode
     if (maximized())
+    {
+        configure(states());
         return;
+    }
 
     Output *output = (Output*)cursor()->output();
 
@@ -124,7 +127,10 @@ void Toplevel::setMaximizedRequest()
 void Toplevel::unsetMaximizedRequest()
 {
     if (!maximized())
+    {
+        configure(states());
         return;
+    }
 
     configure(prevRect.size(), states() & ~Maximized);
 }
@@ -155,7 +161,10 @@ void Toplevel::setFullscreenRequest(LOutput *output)
 
     // Already in fullscreen mode
     if (fullscreen() || !surf || surf->firstMap)
+    {
+        configure(states());
         return;
+    }
 
     Output *dstOutput;
 
@@ -168,7 +177,10 @@ void Toplevel::setFullscreenRequest(LOutput *output)
         dstOutput = (Output*)cursor()->output();
 
     if (dstOutput->animatedFullscreenToplevel)
+    {
+        configure(states());
         return;
+    }
 
     prevRect = LRect(surface()->pos(), windowGeometry().size());
     dstRect = LRect(dstOutput->pos(), dstOutput->size());

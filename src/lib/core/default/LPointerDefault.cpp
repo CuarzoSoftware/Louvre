@@ -64,18 +64,18 @@ void LPointer::pointerMoveEvent(Float32 x, Float32 y, bool absolute)
     // Find the first surface under the cursor
     LSurface *surface = surfaceAt(cursor()->pos());
 
-    if (!surface)
-    {
-        setFocus(nullptr);
-        cursor()->useDefault();
-        cursor()->setVisible(true);
-    }
-    else
+    if (surface)
     {
         if (focusSurface() == surface)
             sendMoveEvent();
         else
             setFocus(surface);
+    }
+    else
+    {
+        setFocus(nullptr);
+        cursor()->useDefault();
+        cursor()->setVisible(true);
     }
 }
 //! [pointerMoveEvent]

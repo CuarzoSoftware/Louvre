@@ -10,15 +10,12 @@ ToplevelRole::ToplevelRole(Params *params) : LToplevelRole(params) {}
 void ToplevelRole::configureRequest()
 {
     setDecorationMode(ClientSide);
-
-    // Adding the resize flag fixes Google Chrome window geometry bug
-    configure(0, Activated | Resizing);
+    configure(0, Activated | states());
 }
 
 void ToplevelRole::setMaximizedRequest()
 {
-    // Get the main output
-    LOutput *output = compositor()->cursor()->output();
+    LOutput *output = cursor()->output();
 
     // Tell the toplevel to maximize
     LSize size = output->size() - LSize(0, 32);
@@ -30,14 +27,10 @@ void ToplevelRole::setFullscreenRequest(LOutput *output)
     statesBeforeFullscreen = states();
     rectBeforeFullscreen = LRect(surface()->pos(), windowGeometry().size());
 
-    if (output)
-        configure(output->size(), LToplevelRole::Activated | LToplevelRole::Fullscreen);
-    else
-    {
-        // Get the main output
-        LOutput *output = compositor()->cursor()->output();
-        configure(output->size(), LToplevelRole::Activated | LToplevelRole::Fullscreen);
-    }
+    if (!output)
+        output = cursor()->output();
+
+    configure(output->size(), LToplevelRole::Activated | LToplevelRole::Fullscreen);
 }
 
 void ToplevelRole::unsetFullscreenRequest()
@@ -88,6 +81,6 @@ void ToplevelRole::startResizeRequest(ResizeEdge edge)
         seat()->pointer()->startResizingToplevel(this,
                                                  edge,
                                                  cursor()->pos(),
-                                                 LSize(0, 0),
+                                                 LSize(128, 128),
                                                  LPointer::EdgeDisabled, 32);
 }

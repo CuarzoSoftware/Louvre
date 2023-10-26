@@ -275,7 +275,7 @@ void LPointer::dismissPopups()
     for (; s!= compositor()->surfaces().rend(); s++)
     {
         if ((*s)->popup())
-            (*s)->popup()->sendPopupDoneEvent();
+            (*s)->popup()->dismiss();
     }
 }
 

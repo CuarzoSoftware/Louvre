@@ -35,7 +35,8 @@ void RXdgPopup::RXdgPopupPrivate::destroy(wl_client *client, wl_resource *resour
             }
         }
 
-        rXdgPopup->popupRole()->surface()->imp()->setKeyboardGrabToParent();
+        if (rXdgPopup->popupRole()->surface()->parent() && rXdgPopup->popupRole()->surface()->parent()->popup())
+            rXdgPopup->popupRole()->surface()->imp()->setKeyboardGrabToParent();
     }
 
     wl_resource_destroy(resource);
@@ -52,25 +53,31 @@ void RXdgPopup::RXdgPopupPrivate::grab(wl_client *client, wl_resource *resource,
     if ((lGSeat->pointerResource() && (lGSeat->pointerResource()->serials().button >= serial || lGSeat->pointerResource()->serials().enter == serial)) ||
         (lGSeat->keyboardResource() && (lGSeat->keyboardResource()->serials().key >= serial || lGSeat->keyboardResource()->serials().enter == serial)))
     {
+        /*
         LSurface *parent = rXdgPopup->popupRole()->surface()->parent();
 
         if (!parent)
             parent = rXdgPopup->popupRole()->surface()->imp()->pendingParent;
 
-        if (!parent || (compositor()->seat()->pointer()->focusSurface() != parent && compositor()->seat()->keyboard()->focusSurface() != parent))
+        bool parentIsPopup = parent && (parent->popup() || (parent->imp()->pending.role && parent->imp()->pending.role->roleId() == LSurface::Popup));
+        bool parentIsToplevel = parent && (parent->toplevel() || (parent->imp()->pending.role && parent->imp()->pending.role->roleId() == LSurface::Toplevel));
+
+        if (parentIsPopup && compositor()->seat()->keyboard()->focusSurface() != parent && !parentIsToplevel)
         {
-            /* TODO: Fix grab.
             wl_resource_post_error(
                 resource,
                 XDG_POPUP_ERROR_INVALID_GRAB,
-                "Invalid grab. Popup parent did not have an implicit grab."); */
+                "Invalid grab. Popup parent did not have an implicit grab.");
             return;
-        }
+        } */
 
         rXdgPopup->popupRole()->grabSeatRequest(lGSeat);
+
+        if (compositor()->seat()->keyboard()->grabbingSurface() != rXdgPopup->popupRole()->surface())
+            rXdgPopup->popupRole()->dismiss();
     }
     else
-        rXdgPopup->popupRole()->sendPopupDoneEvent();
+        rXdgPopup->popupRole()->dismiss();
 }
 
 #if LOUVRE_XDG_WM_BASE_VERSION >= 3

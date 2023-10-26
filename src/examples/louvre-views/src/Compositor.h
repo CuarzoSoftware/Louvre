@@ -27,6 +27,7 @@ public:
     LPointer *createPointerRequest(LPointer::Params *params) override;
     LKeyboard *createKeyboardRequest(LKeyboard::Params *params) override;
     LToplevelRole *createToplevelRoleRequest(LToplevelRole::Params *params) override;
+    LPopupRole *createPopupRoleRequest(LPopupRole::Params *params) override;
 
     // Virtual destructors
     void destroyClientRequest(LClient *client) override;

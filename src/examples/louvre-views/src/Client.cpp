@@ -2,9 +2,11 @@
 #include <unistd.h>
 #include <string.h>
 #include <cstdio>
+#include <LSeat.h>
 #include "Client.h"
 #include "App.h"
 #include "Global.h"
+#include "Surface.h"
 
 static int get_ppid_from_proc(int pid)
 {
@@ -60,6 +62,69 @@ int get_process_name_by_pid(int pid, char *process_name, size_t buffer_size) {
 
 Client::Client(Params *params) : LClient(params)
 {
+    unresponsiveAnim = LAnimation::create(1000,
+    [this](LAnimation *anim)
+    {
+        Float32 color;
+            if (unresponsiveCount > 0)
+            color = 1.f - 0.8 * anim->value();
+        else
+            color = 0.2f + 0.8 * anim->value();
+
+        for (Surface *s : (std::list<Surface*>&)surfaces())
+            s->view->setColorFactor(color, color, color, 1.f);
+
+        compositor()->repaintAllOutputs();
+    },
+    [this](LAnimation *)
+    {
+        Float32 color = 1.f;
+
+        if (unresponsiveCount > 0)
+            color = 0.2f;
+
+        for (Surface *s : (std::list<Surface*>&)surfaces())
+        {
+            s->view->setColorFactor(color, color, color, 1.f);
+            s->requestNextFrame(false);
+        }
+
+        compositor()->repaintAllOutputs();
+    });
+
+    pingTimer = new LTimer([this](LTimer *)
+    {
+        UInt32 newPing = lastPing + 1;
+
+        if (ping(newPing))
+        {
+            if (seat()->enabled() && lastPing != lastPong)
+            {
+                if (unresponsiveCount > 5)
+                    destroy();
+                else if (unresponsiveCount == 0)
+                    unresponsiveAnim->start(false);
+
+                unresponsiveCount++;
+            }
+            else
+            {
+                if (unresponsiveCount > 0)
+                {
+                    unresponsiveCount = 0;
+                    unresponsiveAnim->start(false);
+                }
+            }
+        }
+        else
+           lastPong = newPing;
+
+        lastPing = newPing;
+        pingTimer->start(3000);
+    });
+
+    pingTimer->start(3000);
+
     wl_client_get_credentials(client(), &pid, NULL, NULL);
 
     // Compositor pid
@@ -90,6 +155,9 @@ Client::Client(Params *params) : LClient(params)
 
 Client::~Client()
 {
+    unresponsiveAnim->destroy();
+    pingTimer->destroy();
+
     if (app)
     {
         // Only destroy App if is not pinned to the dock
@@ -101,6 +169,11 @@ Client::~Client()
         else
             delete app;
     }
+}
+
+void Client::pong(UInt32 serial)
+{
+    lastPong = serial;
 }
 
 void Client::createNonPinnedApp()

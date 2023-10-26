@@ -8,6 +8,14 @@ LTimer::LTimer(const Callback &onTimeout)
     imp()->waylandEventSource = wl_event_loop_add_timer(LCompositor::eventLoop(), &LTimer::LTimerPrivate::waylandTimeoutCallback, this);
 }
 
+void LTimer::destroy()
+{
+    if (imp()->inCallback)
+        imp()->pendingDestroy = true;
+    else
+        delete this;
+}
+
 LTimer::~LTimer()
 {
     wl_event_source_timer_update(imp()->waylandEventSource, 0);
@@ -47,7 +55,12 @@ void LTimer::cancel()
     if (running())
     {
         if (imp()->destroyOnTimeout)
-            delete this;
+        {
+            if (imp()->inCallback)
+                imp()->pendingDestroy = true;
+            else
+                delete this;
+        }
         else
         {
             imp()->running = false;

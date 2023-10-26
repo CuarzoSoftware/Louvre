@@ -104,7 +104,7 @@ public:
      *
      * This method dismisses the Popup along with all its children, starting from the topmost and descending downwards.
      */
-    void sendPopupDoneEvent();
+    void dismiss();
 
     /**
      * @brief Check if this Popup is the Topmost.

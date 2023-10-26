@@ -4,14 +4,15 @@
 
 int main(int, char *[])
 {
+    setenv("SRM_RENDER_MODE_ITSELF_FB_COUNT", "3", 0);
+    setenv("WAYLAND_DISPLAY", "wayland-0", 0);
     setenv("MOZ_ENABLE_WAYLAND", "1", 1);
     setenv("QT_QPA_PLATFORM", "wayland-egl", 1);
-    setenv("MESA_NO_ERROR", "1", 1);
-    setenv("MESA_GLTHREAD", "1", 1);
-    setenv("MESA_GLTHREAD", "1", 1);
 
-    setenv("DISPLAY", "wayland-0", 0);
-    setenv("SRM_RENDER_MODE_ITSELF_FB_COUNT", "3", 0);
+    char *display = getenv("WAYLAND_DISPLAY");
+
+    if (display)
+        setenv("DISPLAY", display, 1);
 
     Compositor compositor;
 

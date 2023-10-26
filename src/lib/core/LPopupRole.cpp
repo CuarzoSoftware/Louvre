@@ -54,7 +54,7 @@ void LPopupRole::configure(const LRect &rect) const
     res->xdgSurfaceResource()->configure(LCompositor::nextSerial());
 }
 
-void LPopupRole::sendPopupDoneEvent()
+void LPopupRole::dismiss()
 {
     std::list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();
     for (; s!= compositor()->surfaces().rend(); s++)

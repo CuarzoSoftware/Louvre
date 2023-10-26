@@ -6,9 +6,11 @@ Int32 LTimer::LTimerPrivate::waylandTimeoutCallback(void *data)
 
     timer->imp()->running = false;
 
+    timer->imp()->inCallback = true;
     timer->imp()->onTimeoutCallback(timer);
+    timer->imp()->inCallback = false;
 
-    if (timer->imp()->destroyOnTimeout)
+    if (timer->imp()->pendingDestroy || timer->imp()->destroyOnTimeout)
         delete timer;
 
     return 0;

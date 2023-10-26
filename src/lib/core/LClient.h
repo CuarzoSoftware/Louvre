@@ -59,7 +59,7 @@ public:
      * @par Default Implementation
      * @snippet LClientDefault.cpp pong
      */
-    virtual void pong(UInt32 serial) const;
+    virtual void pong(UInt32 serial);
 
     /**
      * @brief Native `wl_client` struct of the client.

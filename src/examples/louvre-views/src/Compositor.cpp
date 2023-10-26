@@ -18,6 +18,7 @@
 #include "TextRenderer.h"
 #include "Topbar.h"
 #include "ToplevelView.h"
+#include "Popup.h"
 
 Compositor::Compositor() : LCompositor(),
     scene(),
@@ -151,6 +152,11 @@ LToplevelRole *Compositor::createToplevelRoleRequest(LToplevelRole::Params *para
     return new Toplevel(params);
 }
 
+LPopupRole *Compositor::createPopupRoleRequest(LPopupRole::Params *params)
+{
+    return new Popup(params);
+}
+
 void Compositor::destroyClientRequest(LClient *client)
 {
     Client *c = (Client*)client;
@@ -173,8 +179,9 @@ void Compositor::fadeOutSurface(LBaseSurfaceRole *role, UInt32 ms)
 
         surf->fadedOut = true;
 
-        LTextureView *fadeOutView = new LTextureView(surf->renderThumbnail(), &overlayLayer);
+        LTextureView *fadeOutView = new LTextureView(surf->renderThumbnail(), &fullscreenLayer);
         fadeOutView->setPos(surf->rolePos());
+        fadeOutView->enableParentOffset(false);
         fadeOutView->setBufferScale(2);
 
         LAnimation::oneShot(ms,

@@ -389,7 +389,7 @@ void LScene::handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState)
         // Screenshot
         else if (L_CTRL && L_SHIFT && keyCode == KEY_3)
         {
-            if (cursor()->output()->bufferTexture(0))
+            if (cursor() && cursor()->output()->bufferTexture(0))
             {
                 const char *user = getenv("HOME");
 

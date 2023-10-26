@@ -37,7 +37,7 @@ void LToplevelRole::startResizeRequest(ResizeEdge edge)
 //! [resizingChanged]
 void LToplevelRole::resizingChanged()
 {
-
+    /* No default implementation */
 }
 //! [resizingChanged]
 
@@ -51,13 +51,6 @@ void LToplevelRole::configureRequest()
     configure(LSize(0,0), states() | Activated);
 }
 //! [configureRequest]
-
-//! [unsetFullscreenRequest]
-void LToplevelRole::unsetFullscreenRequest()
-{
-    configure(states() &~ Fullscreen);
-}
-//! [unsetFullscreenRequest]
 
 //! [titleChanged]
 void LToplevelRole::titleChanged()
@@ -124,6 +117,27 @@ void LToplevelRole::maximizedChanged()
 }
 //! [maximizedChanged]
 
+//! [setFullscreenRequest]
+void LToplevelRole::setFullscreenRequest(LOutput *destOutput)
+{
+    LOutput *output;
+
+    if (destOutput)
+        output = destOutput;
+    else
+        output = cursor()->output();
+
+    configure(output->size(), Activated | Fullscreen);
+}
+//! [setFullscreenRequest]
+
+//! [unsetFullscreenRequest]
+void LToplevelRole::unsetFullscreenRequest()
+{
+    configure(states() &~ Fullscreen);
+}
+//! [unsetFullscreenRequest]
+
 //! [fullscreenChanged]
 void LToplevelRole::fullscreenChanged()
 {
@@ -184,20 +198,6 @@ void LToplevelRole::setMinimizedRequest()
         seat()->pointer()->stopResizingToplevel();
 }
 //! [setMinimizedRequest]
-
-//! [setFullscreenRequest]
-void LToplevelRole::setFullscreenRequest(LOutput *destOutput)
-{
-    LOutput *output;
-
-    if (destOutput)
-        output = destOutput;
-    else
-        output = cursor()->output();
-
-    configure(output->size(), Activated | Fullscreen);
-}
-//! [setFullscreenRequest]
 
 //! [showWindowMenuRequest]
 void LToplevelRole::showWindowMenuRequest(Int32 x, Int32 y)

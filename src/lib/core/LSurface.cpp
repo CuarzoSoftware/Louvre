@@ -291,8 +291,6 @@ void LSurface::requestNextFrame(bool clearDamage)
         else
             break;
     }
-
-    client()->flush();
 }
 
 bool LSurface::mapped() const

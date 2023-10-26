@@ -222,8 +222,8 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
         return nullptr;
     }
 
-    LRect srcRect;
-    LSize dstSize;
+    LRectF srcRect;
+    LSizeF dstSize;
 
     if (src == LRect())
         srcRect = LRect(0, sizeB());
@@ -235,10 +235,16 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
     else
         dstSize = dst;
 
+    if (srcRect.w() == 0 || srcRect.h() == 0 || dstSize.w() == 0 || dstSize.h() == 0)
+    {
+        LLog::error("Failed to copy texture. Invalid size.");
+        return nullptr;
+    }
+
     if (highQualityScaling)
     {
-        Float32 wScale = abs(srcRect.w() / dstSize.w());
-        Float32 hScale = abs(srcRect.h() / dstSize.h());
+        Float32 wScale = abs(float(srcRect.w()) / float(dstSize.w()));
+        Float32 hScale = abs(float(srcRect.h()) / float(dstSize.h()));
 
         // Check if downscaling is needed
         if (wScale <= 2.f && hScale <= 2.f)
@@ -397,6 +403,12 @@ bool LTexture::save(const char *path) const
     if (!path)
     {
         LLog::error("Failed to save texture. Invalid path.");
+        return false;
+    }
+
+    if (sizeB().area() <= 0)
+    {
+        LLog::error("Failed to save texture. Invalid size.");
         return false;
     }
 

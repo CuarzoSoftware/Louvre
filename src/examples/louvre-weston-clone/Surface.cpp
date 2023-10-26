@@ -5,10 +5,7 @@
 #include "LCursor.h"
 #include "Output.h"
 
-Surface::Surface(LSurface::Params *params) : LSurface(params)
-{
-
-}
+Surface::Surface(LSurface::Params *params) : LSurface(params) {}
 
 void Surface::mappingChanged()
 {
@@ -31,8 +28,6 @@ void Surface::mappingChanged()
 
                 if (pos().y() < barSize)
                     setY(barSize);
-
-                toplevel()->configure(LToplevelRole::Activated);
             }
         }
 

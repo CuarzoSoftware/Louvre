@@ -39,11 +39,11 @@ public:
     /// @endcond
 
     /**
-     * @brief Destructor for the LTimer class.
+     * @brief Destroy the timer.
      *
      * Destroying a timer while it's running will not trigger its on timout callback.
      */
-    ~LTimer();
+    void destroy();
 
     /**
      * @brief Set the callback function to be executed when the timer expires.
@@ -93,6 +93,7 @@ public:
     bool start(UInt32 intervalMs, bool destroyOnTimeout = false);
 
 LPRIVATE_IMP(LTimer)
+    ~LTimer();
 };
 
 #endif // LTIMER_H

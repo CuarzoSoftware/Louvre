@@ -37,6 +37,7 @@ void LOutput::LOutputPrivate::backendInitializeGL()
     cursor()->imp()->update();
     output->imp()->state = LOutput::Initialized;
     output->initializeGL();
+    compositor()->flushClients();
 }
 
 void LOutput::LOutputPrivate::backendPaintGL()
@@ -70,6 +71,7 @@ void LOutput::LOutputPrivate::backendPaintGL()
     compositor()->imp()->processAnimations();
     pendingRepaint = false;
     output->paintGL();
+    compositor()->flushClients();
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
 
     if (callLock)
@@ -121,6 +123,7 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
        compositor()->imp()->lock();
 
     output->uninitializeGL();
+    compositor()->flushClients();
     output->imp()->state = LOutput::Uninitialized;
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
 

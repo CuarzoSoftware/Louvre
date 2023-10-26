@@ -299,7 +299,7 @@ const LPoint &LPopupRole::rolePos() const
 
             if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::SlideX)
             {
-                offset.setX( offset.x() - ( (m_rolePos.x()+popupSize.w()) - (positionerBounds().x() + positionerBounds().w())));
+                offset.setX( offset.x() - ( (m_rolePos.x() + popupSize.w()) - (positionerBounds().x() + positionerBounds().w())));
                 goto retry;
             }
         }
@@ -432,7 +432,7 @@ const LPoint &LPopupRole::rolePos() const
 
             if (positioner().constraintAdjustment() & LPositioner::ConstraintAdjustment::SlideY)
             {
-                offset.setY( offset.y() - ( (m_rolePos.y()+popupSize.h()) - (positionerBounds().y() + positionerBounds().h())));
+                offset.setY( offset.y() - ( (m_rolePos.y() + popupSize.h()) - (positionerBounds().y() + positionerBounds().h())));
                 goto retry;
             }
         }
