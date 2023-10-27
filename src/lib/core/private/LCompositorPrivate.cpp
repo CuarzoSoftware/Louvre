@@ -602,3 +602,14 @@ void LCompositor::LCompositorPrivate::unlockPoll()
     ssize_t n = write(events[0].data.fd, &event_value, sizeof(event_value));
     L_UNUSED(n);
 }
+
+void LCompositor::LCompositorPrivate::destroyNativeTextures(std::list<GLuint> &list)
+{
+    GLuint tex;
+    while (!list.empty())
+    {
+        tex = list.back();
+        list.pop_back();
+        glDeleteTextures(1, &tex);
+    }
+}

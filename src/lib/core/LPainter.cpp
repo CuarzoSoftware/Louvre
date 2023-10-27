@@ -176,6 +176,7 @@ LPainter::LPainter()
     glDisable(GL_SAMPLE_ALPHA_TO_ONE);
 
     imp()->shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
+    imp()->validateMipmap();
 }
 
 void LPainter::bindFramebuffer(LFramebuffer *framebuffer)
@@ -218,6 +219,51 @@ void LPainter::LPainterPrivate::setupProgram()
     currentUniforms->color= glGetUniformLocation(currentProgram, "color");
     currentUniforms->colorFactor = glGetUniformLocation(currentProgram, "colorFactor");
     currentUniforms->alpha = glGetUniformLocation(currentProgram, "alpha");
+}
+
+void LPainter::LPainterPrivate::validateMipmap()
+{
+    UChar8 textureBufer[64*64*4];
+    memset(textureBufer, 255, sizeof(textureBufer));
+
+    GLuint textureId;
+    glGenTextures(1, &textureId);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureBufer);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    GLuint framebufferId;
+    glGenFramebuffers(1, &framebufferId);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
+
+    GLuint renderbufferId;
+    glGenRenderbuffers(1, &renderbufferId);
+    glBindRenderbuffer(GL_RENDERBUFFER, renderbufferId);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, 32, 32);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, renderbufferId);
+    scaleTexture(textureId, GL_TEXTURE_2D, framebufferId, GL_LINEAR_MIPMAP_LINEAR, LSize(64), LRect(0, 0, 64, 64), LSize(32));
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
+
+    UChar8 readBuffer[32*32*4];
+    glPixelStorei(GL_PACK_ALIGNMENT, 4);
+    glPixelStorei(GL_PACK_ROW_LENGTH, 32);
+    glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
+    glPixelStorei(GL_PACK_SKIP_ROWS, 0);
+    glReadPixels(0, 0, 32, 32, GL_RGBA, GL_UNSIGNED_BYTE, readBuffer);
+    glPixelStorei(GL_PACK_ALIGNMENT, 4);
+    glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+    glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
+    glPixelStorei(GL_PACK_SKIP_ROWS, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    mipmap = readBuffer[0] == 255 && readBuffer[1] == 255 && readBuffer[2] == 255 && readBuffer[3] == 255;
+
+    glDeleteTextures(1, &textureId);
+    glDeleteRenderbuffers(1, &renderbufferId);
+    glDeleteFramebuffers(1, &framebufferId);
+
+    if (!mipmap)
+        LLog::warning("[LPainter] glGenerateMipmap() not supported.");
 }
 
 void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src, const LRect &dst)

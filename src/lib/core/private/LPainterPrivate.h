@@ -83,7 +83,7 @@ LPRIVATE_CLASS(LPainter)
     void scaleCursor(LTexture *texture, const LRect &src, const LRect &dst);
     void scaleTexture(LTexture *texture, const LRect &src, const LSize &dst);
     void scaleTexture(GLuint textureId, GLenum textureTarget, GLuint framebufferId, GLint minFilter, const LSize &texSize, const LRect &src, const LSize &dst);
-
+    void validateMipmap();
     // Shader state update
 
     inline void shaderSetTexSize(Int32 w, Int32 h)
@@ -200,6 +200,7 @@ LPRIVATE_CLASS(LPainter)
     LFramebuffer *fb = nullptr;
     GLuint fbId = 0;
     GLenum lastTarget = GL_TEXTURE_2D;
+    bool mipmap = true;
 };
 
 #endif // LPAINTERPRIVATE_H

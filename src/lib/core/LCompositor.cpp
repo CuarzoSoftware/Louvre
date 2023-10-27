@@ -198,6 +198,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
     }
 
     imp()->destroyPendingRenderBuffers(nullptr);
+    imp()->destroyNativeTextures(imp()->nativeTexturesToDestroy);
 
     if (state() == CompositorState::Uninitializing)
     {

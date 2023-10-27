@@ -7,7 +7,8 @@
 using namespace Louvre;
 
 LPRIVATE_CLASS(LTexture)
-    void deleteTexture(LTexture *texture);
+    LTexture *texture;
+    void deleteTexture();
 
     BufferSourceType sourceType                         = CPU;
     LSize sizeB;
@@ -23,6 +24,12 @@ LPRIVATE_CLASS(LTexture)
 
     // List of texture views using it
     std::list<LTextureView*> textureViews;
+
+    // Wrapper for a native OpenGL ES 2.0 texture.
+    bool setDataB(GLuint textureId, GLenum target, UInt32 format, const LSize &size, LOutput *output);
+    GLuint nativeId = 0;
+    GLenum nativeTarget = 0;
+    LOutput *nativeOutput = nullptr;
 };
 
 #endif // LTEXTUREPRIVATE_H

@@ -99,6 +99,9 @@ LPRIVATE_CLASS(LCompositor)
     std::map<std::thread::id, ThreadData> threadsMap;
     void destroyPendingRenderBuffers(std::thread::id *id);
     void addRenderBufferToDestroy(std::thread::id thread, LRenderBuffer::LRenderBufferPrivate::ThreadData &data);
+
+    std::list<GLuint>nativeTexturesToDestroy;
+    static void destroyNativeTextures(std::list<GLuint>&list);
 };
 
 #endif // LCOMPOSITORPRIVATE_H

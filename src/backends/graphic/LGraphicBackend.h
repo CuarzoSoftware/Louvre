@@ -18,6 +18,7 @@ public:
     static void pause();
     static void resume();
     static const list<LOutput*>*getConnectedOutputs();
+    static UInt32 rendererGPUs();
 
     /* OUTPUTS */
 

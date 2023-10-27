@@ -40,6 +40,8 @@ LPRIVATE_CLASS(LOutput)
     void backendResizeGL();
     void backendUninitializeGL();
     void backendPageFlipped();
+
+    std::list<GLuint>nativeTexturesToDestroy;
 };
 
 #endif // LOUTPUTPRIVATE_H

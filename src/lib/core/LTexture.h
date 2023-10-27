@@ -33,7 +33,10 @@ public:
         DMA = 2,
 
         /// Indicates the texture is from an LFramebuffer.
-        Framebuffer = 3
+        Framebuffer = 3,
+
+        /// Sourced from a native OpenGL ES 2.0 texture
+        Native = 4
     };
 
     /**

@@ -49,6 +49,7 @@ struct Backend
     wl_event_source *monitor;
     list<LDMAFormat*>dmaFormats;
     unordered_map<int,int>devices;
+    UInt32 rendererGPUs = 0;
 };
 
 struct Output
@@ -280,6 +281,9 @@ bool LGraphicBackend::initialize()
     {
         SRMDevice *dev = (SRMDevice*)srmListItemGetData(devIt);
 
+        if (srmDeviceIsRenderer(dev))
+            bknd->rendererGPUs++;
+
         SRMListForeach (connIt, srmDeviceGetConnectors(dev))
         {
             SRMConnector *conn = (SRMConnector*)srmListItemGetData(connIt);
@@ -333,6 +337,13 @@ const list<LOutput*> *LGraphicBackend::getConnectedOutputs()
     LCompositor *compositor = LCompositor::compositor();
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
     return &bknd->connectedOutputs;
+}
+
+UInt32 LGraphicBackend::rendererGPUs()
+{
+    LCompositor *compositor = LCompositor::compositor();
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    return bknd->rendererGPUs;
 }
 
 bool LGraphicBackend::initializeOutput(LOutput *output)
@@ -649,6 +660,7 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.scheduleOutputRepaint = &LGraphicBackend::scheduleOutputRepaint;
     API.uninitialize = &LGraphicBackend::uninitialize;
     API.getConnectedOutputs = &LGraphicBackend::getConnectedOutputs;
+    API.rendererGPUs = &LGraphicBackend::rendererGPUs;
     API.initializeOutput = &LGraphicBackend::initializeOutput;
     API.uninitializeOutput = &LGraphicBackend::uninitializeOutput;
     API.hasBufferDamageSupport = &LGraphicBackend::hasBufferDamageSupport;

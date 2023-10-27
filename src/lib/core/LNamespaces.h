@@ -306,6 +306,7 @@ namespace Louvre
         bool (*scheduleOutputRepaint)(LOutput *output);
         void (*uninitialize)();
         const std::list<LOutput*>*(*getConnectedOutputs)();
+        UInt32 (*rendererGPUs)();
         bool (*initializeOutput)(LOutput *output);
         void (*uninitializeOutput)(LOutput *output);
         EGLDisplay (*getOutputEGLDisplay)(LOutput *output);

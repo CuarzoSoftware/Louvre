@@ -73,6 +73,7 @@ void LOutput::LOutputPrivate::backendPaintGL()
     output->paintGL();
     compositor()->flushClients();
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
+    compositor()->imp()->destroyNativeTextures(nativeTexturesToDestroy);
 
     if (callLock)
         compositor()->imp()->unlock();
@@ -126,6 +127,7 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
     compositor()->flushClients();
     output->imp()->state = LOutput::Uninitialized;
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
+    compositor()->imp()->destroyNativeTextures(nativeTexturesToDestroy);
 
     if (callLock)
         compositor()->imp()->unlock();
