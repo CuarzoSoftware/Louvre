@@ -43,7 +43,10 @@ RDataSource::~RDataSource()
     if (dataSource() != seat()->dataSelection())
         delete imp()->lDataSource;
     else
+    {
+        dataSource()->imp()->removeClientOnlySources();
         dataSource()->imp()->dataSourceResource = nullptr;
+    }
 
     delete m_imp;
 }

@@ -1,7 +1,4 @@
-#include "RDataDevicePrivate.h"
-#include "LLog.h"
 #include <private/LDataSourcePrivate.h>
-#include <LCompositor.h>
 #include <private/LDNDIconRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LDNDManagerPrivate.h>
@@ -11,6 +8,10 @@
 #include <protocols/Wayland/GSeat.h>
 #include <protocols/Wayland/RPointer.h>
 #include <protocols/Wayland/RKeyboard.h>
+#include <LCompositor.h>
+#include <LLog.h>
+#include "RDataDevicePrivate.h"
+#include <string.h>
 
 void RDataDevice::RDataDevicePrivate::resource_destroy(wl_resource *resource)
 {
@@ -165,10 +166,20 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resour
         // Ask client to write to the compositor fds
         for (LDataSource::LSource &s : rDataSource->dataSource()->imp()->sources)
         {
-            if (!s.tmp)
-                s.tmp = tmpfile();
 
-            rDataSource->send(s.mimeType, fileno(s.tmp));
+            if (!s.tmp && (
+                    strcmp(s.mimeType, "x-special/gnome-copied-files") == 0 ||
+                    strcmp(s.mimeType, "text/uri-list") == 0 ||
+                    strcmp(s.mimeType, "UTF8_STRING") == 0 ||
+                    strcmp(s.mimeType, "COMPOUND_TEXT") == 0 ||
+                    strcmp(s.mimeType, "TEXT") == 0 ||
+                    strcmp(s.mimeType, "STRING") == 0 ||
+                    strcmp(s.mimeType, "text/plain;charset=utf-8") == 0 ||
+                    strcmp(s.mimeType, "text/plain") == 0))
+            {
+                s.tmp = tmpfile();
+                rDataSource->send(s.mimeType, fileno(s.tmp));
+            }
         }
 
         // If a client already has keyboard focus, send it the current clipboard

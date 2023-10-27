@@ -10,6 +10,7 @@ using namespace Louvre;
 LPRIVATE_CLASS(LDataSource)
 
     void removeSources();
+    void removeClientOnlySources();
 
     Protocols::Wayland::RDataSource *dataSourceResource  = nullptr;
     std::list<LSource>sources;

@@ -13,3 +13,15 @@ void LDataSource::LDataSourcePrivate::removeSources()
         sources.pop_back();
     }
 }
+
+void LDataSource::LDataSourcePrivate::removeClientOnlySources()
+{
+    for (std::list<LSource>::iterator it = sources.begin(); it != sources.end(); it++)
+    {
+        if ((*it).tmp == NULL)
+        {
+            free((*it).mimeType);
+            it = sources.erase(it);
+        }
+    }
+}

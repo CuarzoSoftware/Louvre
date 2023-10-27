@@ -2,7 +2,7 @@
 
 Louvre is a high-performance C++ library designed for building Wayland compositors with a strong emphasis on ease of development.
 
-Creating a Wayland compositor can be a daunting undertaking, often spanning years of effort. This challenging task involves mastering Linux input and graphic APIs, managing buffer memory allocation, and meticulously implementing numerous Wayland protocols and their respective interfaces.
+Creating a Wayland compositor can be a daunting undertaking, often spanning years of effort. This challenging task involves mastering Linux input and graphic APIs, managing graphic buffers, and meticulously implementing numerous Wayland protocols and their respective interfaces.
 
 Fortunately, Louvre simplifies this intricate process by handling all the complex low-level tasks on your behalf. It even provides a default way for managing protocols, enabling you to have a basic but functional compositor from day one and progressively explore and customize its functionality to precisely match your requirements.
 
@@ -54,13 +54,13 @@ Within Louvre, you have the flexibility to either employ your own OpenGL ES 2.0 
 * Presentation Time
 * Linux DMA-Buf
 
-## 💬 Client/Compositor Buffer Sharing
+## 💬 Client-Compositor Buffer Sharing
 
 * Shared Memory
 * Wayland EGL (DMA and GEM flinks)
 * Linux DMA-Buff
 
-## 💻 Graphical Backends
+## 💻 Graphic Backends
 
 * DRM/KMS
 * X11 (discontinued since version 1.0.0)
@@ -76,7 +76,7 @@ Within Louvre, you have the flexibility to either employ your own OpenGL ES 2.0 
 * Multi-Seat Support
 * Scene & Views System
 * Single, Double or Triple Buffering
-* Persistent Clipboard
+* Persistent Clipboard (only for string based mime types)
 
 ## 🔨 TODO
 

@@ -275,7 +275,7 @@ void Toplevel::fullscreenChanged()
 
 void Toplevel::setMinimizedRequest()
 {
-    if (fullscreen() || surface()->minimized())
+    if (fullscreen() || surface()->minimized() || animScene)
         return;
 
     surface()->setMinimized(true);

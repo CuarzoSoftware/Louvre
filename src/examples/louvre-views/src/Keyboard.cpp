@@ -34,12 +34,14 @@ void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
             {
                 if (keyCode == KEY_RIGHT && std::next(output->currentWorkspace->outputLink) != output->workspaces.end())
                 {
-                    output->setWorkspace(*std::next(output->currentWorkspace->outputLink), 512);
+                    if (!output->animatedFullscreenToplevel)
+                        output->setWorkspace(*std::next(output->currentWorkspace->outputLink), 512);
                     return;
                 }
                 else if (keyCode == KEY_LEFT && output->currentWorkspace != output->workspaces.front())
                 {
-                    output->setWorkspace(*std::prev(output->currentWorkspace->outputLink), 512);
+                    if (!output->animatedFullscreenToplevel)
+                        output->setWorkspace(*std::prev(output->currentWorkspace->outputLink), 512);
                     return;
                 }
             }
@@ -72,32 +74,6 @@ void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
                         }
 
                         cursor()->output()->setMode(mode);
-                    }
-                }
-
-                // Screenshot
-                else if (keyCode == KEY_3)
-                {
-                    if (cursor()->output()->bufferTexture(0))
-                    {
-                        const char *user = getenv("HOME");
-
-                        if (!user)
-                            return;
-
-                        char path[128];
-                        char timeString[32];
-
-                        time_t currentTime;
-                        struct tm *timeInfo;
-
-                        time(&currentTime);
-                        timeInfo = localtime(&currentTime);
-                        strftime(timeString, sizeof(timeString), "%Y-%m-%d %H:%M:%S", timeInfo);
-
-                        sprintf(path, "%s/Desktop/LouvreViews_Screenshoot_%s.png", user, timeString);
-
-                        cursor()->output()->bufferTexture(0)->save(path);
                     }
                 }
                 /*

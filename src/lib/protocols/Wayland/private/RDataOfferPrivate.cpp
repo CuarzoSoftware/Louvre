@@ -1,3 +1,4 @@
+#include "LLog.h"
 #include <protocols/Wayland/private/RDataOfferPrivate.h>
 #include <protocols/Wayland/private/RDataSourcePrivate.h>
 #include <protocols/Wayland/private/RDataDevicePrivate.h>
@@ -98,25 +99,44 @@ void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *reso
         // Louvre keeps a copy of the source clipboard for each mime type (so we don't ask the source client to write the data)
         for (LDataSource::LSource &s : seat()->dataSelection()->imp()->sources)
         {
-            if (strcmp(s.mimeType, mime_type) == 0 && s.tmp)
+            if (strcmp(s.mimeType, mime_type) == 0)
             {
-                fseek(s.tmp, 0L, SEEK_END);
-
-                // If pointer is at the beggining means the source client has not written any data
-                if (ftell(s.tmp) == 0)
-                    break;
-
-                rewind(s.tmp);
-                char byte = fgetc(s.tmp);
-
-                while(!feof(s.tmp))
+                if (s.tmp)
                 {
-                    Int32 writen = write(fd, &byte, 1);
+                    fseek(s.tmp, 0L, SEEK_END);
 
-                    if (writen != 1)
+                    Int32 total = ftell(s.tmp);
+
+                    // If pointer is at the beggining means the source client has not written any data
+                    if (total == 0)
                         break;
 
-                    byte = fgetc(s.tmp);
+                    rewind(s.tmp);
+
+                    Int32 written = 0, readN = 0, toRead = 0;
+                    UChar8 buffer[1024];
+
+                    while(written != total)
+                    {
+                        if (total < 1024)
+                            toRead = total;
+                        else
+                            toRead = 1024;
+
+                        readN = fread(buffer, sizeof(UChar8), toRead, s.tmp);
+
+                        written = write(fd, buffer, readN);
+
+                        if (written != 1)
+                            break;
+
+                        total -= written;
+                    }
+                }
+                else if (seat()->dataSelection()->dataSourceResource())
+                {
+                    // Ask the source client to write the data to the FD given the mime type
+                    seat()->dataSelection()->dataSourceResource()->send(mime_type, fd);
                 }
 
                 break;
