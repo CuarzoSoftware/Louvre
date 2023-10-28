@@ -223,11 +223,13 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
         return nullptr;
     }
 
-    LRectF srcRect;
-    LSizeF dstSize;
+    GLuint textureId = id(painter->imp()->output);
+
+    LRect srcRect;
+    LSize dstSize;
 
     if (src == LRect())
-        srcRect = LRect(0, sizeB());
+        srcRect = LRectF(0, sizeB());
     else
         srcRect = src;
 
@@ -248,7 +250,7 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
         Float32 hScale = abs(float(srcRect.h()) / float(dstSize.h()));
 
         // Check if downscaling is needed
-        if (wScale <= 2.f && hScale <= 2.f)
+        if (wScale <= 3.f && hScale <= 3.f)
             goto skipDownscaling;
 
         GLint mipLevel = 0;
@@ -282,6 +284,7 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
         painter->imp()->scaleTexture(id(painter->imp()->output), target(), texFb, GL_LINEAR, sizeB(), LRect(0, sizeB()), sizeB());
         glBindTexture(GL_TEXTURE_2D, texId);
         glGenerateMipmap(GL_TEXTURE_2D);
+        glFinish();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, mipLevel);
 
         glGenFramebuffers(1, &rndFb);
@@ -331,26 +334,61 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
     LTexture *textureCopy;
     bool ret = false;
 
+    // If single GPU, no need for DMA sharing
     if (compositor()->imp()->graphicBackend->rendererGPUs() == 1)
     {
-        GLuint framebuffer;
-        glGenFramebuffers(1, &framebuffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-        GLuint texCopy;
-        glGenTextures(1, &texCopy);
-        glBindTexture(GL_TEXTURE_2D, texCopy);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dstSize.w(), dstSize.h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texCopy, 0);
-        painter->imp()->scaleTexture((LTexture*)this, srcRect, dstSize);
-        glFinish();
-        textureCopy = new LTexture();
-        ret = textureCopy->imp()->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_BGRA8888, dstSize, painter->imp()->output);
-        glDeleteFramebuffers(1, &framebuffer);
+        // Direct copy glCopyTexImage2D()
+        if (target() == GL_TEXTURE_2D &&
+            dstSize.w() == srcRect.w() &&
+            dstSize.h() == srcRect.h() &&
+            srcRect.x() >= 0 &&
+            srcRect.x() + srcRect.w() <= sizeB().w() &&
+            srcRect.y() >= 0 &&
+            srcRect.y() + srcRect.h() <= sizeB().h())
+        {
+            LLog::fatal("[LTexture] Copy with glCopyTexImage2D().");
+
+            GLuint framebuffer;
+            glGenFramebuffers(1, &framebuffer);
+            glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0);
+
+            GLuint texCopy;
+            glGenTextures(1, &texCopy);
+            glBindTexture(GL_TEXTURE_2D, texCopy);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, srcRect.x(), srcRect.y(), srcRect.w(), srcRect.h(), 0);
+            glFinish();
+            textureCopy = new LTexture();
+            ret = textureCopy->imp()->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_BGRA8888, dstSize, painter->imp()->output);
+            glDeleteFramebuffers(1, &framebuffer);
+        }
+        // Scaled draw to new texture fb
+        else
+        {
+            GLuint framebuffer;
+            glGenFramebuffers(1, &framebuffer);
+            glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+            GLuint texCopy;
+            glGenTextures(1, &texCopy);
+            glBindTexture(GL_TEXTURE_2D, texCopy);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dstSize.w(), dstSize.h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texCopy, 0);
+            painter->imp()->scaleTexture((LTexture*)this, srcRect, dstSize);
+            glFinish();
+            textureCopy = new LTexture();
+            ret = textureCopy->imp()->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_BGRA8888, dstSize, painter->imp()->output);
+            glDeleteFramebuffers(1, &framebuffer);
+        }
     }
+    // If multi GPU, create DMA buffer
     else
     {
         GLuint framebuffer;

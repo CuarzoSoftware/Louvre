@@ -295,7 +295,17 @@ public:
         return m_x == p.m_x && m_y == p.m_y;
     }
 
+    inline bool operator==(const LPointTemplate<TB,TA> &p) const
+    {
+        return m_x == p.m_x && m_y == p.m_y;
+    }
+
     inline bool operator!=(const LPointTemplate<TA,TB> &p) const
+    {
+        return m_x != p.m_x || m_y != p.m_y;
+    }
+
+    inline bool operator!=(const LPointTemplate<TB,TA> &p) const
     {
         return m_x != p.m_x || m_y != p.m_y;
     }

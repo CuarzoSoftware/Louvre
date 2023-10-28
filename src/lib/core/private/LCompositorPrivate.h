@@ -66,8 +66,10 @@ LPRIVATE_CLASS(LCompositor)
     // Threads sync
     std::thread::id threadId;
     std::mutex renderMutex;
-    /*std::mutex queueMutex;
-    std::list<std::thread::id>threadsQueue;*/
+
+    /* Requires validation
+    std::mutex queueMutex;
+    std::list<std::thread::id>threadsQueue; */
 
     void lock();
     void unlock();

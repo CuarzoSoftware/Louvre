@@ -84,6 +84,7 @@ LPRIVATE_CLASS(LPainter)
     void scaleTexture(LTexture *texture, const LRect &src, const LSize &dst);
     void scaleTexture(GLuint textureId, GLenum textureTarget, GLuint framebufferId, GLint minFilter, const LSize &texSize, const LRect &src, const LSize &dst);
     void validateMipmap();
+
     // Shader state update
 
     inline void shaderSetTexSize(Int32 w, Int32 h)

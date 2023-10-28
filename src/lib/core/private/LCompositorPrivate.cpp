@@ -564,7 +564,7 @@ void LCompositor::LCompositorPrivate::lock()
 {
     renderMutex.lock();
 
-    /*
+    /* Requires validation
     queueMutex.lock();
     threadsQueue.push_back(std::this_thread::get_id());
     queueMutex.unlock();
@@ -579,14 +579,14 @@ retry:
         queueMutex.unlock();
         goto retry;
     }
-    queueMutex.unlock();*/
+    queueMutex.unlock(); */
 }
 
 void LCompositor::LCompositorPrivate::unlock()
 {
     renderMutex.unlock();
 
-    /*
+    /* Requires validation
     queueMutex.lock();
     threadsQueue.pop_front();
     queueMutex.unlock();*/
