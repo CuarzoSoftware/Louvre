@@ -123,7 +123,7 @@ LTexture *LOpenGL::loadTexture(const char *file)
 
     if (format == FIF_UNKNOWN)
     {
-        LLog::error("Failed to load image %s. Unknown format.", file);
+        LLog::error("Failed to load image %s.", file);
         return nullptr;
     }
 

@@ -223,6 +223,9 @@ void LPainter::LPainterPrivate::setupProgram()
 
 void LPainter::LPainterPrivate::validateMipmap()
 {
+    // Disabled until fixed
+    mipmap = false;
+    return;
     UChar8 textureBufer[64*64*4];
     memset(textureBufer, 255, sizeof(textureBufer));
 
