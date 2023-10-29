@@ -49,7 +49,7 @@ void Output::initializeGL()
 
     if (background)
     {
-        backgroundTexture = background->copyB(sizeB());
+        backgroundTexture = background->copyB(background->sizeB()/7, LRect(300, 300, -800, 800));
         LLog::debug("Background texture size %d %d", backgroundTexture->sizeB().w(), backgroundTexture->sizeB().h());
         delete background;
     }

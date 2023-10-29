@@ -25,7 +25,9 @@ LPainter::LPainter()
     GLchar vShaderStr[] = R"(
         precision lowp float;
         precision lowp int;
+        uniform lowp int mode;
         uniform lowp vec2 texSize;
+        uniform lowp vec2 samplerOffset;
         uniform lowp vec4 srcRect;
         attribute lowp vec4 vertexPosition;
         varying lowp vec2 v_texcoord;
@@ -35,6 +37,9 @@ LPainter::LPainter()
             gl_Position = vec4(vertexPosition.xy, 0.0, 1.0);
             v_texcoord.x = (srcRect.x + vertexPosition.z*srcRect.z) / texSize.x;
             v_texcoord.y = (srcRect.y + srcRect.w - vertexPosition.w*srcRect.w) / texSize.y;
+
+            if (mode == 3)
+                v_texcoord += samplerOffset;
         }
         )";
 
@@ -46,6 +51,7 @@ LPainter::LPainter()
         uniform lowp float alpha;
         uniform lowp vec3 color;
         uniform lowp vec4 colorFactor;
+        uniform lowp vec4 samplerBounds;
         varying lowp vec2 v_texcoord;
 
         void main()
@@ -65,10 +71,39 @@ LPainter::LPainter()
             }
 
             // Colored texture
-            else
+            else if (mode == 2)
             {
                 gl_FragColor.xyz = color;
                 gl_FragColor.w = texture2D(tex, v_texcoord).w * alpha;
+            }
+
+            // Texture with offset (for scaling)
+            else
+            {
+                vec2 texCoords;
+
+                // x < x1
+                if (v_texcoord.x < samplerBounds.x)
+                    texCoords.x = samplerBounds.x;
+
+                // x > x2
+                else if (v_texcoord.x > samplerBounds.z)
+                    texCoords.x = samplerBounds.z;
+                else
+                    texCoords.x = v_texcoord.x;
+
+                // y < y1
+                if (v_texcoord.y < samplerBounds.y)
+                    texCoords.y = samplerBounds.y;
+
+                // y > y2
+                else if (v_texcoord.y > samplerBounds.w)
+                    texCoords.y = samplerBounds.w;
+                else
+                    texCoords.y = v_texcoord.y;
+
+                gl_FragColor = texture2D(tex, texCoords);
+                gl_FragColor.w *= alpha;
             }
 
             gl_FragColor *= colorFactor;
@@ -80,10 +115,12 @@ LPainter::LPainter()
         precision lowp float;
         precision lowp int;
         uniform lowp samplerExternalOES tex;
+
         uniform lowp int mode;
         uniform lowp float alpha;
         uniform lowp vec3 color;
         uniform lowp vec4 colorFactor;
+        uniform lowp vec4 samplerBounds;
         varying lowp vec2 v_texcoord;
 
         void main()
@@ -94,11 +131,48 @@ LPainter::LPainter()
                 gl_FragColor = texture2D(tex, v_texcoord);
                 gl_FragColor.w *= alpha;
             }
+
+            // Solid color
+            else if (mode == 1)
+            {
+                gl_FragColor.xyz = color;
+                gl_FragColor.w = alpha;
+            }
+
             // Colored texture
-            else
+            else if (mode == 2)
             {
                 gl_FragColor.xyz = color;
                 gl_FragColor.w = texture2D(tex, v_texcoord).w * alpha;
+            }
+
+            // Texture with offset (for scaling)
+            else
+            {
+                vec2 texCoords;
+
+                // x < x1
+                if (v_texcoord.x < samplerBounds.x)
+                    texCoords.x = samplerBounds.x;
+
+                // x > x2
+                else if (v_texcoord.x > samplerBounds.z)
+                    texCoords.x = samplerBounds.z;
+                else
+                    texCoords.x = v_texcoord.x;
+
+                // y < y1
+                if (v_texcoord.y < samplerBounds.y)
+                    texCoords.y = samplerBounds.y;
+
+                // y > y2
+                else if (v_texcoord.y > samplerBounds.w)
+                    texCoords.y = samplerBounds.w;
+                else
+                    texCoords.y = v_texcoord.y;
+
+                gl_FragColor = texture2D(tex, texCoords);
+                gl_FragColor.w *= alpha;
             }
 
             gl_FragColor *= colorFactor;
@@ -176,7 +250,6 @@ LPainter::LPainter()
     glDisable(GL_SAMPLE_ALPHA_TO_ONE);
 
     imp()->shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
-    imp()->validateMipmap();
 }
 
 void LPainter::bindFramebuffer(LFramebuffer *framebuffer)
@@ -219,54 +292,8 @@ void LPainter::LPainterPrivate::setupProgram()
     currentUniforms->color= glGetUniformLocation(currentProgram, "color");
     currentUniforms->colorFactor = glGetUniformLocation(currentProgram, "colorFactor");
     currentUniforms->alpha = glGetUniformLocation(currentProgram, "alpha");
-}
-
-void LPainter::LPainterPrivate::validateMipmap()
-{
-    // Disabled until fixed
-    mipmap = false;
-    return;
-    UChar8 textureBufer[64*64*4];
-    memset(textureBufer, 255, sizeof(textureBufer));
-
-    GLuint textureId;
-    glGenTextures(1, &textureId);
-    glBindTexture(GL_TEXTURE_2D, textureId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureBufer);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    GLuint framebufferId;
-    glGenFramebuffers(1, &framebufferId);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
-
-    GLuint renderbufferId;
-    glGenRenderbuffers(1, &renderbufferId);
-    glBindRenderbuffer(GL_RENDERBUFFER, renderbufferId);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, 32, 32);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, renderbufferId);
-    scaleTexture(textureId, GL_TEXTURE_2D, framebufferId, GL_LINEAR_MIPMAP_LINEAR, LSize(64), LRect(0, 0, 64, 64), LSize(32));
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
-
-    UChar8 readBuffer[32*32*4];
-    glPixelStorei(GL_PACK_ALIGNMENT, 4);
-    glPixelStorei(GL_PACK_ROW_LENGTH, 32);
-    glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-    glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-    glReadPixels(0, 0, 32, 32, GL_RGBA, GL_UNSIGNED_BYTE, readBuffer);
-    glPixelStorei(GL_PACK_ALIGNMENT, 4);
-    glPixelStorei(GL_PACK_ROW_LENGTH, 0);
-    glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-    glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    mipmap = readBuffer[0] == 255 && readBuffer[1] == 255 && readBuffer[2] == 255 && readBuffer[3] == 255;
-
-    glDeleteTextures(1, &textureId);
-    glDeleteRenderbuffers(1, &renderbufferId);
-    glDeleteFramebuffers(1, &framebufferId);
-
-    if (!mipmap)
-        LLog::warning("[LPainter] glGenerateMipmap() not supported.");
+    currentUniforms->samplerOffset = glGetUniformLocation(currentProgram, "samplerOffset");
+    currentUniforms->samplerBounds = glGetUniformLocation(currentProgram, "samplerBounds");
 }
 
 void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src, const LRect &dst)

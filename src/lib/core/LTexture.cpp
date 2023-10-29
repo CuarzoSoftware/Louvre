@@ -189,7 +189,6 @@ bool LTexture::updateRect(const LRect &rect, UInt32 stride, const void *buffer)
     return false;
 }
 
-#include <LOpenGL.h>
 Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQualityScaling) const
 {
     if (!initialized())
@@ -245,81 +244,134 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
         return nullptr;
     }
 
-    if (highQualityScaling && painter->imp()->mipmap)
+    LTexture *textureCopy;
+    bool ret = false;
+
+    if (highQualityScaling)
     {
-        Float32 wScale = abs(float(srcRect.w()) / float(dstSize.w()));
-        Float32 hScale = abs(float(srcRect.h()) / float(dstSize.h()));
+        Int32 wScale = round(abs(Float64(srcRect.w()) / Float64(dstSize.w())));
+        Int32 hScale = round(abs(Float64(srcRect.h()) / Float64(dstSize.h())));
 
         // Check if downscaling is needed
-        if (wScale <= 2.f && hScale <= 2.f)
-            goto skipMipmap;
+        if (wScale <= 2 && hScale <= 2)
+            goto skipHQ;
 
-        GLint mipLevel = 0;
+        Float64 pixSizeW = 1.0 / Float64(sizeB().w());
+        Float64 pixSizeH = 1.0 / Float64(sizeB().h());
 
-        if (wScale < hScale)
+        Float64 limit = 3.f;
+
+        if (wScale > limit)
         {
-            wScale = srcRect.w() / 2.f;
-            while (wScale > dstSize.w())
+            pixSizeW *= Float64(wScale) / limit;
+            wScale = limit;
+        }
+
+        if (hScale > limit)
+        {
+            pixSizeH *= Float64(hScale) / limit;
+            hScale = limit;
+        }
+
+        Float64 colorFactor = 1.0 / Float64(wScale*hScale);
+
+        GLuint framebuffer;
+        glGenFramebuffers(1, &framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        GLuint texCopy;
+        glGenTextures(1, &texCopy);
+        glBindTexture(GL_TEXTURE_2D, texCopy);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dstSize.w(), dstSize.h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texCopy, 0);
+
+        GLenum tgt = target();
+        painter->imp()->switchTarget(tgt);
+        glEnable(GL_BLEND);
+        glScissor(0, 0, dstSize.w(), dstSize.h());
+        glViewport(0, 0, dstSize.w(), dstSize.h());
+        glClearColor(0.f, 0.f, 0.f, 0.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glActiveTexture(GL_TEXTURE0);
+        painter->imp()->shaderSetAlpha(1.f);
+        painter->imp()->shaderSetMode(3);
+        painter->imp()->shaderSetActiveTexture(0);
+        painter->imp()->shaderSetTexSize(sizeB().w(), sizeB().h());
+        painter->imp()->shaderSetSrcRect(srcRect.x(), srcRect.y() + srcRect.h(), srcRect.w(), -srcRect.h());
+
+        Float32 tmp;
+        Float32 x1 = (Float32(srcRect.x()) + 0.f * Float32(srcRect.w())) / Float32(sizeB().w());
+        Float32 y1 = (Float32(srcRect.y() + srcRect.h()) + Float32(-srcRect.h()) - 0.f * Float32(-srcRect.h())) / Float32(sizeB().h());
+        Float32 x2 = (Float32(srcRect.x()) + 1.f * Float32(srcRect.w())) / Float32(sizeB().w());
+        Float32 y2 = (Float32(srcRect.y() + srcRect.h()) + Float32(-srcRect.h()) - 1.f * Float32(-srcRect.h())) / Float32(sizeB().h());
+
+        if (x1 > x2)
+        {
+            tmp = x1;
+            x1 = x2;
+            x2 = tmp;
+        }
+
+        if (y1 > y2)
+        {
+            tmp = y1;
+            y1 = y2;
+            y2 = tmp;
+        }
+
+        painter->imp()->shaderSetSamplerBounds(x1, y1, x2, y2);
+        painter->imp()->shaderSetColorFactor(colorFactor, colorFactor, colorFactor, colorFactor);
+
+        glBindTexture(tgt, id(painter->imp()->output));
+        glTexParameteri(tgt, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(tgt, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(tgt, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(tgt, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glBlendFunc(GL_ONE, GL_ONE);
+
+        for (Int32 x = 0; x < wScale; x++)
+        {
+            for (Int32 y = 0; y < hScale; y++)
             {
-                wScale /= 2.f;
-                mipLevel++;
+                painter->imp()->shaderSetSamplerOffset(x * pixSizeW, y * pixSizeH);
+                glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
             }
+        }
+
+        glFinish();
+        painter->imp()->shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        textureCopy = new LTexture();
+
+        if (compositor()->imp()->graphicBackend->rendererGPUs() == 1)
+        {
+            ret = textureCopy->imp()->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_BGRA8888, dstSize, painter->imp()->output);
         }
         else
         {
-            hScale = srcRect.h() / 2.f;
-            while (hScale > dstSize.h())
-            {
-                hScale /= 2.f;
-                mipLevel++;
-            }
+            UChar8 *cpuBuffer = (UChar8*)malloc(dstSize.w() * dstSize.h() * 4);
+
+            glPixelStorei(GL_PACK_ALIGNMENT, 4);
+            glPixelStorei(GL_PACK_ROW_LENGTH, dstSize.w());
+            glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
+            glPixelStorei(GL_PACK_SKIP_ROWS, 0);
+            glReadPixels(0, 0, dstSize.w(), dstSize.h(), GL_BGRA, GL_UNSIGNED_BYTE, cpuBuffer);
+            glPixelStorei(GL_PACK_ALIGNMENT, 4);
+            glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+            glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
+            glPixelStorei(GL_PACK_SKIP_ROWS, 0);
+
+            textureCopy = new LTexture();
+            ret = textureCopy->setDataB(dstSize, dstSize.w() * 4, DRM_FORMAT_ARGB8888, cpuBuffer);
+
+            free(cpuBuffer);
+            glDeleteTextures(1, &texCopy);
         }
 
-        GLuint texFb, texId, rndFb, rndId;
-        glGenFramebuffers(1, &texFb);
-        glBindFramebuffer(GL_FRAMEBUFFER, texFb);
-        glGenTextures(1, &texId);
-        glBindTexture(GL_TEXTURE_2D, texId);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sizeB().w(), sizeB().h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texId, 0);
-        painter->imp()->scaleTexture(id(painter->imp()->output), target(), texFb, GL_LINEAR, sizeB(), LRect(0, sizeB()), sizeB());
-        glBindTexture(GL_TEXTURE_2D, texId);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, mipLevel);
-
-        glGenFramebuffers(1, &rndFb);
-        glBindFramebuffer(GL_FRAMEBUFFER, rndFb);
-        glGenRenderbuffers(1, &rndId);
-        glBindRenderbuffer(GL_RENDERBUFFER, rndId);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, dstSize.w(), dstSize.h());
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rndId);
-        painter->imp()->scaleTexture(texId, GL_TEXTURE_2D, rndFb, GL_LINEAR_MIPMAP_LINEAR, sizeB(), srcRect, dstSize);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, rndFb);
-
-        UChar8 *cpuBuffer = (UChar8*)malloc(dstSize.w() * dstSize.h() * 4);
-
-        glPixelStorei(GL_PACK_ALIGNMENT, 4);
-        glPixelStorei(GL_PACK_ROW_LENGTH, dstSize.w());
-        glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-        glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-        glReadPixels(0, 0, dstSize.w(), dstSize.h(), GL_BGRA, GL_UNSIGNED_BYTE, cpuBuffer);
-        glPixelStorei(GL_PACK_ALIGNMENT, 4);
-        glPixelStorei(GL_PACK_ROW_LENGTH, 0);
-        glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-        glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        LTexture *textureCopy = new LTexture();
-        bool ret = textureCopy->setDataB(dstSize, dstSize.w() * 4, DRM_FORMAT_ARGB8888, cpuBuffer);
-
-        free(cpuBuffer);
-
-        glDeleteTextures(1, &texId);
-        glDeleteFramebuffers(1, &texFb);
-        glDeleteRenderbuffers(1, &rndId);
-        glDeleteFramebuffers(1, &rndFb);
+        glDeleteFramebuffers(1, &framebuffer);
 
         if (ret)
             return textureCopy;
@@ -329,10 +381,7 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
         return nullptr;
     }
 
-    skipMipmap:
-
-    LTexture *textureCopy;
-    bool ret = false;
+    skipHQ:
 
     // If single GPU, no need for DMA sharing
     if (compositor()->imp()->graphicBackend->rendererGPUs() == 1)
@@ -354,8 +403,8 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
             GLuint texCopy;
             glGenTextures(1, &texCopy);
             glBindTexture(GL_TEXTURE_2D, texCopy);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, srcRect.x(), srcRect.y(), srcRect.w(), srcRect.h(), 0);
@@ -373,8 +422,8 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
             GLuint texCopy;
             glGenTextures(1, &texCopy);
             glBindTexture(GL_TEXTURE_2D, texCopy);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dstSize.w(), dstSize.h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);

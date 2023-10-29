@@ -29,10 +29,17 @@ LPRIVATE_CLASS(LPainter)
         mode,
         color,
         colorFactor,
-        alpha;
+        alpha,
+        samplerOffset,
+        samplerBounds;
     } uniforms, uniformsExternal;
 
     Uniforms *currentUniforms;
+
+    struct LGLVec2F
+    {
+        GLfloat x, y;
+    };
 
     struct LGLVec4F
     {
@@ -68,6 +75,8 @@ LPRIVATE_CLASS(LPainter)
         LGLColor color;
         LGLVec4F colorFactor;
         GLfloat alpha;
+        LGLVec4F samplerBounds;
+        LGLVec2F samplerOffset;
     };
 
     ShaderState state, stateExternal;
@@ -83,7 +92,6 @@ LPRIVATE_CLASS(LPainter)
     void scaleCursor(LTexture *texture, const LRect &src, const LRect &dst);
     void scaleTexture(LTexture *texture, const LRect &src, const LSize &dst);
     void scaleTexture(GLuint textureId, GLenum textureTarget, GLuint framebufferId, GLint minFilter, const LSize &texSize, const LRect &src, const LSize &dst);
-    void validateMipmap();
 
     // Shader state update
 
@@ -198,10 +206,35 @@ LPRIVATE_CLASS(LPainter)
         }
     }
 
+    inline void shaderSetSamplerOffset(Float32 x, Float32 y)
+    {
+        if (currentState->samplerOffset.x != x ||
+            currentState->samplerOffset.y != y)
+        {
+            currentState->samplerOffset.x = x;
+            currentState->samplerOffset.y = y;
+            glUniform2f(currentUniforms->samplerOffset, x, y);
+        }
+    }
+
+    inline void shaderSetSamplerBounds(Float32 x1, Float32 y1, Float32 x2, Float32 y2)
+    {
+        if (currentState->samplerBounds.x != x1 ||
+            currentState->samplerBounds.y != y1 ||
+            currentState->samplerBounds.w != x2 ||
+            currentState->samplerBounds.h != y2)
+        {
+            currentState->samplerBounds.x = x1;
+            currentState->samplerBounds.y = y1;
+            currentState->samplerBounds.w = x2;
+            currentState->samplerBounds.h = y2;
+            glUniform4f(currentUniforms->samplerBounds, x1, y1, x2, y2);
+        }
+    }
+
     LFramebuffer *fb = nullptr;
     GLuint fbId = 0;
     GLenum lastTarget = GL_TEXTURE_2D;
-    bool mipmap = true;
 };
 
 #endif // LPAINTERPRIVATE_H
