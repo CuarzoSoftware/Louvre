@@ -1,6 +1,6 @@
-#include "LLog.h"
 #include <private/LXCursorPrivate.h>
 #include <LTexture.h>
+#include <LLog.h>
 #include <X11/Xcursor/Xcursor.h>
 
 using namespace Louvre;
@@ -11,7 +11,7 @@ LXCursor *LXCursor::loadXCursorB(const char *cursor, const char *theme, Int32 su
 
     if (!x11Cursor)
     {
-        LLog::error("Failed to load X Cursor.");
+        LLog::error("[LXCursor::loadXCursorB()] Failed to load X Cursor.");
         return nullptr;
     }
 
@@ -26,7 +26,7 @@ LXCursor *LXCursor::loadXCursorB(const char *cursor, const char *theme, Int32 su
                                                     DRM_FORMAT_ABGR8888,
                                                     x11Cursor->pixels))
     {
-        LLog::error("Failed to create texture from X Cursor.");
+        LLog::error("[LXCursor::loadXCursorB()] Failed to create texture from X Cursor.");
         delete newCursor;
         XcursorImageDestroy(x11Cursor);
         return nullptr;

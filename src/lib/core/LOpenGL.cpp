@@ -18,7 +18,7 @@ char *LOpenGL::openShader(const char *file)
 
     if (fp == NULL)
     {
-        LLog::error("Error while opening shader file: %s.\n", file);
+        LLog::error("[LOpenGL::openShader()] Error while opening shader file: %s.\n", file);
         return nullptr;
     }
 
@@ -107,7 +107,7 @@ GLuint LOpenGL::compileShader(GLenum type, const char *shaderString)
 
         glGetShaderInfoLog(shader, infoLen, &infoLen, errorLog);
 
-        LLog::error("%s", errorLog);
+        LLog::error("[LOpenGL::compileShader()] %s", errorLog);
 
         glDeleteShader(shader);
 
@@ -123,7 +123,7 @@ LTexture *LOpenGL::loadTexture(const char *file)
 
     if (format == FIF_UNKNOWN)
     {
-        LLog::error("Failed to load image %s.", file);
+        LLog::error("[LOpenGL::loadTexture()] Failed to load image %s.", file);
         return nullptr;
     }
 
@@ -131,7 +131,7 @@ LTexture *LOpenGL::loadTexture(const char *file)
 
     if (!bitmap)
     {
-        LLog::error("Failed to load image %s.", file);
+        LLog::error("[LOpenGL::loadTexture()] Failed to load image %s.", file);
         return nullptr;
     }
 
@@ -141,19 +141,15 @@ LTexture *LOpenGL::loadTexture(const char *file)
 
     if (!convertedBitmap)
     {
-        LLog::error("Failed to convert image %s to 32 bit format.", file);
+        LLog::error("[LOpenGL::loadTexture()] Failed to convert image %s to 32 bit format.", file);
         return nullptr;
     }
 
-    LSize size;
-    size.setW(FreeImage_GetWidth(convertedBitmap));
-    size.setH(FreeImage_GetHeight(convertedBitmap));
+    LSize size((Int32)FreeImage_GetWidth(convertedBitmap), (Int32)FreeImage_GetHeight(convertedBitmap));
     UInt32 pitch = FreeImage_GetPitch(convertedBitmap);
     UChar8 *pixels = (UChar8*)FreeImage_GetBits(convertedBitmap);
     LTexture *texture = new LTexture();
     texture->setDataB(size, pitch, DRM_FORMAT_ARGB8888, pixels);
-
     FreeImage_Unload(convertedBitmap);
-
     return texture;
 }

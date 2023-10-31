@@ -184,7 +184,7 @@ void Client::createNonPinnedApp()
     char name[1024];
     get_process_name_by_pid(pid, name, sizeof(name));
 
-    LLog::debug("Non pinned app name: %s", name);
+    LLog::debug("[louvre-views] Non pinned app name: %s", name);
 
     // If not a pinned Dock app, create a tmp AppDock item
     app = new App(name, NULL, NULL);

@@ -19,7 +19,7 @@ int main(int, char *[])
 
     if (!compositor.start())
     {
-        LLog::fatal("Failed to start compositor.");
+        LLog::fatal("[louvre-default] Failed to start compositor.");
         return 1;
     }
 

@@ -26,7 +26,7 @@ public:
     void minimizedChanged() override;
     void damageChanged() override;
 
-    LTexture *renderThumbnail();
+    LTexture *renderThumbnail(LRegion *transRegion = nullptr);
     void unminimize(DockItem *clickedItem);
 
     bool firstMap = true;
@@ -40,6 +40,7 @@ public:
     LRect minimizeStartRect;
     LAnimation *minimizeAnim = nullptr;
     Output *minimizedOutput = nullptr;
+    LRegion minimizedTransRegion;
 
     LPoint localOutputPos;
     LSize localOutputSize;

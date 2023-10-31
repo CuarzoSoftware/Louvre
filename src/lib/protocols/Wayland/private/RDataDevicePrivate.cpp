@@ -4,6 +4,7 @@
 #include <private/LDNDManagerPrivate.h>
 #include <private/LDataDevicePrivate.h>
 #include <private/LSeatPrivate.h>
+#include <private/LCompositorPrivate.h>
 #include <protocols/Wayland/RDataSource.h>
 #include <protocols/Wayland/GSeat.h>
 #include <protocols/Wayland/RPointer.h>
@@ -42,7 +43,7 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
     /* TODO: Use serial
     if (!rDataDevice->seatGlobal()->pointerResource() || rDataDevice->seatGlobal()->pointerResource()->serials().button != serial)
     {
-        LLog::debug("[data device] Start drag request without input grab. Ignoring it.");
+        LLog::debug("[RDataDevicePrivate::start_drag()] Start drag request without input grab. Ignoring it.");
         return;
     }*/
 
@@ -53,7 +54,7 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
     // Cancel if there is dragging going on or if there is no focused surface from this client
     if (dndManager->dragging() || seat()->pointer()->focusSurface() != lOriginSurface)
     {
-        LLog::debug("[data device] Invalid start drag request. Ignoring it.");
+        LLog::debug("[RDataDevicePrivate::start_drag()] Invalid start drag request. Ignoring it.");
         return;
     }
 
@@ -75,9 +76,17 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
             return;
         }
 
+        // Retry if the compositor surfaces list changes
+        retry:
+        compositor()->imp()->surfacesListChanged = false;
         for (LSurface *s : compositor()->surfaces())
             if (s->dndIcon())
+            {
                 s->imp()->setMapped(false);
+
+                if (compositor()->imp()->surfacesListChanged)
+                    goto retry;
+            }
 
         LDNDIconRole::Params dndIconRoleParams;
         dndIconRoleParams.surface = lIcon;

@@ -21,7 +21,7 @@ void GDataDeviceManager::GDataDeviceManagerPrivate::bind(wl_client *client, void
 
     if (lClient->dataDeviceManagerGlobal())
     {
-        LLog::warning("Client bound twice to the wl_data_device_manager singleton global. Ignoring it...");
+        LLog::warning("[GDataDeviceManagerPrivate::bind()] Client bound twice to the wl_data_device_manager singleton global. Ignoring it...");
         return;
     }
 
@@ -54,7 +54,7 @@ void GDataDeviceManager::GDataDeviceManagerPrivate::get_data_device(wl_client *c
 
     if (gSeat->dataDeviceResource())
     {
-        LLog::warning("Client already created a wl_data_device for this wl_seat. Ignoring it.");
+        LLog::warning("[GDataDeviceManagerPrivate::get_data_device()] Client already created a wl_data_device for this wl_seat. Ignoring it.");
         return;
     }
 

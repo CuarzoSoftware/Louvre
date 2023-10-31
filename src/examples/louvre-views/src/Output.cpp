@@ -173,6 +173,10 @@ void Output::initializeGL()
                     tl->animView.setPos((pos() * anim->value()) + (tl->prevBoundingRect.pos() * (1.f - anim->value())));
                     cSize = (size() * anim->value()) + (tl->prevBoundingRect.size() * (1.f - anim->value()));
                     tl->animView.setDstSize(cSize);
+                    LRegion transRegion = tl->captureTransRegion;
+                    LSizeF regScale = LSizeF(cSize) / LSizeF(tl->prevBoundingRect.size());
+                    transRegion.multiply(regScale.x(), regScale.y());
+                    tl->animView.setTranslucentRegion(&transRegion);
                 }
                 else
                 {
@@ -180,8 +184,9 @@ void Output::initializeGL()
                     LPoint animPos = (pos() * (1.f - anim->value())) + (tl->prevBoundingRect.pos() * anim->value());
                     tl->surf()->setPos(0);
                     LBox box = tl->surf()->getView()->boundingBox();
-                    tl->animScene->setSizeB(LSize(box.x2 - box.x1, box.y2 - box.y1)*2);
-                    cSize = (size() * (1.f - anim->value())) + (LSize(box.x2 - box.x1, box.y2 - box.y1) * anim->value());
+                    LSize boxSize = LSize(box.x2 - box.x1, box.y2 - box.y1);
+                    tl->animScene->setSizeB(boxSize * 2);
+                    cSize = (size() * (1.f - anim->value())) + (boxSize * anim->value());
 
                     // Fades out black background
                     tl->blackFullscreenBackground.setOpacity(1.f - anim->value());
@@ -262,6 +267,9 @@ void Output::initializeGL()
                     tl->surf()->setPos(pos().x(), 0);
                     G::reparentWithSubsurfaces(tl->surf(), &tl->fullscreenWorkspace->surfaces);
                     currentWorkspace->clipChildren();
+                    LRegion empty;
+                    tl->surf()->view->enableCustomTranslucentRegion(true);
+                    tl->surf()->view->setCustomTranslucentRegion(&empty);
                 }
                 else
                 {
@@ -270,6 +278,7 @@ void Output::initializeGL()
                     G::repositionNonVisibleToplevelChildren(this, tl->surf());
                     tl->surf()->getView()->setVisible(true);
                     tl->surf()->raise();
+                    tl->surf()->view->enableCustomTranslucentRegion(false);
                     delete tl->fullscreenWorkspace;
                     tl->fullscreenWorkspace = nullptr;
                 }

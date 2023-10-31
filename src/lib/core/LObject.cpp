@@ -1,4 +1,3 @@
-#include <LObject.h>
 #include <LCompositor.h>
 
 using namespace Louvre;

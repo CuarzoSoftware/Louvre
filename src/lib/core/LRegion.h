@@ -99,6 +99,13 @@ public:
     void multiply(Float32 factor);
 
     /**
+     * @brief Multiplies the components of each rectangle in the LRegion by the given factor.
+     *
+     * @param factor The factor to multiply by.
+     */
+    void multiply(Float32 xFactor, Float32 yFactor);
+
+    /**
     * @brief Check if the LRegion contains a specific point.
      *
      * @param point The point to check.

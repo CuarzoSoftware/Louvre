@@ -83,6 +83,8 @@ LKeyboard::~LKeyboard()
 
 bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layout, const char *variant, const char *options)
 {
+    const char *METHOD_NAME = "LKeyboard::setKeymap";
+
     if (imp()->xkbKeymapFd != -1)
     {
         close(imp()->xkbKeymapFd);
@@ -116,8 +118,8 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
 
     if (!imp()->xkbKeymap)
     {
-        LLog::error("[keyboard] Failed to set keymap with names Rules: %s, Model: %s, Layout: %s, Variant: %s, Opetions: %s. Restoring default keymap.",
-                    rules, model, layout, variant, options);
+        LLog::error("[%s()] Failed to set keymap with names Rules: %s, Model: %s, Layout: %s, Variant: %s, Opetions: %s. Restoring default keymap.",
+                    METHOD_NAME, rules, model, layout, variant, options);
 
         goto fail;
     }
@@ -133,8 +135,8 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
 
     if (!xdgRuntimeDir)
     {
-        printf("Louvre error: XDG_RUNTIME_DIR env not set.\n");
-        exit(EXIT_FAILURE);
+        LLog::error("[%s()] XDG_RUNTIME_DIR env not set. Using /tmp,", METHOD_NAME);
+        xdgRuntimeDir = "/tmp";
     }
 
     // Open and store the file descritor
@@ -142,8 +144,8 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
 
     if (imp()->xkbKeymapFd < 0)
     {
-        printf("Error creating shared memory for keyboard layout.\n");
-        exit(-1);
+        LLog::error("[%s()] Failed to allocate shared memory for keymap.", METHOD_NAME);
+        goto fail;
     }
 
     // Write the keymap string
@@ -161,8 +163,8 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
 
     if (!imp()->xkbKeymapState)
     {
-        LLog::error("[keyboard] Failed to get keymap state with names Rules: %s, Model: %s, Layout: %s, Variant: %s, Opetions: %s. Restoring default keymap.",
-                    rules, model, layout, variant, options);
+        LLog::error("[%s()] Failed to get keymap state with names Rules: %s, Model: %s, Layout: %s, Variant: %s, Opetions: %s. Restoring default keymap.",
+                    METHOD_NAME, rules, model, layout, variant, options);
         goto fail;
     }
 
@@ -182,7 +184,7 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
         if (setKeymap())
             return false;
         else
-            LLog::error("[keyboard] Failed to set default keymap. Disabling keymap.");
+            LLog::error("[%s()] Failed to set default keymap. Disabling keymap.", METHOD_NAME);
     }
 
     // Worst case, disables keymap

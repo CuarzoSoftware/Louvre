@@ -10,7 +10,7 @@ LRenderBuffer::LRenderBuffer(const LSize &sizeB)
 {
     m_imp = new LRenderBufferPrivate();
     imp()->texture.imp()->sourceType = LTexture::Framebuffer;
-    imp()->texture.imp()->format = DRM_FORMAT_ARGB8888;
+    imp()->texture.imp()->format = DRM_FORMAT_BGRA8888;
     imp()->texture.imp()->graphicBackendData = this;
     setSizeB(sizeB);
 }
@@ -92,11 +92,7 @@ GLuint LRenderBuffer::id() const
         glGenFramebuffers(1, &data.framebufferId);
         glBindFramebuffer(GL_FRAMEBUFFER, data.framebufferId);
         glGenTextures(1, &data.textureId);
-        glBindTexture(GL_TEXTURE_2D, data.textureId);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        LTexture::LTexturePrivate::setTextureParams(data.textureId, GL_TEXTURE_2D, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imp()->texture.sizeB().w(), imp()->texture.sizeB().h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, data.textureId, 0);
     }

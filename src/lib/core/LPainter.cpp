@@ -2,11 +2,11 @@
 #include <private/LPainterPrivate.h>
 #include <private/LOutputFramebufferPrivate.h>
 #include <private/LCompositorPrivate.h>
+#include <private/LTexturePrivate.h>
 
 #include <GLES2/gl2.h>
 #include <LOpenGL.h>
 #include <LRect.h>
-#include <LTexture.h>
 #include <LOutput.h>
 #include <cstdio>
 #include <string.h>
@@ -25,9 +25,7 @@ LPainter::LPainter()
     GLchar vShaderStr[] = R"(
         precision lowp float;
         precision lowp int;
-        uniform lowp int mode;
         uniform lowp vec2 texSize;
-        uniform lowp vec2 samplerOffset;
         uniform lowp vec4 srcRect;
         attribute lowp vec4 vertexPosition;
         varying lowp vec2 v_texcoord;
@@ -37,9 +35,6 @@ LPainter::LPainter()
             gl_Position = vec4(vertexPosition.xy, 0.0, 1.0);
             v_texcoord.x = (srcRect.x + vertexPosition.z*srcRect.z) / texSize.x;
             v_texcoord.y = (srcRect.y + srcRect.w - vertexPosition.w*srcRect.w) / texSize.y;
-
-            if (mode == 3)
-                v_texcoord += samplerOffset;
         }
         )";
 
@@ -47,11 +42,14 @@ LPainter::LPainter()
         precision lowp float;
         precision lowp int;
         uniform lowp sampler2D tex;
+
         uniform lowp int mode;
         uniform lowp float alpha;
         uniform lowp vec3 color;
         uniform lowp vec4 colorFactor;
         uniform lowp vec4 samplerBounds;
+        uniform lowp vec2 pixelSize;
+        uniform lowp ivec2 iters;
         varying lowp vec2 v_texcoord;
 
         void main()
@@ -77,32 +75,35 @@ LPainter::LPainter()
                 gl_FragColor.w = texture2D(tex, v_texcoord).w * alpha;
             }
 
-            // Texture with offset (for scaling)
+            // Texture scaling with pixel avg
             else
             {
                 vec2 texCoords;
+                gl_FragColor = vec4(0.0);
 
-                // x < x1
-                if (v_texcoord.x < samplerBounds.x)
-                    texCoords.x = samplerBounds.x;
+                for (int x = 0; x < iters.x; x++)
+                {
+                    texCoords.x = v_texcoord.x + float(x) * pixelSize.x;
 
-                // x > x2
-                else if (v_texcoord.x > samplerBounds.z)
-                    texCoords.x = samplerBounds.z;
-                else
-                    texCoords.x = v_texcoord.x;
+                    if (texCoords.x < samplerBounds.x)
+                        texCoords.x = samplerBounds.x;
+                    else if (texCoords.x > samplerBounds.z)
+                        texCoords.x = samplerBounds.z;
 
-                // y < y1
-                if (v_texcoord.y < samplerBounds.y)
-                    texCoords.y = samplerBounds.y;
+                    for (int y = 0; y < iters.y; y++)
+                    {
+                        texCoords.y = v_texcoord.y + float(y) * pixelSize.y;
 
-                // y > y2
-                else if (v_texcoord.y > samplerBounds.w)
-                    texCoords.y = samplerBounds.w;
-                else
-                    texCoords.y = v_texcoord.y;
+                        if (texCoords.y < samplerBounds.y)
+                            texCoords.y = samplerBounds.y;
+                        else if (texCoords.y > samplerBounds.w)
+                            texCoords.y = samplerBounds.w;
 
-                gl_FragColor = texture2D(tex, texCoords);
+                        gl_FragColor += texture2D(tex, texCoords);
+                    }
+                }
+
+                gl_FragColor /= float(iters.x * iters.y);
                 gl_FragColor.w *= alpha;
             }
 
@@ -121,6 +122,8 @@ LPainter::LPainter()
         uniform lowp vec3 color;
         uniform lowp vec4 colorFactor;
         uniform lowp vec4 samplerBounds;
+        uniform lowp vec2 pixelSize;
+        uniform lowp ivec2 iters;
         varying lowp vec2 v_texcoord;
 
         void main()
@@ -146,32 +149,35 @@ LPainter::LPainter()
                 gl_FragColor.w = texture2D(tex, v_texcoord).w * alpha;
             }
 
-            // Texture with offset (for scaling)
+            // Texture scaling with pixel avg
             else
             {
                 vec2 texCoords;
+                gl_FragColor = vec4(0.0);
 
-                // x < x1
-                if (v_texcoord.x < samplerBounds.x)
-                    texCoords.x = samplerBounds.x;
+                for (int x = 0; x < iters.x; x++)
+                {
+                    texCoords.x = v_texcoord.x + float(x) * pixelSize.x;
 
-                // x > x2
-                else if (v_texcoord.x > samplerBounds.z)
-                    texCoords.x = samplerBounds.z;
-                else
-                    texCoords.x = v_texcoord.x;
+                    if (texCoords.x < samplerBounds.x)
+                        texCoords.x = samplerBounds.x;
+                    else if (texCoords.x > samplerBounds.z)
+                        texCoords.x = samplerBounds.z;
 
-                // y < y1
-                if (v_texcoord.y < samplerBounds.y)
-                    texCoords.y = samplerBounds.y;
+                    for (int y = 0; y < iters.y; y++)
+                    {
+                        texCoords.y = v_texcoord.y + float(y) * pixelSize.y;
 
-                // y > y2
-                else if (v_texcoord.y > samplerBounds.w)
-                    texCoords.y = samplerBounds.w;
-                else
-                    texCoords.y = v_texcoord.y;
+                        if (texCoords.y < samplerBounds.y)
+                            texCoords.y = samplerBounds.y;
+                        else if (texCoords.y > samplerBounds.w)
+                            texCoords.y = samplerBounds.w;
 
-                gl_FragColor = texture2D(tex, texCoords);
+                        gl_FragColor += texture2D(tex, texCoords);
+                    }
+                }
+
+                gl_FragColor /= float(iters.x * iters.y);
                 gl_FragColor.w *= alpha;
             }
 
@@ -221,7 +227,7 @@ LPainter::LPainter()
         GLint infoLen = 0;
         glGetProgramiv(imp()->programObjectExternal, GL_INFO_LOG_LENGTH, &infoLen);
         glDeleteProgram(imp()->programObjectExternal);
-        LLog::error("[LPainter] Failed to compile external OES shader.");
+        LLog::error("[LPainter::LPainter()] Failed to compile external OES shader.");
     }
     else
     {
@@ -292,15 +298,18 @@ void LPainter::LPainterPrivate::setupProgram()
     currentUniforms->color= glGetUniformLocation(currentProgram, "color");
     currentUniforms->colorFactor = glGetUniformLocation(currentProgram, "colorFactor");
     currentUniforms->alpha = glGetUniformLocation(currentProgram, "alpha");
-    currentUniforms->samplerOffset = glGetUniformLocation(currentProgram, "samplerOffset");
+    currentUniforms->pixelSize = glGetUniformLocation(currentProgram, "pixelSize");
     currentUniforms->samplerBounds = glGetUniformLocation(currentProgram, "samplerBounds");
+    currentUniforms->iters = glGetUniformLocation(currentProgram, "iters");
 }
 
 void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src, const LRect &dst)
 {
     GLenum target = texture->target();
+    GLuint textureId = texture->id(output);
+
     switchTarget(target);
-    glEnable(GL_BLEND);
+    glDisable(GL_BLEND);
     glScissor(0,0,64,64);
     glViewport(0,0,64,64);
     glClearColor(0,0,0,0);
@@ -311,24 +320,20 @@ void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src,
     shaderSetAlpha(1.f);
     shaderSetMode(0);
     shaderSetActiveTexture(0);
-    glBindTexture(target, texture->id(output));
-    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    texture->imp()->setTextureParams(textureId, target, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
     shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
     shaderSetSrcRect(src.x(), src.y(), src.w(), src.h());
     shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
-    glBlendFunc(GL_ONE, GL_ZERO);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void LPainter::LPainterPrivate::scaleTexture(LTexture *texture, const LRect &src, const LSize &dst)
 {
     GLenum target = texture->target();
+    GLuint textureId = texture->id(output);
+
     switchTarget(target);
-    glEnable(GL_BLEND);
+    glDisable(GL_BLEND);
     glScissor(0, 0, dst.w(), dst.h());
     glViewport(0, 0, dst.w(), dst.h());
     glActiveTexture(GL_TEXTURE0);
@@ -338,21 +343,15 @@ void LPainter::LPainterPrivate::scaleTexture(LTexture *texture, const LRect &src
     shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
     shaderSetSrcRect(src.x(), src.y() + src.h(), src.w(), -src.h());
     shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
-    glBindTexture(target, texture->id(output));
-    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glBlendFunc(GL_ONE, GL_ZERO);
+    texture->imp()->setTextureParams(textureId, target, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void LPainter::LPainterPrivate::scaleTexture(GLuint textureId, GLenum textureTarget, GLuint framebufferId, GLint minFilter, const LSize &texSize, const LRect &src, const LSize &dst)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
     switchTarget(textureTarget);
-    glEnable(GL_BLEND);
+    glDisable(GL_BLEND);
     glScissor(0, 0, dst.w(), dst.h());
     glViewport(0, 0, dst.w(), dst.h());
     glActiveTexture(GL_TEXTURE0);
@@ -362,14 +361,8 @@ void LPainter::LPainterPrivate::scaleTexture(GLuint textureId, GLenum textureTar
     shaderSetTexSize(texSize.w(), texSize.h());
     shaderSetSrcRect(src.x(), src.y() + src.h(), src.w(), -src.h());
     shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
-    glBindTexture(textureTarget, textureId);
-    glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, minFilter);
-    glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, minFilter);
-    glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glBlendFunc(GL_ONE, GL_ZERO);
+    LTexture::LTexturePrivate::setTextureParams(textureId, textureTarget, GL_REPEAT, GL_REPEAT, minFilter, minFilter);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 

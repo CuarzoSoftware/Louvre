@@ -6,7 +6,6 @@
 using namespace Louvre;
 
 LPRIVATE_CLASS(LObject)
-
 };
 
 #endif // LOBJECTPRIVATE_H

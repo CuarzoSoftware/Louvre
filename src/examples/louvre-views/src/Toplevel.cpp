@@ -12,6 +12,8 @@
 #include "Output.h"
 #include "Workspace.h"
 
+#define WORSPACE_ANIM_MS 560
+
 Toplevel::Toplevel(Params *params) : LToplevelRole(params),
     blackFullscreenBackground(0.f, 0.f, 0.f, 1.f),
     capture(nullptr, &blackFullscreenBackground),
@@ -198,7 +200,7 @@ void Toplevel::setFullscreenRequest(LOutput *output)
     if (capture.texture())
         delete capture.texture();
 
-    capture.setTexture(surf->renderThumbnail());
+    capture.setTexture(surf->renderThumbnail(&captureTransRegion));
     capture.setPos(- windowGeometry().pos().x(), - windowGeometry().pos().y());
 }
 
@@ -262,7 +264,7 @@ void Toplevel::fullscreenChanged()
         if (decoratedView)
             decoratedView->fullscreenTopbarVisibility = 0.f;
 
-        fullscreenOutput->setWorkspace(fullscreenWorkspace, 560, 3.f);
+        fullscreenOutput->setWorkspace(fullscreenWorkspace, WORSPACE_ANIM_MS, 3.f);
     }
     else
     {
@@ -285,8 +287,16 @@ void Toplevel::decorationModeChanged()
 {
     if (decorationMode() == ClientSide)
     {
+        LView *prevParent = decoratedView->parent();
         delete decoratedView;
         decoratedView = nullptr;
+
+        LSurfaceView *view = (LSurfaceView*)surf()->getView();
+        view->setPrimary(true);
+        view->enableParentClipping(false);
+        view->enableCustomPos(false);
+        view->setParent(prevParent);
+        surf()->requestNextFrame(false);
     }
     else
     {
@@ -324,7 +334,7 @@ void Toplevel::activatedChanged()
             Output *o = (Output*)cursor()->output();
 
             if (o->currentWorkspace != o->workspaces.front())
-                o->setWorkspace(o->workspaces.front(), 560, 4.f);
+                o->setWorkspace(o->workspaces.front(), WORSPACE_ANIM_MS, 4.f);
         }
     }
 }
@@ -349,7 +359,7 @@ void Toplevel::unsetFullscreen()
             fullscreenOutput->animatedFullscreenToplevel = nullptr;
             delete fullscreenWorkspace;
             fullscreenWorkspace = nullptr;
-            fullscreenOutput->setWorkspace(prev, 560);
+            fullscreenOutput->setWorkspace(prev, WORSPACE_ANIM_MS);
             fullscreenOutput = nullptr;
         }
         return;
@@ -385,7 +395,7 @@ void Toplevel::unsetFullscreen()
     blackFullscreenBackground.setParent(&G::compositor()->overlayLayer);
     blackFullscreenBackground.setVisible(true);
 
-    fullscreenOutput->setWorkspace(fullscreenOutput->workspaces.front(), 560, 4.f);
+    fullscreenOutput->setWorkspace(fullscreenOutput->workspaces.front(), WORSPACE_ANIM_MS, 4.f);
 }
 
 void Toplevel::preferredDecorationModeChanged()

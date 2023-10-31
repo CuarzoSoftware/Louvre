@@ -133,6 +133,34 @@ void LRegion::multiply(Float32 factor)
     m_changed = true;
 }
 
+void LRegion::multiply(Float32 xFactor, Float32 yFactor)
+{
+    if (xFactor == 1.f && yFactor == 1.f)
+        return;
+
+    pixman_region32_t tmp;
+    pixman_region32_init(&tmp);
+
+    int n;
+    pixman_box32_t *rects = pixman_region32_rectangles((pixman_region32_t*)m_region, &n);
+
+    for (int i = 0; i < n; i++)
+    {
+        pixman_region32_union_rect(
+            &tmp,
+            &tmp,
+            floor(float(rects->x1) * xFactor),
+            floor(float(rects->y1) * yFactor),
+            ceil(float(rects->x2 - rects->x1) * xFactor),
+            ceil(float(rects->y2 - rects->y1) * yFactor));
+        rects++;
+    }
+
+    pixman_region32_fini((pixman_region32_t*)m_region);
+    *(pixman_region32_t*)m_region = tmp;
+    m_changed = true;
+}
+
 bool LRegion::containsPoint(const LPoint &point) const
 {
     return pixman_region32_contains_point((pixman_region32_t*)m_region, point.x(), point.y(), NULL);

@@ -31,13 +31,9 @@ static void onPendingPlaceAboveDestroy(wl_listener *listener, void *data)
     RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
 
     for (LSurface *s : LCompositor::compositor()->surfaces())
-    {
         if (s->roleId() == LSurface::Subsurface)
-        {
             if (s->subsurface()->imp()->pendingPlaceAbove == rSurface->surface())
                 s->subsurface()->imp()->pendingPlaceAbove = nullptr;
-        }
-    }
 }
 
 void RSubsurface::RSubsurfacePrivate::place_above(wl_client *client, wl_resource *resource, wl_resource *sibiling)
@@ -119,11 +115,9 @@ static bool hasSyncParent(LSurface *surface)
 static void syncSubsurfaces(LSurface *surface)
 {
     for (LSurface *c : surface->children())
-    {
         if (c->subsurface())
             RSubsurface::RSubsurfacePrivate::set_sync(c->client()->client(),
                                                       c->subsurface()->resource()->resource());
-    }
 }
 
 void RSubsurface::RSubsurfacePrivate::set_sync(wl_client *client, wl_resource *resource)

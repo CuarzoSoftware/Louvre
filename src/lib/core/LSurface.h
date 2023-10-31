@@ -580,17 +580,6 @@ public:
     virtual void inputRegionChanged();
 
     /**
-     * @brief Notifies when the surface is elevated
-     *
-     * If you want to receive notifications when the surface is repositioned to the top of the compositor's list of surfaces,
-     * you can override this virtual method.
-     *
-     * #### Default Implementation
-     * @snippet LSurfaceDefault.cpp raised
-     */
-    virtual void raised();
-
-    /**
      * @brief Notifies when the surface changes its position in the surfaces list
      *
      * Override this virtual method if you wish to be informed about changes in the order of the surface within

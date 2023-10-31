@@ -5,6 +5,7 @@
 #include <private/LDataOfferPrivate.h>
 #include <private/LDataDevicePrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <private/LCompositorPrivate.h>
 #include <LDNDIconRole.h>
 #include <LClient.h>
 #include <LDataSource.h>
@@ -81,11 +82,13 @@ void LDNDManager::drop()
     {
         imp()->dropped = true;
 
-        LTimer::oneShot(500, [this](LTimer *)
+        LTimer::oneShot(100, [this](LTimer *)
         {
             if (source() && imp()->dropped)
                 cancel();
         });
+
+        compositor()->imp()->unlockPoll();
 
         if (icon() && icon()->surface())
             icon()->surface()->imp()->setMapped(false);

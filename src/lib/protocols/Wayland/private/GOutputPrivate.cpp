@@ -22,7 +22,7 @@ void GOutput::GOutputPrivate::bind(wl_client *client, void *output, UInt32 versi
     {
         if (g->output() == lOutput)
         {
-            LLog::warning("Client already bound to output %s. Ignoring it...", lOutput->name());
+            LLog::warning("[GOutputPrivate::bind()] Client already bound to output %s. Ignoring it...", lOutput->name());
             return;
         }
     }

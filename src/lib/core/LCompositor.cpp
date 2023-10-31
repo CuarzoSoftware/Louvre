@@ -83,7 +83,7 @@ bool LCompositor::start()
 {
     if (compositor() != this)
     {
-        LLog::warning("[compositor] Compositor already running. Two Louvre compositors can not live in the same process.");
+        LLog::warning("[LCompositor::start()] Compositor already running. Two Louvre compositors can not live in the same process.");
         return false;
     }
 
@@ -91,7 +91,7 @@ bool LCompositor::start()
 
     if (state() != CompositorState::Uninitialized)
     {
-        LLog::warning("[compositor] Attempting to start a compositor already running. Ignoring...");
+        LLog::warning("[LCompositor::start()] Attempting to start a compositor already running. Ignoring...");
         return false;
     }
 
@@ -103,25 +103,25 @@ bool LCompositor::start()
 
     if (!imp()->initWayland())
     {
-        LLog::fatal("[compositor] Failed to init Wayland.");
+        LLog::fatal("[LCompositor::start()] Failed to init Wayland.");
         goto fail;
     }
 
     if (!imp()->initSeat())
     {
-        LLog::fatal("[compositor] Failed to init seat.");
+        LLog::fatal("[LCompositor::start()] Failed to init seat.");
         goto fail;
     }
 
     if (!imp()->initGraphicBackend())
     {
-        LLog::fatal("[compositor] Failed to init graphic backend.");
+        LLog::fatal("[LCompositor::start()] Failed to init graphic backend.");
         goto fail;
     }
 
     if (!imp()->initInputBackend())
     {
-        LLog::fatal("[compositor] Failed to init input backend.");
+        LLog::fatal("[LCompositor::start()] Failed to init input backend.");
         goto fail;
     }
 
@@ -240,11 +240,9 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
 
         if (imp()->epollFd != -1)
             close(imp()->epollFd);
-
-        return 1;
     }
-
-    imp()->unlock();
+    else
+        imp()->unlock();
 
     return 1;
 }
@@ -265,12 +263,14 @@ void LCompositor::finish()
 
 void LCompositor::LCompositorPrivate::raiseChildren(LSurface *surface)
 {
-    surfaces.erase(surface->imp()->compositorLink);
-    surfaces.push_back(surface);
-    surface->imp()->compositorLink = std::prev(surfaces.end());
-
-    surface->raised();
-    surface->orderChanged();
+    if (surface->nextSurface())
+    {
+        surfaces.erase(surface->imp()->compositorLink);
+        surfaces.push_back(surface);
+        surface->imp()->compositorLink = std::prev(surfaces.end());
+        surfacesListChanged = true;
+        surface->orderChanged();
+    }
 
     // Rise its children
     for (LSurface *children : surface->children())

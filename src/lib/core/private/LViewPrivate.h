@@ -20,7 +20,6 @@ LPRIVATE_CLASS(LView)
     UInt32 keyModifiersSerial = 0;
     UInt32 keySerial = 0;
 
-
     UInt32 type;
     LScene *scene = nullptr;
     LView *parent = nullptr;

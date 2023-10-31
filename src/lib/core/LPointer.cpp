@@ -5,7 +5,7 @@
 #include <private/LPointerPrivate.h>
 #include <private/LToplevelRolePrivate.h>
 #include <private/LSeatPrivate.h>
-#include <LCompositor.h>
+#include <private/LCompositorPrivate.h>
 #include <LCursor.h>
 #include <LOutput.h>
 #include <LPopupRole.h>
@@ -367,10 +367,18 @@ void LPointer::sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int3
 
 LSurface *LPointer::surfaceAt(const LPoint &point)
 {
+    retry:
+    compositor()->imp()->surfacesListChanged = false;
+
     for (std::list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin(); s != compositor()->surfaces().rend(); s++)
         if ((*s)->mapped() && !(*s)->minimized())
+        {
             if ((*s)->inputRegion().containsPoint(point - (*s)->rolePos()))
                 return *s;
+
+            if (compositor()->imp()->surfacesListChanged)
+                goto retry;
+        }
 
     return nullptr;
 }

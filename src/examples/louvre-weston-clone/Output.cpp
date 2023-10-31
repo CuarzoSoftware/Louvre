@@ -8,6 +8,7 @@
 #include <LCursor.h>
 #include <LLog.h>
 #include <LOpenGL.h>
+#include <unistd.h>
 
 Output::Output():LOutput(){}
 
@@ -49,8 +50,7 @@ void Output::initializeGL()
 
     if (background)
     {
-        backgroundTexture = background->copyB(background->sizeB()/7, LRect(300, 300, -800, 800));
-        LLog::debug("Background texture size %d %d", backgroundTexture->sizeB().w(), backgroundTexture->sizeB().h());
+        backgroundTexture = background->copyB(sizeB());
         delete background;
     }
 
@@ -90,8 +90,7 @@ void Output::resizeGL()
 
     if (background)
     {
-        backgroundTexture = background->copyB(sizeB()/50);
-        LLog::debug("Background texture size %d %d", backgroundTexture->sizeB().w(), backgroundTexture->sizeB().h());
+        backgroundTexture = background->copyB(sizeB());
         delete background;
     }
 }

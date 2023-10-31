@@ -30,6 +30,10 @@ LPRIVATE_CLASS(LTexture)
     GLuint nativeId = 0;
     GLenum nativeTarget = 0;
     LOutput *nativeOutput = nullptr;
+
+    // Utility functions
+    static void setTextureParams(GLuint textureId, GLenum target, GLenum wrapS, GLenum wrapT, GLenum minFilter, GLenum magFilter);
+    static void readPixels(const LRect &src, const LPoint &dstOffset, Int32 dstWidth, GLenum format, GLenum type, UChar8 *buffer);
 };
 
 #endif // LTEXTUREPRIVATE_H

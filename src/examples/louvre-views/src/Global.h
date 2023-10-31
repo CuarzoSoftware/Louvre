@@ -195,6 +195,7 @@ public:
     static void arrangeOutputs();
     static class Toplevel *searchFullscreenParent(Surface *parent);
     static void repositionNonVisibleToplevelChildren(Output *target, Surface *toplevel);
+    static void setBlendFuncWithChildren(LView *parent, GLenum sFactor, GLenum dFactor);
 };
 
 #endif // SHARED_H

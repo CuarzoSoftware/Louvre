@@ -83,10 +83,11 @@ LPRIVATE_CLASS(LCompositor)
 
     std::list<LClient*>clients;
     std::list<LOutput*>outputs;
-    std::list<LSurface*>surfaces;
     std::list<LView*>views;
     std::list<LAnimation*>animations;
     std::list<LTexture*>textures;
+    std::list<LSurface*>surfaces;
+    bool surfacesListChanged = false;
 
     bool runningAnimations();
     void processAnimations();
@@ -101,6 +102,7 @@ LPRIVATE_CLASS(LCompositor)
     std::map<std::thread::id, ThreadData> threadsMap;
     void destroyPendingRenderBuffers(std::thread::id *id);
     void addRenderBufferToDestroy(std::thread::id thread, LRenderBuffer::LRenderBufferPrivate::ThreadData &data);
+    static LPainter *findPainter();
 
     std::list<GLuint>nativeTexturesToDestroy;
     static void destroyNativeTextures(std::list<GLuint>&list);

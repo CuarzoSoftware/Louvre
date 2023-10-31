@@ -4,6 +4,7 @@
 #include <LTextureView.h>
 #include <LToplevelRole.h>
 #include <LSolidColorView.h>
+#include <LRegion.h>
 
 class ToplevelView;
 class Output;
@@ -55,6 +56,7 @@ public:
 
     // Rendered view for fullscreen animation
     LTextureView capture;
+    LRegion captureTransRegion;
 
     // Rects for fullscreen animation
     LRect prevRect, dstRect, prevBoundingRect;

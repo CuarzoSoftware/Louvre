@@ -30,8 +30,9 @@ LPRIVATE_CLASS(LPainter)
         color,
         colorFactor,
         alpha,
-        samplerOffset,
-        samplerBounds;
+        pixelSize,
+        samplerBounds,
+        iters;
     } uniforms, uniformsExternal;
 
     Uniforms *currentUniforms;
@@ -76,7 +77,8 @@ LPRIVATE_CLASS(LPainter)
         LGLVec4F colorFactor;
         GLfloat alpha;
         LGLVec4F samplerBounds;
-        LGLVec2F samplerOffset;
+        LGLVec2F pixelSize;
+        LGLSize iters;
     };
 
     ShaderState state, stateExternal;
@@ -206,14 +208,14 @@ LPRIVATE_CLASS(LPainter)
         }
     }
 
-    inline void shaderSetSamplerOffset(Float32 x, Float32 y)
+    inline void shaderSetPixelSize(Float32 x, Float32 y)
     {
-        if (currentState->samplerOffset.x != x ||
-            currentState->samplerOffset.y != y)
+        if (currentState->pixelSize.x != x ||
+            currentState->pixelSize.y != y)
         {
-            currentState->samplerOffset.x = x;
-            currentState->samplerOffset.y = y;
-            glUniform2f(currentUniforms->samplerOffset, x, y);
+            currentState->pixelSize.x = x;
+            currentState->pixelSize.y = y;
+            glUniform2f(currentUniforms->pixelSize, x, y);
         }
     }
 
@@ -229,6 +231,17 @@ LPRIVATE_CLASS(LPainter)
             currentState->samplerBounds.w = x2;
             currentState->samplerBounds.h = y2;
             glUniform4f(currentUniforms->samplerBounds, x1, y1, x2, y2);
+        }
+    }
+
+    inline void shaderSetIters(Int32 x, Int32 y)
+    {
+        if (currentState->iters.w != x ||
+            currentState->iters.h != y)
+        {
+            currentState->iters.w = x;
+            currentState->iters.h = y;
+            glUniform2i(currentUniforms->iters, x, y);
         }
     }
 

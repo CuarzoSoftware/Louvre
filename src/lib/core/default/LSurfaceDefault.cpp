@@ -68,13 +68,6 @@ void LSurface::inputRegionChanged()
 }
 //! [inputRegionChanged]
 
-//! [raised]
-void LSurface::raised()
-{
-    repaintOutputs();
-}
-//! [raised]
-
 //! [orderChanged]
 void LSurface::orderChanged()
 {

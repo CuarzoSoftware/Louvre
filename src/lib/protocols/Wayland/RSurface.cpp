@@ -68,6 +68,7 @@ RSurface::RSurface
     surface()->imp()->clientLink = std::prev(client()->imp()->surfaces.end());
     compositor()->imp()->surfaces.push_back(surface());
     surface()->imp()->compositorLink = std::prev(compositor()->imp()->surfaces.end());
+    compositor()->imp()->surfacesListChanged = true;
 }
 
 RSurface::~RSurface()
@@ -161,6 +162,7 @@ RSurface::~RSurface()
     // Remove the surface from the compositor list
     compositor()->imp()->surfaces.erase(lSurface->imp()->compositorLink);
 
+    compositor()->imp()->surfacesListChanged = true;
     lSurface->imp()->destroyed = true;
 
     delete lSurface;

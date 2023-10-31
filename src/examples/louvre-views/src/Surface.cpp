@@ -248,7 +248,7 @@ void Surface::minimizedChanged()
         minimizedOutput = (Output*)cursor()->output();
 
         // Render the surface, all its decorations and subsurfaces into a texture
-        thumbnailFullSizeTex = renderThumbnail();
+        thumbnailFullSizeTex = renderThumbnail(&minimizedTransRegion);
 
         // Create a smaller scaled version for the dock
         Float32 s = float(DOCK_ITEM_HEIGHT);
@@ -257,9 +257,11 @@ void Surface::minimizedChanged()
         // Create a view for thumbnailFullSizeTex (we only need one)
         thumbnailFullsizeView = new LTextureView(thumbnailFullSizeTex, getView()->parent());
         thumbnailFullsizeView->setBufferScale(2);
-        thumbnailFullsizeView->enableScaling(true);
         thumbnailFullsizeView->enableParentOpacity(false);
         thumbnailFullsizeView->setPos(rolePos());
+        thumbnailFullsizeView->setTranslucentRegion(&minimizedTransRegion);
+        thumbnailFullsizeView->enableDstSize(true);
+        thumbnailFullsizeView->setDstSize(thumbnailFullsizeView->texture()->sizeB() / thumbnailFullsizeView->bufferScale());
 
         // Hide the surface as we will show thumbnailFullsizeView instead
         getView()->setVisible(false);
@@ -290,7 +292,10 @@ void Surface::minimizedChanged()
             }
 
             // Scale and move fullsize view to the dock
-            thumbnailFullsizeView->setScalingVector(1.f - easeOut);
+            LRegion trans = minimizedTransRegion;
+            trans.multiply((1.f - easeOut));
+            thumbnailFullsizeView->setTranslucentRegion(&trans);
+            thumbnailFullsizeView->setDstSize((thumbnailFullsizeView->texture()->sizeB() / thumbnailFullsizeView->bufferScale()) * (1.f - easeOut));
             thumbnailFullsizeView->setPos((dstDockItem->pos() + dstDockItem->size()) * easeOut +
                      minimizeStartRect.pos() * (1.f - easeOut));
         },
@@ -355,7 +360,7 @@ void Surface::minimizedChanged()
     }
 }
 
-LTexture *Surface::renderThumbnail()
+LTexture *Surface::renderThumbnail(LRegion *transRegion)
 {
     LBox box = getView()->boundingBox();
 
@@ -386,10 +391,23 @@ LTexture *Surface::renderThumbnail()
         }
     }
 
+    for (LView *child : tmpView.children())
+        G::setBlendFuncWithChildren(child, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
     getView()->enableParentOffset(false);
+
     tmpView.render();
 
-    LTexture *renderedThumbnail = tmpView.texture()->copyB(LSize(), LRect());
+    if (transRegion)
+    {
+        *transRegion = *tmpView.translucentRegion();
+        transRegion->offset(LPoint() - tmpView.pos());
+    }
+
+    for (LView *child : tmpView.children())
+        G::setBlendFuncWithChildren(child, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    LTexture *renderedThumbnail = tmpView.texture()->copyB();
     getView()->enableParentOffset(true);
     getView()->setParent(prevParent);
 
@@ -431,8 +449,12 @@ void Surface::unminimize(DockItem *clickedItem)
             item->dock->update();
         }
 
+        LRegion trans = minimizedTransRegion;
+        trans.multiply(exp);
+        thumbnailFullsizeView->setTranslucentRegion(&trans);
+        thumbnailFullsizeView->setDstSize((thumbnailFullsizeView->texture()->sizeB() / thumbnailFullsizeView->bufferScale()) * exp);
+
         // Scale and move fullsize view to the dock
-        thumbnailFullsizeView->setScalingVector(exp);
         thumbnailFullsizeView->setPos((clickedItem->pos() + clickedItem->size()) * (1.f - exp) +
                  minimizeStartRect.pos() * exp);
     },

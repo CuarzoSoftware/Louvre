@@ -16,6 +16,24 @@
 using namespace Louvre;
 using namespace std;
 
+LTexture::LTexture()
+{
+    m_imp = new LTexturePrivate();
+    imp()->texture = this;
+    compositor()->imp()->textures.push_back(this);
+    imp()->compositorLink = std::prev(compositor()->imp()->textures.end());
+}
+
+LTexture::~LTexture()
+{
+    while (!imp()->textureViews.empty())
+        imp()->textureViews.back()->setTexture(nullptr);
+
+    imp()->deleteTexture();
+    compositor()->imp()->textures.erase(imp()->compositorLink);
+    delete m_imp;
+}
+
 UInt32 LTexture::waylandFormatToDRM(UInt32 waylandFormat)
 {
     if (waylandFormat == WL_SHM_FORMAT_ARGB8888)
@@ -119,14 +137,6 @@ UInt32 LTexture::formatPlanes(UInt32 format)
     }
 }
 
-LTexture::LTexture()
-{
-    m_imp = new LTexturePrivate();
-    imp()->texture = this;
-    compositor()->imp()->textures.push_back(this);
-    imp()->compositorLink = std::prev(compositor()->imp()->textures.end());
-}
-
 bool LTexture::setDataB(const LSize &size, UInt32 stride, UInt32 format, const void *buffer)
 {
     if (imp()->sourceType == Framebuffer)
@@ -196,34 +206,17 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
 
     if (dst.w() < 0 || dst.h() < 0)
     {
-        LLog::error("Failed to copy texture. Invalid destination size.");
+        LLog::error("[LTexture::copyB()] Failed to copy texture. Invalid destination size.");
         return nullptr;
     }
 
-    LPainter *painter = nullptr;
-    std::thread::id threadId = std::this_thread::get_id();
-
-    if (threadId == LCompositor::compositor()->mainThreadId())
-        painter = LCompositor::compositor()->imp()->painter;
-    else
-    {
-        for (LOutput *o : LCompositor::compositor()->outputs())
-        {
-            if (o->state() == LOutput::Initialized && o->imp()->threadId == threadId)
-            {
-                painter = o->painter();
-                break;
-            }
-        }
-    }
+    LPainter *painter = compositor()->imp()->findPainter();
 
     if (!painter)
     {
-        LLog::error("Failed to copy texture. No painter found.");
+        LLog::error("[LTexture::copyB()] Failed to copy texture. No painter found.");
         return nullptr;
     }
-
-    GLuint textureId = id(painter->imp()->output);
 
     LRect srcRect;
     LSize dstSize;
@@ -240,61 +233,51 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
 
     if (srcRect.w() == 0 || srcRect.h() == 0 || dstSize.w() == 0 || dstSize.h() == 0)
     {
-        LLog::error("Failed to copy texture. Invalid size.");
+        LLog::error("[LTexture::copyB()] Failed to copy texture. Invalid size.");
         return nullptr;
     }
 
+    GLuint textureId = id(painter->imp()->output);
     LTexture *textureCopy;
     bool ret = false;
 
     if (highQualityScaling)
     {
-        Int32 wScale = round(abs(Float64(srcRect.w()) / Float64(dstSize.w())));
-        Int32 hScale = round(abs(Float64(srcRect.h()) / Float64(dstSize.h())));
+        GLenum textureTarget = target();
 
-        // Check if downscaling is needed
-        if (wScale <= 2 && hScale <= 2)
+        Float32 wScaleF = fabs(Float32(srcRect.w()) / Float32(dstSize.w()));
+        Float32 hScaleF = fabs(Float32(srcRect.h()) / Float32(dstSize.h()));
+
+        // Check if HQ downscaling is needed
+        if (wScaleF <= 2.f && hScaleF <= 2.f)
             goto skipHQ;
 
-        Float64 pixSizeW = 1.0 / Float64(sizeB().w());
-        Float64 pixSizeH = 1.0 / Float64(sizeB().h());
+        Int32 wScale = ceilf(wScaleF);
+        Int32 hScale = ceilf(hScaleF);
 
-        Float64 limit = 3.f;
+        Float32 limit = 10.f;
 
         if (wScale > limit)
-        {
-            pixSizeW *= Float64(wScale) / limit;
             wScale = limit;
-        }
 
         if (hScale > limit)
-        {
-            pixSizeH *= Float64(hScale) / limit;
             hScale = limit;
-        }
 
-        Float64 colorFactor = 1.0 / Float64(wScale*hScale);
+        Float32 pixSizeW = wScaleF / Float32(sizeB().w() * wScale);
+        Float32 pixSizeH = hScaleF / Float32(sizeB().h() * hScale);
 
         GLuint framebuffer;
         glGenFramebuffers(1, &framebuffer);
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
         GLuint texCopy;
         glGenTextures(1, &texCopy);
-        glBindTexture(GL_TEXTURE_2D, texCopy);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        imp()->setTextureParams(texCopy, GL_TEXTURE_2D, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dstSize.w(), dstSize.h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texCopy, 0);
-
-        GLenum tgt = target();
-        painter->imp()->switchTarget(tgt);
-        glEnable(GL_BLEND);
+        painter->imp()->switchTarget(textureTarget);
+        glDisable(GL_BLEND);
         glScissor(0, 0, dstSize.w(), dstSize.h());
         glViewport(0, 0, dstSize.w(), dstSize.h());
-        glClearColor(0.f, 0.f, 0.f, 0.f);
-        glClear(GL_COLOR_BUFFER_BIT);
         glActiveTexture(GL_TEXTURE0);
         painter->imp()->shaderSetAlpha(1.f);
         painter->imp()->shaderSetMode(3);
@@ -323,47 +306,23 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
         }
 
         painter->imp()->shaderSetSamplerBounds(x1, y1, x2, y2);
-        painter->imp()->shaderSetColorFactor(colorFactor, colorFactor, colorFactor, colorFactor);
-
-        glBindTexture(tgt, id(painter->imp()->output));
-        glTexParameteri(tgt, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(tgt, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(tgt, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(tgt, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glBlendFunc(GL_ONE, GL_ONE);
-
-        for (Int32 x = 0; x < wScale; x++)
-        {
-            for (Int32 y = 0; y < hScale; y++)
-            {
-                painter->imp()->shaderSetSamplerOffset(x * pixSizeW, y * pixSizeH);
-                glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-            }
-        }
-
-        glFinish();
         painter->imp()->shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        imp()->setTextureParams(textureId, textureTarget, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
+        painter->imp()->shaderSetPixelSize(pixSizeW, pixSizeH);
+        painter->imp()->shaderSetIters(wScale, hScale);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+        painter->imp()->shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
         textureCopy = new LTexture();
 
         if (compositor()->imp()->graphicBackend->rendererGPUs() == 1)
         {
+            glFlush();
             ret = textureCopy->imp()->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_BGRA8888, dstSize, painter->imp()->output);
         }
         else
         {
-            UChar8 *cpuBuffer = (UChar8*)malloc(dstSize.w() * dstSize.h() * 4);
-
-            glPixelStorei(GL_PACK_ALIGNMENT, 4);
-            glPixelStorei(GL_PACK_ROW_LENGTH, dstSize.w());
-            glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-            glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-            glReadPixels(0, 0, dstSize.w(), dstSize.h(), GL_BGRA, GL_UNSIGNED_BYTE, cpuBuffer);
-            glPixelStorei(GL_PACK_ALIGNMENT, 4);
-            glPixelStorei(GL_PACK_ROW_LENGTH, 0);
-            glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-            glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-
+            UChar8 *cpuBuffer = (UChar8*)malloc(dstSize.w() * dstSize.h() * 4);            
+            imp()->readPixels(LRect(0, dstSize), 0, dstSize.w(), GL_BGRA, GL_UNSIGNED_BYTE, cpuBuffer);
             textureCopy = new LTexture();
             ret = textureCopy->setDataB(dstSize, dstSize.w() * 4, DRM_FORMAT_ARGB8888, cpuBuffer);
 
@@ -376,7 +335,7 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
         if (ret)
             return textureCopy;
 
-        LLog::error("Failed to create texture. Graphical backend error.");
+        LLog::error("[LTexture::copyB()] Failed to create texture. Graphical backend error.");
         delete textureCopy;
         return nullptr;
     }
@@ -386,8 +345,10 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
     // If single GPU, no need for DMA sharing
     if (compositor()->imp()->graphicBackend->rendererGPUs() == 1)
     {
+        GLenum textureTarget = target();
+
         // Direct copy glCopyTexImage2D()
-        if (target() == GL_TEXTURE_2D &&
+        if (textureTarget == GL_TEXTURE_2D &&
             dstSize.w() == srcRect.w() &&
             dstSize.h() == srcRect.h() &&
             srcRect.x() >= 0 &&
@@ -402,13 +363,11 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
 
             GLuint texCopy;
             glGenTextures(1, &texCopy);
-            glBindTexture(GL_TEXTURE_2D, texCopy);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            imp()->setTextureParams(texCopy, GL_TEXTURE_2D,
+                                    GL_REPEAT, GL_REPEAT,
+                                    GL_LINEAR, GL_LINEAR);
             glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, srcRect.x(), srcRect.y(), srcRect.w(), srcRect.h(), 0);
-            glFinish();
+            glFlush();
             textureCopy = new LTexture();
             ret = textureCopy->imp()->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_BGRA8888, dstSize, painter->imp()->output);
             glDeleteFramebuffers(1, &framebuffer);
@@ -421,15 +380,13 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
             glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
             GLuint texCopy;
             glGenTextures(1, &texCopy);
-            glBindTexture(GL_TEXTURE_2D, texCopy);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            imp()->setTextureParams(texCopy, GL_TEXTURE_2D,
+                                    GL_REPEAT, GL_REPEAT,
+                                    GL_LINEAR, GL_LINEAR);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dstSize.w(), dstSize.h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texCopy, 0);
             painter->imp()->scaleTexture((LTexture*)this, srcRect, dstSize);
-            glFinish();
+            glFlush();
             textureCopy = new LTexture();
             ret = textureCopy->imp()->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_BGRA8888, dstSize, painter->imp()->output);
             glDeleteFramebuffers(1, &framebuffer);
@@ -443,7 +400,7 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
 
         if (framebuffer == 0)
         {
-            LLog::error("Failed to copy texture. Could not create framebuffer.");
+            LLog::error("[LTexture::copyB()] Failed to copy texture. Could not create framebuffer.");
             return nullptr;
         }
 
@@ -454,7 +411,7 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
 
         if (renderbuffer == 0)
         {
-            LLog::error("Failed to copy texture. Could not create renderbuffer.");
+            LLog::error("[LTexture::copyB()] Failed to copy texture. Could not create renderbuffer.");
             glDeleteFramebuffers(1, &framebuffer);
             return nullptr;
         }
@@ -467,24 +424,16 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
 
         if (status != GL_FRAMEBUFFER_COMPLETE)
         {
-            LLog::error("Failed to copy texture. Incomplete framebuffer.");
+            LLog::error("[LTexture::copyB()] Failed to copy texture. Incomplete framebuffer.");
             glDeleteRenderbuffers(1, &renderbuffer);
             glDeleteFramebuffers(1, &framebuffer);
             return nullptr;
         }
 
+        painter->imp()->scaleTexture((LTexture*)this, srcRect, dstSize);
+
         UChar8 *cpuBuffer = (UChar8*)malloc(dstSize.w() * dstSize.h() * 4);
-
-        glPixelStorei(GL_PACK_ALIGNMENT, 4);
-        glPixelStorei(GL_PACK_ROW_LENGTH, dstSize.w());
-        glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-        glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-        glReadPixels(0, 0, dstSize.w(), dstSize.h(), GL_BGRA, GL_UNSIGNED_BYTE, cpuBuffer);
-        glPixelStorei(GL_PACK_ALIGNMENT, 4);
-        glPixelStorei(GL_PACK_ROW_LENGTH, 0);
-        glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-        glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-
+        imp()->readPixels(LRect(0, dstSize), 0, dstSize.w(), GL_BGRA, GL_UNSIGNED_BYTE, cpuBuffer);
         textureCopy = new LTexture();
         ret = textureCopy->setDataB(dstSize, dstSize.w() * 4, DRM_FORMAT_ARGB8888, cpuBuffer);
 
@@ -499,242 +448,138 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
     if (ret)
         return textureCopy;
 
-    LLog::error("Failed to create texture. Graphical backend error.");
+    LLog::error("[LTexture::copyB()] Failed to create texture. Graphical backend error.");
     delete textureCopy;
     return nullptr;
 }
 
 bool LTexture::save(const char *path) const
 {
-    if (!initialized())
+    if (!path)
     {
-        LLog::error("Failed to save texture. Uninitialized texture.");
+        LLog::error("[LTexture::save()] Failed to save texture. Invalid path.");
         return false;
     }
 
-    if (!path)
+    const char *error;
+    LPainter *painter;
+    GLuint framebuffer;
+    UChar8 *buffer;
+
+    if (!initialized())
     {
-        LLog::error("Failed to save texture. Invalid path.");
-        return false;
+        error = "Uninitialized texture";
+        goto printError;
     }
 
     if (sizeB().area() <= 0)
     {
-        LLog::error("Failed to save texture. Invalid size.");
-        return false;
+        error = "Invalid size";
+        goto printError;
     }
 
-    LPainter *painter = nullptr;
-    std::thread::id threadId = std::this_thread::get_id();
-
-    if (threadId == LCompositor::compositor()->mainThreadId())
-        painter = LCompositor::compositor()->imp()->painter;
-    else
-    {
-        for (LOutput *o : LCompositor::compositor()->outputs())
-        {
-            if (o->state() == LOutput::Initialized && o->imp()->threadId == threadId)
-            {
-                painter = o->painter();
-                break;
-            }
-        }
-    }
+    painter = compositor()->imp()->findPainter();
 
     if (!painter)
     {
-        LLog::error("Failed to save texture. No painter found.");
-        return false;
+        error = "No LPainter found";
+        goto printError;
     }
 
-    {
-        GLuint framebuffer;
-        glGenFramebuffers(1, &framebuffer);
-
-        if (!framebuffer)
-            goto draw;
-
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-        GLuint texId = id(painter->imp()->output);
-        glBindTexture(GL_TEXTURE_2D, texId);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texId, 0);
-
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        {
-            glDeleteFramebuffers(1, &framebuffer);
-            goto draw;
-        }
-
-        UChar8 *cpuBuffer = (UChar8 *)malloc(sizeB().w()*sizeB().h()*4);
-
-        glPixelStorei(GL_PACK_ALIGNMENT, 4);
-        glPixelStorei(GL_PACK_ROW_LENGTH, sizeB().w());
-        glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-        glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-        glReadPixels(0, 0, sizeB().w(), sizeB().h(), GL_BGRA, GL_UNSIGNED_BYTE, cpuBuffer);
-        glPixelStorei(GL_PACK_ALIGNMENT, 4);
-        glPixelStorei(GL_PACK_ROW_LENGTH, 0);
-        glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-        glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-
-        FIBITMAP *image = FreeImage_ConvertFromRawBits(cpuBuffer,
-                                                       sizeB().w(),
-                                                       sizeB().h(),
-                                                       4 * sizeB().w(),
-                                                       32,
-                                                       0xFF0000, 0x00FF00, 0x0000FF,
-                                                       true);
-
-        bool ret = FreeImage_Save(FIF_PNG, image, path, PNG_DEFAULT);
-
-        FreeImage_Unload(image);
-        free(cpuBuffer);
-        glDeleteFramebuffers(1, &framebuffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        if (ret)
-            return true;
-
-        LLog::error("Failed to copy texture. FreeImage error.");
-        return false;
-    }
-
-    draw:
-
-    GLuint framebuffer;
     glGenFramebuffers(1, &framebuffer);
 
-    if (framebuffer == 0)
+    if (!framebuffer)
     {
-        LLog::error("Failed to save texture. Could not create framebuffer.");
-        return false;
+        error = "Could not create framebuffer";
+        goto printError;
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
-    GLuint renderbuffer;
-    glGenRenderbuffers(1, &renderbuffer);
-
-    if (renderbuffer == 0)
+    /* First attempt to read directly from the texture using a framebuffer. */
     {
-        LLog::error("Failed to save texture. Could not create renderbuffer.");
+        GLuint textureId = id(painter->imp()->output);
+        GLenum textureTarget = target();
+
+        glBindTexture(textureTarget, textureId);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textureTarget, textureId, 0);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        {
+            LLog::warning("[LTexture::save()] Failed to read texture directly using a framebuffer. Trying drawing the texture instead.");
+            goto draw;
+        }
+
+        buffer = (UChar8 *)malloc(sizeB().w()*sizeB().h()*4);
+        imp()->readPixels(LRect(0, sizeB()), 0, sizeB().w(), GL_BGRA, GL_UNSIGNED_BYTE, buffer);
         glDeleteFramebuffers(1, &framebuffer);
-        return false;
+
+        goto save;
     }
 
-    glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, sizeB().w(), sizeB().h());
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, renderbuffer);
+    draw:
 
-    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-
-    if (status != GL_FRAMEBUFFER_COMPLETE)
+    /* If first attempt fails, then render texture into a render buffer and then to read the framebuffer. */
     {
-        LLog::error("Failed to save texture. Incomplete framebuffer.");
+        GLuint renderbuffer;
+        glGenRenderbuffers(1, &renderbuffer);
+
+        if (renderbuffer == 0)
+        {
+            glDeleteFramebuffers(1, &framebuffer);
+            error = "Could not create renderbuffer";
+            goto printError;
+        }
+
+        glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, sizeB().w(), sizeB().h());
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, renderbuffer);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        {
+            glDeleteRenderbuffers(1, &renderbuffer);
+            glDeleteFramebuffers(1, &framebuffer);
+            error = "Incomplete framebuffer";
+            goto printError;
+        }
+
+        painter->imp()->scaleTexture((LTexture*)this, LSize(sizeB().w(), -sizeB().h()), sizeB());
+        buffer = (UChar8 *)malloc(sizeB().w()*sizeB().h()*4);
+        imp()->readPixels(LRect(0, sizeB()), 0, sizeB().w(), GL_BGRA, GL_UNSIGNED_BYTE, buffer);
         glDeleteRenderbuffers(1, &renderbuffer);
         glDeleteFramebuffers(1, &framebuffer);
-        return false;
     }
 
-    painter->imp()->scaleTexture((LTexture*)this, LSize(sizeB().w(), -sizeB().h()), sizeB());
+    save:
 
-    UChar8 *cpuBuffer = (UChar8 *)malloc(sizeB().w()*sizeB().h()*4);
+    {
+        FIBITMAP *image = FreeImage_ConvertFromRawBits(buffer,
+                                             sizeB().w(),
+                                             sizeB().h(),
+                                             4 * sizeB().w(),
+                                             32,
+                                             0xFF0000, 0x00FF00, 0x0000FF,
+                                             true);
 
-    glPixelStorei(GL_PACK_ALIGNMENT, 4);
-    glPixelStorei(GL_PACK_ROW_LENGTH, sizeB().w());
-    glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-    glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-    glReadPixels(0, 0, sizeB().w(), sizeB().h(), GL_BGRA, GL_UNSIGNED_BYTE, cpuBuffer);
-    glPixelStorei(GL_PACK_ALIGNMENT, 4);
-    glPixelStorei(GL_PACK_ROW_LENGTH, 0);
-    glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-    glPixelStorei(GL_PACK_SKIP_ROWS, 0);
+        bool ret = FreeImage_Save(FIF_PNG, image, path, PNG_DEFAULT);
 
-    FIBITMAP *image = FreeImage_ConvertFromRawBits(cpuBuffer,
-                                                   sizeB().w(),
-                                                   sizeB().h(),
-                                                   4 * sizeB().w(),
-                                                   32,
-                                                   0xFF0000, 0x00FF00, 0x0000FF,
-                                                   false);
+        FreeImage_Unload(image);
+        free(buffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    bool ret = FreeImage_Save(FIF_PNG, image, path, PNG_DEFAULT);
+        if (ret)
+        {
+            LLog::debug("[LTexture::save()] Texture saved successfully: %s.", path);
+            return true;
+        }
 
-    FreeImage_Unload(image);
-    free(cpuBuffer);
-    glDeleteRenderbuffers(1, &renderbuffer);
-    glDeleteFramebuffers(1, &framebuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        error = "FreeImage error";
+        goto printError;
+    }
 
-    if (ret)
-        return true;
-
-    LLog::error("Failed to copy texture. FreeImage error.");
+    printError:
+    LLog::error("[LTexture::save()] Failed to save texture: %s. %s.", path, error);
     return false;
-}
-
-LTexture::~LTexture()
-{
-    while (!imp()->textureViews.empty())
-        imp()->textureViews.back()->setTexture(nullptr);
-
-    imp()->deleteTexture();
-    compositor()->imp()->textures.erase(imp()->compositorLink);
-    delete m_imp;
-}
-
-void LTexture::LTexturePrivate::deleteTexture()
-{
-    if (texture == compositor()->cursor()->imp()->defaultTexture)
-        compositor()->cursor()->replaceDefaultB(nullptr, 0);
-
-    if (texture == compositor()->cursor()->texture())
-        compositor()->cursor()->useDefault();
-
-    increaseSerial();
-
-    if (texture->sourceType() == Framebuffer)
-    {
-        return;
-    }
-
-    if (texture->sourceType() == Native)
-    {
-        if (nativeOutput)
-            nativeOutput->imp()->nativeTexturesToDestroy.push_back(nativeId);
-        else
-            compositor()->imp()->nativeTexturesToDestroy.push_back(nativeId);
-
-        graphicBackendData = nullptr;
-        return;
-    }
-
-    if (graphicBackendData)
-    {
-        compositor()->imp()->graphicBackend->destroyTexture(texture);
-        graphicBackendData = nullptr;
-    }
-}
-
-void LTexture::LTexturePrivate::increaseSerial()
-{
-    serial++;
-}
-
-bool LTexture::LTexturePrivate::setDataB(GLuint textureId, GLenum target, UInt32 format, const LSize &size, LOutput *output)
-{
-    if (sourceType == Framebuffer)
-        return false;
-
-    deleteTexture();
-    sourceType = Native;
-    graphicBackendData = &nativeId;
-    nativeId = textureId;
-    nativeTarget = target;
-    nativeOutput = output;
-    this->format = format;
-    sizeB = size;
-    return true;
 }
 
 const LSize &LTexture::sizeB() const
