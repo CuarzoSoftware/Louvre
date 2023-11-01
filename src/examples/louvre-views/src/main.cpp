@@ -4,7 +4,6 @@
 
 int main(int, char *[])
 {
-    setenv("SRM_RENDER_MODE_ITSELF_FB_COUNT", "3", 0);
     setenv("WAYLAND_DISPLAY", "wayland-0", 0);
     setenv("MOZ_ENABLE_WAYLAND", "1", 1);
     setenv("QT_QPA_PLATFORM", "wayland-egl", 1);

@@ -205,6 +205,9 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     surfBL->enableParentScaling(false);
     surfBR->enableParentScaling(false);
 
+    surfBL->setBlendFunc(GL_ONE, GL_ZERO);
+    surfBR->setBlendFunc(GL_ONE, GL_ZERO);
+
     // Masks to make the lower corners of the toplevel round
     maskBL = new LTextureView(G::toplevelTextures().maskBL, sceneBL);
     maskBR = new LTextureView(G::toplevelTextures().maskBR, sceneBR);

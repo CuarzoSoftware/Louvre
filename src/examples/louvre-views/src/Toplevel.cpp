@@ -12,7 +12,8 @@
 #include "Output.h"
 #include "Workspace.h"
 
-#define WORSPACE_ANIM_MS 560
+#define WORSPACE_ANIM_MS 400
+#define WORSPACE_ANIM_EASE 4.f
 
 Toplevel::Toplevel(Params *params) : LToplevelRole(params),
     blackFullscreenBackground(0.f, 0.f, 0.f, 1.f),
@@ -45,8 +46,13 @@ Toplevel::~Toplevel()
 
 const LPoint &Toplevel::rolePos() const
 {
-    if (decoratedView && !fullscreen())
-        m_rolePos = surface()->pos() + LPoint(0, TOPLEVEL_TOPBAR_HEIGHT);
+    if (decoratedView)
+    {
+        m_rolePos = surface()->pos();
+
+        if (!fullscreen() && !animScene)
+            m_rolePos += LPoint(0, TOPLEVEL_TOPBAR_HEIGHT);
+    }
     else
         m_rolePos = surface()->pos() - windowGeometry().topLeft();
 
@@ -208,16 +214,30 @@ void Toplevel::unsetFullscreenRequest()
 {
     if (!fullscreen() || !fullscreenOutput || fullscreenOutput->animatedFullscreenToplevel)
     {
-        configure(prevRect.size(), prevStates);
+        configure(states());
         return;
     }
 
     if (capture.texture())
         delete capture.texture();
 
+    LSceneView tmp(fullscreenOutput->sizeB(), fullscreenOutput->scale());
+    blackFullscreenBackground.setSize(fullscreenOutput->size());
+    blackFullscreenBackground.setParent(&tmp);
+    blackFullscreenBackground.enableParentOffset(false);
+    blackFullscreenBackground.setVisible(true);
+    LPoint prevPos = surf()->pos();
+    bool parentOffsetEnabled = surf()->getView()->parentOffsetEnabled();
+    G::reparentWithSubsurfaces(surf(), &blackFullscreenBackground, true);
+    surf()->setPos(0, 0);
+    tmp.setPos(blackFullscreenBackground.pos());
+    tmp.render();
+    capture.setTexture(tmp.texture()->copyB());
+    capture.setBufferScale(tmp.bufferScale());
+    surf()->setPos(prevPos);
+    surf()->getView()->enableParentOffset(parentOffsetEnabled);
+    G::reparentWithSubsurfaces(surf(), &fullscreenWorkspace->surfaces, true);
     capture.setVisible(false);
-    capture.setTexture(surf()->renderThumbnail());
-    capture.setPos(surf()->getView()->pos() - fullscreenOutput->pos());
     configure(prevRect.size(), prevStates);
 }
 
@@ -226,7 +246,10 @@ void Toplevel::fullscreenChanged()
     if (fullscreen())
     {
         if (!fullscreenOutput)
+        {
+            configure(states() &~ Fullscreen);
             return;
+        }
 
         if (animScene)
             delete animScene;
@@ -236,10 +259,17 @@ void Toplevel::fullscreenChanged()
         fullscreenOutput->animatedFullscreenToplevel = this;
         surf()->sendOutputEnterEvent(fullscreenOutput);
 
+        capture.setParent(&G::compositor()->overlayLayer);
+        capture.setDstSize(capture.texture()->sizeB() / capture.bufferScale());
+        capture.setOpacity(1.f);
+        capture.setVisible(true);
+        capture.enableParentOpacity(false);
+        capture.setTranslucentRegion(&captureTransRegion);
+
         blackFullscreenBackground.setParent(animScene);
         blackFullscreenBackground.setPos(0);
         blackFullscreenBackground.setSize(fullscreenOutput->size());
-        blackFullscreenBackground.setOpacity(0.0001f);
+        blackFullscreenBackground.setOpacity(1.f);
         blackFullscreenBackground.setVisible(true);
 
         G::reparentWithSubsurfaces(surf(), &blackFullscreenBackground);
@@ -248,12 +278,14 @@ void Toplevel::fullscreenChanged()
         surf()->getView()->setVisible(true);
         surf()->setPos(0, 0);
 
-        capture.insertAfter(animScene->children().back(), true);
-        capture.setDstSize(fullscreenOutput->size() + (capture.nativePos() * - 2));
-        capture.setOpacity(1.f);
-        capture.setVisible(true);
-        capture.enableParentOpacity(false);
-        capture.setBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ONE);
+        LRegion empty;
+        surf()->view->enableCustomTranslucentRegion(true);
+        surf()->view->setCustomTranslucentRegion(&empty);
+
+        animView.enableDstSize(true);
+        animView.insertAfter(&capture, true);
+        animView.setTranslucentRegion(nullptr);
+        animView.setVisible(false);
 
         fullscreenWorkspace = new Workspace(fullscreenOutput, this, fullscreenOutput->currentWorkspace);
 
@@ -264,7 +296,7 @@ void Toplevel::fullscreenChanged()
         if (decoratedView)
             decoratedView->fullscreenTopbarVisibility = 0.f;
 
-        fullscreenOutput->setWorkspace(fullscreenWorkspace, WORSPACE_ANIM_MS, 3.f);
+        fullscreenOutput->setWorkspace(fullscreenWorkspace, WORSPACE_ANIM_MS, WORSPACE_ANIM_EASE);
     }
     else
     {
@@ -291,17 +323,19 @@ void Toplevel::decorationModeChanged()
         delete decoratedView;
         decoratedView = nullptr;
 
-        LSurfaceView *view = (LSurfaceView*)surf()->getView();
-        view->setPrimary(true);
-        view->enableParentClipping(false);
-        view->enableCustomPos(false);
-        view->setParent(prevParent);
+        surf()->view->setPrimary(true);
+        surf()->view->enableParentClipping(false);
+        surf()->view->enableCustomPos(false);
+        surf()->view->setParent(prevParent);
         surf()->requestNextFrame(false);
     }
     else
     {
         decoratedView = new ToplevelView(this);
         decoratedView->setVisible(surf()->view->visible());
+        surf()->view->enableParentClipping(true);
+        surf()->view->enableCustomPos(true);
+        surf()->view->enableParentOffset(true);
     }
 
     if (!fullscreen() && rolePos().y() < TOPBAR_HEIGHT)
@@ -347,6 +381,9 @@ void Toplevel::titleChanged()
 
 void Toplevel::unsetFullscreen()
 {
+    if (surf())
+        surf()->view->enableCustomTranslucentRegion(false);
+
     if (!fullscreenOutput)
         return;
 
@@ -376,7 +413,6 @@ void Toplevel::unsetFullscreen()
 
     animScene = new LSceneView(sizeB, 2);
     animScene->setPos(fullscreenOutput->pos());
-    surf()->setPos(fullscreenOutput->pos());
     G::reparentWithSubsurfaces(surf(), animScene, true);
     fullscreenOutput->animatedFullscreenToplevel = this;
 
@@ -384,18 +420,16 @@ void Toplevel::unsetFullscreen()
     capture.setDstSize(fullscreenOutput->size());
     capture.setOpacity(1.f);
     capture.setVisible(true);
-    capture.enableParentOpacity(true);
-    capture.setBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    capture.setParent(&blackFullscreenBackground);
-    capture.setColorFactor(1.f, 1.f, 1.f, 1.f);
+    capture.enableParentOpacity(false);
 
-    blackFullscreenBackground.setPos(fullscreenOutput->pos());
-    blackFullscreenBackground.setSize(fullscreenOutput->size());
-    blackFullscreenBackground.setOpacity(1.f);
-    blackFullscreenBackground.setParent(&G::compositor()->overlayLayer);
-    blackFullscreenBackground.setVisible(true);
+    animView.setParent(&G::compositor()->overlayLayer);
+    capture.insertAfter(&animView);
+
+    animView.setTranslucentRegion(nullptr);
+    animView.setOpacity(1.f);
 
     fullscreenOutput->setWorkspace(fullscreenOutput->workspaces.front(), WORSPACE_ANIM_MS, 4.f);
+    G::scene()->mainView()->damageAll(fullscreenOutput);
 }
 
 void Toplevel::preferredDecorationModeChanged()

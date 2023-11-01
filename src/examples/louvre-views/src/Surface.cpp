@@ -469,6 +469,21 @@ void Surface::unminimize(DockItem *clickedItem)
 
 void Surface::damageChanged()
 {
+    if (firstMapTimer)
+    {
+        requestNextFrame(false);
+
+        LSurface *next = this;
+
+        while (next)
+        {
+            if (next->isSubchildOf(this))
+                next->requestNextFrame(false);
+
+            next = next->nextSurface();
+        }
+    }
+
     if (cursorRole())
     {
         getView()->setVisible(false);

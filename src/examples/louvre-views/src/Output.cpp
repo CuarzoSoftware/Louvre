@@ -159,41 +159,39 @@ void Output::initializeGL()
                 // Scaling vector for the black toplevel background container so it matches cSize
                 LSizeF sVector;
 
+                Float32 val = powf(anim->value(), 6.f);
+                Float32 inv = 1.f - val;
+
                 if (tl->fullscreen())
-                {
-                    // Fades in black background
-                    tl->blackFullscreenBackground.setOpacity(anim->value());
-
-                    Float32 inv = 1.f - anim->value();
-                    tl->capture.setColorFactor(inv, inv, inv, 1.f);
-
+                {       
+                    tl->animView.setVisible(true);
                     tl->animScene->render();
                     tl->animView.setTexture(tl->animScene->texture());
-                    tl->animView.enableDstSize(true);
-                    tl->animView.setPos((pos() * anim->value()) + (tl->prevBoundingRect.pos() * (1.f - anim->value())));
-                    cSize = (size() * anim->value()) + (tl->prevBoundingRect.size() * (1.f - anim->value()));
+                    tl->animView.setPos((pos() * val) + (tl->prevBoundingRect.pos() * (inv)));
+                    cSize = (tl->fullscreenOutput->size() * val) + (tl->prevBoundingRect.size() * (inv));
                     tl->animView.setDstSize(cSize);
+                    tl->animView.setOpacity(val);
+
+                    tl->capture.setPos(tl->animView.pos());
+                    tl->capture.setDstSize(cSize);
                     LRegion transRegion = tl->captureTransRegion;
-                    LSizeF regScale = LSizeF(cSize) / LSizeF(tl->prevBoundingRect.size());
-                    transRegion.multiply(regScale.x(), regScale.y());
-                    tl->animView.setTranslucentRegion(&transRegion);
+                    LSizeF transRegionScale = LSizeF(cSize) / LSize(tl->capture.texture()->sizeB()/tl->capture.bufferScale());
+                    transRegion.multiply(transRegionScale.x(), transRegionScale.y());
+                    tl->capture.setTranslucentRegion(&transRegion);
+                    tl->surf()->requestNextFrame(false);
                 }
                 else
                 {
                     tl->animScene->setPos(pos());
-                    LPoint animPos = (pos() * (1.f - anim->value())) + (tl->prevBoundingRect.pos() * anim->value());
+                    LPoint animPos = (pos() * inv) + (tl->prevBoundingRect.pos() * val);
                     tl->surf()->setPos(0);
                     LBox box = tl->surf()->getView()->boundingBox();
                     LSize boxSize = LSize(box.x2 - box.x1, box.y2 - box.y1);
                     tl->animScene->setSizeB(boxSize * 2);
-                    cSize = (size() * (1.f - anim->value())) + (boxSize * anim->value());
+                    cSize = (size() * inv) + (boxSize * val);
 
-                    // Fades out black background
-                    tl->blackFullscreenBackground.setOpacity(1.f - anim->value());
-
-                    // Moves the black background from the output pos to the toplevel prev pos
-                    tl->blackFullscreenBackground.setPos(animPos);
-                    tl->blackFullscreenBackground.setSize(cSize);
+                    tl->capture.setOpacity(inv);
+                    tl->capture.setPos(animPos);
                     tl->capture.setDstSize(cSize);
 
                     if (tl->decoratedView)
@@ -202,12 +200,19 @@ void Output::initializeGL()
                         tl->surf()->setPos(tl->windowGeometry().pos());
 
                     tl->animScene->render();
+                    LRegion transReg;
+                    transReg = *tl->animScene->translucentRegion();
+                    transReg.offset(LPoint() - tl->animScene->pos());
                     tl->animView.setTexture(tl->animScene->texture());
                     tl->animView.enableDstSize(true);
                     tl->animView.enableParentOffset(false);
                     tl->animView.setPos(animPos);
                     tl->animView.setDstSize(cSize);
-                    tl->animView.setOpacity(anim->value());
+
+                    LSizeF regScale = LSizeF(cSize) / LSizeF(boxSize);
+                    transReg.multiply(regScale.x(), regScale.y());
+                    tl->animView.setTranslucentRegion(&transReg);
+
                     tl->configure(tl->prevRect.size(), LToplevelRole::Activated);
                 }
 
@@ -267,9 +272,6 @@ void Output::initializeGL()
                     tl->surf()->setPos(pos().x(), 0);
                     G::reparentWithSubsurfaces(tl->surf(), &tl->fullscreenWorkspace->surfaces);
                     currentWorkspace->clipChildren();
-                    LRegion empty;
-                    tl->surf()->view->enableCustomTranslucentRegion(true);
-                    tl->surf()->view->setCustomTranslucentRegion(&empty);
                 }
                 else
                 {
@@ -278,7 +280,6 @@ void Output::initializeGL()
                     G::repositionNonVisibleToplevelChildren(this, tl->surf());
                     tl->surf()->getView()->setVisible(true);
                     tl->surf()->raise();
-                    tl->surf()->view->enableCustomTranslucentRegion(false);
                     delete tl->fullscreenWorkspace;
                     tl->fullscreenWorkspace = nullptr;
                 }
