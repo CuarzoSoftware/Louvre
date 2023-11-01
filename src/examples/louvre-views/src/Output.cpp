@@ -255,10 +255,7 @@ void Output::initializeGL()
                 if (tl->capture.texture())
                     delete tl->capture.texture();
 
-                tl->capture.setVisible(false);
-
                 tl->animView.setTexture(nullptr);
-                tl->animView.setVisible(false);
 
                 if (tl->animScene)
                 {
