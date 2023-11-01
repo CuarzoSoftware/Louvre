@@ -224,13 +224,14 @@ void Toplevel::unsetFullscreenRequest()
     LSceneView tmp(fullscreenOutput->sizeB(), fullscreenOutput->scale());
     blackFullscreenBackground.setSize(fullscreenOutput->size());
     blackFullscreenBackground.setParent(&tmp);
-    blackFullscreenBackground.enableParentOffset(false);
+    blackFullscreenBackground.enableParentOffset(true);
     blackFullscreenBackground.setVisible(true);
+    blackFullscreenBackground.setPos(0);
     LPoint prevPos = surf()->pos();
     bool parentOffsetEnabled = surf()->getView()->parentOffsetEnabled();
     G::reparentWithSubsurfaces(surf(), &blackFullscreenBackground, true);
     surf()->setPos(0, 0);
-    tmp.setPos(blackFullscreenBackground.pos());
+    tmp.setPos(fullscreenOutput->pos());
     tmp.render();
     capture.setTexture(tmp.texture()->copyB());
     capture.setBufferScale(tmp.bufferScale());
