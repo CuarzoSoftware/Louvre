@@ -5,14 +5,10 @@ project(
     meson_version: '>= 0.56.0',
 	  default_options: [
 		'warning_level=2',
-        'buildtype=custom',
+        'buildtype=release',
 		'cpp_std=c++11',
 	]
 )
-
-if get_option('buildtype') == 'custom'
-    add_project_arguments('-Ofast', '-g3',  language : 'cpp')
-endif
 
 INCLUDES_PATH = '/usr/include/Louvre'
 BACKENDS_PATH = '/usr/etc/Louvre/backends'
@@ -26,8 +22,6 @@ include_paths = [
 ]
 
 include_paths_sys = [
-    '/usr/include',
-    '/usr/local/include',
     '/usr/include/drm',
     '/usr/include/libdrm',
     '/usr/include/pixman-1',

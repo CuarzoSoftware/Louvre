@@ -369,7 +369,7 @@ void Toplevel::activatedChanged()
             Output *o = (Output*)cursor()->output();
 
             if (o->currentWorkspace != o->workspaces.front())
-                o->setWorkspace(o->workspaces.front(), WORSPACE_ANIM_MS, 4.f);
+                o->setWorkspace(o->workspaces.front(), 600.f, 4.f);
         }
     }
 }
@@ -397,7 +397,7 @@ void Toplevel::unsetFullscreen()
             fullscreenOutput->animatedFullscreenToplevel = nullptr;
             delete fullscreenWorkspace;
             fullscreenWorkspace = nullptr;
-            fullscreenOutput->setWorkspace(prev, WORSPACE_ANIM_MS);
+            fullscreenOutput->setWorkspace(prev, 600.f, 4.0f, 0.5f);
             fullscreenOutput = nullptr;
         }
         return;

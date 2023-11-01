@@ -202,7 +202,6 @@ bool LSurfaceView::isRenderable() const
     return true;
 }
 
-#include <LLog.h>
 void LSurfaceView::requestNextFrame(LOutput *output)
 {
     LView *view = this;
@@ -218,6 +217,7 @@ void LSurfaceView::requestNextFrame(LOutput *output)
         return;
 
     bool clearDamage = true;
+
     for (LOutput *o : surface()->outputs())
     {
         // If the view is visible on another output and has not rendered the new damage
@@ -230,12 +230,9 @@ void LSurfaceView::requestNextFrame(LOutput *output)
     }
 
     if (clearDamage)
-    {
         surface()->requestNextFrame();
-    }
 
     view->imp()->threadsMap[output->threadId()].lastRenderedDamageId = surface()->damageId();
-
 }
 
 const LRegion *LSurfaceView::damage() const

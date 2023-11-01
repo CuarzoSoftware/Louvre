@@ -178,7 +178,6 @@ void Output::initializeGL()
                     LSizeF transRegionScale = LSizeF(cSize) / LSizeF(tl->prevBoundingRect.size());
                     transRegion.multiply(transRegionScale.x(), transRegionScale.y());
                     tl->capture.setTranslucentRegion(&transRegion);
-                    tl->surf()->requestNextFrame(false);
                 }
                 else
                 {
@@ -256,7 +255,10 @@ void Output::initializeGL()
                 if (tl->capture.texture())
                     delete tl->capture.texture();
 
+                tl->capture.setVisible(false);
+
                 tl->animView.setTexture(nullptr);
+                tl->animView.setVisible(false);
 
                 if (tl->animScene)
                 {

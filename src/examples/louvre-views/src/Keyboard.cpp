@@ -21,6 +21,7 @@ void Keyboard::keyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked
     G::scene()->handleKeyModifiersEvent(depressed, latched, locked, group);
 }
 
+static Float32 ease = 2.3f;
 void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
 {
     Output *output = (Output*)cursor()->output();
@@ -35,13 +36,15 @@ void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
                 if (keyCode == KEY_RIGHT && std::next(output->currentWorkspace->outputLink) != output->workspaces.end())
                 {
                     if (!output->animatedFullscreenToplevel)
-                        output->setWorkspace(*std::next(output->currentWorkspace->outputLink), 512);
+                        output->setWorkspace(*std::next(output->currentWorkspace->outputLink), 500.f, ease);
+                    //ease += 0.1f;
                     return;
                 }
                 else if (keyCode == KEY_LEFT && output->currentWorkspace != output->workspaces.front())
                 {
                     if (!output->animatedFullscreenToplevel)
-                        output->setWorkspace(*std::prev(output->currentWorkspace->outputLink), 512);
+                        output->setWorkspace(*std::prev(output->currentWorkspace->outputLink), 500.f, ease);
+                    //ease += 0.1f;
                     return;
                 }
             }

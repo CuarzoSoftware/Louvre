@@ -72,33 +72,9 @@ Run the following commands to compile and install Louvre:
 ```
 $ git clone https://github.com/CuarzoSoftware/Louvre.git
 $ cd Louvre/src
-$ meson setup build -Dbuildtype=custom
+$ meson setup build
 $ cd build
 $ sudo meson install
-```
-
-This will install the library in:
-
-```
-/usr/lib
-```
-
-The headers in:
-
-```
-/usr/include/Louvre
-```
-
-The backends and assets in:
-
-```
-/usr/etc/Louvre/
-```
-
-And examples in:
-
-```
-/usr/bin
 ```
 
 To ensure that everything is functioning correctly, you can test one of the available [examples](md_md__examples.html).
