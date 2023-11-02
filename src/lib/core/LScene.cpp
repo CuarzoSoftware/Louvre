@@ -163,7 +163,7 @@ LView *LScene::handlePointerMoveEvent(Float32 x, Float32 y, bool absolute, LPoin
     {
         surface->imp()->lastPointerEventView = (LSurfaceView*)view;
 
-        if (seat()->pointer()->focusSurface() == surface)
+        if (seat()->pointer()->focus() == surface)
             seat()->pointer()->sendMoveEvent(localPos);
         else
             seat()->pointer()->setFocus(surface, localPos);
@@ -191,7 +191,7 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
     if (button == LPointer::Left && state == LPointer::Released)
         seat()->dndManager()->drop();
 
-    if (!seat()->pointer()->focusSurface())
+    if (!seat()->pointer()->focus())
     {
         LSurface *surface = nullptr;
         LView *view = viewAt(cursor()->pos());
@@ -210,7 +210,7 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
                 seat()->pointer()->dismissPopups();
             }
 
-            if (!seat()->keyboard()->focusSurface() || !surface->isSubchildOf(seat()->keyboard()->focusSurface()))
+            if (!seat()->keyboard()->focus() || !surface->isSubchildOf(seat()->keyboard()->focus()))
                 seat()->keyboard()->setFocus(surface);
 
             seat()->pointer()->setFocus(surface, imp()->viewLocalPos(view, cursor()->pos()));
@@ -236,31 +236,31 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
     {
         /* We save the pointer focus surface in order to continue sending events to it even when the cursor
          * is outside of it (while the left button is being held down)*/
-        seat()->pointer()->setDraggingSurface(seat()->pointer()->focusSurface());
+        seat()->pointer()->setDraggingSurface(seat()->pointer()->focus());
 
-        if (seat()->keyboard()->grabbingSurface() && seat()->keyboard()->grabbingSurface()->client() != seat()->pointer()->focusSurface()->client())
+        if (seat()->keyboard()->grabbingSurface() && seat()->keyboard()->grabbingSurface()->client() != seat()->pointer()->focus()->client())
         {
             seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
             seat()->pointer()->dismissPopups();
         }
 
-        if (!seat()->pointer()->focusSurface()->popup())
+        if (!seat()->pointer()->focus()->popup())
             seat()->pointer()->dismissPopups();
 
-        if (!seat()->keyboard()->focusSurface() || !seat()->pointer()->focusSurface()->isSubchildOf(seat()->keyboard()->focusSurface()))
-            seat()->keyboard()->setFocus(seat()->pointer()->focusSurface());
+        if (!seat()->keyboard()->focus() || !seat()->pointer()->focus()->isSubchildOf(seat()->keyboard()->focus()))
+            seat()->keyboard()->setFocus(seat()->pointer()->focus());
 
-        if (seat()->pointer()->focusSurface()->toplevel() && !seat()->pointer()->focusSurface()->toplevel()->activated())
-            seat()->pointer()->focusSurface()->toplevel()->configure(seat()->pointer()->focusSurface()->toplevel()->states() | LToplevelRole::Activated);
+        if (seat()->pointer()->focus()->toplevel() && !seat()->pointer()->focus()->toplevel()->activated())
+            seat()->pointer()->focus()->toplevel()->configure(seat()->pointer()->focus()->toplevel()->states() | LToplevelRole::Activated);
 
         // Raise surface
-        if (seat()->pointer()->focusSurface() == compositor()->surfaces().back())
+        if (seat()->pointer()->focus() == compositor()->surfaces().back())
             return;
 
-        if (seat()->pointer()->focusSurface()->parent())
-            seat()->pointer()->focusSurface()->topmostParent()->raise();
+        if (seat()->pointer()->focus()->parent())
+            seat()->pointer()->focus()->topmostParent()->raise();
         else
-            seat()->pointer()->focusSurface()->raise();
+            seat()->pointer()->focus()->raise();
     }
     // Left button released
     else
@@ -271,9 +271,9 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
         // We stop sending events to the surface on which the left button was being held down
         seat()->pointer()->setDraggingSurface(nullptr);
 
-        if (seat()->pointer()->focusSurface()->imp()->lastPointerEventView)
+        if (seat()->pointer()->focus()->imp()->lastPointerEventView)
         {
-            if (!imp()->pointerIsOverView(seat()->pointer()->focusSurface()->imp()->lastPointerEventView, cursor()->pos()))
+            if (!imp()->pointerIsOverView(seat()->pointer()->focus()->imp()->lastPointerEventView, cursor()->pos()))
             {
                 seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
                 seat()->pointer()->setFocus(nullptr);
@@ -281,7 +281,7 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
         }
         else
         {
-            if (!seat()->pointer()->focusSurface()->inputRegion().containsPoint(cursor()->pos() - seat()->pointer()->focusSurface()->pos()))
+            if (!seat()->pointer()->focus()->inputRegion().containsPoint(cursor()->pos() - seat()->pointer()->focus()->pos()))
             {
                 seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
                 seat()->pointer()->setFocus(nullptr);
@@ -371,15 +371,15 @@ void LScene::handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState)
         // Terminates client connection
         else if (L_CTRL && seat()->keyboard()->keySymbol(keyCode) == XKB_KEY_q)
         {
-            if (seat()->keyboard()->focusSurface())
-                seat()->keyboard()->focusSurface()->client()->destroy();
+            if (seat()->keyboard()->focus())
+                seat()->keyboard()->focus()->client()->destroy();
         }
 
         // Minimizes currently focused surface
         else if (L_CTRL && seat()->keyboard()->keySymbol(keyCode) == XKB_KEY_m)
         {
-            if (seat()->keyboard()->focusSurface() && seat()->keyboard()->focusSurface()->toplevel() && !seat()->keyboard()->focusSurface()->toplevel()->fullscreen())
-                seat()->keyboard()->focusSurface()->toplevel()->setMinimizedRequest();
+            if (seat()->keyboard()->focus() && seat()->keyboard()->focus()->toplevel() && !seat()->keyboard()->focus()->toplevel()->fullscreen())
+                seat()->keyboard()->focus()->toplevel()->setMinimizedRequest();
         }
 
         // Terminates the compositor

@@ -107,9 +107,9 @@ void Keyboard::focusChanged()
 
     LTexture *topbarTitleTexture = nullptr;
 
-    if (focusSurface())
+    if (focus())
     {
-        Client *client = (Client*)focusSurface()->client();
+        Client *client = (Client*)focus()->client();
 
         if (client->app && client->app->nameTexture)
             topbarTitleTexture = client->app->nameTexture;

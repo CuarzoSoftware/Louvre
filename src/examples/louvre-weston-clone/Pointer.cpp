@@ -107,7 +107,7 @@ void Pointer::pointerMoveEvent(Float32 x, Float32 y, bool absolute)
     }
     else
     {
-        if (focusSurface() == surface)
+        if (focus() == surface)
             sendMoveEvent();
         else
             setFocus(surface);
@@ -131,7 +131,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
         }
     }
 
-    if (!focusSurface() && !pointerOverTerminalIcon)
+    if (!focus() && !pointerOverTerminalIcon)
     {
         LSurface *surface = surfaceAt(cursor()->pos());
 
@@ -143,7 +143,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
                 dismissPopups();
             }
 
-            if (!seat()->keyboard()->focusSurface() || !surface->isSubchildOf(seat()->keyboard()->focusSurface()))
+            if (!seat()->keyboard()->focus() || !surface->isSubchildOf(seat()->keyboard()->focus()))
                 seat()->keyboard()->setFocus(surface);
 
             setFocus(surface);
@@ -178,31 +178,31 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
 
         /* We save the pointer focus surface in order to continue sending events to it even when the cursor
          * is outside of it (while the left button is being held down)*/
-        setDraggingSurface(focusSurface());
+        setDraggingSurface(focus());
 
-        if (seat()->keyboard()->grabbingSurface() && seat()->keyboard()->grabbingSurface()->client() != focusSurface()->client())
+        if (seat()->keyboard()->grabbingSurface() && seat()->keyboard()->grabbingSurface()->client() != focus()->client())
         {
             seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
             dismissPopups();
         }
 
-        if (!focusSurface()->popup())
+        if (!focus()->popup())
             dismissPopups();
 
-        if (!seat()->keyboard()->focusSurface() || !focusSurface()->isSubchildOf(seat()->keyboard()->focusSurface()))
-            seat()->keyboard()->setFocus(focusSurface());
+        if (!seat()->keyboard()->focus() || !focus()->isSubchildOf(seat()->keyboard()->focus()))
+            seat()->keyboard()->setFocus(focus());
 
-        if (focusSurface()->toplevel() && !focusSurface()->toplevel()->activated())
-            focusSurface()->toplevel()->configure(focusSurface()->toplevel()->states() | LToplevelRole::Activated);
+        if (focus()->toplevel() && !focus()->toplevel()->activated())
+            focus()->toplevel()->configure(focus()->toplevel()->states() | LToplevelRole::Activated);
 
         // Raise surface
-        if (focusSurface() == compositor()->surfaces().back())
+        if (focus() == compositor()->surfaces().back())
             return;
 
-        if (focusSurface()->parent())
-            focusSurface()->topmostParent()->raise();
+        if (focus()->parent())
+            focus()->topmostParent()->raise();
         else
-            focusSurface()->raise();
+            focus()->raise();
     }
     // Left button released
     else
@@ -221,7 +221,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
         // We stop sending events to the surface on which the left button was being held down
         setDraggingSurface(nullptr);
 
-        if (!focusSurface()->inputRegion().containsPoint(cursor()->pos() - focusSurface()->rolePos()))
+        if (!focus()->inputRegion().containsPoint(cursor()->pos() - focus()->rolePos()))
         {
             seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
             setFocus(nullptr);

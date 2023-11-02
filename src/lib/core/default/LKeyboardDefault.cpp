@@ -38,15 +38,15 @@ void LKeyboard::keyEvent(UInt32 keyCode, KeyState keyState)
         // Terminates client connection
         else if (L_CTRL && (sym == XKB_KEY_q || sym == XKB_KEY_Q))
         {
-            if (focusSurface())
-                focusSurface()->client()->destroy();
+            if (focus())
+                focus()->client()->destroy();
         }
 
         // Minimizes currently focused surface
         else if (L_CTRL && (sym == XKB_KEY_m || sym == XKB_KEY_M))
         {
-            if (focusSurface() && focusSurface()->toplevel() && !focusSurface()->toplevel()->fullscreen())
-                focusSurface()->setMinimized(true);
+            if (focus() && focus()->toplevel() && !focus()->toplevel()->fullscreen())
+                focus()->setMinimized(true);
         }
 
         // Screenshot

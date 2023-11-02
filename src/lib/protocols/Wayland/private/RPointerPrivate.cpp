@@ -29,8 +29,8 @@ void RPointer::RPointerPrivate::set_cursor(wl_client *client, wl_resource *resou
     if (serial != rPointer->serials().enter)
         return;
 
-    if (!seat()->pointer()->focusSurface() ||
-        seat()->pointer()->focusSurface()->client() != rPointer->client())
+    if (!seat()->pointer()->focus() ||
+        seat()->pointer()->focus()->client() != rPointer->client())
         return;
 
     skipCheck:

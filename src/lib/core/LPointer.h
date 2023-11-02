@@ -136,7 +136,7 @@ public:
      *
      * @return A pointer to the focused surface, or `nullptr` if no surface has pointer focus.
      */
-    LSurface *focusSurface() const;
+    LSurface *focus() const;
 
     /**
      * @brief Set the pointer focus to a specific surface.

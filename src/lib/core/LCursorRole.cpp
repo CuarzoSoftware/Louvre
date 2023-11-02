@@ -53,7 +53,7 @@ void LCursorRole::handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin)
 
         // Notify that the cursor changed content
         if (seat()->pointer()->imp()->lastCursorRequest == this && (
-           (seat()->pointer()->focusSurface() && seat()->pointer()->focusSurface()->client() == surface()->client()) ||
+           (seat()->pointer()->focus() && seat()->pointer()->focus()->client() == surface()->client()) ||
            (seat()->dndManager()->origin() && seat()->dndManager()->origin()->client() == surface()->client())))
         {
             seat()->pointer()->imp()->lastCursorRequestWasHide = false;

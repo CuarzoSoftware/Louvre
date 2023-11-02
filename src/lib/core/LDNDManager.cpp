@@ -112,7 +112,7 @@ void LDNDManager::drop()
             if (source())
                 source()->dataSourceResource()->dndDropPerformed();
 
-            LSurface *focus = seat()->pointer()->focusSurface();
+            LSurface *focus = seat()->pointer()->focus();
             seat()->pointer()->setFocus(nullptr);
             seat()->pointer()->setFocus(focus);
         }

@@ -159,12 +159,12 @@ Int32 LSurface::bufferScale() const
 
 bool LSurface::hasPointerFocus() const
 {
-    return seat()->pointer()->focusSurface() == this;
+    return seat()->pointer()->focus() == this;
 }
 
 bool LSurface::hasKeyboardFocus() const
 {
-    return seat()->keyboard()->focusSurface() == this;
+    return seat()->keyboard()->focus() == this;
 }
 
 LTexture *LSurface::texture() const

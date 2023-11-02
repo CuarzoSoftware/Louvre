@@ -189,7 +189,7 @@ void Surface::mappingChanged()
     }
     else
     {
-        if (seat()->pointer()->focusSurface() == this)
+        if (seat()->pointer()->focus() == this)
             seat()->pointer()->setFocus(nullptr);
 
         if (toplevel() && toplevel()->fullscreen())

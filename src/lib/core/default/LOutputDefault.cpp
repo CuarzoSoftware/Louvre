@@ -24,7 +24,7 @@ void LOutput::paintGL()
     p->clearScreen();
 
     // Check if a surface moved under cursor (simulating a pointer move event)
-    if (seat()->pointer()->surfaceAt(cursor()->pos()) != seat()->pointer()->focusSurface())
+    if (seat()->pointer()->surfaceAt(cursor()->pos()) != seat()->pointer()->focus())
         seat()->pointer()->pointerMoveEvent(
             cursor()->pos().x(),
             cursor()->pos().y(),

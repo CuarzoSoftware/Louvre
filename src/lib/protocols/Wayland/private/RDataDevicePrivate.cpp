@@ -52,7 +52,7 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
     LDNDManager *dndManager = seat()->dndManager();
 
     // Cancel if there is dragging going on or if there is no focused surface from this client
-    if (dndManager->dragging() || seat()->pointer()->focusSurface() != lOriginSurface)
+    if (dndManager->dragging() || seat()->pointer()->focus() != lOriginSurface)
     {
         LLog::debug("[RDataDevicePrivate::start_drag()] Invalid start drag request. Ignoring it.");
         return;
@@ -122,9 +122,9 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
     // Notify
     dndManager->startDragRequest();
 
-    if (dndManager->imp()->origin && seat()->pointer()->focusSurface())
-        seat()->pointer()->focusSurface()->client()->dataDevice().imp()->sendDNDEnterEventS(
-            seat()->pointer()->focusSurface(), 0, 0);
+    if (dndManager->imp()->origin && seat()->pointer()->focus())
+        seat()->pointer()->focus()->client()->dataDevice().imp()->sendDNDEnterEventS(
+            seat()->pointer()->focus(), 0, 0);
 }
 
 void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resource *resource, wl_resource *source, UInt32 serial)
@@ -192,8 +192,8 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resour
         }
 
         // If a client already has keyboard focus, send it the current clipboard
-        if (seat()->keyboard()->focusSurface())
-            seat()->keyboard()->focusSurface()->client()->dataDevice().sendSelectionEvent();
+        if (seat()->keyboard()->focus())
+            seat()->keyboard()->focus()->client()->dataDevice().sendSelectionEvent();
     }
     else
     {

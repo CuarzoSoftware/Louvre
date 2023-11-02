@@ -124,7 +124,7 @@ void LDataDevice::LDataDevicePrivate::sendDNDEnterEventS(LSurface *surface, Floa
 
 void LDataDevice::LDataDevicePrivate::sendDNDMotionEventS(Float24 x, Float24 y)
 {
-    if (seat()->dndManager()->dragging() && seat()->dndManager()->focus() && seat()->dndManager()->focus() == seat()->pointer()->focusSurface())
+    if (seat()->dndManager()->dragging() && seat()->dndManager()->focus() && seat()->dndManager()->focus() == seat()->pointer()->focus())
         if (seat()->dndManager()->source() || (!seat()->dndManager()->source() && seat()->dndManager()->srcDataDevice()->client()  && seat()->dndManager()->srcDataDevice()->client() == client))
         {
             UInt32 ms = LTime::ms();

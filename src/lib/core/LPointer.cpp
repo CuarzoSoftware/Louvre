@@ -50,10 +50,10 @@ void LPointer::setFocus(LSurface *surface, const LPoint &localPos)
 {
     if (surface)
     {
-        if (focusSurface() == surface)
+        if (focus() == surface)
             return;
 
-        imp()->sendLeaveEvent(focusSurface());
+        imp()->sendLeaveEvent(focus());
 
         Float24 x = wl_fixed_from_int(localPos.x());
         Float24 y = wl_fixed_from_int(localPos.y());
@@ -79,7 +79,7 @@ void LPointer::setFocus(LSurface *surface, const LPoint &localPos)
     else
     {
         // Remove focus from focused surface
-        imp()->sendLeaveEvent(focusSurface());
+        imp()->sendLeaveEvent(focus());
         imp()->pointerFocusSurface = nullptr;
     }
 
@@ -87,13 +87,13 @@ void LPointer::setFocus(LSurface *surface, const LPoint &localPos)
 
 void LPointer::sendMoveEvent()
 {
-    if (focusSurface())
-        sendMoveEvent(cursor()->pos() - focusSurface()->rolePos());
+    if (focus())
+        sendMoveEvent(cursor()->pos() - focus()->rolePos());
 }
 
 void LPointer::sendMoveEvent(const LPoint &localPos)
 {
-    if (!focusSurface())
+    if (!focus())
         return;
 
     Float24 x = wl_fixed_from_int(localPos.x());
@@ -102,7 +102,7 @@ void LPointer::sendMoveEvent(const LPoint &localPos)
     if (seat()->dndManager()->focus())
         seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDMotionEventS(x, y);
 
-    for (Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+    for (Wayland::GSeat *s : focus()->client()->seatGlobals())
     {
         if (s->pointerResource())
         {
@@ -115,10 +115,10 @@ void LPointer::sendMoveEvent(const LPoint &localPos)
 
 void LPointer::sendButtonEvent(Button button, ButtonState state)
 {
-    if (!focusSurface())
+    if (!focus())
         return;
 
-    for (Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+    for (Wayland::GSeat *s : focus()->client()->seatGlobals())
     {
         if (s->pointerResource())
         {
@@ -130,7 +130,7 @@ void LPointer::sendButtonEvent(Button button, ButtonState state)
         }
     }
 
-    focusSurface()->client()->flush();
+    focus()->client()->flush();
 }
 
 void LPointer::startResizingToplevel(LToplevelRole *toplevel,
@@ -307,7 +307,7 @@ const LPoint &LPointer::movingToplevelInitPointerPos() const
 void LPointer::sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, AxisSource source)
 {
     // If no surface has focus
-    if (!focusSurface())
+    if (!focus())
         return;
 
     Float24 aX = wl_fixed_from_double(axisX);
@@ -317,7 +317,7 @@ void LPointer::sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int3
 
     UInt32 ms = LTime::ms();
 
-    for (Wayland::GSeat *s : focusSurface()->client()->seatGlobals())
+    for (Wayland::GSeat *s : focus()->client()->seatGlobals())
     {
         if (s->pointerResource())
         {
@@ -383,7 +383,7 @@ LSurface *LPointer::surfaceAt(const LPoint &point)
     return nullptr;
 }
 
-LSurface *LPointer::focusSurface() const
+LSurface *LPointer::focus() const
 {
     return imp()->pointerFocusSurface;
 }

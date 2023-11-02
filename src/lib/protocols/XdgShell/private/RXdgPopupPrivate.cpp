@@ -62,7 +62,7 @@ void RXdgPopup::RXdgPopupPrivate::grab(wl_client *client, wl_resource *resource,
         bool parentIsPopup = parent && (parent->popup() || (parent->imp()->pending.role && parent->imp()->pending.role->roleId() == LSurface::Popup));
         bool parentIsToplevel = parent && (parent->toplevel() || (parent->imp()->pending.role && parent->imp()->pending.role->roleId() == LSurface::Toplevel));
 
-        if (parentIsPopup && compositor()->seat()->keyboard()->focusSurface() != parent && !parentIsToplevel)
+        if (parentIsPopup && compositor()->seat()->keyboard()->focus() != parent && !parentIsToplevel)
         {
             wl_resource_post_error(
                 resource,

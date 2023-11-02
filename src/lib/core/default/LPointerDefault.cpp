@@ -66,7 +66,7 @@ void LPointer::pointerMoveEvent(Float32 x, Float32 y, bool absolute)
 
     if (surface)
     {
-        if (focusSurface() == surface)
+        if (focus() == surface)
             sendMoveEvent();
         else
             setFocus(surface);
@@ -86,7 +86,7 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
     if (state == Released && button == Left)
         seat()->dndManager()->drop();
 
-    if (!focusSurface())
+    if (!focus())
     {
         LSurface *surface = surfaceAt(cursor()->pos());
 
@@ -118,24 +118,24 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
     {
         // We save the pointer focus surface to continue sending events to it even when the cursor
         // is outside of it (while the left button is being held down)
-        setDraggingSurface(focusSurface());
+        setDraggingSurface(focus());
 
-        if (!seat()->keyboard()->focusSurface() || !focusSurface()->isSubchildOf(seat()->keyboard()->focusSurface()))
-            seat()->keyboard()->setFocus(focusSurface());
+        if (!seat()->keyboard()->focus() || !focus()->isSubchildOf(seat()->keyboard()->focus()))
+            seat()->keyboard()->setFocus(focus());
 
-        if (focusSurface()->toplevel() && !focusSurface()->toplevel()->activated())
-            focusSurface()->toplevel()->configure(focusSurface()->toplevel()->states() | LToplevelRole::Activated);
+        if (focus()->toplevel() && !focus()->toplevel()->activated())
+            focus()->toplevel()->configure(focus()->toplevel()->states() | LToplevelRole::Activated);
 
-        if (!focusSurface()->popup())
+        if (!focus()->popup())
             dismissPopups();
 
-        if (focusSurface() == compositor()->surfaces().back())
+        if (focus() == compositor()->surfaces().back())
             return;
 
-        if (focusSurface()->parent())
-            focusSurface()->topmostParent()->raise();
+        if (focus()->parent())
+            focus()->topmostParent()->raise();
         else
-            focusSurface()->raise();
+            focus()->raise();
     }
     // Left button released
     else
@@ -146,7 +146,7 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
         // We stop sending events to the surface on which the left button was being held down
         setDraggingSurface(nullptr);
 
-        if (!focusSurface()->inputRegion().containsPoint(cursor()->pos() - focusSurface()->rolePos()))
+        if (!focus()->inputRegion().containsPoint(cursor()->pos() - focus()->rolePos()))
         {
             setFocus(nullptr);
             cursor()->useDefault();

@@ -103,7 +103,7 @@ public:
      *
      * @returns `nullptr` if no surface has keyboard focus.
      */
-    LSurface *focusSurface() const;
+    LSurface *focus() const;
 
     /**
      * @brief Set the surface that grabs keyboard events.
@@ -302,11 +302,11 @@ public:
     /**
      * @brief Notifies that the focused surface changed.
      *
-     * This event is triggered when the focusSurface() property changes, either through the use of setFocus()
+     * This event is triggered when the focus() property changes, either through the use of setFocus()
      * or when the current focused surface is destroyed.
      *
      * @see setFocus()
-     * @see focusSurface()
+     * @see focus()
      *
      * #### Default Implementation
      * @snippet LKeyboardDefault.cpp focusChanged
