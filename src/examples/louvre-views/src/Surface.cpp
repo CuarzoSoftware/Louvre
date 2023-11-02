@@ -27,12 +27,10 @@ Surface::~Surface()
 
     if (toplevel())
     {
-        class Toplevel *tl = (class Toplevel*)toplevel();
-
-        if (tl->decoratedView)
+        if (tl()->decoratedView)
         {
-            delete tl->decoratedView;
-            tl->decoratedView = nullptr;
+            delete tl()->decoratedView;
+            tl()->decoratedView = nullptr;
         }
     }
 
@@ -56,13 +54,8 @@ Surface::~Surface()
 
 LView *Surface::getView() const
 {
-    class Toplevel *tl = (class Toplevel*)toplevel();
-
-    if (tl && tl->decoratedView)
-        return tl->decoratedView;
-
-    if (cursorRole())
-        view->setVisible(false);
+    if (tl() && tl()->decoratedView)
+        return tl()->decoratedView;
 
     return view;
 }
@@ -224,7 +217,7 @@ void Surface::roleChanged()
     if (roleId() == LSurface::Cursor)
     {
         view->setVisible(false);
-        view->setParent(&G::compositor()->backgroundLayer);
+        view->setParent(nullptr);
     }
     else if (roleId() == LSurface::DNDIcon)
     {
@@ -481,11 +474,5 @@ void Surface::unminimize(DockItem *clickedItem)
 
 void Surface::damageChanged()
 {
-    if (cursorRole())
-    {
-        getView()->setVisible(false);
-        return;
-    }
-
     repaintOutputs();
 }

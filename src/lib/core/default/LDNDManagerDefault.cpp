@@ -9,12 +9,9 @@ using namespace Louvre;
 //! [startDragRequest]
 void LDNDManager::startDragRequest()
 {
-    // Let the client start the session only if one of its surfaces has pointer or keyboard focus
-    if ((seat()->pointer()->focus()  && seat()->pointer()->focus()->client()  == source()->client()) ||
-        (seat()->keyboard()->focus() && seat()->keyboard()->focus()->client() == source()->client()))
-    {
+    // Let the client start the session only if the origin surface has pointer focus
+    if (origin()->hasPointerFocus())
         seat()->pointer()->setDraggingSurface(nullptr);
-    }
     else
         cancel();
 }

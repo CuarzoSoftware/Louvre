@@ -10,11 +10,15 @@
 using namespace Louvre;
 using namespace std;
 
+class Toplevel;
+
 class Surface : public LSurface
 {
 public:
     Surface(LSurface::Params *params);
     ~Surface();
+
+    inline class Toplevel *tl() const {return (class Toplevel*)toplevel();};
 
     LView *getView() const;
 

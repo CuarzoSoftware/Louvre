@@ -12,7 +12,7 @@ void Popup::configureRequest()
     if (G::searchFullscreenParent((Surface*)surface()->parent()))
         setPositionerBounds(cursor()->output()->rect());
     else
-        setPositionerBounds(cursor()->output()->rect() + LPoint(0, TOPBAR_HEIGHT));
+        setPositionerBounds(cursor()->output()->rect() + LRect(0, TOPBAR_HEIGHT, 0, -TOPBAR_HEIGHT));
 
     LPoint relativePosition = rolePos() - surface()->parent()->pos();
 

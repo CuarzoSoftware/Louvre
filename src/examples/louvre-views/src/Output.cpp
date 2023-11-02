@@ -357,6 +357,7 @@ void Output::paintGL()
         G::compositor()->softwareCursor.setTexture(cursor()->texture());
         G::compositor()->softwareCursor.setPos(cursor()->rect().pos());
         G::compositor()->softwareCursor.setDstSize(cursor()->rect().size());
+        G::compositor()->softwareCursor.setVisible(cursor()->visible());
     }
 
     G::compositor()->scene.handlePaintGL(this);
