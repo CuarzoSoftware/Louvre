@@ -113,10 +113,10 @@ void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *reso
 
                     rewind(s.tmp);
 
-                    Int32 written = 0, readN = 0, toRead = 0;
+                    Int32 written = 0, readN = 0, toRead = 0, offset = 0;
                     UChar8 buffer[1024];
 
-                    while(written != total)
+                    while (total > 0)
                     {
                         if (total < 1024)
                             toRead = total;
@@ -125,12 +125,25 @@ void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *reso
 
                         readN = fread(buffer, sizeof(UChar8), toRead, s.tmp);
 
-                        written = write(fd, buffer, readN);
-
-                        if (written != 1)
+                        if (readN != toRead)
                             break;
 
-                        total -= written;
+                        offset = 0;
+
+                        retryWrite:
+                        written = write(fd, &buffer[offset], readN);
+
+                        if (written > 0)
+                            offset += written;
+                        else if (written == -1)
+                            break;
+                        else if (written == 0)
+                            goto retryWrite;
+
+                        if (offset != readN)
+                            goto retryWrite;
+
+                        total -= readN;
                     }
                 }
                 else if (seat()->dataSelection()->dataSourceResource())
