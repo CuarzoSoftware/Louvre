@@ -38,6 +38,7 @@ public: \
     inline CAT(class_name,Private) *imp() const {return m_imp;}; \
     private: \
     CAT(class_name,Private) *m_imp = nullptr; \
+
 /**
  * @namespace Louvre
  * @brief Namespaces
@@ -295,57 +296,6 @@ namespace Louvre
         LGraphicBackendX11 = 1      ///< ID for the X11 graphic backend.
     };
 
-    /// @cond OMIT
-    struct LGraphicBackendInterface
-    {
-        UInt32 (*id)();
-        void *(*getContextHandle)();
-        bool (*initialize)();
-        void (*pause)();
-        void (*resume)();
-        bool (*scheduleOutputRepaint)(LOutput *output);
-        void (*uninitialize)();
-        const std::list<LOutput*>*(*getConnectedOutputs)();
-        UInt32 (*rendererGPUs)();
-        bool (*initializeOutput)(LOutput *output);
-        void (*uninitializeOutput)(LOutput *output);
-        EGLDisplay (*getOutputEGLDisplay)(LOutput *output);
-        const LSize *(*getOutputPhysicalSize)(LOutput *output);
-        Int32 (*getOutputCurrentBufferIndex)(LOutput *output);
-        UInt32 (*getOutputBuffersCount)(LOutput *output);
-        LTexture *(*getOutputBuffer)(LOutput *output, UInt32 bufferIndex);
-        bool (*hasBufferDamageSupport)(LOutput *output);
-        void (*setOutputBufferDamage)(LOutput *output, LRegion &region);
-        const char *(*getOutputName)(LOutput *output);
-        const char *(*getOutputManufacturerName)(LOutput *output);
-        const char *(*getOutputModelName)(LOutput *output);
-        const char *(*getOutputDescription)(LOutput *output);
-        const LOutputMode *(*getOutputPreferredMode)(LOutput *output);
-        const LOutputMode *(*getOutputCurrentMode)(LOutput *output);
-        const std::list<LOutputMode*> *(*getOutputModes)(LOutput *output);
-        bool (*setOutputMode)(LOutput *output, LOutputMode *mode);
-        const LSize *(*getOutputModeSize)(LOutputMode *mode);
-        Int32 (*getOutputModeRefreshRate)(LOutputMode *mode);
-        bool (*getOutputModeIsPreferred)(LOutputMode *mode);
-        bool (*hasHardwareCursorSupport)(LOutput *output);
-        void (*setCursorTexture)(LOutput *output, UChar8 *buffer);
-        void (*setCursorPosition)(LOutput *output, const LPoint &position);
-
-        // Buffers
-        const std::list<LDMAFormat*>*(*getDMAFormats)();
-        EGLDisplay (*getAllocatorEGLDisplay)();
-        EGLContext (*getAllocatorEGLContext)();
-
-        bool (*createTextureFromCPUBuffer)(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels);
-        bool (*createTextureFromWaylandDRM)(LTexture *texture, void *wlBuffer);
-        bool (*createTextureFromDMA)(LTexture *texture, const LDMAPlanes *planes);
-        bool (*updateTextureRect)(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels);
-        UInt32 (*getTextureID)(LOutput *output, LTexture *texture);
-        GLenum (*getTextureTarget)(LTexture *texture);
-        void (*destroyTexture)(LTexture *texture);
-    };
-    /// @endcond
-
     /**
      * @brief ID values for the input backends included with Louvre.
      *
@@ -362,20 +312,6 @@ namespace Louvre
         LInputBackendLibinput = 0, ///< ID for the Libinput input backend.
         LInputBackendX11 = 1       ///< ID for the X11 input backend.
     };
-
-    /// @cond OMIT
-    struct LInputBackendInterface
-    {
-        UInt32 (*id)();
-        bool (*initialize)();
-        UInt32 (*getCapabilities)();
-        void *(*getContextHandle)();
-        void (*uninitialize)();
-        void (*suspend)();
-        void (*forceUpdate)();
-        void (*resume)();
-    };
-    /// @endcond
 
     namespace Protocols
     {
@@ -430,6 +366,69 @@ namespace Louvre
             class RLinuxDMABufFeedback;
         };
     }
+
+    /// @cond OMIT
+    struct LGraphicBackendInterface
+    {
+        UInt32 (*id)();
+        void *(*getContextHandle)();
+        bool (*initialize)();
+        void (*pause)();
+        void (*resume)();
+        bool (*scheduleOutputRepaint)(LOutput *output);
+        void (*uninitialize)();
+        const std::list<LOutput*>*(*getConnectedOutputs)();
+        UInt32 (*rendererGPUs)();
+        bool (*initializeOutput)(LOutput *output);
+        void (*uninitializeOutput)(LOutput *output);
+        EGLDisplay (*getOutputEGLDisplay)(LOutput *output);
+        const LSize *(*getOutputPhysicalSize)(LOutput *output);
+        Int32 (*getOutputCurrentBufferIndex)(LOutput *output);
+        UInt32 (*getOutputBuffersCount)(LOutput *output);
+        LTexture *(*getOutputBuffer)(LOutput *output, UInt32 bufferIndex);
+        bool (*hasBufferDamageSupport)(LOutput *output);
+        void (*setOutputBufferDamage)(LOutput *output, LRegion &region);
+        const char *(*getOutputName)(LOutput *output);
+        const char *(*getOutputManufacturerName)(LOutput *output);
+        const char *(*getOutputModelName)(LOutput *output);
+        const char *(*getOutputDescription)(LOutput *output);
+        const LOutputMode *(*getOutputPreferredMode)(LOutput *output);
+        const LOutputMode *(*getOutputCurrentMode)(LOutput *output);
+        const std::list<LOutputMode*> *(*getOutputModes)(LOutput *output);
+        bool (*setOutputMode)(LOutput *output, LOutputMode *mode);
+        const LSize *(*getOutputModeSize)(LOutputMode *mode);
+        Int32 (*getOutputModeRefreshRate)(LOutputMode *mode);
+        bool (*getOutputModeIsPreferred)(LOutputMode *mode);
+        bool (*hasHardwareCursorSupport)(LOutput *output);
+        void (*setCursorTexture)(LOutput *output, UChar8 *buffer);
+        void (*setCursorPosition)(LOutput *output, const LPoint &position);
+
+        // Buffers
+        const std::list<LDMAFormat*>*(*getDMAFormats)();
+        EGLDisplay (*getAllocatorEGLDisplay)();
+        EGLContext (*getAllocatorEGLContext)();
+
+        bool (*createTextureFromCPUBuffer)(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels);
+        bool (*createTextureFromWaylandDRM)(LTexture *texture, void *wlBuffer);
+        bool (*createTextureFromDMA)(LTexture *texture, const LDMAPlanes *planes);
+        bool (*updateTextureRect)(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels);
+        UInt32 (*getTextureID)(LOutput *output, LTexture *texture);
+        GLenum (*getTextureTarget)(LTexture *texture);
+        void (*destroyTexture)(LTexture *texture);
+    };
+
+    struct LInputBackendInterface
+    {
+        UInt32 (*id)();
+        bool (*initialize)();
+        UInt32 (*getCapabilities)();
+        void *(*getContextHandle)();
+        void (*uninitialize)();
+        void (*suspend)();
+        void (*forceUpdate)();
+        void (*resume)();
+    };
+    /// @endcond
 };
 
 #endif // LNAMESPACES_H

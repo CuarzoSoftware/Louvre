@@ -1,3 +1,4 @@
+#include <protocols/Wayland/private/RDataDevicePrivate.h>
 #include <private/LDataSourcePrivate.h>
 #include <private/LDNDIconRolePrivate.h>
 #include <private/LSurfacePrivate.h>
@@ -11,8 +12,8 @@
 #include <protocols/Wayland/RKeyboard.h>
 #include <LCompositor.h>
 #include <LLog.h>
-#include "RDataDevicePrivate.h"
 #include <string.h>
+#include <fcntl.h>
 
 void RDataDevice::RDataDevicePrivate::resource_destroy(wl_resource *resource)
 {
@@ -171,11 +172,11 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resour
 
         // Mark current source as selected
         seat()->imp()->dataSelection = rDataSource->dataSource();
+        int fd;
 
         // Ask client to write to the compositor fds
         for (LDataSource::LSource &s : rDataSource->dataSource()->imp()->sources)
         {
-
             if (!s.tmp && (
                     strcmp(s.mimeType, "x-special/gnome-copied-files") == 0 ||
                     strcmp(s.mimeType, "text/uri-list") == 0 ||
@@ -187,6 +188,8 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resour
                     strcmp(s.mimeType, "text/plain") == 0))
             {
                 s.tmp = tmpfile();
+                fd = fileno(s.tmp);
+                fcntl(fd, F_SETFD, FD_CLOEXEC);
                 rDataSource->send(s.mimeType, fileno(s.tmp));
             }
         }

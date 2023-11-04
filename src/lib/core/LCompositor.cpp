@@ -98,7 +98,7 @@ bool LCompositor::start()
     imp()->threadId = std::this_thread::get_id();
     imp()->state = CompositorState::Initializing;
 
-    compositor()->imp()->epollFd = epoll_create1(0);
+    compositor()->imp()->epollFd = epoll_create1(EPOLL_CLOEXEC);
     compositor()->imp()->events[1].data.fd = -1;
 
     if (!imp()->initWayland())
@@ -206,9 +206,6 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
 
         imp()->processAnimations();
 
-        while (!clients().empty())
-            clients().back()->destroy();
-
         while (!outputs().empty())
             removeOutput(outputs().back());
 
@@ -217,18 +214,16 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         while (!imp()->textures.empty())
             delete imp()->textures.back();
 
-        usleep(10000);
-
         imp()->unitGraphicBackend(true);
         imp()->unitSeat();
+
+        imp()->unitWayland();
 
         if (imp()->cursor)
         {
             delete imp()->cursor;
             imp()->cursor = nullptr;
         }
-
-        imp()->unitWayland();
 
         while (!imp()->animations.empty())
         {

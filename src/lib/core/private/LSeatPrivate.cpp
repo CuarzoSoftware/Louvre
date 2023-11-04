@@ -1,9 +1,10 @@
-#include <cstring>
 #include <private/LSeatPrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
 #include <LLog.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <cstring>
 
 void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
 {
@@ -102,6 +103,7 @@ bool LSeat::LSeatPrivate::initLibseat()
         return false;
     }
 
+    fcntl(fd, F_SETFD, FD_CLOEXEC);
     compositor()->imp()->events[1].events = EPOLLIN;
     compositor()->imp()->events[1].data.fd = fd;
 

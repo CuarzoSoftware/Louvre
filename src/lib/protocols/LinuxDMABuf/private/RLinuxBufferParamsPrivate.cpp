@@ -2,6 +2,7 @@
 #include <protocols/LinuxDMABuf/private/RLinuxBufferParamsPrivate.h>
 #include <protocols/LinuxDMABuf/private/LDMABufferPrivate.h>
 #include <LTexture.h>
+#include <fcntl.h>
 
 void RLinuxBufferParams::RLinuxBufferParamsPrivate::resource_destroy(wl_resource *resource)
 {
@@ -55,6 +56,7 @@ void RLinuxBufferParams::RLinuxBufferParamsPrivate::add(wl_client *client,
     rLinuxBufferParams->imp()->planes->offsets[plane_idx] = offset;
     rLinuxBufferParams->imp()->planes->strides[plane_idx] = stride;
     rLinuxBufferParams->imp()->planes->modifiers[plane_idx] = ((UInt64)modifier_hi << 32) | modifier_lo;
+    fcntl(fd, F_SETFD, FD_CLOEXEC);
 }
 
 void RLinuxBufferParams::RLinuxBufferParamsPrivate::create(wl_client *client,

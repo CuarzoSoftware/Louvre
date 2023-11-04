@@ -164,10 +164,13 @@ Int32 LSeat::openDevice(const char *path, Int32 *fd, Int32 flags)
     if (!imp()->libseatHandle)
     {
         *fd = open(path, flags);
+        fcntl(*fd, F_SETFD, FD_CLOEXEC);
         return *fd;
     }
 
-    return libseat_open_device(libseatHandle(), path, fd);
+    Int32 id = libseat_open_device(libseatHandle(), path, fd);
+    fcntl(*fd, F_SETFD, FD_CLOEXEC);
+    return id;
 }
 
 Int32 LSeat::closeDevice(Int32 id)

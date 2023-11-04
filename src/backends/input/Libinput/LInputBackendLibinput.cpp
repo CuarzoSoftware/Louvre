@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <cstring>
 #include <libinput.h>
+#include <fcntl.h>
 
 using namespace Louvre;
 
@@ -188,6 +189,7 @@ UInt32 LInputBackend::id()
 
 bool LInputBackend::initialize()
 {
+    int fd;
     LSeat *seat = LCompositor::compositor()->seat();
     seat->imp()->initLibseat();
 
@@ -212,7 +214,9 @@ bool LInputBackend::initialize()
         libinput_udev_assign_seat(data->li, "seat0");
 
     libinput_dispatch(data->li);
-    eventSource = LCompositor::addFdListener(libinput_get_fd(data->li), (LSeat*)seat, &processInput);
+    fd = libinput_get_fd(data->li);
+    fcntl(fd, F_SETFD, FD_CLOEXEC);
+    eventSource = LCompositor::addFdListener(fd, (LSeat*)seat, &processInput);
 
     return true;
 
@@ -255,6 +259,7 @@ void LInputBackend::forceUpdate()
 
 void LInputBackend::resume()
 {
+    int fd;
     LSeat *seat = LCompositor::compositor()->seat();
     BACKEND_DATA *data = (BACKEND_DATA*)seat->imp()->inputBackendData;
 
@@ -269,7 +274,9 @@ void LInputBackend::resume()
         libinput_udev_assign_seat(data->li, "seat0");
 
     libinput_dispatch(data->li);
-    eventSource = LCompositor::addFdListener(libinput_get_fd(data->li), (LSeat*)seat, &processInput);
+    fd = libinput_get_fd(data->li);
+    fcntl(fd, F_SETFD, FD_CLOEXEC);
+    eventSource = LCompositor::addFdListener(fd, (LSeat*)seat, &processInput);
 }
 
 void LInputBackend::uninitialize()
