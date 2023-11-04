@@ -243,14 +243,30 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
 
     if (highQualityScaling)
     {
-        GLenum textureTarget = target();
-
         Float32 wScaleF = fabs(Float32(srcRect.w()) / Float32(dstSize.w()));
         Float32 hScaleF = fabs(Float32(srcRect.h()) / Float32(dstSize.h()));
 
         // Check if HQ downscaling is needed
         if (wScaleF <= 2.f && hScaleF <= 2.f)
             goto skipHQ;
+
+        GLenum textureTarget = target();
+        GLuint prevProgram = painter->imp()->currentProgram;
+
+        if (textureTarget == GL_TEXTURE_EXTERNAL_OES)
+        {
+            if (!painter->imp()->programObjectScalerExternal)
+                goto skipHQ;
+
+            glUseProgram(painter->imp()->programObjectScalerExternal);
+            painter->imp()->currentUniformsScaler = &painter->imp()->uniformsScalerExternal;
+        }
+        else
+        {
+            glUseProgram(painter->imp()->programObjectScaler);
+            painter->imp()->currentUniformsScaler = &painter->imp()->uniformsScaler;
+
+        }
 
         Int32 wScale = ceilf(wScaleF);
         Int32 hScale = ceilf(hScaleF);
@@ -274,16 +290,13 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
         imp()->setTextureParams(texCopy, GL_TEXTURE_2D, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dstSize.w(), dstSize.h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texCopy, 0);
-        painter->imp()->switchTarget(textureTarget);
         glDisable(GL_BLEND);
         glScissor(0, 0, dstSize.w(), dstSize.h());
         glViewport(0, 0, dstSize.w(), dstSize.h());
         glActiveTexture(GL_TEXTURE0);
-        painter->imp()->shaderSetAlpha(1.f);
-        painter->imp()->shaderSetMode(3);
-        painter->imp()->shaderSetActiveTexture(0);
-        painter->imp()->shaderSetTexSize(sizeB().w(), sizeB().h());
-        painter->imp()->shaderSetSrcRect(srcRect.x(), srcRect.y() + srcRect.h(), srcRect.w(), -srcRect.h());
+        glUniform1i(painter->imp()->currentUniformsScaler->activeTexture, 0);
+        glUniform2f(painter->imp()->currentUniformsScaler->texSize, sizeB().w(), sizeB().h());
+        glUniform4f(painter->imp()->currentUniformsScaler->srcRect, srcRect.x(), srcRect.y() + srcRect.h(), srcRect.w(), -srcRect.h());
 
         Float32 tmp;
         Float32 x1 = (Float32(srcRect.x()) + 0.f * Float32(srcRect.w())) / Float32(sizeB().w());
@@ -305,13 +318,11 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
             y2 = tmp;
         }
 
-        painter->imp()->shaderSetSamplerBounds(x1, y1, x2, y2);
-        painter->imp()->shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
+        glUniform4f(painter->imp()->currentUniformsScaler->samplerBounds, x1, y1, x2, y2);
         imp()->setTextureParams(textureId, textureTarget, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
-        painter->imp()->shaderSetPixelSize(pixSizeW, pixSizeH);
-        painter->imp()->shaderSetIters(wScale, hScale);
+        glUniform2f(painter->imp()->currentUniformsScaler->pixelSize, pixSizeW, pixSizeH);
+        glUniform2i(painter->imp()->currentUniformsScaler->iters, wScale, hScale);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-        painter->imp()->shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
         textureCopy = new LTexture();
 
         if (compositor()->imp()->graphicBackend->rendererGPUs() == 1)
@@ -325,12 +336,12 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
             imp()->readPixels(LRect(0, dstSize), 0, dstSize.w(), GL_BGRA, GL_UNSIGNED_BYTE, cpuBuffer);
             textureCopy = new LTexture();
             ret = textureCopy->setDataB(dstSize, dstSize.w() * 4, DRM_FORMAT_ARGB8888, cpuBuffer);
-
             free(cpuBuffer);
             glDeleteTextures(1, &texCopy);
         }
 
         glDeleteFramebuffers(1, &framebuffer);
+        glUseProgram(prevProgram);
 
         if (ret)
             return textureCopy;

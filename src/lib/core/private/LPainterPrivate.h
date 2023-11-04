@@ -11,7 +11,7 @@
 using namespace Louvre;
 
 LPRIVATE_CLASS(LPainter)
-    GLuint vertexShader, fragmentShader, fragmentShaderExternal;
+    GLuint vertexShader, fragmentShader, fragmentShaderExternal, fragmentShaderScaler, fragmentShaderScalerExternal;
 
     // Square (left for vertex, right for fragment)
     GLfloat square[16] =
@@ -32,13 +32,24 @@ LPRIVATE_CLASS(LPainter)
         mode,
         color,
         colorFactor,
-        alpha,
-        pixelSize,
-        samplerBounds,
-        iters;
+        colorFactorEnabled,
+        alpha;
     } uniforms, uniformsExternal;
 
     Uniforms *currentUniforms;
+
+    struct UniformsScaler
+    {
+        GLuint
+            texSize,
+            srcRect,
+            activeTexture,
+            pixelSize,
+            samplerBounds,
+            iters;
+    } uniformsScaler, uniformsScalerExternal;
+
+    UniformsScaler *currentUniformsScaler;
 
     struct LGLVec2F
     {
@@ -78,6 +89,7 @@ LPRIVATE_CLASS(LPainter)
         GLint mode;
         LGLColor color;
         LGLVec4F colorFactor;
+        GLint colorFactorEnabled;
         GLfloat alpha;
         LGLVec4F samplerBounds;
         LGLVec2F pixelSize;
@@ -88,12 +100,13 @@ LPRIVATE_CLASS(LPainter)
     ShaderState *currentState;
 
     // Program
-    GLuint programObject, programObjectExternal, currentProgram;
+    GLuint programObject, programObjectExternal, programObjectScaler, programObjectScalerExternal, currentProgram;
     LOutput *output = nullptr;
 
     LPainter *painter;
 
     void setupProgram();
+    void setupProgramScaler();
 
     // Shader state update
 
@@ -165,6 +178,16 @@ LPRIVATE_CLASS(LPainter)
             currentState->colorFactor.w = b;
             currentState->colorFactor.h = a;
             glUniform4f(currentUniforms->colorFactor, r, g, b, a);
+            shaderSetColorFactorEnabled(r != 1.f || g != 1.f || b != 1.f || a != 1.f);
+        }
+    }
+
+    inline void shaderSetColorFactorEnabled(GLint enabled)
+    {
+        if (currentState->colorFactorEnabled != enabled)
+        {
+            currentState->colorFactorEnabled = enabled;
+            glUniform1i(currentUniforms->colorFactorEnabled, enabled);
         }
     }
 
@@ -208,6 +231,7 @@ LPRIVATE_CLASS(LPainter)
         }
     }
 
+    /*
     inline void shaderSetPixelSize(Float32 x, Float32 y)
     {
         if (currentState->pixelSize.x != x ||
@@ -243,7 +267,7 @@ LPRIVATE_CLASS(LPainter)
             currentState->iters.h = y;
             glUniform2i(currentUniforms->iters, x, y);
         }
-    }
+    }*/
 
     inline void setViewport(Int32 x, Int32 y, Int32 w, Int32 h)
     {

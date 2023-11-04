@@ -43,13 +43,11 @@ LPainter::LPainter()
         precision lowp int;
         uniform lowp sampler2D tex;
 
+        uniform bool colorFactorEnabled;
         uniform lowp int mode;
         uniform lowp float alpha;
         uniform lowp vec3 color;
         uniform lowp vec4 colorFactor;
-        uniform lowp vec4 samplerBounds;
-        uniform lowp vec2 pixelSize;
-        uniform lowp ivec2 iters;
         varying lowp vec2 v_texcoord;
 
         void main()
@@ -75,39 +73,8 @@ LPainter::LPainter()
                 gl_FragColor.w = texture2D(tex, v_texcoord).w * alpha;
             }
 
-            // Texture scaling with pixel avg
-            else
-            {
-                vec2 texCoords;
-                gl_FragColor = vec4(0.0);
-
-                for (int x = 0; x < iters.x; x++)
-                {
-                    texCoords.x = v_texcoord.x + float(x) * pixelSize.x;
-
-                    if (texCoords.x < samplerBounds.x)
-                        texCoords.x = samplerBounds.x;
-                    else if (texCoords.x > samplerBounds.z)
-                        texCoords.x = samplerBounds.z;
-
-                    for (int y = 0; y < iters.y; y++)
-                    {
-                        texCoords.y = v_texcoord.y + float(y) * pixelSize.y;
-
-                        if (texCoords.y < samplerBounds.y)
-                            texCoords.y = samplerBounds.y;
-                        else if (texCoords.y > samplerBounds.w)
-                            texCoords.y = samplerBounds.w;
-
-                        gl_FragColor += texture2D(tex, texCoords);
-                    }
-                }
-
-                gl_FragColor /= float(iters.x * iters.y);
-                gl_FragColor.w *= alpha;
-            }
-
-            gl_FragColor *= colorFactor;
+            if (colorFactorEnabled)
+                gl_FragColor *= colorFactor;
         }
         )";
 
@@ -117,13 +84,11 @@ LPainter::LPainter()
         precision lowp int;
         uniform lowp samplerExternalOES tex;
 
+        uniform bool colorFactorEnabled;
         uniform lowp int mode;
         uniform lowp float alpha;
         uniform lowp vec3 color;
         uniform lowp vec4 colorFactor;
-        uniform lowp vec4 samplerBounds;
-        uniform lowp vec2 pixelSize;
-        uniform lowp ivec2 iters;
         varying lowp vec2 v_texcoord;
 
         void main()
@@ -149,39 +114,91 @@ LPainter::LPainter()
                 gl_FragColor.w = texture2D(tex, v_texcoord).w * alpha;
             }
 
-            // Texture scaling with pixel avg
-            else
+            if (colorFactorEnabled)
+                gl_FragColor *= colorFactor;
+        }
+        )";
+
+    GLchar fShaderStrScaler[] =R"(
+        precision highp float;
+        precision highp int;
+        uniform highp sampler2D tex;
+        uniform highp int mode;
+        uniform highp vec4 samplerBounds;
+        uniform highp vec2 pixelSize;
+        uniform highp ivec2 iters;
+        varying highp vec2 v_texcoord;
+
+        void main()
+        {
+            vec2 texCoords;
+            gl_FragColor = vec4(0.0);
+
+            for (int x = 0; x < iters.x; x++)
             {
-                vec2 texCoords;
-                gl_FragColor = vec4(0.0);
+                texCoords.x = v_texcoord.x + float(x) * pixelSize.x;
 
-                for (int x = 0; x < iters.x; x++)
+                if (texCoords.x < samplerBounds.x)
+                    texCoords.x = samplerBounds.x;
+                else if (texCoords.x > samplerBounds.z)
+                    texCoords.x = samplerBounds.z;
+
+                for (int y = 0; y < iters.y; y++)
                 {
-                    texCoords.x = v_texcoord.x + float(x) * pixelSize.x;
+                    texCoords.y = v_texcoord.y + float(y) * pixelSize.y;
 
-                    if (texCoords.x < samplerBounds.x)
-                        texCoords.x = samplerBounds.x;
-                    else if (texCoords.x > samplerBounds.z)
-                        texCoords.x = samplerBounds.z;
+                    if (texCoords.y < samplerBounds.y)
+                        texCoords.y = samplerBounds.y;
+                    else if (texCoords.y > samplerBounds.w)
+                        texCoords.y = samplerBounds.w;
 
-                    for (int y = 0; y < iters.y; y++)
-                    {
-                        texCoords.y = v_texcoord.y + float(y) * pixelSize.y;
-
-                        if (texCoords.y < samplerBounds.y)
-                            texCoords.y = samplerBounds.y;
-                        else if (texCoords.y > samplerBounds.w)
-                            texCoords.y = samplerBounds.w;
-
-                        gl_FragColor += texture2D(tex, texCoords);
-                    }
+                    gl_FragColor += texture2D(tex, texCoords);
                 }
-
-                gl_FragColor /= float(iters.x * iters.y);
-                gl_FragColor.w *= alpha;
             }
 
-            gl_FragColor *= colorFactor;
+            gl_FragColor /= float(iters.x * iters.y);
+        }
+        )";
+
+    GLchar fShaderStrScalerExternal[] =R"(
+        #extension GL_OES_EGL_image_external : require
+        precision highp float;
+        precision highp int;
+        uniform highp samplerExternalOES tex;
+        uniform highp int mode;
+        uniform highp vec4 samplerBounds;
+        uniform highp vec2 pixelSize;
+        uniform highp ivec2 iters;
+        varying highp vec2 v_texcoord;
+
+        void main()
+        {
+            vec2 texCoords;
+            gl_FragColor = vec4(0.0);
+
+            for (int x = 0; x < iters.x; x++)
+            {
+                texCoords.x = v_texcoord.x + float(x) * pixelSize.x;
+
+                if (texCoords.x < samplerBounds.x)
+                    texCoords.x = samplerBounds.x;
+                else if (texCoords.x > samplerBounds.z)
+                    texCoords.x = samplerBounds.z;
+
+                for (int y = 0; y < iters.y; y++)
+                {
+                    texCoords.y = v_texcoord.y + float(y) * pixelSize.y;
+
+                    if (texCoords.y < samplerBounds.y)
+                        texCoords.y = samplerBounds.y;
+                    else if (texCoords.y > samplerBounds.w)
+                        texCoords.y = samplerBounds.w;
+
+                    gl_FragColor += texture2D(tex, texCoords);
+                }
+            }
+
+            gl_FragColor /= float(iters.x * iters.y);
         }
         )";
 
@@ -189,29 +206,67 @@ LPainter::LPainter()
     imp()->vertexShader = LOpenGL::compileShader(GL_VERTEX_SHADER, vShaderStr);
     imp()->fragmentShader = LOpenGL::compileShader(GL_FRAGMENT_SHADER, fShaderStr);
     imp()->fragmentShaderExternal = LOpenGL::compileShader(GL_FRAGMENT_SHADER, fShaderStrExternal);
-
-    // Create the program object
-    imp()->programObject = glCreateProgram();
-    glAttachShader(imp()->programObject, imp()->vertexShader);
-    glAttachShader(imp()->programObject, imp()->fragmentShader);
-
-    // Link the program
-    glLinkProgram(imp()->programObject);
+    imp()->fragmentShaderScaler = LOpenGL::compileShader(GL_FRAGMENT_SHADER, fShaderStrScaler);
+    imp()->fragmentShaderScalerExternal = LOpenGL::compileShader(GL_FRAGMENT_SHADER, fShaderStrScalerExternal);
 
     GLint linked;
 
+    /************** SCALER PROGRAM **************/
+
+    imp()->programObjectScaler = glCreateProgram();
+    glAttachShader(imp()->programObjectScaler, imp()->vertexShader);
+    glAttachShader(imp()->programObjectScaler, imp()->fragmentShaderScaler);
+
+    // Link the program
+    glLinkProgram(imp()->programObjectScaler);
+
     // Check the link status
-    glGetProgramiv(imp()->programObject, GL_LINK_STATUS, &linked);
+    glGetProgramiv(imp()->programObjectScaler, GL_LINK_STATUS, &linked);
 
     if (!linked)
     {
         GLint infoLen = 0;
-        glGetProgramiv(imp()->programObject, GL_INFO_LOG_LENGTH, &infoLen);
-        glDeleteProgram(imp()->programObject);
-        exit(-1);
+        glGetProgramiv(imp()->programObjectScaler, GL_INFO_LOG_LENGTH, &infoLen);
+        glDeleteProgram(imp()->programObjectScaler);
+        imp()->programObjectScaler = 0;
+        LLog::error("[LPainter::LPainter()] Failed to compile scaler shader.");
+    }
+    else
+    {
+        imp()->currentProgram = imp()->programObjectScaler;
+        imp()->currentUniformsScaler = &imp()->uniformsScaler;
+        imp()->setupProgramScaler();
     }
 
-    // Create the program object
+    /************** SCALER PROGRAM EXTERNAL **************/
+
+    imp()->programObjectScalerExternal = glCreateProgram();
+    glAttachShader(imp()->programObjectScalerExternal, imp()->vertexShader);
+    glAttachShader(imp()->programObjectScalerExternal, imp()->fragmentShaderScalerExternal);
+
+    // Link the program
+    glLinkProgram(imp()->programObjectScalerExternal);
+
+    // Check the link status
+    glGetProgramiv(imp()->programObjectScalerExternal, GL_LINK_STATUS, &linked);
+
+    if (!linked)
+    {
+        GLint infoLen = 0;
+        glGetProgramiv(imp()->programObjectScalerExternal, GL_INFO_LOG_LENGTH, &infoLen);
+        glDeleteProgram(imp()->programObjectScalerExternal);
+        imp()->programObjectScalerExternal = 0;
+        LLog::error("[LPainter::LPainter()] Failed to compile scaler shader external.");
+    }
+    else
+    {
+        imp()->currentProgram = imp()->programObjectScalerExternal;
+        imp()->currentUniformsScaler = &imp()->uniformsScalerExternal;
+        imp()->setupProgramScaler();
+    }
+
+    /************** RENDER PROGRAM EXTERNAL **************/
+
     imp()->programObjectExternal = glCreateProgram();
     glAttachShader(imp()->programObjectExternal, imp()->vertexShader);
     glAttachShader(imp()->programObjectExternal, imp()->fragmentShaderExternal);
@@ -235,6 +290,26 @@ LPainter::LPainter()
         imp()->currentState = &imp()->stateExternal;
         imp()->currentUniforms = &imp()->uniformsExternal;
         imp()->setupProgram();
+    }
+
+    /************** RENDER PROGRAM **************/
+
+    imp()->programObject = glCreateProgram();
+    glAttachShader(imp()->programObject, imp()->vertexShader);
+    glAttachShader(imp()->programObject, imp()->fragmentShader);
+
+    // Link the program
+    glLinkProgram(imp()->programObject);
+
+    // Check the link status
+    glGetProgramiv(imp()->programObject, GL_LINK_STATUS, &linked);
+
+    if (!linked)
+    {
+        GLint infoLen = 0;
+        glGetProgramiv(imp()->programObject, GL_INFO_LOG_LENGTH, &infoLen);
+        glDeleteProgram(imp()->programObject);
+        exit(-1);
     }
 
     imp()->currentProgram = imp()->programObject;
@@ -297,10 +372,30 @@ void LPainter::LPainterPrivate::setupProgram()
     currentUniforms->mode = glGetUniformLocation(currentProgram, "mode");
     currentUniforms->color= glGetUniformLocation(currentProgram, "color");
     currentUniforms->colorFactor = glGetUniformLocation(currentProgram, "colorFactor");
+    currentUniforms->colorFactorEnabled = glGetUniformLocation(currentProgram, "colorFactorEnabled");
     currentUniforms->alpha = glGetUniformLocation(currentProgram, "alpha");
-    currentUniforms->pixelSize = glGetUniformLocation(currentProgram, "pixelSize");
-    currentUniforms->samplerBounds = glGetUniformLocation(currentProgram, "samplerBounds");
-    currentUniforms->iters = glGetUniformLocation(currentProgram, "iters");
+}
+
+void LPainter::LPainterPrivate::setupProgramScaler()
+{
+    glBindAttribLocation(currentProgram, 0, "vertexPosition");
+
+    // Use the program object
+    glUseProgram(currentProgram);
+
+    // Load the vertex data
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, square);
+
+    // Enables the vertex array
+    glEnableVertexAttribArray(0);
+
+    // Get Uniform Variables
+    currentUniformsScaler->texSize = glGetUniformLocation(currentProgram, "texSize");
+    currentUniformsScaler->srcRect = glGetUniformLocation(currentProgram, "srcRect");
+    currentUniformsScaler->activeTexture = glGetUniformLocation(currentProgram, "tex");
+    currentUniformsScaler->pixelSize = glGetUniformLocation(currentProgram, "pixelSize");
+    currentUniformsScaler->samplerBounds = glGetUniformLocation(currentProgram, "samplerBounds");
+    currentUniformsScaler->iters = glGetUniformLocation(currentProgram, "iters");
 }
 
 void LPainter::drawTexture(const LTexture *texture,

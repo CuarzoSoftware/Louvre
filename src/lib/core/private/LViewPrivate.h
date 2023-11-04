@@ -30,6 +30,7 @@ LPRIVATE_CLASS(LView)
     GLenum sFactor = GL_SRC_ALPHA;
     GLenum dFactor = GL_ONE_MINUS_SRC_ALPHA;
     LRGBAF colorFactor = {1.f, 1.f, 1.f, 1.f};
+    bool colorFactorEnabled = false;
 
     Float32 opacity = 1.f;
     LSizeF scalingVector = LSizeF(1.f, 1.f);
@@ -62,6 +63,7 @@ LPRIVATE_CLASS(LView)
         bool prevMapped = false;
         LRegion prevClipping;
         LRGBAF prevColorFactor;
+        bool prevColorFactorEnabled = false;
     };
 
     // This is used to prevent invoking heavy methods

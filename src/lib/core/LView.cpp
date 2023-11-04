@@ -390,6 +390,7 @@ void LView::setColorFactor(Float32 r, Float32 g, Float32 b, Float32 a)
     {
         imp()->colorFactor = {r, g, b, a};
         repaint();
+        imp()->colorFactorEnabled = r != 1.f || g != 1.f || b != 1.f || a != 1.f;
     }
 }
 

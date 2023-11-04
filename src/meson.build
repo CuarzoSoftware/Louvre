@@ -16,6 +16,12 @@ ASSETS_PATH = '/usr/etc/Louvre/assets'
 
 cpp = meson.get_compiler('cpp')
 
+if get_option('buildtype') == 'custom'
+    proj_args = ['-Ofast', '-g3', '-s', '-march=native', '-fno-strict-aliasing']
+    add_project_arguments(proj_args, language : 'c')
+    add_project_arguments(proj_args, language : 'cpp')
+endif
+
 include_paths = [
     include_directories('./lib'),
     include_directories('./lib/core')

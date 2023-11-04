@@ -1,41 +1,11 @@
 #include <private/LSceneViewPrivate.h>
 #include <private/LViewPrivate.h>
+#include <private/LPainterPrivate.h>
 #include <LOutput.h>
 #include <LCompositor.h>
-#include <LPainter.h>
 #include <LSurfaceView.h>
 #include <LLog.h>
 #include <LFramebuffer.h>
-
-#ifdef NONO
-void LSceneView::LSceneViewPrivate::cachePass(LView *view, ThreadData *oD)
-{
-    if (view->type() != Scene)
-        for (std::list<LView*>::const_iterator it = view->children().cbegin(); it != view->children().cend(); it++)
-            cachePass(*it, oD);
-
-    // Quick view cache handle to reduce verbosity
-    LView::LViewPrivate::ViewCache *cache = &view->imp()->cache;
-
-    view->imp()->repaintCalled = false;
-
-    // Quick output data handle
-    cache->voD = &view->imp()->threadsMap[std::this_thread::get_id()];
-    cache->voD->o = oD->o;
-
-    // Cache mapped call
-    cache->mapped = view->mapped();
-
-    // Cache view rect
-    cache->rect.setPos(view->pos());
-    cache->rect.setSize(view->size());
-
-    cache->scalingVector = view->scalingVector();
-    cache->scalingEnabled = (view->scalingEnabled() || view->parentScalingEnabled()) && cache->scalingVector != LSizeF(1.f, 1.f);
-
-    if (cache->mapped && cache->scalingEnabled)
-        oD->foundRenderableSaledView = true;
-}
 
 void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
 {
@@ -56,6 +26,22 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
 
     // Quick view cache handle to reduce verbosity
     LView::LViewPrivate::ViewCache *cache = &view->imp()->cache;
+
+    view->imp()->repaintCalled = false;
+
+    // Quick output data handle
+    cache->voD = &view->imp()->threadsMap[std::this_thread::get_id()];
+    cache->voD->o = oD->o;
+
+    // Cache mapped call
+    cache->mapped = view->mapped();
+
+    // Cache view rect
+    cache->rect.setPos(view->pos());
+    cache->rect.setSize(view->size());
+
+    cache->scalingVector = view->scalingVector();
+    cache->scalingEnabled = (view->scalingEnabled() || view->parentScalingEnabled()) && cache->scalingVector != LSizeF(1.f, 1.f);
 
     LRegion vRegion;
     vRegion.addRect(cache->rect);
@@ -83,7 +69,7 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
 
     cache->opacity = view->opacity();
 
-    if (view->colorFactor().a <= 0.f || cache->rect.size().area() == 0 || cache->opacity <= 0.f || cache->scalingVector.w() == 0.f || cache->scalingVector.y() == 0.f || (view->clippingEnabled() && view->clippingRect().area() == 0))
+    if (view->imp()->colorFactor.a <= 0.f || cache->rect.size().area() == 0 || cache->opacity <= 0.f || cache->scalingVector.w() == 0.f || cache->scalingVector.y() == 0.f || (view->clippingEnabled() && view->clippingRect().area() == 0))
         cache->mapped = false;
 
     bool mappingChanged = cache->mapped != cache->voD->prevMapped;
@@ -101,10 +87,15 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
 
     bool rectChanged = cache->localRect != cache->voD->prevLocalRect;
 
-    bool colorFactorChanged = cache->voD->prevColorFactor.r != view->imp()->colorFactor.r ||
+    bool colorFactorChanged = cache->voD->prevColorFactorEnabled != view->imp()->colorFactorEnabled;
+
+    if (!colorFactorChanged && view->imp()->colorFactorEnabled)
+    {
+        colorFactorChanged = cache->voD->prevColorFactor.r != view->imp()->colorFactor.r ||
                               cache->voD->prevColorFactor.g != view->imp()->colorFactor.g ||
                               cache->voD->prevColorFactor.b != view->imp()->colorFactor.b ||
                               cache->voD->prevColorFactor.a != view->imp()->colorFactor.a;
+    }
 
     // If rect or order changed (set current rect and prev rect as damage)
     if (mappingChanged || rectChanged || cache->voD->changedOrder || opacityChanged || cache->scalingEnabled || colorFactorChanged)
@@ -127,7 +118,10 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
             cache->voD->prevOpacity = cache->opacity;
 
         if (colorFactorChanged)
+        {
+            cache->voD->prevColorFactorEnabled = view->imp()->colorFactorEnabled;
             cache->voD->prevColorFactor = view->imp()->colorFactor;
+        }
 
         if (!cache->mapped)
         {
@@ -243,7 +237,7 @@ void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view, ThreadData *oD
 
     LView::LViewPrivate::ViewCache *cache = &view->imp()->cache;
 
-    if (!view->isRenderable() || !cache->mapped || cache->occluded || cache->opacity < 1.f || view->colorFactor().a < 1.f)
+    if (!view->isRenderable() || !cache->mapped || cache->occluded || cache->opacity < 1.f || view->imp()->colorFactor.a < 1.f)
         return;
 
     cache->opaque.intersectRegion(oD->newDamage);
@@ -251,10 +245,15 @@ void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view, ThreadData *oD
 
     oD->boxes = cache->opaque.boxes(&oD->n);
 
-    oD->p->setColorFactor(view->colorFactor().r,
-                         view->colorFactor().g,
-                         view->colorFactor().b,
-                         view->colorFactor().a);
+    if (view->imp()->colorFactorEnabled)
+    {
+        oD->p->imp()->shaderSetColorFactor(view->imp()->colorFactor.r,
+                             view->imp()->colorFactor.g,
+                             view->imp()->colorFactor.b,
+                             view->imp()->colorFactor.a);
+    }
+    else
+        oD->p->imp()->shaderSetColorFactorEnabled(0);
 
     if (cache->scalingEnabled)
     {
@@ -335,10 +334,16 @@ void LSceneView::LSceneViewPrivate::drawTranslucentDamage(LView *view, ThreadDat
         goto drawChildrenOnly;
 
     glBlendFunc(view->imp()->sFactor, view->imp()->dFactor);
-    oD->p->setColorFactor(view->colorFactor().r,
-                         view->colorFactor().g,
-                         view->colorFactor().b,
-                         view->colorFactor().a);
+
+    if (view->imp()->colorFactorEnabled)
+    {
+        oD->p->imp()->shaderSetColorFactor(view->imp()->colorFactor.r,
+                              view->imp()->colorFactor.g,
+                              view->imp()->colorFactor.b,
+                              view->imp()->colorFactor.a);
+    }
+    else
+        oD->p->imp()->shaderSetColorFactorEnabled(0);
 
     cache->occluded = true;
     cache->translucent.intersectRegion(oD->newDamage);
@@ -409,4 +414,3 @@ void LSceneView::LSceneViewPrivate::parentClipping(LView *parent, LRegion *regio
     if (parent->parentClippingEnabled())
         parentClipping(parent->parent(), region);
 }
-#endif
