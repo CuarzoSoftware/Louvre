@@ -303,84 +303,11 @@ void LPainter::LPainterPrivate::setupProgram()
     currentUniforms->iters = glGetUniformLocation(currentProgram, "iters");
 }
 
-void LPainter::LPainterPrivate::scaleCursor(LTexture *texture, const LRect &src, const LRect &dst)
-{
-    GLenum target = texture->target();
-    GLuint textureId = texture->id(output);
-
-    switchTarget(target);
-    glDisable(GL_BLEND);
-    glScissor(0,0,64,64);
-    glViewport(0,0,64,64);
-    glClearColor(0,0,0,0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glScissor(dst.x(),dst.y(),dst.w(),dst.h());
-    glViewport(dst.x(),dst.y(),dst.w(),dst.h());
-    glActiveTexture(GL_TEXTURE0);
-    shaderSetAlpha(1.f);
-    shaderSetMode(0);
-    shaderSetActiveTexture(0);
-    texture->imp()->setTextureParams(textureId, target, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
-    shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
-    shaderSetSrcRect(src.x(), src.y(), src.w(), src.h());
-    shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-}
-
-void LPainter::LPainterPrivate::scaleTexture(LTexture *texture, const LRect &src, const LSize &dst)
-{
-    GLenum target = texture->target();
-    GLuint textureId = texture->id(output);
-
-    switchTarget(target);
-    glDisable(GL_BLEND);
-    glScissor(0, 0, dst.w(), dst.h());
-    glViewport(0, 0, dst.w(), dst.h());
-    glActiveTexture(GL_TEXTURE0);
-    shaderSetAlpha(1.f);
-    shaderSetMode(0);
-    shaderSetActiveTexture(0);
-    shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
-    shaderSetSrcRect(src.x(), src.y() + src.h(), src.w(), -src.h());
-    shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
-    texture->imp()->setTextureParams(textureId, target, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-}
-
-void LPainter::LPainterPrivate::scaleTexture(GLuint textureId, GLenum textureTarget, GLuint framebufferId, GLint minFilter, const LSize &texSize, const LRect &src, const LSize &dst)
-{
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
-    switchTarget(textureTarget);
-    glDisable(GL_BLEND);
-    glScissor(0, 0, dst.w(), dst.h());
-    glViewport(0, 0, dst.w(), dst.h());
-    glActiveTexture(GL_TEXTURE0);
-    shaderSetAlpha(1.f);
-    shaderSetMode(0);
-    shaderSetActiveTexture(0);
-    shaderSetTexSize(texSize.w(), texSize.h());
-    shaderSetSrcRect(src.x(), src.y() + src.h(), src.w(), -src.h());
-    shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
-    LTexture::LTexturePrivate::setTextureParams(textureId, textureTarget, GL_REPEAT, GL_REPEAT, minFilter, minFilter);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
 void LPainter::drawTexture(const LTexture *texture,
                             const LRect &src, const LRect &dst,
                             Float32 srcScale, Float32 alpha)
 {
-    drawTexture(texture,
-                 src.x(),
-                 src.y(),
-                 src.w(),
-                 src.h(),
-                 dst.x(),
-                 dst.y(),
-                 dst.w(),
-                 dst.h(),
-                 srcScale,
-                 alpha);
+    imp()->drawTexture(texture, src.x(), src.y(), src.w(), src.h(), dst.x(), dst.y(), dst.w(), dst.h(), srcScale, alpha);
 }
 
 void LPainter::drawTexture(const LTexture *texture,
@@ -395,60 +322,16 @@ void LPainter::drawTexture(const LTexture *texture,
                             Float32 srcScale,
                             Float32 alpha)
 {
-    if (!texture || srcScale <= 0.f)
-        return;
 
-    if (alpha < 0.f)
-        alpha = 0.f;
-
-    GLenum target = texture->target();
-    imp()->switchTarget(target);
-
-    setViewport(dstX, dstY, dstW, dstH);
-    glActiveTexture(GL_TEXTURE0);
-
-    imp()->shaderSetAlpha(alpha);
-    imp()->shaderSetMode(0);
-    imp()->shaderSetActiveTexture(0);
-
-    if (imp()->fbId != 0)
-        imp()->shaderSetSrcRect(srcX, srcY + srcH, srcW, -srcH);
-    else
-        imp()->shaderSetSrcRect(srcX, srcY, srcW, srcH);
-
-    glBindTexture(target, texture->id(imp()->output));
-    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    if (srcScale == 1.f)
-        imp()->shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
-    else if (srcScale == 2.f)
-    {
-        imp()->shaderSetTexSize(texture->sizeB().w() >> 1,
-                                texture->sizeB().h() >> 1);
-    }
-    else
-    {
-        imp()->shaderSetTexSize(
-                    texture->sizeB().w()/srcScale,
-                    texture->sizeB().h()/srcScale);
-    }
-
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    imp()->drawTexture(texture, srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH, srcScale, alpha);
 }
 
 void LPainter::drawColorTexture(const LTexture *texture, const LRGBF &color, const LRect &src, const LRect &dst, Float32 srcScale, Float32 alpha)
 {
-    drawColorTexture(texture,
+    imp()->drawColorTexture(texture,
                      color.r, color.g, color.b,
-                     src.x(),
-                     src.y(),
-                     src.w(),
-                     src.h(),
-                     dst.x(),
-                     dst.y(),
-                     dst.w(),
-                     dst.h(),
+                     src.x(), src.y(), src.w(), src.h(),
+                     dst.x(), dst.y(), dst.w(), dst.h(),
                      srcScale,
                      alpha);
 }
@@ -459,91 +342,35 @@ void LPainter::drawColorTexture(const LTexture *texture,
                                 Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                                 Float32 srcScale, Float32 alpha)
 {
-    GLenum target = texture->target();
-    imp()->switchTarget(target);
 
-    setViewport(dstX, dstY, dstW, dstH);
-    glActiveTexture(GL_TEXTURE0);
-
-    imp()->shaderSetAlpha(alpha);
-    imp()->shaderSetColor(r, g, b);
-    imp()->shaderSetMode(2);
-    imp()->shaderSetActiveTexture(0);
-
-    if (imp()->fbId != 0)
-        imp()->shaderSetSrcRect(srcX, srcY + srcH, srcW, -srcH);
-    else
-        imp()->shaderSetSrcRect(srcX, srcY, srcW, srcH);
-
-    glBindTexture(target, texture->id(imp()->output));
-    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    if (srcScale == 1.f)
-        imp()->shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
-    else if (srcScale == 2.f)
-    {
-        imp()->shaderSetTexSize(texture->sizeB().w() >> 1,
-                                texture->sizeB().h() >> 1);
-    }
-    else
-    {
-        imp()->shaderSetTexSize(
-            texture->sizeB().w()/srcScale,
-            texture->sizeB().h()/srcScale);
-    }
-
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    imp()->drawColorTexture(texture, r, g, b,
+                            srcX, srcY, srcW, srcH,
+                            dstX, dstY, dstW, dstH,
+                            srcScale, alpha);
 }
 
 void LPainter::drawColor(const LRect &dst,
                           Float32 r, Float32 g, Float32 b, Float32 a)
 {
-    drawColor(dst.x(), dst.y(), dst.w(), dst.h(),
+    imp()->drawColor(dst.x(), dst.y(), dst.w(), dst.h(),
                r, g, b, a);
 }
 
 void LPainter::drawColor(Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                           Float32 r, Float32 g, Float32 b, Float32 a)
 {
-    imp()->switchTarget(GL_TEXTURE_2D);
-    setViewport(dstX, dstY, dstW, dstH);
-    imp()->shaderSetAlpha(a);
-    imp()->shaderSetColor(r, g, b);
-    imp()->shaderSetMode(1);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    imp()->drawColor(dstX, dstY, dstW, dstH,
+                     r, g, b, a);
 }
 
 void LPainter::setViewport(const LRect &rect)
 {
-    setViewport(rect.x(), rect.y(), rect.w(), rect.h());
+    imp()->setViewport(rect.x(), rect.y(), rect.w(), rect.h());
 }
 
 void LPainter::setViewport(Int32 x, Int32 y, Int32 w, Int32 h)
 {
-    x -= imp()->fb->rect().x();
-    y -= imp()->fb->rect().y();
-
-    if (imp()->fbId == 0)
-        y = imp()->fb->rect().h() - y - h;
-
-    if (imp()->fb->scale() == 2)
-    {
-        x <<= 1;
-        y <<= 1;
-        w <<= 1;
-        h <<= 1;
-    }
-    else if (imp()->fb->scale() > 2)
-    {
-        x *= imp()->fb->scale();
-        y *= imp()->fb->scale();
-        w *= imp()->fb->scale();
-        h *= imp()->fb->scale();
-    }
-
-    glScissor(x, y, w, h);
-    glViewport(x, y, w, h);
+    imp()->setViewport(x, y, w, h);
 }
 
 void LPainter::setClearColor(Float32 r, Float32 g, Float32 b, Float32 a)

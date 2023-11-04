@@ -3,7 +3,7 @@
 
 #include <LNamespaces.h>
 #include <LRect.h>
-#include <vector>
+#include <pixman.h>
 
 /**
  * @brief Collection of non-overlapping rectangles
@@ -56,6 +56,32 @@ public:
     /**
      * @brief Adds a rectangle to the LRegion (union operation).
      *
+     * @param pos The rectangle's top-left corner.
+     * @param size The rectangle's size.
+     */
+    void addRect(const LPoint &pos, const LSize &size);
+
+    /**
+     * @brief Adds a rectangle to the LRegion (union operation).
+     *
+     * @param x The x-coordinate of the rectangle's top-left corner.
+     * @param y The y-coordinate of the rectangle's top-left corner.
+     * @param size The rectangle's size.
+     */
+    void addRect(Int32 x, Int32 y, const LSize &size);
+
+    /**
+     * @brief Adds a rectangle to the LRegion (union operation).
+     *
+     * @param pos The rectangle's top-left corner.
+     * @param w The width of the rectangle.
+     * @param h The height of the rectangle.
+     */
+    void addRect(const LPoint &pos, Int32 w, Int32 h);
+
+    /**
+     * @brief Adds a rectangle to the LRegion (union operation).
+     *
      * @param x The x-coordinate of the rectangle's top-left corner.
      * @param y The y-coordinate of the rectangle's top-left corner.
      * @param w The width of the rectangle.
@@ -76,6 +102,42 @@ public:
      * @param rect The rectangle to subtract.
      */
     void subtractRect(const LRect &rect);
+
+    /**
+     * @brief Subtracts a rectangle from the LRegion.
+     *
+     * @param pos The rectangle's top-left corner.
+     * @param size The rectangle's size.
+     */
+    void subtractRect(const LPoint &pos, const LSize &size);
+
+    /**
+     * @brief Subtracts a rectangle from the LRegion.
+     *
+     * @param pos The rectangle's top-left corner.
+     * @param w The width of the rectangle.
+     * @param h The height of the rectangle.
+     */
+    void subtractRect(const LPoint &pos, Int32 w, Int32 h);
+
+    /**
+     * @brief Subtracts a rectangle from the LRegion.
+     *
+     * @param x The x-coordinate of the rectangle's top-left corner.
+     * @param y The y-coordinate of the rectangle's top-left corner.
+     * @param size The rectangle's size.
+     */
+    void subtractRect(Int32 x, Int32 y, const LSize &size);
+
+    /**
+     * @brief Subtracts a rectangle from the LRegion.
+     *
+     * @param x The x-coordinate of the rectangle's top-left corner.
+     * @param y The y-coordinate of the rectangle's top-left corner.
+     * @param w The width of the rectangle.
+     * @param h The height of the rectangle.
+     */
+    void subtractRect(Int32 x, Int32 y, Int32 w, Int32 h);
 
     /**
      * @brief Subtracts another LRegion from this LRegion.
@@ -101,7 +163,8 @@ public:
     /**
      * @brief Multiplies the components of each rectangle in the LRegion by the given factor.
      *
-     * @param factor The factor to multiply by.
+     * @param xFactor The x-axis factor to multiply by.
+     * @param yFactor The y-axis factor to multiply by.
      */
     void multiply(Float32 xFactor, Float32 yFactor);
 
@@ -114,18 +177,19 @@ public:
     bool containsPoint(const LPoint &point) const;
 
     /**
-     * @brief Offset each rectangle in the LRegion by the specified offset.
+     * @brief Translate each rectangle in the LRegion by the specified offset.
      *
      * @param offset The offset to apply.
      */
     void offset(const LPoint &offset);
 
     /**
-     * @brief Replace the current LRegion with the content of another LRegion.
+     * @brief Translate each rectangle in the LRegion by the specified offset.
      *
-     * @param regionToCopy The LRegion to copy from.
+     * @param x The x offset to apply.
+     * @param y The y offset to apply.
      */
-    void copy(const LRegion &regionToCopy);
+    void offset(Int32 x, Int32 y);
 
     /**
      * @brief Invert the region contained within the specified rectangle.
@@ -149,6 +213,20 @@ public:
     void clip(const LRect &rect);
 
     /**
+     * @brief Clips the LRegion to the area defined by the specified rectangle.
+     *
+     * @param rect The rectangle used for clipping.
+     */
+    void clip(const LPoint &pos, const LSize &size);
+
+    /**
+     * @brief Clips the LRegion to the area defined by the specified rectangle.
+     *
+     * @param rect The rectangle used for clipping.
+     */
+    void clip(Int32 x, Int32 y, Int32 w, Int32 h);
+
+    /**
      * @brief Get the extents of the LRegion.
      *
      * This method returns a pointer to an LBox that represents the bounding box of the LRegion.
@@ -161,26 +239,15 @@ public:
     /**
      * @brief Retrieves the list of rectangles that form the LRegion.
      *
-     * @return A reference to a vector containing LRect objects.
-     *
-     * @note If performance is a concern, consider using the other rects() variant that allows you to access the rectangles using the native Pixman method.
-     */
-    const std::vector<LRect> &rects() const;
-
-    /**
-     * @brief Retrieves the list of rectangles that form the LRegion.
-     *
      * @param n A pointer to an integer that will be set to the number of rectangles.
      * @return A pointer to an array of LBox objects representing the rectangles.
      *
      * @note This variant allows you to access the rectangles using the native Pixman method, which is considerably faster.
      */
-    LBox *rects(Int32 *n) const;
+    LBox *boxes(Int32 *n) const;
 private:
     /// @cond OMIT
-    mutable bool m_changed = false;
-    mutable std::vector<LRect>m_rects;
-    mutable void *m_region = nullptr;
+    mutable pixman_region32_t m_region;
     /// @endcond
 };
 

@@ -1,8 +1,8 @@
 #include <private/LSurfaceViewPrivate.h>
 #include <private/LViewPrivate.h>
+#include <private/LPainterPrivate.h>
 #include <LSurface.h>
 #include <LOutput.h>
-#include <LPainter.h>
 
 using namespace Louvre;
 
@@ -269,7 +269,7 @@ void LSurfaceView::paintRect(LPainter *p,
                               Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                               Float32 scale, Float32 alpha)
 {
-    p->drawTexture(surface()->texture(),
+    p->imp()->drawTexture(surface()->texture(),
                     srcX, srcY,
                     srcW, srcH,
                     dstX, dstY,

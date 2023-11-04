@@ -1,9 +1,9 @@
 #include <private/LTextureViewPrivate.h>
 #include <private/LTexturePrivate.h>
 #include <private/LViewPrivate.h>
+#include <private/LPainterPrivate.h>
 #include <LTexture.h>
 #include <LCompositor.h>
-#include <LPainter.h>
 
 LTextureView::LTextureView(LTexture *texture, LView *parent) : LView(LView::Texture, parent)
 {
@@ -303,7 +303,7 @@ void LTextureView::paintRect(LPainter *p,
 
         if (imp()->customColorEnabled)
         {
-            p->drawColorTexture(imp()->texture,
+            p->imp()->drawColorTexture(imp()->texture,
                                 imp()->customColor.r,
                                 imp()->customColor.g,
                                 imp()->customColor.b,
@@ -319,7 +319,7 @@ void LTextureView::paintRect(LPainter *p,
         }
         else
         {
-            p->drawTexture(imp()->texture,
+            p->imp()->drawTexture(imp()->texture,
                            srcX * scaling.x(),
                            srcY * scaling.y(),
                            srcW * scaling.x(),
@@ -335,7 +335,7 @@ void LTextureView::paintRect(LPainter *p,
     {
         if (imp()->customColorEnabled)
         {
-            p->drawColorTexture(imp()->texture,
+            p->imp()->drawColorTexture(imp()->texture,
                                 imp()->customColor.r,
                                 imp()->customColor.g,
                                 imp()->customColor.b,
@@ -345,7 +345,7 @@ void LTextureView::paintRect(LPainter *p,
         }
         else
         {
-            p->drawTexture(imp()->texture,
+            p->imp()->drawTexture(imp()->texture,
                            srcX, srcY, srcW, srcH,
                            dstX, dstY, dstW, dstH,
                            scale, alpha);

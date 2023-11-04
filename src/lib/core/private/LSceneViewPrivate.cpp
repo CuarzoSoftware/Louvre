@@ -7,29 +7,7 @@
 #include <LLog.h>
 #include <LFramebuffer.h>
 
-void LSceneView::LSceneViewPrivate::clearTmpVariables(ThreadData *oD)
-{
-    oD->newDamage.clear();
-    oD->opaqueTransposedSum.clear();
-    oD->foundRenderableSaledView = false;
-}
-
-void LSceneView::LSceneViewPrivate::damageAll(ThreadData *oD)
-{
-    oD->newDamage.clear();
-    oD->newDamage.addRect(fb->rect());
-    oD->newDamage.addRect(fb->rect());
-}
-
-void LSceneView::LSceneViewPrivate::checkRectChange(ThreadData *oD)
-{
-    if (oD->prevRect.size() != fb->rect().size())
-    {
-        damageAll(oD);
-        oD->prevRect.setSize(fb->rect().size());
-    }
-}
-
+#ifdef NONO
 void LSceneView::LSceneViewPrivate::cachePass(LView *view, ThreadData *oD)
 {
     if (view->type() != Scene)
@@ -86,7 +64,7 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
         vRegion.clip(view->clippingRect());
 
     if (view->parent() && view->parentClippingEnabled())
-        vRegion.clip(LRect(view->parent()->pos(),view->parent()->size()));
+        vRegion.clip(view->parent()->pos(), view->parent()->size());
 
     // Update view intersected outputs
     for (std::list<LOutput*>::const_iterator it = compositor()->outputs().cbegin(); it != compositor()->outputs().cend(); it++)
@@ -123,21 +101,33 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
 
     bool rectChanged = cache->localRect != cache->voD->prevLocalRect;
 
-    bool colorFactorChanged = cache->voD->prevColorFactor.r != view->colorFactor().r ||
-                              cache->voD->prevColorFactor.g != view->colorFactor().g ||
-                              cache->voD->prevColorFactor.b != view->colorFactor().b ||
-                              cache->voD->prevColorFactor.a != view->colorFactor().a;
+    bool colorFactorChanged = cache->voD->prevColorFactor.r != view->imp()->colorFactor.r ||
+                              cache->voD->prevColorFactor.g != view->imp()->colorFactor.g ||
+                              cache->voD->prevColorFactor.b != view->imp()->colorFactor.b ||
+                              cache->voD->prevColorFactor.a != view->imp()->colorFactor.a;
 
     // If rect or order changed (set current rect and prev rect as damage)
     if (mappingChanged || rectChanged || cache->voD->changedOrder || opacityChanged || cache->scalingEnabled || colorFactorChanged)
     {
         cache->damage.addRect(cache->rect);
-        cache->voD->changedOrder = false;
-        cache->voD->prevMapped = cache->mapped;
-        cache->voD->prevRect = cache->rect;
-        cache->voD->prevOpacity = cache->opacity;
-        cache->voD->prevLocalRect = cache->localRect;
-        cache->voD->prevColorFactor = view->colorFactor();
+
+        if (cache->voD->changedOrder)
+            cache->voD->changedOrder = false;
+
+        if (mappingChanged)
+            cache->voD->prevMapped = cache->mapped;
+
+        if (rectChanged)
+        {
+            cache->voD->prevRect = cache->rect;
+            cache->voD->prevLocalRect = cache->localRect;
+        }
+
+        if (opacityChanged)
+            cache->voD->prevOpacity = cache->opacity;
+
+        if (colorFactorChanged)
+            cache->voD->prevColorFactor = view->imp()->colorFactor;
 
         if (!cache->mapped)
         {
@@ -259,7 +249,7 @@ void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view, ThreadData *oD
     cache->opaque.intersectRegion(oD->newDamage);
     cache->opaque.subtractRegion(cache->opaqueOverlay);
 
-    oD->boxes = cache->opaque.rects(&oD->n);
+    oD->boxes = cache->opaque.boxes(&oD->n);
 
     oD->p->setColorFactor(view->colorFactor().r,
                          view->colorFactor().g,
@@ -318,7 +308,7 @@ void LSceneView::LSceneViewPrivate::drawBackground(ThreadData *oD, bool addToOpa
 {
     LRegion backgroundDamage = oD->newDamage;
     backgroundDamage.subtractRegion(oD->opaqueTransposedSum);
-    oD->boxes = backgroundDamage.rects(&oD->n);
+    oD->boxes = backgroundDamage.boxes(&oD->n);
 
     for (Int32 i = 0; i < oD->n; i++)
     {
@@ -354,7 +344,7 @@ void LSceneView::LSceneViewPrivate::drawTranslucentDamage(LView *view, ThreadDat
     cache->translucent.intersectRegion(oD->newDamage);
     cache->translucent.subtractRegion(cache->opaqueOverlay);
 
-    oD->boxes = cache->translucent.rects(&oD->n);
+    oD->boxes = cache->translucent.boxes(&oD->n);
 
     if (cache->scalingEnabled)
     {
@@ -414,8 +404,9 @@ void LSceneView::LSceneViewPrivate::parentClipping(LView *parent, LRegion *regio
     if (!parent)
         return;
 
-    region->clip(LRect(parent->pos(), parent->size()));
+    region->clip(parent->pos(), parent->size());
 
     if (parent->parentClippingEnabled())
         parentClipping(parent->parent(), region);
 }
+#endif

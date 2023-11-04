@@ -192,7 +192,7 @@ bool LTexture::updateRect(const LRect &rect, UInt32 stride, const void *buffer)
 
     if (initialized() && imp()->sourceType != Framebuffer)
     {
-        imp()->increaseSerial();
+        imp()->serial++;
         return compositor()->imp()->graphicBackend->updateTextureRect(this, stride, rect, buffer);
     }
 

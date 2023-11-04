@@ -1,6 +1,7 @@
 #ifndef LCOMPOSITORPRIVATE_H
 #define LCOMPOSITORPRIVATE_H
 
+#include <LOutput.h>
 #include <private/LRenderBufferPrivate.h>
 #include <LCompositor.h>
 #include <EGL/egl.h>
@@ -67,10 +68,6 @@ LPRIVATE_CLASS(LCompositor)
     std::thread::id threadId;
     std::mutex renderMutex;
 
-    /* Requires validation
-    std::mutex queueMutex;
-    std::list<std::thread::id>threadsQueue; */
-
     void lock();
     void unlock();
 
@@ -106,6 +103,18 @@ LPRIVATE_CLASS(LCompositor)
 
     std::list<GLuint>nativeTexturesToDestroy;
     static void destroyNativeTextures(std::list<GLuint>&list);
+
+    Int32 greatestOutputScale = 1;
+
+    inline void updateGreatestOutputScale()
+    {
+        greatestOutputScale = 1;
+        for (LOutput *o : outputs)
+        {
+            if (o->scale() > greatestOutputScale)
+                greatestOutputScale = o->scale();
+        }
+    }
 };
 
 #endif // LCOMPOSITORPRIVATE_H

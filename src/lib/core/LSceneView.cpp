@@ -4,7 +4,6 @@
 #include <private/LPainterPrivate.h>
 #include <LFramebuffer.h>
 #include <LRenderBuffer.h>
-#include <LPainter.h>
 #include <LOutput.h>
 
 LSceneView::LSceneView(LFramebuffer *framebuffer, LView *parent) : LView(Scene, parent)
@@ -304,7 +303,7 @@ void LSceneView::paintRect(LPainter *p,
                             Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                             Float32 scale, Float32 alpha)
 {
-    p->drawTexture(imp()->fb->texture(imp()->fb->currentBufferIndex()),
+    p->imp()->drawTexture(imp()->fb->texture(imp()->fb->currentBufferIndex()),
                     srcX, srcY, srcW, srcH,
                     dstX, dstY, dstW, dstH,
                     scale, alpha);

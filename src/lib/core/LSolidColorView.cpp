@@ -1,5 +1,5 @@
 #include <private/LSolidColorViewPrivate.h>
-#include <LPainter.h>
+#include <private/LPainterPrivate.h>
 
 Louvre::LSolidColorView::LSolidColorView(LView *parent) : LView(LView::SolidColor, parent)
 {
@@ -171,7 +171,7 @@ void LSolidColorView::paintRect(LPainter *p,
                                  Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                                  Float32, Float32 alpha)
 {
-    p->drawColor(dstX, dstY, dstW, dstH,
+    p->imp()->drawColor(dstX, dstY, dstW, dstH,
                   color().r, color().g, color().b,
                   alpha);
 }

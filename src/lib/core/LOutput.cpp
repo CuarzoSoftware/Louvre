@@ -119,7 +119,7 @@ void LOutput::setBufferDamage(const LRegion &damage)
     LRegion region = damage;
     region.offset(LPoint(-pos().x(), -pos().y()));
     region.multiply(scale());
-    region.clip(LRect(LSize(0,0), sizeB()));
+    region.clip(0, sizeB());
     compositor()->imp()->graphicBackend->setOutputBufferDamage((LOutput*)this, region);
 }
 
@@ -145,6 +145,8 @@ void LOutput::setScale(Int32 scale)
             }
         }
     }
+
+    compositor()->imp()->updateGreatestOutputScale();
 }
 
 Int32 LOutput::scale() const

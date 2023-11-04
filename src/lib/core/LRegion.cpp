@@ -5,73 +5,109 @@ using namespace Louvre;
 
 LRegion::LRegion()
 {
-    m_region = malloc(sizeof(pixman_region32_t));
-    pixman_region32_init((pixman_region32_t*)m_region);    
+    pixman_region32_init(&m_region);
 }
 
 LRegion::~LRegion()
 {
-    pixman_region32_fini((pixman_region32_t*)m_region);
-    free((pixman_region32_t*)m_region);
+    pixman_region32_fini(&m_region);
 }
 
 LRegion::LRegion(const LRegion &other)
 {
-    copy(other);
+    pixman_region32_init(&m_region);
+    pixman_region32_copy(&m_region, &other.m_region);
 }
 
 Louvre::LRegion &LRegion::operator=(const LRegion &other)
 {
-    copy(other);
+    pixman_region32_copy(&m_region, &other.m_region);
     return *this;
 }
 
 void LRegion::clear()
 {
-    m_changed = true;
-    pixman_region32_clear((pixman_region32_t*)m_region);
+    pixman_region32_clear(&m_region);
 }
 
 void LRegion::addRect(const LRect &rect)
 {
-    pixman_region32_union_rect((pixman_region32_t*)m_region, (pixman_region32_t*)m_region, rect.x(), rect.y(), rect.w(), rect.h());
-    m_changed = true;
+    pixman_region32_union_rect(&m_region, &m_region, rect.x(), rect.y(), rect.w(), rect.h());
+}
+
+void LRegion::addRect(const LPoint &pos, const LSize &size)
+{
+    pixman_region32_union_rect(&m_region, &m_region, pos.x(), pos.y(), size.w(), size.h());
+}
+
+void LRegion::addRect(Int32 x, Int32 y, const LSize &size)
+{
+    pixman_region32_union_rect(&m_region, &m_region, x, y, size.w(), size.h());
+}
+
+void LRegion::addRect(const LPoint &pos, Int32 w, Int32 h)
+{
+    pixman_region32_union_rect(&m_region, &m_region, pos.x(), pos.y(), w, h);
 }
 
 void LRegion::addRect(Int32 x, Int32 y, Int32 w, Int32 h)
 {
-    pixman_region32_union_rect((pixman_region32_t*)m_region, (pixman_region32_t*)m_region, x, y, w, h);
-    m_changed = true;
+    pixman_region32_union_rect(&m_region, &m_region, x, y, w, h);
 }
 
 void LRegion::addRegion(const LRegion &region)
 {
-    m_changed = true;
-    pixman_region32_union((pixman_region32_t*)m_region, (pixman_region32_t*)m_region, (pixman_region32_t*)region.m_region);
+    pixman_region32_union(&m_region, &m_region, &region.m_region);
 }
 
 void LRegion::subtractRect(const LRect &rect)
 {
     pixman_region32_t tmp;
-
     pixman_region32_init_rect(&tmp, rect.x(), rect.y(), rect.w(), rect.h());
-
-    pixman_region32_subtract((pixman_region32_t*)m_region, (pixman_region32_t*)m_region, &tmp);
-
+    pixman_region32_subtract(&m_region, &m_region, &tmp);
     pixman_region32_fini(&tmp);
-    m_changed = true;
+}
+
+void LRegion::subtractRect(const LPoint &pos, const LSize &size)
+{
+    pixman_region32_t tmp;
+    pixman_region32_init_rect(&tmp, pos.x(), pos.y(), size.w(), size.h());
+    pixman_region32_subtract(&m_region, &m_region, &tmp);
+    pixman_region32_fini(&tmp);
+}
+
+void LRegion::subtractRect(const LPoint &pos, Int32 w, Int32 h)
+{
+    pixman_region32_t tmp;
+    pixman_region32_init_rect(&tmp, pos.x(), pos.y(), w, h);
+    pixman_region32_subtract(&m_region, &m_region, &tmp);
+    pixman_region32_fini(&tmp);
+}
+
+void LRegion::subtractRect(Int32 x, Int32 y, const LSize &size)
+{
+    pixman_region32_t tmp;
+    pixman_region32_init_rect(&tmp, x, y, size.w(), size.h());
+    pixman_region32_subtract(&m_region, &m_region, &tmp);
+    pixman_region32_fini(&tmp);
+}
+
+void LRegion::subtractRect(Int32 x, Int32 y, Int32 w, Int32 h)
+{
+    pixman_region32_t tmp;
+    pixman_region32_init_rect(&tmp, x, y, w, h);
+    pixman_region32_subtract(&m_region, &m_region, &tmp);
+    pixman_region32_fini(&tmp);
 }
 
 void LRegion::subtractRegion(const LRegion &region)
 {
-    m_changed = true;
-    pixman_region32_subtract((pixman_region32_t*)m_region, (pixman_region32_t*)m_region, (pixman_region32_t*)region.m_region);
+    pixman_region32_subtract(&m_region, &m_region, &region.m_region);
 }
 
 void LRegion::intersectRegion(const LRegion &region)
 {
-    m_changed = true;
-    pixman_region32_intersect((pixman_region32_t*)m_region, (pixman_region32_t*)m_region, (pixman_region32_t*)region.m_region);
+    pixman_region32_intersect(&m_region, &m_region, &region.m_region);
 }
 
 void LRegion::multiply(Float32 factor)
@@ -83,7 +119,7 @@ void LRegion::multiply(Float32 factor)
     pixman_region32_init(&tmp);
 
     int n;
-    pixman_box32_t *rects = pixman_region32_rectangles((pixman_region32_t*)m_region, &n);
+    pixman_box32_t *rects = pixman_region32_rectangles(&m_region, &n);
 
     if (factor == 0.5f)
     {
@@ -128,9 +164,8 @@ void LRegion::multiply(Float32 factor)
         }
     }
 
-    pixman_region32_fini((pixman_region32_t*)m_region);
-    *(pixman_region32_t*)m_region = tmp;
-    m_changed = true;
+    pixman_region32_fini(&m_region);
+    m_region = tmp;
 }
 
 void LRegion::multiply(Float32 xFactor, Float32 yFactor)
@@ -142,7 +177,7 @@ void LRegion::multiply(Float32 xFactor, Float32 yFactor)
     pixman_region32_init(&tmp);
 
     int n;
-    pixman_box32_t *rects = pixman_region32_rectangles((pixman_region32_t*)m_region, &n);
+    pixman_box32_t *rects = pixman_region32_rectangles(&m_region, &n);
 
     for (int i = 0; i < n; i++)
     {
@@ -156,36 +191,29 @@ void LRegion::multiply(Float32 xFactor, Float32 yFactor)
         rects++;
     }
 
-    pixman_region32_fini((pixman_region32_t*)m_region);
-    *(pixman_region32_t*)m_region = tmp;
-    m_changed = true;
+    pixman_region32_fini(&m_region);
+    m_region = tmp;
 }
 
 bool LRegion::containsPoint(const LPoint &point) const
 {
-    return pixman_region32_contains_point((pixman_region32_t*)m_region, point.x(), point.y(), NULL);
+    return pixman_region32_contains_point(&m_region, point.x(), point.y(), NULL);
 }
 
 void LRegion::offset(const LPoint &offset)
 {
-    if (offset == LPoint(0,0))
+    if (offset.x() == 0 && offset.y() == 0)
         return;
-    pixman_region32_translate((pixman_region32_t*)m_region, offset.x(), offset.y());
-    m_changed = true;
+
+    pixman_region32_translate(&m_region, offset.x(), offset.y());
 }
 
-void LRegion::copy(const LRegion &regionToCopy)
+void LRegion::offset(Int32 x, Int32 y)
 {
-    m_changed = true;
-    m_rects.clear();
+    if (x == 0 && x == 0)
+        return;
 
-    if (!m_region)
-    {
-        m_region = malloc(sizeof(pixman_region32_t));
-        pixman_region32_init((pixman_region32_t*)m_region);
-    }
-
-    pixman_region32_copy((pixman_region32_t*)m_region, (pixman_region32_t*)regionToCopy.m_region);
+    pixman_region32_translate(&m_region, x, y);
 }
 
 void LRegion::inverse(const LRect &rect)
@@ -196,46 +224,35 @@ void LRegion::inverse(const LRect &rect)
     r.y1 = rect.y();
     r.y2 = r.y1 + rect.h();
 
-    pixman_region32_inverse((pixman_region32_t*)m_region, (pixman_region32_t*)m_region, &r);
+    pixman_region32_inverse(&m_region, &m_region, &r);
 }
 
 bool LRegion::empty() const
 {
-    return !pixman_region32_not_empty((pixman_region32_t*)m_region);
+    return !pixman_region32_not_empty(&m_region);
 }
 
 void LRegion::clip(const LRect &rect)
 {
-    pixman_region32_intersect_rect((pixman_region32_t*)m_region, (pixman_region32_t*)m_region, rect.x(), rect.y(), rect.w(), rect.h());
-    m_changed = true;
+    pixman_region32_intersect_rect(&m_region, &m_region, rect.x(), rect.y(), rect.w(), rect.h());
+}
+
+void LRegion::clip(const LPoint &pos, const LSize &size)
+{
+    pixman_region32_intersect_rect(&m_region, &m_region, pos.x(), pos.y(), size.w(), size.h());
+}
+
+void LRegion::clip(Int32 x, Int32 y, Int32 w, Int32 h)
+{
+    pixman_region32_intersect_rect(&m_region, &m_region, x, y, w, h);
 }
 
 const LBox &LRegion::extents() const
 {
-    return *(LBox*)pixman_region32_extents((pixman_region32_t*)m_region);
+    return *(LBox*)pixman_region32_extents(&m_region);
 }
 
-const std::vector<LRect> &LRegion::rects() const
+LBox *LRegion::boxes(Int32 *n) const
 {
-    if (m_changed)
-    {
-        m_changed = false;
-        int n;
-        pixman_box32_t *rects = pixman_region32_rectangles((pixman_region32_t*)m_region, &n);
-        m_rects.resize(n);
-
-        for (int i = 0; i < n; i++)
-        {
-            m_rects[i] = (LRect(rects[i].x1,
-                                   rects[i].y1,
-                                   rects[i].x2 - rects[i].x1,
-                                   rects[i].y2 - rects[i].y1));
-        }
-    }
-    return m_rects;
-}
-
-LBox *LRegion::rects(Int32 *n) const
-{
-    return (LBox*)pixman_region32_rectangles((pixman_region32_t*)m_region, n);
+    return (LBox*)pixman_region32_rectangles(&m_region, n);
 }

@@ -326,7 +326,7 @@ void Output::paintGL()
         s->currentOpaqueTransposedC.intersectRegion(newDamage);
         s->currentOpaqueTransposedC.subtractRegion(s->currentOpaqueTransposedCSum);
 
-        boxes = s->currentOpaqueTransposedC.rects(&n);
+        boxes = s->currentOpaqueTransposedC.boxes(&n);
 
         // Draw opaque rects
         for (Int32 i = 0; i < n; i++)
@@ -353,7 +353,7 @@ void Output::paintGL()
     // Background
     LRegion backgroundDamage = newDamage;
     backgroundDamage.subtractRegion(opaqueTransposedCSum);
-    boxes = backgroundDamage.rects(&n);
+    boxes = backgroundDamage.boxes(&n);
 
     if (backgroundTexture)
     {
@@ -406,7 +406,7 @@ void Output::paintGL()
         s->currentTraslucentTransposedC.intersectRegion(newDamage);
         s->currentTraslucentTransposedC.subtractRegion(s->currentOpaqueTransposedCSum);
 
-        boxes = s->currentTraslucentTransposedC.rects(&n);
+        boxes = s->currentTraslucentTransposedC.boxes(&n);
 
         // Draw transulcent rects
 
@@ -441,7 +441,7 @@ void Output::paintGL()
                                    rect().w(),
                                    topbarHeight));
         topbarRegion.intersectRegion(newDamage);
-        boxes = topbarRegion.rects(&n);
+        boxes = topbarRegion.boxes(&n);
 
         for (Int32 i = 0; i < n; i++)
         {

@@ -396,7 +396,7 @@ void LGraphicBackend::setOutputBufferDamage(LOutput *output, LRegion &region)
         return;
 
     Int32 n;
-    LBox *boxes = region.rects(&n);
+    LBox *boxes = region.boxes(&n);
 
     SRMRect rects[n];
 

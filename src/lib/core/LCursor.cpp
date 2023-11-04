@@ -100,18 +100,6 @@ void LCursor::replaceDefaultB(const LTexture *texture, const LPointF &hotspot)
         useDefault();
 }
 
-static void texture2Buffer(LCursor *cursor, const LSizeF &size)
-{
-    glBindFramebuffer(GL_FRAMEBUFFER, cursor->imp()->glFramebuffer);
-    cursor->compositor()->imp()->painter->imp()->scaleCursor(
-        cursor->texture(),
-        LRect(0, 0, cursor->texture()->sizeB().w(), -cursor->texture()->sizeB().h()),
-        LRect(0, size));
-
-    glReadPixels(0, 0, 64, 64, GL_RGBA , GL_UNSIGNED_BYTE, cursor->imp()->buffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
 void LCursor::setTextureB(const LTexture *texture, const LPointF &hotspot)
 {
     if (!texture)
@@ -133,32 +121,12 @@ void LCursor::setTextureB(const LTexture *texture, const LPointF &hotspot)
 
 void LCursor::move(Float32 x, Float32 y)
 {
-    setPos(imp()->pos + LPointF(x,y));
+    imp()->setPos(imp()->pos + LPointF(x,y));
 }
 
 void Louvre::LCursor::setPos(const LPointF &pos)
 {
-    for (LOutput *output : compositor()->outputs())
-        if (output->rect().containsPoint(pos) && output)
-            imp()->setOutput(output);
-
-    if (!output())
-        return;
-
-    imp()->pos = pos;
-
-    LRect area = output()->rect();
-    if (imp()->pos.x() > area.x() + area.w())
-        imp()->pos.setX(area.x() + area.w());
-    if (imp()->pos.x() < area.x())
-        imp()->pos.setX(area.x());
-
-    if (imp()->pos.y() > area.y() + area.h())
-        imp()->pos.setY(area.y() + area.h());
-    if (imp()->pos.y() < area.y())
-        imp()->pos.setY(area.y());
-
-    imp()->update();
+    imp()->setPos(pos);
 }
 
 void LCursor::setPos(Float32 x, Float32 y)
@@ -286,101 +254,4 @@ const std::list<LOutput *> &LCursor::intersectedOutputs() const
 const LRect &LCursor::rect() const
 {
     return imp()->rect;
-}
-
-void LCursor::LCursorPrivate::update()
-{
-    if (!cursor()->output())
-        return;
-
-    posChanged = true;
-    return;
-
-    LPointF newHotspotS;
-    newHotspotS = (hotspotB*size)/LSizeF(texture->sizeB());
-
-    LPointF newPosS = pos - newHotspotS;
-
-    rect.setPos(newPosS);
-    rect.setSize(size);
-
-    for (LOutput *o : compositor()->outputs())
-    {
-        if (o->rect().intersects(rect))
-        {
-            bool found = (std::find(intersectedOutputs.begin(), intersectedOutputs.end(), o) != intersectedOutputs.end());
-
-            if (!found)
-            {
-                textureChanged = true;
-                intersectedOutputs.push_back(o);
-            }
-        }
-        else
-            intersectedOutputs.remove(o);
-    }
-}
-
-void LCursor::LCursorPrivate::textureUpdate()
-{
-    if (!cursor()->output())
-        return;
-
-    if (!textureChanged && !posChanged)
-        return;
-
-    LPointF newHotspotS;
-    newHotspotS = (hotspotB*size)/LSizeF(texture->sizeB());
-
-    LPointF newPosS = pos - newHotspotS;
-    rect.setPos(newPosS);
-    rect.setSize(size);
-
-    for (LOutput *o : compositor()->outputs())
-    {
-        if (o->rect().intersects(rect))
-        {
-            bool found = (std::find(intersectedOutputs.begin(), intersectedOutputs.end(), o) != intersectedOutputs.end());
-
-            if (!found)
-                intersectedOutputs.push_back(o);
-
-            if (cursor()->hasHardwareSupport(o) && (textureChanged || !found))
-            {
-                texture2Buffer(cursor(), size*o->scale());
-                compositor()->imp()->graphicBackend->setCursorTexture(o, buffer);
-            }
-        }
-        else
-        {
-            intersectedOutputs.remove(o);
-            compositor()->imp()->graphicBackend->setCursorTexture(o, nullptr);
-        }
-
-        if (cursor()->hasHardwareSupport(o))
-        {
-            LPointF p = newPosS - LPointF(o->pos());
-            compositor()->imp()->graphicBackend->setCursorPosition(o, p*o->scale());
-        }
-    }
-
-    textureChanged = false;
-    posChanged = false;
-}
-
-
-void LCursor::LCursorPrivate::setOutput(LOutput *out)
-{
-    bool up = false;
-
-    if (!output)
-        up = true;
-
-    output = out;
-
-    if (up)
-    {
-        textureChanged = true;
-        update();
-    }
 }

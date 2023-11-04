@@ -141,7 +141,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
         else if (surface->imp()->inputRegionChanged || surface->imp()->bufferSizeChanged)
         {
             surface->imp()->currentInputRegion = surface->imp()->pendingInputRegion;
-            surface->imp()->currentInputRegion.clip(LRect(0, surface->size()));
+            surface->imp()->currentInputRegion.clip(0, surface->size());
             surface->inputRegionChanged();
             surface->imp()->inputRegionChanged = false;
         }
@@ -160,7 +160,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
     if (surface->imp()->opaqueRegionChanged || surface->imp()->bufferSizeChanged)
     {
         surface->imp()->currentOpaqueRegion = surface->imp()->pendingOpaqueRegion;
-        surface->imp()->currentOpaqueRegion.clip(LRect(0, surface->size()));
+        surface->imp()->currentOpaqueRegion.clip(0, surface->size());
         surface->imp()->opaqueRegionChanged = false;
         surface->opaqueRegionChanged();
 

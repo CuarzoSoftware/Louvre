@@ -327,6 +327,7 @@ bool LCompositor::addOutput(LOutput *output)
         return false;
     }
 
+    imp()->updateGreatestOutputScale();
     return true;
 }
 
@@ -397,7 +398,7 @@ void LCompositor::removeOutput(LOutput *output)
                 cursor()->imp()->output = nullptr;
 
             cursor()->move(1.f, 1.f);
-
+            imp()->updateGreatestOutputScale();
             return;
         }
     }
