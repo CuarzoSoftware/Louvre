@@ -361,15 +361,8 @@ void LScene::handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState)
 
     if (keyState == LKeyboard::Released)
     {
-        // Launches weston-terminal
-        if (keyCode == KEY_F1 && !mods)
-        {
-            if (fork() == 0)
-                exit(system("weston-terminal"));
-        }
-
         // Terminates client connection
-        else if (L_CTRL && seat()->keyboard()->keySymbol(keyCode) == XKB_KEY_q)
+        if (L_CTRL && seat()->keyboard()->keySymbol(keyCode) == XKB_KEY_q)
         {
             if (seat()->keyboard()->focus())
                 seat()->keyboard()->focus()->client()->destroy();
@@ -423,6 +416,13 @@ void LScene::handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState)
     // Key press
     else
     {
+        // Launches weston-terminal
+        if (keyCode == KEY_F1 && !mods)
+        {
+            if (fork() == 0)
+                exit(system("weston-terminal"));
+        }
+
         // CTRL sets Copy as the preferred action in drag & drop sesión
         if (L_CTRL)
             seat()->dndManager()->setPreferredAction(LDNDManager::Copy);

@@ -143,45 +143,38 @@ LDNDManager *LSeat::dndManager() const
     return imp()->dndManager;
 }
 
-Int32 LSeat::setTTY(Int32 tty)
+void LSeat::setTTY(UInt32 tty)
 {
     if (imp()->libseatHandle)
-    {
-        compositor()->imp()->unlockPoll();
-        int ret = libseat_switch_session(libseatHandle(), tty);
-
-        if (ret == 0)
-            imp()->dispatchSeat();
-
-        return ret;
-    }
-
-    return -1;
+        imp()->ttyNumber = tty;
 }
 
-Int32 LSeat::openDevice(const char *path, Int32 *fd, Int32 flags)
+Int32 LSeat::openDevice(const char *path, Int32 *fd)
 {
     if (!imp()->libseatHandle)
-    {
-        *fd = open(path, flags);
-        fcntl(*fd, F_SETFD, FD_CLOEXEC);
-        return *fd;
-    }
+        return -1;
 
     Int32 id = libseat_open_device(libseatHandle(), path, fd);
-    fcntl(*fd, F_SETFD, FD_CLOEXEC);
+
+    if (id == -1)
+        LLog::error("[LSeat::openDevice] Failed to open device %s, id %d, %fd.", path, id, fd);
+    else
+        fcntl(*fd, F_SETFD, FD_CLOEXEC);
+
     return id;
 }
 
 Int32 LSeat::closeDevice(Int32 id)
 {
     if (!imp()->libseatHandle)
-    {
-        close(id);
-        return 0;
-    }
+        return -1;
 
-    return libseat_close_device(libseatHandle(), id);
+    Int32 ret = libseat_close_device(libseatHandle(), id);
+
+    if (ret == -1)
+        LLog::error("[LSeat::closeDevice] Failed to close device %d.", id);
+
+    return ret;
 }
 
 libseat *LSeat::libseatHandle() const

@@ -22,6 +22,11 @@ public:
     LRegion();
 
     /**
+     * @brief Initialize the region with a rect.
+     */
+    LRegion(const LRect &rect);
+
+    /**
      * @brief Destructor for freeing resources associated with LRegion.
      */
     ~LRegion();
@@ -245,7 +250,9 @@ public:
      * @note This variant allows you to access the rectangles using the native Pixman method, which is considerably faster.
      */
     LBox *boxes(Int32 *n) const;
-private:
+
+    static void multiply(LRegion *dst, LRegion *src, Float32 factor);
+
     /// @cond OMIT
     mutable pixman_region32_t m_region;
     /// @endcond

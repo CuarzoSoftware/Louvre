@@ -8,6 +8,11 @@ LRegion::LRegion()
     pixman_region32_init(&m_region);
 }
 
+LRegion::LRegion(const LRect &rect)
+{
+    pixman_region32_init_rect(&m_region, rect.x(), rect.y(), rect.w(), rect.h());
+}
+
 LRegion::~LRegion()
 {
     pixman_region32_fini(&m_region);
@@ -255,4 +260,67 @@ const LBox &LRegion::extents() const
 LBox *LRegion::boxes(Int32 *n) const
 {
     return (LBox*)pixman_region32_rectangles(&m_region, n);
+}
+
+void LRegion::multiply(LRegion *dst, LRegion *src, Float32 factor)
+{
+    if (dst == src)
+    {
+        src->multiply(factor);
+        return;
+    }
+
+    if (factor == 1.f)
+    {
+        *dst = *src;
+        return;
+    }
+
+    pixman_region32_clear(&dst->m_region);
+
+    int n;
+    pixman_box32_t *rects = pixman_region32_rectangles(&src->m_region, &n);
+
+    if (factor == 0.5f)
+    {
+        for (int i = 0; i < n; i++)
+        {
+            pixman_region32_union_rect(
+                &dst->m_region,
+                &dst->m_region,
+                rects->x1 >> 1,
+                rects->y1 >> 1,
+                (rects->x2 - rects->x1) >> 1,
+                (rects->y2 - rects->y1) >> 1);
+            rects++;
+        }
+    }
+    else if (factor == 2.f)
+    {
+        for (int i = 0; i < n; i++)
+        {
+            pixman_region32_union_rect(
+                &dst->m_region,
+                &dst->m_region,
+                rects->x1 << 1,
+                rects->y1 << 1,
+                (rects->x2 - rects->x1) << 1,
+                (rects->y2 - rects->y1) << 1);
+            rects++;
+        }
+    }
+    else
+    {
+        for (int i = 0; i < n; i++)
+        {
+            pixman_region32_union_rect(
+                &dst->m_region,
+                &dst->m_region,
+                floor(float(rects->x1) * factor),
+                floor(float(rects->y1) * factor),
+                ceil(float(rects->x2 - rects->x1) * factor),
+                ceil(float(rects->y2 - rects->y1) * factor));
+            rects++;
+        }
+    }
 }

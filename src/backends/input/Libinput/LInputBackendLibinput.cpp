@@ -10,16 +10,23 @@
 
 using namespace Louvre;
 
+struct DEVICE_FD_ID
+{
+    int fd;
+    int id;
+};
+
 struct BACKEND_DATA
 {
     libinput *li = nullptr;
     udev *ud = nullptr;
     libinput_interface libinputInterface;
     LSeat *seat;
+    std::list<DEVICE_FD_ID> devices;
 };
 
 // Libseat devices
-static std::unordered_map<int,int>devices;
+static bool libseatEnabled = false;
 static wl_event_source *eventSource = nullptr;
 
 // Event common
@@ -35,53 +42,61 @@ static Int32 keyCode;
 static libinput_event_pointer *pointerEvent;
 static libinput_button_state pointerButtonState;
 static UInt32 pointerButton;
-static Float64 x = 0.0, y = 0.0;
+static Float32 x = 0.f, y = 0.f;
 
 // For any axis event
-static Float64 axisX = 0.0, axisY = 0.0;
+static Float32 axisX = 0.f, axisY = 0.f;
 
 // For discrete scroll events
-static Float64 discreteX = 0.0, discreteY = 0.0;
+static Float32 discreteX = 0.f, discreteY = 0.f;
 
 // For 120 scroll events
-static Float64 d120X = 0.0, d120Y = 0.0;
+static Float32 d120X = 0.f, d120Y = 0.f;
 
 static Int32 openRestricted(const char *path, int flags, void *data)
 {
-    L_UNUSED(flags);
+    BACKEND_DATA *bknd = (BACKEND_DATA*)data;
 
-    LSeat *seat = (LSeat*)data;
-    int id, fd;
+    if (libseatEnabled)
+    {
+        DEVICE_FD_ID dev;
+        dev.id = bknd->seat->openDevice(path, &dev.fd);
 
-    id = seat->openDevice(path, &fd, flags);
-    if (seat->imp()->initLibseat())
-        devices[fd] = id;
+        if (dev.id == -1)
+            return -1;
 
-    return fd;
+        bknd->devices.push_back(dev);
+        return dev.fd;
+    }
+    else
+        return open(path, flags);
 }
 
 static void closeRestricted(int fd, void *data)
 {
-    LSeat *seat = (LSeat*)data;
+    BACKEND_DATA *bknd = (BACKEND_DATA*)data;
 
-    int id = -1;
-
-    for (auto &pair : devices)
+    if (libseatEnabled)
     {
-        if (pair.first == fd)
+        DEVICE_FD_ID dev = {-1, -1};
+
+        for (std::list<DEVICE_FD_ID>::iterator it = bknd->devices.begin(); it != bknd->devices.end(); it++)
         {
-            id = pair.second;
-            break;
+            if ((*it).fd == fd)
+            {
+                dev = (*it);
+                bknd->devices.erase(it);
+                break;
+            }
         }
+
+        if (dev.fd == -1)
+            return;
+
+        bknd->seat->closeDevice(dev.id);
     }
 
-    if (seat->imp()->initLibseat())
-    {
-        if (id != -1 && seat->closeDevice(devices[fd]))
-            close(fd);
-    }
-    else
-        seat->closeDevice(fd);
+    close(fd);
 }
 
 static Int32 processInput(int, unsigned int, void *userData)
@@ -125,12 +140,7 @@ static Int32 processInput(int, unsigned int, void *userData)
             keyEvent = libinput_event_get_keyboard_event(ev);
             keyState = libinput_event_keyboard_get_key_state(keyEvent);
             keyCode = libinput_event_keyboard_get_key(keyEvent);
-
-            if (seat->keyboard()->imp()->backendKeyEvent(keyCode, (LKeyboard::KeyState)keyState))
-            {
-                libinput_event_destroy(ev);
-                return 0;
-            }
+            seat->keyboard()->imp()->backendKeyEvent(keyCode, (LKeyboard::KeyState)keyState);
         }
         else if (eventType == LIBINPUT_EVENT_POINTER_SCROLL_FINGER)
         {
@@ -177,8 +187,8 @@ static Int32 processInput(int, unsigned int, void *userData)
 
         seat->nativeInputEvent(ev);
         libinput_event_destroy(ev);
-        libinput_dispatch(data->li);
     }
+
     return 0;
 }
 
@@ -191,7 +201,7 @@ bool LInputBackend::initialize()
 {
     int fd;
     LSeat *seat = LCompositor::compositor()->seat();
-    seat->imp()->initLibseat();
+    libseatEnabled = seat->imp()->initLibseat();
 
     BACKEND_DATA *data = new BACKEND_DATA;
     data->seat = (LSeat*)seat;
@@ -203,21 +213,20 @@ bool LInputBackend::initialize()
 
     data->libinputInterface.open_restricted = &openRestricted;
     data->libinputInterface.close_restricted = &closeRestricted;
-    data->li = libinput_udev_create_context(&data->libinputInterface, data->seat, data->ud);
+    data->li = libinput_udev_create_context(&data->libinputInterface, data, data->ud);
 
     if (!data->li)
         goto fail;
 
-    if (seat->imp()->initLibseat())
+    if (libseatEnabled )
         libinput_udev_assign_seat(data->li, libseat_seat_name(seat->libseatHandle()));
     else
         libinput_udev_assign_seat(data->li, "seat0");
 
-    libinput_dispatch(data->li);
     fd = libinput_get_fd(data->li);
     fcntl(fd, F_SETFD, FD_CLOEXEC);
-    eventSource = LCompositor::addFdListener(fd, (LSeat*)seat, &processInput);
 
+    eventSource = LCompositor::addFdListener(fd, (LSeat*)seat, &processInput);
     return true;
 
     fail:
@@ -243,12 +252,6 @@ void LInputBackend::suspend()
     BACKEND_DATA *data = (BACKEND_DATA*)seat->imp()->inputBackendData;
     LCompositor::removeFdListener(eventSource);
     libinput_suspend(data->li);
-
-    if (data->li)
-        libinput_unref(data->li);
-
-    if (data->ud)
-        udev_unref(data->ud);
 }
 
 void LInputBackend::forceUpdate()
@@ -259,21 +262,37 @@ void LInputBackend::forceUpdate()
 
 void LInputBackend::resume()
 {
-    int fd;
     LSeat *seat = LCompositor::compositor()->seat();
     BACKEND_DATA *data = (BACKEND_DATA*)seat->imp()->inputBackendData;
+
+    int fd;
+
+    libinput_dispatch(data->li);
+
+    if (libinput_resume(data->li) == -1)
+    {
+        LLog::error("[Libinput Backend] Failed to resume libinput.");
+        return;
+    }
+
+    forceUpdate();
+
+    if (data->li)
+        libinput_unref(data->li);
+
+    if (data->ud)
+        udev_unref(data->ud);
 
     data->ud = udev_new();
     data->libinputInterface.open_restricted = &openRestricted;
     data->libinputInterface.close_restricted = &closeRestricted;
-    data->li = libinput_udev_create_context(&data->libinputInterface, data->seat, data->ud);
+    data->li = libinput_udev_create_context(&data->libinputInterface, data, data->ud);
 
-    if (seat->imp()->initLibseat())
+    if (libseatEnabled )
         libinput_udev_assign_seat(data->li, libseat_seat_name(seat->libseatHandle()));
     else
         libinput_udev_assign_seat(data->li, "seat0");
 
-    libinput_dispatch(data->li);
     fd = libinput_get_fd(data->li);
     fcntl(fd, F_SETFD, FD_CLOEXEC);
     eventSource = LCompositor::addFdListener(fd, (LSeat*)seat, &processInput);

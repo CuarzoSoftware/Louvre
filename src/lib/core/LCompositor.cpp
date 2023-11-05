@@ -237,7 +237,19 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
             close(imp()->epollFd);
     }
     else
+    {
+        // Handle tty switch
+        if (seat()->imp()->ttyNumber != -1)
+        {
+            compositor()->imp()->unlockPoll();
+            if (libseat_switch_session(seat()->libseatHandle(), seat()->imp()->ttyNumber) == 0)
+                seat()->imp()->dispatchSeat();
+
+            seat()->imp()->ttyNumber = -1;
+        }
+
         imp()->unlock();
+    }
 
     return 1;
 }

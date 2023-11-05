@@ -209,10 +209,8 @@ public:
      * using the shortcuts ```Ctrl + Alt + [F1, F2, ..., F10]```.
      *
      * @param tty TTY number.
-     *
-     * @returns 0 if the session is successfully switched and -1 in case of error.
      */
-    Int32 setTTY(Int32 tty);
+    void setTTY(UInt32 tty);
 
     /**
      * @brief Open a device.
@@ -224,14 +222,14 @@ public:
      * @param fd Stores the file descriptor.
      * @returns The ID of the device or -1 in case of an error.
      */
-    Int32 openDevice(const char *path, Int32 *fd, Int32 flags = 0);
+    Int32 openDevice(const char *path, Int32 *fd);
 
     /**
      * @brief Close a device.
      *
      * This method is used by the input and graphic backends to close devices.
      *
-     * @param id The id returned by openDevice().
+     * @param id The id of the device returned by openDevice().
      * @returns 0 if the device is closed successfully and -1 in case of error.
      */
     Int32 closeDevice(Int32 id);

@@ -290,8 +290,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
                 boxes++;
             }
 
-            currentDamage = currentDamageB;
-            currentDamage.multiply(1.f/float(current.bufferScale));
+            LRegion::multiply(&currentDamage, &currentDamageB, 1.f/Float32(current.bufferScale));
         }
         else
         {

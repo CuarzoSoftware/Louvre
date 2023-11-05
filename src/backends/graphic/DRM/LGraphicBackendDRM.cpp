@@ -42,13 +42,21 @@ using namespace std;
 
 #define BKND_NAME "DRM BACKEND"
 
+static bool libseatEnabled = false;
+
+struct DEVICE_FD_ID
+{
+    int fd;
+    int id;
+};
+
 struct Backend
 {
     SRMCore *core;
     list<LOutput*>connectedOutputs;
     wl_event_source *monitor;
     list<LDMAFormat*>dmaFormats;
-    unordered_map<int,int>devices;
+    std::list<DEVICE_FD_ID> devices;
     UInt32 rendererGPUs = 0;
 };
 
@@ -71,13 +79,22 @@ static int openRestricted(const char *path, int flags, void *userData)
     LCompositor *compositor = (LCompositor*)userData;
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
 
-    Int32 id, fd;
-    id = compositor->seat()->openDevice(path, &fd, flags);
+    if (libseatEnabled)
+    {
+        DEVICE_FD_ID dev;
 
-    if (compositor->seat()->imp()->initLibseat())
-        bknd->devices[fd] = id;
+        dev.id = compositor->seat()->openDevice(path, &dev.fd);
 
-    return fd;
+        if (dev.id == -1)
+            return -1;
+        else
+        {
+            bknd->devices.push_back(dev);
+            return dev.fd;
+        }
+    }
+    else
+        return open(path, flags);
 }
 
 static void closeRestricted(int fd, void *userData)
@@ -85,24 +102,27 @@ static void closeRestricted(int fd, void *userData)
     LCompositor *compositor = (LCompositor*)userData;
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
 
-    int id = -1;
-
-    for (auto &pair : bknd->devices)
+    if (libseatEnabled)
     {
-        if (pair.first == fd)
+        DEVICE_FD_ID dev = {-1, -1};
+
+        for (std::list<DEVICE_FD_ID>::iterator it = bknd->devices.begin(); it != bknd->devices.end(); it++)
         {
-            id = pair.second;
-            break;
+            if ((*it).fd == fd)
+            {
+                dev = (*it);
+                bknd->devices.erase(it);
+                break;
+            }
         }
+
+        if (dev.fd == -1)
+            return;
+
+        compositor->seat()->closeDevice(dev.id);
     }
 
-    if (compositor->seat()->imp()->initLibseat())
-    {
-        if (id != -1 && compositor->seat()->closeDevice(id))
-            close(fd);
-    }
-    else
-        compositor->seat()->closeDevice(fd);
+    close(fd);
 }
 
 static SRMInterface srmInterface =
@@ -257,7 +277,7 @@ void *LGraphicBackend::getContextHandle()
 bool LGraphicBackend::initialize()
 {
     LCompositor *compositor = LCompositor::compositor();
-    compositor->seat()->imp()->initLibseat();
+    libseatEnabled = compositor->seat()->imp()->initLibseat();
 
     Backend *bknd = new Backend();
     compositor->imp()->graphicBackendData = bknd;

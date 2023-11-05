@@ -81,6 +81,7 @@ LPRIVATE_CLASS(LView)
         bool mapped = false;
         bool occluded = false;
         bool scalingEnabled;
+        bool isFullyTrans;
     } cache;
 
     std::map<std::thread::id,ViewThreadData>threadsMap;

@@ -6,6 +6,7 @@
 #include <LSurfaceView.h>
 #include <LLog.h>
 #include <LFramebuffer.h>
+#include <pixman.h>
 
 void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
 {
@@ -43,26 +44,29 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
     cache->scalingVector = view->scalingVector();
     cache->scalingEnabled = (view->scalingEnabled() || view->parentScalingEnabled()) && cache->scalingVector != LSizeF(1.f, 1.f);
 
-    LRegion vRegion;
-    vRegion.addRect(cache->rect);
+    /************** Update intersected outputs **************/
+
+    LRegion currentClipping(cache->rect);
+
+    if (view->parentClippingEnabled())
+        parentClipping(view->parent(), &currentClipping);
 
     if (view->clippingEnabled())
-        vRegion.clip(view->clippingRect());
+        currentClipping.clip(view->clippingRect());
 
-    if (view->parent() && view->parentClippingEnabled())
-        vRegion.clip(view->parent()->pos(), view->parent()->size());
-
-    // Update view intersected outputs
+    LRegion intersectedRegionTmp;
     for (std::list<LOutput*>::const_iterator it = compositor()->outputs().cbegin(); it != compositor()->outputs().cend(); it++)
     {
-        LRegion r = vRegion;
-        r.clip((*it)->rect());
+        const LRect &rect = (*it)->rect();
+        pixman_region32_intersect_rect(&intersectedRegionTmp.m_region, &currentClipping.m_region, rect.x(), rect.y(), rect.w(), rect.h());
 
-        if (!r.empty())
+        if (!intersectedRegionTmp.empty())
             view->enteredOutput(*it);
         else
-           view->leftOutput(*it);
+            view->leftOutput(*it);
     }
+
+    /********************************************************/
 
     if (!view->isRenderable())
         return;
@@ -142,20 +146,9 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
         cache->damage.clear();
     }
 
-    // Calculates the non clipped region
-
-    LRegion currentClipping;
-    currentClipping.addRect(cache->rect);
-
-    if (view->parentClippingEnabled())
-        parentClipping(view->parent(), &currentClipping);
-
-    if (view->clippingEnabled())
-        currentClipping.clip(view->clippingRect());
-
     // Calculates the new exposed view region if parent clipping or clipped region has grown
-    LRegion newExposedClipping = currentClipping;
-    newExposedClipping.subtractRegion(cache->voD->prevClipping);
+    LRegion newExposedClipping;
+    pixman_region32_subtract(&newExposedClipping.m_region, &currentClipping.m_region, &cache->voD->prevClipping.m_region);
     cache->damage.addRegion(newExposedClipping);
 
     // Add exposed now non clipped region to new output damage
@@ -168,13 +161,15 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
     // Clip current damage to current visible region
     cache->damage.intersectRegion(currentClipping);
 
-    // Remove previus opaque region to view damage
+    // Remove above opaque region to view damage
     cache->damage.subtractRegion(oD->opaqueTransposedSum);
 
     // Add clipped damage to new damage
     oD->newDamage.addRegion(cache->damage);
 
-    if (cache->opacity < 1.f || cache->scalingEnabled || view->colorFactor().a < 1.f)
+    cache->isFullyTrans = cache->opacity < 1.f || cache->scalingEnabled || view->colorFactor().a < 1.f;
+
+    if (cache->isFullyTrans)
     {
         cache->translucent.clear();
         cache->translucent.addRect(cache->rect);
@@ -206,8 +201,12 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
         }
         else
         {
-            cache->opaque = cache->translucent;
-            cache->opaque.inverse(cache->rect);
+            pixman_box32_t r;
+            r.x1 = cache->rect.x();
+            r.x2 = r.x1 + cache->rect.w();
+            r.y1 = cache->rect.y();
+            r.y2 = r.y1 + cache->rect.h();
+            pixman_region32_inverse(&cache->opaque.m_region, &cache->translucent.m_region, &r);
         }
     }
 
@@ -237,7 +236,7 @@ void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view, ThreadData *oD
 
     LView::LViewPrivate::ViewCache *cache = &view->imp()->cache;
 
-    if (!view->isRenderable() || !cache->mapped || cache->occluded || cache->opacity < 1.f || view->imp()->colorFactor.a < 1.f)
+    if (!view->isRenderable() || !cache->mapped || cache->occluded || cache->isFullyTrans)
         return;
 
     cache->opaque.intersectRegion(oD->newDamage);
@@ -305,8 +304,8 @@ void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view, ThreadData *oD
 
 void LSceneView::LSceneViewPrivate::drawBackground(ThreadData *oD, bool addToOpaqueSum)
 {
-    LRegion backgroundDamage = oD->newDamage;
-    backgroundDamage.subtractRegion(oD->opaqueTransposedSum);
+    LRegion backgroundDamage;
+    pixman_region32_subtract(&backgroundDamage.m_region, &oD->newDamage.m_region, &oD->opaqueTransposedSum.m_region);
     oD->boxes = backgroundDamage.boxes(&oD->n);
 
     for (Int32 i = 0; i < oD->n; i++)

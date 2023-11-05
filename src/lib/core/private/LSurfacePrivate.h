@@ -244,8 +244,7 @@ LPRIVATE_CLASS(LSurface)
             }
 
             currentDamageB.clip(LRect(0, newSize));
-            currentDamage = currentDamageB;
-            currentDamage.multiply(1.f/float(current.bufferScale));
+            LRegion::multiply(&currentDamage, &currentDamageB, 1.f/Float32(current.bufferScale));
         }
     }
 };

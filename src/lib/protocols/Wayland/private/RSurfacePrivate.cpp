@@ -6,6 +6,7 @@
 #include <LCompositor.h>
 #include <LTime.h>
 #include <LLog.h>
+#include <pixman.h>
 
 void RSurface::RSurfacePrivate::resource_destroy(wl_resource *resource)
 {
@@ -140,8 +141,9 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
         }
         else if (surface->imp()->inputRegionChanged || surface->imp()->bufferSizeChanged)
         {
-            surface->imp()->currentInputRegion = surface->imp()->pendingInputRegion;
-            surface->imp()->currentInputRegion.clip(0, surface->size());
+            pixman_region32_intersect_rect(&surface->imp()->currentInputRegion.m_region,
+                                           &surface->imp()->pendingInputRegion.m_region,
+                                           0, 0, surface->size().w(), surface->size().h());
             surface->inputRegionChanged();
             surface->imp()->inputRegionChanged = false;
         }
@@ -159,16 +161,17 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
      ************************************/
     if (surface->imp()->opaqueRegionChanged || surface->imp()->bufferSizeChanged)
     {
-        surface->imp()->currentOpaqueRegion = surface->imp()->pendingOpaqueRegion;
-        surface->imp()->currentOpaqueRegion.clip(0, surface->size());
+        pixman_region32_intersect_rect(&surface->imp()->currentOpaqueRegion.m_region,
+                                       &surface->imp()->pendingOpaqueRegion.m_region,
+                                       0, 0, surface->size().w(), surface->size().h());
         surface->imp()->opaqueRegionChanged = false;
-        surface->opaqueRegionChanged();
 
         /*****************************************
          ********** TRANSLUCENT REGION ***********
          *****************************************/
-        surface->imp()->currentTranslucentRegion = surface->imp()->currentOpaqueRegion;
-        surface->imp()->currentTranslucentRegion.inverse(LRect(0, surface->size()));
+        pixman_box32_t box = {0, 0, surface->size().w(), surface->size().h()};
+        pixman_region32_inverse(&surface->imp()->currentTranslucentRegion.m_region, &surface->imp()->currentOpaqueRegion.m_region, &box);
+        surface->opaqueRegionChanged();
     }
 
     /*******************************************
