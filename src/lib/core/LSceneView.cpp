@@ -116,8 +116,11 @@ void LSceneView::render(const LRegion *exclude)
     imp()->checkRectChange(oD);
 
     // Add manual damage
-    oD->newDamage.addRegion(oD->manuallyAddedDamage);
-    oD->manuallyAddedDamage.clear();
+    if (!oD->manuallyAddedDamage.empty())
+    {
+        oD->newDamage.addRegion(oD->manuallyAddedDamage);
+        oD->manuallyAddedDamage.clear();
+    }
 
     // If extra opaque
     if (exclude)
@@ -129,8 +132,11 @@ void LSceneView::render(const LRegion *exclude)
     }
     else
     {
-        oD->newDamage.addRegion(oD->prevExternalExclude);
-        oD->prevExternalExclude.clear();
+        if (!oD->prevExternalExclude.empty())
+        {
+            oD->newDamage.addRegion(oD->prevExternalExclude);
+            oD->prevExternalExclude.clear();
+        }
     }
 
     for (std::list<LView*>::const_reverse_iterator it = children().crbegin(); it != children().crend(); it++)
@@ -139,17 +145,20 @@ void LSceneView::render(const LRegion *exclude)
     // Save new damage for next frame and add old damage to current damage
     if (imp()->fb->buffersCount() > 1)
     {
-        LRegion oldDamage = *oD->prevDamageList.front();
+        // Sum damage generated in other frames into this region
 
+        // This list contains NUM_FB - 1 regions, so if triple buffering then 2 regions (the prev ones to this current frame)
         for (std::list<LRegion*>::iterator it = std::next(oD->prevDamageList.begin()); it != oD->prevDamageList.end(); it++)
-            oldDamage.addRegion(*(*it));
+            (*oD->prevDamageList.front()).addRegion(*(*it));
+
+        pixman_region32_t tmp = oD->prevDamageList.front()->m_region;
+        oD->prevDamageList.front()->m_region = oD->newDamage.m_region;
+        oD->newDamage.m_region = tmp;
+        oD->newDamage.addRegion(*oD->prevDamageList.front());
 
         LRegion *front = oD->prevDamageList.front();
         oD->prevDamageList.pop_front();
         oD->prevDamageList.push_back(front);
-
-        *front = oD->newDamage;
-        oD->newDamage.addRegion(oldDamage);
     }
 
     glDisable(GL_BLEND);

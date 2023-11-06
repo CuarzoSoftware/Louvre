@@ -158,11 +158,18 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
     // Saves current clipped region for next frame
     cache->voD->prevClipping = currentClipping;
 
+    currentClipping.subtractRegion(oD->opaqueTransposedSum);
+
+    cache->occluded = currentClipping.empty();
+
+    if (oD->o && (!cache->occluded || view->forceRequestNextFrameEnabled()))
+        view->requestNextFrame(oD->o);
+
+    if (cache->occluded)
+        return;
+
     // Clip current damage to current visible region
     cache->damage.intersectRegion(currentClipping);
-
-    // Remove above opaque region to view damage
-    cache->damage.subtractRegion(oD->opaqueTransposedSum);
 
     // Add clipped damage to new damage
     oD->newDamage.addRegion(cache->damage);
@@ -214,16 +221,8 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
     cache->opaque.intersectRegion(currentClipping);
     cache->translucent.intersectRegion(currentClipping);
 
-    // Check if view is ocludded
-    currentClipping.subtractRegion(oD->opaqueTransposedSum);
-
-    cache->occluded = currentClipping.empty();
-
-    if (oD->o && (!cache->occluded || view->forceRequestNextFrameEnabled()))
-        view->requestNextFrame(oD->o);
-
     // Store sum of previus opaque regions (this will later be clipped when painting opaque and translucent regions)
-    cache->opaqueOverlay = oD->opaqueTransposedSum;
+    //cache->opaqueOverlay = oD->opaqueTransposedSum;
     oD->opaqueTransposedSum.addRegion(cache->opaque);
 }
 
@@ -240,7 +239,7 @@ void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view, ThreadData *oD
         return;
 
     cache->opaque.intersectRegion(oD->newDamage);
-    cache->opaque.subtractRegion(cache->opaqueOverlay);
+    //cache->opaque.subtractRegion(cache->opaqueOverlay);
 
     oD->boxes = cache->opaque.boxes(&oD->n);
 
@@ -346,7 +345,7 @@ void LSceneView::LSceneViewPrivate::drawTranslucentDamage(LView *view, ThreadDat
 
     cache->occluded = true;
     cache->translucent.intersectRegion(oD->newDamage);
-    cache->translucent.subtractRegion(cache->opaqueOverlay);
+    //cache->translucent.subtractRegion(cache->opaqueOverlay);
 
     oD->boxes = cache->translucent.boxes(&oD->n);
 
