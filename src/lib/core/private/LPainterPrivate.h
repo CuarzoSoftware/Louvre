@@ -1,6 +1,8 @@
 #ifndef LPAINTERPRIVATE_H
 #define LPAINTERPRIVATE_H
 
+#define LPAINTER_TRACK_UNIFORMS 0
+
 #include <private/LTexturePrivate.h>
 #include <LFramebuffer.h>
 #include <LPainter.h>
@@ -81,6 +83,7 @@ LPRIVATE_CLASS(LPainter)
         Int32 x, y, w, h;
     };
 
+#if LPAINTER_TRACK_UNIFORMS == 1
     struct ShaderState
     {
         LGLSize texSize;
@@ -98,6 +101,7 @@ LPRIVATE_CLASS(LPainter)
 
     ShaderState state, stateExternal;
     ShaderState *currentState;
+#endif
 
     // Program
     GLuint programObject, programObjectExternal, programObjectScaler, programObjectScalerExternal, currentProgram;
@@ -112,16 +116,21 @@ LPRIVATE_CLASS(LPainter)
 
     inline void shaderSetTexSize(Int32 w, Int32 h)
     {
+        #if LPAINTER_TRACK_UNIFORMS == 1
         if (currentState->texSize.w != w || currentState->texSize.h != h)
         {
             currentState->texSize.w = w;
             currentState->texSize.h = h;
             glUniform2f(currentUniforms->texSize, w, h);
         }
+        #else
+            glUniform2f(currentUniforms->texSize, w, h);
+        #endif
     }
 
     inline void shaderSetSrcRect(Int32 x, Int32 y, Int32 w, Int32 h)
     {
+        #if LPAINTER_TRACK_UNIFORMS == 1
         if (currentState->srcRect.x != x ||
             currentState->srcRect.y != y ||
             currentState->srcRect.w != w ||
@@ -133,28 +142,40 @@ LPRIVATE_CLASS(LPainter)
             currentState->srcRect.h = h;
             glUniform4f(currentUniforms->srcRect, x, y, w, h);
         }
+        #else
+            glUniform4f(currentUniforms->srcRect, x, y, w, h);
+        #endif
     }
 
     inline void shaderSetActiveTexture(GLuint unit)
     {
+        #if LPAINTER_TRACK_UNIFORMS == 1
         if (currentState->activeTexture != unit)
         {
             currentState->activeTexture = unit;
             glUniform1i(currentUniforms->activeTexture, unit);
         }
+        #else
+            glUniform1i(currentUniforms->activeTexture, unit);
+        #endif
     }
 
     inline void shaderSetMode(GLint mode)
     {
+        #if LPAINTER_TRACK_UNIFORMS == 1
         if (currentState->mode != mode)
         {
             currentState->mode = mode;
             glUniform1i(currentUniforms->mode, mode);
         }
+        #else
+            glUniform1i(currentUniforms->mode, mode);
+        #endif
     }
 
     inline void shaderSetColor(Float32 r, Float32 g, Float32 b)
     {
+        #if LPAINTER_TRACK_UNIFORMS == 1
         if (currentState->color.r != r ||
             currentState->color.g != g ||
             currentState->color.b != b)
@@ -164,10 +185,14 @@ LPRIVATE_CLASS(LPainter)
             currentState->color.b = b;
             glUniform3f(currentUniforms->color, r, g, b);
         }
+        #else
+            glUniform3f(currentUniforms->color, r, g, b);
+        #endif
     }
 
     inline void shaderSetColorFactor(Float32 r, Float32 g, Float32 b, Float32 a)
     {
+        #if LPAINTER_TRACK_UNIFORMS == 1
         if (currentState->colorFactor.x != r ||
             currentState->colorFactor.y != g ||
             currentState->colorFactor.w != b ||
@@ -180,24 +205,36 @@ LPRIVATE_CLASS(LPainter)
             glUniform4f(currentUniforms->colorFactor, r, g, b, a);
             shaderSetColorFactorEnabled(r != 1.f || g != 1.f || b != 1.f || a != 1.f);
         }
+        #else
+            glUniform4f(currentUniforms->colorFactor, r, g, b, a);
+            shaderSetColorFactorEnabled(r != 1.f || g != 1.f || b != 1.f || a != 1.f);
+        #endif
     }
 
     inline void shaderSetColorFactorEnabled(GLint enabled)
     {
+        #if LPAINTER_TRACK_UNIFORMS == 1
         if (currentState->colorFactorEnabled != enabled)
         {
             currentState->colorFactorEnabled = enabled;
             glUniform1i(currentUniforms->colorFactorEnabled, enabled);
         }
+        #else
+            glUniform1i(currentUniforms->colorFactorEnabled, enabled);
+        #endif
     }
 
     inline void shaderSetAlpha(Float32 a)
     {
+        #if LPAINTER_TRACK_UNIFORMS == 1
         if (currentState->alpha != a)
         {
             currentState->alpha = a;
             glUniform1f(currentUniforms->alpha, a);
         }
+        #else
+            glUniform1f(currentUniforms->alpha, a);
+        #endif
     }
 
     inline void switchTarget(GLenum target)
@@ -207,67 +244,33 @@ LPRIVATE_CLASS(LPainter)
             if (target == GL_TEXTURE_2D)
             {
                 currentProgram = programObject;
-                currentState = &state;
                 currentUniforms = &uniforms;
                 glUseProgram(currentProgram);
+                #if LPAINTER_TRACK_UNIFORMS == 1
+                currentState = &state;
                 shaderSetColorFactor(stateExternal.colorFactor.x,
                                      stateExternal.colorFactor.y,
                                      stateExternal.colorFactor.w,
                                      stateExternal.colorFactor.h);
+                #endif
             }
             else
             {
                 currentProgram = programObjectExternal;
-                currentState = &stateExternal;
                 currentUniforms = &uniformsExternal;
                 glUseProgram(currentProgram);
+                #if LPAINTER_TRACK_UNIFORMS == 1
+                currentState = &stateExternal;
                 shaderSetColorFactor(state.colorFactor.x,
                                      state.colorFactor.y,
                                      state.colorFactor.w,
                                      state.colorFactor.h);
+                #endif
             }
 
             lastTarget = target;
         }
     }
-
-    /*
-    inline void shaderSetPixelSize(Float32 x, Float32 y)
-    {
-        if (currentState->pixelSize.x != x ||
-            currentState->pixelSize.y != y)
-        {
-            currentState->pixelSize.x = x;
-            currentState->pixelSize.y = y;
-            glUniform2f(currentUniforms->pixelSize, x, y);
-        }
-    }
-
-    inline void shaderSetSamplerBounds(Float32 x1, Float32 y1, Float32 x2, Float32 y2)
-    {
-        if (currentState->samplerBounds.x != x1 ||
-            currentState->samplerBounds.y != y1 ||
-            currentState->samplerBounds.w != x2 ||
-            currentState->samplerBounds.h != y2)
-        {
-            currentState->samplerBounds.x = x1;
-            currentState->samplerBounds.y = y1;
-            currentState->samplerBounds.w = x2;
-            currentState->samplerBounds.h = y2;
-            glUniform4f(currentUniforms->samplerBounds, x1, y1, x2, y2);
-        }
-    }
-
-    inline void shaderSetIters(Int32 x, Int32 y)
-    {
-        if (currentState->iters.w != x ||
-            currentState->iters.h != y)
-        {
-            currentState->iters.w = x;
-            currentState->iters.h = y;
-            glUniform2i(currentUniforms->iters, x, y);
-        }
-    }*/
 
     inline void setViewport(Int32 x, Int32 y, Int32 w, Int32 h)
     {

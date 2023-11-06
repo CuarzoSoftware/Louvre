@@ -287,7 +287,9 @@ LPainter::LPainter()
     else
     {
         imp()->currentProgram = imp()->programObjectExternal;
+    #if LPAINTER_TRACK_UNIFORMS == 1
         imp()->currentState = &imp()->stateExternal;
+    #endif
         imp()->currentUniforms = &imp()->uniformsExternal;
         imp()->setupProgram();
     }
@@ -313,7 +315,9 @@ LPainter::LPainter()
     }
 
     imp()->currentProgram = imp()->programObject;
+    #if LPAINTER_TRACK_UNIFORMS == 1
     imp()->currentState = &imp()->state;
+    #endif
     imp()->currentUniforms = &imp()->uniforms;
     imp()->setupProgram();
 
