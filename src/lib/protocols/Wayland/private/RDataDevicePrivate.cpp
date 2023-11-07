@@ -44,7 +44,7 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
     /* TODO: Use serial
     if (!rDataDevice->seatGlobal()->pointerResource() || rDataDevice->seatGlobal()->pointerResource()->serials().button != serial)
     {
-        LLog::debug("[RDataDevicePrivate::start_drag()] Start drag request without input grab. Ignoring it.");
+        LLog::debug("[RDataDevicePrivate::start_drag] Start drag request without input grab. Ignoring it.");
         return;
     }*/
 
@@ -55,7 +55,7 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
     // Cancel if there is dragging going on or if there is no focused surface from this client
     if (dndManager->dragging() || seat()->pointer()->focus() != lOriginSurface)
     {
-        LLog::debug("[RDataDevicePrivate::start_drag()] Invalid start drag request. Ignoring it.");
+        LLog::debug("[RDataDevicePrivate::start_drag] Invalid start drag request. Ignoring it.");
         return;
     }
 

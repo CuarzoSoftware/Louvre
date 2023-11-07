@@ -18,7 +18,7 @@ char *LOpenGL::openShader(const char *file)
 
     if (fp == NULL)
     {
-        LLog::error("[LOpenGL::openShader()] Error while opening shader file: %s.\n", file);
+        LLog::error("[LOpenGL::openShader] Error while opening shader file: %s.\n", file);
         return nullptr;
     }
 
@@ -107,7 +107,7 @@ GLuint LOpenGL::compileShader(GLenum type, const char *shaderString)
 
         glGetShaderInfoLog(shader, infoLen, &infoLen, errorLog);
 
-        LLog::error("[LOpenGL::compileShader()] %s", errorLog);
+        LLog::error("[LOpenGL::compileShader] %s", errorLog);
 
         glDeleteShader(shader);
 
@@ -123,7 +123,7 @@ LTexture *LOpenGL::loadTexture(const char *file)
 
     if (format == FIF_UNKNOWN)
     {
-        LLog::error("[LOpenGL::loadTexture()] Failed to load image %s.", file);
+        LLog::error("[LOpenGL::loadTexture] Failed to load image %s.", file);
         return nullptr;
     }
 
@@ -131,7 +131,7 @@ LTexture *LOpenGL::loadTexture(const char *file)
 
     if (!bitmap)
     {
-        LLog::error("[LOpenGL::loadTexture()] Failed to load image %s.", file);
+        LLog::error("[LOpenGL::loadTexture] Failed to load image %s.", file);
         return nullptr;
     }
 
@@ -141,7 +141,7 @@ LTexture *LOpenGL::loadTexture(const char *file)
 
     if (!convertedBitmap)
     {
-        LLog::error("[LOpenGL::loadTexture()] Failed to convert image %s to 32 bit format.", file);
+        LLog::error("[LOpenGL::loadTexture] Failed to convert image %s to 32 bit format.", file);
         return nullptr;
     }
 

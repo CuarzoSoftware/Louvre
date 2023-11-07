@@ -17,7 +17,7 @@ int main(int, char *[])
 
     if (!compositor.start())
     {
-        LLog::fatal("Failed to start compositor.");
+        LLog::fatal("[louvre-weston-clone] Failed to start compositor.");
         return 1;
     }
 

@@ -229,7 +229,7 @@ LPainter::LPainter()
         glGetProgramiv(imp()->programObjectScaler, GL_INFO_LOG_LENGTH, &infoLen);
         glDeleteProgram(imp()->programObjectScaler);
         imp()->programObjectScaler = 0;
-        LLog::error("[LPainter::LPainter()] Failed to compile scaler shader.");
+        LLog::error("[LPainter::LPainter] Failed to compile scaler shader.");
     }
     else
     {
@@ -256,7 +256,7 @@ LPainter::LPainter()
         glGetProgramiv(imp()->programObjectScalerExternal, GL_INFO_LOG_LENGTH, &infoLen);
         glDeleteProgram(imp()->programObjectScalerExternal);
         imp()->programObjectScalerExternal = 0;
-        LLog::error("[LPainter::LPainter()] Failed to compile scaler shader external.");
+        LLog::error("[LPainter::LPainter] Failed to compile scaler shader external.");
     }
     else
     {
@@ -282,7 +282,7 @@ LPainter::LPainter()
         GLint infoLen = 0;
         glGetProgramiv(imp()->programObjectExternal, GL_INFO_LOG_LENGTH, &infoLen);
         glDeleteProgram(imp()->programObjectExternal);
-        LLog::error("[LPainter::LPainter()] Failed to compile external OES shader.");
+        LLog::error("[LPainter::LPainter] Failed to compile external OES shader.");
     }
     else
     {

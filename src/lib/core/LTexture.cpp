@@ -206,7 +206,7 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
 
     if (dst.w() < 0 || dst.h() < 0)
     {
-        LLog::error("[LTexture::copyB()] Failed to copy texture. Invalid destination size.");
+        LLog::error("[LTexture::copyB] Failed to copy texture. Invalid destination size.");
         return nullptr;
     }
 
@@ -214,7 +214,7 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
 
     if (!painter)
     {
-        LLog::error("[LTexture::copyB()] Failed to copy texture. No painter found.");
+        LLog::error("[LTexture::copyB] Failed to copy texture. No painter found.");
         return nullptr;
     }
 
@@ -233,7 +233,7 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
 
     if (srcRect.w() == 0 || srcRect.h() == 0 || dstSize.w() == 0 || dstSize.h() == 0)
     {
-        LLog::error("[LTexture::copyB()] Failed to copy texture. Invalid size.");
+        LLog::error("[LTexture::copyB] Failed to copy texture. Invalid size.");
         return nullptr;
     }
 
@@ -346,7 +346,7 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
         if (ret)
             return textureCopy;
 
-        LLog::error("[LTexture::copyB()] Failed to create texture. Graphical backend error.");
+        LLog::error("[LTexture::copyB] Failed to create texture. Graphical backend error.");
         delete textureCopy;
         return nullptr;
     }
@@ -411,7 +411,7 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
 
         if (framebuffer == 0)
         {
-            LLog::error("[LTexture::copyB()] Failed to copy texture. Could not create framebuffer.");
+            LLog::error("[LTexture::copyB] Failed to copy texture. Could not create framebuffer.");
             return nullptr;
         }
 
@@ -422,7 +422,7 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
 
         if (renderbuffer == 0)
         {
-            LLog::error("[LTexture::copyB()] Failed to copy texture. Could not create renderbuffer.");
+            LLog::error("[LTexture::copyB] Failed to copy texture. Could not create renderbuffer.");
             glDeleteFramebuffers(1, &framebuffer);
             return nullptr;
         }
@@ -435,7 +435,7 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
 
         if (status != GL_FRAMEBUFFER_COMPLETE)
         {
-            LLog::error("[LTexture::copyB()] Failed to copy texture. Incomplete framebuffer.");
+            LLog::error("[LTexture::copyB] Failed to copy texture. Incomplete framebuffer.");
             glDeleteRenderbuffers(1, &renderbuffer);
             glDeleteFramebuffers(1, &framebuffer);
             return nullptr;
@@ -459,7 +459,7 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
     if (ret)
         return textureCopy;
 
-    LLog::error("[LTexture::copyB()] Failed to create texture. Graphical backend error.");
+    LLog::error("[LTexture::copyB] Failed to create texture. Graphical backend error.");
     delete textureCopy;
     return nullptr;
 }
@@ -468,7 +468,7 @@ bool LTexture::save(const char *path) const
 {
     if (!path)
     {
-        LLog::error("[LTexture::save()] Failed to save texture. Invalid path.");
+        LLog::error("[LTexture::save] Failed to save texture. Invalid path.");
         return false;
     }
 
@@ -517,7 +517,7 @@ bool LTexture::save(const char *path) const
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         {
-            LLog::warning("[LTexture::save()] Failed to read texture directly using a framebuffer. Trying drawing the texture instead.");
+            LLog::warning("[LTexture::save] Failed to read texture directly using a framebuffer. Trying drawing the texture instead.");
             goto draw;
         }
 
@@ -580,7 +580,7 @@ bool LTexture::save(const char *path) const
 
         if (ret)
         {
-            LLog::debug("[LTexture::save()] Texture saved successfully: %s.", path);
+            LLog::debug("[LTexture::save] Texture saved successfully: %s.", path);
             return true;
         }
 
@@ -589,7 +589,7 @@ bool LTexture::save(const char *path) const
     }
 
     printError:
-    LLog::error("[LTexture::save()] Failed to save texture: %s. %s.", path, error);
+    LLog::error("[LTexture::save] Failed to save texture: %s. %s.", path, error);
     return false;
 }
 

@@ -253,6 +253,5 @@ extern "C" LInputBackendInterface *getAPI()
     API.suspend = &LInputBackend::suspend;
     API.forceUpdate = &LInputBackend::forceUpdate;
     API.resume = &LInputBackend::resume;
-
     return &API;
 }

@@ -275,8 +275,13 @@ void LInputBackend::resume()
         return;
     }
 
+    // Handle queued events during session switching
+
     forceUpdate();
 
+    /* For some reason libinput crashes if a device is added while suspended.
+     * As a temp fix we destroy and recreate the context again. */
+    
     if (data->li)
         libinput_unref(data->li);
 

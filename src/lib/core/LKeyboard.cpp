@@ -118,7 +118,7 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
 
     if (!imp()->xkbKeymap)
     {
-        LLog::error("[%s()] Failed to set keymap with names Rules: %s, Model: %s, Layout: %s, Variant: %s, Opetions: %s. Restoring default keymap.",
+        LLog::error("[%s] Failed to set keymap with names Rules: %s, Model: %s, Layout: %s, Variant: %s, Opetions: %s. Restoring default keymap.",
                     METHOD_NAME, rules, model, layout, variant, options);
 
         goto fail;
@@ -135,7 +135,7 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
 
     if (!xdgRuntimeDir)
     {
-        LLog::error("[%s()] XDG_RUNTIME_DIR env not set. Using /tmp,", METHOD_NAME);
+        LLog::error("[%s] XDG_RUNTIME_DIR env not set. Using /tmp,", METHOD_NAME);
         xdgRuntimeDir = "/tmp";
     }
 
@@ -144,7 +144,7 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
 
     if (imp()->xkbKeymapFd < 0)
     {
-        LLog::error("[%s()] Failed to allocate shared memory for keymap.", METHOD_NAME);
+        LLog::error("[%s] Failed to allocate shared memory for keymap.", METHOD_NAME);
         goto fail;
     }
 
@@ -163,7 +163,7 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
 
     if (!imp()->xkbKeymapState)
     {
-        LLog::error("[%s()] Failed to get keymap state with names Rules: %s, Model: %s, Layout: %s, Variant: %s, Opetions: %s. Restoring default keymap.",
+        LLog::error("[%s] Failed to get keymap state with names Rules: %s, Model: %s, Layout: %s, Variant: %s, Opetions: %s. Restoring default keymap.",
                     METHOD_NAME, rules, model, layout, variant, options);
         goto fail;
     }
@@ -184,7 +184,7 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
         if (setKeymap())
             return false;
         else
-            LLog::error("[%s()] Failed to set default keymap. Disabling keymap.", METHOD_NAME);
+            LLog::error("[%s] Failed to set default keymap. Disabling keymap.", METHOD_NAME);
     }
 
     // Worst case, disables keymap

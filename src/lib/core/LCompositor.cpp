@@ -83,7 +83,7 @@ bool LCompositor::start()
 {
     if (compositor() != this)
     {
-        LLog::warning("[LCompositor::start()] Compositor already running. Two Louvre compositors can not live in the same process.");
+        LLog::warning("[LCompositor::start] Compositor already running. Two Louvre compositors can not live in the same process.");
         return false;
     }
 
@@ -91,7 +91,7 @@ bool LCompositor::start()
 
     if (state() != CompositorState::Uninitialized)
     {
-        LLog::warning("[LCompositor::start()] Attempting to start a compositor already running. Ignoring...");
+        LLog::warning("[LCompositor::start] Attempting to start a compositor already running. Ignoring...");
         return false;
     }
 
@@ -103,25 +103,25 @@ bool LCompositor::start()
 
     if (!imp()->initWayland())
     {
-        LLog::fatal("[LCompositor::start()] Failed to init Wayland.");
+        LLog::fatal("[LCompositor::start] Failed to init Wayland.");
         goto fail;
     }
 
     if (!imp()->initSeat())
     {
-        LLog::fatal("[LCompositor::start()] Failed to init seat.");
+        LLog::fatal("[LCompositor::start] Failed to init seat.");
         goto fail;
     }
 
     if (!imp()->initGraphicBackend())
     {
-        LLog::fatal("[LCompositor::start()] Failed to init graphic backend.");
+        LLog::fatal("[LCompositor::start] Failed to init graphic backend.");
         goto fail;
     }
 
     if (!imp()->initInputBackend())
     {
-        LLog::fatal("[LCompositor::start()] Failed to init input backend.");
+        LLog::fatal("[LCompositor::start] Failed to init input backend.");
         goto fail;
     }
 
@@ -334,7 +334,7 @@ bool LCompositor::addOutput(LOutput *output)
 
     if (!output->imp()->initialize())
     {
-        LLog::error("[Compositor] Failed to initialize output %s.", output->name());
+        LLog::error("[LCompositor::addOutput] Failed to initialize output %s.", output->name());
         removeOutput(output);
         return false;
     }

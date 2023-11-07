@@ -120,7 +120,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
             // Returns false on wl_client destroy
             if (!surface->imp()->bufferToTexture())
             {
-                LLog::error("[RSurfacePrivate::apply_commit()] Failed to convert buffer to OpenGL texture.");
+                LLog::error("[RSurfacePrivate::apply_commit] Failed to convert buffer to OpenGL texture.");
                 return;
             }
         }

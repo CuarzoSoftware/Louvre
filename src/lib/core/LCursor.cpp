@@ -29,7 +29,7 @@ LCursor::LCursor()
     imp()->louvreTexture = new LTexture();
 
     if (!imp()->louvreTexture->setDataB(LSize(L_CURSOR_WIDTH, L_CURSOR_HEIGHT), L_CURSOR_STRIDE, DRM_FORMAT_ABGR8888, louvre_default_cursor_data()))
-        LLog::warning("[compositor] Could not create default cursor texture.");
+        LLog::warning("[LCursor::LCursor] Could not create default cursor texture.");
 
     imp()->defaultTexture = imp()->louvreTexture;
     imp()->defaultHotspotB = LPointF(9);
@@ -37,14 +37,14 @@ LCursor::LCursor()
     glGenFramebuffers(1, &imp()->glFramebuffer);
 
     if (imp()->glFramebuffer == 0)
-        LLog::error("[cursor] Could not create GL framebuffer.");
+        LLog::error("[LCursor::LCursor] Could not create GL framebuffer.");
 
     glBindFramebuffer(GL_FRAMEBUFFER, imp()->glFramebuffer);
 
     glGenRenderbuffers(1, &imp()->glRenderbuffer);
 
     if (imp()->glRenderbuffer == 0)
-        LLog::error("[cursor] Could not create GL renderbuffer.");
+        LLog::error("[LCursor::LCursor] Could not create GL renderbuffer.");
 
     glBindRenderbuffer(GL_RENDERBUFFER, imp()->glRenderbuffer);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, L_CURSOR_WIDTH, L_CURSOR_HEIGHT);
@@ -54,7 +54,7 @@ LCursor::LCursor()
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE)
     {
-        LLog::error("[cursor] Framebuffer is not complete.");
+        LLog::error("[LCursor::LCursor] Framebuffer is not complete.");
     }
 
     setSize(LSize(24));

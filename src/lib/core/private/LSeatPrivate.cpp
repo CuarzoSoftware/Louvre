@@ -31,7 +31,7 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
               compositor()->imp()->events[2].data.fd,
               &compositor()->imp()->events[2]);
 
-    LLog::debug("[LSeatPrivate::seatEnabled()] %s enabled.", libseat_seat_name(seat));
+    LLog::debug("[LSeatPrivate::seatEnabled] %s enabled.", libseat_seat_name(seat));
 
     lseat->enabledChanged();
 }
@@ -66,7 +66,7 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
               compositor()->imp()->events[2].data.fd,
               NULL);
 
-    LLog::debug("[LSeatPrivate::seatDisabled()] %s disabled.", libseat_seat_name(seat));
+    LLog::debug("[LSeatPrivate::seatDisabled] %s disabled.", libseat_seat_name(seat));
 
     lseat->enabledChanged();
 }
@@ -116,7 +116,7 @@ bool LSeat::LSeatPrivate::initLibseat()
     dispatchSeat();
     LCompositor::compositor()->imp()->unlock();
 
-    LLog::debug("[LSeatPrivate::initLibseat()] Using libseat.");
+    LLog::debug("[LSeatPrivate::initLibseat] Using libseat.");
     return true;
 }
 
