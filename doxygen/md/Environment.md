@@ -16,12 +16,12 @@ $ LOUVRE_ENABLE_LIBSEAT=0 gdb /path/to/your/compositor
 
 By default, Louvre uses the `wayland-0` Unix domain socket for Wayland communication. If you need to customize this socket's name, you can employ the **LOUVRE_WAYLAND_DISPLAY** environment variable. For instance, you can change it to a name like `wayland-1`.
 
-Keep in mind that for clients to successfully establish a connection, you must also update their **WAYLAND_DISPLAY** environment variable to match the chosen value.
+Keep in mind that for clients to successfully establish a connection, you must also update the **WAYLAND_DISPLAY** environment variable to match the chosen value.
 
 
 ## Graphic Backend Configuration {#graphic}
 
-For adjusting parameters related to the graphic backend, including buffer settings (single, double, or triple buffering) or choosing between the Atomic or Legacy DRM API, please consult the [SRM environment variables](https://cuarzosoftware.github.io/SRM/md_md__envs.html).
+For adjusting parameters related to the graphic backend, including buffering settings (single, double, or triple buffering) or choosing between the Atomic or Legacy DRM API, please consult the [SRM environment variables](https://cuarzosoftware.github.io/SRM/md_md__envs.html).
 
 ### Recommended Settings
 

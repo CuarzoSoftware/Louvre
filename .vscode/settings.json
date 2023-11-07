@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.build": "bat",
+        "atomic": "cpp"
+    }
+}

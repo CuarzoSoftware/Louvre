@@ -1,7 +1,7 @@
 #ifndef LPAINTERPRIVATE_H
 #define LPAINTERPRIVATE_H
 
-#define LPAINTER_TRACK_UNIFORMS 0
+#define LPAINTER_TRACK_UNIFORMS 1
 
 #include <private/LTexturePrivate.h>
 #include <LFramebuffer.h>

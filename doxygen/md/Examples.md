@@ -54,7 +54,7 @@ app2-run-command
 
 Ensure that there are no empty lines between entries or at the begining/end of the file.
 
-> Note: While using .desktop files is recommended for a more standardized approach, this example simplifies the process for demonstration purposes and avoids the need for additional libraries like GLib or Qt to parse .desktop information and icons.
+> Note: While using .desktop files is recommended for a more standardized approach, this example simplifies the process for demonstration purposes and avoids the need for linking to additional libraries like GLib or Qt to parse .desktop information and icons.
 
 ## louvre-weston-clone {#weston}
 
