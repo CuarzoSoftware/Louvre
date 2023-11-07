@@ -7,28 +7,29 @@ class Louvre::LInputBackend
 {
 public:
 
-    // Inicializa el báckend
-    static bool initialize(const LSeat *seat);
+    // Backend Identifier
+    static UInt32 id();
 
-    // Capacidades
-    static UInt32 getCapabilities(const LSeat *seat);
+    // Initialize the backend
+    static bool initialize();
 
-    // Capacidades
-    static void *getContextHandle(const LSeat *seat);
+    // Get capabilities (pointer, keyboard, touch)
+    static UInt32 getCapabilities();
 
-    // Suspende los eventos
-    static void suspend(const LSeat *seat);
+    // Get context handle
+    static void *getContextHandle();
 
-    // Fuerza procesamiento de ventos
-    static void forceUpdate(const LSeat *seat);
+    // Suspend events when switching TTY
+    static void suspend();
 
-    // Resume los eventos
-    static void resume(const LSeat *seat);
+    // Force processing of pending events
+    static void forceUpdate();
 
-    // De-inicializa el báckend
-    static void uninitialize(const LSeat *seat);
+    // Resume events upon returning to the TTY
+    static void resume();
 
+    // Deinitialize the backend
+    static void uninitialize();
 };
-
 
 #endif // LINPUTBACKEND

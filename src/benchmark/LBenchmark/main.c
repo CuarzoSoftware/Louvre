@@ -16,15 +16,12 @@
 struct wl_callback_listener wl_callback_listener;
 static void wl_callback_handle_done(void *data, struct wl_callback *callback, uint32_t ms);
 
-int N;
+static int N;
+static FILE *fp;
+static struct wl_display *display;
+static int outputScale = 1;
+static int childSize = 512;
 
-// Global
-FILE *fp;
-struct wl_display *display;
-int outputScale = 1;
-int childSize = 256;
-
-// Globals
 static struct wl_shm *shm = NULL;
 static struct wl_output *output = NULL;
 static struct wl_subcompositor *subcompositor = NULL;
@@ -33,7 +30,6 @@ static struct xdg_wm_base *xdg_wm_base = NULL;
 
 struct wl_region *childRegion;
 
-// Padre maximizado
 struct ParentSurface
 {
     struct wl_region *region;
@@ -45,13 +41,11 @@ struct ParentSurface
     int width, height;
 }parent;
 
-// Buffer para hijos opacos
-unsigned char *shm_opaque;
+static unsigned char *shm_opaque;
 struct wl_buffer *buffer_opaque;
 
-// Buffer para hijos transparentes
-unsigned char *shm_transparent;
-struct wl_buffer *buffer_transparent;
+static unsigned char *shm_translucent;
+static struct wl_buffer *buffer_translucent;
 
 struct ChildSurface
 {
@@ -62,7 +56,7 @@ struct ChildSurface
     float speed;
 };
 
-struct ChildSurface *children;
+static struct ChildSurface *children;
 
 static struct wl_callback *callback = NULL;
 
@@ -70,14 +64,15 @@ struct timespec start, end;
 
 static void noop(){}
 
-long long int wait_ms = 0;
+static long long int wait_ms = 0;
+static long long int ms = 0;
+static long long int total = 0;
+static int firstCallback = 0;
+static char fname[128];
 
-long long int ms = 0;
-long long int total = 0;
-int firstCallback = 0;
-char fname[128];
+static int outputW, outputH;
 
-void save()
+static void save()
 {
     fprintf(fp, "RESULTS\n");
     fprintf(fp, "Output Scale: %d\n", outputScale);
@@ -91,35 +86,6 @@ void save()
 
 static void wl_callback_handle_done(void *data, struct wl_callback *callback, uint32_t m)
 {
-
-
-    /*
-    unsigned char r = rand() %256;
-    unsigned char g = rand() %256;
-    unsigned char b = rand() %256;
-    unsigned char a = rand() %256;
-
-    for(int i = 0; i < childSize*outputScale*childSize*outputScale*4; i+=4)
-    {
-        shm_transparent[i] = r;
-        shm_transparent[i+1] = g;
-        shm_transparent[i+2] = b;
-        shm_transparent[i+3] = a;
-    }
-
-    r = rand() %256;
-    g = rand() %256;
-    b = rand() %256;
-    a = rand() %256;
-
-    for(int i = 0; i < childSize*outputScale*childSize*outputScale*4; i+=4)
-    {
-        shm_opaque[i] = r;
-        shm_opaque[i+1] = g;
-        shm_opaque[i+2] = b;
-        shm_opaque[i+3] = a;
-    }
-    */
     if(firstCallback == 0)
     {
         firstCallback = 1;
@@ -127,7 +93,6 @@ static void wl_callback_handle_done(void *data, struct wl_callback *callback, ui
     }
     else
     {
-        //do stuff
         clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 
         ms = ((end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec)) / 1000000;
@@ -143,53 +108,31 @@ static void wl_callback_handle_done(void *data, struct wl_callback *callback, ui
             int y = (parent.height-childSize)* (sin(children[i].phaseY+t*children[i].speed)+1)/2;
             wl_subsurface_set_position(children[i].subsurface, x, y);
 
-
             if(i % 2 == 0)
-            {
-                //wl_surface_attach(children[i].surface, buffer_opaque, 0, 0);
-                //wl_surface_damage(children[i].surface, 0, 0, 10, 10);
-                //wl_surface_damage(children[i].surface, 50, 50, 10, 10);
                 wl_surface_set_opaque_region(children[i].surface,childRegion);
-            }
             else
-            {
-                //wl_surface_attach(children[i].surface, buffer_transparent, 0, 0);
-                //wl_surface_damage(children[i].surface, 0, 0, 10, 10);
-                //wl_surface_damage(children[i].surface, 50, 50, 10, 10);
                 wl_surface_set_opaque_region(children[i].surface, NULL);
-            }
-
-            //wl_surface_commit(children[i].surface);
         }
     }
 
-    //printf("Frame count %d\n", total);
+    unsigned char r = (sinf( (float)ms * 0.0015f ) + 1.f) * 128;
+    unsigned char g = (cosf( (float)ms * 0.0010f ) + 1.f) * 128;
+    unsigned char b = (cosf( (float)ms * 0.0005f ) + 1.f) * 128;
+    unsigned char a = 255;
 
-    /*
-    wl_surface_attach(parent.surface, parent.buffer, 0, 0);
-    wl_surface_damage(parent.surface, 0,0,parent.width,parent.height);
-    */
-    /*
-    unsigned char r = rand() %256;
-    unsigned char g = rand() %256;
-    unsigned char b = rand() %256;
-    unsigned char a = rand() %256;
-
-    for(int i = 0; i < parent.width*outputScale*4*10*outputScale;i+=4)
+    for(int i = 0; i < parent.width * outputScale * 4 * 10 * outputScale; i+=4)
     {
         parent.shm_data[i] = r;
         parent.shm_data[i+1] = g;
         parent.shm_data[i+2] = b;
         parent.shm_data[i+3] = a;
     }
-    */
+
     callback = wl_surface_frame(parent.surface);
     wl_callback_add_listener(callback, &wl_callback_listener, parent.surface);
-    //wl_surface_attach(parent.surface, parent.buffer, 0, 0);
-    //wl_surface_damage(parent.surface,0,0,parent.width,10);
-
+    wl_surface_attach(parent.surface, parent.buffer, 0, 0);
+    wl_surface_damage(parent.surface,0,0,parent.width,10);
     wl_surface_set_opaque_region(parent.surface,parent.region);
-
     wl_surface_commit(parent.surface);
     total++;
 }
@@ -201,8 +144,8 @@ struct wl_callback_listener wl_callback_listener =
 
 static void xdg_surface_handle_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial)
 {
+    (void)data;
 	xdg_surface_ack_configure(xdg_surface, serial);
-    wl_surface_commit(parent.surface);
 }
 
 static const struct xdg_surface_listener xdg_surface_listener =
@@ -212,13 +155,17 @@ static const struct xdg_surface_listener xdg_surface_listener =
 
 static void xdg_toplevel_handle_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t w, int32_t h, struct wl_array *states)
 {
-    printf("Parent configured %d %d\n",w,h);
+    (void)data;
+    (void)xdg_toplevel;
+    (void)states;
 
-    if(w*h != 0)
-    {
-        parent.width = w;
-        parent.height = h;
-    }
+    if(w == 0)
+        return;
+
+    parent.width = w;
+    parent.height = h;
+
+    printf("Parent configured: %d %d\n", parent.width, parent.height);
 }
 
 static const struct xdg_toplevel_listener xdg_toplevel_listener =
@@ -229,8 +176,25 @@ static const struct xdg_toplevel_listener xdg_toplevel_listener =
 
 static void wl_output_handle_scale(void *data, struct wl_output *output, int32_t scale)
 {
-    //printf("Output scale %d\n", scale);
+    (void)data;
+    (void)output;
     outputScale = scale;
+}
+
+static void wl_output_handle_mode(void *data,
+                                  struct wl_output *output,
+                                  unsigned int flags,
+                                  int w,
+                                  int h,
+                                  int refresh)
+{
+    (void)data;
+    (void)output;
+    (void)flags;
+    (void)refresh;
+    printf("Output size: %d, %d\n", w, h);
+    outputW = w;
+    outputH = h;
 }
 
 static const struct wl_output_listener wl_output_listener =
@@ -239,11 +203,12 @@ static const struct wl_output_listener wl_output_listener =
     .description = &noop,
     .done = &noop,
     .geometry = &noop,
-    .mode = &noop
+    .mode = &wl_output_handle_mode
 };
 
 static void xdg_wm_base_handle_ping(void *data, struct xdg_wm_base *wm, uint32_t serial)
 {
+    (void)data;
     xdg_wm_base_pong(wm,serial);
 }
 
@@ -282,7 +247,9 @@ static void handle_global(void *data, struct wl_registry *registry, uint32_t nam
 
 static void handle_global_remove(void *data, struct wl_registry *registry, uint32_t name)
 {
-
+    (void)data;
+    (void)registry;
+    (void)name;
 }
 
 static const struct wl_registry_listener registry_listener =
@@ -321,7 +288,7 @@ static struct wl_buffer *create_buffer(int w, int h)
 	return buffer;
 }
 
-void initParent()
+static void initParent()
 {
     parent.surface = wl_compositor_create_surface(compositor);
     parent.xdg_surface = xdg_wm_base_get_xdg_surface(xdg_wm_base, parent.surface);
@@ -331,14 +298,20 @@ void initParent()
     xdg_toplevel_add_listener(parent.xdg_toplevel, &xdg_toplevel_listener, NULL);
 
     wl_display_roundtrip(display);
-
     wl_surface_set_buffer_scale(parent.surface, outputScale);
-    wl_surface_commit(parent.surface);
-
     xdg_toplevel_set_maximized(parent.xdg_toplevel);
+    wl_surface_attach(parent.surface, NULL, 0,0);
     wl_surface_commit(parent.surface);
 
     wl_display_roundtrip(display);
+
+    if (parent.width == 0)
+    {
+        parent.width = outputW/outputScale;
+        parent.height = outputH/outputScale - 32;
+    }
+
+    printf("FINAL SIZE %d %d %d %d\n", parent.width, parent.height, outputW, outputH);
 
     parent.buffer = create_buffer(parent.width*outputScale, parent.height*outputScale);
     parent.shm_data = wl_buffer_get_user_data(parent.buffer);
@@ -375,8 +348,8 @@ void initChildren()
         children[i].surface = wl_compositor_create_surface(compositor);
         wl_surface_set_buffer_scale(children[i].surface, outputScale);
         wl_display_roundtrip(display);
-        children[i].subsurface = wl_subcompositor_get_subsurface(subcompositor,children[i].surface, parent.surface);
-        //wl_subsurface_set_desync(children[i].subsurface);
+        children[i].subsurface = wl_subcompositor_get_subsurface(subcompositor, children[i].surface, parent.surface);
+        wl_subsurface_set_desync(children[i].subsurface);
         wl_surface_commit(children[i].surface);
         wl_display_roundtrip(display);
         wl_subsurface_set_position(children[i].subsurface, 100, 100);
@@ -384,7 +357,6 @@ void initChildren()
         wl_display_roundtrip(display);
         wl_surface_commit(children[i].surface);
 
-        // Opaca
         if(i % 2 == 0)
         {
             wl_surface_attach(children[i].surface, buffer_opaque, 0, 0);
@@ -392,23 +364,33 @@ void initChildren()
         }
         else
         {
-            wl_surface_attach(children[i].surface, buffer_transparent, 0, 0);
+            wl_surface_attach(children[i].surface, buffer_translucent, 0, 0);
             wl_surface_set_opaque_region(children[i].surface, NULL);
 
         }
 
-
         wl_surface_commit(children[i].surface);
         wl_surface_commit(parent.surface);
+        wl_display_roundtrip(display);
     }
 }
 
 int main(int argc, char *argv[])
 {
-    srand(1);
-    N = atoi(argv[1]);
-    wait_ms = atoi(argv[2]);
-    sprintf(fname,"%s_N_%d_MS_%d.txt",argv[3],N,atoi(argv[2]));
+    if (argc == 1)
+    {
+        N = 1;
+        wait_ms = 5000;
+        sprintf(fname, "%s_N_%d_MS_%d.txt","LALA", N, wait_ms);
+        srand(1);
+    }
+    else
+    {
+        N = atoi(argv[1]);
+        wait_ms = atoi(argv[2]);
+        sprintf(fname, "%s_N_%d_MS_%d.txt", argv[3], N, atoi(argv[2]));
+        srand(atoi(argv[4]));
+    }
     fp = fopen(fname, "w");
     display = wl_display_connect(NULL);
 	struct wl_registry *registry = wl_display_get_registry(display);
@@ -424,7 +406,6 @@ int main(int argc, char *argv[])
 
     initParent();
 
-    // Crea buffers para los hijos
     buffer_opaque = create_buffer(childSize*outputScale, childSize*outputScale);
     shm_opaque = wl_buffer_get_user_data(buffer_opaque);
     for(int i = 0; i < childSize*outputScale*childSize*outputScale*4; i+=4)
@@ -437,15 +418,14 @@ int main(int argc, char *argv[])
 
     wl_display_roundtrip(display);
 
-    // Crea buffers para los hijos
-    buffer_transparent = create_buffer(childSize*outputScale, childSize*outputScale);
-    shm_transparent = wl_buffer_get_user_data(buffer_transparent);
+    buffer_translucent = create_buffer(childSize*outputScale, childSize*outputScale);
+    shm_translucent = wl_buffer_get_user_data(buffer_translucent);
     for(int i = 0; i < childSize*outputScale*childSize*outputScale*4; i+=4)
     {
-        shm_transparent[i] = 255;
-        shm_transparent[i+1] = 0;
-        shm_transparent[i+2] = 0;
-        shm_transparent[i+3] = 100;
+        shm_translucent[i] = 255;
+        shm_translucent[i+1] = 0;
+        shm_translucent[i+2] = 0;
+        shm_translucent[i+3] = 100;
     }
 
     wl_display_roundtrip(display);
@@ -471,7 +451,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            wl_surface_attach(children[i].surface, buffer_transparent, 0, 0);
+            wl_surface_attach(children[i].surface, buffer_translucent, 0, 0);
             wl_surface_damage(children[i].surface, 0, 0, childSize, childSize);
         }
 

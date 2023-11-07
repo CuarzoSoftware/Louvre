@@ -1,17 +1,13 @@
-sources = run_command('find', '.', '-type', 'f', '-name', '*[.c,.cpp,.h,.hpp]').stdout().strip().split('\n')
+sources = run_command('find', '.', '-type', 'f', '-name', '*[.c,.cpp,.h,.hpp]', check : false).stdout().strip().split('\n')
 
 executable(
     'louvre-weston-clone',
     sources : sources,
     dependencies : [
         Louvre_dep,
+        wayland_server_dep,
         gl_dep,
+        fontconfig_dep,
+        freetype_dep
     ],
-    install : true, 
-    install_dir : EXAMPLES_PATH)
-
-#wallpaper = 'louvre-wallpaper.png'
-#configure_file(
-#    input : wallpaper,
-#    output : wallpaper,
-#    copy : true)
+    install : true)

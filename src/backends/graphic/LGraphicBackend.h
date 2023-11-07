@@ -6,90 +6,81 @@
 #include <LNamespaces.h>
 #include <list>
 
+using namespace std;
+
 class Louvre::LGraphicBackend
 {
 public:
-
-    // Inicializa el báckend
-    static bool initialize(LCompositor *compositor);
-
-    // Desinicializa el báckend
-    static void uninitialize(const LCompositor *compositor);
-
-    // Lista de salidas disponibles
-    static const std::list<LOutput*>*getAvaliableOutputs(const LCompositor *compositor);
+    static UInt32 id();
+    static void *getContextHandle();
+    static bool initialize();
+    static void uninitialize();
+    static void pause();
+    static void resume();
+    static const list<LOutput*>*getConnectedOutputs();
+    static UInt32 rendererGPUs();
 
     /* OUTPUTS */
 
-    // Inicializa una salida
-    static void initializeOutput(const LOutput *output);
+    static bool initializeOutput(LOutput *output);
+    static bool scheduleOutputRepaint(LOutput *output);
+    static void uninitializeOutput(LOutput *output);
+    static bool hasBufferDamageSupport(LOutput *output);
+    static void setOutputBufferDamage(LOutput *output, LRegion &region);
 
-    // Desinicializa una salida
-    static void uninitializeOutput(const LOutput *output);
-
-    // Realiza un pageflipping de la salida
-    static void flipOutputPage(const LOutput *output);
-
-    // Handle al EGLDisplay de una salida
-    static EGLDisplay getOutputEGLDisplay(const LOutput *output);
-
-    // Dimensiones de una salida en milímetros
-    static const LSize *getOutputPhysicalSize(const LOutput *output);
-
-    // Índice del buffer actual
-    static Int32 getOutputCurrentBufferIndex(const LOutput *output);
-
-    // Nombre de la salida (HDMI-A-1, eDP-1, etc)
-    static const char *getOutputName(const LOutput *output);
-
-    // Fabricante de la salida
-    static const char *getOutputManufacturerName(const LOutput *output);
-
-    // Modelo de la salida
-    static const char *getOutputModelName(const LOutput *output);
-
-    // Descripción de la salida
-    static const char *getOutputDescription(const LOutput *output);
-
-    // Modo preferido de una salida
-    static const LOutputMode *getOutputPreferredMode(const LOutput *output);
-
-    // Modo actual de una salida
-    static const LOutputMode *getOutputCurrentMode(const LOutput *output);
-
-    // Modos de una salida
-    static const std::list<LOutputMode*> *getOutputModes(const LOutput *output);
-
-    // Asigna un modo a una salida
-    static void setOutputMode(const LOutput *output, const LOutputMode *mode);
-
+    /* Connector physical size in mm */
+    static const LSize *getOutputPhysicalSize(LOutput *output);
+    static Int32 getOutputCurrentBufferIndex(LOutput *output);
+    static UInt32 getOutputBuffersCount(LOutput *output);
+    static LTexture *getOutputBuffer(LOutput *output, UInt32 bufferIndex);
+    static const char *getOutputName(LOutput *output);
+    static const char *getOutputManufacturerName(LOutput *output);
+    static const char *getOutputModelName(LOutput *output);
+    static const char *getOutputDescription(LOutput *output);
+    static const LOutputMode *getOutputPreferredMode(LOutput *output);
+    static const LOutputMode *getOutputCurrentMode(LOutput *output);
+    static const list<LOutputMode*> *getOutputModes(LOutput *output);
+    static bool setOutputMode(LOutput *output, LOutputMode *mode);
 
     /* OUTPUT MODES */
 
-    // Dimensiones de un modo
-    static const LSize *getOutputModeSize(const LOutputMode *mode);
-
-    // Tasa de refresco de un modo
-    static Int32 getOutputModeRefreshRate(const LOutputMode *mode);
-
-    // Indica si es un modo preferido
-    static bool getOutputModeIsPreferred(const LOutputMode *mode);
-
+    static const LSize *getOutputModeSize(LOutputMode *mode);
+    static Int32 getOutputModeRefreshRate(LOutputMode *mode);
+    static bool getOutputModeIsPreferred(LOutputMode *mode);
 
     /* CURSOR */
 
-    // Inicializa un cursor
-    static void initializeCursor(const LOutput *output);
+    static bool hasHardwareCursorSupport(LOutput *output);
+    static void setCursorTexture(LOutput *output, UChar8 *buffer);
+    static void setCursorPosition(LOutput *output, const LPoint &position);
 
-    // Indica si el backend soporta composición del cursor vía hardware
-    static bool hasHardwareCursorSupport();
+    /* BUFFERS */
 
-    // Asigna una textura al cursor
-    static void setCursorTexture(const LOutput *output, const LTexture *texture, const LSizeF &size);
+    static const list<LDMAFormat *> *getDMAFormats();
+    static EGLDisplay getAllocatorEGLDisplay();
+    static EGLContext getAllocatorEGLContext();
 
-    // Asigna la posición del cursor
-    static void setCursorPosition(const LOutput *output, const LPoint &position);
+    static bool createTextureFromCPUBuffer(LTexture *texture,
+                                           const LSize &size,
+                                           UInt32 stride,
+                                           UInt32 format,
+                                           const void *pixels);
+
+    static bool createTextureFromWaylandDRM(LTexture *texture,
+                                            void *wlBuffer);
+
+    static bool createTextureFromDMA(LTexture *texture,
+                                     const LDMAPlanes *planes);
+
+    static bool updateTextureRect(LTexture *texture,
+                                  UInt32 stride,
+                                  const LRect &dst,
+                                  const void *pixels);
+
+    static UInt32 getTextureID(LOutput *output, LTexture *texture);
+    static GLenum getTextureTarget(LTexture *texture);
+
+    static void destroyTexture(LTexture *texture);
 };
-
 
 #endif // LGRAPHICBACKEND

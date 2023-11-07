@@ -1,0 +1,1 @@
+#include <private/LSolidColorViewPrivate.h>

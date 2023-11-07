@@ -1,3 +1,4 @@
+#include <LLog.h>
 #include <sys/epoll.h>
 
 #include <string.h>
@@ -15,1438 +16,679 @@
 #include <drm_fourcc.h>
 #include <unordered_map>
 
-
 #include <LGraphicBackend.h>
 #include <private/LCompositorPrivate.h>
+#include <private/LSeatPrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LOutputModePrivate.h>
-#include <private/LOutputManagerPrivate.h>
 #include <private/LPainterPrivate.h>
+#include <private/LTexturePrivate.h>
+#include <private/LCursorPrivate.h>
+#include <private/LSeatPrivate.h>
 
-#include <LWayland.h>
 #include <LTime.h>
 
-
-#include <LDRM.h>
-
-LDRM *drm = nullptr;
-
-#define WEAK __attribute__((weak))
+#include <SRM/SRMCore.h>
+#include <SRM/SRMDevice.h>
+#include <SRM/SRMConnector.h>
+#include <SRM/SRMConnectorMode.h>
+#include <SRM/SRMBuffer.h>
+#include <SRM/SRMListener.h>
+#include <SRM/SRMList.h>
+#include <SRM/SRMFormat.h>
 
 using namespace Louvre;
+using namespace std;
 
-std::unordered_map<int,int>devicesID;
+#define BKND_NAME "DRM BACKEND"
 
-// Lista de salidas disponibles
-std::list<LOutput*>outputs;
+static bool libseatEnabled = false;
 
-// Mutex para impedir que múltiples salidas llamen al método drmHandleEvent simultaneamente
-mutex pageFlipMutex;
-
-struct GL_DATA
+struct DEVICE_FD_ID
 {
-    EGLDisplay display;
-    EGLConfig config;
-    EGLContext context = NULL;
-    EGLSurface surface;
-};
-
-struct GBM_DATA
-{
-    gbm_device *dev;
-    gbm_surface *surface;
-};
-
-struct CURSOR_DATA
-{
-    bool initialized = false;
-    bool visible = false;
-    gbm_bo *bo = nullptr;
-    EGLImage eglImage;
-    GLuint texture;
-    GLuint fb = 0;
-
-    // Dumb buffer
-    bool isDumb;
-    UChar8 *buffer;
     int fd;
-    UInt32 handle;
-    UInt32 fbId;
+    int id;
 };
 
-struct drm_fb
+struct Backend
 {
-    gbm_bo *bo;
-    uint32_t fb_id;
+    SRMCore *core;
+    list<LOutput*>connectedOutputs;
+    wl_event_source *monitor;
+    list<LDMAFormat*>dmaFormats;
+    std::list<DEVICE_FD_ID> devices;
+    UInt32 rendererGPUs = 0;
 };
 
-struct DRM_DATA
+struct Output
 {
-    pollfd fds;
-    char name[64];
-    bool pendingPageFlip = false;
-    UInt32 crtc_id;
-    drmModeConnector *connector = nullptr;
-    drmEventContext evctx = {};
-};
-
-struct OUTPUT_MODE
-{
-    drmModeModeInfo *mode;
-    LSize size;
-    bool isPreferred = false;
-};
-
-struct OUTPUT_DATA
-{
-    Int32 backendId = 1;
-    Int32 currentBufferIndex = 0;
+    SRMConnector *conn;
     LSize physicalSize;
     list<LOutputMode*>modes;
-    LOutputMode *preferredMode;
-    LOutputMode *currentMode;
-
-    bool initialized = false;
-    bool plugged = false;
-
-    gbm_bo *bo = nullptr;
-    drm_fb *fb = nullptr;
-
-    DRM_DATA drm;
-    GBM_DATA gbm;
-    GL_DATA gl;
-    CURSOR_DATA cursor;
-    LOutput *output;
+    LTexture **textures = nullptr;
 };
 
-struct FB_DATA
+struct OutputMode
 {
-    drm_fb *fb;
-    OUTPUT_DATA *data;
+    SRMConnectorMode *mode;
+    LSize size;
 };
 
-struct DRM_PLANE
+static int openRestricted(const char *path, int flags, void *userData)
 {
-    UInt64 type; // (Primary, Overlay, Cursor)
-};
+    LCompositor *compositor = (LCompositor*)userData;
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
 
-struct LDevice
-{
-    LCompositor *compositor;
-    int fd;
-    struct udev *udev;
-    udev_monitor *monitor;
-    udev_device *dev = nullptr;
-}lDevice;
+    if (libseatEnabled)
+    {
+        DEVICE_FD_ID dev;
 
-int ret;
+        dev.id = compositor->seat()->openDevice(path, &dev.fd);
 
-WEAK struct gbm_surface *
-gbm_surface_create_with_modifiers(struct gbm_device *gbm,
-                                  uint32_t width, uint32_t height,
-                                  uint32_t format,
-                                  const uint64_t *modifiers,
-                                  const unsigned int count);
-
-WEAK uint64_t
-gbm_bo_get_modifier(struct gbm_bo *bo);
-
-WEAK int
-gbm_bo_get_plane_count(struct gbm_bo *bo);
-
-WEAK uint32_t
-gbm_bo_get_stride_for_plane(struct gbm_bo *bo, int plane);
-
-WEAK uint32_t
-gbm_bo_get_offset(struct gbm_bo *bo, int plane);
-
-static void drm_fb_destroy_callback(gbm_bo *bo, void *data)
-{
-    (void)bo;
-
-    FB_DATA *fb_data = (FB_DATA*)data;
-
-    drm_fb *fb = fb_data->fb;
-
-    if (fb->fb_id)
-        drmModeRmFB(fb_data->data->drm.fds.fd, fb->fb_id);
-
-    free(fb);
-    free(fb_data);
+        if (dev.id == -1)
+            return -1;
+        else
+        {
+            bknd->devices.push_back(dev);
+            return dev.fd;
+        }
+    }
+    else
+        return open(path, flags);
 }
 
-static struct FB_DATA * drm_fb_get_from_bo(gbm_bo *bo, OUTPUT_DATA *data)
+static void closeRestricted(int fd, void *userData)
 {
-    FB_DATA *fb_data = (FB_DATA*)gbm_bo_get_user_data(bo);
+    LCompositor *compositor = (LCompositor*)userData;
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
 
-    if(!fb_data)
+    if (libseatEnabled)
     {
-        fb_data = (FB_DATA*)calloc(1, sizeof *fb_data);
-        fb_data->data = data;
-        fb_data->fb = nullptr;
-    }
+        DEVICE_FD_ID dev = {-1, -1};
 
-    if (fb_data->fb)
-        return fb_data;
-
-    uint32_t width, height, format, strides[4] = {0}, handles[4] = {0}, offsets[4] = {0}, flags = 0;
-    int ret = -1;
-
-
-    fb_data->fb = (drm_fb*)calloc(1, sizeof(drm_fb));
-    fb_data->fb->bo = bo;
-
-    width = gbm_bo_get_width(bo);
-    height = gbm_bo_get_height(bo);
-    format = gbm_bo_get_format(bo);
-
-    int drm_fd = gbm_device_get_fd(gbm_bo_get_device(bo));
-
-    if(gbm_bo_get_modifier && gbm_bo_get_plane_count && gbm_bo_get_stride_for_plane && gbm_bo_get_offset)
-    {
-        uint64_t modifiers[4] = {0};
-        modifiers[0] = gbm_bo_get_modifier(bo);
-
-        const int num_planes = gbm_bo_get_plane_count(bo);
-        for (int i = 0; i < num_planes; i++)
+        for (std::list<DEVICE_FD_ID>::iterator it = bknd->devices.begin(); it != bknd->devices.end(); it++)
         {
-            strides[i] = gbm_bo_get_stride_for_plane(bo, i);
-            handles[i] = gbm_bo_get_handle(bo).u32;
-            offsets[i] = gbm_bo_get_offset(bo, i);
-            modifiers[i] = modifiers[0];
-        }
-
-        if (modifiers[0])
-        {
-            flags = DRM_MODE_FB_MODIFIERS;
-            //printf("Using modifier %" PRIx64 "\n", modifiers[0]);
-        }
-
-        ret = drmModeAddFB2WithModifiers(drm_fd, width, height, format, handles, strides, offsets, modifiers, &fb_data->fb->fb_id, flags);
-    }
-
-    if(ret)
-    {
-        if(flags)
-            fprintf(stderr, "Modifiers failed!\n");
-
-        uint32_t arr[4];
-        arr[0] = gbm_bo_get_handle(bo).u32;
-        arr[1] = 0;
-        arr[2] = 0;
-        arr[3] = 0;
-        memcpy(handles, arr, 16);
-        arr[0] = gbm_bo_get_stride(bo);
-        memcpy(strides, arr, 16);
-        memset(offsets, 0, 16);
-        ret = drmModeAddFB2(drm_fd, width, height, format, handles, strides, offsets, &fb_data->fb->fb_id, 0);
-    }
-
-    if (ret)
-    {
-        //printf("failed to create fb: %s\n", strerror(errno));
-        free(fb_data->fb);
-        fb_data->fb = NULL;
-        return NULL;
-    }
-
-    gbm_bo_set_user_data(bo, fb_data, drm_fb_destroy_callback);
-
-    return fb_data;
-
-}
-
-static uint32_t find_crtc_for_encoder(const drmModeRes *resources, const drmModeEncoder *encoder)
-{
-    for (int i = 0; i < resources->count_crtcs; i++)
-    {
-        const uint32_t crtc_mask = 1 << i;
-        const uint32_t crtc_id = resources->crtcs[i];
-
-        bool encoderIsFree = true;
-
-
-        for(LOutput *output : outputs)
-        {
-            OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-            if(crtc_id == data->drm.crtc_id)
+            if ((*it).fd == fd)
             {
-                encoderIsFree = false;
+                dev = (*it);
+                bknd->devices.erase(it);
                 break;
             }
         }
 
-        if (encoder->possible_crtcs & crtc_mask && encoderIsFree)
-            return crtc_id;
+        if (dev.fd == -1)
+            return;
+
+        compositor->seat()->closeDevice(dev.id);
     }
-    return -1;
+
+    close(fd);
 }
 
-static uint32_t find_crtc_for_connector(int fd, const drmModeRes *resources, const drmModeConnector *connector)
+static SRMInterface srmInterface =
 {
-    for (int i = 0; i < connector->count_encoders; i++)
-    {
-        const uint32_t encoder_id = connector->encoders[i];
-        drmModeEncoder *encoder = drmModeGetEncoder(fd, encoder_id);
-        if (encoder)
-        {
-            const uint32_t crtc_id = find_crtc_for_encoder(resources, encoder);
+    .openRestricted = &openRestricted,
+    .closeRestricted = &closeRestricted
+};
 
-            drmModeFreeEncoder(encoder);
-            if (crtc_id != 0)
-                return crtc_id;
-        }
+static void initConnector(Backend *bknd, SRMConnector *conn)
+{
+    if (srmConnectorGetUserData(conn))
+       return;
+
+    LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
+    LOutput *output = compositor->createOutputRequest();
+    srmConnectorSetUserData(conn, output);
+
+    Output *bkndOutput = new Output();
+    output->imp()->graphicBackendData = bkndOutput;
+    bkndOutput->textures = nullptr;
+    bkndOutput->conn = conn;
+    bkndOutput->physicalSize.setW(srmConnectorGetmmWidth(conn));
+    bkndOutput->physicalSize.setH(srmConnectorGetmmHeight(conn));
+
+    SRMListForeach (modeIt, srmConnectorGetModes(conn))
+    {
+        SRMConnectorMode *mode = (SRMConnectorMode*)srmListItemGetData(modeIt);
+        LOutputMode *outputMode = new LOutputMode(output);
+        srmConnectorModeSetUserData(mode, outputMode);
+
+        OutputMode *bkndOutputMode = new OutputMode();
+        bkndOutputMode->mode = mode;
+        bkndOutputMode->size.setW(srmConnectorModeGetWidth(mode));
+        bkndOutputMode->size.setH(srmConnectorModeGetHeight(mode));
+
+        outputMode->imp()->graphicBackendData = bkndOutputMode;
+        bkndOutput->modes.push_back(outputMode);
     }
-    return -1;
+
+    bknd->connectedOutputs.push_back(output);
 }
 
-// Se invoca cuando un conector deja de estar conectado, por lo tanto no solo se deinicializa, también se elimina
-void destroyOutput(LOutput *output)
+static void uninitConnector(Backend *bknd, SRMConnector *conn)
 {
-    // Notifica que la salida será destruida
-    output->compositor()->destroyOutputRequest(output);
+    LOutput *output = (LOutput*)srmConnectorGetUserData(conn);
 
-    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
+    if (!output)
+        return;
 
-    drmModeFreeConnector(data->drm.connector);
+    LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
 
-    while(!data->modes.empty())
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+
+    while (!bkndOutput->modes.empty())
     {
-        LOutputMode *mode = data->modes.back();
-        OUTPUT_MODE *modeData = (OUTPUT_MODE*)mode->imp()->graphicBackendData;
-
-        delete modeData;
+        LOutputMode *mode = bkndOutput->modes.back();
+        OutputMode *bkndMode = (OutputMode*)mode->imp()->graphicBackendData;
+        srmConnectorModeSetUserData(bkndMode->mode, NULL);
         delete mode;
-        data->modes.pop_back();
+        delete bkndMode;
+        bkndOutput->modes.pop_back();
     }
 
-    delete data;
+    compositor->destroyOutputRequest(output);
+    bknd->connectedOutputs.remove(output);
     delete output;
+    delete bkndOutput;
+    srmConnectorSetUserData(conn, NULL);
 }
 
-static const char *conn_name(uint32_t type)
+static void connectorPluggedEventHandler(SRMListener *listener, SRMConnector *conn)
 {
-    switch (type) {
-    case DRM_MODE_CONNECTOR_Unknown:     return "unknown";
-    case DRM_MODE_CONNECTOR_VGA:         return "VGA";
-    case DRM_MODE_CONNECTOR_DVII:        return "DVI-I";
-    case DRM_MODE_CONNECTOR_DVID:        return "DVI-D";
-    case DRM_MODE_CONNECTOR_DVIA:        return "DVI-A";
-    case DRM_MODE_CONNECTOR_Composite:   return "composite";
-    case DRM_MODE_CONNECTOR_SVIDEO:      return "S-VIDEO";
-    case DRM_MODE_CONNECTOR_LVDS:        return "LVDS";
-    case DRM_MODE_CONNECTOR_Component:   return "component";
-    case DRM_MODE_CONNECTOR_9PinDIN:     return "DIN";
-    case DRM_MODE_CONNECTOR_DisplayPort: return "DisplayPort";
-    case DRM_MODE_CONNECTOR_HDMIA:       return "HDMI-A";
-    case DRM_MODE_CONNECTOR_HDMIB:       return "HDMI-B";
-    case DRM_MODE_CONNECTOR_TV:          return "TV";
-    case DRM_MODE_CONNECTOR_eDP:         return "eDP";
-    case DRM_MODE_CONNECTOR_VIRTUAL:     return "virtual";
-    case DRM_MODE_CONNECTOR_DSI:         return "DSI";
-    case DRM_MODE_CONNECTOR_DPI:         return "DPI";
-    case DRM_MODE_CONNECTOR_WRITEBACK:   return "writeback";
-    default:                             return "unknown";
-    }
+    Backend *bknd = (Backend*)srmListenerGetUserData(listener);
+    LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
+    initConnector(bknd, conn);
+    LOutput *output = (LOutput*)srmConnectorGetUserData(conn);
+    compositor->seat()->imp()->backendOutputPlugged(output);
 }
 
-void manageOutputs(bool notify)
+static void connectorUnpluggedEventHandler(SRMListener *listener, SRMConnector *conn)
 {
+    Backend *bknd = (Backend*)srmListenerGetUserData(listener);
+    LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
 
-    drmModeRes *resources;
-    drmModeConnector *connector = NULL;
-    drmModeEncoder *encoder = NULL;
-    uint32_t crtc_id;
-    int area;
-
-    resources = drmModeGetResources(lDevice.fd);
-
-    // Iteramos todas las salidas
-    for (int i = 0; i < resources->count_connectors; i++)
-    {
-        connector = drmModeGetConnector(lDevice.fd, resources->connectors[i]);
-
-        // Verificamos que esté conectada
-        if (connector->connection == DRM_MODE_CONNECTED && connector->mmHeight != 0 && connector->mmWidth != 0)
-        {
-
-            bool wasConnected = false;
-
-            // Verificamos si ya se había añadido a la lista de salidas conectadas
-            for(LOutput *output : outputs)
-            {
-                OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-                if(data->drm.connector->connector_id == connector->connector_id)
-                {
-                    wasConnected = true;
-                    break;
-                }
-            }
-
-            // Si ya estaba añadida la saltamos
-            if(wasConnected)
-            {
-                drmModeFreeConnector(connector);
-                continue;
-            }
-
-            // Verificamos que tenga al menos un modo o la omitimos
-            if (connector->count_modes == 0)
-            {
-                drmModeFreeConnector(connector);
-                continue;
-            }
-
-            // Buscamos un encoder disponible
-            for (int j = 0; j < resources->count_encoders; j++)
-            {
-                encoder = drmModeGetEncoder(lDevice.fd, resources->encoders[j]);
-
-                bool encoderIsFree = true;
-
-                for(LOutput *output : outputs)
-                {
-                    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-                    if(encoder->crtc_id == data->drm.crtc_id)
-                    {
-                        encoderIsFree = false;
-                        break;
-                    }
-                }
-
-                if(encoderIsFree && encoder->encoder_id == connector->encoder_id)
-                {
-                    break;
-                }
-                drmModeFreeEncoder(encoder);
-                encoder = NULL;
-            }
-
-
-            if(encoder)
-            {
-                crtc_id = encoder->crtc_id;
-            }
-            else
-            {
-                uint32_t _crtc_id = find_crtc_for_connector(lDevice.fd,resources, connector);
-
-                if (_crtc_id == 0)
-                {
-                    printf("No crtc found!\n");
-                    drmModeFreeConnector(connector);
-                    exit(1);
-                    continue;
-                }
-
-                crtc_id = _crtc_id;
-            }
-
-            drmModeFreeEncoder(encoder);
-
-
-            // Si no estaba añadida creamos una nueva salida
-            LOutput *newOutput = lDevice.compositor->createOutputRequest();
-            newOutput->imp()->compositor = lDevice.compositor;
-
-            OUTPUT_DATA *newOutputData = new OUTPUT_DATA;
-            newOutputData->plugged = true;
-            newOutput->imp()->graphicBackendData = newOutputData;
-            newOutputData->preferredMode = nullptr;
-
-            // Creamos sus modos
-            for (int j = 0; j < connector->count_modes; j++)
-            {
-                drmModeModeInfo *mode = &connector->modes[j];
-
-                LOutputMode *newMode = new LOutputMode(newOutput);
-                newOutputData->modes.push_back(newMode);
-
-                OUTPUT_MODE *newModeData = new OUTPUT_MODE;
-                newMode->imp()->graphicBackendData = newModeData;
-
-                newModeData->mode = mode;
-                newModeData->size.setW(mode->hdisplay);
-                newModeData->size.setH(mode->vdisplay);
-                newModeData->isPreferred = false;
-
-
-            }
-
-            // Obtenemos el modo por defecto
-            area = 0;
-            for (LOutputMode *outputMode : newOutputData->modes)
-            {
-
-                OUTPUT_MODE *newModeData = (OUTPUT_MODE*)outputMode->imp()->graphicBackendData;
-
-                if (newModeData->mode->type & DRM_MODE_TYPE_PREFERRED)
-                {
-                    newOutputData->currentMode = outputMode;
-                    newOutputData->preferredMode = outputMode;
-                    newModeData->isPreferred = true;
-                    break;
-                }
-
-                int current_area = newModeData->size.area();
-
-                if (current_area > area)
-                {
-                    newOutputData->currentMode = outputMode;
-                    newOutputData->preferredMode = outputMode;
-                    newModeData->isPreferred = true;
-                }
-            }
-
-            // RECORDAR ! Eliminar connector y encoder
-
-            newOutputData->output = newOutput;
-
-            newOutputData->physicalSize.setW(connector->mmWidth);
-            newOutputData->physicalSize.setH(connector->mmHeight);
-
-            newOutputData->drm.connector = connector;
-            newOutputData->drm.crtc_id = crtc_id;
-            newOutputData->drm.fds.events = POLLIN;
-            newOutputData->drm.fds.fd = lDevice.fd;
-            newOutputData->drm.fds.revents = 0;
-
-            Int32 avaliableNameNumber = 1;
-
-            // Buscamos un número disponible para añadir al final del nombre (E.g HDMI-A-4)
-
-            for(LOutput *o : outputs)
-            {
-                OUTPUT_DATA *oData = (OUTPUT_DATA*)o->imp()->graphicBackendData;
-                if(oData->drm.connector->connector_type == connector->connector_type)
-                    avaliableNameNumber++;
-            }
-
-            sprintf(newOutputData->drm.name, "%s-%d", (char*)conn_name(connector->connector_type), avaliableNameNumber);
-
-            outputs.push_front(newOutput);
-
-            if(notify)
-                lDevice.compositor->outputManager()->outputPlugged(newOutput);
-
-        }
-        else
-        {
-            // Verificamos si la salida estaba conectada
-            for(list<LOutput*>::iterator it = outputs.begin(); it != outputs.end(); it++)
-            {
-                LOutput *output = *it;
-                OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-                data->plugged = false;
-                if(data->drm.connector->connector_id == connector->connector_id)
-                {
-                    outputs.erase(it);
-                    lDevice.compositor->outputManager()->outputUnplugged(output);
-                    lDevice.compositor->removeOutput(output);
-
-                    // Esperamos que el compositor invoque uninitializeOutput() para eliminarla
-                    //destroyOutput(output);
-                    break;
-                }
-            }
-
-            drmModeFreeConnector(connector);
-            connector = NULL;
-        }
-    }
-
-    drmModeFreeResources(resources);
-
+    LOutput *output = (LOutput*)srmConnectorGetUserData(conn);
+    compositor->seat()->imp()->backendOutputUnplugged(output);
+    compositor->removeOutput(output);
+    uninitConnector(bknd, conn);
 }
 
-int hotplugEvent(int, unsigned int, void*)
+static int monitorEventHandler(Int32, UInt32, void *data)
 {
-    udev_device* monitorDev = udev_monitor_receive_device(lDevice.monitor);
-
-    if(monitorDev)
-    {
-        if(udev_device_get_devnum(lDevice.dev) == udev_device_get_devnum(monitorDev))
-        {
-            ////printf("HOTPLUG EVENT.\n");
-            manageOutputs(true);
-        }
-    }
-
-    udev_device_unref(monitorDev);
-
-    return 0;
+    Backend *bknd = (Backend*)data;
+    return srmCoreProcessMonitor(bknd->core, 0);
 }
 
-static void pageFlipHandler(int, unsigned int, unsigned int, unsigned int, void *user_data)
+static void initializeGL(SRMConnector *connector, void *userData)
 {
-    OUTPUT_DATA *data = (OUTPUT_DATA*)user_data;
-    data->drm.pendingPageFlip = false;
+    SRM_UNUSED(connector);
+    LOutput *output = (LOutput*)userData;
+    output->imp()->backendInitializeGL();
 }
 
-static const struct {
-    const char *name;
-    uint64_t cap;
-} client_caps[] = {
-    { "STEREO_3D", DRM_CLIENT_CAP_STEREO_3D },
-    { "UNIVERSAL_PLANES", DRM_CLIENT_CAP_UNIVERSAL_PLANES },
-    { "ATOMIC", DRM_CLIENT_CAP_ATOMIC },
-    { "ASPECT_RATIO", DRM_CLIENT_CAP_ASPECT_RATIO },
-    { "WRITEBACK_CONNECTORS", DRM_CLIENT_CAP_WRITEBACK_CONNECTORS },
+static void paintGL(SRMConnector *connector, void *userData)
+{
+    SRM_UNUSED(connector);
+    LOutput *output = (LOutput*)userData;
+    output->imp()->backendPaintGL();
+}
+
+static void resizeGL(SRMConnector *connector, void *userData)
+{
+    SRM_UNUSED(connector);
+    LOutput *output = (LOutput*)userData;
+    output->imp()->backendResizeGL();
+}
+
+static void pageFlipped(SRMConnector *connector, void *userData)
+{
+    SRM_UNUSED(connector);
+    LOutput *output = (LOutput*)userData;
+    output->imp()->backendPageFlipped();
+}
+
+static void uninitializeGL(SRMConnector *connector, void *userData)
+{
+    SRM_UNUSED(connector);
+    LOutput *output = (LOutput*)userData;
+    output->imp()->backendUninitializeGL();
+}
+
+static SRMConnectorInterface connectorInterface =
+{
+    .initializeGL = &initializeGL,
+    .paintGL = &paintGL,
+    .pageFlipped = &pageFlipped,
+    .resizeGL = &resizeGL,
+    .uninitializeGL = &uninitializeGL
 };
 
-static const struct {
-    const char *name;
-    uint64_t cap;
-} caps[] = {
-    { "DUMB_BUFFER", DRM_CAP_DUMB_BUFFER },
-    { "VBLANK_HIGH_CRTC", DRM_CAP_VBLANK_HIGH_CRTC },
-    { "DUMB_PREFERRED_DEPTH", DRM_CAP_DUMB_PREFERRED_DEPTH },
-    { "DUMB_PREFER_SHADOW", DRM_CAP_DUMB_PREFER_SHADOW },
-    { "PRIME", DRM_CAP_PRIME },
-    { "TIMESTAMP_MONOTONIC", DRM_CAP_TIMESTAMP_MONOTONIC },
-    { "ASYNC_PAGE_FLIP", DRM_CAP_ASYNC_PAGE_FLIP },
-    { "CURSOR_WIDTH", DRM_CAP_CURSOR_WIDTH },
-    { "CURSOR_HEIGHT", DRM_CAP_CURSOR_HEIGHT },
-    { "ADDFB2_MODIFIERS", DRM_CAP_ADDFB2_MODIFIERS },
-    { "PAGE_FLIP_TARGET", DRM_CAP_PAGE_FLIP_TARGET },
-    { "CRTC_IN_VBLANK_EVENT", DRM_CAP_CRTC_IN_VBLANK_EVENT },
-    { "SYNCOBJ", DRM_CAP_SYNCOBJ },
-    { "SYNCOBJ_TIMELINE", DRM_CAP_SYNCOBJ_TIMELINE },
-};
-
-void driver_info(int fd)
+UInt32 LGraphicBackend::id()
 {
-    drmVersion *ver = drmGetVersion(fd);
-
-    if(!ver)
-    {
-        perror("drmGetVersion");
-        return;
-    }
-
-    //printf("DRIVER NAME:%s\n", ver->name);
-    //printf("DRIVER DESC:%s\n", ver->desc);
-
-    drmFreeVersion(ver);
-
-    for (size_t i = 0; i < sizeof(client_caps) / sizeof(client_caps[0]); ++i)
-    {
-        bool supported = drmSetClientCap(fd, client_caps[i].cap, 1) == 0;
-        //printf("CLIENT_CAP %s = %s\n", client_caps[i].name, supported ? "Yes" : "No");
-    }
-
-    for (size_t i = 0; i < sizeof(caps) / sizeof(caps[0]); ++i)
-    {
-        UInt64 cap;
-
-        if(drmGetCap(fd, caps[i].cap, &cap) == 0)
-        {
-            //printf("CAP %s = %lu\n",caps[i].name, cap);
-        }
-
-    }
-
+    return LGraphicBackendDRM;
 }
 
-void getPlanesInfo(int fd)
+void *LGraphicBackend::getContextHandle()
 {
-    driver_info(fd);
-
-    drmModePlaneRes *planes = drmModeGetPlaneResources(fd);
-
-    //printf("Planes count: %d\n", planes->count_planes);
-
-    for(UInt32 i = 0; i < planes->count_planes; i++)
-    {
-
-        //printf("Plane id: %d\n\n", planes->planes[i]);
-        drmModePlane *plane = drmModeGetPlane(fd,planes->planes[i]);
-
-        drmModeObjectProperties *props = drmModeObjectGetProperties(fd, plane->plane_id, DRM_MODE_OBJECT_PLANE);
-
-        for(UInt32 p = 0; p < props->count_props; p++)
-        {
-            drmModePropertyRes *prop = drmModeGetProperty(fd, props->props[p]);
-
-            if (!prop)
-            {
-                //printf("DRM error: drmModeGetProperty");
-                continue;
-            }
-
-            ////printf("Prop name: %s\n", prop->name);
-            /*
-            if(strcmp("type", prop->name) == 0)
-            {
-                if(props->prop_values[p] == DRM_PLANE_TYPE_CURSOR)
-                    //printf("IS CURSOR\n");
-                if(props->prop_values[p] == DRM_PLANE_TYPE_PRIMARY)
-                    //printf("IS PRIMARY\n");
-                if(props->prop_values[p] == DRM_PLANE_TYPE_OVERLAY)
-                    //printf("IS OVERLAY\n");
-            }
-            */
-
-            if(strcmp("CRTC_X", prop->name) == 0)
-            {
-                //printf("PROP ID CRTCX %d\n", prop->prop_id);
-            }
-
-            drmModeFreeProperty(prop);
-        }
-
-        drmModeFreeObjectProperties(props);
-        drmModeFreePlane(plane);
-    }
-
-    drmModeFreePlaneResources(planes);
-
+    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
+    return bknd->core;
 }
 
-bool LGraphicBackend::initialize(LCompositor *compositor)
+bool LGraphicBackend::initialize()
 {
-    /*
-    drm = new LDRM(compositor);
+    LCompositor *compositor = LCompositor::compositor();
+    libseatEnabled = compositor->seat()->imp()->initLibseat();
 
-    if(!drm->initialize())
+    Backend *bknd = new Backend();
+    compositor->imp()->graphicBackendData = bknd;
+    bknd->core = srmCoreCreate(&srmInterface, compositor);
+
+    if (!bknd->core)
     {
-        LLog::error("%s could not be initialized.",LBACKEND_NAME);
-        delete drm;
-        drm = nullptr;
-        return false;
+        LLog::fatal("[%] Failed to create SRM core.", BKND_NAME);
+        goto fail;
     }
 
+    // Fill DMA formats (LDMAFormat = SRMFormat)
+    SRMListForeach (fmtIt, srmCoreGetSharedDMATextureFormats(bknd->core))
+    {
+        SRMFormat *fmt = (SRMFormat*)srmListItemGetData(fmtIt);
+        bknd->dmaFormats.push_back((LDMAFormat*)fmt);
+    }
+
+    // Find connected outputs
+    SRMListForeach (devIt, srmCoreGetDevices(bknd->core))
+    {
+        SRMDevice *dev = (SRMDevice*)srmListItemGetData(devIt);
+
+        if (srmDeviceIsRenderer(dev))
+            bknd->rendererGPUs++;
+
+        SRMListForeach (connIt, srmDeviceGetConnectors(dev))
+        {
+            SRMConnector *conn = (SRMConnector*)srmListItemGetData(connIt);
+
+            if (srmConnectorIsConnected(conn))
+                initConnector(bknd, conn);
+        }
+    }
+
+    // Listen to connector hotplug events
+    srmCoreAddConnectorPluggedEventListener(bknd->core, &connectorPluggedEventHandler, bknd);
+    srmCoreAddConnectorUnpluggedEventListener(bknd->core, &connectorUnpluggedEventHandler, bknd);
+
+    bknd->monitor = LCompositor::addFdListener(srmCoreGetMonitorFD(bknd->core),
+                                            bknd,
+                                            &monitorEventHandler);
+
+    compositor->imp()->graphicBackendData = bknd;
     return true;
-    */
 
-    lDevice.compositor = (LCompositor*)compositor;
-    lDevice.udev = udev_new();
+    fail:
+    delete bknd;
+    return false;
+}
 
-    if (!lDevice.udev)
+void LGraphicBackend::uninitialize()
+{
+    LCompositor *compositor = LCompositor::compositor();
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    LCompositor::removeFdListener(bknd->monitor);
+    srmCoreDestroy(bknd->core);
+    delete bknd;
+}
+
+void LGraphicBackend::pause()
+{
+    LCompositor *compositor = LCompositor::compositor();
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    srmCoreSuspend(bknd->core);
+}
+
+void LGraphicBackend::resume()
+{
+    LCompositor *compositor = LCompositor::compositor();
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    srmCoreResume(bknd->core);
+}
+
+const list<LOutput*> *LGraphicBackend::getConnectedOutputs()
+{
+    LCompositor *compositor = LCompositor::compositor();
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    return &bknd->connectedOutputs;
+}
+
+UInt32 LGraphicBackend::rendererGPUs()
+{
+    LCompositor *compositor = LCompositor::compositor();
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    return bknd->rendererGPUs;
+}
+
+bool LGraphicBackend::initializeOutput(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorInitialize(bkndOutput->conn, &connectorInterface, output);
+}
+
+bool LGraphicBackend::scheduleOutputRepaint(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorRepaint(bkndOutput->conn);
+}
+
+void LGraphicBackend::uninitializeOutput(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    UInt32 texturesCount = srmConnectorGetBuffersCount(bkndOutput->conn);
+    srmConnectorUninitialize(bkndOutput->conn);
+
+    if (bkndOutput->textures)
     {
-        //printf("Can't create udev.\n");
-        exit(1);
-    }
-
-    udev_enumerate *enumerate;
-    udev_list_entry *devices;
-
-    enumerate = udev_enumerate_new(lDevice.udev);
-    udev_enumerate_add_match_subsystem(enumerate, "drm");
-    udev_enumerate_add_match_property(enumerate, "DEVTYPE", "drm_minor");
-    udev_enumerate_scan_devices(enumerate);
-    devices = udev_enumerate_get_list_entry(enumerate);
-    udev_list_entry *entry;
-
-    bool foundDevice = false;
-    
-    const char *defaultDeviceName = getenv("LOUVRE_DRM_DEVICE");
-    if(!defaultDeviceName)
-      defaultDeviceName = "/dev/dri/card0";
-
-
-    // Iteramos las GPUs disponibles
-    udev_list_entry_foreach(entry, devices)
-    {
-        // Path donde la GPU está montada
-        const char *path = udev_list_entry_get_name(entry);
-
-        // Obtenemos el handle udev
-        lDevice.dev = udev_device_new_from_syspath(lDevice.udev, path);
-
-        // Obtenemos nombre de la GPU (Ej:/dev/dri/card0)
-        const char *devName = udev_device_get_property_value(lDevice.dev, "DEVNAME");
-
-        // Verificamos si es igual a la definida en la variable de entorno LOUVRE_DRM_BACKEND_GPU o la por defecto
-        if(strcmp(devName, defaultDeviceName) != 0)
-          continue;
-
-        LLog::debug("%s Using device %s", LBACKEND_NAME, devName);
-
-        drmModeRes *resources;
-
-        lDevice.fd = open(devName, O_RDWR);
-
-        if(!drmIsMaster(lDevice.fd))
+        for (UInt32 i = 0; i < texturesCount; i++)
         {
-            LLog::fatal("%s Not DRM master. Switch to a free TTY and relaunch.", LBACKEND_NAME);
-            close(lDevice.fd);
-            exit(1);
+            if (bkndOutput->textures[i])
+            {
+                // Do not destroy connectors native buffer
+                bkndOutput->textures[i]->imp()->graphicBackendData = nullptr;
+                delete bkndOutput->textures[i];
+                bkndOutput->textures[i] = nullptr;
+            }
         }
 
-        close(lDevice.fd);
-
-        int id;
-        id = compositor->seat()->openDevice(devName, &lDevice.fd);
-
-        if (lDevice.fd < 0)
-        {
-            printf("Could not open drm device\n");
-            udev_device_unref(lDevice.dev);
-            lDevice.dev = nullptr;
-            continue;
-        }
-
-        getPlanesInfo(lDevice.fd);
-
-        resources = drmModeGetResources(lDevice.fd);
-
-        if (!resources)
-        {
-            printf("drmModeGetResources failed: %s\n", strerror(errno));
-            drmModeFreeResources(resources);
-            udev_device_unref(lDevice.dev);
-            lDevice.dev = nullptr;
-            compositor->seat()->closeDevice(id);
-            continue;
-        }
-
-        devicesID[lDevice.fd] = id;
-
-
-        // Encontramos una GPU disponible !
-
-        drmModeFreeResources(resources);
-
-        foundDevice = true;
-
-        break;
+        free(bkndOutput->textures);
+        bkndOutput->textures = nullptr;
     }
-
-    udev_enumerate_unref(enumerate);
-
-    if(!foundDevice)
-    {
-        printf("No GPU card found.\n");
-        exit(1);
-    }
-
-    // Creamos un monitor para escuchar eventos hotplug
-    lDevice.monitor = udev_monitor_new_from_netlink(lDevice.udev, "udev");
-    udev_monitor_filter_add_match_subsystem_devtype(lDevice.monitor, "drm", "drm_minor");
-
-    udev_list_entry *tags = udev_device_get_tags_list_entry(lDevice.dev);
-
-    // Añadimos filtros al monitor para escuchar solo los eventos hotplug de la GPU seleccionada
-    udev_list_entry_foreach(entry, tags)
-    {
-        const char *tag = udev_list_entry_get_name(entry);
-        udev_monitor_filter_add_match_tag(lDevice.monitor, tag);
-    }
-
-    udev_monitor_enable_receiving(lDevice.monitor);
-
-    // Añadimos el descriptor de archivo al loop de eventos de Wayland
-    LWayland::addFdListener(udev_monitor_get_fd(lDevice.monitor), nullptr, &hotplugEvent);
-
-    // Genera la lista de todas las salidas conectadas sin notificar al LOutputManager (false)
-    manageOutputs(false);
-
-    return true;
 }
 
-void LGraphicBackend::uninitialize(const LCompositor *compositor)
+bool LGraphicBackend::hasBufferDamageSupport(LOutput *output)
 {
-    L_UNUSED(compositor);
-
-    /* TODO: Permitir cambiar de backend gráfico dinámicamente ? */
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorHasBufferDamageSupport(bkndOutput->conn);
 }
 
-const list<LOutput*> *LGraphicBackend::getAvaliableOutputs(const LCompositor *compositor)
+void LGraphicBackend::setOutputBufferDamage(LOutput *output, LRegion &region)
 {
-    L_UNUSED(compositor);
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
-    return &outputs;
-}
-
-static int match_config_to_visual(EGLDisplay egl_display, EGLint visual_id, EGLConfig *configs, int count)
-{
-    int i;
-    for (i = 0; i < count; ++i)
-    {
-        EGLint id;
-
-        if (!eglGetConfigAttrib(egl_display, configs[i], EGL_NATIVE_VISUAL_ID, &id))
-            continue;
-
-        if (id == visual_id)
-            return i;
-    }
-
-    return -1;
-}
-
-static bool egl_choose_config(EGLDisplay egl_display, const EGLint *attribs, EGLint visual_id, EGLConfig *config_out)
-{
-    EGLint count = 0;
-    EGLint matched = 0;
-    EGLConfig *configs;
-    int config_index = -1;
-
-    if (!eglGetConfigs(egl_display, NULL, 0, &count) || count < 1)
-    {
-        LLog::error("No EGL configs to choose from.\n");
-        return false;
-    }
-
-    configs = (void**)malloc(count * sizeof *configs);
-
-    if (!configs)
-        return false;
-
-    if (!eglChooseConfig(egl_display, attribs, configs, count, &matched) || !matched)
-    {
-        LLog::error("No EGL configs with appropriate attributes.\n");
-        goto out;
-    }
-
-    if (!visual_id)
-    {
-        config_index = 0;
-    }
-
-    if (config_index == -1)
-    {
-        config_index = match_config_to_visual(egl_display, visual_id, configs, matched);
-    }
-
-    if (config_index != -1)
-    {
-        *config_out = configs[config_index];
-    }
-
-out:
-    free(configs);
-    if (config_index == -1)
-        return false;
-
-    return true;
-}
-
-void LGraphicBackend::initializeOutput(const LOutput *output)
-{
-
-    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-
-    data->currentBufferIndex = 0;
-
-    data->drm.evctx =
-    {
-        .version = DRM_EVENT_CONTEXT_VERSION,
-        .vblank_handler = NULL,
-        .page_flip_handler = pageFlipHandler,
-        .page_flip_handler2 = NULL,
-        .sequence_handler = NULL
-    };
-
-    if(LWayland::isGlContextInitialized())
-    {
-        LOutput *mainOutput = (LOutput*)LWayland::mainOutput();
-        OUTPUT_DATA *mainOutputData = (OUTPUT_DATA*)mainOutput->imp()->graphicBackendData;
-        data->gbm.dev = mainOutputData->gbm.dev;
-    }
-    else
-        data->gbm.dev = gbm_create_device(data->drm.fds.fd);
-
-    uint64_t modifier = DRM_FORMAT_MOD_LINEAR;
-
-    EGLint fmt = GBM_FORMAT_XRGB8888;
-
-    data->gbm.surface = nullptr;
-
-    if(false && gbm_surface_create_with_modifiers)
-    {
-        data->gbm.surface = gbm_surface_create_with_modifiers(data->gbm.dev,
-                                data->currentMode->sizeB().w(),data->currentMode->sizeB().h(),
-                                fmt,
-                                &modifier, 1);
-
-    }
-
-    if(!data->gbm.surface)
-        data->gbm.surface = gbm_surface_create(
-            data->gbm.dev,
-            data->currentMode->sizeB().w(),data->currentMode->sizeB().h(),
-            fmt,
-            GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
-
-    if (!data->gbm.surface)
-    {
-        //printf("Failed to create gbm surface.\n");
+    if (!srmConnectorHasBufferDamageSupport(bkndOutput->conn) || srmConnectorGetState(bkndOutput->conn) != SRM_CONNECTOR_STATE_INITIALIZED)
         return;
+
+    Int32 n;
+    LBox *boxes = region.boxes(&n);
+
+    SRMRect rects[n];
+
+    for (Int32 i = 0; i < n; i++)
+    {
+        rects[i].x = boxes[i].x1;
+        rects[i].y = boxes[i].y1;
+        rects[i].width = boxes[i].x2 - boxes[i].x1;
+        rects[i].height = boxes[i].y2 - boxes[i].y1;
     }
 
-    EGLint major, minor;
-
-    static const EGLint context_attribs[] = {
-        EGL_CONTEXT_CLIENT_VERSION, 2,
-        EGL_NONE
-    };
-
-    static const EGLint config_attribs[] = {
-        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-        EGL_RED_SIZE, 1,
-        EGL_GREEN_SIZE, 1,
-        EGL_BLUE_SIZE, 1,
-        EGL_ALPHA_SIZE, 0,
-        EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-        EGL_NONE
-    };
-
-
-    PFNEGLGETPLATFORMDISPLAYEXTPROC get_platform_display = NULL;
-    get_platform_display =(void *(*)(unsigned int,void*,const int*)) eglGetProcAddress("eglGetPlatformDisplayEXT");
-    assert(get_platform_display != NULL);
-
-    if(LWayland::isGlContextInitialized())
-    {
-        data->gl.display = LWayland::eglDisplay();
-    }
-    else
-    {
-        if(get_platform_display)
-            data->gl.display = get_platform_display(EGL_PLATFORM_GBM_KHR, data->gbm.dev, NULL);
-        else
-            data->gl.display = eglGetDisplay((EGLNativeDisplayType)data->gbm.dev);
-
-    }
-
-    if (!eglInitialize(data->gl.display, &major, &minor))
-    {
-        //printf("Failed to initialize EGL.\n");
-        return;
-    }
-
-    //printf("Using display %p with EGL version %d.%d.\n", data->gl.display, major, minor);
-    //printf("EGL Version \"%s\"\n", eglQueryString(data->gl.display, EGL_VERSION));
-    //printf("EGL Vendor \"%s\"\n", eglQueryString(data->gl.display, EGL_VENDOR));
-    //printf("EGL Extensions \"%s\"\n", eglQueryString(data->gl.display, EGL_EXTENSIONS));
-
-    if (!eglBindAPI(EGL_OPENGL_ES_API))
-    {
-        //printf("Failed to bind api EGL_OPENGL_ES_API.\n");
-        return;
-    }
-
-
-
-    if (!egl_choose_config(data->gl.display, config_attribs, fmt, &data->gl.config))
-    {
-        LLog::error("Failed to choose EGL config.\n");
-        return;
-    }
-
-
-
-    /*
-    int n;
-    if (!eglChooseConfig(data->gl.display, config_attribs, &data->gl.config, 1, &n) || n != 1)
-    {
-        LLog::error("failed to choose config: %d.\n", n);
-    }*/
-
-
-    EGLContext ctx = EGL_NO_CONTEXT;
-
-    if(LWayland::isGlContextInitialized())
-        ctx = LWayland::eglContext();
-
-    if(!data->gl.context)
-        data->gl.context = eglCreateContext(data->gl.display, data->gl.config, ctx, context_attribs);
-
-    if (data->gl.context == NULL)
-    {
-        LLog::error("Failed to create context.\n");
-        return;
-    }
-
-    PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC create_platform_window = (PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC) eglGetProcAddress("eglCreatePlatformWindowSurfaceEXT");
-
-    data->gl.surface = create_platform_window(data->gl.display, data->gl.config, data->gbm.surface, NULL);
-            //eglCreateWindowSurface(data->gl.display, data->gl.config, data->gbm.surface, NULL);
-
-    if (data->gl.surface == EGL_NO_SURFACE)
-    {
-        LLog::error("Failed to create EGL surface.\n");
-        return;
-    }
-
-    // connect the context to the surface
-    eglMakeCurrent(data->gl.display, data->gl.surface, data->gl.surface, data->gl.context);
-
-    if(!LWayland::isGlContextInitialized())
-        LWayland::setContext(output, data->gl.display, data->gl.context);
-
-    //printf("GL Extensions: \"%s\"\n", glGetString(GL_EXTENSIONS));
-
-    // Clear the color buffer
-    eglSwapBuffers(data->gl.display, data->gl.surface);
-    data->bo = gbm_surface_lock_front_buffer(data->gbm.surface);
-    gbm_bo_set_user_data(data->bo, NULL, NULL);
-    data->fb = drm_fb_get_from_bo(data->bo,data)->fb;
-
-    // set mode:
-    OUTPUT_MODE *om = (OUTPUT_MODE*)data->currentMode->imp()->graphicBackendData;
-
-    ret = drmModeSetCrtc(data->drm.fds.fd, data->drm.crtc_id, data->fb->fb_id, 0, 0,
-                         &data->drm.connector->connector_id,
-                         1,
-                         om->mode);
-
-    if (ret)
-    {
-        printf("Failed to set mode: %s\n", strerror(errno));
-        return;
-    }
-
-    output->imp()->state = LOutput::Initialized;
-    data->initialized = true;
-
-    return;
+    srmConnectorSetBufferDamage(bkndOutput->conn, rects, n);
 }
 
-void LGraphicBackend::uninitializeOutput(const LOutput *output)
+const LSize *LGraphicBackend::getOutputPhysicalSize(LOutput *output)
 {
-    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-
-    // Si no estaba inicializada no hacemos nada
-    if(data->initialized)
-    {
-        // Destruimos la superficie EGL
-        eglDestroySurface(data->gl.display, data->gl.surface);
-
-        // Destruimos el contexto EGL
-        //eglDestroyContext(data->gl.display, data->gl.context);
-
-        // Destruimos la superficie GBM
-        gbm_surface_destroy(data->gbm.surface);
-
-        // Destruimos el dispositivo GBM
-        //gbm_device_destroy(data->gbm.dev);
-    }
-
-    // Elimina cursor
-    if(data->cursor.initialized)
-    {
-        setCursorTexture(output, nullptr, LSizeF());
-        data->cursor.initialized = false;
-        glDeleteFramebuffers(1,&data->cursor.fb);
-        glDeleteTextures(1,&data->cursor.texture);
-        eglDestroyImage(data->gl.display,data->cursor.eglImage);
-        gbm_bo_destroy(data->cursor.bo);
-    }
-
-    // Si no está conectada la eliminamos
-    if(!data->plugged)
-    {
-        destroyOutput((LOutput*)output);
-    }
-
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return &bkndOutput->physicalSize;
 }
 
-void LGraphicBackend::flipOutputPage(const LOutput *output)
+Int32 LGraphicBackend::getOutputCurrentBufferIndex(LOutput *output)
 {
-
-    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-
-    gbm_bo *next_bo;
-
-    if(output->compositor()->seat()->enabled())
-    {
-        if(output->state() == LOutput::Suspended)
-        {
-            drmSetMaster(data->drm.fds.fd);
-            OUTPUT_MODE *mod = (OUTPUT_MODE*)data->currentMode->imp()->graphicBackendData;
-            drmModeSetCrtc(data->drm.fds.fd, data->drm.crtc_id, data->fb->fb_id, 0, 0, &data->drm.connector->connector_id, 1, mod->mode);
-            output->imp()->state = LOutput::Initialized;
-        }
-    }
-    else
-    {
-        output->compositor()->imp()->renderMutex.unlock();
-        return;
-    }
-
-    eglSwapBuffers(data->gl.display, data->gl.surface);
-    output->compositor()->imp()->renderMutex.unlock();
-
-    next_bo = gbm_surface_lock_front_buffer(data->gbm.surface);
-    data->fb = drm_fb_get_from_bo(next_bo,data)->fb;
-
-    data->drm.pendingPageFlip = true;
-    drmModePageFlip(data->drm.fds.fd, data->drm.crtc_id, data->fb->fb_id, DRM_MODE_PAGE_FLIP_EVENT, data);
-
-    // Previene que otras salidas invoken el método drmHandleEvent al mismo tiempo lo que causa bugs
-    pageFlipMutex.lock();
-
-    while(data->drm.pendingPageFlip)
-    {
-        poll(&data->drm.fds, 1, 100);
-
-        if(data->drm.fds.revents & POLLIN)
-            drmHandleEvent(data->drm.fds.fd, &data->drm.evctx);
-
-        if(!output->compositor()->seat()->enabled() || output->state() != LOutput::Initialized)
-            break;
-    }
-
-    pageFlipMutex.unlock();
-
-    // release last buffer to render on again:
-    gbm_surface_release_buffer(data->gbm.surface, data->bo);
-    data->bo = next_bo;
-    data->currentBufferIndex = 1 - data->currentBufferIndex;
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorGetCurrentBufferIndex(bkndOutput->conn);
 }
 
-EGLDisplay LGraphicBackend::getOutputEGLDisplay(const LOutput *output)
+UInt32 LGraphicBackend::getOutputBuffersCount(LOutput *output)
 {
-    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-    return data->gl.display;
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorGetBuffersCount(bkndOutput->conn);
 }
 
-const LSize *LGraphicBackend::getOutputPhysicalSize(const LOutput *output)
+LTexture *LGraphicBackend::getOutputBuffer(LOutput *output, UInt32 bufferIndex)
 {
-    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-    return &data->physicalSize;
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+
+    SRMBuffer *buffer = srmConnectorGetBuffer(bkndOutput->conn, bufferIndex);
+    UInt32 buffersCount = srmConnectorGetBuffersCount(bkndOutput->conn);
+
+    if (!buffer || !buffersCount)
+        return nullptr;
+
+    if (!bkndOutput->textures)
+        bkndOutput->textures = (LTexture**)calloc(buffersCount, sizeof(LTexture*));
+
+    if (bkndOutput->textures[bufferIndex])
+        return bkndOutput->textures[bufferIndex];
+
+    LTexture *tex = new LTexture();
+    tex->imp()->graphicBackendData = buffer;
+    tex->imp()->format = srmBufferGetFormat(buffer);
+    tex->imp()->sizeB.setW(srmBufferGetWidth(buffer));
+    tex->imp()->sizeB.setH(srmBufferGetHeight(buffer));
+    bkndOutput->textures[bufferIndex] = tex;
+    return tex;
 }
 
-Int32 LGraphicBackend::getOutputCurrentBufferIndex(const LOutput *output)
+const char *LGraphicBackend::getOutputName(LOutput *output)
 {
-    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-    return data->currentBufferIndex;
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorGetName(bkndOutput->conn);
 }
 
-const char *LGraphicBackend::getOutputName(const LOutput *output)
+const char *LGraphicBackend::getOutputManufacturerName(LOutput *output)
 {
-    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-    return data->drm.name;
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorGetManufacturer(bkndOutput->conn);
 }
 
-const char *LGraphicBackend::getOutputManufacturerName(const LOutput *output)
+const char *LGraphicBackend::getOutputModelName(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorGetModel(bkndOutput->conn);
+}
+
+const char *LGraphicBackend::getOutputDescription(LOutput *output)
 {
     L_UNUSED(output);
-    return "Unknown Manufacturer";
+    return "DRM connector";
 }
 
-const char *LGraphicBackend::getOutputModelName(const LOutput *output)
+const LOutputMode *LGraphicBackend::getOutputPreferredMode(LOutput *output)
 {
-    L_UNUSED(output);
-    return "Unknown Model";
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    SRMConnectorMode *mode = srmConnectorGetPreferredMode(bkndOutput->conn);
+    return (LOutputMode*)srmConnectorModeGetUserData(mode);
 }
 
-const char *LGraphicBackend::getOutputDescription(const LOutput *output)
+const LOutputMode *LGraphicBackend::getOutputCurrentMode(LOutput *output)
 {
-    L_UNUSED(output);
-    return "A DRM output.";
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    SRMConnectorMode *mode = srmConnectorGetCurrentMode(bkndOutput->conn);
+    return (LOutputMode*)srmConnectorModeGetUserData(mode);
 }
 
-const LOutputMode *LGraphicBackend::getOutputPreferredMode(const LOutput *output)
+const std::list<LOutputMode *> *LGraphicBackend::getOutputModes(LOutput *output)
 {
-    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-    return data->preferredMode;
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return &bkndOutput->modes;
 }
 
-const LOutputMode *LGraphicBackend::getOutputCurrentMode(const LOutput *output)
+bool LGraphicBackend::setOutputMode(LOutput *output, LOutputMode *mode)
 {
-    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-    return data->currentMode;
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    OutputMode *bkndOutputMode = (OutputMode*)mode->imp()->graphicBackendData;
+    return srmConnectorSetMode(bkndOutput->conn, bkndOutputMode->mode);
 }
 
-const std::list<LOutputMode *> *LGraphicBackend::getOutputModes(const LOutput *output)
+const LSize *LGraphicBackend::getOutputModeSize(LOutputMode *mode)
 {
-    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-    return &data->modes;
+    OutputMode *bkndOutputMode = (OutputMode*)mode->imp()->graphicBackendData;
+    return &bkndOutputMode->size;
 }
 
-void LGraphicBackend::setOutputMode(const LOutput *output, const LOutputMode *mode)
+Int32 LGraphicBackend::getOutputModeRefreshRate(LOutputMode *mode)
 {
-    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
+    OutputMode *bkndOutputMode = (OutputMode*)mode->imp()->graphicBackendData;
+    return srmConnectorModeGetRefreshRate(bkndOutputMode->mode)*1000;
+}
 
-    data->currentMode = (LOutputMode*)mode;
+bool LGraphicBackend::getOutputModeIsPreferred(LOutputMode *mode)
+{
+    OutputMode *bkndOutputMode = (OutputMode*)mode->imp()->graphicBackendData;
+    return srmConnectorModeIsPreferred(bkndOutputMode->mode);
+}
 
-    if(data->initialized)
+bool LGraphicBackend::hasHardwareCursorSupport(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorHasHardwareCursor(bkndOutput->conn);
+}
+
+void LGraphicBackend::setCursorTexture(LOutput *output, UChar8 *buffer)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    srmConnectorSetCursor(bkndOutput->conn, buffer);
+}
+
+void LGraphicBackend::setCursorPosition(LOutput *output, const LPoint &position)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    srmConnectorSetCursorPos(bkndOutput->conn, position.x(), position.y());
+}
+
+const list<LDMAFormat*> *LGraphicBackend::getDMAFormats()
+{
+    LCompositor *compositor = LCompositor::compositor();
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    return &bknd->dmaFormats;
+}
+
+EGLDisplay LGraphicBackend::getAllocatorEGLDisplay()
+{
+    LCompositor *compositor = LCompositor::compositor();
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    return srmDeviceGetEGLDisplay(srmCoreGetAllocatorDevice(bknd->core));
+}
+
+EGLContext LGraphicBackend::getAllocatorEGLContext()
+{
+    LCompositor *compositor = LCompositor::compositor();
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    return srmDeviceGetEGLContext(srmCoreGetAllocatorDevice(bknd->core));
+}
+
+bool LGraphicBackend::createTextureFromCPUBuffer(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels)
+{
+    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
+    SRMBuffer *bkndBuffer = srmBufferCreateFromCPU(bknd->core, NULL, size.w(), size.h(), stride, pixels, format);
+
+    if (bkndBuffer)
     {
-        // Destruimos la superficie EGL
-        eglDestroySurface(data->gl.display, data->gl.surface);
-
-        // Destruimos la superficie GBM
-        gbm_surface_destroy(data->gbm.surface);
-
-        initializeOutput(output);
-    }
-}
-
-const LSize *LGraphicBackend::getOutputModeSize(const LOutputMode *mode)
-{
-    OUTPUT_MODE *data = (OUTPUT_MODE*)mode->imp()->graphicBackendData;
-    return &data->size;
-}
-
-Int32 LGraphicBackend::getOutputModeRefreshRate(const LOutputMode *mode)
-{
-    OUTPUT_MODE *data = (OUTPUT_MODE*)mode->imp()->graphicBackendData;
-    return data->mode->vrefresh*1000;
-}
-
-bool LGraphicBackend::getOutputModeIsPreferred(const LOutputMode *mode)
-{
-    OUTPUT_MODE *data = (OUTPUT_MODE*)mode->imp()->graphicBackendData;
-    return data->isPreferred;
-}
-
-int dumbCursor(OUTPUT_DATA *data)
-{
-    struct drm_mode_create_dumb create_request = {
-        .height = 64,
-        .width  = 64,
-        .bpp    = 32
-    };
-
-    ret = ioctl(data->drm.fds.fd, DRM_IOCTL_MODE_CREATE_DUMB, &create_request);
-
-    if(ret)
-        return 0;
-
-    ret = drmModeAddFB(
-        data->drm.fds.fd,
-        64, 64,
-        24, 32, create_request.pitch,
-        create_request.handle, &data->cursor.fbId
-    );
-
-    if(ret)
-        return 0;
-
-    struct drm_prime_handle prime_request = {
-        .handle = create_request.handle,
-        .flags  = DRM_CLOEXEC | DRM_RDWR,
-        .fd     = -1
-    };
-
-    ret = ioctl(data->drm.fds.fd, DRM_IOCTL_PRIME_HANDLE_TO_FD, &prime_request);
-    data->cursor.fd = prime_request.fd;
-    data->cursor.handle = prime_request.handle;
-
-    if (ret || data->cursor.fd < 0)
-       return 0;
-
-    data->cursor.buffer = (UChar8*)mmap(
-        0, create_request.size,	PROT_READ | PROT_WRITE, MAP_SHARED,
-        data->cursor.fd, 0);
-
-    ret = errno;
-
-    if(data->cursor.buffer == NULL || data->cursor.buffer == MAP_FAILED)
-        return 0;
-
-    return 1;
-}
-
-void LGraphicBackend::initializeCursor(const LOutput *output)
-{
-    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-
-    if(data->cursor.initialized)
-        return;
-
-    data->cursor.initialized = true;
-
-    data->cursor.isDumb = dumbCursor(data);
-
-    // Create cursor bo
-    data->cursor.bo = gbm_bo_create(data->gbm.dev, 64, 64, GBM_FORMAT_ARGB8888, GBM_BO_USE_CURSOR | GBM_BO_USE_RENDERING | GBM_BO_USE_LINEAR);
-    // Cursor
-    PFNEGLCREATEIMAGEKHRPROC eglCreateImageKHR = (PFNEGLCREATEIMAGEKHRPROC) eglGetProcAddress ("eglCreateImageKHR");
-    PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOES = (PFNGLEGLIMAGETARGETTEXTURE2DOESPROC) eglGetProcAddress ("glEGLImageTargetTexture2DOES");
-    data->cursor.eglImage = eglCreateImageKHR(data->gl.display, data->gl.context, EGL_NATIVE_PIXMAP_KHR, data->cursor.bo, NULL);
-
-
-    glGenFramebuffers(1, &data->cursor.fb);
-    glBindFramebuffer(GL_FRAMEBUFFER, data->cursor.fb);
-
-    glActiveTexture(GL_TEXTURE0+1);
-    glGenTextures(1, &data->cursor.texture);
-    glBindTexture(GL_TEXTURE_2D, data->cursor.texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D,data->cursor.eglImage);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, data->cursor.texture, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-bool LGraphicBackend::hasHardwareCursorSupport()
-{
-    return true;
-}
-
-void LGraphicBackend::setCursorTexture(const LOutput *output, const LTexture *texture, const LSizeF &size)
-{
-    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-
-    if(!texture)
-    {
-        drmModeSetCursor(data->drm.fds.fd, data->drm.crtc_id, 0, 0, 0);
-        data->cursor.visible = false;
-        return;
+        texture->imp()->graphicBackendData = bkndBuffer;
+        return true;
     }
 
+    return false;
+}
 
-    glBindFramebuffer(GL_FRAMEBUFFER, data->cursor.fb);
+bool LGraphicBackend::createTextureFromWaylandDRM(LTexture *texture, void *wlBuffer)
+{
+    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
+    SRMBuffer *bkndBuffer = srmBufferCreateFromWaylandDRM(bknd->core, wlBuffer);
 
-    output->painter()->imp()->scaleCursor(
-                (LTexture*)texture,
-                LRect(0,0,texture->sizeB().w(),-texture->sizeB().h()),
-                LRect(0,size));
-
-    if(data->cursor.isDumb)
+    if (bkndBuffer)
     {
-        glReadPixels(0,0,64,64,GL_RGBA,GL_UNSIGNED_BYTE,data->cursor.buffer);
+        texture->imp()->graphicBackendData = bkndBuffer;
+        texture->imp()->format = srmBufferGetFormat(bkndBuffer);
+        texture->imp()->sizeB.setW(srmBufferGetWidth(bkndBuffer));
+        texture->imp()->sizeB.setH(srmBufferGetHeight(bkndBuffer));
+        return true;
+    }
 
-        if(!data->cursor.visible)
-            drmModeSetCursor(data->drm.fds.fd, data->drm.crtc_id,
-                             data->cursor.handle,
-                             64, 64);
+    return false;
+}
+
+bool LGraphicBackend::createTextureFromDMA(LTexture *texture, const LDMAPlanes *planes)
+{
+    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
+    SRMBuffer *bkndBuffer = srmBufferCreateFromDMA(bknd->core, NULL, (SRMBufferDMAData*)planes);
+
+    if (bkndBuffer)
+    {
+        texture->imp()->graphicBackendData = bkndBuffer;
+        texture->imp()->format = srmBufferGetFormat(bkndBuffer);
+        texture->imp()->sizeB.setW(srmBufferGetWidth(bkndBuffer));
+        texture->imp()->sizeB.setH(srmBufferGetHeight(bkndBuffer));
+        return true;
+    }
+
+    return false;
+}
+
+bool LGraphicBackend::updateTextureRect(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels)
+{
+    SRMBuffer *bkndBuffer = (SRMBuffer*)texture->imp()->graphicBackendData;
+    return srmBufferWrite(bkndBuffer, stride, dst.x(), dst.y(), dst.w(), dst.h(), pixels);
+}
+
+UInt32 LGraphicBackend::getTextureID(LOutput *output, LTexture *texture)
+{
+    SRMDevice *bkndRendererDevice;
+
+    if (output)
+    {
+        Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+        bkndRendererDevice = srmDeviceGetRendererDevice(srmConnectorGetDevice(bkndOutput->conn));
     }
     else
     {
-        if(!data->cursor.visible)
-            drmModeSetCursor(data->drm.fds.fd, data->drm.crtc_id,
-                             gbm_bo_get_handle(data->cursor.bo).u32,
-                             64, 64);
+        Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
+        bkndRendererDevice = srmCoreGetAllocatorDevice(bknd->core);
     }
 
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // Si se invoca desde el hilo principal debemos llamar glFlush para sincronizar el cambio
-    if(std::this_thread::get_id() == output->compositor()->mainThreadId())
-        glFlush();
-
+    return srmBufferGetTextureID(bkndRendererDevice, (SRMBuffer*)texture->imp()->graphicBackendData);
 }
 
-void LGraphicBackend::setCursorPosition(const LOutput *output, const LPoint &position)
+GLenum LGraphicBackend::getTextureTarget(LTexture *texture)
 {
-    OUTPUT_DATA *data = (OUTPUT_DATA*)output->imp()->graphicBackendData;
-
-    drmModeMoveCursor(data->drm.fds.fd,
-                      data->drm.crtc_id,
-                      position.x(),
-                      position.y());
+    SRMBuffer *bkndBuffer = (SRMBuffer*)texture->imp()->graphicBackendData;
+    return srmBufferGetTextureTarget(bkndBuffer);
 }
 
-LGraphicBackendInterface API;
+void LGraphicBackend::destroyTexture(LTexture *texture)
+{
+    SRMBuffer *buffer = (SRMBuffer*)texture->imp()->graphicBackendData;
+
+    if (buffer)
+        srmBufferDestroy(buffer);
+}
+
+static LGraphicBackendInterface API;
 
 extern "C" LGraphicBackendInterface *getAPI()
 {
+    API.id = &LGraphicBackend::id;
+    API.getContextHandle = &LGraphicBackend::getContextHandle;
     API.initialize = &LGraphicBackend::initialize;
+    API.pause = &LGraphicBackend::pause;
+    API.resume = &LGraphicBackend::resume;
+    API.scheduleOutputRepaint = &LGraphicBackend::scheduleOutputRepaint;
     API.uninitialize = &LGraphicBackend::uninitialize;
-    API.getAvaliableOutputs = &LGraphicBackend::getAvaliableOutputs;
+    API.getConnectedOutputs = &LGraphicBackend::getConnectedOutputs;
+    API.rendererGPUs = &LGraphicBackend::rendererGPUs;
     API.initializeOutput = &LGraphicBackend::initializeOutput;
     API.uninitializeOutput = &LGraphicBackend::uninitializeOutput;
-    API.flipOutputPage = &LGraphicBackend::flipOutputPage;
-    API.getOutputEGLDisplay = &LGraphicBackend::getOutputEGLDisplay;
+    API.hasBufferDamageSupport = &LGraphicBackend::hasBufferDamageSupport;
+    API.setOutputBufferDamage = &LGraphicBackend::setOutputBufferDamage;
     API.getOutputPhysicalSize = &LGraphicBackend::getOutputPhysicalSize;
     API.getOutputCurrentBufferIndex = &LGraphicBackend::getOutputCurrentBufferIndex;
+    API.getOutputBuffersCount = &LGraphicBackend::getOutputBuffersCount;
+    API.getOutputBuffer = &LGraphicBackend::getOutputBuffer;
     API.getOutputName = &LGraphicBackend::getOutputName;
     API.getOutputManufacturerName = &LGraphicBackend::getOutputManufacturerName;
     API.getOutputModelName = &LGraphicBackend::getOutputModelName;
@@ -1458,10 +700,21 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.getOutputModeSize = &LGraphicBackend::getOutputModeSize;
     API.getOutputModeRefreshRate = &LGraphicBackend::getOutputModeRefreshRate;
     API.getOutputModeIsPreferred = &LGraphicBackend::getOutputModeIsPreferred;
-    API.initializeCursor = &LGraphicBackend::initializeCursor;
     API.hasHardwareCursorSupport = &LGraphicBackend::hasHardwareCursorSupport;
     API.setCursorTexture = &LGraphicBackend::setCursorTexture;
     API.setCursorPosition = &LGraphicBackend::setCursorPosition;
+
+    // Buffers
+    API.getDMAFormats = &LGraphicBackend::getDMAFormats;
+    API.getAllocatorEGLDisplay = &LGraphicBackend::getAllocatorEGLDisplay;
+    API.getAllocatorEGLContext = &LGraphicBackend::getAllocatorEGLContext;
+    API.createTextureFromCPUBuffer = &LGraphicBackend::createTextureFromCPUBuffer;
+    API.createTextureFromWaylandDRM = &LGraphicBackend::createTextureFromWaylandDRM;
+    API.createTextureFromDMA = &LGraphicBackend::createTextureFromDMA;
+    API.updateTextureRect = &LGraphicBackend::updateTextureRect;
+    API.getTextureID = &LGraphicBackend::getTextureID;
+    API.getTextureTarget = &LGraphicBackend::getTextureTarget;
+    API.destroyTexture = &LGraphicBackend::destroyTexture;
+
     return &API;
 }
-

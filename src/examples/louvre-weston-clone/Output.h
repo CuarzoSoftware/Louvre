@@ -11,22 +11,36 @@ class Output : public LOutput
 public:
     Output();
 
-    void addExposedRect(const LRect &rect);
+    LTexture *backgroundTexture = nullptr;
 
+    Int32 topbarHeight;
+    LTexture *terminalIconTexture = nullptr;
+    LRect terminalIconRect;
+    Float32 terminalIconAlpha = 1.0f;
+    Float32 terminalIconAlphaPrev = 1.0f;
+
+    void fullDamage();
     void initializeGL() override;
+    void resizeGL() override;
+    void moveGL() override;
     void paintGL() override;
 
-    // Si es true vuelve a repintar toda la salida en el prox frame
-    bool fullRefresh = true;
+    // List of new damage calculated in prev frames
+    bool damageListCreated = false;
+    std::list<LRegion*>prevDamageList;
 
-    // Regiones expuestas del FRONT y BACK buffer
-    LRegion exposedRegionG[2];
+    // New damage calculated on this frame
+    LRegion newDamage;
+
+    // Output rect since the last paintGL()
+    LRect lastRect;
 
     // Almacena recta del cursor (si no es posible composición por hardware)
-    LRect cursorRectG[2];
+    LRect cursorRect[2];
 
-    // Indica si es la primera vez que se renderiza luego de la inicialización
-    bool first[2];
+    LSurface *fullscreenSurface = nullptr;
+    bool redrawClock = true;
+    LRect dstClockRect;
 };
 
 #endif // OUTPUT_H
