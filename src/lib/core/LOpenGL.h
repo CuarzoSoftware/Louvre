@@ -57,6 +57,17 @@ public:
      * @returns A new texture or `nullptr` in case of error.
      */
     static LTexture *loadTexture(const char *file);
+
+    /**
+     * @brief Check if a specific OpenGL extension is available.
+     *
+     * This function queries the list of supported OpenGL extensions and determines
+     * whether the specified extension is among them.
+     *
+     * @param extension The name of the OpenGL extension to check.
+     * @return `true` if the extension is available, `false` otherwise.
+     */
+    static bool hasExtension(const char *extension);
 };
 
 #endif // LOPENGL_H

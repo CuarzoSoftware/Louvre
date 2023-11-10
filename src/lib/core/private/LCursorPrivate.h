@@ -155,13 +155,29 @@ LPRIVATE_CLASS(LCursor)
 
 inline static void texture2Buffer(LCursor *cursor, const LSizeF &size)
 {
+    LPainter *painter = cursor->compositor()->imp()->painter;
     glBindFramebuffer(GL_FRAMEBUFFER, cursor->imp()->glFramebuffer);
-    cursor->compositor()->imp()->painter->imp()->scaleCursor(
+    painter->imp()->scaleCursor(
         cursor->texture(),
         LRect(0, 0, cursor->texture()->sizeB().w(), -cursor->texture()->sizeB().h()),
         LRect(0, size));
 
-    glReadPixels(0, 0, 64, 64, GL_RGBA , GL_UNSIGNED_BYTE, cursor->imp()->buffer);
+    if (painter->imp()->openGLExtensions.EXT_read_format_bgra)
+        glReadPixels(0, 0, 64, 64, GL_BGRA_EXT , GL_UNSIGNED_BYTE, cursor->imp()->buffer);
+    else
+    {
+        glReadPixels(0, 0, 64, 64, GL_RGBA , GL_UNSIGNED_BYTE, cursor->imp()->buffer);
+
+        UChar8 tmp;
+
+        // Convert to RGBA8888
+        for (Int32 i = 0; i < 64*64*4; i+=4)
+        {
+            tmp = cursor->imp()->buffer[i];
+            cursor->imp()->buffer[i] = cursor->imp()->buffer[i+2];
+            cursor->imp()->buffer[i+2] = tmp;
+        }
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 

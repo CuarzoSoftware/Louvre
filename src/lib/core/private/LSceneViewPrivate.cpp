@@ -7,8 +7,10 @@
 #include <LLog.h>
 #include <LFramebuffer.h>
 
-void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
+void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view)
 {
+    ThreadData *oD = currentThreadData;
+
     // Children first
     if (view->type() == Scene)
     {
@@ -21,7 +23,7 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
     else
     {
         for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
-            calcNewDamage(*it, oD);
+            calcNewDamage(*it);
     }
 
     // Quick view cache handle to reduce verbosity
@@ -228,12 +230,14 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view, ThreadData *oD)
     oD->opaqueTransposedSum.addRegion(cache->opaque);
 }
 
-void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view, ThreadData *oD)
+void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view)
 {
+    ThreadData *oD = currentThreadData;
+
     // Children first
     if (view->type() != Scene)
         for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
-            drawOpaqueDamage(*it, oD);
+            drawOpaqueDamage(*it);
 
     LView::LViewPrivate::ViewCache *cache = &view->imp()->cache;
 
@@ -303,8 +307,9 @@ void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view, ThreadData *oD
     }
 }
 
-void LSceneView::LSceneViewPrivate::drawBackground(ThreadData *oD, bool addToOpaqueSum)
+void LSceneView::LSceneViewPrivate::drawBackground(bool addToOpaqueSum)
 {
+    ThreadData *oD = currentThreadData;
     LRegion backgroundDamage = oD->newDamage;
     backgroundDamage.subtractRegion(oD->opaqueTransposedSum);
     oD->boxes = backgroundDamage.boxes(&oD->n);
@@ -326,8 +331,9 @@ void LSceneView::LSceneViewPrivate::drawBackground(ThreadData *oD, bool addToOpa
         oD->opaqueTransposedSum.addRegion(backgroundDamage);
 }
 
-void LSceneView::LSceneViewPrivate::drawTranslucentDamage(LView *view, ThreadData *oD)
+void LSceneView::LSceneViewPrivate::drawTranslucentDamage(LView *view)
 {
+    ThreadData *oD = currentThreadData;
     LView::LViewPrivate::ViewCache *cache = &view->imp()->cache;
 
     if (!view->isRenderable() || !cache->mapped || cache->occluded)
@@ -401,7 +407,7 @@ void LSceneView::LSceneViewPrivate::drawTranslucentDamage(LView *view, ThreadDat
     drawChildrenOnly:
     if (view->type() != Scene)
         for (std::list<LView*>::const_iterator it = view->children().cbegin(); it != view->children().cend(); it++)
-            drawTranslucentDamage(*it, oD);
+            drawTranslucentDamage(*it);
 }
 
 void LSceneView::LSceneViewPrivate::parentClipping(LView *parent, LRegion *region)

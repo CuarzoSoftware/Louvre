@@ -16,10 +16,12 @@ using namespace Louvre;
 LPainter::LPainter()
 {
     m_imp = new LPainterPrivate();
-
     imp()->painter = this;
 
     compositor()->imp()->threadsMap[std::this_thread::get_id()].painter = this;
+
+    imp()->updateExtensions();
+    imp()->updateCPUFormats();
 
     // Open the vertex/fragment shaders
     GLchar vShaderStr[] = R"(
@@ -354,6 +356,38 @@ void LPainter::bindFramebuffer(LFramebuffer *framebuffer)
 LFramebuffer *LPainter::boundFramebuffer() const
 {
     return imp()->fb;
+}
+
+void LPainter::LPainterPrivate::updateExtensions()
+{
+    openGLExtensions.EXT_read_format_bgra = LOpenGL::hasExtension("GL_EXT_read_format_bgra");
+}
+
+void LPainter::LPainterPrivate::updateCPUFormats()
+{
+    for (LDMAFormat *fmt : *compositor()->imp()->graphicBackend->getDMAFormats())
+    {
+        if (fmt->modifier != DRM_FORMAT_MOD_LINEAR)
+            continue;
+
+        switch (fmt->format)
+        {
+        case DRM_FORMAT_ARGB8888:
+            cpuFormats.ARGB8888 = true;
+            break;
+        case DRM_FORMAT_XRGB8888:
+            cpuFormats.XRGB8888 = true;
+            break;
+        case DRM_FORMAT_ABGR8888:
+            cpuFormats.ABGR8888 = true;
+            break;
+        case DRM_FORMAT_XBGR8888:
+            cpuFormats.XBGR8888 = true;
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 void LPainter::LPainterPrivate::setupProgram()

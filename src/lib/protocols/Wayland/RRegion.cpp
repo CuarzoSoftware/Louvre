@@ -3,7 +3,7 @@
 #include <LCompositor.h>
 #include <LClient.h>
 #include <LRegion.h>
-#include <stdio.h>
+#include <pixman.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::Wayland;
@@ -40,5 +40,11 @@ RRegion::~RRegion()
 
 const LRegion &RRegion::region() const
 {
-    return imp()->region;
+    if (!imp()->pendingSubtract.empty())
+    {
+        pixman_region32_subtract(&imp()->added.m_region, &imp()->added.m_region, &imp()->pendingSubtract.m_region);
+        imp()->pendingSubtract.clear();
+    }
+
+    return imp()->added;
 }

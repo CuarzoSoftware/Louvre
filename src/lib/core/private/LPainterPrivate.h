@@ -109,6 +109,22 @@ LPRIVATE_CLASS(LPainter)
 
     LPainter *painter;
 
+    struct OpenGLExtensions
+    {
+        bool EXT_read_format_bgra;
+    } openGLExtensions;
+
+    void updateExtensions();
+
+    struct CPUFormats
+    {
+        bool ARGB8888 = false;
+        bool XRGB8888 = false;
+        bool ABGR8888 = false;
+        bool XBGR8888 = false;
+    } cpuFormats;
+
+    void updateCPUFormats();
     void setupProgram();
     void setupProgramScaler();
 

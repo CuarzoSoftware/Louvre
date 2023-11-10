@@ -8,6 +8,7 @@
 #include <LOutput.h>
 #include <LLog.h>
 #include <FreeImage.h>
+#include <string.h>
 
 using namespace Louvre;
 
@@ -152,4 +153,29 @@ LTexture *LOpenGL::loadTexture(const char *file)
     texture->setDataB(size, pitch, DRM_FORMAT_ARGB8888, pixels);
     FreeImage_Unload(convertedBitmap);
     return texture;
+}
+
+bool LOpenGL::hasExtension(const char *extension)
+{
+    const char *extensions = (const char*)glGetString(GL_EXTENSIONS);
+    size_t extlen = strlen(extension);
+    const char *end = extensions + strlen(extensions);
+
+    while (extensions < end)
+    {
+        if (*extensions == ' ')
+        {
+            extensions++;
+            continue;
+        }
+
+        size_t n = strcspn(extensions, " ");
+
+        if (n == extlen && strncmp(extension, extensions, n) == 0)
+            return true;
+
+        extensions += n;
+    }
+
+    return false;
 }

@@ -1,4 +1,5 @@
 #include <protocols/Wayland/private/RRegionPrivate.h>
+#include <pixman.h>
 
 void RRegion::RRegionPrivate::resource_destroy(wl_resource *resource)
 {
@@ -28,7 +29,9 @@ void RRegion::RRegionPrivate::add(wl_client *client, wl_resource *resource, Int3
     else if (height <= 0)
         return;
 
-    rRegion->imp()->region.addRect(LRect(x, y, width, height));
+    pixman_region32_union_rect(&rRegion->imp()->added.m_region,
+                               &rRegion->imp()->added.m_region,
+                               x, y, width, height);
 }
 
 void RRegion::RRegionPrivate::subtract(wl_client *client, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height)
@@ -47,5 +50,7 @@ void RRegion::RRegionPrivate::subtract(wl_client *client, wl_resource *resource,
     else if (height <= 0)
         return;
 
-    rRegion->imp()->region.subtractRect(LRect(x, y, width, height));
+    pixman_region32_union_rect(&rRegion->imp()->pendingSubtract.m_region,
+                               &rRegion->imp()->pendingSubtract.m_region,
+                               x, y, width, height);
 }

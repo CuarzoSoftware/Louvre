@@ -265,7 +265,6 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
         {
             glUseProgram(painter->imp()->programObjectScaler);
             painter->imp()->currentUniformsScaler = &painter->imp()->uniformsScaler;
-
         }
 
         Int32 wScale = ceilf(wScaleF);
@@ -328,14 +327,35 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
         if (compositor()->imp()->graphicBackend->rendererGPUs() == 1)
         {
             glFlush();
-            ret = textureCopy->imp()->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_BGRA8888, dstSize, painter->imp()->output);
+            ret = textureCopy->imp()->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
         }
         else
         {
-            UChar8 *cpuBuffer = (UChar8*)malloc(dstSize.w() * dstSize.h() * 4);            
-            imp()->readPixels(LRect(0, dstSize), 0, dstSize.w(), GL_BGRA, GL_UNSIGNED_BYTE, cpuBuffer);
+            UChar8 *cpuBuffer = (UChar8*)malloc(dstSize.w() * dstSize.h() * 4);
+            GLenum glFormat = painter->imp()->openGLExtensions.EXT_read_format_bgra ? GL_BGRA_EXT : GL_RGBA;
+            imp()->readPixels(LRect(0, dstSize), 0, dstSize.w(), glFormat, GL_UNSIGNED_BYTE, cpuBuffer);
             textureCopy = new LTexture();
-            ret = textureCopy->setDataB(dstSize, dstSize.w() * 4, DRM_FORMAT_ARGB8888, cpuBuffer);
+
+            if (glFormat == GL_BGRA_EXT)
+                ret = textureCopy->setDataB(dstSize, dstSize.w() * 4, DRM_FORMAT_ARGB8888, cpuBuffer);
+            else
+            {
+                if (painter->imp()->cpuFormats.ABGR8888)
+                    ret = textureCopy->setDataB(dstSize, dstSize.w() * 4, DRM_FORMAT_ABGR8888, cpuBuffer);
+                else
+                {
+                    UChar8 tmp;
+
+                    for (Int32 i = 0; i < dstSize.area() * 4; i+=4)
+                    {
+                        tmp = cpuBuffer[i];
+                        cpuBuffer[i] = cpuBuffer[i+2];
+                        cpuBuffer[i+2] = tmp;
+                    }
+
+                    ret = textureCopy->setDataB(dstSize, dstSize.w() * 4, DRM_FORMAT_ARGB8888, cpuBuffer);
+                }
+            }
             free(cpuBuffer);
             glDeleteTextures(1, &texCopy);
         }
@@ -380,7 +400,7 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
             glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, srcRect.x(), srcRect.y(), srcRect.w(), srcRect.h(), 0);
             glFlush();
             textureCopy = new LTexture();
-            ret = textureCopy->imp()->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_BGRA8888, dstSize, painter->imp()->output);
+            ret = textureCopy->imp()->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
             glDeleteFramebuffers(1, &framebuffer);
         }
         // Scaled draw to new texture fb
@@ -399,7 +419,7 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
             painter->imp()->scaleTexture((LTexture*)this, srcRect, dstSize);
             glFlush();
             textureCopy = new LTexture();
-            ret = textureCopy->imp()->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_BGRA8888, dstSize, painter->imp()->output);
+            ret = textureCopy->imp()->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
             glDeleteFramebuffers(1, &framebuffer);
         }
     }
@@ -444,12 +464,32 @@ Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQ
         painter->imp()->scaleTexture((LTexture*)this, srcRect, dstSize);
 
         UChar8 *cpuBuffer = (UChar8*)malloc(dstSize.w() * dstSize.h() * 4);
-        imp()->readPixels(LRect(0, dstSize), 0, dstSize.w(), GL_BGRA, GL_UNSIGNED_BYTE, cpuBuffer);
+        GLenum glFormat = painter->imp()->openGLExtensions.EXT_read_format_bgra ? GL_BGRA_EXT : GL_RGBA;
+        imp()->readPixels(LRect(0, dstSize), 0, dstSize.w(), glFormat, GL_UNSIGNED_BYTE, cpuBuffer);
         textureCopy = new LTexture();
-        ret = textureCopy->setDataB(dstSize, dstSize.w() * 4, DRM_FORMAT_ARGB8888, cpuBuffer);
+
+        if (glFormat == GL_BGRA_EXT)
+            ret = textureCopy->setDataB(dstSize, dstSize.w() * 4, DRM_FORMAT_ARGB8888, cpuBuffer);
+        else
+        {
+            if (painter->imp()->cpuFormats.ABGR8888)
+                ret = textureCopy->setDataB(dstSize, dstSize.w() * 4, DRM_FORMAT_ABGR8888, cpuBuffer);
+            else
+            {
+                UChar8 tmp;
+
+                for (Int32 i = 0; i < dstSize.area() * 4; i+=4)
+                {
+                    tmp = cpuBuffer[i];
+                    cpuBuffer[i] = cpuBuffer[i+2];
+                    cpuBuffer[i+2] = tmp;
+                }
+
+                ret = textureCopy->setDataB(dstSize, dstSize.w() * 4, DRM_FORMAT_ARGB8888, cpuBuffer);
+            }
+        }
 
         free(cpuBuffer);
-
         glDeleteRenderbuffers(1, &renderbuffer);
         glDeleteFramebuffers(1, &framebuffer);
     }
@@ -522,7 +562,10 @@ bool LTexture::save(const char *path) const
         }
 
         buffer = (UChar8 *)malloc(sizeB().w()*sizeB().h()*4);
-        imp()->readPixels(LRect(0, sizeB()), 0, sizeB().w(), GL_BGRA, GL_UNSIGNED_BYTE, buffer);
+        imp()->readPixels(LRect(0, sizeB()),
+                          0, sizeB().w(),
+                          painter->imp()->openGLExtensions.EXT_read_format_bgra ? GL_BGRA_EXT : GL_RGBA,
+                          GL_UNSIGNED_BYTE, buffer);
         glDeleteFramebuffers(1, &framebuffer);
 
         goto save;
@@ -556,7 +599,10 @@ bool LTexture::save(const char *path) const
 
         painter->imp()->scaleTexture((LTexture*)this, LSize(sizeB().w(), -sizeB().h()), sizeB());
         buffer = (UChar8 *)malloc(sizeB().w()*sizeB().h()*4);
-        imp()->readPixels(LRect(0, sizeB()), 0, sizeB().w(), GL_BGRA, GL_UNSIGNED_BYTE, buffer);
+        imp()->readPixels(LRect(0, sizeB()),
+                          0, sizeB().w(),
+                          painter->imp()->openGLExtensions.EXT_read_format_bgra ? GL_BGRA_EXT : GL_RGBA,
+                          GL_UNSIGNED_BYTE, buffer);
         glDeleteRenderbuffers(1, &renderbuffer);
         glDeleteFramebuffers(1, &framebuffer);
     }
@@ -564,6 +610,19 @@ bool LTexture::save(const char *path) const
     save:
 
     {
+
+        if (!painter->imp()->openGLExtensions.EXT_read_format_bgra)
+        {
+            UChar8 tmp;
+
+            for (Int32 i = 0; i < sizeB().area() * 4; i+=4)
+            {
+                tmp = buffer[i];
+                buffer[i] = buffer[i + 2];
+                buffer[i + 2] = tmp;
+            }
+        }
+
         FIBITMAP *image = FreeImage_ConvertFromRawBits(buffer,
                                              sizeB().w(),
                                              sizeB().h(),

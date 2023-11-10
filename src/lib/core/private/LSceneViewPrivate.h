@@ -46,10 +46,10 @@ LPRIVATE_CLASS(LSceneView)
     // Quck handle to current output data
     ThreadData *currentThreadData;
 
-    void calcNewDamage(LView *view, ThreadData *oD);
-    void drawOpaqueDamage(LView *view, ThreadData *oD);
-    void drawBackground(ThreadData *oD, bool addToOpaqueSum);
-    void drawTranslucentDamage(LView *view, ThreadData *oD);
+    void calcNewDamage(LView *view);
+    void drawOpaqueDamage(LView *view);
+    void drawBackground(bool addToOpaqueSum);
+    void drawTranslucentDamage(LView *view);
 
     void parentClipping(LView *parent, LRegion *region);
 

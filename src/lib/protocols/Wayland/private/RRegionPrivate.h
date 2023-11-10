@@ -12,7 +12,8 @@ LPRIVATE_CLASS(RRegion)
     static void add(wl_client *client, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height);
     static void subtract(wl_client *client, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height);
 
-    LRegion region;
+    LRegion added;
+    LRegion pendingSubtract;
 };
 
 #endif // RREGIONPRIVATE_H

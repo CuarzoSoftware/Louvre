@@ -1,6 +1,7 @@
 #include <private/LSurfaceViewPrivate.h>
 #include <private/LViewPrivate.h>
 #include <private/LPainterPrivate.h>
+#include <LSubsurfaceRole.h>
 #include <LSurface.h>
 #include <LOutput.h>
 
@@ -230,7 +231,12 @@ void LSurfaceView::requestNextFrame(LOutput *output)
     }
 
     if (clearDamage)
+    {
         surface()->requestNextFrame();
+
+        if (surface()->subsurface() && surface()->subsurface()->isSynced() && surface()->parent())
+            surface()->parent()->requestNextFrame(false);
+    }
 
     view->imp()->threadsMap[output->threadId()].lastRenderedDamageId = surface()->damageId();
 }
