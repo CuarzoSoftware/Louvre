@@ -3,6 +3,8 @@
 
 #include <LLayerView.h>
 
+using namespace Louvre;
+
 class Toplevel;
 class InputRect;
 class ToplevelButton;

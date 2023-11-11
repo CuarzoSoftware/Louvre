@@ -13,12 +13,21 @@ using namespace Louvre;
 
 LPRIVATE_CLASS(LView)
 
+    enum LViewState : UInt32
+    {
+        /* Sometimes view ordering can change while a scene is emitting an event,
+         * in such cases it must start again. These flags are for preventing re-sending
+         * the event to the same view */
+        PointerMoveDone         = 1 << 0,
+        PointerButtonDone       = 1 << 2,
+        PointerAxisDone         = 1 << 3,
+        KeyModifiersDone        = 1 << 4,
+        KeyDone                 = 1 << 5,
+    };
+
+    UInt32 state = 0;
+
     void removeThread(Louvre::LView *view, std::thread::id thread);
-    UInt32 pointerMoveSerial = 0;
-    UInt32 pointerButtonSerial = 0;
-    UInt32 pointerAxisSerial = 0;
-    UInt32 keyModifiersSerial = 0;
-    UInt32 keySerial = 0;
 
     UInt32 type;
     LScene *scene = nullptr;
@@ -94,6 +103,14 @@ LPRIVATE_CLASS(LView)
 
     void markAsChangedOrder(bool includeChildren = true);
     void damageScene(LSceneView *s);
+
+    inline static void removeFlagWithChildren(LView *view, UInt32 flag)
+    {
+        view->imp()->state &= ~flag;
+
+        for (LView *child : view->imp()->children)
+            removeFlagWithChildren(child, flag);
+    }
 };
 
 #endif // LVIEWPRIVATE_H

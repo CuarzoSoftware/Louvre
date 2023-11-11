@@ -13,6 +13,8 @@
 
 #include <unistd.h>
 
+using LVS = LView::LViewPrivate::LViewState;
+
 LScene::LScene()
 {
     m_imp = new LScenePrivate();
@@ -85,11 +87,11 @@ LView *LScene::handlePointerMoveEvent(Float32 x, Float32 y, bool absolute, LPoin
     else
         cursor()->move(x, y);
 
-    imp()->pointerMoveSerial++;
     imp()->listChanged = false;
     imp()->pointerIsBlocked = false;
 
     imp()->handlingPointerMove = true;
+    LView::LViewPrivate::removeFlagWithChildren(mainView(), LVS::PointerMoveDone);
     imp()->handlePointerMove(mainView(), cursor()->pos(), &view);
     imp()->handlingPointerMove = false;
 
@@ -178,10 +180,9 @@ void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonS
     if (imp()->handlingPointerButton)
         return;
 
-    imp()->pointerButtonSerial++;
     imp()->listChanged = false;
-
     imp()->handlingPointerButton = true;
+    LView::LViewPrivate::removeFlagWithChildren(mainView(), LVS::PointerButtonDone);
     imp()->handlePointerButton(mainView(), button, state);
     imp()->handlingPointerButton = false;
 
@@ -296,10 +297,9 @@ void LScene::handlePointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discrete
     if (imp()->handlingPointerAxisEvent)
         return;
 
-    imp()->pointerAxisSerial++;
     imp()->listChanged = false;
-
     imp()->handlingPointerAxisEvent = true;
+    LView::LViewPrivate::removeFlagWithChildren(mainView(), LVS::PointerAxisDone);
     imp()->handlePointerAxisEvent(mainView(), axisX, axisY, discreteX, discreteY, source);
     imp()->handlingPointerAxisEvent = false;
 
@@ -325,10 +325,9 @@ void LScene::handleKeyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 lo
     if (imp()->handlingKeyModifiersEvent)
         return;
 
-    imp()->keyModifiersSerial++;
     imp()->listChanged = false;
-
     imp()->handlingKeyModifiersEvent = true;
+    LView::LViewPrivate::removeFlagWithChildren(mainView(), LVS::KeyModifiersDone);
     imp()->handleKeyModifiersEvent(mainView(), depressed, latched, locked, group);
     imp()->handlingKeyModifiersEvent = false;
 
@@ -342,10 +341,9 @@ void LScene::handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState)
     if (imp()->handlingKeyEvent)
         return;
 
-    imp()->keySerial++;
     imp()->listChanged = false;
-
     imp()->handlingKeyEvent = true;
+    LView::LViewPrivate::removeFlagWithChildren(mainView(), LVS::KeyDone);
     imp()->handleKeyEvent(mainView(), keyCode, keyState);
     imp()->handlingKeyEvent = false;
 

@@ -8,6 +8,8 @@
 #include <LFramebuffer.h>
 #include <LLog.h>
 
+using LVS = LView::LViewPrivate::LViewState;
+
 LView *LScene::LScenePrivate::viewAt(LView *view, const LPoint &pos)
 {
     LView *v = nullptr;
@@ -156,9 +158,9 @@ bool LScene::LScenePrivate::handlePointerMove(LView *view, const LPoint &pos, LV
         if (!(*firstViewFound))
             *firstViewFound = view;
 
-        if (pointerMoveSerial != view->imp()->pointerMoveSerial)
+        if (!(view->imp()->state & LVS::PointerMoveDone))
         {
-            view->imp()->pointerMoveSerial = pointerMoveSerial;
+            view->imp()->state |= LVS::PointerMoveDone;
 
             if (view->pointerIsOver())
             {
@@ -182,9 +184,9 @@ bool LScene::LScenePrivate::handlePointerMove(LView *view, const LPoint &pos, LV
     }
     else
     {
-        if (pointerMoveSerial != view->imp()->pointerMoveSerial)
+        if (!(view->imp()->state & LVS::PointerMoveDone))
         {
-            view->imp()->pointerMoveSerial = pointerMoveSerial;
+            view->imp()->state |= LVS::PointerMoveDone;
 
             if (view->pointerIsOver())
             {
@@ -227,10 +229,10 @@ bool LScene::LScenePrivate::handlePointerButton(LView *view, LPointer::Button bu
         if (!handlePointerButton(*it, button, state))
             return false;
 
-    if (view->imp()->pointerButtonSerial == pointerButtonSerial)
+    if (view->imp()->state & LVS::PointerButtonDone)
         return true;
 
-    view->imp()->pointerButtonSerial = pointerButtonSerial;
+    view->imp()->state |= LVS::PointerButtonDone;
 
     if (view->imp()->pointerIsOver)
         view->pointerButtonEvent(button, state);
@@ -256,10 +258,10 @@ bool LScene::LScenePrivate::handlePointerAxisEvent(LView *view, Float64 axisX, F
         if (!handlePointerAxisEvent(*it, axisX, axisY, discreteX, discreteY, source))
             return false;
 
-    if (view->imp()->pointerAxisSerial == pointerAxisSerial)
+    if (view->imp()->state & LVS::PointerAxisDone)
         return true;
 
-    view->imp()->pointerAxisSerial = pointerAxisSerial;
+    view->imp()->state |= LVS::PointerAxisDone;
 
     if (view->imp()->pointerIsOver)
         view->pointerAxisEvent(axisX, axisY, discreteX, discreteY, source);
@@ -285,10 +287,10 @@ bool LScene::LScenePrivate::handleKeyModifiersEvent(LView *view, UInt32 depresse
         if (!handleKeyModifiersEvent(*it, depressed, latched, locked, group))
             return false;
 
-    if (view->imp()->keyModifiersSerial == keyModifiersSerial)
+    if (view->imp()->state & LVS::KeyModifiersDone)
         return true;
 
-    view->imp()->keyModifiersSerial = keyModifiersSerial;
+    view->imp()->state |= LVS::KeyModifiersDone;
 
     view->keyModifiersEvent(depressed, latched, locked, group);
 
@@ -313,10 +315,10 @@ bool LScene::LScenePrivate::handleKeyEvent(LView *view, UInt32 keyCode, UInt32 k
         if (!handleKeyEvent(*it, keyCode, keyState))
             return false;
 
-    if (view->imp()->keySerial == keySerial)
+    if (view->imp()->state & LVS::KeyDone)
         return true;
 
-    view->imp()->keySerial = keySerial;
+    view->imp()->state |= LVS::KeyDone;
 
     view->keyEvent(keyCode, keyState);
 
