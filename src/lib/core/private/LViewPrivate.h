@@ -23,42 +23,21 @@ LPRIVATE_CLASS(LView)
         PointerAxisDone         = 1 << 3,
         KeyModifiersDone        = 1 << 4,
         KeyDone                 = 1 << 5,
+
+        RepaintCalled           = 1 << 6,
+        ColorFactor             = 1 << 7,
+        Visible                 = 1 << 8,
+        Input                   = 1 << 9,
+        Scaling                 = 1 << 10,
+        ParentScaling           = 1 << 11,
+        ParentOffset            = 1 << 12,
+        Clipping                = 1 << 13,
+        ParentClipping          = 1 << 14,
+        ParentOpacity           = 1 << 15,
+        ForceRequestNextFrame   = 1 << 16,
+        PointerIsOver           = 1 << 17,
+        BlockPointer            = 1 << 18
     };
-
-    UInt32 state = 0;
-
-    void removeThread(Louvre::LView *view, std::thread::id thread);
-
-    UInt32 type;
-    LScene *scene = nullptr;
-    LView *parent = nullptr;
-    std::list<LView*>children;
-    std::list<LView*>::iterator parentLink;
-    std::list<LView*>::iterator compositorLink;
-    bool repaintCalled = false;
-    GLenum sFactor = GL_SRC_ALPHA;
-    GLenum dFactor = GL_ONE_MINUS_SRC_ALPHA;
-    LRGBAF colorFactor = {1.f, 1.f, 1.f, 1.f};
-    bool colorFactorEnabled = false;
-
-    Float32 opacity = 1.f;
-    LSizeF scalingVector = LSizeF(1.f, 1.f);
-
-    bool visible = true;
-    bool inputEnabled = false;
-    bool scalingEnabled = false;
-    bool parentScalingEnabled = false;
-    bool parentOffsetEnabled = true;
-    bool clippingEnabled = false;
-    bool parentClippingEnabled = false;
-    bool parentOpacityEnabled = true;
-    bool forceRequestNextFrameEnabled = false;
-
-    LRect clippingRect;
-
-    LPoint tmpPos;
-    LSize tmpSize;
-    LSizeF tmpScalingVector;
 
     // This is used for detecting changes on a view since the last time it was drawn on a specific output
     struct ViewThreadData
@@ -92,21 +71,57 @@ LPRIVATE_CLASS(LView)
         bool scalingEnabled;
         bool isFullyTrans;
     };
-
+    UInt32 state = Visible | ParentOffset | ParentOpacity | BlockPointer;
     ViewCache cache;
 
+    UInt32 type;
+    LView *parent = nullptr;
+    std::list<LView*>children;
+    GLenum sFactor = GL_SRC_ALPHA;
+    GLenum dFactor = GL_ONE_MINUS_SRC_ALPHA;
+    LRGBAF colorFactor = {1.f, 1.f, 1.f, 1.f};
+    Float32 opacity = 1.f;
+    LSizeF scalingVector = LSizeF(1.f, 1.f);
+    LRect clippingRect;
+    LPoint tmpPoint;
+    LSize tmpSize;
+    LPointF tmpPointF;
+
     std::map<std::thread::id,ViewThreadData>threadsMap;
+    LScene *scene = nullptr;
+    std::list<LView*>::iterator parentLink;
+    std::list<LView*>::iterator compositorLink;
 
-    // Input related
-    bool pointerIsOver = false;
-    bool blockPointerEnabled = true;
-
+    void removeThread(Louvre::LView *view, std::thread::id thread);
     void markAsChangedOrder(bool includeChildren = true);
     void damageScene(LSceneView *s);
 
+    inline void removeFlag(UInt32 flag)
+    {
+        state &= ~flag;
+    }
+
+    inline void addFlag(UInt32 flag)
+    {
+        state |= flag;
+    }
+
+    inline bool hasFlag(UInt32 flag)
+    {
+        return state & flag;
+    }
+
+    inline void setFlag(UInt32 flag, bool enable)
+    {
+        if (enable)
+            addFlag(flag);
+        else
+            removeFlag(flag);
+    }
+
     inline static void removeFlagWithChildren(LView *view, UInt32 flag)
     {
-        view->imp()->state &= ~flag;
+        view->imp()->removeFlag(flag);
 
         for (LView *child : view->imp()->children)
             removeFlagWithChildren(child, flag);

@@ -35,6 +35,7 @@ public:
     Int32 currentBufferIndex() const override;
     const LTexture *texture(Int32 index = 0) const override;
     void setFramebufferDamage(const LRegion *damage) override;
+    Transform transform() const override;
 
 LPRIVATE_IMP(LOutputFramebuffer)
 };

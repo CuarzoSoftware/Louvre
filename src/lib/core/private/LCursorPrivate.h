@@ -9,7 +9,7 @@
 
 using namespace Louvre;
 
-inline static void texture2Buffer(LCursor *cursor, const LSizeF &size);
+inline static void texture2Buffer(LCursor *cursor, const LSizeF &size, LFramebuffer::Transform transform);
 
 LPRIVATE_CLASS(LCursor)
     LRect rect;
@@ -131,7 +131,7 @@ LPRIVATE_CLASS(LCursor)
 
                 if (cursor()->hasHardwareSupport(o) && (textureChanged || !found))
                 {
-                    texture2Buffer(cursor(), size*o->scale());
+                    texture2Buffer(cursor(), size*o->scale(), o->transform());
                     compositor()->imp()->graphicBackend->setCursorTexture(o, buffer);
                 }
             }
@@ -144,6 +144,18 @@ LPRIVATE_CLASS(LCursor)
             if (cursor()->hasHardwareSupport(o))
             {
                 LPointF p = newPosS - LPointF(o->pos());
+
+                if (o->transform() == LFramebuffer::Flipped)
+                    p.setX(o->rect().w() - p.x() - size.w());
+                else if (o->transform() == LFramebuffer::Clock90)
+                {
+                    Float32 tmp = p.x();
+                    p.setX(o->rect().h() - p.y() - size.h());
+                    p.setY(tmp);
+                }
+                else if (o->transform() == LFramebuffer::Flipped180)
+                    p.setY(o->rect().h() - p.y() - size.y());
+
                 compositor()->imp()->graphicBackend->setCursorPosition(o, p*o->scale());
             }
         }
@@ -153,14 +165,22 @@ LPRIVATE_CLASS(LCursor)
     }
 };
 
-inline static void texture2Buffer(LCursor *cursor, const LSizeF &size)
+inline static void texture2Buffer(LCursor *cursor, const LSizeF &size, LFramebuffer::Transform transform)
 {
     LPainter *painter = cursor->compositor()->imp()->painter;
     glBindFramebuffer(GL_FRAMEBUFFER, cursor->imp()->glFramebuffer);
+    LRect src;
+
+    if (transform == LFramebuffer::Normal || transform == LFramebuffer::Flipped || transform == LFramebuffer::Flipped180)
+            src = LRect(0, 0, cursor->texture()->sizeB().w(), -cursor->texture()->sizeB().h());
+    else if (transform == LFramebuffer::Clock90)
+            src = LRect(0, 0, -cursor->texture()->sizeB().w(), cursor->texture()->sizeB().h());
+
     painter->imp()->scaleCursor(
         cursor->texture(),
-        LRect(0, 0, cursor->texture()->sizeB().w(), -cursor->texture()->sizeB().h()),
-        LRect(0, size));
+        src,
+        LRect(0, size),
+        transform);
 
     if (painter->imp()->openGLExtensions.EXT_read_format_bgra)
         glReadPixels(0, 0, 64, 64, GL_BGRA_EXT , GL_UNSIGNED_BYTE, cursor->imp()->buffer);

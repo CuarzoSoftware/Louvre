@@ -51,6 +51,11 @@ void LRenderBuffer::setFramebufferDamage(const LRegion *damage)
     L_UNUSED(damage);
 }
 
+LFramebuffer::Transform LRenderBuffer::transform() const
+{
+    return LFramebuffer::Normal;
+}
+
 void LRenderBuffer::setScale(Int32 scale) const
 {
     if (scale <= 0)

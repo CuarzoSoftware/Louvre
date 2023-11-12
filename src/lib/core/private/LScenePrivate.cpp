@@ -171,7 +171,7 @@ bool LScene::LScenePrivate::handlePointerMove(LView *view, const LPoint &pos, LV
             }
             else
             {
-                view->imp()->pointerIsOver = true;
+                view->imp()->addFlag(LVS::PointerIsOver);
                 view->pointerEnterEvent(viewLocalPos(view, pos));
 
                 if (listChanged)
@@ -190,7 +190,7 @@ bool LScene::LScenePrivate::handlePointerMove(LView *view, const LPoint &pos, LV
 
             if (view->pointerIsOver())
             {
-                view->imp()->pointerIsOver = false;
+                view->imp()->removeFlag(LVS::PointerIsOver);
                 view->pointerLeaveEvent();
 
                 if (listChanged)
@@ -234,7 +234,7 @@ bool LScene::LScenePrivate::handlePointerButton(LView *view, LPointer::Button bu
 
     view->imp()->state |= LVS::PointerButtonDone;
 
-    if (view->imp()->pointerIsOver)
+    if (view->imp()->hasFlag(LVS::PointerIsOver))
         view->pointerButtonEvent(button, state);
 
     if (listChanged)
@@ -263,7 +263,7 @@ bool LScene::LScenePrivate::handlePointerAxisEvent(LView *view, Float64 axisX, F
 
     view->imp()->state |= LVS::PointerAxisDone;
 
-    if (view->imp()->pointerIsOver)
+    if (view->imp()->hasFlag(LVS::PointerIsOver))
         view->pointerAxisEvent(axisX, axisY, discreteX, discreteY, source);
 
     if (listChanged)

@@ -5,6 +5,7 @@
 #include <LSize.h>
 #include <LRect.h>
 #include <LRegion.h>
+#include <LFramebuffer.h>
 
 #include <thread>
 #include <GLES2/gl2.h>
@@ -126,6 +127,26 @@ public:
      * @return A pointer to the LFramebuffer instance associated with the output.
      */
     LFramebuffer *framebuffer() const;
+
+    /**
+     * @brief Get the framebuffer transformation.
+     *
+     * This method returns the current framebuffer transformation applied with setTransform().
+     * The default value is LFramebuffer::Normal.
+     *
+     * @return The framebuffer transformation.
+     */
+    LFramebuffer::Transform transform() const;
+
+    /**
+     * @brief Set the framebuffer transformation.
+     *
+     * This method sets the transformation for the framebuffer, allowing you to adjust the orientation of the output.
+     * If the specified transformation includes a 90 or 270-degree rotation, the width and height of the output are swapped accordingly.
+     *
+     * @param transform The framebuffer transformation to apply.
+     */
+    void setTransform(LFramebuffer::Transform transform) const;
 
     /**
      * @brief Return the index of the current buffer.

@@ -35,7 +35,8 @@ LPRIVATE_CLASS(LPainter)
         color,
         colorFactor,
         colorFactorEnabled,
-        alpha;
+        alpha,
+        transform;
     } uniforms, uniformsExternal;
 
     Uniforms *currentUniforms;
@@ -92,11 +93,9 @@ LPRIVATE_CLASS(LPainter)
         GLint mode;
         LGLColor color;
         LGLVec4F colorFactor;
-        GLint colorFactorEnabled;
+        bool colorFactorEnabled = false;
         GLfloat alpha;
-        LGLVec4F samplerBounds;
-        LGLVec2F pixelSize;
-        LGLSize iters;
+        GLint transform;
     };
 
     ShaderState state, stateExternal;
@@ -129,6 +128,19 @@ LPRIVATE_CLASS(LPainter)
     void setupProgramScaler();
 
     // Shader state update
+
+    inline void shaderSetTransform(GLint transform)
+    {
+        #if LPAINTER_TRACK_UNIFORMS == 1
+        if (currentState->transform != transform)
+        {
+            currentState->transform = transform;
+            glUniform1i(currentUniforms->transform, transform);
+        }
+        #else
+        glUniform1i(currentUniforms->transform, transform);
+        #endif
+    }
 
     inline void shaderSetTexSize(Int32 w, Int32 h)
     {
@@ -219,15 +231,16 @@ LPRIVATE_CLASS(LPainter)
             currentState->colorFactor.w = b;
             currentState->colorFactor.h = a;
             glUniform4f(currentUniforms->colorFactor, r, g, b, a);
-            shaderSetColorFactorEnabled(r != 1.f || g != 1.f || b != 1.f || a != 1.f);
         }
+
+        shaderSetColorFactorEnabled(r != 1.f || g != 1.f || b != 1.f || a != 1.f);
         #else
             glUniform4f(currentUniforms->colorFactor, r, g, b, a);
             shaderSetColorFactorEnabled(r != 1.f || g != 1.f || b != 1.f || a != 1.f);
         #endif
     }
 
-    inline void shaderSetColorFactorEnabled(GLint enabled)
+    inline void shaderSetColorFactorEnabled(bool enabled)
     {
         #if LPAINTER_TRACK_UNIFORMS == 1
         if (currentState->colorFactorEnabled != enabled)
@@ -290,11 +303,42 @@ LPRIVATE_CLASS(LPainter)
 
     inline void setViewport(Int32 x, Int32 y, Int32 w, Int32 h)
     {
+        shaderSetTransform(fb->transform());
+
         x -= fb->rect().x();
         y -= fb->rect().y();
 
-        if (fbId == 0)
+        if (fb->transform() == LFramebuffer::Normal)
+        {
+            if (fbId == 0)
+                y = fb->rect().h() - y - h;
+        }
+        else if (fb->transform() == LFramebuffer::Clock90)
+        {
+            Int32 tmp = x;
+            x = fb->rect().h() - y - h;
+            y = tmp;
+            tmp = w;
+            w = h;
+            h = tmp;
+
+            if (fbId == 0)
+                y = fb->rect().w() - y - h;
+        }
+        else if (fb->transform() == LFramebuffer::Flipped)
+        {
+            x = fb->rect().w() - x - w;
+
+            if (fbId == 0)
+                y = fb->rect().h() - y - h;
+        }
+        else if (fb->transform() == LFramebuffer::Flipped180)
+        {
             y = fb->rect().h() - y - h;
+
+            if (fbId == 0)
+                y = fb->rect().h() - y - h;
+        }
 
         Int32 fbScale = fb->scale();
 
@@ -425,7 +469,7 @@ LPRIVATE_CLASS(LPainter)
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     }
 
-    inline void scaleCursor(LTexture *texture, const LRect &src, const LRect &dst)
+    inline void scaleCursor(LTexture *texture, const LRect &src, const LRect &dst, LFramebuffer::Transform transform)
     {
         GLenum target = texture->target();
         GLuint textureId = texture->id(output);
@@ -441,6 +485,7 @@ LPRIVATE_CLASS(LPainter)
         shaderSetAlpha(1.f);
         shaderSetMode(0);
         shaderSetActiveTexture(0);
+        shaderSetTransform(transform);
         texture->imp()->setTextureParams(textureId, target, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
         shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
         shaderSetSrcRect(src.x(), src.y(), src.w(), src.h());

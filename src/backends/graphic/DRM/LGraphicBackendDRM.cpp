@@ -162,6 +162,7 @@ static void initConnector(Backend *bknd, SRMConnector *conn)
         bkndOutput->modes.push_back(outputMode);
     }
 
+    output->imp()->updateRect();
     bknd->connectedOutputs.push_back(output);
 }
 

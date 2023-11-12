@@ -41,6 +41,24 @@ LFramebuffer *LOutput::framebuffer() const
     return imp()->fb;
 }
 
+LFramebuffer::Transform LOutput::transform() const
+{
+    return imp()->transform;
+}
+
+void LOutput::setTransform(LFramebuffer::Transform transform) const
+{
+    if (transform == imp()->transform)
+        return;
+
+    LSize prevSizeB = imp()->sizeB;
+    imp()->transform = transform;
+    imp()->updateRect();
+
+    if (state() == Initialized && prevSizeB != imp()->sizeB)
+        imp()->updateGlobals();
+}
+
 LOutput::~LOutput()
 {
     delete imp()->fb;
@@ -116,10 +134,40 @@ void LOutput::setBufferDamage(const LRegion &damage)
     if (!hasBufferDamageSupport())
         return;
 
-    LRegion region = damage;
-    region.offset(LPoint(-pos().x(), -pos().y()));
-    region.multiply(scale());
-    region.clip(0, sizeB());
+    LRegion region;
+
+    if (transform() == LFramebuffer::Normal)
+    {
+        region = damage;
+        region.offset(LPoint(-pos().x(), -pos().y()));
+        region.multiply(scale());
+        region.clip(0, sizeB());
+    }
+    else if (transform() == LFramebuffer::Flipped)
+    {
+        Int32 n, x, y, w, h;
+        LBox *boxes = damage.boxes(&n);
+
+        for (Int32 i = 0; i < n; i++)
+        {
+            x = boxes->x1 - pos().x();
+            y = boxes->y1 - pos().y();
+            w = boxes->x2 - boxes->x1;
+            h = boxes->y2 - boxes->y1;
+            x = size().w() - x - w;
+
+            region.addRect(
+                x * scale(),
+                y * scale(),
+                w * scale(),
+                h * scale());
+
+            boxes++;
+        }
+
+        region.clip(0, sizeB());
+    }
+
     compositor()->imp()->graphicBackend->setOutputBufferDamage((LOutput*)this, region);
 }
 
@@ -129,23 +177,12 @@ void LOutput::setScale(Int32 scale)
         return;
 
     imp()->outputScale = scale;
-    imp()->rect.setSize(sizeB()/scale);
+    imp()->updateRect();
 
     if (scale == imp()->outputScale)
         return;
 
-    for (LClient *c : compositor()->clients())
-    {
-        for (GOutput *gOutput : c->outputGlobals())
-        {
-            if (this == gOutput->output())
-            {
-                gOutput->sendConfiguration();
-                break;
-            }
-        }
-    }
-
+    imp()->updateGlobals();
     compositor()->imp()->updateGreatestOutputScale();
 }
 
@@ -180,7 +217,7 @@ const LSize &LOutput::physicalSize() const
 
 const LSize &LOutput::sizeB() const
 {
-    return currentMode()->sizeB();
+    return imp()->sizeB;
 }
 
 const LRect &LOutput::rect() const

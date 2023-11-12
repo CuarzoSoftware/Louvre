@@ -29,12 +29,40 @@ LPainter::LPainter()
         precision lowp int;
         uniform lowp vec2 texSize;
         uniform lowp vec4 srcRect;
+        uniform lowp int transform;
         attribute lowp vec4 vertexPosition;
         varying lowp vec2 v_texcoord;
 
         void main()
         {
-            gl_Position = vec4(vertexPosition.xy, 0.0, 1.0);
+            // Normal
+            if (transform == 0)
+                gl_Position = vec4(vertexPosition.xy, 0.0, 1.0);
+
+            // Clock90
+            if (transform == 1)
+            {
+                // TL > TR
+                if (vertexPosition.x == -1.0 && vertexPosition.y == 1.0)
+                    gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
+                // BL > TL
+                else if (vertexPosition.x == -1.0 && vertexPosition.y == -1.0)
+                    gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
+                // BR > BL
+                else if (vertexPosition.x == 1.0 && vertexPosition.y == -1.0)
+                    gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
+                // TR > BR
+                else
+                    gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
+            }
+            // Flipped
+            else if (transform == 4)
+                gl_Position = vec4(-vertexPosition.x, vertexPosition.y, 0.0, 1.0);
+
+            // Flipped180
+            else if (transform == 6)
+                gl_Position = vec4(vertexPosition.x, -vertexPosition.y, 0.0, 1.0);
+
             v_texcoord.x = (srcRect.x + vertexPosition.z*srcRect.z) / texSize.x;
             v_texcoord.y = (srcRect.y + srcRect.w - vertexPosition.w*srcRect.w) / texSize.y;
         }
@@ -412,6 +440,7 @@ void LPainter::LPainterPrivate::setupProgram()
     currentUniforms->colorFactor = glGetUniformLocation(currentProgram, "colorFactor");
     currentUniforms->colorFactorEnabled = glGetUniformLocation(currentProgram, "colorFactorEnabled");
     currentUniforms->alpha = glGetUniformLocation(currentProgram, "alpha");
+    currentUniforms->transform = glGetUniformLocation(currentProgram, "transform");
 }
 
 void LPainter::LPainterPrivate::setupProgramScaler()
@@ -519,6 +548,7 @@ void LPainter::setColorFactor(Float32 r, Float32 g, Float32 b, Float32 a)
 void LPainter::clearScreen()
 {
     glDisable(GL_BLEND);
+    setViewport(imp()->fb->rect());
     glScissor(0, 0, imp()->fb->sizeB().w(), imp()->fb->sizeB().h());
     glViewport(0, 0, imp()->fb->sizeB().w(), imp()->fb->sizeB().h());
     glClear(GL_COLOR_BUFFER_BIT);

@@ -27,17 +27,17 @@
 
 #define LPRIVATE_CLASS(class_name) \
 class class_name::CAT(class_name,Private){ \
-public: \
-    CAT(class_name,Private)() = default; \
-    ~CAT(class_name,Private)() = default; \
-    CAT(class_name,Private)(const CAT(class_name,Private)&) = delete; \
-    CAT(class_name,Private) &operator=(const CAT(class_name,Private)&) = delete;
+        public: \
+        CAT(class_name,Private)() = default; \
+        ~CAT(class_name,Private)() = default; \
+        CAT(class_name,Private)(const CAT(class_name,Private)&) = delete; \
+        CAT(class_name,Private) &operator=(const CAT(class_name,Private)&) = delete;
 
 #define LPRIVATE_IMP(class_name) \
     class CAT(class_name,Private); \
     inline CAT(class_name,Private) *imp() const {return m_imp;}; \
     private: \
-    CAT(class_name,Private) *m_imp = nullptr; \
+    CAT(class_name,Private) *m_imp = nullptr;
 
 /**
  * @namespace Louvre

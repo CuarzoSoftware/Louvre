@@ -52,3 +52,8 @@ void LOutputFramebuffer::setFramebufferDamage(const LRegion *damage)
 {
     imp()->output->setBufferDamage(*damage);
 }
+
+LFramebuffer::Transform LOutputFramebuffer::transform() const
+{
+    return imp()->output->transform();
+}

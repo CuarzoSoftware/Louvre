@@ -7,6 +7,8 @@
 #include <LLog.h>
 #include <LFramebuffer.h>
 
+using LVS = LView::LViewPrivate::LViewState;
+
 void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view)
 {
     ThreadData *oD = currentThreadData;
@@ -29,7 +31,7 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view)
     // Quick view cache handle to reduce verbosity
     LView::LViewPrivate::ViewCache *cache = &view->imp()->cache;
 
-    view->imp()->repaintCalled = false;
+    view->imp()->removeFlag(LVS::RepaintCalled);
 
     // Quick output data handle
     cache->voD = &view->imp()->threadsMap[std::this_thread::get_id()];
@@ -89,9 +91,9 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view)
 
     bool rectChanged = cache->localRect != cache->voD->prevLocalRect;
 
-    bool colorFactorChanged = cache->voD->prevColorFactorEnabled != view->imp()->colorFactorEnabled;
+    bool colorFactorChanged = cache->voD->prevColorFactorEnabled != view->imp()->hasFlag(LVS::ColorFactor);
 
-    if (!colorFactorChanged && view->imp()->colorFactorEnabled)
+    if (!colorFactorChanged && view->imp()->hasFlag(LVS::ColorFactor))
     {
         colorFactorChanged = cache->voD->prevColorFactor.r != view->imp()->colorFactor.r ||
                               cache->voD->prevColorFactor.g != view->imp()->colorFactor.g ||
@@ -121,7 +123,7 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view)
 
         if (colorFactorChanged)
         {
-            cache->voD->prevColorFactorEnabled = view->imp()->colorFactorEnabled;
+            cache->voD->prevColorFactorEnabled = view->imp()->hasFlag(LVS::ColorFactor);
             cache->voD->prevColorFactor = view->imp()->colorFactor;
         }
 
@@ -249,7 +251,7 @@ void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view)
 
     oD->boxes = cache->opaque.boxes(&oD->n);
 
-    if (view->imp()->colorFactorEnabled)
+    if (view->imp()->hasFlag(LVS::ColorFactor))
     {
         oD->p->imp()->shaderSetColorFactor(view->imp()->colorFactor.r,
                              view->imp()->colorFactor.g,
@@ -341,7 +343,7 @@ void LSceneView::LSceneViewPrivate::drawTranslucentDamage(LView *view)
 
     glBlendFunc(view->imp()->sFactor, view->imp()->dFactor);
 
-    if (view->imp()->colorFactorEnabled)
+    if (view->imp()->hasFlag(LVS::ColorFactor))
     {
         oD->p->imp()->shaderSetColorFactor(view->imp()->colorFactor.r,
                               view->imp()->colorFactor.g,

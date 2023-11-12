@@ -14,7 +14,66 @@ struct LSurface::Params
 };
 
 LPRIVATE_CLASS(LSurface)
-    // Called from LCompositor constructor
+
+    struct State
+    {
+        LBaseSurfaceRole *role                          = nullptr;
+        wl_resource *buffer                             = nullptr;
+        Int32 bufferScale                               = 1;
+    };
+
+    LPoint pos;
+    LSize currentSize;
+    LTexture *texture                                   = nullptr;
+    LRegion currentDamage;
+    LRegion currentTranslucentRegion;
+    LRegion currentOpaqueRegion;
+    LRegion currentInputRegion;
+
+    State current;
+
+    bool destroyed                                      = false;
+    bool damaged                                        = false;
+    bool minimized                                      = false;
+    bool receiveInput                                   = true;
+    bool opaqueRegionChanged                            = false;
+    bool inputRegionChanged                             = false;
+    bool inputRegionIsInfinite                          = true;
+    bool damagesChanged                                 = false;
+    bool bufferSizeChanged                              = false;
+    bool bufferReleased                                 = true;
+    bool attached                                       = false;
+    bool mapped                                         = false;
+
+    LRegion pendingInputRegion;
+    LRegion pendingOpaqueRegion;
+    LRegion pendingTranslucentRegion;
+
+    std::vector<LRect> pendingDamageB;
+    std::vector<LRect> pendingDamage;
+    LRegion currentDamageB;
+    LSize currentSizeB;
+    State pending;
+
+    Wayland::RSurface *surfaceResource = nullptr;
+    LSurfaceView *lastPointerEventView = nullptr;
+
+    LTexture *textureBackup;
+    LSurface *parent                                    = nullptr;
+    LSurface *pendingParent                             = nullptr;
+    std::list<LSurface*> children;
+    std::list<LSurface*> pendingChildren;
+    std::list<LSurface*>::iterator parentLink;
+    std::list<LSurface*>::iterator pendingParentLink;
+    std::list<Wayland::RCallback*>frameCallbacks;
+    UInt32 damageId;
+    std::list<LSurface*>::iterator compositorLink, clientLink;
+    Int32 lastSentPreferredBufferScale = -1;
+    std::list<LOutput*> outputs;
+
+    std::list<WpPresentationTime::RWpPresentationFeedback*> wpPresentationFeedbackResources;
+    void sendPresentationFeedback(LOutput *output, timespec &ns);
+    void setBufferScale(Int32 scale);
     static void getEGLFunctions();
     void setPendingParent(LSurface *pendParent);
     void setParent(LSurface *parent);
@@ -29,81 +88,7 @@ LPRIVATE_CLASS(LSurface)
     bool isInChildrenOrPendingChildren(LSurface *child);
     bool hasRoleOrPendingRole();
     bool hasBufferOrPendingBuffer();
-
-    // Input
     void setKeyboardGrabToParent();
-
-    struct State
-    {
-        LBaseSurfaceRole *role                          = nullptr;
-        wl_resource *buffer                             = nullptr;
-        Int32 bufferScale                               = 1;
-    };
-
-    // Link in LSurfaces compositor list
-    std::list<LSurface*>::iterator compositorLink, clientLink;
-
-    LRegion pendingInputRegion;
-    LRegion currentInputRegion;
-
-    LRegion pendingOpaqueRegion;
-    LRegion currentOpaqueRegion;
-
-    LRegion pendingTranslucentRegion;
-    LRegion currentTranslucentRegion;
-
-    LSize currentSizeB;
-    LSize currentSize;
-
-    std::vector<LRect> pendingDamageB;
-    std::vector<LRect> pendingDamage;
-    LRegion currentDamageB;
-    LRegion currentDamage;
-
-    LTexture *texture                                   = nullptr;
-    LTexture *textureBackup;
-
-    std::list<LSurface*> children;
-    std::list<LSurface*> pendingChildren;
-
-    // Buffer
-    void setBufferScale(Int32 scale);
-
-    LSurface *parent                                    = nullptr;
-    LSurface *pendingParent                             = nullptr;
-    std::list<LSurface*>::iterator parentLink;
-    std::list<LSurface*>::iterator pendingParentLink;
-
-    Wayland::RSurface *surfaceResource = nullptr;
-
-    std::list<Wayland::RCallback*>frameCallbacks;
-
-    State current, pending;
-
-    std::list<LOutput*> outputs;
-
-    bool destroyed                                      = false;
-    bool damaged                                        = false;
-    UInt32 damageId;
-    LPoint pos;
-    bool minimized                                      = false;
-    bool receiveInput                                   = true;
-    bool opaqueRegionChanged                            = false;
-    bool inputRegionChanged                             = false;
-    bool inputRegionIsInfinite                          = true;
-    bool damagesChanged                                 = false;
-    bool bufferSizeChanged                              = false;
-    bool bufferReleased                                 = true;
-    bool attached                                       = false;
-    bool mapped                                         = false;
-
-    // Presentation feedback
-    std::list<WpPresentationTime::RWpPresentationFeedback*> wpPresentationFeedbackResources;
-    void sendPresentationFeedback(LOutput *output, timespec &ns);
-
-    LSurfaceView *lastPointerEventView = nullptr;
-
-    Int32 lastSentPreferredBufferScale = -1;
 
     inline void damageCalc1()
     {

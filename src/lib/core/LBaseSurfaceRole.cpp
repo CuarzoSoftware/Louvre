@@ -6,44 +6,39 @@ using namespace Louvre;
 
 LBaseSurfaceRole::LBaseSurfaceRole(LResource *resource, LSurface *surface, UInt32 roleId)
 {
-    m_baseImp = new LBaseSurfaceRolePrivate();
-    m_baseImp->resource = resource;
-    m_baseImp->surface = surface;
-    m_baseImp->roleId = roleId;
+    m_imp = new LBaseSurfaceRolePrivate();
+    imp()->resource = resource;
+    imp()->surface = surface;
+    imp()->roleId = roleId;
 }
 
 LBaseSurfaceRole::~LBaseSurfaceRole()
 {
-    if (m_baseImp->surface)
+    if (imp()->surface)
     {
-        LSurface *surface = m_baseImp->surface;
-        m_baseImp->surface = nullptr;
+        LSurface *surface = imp()->surface;
+        imp()->surface = nullptr;
         surface->imp()->setPendingRole(nullptr);
         surface->imp()->applyPendingRole();
         surface->imp()->setMapped(false);
     }
 
-    delete m_baseImp;
+    delete m_imp;
 }
 
 UInt32 LBaseSurfaceRole::roleId() const
 {
-    return m_baseImp->roleId;
+    return imp()->roleId;
 }
 
 LSurface *LBaseSurfaceRole::surface() const
 {
-    return m_baseImp->surface;
+    return imp()->surface;
 }
 
 LResource *LBaseSurfaceRole::resource() const
 {
-    return m_baseImp->resource;
-}
-
-LBaseSurfaceRole::LBaseSurfaceRolePrivate *LBaseSurfaceRole::baseImp() const
-{
-    return m_baseImp;
+    return imp()->resource;
 }
 
 bool LBaseSurfaceRole::acceptCommitRequest(Wayland::RSurface::CommitOrigin origin)

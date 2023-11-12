@@ -129,6 +129,7 @@ public:
     Int32 buffersCount() const override;
     Int32 currentBufferIndex() const override;
     void setFramebufferDamage(const LRegion *damage) override;
+    Transform transform() const override;
 
 LPRIVATE_IMP(LRenderBuffer)
 };

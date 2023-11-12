@@ -7,10 +7,12 @@
 
 LPRIVATE_CLASS(LOutput)
     LOutputFramebuffer *fb;
+    LFramebuffer::Transform transform = LFramebuffer::Normal;
     LOutput *output;
     LRect rect;
     LPoint lastPos;
     LSize lastSize;
+    LSize sizeB;
     std::atomic<bool> callLock;
     std::atomic<bool> callLockACK;
     std::thread::id threadId;
@@ -41,6 +43,8 @@ LPRIVATE_CLASS(LOutput)
     void backendUninitializeGL();
     void backendPageFlipped();
 
+    void updateRect();
+    void updateGlobals();
     std::list<GLuint>nativeTexturesToDestroy;
 };
 

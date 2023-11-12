@@ -151,10 +151,10 @@ RSurface::~RSurface()
     lSurface->imp()->setParent(nullptr);
 
     if (lSurface->imp()->current.role)
-        lSurface->imp()->current.role->baseImp()->surface = nullptr;
+        lSurface->imp()->current.role->imp()->surface = nullptr;
 
     if (lSurface->imp()->pending.role)
-        lSurface->imp()->pending.role->baseImp()->surface = nullptr;
+        lSurface->imp()->pending.role->imp()->surface = nullptr;
 
     // Remove surface from its client list
     lSurface->client()->imp()->surfaces.erase(lSurface->imp()->clientLink);

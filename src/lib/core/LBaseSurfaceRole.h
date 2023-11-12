@@ -90,17 +90,6 @@ public:
      */
     LResource *resource() const;
 
-    class LBaseSurfaceRolePrivate;
-
-    /**
-     * @brief Access to the private API of LBaseSurfaceRole.
-     *
-     * Returns an instance of the LBaseSurfaceRolePrivate class (following the ***PImpl Idiom*** pattern) which contains all the private members of LBaseSurfaceRole.
-     *
-     * @note This method is used internally by the library for accessing private members.
-     */
-    LBaseSurfaceRolePrivate *baseImp() const;
-
 protected:
 
     friend class Protocols::Wayland::RSurface;
@@ -165,10 +154,7 @@ protected:
      */
     virtual void handleParentChange();
 
-private:
-    /// @cond OMIT
-    LBaseSurfaceRolePrivate *m_baseImp = nullptr;
-    /// @endcond
+    LPRIVATE_IMP(LBaseSurfaceRole)
 };
 
 #endif // LBASESURFACEROLE_H

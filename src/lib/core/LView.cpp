@@ -8,6 +8,8 @@
 
 using namespace Louvre;
 
+using LVS = LView::LViewPrivate::LViewState;
+
 LView::LView(UInt32 type, LView *parent)
 {
     m_imp = new LViewPrivate();
@@ -59,13 +61,13 @@ UInt32 LView::type() const
 
 void LView::repaint()
 {
-    if (imp()->repaintCalled)
+    if (imp()->hasFlag(LVS::RepaintCalled))
         return;
 
     for (std::list<LOutput*>::const_iterator it = outputs().cbegin(); it != outputs().cend(); it++)
         (*it)->repaint();
 
-    imp()->repaintCalled = true;
+    imp()->addFlag(LVS::RepaintCalled);
 }
 
 LView *LView::parent() const
@@ -164,31 +166,31 @@ std::list<Louvre::LView *> &LView::children() const
 
 bool LView::parentOffsetEnabled() const
 {
-    return imp()->parentOffsetEnabled;
+    return imp()->hasFlag(LVS::ParentOffset);
 }
 
 void LView::enableParentOffset(bool enabled)
 {
-    if (mapped() && enabled != parentOffsetEnabled())
+    if (mapped() && enabled != imp()->hasFlag(LVS::ParentOffset))
         repaint();
 
-    imp()->parentOffsetEnabled = enabled;
+    imp()->setFlag(LVS::ParentOffset, enabled);
 }
 
 const LPoint &LView::pos() const
 {
-    imp()->tmpPos = nativePos();
+    imp()->tmpPoint = nativePos();
 
     if (parent())
     {
         if (parentScalingEnabled())
-            imp()->tmpPos *= parent()->scalingVector(parent()->type() == Scene);
+            imp()->tmpPoint *= parent()->scalingVector(parent()->type() == Scene);
 
         if (parentOffsetEnabled())
-            imp()->tmpPos += parent()->pos();
+            imp()->tmpPoint += parent()->pos();
     }
 
-    return imp()->tmpPos;
+    return imp()->tmpPoint;
 }
 
 const LSize &LView::size() const
@@ -199,21 +201,21 @@ const LSize &LView::size() const
         imp()->tmpSize *= scalingVector(true);
 
     if (parent() && parentScalingEnabled())
-            imp()->tmpSize *= parent()->scalingVector(parent()->type() == Scene);
+        imp()->tmpSize *= parent()->scalingVector(parent()->type() == Scene);
 
     return imp()->tmpSize;
 }
 
 bool LView::clippingEnabled() const
 {
-    return imp()->clippingEnabled;
+    return imp()->hasFlag(LVS::Clipping);
 }
 
 void LView::enableClipping(bool enabled)
 {
-    if (imp()->clippingEnabled != enabled)
+    if (imp()->hasFlag(LVS::Clipping) != enabled)
     {
-        imp()->clippingEnabled = enabled;
+        imp()->setFlag(LVS::Clipping, enabled);
         repaint();
     }
 }
@@ -234,51 +236,51 @@ void LView::setClippingRect(const LRect &rect)
 
 bool LView::parentClippingEnabled() const
 {
-    return imp()->parentClippingEnabled;
+    return imp()->hasFlag(LVS::ParentClipping);
 }
 
 void LView::enableParentClipping(bool enabled)
 {
-    if (mapped() && enabled != imp()->parentClippingEnabled)
+    if (mapped() && enabled != imp()->hasFlag(LVS::ParentClipping))
         repaint();
 
-    imp()->parentClippingEnabled = enabled;
+    imp()->setFlag(LVS::ParentClipping, enabled);
 }
 
 bool LView::inputEnabled() const
 {
-    return imp()->inputEnabled;
+    return imp()->hasFlag(LVS::Input);
 }
 
 void LView::enableInput(bool enabled)
 {
-    imp()->inputEnabled = enabled;
+    imp()->setFlag(LVS::Input, enabled);
 }
 
 bool LView::scalingEnabled() const
 {
-    return imp()->scalingEnabled;
+    return imp()->hasFlag(LVS::Scaling);
 }
 
 void LView::enableScaling(bool enabled)
 {
-    if (mapped() && enabled != imp()->scalingEnabled)
+    if (mapped() && enabled != imp()->hasFlag(LVS::Scaling))
         repaint();
 
-    imp()->scalingEnabled = enabled;
+    imp()->setFlag(LVS::Scaling, enabled);
 }
 
 bool LView::parentScalingEnabled() const
 {
-    return imp()->parentScalingEnabled;
+    return imp()->hasFlag(LVS::ParentScaling);
 }
 
 void LView::enableParentScaling(bool enabled)
 {
-    if (mapped() && enabled != imp()->parentScalingEnabled)
+    if (mapped() && enabled != imp()->hasFlag(LVS::ParentScaling))
         repaint();
 
-    imp()->parentScalingEnabled = enabled;
+    return imp()->setFlag(LVS::ParentScaling, enabled);
 }
 
 const LSizeF &LView::scalingVector(bool forceIgnoreParent) const
@@ -286,12 +288,12 @@ const LSizeF &LView::scalingVector(bool forceIgnoreParent) const
     if (forceIgnoreParent)
         return imp()->scalingVector;
 
-    imp()->tmpScalingVector = imp()->scalingVector;
+    imp()->tmpPointF = imp()->scalingVector;
 
     if (parent() && parentScalingEnabled())
-        imp()->tmpScalingVector *= parent()->scalingVector(parent()->type() == Scene);
+        imp()->tmpPointF *= parent()->scalingVector(parent()->type() == Scene);
 
-    return imp()->tmpScalingVector;
+    return imp()->tmpPointF;
 }
 
 void LView::setScalingVector(const LSizeF &scalingVector)
@@ -304,13 +306,13 @@ void LView::setScalingVector(const LSizeF &scalingVector)
 
 bool LView::visible() const
 {
-    return imp()->visible;
+    return imp()->hasFlag(LVS::Visible);
 }
 
 void LView::setVisible(bool visible)
 {
     bool prev = mapped();
-    imp()->visible = visible;
+    imp()->setFlag(LVS::Visible, visible);
 
     if (prev != mapped())
         repaint();
@@ -350,25 +352,25 @@ void LView::setOpacity(Float32 opacity)
 
 bool LView::parentOpacityEnabled() const
 {
-    return imp()->parentOpacityEnabled;
+    return imp()->hasFlag(LVS::ParentOpacity);
 }
 
 void LView::enableParentOpacity(bool enabled)
 {
-    if (mapped() && imp()->parentOpacityEnabled != enabled)
+    if (mapped() && imp()->hasFlag(LVS::ParentOpacity) != enabled)
         repaint();
 
-    imp()->parentOpacityEnabled = enabled;
+    imp()->setFlag(LVS::ParentOpacity, enabled);
 }
 
 bool LView::forceRequestNextFrameEnabled() const
 {
-    return imp()->forceRequestNextFrameEnabled;
+    return imp()->hasFlag(LVS::ForceRequestNextFrame);
 }
 
 void LView::enableForceRequestNextFrame(bool enabled) const
 {
-    imp()->forceRequestNextFrameEnabled = enabled;
+    imp()->setFlag(LVS::ForceRequestNextFrame, enabled);
 }
 
 void LView::setBlendFunc(GLenum sFactor, GLenum dFactor)
@@ -390,7 +392,7 @@ void LView::setColorFactor(Float32 r, Float32 g, Float32 b, Float32 a)
     {
         imp()->colorFactor = {r, g, b, a};
         repaint();
-        imp()->colorFactorEnabled = r != 1.f || g != 1.f || b != 1.f || a != 1.f;
+        imp()->setFlag(LVS::ColorFactor, r != 1.f || g != 1.f || b != 1.f || a != 1.f);
     }
 }
 
@@ -401,17 +403,17 @@ const LRGBAF &LView::colorFactor()
 
 bool LView::pointerIsOver() const
 {
-    return imp()->pointerIsOver;
+    return imp()->hasFlag(LVS::PointerIsOver);
 }
 
 void LView::enableBlockPointer(bool enabled)
 {
-    imp()->blockPointerEnabled = enabled;
+    imp()->setFlag(LVS::BlockPointer, enabled);
 }
 
 bool LView::blockPointerEnabled() const
 {
-    return imp()->blockPointerEnabled;
+    return imp()->hasFlag(LVS::BlockPointer);
 }
 
 LBox LView::boundingBox() const

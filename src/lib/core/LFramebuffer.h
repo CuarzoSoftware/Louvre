@@ -22,6 +22,39 @@ class Louvre::LFramebuffer : public LObject
 public:
 
     /**
+     * @brief Enumeration for Framebuffer Transformations
+     *
+     * This enumeration defines different transformations that can be applied to a framebuffer.
+     * These transformations include rotations and flips for adjusting the orientation of the framebuffer.
+     */
+    enum Transform
+    {
+        /// No transformation
+        Normal = 0,
+
+        /// Rotate 90 degrees counter-clockwise
+        Clock90 = 1,
+
+        /// Rotate 180 degrees counter-clockwise
+        Clock180 = 2,
+
+        /// Rotate 270 degrees counter-clockwise
+        Clock270 = 3,
+
+        /// Flip around a vertical axis (180-degree rotation)
+        Flipped = 4,
+
+        /// Flip and rotate 90 degrees counter-clockwise
+        Flipped90 = 5,
+
+        /// Flip and rotate 180 degrees counter-clockwise
+        Flipped180 = 6,
+
+        /// Flip and rotate 270 degrees counter-clockwise
+        Flipped270 = 7
+    };
+
+    /**
      * @brief Destructor for the LFramebuffer class.
      */
     virtual ~LFramebuffer() {};
@@ -100,6 +133,15 @@ public:
      * @param damage A pointer to the LRegion object representing the changed region.
      */
     virtual void setFramebufferDamage(const LRegion* damage) = 0;
+
+    /**
+     * @brief Get the framebuffer transformation.
+     *
+     * This method must return the current framebuffer transformation applied.
+     *
+     * @return The framebuffer transformation.
+     */
+    virtual Transform transform() const = 0;
 };
 
 #endif // LFRAMEBUFFER_H

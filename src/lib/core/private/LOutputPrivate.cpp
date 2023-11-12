@@ -154,3 +154,36 @@ void LOutput::LOutputPrivate::backendPageFlipped()
     if (callLock)
         compositor()->imp()->unlock();
 }
+
+void LOutput::LOutputPrivate::updateRect()
+{
+    sizeB = compositor()->imp()->graphicBackend->getOutputCurrentMode(output)->sizeB();
+
+    // Swap width with height
+    if (transform == LFramebuffer::Clock90 ||
+        transform == LFramebuffer::Clock270 ||
+        transform == LFramebuffer::Flipped90 ||
+        transform == LFramebuffer::Flipped270)
+    {
+        Int32 tmpW = sizeB.w();
+        sizeB.setW(sizeB.h());
+        sizeB.setH(tmpW);
+    }
+
+    rect.setSize(sizeB/outputScale);
+}
+
+void LOutput::LOutputPrivate::updateGlobals()
+{
+    for (LClient *c : compositor()->clients())
+    {
+        for (GOutput *gOutput : c->outputGlobals())
+        {
+            if (output == gOutput->output())
+            {
+                gOutput->sendConfiguration();
+                break;
+            }
+        }
+    }
+}
