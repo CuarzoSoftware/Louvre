@@ -134,19 +134,83 @@ void LOutput::setBufferDamage(const LRegion &damage)
     if (!hasBufferDamageSupport())
         return;
 
-    LRegion region;
+    LRegion region(LRect(0,0,10,10));
+    Int32 n, x, y, w, h;
+    LBox *boxes;
 
-    if (transform() == LFramebuffer::Normal)
+    switch (transform())
     {
+    case LFramebuffer::Normal:
         region = damage;
         region.offset(LPoint(-pos().x(), -pos().y()));
         region.multiply(scale());
         region.clip(0, sizeB());
-    }
-    else if (transform() == LFramebuffer::Flipped)
-    {
-        Int32 n, x, y, w, h;
-        LBox *boxes = damage.boxes(&n);
+        break;
+    case LFramebuffer::Clock90:
+        boxes = damage.boxes(&n);
+
+        for (Int32 i = 0; i < n; i++)
+        {
+            w = boxes->y2 - boxes->y1;
+            h = boxes->x2 - boxes->x1;
+            x = size().h() - (boxes->y1 - pos().y()) - w;
+            y = boxes->x1 - pos().x();
+
+            region.addRect(
+                x * scale(),
+                y * scale(),
+                w * scale(),
+                h * scale());
+
+            boxes++;
+        }
+
+        region.clip(0, 0, sizeB().h(), sizeB().w());
+        break;
+    case LFramebuffer::Clock180:
+        boxes = damage.boxes(&n);
+
+        for (Int32 i = 0; i < n; i++)
+        {
+            w = boxes->x2 - boxes->x1;
+            h = boxes->y2 - boxes->y1;
+            x = size().w() - (boxes->x1 - pos().x()) - w;
+            y = size().h() - (boxes->y1 - pos().y()) - h;
+
+            region.addRect(
+                x * scale(),
+                y * scale(),
+                w * scale(),
+                h * scale());
+
+            boxes++;
+        }
+
+        region.clip(0, 0, sizeB().w(), sizeB().h());
+        break;
+    case LFramebuffer::Clock270:
+        boxes = damage.boxes(&n);
+
+        for (Int32 i = 0; i < n; i++)
+        {
+            w = boxes->y2 - boxes->y1;
+            h = boxes->x2 - boxes->x1;
+            y = size().w() - (boxes->x1 - pos().x()) - h;
+            x = boxes->y1 - pos().y();
+
+            region.addRect(
+                x * scale(),
+                y * scale(),
+                w * scale(),
+                h * scale());
+
+            boxes++;
+        }
+
+        region.clip(0, 0, sizeB().h(), sizeB().w());
+        break;
+    case LFramebuffer::Flipped:
+        boxes = damage.boxes(&n);
 
         for (Int32 i = 0; i < n; i++)
         {
@@ -166,6 +230,72 @@ void LOutput::setBufferDamage(const LRegion &damage)
         }
 
         region.clip(0, sizeB());
+        break;
+    case LFramebuffer::Flipped90:
+        boxes = damage.boxes(&n);
+
+        for (Int32 i = 0; i < n; i++)
+        {
+            w = boxes->y2 - boxes->y1;
+            h = boxes->x2 - boxes->x1;
+            x = size().h() - (boxes->y1 - pos().y()) - w;
+            y = size().w() - (boxes->x1 - pos().x()) - h;
+
+            region.addRect(
+                x * scale(),
+                y * scale(),
+                w * scale(),
+                h * scale());
+
+            boxes++;
+        }
+
+        region.clip(0, 0, sizeB().h(), sizeB().w());
+        break;
+    case LFramebuffer::Flipped180:
+        boxes = damage.boxes(&n);
+
+        for (Int32 i = 0; i < n; i++)
+        {
+            w = boxes->x2 - boxes->x1;
+            h = boxes->y2 - boxes->y1;
+            x = boxes->x1 - pos().x();
+            y = size().h() - (boxes->y1 - pos().y()) - h;
+
+            region.addRect(
+                x * scale(),
+                y * scale(),
+                w * scale(),
+                h * scale());
+
+            boxes++;
+        }
+
+        region.clip(0, 0, sizeB().w(), sizeB().h());
+        break;
+    case LFramebuffer::Flipped270:
+        boxes = damage.boxes(&n);
+
+        for (Int32 i = 0; i < n; i++)
+        {
+            w = boxes->y2 - boxes->y1;
+            h = boxes->x2 - boxes->x1;
+            y = boxes->x1 - pos().x();
+            x = boxes->y1 - pos().y();
+
+            region.addRect(
+                x * scale(),
+                y * scale(),
+                w * scale(),
+                h * scale());
+
+            boxes++;
+        }
+
+        region.clip(0, 0, sizeB().h(), sizeB().w());
+        break;
+    default:
+        break;
     }
 
     compositor()->imp()->graphicBackend->setOutputBufferDamage((LOutput*)this, region);

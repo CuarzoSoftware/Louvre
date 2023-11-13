@@ -41,7 +41,7 @@ public:
         /// Rotate 270 degrees counter-clockwise
         Clock270 = 3,
 
-        /// Flip around a vertical axis (180-degree rotation)
+        /// Flipped (swap left and right sides)
         Flipped = 4,
 
         /// Flip and rotate 90 degrees counter-clockwise

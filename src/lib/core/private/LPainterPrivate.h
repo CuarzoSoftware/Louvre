@@ -325,6 +325,26 @@ LPRIVATE_CLASS(LPainter)
             if (fbId == 0)
                 y = fb->rect().w() - y - h;
         }
+        else if (fb->transform() == LFramebuffer::Clock180)
+        {
+            x = fb->rect().w() - x - w;
+            y = fb->rect().h() - y - h;
+
+            if (fbId == 0)
+                y = fb->rect().h() - y - h;
+        }
+        else if (fb->transform() == LFramebuffer::Clock270)
+        {
+            Int32 tmp = x;
+            x = y;
+            y = fb->rect().h() - tmp - w;
+            tmp = w;
+            w = h;
+            h = tmp;
+
+            if (fbId == 0)
+                y = fb->rect().h() - y - h;
+        }
         else if (fb->transform() == LFramebuffer::Flipped)
         {
             x = fb->rect().w() - x - w;
@@ -332,12 +352,36 @@ LPRIVATE_CLASS(LPainter)
             if (fbId == 0)
                 y = fb->rect().h() - y - h;
         }
+        else if (fb->transform() == LFramebuffer::Flipped90)
+        {
+            Int32 tmp = x;
+            x = fb->rect().h() - y - h;
+            y = fb->rect().w() - tmp - w;
+            tmp = w;
+            w = h;
+            h = tmp;
+
+            if (fbId == 0)
+                y = fb->rect().w() - y - h;
+        }
         else if (fb->transform() == LFramebuffer::Flipped180)
         {
             y = fb->rect().h() - y - h;
 
             if (fbId == 0)
                 y = fb->rect().h() - y - h;
+        }
+        else if (fb->transform() == LFramebuffer::Flipped270)
+        {
+            Int32 tmp = x;
+            x = y;
+            y = tmp;
+            tmp = w;
+            w = h;
+            h = tmp;
+
+            if (fbId == 0)
+                y = fb->rect().w() - y - h;
         }
 
         Int32 fbScale = fb->scale();

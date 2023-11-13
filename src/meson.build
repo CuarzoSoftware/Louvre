@@ -5,7 +5,7 @@ project(
     meson_version: '>= 0.56.0',
 	  default_options: [
 		'warning_level=2',
-                'buildtype=release',
+        'buildtype=release',
 		'cpp_std=c++11',
 	]
 )
@@ -17,7 +17,7 @@ ASSETS_PATH = '/usr/etc/Louvre/assets'
 cpp = meson.get_compiler('cpp')
 
 if get_option('buildtype') == 'custom'
-    proj_args = ['-Ofast', '-g3', '-s', '-march=native', '-fno-strict-aliasing']
+    proj_args = ['-Ofast', '-s', '-march=native', '-fno-strict-aliasing']
     add_project_arguments(proj_args, language : 'c')
     add_project_arguments(proj_args, language : 'cpp')
 endif

@@ -1,32 +1,42 @@
-Louvre v1.0.0-0
+Louvre (1.0.0-0)
 
-Additions:
+  # Added
 
-- Multi-GPU is now always supported.
-- Introduce LObject as the base class to facilitate sharing of future functionality among classes.
-- Introduce a pluggable scene and views system for eficient rendering and handling of input events.
-- New LAnimation class for creating time-based animations.
-- New LTimer class for time based triggered callbacks.
-- New LResource wrapper class for wl_resource structs. Now each protocol resource or global has its own LResource subclass.
-- Developers can now add/modify the default compositor globals overriding the LCompositor::createGlobalsRequest() virtual method.
-- New louvre-views example, a MacOS X lookalike compositor that uses the scene and views system.
-- LOutput framebuffers can now be used as textures.
-- New LRenderBuffer class for rendering into framebuffers and use them as textures.
-- Add support for XDG Decoration, Presentation Time and Linux DMA-Buf protocols.
-- Libseat can now be enabled/disabled using the LOUVRE_ENABLE_LIBSEAT env.
-- Single, double or triple buffering can now be set using the SRM library envs.
+  * Multi-GPU support is now available.
+  * Introduction of LObject as the base class facilitates sharing future functionality among classes.
+  * Pluggable scene and views system introduced for efficient rendering and handling of input events.
+  * New LAnimation class for creating time-based animations.
+  * New LTimer class for time-based triggered callbacks.
+  * New LResource wrapper class for wl_resource structs; each protocol resource or global now has its own LResource subclass.
+  * Developers can add or modify default compositor globals by overriding the LCompositor::createGlobalsRequest() virtual method.
+  * New example, louvre-views, a MacOS X lookalike compositor that uses the scene and views system.
+  * LOutput framebuffers can now be used as textures.
+  * LOutput now supports framebuffer transforms.
+  * New LRenderBuffer class for rendering into framebuffers and using them as textures.
+  * Added support for XDG Decoration, Presentation Time, and Linux DMA-Buf protocols.
+  * Libseat can now be enabled or disabled using the LOUVRE_ENABLE_LIBSEAT environment variable.
+  * Single, double, or triple buffering can now be configured using SRM library environment variables.
 
-Changes:
+  # Changed
 
-- The LCompositor::start() method is now non-blocking. Developers can control the rate of the compositor events processing using the pollable LCompositor::fd() and LCompositor::processLoop() fuction.
-- New directory structure for protocol interfaces located in src/lib/protocols.
-- Clients can now bind multiple times to the wl_seat global. This fixes the Firefox problem where it could only receive pointer events.
-- Clients can now create a wl_data_device for each wl_seat.
-- Clients can now bind multiple times to the wl_subcompositor global.
-- Moved ping() and pong() method from XDG Shell to LClient class.
-- The DRM graphic backend now uses the SRM library.
+  * LCompositor::start() method is now non-blocking; developers can control the rate of compositor events processing using the pollable LCompositor::fd() and LCompositor::processLoop() methods.
+  * New directory structure for protocol interfaces located in src/lib/protocols.
+  * Clients can now bind multiple times to the wl_seat global, resolving the Firefox issue where it could only receive pointer events.
+  * Clients can now create a wl_data_device for each wl_seat.
+  * Clients can now bind multiple times to the wl_subcompositor global.
+  * Ping() and pong() methods moved from XDG Shell to LClient class.
+  * The DRM graphic backend now uses the SRM library.
 
-Removed:
+  # Removed
 
-- X11 graphic and input backends are no longer supported.
-- The LOutputManager class has been eliminated, and its functionality has been integrated into the LSeat class.
+  * X11 graphic and input backends are no longer supported.
+  * LOutputManager class has been eliminated, and its functionality has been integrated into the LSeat class.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Sun, 12 Nov 2023 23:22:58 -0300
+
+
+SRM (0.1.0-1)
+
+  * First release.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Sat, 21 Jan 2023 18:41:12 -0300

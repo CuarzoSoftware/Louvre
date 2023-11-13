@@ -14,7 +14,7 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 * Multi-Session Support
 * Scene & Views System
 * Single, Double or Triple Buffering
-* Persistent Clipboard (only for string based mime types)
+* Persistent Clipboard (only for string based MIME types)
 
 ## 🧩 Protocols
 
@@ -43,7 +43,7 @@ Within Louvre, you have the flexibility to either employ your own OpenGL ES 2.0 
 
 ## 💻 Graphic Backends
 
-* DRM/KMS
+* DRM/KMS (with the SRM lib)
 * X11 (discontinued since version 1.0.0)
 
 ## 🕹️ Input Backends
@@ -78,9 +78,11 @@ The graph on the left displays the raw CPU consumption results, which might sugg
 
 Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU resources relative to FPS than the other compositors.
 
-## 🔨 TODO
+### 🔨 Upcoming Features
 
 * Touch Events
 * Pointer Gestures
+* Viewporter
+* LView transforms
+* LView src rect
 * XWayland
-* Outputs Transforms

@@ -90,7 +90,7 @@ Within Louvre, you have the flexibility to either employ your own OpenGL ES 2.0 
 
 ## 💻 Graphic Backends
 
-* DRM/KMS
+* DRM/KMS (with the SRM lib)
 * X11 (discontinued since version 1.0.0)
 
 ## 🕹️ Input Backends
@@ -98,9 +98,11 @@ Within Louvre, you have the flexibility to either employ your own OpenGL ES 2.0 
 * Libinput
 * X11 (discontinued since version 1.0.0)
 
-## 🔨 TODO
+## 🔨 Upcoming Features
 
 * Touch Events
 * Pointer Gestures
+* Viewporter
+* LView transforms
+* LView src rect
 * XWayland
-* Outputs Transforms

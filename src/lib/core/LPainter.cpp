@@ -40,7 +40,7 @@ LPainter::LPainter()
                 gl_Position = vec4(vertexPosition.xy, 0.0, 1.0);
 
             // Clock90
-            if (transform == 1)
+            else if (transform == 1)
             {
                 // TL > TR
                 if (vertexPosition.x == -1.0 && vertexPosition.y == 1.0)
@@ -55,13 +55,82 @@ LPainter::LPainter()
                 else
                     gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
             }
+
+            // Clock180
+            else if (transform == 2)
+            {
+                // TL > BR
+                if (vertexPosition.x == -1.0 && vertexPosition.y == 1.0)
+                    gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
+                // BL > TR
+                else if (vertexPosition.x == -1.0 && vertexPosition.y == -1.0)
+                    gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
+                // BR > TL
+                else if (vertexPosition.x == 1.0 && vertexPosition.y == -1.0)
+                    gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
+                // TR > BL
+                else
+                    gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
+            }
+
+            // Clock270
+            else if (transform == 3)
+            {
+                // TL > BL
+                if (vertexPosition.x == -1.0 && vertexPosition.y == 1.0)
+                    gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
+                // BL > BR
+                else if (vertexPosition.x == -1.0 && vertexPosition.y == -1.0)
+                    gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
+                // BR > TR
+                else if (vertexPosition.x == 1.0 && vertexPosition.y == -1.0)
+                    gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
+                // TR > TL
+                else
+                    gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
+            }
+
             // Flipped
             else if (transform == 4)
                 gl_Position = vec4(-vertexPosition.x, vertexPosition.y, 0.0, 1.0);
 
+            // Flipped90
+            else if (transform == 5)
+            {
+                // TL > BR
+                if (vertexPosition.x == -1.0 && vertexPosition.y == 1.0)
+                    gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
+                // BL > BL
+                else if (vertexPosition.x == -1.0 && vertexPosition.y == -1.0)
+                    gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
+                // BR > TL
+                else if (vertexPosition.x == 1.0 && vertexPosition.y == -1.0)
+                    gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
+                // TR > TR
+                else
+                    gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
+            }
+
             // Flipped180
             else if (transform == 6)
                 gl_Position = vec4(vertexPosition.x, -vertexPosition.y, 0.0, 1.0);
+
+            // Flipped270
+            else if (transform == 7)
+            {
+                // TL > TL
+                if (vertexPosition.x == -1.0 && vertexPosition.y == 1.0)
+                    gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
+                // BL > TR
+                else if (vertexPosition.x == -1.0 && vertexPosition.y == -1.0)
+                    gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
+                // BR > BR
+                else if (vertexPosition.x == 1.0 && vertexPosition.y == -1.0)
+                    gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
+                // TR > BL
+                else
+                    gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
+            }
 
             v_texcoord.x = (srcRect.x + vertexPosition.z*srcRect.z) / texSize.x;
             v_texcoord.y = (srcRect.y + srcRect.w - vertexPosition.w*srcRect.w) / texSize.y;

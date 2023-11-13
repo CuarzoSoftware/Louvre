@@ -146,6 +146,8 @@ void Surface::mappingChanged()
 
                             next = (Surface*)next->nextSurface();
                         }
+
+                        compositor()->cursor()->output()->repaint();
                     });
 
                     firstMapTimer->start(200, true);

@@ -153,8 +153,32 @@ LPRIVATE_CLASS(LCursor)
                     p.setX(o->rect().h() - p.y() - size.h());
                     p.setY(tmp);
                 }
+                else if (o->transform() == LFramebuffer::Clock180)
+                {
+                    p.setX(o->rect().w() - p.x() - size.w());
+                    p.setY(o->rect().h() - p.y() - size.h());
+                }
+                else if (o->transform() == LFramebuffer::Clock270)
+                {
+                    Float32 tmp = p.x();
+                    p.setX(p.y());
+                    p.setY(o->rect().w() - tmp - size.h());
+                }
+                else if (o->transform() == LFramebuffer::Flipped90)
+                {
+                    Float32 tmp = p.x();
+                    p.setX(o->rect().h() - p.y() - size.h());
+                    p.setY(o->rect().w() - tmp - size.w());
+                }
                 else if (o->transform() == LFramebuffer::Flipped180)
                     p.setY(o->rect().h() - p.y() - size.y());
+                else if (o->transform() == LFramebuffer::Flipped270)
+                {
+                    Float32 tmp = p.x();
+                    p.setX(p.y());
+                    p.setY(tmp);
+                }
+
 
                 compositor()->imp()->graphicBackend->setCursorPosition(o, p*o->scale());
             }
@@ -171,9 +195,15 @@ inline static void texture2Buffer(LCursor *cursor, const LSizeF &size, LFramebuf
     glBindFramebuffer(GL_FRAMEBUFFER, cursor->imp()->glFramebuffer);
     LRect src;
 
-    if (transform == LFramebuffer::Normal || transform == LFramebuffer::Flipped || transform == LFramebuffer::Flipped180)
+    if (transform == LFramebuffer::Normal ||
+        transform == LFramebuffer::Flipped ||
+        transform == LFramebuffer::Flipped180 ||
+        transform == LFramebuffer::Clock180)
             src = LRect(0, 0, cursor->texture()->sizeB().w(), -cursor->texture()->sizeB().h());
-    else if (transform == LFramebuffer::Clock90)
+    else if (transform == LFramebuffer::Clock90 ||
+             transform == LFramebuffer::Clock270 ||
+             transform == LFramebuffer::Flipped90 ||
+             transform == LFramebuffer::Flipped270)
             src = LRect(0, 0, -cursor->texture()->sizeB().w(), cursor->texture()->sizeB().h());
 
     painter->imp()->scaleCursor(
