@@ -54,7 +54,7 @@ If your distribution is based on Red Hat, all tools and almost all dependencies 
 
 ```
 $ sudo dnf update
-$ sudo dnf install @development-tools make automake gcc gcc-c++ meson libwayland-server wayland-devel libinput-devel libevdev-devel libudev-devel mesa-libEGL-devel libxkbcommon-devel libXcursor-devel pixman-devel libdrm-devel libgbm-devel libseat-devel libfreeimage-devel fontconfig-devel freetype-devel libicu-devel
+$ sudo dnf install @development-tools make automake gcc gcc-c++ meson libwayland-server wayland-devel libinput-devel libevdev-devel libudev-devel mesa-libEGL-devel libxkbcommon-devel libXcursor-devel pixman-devel libdrm-devel libgbm-devel libseat-devel freeimage-devel fontconfig-devel freetype-devel libicu-devel
 ```
 
 To install SRM, follow the instructions provided [here](https://cuarzosoftware.github.io/SRM/md_md__downloads.html).
