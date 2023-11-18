@@ -75,7 +75,7 @@ Within Louvre, you have the flexibility to either employ your own OpenGL ES 2.0 
 
 Louvre offers excellent performance. A benchmark consisting of rendering numerous moving [wl_subsurfaces](https://wayland.app/protocols/wayland#wl_subsurface) (opaque and translucent), in which the [louvre-weston-clone](https://cuarzosoftware.github.io/Louvre/md_md__examples.html#weston) example compositor was tested, shows that Louvre can maintain a high FPS rate even in complex scenarios. Furthermore, it uses fewer CPU and GPU resources than popular compositors like Weston and Sway.
 
-> The source code of the benchmark can be found in `Louvre/src/benchmark`
+> If you're interested in the details of how the benchmark operates and would like to try it yourself, please refer to [this link](https://github.com/CuarzoSoftware/Louvre/tree/main/src/benchmark).
 
 Here is a graph illustrating the benchmark results. It displays the average FPS of each compositor rendering 1 to 50 moving surfaces using double buffering on a HiDPI display.
 

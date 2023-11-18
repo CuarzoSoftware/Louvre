@@ -1,6 +1,8 @@
 #!/bin/bash
 
 sudo rm *.txt
+
+# Update this array if want to try different number of surfaces
 array=($(seq 1 1 50))
 iters=($(seq 1 1 10))
 timeMS=10000

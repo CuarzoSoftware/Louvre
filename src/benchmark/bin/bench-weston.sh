@@ -1,6 +1,6 @@
 # exec <N surfaces> <milliseconds> <seed>
 sudo intel_gpu_top -s $2 -o GPU-Weston_N_$1_MS_$2.txt &
-weston & # taskset --cpu-list 0 weston
+taskset --cpu-list 0 weston
 sleep 2
 ./LBenchmark $1 $2 FPS-Weston $3
 sudo ps -p `pidof weston` -o %cpu > CPU-Weston_N_$1_MS_$2.txt &

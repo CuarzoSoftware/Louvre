@@ -164,8 +164,6 @@ static void xdg_toplevel_handle_configure(void *data, struct xdg_toplevel *xdg_t
 
     parent.width = w;
     parent.height = h;
-
-    printf("Parent configured: %d %d\n", parent.width, parent.height);
 }
 
 static const struct xdg_toplevel_listener xdg_toplevel_listener =
@@ -192,7 +190,6 @@ static void wl_output_handle_mode(void *data,
     (void)output;
     (void)flags;
     (void)refresh;
-    printf("Output size: %d, %d\n", w, h);
     outputW = w;
     outputH = h;
 }
@@ -266,16 +263,12 @@ static struct wl_buffer *create_buffer(int w, int h)
 	int fd = create_shm_file(size);
 
     if (fd < 0)
-    {
-        //printf(stderr, "creating a buffer file for %d B failed: %m\n", size);
 		return NULL;
-	}
 
     void *data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
     if (data == MAP_FAILED)
     {
-        //printf(stderr, "mmap failed: %m\n");
 		close(fd);
 		return NULL;
 	}
@@ -310,8 +303,6 @@ static void initParent()
         parent.width = outputW/outputScale;
         parent.height = outputH/outputScale - 32;
     }
-
-    printf("FINAL SIZE %d %d %d %d\n", parent.width, parent.height, outputW, outputH);
 
     parent.buffer = create_buffer(parent.width*outputScale, parent.height*outputScale);
     parent.shm_data = wl_buffer_get_user_data(parent.buffer);
@@ -377,20 +368,11 @@ void initChildren()
 
 int main(int argc, char *argv[])
 {
-    if (argc == 1)
-    {
-        N = 1;
-        wait_ms = 5000;
-        sprintf(fname, "%s_N_%d_MS_%d.txt","LALA", N, wait_ms);
-        srand(1);
-    }
-    else
-    {
-        N = atoi(argv[1]);
-        wait_ms = atoi(argv[2]);
-        sprintf(fname, "%s_N_%d_MS_%d.txt", argv[3], N, atoi(argv[2]));
-        srand(atoi(argv[4]));
-    }
+    N = atoi(argv[1]);
+    wait_ms = atoi(argv[2]);
+    sprintf(fname, "%s_N_%d_MS_%d.txt", argv[3], N, atoi(argv[2]));
+    srand(atoi(argv[4]));
+
     fp = fopen(fname, "w");
     display = wl_display_connect(NULL);
 	struct wl_registry *registry = wl_display_get_registry(display);
@@ -399,10 +381,7 @@ int main(int argc, char *argv[])
     wl_display_roundtrip(display);
 
     if (shm == NULL || compositor == NULL || xdg_wm_base == NULL || subcompositor == NULL)
-    {
-        //printf(stderr, "Missing globals.\n");
 		return EXIT_FAILURE;
-	}
 
     initParent();
 
