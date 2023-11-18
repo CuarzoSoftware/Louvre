@@ -27,19 +27,6 @@ include_paths = [
     include_directories('./lib/core')
 ]
 
-include_paths_sys = [
-    '/usr/include/drm',
-    '/usr/include/libdrm',
-    '/usr/include/pixman-1',
-    '/usr/include/freetype2'
-]
-
-foreach p : include_paths_sys
-    if run_command('[', '-d', p, ']', check : false).returncode() == 0
-      include_paths += [include_directories(p)]
-    endif
-endforeach
-
 # All headers
 headers = run_command('find', './lib', '-type', 'f', '-name', '*.h', check : false).stdout().strip().split('\n')
 
@@ -70,20 +57,21 @@ foreach g : globals
     endif
 endforeach
 
-wayland_server_dep  = cpp.find_library('wayland-server')
-gl_dep              = cpp.find_library('GL')
-egl_dep             = cpp.find_library('EGL')
-glesv2_dep          = cpp.find_library('GLESv2')
-udev_dep            = cpp.find_library('udev')
+pkg                 = import('pkgconfig')
+wayland_server_dep  = dependency('wayland-server')
+gl_dep              = dependency('gl')
+egl_dep             = dependency('egl')
+glesv2_dep          = dependency('glesv2')
+udev_dep            = dependency('libudev')
 pthread_dep         = cpp.find_library('pthread')
-xcursor_dep         = cpp.find_library('Xcursor')
-xkbcommon_dep       = cpp.find_library('xkbcommon')
-pixman_dep          = cpp.find_library('pixman-1')
+xcursor_dep         = dependency('xcursor')
+xkbcommon_dep       = dependency('xkbcommon')
+pixman_dep          = dependency('pixman-1')
 dl_dep              = cpp.find_library('dl')
-drm_dep             = cpp.find_library('drm')
-gbm_dep             = cpp.find_library('gbm')
-input_dep           = cpp.find_library('input')
-libseat_dep         = cpp.find_library('seat')
+drm_dep             = dependency('libdrm')
+gbm_dep             = dependency('gbm')
+input_dep           = dependency('libinput')
+libseat_dep         = dependency('libseat')
 freeimage_dep       = cpp.find_library('freeimage')
 srm_dep             = cpp.find_library('SRM')
 
@@ -105,14 +93,15 @@ Louvre = library(
         drm_dep,
         gbm_dep,
         libseat_dep,
-        freeimage_dep
+        freeimage_dep,
+        pixman_dep
     ],
     install : true)
 
 meson.add_install_script('../scripts/ld.sh', get_option('prefix') + '/' + get_option('libdir'))
 
 Louvre_dep = declare_dependency(
-    dependencies: [], 
+    dependencies: [pixman_dep, wayland_server_dep, drm_dep, xkbcommon_dep],
     include_directories : include_paths,
     link_with : Louvre)
 
@@ -121,8 +110,8 @@ subdir('backends/input/Libinput')
 
 if get_option('build_examples')
     icuuc_dep = cpp.find_library('icuuc')
-    fontconfig_dep = cpp.find_library('fontconfig')
-    freetype_dep = cpp.find_library('freetype')
+    fontconfig_dep = dependency('fontconfig')
+    freetype_dep = dependency('freetype2')
 
     subdir('examples/louvre-weston-clone')
     subdir('examples/louvre-default')
