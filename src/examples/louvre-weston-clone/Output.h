@@ -12,13 +12,13 @@ public:
     Output();
 
     LTexture *backgroundTexture = nullptr;
-
     Int32 topbarHeight;
     LTexture *terminalIconTexture = nullptr;
     LRect terminalIconRect;
     Float32 terminalIconAlpha = 1.0f;
     Float32 terminalIconAlphaPrev = 1.0f;
 
+    void loadWallpaper();
     void fullDamage();
     void initializeGL() override;
     void resizeGL() override;

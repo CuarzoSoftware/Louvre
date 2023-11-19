@@ -11,8 +11,11 @@ class Surface;
 
 #include <LNamespaces.h>
 #include <LRegion.h>
+#include <LConfig.h>
 
 using namespace Louvre;
+
+#define ASSETS_PATH LOUVRE_DEFAULT_ASSETS_PATH
 
 #define TOPBAR_HEIGHT 26
 
@@ -188,6 +191,8 @@ public:
     static Fonts *font();
 
     // Utils
+    static LTexture *loadAssetsTexture(const char *name);
+    static char *joinPaths(const char *path1, const char *path2);
     static void enableParentScalingChildren(LView *parent, bool enabled);
     static void enableClippingChildren(LView *parent, bool enabled);
     static Output *mostIntersectedOuput(LView *view);

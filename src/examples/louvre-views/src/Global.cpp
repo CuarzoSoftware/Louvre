@@ -51,7 +51,7 @@ std::list<Surface *> &G::surfaces()
 
 void G::loadDockTextures()
 {
-    _dockTextures.left = LOpenGL::loadTexture("/usr/etc/Louvre/assets/dock_side.png");
+    _dockTextures.left = loadAssetsTexture("dock_side.png");
 
     if (!_dockTextures.left)
     {
@@ -59,7 +59,7 @@ void G::loadDockTextures()
         exit(1);
     }
 
-    _dockTextures.center = LOpenGL::loadTexture("/usr/etc/Louvre/assets/dock_clamp.png");
+    _dockTextures.center = loadAssetsTexture("dock_clamp.png");
 
     if (!_dockTextures.center)
     {
@@ -73,7 +73,7 @@ void G::loadDockTextures()
                                                           - _dockTextures.left->sizeB().w(),
                                                           _dockTextures.left->sizeB().h()));
 
-    LTexture *tmp = LOpenGL::loadTexture("/usr/etc/Louvre/assets/dock_app.png");
+    LTexture *tmp = loadAssetsTexture("dock_app.png");
 
     if (tmp)
     {
@@ -89,7 +89,7 @@ void G::loadDockTextures()
         exit(1);
     }
 
-    _dockTextures.dot = LOpenGL::loadTexture("/usr/etc/Louvre/assets/dock_app_dot.png");
+    _dockTextures.dot = loadAssetsTexture("dock_app_dot.png");
 
     if (!_dockTextures.dot)
     {
@@ -130,7 +130,11 @@ void G::loadApps()
 
     default_app:
     if (file == NULL)
-        file = fopen("/usr/etc/Louvre/assets/apps.list", "r");
+    {
+        char *path = joinPaths(ASSETS_PATH, "apps.list");
+        file = fopen(path, "r");
+        free(path);
+    }
 
     if (file == NULL)
         goto error;
@@ -190,10 +194,10 @@ std::list<App *> &G::apps()
 
 void G::createTooltip()
 {
-    _tooltipTextures.decoration[TL] = LOpenGL::loadTexture("/usr/etc/Louvre/assets/container_top_left.png");
-    _tooltipTextures.decoration[T]= LOpenGL::loadTexture("/usr/etc/Louvre/assets/container_clamp_top.png");
-    _tooltipTextures.decoration[L] = LOpenGL::loadTexture("/usr/etc/Louvre/assets/container_clamp_side.png");
-    _tooltipTextures.arrow = LOpenGL::loadTexture("/usr/etc/Louvre/assets/container_arrow.png");
+    _tooltipTextures.decoration[TL] = loadAssetsTexture("container_top_left.png");
+    _tooltipTextures.decoration[T]= loadAssetsTexture("container_clamp_top.png");
+    _tooltipTextures.decoration[L] = loadAssetsTexture("container_clamp_side.png");
+    _tooltipTextures.arrow = loadAssetsTexture("container_arrow.png");
 
 
     _tooltipTextures.decoration[TR] = _tooltipTextures.decoration[TL]->copyB(_tooltipTextures.decoration[TL]->sizeB(),
@@ -263,42 +267,42 @@ G::Cursors &G::cursors()
 
 void G::loadToplevelTextures()
 {
-    _toplevelTextures.activeTL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_top_left.png");
-    _toplevelTextures.activeT = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_top_clamp.png");
+    _toplevelTextures.activeTL = loadAssetsTexture("toplevel_active_top_left.png");
+    _toplevelTextures.activeT = loadAssetsTexture("toplevel_active_top_clamp.png");
     _toplevelTextures.activeTR = _toplevelTextures.activeTL->copyB(_toplevelTextures.activeTL->sizeB(),
                                                                   LRect(0,
                                                                         0,
                                                                         -_toplevelTextures.activeTL->sizeB().w(),
                                                                         _toplevelTextures.activeTL->sizeB().h()));
-    _toplevelTextures.activeL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_side_clamp.png");
+    _toplevelTextures.activeL = loadAssetsTexture("toplevel_active_side_clamp.png");
     _toplevelTextures.activeR = _toplevelTextures.activeL->copyB(_toplevelTextures.activeL->sizeB(),
                                                                   LRect(0,
                                                                         0,
                                                                         -_toplevelTextures.activeL->sizeB().w(),
                                                                         _toplevelTextures.activeL->sizeB().h()));
-    _toplevelTextures.activeBL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_bottom_left.png");
-    _toplevelTextures.activeB = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_active_bottom_clamp.png");
+    _toplevelTextures.activeBL = loadAssetsTexture("toplevel_active_bottom_left.png");
+    _toplevelTextures.activeB = loadAssetsTexture("toplevel_active_bottom_clamp.png");
     _toplevelTextures.activeBR = _toplevelTextures.activeBL->copyB(_toplevelTextures.activeBL->sizeB(),
                                                                   LRect(0,
                                                                         0,
                                                                         -_toplevelTextures.activeBL->sizeB().w(),
                                                                         _toplevelTextures.activeBL->sizeB().h()));
 
-    _toplevelTextures.inactiveTL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_top_left.png");
-    _toplevelTextures.inactiveT = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_top_clamp.png");
+    _toplevelTextures.inactiveTL = loadAssetsTexture("toplevel_inactive_top_left.png");
+    _toplevelTextures.inactiveT = loadAssetsTexture("toplevel_inactive_top_clamp.png");
     _toplevelTextures.inactiveTR = _toplevelTextures.inactiveTL->copyB(_toplevelTextures.inactiveTL->sizeB(),
                                                                   LRect(0,
                                                                         0,
                                                                         -_toplevelTextures.inactiveTL->sizeB().w(),
                                                                         _toplevelTextures.inactiveTL->sizeB().h()));
-    _toplevelTextures.inactiveL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_side_clamp.png");
+    _toplevelTextures.inactiveL = loadAssetsTexture("toplevel_inactive_side_clamp.png");
     _toplevelTextures.inactiveR = _toplevelTextures.inactiveL->copyB(_toplevelTextures.inactiveL->sizeB(),
                                                                   LRect(0,
                                                                         0,
                                                                         -_toplevelTextures.inactiveL->sizeB().w(),
                                                                         _toplevelTextures.inactiveL->sizeB().h()));
-    _toplevelTextures.inactiveBL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_bottom_left.png");
-    _toplevelTextures.inactiveB = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_inactive_bottom_clamp.png");
+    _toplevelTextures.inactiveBL = loadAssetsTexture("toplevel_inactive_bottom_left.png");
+    _toplevelTextures.inactiveB = loadAssetsTexture("toplevel_inactive_bottom_clamp.png");
     _toplevelTextures.inactiveBR = _toplevelTextures.inactiveBL->copyB(_toplevelTextures.inactiveBL->sizeB(),
                                                                   LRect(0,
                                                                         0,
@@ -306,7 +310,7 @@ void G::loadToplevelTextures()
                                                                         _toplevelTextures.inactiveBL->sizeB().h()));
 
 
-    _toplevelTextures.maskBL = LOpenGL::loadTexture("/usr/etc/Louvre/assets/toplevel_border_radius_mask.png");
+    _toplevelTextures.maskBL = loadAssetsTexture("toplevel_border_radius_mask.png");
     _toplevelTextures.maskBR = _toplevelTextures.maskBL->copyB(_toplevelTextures.maskBL->sizeB(),
                                                                   LRect(0,
                                                                         0,
@@ -334,22 +338,22 @@ void G::loadToplevelTextures()
     for (UInt64 i = 0; i < sizeof(inactiveTransRectsTR)/sizeof(LRect); i++)
         _toplevelTextures.inactiveTransRegionTR.addRect(inactiveTransRectsTR[i]);
 
-    _toplevelTextures.inactiveButton = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_inactive.png");
-    _toplevelTextures.activeCloseButton = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_close.png");
-    _toplevelTextures.activeCloseButtonHover = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_close_hover.png");
-    _toplevelTextures.activeCloseButtonPressed = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_close_pressed.png");
-    _toplevelTextures.activeMinimizeButton = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_minimize.png");
-    _toplevelTextures.activeMinimizeButtonHover = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_minimize_hover.png");
-    _toplevelTextures.activeMinimizeButtonPressed = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_minimize_pressed.png");
-    _toplevelTextures.activeMaximizeButton = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_maximize.png");
-    _toplevelTextures.activeMaximizeButtonHover = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_maximize_hover.png");
-    _toplevelTextures.activeMaximizeButtonPressed = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_maximize_pressed.png");
-    _toplevelTextures.activeFullscreenButtonHover = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_fullscreen_hover.png");
-    _toplevelTextures.activeFullscreenButtonPressed = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_fullscreen_pressed.png");
-    _toplevelTextures.activeUnfullscreenButtonHover = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_unfullscreen_hover.png");
-    _toplevelTextures.activeUnfullscreenButtonPressed = LOpenGL::loadTexture("/usr/etc/Louvre/assets/button_unfullscreen_pressed.png");
+    _toplevelTextures.inactiveButton = loadAssetsTexture("button_inactive.png");
+    _toplevelTextures.activeCloseButton = loadAssetsTexture("button_close.png");
+    _toplevelTextures.activeCloseButtonHover = loadAssetsTexture("button_close_hover.png");
+    _toplevelTextures.activeCloseButtonPressed = loadAssetsTexture("button_close_pressed.png");
+    _toplevelTextures.activeMinimizeButton = loadAssetsTexture("button_minimize.png");
+    _toplevelTextures.activeMinimizeButtonHover = loadAssetsTexture("button_minimize_hover.png");
+    _toplevelTextures.activeMinimizeButtonPressed = loadAssetsTexture("button_minimize_pressed.png");
+    _toplevelTextures.activeMaximizeButton = loadAssetsTexture("button_maximize.png");
+    _toplevelTextures.activeMaximizeButtonHover = loadAssetsTexture("button_maximize_hover.png");
+    _toplevelTextures.activeMaximizeButtonPressed = loadAssetsTexture("button_maximize_pressed.png");
+    _toplevelTextures.activeFullscreenButtonHover = loadAssetsTexture("button_fullscreen_hover.png");
+    _toplevelTextures.activeFullscreenButtonPressed = loadAssetsTexture("button_fullscreen_pressed.png");
+    _toplevelTextures.activeUnfullscreenButtonHover = loadAssetsTexture("button_unfullscreen_hover.png");
+    _toplevelTextures.activeUnfullscreenButtonPressed = loadAssetsTexture("button_unfullscreen_pressed.png");
 
-    _toplevelTextures.logo = LOpenGL::loadTexture("/usr/etc/Louvre/assets/logo.png");
+    _toplevelTextures.logo = loadAssetsTexture("logo.png");
 }
 
 G::ToplevelTextures &G::toplevelTextures()
@@ -369,6 +373,37 @@ void G::loadFonts()
 G::Fonts *G::font()
 {
     return &_fonts;
+}
+
+LTexture *G::loadAssetsTexture(const char *name)
+{
+    char *path = joinPaths(ASSETS_PATH, name);
+    LTexture *tex = LOpenGL::loadTexture(path);
+    free(path);
+    return tex;
+}
+
+char *G::joinPaths(const char *path1, const char *path2)
+{
+    size_t len1 = strlen(path1);
+    size_t len2 = strlen(path2);
+
+    char *result = (char *)malloc(len1 + len2 + 2);
+
+    // Copy the first path
+    snprintf(result, len1 + 1, "%s", path1);
+
+    // Add a '/' if needed
+    if (result[len1 - 1] != '/' && path2[0] != '/')
+    {
+        snprintf(result + len1, 2, "/");
+        len1++;
+    }
+
+    // Concatenate the second path
+    snprintf(result + len1, len2 + 1, "%s", path2);
+
+    return result;
 }
 
 void G::enableParentScalingChildren(LView *parent, bool enabled)

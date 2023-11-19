@@ -6,11 +6,55 @@
 #include <LToplevelRole.h>
 #include <LTime.h>
 #include <LCursor.h>
+#include <LConfig.h>
 #include <LLog.h>
 #include <LOpenGL.h>
 #include <unistd.h>
 
 Output::Output():LOutput(){}
+
+static char *joinPaths(const char *path1, const char *path2)
+{
+    size_t len1 = strlen(path1);
+    size_t len2 = strlen(path2);
+
+    char *result = (char *)malloc(len1 + len2 + 2);
+
+    // Copy the first path
+    snprintf(result, len1 + 1, "%s", path1);
+
+    // Add a '/' if needed
+    if (result[len1 - 1] != '/' && path2[0] != '/')
+    {
+        snprintf(result + len1, 2, "/");
+        len1++;
+    }
+
+    // Concatenate the second path
+    snprintf(result + len1, len2 + 1, "%s", path2);
+
+    return result;
+}
+
+void Output::loadWallpaper()
+{
+    char *path = joinPaths(getenv("HOME"), "/.config/Louvre/wallpaper.jpg");
+    LTexture *background = LOpenGL::loadTexture(path);
+    free(path);
+
+    if (!background)
+    {
+        path = joinPaths(LOUVRE_DEFAULT_ASSETS_PATH, "wallpaper.png");
+        background = LOpenGL::loadTexture(path);
+        free(path);
+    }
+
+    if (background)
+    {
+        backgroundTexture = background->copyB(sizeB());
+        delete background;
+    }
+}
 
 void Output::fullDamage()
 {
@@ -41,19 +85,7 @@ void Output::initializeGL()
         terminalIconTexture = nullptr;
     }
 
-    char wallpaperPath[256];
-    sprintf(wallpaperPath, "%s/.config/Louvre/wallpaper.jpg", getenv("HOME"));
-    LTexture *background = LOpenGL::loadTexture(wallpaperPath);
-
-    if (!background)
-        background = LOpenGL::loadTexture("/usr/etc/Louvre/assets/wallpaper.png");
-
-    if (background)
-    {
-        backgroundTexture = background->copyB(sizeB());
-        delete background;
-    }
-
+    loadWallpaper();
     fullDamage();
     repaint();
 }
@@ -81,18 +113,7 @@ void Output::resizeGL()
         backgroundTexture = nullptr;
     }
 
-    char wallpaperPath[256];
-    sprintf(wallpaperPath, "%s/.config/Louvre/wallpaper.jpg", getenv("HOME"));
-    LTexture *background = LOpenGL::loadTexture(wallpaperPath);
-
-    if (!background)
-        background = LOpenGL::loadTexture("/usr/etc/Louvre/assets/wallpaper.png");
-
-    if (background)
-    {
-        backgroundTexture = background->copyB(sizeB());
-        delete background;
-    }
+    loadWallpaper();
 }
 
 void Output::moveGL()
