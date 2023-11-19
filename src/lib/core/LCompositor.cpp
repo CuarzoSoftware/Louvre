@@ -1,6 +1,5 @@
-#include <csignal>
-#include <iostream>
-#include <ostream>
+#include <protocols/Wayland/private/GOutputPrivate.h>
+
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 #include <private/LSeatPrivate.h>
@@ -10,24 +9,25 @@
 #include <private/LAnimationPrivate.h>
 #include <private/LViewPrivate.h>
 
-#include <protocols/Wayland/private/GOutputPrivate.h>
-
 #include <LNamespaces.h>
 #include <LPopupRole.h>
-
-#include <stdio.h>
-#include <sys/poll.h>
-#include <thread>
-#include <unistd.h>
 #include <LToplevelRole.h>
 #include <LCursor.h>
 #include <LSubsurfaceRole.h>
 #include <LPointer.h>
 #include <LKeyboard.h>
 #include <LDNDManager.h>
-#include <dlfcn.h>
 #include <LLog.h>
+
 #include <sys/eventfd.h>
+#include <sys/poll.h>
+#include <stdio.h>
+#include <thread>
+#include <unistd.h>
+#include <dlfcn.h>
+#include <csignal>
+#include <iostream>
+#include <ostream>
 
 using namespace Louvre::Protocols::Wayland;
 
@@ -39,9 +39,10 @@ LCompositor::LCompositor()
         s_compositor = this;
 
     LLog::init();
-    LSurface::LSurfacePrivate::getEGLFunctions();
     m_imp = new LCompositorPrivate();
     imp()->compositor = this;
+    imp()->eglBindWaylandDisplayWL = (PFNEGLBINDWAYLANDDISPLAYWL) eglGetProcAddress ("eglBindWaylandDisplayWL");
+    imp()->eglQueryWaylandBufferWL = (PFNEGLQUERYWAYLANDBUFFERWL) eglGetProcAddress ("eglQueryWaylandBufferWL");
 }
 
 LCompositor *LCompositor::compositor()

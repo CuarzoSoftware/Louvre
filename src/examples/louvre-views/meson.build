@@ -4,7 +4,7 @@ executable(
     'louvre-views',
     sources,
     dependencies : [
-        Louvre_dep,
+        louvre_dep,
         wayland_server_dep,
         input_dep,
         fontconfig_dep,
@@ -17,5 +17,5 @@ assets = run_command('find', './assets', '-type', 'f', '-name', '*[.png, .list]'
 
 install_data(
     assets,
-    install_dir: ASSETS_PATH
+    install_dir: ASSETS_INSTALL_PATH
 )

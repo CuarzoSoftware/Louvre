@@ -4,7 +4,7 @@ executable(
     'louvre-weston-clone',
     sources : sources,
     dependencies : [
-        Louvre_dep,
+        louvre_dep,
         wayland_server_dep,
         gl_dep,
         fontconfig_dep,

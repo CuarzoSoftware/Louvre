@@ -4,7 +4,7 @@ executable(
     'louvre-default',
     sources : sources,
     dependencies : [
-        Louvre_dep,
+        louvre_dep,
         gl_dep,
     ],
     install : true)

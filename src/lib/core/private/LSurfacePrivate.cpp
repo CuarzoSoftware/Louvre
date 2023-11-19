@@ -11,13 +11,6 @@
 #include <LOutputMode.h>
 #include <LLog.h>
 
-static PFNEGLQUERYWAYLANDBUFFERWL eglQueryWaylandBufferWL = NULL;
-
-void LSurface::LSurfacePrivate::getEGLFunctions()
-{
-    eglQueryWaylandBufferWL = (PFNEGLQUERYWAYLANDBUFFERWL) eglGetProcAddress ("eglQueryWaylandBufferWL");
-}
-
 void LSurface::LSurfacePrivate::setParent(LSurface *parent)
 {
     if (destroyed)
@@ -301,14 +294,14 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         wl_shm_buffer_end_access(shm_buffer);
     }
     // WL_DRM
-    else if (eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.buffer, EGL_TEXTURE_FORMAT, &texture_format))
+    else if (compositor()->imp()->eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.buffer, EGL_TEXTURE_FORMAT, &texture_format))
     {
         if (texture && texture != textureBackup && texture->imp()->pendingDelete)
             delete texture;
 
         texture = textureBackup;
-        eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.buffer, EGL_WIDTH, &width);
-        eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.buffer, EGL_HEIGHT, &height);
+        compositor()->imp()->eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.buffer, EGL_WIDTH, &width);
+        compositor()->imp()->eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.buffer, EGL_HEIGHT, &height);
         damageNormal(width, height, prevSize, bufferScaleChanged);
         texture->setData(current.buffer);
     }

@@ -5,7 +5,7 @@ GraphicBackendDRM = library(
     ],
     include_directories : include_paths + [include_directories('./..')],
     dependencies : [
-        Louvre_dep,
+        louvre_dep,
         udev_dep,
         egl_dep,
         gl_dep,
@@ -14,5 +14,5 @@ GraphicBackendDRM = library(
         srm_dep
     ],
     install : true, 
-    install_dir : BACKENDS_PATH)
+    install_dir : BACKENDS_INSTALL_PATH)
 

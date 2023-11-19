@@ -7,9 +7,11 @@
 #include <private/LCursorPrivate.h>
 #include <private/LAnimationPrivate.h>
 #include <LTime.h>
+#include <LConfig.h>
 #include <LLog.h>
 #include <EGL/egl.h>
 #include <dlfcn.h>
+#include <string.h>
 
 void LCompositor::LCompositorPrivate::processRemovedGlobals()
 {
@@ -97,7 +99,6 @@ bool LCompositor::LCompositorPrivate::initWayland()
 {
     unitWayland();
 
-    // Create a new Wayland display
     display = wl_display_create();
 
     if (!display)
@@ -186,44 +187,35 @@ void LCompositor::LCompositorPrivate::unitCompositor()
     state = CompositorState::Uninitialized;
 }
 
+static char *joinPaths(const char *path1, const char *path2)
+{
+    size_t len1 = strlen(path1);
+    size_t len2 = strlen(path2);
+
+    char *result = (char *)malloc(len1 + len2 + 2);
+
+    // Copy the first path
+    snprintf(result, len1 + 1, "%s", path1);
+
+    // Add a '/' if needed
+    if (result[len1 - 1] != '/' && path2[0] != '/')
+    {
+        snprintf(result + len1, 2, "/");
+        len1++;
+    }
+
+    // Concatenate the second path
+    snprintf(result + len1, len2 + 1, "%s", path2);
+
+    return result;
+}
+
 bool LCompositor::LCompositorPrivate::initGraphicBackend()
 {
     unitGraphicBackend(false);
 
-    eglBindWaylandDisplayWL = (PFNEGLBINDWAYLANDDISPLAYWL) eglGetProcAddress ("eglBindWaylandDisplayWL");
-
-    if (!graphicBackend)
-    {
-        LLog::warning("[LCompositorPrivate::initGraphicBackend] User did not load a graphic backend. Trying the DRM backend...");
-
-        testDRMBackend:
-
-        if (!loadGraphicBackend("/usr/etc/Louvre/backends/libLGraphicBackendDRM.so"))
-        {
-            LLog::error("[LCompositorPrivate::initGraphicBackend] Failed to load the DRM backend. Trying the X11 backend...");
-
-            testX11Backend:
-
-            if (!loadGraphicBackend("/usr/etc/Louvre/backends/libLGraphicBackendX11.so"))
-            {
-                LLog::fatal("[LCompositorPrivate::initGraphicBackend] No graphic backend found. Stopping compositor...");
-                return false;
-            }
-        }
-        else
-        {
-            if (!graphicBackend->initialize())
-            {
-                dlclose(graphicBackendHandle);
-                graphicBackendHandle = nullptr;
-                graphicBackend = nullptr;
-
-                LLog::error("[LCompositorPrivate::initGraphicBackend] Could not initialize the DRM backend. Trying the X11 backend...");
-                goto testX11Backend;
-            }
-        }
-    }
-    else
+    // Check if there is a pre-loaded graphic backend
+    if (graphicBackend)
     {
         if (!graphicBackend->initialize())
         {
@@ -231,9 +223,64 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
             graphicBackendHandle = nullptr;
             graphicBackend = nullptr;
 
-            LLog::error("[LCompositorPrivate::initGraphicBackend] Could not initialize the user defined backend. Trying the DRM backend...");
-            goto testDRMBackend;
+            LLog::error("[LCompositorPrivate::initGraphicBackend] Could not initialize pre-loaded backend.");
+            goto loadEnvBackend;
         }
+    }
+    else
+    {
+        loadEnvBackend:
+
+        const char *backendPath = getenv("LOUVRE_BACKENDS_PATH");
+        const char *backendName = getenv("LOUVRE_GRAPHIC_BACKEND");
+        bool usingEnvs = backendPath != NULL || backendName != NULL;
+
+        if (!backendPath)
+            backendPath = LOUVRE_DEFAULT_BACKENDS_PATH;
+
+        if (!backendName)
+            backendName = LOUVRE_DEFAULT_GRAPHIC_BACKEND;
+
+        char *backendPathName = joinPaths(backendPath, backendName);
+
+        retry:
+
+        if (loadGraphicBackend(backendPathName))
+        {
+            if (!graphicBackend->initialize())
+            {
+                dlclose(graphicBackendHandle);
+                graphicBackendHandle = nullptr;
+                graphicBackend = nullptr;
+                LLog::error("[LCompositorPrivate::initGraphicBackend] Failed to initialize %s backend.", backendName);
+                free(backendPathName);
+
+                if (usingEnvs)
+                {
+                    usingEnvs = false;
+                    backendPathName = joinPaths(LOUVRE_DEFAULT_BACKENDS_PATH, LOUVRE_DEFAULT_GRAPHIC_BACKEND);
+                    goto retry;
+                }
+
+                return false;
+            }
+        }
+        else
+        {
+            LLog::error("[LCompositorPrivate::initGraphicBackend] Failed to load %s backend.", backendPathName);
+            free(backendPathName);
+
+            if (usingEnvs)
+            {
+                usingEnvs = false;
+                backendPathName = joinPaths(LOUVRE_DEFAULT_BACKENDS_PATH, LOUVRE_DEFAULT_GRAPHIC_BACKEND);
+                goto retry;
+            }
+
+            return false;
+        }
+
+        free(backendPathName);
     }
 
     LLog::debug("[LCompositorPrivate::initGraphicBackend] Graphic backend initialized successfully.");
@@ -261,21 +308,73 @@ bool LCompositor::LCompositorPrivate::initInputBackend()
 {
     unitInputBackend(false);
 
-    if (!inputBackend)
+    // Check if there is a pre-loaded input backend
+    if (inputBackend)
     {
-        LLog::warning("[LCompositorPrivate::initInputBackend] User did not load an input backend. Trying the Libinput backend...");
-
-        if (!loadInputBackend("/usr/etc/Louvre/backends/libLInputBackendLibinput.so"))
+        if (!inputBackend->initialize())
         {
-            LLog::fatal("[LCompositorPrivate::initInputBackend] No input backend found. Stopping compositor...");
-            return false;
+            dlclose(inputBackendHandle);
+            inputBackendHandle = nullptr;
+            inputBackend = nullptr;
+
+            LLog::error("[LCompositorPrivate::initInputBackend] Could not initialize pre-loaded backend.");
+            goto loadEnvBackend;
         }
     }
-
-    if (!inputBackend->initialize())
+    else
     {
-        LLog::fatal("[LCompositorPrivate::initInputBackend] Failed to initialize input backend. Stopping compositor...");
-        return false;
+        loadEnvBackend:
+
+        const char *backendPath = getenv("LOUVRE_BACKENDS_PATH");
+        const char *backendName = getenv("LOUVRE_INPUT_BACKEND");
+        bool usingEnvs = backendPath != NULL || backendName != NULL;
+
+        if (!backendPath)
+            backendPath = LOUVRE_DEFAULT_BACKENDS_PATH;
+
+        if (!backendName)
+            backendName = LOUVRE_DEFAULT_INPUT_BACKEND;
+
+        char *backendPathName = joinPaths(backendPath, backendName);
+
+        retry:
+
+        if (loadInputBackend(backendPathName))
+        {
+            if (!inputBackend->initialize())
+            {
+                dlclose(inputBackendHandle);
+                inputBackendHandle = nullptr;
+                inputBackend = nullptr;
+                LLog::error("[LCompositorPrivate::initInputBackend] Failed to initialize %s backend.", backendName);
+                free(backendPathName);
+
+                if (usingEnvs)
+                {
+                    usingEnvs = false;
+                    backendPathName = joinPaths(LOUVRE_DEFAULT_BACKENDS_PATH, LOUVRE_DEFAULT_INPUT_BACKEND);
+                    goto retry;
+                }
+
+                return false;
+            }
+        }
+        else
+        {
+            LLog::error("[LCompositorPrivate::initInputBackend] Failed to load %s backend.", backendPathName);
+            free(backendPathName);
+
+            if (usingEnvs)
+            {
+                usingEnvs = false;
+                backendPathName = joinPaths(LOUVRE_DEFAULT_BACKENDS_PATH, LOUVRE_DEFAULT_INPUT_BACKEND);
+                goto retry;
+            }
+
+            return false;
+        }
+
+        free(backendPathName);
     }
 
     LLog::debug("[LCompositorPrivate::initInputBackend] Input backend initialized successfully.");
@@ -403,7 +502,7 @@ bool LCompositor::LCompositorPrivate::loadGraphicBackend(const char *path)
 
     if (!graphicBackendHandle)
     {
-        LLog::warning("[LCompositorPrivate::loadGraphicBackend] No graphic backend found at (%s)\n",path);
+        LLog::warning("[LCompositorPrivate::loadGraphicBackend] No graphic backend found at (%s)",path);
         return false;
     }
 
@@ -411,7 +510,7 @@ bool LCompositor::LCompositorPrivate::loadGraphicBackend(const char *path)
 
     if (!getAPI)
     {
-        LLog::error("[LCompositorPrivate::loadGraphicBackend] Failed to load graphic backend (%s)\n",path);
+        LLog::error("[LCompositorPrivate::loadGraphicBackend] Failed to load graphic backend (%s)",path);
         dlclose(graphicBackendHandle);
         return false;
     }

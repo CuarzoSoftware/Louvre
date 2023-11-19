@@ -18,10 +18,19 @@ By default, Louvre uses the `wayland-0` Unix domain socket for Wayland communica
 
 Keep in mind that for clients to successfully establish a connection, you must also update the **WAYLAND_DISPLAY** environment variable to match the chosen value.
 
+## Backends Configuration
 
-## Graphic Backend Configuration {#graphic}
+  - **LOUVRE_BACKENDS_PATH**: Path to the directory containing Louvre backends, e.g., `/usr/etc/Louvre/backends`.
 
-For adjusting parameters related to the graphic backend, including buffering settings (single, double, or triple buffering) or choosing between the Atomic or Legacy DRM API, please consult the [SRM environment variables](https://cuarzosoftware.github.io/SRM/md_md__envs.html).
+  - **LOUVRE_GRAPHIC_BACKEND**: Name of the graphic backend to load, e.g., `libLGraphicBackendDRM.so`.
+
+  - **LOUVRE_INPUT_BACKEND**: Name of the input backend to load, e.g., `libLInputBackendLibinput.so`.
+
+If Louvre encounters issues loading the specified backend configurations, it will automatically fallback to the default settings.
+
+## DRM Graphic Backend Configuration {#graphic}
+
+For adjusting parameters related to the DRM graphic backend, including buffering settings (single, double, or triple buffering) or choosing between the Atomic or Legacy DRM API, please consult the [SRM environment variables](https://cuarzosoftware.github.io/SRM/md_md__envs.html).
 
 ### Recommended Settings
 

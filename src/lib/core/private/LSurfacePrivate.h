@@ -74,7 +74,6 @@ LPRIVATE_CLASS(LSurface)
     std::list<WpPresentationTime::RWpPresentationFeedback*> wpPresentationFeedbackResources;
     void sendPresentationFeedback(LOutput *output, timespec &ns);
     void setBufferScale(Int32 scale);
-    static void getEGLFunctions();
     void setPendingParent(LSurface *pendParent);
     void setParent(LSurface *parent);
     void removeChild(LSurface *child);

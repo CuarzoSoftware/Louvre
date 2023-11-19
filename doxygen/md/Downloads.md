@@ -74,7 +74,8 @@ $ git clone https://github.com/CuarzoSoftware/Louvre.git
 $ cd Louvre/src
 $ meson setup build
 $ cd build
-$ sudo meson install
+$ meson install
+$ sudo ldconfig
 ```
 
 To ensure that everything is functioning correctly, you can test one of the available [examples](md_md__examples.html).

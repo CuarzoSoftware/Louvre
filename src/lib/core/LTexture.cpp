@@ -129,7 +129,6 @@ UInt32 LTexture::formatPlanes(UInt32 format)
     case DRM_FORMAT_P010:
     case DRM_FORMAT_P012:
     case DRM_FORMAT_P016:
-    case DRM_FORMAT_P030:
         return 2;
         break;
     default:

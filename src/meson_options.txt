@@ -1,1 +1,17 @@
 option('build_examples', type : 'boolean', value : true)
+
+option('assets_path', 
+    type : 'string', 
+    value : '/usr/etc/Louvre/assets')
+
+option('backends_path', 
+    type : 'string', 
+    value : '/usr/etc/Louvre/backends')
+
+option('default_graphic_backend', 
+    type : 'string', 
+    value : 'libLGraphicBackendDRM.so')
+
+option('default_input_backend', 
+    type : 'string',
+    value : 'libLInputBackendLibinput.so')

@@ -39,7 +39,7 @@ To add apps to the dock, follow these instructions:
 
 * **The application name**: This name will be displayed in the popup when you hover over the app icon and in the top bar when the app is active.
 * **Run command**: Specify the command to launch the app. If the command requires environment variables or other parameters, consider creating a Bash script and pointing to that script file.
-* **Icon Path**: Provide the full path to the app's icon in PNG format.
+* **Icon Path**: Provide the full path to the app's icon.
 
 Here's an example format for apps.list:
 
@@ -55,6 +55,8 @@ app2-run-command
 Ensure that there are no empty lines between entries or at the begining/end of the file.
 
 > Note: While using .desktop files is recommended for a more standardized approach, this example simplifies the process for demonstration purposes and avoids the need for linking to additional libraries like GLib or Qt to parse .desktop information and icons.
+
+The icons featured in the screenshot were sourced from [macOSicons](https://macosicons.com/).
 
 ## louvre-weston-clone {#weston}
 
