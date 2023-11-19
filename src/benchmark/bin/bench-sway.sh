@@ -1,6 +1,6 @@
 # exec <N surfaces> <milliseconds> <seed>
 sudo intel_gpu_top -s $2 -o GPU-Sway_N_$1_MS_$2.txt &
-taskset --cpu-list 0 sway
+taskset --cpu-list 0 sway &
 sleep 2
 export WAYLAND_DISPLAY=wayland-1
 ./LBenchmark $1 $2 FPS-Sway $3
