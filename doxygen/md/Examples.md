@@ -16,6 +16,10 @@ The louvre-views example replicates the appearance of macOS X. It showcases the 
 
 <img src="https://lh3.googleusercontent.com/pw/AIL4fc9VCmbRMl7f4ibvQqDrWpmLkXJ9W3MHHWKKE7g5oKcYSIrOut0mQEb1sDoblm9h35zUXk5zhwOwlWnM-soCtjeznhmA7yfRNqo-5a3PdwNYapM1vn4=w2400"/>
 
+<center><i>
+The dock icons featured in the screenshot were sourced from <a href="https://macosicons.com/">macOSicons</a>.
+</i></center>
+
 ### Keyboard Shortcuts
 
 * `Shift + Ctrl + Esc` : Terminates the compositor.
@@ -55,8 +59,6 @@ app2-run-command
 Ensure that there are no empty lines between entries or at the begining/end of the file.
 
 > Note: While using .desktop files is recommended for a more standardized approach, this example simplifies the process for demonstration purposes and avoids the need for linking to additional libraries like GLib or Qt to parse .desktop information and icons.
-
-The icons featured in the screenshot were sourced from [macOSicons](https://macosicons.com/).
 
 ## louvre-weston-clone {#weston}
 

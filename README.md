@@ -59,7 +59,7 @@ Within Louvre, you have the flexibility to either employ your own OpenGL ES 2.0 
 
 * Shared Memory
 * Wayland EGL (DMA and GEM flinks)
-* Linux DMA-Buff
+* Linux DMA-Buf
 
 ## 💻 Graphic Backends
 
