@@ -71,8 +71,8 @@ headers_classes = run_command('find', './lib/core', '-type', 'f', '-name', '*.h'
 headers_classes_private = run_command('find', './lib/core/private', '-type', 'f', '-name', '*.h', '-maxdepth', '1', check : false).stdout().strip().split('\n')
 headers_other = run_command('find', './lib/other', '-type', 'f', '-name', '*.h', '-maxdepth', '1', check : false).stdout().strip().split('\n')
 install_headers(headers_classes, install_dir : HEADERS_INSTALL_PATH)
-install_headers(headers_classes_private, install_dir : join_paths(HEADERS_INSTALL_PATH, '/private'))
-install_headers(headers_other, install_dir : join_paths(HEADERS_INSTALL_PATH, '/other'))
+install_headers(headers_classes_private, install_dir : join_paths(HEADERS_INSTALL_PATH, 'private'))
+install_headers(headers_other, install_dir : join_paths(HEADERS_INSTALL_PATH, 'other'))
 
 globals = [
     'LinuxDMABuf',
