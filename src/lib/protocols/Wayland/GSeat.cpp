@@ -22,9 +22,9 @@ GSeat::GSeat
         id,
         implementation,
         destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(GSeat)
 {
-    m_imp = new GSeatPrivate();
     this->client()->imp()->seatGlobals.push_back(this);
     imp()->clientLink = std::prev(this->client()->imp()->seatGlobals.end());
     capabilities(seat()->inputCapabilities());
@@ -43,8 +43,6 @@ GSeat::~GSeat()
 
     if (dataDeviceResource())
         dataDeviceResource()->imp()->gSeat = nullptr;
-
-    delete m_imp;
 }
 
 RKeyboard *GSeat::keyboardResource() const

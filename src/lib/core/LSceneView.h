@@ -163,7 +163,7 @@ public:
                            Float32 scale,
                            Float32 alpha) override;
 
-LPRIVATE_IMP(LSceneView)
+LPRIVATE_IMP_UNIQUE(LSceneView)
     /// @cond OMIT
     friend class LScene;
     LSceneView(LFramebuffer *framebuffer = nullptr, LView *parent = nullptr);

@@ -88,7 +88,7 @@ public:
                            Float32 scale,
                            Float32 alpha) override;
 
-LPRIVATE_IMP(LLayerView)
+    LPRIVATE_IMP_UNIQUE(LLayerView)
 };
 
 #endif // LLAYERVIEW_H

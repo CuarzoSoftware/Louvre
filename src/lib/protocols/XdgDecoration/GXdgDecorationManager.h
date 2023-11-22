@@ -15,7 +15,7 @@ public:
 
     ~GXdgDecorationManager();
 
-    LPRIVATE_IMP(GXdgDecorationManager)
+    LPRIVATE_IMP_UNIQUE(GXdgDecorationManager)
 };
 
 #endif // GXDGDECORATIONMANAGER_H

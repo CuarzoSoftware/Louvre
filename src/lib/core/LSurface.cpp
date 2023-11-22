@@ -9,6 +9,23 @@
 
 using namespace Louvre::Protocols::Wayland;
 
+LSurface::LSurface(LSurface::Params *params) : LPRIVATE_INIT_UNIQUE(LSurface)
+{
+    imp()->texture = new LTexture();
+    imp()->textureBackup = imp()->texture;
+    imp()->surfaceResource = params->surfaceResource;
+}
+
+LSurface::~LSurface()
+{
+    imp()->lastPointerEventView = nullptr;
+
+    if (imp()->texture && imp()->texture != imp()->textureBackup && imp()->texture->imp()->pendingDelete)
+        delete imp()->texture;
+
+    delete imp()->textureBackup;
+}
+
 LCursorRole *LSurface::cursorRole() const
 {
     if (roleId() == LSurface::Role::Cursor)
@@ -52,25 +69,6 @@ LDNDIconRole *LSurface::dndIcon() const
 LBaseSurfaceRole *LSurface::role() const
 {
     return imp()->current.role;
-}
-
-LSurface::LSurface(LSurface::Params *params)
-{
-    m_imp = new LSurfacePrivate();
-    imp()->texture = new LTexture();
-    imp()->textureBackup = imp()->texture;
-    imp()->surfaceResource = params->surfaceResource;
-}
-
-LSurface::~LSurface()
-{
-    imp()->lastPointerEventView = nullptr;
-
-    if (imp()->texture && imp()->texture != imp()->textureBackup && imp()->texture->imp()->pendingDelete)
-        delete imp()->texture;
-
-    delete imp()->textureBackup;
-    delete m_imp;
 }
 
 void LSurface::setPos(const LPoint &newPos)

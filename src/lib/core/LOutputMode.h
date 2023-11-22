@@ -52,7 +52,7 @@ public:
      */
     bool isPreferred() const;
 
-    LPRIVATE_IMP(LOutputMode)
+    LPRIVATE_IMP_UNIQUE(LOutputMode)
 };
 
 #endif // LOUTPUTMODE_H

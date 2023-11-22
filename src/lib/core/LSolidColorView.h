@@ -130,7 +130,7 @@ public:
                            Float32 scale,
                            Float32 alpha) override;
 
-LPRIVATE_IMP(LSolidColorView)
+LPRIVATE_IMP_UNIQUE(LSolidColorView)
 };
 
 #endif // LSOLIDCOLORVIEW_H

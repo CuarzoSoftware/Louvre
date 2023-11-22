@@ -526,7 +526,7 @@ public:
 
 ///@}
 
-    LPRIVATE_IMP(LPointer)
+    LPRIVATE_IMP_UNIQUE(LPointer)
 };
 
 #endif // LPOINTER_H

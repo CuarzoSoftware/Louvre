@@ -22,7 +22,7 @@ public:
     // Since 5
     bool wmCapabilities(wl_array *capabilities);
 
-    LPRIVATE_IMP(RXdgToplevel)
+    LPRIVATE_IMP_UNIQUE(RXdgToplevel)
 };
 
 #endif // RXDGTOPLEVEL_H

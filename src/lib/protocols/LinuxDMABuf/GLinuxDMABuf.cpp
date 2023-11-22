@@ -22,9 +22,9 @@ GLinuxDMABuf::GLinuxDMABuf
         id,
         implementation,
         destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(GLinuxDMABuf)
 {
-    m_imp = new GLinuxDMABufPrivate();
     this->client()->imp()->linuxDMABufGlobals.push_back(this);
     imp()->clientLink = std::prev(this->client()->imp()->linuxDMABufGlobals.end());
 
@@ -53,7 +53,6 @@ GLinuxDMABuf::GLinuxDMABuf
 GLinuxDMABuf::~GLinuxDMABuf()
 {
     client()->imp()->linuxDMABufGlobals.erase(imp()->clientLink);
-    delete m_imp;
 }
 
 bool GLinuxDMABuf::format(UInt32 format)

@@ -14,7 +14,7 @@ public:
                 wl_resource_destroy_func_t destroy);
     ~GCompositor();
 
-    LPRIVATE_IMP(GCompositor)
+    LPRIVATE_IMP_UNIQUE(GCompositor)
 };
 
 #endif // GCOMPOSITOR_H

@@ -3,6 +3,7 @@
 
 #include <protocols/Wayland/wayland.h>
 #include <list>
+#include <memory>
 
 #define LOUVRE_MAX_SURFACE_SIZE 10000000
 #define LOUVRE_GLOBAL_ITERS_BEFORE_DESTROY 5
@@ -26,10 +27,16 @@
 #define CAT_(x, y) x ## y
 
 #define LPRIVATE_CLASS(class_name) \
-class class_name::CAT(class_name,Private){ \
+    class class_name::CAT(class_name,Private){ \
         public: \
         CAT(class_name,Private)() = default; \
         ~CAT(class_name,Private)() = default; \
+        CAT(class_name,Private)(const CAT(class_name,Private)&) = delete; \
+        CAT(class_name,Private) &operator=(const CAT(class_name,Private)&) = delete;
+
+#define LPRIVATE_CLASS_NO_COPY(class_name) \
+class class_name::CAT(class_name,Private){ \
+        public: \
         CAT(class_name,Private)(const CAT(class_name,Private)&) = delete; \
         CAT(class_name,Private) &operator=(const CAT(class_name,Private)&) = delete;
 
@@ -38,6 +45,16 @@ class class_name::CAT(class_name,Private){ \
     inline CAT(class_name,Private) *imp() const {return m_imp;}; \
     private: \
     CAT(class_name,Private) *m_imp = nullptr;
+
+#define LPRIVATE_IMP_UNIQUE(class_name) \
+    class CAT(class_name,Private); \
+    inline CAT(class_name,Private) *imp() const {return m_imp.get();}; \
+    private: \
+        friend class std::unique_ptr<CAT(class_name,Private)>;\
+        std::unique_ptr<CAT(class_name,Private)> m_imp;
+
+#define LPRIVATE_INIT_UNIQUE(class_name) \
+    m_imp(std::make_unique<CAT(class_name,Private)>())
 
 /**
  * @namespace Louvre

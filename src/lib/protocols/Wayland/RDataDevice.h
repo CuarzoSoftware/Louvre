@@ -26,7 +26,7 @@ public:
     bool drop();
     bool selection(RDataOffer *id);
 
-    LPRIVATE_IMP(RDataDevice)
+    LPRIVATE_IMP_UNIQUE(RDataDevice)
 };
 
 #endif // RDATADEVICE_H

@@ -6,15 +6,17 @@
 #include <LRenderBuffer.h>
 #include <LOutput.h>
 
-LSceneView::LSceneView(LFramebuffer *framebuffer, LView *parent) : LView(Scene, parent)
+LSceneView::LSceneView(LFramebuffer *framebuffer, LView *parent) :
+    LView(Scene, parent),
+    LPRIVATE_INIT_UNIQUE(LSceneView)
 {
-    m_imp = new LSceneViewPrivate();
     imp()->fb = framebuffer;
 }
 
-LSceneView::LSceneView(const LSize &sizeB, Int32 bufferScale, LView *parent) : LView(Scene, parent)
+LSceneView::LSceneView(const LSize &sizeB, Int32 bufferScale, LView *parent) :
+    LView(Scene, parent),
+    LPRIVATE_INIT_UNIQUE(LSceneView)
 {
-    m_imp = new LSceneViewPrivate();
     imp()->fb = new LRenderBuffer(sizeB);
     LRenderBuffer *rb = (LRenderBuffer*)imp()->fb;
     rb->setScale(bufferScale);
@@ -29,8 +31,6 @@ LSceneView::~LSceneView()
 
     if (!isLScene())
         delete imp()->fb;
-
-    delete m_imp;
 }
 
 const LRGBAF &LSceneView::clearColor() const

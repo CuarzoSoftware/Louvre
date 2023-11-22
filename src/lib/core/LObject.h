@@ -30,7 +30,7 @@ public:
     static LCursor *cursor();
 
     /// @cond OMIT
-    LPRIVATE_IMP(LObject);
+    // LPRIVATE_IMP(LObject); (not required yet)
     /// @endcond
 };
 

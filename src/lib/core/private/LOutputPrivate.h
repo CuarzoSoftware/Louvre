@@ -3,10 +3,12 @@
 
 #include <LOutput.h>
 #include <private/LRenderBufferPrivate.h>
+#include <LOutputFramebuffer.h>
 #include <atomic>
 
-LPRIVATE_CLASS(LOutput)
-    LOutputFramebuffer *fb;
+LPRIVATE_CLASS_NO_COPY(LOutput)
+    LOutputPrivate(LOutput *output);
+    LOutputFramebuffer fb;
     LFramebuffer::Transform transform = LFramebuffer::Normal;
     LOutput *output;
     LRect rect;

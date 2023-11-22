@@ -778,7 +778,7 @@ public:
      */
     virtual void keyEvent(UInt32 keyCode, UInt32 keyState);
 
-LPRIVATE_IMP(LView)
+LPRIVATE_IMP_UNIQUE(LView)
 };
 
 #endif // LVIEW_H

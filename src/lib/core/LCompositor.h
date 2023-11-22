@@ -740,7 +740,7 @@ public:
      */
     std::thread::id mainThreadId() const;
 
-    LPRIVATE_IMP(LCompositor)
+    LPRIVATE_IMP_UNIQUE(LCompositor)
 };
 
 #endif // LCOMPOSITOR_H

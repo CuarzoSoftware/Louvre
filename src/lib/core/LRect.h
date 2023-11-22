@@ -439,7 +439,6 @@ public:
     }
 
 private:
-
     friend class LRectTemplate<TB,TA>;
     LPointTemplate<TA,TB> m_topLeft,m_bottomRight;
 };

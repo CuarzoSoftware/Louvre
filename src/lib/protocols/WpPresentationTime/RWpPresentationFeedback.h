@@ -24,7 +24,7 @@ public:
                    UInt32 flags) const;
     bool discarded() const;
 
-    LPRIVATE_IMP(RWpPresentationFeedback)
+    LPRIVATE_IMP_UNIQUE(RWpPresentationFeedback)
 };
 
 #endif // RWPPRESENTATIONFEEDBACK_H

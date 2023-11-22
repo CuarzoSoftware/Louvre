@@ -30,7 +30,7 @@ public:
     bool preferredBufferScale(Int32 scale);
     bool preferredBufferTransform(UInt32 transform);
 
-    LPRIVATE_IMP(RSurface)
+    LPRIVATE_IMP_UNIQUE(RSurface)
 };
 
 #endif // RSURFACE_H

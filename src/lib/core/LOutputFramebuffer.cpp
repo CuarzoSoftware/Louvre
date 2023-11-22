@@ -2,16 +2,13 @@
 #include <LOutput.h>
 #include <GLES2/gl2.h>
 
-LOutputFramebuffer::LOutputFramebuffer(LOutput *output)
+LOutputFramebuffer::LOutputFramebuffer(LOutput *output) :
+LPRIVATE_INIT_UNIQUE(LOutputFramebuffer)
 {
-    m_imp = new LOutputFramebufferPrivate();
     imp()->output = output;
 }
 
-LOutputFramebuffer::~LOutputFramebuffer()
-{
-    delete m_imp;
-}
+LOutputFramebuffer::~LOutputFramebuffer() {}
 
 Int32 LOutputFramebuffer::scale() const
 {

@@ -5,7 +5,7 @@
 
 using namespace Louvre;
 
-LPRIVATE_CLASS(LObject)
-};
+//LPRIVATE_CLASS(LObject)
+//};
 
 #endif // LOBJECTPRIVATE_H

@@ -25,9 +25,9 @@ LDMABuffer::LDMABuffer
         id,
         &wl_dma_buffer_implementation,
         &LDMABuffer::LDMABufferPrivate::resource_destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(LDMABuffer)
 {
-    m_imp = new LDMABufferPrivate();
     imp()->planes = rLinuxBufferParams->imp()->planes;
 }
 
@@ -46,9 +46,7 @@ LDMABuffer::~LDMABuffer()
     }
 
     skipDeleteTexture:
-
     delete imp()->planes;
-    delete m_imp;
 }
 
 const LDMAPlanes *LDMABuffer::planes() const

@@ -13,9 +13,8 @@
 
 using namespace Louvre;
 
-LPainter::LPainter()
+LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
 {
-    m_imp = new LPainterPrivate();
     imp()->painter = this;
 
     compositor()->imp()->threadsMap[std::this_thread::get_id()].painter = this;
@@ -436,6 +435,15 @@ LPainter::LPainter()
     imp()->shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
 }
 
+LPainter::~LPainter()
+{
+    glDeleteProgram(imp()->programObject);
+    glDeleteProgram(imp()->programObjectExternal);
+    glDeleteShader(imp()->fragmentShaderExternal);
+    glDeleteShader(imp()->fragmentShader);
+    glDeleteShader(imp()->vertexShader);
+}
+
 void LPainter::bindFramebuffer(LFramebuffer *framebuffer)
 {
     if (!framebuffer)
@@ -627,14 +635,4 @@ void LPainter::clearScreen()
 void LPainter::bindProgram()
 {
     glUseProgram(imp()->programObject);
-}
-
-LPainter::~LPainter()
-{
-    glDeleteProgram(imp()->programObject);
-    glDeleteProgram(imp()->programObjectExternal);
-    glDeleteShader(imp()->fragmentShaderExternal);
-    glDeleteShader(imp()->fragmentShader);
-    glDeleteShader(imp()->vertexShader);
-    delete m_imp;
 }

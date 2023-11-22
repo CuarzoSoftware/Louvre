@@ -24,9 +24,9 @@ GOutput::GOutput
         id,
         implementation,
         destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(GOutput)
 {
-    m_imp = new GOutputPrivate();
     imp()->lOutput = output;
     this->client()->imp()->outputGlobals.push_back(this);
     imp()->clientLink = std::prev(this->client()->imp()->outputGlobals.end());
@@ -37,7 +37,6 @@ GOutput::~GOutput()
 {
     if (output())
         client()->imp()->outputGlobals.erase(imp()->clientLink);
-    delete m_imp;
 }
 
 LOutput *GOutput::output() const

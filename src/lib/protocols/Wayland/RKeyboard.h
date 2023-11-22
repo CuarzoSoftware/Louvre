@@ -30,7 +30,7 @@ public:
     // Since 4
     bool repeatInfo(Int32 rate, Int32 delay);
 
-LPRIVATE_IMP(RKeyboard)
+    LPRIVATE_IMP_UNIQUE(RKeyboard)
 };
 
 #endif // RKEYBOARD_H

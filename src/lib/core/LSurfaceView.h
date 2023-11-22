@@ -196,7 +196,7 @@ public:
                            Float32 scale,
                            Float32 alpha) override;
 
-LPRIVATE_IMP(LSurfaceView)
+    LPRIVATE_IMP_UNIQUE(LSurfaceView)
 };
 
 #endif // LSURFACEVIEW_H

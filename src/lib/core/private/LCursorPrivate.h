@@ -23,10 +23,11 @@ LPRIVATE_CLASS(LCursor)
     UInt32 lastTextureSerial                            = 0;
     bool textureChanged                                 = false;
     bool posChanged                                     = false;
+    bool hasFb                                          = true;
     LTexture *texture                                   = nullptr;
     LPointF defaultHotspotB;
     LTexture *defaultTexture                            = nullptr;
-    LTexture *louvreTexture                             = nullptr;
+    LTexture louvreTexture;
     GLuint glFramebuffer, glRenderbuffer;
     UChar8 buffer[64*64*4];
 
@@ -178,7 +179,6 @@ LPRIVATE_CLASS(LCursor)
                     p.setX(p.y());
                     p.setY(tmp);
                 }
-
 
                 compositor()->imp()->graphicBackend->setCursorPosition(o, p*o->scale());
             }

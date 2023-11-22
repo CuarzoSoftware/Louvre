@@ -30,9 +30,9 @@ RXdgSurface::RXdgSurface
         id,
         &xdg_surface_implementation,
         &RXdgSurfacePrivate::resource_destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(RXdgSurface)
 {
-    m_imp = new RXdgSurfacePrivate();
     imp()->gXdgWmBase = gXdgWmBase;
     imp()->lSurface = lSurface;
     xdgWmBaseGlobal()->imp()->xdgSurfaces.push_back(this);
@@ -48,8 +48,6 @@ RXdgSurface::~RXdgSurface()
         imp()->rXdgPopup->imp()->rXdgSurface = nullptr;
     else if (imp()->rXdgToplevel)
         imp()->rXdgToplevel->imp()->rXdgSurface = nullptr;
-
-    delete m_imp;
 }
 
 GXdgWmBase *RXdgSurface::xdgWmBaseGlobal() const

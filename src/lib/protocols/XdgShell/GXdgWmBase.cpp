@@ -22,9 +22,9 @@ XdgShell::GXdgWmBase::GXdgWmBase
         id,
         implementation,
         destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(GXdgWmBase)
 {
-    m_imp = new GXdgWmBasePrivate();
     this->client()->imp()->xdgWmBaseGlobals.push_back(this);
     imp()->clientLink = std::prev(this->client()->imp()->xdgWmBaseGlobals.end());
 }
@@ -35,7 +35,6 @@ GXdgWmBase::~GXdgWmBase()
         xdgSurface->imp()->gXdgWmBase = nullptr;
 
     client()->imp()->xdgWmBaseGlobals.erase(imp()->clientLink);
-    delete m_imp;
 }
 
 const list<RXdgSurface *> &GXdgWmBase::xdgSurfaces() const

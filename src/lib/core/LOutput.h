@@ -466,7 +466,7 @@ public:
 
 ///@}
 
-    LPRIVATE_IMP(LOutput)
+    LPRIVATE_IMP_UNIQUE(LOutput)
 };
 
 #endif // LOUTPUT_H

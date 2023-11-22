@@ -6,9 +6,8 @@
 #include <GLES2/gl2.h>
 #include <LLog.h>
 
-LRenderBuffer::LRenderBuffer(const LSize &sizeB)
+LRenderBuffer::LRenderBuffer(const LSize &sizeB) : LPRIVATE_INIT_UNIQUE(LRenderBuffer)
 {
-    m_imp = new LRenderBufferPrivate();
     imp()->texture.imp()->sourceType = LTexture::Framebuffer;
     imp()->texture.imp()->format = DRM_FORMAT_BGRA8888;
     imp()->texture.imp()->graphicBackendData = this;
@@ -20,8 +19,6 @@ LRenderBuffer::~LRenderBuffer()
     for (auto &pair : imp()->threadsMap)
         if (pair.second.textureId)
             compositor()->imp()->addRenderBufferToDestroy(pair.first, pair.second);
-
-    delete m_imp;
 }
 
 void LRenderBuffer::setSizeB(const LSize &sizeB)

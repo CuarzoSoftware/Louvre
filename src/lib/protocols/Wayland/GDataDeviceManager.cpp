@@ -20,14 +20,13 @@ GDataDeviceManager::GDataDeviceManager
         id,
         implementation,
         destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(GDataDeviceManager)
 {
-    m_imp = new GDataDeviceManagerPrivate();
     client->imp()->dataDeviceManagerGlobal = this;
 }
 
 GDataDeviceManager::~GDataDeviceManager()
 {
     client()->imp()->dataDeviceManagerGlobal = nullptr;
-    delete m_imp;
 }

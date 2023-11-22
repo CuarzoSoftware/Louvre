@@ -15,49 +15,42 @@
 
 using LVS = LView::LViewPrivate::LViewState;
 
-LScene::LScene()
+LScene::LScene() : LPRIVATE_INIT_UNIQUE(LScene)
 {
-    m_imp = new LScenePrivate();
-    imp()->view = new LSceneView();
-    imp()->view->setPos(0);
-
-    LView *baseView = imp()->view;
+    imp()->view.setPos(0);
+    LView *baseView = &imp()->view;
     baseView->imp()->scene = this;
 }
 
-LScene::~LScene()
-{
-    delete imp()->view;
-    delete m_imp;
-}
+LScene::~LScene() {}
 
 void LScene::handleInitializeGL(LOutput *output)
 {
     imp()->mutex.lock();
-    imp()->view->imp()->fb = output->framebuffer();
+    imp()->view.imp()->fb = output->framebuffer();
     imp()->mutex.unlock();
 }
 
 void LScene::handlePaintGL(LOutput *output)
 {
     imp()->mutex.lock();
-    imp()->view->imp()->fb = output->framebuffer();
-    imp()->view->render();
+    imp()->view.imp()->fb = output->framebuffer();
+    imp()->view.render();
     imp()->mutex.unlock();
 }
 
 void LScene::handleMoveGL(LOutput *output)
 {
     imp()->mutex.lock();
-    imp()->view->imp()->fb = output->framebuffer();
-    imp()->view->damageAll(output);
+    imp()->view.imp()->fb = output->framebuffer();
+    imp()->view.damageAll(output);
     imp()->mutex.unlock();
 }
 
 void LScene::handleResizeGL(LOutput *output)
 {
     imp()->mutex.lock();
-    imp()->view->damageAll(output);
+    imp()->view.damageAll(output);
     imp()->mutex.unlock();
 }
 
@@ -65,10 +58,10 @@ void LScene::handleUninitializeGL(LOutput *output)
 {
     L_UNUSED(output);
     imp()->mutex.lock();
-    auto it = imp()->view->imp()->threadsMap.find(output->threadId());
+    auto it = imp()->view.imp()->threadsMap.find(output->threadId());
 
-    if (it != imp()->view->imp()->threadsMap.end())
-        imp()->view->imp()->threadsMap.erase(it);
+    if (it != imp()->view.imp()->threadsMap.end())
+        imp()->view.imp()->threadsMap.erase(it);
     imp()->mutex.unlock();
 }
 
@@ -453,7 +446,7 @@ void LScene::enableAuxKeyboardImplementation(bool enabled)
 
 LSceneView *LScene::mainView() const
 {
-    return imp()->view;
+    return &imp()->view;
 }
 
 LView *LScene::viewAt(const LPoint &pos)

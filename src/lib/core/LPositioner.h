@@ -205,7 +205,7 @@ public:
      */
     ConstraintAdjustments constraintAdjustment() const;
 
-    LPRIVATE_IMP(LPositioner)
+    LPRIVATE_IMP_UNIQUE(LPositioner)
 };
 
 #endif // LPOSITIONER_H

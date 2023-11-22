@@ -5,9 +5,10 @@
 #include <LTexture.h>
 #include <LCompositor.h>
 
-LTextureView::LTextureView(LTexture *texture, LView *parent) : LView(LView::Texture, parent)
+LTextureView::LTextureView(LTexture *texture, LView *parent) :
+    LView(LView::Texture, parent),
+    LPRIVATE_INIT_UNIQUE(LTextureView)
 {
-    m_imp = new LTextureViewPrivate();
     setTexture(texture);
 }
 
@@ -21,8 +22,6 @@ LTextureView::~LTextureView()
 
     if (imp()->translucentRegion)
         delete imp()->translucentRegion;
-
-    delete m_imp;
 }
 
 void LTextureView::setPos(Int32 x, Int32 y)

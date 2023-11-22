@@ -33,10 +33,9 @@ RSubsurface::RSubsurface
         id,
         &subsurface_implementation,
         &RSubsurface::RSubsurfacePrivate::resource_destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(RSubsurface)
 {
-    m_imp = new RSubsurfacePrivate();
-
     LSubsurfaceRole::Params subsurfaceRoleParams;
     subsurfaceRoleParams.subsurface = this;
     subsurfaceRoleParams.surface = surface;
@@ -54,7 +53,6 @@ RSubsurface::~RSubsurface()
     // Notify
     compositor()->destroySubsurfaceRoleRequest(imp()->lSubsurfaceRole);
     delete imp()->lSubsurfaceRole;
-    delete m_imp;
 }
 
 LSubsurfaceRole *RSubsurface::subsurfaceRole() const

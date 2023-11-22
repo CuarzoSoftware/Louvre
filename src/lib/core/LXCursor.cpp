@@ -5,6 +5,9 @@
 
 using namespace Louvre;
 
+LXCursor::LXCursor() : LPRIVATE_INIT_UNIQUE(LXCursor) {}
+LXCursor::~LXCursor() {}
+
 LXCursor *LXCursor::loadXCursorB(const char *cursor, const char *theme, Int32 suggestedSize)
 {
     XcursorImage *x11Cursor =  XcursorLibraryLoadImage(cursor, theme, suggestedSize);
@@ -18,9 +21,8 @@ LXCursor *LXCursor::loadXCursorB(const char *cursor, const char *theme, Int32 su
     LXCursor *newCursor = new LXCursor();
     newCursor->imp()->hotspotB.setX((Int32)x11Cursor->xhot);
     newCursor->imp()->hotspotB.setY((Int32)x11Cursor->yhot);
-    newCursor->imp()->texture = new LTexture();
 
-    if (!newCursor->imp()->texture->setDataB(LSize((Int32)x11Cursor->width,
+    if (!newCursor->imp()->texture.setDataB(LSize((Int32)x11Cursor->width,
                                                    (Int32)x11Cursor->height),
                                                     x11Cursor->width * 4,
                                                     DRM_FORMAT_ABGR8888,
@@ -36,20 +38,9 @@ LXCursor *LXCursor::loadXCursorB(const char *cursor, const char *theme, Int32 su
     return newCursor;
 }
 
-LXCursor::LXCursor()
-{
-    m_imp = new LXCursorPrivate();
-}
-
-LXCursor::~LXCursor()
-{
-    delete imp()->texture;
-    delete m_imp;
-}
-
 const LTexture *LXCursor::texture() const
 {
-    return imp()->texture;
+    return &imp()->texture;
 }
 
 const LPoint &LXCursor::hotspotB() const

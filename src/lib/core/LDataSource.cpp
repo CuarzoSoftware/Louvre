@@ -3,16 +3,15 @@
 
 using namespace Louvre;
 
-LDataSource::LDataSource(Protocols::Wayland::RDataSource *dataSourceResource)
+LDataSource::LDataSource(Protocols::Wayland::RDataSource *dataSourceResource) :
+    LPRIVATE_INIT_UNIQUE(LDataSource)
 {
-    m_imp = new LDataSourcePrivate();
     imp()->dataSourceResource = dataSourceResource;
 }
 
 LDataSource::~LDataSource()
 {
     imp()->removeSources();
-    delete m_imp;
 }
 
 LClient *LDataSource::client() const

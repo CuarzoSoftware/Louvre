@@ -12,7 +12,7 @@ public:
     const LPositioner &positioner() const;
     bool isValid();
 
-    LPRIVATE_IMP(RXdgPositioner)
+    LPRIVATE_IMP_UNIQUE(RXdgPositioner)
 };
 
 #endif // RXDGPOSITIONER_H

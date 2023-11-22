@@ -6,12 +6,13 @@
 
 using namespace std;
 
-LClient::LClient(Params *params)
+LClient::LClient(Params *params) : LPRIVATE_INIT_UNIQUE(LClient)
 {
-    m_imp = new LClientPrivate();
-    imp()->params = params;
+    imp()->client = params->client;
     dataDevice().imp()->client = this;
 }
+
+LClient::~LClient() {}
 
 bool LClient::ping(UInt32 serial) const
 {
@@ -22,15 +23,9 @@ bool LClient::ping(UInt32 serial) const
     return true;
 }
 
-LClient::~LClient()
-{
-    delete imp()->params;
-    delete m_imp;
-}
-
 wl_client *LClient::client() const
 {
-    return imp()->params->client;
+    return imp()->client;
 }
 
 LDataDevice &LClient::dataDevice() const

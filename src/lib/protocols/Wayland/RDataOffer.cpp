@@ -28,9 +28,9 @@ RDataOffer::RDataOffer
         id,
         &dataOffer_implementation,
         &RDataOffer::RDataOfferPrivate::resource_destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(RDataOffer)
 {
-    m_imp = new RDataOfferPrivate();
     imp()->rDataDevice = rDataDevice;
     imp()->lDataOffer = new LDataOffer(this);
 }
@@ -38,7 +38,6 @@ RDataOffer::RDataOffer
 RDataOffer::~RDataOffer()
 {
     delete imp()->lDataOffer;
-    delete m_imp;
 }
 
 LDataOffer *RDataOffer::dataOffer() const

@@ -15,16 +15,12 @@
 
 using namespace Louvre;
 
-LDNDManager::LDNDManager(Params *params)
+LDNDManager::LDNDManager(Params *params) : LPRIVATE_INIT_UNIQUE(LDNDManager)
 {
     L_UNUSED(params);
-    m_imp = new LDNDManagerPrivate();
 }
 
-LDNDManager::~LDNDManager()
-{
-    delete m_imp;
-}
+LDNDManager::~LDNDManager() {}
 
 LDNDIconRole *LDNDManager::icon() const
 {

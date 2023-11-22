@@ -173,7 +173,7 @@ public:
      */
     const std::list<Protocols::LinuxDMABuf::GLinuxDMABuf*> &linuxDMABufGlobals() const;
 
-    LPRIVATE_IMP(LClient)
+    LPRIVATE_IMP_UNIQUE(LClient)
 };
 
 #endif // LCLIENT_H

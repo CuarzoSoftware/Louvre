@@ -67,7 +67,7 @@ public:
      */
     Protocols::Wayland::RDataSource *dataSourceResource() const;
 
-    LPRIVATE_IMP(LDataSource)
+    LPRIVATE_IMP_UNIQUE(LDataSource)
 
     /// @cond OMIT
     friend class Protocols::Wayland::RDataSource;

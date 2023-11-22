@@ -7,9 +7,10 @@
 
 using namespace Louvre;
 
-LSurfaceView::LSurfaceView(LSurface *surface, LView *parent) : LView(LView::Surface, parent)
+LSurfaceView::LSurfaceView(LSurface *surface, LView *parent) :
+    LView(LView::Surface, parent),
+    LPRIVATE_INIT_UNIQUE(LSurfaceView)
 {
-    m_imp = new LSurfaceViewPrivate();
     imp()->surface = surface;
     enableInput(true);
 }
@@ -21,8 +22,6 @@ LSurfaceView::~LSurfaceView()
 
     if (imp()->customTranslucentRegion)
         delete imp()->customTranslucentRegion;
-
-    delete m_imp;
 }
 
 LSurface *LSurfaceView::surface() const

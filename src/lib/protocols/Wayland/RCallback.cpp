@@ -16,10 +16,9 @@ RCallback::RCallback
         id,
         NULL,
         &RCallbackPrivate::resource_destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(RCallback)
 {
-    m_imp = new RCallbackPrivate();
-
     if (list)
     {
         imp()->list = list;
@@ -32,8 +31,6 @@ RCallback::~RCallback()
 {
     if (imp()->list)
         imp()->list->erase(imp()->listLink);
-
-    delete m_imp;
 }
 
 bool RCallback::done(UInt32 data)

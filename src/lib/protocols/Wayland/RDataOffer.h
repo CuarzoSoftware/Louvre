@@ -19,7 +19,7 @@ public:
     bool sourceActions(UInt32 sourceActions);
     bool action(UInt32 dndAction);
 
-    LPRIVATE_IMP(RDataOffer)
+    LPRIVATE_IMP_UNIQUE(RDataOffer)
 };
 
 #endif // RDATAOFFER_H

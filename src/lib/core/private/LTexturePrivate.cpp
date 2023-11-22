@@ -5,11 +5,13 @@
 
 void LTexture::LTexturePrivate::deleteTexture()
 {
-    if (texture == compositor()->cursor()->imp()->defaultTexture)
-        compositor()->cursor()->replaceDefaultB(nullptr, 0);
-
-    if (texture == compositor()->cursor()->texture())
-        compositor()->cursor()->useDefault();
+    if (cursor())
+    {
+        if (texture == cursor()->imp()->defaultTexture)
+            compositor()->cursor()->replaceDefaultB(nullptr, 0);
+        if (texture == cursor()->texture())
+            cursor()->useDefault();
+    }
 
     serial++;
 

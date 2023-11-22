@@ -16,9 +16,8 @@
 using namespace Louvre;
 using namespace std;
 
-LTexture::LTexture()
+LTexture::LTexture() : LPRIVATE_INIT_UNIQUE(LTexture)
 {
-    m_imp = new LTexturePrivate();
     imp()->texture = this;
     compositor()->imp()->textures.push_back(this);
     imp()->compositorLink = std::prev(compositor()->imp()->textures.end());
@@ -31,7 +30,6 @@ LTexture::~LTexture()
 
     imp()->deleteTexture();
     compositor()->imp()->textures.erase(imp()->compositorLink);
-    delete m_imp;
 }
 
 UInt32 LTexture::waylandFormatToDRM(UInt32 waylandFormat)

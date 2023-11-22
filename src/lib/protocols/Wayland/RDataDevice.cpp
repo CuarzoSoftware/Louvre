@@ -29,9 +29,9 @@ RDataDevice::RDataDevice
         id,
         &dataDevice_implementation,
         &RDataDevice::RDataDevicePrivate::resource_destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(RDataDevice)
 {
-    m_imp = new RDataDevicePrivate();
     imp()->gSeat = gSeat;
     gSeat->imp()->rDataDevice = this;
 }
@@ -40,8 +40,6 @@ RDataDevice::~RDataDevice()
 {
     if (seatGlobal())
         seatGlobal()->imp()->rDataDevice = nullptr;
-
-    delete m_imp;
 }
 
 GSeat *RDataDevice::seatGlobal() const

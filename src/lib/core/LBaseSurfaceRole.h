@@ -2,7 +2,6 @@
 #define LBASESURFACEROLE_H
 
 #include <protocols/Wayland/RSurface.h>
-
 #include <LObject.h>
 #include <LPoint.h>
 
@@ -154,7 +153,7 @@ protected:
      */
     virtual void handleParentChange();
 
-    LPRIVATE_IMP(LBaseSurfaceRole)
+    LPRIVATE_IMP_UNIQUE(LBaseSurfaceRole)
 };
 
 #endif // LBASESURFACEROLE_H

@@ -1,14 +1,7 @@
 #include <private/LPositionerPrivate.h>
 
-LPositioner::LPositioner()
-{
-    m_imp = new LPositionerPrivate();
-}
-
-LPositioner::~LPositioner()
-{
-    delete m_imp;
-}
+LPositioner::LPositioner() : LPRIVATE_INIT_UNIQUE(LPositioner) {}
+LPositioner::~LPositioner() {}
 
 const LSize &LPositioner::size() const
 {

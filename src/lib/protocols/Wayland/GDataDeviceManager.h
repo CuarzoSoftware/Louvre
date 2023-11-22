@@ -13,6 +13,6 @@ public:
                        const void *implementation, wl_resource_destroy_func_t destroy);
     ~GDataDeviceManager();
 
-    LPRIVATE_IMP(GDataDeviceManager)
+    LPRIVATE_IMP_UNIQUE(GDataDeviceManager)
 };
 #endif // GDATADEVICEMANAGER_H

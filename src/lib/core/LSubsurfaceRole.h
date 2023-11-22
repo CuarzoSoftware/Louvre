@@ -125,7 +125,7 @@ public:
     virtual void placedBelow(LSurface *sibling);
 /// @}
 
-    LPRIVATE_IMP(LSubsurfaceRole)
+    LPRIVATE_IMP_UNIQUE(LSubsurfaceRole)
 
     /// @cond OMIT
     bool acceptCommitRequest(Protocols::Wayland::RSurface::CommitOrigin origin) override;

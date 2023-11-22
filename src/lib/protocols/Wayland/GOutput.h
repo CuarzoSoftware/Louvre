@@ -36,7 +36,7 @@ public:
     bool name(const char *name);
     bool description(const char *description);
 
-    LPRIVATE_IMP(GOutput)
+    LPRIVATE_IMP_UNIQUE(GOutput)
 };
 
 #endif // GOUTPUT_H

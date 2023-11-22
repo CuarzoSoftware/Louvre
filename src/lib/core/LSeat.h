@@ -347,7 +347,7 @@ public:
 
 /// @}
 
-    LPRIVATE_IMP(LSeat)
+    LPRIVATE_IMP_UNIQUE(LSeat)
 };
 
 #endif // LSEAT_H

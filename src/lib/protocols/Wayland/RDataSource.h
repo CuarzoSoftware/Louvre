@@ -21,7 +21,7 @@ public:
     bool dndFinished();
     bool action(UInt32 dndAction);
 
-    LPRIVATE_IMP(RDataSource)
+    LPRIVATE_IMP_UNIQUE(RDataSource)
 };
 
 #endif // RDATASOURCE_H

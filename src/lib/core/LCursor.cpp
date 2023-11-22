@@ -10,52 +10,58 @@
 #include <LLog.h>
 
 #include <string.h>
-
 #include <other/cursor.h>
-
 #include <algorithm>
 
 using namespace Louvre;
 
-#define L_CURSOR_WIDTH 64
-#define L_CURSOR_HEIGHT 64
-#define L_CURSOR_BPP 32
-#define L_CURSOR_STRIDE L_CURSOR_WIDTH*(L_CURSOR_BPP/8)
-
-LCursor::LCursor()
+LCursor::LCursor() : LPRIVATE_INIT_UNIQUE(LCursor)
 {
-    m_imp = new LCursorPrivate();
     compositor()->imp()->cursor = this;
-    imp()->louvreTexture = new LTexture();
 
-    if (!imp()->louvreTexture->setDataB(LSize(L_CURSOR_WIDTH, L_CURSOR_HEIGHT), L_CURSOR_STRIDE, DRM_FORMAT_ABGR8888, louvre_default_cursor_data()))
-        LLog::warning("[LCursor::LCursor] Could not create default cursor texture.");
+    if (!imp()->louvreTexture.setDataB(
+            LSize(LOUVRE_DEFAULT_CURSOR_WIDTH, LOUVRE_DEFAULT_CURSOR_HEIGHT),
+            LOUVRE_DEFAULT_CURSOR_STRIDE,
+            DRM_FORMAT_ARGB8888,
+            louvre_default_cursor_data()))
+        LLog::warning("[LCursor::LCursor] Failed to create default cursor texture.");
 
-    imp()->defaultTexture = imp()->louvreTexture;
+    imp()->defaultTexture = &imp()->louvreTexture;
     imp()->defaultHotspotB = LPointF(9);
 
     glGenFramebuffers(1, &imp()->glFramebuffer);
 
     if (imp()->glFramebuffer == 0)
-        LLog::error("[LCursor::LCursor] Could not create GL framebuffer.");
+    {
+        LLog::error("[LCursor::LCursor] Failed to create GL framebuffer.");
+        imp()->hasFb = false;
+        goto skipGL;
+    }
 
     glBindFramebuffer(GL_FRAMEBUFFER, imp()->glFramebuffer);
-
     glGenRenderbuffers(1, &imp()->glRenderbuffer);
 
     if (imp()->glRenderbuffer == 0)
-        LLog::error("[LCursor::LCursor] Could not create GL renderbuffer.");
+    {
+        LLog::error("[LCursor::LCursor] Failed to create GL renderbuffer.");
+        imp()->hasFb = false;
+        glDeleteFramebuffers(1, &imp()->glFramebuffer);
+        goto skipGL;
+    }
 
     glBindRenderbuffer(GL_RENDERBUFFER, imp()->glRenderbuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, L_CURSOR_WIDTH, L_CURSOR_HEIGHT);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, LOUVRE_DEFAULT_CURSOR_WIDTH, LOUVRE_DEFAULT_CURSOR_HEIGHT);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, imp()->glRenderbuffer);
 
-    // Check framebuffer completeness
-    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (status != GL_FRAMEBUFFER_COMPLETE)
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
-        LLog::error("[LCursor::LCursor] Framebuffer is not complete.");
+        LLog::error("[LCursor::LCursor] GL_FRAMEBUFFER incomplete.");
+        imp()->hasFb = false;
+        glDeleteRenderbuffers(1, &imp()->glRenderbuffer);
+        glDeleteFramebuffers(1, &imp()->glFramebuffer);
     }
+
+    skipGL:
 
     setSize(LSize(24));
     useDefault();
@@ -64,7 +70,13 @@ LCursor::LCursor()
 
 LCursor::~LCursor()
 {
-    delete m_imp;
+    compositor()->imp()->cursor = nullptr;
+
+    if (imp()->glRenderbuffer)
+        glDeleteRenderbuffers(1, &imp()->glRenderbuffer);
+
+    if (imp()->glFramebuffer)
+        glDeleteFramebuffers(1, &imp()->glFramebuffer);
 }
 
 void LCursor::useDefault()
@@ -87,7 +99,7 @@ void LCursor::replaceDefaultB(const LTexture *texture, const LPointF &hotspot)
 
     if (!texture)
     {
-        imp()->defaultTexture = imp()->louvreTexture;
+        imp()->defaultTexture = &imp()->louvreTexture;
         imp()->defaultHotspotB = LPointF(9);
     }
     else
@@ -199,6 +211,9 @@ bool LCursor::visible() const
 
 bool LCursor::hasHardwareSupport(const LOutput *output) const
 {
+    if (!imp()->hasFb)
+        return false;
+
     return compositor()->imp()->graphicBackend->hasHardwareCursorSupport((LOutput*)output);
 }
 
@@ -229,7 +244,7 @@ const LPointF &LCursor::defaultHotspotB() const
 
 LTexture *LCursor::defaultLouvreTexture() const
 {
-    return imp()->louvreTexture;
+    return &imp()->louvreTexture;
 }
 
 LOutput *LCursor::output() const

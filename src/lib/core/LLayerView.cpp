@@ -1,17 +1,15 @@
 #include <private/LLayerViewPrivate.h>
 #include <LCompositor.h>
 
-LLayerView::LLayerView(LView *parent) : LView(LView::Layer, parent)
-{
-    m_imp = new LLayerViewPrivate();
-}
+LLayerView::LLayerView(LView *parent) :
+    LView(LView::Layer, parent),
+    LPRIVATE_INIT_UNIQUE(LLayerView)
+{}
 
 LLayerView::~LLayerView()
 {
     if (imp()->inputRegion)
         delete imp()->inputRegion;
-
-    delete m_imp;
 }
 
 void LLayerView::setPos(Int32 x, Int32 y)

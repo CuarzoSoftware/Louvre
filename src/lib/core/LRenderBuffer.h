@@ -131,7 +131,7 @@ public:
     void setFramebufferDamage(const LRegion *damage) override;
     Transform transform() const override;
 
-LPRIVATE_IMP(LRenderBuffer)
+LPRIVATE_IMP_UNIQUE(LRenderBuffer)
 };
 
 #endif // LRENDERBUFFER_H

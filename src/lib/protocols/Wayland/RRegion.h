@@ -11,7 +11,7 @@ public:
 
     const LRegion &region() const;
 
-    LPRIVATE_IMP(RRegion)
+    LPRIVATE_IMP_UNIQUE(RRegion)
 };
 
 #endif // RREGION_H

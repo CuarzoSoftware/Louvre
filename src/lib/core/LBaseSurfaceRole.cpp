@@ -4,9 +4,8 @@
 
 using namespace Louvre;
 
-LBaseSurfaceRole::LBaseSurfaceRole(LResource *resource, LSurface *surface, UInt32 roleId)
+LBaseSurfaceRole::LBaseSurfaceRole(LResource *resource, LSurface *surface, UInt32 roleId) : LPRIVATE_INIT_UNIQUE(LBaseSurfaceRole)
 {
-    m_imp = new LBaseSurfaceRolePrivate();
     imp()->resource = resource;
     imp()->surface = surface;
     imp()->roleId = roleId;
@@ -21,9 +20,7 @@ LBaseSurfaceRole::~LBaseSurfaceRole()
         surface->imp()->setPendingRole(nullptr);
         surface->imp()->applyPendingRole();
         surface->imp()->setMapped(false);
-    }
-
-    delete m_imp;
+    }    
 }
 
 UInt32 LBaseSurfaceRole::roleId() const

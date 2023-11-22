@@ -38,15 +38,11 @@ RXdgPositioner::RXdgPositioner
         id,
         &xdg_positioner_implementation,
         &RXdgPositioner::RXdgPositionerPrivate::destroy_resource
-    )
-{
-    m_imp = new RXdgPositionerPrivate();
-}
+    ),
+    LPRIVATE_INIT_UNIQUE(RXdgPositioner)
+{}
 
-RXdgPositioner::~RXdgPositioner()
-{
-    delete m_imp;
-}
+RXdgPositioner::~RXdgPositioner() {}
 
 const LPositioner &RXdgPositioner::positioner() const
 {

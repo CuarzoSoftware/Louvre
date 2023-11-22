@@ -33,9 +33,9 @@ RXdgPopup::RXdgPopup
         id,
         &xdg_popup_implementation,
         &RXdgPopup::RXdgPopupPrivate::destroy_resource
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(RXdgPopup)
 {
-    m_imp = new RXdgPopupPrivate();
     imp()->rXdgSurface = rXdgSurface;
     rXdgSurface->imp()->rXdgPopup = this;
 
@@ -58,7 +58,6 @@ RXdgPopup::~RXdgPopup()
         xdgSurfaceResource()->imp()->rXdgPopup = nullptr;
 
     delete imp()->lPopupRole;
-    delete m_imp;
 }
 
 RXdgSurface *RXdgPopup::xdgSurfaceResource() const

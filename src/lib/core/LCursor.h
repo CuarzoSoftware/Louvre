@@ -241,7 +241,7 @@ public:
      */
     const std::list<LOutput*> &intersectedOutputs() const;
 
-    LPRIVATE_IMP(LCursor)
+    LPRIVATE_IMP_UNIQUE(LCursor)
 
     /// @cond OMIT
     friend class Louvre::LCompositor;

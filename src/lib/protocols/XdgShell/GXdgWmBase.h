@@ -22,7 +22,7 @@ public:
     // Since 1
     bool ping(UInt32 serial);
 
-    LPRIVATE_IMP(GXdgWmBase)
+    LPRIVATE_IMP_UNIQUE(GXdgWmBase)
 };
 
 #endif // GXDGWMBASE_H

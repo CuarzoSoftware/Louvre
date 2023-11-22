@@ -20,9 +20,9 @@ GCompositor::GCompositor
         id,
         implementation,
         destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(GCompositor)
 {
-    m_imp = new GCompositorPrivate();
     client->imp()->compositorGlobals.push_back(this);
     imp()->clientLink = std::prev(client->imp()->compositorGlobals.end());
 }
@@ -30,5 +30,4 @@ GCompositor::GCompositor
 GCompositor::~GCompositor()
 {
     client()->imp()->compositorGlobals.erase(imp()->clientLink);
-    delete m_imp;
 }

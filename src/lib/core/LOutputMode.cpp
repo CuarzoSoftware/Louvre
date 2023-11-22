@@ -4,9 +4,9 @@
 
 using namespace Louvre;
 
-LOutputMode::LOutputMode(LOutput *output)
+LOutputMode::LOutputMode(LOutput *output) :
+    LPRIVATE_INIT_UNIQUE(LOutputMode)
 {
-    m_imp = new LOutputModePrivate();
     imp()->output = output;
 }
 
@@ -15,10 +15,7 @@ LOutput *LOutputMode::output() const
     return imp()->output;
 }
 
-LOutputMode::~LOutputMode()
-{
-    delete m_imp;
-}
+LOutputMode::~LOutputMode() {}
 
 const LSize &LOutputMode::sizeB() const
 {

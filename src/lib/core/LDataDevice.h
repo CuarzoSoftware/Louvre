@@ -43,7 +43,7 @@ public:
      */
     LClient *client() const;
 
-    LPRIVATE_IMP(LDataDevice)
+    LPRIVATE_IMP_UNIQUE(LDataDevice)
 
     /// @cond OMIT
     friend class Louvre::LClient;

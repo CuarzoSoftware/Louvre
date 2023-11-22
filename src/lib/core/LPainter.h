@@ -223,7 +223,7 @@ public:
      */
     void bindProgram();
 
-    LPRIVATE_IMP(LPainter)
+    LPRIVATE_IMP_UNIQUE(LPainter)
 
     /// @cond OMIT
     friend class LCompositor;

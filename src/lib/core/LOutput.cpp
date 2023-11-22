@@ -26,19 +26,19 @@
 
 using namespace Louvre;
 
-LOutput::LOutput()
+LOutput::LOutput() : m_imp(std::make_unique<LOutputPrivate>(this))
 {
-    m_imp = new LOutputPrivate();
     imp()->output = this;
     imp()->rect.setX(0);
     imp()->rect.setY(0);
-    imp()->fb = new LOutputFramebuffer(this);
     imp()->callLock.store(true);
 }
 
+LOutput::~LOutput() {}
+
 LFramebuffer *LOutput::framebuffer() const
 {
-    return imp()->fb;
+    return &imp()->fb;
 }
 
 LFramebuffer::Transform LOutput::transform() const
@@ -57,12 +57,6 @@ void LOutput::setTransform(LFramebuffer::Transform transform) const
 
     if (state() == Initialized && prevSizeB != imp()->sizeB)
         imp()->updateGlobals();
-}
-
-LOutput::~LOutput()
-{
-    delete imp()->fb;
-    delete m_imp;
 }
 
 const std::list<LOutputMode *> &LOutput::modes() const

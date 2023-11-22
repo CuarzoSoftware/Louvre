@@ -198,7 +198,7 @@ public:
                            Float32 scale,
                            Float32 alpha) override;
 
-    LPRIVATE_IMP(LTextureView)
+    LPRIVATE_IMP_UNIQUE(LTextureView)
 };
 
 #endif // LTEXTUREVIEW_H

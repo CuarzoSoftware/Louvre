@@ -37,7 +37,7 @@ public:
     void setFramebufferDamage(const LRegion *damage) override;
     Transform transform() const override;
 
-LPRIVATE_IMP(LOutputFramebuffer)
+    LPRIVATE_IMP_UNIQUE(LOutputFramebuffer)
 };
 
 #endif // LOUTPUTFRAMEBUFFER_H

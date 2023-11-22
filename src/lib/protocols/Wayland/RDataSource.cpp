@@ -27,9 +27,9 @@ RDataSource::RDataSource
         id,
         &dataSource_implementation,
         &RDataSource::RDataSourcePrivate::resource_destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(RDataSource)
 {
-    m_imp = new RDataSourcePrivate();
     imp()->lDataSource = new LDataSource(this);
 }
 
@@ -47,8 +47,6 @@ RDataSource::~RDataSource()
         dataSource()->imp()->removeClientOnlySources();
         dataSource()->imp()->dataSourceResource = nullptr;
     }
-
-    delete m_imp;
 }
 
 LDataSource *RDataSource::dataSource() const

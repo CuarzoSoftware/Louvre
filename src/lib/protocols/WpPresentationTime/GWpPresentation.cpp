@@ -21,9 +21,9 @@ GWpPresentation::GWpPresentation
         id,
         implementation,
         destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(GWpPresentation)
 {
-    m_imp = new GWpPresentationPrivate();
     this->client()->imp()->wpPresentationTimeGlobals.push_back(this);
     imp()->clientLink = std::prev(this->client()->imp()->wpPresentationTimeGlobals.end());
     clockId(CLOCK_MONOTONIC);
@@ -32,7 +32,6 @@ GWpPresentation::GWpPresentation
 GWpPresentation::~GWpPresentation()
 {
     client()->imp()->wpPresentationTimeGlobals.erase(imp()->clientLink);
-    delete m_imp;
 }
 
 bool GWpPresentation::clockId(UInt32 clockId)

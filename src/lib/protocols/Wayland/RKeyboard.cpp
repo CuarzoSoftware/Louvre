@@ -29,9 +29,9 @@ RKeyboard::RKeyboard
         id,
         &keyboard_implementation,
         &RKeyboard::RKeyboardPrivate::resource_destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(RKeyboard)
 {
-    m_imp = new RKeyboardPrivate();
     imp()->gSeat = gSeat;
     LKeyboard *lKeyboard = seat()->keyboard();
     repeatInfo(lKeyboard->repeatRate(), lKeyboard->repeatDelay());
@@ -46,8 +46,6 @@ RKeyboard::~RKeyboard()
 
     if (seatGlobal())
         seatGlobal()->imp()->rKeyboard = nullptr;
-
-    delete m_imp;
 }
 
 GSeat *RKeyboard::seatGlobal() const

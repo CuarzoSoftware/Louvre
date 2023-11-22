@@ -3,10 +3,10 @@ project(
     'c','cpp', 
     version : run_command('cat', files('../VERSION'), check : false).stdout().strip(),
     meson_version: '>= 0.56.0',
-	  default_options: [
-		'warning_level=2',
+    default_options: [
+        'warning_level=2',
         'buildtype=release',
-		'cpp_std=c++11',
+        'cpp_std=c++14'
 	]
 )
 

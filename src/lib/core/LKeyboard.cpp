@@ -17,32 +17,11 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 
-void LKeyboard::setGrabbingSurface(LSurface *surface, Wayland::RKeyboard *keyboardResource)
-{
-    imp()->grabbingSurface = nullptr;
-    imp()->grabbingKeyboardResource = nullptr;
-
-    if (surface)
-    {
-        imp()->grabbingSurface = surface;
-        imp()->grabbingKeyboardResource = keyboardResource;
-    }
-}
-
-LSurface *LKeyboard::grabbingSurface() const
-{
-    return imp()->grabbingSurface;
-}
-
-RKeyboard *LKeyboard::grabbingKeyboardResource() const
-{
-    return imp()->grabbingKeyboardResource;
-}
-
-LKeyboard::LKeyboard(Params *params)
+LKeyboard::LKeyboard(Params *params):
+    LPRIVATE_INIT_UNIQUE(LKeyboard)
 {
     L_UNUSED(params);
-    m_imp = new LKeyboardPrivate();
+
     seat()->imp()->keyboard = this;
 
     // Create XKB context
@@ -77,8 +56,28 @@ LKeyboard::~LKeyboard()
         xkb_context_unref(imp()->xkbContext);
         imp()->xkbContext = nullptr;
     }
+}
 
-    delete m_imp;
+void LKeyboard::setGrabbingSurface(LSurface *surface, Wayland::RKeyboard *keyboardResource)
+{
+    imp()->grabbingSurface = nullptr;
+    imp()->grabbingKeyboardResource = nullptr;
+
+    if (surface)
+    {
+        imp()->grabbingSurface = surface;
+        imp()->grabbingKeyboardResource = keyboardResource;
+    }
+}
+
+LSurface *LKeyboard::grabbingSurface() const
+{
+    return imp()->grabbingSurface;
+}
+
+RKeyboard *LKeyboard::grabbingKeyboardResource() const
+{
+    return imp()->grabbingKeyboardResource;
 }
 
 bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layout, const char *variant, const char *options)

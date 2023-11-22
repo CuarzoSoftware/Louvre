@@ -20,9 +20,9 @@ RWpPresentationFeedback::RWpPresentationFeedback
         id,
         nullptr,
         &RWpPresentationFeedbackPrivate::resource_destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(RWpPresentationFeedback)
 {
-    m_imp = new RWpPresentationFeedbackPrivate();
     imp()->lSurface = lSurface;
     this->lSurface()->imp()->wpPresentationFeedbackResources.push_back(this);
     imp()->surfaceLink = std::prev(this->lSurface()->imp()->wpPresentationFeedbackResources.end());
@@ -32,8 +32,6 @@ RWpPresentationFeedback::~RWpPresentationFeedback()
 {
     if (lSurface())
         lSurface()->imp()->wpPresentationFeedbackResources.erase(imp()->surfaceLink);
-
-    delete m_imp;
 }
 
 Louvre::LSurface *RWpPresentationFeedback::lSurface() const

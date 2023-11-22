@@ -28,9 +28,9 @@ RXdgToplevelDecoration::RXdgToplevelDecoration
         id,
         &xdg_toplevel_decoration_implementation,
         &RXdgToplevelDecoration::RXdgToplevelDecorationPrivate::resource_destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(RXdgToplevelDecoration)
 {
-    m_imp = new RXdgToplevelDecorationPrivate();
     imp()->lToplevelRole = lToplevelRole;
     lToplevelRole->imp()->xdgDecoration = this;
 }
@@ -48,8 +48,6 @@ RXdgToplevelDecoration::~RXdgToplevelDecoration()
 
         toplevelRole()->imp()->xdgDecoration = nullptr;
     }
-
-    delete m_imp;
 }
 
 LToplevelRole *RXdgToplevelDecoration::toplevelRole() const

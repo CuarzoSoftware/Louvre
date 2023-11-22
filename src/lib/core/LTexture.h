@@ -195,7 +195,7 @@ public:
      */
     UInt32 format() const;
 
-    LPRIVATE_IMP(LTexture)
+    LPRIVATE_IMP_UNIQUE(LTexture)
 };
 
 #endif

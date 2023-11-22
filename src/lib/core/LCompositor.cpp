@@ -33,17 +33,18 @@ using namespace Louvre::Protocols::Wayland;
 
 static LCompositor *s_compositor = nullptr;
 
-LCompositor::LCompositor()
+LCompositor::LCompositor() : LPRIVATE_INIT_UNIQUE(LCompositor)
 {
     if (!s_compositor)
         s_compositor = this;
 
     LLog::init();
-    m_imp = new LCompositorPrivate();
     imp()->compositor = this;
     imp()->eglBindWaylandDisplayWL = (PFNEGLBINDWAYLANDDISPLAYWL) eglGetProcAddress ("eglBindWaylandDisplayWL");
     imp()->eglQueryWaylandBufferWL = (PFNEGLQUERYWAYLANDBUFFERWL) eglGetProcAddress ("eglQueryWaylandBufferWL");
 }
+
+LCompositor::~LCompositor() {}
 
 LCompositor *LCompositor::compositor()
 {
@@ -73,11 +74,6 @@ bool LCompositor::loadInputBackend(const char *path)
 LCompositor::CompositorState LCompositor::state() const
 {
     return imp()->state;
-}
-
-LCompositor::~LCompositor()
-{
-    delete m_imp;
 }
 
 bool LCompositor::start()
@@ -212,6 +208,9 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
 
         imp()->unitInputBackend(true);
 
+        if (imp()->cursor)
+            delete imp()->cursor;
+
         while (!imp()->textures.empty())
             delete imp()->textures.back();
 
@@ -219,12 +218,6 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         imp()->unitSeat();
 
         imp()->unitWayland();
-
-        if (imp()->cursor)
-        {
-            delete imp()->cursor;
-            imp()->cursor = nullptr;
-        }
 
         while (!imp()->animations.empty())
         {

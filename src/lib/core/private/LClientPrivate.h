@@ -14,7 +14,7 @@ struct LClient::Params
 
 LPRIVATE_CLASS(LClient)
 
-    LClient::Params *params = nullptr;
+    wl_client *client = nullptr;
     std::list<LClient*>::iterator compositorLink;
     LDataDevice dataDevice;
     std::list<LSurface*> surfaces;

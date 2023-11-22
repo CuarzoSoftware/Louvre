@@ -15,7 +15,7 @@ public:
     bool created(wl_resource *buffer);
     bool failed();
 
-    LPRIVATE_IMP(RLinuxBufferParams)
+    LPRIVATE_IMP_UNIQUE(RLinuxBufferParams)
 };
 
 #endif // RLINUXBUFFERPARAMS_H

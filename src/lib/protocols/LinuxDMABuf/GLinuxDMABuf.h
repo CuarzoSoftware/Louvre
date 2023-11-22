@@ -21,7 +21,7 @@ public:
     // Since 3
     bool modifier(UInt32 format, UInt32 mod_hi, UInt32 mod_lo);
 
-    LPRIVATE_IMP(GLinuxDMABuf)
+    LPRIVATE_IMP_UNIQUE(GLinuxDMABuf)
 };
 
 #endif // GLINUXDMABUF_H

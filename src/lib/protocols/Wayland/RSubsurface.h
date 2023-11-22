@@ -13,7 +13,7 @@ public:
     ~RSubsurface();
 
     LSubsurfaceRole *subsurfaceRole() const;
-    LPRIVATE_IMP(RSubsurface)
+    LPRIVATE_IMP_UNIQUE(RSubsurface)
 };
 
 #endif // SUBSURFACE_H

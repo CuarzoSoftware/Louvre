@@ -537,7 +537,7 @@ public:
     virtual void preferredDecorationModeChanged();
 /// @}
 
-    LPRIVATE_IMP(LToplevelRole)
+    LPRIVATE_IMP_UNIQUE(LToplevelRole)
 
     /// @cond OMIT
     void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;

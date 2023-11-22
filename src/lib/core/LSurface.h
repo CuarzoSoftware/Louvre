@@ -611,7 +611,7 @@ public:
     virtual void minimizedChanged();
 /// @}
 
-    LPRIVATE_IMP(LSurface)
+    LPRIVATE_IMP_UNIQUE(LSurface)
 };
 
 #endif // LSURFACE_H

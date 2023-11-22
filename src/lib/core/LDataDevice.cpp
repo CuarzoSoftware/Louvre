@@ -11,15 +11,8 @@
 
 using namespace Louvre;
 
-LDataDevice::LDataDevice()
-{
-    m_imp = new LDataDevicePrivate();
-}
-
-LDataDevice::~LDataDevice()
-{
-    delete m_imp;
-}
+LDataDevice::LDataDevice() : LPRIVATE_INIT_UNIQUE(LDataDevice) {}
+LDataDevice::~LDataDevice() {}
 
 LClient *LDataDevice::client() const
 {

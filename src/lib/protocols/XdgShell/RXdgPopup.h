@@ -22,7 +22,7 @@ public:
     // Since 3
     bool repositioned(UInt32 token);
 
-    LPRIVATE_IMP(RXdgPopup)
+    LPRIVATE_IMP_UNIQUE(RXdgPopup)
 };
 
 #endif // RXDGPOPUP_H

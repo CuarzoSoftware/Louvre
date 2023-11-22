@@ -25,7 +25,7 @@ public:
     // Since 2
     bool name(const char *name);
 
-    LPRIVATE_IMP(GSeat)
+    LPRIVATE_IMP_UNIQUE(GSeat)
 };
 
 #endif // GSEAT_H

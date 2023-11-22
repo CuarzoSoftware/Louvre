@@ -53,7 +53,7 @@ public:
      */
     const LPoint &hotspotB() const;
 
-    LPRIVATE_IMP(LXCursor)
+    LPRIVATE_IMP_UNIQUE(LXCursor)
     /// @cond OMIT
     LXCursor();
     /// @endcond

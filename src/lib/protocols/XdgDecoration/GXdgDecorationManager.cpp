@@ -20,9 +20,9 @@ GXdgDecorationManager::GXdgDecorationManager
         id,
         implementation,
         destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(GXdgDecorationManager)
 {
-    m_imp = new GXdgDecorationManagerPrivate();
     this->client()->imp()->xdgDecorationManagerGlobals.push_back(this);
     imp()->clientLink = std::prev(this->client()->imp()->xdgDecorationManagerGlobals.end());
 }
@@ -30,5 +30,4 @@ GXdgDecorationManager::GXdgDecorationManager
 GXdgDecorationManager::~GXdgDecorationManager()
 {
     client()->imp()->xdgDecorationManagerGlobals.erase(imp()->clientLink);
-    delete m_imp;
 }

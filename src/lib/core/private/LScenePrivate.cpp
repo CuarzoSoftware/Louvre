@@ -207,7 +207,7 @@ bool LScene::LScenePrivate::handlePointerMove(LView *view, const LPoint &pos, LV
     // If a list was modified, start again, serials are used to prevent resend events
     listChangedErr:
     listChanged = false;
-    handlePointerMove(this->view, pos, nullptr);
+    handlePointerMove(&this->view, pos, nullptr);
     return false;
 }
 
@@ -245,7 +245,7 @@ bool LScene::LScenePrivate::handlePointerButton(LView *view, LPointer::Button bu
     // If a list was modified, start again, serials are used to prevent resend events
     listChangedErr:
     listChanged = false;
-    handlePointerButton(this->view, button, state);
+    handlePointerButton(&this->view, button, state);
     return false;
 }
 
@@ -274,7 +274,7 @@ bool LScene::LScenePrivate::handlePointerAxisEvent(LView *view, Float64 axisX, F
     // If a list was modified, start again, serials are used to prevent resend events
     listChangedErr:
     listChanged = false;
-    handlePointerAxisEvent(this->view, axisX, axisY, discreteX, discreteY, source);
+    handlePointerAxisEvent(&this->view, axisX, axisY, discreteX, discreteY, source);
     return false;
 }
 
@@ -302,7 +302,7 @@ bool LScene::LScenePrivate::handleKeyModifiersEvent(LView *view, UInt32 depresse
     // If a list was modified, start again, serials are used to prevent resend events
     listChangedErr:
     listChanged = false;
-    handleKeyModifiersEvent(this->view, depressed, latched, locked, group);
+    handleKeyModifiersEvent(&this->view, depressed, latched, locked, group);
     return false;
 }
 
@@ -330,6 +330,6 @@ bool LScene::LScenePrivate::handleKeyEvent(LView *view, UInt32 keyCode, UInt32 k
     // If a list was modified, start again, serials are used to prevent resend events
     listChangedErr:
     listChanged = false;
-    handleKeyEvent(this->view, keyCode, keyState);
+    handleKeyEvent(&this->view, keyCode, keyState);
     return false;
 }

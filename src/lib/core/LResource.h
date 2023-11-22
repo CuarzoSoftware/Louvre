@@ -116,7 +116,7 @@ public:
      */
     void destroy();
 
-    LPRIVATE_IMP(LResource)
+    LPRIVATE_IMP_UNIQUE(LResource)
 };
 
 #endif // LRESOURCE_H

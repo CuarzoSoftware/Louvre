@@ -7,10 +7,10 @@
 
 using namespace Louvre;
 
-LDNDIconRole::LDNDIconRole(Params *params) : LBaseSurfaceRole(params->surface->surfaceResource(), params->surface, LSurface::Role::DNDIcon)
+LDNDIconRole::LDNDIconRole(Params *params) :
+    LBaseSurfaceRole(params->surface->surfaceResource(), params->surface, LSurface::Role::DNDIcon),
+    LPRIVATE_INIT_UNIQUE(LDNDIconRole)
 {
-    m_imp = new LDNDIconRolePrivate();
-
     surface()->imp()->receiveInput = false;
 }
 
@@ -18,8 +18,6 @@ LDNDIconRole::~LDNDIconRole()
 {
     if (surface())
         surface()->imp()->setMapped(false);
-
-    delete m_imp;
 }
 
 const LPoint &LDNDIconRole::hotspot() const

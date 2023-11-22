@@ -15,17 +15,14 @@ LSubsurfaceRole::LSubsurfaceRole
         params->subsurface,
         params->surface,
         LSurface::Role::Subsurface
-    )
-{
-    m_imp = new LSubsurfaceRolePrivate();
-}
+    ),
+    LPRIVATE_INIT_UNIQUE(LSubsurfaceRole)
+{}
 
 LSubsurfaceRole::~LSubsurfaceRole()
 {
     if (surface())
         surface()->imp()->setMapped(false);
-
-    delete m_imp;
 }
 
 bool LSubsurfaceRole::isSynced() const

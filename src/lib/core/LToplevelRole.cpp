@@ -20,9 +20,10 @@
 
 using namespace Louvre;
 
-LToplevelRole::LToplevelRole(Louvre::LToplevelRole::Params *params) : LBaseSurfaceRole(params->toplevel, params->surface, LSurface::Role::Toplevel)
+LToplevelRole::LToplevelRole(Louvre::LToplevelRole::Params *params) :
+    LBaseSurfaceRole(params->toplevel, params->surface, LSurface::Role::Toplevel),
+    LPRIVATE_INIT_UNIQUE(LToplevelRole)
 {
-    m_imp = new LToplevelRolePrivate();
     imp()->currentConf.commited = true;
     imp()->toplevel = this;
     imp()->appId = new char[1];
@@ -51,7 +52,6 @@ LToplevelRole::~LToplevelRole()
 
     delete []imp()->appId;
     delete []imp()->title;
-    delete m_imp;
 }
 
 bool LToplevelRole::maximized() const

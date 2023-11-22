@@ -72,7 +72,7 @@ public:
      */
     const LPoint &hotspotB() const;
 
-    LPRIVATE_IMP(LCursorRole)
+    LPRIVATE_IMP_UNIQUE(LCursorRole)
 
     /// @cond OMIT
     virtual void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;

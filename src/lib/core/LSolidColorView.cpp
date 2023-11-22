@@ -1,31 +1,31 @@
 #include <private/LSolidColorViewPrivate.h>
 #include <private/LPainterPrivate.h>
 
-Louvre::LSolidColorView::LSolidColorView(LView *parent) : LView(LView::SolidColor, parent)
+Louvre::LSolidColorView::LSolidColorView(LView *parent) :
+    LView(LView::SolidColor, parent),
+    LPRIVATE_INIT_UNIQUE(LSolidColorView)
 {
-    m_imp = new LSolidColorViewPrivate();
     imp()->color = {0, 0, 0};
     setOpacity(1.f);
 }
 
-Louvre::LSolidColorView::LSolidColorView(Float32 r, Float32 g, Float32 b, Float32 a, LView *parent) : LView(SolidColor, parent)
+Louvre::LSolidColorView::LSolidColorView(Float32 r, Float32 g, Float32 b, Float32 a, LView *parent) :
+    LView(SolidColor, parent),
+    LPRIVATE_INIT_UNIQUE(LSolidColorView)
 {
-    m_imp = new LSolidColorViewPrivate();
     imp()->color = {r, g, b};
     setOpacity(a);
 }
 
-LSolidColorView::LSolidColorView(const LRGBF &color, Float32 a, LView *parent) : LView(SolidColor, parent)
+LSolidColorView::LSolidColorView(const LRGBF &color, Float32 a, LView *parent) :
+    LView(SolidColor, parent),
+    LPRIVATE_INIT_UNIQUE(LSolidColorView)
 {
-    m_imp = new LSolidColorViewPrivate();
     imp()->color = color;
     setOpacity(a);
 }
 
-LSolidColorView::~LSolidColorView()
-{
-    delete m_imp;
-}
+LSolidColorView::~LSolidColorView() {}
 
 void LSolidColorView::setColor(const LRGBF &color)
 {

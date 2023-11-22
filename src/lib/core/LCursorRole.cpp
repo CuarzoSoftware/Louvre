@@ -9,10 +9,10 @@
 
 using namespace Louvre;
 
-LCursorRole::LCursorRole(Params *params) : LBaseSurfaceRole(params->surface->surfaceResource(), params->surface, LSurface::Role::Cursor)
+LCursorRole::LCursorRole(Params *params) :
+    LBaseSurfaceRole(params->surface->surfaceResource(), params->surface, LSurface::Role::Cursor),
+    LPRIVATE_INIT_UNIQUE(LCursorRole)
 {
-    m_imp = new LCursorRolePrivate();
-
     surface()->imp()->receiveInput = false;
 }
 
@@ -23,8 +23,6 @@ LCursorRole::~LCursorRole()
 
     if (surface())
         surface()->imp()->setMapped(false);
-
-    delete m_imp;
 }
 
 const LPoint &LCursorRole::hotspot() const

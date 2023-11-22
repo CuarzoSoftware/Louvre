@@ -313,7 +313,7 @@ public:
      */
     virtual void focusChanged();
 
-    LPRIVATE_IMP(LKeyboard)
+    LPRIVATE_IMP_UNIQUE(LKeyboard)
 };
 
 #endif // LKEYBOARD_H

@@ -10,9 +10,8 @@ using namespace Louvre;
 
 using LVS = LView::LViewPrivate::LViewState;
 
-LView::LView(UInt32 type, LView *parent)
+LView::LView(UInt32 type, LView *parent) : LPRIVATE_INIT_UNIQUE(LView)
 {
-    m_imp = new LViewPrivate();
     imp()->type = type;
     compositor()->imp()->views.push_back(this);
     imp()->compositorLink = std::prev(compositor()->imp()->views.end());
@@ -27,7 +26,6 @@ LView::~LView()
         children().front()->setParent(nullptr);
 
     compositor()->imp()->views.erase(imp()->compositorLink);
-    delete m_imp;
 }
 
 LScene *LView::scene() const

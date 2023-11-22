@@ -22,9 +22,9 @@ RPointer::RPointer
         id,
         &pointer_implementation,
         &RPointer::RPointerPrivate::resource_destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(RPointer)
 {
-    m_imp = new RPointerPrivate();
     imp()->gSeat = gSeat;
     gSeat->imp()->rPointer = this;
 }
@@ -33,8 +33,6 @@ RPointer::~RPointer()
 {
     if (seatGlobal())
         seatGlobal()->imp()->rPointer = nullptr;
-
-    delete m_imp;
 }
 
 GSeat *RPointer::seatGlobal() const

@@ -15,6 +15,20 @@
 
 using namespace Louvre;
 
+LPopupRole::LPopupRole(LPopupRole::Params *params) :
+    LBaseSurfaceRole(params->popup, params->surface, LSurface::Role::Popup),
+    LPRIVATE_INIT_UNIQUE(LPopupRole)
+{
+    imp()->positioner.imp()->data = params->positioner->imp()->data;
+    imp()->positioner.setUnconstrainedSize(imp()->positioner.size());
+}
+
+LPopupRole::~LPopupRole()
+{
+    if (surface())
+        surface()->imp()->setMapped(false);
+}
+
 bool LPopupRole::isTopmostPopup() const
 {
     if (!surface())
@@ -26,21 +40,6 @@ bool LPopupRole::isTopmostPopup() const
                 return (*s)->popup() == this;
 
     return false;
-}
-
-LPopupRole::LPopupRole(LPopupRole::Params *params) : LBaseSurfaceRole(params->popup, params->surface, LSurface::Role::Popup)
-{
-   m_imp = new LPopupRolePrivate();
-   imp()->positioner.imp()->data = params->positioner->imp()->data;
-   imp()->positioner.setUnconstrainedSize(imp()->positioner.size());
-}
-
-LPopupRole::~LPopupRole()
-{
-    if (surface())
-        surface()->imp()->setMapped(false);
-
-    delete m_imp;
 }
 
 void LPopupRole::configure(const LRect &rect) const

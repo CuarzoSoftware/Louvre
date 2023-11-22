@@ -28,9 +28,9 @@ RLinuxBufferParams::RLinuxBufferParams
         id,
         &zwp_linux_buffer_params_v1_implementation,
         &RLinuxBufferParams::RLinuxBufferParamsPrivate::resource_destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(RLinuxBufferParams)
 {
-    m_imp = new RLinuxBufferParamsPrivate();
     imp()->planes = new LDMAPlanes();
 }
 
@@ -38,8 +38,6 @@ RLinuxBufferParams::~RLinuxBufferParams()
 {
     if (planes())
         delete imp()->planes;
-
-    delete m_imp;
 }
 
 const LDMAPlanes *RLinuxBufferParams::planes() const

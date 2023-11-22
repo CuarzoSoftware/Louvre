@@ -17,7 +17,7 @@ public:
     // Since 1
     bool configure(UInt32 mode);
 
-    LPRIVATE_IMP(RXdgToplevelDecoration)
+    LPRIVATE_IMP_UNIQUE(RXdgToplevelDecoration)
 };
 
 #endif // RXDGTOPLEVELDECORATION_H

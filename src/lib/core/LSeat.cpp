@@ -34,11 +34,9 @@
 
 using namespace Louvre;
 
-LSeat::LSeat(Params *params)
+LSeat::LSeat(Params *params) : LPRIVATE_INIT_UNIQUE(LSeat)
 {
     L_UNUSED(params);
-
-    m_imp = new LSeatPrivate();
     compositor()->imp()->seat = this;
 
     LDNDManager::Params dndManagerParams;
@@ -59,10 +57,7 @@ LSeat::~LSeat()
     {
         libseat_close_seat(imp()->libseatHandle);
         imp()->libseatHandle = nullptr;
-    }
-
-    delete m_imp;
-}
+    }}
 
 const std::list<LOutput *> &LSeat::outputs() const
 {

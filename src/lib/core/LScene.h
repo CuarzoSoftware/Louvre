@@ -280,7 +280,7 @@ public:
      */
     LView *viewAt(const LPoint &pos);
 
-LPRIVATE_IMP(LScene)
+LPRIVATE_IMP_UNIQUE(LScene)
 };
 
 #endif // LSCENE_H

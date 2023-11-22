@@ -16,6 +16,14 @@
 using namespace Louvre;
 using namespace Louvre::Protocols;
 
+LPointer::LPointer(Params *params) : LPRIVATE_INIT_UNIQUE(LPointer)
+{
+    L_UNUSED(params);
+    seat()->imp()->pointer = this;
+}
+
+LPointer::~LPointer() {}
+
 LCursorRole *LPointer::lastCursorRequest() const
 {
     return imp()->lastCursorRequest;
@@ -24,18 +32,6 @@ LCursorRole *LPointer::lastCursorRequest() const
 bool LPointer::lastCursorRequestWasHide() const
 {
     return imp()->lastCursorRequestWasHide;
-}
-
-LPointer::LPointer(Params *params)
-{
-    L_UNUSED(params);
-    m_imp = new LPointerPrivate();
-    seat()->imp()->pointer = this;
-}
-
-LPointer::~LPointer()
-{
-    delete m_imp;
 }
 
 void LPointer::setFocus(LSurface *surface)

@@ -12,7 +12,7 @@ public:
     bool commited = false;
     bool done(UInt32 data);
 
-    LPRIVATE_IMP(RCallback)
+    LPRIVATE_IMP_UNIQUE(RCallback)
 };
 
 #endif // RCALLBACK_H

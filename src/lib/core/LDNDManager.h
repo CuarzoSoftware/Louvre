@@ -185,7 +185,7 @@ public:
      */
     virtual void cancelled();
 
-    LPRIVATE_IMP(LDNDManager)
+    LPRIVATE_IMP_UNIQUE(LDNDManager)
 };
 
 #endif // LDNDMANAGER_H

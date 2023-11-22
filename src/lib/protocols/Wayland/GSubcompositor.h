@@ -15,7 +15,7 @@ public:
 
     ~GSubcompositor();
 
-    LPRIVATE_IMP(GSubcompositor)
+    LPRIVATE_IMP_UNIQUE(GSubcompositor)
 };
 
 #endif // GSUBCOMPOSITOR_H

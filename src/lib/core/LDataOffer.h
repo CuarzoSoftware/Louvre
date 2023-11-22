@@ -54,7 +54,7 @@ public:
      */
     Protocols::Wayland::RDataOffer *dataOfferResource() const;
 
-    LPRIVATE_IMP(LDataOffer)
+    LPRIVATE_IMP_UNIQUE(LDataOffer)
 
     /// @cond OMIT
     friend class Protocols::Wayland::RDataOffer;

@@ -1,6 +1,7 @@
 #ifndef LSCENEPRIVATE_H
 #define LSCENEPRIVATE_H
 
+#include <LSceneView.h>
 #include <LScene.h>
 #include <mutex>
 
@@ -8,7 +9,7 @@ using namespace Louvre;
 
 LPRIVATE_CLASS(LScene)
     std::mutex mutex;
-    LSceneView *view;
+    LSceneView view;
     bool handleWaylandPointerEvents = true;
     bool handleWaylandKeyboardEvents = true;
     bool auxKeyboardImplementationEnabled = true;

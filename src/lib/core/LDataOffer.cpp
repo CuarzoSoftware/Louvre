@@ -1,4 +1,3 @@
-#include "LLog.h"
 #include <protocols/Wayland/RDataSource.h>
 #include <protocols/Wayland/RDataOffer.h>
 
@@ -12,16 +11,13 @@
 
 using namespace Louvre;
 
-LDataOffer::LDataOffer(Protocols::Wayland::RDataOffer *dataOfferResource)
+LDataOffer::LDataOffer(Protocols::Wayland::RDataOffer *dataOfferResource) :
+    LPRIVATE_INIT_UNIQUE(LDataOffer)
 {
-    m_imp = new LDataOfferPrivate();
     imp()->dataOfferResource = dataOfferResource;
 }
 
-LDataOffer::~LDataOffer()
-{
-    delete m_imp;
-}
+LDataOffer::~LDataOffer() {}
 
 Protocols::Wayland::RDataOffer *LDataOffer::dataOfferResource() const
 {

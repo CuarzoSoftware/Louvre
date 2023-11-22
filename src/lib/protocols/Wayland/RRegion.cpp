@@ -28,15 +28,11 @@ RRegion::RRegion
         id,
         &region_implementation,
         &RRegion::RRegionPrivate::resource_destroy
-    )
-{
-    m_imp = new RRegionPrivate();
-}
+    ),
+    LPRIVATE_INIT_UNIQUE(RRegion)
+{}
 
-RRegion::~RRegion()
-{
-    delete m_imp;
-}
+RRegion::~RRegion() {}
 
 const LRegion &RRegion::region() const
 {

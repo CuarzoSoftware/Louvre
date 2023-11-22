@@ -2,6 +2,14 @@
 #include <private/LCompositorPrivate.h>
 #include <LTime.h>
 
+LAnimation::LAnimation() : LPRIVATE_INIT_UNIQUE(LAnimation)
+{
+    LCompositor::compositor()->imp()->animations.push_back(this);
+    imp()->compositorLink = std::prev(LCompositor::compositor()->imp()->animations.end());
+}
+
+LAnimation::~LAnimation() {}
+
 void LAnimation::oneShot(UInt32 durationMs, const Callback &onUpdate, const Callback &onFinish)
 {
     LAnimation *anim = new LAnimation();
@@ -85,16 +93,4 @@ void LAnimation::stop()
 void LAnimation::destroy()
 {
     imp()->pendingDestroy = true;
-}
-
-LAnimation::LAnimation()
-{
-    m_imp = new LAnimationPrivate();
-    LCompositor::compositor()->imp()->animations.push_back(this);
-    imp()->compositorLink = std::prev(LCompositor::compositor()->imp()->animations.end());
-}
-
-LAnimation::~LAnimation()
-{
-    delete m_imp;
 }

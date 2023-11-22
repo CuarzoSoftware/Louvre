@@ -3,12 +3,13 @@
 
 #include <LXCursor.h>
 #include <LPoint.h>
+#include <LTexture.h>
 
 using namespace Louvre;
 
 LPRIVATE_CLASS(LXCursor)
     LPoint hotspotB;
-    LTexture *texture;
+    LTexture texture;
 };
 
 #endif // LX11CURSORPRIVATE_H

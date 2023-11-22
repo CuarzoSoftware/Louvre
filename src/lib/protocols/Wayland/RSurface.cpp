@@ -54,10 +54,9 @@ RSurface::RSurface
         id,
         &surface_implementation,
         &RSurface::RSurfacePrivate::resource_destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(RSurface)
 {
-    m_imp = new RSurfacePrivate();
-
     // Create surface
     LSurface::Params params;
     params.surfaceResource = this;
@@ -166,7 +165,6 @@ RSurface::~RSurface()
     lSurface->imp()->destroyed = true;
 
     delete lSurface;
-    delete m_imp;
 }
 
 LSurface *RSurface::surface() const

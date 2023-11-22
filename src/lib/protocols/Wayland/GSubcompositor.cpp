@@ -20,10 +20,9 @@ GSubcompositor::GSubcompositor
         id,
         implementation,
         destroy
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(GSubcompositor)
 {
-    m_imp = new GSubcompositorPrivate();
-
     this->client()->imp()->subcompositorGlobals.push_back(this);
     imp()->clientLink = std::prev(this->client()->imp()->subcompositorGlobals.end());
 }
@@ -31,5 +30,4 @@ GSubcompositor::GSubcompositor
 GSubcompositor::~GSubcompositor()
 {
     client()->imp()->subcompositorGlobals.erase(imp()->clientLink);
-    delete m_imp;
 }

@@ -73,7 +73,7 @@ public:
      */
     const LPoint &hotspotB() const;
 
-    LPRIVATE_IMP(LDNDIconRole)
+    LPRIVATE_IMP_UNIQUE(LDNDIconRole)
 
     /// @cond OMIT
     virtual void handleSurfaceOffset(Int32 x, Int32 y) override;

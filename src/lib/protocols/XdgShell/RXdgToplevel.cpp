@@ -36,9 +36,9 @@ RXdgToplevel::RXdgToplevel
         id,
         &xdg_toplevel_implementation,
         &RXdgToplevelPrivate::destroy_resource
-    )
+    ),
+    LPRIVATE_INIT_UNIQUE(RXdgToplevel)
 {
-    m_imp = new RXdgToplevelPrivate();
     imp()->rXdgSurface = rXdgSurface;
     rXdgSurface->imp()->rXdgToplevel = this;
 
@@ -58,7 +58,6 @@ RXdgToplevel::~RXdgToplevel()
         xdgSurfaceResource()->imp()->rXdgToplevel = nullptr;
 
     delete imp()->lToplevelRole;
-    delete m_imp;
 }
 
 RXdgSurface *RXdgToplevel::xdgSurfaceResource() const

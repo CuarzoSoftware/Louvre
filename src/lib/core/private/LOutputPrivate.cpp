@@ -9,6 +9,8 @@
 #include <LTime.h>
 #include <iostream>
 
+LOutput::LOutputPrivate::LOutputPrivate(LOutput *output) : fb(output) {}
+
 // This is called from LCompositor::addOutput()
 bool LOutput::LOutputPrivate::initialize()
 {

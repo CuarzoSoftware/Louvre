@@ -17,7 +17,7 @@ public:
     // Since 1
     bool configure(UInt32 serial) const;
 
-    LPRIVATE_IMP(RXdgSurface)
+    LPRIVATE_IMP_UNIQUE(RXdgSurface)
 };
 
 #endif // RXDGSURFACE_H

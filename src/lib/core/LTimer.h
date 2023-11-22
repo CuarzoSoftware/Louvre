@@ -92,7 +92,7 @@ public:
      */
     bool start(UInt32 intervalMs, bool destroyOnTimeout = false);
 
-LPRIVATE_IMP(LTimer)
+LPRIVATE_IMP_UNIQUE(LTimer)
     ~LTimer();
 };
 

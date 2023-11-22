@@ -18,7 +18,7 @@ public:
     // Since 1
     bool clockId(UInt32 clockId);
 
-    LPRIVATE_IMP(GWpPresentation)
+    LPRIVATE_IMP_UNIQUE(GWpPresentation)
 };
 
 #endif // PRESENTATION_H
