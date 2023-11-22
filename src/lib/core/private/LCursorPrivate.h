@@ -11,7 +11,8 @@ using namespace Louvre;
 
 inline static void texture2Buffer(LCursor *cursor, const LSizeF &size, LFramebuffer::Transform transform);
 
-LPRIVATE_CLASS(LCursor)
+LPRIVATE_CLASS_NO_COPY(LCursor)
+    LCursorPrivate();
     LRect rect;
     LPointF pos;
     LPointF hotspotB;

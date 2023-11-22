@@ -24,11 +24,6 @@ configuration_data.set('LOUVRE_DEFAULT_GRAPHIC_BACKEND', get_option('default_gra
 configuration_data.set('LOUVRE_DEFAULT_INPUT_BACKEND', get_option('default_input_backend'))
 configuration_data.set('LOUVRE_DEFAULT_ASSETS_PATH', ASSETS_INSTALL_PATH)
 
-message('INSTALL PATHS')
-message('HEADERS:', HEADERS_INSTALL_PATH)
-message('BACKENDS:', BACKENDS_INSTALL_PATH)
-message('ASSETS:', ASSETS_INSTALL_PATH)
-
 config_header = configure_file(
   input : './lib/core/LConfig.h.in',
   output : 'LConfig.h',

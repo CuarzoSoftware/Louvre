@@ -20,13 +20,23 @@ Keep in mind that for clients to successfully establish a connection, you must a
 
 ## Backends Configuration
 
-  - **LOUVRE_BACKENDS_PATH**: Path to the directory containing Louvre backends, e.g., `/usr/etc/Louvre/backends`.
+  - **LOUVRE_BACKENDS_PATH**: This points to the directory containing Louvre backends. The directory structure must include two subdirectories as follows:
 
-  - **LOUVRE_GRAPHIC_BACKEND**: Name of the graphic backend to load, e.g., `libLGraphicBackendDRM.so`.
+  ```
+  backends
+  |-- graphic
+      |-- drm.so
+      |-- another_graphic_backend.so
+  |-- input
+      |-- libinput.so
+      |-- another_input_backend.so
+  ```
 
-  - **LOUVRE_INPUT_BACKEND**: Name of the input backend to load, e.g., `libLInputBackendLibinput.so`.
+  - **LOUVRE_GRAPHIC_BACKEND**: This is the name of the graphic backend to load, excluding the `.so` extension, for example, `drm`.
 
-If Louvre encounters issues loading the specified backend configurations, it will automatically fallback to the default settings.
+  - **LOUVRE_INPUT_BACKEND**: This is the name of the input backend to load, excluding the `.so` extension, for example, `libinput`.
+
+If Louvre encounters any issues while loading the specified backend configurations, it will automatically revert to the default settings. You can configure the default backends and paths by using the `libdir` Meson option and by modifying the `meson_options.txt` file during the Louvre build process.
 
 ## DRM Graphic Backend Configuration {#graphic}
 

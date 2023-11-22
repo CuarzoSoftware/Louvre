@@ -211,12 +211,8 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         if (imp()->cursor)
             delete imp()->cursor;
 
-        while (!imp()->textures.empty())
-            delete imp()->textures.back();
-
         imp()->unitGraphicBackend(true);
         imp()->unitSeat();
-
         imp()->unitWayland();
 
         while (!imp()->animations.empty())

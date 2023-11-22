@@ -99,7 +99,7 @@ public:
      * @brief Loads a graphic backend (dynamic library).
      *
      * Use this method to load a custom graphic backend before calling start().
-     * By default, Louvre loads the DRM backend which is tipically located at `/usr/etc/Louvre/backends/libLGraphicBackendDRM.so`.
+     * By default, Louvre loads the DRM backend which is tipically located at `/usr/local/lib/Louvre/backends/graphic/drm.so`.
      * 
      * @note Instead of using this method, a more preferable approach is to let the user choose the graphical backend by
      *       configuring the **LOUVRE_BACKENDS_PATH** and **LOUVRE_GRAPHIC_BACKEND** environment variables.
@@ -123,7 +123,7 @@ public:
      * @brief Loads an input backend (dynamic library).
      *
      * Use this method to load a custom input backend before calling start().
-     * By default, Louvre loads the Libinput backend which is tipically located at `/usr/etc/Louvre/backends/libLInputBackendLibinput.so`.
+     * By default, Louvre loads the Libinput backend which is tipically located at `/usr/local/lib/Louvre/backends/input/libinput.so`.
      *
      * @note Instead of using this method, a more preferable approach is to let the user choose the graphical backend by
      *       configuring the **LOUVRE_BACKENDS_PATH** and **LOUVRE_INPUT_BACKEND** environment variables.
