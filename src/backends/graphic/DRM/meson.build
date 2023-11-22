@@ -1,5 +1,7 @@
 GraphicBackendDRM = library(
-    'LGraphicBackendDRM',
+    'drm',
+    name_prefix : '',
+    name_suffix : 'so',
     sources : [
         'LGraphicBackendDRM.cpp'
     ],
@@ -14,5 +16,5 @@ GraphicBackendDRM = library(
         srm_dep
     ],
     install : true, 
-    install_dir : BACKENDS_INSTALL_PATH)
+    install_dir : join_paths(BACKENDS_INSTALL_PATH, 'graphic'))
 

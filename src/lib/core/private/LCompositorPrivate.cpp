@@ -210,6 +210,18 @@ static char *joinPaths(const char *path1, const char *path2)
     return result;
 }
 
+static char *joinBackendsPath(const char *backendsPath, const char *backendType, const char *backendName)
+{
+    char *tmp = joinPaths(backendsPath, backendType);
+    char *path = joinPaths(tmp, backendName);
+    free(tmp);
+    size_t len = strlen(path) + 4;
+    char *pathSo = (char*) malloc(len);
+    snprintf(pathSo, len, "%s.so", path);
+    free(path);
+    return pathSo;
+}
+
 bool LCompositor::LCompositorPrivate::initGraphicBackend()
 {
     unitGraphicBackend(false);
@@ -231,17 +243,17 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
     {
         loadEnvBackend:
 
-        const char *backendPath = getenv("LOUVRE_BACKENDS_PATH");
+        const char *backendsPath = getenv("LOUVRE_BACKENDS_PATH");
         const char *backendName = getenv("LOUVRE_GRAPHIC_BACKEND");
-        bool usingEnvs = backendPath != NULL || backendName != NULL;
+        bool usingEnvs = backendsPath != NULL || backendName != NULL;
 
-        if (!backendPath)
-            backendPath = LOUVRE_DEFAULT_BACKENDS_PATH;
+        if (!backendsPath)
+            backendsPath = LOUVRE_DEFAULT_BACKENDS_PATH;
 
         if (!backendName)
             backendName = LOUVRE_DEFAULT_GRAPHIC_BACKEND;
 
-        char *backendPathName = joinPaths(backendPath, backendName);
+        char *backendPathName = joinBackendsPath(backendsPath, "graphic", backendName);
 
         retry:
 
@@ -258,7 +270,7 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
                 if (usingEnvs)
                 {
                     usingEnvs = false;
-                    backendPathName = joinPaths(LOUVRE_DEFAULT_BACKENDS_PATH, LOUVRE_DEFAULT_GRAPHIC_BACKEND);
+                    backendPathName = joinBackendsPath(LOUVRE_DEFAULT_BACKENDS_PATH, "graphic", LOUVRE_DEFAULT_GRAPHIC_BACKEND);
                     goto retry;
                 }
 
@@ -273,7 +285,7 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
             if (usingEnvs)
             {
                 usingEnvs = false;
-                backendPathName = joinPaths(LOUVRE_DEFAULT_BACKENDS_PATH, LOUVRE_DEFAULT_GRAPHIC_BACKEND);
+                backendPathName = joinBackendsPath(LOUVRE_DEFAULT_BACKENDS_PATH, "graphic", LOUVRE_DEFAULT_GRAPHIC_BACKEND);
                 goto retry;
             }
 
@@ -325,17 +337,17 @@ bool LCompositor::LCompositorPrivate::initInputBackend()
     {
         loadEnvBackend:
 
-        const char *backendPath = getenv("LOUVRE_BACKENDS_PATH");
+        const char *backendsPath = getenv("LOUVRE_BACKENDS_PATH");
         const char *backendName = getenv("LOUVRE_INPUT_BACKEND");
-        bool usingEnvs = backendPath != NULL || backendName != NULL;
+        bool usingEnvs = backendsPath != NULL || backendName != NULL;
 
-        if (!backendPath)
-            backendPath = LOUVRE_DEFAULT_BACKENDS_PATH;
+        if (!backendsPath)
+            backendsPath = LOUVRE_DEFAULT_BACKENDS_PATH;
 
         if (!backendName)
             backendName = LOUVRE_DEFAULT_INPUT_BACKEND;
 
-        char *backendPathName = joinPaths(backendPath, backendName);
+        char *backendPathName = joinBackendsPath(backendsPath, "input", backendName);
 
         retry:
 
@@ -352,7 +364,7 @@ bool LCompositor::LCompositorPrivate::initInputBackend()
                 if (usingEnvs)
                 {
                     usingEnvs = false;
-                    backendPathName = joinPaths(LOUVRE_DEFAULT_BACKENDS_PATH, LOUVRE_DEFAULT_INPUT_BACKEND);
+                    backendPathName = joinBackendsPath(LOUVRE_DEFAULT_BACKENDS_PATH, "input", LOUVRE_DEFAULT_INPUT_BACKEND);
                     goto retry;
                 }
 
@@ -367,7 +379,7 @@ bool LCompositor::LCompositorPrivate::initInputBackend()
             if (usingEnvs)
             {
                 usingEnvs = false;
-                backendPathName = joinPaths(LOUVRE_DEFAULT_BACKENDS_PATH, LOUVRE_DEFAULT_INPUT_BACKEND);
+                backendPathName = joinBackendsPath(LOUVRE_DEFAULT_BACKENDS_PATH, "input", LOUVRE_DEFAULT_INPUT_BACKEND);
                 goto retry;
             }
 

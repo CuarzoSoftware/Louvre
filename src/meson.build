@@ -15,12 +15,19 @@ cpp = meson.get_compiler('cpp')
 # -------------- CONFIGURATION --------------
 
 HEADERS_INSTALL_PATH = join_paths(get_option('prefix'), get_option('includedir'), 'Louvre')
-BACKENDS_INSTALL_PATH = get_option('backends_path')
-ASSETS_INSTALL_PATH = get_option('assets_path')
+BACKENDS_INSTALL_PATH = join_paths(get_option('prefix'), get_option('libdir'), 'Louvre/backends')
+ASSETS_INSTALL_PATH = join_paths(get_option('prefix'), get_option('datadir'), 'Louvre/assets')
 
 configuration_data = configuration_data()
 configuration_data.set('LOUVRE_DEFAULT_BACKENDS_PATH', BACKENDS_INSTALL_PATH)
+configuration_data.set('LOUVRE_DEFAULT_GRAPHIC_BACKEND', get_option('default_graphic_backend'))
+configuration_data.set('LOUVRE_DEFAULT_INPUT_BACKEND', get_option('default_input_backend'))
 configuration_data.set('LOUVRE_DEFAULT_ASSETS_PATH', ASSETS_INSTALL_PATH)
+
+message('INSTALL PATHS')
+message('HEADERS:', HEADERS_INSTALL_PATH)
+message('BACKENDS:', BACKENDS_INSTALL_PATH)
+message('ASSETS:', ASSETS_INSTALL_PATH)
 
 config_header = configure_file(
   input : './lib/core/LConfig.h.in',
