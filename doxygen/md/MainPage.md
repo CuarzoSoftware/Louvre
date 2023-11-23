@@ -24,7 +24,7 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 * Presentation Time
 * Linux DMA-Buf
 
-## 🖌️ Renderering
+## 🖌️ Rendering
 
 Within Louvre, you have the flexibility to either employ your own OpenGL ES 2.0 shaders/programs, use the Louvre::LPainter class for fundamental 2D rendering, or leverage the Louvre::LScene and Louvre::LView system, which manages buffer damage and can also handle input events for you. Additionally, it's possible to combine these three approaches as needed.
 
