@@ -148,6 +148,12 @@ namespace Louvre
     typedef int16_t         Int16;
 
     /// @brief 8 bits unsigned integer
+    typedef uint8_t         UInt8;
+
+    /// @brief 8 bits signed integer
+    typedef int8_t          Int8;
+
+    /// @brief 8 bits unsigned integer
     typedef unsigned char   UChar8;
 
     /// @brief 8 bits signed integer

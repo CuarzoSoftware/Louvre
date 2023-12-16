@@ -14,7 +14,6 @@ Louvre relies on the following libraries:
 * **XKB Common** >= 0.7.1
 * **Pixman** >= 0.40.0
 * **Libseat** >= 0.6.4
-* **FreeImage** >= 3.18.0
 
 The examples also require:
 
@@ -31,7 +30,7 @@ If your distribution is based on Debian, all tools and almost all dependencies c
 ```
 $ sudo apt update
 $ sudo apt upgrade
-$ sudo apt install build-essential meson libegl-dev mesa-common-dev libgles2-mesa-dev libdrm-dev libgbm-dev libevdev-dev libinput-dev libxcursor-dev libxkbcommon-dev libpixman-1-dev libwayland-dev hwinfo libseat-dev libfreeimage-dev libicu-dev libfontconfig-dev libfreetype-dev
+$ sudo apt install build-essential meson libegl-dev mesa-common-dev libgles2-mesa-dev libdrm-dev libgbm-dev libevdev-dev libinput-dev libxcursor-dev libxkbcommon-dev libpixman-1-dev libwayland-dev hwinfo libseat-dev libicu-dev libfontconfig-dev libfreetype-dev
 ```
 
 If the [hwinfo](https://github.com/vcrhonek/hwdata) or [libdisplay-info](https://gitlab.freedesktop.org/emersion/libdisplay-info) packages are not available in your distribution, please download and install them manually in the specified order:
@@ -54,7 +53,7 @@ If your distribution is based on Red Hat, all tools and almost all dependencies 
 
 ```
 $ sudo dnf update
-$ sudo dnf install @development-tools make automake gcc gcc-c++ meson libwayland-server wayland-devel libinput-devel libevdev-devel libudev-devel mesa-libEGL-devel libxkbcommon-devel libXcursor-devel pixman-devel libdrm-devel libgbm-devel libseat-devel freeimage-devel fontconfig-devel freetype-devel libicu-devel
+$ sudo dnf install @development-tools make automake gcc gcc-c++ meson libwayland-server wayland-devel libinput-devel libevdev-devel libudev-devel mesa-libEGL-devel libxkbcommon-devel libXcursor-devel pixman-devel libdrm-devel libgbm-devel libseat-devel fontconfig-devel freetype-devel libicu-devel
 ```
 
 To install SRM, follow the instructions provided [here](https://cuarzosoftware.github.io/SRM/md_md__downloads.html).

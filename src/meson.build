@@ -55,7 +55,6 @@ input_dep           = dependency('libinput')
 libseat_dep         = dependency('libseat')
 srm_dep             = dependency('SRM')
 pthread_dep         = cpp.find_library('pthread')
-freeimage_dep       = cpp.find_library('freeimage')
 dl_dep              = cpp.find_library('dl')
 
 # -------------- HEADERS --------------
@@ -115,7 +114,6 @@ louvre = library(
         drm_dep,
         gbm_dep,
         libseat_dep,
-        freeimage_dep,
         pixman_dep
     ],
     install : true)

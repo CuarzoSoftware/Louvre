@@ -11,6 +11,10 @@
 class Louvre::LOpenGL
 {
 public:
+    /// @cond OMIT
+    LOpenGL() = delete;
+    /// @endcond
+
     /**
      * @brief Open a GLSL shader file.
      *
@@ -51,9 +55,9 @@ public:
      *
      * Loads and creates a texture from an image file.
      *
-     * @note The image is always converted to the `DRM_FORMAT_ARGB8888` format.
+     * @note The image format is always converted to `DRM_FORMAT_ARGB8888` or `DRM_FORMAT_ABGR8888`.
      *
-     * @param file Path to the image file. Must be an image format supported by [FreeImage](https://freeimage.sourceforge.io/features.html) (JPEG, PNG, BMP, etc).
+     * @param file Path to the image file. Must be an image format supported by [STB Image](https://github.com/nothings/stb) (JPG, PNG, TGA, BMP, PSD, GIF, HDR, PIC).
      * @returns A new texture or `nullptr` in case of error.
      */
     static LTexture *loadTexture(const char *file);

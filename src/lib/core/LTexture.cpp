@@ -1,3 +1,5 @@
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <other/stb_image_write.h>
 #include <private/LPainterPrivate.h>
 #include <private/LTexturePrivate.h>
 #include <private/LCompositorPrivate.h>
@@ -5,7 +7,6 @@
 #include <private/LOutputPrivate.h>
 #include <private/LRenderBufferPrivate.h>
 #include <LTextureView.h>
-#include <FreeImage.h>
 #include <LRect.h>
 #include <LLog.h>
 
@@ -196,7 +197,7 @@ bool LTexture::updateRect(const LRect &rect, UInt32 stride, const void *buffer)
     return false;
 }
 
-Louvre::LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQualityScaling) const
+LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQualityScaling) const
 {
     if (!initialized())
         return nullptr;
@@ -561,7 +562,7 @@ bool LTexture::save(const char *path) const
         buffer = (UChar8 *)malloc(sizeB().w()*sizeB().h()*4);
         imp()->readPixels(LRect(0, sizeB()),
                           0, sizeB().w(),
-                          painter->imp()->openGLExtensions.EXT_read_format_bgra ? GL_BGRA_EXT : GL_RGBA,
+                          GL_RGBA,
                           GL_UNSIGNED_BYTE, buffer);
         glDeleteFramebuffers(1, &framebuffer);
 
@@ -598,7 +599,7 @@ bool LTexture::save(const char *path) const
         buffer = (UChar8 *)malloc(sizeB().w()*sizeB().h()*4);
         imp()->readPixels(LRect(0, sizeB()),
                           0, sizeB().w(),
-                          painter->imp()->openGLExtensions.EXT_read_format_bgra ? GL_BGRA_EXT : GL_RGBA,
+                          GL_RGBA,
                           GL_UNSIGNED_BYTE, buffer);
         glDeleteRenderbuffers(1, &renderbuffer);
         glDeleteFramebuffers(1, &framebuffer);
@@ -608,29 +609,7 @@ bool LTexture::save(const char *path) const
 
     {
 
-        if (!painter->imp()->openGLExtensions.EXT_read_format_bgra)
-        {
-            UChar8 tmp;
-
-            for (Int32 i = 0; i < sizeB().area() * 4; i+=4)
-            {
-                tmp = buffer[i];
-                buffer[i] = buffer[i + 2];
-                buffer[i + 2] = tmp;
-            }
-        }
-
-        FIBITMAP *image = FreeImage_ConvertFromRawBits(buffer,
-                                             sizeB().w(),
-                                             sizeB().h(),
-                                             4 * sizeB().w(),
-                                             32,
-                                             0xFF0000, 0x00FF00, 0x0000FF,
-                                             true);
-
-        bool ret = FreeImage_Save(FIF_PNG, image, path, PNG_DEFAULT);
-
-        FreeImage_Unload(image);
+        Int32 ret = stbi_write_png(path, sizeB().w(), sizeB().h(), 4, buffer, sizeB().w() * 4);
         free(buffer);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -640,7 +619,7 @@ bool LTexture::save(const char *path) const
             return true;
         }
 
-        error = "FreeImage error";
+        error = "STB Image error";
         goto printError;
     }
 

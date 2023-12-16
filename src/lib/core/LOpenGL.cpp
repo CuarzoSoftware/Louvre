@@ -1,3 +1,5 @@
+#define STB_IMAGE_IMPLEMENTATION
+#include <other/stb_image.h>
 #include <LOpenGL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +9,6 @@
 #include <LTexture.h>
 #include <LOutput.h>
 #include <LLog.h>
-#include <FreeImage.h>
 #include <string.h>
 
 using namespace Louvre;
@@ -120,38 +121,32 @@ GLuint LOpenGL::compileShader(GLenum type, const char *shaderString)
 
 LTexture *LOpenGL::loadTexture(const char *file)
 {
-    FREE_IMAGE_FORMAT format = FreeImage_GetFileType(file);
+    Int32 width, height, channels;
+    UInt8 *image = stbi_load(file, &width, &height, &channels, STBI_rgb_alpha);
 
-    if (format == FIF_UNKNOWN)
+    if (!image)
     {
-        LLog::error("[LOpenGL::loadTexture] Failed to load image %s.", file);
+        LLog::error("[LOpenGL::loadTexture] Failed to load image %s: %s.", file, stbi_failure_reason());
         return nullptr;
     }
 
-    FIBITMAP *bitmap = FreeImage_Load(format, file);
-
-    if (!bitmap)
-    {
-        LLog::error("[LOpenGL::loadTexture] Failed to load image %s.", file);
-        return nullptr;
-    }
-
-    FreeImage_FlipVertical(bitmap);
-    FIBITMAP *convertedBitmap = FreeImage_ConvertTo32Bits(bitmap);
-    FreeImage_Unload(bitmap);
-
-    if (!convertedBitmap)
-    {
-        LLog::error("[LOpenGL::loadTexture] Failed to convert image %s to 32 bit format.", file);
-        return nullptr;
-    }
-
-    LSize size((Int32)FreeImage_GetWidth(convertedBitmap), (Int32)FreeImage_GetHeight(convertedBitmap));
-    UInt32 pitch = FreeImage_GetPitch(convertedBitmap);
-    UChar8 *pixels = (UChar8*)FreeImage_GetBits(convertedBitmap);
     LTexture *texture = new LTexture();
-    texture->setDataB(size, pitch, DRM_FORMAT_ARGB8888, pixels);
-    FreeImage_Unload(convertedBitmap);
+
+    if (!texture->setDataB(LSize(width, height), width * 4, DRM_FORMAT_ABGR8888, image))
+    {
+        UInt8 pix = 0;
+
+        for (int i = 0; i < width * 4 * height; i+=4)
+        {
+            pix = image[i + 2];
+            image[i + 2] = image[i];
+            image[i] = pix;
+        }
+
+        texture->setDataB(LSize(width, height), width * 4, DRM_FORMAT_ARGB8888, image);
+    }
+
+    free(image);
     return texture;
 }
 
