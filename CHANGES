@@ -1,3 +1,23 @@
+Louvre (1.1.0-1)
+
+  # Additions
+
+  * Introduce new environment variables enabling backend selection, thanks to @2xsaiko for the idea.
+
+  # Building
+
+  * Incorporate pkg-config into meson.build to enhance dependency resolution, special thanks to @jengelh.
+  * Integrate meson.build options to streamline the configuration of assets and backends.
+
+  # Documentation
+
+  * Rectify a package error in Fedora build instructions, thanks to @jwijenbergh.
+  * Append notes to LCompositor::loadGraphicBackend() and LCompositor::loadInputBackend() methods.
+  * Enhance benchmark documentation with operational details and transition build system from qmake to Meson.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Sat, 16 Dec 2023 15:51:55 -0300
+
+
 Louvre (1.0.1-1)
 
   # Additions

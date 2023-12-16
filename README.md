@@ -2,13 +2,12 @@
 <img style="position:relative;margin:0px;padding:0;top:40px" src="https://i.imgur.com/cCT9KwN.png" width="104"/>
 <h1 style="margin-top:0px;padding-top:0px">Louvre</h1>
 
-
 <p align="left">
   <a href="https://github.com/CuarzoSoftware/Louvre/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/license-GPL_v3.0-blue.svg" alt="Louvre is released under the GPL v3.0 license." />
   </a>
   <a href="https://github.com/CuarzoSoftware/Louvre">
-    <img src="https://img.shields.io/badge/version-1.0.1-brightgreen" alt="Current Louvre version." />
+    <img src="https://img.shields.io/badge/version-1.1.0-brightgreen" alt="Current Louvre version." />
   </a>
 </p>
 
