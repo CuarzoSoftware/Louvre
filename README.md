@@ -4,7 +4,7 @@
 
 <p align="left">
   <a href="https://github.com/CuarzoSoftware/Louvre/blob/main/LICENSE">
-    <img src="https://img.shields.io/badge/license-GPL_v3.0-blue.svg" alt="Louvre is released under the GPL v3.0 license." />
+    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Louvre is released under the MIT license." />
   </a>
   <a href="https://github.com/CuarzoSoftware/Louvre">
     <img src="https://img.shields.io/badge/version-1.1.0-brightgreen" alt="Current Louvre version." />

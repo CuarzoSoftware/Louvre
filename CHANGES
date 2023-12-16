@@ -1,5 +1,9 @@
 Louvre (1.1.0-1)
 
+  # License
+
+  * License updated from GPLv3 to MIT.
+
   # Dependencies
 
   * Substituted the FreeImage dependency with STB Image.
