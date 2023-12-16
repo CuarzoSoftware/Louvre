@@ -13,6 +13,10 @@ Louvre (1.1.0-1)
   * Substituted LConfig.h configuration header with LCompositor methods for querying default assets paths and backends.
   * Incorporated soversion in meson.build.
 
+  # Additions
+
+  * Introduce the LVersion struct and the LCompositor::version() method to facilitate querying the current Louvre version in use.
+
   # Internal Changes
 
   * Error and fatal messages from LLog are now directed to stderr, thanks to @brianhsu.

@@ -47,6 +47,11 @@ LCompositor::LCompositor() : LPRIVATE_INIT_UNIQUE(LCompositor)
     imp()->defaultBackendsPath = LOUVRE_DEFAULT_BACKENDS_PATH;
     imp()->defaultGraphicBackendName = LOUVRE_DEFAULT_GRAPHIC_BACKEND;
     imp()->defaultInputBackendName = LOUVRE_DEFAULT_INPUT_BACKEND;
+
+    imp()->version.major = LOUVRE_VERSION_MAJOR;
+    imp()->version.minor = LOUVRE_VERSION_MINOR;
+    imp()->version.patch = LOUVRE_VERSION_PATCH;
+    imp()->version.build = LOUVRE_VERSION_BUILD;
 }
 
 LCompositor::~LCompositor() {}
@@ -54,6 +59,11 @@ LCompositor::~LCompositor() {}
 LCompositor *LCompositor::compositor()
 {
     return s_compositor;
+}
+
+const LVersion &LCompositor::version()
+{
+    return s_compositor->imp()->version;
 }
 
 const std::string &LCompositor::defaultBackendsPath() const

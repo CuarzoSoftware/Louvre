@@ -336,6 +336,17 @@ namespace Louvre
         LInputBackendX11 = 1       ///< ID for the X11 input backend.
     };
 
+    /**
+     * @brief Structure representing a version in the format major.minor.patch-build.
+     */
+    struct LVersion
+    {
+        UInt32 major; ///< Major version.
+        UInt32 minor; ///< Minor version.
+        UInt32 patch; ///< Patch version.
+        UInt32 build; ///< Build number.
+    };
+
     namespace Protocols
     {
         namespace Wayland

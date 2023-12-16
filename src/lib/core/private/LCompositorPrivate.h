@@ -12,6 +12,7 @@
 
 LPRIVATE_CLASS(LCompositor)
 
+    LVersion version;
     std::string defaultAssetsPath;
     std::string defaultBackendsPath;
     std::string defaultGraphicBackendName;

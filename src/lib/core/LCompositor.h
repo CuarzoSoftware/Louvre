@@ -84,6 +84,11 @@ public:
     static LCompositor *compositor();
 
     /**
+     * @brief Get the current Louvre version.
+     */
+    static const LVersion &version();
+
+    /**
      * @brief Wayland globals initialization.
      *
      * Override this method if you want to remove or add custom Wayland globals when initializing the compositor.
