@@ -8,6 +8,10 @@ Louvre (1.1.0-1)
 
   * Substituted the FreeImage dependency with STB Image.
 
+  # Building
+
+  * Substituted LConfig.h configuration header with LCompositor methods for querying default assets paths and backends.
+
   # Internal Changes
 
   * Error and fatal messages from LLog are now directed to stderr, thanks to @brianhsu.

@@ -42,6 +42,11 @@ LCompositor::LCompositor() : LPRIVATE_INIT_UNIQUE(LCompositor)
     imp()->compositor = this;
     imp()->eglBindWaylandDisplayWL = (PFNEGLBINDWAYLANDDISPLAYWL) eglGetProcAddress ("eglBindWaylandDisplayWL");
     imp()->eglQueryWaylandBufferWL = (PFNEGLQUERYWAYLANDBUFFERWL) eglGetProcAddress ("eglQueryWaylandBufferWL");
+
+    imp()->defaultAssetsPath = LOUVRE_DEFAULT_ASSETS_PATH;
+    imp()->defaultBackendsPath = LOUVRE_DEFAULT_BACKENDS_PATH;
+    imp()->defaultGraphicBackendName = LOUVRE_DEFAULT_GRAPHIC_BACKEND;
+    imp()->defaultInputBackendName = LOUVRE_DEFAULT_INPUT_BACKEND;
 }
 
 LCompositor::~LCompositor() {}
@@ -49,6 +54,26 @@ LCompositor::~LCompositor() {}
 LCompositor *LCompositor::compositor()
 {
     return s_compositor;
+}
+
+const std::string &LCompositor::defaultBackendsPath() const
+{
+    return imp()->defaultBackendsPath;
+}
+
+const std::string &LCompositor::defaultAssetsPath() const
+{
+    return imp()->defaultAssetsPath;
+}
+
+const std::string &LCompositor::defaultGraphicBackendName() const
+{
+    return imp()->defaultGraphicBackendName;
+}
+
+const std::string &LCompositor::defaultInputBackendName() const
+{
+    return imp()->defaultInputBackendName;
 }
 
 bool LCompositor::isGraphicBackendInitialized() const
@@ -61,14 +86,14 @@ bool LCompositor::isInputBackendInitialized() const
     return imp()->isInputBackendInitialized;
 }
 
-bool LCompositor::loadGraphicBackend(const char *path)
+bool LCompositor::loadGraphicBackend(const std::string &path)
 {
-    return imp()->loadGraphicBackend(path);
+    return imp()->loadGraphicBackend(path.c_str());
 }
 
-bool LCompositor::loadInputBackend(const char *path)
+bool LCompositor::loadInputBackend(const std::string &path)
 {
-    return imp()->loadInputBackend(path);
+    return imp()->loadInputBackend(path.c_str());
 }
 
 LCompositor::CompositorState LCompositor::state() const

@@ -11,11 +11,10 @@ class Surface;
 
 #include <LNamespaces.h>
 #include <LRegion.h>
-#include <LConfig.h>
 
 using namespace Louvre;
 
-#define ASSETS_PATH LOUVRE_DEFAULT_ASSETS_PATH
+#define ASSETS_PATH LCompositor::compositor()->defaultAssetsPath().c_str()
 
 #define TOPBAR_HEIGHT 26
 

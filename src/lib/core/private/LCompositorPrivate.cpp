@@ -7,7 +7,6 @@
 #include <private/LCursorPrivate.h>
 #include <private/LAnimationPrivate.h>
 #include <LTime.h>
-#include <LConfig.h>
 #include <LLog.h>
 #include <EGL/egl.h>
 #include <dlfcn.h>

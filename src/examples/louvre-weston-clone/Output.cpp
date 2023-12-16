@@ -6,7 +6,6 @@
 #include <LToplevelRole.h>
 #include <LTime.h>
 #include <LCursor.h>
-#include <LConfig.h>
 #include <LLog.h>
 #include <LOpenGL.h>
 #include <unistd.h>
@@ -44,7 +43,7 @@ void Output::loadWallpaper()
 
     if (!background)
     {
-        path = joinPaths(LOUVRE_DEFAULT_ASSETS_PATH, "wallpaper.png");
+        path = joinPaths(compositor()->defaultAssetsPath().c_str(), "wallpaper.png");
         background = LOpenGL::loadTexture(path);
         free(path);
     }

@@ -18,19 +18,12 @@ HEADERS_INSTALL_PATH = join_paths(get_option('prefix'), get_option('includedir')
 BACKENDS_INSTALL_PATH = join_paths(get_option('prefix'), get_option('libdir'), 'Louvre/backends')
 ASSETS_INSTALL_PATH = join_paths(get_option('prefix'), get_option('datadir'), 'Louvre/assets')
 
-configuration_data = configuration_data()
-configuration_data.set('LOUVRE_DEFAULT_BACKENDS_PATH', BACKENDS_INSTALL_PATH)
-configuration_data.set('LOUVRE_DEFAULT_GRAPHIC_BACKEND', get_option('default_graphic_backend'))
-configuration_data.set('LOUVRE_DEFAULT_INPUT_BACKEND', get_option('default_input_backend'))
-configuration_data.set('LOUVRE_DEFAULT_ASSETS_PATH', ASSETS_INSTALL_PATH)
-
-config_header = configure_file(
-  input : './lib/core/LConfig.h.in',
-  output : 'LConfig.h',
-  configuration : configuration_data,
-  install : true,
-  install_dir : HEADERS_INSTALL_PATH 
-)
+add_project_arguments([
+    '-DLOUVRE_DEFAULT_BACKENDS_PATH="@0@"'.format(BACKENDS_INSTALL_PATH),
+    '-DLOUVRE_DEFAULT_GRAPHIC_BACKEND="@0@"'.format(get_option('default_graphic_backend')),
+    '-DLOUVRE_DEFAULT_INPUT_BACKEND="@0@"'.format(get_option('default_input_backend')),
+    '-DLOUVRE_DEFAULT_ASSETS_PATH="@0@"'.format(ASSETS_INSTALL_PATH)
+], language: 'cpp')
 
 if get_option('buildtype') == 'custom'
     proj_args = ['-Ofast', '-s', '-march=native', '-fno-strict-aliasing']
@@ -98,7 +91,7 @@ endforeach
 
 louvre = library(
     'Louvre',
-    sources : [run_command('find', './lib', '-type', 'f', '-name', '*[.cpp,.c]', check : false).stdout().strip().split('\n'), config_header],
+    sources : run_command('find', './lib', '-type', 'f', '-name', '*[.cpp,.c]', check : false).stdout().strip().split('\n'),
     include_directories : include_paths,
     dependencies : [
         wayland_server_dep,
