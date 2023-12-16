@@ -11,6 +11,7 @@ Louvre (1.1.0-1)
   # Building
 
   * Substituted LConfig.h configuration header with LCompositor methods for querying default assets paths and backends.
+  * Incorporated soversion in meson.build.
 
   # Internal Changes
 

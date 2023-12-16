@@ -12,6 +12,11 @@ project(
 
 cpp = meson.get_compiler('cpp')
 
+VERSION_MAJOR = meson.project_version().split('.')[0]
+VERSION_MINOR = meson.project_version().split('.')[1]
+VERSION_PATCH = meson.project_version().split('.')[2]
+VERSION_BUILD = run_command('cat', '../BUILD', check : false).stdout()
+
 # -------------- CONFIGURATION --------------
 
 HEADERS_INSTALL_PATH = join_paths(get_option('prefix'), get_option('includedir'), 'Louvre')
@@ -109,6 +114,7 @@ louvre = library(
         libseat_dep,
         pixman_dep
     ],
+    soversion: VERSION_MAJOR,
     install : true)
 
 louvre_dep = declare_dependency(
