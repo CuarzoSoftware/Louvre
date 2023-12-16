@@ -34,12 +34,12 @@ void LLog::fatal(const char *format, ...)
 {
     if (level >= 1)
     {
-        printf("%sLouvre fatal:%s ", KRED, KNRM);
+        fprintf(stderr, "%sLouvre fatal:%s ", KRED, KNRM);
         va_list args;
         va_start(args, format);
-        vprintf(format, args);
+        vfprintf(stderr, format, args);
         va_end(args);
-        printf(BRELN);
+        fprintf(stderr, BRELN);
     }
 }
 
@@ -47,12 +47,12 @@ void LLog::error(const char *format, ...)
 {
     if (level >= 2)
     {
-        printf("%sLouvre error:%s ", KRED, KNRM);
+        fprintf(stderr, "%sLouvre error:%s ", KRED, KNRM);
         va_list args;
         va_start(args, format);
-        vprintf(format, args);
+        vfprintf(stderr, format, args);
         va_end(args);
-        printf(BRELN);
+        fprintf(stderr, BRELN);
     }
 }
 
@@ -90,4 +90,3 @@ void LLog::log(const char *format, ...)
     va_end(args);
     printf(BRELN);
 }
-

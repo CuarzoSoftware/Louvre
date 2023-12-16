@@ -8,6 +8,10 @@ Louvre (1.1.0-1)
 
   * Substituted the FreeImage dependency with STB Image.
 
+  # Internal Changes
+
+  * Error and fatal messages from LLog are now directed to stderr, thanks to @brianhsu.
+
  -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Sat, 16 Dec 2023 15:51:55 -0300
 
 
