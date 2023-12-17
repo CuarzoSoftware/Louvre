@@ -78,6 +78,11 @@ const LRect &LPopupRole::windowGeometry() const
     return xdgSurfaceResource()->imp()->currentWindowGeometry;
 }
 
+const LSize &LPopupRole::size() const
+{
+    return xdgSurfaceResource()->imp()->currentWindowGeometry.size();
+}
+
 const LPositioner &LPopupRole::positioner() const
 {
     return imp()->positioner;
