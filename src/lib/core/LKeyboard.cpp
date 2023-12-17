@@ -260,7 +260,7 @@ void LKeyboard::setFocus(LSurface *surface)
             // If another surface has focus
             if (focus())
             {
-                UInt32 serial = LCompositor::nextSerial();
+                UInt32 serial = LTime::nextSerial();
 
                 for (Wayland::GSeat *s : focus()->client()->seatGlobals())
                 {
@@ -279,7 +279,7 @@ void LKeyboard::setFocus(LSurface *surface)
             // If the new surface has no wl_pointer then it is like calling setFocus(nullptr)
             imp()->keyboardFocusSurface = nullptr;
 
-            UInt32 serial = LCompositor::nextSerial();
+            UInt32 serial = LTime::nextSerial();
 
             // Pack currently pressed keys
             wl_array keys;
@@ -316,7 +316,7 @@ void LKeyboard::setFocus(LSurface *surface)
         // Remove focus from current surface
         if (focus())
         {
-            UInt32 serial = LCompositor::nextSerial();
+            UInt32 serial = LTime::nextSerial();
             for (Wayland::GSeat *s : focus()->client()->seatGlobals())
             {
                 if (s->keyboardResource())
@@ -338,7 +338,7 @@ void LKeyboard::sendKeyEvent(UInt32 keyCode, KeyState keyState)
     if (!focus())
         return;
 
-    UInt32 serial = LCompositor::nextSerial();
+    UInt32 serial = LTime::nextSerial();
     UInt32 ms = LTime::ms();
 
     if (grabbingSurface())
@@ -363,7 +363,7 @@ void LKeyboard::sendModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 lock
     if (!focus())
         return;
 
-    UInt32 serial = LCompositor::nextSerial();
+    UInt32 serial = LTime::nextSerial();
 
     if (grabbingSurface())
     {

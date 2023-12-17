@@ -736,10 +736,13 @@ public:
     /**
      * @brief Get a new positive integer number, incrementally.
      *
+     * @deprecated This method will be removed in Louvre v2.0.0-1. Use LTime::nextSerial() instead.
+     *
      * This method returns a new positive integer number each time it is called, incrementally.
      *
      * @return The next positive integer in the sequence.
      */
+    [[deprecated("This method will be removed in Louvre v2.0.0-1. Use LTime::nextSerial() instead.")]]
     static UInt32 nextSerial();
 
     /**

@@ -9,6 +9,7 @@
 #include <private/LOutputPrivate.h>
 #include <private/LKeyboardPrivate.h>
 #include <LOutputMode.h>
+#include <LTime.h>
 #include <LLog.h>
 
 void LSurface::LSurfacePrivate::setParent(LSurface *parent)
@@ -343,7 +344,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     wl_buffer_send_release(current.buffer);
     bufferReleased = true;
 
-    damageId = LCompositor::nextSerial();
+    damageId = LTime::nextSerial();
 
     damaged = true;
     surface->damageChanged();

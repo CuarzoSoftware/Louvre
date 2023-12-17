@@ -59,7 +59,7 @@ void LPointer::setFocus(LSurface *surface, const LPoint &localPos)
         {
             if (s->pointerResource())
             {
-                UInt32 serial = LCompositor::nextSerial();
+                UInt32 serial = LTime::nextSerial();
                 imp()->pointerFocusSurface = surface;
                 s->pointerResource()->imp()->serials.enter = serial;
                 s->pointerResource()->enter(serial,
@@ -118,7 +118,7 @@ void LPointer::sendButtonEvent(Button button, ButtonState state)
     {
         if (s->pointerResource())
         {
-            UInt32 serial = LCompositor::nextSerial();
+            UInt32 serial = LTime::nextSerial();
             UInt32 ms = LTime::ms();
             s->pointerResource()->imp()->serials.button = serial;
             s->pointerResource()->button(serial, ms, button, state);
@@ -396,7 +396,7 @@ void LPointer::LPointerPrivate::sendLeaveEvent(LSurface *surface)
     {
         if (s->pointerResource())
         {
-            UInt32 serial = LCompositor::nextSerial();
+            UInt32 serial = LTime::nextSerial();
             s->pointerResource()->imp()->serials.leave = serial;
             s->pointerResource()->leave(serial,
                                         surface->surfaceResource());

@@ -17,11 +17,13 @@ Louvre (1.1.0-1)
 
   * The LCompositor loadGraphicBackend() and loadInputBackend() methods now accept const std::string & as an argument instead of const char *.
   * The LToplevelRole appId() and title() methods now return const std::string & instead of const char *.
+  * The use of LCompositor::nextSerial() is now deprecated, and LTime::nextSerial() should be used instead.
   
   # Additions
 
   * Introduce LToplevelRole pendingStates() and pendingSize() methods for querying the last configure() parameters.
   * Introduce the LVersion struct and the LCompositor::version() method to facilitate querying the current Louvre version in use.
+  * Introduce the LTime nextSerial() and us() functions for obtaining incremental integer numbers and timestamps with microsecond granularity.
 
   # Internal Changes
 

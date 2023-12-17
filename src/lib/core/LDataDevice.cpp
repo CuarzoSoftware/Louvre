@@ -71,7 +71,7 @@ void LDataDevice::LDataDevicePrivate::sendDNDEnterEventS(LSurface *surface, Floa
                     for (const LDataSource::LSource &s : seat()->dndManager()->source()->sources())
                         rDataOffer->offer(s.mimeType);
 
-                    UInt32 serial = LCompositor::nextSerial();
+                    UInt32 serial = LTime::nextSerial();
 
                     d->dataDeviceResource()->imp()->serials.enter = serial;
                     d->dataDeviceResource()->enter(serial,
@@ -94,7 +94,7 @@ void LDataDevice::LDataDevicePrivate::sendDNDEnterEventS(LSurface *surface, Floa
             {
                 for (Protocols::Wayland::GSeat *d : client->seatGlobals())
                 {
-                    UInt32 serial = LCompositor::nextSerial();
+                    UInt32 serial = LTime::nextSerial();
 
                     if (d->dataDeviceResource())
                     {

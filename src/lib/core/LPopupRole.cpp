@@ -12,6 +12,7 @@
 #include <LSeat.h>
 #include <LPointer.h>
 #include <LKeyboard.h>
+#include <LTime.h>
 
 using namespace Louvre;
 
@@ -50,7 +51,7 @@ void LPopupRole::configure(const LRect &rect) const
         return;
 
     res->configure(rect.x(), rect.y(), rect.w(), rect.h());
-    res->xdgSurfaceResource()->configure(LCompositor::nextSerial());
+    res->xdgSurfaceResource()->configure(LTime::nextSerial());
 }
 
 void LPopupRole::dismiss()

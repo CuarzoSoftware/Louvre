@@ -18,6 +18,7 @@
 #include <LKeyboard.h>
 #include <LDNDManager.h>
 #include <LLog.h>
+#include <LTime.h>
 
 #include <sys/eventfd.h>
 #include <sys/poll.h>
@@ -458,7 +459,7 @@ const std::list<LClient *> &LCompositor::clients() const
 
 UInt32 LCompositor::nextSerial()
 {
-    return wl_display_next_serial(LCompositor::compositor()->display());
+    return LTime::nextSerial();
 }
 
 EGLDisplay LCompositor::eglDisplay()

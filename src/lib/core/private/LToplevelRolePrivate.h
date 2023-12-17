@@ -1,14 +1,15 @@
 #ifndef LTOPLEVELROLEPRIVATE_H
 #define LTOPLEVELROLEPRIVATE_H
 
-#include "protocols/XdgDecoration/RXdgToplevelDecoration.h"
-#include "protocols/XdgShell/RXdgSurface.h"
-#include "protocols/XdgShell/RXdgToplevel.h"
-#include <LToplevelRole.h>
-#include <LCompositor.h>
+#include <protocols/XdgDecoration/RXdgToplevelDecoration.h>
+#include <protocols/XdgShell/RXdgSurface.h>
+#include <protocols/XdgShell/RXdgToplevel.h>
 #include <protocols/XdgShell/xdg-shell.h>
 #include <private/LSeatPrivate.h>
 #include <private/LCompositorPrivate.h>
+#include <LToplevelRole.h>
+#include <LCompositor.h>
+#include <LTime.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols;
@@ -137,7 +138,7 @@ inline void sendConfiguration()
     toplevel->surface()->requestNextFrame(false);
 
     pendingSendConf.commited = false;
-    pendingSendConf.serial = LCompositor::nextSerial();
+    pendingSendConf.serial = LTime::nextSerial();
 
     if (forceRemoveActivatedFlag)
     {
