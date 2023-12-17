@@ -110,7 +110,7 @@ inline void applyPendingChanges()
     }
 }
 
-inline void configure(Int32 width, Int32 height, UInt32 stateFlags)
+inline void configure(Int32 width, Int32 height, StateFlags flags)
 {
     if (width < 0)
         width = 0;
@@ -121,7 +121,7 @@ inline void configure(Int32 width, Int32 height, UInt32 stateFlags)
     hasConfToSend = true;
     pendingSendConf.size.setW(width);
     pendingSendConf.size.setH(height);
-    pendingSendConf.flags = stateFlags;
+    pendingSendConf.flags = flags;
     compositor()->imp()->unlockPoll();
 }
 

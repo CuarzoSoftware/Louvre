@@ -143,6 +143,9 @@ void LToplevelRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrig
         surface()->imp()->applyPendingRole();
         configureRequest();
 
+        if (!imp()->hasConfToSend)
+            configure(pendingStates());
+
         // Fake set maximized or fullscreen request if called before the role was applied
         if (imp()->prevRoleRequest == LToplevelRole::Maximized)
             setMaximizedRequest();
@@ -214,6 +217,10 @@ void LToplevelRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrig
     if (!surface()->mapped() && !surface()->buffer())
     {
         configureRequest();
+
+        if (!imp()->hasConfToSend)
+            configure(pendingStates());
+            
         return;
     }
 
@@ -299,9 +306,9 @@ const LSize &LToplevelRole::minSize() const
     return imp()->currentMinSize;
 }
 
-void LToplevelRole::configure(Int32 width, Int32 height, UInt32 stateFlags)
+void LToplevelRole::configure(Int32 width, Int32 height, StateFlags flags)
 {
-    imp()->configure(width, height, stateFlags);
+    imp()->configure(width, height, flags);
 }
 
 void LToplevelRole::close() const
@@ -325,16 +332,16 @@ const LSize &LToplevelRole::pendingSize() const
     return imp()->pendingSendConf.size;
 }
 
-void LToplevelRole::configure(const LSize &size, UInt32 stateFlags)
+void LToplevelRole::configure(const LSize &size, StateFlags flags)
 {
-    imp()->configure(size.w(), size.h(), stateFlags);
+    imp()->configure(size.w(), size.h(), flags);
 }
 
-void LToplevelRole::configure(UInt32 stateFlags)
+void LToplevelRole::configure(StateFlags flags)
 {
     imp()->configure(imp()->pendingSendConf.size.w(),
                      imp()->pendingSendConf.size.h(),
-                     stateFlags);
+                     flags);
 }
 
 LSize LToplevelRole::calculateResizeSize(const LPoint &cursorPosDelta, const LSize &initialSize, ResizeEdge edge)

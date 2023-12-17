@@ -226,53 +226,61 @@ public:
     const std::string &title() const;
 
     /**
-     * @brief Get the minimum size of the window geometry in surface coordinates.
+     * @brief Get the minimum size of the toplevel in surface coordinates.
      *
-     * If one of the axis is 0, it means it has no minimum size.
+     * If one of the axis is 0, it means that axis has no expected minimum size.
      *
      * @return The minimum size as a Louvre::LSize object.
      */
     const LSize &minSize() const;
 
     /**
-     * @brief Get the maximum size of the window geometry in surface coordinates.
+     * @brief Get the maximum size of the toplevel in surface coordinates.
      *
-     * If one of the axis is 0, it means it has no maximum size.
+     * If one of the axis is 0, it means that axis has no expected maximum size.
      *
      * @return The maximum size as a Louvre::LSize object.
      */
     const LSize &maxSize() const;
 
     /**
-     * @brief Check if the toplevel window is being resized.
+     * @brief Check if the toplevel is being resized.
+     * 
+     * Equivalent to `states() & Resizing`.
      *
      * @return `true` if the toplevel is being resized; otherwise, `false`.
      */
     bool resizing() const;
 
     /**
-     * @brief Check if the toplevel window is maximized.
+     * @brief Check if the toplevel is maximized.
+     * 
+     * Equivalent to `states() & Maximized`.
      *
      * @return `true` if the toplevel is maximized; otherwise, `false`.
      */
     bool maximized() const;
 
     /**
-     * @brief Check if the toplevel window is in fullscreen mode.
+     * @brief Check if the toplevel is in fullscreen mode.
      *
+     * Equivalent to `states() & Fullscreen`.
+     * 
      * @return `true` if the toplevel is in fullscreen mode; otherwise, `false`.
      */
     bool fullscreen() const;
 
     /**
-     * @brief Check if the toplevel window is currently active.
+     * @brief Check if the toplevel is currently active.
+     * 
+     * Equivalent to `states() & Activated`.
      *
      * @return `true` if the toplevel is active; otherwise, `false`.
      */
     bool activated() const;
 
     /**
-     * @brief Get the flags representing the current state of the toplevel window.
+     * @brief Get the flags representing the current states of the toplevel.
      */
     StateFlags states() const;
 
@@ -323,10 +331,10 @@ public:
     /**
      * @brief Position of the surface according to the role.
      *
-     * The default implementation of rolePos() positions the toplevel at the position assigned by the compositor
+     * Override this virtual method if you wish to define your own logic for positioning the Toplevel.
+     * 
+     * The default implementation of rolePos() returns the position assigned by the compositor
      * with LSurface::setPos() minus the (x, y) coords of its window geometry.
-     *
-     * Reimplement this virtual method if you wish to define your own logic for positioning the Toplevel.
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp rolePos
@@ -336,7 +344,9 @@ public:
     /**
      * @brief Request to start an interactive move session
      *
-     * Reimplement this virtual method if you wish to be notified when the client wishes to start an interactive move session.
+     * Override this virtual method if you wish to be notified when the client wishes to start an interactive move session.
+     * 
+     * @see LPointer::startMovingToplevel()
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp startMoveRequest
@@ -346,7 +356,11 @@ public:
     /**
      * @brief Request to start an interactive resize session
      *
-     * Reimplement this virtual method if you want to be notified when the client wants to start an interactive resize session.
+     * Override this virtual method if you want to be notified when the client wants to start an interactive resize session.
+     * 
+     * @see LPointer::startResizingToplevel()
+     * 
+     * @param edge Which edge or corner is being dragged.
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp startResizeRequest
@@ -356,8 +370,8 @@ public:
     /**
      * @brief Resizing state change
      *
-     * Reimplement this virtual method if you want to be notified when the toplevel changes its resizing state.\n
-     * You can know if the toplevel is being resized with resizing().
+     * Override this virtual method if you want to be notified when the toplevel changes its resizing state.\n
+     * You can know if the toplevel is being resized with the resizing() property.
      *
      * #### Default implementation
      * @snippet LToplevelRoleDefault.cpp resizingChanged
@@ -367,7 +381,10 @@ public:
     /**
      * @brief Request for configuration
      *
-     * Reimplement this virtual method if you want to be notified when the client wants the compositor to configure the Toplevel.
+     * Override this virtual method if you want to be notified when the client wants the compositor to configure the Toplevel.\n
+     * This request occurs when the toplevel is created and each time it gets remapped after being previously unmapped.
+     * 
+     * @note If you do not explicitly configure the toplevel, Louvre will internally invoke `configure(pendingState())`.
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp configureRequest
@@ -377,7 +394,11 @@ public:
     /**
      * @brief Request to maximize
      *
-     * Reimplement this virtual method if you want to be notified when the client wants to maximize the Toplevel.
+     * Override this virtual method if you wish to be notified when the client intends to maximize the toplevel.\n
+     * It is recommended to respond to this request with a configure() event, preferably with the Louvre::LToplevelRole::Maximized flag. 
+     * If you have no intention of maximizing it, you may choose to ignore the request or configure it according to your preferences.
+     * 
+     * @note If you do not explicitly configure the toplevel, Louvre will internally invoke `configure(pendingState())` after this request.
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp setMaximizedRequest
@@ -387,7 +408,11 @@ public:
     /**
      * @brief Request to unmaximize
      *
-     * Reimplement this virtual method if you want to be notified when the client wants to unmaximize the Toplevel.
+     * Override this virtual method if you wish to be notified when the client intends to unmaximize the toplevel.\n
+     * It is recommended to respond to this request with a configure() event, preferably without the Louvre::LToplevelRole::Maximized flag. 
+     * If you have no intention of unmaximizing it, you may choose to ignore the request or configure it according to your preferences.
+     * 
+     * @note If you do not explicitly configure the toplevel, Louvre will internally invoke `configure(pendingState())` after this request.
      *
      * #### Default implementation
      * @snippet LToplevelRoleDefault.cpp unsetMaximizedRequest
@@ -397,13 +422,43 @@ public:
     /**
      * @brief Maximized state change
      *
-     * Reimplement this virtual method if you want to be notified when the toplevel changes its maximized state.\n
-     * You can know if the toplevel is maximized with maximized().
+     * Override this virtual method if you want to be notified when the toplevel changes its maximized state.\n
+     * You can know if the toplevel is maximized with the maximized() property.
      *
      * #### Default implementation
      * @snippet LToplevelRoleDefault.cpp maximizedChanged
      */
     virtual void maximizedChanged();
+
+    /**
+     * @brief Request to set fullscreen mode
+     *
+     * Override this virtual method if you wish to be notified when the client intends to set the toplevel into fullscreen mode.\n
+     * It is recommended to respond to this request with a configure() event, preferably with the Louvre::LToplevelRole::Fullscreen flag. 
+     * If you have no intention of setting it fullscreen, you may choose to ignore the request or configure it according to your preferences.
+     * 
+     * @note If you do not explicitly configure the toplevel, Louvre will internally invoke `configure(pendingState())` after this request.
+     *
+     * @param destOutput Output on which the client wishes to display the toplevel. If it is `nullptr` the compositor must choose the output.
+     * 
+     * #### Default implementation
+     * @snippet LToplevelRoleDefault.cpp setFullscreenRequest
+     */
+    virtual void setFullscreenRequest(LOutput *destOutput);
+
+    /**
+     * @brief Request to unset fullscreen mode
+     *
+     * Override this virtual method if you wish to be notified when the client intends to unset the toplevel fullscreen mode.\n
+     * It is recommended to respond to this request with a configure() event, preferably without the Louvre::LToplevelRole::Fullscreen flag. 
+     * If you have no intention of unsetting the fullscreen mode, you may choose to ignore the request or configure it according to your preferences.
+     * 
+     * @note If you do not explicitly configure the toplevel, Louvre will internally invoke `configure(pendingState())` after this request.
+     *
+     * #### Default implementation
+     * @snippet LToplevelRoleDefault.cpp unsetFullscreenRequest
+     */
+    virtual void unsetFullscreenRequest();
 
     /**
      * @brief Request to minimize
@@ -416,30 +471,20 @@ public:
     virtual void setMinimizedRequest();
 
     /**
-     * @brief Request to set fullscreen mode
+     * @brief Request to show a menu
      *
-     * Reimplement this virtual method if you want to be notified when the client wants to show the toplevel in fullscreen mode.
+     * Override this virtual method if you want to be notified when the client requests the compositor to show a menu
+     * containing options to minimize, maximize and change the fullscreen mode.
      *
-     * @param destOutput Output on which the toplevel should be shown. If it is `nullptr` the compositor should choose the output.
-     * #### Default implementation
-     * @snippet LToplevelRoleDefault.cpp setFullscreenRequest
+     * #### Default Implementation
+     * @snippet LToplevelRoleDefault.cpp showWindowMenuRequest
      */
-    virtual void setFullscreenRequest(LOutput *destOutput);
-
-    /**
-     * @brief Request to unset fullscreen mode
-     *
-     * Reimplement this virtual method if you want to be notified when the client wants to deactivate fullscreen mode.
-     *
-     * #### Default implementation
-     * @snippet LToplevelRoleDefault.cpp unsetFullscreenRequest
-     */
-    virtual void unsetFullscreenRequest();
+    virtual void showWindowMenuRequest(Int32 x, Int32 y);
 
     /**
      * @brief Change in fullscreen mode state
      *
-     * Reimplement this virtual method if you want to be notified when the toplevel changes its fullscreen mode state.\n
+     * Override this virtual method if you want to be notified when the toplevel changes its fullscreen mode state.\n
      * You can know if the toplevel is in fullscreen mode with fullscreen().
      *
      * #### Default Implementation
@@ -448,21 +493,10 @@ public:
     virtual void fullscreenChanged();
 
     /**
-     * @brief Request to show a menu
-     *
-     * Reimplement this virtual method if you want to be notified when the client requests the compositor to show a menu
-     * containing options to minimize, maximize and change to fullscreen mode.
-     *
-     * #### Default Implementation
-     * @snippet LToplevelRoleDefault.cpp showWindowMenuRequest
-     */
-    virtual void showWindowMenuRequest(Int32 x, Int32 y);
-
-    /**
      * @brief Change of active state
      *
-     * Reimplement this virtual method if you want to be notified when the toplevel changes its active state.\n
-     * You can check if the toplevel is active with activated().
+     * Override this virtual method if you want to be notified when the toplevel changes its active state.\n
+     * You can check if the toplevel is active with the activated() property.
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp activatedChanged
@@ -472,11 +506,11 @@ public:
     /**
      * @brief Notification of state flag changes
      *
-     * Reimplement this virtual method if you wish to receive notifications when the Toplevel's state flags change.
+     * Override this virtual method if you wish to receive notifications when the Toplevel's state flags change.
      *
      * You can access the current state flags using the states() property.
      *
-     * @note When this method is called, the pendingStates() flags are updated to match the value of states().
+     * @note When this method is called, the pendingStates() property is updated to match the value of states().
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp stateChanged
@@ -486,8 +520,8 @@ public:
     /**
      * @brief Change of maximum size
      *
-     * Reimplement this virtual method if you want to be notified when the toplevel changes its maximum size.\n
-     * You can access the maximum size with maxSize().
+     * Override this virtual method if you want to be notified when the toplevel changes its maximum size.\n
+     * You can access the maximum toplevel size with the maxSize() property.
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp maxSizeChanged
@@ -497,8 +531,8 @@ public:
     /**
      * @brief Change of minimum size
      *
-     * Reimplement this virtual method if you want to be notified when the toplevel changes its minimum size.\n
-     * You can access the minimum size with minSize().
+     * Override this virtual method if you want to be notified when the toplevel changes its minimum size.\n
+     * You can access the minimum size with the minSize() property.
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp minSizeChanged
@@ -508,8 +542,8 @@ public:
     /**
      * @brief Title change
      *
-     * Reimplement this virtual method if you want to be notified when the toplevel changes its title.
-     * You can access the Toplevel's title with title().
+     * Override this virtual method if you want to be notified when the toplevel changes its title.
+     * You can access the Toplevel's title with the title() property.
      *
      * #### Default implementation
      * @snippet LToplevelRoleDefault.cpp titleChanged
@@ -519,8 +553,8 @@ public:
     /**
      * @brief Application ID change
      *
-     * Reimplement this virtual method if you want to be notified when the client changes its application ID.
-     * You can access the application ID with appId().
+     * Override this virtual method if you want to be notified when the client changes its application ID.
+     * You can access the application ID with the appId() property.
      *
      * #### Default implementation
      * @snippet LToplevelRoleDefault.cpp appIdChanged
@@ -530,8 +564,8 @@ public:
     /**
      * @brief Window geometry change
      *
-     * Reimplement this virtual method if you want to be notified when the toplevel changes its window geometry.
-     * You can access the Toplevel's window geometry with windowGeometry().
+     * Override this virtual method if you want to be notified when the toplevel changes its window geometry.
+     * You can access the Toplevel's window geometry with the windowGeometry() property.
      *
      * #### Default implementation
      * @snippet LToplevelRoleDefault.cpp geometryChanged
@@ -541,8 +575,8 @@ public:
     /**
      * @brief Decoration mode change
      *
-     * Reimplement this virtual method if you want to be notified when the toplevel changes its decoration mode.
-     * You can access the Toplevel's decoration mode with decorationMode().
+     * Override this virtual method if you want to be notified when the toplevel changes its decoration mode.
+     * You can access the Toplevel's decoration mode with the decorationMode() property.
      *
      * #### Default implementation
      * @snippet LToplevelRoleDefault.cpp decorationModeChanged
@@ -550,8 +584,8 @@ public:
     virtual void decorationModeChanged();
 
     /**
-     * Reimplement this virtual method if you want to be notified when the toplevel changes its preferred decoration mode.
-     * You can access the Toplevel's preferred decoration mode with preferredDecorationMode().
+     * Override this virtual method if you want to be notified when the toplevel changes its preferred decoration mode.
+     * You can access the Toplevel's preferred decoration mode with the preferredDecorationMode() property.
      *
      * #### Default implementation
      * @snippet LToplevelRoleDefault.cpp preferredDecorationModeChanged

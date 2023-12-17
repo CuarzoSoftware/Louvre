@@ -151,10 +151,10 @@ void RXdgToplevel::RXdgToplevelPrivate::set_maximized(wl_client *client, wl_reso
         return;
     }
 
-    if (rXdgToplevel->toplevelRole()->maximized())
-        return;
-
     rXdgToplevel->toplevelRole()->setMaximizedRequest();
+
+    if (!lToplevel->imp()->hasConfToSend)
+        lToplevel->configure(lToplevel->pendingStates());
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::unset_maximized(wl_client *client, wl_resource *resource)
@@ -172,10 +172,10 @@ void RXdgToplevel::RXdgToplevelPrivate::unset_maximized(wl_client *client, wl_re
         return;
     }
 
-    if (!rXdgToplevel->toplevelRole()->maximized())
-        return;
-
     rXdgToplevel->toplevelRole()->unsetMaximizedRequest();
+
+    if (!lToplevel->imp()->hasConfToSend)
+        lToplevel->configure(lToplevel->pendingStates());
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::set_fullscreen(wl_client *client, wl_resource *resource, wl_resource *output)
@@ -197,34 +197,34 @@ void RXdgToplevel::RXdgToplevelPrivate::set_fullscreen(wl_client *client, wl_res
         return;
     }
 
-    if (rXdgToplevel->toplevelRole()->fullscreen())
-        return;
-
     rXdgToplevel->toplevelRole()->setFullscreenRequest(lOutput);
+
+    if (!lToplevel->imp()->hasConfToSend)
+        lToplevel->configure(lToplevel->pendingStates());
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::unset_fullscreen(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);
     RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
-    LToplevelRole *toplevel = rXdgToplevel->toplevelRole();
+    LToplevelRole *lToplevel = rXdgToplevel->toplevelRole();
 
     // Cache until role is applied
-    if (toplevel->surface()->imp()->pending.role)
+    if (lToplevel->surface()->imp()->pending.role)
     {
-        if (toplevel->imp()->prevRoleRequest == LToplevelRole::Fullscreen)
+        if (lToplevel->imp()->prevRoleRequest == LToplevelRole::Fullscreen)
         {
-            toplevel->imp()->prevRoleRequest = 0;
-            toplevel->imp()->prevRoleFullscreenRequestOutput = nullptr;
+            lToplevel->imp()->prevRoleRequest = 0;
+            lToplevel->imp()->prevRoleFullscreenRequestOutput = nullptr;
         }
 
         return;
     }
 
-    if (!rXdgToplevel->toplevelRole()->fullscreen())
-        return;
-
     rXdgToplevel->toplevelRole()->unsetFullscreenRequest();
+
+    if (!lToplevel->imp()->hasConfToSend)
+        lToplevel->configure(lToplevel->pendingStates());
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::set_minimized(wl_client *client, wl_resource *resource)
