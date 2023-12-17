@@ -76,14 +76,14 @@ public:
     };
 
     /**
-     * @brief Toplevel states bitfield
+     * @brief Toplevel state bitfield
      */
-    typedef UInt32 States;
+    typedef UInt32 StateFlags;
 
     /**
      * @brief Flags indicating the possible states of a Toplevel.
      */
-    enum State : States
+    enum State : StateFlags
     {
         /// No state
         NoState     = 0,
@@ -129,34 +129,34 @@ public:
     /**
      * @brief Configures the Toplevel.
      *
-     * Requests to change the states of the toplevel while keeping its current size.\n
+     * Requests to change the state flags of the toplevel while keeping its pending size (pendingSize()).\n
      *
-     * @param stateFlags Union of toplevel states defined in #States.
+     * @param flags Union of toplevel state flags defined in #State.
      */
-    void configure(States stateFlags);
+    void configure(StateFlags flags);
 
     /**
      * @brief Configures the Toplevel.
      *
-     * Requests to change the size and states of the Toplevel.\n
+     * Requests to change the size and state flags of the Toplevel.\n
      * The size refers to its window geometry (ignoring its decoration).
      *
      * @param size Requested size. Passing (0,0) allows the client to decide the size.
-     * @param stateFlags Union of toplevel states defined in #States.
+     * @param flags Union of toplevel state flags defined in #States.
      */
-    void configure(const LSize &size, States stateFlags);
+    void configure(const LSize &size, StateFlags flags);
 
     /**
      * @brief Configures the Toplevel.
      *
-     * Requests to change the size and states of the Toplevel.\n
+     * Requests to change the size and state flags of the Toplevel.\n
      * The size refers to its window geometry (ignoring its decoration).
      *
      * @param width Suggested width. Passing (0,0) allows the client to decide the size.
      * @param height Suggested height. Passing (0,0) allows the client to decide the size.
-     * @param stateFlags Union of toplevel states defined in #States.
+     * @param flags Union of toplevel state flags defined in #States.
      */
-    void configure(Int32 width, Int32 height, States stateFlags);
+    void configure(Int32 width, Int32 height, StateFlags flags);
 
     /**
      * @brief Closes the Toplevel.
@@ -170,9 +170,24 @@ public:
      *
      * <center><img height="300px" src="https://lh3.googleusercontent.com/pw/AIL4fc_le5DeTa6b-yBnChX6YPbkr12gAp38ghVyvsv4SjHCd2L4fTL8agYls0AcGlBeplJyc0FNQCIeb6sR4WbSUyAHM4_LrKLNjhZ0SniRdaSUsjS9IGQ=w2400"></center>
      *
-     * The window geometry is a toplevel rectangle that excludes its decorations (typically shadows).     *
+     * The window geometry is a toplevel rectangle that excludes its decorations (typically shadows).
      */
     const LRect &windowGeometry() const;
+
+    /**
+     * @brief Retrieve the current size in surface coordinates.
+     *
+     * This size corresponds to the value returned by `windowGeometry().size()`.
+     */
+    const LSize &size() const;
+
+    /**
+     * @brief Retrieve the size of the last configure() event.
+     *
+     * This size corresponds to the size of the most recent configure() event.
+     * When a configuration event is acknowledged, this size is updated to match the current size (size()).
+     */
+    const LSize &pendingSize() const;
 
     /**
      * @brief Size during a resizing session
@@ -257,11 +272,16 @@ public:
     bool activated() const;
 
     /**
-     * @brief Get the flags representing the current states of the toplevel window.
-     *
-     * @return The states of the toplevel window as a #States bitfield.
+     * @brief Get the flags representing the current state of the toplevel window.
      */
-    States states() const;
+    StateFlags states() const;
+
+    /**
+     * @brief Retrieve the state flags of the last configure() event.
+     *
+     * Once a configuration event is acknowledged, these flags are updated to match the current states (states()).
+     */
+    StateFlags pendingStates() const;
 
     /**
      * @brief Request the client to change its decoration mode.
@@ -450,14 +470,16 @@ public:
     virtual void activatedChanged();
 
     /**
-     * @brief Notification of State Changes
+     * @brief Notification of state flag changes
      *
-     * Reimplement this virtual method if you wish to receive notifications when the Toplevel's states flags change.
+     * Reimplement this virtual method if you wish to receive notifications when the Toplevel's state flags change.
      *
-     * You can access the Toplevel's state flags using the states() property.
+     * You can access the current state flags using the states() property.
+     *
+     * @note When this method is called, the pendingStates() flags are updated to match the value of states().
      *
      * #### Default Implementation
-     * @snippet LToplevelRoleDefault.cpp statesChanged
+     * @snippet LToplevelRoleDefault.cpp stateChanged
      */
     virtual void statesChanged();
 

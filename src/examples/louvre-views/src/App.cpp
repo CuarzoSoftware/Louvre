@@ -159,7 +159,7 @@ void App::clicked()
                     }
                     else
                     {
-                        surf->toplevel()->configure(surf->toplevel()->states() | LToplevelRole::Activated);
+                        surf->toplevel()->configure(surf->toplevel()->pendingStates() | LToplevelRole::Activated);
                         surf->raise();
 
                         if (surf->getView()->parent() != &G::compositor()->surfacesLayer)

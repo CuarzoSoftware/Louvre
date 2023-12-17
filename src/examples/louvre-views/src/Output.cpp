@@ -108,7 +108,7 @@ void Output::updateWorkspacesPos()
             ws->setPos(offset, 0);
 
             if (ws->toplevel)
-                ws->toplevel->configure(size(), ws->toplevel->states());
+                ws->toplevel->configure(size(), ws->toplevel->pendingStates());
         }
 
         offset += size().w() + spacing;
@@ -243,7 +243,7 @@ void Output::initializeGL()
 
                 seat()->pointer()->setFocus(tl->surface());
                 seat()->keyboard()->setFocus(tl->surface());
-                tl->configure(tl->states() | LToplevelRole::Activated);
+                tl->configure(tl->pendingStates() | LToplevelRole::Activated);
             }
 
             if (animatedFullscreenToplevel)

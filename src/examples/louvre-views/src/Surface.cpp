@@ -188,7 +188,7 @@ void Surface::mappingChanged()
             seat()->pointer()->setFocus(nullptr);
 
         if (toplevel() && toplevel()->fullscreen())
-            toplevel()->configure(toplevel()->states() &~LToplevelRole::Fullscreen);
+            toplevel()->configure(toplevel()->pendingStates() &~LToplevelRole::Fullscreen);
 
         view->repaint();
     }
@@ -324,7 +324,7 @@ void Surface::minimizedChanged()
         minimizeAnim->start();
 
         if (toplevel())
-            toplevel()->configure(toplevel()->states() &~LToplevelRole::Activated);
+            toplevel()->configure(toplevel()->pendingStates() &~LToplevelRole::Activated);
     }
     else
     {
@@ -360,7 +360,7 @@ void Surface::minimizedChanged()
         raise();
 
         if (toplevel())
-            toplevel()->configure(toplevel()->states() | LToplevelRole::Activated);
+            toplevel()->configure(toplevel()->pendingStates() | LToplevelRole::Activated);
 
         getView()->setVisible(true);
         getView()->enableInput(true);

@@ -473,6 +473,7 @@ EGLContext LCompositor::eglContext()
 
 void LCompositor::flushClients()
 {
+    compositor()->imp()->sendPendingToplevelsConfiguration();
     wl_display_flush_clients(LCompositor::display());
 }
 

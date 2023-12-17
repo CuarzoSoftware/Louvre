@@ -15,16 +15,18 @@ Louvre (1.1.0-1)
 
   # Minor API Changes
 
-  * The LCompositor loadGraphicBackend() and loadInputBackend() methods now accept std::string as an argument instead of const char *.
-  * The LToplevelRole appId() and title() methods now return std::string & instead of const char *.
-
+  * The LCompositor loadGraphicBackend() and loadInputBackend() methods now accept const std::string & as an argument instead of const char *.
+  * The LToplevelRole appId() and title() methods now return const std::string & instead of const char *.
+  
   # Additions
 
+  * Introduce LToplevelRole pendingStates() and pendingSize() methods for querying the last configure() parameters.
   * Introduce the LVersion struct and the LCompositor::version() method to facilitate querying the current Louvre version in use.
 
   # Internal Changes
 
   * Error and fatal messages from LLog are now directed to stderr, thanks to @brianhsu.
+  * LToplevelRole configure events are now stored and dispatched at the conclusion of a main loop iteration.
 
  -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Sat, 16 Dec 2023 15:51:55 -0300
 

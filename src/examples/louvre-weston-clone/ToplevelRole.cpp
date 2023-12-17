@@ -10,7 +10,7 @@ ToplevelRole::ToplevelRole(Params *params) : LToplevelRole(params) {}
 void ToplevelRole::configureRequest()
 {
     setDecorationMode(ClientSide);
-    configure(0, Activated | states());
+    configure(0, Activated | pendingStates());
 }
 
 void ToplevelRole::setMaximizedRequest()

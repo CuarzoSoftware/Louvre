@@ -220,7 +220,7 @@ void LPointer::stopResizingToplevel()
     {
         updateResizingToplevelSize(cursor()->pos());
         updateResizingToplevelPos();
-        resizingToplevel()->configure(0, resizingToplevel()->states() &~ LToplevelRole::Resizing);
+        resizingToplevel()->configure(0, resizingToplevel()->pendingStates() &~ LToplevelRole::Resizing);
         imp()->resizingToplevel = nullptr;
     }
 }

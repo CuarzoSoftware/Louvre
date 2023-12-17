@@ -122,6 +122,8 @@ LPRIVATE_CLASS(LCompositor)
                 greatestOutputScale = o->scale();
         }
     }
+
+    void sendPendingToplevelsConfiguration();
 };
 
 #endif // LCOMPOSITORPRIVATE_H

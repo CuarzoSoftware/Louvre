@@ -130,7 +130,7 @@ static void onPointerButtonResizeArea(InputRect *rect, void *data, LPointer::But
         view->seat()->keyboard()->setFocus(toplevel->surface());
 
         if (!toplevel->activated())
-            toplevel->configure(toplevel->states() | LToplevelRole::Activated);
+            toplevel->configure(toplevel->pendingStates() | LToplevelRole::Activated);
         toplevel->surface()->raise();
 
         if (data)

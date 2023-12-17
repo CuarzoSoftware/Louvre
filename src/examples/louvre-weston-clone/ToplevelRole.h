@@ -20,7 +20,7 @@ public:
     void startResizeRequest(ResizeEdge edge) override;
 
     LRect rectBeforeFullscreen;
-    States statesBeforeFullscreen;
+    StateFlags statesBeforeFullscreen;
 };
 
 #endif // TOPLEVELROLE_H

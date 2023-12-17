@@ -77,7 +77,7 @@ void Pointer::pointerMoveEvent(Float32 x, Float32 y, bool absolute)
         movingToplevel()->surface()->repaintOutputs();
 
         if (movingToplevel()->maximized())
-            movingToplevel()->configure(movingToplevel()->states() &~ LToplevelRole::Maximized);
+            movingToplevel()->configure(movingToplevel()->pendingStates() &~ LToplevelRole::Maximized);
 
         return;
     }
@@ -193,7 +193,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
             seat()->keyboard()->setFocus(focus());
 
         if (focus()->toplevel() && !focus()->toplevel()->activated())
-            focus()->toplevel()->configure(focus()->toplevel()->states() | LToplevelRole::Activated);
+            focus()->toplevel()->configure(focus()->toplevel()->pendingStates() | LToplevelRole::Activated);
 
         // Raise surface
         if (focus() == compositor()->surfaces().back())

@@ -6,6 +6,7 @@
 #include <private/LPainterPrivate.h>
 #include <private/LCursorPrivate.h>
 #include <private/LAnimationPrivate.h>
+#include <private/LToplevelRolePrivate.h>
 #include <LTime.h>
 #include <LLog.h>
 #include <EGL/egl.h>
@@ -730,4 +731,11 @@ LPainter *LCompositor::LCompositorPrivate::findPainter()
     }
 
     return painter;
+}
+
+void LCompositor::LCompositorPrivate::sendPendingToplevelsConfiguration()
+{
+    for (LSurface *s : surfaces)
+        if (s->toplevel())
+            s->toplevel()->imp()->sendConfiguration();
 }
