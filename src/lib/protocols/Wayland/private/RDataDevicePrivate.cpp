@@ -39,22 +39,21 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
     L_UNUSED(client);
     L_UNUSED(serial);
 
+    RDataSource *rDataSource = nullptr;
     RDataDevice *rDataDevice = (RDataDevice*)wl_resource_get_user_data(resource);
-
-    /* TODO: Use serial
-    if (!rDataDevice->seatGlobal()->pointerResource() || rDataDevice->seatGlobal()->pointerResource()->serials().button != serial)
-    {
-        LLog::debug("[RDataDevicePrivate::start_drag] Start drag request without input grab. Ignoring it.");
-        return;
-    }*/
-
     RSurface *rOriginSurface = (RSurface*)wl_resource_get_user_data(origin);
     LSurface *lOriginSurface = rOriginSurface->surface();
     LDNDManager *dndManager = seat()->dndManager();
 
+    if (source)
+        rDataSource = (RDataSource*)wl_resource_get_user_data(source);
+
     // Cancel if there is dragging going on or if there is no focused surface from this client
     if (dndManager->dragging() || seat()->pointer()->focus() != lOriginSurface)
     {
+        if (rDataSource)
+            rDataSource->cancelled();
+
         LLog::debug("[RDataDevicePrivate::start_drag] Invalid start drag request. Ignoring it.");
         return;
     }

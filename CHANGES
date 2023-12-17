@@ -34,6 +34,7 @@ Louvre (1.1.0-1)
   # Bug Fixes
 
   * Addressed a bug in LPainter::clearScreen() where it failed to clear the entire screen when the current framebuffer transform differed from LFramebuffer::Transform::Normal.
+  * Addressed a bug where the data source cancelled event wasn't sent to the client when start drag & drop sessions were denied.
 
  -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Sat, 16 Dec 2023 15:51:55 -0300
 
