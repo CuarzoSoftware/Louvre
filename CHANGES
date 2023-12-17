@@ -13,6 +13,11 @@ Louvre (1.1.0-1)
   * Substituted LConfig.h configuration header with LCompositor methods for querying default assets paths and backends.
   * Incorporated soversion in meson.build.
 
+  # Minor API Changes
+
+  * The LCompositor loadGraphicBackend() and loadInputBackend() methods now accept std::string as an argument instead of const char *.
+  * The LToplevelRole appId() and title() methods now return std::string & instead of const char *.
+
   # Additions
 
   * Introduce the LVersion struct and the LCompositor::version() method to facilitate querying the current Louvre version in use.

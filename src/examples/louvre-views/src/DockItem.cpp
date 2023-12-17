@@ -32,7 +32,7 @@ void DockItem::pointerEnterEvent(const LPoint &localPos)
 
     if (surface->toplevel())
     {
-        G::tooltip()->setText(surface->toplevel()->title());
+        G::tooltip()->setText(surface->toplevel()->title().c_str());
         G::tooltip()->targetView = this;
         dock->update();
     }

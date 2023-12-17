@@ -412,17 +412,17 @@ void ToplevelView::updateTitle()
 
     if (title->texture())
     {
-        titleWidth = G::font()->semibold->calculateTextureSize(toplevel->title(), 28).w();
+        titleWidth = G::font()->semibold->calculateTextureSize(toplevel->title().c_str(), 28).w();
 
         if (titleWidth != title->texture()->sizeB().w() || titleWidth > maxWidth)
         {
             delete title->texture();
-            title->setTexture(G::font()->semibold->renderText(toplevel->title(), 28, maxWidth));
+            title->setTexture(G::font()->semibold->renderText(toplevel->title().c_str(), 28, maxWidth));
         }
     }
     else
     {
-        title->setTexture(G::font()->semibold->renderText(toplevel->title(), 28, maxWidth));
+        title->setTexture(G::font()->semibold->renderText(toplevel->title().c_str(), 28, maxWidth));
     }
 
     updateGeometry();
