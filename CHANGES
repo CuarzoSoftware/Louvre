@@ -29,6 +29,10 @@ Louvre (1.1.0-1)
   * LToplevelRole configure events are now stored and dispatched at the conclusion of a main loop iteration.
   * Toplevels are now automatically configured with the pending states and size if the developer does not explicitly configure them during set or unset fullscreen or maximize requests.
 
+  # Bug Fixes
+
+  * Addressed a bug in LPainter::clearScreen() where it failed to clear the entire screen when the current framebuffer transform differed from LFramebuffer::Transform::Normal.
+
  -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Sat, 16 Dec 2023 15:51:55 -0300
 
 
