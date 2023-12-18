@@ -61,6 +61,7 @@ LPRIVATE_CLASS(LSurface)
     LTexture *textureBackup;
     LSurface *parent                                    = nullptr;
     LSurface *pendingParent                             = nullptr;
+    std::list<LSurfaceView*> views;
     std::list<LSurface*> children;
     std::list<LSurface*> pendingChildren;
     std::list<LSurface*>::iterator parentLink;

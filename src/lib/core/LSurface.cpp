@@ -1,6 +1,7 @@
 #include <protocols/LinuxDMABuf/private/LDMABufferPrivate.h>
 #include <protocols/Wayland/RCallback.h>
 #include <protocols/Wayland/GOutput.h>
+#include <private/LSurfaceViewPrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
@@ -19,6 +20,9 @@ LSurface::LSurface(LSurface::Params *params) : LPRIVATE_INIT_UNIQUE(LSurface)
 LSurface::~LSurface()
 {
     imp()->lastPointerEventView = nullptr;
+
+    for (LSurfaceView *view : imp()->views)
+        view->imp()->surface = nullptr;
 
     if (imp()->texture && imp()->texture != imp()->textureBackup && imp()->texture->imp()->pendingDelete)
         delete imp()->texture;
@@ -296,6 +300,11 @@ bool LSurface::mapped() const
     return imp()->mapped;
 }
 
+const std::list<LSurfaceView *> &LSurface::views() const
+{
+    return imp()->views;
+}
+
 Wayland::RSurface *LSurface::surfaceResource() const
 {
     return imp()->surfaceResource;
@@ -404,7 +413,7 @@ void LSurface::raise()
     compositor()->imp()->raiseChildren(this);
 }
 
-Louvre::LSurface *LSurface::prevSurface() const
+LSurface *LSurface::prevSurface() const
 {
     if (imp()->destroyed || this == compositor()->surfaces().front())
         return nullptr;
@@ -412,7 +421,7 @@ Louvre::LSurface *LSurface::prevSurface() const
         return *std::prev(imp()->compositorLink);
 }
 
-Louvre::LSurface *LSurface::nextSurface() const
+LSurface *LSurface::nextSurface() const
 {
     if (imp()->destroyed || this == compositor()->surfaces().back())
         return nullptr;

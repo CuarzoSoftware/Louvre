@@ -8,6 +8,8 @@ using namespace Louvre;
 
 LPRIVATE_CLASS(LSurfaceView)
     LSurface *surface;
+    std::list<LSurfaceView*>::iterator surfaceLink;
+
     LRegion *customInputRegion = nullptr;
     LRegion *customTranslucentRegion = nullptr;
     LPoint customPos;

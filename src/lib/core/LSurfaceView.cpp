@@ -1,8 +1,8 @@
 #include <private/LSurfaceViewPrivate.h>
 #include <private/LViewPrivate.h>
 #include <private/LPainterPrivate.h>
+#include <private/LSurfacePrivate.h>
 #include <LSubsurfaceRole.h>
-#include <LSurface.h>
 #include <LOutput.h>
 
 using namespace Louvre;
@@ -12,6 +12,8 @@ LSurfaceView::LSurfaceView(LSurface *surface, LView *parent) :
     LPRIVATE_INIT_UNIQUE(LSurfaceView)
 {
     imp()->surface = surface;
+    surface->imp()->views.push_back(this);
+    imp()->surfaceLink = std::prev(surface->imp()->views.end());
     enableInput(true);
 }
 
@@ -22,6 +24,14 @@ LSurfaceView::~LSurfaceView()
 
     if (imp()->customTranslucentRegion)
         delete imp()->customTranslucentRegion;
+
+    if (surface())
+    {
+        surface()->imp()->views.erase(imp()->surfaceLink);
+
+        if (surface()->imp()->lastPointerEventView == this)
+            surface()->imp()->lastPointerEventView = nullptr;
+    }
 }
 
 LSurface *LSurfaceView::surface() const
@@ -149,31 +159,40 @@ void LSurfaceView::setCustomTranslucentRegion(const LRegion *region)
 
 bool LSurfaceView::nativeMapped() const
 {
-    return surface()->mapped();
+    if (!imp()->surface)
+        return false;
+
+    return imp()->surface->mapped();
 }
 
 const LPoint &LSurfaceView::nativePos() const
 {
-    if (customPosEnabled())
+    if (customPosEnabled() || !imp()->surface)
         return imp()->customPos;
 
-    return surface()->rolePos();
+    return imp()->surface->rolePos();
 }
 
 const LSize &LSurfaceView::nativeSize() const
 {
-    return surface()->size();
+    if (!imp()->surface)
+        return imp()->customPos;
+
+    return imp()->surface->size();
 }
 
 Int32 LSurfaceView::bufferScale() const
 {
-    return surface()->bufferScale();
+    if (!imp()->surface)
+        return 1;
+
+    return imp()->surface->bufferScale();
 }
 
 void LSurfaceView::enteredOutput(LOutput *output)
 {
-    if (primary())
-        surface()->sendOutputEnterEvent(output);
+    if (imp()->primary && imp()->surface)
+        imp()->surface->sendOutputEnterEvent(output);
     else
     {
         imp()->nonPrimaryOutputs.remove(output);
@@ -183,16 +202,16 @@ void LSurfaceView::enteredOutput(LOutput *output)
 
 void LSurfaceView::leftOutput(LOutput *output)
 {
-    if (primary())
-        surface()->sendOutputLeaveEvent(output);
+    if (imp()->primary && imp()->surface)
+        imp()->surface->sendOutputLeaveEvent(output);
     else
         imp()->nonPrimaryOutputs.remove(output);
 }
 
 const std::list<LOutput *> &LSurfaceView::outputs() const
 {
-    if (primary())
-        return surface()->outputs();
+    if (imp()->primary && imp()->surface)
+        return imp()->surface->outputs();
     else
         return imp()->nonPrimaryOutputs;
 }
@@ -204,16 +223,19 @@ bool LSurfaceView::isRenderable() const
 
 void LSurfaceView::requestNextFrame(LOutput *output)
 {
+    if (!imp()->surface || !output)
+        return;
+
     LView *view = this;
 
     if (forceRequestNextFrameEnabled())
     {
-        surface()->requestNextFrame();
-        view->imp()->threadsMap[output->threadId()].lastRenderedDamageId = surface()->damageId();
+        imp()->surface->requestNextFrame();
+        view->imp()->threadsMap[output->threadId()].lastRenderedDamageId = imp()->surface->damageId();
         return;
     }
 
-    if (!primary())
+    if (!imp()->primary)
         return;
 
     bool clearDamage = true;
@@ -222,7 +244,7 @@ void LSurfaceView::requestNextFrame(LOutput *output)
     {
         // If the view is visible on another output and has not rendered the new damage
         // prevent clearing the damage immediately
-        if (o != output && (view->imp()->threadsMap[o->threadId()].lastRenderedDamageId < surface()->damageId()))
+        if (o != output && (view->imp()->threadsMap[o->threadId()].lastRenderedDamageId < imp()->surface->damageId()))
         {
             clearDamage = false;
             o->repaint();
@@ -231,42 +253,45 @@ void LSurfaceView::requestNextFrame(LOutput *output)
 
     if (clearDamage)
     {
-        surface()->requestNextFrame();
+        imp()->surface->requestNextFrame();
 
-        if (surface()->subsurface() && surface()->subsurface()->isSynced() && surface()->parent())
-            surface()->parent()->requestNextFrame(false);
+        if (imp()->surface->subsurface() && imp()->surface->subsurface()->isSynced() && imp()->surface->parent())
+            imp()->surface->parent()->requestNextFrame(false);
     }
 
-    view->imp()->threadsMap[output->threadId()].lastRenderedDamageId = surface()->damageId();
+    view->imp()->threadsMap[output->threadId()].lastRenderedDamageId = imp()->surface->damageId();
 }
 
 const LRegion *LSurfaceView::damage() const
 {
-    return &surface()->damage();
+    if (!imp()->surface)
+        return nullptr;
+
+    return &imp()->surface->damage();
 }
 
 const LRegion *LSurfaceView::translucentRegion() const
 {
-    if (imp()->customTranslucentRegionEnabled)
+    if (imp()->customTranslucentRegionEnabled || !imp()->surface)
         return imp()->customTranslucentRegion;
 
-    return &surface()->translucentRegion();
+    return &imp()->surface->translucentRegion();
 }
 
 const LRegion *LSurfaceView::opaqueRegion() const
 {
-    if (imp()->customTranslucentRegionEnabled)
+    if (imp()->customTranslucentRegionEnabled || !imp()->surface)
         return nullptr;
 
-    return &surface()->opaqueRegion();
+    return &imp()->surface->opaqueRegion();
 }
 
 const LRegion *LSurfaceView::inputRegion() const
 {
-    if (customInputRegionEnabled())
+    if (customInputRegionEnabled() || !imp()->surface)
         return imp()->customInputRegion;
 
-    return &surface()->inputRegion();
+    return &imp()->surface->inputRegion();
 }
 
 void LSurfaceView::paintRect(const PaintRectParams &params)

@@ -30,6 +30,7 @@ Louvre (1.1.0-1)
   * Introduce the PaintRectParams struct to LView for utilization in LView::paintRect() calls from an LScene, aiming to reduce the memory transfer overhead associated with each call.
   * Introduce the enableAutoBlendFunc() option to LView to enable Louvre to automatically select the OpenGL blend function based on whether the target framebuffer is an output framebuffer or a custom framebuffer. This addition aims to address and resolve alpha-related issues while rendering.
   * Add pressedButtons() and isButtonPressed() methods to LPointer, providing the ability to query the state of pointer buttons at any given time.
+  * The LSurface class now features the views() method, providing access to all LSurfaceViews created for the surface.
 
   # Internal Changes
 
