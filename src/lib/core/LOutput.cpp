@@ -23,6 +23,7 @@
 #include <LTime.h>
 #include <LLog.h>
 #include <LOutputFramebuffer.h>
+#include <string>
 
 using namespace Louvre;
 

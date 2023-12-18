@@ -3,7 +3,9 @@
 
 #include <protocols/Wayland/wayland.h>
 #include <list>
+#include <vector>
 #include <memory>
+#include <string>
 
 #define LOUVRE_MAX_SURFACE_SIZE 10000000
 #define LOUVRE_GLOBAL_ITERS_BEFORE_DESTROY 5
