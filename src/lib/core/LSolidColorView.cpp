@@ -1,5 +1,6 @@
 #include <private/LSolidColorViewPrivate.h>
 #include <private/LPainterPrivate.h>
+#include <private/LViewPrivate.h>
 
 Louvre::LSolidColorView::LSolidColorView(LView *parent) :
     LView(LView::SolidColor, parent),
@@ -29,14 +30,18 @@ LSolidColorView::~LSolidColorView() {}
 
 void LSolidColorView::setColor(const LRGBF &color)
 {
-    imp()->color = color;
-    repaint();
+    setColor(color.r, color.g, color.b);
 }
 
 void LSolidColorView::setColor(Float32 r, Float32 g, Float32 b)
 {
-    imp()->color = {r,g,b};
-    repaint();
+    if (imp()->color.r != r || imp()->color.g != g || imp()->color.b != b)
+    {
+        imp()->color = {r, g, b};
+        LView *nativeView = this;
+        nativeView->imp()->markAsChangedOrder(false);
+        repaint();
+    }
 }
 
 const LRGBF &LSolidColorView::color() const
