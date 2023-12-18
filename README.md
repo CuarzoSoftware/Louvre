@@ -74,6 +74,35 @@ Within Louvre, you have the flexibility to either employ your own OpenGL ES 2.0 
 
 Louvre offers excellent performance. A benchmark consisting of rendering numerous moving [wl_subsurfaces](https://wayland.app/protocols/wayland#wl_subsurface) (opaque and translucent), in which the [louvre-weston-clone](https://cuarzosoftware.github.io/Louvre/md_md__examples.html#weston) example compositor was tested, shows that Louvre can maintain a high FPS rate even in complex scenarios. Furthermore, it uses fewer CPU and GPU resources than popular compositors like Weston and Sway.
 
+#### Benchmark Environment
+
+<table>
+  <tr>
+    <td><strong>Machine</strong></td>
+    <td>MacBook Pro A1398 (Retina, 15-inch, Mid 2015)</td>
+  </tr>
+  <tr>
+    <td><strong>CPU</strong></td>
+    <td>Intel Core i7-4770HQ @ 2.20GHz (up to 3.4GHz) with 6MB shared L3 cache</td>
+  </tr>
+  <tr>
+    <td><strong>Memory</strong></td>
+    <td>16GB of 1600MHz DDR3L</td>
+  </tr>
+  <tr>
+    <td><strong>GPU</strong></td>
+    <td>Intel Iris Pro Graphics - i915 (Intel Graphics) version 1.6.0 (20201103)</td>
+  </tr>
+  <tr>
+    <td><strong>Display</strong></td>
+    <td>15-inch Retina Display with single mode 2880x1800@60Hz</td>
+  </tr>
+  <tr>
+    <td><strong>OS</strong></td>
+    <td>Linux Mint 21 - Linux 5.15.0-86-generic</td>
+  </tr>
+</table>
+
 > If you're interested in the details of how the benchmark operates and would like to try it yourself, please refer to [this link](https://github.com/CuarzoSoftware/Louvre/tree/main/src/benchmark).
 
 Here is a graph illustrating the benchmark results. It displays the average FPS of each compositor rendering 1 to 50 moving surfaces using double buffering on a HiDPI display.
@@ -101,6 +130,7 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 
 * Touch Events
 * Pointer Gestures
+* Relative Pointer
 * Viewporter
 * LView transforms
 * LView src rect

@@ -46,7 +46,12 @@ Louvre (1.1.0-1)
   * Addressed a bug where the data source cancelled event wasn't sent to the client when start drag & drop sessions were denied.
   * Resolved a bug where LSolidColorViews were not marked as damaged when their color was changed.
 
- -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Sat, 16 Dec 2023 15:51:55 -0300
+  # Benchmark
+
+  * Include details about the environment in which the benchmark was conducted.
+  * Enhance benchmark scripts to more safely retrieve the compositors' process IDs.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Mon, 18 Dec 2023 19:06:14 -0300
 
 
 Louvre (1.0.1-1)
