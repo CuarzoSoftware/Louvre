@@ -1,4 +1,5 @@
 #include <LCompositor.h>
+#include <LLauncher.h>
 #include <LLog.h>
 #include <unistd.h>
 
@@ -14,6 +15,8 @@ int main(int, char *[])
 
     if (display)
         setenv("DISPLAY", display, 1);
+
+    LLauncher::startDaemon();
 
     LCompositor compositor;
 

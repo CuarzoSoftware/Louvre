@@ -10,7 +10,7 @@
 #include <LDNDIconRole.h>
 #include <LPointer.h>
 #include <LCompositor.h>
-
+#include <LLauncher.h>
 #include <unistd.h>
 
 using LVS = LView::LViewPrivate::LViewState;
@@ -409,10 +409,7 @@ void LScene::handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState)
     {
         // Launches weston-terminal
         if (keyCode == KEY_F1 && !mods)
-        {
-            if (fork() == 0)
-                exit(system("weston-terminal"));
-        }
+            LLauncher::launch("weston-terminal");
 
         // CTRL sets Copy as the preferred action in drag & drop sesión
         if (L_CTRL)

@@ -6,6 +6,7 @@
 #include <LSeat.h>
 #include <LTime.h>
 #include <LCursor.h>
+#include <LLauncher.h>
 #include <cstdio>
 #include <math.h>
 #include <unistd.h>
@@ -125,10 +126,7 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
         seat()->dndManager()->drop();
 
         if (pointerOverTerminalIcon)
-        {
-            if (fork() == 0)
-                exit(system("weston-terminal"));
-        }
+            LLauncher::launch("weston-terminal");
     }
 
     if (!focus() && !pointerOverTerminalIcon)

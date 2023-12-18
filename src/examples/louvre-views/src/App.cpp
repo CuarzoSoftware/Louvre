@@ -2,6 +2,7 @@
 #include <LOpenGL.h>
 #include <LTexture.h>
 #include <LCursor.h>
+#include <LLauncher.h>
 #include <unistd.h>
 #include "Global.h"
 #include "App.h"
@@ -120,12 +121,7 @@ void App::clicked()
         });
 
         launchAnimation->start(true);
-
-        pid = fork();
-
-        if (pid == 0)
-            exit(system(exec));
-
+        pid = LLauncher::launch(exec);
         state = Launching;
     }
     else if (state == Running)

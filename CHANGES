@@ -24,6 +24,7 @@ Louvre (1.1.0-1)
   * Introduce LToplevelRole pendingStates() and pendingSize() methods for querying the last configure() parameters.
   * Introduce the LVersion struct and the LCompositor::version() method to facilitate querying the current Louvre version in use.
   * Introduce the LTime nextSerial() and us() functions for obtaining incremental integer numbers and timestamps with microsecond granularity.
+  * Introduce the LLauncher auxiliary class, designed for creating a daemon and safely launching applications.
 
   # Internal Changes
 
