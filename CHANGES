@@ -18,6 +18,7 @@ Louvre (1.1.0-1)
   * The LCompositor loadGraphicBackend() and loadInputBackend() methods now accept const std::string & as an argument instead of const char *.
   * The LToplevelRole appId() and title() methods now return const std::string & instead of const char *.
   * The use of LCompositor::nextSerial() is now deprecated, and LTime::nextSerial() should be used instead.
+  * LView::paintRect() now takes an LView::PaintRectParams struct reference as an argument, eliminating the need to pass all parameters by value.
   
   # Additions
 
@@ -25,6 +26,7 @@ Louvre (1.1.0-1)
   * Introduce the LVersion struct and the LCompositor::version() method to facilitate querying the current Louvre version in use.
   * Introduce the LTime nextSerial() and us() functions for obtaining incremental integer numbers and timestamps with microsecond granularity.
   * Introduce the LLauncher auxiliary class, designed for creating a daemon and safely launching applications.
+  * Introduce the PaintRectParams struct to LView for utilization in LView::paintRect() calls from an LScene, aiming to reduce the memory transfer overhead associated with each call.
 
   # Internal Changes
 

@@ -96,6 +96,46 @@
 class Louvre::LView : public LObject
 {
 public:
+
+    /**
+     * @brief Parameters used within a paintRect() event.
+     */
+    struct PaintRectParams
+    {
+        /// LPainter object to perform the painting.
+        LPainter *p;
+
+        /// x-surface-coordinate within the view to draw.
+        Int32 srcX;
+
+        /// y-surface-coordinate within the view to draw.
+        Int32 srcY;
+
+        /// The source width-surface-coordinate within the view to draw.
+        Int32 srcW;
+
+        /// The source height-surface-coordinate within the view to draw.
+        Int32 srcH;
+
+        /// The destination x-surface-coordinate within the output to paint on.
+        Int32 dstX;
+
+        /// The destination y-surface-coordinate within the output to paint on.
+        Int32 dstY;
+
+        /// The destination width-surface-coordinate within the output to paint on.
+        Int32 dstW;
+
+        /// The destination height-surface-coordinate within the output to paint on.
+        Int32 dstH;
+
+        /// The scaling factor to be applied during painting.
+        Float32 scale;
+
+        /// The alpha (transparency) value to be applied during painting.
+        Float32 alpha;
+    };
+
     /**
      * @brief Construct an LView object.
      *
@@ -690,27 +730,9 @@ public:
      * on the current framebuffer. The painting is performed using the provided LPainter object
      * with the specified source and destination surface coordinates, size, scaling, and alpha value.
      *
-    * @note Alternatively, you have the option to use your own custom OpenGL shaders/program for rendering, in place of the provided LPainter.
-     *
-     * @param p The LPainter object to perform the painting.
-     * @param srcX The source x-coordinate within the view to copy from.
-     * @param srcY The source y-coordinate within the view to copy from.
-     * @param srcW The width of the source area to copy from.
-     * @param srcH The height of the source area to copy from.
-     * @param dstX The destination x-coordinate within the output to paint on.
-     * @param dstY The destination y-coordinate within the output to paint on.
-     * @param dstW The width of the destination area to paint on.
-     * @param dstH The height of the destination area to paint on.
-     * @param scale The scaling factor to be applied during painting.
-     * @param alpha The alpha (transparency) value to be applied during painting.
+     * @note Alternatively, you have the option to use your own custom OpenGL shaders/program for rendering, in place of the provided LPainter.
      */
-    virtual void paintRect(LPainter *p,
-                           Int32 srcX, Int32 srcY,
-                           Int32 srcW, Int32 srcH,
-                           Int32 dstX, Int32 dstY,
-                           Int32 dstW, Int32 dstH,
-                           Float32 scale,
-                           Float32 alpha) = 0;
+    virtual void paintRect(const PaintRectParams &params) = 0;
 
     /**
      * @brief Handle the pointer enter event within the view.

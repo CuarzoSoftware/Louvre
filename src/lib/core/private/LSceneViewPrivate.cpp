@@ -261,26 +261,25 @@ void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view)
     else
         oD->p->imp()->shaderSetColorFactorEnabled(0);
 
+    paintParams.p = oD->p;
+    paintParams.alpha = 1.f;
+    paintParams.scale = view->bufferScale();
+
     if (cache->scalingEnabled)
     {
         for (Int32 i = 0; i < oD->n; i++)
         {
-            oD->w = oD->boxes->x2 - oD->boxes->x1;
-            oD->h = oD->boxes->y2 - oD->boxes->y1;
+            paintParams.dstX = oD->boxes->x1;
+            paintParams.dstY = oD->boxes->y1;
+            paintParams.dstW = oD->boxes->x2 - oD->boxes->x1;
+            paintParams.dstH = oD->boxes->y2 - oD->boxes->y1;
 
-            view->paintRect(
-                oD->p,
-                (oD->boxes->x1 - cache->rect.x()) / cache->scalingVector.x(),
-                (oD->boxes->y1  - cache->rect.y()) / cache->scalingVector.y(),
-                oD->w / cache->scalingVector.x(),
-                oD->h / cache->scalingVector.y(),
-                oD->boxes->x1,
-                oD->boxes->y1,
-                oD->w,
-                oD->h,
-                view->bufferScale(),
-                1.f);
+            paintParams.srcX = (oD->boxes->x1 - cache->rect.x()) / cache->scalingVector.x();
+            paintParams.srcY = (oD->boxes->y1  - cache->rect.y()) / cache->scalingVector.y();
+            paintParams.srcW = paintParams.dstW / cache->scalingVector.x();
+            paintParams.srcH = paintParams.dstH / cache->scalingVector.y();
 
+            view->paintRect(paintParams);
             oD->boxes++;
         }
     }
@@ -291,19 +290,17 @@ void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view)
             oD->w = oD->boxes->x2 - oD->boxes->x1;
             oD->h = oD->boxes->y2 - oD->boxes->y1;
 
-            view->paintRect(
-                oD->p,
-                oD->boxes->x1 - cache->rect.x(),
-                oD->boxes->y1 - cache->rect.y(),
-                oD->w,
-                oD->h,
-                oD->boxes->x1,
-                oD->boxes->y1,
-                oD->w,
-                oD->h,
-                view->bufferScale(),
-                1.f);
+            paintParams.dstX = oD->boxes->x1;
+            paintParams.dstY = oD->boxes->y1;
+            paintParams.dstW = oD->boxes->x2 - oD->boxes->x1;
+            paintParams.dstH = oD->boxes->y2 - oD->boxes->y1;
 
+            paintParams.srcX = oD->boxes->x1 - cache->rect.x();
+            paintParams.srcY = oD->boxes->y1 - cache->rect.y();
+            paintParams.srcW = paintParams.dstW;
+            paintParams.srcH = paintParams.dstH;
+
+            view->paintRect(paintParams);
             oD->boxes++;
         }
     }
@@ -358,27 +355,24 @@ void LSceneView::LSceneViewPrivate::drawTranslucentDamage(LView *view)
     cache->translucent.subtractRegion(cache->opaqueOverlay);
 
     oD->boxes = cache->translucent.boxes(&oD->n);
+    paintParams.scale = view->bufferScale();
+    paintParams.alpha = cache->opacity;
 
     if (cache->scalingEnabled)
     {
         for (Int32 i = 0; i < oD->n; i++)
         {
-            oD->w = oD->boxes->x2 - oD->boxes->x1;
-            oD->h = oD->boxes->y2 - oD->boxes->y1;
+            paintParams.dstX = oD->boxes->x1;
+            paintParams.dstY = oD->boxes->y1;
+            paintParams.dstW = oD->boxes->x2 - oD->boxes->x1;
+            paintParams.dstH = oD->boxes->y2 - oD->boxes->y1;
 
-            view->paintRect(
-                oD->p,
-                (oD->boxes->x1 - cache->rect.x()) / cache->scalingVector.x(),
-                (oD->boxes->y1  - cache->rect.y()) / cache->scalingVector.y(),
-                oD->w / cache->scalingVector.x(),
-                oD->h / cache->scalingVector.y(),
-                oD->boxes->x1,
-                oD->boxes->y1,
-                oD->w,
-                oD->h,
-                view->bufferScale(),
-                cache->opacity);
+            paintParams.srcX = (oD->boxes->x1 - cache->rect.x()) / cache->scalingVector.x();
+            paintParams.srcY = (oD->boxes->y1  - cache->rect.y()) / cache->scalingVector.y();
+            paintParams.srcW = paintParams.dstW / cache->scalingVector.x();
+            paintParams.srcH = paintParams.dstH / cache->scalingVector.y();
 
+            view->paintRect(paintParams);
             oD->boxes++;
         }
     }
@@ -386,22 +380,17 @@ void LSceneView::LSceneViewPrivate::drawTranslucentDamage(LView *view)
     {
         for (Int32 i = 0; i < oD->n; i++)
         {
-            oD->w = oD->boxes->x2 - oD->boxes->x1;
-            oD->h = oD->boxes->y2 - oD->boxes->y1;
+            paintParams.dstX = oD->boxes->x1;
+            paintParams.dstY = oD->boxes->y1;
+            paintParams.dstW = oD->boxes->x2 - oD->boxes->x1;
+            paintParams.dstH = oD->boxes->y2 - oD->boxes->y1;
 
-            view->paintRect(
-                oD->p,
-                oD->boxes->x1 - cache->rect.x(),
-                oD->boxes->y1 - cache->rect.y(),
-                oD->w,
-                oD->h,
-                oD->boxes->x1,
-                oD->boxes->y1,
-                oD->w,
-                oD->h,
-                view->bufferScale(),
-                cache->opacity);
+            paintParams.srcX = oD->boxes->x1 - cache->rect.x();
+            paintParams.srcY = oD->boxes->y1 - cache->rect.y();
+            paintParams.srcW = paintParams.dstW;
+            paintParams.srcH = paintParams.dstH;
 
+            view->paintRect(paintParams);
             oD->boxes++;
         }
     }

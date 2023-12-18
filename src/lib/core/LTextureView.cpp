@@ -286,10 +286,7 @@ const LRegion *LTextureView::inputRegion() const
     return imp()->inputRegion;
 }
 
-void LTextureView::paintRect(LPainter *p,
-                              Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
-                              Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                              Float32 scale, Float32 alpha)
+void LTextureView::paintRect(const PaintRectParams &params)
 {
     if (!imp()->texture)
         return;
@@ -302,52 +299,58 @@ void LTextureView::paintRect(LPainter *p,
 
         if (imp()->customColorEnabled)
         {
-            p->imp()->drawColorTexture(imp()->texture,
-                                imp()->customColor.r,
-                                imp()->customColor.g,
-                                imp()->customColor.b,
-                                srcX * scaling.x(),
-                                srcY * scaling.y(),
-                                srcW * scaling.x(),
-                                srcH * scaling.y(),
-                                dstX,
-                                dstY,
-                                dstW,
-                                dstH,
-                                scale, alpha);
+            params.p->imp()->drawColorTexture(imp()->texture,
+                                              imp()->customColor.r,
+                                              imp()->customColor.g,
+                                              imp()->customColor.b,
+                                              params.srcX * scaling.x(),
+                                              params.srcY * scaling.y(),
+                                              params.srcW * scaling.x(),
+                                              params.srcH * scaling.y(),
+                                              params.dstX,
+                                              params.dstY,
+                                              params.dstW,
+                                              params.dstH,
+                                              params.scale,
+                                              params.alpha);
         }
         else
         {
-            p->imp()->drawTexture(imp()->texture,
-                           srcX * scaling.x(),
-                           srcY * scaling.y(),
-                           srcW * scaling.x(),
-                           srcH * scaling.y(),
-                           dstX,
-                           dstY,
-                           dstW,
-                           dstH,
-                           scale, alpha);
+            params.p->imp()->drawTexture(imp()->texture,
+                                         params.srcX * scaling.x(),
+                                         params.srcY * scaling.y(),
+                                         params.srcW * scaling.x(),
+                                         params.srcH * scaling.y(),
+                                         params.dstX,
+                                         params.dstY,
+                                         params.dstW,
+                                         params.dstH,
+                                         params.scale,
+                                         params.alpha);
         }
     }
     else
     {
         if (imp()->customColorEnabled)
         {
-            p->imp()->drawColorTexture(imp()->texture,
-                                imp()->customColor.r,
-                                imp()->customColor.g,
-                                imp()->customColor.b,
-                                srcX, srcY, srcW, srcH,
-                                dstX, dstY, dstW, dstH,
-                                scale, alpha);
+            params.p->imp()->drawColorTexture(imp()->texture,
+                                              imp()->customColor.r,
+                                              imp()->customColor.g,
+                                              imp()->customColor.b,
+                                              params.srcX, params.srcY,
+                                              params.srcW, params.srcH,
+                                              params.dstX, params.dstY,
+                                              params.dstW, params.dstH,
+                                              params.scale, params.alpha);
         }
         else
         {
-            p->imp()->drawTexture(imp()->texture,
-                           srcX, srcY, srcW, srcH,
-                           dstX, dstY, dstW, dstH,
-                           scale, alpha);
+            params.p->imp()->drawTexture(imp()->texture,
+                                         params.srcX, params.srcY,
+                                         params.srcW, params.srcH,
+                                         params.dstX, params.dstY,
+                                         params.dstW, params.dstH,
+                                         params.scale, params.alpha);
         }
     }
 }

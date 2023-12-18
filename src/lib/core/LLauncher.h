@@ -11,12 +11,12 @@
  * leading to undesired behaviors and potentially causing the compositor to experience reduced performance or crashes.
  *
  * The LLauncher class is an auxiliary class designed to facilitate the secure launching of applications from the compositor.
- * It creates a background daemon capable of launching applications using the system() call.
+ * It creates a background daemon capable of launching applications using the [system()](https://man7.org/linux/man-pages/man3/system.3.html) call.
  *
  * The daemon must be started before creating an instance of LCompositor, achieved through the startDaemon() function.
  * The daemon can be terminated by calling the stopDaemon() function and is automatically exited when the compositor ends.
  *
- * If the daemon exits normally, it sends a SIGTERM signal to all processes in its process group.
+ * If the daemon exits normally, it sends a [SIGTERM](https://www.gnu.org/software/libc/manual/html_node/Termination-Signals.html#index-SIGTERM) signal to all processes in its process group.
  */
 class Louvre::LLauncher
 {
@@ -24,7 +24,7 @@ public:
     /**
      * @brief Starts the daemon and returns its process ID.
      *
-     * Should preferably be the first function called from the main() function and
+     * Should preferably be the first function called from the `main()` function and
      * must be called before creating an instance of LCompositor.
      *
      * @param name The process name to be set for the daemon.
@@ -45,7 +45,7 @@ public:
     /**
      * @brief Launches an application.
      *
-     * This function uses the same arguments as the system() call.
+     * This function uses the same arguments as the [system()](https://man7.org/linux/man-pages/man3/system.3.html) call.
      * It launches an application specified by the provided command and returns the application's process ID.
      *
      * @param command The command to execute, as a string.

@@ -80,13 +80,7 @@ public:
     virtual const LRegion *translucentRegion() const override;
     virtual const LRegion *opaqueRegion() const override;
     virtual const LRegion *inputRegion() const override;
-    virtual void paintRect(LPainter *p,
-                           Int32 srcX, Int32 srcY,
-                           Int32 srcW, Int32 srcH,
-                           Int32 dstX, Int32 dstY,
-                           Int32 dstW, Int32 dstH,
-                           Float32 scale,
-                           Float32 alpha) override;
+    virtual void paintRect(const PaintRectParams &params) override;
 
     LPRIVATE_IMP_UNIQUE(LLayerView)
 };

@@ -128,10 +128,7 @@ const LRegion *LLayerView::inputRegion() const
     return imp()->inputRegion;
 }
 
-void LLayerView::paintRect(LPainter *,
-                            Int32, Int32, Int32, Int32,
-                            Int32, Int32, Int32, Int32,
-                            Float32, Float32)
+void LLayerView::paintRect(const PaintRectParams &)
 {
     /* It is not renderable */
 }

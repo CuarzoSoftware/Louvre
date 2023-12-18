@@ -166,12 +166,9 @@ const LRegion *LSolidColorView::inputRegion() const
     return imp()->inputRegion;
 }
 
-void LSolidColorView::paintRect(LPainter *p,
-                                 Int32, Int32, Int32, Int32,
-                                 Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                                 Float32, Float32 alpha)
+void LSolidColorView::paintRect(const PaintRectParams &params)
 {
-    p->imp()->drawColor(dstX, dstY, dstW, dstH,
-                  color().r, color().g, color().b,
-                  alpha);
+    params.p->imp()->drawColor(params.dstX, params.dstY, params.dstW, params.dstH,
+                               color().r, color().g, color().b,
+                               params.alpha);
 }
