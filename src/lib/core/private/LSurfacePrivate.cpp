@@ -351,7 +351,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     return true;
 }
 
-void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output, timespec &ns)
+void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output)
 {
     if (wpPresentationFeedbackResources.empty())
         return;
@@ -371,9 +371,9 @@ void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output, timesp
             {
                 WpPresentationTime::RWpPresentationFeedback *rFeed = wpPresentationFeedbackResources.back();
                 rFeed->sync_output(gOutput);
-                rFeed->presented(ns.tv_sec >> 32,
-                                 ns.tv_sec & 0xffffffff,
-                                 ns.tv_nsec,
+                rFeed->presented(output->imp()->presentationTime.tv_sec >> 32,
+                                 output->imp()->presentationTime.tv_sec & 0xffffffff,
+                                 output->imp()->presentationTime.tv_nsec,
                                  0,
                                  0,
                                  0,

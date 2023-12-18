@@ -2,6 +2,7 @@
 #define LOUTPUTPRIVATE_H
 
 #include <LOutput.h>
+#include <mutex>
 #include <private/LRenderBufferPrivate.h>
 #include <LOutputFramebuffer.h>
 #include <atomic>
@@ -36,7 +37,9 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     // Params
     Int32 outputScale = 1;
 
+    std::mutex pageflipMutex;
     timespec presentationTime;
+    bool unhandledPresentation = false;
 
     // Called by the backend
     void backendInitializeGL();

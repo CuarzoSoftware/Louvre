@@ -194,7 +194,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
                          msTimeout);
 
     imp()->lock();
-
+    imp()->sendPresentationTime();
     imp()->processRemovedGlobals();
 
     /* In certain older libseat versions, a POLLIN event may not be generated

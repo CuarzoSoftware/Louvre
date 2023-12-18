@@ -124,6 +124,7 @@ LPRIVATE_CLASS(LCompositor)
     }
 
     void sendPendingToplevelsConfiguration();
+    void sendPresentationTime();
 };
 
 #endif // LCOMPOSITORPRIVATE_H

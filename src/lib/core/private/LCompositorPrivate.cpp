@@ -739,3 +739,15 @@ void LCompositor::LCompositorPrivate::sendPendingToplevelsConfiguration()
         if (s->toplevel())
             s->toplevel()->imp()->sendConfiguration();
 }
+
+void  LCompositor::LCompositorPrivate::sendPresentationTime()
+{
+    for (LOutput *o : outputs)
+    {
+        o->imp()->pageflipMutex.lock();
+        if (o->imp()->unhandledPresentation)
+            for (LSurface *s : surfaces)
+                s->imp()->sendPresentationFeedback(o);
+        o->imp()->pageflipMutex.unlock();
+    }
+}

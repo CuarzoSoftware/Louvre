@@ -70,6 +70,7 @@ void LOutput::LOutputPrivate::backendPaintGL()
         lastSize = rect.size();
     }
 
+    compositor()->imp()->sendPresentationTime();
     compositor()->imp()->processAnimations();
     pendingRepaint = false;
     output->paintGL();
@@ -137,24 +138,10 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
 
 void LOutput::LOutputPrivate::backendPageFlipped()
 {
-    bool callLock = output->imp()->callLock.load();
-
-    if (!callLock)
-        callLockACK.store(true);
-
-    if (output->imp()->state != LOutput::Initialized)
-        return;
-
-    if (callLock)
-        compositor()->imp()->lock();
-
-    // Send presentation time feedback
+    pageflipMutex.lock();
     presentationTime = LTime::ns();
-    for (LSurface *surf : compositor()->surfaces())
-        surf->imp()->sendPresentationFeedback(output, presentationTime);
-
-    if (callLock)
-        compositor()->imp()->unlock();
+    unhandledPresentation = true;
+    pageflipMutex.unlock();
 }
 
 void LOutput::LOutputPrivate::updateRect()
