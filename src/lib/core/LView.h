@@ -537,12 +537,35 @@ public:
      * @brief Set the alpha blending function for the view.
      *
      * This method sets the OpenGL blend function for the view. Refer to the documentation
-     * of glBlendFunc() for more information.
+     * of [glBlendFuncSeparate()](https://docs.gl/es2/glBlendFuncSeparate) for more information.
      *
-     * @param sFactor Source factor for blending.
-     * @param dFactor Destination factor for blending.
+     * @note This only works when the autoBlendFuncEnabled() property is disabled.
+     *
+     * @param sRGBFactor Source RGB factor for blending.
+     * @param dRGBFactor Destination RGB factor for blending.
+     * @param sAlphaFactor Source alpha factor for blending.
+     * @param dAlphaFactor Destination alpha factor for blending.
      */
-    void setBlendFunc(GLenum sFactor, GLenum dFactor);
+    void setBlendFunc(GLenum sRGBFactor, GLenum dRGBFactor, GLenum sAlphaFactor, GLenum dAlphaFactor);
+
+    /**
+     * @brief Enable or disable automatic blend function adjustment.
+     *
+     * When the automatic blend function is enabled, the blend function dynamically adjusts based on whether rendering occurs
+     * in an output framebuffer or a custom framebuffer (e.g., an LRenderBuffer or LSceneView).
+     *
+     * By default, automatic blend function adjustment is enabled. When enabled, the blend function set with setBlendFunc() is ignored.
+     *
+     * @param enabled `true` to enable automatic blend function adjustment, `false` to disable.
+     */
+    void enableAutoBlendFunc(bool enabled);
+
+    /**
+     * @brief Check whether the automatic blend function adjustment is enabled.
+     *
+     * @return `true` if automatic blend function adjustment is enabled, `false` otherwise.
+     */
+    bool autoBlendFuncEnabled() const;
 
     /**
      * @brief Set the color factor.

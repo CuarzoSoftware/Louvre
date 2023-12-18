@@ -398,9 +398,6 @@ LTexture *Surface::renderThumbnail(LRegion *transRegion)
         }
     }
 
-    for (LView *child : tmpView.children())
-        G::setBlendFuncWithChildren(child, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
     getView()->enableParentOffset(false);
 
     tmpView.render();
@@ -410,9 +407,6 @@ LTexture *Surface::renderThumbnail(LRegion *transRegion)
         *transRegion = *tmpView.translucentRegion();
         transRegion->offset(LPoint() - tmpView.pos());
     }
-
-    for (LView *child : tmpView.children())
-        G::setBlendFuncWithChildren(child, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     LTexture *renderedThumbnail = tmpView.texture()->copyB();
     getView()->enableParentOffset(true);

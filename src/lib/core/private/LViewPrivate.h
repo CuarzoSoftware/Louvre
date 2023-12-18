@@ -36,7 +36,8 @@ LPRIVATE_CLASS(LView)
         ParentOpacity           = 1 << 15,
         ForceRequestNextFrame   = 1 << 16,
         PointerIsOver           = 1 << 17,
-        BlockPointer            = 1 << 18
+        BlockPointer            = 1 << 18,
+        AutoBlendFunc           = 1 << 19
     };
 
     // This is used for detecting changes on a view since the last time it was drawn on a specific output
@@ -71,14 +72,18 @@ LPRIVATE_CLASS(LView)
         bool scalingEnabled;
         bool isFullyTrans;
     };
-    UInt32 state = Visible | ParentOffset | ParentOpacity | BlockPointer;
+    UInt32 state = Visible | ParentOffset | ParentOpacity | BlockPointer | AutoBlendFunc;
     ViewCache cache;
 
     UInt32 type;
     LView *parent = nullptr;
     std::list<LView*>children;
-    GLenum sFactor = GL_SRC_ALPHA;
-    GLenum dFactor = GL_ONE_MINUS_SRC_ALPHA;
+
+    GLenum sRGBFactor = GL_SRC_ALPHA;
+    GLenum dRGBFactor = GL_ONE_MINUS_SRC_ALPHA;
+    GLenum sAlphaFactor = GL_SRC_ALPHA;
+    GLenum dAlphaFactor = GL_ONE_MINUS_SRC_ALPHA;
+
     LRGBAF colorFactor = {1.f, 1.f, 1.f, 1.f};
     Float32 opacity = 1.f;
     LSizeF scalingVector = LSizeF(1.f, 1.f);

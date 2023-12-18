@@ -19,6 +19,7 @@ Louvre (1.1.0-1)
   * The LToplevelRole appId() and title() methods now return const std::string & instead of const char *.
   * The use of LCompositor::nextSerial() is now deprecated, and LTime::nextSerial() should be used instead.
   * LView::paintRect() now takes an LView::PaintRectParams struct reference as an argument, eliminating the need to pass all parameters by value.
+  * The LView setBlendFunc() method now follows the glBlendFuncSeparate() parameters, enabling a more precise blend function configuration.
   
   # Additions
 
@@ -27,6 +28,7 @@ Louvre (1.1.0-1)
   * Introduce the LTime nextSerial() and us() functions for obtaining incremental integer numbers and timestamps with microsecond granularity.
   * Introduce the LLauncher auxiliary class, designed for creating a daemon and safely launching applications.
   * Introduce the PaintRectParams struct to LView for utilization in LView::paintRect() calls from an LScene, aiming to reduce the memory transfer overhead associated with each call.
+  * Introduce the enableAutoBlendFunc() option to LView to enable Louvre to automatically select the OpenGL blend function based on whether the target framebuffer is an output framebuffer or a custom framebuffer. This addition aims to address and resolve alpha-related issues while rendering.
 
   # Internal Changes
 

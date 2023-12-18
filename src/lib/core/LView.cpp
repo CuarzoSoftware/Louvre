@@ -371,14 +371,31 @@ void LView::enableForceRequestNextFrame(bool enabled) const
     imp()->setFlag(LVS::ForceRequestNextFrame, enabled);
 }
 
-void LView::setBlendFunc(GLenum sFactor, GLenum dFactor)
+void LView::setBlendFunc(GLenum sRGBFactor, GLenum dRGBFactor, GLenum sAlphaFactor, GLenum dAlphaFactor)
 {
-    if (imp()->sFactor != sFactor || imp()->dFactor != dFactor)
+    if (imp()->sRGBFactor != sRGBFactor || imp()->dRGBFactor != dRGBFactor ||
+        imp()->sAlphaFactor != sAlphaFactor || imp()->dAlphaFactor != dAlphaFactor)
     {
-        imp()->sFactor = sFactor;
-        imp()->dFactor = dFactor;
+        imp()->sRGBFactor = sRGBFactor;
+        imp()->dRGBFactor = dRGBFactor;
+        imp()->sAlphaFactor = sAlphaFactor;
+        imp()->dAlphaFactor = dAlphaFactor;
         repaint();
     }
+}
+
+void LView::enableAutoBlendFunc(bool enabled)
+{
+    if (enabled == imp()->hasFlag(LVS::AutoBlendFunc))
+        return;
+
+    imp()->setFlag(LVS::AutoBlendFunc, enabled);
+    repaint();
+}
+
+bool LView::autoBlendFuncEnabled() const
+{
+    return imp()->hasFlag(LVS::AutoBlendFunc);
 }
 
 void LView::setColorFactor(Float32 r, Float32 g, Float32 b, Float32 a)

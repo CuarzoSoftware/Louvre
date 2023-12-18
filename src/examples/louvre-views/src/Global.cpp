@@ -506,14 +506,3 @@ void G::repositionNonVisibleToplevelChildren(Output *target, Surface *toplevel)
         G::repositionNonVisibleToplevelChildren(target, s);
     }
 }
-
-void G::setBlendFuncWithChildren(LView *parent, GLenum sFactor, GLenum dFactor)
-{
-    parent->setBlendFunc(sFactor, dFactor);
-
-    if (parent->type() == LView::Scene)
-        return;
-
-    for (LView *child : parent->children())
-        setBlendFuncWithChildren(child, sFactor, dFactor);
-}

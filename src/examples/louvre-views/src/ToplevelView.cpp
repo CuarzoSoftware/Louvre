@@ -201,12 +201,15 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     surfBL->enableParentClipping(true);
     surfBR->enableParentClipping(true);
 
-    // Clipped to the bottom border radius rect
     surfBL->enableParentScaling(false);
     surfBR->enableParentScaling(false);
 
-    surfBL->setBlendFunc(GL_ONE, GL_ZERO);
-    surfBR->setBlendFunc(GL_ONE, GL_ZERO);
+    // Disable auto blend func
+    surfBL->enableAutoBlendFunc(false);
+    surfBR->enableAutoBlendFunc(false);
+
+    surfBL->setBlendFunc(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
+    surfBR->setBlendFunc(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
 
     // Masks to make the lower corners of the toplevel round
     maskBL = new LTextureView(G::toplevelTextures().maskBL, sceneBL);
@@ -218,9 +221,13 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     maskBL->enableParentScaling(false);
     maskBR->enableParentScaling(false);
 
+    // Disable auto blend func
+    maskBL->enableAutoBlendFunc(false);
+    maskBR->enableAutoBlendFunc(false);
+
     // This blending func makes the alpha of the toplevel be replaced by the one of the mask
-    maskBL->setBlendFunc(GL_ZERO, GL_SRC_ALPHA);
-    maskBR->setBlendFunc(GL_ZERO, GL_SRC_ALPHA);
+    maskBL->setBlendFunc(GL_ZERO, GL_SRC_ALPHA, GL_ZERO, GL_SRC_ALPHA);
+    maskBR->setBlendFunc(GL_ZERO, GL_SRC_ALPHA, GL_ZERO, GL_SRC_ALPHA);
 
     // Toplevel decorations (shadows and topbar)
     decoTL = new LTextureView(G::toplevelTextures().activeTL, this);

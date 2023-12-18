@@ -338,7 +338,15 @@ void LSceneView::LSceneViewPrivate::drawTranslucentDamage(LView *view)
     if (!view->isRenderable() || !cache->mapped || cache->occluded)
         goto drawChildrenOnly;
 
-    glBlendFunc(view->imp()->sFactor, view->imp()->dFactor);
+    if (view->autoBlendFuncEnabled())
+    {
+        if (oD->p->boundFramebuffer()->id() != 0)
+            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+        else
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+    else
+        glBlendFuncSeparate(view->imp()->sRGBFactor, view->imp()->dRGBFactor, view->imp()->sAlphaFactor, view->imp()->dAlphaFactor);
 
     if (view->imp()->hasFlag(LVS::ColorFactor))
     {
