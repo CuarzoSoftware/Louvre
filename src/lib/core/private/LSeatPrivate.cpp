@@ -103,7 +103,6 @@ bool LSeat::LSeatPrivate::initLibseat()
         return false;
     }
 
-    fcntl(fd, F_SETFD, FD_CLOEXEC);
     compositor()->imp()->events[1].events = EPOLLIN;
     compositor()->imp()->events[1].data.fd = fd;
 

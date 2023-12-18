@@ -171,7 +171,6 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resour
 
         // Mark current source as selected
         seat()->imp()->dataSelection = rDataSource->dataSource();
-        int fd;
 
         // Ask client to write to the compositor fds
         for (LDataSource::LSource &s : rDataSource->dataSource()->imp()->sources)
@@ -187,8 +186,6 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resour
                     strcmp(s.mimeType, "text/plain") == 0))
             {
                 s.tmp = tmpfile();
-                fd = fileno(s.tmp);
-                fcntl(fd, F_SETFD, FD_CLOEXEC);
                 rDataSource->send(s.mimeType, fileno(s.tmp));
             }
         }

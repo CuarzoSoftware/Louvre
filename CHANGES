@@ -35,6 +35,7 @@ Louvre (1.1.0-1)
   * Error and fatal messages from LLog are now directed to stderr, thanks to @brianhsu.
   * LToplevelRole configure events are now stored and dispatched at the conclusion of a main loop iteration.
   * Toplevels are now automatically configured with the pending states and size if the developer does not explicitly configure them during set or unset fullscreen or maximize requests.
+  * Within the Libinput backend, the Libinput context is no longer recreated with each session switch. Previously, this recreation was necessary when forks were created while the compositor was running, as failure to do so would lead to compositor crashes.
 
   # Bug Fixes
 

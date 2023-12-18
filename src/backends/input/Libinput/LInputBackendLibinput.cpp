@@ -224,7 +224,6 @@ bool LInputBackend::initialize()
         libinput_udev_assign_seat(data->li, "seat0");
 
     fd = libinput_get_fd(data->li);
-    fcntl(fd, F_SETFD, FD_CLOEXEC);
 
     eventSource = LCompositor::addFdListener(fd, (LSeat*)seat, &processInput);
     return true;
@@ -250,7 +249,6 @@ void LInputBackend::suspend()
 {
     LSeat *seat = LCompositor::compositor()->seat();
     BACKEND_DATA *data = (BACKEND_DATA*)seat->imp()->inputBackendData;
-    LCompositor::removeFdListener(eventSource);
     libinput_suspend(data->li);
 }
 
@@ -265,42 +263,11 @@ void LInputBackend::resume()
     LSeat *seat = LCompositor::compositor()->seat();
     BACKEND_DATA *data = (BACKEND_DATA*)seat->imp()->inputBackendData;
 
-    int fd;
-
-    libinput_dispatch(data->li);
-
     if (libinput_resume(data->li) == -1)
     {
         LLog::error("[Libinput Backend] Failed to resume libinput.");
         return;
     }
-
-    // Handle queued events during session switching
-
-    forceUpdate();
-
-    /* For some reason libinput crashes if a device is added while suspended.
-     * As a temp fix we destroy and recreate the context again. */
-    
-    if (data->li)
-        libinput_unref(data->li);
-
-    if (data->ud)
-        udev_unref(data->ud);
-
-    data->ud = udev_new();
-    data->libinputInterface.open_restricted = &openRestricted;
-    data->libinputInterface.close_restricted = &closeRestricted;
-    data->li = libinput_udev_create_context(&data->libinputInterface, data, data->ud);
-
-    if (libseatEnabled )
-        libinput_udev_assign_seat(data->li, libseat_seat_name(seat->libseatHandle()));
-    else
-        libinput_udev_assign_seat(data->li, "seat0");
-
-    fd = libinput_get_fd(data->li);
-    fcntl(fd, F_SETFD, FD_CLOEXEC);
-    eventSource = LCompositor::addFdListener(fd, (LSeat*)seat, &processInput);
 }
 
 void LInputBackend::uninitialize()

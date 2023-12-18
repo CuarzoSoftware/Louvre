@@ -184,7 +184,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         return 0;
 
     if (!seat()->enabled())
-        msTimeout = 1000;
+        msTimeout = 100;
 
     epoll_event events[3];
 
@@ -204,6 +204,12 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
 
     seat()->imp()->dispatchSeat();
 
+    /* Some input backends, such as Libinput, require periodic handling of events related to device plugging and unplugging,
+     * even if the session is disabled. Failing to do so may lead to unexpected bugs and result in a compositor crash. */
+
+    if (!seat()->enabled())
+        imp()->inputBackend->forceUpdate();
+
     for (Int32 i = 0; i < nEvents; i++)
     {
         // Wayland
@@ -212,8 +218,8 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
             if (seat()->enabled())
             {
                 wl_event_loop_dispatch(imp()->eventLoop, 0);
-                flushClients();
                 cursor()->imp()->textureUpdate();
+                flushClients();
             }
         }
         // Event fd
@@ -230,8 +236,11 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         }
     }
 
-    imp()->destroyPendingRenderBuffers(nullptr);
-    imp()->destroyNativeTextures(imp()->nativeTexturesToDestroy);
+    if (seat()->enabled())
+    {
+        imp()->destroyPendingRenderBuffers(nullptr);
+        imp()->destroyNativeTextures(imp()->nativeTexturesToDestroy);
+    }
 
     if (state() == CompositorState::Uninitializing)
     {
