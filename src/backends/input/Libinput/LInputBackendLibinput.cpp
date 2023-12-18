@@ -1,6 +1,7 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LSeatPrivate.h>
 #include <private/LKeyboardPrivate.h>
+#include <private/LPointerPrivate.h>
 #include <LInputBackend.h>
 #include <LLog.h>
 #include <unordered_map>
@@ -130,6 +131,16 @@ static Int32 processInput(int, unsigned int, void *userData)
             pointerEvent = libinput_event_get_pointer_event(ev);
             pointerButton = libinput_event_pointer_get_button(pointerEvent);
             pointerButtonState = libinput_event_pointer_get_button_state(pointerEvent);
+
+            // Remember: Move this in 2.0.0
+            if (pointerButton == LPointer::Pressed)
+                seat->pointer()->imp()->pressedButtons.push_back((LPointer::Button)pointerButton);
+            else
+                seat->pointer()->imp()->pressedButtons.erase(
+                    std::remove(
+                        seat->pointer()->imp()->pressedButtons.begin(),
+                        seat->pointer()->imp()->pressedButtons.end(), (LPointer::Button)pointerButton),
+                    seat->pointer()->imp()->pressedButtons.end());
 
             seat->pointer()->pointerButtonEvent(
                 (LPointer::Button)pointerButton,

@@ -411,14 +411,14 @@ bool LKeyboard::isModActive(const char *name) const
                 XKB_STATE_MODS_EFFECTIVE);
 }
 
-const std::list<UInt32> &LKeyboard::pressedKeys() const
+const std::vector<UInt32> &LKeyboard::pressedKeys() const
 {
     return imp()->pressedKeys;
 }
 
 bool LKeyboard::isKeyCodePressed(UInt32 keyCode) const
 {
-    for (UInt32 key : pressedKeys())
+    for (UInt32 key : imp()->pressedKeys)
     {
         if (key == keyCode)
             return true;

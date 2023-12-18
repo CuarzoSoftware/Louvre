@@ -275,6 +275,21 @@ void LPointer::dismissPopups()
     }
 }
 
+const std::vector<LPointer::Button> &LPointer::pressedKeys() const
+{
+    return imp()->pressedButtons;
+}
+
+bool LPointer::isButtonPressed(Button button) const
+{
+    for (Button btn : imp()->pressedButtons)
+    {
+        if (btn == button)
+            return true;
+    }
+    return false;
+}
+
 LSurface *LPointer::draggingSurface() const
 {
     return imp()->draggingSurface;

@@ -5,6 +5,7 @@
 #include <private/LSeatPrivate.h>
 #include <LKeyboard.h>
 #include <vector>
+#include <algorithm>
 
 using namespace Louvre;
 using namespace Louvre::Protocols;
@@ -29,7 +30,7 @@ LPRIVATE_CLASS(LKeyboard)
 
     KeyboardModifiersState modifiersState;
 
-    std::list<UInt32>pressedKeys;
+    std::vector<UInt32>pressedKeys;
 
     // Since 4
     Int32 repeatRate = 32;
@@ -49,7 +50,7 @@ LPRIVATE_CLASS(LKeyboard)
         if (keyState == LKeyboard::Pressed)
             pressedKeys.push_back(keyCode);
         else
-            pressedKeys.remove(keyCode);
+            pressedKeys.erase(std::remove(pressedKeys.begin(), pressedKeys.end(), keyCode), pressedKeys.end());
 
         seat()->keyboard()->keyEvent(keyCode, keyState);
         updateModifiers();

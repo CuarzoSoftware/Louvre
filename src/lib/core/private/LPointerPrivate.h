@@ -25,6 +25,8 @@ LPRIVATE_CLASS(LPointer)
     LPoint movingToplevelInitPointerPos;
     LRect movingToplevelConstraintBounds;
 
+    std::vector<Button> pressedButtons;
+
     Float64 axisXprev;
     Float64 axisYprev;
     Int32 discreteXprev;

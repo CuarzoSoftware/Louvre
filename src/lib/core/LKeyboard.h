@@ -2,6 +2,7 @@
 #define LKEYBOARD_H
 
 #include <LObject.h>
+#include <vector>
 #include <xkbcommon/xkbcommon.h>
 
 /**
@@ -226,9 +227,9 @@ public:
     bool isModActive(const char *name) const;
 
     /**
-     * @brief List of pressed key codes.
+     * @brief Vector of pressed key codes.
      */
-    const std::list<UInt32> &pressedKeys() const;
+    const std::vector<UInt32> &pressedKeys() const;
 
     /**
      * @brief Check if a key code is pressed.
