@@ -4,6 +4,7 @@
 #include <LSurface.h>
 #include <private/LCompositorPrivate.h>
 #include <vector>
+#include <string>
 
 using namespace Louvre;
 using namespace Louvre::Protocols;

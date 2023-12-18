@@ -9,6 +9,7 @@
 #include <sys/epoll.h>
 #include <map>
 #include <unistd.h>
+#include <string>
 
 LPRIVATE_CLASS(LCompositor)
 
