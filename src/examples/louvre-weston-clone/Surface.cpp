@@ -57,7 +57,7 @@ void Surface::mappingChanged()
         {
             for (Output *o : (list<Output*>&)outputs())
             {
-                o->newDamage.addRect(outputsMap[o].previousRectC);
+                o->newDamage.addRect(outputsMap[o].previousRect);
                 o->repaint();
                 if (this == o->fullscreenSurface)
                     o->fullscreenSurface = nullptr;
@@ -80,7 +80,7 @@ void Surface::minimizedChanged()
     {
         for (Output *o : (list<Output*>&)outputs())
         {
-            o->newDamage.addRect(outputsMap[o].previousRectC);
+            o->newDamage.addRect(outputsMap[o].previousRect);
             o->repaint();
 
             if (this == o->fullscreenSurface)

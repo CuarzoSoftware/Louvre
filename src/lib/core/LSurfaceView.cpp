@@ -157,6 +157,14 @@ void LSurfaceView::setCustomTranslucentRegion(const LRegion *region)
     }
 }
 
+const LRectF &LSurfaceView::srcRect() const
+{
+    if (!imp()->surface)
+        return imp()->customSrcRect;
+
+    return imp()->surface->srcRect();
+}
+
 bool LSurfaceView::nativeMapped() const
 {
     if (!imp()->surface)
@@ -181,7 +189,7 @@ const LSize &LSurfaceView::nativeSize() const
     return imp()->surface->size();
 }
 
-Int32 LSurfaceView::bufferScale() const
+Float32 LSurfaceView::bufferScale() const
 {
     if (!imp()->surface)
         return 1;
@@ -294,16 +302,20 @@ const LRegion *LSurfaceView::inputRegion() const
     return &imp()->surface->inputRegion();
 }
 
-void LSurfaceView::paintRect(const PaintRectParams &params)
+void LSurfaceView::paintEvent(const PaintEventParams &params)
 {
     if (!imp()->surface)
         return;
 
-    params.p->imp()->drawTexture(surface()->texture(),
-                                 params.srcX, params.srcY,
-                                 params.srcW, params.srcH,
-                                 params.dstX, params.dstY,
-                                 params.dstW, params.dstH,
-                                 params.scale,
-                                 params.alpha);
+    params.painter->bindTextureMode({
+        .texture = imp()->surface->texture(),
+        .pos = pos(),
+        .srcRect = srcRect(),
+        .dstSize = size(),
+        .srcTransform = LFramebuffer::Normal,
+        .srcScale = bufferScale(),
+    });
+
+    params.painter->enableCustomTextureColor(false);
+    params.painter->drawRegion(*params.region);
 }

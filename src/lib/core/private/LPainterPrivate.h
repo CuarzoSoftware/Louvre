@@ -35,8 +35,12 @@ LPRIVATE_CLASS(LPainter)
         color,
         colorFactor,
         colorFactorEnabled,
+        texColorEnabled,
         alpha,
-        transform;
+        transform,
+        texOffset,
+        rotate,
+        isCustomFb;
     } uniforms, uniformsExternal;
 
     Uniforms *currentUniforms;
@@ -79,21 +83,34 @@ LPRIVATE_CLASS(LPainter)
         Int32 w, h;
     };
 
-    union LGLRect
+    struct LGLSizeF
+    {
+        Float32 w, h;
+    };
+
+    struct LGLRect
     {
         Int32 x, y, w, h;
+    };
+
+    struct LGLRectF
+    {
+        Float32 x, y, w, h;
     };
 
 #if LPAINTER_TRACK_UNIFORMS == 1
     struct ShaderState
     {
-        LGLSize texSize;
-        LGLRect srcRect;
+        LGLSizeF texSize;
+        LGLSizeF texOffset;
+        LGLRectF srcRect;
         GLuint activeTexture;
         GLint mode;
         LGLColor color;
         LGLVec4F colorFactor;
         bool colorFactorEnabled = false;
+        bool texColorEnabled = false;
+        bool isCustomFb = false;
         GLfloat alpha;
         GLint transform;
     };
@@ -105,8 +122,10 @@ LPRIVATE_CLASS(LPainter)
     // Program
     GLuint programObject, programObjectExternal, programObjectScaler, programObjectScalerExternal, currentProgram;
     LOutput *output = nullptr;
-
     LPainter *painter;
+    LFramebuffer *fb = nullptr;
+    GLuint fbId = 0;
+    GLenum textureTarget = GL_TEXTURE_2D;
 
     struct OpenGLExtensions
     {
@@ -142,7 +161,21 @@ LPRIVATE_CLASS(LPainter)
         #endif
     }
 
-    inline void shaderSetTexSize(Int32 w, Int32 h)
+    inline void shaderSetTexOffset(Float32 w, Float32 h)
+    {
+        #if LPAINTER_TRACK_UNIFORMS == 1
+        if (currentState->texOffset.w != w || currentState->texOffset.h != h)
+        {
+            currentState->texOffset.w = w;
+            currentState->texOffset.h = h;
+            glUniform2f(currentUniforms->texOffset, w, h);
+        }
+        #else
+        glUniform2f(currentUniforms->texOffset, w, h);
+        #endif
+    }
+
+    inline void shaderSetTexSize(Float32 w, Float32 h)
     {
         #if LPAINTER_TRACK_UNIFORMS == 1
         if (currentState->texSize.w != w || currentState->texSize.h != h)
@@ -156,7 +189,7 @@ LPRIVATE_CLASS(LPainter)
         #endif
     }
 
-    inline void shaderSetSrcRect(Int32 x, Int32 y, Int32 w, Int32 h)
+    inline void shaderSetSrcRect(Float32 x, Float32 y, Float32 w, Float32 h)
     {
         #if LPAINTER_TRACK_UNIFORMS == 1
         if (currentState->srcRect.x != x ||
@@ -253,6 +286,32 @@ LPRIVATE_CLASS(LPainter)
         #endif
     }
 
+    inline void shaderSetTexColorEnabled(bool enabled)
+    {
+        #if LPAINTER_TRACK_UNIFORMS == 1
+        if (currentState->texColorEnabled != enabled)
+        {
+            currentState->texColorEnabled = enabled;
+            glUniform1i(currentUniforms->texColorEnabled, enabled);
+        }
+        #else
+            glUniform1i(currentUniforms->texColorEnabled, enabled);
+        #endif
+    }
+
+    inline void shaderSetIsCustomFb(bool enabled)
+    {
+        #if LPAINTER_TRACK_UNIFORMS == 1
+        if (currentState->isCustomFb!= enabled)
+        {
+            currentState->isCustomFb = enabled;
+            glUniform1i(currentUniforms->isCustomFb, enabled);
+        }
+        #else
+            glUniform1i(currentUniforms->isCustomFb, enabled);
+        #endif
+    }
+
     inline void shaderSetAlpha(Float32 a)
     {
         #if LPAINTER_TRACK_UNIFORMS == 1
@@ -266,9 +325,11 @@ LPRIVATE_CLASS(LPainter)
         #endif
     }
 
+    // GL params
+
     inline void switchTarget(GLenum target)
     {
-        if (lastTarget != target)
+        if (textureTarget != target)
         {
             if (target == GL_TEXTURE_2D)
             {
@@ -297,7 +358,7 @@ LPRIVATE_CLASS(LPainter)
                 #endif
             }
 
-            lastTarget = target;
+            textureTarget = target;
         }
     }
 
@@ -313,9 +374,9 @@ LPRIVATE_CLASS(LPainter)
             if (fbId == 0)
                 y = fb->rect().h() - y - h;
         }
-        else if (fb->transform() == LFramebuffer::Clock90)
+        else if (fb->transform() == LFramebuffer::Rotated270)
         {
-            Int32 tmp = x;
+            Float32 tmp = x;
             x = fb->rect().h() - y - h;
             y = tmp;
             tmp = w;
@@ -325,7 +386,7 @@ LPRIVATE_CLASS(LPainter)
             if (fbId == 0)
                 y = fb->rect().w() - y - h;
         }
-        else if (fb->transform() == LFramebuffer::Clock180)
+        else if (fb->transform() == LFramebuffer::Rotated180)
         {
             x = fb->rect().w() - x - w;
             y = fb->rect().h() - y - h;
@@ -333,9 +394,9 @@ LPRIVATE_CLASS(LPainter)
             if (fbId == 0)
                 y = fb->rect().h() - y - h;
         }
-        else if (fb->transform() == LFramebuffer::Clock270)
+        else if (fb->transform() == LFramebuffer::Rotated90)
         {
-            Int32 tmp = x;
+            Float32 tmp = x;
             x = y;
             y = fb->rect().h() - tmp - w;
             tmp = w;
@@ -352,9 +413,9 @@ LPRIVATE_CLASS(LPainter)
             if (fbId == 0)
                 y = fb->rect().h() - y - h;
         }
-        else if (fb->transform() == LFramebuffer::Flipped90)
+        else if (fb->transform() == LFramebuffer::Flipped270)
         {
-            Int32 tmp = x;
+            Float32 tmp = x;
             x = fb->rect().h() - y - h;
             y = fb->rect().w() - tmp - w;
             tmp = w;
@@ -371,9 +432,9 @@ LPRIVATE_CLASS(LPainter)
             if (fbId == 0)
                 y = fb->rect().h() - y - h;
         }
-        else if (fb->transform() == LFramebuffer::Flipped270)
+        else if (fb->transform() == LFramebuffer::Flipped90)
         {
-            Int32 tmp = x;
+            Float32 tmp = x;
             x = y;
             y = tmp;
             tmp = w;
@@ -384,38 +445,31 @@ LPRIVATE_CLASS(LPainter)
                 y = fb->rect().w() - y - h;
         }
 
-        Int32 fbScale = fb->scale();
+        Float32 fbScale = fb->scale();
 
-        if (fbScale == 2)
-        {
-            x <<= 1;
-            y <<= 1;
-            w <<= 1;
-            h <<= 1;
-        }
-        else if (fbScale > 2)
-        {
-            x *= fbScale;
-            y *= fbScale;
-            w *= fbScale;
-            h *= fbScale;
-        }
+        Int32 x2 = floorf(Float32(x + w) * fbScale);
+        Int32 y2 = floorf(Float32(y + h) * fbScale);
+
+        x = floorf(Float32(x) * fbScale);
+        y = floorf(Float32(y) * fbScale);
+        w = x2 - x;
+        h = y2 - y;
 
         glScissor(x, y, w, h);
         glViewport(x, y, w, h);
     }
 
     inline void drawTexture(const LTexture *texture,
-                           Int32 srcX,
-                           Int32 srcY,
-                           Int32 srcW,
-                           Int32 srcH,
-                           Int32 dstX,
-                           Int32 dstY,
-                           Int32 dstW,
-                           Int32 dstH,
-                           Float32 srcScale,
-                           Float32 alpha)
+                            Int32 srcX,
+                            Int32 srcY,
+                            Int32 srcW,
+                            Int32 srcH,
+                            Int32 dstX,
+                            Int32 dstY,
+                            Int32 dstW,
+                            Int32 dstH,
+                            Float32 srcScale,
+                            Float32 alpha)
     {
         if (!texture || srcScale <= 0.f)
             return;
@@ -429,6 +483,7 @@ LPRIVATE_CLASS(LPainter)
         setViewport(dstX, dstY, dstW, dstH);
         glActiveTexture(GL_TEXTURE0);
 
+        shaderSetTexColorEnabled(false);
         shaderSetAlpha(alpha);
         shaderSetMode(0);
         shaderSetActiveTexture(0);
@@ -460,10 +515,10 @@ LPRIVATE_CLASS(LPainter)
     }
 
     inline void drawColorTexture(const LTexture *texture,
-                               Float32 r, Float32 g, Float32 b,
-                               Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
-                               Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                               Float32 srcScale, Float32 alpha)
+                                 Float32 r, Float32 g, Float32 b,
+                                 Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
+                                 Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
+                                 Float32 srcScale, Float32 alpha)
     {
         GLenum target = texture->target();
         switchTarget(target);
@@ -471,9 +526,10 @@ LPRIVATE_CLASS(LPainter)
         setViewport(dstX, dstY, dstW, dstH);
         glActiveTexture(GL_TEXTURE0);
 
+        shaderSetTexColorEnabled(true);
         shaderSetAlpha(alpha);
         shaderSetColor(r, g, b);
-        shaderSetMode(2);
+        shaderSetMode(0);
         shaderSetActiveTexture(0);
 
         if (fbId != 0)
@@ -490,7 +546,7 @@ LPRIVATE_CLASS(LPainter)
         else if (srcScale == 2.f)
         {
             shaderSetTexSize(texture->sizeB().w() >> 1,
-                                    texture->sizeB().h() >> 1);
+                             texture->sizeB().h() >> 1);
         }
         else
         {
@@ -503,7 +559,7 @@ LPRIVATE_CLASS(LPainter)
     }
 
     inline void drawColor(Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                             Float32 r, Float32 g, Float32 b, Float32 a)
+                          Float32 r, Float32 g, Float32 b, Float32 a)
     {
         switchTarget(GL_TEXTURE_2D);
         setViewport(dstX, dstY, dstW, dstH);
@@ -573,11 +629,7 @@ LPRIVATE_CLASS(LPainter)
         LTexture::LTexturePrivate::setTextureParams(textureId, textureTarget, GL_REPEAT, GL_REPEAT, minFilter, minFilter);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
-
-    LFramebuffer *fb = nullptr;
-    GLuint fbId = 0;
-    GLenum lastTarget = GL_TEXTURE_2D;
+    }  
 };
 
 #endif // LPAINTERPRIVATE_H

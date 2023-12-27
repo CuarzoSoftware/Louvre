@@ -3,6 +3,8 @@
 
 #include <LObject.h>
 #include <LPoint.h>
+#include <LFramebuffer.h>
+#include <LRect.h>
 
 /**
  * @brief Utility for Painting Operations
@@ -31,6 +33,131 @@
 class Louvre::LPainter : LObject
 {
 public:
+
+    /**
+     * @brief Parameters required for bindTextureMode().
+     *
+     * This struct provides all the necessary parameters to map a texture into the current destination framebuffer.
+     */
+    struct TextureParams
+    {
+        /**
+         * @brief Texture to be drawn.
+         */
+        const LTexture *texture;
+
+        /**
+         * @brief Position of the texture (destination rect) in global compositor coordinates.
+         */
+        LPoint pos;
+
+        /**
+         * @brief Subrect of the texture to be mapped in surface coordinates with fractional values.
+         *
+         * Coordinates should be specified in the space generated after applying the scale factor and transformation to the texture buffer.
+         */
+        LRectF srcRect;
+
+        /**
+         * @brief Destination size of the source rect in surface coordinates.
+         */
+        LSize dstSize;
+
+        /**
+         * @brief Transform applied to the texture.
+         *
+         * For example, if the texture is rotated 90 degrees counterclockwise, use LFramebuffer::Rotated90.
+         * LPainter will apply the inverse transform (LFramebuffer::Rotated270).
+         */
+        LFramebuffer::Transform srcTransform = LFramebuffer::Normal;
+
+        /**
+         * @brief Scale factor of the texture.
+         */
+        Float32 srcScale = 1.f;
+    };
+
+    /**
+     * @brief Switches to texture mode.
+     *
+     * This method maps a texture to the global compositor space, enabling subsequent drawing of specific parts using drawBox() or drawRect().
+     *
+     * @param params Parameters required to map the texture.
+     */
+    void bindTextureMode(const TextureParams &params);
+
+    /**
+     * @brief Switches to color mode.
+     *
+     * In color mode, drawBox() or drawRect() can be called to draw the specified color.
+     * The color is set using setColor() and setAlpha().
+     */
+    void bindColorMode();
+
+    /**
+     * @brief Draws a texture or color box on the screen based on the current rendering mode.
+     *
+     * @param box The box to be drawn in global compositor coordinates.
+     */
+    void drawBox(const LBox &box);
+
+    /**
+     * @brief Draws a texture or color rect on the screen based on the current rendering mode.
+     *
+     * @param rect The rect to be drawn in global compositor coordinates.
+     */
+    void drawRect(const LRect &rect);
+
+    /**
+     * @brief Draws a texture or color region on the screen based on the current rendering mode.
+     *
+     * @param region The region to be drawn in global compositor coordinates.
+     */
+    void drawRegion(const LRegion &region);
+
+    /**
+     * @brief Enables or disables custom texture color.
+     *
+     * When enabled, the texture RGB values are replaced by the color set with setColor().
+     */
+    void enableCustomTextureColor(bool enabled);
+
+    /**
+     * @brief Checks if custom texture color is enabled.
+     *
+     * @return `true` if custom texture color is enabled, otherwise `false`.
+     */
+    bool customTextureColorEnabled() const;
+
+    /**
+     * @brief Sets the alpha value.
+     *
+     * In texture mode, the texture alpha value is multiplied by this value.
+     * In color mode, this value becomes the alpha value of the color.
+     *
+     * @param alpha The alpha value to be set.
+     */
+    void setAlpha(Float32 alpha);
+
+    /**
+     * @brief Sets the color.
+     *
+     * If the current mode is texture mode and customTextureColorEnabled() is enabled, this value replaces the texture RGB values while keeping the alpha intact.
+     * If the current mode is color mode, this is the color to be drawn.
+     *
+     * @param color The color to be set.
+     */
+    void setColor(const LRGBF &color);
+
+    /**
+     * @brief Sets the color factor.
+     *
+     * This factor multiplies each component of the destination color. Setting all components to 1.0f disables it.
+     *
+     * @param color The color factor to be set.
+     */
+    void setColorFactor(const LRGBAF &color);
+
     /// @cond OMIT
     LPainter(const LPainter&) = delete;
     LPainter& operator= (const LPainter&) = delete;
@@ -69,6 +196,7 @@ public:
      * @param srcScale Scaling factor for the source texture (default is 1.0).
      * @param alpha Alpha value for blending the texture (range [0.0, 1.0]).
      */
+    [[deprecated("This method will be removed in Louvre v2.0.0-1. See LPainter::bindTextureMode().")]]
     void drawTexture(const LTexture *texture, const LRect &src, const LRect &dst,
                      Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
 
@@ -91,6 +219,7 @@ public:
      * @param srcScale Scaling factor for the source texture (default is 1.0).
      * @param alpha Alpha value for blending the texture (range [0.0, 1.0]).
      */
+    [[deprecated("This method will be removed in Louvre v2.0.0-1. See LPainter::bindTextureMode().")]]
     void drawTexture(const LTexture *texture,
                      Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
                      Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
@@ -110,6 +239,7 @@ public:
      * @param srcScale Scaling factor for the source texture (default is 1.0).
      * @param alpha Alpha value for blending the texture (range [0.0, 1.0]).
      */
+    [[deprecated("This method will be removed in Louvre v2.0.0-1. See LPainter::bindTextureMode().")]]
     void drawColorTexture(const LTexture *texture, const LRGBF &color, const LRect &src, const LRect &dst,
                           Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
 
@@ -135,6 +265,7 @@ public:
      * @param srcScale Scaling factor for the source texture (default is 1.0).
      * @param alpha Alpha value for blending the texture (range [0.0, 1.0]).
      */
+    [[deprecated("This method will be removed in Louvre v2.0.0-1. See LPainter::bindTextureMode().")]]
     void drawColorTexture(const LTexture *texture, Float32 r, Float32 g, Float32 b,
                           Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
                           Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
@@ -151,6 +282,7 @@ public:
      * @param b Blue component value (range [0.0, 1.0]).
      * @param a Alpha component value (range [0.0, 1.0]).
      */
+    [[deprecated("This method will be removed in Louvre v2.0.0-1. See LPainter::bindColorMode().")]]
     void drawColor(const LRect &dst, Float32 r, Float32 g, Float32 b, Float32 a);
 
     /**
@@ -167,6 +299,7 @@ public:
      * @param b Blue component value (range [0.0, 1.0]).
      * @param a Alpha component value (range [0.0, 1.0]).
      */
+    [[deprecated("This method will be removed in Louvre v2.0.0-1. See LPainter::bindColorMode().")]]
     void drawColor(Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                    Float32 r, Float32 g, Float32 b, Float32 a);
 
@@ -175,6 +308,7 @@ public:
      *
      * @note This method should be used if you are working with your own shaders/programs.
      */
+    [[deprecated("This method will be removed in Louvre v2.0.0-1.")]]
     void setViewport(const LRect &rect);
 
     /**
@@ -182,6 +316,7 @@ public:
      *
      * @note This method should be used if you are working with your own shaders/programs.
      */
+    [[deprecated("This method will be removed in Louvre v2.0.0-1.")]]
     void setViewport(Int32 x, Int32 y, Int32 w, Int32 h);
 
     /**
@@ -195,6 +330,13 @@ public:
      * @param a Value of the alpha component (range [0.0, 1.0]).
      */
     void setClearColor(Float32 r, Float32 g, Float32 b, Float32 a);
+
+    /**
+     * @brief Set the clear color.
+     *
+     * This method sets the clear color used when calling clearScreen().
+     */
+    void setClearColor(const LRGBAF &color);
 
     /**
      * @brief Set the color factor.
@@ -221,7 +363,15 @@ public:
      *
      * @note This method should be used if you are working with your own OpenGL programs and want to use the LPainter methods again.
      */
+    [[deprecated("This method will be removed in Louvre v2.0.0-1. Use LPainter::sync() instead.")]]
     void bindProgram();
+
+    /**
+     * @brief Synchronizes the LPainter state.
+     *
+     * This method should be used if you are working with your own OpenGL programs and want to use the LPainter methods again.
+     */
+    void sync();
 
     LPRIVATE_IMP_UNIQUE(LPainter)
 

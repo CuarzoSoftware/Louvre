@@ -20,6 +20,8 @@
 #include "ToplevelView.h"
 #include "Popup.h"
 
+#include <LOpenGL.h>
+
 Compositor::Compositor() : LCompositor(),
     scene(),
     backgroundLayer(scene.mainView()),
@@ -96,12 +98,23 @@ void Compositor::initialized()
     for (LOutput *output : seat()->outputs())
     {
         // Set scale 2 to HiDPI screens
-        output->setScale(output->dpi() >= 200 ? 2 : 1);
+        output->setScale(output->dpi() >= 200 ? 2.f : 1.75f);
         output->setPos(LPoint(totalWidth, 0));
+        output->setTransform(LFramebuffer::Normal);
         totalWidth += output->size().w();
         compositor()->addOutput(output);
         output->repaint();
     }
+
+    /*
+    LSceneView *s = new LSceneView(2880, 1600, &overlayLayer);
+    s->setScale(2);
+    LTexture *tex = LOpenGL::loadTexture("/home/eduardo/buttons.png");
+    LTextureView *v = new LTextureView(tex, s);
+    s->setPos(0, 0);
+    s->setClearColor(1,0,0,1);
+    v->setPos(200, 200);
+    s->damageAll(nullptr);*/
 }
 
 void Compositor::uninitialized()

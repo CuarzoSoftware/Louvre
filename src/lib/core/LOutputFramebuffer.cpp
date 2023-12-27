@@ -10,7 +10,7 @@ LPRIVATE_INIT_UNIQUE(LOutputFramebuffer)
 
 LOutputFramebuffer::~LOutputFramebuffer() {}
 
-Int32 LOutputFramebuffer::scale() const
+Float32 LOutputFramebuffer::scale() const
 {
     return imp()->output->scale();
 }

@@ -20,7 +20,6 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     std::atomic<bool> callLockACK;
     std::thread::id threadId;
 
-    // Painter
     LPainter *painter = nullptr;
 
     State state = Uninitialized;
@@ -28,14 +27,11 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     void *graphicBackendData = nullptr;
     bool pendingRepaint = false;
 
-    // Setup Methods
     bool initialize();
 
-    // Compositor
     wl_global *global = nullptr;
 
-    // Params
-    Int32 outputScale = 1;
+    Float32 scale = 1.f;
 
     std::mutex pageflipMutex;
     timespec presentationTime;

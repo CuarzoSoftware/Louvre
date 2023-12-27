@@ -1,4 +1,5 @@
 #include "Output.h"
+#include <LRenderBuffer.h>
 #include "TerminalIcon.h"
 #include <Compositor.h>
 #include <LPainter.h>
@@ -92,6 +93,7 @@ void Output::initializeGL()
 void Output::resizeGL()
 {
     Int32 x = 0;
+
     // Set double scale to outputs with DPI >= 200
     for (Output *output : (std::list<Output*>&)compositor()->outputs())
     {
@@ -140,6 +142,15 @@ void repaintChildren(LSurface *s)
 
 void Output::paintGL()
 {
+    LPainter::TextureParams params;
+    Compositor *c = (Compositor*)compositor();
+    LPainter *p = painter();
+    list<Surface*> &surfaces = (list<Surface*>&)compositor()->surfaces();
+
+    p->setAlpha(1.f);
+    p->enableCustomTextureColor(false);
+
+    // Creates an LRegion for each output framebuffer
     if (!damageListCreated)
     {
         for (UInt32 i = 0; i < buffersCount() - 1; i++)
@@ -148,9 +159,7 @@ void Output::paintGL()
         damageListCreated = true;
     }
 
-    Int32 n, w, h;
-    LBox *boxes;
-
+    // Damage the entire output if rect changed
     if (lastRect != rect())
     {
         fullDamage();
@@ -160,10 +169,6 @@ void Output::paintGL()
     // Check if surface moved under cursor
     if (seat()->pointer()->surfaceAt(cursor()->pos()) != seat()->pointer()->focus())
         seat()->pointer()->pointerMoveEvent(0, 0, false);
-
-    Compositor *c = (Compositor*)compositor();
-    LPainter *p = painter();
-    list<Surface*> &surfaces = (list<Surface*>&)compositor()->surfaces();
 
     if (c->clock && c->clock->texture && redrawClock)
     {
@@ -179,17 +184,11 @@ void Output::paintGL()
     if (seat()->dndManager()->icon())
         seat()->dndManager()->icon()->surface()->raise();
 
-    /* In this pass we:
-     * - 1. Calculate the new output damage.
-     * - 2. Mark each surface as ocludded by default.
-     * - 3. Update the outputs each surface intersects.
-     * - 4. Check if each surface scale matches the global scale.
-     * - 5. Check if each surface changed its position or size.
-     * - 3. Transpose each surface damage.
-     * - 4. Transpose each surface traslucent region.
-     * - 5. Transpose each surface opaque region.
-     * - 6. Sum the surfaces transposed opaque region. */
-    LRegion opaqueTransposedCSum;
+    /*********************************************************
+     ***************** CALC SURFACES DAMAGE ******************
+     *********************************************************/
+
+    LRegion opaqueTranslatedCSum;
     for (list<Surface*>::reverse_iterator it = surfaces.rbegin(); it != surfaces.rend(); it++)
     {
         Surface *s = *it;
@@ -208,7 +207,7 @@ void Output::paintGL()
                 s->setPos(cursor()->pos());
                 for (LOutput *o : compositor()->outputs())
                 {
-                    if (o->rect().intersects(s->currentRectC))
+                    if (o->rect().intersects(s->currentRect))
                         s->sendOutputEnterEvent(o);
                     else
                         s->sendOutputLeaveEvent(o);
@@ -220,20 +219,16 @@ void Output::paintGL()
             continue;
         }
 
-        // If the scale is equal to the global scale, we avoid performing transformations later
-        //s->bufferScaleMatchGlobalScale = s->bufferScale() == compositor()->globalScale();
+        // Store the current surface rect
+        s->currentRect.setPos(s->rolePos());
+        s->currentRect.setSize(s->size());
 
-        // 2. Store the current surface rect
-        s->currentRectC.setPos(s->rolePos());
-        s->currentRectC.setSize(s->size());
-
-        // We clear damage only
         bool clearDamage = true;
 
-        // 3. Update the surface intersected outputs
+        // Update the surface intersected outputs
         for (LOutput *o : compositor()->outputs())
         {
-            if (o->rect().intersects(s->currentRectC, false))
+            if (o->rect().intersects(s->currentRect, false))
             {
                 s->sendOutputEnterEvent(o);
 
@@ -247,51 +242,51 @@ void Output::paintGL()
                 s->sendOutputLeaveEvent(o);
         }
 
-        bool rectChanged = s->currentRectC!= s->currentOutputData->previousRectC;
+        bool rectChanged = s->currentRect!= s->currentOutputData->previousRect;
 
         // If rect or order changed (set current rect and prev rect as damage)
         if (rectChanged || s->currentOutputData->changedOrder)
         {
-            s->currentDamageTransposedC.clear();
-            s->currentDamageTransposedC.addRect(s->currentRectC);
-            s->currentDamageTransposedC.addRect(s->currentOutputData->previousRectC);
+            s->currentDamageTranslated.clear();
+            s->currentDamageTranslated.addRect(s->currentRect);
+            s->currentDamageTranslated.addRect(s->currentOutputData->previousRect);
             s->currentOutputData->changedOrder = false;
-            s->currentOutputData->previousRectC = s->currentRectC;
+            s->currentOutputData->previousRect = s->currentRect;
         }
         else
         {
-            s->currentDamageTransposedC = s->damage();
-            s->currentDamageTransposedC.offset(s->currentRectC.pos());
+            s->currentDamageTranslated = s->damage();
+            s->currentDamageTranslated.offset(s->currentRect.pos());
         }
 
-        // Remove previus opaque region to surface damage
-        s->currentDamageTransposedC.subtractRegion(opaqueTransposedCSum);
+        // Remove overlay opaque region to surface damage
+        s->currentDamageTranslated.subtractRegion(opaqueTranslatedCSum);
 
         // Add clipped damage to new damage
-        newDamage.addRegion(s->currentDamageTransposedC);
+        newDamage.addRegion(s->currentDamageTranslated);
 
-        // Store tansposed traslucent region
-        s->currentTraslucentTransposedC = s->translucentRegion();
-        s->currentTraslucentTransposedC.offset(s->currentRectC.pos());
+        // Store translated Translucent region
+        s->currentTranslucentTranslated = s->translucentRegion();
+        s->currentTranslucentTranslated.offset(s->currentRect.pos());
 
-        // Store tansposed opaque region
-        s->currentOpaqueTransposedC = s->opaqueRegion();
-        s->currentOpaqueTransposedC.offset(s->currentRectC.pos());
+        // Store translated opaque region
+        s->currentOpaqueTranslated = s->opaqueRegion();
+        s->currentOpaqueTranslated.offset(s->currentRect.pos());
 
         // Store sum of previus opaque regions
-        s->currentOpaqueTransposedCSum = opaqueTransposedCSum;
+        s->currentOpaqueTranslatedSum = opaqueTranslatedCSum;
 
         // Check if surface is ocludded
         LRegion ocluddedTest;
-        ocluddedTest.addRect(s->currentRectC);
-        ocluddedTest.subtractRegion(opaqueTransposedCSum);
+        ocluddedTest.addRect(s->currentRect);
+        ocluddedTest.subtractRegion(opaqueTranslatedCSum);
         s->occluded = ocluddedTest.empty();
 
         if (!s->occluded && clearDamage)
             s->requestNextFrame();
 
-        // Add current transposed opaque region to global sum
-        opaqueTransposedCSum.addRegion(s->currentOpaqueTransposedC);
+        // Add current Translated opaque region to global sum
+        opaqueTranslatedCSum.addRegion(s->currentOpaqueTranslated);
 
         s->currentOutputData->lastRenderedDamageId = s->damageId();
     }
@@ -336,6 +331,10 @@ void Output::paintGL()
         }
     }
 
+    /*******************************************************
+     ***************** DRAW OPAQUE DAMAGE ******************
+     *******************************************************/
+
     for (list<Surface*>::reverse_iterator it = surfaces.rbegin(); it != surfaces.rend(); it++)
     {
         Surface *s = *it;
@@ -343,77 +342,55 @@ void Output::paintGL()
         if (!s->isRenderable || s->occluded)
             continue;
 
-        s->currentOpaqueTransposedC.intersectRegion(newDamage);
-        s->currentOpaqueTransposedC.subtractRegion(s->currentOpaqueTransposedCSum);
+        s->currentOpaqueTranslated.intersectRegion(newDamage);
+        s->currentOpaqueTranslated.subtractRegion(s->currentOpaqueTranslatedSum);
 
-        boxes = s->currentOpaqueTransposedC.boxes(&n);
-
-        // Draw opaque rects
-        for (Int32 i = 0; i < n; i++)
-        {
-            w = boxes->x2 - boxes->x1;
-            h = boxes->y2 - boxes->y1;
-
-            p->drawTexture(
-                s->texture(),
-                boxes->x1 - s->currentRectC.x(),
-                boxes->y1 - s->currentRectC.y(),
-                w,
-                h,
-                boxes->x1,
-                boxes->y1,
-                w,
-                h,
-                s->bufferScale());
-
-            boxes++;
-        }
+        params.dstSize = s->currentRect.size();
+        params.srcRect = s->srcRect();
+        params.pos = s->currentRect.pos();
+        params.texture = s->texture();
+        params.srcTransform = LFramebuffer::Normal;
+        params.srcScale = s->bufferScale();
+        p->bindTextureMode(params);
+        p->drawRegion(s->currentOpaqueTranslated);
     }
 
-    // Background
+    /****************************************************
+     ***************** DRAW BACKGROUND ******************
+     ****************************************************/
+
     LRegion backgroundDamage = newDamage;
-    backgroundDamage.subtractRegion(opaqueTransposedCSum);
-    boxes = backgroundDamage.boxes(&n);
+    backgroundDamage.subtractRegion(opaqueTranslatedCSum);
 
     if (backgroundTexture)
     {
-        for (Int32 i = 0; i < n; i++)
-        {
-            w = boxes->x2 - boxes->x1;
-            h = boxes->y2 - boxes->y1;
-
-            p->drawTexture(backgroundTexture,
-                            boxes->x1 - pos().x(),
-                            boxes->y1 - pos().y(),
-                            w,
-                            h,
-                            boxes->x1,
-                            boxes->y1,
-                            w,
-                            h,
-                            scale());
-            boxes++;
-        }
+        params.texture = backgroundTexture;
+        params.dstSize = size();
+        params.srcRect = LRectF(0, backgroundTexture->sizeB());
+        params.pos = pos();
+        params.srcScale = 1.f;
+        params.srcTransform = LFramebuffer::Normal;
+        p->bindTextureMode(params);
+        p->drawRegion(backgroundDamage);
     }
     else
     {
-        for (Int32 i = 0; i < n; i++)
-        {
-            p->drawColor(boxes->x1,
-                          boxes->y1,
-                          boxes->x2 - boxes->x1,
-                          boxes->y2 - boxes->y1,
-                          0.15f,
-                          0.25f,
-                          0.35f,
-                          1.f);
-            boxes++;
-        }
+        p->bindColorMode();
+
+        p->setColor({
+            .r = 0.15f,
+            .g = 0.25f,
+            .b = 0.35f
+        });
+
+        p->drawRegion(backgroundDamage);
     }
 
     glEnable(GL_BLEND);
 
-    // Traslucent
+    /************************************************************
+     ***************** DRAW TRANSLUCENT DAMAGE ******************
+     ************************************************************/
 
     for (list<Surface*>::iterator it = surfaces.begin(); it != surfaces.end(); it++)
     {
@@ -423,32 +400,17 @@ void Output::paintGL()
             continue;
 
         s->occluded = true;
-        s->currentTraslucentTransposedC.intersectRegion(newDamage);
-        s->currentTraslucentTransposedC.subtractRegion(s->currentOpaqueTransposedCSum);
+        s->currentTranslucentTranslated.intersectRegion(newDamage);
+        s->currentTranslucentTranslated.subtractRegion(s->currentOpaqueTranslatedSum);
 
-        boxes = s->currentTraslucentTransposedC.boxes(&n);
-
-        // Draw transulcent rects
-
-        for (Int32 i = 0; i < n; i++)
-        {
-            w = boxes->x2 - boxes->x1;
-            h = boxes->y2 - boxes->y1;
-
-            p->drawTexture(
-                s->texture(),
-                boxes->x1 - s->currentRectC.x(),
-                boxes->y1 - s->currentRectC.y(),
-                w,
-                h,
-                boxes->x1 ,
-                boxes->y1,
-                w,
-                h,
-                s->bufferScale());
-
-            boxes++;
-        }
+        params.dstSize = s->currentRect.size();
+        params.srcRect = s->srcRect();
+        params.pos = s->currentRect.pos();
+        params.texture = s->texture();
+        params.srcTransform = LFramebuffer::Normal;
+        params.srcScale = s->bufferScale();
+        p->bindTextureMode(params);
+        p->drawRegion(s->currentTranslucentTranslated);
     }
 
     // Topbar
@@ -461,20 +423,14 @@ void Output::paintGL()
                                    rect().w(),
                                    topbarHeight));
         topbarRegion.intersectRegion(newDamage);
-        boxes = topbarRegion.boxes(&n);
-
-        for (Int32 i = 0; i < n; i++)
-        {
-            p->drawColor(boxes->x1,
-                          boxes->y1,
-                          boxes->x2 - boxes->x1,
-                          boxes->y2 - boxes->y1,
-                          1.0f,
-                          1.0f,
-                          1.0f,
-                          0.9f);
-            boxes++;
-        }
+        p->bindColorMode();
+        p->setColor({
+            .r = 1.f,
+            .g = 1.f,
+            .b = 1.f
+        });
+        p->setAlpha(0.9f);
+        p->drawRegion(topbarRegion);
 
         if (terminalIconTexture)
         {
@@ -484,19 +440,32 @@ void Output::paintGL()
 
             if (!terminalIconRegion.empty())
             {
-                p->drawTexture(terminalIconTexture,
-                                LRect(0, terminalIconTexture->sizeB()),
-                                terminalIconRect,
-                                1.f,
-                                terminalIconAlpha);
+                params.pos = terminalIconRect.pos();
+                params.dstSize = terminalIconRect.size();
+                params.srcRect = LRect(0, terminalIconTexture->sizeB());
+                params.texture = terminalIconTexture;
+                params.srcTransform = LFramebuffer::Normal;
+                params.srcScale = 1.f;
+                p->setAlpha(terminalIconAlpha);
+                p->bindTextureMode(params);
+                p->drawRect(terminalIconRect);
             }
         }
 
         if (drawClock)
         {
-            p->drawTexture(c->clock->texture,
-                            LRect(0, c->clock->texture->sizeB()),
-                            dstClockRect);
+            params.pos = dstClockRect.pos();
+            params.dstSize = dstClockRect.size();
+            params.srcRect = LRect(0, c->clock->texture->sizeB());
+            params.texture = c->clock->texture;
+            params.srcTransform = LFramebuffer::Normal;
+            params.srcScale = 1.f;
+            p->enableCustomTextureColor(true);
+            p->setColor({.r = 0.1f, .g = 0.1f, .b = 0.1f});
+            p->setAlpha(1.f);
+            p->bindTextureMode(params);
+            p->drawRect(dstClockRect);
+            p->enableCustomTextureColor(false);
         }
     }
 
@@ -507,11 +476,15 @@ void Output::paintGL()
         if (alpha < 0.f)
             alpha = 0.f;
 
-        p->drawTexture((*it).texture,
-                        LRect(0, (*it).texture->sizeB()),
-                        (*it).rect,
-                        1.f,
-                        alpha);
+        params.pos = (*it).rect.pos();
+        params.dstSize = (*it).rect.size();
+        params.srcRect = LRect(0, (*it).texture->sizeB());
+        params.texture = (*it).texture;
+        params.srcTransform = LFramebuffer::Normal;
+        params.srcScale = 1.f;
+        p->bindTextureMode(params);
+        p->setAlpha(alpha);
+        p->drawRect((*it).rect);
 
         if (alpha == 0.f)
         {
@@ -519,9 +492,7 @@ void Output::paintGL()
             it = c->destroyedToplevels.erase(it);
         }
         else
-        {
             repaint();
-        }
     }
 
     setBufferDamage(newDamage);

@@ -28,6 +28,14 @@ LView::~LView()
     compositor()->imp()->views.erase(imp()->compositorLink);
 }
 
+void LView::damageAll()
+{
+    imp()->markAsChangedOrder(false);
+
+    if (mapped())
+        repaint();
+}
+
 LScene *LView::scene() const
 {
     // Only the LScene mainView has this variable assigned

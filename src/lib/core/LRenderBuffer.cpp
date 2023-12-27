@@ -53,9 +53,9 @@ LFramebuffer::Transform LRenderBuffer::transform() const
     return LFramebuffer::Normal;
 }
 
-void LRenderBuffer::setScale(Int32 scale) const
+void LRenderBuffer::setScale(Float32 scale) const
 {
-    if (scale <= 0)
+    if (scale < 1.f)
         return;
 
     if (imp()->scale != scale)
@@ -70,7 +70,12 @@ void LRenderBuffer::setPos(const LPoint &pos)
     imp()->rect.setPos(pos);
 }
 
-Int32 LRenderBuffer::scale() const
+const LPoint &LRenderBuffer::pos() const
+{
+    return imp()->rect.pos();
+}
+
+Float32 LRenderBuffer::scale() const
 {
     return imp()->scale;
 }
@@ -78,6 +83,11 @@ Int32 LRenderBuffer::scale() const
 const LSize &LRenderBuffer::sizeB() const
 {
     return imp()->texture.sizeB();
+}
+
+const LSize &LRenderBuffer::size() const
+{
+    return imp()->rect.size();
 }
 
 const LRect &LRenderBuffer::rect() const

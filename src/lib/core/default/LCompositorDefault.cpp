@@ -1,3 +1,4 @@
+#include <cstring>
 #include <protocols/Wayland/private/GSeatPrivate.h>
 #include <protocols/Wayland/private/GCompositorPrivate.h>
 #include <protocols/Wayland/private/GSubcompositorPrivate.h>
@@ -68,7 +69,9 @@ void LCompositor::initialized()
     for (LOutput *output : seat()->outputs())
     {
         // Set scale 2 to outputs with DPI >= 200
-        output->setScale(output->dpi() >= 200 ? 2 : 1);
+        output->setScale(output->dpi() >= 200 ? 2.f : 1.f);
+        output->setTransform(LFramebuffer::Normal);
+
         output->setPos(LPoint(totalWidth, 0));
         totalWidth += output->size().w();
         addOutput(output);

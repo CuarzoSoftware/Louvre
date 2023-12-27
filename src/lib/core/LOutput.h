@@ -252,14 +252,14 @@ public:
      *
      * @see See an example of its use in the default implementation of LCompositor::initialized().
      */
-    void setScale(Int32 scale);
+    void setScale(Float32 scale);
 
     /**
      * @brief Retrieve the current output scale factor.
      *
      * This method returns the current scale factor assigned to the output using setScale(). The default scale factor is 1.
      */
-    Int32 scale() const;
+    Float32 scale() const;
 
     /**
      * @brief Schedule the next rendering frame.

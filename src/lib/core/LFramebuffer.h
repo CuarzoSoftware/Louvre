@@ -33,13 +33,13 @@ public:
         Normal = 0,
 
         /// Rotate 90 degrees counter-clockwise
-        Clock90 = 1,
+        Rotated90 = 1,
 
         /// Rotate 180 degrees counter-clockwise
-        Clock180 = 2,
+        Rotated180 = 2,
 
         /// Rotate 270 degrees counter-clockwise
-        Clock270 = 3,
+        Rotated270 = 3,
 
         /// Flipped (swap left and right sides)
         Flipped = 4,
@@ -54,6 +54,32 @@ public:
         Flipped270 = 7
     };
 
+    static inline bool is90Transform(Transform transform)
+    {
+        return transform & Rotated90;
+    }
+
+    static inline Transform requiredTransform(Transform from, Transform to)
+    {
+        Int32 bitmask = Rotated270;
+        Int32 flip = (from & ~bitmask) ^ (to & ~bitmask);
+        Int32 rotation;
+
+        if (flip)
+        {
+            rotation = ((to & bitmask) + (from & bitmask)) & bitmask;
+        }
+        else
+        {
+            rotation = (to & bitmask) - (from & bitmask);
+
+            if (rotation < 0)
+                rotation += 4;
+        }
+
+        return (LFramebuffer::Transform)(flip| rotation);
+    }
+
     /**
      * @brief Destructor for the LFramebuffer class.
      */
@@ -67,7 +93,7 @@ public:
      *
      * @returns The scale factor for the framebuffer.
      */
-    virtual Int32 scale() const = 0;
+    virtual Float32 scale() const = 0;
 
     /**
      * @brief Get the size of the framebuffer in buffer coordinates.

@@ -63,7 +63,7 @@ void GOutput::sendConfiguration()
         output()->currentMode()->sizeB().h(),
         output()->currentMode()->refreshRate());
 
-    if (scale(output()->scale()))
+    if (scale(roundf(output()->scale())))
     {
         if (name(output()->name()))
             description(output()->description());

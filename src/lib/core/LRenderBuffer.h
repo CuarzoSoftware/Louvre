@@ -115,7 +115,7 @@ public:
      *
      * @param scale The buffer scale factor.
      */
-    void setScale(Int32 scale) const;
+    void setScale(Float32 scale) const;
 
     /**
      * @brief Retrieve the buffer scale of the framebuffer.
@@ -124,7 +124,7 @@ public:
      *
      * @return The buffer scale factor.
      */
-    Int32 scale() const override;
+    Float32 scale() const override;
 
     Int32 buffersCount() const override;
     Int32 currentBufferIndex() const override;

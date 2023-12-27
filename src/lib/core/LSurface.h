@@ -119,6 +119,8 @@ public:
         DNDIcon = 5
     };
 
+    const LRectF &srcRect() const;
+
     /**
      * @brief ID of the role
      *

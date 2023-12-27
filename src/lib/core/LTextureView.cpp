@@ -82,15 +82,16 @@ void LTextureView::setTranslucentRegion(const LRegion *region)
     }
 }
 
-void LTextureView::setBufferScale(Int32 scale)
+void LTextureView::setBufferScale(Float32 scale)
 {
-    if (scale < 0)
-        scale = 0;
+    if (scale < 0.5f)
+        scale = 0.5f;
 
     if (mapped() && scale != imp()->bufferScale)
         repaint();
 
     imp()->bufferScale = scale;
+    imp()->updateDimensions();
 }
 
 void LTextureView::setTexture(LTexture *texture)
@@ -104,16 +105,13 @@ void LTextureView::setTexture(LTexture *texture)
 
         if (imp()->texture)
         {
+            imp()->textureSerial = imp()->texture->imp()->serial;
             imp()->texture->imp()->textureViews.push_back(this);
             imp()->textureLink = std::prev(imp()->texture->imp()->textureViews.end());
         }
 
-        LView *nativeView = this;
-
-        nativeView->imp()->markAsChangedOrder(false);
-
-        if (mapped())
-            repaint();
+        imp()->updateDimensions();
+        damageAll();
     }
 }
 
@@ -127,6 +125,7 @@ void LTextureView::enableDstSize(bool enabled)
     if (enabled != imp()->dstSizeEnabled)
     {
         imp()->dstSizeEnabled = enabled;
+        imp()->updateDimensions();
         repaint();
     }
 }
@@ -144,11 +143,15 @@ void LTextureView::setDstSize(Int32 w, Int32 h)
     if (h < 0)
         h = 0;
 
-    if (imp()->dstSizeEnabled && (w != imp()->dstSize.w() || h != imp()->dstSize.h()))
-        repaint();
+    if (w == imp()->customDstSize.w() && h == imp()->customDstSize.h())
+        return;
 
-    imp()->dstSize.setW(w);
-    imp()->dstSize.setH(h);
+    imp()->customDstSize.setW(w);
+    imp()->customDstSize.setH(h);
+    imp()->updateDimensions();
+
+    if (mapped() && dstSizeEnabled())
+        repaint();
 }
 
 void LTextureView::setDstSize(const LSize &dstSize)
@@ -161,13 +164,7 @@ void LTextureView::enableCustomColor(bool enabled)
     if (imp()->customColorEnabled != enabled)
     {
         imp()->customColorEnabled = enabled;
-
-        LView *nativeView = this;
-
-        nativeView->imp()->markAsChangedOrder(false);
-
-        if (mapped())
-            repaint();
+        damageAll();
     }
 }
 
@@ -178,22 +175,15 @@ bool LTextureView::customColorEnabled() const
 
 void LTextureView::setCustomColor(Float32 r, Float32 g, Float32 b)
 {
-    if (imp()->customColorEnabled)
-    {
-        if (imp()->customColor.r != r || imp()->customColor.g != g || imp()->customColor.b != b)
-        {
-            LView *nativeView = this;
-
-            nativeView->imp()->markAsChangedOrder(false);
-
-            if (mapped())
-                repaint();
-        }
-    }
+    if (imp()->customColor.r == r && imp()->customColor.g == g && imp()->customColor.b == b)
+        return;
 
     imp()->customColor.r = r;
     imp()->customColor.g = g;
     imp()->customColor.b = b;
+
+    if (imp()->customColorEnabled)
+        damageAll();
 }
 
 void LTextureView::setCustomColor(const LRGBF &color)
@@ -204,6 +194,53 @@ void LTextureView::setCustomColor(const LRGBF &color)
 const LRGBF &LTextureView::customColor() const
 {
     return imp()->customColor;
+}
+
+void LTextureView::enableSrcRect(bool enabled)
+{
+    if (imp()->srcRectEnabled == enabled)
+        return;
+
+    imp()->srcRectEnabled = enabled;
+    damageAll();
+    imp()->updateDimensions();
+}
+
+bool LTextureView::srcRectEnabled() const
+{
+    return imp()->srcRectEnabled;
+}
+
+void LTextureView::setSrcRect(const LRectF &srcRect)
+{
+    if (imp()->customSrcRect == srcRect)
+        return;
+
+    imp()->customSrcRect = srcRect;
+    imp()->updateDimensions();
+
+    if (imp()->srcRectEnabled)
+        damageAll();
+}
+
+const LRectF &LTextureView::srcRect() const
+{
+    return imp()->srcRect;
+}
+
+void LTextureView::setTransform(LFramebuffer::Transform transform)
+{
+    if (imp()->transform == transform)
+        return;
+
+    imp()->transform = transform;
+    damageAll();
+    imp()->updateDimensions();
+}
+
+LFramebuffer::Transform LTextureView::transform() const
+{
+    return imp()->transform;
 }
 
 bool LTextureView::nativeMapped() const
@@ -218,24 +255,17 @@ const LPoint &LTextureView::nativePos() const
 
 const LSize &LTextureView::nativeSize() const
 {
-    if (imp()->texture)
+
+    if (imp()->texture && imp()->texture->imp()->serial != imp()->textureSerial)
     {
-        if (imp()->dstSizeEnabled)
-            return imp()->dstSize;
-
-        imp()->tmpSize = imp()->texture->sizeB();
-
-        if (imp()->bufferScale)
-            imp()->tmpSize = imp()->tmpSize/imp()->bufferScale;
-
-        return imp()->tmpSize;
+        imp()->textureSerial = imp()->texture->imp()->serial;
+        imp()->updateDimensions();
     }
 
-    imp()->tmpSize = LSize();
-    return imp()->tmpSize;
+    return imp()->dstSize;
 }
 
-Int32 LTextureView::bufferScale() const
+Float32 LTextureView::bufferScale() const
 {
     return imp()->bufferScale;
 }
@@ -286,71 +316,21 @@ const LRegion *LTextureView::inputRegion() const
     return imp()->inputRegion;
 }
 
-void LTextureView::paintRect(const PaintRectParams &params)
+void LTextureView::paintEvent(const PaintEventParams &params)
 {
     if (!imp()->texture)
         return;
 
-    if (imp()->dstSizeEnabled)
-    {
-        LSizeF scaling;
-        scaling.setW(Float32(imp()->texture->sizeB().w()) / Float32(imp()->dstSize.w() * bufferScale()));
-        scaling.setH(Float32(imp()->texture->sizeB().h()) / Float32(imp()->dstSize.h() * bufferScale()));
+    params.painter->bindTextureMode({
+        .texture = imp()->texture,
+        .pos = pos(),
+        .srcRect = srcRect(),
+        .dstSize = size(),
+        .srcTransform = transform(),
+        .srcScale = bufferScale(),
+    });
 
-        if (imp()->customColorEnabled)
-        {
-            params.p->imp()->drawColorTexture(imp()->texture,
-                                              imp()->customColor.r,
-                                              imp()->customColor.g,
-                                              imp()->customColor.b,
-                                              params.srcX * scaling.x(),
-                                              params.srcY * scaling.y(),
-                                              params.srcW * scaling.x(),
-                                              params.srcH * scaling.y(),
-                                              params.dstX,
-                                              params.dstY,
-                                              params.dstW,
-                                              params.dstH,
-                                              params.scale,
-                                              params.alpha);
-        }
-        else
-        {
-            params.p->imp()->drawTexture(imp()->texture,
-                                         params.srcX * scaling.x(),
-                                         params.srcY * scaling.y(),
-                                         params.srcW * scaling.x(),
-                                         params.srcH * scaling.y(),
-                                         params.dstX,
-                                         params.dstY,
-                                         params.dstW,
-                                         params.dstH,
-                                         params.scale,
-                                         params.alpha);
-        }
-    }
-    else
-    {
-        if (imp()->customColorEnabled)
-        {
-            params.p->imp()->drawColorTexture(imp()->texture,
-                                              imp()->customColor.r,
-                                              imp()->customColor.g,
-                                              imp()->customColor.b,
-                                              params.srcX, params.srcY,
-                                              params.srcW, params.srcH,
-                                              params.dstX, params.dstY,
-                                              params.dstW, params.dstH,
-                                              params.scale, params.alpha);
-        }
-        else
-        {
-            params.p->imp()->drawTexture(imp()->texture,
-                                         params.srcX, params.srcY,
-                                         params.srcW, params.srcH,
-                                         params.dstX, params.dstY,
-                                         params.dstW, params.dstH,
-                                         params.scale, params.alpha);
-        }
-    }
+    params.painter->enableCustomTextureColor(customColorEnabled());
+    params.painter->setColor(customColor());
+    params.painter->drawRegion(*params.region);
 }

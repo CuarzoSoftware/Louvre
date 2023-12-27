@@ -149,24 +149,24 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
 
                 if (o->transform() == LFramebuffer::Flipped)
                     p.setX(o->rect().w() - p.x() - size.w());
-                else if (o->transform() == LFramebuffer::Clock90)
+                else if (o->transform() == LFramebuffer::Rotated270)
                 {
                     Float32 tmp = p.x();
                     p.setX(o->rect().h() - p.y() - size.h());
                     p.setY(tmp);
                 }
-                else if (o->transform() == LFramebuffer::Clock180)
+                else if (o->transform() == LFramebuffer::Rotated180)
                 {
                     p.setX(o->rect().w() - p.x() - size.w());
                     p.setY(o->rect().h() - p.y() - size.h());
                 }
-                else if (o->transform() == LFramebuffer::Clock270)
+                else if (o->transform() == LFramebuffer::Rotated90)
                 {
                     Float32 tmp = p.x();
                     p.setX(p.y());
                     p.setY(o->rect().w() - tmp - size.h());
                 }
-                else if (o->transform() == LFramebuffer::Flipped90)
+                else if (o->transform() == LFramebuffer::Flipped270)
                 {
                     Float32 tmp = p.x();
                     p.setX(o->rect().h() - p.y() - size.h());
@@ -174,7 +174,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
                 }
                 else if (o->transform() == LFramebuffer::Flipped180)
                     p.setY(o->rect().h() - p.y() - size.y());
-                else if (o->transform() == LFramebuffer::Flipped270)
+                else if (o->transform() == LFramebuffer::Flipped90)
                 {
                     Float32 tmp = p.x();
                     p.setX(p.y());
@@ -199,13 +199,13 @@ inline static void texture2Buffer(LCursor *cursor, const LSizeF &size, LFramebuf
     if (transform == LFramebuffer::Normal ||
         transform == LFramebuffer::Flipped ||
         transform == LFramebuffer::Flipped180 ||
-        transform == LFramebuffer::Clock180)
-            src = LRect(0, 0, cursor->texture()->sizeB().w(), -cursor->texture()->sizeB().h());
-    else if (transform == LFramebuffer::Clock90 ||
-             transform == LFramebuffer::Clock270 ||
+        transform == LFramebuffer::Rotated180)
+        src = LRect(0, 0, cursor->texture()->sizeB().w(), -cursor->texture()->sizeB().h());
+    else if (transform == LFramebuffer::Rotated90 ||
+             transform == LFramebuffer::Rotated270 ||
              transform == LFramebuffer::Flipped90 ||
              transform == LFramebuffer::Flipped270)
-            src = LRect(0, 0, -cursor->texture()->sizeB().w(), cursor->texture()->sizeB().h());
+        src = LRect(0, 0, -cursor->texture()->sizeB().w(), cursor->texture()->sizeB().h());
 
     painter->imp()->scaleCursor(
         cursor->texture(),
@@ -219,7 +219,7 @@ inline static void texture2Buffer(LCursor *cursor, const LSizeF &size, LFramebuf
     {
         glReadPixels(0, 0, 64, 64, GL_RGBA , GL_UNSIGNED_BYTE, cursor->imp()->buffer);
 
-        UChar8 tmp;
+        UInt8 tmp;
 
         // Convert to RGBA8888
         for (Int32 i = 0; i < 64*64*4; i+=4)

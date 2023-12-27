@@ -333,7 +333,10 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     }
 
     currentSizeB = texture->sizeB();
-    currentSize = texture->sizeB()/current.bufferScale;
+    currentSize = texture->sizeB();
+    currentSize.setW(roundf(Float32(currentSize.w()) / Float32(current.bufferScale)));
+    currentSize.setH(roundf(Float32(currentSize.h()) / Float32(current.bufferScale)));
+    srcRect = LRectF(0, 0, Float32(currentSizeB.w()) / Float32(current.bufferScale), Float32(currentSizeB.h()) / Float32(current.bufferScale));
 
     if (bufferSizeChanged)
         surface->bufferSizeChanged();

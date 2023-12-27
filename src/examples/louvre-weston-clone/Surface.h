@@ -19,17 +19,17 @@ public:
     bool firstMap = true;
     bool occluded = false;
     bool isRenderable = false;
-    LRect currentRectC;
-    LRegion currentOpaqueTransposedC;
-    LRegion currentDamageTransposedC;
-    LRegion currentOpaqueTransposedCSum;
-    LRegion currentTraslucentTransposedC;
+    LRect currentRect;
+    LRegion currentOpaqueTranslated;
+    LRegion currentDamageTranslated;
+    LRegion currentOpaqueTranslatedSum;
+    LRegion currentTranslucentTranslated;
 
     // Cached data for each output
     struct OutputData
     {
         UInt32 lastRenderedDamageId;
-        LRect previousRectC;
+        LRect previousRect;
         bool changedOrder = true;
     };
     map<LOutput*,OutputData>outputsMap;

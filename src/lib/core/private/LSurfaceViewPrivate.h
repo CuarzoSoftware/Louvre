@@ -22,6 +22,7 @@ LPRIVATE_CLASS(LSurfaceView)
     bool customTranslucentRegionEnabled = false;
 
     LPoint tmpPos;
+    LRectF customSrcRect;
 };
 
 #endif // LSURFACEVIEWPRIVATE_H

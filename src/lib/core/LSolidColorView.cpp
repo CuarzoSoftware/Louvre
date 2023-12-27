@@ -120,9 +120,9 @@ const LSize &LSolidColorView::nativeSize() const
     return imp()->nativeSize;
 }
 
-Int32 LSolidColorView::bufferScale() const
+Float32 LSolidColorView::bufferScale() const
 {
-    return 0;
+    return 1.f;
 }
 
 void LSolidColorView::enteredOutput(LOutput *output)
@@ -171,9 +171,9 @@ const LRegion *LSolidColorView::inputRegion() const
     return imp()->inputRegion;
 }
 
-void LSolidColorView::paintRect(const PaintRectParams &params)
+void LSolidColorView::paintEvent(const PaintEventParams &params)
 {
-    params.p->imp()->drawColor(params.dstX, params.dstY, params.dstW, params.dstH,
-                               color().r, color().g, color().b,
-                               params.alpha);
+    params.painter->setColor(color());
+    params.painter->bindColorMode();
+    params.painter->drawRegion(*params.region);
 }

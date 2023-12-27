@@ -25,39 +25,39 @@ void ToplevelButton::update()
         if (toplevelView->buttonsContainer->pointerIsOver())
         {
             if (pressed)
-                setTexture(G::toplevelTextures().activeCloseButtonPressed);
+                G::setTexViewConf(this, G::CloseButtonEnabledPressed);
             else
-                setTexture(G::toplevelTextures().activeCloseButtonHover);
+                G::setTexViewConf(this, G::CloseButtonEnabledHover);
         }
         else
         {
             if (toplevelView->toplevel->activated())
-                setTexture(G::toplevelTextures().activeCloseButton);
+                G::setTexViewConf(this, G::CloseButtonEnabled);
             else
-                setTexture(G::toplevelTextures().inactiveButton);
+                G::setTexViewConf(this, G::ButtonDisabled);
         }
     }
     else if (buttonType == Minimize)
     {
         if (toplevelView->toplevel->fullscreen())
         {
-            setTexture(G::toplevelTextures().inactiveButton);
+            G::setTexViewConf(this, G::ButtonDisabled);
         }
         else
         {
             if (toplevelView->buttonsContainer->pointerIsOver())
             {
                 if (pressed)
-                    setTexture(G::toplevelTextures().activeMinimizeButtonPressed);
+                    G::setTexViewConf(this, G::MinimizeButtonEnabledPressed);
                 else
-                    setTexture(G::toplevelTextures().activeMinimizeButtonHover);
+                    G::setTexViewConf(this, G::MinimizeButtonEnabledHover);
             }
             else
             {
                 if (toplevelView->toplevel->activated())
-                    setTexture(G::toplevelTextures().activeMinimizeButton);
+                    G::setTexViewConf(this, G::MinimizeButtonEnabled);
                 else
-                    setTexture(G::toplevelTextures().inactiveButton);
+                    G::setTexViewConf(this, G::ButtonDisabled);
             }
         }
     }
@@ -73,32 +73,32 @@ void ToplevelButton::update()
                 if (altMode)
                 {
                     if (toplevelView->toplevel->fullscreen())
-                        setTexture(G::toplevelTextures().activeUnfullscreenButtonPressed);
+                        G::setTexViewConf(this, G::UnfullscreenButtonEnabledPressed);
                     else
-                        setTexture(G::toplevelTextures().activeFullscreenButtonPressed);
+                        G::setTexViewConf(this, G::FullscreenButtonEnabledPressed);
                 }
                 else
-                    setTexture(G::toplevelTextures().activeMaximizeButtonPressed);
+                    G::setTexViewConf(this, G::MaximizeButtonEnabledPressed);
             }
             else
             {
                 if (altMode)
                 {
                     if (toplevelView->toplevel->fullscreen())
-                        setTexture(G::toplevelTextures().activeUnfullscreenButtonHover);
+                        G::setTexViewConf(this, G::UnfullscreenButtonEnabledHover);
                     else
-                        setTexture(G::toplevelTextures().activeFullscreenButtonHover);
+                        G::setTexViewConf(this, G::FullscreenButtonEnabledHover);
                 }
                 else
-                    setTexture(G::toplevelTextures().activeMaximizeButtonHover);
+                    G::setTexViewConf(this, G::MaximizeButtonEnabledHover);
             }
         }
         else
         {
             if (toplevelView->toplevel->activated())
-                setTexture(G::toplevelTextures().activeMaximizeButton);
+                G::setTexViewConf(this, G::MaximizeButtonEnabled);
             else
-                setTexture(G::toplevelTextures().inactiveButton);
+                G::setTexViewConf(this, G::ButtonDisabled);
         }
     }
 }

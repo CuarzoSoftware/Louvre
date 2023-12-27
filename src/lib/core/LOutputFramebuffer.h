@@ -27,7 +27,7 @@ public:
     ~LOutputFramebuffer();
     /// @endcond
 
-    Int32 scale() const override;
+    Float32 scale() const override;
     const LSize &sizeB() const override;
     const LRect &rect() const override;
     GLuint id() const override;

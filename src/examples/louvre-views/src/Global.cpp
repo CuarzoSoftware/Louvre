@@ -24,6 +24,8 @@ static std::list<App*>_apps;
 
 static Tooltip *_tooltip;
 
+static G::TextureViewConf texViewConfs[34];
+
 Compositor *G::compositor()
 {
     return (Compositor*)LCompositor::compositor();
@@ -267,55 +269,136 @@ G::Cursors &G::cursors()
 
 void G::loadToplevelTextures()
 {
-    _toplevelTextures.activeTL = loadAssetsTexture("toplevel_active_top_left.png");
-    _toplevelTextures.activeT = loadAssetsTexture("toplevel_active_top_clamp.png");
-    _toplevelTextures.activeTR = _toplevelTextures.activeTL->copyB(_toplevelTextures.activeTL->sizeB(),
-                                                                  LRect(0,
-                                                                        0,
-                                                                        -_toplevelTextures.activeTL->sizeB().w(),
-                                                                        _toplevelTextures.activeTL->sizeB().h()));
-    _toplevelTextures.activeL = loadAssetsTexture("toplevel_active_side_clamp.png");
-    _toplevelTextures.activeR = _toplevelTextures.activeL->copyB(_toplevelTextures.activeL->sizeB(),
-                                                                  LRect(0,
-                                                                        0,
-                                                                        -_toplevelTextures.activeL->sizeB().w(),
-                                                                        _toplevelTextures.activeL->sizeB().h()));
-    _toplevelTextures.activeBL = loadAssetsTexture("toplevel_active_bottom_left.png");
-    _toplevelTextures.activeB = loadAssetsTexture("toplevel_active_bottom_clamp.png");
-    _toplevelTextures.activeBR = _toplevelTextures.activeBL->copyB(_toplevelTextures.activeBL->sizeB(),
-                                                                  LRect(0,
-                                                                        0,
-                                                                        -_toplevelTextures.activeBL->sizeB().w(),
-                                                                        _toplevelTextures.activeBL->sizeB().h()));
+    _toplevelTextures.atlas = LOpenGL::loadTexture("/home/eduardo/Arduino/atlas@2x.png");
 
-    _toplevelTextures.inactiveTL = loadAssetsTexture("toplevel_inactive_top_left.png");
-    _toplevelTextures.inactiveT = loadAssetsTexture("toplevel_inactive_top_clamp.png");
-    _toplevelTextures.inactiveTR = _toplevelTextures.inactiveTL->copyB(_toplevelTextures.inactiveTL->sizeB(),
-                                                                  LRect(0,
-                                                                        0,
-                                                                        -_toplevelTextures.inactiveTL->sizeB().w(),
-                                                                        _toplevelTextures.inactiveTL->sizeB().h()));
-    _toplevelTextures.inactiveL = loadAssetsTexture("toplevel_inactive_side_clamp.png");
-    _toplevelTextures.inactiveR = _toplevelTextures.inactiveL->copyB(_toplevelTextures.inactiveL->sizeB(),
-                                                                  LRect(0,
-                                                                        0,
-                                                                        -_toplevelTextures.inactiveL->sizeB().w(),
-                                                                        _toplevelTextures.inactiveL->sizeB().h()));
-    _toplevelTextures.inactiveBL = loadAssetsTexture("toplevel_inactive_bottom_left.png");
-    _toplevelTextures.inactiveB = loadAssetsTexture("toplevel_inactive_bottom_clamp.png");
-    _toplevelTextures.inactiveBR = _toplevelTextures.inactiveBL->copyB(_toplevelTextures.inactiveBL->sizeB(),
-                                                                  LRect(0,
-                                                                        0,
-                                                                        -_toplevelTextures.inactiveBL->sizeB().w(),
-                                                                        _toplevelTextures.inactiveBL->sizeB().h()));
+    Float32 bufferScale = 2.f;
+    TextureViewConf *conf;
 
+    for (UInt32 i = 0; i < 14; i++)
+    {
+        conf = &texViewConfs[i];
+        conf->texture = _toplevelTextures.atlas;
+        conf->customSrcRect = LRectF(2.f, 2.f + 14.f * Float32(i), 12.f, 12.f);
+        conf->customDstSize = LSize(12, 12);
+        conf->bufferScale = bufferScale;
+    }
 
-    _toplevelTextures.maskBL = loadAssetsTexture("toplevel_border_radius_mask.png");
-    _toplevelTextures.maskBR = _toplevelTextures.maskBL->copyB(_toplevelTextures.maskBL->sizeB(),
-                                                                  LRect(0,
-                                                                        0,
-                                                                        -_toplevelTextures.maskBL->sizeB().w(),
-                                                                        _toplevelTextures.maskBL->sizeB().h()));
+    conf = &texViewConfs[DecorationActiveTL];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(16.f, 59.5f, 70.f, 74.f);
+    conf->customDstSize = LSize(70, 74);
+    conf->bufferScale = bufferScale;
+
+    conf = &texViewConfs[DecorationActiveTR];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(172.f - 16.f - 70.f, 59.5f, 70.f, 74.f);
+    conf->customDstSize = LSize(70, 74);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Flipped;
+
+    conf = &texViewConfs[DecorationActiveT];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(87.f, 59.5f, 1.f, 61.f);
+    conf->customDstSize = LSize(1, 61);
+    conf->bufferScale = bufferScale;
+
+    conf = &texViewConfs[DecorationActiveL];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(16.f, 133.5f, 48.f, 0.5f);
+    conf->customDstSize = LSize(48, 1);
+    conf->bufferScale = bufferScale;
+
+    conf = &texViewConfs[DecorationActiveR];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(172.f - 16.f - 48.f, 133.5f, 48.f, 0.5f);
+    conf->customDstSize = LSize(48, 1);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Flipped;
+
+    conf = &texViewConfs[DecorationActiveBL];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(16.f, 134.f, 82.f, 80.f);
+    conf->customDstSize = LSize(82, 80);
+    conf->bufferScale = bufferScale;
+
+    conf = &texViewConfs[DecorationActiveBR];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(172.f - 16.f - 82.f, 134.f, 82.f, 80.f);
+    conf->customDstSize = LSize(82, 80);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Flipped;
+
+    conf = &texViewConfs[DecorationActiveB];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(98.f, 155.5f, 0.5f, 58.5f);
+    conf->customDstSize = LSize(1, 59);
+    conf->bufferScale = bufferScale;
+
+    conf = &texViewConfs[DecorationInactiveTL];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(100.5f, 58.5f, 56.f, 63.f);
+    conf->customDstSize = LSize(56, 63);
+    conf->bufferScale = bufferScale;
+
+    conf = &texViewConfs[DecorationInactiveTR];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(172.f - 100.5f - 56.f, 58.5f, 56.f, 63.f);
+    conf->customDstSize = LSize(56, 63);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Flipped;
+
+    conf = &texViewConfs[DecorationInactiveT];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(156.f, 58.5f, 0.5f, 56.f);
+    conf->customDstSize = LSize(1, 56);
+    conf->bufferScale = bufferScale;
+
+    conf = &texViewConfs[DecorationInactiveBL];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(100.5f, 122.f, 71.f, 66.f);
+    conf->customDstSize = LSize(71, 66);
+    conf->bufferScale = bufferScale;
+
+    conf = &texViewConfs[DecorationInactiveBR];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(172.f - 100.5f - 71.f, 122.f, 71.f, 66.f);
+    conf->customDstSize = LSize(71, 66);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Flipped;
+
+    conf = &texViewConfs[DecorationInactiveL];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(100.5f, 121.5f, 41.f, 0.5f);
+    conf->customDstSize = LSize(41, 1);
+    conf->bufferScale = bufferScale;
+
+    conf = &texViewConfs[DecorationInactiveR];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(172.f - 100.5f - 41.f, 121.5f, 41.f, 0.5f);
+    conf->customDstSize = LSize(41, 1);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Flipped;
+
+    conf = &texViewConfs[DecorationInactiveB];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(171.5f, 136.f, 0.5f, 52.f);
+    conf->customDstSize = LSize(1, 52);
+    conf->bufferScale = bufferScale;
+
+    conf = &texViewConfs[DecorationMaskBL];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(172.f - 11.f, 0.f, 11.f, 11.f);
+    conf->customDstSize = LSize(11, 11);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Flipped180;
+
+    conf = &texViewConfs[DecorationMaskBR];
+    conf->texture = _toplevelTextures.atlas;
+    conf->customSrcRect = LRectF(0.f, 0.f, 11.f, 11.f);
+    conf->customDstSize = LSize(11, 11);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Rotated180;
+
 
     LRect activeTransRectsTL[] = TOPLEVEL_ACTIVE_TOP_LEFT_TRANS_REGION;
 
@@ -338,27 +421,26 @@ void G::loadToplevelTextures()
     for (UInt64 i = 0; i < sizeof(inactiveTransRectsTR)/sizeof(LRect); i++)
         _toplevelTextures.inactiveTransRegionTR.addRect(inactiveTransRectsTR[i]);
 
-    _toplevelTextures.inactiveButton = loadAssetsTexture("button_inactive.png");
-    _toplevelTextures.activeCloseButton = loadAssetsTexture("button_close.png");
-    _toplevelTextures.activeCloseButtonHover = loadAssetsTexture("button_close_hover.png");
-    _toplevelTextures.activeCloseButtonPressed = loadAssetsTexture("button_close_pressed.png");
-    _toplevelTextures.activeMinimizeButton = loadAssetsTexture("button_minimize.png");
-    _toplevelTextures.activeMinimizeButtonHover = loadAssetsTexture("button_minimize_hover.png");
-    _toplevelTextures.activeMinimizeButtonPressed = loadAssetsTexture("button_minimize_pressed.png");
-    _toplevelTextures.activeMaximizeButton = loadAssetsTexture("button_maximize.png");
-    _toplevelTextures.activeMaximizeButtonHover = loadAssetsTexture("button_maximize_hover.png");
-    _toplevelTextures.activeMaximizeButtonPressed = loadAssetsTexture("button_maximize_pressed.png");
-    _toplevelTextures.activeFullscreenButtonHover = loadAssetsTexture("button_fullscreen_hover.png");
-    _toplevelTextures.activeFullscreenButtonPressed = loadAssetsTexture("button_fullscreen_pressed.png");
-    _toplevelTextures.activeUnfullscreenButtonHover = loadAssetsTexture("button_unfullscreen_hover.png");
-    _toplevelTextures.activeUnfullscreenButtonPressed = loadAssetsTexture("button_unfullscreen_pressed.png");
-
     _toplevelTextures.logo = loadAssetsTexture("logo.png");
 }
 
 G::ToplevelTextures &G::toplevelTextures()
 {
     return _toplevelTextures;
+}
+
+void G::setTexViewConf(LTextureView *view, TextureConfIndex index)
+{
+    TextureViewConf *conf = &texViewConfs[index];
+    view->setTexture(conf->texture);
+    view->enableCustomColor(conf->enableCustomColor);
+    view->setCustomColor(conf->customColor);
+    view->enableDstSize(conf->enableCustomDstSize);
+    view->setDstSize(conf->customDstSize);
+    view->enableSrcRect(conf->enableCustomSrcRect);
+    view->setSrcRect(conf->customSrcRect);
+    view->setBufferScale(conf->bufferScale);
+    view->setTransform(conf->transform);
 }
 
 void G::loadFonts()

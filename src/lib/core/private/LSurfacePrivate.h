@@ -16,6 +16,8 @@ struct LSurface::Params
 
 LPRIVATE_CLASS(LSurface)
 
+    LRectF srcRect = LRectF(0,0,1,1);
+
     struct State
     {
         LBaseSurfaceRole *role                          = nullptr;
@@ -145,7 +147,7 @@ LPRIVATE_CLASS(LSurface)
 
     inline void damageCalcN()
     {
-        if (compositor()->imp()->greatestOutputScale == 1)
+        if (compositor()->imp()->greatestOutputScale == 100)
         {
             while (!pendingDamage.empty())
             {
@@ -158,10 +160,10 @@ LPRIVATE_CLASS(LSurface)
             while (!pendingDamage.empty())
             {
                 LRect &r = pendingDamage.back();
-                currentDamageB.addRect((r.x() - 1 )*current.bufferScale,
-                                       (r.y() - 1 )*current.bufferScale,
-                                       (r.w() + 2 )*current.bufferScale,
-                                       (r.h() + 2 )*current.bufferScale);
+                currentDamageB.addRect((r.x() - 2 )*current.bufferScale,
+                                       (r.y() - 2 )*current.bufferScale,
+                                       (r.w() + 4 )*current.bufferScale,
+                                       (r.h() + 4 )*current.bufferScale);
                 pendingDamage.pop_back();
             }
         }
@@ -211,14 +213,14 @@ LPRIVATE_CLASS(LSurface)
         }
         else if (!pendingDamageB.empty() || !pendingDamage.empty())
         {
-            if (current.bufferScale == 1)
+            if (current.bufferScale == 10)
                 damageCalc1();
-            else if (current.bufferScale == 2)
+            else if (current.bufferScale == 20)
                 damageCalc2();
             else
                 damageCalcN();
 
-            if (current.bufferScale > 1)
+            if (current.bufferScale > 100)
                 damageMod();
             else
             {

@@ -160,10 +160,29 @@ static void onPointerButtonResizeArea(InputRect *rect, void *data, LPointer::But
 
 ToplevelView::ToplevelView(Toplevel *toplevel) :
     LLayerView(&G::compositor()->surfacesLayer),
+    toplevel(toplevel),
     clipTop(this),
-    clipBottom(this)
+    clipBottom(this),
+
+    // Toplevel decorations (shadows and topbar)
+    sceneBL(LSize(TOPLEVEL_BORDER_RADIUS, TOPLEVEL_BORDER_RADIUS) * 2, 2, this),
+    sceneBR(LSize(TOPLEVEL_BORDER_RADIUS, TOPLEVEL_BORDER_RADIUS) * 2, 2, this),
+    surfBL(toplevel->surface(), &sceneBL),
+    surfBR(toplevel->surface(), &sceneBR),
+    decoTL(nullptr, this),
+    decoT(nullptr, this),
+    decoTR(nullptr, this),
+    decoL(nullptr, this),
+    decoR(nullptr, this),
+    decoBL(nullptr, this),
+    decoB(nullptr, this),
+    decoBR(nullptr, this),
+    maskBL(nullptr, &sceneBL),
+    maskBR(nullptr, &sceneBR)
 {
-    this->toplevel = toplevel;
+    G::setTexViewConf(&maskBL, G::DecorationMaskBL);
+    G::setTexViewConf(&maskBR, G::DecorationMaskBR);
+
     toplevel->decoratedView = this;
 
     class Surface *surf = (class Surface*)toplevel->surface();
@@ -179,79 +198,45 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     surfB->enableParentClipping(true);
     surfB->enableCustomPos(true);
 
-    sceneBL = new LSceneView(LSize(TOPLEVEL_BORDER_RADIUS, TOPLEVEL_BORDER_RADIUS) * 2, 2, this);
-    sceneBR = new LSceneView(LSize(TOPLEVEL_BORDER_RADIUS, TOPLEVEL_BORDER_RADIUS) * 2, 2, this);
-
-    surfBL = new LSurfaceView(toplevel->surface(), sceneBL);
-    surfBR = new LSurfaceView(toplevel->surface(), sceneBR);
-
     // Make them always translucent
-    surfBL->enableCustomTranslucentRegion(true);
-    surfBR->enableCustomTranslucentRegion(true);
+    surfBL.enableCustomTranslucentRegion(true);
+    surfBR.enableCustomTranslucentRegion(true);
 
     // Make them not primary so that the damage of the surface won't be cleared after rendered
-    surfBL->setPrimary(false);
-    surfBR->setPrimary(false);
+    surfBL.setPrimary(false);
+    surfBR.setPrimary(false);
 
     // Ignore the pos given by the surface
-    surfBL->enableCustomPos(true);
-    surfBR->enableCustomPos(true);
+    surfBL.enableCustomPos(true);
+    surfBR.enableCustomPos(true);
 
     // Clipped to the bottom border radius rect
-    surfBL->enableParentClipping(true);
-    surfBR->enableParentClipping(true);
+    surfBL.enableParentClipping(true);
+    surfBR.enableParentClipping(true);
 
-    surfBL->enableParentScaling(false);
-    surfBR->enableParentScaling(false);
+    surfBL.enableParentScaling(false);
+    surfBR.enableParentScaling(false);
 
     // Disable auto blend func
-    surfBL->enableAutoBlendFunc(false);
-    surfBR->enableAutoBlendFunc(false);
+    surfBL.enableAutoBlendFunc(false);
+    surfBR.enableAutoBlendFunc(false);
 
-    surfBL->setBlendFunc(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
-    surfBR->setBlendFunc(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
+    surfBL.setBlendFunc(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
+    surfBR.setBlendFunc(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
 
     // Masks to make the lower corners of the toplevel round
-    maskBL = new LTextureView(G::toplevelTextures().maskBL, sceneBL);
-    maskBR = new LTextureView(G::toplevelTextures().maskBR, sceneBR);
-    maskBL->setBufferScale(2);
-    maskBR->setBufferScale(2);
-    maskBL->setPos(0, 0);
-    maskBR->setPos(0, 0);
-    maskBL->enableParentScaling(false);
-    maskBR->enableParentScaling(false);
+    maskBL.setPos(0, 0);
+    maskBR.setPos(0, 0);
+    maskBL.enableParentScaling(false);
+    maskBR.enableParentScaling(false);
 
     // Disable auto blend func
-    maskBL->enableAutoBlendFunc(false);
-    maskBR->enableAutoBlendFunc(false);
+    maskBL.enableAutoBlendFunc(false);
+    maskBR.enableAutoBlendFunc(false);
 
     // This blending func makes the alpha of the toplevel be replaced by the one of the mask
-    maskBL->setBlendFunc(GL_ZERO, GL_SRC_ALPHA, GL_ZERO, GL_SRC_ALPHA);
-    maskBR->setBlendFunc(GL_ZERO, GL_SRC_ALPHA, GL_ZERO, GL_SRC_ALPHA);
-
-    // Toplevel decorations (shadows and topbar)
-    decoTL = new LTextureView(G::toplevelTextures().activeTL, this);
-    decoT = new LTextureView(G::toplevelTextures().activeT, this);
-    decoTR = new LTextureView(G::toplevelTextures().activeTR, this);
-    decoL = new LTextureView(G::toplevelTextures().activeL, this);
-    decoR = new LTextureView(G::toplevelTextures().activeR, this);
-    decoBL = new LTextureView(G::toplevelTextures().activeBL, this);
-    decoB = new LTextureView(G::toplevelTextures().activeB, this);
-    decoBR = new LTextureView(G::toplevelTextures().activeBR, this);
-
-    decoTL->setBufferScale(2);
-    decoT->setBufferScale(2);
-    decoTR->setBufferScale(2);
-    decoL->setBufferScale(2);
-    decoR->setBufferScale(2);
-    decoBL->setBufferScale(2);
-    decoB->setBufferScale(2);
-    decoBR->setBufferScale(2);
-
-    decoT->enableDstSize(true);
-    decoL->enableDstSize(true);
-    decoR->enableDstSize(true);
-    decoB->enableDstSize(true);
+    maskBL.setBlendFunc(GL_ZERO, GL_SRC_ALPHA, GL_ZERO, GL_SRC_ALPHA);
+    maskBR.setBlendFunc(GL_ZERO, GL_SRC_ALPHA, GL_ZERO, GL_SRC_ALPHA);
 
     topbarInput = new InputRect(this, nullptr);
     resizeT = new InputRect(this, G::cursors().top_side, LToplevelRole::ResizeEdge::Top);
@@ -379,20 +364,6 @@ ToplevelView::~ToplevelView()
 
     delete title;
     delete surfB;
-    delete decoTL;
-    delete decoT;
-    delete decoTR;
-    delete decoL;
-    delete decoR;
-    delete decoBL;
-    delete decoB;
-    delete decoBR;
-    delete maskBL;
-    delete maskBR;
-    delete sceneBL;
-    delete sceneBR;
-    delete surfBL;
-    delete surfBR;
 
     delete resizeTL;
     delete resizeTR;
@@ -472,18 +443,18 @@ void ToplevelView::updateGeometry()
         {
             title->setCustomColor(0.1f, 0.1f, 0.1f);
 
-            decoTL->setTexture(G::toplevelTextures().activeTL);
-            decoT->setTexture(G::toplevelTextures().activeT);
-            decoTR->setTexture(G::toplevelTextures().activeTR);
-            decoL->setTexture(G::toplevelTextures().activeL);
-            decoR->setTexture(G::toplevelTextures().activeR);
-            decoBL->setTexture(G::toplevelTextures().activeBL);
-            decoB->setTexture(G::toplevelTextures().activeB);
-            decoBR->setTexture(G::toplevelTextures().activeBR);
+            G::setTexViewConf(&decoTL, G::DecorationActiveTL);
+            G::setTexViewConf(&decoT, G::DecorationActiveT);
+            G::setTexViewConf(&decoTR, G::DecorationActiveTR);
+            G::setTexViewConf(&decoL, G::DecorationActiveL);
+            G::setTexViewConf(&decoR, G::DecorationActiveR);
+            G::setTexViewConf(&decoBL, G::DecorationActiveBL);
+            G::setTexViewConf(&decoB, G::DecorationActiveB);
+            G::setTexViewConf(&decoBR, G::DecorationActiveBR);
 
             // Trans region
-            decoTL->setTranslucentRegion(&G::toplevelTextures().activeTransRegionTL);
-            decoTR->setTranslucentRegion(&G::toplevelTextures().activeTransRegionTR);
+            decoTL.setTranslucentRegion(&G::toplevelTextures().activeTransRegionTL);
+            decoT.setTranslucentRegion(&G::toplevelTextures().activeTransRegionTR);
         }
     }
     else
@@ -501,18 +472,18 @@ void ToplevelView::updateGeometry()
         {
             title->setCustomColor(0.7f, 0.7f, 0.7f);
 
-            decoTL->setTexture(G::toplevelTextures().inactiveTL);
-            decoT->setTexture(G::toplevelTextures().inactiveT);
-            decoTR->setTexture(G::toplevelTextures().inactiveTR);
-            decoL->setTexture(G::toplevelTextures().inactiveL);
-            decoR->setTexture(G::toplevelTextures().inactiveR);
-            decoBL->setTexture(G::toplevelTextures().inactiveBL);
-            decoB->setTexture(G::toplevelTextures().inactiveB);
-            decoBR->setTexture(G::toplevelTextures().inactiveBR);
+            G::setTexViewConf(&decoTL, G::DecorationInactiveTL);
+            G::setTexViewConf(&decoT, G::DecorationInactiveT);
+            G::setTexViewConf(&decoTR, G::DecorationInactiveTR);
+            G::setTexViewConf(&decoL, G::DecorationInactiveL);
+            G::setTexViewConf(&decoR, G::DecorationInactiveR);
+            G::setTexViewConf(&decoBL, G::DecorationInactiveBL);
+            G::setTexViewConf(&decoB, G::DecorationInactiveB);
+            G::setTexViewConf(&decoBR, G::DecorationInactiveBR);
 
             // Trans region
-            decoTL->setTranslucentRegion(&G::toplevelTextures().inactiveTransRegionTL);
-            decoTR->setTranslucentRegion(&G::toplevelTextures().inactiveTransRegionTR);
+            decoTL.setTranslucentRegion(&G::toplevelTextures().inactiveTransRegionTL);
+            decoT.setTranslucentRegion(&G::toplevelTextures().inactiveTransRegionTR);
         }
     }
 
@@ -530,17 +501,17 @@ void ToplevelView::updateGeometry()
         if (!lastFullscreenState)
         {
             clipBottom.setVisible(false);
-            sceneBL->setVisible(false);
-            sceneBR->setVisible(false);
-            maskBL->setVisible(false);
-            maskBR->setVisible(false);
-            decoTL->setVisible(false);
-            decoTR->setVisible(false);
-            decoL->setVisible(false);
-            decoR->setVisible(false);
-            decoBL->setVisible(false);
-            decoBR->setVisible(false);
-            decoB->setVisible(false);
+            sceneBL.setVisible(false);
+            sceneBR.setVisible(false);
+            maskBL.setVisible(false);
+            maskBR.setVisible(false);
+            decoTL.setVisible(false);
+            decoTR.setVisible(false);
+            decoL.setVisible(false);
+            decoR.setVisible(false);
+            decoBL.setVisible(false);
+            decoBR.setVisible(false);
+            decoB.setVisible(false);
             resizeT->setVisible(false);
             resizeB->setVisible(false);
             resizeL->setVisible(false);
@@ -561,8 +532,8 @@ void ToplevelView::updateGeometry()
 
         clipTop.setSize(size);
 
-        decoT->setDstSize(size.w(), decoT->texture()->sizeB().h() / 2);
-        decoT->setPos(0, -decoT->nativeSize().h() + (TOPLEVEL_TOPBAR_HEIGHT + TOPLEVEL_TOP_CLAMP_OFFSET_Y) * fullscreenTopbarVisibility);
+        decoT.setDstSize(size.w(), decoT.nativeSize().h());
+        decoT.setPos(0, -decoT.nativeSize().h() + (TOPLEVEL_TOPBAR_HEIGHT + TOPLEVEL_TOP_CLAMP_OFFSET_Y) * fullscreenTopbarVisibility);
         buttonsContainer->setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT * (1.f - fullscreenTopbarVisibility));
 
         // Set topbar center translucent regions
@@ -570,14 +541,15 @@ void ToplevelView::updateGeometry()
         transT.addRect(
             0,
             0,
-            decoT->size().w(),
-            decoT->size().h() - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_TOP_CLAMP_OFFSET_Y);
+            decoT.size().w(),
+            decoT.size().h() - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_TOP_CLAMP_OFFSET_Y);
         transT.addRect(
             0,
-            decoT->size().h() - TOPLEVEL_TOP_CLAMP_OFFSET_Y,
-            decoT->size().w(),
+            decoT.size().h() - TOPLEVEL_TOP_CLAMP_OFFSET_Y,
+            decoT.size().w(),
             TOPLEVEL_TOP_CLAMP_OFFSET_Y);
-        decoT->setTranslucentRegion(&transT);
+
+        decoT.setTranslucentRegion(&transT);
 
         topbarInput->setPos(0, - TOPLEVEL_TOPBAR_HEIGHT * (1.f - fullscreenTopbarVisibility));
         topbarInput->setSize(size.w(), TOPLEVEL_TOPBAR_HEIGHT + 1);
@@ -589,17 +561,18 @@ void ToplevelView::updateGeometry()
             buttonsContainer->setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT);
             surf->view->setCustomPos(0, 0);
             clipBottom.setVisible(true);
-            sceneBL->setVisible(true);
-            sceneBR->setVisible(true);
-            maskBL->setVisible(true);
-            maskBR->setVisible(true);
-            decoTL->setVisible(true);
-            decoTR->setVisible(true);
-            decoL->setVisible(true);
-            decoR->setVisible(true);
-            decoBL->setVisible(true);
-            decoBR->setVisible(true);
-            decoB->setVisible(true);
+            sceneBL.setVisible(true);
+            sceneBR.setVisible(true);
+            maskBL.setVisible(true);
+            maskBR.setVisible(true);
+            decoTL.setVisible(true);
+            decoT.setVisible(true);
+            decoTR.setVisible(true);
+            decoL.setVisible(true);
+            decoR.setVisible(true);
+            decoBL.setVisible(true);
+            decoBR.setVisible(true);
+            decoB.setVisible(true);
             resizeT->setVisible(true);
             resizeB->setVisible(true);
             resizeL->setVisible(true);
@@ -637,55 +610,55 @@ void ToplevelView::updateGeometry()
             TOPLEVEL_BORDER_RADIUS - size.h() - clip);
 
         // Bottom left / right surfaces views
-        sceneBL->setPos(
+        sceneBL.setPos(
             0,
             size.h() - TOPLEVEL_BORDER_RADIUS);
-        sceneBR->setPos(
+        sceneBR.setPos(
             size.w() - TOPLEVEL_BORDER_RADIUS,
             size.h() - TOPLEVEL_BORDER_RADIUS);
-        surfBL->setCustomPos(
+        surfBL.setCustomPos(
             - clip,
             TOPLEVEL_BORDER_RADIUS - size.h() - clip);
-        surfBR->setCustomPos(
+        surfBR.setCustomPos(
             TOPLEVEL_BORDER_RADIUS - size.w() - clip,
             TOPLEVEL_BORDER_RADIUS - size.h() - clip);
 
         // Decorations
-        decoTL->setPos(
+        decoTL.setPos(
             TOPLEVEL_TOP_LEFT_OFFSET_X,
             TOPLEVEL_TOP_LEFT_OFFSET_Y);
-        decoT->setDstSize(
+        decoT.setDstSize(
             size.w() - TOPLEVEL_MIN_WIDTH_TOP,
-            decoT->texture()->sizeB().h() / 2);
-        decoT->setPos(
-            decoTL->nativePos().x() + decoTL->nativeSize().w(),
-            -decoT->nativeSize().h() + TOPLEVEL_TOP_CLAMP_OFFSET_Y);
-        decoTR->setPos(
-            size.w() - decoTR->nativeSize().w() - TOPLEVEL_TOP_LEFT_OFFSET_X,
+            decoT.nativeSize().h());
+        decoT.setPos(
+            decoTL.nativePos().x() + decoTL.nativeSize().w(),
+            -decoT.nativeSize().h() + TOPLEVEL_TOP_CLAMP_OFFSET_Y);
+        decoTR.setPos(
+            size.w() - decoTR.nativeSize().w() - TOPLEVEL_TOP_LEFT_OFFSET_X,
             TOPLEVEL_TOP_LEFT_OFFSET_Y);
-        decoL->setDstSize(
-            decoL->texture()->sizeB().w() / 2,
+        decoL.setDstSize(
+            decoL.nativeSize().w(),
             size.h() - TOPLEVEL_MIN_HEIGHT);
-        decoL->setPos(
-            -decoL->nativeSize().w(),
-            decoTL->nativePos().y() + decoTL->nativeSize().h());
-        decoR->setDstSize(
-            decoR->texture()->sizeB().w() / 2,
+        decoL.setPos(
+            -decoL.nativeSize().w(),
+            decoTL.nativePos().y() + decoTL.nativeSize().h());
+        decoR.setDstSize(
+            decoR.nativeSize().w(),
             size.h() - TOPLEVEL_MIN_HEIGHT);
-        decoR->setPos(
+        decoR.setPos(
             size.w(),
-            decoTL->nativePos().y() + decoTL->nativeSize().h());
-        decoBL->setPos(
+            decoTL.nativePos().y() + decoTL.nativeSize().h());
+        decoBL.setPos(
             TOPLEVEL_BOTTOM_LEFT_OFFSET_X,
             size.h() + TOPLEVEL_BOTTOM_LEFT_OFFSET_Y);
-        decoBR->setPos(
-            size.w() - decoBR->nativeSize().w() - TOPLEVEL_BOTTOM_LEFT_OFFSET_X,
+        decoBR.setPos(
+            size.w() - decoBR.nativeSize().w() - TOPLEVEL_BOTTOM_LEFT_OFFSET_X,
             size.h() + TOPLEVEL_BOTTOM_LEFT_OFFSET_Y);
-        decoB->setDstSize(
+        decoB.setDstSize(
             size.w() - TOPLEVEL_MIN_WIDTH_BOTTOM,
-            decoB->texture()->sizeB().h() / 2);
-        decoB->setPos(
-            decoBL->nativePos().x() + decoBL->nativeSize().w(),
+            decoB.nativeSize().h());
+        decoB.setPos(
+            decoBL.nativePos().x() + decoBL.nativeSize().w(),
             size.h());
 
         // Set topbar center translucent regions
@@ -693,14 +666,15 @@ void ToplevelView::updateGeometry()
         transT.addRect(
             0,
             0,
-            decoT->size().w(),
-            decoT->size().h() - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_TOP_CLAMP_OFFSET_Y + 1);
+            decoT.size().w(),
+            decoT.size().h() - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_TOP_CLAMP_OFFSET_Y + 1);
         transT.addRect( // Bottom line
             0,
-            decoT->size().h() - TOPLEVEL_TOP_CLAMP_OFFSET_Y,
-            decoT->size().w(),
+            decoT.size().h() - TOPLEVEL_TOP_CLAMP_OFFSET_Y,
+            decoT.size().w(),
             TOPLEVEL_TOP_CLAMP_OFFSET_Y);
-        decoT->setTranslucentRegion(&transT);
+
+        decoT.setTranslucentRegion(&transT);
 
         // Update input rects
         resizeT->setPos(0, - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_RESIZE_INPUT_MARGIN);

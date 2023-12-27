@@ -2,6 +2,9 @@
 #define TOPLEVELVIEW_H
 
 #include <LLayerView.h>
+#include <LTextureView.h>
+#include <LSceneView.h>
+#include <LSurfaceView.h>
 
 using namespace Louvre;
 
@@ -15,31 +18,31 @@ public:
     ToplevelView(Toplevel *toplevel);
     ~ToplevelView();
 
+    Toplevel *toplevel = nullptr;
     bool lastActiveState = false;
     bool lastFullscreenState = false;
-    Toplevel *toplevel = nullptr;
 
     LLayerView clipTop;
     LLayerView clipBottom;
     LSurfaceView *surfB = nullptr;
 
-    LTextureView *decoTL = nullptr;
-    LTextureView *decoT = nullptr;
-    LTextureView *decoTR = nullptr;
-    LTextureView *decoL = nullptr;
-    LTextureView *decoR = nullptr;
-    LTextureView *decoBL = nullptr;
-    LTextureView *decoB = nullptr;
-    LTextureView *decoBR = nullptr;
+    LSceneView sceneBL;
+    LSceneView sceneBR;
 
-    LTextureView *maskBL = nullptr;
-    LTextureView *maskBR = nullptr;
+    LSurfaceView surfBL;
+    LSurfaceView surfBR;
 
-    LSceneView *sceneBL = nullptr;
-    LSceneView *sceneBR = nullptr;
+    LTextureView decoTL;
+    LTextureView decoT;
+    LTextureView decoTR;
+    LTextureView decoL;
+    LTextureView decoR;
+    LTextureView decoBL;
+    LTextureView decoB;
+    LTextureView decoBR;
 
-    LSurfaceView *surfBL = nullptr;
-    LSurfaceView *surfBR = nullptr;
+    LTextureView maskBL;
+    LTextureView maskBR;
 
     InputRect *resizeTL = nullptr;
     InputRect *resizeTR = nullptr;

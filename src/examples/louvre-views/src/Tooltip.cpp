@@ -89,7 +89,7 @@ void Tooltip::update()
     decoration[G::R].setPos(decoration[G::TR].nativePos().x(), CONTAINER_BORDER_RADIUS);
     decoration[G::R].setDstSize(decoration[G::L].size());
 
-    arrow.setPos((size().w() - arrow.size().w()) / 2, size().h());
+    arrow.setPos((size().w() - arrow.size().w()) / 2, size().h() - 1);
 
     setPos(point.x() - (size().w() / 2), point.y() - size().h() - arrow.size().h());
 }

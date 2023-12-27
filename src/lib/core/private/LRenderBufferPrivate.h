@@ -10,7 +10,7 @@ using namespace Louvre;
 
 LPRIVATE_CLASS(LRenderBuffer)
     LTexture texture;
-    Int32 scale = 1;
+    Float32 scale = 1;
     LRect rect;
 
     struct ThreadData

@@ -11,6 +11,7 @@ class Surface;
 
 #include <LNamespaces.h>
 #include <LRegion.h>
+#include <LFramebuffer.h>
 
 using namespace Louvre;
 
@@ -107,42 +108,6 @@ public:
 
     struct ToplevelTextures
     {
-        LTexture *activeTL = nullptr;
-        LTexture *activeT = nullptr;
-        LTexture *activeTR = nullptr;
-        LTexture *activeL = nullptr;
-        LTexture *activeR = nullptr;
-        LTexture *activeBL = nullptr;
-        LTexture *activeB = nullptr;
-        LTexture *activeBR = nullptr;
-
-        LTexture *inactiveTL = nullptr;
-        LTexture *inactiveT = nullptr;
-        LTexture *inactiveTR = nullptr;
-        LTexture *inactiveL = nullptr;
-        LTexture *inactiveR = nullptr;
-        LTexture *inactiveBL = nullptr;
-        LTexture *inactiveB = nullptr;
-        LTexture *inactiveBR = nullptr;
-
-        LTexture *maskBL = nullptr;
-        LTexture *maskBR = nullptr;
-
-        LTexture *inactiveButton = nullptr;
-        LTexture *activeCloseButton = nullptr;
-        LTexture *activeCloseButtonHover = nullptr;
-        LTexture *activeCloseButtonPressed = nullptr;
-        LTexture *activeMinimizeButton = nullptr;
-        LTexture *activeMinimizeButtonHover = nullptr;
-        LTexture *activeMinimizeButtonPressed = nullptr;
-        LTexture *activeMaximizeButton = nullptr;
-        LTexture *activeMaximizeButtonHover = nullptr;
-        LTexture *activeMaximizeButtonPressed = nullptr;
-        LTexture *activeFullscreenButtonHover = nullptr;
-        LTexture *activeFullscreenButtonPressed = nullptr;
-        LTexture *activeUnfullscreenButtonHover = nullptr;
-        LTexture *activeUnfullscreenButtonPressed = nullptr;
-
         LRegion activeTransRegionTL;
         LRegion activeTransRegionTR;
         LRegion inactiveTransRegionTL;
@@ -150,12 +115,63 @@ public:
 
         LTexture *defaultTopbarAppName = nullptr; // Louvre
         LTexture *logo = nullptr;
+
+        LTexture *atlas = nullptr;
     };
 
     struct Fonts
     {
         TextRenderer *regular = nullptr;
         TextRenderer *semibold = nullptr;
+    };
+
+    struct TextureViewConf
+    {
+        LTexture *texture = nullptr;
+        LRectF customSrcRect;
+        Float32 bufferScale = 1.f;
+        LSize customDstSize;
+        LFramebuffer::Transform transform = LFramebuffer::Normal;
+        LRGBF customColor;
+        bool enableCustomColor = false;
+        bool enableCustomSrcRect = true;
+        bool enableCustomDstSize = true;
+    };
+
+    enum TextureConfIndex : UInt32
+    {
+        ButtonDisabled                      = 0,
+        CloseButtonEnabled                  = 1,
+        CloseButtonEnabledHover             = 2,
+        CloseButtonEnabledPressed           = 3,
+        MinimizeButtonEnabled               = 4,
+        MinimizeButtonEnabledHover          = 5,
+        MinimizeButtonEnabledPressed        = 6,
+        MaximizeButtonEnabled               = 7,
+        MaximizeButtonEnabledHover          = 8,
+        MaximizeButtonEnabledPressed        = 9,
+        FullscreenButtonEnabledHover        = 10,
+        FullscreenButtonEnabledPressed      = 11,
+        UnfullscreenButtonEnabledHover      = 12,
+        UnfullscreenButtonEnabledPressed    = 13,
+        DecorationActiveTL                  = 14,
+        DecorationActiveTR                  = 15,
+        DecorationActiveT                   = 16,
+        DecorationActiveL                   = 17,
+        DecorationActiveR                   = 18,
+        DecorationActiveBL                  = 19,
+        DecorationActiveBR                  = 20,
+        DecorationActiveB                   = 21,
+        DecorationInactiveTL                = 22,
+        DecorationInactiveTR                = 23,
+        DecorationInactiveT                 = 24,
+        DecorationInactiveL                 = 25,
+        DecorationInactiveR                 = 26,
+        DecorationInactiveBL                = 27,
+        DecorationInactiveBR                = 28,
+        DecorationInactiveB                 = 29,
+        DecorationMaskBL                    = 30,
+        DecorationMaskBR                    = 31,
     };
 
     // Quick handles
@@ -184,6 +200,8 @@ public:
     // Toplevel
     static void loadToplevelTextures();
     static ToplevelTextures &toplevelTextures();
+
+    static void setTexViewConf(LTextureView *view, TextureConfIndex index);
 
     // Fonts
     static void loadFonts();

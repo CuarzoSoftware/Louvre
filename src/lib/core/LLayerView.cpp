@@ -77,9 +77,9 @@ const LSize &LLayerView::nativeSize() const
     return imp()->nativeSize;
 }
 
-Int32 LLayerView::bufferScale() const
+Float32 LLayerView::bufferScale() const
 {
-    return 0;
+    return 1.f;
 }
 
 void LLayerView::enteredOutput(LOutput *output)
@@ -128,7 +128,7 @@ const LRegion *LLayerView::inputRegion() const
     return imp()->inputRegion;
 }
 
-void LLayerView::paintRect(const PaintRectParams &)
+void LLayerView::paintEvent(const PaintEventParams &)
 {
     /* It is not renderable */
 }

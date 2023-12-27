@@ -12,7 +12,7 @@ using namespace Louvre;
 LPRIVATE_CLASS(LSceneView)
     LPoint customPos;
 
-    PaintRectParams paintParams;
+    PaintEventParams paintParams;
     LFramebuffer *fb = nullptr;
     std::list<LOutput*>outputs;
     LRegion input;

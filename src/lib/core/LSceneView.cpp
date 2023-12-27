@@ -13,7 +13,7 @@ LSceneView::LSceneView(LFramebuffer *framebuffer, LView *parent) :
     imp()->fb = framebuffer;
 }
 
-LSceneView::LSceneView(const LSize &sizeB, Int32 bufferScale, LView *parent) :
+LSceneView::LSceneView(const LSize &sizeB, Float32 bufferScale, LView *parent) :
     LView(Scene, parent),
     LPRIVATE_INIT_UNIQUE(LSceneView)
 {
@@ -226,7 +226,7 @@ void LSceneView::setSizeB(const LSize &size)
     }
 }
 
-void LSceneView::setScale(Int32 scale)
+void LSceneView::setScale(Float32 scale)
 {
     if (!isLScene() && bufferScale() != scale)
     {
@@ -253,7 +253,7 @@ const LSize &LSceneView::nativeSize() const
     return imp()->fb->rect().size();
 }
 
-Int32 LSceneView::bufferScale() const
+Float32 LSceneView::bufferScale() const
 {
     return imp()->fb->scale();
 }
@@ -304,10 +304,17 @@ const LRegion *LSceneView::inputRegion() const
     return &imp()->input;
 }
 
-void LSceneView::paintRect(const PaintRectParams &params)
+void LSceneView::paintEvent(const PaintEventParams &params)
 {
-    params.p->imp()->drawTexture(imp()->fb->texture(imp()->fb->currentBufferIndex()),
-                                 params.srcX, params.srcY, params.srcW, params.srcH,
-                                 params.dstX, params.dstY, params.dstW, params.dstH,
-                                 params.scale, params.alpha);
+    params.painter->bindTextureMode({
+        .texture = imp()->fb->texture(imp()->fb->currentBufferIndex()),
+        .pos = pos(),
+        .srcRect = LRectF(LPointF(), imp()->fb->sizeB()) / bufferScale(),
+        .dstSize = size(),
+        .srcTransform = imp()->fb->transform(),
+        .srcScale = bufferScale(),
+    });
+
+    params.painter->enableCustomTextureColor(false);
+    params.painter->drawRegion(*params.region);
 }

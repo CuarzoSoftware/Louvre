@@ -21,6 +21,8 @@ void LOutput::paintGL()
 {
     LPainter *p = painter();
 
+    LPainter::TextureParams params;
+
     p->clearScreen();
 
     // Check if a surface moved under cursor (simulating a pointer move event)
@@ -32,6 +34,8 @@ void LOutput::paintGL()
 
     if (seat()->dndManager()->icon())
         seat()->dndManager()->icon()->surface()->raise();
+
+    p->setAlpha(1.f);
 
     // Draw every surface
     for (LSurface *s : compositor()->surfaces())
@@ -57,11 +61,18 @@ void LOutput::paintGL()
                 s->sendOutputLeaveEvent(o);
         }
 
+        params.srcRect = s->srcRect();
+        params.dstSize = s->size();
+        params.srcScale = s->bufferScale();
+        params.srcTransform = LFramebuffer::Normal;
+        params.texture = s->texture();
+        params.pos = currentRect.pos();
+
+        // Bind the surface texture
+        p->bindTextureMode(params);
+
         // Draw the surface
-        p->drawTexture(
-            s->texture(),        // Surface texture
-            LRect(0, s->sizeB()),// The entire texture size
-            currentRect);        // The destination rect on screen
+        p->drawRect(currentRect);
 
         // Notify the client it can now render a new surface frame
         s->requestNextFrame();

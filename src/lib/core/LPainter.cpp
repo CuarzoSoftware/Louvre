@@ -13,6 +13,255 @@
 
 using namespace Louvre;
 
+static void makeExternalShader(std::string &shader)
+{
+    size_t pos = 0;
+    std::string findStr = "sampler2D";
+    std::string replaceStr = "samplerExternalOES";
+
+    shader = std::string("#extension GL_OES_EGL_image_external : require\n") + shader;
+
+    while ((pos = shader.find(findStr, pos)) != std::string::npos)
+    {
+        shader.replace(pos, findStr.length(), replaceStr);
+        pos += replaceStr.length();
+    }
+}
+
+void LPainter::bindTextureMode(const TextureParams &p)
+{
+    GLenum target = p.texture->target();
+    imp()->switchTarget(target);
+
+    Float32 fbScale = imp()->fb->scale();
+    LPointF pos = p.pos - imp()->fb->rect().pos();
+
+    Float32 srcDstX, srcDstY;
+    Float32 srcW, srcH;
+    Float32 srcDstW, srcDstH;
+    Float32 srcFbX1, srcFbY1, srcFbX2, srcFbY2;
+    Float32 srcFbW, srcFbH;
+    Float32 diffX, diffY;
+
+    Float32 xFlip = 1.f;
+    Float32 yFlip = 1.f;
+
+    LFramebuffer::Transform invTrans = LFramebuffer::requiredTransform(p.srcTransform, imp()->fb->transform());
+    bool rotate = LFramebuffer::is90Transform(invTrans);
+
+    if (LFramebuffer::is90Transform(p.srcTransform))
+    {
+        srcH = Float32(p.texture->sizeB().w()) / p.srcScale;
+        srcW = Float32(p.texture->sizeB().h()) / p.srcScale;
+    }
+    else
+    {
+        srcW = (Float32(p.texture->sizeB().w()) / p.srcScale);
+        srcH = (Float32(p.texture->sizeB().h()) / p.srcScale);
+    }
+    srcDstW = (Float32(p.dstSize.w()) * srcW)/p.srcRect.w();
+    srcDstH = (Float32(p.dstSize.h()) * srcH)/p.srcRect.h();
+
+    srcDstX = (Float32(p.dstSize.w()) * p.srcRect.x())/p.srcRect.w();
+    srcDstY = (Float32(p.dstSize.h()) * p.srcRect.y())/p.srcRect.h();
+
+    switch (invTrans)
+    {
+    case LFramebuffer::Normal:
+        break;
+    case LFramebuffer::Rotated90:
+        xFlip *= -1.f;
+        break;
+    case LFramebuffer::Rotated180:
+        xFlip *= -1.f;
+        yFlip *= -1.f;
+        break;
+    case LFramebuffer::Rotated270:
+        yFlip *= -1.f;
+        break;
+    case LFramebuffer::Flipped:
+        xFlip *= -1.f;
+        break;
+    case LFramebuffer::Flipped90:
+        break;
+    case LFramebuffer::Flipped180:
+        yFlip *= -1.f;
+        break;
+    case LFramebuffer::Flipped270:
+        yFlip *= -1.f;
+        xFlip *= -1.f;
+        break;
+    default:
+        break;
+    }
+
+    imp()->shaderSetIsCustomFb(imp()->fb->id() != 0);
+
+    switch (imp()->fb->transform())
+    {
+    case LFramebuffer::Normal:
+        diffX = pos.x() - srcDstX;
+        srcFbX1 = floorf(diffX * fbScale);
+        srcFbX2 = floorf((diffX + srcDstW) * fbScale);
+        if (imp()->fb->id() == 0)
+        {
+            diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
+            srcFbY1 = floorf(diffY * fbScale);
+            srcFbY2 = floorf((diffY - srcDstH) * fbScale);
+        }
+        else
+        {
+            diffY = pos.y() - srcDstY;
+            srcFbY1 = floorf(diffY * fbScale);
+            srcFbY2 = floorf((diffY + srcDstH) * fbScale);
+        }
+        break;
+    case LFramebuffer::Rotated90:
+        diffY = pos.y() - srcDstY;
+        srcFbX1 = floorf(diffY * fbScale);
+        srcFbX2 = floorf((diffY + srcDstH) * fbScale);
+
+        if (imp()->fb->id() == 0)
+        {
+            diffX = pos.x() - srcDstX;
+            srcFbY1 = floorf((diffX + srcDstW) * fbScale);
+            srcFbY2 = floorf(diffX * fbScale);
+        }
+        else
+        {
+            diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
+            srcFbY1 = floorf(diffX * fbScale);
+            srcFbY2 = floorf((diffX + srcDstW) * fbScale);
+        }
+        break;
+    case LFramebuffer::Rotated180:
+        diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
+        srcFbX1 = floorf((diffX - srcDstW) * fbScale);
+        srcFbX2 = floorf(diffX * fbScale);
+
+        if (imp()->fb->id() == 0)
+        {
+            diffY = pos.y() - srcDstY;
+            srcFbY1 = floorf((diffY + srcDstH) * fbScale);
+            srcFbY2 = floorf(diffY * fbScale);
+        }
+        else
+        {
+            diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
+            srcFbY1 = floorf((diffY - srcDstH) * fbScale);
+            srcFbY2 = floorf(diffY * fbScale);
+        }
+        break;
+    case LFramebuffer::Rotated270:
+        diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
+        srcFbX1 = floorf((diffY - srcDstH) * fbScale);
+        srcFbX2 = floorf(diffY * fbScale);
+        if (1 == 1 || imp()->fb->id() == 0)
+        {
+            diffX = imp()->fb->rect().w() - pos.x() - srcDstX;
+            srcFbY1 = floorf(diffX * fbScale);
+            srcFbY2 = floorf((diffX + srcDstW) * fbScale);
+        }
+        else
+        {
+            diffX = pos.x() - srcDstX;
+            srcFbY1 = floorf(diffX * fbScale);
+            srcFbY2 = floorf((diffX + srcDstW) * fbScale);
+        }
+        break;
+    case LFramebuffer::Flipped:
+        srcFbX1 = floorf((imp()->fb->rect().w() - pos.x() + srcDstX - srcDstW) * fbScale);
+        srcFbY1 = floorf((imp()->fb->rect().h() - pos.y() - srcDstY) * fbScale);
+        srcFbX2 = floorf((imp()->fb->rect().w() - pos.x() + srcDstX) * fbScale);
+        srcFbY2 = floorf((imp()->fb->rect().h() - pos.y() - srcDstY + srcDstH) * fbScale);
+        break;
+    case LFramebuffer::Flipped90:
+        srcFbX1 = floorf((pos.y() - srcDstY) * fbScale);
+        srcFbY1 = floorf((imp()->fb->rect().w() - pos.x() + srcDstX) * fbScale);
+        srcFbX2 = floorf((pos.y() - srcDstY + srcDstH) * fbScale);
+        srcFbY2 = floorf((imp()->fb->rect().w() - pos.x() + srcDstX + srcDstW) * fbScale);
+        break;
+    case LFramebuffer::Flipped180:
+        srcFbX1 = floorf((pos.x() - srcDstX) * fbScale);
+        srcFbY1 = floorf((pos.y() - srcDstY + srcDstH) * fbScale);
+        srcFbX2 = floorf((pos.x() - srcDstX + srcDstW) * fbScale);
+        srcFbY2 = floorf((pos.y() - srcDstY) * fbScale);
+        break;
+    case LFramebuffer::Flipped270:
+        srcFbX1 = floorf((imp()->fb->rect().h() - pos.y() + srcDstY - srcDstH) * fbScale);
+        srcFbY1 = floorf((pos.x() - srcDstX + srcDstW) * fbScale);
+        srcFbX2 = floorf((imp()->fb->rect().h() - pos.y() + srcDstY) * fbScale);
+        srcFbY2 = floorf((pos.x() - srcDstX) * fbScale);
+        break;
+    }
+
+    glUniform1i(imp()->currentUniforms->rotate, rotate);
+    srcFbW = fabs(srcFbX2 - srcFbX1) * xFlip;
+    srcFbH = fabs(srcFbY2 - srcFbY1) * yFlip;
+    imp()->shaderSetTexOffset(srcFbX1, srcFbY1);
+    imp()->shaderSetTexSize(srcFbW, srcFbH);
+    glActiveTexture(GL_TEXTURE0);
+    imp()->shaderSetMode(3);
+    imp()->shaderSetActiveTexture(0);
+    glBindTexture(target, p.texture->id(imp()->output));
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+}
+
+void LPainter::bindColorMode()
+{
+    imp()->shaderSetMode(1);
+}
+
+void LPainter::drawBox(const LBox &box)
+{
+    imp()->setViewport(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
+void LPainter::drawRect(const LRect &rect)
+{
+    imp()->setViewport(rect.x(), rect.y(), rect.w(), rect.h());
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
+void LPainter::drawRegion(const LRegion &region)
+{
+    Int32 n;
+    LBox *box = region.boxes(&n);
+    for (Int32 i = 0; i < n; i++)
+    {
+        imp()->setViewport(box->x1,
+                           box->y1,
+                           box->x2 - box->x1,
+                           box->y2 - box->y1);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+        box++;
+    }
+}
+
+void LPainter::enableCustomTextureColor(bool enabled)
+{
+    imp()->shaderSetTexColorEnabled(enabled);
+}
+
+bool LPainter::customTextureColorEnabled() const
+{
+    return imp()->currentState->texColorEnabled;
+}
+
+void LPainter::setAlpha(Float32 alpha)
+{
+    imp()->shaderSetAlpha(alpha);
+}
+
+void LPainter::setColor(const LRGBF &color)
+{
+    imp()->shaderSetColor(color.r, color.g, color.b);
+}
+
 LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
 {
     imp()->painter = this;
@@ -38,8 +287,8 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
             if (transform == 0)
                 gl_Position = vec4(vertexPosition.xy, 0.0, 1.0);
 
-            // Clock90
-            else if (transform == 1)
+            // Counter270
+            else if (transform == 3)
             {
                 // TL > TR
                 if (vertexPosition.x == -1.0 && vertexPosition.y == 1.0)
@@ -72,8 +321,8 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
                     gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
             }
 
-            // Clock270
-            else if (transform == 3)
+            // Counter90
+            else if (transform == 1)
             {
                 // TL > BL
                 if (vertexPosition.x == -1.0 && vertexPosition.y == 1.0)
@@ -93,8 +342,8 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
             else if (transform == 4)
                 gl_Position = vec4(-vertexPosition.x, vertexPosition.y, 0.0, 1.0);
 
-            // Flipped90
-            else if (transform == 5)
+            // Flipped270
+            else if (transform == 7)
             {
                 // TL > BR
                 if (vertexPosition.x == -1.0 && vertexPosition.y == 1.0)
@@ -114,8 +363,8 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
             else if (transform == 6)
                 gl_Position = vec4(vertexPosition.x, -vertexPosition.y, 0.0, 1.0);
 
-            // Flipped270
-            else if (transform == 7)
+            // Flipped90
+            else if (transform == 5)
             {
                 // TL > TL
                 if (vertexPosition.x == -1.0 && vertexPosition.y == 1.0)
@@ -140,20 +389,87 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
         precision lowp float;
         precision lowp int;
         uniform lowp sampler2D tex;
-
         uniform bool colorFactorEnabled;
         uniform lowp int mode;
         uniform lowp float alpha;
         uniform lowp vec3 color;
         uniform lowp vec4 colorFactor;
         varying lowp vec2 v_texcoord;
+        uniform lowp vec2 texSize;
+        uniform lowp vec2 texOffset;
+        uniform bool rotate;
+        uniform bool texColorEnabled;
+        uniform bool isCustomFb;
 
         void main()
         {
             // Texture
-            if (mode == 0)
+            if (mode == 3)
             {
-                gl_FragColor = texture2D(tex, v_texcoord);
+                vec2 texco;
+                vec2 texsi = texSize;
+                bool xFlip = false;
+                bool yFlip = false;
+
+                if (texSize.x < 0.0)
+                {
+                    xFlip = true;
+                    texsi.x *= -1.0;
+                }
+
+                if (texSize.y < 0.0)
+                {
+                    yFlip = true;
+                    texsi.y *= -1.0;
+                }
+
+                if (rotate)
+                {
+                    texco.y = (gl_FragCoord.x - texOffset.x) / texsi.x;
+
+                    if (isCustomFb)
+                        texco.x = (gl_FragCoord.y - texOffset.y) / texsi.y;
+                    else
+                        texco.x = (texOffset.y - gl_FragCoord.y) / texsi.y;
+                }
+                else
+                {
+                    texco.x = (gl_FragCoord.x - texOffset.x) / texsi.x;
+
+                    if (isCustomFb)
+                        texco.y = (gl_FragCoord.y - texOffset.y) / texsi.y;
+                    else
+                        texco.y = (texOffset.y - gl_FragCoord.y) / texsi.y;
+                }
+
+                if (xFlip)
+                    texco.x = 1.0 - texco.x;
+
+                if (yFlip)
+                    texco.y = 1.0 - texco.y;
+
+                if (texColorEnabled)
+                {
+                    gl_FragColor.xyz = color;
+                    gl_FragColor.w = texture2D(tex, texco).w;
+                }
+                else
+                    gl_FragColor = texture2D(tex, texco);
+
+                gl_FragColor.w *= alpha;
+            }
+
+            // Texture legacy
+            else if (mode == 0)
+            {
+                if (texColorEnabled)
+                {
+                    gl_FragColor.xyz = color;
+                    gl_FragColor.w = texture2D(tex, v_texcoord).w;
+                }
+                else
+                    gl_FragColor = texture2D(tex, v_texcoord);
+
                 gl_FragColor.w *= alpha;
             }
 
@@ -164,58 +480,13 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
                 gl_FragColor.w = alpha;
             }
 
-            // Colored texture
-            else if (mode == 2)
-            {
-                gl_FragColor.xyz = color;
-                gl_FragColor.w = texture2D(tex, v_texcoord).w * alpha;
-            }
-
             if (colorFactorEnabled)
                 gl_FragColor *= colorFactor;
         }
         )";
 
-    GLchar fShaderStrExternal[] =R"(
-        #extension GL_OES_EGL_image_external : require
-        precision lowp float;
-        precision lowp int;
-        uniform lowp samplerExternalOES tex;
-
-        uniform bool colorFactorEnabled;
-        uniform lowp int mode;
-        uniform lowp float alpha;
-        uniform lowp vec3 color;
-        uniform lowp vec4 colorFactor;
-        varying lowp vec2 v_texcoord;
-
-        void main()
-        {
-            // Texture
-            if (mode == 0)
-            {
-                gl_FragColor = texture2D(tex, v_texcoord);
-                gl_FragColor.w *= alpha;
-            }
-
-            // Solid color
-            else if (mode == 1)
-            {
-                gl_FragColor.xyz = color;
-                gl_FragColor.w = alpha;
-            }
-
-            // Colored texture
-            else if (mode == 2)
-            {
-                gl_FragColor.xyz = color;
-                gl_FragColor.w = texture2D(tex, v_texcoord).w * alpha;
-            }
-
-            if (colorFactorEnabled)
-                gl_FragColor *= colorFactor;
-        }
-        )";
+    std::string fShaderStrExternal = fShaderStr;
+    makeExternalShader(fShaderStrExternal);
 
     GLchar fShaderStrScaler[] =R"(
         precision highp float;
@@ -258,54 +529,14 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
         }
         )";
 
-    GLchar fShaderStrScalerExternal[] =R"(
-        #extension GL_OES_EGL_image_external : require
-        precision highp float;
-        precision highp int;
-        uniform highp samplerExternalOES tex;
-        uniform highp int mode;
-        uniform highp vec4 samplerBounds;
-        uniform highp vec2 pixelSize;
-        uniform highp ivec2 iters;
-        varying highp vec2 v_texcoord;
+    std::string fShaderStrScalerExternal = fShaderStr;
+    makeExternalShader(fShaderStrScalerExternal);
 
-        void main()
-        {
-            vec2 texCoords;
-            gl_FragColor = vec4(0.0);
-
-            for (int x = 0; x < iters.x; x++)
-            {
-                texCoords.x = v_texcoord.x + float(x) * pixelSize.x;
-
-                if (texCoords.x < samplerBounds.x)
-                    texCoords.x = samplerBounds.x;
-                else if (texCoords.x > samplerBounds.z)
-                    texCoords.x = samplerBounds.z;
-
-                for (int y = 0; y < iters.y; y++)
-                {
-                    texCoords.y = v_texcoord.y + float(y) * pixelSize.y;
-
-                    if (texCoords.y < samplerBounds.y)
-                        texCoords.y = samplerBounds.y;
-                    else if (texCoords.y > samplerBounds.w)
-                        texCoords.y = samplerBounds.w;
-
-                    gl_FragColor += texture2D(tex, texCoords);
-                }
-            }
-
-            gl_FragColor /= float(iters.x * iters.y);
-        }
-        )";
-
-    // Load the vertex/fragment shaders
     imp()->vertexShader = LOpenGL::compileShader(GL_VERTEX_SHADER, vShaderStr);
     imp()->fragmentShader = LOpenGL::compileShader(GL_FRAGMENT_SHADER, fShaderStr);
-    imp()->fragmentShaderExternal = LOpenGL::compileShader(GL_FRAGMENT_SHADER, fShaderStrExternal);
+    imp()->fragmentShaderExternal = LOpenGL::compileShader(GL_FRAGMENT_SHADER, fShaderStrExternal.c_str());
     imp()->fragmentShaderScaler = LOpenGL::compileShader(GL_FRAGMENT_SHADER, fShaderStrScaler);
-    imp()->fragmentShaderScalerExternal = LOpenGL::compileShader(GL_FRAGMENT_SHADER, fShaderStrScalerExternal);
+    imp()->fragmentShaderScalerExternal = LOpenGL::compileShader(GL_FRAGMENT_SHADER, fShaderStrScalerExternal.c_str());
 
     GLint linked;
 
@@ -514,10 +745,14 @@ void LPainter::LPainterPrivate::setupProgram()
     currentUniforms->activeTexture = glGetUniformLocation(currentProgram, "tex");
     currentUniforms->mode = glGetUniformLocation(currentProgram, "mode");
     currentUniforms->color= glGetUniformLocation(currentProgram, "color");
+    currentUniforms->texColorEnabled = glGetUniformLocation(currentProgram, "texColorEnabled");
     currentUniforms->colorFactor = glGetUniformLocation(currentProgram, "colorFactor");
     currentUniforms->colorFactorEnabled = glGetUniformLocation(currentProgram, "colorFactorEnabled");
     currentUniforms->alpha = glGetUniformLocation(currentProgram, "alpha");
     currentUniforms->transform = glGetUniformLocation(currentProgram, "transform");
+    currentUniforms->texOffset = glGetUniformLocation(currentProgram, "texOffset");
+    currentUniforms->rotate = glGetUniformLocation(currentProgram, "rotate");
+    currentUniforms->isCustomFb = glGetUniformLocation(currentProgram, "isCustomFb");
 }
 
 void LPainter::LPainterPrivate::setupProgramScaler()
@@ -628,7 +863,7 @@ void LPainter::clearScreen()
         return;
 
     glDisable(GL_BLEND);
-    setViewport(imp()->fb->rect());
+    imp()->setViewport(imp()->fb->rect().x(), imp()->fb->rect().y(), imp()->fb->rect().w(), imp()->fb->rect().h());
     glClear(GL_COLOR_BUFFER_BIT);
     glEnable(GL_BLEND);
 }

@@ -149,8 +149,8 @@ void LOutput::LOutputPrivate::updateRect()
     sizeB = compositor()->imp()->graphicBackend->getOutputCurrentMode(output)->sizeB();
 
     // Swap width with height
-    if (transform == LFramebuffer::Clock90 ||
-        transform == LFramebuffer::Clock270 ||
+    if (transform == LFramebuffer::Rotated90 ||
+        transform == LFramebuffer::Rotated270 ||
         transform == LFramebuffer::Flipped90 ||
         transform == LFramebuffer::Flipped270)
     {
@@ -159,7 +159,9 @@ void LOutput::LOutputPrivate::updateRect()
         sizeB.setH(tmpW);
     }
 
-    rect.setSize(sizeB/outputScale);
+    rect.setSize(sizeB);
+    rect.setW(roundf(Float32(rect.w())/scale));
+    rect.setH(roundf(Float32(rect.h())/scale));
 }
 
 void LOutput::LOutputPrivate::updateGlobals()

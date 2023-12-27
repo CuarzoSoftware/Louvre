@@ -141,7 +141,7 @@ void LOutput::setBufferDamage(const LRegion &damage)
         region.multiply(scale());
         region.clip(0, sizeB());
         break;
-    case LFramebuffer::Clock90:
+    case LFramebuffer::Rotated270:
         boxes = damage.boxes(&n);
 
         for (Int32 i = 0; i < n; i++)
@@ -162,7 +162,7 @@ void LOutput::setBufferDamage(const LRegion &damage)
 
         region.clip(0, 0, sizeB().h(), sizeB().w());
         break;
-    case LFramebuffer::Clock180:
+    case LFramebuffer::Rotated180:
         boxes = damage.boxes(&n);
 
         for (Int32 i = 0; i < n; i++)
@@ -183,7 +183,7 @@ void LOutput::setBufferDamage(const LRegion &damage)
 
         region.clip(0, 0, sizeB().w(), sizeB().h());
         break;
-    case LFramebuffer::Clock270:
+    case LFramebuffer::Rotated90:
         boxes = damage.boxes(&n);
 
         for (Int32 i = 0; i < n; i++)
@@ -226,7 +226,7 @@ void LOutput::setBufferDamage(const LRegion &damage)
 
         region.clip(0, sizeB());
         break;
-    case LFramebuffer::Flipped90:
+    case LFramebuffer::Flipped270:
         boxes = damage.boxes(&n);
 
         for (Int32 i = 0; i < n; i++)
@@ -268,7 +268,7 @@ void LOutput::setBufferDamage(const LRegion &damage)
 
         region.clip(0, 0, sizeB().w(), sizeB().h());
         break;
-    case LFramebuffer::Flipped270:
+    case LFramebuffer::Flipped90:
         boxes = damage.boxes(&n);
 
         for (Int32 i = 0; i < n; i++)
@@ -296,24 +296,24 @@ void LOutput::setBufferDamage(const LRegion &damage)
     compositor()->imp()->graphicBackend->setOutputBufferDamage((LOutput*)this, region);
 }
 
-void LOutput::setScale(Int32 scale)
+void LOutput::setScale(Float32 scale)
 {
-    if (scale < 1 || scale > 3)
-        return;
+    if (scale < 0.5f)
+        scale = 0.5f;
 
-    imp()->outputScale = scale;
+    imp()->scale = scale;
     imp()->updateRect();
 
-    if (scale == imp()->outputScale)
+    if (scale == imp()->scale)
         return;
 
     imp()->updateGlobals();
     compositor()->imp()->updateGreatestOutputScale();
 }
 
-Int32 LOutput::scale() const
+Float32 LOutput::scale() const
 {
-    return imp()->outputScale;
+    return imp()->scale;
 }
 
 void LOutput::repaint()

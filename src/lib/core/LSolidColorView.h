@@ -112,7 +112,7 @@ public:
     virtual bool nativeMapped() const override;
     virtual const LPoint &nativePos() const override;
     virtual const LSize &nativeSize() const override;
-    virtual Int32 bufferScale() const override;
+    virtual Float32 bufferScale() const override;
     virtual void enteredOutput(LOutput *output) override;
     virtual void leftOutput(LOutput *output) override;
     virtual const std::list<LOutput*> &outputs() const override;
@@ -122,7 +122,7 @@ public:
     virtual const LRegion *translucentRegion() const override;
     virtual const LRegion *opaqueRegion() const override;
     virtual const LRegion *inputRegion() const override;
-    virtual void paintRect(const PaintRectParams &params) override;
+    virtual void paintEvent(const PaintEventParams &params) override;
 
 LPRIVATE_IMP_UNIQUE(LSolidColorView)
 };

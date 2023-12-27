@@ -3,6 +3,7 @@
 
 #include <LObject.h>
 #include <LPointer.h>
+#include <LFramebuffer.h>
 
 /**
  * @brief Base class for LScene views.
@@ -100,40 +101,13 @@ public:
     /**
      * @brief Parameters used within a paintRect() event.
      */
-    struct PaintRectParams
+    struct PaintEventParams
     {
         /// LPainter object to perform the painting.
-        LPainter *p;
+        LPainter *painter;
 
-        /// x-surface-coordinate within the view to draw.
-        Int32 srcX;
-
-        /// y-surface-coordinate within the view to draw.
-        Int32 srcY;
-
-        /// The source width-surface-coordinate within the view to draw.
-        Int32 srcW;
-
-        /// The source height-surface-coordinate within the view to draw.
-        Int32 srcH;
-
-        /// The destination x-surface-coordinate within the output to paint on.
-        Int32 dstX;
-
-        /// The destination y-surface-coordinate within the output to paint on.
-        Int32 dstY;
-
-        /// The destination width-surface-coordinate within the output to paint on.
-        Int32 dstW;
-
-        /// The destination height-surface-coordinate within the output to paint on.
-        Int32 dstH;
-
-        /// The scaling factor to be applied during painting.
-        Float32 scale;
-
-        /// The alpha (transparency) value to be applied during painting.
-        Float32 alpha;
+        /// Region to draw in global compositor coordinates.
+        LRegion *region;
     };
 
     /**
@@ -172,6 +146,8 @@ public:
         /// LSceneView
         Scene = 4
     };
+
+    void damageAll();
 
     /**
      * @brief Get the scene in which this view is currently embedded.
@@ -654,7 +630,7 @@ public:
      *
      * @return The buffer scale as an Int32 value.
      */
-    virtual Int32 bufferScale() const = 0;
+    virtual Float32 bufferScale() const = 0;
 
     /**
      * @brief Indicate that the view is visible on the given output.
@@ -747,15 +723,14 @@ public:
     virtual const LRegion *inputRegion() const = 0;
 
     /**
-     * @brief Request to paint a rectangle of the view to the current framebuffer.
+     * @brief Request to paint a region of the view to the current framebuffer.
      *
-     * This method is used by LSceneView to request the view to paint a specified rectangular area
-     * on the current framebuffer. The painting is performed using the provided LPainter object
-     * with the specified source and destination surface coordinates, size, scaling, and alpha value.
+     * This method is used by LSceneView to request the view to paint a specified region
+     * on the current framebuffer. The painting is performed using the provided LPainter object.
      *
      * @note Alternatively, you have the option to use your own custom OpenGL shaders/program for rendering, in place of the provided LPainter.
      */
-    virtual void paintRect(const PaintRectParams &params) = 0;
+    virtual void paintEvent(const PaintEventParams &params) = 0;
 
     /**
      * @brief Handle the pointer enter event within the view.

@@ -189,6 +189,11 @@ bool LSurface::minimized() const
     return imp()->minimized;
 }
 
+const LRectF &LSurface::srcRect() const
+{
+    return imp()->srcRect;
+}
+
 LSurface::Role LSurface::roleId() const
 {
     if (role())

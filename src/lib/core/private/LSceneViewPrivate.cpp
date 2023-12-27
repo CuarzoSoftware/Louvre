@@ -249,8 +249,6 @@ void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view)
     cache->opaque.intersectRegion(oD->newDamage);
     cache->opaque.subtractRegion(cache->opaqueOverlay);
 
-    oD->boxes = cache->opaque.boxes(&oD->n);
-
     if (view->imp()->hasFlag(LVS::ColorFactor))
     {
         oD->p->imp()->shaderSetColorFactor(view->imp()->colorFactor.r,
@@ -261,49 +259,10 @@ void LSceneView::LSceneViewPrivate::drawOpaqueDamage(LView *view)
     else
         oD->p->imp()->shaderSetColorFactorEnabled(0);
 
-    paintParams.p = oD->p;
-    paintParams.alpha = 1.f;
-    paintParams.scale = view->bufferScale();
-
-    if (cache->scalingEnabled)
-    {
-        for (Int32 i = 0; i < oD->n; i++)
-        {
-            paintParams.dstX = oD->boxes->x1;
-            paintParams.dstY = oD->boxes->y1;
-            paintParams.dstW = oD->boxes->x2 - oD->boxes->x1;
-            paintParams.dstH = oD->boxes->y2 - oD->boxes->y1;
-
-            paintParams.srcX = (oD->boxes->x1 - cache->rect.x()) / cache->scalingVector.x();
-            paintParams.srcY = (oD->boxes->y1  - cache->rect.y()) / cache->scalingVector.y();
-            paintParams.srcW = paintParams.dstW / cache->scalingVector.x();
-            paintParams.srcH = paintParams.dstH / cache->scalingVector.y();
-
-            view->paintRect(paintParams);
-            oD->boxes++;
-        }
-    }
-    else
-    {
-        for (Int32 i = 0; i < oD->n; i++)
-        {
-            oD->w = oD->boxes->x2 - oD->boxes->x1;
-            oD->h = oD->boxes->y2 - oD->boxes->y1;
-
-            paintParams.dstX = oD->boxes->x1;
-            paintParams.dstY = oD->boxes->y1;
-            paintParams.dstW = oD->boxes->x2 - oD->boxes->x1;
-            paintParams.dstH = oD->boxes->y2 - oD->boxes->y1;
-
-            paintParams.srcX = oD->boxes->x1 - cache->rect.x();
-            paintParams.srcY = oD->boxes->y1 - cache->rect.y();
-            paintParams.srcW = paintParams.dstW;
-            paintParams.srcH = paintParams.dstH;
-
-            view->paintRect(paintParams);
-            oD->boxes++;
-        }
-    }
+    oD->p->imp()->shaderSetAlpha(1.f);
+    paintParams.painter = oD->p;
+    paintParams.region = &cache->opaque;
+    view->paintEvent(paintParams);
 }
 
 void LSceneView::LSceneViewPrivate::drawBackground(bool addToOpaqueSum)
@@ -311,21 +270,10 @@ void LSceneView::LSceneViewPrivate::drawBackground(bool addToOpaqueSum)
     ThreadData *oD = currentThreadData;
     LRegion backgroundDamage = oD->newDamage;
     backgroundDamage.subtractRegion(oD->opaqueTransposedSum);
-    oD->boxes = backgroundDamage.boxes(&oD->n);
-
-    for (Int32 i = 0; i < oD->n; i++)
-    {
-        oD->p->drawColor(oD->boxes->x1,
-                      oD->boxes->y1,
-                      oD->boxes->x2 - oD->boxes->x1,
-                      oD->boxes->y2 - oD->boxes->y1,
-                      clearColor.r,
-                      clearColor.g,
-                      clearColor.b,
-                      clearColor.a);
-        oD->boxes++;
-    }
-
+    oD->p->setColor((LRGBF&)clearColor);
+    oD->p->setAlpha(clearColor.a);
+    oD->p->bindColorMode();
+    oD->p->drawRegion(backgroundDamage);
     if (addToOpaqueSum)
         oD->opaqueTransposedSum.addRegion(backgroundDamage);
 }
@@ -362,46 +310,10 @@ void LSceneView::LSceneViewPrivate::drawTranslucentDamage(LView *view)
     cache->translucent.intersectRegion(oD->newDamage);
     cache->translucent.subtractRegion(cache->opaqueOverlay);
 
-    oD->boxes = cache->translucent.boxes(&oD->n);
-    paintParams.scale = view->bufferScale();
-    paintParams.alpha = cache->opacity;
-
-    if (cache->scalingEnabled)
-    {
-        for (Int32 i = 0; i < oD->n; i++)
-        {
-            paintParams.dstX = oD->boxes->x1;
-            paintParams.dstY = oD->boxes->y1;
-            paintParams.dstW = oD->boxes->x2 - oD->boxes->x1;
-            paintParams.dstH = oD->boxes->y2 - oD->boxes->y1;
-
-            paintParams.srcX = (oD->boxes->x1 - cache->rect.x()) / cache->scalingVector.x();
-            paintParams.srcY = (oD->boxes->y1  - cache->rect.y()) / cache->scalingVector.y();
-            paintParams.srcW = paintParams.dstW / cache->scalingVector.x();
-            paintParams.srcH = paintParams.dstH / cache->scalingVector.y();
-
-            view->paintRect(paintParams);
-            oD->boxes++;
-        }
-    }
-    else
-    {
-        for (Int32 i = 0; i < oD->n; i++)
-        {
-            paintParams.dstX = oD->boxes->x1;
-            paintParams.dstY = oD->boxes->y1;
-            paintParams.dstW = oD->boxes->x2 - oD->boxes->x1;
-            paintParams.dstH = oD->boxes->y2 - oD->boxes->y1;
-
-            paintParams.srcX = oD->boxes->x1 - cache->rect.x();
-            paintParams.srcY = oD->boxes->y1 - cache->rect.y();
-            paintParams.srcW = paintParams.dstW;
-            paintParams.srcH = paintParams.dstH;
-
-            view->paintRect(paintParams);
-            oD->boxes++;
-        }
-    }
+    oD->p->imp()->shaderSetAlpha(cache->opacity);
+    paintParams.painter = oD->p;
+    paintParams.region = &cache->translucent;
+    view->paintEvent(paintParams);
 
     drawChildrenOnly:
     if (view->type() != Scene)
