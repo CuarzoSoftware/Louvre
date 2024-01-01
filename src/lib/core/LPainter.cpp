@@ -83,19 +83,19 @@ void LPainter::bindTextureMode(const TextureParams &p)
         xFlip *= -1.f;
         break;
     case LFramebuffer::Flipped90:
+        xFlip *= -1.f;
+        yFlip *= -1.f;
         break;
     case LFramebuffer::Flipped180:
         yFlip *= -1.f;
         break;
     case LFramebuffer::Flipped270:
-        yFlip *= -1.f;
-        xFlip *= -1.f;
+        //yFlip *= -1.f;
+        //xFlip *= -1.f;
         break;
     default:
         break;
     }
-
-    imp()->shaderSetIsCustomFb(imp()->fb->id() != 0);
 
     switch (imp()->fb->transform())
     {
@@ -118,14 +118,14 @@ void LPainter::bindTextureMode(const TextureParams &p)
         break;
     case LFramebuffer::Rotated90:
         diffY = pos.y() - srcDstY;
-        srcFbX1 = floorf(diffY * fbScale);
-        srcFbX2 = floorf((diffY + srcDstH) * fbScale);
+        srcFbX2 = floorf(diffY * fbScale);
+        srcFbX1 = floorf((diffY + srcDstH) * fbScale);
 
         if (imp()->fb->id() == 0)
         {
             diffX = pos.x() - srcDstX;
-            srcFbY1 = floorf((diffX + srcDstW) * fbScale);
-            srcFbY2 = floorf(diffX * fbScale);
+            srcFbY2 = floorf((diffX + srcDstW) * fbScale);
+            srcFbY1 = floorf(diffX * fbScale);
         }
         else
         {
@@ -154,13 +154,13 @@ void LPainter::bindTextureMode(const TextureParams &p)
         break;
     case LFramebuffer::Rotated270:
         diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
-        srcFbX1 = floorf((diffY - srcDstH) * fbScale);
-        srcFbX2 = floorf(diffY * fbScale);
-        if (1 == 1 || imp()->fb->id() == 0)
+        srcFbX2 = floorf((diffY - srcDstH) * fbScale);
+        srcFbX1 = floorf(diffY * fbScale);
+        if (imp()->fb->id() == 0)
         {
-            diffX = imp()->fb->rect().w() - pos.x() - srcDstX;
-            srcFbY1 = floorf(diffX * fbScale);
-            srcFbY2 = floorf((diffX + srcDstW) * fbScale);
+            diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
+            srcFbY2 = floorf(diffX * fbScale);
+            srcFbY1 = floorf((diffX - srcDstW) * fbScale);
         }
         else
         {
@@ -170,16 +170,39 @@ void LPainter::bindTextureMode(const TextureParams &p)
         }
         break;
     case LFramebuffer::Flipped:
-        srcFbX1 = floorf((imp()->fb->rect().w() - pos.x() + srcDstX - srcDstW) * fbScale);
-        srcFbY1 = floorf((imp()->fb->rect().h() - pos.y() - srcDstY) * fbScale);
-        srcFbX2 = floorf((imp()->fb->rect().w() - pos.x() + srcDstX) * fbScale);
-        srcFbY2 = floorf((imp()->fb->rect().h() - pos.y() - srcDstY + srcDstH) * fbScale);
+        diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
+        srcFbX2 = floorf(diffX * fbScale);
+        srcFbX1 = floorf((diffX - srcDstW) * fbScale);
+        if (imp()->fb->id() == 0)
+        {
+            diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
+            srcFbY1 = floorf(diffY * fbScale);
+            srcFbY2 = floorf((diffY - srcDstH) * fbScale);
+        }
+        else
+        {
+            diffY = pos.y() - srcDstY;
+            srcFbY1 = floorf(diffY * fbScale);
+            srcFbY2 = floorf((diffY + srcDstH) * fbScale);
+        }
         break;
     case LFramebuffer::Flipped90:
-        srcFbX1 = floorf((pos.y() - srcDstY) * fbScale);
-        srcFbY1 = floorf((imp()->fb->rect().w() - pos.x() + srcDstX) * fbScale);
-        srcFbX2 = floorf((pos.y() - srcDstY + srcDstH) * fbScale);
-        srcFbY2 = floorf((imp()->fb->rect().w() - pos.x() + srcDstX + srcDstW) * fbScale);
+        diffY = pos.y() - srcDstY;
+        srcFbX2 = floorf(diffY * fbScale);
+        srcFbX1 = floorf((diffY + srcDstH) * fbScale);
+
+        if (imp()->fb->id() == 0)
+        {
+            diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
+            srcFbY2 = floorf(diffX * fbScale);
+            srcFbY1 = floorf((diffX - srcDstW) * fbScale);
+        }
+        else
+        {
+            diffX = pos.x() - srcDstX;
+            srcFbY2 = floorf((diffX + srcDstW) * fbScale);
+            srcFbY1 = floorf(diffX * fbScale);
+        }
         break;
     case LFramebuffer::Flipped180:
         srcFbX1 = floorf((pos.x() - srcDstX) * fbScale);
@@ -188,16 +211,43 @@ void LPainter::bindTextureMode(const TextureParams &p)
         srcFbY2 = floorf((pos.y() - srcDstY) * fbScale);
         break;
     case LFramebuffer::Flipped270:
-        srcFbX1 = floorf((imp()->fb->rect().h() - pos.y() + srcDstY - srcDstH) * fbScale);
-        srcFbY1 = floorf((pos.x() - srcDstX + srcDstW) * fbScale);
-        srcFbX2 = floorf((imp()->fb->rect().h() - pos.y() + srcDstY) * fbScale);
-        srcFbY2 = floorf((pos.x() - srcDstX) * fbScale);
+        diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
+        srcFbX1 = floorf(diffY * fbScale);
+        srcFbX2 = floorf((diffY - srcDstH) * fbScale);
+
+        if (imp()->fb->id() == 0)
+        {
+            diffX = pos.x() - srcDstX;
+            srcFbY2 = floorf((diffX + srcDstW) * fbScale);
+            srcFbY1 = floorf(diffX * fbScale);
+        }
+        else
+        {
+            diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
+            srcFbY2 = floorf(diffX * fbScale);
+            srcFbY1 = floorf((diffX - srcDstW) * fbScale);
+        }
         break;
     }
 
     glUniform1i(imp()->currentUniforms->rotate, rotate);
-    srcFbW = fabs(srcFbX2 - srcFbX1) * xFlip;
-    srcFbH = fabs(srcFbY2 - srcFbY1) * yFlip;
+
+    if (xFlip < 0.0)
+    {
+        diffX = srcFbX2;
+        srcFbX2 = srcFbX1;
+        srcFbX1 = diffX;
+    }
+
+    if (yFlip < 0.0)
+    {
+        diffY = srcFbY2;
+        srcFbY2 = srcFbY1;
+        srcFbY1 = diffY;
+    }
+
+    srcFbW = srcFbX2 - srcFbX1;
+    srcFbH = srcFbY2 - srcFbY1;
     imp()->shaderSetTexOffset(srcFbX1, srcFbY1);
     imp()->shaderSetTexSize(srcFbW, srcFbH);
     glActiveTexture(GL_TEXTURE0);
@@ -399,7 +449,6 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
         uniform lowp vec2 texOffset;
         uniform bool rotate;
         uniform bool texColorEnabled;
-        uniform bool isCustomFb;
 
         void main()
         {
@@ -407,46 +456,17 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
             if (mode == 3)
             {
                 vec2 texco;
-                vec2 texsi = texSize;
-                bool xFlip = false;
-                bool yFlip = false;
-
-                if (texSize.x < 0.0)
-                {
-                    xFlip = true;
-                    texsi.x *= -1.0;
-                }
-
-                if (texSize.y < 0.0)
-                {
-                    yFlip = true;
-                    texsi.y *= -1.0;
-                }
 
                 if (rotate)
                 {
-                    texco.y = (gl_FragCoord.x - texOffset.x) / texsi.x;
-
-                    if (isCustomFb)
-                        texco.x = (gl_FragCoord.y - texOffset.y) / texsi.y;
-                    else
-                        texco.x = (texOffset.y - gl_FragCoord.y) / texsi.y;
+                    texco.x = (gl_FragCoord.y - texOffset.y) / texSize.y;
+                    texco.y = (gl_FragCoord.x - texOffset.x) / texSize.x;
                 }
                 else
                 {
-                    texco.x = (gl_FragCoord.x - texOffset.x) / texsi.x;
-
-                    if (isCustomFb)
-                        texco.y = (gl_FragCoord.y - texOffset.y) / texsi.y;
-                    else
-                        texco.y = (texOffset.y - gl_FragCoord.y) / texsi.y;
+                    texco.y = (gl_FragCoord.y - texOffset.y) / texSize.y;
+                    texco.x = (gl_FragCoord.x - texOffset.x) / texSize.x;
                 }
-
-                if (xFlip)
-                    texco.x = 1.0 - texco.x;
-
-                if (yFlip)
-                    texco.y = 1.0 - texco.y;
 
                 if (texColorEnabled)
                 {
@@ -752,7 +772,6 @@ void LPainter::LPainterPrivate::setupProgram()
     currentUniforms->transform = glGetUniformLocation(currentProgram, "transform");
     currentUniforms->texOffset = glGetUniformLocation(currentProgram, "texOffset");
     currentUniforms->rotate = glGetUniformLocation(currentProgram, "rotate");
-    currentUniforms->isCustomFb = glGetUniformLocation(currentProgram, "isCustomFb");
 }
 
 void LPainter::LPainterPrivate::setupProgramScaler()

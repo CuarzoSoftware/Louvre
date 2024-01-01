@@ -39,8 +39,7 @@ LPRIVATE_CLASS(LPainter)
         alpha,
         transform,
         texOffset,
-        rotate,
-        isCustomFb;
+        rotate;
     } uniforms, uniformsExternal;
 
     Uniforms *currentUniforms;
@@ -110,7 +109,6 @@ LPRIVATE_CLASS(LPainter)
         LGLVec4F colorFactor;
         bool colorFactorEnabled = false;
         bool texColorEnabled = false;
-        bool isCustomFb = false;
         GLfloat alpha;
         GLint transform;
     };
@@ -296,19 +294,6 @@ LPRIVATE_CLASS(LPainter)
         }
         #else
             glUniform1i(currentUniforms->texColorEnabled, enabled);
-        #endif
-    }
-
-    inline void shaderSetIsCustomFb(bool enabled)
-    {
-        #if LPAINTER_TRACK_UNIFORMS == 1
-        if (currentState->isCustomFb!= enabled)
-        {
-            currentState->isCustomFb = enabled;
-            glUniform1i(currentUniforms->isCustomFb, enabled);
-        }
-        #else
-            glUniform1i(currentUniforms->isCustomFb, enabled);
         #endif
     }
 
