@@ -31,7 +31,8 @@ Compositor::Compositor() : LCompositor(),
     overlayLayer(scene.mainView()),
     tooltipsLayer(scene.mainView()),
     cursorLayer(scene.mainView()),
-    softwareCursor(nullptr, &cursorLayer)
+    softwareCursor(nullptr, &cursorLayer),
+    test(nullptr, &cursorLayer)
 {
     // Set black as default background color
     scene.mainView()->setClearColor(0.f, 0.f, 0.f, 1.f);
@@ -53,6 +54,9 @@ void Compositor::initialized()
     G::loadFonts();
     G::createTooltip();
     G::loadApps();
+
+    test.setTexture(LOpenGL::loadTexture("/home/eduardo/Desktop/lines.jpg"));
+    test.setOpacity(0.001);
 
     clockMinuteTimer = new LTimer([](LTimer *timer)
     {

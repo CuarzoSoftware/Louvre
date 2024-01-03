@@ -39,6 +39,9 @@ LOutput::~LOutput() {}
 
 LFramebuffer *LOutput::framebuffer() const
 {
+    if (imp()->fractionalEnabled)
+        return &imp()->fractionalFb;
+
     return &imp()->fb;
 }
 
@@ -298,14 +301,23 @@ void LOutput::setBufferDamage(const LRegion &damage)
 
 void LOutput::setScale(Float32 scale)
 {
-    if (scale < 0.5f)
-        scale = 0.5f;
-
-    imp()->scale = scale;
-    imp()->updateRect();
+    if (scale < 0.25f)
+        scale = 0.25f;
 
     if (scale == imp()->scale)
         return;
+
+    imp()->fractionalScale = scale;
+    imp()->scale = scale;
+
+    if (1 == 2 && fmod(scale, 1.f) != 0.f)
+    {
+        imp()->fractionalEnabled = true;
+        imp()->fractionalFb.setSizeB(imp()->sizeB * 2.f);//(1.f + imp()->scale - imp()->fractionalScale));
+        imp()->fractionalFb.setScale(imp()->scale);
+    }
+
+    imp()->updateRect();
 
     imp()->updateGlobals();
     compositor()->imp()->updateGreatestOutputScale();
@@ -324,8 +336,8 @@ void LOutput::repaint()
 
 Int32 LOutput::dpi()
 {
-    float w = sizeB().w();
-    float h = sizeB().h();
+    float w = imp()->sizeB.w();
+    float h = imp()->sizeB.h();
 
     float Wi = physicalSize().w();
     Wi /= 25.4;
@@ -342,22 +354,34 @@ const LSize &LOutput::physicalSize() const
 
 const LSize &LOutput::sizeB() const
 {
+    if (imp()->fractionalEnabled)
+        return imp()->fractionalFb.sizeB();
+
     return imp()->sizeB;
 }
 
 const LRect &LOutput::rect() const
 {
+    if (imp()->fractionalEnabled)
+        return imp()->fractionalFb.rect();
+
     return imp()->rect;
 }
 
 const LPoint &LOutput::pos() const
 {
-    return rect().pos();
+    if (imp()->fractionalEnabled)
+        return imp()->fractionalFb.pos();
+
+    return imp()->rect.pos();
 }
 
 const LSize &LOutput::size() const
 {
-    return rect().size();
+    if (imp()->fractionalEnabled)
+        return imp()->fractionalFb.size();
+
+    return imp()->rect.size();
 }
 
 EGLDisplay LOutput::eglDisplay()
@@ -392,7 +416,10 @@ const char *LOutput::description() const
 
 void LOutput::setPos(const LPoint &pos)
 {
-    imp()->rect.setPos(pos);
+    if (imp()->fractionalEnabled)
+        imp()->fractionalFb.setPos(pos);
+    else
+        imp()->rect.setPos(pos);
 }
 
 LPainter *LOutput::painter() const

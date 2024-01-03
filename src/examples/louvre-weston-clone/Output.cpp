@@ -366,7 +366,7 @@ void Output::paintGL()
     {
         params.texture = backgroundTexture;
         params.dstSize = size();
-        params.srcRect = LRectF(0, backgroundTexture->sizeB());
+        params.srcRect = LRectF(0, backgroundTexture->sizeB() - LSize(0, 1));
         params.pos = pos();
         params.srcScale = 1.f;
         params.srcTransform = LFramebuffer::Normal;

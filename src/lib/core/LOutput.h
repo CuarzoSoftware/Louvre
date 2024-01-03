@@ -97,6 +97,12 @@ public:
         Suspended            ///< Output is suspended.
     };
 
+    enum FractionalScalingMode
+    {
+        Oversampling,
+        Fast
+    };
+
     /**
      * @brief Constructor of the LOutput class.
      */

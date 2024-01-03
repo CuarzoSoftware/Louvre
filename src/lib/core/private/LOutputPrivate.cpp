@@ -9,7 +9,7 @@
 #include <LTime.h>
 #include <iostream>
 
-LOutput::LOutputPrivate::LOutputPrivate(LOutput *output) : fb(output) {}
+LOutput::LOutputPrivate::LOutputPrivate(LOutput *output) : fb(output), fractionalFb(LSize(100, 100)) {}
 
 // This is called from LCompositor::addOutput()
 bool LOutput::LOutputPrivate::initialize()
@@ -73,7 +73,27 @@ void LOutput::LOutputPrivate::backendPaintGL()
     compositor()->imp()->sendPresentationTime();
     compositor()->imp()->processAnimations();
     pendingRepaint = false;
+    //painter->bindFramebuffer(&fractionalFb);
     output->paintGL();
+
+    /*
+    if (fractionalEnabled)
+    {
+        painter->bindFramebuffer(&fb);
+
+        painter->bindTextureMode({
+            .texture = fractionalFb.texture(0),
+            .pos = rect.pos(),
+            .srcRect = LRect(0, fractionalFb.sizeB()),
+            .dstSize = rect.size(),
+            .srcTransform = LFramebuffer::Normal,
+            .srcScale = 1.f,
+        });
+
+        glDisable(GL_BLEND);
+        painter->drawRect(fb.rect());
+    }*/
+
     compositor()->flushClients();
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
     compositor()->imp()->destroyNativeTextures(nativeTexturesToDestroy);
@@ -149,10 +169,7 @@ void LOutput::LOutputPrivate::updateRect()
     sizeB = compositor()->imp()->graphicBackend->getOutputCurrentMode(output)->sizeB();
 
     // Swap width with height
-    if (transform == LFramebuffer::Rotated90 ||
-        transform == LFramebuffer::Rotated270 ||
-        transform == LFramebuffer::Flipped90 ||
-        transform == LFramebuffer::Flipped270)
+    if (LFramebuffer::is90Transform(transform))
     {
         Int32 tmpW = sizeB.w();
         sizeB.setW(sizeB.h());

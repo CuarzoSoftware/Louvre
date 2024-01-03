@@ -5,6 +5,7 @@
 #include <LTexture.h>
 #include <LRegion.h>
 #include <LRect.h>
+#include <LFramebuffer.h>
 
 #include <list>
 #include <mutex>
@@ -120,6 +121,8 @@ public:
     };
 
     const LRectF &srcRect() const;
+    LFramebuffer::Transform bufferTransform() const;
+    virtual void bufferTransformChanged();
 
     /**
      * @brief ID of the role

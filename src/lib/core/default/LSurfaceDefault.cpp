@@ -8,6 +8,11 @@
 
 using namespace Louvre;
 
+void LSurface::bufferTransformChanged()
+{
+
+}
+
 //! [damageChanged]
 void LSurface::damageChanged()
 {

@@ -13,9 +13,6 @@
 
 using namespace Louvre;
 
-#define OPB roundf
-#define OPE roundf
-
 static void makeExternalShader(std::string &shader)
 {
     size_t pos = 0;
@@ -64,11 +61,11 @@ void LPainter::bindTextureMode(const TextureParams &p)
         srcW = (Float32(p.texture->sizeB().w()) / p.srcScale);
         srcH = (Float32(p.texture->sizeB().h()) / p.srcScale);
     }
-    srcDstW = (Float32(p.dstSize.w()) * srcW)/p.srcRect.w();
-    srcDstH = (Float32(p.dstSize.h()) * srcH)/p.srcRect.h();
+    srcDstW = (Float32(p.dstSize.w()) * srcW)/(p.srcRect.w());
+    srcDstH = (Float32(p.dstSize.h()) * srcH)/(p.srcRect.h());
 
-    srcDstX = (Float32(p.dstSize.w()) * p.srcRect.x())/p.srcRect.w();
-    srcDstY = (Float32(p.dstSize.h()) * p.srcRect.y())/p.srcRect.h();
+    srcDstX = (Float32(p.dstSize.w()) * (p.srcRect.x()))/(p.srcRect.w());
+    srcDstY = (Float32(p.dstSize.h()) * (p.srcRect.y()))/(p.srcRect.h());
 
     switch (invTrans)
     {
@@ -104,131 +101,132 @@ void LPainter::bindTextureMode(const TextureParams &p)
     {
     case LFramebuffer::Normal:
         diffX = pos.x() - srcDstX;
-        srcFbX1 = (Float32)(diffX * fbScale);
-        srcFbX2 = (Float32)((diffX + srcDstW) * fbScale);
+        srcFbX1 = (Float32)(diffX);
+        srcFbX2 = (Float32)((diffX + srcDstW));
+
         if (imp()->fb->id() == 0)
         {
             diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
-            srcFbY1 = (Float32)(diffY * fbScale);
-            srcFbY2 = (Float32)((diffY - srcDstH) * fbScale);
+            srcFbY1 = (Float32)(diffY);
+            srcFbY2 = (Float32)((diffY - srcDstH));
         }
         else
         {
             diffY = pos.y() - srcDstY;
-            srcFbY1 = (Float32)(diffY * fbScale);
-            srcFbY2 = (Float32)((diffY + srcDstH) * fbScale);
+            srcFbY1 = (Float32)(diffY);
+            srcFbY2 = (Float32)((diffY + srcDstH));
         }
         break;
     case LFramebuffer::Rotated90:
         diffY = pos.y() - srcDstY;
-        srcFbX2 = (Float32)(diffY * fbScale);
-        srcFbX1 = (Float32)((diffY + srcDstH) * fbScale);
+        srcFbX2 = (Float32)(diffY );
+        srcFbX1 = (Float32)((diffY + srcDstH) );
 
         if (imp()->fb->id() == 0)
         {
             diffX = pos.x() - srcDstX;
-            srcFbY2 = (Float32)((diffX + srcDstW) * fbScale);
-            srcFbY1 = (Float32)(diffX * fbScale);
+            srcFbY2 = (Float32)((diffX + srcDstW) );
+            srcFbY1 = (Float32)(diffX );
         }
         else
         {
             diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-            srcFbY1 = (Float32)(diffX * fbScale);
-            srcFbY2 = (Float32)((diffX + srcDstW) * fbScale);
+            srcFbY1 = (Float32)(diffX );
+            srcFbY2 = (Float32)((diffX + srcDstW) );
         }
         break;
     case LFramebuffer::Rotated180:
         diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-        srcFbX1 = (Float32)((diffX - srcDstW) * fbScale);
-        srcFbX2 = (Float32)(diffX * fbScale);
+        srcFbX1 = (Float32)((diffX - srcDstW) );
+        srcFbX2 = (Float32)(diffX );
 
         if (imp()->fb->id() == 0)
         {
             diffY = pos.y() - srcDstY;
-            srcFbY1 = (Float32)((diffY + srcDstH) * fbScale);
-            srcFbY2 = (Float32)(diffY * fbScale);
+            srcFbY1 = (Float32)((diffY + srcDstH) );
+            srcFbY2 = (Float32)(diffY );
         }
         else
         {
             diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
-            srcFbY1 = (Float32)((diffY - srcDstH) * fbScale);
-            srcFbY2 = (Float32)(diffY * fbScale);
+            srcFbY1 = (Float32)((diffY - srcDstH) );
+            srcFbY2 = (Float32)(diffY );
         }
         break;
     case LFramebuffer::Rotated270:
         diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
-        srcFbX2 = (Float32)((diffY - srcDstH) * fbScale);
-        srcFbX1 = (Float32)(diffY * fbScale);
+        srcFbX2 = (Float32)((diffY - srcDstH) );
+        srcFbX1 = (Float32)(diffY );
         if (imp()->fb->id() == 0)
         {
             diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-            srcFbY2 = (Float32)(diffX * fbScale);
-            srcFbY1 = (Float32)((diffX - srcDstW) * fbScale);
+            srcFbY2 = (Float32)(diffX );
+            srcFbY1 = (Float32)((diffX - srcDstW) );
         }
         else
         {
             diffX = pos.x() - srcDstX;
-            srcFbY1 = (Float32)(diffX * fbScale);
-            srcFbY2 = (Float32)((diffX + srcDstW) * fbScale);
+            srcFbY1 = (Float32)(diffX );
+            srcFbY2 = (Float32)((diffX + srcDstW) );
         }
         break;
     case LFramebuffer::Flipped:
         diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-        srcFbX2 = (Float32)(diffX * fbScale);
-        srcFbX1 = (Float32)((diffX - srcDstW) * fbScale);
+        srcFbX2 = (Float32)(diffX );
+        srcFbX1 = (Float32)((diffX - srcDstW) );
         if (imp()->fb->id() == 0)
         {
             diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
-            srcFbY1 = (Float32)(diffY * fbScale);
-            srcFbY2 = (Float32)((diffY - srcDstH) * fbScale);
+            srcFbY1 = (Float32)(diffY );
+            srcFbY2 = (Float32)((diffY - srcDstH) );
         }
         else
         {
             diffY = pos.y() - srcDstY;
-            srcFbY1 = (Float32)(diffY * fbScale);
-            srcFbY2 = (Float32)((diffY + srcDstH) * fbScale);
+            srcFbY1 = (Float32)(diffY );
+            srcFbY2 = (Float32)((diffY + srcDstH) );
         }
         break;
     case LFramebuffer::Flipped90:
         diffY = pos.y() - srcDstY;
-        srcFbX2 = (Float32)(diffY * fbScale);
-        srcFbX1 = (Float32)((diffY + srcDstH) * fbScale);
+        srcFbX2 = (Float32)(diffY );
+        srcFbX1 = (Float32)((diffY + srcDstH) );
 
         if (imp()->fb->id() == 0)
         {
             diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-            srcFbY2 = (Float32)(diffX * fbScale);
-            srcFbY1 = (Float32)((diffX - srcDstW) * fbScale);
+            srcFbY2 = (Float32)(diffX );
+            srcFbY1 = (Float32)((diffX - srcDstW) );
         }
         else
         {
             diffX = pos.x() - srcDstX;
-            srcFbY2 = (Float32)((diffX + srcDstW) * fbScale);
-            srcFbY1 = (Float32)(diffX * fbScale);
+            srcFbY2 = (Float32)((diffX + srcDstW) );
+            srcFbY1 = (Float32)(diffX );
         }
         break;
     case LFramebuffer::Flipped180:
-        srcFbX1 = (Float32)((pos.x() - srcDstX) * fbScale);
-        srcFbY1 = (Float32)((pos.y() - srcDstY + srcDstH) * fbScale);
-        srcFbX2 = (Float32)((pos.x() - srcDstX + srcDstW) * fbScale);
-        srcFbY2 = (Float32)((pos.y() - srcDstY) * fbScale);
+        srcFbX1 = (Float32)((pos.x() - srcDstX) );
+        srcFbY1 = (Float32)((pos.y() - srcDstY + srcDstH) );
+        srcFbX2 = (Float32)((pos.x() - srcDstX + srcDstW) );
+        srcFbY2 = (Float32)((pos.y() - srcDstY) );
         break;
     case LFramebuffer::Flipped270:
         diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
-        srcFbX1 = (Float32)(diffY * fbScale);
-        srcFbX2 = (Float32)((diffY - srcDstH) * fbScale);
+        srcFbX1 = (Float32)(diffY );
+        srcFbX2 = (Float32)((diffY - srcDstH) );
 
         if (imp()->fb->id() == 0)
         {
             diffX = pos.x() - srcDstX;
-            srcFbY2 = (Float32)((diffX + srcDstW) * fbScale);
-            srcFbY1 = (Float32)(diffX * fbScale);
+            srcFbY2 = (Float32)((diffX + srcDstW) );
+            srcFbY1 = (Float32)(diffX );
         }
         else
         {
             diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-            srcFbY2 = (Float32)(diffX * fbScale);
-            srcFbY1 = (Float32)((diffX - srcDstW) * fbScale);
+            srcFbY2 = (Float32)(diffX );
+            srcFbY1 = (Float32)((diffX - srcDstW) );
         }
         break;
     }
@@ -252,8 +250,7 @@ void LPainter::bindTextureMode(const TextureParams &p)
     srcFbW = srcFbX2 - srcFbX1;
     srcFbH = srcFbY2 - srcFbY1;
 
-    //srcFbW = fbScale * srcDstW * (srcFbW/abs(srcFbW));
-    //srcFbH = fbScale * srcDstH * (srcFbH/abs(srcFbH));
+    glUniform1f(imp()->currentUniforms->scale, fbScale);
 
     imp()->shaderSetTexOffset(srcFbX1, srcFbY1);
     imp()->shaderSetTexSize(srcFbW, srcFbH);
@@ -454,6 +451,7 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
         varying lowp vec2 v_texcoord;
         uniform lowp vec2 texSize;
         uniform lowp vec2 texOffset;
+        uniform lowp float scale;
         uniform bool rotate;
         uniform bool texColorEnabled;
 
@@ -462,17 +460,49 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
             // Texture
             if (mode == 3)
             {
-                vec2 texco;
+                vec2 texco, texco1, texco2, texco3, texco4;
+                float s = scale;
+                float of = 1.0 / s;
+
+                /*if (scale < 1.5)
+                    of = 0.7;*/
+
 
                 if (rotate)
                 {
-                    texco.x = (gl_FragCoord.y - texOffset.y) / texSize.y;
-                    texco.y = (gl_FragCoord.x - texOffset.x) / texSize.x;
+                    texco.x = ((gl_FragCoord.y)/s - texOffset.y) / texSize.y;
+                    texco.y = ((gl_FragCoord.x)/s - texOffset.x) / texSize.x;
+
+                    texco1.x = ((gl_FragCoord.y)/s - texOffset.y + of) / texSize.y;
+                    texco1.y = ((gl_FragCoord.x)/s - texOffset.x) / texSize.x;
+
+                    texco2.x = ((gl_FragCoord.y)/s - texOffset.y) / texSize.y;
+                    texco2.y = ((gl_FragCoord.x)/s - texOffset.x + of) / texSize.x;
+
+                    texco3.x = ((gl_FragCoord.y)/s - texOffset.y - of) / texSize.y;
+                    texco3.y = ((gl_FragCoord.x)/s - texOffset.x) / texSize.x;
+
+                    texco4.x = ((gl_FragCoord.y)/s - texOffset.y) / texSize.y;
+                    texco4.y = ((gl_FragCoord.x)/s - texOffset.x - of) / texSize.x;
                 }
                 else
                 {
-                    texco.y = (gl_FragCoord.y - texOffset.y) / texSize.y;
-                    texco.x = (gl_FragCoord.x - texOffset.x) / texSize.x;
+
+                    texco.y = ((gl_FragCoord.y)/s - texOffset.y) / texSize.y;
+                    texco.x = ((gl_FragCoord.x)/s - texOffset.x) / texSize.x;
+
+                    texco1.y = ((gl_FragCoord.y)/s - texOffset.y + of) / texSize.y;
+                    texco1.x = ((gl_FragCoord.x)/s - texOffset.x) / texSize.x;
+
+                    texco2.y = ((gl_FragCoord.y)/s - texOffset.y) / texSize.y;
+                    texco2.x = ((gl_FragCoord.x)/s - texOffset.x + of) / texSize.x;
+
+                    texco3.y = ((gl_FragCoord.y)/s - texOffset.y - of) / texSize.y;
+                    texco3.x = ((gl_FragCoord.x)/s - texOffset.x) / texSize.x;
+
+                    texco4.y = ((gl_FragCoord.y)/s - texOffset.y) / texSize.y;
+                    texco4.x = ((gl_FragCoord.x)/s - texOffset.x - of) / texSize.x;
+
                 }
 
                 if (texColorEnabled)
@@ -481,7 +511,49 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
                     gl_FragColor.w = texture2D(tex, texco).w;
                 }
                 else
+                {
                     gl_FragColor = texture2D(tex, texco);
+
+                    if (1 == 2 && mod(scale, 1.0) != 0.0 && gl_FragColor.w < 1.0)
+                    {
+                        vec4 col = texture2D(tex, texco1);
+
+                        if (col.w >= 1.0)
+                        {
+                            //gl_FragColor = (gl_FragColor + col) / 2.0;
+                            //gl_FragColor.w = col.w;
+
+                            gl_FragColor = col;
+                        }
+                        else
+                        {
+                            col = texture2D(tex, texco2);
+
+                            if (col.w >= 1.0)
+                            {
+                                gl_FragColor = col;
+                            }
+                            else
+                            {
+                                col = texture2D(tex, texco3);
+
+                                if (col.w >= 1.0)
+                                {
+                                    gl_FragColor = col;
+                                }
+                                else
+                                {
+                                    col = texture2D(tex, texco4);
+
+                                    if (col.w >= 1.0)
+                                    {
+                                        gl_FragColor = col;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
 
                 gl_FragColor.w *= alpha;
             }
@@ -779,6 +851,7 @@ void LPainter::LPainterPrivate::setupProgram()
     currentUniforms->transform = glGetUniformLocation(currentProgram, "transform");
     currentUniforms->texOffset = glGetUniformLocation(currentProgram, "texOffset");
     currentUniforms->rotate = glGetUniformLocation(currentProgram, "rotate");
+    currentUniforms->scale = glGetUniformLocation(currentProgram, "scale");
 }
 
 void LPainter::LPainterPrivate::setupProgramScaler()

@@ -98,12 +98,12 @@ void LSurface::setY(Int32 y)
 
 const LSize &LSurface::sizeB() const
 {
-    return imp()->currentSizeB;
+    return imp()->sizeB;
 }
 
 const LSize &LSurface::size() const
 {
-    return imp()->currentSize;
+    return imp()->size;
 }
 
 const LRegion &LSurface::inputRegion() const
@@ -192,6 +192,11 @@ bool LSurface::minimized() const
 const LRectF &LSurface::srcRect() const
 {
     return imp()->srcRect;
+}
+
+LFramebuffer::Transform LSurface::bufferTransform() const
+{
+    return imp()->current.transform;
 }
 
 LSurface::Role LSurface::roleId() const
@@ -285,31 +290,14 @@ void LSurface::requestNextFrame(bool clearDamage)
         imp()->damaged = false;
     }
 
-    UInt32 ms = LTime::ms();
-
-
-    if (imp()->frameCallbacks.empty())
-        return;
-
-    if (imp()->frameCallbacks.front()->commited)
-    {
-        imp()->frameCallbacks.front()->done(ms);
-        imp()->frameCallbacks.front()->destroy();
-    }
-
-    /*
     while (!imp()->frameCallbacks.empty())
     {
-        Wayland::RCallback *rCallback = imp()->frameCallbacks.front();
-        if (rCallback->commited)
-        {
-            rCallback->done(ms);
-            rCallback->destroy();
-        }
-        else
+        if (!imp()->frameCallbacks.front()->commited)
             break;
+
+        imp()->frameCallbacks.front()->done(LTime::ms());
+        imp()->frameCallbacks.front()->destroy();
     }
-*/
 }
 
 bool LSurface::mapped() const

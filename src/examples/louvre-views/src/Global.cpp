@@ -20,7 +20,7 @@ static std::list<App*>_apps;
 static Tooltip *_tooltip;
 static G::Textures _textures;
 static G::ToplevelRegions _toplevelRegions;
-static Float32 scales[] = {1.f, 1.25f, 1.5f, 1.75f, 2.f};
+static Float32 scales[] = {2.f, 2.f, 2.f, 2.f, 2.f};
 
 
 Compositor *G::compositor()
@@ -429,7 +429,7 @@ void G::loadTextures()
 
         conf = &_textures.UIConf[s][TooltipArrow];
         conf->texture = texture;
-        conf->customSrcRect = LRectF(100.5f, 194.f, 29.f, 17.f);
+        conf->customSrcRect = LRectF(100.5f, 194.5f, 29.f, 17.f);
         conf->customDstSize = LSize(29, 17);
         conf->bufferScale = bufferScale;
 

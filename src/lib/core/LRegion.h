@@ -4,6 +4,7 @@
 #include <LNamespaces.h>
 #include <LRect.h>
 #include <pixman.h>
+#include <LFramebuffer.h>
 
 /**
  * @brief Collection of non-overlapping rectangles
@@ -250,6 +251,16 @@ public:
      * @note This variant allows you to access the rectangles using the native Pixman method, which is considerably faster.
      */
     LBox *boxes(Int32 *n) const;
+
+    /**
+     * @brief Applies a specified transforma to all rectangles within the given size.
+     *
+     * This function clips the rectangles within the specified size and applies the specified transform.
+     *
+     * @param size The size used for clipping and transformation.
+     * @param transform The transform to be applied to the rectangles.
+     */
+    void transform(const LSize &size, LFramebuffer::Transform transform);
 
     static void multiply(LRegion *dst, LRegion *src, Float32 factor);
 

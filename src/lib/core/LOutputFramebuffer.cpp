@@ -1,6 +1,5 @@
 #include <private/LOutputFramebufferPrivate.h>
-#include <LOutput.h>
-#include <GLES2/gl2.h>
+#include <private/LOutputPrivate.h>
 
 LOutputFramebuffer::LOutputFramebuffer(LOutput *output) :
 LPRIVATE_INIT_UNIQUE(LOutputFramebuffer)
@@ -12,17 +11,17 @@ LOutputFramebuffer::~LOutputFramebuffer() {}
 
 Float32 LOutputFramebuffer::scale() const
 {
-    return imp()->output->scale();
+    return imp()->output->imp()->scale;
 }
 
 const LSize &LOutputFramebuffer::sizeB() const
 {
-    return imp()->output->sizeB();
+    return imp()->output->imp()->sizeB;
 }
 
 const LRect &LOutputFramebuffer::rect() const
 {
-    return imp()->output->rect();
+    return imp()->output->imp()->rect;
 }
 
 GLuint LOutputFramebuffer::id() const
@@ -52,5 +51,5 @@ void LOutputFramebuffer::setFramebufferDamage(const LRegion *damage)
 
 LFramebuffer::Transform LOutputFramebuffer::transform() const
 {
-    return imp()->output->transform();
+    return imp()->output->imp()->transform;
 }

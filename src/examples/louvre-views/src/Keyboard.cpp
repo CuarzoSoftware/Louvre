@@ -28,19 +28,6 @@ void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
 
     if (keyState == Pressed)
     {
-
-        if (keyCode == KEY_UP)
-        {
-            if (cursor()->output()->scale() < 2.f)
-                cursor()->output()->setScale(cursor()->output()->scale() + 0.25);
-        }
-
-        if (keyCode == KEY_DOWN)
-        {
-            if (cursor()->output()->scale() > 1.f)
-                cursor()->output()->setScale(cursor()->output()->scale() - 0.25);
-        }
-
         if (isKeyCodePressed(KEY_LEFTCTRL))
         {
             // Switch workspace
@@ -92,21 +79,26 @@ void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
                         cursor()->output()->setMode(mode);
                     }
                 }
-                /*
-                // Pause graphic backend
-                else if (keyCode == KEY_P)
+
+                // Increase fractional scaling by 0.25x
+                else if (keyCode == KEY_UP)
                 {
-                    compositor()->imp()->unlock();
-                    compositor()->imp()->graphicBackend->pause();
-                    compositor()->imp()->lock();
+                    if (cursor()->output()->scale() < 3.f)
+                    {
+                        cursor()->output()->setScale(cursor()->output()->scale() + 0.25);
+                        cursor()->output()->repaint();
+                    }
                 }
-                // Resume graphic backend
-                else if (keyCode == KEY_R)
+
+                // Decrease fractional scaling by 0.25x
+                else if (keyCode == KEY_DOWN)
                 {
-                    compositor()->imp()->unlock();
-                    compositor()->imp()->graphicBackend->resume();
-                    compositor()->imp()->lock();
-                }*/
+                    if (cursor()->output()->scale() > 0.25f)
+                    {
+                        cursor()->output()->setScale(cursor()->output()->scale() - 0.25);
+                        cursor()->output()->repaint();
+                    }
+                }
             }
         }
     }

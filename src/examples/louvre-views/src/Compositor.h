@@ -75,6 +75,8 @@ public:
     // Turns black all outputs until an output unplug is finished
     bool outputUnplugHandled = true;
     bool checkUpdateOutputUnplug();
+
+    LTextureView test;
 };
 
 #endif // COMPOSITOR_H

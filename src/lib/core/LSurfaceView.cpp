@@ -312,7 +312,7 @@ void LSurfaceView::paintEvent(const PaintEventParams &params)
         .pos = pos(),
         .srcRect = srcRect(),
         .dstSize = size(),
-        .srcTransform = LFramebuffer::Normal,
+        .srcTransform = imp()->surface->bufferTransform(),
         .srcScale = bufferScale(),
     });
 

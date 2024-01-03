@@ -55,15 +55,15 @@ void GOutput::sendConfiguration()
         WL_OUTPUT_SUBPIXEL_HORIZONTAL_RGB,
         output()->manufacturer(),
         output()->model(),
-        WL_OUTPUT_TRANSFORM_NORMAL);
+        WL_OUTPUT_TRANSFORM_FLIPPED);
 
     mode(
-        wl_output_mode::WL_OUTPUT_MODE_CURRENT,
+        WL_OUTPUT_MODE_CURRENT,
         output()->currentMode()->sizeB().w(),
         output()->currentMode()->sizeB().h(),
         output()->currentMode()->refreshRate());
 
-    if (scale(roundf(output()->scale())))
+    if (scale(ceilf(output()->scale())))
     {
         if (name(output()->name()))
             description(output()->description());

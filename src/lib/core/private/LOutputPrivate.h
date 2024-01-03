@@ -20,6 +20,9 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     std::atomic<bool> callLockACK;
     std::thread::id threadId;
 
+    LRenderBuffer fractionalFb;
+    bool fractionalEnabled = false;
+
     LPainter *painter = nullptr;
 
     State state = Uninitialized;
@@ -32,6 +35,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     wl_global *global = nullptr;
 
     Float32 scale = 1.f;
+    Float32 fractionalScale = 1.f;
 
     std::mutex pageflipMutex;
     timespec presentationTime;

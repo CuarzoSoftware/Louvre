@@ -39,7 +39,7 @@ LPRIVATE_CLASS(LPainter)
         alpha,
         transform,
         texOffset,
-        rotate;
+        rotate, scale;
     } uniforms, uniformsExternal;
 
     Uniforms *currentUniforms;

@@ -60,7 +60,8 @@ void LRenderBuffer::setScale(Float32 scale) const
 
     if (imp()->scale != scale)
     {
-        imp()->rect.setSize(sizeB()/scale);
+        imp()->rect.setW(roundf(Float32(sizeB().w())/scale));
+        imp()->rect.setH(roundf(Float32(sizeB().h())/scale));
         imp()->scale = scale;
     }
 }
