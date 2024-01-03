@@ -1,6 +1,7 @@
 #ifndef SHARED_H
 #define SHARED_H
 
+#include <map>
 class Compositor;
 class Output;
 class Pointer;
@@ -65,81 +66,9 @@ class G
 {
 public:
 
-    enum Side
-    {
-        T   = 0,
-        R   = 1,
-        B   = 2,
-        L   = 3,
-        TL  = 4,
-        TR  = 5,
-        BR  = 6,
-        BL  = 7
-    };
-
-    struct Cursors
-    {
-        LXCursor *arrow = nullptr;
-        LXCursor *hand2 = nullptr;
-        LXCursor *top_left_corner = nullptr;
-        LXCursor *top_right_corner = nullptr;
-        LXCursor *bottom_left_corner = nullptr;
-        LXCursor *bottom_right_corner = nullptr;
-        LXCursor *left_side = nullptr;
-        LXCursor *top_side = nullptr;
-        LXCursor *right_side = nullptr;
-        LXCursor *bottom_side = nullptr;
-    };
-
-    struct DockTextures
-    {
-        LTexture *left = nullptr;
-        LTexture *center = nullptr;
-        LTexture *right = nullptr;
-        LTexture *defaultApp = nullptr;
-        LTexture *dot = nullptr;
-    };
-
-    struct TooltipTextures
-    {
-        LTexture *decoration[8];
-        LTexture *arrow = nullptr;
-    };
-
-    struct ToplevelTextures
-    {
-        LRegion activeTransRegionTL;
-        LRegion activeTransRegionTR;
-        LRegion inactiveTransRegionTL;
-        LRegion inactiveTransRegionTR;
-
-        LTexture *defaultTopbarAppName = nullptr; // Louvre
-        LTexture *logo = nullptr;
-
-        LTexture *atlas = nullptr;
-    };
-
-    struct Fonts
-    {
-        TextRenderer *regular = nullptr;
-        TextRenderer *semibold = nullptr;
-    };
-
-    struct TextureViewConf
-    {
-        LTexture *texture = nullptr;
-        LRectF customSrcRect;
-        Float32 bufferScale = 1.f;
-        LSize customDstSize;
-        LFramebuffer::Transform transform = LFramebuffer::Normal;
-        LRGBF customColor;
-        bool enableCustomColor = false;
-        bool enableCustomSrcRect = true;
-        bool enableCustomDstSize = true;
-    };
-
     enum TextureConfIndex : UInt32
     {
+        /* Toplevel Buttons */
         ButtonDisabled                      = 0,
         CloseButtonEnabled                  = 1,
         CloseButtonEnabledHover             = 2,
@@ -154,6 +83,8 @@ public:
         FullscreenButtonEnabledPressed      = 11,
         UnfullscreenButtonEnabledHover      = 12,
         UnfullscreenButtonEnabledPressed    = 13,
+
+        /* Toplevel Decoration */
         DecorationActiveTL                  = 14,
         DecorationActiveTR                  = 15,
         DecorationActiveT                   = 16,
@@ -172,6 +103,82 @@ public:
         DecorationInactiveB                 = 29,
         DecorationMaskBL                    = 30,
         DecorationMaskBR                    = 31,
+
+        /* Tooltip */
+        TooltipT                            = 32,
+        TooltipR                            = 33,
+        TooltipB                            = 34,
+        TooltipL                            = 35,
+        TooltipTL                           = 36,
+        TooltipTR                           = 37,
+        TooltipBR                           = 38,
+        TooltipBL                           = 39,
+        TooltipArrow                        = 40,
+
+        /* Dock */
+        DockL                               = 41,
+        DockC                               = 42,
+        DockR                               = 43,
+        DockDot                             = 44,
+
+        /* Louvre Logo */
+        Logo                                = 45
+    };
+
+    struct Cursors
+    {
+        LXCursor *arrow = nullptr;
+        LXCursor *hand2 = nullptr;
+        LXCursor *top_left_corner = nullptr;
+        LXCursor *top_right_corner = nullptr;
+        LXCursor *bottom_left_corner = nullptr;
+        LXCursor *bottom_right_corner = nullptr;
+        LXCursor *left_side = nullptr;
+        LXCursor *top_side = nullptr;
+        LXCursor *right_side = nullptr;
+        LXCursor *bottom_side = nullptr;
+    };
+
+    struct ToplevelRegions
+    {
+        LRegion activeTransRegionTL;
+        LRegion activeTransRegionTR;
+        LRegion inactiveTransRegionTL;
+        LRegion inactiveTransRegionTR;
+    };
+
+    struct TextureViewConf
+    {
+        LTexture *texture = nullptr;
+        LRectF customSrcRect;
+        Float32 bufferScale = 1.f;
+        LSize customDstSize;
+        LFramebuffer::Transform transform = LFramebuffer::Normal;
+        LRGBF customColor;
+        bool enableCustomColor = false;
+        bool enableCustomSrcRect = true;
+        bool enableCustomDstSize = true;
+    };
+
+    struct Textures
+    {
+        // Louvre label
+        LTexture *defaultTopbarAppName = nullptr;
+
+        // Terminal icon
+        LTexture *defaultAppIcon = nullptr;
+
+        // UI textures @1x @1.25x @1.5x @1.75x @2x
+        LTexture *UI[5];
+
+        // UI textures confs @1x @1.25x @1.5x @1.75x @2x
+        TextureViewConf UIConf[5][46];
+    };
+
+    struct Fonts
+    {
+        TextRenderer *regular = nullptr;
+        TextRenderer *semibold = nullptr;
     };
 
     // Quick handles
@@ -182,33 +189,33 @@ public:
     static std::list<Surface*>&surfaces();
 
     // Dock
-    static void loadDockTextures();
-    static DockTextures &dockTextures();
     static void enableDocks(bool enabled);
     static void loadApps();
     static std::list<App*>&apps();
 
     // Tooltip
     static void createTooltip();
-    static TooltipTextures &tooltipTextures();
     static Tooltip *tooltip();
 
     // Cursors
     static void loadCursors();
     static Cursors &cursors();
 
-    // Toplevel
-    static void loadToplevelTextures();
-    static ToplevelTextures &toplevelTextures();
+    // Textures
+    static Textures *textures();
+    static void loadTextures();
+    static void setTexViewConf(LTextureView *view, UInt32 index, Float32 scale);
 
-    static void setTexViewConf(LTextureView *view, TextureConfIndex index);
+    // Toplevel regions
+    static ToplevelRegions *toplevelRegions();
+    static void loadToplevelRegions();
 
     // Fonts
     static void loadFonts();
     static Fonts *font();
 
     // Utils
-    static LTexture *loadAssetsTexture(const char *name);
+    static LTexture *loadAssetsTexture(const char *name, bool exitOnFail = true);
     static char *joinPaths(const char *path1, const char *path2);
     static void enableParentScalingChildren(LView *parent, bool enabled);
     static void enableClippingChildren(LView *parent, bool enabled);

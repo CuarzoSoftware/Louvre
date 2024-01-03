@@ -47,9 +47,9 @@ void Compositor::initialized()
     // Change the keyboard map to "latam"
     seat()->keyboard()->setKeymap(NULL, NULL, "latam", NULL);
 
-    G::loadDockTextures();
     G::loadCursors();
-    G::loadToplevelTextures();
+    G::loadTextures();
+    G::loadToplevelRegions();
     G::loadFonts();
     G::createTooltip();
     G::loadApps();
@@ -71,9 +71,9 @@ void Compositor::initialized()
             {
                 for (Output *o : G::outputs())
                 {
-                    if (o->topbar && o->topbar->clock)
+                    if (o->topbar)
                     {
-                        o->topbar->clock->setTexture(newClockTexture);
+                        o->topbar->clock.setTexture(newClockTexture);
                         o->topbar->update();
                     }
                 }
@@ -98,7 +98,7 @@ void Compositor::initialized()
     for (LOutput *output : seat()->outputs())
     {
         // Set scale 2 to HiDPI screens
-        output->setScale(output->dpi() >= 200 ? 2.f : 1.75f);
+        output->setScale(output->dpi() >= 200 ? 2.f : 1.f);
         output->setPos(LPoint(totalWidth, 0));
         output->setTransform(LFramebuffer::Normal);
         totalWidth += output->size().w();

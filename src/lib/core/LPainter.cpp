@@ -13,6 +13,9 @@
 
 using namespace Louvre;
 
+#define OPB roundf
+#define OPE roundf
+
 static void makeExternalShader(std::string &shader)
 {
     size_t pos = 0;
@@ -53,6 +56,8 @@ void LPainter::bindTextureMode(const TextureParams &p)
     {
         srcH = Float32(p.texture->sizeB().w()) / p.srcScale;
         srcW = Float32(p.texture->sizeB().h()) / p.srcScale;
+        yFlip *= -1.f;
+        xFlip *= -1.f;
     }
     else
     {
@@ -90,8 +95,6 @@ void LPainter::bindTextureMode(const TextureParams &p)
         yFlip *= -1.f;
         break;
     case LFramebuffer::Flipped270:
-        //yFlip *= -1.f;
-        //xFlip *= -1.f;
         break;
     default:
         break;
@@ -101,131 +104,131 @@ void LPainter::bindTextureMode(const TextureParams &p)
     {
     case LFramebuffer::Normal:
         diffX = pos.x() - srcDstX;
-        srcFbX1 = floorf(diffX * fbScale);
-        srcFbX2 = floorf((diffX + srcDstW) * fbScale);
+        srcFbX1 = (Float32)(diffX * fbScale);
+        srcFbX2 = (Float32)((diffX + srcDstW) * fbScale);
         if (imp()->fb->id() == 0)
         {
             diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
-            srcFbY1 = floorf(diffY * fbScale);
-            srcFbY2 = floorf((diffY - srcDstH) * fbScale);
+            srcFbY1 = (Float32)(diffY * fbScale);
+            srcFbY2 = (Float32)((diffY - srcDstH) * fbScale);
         }
         else
         {
             diffY = pos.y() - srcDstY;
-            srcFbY1 = floorf(diffY * fbScale);
-            srcFbY2 = floorf((diffY + srcDstH) * fbScale);
+            srcFbY1 = (Float32)(diffY * fbScale);
+            srcFbY2 = (Float32)((diffY + srcDstH) * fbScale);
         }
         break;
     case LFramebuffer::Rotated90:
         diffY = pos.y() - srcDstY;
-        srcFbX2 = floorf(diffY * fbScale);
-        srcFbX1 = floorf((diffY + srcDstH) * fbScale);
+        srcFbX2 = (Float32)(diffY * fbScale);
+        srcFbX1 = (Float32)((diffY + srcDstH) * fbScale);
 
         if (imp()->fb->id() == 0)
         {
             diffX = pos.x() - srcDstX;
-            srcFbY2 = floorf((diffX + srcDstW) * fbScale);
-            srcFbY1 = floorf(diffX * fbScale);
+            srcFbY2 = (Float32)((diffX + srcDstW) * fbScale);
+            srcFbY1 = (Float32)(diffX * fbScale);
         }
         else
         {
             diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-            srcFbY1 = floorf(diffX * fbScale);
-            srcFbY2 = floorf((diffX + srcDstW) * fbScale);
+            srcFbY1 = (Float32)(diffX * fbScale);
+            srcFbY2 = (Float32)((diffX + srcDstW) * fbScale);
         }
         break;
     case LFramebuffer::Rotated180:
         diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-        srcFbX1 = floorf((diffX - srcDstW) * fbScale);
-        srcFbX2 = floorf(diffX * fbScale);
+        srcFbX1 = (Float32)((diffX - srcDstW) * fbScale);
+        srcFbX2 = (Float32)(diffX * fbScale);
 
         if (imp()->fb->id() == 0)
         {
             diffY = pos.y() - srcDstY;
-            srcFbY1 = floorf((diffY + srcDstH) * fbScale);
-            srcFbY2 = floorf(diffY * fbScale);
+            srcFbY1 = (Float32)((diffY + srcDstH) * fbScale);
+            srcFbY2 = (Float32)(diffY * fbScale);
         }
         else
         {
             diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
-            srcFbY1 = floorf((diffY - srcDstH) * fbScale);
-            srcFbY2 = floorf(diffY * fbScale);
+            srcFbY1 = (Float32)((diffY - srcDstH) * fbScale);
+            srcFbY2 = (Float32)(diffY * fbScale);
         }
         break;
     case LFramebuffer::Rotated270:
         diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
-        srcFbX2 = floorf((diffY - srcDstH) * fbScale);
-        srcFbX1 = floorf(diffY * fbScale);
+        srcFbX2 = (Float32)((diffY - srcDstH) * fbScale);
+        srcFbX1 = (Float32)(diffY * fbScale);
         if (imp()->fb->id() == 0)
         {
             diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-            srcFbY2 = floorf(diffX * fbScale);
-            srcFbY1 = floorf((diffX - srcDstW) * fbScale);
+            srcFbY2 = (Float32)(diffX * fbScale);
+            srcFbY1 = (Float32)((diffX - srcDstW) * fbScale);
         }
         else
         {
             diffX = pos.x() - srcDstX;
-            srcFbY1 = floorf(diffX * fbScale);
-            srcFbY2 = floorf((diffX + srcDstW) * fbScale);
+            srcFbY1 = (Float32)(diffX * fbScale);
+            srcFbY2 = (Float32)((diffX + srcDstW) * fbScale);
         }
         break;
     case LFramebuffer::Flipped:
         diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-        srcFbX2 = floorf(diffX * fbScale);
-        srcFbX1 = floorf((diffX - srcDstW) * fbScale);
+        srcFbX2 = (Float32)(diffX * fbScale);
+        srcFbX1 = (Float32)((diffX - srcDstW) * fbScale);
         if (imp()->fb->id() == 0)
         {
             diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
-            srcFbY1 = floorf(diffY * fbScale);
-            srcFbY2 = floorf((diffY - srcDstH) * fbScale);
+            srcFbY1 = (Float32)(diffY * fbScale);
+            srcFbY2 = (Float32)((diffY - srcDstH) * fbScale);
         }
         else
         {
             diffY = pos.y() - srcDstY;
-            srcFbY1 = floorf(diffY * fbScale);
-            srcFbY2 = floorf((diffY + srcDstH) * fbScale);
+            srcFbY1 = (Float32)(diffY * fbScale);
+            srcFbY2 = (Float32)((diffY + srcDstH) * fbScale);
         }
         break;
     case LFramebuffer::Flipped90:
         diffY = pos.y() - srcDstY;
-        srcFbX2 = floorf(diffY * fbScale);
-        srcFbX1 = floorf((diffY + srcDstH) * fbScale);
+        srcFbX2 = (Float32)(diffY * fbScale);
+        srcFbX1 = (Float32)((diffY + srcDstH) * fbScale);
 
         if (imp()->fb->id() == 0)
         {
             diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-            srcFbY2 = floorf(diffX * fbScale);
-            srcFbY1 = floorf((diffX - srcDstW) * fbScale);
+            srcFbY2 = (Float32)(diffX * fbScale);
+            srcFbY1 = (Float32)((diffX - srcDstW) * fbScale);
         }
         else
         {
             diffX = pos.x() - srcDstX;
-            srcFbY2 = floorf((diffX + srcDstW) * fbScale);
-            srcFbY1 = floorf(diffX * fbScale);
+            srcFbY2 = (Float32)((diffX + srcDstW) * fbScale);
+            srcFbY1 = (Float32)(diffX * fbScale);
         }
         break;
     case LFramebuffer::Flipped180:
-        srcFbX1 = floorf((pos.x() - srcDstX) * fbScale);
-        srcFbY1 = floorf((pos.y() - srcDstY + srcDstH) * fbScale);
-        srcFbX2 = floorf((pos.x() - srcDstX + srcDstW) * fbScale);
-        srcFbY2 = floorf((pos.y() - srcDstY) * fbScale);
+        srcFbX1 = (Float32)((pos.x() - srcDstX) * fbScale);
+        srcFbY1 = (Float32)((pos.y() - srcDstY + srcDstH) * fbScale);
+        srcFbX2 = (Float32)((pos.x() - srcDstX + srcDstW) * fbScale);
+        srcFbY2 = (Float32)((pos.y() - srcDstY) * fbScale);
         break;
     case LFramebuffer::Flipped270:
         diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
-        srcFbX1 = floorf(diffY * fbScale);
-        srcFbX2 = floorf((diffY - srcDstH) * fbScale);
+        srcFbX1 = (Float32)(diffY * fbScale);
+        srcFbX2 = (Float32)((diffY - srcDstH) * fbScale);
 
         if (imp()->fb->id() == 0)
         {
             diffX = pos.x() - srcDstX;
-            srcFbY2 = floorf((diffX + srcDstW) * fbScale);
-            srcFbY1 = floorf(diffX * fbScale);
+            srcFbY2 = (Float32)((diffX + srcDstW) * fbScale);
+            srcFbY1 = (Float32)(diffX * fbScale);
         }
         else
         {
             diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-            srcFbY2 = floorf(diffX * fbScale);
-            srcFbY1 = floorf((diffX - srcDstW) * fbScale);
+            srcFbY2 = (Float32)(diffX * fbScale);
+            srcFbY1 = (Float32)((diffX - srcDstW) * fbScale);
         }
         break;
     }
@@ -235,19 +238,23 @@ void LPainter::bindTextureMode(const TextureParams &p)
     if (xFlip < 0.0)
     {
         diffX = srcFbX2;
-        srcFbX2 = srcFbX1;
-        srcFbX1 = diffX;
+        srcFbX2 = (srcFbX1);
+        srcFbX1 = (diffX);
     }
 
     if (yFlip < 0.0)
     {
         diffY = srcFbY2;
-        srcFbY2 = srcFbY1;
-        srcFbY1 = diffY;
+        srcFbY2 = (srcFbY1);
+        srcFbY1 = (diffY);
     }
 
     srcFbW = srcFbX2 - srcFbX1;
     srcFbH = srcFbY2 - srcFbY1;
+
+    //srcFbW = fbScale * srcDstW * (srcFbW/abs(srcFbW));
+    //srcFbH = fbScale * srcDstH * (srcFbH/abs(srcFbH));
+
     imp()->shaderSetTexOffset(srcFbX1, srcFbY1);
     imp()->shaderSetTexSize(srcFbW, srcFbH);
     glActiveTexture(GL_TEXTURE0);

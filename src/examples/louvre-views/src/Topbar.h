@@ -3,6 +3,7 @@
 
 #include <LLayerView.h>
 #include <LSolidColorView.h>
+#include "UITextureView.h"
 
 class Output;
 
@@ -19,16 +20,16 @@ public:
     Output *output;
 
     // White bar
-    LSolidColorView *background;
+    LSolidColorView background;
 
     // Louvre logo
-    LTextureView *logo = nullptr;
+    UITextureView logo;
 
     // Clock text
-    LTextureView *clock = nullptr;
+    LTextureView clock;
 
     // Current app title
-    LTextureView *appName = nullptr;
+    LTextureView appName;
 
     void pointerEnterEvent(const LPoint &localPos) override;
     void pointerMoveEvent(const LPoint &) override;

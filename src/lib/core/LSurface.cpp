@@ -287,6 +287,17 @@ void LSurface::requestNextFrame(bool clearDamage)
 
     UInt32 ms = LTime::ms();
 
+
+    if (imp()->frameCallbacks.empty())
+        return;
+
+    if (imp()->frameCallbacks.front()->commited)
+    {
+        imp()->frameCallbacks.front()->done(ms);
+        imp()->frameCallbacks.front()->destroy();
+    }
+
+    /*
     while (!imp()->frameCallbacks.empty())
     {
         Wayland::RCallback *rCallback = imp()->frameCallbacks.front();
@@ -298,6 +309,7 @@ void LSurface::requestNextFrame(bool clearDamage)
         else
             break;
     }
+*/
 }
 
 bool LSurface::mapped() const

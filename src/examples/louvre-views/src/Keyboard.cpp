@@ -28,6 +28,19 @@ void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
 
     if (keyState == Pressed)
     {
+
+        if (keyCode == KEY_UP)
+        {
+            if (cursor()->output()->scale() < 2.f)
+                cursor()->output()->setScale(cursor()->output()->scale() + 0.25);
+        }
+
+        if (keyCode == KEY_DOWN)
+        {
+            if (cursor()->output()->scale() > 1.f)
+                cursor()->output()->setScale(cursor()->output()->scale() - 0.25);
+        }
+
         if (isKeyCodePressed(KEY_LEFTCTRL))
         {
             // Switch workspace
@@ -116,14 +129,14 @@ void Keyboard::focusChanged()
     }
     else
     {
-        topbarTitleTexture = G::toplevelTextures().defaultTopbarAppName;
+        topbarTitleTexture = G::textures()->defaultTopbarAppName;
     }
 
     for (Output *output : G::outputs())
     {
         if (output->topbar)
         {
-            output->topbar->appName->setTexture(topbarTitleTexture);
+            output->topbar->appName.setTexture(topbarTitleTexture);
             output->topbar->update();
         }
     }

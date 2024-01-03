@@ -98,7 +98,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
     }
 
     // Send done to already commited callbacks
-    surface->requestNextFrame(false);
+    //surface->requestNextFrame(false);
 
     // If new callbacks
     if (!surface->imp()->frameCallbacks.empty())

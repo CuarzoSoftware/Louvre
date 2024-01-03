@@ -8,7 +8,7 @@
 #include "Dock.h"
 #include "Tooltip.h"
 
-DockItem::DockItem(class Surface *surface, Dock *dock) : LTextureView(surface->thumbnailTex, dock->itemsContainer)
+DockItem::DockItem(class Surface *surface, Dock *dock) : LTextureView(surface->thumbnailTex, &dock->itemsContainer)
 {
     surface->minimizedViews.push_back(this);
     this->dock = dock;

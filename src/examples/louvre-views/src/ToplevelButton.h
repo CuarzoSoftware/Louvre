@@ -2,10 +2,11 @@
 #define TOPLEVELBUTTON_H
 
 #include <LTextureView.h>
+#include "UITextureView.h"
 
 class ToplevelView;
 
-class ToplevelButton : public LTextureView
+class ToplevelButton : public UITextureView
 {
 public:
     enum ButtonType

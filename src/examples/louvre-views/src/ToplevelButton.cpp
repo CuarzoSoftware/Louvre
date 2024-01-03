@@ -9,7 +9,7 @@
 #include <LSeat.h>
 #include <LCursor.h>
 
-ToplevelButton::ToplevelButton(LView *parent, ToplevelView *toplevelView, ButtonType type) : LTextureView(nullptr, parent)
+ToplevelButton::ToplevelButton(LView *parent, ToplevelView *toplevelView, ButtonType type) : UITextureView(G::ButtonDisabled, parent)
 {
     this->toplevelView = toplevelView;
     this->buttonType = type;
@@ -25,39 +25,39 @@ void ToplevelButton::update()
         if (toplevelView->buttonsContainer->pointerIsOver())
         {
             if (pressed)
-                G::setTexViewConf(this, G::CloseButtonEnabledPressed);
+                setTextureIndex(G::CloseButtonEnabledPressed);
             else
-                G::setTexViewConf(this, G::CloseButtonEnabledHover);
+                setTextureIndex(G::CloseButtonEnabledHover);
         }
         else
         {
             if (toplevelView->toplevel->activated())
-                G::setTexViewConf(this, G::CloseButtonEnabled);
+                setTextureIndex(G::CloseButtonEnabled);
             else
-                G::setTexViewConf(this, G::ButtonDisabled);
+                setTextureIndex(G::ButtonDisabled);
         }
     }
     else if (buttonType == Minimize)
     {
         if (toplevelView->toplevel->fullscreen())
         {
-            G::setTexViewConf(this, G::ButtonDisabled);
+            setTextureIndex(G::ButtonDisabled);
         }
         else
         {
             if (toplevelView->buttonsContainer->pointerIsOver())
             {
                 if (pressed)
-                    G::setTexViewConf(this, G::MinimizeButtonEnabledPressed);
+                    setTextureIndex(G::MinimizeButtonEnabledPressed);
                 else
-                    G::setTexViewConf(this, G::MinimizeButtonEnabledHover);
+                    setTextureIndex(G::MinimizeButtonEnabledHover);
             }
             else
             {
                 if (toplevelView->toplevel->activated())
-                    G::setTexViewConf(this, G::MinimizeButtonEnabled);
+                    setTextureIndex(G::MinimizeButtonEnabled);
                 else
-                    G::setTexViewConf(this, G::ButtonDisabled);
+                    setTextureIndex(G::ButtonDisabled);
             }
         }
     }
@@ -73,32 +73,32 @@ void ToplevelButton::update()
                 if (altMode)
                 {
                     if (toplevelView->toplevel->fullscreen())
-                        G::setTexViewConf(this, G::UnfullscreenButtonEnabledPressed);
+                        setTextureIndex(G::UnfullscreenButtonEnabledPressed);
                     else
-                        G::setTexViewConf(this, G::FullscreenButtonEnabledPressed);
+                        setTextureIndex(G::FullscreenButtonEnabledPressed);
                 }
                 else
-                    G::setTexViewConf(this, G::MaximizeButtonEnabledPressed);
+                    setTextureIndex(G::MaximizeButtonEnabledPressed);
             }
             else
             {
                 if (altMode)
                 {
                     if (toplevelView->toplevel->fullscreen())
-                        G::setTexViewConf(this, G::UnfullscreenButtonEnabledHover);
+                        setTextureIndex(G::UnfullscreenButtonEnabledHover);
                     else
-                        G::setTexViewConf(this, G::FullscreenButtonEnabledHover);
+                        setTextureIndex(G::FullscreenButtonEnabledHover);
                 }
                 else
-                    G::setTexViewConf(this, G::MaximizeButtonEnabledHover);
+                    setTextureIndex(G::MaximizeButtonEnabledHover);
             }
         }
         else
         {
             if (toplevelView->toplevel->activated())
-                G::setTexViewConf(this, G::MaximizeButtonEnabled);
+                setTextureIndex(G::MaximizeButtonEnabled);
             else
-                G::setTexViewConf(this, G::ButtonDisabled);
+                setTextureIndex(G::ButtonDisabled);
         }
     }
 }

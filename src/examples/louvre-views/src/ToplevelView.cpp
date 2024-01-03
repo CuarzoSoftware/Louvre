@@ -169,20 +169,17 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     sceneBR(LSize(TOPLEVEL_BORDER_RADIUS, TOPLEVEL_BORDER_RADIUS) * 2, 2, this),
     surfBL(toplevel->surface(), &sceneBL),
     surfBR(toplevel->surface(), &sceneBR),
-    decoTL(nullptr, this),
-    decoT(nullptr, this),
-    decoTR(nullptr, this),
-    decoL(nullptr, this),
-    decoR(nullptr, this),
-    decoBL(nullptr, this),
-    decoB(nullptr, this),
-    decoBR(nullptr, this),
-    maskBL(nullptr, &sceneBL),
-    maskBR(nullptr, &sceneBR)
+    decoTL(G::DecorationActiveTL, this),
+    decoT(G::DecorationActiveT, this),
+    decoTR(G::DecorationActiveTR, this),
+    decoL(G::DecorationActiveL, this),
+    decoR(G::DecorationActiveR, this),
+    decoBL(G::DecorationActiveBL, this),
+    decoB(G::DecorationActiveB, this),
+    decoBR(G::DecorationActiveBR, this),
+    maskBL(G::DecorationMaskBL, &sceneBL),
+    maskBR(G::DecorationMaskBR, &sceneBR)
 {
-    G::setTexViewConf(&maskBL, G::DecorationMaskBL);
-    G::setTexViewConf(&maskBR, G::DecorationMaskBR);
-
     toplevel->decoratedView = this;
 
     class Surface *surf = (class Surface*)toplevel->surface();
@@ -343,6 +340,12 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
         }
     }
 
+    decoL.insertAfter(children().front());
+    decoR.insertAfter(children().front());
+    decoBL.insertAfter(children().front());
+    decoBR.insertAfter(children().front());    
+    clipTop.insertAfter(children().front());
+
     updateGeometry();
 }
 
@@ -443,18 +446,18 @@ void ToplevelView::updateGeometry()
         {
             title->setCustomColor(0.1f, 0.1f, 0.1f);
 
-            G::setTexViewConf(&decoTL, G::DecorationActiveTL);
-            G::setTexViewConf(&decoT, G::DecorationActiveT);
-            G::setTexViewConf(&decoTR, G::DecorationActiveTR);
-            G::setTexViewConf(&decoL, G::DecorationActiveL);
-            G::setTexViewConf(&decoR, G::DecorationActiveR);
-            G::setTexViewConf(&decoBL, G::DecorationActiveBL);
-            G::setTexViewConf(&decoB, G::DecorationActiveB);
-            G::setTexViewConf(&decoBR, G::DecorationActiveBR);
+            decoTL.setTextureIndex(G::DecorationActiveTL);
+            decoT.setTextureIndex(G::DecorationActiveT);
+            decoTR.setTextureIndex(G::DecorationActiveTR);
+            decoL.setTextureIndex(G::DecorationActiveL);
+            decoR.setTextureIndex(G::DecorationActiveR);
+            decoBL.setTextureIndex(G::DecorationActiveBL);
+            decoB.setTextureIndex(G::DecorationActiveB);
+            decoBR.setTextureIndex(G::DecorationActiveBR);
 
             // Trans region
-            decoTL.setTranslucentRegion(&G::toplevelTextures().activeTransRegionTL);
-            decoT.setTranslucentRegion(&G::toplevelTextures().activeTransRegionTR);
+            decoTL.setTranslucentRegion(&G::toplevelRegions()->activeTransRegionTL);
+            decoT.setTranslucentRegion(&G::toplevelRegions()->activeTransRegionTR);
         }
     }
     else
@@ -472,18 +475,18 @@ void ToplevelView::updateGeometry()
         {
             title->setCustomColor(0.7f, 0.7f, 0.7f);
 
-            G::setTexViewConf(&decoTL, G::DecorationInactiveTL);
-            G::setTexViewConf(&decoT, G::DecorationInactiveT);
-            G::setTexViewConf(&decoTR, G::DecorationInactiveTR);
-            G::setTexViewConf(&decoL, G::DecorationInactiveL);
-            G::setTexViewConf(&decoR, G::DecorationInactiveR);
-            G::setTexViewConf(&decoBL, G::DecorationInactiveBL);
-            G::setTexViewConf(&decoB, G::DecorationInactiveB);
-            G::setTexViewConf(&decoBR, G::DecorationInactiveBR);
+            decoTL.setTextureIndex(G::DecorationInactiveTL);
+            decoT.setTextureIndex(G::DecorationInactiveT);
+            decoTR.setTextureIndex(G::DecorationInactiveTR);
+            decoL.setTextureIndex(G::DecorationInactiveL);
+            decoR.setTextureIndex(G::DecorationInactiveR);
+            decoBL.setTextureIndex(G::DecorationInactiveBL);
+            decoB.setTextureIndex(G::DecorationInactiveB);
+            decoBR.setTextureIndex(G::DecorationInactiveBR);
 
             // Trans region
-            decoTL.setTranslucentRegion(&G::toplevelTextures().inactiveTransRegionTL);
-            decoT.setTranslucentRegion(&G::toplevelTextures().inactiveTransRegionTR);
+            decoTL.setTranslucentRegion(&G::toplevelRegions()->inactiveTransRegionTL);
+            decoT.setTranslucentRegion(&G::toplevelRegions()->inactiveTransRegionTR);
         }
     }
 
@@ -717,6 +720,7 @@ void ToplevelView::updateGeometry()
     }
 
     lastFullscreenState = toplevel->fullscreen();
+
 }
 
 bool ToplevelView::nativeMapped() const

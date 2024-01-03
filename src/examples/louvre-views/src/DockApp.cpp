@@ -4,20 +4,20 @@
 #include "Global.h"
 #include "Tooltip.h"
 
-DockApp::DockApp(App *app, Dock *dock) : LTextureView()
+DockApp::DockApp(App *app, Dock *dock) :
+    LTextureView(),
+    dot(G::DockDot, this)
 {
     this->app = app;
     this->dock = dock;
-    setParent(dock->appsContainer);
+    setParent(&dock->appsContainer);
     setTexture(app->texture);
     setBufferScale(2);
     enableInput(true);
     enableBlockPointer(false);
 
-    dot = new LTextureView(G::dockTextures().dot, this);
-    dot->setBufferScale(2);
-    dot->setPos((size().w() - dot->size().w()) / 2, size().h() - 2);
-    dot->setVisible(false);
+    dot.setPos((size().w() - dot.size().w()) / 2, size().h() - 2);
+    dot.setVisible(false);
     app->dockApps.push_back(this);
     appLink = std::prev(app->dockApps.end());
     dock->update();
@@ -28,8 +28,6 @@ DockApp::~DockApp()
     if (app->launchAnimation)
         app->launchAnimation->stop();
 
-    delete dot;
-    dot = nullptr;
     setParent(nullptr);
     app->dockApps.erase(appLink);
     dock->update();

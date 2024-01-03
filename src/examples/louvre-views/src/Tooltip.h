@@ -2,8 +2,9 @@
 #define TOOLTIP_H
 
 #include <LLayerView.h>
-#include <LTextureView.h>
 #include <LSolidColorView.h>
+
+#include "UITextureView.h"
 
 using namespace Louvre;
 
@@ -13,8 +14,17 @@ public:
     Tooltip();
 
     LSolidColorView center;
-    LTextureView decoration[8];
-    LTextureView arrow;
+
+    UITextureView decoT;
+    UITextureView decoR;
+    UITextureView decoB;
+    UITextureView decoL;
+    UITextureView decoTL;
+    UITextureView decoTR;
+    UITextureView decoBR;
+    UITextureView decoBL;
+
+    UITextureView arrow;
     LTextureView label;
 
     LView *targetView = nullptr;

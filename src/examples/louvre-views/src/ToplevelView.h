@@ -2,9 +2,9 @@
 #define TOPLEVELVIEW_H
 
 #include <LLayerView.h>
-#include <LTextureView.h>
 #include <LSceneView.h>
 #include <LSurfaceView.h>
+#include "UITextureView.h"
 
 using namespace Louvre;
 
@@ -32,17 +32,9 @@ public:
     LSurfaceView surfBL;
     LSurfaceView surfBR;
 
-    LTextureView decoTL;
-    LTextureView decoT;
-    LTextureView decoTR;
-    LTextureView decoL;
-    LTextureView decoR;
-    LTextureView decoBL;
-    LTextureView decoB;
-    LTextureView decoBR;
-
-    LTextureView maskBL;
-    LTextureView maskBR;
+    UITextureView decoTL, decoT, decoTR, decoL,
+        decoR, decoBL, decoB, decoBR,
+        maskBL, maskBR;
 
     InputRect *resizeTL = nullptr;
     InputRect *resizeTR = nullptr;

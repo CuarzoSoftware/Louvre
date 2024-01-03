@@ -4,29 +4,23 @@
 #include "TextRenderer.h"
 #include "Compositor.h"
 
-Tooltip::Tooltip()
+Tooltip::Tooltip() :
+    decoT(G::TooltipT, this),
+    decoR(G::TooltipR, this),
+    decoB(G::TooltipB, this),
+    decoL(G::TooltipL, this),
+    decoTL(G::TooltipTL, this),
+    decoTR(G::TooltipTR, this),
+    decoBR(G::TooltipBR, this),
+    decoBL(G::TooltipBL, this),
+    arrow(G::TooltipArrow, this)
 {
     setVisible(false);
     enableParentOffset(false);
     setParent(&G::compositor()->tooltipsLayer);
 
-    for (Int32 i = 0; i < 8; i++)
-    {
-        // Clamp textures
-        if (i < 4)
-            decoration[i].enableDstSize(true);
-
-        decoration[i].setParent(this);
-        decoration[i].setBufferScale(2);
-        decoration[i].setTexture(G::tooltipTextures().decoration[i]);
-    }
-
     center.setParent(this);
     center.setColor(0.97f, 0.97f, 0.97f);
-
-    arrow.setParent(this);
-    arrow.setBufferScale(2);
-    arrow.setTexture(G::tooltipTextures().arrow);
 
     label.setParent(this);
     label.setBufferScale(2);
@@ -72,22 +66,22 @@ void Tooltip::update()
     center.setSize(size() - LSize(2 * CONTAINER_BORDER_RADIUS));
 
     // Position decoration
-    decoration[G::TL].setPos(CONTAINER_OFFSET);
-    decoration[G::TR].setPos(size().w() - CONTAINER_BORDER_RADIUS, CONTAINER_OFFSET);
-    decoration[G::BR].setPos(size() - LSize(CONTAINER_BORDER_RADIUS));
-    decoration[G::BL].setPos(CONTAINER_OFFSET, size().h() - CONTAINER_BORDER_RADIUS);
+    decoTL.setPos(CONTAINER_OFFSET);
+    decoTR.setPos(size().w() - CONTAINER_BORDER_RADIUS, CONTAINER_OFFSET);
+    decoBR.setPos(size() - LSize(CONTAINER_BORDER_RADIUS));
+    decoBL.setPos(CONTAINER_OFFSET, size().h() - CONTAINER_BORDER_RADIUS);
 
-    decoration[G::T].setPos(CONTAINER_BORDER_RADIUS, CONTAINER_OFFSET);
-    decoration[G::T].setDstSize(center.size().w(), decoration[G::T].texture()->sizeB().h() / 2);
+    decoT.setPos(CONTAINER_BORDER_RADIUS, CONTAINER_OFFSET);
+    decoT.setDstSize(center.size().w(), decoT.nativeSize().h());
 
-    decoration[G::B].setPos(CONTAINER_BORDER_RADIUS, size().h() - CONTAINER_BORDER_RADIUS);
-    decoration[G::B].setDstSize(decoration[G::T].size());
+    decoB.setPos(CONTAINER_BORDER_RADIUS, size().h() - CONTAINER_BORDER_RADIUS);
+    decoB.setDstSize(decoT.size());
 
-    decoration[G::L].setPos(CONTAINER_OFFSET, CONTAINER_BORDER_RADIUS);
-    decoration[G::L].setDstSize(decoration[G::L].texture()->sizeB().w() / 2, center.size().h());
+    decoL.setPos(CONTAINER_OFFSET, CONTAINER_BORDER_RADIUS);
+    decoL.setDstSize(decoL.nativeSize().w(), center.size().h());
 
-    decoration[G::R].setPos(decoration[G::TR].nativePos().x(), CONTAINER_BORDER_RADIUS);
-    decoration[G::R].setDstSize(decoration[G::L].size());
+    decoR.setPos(decoTR.nativePos().x(), CONTAINER_BORDER_RADIUS);
+    decoR.setDstSize(decoL.size());
 
     arrow.setPos((size().w() - arrow.size().w()) / 2, size().h() - 1);
 

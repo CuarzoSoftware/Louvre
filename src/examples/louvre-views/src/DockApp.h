@@ -1,7 +1,7 @@
 #ifndef DOCKAPP_H
 #define DOCKAPP_H
 
-#include <LTextureView.h>
+#include "UITextureView.h"
 
 using namespace Louvre;
 
@@ -20,7 +20,7 @@ public:
     std::list<DockApp*>::iterator appLink;
     App *app = nullptr;
     Dock *dock = nullptr;
-    LTextureView *dot = nullptr;
+    UITextureView dot;
 };
 
 #endif // DOCKAPP_H

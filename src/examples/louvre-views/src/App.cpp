@@ -50,7 +50,7 @@ App::App(const char *name, const char *exec, const char *iconPath)
     }
 
     if (!texture)
-        texture = G::dockTextures().defaultApp;
+        texture = G::textures()->defaultAppIcon;
 
     for (Output *output : G::outputs())
         new DockApp(this, output->dock);

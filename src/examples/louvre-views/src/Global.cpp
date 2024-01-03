@@ -14,17 +14,14 @@
 #include "Tooltip.h"
 #include "Surface.h"
 
-static G::DockTextures _dockTextures;
-static G::ToplevelTextures _toplevelTextures;
-static G::TooltipTextures _tooltipTextures;
-
 static G::Cursors xCursors;
 static G::Fonts _fonts;
 static std::list<App*>_apps;
-
 static Tooltip *_tooltip;
+static G::Textures _textures;
+static G::ToplevelRegions _toplevelRegions;
+static Float32 scales[] = {1.f, 1.25f, 1.5f, 1.75f, 2.f};
 
-static G::TextureViewConf texViewConfs[34];
 
 Compositor *G::compositor()
 {
@@ -49,60 +46,6 @@ std::list<Output *> &G::outputs()
 std::list<Surface *> &G::surfaces()
 {
     return (std::list<Surface*>&)compositor()->surfaces();
-}
-
-void G::loadDockTextures()
-{
-    _dockTextures.left = loadAssetsTexture("dock_side.png");
-
-    if (!_dockTextures.left)
-    {
-        LLog::fatal("[louvre-views] Failed to load dock_side.png texture.");
-        exit(1);
-    }
-
-    _dockTextures.center = loadAssetsTexture("dock_clamp.png");
-
-    if (!_dockTextures.center)
-    {
-        LLog::fatal("[louvre-views] Failed to load dock_center.png texture.");
-        exit(1);
-    }
-
-    _dockTextures.right = _dockTextures.left->copyB(_dockTextures.left->sizeB(),
-                                                    LRect(0,
-                                                          0,
-                                                          - _dockTextures.left->sizeB().w(),
-                                                          _dockTextures.left->sizeB().h()));
-
-    LTexture *tmp = loadAssetsTexture("dock_app.png");
-
-    if (tmp)
-    {
-        LTexture *hires = tmp->copyB(LSize(DOCK_ITEM_HEIGHT * 4));
-        _dockTextures.defaultApp = hires->copyB(LSize(DOCK_ITEM_HEIGHT * 2));
-        delete hires;
-        delete tmp;
-    }
-
-    if (!_dockTextures.defaultApp)
-    {
-        LLog::fatal("[louvre-views] Failed to load dock_app.png texture.");
-        exit(1);
-    }
-
-    _dockTextures.dot = loadAssetsTexture("dock_app_dot.png");
-
-    if (!_dockTextures.dot)
-    {
-        LLog::fatal("[louvre-views] Failed to load dock_dot.png texture.");
-        exit(1);
-    }
-}
-
-G::DockTextures &G::dockTextures()
-{
-    return _dockTextures;
 }
 
 void G::enableDocks(bool enabled)
@@ -196,47 +139,7 @@ std::list<App *> &G::apps()
 
 void G::createTooltip()
 {
-    _tooltipTextures.decoration[TL] = loadAssetsTexture("container_top_left.png");
-    _tooltipTextures.decoration[T]= loadAssetsTexture("container_clamp_top.png");
-    _tooltipTextures.decoration[L] = loadAssetsTexture("container_clamp_side.png");
-    _tooltipTextures.arrow = loadAssetsTexture("container_arrow.png");
-
-
-    _tooltipTextures.decoration[TR] = _tooltipTextures.decoration[TL]->copyB(_tooltipTextures.decoration[TL]->sizeB(),
-                                                                LRect(0,
-                                                                      0,
-                                                                      - _tooltipTextures.decoration[TL]->sizeB().w(),
-                                                                      _tooltipTextures.decoration[TL]->sizeB().h()));
-
-    _tooltipTextures.decoration[R] = _tooltipTextures.decoration[L]->copyB(_tooltipTextures.decoration[L]->sizeB(),
-                                                                LRect(0,
-                                                                      0,
-                                                                      - _tooltipTextures.decoration[L]->sizeB().w(),
-                                                                      _tooltipTextures.decoration[L]->sizeB().h()));
-
-    _tooltipTextures.decoration[BR] = _tooltipTextures.decoration[TL]->copyB(_tooltipTextures.decoration[TL]->sizeB(),
-                                                                LRect(0,
-                                                                      0,
-                                                                      - _tooltipTextures.decoration[TL]->sizeB().w(),
-                                                                      - _tooltipTextures.decoration[TL]->sizeB().h()));
-
-    _tooltipTextures.decoration[B] = _tooltipTextures.decoration[T]->copyB(_tooltipTextures.decoration[T]->sizeB(),
-                                                          LRect(0,
-                                                                0,
-                                                                _tooltipTextures.decoration[T]->sizeB().w(),
-                                                                - _tooltipTextures.decoration[T]->sizeB().h()));
-
-    _tooltipTextures.decoration[BL] = _tooltipTextures.decoration[TL]->copyB(_tooltipTextures.decoration[TL]->sizeB(),
-                                                                   LRect(0,
-                                                                         0,
-                                                                         _tooltipTextures.decoration[TL]->sizeB().w(),
-                                                                         - _tooltipTextures.decoration[TL]->sizeB().h()));
     _tooltip = new Tooltip();
-}
-
-G::TooltipTextures &G::tooltipTextures()
-{
-    return _tooltipTextures;
 }
 
 Tooltip *G::tooltip()
@@ -267,171 +170,319 @@ G::Cursors &G::cursors()
     return xCursors;
 }
 
-void G::loadToplevelTextures()
+G::Textures *G::textures()
 {
-    _toplevelTextures.atlas = LOpenGL::loadTexture("/home/eduardo/Arduino/atlas@2x.png");
+    return &_textures;
+}
 
-    Float32 bufferScale = 2.f;
-    TextureViewConf *conf;
+void G::loadTextures()
+{
 
-    for (UInt32 i = 0; i < 14; i++)
+    LTexture *tmp = loadAssetsTexture("dock_app.png");
+
+    if (tmp)
     {
-        conf = &texViewConfs[i];
-        conf->texture = _toplevelTextures.atlas;
-        conf->customSrcRect = LRectF(2.f, 2.f + 14.f * Float32(i), 12.f, 12.f);
-        conf->customDstSize = LSize(12, 12);
-        conf->bufferScale = bufferScale;
+        LTexture *hires = tmp->copyB(LSize(DOCK_ITEM_HEIGHT * 4));
+        _textures.defaultAppIcon = hires->copyB(LSize(DOCK_ITEM_HEIGHT * 2));
+        delete hires;
+        delete tmp;
     }
 
-    conf = &texViewConfs[DecorationActiveTL];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(16.f, 59.5f, 70.f, 74.f);
-    conf->customDstSize = LSize(70, 74);
-    conf->bufferScale = bufferScale;
+    _textures.UI[0] = loadAssetsTexture("ui@1x.png");
+    _textures.UI[1] = loadAssetsTexture("ui@1.25x.png");
+    _textures.UI[2] = loadAssetsTexture("ui@1.5x.png");
+    _textures.UI[3] = loadAssetsTexture("ui@1.75x.png");
+    _textures.UI[4] = loadAssetsTexture("ui@2x.png");
 
-    conf = &texViewConfs[DecorationActiveTR];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(172.f - 16.f - 70.f, 59.5f, 70.f, 74.f);
-    conf->customDstSize = LSize(70, 74);
-    conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Flipped;
+    for (UInt32 s = 0; s < 5; s++)
+    {
+        Float32 bufferScale = scales[s];
+        LTexture *texture = _textures.UI[s];
+        TextureViewConf *conf;
 
-    conf = &texViewConfs[DecorationActiveT];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(87.f, 59.5f, 1.f, 61.f);
-    conf->customDstSize = LSize(1, 61);
-    conf->bufferScale = bufferScale;
+        // Toplevel buttons
+        for (UInt32 i = 0; i < 14; i++)
+        {
+            conf = &_textures.UIConf[s][i];
+            conf->texture = texture;
 
-    conf = &texViewConfs[DecorationActiveL];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(16.f, 133.5f, 48.f, 0.5f);
-    conf->customDstSize = LSize(48, 1);
-    conf->bufferScale = bufferScale;
+            if (bufferScale == 1.5f)
+                conf->customSrcRect = LRectF(2.f, 2.f - 0.25f + 14.f * Float32(i), 12.f + 0.25f, 12.f + 0.25f);
+            else if (bufferScale == 1.75f)
+                conf->customSrcRect = LRectF(2.f - 0.25f, 2.f - 1.f + 14.f * Float32(i), 12.f + 1.f, 12.f + 1.f);
+            else if (bufferScale == 1.25f)
+                conf->customSrcRect = LRectF(2.f - 0.75f, 2.f - 0.75f + 14.f * Float32(i), 12.f + 1.5f, 12.f + 1.5f);
+            else
+                conf->customSrcRect = LRectF(2.f, 2.f + 14.f * Float32(i), 12.f, 12.f);
 
-    conf = &texViewConfs[DecorationActiveR];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(172.f - 16.f - 48.f, 133.5f, 48.f, 0.5f);
-    conf->customDstSize = LSize(48, 1);
-    conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Flipped;
+            conf->customDstSize = LSize(12, 12);
+            conf->bufferScale = bufferScale;
+        }
 
-    conf = &texViewConfs[DecorationActiveBL];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(16.f, 134.f, 82.f, 80.f);
-    conf->customDstSize = LSize(82, 80);
-    conf->bufferScale = bufferScale;
+        conf = &_textures.UIConf[s][DecorationActiveTL];
+        conf->texture = texture;
+        if (bufferScale == 1.75f)
+            conf->customSrcRect = LRectF(16.f + 0.35f, 59.75f, 70.f, 74.f);
+        else if (bufferScale == 1.25f)
+            conf->customSrcRect = LRectF(16.f + 0.4f, 59.5f, 70.f, 74.f);
+        else
+            conf->customSrcRect = LRectF(16.f, 59.5f, 70.f, 74.f);
+        conf->customDstSize = LSize(70, 74);
+        conf->bufferScale = bufferScale;
 
-    conf = &texViewConfs[DecorationActiveBR];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(172.f - 16.f - 82.f, 134.f, 82.f, 80.f);
-    conf->customDstSize = LSize(82, 80);
-    conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Flipped;
+        conf = &_textures.UIConf[s][DecorationActiveTR];
+        conf->texture = texture;
 
-    conf = &texViewConfs[DecorationActiveB];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(98.f, 155.5f, 0.5f, 58.5f);
-    conf->customDstSize = LSize(1, 59);
-    conf->bufferScale = bufferScale;
+        if (bufferScale == 1.f)
+            conf->customSrcRect = LRectF(172.f - 16.f - 70.f, 59.25f, 70.f, 74.25f);
+        else if (bufferScale == 1.75f)
+            conf->customSrcRect = LRectF(172.f - 16.f - 70.f, 59.75f, 70.f, 74.f);
+        else
+            conf->customSrcRect = LRectF(172.f - 16.f - 70.f, 59.5f, 70.f, 74.f);
+        conf->customDstSize = LSize(70, 74);
+        conf->bufferScale = bufferScale;
+        conf->transform = LFramebuffer::Flipped;
 
-    conf = &texViewConfs[DecorationInactiveTL];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(100.5f, 58.5f, 56.f, 63.f);
-    conf->customDstSize = LSize(56, 63);
-    conf->bufferScale = bufferScale;
+        conf = &_textures.UIConf[s][DecorationActiveT];
+        conf->texture = texture;
+        if (bufferScale == 1.75f)
+            conf->customSrcRect = LRectF(87.f, 59.75f, 1.f, 61.f);
+        else
+            conf->customSrcRect = LRectF(87.f, 59.5f, 1.f, 61.f);
+        conf->customDstSize = LSize(1, 61);
+        conf->bufferScale = bufferScale;
 
-    conf = &texViewConfs[DecorationInactiveTR];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(172.f - 100.5f - 56.f, 58.5f, 56.f, 63.f);
-    conf->customDstSize = LSize(56, 63);
-    conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Flipped;
+        conf = &_textures.UIConf[s][DecorationActiveL];
+        conf->texture = texture;
 
-    conf = &texViewConfs[DecorationInactiveT];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(156.f, 58.5f, 0.5f, 56.f);
-    conf->customDstSize = LSize(1, 56);
-    conf->bufferScale = bufferScale;
+        if (bufferScale == 1.5f)
+            conf->customSrcRect = LRectF(16.f, 133.5f, 48.f - 0.25f, 0.5f);
+        else
+            conf->customSrcRect = LRectF(16.f, 133.5f, 48.f, 0.5f);
 
-    conf = &texViewConfs[DecorationInactiveBL];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(100.5f, 122.f, 71.f, 66.f);
-    conf->customDstSize = LSize(71, 66);
-    conf->bufferScale = bufferScale;
+        conf->customDstSize = LSize(48, 1);
+        conf->bufferScale = bufferScale;
 
-    conf = &texViewConfs[DecorationInactiveBR];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(172.f - 100.5f - 71.f, 122.f, 71.f, 66.f);
-    conf->customDstSize = LSize(71, 66);
-    conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Flipped;
+        conf = &_textures.UIConf[s][DecorationActiveR];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(172.f - 16.f - 48.f, 133.5f, 48.f, 0.1f);
+        conf->customDstSize = LSize(48, 1);
+        conf->bufferScale = bufferScale;
+        conf->transform = LFramebuffer::Flipped;
 
-    conf = &texViewConfs[DecorationInactiveL];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(100.5f, 121.5f, 41.f, 0.5f);
-    conf->customDstSize = LSize(41, 1);
-    conf->bufferScale = bufferScale;
+        conf = &_textures.UIConf[s][DecorationActiveBL];
+        conf->texture = texture;
+        if (bufferScale == 1.25f)
+            conf->customSrcRect = LRectF(16.f, 134.f + 0.4f, 82.f, 80.f);
+        else
+            conf->customSrcRect = LRectF(16.f, 134.f, 82.f, 80.f);
+        conf->customDstSize = LSize(82, 80);
+        conf->bufferScale = bufferScale;
 
-    conf = &texViewConfs[DecorationInactiveR];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(172.f - 100.5f - 41.f, 121.5f, 41.f, 0.5f);
-    conf->customDstSize = LSize(41, 1);
-    conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Flipped;
+        conf = &_textures.UIConf[s][DecorationActiveBR];
+        conf->texture = texture;
 
-    conf = &texViewConfs[DecorationInactiveB];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(171.5f, 136.f, 0.5f, 52.f);
-    conf->customDstSize = LSize(1, 52);
-    conf->bufferScale = bufferScale;
+        if (bufferScale == 1.5f || bufferScale == 1.75f)
+            conf->customSrcRect = LRectF(172.f - 16.f - 82.f + 0.25f, 134.f, 82.f, 80.f);
+        else if (bufferScale == 1.25f)
+            conf->customSrcRect = LRectF(172.f - 16.f - 82.f + 0.4f, 134.f + 0.25f, 82.f, 80.f);
+        else
+            conf->customSrcRect = LRectF(172.f - 16.f - 82.f, 134.f, 82.f, 80.f);
 
-    conf = &texViewConfs[DecorationMaskBL];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(172.f - 11.f, 0.f, 11.f, 11.f);
-    conf->customDstSize = LSize(11, 11);
-    conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Flipped180;
+        conf->customDstSize = LSize(82, 80);
+        conf->bufferScale = bufferScale;
+        conf->transform = LFramebuffer::Flipped;
 
-    conf = &texViewConfs[DecorationMaskBR];
-    conf->texture = _toplevelTextures.atlas;
-    conf->customSrcRect = LRectF(0.f, 0.f, 11.f, 11.f);
-    conf->customDstSize = LSize(11, 11);
-    conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Rotated180;
+        conf = &_textures.UIConf[s][DecorationActiveB];
+        conf->texture = texture;
 
+        if (bufferScale == 1.5f)
+            conf->customSrcRect = LRectF(98.f, 155.5f - 0.25f, 0.5f, 58.5f);
+        else
+            conf->customSrcRect = LRectF(98.f, 155.5f, 0.5f, 58.5f);
 
-    LRect activeTransRectsTL[] = TOPLEVEL_ACTIVE_TOP_LEFT_TRANS_REGION;
+        conf->customDstSize = LSize(1, 59);
+        conf->bufferScale = bufferScale;
 
-    for (UInt64 i = 0; i < sizeof(activeTransRectsTL)/sizeof(LRect); i++)
-        _toplevelTextures.activeTransRegionTL.addRect(activeTransRectsTL[i]);
+        conf = &_textures.UIConf[s][DecorationInactiveTL];
+        conf->texture = texture;
 
-    LRect activeTransRectsTR[] = TOPLEVEL_ACTIVE_TOP_RIGHT_TRANS_REGION;
+        if (bufferScale == 1.25f)
+            conf->customSrcRect = LRectF(100.5f + 0.3f, 58.5f, 56.f, 63.f);
+        else
+            conf->customSrcRect = LRectF(100.5f, 58.5f, 56.f, 63.f);
 
-    for (UInt64 i = 0; i < sizeof(activeTransRectsTR)/sizeof(LRect); i++)
-        _toplevelTextures.activeTransRegionTR.addRect(activeTransRectsTR[i]);
+        conf->customDstSize = LSize(56, 63);
+        conf->bufferScale = bufferScale;
 
+        conf = &_textures.UIConf[s][DecorationInactiveTR];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(172.f - 100.5f - 56.f, 58.5f, 56.f, 63.f);
+        conf->customDstSize = LSize(56, 63);
+        conf->bufferScale = bufferScale;
+        conf->transform = LFramebuffer::Flipped;
 
-    LRect inactiveTransRectsTL[] = TOPLEVEL_INACTIVE_TOP_LEFT_TRANS_REGION;
+        conf = &_textures.UIConf[s][DecorationInactiveT];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(156.f, 58.5f, 0.5f, 56.f);
+        conf->customDstSize = LSize(1, 56);
+        conf->bufferScale = bufferScale;
 
-    for (UInt64 i = 0; i < sizeof(inactiveTransRectsTL)/sizeof(LRect); i++)
-        _toplevelTextures.inactiveTransRegionTL.addRect(inactiveTransRectsTL[i]);
+        conf = &_textures.UIConf[s][DecorationInactiveBL];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(100.5f, 122.f, 71.f, 66.f);
+        conf->customDstSize = LSize(71, 66);
+        conf->bufferScale = bufferScale;
 
-    LRect inactiveTransRectsTR[] = TOPLEVEL_INACTIVE_TOP_RIGHT_TRANS_REGION;
+        conf = &_textures.UIConf[s][DecorationInactiveBR];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(172.f - 100.5f - 71.f, 122.f, 71.f, 66.f);
+        conf->customDstSize = LSize(71, 66);
+        conf->bufferScale = bufferScale;
+        conf->transform = LFramebuffer::Flipped;
 
-    for (UInt64 i = 0; i < sizeof(inactiveTransRectsTR)/sizeof(LRect); i++)
-        _toplevelTextures.inactiveTransRegionTR.addRect(inactiveTransRectsTR[i]);
+        conf = &_textures.UIConf[s][DecorationInactiveL];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(100.5f, 121.5f, 41.f, 0.5f);
+        conf->customDstSize = LSize(41, 1);
+        conf->bufferScale = bufferScale;
 
-    _toplevelTextures.logo = loadAssetsTexture("logo.png");
+        conf = &_textures.UIConf[s][DecorationInactiveR];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(172.f - 100.5f - 41.f, 121.5f, 41.f, 0.5f);
+        conf->customDstSize = LSize(41, 1);
+        conf->bufferScale = bufferScale;
+        conf->transform = LFramebuffer::Flipped;
+
+        conf = &_textures.UIConf[s][DecorationInactiveB];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(171.5f, 136.f, 0.5f, 52.f);
+        conf->customDstSize = LSize(1, 52);
+        conf->bufferScale = bufferScale;
+
+        conf = &_textures.UIConf[s][DecorationMaskBL];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(172.f - 11.f, 0.f, 11.f, 11.f);
+        conf->customDstSize = LSize(11, 11);
+        conf->bufferScale = bufferScale;
+        conf->transform = LFramebuffer::Flipped180;
+
+        conf = &_textures.UIConf[s][DecorationMaskBR];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(0.f, 0.f, 11.f, 11.f);
+        conf->customDstSize = LSize(11, 11);
+        conf->bufferScale = bufferScale;
+        conf->transform = LFramebuffer::Rotated180;
+
+        conf = &_textures.UIConf[s][TooltipT];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(0.f, 216.f - 0.5f - 21.f, 0.5f, 21.f);
+        conf->customDstSize = LSize(1, 21);
+        conf->bufferScale = bufferScale;
+        conf->transform = LFramebuffer::Rotated180;
+
+        conf = &_textures.UIConf[s][TooltipL];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(150.5f, 0.f, 21.f, 0.5f);
+        conf->customDstSize = LSize(21, 1);
+        conf->bufferScale = bufferScale;
+
+        conf = &_textures.UIConf[s][TooltipR];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(0.5f, 0.f, 21.f, 0.5f);
+        conf->customDstSize = LSize(21, 1);
+        conf->bufferScale = bufferScale;
+        conf->transform = LFramebuffer::Flipped;
+
+        conf = &_textures.UIConf[s][TooltipB];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(172.f - 0.5f, 0.5f, 0.5f, 21.f);
+        conf->customDstSize = LSize(1, 21);
+        conf->bufferScale = bufferScale;
+
+        conf = &_textures.UIConf[s][TooltipTL];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(216.f - 21.f - 0.5f, 150.5f, 21.f, 21.f);
+        conf->customDstSize = LSize(21, 21);
+        conf->bufferScale = bufferScale;
+        conf->transform = LFramebuffer::Rotated90;
+
+        conf = &_textures.UIConf[s][TooltipTR];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(0.5f, 172.f - 0.5f - 21.f, 21.f, 21.f);
+        conf->customDstSize = LSize(21, 21);
+        conf->bufferScale = bufferScale;
+        conf->transform = LFramebuffer::Flipped90;
+
+        conf = &_textures.UIConf[s][TooltipBR];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(0.5f, 0.5f, 21.f, 21.f);
+        conf->customDstSize = LSize(21, 21);
+        conf->bufferScale = bufferScale;
+        conf->transform = LFramebuffer::Rotated270;
+
+        conf = &_textures.UIConf[s][TooltipBL];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(150.5f, 0.5f, 21.f, 21.f);
+        conf->customDstSize = LSize(21, 21);
+        conf->bufferScale = bufferScale;
+
+        conf = &_textures.UIConf[s][TooltipArrow];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(100.5f, 194.f, 29.f, 17.f);
+        conf->customDstSize = LSize(29, 17);
+        conf->bufferScale = bufferScale;
+
+        conf = &_textures.UIConf[s][DockL];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(216.f - 0.5f - 56.f, 16.f, 56.f, 133.f);
+        conf->customDstSize = LSize(56, 133);
+        conf->bufferScale = bufferScale;
+        conf->transform = LFramebuffer::Rotated90;
+
+        conf = &_textures.UIConf[s][DockC];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(216.f - 0.5f, 16.f, 0.5f, 133.f);
+        conf->customDstSize = LSize(1, 133);
+        conf->bufferScale = bufferScale;
+        conf->transform = LFramebuffer::Rotated90;
+
+        conf = &_textures.UIConf[s][DockR];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(0.5f, 23.f, 56.f, 133.f);
+        conf->customDstSize = LSize(56, 133);
+        conf->bufferScale = bufferScale;
+        conf->transform = LFramebuffer::Rotated270;
+
+        conf = &_textures.UIConf[s][DockDot];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(5.5f, 198.f, 5.f, 5.f);
+        conf->customDstSize = LSize(5, 5);
+        conf->bufferScale = bufferScale;
+
+        conf = &_textures.UIConf[s][Logo];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(133.5f, 194.f, 20.f, 14.f);
+        conf->customDstSize = LSize(20, 14);
+        conf->bufferScale = bufferScale;
+    }
 }
 
-G::ToplevelTextures &G::toplevelTextures()
+void G::setTexViewConf(LTextureView *view, UInt32 index, Float32 scale)
 {
-    return _toplevelTextures;
-}
+    TextureViewConf *conf;
 
-void G::setTexViewConf(LTextureView *view, TextureConfIndex index)
-{
-    TextureViewConf *conf = &texViewConfs[index];
+    if (scale == 1.f)
+        conf = &_textures.UIConf[0][index];
+    else if (scale == 1.25f)
+        conf = &_textures.UIConf[1][index];
+    else if (scale == 1.5f)
+        conf = &_textures.UIConf[2][index];
+    else if (scale == 1.75f)
+        conf = &_textures.UIConf[3][index];
+    else
+        conf = &_textures.UIConf[4][index];
+
     view->setTexture(conf->texture);
     view->enableCustomColor(conf->enableCustomColor);
     view->setCustomColor(conf->customColor);
@@ -443,13 +494,41 @@ void G::setTexViewConf(LTextureView *view, TextureConfIndex index)
     view->setTransform(conf->transform);
 }
 
+G::ToplevelRegions *G::toplevelRegions()
+{
+    return &_toplevelRegions;
+}
+
+void G::loadToplevelRegions()
+{
+    LRect activeTransRectsTL[] = TOPLEVEL_ACTIVE_TOP_LEFT_TRANS_REGION;
+
+    for (UInt64 i = 0; i < sizeof(activeTransRectsTL)/sizeof(LRect); i++)
+        _toplevelRegions.activeTransRegionTL.addRect(activeTransRectsTL[i]);
+
+    LRect activeTransRectsTR[] = TOPLEVEL_ACTIVE_TOP_RIGHT_TRANS_REGION;
+
+    for (UInt64 i = 0; i < sizeof(activeTransRectsTR)/sizeof(LRect); i++)
+        _toplevelRegions.activeTransRegionTR.addRect(activeTransRectsTR[i]);
+
+    LRect inactiveTransRectsTL[] = TOPLEVEL_INACTIVE_TOP_LEFT_TRANS_REGION;
+
+    for (UInt64 i = 0; i < sizeof(inactiveTransRectsTL)/sizeof(LRect); i++)
+        _toplevelRegions.inactiveTransRegionTL.addRect(inactiveTransRectsTL[i]);
+
+    LRect inactiveTransRectsTR[] = TOPLEVEL_INACTIVE_TOP_RIGHT_TRANS_REGION;
+
+    for (UInt64 i = 0; i < sizeof(inactiveTransRectsTR)/sizeof(LRect); i++)
+        _toplevelRegions.inactiveTransRegionTR.addRect(inactiveTransRectsTR[i]);
+}
+
 void G::loadFonts()
 {
     _fonts.regular = TextRenderer::loadFont("Inter");
     _fonts.semibold = TextRenderer::loadFont("Inter Semi Bold");
 
     if (_fonts.semibold)
-        G::toplevelTextures().defaultTopbarAppName = G::font()->semibold->renderText("Louvre", 24);
+        _textures.defaultTopbarAppName = G::font()->semibold->renderText("Louvre", 24);
 }
 
 G::Fonts *G::font()
@@ -457,11 +536,18 @@ G::Fonts *G::font()
     return &_fonts;
 }
 
-LTexture *G::loadAssetsTexture(const char *name)
+LTexture *G::loadAssetsTexture(const char *name, bool exitOnFail)
 {
     char *path = joinPaths(ASSETS_PATH, name);
     LTexture *tex = LOpenGL::loadTexture(path);
     free(path);
+
+    if (exitOnFail && !tex)
+    {
+        LLog::fatal("[louvre-views] Failed to load texture %s.", name);
+        exit(1);
+    }
+
     return tex;
 }
 
