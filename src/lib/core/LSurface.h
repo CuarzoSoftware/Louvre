@@ -120,7 +120,9 @@ public:
         DNDIcon = 5
     };
 
+    virtual void sizeChanged();
     const LRectF &srcRect() const;
+    virtual void srcRectChanged();
     LFramebuffer::Transform bufferTransform() const;
     virtual void bufferTransformChanged();
 

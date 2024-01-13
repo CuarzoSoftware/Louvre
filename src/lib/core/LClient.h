@@ -173,6 +173,13 @@ public:
      */
     const std::list<Protocols::LinuxDMABuf::GLinuxDMABuf*> &linuxDMABufGlobals() const;
 
+    /**
+     * List of resources generated when the client binds to the
+     * [wp_viewporter](https://wayland.app/protocols/viewporter#wp_viewporter) global
+     * of the Viewporter protocol.
+     */
+    const std::list<Protocols::Viewporter::GViewporter*> &viewporterGlobals() const;
+
     LPRIVATE_IMP_UNIQUE(LClient)
 };
 

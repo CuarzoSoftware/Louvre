@@ -22,6 +22,7 @@
 #define LOUVRE_XDG_DECORATION_MANAGER_VERSION 1
 #define LOUVRE_WP_PRESENTATION_VERSION 1
 #define LOUVRE_LINUX_DMA_BUF_VERSION 3
+#define LOUVRE_VIEWPORTER_VERSION 1
 
 #define L_UNUSED(object){(void)object;}
 
@@ -130,6 +131,7 @@ namespace Louvre
     class LLauncher;
     template <class TA, class TB> class LPointTemplate;
     template <class TA, class TB> class LRectTemplate;
+    template <class T> class LBitfield;
 
     // Types
     /// @brief 64 bits unsigned integer
@@ -401,6 +403,13 @@ namespace Louvre
 
             class RLinuxBufferParams;
             class RLinuxDMABufFeedback;
+        };
+
+        namespace Viewporter
+        {
+            class GViewporter;
+
+            class RViewport;
         };
     }
 

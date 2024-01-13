@@ -10,6 +10,7 @@ public:
     ~RSurface();
 
     LSurface *surface() const;
+    Viewporter::RViewport *viewport() const;
 
     /// @brief Commit origin
     /// Indicates who requests to commit a surface

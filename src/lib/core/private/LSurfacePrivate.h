@@ -1,10 +1,13 @@
 #ifndef LSURFACEPRIVATE_H
 #define LSURFACEPRIVATE_H
 
+#include <protocols/Viewporter/viewporter.h>
+#include <protocols/Viewporter/RViewport.h>
 #include <LSurface.h>
 #include <private/LCompositorPrivate.h>
 #include <vector>
 #include <string>
+#include <LBitfield.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols;
@@ -17,7 +20,7 @@ struct LSurface::Params
 LPRIVATE_CLASS(LSurface)
 
     // Changes that are notified at the end of a commit after all changes are applied
-    enum ChangesToNotify : UInt32
+    enum ChangesToNotify
     {
         NoChanges                   = 0,
         BufferSizeChanged           = 1 << 0,
@@ -25,10 +28,20 @@ LPRIVATE_CLASS(LSurface)
         BufferTransformChanged      = 1 << 2,
         DamageRegionChanged         = 1 << 3,
         OpaqueRegionChanged         = 1 << 4,
-        InputRegionChanged          = 1 << 5
+        InputRegionChanged          = 1 << 5,
+        SourceRectChanged           = 1 << 6,
+        SizeChanged                 = 1 << 7,
     };
 
-    UInt32 changesToNotify = NoChanges;
+    LBitfield<ChangesToNotify> changesToNotify;
+
+    enum StateFlags : UInt32
+    {
+        ViewportIsScaled           = 1 << 0,
+        ViewportIsCropped          = 1 << 1,
+    };
+
+    LBitfield<StateFlags> stateFlags;
 
     struct State
     {
@@ -103,7 +116,7 @@ LPRIVATE_CLASS(LSurface)
 
     inline void updateDamage()
     {        
-        if (!texture->initialized() || changesToNotify & (BufferSizeChanged | BufferTransformChanged | BufferScaleChanged))
+        if (!texture->initialized() || changesToNotify.check(SizeChanged | SourceRectChanged | BufferSizeChanged | BufferTransformChanged | BufferScaleChanged))
         {
             currentDamageB.clear();
             currentDamageB.addRect(LRect(0, sizeB));
@@ -112,34 +125,74 @@ LPRIVATE_CLASS(LSurface)
         }
         else if (!pendingDamageB.empty() || !pendingDamage.empty())
         {
-            while (!pendingDamage.empty())
+            if (stateFlags.check(ViewportIsScaled | ViewportIsCropped))
             {
-                LRect &r = pendingDamage.back();
-                currentDamageB.addRect((r.x() - 1 )*current.bufferScale,
-                                    (r.y() - 1 )*current.bufferScale,
-                                    (r.w() + 2 )*current.bufferScale,
-                                    (r.h() + 2 )*current.bufferScale);
-                pendingDamage.pop_back();
-            }
+                Float32 xInvScale = (Float32(current.bufferScale) * srcRect.w())/Float32(size.w());
+                Float32 yInvScale = (Float32(current.bufferScale) * srcRect.h())/Float32(size.h());
 
-            while (!pendingDamageB.empty())
+                Int32 xOffset = roundf(srcRect.x() * Float32(current.bufferScale)) - 3;
+                Int32 yOffset = roundf(srcRect.y() * Float32(current.bufferScale)) - 3;
+
+                while (!pendingDamage.empty())
+                {
+                    LRect &r = pendingDamage.back();
+                    currentDamageB.addRect((r.x() * xInvScale + xOffset),
+                                        (r.y() * yInvScale + yOffset),
+                                        (r.w() * xInvScale + 6 ),
+                                        (r.h() * yInvScale + 6 ));
+                    pendingDamage.pop_back();
+                }
+
+                while (!pendingDamageB.empty())
+                {
+                    LRect &r = pendingDamageB.back();
+                    currentDamageB.addRect(
+                        r.x() - 1,
+                        r.y() - 1,
+                        r.w() + 2,
+                        r.h() + 2);
+                    pendingDamageB.pop_back();
+                }
+
+                currentDamage = currentDamageB;
+                currentDamage.offset(-xOffset - 3, -yOffset - 3);
+                currentDamage.multiply(1.f/xInvScale, 1.f/yInvScale);
+            }
+            else
             {
-                LRect &r = pendingDamageB.back();
-                currentDamageB.addRect(
-                    r.x() - 1,
-                    r.y() - 1,
-                    r.w() + 2,
-                    r.h() + 2);
-                pendingDamageB.pop_back();
-            }
+                while (!pendingDamage.empty())
+                {
+                    LRect &r = pendingDamage.back();
+                    currentDamageB.addRect((r.x() - 1 )*current.bufferScale,
+                                        (r.y() - 1 )*current.bufferScale,
+                                        (r.w() + 2 )*current.bufferScale,
+                                        (r.h() + 2 )*current.bufferScale);
+                    pendingDamage.pop_back();
+                }
 
-            currentDamageB.clip(LRect(0, sizeB));
-            LRegion::multiply(&currentDamage, &currentDamageB, 1.f/Float32(current.bufferScale));
+                while (!pendingDamageB.empty())
+                {
+                    LRect &r = pendingDamageB.back();
+                    currentDamageB.addRect(
+                        r.x() - 1,
+                        r.y() - 1,
+                        r.w() + 2,
+                        r.h() + 2);
+                    pendingDamageB.pop_back();
+                }
+
+                currentDamageB.clip(LRect(0, sizeB));
+                LRegion::multiply(&currentDamage, &currentDamageB, 1.f/Float32(current.bufferScale));
+            }
         }
     }
 
-    inline void updateDimensions(Int32 widthB, Int32 heightB)
+    inline bool updateDimensions(Int32 widthB, Int32 heightB)
     {
+        LSize prevSizeB = sizeB;
+        LSize prevSize = size;
+        LRectF prevSrcRect = srcRect;
+
         if (LFramebuffer::is90Transform(current.transform))
         {
             sizeB.setW(heightB);
@@ -151,13 +204,116 @@ LPRIVATE_CLASS(LSurface)
             sizeB.setH(heightB);
         }
 
-        srcRect.setX(0.f);
-        srcRect.setY(0.f);
-        srcRect.setW(Float32(sizeB.w()) / Float32(current.bufferScale));
-        srcRect.setH(Float32(sizeB.h()) / Float32(current.bufferScale));
+        if (prevSizeB != sizeB)
+            changesToNotify.add(BufferSizeChanged);
 
-        size.setW(roundf(srcRect.w()));
-        size.setH(roundf(srcRect.h()));
+        if (surfaceResource->viewport())
+        {
+            bool usingViewportSrc = false;
+
+            // Using the viewport source rect
+            if (surfaceResource->viewport()->srcRect().x() != -1.f ||
+                surfaceResource->viewport()->srcRect().y() != -1.f ||
+                surfaceResource->viewport()->srcRect().w() != -1.f ||
+                surfaceResource->viewport()->srcRect().h() != -1.f)
+            {
+                usingViewportSrc = true;
+
+                srcRect = surfaceResource->viewport()->srcRect();
+
+                if (srcRect.x() < 0.f || srcRect.y() < 0.f || srcRect.w() <= 0.f || srcRect.h() <= 0.f)
+                {
+                    wl_resource_post_error(surfaceResource->viewport()->resource(),
+                                           WP_VIEWPORT_ERROR_BAD_VALUE,
+                                           "Invalid source rect (%f, %f, %f, %f).",
+                                           srcRect.x(), srcRect.y(), srcRect.w(), srcRect.h());
+                    return false;
+                }
+
+                if (roundf((srcRect.x() + srcRect.w()) * Float32(current.bufferScale)) > sizeB.w() || roundf((srcRect.y() + srcRect.h()) * Float32(current.bufferScale)) > sizeB.h())
+                {
+                    wl_resource_post_error(surfaceResource->viewport()->resource(),
+                                           WP_VIEWPORT_ERROR_OUT_OF_BUFFER,
+                                           "Source rectangle extends outside of the content area rect.");
+                    return false;
+                }
+
+                stateFlags.add(ViewportIsCropped);
+            }
+
+            // Using the entire buffer as source
+            else
+            {
+                srcRect.setX(0.f);
+                srcRect.setY(0.f);
+                srcRect.setW(Float32(sizeB.w()) / Float32(current.bufferScale));
+                srcRect.setH(Float32(sizeB.h()) / Float32(current.bufferScale));
+                stateFlags.remove(ViewportIsCropped);
+            }
+
+            // Using the viewport destination size
+            if (surfaceResource->viewport()->dstSize().w() != -1 || surfaceResource->viewport()->dstSize().h() != -1)
+            {
+                size = surfaceResource->viewport()->dstSize();
+
+                if (size.w() <= 0 || size.h() <= 0)
+                {
+                    wl_resource_post_error(surfaceResource->viewport()->resource(),
+                                           WP_VIEWPORT_ERROR_BAD_VALUE,
+                                           "Invalid destination size (%d, %d).",
+                                           size.w(), size.h());
+                    return false;
+                }
+
+                stateFlags.add(ViewportIsScaled);
+            }
+
+            // Using the viewport source rect size or normal surface size
+            else
+            {
+                if (usingViewportSrc)
+                {
+                    if (fmod(srcRect.w(), 1.f) != 0.f || fmod(srcRect.h(), 1.f) != 0.f)
+                    {
+                        wl_resource_post_error(surfaceResource->viewport()->resource(),
+                                               WP_VIEWPORT_ERROR_BAD_SIZE,
+                                               "Destination size is not integer");
+                        return false;
+                    }
+
+                    size.setW(srcRect.w());
+                    size.setH(srcRect.h());
+                    stateFlags.add(ViewportIsScaled);
+                }
+                else
+                {
+                    size.setW(roundf(srcRect.w()));
+                    size.setH(roundf(srcRect.h()));
+                    stateFlags.remove(ViewportIsScaled);
+                }
+            }
+        }
+
+        // Normal case, surface has no viewport
+        else
+        {
+            srcRect.setX(0.f);
+            srcRect.setY(0.f);
+            srcRect.setW(Float32(sizeB.w()) / Float32(current.bufferScale));
+            srcRect.setH(Float32(sizeB.h()) / Float32(current.bufferScale));
+            size.setW(roundf(srcRect.w()));
+            size.setH(roundf(srcRect.h()));
+            stateFlags.remove(ViewportIsCropped);
+            stateFlags.remove(ViewportIsScaled);
+        }
+
+        if (prevSize != size)
+            changesToNotify.add(SizeChanged);
+
+        if (prevSrcRect != srcRect)
+            changesToNotify.add(SourceRectChanged);
+
+        return true;
     }
 };
 

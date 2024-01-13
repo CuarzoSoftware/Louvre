@@ -3,6 +3,7 @@
 #include <protocols/Wayland/GCompositor.h>
 #include <protocols/Wayland/GOutput.h>
 #include <protocols/Wayland/RCallback.h>
+#include <protocols/Viewporter/private/RViewportPrivate.h>
 #include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
@@ -137,6 +138,9 @@ RSurface::~RSurface()
         delete lCursor;
     }
 
+    if (imp()->rViewport)
+        imp()->rViewport->imp()->rSurface = nullptr;
+
     while(!lSurface->children().empty())
         lSurface->imp()->removeChild(lSurface->imp()->children.back());
 
@@ -170,6 +174,11 @@ RSurface::~RSurface()
 LSurface *RSurface::surface() const
 {
     return imp()->lSurface;
+}
+
+Viewporter::RViewport *RSurface::viewport() const
+{
+    return imp()->rViewport;
 }
 
 bool RSurface::enter(GOutput *gOutput)

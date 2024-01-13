@@ -20,6 +20,14 @@
 class Louvre::LFramebuffer : public LObject
 {
 public:
+    
+    enum Type
+    {
+        Output,
+        Render
+    };
+    
+    //Type type() const {re}
 
     /**
      * @brief Enumeration for Framebuffer Transformations
@@ -77,7 +85,7 @@ public:
                 rotation += 4;
         }
 
-        return (LFramebuffer::Transform)(flip| rotation);
+        return (LFramebuffer::Transform)(flip | rotation);
     }
 
     /**
@@ -168,6 +176,9 @@ public:
      * @return The framebuffer transformation.
      */
     virtual Transform transform() const = 0;
+    
+protected:
+    Type m_type;
 };
 
 #endif // LFRAMEBUFFER_H

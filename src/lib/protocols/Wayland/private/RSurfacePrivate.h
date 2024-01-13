@@ -35,6 +35,7 @@ LPRIVATE_CLASS(RSurface)
     static void apply_commit(LSurface *surface, CommitOrigin origin = Itself);
 
     LSurface *lSurface = nullptr;
+    Viewporter::RViewport *rViewport = nullptr;
 };
 
 #endif // RSURFACEPRIVATE_H

@@ -28,6 +28,7 @@ LPRIVATE_CLASS(LClient)
     std::list<XdgDecoration::GXdgDecorationManager*> xdgDecorationManagerGlobals;
     std::list<WpPresentationTime::GWpPresentation*> wpPresentationTimeGlobals;
     std::list<LinuxDMABuf::GLinuxDMABuf*> linuxDMABufGlobals;
+    std::list<Viewporter::GViewporter*> viewporterGlobals;
 
     // Singleton Globals
     Wayland::GDataDeviceManager *dataDeviceManagerGlobal = nullptr;

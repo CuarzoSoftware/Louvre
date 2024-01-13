@@ -8,9 +8,19 @@
 
 using namespace Louvre;
 
+void LSurface::sizeChanged()
+{
+    repaintOutputs();
+}
+
+void LSurface::srcRectChanged()
+{
+    repaintOutputs();
+}
+
 void LSurface::bufferTransformChanged()
 {
-
+    repaintOutputs();
 }
 
 //! [damageChanged]

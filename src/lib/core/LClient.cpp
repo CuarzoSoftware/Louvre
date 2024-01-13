@@ -88,6 +88,11 @@ const list<LinuxDMABuf::GLinuxDMABuf *> &LClient::linuxDMABufGlobals() const
     return imp()->linuxDMABufGlobals;
 }
 
+const std::list<Viewporter::GViewporter *> &LClient::viewporterGlobals() const
+{
+    return imp()->viewporterGlobals;
+}
+
 const list<XdgDecoration::GXdgDecorationManager *> &LClient::xdgDecorationManagerGlobals() const
 {
     return imp()->xdgDecorationManagerGlobals;

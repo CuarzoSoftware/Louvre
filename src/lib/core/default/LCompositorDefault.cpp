@@ -7,6 +7,7 @@
 #include <protocols/XdgDecoration/private/GXdgDecorationManagerPrivate.h>
 #include <protocols/LinuxDMABuf/private/GLinuxDMABufPrivate.h>
 #include <protocols/WpPresentationTime/private/GWpPresentationPrivate.h>
+#include <protocols/Viewporter/private/GViewporterPrivate.h>
 #include <LCompositor.h>
 #include <LToplevelRole.h>
 #include <LCursor.h>
@@ -50,6 +51,9 @@ bool LCompositor::createGlobalsRequest()
 
     wl_global_create(display(), &wp_presentation_interface,
                      LOUVRE_WP_PRESENTATION_VERSION, this, &Protocols::WpPresentationTime::GWpPresentation::GWpPresentationPrivate::bind);
+
+    wl_global_create(display(), &wp_viewporter_interface,
+                     LOUVRE_VIEWPORTER_VERSION, this, &Protocols::Viewporter::GViewporter::GViewporterPrivate::bind);
 
     wl_display_init_shm(display());
 

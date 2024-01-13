@@ -74,7 +74,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
 
     LSurface::LSurfacePrivate *imp = surface->imp();
 
-    UInt32 &changes = imp->changesToNotify;
+    auto &changes = imp->changesToNotify;
 
     /**************************************
      *********** PENDING CHILDREN *********
@@ -132,13 +132,13 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
     {
         if (imp->inputRegionIsInfinite)
         {
-            if (changes & Changes::BufferSizeChanged)
+            if (changes.check(Changes::BufferSizeChanged))
             {
                 imp->currentInputRegion.clear();
                 imp->currentInputRegion.addRect(LRect(0, surface->size()));
             }
         }
-        else if (changes & (Changes::BufferSizeChanged | Changes::InputRegionChanged))
+        else if (changes.check(Changes::BufferSizeChanged | Changes::InputRegionChanged))
         {
             pixman_region32_intersect_rect(&surface->imp()->currentInputRegion.m_region,
                                            &surface->imp()->pendingInputRegion.m_region,
@@ -156,7 +156,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
     /************************************
      ********** OPAQUE REGION ***********
      ************************************/
-    if (changes & (Changes::BufferSizeChanged | Changes::OpaqueRegionChanged))
+    if (changes.check(Changes::BufferSizeChanged | Changes::OpaqueRegionChanged))
     {
 
         if (surface->texture()->format() == DRM_FORMAT_XRGB8888)
@@ -186,25 +186,31 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
         surface->imp()->pending.role->handleSurfaceCommit(origin);
     }
 
-    if (changes & Changes::BufferSizeChanged)
+    if (changes.check(Changes::BufferSizeChanged))
         surface->bufferSizeChanged();
 
-    if (changes & Changes::BufferScaleChanged)
+    if (changes.check(Changes::SizeChanged))
+        surface->sizeChanged();
+
+    if (changes.check(Changes::SourceRectChanged))
+        surface->srcRectChanged();
+
+    if (changes.check(Changes::BufferScaleChanged))
         surface->bufferScaleChanged();
 
-    if (changes & Changes::BufferTransformChanged)
+    if (changes.check(Changes::BufferTransformChanged))
         surface->bufferTransformChanged();
 
-    if (changes & Changes::DamageRegionChanged)
+    if (changes.check(Changes::DamageRegionChanged))
         surface->damageChanged();
 
-    if (changes & Changes::InputRegionChanged)
+    if (changes.check(Changes::InputRegionChanged))
         surface->inputRegionChanged();
 
-    if (changes & Changes::OpaqueRegionChanged)
+    if (changes.check(Changes::OpaqueRegionChanged))
         surface->opaqueRegionChanged();
 
-    changes = Changes::NoChanges;
+    changes.set(Changes::NoChanges);
 }
 
 void RSurface::RSurfacePrivate::damage(wl_client *client, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height)
@@ -227,7 +233,7 @@ void RSurface::RSurfacePrivate::damage(wl_client *client, wl_resource *resource,
         return;
 
     lSurface->imp()->pendingDamage.push_back(LRect(x, y, width, height));
-    lSurface->imp()->changesToNotify |= Changes::DamageRegionChanged;
+    lSurface->imp()->changesToNotify.add(Changes::DamageRegionChanged);
 }
 
 void RSurface::RSurfacePrivate::set_opaque_region(wl_client *client, wl_resource *resource, wl_resource *region)
@@ -245,7 +251,7 @@ void RSurface::RSurfacePrivate::set_opaque_region(wl_client *client, wl_resource
     else
         lSurface->imp()->pendingOpaqueRegion.clear();
 
-    lSurface->imp()->changesToNotify |= Changes::OpaqueRegionChanged;
+    lSurface->imp()->changesToNotify.add(Changes::OpaqueRegionChanged);
 }
 
 void RSurface::RSurfacePrivate::set_input_region(wl_client *client, wl_resource *resource, wl_resource *region)
@@ -267,7 +273,7 @@ void RSurface::RSurfacePrivate::set_input_region(wl_client *client, wl_resource 
         lSurface->imp()->inputRegionIsInfinite = false;
     }
 
-    lSurface->imp()->changesToNotify |= Changes::InputRegionChanged;
+    lSurface->imp()->changesToNotify.add(Changes::InputRegionChanged);
 }
 
 #if LOUVRE_WL_COMPOSITOR_VERSION >= 2
@@ -325,7 +331,7 @@ void RSurface::RSurfacePrivate::damage_buffer(wl_client *client, wl_resource *re
     RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
     LSurface *lSurface = rSurface->surface();
     lSurface->imp()->pendingDamageB.push_back(LRect(x, y, width, height));
-    lSurface->imp()->changesToNotify |= Changes::DamageRegionChanged;
+    lSurface->imp()->changesToNotify.add(Changes::DamageRegionChanged);
 }
 #endif
 
