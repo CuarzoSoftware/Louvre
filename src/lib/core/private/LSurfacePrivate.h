@@ -94,6 +94,7 @@ LPRIVATE_CLASS(LSurface)
     UInt32 damageId;
     std::list<LSurface*>::iterator compositorLink, clientLink;
     Int32 lastSentPreferredBufferScale = -1;
+    LFramebuffer::Transform lastSentPreferredTransform = LFramebuffer::Normal;
     std::list<LOutput*> outputs;
 
     std::list<WpPresentationTime::RWpPresentationFeedback*> wpPresentationFeedbackResources;
@@ -130,16 +131,16 @@ LPRIVATE_CLASS(LSurface)
                 Float32 xInvScale = (Float32(current.bufferScale) * srcRect.w())/Float32(size.w());
                 Float32 yInvScale = (Float32(current.bufferScale) * srcRect.h())/Float32(size.h());
 
-                Int32 xOffset = roundf(srcRect.x() * Float32(current.bufferScale)) - 3;
-                Int32 yOffset = roundf(srcRect.y() * Float32(current.bufferScale)) - 3;
+                Int32 xOffset = roundf(srcRect.x() * Float32(current.bufferScale)) - 2;
+                Int32 yOffset = roundf(srcRect.y() * Float32(current.bufferScale)) - 2;
 
                 while (!pendingDamage.empty())
                 {
                     LRect &r = pendingDamage.back();
                     currentDamageB.addRect((r.x() * xInvScale + xOffset),
                                         (r.y() * yInvScale + yOffset),
-                                        (r.w() * xInvScale + 6 ),
-                                        (r.h() * yInvScale + 6 ));
+                                        (r.w() * xInvScale + 4 ),
+                                        (r.h() * yInvScale + 4 ));
                     pendingDamage.pop_back();
                 }
 
@@ -155,7 +156,7 @@ LPRIVATE_CLASS(LSurface)
                 }
 
                 currentDamage = currentDamageB;
-                currentDamage.offset(-xOffset - 3, -yOffset - 3);
+                currentDamage.offset(-xOffset - 2, -yOffset - 2);
                 currentDamage.multiply(1.f/xInvScale, 1.f/yInvScale);
             }
             else
@@ -207,23 +208,23 @@ LPRIVATE_CLASS(LSurface)
         if (prevSizeB != sizeB)
             changesToNotify.add(BufferSizeChanged);
 
-        if (surfaceResource->viewport())
+        if (surfaceResource->viewportResource())
         {
             bool usingViewportSrc = false;
 
             // Using the viewport source rect
-            if (surfaceResource->viewport()->srcRect().x() != -1.f ||
-                surfaceResource->viewport()->srcRect().y() != -1.f ||
-                surfaceResource->viewport()->srcRect().w() != -1.f ||
-                surfaceResource->viewport()->srcRect().h() != -1.f)
+            if (surfaceResource->viewportResource()->srcRect().x() != -1.f ||
+                surfaceResource->viewportResource()->srcRect().y() != -1.f ||
+                surfaceResource->viewportResource()->srcRect().w() != -1.f ||
+                surfaceResource->viewportResource()->srcRect().h() != -1.f)
             {
                 usingViewportSrc = true;
 
-                srcRect = surfaceResource->viewport()->srcRect();
+                srcRect = surfaceResource->viewportResource()->srcRect();
 
                 if (srcRect.x() < 0.f || srcRect.y() < 0.f || srcRect.w() <= 0.f || srcRect.h() <= 0.f)
                 {
-                    wl_resource_post_error(surfaceResource->viewport()->resource(),
+                    wl_resource_post_error(surfaceResource->viewportResource()->resource(),
                                            WP_VIEWPORT_ERROR_BAD_VALUE,
                                            "Invalid source rect (%f, %f, %f, %f).",
                                            srcRect.x(), srcRect.y(), srcRect.w(), srcRect.h());
@@ -232,7 +233,7 @@ LPRIVATE_CLASS(LSurface)
 
                 if (roundf((srcRect.x() + srcRect.w()) * Float32(current.bufferScale)) > sizeB.w() || roundf((srcRect.y() + srcRect.h()) * Float32(current.bufferScale)) > sizeB.h())
                 {
-                    wl_resource_post_error(surfaceResource->viewport()->resource(),
+                    wl_resource_post_error(surfaceResource->viewportResource()->resource(),
                                            WP_VIEWPORT_ERROR_OUT_OF_BUFFER,
                                            "Source rectangle extends outside of the content area rect.");
                     return false;
@@ -252,13 +253,13 @@ LPRIVATE_CLASS(LSurface)
             }
 
             // Using the viewport destination size
-            if (surfaceResource->viewport()->dstSize().w() != -1 || surfaceResource->viewport()->dstSize().h() != -1)
+            if (surfaceResource->viewportResource()->dstSize().w() != -1 || surfaceResource->viewportResource()->dstSize().h() != -1)
             {
-                size = surfaceResource->viewport()->dstSize();
+                size = surfaceResource->viewportResource()->dstSize();
 
                 if (size.w() <= 0 || size.h() <= 0)
                 {
-                    wl_resource_post_error(surfaceResource->viewport()->resource(),
+                    wl_resource_post_error(surfaceResource->viewportResource()->resource(),
                                            WP_VIEWPORT_ERROR_BAD_VALUE,
                                            "Invalid destination size (%d, %d).",
                                            size.w(), size.h());
@@ -275,7 +276,7 @@ LPRIVATE_CLASS(LSurface)
                 {
                     if (fmod(srcRect.w(), 1.f) != 0.f || fmod(srcRect.h(), 1.f) != 0.f)
                     {
-                        wl_resource_post_error(surfaceResource->viewport()->resource(),
+                        wl_resource_post_error(surfaceResource->viewportResource()->resource(),
                                                WP_VIEWPORT_ERROR_BAD_SIZE,
                                                "Destination size is not integer");
                         return false;

@@ -83,7 +83,8 @@ globals = [
     'XdgDecoration',
     'XdgShell',
     'WpPresentationTime',
-    'Viewporter'
+    'Viewporter',
+    'FractionalScale'
 ]
 
 foreach g : globals

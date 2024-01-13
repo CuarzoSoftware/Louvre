@@ -2,7 +2,7 @@
 #include <private/LClientPrivate.h>
 #include <LCompositor.h>
 #include <LOutputMode.h>
-#include <LOutput.h>
+#include <private/LOutputPrivate.h>
 
 using namespace Protocols::Wayland;
 
@@ -46,7 +46,6 @@ LOutput *GOutput::output() const
 
 void GOutput::sendConfiguration()
 {
-    // TODO: Replace pos by mmPos
     geometry(
         output()->pos().x(),
         output()->pos().y(),
@@ -55,7 +54,7 @@ void GOutput::sendConfiguration()
         WL_OUTPUT_SUBPIXEL_HORIZONTAL_RGB,
         output()->manufacturer(),
         output()->model(),
-        WL_OUTPUT_TRANSFORM_FLIPPED);
+        output()->transform());
 
     mode(
         WL_OUTPUT_MODE_CURRENT,
@@ -63,7 +62,7 @@ void GOutput::sendConfiguration()
         output()->currentMode()->sizeB().h(),
         output()->currentMode()->refreshRate());
 
-    if (scale(ceilf(output()->scale())))
+    if (scale(output()->imp()->scale))
     {
         if (name(output()->name()))
             description(output()->description());

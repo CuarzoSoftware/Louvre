@@ -1,5 +1,6 @@
 #include "Tooltip.h"
 #include "Global.h"
+#include "LLog.h"
 #include "LTexture.h"
 #include "TextRenderer.h"
 #include "Compositor.h"
@@ -52,7 +53,6 @@ void Tooltip::show(Int32 x, Int32 y)
 void Tooltip::hide()
 {
     setVisible(false);
-    label.setTexture(nullptr);
 }
 
 void Tooltip::update()

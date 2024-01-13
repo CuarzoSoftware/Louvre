@@ -72,7 +72,7 @@ LTexture *TextRenderer::renderText(const char *text, Int32 fontSize, Int32 maxWi
 
     LSize bufferSize = calculateTextureSize(text, fontSize);
 
-    if (bufferSize.area() == 0)
+    if (bufferSize.area() <= 0)
         return nullptr;
 
     if (maxWidth != -1 && bufferSize.w() > maxWidth)

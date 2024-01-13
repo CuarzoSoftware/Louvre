@@ -101,7 +101,7 @@ LPRIVATE_CLASS(LCompositor)
     struct ThreadData
     {
         LPainter *painter = nullptr;
-        std::list<LRenderBuffer::LRenderBufferPrivate::ThreadData> renderBuffersToDestroy;
+        std::vector<LRenderBuffer::LRenderBufferPrivate::ThreadData> renderBuffersToDestroy;
     };
 
     std::map<std::thread::id, ThreadData> threadsMap;
@@ -109,18 +109,13 @@ LPRIVATE_CLASS(LCompositor)
     void addRenderBufferToDestroy(std::thread::id thread, LRenderBuffer::LRenderBufferPrivate::ThreadData &data);
     static LPainter *findPainter();
 
-    std::list<GLuint>nativeTexturesToDestroy;
-    static void destroyNativeTextures(std::list<GLuint>&list);
-
-    Int32 greatestOutputScale = 1;
-
-    inline void updateGreatestOutputScale()
+    std::vector<GLuint>nativeTexturesToDestroy;
+    inline static void destroyNativeTextures(std::vector<GLuint> &vector)
     {
-        greatestOutputScale = 1;
-        for (LOutput *o : outputs)
+        while (!vector.empty())
         {
-            if (o->scale() > greatestOutputScale)
-                greatestOutputScale = o->scale();
+            glDeleteTextures(1, &vector.back());
+            vector.pop_back();
         }
     }
 

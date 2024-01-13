@@ -8,6 +8,7 @@
 #include <protocols/LinuxDMABuf/private/GLinuxDMABufPrivate.h>
 #include <protocols/WpPresentationTime/private/GWpPresentationPrivate.h>
 #include <protocols/Viewporter/private/GViewporterPrivate.h>
+#include <protocols/FractionalScale/private/GFractionalScaleManagerPrivate.h>
 #include <LCompositor.h>
 #include <LToplevelRole.h>
 #include <LCursor.h>
@@ -55,6 +56,9 @@ bool LCompositor::createGlobalsRequest()
     wl_global_create(display(), &wp_viewporter_interface,
                      LOUVRE_VIEWPORTER_VERSION, this, &Protocols::Viewporter::GViewporter::GViewporterPrivate::bind);
 
+    wl_global_create(display(), &wp_fractional_scale_manager_v1_interface,
+                     LOUVRE_FRACTIONAL_SCALE_VERSION, this, &Protocols::FractionalScale::GFractionalScaleManager::GFractionalScaleManagerPrivate::bind);
+
     wl_display_init_shm(display());
 
     return true;
@@ -73,7 +77,7 @@ void LCompositor::initialized()
     for (LOutput *output : seat()->outputs())
     {
         // Set scale 2 to outputs with DPI >= 200
-        output->setScale(output->dpi() >= 200 ? 1.75f : 1.f);
+        output->setScale(output->dpi() >= 200 ? 2.f : 1.f);
         output->setTransform(LFramebuffer::Normal);
 
         output->setPos(LPoint(totalWidth, 0));

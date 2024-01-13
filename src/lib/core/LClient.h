@@ -167,18 +167,25 @@ public:
     const std::list<Protocols::WpPresentationTime::GWpPresentation*> &wpPresentationTimeGlobals() const;
 
     /**
-     * List of resources generated when the client binds to the
+     * List of resources created when the client binds to the
      * [zwp_linux_dmabuf_v1](https://wayland.app/protocols/linux-dmabuf-unstable-v1#zwp_linux_dmabuf_v1) global
      * of the LinuxDMA-BUF protocol.
      */
     const std::list<Protocols::LinuxDMABuf::GLinuxDMABuf*> &linuxDMABufGlobals() const;
 
     /**
-     * List of resources generated when the client binds to the
+     * List of resources created when the client binds to the
      * [wp_viewporter](https://wayland.app/protocols/viewporter#wp_viewporter) global
      * of the Viewporter protocol.
      */
     const std::list<Protocols::Viewporter::GViewporter*> &viewporterGlobals() const;
+
+    /**
+     * List of resources created when the client binds to the
+     * [wp_fractional_scale_manager_v1](https://wayland.app/protocols/fractional-scale-v1#wp_fractional_scale_manager_v1) global
+     * of the FractionalScale protocol.
+     */
+    const std::list<Protocols::FractionalScale::GFractionalScaleManager*> &fractionalScaleManagerGlobals() const;
 
     LPRIVATE_IMP_UNIQUE(LClient)
 };

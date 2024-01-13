@@ -9,7 +9,7 @@
 #include <LTime.h>
 #include <iostream>
 
-LOutput::LOutputPrivate::LOutputPrivate(LOutput *output) : fb(output), fractionalFb(LSize(100, 100)) {}
+LOutput::LOutputPrivate::LOutputPrivate(LOutput *output) : fb(output), fractionalFb(LSize(64, 64), false) {}
 
 // This is called from LCompositor::addOutput()
 bool LOutput::LOutputPrivate::initialize()
@@ -32,7 +32,7 @@ void LOutput::LOutputPrivate::backendInitializeGL()
                                              output,
                                              &Protocols::Wayland::GOutput::GOutputPrivate::bind);
 
-    output->setScale(output->scale());
+    output->setScale(output->imp()->fractionalScale);
     lastPos = rect.pos();
     lastSize = rect.size();
     cursor()->imp()->textureChanged = true;
@@ -72,28 +72,58 @@ void LOutput::LOutputPrivate::backendPaintGL()
 
     compositor()->imp()->sendPresentationTime();
     compositor()->imp()->processAnimations();
-    pendingRepaint = false;
-    //painter->bindFramebuffer(&fractionalFb);
+    stateFlags.remove(PendingRepaint);
+    painter->bindFramebuffer(&fb);
+
     output->paintGL();
 
-    /*
-    if (fractionalEnabled)
+    if (stateFlags.check(HasDamage) && (stateFlags.checkAll(UsingFractionalScale | FractionalOversamplingEnabled) || output->hasBufferDamageSupport()))
     {
-        painter->bindFramebuffer(&fb);
+        damage.offset(-rect.pos().x(), -rect.pos().y());
+        damage.transform(rect.size(), transform);
+        damage.multiply(scale/(scale/fractionalScale));
+        damage.clip(LRect(0, output->currentMode()->sizeB()));
 
+        if (output->hasBufferDamageSupport())
+            compositor()->imp()->graphicBackend->setOutputBufferDamage(output, damage);
+    }
+
+    if (stateFlags.checkAll(UsingFractionalScale | FractionalOversamplingEnabled))
+    {
+        stateFlags.remove(UsingFractionalScale);
+        LFramebuffer::Transform prevTrasform = transform;
+        transform = LFramebuffer::Normal;
+        Float32 prevScale = scale;
+        scale = 1.f;
+        LPoint prevPos = rect.pos();
+        rect.setPos(LPoint(0));
+        updateRect();
+        painter->bindFramebuffer(&fb);
+        painter->enableCustomTextureColor(false);
         painter->bindTextureMode({
             .texture = fractionalFb.texture(0),
             .pos = rect.pos(),
             .srcRect = LRect(0, fractionalFb.sizeB()),
             .dstSize = rect.size(),
             .srcTransform = LFramebuffer::Normal,
-            .srcScale = 1.f,
+            .srcScale = 1.f
         });
 
         glDisable(GL_BLEND);
-        painter->drawRect(fb.rect());
-    }*/
 
+        if (stateFlags.check(HasDamage))
+            painter->drawRegion(damage);
+        else
+            painter->drawRect(LRect(0, output->currentMode()->sizeB()));
+
+        stateFlags.add(UsingFractionalScale);
+        transform = prevTrasform;
+        scale = prevScale;
+        rect.setPos(prevPos);
+        updateRect();
+    }
+
+    stateFlags.remove(HasDamage);
     compositor()->flushClients();
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
     compositor()->imp()->destroyNativeTextures(nativeTexturesToDestroy);
@@ -160,13 +190,20 @@ void LOutput::LOutputPrivate::backendPageFlipped()
 {
     pageflipMutex.lock();
     presentationTime = LTime::ns();
-    unhandledPresentation = true;
+    stateFlags.add(HasUnhandledPresentationTime);
     pageflipMutex.unlock();
 }
 
 void LOutput::LOutputPrivate::updateRect()
 {
-    sizeB = compositor()->imp()->graphicBackend->getOutputCurrentMode(output)->sizeB();
+    if (stateFlags.check(UsingFractionalScale))
+    {
+        sizeB = compositor()->imp()->graphicBackend->getOutputCurrentMode(output)->sizeB();
+        sizeB.setW(roundf(Float32(sizeB.w()) * scale / fractionalScale));
+        sizeB.setH(roundf(Float32(sizeB.h()) * scale / fractionalScale));
+    }
+    else
+        sizeB = compositor()->imp()->graphicBackend->getOutputCurrentMode(output)->sizeB();
 
     // Swap width with height
     if (LFramebuffer::is90Transform(transform))

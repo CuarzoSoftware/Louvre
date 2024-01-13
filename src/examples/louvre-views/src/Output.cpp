@@ -6,6 +6,7 @@
 #include <LLog.h>
 #include <LOpenGL.h>
 #include <LTextureView.h>
+#include <LOutputMode.h>
 
 #include "Global.h"
 #include "Output.h"
@@ -21,13 +22,26 @@ Output::Output() : LOutput() {}
 
 void Output::loadWallpaper()
 {
+    LSize bufferSize;
+
+    if (LFramebuffer::is90Transform(transform()))
+    {
+        bufferSize.setW(currentMode()->sizeB().h());
+        bufferSize.setH(currentMode()->sizeB().w());
+    }
+    else
+    {
+        bufferSize = currentMode()->sizeB();
+    }
+
     if (wallpaperView)
     {
         if (wallpaperView->texture())
         {
-            if (sizeB() == wallpaperView->texture()->sizeB())
+            if (bufferSize == wallpaperView->texture()->sizeB())
             {
-                wallpaperView->setBufferScale(scale());
+                wallpaperView->enableDstSize(true);
+                wallpaperView->setDstSize(size());
                 return;
             }
 
@@ -52,24 +66,25 @@ void Output::loadWallpaper()
         // Clip and scale wallpaper so that it covers the entire screen
 
         LRect srcB;
-        float w = float(size().w() * tmpWallpaper->sizeB().h()) / float(size().h());
+        Float32 w = Float32(bufferSize.w() * tmpWallpaper->sizeB().h()) / Float32(bufferSize.h());
 
         if (w >= tmpWallpaper->sizeB().w())
         {
             srcB.setX(0);
             srcB.setW(tmpWallpaper->sizeB().w());
-            srcB.setH((tmpWallpaper->sizeB().w() * size().h()) / size().w());
+            srcB.setH((tmpWallpaper->sizeB().w() * bufferSize.h()) / bufferSize.w());
             srcB.setY((tmpWallpaper->sizeB().h() - srcB.h()) / 2);
         }
         else
         {
             srcB.setY(0);
             srcB.setH(tmpWallpaper->sizeB().h());
-            srcB.setW((tmpWallpaper->sizeB().h() * size().w()) / size().h());
+            srcB.setW((tmpWallpaper->sizeB().h() * bufferSize.w()) / bufferSize.h());
             srcB.setX((tmpWallpaper->sizeB().w() - srcB.w()) / 2);
         }
-        wallpaperView->setTexture(tmpWallpaper->copyB(sizeB(), srcB));
-        wallpaperView->setBufferScale(scale());
+        wallpaperView->setTexture(tmpWallpaper->copyB(bufferSize, srcB));
+        wallpaperView->enableDstSize(true);
+        wallpaperView->setDstSize(size());
         delete tmpWallpaper;
     }
     else
@@ -112,6 +127,75 @@ void Output::updateWorkspacesPos()
         }
 
         offset += size().w() + spacing;
+    }
+}
+
+void Output::updateFractionalOversampling()
+{
+    bool oversampling = false;
+
+    if (!usingFractionalScale() || swippingWorkspace || workspaceAnim->running())
+        goto checkChange;
+
+    if (currentWorkspace->toplevel)
+    {
+        if (currentWorkspace->toplevel->decoratedView && currentWorkspace->toplevel->decoratedView->fullscreenTopbarVisibility != 0.f)
+        {
+            oversampling = true;
+            goto checkChange;
+        }
+
+        for (LSurface *surf : currentWorkspace->toplevel->surf()->children())
+        {
+            if (surf->toplevel() && surf->toplevel()->decorationMode() == LToplevelRole::ServerSide && surf->mapped() && !surf->minimized())
+            {
+                oversampling = true;
+                goto checkChange;
+            }
+        }
+    }
+    else
+    {
+        for (Surface *surf : G::surfaces())
+        {
+            if (!surf->mapped() || surf->minimized())
+                continue;
+
+            if (surf->subsurface())
+            {
+                for (LOutput *o : surf->getView()->outputs())
+                {
+                    if (o == this)
+                    {
+                        oversampling = true;
+                        goto checkChange;
+                    }
+                }
+            }
+            else if (surf->toplevel())
+            {
+                if (surf->tl()->decoratedView)
+                {
+                    for (LOutput *o : surf->getView()->outputs())
+                    {
+                        if (o == this)
+                        {
+                            oversampling = true;
+                            goto checkChange;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    checkChange:
+
+    if (oversampling != fractionalOversamplingEnabled())
+    {
+        enableFractionalOversampling(oversampling);
+        G::scene()->mainView()->damageAll(this);
+        topbar->update();
     }
 }
 
@@ -304,8 +388,6 @@ void Output::initializeGL()
     currentWorkspace = new Workspace(this);
 
     new Topbar(this);
-    topbar->update();
-
     new Dock(this);
     loadWallpaper();
     G::compositor()->scene.handleInitializeGL(this);
@@ -316,6 +398,7 @@ void Output::resizeGL()
     G::arrangeOutputs();
     updateWorkspacesPos();
     setWorkspace(currentWorkspace, 1);
+    topbar->updateOutputInfo();
     topbar->update();
     dock->update();
     loadWallpaper();
@@ -360,6 +443,7 @@ void Output::paintGL()
         G::compositor()->softwareCursor.setVisible(cursor()->visible());
     }
 
+    updateFractionalOversampling();
     G::compositor()->scene.handlePaintGL(this);
 }
 

@@ -700,17 +700,6 @@ void LCompositor::LCompositorPrivate::unlockPoll()
     L_UNUSED(n);
 }
 
-void LCompositor::LCompositorPrivate::destroyNativeTextures(std::list<GLuint> &list)
-{
-    GLuint tex;
-    while (!list.empty())
-    {
-        tex = list.back();
-        list.pop_back();
-        glDeleteTextures(1, &tex);
-    }
-}
-
 LPainter *LCompositor::LCompositorPrivate::findPainter()
 {
     LPainter *painter = nullptr;
@@ -745,7 +734,7 @@ void  LCompositor::LCompositorPrivate::sendPresentationTime()
     for (LOutput *o : outputs)
     {
         o->imp()->pageflipMutex.lock();
-        if (o->imp()->unhandledPresentation)
+        if (o->imp()->stateFlags.check(LOutput::LOutputPrivate::HasUnhandledPresentationTime))
             for (LSurface *s : surfaces)
                 s->imp()->sendPresentationFeedback(o);
         o->imp()->pageflipMutex.unlock();

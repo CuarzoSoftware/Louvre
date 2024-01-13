@@ -25,9 +25,16 @@ public:
         m_flags &= ~flags;
     }
 
+    // Returns true if at least one flags exist
     inline bool check(Flag flags) const
     {
         return (m_flags & flags) != 0;
+    }
+
+    // Returns true only if all flags exist
+    inline bool checkAll(Flag flags) const
+    {
+        return (m_flags & flags) == flags;
     }
 
     inline Flag get() const

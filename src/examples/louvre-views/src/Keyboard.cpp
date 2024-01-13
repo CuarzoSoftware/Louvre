@@ -54,17 +54,17 @@ void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
                 // Change output mode
                 if (keyCode == KEY_M)
                 {
-                    const LOutputMode *mode = cursor()->output()->currentMode();
+                    const LOutputMode *mode = output->currentMode();
 
-                    if (mode == cursor()->output()->modes().back())
+                    if (mode == output->modes().back())
                     {
-                        cursor()->output()->setMode(cursor()->output()->modes().front());
+                        output->setMode(output->modes().front());
                     }
                     else
                     {
                         bool found = false;
 
-                        for (LOutputMode *om : cursor()->output()->modes())
+                        for (LOutputMode *om : output->modes())
                         {
                             if (found)
                             {
@@ -76,27 +76,37 @@ void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
                                 found = true;
                         }
 
-                        cursor()->output()->setMode(mode);
+                        output->setMode(mode);
                     }
+                }
+
+                if (keyCode == KEY_T)
+                {
+                    Int32 trans = (Int32)output->transform();
+
+                    if (trans == LFramebuffer::Flipped270)
+                        output->setTransform(LFramebuffer::Normal);
+                    else
+                        output->setTransform((LFramebuffer::Transform)(trans+1));
                 }
 
                 // Increase fractional scaling by 0.25x
                 else if (keyCode == KEY_UP)
                 {
-                    if (cursor()->output()->scale() < 3.f)
+                    if (output->fractionalScale() < 3.f)
                     {
-                        cursor()->output()->setScale(cursor()->output()->scale() + 0.25);
-                        cursor()->output()->repaint();
+                        output->setScale(output->fractionalScale() + 0.25);
+                        output->repaint();
                     }
                 }
 
                 // Decrease fractional scaling by 0.25x
                 else if (keyCode == KEY_DOWN)
                 {
-                    if (cursor()->output()->scale() > 0.25f)
+                    if (output->fractionalScale() > 0.25f)
                     {
-                        cursor()->output()->setScale(cursor()->output()->scale() - 0.25);
-                        cursor()->output()->repaint();
+                        output->setScale(output->fractionalScale() - 0.25);
+                        output->repaint();
                     }
                 }
             }

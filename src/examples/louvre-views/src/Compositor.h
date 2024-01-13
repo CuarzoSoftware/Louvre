@@ -65,6 +65,7 @@ public:
 
     // Shared texture used in all clock views
     LTexture *clockTexture = nullptr;
+    LTexture *oversamplingLabelTexture = nullptr;
 
     // If true, we call scene->handlePointerEvent() once before scene->handlePaintGL().
     // The reason for this is that pointer events are only emitted when the pointer itself moves,
@@ -75,8 +76,6 @@ public:
     // Turns black all outputs until an output unplug is finished
     bool outputUnplugHandled = true;
     bool checkUpdateOutputUnplug();
-
-    LTextureView test;
 };
 
 #endif // COMPOSITOR_H

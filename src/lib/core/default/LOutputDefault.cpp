@@ -64,7 +64,7 @@ void LOutput::paintGL()
         params.srcRect = s->srcRect();
         params.dstSize = s->size();
         params.srcScale = s->bufferScale();
-        params.srcTransform = LFramebuffer::Normal;
+        params.srcTransform = s->bufferTransform();
         params.texture = s->texture();
         params.pos = currentRect.pos();
 

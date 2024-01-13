@@ -1,13 +1,15 @@
-#include "LLog.h"
 #include <private/LPainterPrivate.h>
 #include <private/LOutputFramebufferPrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LTexturePrivate.h>
+#include <private/LOutputPrivate.h>
 
-#include <GLES2/gl2.h>
-#include <LOpenGL.h>
 #include <LRect.h>
 #include <LOutput.h>
+#include <LOpenGL.h>
+#include <LLog.h>
+
+#include <GLES2/gl2.h>
 #include <cstdio>
 #include <string.h>
 
@@ -33,18 +35,34 @@ void LPainter::bindTextureMode(const TextureParams &p)
     GLenum target = p.texture->target();
     imp()->switchTarget(target);
 
-    Float32 fbScale = imp()->fb->scale();
-    LPointF pos = p.pos - imp()->fb->rect().pos();
+    Float32 fbScale;
 
+    if (imp()->fb->type() == LFramebuffer::Output)
+    {
+        LOutputFramebuffer *outputFB = (LOutputFramebuffer*)imp()->fb;
+
+        if (outputFB->output()->usingFractionalScale())
+        {
+            if (outputFB->output()->fractionalOversamplingEnabled())
+                fbScale = imp()->fb->scale();
+            else
+                fbScale = outputFB->output()->fractionalScale();
+        }
+        else
+            fbScale = imp()->fb->scale();
+    }
+    else
+        fbScale = imp()->fb->scale();
+
+    LPointF pos = p.pos - imp()->fb->rect().pos();
     Float32 srcDstX, srcDstY;
     Float32 srcW, srcH;
     Float32 srcDstW, srcDstH;
     Float32 srcFbX1, srcFbY1, srcFbX2, srcFbY2;
     Float32 srcFbW, srcFbH;
-    Float32 diffX, diffY;
 
-    Float32 xFlip = 1.f;
-    Float32 yFlip = 1.f;
+    bool xFlip = false;
+    bool yFlip = false;
 
     LFramebuffer::Transform invTrans = LFramebuffer::requiredTransform(p.srcTransform, imp()->fb->transform());
     bool rotate = LFramebuffer::is90Transform(invTrans);
@@ -53,8 +71,8 @@ void LPainter::bindTextureMode(const TextureParams &p)
     {
         srcH = Float32(p.texture->sizeB().w()) / p.srcScale;
         srcW = Float32(p.texture->sizeB().h()) / p.srcScale;
-        yFlip *= -1.f;
-        xFlip *= -1.f;
+        yFlip = !yFlip;
+        xFlip = !xFlip;
     }
     else
     {
@@ -72,188 +90,183 @@ void LPainter::bindTextureMode(const TextureParams &p)
     case LFramebuffer::Normal:
         break;
     case LFramebuffer::Rotated90:
-        xFlip *= -1.f;
+        xFlip = !xFlip;
         break;
     case LFramebuffer::Rotated180:
-        xFlip *= -1.f;
-        yFlip *= -1.f;
+        xFlip = !xFlip;
+        yFlip = !yFlip;
         break;
     case LFramebuffer::Rotated270:
-        yFlip *= -1.f;
+        yFlip = !yFlip;
         break;
     case LFramebuffer::Flipped:
-        xFlip *= -1.f;
+        xFlip = !xFlip;
         break;
     case LFramebuffer::Flipped90:
-        xFlip *= -1.f;
-        yFlip *= -1.f;
+        xFlip = !xFlip;
+        yFlip = !yFlip;
         break;
     case LFramebuffer::Flipped180:
-        yFlip *= -1.f;
+        yFlip = !yFlip;
         break;
     case LFramebuffer::Flipped270:
         break;
     default:
-        break;
+        return;
     }
 
     switch (imp()->fb->transform())
     {
     case LFramebuffer::Normal:
-        diffX = pos.x() - srcDstX;
-        srcFbX1 = (Float32)(diffX);
-        srcFbX2 = (Float32)((diffX + srcDstW));
+        srcFbX1 = pos.x() - srcDstX;
+        srcFbX2 = srcFbX1 + srcDstW;
 
-        if (imp()->fb->id() == 0)
+        if (imp()->fbId == 0)
         {
-            diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
-            srcFbY1 = (Float32)(diffY);
-            srcFbY2 = (Float32)((diffY - srcDstH));
+            srcFbY1 = imp()->fb->rect().h() - pos.y() + srcDstY;
+            srcFbY2 = srcFbY1 - srcDstH;
         }
         else
         {
-            diffY = pos.y() - srcDstY;
-            srcFbY1 = (Float32)(diffY);
-            srcFbY2 = (Float32)((diffY + srcDstH));
+            srcFbY1 = pos.y() - srcDstY;
+            srcFbY2 = srcFbY1 + srcDstH;
         }
         break;
     case LFramebuffer::Rotated90:
-        diffY = pos.y() - srcDstY;
-        srcFbX2 = (Float32)(diffY );
-        srcFbX1 = (Float32)((diffY + srcDstH) );
+        srcFbX2 = pos.y() - srcDstY;
+        srcFbX1 = srcFbX2 + srcDstH;
 
-        if (imp()->fb->id() == 0)
+        if (imp()->fbId == 0)
         {
-            diffX = pos.x() - srcDstX;
-            srcFbY2 = (Float32)((diffX + srcDstW) );
-            srcFbY1 = (Float32)(diffX );
+            srcFbY1 = pos.x() - srcDstX;
+            srcFbY2 = srcFbY1 + srcDstW;
         }
         else
         {
-            diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-            srcFbY1 = (Float32)(diffX );
-            srcFbY2 = (Float32)((diffX + srcDstW) );
+            srcFbY2 = imp()->fb->rect().w() - pos.x() + srcDstX;
+            srcFbY1 = srcFbY2 - srcDstW;
+            yFlip = !yFlip;
         }
         break;
     case LFramebuffer::Rotated180:
-        diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-        srcFbX1 = (Float32)((diffX - srcDstW) );
-        srcFbX2 = (Float32)(diffX );
+        srcFbX2 = imp()->fb->rect().w() - pos.x() + srcDstX;
+        srcFbX1 = srcFbX2 - srcDstW;
 
-        if (imp()->fb->id() == 0)
+        if (imp()->fbId == 0)
         {
-            diffY = pos.y() - srcDstY;
-            srcFbY1 = (Float32)((diffY + srcDstH) );
-            srcFbY2 = (Float32)(diffY );
+            srcFbY2 = pos.y() - srcDstY;
+            srcFbY1 = srcFbY2 + srcDstH;
         }
         else
         {
-            diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
-            srcFbY1 = (Float32)((diffY - srcDstH) );
-            srcFbY2 = (Float32)(diffY );
+            srcFbY2 = imp()->fb->rect().h() - pos.y() + srcDstY;
+            srcFbY1 = srcFbY2 - srcDstH;
         }
         break;
     case LFramebuffer::Rotated270:
-        diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
-        srcFbX2 = (Float32)((diffY - srcDstH) );
-        srcFbX1 = (Float32)(diffY );
-        if (imp()->fb->id() == 0)
+        srcFbX1 = imp()->fb->rect().h() - pos.y() + srcDstY;
+        srcFbX2 = srcFbX1 - srcDstH;
+
+        if (imp()->fbId == 0)
         {
-            diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-            srcFbY2 = (Float32)(diffX );
-            srcFbY1 = (Float32)((diffX - srcDstW) );
+            srcFbY2 = imp()->fb->rect().w() - pos.x() + srcDstX;
+            srcFbY1 = srcFbY2 - srcDstW;
         }
         else
         {
-            diffX = pos.x() - srcDstX;
-            srcFbY1 = (Float32)(diffX );
-            srcFbY2 = (Float32)((diffX + srcDstW) );
+            srcFbY1 = pos.x() - srcDstX;
+            srcFbY2 = srcFbY1 + srcDstW;
+            yFlip = !yFlip;
         }
         break;
     case LFramebuffer::Flipped:
-        diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-        srcFbX2 = (Float32)(diffX );
-        srcFbX1 = (Float32)((diffX - srcDstW) );
-        if (imp()->fb->id() == 0)
+        srcFbX2 = imp()->fb->rect().w() - pos.x() + srcDstX;
+        srcFbX1 = srcFbX2 - srcDstW;
+
+        if (imp()->fbId == 0)
         {
-            diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
-            srcFbY1 = (Float32)(diffY );
-            srcFbY2 = (Float32)((diffY - srcDstH) );
+            srcFbY1 = imp()->fb->rect().h() - pos.y() + srcDstY;
+            srcFbY2 = srcFbY1 - srcDstH;
         }
         else
         {
-            diffY = pos.y() - srcDstY;
-            srcFbY1 = (Float32)(diffY );
-            srcFbY2 = (Float32)((diffY + srcDstH) );
+            srcFbY1 = pos.y() - srcDstY;
+            srcFbY2 = srcFbY1 + srcDstH;
         }
         break;
     case LFramebuffer::Flipped90:
-        diffY = pos.y() - srcDstY;
-        srcFbX2 = (Float32)(diffY );
-        srcFbX1 = (Float32)((diffY + srcDstH) );
+        srcFbX2 = pos.y() - srcDstY;
+        srcFbX1 = srcFbX2 + srcDstH;
 
-        if (imp()->fb->id() == 0)
+        if (imp()->fbId == 0)
         {
-            diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-            srcFbY2 = (Float32)(diffX );
-            srcFbY1 = (Float32)((diffX - srcDstW) );
+            srcFbY2 = imp()->fb->rect().w() - pos.x() + srcDstX;
+            srcFbY1 = srcFbY2 - srcDstW;
         }
         else
         {
-            diffX = pos.x() - srcDstX;
-            srcFbY2 = (Float32)((diffX + srcDstW) );
-            srcFbY1 = (Float32)(diffX );
+            srcFbY1 = pos.x() - srcDstX;
+            srcFbY2 = srcFbY1 + srcDstW;
+            yFlip = !yFlip;
         }
         break;
     case LFramebuffer::Flipped180:
-        srcFbX1 = (Float32)((pos.x() - srcDstX) );
-        srcFbY1 = (Float32)((pos.y() - srcDstY + srcDstH) );
-        srcFbX2 = (Float32)((pos.x() - srcDstX + srcDstW) );
-        srcFbY2 = (Float32)((pos.y() - srcDstY) );
-        break;
-    case LFramebuffer::Flipped270:
-        diffY = imp()->fb->rect().h() - pos.y() + srcDstY;
-        srcFbX1 = (Float32)(diffY );
-        srcFbX2 = (Float32)((diffY - srcDstH) );
-
-        if (imp()->fb->id() == 0)
+        if (imp()->fbId == 0)
         {
-            diffX = pos.x() - srcDstX;
-            srcFbY2 = (Float32)((diffX + srcDstW) );
-            srcFbY1 = (Float32)(diffX );
+            srcFbX1 = pos.x() - srcDstX;
+            srcFbY1 = pos.y() - srcDstY + srcDstH;
+            srcFbX2 = pos.x() - srcDstX + srcDstW;
+            srcFbY2 = pos.y() - srcDstY;
         }
         else
         {
-            diffX = imp()->fb->rect().w() - pos.x() + srcDstX;
-            srcFbY2 = (Float32)(diffX );
-            srcFbY1 = (Float32)((diffX - srcDstW) );
+            srcFbY2 = imp()->fb->rect().h() - pos.y() + srcDstY;
+            srcFbY1 = srcFbY2 - srcDstH;
+            srcFbX1 = pos.x() - srcDstX;
+            srcFbX2 = pos.x() - srcDstX + srcDstW;
         }
         break;
+    case LFramebuffer::Flipped270:
+        srcFbX1 = imp()->fb->rect().h() - pos.y() + srcDstY;
+        srcFbX2 = srcFbX1 - srcDstH;
+
+        if (imp()->fbId == 0)
+        {
+            srcFbY1 = pos.x() - srcDstX;
+            srcFbY2 = srcFbY1 + srcDstW;
+        }
+        else
+        {
+            srcFbY2 = imp()->fb->rect().w() - pos.x() + srcDstX;
+            srcFbY1 = srcFbY2 - srcDstW;
+            yFlip = !yFlip;
+        }
+        break;
+    default:
+        return;
     }
 
     glUniform1i(imp()->currentUniforms->rotate, rotate);
 
-    if (xFlip < 0.0)
+    if (xFlip)
     {
-        diffX = srcFbX2;
-        srcFbX2 = (srcFbX1);
-        srcFbX1 = (diffX);
+        srcW = srcFbX2;
+        srcFbX2 = srcFbX1;
+        srcFbX1 = srcW;
     }
 
-    if (yFlip < 0.0)
+    if (yFlip)
     {
-        diffY = srcFbY2;
-        srcFbY2 = (srcFbY1);
-        srcFbY1 = (diffY);
+        srcH = srcFbY2;
+        srcFbY2 = srcFbY1;
+        srcFbY1 = srcH;
     }
 
     srcFbW = srcFbX2 - srcFbX1;
     srcFbH = srcFbY2 - srcFbY1;
 
-    glUniform1f(imp()->currentUniforms->scale, fbScale);
-
-    imp()->shaderSetTexOffset(srcFbX1, srcFbY1);
-    imp()->shaderSetTexSize(srcFbW, srcFbH);
+    imp()->shaderSetTexOffset(srcFbX1 * fbScale, srcFbY1 * fbScale);
+    imp()->shaderSetTexSize(srcFbW * fbScale, srcFbH * fbScale);
     glActiveTexture(GL_TEXTURE0);
     imp()->shaderSetMode(3);
     imp()->shaderSetActiveTexture(0);
@@ -451,7 +464,6 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
         varying lowp vec2 v_texcoord;
         uniform lowp vec2 texSize;
         uniform lowp vec2 texOffset;
-        uniform lowp float scale;
         uniform bool rotate;
         uniform bool texColorEnabled;
 
@@ -460,99 +472,25 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
             // Texture
             if (mode == 3)
             {
-                vec2 texco, texco1, texco2, texco3, texco4;
-                float s = scale;
-                float of = 1.0 / s;
-
-                /*if (scale < 1.5)
-                    of = 0.7;*/
-
-
                 if (rotate)
                 {
-                    texco.x = ((gl_FragCoord.y)/s - texOffset.y) / texSize.y;
-                    texco.y = ((gl_FragCoord.x)/s - texOffset.x) / texSize.x;
-
-                    texco1.x = ((gl_FragCoord.y)/s - texOffset.y + of) / texSize.y;
-                    texco1.y = ((gl_FragCoord.x)/s - texOffset.x) / texSize.x;
-
-                    texco2.x = ((gl_FragCoord.y)/s - texOffset.y) / texSize.y;
-                    texco2.y = ((gl_FragCoord.x)/s - texOffset.x + of) / texSize.x;
-
-                    texco3.x = ((gl_FragCoord.y)/s - texOffset.y - of) / texSize.y;
-                    texco3.y = ((gl_FragCoord.x)/s - texOffset.x) / texSize.x;
-
-                    texco4.x = ((gl_FragCoord.y)/s - texOffset.y) / texSize.y;
-                    texco4.y = ((gl_FragCoord.x)/s - texOffset.x - of) / texSize.x;
+                    gl_FragColor.x = (gl_FragCoord.y - texOffset.y) / texSize.y;
+                    gl_FragColor.y = (gl_FragCoord.x - texOffset.x) / texSize.x;
                 }
                 else
                 {
-
-                    texco.y = ((gl_FragCoord.y)/s - texOffset.y) / texSize.y;
-                    texco.x = ((gl_FragCoord.x)/s - texOffset.x) / texSize.x;
-
-                    texco1.y = ((gl_FragCoord.y)/s - texOffset.y + of) / texSize.y;
-                    texco1.x = ((gl_FragCoord.x)/s - texOffset.x) / texSize.x;
-
-                    texco2.y = ((gl_FragCoord.y)/s - texOffset.y) / texSize.y;
-                    texco2.x = ((gl_FragCoord.x)/s - texOffset.x + of) / texSize.x;
-
-                    texco3.y = ((gl_FragCoord.y)/s - texOffset.y - of) / texSize.y;
-                    texco3.x = ((gl_FragCoord.x)/s - texOffset.x) / texSize.x;
-
-                    texco4.y = ((gl_FragCoord.y)/s - texOffset.y) / texSize.y;
-                    texco4.x = ((gl_FragCoord.x)/s - texOffset.x - of) / texSize.x;
-
+                    gl_FragColor.y = (gl_FragCoord.y - texOffset.y) / texSize.y;
+                    gl_FragColor.x = (gl_FragCoord.x - texOffset.x) / texSize.x;
                 }
 
                 if (texColorEnabled)
                 {
+                    gl_FragColor.w = texture2D(tex, gl_FragColor.xy).w;
                     gl_FragColor.xyz = color;
-                    gl_FragColor.w = texture2D(tex, texco).w;
                 }
                 else
                 {
-                    gl_FragColor = texture2D(tex, texco);
-
-                    if (1 == 2 && mod(scale, 1.0) != 0.0 && gl_FragColor.w < 1.0)
-                    {
-                        vec4 col = texture2D(tex, texco1);
-
-                        if (col.w >= 1.0)
-                        {
-                            //gl_FragColor = (gl_FragColor + col) / 2.0;
-                            //gl_FragColor.w = col.w;
-
-                            gl_FragColor = col;
-                        }
-                        else
-                        {
-                            col = texture2D(tex, texco2);
-
-                            if (col.w >= 1.0)
-                            {
-                                gl_FragColor = col;
-                            }
-                            else
-                            {
-                                col = texture2D(tex, texco3);
-
-                                if (col.w >= 1.0)
-                                {
-                                    gl_FragColor = col;
-                                }
-                                else
-                                {
-                                    col = texture2D(tex, texco4);
-
-                                    if (col.w >= 1.0)
-                                    {
-                                        gl_FragColor = col;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    gl_FragColor = texture2D(tex, gl_FragColor.xy);
                 }
 
                 gl_FragColor.w *= alpha;
@@ -851,7 +789,6 @@ void LPainter::LPainterPrivate::setupProgram()
     currentUniforms->transform = glGetUniformLocation(currentProgram, "transform");
     currentUniforms->texOffset = glGetUniformLocation(currentProgram, "texOffset");
     currentUniforms->rotate = glGetUniformLocation(currentProgram, "rotate");
-    currentUniforms->scale = glGetUniformLocation(currentProgram, "scale");
 }
 
 void LPainter::LPainterPrivate::setupProgramScaler()

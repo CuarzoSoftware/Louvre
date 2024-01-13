@@ -181,6 +181,8 @@ public:
      */
     void destroy();
 
+    bool running() const;
+
 LPRIVATE_IMP_UNIQUE(LAnimation)
     /// @cond OMIT
     friend class Louvre::LCompositor;

@@ -335,6 +335,20 @@ void LGraphicBackend::uninitialize()
     LCompositor *compositor = LCompositor::compositor();
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
     LCompositor::removeFdListener(bknd->monitor);
+
+    // Find connected outputs
+    SRMListForeach (devIt, srmCoreGetDevices(bknd->core))
+    {
+        SRMDevice *dev = (SRMDevice*)srmListItemGetData(devIt);
+
+        SRMListForeach (connIt, srmDeviceGetConnectors(dev))
+        {
+            SRMConnector *conn = (SRMConnector*)srmListItemGetData(connIt);
+            srmConnectorUninitialize(conn);
+            uninitConnector(bknd, conn);
+        }
+    }
+
     srmCoreDestroy(bknd->core);
     delete bknd;
 }

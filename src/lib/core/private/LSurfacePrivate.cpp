@@ -3,6 +3,7 @@
 #include <protocols/LinuxDMABuf/private/LDMABufferPrivate.h>
 #include <protocols/Wayland/private/RSurfacePrivate.h>
 #include <protocols/Wayland/private/GOutputPrivate.h>
+#include <protocols/FractionalScale/RFractionalScale.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LTexturePrivate.h>
@@ -201,16 +202,16 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
                 Float32 xInvScale = (Float32(current.bufferScale) * srcRect.w())/Float32(size.w());
                 Float32 yInvScale = (Float32(current.bufferScale) * srcRect.h())/Float32(size.h());
 
-                Int32 xOffset = roundf(srcRect.x() * Float32(current.bufferScale)) - 3;
-                Int32 yOffset = roundf(srcRect.y() * Float32(current.bufferScale)) - 3;
+                Int32 xOffset = roundf(srcRect.x() * Float32(current.bufferScale)) - 2;
+                Int32 yOffset = roundf(srcRect.y() * Float32(current.bufferScale)) - 2;
 
                 while (!pendingDamage.empty())
                 {
                     LRect &r = pendingDamage.back();
                     onlyPending.addRect((r.x() * xInvScale + xOffset),
                                         (r.y() * yInvScale + yOffset),
-                                        (r.w() * xInvScale + 6 ),
-                                        (r.h() * yInvScale + 6 ));
+                                        (r.w() * xInvScale + 4 ),
+                                        (r.h() * yInvScale + 4 ));
                     pendingDamage.pop_back();
                 }
 
@@ -248,7 +249,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
                 onlyPending.transform(sizeB, LFramebuffer::requiredTransform(current.transform, LFramebuffer::Normal));
                 currentDamageB.addRegion(onlyPending);
                 currentDamage = currentDamageB;
-                currentDamage.offset(-xOffset - 3, -yOffset - 3);
+                currentDamage.offset(-xOffset - 2, -yOffset - 2);
                 currentDamage.multiply(1.f/xInvScale, 1.f/yInvScale);
             }
             else
@@ -256,10 +257,10 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
                 while (!pendingDamage.empty())
                 {
                     LRect &r = pendingDamage.back();
-                    onlyPending.addRect((r.x() - 1)*current.bufferScale,
-                                        (r.y() - 1)*current.bufferScale,
-                                        (r.w() + 2 )*current.bufferScale,
-                                        (r.h() + 2 )*current.bufferScale);
+                    onlyPending.addRect((r.x() - 2)*current.bufferScale,
+                                        (r.y() - 2)*current.bufferScale,
+                                        (r.w() + 4 )*current.bufferScale,
+                                        (r.h() + 4 )*current.bufferScale);
                     pendingDamage.pop_back();
                 }
 
@@ -267,10 +268,10 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
                 {
                     LRect &r = pendingDamageB.back();
                     onlyPending.addRect(
-                        r.x() - 1,
-                        r.y() - 1,
-                        r.w() + 2,
-                        r.h() + 2);
+                        r.x() - 2,
+                        r.y() - 2,
+                        r.w() + 4,
+                        r.h() + 4);
                     pendingDamageB.pop_back();
                 }
 
@@ -409,19 +410,38 @@ void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output)
 
 void LSurface::LSurfacePrivate::sendPreferredScale()
 {
-    Int32 scale = 1;
+    Int32 wlScale = 0;
+    Float32 wlFracScale = 0.f;
+
+    LFramebuffer::Transform transform = LFramebuffer::Normal;
+
+    if (outputs.empty())
+        return;
 
     for (LOutput *o : outputs)
     {
-        if (o->scale() > scale)
-            scale = o->scale();
+        if (o->imp()->fractionalScale > wlFracScale)
+        {
+            wlScale = o->imp()->scale;
+            wlFracScale = o->imp()->fractionalScale;
+            transform = o->transform();
+        }
     }
 
-    if (lastSentPreferredBufferScale == scale)
-        return;
+    if (lastSentPreferredBufferScale != wlScale)
+    {
+        lastSentPreferredBufferScale = wlScale;
+        surfaceResource->preferredBufferScale(lastSentPreferredBufferScale);
+    }
 
-    lastSentPreferredBufferScale = scale;
-    surfaceResource->preferredBufferScale(scale);
+    if (lastSentPreferredTransform != transform)
+    {
+        lastSentPreferredTransform = transform;
+        surfaceResource->preferredBufferTransform(lastSentPreferredTransform);
+    }
+
+    if (surfaceResource->fractionalScaleResource())
+        surfaceResource->fractionalScaleResource()->preferredScale(wlFracScale);
 }
 
 void LSurface::LSurfacePrivate::setPendingParent(LSurface *pendParent)

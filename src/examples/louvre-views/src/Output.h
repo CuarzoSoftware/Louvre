@@ -29,6 +29,7 @@ public:
 
     void setWorkspace(Workspace *ws, UInt32 animMs, Float32 curve = 2.f, Float32 start = 0.f);
     void updateWorkspacesPos();
+    void updateFractionalOversampling();
 
     // Current workspace
     Workspace *currentWorkspace = nullptr;

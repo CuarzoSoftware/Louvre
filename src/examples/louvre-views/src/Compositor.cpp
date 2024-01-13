@@ -31,8 +31,7 @@ Compositor::Compositor() : LCompositor(),
     overlayLayer(scene.mainView()),
     tooltipsLayer(scene.mainView()),
     cursorLayer(scene.mainView()),
-    softwareCursor(nullptr, &cursorLayer),
-    test(nullptr, &cursorLayer)
+    softwareCursor(nullptr, &cursorLayer)
 {
     // Set black as default background color
     scene.mainView()->setClearColor(0.f, 0.f, 0.f, 1.f);
@@ -54,9 +53,6 @@ void Compositor::initialized()
     G::loadFonts();
     G::createTooltip();
     G::loadApps();
-
-    test.setTexture(LOpenGL::loadTexture("/home/eduardo/Desktop/lines.jpg"));
-    test.setOpacity(0.001);
 
     clockMinuteTimer = new LTimer([](LTimer *timer)
     {
@@ -83,10 +79,9 @@ void Compositor::initialized()
                 }
 
                 if (G::compositor()->clockTexture)
-                {
                     delete G::compositor()->clockTexture;
-                    G::compositor()->clockTexture = newClockTexture;
-                }
+
+                G::compositor()->clockTexture = newClockTexture;
             }
         }
 
@@ -96,29 +91,21 @@ void Compositor::initialized()
     // Start the timer right on to setup the clock texture
     clockMinuteTimer->start(1);
 
+    oversamplingLabelTexture = G::font()->semibold->renderText("OVERSAMPLING", 22);
+
     Int32 totalWidth = 0;
 
     // Initialize and arrange outputs (screens) left to right
     for (LOutput *output : seat()->outputs())
     {
         // Set scale 2 to HiDPI screens
-        output->setScale(output->dpi() >= 200 ? 2.f : 1.f);
-        output->setPos(LPoint(totalWidth, 0));
         output->setTransform(LFramebuffer::Normal);
+        output->setScale(output->dpi() >= 200 ? 1.5f : 1.f);
+        output->setPos(LPoint(totalWidth, 0));
         totalWidth += output->size().w();
         compositor()->addOutput(output);
         output->repaint();
     }
-
-    /*
-    LSceneView *s = new LSceneView(2880, 1600, &overlayLayer);
-    s->setScale(2);
-    LTexture *tex = LOpenGL::loadTexture("/home/eduardo/buttons.png");
-    LTextureView *v = new LTextureView(tex, s);
-    s->setPos(0, 0);
-    s->setClearColor(1,0,0,1);
-    v->setPos(200, 200);
-    s->damageAll(nullptr);*/
 }
 
 void Compositor::uninitialized()

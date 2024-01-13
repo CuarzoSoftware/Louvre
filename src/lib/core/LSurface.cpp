@@ -228,6 +228,8 @@ void LSurface::sendOutputEnterEvent(LOutput *output)
     if (!output)
         return;
 
+    imp()->sendPreferredScale();
+
     // Check if already sent
     for (LOutput *o : imp()->outputs)
         if (o == output)

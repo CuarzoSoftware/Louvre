@@ -285,7 +285,7 @@ void Surface::minimizedChanged()
                 dstDockItem = minView;
         }
 
-        minimizeAnim = LAnimation::create(300000,
+        minimizeAnim = LAnimation::create(300,
         [this, dstDockItem](LAnimation *anim)
         {
             // Transform linear curve to ease out

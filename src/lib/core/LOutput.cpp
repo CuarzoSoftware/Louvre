@@ -27,6 +27,26 @@
 
 using namespace Louvre;
 
+bool LOutput::fractionalOversamplingEnabled() const
+{
+    return imp()->stateFlags.check(LOutputPrivate::FractionalOversamplingEnabled);
+}
+
+bool LOutput::usingFractionalScale() const
+{
+    return imp()->stateFlags.check(LOutputPrivate::UsingFractionalScale);
+}
+
+void LOutput::enableFractionalOversampling(bool enabled)
+{
+    imp()->stateFlags.setFlag(LOutputPrivate::FractionalOversamplingEnabled, enabled);
+}
+
+Float32 LOutput::fractionalScale() const
+{
+    return imp()->fractionalScale;
+}
+
 LOutput::LOutput() : m_imp(std::make_unique<LOutputPrivate>(this))
 {
     imp()->output = this;
@@ -39,9 +59,6 @@ LOutput::~LOutput() {}
 
 LFramebuffer *LOutput::framebuffer() const
 {
-    if (imp()->fractionalEnabled)
-        return &imp()->fractionalFb;
-
     return &imp()->fb;
 }
 
@@ -50,7 +67,7 @@ LFramebuffer::Transform LOutput::transform() const
     return imp()->transform;
 }
 
-void LOutput::setTransform(LFramebuffer::Transform transform) const
+void LOutput::setTransform(LFramebuffer::Transform transform)
 {
     if (transform == imp()->transform)
         return;
@@ -60,7 +77,11 @@ void LOutput::setTransform(LFramebuffer::Transform transform) const
     imp()->updateRect();
 
     if (state() == Initialized && prevSizeB != imp()->sizeB)
+    {
+        repaint();
         imp()->updateGlobals();
+        cursor()->imp()->textureChanged = true;
+    }
 }
 
 const std::list<LOutputMode *> &LOutput::modes() const
@@ -127,8 +148,18 @@ bool LOutput::hasBufferDamageSupport() const
     return compositor()->imp()->graphicBackend->hasBufferDamageSupport((LOutput*)this);
 }
 
-void LOutput::setBufferDamage(const LRegion &damage)
+void LOutput::setBufferDamage(const LRegion *damage)
 {
+    if (!damage)
+    {
+        imp()->stateFlags.remove(LOutputPrivate::HasDamage);
+        return;
+    }
+
+    imp()->damage = *damage;
+    imp()->stateFlags.add(LOutputPrivate::HasDamage);
+
+    /*
     if (!hasBufferDamageSupport())
         return;
 
@@ -297,6 +328,7 @@ void LOutput::setBufferDamage(const LRegion &damage)
     }
 
     compositor()->imp()->graphicBackend->setOutputBufferDamage((LOutput*)this, region);
+*/
 }
 
 void LOutput::setScale(Float32 scale)
@@ -304,23 +336,29 @@ void LOutput::setScale(Float32 scale)
     if (scale < 0.25f)
         scale = 0.25f;
 
-    if (scale == imp()->scale)
+    if (imp()->fractionalScale == scale)
         return;
 
+    imp()->scale = ceilf(scale);
     imp()->fractionalScale = scale;
-    imp()->scale = scale;
 
-    if (1 == 2 && fmod(scale, 1.f) != 0.f)
+    if (fmod(imp()->fractionalScale, 1.f) != 0.f)
     {
-        imp()->fractionalEnabled = true;
-        imp()->fractionalFb.setSizeB(imp()->sizeB * 2.f);//(1.f + imp()->scale - imp()->fractionalScale));
-        imp()->fractionalFb.setScale(imp()->scale);
+        imp()->stateFlags.add(LOutputPrivate::UsingFractionalScale);
+        LSize fbSize = currentMode()->sizeB();
+        fbSize = LSize(roundf(Float32(fbSize.w()) * imp()->scale / imp()->fractionalScale),
+                             roundf(Float32(fbSize.h()) * imp()->scale / imp()->fractionalScale));
+        imp()->fractionalFb.setSizeB(fbSize);
     }
+    else
+        imp()->stateFlags.remove(LOutputPrivate::UsingFractionalScale);
 
     imp()->updateRect();
-
     imp()->updateGlobals();
-    compositor()->imp()->updateGreatestOutputScale();
+    cursor()->imp()->textureChanged = true;
+
+    for (LSurface *s : compositor()->surfaces())
+        s->imp()->sendPreferredScale();
 }
 
 Float32 LOutput::scale() const
@@ -331,7 +369,7 @@ Float32 LOutput::scale() const
 void LOutput::repaint()
 {
     if (compositor()->imp()->graphicBackend->scheduleOutputRepaint(this))
-        imp()->pendingRepaint = true;
+        imp()->stateFlags.add(LOutputPrivate::PendingRepaint);
 }
 
 Int32 LOutput::dpi()
@@ -354,33 +392,21 @@ const LSize &LOutput::physicalSize() const
 
 const LSize &LOutput::sizeB() const
 {
-    if (imp()->fractionalEnabled)
-        return imp()->fractionalFb.sizeB();
-
     return imp()->sizeB;
 }
 
 const LRect &LOutput::rect() const
 {
-    if (imp()->fractionalEnabled)
-        return imp()->fractionalFb.rect();
-
     return imp()->rect;
 }
 
 const LPoint &LOutput::pos() const
 {
-    if (imp()->fractionalEnabled)
-        return imp()->fractionalFb.pos();
-
     return imp()->rect.pos();
 }
 
 const LSize &LOutput::size() const
 {
-    if (imp()->fractionalEnabled)
-        return imp()->fractionalFb.size();
-
     return imp()->rect.size();
 }
 
@@ -416,10 +442,7 @@ const char *LOutput::description() const
 
 void LOutput::setPos(const LPoint &pos)
 {
-    if (imp()->fractionalEnabled)
-        imp()->fractionalFb.setPos(pos);
-    else
-        imp()->rect.setPos(pos);
+    imp()->rect.setPos(pos);
 }
 
 LPainter *LOutput::painter() const

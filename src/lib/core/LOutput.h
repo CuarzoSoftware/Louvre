@@ -97,11 +97,11 @@ public:
         Suspended            ///< Output is suspended.
     };
 
-    enum FractionalScalingMode
-    {
-        Oversampling,
-        Fast
-    };
+    // Default is enabled
+    bool fractionalOversamplingEnabled() const;
+    bool usingFractionalScale() const;
+    void enableFractionalOversampling(bool enabled);
+    Float32 fractionalScale() const;
 
     /**
      * @brief Constructor of the LOutput class.
@@ -152,7 +152,7 @@ public:
      *
      * @param transform The framebuffer transformation to apply.
      */
-    void setTransform(LFramebuffer::Transform transform) const;
+    void setTransform(LFramebuffer::Transform transform);
 
     /**
      * @brief Return the index of the current buffer.
@@ -201,16 +201,20 @@ public:
     bool hasBufferDamageSupport() const;
 
     /**
-     * @brief Set the damaged region of the framebuffer.
+     * @brief Specify the damaged region of the framebuffer.
      *
-     * This method is used to specify which region of the framebuffer has been damaged within a paintGL() call.
-     * The damage region is cleared after the subsequent paintGL() call.
+     * This method is used to designate the region of the framebuffer that has been affected in the most recent paintGL() event.
+     * It should be invoked after completing all painting operations during a paintGL() event.
+     * The damage region is automatically cleared just before the subsequent paintGL() event.
      *
-     * @note Calling this method is not mandatory, but it could considerably improve performance on certain graphic backends/hardware.
+     * @note Although calling this method is not mandatory, it can significantly enhance performance, especially on certain graphic backends/hardware
+     *       or when the output scale is fractional and oversampling is enabled. If never invoked, the entire output is considered damaged.
      *
-     * @param damage The damaged region of the framebuffer.
+     * When using LScene for rendering, damage calculation is handled automatically, and calling this method should be avoided.
+     *
+     * @param damage The damaged region of the framebuffer in surface coordinates. Providing an empty region indicates no damage, while passing `nullptr` implies the entire output is damaged.
      */
-    void setBufferDamage(const LRegion &damage);
+    void setBufferDamage(const LRegion *damage);
 
     /**
      * @brief List of available modes.

@@ -94,3 +94,8 @@ void LAnimation::destroy()
 {
     imp()->pendingDestroy = true;
 }
+
+bool LAnimation::running() const
+{
+    return imp()->running;
+}

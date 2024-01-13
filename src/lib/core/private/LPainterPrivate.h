@@ -4,7 +4,8 @@
 #define LPAINTER_TRACK_UNIFORMS 1
 
 #include <private/LTexturePrivate.h>
-#include <LFramebuffer.h>
+#include <private/LOutputPrivate.h>
+#include <LOutputFramebuffer.h>
 #include <LPainter.h>
 #include <LRect.h>
 #include <GL/gl.h>
@@ -39,7 +40,7 @@ LPRIVATE_CLASS(LPainter)
         alpha,
         transform,
         texOffset,
-        rotate, scale;
+        rotate;
     } uniforms, uniformsExternal;
 
     Uniforms *currentUniforms;
@@ -356,8 +357,6 @@ LPRIVATE_CLASS(LPainter)
 
         if (fb->transform() == LFramebuffer::Normal)
         {
-            if (fbId == 0)
-                y = fb->rect().h() - y - h;
         }
         else if (fb->transform() == LFramebuffer::Rotated270)
         {
@@ -367,36 +366,24 @@ LPRIVATE_CLASS(LPainter)
             tmp = w;
             w = h;
             h = tmp;
-
-            if (fbId == 0)
-                y = fb->rect().w() - y - h;
         }
         else if (fb->transform() == LFramebuffer::Rotated180)
         {
             x = fb->rect().w() - x - w;
             y = fb->rect().h() - y - h;
-
-            if (fbId == 0)
-                y = fb->rect().h() - y - h;
         }
         else if (fb->transform() == LFramebuffer::Rotated90)
         {
             Float32 tmp = x;
             x = y;
-            y = fb->rect().h() - tmp - w;
+            y = fb->rect().w() - tmp - w;
             tmp = w;
             w = h;
             h = tmp;
-
-            if (fbId == 0)
-                y = fb->rect().h() - y - h;
         }
         else if (fb->transform() == LFramebuffer::Flipped)
         {
             x = fb->rect().w() - x - w;
-
-            if (fbId == 0)
-                y = fb->rect().h() - y - h;
         }
         else if (fb->transform() == LFramebuffer::Flipped270)
         {
@@ -406,16 +393,10 @@ LPRIVATE_CLASS(LPainter)
             tmp = w;
             w = h;
             h = tmp;
-
-            if (fbId == 0)
-                y = fb->rect().w() - y - h;
         }
         else if (fb->transform() == LFramebuffer::Flipped180)
         {
             y = fb->rect().h() - y - h;
-
-            if (fbId == 0)
-                y = fb->rect().h() - y - h;
         }
         else if (fb->transform() == LFramebuffer::Flipped90)
         {
@@ -425,12 +406,34 @@ LPRIVATE_CLASS(LPainter)
             tmp = w;
             w = h;
             h = tmp;
-
-            if (fbId == 0)
-                y = fb->rect().w() - y - h;
         }
 
-        Float32 fbScale = fb->scale();
+        if (fbId == 0)
+        {
+            if (LFramebuffer::is90Transform(fb->transform()))
+                y = fb->rect().w() - y - h;
+            else
+                y = fb->rect().h() - y - h;
+        }
+
+        Float32 fbScale;
+
+        if (fb->type() == LFramebuffer::Output)
+        {
+            LOutputFramebuffer *outputFB = (LOutputFramebuffer*)fb;
+
+            if (outputFB->output()->usingFractionalScale())
+            {
+                if (outputFB->output()->fractionalOversamplingEnabled())
+                    fbScale = fb->scale();
+                else
+                    fbScale = outputFB->output()->fractionalScale();
+            }
+            else
+                fbScale = fb->scale();
+        }
+        else
+            fbScale = fb->scale();
 
         Int32 x2 = floorf(Float32(x + w) * fbScale);
         Int32 y2 = floorf(Float32(y + h) * fbScale);

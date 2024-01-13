@@ -27,6 +27,7 @@ public:
     ~LOutputFramebuffer();
     /// @endcond
 
+    LOutput *output() const;
     Float32 scale() const override;
     const LSize &sizeB() const override;
     const LRect &rect() const override;

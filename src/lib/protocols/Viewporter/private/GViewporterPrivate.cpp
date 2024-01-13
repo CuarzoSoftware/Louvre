@@ -28,7 +28,7 @@ void GViewporter::GViewporterPrivate::get_viewport(wl_client *client, wl_resourc
 
     Wayland::RSurface *rSurface = (Wayland::RSurface*)wl_resource_get_user_data(surface);
 
-    if (rSurface->viewport())
+    if (rSurface->viewportResource())
     {
         wl_resource_post_error(resource, WP_VIEWPORTER_ERROR_VIEWPORT_EXISTS, "The surface already has a viewport object associated.");
         return;

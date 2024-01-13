@@ -22,7 +22,7 @@ public:
      *
      * @param sizeB The size of the framebuffer in buffer coordinates.
      */
-    LRenderBuffer(const LSize &sizeB);
+    LRenderBuffer(const LSize &sizeB, bool alpha = true);
 
     /// @cond OMIT
     LRenderBuffer(const LRenderBuffer&) = delete;

@@ -536,6 +536,31 @@ G::Fonts *G::font()
     return &_fonts;
 }
 
+const char *G::transformName(LFramebuffer::Transform transform)
+{
+    switch (transform)
+    {
+    case LFramebuffer::Normal:
+        return "No Transform";
+    case LFramebuffer::Rotated90:
+        return "Rotated 90°";
+    case LFramebuffer::Rotated180:
+        return "Rotated 180°";
+    case LFramebuffer::Rotated270:
+        return "Rotated 270°";
+    case LFramebuffer::Flipped:
+        return "Flipped";
+    case LFramebuffer::Flipped90:
+        return "Flipped & Rotated 90°";
+    case LFramebuffer::Flipped180:
+        return "Flipped & Rotated 180°";
+    case LFramebuffer::Flipped270:
+        return "Flipped & Rotated 270°";
+    }
+
+    return NULL;
+}
+
 LTexture *G::loadAssetsTexture(const char *name, bool exitOnFail)
 {
     char *path = joinPaths(ASSETS_PATH, name);

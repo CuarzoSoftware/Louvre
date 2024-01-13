@@ -36,6 +36,7 @@ LPRIVATE_CLASS(RSurface)
 
     LSurface *lSurface = nullptr;
     Viewporter::RViewport *rViewport = nullptr;
+    FractionalScale::RFractionalScale *rFractionalScale = nullptr;
 };
 
 #endif // RSURFACEPRIVATE_H

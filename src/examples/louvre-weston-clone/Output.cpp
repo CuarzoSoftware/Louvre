@@ -349,7 +349,7 @@ void Output::paintGL()
         params.srcRect = s->srcRect();
         params.pos = s->currentRect.pos();
         params.texture = s->texture();
-        params.srcTransform = LFramebuffer::Normal;
+        params.srcTransform = s->bufferTransform();
         params.srcScale = s->bufferScale();
         p->bindTextureMode(params);
         p->drawRegion(s->currentOpaqueTranslated);
@@ -407,7 +407,7 @@ void Output::paintGL()
         params.srcRect = s->srcRect();
         params.pos = s->currentRect.pos();
         params.texture = s->texture();
-        params.srcTransform = LFramebuffer::Normal;
+        params.srcTransform = s->bufferTransform();
         params.srcScale = s->bufferScale();
         p->bindTextureMode(params);
         p->drawRegion(s->currentTranslucentTranslated);
@@ -495,6 +495,6 @@ void Output::paintGL()
             repaint();
     }
 
-    setBufferDamage(newDamage);
+    setBufferDamage(&newDamage);
     newDamage.clear();
 }

@@ -16,6 +16,7 @@ public:
     ~Topbar();
 
     void update();
+    void updateOutputInfo();
 
     Output *output;
 
@@ -27,6 +28,12 @@ public:
 
     // Clock text
     LTextureView clock;
+
+    // Output mode text
+    LTextureView outputInfo;
+
+    // Oversampling indicator
+    LTextureView oversamplingLabel;
 
     // Current app title
     LTextureView appName;

@@ -88,6 +88,11 @@ const list<LinuxDMABuf::GLinuxDMABuf *> &LClient::linuxDMABufGlobals() const
     return imp()->linuxDMABufGlobals;
 }
 
+const std::list<FractionalScale::GFractionalScaleManager *> &LClient::fractionalScaleManagerGlobals() const
+{
+    return imp()->fractionalScaleManagerGlobals;
+}
+
 const std::list<Viewporter::GViewporter *> &LClient::viewporterGlobals() const
 {
     return imp()->viewporterGlobals;

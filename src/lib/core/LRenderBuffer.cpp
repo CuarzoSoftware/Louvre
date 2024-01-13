@@ -6,10 +6,16 @@
 #include <GLES2/gl2.h>
 #include <LLog.h>
 
-LRenderBuffer::LRenderBuffer(const LSize &sizeB) : LPRIVATE_INIT_UNIQUE(LRenderBuffer)
+LRenderBuffer::LRenderBuffer(const LSize &sizeB, bool alpha) : LPRIVATE_INIT_UNIQUE(LRenderBuffer)
 {
+    m_type = Render;
     imp()->texture.imp()->sourceType = LTexture::Framebuffer;
-    imp()->texture.imp()->format = DRM_FORMAT_BGRA8888;
+
+    if (alpha)
+        imp()->texture.imp()->format = DRM_FORMAT_BGRA8888;
+    else
+        imp()->texture.imp()->format = DRM_FORMAT_BGRX8888;
+
     imp()->texture.imp()->graphicBackendData = this;
     setSizeB(sizeB);
 }
@@ -23,11 +29,22 @@ LRenderBuffer::~LRenderBuffer()
 
 void LRenderBuffer::setSizeB(const LSize &sizeB)
 {
+    if (LFramebuffer::is90Transform(imp()->transform))
+    {
+        imp()->sizeB.setW(sizeB.h());
+        imp()->sizeB.setH(sizeB.w());
+    }
+    else
+    {
+        imp()->sizeB = sizeB;
+    }
+
+    imp()->rect.setW(roundf(Float32(imp()->sizeB.w()) * imp()->scale));
+    imp()->rect.setH(roundf(Float32(imp()->sizeB.h()) * imp()->scale));
+
     if (imp()->texture.imp()->sizeB != sizeB)
     {
         imp()->texture.imp()->sizeB = sizeB;
-
-        imp()->rect.setSize(sizeB/imp()->scale);
 
         for (auto &pair : imp()->threadsMap)
             if (pair.second.textureId)
@@ -55,13 +72,13 @@ LFramebuffer::Transform LRenderBuffer::transform() const
 
 void LRenderBuffer::setScale(Float32 scale) const
 {
-    if (scale < 1.f)
-        return;
+    if (scale < 0.25f)
+        scale = 0.25;
 
     if (imp()->scale != scale)
     {
-        imp()->rect.setW(roundf(Float32(sizeB().w())/scale));
-        imp()->rect.setH(roundf(Float32(sizeB().h())/scale));
+        imp()->rect.setW(roundf(Float32(imp()->sizeB.w())/scale));
+        imp()->rect.setH(roundf(Float32(imp()->sizeB.h())/scale));
         imp()->scale = scale;
     }
 }
@@ -83,7 +100,7 @@ Float32 LRenderBuffer::scale() const
 
 const LSize &LRenderBuffer::sizeB() const
 {
-    return imp()->texture.sizeB();
+    return imp()->sizeB;
 }
 
 const LSize &LRenderBuffer::size() const
@@ -106,7 +123,12 @@ GLuint LRenderBuffer::id() const
         glBindFramebuffer(GL_FRAMEBUFFER, data.framebufferId);
         glGenTextures(1, &data.textureId);
         LTexture::LTexturePrivate::setTextureParams(data.textureId, GL_TEXTURE_2D, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imp()->texture.sizeB().w(), imp()->texture.sizeB().h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+        if (imp()->texture.imp()->format == DRM_FORMAT_BGRA8888)
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imp()->texture.sizeB().w(), imp()->texture.sizeB().h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        else
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imp()->texture.sizeB().w(), imp()->texture.sizeB().h(), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, data.textureId, 0);
     }
 

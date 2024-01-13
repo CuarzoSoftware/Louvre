@@ -4,10 +4,16 @@
 LOutputFramebuffer::LOutputFramebuffer(LOutput *output) :
 LPRIVATE_INIT_UNIQUE(LOutputFramebuffer)
 {
+    m_type = Output;
     imp()->output = output;
 }
 
 LOutputFramebuffer::~LOutputFramebuffer() {}
+
+LOutput *LOutputFramebuffer::output() const
+{
+    return imp()->output;
+}
 
 Float32 LOutputFramebuffer::scale() const
 {
@@ -26,6 +32,9 @@ const LRect &LOutputFramebuffer::rect() const
 
 GLuint LOutputFramebuffer::id() const
 {
+    if (imp()->output->usingFractionalScale() && imp()->output->fractionalOversamplingEnabled())
+        return imp()->output->imp()->fractionalFb.id();
+
     return 0;
 }
 
@@ -46,7 +55,7 @@ const LTexture *LOutputFramebuffer::texture(Int32 index) const
 
 void LOutputFramebuffer::setFramebufferDamage(const LRegion *damage)
 {
-    imp()->output->setBufferDamage(*damage);
+    imp()->output->setBufferDamage(damage);
 }
 
 LFramebuffer::Transform LOutputFramebuffer::transform() const

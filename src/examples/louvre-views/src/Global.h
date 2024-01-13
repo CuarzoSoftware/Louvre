@@ -213,6 +213,8 @@ public:
     // Fonts
     static void loadFonts();
     static Fonts *font();
+    static const char *transformName(LFramebuffer::Transform transform);
+
 
     // Utils
     static LTexture *loadAssetsTexture(const char *name, bool exitOnFail = true);

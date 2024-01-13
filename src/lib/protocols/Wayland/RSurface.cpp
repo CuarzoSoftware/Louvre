@@ -1,9 +1,10 @@
 #include <protocols/WpPresentationTime/private/RWpPresentationFeedbackPrivate.h>
+#include <protocols/Viewporter/private/RViewportPrivate.h>
+#include <protocols/FractionalScale/private/RFractionalScalePrivate.h>
 #include <protocols/Wayland/private/RSurfacePrivate.h>
 #include <protocols/Wayland/GCompositor.h>
 #include <protocols/Wayland/GOutput.h>
 #include <protocols/Wayland/RCallback.h>
-#include <protocols/Viewporter/private/RViewportPrivate.h>
 #include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
@@ -141,6 +142,9 @@ RSurface::~RSurface()
     if (imp()->rViewport)
         imp()->rViewport->imp()->rSurface = nullptr;
 
+    if (imp()->rFractionalScale)
+        imp()->rFractionalScale->imp()->rSurface = nullptr;
+
     while(!lSurface->children().empty())
         lSurface->imp()->removeChild(lSurface->imp()->children.back());
 
@@ -176,7 +180,12 @@ LSurface *RSurface::surface() const
     return imp()->lSurface;
 }
 
-Viewporter::RViewport *RSurface::viewport() const
+FractionalScale::RFractionalScale *RSurface::fractionalScaleResource() const
+{
+    return imp()->rFractionalScale;
+}
+
+Viewporter::RViewport *RSurface::viewportResource() const
 {
     return imp()->rViewport;
 }

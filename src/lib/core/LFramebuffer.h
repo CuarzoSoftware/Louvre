@@ -27,7 +27,10 @@ public:
         Render
     };
     
-    //Type type() const {re}
+    inline Type type() const
+    {
+        return m_type;
+    }
 
     /**
      * @brief Enumeration for Framebuffer Transformations
@@ -35,7 +38,7 @@ public:
      * This enumeration defines different transformations that can be applied to a framebuffer.
      * These transformations include rotations and flips for adjusting the orientation of the framebuffer.
      */
-    enum Transform
+    enum Transform : Int32
     {
         /// No transformation
         Normal = 0,
@@ -110,7 +113,7 @@ public:
      *
      * @returns The size of the framebuffer in buffer coordinates.
      */
-    virtual const LSize& sizeB() const = 0;
+    virtual const LSize &sizeB() const = 0;
 
     /**
      * @brief Get the position and size of the framebuffer in surface coordinates.
@@ -119,7 +122,7 @@ public:
      *
      * @returns The rect representing the position and size of the framebuffer in surface coordinates.
      */
-    virtual const LRect& rect() const = 0;
+    virtual const LRect &rect() const = 0;
 
     /**
      * @brief Get the OpenGL framebuffer ID.
@@ -156,7 +159,7 @@ public:
      * @param index The index of the framebuffer.
      * @returns The OpenGL texture ID of the specified framebuffer index.
      */
-    virtual const LTexture* texture(Int32 index = 0) const = 0;
+    virtual const LTexture *texture(Int32 index = 0) const = 0;
 
     /**
      * @brief Set the damaged region
@@ -166,7 +169,7 @@ public:
      *
      * @param damage A pointer to the LRegion object representing the changed region.
      */
-    virtual void setFramebufferDamage(const LRegion* damage) = 0;
+    virtual void setFramebufferDamage(const LRegion *damage) = 0;
 
     /**
      * @brief Get the framebuffer transformation.

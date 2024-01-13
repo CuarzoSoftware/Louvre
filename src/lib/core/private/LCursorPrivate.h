@@ -133,7 +133,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
 
                 if (cursor()->hasHardwareSupport(o) && (textureChanged || !found))
                 {
-                    texture2Buffer(cursor(), size*o->imp()->fractionalScale, o->transform());
+                    texture2Buffer(cursor(), size * o->fractionalScale(), o->transform());
                     compositor()->imp()->graphicBackend->setCursorTexture(o, buffer);
                 }
             }
@@ -181,7 +181,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
                     p.setY(tmp);
                 }
 
-                compositor()->imp()->graphicBackend->setCursorPosition(o, ((p * o->scale())*LSizeF(o->imp()->sizeB))/LSizeF(o->framebuffer()->sizeB()));
+                compositor()->imp()->graphicBackend->setCursorPosition(o, o->scale() * p / ( o->scale() / o->fractionalScale()) );
             }
         }
 

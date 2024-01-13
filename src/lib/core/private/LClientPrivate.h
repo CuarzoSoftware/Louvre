@@ -29,6 +29,7 @@ LPRIVATE_CLASS(LClient)
     std::list<WpPresentationTime::GWpPresentation*> wpPresentationTimeGlobals;
     std::list<LinuxDMABuf::GLinuxDMABuf*> linuxDMABufGlobals;
     std::list<Viewporter::GViewporter*> viewporterGlobals;
+    std::list<FractionalScale::GFractionalScaleManager*> fractionalScaleManagerGlobals;
 
     // Singleton Globals
     Wayland::GDataDeviceManager *dataDeviceManagerGlobal = nullptr;
