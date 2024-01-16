@@ -221,19 +221,19 @@ void G::loadTextures()
 
     conf = &_textures.UIConf[DecorationActiveT];
     conf->texture = texture;
-    conf->customSrcRect = LRectF(87.f, 59.5f, 1.f, 61.f);
+    conf->customSrcRect = LRectF(86.5f, 59.5f, 2.f, 61.f);
     conf->customDstSize = LSize(1, 61);
     conf->bufferScale = bufferScale;
 
     conf = &_textures.UIConf[DecorationActiveL];
     conf->texture = texture;
-    conf->customSrcRect = LRectF(16.f, 133.5f, 48.f, 0.5f);
+    conf->customSrcRect = LRectF(16.f, 133.f, 48.f, 2.f);
     conf->customDstSize = LSize(48, 1);
     conf->bufferScale = bufferScale;
 
     conf = &_textures.UIConf[DecorationActiveR];
     conf->texture = texture;
-    conf->customSrcRect = LRectF(172.f - 16.f - 48.f, 133.5f, 48.f, 0.1f);
+    conf->customSrcRect = LRectF(172.f - 16.f - 48.f, 133.f, 48.f, 2.f);
     conf->customDstSize = LSize(48, 1);
     conf->bufferScale = bufferScale;
     conf->transform = LFramebuffer::Flipped;
@@ -324,7 +324,7 @@ void G::loadTextures()
 
     conf = &_textures.UIConf[TooltipT];
     conf->texture = texture;
-    conf->customSrcRect = LRectF(0.f, 216.f - 0.5f - 21.f, 0.5f, 21.f);
+    conf->customSrcRect = LRectF(-0.5f, 216.f - 0.5f - 21.f, 1.f, 21.f);
     conf->customDstSize = LSize(1, 21);
     conf->bufferScale = bufferScale;
     conf->transform = LFramebuffer::Rotated180;
@@ -344,7 +344,7 @@ void G::loadTextures()
 
     conf = &_textures.UIConf[TooltipB];
     conf->texture = texture;
-    conf->customSrcRect = LRectF(172.f - 0.5f, 0.5f, 0.5f, 21.f);
+    conf->customSrcRect = LRectF(172.f - 0.5f, 0.5f, 1.f, 21.f);
     conf->customDstSize = LSize(1, 21);
     conf->bufferScale = bufferScale;
 

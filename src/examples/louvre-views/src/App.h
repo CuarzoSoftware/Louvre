@@ -25,13 +25,7 @@ public:
         const char *iconPath);
     ~App();
 
-    void clicked();
-
-    Client *client = nullptr;
-
-    Int32 pid = -1;
-    std::string name;
-    std::string exec;
+    void dockIconClicked();
 
     // True for Apps pinned in the Dock, false for non Dock apps
     bool pinned = true;
@@ -45,11 +39,18 @@ public:
     // Name texture (for topbar)
     LTexture *nameTexture = nullptr;
 
-    // App icon view on each Output dock
-    std::list<DockApp*>dockApps;
+    // App icon view on each dock
+    std::vector<DockApp*>dockApps;
+
+    // App jumping icon animation
+    LAnimation launchAnimation;
     LPoint dockAppsAnimationOffset;
 
-    LAnimation launchAnimation;
+    Client *client = nullptr;
+
+    Int32 pid = -1;
+    std::string name;
+    std::string exec;
 };
 
 #endif // APP_H

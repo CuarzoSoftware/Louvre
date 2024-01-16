@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "DockApp.h"
 #include "App.h"
 #include "Dock.h"
@@ -19,7 +20,6 @@ DockApp::DockApp(App *app, Dock *dock) :
     dot.setPos((size().w() - dot.size().w()) / 2, size().h() - 2);
     dot.setVisible(false);
     app->dockApps.push_back(this);
-    appLink = std::prev(app->dockApps.end());
     dock->update();
 }
 
@@ -27,7 +27,9 @@ DockApp::~DockApp()
 {
     app->launchAnimation.stop();
     setParent(nullptr);
-    app->dockApps.erase(appLink);
+    auto it = std::find(app->dockApps.begin(), app->dockApps.end(), this);
+    if (it != app->dockApps.end())
+        app->dockApps.erase(it);
     dock->update();
 }
 
@@ -41,5 +43,5 @@ void DockApp::pointerEnterEvent(const LPoint &)
 void DockApp::pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state)
 {
     if (button == LPointer::Left && state == LPointer::Released)
-        app->clicked();
+        app->dockIconClicked();
 }

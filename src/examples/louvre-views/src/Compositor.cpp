@@ -100,7 +100,7 @@ void Compositor::initialized()
     {
         // Set scale 2 to HiDPI screens
         output->setTransform(LFramebuffer::Normal);
-        output->setScale(output->dpi() >= 200 ? 1.5f : 1.f);
+        output->setScale(output->dpi() >= 200 ? 2.f : 1.f);
         output->setPos(LPoint(totalWidth, 0));
         totalWidth += output->size().w();
         compositor()->addOutput(output);

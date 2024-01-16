@@ -1,3 +1,4 @@
+#include "LOutputMode.h"
 #include <private/LPainterPrivate.h>
 #include <private/LOutputFramebufferPrivate.h>
 #include <private/LCompositorPrivate.h>
@@ -44,22 +45,32 @@ void LPainter::bindTextureMode(const TextureParams &p)
         if (outputFB->output()->usingFractionalScale())
         {
             if (outputFB->output()->fractionalOversamplingEnabled())
+            {
                 fbScale = imp()->fb->scale();
+            }
             else
+            {
                 fbScale = outputFB->output()->fractionalScale();
+            }
         }
         else
+        {
             fbScale = imp()->fb->scale();
+        }
     }
     else
+    {
         fbScale = imp()->fb->scale();
+    }
 
-    LPointF pos = p.pos - imp()->fb->rect().pos();
+    LPoint pos = p.pos - imp()->fb->rect().pos();
     Float32 srcDstX, srcDstY;
     Float32 srcW, srcH;
     Float32 srcDstW, srcDstH;
     Float32 srcFbX1, srcFbY1, srcFbX2, srcFbY2;
     Float32 srcFbW, srcFbH;
+    Float32 srcRectW = p.srcRect.w() <= 0.f ? 0.001f : p.srcRect.w();
+    Float32 srcRectH = p.srcRect.h() <= 0.f ? 0.001f : p.srcRect.h();
 
     bool xFlip = false;
     bool yFlip = false;
@@ -79,11 +90,11 @@ void LPainter::bindTextureMode(const TextureParams &p)
         srcW = (Float32(p.texture->sizeB().w()) / p.srcScale);
         srcH = (Float32(p.texture->sizeB().h()) / p.srcScale);
     }
-    srcDstW = (Float32(p.dstSize.w()) * srcW)/(p.srcRect.w());
-    srcDstH = (Float32(p.dstSize.h()) * srcH)/(p.srcRect.h());
 
-    srcDstX = (Float32(p.dstSize.w()) * (p.srcRect.x()))/(p.srcRect.w());
-    srcDstY = (Float32(p.dstSize.h()) * (p.srcRect.y()))/(p.srcRect.h());
+    srcDstW = (Float32(p.dstSize.w()) * srcW) / srcRectW;
+    srcDstX = (Float32(p.dstSize.w()) * p.srcRect.x()) / srcRectW;
+    srcDstH = (Float32(p.dstSize.h()) * srcH) / srcRectH;
+    srcDstY = (Float32(p.dstSize.h()) * p.srcRect.y()) / srcRectH;
 
     switch (invTrans)
     {
@@ -115,6 +126,9 @@ void LPainter::bindTextureMode(const TextureParams &p)
         return;
     }
 
+    Float32 screenH = Float32(imp()->fb->rect().h());
+    Float32 screenW = Float32(imp()->fb->rect().w());
+
     switch (imp()->fb->transform())
     {
     case LFramebuffer::Normal:
@@ -123,7 +137,7 @@ void LPainter::bindTextureMode(const TextureParams &p)
 
         if (imp()->fbId == 0)
         {
-            srcFbY1 = imp()->fb->rect().h() - pos.y() + srcDstY;
+            srcFbY1 = screenH - pos.y() + srcDstY;
             srcFbY2 = srcFbY1 - srcDstH;
         }
         else
@@ -143,13 +157,13 @@ void LPainter::bindTextureMode(const TextureParams &p)
         }
         else
         {
-            srcFbY2 = imp()->fb->rect().w() - pos.x() + srcDstX;
+            srcFbY2 = screenW - pos.x() + srcDstX;
             srcFbY1 = srcFbY2 - srcDstW;
             yFlip = !yFlip;
         }
         break;
     case LFramebuffer::Rotated180:
-        srcFbX2 = imp()->fb->rect().w() - pos.x() + srcDstX;
+        srcFbX2 = screenW - pos.x() + srcDstX;
         srcFbX1 = srcFbX2 - srcDstW;
 
         if (imp()->fbId == 0)
@@ -159,17 +173,17 @@ void LPainter::bindTextureMode(const TextureParams &p)
         }
         else
         {
-            srcFbY2 = imp()->fb->rect().h() - pos.y() + srcDstY;
+            srcFbY2 = screenH - pos.y() + srcDstY;
             srcFbY1 = srcFbY2 - srcDstH;
         }
         break;
     case LFramebuffer::Rotated270:
-        srcFbX1 = imp()->fb->rect().h() - pos.y() + srcDstY;
+        srcFbX1 = screenH - pos.y() + srcDstY;
         srcFbX2 = srcFbX1 - srcDstH;
 
         if (imp()->fbId == 0)
         {
-            srcFbY2 = imp()->fb->rect().w() - pos.x() + srcDstX;
+            srcFbY2 = screenW - pos.x() + srcDstX;
             srcFbY1 = srcFbY2 - srcDstW;
         }
         else
@@ -180,12 +194,12 @@ void LPainter::bindTextureMode(const TextureParams &p)
         }
         break;
     case LFramebuffer::Flipped:
-        srcFbX2 = imp()->fb->rect().w() - pos.x() + srcDstX;
+        srcFbX2 = screenW - pos.x() + srcDstX;
         srcFbX1 = srcFbX2 - srcDstW;
 
         if (imp()->fbId == 0)
         {
-            srcFbY1 = imp()->fb->rect().h() - pos.y() + srcDstY;
+            srcFbY1 = screenH - pos.y() + srcDstY;
             srcFbY2 = srcFbY1 - srcDstH;
         }
         else
@@ -200,7 +214,7 @@ void LPainter::bindTextureMode(const TextureParams &p)
 
         if (imp()->fbId == 0)
         {
-            srcFbY2 = imp()->fb->rect().w() - pos.x() + srcDstX;
+            srcFbY2 = screenW - pos.x() + srcDstX;
             srcFbY1 = srcFbY2 - srcDstW;
         }
         else
@@ -220,14 +234,14 @@ void LPainter::bindTextureMode(const TextureParams &p)
         }
         else
         {
-            srcFbY2 = imp()->fb->rect().h() - pos.y() + srcDstY;
+            srcFbY2 = screenH - pos.y() + srcDstY;
             srcFbY1 = srcFbY2 - srcDstH;
             srcFbX1 = pos.x() - srcDstX;
             srcFbX2 = pos.x() - srcDstX + srcDstW;
         }
         break;
     case LFramebuffer::Flipped270:
-        srcFbX1 = imp()->fb->rect().h() - pos.y() + srcDstY;
+        srcFbX1 = screenH - pos.y() + srcDstY;
         srcFbX2 = srcFbX1 - srcDstH;
 
         if (imp()->fbId == 0)
@@ -237,7 +251,7 @@ void LPainter::bindTextureMode(const TextureParams &p)
         }
         else
         {
-            srcFbY2 = imp()->fb->rect().w() - pos.x() + srcDstX;
+            srcFbY2 = screenW - pos.x() + srcDstX;
             srcFbY1 = srcFbY2 - srcDstW;
             yFlip = !yFlip;
         }
@@ -246,7 +260,7 @@ void LPainter::bindTextureMode(const TextureParams &p)
         return;
     }
 
-    glUniform1i(imp()->currentUniforms->rotate, rotate);
+    imp()->shaderSetTransform(rotate);
 
     if (xFlip)
     {
@@ -262,11 +276,18 @@ void LPainter::bindTextureMode(const TextureParams &p)
         srcFbY1 = srcH;
     }
 
-    srcFbW = srcFbX2 - srcFbX1;
-    srcFbH = srcFbY2 - srcFbY1;
+    srcFbX1 *= fbScale;
+    srcFbY1 *= fbScale;
 
-    imp()->shaderSetTexOffset(srcFbX1 * fbScale, srcFbY1 * fbScale);
-    imp()->shaderSetTexSize(srcFbW * fbScale, srcFbH * fbScale);
+    srcFbW = srcFbX2 * fbScale - srcFbX1;
+    srcFbH = srcFbY2 * fbScale - srcFbY1;
+
+    imp()->srcRect.x = srcFbX1;
+    imp()->srcRect.y = srcFbY1;
+
+    imp()->srcRect.w = srcFbW;
+    imp()->srcRect.h = srcFbH;
+
     glActiveTexture(GL_TEXTURE0);
     imp()->shaderSetMode(3);
     imp()->shaderSetActiveTexture(0);
@@ -340,16 +361,37 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
 
     // Open the vertex/fragment shaders
     GLchar vShaderStr[] = R"(
-        precision lowp float;
-        precision lowp int;
-        uniform lowp vec2 texSize;
-        uniform lowp vec4 srcRect;
-        uniform lowp int transform;
-        attribute lowp vec4 vertexPosition;
-        varying lowp vec2 v_texcoord;
+        precision mediump float;
+        precision mediump int;
+        uniform mediump vec2 texSize;
+        uniform mediump vec4 srcRect;
+        uniform mediump int transform;
+        attribute mediump vec4 vertexPosition;
+        varying mediump vec2 v_texcoord;
+        uniform mediump int mode;
 
         void main()
         {
+            if (mode == 3)
+            {
+                gl_Position = vec4(vertexPosition.xy, 0.0, 1.0);
+
+                if (vertexPosition.x == -1.0)
+                    v_texcoord.x = srcRect.x;
+                else
+                    v_texcoord.x = srcRect.z;
+
+                if (vertexPosition.y == 1.0)
+                    v_texcoord.y = srcRect.y;
+                else
+                    v_texcoord.y = srcRect.w;
+
+                if (transform == 1)
+                    v_texcoord.yx = v_texcoord;
+
+                return;
+            }
+
             // Normal
             if (transform == 0)
                 gl_Position = vec4(vertexPosition.xy, 0.0, 1.0);
@@ -453,51 +495,19 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
         )";
 
     GLchar fShaderStr[] =R"(
-        precision lowp float;
-        precision lowp int;
-        uniform lowp sampler2D tex;
+        uniform mediump sampler2D tex;
         uniform bool colorFactorEnabled;
-        uniform lowp int mode;
-        uniform lowp float alpha;
-        uniform lowp vec3 color;
-        uniform lowp vec4 colorFactor;
-        varying lowp vec2 v_texcoord;
-        uniform lowp vec2 texSize;
-        uniform lowp vec2 texOffset;
-        uniform bool rotate;
+        uniform mediump int mode;
+        uniform mediump float alpha;
+        uniform mediump vec3 color;
+        uniform mediump vec4 colorFactor;
+        varying mediump vec2 v_texcoord;
         uniform bool texColorEnabled;
 
         void main()
         {
             // Texture
-            if (mode == 3)
-            {
-                if (rotate)
-                {
-                    gl_FragColor.x = (gl_FragCoord.y - texOffset.y) / texSize.y;
-                    gl_FragColor.y = (gl_FragCoord.x - texOffset.x) / texSize.x;
-                }
-                else
-                {
-                    gl_FragColor.y = (gl_FragCoord.y - texOffset.y) / texSize.y;
-                    gl_FragColor.x = (gl_FragCoord.x - texOffset.x) / texSize.x;
-                }
-
-                if (texColorEnabled)
-                {
-                    gl_FragColor.w = texture2D(tex, gl_FragColor.xy).w;
-                    gl_FragColor.xyz = color;
-                }
-                else
-                {
-                    gl_FragColor = texture2D(tex, gl_FragColor.xy);
-                }
-
-                gl_FragColor.w *= alpha;
-            }
-
-            // Texture legacy
-            else if (mode == 0)
+            if (mode == 3 || mode == 0)
             {
                 if (texColorEnabled)
                 {
@@ -653,9 +663,9 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
     else
     {
         imp()->currentProgram = imp()->programObjectExternal;
-    #if LPAINTER_TRACK_UNIFORMS == 1
+#if LPAINTER_TRACK_UNIFORMS == 1
         imp()->currentState = &imp()->stateExternal;
-    #endif
+#endif
         imp()->currentUniforms = &imp()->uniformsExternal;
         imp()->setupProgram();
     }
@@ -681,9 +691,9 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
     }
 
     imp()->currentProgram = imp()->programObject;
-    #if LPAINTER_TRACK_UNIFORMS == 1
+#if LPAINTER_TRACK_UNIFORMS == 1
     imp()->currentState = &imp()->state;
-    #endif
+#endif
     imp()->currentUniforms = &imp()->uniforms;
     imp()->setupProgram();
 
@@ -787,8 +797,6 @@ void LPainter::LPainterPrivate::setupProgram()
     currentUniforms->colorFactorEnabled = glGetUniformLocation(currentProgram, "colorFactorEnabled");
     currentUniforms->alpha = glGetUniformLocation(currentProgram, "alpha");
     currentUniforms->transform = glGetUniformLocation(currentProgram, "transform");
-    currentUniforms->texOffset = glGetUniformLocation(currentProgram, "texOffset");
-    currentUniforms->rotate = glGetUniformLocation(currentProgram, "rotate");
 }
 
 void LPainter::LPainterPrivate::setupProgramScaler()
@@ -814,23 +822,23 @@ void LPainter::LPainterPrivate::setupProgramScaler()
 }
 
 void LPainter::drawTexture(const LTexture *texture,
-                            const LRect &src, const LRect &dst,
-                            Float32 srcScale, Float32 alpha)
+                           const LRect &src, const LRect &dst,
+                           Float32 srcScale, Float32 alpha)
 {
     imp()->drawTexture(texture, src.x(), src.y(), src.w(), src.h(), dst.x(), dst.y(), dst.w(), dst.h(), srcScale, alpha);
 }
 
 void LPainter::drawTexture(const LTexture *texture,
-                            Int32 srcX,
-                            Int32 srcY,
-                            Int32 srcW,
-                            Int32 srcH,
-                            Int32 dstX,
-                            Int32 dstY,
-                            Int32 dstW,
-                            Int32 dstH,
-                            Float32 srcScale,
-                            Float32 alpha)
+                           Int32 srcX,
+                           Int32 srcY,
+                           Int32 srcW,
+                           Int32 srcH,
+                           Int32 dstX,
+                           Int32 dstY,
+                           Int32 dstW,
+                           Int32 dstH,
+                           Float32 srcScale,
+                           Float32 alpha)
 {
 
     imp()->drawTexture(texture, srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH, srcScale, alpha);
@@ -839,11 +847,11 @@ void LPainter::drawTexture(const LTexture *texture,
 void LPainter::drawColorTexture(const LTexture *texture, const LRGBF &color, const LRect &src, const LRect &dst, Float32 srcScale, Float32 alpha)
 {
     imp()->drawColorTexture(texture,
-                     color.r, color.g, color.b,
-                     src.x(), src.y(), src.w(), src.h(),
-                     dst.x(), dst.y(), dst.w(), dst.h(),
-                     srcScale,
-                     alpha);
+                            color.r, color.g, color.b,
+                            src.x(), src.y(), src.w(), src.h(),
+                            dst.x(), dst.y(), dst.w(), dst.h(),
+                            srcScale,
+                            alpha);
 }
 
 void LPainter::drawColorTexture(const LTexture *texture,
@@ -860,14 +868,14 @@ void LPainter::drawColorTexture(const LTexture *texture,
 }
 
 void LPainter::drawColor(const LRect &dst,
-                          Float32 r, Float32 g, Float32 b, Float32 a)
+                         Float32 r, Float32 g, Float32 b, Float32 a)
 {
     imp()->drawColor(dst.x(), dst.y(), dst.w(), dst.h(),
-               r, g, b, a);
+                     r, g, b, a);
 }
 
 void LPainter::drawColor(Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                          Float32 r, Float32 g, Float32 b, Float32 a)
+                         Float32 r, Float32 g, Float32 b, Float32 a)
 {
     imp()->drawColor(dstX, dstY, dstW, dstH,
                      r, g, b, a);

@@ -123,7 +123,7 @@ App::~App()
     }
 }
 
-void App::clicked()
+void App::dockIconClicked()
 {
     if (state == Dead)
     {

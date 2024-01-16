@@ -2,14 +2,6 @@
 #define SHARED_H
 
 #include <map>
-class Compositor;
-class Output;
-class Pointer;
-class TextRenderer;
-class App;
-class Tooltip;
-class Surface;
-
 #include <LNamespaces.h>
 #include <LRegion.h>
 #include <LFramebuffer.h>
@@ -61,6 +53,14 @@ using namespace Louvre;
 #define CONTAINER_OFFSET -15
 #define CONTAINER_ARROW_WIDTH 29
 #define CONTAINER_ARROW_HEIGHT 17
+
+class Compositor;
+class Output;
+class Pointer;
+class TextRenderer;
+class App;
+class Tooltip;
+class Surface;
 
 class G
 {

@@ -6,13 +6,15 @@
 class Surface;
 class Dock;
 
+using namespace Louvre;
+
 class DockItem : public LTextureView
 {
 public:
     DockItem(class Surface *surface, Dock *dock);
     ~DockItem();
 
-    void pointerEnterEvent(const LPoint &localPos) override;
+    void pointerEnterEvent(const LPoint &) override;
     void pointerLeaveEvent() override;
     void pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state) override;
 

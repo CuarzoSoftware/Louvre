@@ -260,10 +260,16 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         imp()->unitSeat();
         imp()->unitWayland();
 
-        while (!imp()->animations.empty())
+        retry:
+        for (LAnimation *a : imp()->animations)
         {
-            delete imp()->animations.back();
-            imp()->animations.pop_back();
+            if (a->imp()->destroyOnFinish)
+            {
+                delete a;
+                goto retry;
+            }
+            else
+                a->stop();
         }
 
         imp()->state = CompositorState::Uninitialized;

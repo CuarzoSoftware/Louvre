@@ -181,7 +181,7 @@ void Client::createNonPinnedApp()
     if (app)
         return;
 
-    char name[1024];
+    char name[256];
     get_process_name_by_pid(pid, name, sizeof(name));
 
     LLog::debug("[louvre-views] Non pinned app name: %s", name);

@@ -25,9 +25,8 @@ DockItem::~DockItem()
     surface->minimizedViews.remove(this);
 }
 
-void DockItem::pointerEnterEvent(const LPoint &localPos)
+void DockItem::pointerEnterEvent(const LPoint &)
 {
-    L_UNUSED(localPos);
     setOpacity(0.8f);
 
     if (surface->toplevel())

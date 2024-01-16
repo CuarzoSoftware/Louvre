@@ -15,6 +15,7 @@ public:
     Client(LClient::Params *params);
     ~Client();
 
+    // Used to check if the client is alive
     void pong(UInt32 serial) override;
 
     void createNonPinnedApp();
