@@ -101,14 +101,14 @@ void Output::setWorkspace(Workspace *ws, UInt32 animMs, Float32 curve, Float32 s
 {
     animStart = start;
     easingCurve = curve;
-    workspaceAnim->stop();
-    workspaceAnim->setDuration(animMs);
+    workspaceAnim.stop();
+    workspaceAnim.setDuration(animMs);
     currentWorkspace = ws;
 
     for (Output *o : G::outputs())
         o->workspaces.front()->stealChildren();
 
-    workspaceAnim->start(false);
+    workspaceAnim.start();
 }
 
 void Output::updateWorkspacesPos()
@@ -134,7 +134,7 @@ void Output::updateFractionalOversampling()
 {
     bool oversampling = false;
 
-    if (!usingFractionalScale() || swippingWorkspace || workspaceAnim->running())
+    if (!usingFractionalScale() || swippingWorkspace || workspaceAnim.running())
         goto checkChange;
 
     if (currentWorkspace->toplevel)
@@ -201,7 +201,8 @@ void Output::updateFractionalOversampling()
 
 void Output::initializeGL()
 {
-    workspaceAnim = LAnimation::create(400,
+    workspaceAnim.setDuration(400);
+    workspaceAnim.setOnUpdateCallback(
         [this](LAnimation *anim)
         {
             repaint();
@@ -302,7 +303,9 @@ void Output::initializeGL()
                 if (tl->decoratedView)
                     tl->decoratedView->updateGeometry();
             }
-        },
+        });
+
+    workspaceAnim.setOnFinishCallback(
         [this](LAnimation *)
         {
             if (currentWorkspace->toplevel)
@@ -477,7 +480,7 @@ void Output::uninitializeGL()
         tl->surf()->localOutputPos = tl->prevRect.pos() - pos();
         tl->surf()->localOutputSize = size();
         tl->surf()->outputUnplugHandled = false;
-        workspaceAnim->stop();
+        workspaceAnim.stop();
     }
 
     workspacesContainer->setPos(0, 0);
@@ -504,9 +507,7 @@ void Output::uninitializeGL()
 
         if (s->minimizedOutput == this)
         {
-            if (s->minimizeAnim)
-                s->minimizeAnim->stop();
-
+            s->minimizeAnim.stop();
             s->minimizedOutput = aliveOutput;
             s->minimizeStartRect.setPos(LPoint(rand() % 128, TOPBAR_HEIGHT + (rand() % 128)));
         }
@@ -523,9 +524,7 @@ void Output::uninitializeGL()
     delete wallpaperView;
     wallpaperView = nullptr;
 
-    workspaceAnim->stop();
-    workspaceAnim->destroy();
-    workspaceAnim = nullptr;
+    workspaceAnim.stop();
 
     while (!workspaces.empty())
         delete workspaces.back();

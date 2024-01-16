@@ -2,6 +2,7 @@
 #define APP_H
 
 #include <LObject.h>
+#include <LAnimation.h>
 #include "DockApp.h"
 
 class Client;
@@ -19,7 +20,9 @@ public:
         Running
     };
 
-    App(const char *name, const char *exec, const char *iconPath);
+    App(const char *appName,
+        const char *appExec,
+        const char *iconPath);
     ~App();
 
     void clicked();
@@ -27,8 +30,8 @@ public:
     Client *client = nullptr;
 
     Int32 pid = -1;
-    char name[1024];
-    char exec[1024];
+    std::string name;
+    std::string exec;
 
     // True for Apps pinned in the Dock, false for non Dock apps
     bool pinned = true;
@@ -45,7 +48,8 @@ public:
     // App icon view on each Output dock
     std::list<DockApp*>dockApps;
     LPoint dockAppsAnimationOffset;
-    LAnimation *launchAnimation = nullptr;
+
+    LAnimation launchAnimation;
 };
 
 #endif // APP_H

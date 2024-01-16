@@ -3,7 +3,11 @@
 #include <LTexture.h>
 #include <LCursor.h>
 #include <LLauncher.h>
+#include <LLog.h>
+
 #include <unistd.h>
+#include <algorithm>
+
 #include "Global.h"
 #include "App.h"
 #include "DockApp.h"
@@ -14,61 +18,7 @@
 #include "Toplevel.h"
 #include "TextRenderer.h"
 #include "Workspace.h"
-#include "src/Compositor.h"
-
-App::App(const char *name, const char *exec, const char *iconPath)
-{
-    if (name)
-    {
-        strcpy(this->name, name);
-
-        if (G::font()->semibold)
-            nameTexture = G::font()->semibold->renderText(name, 24, 512);
-    }
-    else
-    {
-        delete this;
-        return;
-    }
-
-    if (exec)
-        strcpy(this->exec, exec);
-    else
-    {
-        pinned = false;
-        state = Running;
-    }
-
-    LTexture *tmp = LOpenGL::loadTexture(iconPath);
-
-    if (tmp)
-    {
-        LTexture *hires = tmp->copyB(LSize(DOCK_ITEM_HEIGHT * 4));
-        texture = hires->copyB(LSize(DOCK_ITEM_HEIGHT * 2));
-        delete hires;
-        delete tmp;
-    }
-
-    if (!texture)
-        texture = G::textures()->defaultAppIcon;
-
-    for (Output *output : G::outputs())
-        new DockApp(this, output->dock);
-
-    G::apps().push_back(this);
-}
-
-App::~App()
-{
-    if (launchAnimation)
-        launchAnimation->stop();
-
-    while (!dockApps.empty())
-        delete dockApps.back();
-
-    if (nameTexture)
-        delete nameTexture;
-}
+#include "Compositor.h"
 
 static Float64 easeIn(Float64 t, Float64 exponent)
 {
@@ -92,35 +42,92 @@ static Float64 periodic_easing_function(Float64 t, Float64 exponent_in, Float64 
         return easeOut(norm, exponent_out);
 }
 
+App::App(const char *appName, const char *appExec, const char *iconPath) :
+    launchAnimation(15000,
+    [this](LAnimation *anim)
+    {
+        Float32 offsetY = periodic_easing_function(anim->value() * 37.0, 2.0, 1.6);
+
+        if (state == Running && offsetY < 0.08f)
+        {
+            anim->stop();
+            return;
+        }
+
+        offsetY = 22.f * offsetY;
+        dockAppsAnimationOffset.setY(round(offsetY));
+        for (DockApp *dapp : dockApps)
+            dapp->dock->update();
+    },
+    [this](LAnimation *)
+    {
+        dockAppsAnimationOffset.setY(0);
+        for (DockApp *dapp : dockApps)
+            dapp->dock->update();
+    })
+{
+    if (!appName)
+    {
+        LLog::error("[louvre-views] Failed to create dock app. Missing name.");
+        delete this;
+        return;
+    }
+
+    name = appName;
+
+    if (G::font()->semibold)
+        nameTexture = G::font()->semibold->renderText(name.c_str(), 24, 512);
+
+    if (!appExec)
+    {
+        pinned = false;
+        state = Running;
+    }
+    else
+        exec = appExec;
+
+    LTexture *tmp = LOpenGL::loadTexture(iconPath);
+
+    if (tmp)
+    {
+        LTexture *hires = tmp->copyB(LSize(DOCK_ITEM_HEIGHT * 4));
+        texture = hires->copyB(LSize(DOCK_ITEM_HEIGHT * 2));
+        delete hires;
+        delete tmp;
+    }
+
+    if (!texture)
+        texture = G::textures()->defaultAppIcon;
+
+    for (Output *output : G::outputs())
+        new DockApp(this, output->dock);
+
+    G::apps().push_back(this);
+}
+
+App::~App()
+{
+    launchAnimation.stop();
+
+    while (!dockApps.empty())
+        delete dockApps.back();
+
+    if (nameTexture)
+        delete nameTexture;
+
+    if (!pinned)
+    {
+        auto it = std::find(G::apps().begin(), G::apps().end(), this);
+        if (it != G::apps().end())
+            G::apps().erase(it);
+    }
+}
+
 void App::clicked()
 {
     if (state == Dead)
     {
-        launchAnimation = LAnimation::create(15000,
-        [this](LAnimation *anim)
-        {
-            Float32 offsetY = periodic_easing_function(anim->value() * 37.0, 2.0, 1.6);
-
-            if (state == Running && offsetY < 0.08f)
-            {
-                anim->stop();
-                return;
-            }
-
-            offsetY = 22.f * offsetY;
-            dockAppsAnimationOffset.setY(round(offsetY));
-            for (DockApp *dapp : dockApps)
-                dapp->dock->update();
-        },
-        [this](LAnimation *)
-        {
-            dockAppsAnimationOffset.setY(0);
-            for (DockApp *dapp : dockApps)
-                dapp->dock->update();
-            launchAnimation = nullptr;
-        });
-
-        launchAnimation->start(true);
+        launchAnimation.start();
         pid = LLauncher::launch(exec);
         state = Launching;
     }

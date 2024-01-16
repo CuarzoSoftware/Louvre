@@ -5,6 +5,7 @@
 #include <LSolidColorView.h>
 #include <LRenderBuffer.h>
 #include <LSceneView.h>
+#include <LAnimation.h>
 
 using namespace Louvre;
 
@@ -35,7 +36,7 @@ public:
     Workspace *currentWorkspace = nullptr;
 
     // Workspace switch/restore animation
-    LAnimation *workspaceAnim = nullptr;
+    LAnimation workspaceAnim;
     Float32 easingCurve = 2.f;
     Float32 animStart = 0.f;
     Toplevel *animatedFullscreenToplevel = nullptr;

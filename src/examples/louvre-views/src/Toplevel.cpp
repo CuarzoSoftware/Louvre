@@ -393,7 +393,7 @@ void Toplevel::unsetFullscreen()
         if (fullscreenWorkspace)
         {
             Workspace *prev = *std::prev(fullscreenWorkspace->outputLink);
-            fullscreenOutput->workspaceAnim->stop();
+            fullscreenOutput->workspaceAnim.stop();
             fullscreenOutput->animatedFullscreenToplevel = nullptr;
             delete fullscreenWorkspace;
             fullscreenWorkspace = nullptr;

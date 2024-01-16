@@ -63,9 +63,7 @@ Dock::Dock(Output *output) :
 Dock::~Dock()
 {
     alive = false;
-
-    if (anim)
-        anim->stop();
+    anim.stop();
 
     while (!itemsContainer.children().empty())
         delete itemsContainer.children().back();
@@ -153,22 +151,24 @@ void Dock::update()
 
 void Dock::show()
 {
-    if (anim || visiblePercent != 0.f)
+    if (anim.running() || visiblePercent != 0.f)
         return;
 
     dockContainer.setVisible(true);
 
-    anim = LAnimation::create(250,
+    anim.setDuration(250);
+
+    anim.setOnUpdateCallback(
     [this](LAnimation *anim)
     {
         visiblePercent = 1.f - powf(1.f - anim->value(), 2.f);
         update();
         output->repaint();
-    },
+    });
+
+    anim.setOnFinishCallback(
     [this](LAnimation *)
     {
-        anim = nullptr;
-
         if (!pointerIsOver())
         {
             hide();
@@ -184,31 +184,34 @@ void Dock::show()
         setInputRegion(&input);
     });
 
-    anim->start();
+    anim.start();
 }
 
 void Dock::hide()
 {
-    if (anim || visiblePercent != 1.f)
+    if (anim.running() || visiblePercent != 1.f)
         return;
 
-    anim = LAnimation::create(250,
+    anim.setDuration(250);
+
+    anim.setOnUpdateCallback(
     [this](LAnimation *anim)
     {
         visiblePercent = 1.f - powf(anim->value(), 2.f);
         update();
         output->repaint();
-    },
+    });
+
+    anim.setOnFinishCallback(
     [this](LAnimation *)
     {
-        anim = nullptr;
         dockContainer.setVisible(false);
         G::tooltip()->hide();
         G::tooltip()->targetView = nullptr;
         setInputRegion(nullptr);
     });
 
-    anim->start();
+    anim.start();
 }
 
 void Dock::pointerEnterEvent(const LPoint &localPos)

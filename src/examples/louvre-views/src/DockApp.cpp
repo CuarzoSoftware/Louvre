@@ -25,9 +25,7 @@ DockApp::DockApp(App *app, Dock *dock) :
 
 DockApp::~DockApp()
 {
-    if (app->launchAnimation)
-        app->launchAnimation->stop();
-
+    app->launchAnimation.stop();
     setParent(nullptr);
     app->dockApps.erase(appLink);
     dock->update();
@@ -35,7 +33,7 @@ DockApp::~DockApp()
 
 void DockApp::pointerEnterEvent(const LPoint &)
 {
-    G::tooltip()->setText(app->name);
+    G::tooltip()->setText(app->name.c_str());
     G::tooltip()->targetView = this;
     dock->update();
 }

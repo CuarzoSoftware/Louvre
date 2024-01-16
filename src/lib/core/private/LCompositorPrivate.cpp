@@ -597,35 +597,39 @@ void LCompositor::LCompositorPrivate::insertSurfaceBefore(LSurface *nextSurface,
 
 bool LCompositor::LCompositorPrivate::runningAnimations()
 {
-    for (LAnimation *anim : animations)
-        if (anim->imp()->running || anim->imp()->pendingDestroy)
-            return true;
+    bool running = false;
 
-    return false;
+    for (LAnimation *anim : animations)
+    {
+        anim->imp()->processed = false;
+
+        if (anim->imp()->running || anim->imp()->pendingDestroy)
+            running = true;
+    }
+
+    return running;
 }
 
 void LCompositor::LCompositorPrivate::processAnimations()
 {
-    auto it = animations.begin();
-
-    while (it != animations.end())
+    Int64 elapsed;
+    retry:
+    animationsVectorChanged = false;
+    for (LAnimation *a : animations)
     {
-        LAnimation *a = *it;
+        if (a->imp()->processed)
+            continue;
 
         if (a->imp()->pendingDestroy)
         {
-            it = animations.erase(it);
             delete a;
-            continue;
+            goto retry;
         }
+
+        a->imp()->processed = true;
 
         if (!a->imp()->running)
-        {
-            it++;
             continue;
-        }
-
-        Int64 elapsed;
 
         elapsed = (Int64)LTime::ms() - (Int64)a->imp()->beginTime;
 
@@ -635,24 +639,21 @@ void LCompositor::LCompositorPrivate::processAnimations()
         a->imp()->value = (Float32)elapsed/(Float32)a->imp()->duration;
 
         if (a->imp()->onUpdate)
+        {
             a->imp()->onUpdate(a);
+
+            if (animationsVectorChanged)
+                goto retry;
+        }
 
         if (a->imp()->value == 1.f)
         {
-            if (a->imp()->onFinish)
-                a->imp()->onFinish(a);
+            a->stop();
 
-            a->imp()->running = false;
-
-            if (a->imp()->destroyOnFinish)
-            {
-                it = animations.erase(it);
-                delete a;
-                continue;
-            }
+            if (animationsVectorChanged)
+                goto retry;
         }
 
-        it++;
     }
 }
 

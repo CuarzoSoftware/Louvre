@@ -60,13 +60,13 @@ int get_process_name_by_pid(int pid, char *process_name, size_t buffer_size) {
     return 0; // Success
 }
 
-Client::Client(Params *params) : LClient(params)
-{
-    unresponsiveAnim = LAnimation::create(1000,
+Client::Client(Params *params) : LClient(params),
+    unresponsiveAnim(1000,
     [this](LAnimation *anim)
     {
         Float32 color;
-            if (unresponsiveCount > 0)
+
+        if (unresponsiveCount > 0)
             color = 1.f - 0.8 * anim->value();
         else
             color = 0.2f + 0.8 * anim->value();
@@ -90,7 +90,8 @@ Client::Client(Params *params) : LClient(params)
         }
 
         compositor()->repaintAllOutputs();
-    });
+    })
+{
 
     pingTimer = new LTimer([this](LTimer *)
     {
@@ -103,7 +104,7 @@ Client::Client(Params *params) : LClient(params)
                 if (unresponsiveCount > 5)
                     destroy();
                 else if (unresponsiveCount == 0)
-                    unresponsiveAnim->start(false);
+                    unresponsiveAnim.start();
 
                 unresponsiveCount++;
             }
@@ -112,7 +113,7 @@ Client::Client(Params *params) : LClient(params)
                 if (unresponsiveCount > 0)
                 {
                     unresponsiveCount = 0;
-                    unresponsiveAnim->start(false);
+                    unresponsiveAnim.start();
                 }
             }
         }
@@ -155,7 +156,6 @@ Client::Client(Params *params) : LClient(params)
 
 Client::~Client()
 {
-    unresponsiveAnim->destroy();
     pingTimer->destroy();
 
     if (app)

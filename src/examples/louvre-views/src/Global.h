@@ -168,11 +168,11 @@ public:
         // Terminal icon
         LTexture *defaultAppIcon = nullptr;
 
-        // UI textures @1x @1.25x @1.5x @1.75x @2x
-        LTexture *UI[5];
+        // UI texture
+        LTexture *atlas;
 
-        // UI textures confs @1x @1.25x @1.5x @1.75x @2x
-        TextureViewConf UIConf[5][46];
+        // UI textures confs
+        TextureViewConf UIConf[46];
     };
 
     struct Fonts
@@ -191,7 +191,7 @@ public:
     // Dock
     static void enableDocks(bool enabled);
     static void loadApps();
-    static std::list<App*>&apps();
+    static std::vector<App *> &apps();
 
     // Tooltip
     static void createTooltip();
@@ -204,7 +204,7 @@ public:
     // Textures
     static Textures *textures();
     static void loadTextures();
-    static void setTexViewConf(LTextureView *view, UInt32 index, Float32 scale);
+    static void setTexViewConf(LTextureView *view, UInt32 index);
 
     // Toplevel regions
     static ToplevelRegions *toplevelRegions();
@@ -214,7 +214,6 @@ public:
     static void loadFonts();
     static Fonts *font();
     static const char *transformName(LFramebuffer::Transform transform);
-
 
     // Utils
     static LTexture *loadAssetsTexture(const char *name, bool exitOnFail = true);

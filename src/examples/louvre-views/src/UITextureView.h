@@ -2,16 +2,14 @@
 #define UITEXTUREVIEW_H
 
 #include <LTextureView.h>
-#include "Global.h"
 
-/* This texture view dynamically adjusts the texture scale during a paintEvent, ensuring alignment with the current framebuffer scale. */
+using namespace Louvre;
 
-class UITextureView : public Louvre::LTextureView
+class UITextureView : public LTextureView
 {
 public:
-    UITextureView(UInt32 textureIndex, LView *parent, Float32 scale = 2.f);
-    void setTextureIndex(UInt32 textureIndex, Float32 scale = 2.f);
-    void paintEvent(const Louvre::LTextureView::PaintEventParams &params) override;
+    UITextureView(UInt32 textureIndex, LView *parent);
+    void setTextureIndex(UInt32 textureIndex);
     UInt32 textureIndex;
 };
 

@@ -9,10 +9,10 @@ LPRIVATE_CLASS(LAnimation)
     Float32 value = 0.f;
     UInt32 duration;
     UInt32 beginTime;
+    bool processed = false;
     bool pendingDestroy = false;
     bool running = false;
-    bool destroyOnFinish = true;
-    std::list<LAnimation*>::iterator compositorLink;
+    bool destroyOnFinish = false;
     Callback onUpdate = nullptr;
     Callback onFinish = nullptr;
 };

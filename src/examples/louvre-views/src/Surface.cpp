@@ -14,7 +14,7 @@
 #include "Client.h"
 #include "App.h"
 
-Surface::Surface(LSurface::Params *params) : LSurface(params)
+Surface::Surface(LSurface::Params *params) : LSurface(params), minimizeAnim(300)
 {
     view = new LSurfaceView(this, &G::compositor()->surfacesLayer);
     view->setVisible(false);
@@ -33,9 +33,6 @@ Surface::~Surface()
             tl()->decoratedView = nullptr;
         }
     }
-
-    if (minimizeAnim)
-        minimizeAnim->stop();
 
     while (!minimizedViews.empty())
         delete minimizedViews.back();
@@ -285,28 +282,29 @@ void Surface::minimizedChanged()
                 dstDockItem = minView;
         }
 
-        minimizeAnim = LAnimation::create(300,
-        [this, dstDockItem](LAnimation *anim)
-        {
-            // Transform linear curve to ease out
-            Float32 easeOut = 1.f - powf(1.f - anim->value(), 2.f);
-
-            // Animate all docks items
-            for (DockItem *item : minimizedViews)
+        minimizeAnim.setOnUpdateCallback(
+            [this, dstDockItem](LAnimation *anim)
             {
-                item->setScalingVector(easeOut);
-                item->dock->update();
-            }
+                // Transform linear curve to ease out
+                Float32 easeOut = 1.f - powf(1.f - anim->value(), 2.f);
 
-            // Scale and move fullsize view to the dock
-            LRegion trans = minimizedTransRegion;
-            trans.multiply((1.f - easeOut));
-            thumbnailFullsizeView->setTranslucentRegion(&trans);
-            thumbnailFullsizeView->setDstSize((thumbnailFullsizeView->texture()->sizeB() / thumbnailFullsizeView->bufferScale()) * (1.f - easeOut));
-            thumbnailFullsizeView->setPos((dstDockItem->pos() + dstDockItem->size()) * easeOut +
-                     minimizeStartRect.pos() * (1.f - easeOut));
-        },
-        [this](LAnimation *)
+                // Animate all docks items
+                for (DockItem *item : minimizedViews)
+                {
+                    item->setScalingVector(easeOut);
+                    item->dock->update();
+                }
+
+                // Scale and move fullsize view to the dock
+                LRegion trans = minimizedTransRegion;
+                trans.multiply((1.f - easeOut));
+                thumbnailFullsizeView->setTranslucentRegion(&trans);
+                thumbnailFullsizeView->setDstSize((thumbnailFullsizeView->texture()->sizeB() / thumbnailFullsizeView->bufferScale()) * (1.f - easeOut));
+                thumbnailFullsizeView->setPos((dstDockItem->pos() + dstDockItem->size()) * easeOut +
+                         minimizeStartRect.pos() * (1.f - easeOut));
+            });
+
+        minimizeAnim.setOnFinishCallback([this](LAnimation *)
         {
             // Finish docks items animations
             for (DockItem *item : minimizedViews)
@@ -318,10 +316,9 @@ void Surface::minimizedChanged()
 
             // Hide the resized fullsize view
             thumbnailFullsizeView->setVisible(false);
-            minimizeAnim = nullptr;
         });
 
-        minimizeAnim->start();
+        minimizeAnim.start();
 
         if (toplevel())
             toplevel()->configure(toplevel()->pendingStates() &~LToplevelRole::Activated);
@@ -353,8 +350,6 @@ void Surface::minimizedChanged()
             thumbnailFullSizeTex = nullptr;
             delete thumbnailTex;
             thumbnailTex = nullptr;
-
-            minimizeAnim = nullptr;
         }
 
         raise();
@@ -437,7 +432,7 @@ void Surface::unminimize(DockItem *clickedItem)
         item->enableScaling(true);
     }
 
-    minimizeAnim = LAnimation::create(300,
+    minimizeAnim.setOnUpdateCallback(
     [this, clickedItem](LAnimation *anim)
     {
         // Transform linear curve to ease out
@@ -458,14 +453,15 @@ void Surface::unminimize(DockItem *clickedItem)
         // Scale and move fullsize view to the dock
         thumbnailFullsizeView->setPos((clickedItem->pos() + clickedItem->size()) * (1.f - exp) +
                  minimizeStartRect.pos() * exp);
-    },
+    });
+
+    minimizeAnim.setOnFinishCallback(
     [this](LAnimation *)
     {
         setMinimized(false);
-        minimizeAnim = nullptr;
     });
 
-    minimizeAnim->start();
+    minimizeAnim.start();
 }
 
 void Surface::damageChanged()

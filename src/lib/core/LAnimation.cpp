@@ -1,31 +1,33 @@
 #include <private/LAnimationPrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <LTime.h>
+#include <algorithm>
 
-LAnimation::LAnimation() : LPRIVATE_INIT_UNIQUE(LAnimation)
+LAnimation::LAnimation(UInt32 durationMs, const Callback &onUpdate, const Callback &onFinish) : LPRIVATE_INIT_UNIQUE(LAnimation)
 {
-    LCompositor::compositor()->imp()->animations.push_back(this);
-    imp()->compositorLink = std::prev(LCompositor::compositor()->imp()->animations.end());
+    compositor()->imp()->animations.push_back(this);
+    imp()->duration = durationMs;
+    imp()->onUpdate = onUpdate;
+    imp()->onFinish = onFinish;
 }
 
-LAnimation::~LAnimation() {}
+LAnimation::~LAnimation()
+{
+    stop();
+
+    auto it = std::find(compositor()->imp()->animations.begin(), compositor()->imp()->animations.end(), this);
+    if (it != compositor()->imp()->animations.end())
+    {
+        compositor()->imp()->animationsVectorChanged= true;
+        compositor()->imp()->animations.erase(it);
+    }
+}
 
 void LAnimation::oneShot(UInt32 durationMs, const Callback &onUpdate, const Callback &onFinish)
 {
-    LAnimation *anim = new LAnimation();
-    anim->imp()->duration = durationMs;
-    anim->imp()->onUpdate = onUpdate;
-    anim->imp()->onFinish = onFinish;
+    LAnimation *anim = new LAnimation(durationMs, onUpdate, onFinish);
+    anim->imp()->destroyOnFinish = true;
     anim->start();
-}
-
-LAnimation *LAnimation::create(UInt32 durationMs, const Callback &onUpdate, const Callback &onFinish)
-{
-    LAnimation *anim = new LAnimation();
-    anim->imp()->duration = durationMs;
-    anim->imp()->onUpdate = onUpdate;
-    anim->imp()->onFinish = onFinish;
-    return anim;
 }
 
 void LAnimation::setOnUpdateCallback(const Callback &onUpdate)
@@ -62,14 +64,13 @@ Float32 LAnimation::value() const
     return imp()->value;
 }
 
-void LAnimation::start(bool destroyOnFinish)
+void LAnimation::start()
 {
     if (imp()->running)
         return;
 
     imp()->value = 0.f;
     imp()->beginTime = LTime::ms();
-    imp()->destroyOnFinish = destroyOnFinish;
     imp()->running = true;
     compositor()->repaintAllOutputs();
 }
@@ -80,7 +81,6 @@ void LAnimation::stop()
         return;
 
     imp()->value = 1.f;
-
     imp()->running = false;
 
     if (imp()->onFinish)
@@ -88,11 +88,6 @@ void LAnimation::stop()
 
     if (imp()->destroyOnFinish)
         imp()->pendingDestroy = true;
-}
-
-void LAnimation::destroy()
-{
-    imp()->pendingDestroy = true;
 }
 
 bool LAnimation::running() const

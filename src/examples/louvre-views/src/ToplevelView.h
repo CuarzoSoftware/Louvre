@@ -4,6 +4,7 @@
 #include <LLayerView.h>
 #include <LSceneView.h>
 #include <LSurfaceView.h>
+#include <LAnimation.h>
 #include "UITextureView.h"
 
 using namespace Louvre;
@@ -55,7 +56,7 @@ public:
 
     UInt32 lastTopbarClickMs = 0;
     Float32 fullscreenTopbarVisibility = 0.f;
-    LAnimation *fullscreenTopbarAnim = nullptr;
+    LAnimation fullscreenTopbarAnim;
 
     Int32 titleWidth = 0;
     void updateTitle();

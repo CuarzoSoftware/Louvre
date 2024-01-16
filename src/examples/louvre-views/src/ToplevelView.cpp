@@ -40,31 +40,33 @@ static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &
         G::compositor()->cursor()->useDefault();
 
         // Hide / show title bar when fullscreen
-        if (view->toplevel->fullscreen() && !view->fullscreenTopbarAnim && view->fullscreenTopbarVisibility == 0.f)
+        if (view->toplevel->fullscreen() && !view->fullscreenTopbarAnim.running() && view->fullscreenTopbarVisibility == 0.f)
         {
             // Stop if the user is interacting with a popup
             if (view->seat()->keyboard()->grabbingSurface())
                 return;
 
-            view->fullscreenTopbarAnim =
-                LAnimation::create(256,
-                [view](LAnimation *anim)
-                {
-                    view->fullscreenTopbarVisibility = 1.f - powf(1.f - anim->value(), 2.f);
-                    view->updateGeometry();
-                    G::compositor()->repaintAllOutputs();
-                },
-                [view](LAnimation *anim)
-                {
-                    view->fullscreenTopbarVisibility = anim->value();
-                    view->updateGeometry();
-                    view->fullscreenTopbarAnim = nullptr;
+            view->fullscreenTopbarAnim.setDuration(256);
 
-                    if (!view->topbarInput->pointerIsOver())
-                        onPointerLeaveResizeArea(view->topbarInput, nullptr);
-                });
+            view->fullscreenTopbarAnim.setOnUpdateCallback(
+            [view](LAnimation *anim)
+            {
+                view->fullscreenTopbarVisibility = 1.f - powf(1.f - anim->value(), 2.f);
+                view->updateGeometry();
+                G::compositor()->repaintAllOutputs();
+            });
 
-            view->fullscreenTopbarAnim->start();
+            view->fullscreenTopbarAnim.setOnFinishCallback(
+            [view](LAnimation *anim)
+            {
+                view->fullscreenTopbarVisibility = anim->value();
+                view->updateGeometry();
+
+                if (!view->topbarInput->pointerIsOver())
+                    onPointerLeaveResizeArea(view->topbarInput, nullptr);
+            });
+
+            view->fullscreenTopbarAnim.start();
         }
     }
 
@@ -86,28 +88,30 @@ static void onPointerLeaveResizeArea(InputRect *rect, void *data)
     }
     else
     {
-        if (view->toplevel->fullscreen() && !view->fullscreenTopbarAnim && view->fullscreenTopbarVisibility == 1.f)
+        if (view->toplevel->fullscreen() && !view->fullscreenTopbarAnim.running() && view->fullscreenTopbarVisibility == 1.f)
         {
-            view->fullscreenTopbarAnim =
-                LAnimation::create(256,
-                    [view](LAnimation *anim)
-                    {
-                        view->fullscreenTopbarVisibility = powf(1.f - anim->value(), 2.f);
-                        view->updateGeometry();
-                        if (view->toplevel->fullscreenOutput)
-                            view->toplevel->fullscreenOutput->repaint();
-                    },
-                    [view](LAnimation *anim)
-                    {
-                        view->fullscreenTopbarVisibility = 1.f -anim->value();
-                        view->updateGeometry();
-                        view->fullscreenTopbarAnim = nullptr;
+            view->fullscreenTopbarAnim.setDuration(256);
 
-                        if (view->topbarInput->pointerIsOver())
-                            onPointerEnterResizeArea(view->topbarInput, nullptr, LPoint());
-                    });
+            view->fullscreenTopbarAnim.setOnUpdateCallback(
+            [view](LAnimation *anim)
+            {
+                view->fullscreenTopbarVisibility = powf(1.f - anim->value(), 2.f);
+                view->updateGeometry();
+                if (view->toplevel->fullscreenOutput)
+                    view->toplevel->fullscreenOutput->repaint();
+            });
 
-            view->fullscreenTopbarAnim->start();
+            view->fullscreenTopbarAnim.setOnFinishCallback(
+            [view](LAnimation *anim)
+            {
+                view->fullscreenTopbarVisibility = 1.f -anim->value();
+                view->updateGeometry();
+
+                if (view->topbarInput->pointerIsOver())
+                    onPointerEnterResizeArea(view->topbarInput, nullptr, LPoint());
+            });
+
+            view->fullscreenTopbarAnim.start();
         }
     }
 }
@@ -351,8 +355,7 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
 
 ToplevelView::~ToplevelView()
 {
-    if (fullscreenTopbarAnim)
-        fullscreenTopbarAnim->stop();
+    fullscreenTopbarAnim.stop();
 
     Pointer *pointer = (Pointer*)seat()->pointer();
 

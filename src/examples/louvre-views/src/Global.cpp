@@ -16,12 +16,10 @@
 
 static G::Cursors xCursors;
 static G::Fonts _fonts;
-static std::list<App*>_apps;
+static std::vector<App*>_apps;
 static Tooltip *_tooltip;
 static G::Textures _textures;
 static G::ToplevelRegions _toplevelRegions;
-static Float32 scales[] = {2.f, 2.f, 2.f, 2.f, 2.f};
-
 
 Compositor *G::compositor()
 {
@@ -57,39 +55,49 @@ void G::enableDocks(bool enabled)
 
 void G::loadApps()
 {
-    FILE *file = NULL;
+    int len;
 
-    char appList[256];
+    FILE *appsListFile = NULL;
+    char *appsListPath = NULL;
+
     char appName[256];
     char appExec[256];
     char appIcon[256];
 
     const char *home = getenv("HOME");
 
-    if (!home)
-        goto default_app;
+    // Try loading user's apps.list first
 
-    sprintf(appList, "%s/.config/Louvre/apps.list", home);
-
-    file = fopen(appList, "r");
-
-    default_app:
-    if (file == NULL)
+    if (home)
     {
-        char *path = joinPaths(ASSETS_PATH, "apps.list");
-        file = fopen(path, "r");
-        free(path);
+        appsListPath = joinPaths(home, "/.config/Louvre/apps.list");
+        appsListFile = fopen(appsListPath, "r");
+        free(appsListPath);
     }
 
-    if (file == NULL)
-        goto error;
+    // If doesn't exist, fallback to default
 
-    int len;
+    if (appsListFile == NULL)
+    {
+        appsListPath = joinPaths(ASSETS_PATH, "apps.list");
+        appsListFile = fopen(appsListPath, "r");
+        free(appsListPath);
+    }
 
-     // Buffer to hold each line
+    // If doesn't exist, the dock is empty
+
+    if (appsListFile == NULL)
+    {
+        LLog::error("[louvre-views] Failed to read apps.list.");
+        return;
+    }
+
+    // Parse the apps.list file
+
     while (true)
     {
-        if (!fgets(appName, sizeof(appName), file))
+        // Read the app's name
+        if (!fgets(appName, sizeof(appName), appsListFile))
             break;
 
         len = strlen(appName);
@@ -99,7 +107,8 @@ void G::loadApps()
         else
             break;
 
-        if (!fgets(appExec, sizeof(appExec), file))
+        // Read the app's exec command
+        if (!fgets(appExec, sizeof(appExec), appsListFile))
             break;
 
         len = strlen(appExec);
@@ -109,7 +118,8 @@ void G::loadApps()
         else
             break;
 
-        if (!fgets(appIcon, sizeof(appIcon), file))
+        // Read the app's icon path
+        if (!fgets(appIcon, sizeof(appIcon), appsListFile))
             break;
 
         len = strlen(appIcon);
@@ -122,17 +132,10 @@ void G::loadApps()
         new App(appName, appExec, appIcon);
     }
 
-    fclose(file);
-    return;
-
-    error:
-    LLog::error("[louvre-views] Failed to read apps.list");
-
-    if (file)
-        fclose(file);
+    fclose(appsListFile);
 }
 
-std::list<App *> &G::apps()
+std::vector<App *> &G::apps()
 {
     return _apps;
 }
@@ -177,7 +180,6 @@ G::Textures *G::textures()
 
 void G::loadTextures()
 {
-
     LTexture *tmp = loadAssetsTexture("dock_app.png");
 
     if (tmp)
@@ -188,301 +190,234 @@ void G::loadTextures()
         delete tmp;
     }
 
-    _textures.UI[0] = loadAssetsTexture("ui@1x.png");
-    _textures.UI[1] = loadAssetsTexture("ui@1.25x.png");
-    _textures.UI[2] = loadAssetsTexture("ui@1.5x.png");
-    _textures.UI[3] = loadAssetsTexture("ui@1.75x.png");
-    _textures.UI[4] = loadAssetsTexture("ui@2x.png");
+    _textures.atlas = loadAssetsTexture("ui@2x.png");
 
-    for (UInt32 s = 0; s < 5; s++)
-    {
-        Float32 bufferScale = scales[s];
-        LTexture *texture = _textures.UI[s];
-        TextureViewConf *conf;
-
-        // Toplevel buttons
-        for (UInt32 i = 0; i < 14; i++)
-        {
-            conf = &_textures.UIConf[s][i];
-            conf->texture = texture;
-
-            if (bufferScale == 1.5f)
-                conf->customSrcRect = LRectF(2.f, 2.f - 0.25f + 14.f * Float32(i), 12.f + 0.25f, 12.f + 0.25f);
-            else if (bufferScale == 1.75f)
-                conf->customSrcRect = LRectF(2.f - 0.25f, 2.f - 1.f + 14.f * Float32(i), 12.f + 1.f, 12.f + 1.f);
-            else if (bufferScale == 1.25f)
-                conf->customSrcRect = LRectF(2.f - 0.75f, 2.f - 0.75f + 14.f * Float32(i), 12.f + 1.5f, 12.f + 1.5f);
-            else
-                conf->customSrcRect = LRectF(2.f, 2.f + 14.f * Float32(i), 12.f, 12.f);
-
-            conf->customDstSize = LSize(12, 12);
-            conf->bufferScale = bufferScale;
-        }
-
-        conf = &_textures.UIConf[s][DecorationActiveTL];
-        conf->texture = texture;
-        if (bufferScale == 1.75f)
-            conf->customSrcRect = LRectF(16.f + 0.35f, 59.75f, 70.f, 74.f);
-        else if (bufferScale == 1.25f)
-            conf->customSrcRect = LRectF(16.f + 0.4f, 59.5f, 70.f, 74.f);
-        else
-            conf->customSrcRect = LRectF(16.f, 59.5f, 70.f, 74.f);
-        conf->customDstSize = LSize(70, 74);
-        conf->bufferScale = bufferScale;
-
-        conf = &_textures.UIConf[s][DecorationActiveTR];
-        conf->texture = texture;
-
-        if (bufferScale == 1.f)
-            conf->customSrcRect = LRectF(172.f - 16.f - 70.f, 59.25f, 70.f, 74.25f);
-        else if (bufferScale == 1.75f)
-            conf->customSrcRect = LRectF(172.f - 16.f - 70.f, 59.75f, 70.f, 74.f);
-        else
-            conf->customSrcRect = LRectF(172.f - 16.f - 70.f, 59.5f, 70.f, 74.f);
-        conf->customDstSize = LSize(70, 74);
-        conf->bufferScale = bufferScale;
-        conf->transform = LFramebuffer::Flipped;
-
-        conf = &_textures.UIConf[s][DecorationActiveT];
-        conf->texture = texture;
-        if (bufferScale == 1.75f)
-            conf->customSrcRect = LRectF(87.f, 59.75f, 1.f, 61.f);
-        else
-            conf->customSrcRect = LRectF(87.f, 59.5f, 1.f, 61.f);
-        conf->customDstSize = LSize(1, 61);
-        conf->bufferScale = bufferScale;
-
-        conf = &_textures.UIConf[s][DecorationActiveL];
-        conf->texture = texture;
-
-        if (bufferScale == 1.5f)
-            conf->customSrcRect = LRectF(16.f, 133.5f, 48.f - 0.25f, 0.5f);
-        else
-            conf->customSrcRect = LRectF(16.f, 133.5f, 48.f, 0.5f);
-
-        conf->customDstSize = LSize(48, 1);
-        conf->bufferScale = bufferScale;
-
-        conf = &_textures.UIConf[s][DecorationActiveR];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(172.f - 16.f - 48.f, 133.5f, 48.f, 0.1f);
-        conf->customDstSize = LSize(48, 1);
-        conf->bufferScale = bufferScale;
-        conf->transform = LFramebuffer::Flipped;
-
-        conf = &_textures.UIConf[s][DecorationActiveBL];
-        conf->texture = texture;
-        if (bufferScale == 1.25f)
-            conf->customSrcRect = LRectF(16.f, 134.f + 0.4f, 82.f, 80.f);
-        else
-            conf->customSrcRect = LRectF(16.f, 134.f, 82.f, 80.f);
-        conf->customDstSize = LSize(82, 80);
-        conf->bufferScale = bufferScale;
-
-        conf = &_textures.UIConf[s][DecorationActiveBR];
-        conf->texture = texture;
-
-        if (bufferScale == 1.5f || bufferScale == 1.75f)
-            conf->customSrcRect = LRectF(172.f - 16.f - 82.f + 0.25f, 134.f, 82.f, 80.f);
-        else if (bufferScale == 1.25f)
-            conf->customSrcRect = LRectF(172.f - 16.f - 82.f + 0.4f, 134.f + 0.25f, 82.f, 80.f);
-        else
-            conf->customSrcRect = LRectF(172.f - 16.f - 82.f, 134.f, 82.f, 80.f);
-
-        conf->customDstSize = LSize(82, 80);
-        conf->bufferScale = bufferScale;
-        conf->transform = LFramebuffer::Flipped;
-
-        conf = &_textures.UIConf[s][DecorationActiveB];
-        conf->texture = texture;
-
-        if (bufferScale == 1.5f)
-            conf->customSrcRect = LRectF(98.f, 155.5f - 0.25f, 0.5f, 58.5f);
-        else
-            conf->customSrcRect = LRectF(98.f, 155.5f, 0.5f, 58.5f);
-
-        conf->customDstSize = LSize(1, 59);
-        conf->bufferScale = bufferScale;
-
-        conf = &_textures.UIConf[s][DecorationInactiveTL];
-        conf->texture = texture;
-
-        if (bufferScale == 1.25f)
-            conf->customSrcRect = LRectF(100.5f + 0.3f, 58.5f, 56.f, 63.f);
-        else
-            conf->customSrcRect = LRectF(100.5f, 58.5f, 56.f, 63.f);
-
-        conf->customDstSize = LSize(56, 63);
-        conf->bufferScale = bufferScale;
-
-        conf = &_textures.UIConf[s][DecorationInactiveTR];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(172.f - 100.5f - 56.f, 58.5f, 56.f, 63.f);
-        conf->customDstSize = LSize(56, 63);
-        conf->bufferScale = bufferScale;
-        conf->transform = LFramebuffer::Flipped;
-
-        conf = &_textures.UIConf[s][DecorationInactiveT];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(156.f, 58.5f, 0.5f, 56.f);
-        conf->customDstSize = LSize(1, 56);
-        conf->bufferScale = bufferScale;
-
-        conf = &_textures.UIConf[s][DecorationInactiveBL];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(100.5f, 122.f, 71.f, 66.f);
-        conf->customDstSize = LSize(71, 66);
-        conf->bufferScale = bufferScale;
-
-        conf = &_textures.UIConf[s][DecorationInactiveBR];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(172.f - 100.5f - 71.f, 122.f, 71.f, 66.f);
-        conf->customDstSize = LSize(71, 66);
-        conf->bufferScale = bufferScale;
-        conf->transform = LFramebuffer::Flipped;
-
-        conf = &_textures.UIConf[s][DecorationInactiveL];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(100.5f, 121.5f, 41.f, 0.5f);
-        conf->customDstSize = LSize(41, 1);
-        conf->bufferScale = bufferScale;
-
-        conf = &_textures.UIConf[s][DecorationInactiveR];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(172.f - 100.5f - 41.f, 121.5f, 41.f, 0.5f);
-        conf->customDstSize = LSize(41, 1);
-        conf->bufferScale = bufferScale;
-        conf->transform = LFramebuffer::Flipped;
-
-        conf = &_textures.UIConf[s][DecorationInactiveB];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(171.5f, 136.f, 0.5f, 52.f);
-        conf->customDstSize = LSize(1, 52);
-        conf->bufferScale = bufferScale;
-
-        conf = &_textures.UIConf[s][DecorationMaskBL];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(172.f - 11.f, 0.f, 11.f, 11.f);
-        conf->customDstSize = LSize(11, 11);
-        conf->bufferScale = bufferScale;
-        conf->transform = LFramebuffer::Flipped180;
-
-        conf = &_textures.UIConf[s][DecorationMaskBR];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(0.f, 0.f, 11.f, 11.f);
-        conf->customDstSize = LSize(11, 11);
-        conf->bufferScale = bufferScale;
-        conf->transform = LFramebuffer::Rotated180;
-
-        conf = &_textures.UIConf[s][TooltipT];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(0.f, 216.f - 0.5f - 21.f, 0.5f, 21.f);
-        conf->customDstSize = LSize(1, 21);
-        conf->bufferScale = bufferScale;
-        conf->transform = LFramebuffer::Rotated180;
-
-        conf = &_textures.UIConf[s][TooltipL];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(150.5f, 0.f, 21.f, 0.5f);
-        conf->customDstSize = LSize(21, 1);
-        conf->bufferScale = bufferScale;
-
-        conf = &_textures.UIConf[s][TooltipR];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(0.5f, 0.f, 21.f, 0.5f);
-        conf->customDstSize = LSize(21, 1);
-        conf->bufferScale = bufferScale;
-        conf->transform = LFramebuffer::Flipped;
-
-        conf = &_textures.UIConf[s][TooltipB];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(172.f - 0.5f, 0.5f, 0.5f, 21.f);
-        conf->customDstSize = LSize(1, 21);
-        conf->bufferScale = bufferScale;
-
-        conf = &_textures.UIConf[s][TooltipTL];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(216.f - 21.f - 0.5f, 150.5f, 21.f, 21.f);
-        conf->customDstSize = LSize(21, 21);
-        conf->bufferScale = bufferScale;
-        conf->transform = LFramebuffer::Rotated90;
-
-        conf = &_textures.UIConf[s][TooltipTR];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(0.5f, 172.f - 0.5f - 21.f, 21.f, 21.f);
-        conf->customDstSize = LSize(21, 21);
-        conf->bufferScale = bufferScale;
-        conf->transform = LFramebuffer::Flipped90;
-
-        conf = &_textures.UIConf[s][TooltipBR];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(0.5f, 0.5f, 21.f, 21.f);
-        conf->customDstSize = LSize(21, 21);
-        conf->bufferScale = bufferScale;
-        conf->transform = LFramebuffer::Rotated270;
-
-        conf = &_textures.UIConf[s][TooltipBL];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(150.5f, 0.5f, 21.f, 21.f);
-        conf->customDstSize = LSize(21, 21);
-        conf->bufferScale = bufferScale;
-
-        conf = &_textures.UIConf[s][TooltipArrow];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(100.5f, 194.5f, 29.f, 17.f);
-        conf->customDstSize = LSize(29, 17);
-        conf->bufferScale = bufferScale;
-
-        conf = &_textures.UIConf[s][DockL];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(216.f - 0.5f - 56.f, 16.f, 56.f, 133.f);
-        conf->customDstSize = LSize(56, 133);
-        conf->bufferScale = bufferScale;
-        conf->transform = LFramebuffer::Rotated90;
-
-        conf = &_textures.UIConf[s][DockC];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(216.f - 0.5f, 16.f, 0.5f, 133.f);
-        conf->customDstSize = LSize(1, 133);
-        conf->bufferScale = bufferScale;
-        conf->transform = LFramebuffer::Rotated90;
-
-        conf = &_textures.UIConf[s][DockR];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(0.5f, 23.f, 56.f, 133.f);
-        conf->customDstSize = LSize(56, 133);
-        conf->bufferScale = bufferScale;
-        conf->transform = LFramebuffer::Rotated270;
-
-        conf = &_textures.UIConf[s][DockDot];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(5.5f, 198.f, 5.f, 5.f);
-        conf->customDstSize = LSize(5, 5);
-        conf->bufferScale = bufferScale;
-
-        conf = &_textures.UIConf[s][Logo];
-        conf->texture = texture;
-        conf->customSrcRect = LRectF(133.5f, 194.f, 20.f, 14.f);
-        conf->customDstSize = LSize(20, 14);
-        conf->bufferScale = bufferScale;
-    }
-}
-
-void G::setTexViewConf(LTextureView *view, UInt32 index, Float32 scale)
-{
+    Float32 bufferScale = 2.f;
+    LTexture *texture = _textures.atlas;
     TextureViewConf *conf;
 
-    if (scale == 1.f)
-        conf = &_textures.UIConf[0][index];
-    else if (scale == 1.25f)
-        conf = &_textures.UIConf[1][index];
-    else if (scale == 1.5f)
-        conf = &_textures.UIConf[2][index];
-    else if (scale == 1.75f)
-        conf = &_textures.UIConf[3][index];
-    else
-        conf = &_textures.UIConf[4][index];
+    // Toplevel buttons
+    for (UInt32 i = 0; i < 14; i++)
+    {
+        conf = &_textures.UIConf[i];
+        conf->texture = texture;
+        conf->customSrcRect = LRectF(2.f, 2.f + 14.f * Float32(i), 12.f, 12.f);
+        conf->customDstSize = LSize(12, 12);
+        conf->bufferScale = bufferScale;
+    }
 
+    conf = &_textures.UIConf[DecorationActiveTL];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(16.f, 59.5f, 70.f, 74.f);
+    conf->customDstSize = LSize(70, 74);
+    conf->bufferScale = bufferScale;
+
+    conf = &_textures.UIConf[DecorationActiveTR];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(172.f - 16.f - 70.f, 59.5f, 70.f, 74.f);
+    conf->customDstSize = LSize(70, 74);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Flipped;
+
+    conf = &_textures.UIConf[DecorationActiveT];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(87.f, 59.5f, 1.f, 61.f);
+    conf->customDstSize = LSize(1, 61);
+    conf->bufferScale = bufferScale;
+
+    conf = &_textures.UIConf[DecorationActiveL];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(16.f, 133.5f, 48.f, 0.5f);
+    conf->customDstSize = LSize(48, 1);
+    conf->bufferScale = bufferScale;
+
+    conf = &_textures.UIConf[DecorationActiveR];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(172.f - 16.f - 48.f, 133.5f, 48.f, 0.1f);
+    conf->customDstSize = LSize(48, 1);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Flipped;
+
+    conf = &_textures.UIConf[DecorationActiveBL];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(16.f, 134.f, 82.f, 80.f);
+    conf->customDstSize = LSize(82, 80);
+    conf->bufferScale = bufferScale;
+
+    conf = &_textures.UIConf[DecorationActiveBR];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(172.f - 16.f - 82.f, 134.f, 82.f, 80.f);
+    conf->customDstSize = LSize(82, 80);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Flipped;
+
+    conf = &_textures.UIConf[DecorationActiveB];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(98.f, 155.5f, 0.5f, 58.5f);
+    conf->customDstSize = LSize(1, 59);
+    conf->bufferScale = bufferScale;
+
+    conf = &_textures.UIConf[DecorationInactiveTL];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(100.5f, 58.5f, 56.f, 63.f);
+    conf->customDstSize = LSize(56, 63);
+    conf->bufferScale = bufferScale;
+
+    conf = &_textures.UIConf[DecorationInactiveTR];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(172.f - 100.5f - 56.f, 58.5f, 56.f, 63.f);
+    conf->customDstSize = LSize(56, 63);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Flipped;
+
+    conf = &_textures.UIConf[DecorationInactiveT];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(156.f, 58.5f, 0.5f, 56.f);
+    conf->customDstSize = LSize(1, 56);
+    conf->bufferScale = bufferScale;
+
+    conf = &_textures.UIConf[DecorationInactiveBL];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(100.5f, 122.f, 71.f, 66.f);
+    conf->customDstSize = LSize(71, 66);
+    conf->bufferScale = bufferScale;
+
+    conf = &_textures.UIConf[DecorationInactiveBR];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(172.f - 100.5f - 71.f, 122.f, 71.f, 66.f);
+    conf->customDstSize = LSize(71, 66);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Flipped;
+
+    conf = &_textures.UIConf[DecorationInactiveL];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(100.5f, 121.5f, 41.f, 0.5f);
+    conf->customDstSize = LSize(41, 1);
+    conf->bufferScale = bufferScale;
+
+    conf = &_textures.UIConf[DecorationInactiveR];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(172.f - 100.5f - 41.f, 121.5f, 41.f, 0.5f);
+    conf->customDstSize = LSize(41, 1);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Flipped;
+
+    conf = &_textures.UIConf[DecorationInactiveB];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(171.5f, 136.f, 0.5f, 52.f);
+    conf->customDstSize = LSize(1, 52);
+    conf->bufferScale = bufferScale;
+
+    conf = &_textures.UIConf[DecorationMaskBL];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(172.f - 11.f, 0.f, 11.f, 11.f);
+    conf->customDstSize = LSize(11, 11);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Flipped180;
+
+    conf = &_textures.UIConf[DecorationMaskBR];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(0.f, 0.f, 11.f, 11.f);
+    conf->customDstSize = LSize(11, 11);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Rotated180;
+
+    conf = &_textures.UIConf[TooltipT];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(0.f, 216.f - 0.5f - 21.f, 0.5f, 21.f);
+    conf->customDstSize = LSize(1, 21);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Rotated180;
+
+    conf = &_textures.UIConf[TooltipL];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(150.5f, 0.f, 21.f, 0.5f);
+    conf->customDstSize = LSize(21, 1);
+    conf->bufferScale = bufferScale;
+
+    conf = &_textures.UIConf[TooltipR];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(0.5f, 0.f, 21.f, 0.5f);
+    conf->customDstSize = LSize(21, 1);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Flipped;
+
+    conf = &_textures.UIConf[TooltipB];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(172.f - 0.5f, 0.5f, 0.5f, 21.f);
+    conf->customDstSize = LSize(1, 21);
+    conf->bufferScale = bufferScale;
+
+    conf = &_textures.UIConf[TooltipTL];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(216.f - 21.f - 0.5f, 150.5f, 21.f, 21.f);
+    conf->customDstSize = LSize(21, 21);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Rotated90;
+
+    conf = &_textures.UIConf[TooltipTR];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(0.5f, 172.f - 0.5f - 21.f, 21.f, 21.f);
+    conf->customDstSize = LSize(21, 21);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Flipped90;
+
+    conf = &_textures.UIConf[TooltipBR];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(0.5f, 0.5f, 21.f, 21.f);
+    conf->customDstSize = LSize(21, 21);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Rotated270;
+
+    conf = &_textures.UIConf[TooltipBL];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(150.5f, 0.5f, 21.f, 21.f);
+    conf->customDstSize = LSize(21, 21);
+    conf->bufferScale = bufferScale;
+
+    conf = &_textures.UIConf[TooltipArrow];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(100.5f, 194.5f, 29.f, 17.f);
+    conf->customDstSize = LSize(29, 17);
+    conf->bufferScale = bufferScale;
+
+    conf = &_textures.UIConf[DockL];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(216.f - 0.5f - 56.f, 16.f, 56.f, 133.f);
+    conf->customDstSize = LSize(56, 133);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Rotated90;
+
+    conf = &_textures.UIConf[DockC];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(216.f - 0.5f, 16.f, 0.5f, 133.f);
+    conf->customDstSize = LSize(1, 133);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Rotated90;
+
+    conf = &_textures.UIConf[DockR];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(0.5f, 23.f, 56.f, 133.f);
+    conf->customDstSize = LSize(56, 133);
+    conf->bufferScale = bufferScale;
+    conf->transform = LFramebuffer::Rotated270;
+
+    conf = &_textures.UIConf[DockDot];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(5.5f, 198.f, 5.f, 5.f);
+    conf->customDstSize = LSize(5, 5);
+    conf->bufferScale = bufferScale;
+
+    conf = &_textures.UIConf[Logo];
+    conf->texture = texture;
+    conf->customSrcRect = LRectF(133.5f, 194.f, 20.f, 14.f);
+    conf->customDstSize = LSize(20, 14);
+    conf->bufferScale = bufferScale;
+}
+
+void G::setTexViewConf(LTextureView *view, UInt32 index)
+{
+    TextureViewConf *conf = &_textures.UIConf[index];
     view->setTexture(conf->texture);
     view->enableCustomColor(conf->enableCustomColor);
     view->setCustomColor(conf->customColor);

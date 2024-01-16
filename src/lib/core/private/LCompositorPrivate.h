@@ -89,10 +89,11 @@ LPRIVATE_CLASS(LCompositor)
     std::list<LClient*>clients;
     std::list<LOutput*>outputs;
     std::list<LView*>views;
-    std::list<LAnimation*>animations;
     std::list<LTexture*>textures;
-    std::list<LSurface*>surfaces;
+    std::list<LSurface*>surfaces;    
     bool surfacesListChanged = false;
+    std::vector<LAnimation*>animations;
+    bool animationsVectorChanged = false;
 
     bool runningAnimations();
     void processAnimations();

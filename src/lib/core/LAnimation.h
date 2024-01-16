@@ -75,18 +75,22 @@ public:
      */
     using Callback = std::function<void(LAnimation*)>;
 
+    /**
+     * @brief Creates a reusable animation.
+     *
+     * Creates an animation without starting it immediately.
+     *
+     * @param durationMs The duration of the animation in milliseconds.
+     * @param onUpdate A callback function triggered each time the value() property changes. `nullptr` can be passed if not used.
+     * @param onFinish A callback function triggered once the value() property reaches 1.f. `nullptr` can be passed if not used.
+     */
+    LAnimation(UInt32 durationMs = 0, const Callback &onUpdate = nullptr, const Callback &onFinish = nullptr);
+    ~LAnimation();
+
     /// @cond OMIT
     LAnimation(const LAnimation&) = delete;
     LAnimation& operator= (const LAnimation&) = delete;
     /// @endcond
-
-    /**
-     * @name Constructors
-     *
-     * Methods for creating an LAnimation.
-     */
-
-    ///@{
 
     /**
      * @brief Creates and launches a one-time animation with automatic cleanup.
@@ -98,19 +102,6 @@ public:
      * @param onFinish A callback function triggered once the value() property reaches 1.f. `nullptr` can be passed if not used.
      */
     static void oneShot(UInt32 durationMs, const Callback &onUpdate = nullptr, const Callback &onFinish = nullptr);
-
-    /**
-     * @brief Creates a reusable animation.
-     *
-     * The create() method creates an animation without starting it immediately.
-     *
-     * @param durationMs The duration of the animation in milliseconds.
-     * @param onUpdate A callback function triggered each time the value() property changes. `nullptr` can be passed if not used.
-     * @param onFinish A callback function triggered once the value() property reaches 1.f. `nullptr` can be passed if not used.
-     */
-    static LAnimation *create(UInt32 durationMs, const Callback &onUpdate = nullptr, const Callback &onFinish = nullptr);
-
-    ///@}
 
     /**
      * @brief Sets the `onUpdate()` callback handler function.
@@ -161,12 +152,8 @@ public:
 
     /**
      * @brief Starts the animation.
-     *
-     * Use this method to initiate the animation. You can also specify whether to destroy the animation object after the `onFinish()` callback is called by providing a boolean parameter.
-     *
-     * @param destroyOnFinish If set to true, the animation is destroyed after `onFinish()` is called. Default is `true`.
      */
-    void start(bool destroyOnFinish = true);
+    void start();
 
     /**
      * @brief Halts the animation before its duration is reached.
@@ -176,19 +163,9 @@ public:
      */
     void stop();
 
-    /**
-     * @brief Destroys the animation without invoking `onFinish()`.
-     */
-    void destroy();
-
     bool running() const;
 
 LPRIVATE_IMP_UNIQUE(LAnimation)
-    /// @cond OMIT
-    friend class Louvre::LCompositor;
-    LAnimation();
-    ~LAnimation();
-    /// @endcond
 };
 
 #endif // LANIMATION_H

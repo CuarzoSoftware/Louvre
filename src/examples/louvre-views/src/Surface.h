@@ -3,6 +3,7 @@
 
 #include <LSurface.h>
 #include <LSurfaceView.h>
+#include <LAnimation.h>
 
 #include "Global.h"
 #include "DockItem.h"
@@ -42,7 +43,7 @@ public:
     std::list<DockItem*>minimizedViews;
 
     LRect minimizeStartRect;
-    LAnimation *minimizeAnim = nullptr;
+    LAnimation minimizeAnim;
     Output *minimizedOutput = nullptr;
     LRegion minimizedTransRegion;
 

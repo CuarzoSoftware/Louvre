@@ -28,7 +28,7 @@ public:
     UInt32 lastPong = 0;
 
     UInt32 unresponsiveCount = 0;
-    LAnimation *unresponsiveAnim = nullptr;
+    LAnimation unresponsiveAnim;
 };
 
 #endif // CLIENT_H

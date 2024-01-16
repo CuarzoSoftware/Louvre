@@ -42,7 +42,7 @@ public:
     Float32 visiblePercent = 0.f;
 
     // HIDE/SHOW animation
-    LAnimation *anim = nullptr;
+    LAnimation anim;
 
     // Number of pointerMoveEvent() calls before show() is called
     UInt32 showResistance = 6;

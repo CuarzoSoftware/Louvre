@@ -111,10 +111,7 @@ void Compositor::initialized()
 void Compositor::uninitialized()
 {
     for (Output *o : G::outputs())
-    {
-        if (o->workspaceAnim)
-            o->workspaceAnim->stop();
-    }
+        o->workspaceAnim.stop();
 
     for (Client *c : (std::list<Client*>&)clients())
         if (c->pid != -1)
