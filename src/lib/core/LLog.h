@@ -37,18 +37,23 @@ public:
     static void init();
 
     /// Prints general messages independent of the value of **LOUVRE_DEBUG**.
+    __attribute__((format(printf, 1, 2)))
     static void log(const char *format, ...);
 
     /// Reports an unrecoverable error. **LOUVRE_DEBUG** >= 1.
+    __attribute__((format(printf, 1, 2)))
     static void fatal(const char *format, ...);
 
     /// Reports a nonfatal error. **LOUVRE_DEBUG** >= 2.
+    __attribute__((format(printf, 1, 2)))
     static void error(const char *format, ...);
 
     /// Messages that report a risk for the compositor. **LOUVRE_DEBUG** >= 3.
+    __attribute__((format(printf, 1, 2)))
     static void warning(const char *format, ...);
 
     /// Debugging messages. **LOUVRE_DEBUG** >= 4.
+    __attribute__((format(printf, 1, 2)))
     static void debug(const char *format, ...);
 };
 

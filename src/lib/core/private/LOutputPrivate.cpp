@@ -81,7 +81,28 @@ void LOutput::LOutputPrivate::backendPaintGL()
     {
         damage.offset(-rect.pos().x(), -rect.pos().y());
         damage.transform(rect.size(), transform);
-        damage.multiply(scale/(scale/fractionalScale));
+
+        pixman_region32_t tmp;
+        pixman_region32_init(&tmp);
+
+        Int32 n;
+        pixman_box32_t *rects = pixman_region32_rectangles(&damage.m_region, &n);
+
+        for (Int32 i = 0; i < n; i++)
+        {
+            pixman_region32_union_rect(
+                &tmp,
+                &tmp,
+                floorf(Float32(rects->x1) * fractionalScale) - 2,
+                floorf(Float32(rects->y1) * fractionalScale) - 2,
+                ceilf(Float32(rects->x2 - rects->x1) * fractionalScale) + 4,
+                ceilf(Float32(rects->y2 - rects->y1) * fractionalScale) + 4);
+            rects++;
+        }
+
+        pixman_region32_fini(&damage.m_region);
+        damage.m_region = tmp;
+
         damage.clip(LRect(0, output->currentMode()->sizeB()));
 
         if (output->hasBufferDamageSupport())

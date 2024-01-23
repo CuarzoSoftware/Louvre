@@ -49,13 +49,6 @@
  * The library is in charge of triggering the initializeGL(), moveGL(), resizeGL(), paintGL(), and uninitializeGL() events,
  * so you must avoid calling them directly.
  *
- * @section Modes
- *
- * Each LOutput can have multiple modes. An LOutputMode contains information about the resolution and refresh rate that the output can operate at.\n 
- * You can access the modes of an output with modes() and set the desired one with setMode().\n
- * Outputs by default use the preferredMode(), which typically has the highest refresh rate and resolution.\n
- * If you change an output's mode or scale while it's initialized, the resizeGL() event is triggered.
- *
  * @section Context
  *
  * Each output has its own OpenGL context and its own instance of LPainter, which can be accessed with the painter() method.\n
@@ -65,6 +58,13 @@
  * @note Consider leveraging the LScene and LView classes for rendering, as they automatically calculate and repaint only the
  *       portions of an output that require updates. This can significantly enhance the performance of your compositor.
  *
+ * @section Modes
+ *
+ * Each LOutput can have multiple modes. An LOutputMode contains information about the resolution and refresh rate that the output can operate at.\n 
+ * You can access the modes of an output with modes() and set the desired one with setMode().\n
+ * Outputs by default use the preferredMode(), which typically has the highest refresh rate and resolution.\n
+ * If you change an output's mode or scale while it's initialized, the resizeGL() event is triggered.
+ *
  * @section Arrangement
  *
  * Outputs, like surfaces, have a position and dimensions that allow them to be logically organized in a similar way to how a system settings panel does.\n
@@ -73,6 +73,88 @@
  * <center><IMG height="350px" SRC="https://lh3.googleusercontent.com/VOWUX4iiqYMF_bIrBP3xMyaiydv_e_ZKznCIJlRLaEA0CtBLMuU4h41R3D4Xm-7krk8jFGZrQGb_SS7hlIFUY9E5dVbQqs0Q3NIBXvRFrGs_cukqOmbCv1ExN9fG3BDdj4Yz45xIkQ=w2400"></center>
  *
  * @note To enable LCursor to transition across different LOutputs, ensure that the outputs are closely arranged side by side.
+ *
+ * @section Scaling
+ *
+ * Many screens nowadays are HiDPI, so it is commonly required to apply a scaling factor to prevent content from appearing tiny on the screen.
+ * By default, all screens in Louvre have a scaling factor of 1, meaning no scaling is applied. To assign a scale to a screen, you can use setScale(),
+ * which modifies the size returned by size().
+ *
+ * In Louvre, you typically work with two coordinate systems: buffer coordinates and surface coordinates.
+ *
+ * In buffer coordinates, the scale is not taken into account, and the dimensions always have maximum granularity.
+ * For example, if a screen has a resolution of 2000x1000px, its size in buffer coordinates would be the same: 2000x1000px, which is returned by sizeB().
+ * However, the global coordinate space of the compositor uses surface coordinates, which is equal to the size in buffer coordinates divided by the applied scale.
+ * Therefore, if a factor of 2 is used, the size in surface coordinates would be 1000x500, which is returned by size().
+ *
+ * When arranging displays, both the position and size of the outputs should be considered in surface coordinates.
+ *
+ * Let's look at an example to make these concepts clearer:
+ *
+ * Let's assume you have two displays, one with a resolution of 1000x500px and another with 2000x1000px (double the resolution), but both with a physical size of 22''.
+ * This means that the space occupied by 1px on the blue screen accommodates 4px on the pink screen. If you were to see it in person, side by side they would look like:
+ *
+ * <center><IMG SRC="https://lh3.googleusercontent.com/pw/ABLVV87QBEaAMVfuF92jfv0HRQrEgc0PMKgx9N29Wb6dDbF9cHLpCr7qSDUowUFnBXFHJxg4F9c7v7EcxxTSnpSzkEqLvCB7CxlnUYJmG1JsNspSHRq3zZE=w2400"></center>
+ *
+ * If you assign the same scaling factor of 1 to both screens, their sizes in surface coordinates would be the same as in buffer coordinates.
+ * Therefore, the global coordinate space of the compositor would look like this.
+ *
+ * <center><IMG SRC="https://lh3.googleusercontent.com/pw/ABLVV86CZvhAIc-yONr5BQe6ABGxfcuSVajo1jobAWL5C6tMdJO8BXjsbMbZk7r7rEZ9-ZsYmr3LsIdBSKkb3npEYoCIG1OD0iZKUoCDFVoqMG4avt06Vhs=w2400"></center>
+ *
+ * And if you were to see your screens in real life, it would look like the following. In the pink screen, everything would appear tiny, half the size of the blue screen.
+ * And as you can see, if you were to drag an application window from one screen to another, it would look somewhat odd.
+ *
+ * <center><IMG SRC="https://lh3.googleusercontent.com/pw/ABLVV84F3o3dewpcSRttqMHPjKO2YYUqSJ299tj760KcT6KRd0s7uf_bXtKQfwy5CFeXqPoxynuu2UmtkEOodg1l7DjZHoXohjXdpGIth9S50mKGdsHqfPw=w2400"></center>
+ *
+ * Now, let's imagine that you assign a scaling factor of 2 to the pink screen. In this case, the global coordinate space of the compositor would look as follows:
+ *
+ * <center><IMG SRC="https://lh3.googleusercontent.com/pw/ABLVV86j52vqCYAxcm94frzQHzeI47idYlb-tggnlbwcVsZZwXIkr9M4tyhKPMDLfmtjOYqHWS9jnCiXojuusl8EKyv3OIn8KQX6biHr0hQeLxH7m04VaTc=w2400"></center>
+ *
+ * And therefore, if you were to see it in real life now, it would appear consistently.
+ *
+ * <center><IMG SRC="https://lh3.googleusercontent.com/pw/ABLVV87mN6ufD6PY9Rt8fjl3B84ii627PdOYwJx9vmeA72EeT_cpr8Q01IdoiBknoPI6fonVJWRCW34VZNKVKCsNIERY70Gvqkl7eH0R2vr3gBrEtuMNps0=w2400"></center>
+ *
+ * Therefore, in summary, the size of a screen in surface coordinates is determined by dividing its buffer size by the applied scale.
+ *
+ * ## Fractional Scaling
+ *
+ * Louvre also supports fractional scaling, albeit with some differences compared to integer scaling. For instance, if you assign a scale of 1.5 using setScale()
+ * to the pink screen, the resulting applied scale (obtained with scale()) will be ceil(1.5) = 2. However, the buffer dimensions of the screen will simulate
+ * being 2/1.5 times larger than its current mode (rounded), resulting in 2668 x 1334 for this case. Consequently, its size in surface coordinates would be
+ * 2668 x 1334 divided by 2.
+ * As a result, the compositor coordinate space would appear as follows:
+ *
+ * <center><IMG SRC="https://lh3.googleusercontent.com/pw/ABLVV86R-d2uzDybJ-FLWL5PzbShg33f2_OJX9mQME8DkVI5y6O3eDT18UBRgwY8UScaApeoqU4ePq3BwbDNmW5Z-eW0dukpvdQfmarUbOVEbN_GmYU3MqE=w2400"></center>
+ *
+ * This creates the illusion of rendering on a larger screen, the result of which is actually scaled to the real size, allowing for the desired scaling effect.
+ * Rendering using fractional scales, however, can introduce undesired visual effects like aliasing, especially noticeable when moving elements with textures containing fine details.
+ * For this reason, Louvre offers the option to render using oversampling, where all the screen content is rendered in a larger buffer, and then that rendered buffer is scaled down to screen framebuffer.
+ * This method almost completely eliminates aliasing but has the disadvantage of consuming more computational power, potentially decreasing performance.
+ * Without oversampling the content directly rendered on the screen, making it efficient but retaining aliasing artifacts.
+ * Louvre allows you to toggle oversampling on and off instantly at any time using enableFractionalOversampling(). For example, you could enable it when displaying a desktop with flating windows and disable it when displaying a fullscreen window.
+ *
+ * @note Oversampling is not required and is always deactivated when using non-fractional scales. Therefore, as a recommendation, if your monitor supports multiple modes with various resolutions,
+ *       it is preferable to select one of those modes instead of using fractional scaling.
+ *
+ * Clients supporting the fractional scaling protocol are instructed to scale their buffers directly to the fractional scale.
+ * On the other hand, clients lacking support for the protocol are advised to use ceil(fractional scale), ensuring a consistently high-detail appearance.
+ *
+ * @section Transforms
+ *
+ * Louvre also supports applying transforms to outputs with setTransform().
+ * Let's imagine that you physically rotate the pink monitor 90° clockwise while maintaining the same normal transform on both.
+ * What you would see is the following:
+ *
+ * <center><IMG SRC="https://lh3.googleusercontent.com/pw/ABLVV85bV4h-OcbW1DozgUCQp4PbMoWOd2E2MNRQveEhw5r2p_mjnVRLbziTJ-egMu9D0eSIbMyLNmXECbupfa1gmQZMAidIS1pT5ahbeoL6hcsa6O3QlYc=w2400"></center>
+ *
+ * Given that you rotated the screen 90° clockwise, it is necessary to apply a transform that rotates the screen 90° counter-clockwise (Louvre::LFramebuffer::Rotated90).
+ * If you apply this to the pink screen, then you would see the following:
+ *
+ * <center><IMG SRC="https://lh3.googleusercontent.com/pw/ABLVV84Tm3VGwuNHqbAumAVrzZVgBtKSOo24y8PDk5Y47hIlLmO7uSzIMLeE0f9y-5DOQh1nOI9-qz48c_fnlgkM3CILC-GFB2qttGaE671Xke_jcF6DlVY=w2400"></center>
+ *
+ * Note that when applying a transformation containing a 90° rotation to an output, its width becomes its height, and its height becomes its width.
+ * The global coordinate space of the compositor is structured in such a way that you can continue rendering in the same manner
+ * as if the screens were in their normal transform state. Therefore, there's no need to worry about rotating or flipping the elements you draw.
  *
  * @section Uninitialization
  *

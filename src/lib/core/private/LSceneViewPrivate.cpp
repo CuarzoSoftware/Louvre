@@ -270,7 +270,7 @@ void LSceneView::LSceneViewPrivate::drawBackground(bool addToOpaqueSum)
     ThreadData *oD = currentThreadData;
     LRegion backgroundDamage = oD->newDamage;
     backgroundDamage.subtractRegion(oD->opaqueTransposedSum);
-    oD->p->setColor((LRGBF&)clearColor);
+    oD->p->setColor({.r = clearColor.r, .g = clearColor.g, .b = clearColor.b});
     oD->p->setAlpha(clearColor.a);
     oD->p->bindColorMode();
     oD->p->drawRegion(backgroundDamage);

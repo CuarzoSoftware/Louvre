@@ -20,23 +20,23 @@
 #include "Workspace.h"
 #include "Compositor.h"
 
-static Float64 easeIn(Float64 t, Float64 exponent)
+static Float32 easeIn(Float32 t, Float32 exponent)
 {
-    return 1.0 - pow(1.0 - t, exponent);
+    return 1.0 - powf(1.0 - t, exponent);
 }
 
-static Float64 easeOut(Float64 t, Float64 exponent)
+static Float32 easeOut(Float32 t, Float32 exponent)
 {
-    return 1.0 - pow(t, exponent);
+    return 1.0 - powf(t, exponent);
 }
 
-static Float64 periodic_easing_function(Float64 t, Float64 exponent_in, Float64 exponent_out)
+static Float32 periodicEasing(Float32 t, Float32 exponent_in, Float32 exponent_out)
 {
-    Float64 floo = floor(t);
-    Float64 norm = t - floo;
-    Float64 floo2 = floo/2.0;
+    Float32 floo = floorf(t);
+    Float32 norm = t - floo;
+    Float32 floo2 = floo/2.0;
 
-    if (floo2 - floor(floo2) == 0.0)
+    if (floo2 - floorf(floo2) == 0.0)
         return easeIn(norm, exponent_in);
     else
         return easeOut(norm, exponent_out);
@@ -46,7 +46,7 @@ App::App(const char *appName, const char *appExec, const char *iconPath) :
     launchAnimation(15000,
     [this](LAnimation *anim)
     {
-        Float32 offsetY = periodic_easing_function(anim->value() * 37.0, 2.0, 1.6);
+        Float32 offsetY = periodicEasing(anim->value() * 37.0, 2.0, 1.6);
 
         if (state == Running && offsetY < 0.08f)
         {

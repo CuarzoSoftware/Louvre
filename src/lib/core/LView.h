@@ -62,9 +62,12 @@
  *
  * ### Painting
  *
- * If the view is renderable, the paintRect() method must be implemented.\n
- * This method provides the src rect within the view and the dst rect within the destination framebuffer to render in surface coordinates, along with
- * the scale that must be used and LPainter.
+ * If the view is renderable, the paintEvent() method must be implemented.
+ * This method is called by the scene to request the view to render itself into the current framebuffer.
+ * It provides an LPainter, the region of the view to be rendered in global compositor coordinates, and a boolean variable indicating whether blending
+ * is enabled.
+ * The paintEvent() method is called twice per frame: once for drawing only the opaque regions of the view (blending disabled), and a second pass for
+ * the translucent regions (blending enabled).
  *
  * ### Damage
  *
@@ -99,7 +102,7 @@ class Louvre::LView : public LObject
 public:
 
     /**
-     * @brief Parameters used within a paintRect() event.
+     * @brief Parameters used within a paintEvent().
      */
     struct PaintEventParams
     {
@@ -108,6 +111,9 @@ public:
 
         /// Region to draw in global compositor coordinates.
         LRegion *region;
+
+        /// Indicates if the region to render is opaque (false) or translucent (true)
+        bool blending;
     };
 
     /**
@@ -306,16 +312,17 @@ public:
      * When clipping is enabled, the view's content outside this rectangle will be clipped
      * (not visible).
      *
-     * @note The rect is not local to the view's position, if you need to clip the view without having to update the rect pos each time the view moves, use parent clipping instead.
+     * @note The rect is not local to the view's position, if you need to clip the view without having to
+     *       update the rect pos each time the view moves, use parent clipping instead.
      *
      * @param rect The clipping rectangle to set for the view using the clippingRect() property.
      */
     void setClippingRect(const LRect &rect);
 
     /**
-     * @brief Check if the view is clipped to the current parent view rect.
+     * @brief Check if the view clipping to the current parent view rect is enabled.
      *
-     * This method returns `true` if the view is clipped to the current parent view rect, `false` otherwise.
+     * This method returns `true` if the view clipping to the current parent view rect is enabled, `false` otherwise.
      *
      * The default value is `false`.
      *
@@ -357,7 +364,9 @@ public:
     /**
      * @brief Check if scaling is enabled for the view's size.
      *
-     * This method returns `true` if the view's size is scaled using the scaling vector, `false` otherwise.
+     * This method returns `true` if the view's size is scaled using the scalingVector(), `false` otherwise.
+     *
+     * The default value is `false`.
      *
      * @returns `true` if the view's size is scaled, `false` otherwise.
      */
@@ -366,7 +375,9 @@ public:
     /**
      * @brief Enable or disable scaling for the view's size.
      *
-     * If enabled, the view's size will be scaled using the scaling vector.
+     * If enabled, the view's size will be scaled using the scalingVector().
+     *
+     * Disabled by default.
      *
      * @param enabled If `true`, the view's size will be scaled.
      */
@@ -433,12 +444,12 @@ public:
      *
      * @see mapped()
      *
-     * @param visible If `true`, the view will be marked as visible; if `false`, it will be marked as not visible.
+     * @param visible If `true`, the view will be marked as visible, if `false`, it will be marked as not visible.
      */
     void setVisible(bool visible);
 
     /**
-     * @brief Check if the view should be rendered, taking into consideration several boolean conditions.
+     * @brief Check if the view should be rendered, taking into consideration several conditions.
      *
      * This method indicates whether the view should be rendered, considering the nativeMapped() && visible() && parent() && parent()->mapped() boolean operation.
      *
@@ -485,7 +496,7 @@ public:
      *
      * The default value is `true`.
      *
-     * @param enabled If `true`, the view's opacity will be multiplied by its parent's opacity; if `false`, it will not be affected by the parent's opacity.
+     * @param enabled If `true`, the view's opacity will be multiplied by its parent's opacity, if `false`, it will not be affected by the parent's opacity.
      */
     void enableParentOpacity(bool enabled);
 
@@ -493,9 +504,9 @@ public:
      * @brief Check if the requestNextFrame() is enabled.
      *
      * If this method returns `true`, requestNextFrame() will be called even if the view
-     * is not mapped or occluded.
+     * is occluded by other views or not mapped.
      *
-     * @return `true` if requestNextFrame() is forced to be called; otherwise, `false`.
+     * @return `true` if requestNextFrame() is forced to be called, otherwise, `false`.
      */
     bool forceRequestNextFrameEnabled() const;
 
@@ -503,9 +514,9 @@ public:
      * @brief Enable or disable the requestNextFrame() to be called always.
      *
      * When enabled, requestNextFrame() will be called even if the view
-     * is not mapped or occluded.
+     * is occluded by other view or not mapped.
      *
-     * @param enabled `true` to enable requestNextFrame(); `false` to disable.
+     * @param enabled `true` to enable requestNextFrame(), `false` to disable.
      */
     void enableForceRequestNextFrame(bool enabled) const;
 
@@ -663,7 +674,7 @@ public:
     /**
      * @brief Check if the view is itself renderable.
      *
-     * This property indicates whether the view is capable of rendering its content (check paintRect()).
+     * This property indicates whether the view is capable of rendering its content (check paintEvent()).
      * For example, all view types included in Louvre are renderable,
      * except for LLayerView, which serves as a container for other views
      * but does not produce any output by itself.

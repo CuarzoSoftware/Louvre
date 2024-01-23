@@ -158,15 +158,13 @@ void LRegion::multiply(Float32 factor)
     {
         for (int i = 0; i < n; i++)
         {
-            float x1 = floorf(float(rects->x1) * factor);
-            float y1 = floorf(float(rects->y1) * factor);
             pixman_region32_union_rect(
                 &tmp,
                 &tmp,
-                x1,
-                y1,
-                ceilf(float(rects->x2) * factor) - x1,
-                ceilf(float(rects->y2) * factor) - y1);
+                floorf(float(rects->x1) * factor),
+                floorf(float(rects->y1) * factor),
+                ceilf(float(rects->x2 - rects->x1) * factor),
+                ceilf(float(rects->y2 - rects->y1) * factor));
             rects++;
         }
     }

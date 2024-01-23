@@ -130,7 +130,7 @@ bool LCompositor::LCompositorPrivate::initWayland()
 
         if (!socket)
         {
-            LLog::fatal("[LCompositorPrivate::initWayland] Failed to add auto socket %s.", socket);
+            LLog::fatal("[LCompositorPrivate::initWayland] Failed to add auto socket.");
             return false;
         }
     }

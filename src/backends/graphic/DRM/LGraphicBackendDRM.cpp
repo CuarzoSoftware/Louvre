@@ -286,7 +286,7 @@ bool LGraphicBackend::initialize()
 
     if (!bknd->core)
     {
-        LLog::fatal("[%] Failed to create SRM core.", BKND_NAME);
+        LLog::fatal("[%s] Failed to create SRM core.", BKND_NAME);
         goto fail;
     }
 

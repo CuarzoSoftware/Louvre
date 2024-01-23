@@ -196,7 +196,6 @@ public:
      * @param srcScale Scaling factor for the source texture (default is 1.0).
      * @param alpha Alpha value for blending the texture (range [0.0, 1.0]).
      */
-    [[deprecated("This method will be removed in Louvre v2.0.0-1. See LPainter::bindTextureMode().")]]
     void drawTexture(const LTexture *texture, const LRect &src, const LRect &dst,
                      Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
 
@@ -219,7 +218,6 @@ public:
      * @param srcScale Scaling factor for the source texture (default is 1.0).
      * @param alpha Alpha value for blending the texture (range [0.0, 1.0]).
      */
-    [[deprecated("This method will be removed in Louvre v2.0.0-1. See LPainter::bindTextureMode().")]]
     void drawTexture(const LTexture *texture,
                      Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
                      Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
@@ -239,7 +237,6 @@ public:
      * @param srcScale Scaling factor for the source texture (default is 1.0).
      * @param alpha Alpha value for blending the texture (range [0.0, 1.0]).
      */
-    [[deprecated("This method will be removed in Louvre v2.0.0-1. See LPainter::bindTextureMode().")]]
     void drawColorTexture(const LTexture *texture, const LRGBF &color, const LRect &src, const LRect &dst,
                           Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
 
@@ -265,7 +262,6 @@ public:
      * @param srcScale Scaling factor for the source texture (default is 1.0).
      * @param alpha Alpha value for blending the texture (range [0.0, 1.0]).
      */
-    [[deprecated("This method will be removed in Louvre v2.0.0-1. See LPainter::bindTextureMode().")]]
     void drawColorTexture(const LTexture *texture, Float32 r, Float32 g, Float32 b,
                           Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
                           Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
@@ -282,7 +278,6 @@ public:
      * @param b Blue component value (range [0.0, 1.0]).
      * @param a Alpha component value (range [0.0, 1.0]).
      */
-    [[deprecated("This method will be removed in Louvre v2.0.0-1. See LPainter::bindColorMode().")]]
     void drawColor(const LRect &dst, Float32 r, Float32 g, Float32 b, Float32 a);
 
     /**
@@ -299,7 +294,6 @@ public:
      * @param b Blue component value (range [0.0, 1.0]).
      * @param a Alpha component value (range [0.0, 1.0]).
      */
-    [[deprecated("This method will be removed in Louvre v2.0.0-1. See LPainter::bindColorMode().")]]
     void drawColor(Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
                    Float32 r, Float32 g, Float32 b, Float32 a);
 
@@ -308,7 +302,6 @@ public:
      *
      * @note This method should be used if you are working with your own shaders/programs.
      */
-    [[deprecated("This method will be removed in Louvre v2.0.0-1.")]]
     void setViewport(const LRect &rect);
 
     /**
@@ -316,7 +309,6 @@ public:
      *
      * @note This method should be used if you are working with your own shaders/programs.
      */
-    [[deprecated("This method will be removed in Louvre v2.0.0-1.")]]
     void setViewport(Int32 x, Int32 y, Int32 w, Int32 h);
 
     /**
@@ -363,15 +355,7 @@ public:
      *
      * @note This method should be used if you are working with your own OpenGL programs and want to use the LPainter methods again.
      */
-    [[deprecated("This method will be removed in Louvre v2.0.0-1. Use LPainter::sync() instead.")]]
     void bindProgram();
-
-    /**
-     * @brief Synchronizes the LPainter state.
-     *
-     * This method should be used if you are working with your own OpenGL programs and want to use the LPainter methods again.
-     */
-    void sync();
 
     LPRIVATE_IMP_UNIQUE(LPainter)
 

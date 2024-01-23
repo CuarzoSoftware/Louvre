@@ -152,7 +152,7 @@ Int32 LSeat::openDevice(const char *path, Int32 *fd)
     Int32 id = libseat_open_device(libseatHandle(), path, fd);
 
     if (id == -1)
-        LLog::error("[LSeat::openDevice] Failed to open device %s, id %d, %fd.", path, id, fd);
+        LLog::error("[LSeat::openDevice] Failed to open device %s, id %d, %d.", path, id, *fd);
 
     return id;
 }

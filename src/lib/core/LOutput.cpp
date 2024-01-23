@@ -177,6 +177,8 @@ void LOutput::setScale(Float32 scale)
         LSize fbSize = currentMode()->sizeB();
         fbSize = LSize(roundf(Float32(fbSize.w()) * imp()->scale / imp()->fractionalScale),
                              roundf(Float32(fbSize.h()) * imp()->scale / imp()->fractionalScale));
+        fbSize.setW(fbSize.w() + fbSize.w() % (Int32)imp()->scale);
+        fbSize.setH(fbSize.h() + fbSize.h() % (Int32)imp()->scale);
         imp()->fractionalFb.setSizeB(fbSize);
     }
     else
