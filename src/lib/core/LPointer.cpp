@@ -155,7 +155,7 @@ void LPointer::startResizingToplevel(LToplevelRole *toplevel,
 
     toplevel->imp()->resizingInitPos = toplevel->surface()->pos();
 
-    resizingToplevel()->configure(LToplevelRole::Activated | LToplevelRole::Resizing);
+    resizingToplevel()->configure(resizingToplevel()->size(), LToplevelRole::Activated | LToplevelRole::Resizing);
 }
 
 void LPointer::updateResizingToplevelSize(const LPoint &pointerPos)

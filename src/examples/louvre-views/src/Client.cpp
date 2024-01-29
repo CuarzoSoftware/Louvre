@@ -8,7 +8,7 @@
 #include "Global.h"
 #include "Surface.h"
 
-static int get_ppid_from_proc(int pid)
+static int getPpidFromProc(int pid)
 {
     char filename[128];
     snprintf(filename, sizeof(filename), "/proc/%d/status", pid);
@@ -32,7 +32,7 @@ static int get_ppid_from_proc(int pid)
     return ppid;
 }
 
-int get_process_name_by_pid(int pid, char *process_name, size_t buffer_size) {
+int getProcessNameByPid(int pid, char *process_name, size_t buffer_size) {
     char pid_path[1024];
     ssize_t len;
 
@@ -93,7 +93,7 @@ Client::Client(Params *params) : LClient(params),
     })
 {
 
-    pingTimer = new LTimer([this](LTimer *)
+    pingTimer.setCallback([this](LTimer *)
     {
         UInt32 newPing = lastPing + 1;
 
@@ -121,10 +121,10 @@ Client::Client(Params *params) : LClient(params),
            lastPong = newPing;
 
         lastPing = newPing;
-        pingTimer->start(3000);
+        pingTimer.start(3000);
     });
 
-    pingTimer->start(3000);
+    pingTimer.start(3000);
 
     wl_client_get_credentials(client(), &pid, NULL, NULL);
 
@@ -150,14 +150,12 @@ Client::Client(Params *params) : LClient(params),
             }
         }
 
-        ppid = get_ppid_from_proc(ppid);
+        ppid = getPpidFromProc(ppid);
     }
 }
 
 Client::~Client()
 {
-    pingTimer->destroy();
-
     if (app)
     {
         // Only destroy App if is not pinned to the dock
@@ -182,7 +180,7 @@ void Client::createNonPinnedApp()
         return;
 
     char name[256];
-    get_process_name_by_pid(pid, name, sizeof(name));
+    getProcessNameByPid(pid, name, sizeof(name));
 
     LLog::debug("[louvre-views] Non pinned app name: %s", name);
 

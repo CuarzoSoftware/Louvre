@@ -24,7 +24,7 @@ public:
     Int32 pid = -1;
     bool destroyed = false;
 
-    LTimer *pingTimer = nullptr;
+    LTimer pingTimer;
     UInt32 lastPing = 0;
     UInt32 lastPong = 0;
 

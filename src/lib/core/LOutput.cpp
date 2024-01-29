@@ -47,6 +47,36 @@ Float32 LOutput::fractionalScale() const
     return imp()->fractionalScale;
 }
 
+LOutput::SubPixel LOutput::subPixel() const
+{
+    return (LOutput::SubPixel)compositor()->imp()->graphicBackend->outputGetSubPixel((LOutput*)this);
+}
+
+bool LOutput::hasVSyncControlSupport() const
+{
+    return compositor()->imp()->graphicBackend->outputHasVSyncControlSupport((LOutput*)this);
+}
+
+bool LOutput::vSyncEnabled() const
+{
+    return compositor()->imp()->graphicBackend->outputIsVSyncEnabled((LOutput*)this);
+}
+
+bool LOutput::enableVSync(bool enabled)
+{
+    return compositor()->imp()->graphicBackend->outputEnableVSync((LOutput*)this, enabled);
+}
+
+Int32 LOutput::refreshRateLimit() const
+{
+    return compositor()->imp()->graphicBackend->outputGetRefreshRateLimit((LOutput*)this);
+}
+
+void LOutput::setRefreshRateLimit(Int32 hz)
+{
+    return compositor()->imp()->graphicBackend->outputSetRefreshRateLimit((LOutput*)this, hz);
+}
+
 LOutput::LOutput() : m_imp(std::make_unique<LOutputPrivate>(this))
 {
     imp()->output = this;
@@ -86,17 +116,17 @@ void LOutput::setTransform(LFramebuffer::Transform transform)
 
 const std::list<LOutputMode *> &LOutput::modes() const
 {
-    return *compositor()->imp()->graphicBackend->getOutputModes((LOutput*)this);
+    return *compositor()->imp()->graphicBackend->outputGetModes((LOutput*)this);
 }
 
 const LOutputMode *LOutput::preferredMode() const
 {
-    return compositor()->imp()->graphicBackend->getOutputPreferredMode((LOutput*)this);
+    return compositor()->imp()->graphicBackend->outputGetPreferredMode((LOutput*)this);
 }
 
 const LOutputMode *LOutput::currentMode() const
 {
-    return compositor()->imp()->graphicBackend->getOutputCurrentMode((LOutput*)this);
+    return compositor()->imp()->graphicBackend->outputGetCurrentMode((LOutput*)this);
 }
 
 void LOutput::setMode(const LOutputMode *mode)
@@ -123,29 +153,29 @@ void LOutput::setMode(const LOutputMode *mode)
 
     compositor()->imp()->lock();
     imp()->state = ChangingMode;
-    compositor()->imp()->graphicBackend->setOutputMode(this, (LOutputMode*)mode);
+    compositor()->imp()->graphicBackend->outputSetMode(this, (LOutputMode*)mode);
     imp()->state = Initialized;
     imp()->callLock.store(true);
 }
 
 Int32 LOutput::currentBuffer() const
 {
-    return compositor()->imp()->graphicBackend->getOutputCurrentBufferIndex((LOutput*)this);
+    return compositor()->imp()->graphicBackend->outputGetCurrentBufferIndex((LOutput*)this);
 }
 
 UInt32 LOutput::buffersCount() const
 {
-    return compositor()->imp()->graphicBackend->getOutputBuffersCount((LOutput*)this);
+    return compositor()->imp()->graphicBackend->outputGetBuffersCount((LOutput*)this);
 }
 
 LTexture *LOutput::bufferTexture(UInt32 bufferIndex)
 {
-    return compositor()->imp()->graphicBackend->getOutputBuffer((LOutput*)this, bufferIndex);
+    return compositor()->imp()->graphicBackend->outputGetBuffer((LOutput*)this, bufferIndex);
 }
 
 bool LOutput::hasBufferDamageSupport() const
 {
-    return compositor()->imp()->graphicBackend->hasBufferDamageSupport((LOutput*)this);
+    return compositor()->imp()->graphicBackend->outputHasBufferDamageSupport((LOutput*)this);
 }
 
 void LOutput::setBufferDamage(const LRegion *damage)
@@ -179,7 +209,7 @@ void LOutput::setScale(Float32 scale)
                              roundf(Float32(fbSize.h()) * imp()->scale / imp()->fractionalScale));
         fbSize.setW(fbSize.w() + fbSize.w() % (Int32)imp()->scale);
         fbSize.setH(fbSize.h() + fbSize.h() % (Int32)imp()->scale);
-        imp()->fractionalFb.setSizeB(fbSize);
+        imp()->fractionalFb->setSizeB(fbSize);
     }
     else
         imp()->stateFlags.remove(LOutputPrivate::UsingFractionalScale);
@@ -199,7 +229,7 @@ Float32 LOutput::scale() const
 
 void LOutput::repaint()
 {
-    if (compositor()->imp()->graphicBackend->scheduleOutputRepaint(this))
+    if (compositor()->imp()->graphicBackend->outputRepaint(this))
         imp()->stateFlags.add(LOutputPrivate::PendingRepaint);
 }
 
@@ -218,7 +248,7 @@ Int32 LOutput::dpi()
 
 const LSize &LOutput::physicalSize() const
 {
-    return *compositor()->imp()->graphicBackend->getOutputPhysicalSize((LOutput*)this);
+    return *compositor()->imp()->graphicBackend->outputGetPhysicalSize((LOutput*)this);
 }
 
 const LSize &LOutput::sizeB() const
@@ -241,11 +271,12 @@ const LSize &LOutput::size() const
     return imp()->rect.size();
 }
 
+/*
 EGLDisplay LOutput::eglDisplay()
 {
-    return compositor()->imp()->graphicBackend->getOutputEGLDisplay(this);
+    return compositor()->imp()->graphicBackend->outputGetEGLDisplay(this);
 }
-
+*/
 LOutput::State LOutput::state() const
 {
     return imp()->state;
@@ -253,22 +284,22 @@ LOutput::State LOutput::state() const
 
 const char *LOutput::name() const
 {
-    return compositor()->imp()->graphicBackend->getOutputName((LOutput*)this);
+    return compositor()->imp()->graphicBackend->outputGetName((LOutput*)this);
 }
 
 const char *LOutput::model() const
 {
-    return compositor()->imp()->graphicBackend->getOutputModelName((LOutput*)this);
+    return compositor()->imp()->graphicBackend->outputGetModelName((LOutput*)this);
 }
 
 const char *LOutput::manufacturer() const
 {
-    return compositor()->imp()->graphicBackend->getOutputManufacturerName((LOutput*)this);
+    return compositor()->imp()->graphicBackend->outputGetManufacturerName((LOutput*)this);
 }
 
 const char *LOutput::description() const
 {
-    return compositor()->imp()->graphicBackend->getOutputDescription((LOutput*)this);
+    return compositor()->imp()->graphicBackend->outputGetDescription((LOutput*)this);
 }
 
 void LOutput::setPos(const LPoint &pos)

@@ -410,7 +410,7 @@ void LCompositor::removeOutput(LOutput *output)
             }
 
             imp()->lock();
-            imp()->graphicBackend->uninitializeOutput(output);
+            imp()->graphicBackend->outputUninitialize(output);
 
             while (output->imp()->state != LOutput::Uninitialized)
                 usleep(1000);

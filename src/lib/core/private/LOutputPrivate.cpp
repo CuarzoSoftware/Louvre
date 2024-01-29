@@ -9,19 +9,20 @@
 #include <LTime.h>
 #include <iostream>
 
-LOutput::LOutputPrivate::LOutputPrivate(LOutput *output) : fb(output), fractionalFb(LSize(64, 64), false) {}
+LOutput::LOutputPrivate::LOutputPrivate(LOutput *output) : fb(output) {}
 
 // This is called from LCompositor::addOutput()
 bool LOutput::LOutputPrivate::initialize()
 {
     output->imp()->state = LOutput::PendingInitialize;
-    // The backend must call LOutputPrivate::backendInitialized() before initializeGL()
-    return compositor()->imp()->graphicBackend->initializeOutput(output);
+    return compositor()->imp()->graphicBackend->outputInitialize(output);
 }
 
 void LOutput::LOutputPrivate::backendInitializeGL()
 {
+    fractionalFb = new LRenderBuffer(LSize(64, 64), false);
     threadId = std::this_thread::get_id();
+
     painter = new LPainter();
     painter->imp()->output = output;
     painter->bindFramebuffer(output->framebuffer());
@@ -106,7 +107,7 @@ void LOutput::LOutputPrivate::backendPaintGL()
         damage.clip(LRect(0, output->currentMode()->sizeB()));
 
         if (output->hasBufferDamageSupport())
-            compositor()->imp()->graphicBackend->setOutputBufferDamage(output, damage);
+            compositor()->imp()->graphicBackend->outputSetBufferDamage(output, damage);
     }
 
     if (stateFlags.checkAll(UsingFractionalScale | FractionalOversamplingEnabled))
@@ -122,9 +123,9 @@ void LOutput::LOutputPrivate::backendPaintGL()
         painter->bindFramebuffer(&fb);
         painter->enableCustomTextureColor(false);
         painter->bindTextureMode({
-            .texture = fractionalFb.texture(0),
+            .texture = fractionalFb->texture(0),
             .pos = rect.pos(),
-            .srcRect = LRect(0, fractionalFb.sizeB()),
+            .srcRect = LRect(0, fractionalFb->sizeB()),
             .dstSize = rect.size(),
             .srcTransform = LFramebuffer::Normal,
             .srcScale = 1.f
@@ -200,6 +201,7 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
     output->uninitializeGL();
     compositor()->flushClients();
     output->imp()->state = LOutput::Uninitialized;
+    delete fractionalFb;
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
     compositor()->imp()->destroyNativeTextures(nativeTexturesToDestroy);
 
@@ -219,12 +221,12 @@ void LOutput::LOutputPrivate::updateRect()
 {
     if (stateFlags.check(UsingFractionalScale))
     {
-        sizeB = compositor()->imp()->graphicBackend->getOutputCurrentMode(output)->sizeB();
+        sizeB = compositor()->imp()->graphicBackend->outputGetCurrentMode(output)->sizeB();
         sizeB.setW(roundf(Float32(sizeB.w()) * scale / fractionalScale));
         sizeB.setH(roundf(Float32(sizeB.h()) * scale / fractionalScale));
     }
     else
-        sizeB = compositor()->imp()->graphicBackend->getOutputCurrentMode(output)->sizeB();
+        sizeB = compositor()->imp()->graphicBackend->outputGetCurrentMode(output)->sizeB();
 
     // Swap width with height
     if (LFramebuffer::is90Transform(transform))

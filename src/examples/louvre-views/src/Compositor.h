@@ -66,6 +66,7 @@ public:
     // Shared texture used in all clock views
     LTexture *clockTexture = nullptr;
     LTexture *oversamplingLabelTexture = nullptr;
+    LTexture *vSyncLabelTexture = nullptr;
 
     // If true, we call scene->handlePointerEvent() once before scene->handlePaintGL().
     // The reason for this is that pointer events are only emitted when the pointer itself moves,

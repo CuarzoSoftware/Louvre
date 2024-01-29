@@ -22,8 +22,7 @@ Surface::Surface(LSurface::Params *params) : LSurface(params), minimizeAnim(300)
 
 Surface::~Surface()
 {
-    if (firstMapTimer)
-        firstMapTimer->cancel();
+    firstMapTimer.cancel();
 
     if (toplevel())
     {
@@ -108,47 +107,42 @@ void Surface::mappingChanged()
 
             if (toplevel())
             {
-                if (!firstMapTimer)
+                firstMapTimer.setCallback([this](LTimer*)
                 {
-                    firstMapTimer = new LTimer([this](LTimer*)
+                    if (!toplevel() || !mapped() || minimized())
+                        return;
+
+                    LPoint outputPosG = compositor()->cursor()->output()->pos() + LPoint(0, TOPBAR_HEIGHT);
+                    LSize outputSizeG = compositor()->cursor()->output()->size() - LSize(0, TOPBAR_HEIGHT);
+
+                    setPos(outputPosG + (outputSizeG - toplevel()->windowGeometry().size())/2);
+
+                    if (pos().x() < outputPosG.x())
+                        setX(outputPosG.x());
+
+                    if (pos().y() < TOPBAR_HEIGHT)
+                        setY(TOPBAR_HEIGHT);
+
+                    Surface *next = (Surface*)nextSurface();
+
+                    view->setVisible(true);
+                    getView()->setVisible(true);
+
+                    while (next)
                     {
-                        firstMapTimer = nullptr;
-
-                        if (!toplevel() || !mapped() || minimized())
-                            return;
-
-                        LPoint outputPosG = compositor()->cursor()->output()->pos() + LPoint(0, TOPBAR_HEIGHT);
-                        LSize outputSizeG = compositor()->cursor()->output()->size() - LSize(0, TOPBAR_HEIGHT);
-
-                        setPos(outputPosG + (outputSizeG - toplevel()->windowGeometry().size())/2);
-
-                        if (pos().x() < outputPosG.x())
-                            setX(outputPosG.x());
-
-                        if (pos().y() < TOPBAR_HEIGHT)
-                            setY(TOPBAR_HEIGHT);
-
-                        Surface *next = (Surface*)nextSurface();
-
-                        view->setVisible(true);
-                        getView()->setVisible(true);
-
-                        while (next)
+                        if (next->isSubchildOf(this) && !next->minimized())
                         {
-                            if (next->isSubchildOf(this) && !next->minimized())
-                            {
-                                view->setVisible(true);
-                                next->getView()->setVisible(true);
-                            }
-
-                            next = (Surface*)next->nextSurface();
+                            view->setVisible(true);
+                            next->getView()->setVisible(true);
                         }
 
-                        compositor()->cursor()->output()->repaint();
-                    });
+                        next = (Surface*)next->nextSurface();
+                    }
 
-                    firstMapTimer->start(200, true);
-                }
+                    compositor()->cursor()->output()->repaint();
+                });
+
+                firstMapTimer.start(200);
 
                 toplevel()->configure(LToplevelRole::Activated);
 

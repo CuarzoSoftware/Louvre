@@ -424,51 +424,69 @@ namespace Louvre
     /// @cond OMIT
     struct LGraphicBackendInterface
     {
-        UInt32 (*id)();
-        void *(*getContextHandle)();
-        bool (*initialize)();
-        void (*pause)();
-        void (*resume)();
-        bool (*scheduleOutputRepaint)(LOutput *output);
-        void (*uninitialize)();
-        const std::list<LOutput*>*(*getConnectedOutputs)();
-        UInt32 (*rendererGPUs)();
-        bool (*initializeOutput)(LOutput *output);
-        void (*uninitializeOutput)(LOutput *output);
-        EGLDisplay (*getOutputEGLDisplay)(LOutput *output);
-        const LSize *(*getOutputPhysicalSize)(LOutput *output);
-        Int32 (*getOutputCurrentBufferIndex)(LOutput *output);
-        UInt32 (*getOutputBuffersCount)(LOutput *output);
-        LTexture *(*getOutputBuffer)(LOutput *output, UInt32 bufferIndex);
-        bool (*hasBufferDamageSupport)(LOutput *output);
-        void (*setOutputBufferDamage)(LOutput *output, LRegion &region);
-        const char *(*getOutputName)(LOutput *output);
-        const char *(*getOutputManufacturerName)(LOutput *output);
-        const char *(*getOutputModelName)(LOutput *output);
-        const char *(*getOutputDescription)(LOutput *output);
-        const LOutputMode *(*getOutputPreferredMode)(LOutput *output);
-        const LOutputMode *(*getOutputCurrentMode)(LOutput *output);
-        const std::list<LOutputMode*> *(*getOutputModes)(LOutput *output);
-        bool (*setOutputMode)(LOutput *output, LOutputMode *mode);
-        const LSize *(*getOutputModeSize)(LOutputMode *mode);
-        Int32 (*getOutputModeRefreshRate)(LOutputMode *mode);
-        bool (*getOutputModeIsPreferred)(LOutputMode *mode);
-        bool (*hasHardwareCursorSupport)(LOutput *output);
-        void (*setCursorTexture)(LOutput *output, UChar8 *buffer);
-        void (*setCursorPosition)(LOutput *output, const LPoint &position);
+        UInt32                              (*backendGetId)();
+        void *                              (*backendGetContextHandle)();
+        bool                                (*backendInitialize)();
+        void                                (*backendUninitialize)();
+        void                                (*backendSuspend)();
+        void                                (*backendResume)();
+        const std::list<LOutput*>*          (*backendGetConnectedOutputs)();
+        UInt32                              (*backendGetRendererGPUs)();
+        const std::list<LDMAFormat*>*       (*backendGetDMAFormats)();
+        EGLDisplay                          (*backendGetAllocatorEGLDisplay)();
+        EGLContext                          (*backendGetAllocatorEGLContext)();
 
-        // Buffers
-        const std::list<LDMAFormat*>*(*getDMAFormats)();
-        EGLDisplay (*getAllocatorEGLDisplay)();
-        EGLContext (*getAllocatorEGLContext)();
+        /* TEXTURES */
+        bool                                (*textureCreateFromCPUBuffer)(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels);
+        bool                                (*textureCreateFromWaylandDRM)(LTexture *texture, void *wlBuffer);
+        bool                                (*textureCreateFromDMA)(LTexture *texture, const LDMAPlanes *planes);
+        bool                                (*textureUpdateRect)(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels);
+        UInt32                              (*textureGetID)(LOutput *output, LTexture *texture);
+        GLenum                              (*textureGetTarget)(LTexture *texture);
+        void                                (*textureDestroy)(LTexture *texture);
 
-        bool (*createTextureFromCPUBuffer)(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels);
-        bool (*createTextureFromWaylandDRM)(LTexture *texture, void *wlBuffer);
-        bool (*createTextureFromDMA)(LTexture *texture, const LDMAPlanes *planes);
-        bool (*updateTextureRect)(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels);
-        UInt32 (*getTextureID)(LOutput *output, LTexture *texture);
-        GLenum (*getTextureTarget)(LTexture *texture);
-        void (*destroyTexture)(LTexture *texture);
+        /* OUTPUT */
+        bool                                (*outputInitialize)(LOutput *output);
+        bool                                (*outputRepaint)(LOutput *output);
+        void                                (*outputUninitialize)(LOutput *output);
+        bool                                (*outputHasBufferDamageSupport)(LOutput *output);
+        void                                (*outputSetBufferDamage)(LOutput *output, LRegion &region);
+
+        /* OUTPUT PROPS */
+        const char *                        (*outputGetName)(LOutput *output);
+        const char *                        (*outputGetManufacturerName)(LOutput *output);
+        const char *                        (*outputGetModelName)(LOutput *output);
+        const char *                        (*outputGetDescription)(LOutput *output);
+        const LSize *                       (*outputGetPhysicalSize)(LOutput *output);
+        Int32                               (*outputGetSubPixel)(LOutput *output);
+
+        /* OUTPUT BUFFERING */
+        Int32                               (*outputGetCurrentBufferIndex)(LOutput *output);
+        UInt32                              (*outputGetBuffersCount)(LOutput *output);
+        LTexture *                          (*outputGetBuffer)(LOutput *output, UInt32 bufferIndex);
+
+        /* OUTPUT V-SYNC */
+        bool                                (*outputHasVSyncControlSupport)(LOutput *output);
+        bool                                (*outputIsVSyncEnabled)(LOutput *output);
+        bool                                (*outputEnableVSync)(LOutput *output, bool enabled);
+        void                                (*outputSetRefreshRateLimit)(LOutput *output, Int32 hz);
+        Int32                               (*outputGetRefreshRateLimit)(LOutput *output);
+
+        /* OUTPUT CURSOR */
+        bool                                (*outputHasHardwareCursorSupport)(LOutput *output);
+        void                                (*outputSetCursorTexture)(LOutput *output, UChar8 *buffer);
+        void                                (*outputSetCursorPosition)(LOutput *output, const LPoint &position);
+
+        /* OUTPUT MODES */
+        const LOutputMode *                 (*outputGetPreferredMode)(LOutput *output);
+        const LOutputMode *                 (*outputGetCurrentMode)(LOutput *output);
+        const std::list<LOutputMode*> *     (*outputGetModes)(LOutput *output);
+        bool                                (*outputSetMode)(LOutput *output, LOutputMode *mode);
+
+        /* MODES */
+        const LSize *                       (*outputModeGetSize)(LOutputMode *mode);
+        Int32                               (*outputModeGetRefreshRate)(LOutputMode *mode);
+        bool                                (*outputModeIsPreferred)(LOutputMode *mode);
     };
 
     struct LInputBackendInterface

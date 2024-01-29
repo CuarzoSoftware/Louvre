@@ -11,76 +11,69 @@ using namespace std;
 class Louvre::LGraphicBackend
 {
 public:
-    static UInt32 id();
-    static void *getContextHandle();
-    static bool initialize();
-    static void uninitialize();
-    static void pause();
-    static void resume();
-    static const list<LOutput*>*getConnectedOutputs();
-    static UInt32 rendererGPUs();
+    static UInt32                       backendGetId();
+    static void *                       backendGetContextHandle();
+    static bool                         backendInitialize();
+    static void                         backendUninitialize();
+    static void                         backendSuspend();
+    static void                         backendResume();
+    static const list<LOutput*>*        backendGetConnectedOutputs();
+    static UInt32                       backendGetRendererGPUs();
+    static const list<LDMAFormat *> *   backendGetDMAFormats();
+    static EGLDisplay                   backendGetAllocatorEGLDisplay();
+    static EGLContext                   backendGetAllocatorEGLContext();
 
-    /* OUTPUTS */
+    /* TEXTURES */
+    static bool                         textureCreateFromCPUBuffer(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels);
+    static bool                         textureCreateFromWaylandDRM(LTexture *texture,void *wlBuffer);
+    static bool                         textureCreateFromDMA(LTexture *texture, const LDMAPlanes *planes);
+    static bool                         textureUpdateRect(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels);
+    static UInt32                       textureGetID(LOutput *output, LTexture *texture);
+    static GLenum                       textureGetTarget(LTexture *texture);
+    static void                         textureDestroy(LTexture *texture);
 
-    static bool initializeOutput(LOutput *output);
-    static bool scheduleOutputRepaint(LOutput *output);
-    static void uninitializeOutput(LOutput *output);
-    static bool hasBufferDamageSupport(LOutput *output);
-    static void setOutputBufferDamage(LOutput *output, LRegion &region);
+    /* OUTPUT */
+    static bool                         outputInitialize(LOutput *output);
+    static bool                         outputRepaint(LOutput *output);
+    static void                         outputUninitialize(LOutput *output);
+    static bool                         outputHasBufferDamageSupport(LOutput *output);
+    static void                         outputSetBufferDamage(LOutput *output, LRegion &region);
 
-    /* Connector physical size in mm */
-    static const LSize *getOutputPhysicalSize(LOutput *output);
-    static Int32 getOutputCurrentBufferIndex(LOutput *output);
-    static UInt32 getOutputBuffersCount(LOutput *output);
-    static LTexture *getOutputBuffer(LOutput *output, UInt32 bufferIndex);
-    static const char *getOutputName(LOutput *output);
-    static const char *getOutputManufacturerName(LOutput *output);
-    static const char *getOutputModelName(LOutput *output);
-    static const char *getOutputDescription(LOutput *output);
-    static const LOutputMode *getOutputPreferredMode(LOutput *output);
-    static const LOutputMode *getOutputCurrentMode(LOutput *output);
-    static const list<LOutputMode*> *getOutputModes(LOutput *output);
-    static bool setOutputMode(LOutput *output, LOutputMode *mode);
+    /* OUTPUT PROPS */
+    static const char *                 outputGetName(LOutput *output);
+    static const char *                 outputGetManufacturerName(LOutput *output);
+    static const char *                 outputGetModelName(LOutput *output);
+    static const char *                 outputGetDescription(LOutput *output);
+    static const LSize *                outputGetPhysicalSize(LOutput *output);
+    static Int32                        outputGetSubPixel(LOutput *output);
+
+    /* OUTPUT BUFFERING */
+    static Int32                        outputGetCurrentBufferIndex(LOutput *output);
+    static UInt32                       outputGetBuffersCount(LOutput *output);
+    static LTexture *                   outputGetBuffer(LOutput *output, UInt32 bufferIndex);
+
+    /* OUTPUT V-SYNC */
+    static bool                         outputHasVSyncControlSupport(LOutput *output);
+    static bool                         outputIsVSyncEnabled(LOutput *output);
+    static bool                         outputEnableVSync(LOutput *output, bool enabled);
+    static void                         outputSetRefreshRateLimit(LOutput *output, Int32 hz);
+    static Int32                        outputGetRefreshRateLimit(LOutput *output);
+
+    /* OUTPUT CURSOR */
+    static bool                         outputHasHardwareCursorSupport(LOutput *output);
+    static void                         outputSetCursorTexture(LOutput *output, UChar8 *buffer);
+    static void                         outputSetCursorPosition(LOutput *output, const LPoint &position);
 
     /* OUTPUT MODES */
+    static const LOutputMode *          outputGetPreferredMode(LOutput *output);
+    static const LOutputMode *          outputGetCurrentMode(LOutput *output);
+    static const list<LOutputMode*> *   outputGetModes(LOutput *output);
+    static bool                         outputSetMode(LOutput *output, LOutputMode *mode);
 
-    static const LSize *getOutputModeSize(LOutputMode *mode);
-    static Int32 getOutputModeRefreshRate(LOutputMode *mode);
-    static bool getOutputModeIsPreferred(LOutputMode *mode);
-
-    /* CURSOR */
-
-    static bool hasHardwareCursorSupport(LOutput *output);
-    static void setCursorTexture(LOutput *output, UChar8 *buffer);
-    static void setCursorPosition(LOutput *output, const LPoint &position);
-
-    /* BUFFERS */
-
-    static const list<LDMAFormat *> *getDMAFormats();
-    static EGLDisplay getAllocatorEGLDisplay();
-    static EGLContext getAllocatorEGLContext();
-
-    static bool createTextureFromCPUBuffer(LTexture *texture,
-                                           const LSize &size,
-                                           UInt32 stride,
-                                           UInt32 format,
-                                           const void *pixels);
-
-    static bool createTextureFromWaylandDRM(LTexture *texture,
-                                            void *wlBuffer);
-
-    static bool createTextureFromDMA(LTexture *texture,
-                                     const LDMAPlanes *planes);
-
-    static bool updateTextureRect(LTexture *texture,
-                                  UInt32 stride,
-                                  const LRect &dst,
-                                  const void *pixels);
-
-    static UInt32 getTextureID(LOutput *output, LTexture *texture);
-    static GLenum getTextureTarget(LTexture *texture);
-
-    static void destroyTexture(LTexture *texture);
+    /* OUTPUT MODE PROPS */
+    static const LSize *                outputModeGetSize(LOutputMode *mode);
+    static Int32                        outputModeGetRefreshRate(LOutputMode *mode);
+    static bool                         outputModeIsPreferred(LOutputMode *mode);
 };
 
 #endif // LGRAPHICBACKEND

@@ -28,6 +28,17 @@ void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
 
     if (keyState == Pressed)
     {
+        bool LEFT_META  = isKeyCodePressed(KEY_LEFTMETA);
+        bool LEFT_CTRL  = isKeyCodePressed(KEY_LEFTCTRL);
+        bool LEFT_SHIFT = isKeyCodePressed(KEY_LEFTSHIFT);
+
+        /* Turn ON / OFF V-Sync */
+        if (LEFT_META && LEFT_SHIFT && keyCode == KEY_V)
+        {
+            output->enableVSync(!output->vSyncEnabled());
+            output->topbar->update();
+        }
+
         if (isKeyCodePressed(KEY_LEFTCTRL))
         {
             // Switch workspace

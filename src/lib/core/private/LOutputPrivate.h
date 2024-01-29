@@ -44,7 +44,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     LOutputFramebuffer fb;
 
     // Framebuffer for fractional scaling with oversampling
-    LRenderBuffer fractionalFb;
+    LRenderBuffer *fractionalFb = nullptr;
 
     // The wp_fractional_v1 scale set with setScale() returned with fractionalScale()
     Float32 fractionalScale = 1.f;

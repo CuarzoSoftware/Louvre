@@ -134,13 +134,13 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
                 if (cursor()->hasHardwareSupport(o) && (textureChanged || !found))
                 {
                     texture2Buffer(cursor(), size * o->fractionalScale(), o->transform());
-                    compositor()->imp()->graphicBackend->setCursorTexture(o, buffer);
+                    compositor()->imp()->graphicBackend->outputSetCursorTexture(o, buffer);
                 }
             }
             else
             {
                 intersectedOutputs.remove(o);
-                compositor()->imp()->graphicBackend->setCursorTexture(o, nullptr);
+                compositor()->imp()->graphicBackend->outputSetCursorTexture(o, nullptr);
             }
 
             if (cursor()->hasHardwareSupport(o))
@@ -181,7 +181,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
                     p.setY(tmp);
                 }
 
-                compositor()->imp()->graphicBackend->setCursorPosition(o, o->scale() * p / ( o->scale() / o->fractionalScale()) );
+                compositor()->imp()->graphicBackend->outputSetCursorPosition(o, o->scale() * p / ( o->scale() / o->fractionalScale()) );
             }
         }
 

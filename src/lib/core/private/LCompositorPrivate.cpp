@@ -229,7 +229,7 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
     // Check if there is a pre-loaded graphic backend
     if (graphicBackend)
     {
-        if (!graphicBackend->initialize())
+        if (!graphicBackend->backendInitialize())
         {
             dlclose(graphicBackendHandle);
             graphicBackendHandle = nullptr;
@@ -259,7 +259,7 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
 
         if (loadGraphicBackend(backendPathName))
         {
-            if (!graphicBackend->initialize())
+            if (!graphicBackend->backendInitialize())
             {
                 dlclose(graphicBackendHandle);
                 graphicBackendHandle = nullptr;
@@ -298,8 +298,8 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
     LLog::debug("[LCompositorPrivate::initGraphicBackend] Graphic backend initialized successfully.");
     isGraphicBackendInitialized = true;
 
-    mainEGLDisplay = graphicBackend->getAllocatorEGLDisplay();
-    mainEGLContext = graphicBackend->getAllocatorEGLContext();
+    mainEGLDisplay = graphicBackend->backendGetAllocatorEGLDisplay();
+    mainEGLContext = graphicBackend->backendGetAllocatorEGLContext();
 
     eglMakeCurrent(eglDisplay(),
                    EGL_NO_SURFACE,
@@ -424,7 +424,7 @@ void LCompositor::LCompositorPrivate::unitGraphicBackend(bool closeLib)
 
     if (isGraphicBackendInitialized && graphicBackend)
     {
-        graphicBackend->uninitialize();
+        graphicBackend->backendUninitialize();
         LLog::debug("[LCompositorPrivate::unitGraphicBackend] Graphic backend uninitialized successfully.");
     }
 

@@ -59,7 +59,7 @@ void Output::loadWallpaper()
     LTexture *tmpWallpaper = LOpenGL::loadTexture(wallpaperPath);
 
     if (!tmpWallpaper)
-        tmpWallpaper = G::loadAssetsTexture("wallpaper.png");
+        tmpWallpaper = G::loadAssetsTexture("wallpaper.png", false);
 
     if (tmpWallpaper)
     {
@@ -248,7 +248,8 @@ void Output::initializeGL()
                 Float32 inv = 1.f - val;
 
                 if (tl->fullscreen())
-                {       
+                {
+                    tl->animView.enableSrcRect(false);
                     tl->animView.setVisible(true);
                     tl->animScene->render();
                     tl->animView.setTexture(tl->animScene->texture());
@@ -271,7 +272,6 @@ void Output::initializeGL()
                     tl->surf()->setPos(0);
                     LBox box = tl->surf()->getView()->boundingBox();
                     LSize boxSize = LSize(box.x2 - box.x1, box.y2 - box.y1);
-                    tl->animScene->setSizeB(boxSize * 2);
                     cSize = (size() * inv) + (boxSize * val);
 
                     tl->capture.setOpacity(inv);
@@ -288,6 +288,8 @@ void Output::initializeGL()
                     transReg = *tl->animScene->translucentRegion();
                     transReg.offset(LPoint() - tl->animScene->pos());
                     tl->animView.setTexture(tl->animScene->texture());
+                    tl->animView.enableSrcRect(true);
+                    tl->animView.setSrcRect(LRectF(0, boxSize * tl->animScene->bufferScale()));
                     tl->animView.enableDstSize(true);
                     tl->animView.enableParentOffset(false);
                     tl->animView.setPos(animPos);

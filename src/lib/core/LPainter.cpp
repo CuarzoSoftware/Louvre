@@ -747,7 +747,7 @@ void LPainter::LPainterPrivate::updateExtensions()
 
 void LPainter::LPainterPrivate::updateCPUFormats()
 {
-    for (LDMAFormat *fmt : *compositor()->imp()->graphicBackend->getDMAFormats())
+    for (LDMAFormat *fmt : *compositor()->imp()->graphicBackend->backendGetDMAFormats())
     {
         if (fmt->modifier != DRM_FORMAT_MOD_LINEAR)
             continue;

@@ -31,7 +31,7 @@ void LTexture::LTexturePrivate::deleteTexture()
 
     if (graphicBackendData)
     {
-        compositor()->imp()->graphicBackend->destroyTexture(texture);
+        compositor()->imp()->graphicBackend->textureDestroy(texture);
         graphicBackendData = nullptr;
     }
 }

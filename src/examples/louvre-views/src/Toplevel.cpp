@@ -255,7 +255,7 @@ void Toplevel::fullscreenChanged()
         if (animScene)
             delete animScene;
 
-        animScene = new LSceneView(fullscreenOutput->sizeB(), fullscreenOutput->scale());
+        animScene = new LSceneView(fullscreenOutput->size() * 0.5f, 0.5f);
         quickUnfullscreen = false;
         fullscreenOutput->animatedFullscreenToplevel = this;
         surf()->sendOutputEnterEvent(fullscreenOutput);
@@ -406,13 +406,10 @@ void Toplevel::unsetFullscreen()
     if (decoratedView)
         decoratedView->updateGeometry();
 
-    LBox box = surf()->getView()->boundingBox();
-    LSize sizeB = LSize(box.x2 - box.x1, box.y2 - box.y1) * 2;
-
     if (animScene)
         delete animScene;
 
-    animScene = new LSceneView(sizeB, 2);
+    animScene = new LSceneView(fullscreenOutput->size() * 0.5f, 0.5f);
     animScene->setPos(fullscreenOutput->pos());
     G::reparentWithSubsurfaces(surf(), animScene, true);
     fullscreenOutput->animatedFullscreenToplevel = this;

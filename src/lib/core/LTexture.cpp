@@ -142,7 +142,7 @@ bool LTexture::setDataB(const LSize &size, UInt32 stride, UInt32 format, const v
 
     imp()->deleteTexture();
 
-    if (compositor()->imp()->graphicBackend->createTextureFromCPUBuffer(this, size, stride, format, buffer))
+    if (compositor()->imp()->graphicBackend->textureCreateFromCPUBuffer(this, size, stride, format, buffer))
     {
         imp()->format = format;
         imp()->sizeB = size;
@@ -160,7 +160,7 @@ bool LTexture::setData(void *wlDRMBuffer)
 
     imp()->deleteTexture();
 
-    if (compositor()->imp()->graphicBackend->createTextureFromWaylandDRM(this, wlDRMBuffer))
+    if (compositor()->imp()->graphicBackend->textureCreateFromWaylandDRM(this, wlDRMBuffer))
     {
         imp()->sourceType = WL_DRM;
         return true;
@@ -176,7 +176,7 @@ bool LTexture::setDataB(const LDMAPlanes *planes)
 
     imp()->deleteTexture();
 
-    if (compositor()->imp()->graphicBackend->createTextureFromDMA(this, planes))
+    if (compositor()->imp()->graphicBackend->textureCreateFromDMA(this, planes))
     {
         imp()->sourceType = DMA;
         return true;
@@ -191,7 +191,7 @@ bool LTexture::updateRect(const LRect &rect, UInt32 stride, const void *buffer)
     if (initialized() && imp()->sourceType != Framebuffer)
     {
         imp()->serial++;
-        return compositor()->imp()->graphicBackend->updateTextureRect(this, stride, rect, buffer);
+        return compositor()->imp()->graphicBackend->textureUpdateRect(this, stride, rect, buffer);
     }
 
     return false;
@@ -322,7 +322,7 @@ LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQualitySc
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         textureCopy = new LTexture();
 
-        if (compositor()->imp()->graphicBackend->rendererGPUs() == 1)
+        if (compositor()->imp()->graphicBackend->backendGetRendererGPUs() == 1)
         {
             glFlush();
             ret = textureCopy->imp()->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
@@ -372,7 +372,7 @@ LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQualitySc
     skipHQ:
 
     // If single GPU, no need for DMA sharing
-    if (compositor()->imp()->graphicBackend->rendererGPUs() == 1)
+    if (compositor()->imp()->graphicBackend->backendGetRendererGPUs() == 1)
     {
         GLenum textureTarget = target();
 
@@ -652,7 +652,7 @@ GLuint LTexture::id(LOutput *output) const
             return imp()->nativeId;
         }
         else
-            return compositor()->imp()->graphicBackend->getTextureID(output, (LTexture*)this);
+            return compositor()->imp()->graphicBackend->textureGetID(output, (LTexture*)this);
     }
 
     return 0;
@@ -668,7 +668,7 @@ GLenum LTexture::target() const
         else if (sourceType() == Native)
             return imp()->nativeTarget;
 
-        return compositor()->imp()->graphicBackend->getTextureTarget((LTexture*)this);
+        return compositor()->imp()->graphicBackend->textureGetTarget((LTexture*)this);
     }
 
     return GL_TEXTURE_2D;

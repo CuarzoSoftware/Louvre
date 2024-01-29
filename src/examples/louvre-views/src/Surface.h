@@ -4,6 +4,7 @@
 #include <LSurface.h>
 #include <LSurfaceView.h>
 #include <LAnimation.h>
+#include <LTimer.h>
 
 #include "Global.h"
 #include "DockItem.h"
@@ -53,7 +54,7 @@ public:
 
     bool fadedOut = false;
 
-    LTimer *firstMapTimer = nullptr;
+    LTimer firstMapTimer;
 };
 
 #endif // SURFACE_H

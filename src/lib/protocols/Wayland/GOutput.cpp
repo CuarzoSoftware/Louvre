@@ -51,7 +51,7 @@ void GOutput::sendConfiguration()
         output()->pos().y(),
         output()->physicalSize().w(),
         output()->physicalSize().h(),
-        WL_OUTPUT_SUBPIXEL_HORIZONTAL_RGB,
+        output()->subPixel(),
         output()->manufacturer(),
         output()->model(),
         output()->transform());

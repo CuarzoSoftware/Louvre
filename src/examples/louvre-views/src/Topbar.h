@@ -35,6 +35,9 @@ public:
     // Oversampling indicator
     LTextureView oversamplingLabel;
 
+    // V-Sync indicator
+    LTextureView vSyncLabel;
+
     // Current app title
     LTextureView appName;
 

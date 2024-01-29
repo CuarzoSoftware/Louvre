@@ -16,6 +16,7 @@ Topbar::Topbar(Output *output) :
     clock(G::compositor()->clockTexture, &background),
     outputInfo(nullptr, &background),
     oversamplingLabel(G::compositor()->oversamplingLabelTexture, &background),
+    vSyncLabel(G::compositor()->vSyncLabelTexture, &background),
     appName(G::textures()->defaultTopbarAppName, &background)
 {
     this->output = output;
@@ -42,6 +43,10 @@ Topbar::Topbar(Output *output) :
     oversamplingLabel.enableInput(false);
     oversamplingLabel.setBufferScale(2);
 
+    vSyncLabel.enableCustomColor(true);
+    vSyncLabel.enableInput(false);
+    vSyncLabel.setBufferScale(2);
+
     appName.setBufferScale(2);
     updateOutputInfo();
     update();
@@ -59,6 +64,11 @@ void Topbar::update()
     else
         oversamplingLabel.setCustomColor(0.8f, 0.1f, 0.1f);
 
+    if (output->vSyncEnabled())
+        vSyncLabel.setCustomColor(0.1f, 0.8f, 0.1f);
+    else
+        vSyncLabel.setCustomColor(0.8f, 0.1f, 0.1f);
+
     setVisible(true);
     setPos(output->pos().x(), output->pos().y());
     background.setSize(output->size().w(), TOPBAR_HEIGHT);
@@ -66,7 +76,8 @@ void Topbar::update()
     background.setVisible(true);
     appName.setPos(42, 1 + (background.size().h() - appName.size().h()) / 2);
     clock.setPos(size().w() - clock.size().w() - 8, 1 + (size().h() - clock.size().h()) / 2);
-    oversamplingLabel.setPos(clock.nativePos().x() - oversamplingLabel.size().w() - 8, clock.nativePos().y());
+    vSyncLabel.setPos(clock.nativePos().x() - vSyncLabel.size().w() - 8, clock.nativePos().y());
+    oversamplingLabel.setPos(vSyncLabel.nativePos().x() - oversamplingLabel.size().w() - 8, vSyncLabel.nativePos().y());
     outputInfo.setPos(oversamplingLabel.nativePos().x() - outputInfo.size().w() - 8, oversamplingLabel.nativePos().y());
 }
 

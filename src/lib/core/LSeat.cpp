@@ -61,17 +61,17 @@ LSeat::~LSeat()
 
 const std::list<LOutput *> &LSeat::outputs() const
 {
-    return *compositor()->imp()->graphicBackend->getConnectedOutputs();
+    return *compositor()->imp()->graphicBackend->backendGetConnectedOutputs();
 }
 
 void *LSeat::graphicBackendContextHandle() const
 {
-    return compositor()->imp()->graphicBackend->getContextHandle();
+    return compositor()->imp()->graphicBackend->backendGetContextHandle();
 }
 
 UInt32 LSeat::graphicBackendId() const
 {
-    return compositor()->imp()->graphicBackend->id();
+    return compositor()->imp()->graphicBackend->backendGetId();
 }
 
 LSeat::InputCapabilitiesFlags LSeat::inputBackendCapabilities() const

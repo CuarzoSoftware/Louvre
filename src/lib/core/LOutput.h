@@ -179,11 +179,32 @@ public:
         Suspended            ///< Output is suspended.
     };
 
+    /**
+     * @brief Enumeration describing the subpixel geometry.
+     *
+     * This enumeration provides information about how the physical pixels on an output are laid out.
+     */
+    enum SubPixel
+    {
+        Unknown         = 0, ///< Unknown geometry.
+        None            = 1, ///< No specific geometry.
+        HorizontalRGB   = 2, ///< Horizontal RGB layout.
+        HorizontalBGR   = 3, ///< Horizontal BGR layout.
+        VerticalRGB     = 4, ///< Vertical RGB layout.
+        VerticalBGR     = 5  ///< Vertical BGR layout.
+    };
+
     // Default is enabled
     bool fractionalOversamplingEnabled() const;
     bool usingFractionalScale() const;
     void enableFractionalOversampling(bool enabled);
     Float32 fractionalScale() const;
+    SubPixel subPixel() const;
+    bool hasVSyncControlSupport() const;
+    bool vSyncEnabled() const;
+    bool enableVSync(bool enabled);
+    Int32 refreshRateLimit() const;
+    void setRefreshRateLimit(Int32 hz);
 
     /**
      * @brief Constructor of the LOutput class.

@@ -4,7 +4,6 @@
 #include "Global.h"
 #include "InputRect.h"
 #include "Pointer.h"
-#include "src/Compositor.h"
 #include <LKeyboard.h>
 #include <LSeat.h>
 #include <LCursor.h>
@@ -22,7 +21,7 @@ void ToplevelButton::update()
 {
     if (buttonType == Close)
     {
-        if (toplevelView->buttonsContainer->pointerIsOver())
+        if (toplevelView->buttonsContainer.pointerIsOver())
         {
             if (pressed)
                 setTextureIndex(G::CloseButtonEnabledPressed);
@@ -45,7 +44,7 @@ void ToplevelButton::update()
         }
         else
         {
-            if (toplevelView->buttonsContainer->pointerIsOver())
+            if (toplevelView->buttonsContainer.pointerIsOver())
             {
                 if (pressed)
                     setTextureIndex(G::MinimizeButtonEnabledPressed);
@@ -66,7 +65,7 @@ void ToplevelButton::update()
 
         bool altMode = !seat()->keyboard()->isKeyCodePressed(KEY_LEFTALT) || toplevelView->toplevel->fullscreen();
 
-        if (toplevelView->buttonsContainer->pointerIsOver())
+        if (toplevelView->buttonsContainer.pointerIsOver())
         {
             if (pressed)
             {

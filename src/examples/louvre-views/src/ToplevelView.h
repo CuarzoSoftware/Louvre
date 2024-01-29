@@ -6,6 +6,8 @@
 #include <LSurfaceView.h>
 #include <LAnimation.h>
 #include "UITextureView.h"
+#include "InputRect.h"
+#include "ToplevelButton.h"
 
 using namespace Louvre;
 
@@ -25,7 +27,7 @@ public:
 
     LLayerView clipTop;
     LLayerView clipBottom;
-    LSurfaceView *surfB = nullptr;
+    LSurfaceView surfB;
 
     LSceneView sceneBL;
     LSceneView sceneBR;
@@ -37,22 +39,23 @@ public:
         decoR, decoBL, decoB, decoBR,
         maskBL, maskBR;
 
-    InputRect *resizeTL = nullptr;
-    InputRect *resizeTR = nullptr;
-    InputRect *resizeBL = nullptr;
-    InputRect *resizeBR = nullptr;
-    InputRect *resizeT = nullptr;
-    InputRect *resizeB = nullptr;
-    InputRect *resizeL = nullptr;
-    InputRect *resizeR = nullptr;
-    InputRect *topbarInput = nullptr;
+    InputRect
+        topbarInput,
+        buttonsContainer,
+        resizeT,
+        resizeB,
+        resizeL,
+        resizeR,
+        resizeTL,
+        resizeTR,
+        resizeBL,
+        resizeBR;
 
-    InputRect *buttonsContainer = nullptr;
-    ToplevelButton *closeButton = nullptr;
-    ToplevelButton *minimizeButton = nullptr;
-    ToplevelButton *maximizeButton = nullptr;
+    ToplevelButton closeButton,
+        minimizeButton,
+        maximizeButton;
 
-    LTextureView *title = nullptr;
+    LTextureView title;
 
     UInt32 lastTopbarClickMs = 0;
     Float32 fullscreenTopbarVisibility = 0.f;

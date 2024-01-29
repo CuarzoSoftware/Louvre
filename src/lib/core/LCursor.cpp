@@ -175,7 +175,7 @@ void LCursor::setVisible(bool state)
     if (!visible())
     {
         for (LOutput *o : compositor()->outputs())
-            compositor()->imp()->graphicBackend->setCursorTexture(
+            compositor()->imp()->graphicBackend->outputSetCursorTexture(
                         o,
                         nullptr);
     }
@@ -214,7 +214,7 @@ bool LCursor::hasHardwareSupport(const LOutput *output) const
     if (!imp()->hasFb)
         return false;
 
-    return compositor()->imp()->graphicBackend->hasHardwareCursorSupport((LOutput*)output);
+    return compositor()->imp()->graphicBackend->outputHasHardwareCursorSupport((LOutput*)output);
 }
 
 const LPointF &LCursor::pos() const

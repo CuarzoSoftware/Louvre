@@ -92,6 +92,7 @@ void Compositor::initialized()
     clockMinuteTimer->start(1);
 
     oversamplingLabelTexture = G::font()->semibold->renderText("OVERSAMPLING", 22);
+    vSyncLabelTexture = G::font()->semibold->renderText("V-SYNC", 22);
 
     Int32 totalWidth = 0;
 

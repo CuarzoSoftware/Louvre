@@ -62,8 +62,8 @@ static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &
                 view->fullscreenTopbarVisibility = anim->value();
                 view->updateGeometry();
 
-                if (!view->topbarInput->pointerIsOver())
-                    onPointerLeaveResizeArea(view->topbarInput, nullptr);
+                if (!view->topbarInput.pointerIsOver())
+                    onPointerLeaveResizeArea(&view->topbarInput, nullptr);
             });
 
             view->fullscreenTopbarAnim.start();
@@ -107,8 +107,8 @@ static void onPointerLeaveResizeArea(InputRect *rect, void *data)
                 view->fullscreenTopbarVisibility = 1.f -anim->value();
                 view->updateGeometry();
 
-                if (view->topbarInput->pointerIsOver())
-                    onPointerEnterResizeArea(view->topbarInput, nullptr, LPoint());
+                if (view->topbarInput.pointerIsOver())
+                    onPointerEnterResizeArea(&view->topbarInput, nullptr, LPoint());
             });
 
             view->fullscreenTopbarAnim.start();
@@ -169,6 +169,7 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     clipBottom(this),
 
     // Toplevel decorations (shadows and topbar)
+    surfB(toplevel->surface(), &clipBottom),
     sceneBL(LSize(TOPLEVEL_BORDER_RADIUS, TOPLEVEL_BORDER_RADIUS) * 2, 2, this),
     sceneBR(LSize(TOPLEVEL_BORDER_RADIUS, TOPLEVEL_BORDER_RADIUS) * 2, 2, this),
     surfBL(toplevel->surface(), &sceneBL),
@@ -182,7 +183,21 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     decoB(G::DecorationActiveB, this),
     decoBR(G::DecorationActiveBR, this),
     maskBL(G::DecorationMaskBL, &sceneBL),
-    maskBR(G::DecorationMaskBR, &sceneBR)
+    maskBR(G::DecorationMaskBR, &sceneBR),
+    topbarInput(this, nullptr),
+    buttonsContainer(this, this),
+    resizeT(this, G::cursors().top_side, LToplevelRole::ResizeEdge::Top),
+    resizeB(this, G::cursors().bottom_side, LToplevelRole::ResizeEdge::Bottom),
+    resizeL(this, G::cursors().left_side, LToplevelRole::ResizeEdge::Left),
+    resizeR(this, G::cursors().right_side, LToplevelRole::ResizeEdge::Right),
+    resizeTL(this, G::cursors().top_left_corner, LToplevelRole::ResizeEdge::TopLeft),
+    resizeTR(this, G::cursors().top_right_corner, LToplevelRole::ResizeEdge::TopRight),
+    resizeBL(this, G::cursors().bottom_left_corner, LToplevelRole::ResizeEdge::BottomLeft),
+    resizeBR(this, G::cursors().bottom_right_corner, LToplevelRole::ResizeEdge::BottomRight),
+    closeButton(&buttonsContainer, this, ToplevelButton::Close),
+    minimizeButton(&buttonsContainer, this, ToplevelButton::Minimize),
+    maximizeButton(&buttonsContainer, this, ToplevelButton::Maximize),
+    title(nullptr, &topbarInput)
 {
     toplevel->decoratedView = this;
 
@@ -194,10 +209,9 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     surf->view->setParent(&clipTop);
     surf->view->setCustomPos(LPoint(0, 0));
 
-    surfB = new LSurfaceView(toplevel->surface(), &clipBottom);
-    surfB->setPrimary(false);
-    surfB->enableParentClipping(true);
-    surfB->enableCustomPos(true);
+    surfB.setPrimary(false);
+    surfB.enableParentClipping(true);
+    surfB.enableCustomPos(true);
 
     // Make them always translucent
     surfBL.enableCustomTranslucentRegion(true);
@@ -239,69 +253,53 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     maskBL.setBlendFunc(GL_ZERO, GL_SRC_ALPHA, GL_ZERO, GL_SRC_ALPHA);
     maskBR.setBlendFunc(GL_ZERO, GL_SRC_ALPHA, GL_ZERO, GL_SRC_ALPHA);
 
-    topbarInput = new InputRect(this, nullptr);
-    resizeT = new InputRect(this, G::cursors().top_side, LToplevelRole::ResizeEdge::Top);
-    resizeB = new InputRect(this, G::cursors().bottom_side, LToplevelRole::ResizeEdge::Bottom);
-    resizeL = new InputRect(this, G::cursors().left_side, LToplevelRole::ResizeEdge::Left);
-    resizeR = new InputRect(this, G::cursors().right_side, LToplevelRole::ResizeEdge::Right);
-    resizeTL = new InputRect(this, G::cursors().top_left_corner, LToplevelRole::ResizeEdge::TopLeft);
-    resizeTR = new InputRect(this, G::cursors().top_right_corner, LToplevelRole::ResizeEdge::TopRight);
-    resizeBL = new InputRect(this, G::cursors().bottom_left_corner, LToplevelRole::ResizeEdge::BottomLeft);
-    resizeBR = new InputRect(this, G::cursors().bottom_right_corner, LToplevelRole::ResizeEdge::BottomRight);
+    resizeTL.onPointerEnter = &onPointerEnterResizeArea;
+    resizeTR.onPointerEnter = &onPointerEnterResizeArea;
+    resizeBL.onPointerEnter = &onPointerEnterResizeArea;
+    resizeBR.onPointerEnter = &onPointerEnterResizeArea;
+    resizeT.onPointerEnter = &onPointerEnterResizeArea;
+    resizeB.onPointerEnter = &onPointerEnterResizeArea;
+    resizeL.onPointerEnter = &onPointerEnterResizeArea;
+    resizeR.onPointerEnter = &onPointerEnterResizeArea;
+    topbarInput.onPointerEnter = &onPointerEnterResizeArea;
+
+    resizeTL.onPointerLeave = &onPointerLeaveResizeArea;
+    resizeTR.onPointerLeave = &onPointerLeaveResizeArea;
+    resizeBL.onPointerLeave = &onPointerLeaveResizeArea;
+    resizeBR.onPointerLeave = &onPointerLeaveResizeArea;
+    resizeT.onPointerLeave = &onPointerLeaveResizeArea;
+    resizeB.onPointerLeave = &onPointerLeaveResizeArea;
+    resizeL.onPointerLeave = &onPointerLeaveResizeArea;
+    resizeR.onPointerLeave = &onPointerLeaveResizeArea;
+    topbarInput.onPointerLeave = &onPointerLeaveResizeArea;
+
+    resizeTL.onPointerButton = &onPointerButtonResizeArea;
+    resizeTR.onPointerButton = &onPointerButtonResizeArea;
+    resizeBL.onPointerButton = &onPointerButtonResizeArea;
+    resizeBR.onPointerButton = &onPointerButtonResizeArea;
+    resizeT.onPointerButton = &onPointerButtonResizeArea;
+    resizeB.onPointerButton = &onPointerButtonResizeArea;
+    resizeL.onPointerButton = &onPointerButtonResizeArea;
+    resizeR.onPointerButton = &onPointerButtonResizeArea;
+    topbarInput.onPointerButton = &onPointerButtonResizeArea;
 
     // Title label
-    title = new LTextureView(nullptr, topbarInput);
-    title->setBufferScale(2);
-    title->setCustomColor(0.1f, 0.1f, 0.1f);
-    title->enableCustomColor(true);
-
-    resizeTL->onPointerEnter = &onPointerEnterResizeArea;
-    resizeTR->onPointerEnter = &onPointerEnterResizeArea;
-    resizeBL->onPointerEnter = &onPointerEnterResizeArea;
-    resizeBR->onPointerEnter = &onPointerEnterResizeArea;
-    resizeT->onPointerEnter = &onPointerEnterResizeArea;
-    resizeB->onPointerEnter = &onPointerEnterResizeArea;
-    resizeL->onPointerEnter = &onPointerEnterResizeArea;
-    resizeR->onPointerEnter = &onPointerEnterResizeArea;
-    topbarInput->onPointerEnter = &onPointerEnterResizeArea;
-
-    resizeTL->onPointerLeave = &onPointerLeaveResizeArea;
-    resizeTR->onPointerLeave = &onPointerLeaveResizeArea;
-    resizeBL->onPointerLeave = &onPointerLeaveResizeArea;
-    resizeBR->onPointerLeave = &onPointerLeaveResizeArea;
-    resizeT->onPointerLeave = &onPointerLeaveResizeArea;
-    resizeB->onPointerLeave = &onPointerLeaveResizeArea;
-    resizeL->onPointerLeave = &onPointerLeaveResizeArea;
-    resizeR->onPointerLeave = &onPointerLeaveResizeArea;
-    topbarInput->onPointerLeave = &onPointerLeaveResizeArea;
-
-    resizeTL->onPointerButton = &onPointerButtonResizeArea;
-    resizeTR->onPointerButton = &onPointerButtonResizeArea;
-    resizeBL->onPointerButton = &onPointerButtonResizeArea;
-    resizeBR->onPointerButton = &onPointerButtonResizeArea;
-    resizeT->onPointerButton = &onPointerButtonResizeArea;
-    resizeB->onPointerButton = &onPointerButtonResizeArea;
-    resizeL->onPointerButton = &onPointerButtonResizeArea;
-    resizeR->onPointerButton = &onPointerButtonResizeArea;
-    topbarInput->onPointerButton = &onPointerButtonResizeArea;
+    title.setBufferScale(2);
+    title.setCustomColor(0.1f, 0.1f, 0.1f);
+    title.enableCustomColor(true);
 
     // Buttons
-    buttonsContainer = new InputRect(this, this);
-    buttonsContainer->setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT);
-    buttonsContainer->setSize(3 * TOPLEVEL_BUTTON_SIZE + 2 * TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SIZE);
+    buttonsContainer.setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT);
+    buttonsContainer.setSize(3 * TOPLEVEL_BUTTON_SIZE + 2 * TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SIZE);
 
-    closeButton = new ToplevelButton(buttonsContainer, this, ToplevelButton::Close);
-    minimizeButton = new ToplevelButton(buttonsContainer, this, ToplevelButton::Minimize);
-    maximizeButton = new ToplevelButton(buttonsContainer, this, ToplevelButton::Maximize);
+    closeButton.enableBlockPointer(false);
+    minimizeButton.enableBlockPointer(false);
+    maximizeButton.enableBlockPointer(false);
 
-    closeButton->enableBlockPointer(false);
-    minimizeButton->enableBlockPointer(false);
-    maximizeButton->enableBlockPointer(false);
+    minimizeButton.setPos(TOPLEVEL_BUTTON_SIZE + TOPLEVEL_BUTTON_SPACING, 0);
+    maximizeButton.setPos(2 * (TOPLEVEL_BUTTON_SIZE + TOPLEVEL_BUTTON_SPACING), 0);
 
-    minimizeButton->setPos(TOPLEVEL_BUTTON_SIZE + TOPLEVEL_BUTTON_SPACING, 0);
-    maximizeButton->setPos(2 * (TOPLEVEL_BUTTON_SIZE + TOPLEVEL_BUTTON_SPACING), 0);
-
-    buttonsContainer->onPointerEnter = [](InputRect *, void *data, const LPoint &)
+    buttonsContainer.onPointerEnter = [](InputRect *, void *data, const LPoint &)
     {
         ToplevelView *view = (ToplevelView*)data;
         Pointer *pointer = (Pointer*)view->seat()->pointer();
@@ -309,24 +307,24 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
         if (view->seat()->pointer()->resizingToplevel())
             return;
 
-        view->closeButton->update();
-        view->minimizeButton->update();
-        view->maximizeButton->update();
+        view->closeButton.update();
+        view->minimizeButton.update();
+        view->maximizeButton.update();
 
         if (!pointer->cursorOwner)
             view->cursor()->useDefault();
     };
 
-    buttonsContainer->onPointerLeave = [](InputRect *, void *data)
+    buttonsContainer.onPointerLeave = [](InputRect *, void *data)
     {
         ToplevelView *view = (ToplevelView*)data;
 
         if (view->seat()->pointer()->resizingToplevel())
             return;
 
-        view->closeButton->update();
-        view->minimizeButton->update();
-        view->maximizeButton->update();
+        view->closeButton.update();
+        view->minimizeButton.update();
+        view->maximizeButton.update();
     };
 
     // Clip to workspace if parent is fullscreen
@@ -365,26 +363,8 @@ ToplevelView::~ToplevelView()
         cursor()->useDefault();
     }
 
-    if (title->texture())
-        delete title->texture();
-
-    delete title;
-    delete surfB;
-
-    delete resizeTL;
-    delete resizeTR;
-    delete resizeBL;
-    delete resizeBR;
-    delete resizeT;
-    delete resizeB;
-    delete resizeL;
-    delete resizeR;
-    delete topbarInput;
-
-    delete buttonsContainer;
-    delete closeButton;
-    delete minimizeButton;
-    delete maximizeButton;
+    if (title.texture())
+        delete title.texture();
 }
 
 void ToplevelView::updateTitle()
@@ -394,19 +374,19 @@ void ToplevelView::updateTitle()
 
     Int32 maxWidth = (toplevel->windowGeometry().w() - 128) * 2;
 
-    if (title->texture())
+    if (title.texture())
     {
         titleWidth = G::font()->semibold->calculateTextureSize(toplevel->title().c_str(), 28).w();
 
-        if (titleWidth != title->texture()->sizeB().w() || titleWidth > maxWidth)
+        if (titleWidth != title.texture()->sizeB().w() || titleWidth > maxWidth)
         {
-            delete title->texture();
-            title->setTexture(G::font()->semibold->renderText(toplevel->title().c_str(), 28, maxWidth));
+            delete title.texture();
+            title.setTexture(G::font()->semibold->renderText(toplevel->title().c_str(), 28, maxWidth));
         }
     }
     else
     {
-        title->setTexture(G::font()->semibold->renderText(toplevel->title().c_str(), 28, maxWidth));
+        title.setTexture(G::font()->semibold->renderText(toplevel->title().c_str(), 28, maxWidth));
     }
 
     updateGeometry();
@@ -447,7 +427,7 @@ void ToplevelView::updateGeometry()
 
         if (lastActiveState != toplevel->activated())
         {
-            title->setCustomColor(0.1f, 0.1f, 0.1f);
+            title.setCustomColor(0.1f, 0.1f, 0.1f);
 
             decoTL.setTextureIndex(G::DecorationActiveTL);
             decoT.setTextureIndex(G::DecorationActiveT);
@@ -476,7 +456,7 @@ void ToplevelView::updateGeometry()
 
         if (lastActiveState != toplevel->activated())
         {
-            title->setCustomColor(0.7f, 0.7f, 0.7f);
+            title.setCustomColor(0.7f, 0.7f, 0.7f);
 
             decoTL.setTextureIndex(G::DecorationInactiveTL);
             decoT.setTextureIndex(G::DecorationInactiveT);
@@ -494,9 +474,9 @@ void ToplevelView::updateGeometry()
     }
 
     // Update titlebar button icons
-    closeButton->update();
-    minimizeButton->update();
-    maximizeButton->update();
+    closeButton.update();
+    minimizeButton.update();
+    maximizeButton.update();
     lastActiveState = toplevel->activated();
 
     if (toplevel->fullscreen())
@@ -518,15 +498,15 @@ void ToplevelView::updateGeometry()
             decoBL.setVisible(false);
             decoBR.setVisible(false);
             decoB.setVisible(false);
-            resizeT->setVisible(false);
-            resizeB->setVisible(false);
-            resizeL->setVisible(false);
-            resizeR->setVisible(false);
-            resizeTL->setVisible(false);
-            resizeTR->setVisible(false);
-            resizeBL->setVisible(false);
-            resizeBR->setVisible(false);
-            buttonsContainer->enableBlockPointer(false);
+            resizeT.setVisible(false);
+            resizeB.setVisible(false);
+            resizeL.setVisible(false);
+            resizeR.setVisible(false);
+            resizeTL.setVisible(false);
+            resizeTR.setVisible(false);
+            resizeBL.setVisible(false);
+            resizeBR.setVisible(false);
+            buttonsContainer.enableBlockPointer(false);
         }
 
         setSize(toplevel->fullscreenOutput->size());
@@ -540,7 +520,7 @@ void ToplevelView::updateGeometry()
 
         decoT.setDstSize(size.w(), decoT.nativeSize().h());
         decoT.setPos(0, -decoT.nativeSize().h() + (TOPLEVEL_TOPBAR_HEIGHT + TOPLEVEL_TOP_CLAMP_OFFSET_Y) * fullscreenTopbarVisibility);
-        buttonsContainer->setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT * (1.f - fullscreenTopbarVisibility));
+        buttonsContainer.setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT * (1.f - fullscreenTopbarVisibility));
 
         // Set topbar center translucent regions
         LRegion transT;
@@ -557,14 +537,14 @@ void ToplevelView::updateGeometry()
 
         decoT.setTranslucentRegion(&transT);
 
-        topbarInput->setPos(0, - TOPLEVEL_TOPBAR_HEIGHT * (1.f - fullscreenTopbarVisibility));
-        topbarInput->setSize(size.w(), TOPLEVEL_TOPBAR_HEIGHT + 1);
+        topbarInput.setPos(0, - TOPLEVEL_TOPBAR_HEIGHT * (1.f - fullscreenTopbarVisibility));
+        topbarInput.setSize(size.w(), TOPLEVEL_TOPBAR_HEIGHT + 1);
     }
     else
     {
         if (lastFullscreenState)
         {
-            buttonsContainer->setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT);
+            buttonsContainer.setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT);
             surf->view->setCustomPos(0, 0);
             clipBottom.setVisible(true);
             sceneBL.setVisible(true);
@@ -579,15 +559,15 @@ void ToplevelView::updateGeometry()
             decoBL.setVisible(true);
             decoBR.setVisible(true);
             decoB.setVisible(true);
-            resizeT->setVisible(true);
-            resizeB->setVisible(true);
-            resizeL->setVisible(true);
-            resizeR->setVisible(true);
-            resizeTL->setVisible(true);
-            resizeTR->setVisible(true);
-            resizeBL->setVisible(true);
-            resizeBR->setVisible(true);
-            buttonsContainer->enableBlockPointer(true);
+            resizeT.setVisible(true);
+            resizeB.setVisible(true);
+            resizeL.setVisible(true);
+            resizeR.setVisible(true);
+            resizeTL.setVisible(true);
+            resizeTR.setVisible(true);
+            resizeBL.setVisible(true);
+            resizeBR.setVisible(true);
+            buttonsContainer.enableBlockPointer(true);
         }
 
         Int32 clip = 1;
@@ -611,7 +591,7 @@ void ToplevelView::updateGeometry()
         clipBottom.setSize(
             size.w() - 2 * TOPLEVEL_BORDER_RADIUS,
             TOPLEVEL_BORDER_RADIUS);
-        surfB->setCustomPos(
+        surfB.setCustomPos(
             - TOPLEVEL_BORDER_RADIUS - clip,
             TOPLEVEL_BORDER_RADIUS - size.h() - clip);
 
@@ -683,43 +663,43 @@ void ToplevelView::updateGeometry()
         decoT.setTranslucentRegion(&transT);
 
         // Update input rects
-        resizeT->setPos(0, - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_RESIZE_INPUT_MARGIN);
-        resizeT->setSize(size.w(), TOPLEVEL_RESIZE_INPUT_MARGIN * 2);
+        resizeT.setPos(0, - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_RESIZE_INPUT_MARGIN);
+        resizeT.setSize(size.w(), TOPLEVEL_RESIZE_INPUT_MARGIN * 2);
 
-        resizeB->setPos(0, size.h() - TOPLEVEL_RESIZE_INPUT_MARGIN);
-        resizeB->setSize(size.w(), TOPLEVEL_RESIZE_INPUT_MARGIN * 2);
+        resizeB.setPos(0, size.h() - TOPLEVEL_RESIZE_INPUT_MARGIN);
+        resizeB.setSize(size.w(), TOPLEVEL_RESIZE_INPUT_MARGIN * 2);
 
-        resizeL->setPos(-TOPLEVEL_RESIZE_INPUT_MARGIN, - TOPLEVEL_TOPBAR_HEIGHT);
-        resizeL->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN * 2, size.h() + TOPLEVEL_TOPBAR_HEIGHT);
+        resizeL.setPos(-TOPLEVEL_RESIZE_INPUT_MARGIN, - TOPLEVEL_TOPBAR_HEIGHT);
+        resizeL.setSize(TOPLEVEL_RESIZE_INPUT_MARGIN * 2, size.h() + TOPLEVEL_TOPBAR_HEIGHT);
 
-        resizeR->setPos(size.w() - TOPLEVEL_RESIZE_INPUT_MARGIN, - TOPLEVEL_TOPBAR_HEIGHT);
-        resizeR->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN * 2, size.h() + TOPLEVEL_TOPBAR_HEIGHT);
+        resizeR.setPos(size.w() - TOPLEVEL_RESIZE_INPUT_MARGIN, - TOPLEVEL_TOPBAR_HEIGHT);
+        resizeR.setSize(TOPLEVEL_RESIZE_INPUT_MARGIN * 2, size.h() + TOPLEVEL_TOPBAR_HEIGHT);
 
-        resizeTL->setPos(-TOPLEVEL_RESIZE_INPUT_MARGIN, - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_RESIZE_INPUT_MARGIN);
-        resizeTL->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS, TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS);
+        resizeTL.setPos(-TOPLEVEL_RESIZE_INPUT_MARGIN, - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_RESIZE_INPUT_MARGIN);
+        resizeTL.setSize(TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS, TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS);
 
-        resizeTR->setPos(size.w() - TOPLEVEL_BORDER_RADIUS, - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_RESIZE_INPUT_MARGIN);
-        resizeTR->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS, TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS);
+        resizeTR.setPos(size.w() - TOPLEVEL_BORDER_RADIUS, - TOPLEVEL_TOPBAR_HEIGHT - TOPLEVEL_RESIZE_INPUT_MARGIN);
+        resizeTR.setSize(TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS, TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS);
 
-        resizeBL->setPos(-TOPLEVEL_RESIZE_INPUT_MARGIN, size.h() - TOPLEVEL_BORDER_RADIUS);
-        resizeBL->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS, TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS);
+        resizeBL.setPos(-TOPLEVEL_RESIZE_INPUT_MARGIN, size.h() - TOPLEVEL_BORDER_RADIUS);
+        resizeBL.setSize(TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS, TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS);
 
-        resizeBR->setPos(size.w() - TOPLEVEL_BORDER_RADIUS, size.h() - TOPLEVEL_BORDER_RADIUS);
-        resizeBR->setSize(TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS, TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS);
+        resizeBR.setPos(size.w() - TOPLEVEL_BORDER_RADIUS, size.h() - TOPLEVEL_BORDER_RADIUS);
+        resizeBR.setSize(TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS, TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS);
 
-        topbarInput->setPos(0, - TOPLEVEL_TOPBAR_HEIGHT);
-        topbarInput->setSize(size.w(), TOPLEVEL_TOPBAR_HEIGHT);
+        topbarInput.setPos(0, - TOPLEVEL_TOPBAR_HEIGHT);
+        topbarInput.setSize(size.w(), TOPLEVEL_TOPBAR_HEIGHT);
     }
 
     // Update title pos
-    if (title->texture())
+    if (title.texture())
     {
-        Int32 px = (topbarInput->size().w() - title->size().w()) / 2;
+        Int32 px = (topbarInput.size().w() - title.size().w()) / 2;
 
-        if (titleWidth > (topbarInput->size().w() - 128) * 2)
+        if (titleWidth > (topbarInput.size().w() - 128) * 2)
             px = 64;
 
-        title->setPos(px, topbarInput->size().h() - (TOPLEVEL_TOPBAR_HEIGHT + title->size().h()) / 2 );
+        title.setPos(px, topbarInput.size().h() - (TOPLEVEL_TOPBAR_HEIGHT + title.size().h()) / 2 );
     }
 
     lastFullscreenState = toplevel->fullscreen();
@@ -741,5 +721,5 @@ void ToplevelView::keyEvent(UInt32 keyCode, UInt32 keyState)
     L_UNUSED(keyState);
 
     if (keyCode == KEY_LEFTALT)
-        maximizeButton->update();
+        maximizeButton.update();
 }

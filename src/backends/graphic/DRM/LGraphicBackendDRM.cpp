@@ -74,6 +74,18 @@ struct OutputMode
     LSize size;
 };
 
+// SRM -> Louvre Subpixel
+static UInt32 subPixelTable[] =
+{
+    0,
+    LOutput::SubPixel::Unknown,
+    LOutput::SubPixel::HorizontalRGB,
+    LOutput::SubPixel::HorizontalBGR,
+    LOutput::SubPixel::VerticalRGB,
+    LOutput::SubPixel::VerticalBGR,
+    LOutput::SubPixel::None,
+};
+
 static int openRestricted(const char *path, int flags, void *userData)
 {
     LCompositor *compositor = (LCompositor*)userData;
@@ -264,19 +276,22 @@ static SRMConnectorInterface connectorInterface =
     .uninitializeGL = &uninitializeGL
 };
 
-UInt32 LGraphicBackend::id()
+/* BACKEND API */
+
+UInt32 LGraphicBackend::backendGetId()
 {
     return LGraphicBackendDRM;
 }
 
-void *LGraphicBackend::getContextHandle()
+void *LGraphicBackend::backendGetContextHandle()
 {
     Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
     return bknd->core;
 }
 
-bool LGraphicBackend::initialize()
+bool LGraphicBackend::backendInitialize()
 {
+    setenv("SRM_FORCE_LEGACY_API", "1", 0);
     LCompositor *compositor = LCompositor::compositor();
     libseatEnabled = compositor->seat()->imp()->initLibseat();
 
@@ -330,7 +345,7 @@ bool LGraphicBackend::initialize()
     return false;
 }
 
-void LGraphicBackend::uninitialize()
+void LGraphicBackend::backendUninitialize()
 {
     LCompositor *compositor = LCompositor::compositor();
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
@@ -353,47 +368,158 @@ void LGraphicBackend::uninitialize()
     delete bknd;
 }
 
-void LGraphicBackend::pause()
+void LGraphicBackend::backendSuspend()
 {
     LCompositor *compositor = LCompositor::compositor();
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
     srmCoreSuspend(bknd->core);
 }
 
-void LGraphicBackend::resume()
+void LGraphicBackend::backendResume()
 {
     LCompositor *compositor = LCompositor::compositor();
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
     srmCoreResume(bknd->core);
 }
 
-const list<LOutput*> *LGraphicBackend::getConnectedOutputs()
+const list<LOutput*> *LGraphicBackend::backendGetConnectedOutputs()
 {
     LCompositor *compositor = LCompositor::compositor();
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
     return &bknd->connectedOutputs;
 }
 
-UInt32 LGraphicBackend::rendererGPUs()
+UInt32 LGraphicBackend::backendGetRendererGPUs()
 {
     LCompositor *compositor = LCompositor::compositor();
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
     return bknd->rendererGPUs;
 }
 
-bool LGraphicBackend::initializeOutput(LOutput *output)
+const list<LDMAFormat*> *LGraphicBackend::backendGetDMAFormats()
+{
+    LCompositor *compositor = LCompositor::compositor();
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    return &bknd->dmaFormats;
+}
+
+EGLDisplay LGraphicBackend::backendGetAllocatorEGLDisplay()
+{
+    LCompositor *compositor = LCompositor::compositor();
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    return srmDeviceGetEGLDisplay(srmCoreGetAllocatorDevice(bknd->core));
+}
+
+EGLContext LGraphicBackend::backendGetAllocatorEGLContext()
+{
+    LCompositor *compositor = LCompositor::compositor();
+    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    return srmDeviceGetEGLContext(srmCoreGetAllocatorDevice(bknd->core));
+}
+
+/* TEXTURES */
+
+bool LGraphicBackend::textureCreateFromCPUBuffer(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels)
+{
+    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
+    SRMBuffer *bkndBuffer = srmBufferCreateFromCPU(bknd->core, NULL, size.w(), size.h(), stride, pixels, format);
+
+    if (bkndBuffer)
+    {
+        texture->imp()->graphicBackendData = bkndBuffer;
+        return true;
+    }
+
+    return false;
+}
+
+bool LGraphicBackend::textureCreateFromWaylandDRM(LTexture *texture, void *wlBuffer)
+{
+    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
+    SRMBuffer *bkndBuffer = srmBufferCreateFromWaylandDRM(bknd->core, wlBuffer);
+
+    if (bkndBuffer)
+    {
+        texture->imp()->graphicBackendData = bkndBuffer;
+        texture->imp()->format = srmBufferGetFormat(bkndBuffer);
+        texture->imp()->sizeB.setW(srmBufferGetWidth(bkndBuffer));
+        texture->imp()->sizeB.setH(srmBufferGetHeight(bkndBuffer));
+        return true;
+    }
+
+    return false;
+}
+
+bool LGraphicBackend::textureCreateFromDMA(LTexture *texture, const LDMAPlanes *planes)
+{
+    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
+    SRMBuffer *bkndBuffer = srmBufferCreateFromDMA(bknd->core, NULL, (SRMBufferDMAData*)planes);
+
+    if (bkndBuffer)
+    {
+        texture->imp()->graphicBackendData = bkndBuffer;
+        texture->imp()->format = srmBufferGetFormat(bkndBuffer);
+        texture->imp()->sizeB.setW(srmBufferGetWidth(bkndBuffer));
+        texture->imp()->sizeB.setH(srmBufferGetHeight(bkndBuffer));
+        return true;
+    }
+
+    return false;
+}
+
+bool LGraphicBackend::textureUpdateRect(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels)
+{
+    SRMBuffer *bkndBuffer = (SRMBuffer*)texture->imp()->graphicBackendData;
+    return srmBufferWrite(bkndBuffer, stride, dst.x(), dst.y(), dst.w(), dst.h(), pixels);
+}
+
+UInt32 LGraphicBackend::textureGetID(LOutput *output, LTexture *texture)
+{
+    SRMDevice *bkndRendererDevice;
+
+    if (output)
+    {
+        Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+        bkndRendererDevice = srmDeviceGetRendererDevice(srmConnectorGetDevice(bkndOutput->conn));
+    }
+    else
+    {
+        Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
+        bkndRendererDevice = srmCoreGetAllocatorDevice(bknd->core);
+    }
+
+    return srmBufferGetTextureID(bkndRendererDevice, (SRMBuffer*)texture->imp()->graphicBackendData);
+}
+
+GLenum LGraphicBackend::textureGetTarget(LTexture *texture)
+{
+    SRMBuffer *bkndBuffer = (SRMBuffer*)texture->imp()->graphicBackendData;
+    return srmBufferGetTextureTarget(bkndBuffer);
+}
+
+void LGraphicBackend::textureDestroy(LTexture *texture)
+{
+    SRMBuffer *buffer = (SRMBuffer*)texture->imp()->graphicBackendData;
+
+    if (buffer)
+        srmBufferDestroy(buffer);
+}
+
+/* OUTPUT */
+
+bool LGraphicBackend::outputInitialize(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     return srmConnectorInitialize(bkndOutput->conn, &connectorInterface, output);
 }
 
-bool LGraphicBackend::scheduleOutputRepaint(LOutput *output)
+bool LGraphicBackend::outputRepaint(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     return srmConnectorRepaint(bkndOutput->conn);
 }
 
-void LGraphicBackend::uninitializeOutput(LOutput *output)
+void LGraphicBackend::outputUninitialize(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     UInt32 texturesCount = srmConnectorGetBuffersCount(bkndOutput->conn);
@@ -417,13 +543,13 @@ void LGraphicBackend::uninitializeOutput(LOutput *output)
     }
 }
 
-bool LGraphicBackend::hasBufferDamageSupport(LOutput *output)
+bool LGraphicBackend::outputHasBufferDamageSupport(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     return srmConnectorHasBufferDamageSupport(bkndOutput->conn);
 }
 
-void LGraphicBackend::setOutputBufferDamage(LOutput *output, LRegion &region)
+void LGraphicBackend::outputSetBufferDamage(LOutput *output, LRegion &region)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
@@ -433,6 +559,9 @@ void LGraphicBackend::setOutputBufferDamage(LOutput *output, LRegion &region)
     Int32 n;
     LBox *boxes = region.boxes(&n);
 
+#if SRM_VERSION_MINOR >= 5
+    srmConnectorSetBufferDamageBoxes(bkndOutput->conn, (SRMBox*)boxes, n);
+#else
     SRMRect rects[n];
 
     for (Int32 i = 0; i < n; i++)
@@ -442,29 +571,68 @@ void LGraphicBackend::setOutputBufferDamage(LOutput *output, LRegion &region)
         rects[i].width = boxes[i].x2 - boxes[i].x1;
         rects[i].height = boxes[i].y2 - boxes[i].y1;
     }
-
     srmConnectorSetBufferDamage(bkndOutput->conn, rects, n);
+#endif
 }
 
-const LSize *LGraphicBackend::getOutputPhysicalSize(LOutput *output)
+/* OUTPUT PROPS */
+
+const char *LGraphicBackend::outputGetName(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorGetName(bkndOutput->conn);
+}
+
+const char *LGraphicBackend::outputGetManufacturerName(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorGetManufacturer(bkndOutput->conn);
+}
+
+const char *LGraphicBackend::outputGetModelName(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorGetModel(bkndOutput->conn);
+}
+
+const char *LGraphicBackend::outputGetDescription(LOutput *output)
+{
+    L_UNUSED(output);
+    return "DRM connector";
+}
+
+const LSize *LGraphicBackend::outputGetPhysicalSize(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     return &bkndOutput->physicalSize;
 }
 
-Int32 LGraphicBackend::getOutputCurrentBufferIndex(LOutput *output)
+Int32 LGraphicBackend::outputGetSubPixel(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+
+#if SRM_VERSION_MINOR >= 5
+    return subPixelTable[(Int32)srmConnectorGetSubPixel(bkndOutput->conn)];
+#else
+    return WL_OUTPUT_SUBPIXEL_UNKNOWN;
+#endif
+}
+
+/* OUTPUT BUFFERING */
+
+Int32 LGraphicBackend::outputGetCurrentBufferIndex(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     return srmConnectorGetCurrentBufferIndex(bkndOutput->conn);
 }
 
-UInt32 LGraphicBackend::getOutputBuffersCount(LOutput *output)
+UInt32 LGraphicBackend::outputGetBuffersCount(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     return srmConnectorGetBuffersCount(bkndOutput->conn);
 }
 
-LTexture *LGraphicBackend::getOutputBuffer(LOutput *output, UInt32 bufferIndex)
+LTexture *LGraphicBackend::outputGetBuffer(LOutput *output, UInt32 bufferIndex)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
@@ -489,247 +657,199 @@ LTexture *LGraphicBackend::getOutputBuffer(LOutput *output, UInt32 bufferIndex)
     return tex;
 }
 
-const char *LGraphicBackend::getOutputName(LOutput *output)
+/* OUTPUT V-SYNC */
+bool LGraphicBackend::outputHasVSyncControlSupport(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-    return srmConnectorGetName(bkndOutput->conn);
+
+#if SRM_VERSION_MINOR >= 5
+    return srmConnectorHasVSyncControlSupport(bkndOutput->conn);
+#else
+    return false;
+#endif
 }
 
-const char *LGraphicBackend::getOutputManufacturerName(LOutput *output)
+bool LGraphicBackend::outputIsVSyncEnabled(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-    return srmConnectorGetManufacturer(bkndOutput->conn);
+
+#if SRM_VERSION_MINOR >= 5
+    return srmConnectorIsVSyncEnabled(bkndOutput->conn);
+#else
+    return true;
+#endif
 }
 
-const char *LGraphicBackend::getOutputModelName(LOutput *output)
+bool LGraphicBackend::outputEnableVSync(LOutput *output, bool enabled)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-    return srmConnectorGetModel(bkndOutput->conn);
+
+#if SRM_VERSION_MINOR >= 5
+    return srmConnectorEnableVSync(bkndOutput->conn, enabled);
+#else
+    return enabled;
+#endif
 }
 
-const char *LGraphicBackend::getOutputDescription(LOutput *output)
+void LGraphicBackend::outputSetRefreshRateLimit(LOutput *output, Int32 hz)
 {
-    L_UNUSED(output);
-    return "DRM connector";
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+
+#if SRM_VERSION_MINOR >= 5
+    srmConnectorSetRefreshRateLimit(bkndOutput->conn, hz);
+#else
+    L_UNUSED(bkndOutput)
+#endif
 }
 
-const LOutputMode *LGraphicBackend::getOutputPreferredMode(LOutput *output)
+Int32 LGraphicBackend::outputGetRefreshRateLimit(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+
+#if SRM_VERSION_MINOR >= 5
+    return srmConnectorGetRefreshRateLimit(bkndOutput->conn);
+#else
+    return 0;
+#endif
+}
+
+/* OUTPUT CURSOR */
+
+bool LGraphicBackend::outputHasHardwareCursorSupport(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorHasHardwareCursor(bkndOutput->conn);
+}
+
+void LGraphicBackend::outputSetCursorTexture(LOutput *output, UChar8 *buffer)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    srmConnectorSetCursor(bkndOutput->conn, buffer);
+}
+
+void LGraphicBackend::outputSetCursorPosition(LOutput *output, const LPoint &position)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    srmConnectorSetCursorPos(bkndOutput->conn, position.x(), position.y());
+}
+
+/* OUTPUT MODES */
+
+const LOutputMode *LGraphicBackend::outputGetPreferredMode(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     SRMConnectorMode *mode = srmConnectorGetPreferredMode(bkndOutput->conn);
     return (LOutputMode*)srmConnectorModeGetUserData(mode);
 }
 
-const LOutputMode *LGraphicBackend::getOutputCurrentMode(LOutput *output)
+const LOutputMode *LGraphicBackend::outputGetCurrentMode(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     SRMConnectorMode *mode = srmConnectorGetCurrentMode(bkndOutput->conn);
     return (LOutputMode*)srmConnectorModeGetUserData(mode);
 }
 
-const std::list<LOutputMode *> *LGraphicBackend::getOutputModes(LOutput *output)
+const std::list<LOutputMode *> *LGraphicBackend::outputGetModes(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     return &bkndOutput->modes;
 }
 
-bool LGraphicBackend::setOutputMode(LOutput *output, LOutputMode *mode)
+bool LGraphicBackend::outputSetMode(LOutput *output, LOutputMode *mode)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     OutputMode *bkndOutputMode = (OutputMode*)mode->imp()->graphicBackendData;
     return srmConnectorSetMode(bkndOutput->conn, bkndOutputMode->mode);
 }
 
-const LSize *LGraphicBackend::getOutputModeSize(LOutputMode *mode)
+/* OUTPUT MODE PROPS */
+
+const LSize *LGraphicBackend::outputModeGetSize(LOutputMode *mode)
 {
     OutputMode *bkndOutputMode = (OutputMode*)mode->imp()->graphicBackendData;
     return &bkndOutputMode->size;
 }
 
-Int32 LGraphicBackend::getOutputModeRefreshRate(LOutputMode *mode)
+Int32 LGraphicBackend::outputModeGetRefreshRate(LOutputMode *mode)
 {
     OutputMode *bkndOutputMode = (OutputMode*)mode->imp()->graphicBackendData;
     return srmConnectorModeGetRefreshRate(bkndOutputMode->mode)*1000;
 }
 
-bool LGraphicBackend::getOutputModeIsPreferred(LOutputMode *mode)
+bool LGraphicBackend::outputModeIsPreferred(LOutputMode *mode)
 {
     OutputMode *bkndOutputMode = (OutputMode*)mode->imp()->graphicBackendData;
     return srmConnectorModeIsPreferred(bkndOutputMode->mode);
 }
 
-bool LGraphicBackend::hasHardwareCursorSupport(LOutput *output)
-{
-    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-    return srmConnectorHasHardwareCursor(bkndOutput->conn);
-}
-
-void LGraphicBackend::setCursorTexture(LOutput *output, UChar8 *buffer)
-{
-    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-    srmConnectorSetCursor(bkndOutput->conn, buffer);
-}
-
-void LGraphicBackend::setCursorPosition(LOutput *output, const LPoint &position)
-{
-    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-    srmConnectorSetCursorPos(bkndOutput->conn, position.x(), position.y());
-}
-
-const list<LDMAFormat*> *LGraphicBackend::getDMAFormats()
-{
-    LCompositor *compositor = LCompositor::compositor();
-    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
-    return &bknd->dmaFormats;
-}
-
-EGLDisplay LGraphicBackend::getAllocatorEGLDisplay()
-{
-    LCompositor *compositor = LCompositor::compositor();
-    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
-    return srmDeviceGetEGLDisplay(srmCoreGetAllocatorDevice(bknd->core));
-}
-
-EGLContext LGraphicBackend::getAllocatorEGLContext()
-{
-    LCompositor *compositor = LCompositor::compositor();
-    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
-    return srmDeviceGetEGLContext(srmCoreGetAllocatorDevice(bknd->core));
-}
-
-bool LGraphicBackend::createTextureFromCPUBuffer(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels)
-{
-    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
-    SRMBuffer *bkndBuffer = srmBufferCreateFromCPU(bknd->core, NULL, size.w(), size.h(), stride, pixels, format);
-
-    if (bkndBuffer)
-    {
-        texture->imp()->graphicBackendData = bkndBuffer;
-        return true;
-    }
-
-    return false;
-}
-
-bool LGraphicBackend::createTextureFromWaylandDRM(LTexture *texture, void *wlBuffer)
-{
-    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
-    SRMBuffer *bkndBuffer = srmBufferCreateFromWaylandDRM(bknd->core, wlBuffer);
-
-    if (bkndBuffer)
-    {
-        texture->imp()->graphicBackendData = bkndBuffer;
-        texture->imp()->format = srmBufferGetFormat(bkndBuffer);
-        texture->imp()->sizeB.setW(srmBufferGetWidth(bkndBuffer));
-        texture->imp()->sizeB.setH(srmBufferGetHeight(bkndBuffer));
-        return true;
-    }
-
-    return false;
-}
-
-bool LGraphicBackend::createTextureFromDMA(LTexture *texture, const LDMAPlanes *planes)
-{
-    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
-    SRMBuffer *bkndBuffer = srmBufferCreateFromDMA(bknd->core, NULL, (SRMBufferDMAData*)planes);
-
-    if (bkndBuffer)
-    {
-        texture->imp()->graphicBackendData = bkndBuffer;
-        texture->imp()->format = srmBufferGetFormat(bkndBuffer);
-        texture->imp()->sizeB.setW(srmBufferGetWidth(bkndBuffer));
-        texture->imp()->sizeB.setH(srmBufferGetHeight(bkndBuffer));
-        return true;
-    }
-
-    return false;
-}
-
-bool LGraphicBackend::updateTextureRect(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels)
-{
-    SRMBuffer *bkndBuffer = (SRMBuffer*)texture->imp()->graphicBackendData;
-    return srmBufferWrite(bkndBuffer, stride, dst.x(), dst.y(), dst.w(), dst.h(), pixels);
-}
-
-UInt32 LGraphicBackend::getTextureID(LOutput *output, LTexture *texture)
-{
-    SRMDevice *bkndRendererDevice;
-
-    if (output)
-    {
-        Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-        bkndRendererDevice = srmDeviceGetRendererDevice(srmConnectorGetDevice(bkndOutput->conn));
-    }
-    else
-    {
-        Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
-        bkndRendererDevice = srmCoreGetAllocatorDevice(bknd->core);
-    }
-
-    return srmBufferGetTextureID(bkndRendererDevice, (SRMBuffer*)texture->imp()->graphicBackendData);
-}
-
-GLenum LGraphicBackend::getTextureTarget(LTexture *texture)
-{
-    SRMBuffer *bkndBuffer = (SRMBuffer*)texture->imp()->graphicBackendData;
-    return srmBufferGetTextureTarget(bkndBuffer);
-}
-
-void LGraphicBackend::destroyTexture(LTexture *texture)
-{
-    SRMBuffer *buffer = (SRMBuffer*)texture->imp()->graphicBackendData;
-
-    if (buffer)
-        srmBufferDestroy(buffer);
-}
 
 static LGraphicBackendInterface API;
 
 extern "C" LGraphicBackendInterface *getAPI()
 {
-    API.id = &LGraphicBackend::id;
-    API.getContextHandle = &LGraphicBackend::getContextHandle;
-    API.initialize = &LGraphicBackend::initialize;
-    API.pause = &LGraphicBackend::pause;
-    API.resume = &LGraphicBackend::resume;
-    API.scheduleOutputRepaint = &LGraphicBackend::scheduleOutputRepaint;
-    API.uninitialize = &LGraphicBackend::uninitialize;
-    API.getConnectedOutputs = &LGraphicBackend::getConnectedOutputs;
-    API.rendererGPUs = &LGraphicBackend::rendererGPUs;
-    API.initializeOutput = &LGraphicBackend::initializeOutput;
-    API.uninitializeOutput = &LGraphicBackend::uninitializeOutput;
-    API.hasBufferDamageSupport = &LGraphicBackend::hasBufferDamageSupport;
-    API.setOutputBufferDamage = &LGraphicBackend::setOutputBufferDamage;
-    API.getOutputPhysicalSize = &LGraphicBackend::getOutputPhysicalSize;
-    API.getOutputCurrentBufferIndex = &LGraphicBackend::getOutputCurrentBufferIndex;
-    API.getOutputBuffersCount = &LGraphicBackend::getOutputBuffersCount;
-    API.getOutputBuffer = &LGraphicBackend::getOutputBuffer;
-    API.getOutputName = &LGraphicBackend::getOutputName;
-    API.getOutputManufacturerName = &LGraphicBackend::getOutputManufacturerName;
-    API.getOutputModelName = &LGraphicBackend::getOutputModelName;
-    API.getOutputDescription = &LGraphicBackend::getOutputDescription;
-    API.getOutputPreferredMode = &LGraphicBackend::getOutputPreferredMode;
-    API.getOutputCurrentMode = &LGraphicBackend::getOutputCurrentMode;
-    API.getOutputModes = &LGraphicBackend::getOutputModes;
-    API.setOutputMode = &LGraphicBackend::setOutputMode;
-    API.getOutputModeSize = &LGraphicBackend::getOutputModeSize;
-    API.getOutputModeRefreshRate = &LGraphicBackend::getOutputModeRefreshRate;
-    API.getOutputModeIsPreferred = &LGraphicBackend::getOutputModeIsPreferred;
-    API.hasHardwareCursorSupport = &LGraphicBackend::hasHardwareCursorSupport;
-    API.setCursorTexture = &LGraphicBackend::setCursorTexture;
-    API.setCursorPosition = &LGraphicBackend::setCursorPosition;
+    API.backendGetId                    = &LGraphicBackend::backendGetId;
+    API.backendGetContextHandle         = &LGraphicBackend::backendGetContextHandle;
+    API.backendInitialize               = &LGraphicBackend::backendInitialize;
+    API.backendUninitialize             = &LGraphicBackend::backendUninitialize;
+    API.backendSuspend                  = &LGraphicBackend::backendSuspend;
+    API.backendResume                   = &LGraphicBackend::backendResume;
+    API.backendGetConnectedOutputs      = &LGraphicBackend::backendGetConnectedOutputs;
+    API.backendGetRendererGPUs          = &LGraphicBackend::backendGetRendererGPUs;
+    API.backendGetDMAFormats            = &LGraphicBackend::backendGetDMAFormats;
+    API.backendGetAllocatorEGLDisplay   = &LGraphicBackend::backendGetAllocatorEGLDisplay;
+    API.backendGetAllocatorEGLContext   = &LGraphicBackend::backendGetAllocatorEGLContext;
 
-    // Buffers
-    API.getDMAFormats = &LGraphicBackend::getDMAFormats;
-    API.getAllocatorEGLDisplay = &LGraphicBackend::getAllocatorEGLDisplay;
-    API.getAllocatorEGLContext = &LGraphicBackend::getAllocatorEGLContext;
-    API.createTextureFromCPUBuffer = &LGraphicBackend::createTextureFromCPUBuffer;
-    API.createTextureFromWaylandDRM = &LGraphicBackend::createTextureFromWaylandDRM;
-    API.createTextureFromDMA = &LGraphicBackend::createTextureFromDMA;
-    API.updateTextureRect = &LGraphicBackend::updateTextureRect;
-    API.getTextureID = &LGraphicBackend::getTextureID;
-    API.getTextureTarget = &LGraphicBackend::getTextureTarget;
-    API.destroyTexture = &LGraphicBackend::destroyTexture;
+    /* TEXTURES */
+    API.textureCreateFromCPUBuffer      = &LGraphicBackend::textureCreateFromCPUBuffer;
+    API.textureCreateFromWaylandDRM     = &LGraphicBackend::textureCreateFromWaylandDRM;
+    API.textureCreateFromDMA            = &LGraphicBackend::textureCreateFromDMA;
+    API.textureUpdateRect               = &LGraphicBackend::textureUpdateRect;
+    API.textureGetID                    = &LGraphicBackend::textureGetID;
+    API.textureGetTarget                = &LGraphicBackend::textureGetTarget;
+    API.textureDestroy                  = &LGraphicBackend::textureDestroy;
+
+    /* OUTPUT */
+    API.outputInitialize                = &LGraphicBackend::outputInitialize;
+    API.outputRepaint                   = &LGraphicBackend::outputRepaint;
+    API.outputUninitialize              = &LGraphicBackend::outputUninitialize;
+    API.outputHasBufferDamageSupport    = &LGraphicBackend::outputHasBufferDamageSupport;
+    API.outputSetBufferDamage           = &LGraphicBackend::outputSetBufferDamage;
+
+    /* OUTPUT PROPS */
+    API.outputGetName                   = &LGraphicBackend::outputGetName;
+    API.outputGetManufacturerName       = &LGraphicBackend::outputGetManufacturerName;
+    API.outputGetModelName              = &LGraphicBackend::outputGetModelName;
+    API.outputGetDescription            = &LGraphicBackend::outputGetDescription;
+    API.outputGetPhysicalSize           = &LGraphicBackend::outputGetPhysicalSize;
+    API.outputGetSubPixel               = &LGraphicBackend::outputGetSubPixel;
+
+    /* OUTPUT BUFFERING */
+    API.outputGetCurrentBufferIndex     = &LGraphicBackend::outputGetCurrentBufferIndex;
+    API.outputGetBuffersCount           = &LGraphicBackend::outputGetBuffersCount;
+    API.outputGetBuffer                 = &LGraphicBackend::outputGetBuffer;
+
+    /* OUTPUT V-SYNC */
+    API.outputHasVSyncControlSupport    = &LGraphicBackend::outputHasVSyncControlSupport;
+    API.outputIsVSyncEnabled            = &LGraphicBackend::outputIsVSyncEnabled;
+    API.outputEnableVSync               = &LGraphicBackend::outputEnableVSync;
+    API.outputSetRefreshRateLimit       = &LGraphicBackend::outputSetRefreshRateLimit;
+    API.outputGetRefreshRateLimit       = &LGraphicBackend::outputGetRefreshRateLimit;
+
+    /* OUTPUT CURSOR */
+    API.outputHasHardwareCursorSupport  = &LGraphicBackend::outputHasHardwareCursorSupport;
+    API.outputSetCursorTexture          = &LGraphicBackend::outputSetCursorTexture;
+    API.outputSetCursorPosition         = &LGraphicBackend::outputSetCursorPosition;
+
+    /* OUTPUT MODES */
+    API.outputGetPreferredMode          = &LGraphicBackend::outputGetPreferredMode;
+    API.outputGetCurrentMode            = &LGraphicBackend::outputGetCurrentMode;
+    API.outputGetModes                  = &LGraphicBackend::outputGetModes;
+    API.outputSetMode                   = &LGraphicBackend::outputSetMode;
+
+    /* OUTPUT MODE PROPS */
+    API.outputModeGetSize               = &LGraphicBackend::outputModeGetSize;
+    API.outputModeGetRefreshRate        = &LGraphicBackend::outputModeGetRefreshRate;
+    API.outputModeIsPreferred           = &LGraphicBackend::outputModeIsPreferred;
 
     return &API;
 }
