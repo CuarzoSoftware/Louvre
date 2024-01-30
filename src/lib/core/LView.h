@@ -662,14 +662,14 @@ public:
     virtual void leftOutput(LOutput *output) = 0;
 
     /**
-     * @brief Get a list of outputs on which the view is currently visible.
+     * @brief Get a vector of output pointers on which the view is currently visible.
      *
-     * Must return a list of outputs where the view is currently visible.
-     * Use the enteredOutput() and leftOutput() methods to update the list.
+     * Must return a vector of output pointers where the view is currently visible.
+     * Use the enteredOutput() and leftOutput() methods to update the vector.
      *
-     * @return A reference to a list of LOutput pointers representing the outputs where the view is visible.
+     * @return A reference to a vector of LOutput pointers representing the outputs where the view is visible.
      */
-    virtual const std::list<LOutput*> &outputs() const = 0;
+    virtual const std::vector<LOutput*> &outputs() const = 0;
 
     /**
      * @brief Check if the view is itself renderable.

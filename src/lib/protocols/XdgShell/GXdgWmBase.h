@@ -17,7 +17,7 @@ public:
 
     ~GXdgWmBase();
 
-    const list<RXdgSurface*> &xdgSurfaces() const;
+    const std::vector<RXdgSurface*> &xdgSurfaces() const;
 
     // Since 1
     bool ping(UInt32 serial);

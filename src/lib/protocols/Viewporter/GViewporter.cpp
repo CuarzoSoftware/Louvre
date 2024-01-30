@@ -24,10 +24,9 @@ GViewporter::GViewporter
     LPRIVATE_INIT_UNIQUE(GViewporter)
 {
     client->imp()->viewporterGlobals.push_back(this);
-    imp()->clientLink = std::prev(client->imp()->viewporterGlobals.end());
 }
 
 GViewporter::~GViewporter()
 {
-    client()->imp()->viewporterGlobals.erase(imp()->clientLink);
+    LVectorRemoveOneUnordered(client()->imp()->viewporterGlobals, this);
 }

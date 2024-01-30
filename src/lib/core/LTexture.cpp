@@ -21,7 +21,6 @@ LTexture::LTexture() : LPRIVATE_INIT_UNIQUE(LTexture)
 {
     imp()->texture = this;
     compositor()->imp()->textures.push_back(this);
-    imp()->compositorLink = std::prev(compositor()->imp()->textures.end());
 }
 
 LTexture::~LTexture()
@@ -30,7 +29,7 @@ LTexture::~LTexture()
         imp()->textureViews.back()->setTexture(nullptr);
 
     imp()->deleteTexture();
-    compositor()->imp()->textures.erase(imp()->compositorLink);
+    LVectorRemoveOneUnordered(compositor()->imp()->textures, this);
 }
 
 UInt32 LTexture::waylandFormatToDRM(UInt32 waylandFormat)

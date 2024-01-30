@@ -722,7 +722,7 @@ public:
      *
      * @return A list of LOutput objects representing the initialized outputs.
      */
-    const std::list<LOutput*> &outputs() const;
+    const std::vector<LOutput*> &outputs() const;
 
     /**
      * @brief Get a list of clients connected to the compositor.
@@ -731,7 +731,7 @@ public:
      *
      * @return A list of LClient objects representing the connected clients.
      */
-    const std::list<LClient*> &clients() const;
+    const std::vector<LClient*> &clients() const;
 
     /**
      * @brief Get a new positive integer number, incrementally.

@@ -469,7 +469,7 @@ void Output::paintGL()
         }
     }
 
-    for (std::list<DestroyedToplevel>::iterator it = c->destroyedToplevels.begin(); it != c->destroyedToplevels.end(); it++)
+    for (std::list<DestroyedToplevel>::iterator it = c->destroyedToplevels.begin(); it != c->destroyedToplevels.end();)
     {
         float alpha = (256.f - ((float)LTime::ms() - (float)(*it).ms))/256.f;
 
@@ -492,7 +492,10 @@ void Output::paintGL()
             it = c->destroyedToplevels.erase(it);
         }
         else
+        {
             repaint();
+            ++it;
+        }
     }
 
     setBufferDamage(&newDamage);

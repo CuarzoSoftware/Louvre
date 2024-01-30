@@ -24,10 +24,9 @@ GSubcompositor::GSubcompositor
     LPRIVATE_INIT_UNIQUE(GSubcompositor)
 {
     this->client()->imp()->subcompositorGlobals.push_back(this);
-    imp()->clientLink = std::prev(this->client()->imp()->subcompositorGlobals.end());
 }
 
 GSubcompositor::~GSubcompositor()
 {
-    client()->imp()->subcompositorGlobals.erase(imp()->clientLink);
+    LVectorRemoveOneUnordered(client()->imp()->subcompositorGlobals, this);
 }

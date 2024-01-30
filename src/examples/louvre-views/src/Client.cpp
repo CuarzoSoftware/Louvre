@@ -71,7 +71,7 @@ Client::Client(Params *params) : LClient(params),
         else
             color = 0.2f + 0.8 * anim->value();
 
-        for (Surface *s : (std::list<Surface*>&)surfaces())
+        for (Surface *s : (std::vector<Surface*>&)surfaces())
             s->view->setColorFactor(color, color, color, 1.f);
 
         compositor()->repaintAllOutputs();
@@ -83,7 +83,7 @@ Client::Client(Params *params) : LClient(params),
         if (unresponsiveCount > 0)
             color = 0.2f;
 
-        for (Surface *s : (std::list<Surface*>&)surfaces())
+        for (Surface *s : (std::vector<Surface*>&)surfaces())
         {
             s->view->setColorFactor(color, color, color, 1.f);
             s->requestNextFrame(false);
@@ -102,7 +102,13 @@ Client::Client(Params *params) : LClient(params),
             if (seat()->enabled() && lastPing != lastPong)
             {
                 if (unresponsiveCount > 5)
+                {
+                    LLog::warning("[louvre-views] Destroyed unresponsive client %lu.", (UInt64)client());
                     destroy();
+
+                    /* Be careful, the time is destroyed, so return */
+                    return;
+                }
                 else if (unresponsiveCount == 0)
                     unresponsiveAnim.start();
 

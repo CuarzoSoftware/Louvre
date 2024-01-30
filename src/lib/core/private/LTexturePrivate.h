@@ -20,8 +20,6 @@ LPRIVATE_CLASS(LTexture)
     UInt32 serial                                       = 0;
     bool pendingDelete = false;
 
-    std::list<LTexture*>::iterator compositorLink;
-
     // List of texture views using it
     std::list<LTextureView*> textureViews;
 

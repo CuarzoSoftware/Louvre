@@ -14,7 +14,7 @@ LPRIVATE_CLASS(LSceneView)
 
     PaintEventParams paintParams;
     LFramebuffer *fb = nullptr;
-    std::list<LOutput*>outputs;
+    std::vector<LOutput*>outputs;
     LRegion input;
 
     struct ThreadData

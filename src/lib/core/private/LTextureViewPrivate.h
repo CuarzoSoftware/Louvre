@@ -15,7 +15,7 @@ LPRIVATE_CLASS(LTextureView)
     LRegion emptyRegion;
     LPoint nativePos;
     Float32 bufferScale = 1.f;
-    std::list<LOutput*> outputs;
+    std::vector<LOutput*> outputs;
 
     bool dstSizeEnabled = false;
     LSize dstSize = LSize(1);

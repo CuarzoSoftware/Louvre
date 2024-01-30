@@ -18,7 +18,9 @@
 #include "Surface.h"
 #include "ToplevelView.h"
 
-Output::Output() : LOutput() {}
+Output::Output() : LOutput(),
+    gammaTable(0)
+{}
 
 void Output::loadWallpaper()
 {
@@ -201,6 +203,11 @@ void Output::updateFractionalOversampling()
 
 void Output::initializeGL()
 {
+    // Linear Gamma
+    gammaTable.setSize(gammaSize());
+    gammaTable.fill(1.0, brightness, 1.0);
+    setGamma(gammaTable);
+
     workspaceAnim.setDuration(400);
     workspaceAnim.setOnUpdateCallback(
         [this](LAnimation *anim)
@@ -244,7 +251,8 @@ void Output::initializeGL()
                 // Scaling vector for the black toplevel background container so it matches cSize
                 LSizeF sVector;
 
-                Float32 val = powf(anim->value(), 6.f);
+                Float32 val = powf(anim->value(), 1.f);
+                //Float32 valSlow = powf(anim->value(), 12.f);
                 Float32 inv = 1.f - val;
 
                 if (tl->fullscreen())

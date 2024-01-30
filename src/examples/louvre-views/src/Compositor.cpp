@@ -54,7 +54,7 @@ void Compositor::initialized()
     G::createTooltip();
     G::loadApps();
 
-    clockMinuteTimer = new LTimer([](LTimer *timer)
+    clockMinuteTimer.setCallback([](LTimer *timer)
     {
         if (G::font()->regular)
         {
@@ -89,7 +89,7 @@ void Compositor::initialized()
     });
 
     // Start the timer right on to setup the clock texture
-    clockMinuteTimer->start(1);
+    clockMinuteTimer.start(1);
 
     oversamplingLabelTexture = G::font()->semibold->renderText("OVERSAMPLING", 22);
     vSyncLabelTexture = G::font()->semibold->renderText("V-SYNC", 22);
@@ -114,7 +114,7 @@ void Compositor::uninitialized()
     for (Output *o : G::outputs())
         o->workspaceAnim.stop();
 
-    for (Client *c : (std::list<Client*>&)clients())
+    for (Client *c : (std::vector<Client*>&)clients())
         if (c->pid != -1)
             kill(c->pid, SIGKILL);
 }

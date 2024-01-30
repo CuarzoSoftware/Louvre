@@ -24,10 +24,9 @@ GXdgDecorationManager::GXdgDecorationManager
     LPRIVATE_INIT_UNIQUE(GXdgDecorationManager)
 {
     this->client()->imp()->xdgDecorationManagerGlobals.push_back(this);
-    imp()->clientLink = std::prev(this->client()->imp()->xdgDecorationManagerGlobals.end());
 }
 
 GXdgDecorationManager::~GXdgDecorationManager()
 {
-    client()->imp()->xdgDecorationManagerGlobals.erase(imp()->clientLink);
+    LVectorRemoveOneUnordered(client()->imp()->xdgDecorationManagerGlobals, this);
 }

@@ -256,11 +256,11 @@ void LSurface::sendOutputLeaveEvent(LOutput *output)
     if (!output)
         return;
 
-    for (list<LOutput*>::iterator o = imp()->outputs.begin(); o != imp()->outputs.end(); o++)
+    for (LOutput *o : imp()->outputs)
     {
-        if (*o == output)
+        if (o == output)
         {
-            imp()->outputs.erase(o);
+            LVectorRemoveOneUnordered(imp()->outputs, o);
             for (GOutput *g : client()->outputGlobals())
             {
                 if (g->output() == output)
@@ -275,7 +275,7 @@ void LSurface::sendOutputLeaveEvent(LOutput *output)
     }
 }
 
-const list<LOutput *> &LSurface::outputs() const
+const std::vector<LOutput *> &LSurface::outputs() const
 {
     return imp()->outputs;
 }
@@ -307,7 +307,7 @@ bool LSurface::mapped() const
     return imp()->mapped;
 }
 
-const std::list<LSurfaceView *> &LSurface::views() const
+const std::vector<LSurfaceView *> &LSurface::views() const
 {
     return imp()->views;
 }

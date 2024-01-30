@@ -190,7 +190,7 @@ public:
     virtual Float32 bufferScale() const override;
     virtual void enteredOutput(LOutput *output) override;
     virtual void leftOutput(LOutput *output) override;
-    virtual const std::list<LOutput*> &outputs() const override;
+    virtual const std::vector<LOutput*> &outputs() const override;
     virtual bool isRenderable() const override;
     virtual void requestNextFrame(LOutput *output) override;
     virtual const LRegion *damage() const override;

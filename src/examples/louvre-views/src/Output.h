@@ -6,6 +6,7 @@
 #include <LRenderBuffer.h>
 #include <LSceneView.h>
 #include <LAnimation.h>
+#include <LGammaTable.h>
 
 using namespace Louvre;
 
@@ -61,6 +62,10 @@ public:
 
     // Dock for this output
     Dock *dock = nullptr;
+
+    // Gamma
+    Float64 brightness = 1.0;
+    LGammaTable gammaTable;
 };
 
 #endif // OUTPUT_H

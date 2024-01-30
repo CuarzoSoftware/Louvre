@@ -382,13 +382,13 @@ void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output)
             {
                 WpPresentationTime::RWpPresentationFeedback *rFeed = wpPresentationFeedbackResources.back();
                 rFeed->sync_output(gOutput);
-                rFeed->presented(output->imp()->presentationTime.tv_sec >> 32,
-                                 output->imp()->presentationTime.tv_sec & 0xffffffff,
-                                 output->imp()->presentationTime.tv_nsec,
-                                 0,
-                                 0,
-                                 0,
-                                 WP_PRESENTATION_FEEDBACK_KIND_VSYNC);
+                rFeed->presented(output->imp()->presentationTime.time.tv_sec >> 32,
+                                 output->imp()->presentationTime.time.tv_sec & 0xffffffff,
+                                 (UInt32)output->imp()->presentationTime.time.tv_nsec,
+                                 output->imp()->presentationTime.period,
+                                 output->imp()->presentationTime.frame >> 32,
+                                 output->imp()->presentationTime.frame & 0xffffffff,
+                                output->imp()->presentationTime.flags);
                 rFeed->imp()->lSurface = nullptr;
                 wpPresentationFeedbackResources.pop_back();
                 wl_resource_destroy(rFeed->resource());

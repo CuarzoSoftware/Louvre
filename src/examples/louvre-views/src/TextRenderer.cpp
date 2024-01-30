@@ -112,6 +112,17 @@ LTexture *TextRenderer::renderText(const char *text, Int32 fontSize, Int32 maxWi
         return nullptr;
     }
 
+    if (bufferSize.area() <= 0)
+    {
+        if (clippedText != text)
+            delete[] clippedText;
+
+        if (character)
+            free(utf32);
+
+        return nullptr;
+    }
+
     FT_UInt charIndex;
 
     Int64 glyph_width;

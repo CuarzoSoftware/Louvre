@@ -50,7 +50,7 @@ LPRIVATE_CLASS(LKeyboard)
         if (keyState == LKeyboard::Pressed)
             pressedKeys.push_back(keyCode);
         else
-            pressedKeys.erase(std::remove(pressedKeys.begin(), pressedKeys.end(), keyCode), pressedKeys.end());
+            LVectorRemoveOneUnordered(pressedKeys, keyCode);
 
         seat()->keyboard()->keyEvent(keyCode, keyState);
         updateModifiers();

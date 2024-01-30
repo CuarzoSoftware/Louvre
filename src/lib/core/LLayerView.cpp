@@ -84,16 +84,15 @@ Float32 LLayerView::bufferScale() const
 
 void LLayerView::enteredOutput(LOutput *output)
 {
-    imp()->outputs.remove(output);
-    imp()->outputs.push_back(output);
+    LVectorPushBackIfNonexistent(imp()->outputs, output);
 }
 
 void LLayerView::leftOutput(LOutput *output)
 {
-    imp()->outputs.remove(output);
+    LVectorRemoveOneUnordered(imp()->outputs, output);
 }
 
-const std::list<LOutput*> &LLayerView::outputs() const
+const std::vector<LOutput*> &LLayerView::outputs() const
 {
     return imp()->outputs;
 }

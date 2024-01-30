@@ -25,10 +25,9 @@ GFractionalScaleManager::GFractionalScaleManager
     LPRIVATE_INIT_UNIQUE(GFractionalScaleManager)
 {
     this->client()->imp()->fractionalScaleManagerGlobals.push_back(this);
-    imp()->clientLink = std::prev(this->client()->imp()->fractionalScaleManagerGlobals.end());
 }
 
 GFractionalScaleManager::~GFractionalScaleManager()
 {
-    client()->imp()->fractionalScaleManagerGlobals.erase(imp()->clientLink);
+    LVectorRemoveOneUnordered(client()->imp()->fractionalScaleManagerGlobals, this);
 }

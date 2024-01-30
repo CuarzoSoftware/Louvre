@@ -1,7 +1,7 @@
 #include <LLauncher.h>
-#include "Compositor.h"
 #include <LLog.h>
 #include <unistd.h>
+#include "Compositor.h"
 
 int main(int, char *[])
 {

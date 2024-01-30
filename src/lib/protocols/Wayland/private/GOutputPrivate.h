@@ -14,7 +14,6 @@ static void release(wl_client *client, wl_resource *resource);
 #endif
 
 LOutput *lOutput = nullptr;
-std::list<GOutput*>::iterator clientLink;
 };
 
 #endif // GOUTPUTPRIVATE_H

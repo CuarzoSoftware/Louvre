@@ -8,7 +8,6 @@
 #include "DockApp.h"
 #include "src/Tooltip.h"
 
-#include <LTimer.h>
 #include <LTextureView.h>
 #include <LCursor.h>
 #include <LLog.h>

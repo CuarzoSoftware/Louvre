@@ -14,7 +14,6 @@ LView::LView(UInt32 type, LView *parent) : LPRIVATE_INIT_UNIQUE(LView)
 {
     imp()->type = type;
     compositor()->imp()->views.push_back(this);
-    imp()->compositorLink = std::prev(compositor()->imp()->views.end());
     setParent(parent);
 }
 
@@ -25,7 +24,7 @@ LView::~LView()
     while (!children().empty())
         children().front()->setParent(nullptr);
 
-    compositor()->imp()->views.erase(imp()->compositorLink);
+    LVectorRemoveOneUnordered(compositor()->imp()->views, this);
 }
 
 void LView::damageAll()
@@ -70,8 +69,8 @@ void LView::repaint()
     if (imp()->hasFlag(LVS::RepaintCalled))
         return;
 
-    for (std::list<LOutput*>::const_iterator it = outputs().cbegin(); it != outputs().cend(); it++)
-        (*it)->repaint();
+    for (LOutput *o : outputs())
+        o->repaint();
 
     imp()->addFlag(LVS::RepaintCalled);
 }

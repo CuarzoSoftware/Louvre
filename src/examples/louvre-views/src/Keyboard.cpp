@@ -8,6 +8,7 @@
 
 #include "Keyboard.h"
 #include "Global.h"
+#include "LLog.h"
 #include "Output.h"
 #include "Topbar.h"
 #include "App.h"
@@ -32,11 +33,38 @@ void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
         bool LEFT_CTRL  = isKeyCodePressed(KEY_LEFTCTRL);
         bool LEFT_SHIFT = isKeyCodePressed(KEY_LEFTSHIFT);
 
-        /* Turn ON / OFF V-Sync */
-        if (LEFT_META && LEFT_SHIFT && keyCode == KEY_V)
+        if (LEFT_META && LEFT_SHIFT)
         {
-            output->enableVSync(!output->vSyncEnabled());
-            output->topbar->update();
+            /* Turn ON / OFF V-Sync */
+
+            if (keyCode == KEY_V)
+            {
+                output->enableVSync(!output->vSyncEnabled());
+                output->topbar->update();
+            }
+
+            if (isKeyCodePressed(KEY_B))
+            {
+                if (keyCode == KEY_UP)
+                {
+                    if (output->brightness < 1.0)
+                    {
+                        output->brightness += 0.1;
+                        output->gammaTable.fill(1.0, 1.0, output->brightness);
+                        output->setGamma(output->gammaTable);
+                        LLog::log("Gamma %f", output->brightness);
+                    }
+                }
+                else if (keyCode == KEY_DOWN)
+                {
+                    if (output->brightness > 0.0)
+                    {
+                        output->brightness -= 0.1;
+                        output->gammaTable.fill(1.0, 1.0, output->brightness);
+                        output->setGamma(output->gammaTable);
+                    }
+                }
+            }
         }
 
         if (isKeyCodePressed(KEY_LEFTCTRL))
@@ -47,14 +75,14 @@ void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
                 if (keyCode == KEY_RIGHT && std::next(output->currentWorkspace->outputLink) != output->workspaces.end())
                 {
                     if (!output->animatedFullscreenToplevel)
-                        output->setWorkspace(*std::next(output->currentWorkspace->outputLink), 500.f, ease);
+                        output->setWorkspace(*std::next(output->currentWorkspace->outputLink), 600.f, ease);
                     //ease += 0.1f;
                     return;
                 }
                 else if (keyCode == KEY_LEFT && output->currentWorkspace != output->workspaces.front())
                 {
                     if (!output->animatedFullscreenToplevel)
-                        output->setWorkspace(*std::prev(output->currentWorkspace->outputLink), 500.f, ease);
+                        output->setWorkspace(*std::prev(output->currentWorkspace->outputLink), 600.f, ease);
                     //ease += 0.1f;
                     return;
                 }

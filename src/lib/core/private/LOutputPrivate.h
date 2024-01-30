@@ -12,10 +12,17 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
 
     // TODO: Add timestamp to SRM pageflip events and option for toggling vsync
     std::mutex pageflipMutex;
-    timespec presentationTime;
 
     // TODO: Replace with vector
     wl_global *global = nullptr;
+
+    struct PresentationTime
+    {
+        timespec time;
+        UInt32 period;
+        UInt64 frame;
+        UInt32 flags;
+    } presentationTime;
 
     enum StateFlags : UInt32
     {

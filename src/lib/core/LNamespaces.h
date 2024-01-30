@@ -5,6 +5,7 @@
 #include <list>
 #include <vector>
 #include <memory>
+#include <algorithm>
 #include <string>
 
 #define LOUVRE_MAX_SURFACE_SIZE 10000000
@@ -60,6 +61,49 @@ class class_name::CAT(class_name,Private){ \
 #define LPRIVATE_INIT_UNIQUE(class_name) \
     m_imp(std::make_unique<CAT(class_name,Private)>())
 
+template <typename T>
+static inline void LVectorRemoveOne(std::vector<T>& vec, T val)
+{
+    auto it = std::find(vec.begin(), vec.end(), val);
+    if (it != vec.end())
+        vec.erase(it);
+}
+
+template <typename T>
+static inline void LVectorRemoveOneUnordered(std::vector<T>& vec, T val)
+{
+    auto it = std::find(vec.begin(), vec.end(), val);
+    if (it != vec.end())
+    {
+        *it = std::move(vec.back());
+        vec.pop_back();
+    }
+}
+
+template <typename T>
+static inline void LVectorPushBackIfNonexistent(std::vector<T>& vec, T val)
+{
+    auto it = std::find(vec.begin(), vec.end(), val);
+    if (it == vec.end())
+    {
+        vec.push_back(val);
+    }
+}
+
+template <typename T>
+static inline void LVectorRemoveAllUnordered(std::vector<T>& vec, T val)
+{
+    typename std::vector<T>::iterator it;
+    retry:
+    it = std::find(vec.begin(), vec.end(), val);
+    if (it != vec.end())
+    {
+        *it = std::move(vec.back());
+        vec.pop_back();
+        goto retry;
+    }
+}
+
 /**
  * @namespace Louvre
  * @brief Namespaces
@@ -82,9 +126,7 @@ namespace Louvre
     class LRegion;
     class LResource;
     class LSurface;
-    class LSession;
     class LTexture;
-    class LWayland;
 
     // Painter
     class LPainter;
@@ -130,6 +172,7 @@ namespace Louvre
     class LTime;
     class LTimer;
     class LLauncher;
+    class LGammaTable;
     template <class TA, class TB> class LPointTemplate;
     template <class TA, class TB> class LRectTemplate;
     template <class T> class LBitfield;
@@ -419,6 +462,13 @@ namespace Louvre
 
             class RFractionalScale;
         };
+
+        namespace GammaControl
+        {
+            class GGammaControlManager;
+
+            class RGammaControl;
+        };
     }
 
     /// @cond OMIT
@@ -465,12 +515,19 @@ namespace Louvre
         UInt32                              (*outputGetBuffersCount)(LOutput *output);
         LTexture *                          (*outputGetBuffer)(LOutput *output, UInt32 bufferIndex);
 
+        /* OUTPUT GAMMA */
+        UInt32                              (*outputGetGammaSize)(LOutput *output);
+        bool                                (*outputSetGamma)(LOutput *output, const LGammaTable &gamma);
+
         /* OUTPUT V-SYNC */
         bool                                (*outputHasVSyncControlSupport)(LOutput *output);
         bool                                (*outputIsVSyncEnabled)(LOutput *output);
         bool                                (*outputEnableVSync)(LOutput *output, bool enabled);
         void                                (*outputSetRefreshRateLimit)(LOutput *output, Int32 hz);
         Int32                               (*outputGetRefreshRateLimit)(LOutput *output);
+
+        /* OUTPUT TIME */
+        clockid_t                           (*outputGetClock)(LOutput *output);
 
         /* OUTPUT CURSOR */
         bool                                (*outputHasHardwareCursorSupport)(LOutput *output);
@@ -483,7 +540,7 @@ namespace Louvre
         const std::list<LOutputMode*> *     (*outputGetModes)(LOutput *output);
         bool                                (*outputSetMode)(LOutput *output, LOutputMode *mode);
 
-        /* MODES */
+        /* MODE PROPS */
         const LSize *                       (*outputModeGetSize)(LOutputMode *mode);
         Int32                               (*outputModeGetRefreshRate)(LOutputMode *mode);
         bool                                (*outputModeIsPreferred)(LOutputMode *mode);

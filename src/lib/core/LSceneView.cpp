@@ -260,16 +260,15 @@ Float32 LSceneView::bufferScale() const
 
 void LSceneView::enteredOutput(LOutput *output)
 {
-    imp()->outputs.remove(output);
-    imp()->outputs.push_back(output);
+    LVectorPushBackIfNonexistent(imp()->outputs, output);
 }
 
 void LSceneView::leftOutput(LOutput *output)
 {
-    imp()->outputs.remove(output);
+    LVectorRemoveOneUnordered(imp()->outputs, output);
 }
 
-const std::list<LOutput *> &LSceneView::outputs() const
+const std::vector<LOutput *> &LSceneView::outputs() const
 {
     return imp()->outputs;
 }

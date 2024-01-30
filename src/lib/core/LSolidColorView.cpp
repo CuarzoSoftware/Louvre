@@ -127,16 +127,15 @@ Float32 LSolidColorView::bufferScale() const
 
 void LSolidColorView::enteredOutput(LOutput *output)
 {
-    imp()->outputs.remove(output);
-    imp()->outputs.push_back(output);
+    LVectorPushBackIfNonexistent(imp()->outputs, output);
 }
 
 void LSolidColorView::leftOutput(LOutput *output)
 {
-    imp()->outputs.remove(output);
+    LVectorRemoveOneUnordered(imp()->outputs, output);
 }
 
-const std::list<LOutput *> &LSolidColorView::outputs() const
+const std::vector<LOutput *> &LSolidColorView::outputs() const
 {
     return imp()->outputs;
 }

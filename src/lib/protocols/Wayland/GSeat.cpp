@@ -26,14 +26,13 @@ GSeat::GSeat
     LPRIVATE_INIT_UNIQUE(GSeat)
 {
     this->client()->imp()->seatGlobals.push_back(this);
-    imp()->clientLink = std::prev(this->client()->imp()->seatGlobals.end());
     capabilities(seat()->inputCapabilities());
     name(seat()->name());
 }
 
 GSeat::~GSeat()
 {
-    client()->imp()->seatGlobals.erase(imp()->clientLink);
+    LVectorRemoveOneUnordered(client()->imp()->seatGlobals, this);
 
     if (keyboardResource())
         keyboardResource()->imp()->gSeat = nullptr;

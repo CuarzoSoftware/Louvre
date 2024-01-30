@@ -205,6 +205,8 @@ public:
     bool enableVSync(bool enabled);
     Int32 refreshRateLimit() const;
     void setRefreshRateLimit(Int32 hz);
+    UInt32 gammaSize() const;
+    bool setGamma(const LGammaTable &gamma);
 
     /**
      * @brief Constructor of the LOutput class.
@@ -441,13 +443,6 @@ public:
      * @param pos The new position of the output.
      */
     void setPos(const LPoint &pos);
-
-    /**
-     * @brief Get the EGLDisplay handle.
-     *
-     * This method retrieves the EGLDisplay of the output created by the graphic backend.
-     */
-    EGLDisplay eglDisplay();
 
     /**
      * @brief Get the output name.

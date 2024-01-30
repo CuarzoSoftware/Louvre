@@ -36,9 +36,9 @@ Pointer *G::pointer()
     return (Pointer*)compositor()->seat()->pointer();
 }
 
-std::list<Output *> &G::outputs()
+std::vector<Output *> &G::outputs()
 {
-    return (std::list<Output*>&)compositor()->outputs();
+    return (std::vector<Output*>&)compositor()->outputs();
 }
 
 std::list<Surface *> &G::surfaces()

@@ -10,7 +10,6 @@ LPRIVATE_CLASS(RWpPresentationFeedback)
     static void resource_destroy(wl_resource *resource);
 
     LSurface *lSurface = nullptr;
-    list<RWpPresentationFeedback*>::iterator surfaceLink;
 };
 
 #endif // RWPPRESENTATIONFEEDBACKPRIVATE_H

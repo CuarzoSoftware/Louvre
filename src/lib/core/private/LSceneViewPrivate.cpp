@@ -57,15 +57,15 @@ void LSceneView::LSceneViewPrivate::calcNewDamage(LView *view)
         vRegion.clip(view->parent()->pos(), view->parent()->size());
 
     // Update view intersected outputs
-    for (std::list<LOutput*>::const_iterator it = compositor()->outputs().cbegin(); it != compositor()->outputs().cend(); it++)
+    for (LOutput *o : compositor()->outputs())
     {
         LRegion r = vRegion;
-        r.clip((*it)->rect());
+        r.clip(o->rect());
 
         if (!r.empty())
-            view->enteredOutput(*it);
+            view->enteredOutput(o);
         else
-           view->leftOutput(*it);
+           view->leftOutput(o);
     }
 
     if (!view->isRenderable())

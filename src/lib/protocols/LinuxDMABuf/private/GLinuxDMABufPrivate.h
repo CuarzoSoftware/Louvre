@@ -16,8 +16,6 @@ LPRIVATE_CLASS(GLinuxDMABuf)
     static void get_default_feedback(wl_client *client, wl_resource *resource, UInt32 id);
     static void get_surface_feedback(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface);
 #endif
-
-    std::list<GLinuxDMABuf*>::iterator clientLink;
 };
 
 #endif // GLINUXDMABUFPRIVATE_H

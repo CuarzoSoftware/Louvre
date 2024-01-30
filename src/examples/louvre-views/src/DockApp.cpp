@@ -27,9 +27,7 @@ DockApp::~DockApp()
 {
     app->launchAnimation.stop();
     setParent(nullptr);
-    auto it = std::find(app->dockApps.begin(), app->dockApps.end(), this);
-    if (it != app->dockApps.end())
-        app->dockApps.erase(it);
+    LVectorRemoveOneUnordered(app->dockApps, this);
     dock->update();
 }
 

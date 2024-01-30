@@ -19,6 +19,7 @@
 #include <LDNDManager.h>
 #include <LLog.h>
 #include <LTime.h>
+#include <LTimer.h>
 
 #include <sys/eventfd.h>
 #include <sys/poll.h>
@@ -272,6 +273,9 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
                 a->stop();
         }
 
+        while (!imp()->oneShotTimers.empty())
+            delete imp()->oneShotTimers.back();
+
         imp()->state = CompositorState::Uninitialized;
 
         if (imp()->epollFd != -1)
@@ -357,8 +361,8 @@ LSeat *LCompositor::seat() const
 
 void LCompositor::repaintAllOutputs()
 {
-    for (std::list<LOutput*>::iterator it = imp()->outputs.begin(); it != imp()->outputs.end(); ++it)
-        (*it)->repaint();
+    for (LOutput *o : imp()->outputs)
+        o->repaint();
 }
 
 bool LCompositor::addOutput(LOutput *output)
@@ -386,10 +390,10 @@ bool LCompositor::addOutput(LOutput *output)
 void LCompositor::removeOutput(LOutput *output)
 {
     // Loop to check if output was added (initialized)
-    for (std::list<LOutput*>::iterator it = imp()->outputs.begin(); it != imp()->outputs.end(); it++)
+    for (LOutput *o : imp()->outputs)
     {
         // Was initialized
-        if (*it == output)
+        if (o == output)
         {
             // Uninitializing outputs from their own thread is not allowed
             if (output->threadId() == std::this_thread::get_id())
@@ -421,9 +425,9 @@ void LCompositor::removeOutput(LOutput *output)
                 s->sendOutputLeaveEvent(output);
 
             for (LView *v : imp()->views)
-                v->imp()->removeThread(v, (*it)->threadId());
+                v->imp()->removeThread(v, o->threadId());
 
-            imp()->outputs.erase(it);
+            LVectorRemoveOne(imp()->outputs, output);
 
             // Remove all wl_outputs from clients
             for (LClient *c : clients())
@@ -432,10 +436,11 @@ void LCompositor::removeOutput(LOutput *output)
                 {
                     if (output == g->output())
                     {
-                        g->client()->imp()->outputGlobals.erase(g->imp()->clientLink);
+                        LVectorRemoveOneUnordered(g->client()->imp()->outputGlobals, g);
                         g->imp()->lOutput = nullptr;
 
                         // Break because clients can bind to to a wl_output global just once
+                        // TODO: this is not true
                         break;
                     }
                 }
@@ -460,12 +465,12 @@ const std::list<LSurface *> &LCompositor::surfaces() const
     return imp()->surfaces;
 }
 
-const std::list<LOutput *> &LCompositor::outputs() const
+const std::vector<LOutput *> &LCompositor::outputs() const
 {
     return imp()->outputs;
 }
 
-const std::list<LClient *> &LCompositor::clients() const
+const std::vector<LClient *> &LCompositor::clients() const
 {
     return imp()->clients;
 }

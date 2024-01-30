@@ -20,17 +20,17 @@
 #include "Workspace.h"
 #include "Compositor.h"
 
-static Float32 easeIn(Float32 t, Float32 exponent)
+static inline Float32 easeIn(Float32 t, Float32 exponent)
 {
     return 1.0 - powf(1.0 - t, exponent);
 }
 
-static Float32 easeOut(Float32 t, Float32 exponent)
+static inline Float32 easeOut(Float32 t, Float32 exponent)
 {
     return 1.0 - powf(t, exponent);
 }
 
-static Float32 periodicEasing(Float32 t, Float32 exponent_in, Float32 exponent_out)
+static inline Float32 periodicEasing(Float32 t, Float32 exponent_in, Float32 exponent_out)
 {
     Float32 floo = floorf(t);
     Float32 norm = t - floo;
@@ -73,7 +73,7 @@ App::App(const char *appName, const char *appExec, const char *iconPath) :
         return;
     }
 
-    name = appName;
+    name = std::string(appName);
 
     if (G::font()->semibold)
         nameTexture = G::font()->semibold->renderText(name.c_str(), 24, 512);
@@ -84,7 +84,7 @@ App::App(const char *appName, const char *appExec, const char *iconPath) :
         state = Running;
     }
     else
-        exec = appExec;
+        exec = std::string(appExec);
 
     LTexture *tmp = LOpenGL::loadTexture(iconPath);
 
@@ -116,11 +116,7 @@ App::~App()
         delete nameTexture;
 
     if (!pinned)
-    {
-        auto it = std::find(G::apps().begin(), G::apps().end(), this);
-        if (it != G::apps().end())
-            G::apps().erase(it);
-    }
+        LVectorRemoveOneUnordered(G::apps(), this);
 }
 
 void App::dockIconClicked()

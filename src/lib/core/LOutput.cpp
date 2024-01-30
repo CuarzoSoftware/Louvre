@@ -77,6 +77,16 @@ void LOutput::setRefreshRateLimit(Int32 hz)
     return compositor()->imp()->graphicBackend->outputSetRefreshRateLimit((LOutput*)this, hz);
 }
 
+UInt32 LOutput::gammaSize() const
+{
+    return compositor()->imp()->graphicBackend->outputGetGammaSize((LOutput*)this);
+}
+
+bool LOutput::setGamma(const LGammaTable &gamma)
+{
+    return compositor()->imp()->graphicBackend->outputSetGamma((LOutput*)this, gamma);
+}
+
 LOutput::LOutput() : m_imp(std::make_unique<LOutputPrivate>(this))
 {
     imp()->output = this;
@@ -271,12 +281,6 @@ const LSize &LOutput::size() const
     return imp()->rect.size();
 }
 
-/*
-EGLDisplay LOutput::eglDisplay()
-{
-    return compositor()->imp()->graphicBackend->outputGetEGLDisplay(this);
-}
-*/
 LOutput::State LOutput::state() const
 {
     return imp()->state;

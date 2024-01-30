@@ -26,7 +26,6 @@ GLinuxDMABuf::GLinuxDMABuf
     LPRIVATE_INIT_UNIQUE(GLinuxDMABuf)
 {
     this->client()->imp()->linuxDMABufGlobals.push_back(this);
-    imp()->clientLink = std::prev(this->client()->imp()->linuxDMABufGlobals.end());
 
     if (version < 3)
     {
@@ -52,7 +51,7 @@ GLinuxDMABuf::GLinuxDMABuf
 
 GLinuxDMABuf::~GLinuxDMABuf()
 {
-    client()->imp()->linuxDMABufGlobals.erase(imp()->clientLink);
+    LVectorRemoveOneUnordered(client()->imp()->linuxDMABufGlobals, this);
 }
 
 bool GLinuxDMABuf::format(UInt32 format)

@@ -13,7 +13,6 @@ LSurfaceView::LSurfaceView(LSurface *surface, LView *parent) :
 {
     imp()->surface = surface;
     surface->imp()->views.push_back(this);
-    imp()->surfaceLink = std::prev(surface->imp()->views.end());
     enableInput(true);
 }
 
@@ -27,7 +26,7 @@ LSurfaceView::~LSurfaceView()
 
     if (surface())
     {
-        surface()->imp()->views.erase(imp()->surfaceLink);
+        LVectorRemoveOneUnordered(surface()->imp()->views, this);
 
         if (surface()->imp()->lastPointerEventView == this)
             surface()->imp()->lastPointerEventView = nullptr;
@@ -202,10 +201,7 @@ void LSurfaceView::enteredOutput(LOutput *output)
     if (imp()->primary && imp()->surface)
         imp()->surface->sendOutputEnterEvent(output);
     else
-    {
-        imp()->nonPrimaryOutputs.remove(output);
-        imp()->nonPrimaryOutputs.push_back(output);
-    }
+        LVectorPushBackIfNonexistent(imp()->nonPrimaryOutputs, output);
 }
 
 void LSurfaceView::leftOutput(LOutput *output)
@@ -213,10 +209,10 @@ void LSurfaceView::leftOutput(LOutput *output)
     if (imp()->primary && imp()->surface)
         imp()->surface->sendOutputLeaveEvent(output);
     else
-        imp()->nonPrimaryOutputs.remove(output);
+        LVectorRemoveOneUnordered(imp()->nonPrimaryOutputs, output);
 }
 
-const std::list<LOutput *> &LSurfaceView::outputs() const
+const std::vector<LOutput *> &LSurfaceView::outputs() const
 {
     if (imp()->primary && imp()->surface)
         return imp()->surface->outputs();

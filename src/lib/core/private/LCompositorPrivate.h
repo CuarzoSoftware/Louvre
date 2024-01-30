@@ -27,7 +27,7 @@ LPRIVATE_CLASS(LCompositor)
         wl_global *global;
         UChar8 iters;
     };
-    std::list<RemovedGlobal*>removedGlobals;
+    std::vector<RemovedGlobal>removedGlobals;
     void processRemovedGlobals();
     void removeGlobal(wl_global *global);
 
@@ -46,7 +46,6 @@ LPRIVATE_CLASS(LCompositor)
 
     bool initSeat();
         LSeat *seat = nullptr;
-        LSession *session = nullptr;
     void unitSeat();
 
     bool initGraphicBackend();
@@ -86,14 +85,15 @@ LPRIVATE_CLASS(LCompositor)
     void insertSurfaceAfter(LSurface *prevSurface, LSurface *surfaceToInsert);
     void insertSurfaceBefore(LSurface *nextSurface, LSurface *surfaceToInsert);
 
-    std::list<LClient*>clients;
-    std::list<LOutput*>outputs;
-    std::list<LView*>views;
-    std::list<LTexture*>textures;
-    std::list<LSurface*>surfaces;    
+    std::list<LSurface*>surfaces;
+    std::vector<LClient*>clients;
+    std::vector<LOutput*>outputs;
+    std::vector<LView*>views;
+    std::vector<LTexture*>textures;
     bool surfacesListChanged = false;
     std::vector<LAnimation*>animations;
     bool animationsVectorChanged = false;
+    std::vector<LTimer*>oneShotTimers;
 
     bool runningAnimations();
     void processAnimations();

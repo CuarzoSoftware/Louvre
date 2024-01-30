@@ -52,12 +52,19 @@ public:
     static UInt32                       outputGetBuffersCount(LOutput *output);
     static LTexture *                   outputGetBuffer(LOutput *output, UInt32 bufferIndex);
 
+    /* OUTPUT GAMMA */
+    static UInt32                       outputGetGammaSize(LOutput *output);
+    static bool                         outputSetGamma(LOutput *output, const LGammaTable &table);
+
     /* OUTPUT V-SYNC */
     static bool                         outputHasVSyncControlSupport(LOutput *output);
     static bool                         outputIsVSyncEnabled(LOutput *output);
     static bool                         outputEnableVSync(LOutput *output, bool enabled);
     static void                         outputSetRefreshRateLimit(LOutput *output, Int32 hz);
     static Int32                        outputGetRefreshRateLimit(LOutput *output);
+
+    /* OUTPUT TIME */
+    static clockid_t                    outputGetClock(LOutput *output);
 
     /* OUTPUT CURSOR */
     static bool                         outputHasHardwareCursorSupport(LOutput *output);

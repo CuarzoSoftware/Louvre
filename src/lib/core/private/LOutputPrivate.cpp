@@ -212,7 +212,6 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
 void LOutput::LOutputPrivate::backendPageFlipped()
 {
     pageflipMutex.lock();
-    presentationTime = LTime::ns();
     stateFlags.add(HasUnhandledPresentationTime);
     pageflipMutex.unlock();
 }

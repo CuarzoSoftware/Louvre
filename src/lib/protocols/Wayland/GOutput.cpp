@@ -29,14 +29,13 @@ GOutput::GOutput
 {
     imp()->lOutput = output;
     this->client()->imp()->outputGlobals.push_back(this);
-    imp()->clientLink = std::prev(this->client()->imp()->outputGlobals.end());
     sendConfiguration();
 }
 
 GOutput::~GOutput()
 {
     if (output())
-        client()->imp()->outputGlobals.erase(imp()->clientLink);
+        LVectorRemoveOneUnordered(client()->imp()->outputGlobals, this);
 }
 
 LOutput *GOutput::output() const

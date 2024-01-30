@@ -6,7 +6,7 @@ RCallback::RCallback
 (
     wl_client *client,
     UInt32 id,
-    std::list<RCallback *> *list
+    std::vector<RCallback *> *vec
 )
     :LResource
     (
@@ -19,18 +19,17 @@ RCallback::RCallback
     ),
     LPRIVATE_INIT_UNIQUE(RCallback)
 {
-    if (list)
+    if (vec)
     {
-        imp()->list = list;
-        imp()->list->push_back(this);
-        imp()->listLink = std::prev(imp()->list->end());
+        imp()->vec = vec;
+        imp()->vec->push_back(this);
     }
 }
 
 RCallback::~RCallback()
 {
-    if (imp()->list)
-        imp()->list->erase(imp()->listLink);
+    if (imp()->vec)
+        LVectorRemoveOne(*imp()->vec, this);
 }
 
 bool RCallback::done(UInt32 data)

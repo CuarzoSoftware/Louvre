@@ -12,8 +12,8 @@
 #include "Output.h"
 #include "Workspace.h"
 
-#define WORSPACE_ANIM_MS 400
-#define WORSPACE_ANIM_EASE 4.f
+#define WORSPACE_ANIM_MS 600
+#define WORSPACE_ANIM_EASE 5.f
 
 Toplevel::Toplevel(Params *params) : LToplevelRole(params),
     blackFullscreenBackground(0.f, 0.f, 0.f, 1.f),
@@ -255,7 +255,7 @@ void Toplevel::fullscreenChanged()
         if (animScene)
             delete animScene;
 
-        animScene = new LSceneView(fullscreenOutput->size() * 0.5f, 0.5f);
+        animScene = new LSceneView(fullscreenOutput->size() * 0.75f, 0.75f);
         quickUnfullscreen = false;
         fullscreenOutput->animatedFullscreenToplevel = this;
         surf()->sendOutputEnterEvent(fullscreenOutput);
@@ -409,7 +409,7 @@ void Toplevel::unsetFullscreen()
     if (animScene)
         delete animScene;
 
-    animScene = new LSceneView(fullscreenOutput->size() * 0.5f, 0.5f);
+    animScene = new LSceneView(fullscreenOutput->size() * 0.75f, 0.75f);
     animScene->setPos(fullscreenOutput->pos());
     G::reparentWithSubsurfaces(surf(), animScene, true);
     fullscreenOutput->animatedFullscreenToplevel = this;
@@ -426,7 +426,7 @@ void Toplevel::unsetFullscreen()
     animView.setTranslucentRegion(nullptr);
     animView.setOpacity(1.f);
 
-    fullscreenOutput->setWorkspace(fullscreenOutput->workspaces.front(), WORSPACE_ANIM_MS, 4.f);
+    fullscreenOutput->setWorkspace(fullscreenOutput->workspaces.front(), WORSPACE_ANIM_MS, WORSPACE_ANIM_EASE);
     G::scene()->mainView()->damageAll(fullscreenOutput);
 }
 

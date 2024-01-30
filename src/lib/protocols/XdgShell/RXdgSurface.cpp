@@ -36,13 +36,12 @@ RXdgSurface::RXdgSurface
     imp()->gXdgWmBase = gXdgWmBase;
     imp()->lSurface = lSurface;
     xdgWmBaseGlobal()->imp()->xdgSurfaces.push_back(this);
-    imp()->xdgWmBaseLink = std::prev(xdgWmBaseGlobal()->imp()->xdgSurfaces.end());
 }
 
 RXdgSurface::~RXdgSurface()
 {
     if (xdgWmBaseGlobal())
-        xdgWmBaseGlobal()->imp()->xdgSurfaces.erase(imp()->xdgWmBaseLink);
+        LVectorRemoveOneUnordered(xdgWmBaseGlobal()->imp()->xdgSurfaces, this);
 
     if (imp()->rXdgPopup)
         imp()->rXdgPopup->imp()->rXdgSurface = nullptr;

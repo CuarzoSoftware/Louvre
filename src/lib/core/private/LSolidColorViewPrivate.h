@@ -13,7 +13,7 @@ LPRIVATE_CLASS(LSolidColorView)
     LRegion *inputRegion = nullptr;
     LRegion opaqueRegion;
     LRegion emptyRegion;
-    std::list<LOutput *>outputs;
+    std::vector<LOutput *>outputs;
 
     LPoint tmpPos;
 };

@@ -85,19 +85,19 @@ LPRIVATE_CLASS(LSurface)
     LTexture *textureBackup;
     LSurface *parent                                    = nullptr;
     LSurface *pendingParent                             = nullptr;
-    std::list<LSurfaceView*> views;
+    std::vector<LSurfaceView*> views;
     std::list<LSurface*> children;
     std::list<LSurface*> pendingChildren;
     std::list<LSurface*>::iterator parentLink;
     std::list<LSurface*>::iterator pendingParentLink;
-    std::list<Wayland::RCallback*>frameCallbacks;
+    std::vector<Wayland::RCallback*>frameCallbacks;
     UInt32 damageId;
-    std::list<LSurface*>::iterator compositorLink, clientLink;
+    std::list<LSurface*>::iterator compositorLink;
     Int32 lastSentPreferredBufferScale = -1;
     LFramebuffer::Transform lastSentPreferredTransform = LFramebuffer::Normal;
-    std::list<LOutput*> outputs;
+    std::vector<LOutput*> outputs;
 
-    std::list<WpPresentationTime::RWpPresentationFeedback*> wpPresentationFeedbackResources;
+    std::vector<WpPresentationTime::RWpPresentationFeedback*> wpPresentationFeedbackResources;
     void sendPresentationFeedback(LOutput *output);
     void setBufferScale(Int32 scale);
     void setPendingParent(LSurface *pendParent);

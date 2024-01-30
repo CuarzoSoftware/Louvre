@@ -185,7 +185,7 @@ public:
     static Compositor *compositor();
     static LScene *scene();
     static Pointer *pointer();
-    static std::list<Output*>&outputs();
+    static std::vector<Output*>&outputs();
     static std::list<Surface*>&surfaces();
 
     // Dock

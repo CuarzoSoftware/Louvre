@@ -18,7 +18,6 @@ LPRIVATE_CLASS(GSeat)
     RKeyboard *rKeyboard = nullptr;
     RPointer *rPointer = nullptr;
     RDataDevice *rDataDevice = nullptr;
-    std::list<GSeat*>::iterator clientLink;
 };
 
 #endif // GSEATPRIVATE_H

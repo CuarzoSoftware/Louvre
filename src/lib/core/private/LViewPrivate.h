@@ -95,7 +95,6 @@ LPRIVATE_CLASS(LView)
     std::map<std::thread::id,ViewThreadData>threadsMap;
     LScene *scene = nullptr;
     std::list<LView*>::iterator parentLink;
-    std::list<LView*>::iterator compositorLink;
 
     void removeThread(Louvre::LView *view, std::thread::id thread);
     void markAsChangedOrder(bool includeChildren = true);

@@ -25,13 +25,12 @@ RWpPresentationFeedback::RWpPresentationFeedback
 {
     imp()->lSurface = lSurface;
     this->lSurface()->imp()->wpPresentationFeedbackResources.push_back(this);
-    imp()->surfaceLink = std::prev(this->lSurface()->imp()->wpPresentationFeedbackResources.end());
 }
 
 RWpPresentationFeedback::~RWpPresentationFeedback()
 {
     if (lSurface())
-        lSurface()->imp()->wpPresentationFeedbackResources.erase(imp()->surfaceLink);
+        LVectorRemoveOne(lSurface()->imp()->wpPresentationFeedbackResources, this);
 }
 
 Louvre::LSurface *RWpPresentationFeedback::lSurface() const

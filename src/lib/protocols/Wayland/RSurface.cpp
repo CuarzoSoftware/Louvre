@@ -66,7 +66,6 @@ RSurface::RSurface
 
     // Append surface
     client()->imp()->surfaces.push_back(surface());
-    surface()->imp()->clientLink = std::prev(client()->imp()->surfaces.end());
     compositor()->imp()->surfaces.push_back(surface());
     surface()->imp()->compositorLink = std::prev(compositor()->imp()->surfaces.end());
     compositor()->imp()->surfacesListChanged = true;
@@ -164,7 +163,7 @@ RSurface::~RSurface()
         lSurface->imp()->pending.role->imp()->surface = nullptr;
 
     // Remove surface from its client list
-    lSurface->client()->imp()->surfaces.erase(lSurface->imp()->clientLink);
+    LVectorRemoveOneUnordered(lSurface->client()->imp()->surfaces, lSurface);
 
     // Remove the surface from the compositor list
     compositor()->imp()->surfaces.erase(lSurface->imp()->compositorLink);

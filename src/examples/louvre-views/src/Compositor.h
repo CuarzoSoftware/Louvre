@@ -6,6 +6,7 @@
 #include <LCompositor.h>
 #include <LScene.h>
 #include <LView.h>
+#include <LTimer.h>
 
 using namespace Louvre;
 
@@ -60,7 +61,7 @@ public:
     LTextureView softwareCursor;
 
     // Timer for updating the clock every minute
-    LTimer *clockMinuteTimer;
+    LTimer clockMinuteTimer;
     static Int32 millisecondsUntilNextMinute();
 
     // Shared texture used in all clock views

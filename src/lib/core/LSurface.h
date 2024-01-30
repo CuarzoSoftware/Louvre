@@ -303,9 +303,9 @@ public:
     /**
      * @brief Surface intersected outputs
      *
-     * List of outputs in which the surface is visible, modifiable with the sendOutputEnterEvent() and sendOutputLeaveEvent() methods.
+     * Vector of output pointers in which the surface is visible, modifiable with the sendOutputEnterEvent() and sendOutputLeaveEvent() methods.
      */
-    const std::list<LOutput*>&outputs() const;
+    const std::vector<LOutput*>&outputs() const;
 
     /**
      * @brief Repaints the intersected outputs
@@ -411,9 +411,9 @@ public:
     bool mapped() const;
 
     /**
-     * @brief List of views created for this surface.
+     * @brief LSurfaceViews created for this surface.
      */
-    const std::list<LSurfaceView*> &views() const;
+    const std::vector<LSurfaceView*> &views() const;
 
     /**
      * @brief Wayland surface resource

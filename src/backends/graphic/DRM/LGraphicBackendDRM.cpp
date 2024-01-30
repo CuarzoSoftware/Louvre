@@ -27,6 +27,7 @@
 #include <private/LSeatPrivate.h>
 
 #include <LTime.h>
+#include <LGammaTable.h>
 
 #include <SRM/SRMCore.h>
 #include <SRM/SRMDevice.h>
@@ -257,6 +258,19 @@ static void pageFlipped(SRMConnector *connector, void *userData)
 {
     SRM_UNUSED(connector);
     LOutput *output = (LOutput*)userData;
+
+#if SRM_VERSION_MINOR >= 5
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    memcpy(&output->imp()->presentationTime,
+           srmConnectorGetPresentationTime(bkndOutput->conn),
+           sizeof(output->imp()->presentationTime));
+#else
+    output->imp()->presentationTime.flags = SRM_PRESENTATION_TIME_FLAGS_VSYNC;
+    output->imp()->presentationTime.frame = 0;
+    output->imp()->presentationTime.period = 0;
+    clock_gettime(CLOCK_MONOTONIC, &output->imp()->presentationTime.time);
+#endif
+
     output->imp()->backendPageFlipped();
 }
 
@@ -657,6 +671,41 @@ LTexture *LGraphicBackend::outputGetBuffer(LOutput *output, UInt32 bufferIndex)
     return tex;
 }
 
+/* OUTPUT GAMMA */
+
+UInt32 LGraphicBackend::outputGetGammaSize(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+
+#if SRM_VERSION_MINOR >= 5
+    return srmConnectorGetGammaSize(bkndOutput->conn);
+#else
+    L_UNUSED(bkndOutput);
+    return 0;
+#endif
+}
+
+bool LGraphicBackend::outputSetGamma(LOutput *output, const LGammaTable &table)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+
+#if SRM_VERSION_MINOR >= 5
+    if (table.size() != srmConnectorGetGammaSize(bkndOutput->conn))
+    {
+        LLog::error("[%s] Failed to set gamma to output %s. Invalid size %d != real gamma size %d.",
+                    BKND_NAME,
+                    output->name(),
+                    table.size(),
+                    output->gammaSize());
+        return false;
+    }
+    return srmConnectorSetGamma(bkndOutput->conn, table.red());
+#else
+    L_UNUSED(bkndOutput)
+    return false;
+#endif
+}
+
 /* OUTPUT V-SYNC */
 bool LGraphicBackend::outputHasVSyncControlSupport(LOutput *output)
 {
@@ -710,6 +759,19 @@ Int32 LGraphicBackend::outputGetRefreshRateLimit(LOutput *output)
     return srmConnectorGetRefreshRateLimit(bkndOutput->conn);
 #else
     return 0;
+#endif
+}
+
+/* OUTPUT TIME */
+
+clockid_t LGraphicBackend::outputGetClock(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+
+#if SRM_VERSION_MINOR >= 5
+    return srmConnectorGetPresentationClock(bkndOutput->conn);
+#else
+    return CLOCK_MONOTONIC;
 #endif
 }
 
@@ -828,12 +890,19 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.outputGetBuffersCount           = &LGraphicBackend::outputGetBuffersCount;
     API.outputGetBuffer                 = &LGraphicBackend::outputGetBuffer;
 
+    /* OUTPUT GAMMA */
+    API.outputGetGammaSize              = &LGraphicBackend::outputGetGammaSize;
+    API.outputSetGamma                  = &LGraphicBackend::outputSetGamma;
+
     /* OUTPUT V-SYNC */
     API.outputHasVSyncControlSupport    = &LGraphicBackend::outputHasVSyncControlSupport;
     API.outputIsVSyncEnabled            = &LGraphicBackend::outputIsVSyncEnabled;
     API.outputEnableVSync               = &LGraphicBackend::outputEnableVSync;
     API.outputSetRefreshRateLimit       = &LGraphicBackend::outputSetRefreshRateLimit;
     API.outputGetRefreshRateLimit       = &LGraphicBackend::outputGetRefreshRateLimit;
+
+    /* OUTPUT TIME */
+    API.outputGetClock                  = &LGraphicBackend::outputGetClock;
 
     /* OUTPUT CURSOR */
     API.outputHasHardwareCursorSupport  = &LGraphicBackend::outputHasHardwareCursorSupport;

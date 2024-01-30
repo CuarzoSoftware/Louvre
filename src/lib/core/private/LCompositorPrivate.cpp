@@ -8,6 +8,7 @@
 #include <private/LAnimationPrivate.h>
 #include <private/LToplevelRolePrivate.h>
 #include <LTime.h>
+#include <LTimer.h>
 #include <LLog.h>
 #include <EGL/egl.h>
 #include <dlfcn.h>
@@ -15,29 +16,32 @@
 
 void LCompositor::LCompositorPrivate::processRemovedGlobals()
 {
-    std::list<RemovedGlobal*>::iterator it;
-    for (it = removedGlobals.begin(); it != removedGlobals.end(); it++)
+    std::vector<RemovedGlobal>::iterator it;
+    for (it = removedGlobals.begin(); it != removedGlobals.end();)
     {
-        RemovedGlobal *rg = *it;
+        RemovedGlobal &rg = *it;
 
-        if (rg->iters >= LOUVRE_GLOBAL_ITERS_BEFORE_DESTROY)
+        if (rg.iters >= LOUVRE_GLOBAL_ITERS_BEFORE_DESTROY)
         {
-            wl_global_destroy(rg->global);
+            wl_global_destroy(rg.global);
             it = removedGlobals.erase(it);
-            delete rg;
         }
         else
-            rg->iters++;
+        {
+            rg.iters++;
+            ++it;
+        }
     }
 }
 
 void LCompositor::LCompositorPrivate::removeGlobal(wl_global *global)
 {
     wl_global_remove(global);
-    RemovedGlobal *rg = new RemovedGlobal();
-    rg->global = global;
-    rg->iters = 0;
-    removedGlobals.push_back(rg);
+
+    removedGlobals.push_back({
+        .global = global,
+        .iters = 0
+    });
 }
 
 static wl_iterator_result resourceDestroyIterator(wl_resource *resource, void *data)
@@ -69,7 +73,7 @@ static void clientDisconnectedEvent(wl_listener *listener, void *data)
             wl_resource_destroy(lastCreatedResource);
     }
 
-    compositor->imp()->clients.erase(disconnectedClient->imp()->compositorLink);
+    LVectorRemoveOneUnordered(compositor->imp()->clients, disconnectedClient);
     delete disconnectedClient;
 }
 
@@ -92,7 +96,6 @@ static void clientConnectedEvent(wl_listener *listener, void *data)
 
     // Append client to the compositor list
     compositor->imp()->clients.push_back(newClient);
-    newClient->imp()->compositorLink = std::prev(compositor->imp()->clients.end());
 }
 
 bool LCompositor::LCompositorPrivate::initWayland()
@@ -183,6 +186,9 @@ void LCompositor::LCompositorPrivate::unitCompositor()
 
     if (epollFd != -1)
         close(epollFd);
+
+    while (!oneShotTimers.empty())
+        delete oneShotTimers.back();
 
     state = CompositorState::Uninitialized;
 }

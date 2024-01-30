@@ -15,21 +15,20 @@ struct LClient::Params
 LPRIVATE_CLASS(LClient)
 
     wl_client *client = nullptr;
-    std::list<LClient*>::iterator compositorLink;
     LDataDevice dataDevice;
-    std::list<LSurface*> surfaces;
+    std::vector<LSurface*> surfaces;
 
     // Globals
-    std::list<Wayland::GCompositor*> compositorGlobals;
-    std::list<Wayland::GOutput*> outputGlobals;
-    std::list<Wayland::GSeat*> seatGlobals;
-    std::list<Wayland::GSubcompositor*> subcompositorGlobals;
-    std::list<XdgShell::GXdgWmBase*> xdgWmBaseGlobals;
-    std::list<XdgDecoration::GXdgDecorationManager*> xdgDecorationManagerGlobals;
-    std::list<WpPresentationTime::GWpPresentation*> wpPresentationTimeGlobals;
-    std::list<LinuxDMABuf::GLinuxDMABuf*> linuxDMABufGlobals;
-    std::list<Viewporter::GViewporter*> viewporterGlobals;
-    std::list<FractionalScale::GFractionalScaleManager*> fractionalScaleManagerGlobals;
+    std::vector<Wayland::GCompositor*> compositorGlobals;
+    std::vector<Wayland::GOutput*> outputGlobals;
+    std::vector<Wayland::GSeat*> seatGlobals;
+    std::vector<Wayland::GSubcompositor*> subcompositorGlobals;
+    std::vector<XdgShell::GXdgWmBase*> xdgWmBaseGlobals;
+    std::vector<XdgDecoration::GXdgDecorationManager*> xdgDecorationManagerGlobals;
+    std::vector<WpPresentationTime::GWpPresentation*> wpPresentationTimeGlobals;
+    std::vector<LinuxDMABuf::GLinuxDMABuf*> linuxDMABufGlobals;
+    std::vector<Viewporter::GViewporter*> viewporterGlobals;
+    std::vector<FractionalScale::GFractionalScaleManager*> fractionalScaleManagerGlobals;
 
     // Singleton Globals
     Wayland::GDataDeviceManager *dataDeviceManagerGlobal = nullptr;

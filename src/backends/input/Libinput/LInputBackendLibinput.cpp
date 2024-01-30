@@ -136,11 +136,7 @@ static Int32 processInput(int, unsigned int, void *userData)
             if (pointerButton == LPointer::Pressed)
                 seat->pointer()->imp()->pressedButtons.push_back((LPointer::Button)pointerButton);
             else
-                seat->pointer()->imp()->pressedButtons.erase(
-                    std::remove(
-                        seat->pointer()->imp()->pressedButtons.begin(),
-                        seat->pointer()->imp()->pressedButtons.end(), (LPointer::Button)pointerButton),
-                    seat->pointer()->imp()->pressedButtons.end());
+                LVectorRemoveOneUnordered(seat->pointer()->imp()->pressedButtons, (LPointer::Button)pointerButton);
 
             seat->pointer()->pointerButtonEvent(
                 (LPointer::Button)pointerButton,

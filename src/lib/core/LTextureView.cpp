@@ -272,16 +272,15 @@ Float32 LTextureView::bufferScale() const
 
 void LTextureView::enteredOutput(LOutput *output)
 {
-    imp()->outputs.remove(output);
-    imp()->outputs.push_back(output);
+    LVectorPushBackIfNonexistent(imp()->outputs, output);
 }
 
 void LTextureView::leftOutput(LOutput *output)
 {
-    imp()->outputs.remove(output);
+    LVectorRemoveOneUnordered(imp()->outputs, output);
 }
 
-const std::list<LOutput *> &LTextureView::outputs() const
+const std::vector<LOutput *> &LTextureView::outputs() const
 {
     return imp()->outputs;
 }

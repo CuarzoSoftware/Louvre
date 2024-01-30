@@ -11,7 +11,7 @@ LPRIVATE_CLASS(LLayerView)
     LSize nativeSize = LSize(256, 256);
     LRegion *inputRegion = nullptr;
     LRegion dummyRegion;
-    std::list<LOutput *>outputs;
+    std::vector<LOutput *>outputs;
 
     LPoint tmpPos;
 };

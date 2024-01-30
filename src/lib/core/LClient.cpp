@@ -4,8 +4,6 @@
 #include <LCompositor.h>
 #include <LClient.h>
 
-using namespace std;
-
 LClient::LClient(Params *params) : LPRIVATE_INIT_UNIQUE(LClient)
 {
     imp()->client = params->client;
@@ -33,7 +31,7 @@ LDataDevice &LClient::dataDevice() const
     return imp()->dataDevice;
 }
 
-const list<LSurface *> &LClient::surfaces() const
+const std::vector<LSurface *> &LClient::surfaces() const
 {
     return imp()->surfaces;
 }
@@ -48,22 +46,22 @@ void LClient::destroy()
     wl_client_destroy(client());
 }
 
-const list<Wayland::GOutput*> &LClient::outputGlobals() const
+const std::vector<Wayland::GOutput*> &LClient::outputGlobals() const
 {
     return imp()->outputGlobals;
 }
 
-const list<Wayland::GCompositor*> &LClient::compositorGlobals() const
+const std::vector<Wayland::GCompositor*> &LClient::compositorGlobals() const
 {
     return imp()->compositorGlobals;
 }
 
-const list<Wayland::GSubcompositor*> &LClient::subcompositorGlobals() const
+const std::vector<Wayland::GSubcompositor*> &LClient::subcompositorGlobals() const
 {
     return imp()->subcompositorGlobals;
 }
 
-const list<Wayland::GSeat*> &LClient::seatGlobals() const
+const std::vector<Wayland::GSeat*> &LClient::seatGlobals() const
 {
     return imp()->seatGlobals;
 }
@@ -73,32 +71,32 @@ const Wayland::GDataDeviceManager *LClient::dataDeviceManagerGlobal() const
     return imp()->dataDeviceManagerGlobal;
 }
 
-const list<XdgShell::GXdgWmBase *> &LClient::xdgWmBaseGlobals() const
+const std::vector<XdgShell::GXdgWmBase *> &LClient::xdgWmBaseGlobals() const
 {
     return imp()->xdgWmBaseGlobals;
 }
 
-const list<WpPresentationTime::GWpPresentation *> &LClient::wpPresentationTimeGlobals() const
+const std::vector<WpPresentationTime::GWpPresentation *> &LClient::wpPresentationTimeGlobals() const
 {
     return imp()->wpPresentationTimeGlobals;
 }
 
-const list<LinuxDMABuf::GLinuxDMABuf *> &LClient::linuxDMABufGlobals() const
+const std::vector<LinuxDMABuf::GLinuxDMABuf *> &LClient::linuxDMABufGlobals() const
 {
     return imp()->linuxDMABufGlobals;
 }
 
-const std::list<FractionalScale::GFractionalScaleManager *> &LClient::fractionalScaleManagerGlobals() const
+const std::vector<FractionalScale::GFractionalScaleManager *> &LClient::fractionalScaleManagerGlobals() const
 {
     return imp()->fractionalScaleManagerGlobals;
 }
 
-const std::list<Viewporter::GViewporter *> &LClient::viewporterGlobals() const
+const std::vector<Viewporter::GViewporter *> &LClient::viewporterGlobals() const
 {
     return imp()->viewporterGlobals;
 }
 
-const list<XdgDecoration::GXdgDecorationManager *> &LClient::xdgDecorationManagerGlobals() const
+const std::vector<XdgDecoration::GXdgDecorationManager *> &LClient::xdgDecorationManagerGlobals() const
 {
     return imp()->xdgDecorationManagerGlobals;
 }

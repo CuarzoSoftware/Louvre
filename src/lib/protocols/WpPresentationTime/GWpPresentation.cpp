@@ -1,6 +1,8 @@
 #include <protocols/WpPresentationTime/private/GWpPresentationPrivate.h>
 #include <protocols/WpPresentationTime/presentation-time.h>
+#include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
+#include <LSeat.h>
 
 using namespace Louvre::Protocols::WpPresentationTime;
 
@@ -25,13 +27,16 @@ GWpPresentation::GWpPresentation
     LPRIVATE_INIT_UNIQUE(GWpPresentation)
 {
     this->client()->imp()->wpPresentationTimeGlobals.push_back(this);
-    imp()->clientLink = std::prev(this->client()->imp()->wpPresentationTimeGlobals.end());
-    clockId(CLOCK_MONOTONIC);
+
+    if (seat()->outputs().empty())
+        clockId(CLOCK_MONOTONIC);
+    else
+        clockId(compositor()->imp()->graphicBackend->outputGetClock(seat()->outputs().front()));
 }
 
 GWpPresentation::~GWpPresentation()
 {
-    client()->imp()->wpPresentationTimeGlobals.erase(imp()->clientLink);
+    LVectorRemoveOneUnordered(client()->imp()->wpPresentationTimeGlobals, this);
 }
 
 bool GWpPresentation::clockId(UInt32 clockId)

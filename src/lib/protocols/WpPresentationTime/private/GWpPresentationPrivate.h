@@ -12,8 +12,6 @@ LPRIVATE_CLASS(GWpPresentation)
     static void resource_destroy(wl_resource *resource);
     static void destroy(wl_client *client, wl_resource *resource);
     static void feedback(wl_client *client, wl_resource *resource, wl_resource *surface, UInt32 id);
-
-    list<GWpPresentation*>::iterator clientLink;
 };
 
 #endif // GWPPRESENTATIONPRIVATE_H

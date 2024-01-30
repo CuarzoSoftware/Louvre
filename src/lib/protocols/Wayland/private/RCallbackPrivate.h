@@ -7,8 +7,7 @@ using namespace Louvre::Protocols::Wayland;
 
 LPRIVATE_CLASS(RCallback)
 static void resource_destroy(wl_resource *resource);
-std::list<RCallback*>*list = nullptr;
-std::list<RCallback*>::iterator listLink;
+std::vector<RCallback*> *vec = nullptr;
 };
 
 #endif // RCALLBACKPRIVATE_H
