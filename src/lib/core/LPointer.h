@@ -115,7 +115,7 @@ public:
      *
      * @param params Internal library parameters provided in the LCompositor::createPointerRequest() virtual constructor.
      */
-    LPointer(Params *params);
+    LPointer(void *params);
 
     /**
      * @brief LPointer class destructor.

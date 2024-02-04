@@ -7,6 +7,8 @@
 #include <private/LCursorPrivate.h>
 #include <private/LAnimationPrivate.h>
 #include <private/LToplevelRolePrivate.h>
+#include <LKeyboard.h>
+#include <LPointer.h>
 #include <LTime.h>
 #include <LTimer.h>
 #include <LLog.h>

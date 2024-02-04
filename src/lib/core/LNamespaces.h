@@ -25,6 +25,7 @@
 #define LOUVRE_LINUX_DMA_BUF_VERSION 3
 #define LOUVRE_VIEWPORTER_VERSION 1
 #define LOUVRE_FRACTIONAL_SCALE_VERSION 1
+#define LOUVRE_GAMMA_CONTROL_MANAGER_VERSION 1
 
 #define L_UNUSED(object){(void)object;}
 
@@ -70,6 +71,18 @@ static inline void LVectorRemoveOne(std::vector<T>& vec, T val)
 }
 
 template <typename T>
+static inline void LVectorRemoveAll(std::vector<T>& vec, T val)
+{
+    for (auto it = vec.begin(); it != vec.end();)
+    {
+        if (*it == val)
+            it = vec.erase(it);
+        else
+            it++;
+    }
+}
+
+template <typename T>
 static inline void LVectorRemoveOneUnordered(std::vector<T>& vec, T val)
 {
     auto it = std::find(vec.begin(), vec.end(), val);
@@ -93,14 +106,19 @@ static inline void LVectorPushBackIfNonexistent(std::vector<T>& vec, T val)
 template <typename T>
 static inline void LVectorRemoveAllUnordered(std::vector<T>& vec, T val)
 {
-    typename std::vector<T>::iterator it;
-    retry:
-    it = std::find(vec.begin(), vec.end(), val);
-    if (it != vec.end())
+    for (auto it = vec.begin(); it != vec.end();)
     {
-        *it = std::move(vec.back());
-        vec.pop_back();
-        goto retry;
+        retry:
+        if (*it == val)
+        {
+            *it = std::move(vec.back());
+            vec.pop_back();
+
+            if (it != vec.end())
+                goto retry;
+        }
+        else
+            it++;
     }
 }
 
@@ -175,7 +193,7 @@ namespace Louvre
     class LGammaTable;
     template <class TA, class TB> class LPointTemplate;
     template <class TA, class TB> class LRectTemplate;
-    template <class T> class LBitfield;
+    template <class T> class LBitset;
 
     // Types
     /// @brief 64 bits unsigned integer

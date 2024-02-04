@@ -1,11 +1,12 @@
 #include <LCompositor.h>
+#include <LToplevelRole.h>
 #include "Compositor.h"
 #include "LTime.h"
 #include "Surface.h"
 #include "LCursor.h"
 #include "Output.h"
 
-Surface::Surface(LSurface::Params *params) : LSurface(params) {}
+Surface::Surface(void *params) : LSurface(params) {}
 
 void Surface::mappingChanged()
 {
@@ -55,7 +56,7 @@ void Surface::mappingChanged()
         }
         else
         {
-            for (Output *o : (list<Output*>&)outputs())
+            for (Output *o : (std::vector<Output*>&)outputs())
             {
                 o->newDamage.addRect(outputsMap[o].previousRect);
                 o->repaint();
@@ -78,7 +79,7 @@ void Surface::minimizedChanged()
 {
     if (minimized())
     {
-        for (Output *o : (list<Output*>&)outputs())
+        for (Output *o : (std::vector<Output*>&)outputs())
         {
             o->newDamage.addRect(outputsMap[o].previousRect);
             o->repaint();

@@ -5,6 +5,7 @@
 #include <private/LCursorPrivate.h>
 
 #include <protocols/Wayland/private/GOutputPrivate.h>
+#include <protocols/GammaControl/RGammaControl.h>
 
 #include <string.h>
 #include <sys/types.h>
@@ -82,9 +83,32 @@ UInt32 LOutput::gammaSize() const
     return compositor()->imp()->graphicBackend->outputGetGammaSize((LOutput*)this);
 }
 
-bool LOutput::setGamma(const LGammaTable &gamma)
+bool LOutput::setGamma(const LGammaTable *gamma)
 {
-    return compositor()->imp()->graphicBackend->outputSetGamma((LOutput*)this, gamma);
+    if (gamma)
+    {
+        if (gamma->size() != gammaSize())
+            return false;
+
+        if (imp()->gammaTable.m_gammaControlResource && imp()->gammaTable.m_gammaControlResource != gamma->m_gammaControlResource)
+            imp()->gammaTable.m_gammaControlResource->failed();
+
+        imp()->gammaTable = *gamma;
+        imp()->gammaTable.m_gammaControlResource = gamma->m_gammaControlResource;
+    }
+    else
+    {
+        if (imp()->gammaTable.m_gammaControlResource)
+        {
+            imp()->gammaTable.m_gammaControlResource->failed();
+            imp()->gammaTable.m_gammaControlResource = nullptr;
+        }
+
+        imp()->gammaTable.setSize(gammaSize());
+        imp()->gammaTable.fill(1.0, 1.0, 1.0);
+    }
+
+    return compositor()->imp()->graphicBackend->outputSetGamma((LOutput*)this, imp()->gammaTable);
 }
 
 LOutput::LOutput() : m_imp(std::make_unique<LOutputPrivate>(this))

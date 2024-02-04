@@ -5,6 +5,7 @@
 #include <LXCursor.h>
 #include <LTime.h>
 #include <LLog.h>
+#include <LSeat.h>
 
 #include "Compositor.h"
 #include "ToplevelButton.h"

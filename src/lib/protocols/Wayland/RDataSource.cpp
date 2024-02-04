@@ -2,6 +2,8 @@
 #include <protocols/Wayland/GDataDeviceManager.h>
 #include <private/LDataSourcePrivate.h>
 #include <private/LCompositorPrivate.h>
+#include <LDNDManager.h>
+#include <LSeat.h>
 
 using namespace Louvre::Protocols::Wayland;
 

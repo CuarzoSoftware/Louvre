@@ -1,4 +1,5 @@
 #include <protocols/Wayland/private/GOutputPrivate.h>
+#include <protocols/GammaControl/private/RGammaControlPrivate.h>
 #include <private/LClientPrivate.h>
 #include <LCompositor.h>
 #include <LOutputMode.h>
@@ -36,6 +37,9 @@ GOutput::~GOutput()
 {
     if (output())
         LVectorRemoveOneUnordered(client()->imp()->outputGlobals, this);
+
+    for (GammaControl::RGammaControl *rGammaControl : imp()->gammaControlResources)
+        rGammaControl->imp()->gOutput = nullptr;
 }
 
 LOutput *GOutput::output() const

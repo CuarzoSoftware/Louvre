@@ -5,6 +5,9 @@
 #include <private/LTexturePrivate.h>
 #include <private/LPainterPrivate.h>
 
+#include <LCursorRole.h>
+#include <LPointer.h>
+#include <LSeat.h>
 #include <LRect.h>
 #include <LPainter.h>
 #include <LLog.h>

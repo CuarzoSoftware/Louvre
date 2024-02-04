@@ -592,6 +592,7 @@ inline void scaleTexture(LTexture *texture, const LRect &src, const LSize &dst)
     shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
     shaderSetSrcRect(src.x(), src.y() + src.h(), src.w(), -src.h());
     shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
+    shaderSetTransform(LFramebuffer::Normal);
     texture->imp()->setTextureParams(textureId, target, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
@@ -610,6 +611,7 @@ inline void scaleTexture(GLuint textureId, GLenum textureTarget, GLuint framebuf
     shaderSetTexSize(texSize.w(), texSize.h());
     shaderSetSrcRect(src.x(), src.y() + src.h(), src.w(), -src.h());
     shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
+    shaderSetTransform(LFramebuffer::Normal);
     LTexture::LTexturePrivate::setTextureParams(textureId, textureTarget, GL_REPEAT, GL_REPEAT, minFilter, minFilter);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

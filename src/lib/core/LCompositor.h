@@ -1,16 +1,7 @@
 #ifndef LCOMPOSITOR_H
 #define LCOMPOSITOR_H
 
-#include <LClient.h>
-#include <LSeat.h>
-#include <LPointer.h>
-#include <LKeyboard.h>
-#include <LDNDManager.h>
-#include <LPopupRole.h>
-#include <LSubsurfaceRole.h>
-#include <LCursorRole.h>
-#include <LDNDIconRole.h>
-
+#include <LNamespaces.h>
 #include <thread>
 
 /**
@@ -268,7 +259,7 @@ public:
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createClientRequest
      */
-    virtual LClient *createClientRequest(LClient::Params *params);
+    virtual LClient *createClientRequest(void *params);
 
     /**
      * @brief Virtual constructor for creating LSurface instances when a client creates a new surface.
@@ -282,7 +273,7 @@ public:
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createSurfaceRequest
      */
-    virtual LSurface *createSurfaceRequest(LSurface::Params *params);
+    virtual LSurface *createSurfaceRequest(void *params);
 
     /**
      * @brief Virtual constructor for creating the LSeat instance during compositor initialization.
@@ -296,7 +287,7 @@ public:
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createSeatRequest
      */
-    virtual LSeat *createSeatRequest(LSeat::Params *params);
+    virtual LSeat *createSeatRequest(void *params);
 
     /**
      * @brief Virtual constructor for creating the LPointer instance during LSeat initialization.
@@ -310,7 +301,7 @@ public:
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createPointerRequest
      */
-    virtual LPointer *createPointerRequest(LPointer::Params *params);
+    virtual LPointer *createPointerRequest(void *params);
 
     /**
      * @brief Virtual constructor for creating the LKeyboard instance during LSeat initialization.
@@ -324,7 +315,7 @@ public:
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createKeyboardRequest
      */
-    virtual LKeyboard *createKeyboardRequest(LKeyboard::Params *params);
+    virtual LKeyboard *createKeyboardRequest(void *params);
 
     /**
      * @brief Virtual constructor for creating the LDNDManager instance during LSeat initialization.
@@ -340,7 +331,7 @@ public:
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createDNDManagerRequest
      */
-    virtual LDNDManager *createDNDManagerRequest(LDNDManager::Params *params);
+    virtual LDNDManager *createDNDManagerRequest(void *params);
 
     /**
      * @brief Virtual constructor for creating LToplevelRole instances when a client creates a toplevel role for a surface.
@@ -356,7 +347,7 @@ public:
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createToplevelRoleRequest
      */
-    virtual LToplevelRole *createToplevelRoleRequest(LToplevelRole::Params *params);
+    virtual LToplevelRole *createToplevelRoleRequest(void *params);
 
     /**
      * @brief Virtual constructor for creating LPopupRole instances when a client creates a Popup role for a surface.
@@ -372,7 +363,7 @@ public:
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createPopupRoleRequest
      */
-    virtual LPopupRole *createPopupRoleRequest(LPopupRole::Params *params);
+    virtual LPopupRole *createPopupRoleRequest(void *params);
 
     /**
      * @brief Virtual constructor for creating LSubsurfaceRole instances when a client creates a Subsurface role for a surface.
@@ -388,7 +379,7 @@ public:
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createSubsurfaceRoleRequest
      */
-    virtual LSubsurfaceRole *createSubsurfaceRoleRequest(LSubsurfaceRole::Params *params);
+    virtual LSubsurfaceRole *createSubsurfaceRoleRequest(void *params);
 
     /**
      * @brief Virtual constructor for creating LCursorRole instances when a client wants to use a surface as a cursor.
@@ -403,7 +394,7 @@ public:
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createCursorRoleRequest
      */
-    virtual LCursorRole *createCursorRoleRequest(LCursorRole::Params *params);
+    virtual LCursorRole *createCursorRoleRequest(void *params);
 
     /**
      * @brief Virtual constructor for creating LDNDIconRole instances when a client wants to use a surface as an icon for a Drag & Drop session.
@@ -418,7 +409,7 @@ public:
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createDNDIconRoleRequest
      */
-    virtual LDNDIconRole *createDNDIconRoleRequest(LDNDIconRole::Params *params);
+    virtual LDNDIconRole *createDNDIconRoleRequest(void *params);
 
 ///@}
 

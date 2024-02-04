@@ -7,14 +7,17 @@
 #include <private/LOutputPrivate.h>
 #include <private/LTexturePrivate.h>
 #include <LTime.h>
+#include <LSeat.h>
+#include <LClient.h>
+#include <LKeyboard.h>
 
 using namespace Louvre::Protocols::Wayland;
 
-LSurface::LSurface(LSurface::Params *params) : LPRIVATE_INIT_UNIQUE(LSurface)
+LSurface::LSurface(void *params) : LPRIVATE_INIT_UNIQUE(LSurface)
 {
     imp()->texture = new LTexture();
     imp()->textureBackup = imp()->texture;
-    imp()->surfaceResource = params->surfaceResource;
+    imp()->surfaceResource = ((LSurface::Params*)params)->surfaceResource;
 }
 
 LSurface::~LSurface()

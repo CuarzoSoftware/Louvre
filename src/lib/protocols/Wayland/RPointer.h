@@ -39,6 +39,6 @@ public:
     // Since 9
     bool axisRelativeDirection(UInt32 axis, UInt32 direction);
 
-    LPRIVATE_IMP_UNIQUE(RPointer);
+    LPRIVATE_IMP_UNIQUE(RPointer)
 };
 #endif // RPOINTER_H

@@ -3,6 +3,7 @@
 #include "Output.h"
 #include <LDNDIconRole.h>
 #include <LDNDManager.h>
+#include <LKeyboard.h>
 #include <LSeat.h>
 #include <LTime.h>
 #include <LCursor.h>
@@ -11,7 +12,7 @@
 #include <math.h>
 #include <unistd.h>
 
-Pointer::Pointer(Params *params) : LPointer(params) {}
+Pointer::Pointer(void *params) : LPointer(params) {}
 
 void Pointer::pointerMoveEvent(Float32 x, Float32 y, bool absolute)
 {

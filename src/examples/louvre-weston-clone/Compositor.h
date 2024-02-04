@@ -20,16 +20,14 @@ class Compositor : public LCompositor
 public:
     Compositor();
 
-    LSeat *createSeatRequest(LSeat::Params *params) override;
+    LSeat *createSeatRequest(void *params) override;
     LOutput *createOutputRequest() override;
-    LSurface *createSurfaceRequest(LSurface::Params *params) override;
-    LToplevelRole *createToplevelRoleRequest(LToplevelRole::Params *params) override;
-    LPopupRole *createPopupRoleRequest(LPopupRole::Params *params) override;
-    LPointer *createPointerRequest(LPointer::Params *params) override;
-
+    LSurface *createSurfaceRequest(void *params) override;
+    LToplevelRole *createToplevelRoleRequest(void *params) override;
+    LPopupRole *createPopupRoleRequest(void *params) override;
+    LPointer *createPointerRequest(void *params) override;
 
     void destroySurfaceRequest(LSurface *surface) override;
-
     void cursorInitialized() override;
 
     LXCursor *pointerCursor = nullptr;

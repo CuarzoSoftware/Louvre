@@ -15,7 +15,7 @@
 #include "Client.h"
 #include "Workspace.h"
 
-Keyboard::Keyboard(Params *params) : LKeyboard(params) {}
+Keyboard::Keyboard(void *params) : LKeyboard(params) {}
 
 void Keyboard::keyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
 {
@@ -30,7 +30,6 @@ void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
     if (keyState == Pressed)
     {
         bool LEFT_META  = isKeyCodePressed(KEY_LEFTMETA);
-        bool LEFT_CTRL  = isKeyCodePressed(KEY_LEFTCTRL);
         bool LEFT_SHIFT = isKeyCodePressed(KEY_LEFTSHIFT);
 
         if (LEFT_META && LEFT_SHIFT)
@@ -41,29 +40,6 @@ void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
             {
                 output->enableVSync(!output->vSyncEnabled());
                 output->topbar->update();
-            }
-
-            if (isKeyCodePressed(KEY_B))
-            {
-                if (keyCode == KEY_UP)
-                {
-                    if (output->brightness < 1.0)
-                    {
-                        output->brightness += 0.1;
-                        output->gammaTable.fill(1.0, 1.0, output->brightness);
-                        output->setGamma(output->gammaTable);
-                        LLog::log("Gamma %f", output->brightness);
-                    }
-                }
-                else if (keyCode == KEY_DOWN)
-                {
-                    if (output->brightness > 0.0)
-                    {
-                        output->brightness -= 0.1;
-                        output->gammaTable.fill(1.0, 1.0, output->brightness);
-                        output->setGamma(output->gammaTable);
-                    }
-                }
             }
         }
 

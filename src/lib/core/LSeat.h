@@ -58,7 +58,7 @@ public:
      *
      * @param params Internal library parameters provided in the virtual LCompositor::createSeatRequest() constructor.
      */
-    LSeat(Params *params);
+    LSeat(void *params);
 
     /**
      * @brief LSeat class destructor.

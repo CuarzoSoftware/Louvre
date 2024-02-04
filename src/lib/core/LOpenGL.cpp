@@ -105,14 +105,14 @@ GLuint LOpenGL::compileShader(GLenum type, const char *shaderString)
 
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
 
-        GLchar errorLog[infoLen];
+        GLchar *errorLog = new GLchar[infoLen];
 
         glGetShaderInfoLog(shader, infoLen, &infoLen, errorLog);
 
         LLog::error("[LOpenGL::compileShader] %s", errorLog);
 
         glDeleteShader(shader);
-
+        delete[] errorLog;
         return 0;
     }
 

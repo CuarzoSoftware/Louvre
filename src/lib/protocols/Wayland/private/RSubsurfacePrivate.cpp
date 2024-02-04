@@ -1,8 +1,9 @@
 #include <protocols/Wayland/private/RSubsurfacePrivate.h>
 #include <protocols/Wayland/private/RSurfacePrivate.h>
 #include <private/LSubsurfaceRolePrivate.h>
-#include <LSurface.h>
 #include <LCompositor.h>
+#include <LSurface.h>
+#include <LClient.h>
 
 void RSubsurface::RSubsurfacePrivate::resource_destroy(wl_resource *resource)
 {

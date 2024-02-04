@@ -26,6 +26,7 @@ public:
     void moveGL() override;
     void paintGL() override;
     void uninitializeGL() override;
+    void setGammaRequest(LClient *client, const LGammaTable *gamma) override;
 
     void loadWallpaper();
 
@@ -62,10 +63,6 @@ public:
 
     // Dock for this output
     Dock *dock = nullptr;
-
-    // Gamma
-    Float64 brightness = 1.0;
-    LGammaTable gammaTable;
 };
 
 #endif // OUTPUT_H

@@ -5,9 +5,9 @@ void Louvre::LGammaTable::fill(Float64 gamma, Float64 brightness, Float64 contra
     if (size() == 0)
         return;
 
-    UInt16 *r = red();
-    UInt16 *g = green();
-    UInt16 *b = blue();
+    UInt16 *r { red()   };
+    UInt16 *g { green() };
+    UInt16 *b { blue()  };
 
     if (size() == 1)
     {
@@ -18,7 +18,7 @@ void Louvre::LGammaTable::fill(Float64 gamma, Float64 brightness, Float64 contra
     if (gamma <= 0.0)
         gamma = 0.1;
 
-    Float64 n = size() - 1;
+    Float64 n { (Float64)size() - 1 };
     Float64 val;
 
     for (UInt32 i = 0; i < size(); i++)

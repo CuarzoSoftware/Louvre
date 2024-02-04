@@ -4,9 +4,9 @@
 #include <LCompositor.h>
 #include <LClient.h>
 
-LClient::LClient(Params *params) : LPRIVATE_INIT_UNIQUE(LClient)
+LClient::LClient(void *params) : LPRIVATE_INIT_UNIQUE(LClient)
 {
-    imp()->client = params->client;
+    imp()->client = ((Params*)params)->client;
     dataDevice().imp()->client = this;
 }
 
@@ -89,6 +89,11 @@ const std::vector<LinuxDMABuf::GLinuxDMABuf *> &LClient::linuxDMABufGlobals() co
 const std::vector<FractionalScale::GFractionalScaleManager *> &LClient::fractionalScaleManagerGlobals() const
 {
     return imp()->fractionalScaleManagerGlobals;
+}
+
+const std::vector<GammaControl::GGammaControlManager *> &LClient::gammaControlManagerGlobals() const
+{
+    return imp()->gammaControlManagerGlobals;
 }
 
 const std::vector<Viewporter::GViewporter *> &LClient::viewporterGlobals() const

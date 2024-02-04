@@ -37,7 +37,7 @@ public:
      *
      * @param params Internal parameters of the library passed in the virtual constructor LCompositor::createSubsurfaceRoleRequest().
      */
-    LSubsurfaceRole(Params *params);
+    LSubsurfaceRole(void *params);
 
     /**
      * @brief Destructor for the LSubsurfaceRole class.

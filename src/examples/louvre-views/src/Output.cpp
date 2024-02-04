@@ -7,6 +7,7 @@
 #include <LOpenGL.h>
 #include <LTextureView.h>
 #include <LOutputMode.h>
+#include <LSeat.h>
 
 #include "Global.h"
 #include "Output.h"
@@ -18,9 +19,7 @@
 #include "Surface.h"
 #include "ToplevelView.h"
 
-Output::Output() : LOutput(),
-    gammaTable(0)
-{}
+Output::Output() : LOutput() {}
 
 void Output::loadWallpaper()
 {
@@ -203,11 +202,6 @@ void Output::updateFractionalOversampling()
 
 void Output::initializeGL()
 {
-    // Linear Gamma
-    gammaTable.setSize(gammaSize());
-    gammaTable.fill(1.0, brightness, 1.0);
-    setGamma(gammaTable);
-
     workspaceAnim.setDuration(400);
     workspaceAnim.setOnUpdateCallback(
         [this](LAnimation *anim)
@@ -546,4 +540,10 @@ void Output::uninitializeGL()
     animatedFullscreenToplevel = nullptr;
 
     G::compositor()->scene.handleUninitializeGL(this);
+}
+
+void Output::setGammaRequest(LClient *client, const LGammaTable *gamma)
+{
+    L_UNUSED(client);
+    setGamma(gamma);
 }

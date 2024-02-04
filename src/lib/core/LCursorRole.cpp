@@ -2,15 +2,19 @@
 #include <private/LCursorRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LPointerPrivate.h>
+#include <LDNDManager.h>
 #include <LCursorRole.h>
 #include <LSurface.h>
 #include <LCompositor.h>
 #include <LCursor.h>
+#include <LSeat.h>
 
 using namespace Louvre;
 
-LCursorRole::LCursorRole(Params *params) :
-    LBaseSurfaceRole(params->surface->surfaceResource(), params->surface, LSurface::Role::Cursor),
+LCursorRole::LCursorRole(void *params) :
+    LBaseSurfaceRole(((Params*)params)->surface->surfaceResource(),
+                       ((Params*)params)->surface,
+                       LSurface::Role::Cursor),
     LPRIVATE_INIT_UNIQUE(LCursorRole)
 {
     surface()->imp()->receiveInput = false;

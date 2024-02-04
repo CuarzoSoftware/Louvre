@@ -9,6 +9,7 @@
 #include <protocols/WpPresentationTime/private/GWpPresentationPrivate.h>
 #include <protocols/Viewporter/private/GViewporterPrivate.h>
 #include <protocols/FractionalScale/private/GFractionalScaleManagerPrivate.h>
+#include <protocols/GammaControl/private/GGammaControlManagerPrivate.h>
 #include <LCompositor.h>
 #include <LToplevelRole.h>
 #include <LCursor.h>
@@ -23,6 +24,8 @@
 #include <LCursorRole.h>
 #include <LLog.h>
 #include <LXCursor.h>
+#include <LClient.h>
+#include <LDNDIconRole.h>
 
 using namespace Louvre;
 
@@ -58,6 +61,9 @@ bool LCompositor::createGlobalsRequest()
 
     wl_global_create(display(), &wp_fractional_scale_manager_v1_interface,
                      LOUVRE_FRACTIONAL_SCALE_VERSION, this, &Protocols::FractionalScale::GFractionalScaleManager::GFractionalScaleManagerPrivate::bind);
+
+    wl_global_create(display(), &zwlr_gamma_control_manager_v1_interface,
+                     LOUVRE_GAMMA_CONTROL_MANAGER_VERSION, this, &Protocols::GammaControl::GGammaControlManager::GGammaControlManagerPrivate::bind);
 
     wl_display_init_shm(display());
 
@@ -122,77 +128,77 @@ LOutput *LCompositor::createOutputRequest()
 //! [createOutputRequest]
 
 //! [createClientRequest]
-LClient *LCompositor::createClientRequest(LClient::Params *params)
+LClient *LCompositor::createClientRequest(void *params)
 {
     return new LClient(params);
 }
 //! [createClientRequest]
 
 //! [createSurfaceRequest]
-LSurface *LCompositor::createSurfaceRequest(LSurface::Params *params)
+LSurface *LCompositor::createSurfaceRequest(void *params)
 {
     return new LSurface(params);
 }
 //! [createSurfaceRequest]
 
 //! [createSeatRequest]
-LSeat *LCompositor::createSeatRequest(LSeat::Params *params)
+LSeat *LCompositor::createSeatRequest(void *params)
 {
     return new LSeat(params);
 }
 //! [createSeatRequest]
 
 //! [createPointerRequest]
-LPointer *LCompositor::createPointerRequest(LPointer::Params *params)
+LPointer *LCompositor::createPointerRequest(void *params)
 {
     return new LPointer(params);
 }
 //! [createPointerRequest]
 
 //! [createKeyboardRequest]
-LKeyboard *LCompositor::createKeyboardRequest(LKeyboard::Params *params)
+LKeyboard *LCompositor::createKeyboardRequest(void *params)
 {
     return new LKeyboard(params);
 }
 //! [createKeyboardRequest]
 
 //! [createDNDManagerRequest]
-LDNDManager *LCompositor::createDNDManagerRequest(LDNDManager::Params *params)
+LDNDManager *LCompositor::createDNDManagerRequest(void *params)
 {
     return new LDNDManager(params);
 }
 //! [createDNDManagerRequest]
 
 //! [createToplevelRoleRequest]
-LToplevelRole *LCompositor::createToplevelRoleRequest(LToplevelRole::Params *params)
+LToplevelRole *LCompositor::createToplevelRoleRequest(void *params)
 {
     return new LToplevelRole(params);
 }
 //! [createToplevelRoleRequest]
 
 //! [createPopupRoleRequest]
-LPopupRole *LCompositor::createPopupRoleRequest(LPopupRole::Params *params)
+LPopupRole *LCompositor::createPopupRoleRequest(void *params)
 {
     return new LPopupRole(params);
 }
 //! [createPopupRoleRequest]
 
 //! [createSubsurfaceRoleRequest]
-LSubsurfaceRole *LCompositor::createSubsurfaceRoleRequest(LSubsurfaceRole::Params *params)
+LSubsurfaceRole *LCompositor::createSubsurfaceRoleRequest(void *params)
 {
     return new LSubsurfaceRole(params);
 }
 //! [createSubsurfaceRoleRequest]
 
 //! [createCursorRoleRequest]
-LCursorRole *LCompositor::createCursorRoleRequest(LCursorRole::Params *params)
+LCursorRole *LCompositor::createCursorRoleRequest(void *params)
 {
     return new LCursorRole(params);
 }
 //! [createCursorRoleRequest]
 
 //! [createDNDIconRoleRequest]
-LDNDIconRole *LCompositor::createDNDIconRoleRequest(LDNDIconRole::Params *params)
+LDNDIconRole *LCompositor::createDNDIconRoleRequest(void *params)
 {
     return new LDNDIconRole(params);
 }

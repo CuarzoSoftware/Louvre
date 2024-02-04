@@ -1,5 +1,6 @@
 #include <private/LResourcePrivate.h>
 #include <LCompositor.h>
+#include <LClient.h>
 
 using namespace Louvre;
 

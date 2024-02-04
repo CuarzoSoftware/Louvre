@@ -15,7 +15,7 @@ using namespace Louvre;
 class Toplevel : public LToplevelRole
 {
 public:
-    Toplevel(Params *params);
+    Toplevel(void *params);
     ~Toplevel();
 
     // Quick parse handles

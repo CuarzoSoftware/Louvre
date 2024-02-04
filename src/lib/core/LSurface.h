@@ -180,7 +180,7 @@ public:
      *
      * @param params Internal parameters of the library provided in the virtual constructor LCompositor::createSurfaceRequest().
      */
-    LSurface(Params *params);
+    LSurface(void *params);
 
     /**
      * @brief Destructor of the LSurface class.

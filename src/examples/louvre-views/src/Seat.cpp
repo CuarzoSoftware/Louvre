@@ -3,6 +3,7 @@
 #include <libinput.h>
 #include <LAnimation.h>
 #include <LLog.h>
+#include <LClient.h>
 #include "Seat.h"
 #include "Global.h"
 #include "Output.h"
@@ -10,7 +11,7 @@
 #include "Surface.h"
 #include "Toplevel.h"
 
-Seat::Seat(Params *params) : LSeat(params) {}
+Seat::Seat(void *params) : LSeat(params) {}
 
 void Seat::enabledChanged()
 {

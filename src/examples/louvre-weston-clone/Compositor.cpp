@@ -14,7 +14,7 @@
 
 Compositor::Compositor():LCompositor(){}
 
-LSeat *Compositor::createSeatRequest(LSeat::Params *params)
+LSeat *Compositor::createSeatRequest(void *params)
 {
     return new Seat(params);
 }
@@ -24,7 +24,7 @@ LOutput *Compositor::createOutputRequest()
     return new Output();
 }
 
-LSurface *Compositor::createSurfaceRequest(LSurface::Params *params)
+LSurface *Compositor::createSurfaceRequest(void *params)
 {
     Surface *newSurface = new Surface(params);
     return newSurface;
@@ -32,7 +32,7 @@ LSurface *Compositor::createSurfaceRequest(LSurface::Params *params)
 
 void Compositor::destroySurfaceRequest(LSurface *s)
 {
-    for (Output *output : (std::list<Output*>&)outputs())
+    for (Output *output : (std::vector<Output*>&)outputs())
         if (s == output->fullscreenSurface)
             output->fullscreenSurface = nullptr;
 }
@@ -42,17 +42,17 @@ void Compositor::cursorInitialized()
     pointerCursor = LXCursor::loadXCursorB("hand2");
 }
 
-LToplevelRole *Compositor::createToplevelRoleRequest(LToplevelRole::Params *params)
+LToplevelRole *Compositor::createToplevelRoleRequest(void *params)
 {
     return new ToplevelRole(params);
 }
 
-LPopupRole *Compositor::createPopupRoleRequest(LPopupRole::Params *params)
+LPopupRole *Compositor::createPopupRoleRequest(void *params)
 {
     return new Popup(params);
 }
 
-LPointer *Compositor::createPointerRequest(LPointer::Params *params)
+LPointer *Compositor::createPointerRequest(void *params)
 {
     return new Pointer(params);
 }

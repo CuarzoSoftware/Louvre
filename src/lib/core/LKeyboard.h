@@ -4,6 +4,7 @@
 #include <LObject.h>
 #include <vector>
 #include <xkbcommon/xkbcommon.h>
+#include <linux/input-event-codes.h>
 
 /**
  * @brief Class for handling keyboard events.
@@ -71,7 +72,7 @@ public:
      *
      * @param params Internal library parameters passed in the LCompositor::createKeyboardRequest() virtual constructor.
      */
-    LKeyboard(Params *params);
+    LKeyboard(void *params);
 
     /**
      * @brief Destructor of the LKeyboard class.

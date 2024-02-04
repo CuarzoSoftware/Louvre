@@ -7,7 +7,9 @@
 #include <private/LDataSourcePrivate.h>
 #include <private/LSeatPrivate.h>
 #include <private/LDNDManagerPrivate.h>
+#include <LClient.h>
 #include <LTime.h>
+#include <LPointer.h>
 
 using namespace Louvre;
 

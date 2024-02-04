@@ -58,7 +58,7 @@ struct Backend
     wl_event_source *monitor;
     list<LDMAFormat*>dmaFormats;
     std::list<DEVICE_FD_ID> devices;
-    UInt32 rendererGPUs = 0;
+    UInt32 rendererGPUs {0};
 };
 
 struct Output
@@ -66,7 +66,7 @@ struct Output
     SRMConnector *conn;
     LSize physicalSize;
     list<LOutputMode*>modes;
-    LTexture **textures = nullptr;
+    LTexture **textures {nullptr};
 };
 
 struct OutputMode
@@ -89,8 +89,8 @@ static UInt32 subPixelTable[] =
 
 static int openRestricted(const char *path, int flags, void *userData)
 {
-    LCompositor *compositor = (LCompositor*)userData;
-    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    LCompositor *compositor {(LCompositor*)userData};
+    Backend *bknd {(Backend*)compositor->imp()->graphicBackendData};
 
     if (libseatEnabled)
     {
@@ -112,12 +112,12 @@ static int openRestricted(const char *path, int flags, void *userData)
 
 static void closeRestricted(int fd, void *userData)
 {
-    LCompositor *compositor = (LCompositor*)userData;
-    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    LCompositor *compositor {(LCompositor*)userData};
+    Backend *bknd {(Backend*)compositor->imp()->graphicBackendData};
 
     if (libseatEnabled)
     {
-        DEVICE_FD_ID dev = {-1, -1};
+        DEVICE_FD_ID dev {-1, -1};
 
         for (std::list<DEVICE_FD_ID>::iterator it = bknd->devices.begin(); it != bknd->devices.end(); it++)
         {

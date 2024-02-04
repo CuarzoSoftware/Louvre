@@ -30,11 +30,12 @@
 #include <LTime.h>
 #include <LOutput.h>
 #include <LPopupRole.h>
+#include <LClient.h>
 #include <LLog.h>
 
 using namespace Louvre;
 
-LSeat::LSeat(Params *params) : LPRIVATE_INIT_UNIQUE(LSeat)
+LSeat::LSeat(void *params) : LPRIVATE_INIT_UNIQUE(LSeat)
 {
     L_UNUSED(params);
     compositor()->imp()->seat = this;

@@ -4,14 +4,14 @@
 #include "Seat.h"
 #include "Output.h"
 
-Seat::Seat(Params *params) : LSeat(params){}
+Seat::Seat(void *params) : LSeat(params){}
 
 void Seat::enabledChanged()
 {
     if (!enabled())
         return;
 
-    for (Output *o : (std::list<Output*>&)compositor()->outputs())
+    for (Output *o : (std::vector<Output*>&)compositor()->outputs())
     {
         o->fullDamage();
         o->repaint();

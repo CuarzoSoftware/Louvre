@@ -4,9 +4,9 @@ project(
     version : run_command('cat', files('../VERSION'), check : false).stdout().strip(),
     meson_version: '>= 0.56.0',
     default_options: [
-        'warning_level=2',
+        'warning_level=3',
         'buildtype=release',
-        'cpp_std=c++14'
+        'cpp_std=c++20'
 	]
 )
 
@@ -31,7 +31,8 @@ add_project_arguments([
     '-DLOUVRE_DEFAULT_BACKENDS_PATH="@0@"'.format(BACKENDS_INSTALL_PATH),
     '-DLOUVRE_DEFAULT_GRAPHIC_BACKEND="@0@"'.format(get_option('default_graphic_backend')),
     '-DLOUVRE_DEFAULT_INPUT_BACKEND="@0@"'.format(get_option('default_input_backend')),
-    '-DLOUVRE_DEFAULT_ASSETS_PATH="@0@"'.format(ASSETS_INSTALL_PATH)
+    '-DLOUVRE_DEFAULT_ASSETS_PATH="@0@"'.format(ASSETS_INSTALL_PATH),
+    '-pedantic-errors'
 ], language: 'cpp')
 
 if get_option('buildtype') == 'custom'

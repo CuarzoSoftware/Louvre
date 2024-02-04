@@ -6,6 +6,7 @@
 #include <LDNDManager.h>
 #include <LDNDIconRole.h>
 #include <LCursor.h>
+#include <LPointer.h>
 
 using namespace Louvre;
 
@@ -109,3 +110,13 @@ void LOutput::uninitializeGL()
     /* No default implementation */
 }
 //! [uninitializeGL]
+
+//! [setGammaRequest]
+void LOutput::setGammaRequest(LClient *client, const LGammaTable *gamma)
+{
+    L_UNUSED(client)
+    L_UNUSED(gamma)
+
+    /* No default implementation */
+}
+//! [setGammaRequest]

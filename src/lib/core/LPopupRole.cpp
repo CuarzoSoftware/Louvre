@@ -16,11 +16,13 @@
 
 using namespace Louvre;
 
-LPopupRole::LPopupRole(LPopupRole::Params *params) :
-    LBaseSurfaceRole(params->popup, params->surface, LSurface::Role::Popup),
+LPopupRole::LPopupRole(void *params) :
+    LBaseSurfaceRole(((LPopupRole::Params*)params)->popup,
+                     ((LPopupRole::Params*)params)->surface,
+                       LSurface::Role::Popup),
     LPRIVATE_INIT_UNIQUE(LPopupRole)
 {
-    imp()->positioner.imp()->data = params->positioner->imp()->data;
+    imp()->positioner.imp()->data = ((LPopupRole::Params*)params)->positioner->imp()->data;
     imp()->positioner.setUnconstrainedSize(imp()->positioner.size());
 }
 

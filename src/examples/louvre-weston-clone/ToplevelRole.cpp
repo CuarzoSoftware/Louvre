@@ -4,8 +4,10 @@
 #include <Compositor.h>
 #include <Surface.h>
 #include <LOutput.h>
+#include <LSeat.h>
+#include <LPointer.h>
 
-ToplevelRole::ToplevelRole(Params *params) : LToplevelRole(params) {}
+ToplevelRole::ToplevelRole(void *params) : LToplevelRole(params) {}
 
 void ToplevelRole::configureRequest()
 {

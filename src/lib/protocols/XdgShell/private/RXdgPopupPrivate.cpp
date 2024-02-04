@@ -9,6 +9,8 @@
 #include <private/LSurfacePrivate.h>
 #include <private/LPositionerPrivate.h>
 #include <LCompositor.h>
+#include <LSeat.h>
+#include <LKeyboard.h>
 
 void RXdgPopup::RXdgPopupPrivate::destroy_resource(wl_resource *resource)
 {

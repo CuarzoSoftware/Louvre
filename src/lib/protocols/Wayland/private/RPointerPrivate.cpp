@@ -2,7 +2,9 @@
 #include <private/LCursorRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LPointerPrivate.h>
+#include <LDNDManager.h>
 #include <LCompositor.h>
+#include <LSeat.h>
 
 using namespace Louvre;
 

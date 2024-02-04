@@ -8,12 +8,14 @@
 #include <LSurfaceView.h>
 #include <LSurface.h>
 #include <LOutput.h>
+#include <LSeat.h>
+#include <LDNDManager.h>
 
 #include "Global.h"
 #include "Pointer.h"
 #include "Compositor.h"
 
-Pointer::Pointer(Params *params) : LPointer(params) {}
+Pointer::Pointer(void *params) : LPointer(params) {}
 
 void Pointer::pointerMoveEvent(Float32 x, Float32 y, bool absolute)
 {

@@ -28,7 +28,7 @@ public:
      *
      * @param params Internal library parameters provided in the virtual LCompositor::createToplevelRoleRequest() constructor.
      */
-    LToplevelRole(Params *params);
+    LToplevelRole(void *params);
 
     /**
      * @brief LToplevelRole class destructor.

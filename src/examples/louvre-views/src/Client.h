@@ -12,7 +12,7 @@ using namespace Louvre;
 class Client : public LClient
 {
 public:
-    Client(LClient::Params *params);
+    Client(void *params);
     ~Client();
 
     // Used to check if the client is alive

@@ -3,11 +3,12 @@
 
 #include <protocols/Viewporter/viewporter.h>
 #include <protocols/Viewporter/RViewport.h>
-#include <LSurface.h>
+#include <protocols/Wayland/RSurface.h>
 #include <private/LCompositorPrivate.h>
+#include <LSurface.h>
 #include <vector>
 #include <string>
-#include <LBitfield.h>
+#include <LBitset.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols;
@@ -33,7 +34,7 @@ LPRIVATE_CLASS(LSurface)
         SizeChanged                 = 1 << 7,
     };
 
-    LBitfield<ChangesToNotify> changesToNotify;
+    LBitset<ChangesToNotify> changesToNotify;
 
     enum StateFlags : UInt32
     {
@@ -41,7 +42,7 @@ LPRIVATE_CLASS(LSurface)
         ViewportIsCropped          = 1 << 1,
     };
 
-    LBitfield<StateFlags> stateFlags;
+    LBitset<StateFlags> stateFlags;
 
     struct State
     {

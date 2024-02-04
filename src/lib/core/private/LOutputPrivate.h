@@ -6,7 +6,8 @@
 #include <private/LRenderBufferPrivate.h>
 #include <LOutputFramebuffer.h>
 #include <atomic>
-#include <LBitfield.h>
+#include <LBitset.h>
+#include <LGammaTable.h>
 
 LPRIVATE_CLASS_NO_COPY(LOutput)
 
@@ -36,13 +37,13 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     LOutputPrivate(LOutput *output);
 
     // Created before initializeGL() and destroyed after uninitializeGL()
-    LPainter *painter = nullptr;
+    LPainter *painter { nullptr };
 
-    // Using bitfield instead of a booleans to save some bytes
-    LBitfield<StateFlags> stateFlags = LBitfield<StateFlags>(FractionalOversamplingEnabled);
+    // Using bitset instead of a booleans to save some bytes
+    LBitset<StateFlags> stateFlags { FractionalOversamplingEnabled };
 
     // The current state of the output
-    State state = Uninitialized;
+    State state { Uninitialized };
 
     // Handle to the output (some internals require the public API)
     LOutput *output;
@@ -51,16 +52,16 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     LOutputFramebuffer fb;
 
     // Framebuffer for fractional scaling with oversampling
-    LRenderBuffer *fractionalFb = nullptr;
+    LRenderBuffer *fractionalFb { nullptr };
 
     // The wp_fractional_v1 scale set with setScale() returned with fractionalScale()
-    Float32 fractionalScale = 1.f;
+    Float32 fractionalScale { 1.f };
 
     // The wl_output scale used for rendering ceil(fractionalScale)
-    Float32 scale = 1.f;
+    Float32 scale { 1.f };
 
     // Transform set with LOutput::setTransform()
-    LFramebuffer::Transform transform = LFramebuffer::Normal;
+    LFramebuffer::Transform transform { LFramebuffer::Normal };
 
     // Rect in surface coordinates
     LRect rect;
@@ -85,8 +86,10 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     // Raw native OpenGL textures that need to be destroyed from this thread
     std::vector<GLuint>nativeTexturesToDestroy;
 
+    LGammaTable gammaTable {0};
+
     // API for the graphic backend
-    void *graphicBackendData = nullptr;
+    void *graphicBackendData {nullptr};
     void backendInitializeGL();
     void backendPaintGL();
     void backendResizeGL();

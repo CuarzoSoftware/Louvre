@@ -5,6 +5,8 @@
 #include <private/LPainterPrivate.h>
 #include <private/LCursorPrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <LSeat.h>
+#include <LClient.h>
 
 #include <LTime.h>
 #include <iostream>
@@ -20,6 +22,9 @@ bool LOutput::LOutputPrivate::initialize()
 
 void LOutput::LOutputPrivate::backendInitializeGL()
 {
+    if (output->gammaSize() != 0)
+        output->setGamma(nullptr);
+
     fractionalFb = new LRenderBuffer(LSize(64, 64), false);
     threadId = std::this_thread::get_id();
 

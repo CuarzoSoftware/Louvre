@@ -1,20 +1,10 @@
-#include <LCompositor.h>
+#include <LObject.h>
+#include <private/LCompositorPrivate.h>
 
 using namespace Louvre;
 
-LObject::LObject() {}
-
-LCompositor *LObject::compositor()
+LObject::~LObject()
 {
-    return LCompositor::compositor();
-}
-
-LSeat *LObject::seat()
-{
-    return compositor()->seat();
-}
-
-LCursor *LObject::cursor()
-{
-    return compositor()->cursor();
+    *m_isAlive = false;
+    compositor()->imp()->removedObjectsAliveIndicators.push_back(m_isAlive);
 }

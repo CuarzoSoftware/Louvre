@@ -206,7 +206,9 @@ public:
     Int32 refreshRateLimit() const;
     void setRefreshRateLimit(Int32 hz);
     UInt32 gammaSize() const;
-    bool setGamma(const LGammaTable &gamma);
+
+    // If nullptr restores the default table (linear)
+    bool setGamma(const LGammaTable *gamma);
 
     /**
      * @brief Constructor of the LOutput class.
@@ -571,6 +573,25 @@ public:
      * @snippet LOutputDefault.cpp uninitializeGL
      */
     virtual void uninitializeGL();
+
+    /**
+     * @brief Set gamma table request.
+     *
+     * Clients using the [wlr gamma control](https://wayland.app/protocols/wlr-gamma-control-unstable-v1#zwlr_gamma_control_manager_v1)
+     * protocol can request to set the gamma table for an output.
+     *
+     * For security reasons, it is advisable to permit only authorized clients to perform such actions.
+     * The default implementation ignores all requests, and the mechanism to identify an authorized client is left to the developer's discretion.
+     *
+     * The gamma table (when is not `nullptr`) always have a size equal to gammaSize(), hence, it is not necessary to validate that.
+     *
+     * @param client Pointer to the client making the request.
+     * @param gamma Pointer to the LGammaTable object containing the requested gamma table or `nullptr` to restore the default table.
+     *
+     * #### Default Implementation
+     * @snippet LOutputDefault.cpp setGammaRequest
+     */
+    virtual void setGammaRequest(LClient *client, const LGammaTable *gamma);
 
 ///@}
 

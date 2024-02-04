@@ -14,6 +14,7 @@ static void release(wl_client *client, wl_resource *resource);
 #endif
 
 LOutput *lOutput = nullptr;
+std::vector<GammaControl::RGammaControl*> gammaControlResources;
 };
 
 #endif // GOUTPUTPRIVATE_H

@@ -11,6 +11,7 @@
 #include <LPointer.h>
 #include <LCompositor.h>
 #include <LLauncher.h>
+#include <LClient.h>
 #include <unistd.h>
 
 using LVS = LView::LViewPrivate::LViewState;

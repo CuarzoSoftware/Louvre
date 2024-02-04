@@ -29,6 +29,7 @@ LPRIVATE_CLASS(LClient)
     std::vector<LinuxDMABuf::GLinuxDMABuf*> linuxDMABufGlobals;
     std::vector<Viewporter::GViewporter*> viewporterGlobals;
     std::vector<FractionalScale::GFractionalScaleManager*> fractionalScaleManagerGlobals;
+    std::vector<GammaControl::GGammaControlManager*> gammaControlManagerGlobals;
 
     // Singleton Globals
     Wayland::GDataDeviceManager *dataDeviceManagerGlobal = nullptr;

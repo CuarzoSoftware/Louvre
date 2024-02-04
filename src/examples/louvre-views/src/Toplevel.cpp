@@ -3,6 +3,7 @@
 #include <LSurface.h>
 #include <LLog.h>
 #include <unistd.h>
+#include <LSeat.h>
 
 #include "Compositor.h"
 #include "Toplevel.h"
@@ -15,7 +16,7 @@
 #define WORSPACE_ANIM_MS 600
 #define WORSPACE_ANIM_EASE 5.f
 
-Toplevel::Toplevel(Params *params) : LToplevelRole(params),
+Toplevel::Toplevel(void *params) : LToplevelRole(params),
     blackFullscreenBackground(0.f, 0.f, 0.f, 1.f),
     capture(nullptr, &blackFullscreenBackground),
     animView(nullptr, &G::compositor()->overlayLayer)

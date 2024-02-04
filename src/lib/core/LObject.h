@@ -1,7 +1,7 @@
 #ifndef LOBJECT_H
 #define LOBJECT_H
 
-#include <LNamespaces.h>
+#include <LCompositor.h>
 
 /**
  * @brief Base class for Louvre objects.
@@ -12,26 +12,58 @@ public:
     /**
      * @brief Constructor of the LObject class.
      */
-    LObject();
+    inline LObject()
+    {
+        m_isAlive = new bool(true);
+    }
+
+    /**
+     * @brief Destructor of the LObject class.
+     */
+    ~LObject();
 
     /**
      * @brief Quick access to the global compositor instance.
      */
-    static LCompositor *compositor();
+    inline static LCompositor *compositor()
+    {
+        return LCompositor::compositor();
+    }
 
     /**
      * @brief Quick access to the global seat instance.
      */
-    static LSeat *seat();
+    inline static LSeat *seat()
+    {
+        return LCompositor::compositor()->seat();
+    }
 
     /**
      * @brief Quick access to the global cursor instance.
      */
-    static LCursor *cursor();
+    inline static LCursor *cursor()
+    {
+        return LCompositor::compositor()->cursor();
+    }
 
-    /// @cond OMIT
-    // LPRIVATE_IMP(LObject); (not required yet)
-    /// @endcond
+    /**
+     * @brief Get a pointer to a boolean variable indicating the object's existence.
+     *
+     * The boolean variable is not immediately destroyed when the object is destructed,
+     * making it safe to check its value even after the object is no longer present.
+     * Developers may destroy an object during processing a request; therefore,
+     * Louvre internally uses this property to verify its existence before accessing it.
+     *
+     * @return Pointer to the boolean variable indicating the object's existence.
+     */
+    inline const bool *isAlive() const
+    {
+        return m_isAlive;
+    }
+
+private:
+    friend class LCompositor;
+    bool *m_isAlive;
 };
 
 #endif // LOBJECT_H

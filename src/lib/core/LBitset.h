@@ -1,13 +1,16 @@
-#ifndef LBITFIELD_H
-#define LBITFIELD_H
+#ifndef LBITSET_H
+#define LBITSET_H
 
 #include <LNamespaces.h>
 
 /**
- * @brief Utility for managing bitfields
+ * @brief Compact way of storing and managing conditions or states
  *
- * The LBitfield class template facilitates the creation and management of bitfields, offering a cleaner API for flag manipulation.
- * Supported data types include integer types, including enums.
+ * The LBitset class template is similar to std::bitset in that it enables the compact storage of a set of conditions or states using bits.\n
+ * Unlike std::bitset, LBitset functions are designed to modify and retrieve bit states using flags rather than indices, which are ideally
+ * defined within an enum.
+ *
+ * It is widely used in the private API of Louvre classes to optimize memory usage.
  *
  * Example usage:
  *
@@ -19,7 +22,7 @@
  *      FlagC = 1 << 2
  * };
  *
- * LBitfield<MyFlags> myFlags;
+ * LBitset<MyFlags> myFlags;
  *
  * myFlags.add(MyFlags::FlagA | MyFlags::FlagC);
  *
@@ -30,7 +33,7 @@
  * @endcode
  */
 template <class T>
-class Louvre::LBitfield
+class Louvre::LBitset
 {
     using Flag = typename std::conditional<
         std::is_enum<T>::value,
@@ -41,13 +44,13 @@ class Louvre::LBitfield
 public:
 
     /**
-     * @brief Constructor for LBitfield
+     * @brief Constructor for LBitset
      *
-     * Initializes the LBitfield with the specified initial flags. If no flags are provided, the bitfield is constructed empty without any flags.
+     * Initializes the bitset with the specified initial flags. If no flags are provided, the bitset is constructed empty without any flags.
      *
      * @param flags Initial flags to set (default is 0)
      */
-    inline LBitfield(Flag flags = 0) : m_flags(flags) {}
+    inline LBitset(Flag flags = 0) : m_flags(flags) {}
 
     /**
      * @brief Add new flags to the bitfield
@@ -143,4 +146,4 @@ private:
     Flag m_flags;
 };
 
-#endif // LBITFIELD_H
+#endif // LBITSET_H

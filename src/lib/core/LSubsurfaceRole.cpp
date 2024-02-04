@@ -8,12 +8,12 @@ using namespace Louvre;
 
 LSubsurfaceRole::LSubsurfaceRole
 (
-    Params *params
+    void *params
 )
     :LBaseSurfaceRole
     (
-        params->subsurface,
-        params->surface,
+        ((LSubsurfaceRole::Params*)params)->subsurface,
+        ((LSubsurfaceRole::Params*)params)->surface,
         LSurface::Role::Subsurface
     ),
     LPRIVATE_INIT_UNIQUE(LSubsurfaceRole)

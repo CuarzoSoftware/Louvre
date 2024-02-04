@@ -8,7 +8,7 @@ using namespace Louvre;
 class ToplevelRole : public LToplevelRole
 {
 public:
-    ToplevelRole(Params *params);
+    ToplevelRole(void *params);
 
     void configureRequest() override;
     void setMaximizedRequest() override;

@@ -259,7 +259,7 @@ UChar32 *TextRenderer::toUTF32(const char *utf8Str)
 
     Int32 utf8Len = strlen(utf8Str) + 1;
     Int32 str16Capacity = utf8Len;
-    UChar utf16Str[str16Capacity * 2];
+    UChar *utf16Str = new UChar[str16Capacity * 2];
     Int32 utf16Len = 0;
 
     // Convert UTF-8 to UTF-16
@@ -272,6 +272,7 @@ UChar32 *TextRenderer::toUTF32(const char *utf8Str)
 
     if (U_FAILURE(errorCode))
     {
+        delete[] utf16Str;
         LLog::error("Error converting UTF-8 to UTF-32: %s\n", u_errorName(errorCode));
         return nullptr;
     }
@@ -290,12 +291,13 @@ UChar32 *TextRenderer::toUTF32(const char *utf8Str)
 
     if (U_FAILURE(errorCode))
     {
+        delete[] utf16Str;
         LLog::error("Error converting UTF-8 to UTF-32: %s\n", u_errorName(errorCode));
         free(utf32Str);
         return nullptr;
     }
 
     utf32Str[utf32Len - 1] = 0;
-
+    delete[] utf16Str;
     return utf32Str;
 }

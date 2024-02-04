@@ -17,7 +17,7 @@ public:
     const LDMAPlanes *planes() const;
     LTexture *texture() const;
 
-    LPRIVATE_IMP_UNIQUE(LDMABuffer);
+    LPRIVATE_IMP_UNIQUE(LDMABuffer)
 };
 
 #endif // LDMABUFFER_H

@@ -10,6 +10,10 @@
 #include <LLog.h>
 #include <LOpenGL.h>
 #include <unistd.h>
+#include <LSeat.h>
+#include <LPointer.h>
+#include <LDNDManager.h>
+#include <LDNDIconRole.h>
 
 Output::Output():LOutput(){}
 
@@ -95,7 +99,7 @@ void Output::resizeGL()
     Int32 x = 0;
 
     // Set double scale to outputs with DPI >= 200
-    for (Output *output : (std::list<Output*>&)compositor()->outputs())
+    for (Output *output : (std::vector<Output*>&)compositor()->outputs())
     {
         if (output->dpi() >= 200)
             output->setScale(2);

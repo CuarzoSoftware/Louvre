@@ -2,6 +2,7 @@
 #include <protocols/Wayland/private/GSeatPrivate.h>
 #include <protocols/Wayland/GDataDeviceManager.h>
 #include <protocols/Wayland/RDataOffer.h>
+#include <protocols/Wayland/RSurface.h>
 #include <private/LCompositorPrivate.h>
 
 using namespace Louvre::Protocols::Wayland;

@@ -119,7 +119,7 @@ void Compositor::uninitialized()
             kill(c->pid, SIGKILL);
 }
 
-LClient *Compositor::createClientRequest(LClient::Params *params)
+LClient *Compositor::createClientRequest(void *params)
 {
     return new Client(params);
 }
@@ -129,32 +129,32 @@ LOutput *Compositor::createOutputRequest()
     return new Output();
 }
 
-LSurface *Compositor::createSurfaceRequest(LSurface::Params *params)
+LSurface *Compositor::createSurfaceRequest(void *params)
 {
     return new Surface(params);
 }
 
-LSeat *Compositor::createSeatRequest(LSeat::Params *params)
+LSeat *Compositor::createSeatRequest(void *params)
 {
     return new Seat(params);
 }
 
-LPointer *Compositor::createPointerRequest(LPointer::Params *params)
+LPointer *Compositor::createPointerRequest(void *params)
 {
     return new Pointer(params);
 }
 
-LKeyboard *Compositor::createKeyboardRequest(LKeyboard::Params *params)
+LKeyboard *Compositor::createKeyboardRequest(void *params)
 {
     return new Keyboard(params);
 }
 
-LToplevelRole *Compositor::createToplevelRoleRequest(LToplevelRole::Params *params)
+LToplevelRole *Compositor::createToplevelRoleRequest(void *params)
 {
     return new Toplevel(params);
 }
 
-LPopupRole *Compositor::createPopupRoleRequest(LPopupRole::Params *params)
+LPopupRole *Compositor::createPopupRoleRequest(void *params)
 {
     return new Popup(params);
 }

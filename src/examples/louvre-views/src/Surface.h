@@ -17,7 +17,7 @@ class Toplevel;
 class Surface : public LSurface
 {
 public:
-    Surface(LSurface::Params *params);
+    Surface(void *params);
     ~Surface();
 
     inline class Toplevel *tl() const {return (class Toplevel*)toplevel();};

@@ -23,7 +23,7 @@ public:
      *
      * @param params Internal library parameters passed in the LCompositor::createClientRequest() virtual constructor.
      */
-    LClient(Params *params);
+    LClient(void *params);
 
     /**
      * @brief Destructor of the LClient class.
@@ -107,8 +107,7 @@ public:
     void destroy();
 
     /**
-     * Returns a list of [wl_output](https://wayland.app/protocols/wayland#wl_output)
-     * resources created when the client binds this global.\n
+     * Resources created when the client binds to the [wl_output](https://wayland.app/protocols/wayland#wl_output) global.\n
      * The library creates a [wl_output](https://wayland.app/protocols/wayland#wl_output)
      * global for each output added to the compositor in
      * order to notify the client the available outputs and their properties.
@@ -116,21 +115,21 @@ public:
     const std::vector<Protocols::Wayland::GOutput*>&outputGlobals() const;
 
     /**
-     * Resource created when the client binds to
+     * Resources created when the client binds to
      * the [wl_compositor](https://wayland.app/protocols/wayland#wl_compositor)
      * singleton global of the Wayland protocol.
      */
     const std::vector<Protocols::Wayland::GCompositor*>&compositorGlobals() const;
 
     /**
-     * List of resources created when the client binds to
+     * Resources created when the client binds to
      * the [wl_subcompositor](https://wayland.app/protocols/wayland#wl_subcompositor)
      * global of the Wayland protocol.
      */
     const std::vector<Protocols::Wayland::GSubcompositor*>&subcompositorGlobals() const;
 
     /**
-     * List of resources created when the client binds to
+     * Resources created when the client binds to
      * the [wl_seat](https://wayland.app/protocols/wayland#wl_seat)
      * global of the Wayland protocol.
      */
@@ -144,13 +143,13 @@ public:
     const Protocols::Wayland::GDataDeviceManager* dataDeviceManagerGlobal() const;
 
     /**
-     * List of resources created when the client binds to the
+     * Resources created when the client binds to the
      * [xdg_wm_base](https://wayland.app/protocols/xdg-shell#xdg_wm_base) global of the XdgShell protocol.
      */
     const std::vector<Protocols::XdgShell::GXdgWmBase *> &xdgWmBaseGlobals() const;
 
     /**
-     * List of resources created when the client binds to the
+     * Resources created when the client binds to the
      * [zxdg_decoration_manager_v1](https://wayland.app/protocols/xdg-decoration-unstable-v1#zxdg_decoration_manager_v1) global
      * of the XdgDecoration protocol.
      *
@@ -160,32 +159,39 @@ public:
     const std::vector<Protocols::XdgDecoration::GXdgDecorationManager*> &xdgDecorationManagerGlobals() const;
 
     /**
-     * List of resources created when the client binds to the
+     * Resources created when the client binds to the
      * [wp_presentation](https://wayland.app/protocols/presentation-time#wp_presentation) global of the
      * PresentationTime protocol.
      */
     const std::vector<Protocols::WpPresentationTime::GWpPresentation*> &wpPresentationTimeGlobals() const;
 
     /**
-     * List of resources created when the client binds to the
+     * Resources created when the client binds to the
      * [zwp_linux_dmabuf_v1](https://wayland.app/protocols/linux-dmabuf-unstable-v1#zwp_linux_dmabuf_v1) global
      * of the LinuxDMA-BUF protocol.
      */
     const std::vector<Protocols::LinuxDMABuf::GLinuxDMABuf*> &linuxDMABufGlobals() const;
 
     /**
-     * List of resources created when the client binds to the
+     * Resources created when the client binds to the
      * [wp_viewporter](https://wayland.app/protocols/viewporter#wp_viewporter) global
      * of the Viewporter protocol.
      */
     const std::vector<Protocols::Viewporter::GViewporter*> &viewporterGlobals() const;
 
     /**
-     * List of resources created when the client binds to the
+     * Resources created when the client binds to the
      * [wp_fractional_scale_manager_v1](https://wayland.app/protocols/fractional-scale-v1#wp_fractional_scale_manager_v1) global
      * of the FractionalScale protocol.
      */
     const std::vector<Protocols::FractionalScale::GFractionalScaleManager*> &fractionalScaleManagerGlobals() const;
+
+    /**
+     * Resources created when the client binds to the
+     * [zwlr_gamma_control_manager_v1](https://wayland.app/protocols/wlr-gamma-control-unstable-v1#zwlr_gamma_control_manager_v1) global
+     * of the wlroots Gamma Control protocol.
+     */
+    const std::vector<Protocols::GammaControl::GGammaControlManager*> &gammaControlManagerGlobals() const;
 
     LPRIVATE_IMP_UNIQUE(LClient)
 };

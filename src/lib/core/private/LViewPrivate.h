@@ -4,10 +4,10 @@
 #include <LRegion.h>
 #include <LView.h>
 #include <LRect.h>
-#include <map>
-#include <thread>
 #include <LPainter.h>
 #include <GL/gl.h>
+#include <thread>
+#include <map>
 
 using namespace Louvre;
 
@@ -72,6 +72,7 @@ LPRIVATE_CLASS(LView)
         bool scalingEnabled;
         bool isFullyTrans;
     };
+
     UInt32 state = Visible | ParentOffset | ParentOpacity | BlockPointer | AutoBlendFunc;
     ViewCache cache;
 

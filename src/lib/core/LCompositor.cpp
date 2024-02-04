@@ -56,7 +56,10 @@ LCompositor::LCompositor() : LPRIVATE_INIT_UNIQUE(LCompositor)
     imp()->version.build = LOUVRE_VERSION_BUILD;
 }
 
-LCompositor::~LCompositor() {}
+LCompositor::~LCompositor()
+{
+    imp()->destroyRemovedObjectsAliveIndicators();
+}
 
 LCompositor *LCompositor::compositor()
 {
@@ -181,6 +184,8 @@ bool LCompositor::start()
 
 Int32 LCompositor::processLoop(Int32 msTimeout)
 {
+    imp()->destroyRemovedObjectsAliveIndicators();
+
     if (state() == CompositorState::Uninitialized)
         return 0;
 

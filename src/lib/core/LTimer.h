@@ -29,7 +29,7 @@ public:
     /**
      * @brief Destructor for the LTimer class.
      *
-     * If the timer is destroyed while it is running, the associated callback function is invoked.
+     * If the timer is destroyed while it is running, the associated callback function is not invoked.
      */
     ~LTimer();
 

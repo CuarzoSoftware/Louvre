@@ -11,9 +11,11 @@
 #include <protocols/Wayland/RPointer.h>
 #include <protocols/Wayland/RKeyboard.h>
 #include <LCompositor.h>
+#include <LClient.h>
 #include <LLog.h>
 #include <string.h>
 #include <fcntl.h>
+#include <LKeyboard.h>
 
 void RDataDevice::RDataDevicePrivate::resource_destroy(wl_resource *resource)
 {

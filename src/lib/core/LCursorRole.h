@@ -25,7 +25,7 @@ public:
      *
      * @param params Internal library parameters passed in the LCompositor::createCursorRoleRequest() virtual constructor.
      */
-    LCursorRole(Params *params);
+    LCursorRole(void *params);
 
     /**
      * @brief Destructor of the LCursorRole class.

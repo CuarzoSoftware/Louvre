@@ -20,8 +20,10 @@
 
 using namespace Louvre;
 
-LToplevelRole::LToplevelRole(Louvre::LToplevelRole::Params *params) :
-    LBaseSurfaceRole(params->toplevel, params->surface, LSurface::Role::Toplevel),
+LToplevelRole::LToplevelRole(void *params) :
+    LBaseSurfaceRole(((LToplevelRole::Params*)params)->toplevel,
+                       ((LToplevelRole::Params*)params)->surface,
+                       LSurface::Role::Toplevel),
     LPRIVATE_INIT_UNIQUE(LToplevelRole)
 {
     imp()->currentConf.commited = true;

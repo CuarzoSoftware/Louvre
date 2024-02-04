@@ -1,6 +1,7 @@
 #include <protocols/Wayland/private/GOutputPrivate.h>
-#include <LOutput.h>
 #include <LCompositor.h>
+#include <LOutput.h>
+#include <LClient.h>
 #include <LLog.h>
 
 static struct wl_output_interface output_implementation =

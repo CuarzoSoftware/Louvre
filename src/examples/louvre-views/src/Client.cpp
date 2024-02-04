@@ -60,7 +60,7 @@ int getProcessNameByPid(int pid, char *process_name, size_t buffer_size) {
     return 0; // Success
 }
 
-Client::Client(Params *params) : LClient(params),
+Client::Client(void *params) : LClient(params),
     unresponsiveAnim(1000,
     [this](LAnimation *anim)
     {

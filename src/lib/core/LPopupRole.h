@@ -26,7 +26,7 @@ public:
      * @brief Constructor for LPopupRole class.
      * @param params Internal library parameters provided in the LCompositor::createPopupRoleRequest() virtual constructor.
      */
-    LPopupRole(Params *params);
+    LPopupRole(void *params);
 
     /**
      * @brief Destructor of LPopupRole class.

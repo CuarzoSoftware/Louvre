@@ -13,6 +13,8 @@
 #include <private/LPointerPrivate.h>
 #include <private/LKeyboardPrivate.h>
 #include <private/LSubsurfaceRolePrivate.h>
+#include <LDNDIconRole.h>
+#include <LCursorRole.h>
 
 using namespace Protocols::Wayland;
 

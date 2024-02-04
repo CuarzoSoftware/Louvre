@@ -1,6 +1,7 @@
 #include <protocols/Viewporter/private/GViewporterPrivate.h>
 #include <protocols/Viewporter/viewporter.h>
 #include <protocols/Viewporter/RViewport.h>
+#include <protocols/Wayland/RSurface.h>
 #include <LCompositor.h>
 
 struct wp_viewporter_interface viewporter_implementation =

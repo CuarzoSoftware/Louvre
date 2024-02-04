@@ -3,6 +3,7 @@
 #include <LPointer.h>
 #include <LCompositor.h>
 #include <LDataSource.h>
+#include <LDNDIconRole.h>
 
 using namespace Louvre;
 

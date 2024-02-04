@@ -1,6 +1,7 @@
 #include <LTextureView.h>
 #include <LAnimation.h>
 #include <LTimer.h>
+#include <LSeat.h>
 
 #include "Workspace.h"
 #include "Compositor.h"
@@ -14,7 +15,7 @@
 #include "Client.h"
 #include "App.h"
 
-Surface::Surface(LSurface::Params *params) : LSurface(params), minimizeAnim(500)
+Surface::Surface(void *params) : LSurface(params), minimizeAnim(500)
 {
     view = new LSurfaceView(this, &G::compositor()->surfacesLayer);
     view->setVisible(false);

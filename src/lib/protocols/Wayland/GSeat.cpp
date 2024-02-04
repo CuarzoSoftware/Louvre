@@ -4,6 +4,7 @@
 #include <protocols/Wayland/private/GSeatPrivate.h>
 #include <private/LClientPrivate.h>
 #include <LCompositor.h>
+#include <LSeat.h>
 
 GSeat::GSeat
 (

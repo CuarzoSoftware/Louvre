@@ -14,7 +14,6 @@ LTimer::~LTimer()
 {
     if (compositor()->display())
     {
-        stop();
         wl_event_source_timer_update(imp()->waylandEventSource, 0);
         wl_event_source_remove(imp()->waylandEventSource);
     }

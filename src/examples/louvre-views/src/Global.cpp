@@ -3,6 +3,7 @@
 #include <LXCursor.h>
 #include <LCursor.h>
 #include <LOpenGL.h>
+#include <LSeat.h>
 #include <stdio.h>
 
 #include "Global.h"

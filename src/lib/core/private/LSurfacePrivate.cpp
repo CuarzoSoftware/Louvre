@@ -10,6 +10,7 @@
 #include <private/LOutputPrivate.h>
 #include <private/LKeyboardPrivate.h>
 #include <LOutputMode.h>
+#include <LClient.h>
 #include <LTime.h>
 #include <LLog.h>
 
