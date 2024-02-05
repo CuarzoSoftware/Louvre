@@ -13,10 +13,10 @@
 #include "Output.h"
 #include "Workspace.h"
 
-#define WORSPACE_ANIM_MS 600
-#define WORSPACE_ANIM_EASE 5.f
+#define WORKSPACE_ANIM_MS 600
+#define WORKSPACE_ANIM_EASE 5.f
 
-Toplevel::Toplevel(void *params) : LToplevelRole(params),
+Toplevel::Toplevel(const void *params) : LToplevelRole(params),
     blackFullscreenBackground(0.f, 0.f, 0.f, 1.f),
     capture(nullptr, &blackFullscreenBackground),
     animView(nullptr, &G::compositor()->overlayLayer)
@@ -281,8 +281,8 @@ void Toplevel::fullscreenChanged()
         surf()->setPos(0, 0);
 
         LRegion empty;
-        surf()->view->enableCustomTranslucentRegion(true);
-        surf()->view->setCustomTranslucentRegion(&empty);
+        surf()->view.enableCustomTranslucentRegion(true);
+        surf()->view.setCustomTranslucentRegion(&empty);
 
         animView.enableDstSize(true);
         animView.insertAfter(&capture, true);
@@ -298,7 +298,7 @@ void Toplevel::fullscreenChanged()
         if (decoratedView)
             decoratedView->fullscreenTopbarVisibility = 0.f;
 
-        fullscreenOutput->setWorkspace(fullscreenWorkspace, WORSPACE_ANIM_MS, WORSPACE_ANIM_EASE);
+        fullscreenOutput->setWorkspace(fullscreenWorkspace, WORKSPACE_ANIM_MS, WORKSPACE_ANIM_EASE);
     }
     else
     {
@@ -325,19 +325,19 @@ void Toplevel::decorationModeChanged()
         delete decoratedView;
         decoratedView = nullptr;
 
-        surf()->view->setPrimary(true);
-        surf()->view->enableParentClipping(false);
-        surf()->view->enableCustomPos(false);
-        surf()->view->setParent(prevParent);
+        surf()->view.setPrimary(true);
+        surf()->view.enableParentClipping(false);
+        surf()->view.enableCustomPos(false);
+        surf()->view.setParent(prevParent);
         surf()->requestNextFrame(false);
     }
     else
     {
         decoratedView = new ToplevelView(this);
-        decoratedView->setVisible(surf()->view->visible());
-        surf()->view->enableParentClipping(true);
-        surf()->view->enableCustomPos(true);
-        surf()->view->enableParentOffset(true);
+        decoratedView->setVisible(surf()->view.visible());
+        surf()->view.enableParentClipping(true);
+        surf()->view.enableCustomPos(true);
+        surf()->view.enableParentOffset(true);
     }
 
     if (!fullscreen() && rolePos().y() < TOPBAR_HEIGHT)
@@ -384,7 +384,7 @@ void Toplevel::titleChanged()
 void Toplevel::unsetFullscreen()
 {
     if (surf())
-        surf()->view->enableCustomTranslucentRegion(false);
+        surf()->view.enableCustomTranslucentRegion(false);
 
     if (!fullscreenOutput)
         return;
@@ -427,7 +427,7 @@ void Toplevel::unsetFullscreen()
     animView.setTranslucentRegion(nullptr);
     animView.setOpacity(1.f);
 
-    fullscreenOutput->setWorkspace(fullscreenOutput->workspaces.front(), WORSPACE_ANIM_MS, WORSPACE_ANIM_EASE);
+    fullscreenOutput->setWorkspace(fullscreenOutput->workspaces.front(), WORKSPACE_ANIM_MS, WORKSPACE_ANIM_EASE);
     G::scene()->mainView()->damageAll(fullscreenOutput);
 }
 

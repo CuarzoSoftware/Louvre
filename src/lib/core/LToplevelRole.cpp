@@ -20,7 +20,7 @@
 
 using namespace Louvre;
 
-LToplevelRole::LToplevelRole(void *params) :
+LToplevelRole::LToplevelRole(const void *params) :
     LBaseSurfaceRole(((LToplevelRole::Params*)params)->toplevel,
                        ((LToplevelRole::Params*)params)->surface,
                        LSurface::Role::Toplevel),

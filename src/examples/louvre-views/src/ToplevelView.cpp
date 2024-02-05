@@ -202,13 +202,13 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
 {
     toplevel->decoratedView = this;
 
-    class Surface *surf = (class Surface*)toplevel->surface();
-    setParent(surf->view->parent());
-    surf->view->setPrimary(true);
-    surf->view->enableCustomPos(true);
-    surf->view->enableParentClipping(true);
-    surf->view->setParent(&clipTop);
-    surf->view->setCustomPos(LPoint(0, 0));
+    class Surface *surf = toplevel->surf();
+    setParent(surf->view.parent());
+    surf->view.setPrimary(true);
+    surf->view.enableCustomPos(true);
+    surf->view.enableParentClipping(true);
+    surf->view.setParent(&clipTop);
+    surf->view.setCustomPos(LPoint(0, 0));
 
     surfB.setPrimary(false);
     surfB.enableParentClipping(true);
@@ -397,10 +397,10 @@ void ToplevelView::updateGeometry()
 {
     class Surface *surf = (class Surface *)toplevel->surface();
 
-    if (surf->view->parent() != &clipTop)
+    if (surf->view.parent() != &clipTop)
     {
-        surf->view->setParent(&clipTop);
-        surf->view->insertAfter(nullptr);
+        surf->view.setParent(&clipTop);
+        surf->view.insertAfter(nullptr);
     }
 
     if (toplevel->windowGeometry().size().area() == 0)
@@ -512,8 +512,7 @@ void ToplevelView::updateGeometry()
 
         setSize(toplevel->fullscreenOutput->size());
 
-        surf->view->setCustomPos((toplevel->fullscreenOutput->size() - toplevel->windowGeometry().size()) / 2);
-
+        surf->view.setCustomPos((toplevel->fullscreenOutput->size() - toplevel->windowGeometry().size()) / 2);
 
         LSize size = nativeSize();
 
@@ -546,7 +545,7 @@ void ToplevelView::updateGeometry()
         if (lastFullscreenState)
         {
             buttonsContainer.setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT);
-            surf->view->setCustomPos(0, 0);
+            surf->view.setCustomPos(0, 0);
             clipBottom.setVisible(true);
             sceneBL.setVisible(true);
             sceneBR.setVisible(true);
@@ -583,7 +582,7 @@ void ToplevelView::updateGeometry()
         clipTop.setSize(
             size.w(),
             size.h() - TOPLEVEL_BORDER_RADIUS);
-        surf->view->setCustomPos(- clip, - clip);
+        surf->view.setCustomPos(- clip, - clip);
 
         // Lower surface view (without border radius rects)
         clipBottom.setPos(

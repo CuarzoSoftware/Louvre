@@ -1,19 +1,15 @@
+#include <LTextureView.h>
 #include "Workspace.h"
 #include "Output.h"
 #include "Global.h"
 #include "Compositor.h"
 #include "Topbar.h"
-#include <LTextureView.h>
 #include "Surface.h"
 
 Workspace::Workspace(Output *output, Toplevel *toplevel, Workspace *prev) : LLayerView(output->workspacesContainer),
-    background(this),
-    surfaces(this),
-    overlay(this)
+    output   { output },
+    toplevel { toplevel }
 {
-    this->output = output;
-    this->toplevel = toplevel;
-
     // The first workspace is the desktop
     if (output->workspaces.empty())
     {

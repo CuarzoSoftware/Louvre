@@ -15,7 +15,7 @@
 
 using namespace Louvre;
 
-LDNDManager::LDNDManager(void *params) : LPRIVATE_INIT_UNIQUE(LDNDManager)
+LDNDManager::LDNDManager(const void *params) : LPRIVATE_INIT_UNIQUE(LDNDManager)
 {
     L_UNUSED(params);
 }

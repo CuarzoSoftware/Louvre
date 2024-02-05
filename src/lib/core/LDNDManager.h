@@ -22,7 +22,7 @@ public:
      *
      * @param params Internal library parameters passed in the LCompositor::createDNDManagerRequest() virtual constructor.
      */
-    LDNDManager(void *params);
+    LDNDManager(const void *params);
 
     /**
      * @brief Destructor of the LDNDManager class.

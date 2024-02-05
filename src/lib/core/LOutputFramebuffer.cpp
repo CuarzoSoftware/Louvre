@@ -33,7 +33,7 @@ const LRect &LOutputFramebuffer::rect() const
 GLuint LOutputFramebuffer::id() const
 {
     if (imp()->output->usingFractionalScale() && imp()->output->fractionalOversamplingEnabled())
-        return imp()->output->imp()->fractionalFb->id();
+        return imp()->output->imp()->fractionalFb.id();
 
     return 0;
 }

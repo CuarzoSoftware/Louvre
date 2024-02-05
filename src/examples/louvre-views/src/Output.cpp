@@ -19,7 +19,7 @@
 #include "Surface.h"
 #include "ToplevelView.h"
 
-Output::Output() : LOutput() {}
+Output::Output(const void *params) : LOutput(params) {}
 
 void Output::loadWallpaper()
 {
@@ -105,6 +105,13 @@ void Output::setWorkspace(Workspace *ws, UInt32 animMs, Float32 curve, Float32 s
     workspaceAnim.stop();
     workspaceAnim.setDuration(animMs);
     currentWorkspace = ws;
+
+    if (currentWorkspace->toplevel && currentWorkspace->toplevel->surf())
+        enableVSync(currentWorkspace->toplevel->surf()->preferVSync());
+    else
+        enableVSync(true);
+
+    topbar->update();
 
     for (Output *o : G::outputs())
         o->workspaces.front()->stealChildren();

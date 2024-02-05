@@ -5,24 +5,24 @@
 #include <string.h>
 
 /**
- * @brief Gamma Correction Table for LOutputs.
+ * @brief Gamma correction table for outputs.
  *
- * The LGammaTable class manages gamma correction curves for each RGB component, applicable
- * through LOutput::setGamma() method.
+ * The LGammaTable class allows to define the gamma correction curves for each RGB component of an LOutput, applicable
+ * through the LOutput::setGamma() method.
  *
- * The curves are stored in a single array of type UInt16. The table size() indicates how many UInt16
- * values each curve contains. For example, if the table has a size() of 256, the array would have
- * 256 * 3 UInt16 values, where the first 256 represent the red curve, the next 256 represent the
+ * The curves (red, green and blue) are stored in a single array of type @ref UInt16.
+ * The table size (size()) indicates how many @ref UInt16 values each curve contains.
+ * For example, if size() is 256, the array would have 256 * 3 @ref UInt16 values, where the first 256 represent the red curve, the next 256 represent the
  * green curve, and the remaining values represent the blue curve.
  *
  * The table size must match the LOutput::gammaSize() property of the output to which the correction
- * is applied. If not, LOutput::setGamma() will fail. To modify table values, use the fill() auxiliary
+ * is applied. If not, LOutput::setGamma() will fail. To modify table values, you can use the fill() auxiliary
  * method or directly modify each curve using red(), green(), and blue(), which return the address of
  * each curve in the array.
  *
- * @see LOuput::gammaSize()
- * @see LOuput::setGamma()
- * @see LOuput::setGammaRequest()
+ * @see LOutput::gammaSize()
+ * @see LOutput::setGamma()
+ * @see LOutput::setGammaRequest()
  */
 class Louvre::LGammaTable
 {
@@ -105,7 +105,7 @@ public:
     /**
      * @brief Get the size of the gamma correction table.
      *
-     * The size represents the number of UInt16 values used to independently represent each RGB curve.
+     * The size represents the number of @ref UInt16 values used to independently represent each RGB curve.
      *
      * @return The size of the gamma correction table.
      */
@@ -155,6 +155,7 @@ public:
         return (m_size == 0) ? nullptr : m_table + m_size * 2;
     }
 
+    /// @cond OMIT
 private:
     friend class Protocols::GammaControl::RGammaControl;
     friend class LOutput;
@@ -164,6 +165,7 @@ private:
 
     // This is only set for tables created by a client and is not copied across tables
     Protocols::GammaControl::RGammaControl *m_gammaControlResource {nullptr};
+    /// @endcond OMIT
 };
 
 #endif // LGAMMATABLE_H

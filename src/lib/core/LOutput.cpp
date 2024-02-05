@@ -28,6 +28,23 @@
 
 using namespace Louvre;
 
+LOutput::LOutput(const void *params) : m_imp(std::make_unique<LOutputPrivate>(this))
+{
+    imp()->output = this;
+    imp()->rect.setX(0);
+    imp()->rect.setY(0);
+    imp()->callLock.store(true);
+
+    Params *p = (Params*)params;
+
+    imp()->graphicBackendData = p->backendData;
+
+    if (p->callback)
+        p->callback(this);
+}
+
+LOutput::~LOutput() {}
+
 bool LOutput::fractionalOversamplingEnabled() const
 {
     return imp()->stateFlags.check(LOutputPrivate::FractionalOversamplingEnabled);
@@ -111,16 +128,6 @@ bool LOutput::setGamma(const LGammaTable *gamma)
     return compositor()->imp()->graphicBackend->outputSetGamma((LOutput*)this, imp()->gammaTable);
 }
 
-LOutput::LOutput() : m_imp(std::make_unique<LOutputPrivate>(this))
-{
-    imp()->output = this;
-    imp()->rect.setX(0);
-    imp()->rect.setY(0);
-    imp()->callLock.store(true);
-}
-
-LOutput::~LOutput() {}
-
 LFramebuffer *LOutput::framebuffer() const
 {
     return &imp()->fb;
@@ -148,7 +155,7 @@ void LOutput::setTransform(LFramebuffer::Transform transform)
     }
 }
 
-const std::list<LOutputMode *> &LOutput::modes() const
+const std::vector<LOutputMode *> &LOutput::modes() const
 {
     return *compositor()->imp()->graphicBackend->outputGetModes((LOutput*)this);
 }
@@ -243,7 +250,7 @@ void LOutput::setScale(Float32 scale)
                              roundf(Float32(fbSize.h()) * imp()->scale / imp()->fractionalScale));
         fbSize.setW(fbSize.w() + fbSize.w() % (Int32)imp()->scale);
         fbSize.setH(fbSize.h() + fbSize.h() % (Int32)imp()->scale);
-        imp()->fractionalFb->setSizeB(fbSize);
+        imp()->fractionalFb.setSizeB(fbSize);
     }
     else
         imp()->stateFlags.remove(LOutputPrivate::UsingFractionalScale);

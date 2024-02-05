@@ -16,7 +16,7 @@
 
 using namespace Louvre;
 
-LPopupRole::LPopupRole(void *params) :
+LPopupRole::LPopupRole(const void *params) :
     LBaseSurfaceRole(((LPopupRole::Params*)params)->popup,
                      ((LPopupRole::Params*)params)->surface,
                        LSurface::Role::Popup),

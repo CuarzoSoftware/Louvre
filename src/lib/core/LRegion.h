@@ -262,9 +262,8 @@ public:
      */
     void transform(const LSize &size, LFramebuffer::Transform transform);
 
-    static void multiply(LRegion *dst, LRegion *src, Float32 factor);
-
     /// @cond OMIT
+    static void multiply(LRegion *dst, LRegion *src, Float32 factor);
     mutable pixman_region32_t m_region;
     /// @endcond
 };

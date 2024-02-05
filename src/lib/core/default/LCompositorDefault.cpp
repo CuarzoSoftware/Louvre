@@ -1,4 +1,3 @@
-#include <cstring>
 #include <protocols/Wayland/private/GSeatPrivate.h>
 #include <protocols/Wayland/private/GCompositorPrivate.h>
 #include <protocols/Wayland/private/GSubcompositorPrivate.h>
@@ -10,6 +9,7 @@
 #include <protocols/Viewporter/private/GViewporterPrivate.h>
 #include <protocols/FractionalScale/private/GFractionalScaleManagerPrivate.h>
 #include <protocols/GammaControl/private/GGammaControlManagerPrivate.h>
+#include <protocols/TearingControl/private/GTearingControlManagerPrivate.h>
 #include <LCompositor.h>
 #include <LToplevelRole.h>
 #include <LCursor.h>
@@ -26,6 +26,7 @@
 #include <LXCursor.h>
 #include <LClient.h>
 #include <LDNDIconRole.h>
+#include <cstring>
 
 using namespace Louvre;
 
@@ -64,6 +65,9 @@ bool LCompositor::createGlobalsRequest()
 
     wl_global_create(display(), &zwlr_gamma_control_manager_v1_interface,
                      LOUVRE_GAMMA_CONTROL_MANAGER_VERSION, this, &Protocols::GammaControl::GGammaControlManager::GGammaControlManagerPrivate::bind);
+
+    wl_global_create(display(), &wp_tearing_control_manager_v1_interface,
+                     LOUVRE_TEARING_CONTROL_MANAGER_VERSION, this, &Protocols::TearingControl::GTearingControlManager::GTearingControlManagerPrivate::bind);
 
     wl_display_init_shm(display());
 
@@ -121,84 +125,84 @@ void LCompositor::cursorInitialized()
 //! [cursorInitialized]
 
 //! [createOutputRequest]
-LOutput *LCompositor::createOutputRequest()
+LOutput *LCompositor::createOutputRequest(const void *params)
 {
-    return new LOutput();
+    return new LOutput(params);
 }
 //! [createOutputRequest]
 
 //! [createClientRequest]
-LClient *LCompositor::createClientRequest(void *params)
+LClient *LCompositor::createClientRequest(const void *params)
 {
     return new LClient(params);
 }
 //! [createClientRequest]
 
 //! [createSurfaceRequest]
-LSurface *LCompositor::createSurfaceRequest(void *params)
+LSurface *LCompositor::createSurfaceRequest(const void *params)
 {
     return new LSurface(params);
 }
 //! [createSurfaceRequest]
 
 //! [createSeatRequest]
-LSeat *LCompositor::createSeatRequest(void *params)
+LSeat *LCompositor::createSeatRequest(const void *params)
 {
     return new LSeat(params);
 }
 //! [createSeatRequest]
 
 //! [createPointerRequest]
-LPointer *LCompositor::createPointerRequest(void *params)
+LPointer *LCompositor::createPointerRequest(const void *params)
 {
     return new LPointer(params);
 }
 //! [createPointerRequest]
 
 //! [createKeyboardRequest]
-LKeyboard *LCompositor::createKeyboardRequest(void *params)
+LKeyboard *LCompositor::createKeyboardRequest(const void *params)
 {
     return new LKeyboard(params);
 }
 //! [createKeyboardRequest]
 
 //! [createDNDManagerRequest]
-LDNDManager *LCompositor::createDNDManagerRequest(void *params)
+LDNDManager *LCompositor::createDNDManagerRequest(const void *params)
 {
     return new LDNDManager(params);
 }
 //! [createDNDManagerRequest]
 
 //! [createToplevelRoleRequest]
-LToplevelRole *LCompositor::createToplevelRoleRequest(void *params)
+LToplevelRole *LCompositor::createToplevelRoleRequest(const void *params)
 {
     return new LToplevelRole(params);
 }
 //! [createToplevelRoleRequest]
 
 //! [createPopupRoleRequest]
-LPopupRole *LCompositor::createPopupRoleRequest(void *params)
+LPopupRole *LCompositor::createPopupRoleRequest(const void *params)
 {
     return new LPopupRole(params);
 }
 //! [createPopupRoleRequest]
 
 //! [createSubsurfaceRoleRequest]
-LSubsurfaceRole *LCompositor::createSubsurfaceRoleRequest(void *params)
+LSubsurfaceRole *LCompositor::createSubsurfaceRoleRequest(const void *params)
 {
     return new LSubsurfaceRole(params);
 }
 //! [createSubsurfaceRoleRequest]
 
 //! [createCursorRoleRequest]
-LCursorRole *LCompositor::createCursorRoleRequest(void *params)
+LCursorRole *LCompositor::createCursorRoleRequest(const void *params)
 {
     return new LCursorRole(params);
 }
 //! [createCursorRoleRequest]
 
 //! [createDNDIconRoleRequest]
-LDNDIconRole *LCompositor::createDNDIconRoleRequest(void *params)
+LDNDIconRole *LCompositor::createDNDIconRoleRequest(const void *params)
 {
     return new LDNDIconRole(params);
 }

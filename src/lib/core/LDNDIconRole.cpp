@@ -7,13 +7,13 @@
 
 using namespace Louvre;
 
-LDNDIconRole::LDNDIconRole(void *params) :
+LDNDIconRole::LDNDIconRole(const void *params) :
     LBaseSurfaceRole(((Params*)params)->surface->surfaceResource(),
                      ((Params*)params)->surface,
                     LSurface::Role::DNDIcon),
     LPRIVATE_INIT_UNIQUE(LDNDIconRole)
 {
-    surface()->imp()->receiveInput = false;
+    surface()->imp()->stateFlags.remove(LSurface::LSurfacePrivate::ReceiveInput);
 }
 
 LDNDIconRole::~LDNDIconRole()

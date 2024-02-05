@@ -9,7 +9,7 @@ using namespace Louvre;
 class Output : public LOutput
 {
 public:
-    Output();
+    Output(const void *params);
 
     LTexture *backgroundTexture = nullptr;
     Int32 topbarHeight;

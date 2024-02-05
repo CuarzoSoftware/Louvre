@@ -394,6 +394,9 @@ bool LCompositor::addOutput(LOutput *output)
 
 void LCompositor::removeOutput(LOutput *output)
 {
+    if (!isGraphicBackendInitialized())
+        return;
+
     // Loop to check if output was added (initialized)
     for (LOutput *o : imp()->outputs)
     {

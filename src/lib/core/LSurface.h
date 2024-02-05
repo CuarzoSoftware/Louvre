@@ -120,12 +120,6 @@ public:
         DNDIcon = 5
     };
 
-    virtual void sizeChanged();
-    const LRectF &srcRect() const;
-    virtual void srcRectChanged();
-    LFramebuffer::Transform bufferTransform() const;
-    virtual void bufferTransformChanged();
-
     /**
      * @brief ID of the role
      *
@@ -180,7 +174,7 @@ public:
      *
      * @param params Internal parameters of the library provided in the virtual constructor LCompositor::createSurfaceRequest().
      */
-    LSurface(void *params);
+    LSurface(const void *params);
 
     /**
      * @brief Destructor of the LSurface class.
@@ -345,6 +339,21 @@ public:
     Int32 bufferScale() const;
 
     /**
+     * @brief Gets the buffer transform of the surface.
+     *
+     * @return The buffer transform applied to the surface.
+     */
+    LFramebuffer::Transform bufferTransform() const;
+
+    /**
+     * @brief Gets the source rect of the surface in surface coordinates.
+     *
+     * For clients using the Viewporter protocol, a custom srcRect() detached from the buffer size
+     * can be specified. For clients not using the protocol, the source rect covers the entire surface buffer.
+     */
+    const LRectF &srcRect() const;
+
+    /**
      * @brief Check if the surface has pointer focus
      *
      * @return `true` if the surface has pointer focus, `false` otherwise.
@@ -409,6 +418,15 @@ public:
      * Indicates if the surface can be rendered.
      */
     bool mapped() const;
+
+    /**
+     * @brief Gets the VSync preference of the client for this surface.
+     *
+     * @see LOutput::enableVSync()
+     *
+     * @return `true` if VSync is preferred, `false` if tearing is preferred.
+    */
+    bool preferVSync();
 
     /**
      * @brief LSurfaceViews created for this surface.
@@ -562,14 +580,48 @@ public:
     virtual void bufferScaleChanged();
 
     /**
+     * @brief Notifies a change of the buffer transform
+     *
+     * Reimplement this virtual method if you want to be notified when the surface's buffer transform changes.
+     *
+     * #### Default Implementation
+     * @snippet LSurfaceDefault.cpp bufferTransformChanged
+     */
+    virtual void bufferTransformChanged();
+
+    /**
      * @brief Notifies a change in buffer dimensions
      *
-     * Reimplement this virtual method if you want to be notified when the buffer of the surface changes in size.
+     * Reimplement this virtual method if you want to be notified when the buffer size (sizeB()) changes.
      *
      * #### Default Implementation
      * @snippet LSurfaceDefault.cpp bufferSizeChanged
      */
     virtual void bufferSizeChanged();
+
+    /**
+     * @brief Notifies a change in the surface size
+     *
+     * Reimplement this virtual method if you want to be notified when the surface size() changes.
+     *
+     * @note This event differs from bufferSizeChanged(). The surface size() may change
+     *       when the client applies a different scale factor, transform or sets a custom destination size
+     *       while using the Viewport protocol.
+     *
+     * #### Default Implementation
+     * @snippet LSurfaceDefault.cpp sizeChanged
+     */
+    virtual void sizeChanged();
+
+    /**
+     * @brief Notifies a change in the src rect
+     *
+     * Reimplement this virtual method if you want to be notified when srcRect() changes.
+     *
+     * #### Default Implementation
+     * @snippet LSurfaceDefault.cpp srcRectChanged
+     */
+    virtual void srcRectChanged();
 
     /**
      * @brief Notifies of a change in the opaque region
@@ -621,6 +673,17 @@ public:
      * @snippet LSurfaceDefault.cpp minimizedChanged
      */
     virtual void minimizedChanged();
+
+    /**
+     * @brief Notifies about changes in the VSync preference
+     *
+     * This event is triggered when the preferVSync() property changes.
+     *
+     * #### Default Implementation
+     * @snippet LSurfaceDefault.cpp preferVSyncChanged
+     */
+    virtual void preferVSyncChanged();
+
 /// @}
 
     LPRIVATE_IMP_UNIQUE(LSurface)

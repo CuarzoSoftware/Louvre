@@ -27,7 +27,7 @@ public:
      *
      * @param params Internal library parameters passed in the LCompositor::createDNDIconRoleRequest() virtual constructor.
      */
-    LDNDIconRole(void *params);
+    LDNDIconRole(const void *params);
 
     /**
      * @brief Destructor of the LDNDIconRole class.

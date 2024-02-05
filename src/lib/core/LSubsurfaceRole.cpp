@@ -8,7 +8,7 @@ using namespace Louvre;
 
 LSubsurfaceRole::LSubsurfaceRole
 (
-    void *params
+    const void *params
 )
     :LBaseSurfaceRole
     (

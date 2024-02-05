@@ -72,7 +72,7 @@ public:
      *
      * @param params Internal library parameters passed in the LCompositor::createKeyboardRequest() virtual constructor.
      */
-    LKeyboard(void *params);
+    LKeyboard(const void *params);
 
     /**
      * @brief Destructor of the LKeyboard class.

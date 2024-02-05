@@ -1,3 +1,52 @@
+Louvre (1.2.0-1)
+
+  # New Protocols
+
+  * Viewporter (see LSurface::srcRect()).
+  * Fractional Scale (see LOutput::setScale()).
+  * Wlr Gamma Control (see LOutput::setGammaRequest()).
+  * Tearing Control (see LSurface::preferVSync() and LOutput::enableVSync()).
+
+  # New Features
+
+  * LOutput now provides support for fractional scales and the ability to seamlessly toggle oversampling on and off to reduce aliasing artifacts.
+  * Added VSync disabling capability in LOutput with optional refresh rate limits.
+  * LOutput now allows specifying custom gamma correction curves through the new LGammaTable class.
+  * Enhanced drawing capabilities in LPainter with new methods for rendering texture regions with higher precision and applied transforms.
+  * LTextureView now supports custom source rects and transforms.
+  * Introduced LBitset class to reduce memory usage for storing binary conditions.
+
+  # Minor API Changes
+
+  * Replaced non-order-dependent lists with vectors to minimize cache misses.
+  * LOutput setBufferDamage() now takes LRegion * as an argument instead of LRegion &.
+  * Updated all virtual constructor parameters in LCompositor to const void *.
+  * Removed the create() method in LAnimation and LTimer, replaced with class constructors for stack allocation.
+  * Replaced LView's paintRect() event with paintEvent().
+
+  # Bug Fixes
+
+  * Resolved a bug causing the compositor to respond to multiple frame callbacks when a client sent multiple frames before waiting for a reply, thanks to @yurikhan for identifying and reporting it.
+
+  # Examples
+
+  * louvre-views now uses a single texture atlas for UI elements instead of individual images.
+  * Transitioned most heap-allocated objects to stack allocation in louvre-views.
+  * louvre-views workspace switching and fullscreen transition animations have undergone optimization, resulting in a smoother visual experience.
+  * Added new shortcuts for changing the output transform, scale, mode, and toggling VSync.
+
+  # Building
+
+  * Updated C++ standard to version 20.
+
+  # Documentation
+
+  * Expanded the tutorial with new chapters on Gamma Correction and Tearing.
+  * Included a pre-built binaries section on the downloads page.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Tue, 06 Feb 2024 19:06:14 -0300
+
+
 Louvre (1.1.0-1)
 
   # License

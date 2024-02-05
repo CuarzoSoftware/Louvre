@@ -17,7 +17,7 @@ class Toplevel;
 class Surface : public LSurface
 {
 public:
-    Surface(void *params);
+    Surface(const void *params);
     ~Surface();
 
     inline class Toplevel *tl() const {return (class Toplevel*)toplevel();};
@@ -31,12 +31,13 @@ public:
     void bufferSizeChanged() override;
     void minimizedChanged() override;
     void damageChanged() override;
+    void preferVSyncChanged() override;
 
     LTexture *renderThumbnail(LRegion *transRegion = nullptr);
     void unminimize(DockItem *clickedItem);
 
     bool firstMap = true;
-    LSurfaceView *view = nullptr;
+    LSurfaceView view;
 
     LTextureView *thumbnailFullsizeView = nullptr;
     LTexture *thumbnailFullSizeTex = nullptr;

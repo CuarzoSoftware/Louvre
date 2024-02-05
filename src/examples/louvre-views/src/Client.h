@@ -12,7 +12,7 @@ using namespace Louvre;
 class Client : public LClient
 {
 public:
-    Client(void *params);
+    Client(const void *params);
     ~Client();
 
     // Used to check if the client is alive
@@ -20,15 +20,15 @@ public:
 
     void createNonPinnedApp();
 
-    App *app = nullptr;
-    Int32 pid = -1;
-    bool destroyed = false;
+    App *app { nullptr };
+    Int32 pid { -1 };
+    bool destroyed { false };
 
     LTimer pingTimer;
-    UInt32 lastPing = 0;
-    UInt32 lastPong = 0;
+    UInt32 lastPing { 0 };
+    UInt32 lastPong { 0 };
 
-    UInt32 unresponsiveCount = 0;
+    UInt32 unresponsiveCount { 0 };
     LAnimation unresponsiveAnim;
 };
 

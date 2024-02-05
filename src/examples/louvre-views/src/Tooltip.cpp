@@ -1,24 +1,13 @@
 #include "Tooltip.h"
 #include "Global.h"
-#include "LLog.h"
 #include "LTexture.h"
 #include "TextRenderer.h"
 #include "Compositor.h"
 
-Tooltip::Tooltip() :
-    decoT(G::TooltipT, this),
-    decoR(G::TooltipR, this),
-    decoB(G::TooltipB, this),
-    decoL(G::TooltipL, this),
-    decoTL(G::TooltipTL, this),
-    decoTR(G::TooltipTR, this),
-    decoBR(G::TooltipBR, this),
-    decoBL(G::TooltipBL, this),
-    arrow(G::TooltipArrow, this)
+Tooltip::Tooltip() : LLayerView(&G::compositor()->tooltipsLayer)
 {
     setVisible(false);
     enableParentOffset(false);
-    setParent(&G::compositor()->tooltipsLayer);
 
     center.setParent(this);
     center.setColor(0.97f, 0.97f, 0.97f);
@@ -40,8 +29,8 @@ void Tooltip::setText(const char *text)
 
 void Tooltip::show(Int32 x, Int32 y)
 {
-    point.setX(x);
-    point.setY(y);
+    globalPos.setX(x);
+    globalPos.setY(y);
 
     if (label.texture())
     {
@@ -85,10 +74,10 @@ void Tooltip::update()
 
     arrow.setPos((size().w() - arrow.size().w()) / 2, size().h() - 1);
 
-    setPos(point.x() - (size().w() / 2), point.y() - size().h() - arrow.size().h());
+    setPos(globalPos.x() - (size().w() / 2), globalPos.y() - size().h() - arrow.size().h());
 }
 
 bool Tooltip::nativeMapped() const
 {
-    return label.texture() != nullptr;
+    return label.texture() != nullptr && targetView != nullptr;
 }

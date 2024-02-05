@@ -5,23 +5,9 @@
 #include <LPointer.h>
 #include <LCompositor.h>
 #include <LCursor.h>
+#include <LLog.h>
 
 using namespace Louvre;
-
-void LSurface::sizeChanged()
-{
-    repaintOutputs();
-}
-
-void LSurface::srcRectChanged()
-{
-    repaintOutputs();
-}
-
-void LSurface::bufferTransformChanged()
-{
-    repaintOutputs();
-}
 
 //! [damageChanged]
 void LSurface::damageChanged()
@@ -62,12 +48,33 @@ void LSurface::bufferScaleChanged()
 }
 //! [bufferScaleChanged]
 
+//! [bufferTransformChanged]
+void LSurface::bufferTransformChanged()
+{
+    repaintOutputs();
+}
+//! [bufferTransformChanged]
+
 //! [bufferSizeChanged]
 void LSurface::bufferSizeChanged()
 {
     repaintOutputs();
 }
 //! [bufferSizeChanged]
+
+//! [sizeChanged]
+void LSurface::sizeChanged()
+{
+    repaintOutputs();
+}
+//! [sizeChanged]
+
+//! [srcRectChanged]
+void LSurface::srcRectChanged()
+{
+    repaintOutputs();
+}
+//! [srcRectChanged]
 
 //! [opaqueRegionChanged]
 void LSurface::opaqueRegionChanged()
@@ -103,3 +110,10 @@ void LSurface::minimizedChanged()
     repaintOutputs();
 }
 //! [minimizedChanged]
+
+//! [preferVSyncChanged]
+void LSurface::preferVSyncChanged()
+{
+    /* No default implementation */
+}
+//! [preferVSyncChanged]

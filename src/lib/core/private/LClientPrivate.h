@@ -30,6 +30,7 @@ LPRIVATE_CLASS(LClient)
     std::vector<Viewporter::GViewporter*> viewporterGlobals;
     std::vector<FractionalScale::GFractionalScaleManager*> fractionalScaleManagerGlobals;
     std::vector<GammaControl::GGammaControlManager*> gammaControlManagerGlobals;
+    std::vector<TearingControl::GTearingControlManager*> tearingControlManagerGlobals;
 
     // Singleton Globals
     Wayland::GDataDeviceManager *dataDeviceManagerGlobal = nullptr;

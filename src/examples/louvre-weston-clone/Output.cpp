@@ -15,7 +15,7 @@
 #include <LDNDManager.h>
 #include <LDNDIconRole.h>
 
-Output::Output():LOutput(){}
+Output::Output(const void *params) : LOutput(params){}
 
 static char *joinPaths(const char *path1, const char *path2)
 {

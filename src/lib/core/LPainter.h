@@ -80,7 +80,7 @@ public:
     /**
      * @brief Switches to texture mode.
      *
-     * This method maps a texture to the global compositor space, enabling subsequent drawing of specific parts using drawBox() or drawRect().
+     * This method maps a texture to the global compositor space, enabling subsequent drawing of specific parts using drawBox(), drawRect() or drawRegion().
      *
      * @param params Parameters required to map the texture.
      */

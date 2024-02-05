@@ -23,21 +23,21 @@ public:
     /**
      * @brief Milliseconds
      *
-     * Time with a granularity of milliseconds and an undefined base.
+     * Monotonic time with a granularity of milliseconds and an undefined base.
      */
     static UInt32 ms();
 
     /**
      * @brief Microseconds
      *
-     * Time with a granularity of microseconds and an undefined base.
+     * Monotonic time with a granularity of microseconds and an undefined base.
      */
     static UInt32 us();
 
     /**
      * @brief Nanoseconds
      *
-     * Time with nanosecond granularity and undefined base.
+     * Monotonic time with nanosecond granularity and undefined base.
      */
     static timespec ns();
 };

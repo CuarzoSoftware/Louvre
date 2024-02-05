@@ -14,12 +14,14 @@ public:
     Workspace(Output *output, Toplevel *toplevel = nullptr, Workspace *prev = nullptr);
     ~Workspace();
 
-    Output *output = nullptr;
     std::list<Workspace*>::iterator outputLink;
+    Output *output          { nullptr };
 
-    LLayerView background, surfaces, overlay;
+    LLayerView background   { this };
+    LLayerView surfaces     { this };
+    LLayerView overlay      { this };
 
-    Toplevel *toplevel = nullptr;
+    Toplevel *toplevel      { nullptr };
 
     // Moves the main layers childrens into this
     void stealChildren();

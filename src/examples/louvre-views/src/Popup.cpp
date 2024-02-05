@@ -5,7 +5,7 @@
 #include "Surface.h"
 #include "Global.h"
 
-Popup::Popup(void *params) : LPopupRole(params) {}
+Popup::Popup(const void *params) : LPopupRole(params) {}
 
 void Popup::configureRequest()
 {

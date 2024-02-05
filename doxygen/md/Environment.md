@@ -6,7 +6,7 @@ You can harness the **LOUVRE_DEBUG** environment variable, which accepts an inte
 
 ### GDB
 
-Debugging a Wayland compositor presents a unique challenge, as traditional terminal-based logging is unavailable. If you find yourself needing to debug your compositor with a tool like GDB, consider SSH-ing into the target machine from another device, even your smartphone, for remote debugging. Note that running the compositor via SSH may encounter issues, necessitating the disabling of libseat. This can be achieved by setting **LOUVRE_ENABLE_LIBSEAT** to 0. Here's an example:
+Debugging a Wayland compositor presents a unique challenge, as traditional terminal-based logging is unavailable (there will be a Wayland and X11 backend soon). If you find yourself needing to debug your compositor with a tool like GDB, consider SSH-ing into the target machine from another device, even your smartphone, for remote debugging. Note that running the compositor via SSH may encounter issues, necessitating the disabling of libseat. This can be achieved by setting **LOUVRE_ENABLE_LIBSEAT** to 0. Here's an example:
 
 ```
 $ LOUVRE_ENABLE_LIBSEAT=0 gdb /path/to/your/compositor
@@ -20,7 +20,7 @@ Keep in mind that for clients to successfully establish a connection, you must a
 
 ## Backends Configuration
 
-  - **LOUVRE_BACKENDS_PATH**: This points to the directory containing Louvre backends. The directory structure must include two subdirectories as follows:
+  - **LOUVRE_BACKENDS_PATH**: Directory containing Louvre backends. The directory structure must include two subdirectories as follows:
 
   ```
   backends
@@ -32,9 +32,9 @@ Keep in mind that for clients to successfully establish a connection, you must a
       |-- another_input_backend.so
   ```
 
-  - **LOUVRE_GRAPHIC_BACKEND**: This is the name of the graphic backend to load, excluding the `.so` extension, for example, `drm`.
+  - **LOUVRE_GRAPHIC_BACKEND**: Name of the graphic backend to load, excluding the `.so` extension, for example, `drm`.
 
-  - **LOUVRE_INPUT_BACKEND**: This is the name of the input backend to load, excluding the `.so` extension, for example, `libinput`.
+  - **LOUVRE_INPUT_BACKEND**: Name of the input backend to load, excluding the `.so` extension, for example, `libinput`.
 
 If Louvre encounters any issues while loading the specified backend configurations, it will automatically revert to the default settings. You can configure the default backends and paths by using the `libdir` Meson option and by modifying the `meson_options.txt` file during the Louvre build process.
 
@@ -46,19 +46,13 @@ For adjusting parameters related to the DRM graphic backend, including buffering
 
 The SRM backend uses double buffering by default.
 
-For smoother performance on relatively powerful hardware, try triple buffering:
+For smoother performance try triple buffering:
 
   - **SRM_RENDER_MODE_ITSELF_FB_COUNT**=3
-
-If you have very limited hardware, consider using single buffering (no v-sync, potential glitches):
-
-  - **SRM_RENDER_MODE_ITSELF_FB_COUNT**=1
+  - **SRM_RENDER_MODE_DUMB_FB_COUNT**=3
 
 For snappier cursor updates, force the legacy DRM API (asynchronous hardware cursor updates):
 
   - **SRM_FORCE_LEGACY_API**=1
 
-> Keep in mind that using the legacy API may lead to performance problems with certain drivers, like some proprietary Nvidia drivers.
-
-
-
+> Starting from Louvre version 1.2 the SRM backend defaults to using the legacy API. To enable the atomic API instead, simply set **SRM_FORCE_LEGACY_API**=0.

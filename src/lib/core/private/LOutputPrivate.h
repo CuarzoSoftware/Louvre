@@ -1,13 +1,20 @@
 #ifndef LOUTPUTPRIVATE_H
 #define LOUTPUTPRIVATE_H
 
-#include <LOutput.h>
-#include <mutex>
 #include <private/LRenderBufferPrivate.h>
 #include <LOutputFramebuffer.h>
-#include <atomic>
+#include <LOutput.h>
 #include <LBitset.h>
 #include <LGammaTable.h>
+#include <atomic>
+#include <mutex>
+#include <functional>
+
+struct LOutput::Params
+{
+    std::function<void(LOutput*)> callback { nullptr };
+    void *backendData { nullptr };
+};
 
 LPRIVATE_CLASS_NO_COPY(LOutput)
 
@@ -52,7 +59,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     LOutputFramebuffer fb;
 
     // Framebuffer for fractional scaling with oversampling
-    LRenderBuffer *fractionalFb { nullptr };
+    LRenderBuffer fractionalFb { LSize(64, 64), false };
 
     // The wp_fractional_v1 scale set with setScale() returned with fractionalScale()
     Float32 fractionalScale { 1.f };

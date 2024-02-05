@@ -14,17 +14,17 @@
 
 Compositor::Compositor():LCompositor(){}
 
-LSeat *Compositor::createSeatRequest(void *params)
+LSeat *Compositor::createSeatRequest(const void *params)
 {
     return new Seat(params);
 }
 
-LOutput *Compositor::createOutputRequest()
+LOutput *Compositor::createOutputRequest(const void *params)
 {
-    return new Output();
+    return new Output(params);
 }
 
-LSurface *Compositor::createSurfaceRequest(void *params)
+LSurface *Compositor::createSurfaceRequest(const void *params)
 {
     Surface *newSurface = new Surface(params);
     return newSurface;
@@ -42,17 +42,17 @@ void Compositor::cursorInitialized()
     pointerCursor = LXCursor::loadXCursorB("hand2");
 }
 
-LToplevelRole *Compositor::createToplevelRoleRequest(void *params)
+LToplevelRole *Compositor::createToplevelRoleRequest(const void *params)
 {
     return new ToplevelRole(params);
 }
 
-LPopupRole *Compositor::createPopupRoleRequest(void *params)
+LPopupRole *Compositor::createPopupRoleRequest(const void *params)
 {
     return new Popup(params);
 }
 
-LPointer *Compositor::createPointerRequest(void *params)
+LPointer *Compositor::createPointerRequest(const void *params)
 {
     return new Pointer(params);
 }

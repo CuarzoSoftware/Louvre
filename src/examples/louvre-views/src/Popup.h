@@ -8,7 +8,7 @@ using namespace Louvre;
 class Popup : public LPopupRole
 {
 public:
-    Popup(void *params);
+    Popup(const void *params);
     void configureRequest() override;
 };
 

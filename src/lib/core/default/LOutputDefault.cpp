@@ -36,7 +36,6 @@ void LOutput::paintGL()
     if (seat()->dndManager()->icon())
         seat()->dndManager()->icon()->surface()->raise();
 
-    p->setAlpha(1.f);
 
     // Draw every surface
     for (LSurface *s : compositor()->surfaces())

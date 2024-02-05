@@ -34,9 +34,10 @@ LPRIVATE_CLASS(RSurface)
     static void handleOffset(LSurface *lSurface, Int32 x, Int32 y);
     static void apply_commit(LSurface *surface, CommitOrigin origin = Itself);
 
-    LSurface *lSurface = nullptr;
-    Viewporter::RViewport *rViewport = nullptr;
-    FractionalScale::RFractionalScale *rFractionalScale = nullptr;
+    LSurface *lSurface { nullptr };
+    Viewporter::RViewport *rViewport { nullptr };
+    FractionalScale::RFractionalScale *rFractionalScale { nullptr };
+    TearingControl::RTearingControl *rTearingControl { nullptr };
 };
 
 #endif // RSURFACEPRIVATE_H

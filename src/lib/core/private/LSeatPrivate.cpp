@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstring>
+#include <private/LCursorPrivate.h>
 
 void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
 {
@@ -32,6 +33,15 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
               &compositor()->imp()->events[2]);
 
     LLog::debug("[LSeatPrivate::seatEnabled] %s enabled.", libseat_seat_name(seat));
+
+    for (LOutput *o : compositor()->outputs())
+        o->setGamma(&o->imp()->gammaTable);
+
+    if (cursor())
+    {
+        cursor()->imp()->textureChanged = true;
+        cursor()->imp()->posChanged = true;
+    }
 
     lseat->enabledChanged();
 }

@@ -1,8 +1,8 @@
-#include <fcntl.h>
 #include <protocols/GammaControl/private/RGammaControlPrivate.h>
 #include <protocols/GammaControl/wlr-gamma-control-unstable-v1.h>
 #include <protocols/Wayland/GOutput.h>
 #include <private/LOutputPrivate.h>
+#include <fcntl.h>
 
 void RGammaControl::RGammaControlPrivate::resource_destroy(wl_resource *resource)
 {

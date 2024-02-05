@@ -17,7 +17,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 
-LKeyboard::LKeyboard(void *params):
+LKeyboard::LKeyboard(const void *params):
     LPRIVATE_INIT_UNIQUE(LKeyboard)
 {
     L_UNUSED(params);

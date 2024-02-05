@@ -13,7 +13,7 @@
 
 using namespace Louvre::Protocols::Wayland;
 
-LSurface::LSurface(void *params) : LPRIVATE_INIT_UNIQUE(LSurface)
+LSurface::LSurface(const void *params) : LPRIVATE_INIT_UNIQUE(LSurface)
 {
     imp()->texture = new LTexture();
     imp()->textureBackup = imp()->texture;
@@ -138,7 +138,7 @@ void LSurface::setMinimized(bool state)
 {
     if (state != minimized())
     {
-        imp()->minimized = state;
+        imp()->stateFlags.setFlag(LSurfacePrivate::Minimized, state);
         minimizedChanged();
 
         for (LSurface *child : children())
@@ -154,7 +154,7 @@ void LSurface::repaintOutputs()
 
 bool LSurface::receiveInput() const
 {
-    return imp()->receiveInput;
+    return imp()->stateFlags.check(LSurfacePrivate::ReceiveInput);
 }
 
 Int32 LSurface::bufferScale() const
@@ -179,7 +179,7 @@ LTexture *LSurface::texture() const
 
 bool LSurface::hasDamage() const
 {
-    return imp()->damaged;
+    return imp()->stateFlags.check(LSurfacePrivate::Damaged);
 }
 
 UInt32 LSurface::damageId() const
@@ -189,7 +189,7 @@ UInt32 LSurface::damageId() const
 
 bool LSurface::minimized() const
 {
-    return imp()->minimized;
+    return imp()->stateFlags.check(LSurfacePrivate::Minimized);
 }
 
 const LRectF &LSurface::srcRect() const
@@ -225,7 +225,7 @@ const LPoint &LSurface::rolePos() const
 
 void LSurface::sendOutputEnterEvent(LOutput *output)
 {
-    if (imp()->destroyed)
+    if (imp()->stateFlags.check(LSurfacePrivate::Destroyed))
         return;
 
     if (!output)
@@ -253,7 +253,7 @@ void LSurface::sendOutputEnterEvent(LOutput *output)
 
 void LSurface::sendOutputLeaveEvent(LOutput *output)
 {
-    if (imp()->destroyed)
+    if (imp()->stateFlags.check(LSurfacePrivate::Destroyed))
         return;
 
     if (!output)
@@ -285,14 +285,14 @@ const std::vector<LOutput *> &LSurface::outputs() const
 
 void LSurface::requestNextFrame(bool clearDamage)
 {
-    if (imp()->destroyed)
+    if (imp()->stateFlags.check(LSurfacePrivate::Destroyed))
         return;
 
     if (clearDamage)
     {
         imp()->currentDamageB.clear();
         imp()->currentDamage.clear();
-        imp()->damaged = false;
+        imp()->stateFlags.remove(LSurfacePrivate::Damaged);
     }
 
     while (!imp()->frameCallbacks.empty())
@@ -307,7 +307,12 @@ void LSurface::requestNextFrame(bool clearDamage)
 
 bool LSurface::mapped() const
 {
-    return imp()->mapped;
+    return imp()->stateFlags.check(LSurfacePrivate::Mapped);
+}
+
+bool LSurface::preferVSync()
+{
+    return imp()->stateFlags.check(LSurfacePrivate::VSync);
 }
 
 const std::vector<LSurfaceView *> &LSurface::views() const
@@ -411,7 +416,7 @@ bool LSurface::isSubchildOf(LSurface *parent) const
 
 void LSurface::raise()
 {
-    if (imp()->destroyed)
+    if (imp()->stateFlags.check(LSurfacePrivate::Destroyed))
         return;
 
     if (parent())
@@ -425,7 +430,7 @@ void LSurface::raise()
 
 LSurface *LSurface::prevSurface() const
 {
-    if (imp()->destroyed || this == compositor()->surfaces().front())
+    if (imp()->stateFlags.check(LSurfacePrivate::Destroyed) || this == compositor()->surfaces().front())
         return nullptr;
     else
         return *std::prev(imp()->compositorLink);
@@ -433,7 +438,7 @@ LSurface *LSurface::prevSurface() const
 
 LSurface *LSurface::nextSurface() const
 {
-    if (imp()->destroyed || this == compositor()->surfaces().back())
+    if (imp()->stateFlags.check(LSurfacePrivate::Destroyed) || this == compositor()->surfaces().back())
         return nullptr;
     else
         return *std::next(imp()->compositorLink);

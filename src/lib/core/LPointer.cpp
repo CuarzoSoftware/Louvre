@@ -16,7 +16,7 @@
 using namespace Louvre;
 using namespace Louvre::Protocols;
 
-LPointer::LPointer(void *params) : LPRIVATE_INIT_UNIQUE(LPointer)
+LPointer::LPointer(const void *params) : LPRIVATE_INIT_UNIQUE(LPointer)
 {
     L_UNUSED(params);
     seat()->imp()->pointer = this;

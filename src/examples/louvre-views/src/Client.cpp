@@ -60,7 +60,7 @@ int getProcessNameByPid(int pid, char *process_name, size_t buffer_size) {
     return 0; // Success
 }
 
-Client::Client(void *params) : LClient(params),
+Client::Client(const void *params) : LClient(params),
     unresponsiveAnim(1000,
     [this](LAnimation *anim)
     {
@@ -72,7 +72,7 @@ Client::Client(void *params) : LClient(params),
             color = 0.2f + 0.8 * anim->value();
 
         for (Surface *s : (std::vector<Surface*>&)surfaces())
-            s->view->setColorFactor(color, color, color, 1.f);
+            s->view.setColorFactor(color, color, color, 1.f);
 
         compositor()->repaintAllOutputs();
     },
@@ -85,7 +85,7 @@ Client::Client(void *params) : LClient(params),
 
         for (Surface *s : (std::vector<Surface*>&)surfaces())
         {
-            s->view->setColorFactor(color, color, color, 1.f);
+            s->view.setColorFactor(color, color, color, 1.f);
             s->requestNextFrame(false);
         }
 

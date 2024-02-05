@@ -7,7 +7,7 @@
 #include <LSeat.h>
 #include <LPointer.h>
 
-ToplevelRole::ToplevelRole(void *params) : LToplevelRole(params) {}
+ToplevelRole::ToplevelRole(const void *params) : LToplevelRole(params) {}
 
 void ToplevelRole::configureRequest()
 {

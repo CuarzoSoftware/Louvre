@@ -11,13 +11,13 @@
 
 using namespace Louvre;
 
-LCursorRole::LCursorRole(void *params) :
+LCursorRole::LCursorRole(const void *params) :
     LBaseSurfaceRole(((Params*)params)->surface->surfaceResource(),
                        ((Params*)params)->surface,
                        LSurface::Role::Cursor),
     LPRIVATE_INIT_UNIQUE(LCursorRole)
 {
-    surface()->imp()->receiveInput = false;
+    surface()->imp()->stateFlags.remove(LSurface::LSurfacePrivate::ReceiveInput);
 }
 
 LCursorRole::~LCursorRole()

@@ -58,7 +58,7 @@ public:
      *
      * @param params Internal library parameters provided in the virtual LCompositor::createSeatRequest() constructor.
      */
-    LSeat(void *params);
+    LSeat(const void *params);
 
     /**
      * @brief LSeat class destructor.
@@ -73,15 +73,15 @@ public:
     /// @endcond
 
     /**
-     * @brief List of available outputs.
+     * @brief Vector of available outputs.
      *
-     * This method provides a list of currently available outputs. The list includes connected outputs that can be initialized
+     * This method provides a vector of currently available outputs. The vector includes connected outputs that can be initialized
      * as well as those that are already initialized.
-     * To obtain a list of only initialized outputs, refer to LCompositor::outputs().
+     * To obtain only initialized outputs, refer to LCompositor::outputs().
      *
-     * @return A reference to a list of available outputs.
+     * @return A reference to a vector of available outputs.
      */
-    const std::list<LOutput *> &outputs() const;
+    const std::vector<LOutput *> &outputs() const;
 
     /**
      * @brief Handle to the native context used by the graphic backend.

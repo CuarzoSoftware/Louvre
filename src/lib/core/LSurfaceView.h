@@ -19,7 +19,7 @@
  * when requestNextFrame() is called and also send LSurface::sendOutputEnterEvent() and LSurface::sendOutputLeaveEvent() to its client.
  * Use the setPrimary() method to set the primary property of a view.
  *
- * @attention The view must always be destroyed before its surface.
+ * @attention The view should always be destroyed before its surface.
  */
 class Louvre::LSurfaceView : public LView
 {
@@ -175,6 +175,9 @@ public:
      */
     virtual void setCustomTranslucentRegion(const LRegion *region);
 
+    /**
+     * @brief Gets the source rect of the surface, equivalent to LSurface::srcRect().
+     */
     const LRectF &srcRect() const;
 
     virtual bool nativeMapped() const override;

@@ -26,6 +26,7 @@
 #define LOUVRE_VIEWPORTER_VERSION 1
 #define LOUVRE_FRACTIONAL_SCALE_VERSION 1
 #define LOUVRE_GAMMA_CONTROL_MANAGER_VERSION 1
+#define LOUVRE_TEARING_CONTROL_MANAGER_VERSION 1
 
 #define L_UNUSED(object){(void)object;}
 
@@ -487,6 +488,13 @@ namespace Louvre
 
             class RGammaControl;
         };
+
+        namespace TearingControl
+        {
+            class GTearingControlManager;
+
+            class RTearingControl;
+        };
     }
 
     /// @cond OMIT
@@ -498,9 +506,9 @@ namespace Louvre
         void                                (*backendUninitialize)();
         void                                (*backendSuspend)();
         void                                (*backendResume)();
-        const std::list<LOutput*>*          (*backendGetConnectedOutputs)();
+        const std::vector<LOutput*>*        (*backendGetConnectedOutputs)();
         UInt32                              (*backendGetRendererGPUs)();
-        const std::list<LDMAFormat*>*       (*backendGetDMAFormats)();
+        const std::vector<LDMAFormat>*      (*backendGetDMAFormats)();
         EGLDisplay                          (*backendGetAllocatorEGLDisplay)();
         EGLContext                          (*backendGetAllocatorEGLContext)();
 
@@ -555,7 +563,7 @@ namespace Louvre
         /* OUTPUT MODES */
         const LOutputMode *                 (*outputGetPreferredMode)(LOutput *output);
         const LOutputMode *                 (*outputGetCurrentMode)(LOutput *output);
-        const std::list<LOutputMode*> *     (*outputGetModes)(LOutput *output);
+        const std::vector<LOutputMode*> *   (*outputGetModes)(LOutput *output);
         bool                                (*outputSetMode)(LOutput *output, LOutputMode *mode);
 
         /* MODE PROPS */

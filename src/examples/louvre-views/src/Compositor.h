@@ -21,14 +21,14 @@ public:
     void initialized() override;
     void uninitialized() override;
 
-    LClient *createClientRequest(void *params) override;
-    LOutput *createOutputRequest() override;
-    LSurface *createSurfaceRequest(void *params) override;
-    LSeat *createSeatRequest(void *params) override;
-    LPointer *createPointerRequest(void *params) override;
-    LKeyboard *createKeyboardRequest(void *params) override;
-    LToplevelRole *createToplevelRoleRequest(void *params) override;
-    LPopupRole *createPopupRoleRequest(void *params) override;
+    LClient *createClientRequest(const void *params) override;
+    LOutput *createOutputRequest(const void *params) override;
+    LSurface *createSurfaceRequest(const void *params) override;
+    LSeat *createSeatRequest(const void *params) override;
+    LPointer *createPointerRequest(const void *params) override;
+    LKeyboard *createKeyboardRequest(const void *params) override;
+    LToplevelRole *createToplevelRoleRequest(const void *params) override;
+    LPopupRole *createPopupRoleRequest(const void *params) override;
 
     // Virtual destructors
     void destroyClientRequest(LClient *client) override;

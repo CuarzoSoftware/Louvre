@@ -18,7 +18,7 @@ LAnimation::~LAnimation()
     auto it = std::find(compositor()->imp()->animations.begin(), compositor()->imp()->animations.end(), this);
     if (it != compositor()->imp()->animations.end())
     {
-        compositor()->imp()->animationsVectorChanged= true;
+        compositor()->imp()->animationsVectorChanged = true;
         compositor()->imp()->animations.erase(it);
     }
 }

@@ -315,6 +315,12 @@ inline void switchTarget(GLenum target)
                                  stateExternal.colorFactor.y,
                                  stateExternal.colorFactor.w,
                                  stateExternal.colorFactor.h);
+            shaderSetAlpha(stateExternal.alpha);
+            shaderSetMode(stateExternal.mode);
+            shaderSetColor(stateExternal.color.r,
+                           stateExternal.color.g,
+                           stateExternal.color.b);
+            shaderSetTexColorEnabled(stateExternal.texColorEnabled);
 #endif
         }
         else
@@ -328,6 +334,12 @@ inline void switchTarget(GLenum target)
                                  state.colorFactor.y,
                                  state.colorFactor.w,
                                  state.colorFactor.h);
+            shaderSetAlpha(state.alpha);
+            shaderSetMode(state.mode);
+            shaderSetColor(state.color.r,
+                           state.color.g,
+                           state.color.b);
+            shaderSetTexColorEnabled(state.texColorEnabled);
 #endif
         }
 

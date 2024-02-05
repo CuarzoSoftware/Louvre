@@ -12,7 +12,7 @@
 #include <math.h>
 #include <unistd.h>
 
-Pointer::Pointer(void *params) : LPointer(params) {}
+Pointer::Pointer(const void *params) : LPointer(params) {}
 
 void Pointer::pointerMoveEvent(Float32 x, Float32 y, bool absolute)
 {

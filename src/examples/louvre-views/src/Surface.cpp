@@ -14,11 +14,14 @@
 #include "Dock.h"
 #include "Client.h"
 #include "App.h"
+#include "Topbar.h"
 
-Surface::Surface(void *params) : LSurface(params), minimizeAnim(500)
+Surface::Surface(const void *params) :
+    LSurface(params),
+    view(this, &G::compositor()->surfacesLayer),
+    minimizeAnim(500)
 {
-    view = new LSurfaceView(this, &G::compositor()->surfacesLayer);
-    view->setVisible(false);
+    view.setVisible(false);
 }
 
 Surface::~Surface()
@@ -45,8 +48,6 @@ Surface::~Surface()
 
     if (thumbnailTex)
         delete thumbnailTex;
-
-    delete view;
 }
 
 LView *Surface::getView() const
@@ -54,7 +55,7 @@ LView *Surface::getView() const
     if (tl() && tl()->decoratedView)
         return tl()->decoratedView;
 
-    return view;
+    return (LView*)&view;
 }
 
 void Surface::parentChanged()
@@ -85,7 +86,7 @@ void Surface::parentChanged()
 void Surface::mappingChanged()
 {
     if (cursorRole())
-        view->setVisible(false);
+        view.setVisible(false);
 
     if (mapped())
     {
@@ -126,14 +127,14 @@ void Surface::mappingChanged()
 
                     Surface *next = (Surface*)nextSurface();
 
-                    view->setVisible(true);
+                    view.setVisible(true);
                     getView()->setVisible(true);
 
                     while (next)
                     {
                         if (next->isSubchildOf(this) && !next->minimized())
                         {
-                            view->setVisible(true);
+                            view.setVisible(true);
                             next->getView()->setVisible(true);
                         }
 
@@ -168,7 +169,7 @@ void Surface::mappingChanged()
 
             Surface *par = (Surface*)parent();
 
-            if ((!dndIcon() && !toplevel() && !subsurface()) || (subsurface() && par && par->view->visible()))
+            if ((!dndIcon() && !toplevel() && !subsurface()) || (subsurface() && par && par->view.visible()))
                 getView()->setVisible(true);
         }
 
@@ -182,7 +183,7 @@ void Surface::mappingChanged()
         if (toplevel() && toplevel()->fullscreen())
             toplevel()->configure(toplevel()->pendingStates() &~LToplevelRole::Fullscreen);
 
-        view->repaint();
+        view.repaint();
     }
 }
 
@@ -210,8 +211,8 @@ void Surface::roleChanged()
 {
     if (roleId() == LSurface::Cursor)
     {
-        view->setVisible(false);
-        view->setParent(nullptr);
+        view.setVisible(false);
+        view.setParent(nullptr);
     }
     else if (roleId() == LSurface::DNDIcon)
     {
@@ -230,7 +231,7 @@ void Surface::roleChanged()
 
 void Surface::bufferSizeChanged()
 {
-    view->repaint();
+    view.repaint();
 }
 
 void Surface::minimizedChanged()
@@ -240,7 +241,7 @@ void Surface::minimizedChanged()
         // When a surface is minimized, its children are too, so lets just hide them
         if (!toplevel())
         {
-            view->setVisible(false);
+            view.setVisible(false);
             return;
         }
 
@@ -382,9 +383,9 @@ LTexture *Surface::renderThumbnail(LRegion *transRegion)
     {
         if (next->parent() == this && next->subsurface())
         {
-            tmpChildren.push_back({next->view, next->view->parent()});
-            next->view->enableParentOffset(false);
-            next->view->setParent(&tmpView);
+            tmpChildren.push_back({&next->view, next->view.parent()});
+            next->view.enableParentOffset(false);
+            next->view.setParent(&tmpView);
         }
     }
 
@@ -462,4 +463,13 @@ void Surface::unminimize(DockItem *clickedItem)
 void Surface::damageChanged()
 {
     repaintOutputs();
+}
+
+void Surface::preferVSyncChanged()
+{
+    if (tl() && tl()->fullscreenOutput && tl()->fullscreenOutput->currentWorkspace == tl()->fullscreenWorkspace)
+    {
+        tl()->fullscreenOutput->enableVSync(preferVSync());
+        tl()->fullscreenOutput->topbar->update();
+    }
 }

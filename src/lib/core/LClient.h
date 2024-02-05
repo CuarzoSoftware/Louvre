@@ -23,7 +23,7 @@ public:
      *
      * @param params Internal library parameters passed in the LCompositor::createClientRequest() virtual constructor.
      */
-    LClient(void *params);
+    LClient(const void *params);
 
     /**
      * @brief Destructor of the LClient class.
@@ -192,6 +192,13 @@ public:
      * of the wlroots Gamma Control protocol.
      */
     const std::vector<Protocols::GammaControl::GGammaControlManager*> &gammaControlManagerGlobals() const;
+
+    /**
+     * Resources created when the client binds to the
+     * [wp_tearing_control_manager_v1](https://wayland.app/protocols/tearing-control-v1#wp_tearing_control_manager_v1) global
+     * of the Tearing Control protocol.
+     */
+    const std::vector<Protocols::TearingControl::GTearingControlManager*> &tearingControlManagerGlobals() const;
 
     LPRIVATE_IMP_UNIQUE(LClient)
 };

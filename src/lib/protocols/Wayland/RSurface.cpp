@@ -1,6 +1,7 @@
 #include <protocols/WpPresentationTime/private/RWpPresentationFeedbackPrivate.h>
 #include <protocols/Viewporter/private/RViewportPrivate.h>
 #include <protocols/FractionalScale/private/RFractionalScalePrivate.h>
+#include <protocols/TearingControl/private/RTearingControlPrivate.h>
 #include <protocols/Wayland/private/RSurfacePrivate.h>
 #include <protocols/Wayland/GCompositor.h>
 #include <protocols/Wayland/GOutput.h>
@@ -146,6 +147,9 @@ RSurface::~RSurface()
     if (imp()->rFractionalScale)
         imp()->rFractionalScale->imp()->rSurface = nullptr;
 
+    if (imp()->rTearingControl)
+        imp()->rTearingControl->imp()->rSurface = nullptr;
+
     while(!lSurface->children().empty())
         lSurface->imp()->removeChild(lSurface->imp()->children.back());
 
@@ -171,7 +175,7 @@ RSurface::~RSurface()
     compositor()->imp()->surfaces.erase(lSurface->imp()->compositorLink);
 
     compositor()->imp()->surfacesListChanged = true;
-    lSurface->imp()->destroyed = true;
+    lSurface->imp()->stateFlags.add(LSurface::LSurfacePrivate::Destroyed);
 
     delete lSurface;
 }
@@ -184,6 +188,11 @@ LSurface *RSurface::surface() const
 FractionalScale::RFractionalScale *RSurface::fractionalScaleResource() const
 {
     return imp()->rFractionalScale;
+}
+
+TearingControl::RTearingControl *RSurface::tearingControlResource() const
+{
+    return imp()->rTearingControl;
 }
 
 Viewporter::RViewport *RSurface::viewportResource() const

@@ -8,7 +8,7 @@ using namespace Louvre;
 class Seat : public LSeat
 {
 public:
-    Seat(void *params);
+    Seat(const void *params);
 
     void enabledChanged() override;
     void nativeInputEvent(void *event) override;

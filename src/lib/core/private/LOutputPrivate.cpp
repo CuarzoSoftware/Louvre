@@ -25,7 +25,6 @@ void LOutput::LOutputPrivate::backendInitializeGL()
     if (output->gammaSize() != 0)
         output->setGamma(nullptr);
 
-    fractionalFb = new LRenderBuffer(LSize(64, 64), false);
     threadId = std::this_thread::get_id();
 
     painter = new LPainter();
@@ -128,9 +127,9 @@ void LOutput::LOutputPrivate::backendPaintGL()
         painter->bindFramebuffer(&fb);
         painter->enableCustomTextureColor(false);
         painter->bindTextureMode({
-            .texture = fractionalFb->texture(0),
+            .texture = fractionalFb.texture(0),
             .pos = rect.pos(),
-            .srcRect = LRect(0, fractionalFb->sizeB()),
+            .srcRect = LRect(0, fractionalFb.sizeB()),
             .dstSize = rect.size(),
             .srcTransform = LFramebuffer::Normal,
             .srcScale = 1.f
@@ -169,7 +168,10 @@ void LOutput::LOutputPrivate::backendResizeGL()
     if (output->imp()->state == LOutput::ChangingMode)
     {
         output->imp()->state = LOutput::Initialized;
-        output->setScale(output->scale());
+        output->setScale(output->fractionalScale());
+        output->imp()->updateRect();
+        output->imp()->updateGlobals();
+        cursor()->imp()->textureChanged = true;
     }
 
     if (output->imp()->state != LOutput::Initialized)
@@ -206,7 +208,6 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
     output->uninitializeGL();
     compositor()->flushClients();
     output->imp()->state = LOutput::Uninitialized;
-    delete fractionalFb;
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
     compositor()->imp()->destroyNativeTextures(nativeTexturesToDestroy);
 

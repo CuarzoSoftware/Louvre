@@ -35,7 +35,7 @@
 
 using namespace Louvre;
 
-LSeat::LSeat(void *params) : LPRIVATE_INIT_UNIQUE(LSeat)
+LSeat::LSeat(const void *params) : LPRIVATE_INIT_UNIQUE(LSeat)
 {
     L_UNUSED(params);
     compositor()->imp()->seat = this;
@@ -60,7 +60,7 @@ LSeat::~LSeat()
         imp()->libseatHandle = nullptr;
     }}
 
-const std::list<LOutput *> &LSeat::outputs() const
+const std::vector<LOutput *> &LSeat::outputs() const
 {
     return *compositor()->imp()->graphicBackend->backendGetConnectedOutputs();
 }

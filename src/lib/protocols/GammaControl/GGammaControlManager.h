@@ -17,5 +17,4 @@ public:
     LPRIVATE_IMP_UNIQUE(GGammaControlManager)
 };
 
-
 #endif // GGAMMACONTROLMANAGER_H

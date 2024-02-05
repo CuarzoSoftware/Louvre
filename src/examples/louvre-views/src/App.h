@@ -47,16 +47,16 @@ public:
     void dockIconClicked();
 
     // True for Apps pinned in the Dock, false for non Dock apps
-    bool pinned = true;
+    bool pinned { true };
 
     // App has not yet started
-    AppState state = Dead;
+    AppState state { Dead };
 
     // App icon texture
-    LTexture *texture = nullptr;
+    LTexture *texture { nullptr };
 
     // Name texture (for topbar)
-    LTexture *nameTexture = nullptr;
+    LTexture *nameTexture { nullptr };
 
     // App icon view on each dock
     std::vector<DockApp*>dockApps;
@@ -65,9 +65,9 @@ public:
     LAnimation launchAnimation;
     LPoint dockAppsAnimationOffset;
 
-    Client *client = nullptr;
+    Client *client { nullptr };
 
-    Int32 pid = -1;
+    Int32 pid { -1 };
     std::string name;
     std::string exec;
 };

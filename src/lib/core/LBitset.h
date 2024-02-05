@@ -6,8 +6,8 @@
 /**
  * @brief Compact way of storing and managing conditions or states
  *
- * The LBitset class template is similar to std::bitset in that it enables the compact storage of a set of conditions or states using bits.\n
- * Unlike std::bitset, LBitset functions are designed to modify and retrieve bit states using flags rather than indices, which are ideally
+ * The LBitset class template is similar to `std::bitset` in that it enables the compact storage of a set of conditions or states using bits.\n
+ * Unlike `std::bitset`, LBitset functions are designed to modify and retrieve bit states using flags rather than indices, which are ideally
  * defined within an enum.
  *
  * It is widely used in the private API of Louvre classes to optimize memory usage.

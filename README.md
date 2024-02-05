@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Louvre is released under the MIT license." />
   </a>
   <a href="https://github.com/CuarzoSoftware/Louvre">
-    <img src="https://img.shields.io/badge/version-1.1.0-brightgreen" alt="Current Louvre version." />
+    <img src="https://img.shields.io/badge/version-1.2.0-brightgreen" alt="Current Louvre version." />
   </a>
 </p>
 
@@ -34,6 +34,9 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 * Scene & Views System
 * Single, Double or Triple Buffering
 * Persistent Clipboard (only for string based mime types)
+* Fractional Scaling
+* VSync Control
+* Gamma Correction
 
 ## 🧩 Protocols
 
@@ -42,6 +45,10 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 * XDG Decoration
 * Presentation Time
 * Linux DMA-Buf
+* Viewporter
+* Fractional Scale
+* Wlr Gamma Control
+* Tearing Control
 
 ## 🖌️ Rendering
 
@@ -131,7 +138,9 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 * Touch Events
 * Pointer Gestures
 * Relative Pointer
-* Viewporter
-* LView transforms
-* LView src rect
+* Pointer Constraints
+* Session Lock
+* Screencasting
+* Wayland Backend
+* X11 Backend
 * XWayland

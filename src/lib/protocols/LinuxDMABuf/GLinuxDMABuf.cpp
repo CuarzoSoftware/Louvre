@@ -31,21 +31,21 @@ GLinuxDMABuf::GLinuxDMABuf
     {
         Int64 prevFormat = -1;
 
-        for (LDMAFormat *dmaFormat : *compositor()->imp()->graphicBackend->backendGetDMAFormats())
+        for (const LDMAFormat &dmaFormat : *compositor()->imp()->graphicBackend->backendGetDMAFormats())
         {
-            if (dmaFormat->format != prevFormat)
+            if (dmaFormat.format != prevFormat)
             {
-                format(dmaFormat->format);
-                prevFormat = dmaFormat->format;
+                format(dmaFormat.format);
+                prevFormat = dmaFormat.format;
             }
         }
     }
     else
     {
-        for (LDMAFormat *dmaFormat : *compositor()->imp()->graphicBackend->backendGetDMAFormats())
-            modifier(dmaFormat->format,
-                     dmaFormat->modifier >> 32,
-                     dmaFormat->modifier & 0xffffffff);
+        for (const LDMAFormat &dmaFormat : *compositor()->imp()->graphicBackend->backendGetDMAFormats())
+            modifier(dmaFormat.format,
+                     dmaFormat.modifier >> 32,
+                     dmaFormat.modifier & 0xffffffff);
     }
 }
 

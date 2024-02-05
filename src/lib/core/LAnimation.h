@@ -17,54 +17,6 @@
  * @note It is essential to manually invoke LOutput::repaint() on the outputs you are animating; otherwise, the `onUpdate()` callback may not be invoked.
  *
  * After the animation finishes, the `onFinish()` callback is triggered, and the value() property has a value of 1.f.\n
- *
- * To create an LAnimation, you can use the oneShot() or create() methods.\n
- *
- * The oneShot() method creates and starts an animation immediately, and it is automatically destroyed once finished.
- *
- * #### Example using oneShot()
- * \code{.cpp}
- *  LAnimation::oneShot(5000,
- *
- *   // On Update
- *   [yourObjectToAnimate](LAnimation *anim)
- *   {
- *       yourObjectToAnimate->setPos(anim->value() * x);
- *   },
- *
- *   // On Finish
- *   [yourObjectToAnimate](LAnimation *anim)
- *   {
- *       yourObjectToAnimate->hide();
- *   });
- * \endcode
- *
- * On the other hand, the create() method generates an LAnimation that can be reused multiple times.\n
- * You need to call the start() method to initiate it. By passing `true` to start(), the animation is automatically
- * destroyed upon completion, whereas passing `false` keeps the animation intact for potential reuse.
- *
- * #### Example using create()
- * \code{.cpp}
- *  LAnimation *animation = LAnimation::create(5000,
- *
- *   // On Update
- *   [yourObjectToAnimate](LAnimation *anim)
- *   {
- *       yourObjectToAnimate->setPos(anim->value() * x);
- *   },
- *
- *   // On Finish
- *   [yourObjectToAnimate](LAnimation *anim)
- *   {
- *       yourObjectToAnimate->hide();
- *   });
- *
- * // Starts the animation without destroying it on finish
- * animation->start(false);
- * \endcode
- *
- * ### Common Mistakes
- * @warning Always ensure that the objects you animate remain valid during the animation to avoid potential segmentation faults. A recommended practice is to use the create() method and call stop() if an animated object is destroyed before it finishes.
  */
 class Louvre::LAnimation : public LObject
 {
@@ -85,6 +37,14 @@ public:
      * @param onFinish A callback function triggered once the value() property reaches 1.f. `nullptr` can be passed if not used.
      */
     LAnimation(UInt32 durationMs = 0, const Callback &onUpdate = nullptr, const Callback &onFinish = nullptr);
+
+    /**
+     * @brief Destructor for the LAnimation class.
+     *
+     * Destroys an animation object. If the animation is currently running at the
+     * time of destruction, the `onFinish()` callback is invoked immediately before
+     * the object is deleted.
+     */
     ~LAnimation();
 
     /// @cond OMIT
@@ -163,6 +123,11 @@ public:
      */
     void stop();
 
+    /**
+     * @brief Checks if the animation is currently running.
+     *
+     * @return `true` if running, `false` otherwise.
+     */
     bool running() const;
 
 LPRIVATE_IMP_UNIQUE(LAnimation)

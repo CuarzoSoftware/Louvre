@@ -5,6 +5,7 @@
 #include <LSolidColorView.h>
 
 #include "UITextureView.h"
+#include "Global.h"
 
 using namespace Louvre;
 
@@ -13,28 +14,25 @@ class Tooltip : LLayerView
 public:
     Tooltip();
 
-    LSolidColorView center;
-
-    UITextureView decoT;
-    UITextureView decoR;
-    UITextureView decoB;
-    UITextureView decoL;
-    UITextureView decoTL;
-    UITextureView decoTR;
-    UITextureView decoBR;
-    UITextureView decoBL;
-
-    UITextureView arrow;
+    LSolidColorView center  { 0.97f, 0.97f, 0.97f, 1.f, this };
+    UITextureView decoT     { G::TooltipT,     this };
+    UITextureView decoR     { G::TooltipR,     this };
+    UITextureView decoB     { G::TooltipB,     this };
+    UITextureView decoL     { G::TooltipL,     this };
+    UITextureView decoTL    { G::TooltipTL,    this };
+    UITextureView decoTR    { G::TooltipTR,    this };
+    UITextureView decoBR    { G::TooltipBR,    this };
+    UITextureView decoBL    { G::TooltipBL,    this };
+    UITextureView arrow     { G::TooltipArrow, this };
     LTextureView label;
+    LPoint globalPos;
 
-    LView *targetView = nullptr;
+    // Dock item
+    LView *targetView { nullptr };
 
     void setText(const char *text);
     void show(Int32 x, Int32 y);
     void hide();
-
-    LPoint point;
-
     void update();
 
     bool nativeMapped() const override;

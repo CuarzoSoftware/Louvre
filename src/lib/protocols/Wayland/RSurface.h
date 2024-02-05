@@ -12,6 +12,7 @@ public:
     LSurface *surface() const;
     Viewporter::RViewport *viewportResource() const;
     FractionalScale::RFractionalScale *fractionalScaleResource() const;
+    TearingControl::RTearingControl *tearingControlResource() const;
 
     /// @brief Commit origin
     /// Indicates who requests to commit a surface

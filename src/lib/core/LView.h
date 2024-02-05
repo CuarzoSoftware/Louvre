@@ -55,10 +55,10 @@
  *
  * ### Intersected Outputs
  *
- * The outputs() virtual method must return a list with the outputs where the view is currently visible. When the view changes, repaint() is called,
+ * The outputs() virtual method must return a vector with the outputs where the view is currently visible. When the view changes, repaint() is called,
  * and all those intersected outputs are scheduled for repainting.
  * The scene informs which outputs a view is currently on based on its rect through the enteredOutput() and leftOutput() virtual methods.
- * So, those methods must be used to update the intersected outputs list.
+ * So, those methods must be used to update the intersected outputs vector.
  *
  * ### Painting
  *
@@ -153,6 +153,9 @@ public:
         Scene = 4
     };
 
+    /**
+     * @brief Forces a complete repaint of the view in the next rendering frame.
+     */
     void damageAll();
 
     /**

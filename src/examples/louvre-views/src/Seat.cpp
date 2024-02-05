@@ -11,7 +11,7 @@
 #include "Surface.h"
 #include "Toplevel.h"
 
-Seat::Seat(void *params) : LSeat(params) {}
+Seat::Seat(const void *params) : LSeat(params) {}
 
 void Seat::enabledChanged()
 {

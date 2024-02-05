@@ -39,7 +39,6 @@
 #include <SRM/SRMFormat.h>
 
 using namespace Louvre;
-using namespace std;
 
 #define BKND_NAME "DRM BACKEND"
 
@@ -54,9 +53,9 @@ struct DEVICE_FD_ID
 struct Backend
 {
     SRMCore *core;
-    list<LOutput*>connectedOutputs;
+    std::vector<LOutput*>connectedOutputs;
     wl_event_source *monitor;
-    list<LDMAFormat*>dmaFormats;
+    std::vector<LDMAFormat>dmaFormats;
     std::list<DEVICE_FD_ID> devices;
     UInt32 rendererGPUs {0};
 };
@@ -65,8 +64,8 @@ struct Output
 {
     SRMConnector *conn;
     LSize physicalSize;
-    list<LOutputMode*>modes;
-    LTexture **textures {nullptr};
+    std::vector<LOutputMode*>modes;
+    LTexture **textures { nullptr };
 };
 
 struct OutputMode
@@ -150,33 +149,43 @@ static void initConnector(Backend *bknd, SRMConnector *conn)
        return;
 
     LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
-    LOutput *output = compositor->createOutputRequest();
-    srmConnectorSetUserData(conn, output);
-
     Output *bkndOutput = new Output();
-    output->imp()->graphicBackendData = bkndOutput;
-    bkndOutput->textures = nullptr;
-    bkndOutput->conn = conn;
-    bkndOutput->physicalSize.setW(srmConnectorGetmmWidth(conn));
-    bkndOutput->physicalSize.setH(srmConnectorGetmmHeight(conn));
 
-    SRMListForeach (modeIt, srmConnectorGetModes(conn))
+    LOutput::Params params
     {
-        SRMConnectorMode *mode = (SRMConnectorMode*)srmListItemGetData(modeIt);
-        LOutputMode *outputMode = new LOutputMode(output);
-        srmConnectorModeSetUserData(mode, outputMode);
+        // Callback triggered from the LOutput constructor
+        .callback = [=](LOutput *output)
+        {
+            srmConnectorSetUserData(conn, output);
+            bkndOutput->textures = nullptr;
+            bkndOutput->conn = conn;
+            bkndOutput->physicalSize.setW(srmConnectorGetmmWidth(conn));
+            bkndOutput->physicalSize.setH(srmConnectorGetmmHeight(conn));
 
-        OutputMode *bkndOutputMode = new OutputMode();
-        bkndOutputMode->mode = mode;
-        bkndOutputMode->size.setW(srmConnectorModeGetWidth(mode));
-        bkndOutputMode->size.setH(srmConnectorModeGetHeight(mode));
+            SRMListForeach (modeIt, srmConnectorGetModes(conn))
+            {
+                SRMConnectorMode *mode = (SRMConnectorMode*)srmListItemGetData(modeIt);
+                LOutputMode *outputMode = new LOutputMode(output);
+                srmConnectorModeSetUserData(mode, outputMode);
 
-        outputMode->imp()->graphicBackendData = bkndOutputMode;
-        bkndOutput->modes.push_back(outputMode);
-    }
+                OutputMode *bkndOutputMode = new OutputMode();
+                bkndOutputMode->mode = mode;
+                bkndOutputMode->size.setW(srmConnectorModeGetWidth(mode));
+                bkndOutputMode->size.setH(srmConnectorModeGetHeight(mode));
 
-    output->imp()->updateRect();
-    bknd->connectedOutputs.push_back(output);
+                outputMode->imp()->graphicBackendData = bkndOutputMode;
+                bkndOutput->modes.push_back(outputMode);
+            }
+
+            output->imp()->updateRect();
+            bknd->connectedOutputs.push_back(output);
+        },
+
+        // Backend data set to output->imp()->graphicBackendData
+        .backendData = bkndOutput
+    };
+
+    compositor->createOutputRequest(&params);
 }
 
 static void uninitConnector(Backend *bknd, SRMConnector *conn)
@@ -201,7 +210,7 @@ static void uninitConnector(Backend *bknd, SRMConnector *conn)
     }
 
     compositor->destroyOutputRequest(output);
-    bknd->connectedOutputs.remove(output);
+    LVectorRemoveOne(bknd->connectedOutputs, output);
     delete output;
     delete bkndOutput;
     srmConnectorSetUserData(conn, NULL);
@@ -323,7 +332,10 @@ bool LGraphicBackend::backendInitialize()
     SRMListForeach (fmtIt, srmCoreGetSharedDMATextureFormats(bknd->core))
     {
         SRMFormat *fmt = (SRMFormat*)srmListItemGetData(fmtIt);
-        bknd->dmaFormats.push_back((LDMAFormat*)fmt);
+        bknd->dmaFormats.push_back({
+            .format = fmt->format,
+            .modifier = fmt->modifier
+        });
     }
 
     // Find connected outputs
@@ -396,7 +408,7 @@ void LGraphicBackend::backendResume()
     srmCoreResume(bknd->core);
 }
 
-const list<LOutput*> *LGraphicBackend::backendGetConnectedOutputs()
+const std::vector<LOutput*> *LGraphicBackend::backendGetConnectedOutputs()
 {
     LCompositor *compositor = LCompositor::compositor();
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
@@ -410,7 +422,7 @@ UInt32 LGraphicBackend::backendGetRendererGPUs()
     return bknd->rendererGPUs;
 }
 
-const list<LDMAFormat*> *LGraphicBackend::backendGetDMAFormats()
+const std::vector<LDMAFormat> *LGraphicBackend::backendGetDMAFormats()
 {
     LCompositor *compositor = LCompositor::compositor();
     Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
@@ -811,7 +823,7 @@ const LOutputMode *LGraphicBackend::outputGetCurrentMode(LOutput *output)
     return (LOutputMode*)srmConnectorModeGetUserData(mode);
 }
 
-const std::list<LOutputMode *> *LGraphicBackend::outputGetModes(LOutput *output)
+const std::vector<LOutputMode *> *LGraphicBackend::outputGetModes(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     return &bkndOutput->modes;

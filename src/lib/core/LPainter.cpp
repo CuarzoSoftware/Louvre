@@ -710,6 +710,7 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
     glDisable(GL_SAMPLE_ALPHA_TO_ONE);
 
     imp()->shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
+    imp()->shaderSetAlpha(1.f);
 }
 
 LPainter::~LPainter()
@@ -747,12 +748,12 @@ void LPainter::LPainterPrivate::updateExtensions()
 
 void LPainter::LPainterPrivate::updateCPUFormats()
 {
-    for (LDMAFormat *fmt : *compositor()->imp()->graphicBackend->backendGetDMAFormats())
+    for (const LDMAFormat &fmt : *compositor()->imp()->graphicBackend->backendGetDMAFormats())
     {
-        if (fmt->modifier != DRM_FORMAT_MOD_LINEAR)
+        if (fmt.modifier != DRM_FORMAT_MOD_LINEAR)
             continue;
 
-        switch (fmt->format)
+        switch (fmt.format)
         {
         case DRM_FORMAT_ARGB8888:
             cpuFormats.ARGB8888 = true;

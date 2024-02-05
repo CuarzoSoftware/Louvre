@@ -26,7 +26,7 @@
  *
  * The graphic backend is responsible for creating each LOutput making a request to the compositor through LCompositor::createOutputRequest().\n
  * You can override that virtual constructor to use your own LOutput subclasses.\n
- * The LSeat class grants access to all outputs created by the graphic backend through the LSeat::outputs() list and it also notifies you of
+ * The LSeat class grants access to all outputs created by the graphic backend through LSeat::outputs() and it also notifies you of
  * hotplugging events (e.g. when connecting or disconnecting a display through an HDMI port).
  *
  * @see LSeat::outputPlugged() and LSeat::outputUnplugged()
@@ -40,13 +40,19 @@
  *
  * @note Louvre by default initializes all available outputs once the compositor is started within the LCompositor::initialized() event.
  *
+ * @section Uninitialization
+ *
+ * If you no longer wish to use an output, call the LCompositor::removeOutput() method to
+ * remove it from the compositor. This will only uninitialize it, making it possible to re-initialize it later.\n
+ * An LOutput is no longer available when its virtual destructor is invoked (LCompositor::destroyOutputRequest()).
+ *
  * @section Rendering
  *
  * Painting operations must exclusively take place within a paintGL() event, as rendering elsewhere won't be visible on the screen.\n
  * When you call repaint(), Louvre unlocks the output rendering thread and invokes paintGL() just once, regardless of the number of
  * repaint() calls during a frame.\n
  * To unlock the rendering thread again, you must call repaint() within or after the last paintGL() event.\n
- * The library is in charge of triggering the initializeGL(), moveGL(), resizeGL(), paintGL(), and uninitializeGL() events,
+ * The graphic backend is in charge of triggering the initializeGL(), moveGL(), resizeGL(), paintGL(), and uninitializeGL() events,
  * so you must avoid calling them directly.
  *
  * @section Context
@@ -78,9 +84,9 @@
  *
  * Many screens nowadays are HiDPI, so it is commonly required to apply a scaling factor to prevent content from appearing tiny on the screen.
  * By default, all screens in Louvre have a scaling factor of 1, meaning no scaling is applied. To assign a scale to a screen, you can use setScale(),
- * which modifies the size returned by size().
+ * which modifies the size returned by size() and rect().
  *
- * In Louvre, you typically work with two coordinate systems: buffer coordinates and surface coordinates.
+ * In Louvre, you typically work with two coordinate systems: ***buffer coordinates*** and ***surface coordinates***.
  *
  * In buffer coordinates, the scale is not taken into account, and the dimensions always have maximum granularity.
  * For example, if a screen has a resolution of 2000x1000px, its size in buffer coordinates would be the same: 2000x1000px, which is returned by sizeB().
@@ -92,12 +98,14 @@
  * Let's look at an example to make these concepts clearer:
  *
  * Let's assume you have two displays, one with a resolution of 1000x500px and another with 2000x1000px (double the resolution), but both with a physical size of 22''.
- * This means that the space occupied by 1px on the blue screen accommodates 4px on the pink screen. If you were to see it in person, side by side they would look like:
+ * This means that the space occupied by 1px on the blue screen accommodates 4px on the pink screen.
+ *
+ * If you were to see it in person, side by side they would look like this:
  *
  * <center><IMG SRC="https://lh3.googleusercontent.com/pw/ABLVV87QBEaAMVfuF92jfv0HRQrEgc0PMKgx9N29Wb6dDbF9cHLpCr7qSDUowUFnBXFHJxg4F9c7v7EcxxTSnpSzkEqLvCB7CxlnUYJmG1JsNspSHRq3zZE=w2400"></center>
  *
  * If you assign the same scaling factor of 1 to both screens, their sizes in surface coordinates would be the same as in buffer coordinates.
- * Therefore, the global coordinate space of the compositor would look like this.
+ * Therefore, the global coordinate space of the compositor would look like this:
  *
  * <center><IMG SRC="https://lh3.googleusercontent.com/pw/ABLVV86CZvhAIc-yONr5BQe6ABGxfcuSVajo1jobAWL5C6tMdJO8BXjsbMbZk7r7rEZ9-ZsYmr3LsIdBSKkb3npEYoCIG1OD0iZKUoCDFVoqMG4avt06Vhs=w2400"></center>
  *
@@ -128,15 +136,16 @@
  *
  * This creates the illusion of rendering on a larger screen, the result of which is actually scaled to the real size, allowing for the desired scaling effect.
  * Rendering using fractional scales, however, can introduce undesired visual effects like aliasing, especially noticeable when moving elements with textures containing fine details.
- * For this reason, Louvre offers the option to render using oversampling, where all the screen content is rendered in a larger buffer, and then that rendered buffer is scaled down to screen framebuffer.
+ * For this reason, Louvre offers the option to render using oversampling, where all the screen content is rendered in a larger buffer, and then that rendered buffer is scaled down to the screen framebuffer.
  * This method almost completely eliminates aliasing but has the disadvantage of consuming more computational power, potentially decreasing performance.
- * Without oversampling the content directly rendered on the screen, making it efficient but retaining aliasing artifacts.
- * Louvre allows you to toggle oversampling on and off instantly at any time using enableFractionalOversampling(). For example, you could enable it when displaying a desktop with flating windows and disable it when displaying a fullscreen window.
+ * Without oversampling the content is directly rendered on the screen, making it efficient but retaining aliasing artifacts.
+ * Louvre allows you to toggle oversampling on and off instantly at any time using enableFractionalOversampling().
+ * For example, you could enable it when displaying a desktop with floating windows and disable it when displaying a fullscreen window.
  *
- * @note Oversampling is not required and is always deactivated when using non-fractional scales. Therefore, as a recommendation, if your monitor supports multiple modes with various resolutions,
+ * @note Oversampling is not required and is always disabled when using non-fractional scales. Therefore, as a recommendation, if your monitor supports multiple modes with various resolutions,
  *       it is preferable to select one of those modes instead of using fractional scaling.
  *
- * Clients supporting the fractional scaling protocol are instructed to scale their buffers directly to the fractional scale.
+ * Clients supporting the [fractional scaling protocol](https://wayland.app/protocols/fractional-scale-v1) are instructed to scale their buffers directly to the fractional scale.
  * On the other hand, clients lacking support for the protocol are advised to use ceil(fractional scale), ensuring a consistently high-detail appearance.
  *
  * @section Transforms
@@ -152,19 +161,16 @@
  *
  * <center><IMG SRC="https://lh3.googleusercontent.com/pw/ABLVV84Tm3VGwuNHqbAumAVrzZVgBtKSOo24y8PDk5Y47hIlLmO7uSzIMLeE0f9y-5DOQh1nOI9-qz48c_fnlgkM3CILC-GFB2qttGaE671Xke_jcF6DlVY=w2400"></center>
  *
- * Note that when applying a transformation containing a 90° rotation to an output, its width becomes its height, and its height becomes its width.
+ * Note that when applying a transformation containing a 90° or 270° rotation to an output, the components of sizeB(), size() and `rect().size()` are swapped (their width becomes the
+ * height, and the height becomes the width).
  * The global coordinate space of the compositor is structured in such a way that you can continue rendering in the same manner
  * as if the screens were in their normal transform state. Therefore, there's no need to worry about rotating or flipping the elements you draw.
- *
- * @section Uninitialization
- *
- * If you no longer wish to use an output, call the LCompositor::removeOutput() method to
- * remove it from the compositor. This will only uninitialize it, making it possible to re-initialize it later.\n
- * An LOutput is no longer available when its virtual destructor is invoked (LCompositor::destroyOutputRequest()).
  */
 class Louvre::LOutput : public LObject
 {
 public:
+
+    struct Params;
 
     /**
      * @brief Enumeration of possible states for an LOutput.
@@ -194,26 +200,10 @@ public:
         VerticalBGR     = 5  ///< Vertical BGR layout.
     };
 
-    // Default is enabled
-    bool fractionalOversamplingEnabled() const;
-    bool usingFractionalScale() const;
-    void enableFractionalOversampling(bool enabled);
-    Float32 fractionalScale() const;
-    SubPixel subPixel() const;
-    bool hasVSyncControlSupport() const;
-    bool vSyncEnabled() const;
-    bool enableVSync(bool enabled);
-    Int32 refreshRateLimit() const;
-    void setRefreshRateLimit(Int32 hz);
-    UInt32 gammaSize() const;
-
-    // If nullptr restores the default table (linear)
-    bool setGamma(const LGammaTable *gamma);
-
     /**
      * @brief Constructor of the LOutput class.
      */
-    LOutput();
+    LOutput(const void *params);
 
     /**
      * @brief Destructor of the LOutput class.
@@ -324,13 +314,94 @@ public:
     void setBufferDamage(const LRegion *damage);
 
     /**
-     * @brief List of available modes.
+     * @brief Gets the layout of RGB subpixels for a single pixel on a display.
      *
-     * This method returns a list containing all the available output modes for the LOutput instance.
-     *
-     * @return A list of pointers to LOutputMode instances representing the available modes of the output.
+     * The layout of subpixels can impact the display of elements like fonts.
      */
-    const std::list<LOutputMode *> &modes() const;
+    SubPixel subPixel() const;
+
+    /**
+     * @brief Checks if VSync control is supported for this output.
+     *
+     * @return `true` if VSync control is supported, `false` if VSync is always enabled.
+     */
+    bool hasVSyncControlSupport() const;
+
+    /**
+     * @brief Checks if VSync is enabled (enabled by default).
+     *
+     * @return `true` if VSync is enabled, `false` otherwise.
+     */
+    bool vSyncEnabled() const;
+
+    /**
+     * @brief Turns VSync on or off.
+     *
+     * @param enabled `true` to enable VSync, `false` to disable.
+     *
+     * @return `true` if VSync was successfully enabled or disabled, `false` if VSync control is not supported (see hasVSyncControlSupport()).
+     */
+    bool enableVSync(bool enabled);
+
+    /**
+     * @brief Gets the refresh rate limit in Hz when VSync is disabled.
+     *
+     * A value less than 0 indicates the limit is disabled.\n
+     * A value equal to 0 indicates the limit is double the current output mode refresh rate (the default).\n
+     * Any other positive value represents the limit in Hz.
+     *
+     * @return The refresh rate limit when VSync is disabled.
+     */
+    Int32 refreshRateLimit() const;
+
+    /**
+     * @brief Sets the refresh rate limit in Hz when VSync is disabled.
+     *
+     * A value less than 0 indicates the limit is disabled.\n
+     * A value equal to 0 indicates the limit is double the current output mode refresh rate (the default).\n
+     * Any other positive value represents the limit in Hz.
+     *
+     * @param hz The refresh rate limit in Hz when VSync is disabled.
+     */
+    void setRefreshRateLimit(Int32 hz);
+
+    /**
+     * @brief Gets the size of the gamma table.
+     *
+     * @note This method can only be called while the output is initialized.
+     *       If called when not initialized, it returns 0. If the output doesn't support gamma correction,
+     *       this method also returns 0.
+     *
+     * @return The size of the gamma correction table.
+     *
+     * @see setGamma()
+     * @see LGammaTable
+     */
+    UInt32 gammaSize() const;
+
+    /**
+     * @brief Sets the gamma correction table for the output.
+     *
+     * This method allows to set the gamma correction table for the output.
+     *
+     * @note This method can only be called while the output is initialized.
+     *       Louvre automatically sets a linear gamma table when the output is initialized.
+     *
+     * @param gamma A pointer to the LGammaTable with a size matching gammaSize().
+     *              Passing `nullptr` restores the default table (linear).
+     *
+     * @return `true` if the gamma correction table was successfully set, `false` otherwise.
+     */
+    bool setGamma(const LGammaTable *gamma);
+
+    /**
+     * @brief Vector of available modes.
+     *
+     * This method returns a vector containing all the available output modes for the LOutput instance.
+     *
+     * @return A vector of pointers to LOutputMode instances representing the available modes of the output.
+     */
+    const std::vector<LOutputMode *> &modes() const;
 
     /**
      * @brief Get the preferred mode.
@@ -365,6 +436,8 @@ public:
      * It's common for clients to adapt their surface scales to match the scale of the output where they are displayed.
      * If the scale changes and the output is already initialized, the resizeGL() event will be triggered.
      *
+     * @note Starting from Louvre version 1.2, fractional scales are now supported.
+     *
      * @param scale The desired scale factor to set.
      *
      * @see See an example of its use in the default implementation of LCompositor::initialized().
@@ -375,8 +448,50 @@ public:
      * @brief Retrieve the current output scale factor.
      *
      * This method returns the current scale factor assigned to the output using setScale(). The default scale factor is 1.
+     *
+     * If the assigned scale is fractional this value is equal to ceil(scale).
+     *
+     * @see fractionalScale()
      */
     Float32 scale() const;
+
+    /**
+     * @brief Gets the same scale set with setScale().
+     *
+     * Set to 1.f by default.
+     *
+     * @return The fractional scale value.
+     */
+    Float32 fractionalScale() const;
+
+    /**
+     * @brief Checks if the scale factor set with setScale() is fractional.
+     *
+     * @return `true` if the scale factor is fractional, `false` otherwise.
+     */
+    bool usingFractionalScale() const;
+
+    /**
+     * @brief Checks if oversampling is enabled.
+     *
+     * Oversampling is enabled by default when a fractional scale is set using setScale().
+     * It is always disabled when using an integer scale. You can disable oversampling
+     * using enableFractionalOversampling().
+     *
+     * @return `true` if oversampling is enabled, `false` otherwise.
+     */
+    bool fractionalOversamplingEnabled() const;
+
+    /**
+     * @brief Enable or disable oversampling for fractional scales.
+     *
+     * @note Oversampling is always turned off for integer scales.
+     *       You can instantly turn oversampling on or off when using a fractional scale.
+     *       However, it is recommended to perform a full repaint in such cases to ensure the framebuffers stay synchronized.
+     *
+     * @param enabled `true` to enable oversampling for fractional scales, `false` to disable.
+     */
+    void enableFractionalOversampling(bool enabled);
 
     /**
      * @brief Schedule the next rendering frame.

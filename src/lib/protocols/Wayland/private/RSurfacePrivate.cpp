@@ -1,6 +1,7 @@
 #include <protocols/Wayland/private/RSurfacePrivate.h>
 #include <protocols/Wayland/RRegion.h>
 #include <protocols/Wayland/RCallback.h>
+#include <protocols/TearingControl/RTearingControl.h>
 #include <private/LSurfacePrivate.h>
 #include <LBaseSurfaceRole.h>
 #include <LCompositor.h>
@@ -28,7 +29,7 @@ void RSurface::RSurfacePrivate::attach(wl_client *client, wl_resource *resource,
     RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
     LSurface *lSurface = rSurface->surface();
 
-    lSurface->imp()->attached = true;
+    lSurface->imp()->stateFlags.add(LSurface::LSurfacePrivate::BufferAttached);
 
     if (lSurface->role())
         lSurface->role()->handleSurfaceBufferAttach(buffer, x, y);
@@ -89,14 +90,14 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
         if (s->role())
             s->role()->handleParentCommit();
 
-    if (imp->attached)
+    if (imp->stateFlags.check(LSurface::LSurfacePrivate::BufferAttached))
     {
         imp->current.buffer = imp->pending.buffer;
 
         if (imp->current.buffer)
-            surface->imp()->bufferReleased = false;
+            imp->stateFlags.remove(LSurface::LSurfacePrivate::BufferReleased);
 
-        imp->attached = false;
+        imp->stateFlags.remove(LSurface::LSurfacePrivate::BufferAttached);
     }
 
     // Mark the next frame as commited
@@ -114,7 +115,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
     // Turn buffer into OpenGL texture and process damage
     if (imp->current.buffer)
     {
-        if (!imp->bufferReleased)
+        if (!imp->stateFlags.check(LSurface::LSurfacePrivate::BufferReleased))
         {
             // Returns false on wl_client destroy
             if (!imp->bufferToTexture())
@@ -130,7 +131,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
      ************************************/
     if (surface->receiveInput())
     {
-        if (imp->inputRegionIsInfinite)
+        if (imp->stateFlags.check(LSurface::LSurfacePrivate::InfiniteInput))
         {
             if (changes.check(Changes::BufferSizeChanged))
             {
@@ -177,6 +178,17 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
     }
 
     /*******************************************
+     ***************** VSYNC *******************
+     *******************************************/
+    bool preferVSync = surface->surfaceResource()->imp()->rTearingControl == nullptr || surface->surfaceResource()->imp()->rTearingControl->preferVSync();
+
+    if (imp->stateFlags.check(LSurface::LSurfacePrivate::VSync) != preferVSync)
+    {
+        changes.add(Changes::VSyncChanged);
+        imp->stateFlags.setFlag(LSurface::LSurfacePrivate::VSync, preferVSync);
+    }
+
+    /*******************************************
      *********** NOTIFY COMMIT TO ROLE *********
      *******************************************/
     if (surface->role())
@@ -209,6 +221,9 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
 
     if (changes.check(Changes::OpaqueRegionChanged))
         surface->opaqueRegionChanged();
+
+    if (changes.check(Changes::VSyncChanged))
+        surface->preferVSyncChanged();
 
     changes.set(Changes::NoChanges);
 }
@@ -264,13 +279,13 @@ void RSurface::RSurfacePrivate::set_input_region(wl_client *client, wl_resource 
     if (region == NULL)
     {
         lSurface->imp()->pendingInputRegion.clear();
-        lSurface->imp()->inputRegionIsInfinite = true;
+        lSurface->imp()->stateFlags.add(LSurface::LSurfacePrivate::InfiniteInput);
     }
     else
     {
         RRegion *lRRegion = (RRegion*)wl_resource_get_user_data(region);
         lSurface->imp()->pendingInputRegion = lRRegion->region();
-        lSurface->imp()->inputRegionIsInfinite = false;
+        lSurface->imp()->stateFlags.remove(LSurface::LSurfacePrivate::InfiniteInput);
     }
 
     lSurface->imp()->changesToNotify.add(Changes::InputRegionChanged);

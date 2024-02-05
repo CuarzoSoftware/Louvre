@@ -94,7 +94,7 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
         dndIconRoleParams.surface = lIcon;
         lIcon->imp()->setPendingRole(compositor()->createDNDIconRoleRequest(&dndIconRoleParams));
         lIcon->imp()->applyPendingRole();
-        lIcon->imp()->mapped = true;
+        lIcon->imp()->stateFlags.add(LSurface::LSurfacePrivate::Mapped);
         dndManager->imp()->icon = lIcon->dndIcon();
     }
     else

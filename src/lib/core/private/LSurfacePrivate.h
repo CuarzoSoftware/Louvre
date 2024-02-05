@@ -21,7 +21,7 @@ struct LSurface::Params
 LPRIVATE_CLASS(LSurface)
 
     // Changes that are notified at the end of a commit after all changes are applied
-    enum ChangesToNotify
+    enum ChangesToNotify : UInt16
     {
         NoChanges                   = 0,
         BufferSizeChanged           = 1 << 0,
@@ -32,6 +32,7 @@ LPRIVATE_CLASS(LSurface)
         InputRegionChanged          = 1 << 5,
         SourceRectChanged           = 1 << 6,
         SizeChanged                 = 1 << 7,
+        VSyncChanged                = 1 << 8
     };
 
     LBitset<ChangesToNotify> changesToNotify;
@@ -40,37 +41,37 @@ LPRIVATE_CLASS(LSurface)
     {
         ViewportIsScaled           = 1 << 0,
         ViewportIsCropped          = 1 << 1,
+        Destroyed                  = 1 << 2,
+        Damaged                    = 1 << 3,
+        Minimized                  = 1 << 4,
+        ReceiveInput               = 1 << 5,
+        InfiniteInput              = 1 << 6,
+        BufferReleased             = 1 << 7,
+        BufferAttached             = 1 << 8,
+        Mapped                     = 1 << 9,
+        VSync                      = 1 << 10
     };
 
-    LBitset<StateFlags> stateFlags;
+    LBitset<StateFlags> stateFlags { ReceiveInput | InfiniteInput | BufferReleased | VSync };
 
     struct State
     {
-        LBaseSurfaceRole *role                          = nullptr;
-        wl_resource *buffer                             = nullptr;
-        Int32 bufferScale                               = 1;
-        LFramebuffer::Transform transform               = LFramebuffer::Normal;
+        LBaseSurfaceRole *role              { nullptr };
+        wl_resource *buffer                 { nullptr };
+        Int32 bufferScale                   { 1 };
+        LFramebuffer::Transform transform   { LFramebuffer::Normal };
     };
 
     State current, pending;
 
-    LRectF srcRect = LRectF(0,0,1,1);
+    LRectF srcRect                          { 0, 0, 1, 1 };
     LSize size, sizeB;
     LPoint pos;
-    LTexture *texture                                   = nullptr;
+    LTexture *texture                       { nullptr };
     LRegion currentDamage;
     LRegion currentTranslucentRegion;
     LRegion currentOpaqueRegion;
     LRegion currentInputRegion;
-
-    bool destroyed                                      = false;
-    bool damaged                                        = false;
-    bool minimized                                      = false;
-    bool receiveInput                                   = true;
-    bool inputRegionIsInfinite                          = true;
-    bool bufferReleased                                 = true;
-    bool attached                                       = false;
-    bool mapped                                         = false;
 
     LRegion pendingInputRegion;
     LRegion pendingOpaqueRegion;
@@ -80,12 +81,12 @@ LPRIVATE_CLASS(LSurface)
     std::vector<LRect> pendingDamage;
     LRegion currentDamageB;
 
-    Wayland::RSurface *surfaceResource = nullptr;
-    LSurfaceView *lastPointerEventView = nullptr;
+    Wayland::RSurface *surfaceResource      { nullptr };
+    LSurfaceView *lastPointerEventView      { nullptr };
 
     LTexture *textureBackup;
-    LSurface *parent                                    = nullptr;
-    LSurface *pendingParent                             = nullptr;
+    LSurface *parent                        { nullptr };
+    LSurface *pendingParent                 { nullptr };
     std::vector<LSurfaceView*> views;
     std::list<LSurface*> children;
     std::list<LSurface*> pendingChildren;
@@ -94,8 +95,8 @@ LPRIVATE_CLASS(LSurface)
     std::vector<Wayland::RCallback*>frameCallbacks;
     UInt32 damageId;
     std::list<LSurface*>::iterator compositorLink;
-    Int32 lastSentPreferredBufferScale = -1;
-    LFramebuffer::Transform lastSentPreferredTransform = LFramebuffer::Normal;
+    Int32 lastSentPreferredBufferScale      { -1 };
+    LFramebuffer::Transform lastSentPreferredTransform { LFramebuffer::Normal };
     std::vector<LOutput*> outputs;
 
     std::vector<WpPresentationTime::RWpPresentationFeedback*> wpPresentationFeedbackResources;

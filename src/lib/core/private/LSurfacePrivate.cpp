@@ -16,7 +16,7 @@
 
 void LSurface::LSurfacePrivate::setParent(LSurface *parent)
 {
-    if (destroyed)
+    if (stateFlags.check(Destroyed))
         return;
 
     if (pendingParent)
@@ -53,7 +53,7 @@ void LSurface::LSurfacePrivate::setParent(LSurface *parent)
 
 void LSurface::LSurfacePrivate::removeChild(LSurface *child)
 {
-    if (destroyed)
+    if (stateFlags.check(Destroyed))
         return;
 
     children.erase(child->imp()->parentLink);
@@ -63,15 +63,14 @@ void LSurface::LSurfacePrivate::removeChild(LSurface *child)
 
 void LSurface::LSurfacePrivate::setMapped(bool state)
 {
-    if (destroyed)
+    if (stateFlags.check(Destroyed))
         return;
 
     LSurface *surface = surfaceResource->surface();
 
-    if (mapped != state)
+    if (stateFlags.check(Mapped) != state)
     {
-        mapped = state;
-
+        stateFlags.setFlag(Mapped, state);
         surface->mappingChanged();
 
         /* We create a copy of the childrens list
@@ -357,9 +356,8 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     pendingDamageB.clear();
     pendingDamage.clear();
     wl_buffer_send_release(current.buffer);
-    bufferReleased = true;
     damageId = LTime::nextSerial();
-    damaged = true;
+    stateFlags.add(Damaged | BufferReleased);
     return true;
 }
 

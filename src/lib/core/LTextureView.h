@@ -8,17 +8,20 @@
  *
  * The LTextureView class enables you to use an LTexture as a view within a scene.\n
  * You can set the view's texture using setTexture(), and passing `nullptr` unsets the texture, effectively unmapping the view.\n
- * Multiple texture views can share the same LTexture, and if the texture is destroyed, their texture() property is automatically set to `nullptr`.
+ * Multiple views can share the same LTexture, and if the texture is destroyed, their texture() property is automatically set to `nullptr`.
  *
  * Texture views can also have a custom destination size, which may differ from their buffer size. In such cases, regions for damage, input, translucent,
  * and opaque must be defined based on the destination size.\n
- * To enable a custom destination size, utilize the enableDstSize() and setDstSize() methods.\n
+ * To enable a custom destination size, use the enableDstSize() and setDstSize() methods.\n
  *
  * @note Using a custom destination size is recommended instead of relying on the scalingVector() option, as it allows for continued damage tracking
  *       within the scene.
  *
  * When destination size is disabled, the view size is by default equal to the texture size divided by its buffer scale if no other transformations
  * are applied.
+ *
+ * As of Louvre version 1.2.0, you can define a source rect with applied transformations, adhering to the behavior outlined in the
+ * [Viewporter](https://wayland.app/protocols/viewporter) protocol.
  *
  * For additional methods and properties available, please refer to the documentation of the `LView` class.
  */
@@ -177,11 +180,72 @@ public:
      */
     const LRGBF &customColor() const;
 
+    /**
+     * @brief Enables or disables the use of a custom source rect.
+     *
+     * Enabling this feature allows you to specify a custom source rectangle using
+     * setSrcRect().
+     *
+     * @note When disabled, the entire texture is used as the source.
+     *
+     * @param enabled If `true`, the custom source rectangle is enabled; if `false`, the entire
+     *                texture is used as the source.
+     */
     void enableSrcRect(bool enabled);
+
+    /**
+     * @brief Checks if the use of the source rect (srcRect()) is enabled.
+     *
+     * Disabled by default.
+     *
+     * @return `true` if enabled, `false` otherwise.
+     *
+     * @see enableSrcRect()
+     * @see setSrcRect()
+     */
     bool srcRectEnabled() const;
+
+    /**
+     * @brief Sets the source rect of the texture to use.
+     *
+     * The source rect must be specified in surface coordinates, taking into
+     * account the space generated after the inverse transform() (from transform() to LFramebuffer::Normal) is applied.
+     *
+     * @note The source rect is used only if srcRectEnabled() is set to `true`.
+     *
+     * @param srcRect The source rect in surface coordinates.
+     */
     void setSrcRect(const LRectF &srcRect);
+
+    /**
+     * @brief Gets the source rect set with setSrcRect().
+     *
+     * @note When srcRectEnabled() returns `false` the rect covers the entire texture.
+     *
+     * @return A constant reference to the source rect specified using setSrcRect().
+     */
     const LRectF &srcRect() const;
+
+    /**
+     * @brief Sets the transform of the texture.
+     *
+     * Use this method to tell the scene the transformation that the texture's content **ALREADY HAS** and not the transformation you want to apply.
+     *
+     * For example, pass LFramebuffer::Rotated90 if the texture's content is rotated 90 degrees **counter-clockwise**, and the scene
+     * (if the current LOutput has a normal transform) will apply a 90-degree **clockwise** rotation to display it normally.
+     *
+     * Changing the transform affects how the source rectangle is defined and may also swap the original width
+     * and height of the view when using transforms with 90 or 270 degrees rotation.
+     *
+     * @param transform The transform to be applied for proper display.
+     */
     void setTransform(LFramebuffer::Transform transform);
+
+    /**
+     * @brief Gets the transform set with setTransform().
+     *
+     * The default value is LFramebuffer::Normal.
+     */
     LFramebuffer::Transform transform() const;
 
     virtual bool nativeMapped() const override;

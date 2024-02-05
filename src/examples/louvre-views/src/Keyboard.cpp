@@ -8,122 +8,104 @@
 
 #include "Keyboard.h"
 #include "Global.h"
-#include "LLog.h"
 #include "Output.h"
 #include "Topbar.h"
 #include "App.h"
 #include "Client.h"
 #include "Workspace.h"
 
-Keyboard::Keyboard(void *params) : LKeyboard(params) {}
+Keyboard::Keyboard(const void *params) : LKeyboard(params) {}
 
 void Keyboard::keyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
 {
     G::scene()->handleKeyModifiersEvent(depressed, latched, locked, group);
 }
 
-static Float32 ease = 2.3f;
 void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
 {
-    Output *output = (Output*)cursor()->output();
+    Output *output  { (Output*)cursor()->output()     };
 
-    if (keyState == Pressed)
+    bool LEFT_META  { isKeyCodePressed(KEY_LEFTMETA)  };
+    bool LEFT_SHIFT { isKeyCodePressed(KEY_LEFTSHIFT) };
+    bool LEFT_ALT   { isKeyCodePressed(KEY_LEFTALT)   };
+    bool LEFT_CTRL  { isKeyCodePressed(KEY_LEFTCTRL)  };
+
+    if (output && keyState == Pressed)
     {
-        bool LEFT_META  = isKeyCodePressed(KEY_LEFTMETA);
-        bool LEFT_SHIFT = isKeyCodePressed(KEY_LEFTSHIFT);
+        /* Switch workspace */
 
-        if (LEFT_META && LEFT_SHIFT)
+        if (LEFT_ALT && LEFT_CTRL && output->currentWorkspace)
         {
-            /* Turn ON / OFF V-Sync */
-
-            if (keyCode == KEY_V)
+            if (keyCode == KEY_RIGHT && std::next(output->currentWorkspace->outputLink) != output->workspaces.end())
             {
-                output->enableVSync(!output->vSyncEnabled());
-                output->topbar->update();
+                if (!output->animatedFullscreenToplevel)
+                    output->setWorkspace(*std::next(output->currentWorkspace->outputLink), 600.f, 2.3f);
+                return;
+            }
+            else if (keyCode == KEY_LEFT && output->currentWorkspace != output->workspaces.front())
+            {
+                if (!output->animatedFullscreenToplevel)
+                    output->setWorkspace(*std::prev(output->currentWorkspace->outputLink), 600.f, 2.3f);
+                return;
             }
         }
 
-        if (isKeyCodePressed(KEY_LEFTCTRL))
+        if (LEFT_META && LEFT_SHIFT)
         {
-            // Switch workspace
-            if (output && output->currentWorkspace && isKeyCodePressed(KEY_LEFTALT))
+            switch (keyCode)
             {
-                if (keyCode == KEY_RIGHT && std::next(output->currentWorkspace->outputLink) != output->workspaces.end())
+
+            /*********** Turn ON / OFF V-Sync *********/
+
+            case KEY_V:
+                output->enableVSync(!output->vSyncEnabled());
+                output->topbar->update();
+                break;
+
+            /************ Change output mode ***********/
+
+            case KEY_M:
+                if (output->currentMode() == output->modes().back())
+                    output->setMode(output->modes().front());
+                else
+                    output->setMode(
+                        *(++std::find(
+                            output->modes().begin(),
+                            output->modes().end(),
+                            output->currentMode()))
+                        );
+                break;
+
+            /********** Change output transform **********/
+
+            case KEY_T:
+                if (output->transform() == LFramebuffer::Flipped270)
+                    output->setTransform(LFramebuffer::Normal);
+                else
+                    output->setTransform((LFramebuffer::Transform)(output->transform() + 1));
+                break;
+
+            /**** Increase fractional scaling by 0.25 ****/
+
+            case KEY_UP:
+                if (output->fractionalScale() < 3.f)
                 {
-                    if (!output->animatedFullscreenToplevel)
-                        output->setWorkspace(*std::next(output->currentWorkspace->outputLink), 600.f, ease);
-                    //ease += 0.1f;
-                    return;
+                    output->setScale(output->fractionalScale() + 0.25);
+                    output->repaint();
                 }
-                else if (keyCode == KEY_LEFT && output->currentWorkspace != output->workspaces.front())
+                break;
+
+            /**** Decrease fractional scaling by 0.25 ****/
+
+            case KEY_DOWN:
+                if (output->fractionalScale() > 0.25f)
                 {
-                    if (!output->animatedFullscreenToplevel)
-                        output->setWorkspace(*std::prev(output->currentWorkspace->outputLink), 600.f, ease);
-                    //ease += 0.1f;
-                    return;
+                    output->setScale(output->fractionalScale() - 0.25);
+                    output->repaint();
                 }
-            }
-
-            if (isKeyCodePressed(KEY_LEFTSHIFT))
-            {
-                // Change output mode
-                if (keyCode == KEY_M)
-                {
-                    const LOutputMode *mode = output->currentMode();
-
-                    if (mode == output->modes().back())
-                    {
-                        output->setMode(output->modes().front());
-                    }
-                    else
-                    {
-                        bool found = false;
-
-                        for (LOutputMode *om : output->modes())
-                        {
-                            if (found)
-                            {
-                                mode = om;
-                                break;
-                            }
-
-                            if (om == mode)
-                                found = true;
-                        }
-
-                        output->setMode(mode);
-                    }
-                }
-
-                if (keyCode == KEY_T)
-                {
-                    Int32 trans = (Int32)output->transform();
-
-                    if (trans == LFramebuffer::Flipped270)
-                        output->setTransform(LFramebuffer::Normal);
-                    else
-                        output->setTransform((LFramebuffer::Transform)(trans+1));
-                }
-
-                // Increase fractional scaling by 0.25x
-                else if (keyCode == KEY_UP)
-                {
-                    if (output->fractionalScale() < 3.f)
-                    {
-                        output->setScale(output->fractionalScale() + 0.25);
-                        output->repaint();
-                    }
-                }
-
-                // Decrease fractional scaling by 0.25x
-                else if (keyCode == KEY_DOWN)
-                {
-                    if (output->fractionalScale() > 0.25f)
-                    {
-                        output->setScale(output->fractionalScale() - 0.25);
-                        output->repaint();
-                    }
-                }
+                break;
+            default:
+                break;
             }
         }
     }
@@ -135,7 +117,7 @@ void Keyboard::focusChanged()
 {
     /* Here we use the current keyboard focus client to set the topbar app name */
 
-    LTexture *topbarTitleTexture = nullptr;
+    LTexture *topbarTitleTexture { nullptr };
 
     if (focus())
     {

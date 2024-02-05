@@ -19,7 +19,7 @@ class Workspace;
 class Output : public LOutput
 {
 public:
-    Output();
+    Output(const void *params);
 
     void initializeGL() override;
     void resizeGL() override;
