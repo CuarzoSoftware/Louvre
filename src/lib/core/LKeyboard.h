@@ -222,10 +222,20 @@ public:
     /**
      * @brief Check the state of a modifier.
      *
-     * @param name Name of the modifier "Control", "Shift", etc.
+     * @param name Modifier name defined in `<xkbcommon/xkbcommon_names.h>` such as `XKB_MOD_NAME_SHIFT`, `XKB_LED_NAME_CAPS`, etc.
+     * @param type In XKB, the `XKB_STATE_MODS_DEPRESSED`, `XKB_STATE_MODS_LATCHED`, `XKB_STATE_MODS_LOCKED`, and `XKB_STATE_MODS_EFFECTIVE` are flags used to represent different aspects of the keyboard modifier keys' states.
+     *
+     * **XKB_STATE_MODS_DEPRESSED:** This flag represents the currently depressed (pressed down) modifiers. When a modifier key is pressed, it falls into the depressed state. This flag helps identify which modifiers are currently held down.
+     *
+     * **XKB_STATE_MODS_LATCHED:** This flag represents modifiers that are latched. A latched modifier is one that will be activated with the next non-modifier key press. Once the latched modifier is used, it returns to its original state.
+     *
+     * **XKB_STATE_MODS_LOCKED:** This flag represents modifiers that are locked. When a modifier is locked, it stays active until explicitly unlocked. For example, if Caps Lock is activated, the Caps Lock state is locked until Caps Lock is pressed again.
+     *
+     * **XKB_STATE_MODS_EFFECTIVE:** This flag represents the effective state of the modifiers. It takes into account the depressed, latched, and locked states to provide a combined view of the current modifier key states.
+     *
      * @returns `true` if the modifier is active and `false` otherwise.
      */
-    bool isModActive(const char *name) const;
+    bool isModActive(const char *, xkb_state_component type) const;
 
     /**
      * @brief Vector of pressed key codes.
@@ -236,6 +246,11 @@ public:
      * @brief Check if a key code is pressed.
      */
     bool isKeyCodePressed(UInt32 keyCode) const;
+
+    /**
+     * @brief Check if a key symbol is pressed.
+     */
+    bool isKeySymbolPressed(xkb_keysym_t keySymbol) const;
 
     /**
      * @brief Set the keyboard map.

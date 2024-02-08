@@ -148,6 +148,10 @@ static Int32 processInput(int, unsigned int, void *userData)
             keyState = libinput_event_keyboard_get_key_state(keyEvent);
             keyCode = libinput_event_keyboard_get_key(keyEvent);
             seat->keyboard()->imp()->backendKeyEvent(keyCode, (LKeyboard::KeyState)keyState);
+
+            libinput_device_led_update(
+                libinput_event_get_device(ev),
+                seat->keyboard()->isModActive(XKB_MOD_NAME_CAPS, XKB_STATE_MODS_LOCKED) ? LIBINPUT_LED_CAPS_LOCK : (libinput_led)0);
         }
         else if (eventType == LIBINPUT_EVENT_POINTER_SCROLL_FINGER)
         {

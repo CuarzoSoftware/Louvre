@@ -400,7 +400,7 @@ xkb_state *LKeyboard::keymapState() const
     return imp()->xkbKeymapState;
 }
 
-bool LKeyboard::isModActive(const char *name) const
+bool LKeyboard::isModActive(const char *name, xkb_state_component type) const
 {
     if (!imp()->xkbKeymapState)
         return false;
@@ -408,7 +408,7 @@ bool LKeyboard::isModActive(const char *name) const
     return xkb_state_mod_name_is_active(
                 imp()->xkbKeymapState,
                 name,
-                XKB_STATE_MODS_EFFECTIVE);
+                type) == 1;
 }
 
 const std::vector<UInt32> &LKeyboard::pressedKeys() const
@@ -419,10 +419,18 @@ const std::vector<UInt32> &LKeyboard::pressedKeys() const
 bool LKeyboard::isKeyCodePressed(UInt32 keyCode) const
 {
     for (UInt32 key : imp()->pressedKeys)
-    {
         if (key == keyCode)
             return true;
-    }
+
+    return false;
+}
+
+bool LKeyboard::isKeySymbolPressed(xkb_keysym_t keySymbol) const
+{
+    for (UInt32 key : imp()->pressedKeys)
+        if (xkb_state_key_get_one_sym(imp()->xkbKeymapState, key + 8) == keySymbol)
+            return true;
+
     return false;
 }
 

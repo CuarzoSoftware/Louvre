@@ -24,6 +24,10 @@ Louvre (1.2.0-1)
   * Removed the create() method in LAnimation and LTimer, replaced with class constructors for stack allocation.
   * Replaced LView's paintRect() event with paintEvent().
 
+  # Input Backend
+
+  * The Caps Lock key LED is now automatically toggled based on the state of the keyboard modifiers.
+
   # Bug Fixes
 
   * Resolved a bug causing the compositor to respond to multiple frame callbacks when a client sent multiple frames before waiting for a reply, thanks to @yurikhan for identifying and reporting it.

@@ -62,7 +62,7 @@ void LPointer::pointerMoveEvent(Float32 x, Float32 y, bool absolute)
     }
 
     // Find the first surface under the cursor
-    LSurface *surface = surfaceAt(cursor()->pos());
+    LSurface *surface { surfaceAt(cursor()->pos()) };
 
     if (surface)
     {
@@ -88,7 +88,7 @@ void LPointer::pointerButtonEvent(Button button, ButtonState state)
 
     if (!focus())
     {
-        LSurface *surface = surfaceAt(cursor()->pos());
+        LSurface *surface { surfaceAt(cursor()->pos()) };
 
         if (surface)
         {
