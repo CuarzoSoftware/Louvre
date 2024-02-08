@@ -37,6 +37,19 @@ static LCompositor *s_compositor = nullptr;
 
 LCompositor::LCompositor() : LPRIVATE_INIT_UNIQUE(LCompositor)
 {
+    setenv("WAYLAND_DISPLAY", "wayland-2", 0);
+    setenv("MOZ_ENABLE_WAYLAND", "1", 0);
+    setenv("QT_QPA_PLATFORM", "wayland-egl", 0);
+
+    char *wdisplay = getenv("WAYLAND_DISPLAY");
+
+    if (wdisplay)
+    {
+        // For Firefox
+        setenv("DISPLAY", wdisplay, 0);
+        setenv("LOUVRE_WAYLAND_DISPLAY", wdisplay, 0);
+    }
+
     if (!s_compositor)
         s_compositor = this;
 
@@ -71,12 +84,12 @@ const LVersion &LCompositor::version()
     return s_compositor->imp()->version;
 }
 
-const std::string &LCompositor::defaultBackendsPath() const
+const std::filesystem::path &LCompositor::defaultBackendsPath() const
 {
     return imp()->defaultBackendsPath;
 }
 
-const std::string &LCompositor::defaultAssetsPath() const
+const std::filesystem::path &LCompositor::defaultAssetsPath() const
 {
     return imp()->defaultAssetsPath;
 }
@@ -101,14 +114,14 @@ bool LCompositor::isInputBackendInitialized() const
     return imp()->isInputBackendInitialized;
 }
 
-bool LCompositor::loadGraphicBackend(const std::string &path)
+bool LCompositor::loadGraphicBackend(const std::filesystem::path &path)
 {
-    return imp()->loadGraphicBackend(path.c_str());
+    return imp()->loadGraphicBackend(path);
 }
 
-bool LCompositor::loadInputBackend(const std::string &path)
+bool LCompositor::loadInputBackend(const std::filesystem::path &path)
 {
-    return imp()->loadInputBackend(path.c_str());
+    return imp()->loadInputBackend(path);
 }
 
 LCompositor::CompositorState LCompositor::state() const
@@ -456,8 +469,7 @@ void LCompositor::removeOutput(LOutput *output)
 
             // Safely remove global
             imp()->removeGlobal(output->imp()->global);
-
-            cursor()->imp()->intersectedOutputs.remove(output);
+            LVectorRemoveOneUnordered(cursor()->imp()->intersectedOutputs, output);
 
             if (cursor()->imp()->output == output)
                 cursor()->imp()->output = nullptr;

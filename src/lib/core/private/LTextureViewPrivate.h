@@ -8,7 +8,6 @@
 using namespace Louvre;
 
 LPRIVATE_CLASS(LTextureView)
-    std::list<LTextureView*>::iterator textureLink;
     LTexture *texture = nullptr;
     LRegion *inputRegion = nullptr;
     LRegion *translucentRegion = nullptr;

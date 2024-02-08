@@ -79,5 +79,5 @@ void Tooltip::update()
 
 bool Tooltip::nativeMapped() const
 {
-    return label.texture() != nullptr && targetView != nullptr;
+    return label.texture() != nullptr || targetView != nullptr;
 }

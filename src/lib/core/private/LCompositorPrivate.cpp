@@ -195,41 +195,6 @@ void LCompositor::LCompositorPrivate::unitCompositor()
     state = CompositorState::Uninitialized;
 }
 
-static char *joinPaths(const char *path1, const char *path2)
-{
-    size_t len1 = strlen(path1);
-    size_t len2 = strlen(path2);
-
-    char *result = (char *)malloc(len1 + len2 + 2);
-
-    // Copy the first path
-    snprintf(result, len1 + 1, "%s", path1);
-
-    // Add a '/' if needed
-    if (result[len1 - 1] != '/' && path2[0] != '/')
-    {
-        snprintf(result + len1, 2, "/");
-        len1++;
-    }
-
-    // Concatenate the second path
-    snprintf(result + len1, len2 + 1, "%s", path2);
-
-    return result;
-}
-
-static char *joinBackendsPath(const char *backendsPath, const char *backendType, const char *backendName)
-{
-    char *tmp = joinPaths(backendsPath, backendType);
-    char *path = joinPaths(tmp, backendName);
-    free(tmp);
-    size_t len = strlen(path) + 4;
-    char *pathSo = (char*) malloc(len);
-    snprintf(pathSo, len, "%s.so", path);
-    free(path);
-    return pathSo;
-}
-
 bool LCompositor::LCompositorPrivate::initGraphicBackend()
 {
     unitGraphicBackend(false);
@@ -251,17 +216,19 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
     {
         loadEnvBackend:
 
-        const char *backendsPath = getenv("LOUVRE_BACKENDS_PATH");
-        const char *backendName = getenv("LOUVRE_GRAPHIC_BACKEND");
-        bool usingEnvs = backendsPath != NULL || backendName != NULL;
+        std::filesystem::path backendsPath { getenvString("LOUVRE_BACKENDS_PATH") };
+        std::filesystem::path backendName  { getenvString("LOUVRE_INPUT_BACKEND")};
 
-        if (!backendsPath)
+        bool usingEnvs = !backendsPath.empty() || !backendName.empty();
+
+        if (backendsPath.empty())
             backendsPath = LOUVRE_DEFAULT_BACKENDS_PATH;
 
-        if (!backendName)
+        if (backendName.empty())
             backendName = LOUVRE_DEFAULT_GRAPHIC_BACKEND;
 
-        char *backendPathName = joinBackendsPath(backendsPath, "graphic", backendName);
+        std::filesystem::path backendPathName { backendsPath / "graphic" / backendName };
+        backendPathName += ".so";
 
         retry:
 
@@ -272,13 +239,13 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
                 dlclose(graphicBackendHandle);
                 graphicBackendHandle = nullptr;
                 graphicBackend = nullptr;
-                LLog::error("[LCompositorPrivate::initGraphicBackend] Failed to initialize %s backend.", backendName);
-                free(backendPathName);
+                LLog::error("[LCompositorPrivate::initGraphicBackend] Failed to initialize %s backend.", backendName.c_str());
 
                 if (usingEnvs)
                 {
                     usingEnvs = false;
-                    backendPathName = joinBackendsPath(LOUVRE_DEFAULT_BACKENDS_PATH, "graphic", LOUVRE_DEFAULT_GRAPHIC_BACKEND);
+                    backendPathName = std::filesystem::path(LOUVRE_DEFAULT_BACKENDS_PATH) / "graphic" / LOUVRE_DEFAULT_GRAPHIC_BACKEND;
+                    backendPathName += ".so";
                     goto retry;
                 }
 
@@ -287,20 +254,18 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
         }
         else
         {
-            LLog::error("[LCompositorPrivate::initGraphicBackend] Failed to load %s backend.", backendPathName);
-            free(backendPathName);
+            LLog::error("[LCompositorPrivate::initGraphicBackend] Failed to load %s backend.", backendPathName.c_str());
 
             if (usingEnvs)
             {
                 usingEnvs = false;
-                backendPathName = joinBackendsPath(LOUVRE_DEFAULT_BACKENDS_PATH, "graphic", LOUVRE_DEFAULT_GRAPHIC_BACKEND);
+                backendPathName = std::filesystem::path(LOUVRE_DEFAULT_BACKENDS_PATH) / "graphic" / LOUVRE_DEFAULT_GRAPHIC_BACKEND;
+                backendPathName += ".so";
                 goto retry;
             }
 
             return false;
         }
-
-        free(backendPathName);
     }
 
     LLog::debug("[LCompositorPrivate::initGraphicBackend] Graphic backend initialized successfully.");
@@ -345,17 +310,19 @@ bool LCompositor::LCompositorPrivate::initInputBackend()
     {
         loadEnvBackend:
 
-        const char *backendsPath = getenv("LOUVRE_BACKENDS_PATH");
-        const char *backendName = getenv("LOUVRE_INPUT_BACKEND");
-        bool usingEnvs = backendsPath != NULL || backendName != NULL;
+        std::filesystem::path backendsPath { getenvString("LOUVRE_BACKENDS_PATH") };
+        std::filesystem::path backendName  { getenvString("LOUVRE_INPUT_BACKEND") };
 
-        if (!backendsPath)
+        bool usingEnvs { !backendsPath.empty() || !backendName.empty() };
+
+        if (backendsPath.empty())
             backendsPath = LOUVRE_DEFAULT_BACKENDS_PATH;
 
-        if (!backendName)
+        if (backendName.empty())
             backendName = LOUVRE_DEFAULT_INPUT_BACKEND;
 
-        char *backendPathName = joinBackendsPath(backendsPath, "input", backendName);
+        std::filesystem::path backendPathName = { backendsPath / "input" / backendName};
+        backendPathName += ".so";
 
         retry:
 
@@ -366,13 +333,13 @@ bool LCompositor::LCompositorPrivate::initInputBackend()
                 dlclose(inputBackendHandle);
                 inputBackendHandle = nullptr;
                 inputBackend = nullptr;
-                LLog::error("[LCompositorPrivate::initInputBackend] Failed to initialize %s backend.", backendName);
-                free(backendPathName);
+                LLog::error("[LCompositorPrivate::initInputBackend] Failed to initialize %s backend.", backendName.c_str());
 
                 if (usingEnvs)
                 {
                     usingEnvs = false;
-                    backendPathName = joinBackendsPath(LOUVRE_DEFAULT_BACKENDS_PATH, "input", LOUVRE_DEFAULT_INPUT_BACKEND);
+                    backendPathName = std::filesystem::path(LOUVRE_DEFAULT_BACKENDS_PATH) / "input" / LOUVRE_DEFAULT_INPUT_BACKEND;
+                    backendPathName += ".so";
                     goto retry;
                 }
 
@@ -381,20 +348,18 @@ bool LCompositor::LCompositorPrivate::initInputBackend()
         }
         else
         {
-            LLog::error("[LCompositorPrivate::initInputBackend] Failed to load %s backend.", backendPathName);
-            free(backendPathName);
+            LLog::error("[LCompositorPrivate::initInputBackend] Failed to load %s backend.", backendPathName.c_str());
 
             if (usingEnvs)
             {
                 usingEnvs = false;
-                backendPathName = joinBackendsPath(LOUVRE_DEFAULT_BACKENDS_PATH, "input", LOUVRE_DEFAULT_INPUT_BACKEND);
+                backendPathName = std::filesystem::path(LOUVRE_DEFAULT_BACKENDS_PATH) / "input" / LOUVRE_DEFAULT_INPUT_BACKEND;
+                backendPathName += ".so";
                 goto retry;
             }
 
             return false;
         }
-
-        free(backendPathName);
     }
 
     LLog::debug("[LCompositorPrivate::initInputBackend] Input backend initialized successfully.");
@@ -513,16 +478,16 @@ void LCompositor::LCompositorPrivate::unitSeat()
     }
 }
 
-bool LCompositor::LCompositorPrivate::loadGraphicBackend(const char *path)
+bool LCompositor::LCompositorPrivate::loadGraphicBackend(const std::filesystem::path &path)
 {
     if (graphicBackendHandle)
         dlclose(graphicBackendHandle);
 
-    graphicBackendHandle = dlopen(path, RTLD_LAZY);
+    graphicBackendHandle = dlopen(path.c_str(), RTLD_LAZY);
 
     if (!graphicBackendHandle)
     {
-        LLog::warning("[LCompositorPrivate::loadGraphicBackend] No graphic backend found at (%s)",path);
+        LLog::warning("[LCompositorPrivate::loadGraphicBackend] No graphic backend found at (%s)", path.c_str());
         return false;
     }
 
@@ -530,7 +495,7 @@ bool LCompositor::LCompositorPrivate::loadGraphicBackend(const char *path)
 
     if (!getAPI)
     {
-        LLog::error("[LCompositorPrivate::loadGraphicBackend] Failed to load graphic backend (%s)",path);
+        LLog::error("[LCompositorPrivate::loadGraphicBackend] Failed to load graphic backend (%s)", path.c_str());
         dlclose(graphicBackendHandle);
         return false;
     }
@@ -538,21 +503,21 @@ bool LCompositor::LCompositorPrivate::loadGraphicBackend(const char *path)
     graphicBackend = getAPI();
 
     if (graphicBackend)
-        LLog::debug("[LCompositorPrivate::loadGraphicBackend] Graphic backend loaded successfully (%s).", path);
+        LLog::debug("[LCompositorPrivate::loadGraphicBackend] Graphic backend loaded successfully (%s).", path.c_str());
 
     return true;
 }
 
-bool LCompositor::LCompositorPrivate::loadInputBackend(const char *path)
+bool LCompositor::LCompositorPrivate::loadInputBackend(const std::filesystem::path &path)
 {
     if (inputBackendHandle)
         dlclose(inputBackendHandle);
 
-    inputBackendHandle = dlopen(path, RTLD_LAZY);
+    inputBackendHandle = dlopen(path.c_str(), RTLD_LAZY);
 
     if (!inputBackendHandle)
     {
-        LLog::warning("[LCompositorPrivate::loadInputBackend] No input backend found at (%s).",path);
+        LLog::warning("[LCompositorPrivate::loadInputBackend] No input backend found at (%s).", path.c_str());
         return false;
     }
 
@@ -560,7 +525,7 @@ bool LCompositor::LCompositorPrivate::loadInputBackend(const char *path)
 
     if (!getAPI)
     {
-        LLog::warning("[LCompositorPrivate::loadInputBackend] Failed to load input backend (%s).",path);
+        LLog::warning("[LCompositorPrivate::loadInputBackend] Failed to load input backend (%s).", path.c_str());
         dlclose(inputBackendHandle);
         return false;
     }
@@ -568,7 +533,7 @@ bool LCompositor::LCompositorPrivate::loadInputBackend(const char *path)
     inputBackend = getAPI();
 
     if (inputBackend)
-        LLog::debug("[LCompositorPrivate::loadInputBackend] Input backend loaded successfully (%s).", path);
+        LLog::debug("[LCompositorPrivate::loadInputBackend] Input backend loaded successfully (%s).", path.c_str());
 
     return true;
 }

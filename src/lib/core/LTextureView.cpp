@@ -15,7 +15,7 @@ LTextureView::LTextureView(LTexture *texture, LView *parent) :
 LTextureView::~LTextureView()
 {
     if (imp()->texture)
-        imp()->texture->imp()->textureViews.erase(imp()->textureLink);
+        LVectorRemoveOneUnordered(imp()->texture->imp()->textureViews, this);
 
     if (imp()->inputRegion)
         delete imp()->inputRegion;
@@ -99,7 +99,7 @@ void LTextureView::setTexture(LTexture *texture)
     if (texture != imp()->texture)
     {
         if (imp()->texture)
-            imp()->texture->imp()->textureViews.erase(imp()->textureLink);
+            LVectorRemoveOneUnordered(imp()->texture->imp()->textureViews, this);
 
         imp()->texture = texture;
 
@@ -107,7 +107,6 @@ void LTextureView::setTexture(LTexture *texture)
         {
             imp()->textureSerial = imp()->texture->imp()->serial;
             imp()->texture->imp()->textureViews.push_back(this);
-            imp()->textureLink = std::prev(imp()->texture->imp()->textureViews.end());
         }
 
         imp()->updateDimensions();

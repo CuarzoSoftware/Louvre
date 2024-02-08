@@ -94,7 +94,7 @@ void Compositor::initialized()
     oversamplingLabelTexture = G::font()->semibold->renderText("OVERSAMPLING", 22);
     vSyncLabelTexture = G::font()->semibold->renderText("V-SYNC", 22);
 
-    Int32 totalWidth = 0;
+    Int32 totalWidth { 0 };
 
     // Initialize and arrange outputs (screens) left to right
     for (LOutput *output : seat()->outputs())

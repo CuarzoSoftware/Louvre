@@ -8,19 +8,19 @@ Popup::Popup(const void *params) : LPopupRole(params) {}
 
 void Popup::configureRequest()
 {
-    Output *output = (Output*)cursor()->output();
+    Output *output { (Output*)cursor()->output() };
 
-    if (output->fullscreenSurface)
-        setPositionerBounds(output->rect());
+    if (output && output->fullscreenSurface)
+        setPositionerBounds(output != nullptr ? output->rect() : LRect());
     else
-        setPositionerBounds(LRect(
+        setPositionerBounds(output != nullptr ? LRect(
             output->rect().x(),
             output->rect().y() + 32,
             output->rect().w(),
             output->rect().h() - 32
-            ));
+            ) : LRect());
 
-    LPoint p = rolePos() - surface()->parent()->pos();
+    LPoint p { rolePos() - surface()->parent()->pos() };
     configure(LRect(p, positioner().size()));
     surface()->raise();
 }

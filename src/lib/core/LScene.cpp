@@ -374,24 +374,21 @@ void LScene::handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState)
         // Screenshot
         else if (L_CTRL && L_SHIFT && keyCode == KEY_3)
         {
-            if (cursor() && cursor()->output()->bufferTexture(0))
+            if (cursor() && cursor()->output() && cursor()->output()->bufferTexture(0))
             {
-                const char *user = getenv("HOME");
+                std::filesystem::path path { getenvString("HOME") };
 
-                if (!user)
+                if (path.empty())
                     return;
 
-                char path[128];
+                path /= "Desktop/Louvre_Screenshoot_";
+
                 char timeString[32];
+                const auto now { std::chrono::system_clock::now() };
+                const auto time { std::chrono::system_clock::to_time_t(now) };
+                std::strftime(timeString, sizeof(timeString), "%Y-%m-%d %H:%M:%S.png", std::localtime(&time));
 
-                time_t currentTime;
-                struct tm *timeInfo;
-
-                time(&currentTime);
-                timeInfo = localtime(&currentTime);
-                strftime(timeString, sizeof(timeString), "%Y-%m-%d %H:%M:%S", timeInfo);
-
-                sprintf(path, "%s/Desktop/Louvre_Screenshoot_%s.png", user, timeString);
+                path += timeString;
 
                 cursor()->output()->bufferTexture(0)->save(path);
             }

@@ -65,9 +65,7 @@ void LSeat::outputUnplugged(LOutput *output)
 {
     compositor()->removeOutput(output);
 
-    // Organize outputs horizontally and sequentially.
-
-    Int32 totalWidth = 0;
+    Int32 totalWidth { 0 };
 
     for (LOutput *o : compositor()->outputs())
     {

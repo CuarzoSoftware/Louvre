@@ -19,9 +19,9 @@ Pointer::Pointer(const void *params) : LPointer(params) {}
 
 void Pointer::pointerMoveEvent(Float32 x, Float32 y, bool absolute)
 {
-    LView *view = G::scene()->handlePointerMoveEvent(x, y, absolute);
+    LView *view { G::scene()->handlePointerMoveEvent(x, y, absolute) };
 
-    if (movingToplevel() || resizingToplevel())
+    if (cursor()->output() && (movingToplevel() || resizingToplevel()))
         cursor()->output()->repaint();
 
     if (resizingToplevel() || cursorOwner)

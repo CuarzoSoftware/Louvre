@@ -33,6 +33,9 @@ void LSurface::parentChanged()
 //! [mappingChanged]
 void LSurface::mappingChanged()
 {
+    if (!cursor()->output())
+        return;
+
     // If the surface is a toplevel, we place it at the center of the screen
     if (mapped() && toplevel())
         setPos(cursor()->output()->pos() + (cursor()->output()->size() - size()) / 2);

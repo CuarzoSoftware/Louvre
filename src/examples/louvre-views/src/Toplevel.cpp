@@ -107,7 +107,10 @@ void Toplevel::setMaximizedRequest()
         return;
     }
 
-    Output *output = (Output*)cursor()->output();
+    Output *output { (Output*)cursor()->output() };
+
+    if (!output)
+        return;
 
     if (!fullscreen())
         prevRect = LRect(surface()->pos(), windowGeometry().size());
@@ -184,6 +187,9 @@ void Toplevel::setFullscreenRequest(LOutput *output)
     // If no output is specified we use the output where the cursor is located
     else
         dstOutput = (Output*)cursor()->output();
+
+    if (!dstOutput)
+        return;
 
     if (dstOutput->animatedFullscreenToplevel)
     {
@@ -369,7 +375,7 @@ void Toplevel::activatedChanged()
         {
             Output *o = (Output*)cursor()->output();
 
-            if (o->currentWorkspace != o->workspaces.front())
+            if (o && o->currentWorkspace != o->workspaces.front())
                 o->setWorkspace(o->workspaces.front(), 600.f, 4.f);
         }
     }

@@ -7,7 +7,8 @@ Louvre::LSolidColorView::LSolidColorView(LView *parent) :
     LPRIVATE_INIT_UNIQUE(LSolidColorView)
 {
     imp()->color = {0, 0, 0};
-    setOpacity(1.f);
+    LView *nativeView = (LView*)this;
+    nativeView->imp()->opacity = 1.f;
 }
 
 Louvre::LSolidColorView::LSolidColorView(Float32 r, Float32 g, Float32 b, Float32 a, LView *parent) :
@@ -15,7 +16,14 @@ Louvre::LSolidColorView::LSolidColorView(Float32 r, Float32 g, Float32 b, Float3
     LPRIVATE_INIT_UNIQUE(LSolidColorView)
 {
     imp()->color = {r, g, b};
-    setOpacity(a);
+
+    if (a < 0.f)
+        a = 0.f;
+    else if(a > 1.f)
+        a = 1.f;
+
+    LView *nativeView = (LView*)this;
+    nativeView->imp()->opacity = a;
 }
 
 LSolidColorView::LSolidColorView(const LRGBF &color, Float32 a, LView *parent) :
@@ -23,7 +31,14 @@ LSolidColorView::LSolidColorView(const LRGBF &color, Float32 a, LView *parent) :
     LPRIVATE_INIT_UNIQUE(LSolidColorView)
 {
     imp()->color = color;
-    setOpacity(a);
+
+    if (a < 0.f)
+        a = 0.f;
+    else if(a > 1.f)
+        a = 1.f;
+
+    LView *nativeView = (LView*)this;
+    nativeView->imp()->opacity = a;
 }
 
 LSolidColorView::~LSolidColorView() {}

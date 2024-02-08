@@ -17,20 +17,24 @@ void ToplevelRole::configureRequest()
 
 void ToplevelRole::setMaximizedRequest()
 {
-    LOutput *output = cursor()->output();
+    const LOutput *output { cursor()->output() };
 
-    // Tell the toplevel to maximize
-    LSize size = output->size() - LSize(0, 32);
+    if (!output)
+        return;
+
+    const LSize size { output->size() - LSize(0, 32) };
     configure(size, LToplevelRole::Activated | LToplevelRole::Maximized);
 }
 
-void ToplevelRole::setFullscreenRequest(LOutput *output)
+void ToplevelRole::setFullscreenRequest(LOutput *preferredOutput)
 {
-    statesBeforeFullscreen = states();
-    rectBeforeFullscreen = LRect(surface()->pos(), windowGeometry().size());
+    const LOutput *output { preferredOutput != nullptr ? preferredOutput : cursor()->output()};
 
     if (!output)
         output = cursor()->output();
+
+    statesBeforeFullscreen = states();
+    rectBeforeFullscreen = LRect(surface()->pos(), windowGeometry().size());
 
     configure(output->size(), LToplevelRole::Activated | LToplevelRole::Fullscreen);
 }
@@ -42,33 +46,45 @@ void ToplevelRole::unsetFullscreenRequest()
 
 void ToplevelRole::maximizedChanged()
 {
-    // Get the main output
-    LOutput *output = compositor()->cursor()->output();
+    const LOutput *output { cursor()->output() };
 
     if (maximized())
     {
-        surface()->raise();
-        surface()->setPos(output->pos() + LPoint(0, 32));
-        surface()->setMinimized(false);
+        if (output)
+        {
+            surface()->raise();
+            surface()->setPos(output->pos() + LPoint(0, 32));
+            surface()->setMinimized(false);
+        }
+        else
+            configure(LSize(0, 0), pendingStates() & ~Maximized);
     }
 }
 
 void ToplevelRole::fullscreenChanged()
 {
-    Output *output = (Output*)compositor()->cursor()->output();
+    Output *output { (Output*)cursor()->output() };
 
     if (fullscreen())
     {
-        surface()->setPos(output->pos());
-        output->fullscreenSurface = surface();
-        surface()->raise();
+        if (output)
+        {
+            surface()->setPos(output->pos());
+            output->fullscreenSurface = surface();
+            surface()->raise();
+        }
+        else
+            configure(LSize(0, 0), pendingStates() & ~Fullscreen);
     }
-    else
+    else if (output)
     {
         surface()->setPos(rectBeforeFullscreen.pos());
         if (output->fullscreenSurface == surface())
            output->fullscreenSurface = nullptr;
     }
+
+    if (output)
+        output->fullDamage();
 }
 
 void ToplevelRole::startMoveRequest()

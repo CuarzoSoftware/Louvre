@@ -85,7 +85,7 @@ void LView::setParent(LView *view)
     if (parent() == view || view == this)
         return;
 
-    LScene *s = scene();
+    LScene *s { scene() };
 
     if (s)
         s->imp()->listChanged = true;

@@ -13,14 +13,14 @@
 
 using namespace Louvre;
 
-char *LOpenGL::openShader(const char *file)
+char *LOpenGL::openShader(const std::filesystem::path &file)
 {
     FILE *fp;
-    fp = fopen(file, "r");
+    fp = fopen(file.c_str(), "r");
 
     if (fp == NULL)
     {
-        LLog::error("[LOpenGL::openShader] Error while opening shader file: %s.\n", file);
+        LLog::error("[LOpenGL::openShader] Error while opening shader file: %s.\n", file.c_str());
         return nullptr;
     }
 
@@ -119,22 +119,22 @@ GLuint LOpenGL::compileShader(GLenum type, const char *shaderString)
     return shader;
 }
 
-LTexture *LOpenGL::loadTexture(const char *file)
+LTexture *LOpenGL::loadTexture(const std::filesystem::path &file)
 {
     Int32 width, height, channels;
-    UInt8 *image = stbi_load(file, &width, &height, &channels, STBI_rgb_alpha);
+    UInt8 *image = stbi_load(file.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 
     if (!image)
     {
-        LLog::error("[LOpenGL::loadTexture] Failed to load image %s: %s.", file, stbi_failure_reason());
+        LLog::error("[LOpenGL::loadTexture] Failed to load image %s: %s.", file.c_str(), stbi_failure_reason());
         return nullptr;
     }
 
-    LTexture *texture = new LTexture();
+    LTexture *texture { new LTexture() };
 
     if (!texture->setDataB(LSize(width, height), width * 4, DRM_FORMAT_ABGR8888, image))
     {
-        UInt8 pix = 0;
+        UInt8 pix { 0 };
 
         for (int i = 0; i < width * 4 * height; i+=4)
         {

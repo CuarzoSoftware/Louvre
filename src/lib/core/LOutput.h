@@ -695,8 +695,8 @@ public:
      * Clients using the [wlr gamma control](https://wayland.app/protocols/wlr-gamma-control-unstable-v1#zwlr_gamma_control_manager_v1)
      * protocol can request to set the gamma table for an output.
      *
-     * For security reasons, it is advisable to permit only authorized clients to perform such actions.
-     * The default implementation ignores all requests, and the mechanism to identify an authorized client is left to the developer's discretion.
+     * @warning For security reasons, it is advisable to permit only authorized clients to perform such actions.
+     *          The default implementation ignores all requests, and the mechanism to identify an authorized client is left to the developer's discretion.
      *
      * The gamma table (when is not `nullptr`) always have a size equal to gammaSize(), hence, it is not necessary to validate that.
      *

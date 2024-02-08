@@ -43,16 +43,16 @@ LPRIVATE_CLASS(LView)
     // This is used for detecting changes on a view since the last time it was drawn on a specific output
     struct ViewThreadData
     {
-        LOutput *o = nullptr;
-        Float32 prevOpacity = 1.f;
-        UInt32 lastRenderedDamageId = 0;
+        LOutput *o { nullptr };
+        Float32 prevOpacity { 1.f };
+        UInt32 lastRenderedDamageId { 0 };
         LRect prevRect;
         LRect prevLocalRect;
-        bool changedOrder = true;
-        bool prevMapped = false;
+        bool changedOrder { true };
+        bool prevMapped { false };
         LRegion prevClipping;
         LRGBAF prevColorFactor;
-        bool prevColorFactorEnabled = false;
+        bool prevColorFactorEnabled { false };
     };
 
     // This is used to prevent invoking heavy methods
@@ -67,34 +67,34 @@ LPRIVATE_CLASS(LView)
         LRegion opaqueOverlay;
         Float32 opacity;
         LSizeF scalingVector;
-        bool mapped = false;
-        bool occluded = false;
+        bool mapped { false };
+        bool occluded { false };
         bool scalingEnabled;
         bool isFullyTrans;
     };
 
-    UInt32 state = Visible | ParentOffset | ParentOpacity | BlockPointer | AutoBlendFunc;
+    UInt32 state { Visible | ParentOffset | ParentOpacity | BlockPointer | AutoBlendFunc };
     ViewCache cache;
 
     UInt32 type;
-    LView *parent = nullptr;
+    LView *parent { nullptr };
     std::list<LView*>children;
 
-    GLenum sRGBFactor = GL_SRC_ALPHA;
-    GLenum dRGBFactor = GL_ONE_MINUS_SRC_ALPHA;
-    GLenum sAlphaFactor = GL_SRC_ALPHA;
-    GLenum dAlphaFactor = GL_ONE_MINUS_SRC_ALPHA;
+    GLenum sRGBFactor    { GL_SRC_ALPHA };
+    GLenum dRGBFactor    { GL_ONE_MINUS_SRC_ALPHA };
+    GLenum sAlphaFactor  { GL_SRC_ALPHA };
+    GLenum dAlphaFactor  { GL_ONE_MINUS_SRC_ALPHA };
 
-    LRGBAF colorFactor = {1.f, 1.f, 1.f, 1.f};
-    Float32 opacity = 1.f;
-    LSizeF scalingVector = LSizeF(1.f, 1.f);
+    LRGBAF colorFactor {1.f, 1.f, 1.f, 1.f};
+    Float32 opacity { 1.f };
+    LSizeF scalingVector { 1.f, 1.f };
     LRect clippingRect;
     LPoint tmpPoint;
     LSize tmpSize;
     LPointF tmpPointF;
 
     std::map<std::thread::id,ViewThreadData>threadsMap;
-    LScene *scene = nullptr;
+    LScene *scene { nullptr };
     std::list<LView*>::iterator parentLink;
 
     void removeThread(Louvre::LView *view, std::thread::id thread);

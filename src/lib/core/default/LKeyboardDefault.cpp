@@ -22,58 +22,47 @@ void LKeyboard::keyEvent(UInt32 keyCode, KeyState keyState)
 {
     sendKeyEvent(keyCode, keyState);
 
-    bool L_CTRL = isKeyCodePressed(KEY_LEFTCTRL);
-    bool L_SHIFT = isKeyCodePressed(KEY_LEFTSHIFT);
-    bool mods = isKeyCodePressed(KEY_LEFTALT) && L_CTRL;
-    xkb_keysym_t sym = keySymbol(keyCode);
+    const bool L_CTRL      { isKeyCodePressed(KEY_LEFTCTRL) };
+    const bool L_SHIFT     { isKeyCodePressed(KEY_LEFTSHIFT) };
+    const bool mods        { isKeyCodePressed(KEY_LEFTALT) && L_CTRL };
+    const xkb_keysym_t sym { keySymbol(keyCode) };
 
     if (keyState == Released)
     {
-        // Launches weston-terminal
         if (keyCode == KEY_F1 && !mods)
             LLauncher::launch("weston-terminal");
-
-        // Terminates client connection
         else if (L_CTRL && (sym == XKB_KEY_q || sym == XKB_KEY_Q))
         {
             if (focus())
                 focus()->client()->destroy();
         }
-
-        // Minimizes currently focused surface
         else if (L_CTRL && (sym == XKB_KEY_m || sym == XKB_KEY_M))
         {
             if (focus() && focus()->toplevel() && !focus()->toplevel()->fullscreen())
                 focus()->setMinimized(true);
         }
-
         // Screenshot
         else if (L_CTRL && L_SHIFT && keyCode == KEY_3)
         {
-            if (cursor()->output()->bufferTexture(0))
+            if (cursor()->output() && cursor()->output()->bufferTexture(0))
             {
-                const char *user = getenv("HOME");
+                std::filesystem::path path { getenvString("HOME") };
 
-                if (!user)
+                if (path.empty())
                     return;
 
-                char path[128];
+                path /= "Desktop/Louvre_Screenshoot_";
+
                 char timeString[32];
+                const auto now { std::chrono::system_clock::now() };
+                const auto time { std::chrono::system_clock::to_time_t(now) };
+                std::strftime(timeString, sizeof(timeString), "%Y-%m-%d %H:%M:%S.png", std::localtime(&time));
 
-                time_t currentTime;
-                struct tm *timeInfo;
-
-                time(&currentTime);
-                timeInfo = localtime(&currentTime);
-                strftime(timeString, sizeof(timeString), "%Y-%m-%d %H:%M:%S", timeInfo);
-
-                sprintf(path, "%s/Desktop/Louvre_Screenshoot_%s.png", user, timeString);
+                path += timeString;
 
                 cursor()->output()->bufferTexture(0)->save(path);
             }
         }
-
-        // Terminates the compositor
         else if (keyCode == KEY_ESC && L_CTRL && L_SHIFT)
         {
             compositor()->finish();
@@ -87,7 +76,7 @@ void LKeyboard::keyEvent(UInt32 keyCode, KeyState keyState)
             seat()->dndManager()->setPreferredAction(LDNDManager::NoAction);
     }
 
-    // Key press
+    // Key pressed
     else
     {
         // CTRL sets Copy as the preferred action in drag & drop session

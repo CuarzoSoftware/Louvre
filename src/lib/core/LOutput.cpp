@@ -57,7 +57,13 @@ bool LOutput::usingFractionalScale() const
 
 void LOutput::enableFractionalOversampling(bool enabled)
 {
-    imp()->stateFlags.setFlag(LOutputPrivate::FractionalOversamplingEnabled, enabled);
+    if (imp()->stateFlags.check(LOutputPrivate::FractionalOversamplingEnabled) != enabled)
+    {
+        imp()->stateFlags.setFlag(LOutputPrivate::FractionalOversamplingEnabled, enabled);
+
+        if (usingFractionalScale())
+            repaint();
+    }
 }
 
 Float32 LOutput::fractionalScale() const
@@ -239,6 +245,7 @@ void LOutput::setScale(Float32 scale)
     if (imp()->fractionalScale == scale)
         return;
 
+    repaint();
     imp()->scale = ceilf(scale);
     imp()->fractionalScale = scale;
 

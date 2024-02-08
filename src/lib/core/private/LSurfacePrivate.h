@@ -65,7 +65,8 @@ LPRIVATE_CLASS(LSurface)
     State current, pending;
 
     LRectF srcRect                          { 0, 0, 1, 1 };
-    LSize size, sizeB;
+    LSize size                              { 1, 1 };
+    LSize sizeB                             { 1, 1 };
     LPoint pos;
     LTexture *texture                       { nullptr };
     LRegion currentDamage;
@@ -157,6 +158,7 @@ LPRIVATE_CLASS(LSurface)
                     pendingDamageB.pop_back();
                 }
 
+                currentDamageB.clip(LRect(0, sizeB));
                 currentDamage = currentDamageB;
                 currentDamage.offset(-xOffset - 2, -yOffset - 2);
                 currentDamage.multiply(1.f/xInvScale, 1.f/yInvScale);

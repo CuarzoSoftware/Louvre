@@ -55,9 +55,7 @@ void Output::loadWallpaper()
         wallpaperView->enableParentOffset(false);
     }
 
-    char wallpaperPath[256];
-    sprintf(wallpaperPath, "%s/.config/Louvre/wallpaper.jpg", getenv("HOME"));
-    LTexture *tmpWallpaper = LOpenGL::loadTexture(wallpaperPath);
+    LTexture *tmpWallpaper = LOpenGL::loadTexture(std::filesystem::path(getenvString("HOME")) / ".config/Louvre/wallpaper.jpg");
 
     if (!tmpWallpaper)
         tmpWallpaper = G::loadAssetsTexture("wallpaper.png", false);
@@ -404,6 +402,12 @@ void Output::initializeGL()
     new Topbar(this);
     new Dock(this);
     loadWallpaper();
+
+    updateWorkspacesPos();
+    topbar->update();
+    dock->update();
+    wallpaperView->setPos(pos());
+
     G::compositor()->scene.handleInitializeGL(this);
 }
 

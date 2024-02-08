@@ -14,6 +14,12 @@ class Tooltip : LLayerView
 public:
     Tooltip();
 
+    LTextureView label;
+    LPoint globalPos;
+
+    // Dock item
+    LView *targetView { nullptr };
+
     LSolidColorView center  { 0.97f, 0.97f, 0.97f, 1.f, this };
     UITextureView decoT     { G::TooltipT,     this };
     UITextureView decoR     { G::TooltipR,     this };
@@ -24,11 +30,6 @@ public:
     UITextureView decoBR    { G::TooltipBR,    this };
     UITextureView decoBL    { G::TooltipBL,    this };
     UITextureView arrow     { G::TooltipArrow, this };
-    LTextureView label;
-    LPoint globalPos;
-
-    // Dock item
-    LView *targetView { nullptr };
 
     void setText(const char *text);
     void show(Int32 x, Int32 y);

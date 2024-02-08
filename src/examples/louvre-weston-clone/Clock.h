@@ -16,13 +16,13 @@ public:
     static Int32 timerCallback(void *data);
     static Int32 millisecondsUntilNextMinute();
 
-    LTexture *texture = nullptr;
-    wl_event_source *clockTimer = nullptr;
+    LTexture *texture { nullptr };
+    wl_event_source *clockTimer { nullptr };
     LRect rectC;
 
     // Font
     char text[128];
-    bool loadedFont = false;
+    bool loadedFont { false };
     FT_Library ft;
     FT_Face face;
 };

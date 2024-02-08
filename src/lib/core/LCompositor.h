@@ -2,6 +2,7 @@
 #define LCOMPOSITOR_H
 
 #include <LNamespaces.h>
+#include <filesystem>
 #include <thread>
 
 /**
@@ -98,7 +99,7 @@ public:
      *
      * @return The absolute path to the default Louvre assets directory.
      */
-    const std::string &defaultAssetsPath() const;
+    const std::filesystem::path &defaultAssetsPath() const;
 
     /**
      * @brief Get the absolute path to the default Louvre backends directory.
@@ -108,7 +109,7 @@ public:
      *
      * @return The absolute path to the default Louvre backends directory.
      */
-    const std::string &defaultBackendsPath() const;
+    const std::filesystem::path &defaultBackendsPath() const;
 
     /**
      * @brief Loads a graphic backend (dynamic library).
@@ -123,7 +124,7 @@ public:
      *
      * @return `true` if the backend is successfully loaded, `false` otherwise.
      */
-    bool loadGraphicBackend(const std::string &path);
+    bool loadGraphicBackend(const std::filesystem::path &path);
 
     /**
      * @brief Checks if the graphic backend is initialized.
@@ -157,7 +158,7 @@ public:
      *
      * @return `true` if the backend is successfully loaded, `false` otherwise.
      */
-    bool loadInputBackend(const std::string &path);
+    bool loadInputBackend(const std::filesystem::path &path);
 
     /**
      * @brief Checks if the input backend is initialized.

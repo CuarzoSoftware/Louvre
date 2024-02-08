@@ -16,9 +16,9 @@ public:
     void minimizedChanged() override;
 
     // Temp variables used in paintGL()
-    bool firstMap = true;
-    bool occluded = false;
-    bool isRenderable = false;
+    bool firstMap { true };
+    bool occluded { false };
+    bool isRenderable { false };
     LRect currentRect;
     LRegion currentOpaqueTranslated;
     LRegion currentDamageTranslated;
@@ -30,7 +30,7 @@ public:
     {
         UInt32 lastRenderedDamageId;
         LRect previousRect;
-        bool changedOrder = true;
+        bool changedOrder { true };
     };
     map<LOutput*,OutputData>outputsMap;
 

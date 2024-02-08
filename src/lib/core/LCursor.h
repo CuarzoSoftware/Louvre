@@ -235,11 +235,11 @@ public:
     LOutput *output() const;
 
     /**
-     * @brief Get a list of intersected outputs.
+     * @brief Vector of intersected outputs.
      *
-     * Returns a list of initialized outputs that intersect with the cursor's rect() property.
+     * Returns a vector of initialized outputs that intersect with the cursor's rect() property.
      */
-    const std::list<LOutput*> &intersectedOutputs() const;
+    const std::vector<LOutput*> &intersectedOutputs() const;
 
     LPRIVATE_IMP_UNIQUE(LCursor)
 

@@ -62,6 +62,7 @@ void LSceneView::damageAll(LOutput *output)
     else
         oD->manuallyAddedDamage.addRect(LRect(pos(), size()));
 
+    output->repaint();
 }
 
 void LSceneView::addDamage(LOutput *output, const LRegion &damage)
@@ -73,6 +74,8 @@ void LSceneView::addDamage(LOutput *output, const LRegion &damage)
 
     if (oD->o)
         oD->manuallyAddedDamage.addRegion(damage);
+
+    output->repaint();
 }
 
 bool LSceneView::isLScene() const

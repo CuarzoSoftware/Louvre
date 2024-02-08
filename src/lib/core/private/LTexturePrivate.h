@@ -20,8 +20,8 @@ LPRIVATE_CLASS(LTexture)
     UInt32 serial                                       = 0;
     bool pendingDelete = false;
 
-    // List of texture views using it
-    std::list<LTextureView*> textureViews;
+    // Texture views using it
+    std::vector<LTextureView*> textureViews;
 
     // Wrapper for a native OpenGL ES 2.0 texture.
     GLuint nativeId = 0;

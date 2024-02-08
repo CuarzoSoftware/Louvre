@@ -73,7 +73,7 @@ App::App(const char *appName, const char *appExec, const char *iconPath) :
         return;
     }
 
-    name = std::string(appName);
+    name = appName;
 
     if (G::font()->semibold)
         nameTexture = G::font()->semibold->renderText(name.c_str(), 24, 512);
@@ -84,9 +84,12 @@ App::App(const char *appName, const char *appExec, const char *iconPath) :
         state = Running;
     }
     else
-        exec = std::string(appExec);
+        exec = appExec;
 
-    LTexture *tmp = LOpenGL::loadTexture(iconPath);
+    LTexture *tmp = { nullptr };
+
+    if (iconPath)
+        tmp = LOpenGL::loadTexture(iconPath);
 
     if (tmp)
     {

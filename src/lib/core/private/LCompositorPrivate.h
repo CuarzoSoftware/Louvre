@@ -10,12 +10,13 @@
 #include <map>
 #include <unistd.h>
 #include <string>
+#include <filesystem>
 
 LPRIVATE_CLASS(LCompositor)
 
     LVersion version;
-    std::string defaultAssetsPath;
-    std::string defaultBackendsPath;
+    std::filesystem::path defaultAssetsPath;
+    std::filesystem::path defaultBackendsPath;
     std::string defaultGraphicBackendName;
     std::string defaultInputBackendName;
 
@@ -78,8 +79,8 @@ LPRIVATE_CLASS(LCompositor)
     void lock();
     void unlock();
 
-    bool loadGraphicBackend(const char *path);
-    bool loadInputBackend(const char *path);
+    bool loadGraphicBackend(const std::filesystem::path &path);
+    bool loadInputBackend(const std::filesystem::path &path);
 
     void raiseChildren(LSurface *surface);
     void insertSurfaceAfter(LSurface *prevSurface, LSurface *surfaceToInsert);

@@ -260,11 +260,13 @@ LOutput *LCursor::output() const
         imp()->output = compositor()->outputs().front();
         imp()->textureChanged = true;
     }
+    else
+        imp()->output = nullptr;
 
     return imp()->output;
 }
 
-const std::list<LOutput *> &LCursor::intersectedOutputs() const
+const std::vector<LOutput *> &LCursor::intersectedOutputs() const
 {
     return imp()->intersectedOutputs;
 }

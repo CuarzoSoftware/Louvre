@@ -8,8 +8,6 @@
 
 using namespace Louvre;
 
-#define ASSETS_PATH LCompositor::compositor()->defaultAssetsPath().c_str()
-
 #define TOPBAR_HEIGHT 26
 
 #define DOCK_SHADOW_SIZE 40
@@ -216,8 +214,7 @@ public:
     static const char *transformName(LFramebuffer::Transform transform);
 
     // Utils
-    static LTexture *loadAssetsTexture(const char *name, bool exitOnFail = true);
-    static char *joinPaths(const char *path1, const char *path2);
+    static LTexture *loadAssetsTexture(const std::filesystem::path &file, bool exitOnFail = true);
     static void enableParentScalingChildren(LView *parent, bool enabled);
     static void enableClippingChildren(LView *parent, bool enabled);
     static Output *mostIntersectedOuput(LView *view);

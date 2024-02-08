@@ -501,9 +501,9 @@ LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQualitySc
     return nullptr;
 }
 
-bool LTexture::save(const char *path) const
+bool LTexture::save(const std::filesystem::path &name) const
 {
-    if (!path)
+    if (name.empty())
     {
         LLog::error("[LTexture::save] Failed to save texture. Invalid path.");
         return false;
@@ -546,8 +546,8 @@ bool LTexture::save(const char *path) const
 
     /* First attempt to read directly from the texture using a framebuffer. */
     {
-        GLuint textureId = id(painter->imp()->output);
-        GLenum textureTarget = target();
+        const GLuint textureId { id(painter->imp()->output) };
+        const GLenum textureTarget { target() };
 
         glBindTexture(textureTarget, textureId);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textureTarget, textureId, 0);
@@ -608,13 +608,13 @@ bool LTexture::save(const char *path) const
 
     {
 
-        Int32 ret = stbi_write_png(path, sizeB().w(), sizeB().h(), 4, buffer, sizeB().w() * 4);
+        const Int32 ret { stbi_write_png(name.c_str(), sizeB().w(), sizeB().h(), 4, buffer, sizeB().w() * 4) };
         free(buffer);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         if (ret)
         {
-            LLog::debug("[LTexture::save] Texture saved successfully: %s.", path);
+            LLog::debug("[LTexture::save] Texture saved successfully: %s.", name.c_str());
             return true;
         }
 
@@ -623,7 +623,7 @@ bool LTexture::save(const char *path) const
     }
 
     printError:
-    LLog::error("[LTexture::save] Failed to save texture: %s. %s.", path, error);
+    LLog::error("[LTexture::save] Failed to save texture: %s. %s.", name.c_str(), error);
     return false;
 }
 

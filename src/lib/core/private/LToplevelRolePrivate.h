@@ -10,6 +10,7 @@
 #include <LToplevelRole.h>
 #include <LCompositor.h>
 #include <LTime.h>
+#include <queue>
 
 using namespace Louvre;
 using namespace Louvre::Protocols;
@@ -24,15 +25,15 @@ struct LToplevelRole::Params
 LPRIVATE_CLASS(LToplevelRole)
 struct ToplevelConfiguration
 {
-    bool commited                                               = false;
-    LSize size                                                  = LSize();
-    StateFlags flags                                            = NoState;
-    UInt32 serial                                               = 0;
+    bool commited                                               { false };
+    LSize size                                                  { 0, 0 };
+    StateFlags flags                                            { NoState };
+    UInt32 serial                                               { 0 };
 };
 
 LToplevelRole *toplevel;
 
-bool hasConfToSend = false;
+bool hasConfToSend { false };
 ToplevelConfiguration
     currentConf,        // Current ACKed conf
     pendingApplyConf,   // ACKed conf not yet made the current conf
@@ -40,10 +41,10 @@ ToplevelConfiguration
 std::list<ToplevelConfiguration>sentConfs;
 
 /* Used to forcefully remove the activated flag when another toplevel is activated */
-bool forceRemoveActivatedFlag = false;
+bool forceRemoveActivatedFlag { false };
 
-bool hasPendingMinSize                                          = false;
-bool hasPendingMaxSize                                          = false;
+bool hasPendingMinSize                                          { false };
+bool hasPendingMaxSize                                          { false };
 
 LSize currentMinSize, pendingMinSize;
 LSize currentMaxSize, pendingMaxSize;
@@ -53,15 +54,15 @@ void setTitle(const char *title);
 std::string appId;
 std::string title;
 
-RXdgToplevelDecoration *xdgDecoration                           = nullptr;
-DecorationMode decorationMode                                   = ClientSide;
-UInt32 pendingDecorationMode                                    = ClientSide;
-UInt32 lastDecorationModeConfigureSerial                        = 0;
-LToplevelRole::DecorationMode preferredDecorationMode           = NoPreferredMode;
+RXdgToplevelDecoration *xdgDecoration                           { nullptr };
+DecorationMode decorationMode                                   { ClientSide };
+UInt32 pendingDecorationMode                                    { ClientSide };
+UInt32 lastDecorationModeConfigureSerial                        { 0 };
+LToplevelRole::DecorationMode preferredDecorationMode           { NoPreferredMode };
 
 // Request before the role is applied
-StateFlags prevRoleRequest = 0;
-LOutput *prevRoleFullscreenRequestOutput = nullptr;
+StateFlags prevRoleRequest { 0 };
+LOutput *prevRoleFullscreenRequestOutput { nullptr };
 
 // Resizing
 LPoint resizingInitPos;
@@ -79,7 +80,7 @@ inline void applyPendingChanges()
         pendingApplyConf.commited = true;
         pendingApplyConf.size = toplevel->windowGeometry().size();
 
-        UInt32 prevState = currentConf.flags;
+        const UInt32 prevState { currentConf.flags };
         currentConf = pendingApplyConf;
         pendingSendConf = currentConf;
 

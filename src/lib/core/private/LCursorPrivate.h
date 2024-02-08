@@ -18,7 +18,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
     LPointF hotspotB;
     LSizeF size;
     LOutput *output                                     = nullptr;
-    std::list<LOutput*>intersectedOutputs;
+    std::vector<LOutput*>intersectedOutputs;
     bool isVisible                                      = true;
 
     UInt32 lastTextureSerial                            = 0;
@@ -102,7 +102,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
                 }
             }
             else
-                intersectedOutputs.remove(o);
+                LVectorRemoveOneUnordered(intersectedOutputs, o);
         }
     }
 
@@ -139,7 +139,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
             }
             else
             {
-                intersectedOutputs.remove(o);
+                LVectorRemoveOneUnordered(intersectedOutputs, o);
                 compositor()->imp()->graphicBackend->outputSetCursorTexture(o, nullptr);
             }
 

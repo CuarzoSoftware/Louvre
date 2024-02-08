@@ -583,6 +583,16 @@ namespace Louvre
         void (*forceUpdate)();
         void (*resume)();
     };
+
+    inline const std::string getenvString(const char *env)
+    {
+        const char *val = getenv(env);
+
+        if (val != NULL)
+            return std::string(val);
+
+        return std::string();
+    }
     /// @endcond
 };
 

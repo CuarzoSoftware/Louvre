@@ -483,7 +483,7 @@ void LPopupRole::grabSeatRequest(Wayland::GSeat *seatGlobal)
 void LPopupRole::configureRequest()
 {
     // Ensure the Popup stays within the boundaries of the current output where the cursor is positioned
-    setPositionerBounds(cursor()->output()->rect());
+    setPositionerBounds(cursor()->output() != nullptr ? cursor()->output()->rect() : LRect(0, 0, 0, 0));
 
     // Calculate the relative position of the Popup with respect to its parent position,
     // calling rolePos() also determines LPositioner::unconstrainedSize().

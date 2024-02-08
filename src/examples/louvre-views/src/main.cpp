@@ -5,15 +5,6 @@
 
 int main(int, char *[])
 {
-    setenv("WAYLAND_DISPLAY", "wayland-0", 0);
-    setenv("MOZ_ENABLE_WAYLAND", "1", 1);
-    setenv("QT_QPA_PLATFORM", "wayland-egl", 1);
-
-    char *display = getenv("WAYLAND_DISPLAY");
-
-    if (display)
-        setenv("DISPLAY", display, 1);
-
     LLauncher::startDaemon();
 
     Compositor compositor;

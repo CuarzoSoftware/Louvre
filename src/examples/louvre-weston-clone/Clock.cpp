@@ -1,11 +1,11 @@
-#include "Clock.h"
-#include "Output.h"
-#include <cstring>
+#include <LCompositor.h>
+#include <LTexture.h>
+#include <LLog.h>
 #include <fontconfig/fontconfig.h>
 #include <freetype/freetype.h>
-#include <LLog.h>
-#include <LTexture.h>
-#include <LCompositor.h>
+#include <cstring>
+#include "Clock.h"
+#include "Output.h"
 
 Clock::Clock()
 {
@@ -22,17 +22,17 @@ Clock::Clock()
 bool Clock::loadFont(const char *fontName)
 {
     FcInit();
-    FcConfig *config = FcInitLoadConfigAndFonts();
-    FcPattern *pat = FcNameParse((const FcChar8*)fontName);
+    FcConfig *config { FcInitLoadConfigAndFonts() };
+    FcPattern *pat { FcNameParse((const FcChar8*)fontName) };
     FcConfigSubstitute(config, pat, FcMatchPattern);
     FcDefaultSubstitute(pat);
     FcResult result;
-    FcPattern* font = FcFontMatch(config, pat, &result);
-    bool success = false;
+    FcPattern* font { FcFontMatch(config, pat, &result) };
+    bool success { false };
 
     if (font)
     {
-        FcChar8* file = NULL;
+        FcChar8* file { NULL };
         if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch)
         {
             LLog::debug("Font %s or similar found: %s", fontName, file);
@@ -78,7 +78,7 @@ void Clock::updateClockTexture()
     if (!texture)
         texture = new LTexture();
 
-    Int32 fontSize = 2 * (32 - 16);
+    const Int32 fontSize { 2 * (32 - 16) };
     updateClockText();
 
     FT_UInt charIndex;
@@ -89,7 +89,7 @@ void Clock::updateClockTexture()
     Int64 y_off;
 
     UChar8 *buffer;
-    Int32 bufferWidth = 0;
+    Int32 bufferWidth { 0 };
     Int32 bufferHeight;
 
     if (FT_Set_Pixel_Sizes(face, 0, fontSize) != 0)
@@ -104,7 +104,7 @@ void Clock::updateClockTexture()
     bufferHeight = (face->size->metrics.ascender - face->size->metrics.descender) >> 6;
 
     // Calc min buffer width and height to fit all characters
-    char *character = text;
+    char *character { text };
     while (*character != '\0')
     {
         charIndex = FT_Get_Char_Index(face, (FT_ULong)*character);
@@ -144,7 +144,7 @@ void Clock::updateClockTexture()
     }
 
     // Draw glyps to buffer
-    UInt32 totalAdvanceX = 0;
+    UInt32 totalAdvanceX { 0 };
     character = text;
     while (*character != '\0')
     {

@@ -17,41 +17,12 @@
 
 Output::Output(const void *params) : LOutput(params){}
 
-static char *joinPaths(const char *path1, const char *path2)
-{
-    size_t len1 = strlen(path1);
-    size_t len2 = strlen(path2);
-
-    char *result = (char *)malloc(len1 + len2 + 2);
-
-    // Copy the first path
-    snprintf(result, len1 + 1, "%s", path1);
-
-    // Add a '/' if needed
-    if (result[len1 - 1] != '/' && path2[0] != '/')
-    {
-        snprintf(result + len1, 2, "/");
-        len1++;
-    }
-
-    // Concatenate the second path
-    snprintf(result + len1, len2 + 1, "%s", path2);
-
-    return result;
-}
-
 void Output::loadWallpaper()
 {
-    char *path = joinPaths(getenv("HOME"), "/.config/Louvre/wallpaper.jpg");
-    LTexture *background = LOpenGL::loadTexture(path);
-    free(path);
+    LTexture *background { LOpenGL::loadTexture(std::filesystem::path(getenvString("HOME")) / ".config/Louvre/wallpaper.jpg") };
 
     if (!background)
-    {
-        path = joinPaths(compositor()->defaultAssetsPath().c_str(), "wallpaper.png");
-        background = LOpenGL::loadTexture(path);
-        free(path);
-    }
+        background = LOpenGL::loadTexture(compositor()->defaultAssetsPath() / "wallpaper.png");
 
     if (background)
     {
@@ -62,7 +33,7 @@ void Output::loadWallpaper()
 
 void Output::fullDamage()
 {
-    Compositor *c = (Compositor*)compositor();
+    Compositor *c { (Compositor*)compositor() };
 
     if (!c->clock)
         c->clock = new Clock();
@@ -96,7 +67,7 @@ void Output::initializeGL()
 
 void Output::resizeGL()
 {
-    Int32 x = 0;
+    Int32 x { 0 };
 
     // Set double scale to outputs with DPI >= 200
     for (Output *output : (std::vector<Output*>&)compositor()->outputs())
@@ -147,9 +118,9 @@ void repaintChildren(LSurface *s)
 void Output::paintGL()
 {
     LPainter::TextureParams params;
-    Compositor *c = (Compositor*)compositor();
-    LPainter *p = painter();
-    list<Surface*> &surfaces = (list<Surface*>&)compositor()->surfaces();
+    Compositor *c { (Compositor*)compositor() };
+    LPainter *p { painter() };
+    list<Surface*> &surfaces { (list<Surface*>&)compositor()->surfaces() };
 
     p->setAlpha(1.f);
     p->enableCustomTextureColor(false);
@@ -349,10 +320,10 @@ void Output::paintGL()
         s->currentOpaqueTranslated.intersectRegion(newDamage);
         s->currentOpaqueTranslated.subtractRegion(s->currentOpaqueTranslatedSum);
 
+        params.texture = s->texture();
         params.dstSize = s->currentRect.size();
         params.srcRect = s->srcRect();
         params.pos = s->currentRect.pos();
-        params.texture = s->texture();
         params.srcTransform = s->bufferTransform();
         params.srcScale = s->bufferScale();
         p->bindTextureMode(params);
@@ -370,10 +341,10 @@ void Output::paintGL()
     {
         params.texture = backgroundTexture;
         params.dstSize = size();
-        params.srcRect = LRectF(0, backgroundTexture->sizeB() - LSize(0, 1));
+        params.srcRect = LRectF(0, backgroundTexture->sizeB());
         params.pos = pos();
-        params.srcScale = 1.f;
         params.srcTransform = LFramebuffer::Normal;
+        params.srcScale = 1.f;
         p->bindTextureMode(params);
         p->drawRegion(backgroundDamage);
     }
@@ -407,10 +378,10 @@ void Output::paintGL()
         s->currentTranslucentTranslated.intersectRegion(newDamage);
         s->currentTranslucentTranslated.subtractRegion(s->currentOpaqueTranslatedSum);
 
+        params.texture = s->texture();
         params.dstSize = s->currentRect.size();
         params.srcRect = s->srcRect();
         params.pos = s->currentRect.pos();
-        params.texture = s->texture();
         params.srcTransform = s->bufferTransform();
         params.srcScale = s->bufferScale();
         p->bindTextureMode(params);
@@ -444,10 +415,10 @@ void Output::paintGL()
 
             if (!terminalIconRegion.empty())
             {
-                params.pos = terminalIconRect.pos();
+                params.texture = terminalIconTexture;
                 params.dstSize = terminalIconRect.size();
                 params.srcRect = LRect(0, terminalIconTexture->sizeB());
-                params.texture = terminalIconTexture;
+                params.pos = terminalIconRect.pos();
                 params.srcTransform = LFramebuffer::Normal;
                 params.srcScale = 1.f;
                 p->setAlpha(terminalIconAlpha);
@@ -458,10 +429,10 @@ void Output::paintGL()
 
         if (drawClock)
         {
-            params.pos = dstClockRect.pos();
+            params.texture = c->clock->texture;
             params.dstSize = dstClockRect.size();
             params.srcRect = LRect(0, c->clock->texture->sizeB());
-            params.texture = c->clock->texture;
+            params.pos = dstClockRect.pos();
             params.srcTransform = LFramebuffer::Normal;
             params.srcScale = 1.f;
             p->enableCustomTextureColor(true);
@@ -480,10 +451,10 @@ void Output::paintGL()
         if (alpha < 0.f)
             alpha = 0.f;
 
-        params.pos = (*it).rect.pos();
+        params.texture = (*it).texture;
         params.dstSize = (*it).rect.size();
         params.srcRect = LRect(0, (*it).texture->sizeB());
-        params.texture = (*it).texture;
+        params.pos = (*it).rect.pos();
         params.srcTransform = LFramebuffer::Normal;
         params.srcScale = 1.f;
         p->bindTextureMode(params);

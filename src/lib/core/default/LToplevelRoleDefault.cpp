@@ -91,8 +91,10 @@ void LToplevelRole::preferredDecorationModeChanged()
 //! [setMaximizedRequest]
 void LToplevelRole::setMaximizedRequest()
 {
-    LOutput *output = compositor()->cursor()->output();
-    configure(output->size(), Activated | Maximized);
+    if (!cursor()->output())
+        return;
+
+    configure(cursor()->output()->size(), Activated | Maximized);
 }
 //! [setMaximizedRequest]
 
@@ -106,26 +108,27 @@ void LToplevelRole::unsetMaximizedRequest()
 //! [maximizedChanged]
 void LToplevelRole::maximizedChanged()
 {
-    LOutput *output = cursor()->output();
-
     if (maximized())
     {
-        surface()->raise();
-        surface()->setPos(output->pos());
-        surface()->setMinimized(false);
+        if (cursor()->output())
+        {
+            surface()->raise();
+            surface()->setPos(cursor()->output()->pos());
+            surface()->setMinimized(false);
+        }
+        else
+            configure(LSize(0, 0), pendingStates() & ~Maximized);
     }
 }
 //! [maximizedChanged]
 
 //! [setFullscreenRequest]
-void LToplevelRole::setFullscreenRequest(LOutput *destOutput)
+void LToplevelRole::setFullscreenRequest(LOutput *preferredOutput)
 {
-    LOutput *output;
+    const LOutput *output { preferredOutput != nullptr ? preferredOutput : cursor()->output()};
 
-    if (destOutput)
-        output = destOutput;
-    else
-        output = cursor()->output();
+    if (!output)
+        return;
 
     configure(output->size(), Activated | Fullscreen);
 }
@@ -143,8 +146,13 @@ void LToplevelRole::fullscreenChanged()
 {
     if (fullscreen())
     {
-        surface()->setPos(cursor()->output()->pos());
-        surface()->raise();
+        if (cursor()->output())
+        {
+            surface()->setPos(cursor()->output()->pos());
+            surface()->raise();
+        }
+        else
+            configure(LSize(0, 0), pendingStates() & ~Fullscreen);
     }
 }
 //! [fullscreenChanged]

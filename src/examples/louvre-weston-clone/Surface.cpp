@@ -16,11 +16,11 @@ void Surface::mappingChanged()
         {
             firstMap = false;
 
-            if (toplevel())
+            if (toplevel() && cursor()->output())
             {
-                Int32 barSize = 32;
-                LPoint outputPosG = cursor()->output()->pos() + LPoint(0, barSize);
-                LSize outputSizeG = cursor()->output()->size() - LSize(0, barSize);
+                const Int32 barSize { 32 };
+                const LPoint outputPosG { cursor()->output()->pos() + LPoint(0, barSize) };
+                const LSize outputSizeG { cursor()->output()->size() - LSize(0, barSize) };
 
                 setPos(outputPosG + (outputSizeG - toplevel()->windowGeometry().size())/2);
 
@@ -38,7 +38,7 @@ void Surface::mappingChanged()
     {
         if (toplevel())
         {
-            Compositor *c = (Compositor*)compositor();
+            Compositor *c { (Compositor*)compositor() };
             DestroyedToplevel destroyed;
             destroyed.texture = texture()->copyB();
             destroyed.rect = LRect(rolePos(), size());

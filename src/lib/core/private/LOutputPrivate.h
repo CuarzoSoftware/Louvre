@@ -19,7 +19,7 @@ struct LOutput::Params
 LPRIVATE_CLASS_NO_COPY(LOutput)
 
     // TODO: Add timestamp to SRM pageflip events and option for toggling vsync
-    std::mutex pageflipMutex;
+    std::mutex pageflipMutex {};
 
     // TODO: Replace with vector
     wl_global *global = nullptr;

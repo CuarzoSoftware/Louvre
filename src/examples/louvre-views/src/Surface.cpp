@@ -111,11 +111,11 @@ void Surface::mappingChanged()
             {
                 firstMapTimer.setCallback([this](LTimer*)
                 {
-                    if (!toplevel() || !mapped() || minimized())
+                    if (!cursor()->output() ||!toplevel() || !mapped() || minimized())
                         return;
 
-                    LPoint outputPosG = compositor()->cursor()->output()->pos() + LPoint(0, TOPBAR_HEIGHT);
-                    LSize outputSizeG = compositor()->cursor()->output()->size() - LSize(0, TOPBAR_HEIGHT);
+                    LPoint outputPosG = cursor()->output()->pos() + LPoint(0, TOPBAR_HEIGHT);
+                    LSize outputSizeG = cursor()->output()->size() - LSize(0, TOPBAR_HEIGHT);
 
                     setPos(outputPosG + (outputSizeG - toplevel()->windowGeometry().size())/2);
 
@@ -141,7 +141,7 @@ void Surface::mappingChanged()
                         next = (Surface*)next->nextSurface();
                     }
 
-                    compositor()->cursor()->output()->repaint();
+                    cursor()->output()->repaint();
                 });
 
                 firstMapTimer.start(200);
@@ -236,7 +236,7 @@ void Surface::bufferSizeChanged()
 
 void Surface::minimizedChanged()
 {
-    if (minimized())
+    if (minimized() && cursor()->output())
     {
         // When a surface is minimized, its children are too, so lets just hide them
         if (!toplevel())
@@ -251,7 +251,7 @@ void Surface::minimizedChanged()
         thumbnailFullSizeTex = renderThumbnail(&minimizedTransRegion);
 
         // Create a smaller scaled version for the dock
-        Float32 s = float(DOCK_ITEM_HEIGHT);
+        Float32 s { float(DOCK_ITEM_HEIGHT) };
         thumbnailTex = thumbnailFullSizeTex->copyB(LSize((s * thumbnailFullSizeTex->sizeB().w()) /thumbnailFullSizeTex->sizeB().h(), s) * 3.5f);
 
         // Create a view for thumbnailFullSizeTex (we only need one)
@@ -267,7 +267,7 @@ void Surface::minimizedChanged()
         getView()->setVisible(false);
 
         // We will move the fullsize view to the dock where the cursor is currently at
-        DockItem *dstDockItem = nullptr;
+        DockItem *dstDockItem { nullptr };
 
         // Create a dock item for each output dock
         for (Output *o : G::outputs())

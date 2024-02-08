@@ -39,8 +39,11 @@ void Seat::nativeInputEvent(void *event)
     if (inputBackendId() != LInputBackendLibinput)
         return;
 
-    libinput_event *ev = (libinput_event*)event;
-    Output *output = (Output*)cursor()->output();
+    libinput_event *ev { (libinput_event*)event };
+    Output *output { (Output*)cursor()->output() };
+
+    if (!output)
+        return;
 
     if (libinput_event_get_type(ev) == LIBINPUT_EVENT_GESTURE_SWIPE_BEGIN)
     {

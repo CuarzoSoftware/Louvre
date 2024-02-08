@@ -141,10 +141,10 @@ public:
      *
      * This method allows you to save the texture as a PNG image file at the specified @p path.
      *
-     * @param path The file path where the PNG image will be saved.
+     * @param name The file path where the PNG image will be saved.
      * @return `true` if the save operation is successful, `false` otherwise.
      */
-    bool save(const char *path) const;
+    bool save(const std::filesystem::path &name) const;
 
     /**
      * @brief Get the size of the texture in buffer coordinates.

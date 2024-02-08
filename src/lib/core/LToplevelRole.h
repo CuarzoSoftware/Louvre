@@ -244,6 +244,14 @@ public:
     const LSize &maxSize() const;
 
     /**
+     * @brief Check if the provided size falls within the range defined by minSize() and maxSize().
+     *
+     * @param size The size to be checked.
+     * @return `true` if the size is within the specified range, `false` otherwise.
+    */
+    bool sizeInRange(const LSize &size) const;
+
+    /**
      * @brief Check if the toplevel is being resized.
      * 
      * Equivalent to `states() & Resizing`.

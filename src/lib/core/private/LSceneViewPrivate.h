@@ -4,6 +4,7 @@
 #include <LFramebuffer.h>
 #include <LSceneView.h>
 #include <LRegion.h>
+#include <LOutput.h>
 #include <map>
 #include <thread>
 
@@ -27,7 +28,8 @@ LPRIVATE_CLASS(LSceneView)
 
         // Manually added damage
         LRegion manuallyAddedDamage;
-
+        bool oversampling = false;
+        bool fractionalScale = false;
         LRect prevRect;
         LCompositor *c;
         LPainter *p;
@@ -73,6 +75,13 @@ LPRIVATE_CLASS(LSceneView)
         {
             damageAll(oD);
             oD->prevRect.setSize(fb->rect().size());
+        }
+
+        if (oD->o && ((oD->o->fractionalOversamplingEnabled() != oD->oversampling && oD->o->usingFractionalScale()) || oD->o->usingFractionalScale() != oD->fractionalScale))
+        {
+            oD->fractionalScale = oD->o->usingFractionalScale();
+            oD->oversampling = oD->o->fractionalOversamplingEnabled();
+            damageAll(oD);
         }
     }
 };

@@ -21,32 +21,36 @@ void Pointer::pointerMoveEvent(Float32 x, Float32 y, bool absolute)
     else
         cursor()->move(x, y);
 
-    Output *cursorOutput = (Output*)cursor()->output();
-    Compositor *c = (Compositor*)compositor();
+    Output *cursorOutput { (Output*)cursor()->output() };
+    Compositor *c { (Compositor*)compositor() };
+    bool pointerOverTerminalIcon { false };
 
-    bool pointerOverTerminalIcon = cursorOutput->terminalIconRect.containsPoint(cursor()->pos());
-
-    if (pointerOverTerminalIcon)
+    if (cursorOutput)
     {
-        if (cursorOutput->terminalIconAlpha == 1.0f)
+        pointerOverTerminalIcon = cursorOutput->terminalIconRect.containsPoint(cursor()->pos());
+
+        if (pointerOverTerminalIcon)
         {
-            cursorOutput->terminalIconRect += LRect(-1,-1, 2, 2);
-            cursorOutput->newDamage.addRect(cursorOutput->terminalIconRect);
-            cursorOutput->terminalIconAlpha = 0.9f;
-            cursorOutput->repaint();
+            if (cursorOutput->terminalIconAlpha == 1.0f)
+            {
+                cursorOutput->terminalIconRect += LRect(-1,-1, 2, 2);
+                cursorOutput->newDamage.addRect(cursorOutput->terminalIconRect);
+                cursorOutput->terminalIconAlpha = 0.9f;
+                cursorOutput->repaint();
+            }
+
+            if (c->pointerCursor)
+                cursor()->setTextureB(c->pointerCursor->texture(), c->pointerCursor->hotspotB());
         }
-
-        if (c->pointerCursor)
-            cursor()->setTextureB(c->pointerCursor->texture(), c->pointerCursor->hotspotB());
-    }
-    else
-    {
-        if (cursorOutput->terminalIconAlpha != 1.0f)
+        else
         {
-            cursorOutput->newDamage.addRect(cursorOutput->terminalIconRect);
-            cursorOutput->terminalIconRect += LRect(1, 1, -2, -2);
-            cursorOutput->terminalIconAlpha = 1.0f;
-            cursorOutput->repaint();
+            if (cursorOutput->terminalIconAlpha != 1.0f)
+            {
+                cursorOutput->newDamage.addRect(cursorOutput->terminalIconRect);
+                cursorOutput->terminalIconRect += LRect(1, 1, -2, -2);
+                cursorOutput->terminalIconAlpha = 1.0f;
+                cursorOutput->repaint();
+            }
         }
     }
 
@@ -119,8 +123,10 @@ void Pointer::pointerMoveEvent(Float32 x, Float32 y, bool absolute)
 void Pointer::pointerButtonEvent(Button button, ButtonState state)
 {
     Output *cursorOutput = (Output*)cursor()->output();
+    bool pointerOverTerminalIcon { false };
 
-    bool pointerOverTerminalIcon = cursorOutput->terminalIconRect.containsPoint(cursor()->pos());
+    if (cursorOutput)
+        pointerOverTerminalIcon = cursorOutput->terminalIconRect.containsPoint(cursor()->pos());
 
     if (state == Released && button == Left)
     {

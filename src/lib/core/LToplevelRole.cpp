@@ -298,6 +298,15 @@ const LSize &LToplevelRole::maxSize() const
     return imp()->currentMaxSize;
 }
 
+bool LToplevelRole::sizeInRange(const LSize &size) const
+{
+    return (minSize().w() <= size.w() || minSize().w() == 0) &&
+           (maxSize().w() >= size.w() || maxSize().w() == 0) &&
+           (minSize().h() <= size.h() || minSize().h() == 0) &&
+           (maxSize().h() >= size.h() || maxSize().h() == 0);
+
+}
+
 bool LToplevelRole::resizing() const
 {
     return imp()->currentConf.flags & LToplevelRole::Resizing;

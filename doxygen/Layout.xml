@@ -20,6 +20,9 @@
       <tab type="usergroup" title="13 - Cursor" url="md_md_tutorial_13.html"></tab>
       <tab type="usergroup" title="14 - Clipboard and DND" url="md_md_tutorial_14.html"></tab>
       <tab type="usergroup" title="15 - Output Hotplugging and Seat" url="md_md_tutorial_15.html"></tab>
+      <tab type="usergroup" title="16 - Gamma Correction" url="md_md_tutorial_16.html"></tab>
+      <tab type="usergroup" title="17 - Fractional Scaling" url="md_md_tutorial_17.html"></tab>
+      <tab type="usergroup" title="18 - Tearing Control" url="md_md_tutorial_18.html"></tab>
     </tab>
     
     <tab type="namespaces" visible="no" title="">

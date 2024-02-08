@@ -2,6 +2,7 @@
 #define LOPENGL_H
 
 #include <LNamespaces.h>
+#include <filesystem>
 
 /**
  * @brief OpenGL utility functions.
@@ -23,7 +24,7 @@ public:
      * @param fileName Path to the shader file.
      * @returns A string with the contents of the shader or `nullptr` in case of error.
      */
-    static char *openShader(const char *fileName);
+    static char *openShader(const std::filesystem::path &file);
 
     /**
      * @brief Get a string representation of an OpenGL error code.
@@ -60,7 +61,7 @@ public:
      * @param file Path to the image file. Must be an image format supported by [STB Image](https://github.com/nothings/stb) (JPG, PNG, TGA, BMP, PSD, GIF, HDR, PIC).
      * @returns A new texture or `nullptr` in case of error.
      */
-    static LTexture *loadTexture(const char *file);
+    static LTexture *loadTexture(const std::filesystem::path &file);
 
     /**
      * @brief Check if a specific OpenGL extension is available.

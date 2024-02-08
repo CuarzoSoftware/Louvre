@@ -59,30 +59,28 @@ void G::loadApps()
     int len;
 
     FILE *appsListFile = NULL;
-    char *appsListPath = NULL;
+    std::filesystem::path appsListPath;
 
     char appName[256];
     char appExec[256];
     char appIcon[256];
 
-    const char *home = getenv("HOME");
+    const std::filesystem::path home { getenvString("HOME") };
 
     // Try loading user's apps.list first
 
-    if (home)
+    if (!home.empty())
     {
-        appsListPath = joinPaths(home, "/.config/Louvre/apps.list");
-        appsListFile = fopen(appsListPath, "r");
-        free(appsListPath);
+        appsListPath = home / ".config/Louvre/apps.list";
+        appsListFile = fopen(appsListPath.c_str(), "r");
     }
 
     // If doesn't exist, fallback to default
 
     if (appsListFile == NULL)
     {
-        appsListPath = joinPaths(ASSETS_PATH, "apps.list");
-        appsListFile = fopen(appsListPath, "r");
-        free(appsListPath);
+        appsListPath = compositor()->defaultAssetsPath() / "apps.list";
+        appsListFile = fopen(appsListPath.c_str(), "r");
     }
 
     // If doesn't exist, the dock is empty
@@ -497,42 +495,18 @@ const char *G::transformName(LFramebuffer::Transform transform)
     return NULL;
 }
 
-LTexture *G::loadAssetsTexture(const char *name, bool exitOnFail)
+LTexture *G::loadAssetsTexture(const std::filesystem::path &file, bool exitOnFail)
 {
-    char *path = joinPaths(ASSETS_PATH, name);
+    const std::filesystem::path path = compositor()->defaultAssetsPath() / file;
     LTexture *tex = LOpenGL::loadTexture(path);
-    free(path);
 
     if (exitOnFail && !tex)
     {
-        LLog::fatal("[louvre-views] Failed to load texture %s.", name);
+        LLog::fatal("[louvre-views] Failed to load texture %s.", path.c_str());
         exit(1);
     }
 
     return tex;
-}
-
-char *G::joinPaths(const char *path1, const char *path2)
-{
-    size_t len1 = strlen(path1);
-    size_t len2 = strlen(path2);
-
-    char *result = (char *)malloc(len1 + len2 + 2);
-
-    // Copy the first path
-    snprintf(result, len1 + 1, "%s", path1);
-
-    // Add a '/' if needed
-    if (result[len1 - 1] != '/' && path2[0] != '/')
-    {
-        snprintf(result + len1, 2, "/");
-        len1++;
-    }
-
-    // Concatenate the second path
-    snprintf(result + len1, len2 + 1, "%s", path2);
-
-    return result;
 }
 
 void G::enableParentScalingChildren(LView *parent, bool enabled)

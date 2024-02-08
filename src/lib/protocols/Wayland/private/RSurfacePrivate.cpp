@@ -133,13 +133,13 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
     {
         if (imp->stateFlags.check(LSurface::LSurfacePrivate::InfiniteInput))
         {
-            if (changes.check(Changes::BufferSizeChanged))
+            if (changes.check(Changes::SizeChanged))
             {
                 imp->currentInputRegion.clear();
                 imp->currentInputRegion.addRect(LRect(0, surface->size()));
             }
         }
-        else if (changes.check(Changes::BufferSizeChanged | Changes::InputRegionChanged))
+        else if (changes.check(Changes::SizeChanged | Changes::InputRegionChanged))
         {
             pixman_region32_intersect_rect(&surface->imp()->currentInputRegion.m_region,
                                            &surface->imp()->pendingInputRegion.m_region,
@@ -157,7 +157,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
     /************************************
      ********** OPAQUE REGION ***********
      ************************************/
-    if (changes.check(Changes::BufferSizeChanged | Changes::OpaqueRegionChanged))
+    if (changes.check(Changes::BufferSizeChanged | Changes::SizeChanged | Changes::OpaqueRegionChanged))
     {
 
         if (surface->texture()->format() == DRM_FORMAT_XRGB8888)
