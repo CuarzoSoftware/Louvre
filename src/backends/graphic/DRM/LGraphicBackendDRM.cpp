@@ -321,10 +321,20 @@ bool LGraphicBackend::backendInitialize()
     Backend *bknd = new Backend();
     compositor->imp()->graphicBackendData = bknd;
     bknd->core = srmCoreCreate(&srmInterface, compositor);
+    SRMVersion *version;
 
     if (!bknd->core)
     {
         LLog::fatal("[%s] Failed to create SRM core.", BKND_NAME);
+        goto fail;
+    }
+
+    version = srmCoreGetVersion(bknd->core);
+
+    if (version->major == 0 && version->minor == 5 && version->patch == 1)
+    {
+        LLog::fatal("[%s] You are currently using SRM v0.5.1, which has serious bugs causing issues with the refresh rate and hardware cursor plane updates. Consider upgrading to v0.5.2 or a later version.", BKND_NAME);
+        srmCoreDestroy(bknd->core);
         goto fail;
     }
 

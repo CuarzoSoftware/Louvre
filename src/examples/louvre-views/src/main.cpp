@@ -5,6 +5,9 @@
 
 int main(int, char *[])
 {
+    setenv("LOUVRE_DEBUG", "1", 0);
+    setenv("SRM_DEBUG", "1", 0);
+
     LLauncher::startDaemon();
 
     Compositor compositor;
