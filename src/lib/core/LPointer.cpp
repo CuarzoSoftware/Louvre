@@ -106,7 +106,7 @@ void LPointer::sendMoveEvent(const LPoint &localPos)
             s->pointerResource()->motion(ms, x, y);
             s->pointerResource()->frame();
         }
-    }    
+    }   
 }
 
 void LPointer::sendButtonEvent(Button button, ButtonState state)

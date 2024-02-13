@@ -20,7 +20,7 @@ LBaseSurfaceRole::~LBaseSurfaceRole()
         surface->imp()->setPendingRole(nullptr);
         surface->imp()->applyPendingRole();
         surface->imp()->setMapped(false);
-    }    
+    }   
 }
 
 UInt32 LBaseSurfaceRole::roleId() const

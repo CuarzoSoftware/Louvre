@@ -82,7 +82,7 @@ void LOutput::paintGL()
     if (!cursor()->hasHardwareSupport(this))
     {
         p->drawTexture(
-            cursor()->texture(),                   
+            cursor()->texture(),                  
             LRect(0, cursor()->texture()->sizeB()),
             cursor()->rect());
     }

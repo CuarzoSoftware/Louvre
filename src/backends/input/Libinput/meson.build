@@ -13,6 +13,6 @@ DRMBackend = library(
         xkbcommon_dep,
         libseat_dep
     ],
-    install : true, 
+    install : true,
     install_dir : join_paths(BACKENDS_INSTALL_PATH, 'input'))
 

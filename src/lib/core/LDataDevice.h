@@ -15,7 +15,7 @@
  * that contains the information they want to share, the library then notifies other clients
  * the presence of such a data source when they acquire pointer or keyboard focus through a data offer (LDataOffer). Finally clients
  * can request to acquire such information, for example when the user presses `Ctrl + v` (paste).\n
- * The library internally is responsible for coordinating the exchange of information between data devices, but provides control over which client can set the 
+ * The library internally is responsible for coordinating the exchange of information between data devices, but provides control over which client can set the
  * clipboard or start drag & drop sessions.\n
  *
  * @see @li LSeat::setSelectionRequest() to manage client-set clipboard requests.

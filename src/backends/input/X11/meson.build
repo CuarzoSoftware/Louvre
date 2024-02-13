@@ -9,6 +9,6 @@ DRMBackend = library(
 	x11_dep,
 	xkbcommon_dep
     ],
-    install : true, 
+    install : true,
     install_dir : BACKENDS_PATH)
 

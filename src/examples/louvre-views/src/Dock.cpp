@@ -100,7 +100,7 @@ void Dock::update()
             dockWidth += DOCK_SPACING;
         }
         else
-        {                
+        {               
             item->setPos(dockWidth, - 2 - item->app->dockAppsAnimationOffset.y() + DOCK_PADDING + (DOCK_ITEM_HEIGHT - item->size().h())/2);
 
             item->dot.setVisible(item->app->state == App::Running && item->app->dockAppsAnimationOffset.y() == 0);
@@ -232,7 +232,7 @@ void Dock::pointerMoveEvent(const LPoint &localPos)
     if (showResistanceCount > showResistance)
         show();
     else
-        showResistanceCount++;    
+        showResistanceCount++;   
 }
 
 void Dock::pointerLeaveEvent()

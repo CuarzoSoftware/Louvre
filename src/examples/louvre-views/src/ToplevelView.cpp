@@ -346,7 +346,7 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     decoL.insertAfter(children().front());
     decoR.insertAfter(children().front());
     decoBL.insertAfter(children().front());
-    decoBR.insertAfter(children().front());    
+    decoBR.insertAfter(children().front());   
     clipTop.insertAfter(children().front());
 
     updateGeometry();

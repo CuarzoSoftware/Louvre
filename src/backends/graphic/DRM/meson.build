@@ -15,6 +15,6 @@ GraphicBackendDRM = library(
         gbm_dep,
         srm_dep
     ],
-    install : true, 
+    install : true,
     install_dir : join_paths(BACKENDS_INSTALL_PATH, 'graphic'))
 

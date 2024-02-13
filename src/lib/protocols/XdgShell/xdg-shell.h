@@ -775,7 +775,7 @@ struct xdg_positioner_interface {
 	void (*set_reactive)(struct wl_client *client,
 			     struct wl_resource *resource);
 	/**
-	 * 
+	 *
 	 *
 	 * Set the parent window geometry the compositor should use when
 	 * positioning the popup. The compositor may use this information

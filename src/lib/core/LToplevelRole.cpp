@@ -222,7 +222,7 @@ void LToplevelRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrig
 
         if (!imp()->hasConfToSend)
             configure(pendingStates());
-            
+           
         return;
     }
 

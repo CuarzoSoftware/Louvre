@@ -14,7 +14,7 @@
  */
 class Louvre::LRenderBuffer : public LFramebuffer
 {
-public:    
+public:   
     /**
      * @brief Constructor for LRenderBuffer with specified size.
      *

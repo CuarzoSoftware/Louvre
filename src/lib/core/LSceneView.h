@@ -20,7 +20,7 @@
  */
 class Louvre::LSceneView : public LView
 {
-public:    
+public:   
     /**
      * @brief Construct an LSceneView with a specified buffer size, buffer scale, and optional parent.
      *

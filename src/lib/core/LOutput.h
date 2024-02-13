@@ -66,7 +66,7 @@
  *
  * @section Modes
  *
- * Each LOutput can have multiple modes. An LOutputMode contains information about the resolution and refresh rate that the output can operate at.\n 
+ * Each LOutput can have multiple modes. An LOutputMode contains information about the resolution and refresh rate that the output can operate at.\n
  * You can access the modes of an output with modes() and set the desired one with setMode().\n
  * Outputs by default use the preferredMode(), which typically has the highest refresh rate and resolution.\n
  * If you change an output's mode or scale while it's initialized, the resizeGL() event is triggered.

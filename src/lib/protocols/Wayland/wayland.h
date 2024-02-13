@@ -4087,7 +4087,7 @@ struct wl_keyboard_interface {
 	/**
 	 * release the keyboard object
 	 *
-	 * 
+	 *
 	 * @since 3
 	 */
 	void (*release)(struct wl_client *client,
@@ -4224,7 +4224,7 @@ struct wl_touch_interface {
 	/**
 	 * release the touch object
 	 *
-	 * 
+	 *
 	 * @since 3
 	 */
 	void (*release)(struct wl_client *client,

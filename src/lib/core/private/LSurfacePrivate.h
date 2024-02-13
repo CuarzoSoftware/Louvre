@@ -119,7 +119,7 @@ LPRIVATE_CLASS(LSurface)
     void setKeyboardGrabToParent();
 
     inline void updateDamage()
-    {        
+    {       
         if (!texture->initialized() || changesToNotify.check(SizeChanged | SourceRectChanged | BufferSizeChanged | BufferTransformChanged | BufferScaleChanged))
         {
             currentDamageB.clear();
