@@ -20,13 +20,13 @@
 class Louvre::LFramebuffer : public LObject
 {
 public:
-    
+   
     enum Type
     {
         Output,
         Render
     };
-    
+   
     inline Type type() const
     {
         return m_type;
@@ -179,7 +179,7 @@ public:
      * @return The framebuffer transformation.
      */
     virtual Transform transform() const = 0;
-    
+   
 protected:
     Type m_type;
 };

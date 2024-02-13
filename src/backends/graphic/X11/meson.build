@@ -12,6 +12,6 @@ GraphicBackendX11 = library(
         xfixes_dep,
         xrandr_dep
     ],
-    install : true, 
+    install : true,
     install_dir : BACKENDS_PATH)
 

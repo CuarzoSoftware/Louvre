@@ -17,7 +17,7 @@
  */
 class Louvre::LDataSource : LObject
 {
-public:   
+public:  
 
     /**
      * @brief Variant of a data source.

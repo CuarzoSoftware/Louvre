@@ -27,7 +27,7 @@
  * You can consider the anchor point as a "nail" and the Popup as a frame composed only of edges. If the gravity is down,
  * the top edge of the Popup will collide with the nail, preventing it from moving further.\n
  * In the following image, a Popup with gravity LPositioner::GravityBottomRight and LPositioner::GravityTopLeft is shown.\n
- * 
+ *
  * <IMG SRC="https://lh3.googleusercontent.com/92DINcYGHOAothPGrLctUtN7mCKRpqESPh4vRA8XN--IehoprgWKYn74myk1CsjXMR_IcaLM7kJZWny7rvytDRr-nXzljMA-W0LWtQ4neu-HGxpT8V2P0blWg5zYymbGQ8vja5Rx6w=w2400">
  *
  * @section Constraint-Adjustments

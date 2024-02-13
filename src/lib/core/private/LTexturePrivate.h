@@ -28,7 +28,7 @@ LPRIVATE_CLASS(LTexture)
     GLenum nativeTarget = 0;
     LOutput *nativeOutput = nullptr;
 
-    // Utility functions    
+    // Utility functions   
     inline bool setDataB(GLuint textureId, GLenum target, UInt32 format, const LSize &size, LOutput *output)
     {
         if (sourceType == Framebuffer)

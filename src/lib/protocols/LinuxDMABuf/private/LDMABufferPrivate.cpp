@@ -9,5 +9,5 @@ void LDMABuffer::LDMABufferPrivate::resource_destroy(wl_resource *resource)
 void LDMABuffer::LDMABufferPrivate::destroy(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);
-    wl_resource_destroy(resource);    
+    wl_resource_destroy(resource);   
 }

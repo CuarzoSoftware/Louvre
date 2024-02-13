@@ -253,7 +253,7 @@ public:
 
     /**
      * @brief Check if the toplevel is being resized.
-     * 
+     *
      * Equivalent to `states() & Resizing`.
      *
      * @return `true` if the toplevel is being resized; otherwise, `false`.
@@ -262,7 +262,7 @@ public:
 
     /**
      * @brief Check if the toplevel is maximized.
-     * 
+     *
      * Equivalent to `states() & Maximized`.
      *
      * @return `true` if the toplevel is maximized; otherwise, `false`.
@@ -273,14 +273,14 @@ public:
      * @brief Check if the toplevel is in fullscreen mode.
      *
      * Equivalent to `states() & Fullscreen`.
-     * 
+     *
      * @return `true` if the toplevel is in fullscreen mode; otherwise, `false`.
      */
     bool fullscreen() const;
 
     /**
      * @brief Check if the toplevel is currently active.
-     * 
+     *
      * Equivalent to `states() & Activated`.
      *
      * @return `true` if the toplevel is active; otherwise, `false`.
@@ -340,7 +340,7 @@ public:
      * @brief Position of the surface according to the role.
      *
      * Override this virtual method if you wish to define your own logic for positioning the Toplevel.
-     * 
+     *
      * The default implementation of rolePos() returns the position assigned by the compositor
      * with LSurface::setPos() minus the (x, y) coords of its window geometry.
      *
@@ -353,7 +353,7 @@ public:
      * @brief Request to start an interactive move session
      *
      * Override this virtual method if you wish to be notified when the client wishes to start an interactive move session.
-     * 
+     *
      * @see LPointer::startMovingToplevel()
      *
      * #### Default Implementation
@@ -365,9 +365,9 @@ public:
      * @brief Request to start an interactive resize session
      *
      * Override this virtual method if you want to be notified when the client wants to start an interactive resize session.
-     * 
+     *
      * @see LPointer::startResizingToplevel()
-     * 
+     *
      * @param edge Which edge or corner is being dragged.
      *
      * #### Default Implementation
@@ -391,7 +391,7 @@ public:
      *
      * Override this virtual method if you want to be notified when the client wants the compositor to configure the Toplevel.\n
      * This request occurs when the toplevel is created and each time it gets remapped after being previously unmapped.
-     * 
+     *
      * @note If you do not explicitly configure the toplevel, Louvre will internally invoke `configure(pendingState())`.
      *
      * #### Default Implementation
@@ -403,9 +403,9 @@ public:
      * @brief Request to maximize
      *
      * Override this virtual method if you wish to be notified when the client intends to maximize the toplevel.\n
-     * It is recommended to respond to this request with a configure() event, preferably with the Louvre::LToplevelRole::Maximized flag. 
+     * It is recommended to respond to this request with a configure() event, preferably with the Louvre::LToplevelRole::Maximized flag.
      * If you have no intention of maximizing it, you may choose to ignore the request or configure it according to your preferences.
-     * 
+     *
      * @note If you do not explicitly configure the toplevel, Louvre will internally invoke `configure(pendingState())` after this request.
      *
      * #### Default Implementation
@@ -417,9 +417,9 @@ public:
      * @brief Request to unmaximize
      *
      * Override this virtual method if you wish to be notified when the client intends to unmaximize the toplevel.\n
-     * It is recommended to respond to this request with a configure() event, preferably without the Louvre::LToplevelRole::Maximized flag. 
+     * It is recommended to respond to this request with a configure() event, preferably without the Louvre::LToplevelRole::Maximized flag.
      * If you have no intention of unmaximizing it, you may choose to ignore the request or configure it according to your preferences.
-     * 
+     *
      * @note If you do not explicitly configure the toplevel, Louvre will internally invoke `configure(pendingState())` after this request.
      *
      * #### Default implementation
@@ -442,13 +442,13 @@ public:
      * @brief Request to set fullscreen mode
      *
      * Override this virtual method if you wish to be notified when the client intends to set the toplevel into fullscreen mode.\n
-     * It is recommended to respond to this request with a configure() event, preferably with the Louvre::LToplevelRole::Fullscreen flag. 
+     * It is recommended to respond to this request with a configure() event, preferably with the Louvre::LToplevelRole::Fullscreen flag.
      * If you have no intention of setting it fullscreen, you may choose to ignore the request or configure it according to your preferences.
-     * 
+     *
      * @note If you do not explicitly configure the toplevel, Louvre will internally invoke `configure(pendingState())` after this request.
      *
      * @param destOutput Output on which the client wishes to display the toplevel. If it is `nullptr` the compositor must choose the output.
-     * 
+     *
      * #### Default implementation
      * @snippet LToplevelRoleDefault.cpp setFullscreenRequest
      */
@@ -458,9 +458,9 @@ public:
      * @brief Request to unset fullscreen mode
      *
      * Override this virtual method if you wish to be notified when the client intends to unset the toplevel fullscreen mode.\n
-     * It is recommended to respond to this request with a configure() event, preferably without the Louvre::LToplevelRole::Fullscreen flag. 
+     * It is recommended to respond to this request with a configure() event, preferably without the Louvre::LToplevelRole::Fullscreen flag.
      * If you have no intention of unsetting the fullscreen mode, you may choose to ignore the request or configure it according to your preferences.
-     * 
+     *
      * @note If you do not explicitly configure the toplevel, Louvre will internally invoke `configure(pendingState())` after this request.
      *
      * #### Default implementation

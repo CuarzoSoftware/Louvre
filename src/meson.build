@@ -1,6 +1,6 @@
 project(
     'Louvre',
-    'c','cpp', 
+    'c','cpp',
     version : run_command('cat', files('../VERSION'), check : false).stdout().strip(),
     meson_version: '>= 0.56.0',
     default_options: [
@@ -93,7 +93,7 @@ globals = [
 foreach g : globals
     hs = run_command('find', './lib/protocols/' + g, '-type', 'f', '-name', '*.h', '-maxdepth', '1', check : false).stdout().strip().split('\n')
     install_headers(hs, install_dir : join_paths(HEADERS_INSTALL_PATH, 'protocols', g))
-    
+   
     hs_p = run_command('find', './lib/protocols/' + g + '/private', '-type', 'f', '-name', '*.h', '-maxdepth', '1', check : false).stdout().strip().split('\n')
 
     if hs_p[0] != ''
