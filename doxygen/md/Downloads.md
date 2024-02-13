@@ -6,7 +6,7 @@ Louvre relies on the following libraries:
 * **EGL** >= 1.5.0
 * **GLES 2.0** >= 13.0.6
 * **DRM** >= 2.4.85
-* **SRM** >= 0.3.0
+* **SRM** >= 0.5.2
 * **GBM** >= 22.2.0
 * **Evdev** >= 1.5.6
 * **Libinput** >= 1.6.3
@@ -41,6 +41,8 @@ If the [hwinfo](https://github.com/vcrhonek/hwdata) or [libdisplay-info](https:/
 
 To install SRM, follow the instructions provided [here](https://cuarzosoftware.github.io/SRM/md_md__downloads.html).
 
+> Louvre 1.2.0 requires SRM >= 0.5.2
+
 It is also recommended to install [weston-terminal](https://gitlab.freedesktop.org/wayland/weston), which is compatible with Wayland and is used throughout the tutorial and the examples.
 
 ```
@@ -57,6 +59,8 @@ $ sudo dnf install @development-tools make automake gcc gcc-c++ meson libwayland
 ```
 
 To install SRM, follow the instructions provided [here](https://cuarzosoftware.github.io/SRM/md_md__downloads.html).
+
+> Louvre 1.2.0 requires SRM >= 0.5.2
 
 It is also recommended to install [weston-terminal](https://gitlab.freedesktop.org/wayland/weston) which is compatible with Wayland and is used throughout the tutorial and the examples.
 

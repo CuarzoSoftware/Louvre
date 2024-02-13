@@ -55,4 +55,4 @@ For snappier cursor updates, force the legacy DRM API (asynchronous hardware cur
 
   - **SRM_FORCE_LEGACY_API**=1
 
-> Starting from Louvre version 1.2 the SRM backend defaults to using the legacy API. To enable the atomic API instead, simply set **SRM_FORCE_LEGACY_API**=0.
+> Starting from Louvre version 1.2.0 the SRM backend defaults to using the legacy API. To enable the atomic API instead, simply set **SRM_FORCE_LEGACY_API**=0.
