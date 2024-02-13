@@ -395,7 +395,7 @@ void ToplevelView::updateTitle()
 
 void ToplevelView::updateGeometry()
 {
-    class Surface *surf = (class Surface *)toplevel->surface();
+    class Surface *surf { (class Surface *)toplevel->surface() };
 
     if (surf->view.parent() != &clipTop)
     {
@@ -514,10 +514,9 @@ void ToplevelView::updateGeometry()
 
         surf->view.setCustomPos((toplevel->fullscreenOutput->size() - toplevel->windowGeometry().size()) / 2);
 
-        LSize size = nativeSize();
+        const LSize size { nativeSize() };
 
         clipTop.setSize(size);
-
         decoT.setDstSize(size.w(), decoT.nativeSize().h());
         decoT.setPos(0, -decoT.nativeSize().h() + (TOPLEVEL_TOPBAR_HEIGHT + TOPLEVEL_TOP_CLAMP_OFFSET_Y) * fullscreenTopbarVisibility);
         buttonsContainer.setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT * (1.f - fullscreenTopbarVisibility));
@@ -570,13 +569,14 @@ void ToplevelView::updateGeometry()
             buttonsContainer.enableBlockPointer(true);
         }
 
-        Int32 clip = 1;
+        const Int32 clip { 1 };
+        const LSize tlSize { toplevel->windowGeometry().size().w() - 2 * clip, toplevel->windowGeometry().size().h() - 2 * clip };
 
         setSize(
-            toplevel->windowGeometry().size().w() - 2 * clip,
-            toplevel->windowGeometry().size().h() - 2 * clip);
+            tlSize.w() < 128 ? 128 : tlSize.w(),
+            tlSize.h() < 128 ? 128 : tlSize.h());
 
-        LSize size = nativeSize();
+        const LSize size { nativeSize() };
 
         // Upper surface view
         clipTop.setSize(
@@ -694,7 +694,7 @@ void ToplevelView::updateGeometry()
     // Update title pos
     if (title.texture())
     {
-        Int32 px = (topbarInput.size().w() - title.size().w()) / 2;
+        Int32 px { (topbarInput.size().w() - title.size().w()) / 2 };
 
         if (titleWidth > (topbarInput.size().w() - 128) * 2)
             px = 64;

@@ -47,10 +47,10 @@ public:
 
     void unsetFullscreen();
 
-    bool destructorCalled = false;
-    bool quickUnfullscreen = false;
+    bool destructorCalled { false };
+    bool quickUnfullscreen { false };
 
-    ToplevelView *decoratedView = nullptr;
+    ToplevelView *decoratedView { nullptr };
 
     LSolidColorView blackFullscreenBackground;
 
@@ -60,13 +60,13 @@ public:
 
     // Rects for fullscreen animation
     LRect prevRect, dstRect, prevBoundingRect;
-    Output *fullscreenOutput = nullptr;
-    Workspace *fullscreenWorkspace = nullptr;
-    UInt32 prevStates = 0;
-    UInt32 outputUnplugConfigureCount = 0;
+    Output *fullscreenOutput { nullptr };
+    Workspace *fullscreenWorkspace { nullptr };
+    UInt32 prevStates { 0 };
+    UInt32 outputUnplugConfigureCount { 0 };
 
     LTextureView animView;
-    LSceneView *animScene = nullptr;
+    LSceneView *animScene { nullptr };
 };
 
 #endif // TOPLEVEL_H

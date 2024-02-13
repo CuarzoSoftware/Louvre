@@ -319,7 +319,8 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         texture = textureBackup;
         compositor()->imp()->eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.buffer, EGL_WIDTH, &widthB);
         compositor()->imp()->eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.buffer, EGL_HEIGHT, &heightB);
-        updateDimensions(widthB, heightB);
+        if (!updateDimensions(widthB, heightB))
+            return false;
         updateDamage();
         texture->setData(current.buffer);
     }
@@ -331,7 +332,8 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         widthB = dmaBuffer->planes()->width;
         heightB = dmaBuffer->planes()->height;
 
-        updateDimensions(widthB, heightB);
+        if (!updateDimensions(widthB, heightB))
+            return false;
 
         if (!dmaBuffer->texture())
         {

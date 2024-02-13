@@ -22,7 +22,7 @@ public:
 
     ToplevelView *toplevelView;
     ButtonType buttonType;
-    bool pressed = false;
+    bool pressed { false };
 
     void pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state) override;
     void pointerLeaveEvent() override;

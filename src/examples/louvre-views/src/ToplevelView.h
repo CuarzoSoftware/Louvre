@@ -21,9 +21,9 @@ public:
     ToplevelView(Toplevel *toplevel);
     ~ToplevelView();
 
-    Toplevel *toplevel = nullptr;
-    bool lastActiveState = false;
-    bool lastFullscreenState = false;
+    Toplevel *toplevel { nullptr };
+    bool lastActiveState { false };
+    bool lastFullscreenState { false };
 
     LLayerView clipTop;
     LLayerView clipBottom;
@@ -57,11 +57,11 @@ public:
 
     LTextureView title;
 
-    UInt32 lastTopbarClickMs = 0;
-    Float32 fullscreenTopbarVisibility = 0.f;
+    UInt32 lastTopbarClickMs { 0 };
+    Float32 fullscreenTopbarVisibility { 0.f };
     LAnimation fullscreenTopbarAnim;
 
-    Int32 titleWidth = 0;
+    Int32 titleWidth { 0 };
     void updateTitle();
     void updateGeometry();
 

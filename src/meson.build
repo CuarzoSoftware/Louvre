@@ -56,7 +56,7 @@ drm_dep             = dependency('libdrm')
 gbm_dep             = dependency('gbm')
 input_dep           = dependency('libinput')
 libseat_dep         = dependency('libseat')
-srm_dep             = dependency('SRM')
+srm_dep             = dependency('SRM', version : '>=0.5.2')
 pthread_dep         = cpp.find_library('pthread')
 dl_dep              = cpp.find_library('dl')
 

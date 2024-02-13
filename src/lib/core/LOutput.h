@@ -436,7 +436,7 @@ public:
      * It's common for clients to adapt their surface scales to match the scale of the output where they are displayed.
      * If the scale changes and the output is already initialized, the resizeGL() event will be triggered.
      *
-     * @note Starting from Louvre version 1.2, fractional scales are now supported.
+     * @note Starting from Louvre version 1.2, fractional scales are now supported, see the @ref Scaling "Scaling Section".
      *
      * @param scale The desired scale factor to set.
      *

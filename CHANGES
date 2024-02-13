@@ -2,19 +2,20 @@ Louvre (1.2.0-1)
 
   # New Protocols
 
-  * Viewporter (see LSurface::srcRect()).
-  * Fractional Scale (see LOutput::setScale()).
-  * Wlr Gamma Control (see LOutput::setGammaRequest()).
-  * Tearing Control (see LSurface::preferVSync() and LOutput::enableVSync()).
+  * Viewporter (refer to LSurface::srcRect()).
+  * Fractional Scale (refer to LOutput::setScale()).
+  * Wlr Gamma Control (refer to LOutput::setGammaRequest()).
+  * Tearing Control (refer to LSurface::preferVSync() and LOutput::enableVSync()).
 
   # New Features
 
-  * LOutput now supports fractional scales and the ability to seamlessly toggle oversampling on and off to reduce aliasing artifacts when required.
+  * LOutput now supports fractional scales and with optional oversampling to reduce aliasing artifacts when necessary.
   * Added VSync disabling capability in LOutput with optional refresh rate limits.
   * LOutput now supports custom gamma correction curves through LOutput::setGamma() and the new LGammaTable class.
   * LPainter has new methods for rendering texture regions with higher precision and applied transforms.
   * LTextureView now supports custom source rects and transforms.
   * Introduced LBitset class to reduce memory usage for storing binary conditions.
+  * Introduced isKeySymbolPressed() to LKeyboard, allowing querying the state of key symbols instead of raw key codes.
 
   # Minor API Changes
 
@@ -23,6 +24,10 @@ Louvre (1.2.0-1)
   * Updated all virtual constructor parameters in LCompositor to const void *.
   * Removed the create() method in LAnimation and LTimer, replaced with class constructors for stack allocation.
   * Replaced LView's paintRect() event with paintEvent().
+
+  # Graphic Backend
+
+  * The graphic backend modules API has been refactored with a cleaner and more efficient API (this does not affect Louvre public API).
 
   # Input Backend
 
@@ -34,21 +39,23 @@ Louvre (1.2.0-1)
 
   # Examples
 
-  * louvre-views now uses a single texture atlas for UI elements instead of individual images.
-  * Transitioned most heap-allocated objects to stack allocation in louvre-views.
-  * louvre-views workspace switching and fullscreen transition animations have undergone optimization, resulting in a smoother visual experience.
+  * The louvre-views example now uses a single texture atlas for UI elements instead of individual images.
+  * Transitioned most heap-allocated objects to stack allocation.
+  * Workspace switching and fullscreen transition animations have undergone optimization, resulting in a smoother visual experience.
   * Added new shortcuts for changing the output transform, scale, mode, and toggling VSync.
 
   # Building
 
   * Updated C++ standard to version 20.
+  * SRM dependency now requires version 0.5.2 or later.
 
   # Documentation
 
-  * Expanded the tutorial with new chapters on Gamma Correction and Tearing.
-  * Included a pre-built binaries section on the downloads page.
+  * Rewrote most of the tutorial for clearer explanations and code.
+  * Created a new repo containing the code of the final result after completing the tutorial.
+  * Expanded the tutorial with new chapters on gamma correction, fractional scaling, and VSync.
 
- -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Tue, 06 Feb 2024 19:06:14 -0300
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Tue, 13 Feb 2024 13:28:39 -0300
 
 
 Louvre (1.1.0-1)

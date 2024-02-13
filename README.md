@@ -34,9 +34,9 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 * Scene & Views System
 * Single, Double or Triple Buffering
 * Persistent Clipboard (only for string based mime types)
-* Fractional Scaling
-* VSync Control
-* Gamma Correction
+* Fractional Scaling (since v1.2.0)
+* VSync Control (since v1.2.0)
+* Gamma Correction (since v1.2.0)
 
 ## 🧩 Protocols
 
@@ -45,10 +45,10 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 * XDG Decoration
 * Presentation Time
 * Linux DMA-Buf
-* Viewporter
-* Fractional Scale
-* Wlr Gamma Control
-* Tearing Control
+* Viewporter (since v1.2.0)
+* Fractional Scale (since v1.2.0)
+* Wlr Gamma Control (since v1.2.0)
+* Tearing Control (since v1.2.0)
 
 ## 🖌️ Rendering
 
@@ -135,12 +135,12 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 
 ## 🔨 Upcoming Features
 
-* Touch Events
-* Pointer Gestures
-* Relative Pointer
-* Pointer Constraints
-* Session Lock
-* Screencasting
-* Wayland Backend
-* X11 Backend
-* XWayland
+* Touch Events (v2.0.0)
+* Pointer Gestures (v2.0.0)
+* Relative Pointer (v2.0.0)
+* Pointer Constraints (v2.0.0)
+* Session Lock (v2.0.0)
+* Screencasting (probably v2.0.0)
+* Wayland Backend (probably v2.0.0)
+* X11 Backend (someday)
+* XWayland (hopefully never)
