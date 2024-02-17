@@ -29,6 +29,7 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 
 ## ⭐ Features
 
+* Rootful XWayland (rootless mode is not yet supported)
 * Multi-GPU Support
 * Multi-Session Support
 * Scene & Views System
@@ -143,4 +144,4 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 * Screencasting (probably v2.0.0)
 * Wayland Backend (probably v2.0.0)
 * X11 Backend (someday)
-* XWayland (hopefully never)
+* Rootless XWayland (someday)
