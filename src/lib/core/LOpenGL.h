@@ -21,7 +21,7 @@ public:
      *
      * @note The returned string must be manually freed when no longer used.
      *
-     * @param fileName Path to the shader file.
+     * @param file Path to the shader file.
      * @returns A string with the contents of the shader or `nullptr` in case of error.
      */
     static char *openShader(const std::filesystem::path &file);

@@ -142,7 +142,7 @@ public:
      * The size refers to its window geometry (ignoring its decoration).
      *
      * @param size Requested size. Passing (0,0) allows the client to decide the size.
-     * @param flags Union of toplevel state flags defined in #States.
+     * @param flags Union of toplevel state flags defined in @ref State.
      */
     void configure(const LSize &size, StateFlags flags);
 
@@ -154,7 +154,7 @@ public:
      *
      * @param width Suggested width. Passing (0,0) allows the client to decide the size.
      * @param height Suggested height. Passing (0,0) allows the client to decide the size.
-     * @param flags Union of toplevel state flags defined in #States.
+     * @param flags Union of toplevel state flags defined in @ref State.
      */
     void configure(Int32 width, Int32 height, StateFlags flags);
 

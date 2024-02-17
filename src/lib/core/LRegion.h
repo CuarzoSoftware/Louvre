@@ -220,15 +220,11 @@ public:
 
     /**
      * @brief Clips the LRegion to the area defined by the specified rectangle.
-     *
-     * @param rect The rectangle used for clipping.
      */
     void clip(const LPoint &pos, const LSize &size);
 
     /**
      * @brief Clips the LRegion to the area defined by the specified rectangle.
-     *
-     * @param rect The rectangle used for clipping.
      */
     void clip(Int32 x, Int32 y, Int32 w, Int32 h);
 
