@@ -1,5 +1,14 @@
 # 📦 Downloads
 
+## Pre-built Binaries
+
+Pre-built binaries are provided for the following distributions. Please be aware that their versions may not always match the latest Louvre release.
+
+* **Arch** : [louvre](https://aur.archlinux.org/packages/louvre) - *Thanks to [@TrialnError](https://aur.archlinux.org/account/TrialnError)*.
+* **NixOS** : [louvre](https://search.nixos.org/packages?channel=unstable&show=louvre&from=0&size=50&sort=relevance&type=packages&query=louvre) - *Thanks to [Marco Rebhan](https://github.com/2xsaiko)*.
+
+## Manual Building
+
 Louvre relies on the following libraries:
 
 * **Wayland Server** >= 1.16

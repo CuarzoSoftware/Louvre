@@ -21,6 +21,7 @@ public:
      * This constructor creates an LRenderBuffer with the specified size in buffer coordinates.
      *
      * @param sizeB The size of the framebuffer in buffer coordinates.
+     * @param alpha Employ a format with an alpha component.
      */
     LRenderBuffer(const LSize &sizeB, bool alpha = true);
 

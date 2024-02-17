@@ -298,7 +298,7 @@ public:
      * and in the X11 backend to a [XEvent](https://www.x.org/releases/X11R7.6/doc/libX11/specs/libX11/libX11.html) struct.
      *
      * #### Default implementation
-     * @snippet LSeatDefault.cpp backendNativeEvent
+     * @snippet LSeatDefault.cpp nativeInputEvent
      */
     virtual void nativeInputEvent(void *event);
 
