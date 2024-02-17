@@ -1,9 +1,10 @@
 #ifndef LCOMPOSITORPRIVATE_H
 #define LCOMPOSITORPRIVATE_H
 
-#include <LOutput.h>
 #include <private/LRenderBufferPrivate.h>
 #include <LCompositor.h>
+#include <LOutput.h>
+#include <LInputDevice.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <sys/epoll.h>
@@ -32,13 +33,13 @@ LPRIVATE_CLASS(LCompositor)
     void processRemovedGlobals();
     void removeGlobal(wl_global *global);
 
-    CompositorState state = CompositorState::Uninitialized;
-    LCompositor *compositor = nullptr;
+    CompositorState state { CompositorState::Uninitialized };
+    LCompositor *compositor;
     void unitCompositor();
 
     bool initWayland();
-        wl_display *display = nullptr;
-        wl_event_loop *eventLoop = nullptr;
+        wl_display *display { nullptr };
+        wl_event_loop *eventLoop { nullptr };
         epoll_event events[3];
         Int32 epollFd;
         wl_listener clientConnectedListener;
@@ -46,30 +47,31 @@ LPRIVATE_CLASS(LCompositor)
     void unitWayland();
 
     bool initSeat();
-        LSeat *seat = nullptr;
+        LSeat *seat { nullptr };
     void unitSeat();
 
     bool initGraphicBackend();
-        PFNEGLBINDWAYLANDDISPLAYWL eglBindWaylandDisplayWL = NULL;
-        PFNEGLQUERYWAYLANDBUFFERWL eglQueryWaylandBufferWL = NULL;
-        EGLDisplay mainEGLDisplay = EGL_NO_DISPLAY;
-        EGLContext mainEGLContext = EGL_NO_CONTEXT;
-        LGraphicBackendInterface *graphicBackend = nullptr;
-        void *graphicBackendHandle = nullptr; // Dylib
-        void *graphicBackendData = nullptr;
-        LCursor *cursor = nullptr;
-        LPainter *painter;
-        bool isGraphicBackendInitialized = false;
+        PFNEGLBINDWAYLANDDISPLAYWL eglBindWaylandDisplayWL { NULL };
+        PFNEGLQUERYWAYLANDBUFFERWL eglQueryWaylandBufferWL { NULL };
+        EGLDisplay mainEGLDisplay { EGL_NO_DISPLAY };
+        EGLContext mainEGLContext { EGL_NO_CONTEXT };
+        LGraphicBackendInterface *graphicBackend { nullptr };
+        void *graphicBackendHandle { nullptr };
+        void *graphicBackendData { nullptr };
+        LCursor *cursor { nullptr };
+        LPainter *painter { nullptr };
+        bool isGraphicBackendInitialized { false };
     void unitGraphicBackend(bool closeLib);
 
     bool initInputBackend();
-        void *inputBackendHandle = nullptr;
-        LInputBackendInterface *inputBackend = nullptr;
-        bool isInputBackendInitialized = false;
+        LInputDevice fakeDevice { LSeat::Pointer | LSeat::Keyboard | LSeat::Touch };
+        void *inputBackendHandle { nullptr };
+        LInputBackendInterface *inputBackend { nullptr };
+        bool isInputBackendInitialized { false };
     void unitInputBackend(bool closeLib);
 
     // Event FD to force unlock main loop poll
-    bool pollUnlocked = false;
+    bool pollUnlocked { false };
     void unlockPoll();
 
     // Threads sync
@@ -91,9 +93,9 @@ LPRIVATE_CLASS(LCompositor)
     std::vector<LOutput*>outputs;
     std::vector<LView*>views;
     std::vector<LTexture*>textures;
-    bool surfacesListChanged = false;
+    bool surfacesListChanged { false };
     std::vector<LAnimation*>animations;
-    bool animationsVectorChanged = false;
+    bool animationsVectorChanged { false };
     std::vector<LTimer*>oneShotTimers;
 
     bool runningAnimations();
@@ -102,7 +104,7 @@ LPRIVATE_CLASS(LCompositor)
     // Thread specific data
     struct ThreadData
     {
-        LPainter *painter = nullptr;
+        LPainter *painter { nullptr };
         std::vector<LRenderBuffer::LRenderBufferPrivate::ThreadData> renderBuffersToDestroy;
     };
 

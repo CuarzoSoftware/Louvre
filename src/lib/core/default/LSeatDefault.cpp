@@ -76,3 +76,19 @@ void LSeat::outputUnplugged(LOutput *output)
     compositor()->repaintAllOutputs();
 }
 //! [outputUnplugged]
+
+//! [inputDevicePlugged]
+void LSeat::inputDevicePlugged(LInputDevice *device)
+{
+    L_UNUSED(device);
+    setInputCapabilities(inputBackendCapabilities());
+}
+//! [inputDevicePlugged]
+
+//! [inputDeviceUnplugged]
+void LSeat::inputDeviceUnplugged(LInputDevice *device)
+{
+    L_UNUSED(device);
+    setInputCapabilities(inputBackendCapabilities());
+}
+//! [inputDeviceUnplugged]

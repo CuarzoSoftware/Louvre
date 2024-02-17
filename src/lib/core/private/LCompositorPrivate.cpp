@@ -48,7 +48,7 @@ void LCompositor::LCompositorPrivate::removeGlobal(wl_global *global)
 
 static wl_iterator_result resourceDestroyIterator(wl_resource *resource, void *data)
 {
-    wl_resource **lastCreatedResource = (wl_resource **)data;
+    wl_resource **lastCreatedResource { (wl_resource **)data };
     *lastCreatedResource = resource;
     return WL_ITERATOR_CONTINUE;
 }
@@ -56,13 +56,13 @@ static wl_iterator_result resourceDestroyIterator(wl_resource *resource, void *d
 static void clientDisconnectedEvent(wl_listener *listener, void *data)
 {
     delete listener;
-    LCompositor *compositor = LCompositor::compositor();
-    wl_client *client = (wl_client*)data;
+    LCompositor *compositor { LCompositor::compositor() };
+    wl_client *client { (wl_client*)data };
 
-    LClient *disconnectedClient = compositor->getClientFromNativeResource(client);
+    LClient *disconnectedClient { compositor->getClientFromNativeResource(client) };
     compositor->destroyClientRequest(disconnectedClient);
 
-    wl_resource *lastCreatedResource = NULL;
+    wl_resource *lastCreatedResource { NULL };
 
     while (1)
     {
@@ -82,19 +82,19 @@ static void clientDisconnectedEvent(wl_listener *listener, void *data)
 static void clientConnectedEvent(wl_listener *listener, void *data)
 {
     L_UNUSED(listener);
-    LCompositor *compositor = LCompositor::compositor();
-    wl_client *client = (wl_client*)data;
-    LClient::Params *params = new LClient::Params;
+    LCompositor *compositor { LCompositor::compositor() };
+    wl_client *client { (wl_client*)data };
+    LClient::Params *params { new LClient::Params };
     params->client = client;
 
-    wl_listener *destroyListener = new wl_listener();
+    wl_listener *destroyListener { new wl_listener() };
     destroyListener->notify = clientDisconnectedEvent;
 
     // Listen for client disconnection
     wl_client_add_destroy_listener(client, destroyListener);
 
     // Let the developer create his own client implementation
-    LClient *newClient =  compositor->createClientRequest(params);
+    LClient *newClient { compositor->createClientRequest(params) };
 
     // Append client to the compositor list
     compositor->imp()->clients.push_back(newClient);
@@ -112,11 +112,11 @@ bool LCompositor::LCompositorPrivate::initWayland()
         return false;
     }
 
-    const char *socket = getenv("LOUVRE_WAYLAND_DISPLAY");
+    const char *socket { getenv("LOUVRE_WAYLAND_DISPLAY") };
 
     if (socket)
     {
-        int socketFd = wl_display_add_socket(display, socket);
+        int socketFd { wl_display_add_socket(display, socket) };
 
         if (socketFd == -1)
         {

@@ -345,6 +345,28 @@ public:
      */
     virtual void outputUnplugged(LOutput *output);
 
+    /**
+     * @brief New available input device.
+     *
+     * Override this method to be notified when a new input device is avaliable.\n
+     * The default implementation aligns the input capabilities of the compositor with those of the input backend.
+     *
+     * #### Default Implementation
+     * @snippet LSeatDefault.cpp inputDevicePlugged
+     */
+    virtual void inputDevicePlugged(LInputDevice *device);
+
+    /**
+     * @brief Disconnected input device.
+     *
+     * Override this method to be notified when an input device is no longer avaliable.\n
+     * The default implementation aligns the input capabilities of the compositor with those of the input backend.
+     *
+     * #### Default Implementation
+     * @snippet LSeatDefault.cpp inputDeviceUnplugged
+     */
+    virtual void inputDeviceUnplugged(LInputDevice *device);
+
 /// @}
 
     LPRIVATE_IMP_UNIQUE(LSeat)

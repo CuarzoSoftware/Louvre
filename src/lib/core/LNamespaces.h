@@ -161,6 +161,7 @@ namespace Louvre
     class LTextureView;
     class LSolidColorView;
     class LSceneView;
+    class LSceneTouchPoint;
 
     // Data
     class LDataDevice;
@@ -180,8 +181,47 @@ namespace Louvre
     class LSeat;
     class LPointer;
     class LKeyboard;
+    class LTouch;
     class LCursor;
     class LXCursor;
+    class LInputDevice;
+    class LEvent;
+    class LInputEvent;
+
+    class LPointerEvent;
+    class LPointerEnterEvent;
+    class LPointerLeaveEvent;
+    class LPointerMoveEvent;
+    class LPointerButtonEvent;
+    class LPointerScrollEvent;
+
+    class LPointerSwipeBeginEvent;
+    class LPointerSwipeUpdateEvent;
+    class LPointerSwipeEndEvent;
+
+    class LPointerPinchBeginEvent;
+    class LPointerPinchUpdateEvent;
+    class LPointerPinchEndEvent;
+
+    class LPointerHoldBeginEvent;
+    class LPointerHoldEndEvent;
+
+    class LKeyboardEvent;
+    class LKeyboardEnterEvent;
+    class LKeyboardLeaveEvent;
+    class LKeyboardKeyEvent;
+    class LKeyboardModifiersEvent;
+
+    class LTouchEvent;
+    class LTouchDownEvent;
+    class LTouchMoveEvent;
+    class LTouchUpEvent;
+    class LTouchFrameEvent;
+    class LTouchCancelEvent;
+    class LTouchPoint;
+
+    class LToplevelResizeSession;
+    class LToplevelMoveSession;
 
     // Other
     class LDMABuffer;
