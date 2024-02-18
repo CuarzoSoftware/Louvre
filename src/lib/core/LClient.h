@@ -263,6 +263,14 @@ public:
      */
     const std::vector<Protocols::TearingControl::GTearingControlManager*> &tearingControlManagerGlobals() const;
 
+    /**
+     * Resources created when the client binds to the
+     * [zwp_relative_pointer_manager_v1](https://wayland.app/protocols/relative-pointer-unstable-v1) global
+     * of the Relative Pointer protocol.
+     */
+    const std::vector<Protocols::RelativePointer::GRelativePointerManager*> &relativePointerManagerGlobals() const;
+
+    // TODO
     const Events &events() const;
 
     LPRIVATE_IMP_UNIQUE(LClient)

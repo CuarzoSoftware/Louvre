@@ -1,5 +1,6 @@
 #include <protocols/Wayland/private/RPointerPrivate.h>
 #include <protocols/Wayland/GSeat.h>
+#include <protocols/RelativePointer/RRelativePointer.h>
 #include <private/LDataDevicePrivate.h>
 #include <private/LClientPrivate.h>
 #include <private/LPointerPrivate.h>
@@ -106,10 +107,8 @@ void LPointer::sendMoveEvent(const LPointerMoveEvent &event)
             rPointer->motion(event);
             rPointer->frame();
 
-#ifdef TODO
-            if (p->relativePointerResource())
-                p->relativePointerResource()->relative_motion(event);
-#endif
+            for (auto rRelativePointer : rPointer->relativePointerResources())
+                rRelativePointer->relativeMotion(event);
         }
     }
 }

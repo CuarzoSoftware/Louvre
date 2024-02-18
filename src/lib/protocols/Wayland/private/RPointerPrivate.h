@@ -13,6 +13,7 @@ LPRIVATE_CLASS(RPointer)
 #endif
 
     GSeat *gSeat;
+    std::vector<Protocols::RelativePointer::RRelativePointer*> rRelativePointers;
 };
 
 #endif // RPOINTERPRIVATE_H

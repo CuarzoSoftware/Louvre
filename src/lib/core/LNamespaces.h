@@ -27,6 +27,7 @@
 #define LOUVRE_FRACTIONAL_SCALE_VERSION 1
 #define LOUVRE_GAMMA_CONTROL_MANAGER_VERSION 1
 #define LOUVRE_TEARING_CONTROL_MANAGER_VERSION 1
+#define LOUVRE_RELATIVE_POINTER_MANAGER_VERSION 1
 
 #define L_UNUSED(object){(void)object;}
 
@@ -535,6 +536,22 @@ namespace Louvre
 
             class RTearingControl;
         };
+
+        namespace PointerGestures
+        {
+            class GPointerGestures;
+
+            class RGestureSwipe;
+            class RGesturePinch;
+            class RGestureHold;
+        };
+
+        namespace RelativePointer
+        {
+            class GRelativePointerManager;
+
+            class RRelativePointer;
+        };
     }
 
     /// @cond OMIT
@@ -627,7 +644,7 @@ namespace Louvre
 
     inline const std::string getenvString(const char *env)
     {
-        const char *val = getenv(env);
+        const char *val { getenv(env) };
 
         if (val != NULL)
             return std::string(val);

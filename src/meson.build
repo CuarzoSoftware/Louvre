@@ -87,7 +87,8 @@ globals = [
     'Viewporter',
     'FractionalScale',
     'GammaControl',
-    'TearingControl'
+    'TearingControl',
+    'RelativePointer'
 ]
 
 foreach g : globals

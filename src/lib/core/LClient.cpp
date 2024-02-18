@@ -111,6 +111,11 @@ const std::vector<XdgDecoration::GXdgDecorationManager *> &LClient::xdgDecoratio
     return imp()->xdgDecorationManagerGlobals;
 }
 
+const std::vector<RelativePointer::GRelativePointerManager *> &LClient::relativePointerManagerGlobals() const
+{
+    return imp()->relativePointerManagerGlobals;
+}
+
 const LClient::Events &LClient::events() const
 {
     return imp()->events;

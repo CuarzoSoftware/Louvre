@@ -11,6 +11,7 @@ public:
     ~RPointer();
 
     GSeat *seatGlobal() const;
+    const std::vector<Protocols::RelativePointer::RRelativePointer*> &relativePointerResources() const;
 
     // Since 1
     bool enter(const LPointerEnterEvent &event, RSurface *rSurface);

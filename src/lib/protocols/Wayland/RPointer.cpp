@@ -1,5 +1,6 @@
 #include <protocols/Wayland/private/RPointerPrivate.h>
 #include <protocols/Wayland/private/GSeatPrivate.h>
+#include <protocols/RelativePointer/private/RRelativePointerPrivate.h>
 #include <private/LClientPrivate.h>
 
 static struct wl_pointer_interface pointer_implementation =
@@ -34,11 +35,22 @@ RPointer::~RPointer()
 {
     if (seatGlobal())
         LVectorRemoveOneUnordered(seatGlobal()->imp()->rPointers, this);
+
+    while (!relativePointerResources().empty())
+    {
+        imp()->rRelativePointers.back()->imp()->rPointer = nullptr;
+        imp()->rRelativePointers.pop_back();
+    }
 }
 
 GSeat *RPointer::seatGlobal() const
 {
     return imp()->gSeat;
+}
+
+const std::vector<RelativePointer::RRelativePointer *> &RPointer::relativePointerResources() const
+{
+    return imp()->rRelativePointers;
 }
 
 bool RPointer::enter(const LPointerEnterEvent &event, RSurface *rSurface)

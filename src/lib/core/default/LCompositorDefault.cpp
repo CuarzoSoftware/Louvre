@@ -10,6 +10,7 @@
 #include <protocols/FractionalScale/private/GFractionalScaleManagerPrivate.h>
 #include <protocols/GammaControl/private/GGammaControlManagerPrivate.h>
 #include <protocols/TearingControl/private/GTearingControlManagerPrivate.h>
+#include <protocols/RelativePointer/private/GRelativePointerManagerPrivate.h>
 #include <LCompositor.h>
 #include <LToplevelRole.h>
 #include <LCursor.h>
@@ -68,6 +69,9 @@ bool LCompositor::createGlobalsRequest()
 
     wl_global_create(display(), &wp_tearing_control_manager_v1_interface,
                      LOUVRE_TEARING_CONTROL_MANAGER_VERSION, this, &Protocols::TearingControl::GTearingControlManager::GTearingControlManagerPrivate::bind);
+
+    wl_global_create(display(), &zwp_relative_pointer_manager_v1_interface,
+                     LOUVRE_RELATIVE_POINTER_MANAGER_VERSION, this, &Protocols::RelativePointer::GRelativePointerManager::GRelativePointerManagerPrivate::bind);
 
     wl_display_init_shm(display());
 
