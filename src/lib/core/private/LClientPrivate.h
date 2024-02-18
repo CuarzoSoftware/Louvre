@@ -14,9 +14,10 @@ struct LClient::Params
 
 LPRIVATE_CLASS(LClient)
 
-    wl_client *client = nullptr;
+    wl_client *client { nullptr };
     LDataDevice dataDevice;
     std::vector<LSurface*> surfaces;
+    Events events;
 
     // Globals
     std::vector<Wayland::GCompositor*> compositorGlobals;
@@ -33,7 +34,7 @@ LPRIVATE_CLASS(LClient)
     std::vector<TearingControl::GTearingControlManager*> tearingControlManagerGlobals;
 
     // Singleton Globals
-    Wayland::GDataDeviceManager *dataDeviceManagerGlobal = nullptr;
+    Wayland::GDataDeviceManager *dataDeviceManagerGlobal { nullptr };
 };
 
 #endif // LCLIENTPRIVATE_H

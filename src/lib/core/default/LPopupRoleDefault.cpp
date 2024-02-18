@@ -475,7 +475,7 @@ void LPopupRole::grabSeatRequest(Wayland::GSeat *seatGlobal)
 {
     /* The grabSeatRequest() is only triggered if the request has been
      * originated from some client event, such as a pointer click or key press*/
-    seat()->keyboard()->setGrabbingSurface(surface(), seatGlobal->keyboardResource());
+    //seat()->keyboard()->setGrabbingSurface(surface(), seatGlobal->keyboardResource());
 }
 //! [grabSeatRequest]
 

@@ -174,10 +174,10 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
 
     imp()->keymapFormat = WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1;
 
-    for (LClient *c : compositor()->clients())
-        for (Protocols::Wayland::GSeat *s : c->seatGlobals())
-            if (s->keyboardResource())
-                s->keyboardResource()->keymap(keymapFormat(), keymapFd(), keymapSize());
+    for (auto client : compositor()->clients())
+        for (auto gSeat : client->seatGlobals())
+            for (auto rKeyboard : gSeat->keyboardResources())
+                rKeyboard->keymap(keymapFormat(), keymapFd(), keymapSize());
 
     return true;
 
@@ -217,10 +217,10 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
 
     imp()->keymapFormat = WL_KEYBOARD_KEYMAP_FORMAT_NO_KEYMAP;
 
-    for (LClient *c : compositor()->clients())
-        for (Protocols::Wayland::GSeat *s : c->seatGlobals())
-            if (s->keyboardResource())
-                s->keyboardResource()->keymap(keymapFormat(), keymapFd(), keymapSize());
+    for (auto client : compositor()->clients())
+        for (auto gSeat : client->seatGlobals())
+            for (auto rKeyboard : gSeat->keyboardResources())
+                rKeyboard->keymap(keymapFormat(), keymapFd(), keymapSize());
 
     return false;
 }
@@ -247,115 +247,93 @@ LSurface *LKeyboard::focus() const
 
 void LKeyboard::setFocus(LSurface *surface)
 {
-    /*
     if (grabbingSurface())
         return;
 
     if (surface)
     {
-        // If already has focus
         if (focus() == surface)
             return;
-        else
+
+        if (focus())
         {
-            // If another surface has focus
-            if (focus())
-            {
-                UInt32 serial = LTime::nextSerial();
+            LKeyboardLeaveEvent leaveEvent;
 
-                for (Wayland::GSeat *s : focus()->client()->seatGlobals())
-                {
-                    if (s->keyboardResource())
-                    {
-                        s->keyboardResource()->imp()->serials.leave = serial;
-                        s->keyboardResource()->leave(serial, focus()->surfaceResource());
-                        break;
-                    }
-                }
-            }
-
-            if (!focus() || (focus() && focus()->client() != surface->client()))
-                surface->client()->dataDevice().sendSelectionEvent();
-
-            // If the new surface has no wl_pointer then it is like calling setFocus(nullptr)
-            imp()->keyboardFocusSurface = nullptr;
-
-            UInt32 serial = LTime::nextSerial();
-
-            // Pack currently pressed keys
-            wl_array keys;
-            wl_array_init(&keys);
-
-            for (UInt32 key : seat()->keyboard()->pressedKeys())
-            {
-                UInt32 *p = (UInt32*)wl_array_add(&keys, sizeof(UInt32));
-                *p = key;
-            }
-
-            for (Wayland::GSeat *s : surface->client()->seatGlobals())
-            {
-                if (s->keyboardResource())
-                {
-                    imp()->keyboardFocusSurface = surface;
-                    s->keyboardResource()->imp()->serials.enter = serial;
-                    s->keyboardResource()->enter(serial, surface->surfaceResource(), &keys);
-                    s->keyboardResource()->imp()->serials.modifiers = serial;
-                    s->keyboardResource()->modifiers(
-                        serial,
-                        modifiersState().depressed,
-                        modifiersState().latched,
-                        modifiersState().locked,
-                        modifiersState().group);
-                }
-            }
-
-            wl_array_release(&keys);
+            for (auto gSeat : focus()->client()->seatGlobals())
+                for (auto rKeyboard : gSeat->keyboardResources())
+                    rKeyboard->leave(leaveEvent, focus()->surfaceResource());
         }
+
+        if (!focus() || (focus() && focus()->client() != surface->client()))
+            surface->client()->dataDevice().sendSelectionEvent();
+
+        imp()->keyboardFocusSurface = nullptr;
+
+        // Pack currently pressed keys
+        wl_array keys;
+        wl_array_init(&keys);
+
+        for (UInt32 key : seat()->keyboard()->pressedKeys())
+            *(UInt32*)wl_array_add(&keys, sizeof(UInt32)) = key;
+
+        LKeyboardEnterEvent enterEvent;
+        LKeyboardModifiersEvent modifiersEvent { modifiers() };
+
+        for (auto gSeat : surface->client()->seatGlobals())
+        {
+            for (auto rKeyboard : gSeat->keyboardResources())
+            {
+                imp()->keyboardFocusSurface = surface;
+                rKeyboard->enter(enterEvent, surface->surfaceResource(), &keys);
+                rKeyboard->modifiers(modifiersEvent);
+            }
+        }
+
+        wl_array_release(&keys);
     }
     else
     {
         // Remove focus from current surface
         if (focus())
         {
-            UInt32 serial = LTime::nextSerial();
-            for (Wayland::GSeat *s : focus()->client()->seatGlobals())
-            {
-                if (s->keyboardResource())
-                {
-                    s->keyboardResource()->imp()->serials.leave = serial;
-                    s->keyboardResource()->leave(serial, focus()->surfaceResource());
-                }
-            }
+            LKeyboardLeaveEvent leaveEvent;
+
+            for (auto gSeat : focus()->client()->seatGlobals())
+                for (auto rKeyboard : gSeat->keyboardResources())
+                    rKeyboard->leave(leaveEvent, focus()->surfaceResource());
         }
+
         imp()->keyboardFocusSurface = nullptr;
     }
 
     focusChanged();
-*/
 }
 
-void LKeyboard::sendKeyEvent(UInt32 keyCode, KeyState keyState)
+void LKeyboard::sendKeyEvent(const LKeyboardKeyEvent &event)
 {
-    // If no surface has focus
     if (!focus())
         return;
 
-    UInt32 serial = LTime::nextSerial();
-    UInt32 ms = LTime::ms();
-
     if (grabbingSurface())
     {
-        grabbingKeyboardResource()->imp()->serials.key = serial;
-        grabbingKeyboardResource()->key(serial, ms, keyCode, keyState);
+        grabbingKeyboardResource()->key(event);
+
+        if (imp()->modifiersChanged)
+            grabbingKeyboardResource()->modifiers(LKeyboardModifiersEvent(modifiers()));
+
         return;
     }
 
-    for (Wayland::GSeat *s : focus()->client()->seatGlobals())
+    const LKeyboardModifiersEvent modifiersEvent { modifiers() };
+
+    for (auto gSeat : focus()->client()->seatGlobals())
     {
-        if (s->keyboardResource())
+        for (auto rKeyboard : gSeat->keyboardResources())
         {
-            s->keyboardResource()->imp()->serials.key = serial;
-            s->keyboardResource()->key(serial, ms, keyCode, keyState);
+            rKeyboard->key(event);
+
+            if (imp()->modifiersChanged)
+                rKeyboard->modifiers(modifiersEvent);
         }
     }
 }
@@ -421,20 +399,11 @@ Int32 LKeyboard::repeatDelay() const
 
 void LKeyboard::setRepeatInfo(Int32 rate, Int32 msDelay)
 {
-    if (rate < 0)
-        imp()->repeatRate = 0;
-    else
-        imp()->repeatRate = rate;
+    imp()->repeatRate = rate < 0 ? 0 : rate;
+    imp()->repeatDelay = msDelay < 0 ? 0 : msDelay;
 
-    if (msDelay < 0)
-        imp()->repeatDelay = 0;
-    else
-        imp()->repeatDelay = msDelay;
-
-    for (LClient *c : compositor()->clients())
-    {
-        for (Protocols::Wayland::GSeat *s : c->seatGlobals())
-            if (s->keyboardResource())
-                s->keyboardResource()->repeatInfo(rate, msDelay);
-    }
+    for (auto client : compositor()->clients())
+        for (auto gSeat : client->seatGlobals())
+            for (auto rKeyboard : gSeat->keyboardResources())
+                rKeyboard->repeatInfo(rate, msDelay);
 }

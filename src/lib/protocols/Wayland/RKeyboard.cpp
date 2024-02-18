@@ -1,11 +1,10 @@
-#include <LTime.h>
-#include <LSeat.h>
-#include <private/LKeyboardPrivate.h>
-#include <LClient.h>
-#include <protocols/Wayland/private/GSeatPrivate.h>
 #include <protocols/Wayland/private/RKeyboardPrivate.h>
-
+#include <protocols/Wayland/private/GSeatPrivate.h>
+#include <private/LKeyboardPrivate.h>
+#include <private/LClientPrivate.h>
 #include <LCompositor.h>
+#include <LSeat.h>
+#include <LTime.h>
 
 using namespace Louvre;
 
@@ -33,10 +32,10 @@ RKeyboard::RKeyboard
     LPRIVATE_INIT_UNIQUE(RKeyboard)
 {
     imp()->gSeat = gSeat;
-    LKeyboard *lKeyboard = seat()->keyboard();
+    const LKeyboard *lKeyboard { seat()->keyboard() };
     repeatInfo(lKeyboard->repeatRate(), lKeyboard->repeatDelay());
     keymap(lKeyboard->keymapFormat(), lKeyboard->keymapFd(), lKeyboard->keymapSize());
-    gSeat->imp()->rKeyboard = this;
+    gSeat->imp()->rKeyboards.push_back(this);
 }
 
 RKeyboard::~RKeyboard()
@@ -45,17 +44,12 @@ RKeyboard::~RKeyboard()
         seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
 
     if (seatGlobal())
-        seatGlobal()->imp()->rKeyboard = nullptr;
+        LVectorRemoveOneUnordered(seatGlobal()->imp()->rKeyboards, this);
 }
 
 GSeat *RKeyboard::seatGlobal() const
 {
     return imp()->gSeat;
-}
-
-const RKeyboard::LastEventSerials &RKeyboard::serials() const
-{
-    return imp()->serials;
 }
 
 bool RKeyboard::keymap(UInt32 format, Int32 fd, UInt32 size)
@@ -64,27 +58,52 @@ bool RKeyboard::keymap(UInt32 format, Int32 fd, UInt32 size)
     return true;
 }
 
-bool RKeyboard::enter(UInt32 serial, RSurface *rSurface, wl_array *keys)
+bool RKeyboard::enter(const LKeyboardEnterEvent &event, RSurface *rSurface, wl_array *keys)
 {
-    wl_keyboard_send_enter(resource(), serial, rSurface->resource(), keys);
+    auto &clientEvent = client()->imp()->events.keyboard.enter;
+
+    if (clientEvent.serial() != event.serial())
+        clientEvent = event;
+
+    wl_keyboard_send_enter(resource(), event.serial(), rSurface->resource(), keys);
     return true;
 }
 
-bool RKeyboard::leave(UInt32 serial, RSurface *rSurface)
+bool RKeyboard::leave(const LKeyboardLeaveEvent &event, RSurface *rSurface)
 {
-    wl_keyboard_send_leave(resource(), serial, rSurface->resource());
+    auto &clientEvent = client()->imp()->events.keyboard.leave;
+
+    if (clientEvent.serial() != event.serial())
+        clientEvent = event;
+
+    wl_keyboard_send_leave(resource(), event.serial(), rSurface->resource());
     return true;
 }
 
-bool RKeyboard::key(UInt32 serial, UInt32 time, UInt32 key, UInt32 state)
+bool RKeyboard::key(const LKeyboardKeyEvent &event)
 {
-    wl_keyboard_send_key(resource(), serial, time, key, state);
+    auto &clientEvent = client()->imp()->events.keyboard.key;
+
+    if (clientEvent.serial() != event.serial())
+        clientEvent = event;
+
+    wl_keyboard_send_key(resource(), event.serial(), event.ms(), event.keyCode(), event.state());
     return true;
 }
 
-bool RKeyboard::modifiers(UInt32 serial, UInt32 modsDepressed, UInt32 modsLatched, UInt32 modsLocked, UInt32 group)
+bool RKeyboard::modifiers(const LKeyboardModifiersEvent &event)
 {
-    wl_keyboard_send_modifiers(resource(), serial, modsDepressed, modsLatched, modsLocked, group);
+    auto &clientEvent = client()->imp()->events.keyboard.modifiers;
+
+    if (clientEvent.serial() != event.serial())
+        clientEvent = event;
+
+    wl_keyboard_send_modifiers(resource(),
+                               event.serial(),
+                               event.modifiers().depressed,
+                               event.modifiers().latched,
+                               event.modifiers().locked,
+                               event.modifiers().group);
     return true;
 }
 

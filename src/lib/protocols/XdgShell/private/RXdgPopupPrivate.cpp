@@ -49,6 +49,7 @@ void RXdgPopup::RXdgPopupPrivate::grab(wl_client *client, wl_resource *resource,
     L_UNUSED(client);
     L_UNUSED(seat);
 
+#ifdef TODO
     RXdgPopup *rXdgPopup = (RXdgPopup*)wl_resource_get_user_data(resource);
     Wayland::GSeat *lGSeat = (Wayland::GSeat*)wl_resource_get_user_data(seat);
 
@@ -80,6 +81,7 @@ void RXdgPopup::RXdgPopupPrivate::grab(wl_client *client, wl_resource *resource,
     }
     else
         rXdgPopup->popupRole()->dismiss();
+#endif
 }
 
 #if LOUVRE_XDG_WM_BASE_VERSION >= 3

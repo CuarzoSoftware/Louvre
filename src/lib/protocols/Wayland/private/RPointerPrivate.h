@@ -13,7 +13,6 @@ LPRIVATE_CLASS(RPointer)
 #endif
 
     GSeat *gSeat;
-    LastEventSerials serials;
 };
 
 #endif // RPOINTERPRIVATE_H

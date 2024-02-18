@@ -20,18 +20,9 @@ void LOutput::initializeGL()
 //! [paintGL]
 void LOutput::paintGL()
 {
-    LPainter *p = painter();
-
+    LPainter *p { painter() };
     LPainter::TextureParams params;
-
     p->clearScreen();
-
-    // Check if a surface moved under cursor (simulating a pointer move event)
-    if (seat()->pointer()->surfaceAt(cursor()->pos()) != seat()->pointer()->focus())
-        seat()->pointer()->pointerMoveEvent(
-            cursor()->pos().x(),
-            cursor()->pos().y(),
-            true);
 
     if (seat()->dndManager()->icon())
         seat()->dndManager()->icon()->surface()->raise();

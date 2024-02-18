@@ -66,6 +66,7 @@ void LScene::handleUninitializeGL(LOutput *output)
     imp()->mutex.unlock();
 }
 
+#ifdef TODO
 LView *LScene::handlePointerMoveEvent(Float32 x, Float32 y, bool absolute, LPoint *outLocalPos)
 {
     // Prevent recursive calls
@@ -302,6 +303,7 @@ void LScene::handlePointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discrete
 
     seat()->pointer()->sendAxisEvent(axisX, axisY, discreteX, discreteY, source);
 }
+#endif
 
 bool LScene::handleWaylandPointerEventsEnabled() const
 {
@@ -313,6 +315,7 @@ void LScene::enableHandleWaylandPointerEvents(bool enabled)
     imp()->handleWaylandPointerEvents = enabled;
 }
 
+#ifdef TODO
 void LScene::handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState)
 {
     // Prevent recursive calls
@@ -402,6 +405,7 @@ void LScene::handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState)
             seat()->dndManager()->setPreferredAction(LDNDManager::Move);
     }
 }
+#endif
 
 bool LScene::handleWaylandKeyboardEventsEnabled() const
 {

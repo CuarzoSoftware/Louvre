@@ -15,8 +15,9 @@ public:
 
     ~GSeat();
 
-    RKeyboard *keyboardResource() const;
-    RPointer  *pointerResource() const;
+    const std::vector<RKeyboard*> &keyboardResources() const;
+    const std::vector<RPointer*> &pointerResources() const;
+
     RDataDevice *dataDeviceResource() const;
 
     // Since 1

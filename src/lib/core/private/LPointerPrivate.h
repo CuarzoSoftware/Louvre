@@ -2,6 +2,7 @@
 #define LPOINTERPRIVATE_H
 
 #include <LPointer.h>
+#include <LBitset.h>
 
 using namespace Louvre;
 
@@ -11,30 +12,33 @@ struct LPointer::Params
 };
 
 LPRIVATE_CLASS(LPointer)
-    // Events
+
+    enum StateFlags
+    {
+        LastCursorRequestWasHide = 1 << 0,
+        NaturalScrollX           = 1 << 1,
+        NaturalScrollY           = 1 << 2
+    };
+
+    LBitset<StateFlags> state { NaturalScrollX | NaturalScrollY };
+
     void sendLeaveEvent(LSurface *surface);
 
-    // Wayland
     LSurface *pointerFocusSurface = nullptr;
     LSurface *draggingSurface = nullptr;
     LToplevelRole *movingToplevel = nullptr;
     LToplevelRole *resizingToplevel = nullptr;
 
-    // Toplevel Moving
     LPoint movingToplevelInitPos;
     LPoint movingToplevelInitPointerPos;
     LRect movingToplevelConstraintBounds;
 
     std::vector<Button> pressedButtons;
 
-    Float64 axisXprev;
-    Float64 axisYprev;
-    Int32 discreteXprev;
-    Int32 discreteYprev;
+    Float32 axisXprev;
+    Float32 axisYprev;
 
-    // Cursor
     LCursorRole *lastCursorRequest = nullptr;
-    bool lastCursorRequestWasHide = false;
 };
 
 #endif // LPOINTERPRIVATE_H

@@ -4,6 +4,28 @@
 #include <LObject.h>
 #include <LRegion.h>
 #include <LSurface.h>
+#include <LPointerEnterEvent.h>
+#include <LPointerLeaveEvent.h>
+#include <LPointerMoveEvent.h>
+#include <LPointerButtonEvent.h>
+#include <LPointerScrollEvent.h>
+#include <LPointerSwipeBeginEvent.h>
+#include <LPointerSwipeUpdateEvent.h>
+#include <LPointerSwipeEndEvent.h>
+#include <LPointerPinchBeginEvent.h>
+#include <LPointerPinchUpdateEvent.h>
+#include <LPointerPinchEndEvent.h>
+#include <LPointerHoldBeginEvent.h>
+#include <LPointerHoldEndEvent.h>
+#include <LKeyboardEnterEvent.h>
+#include <LKeyboardLeaveEvent.h>
+#include <LKeyboardKeyEvent.h>
+#include <LKeyboardModifiersEvent.h>
+#include <LTouchDownEvent.h>
+#include <LTouchMoveEvent.h>
+#include <LTouchUpEvent.h>
+#include <LTouchFrameEvent.h>
+#include <LTouchCancelEvent.h>
 
 /**
  * @brief Representation of a Wayland client.
@@ -18,9 +40,45 @@ public:
 
     struct Params;
 
+    struct PointerEvents
+    {
+        LPointerEnterEvent enter;
+        LPointerMoveEvent move;
+        LPointerLeaveEvent leave;
+        LPointerButtonEvent button;
+        LPointerScrollEvent scroll;
+        LPointerSwipeBeginEvent swipeBegin;
+        LPointerSwipeUpdateEvent swipeUpdate;
+        LPointerSwipeEndEvent swipeEnd;
+        LPointerPinchBeginEvent pinchBegin;
+        LPointerPinchUpdateEvent pinchUpdate;
+        LPointerPinchEndEvent pinchEnd;
+        LPointerHoldBeginEvent holdBegin;
+        LPointerHoldEndEvent holdEnd;
+    };
+
+    struct KeyboardEvents
+    {
+        LKeyboardEnterEvent enter;
+        LKeyboardKeyEvent key;
+        LKeyboardLeaveEvent leave;
+        LKeyboardModifiersEvent modifiers;
+    };
+
+    struct TouchEvents
+    {
+        LTouchDownEvent down;
+        LTouchMoveEvent move;
+        LTouchUpEvent up;
+        LTouchFrameEvent frame;
+        LTouchCancelEvent cancel;
+    };
+
     struct Events
     {
-
+        PointerEvents pointer;
+        KeyboardEvents keyboard;
+        TouchEvents touch;
     };
 
     /**
@@ -204,6 +262,8 @@ public:
      * of the Tearing Control protocol.
      */
     const std::vector<Protocols::TearingControl::GTearingControlManager*> &tearingControlManagerGlobals() const;
+
+    const Events &events() const;
 
     LPRIVATE_IMP_UNIQUE(LClient)
 };

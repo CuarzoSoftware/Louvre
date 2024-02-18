@@ -16,6 +16,7 @@ void RPointer::RPointerPrivate::resource_destroy(wl_resource *resource)
 
 void RPointer::RPointerPrivate::set_cursor(wl_client *client, wl_resource *resource, UInt32 serial, wl_resource *surface, Int32 hotspot_x, Int32 hotspot_y)
 {
+#ifdef TODO
     L_UNUSED(client);
 
     RPointer *rPointer = (RPointer*)wl_resource_get_user_data(resource);
@@ -68,6 +69,7 @@ void RPointer::RPointerPrivate::set_cursor(wl_client *client, wl_resource *resou
         seat()->pointer()->imp()->lastCursorRequest = nullptr;
         seat()->pointer()->setCursorRequest(nullptr);
     }
+#endif
 }
 
 #if LOUVRE_WL_SEAT_VERSION >= 3

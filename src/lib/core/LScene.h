@@ -210,7 +210,7 @@ public:
      * @param keyCode The code of the key involved in the event.
      * @param keyState The state of the key (pressed or released).
      */
-    void handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState);
+    //void handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState);
 
     /**
      * @brief Check if handling of Wayland keyboard events is enabled.

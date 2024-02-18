@@ -1,5 +1,6 @@
 #include <protocols/Wayland/private/RPointerPrivate.h>
 #include <protocols/Wayland/private/GSeatPrivate.h>
+#include <private/LClientPrivate.h>
 
 static struct wl_pointer_interface pointer_implementation =
 {
@@ -26,13 +27,13 @@ RPointer::RPointer
     LPRIVATE_INIT_UNIQUE(RPointer)
 {
     imp()->gSeat = gSeat;
-    gSeat->imp()->rPointer = this;
+    gSeat->imp()->rPointers.push_back(this);
 }
 
 RPointer::~RPointer()
 {
     if (seatGlobal())
-        seatGlobal()->imp()->rPointer = nullptr;
+        LVectorRemoveOneUnordered(seatGlobal()->imp()->rPointers, this);
 }
 
 GSeat *RPointer::seatGlobal() const
@@ -40,36 +41,54 @@ GSeat *RPointer::seatGlobal() const
     return imp()->gSeat;
 }
 
-const RPointer::LastEventSerials &RPointer::serials() const
+bool RPointer::enter(const LPointerEnterEvent &event, RSurface *rSurface)
 {
-    return imp()->serials;
-}
+    auto &clientEvent = client()->imp()->events.pointer.enter;
 
-bool RPointer::enter(UInt32 serial, RSurface *rSurface, Float24 x, Float24 y)
-{
+    if (clientEvent.serial() != event.serial())
+        clientEvent = event;
+
     wl_pointer_send_enter(resource(),
-                          serial,
+                          event.serial(),
                           rSurface->resource(),
-                          x,
-                          y);
+                          wl_fixed_from_double(event.localPos.x()),
+                          wl_fixed_from_double(event.localPos.y()));
     return true;
 }
 
-bool RPointer::leave(UInt32 serial, RSurface *rSurface)
+bool RPointer::leave(const LPointerLeaveEvent &event, RSurface *rSurface)
 {
-    wl_pointer_send_leave(resource(), serial, rSurface->resource());
+    auto &clientEvent = client()->imp()->events.pointer.leave;
+
+    if (clientEvent.serial() != event.serial())
+        clientEvent = event;
+
+    wl_pointer_send_leave(resource(), event.serial(), rSurface->resource());
     return true;
 }
 
-bool RPointer::motion(UInt32 time, Float24 x, Float24 y)
+bool RPointer::motion(const LPointerMoveEvent &event)
 {
-    wl_pointer_send_motion(resource(), time, x, y);
+    auto &clientEvent = client()->imp()->events.pointer.move;
+
+    if (clientEvent.serial() != event.serial())
+        clientEvent = event;
+
+    wl_pointer_send_motion(resource(),
+                           event.ms(),
+                           wl_fixed_from_double(event.localPos.x()),
+                           wl_fixed_from_double(event.localPos.y()));
     return true;
 }
 
-bool RPointer::button(UInt32 serial, UInt32 time, UInt32 button, UInt32 state)
+bool RPointer::button(const LPointerButtonEvent &event)
 {
-    wl_pointer_send_button(resource(), serial, time, button, state);
+    auto &clientEvent = client()->imp()->events.pointer.button;
+
+    if (clientEvent.serial() != event.serial())
+        clientEvent = event;
+
+    wl_pointer_send_button(resource(), event.serial(), event.ms(), event.button(), event.state());
     return true;
 }
 

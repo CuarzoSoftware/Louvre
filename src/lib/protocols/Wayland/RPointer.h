@@ -10,21 +10,13 @@ public:
     RPointer(GSeat *gSeat, Int32 id);
     ~RPointer();
 
-    struct LastEventSerials
-    {
-        UInt32 leave = 0;
-        UInt32 enter = 0;
-        UInt32 button = 0;
-    };
-
     GSeat *seatGlobal() const;
-    const LastEventSerials &serials() const;
 
     // Since 1
-    bool enter(UInt32 serial, RSurface *rSurface, Float24 x, Float24 y);
-    bool leave(UInt32 serial, RSurface *rSurface);
-    bool motion(UInt32 time, Float24 x, Float24 y);
-    bool button(UInt32 serial, UInt32 time, UInt32 button, UInt32 state);
+    bool enter(const LPointerEnterEvent &event, RSurface *rSurface);
+    bool leave(const LPointerLeaveEvent &event, RSurface *rSurface);
+    bool motion(const LPointerMoveEvent &event);
+    bool button(const LPointerButtonEvent &event);
     bool axis(UInt32 time, UInt32 axis, Float24 value);
 
     // Since 5

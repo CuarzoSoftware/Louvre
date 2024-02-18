@@ -35,24 +35,30 @@ GSeat::~GSeat()
 {
     LVectorRemoveOneUnordered(client()->imp()->seatGlobals, this);
 
-    if (keyboardResource())
-        keyboardResource()->imp()->gSeat = nullptr;
+    while (!keyboardResources().empty())
+    {
+        keyboardResources().back()->imp()->gSeat = nullptr;
+        imp()->rKeyboards.pop_back();
+    }
 
-    if (pointerResource())
-        pointerResource()->imp()->gSeat = nullptr;
+    while (!pointerResources().empty())
+    {
+        pointerResources().back()->imp()->gSeat = nullptr;
+        imp()->rPointers.pop_back();
+    }
 
     if (dataDeviceResource())
         dataDeviceResource()->imp()->gSeat = nullptr;
 }
 
-RKeyboard *GSeat::keyboardResource() const
+const std::vector<RKeyboard *> &GSeat::keyboardResources() const
 {
-    return imp()->rKeyboard;
+    return imp()->rKeyboards;
 }
 
-RPointer *GSeat::pointerResource() const
+const std::vector<RPointer*> &GSeat::pointerResources() const
 {
-    return imp()->rPointer;
+    return imp()->rPointers;
 }
 
 RDataDevice *GSeat::dataDeviceResource() const

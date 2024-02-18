@@ -110,3 +110,8 @@ const std::vector<XdgDecoration::GXdgDecorationManager *> &LClient::xdgDecoratio
 {
     return imp()->xdgDecorationManagerGlobals;
 }
+
+const LClient::Events &LClient::events() const
+{
+    return imp()->events;
+}

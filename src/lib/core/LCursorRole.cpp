@@ -58,7 +58,7 @@ void LCursorRole::handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin)
            (seat()->pointer()->focus() && seat()->pointer()->focus()->client() == surface()->client()) ||
            (seat()->dndManager()->origin() && seat()->dndManager()->origin()->client() == surface()->client())))
         {
-            seat()->pointer()->imp()->lastCursorRequestWasHide = false;
+            seat()->pointer()->imp()->state.remove(LPointer::LPointerPrivate::LastCursorRequestWasHide);
             seat()->pointer()->setCursorRequest(this);
         }
     }

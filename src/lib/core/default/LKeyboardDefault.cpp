@@ -14,14 +14,14 @@ using namespace Louvre;
 //! [keyEvent]
 void LKeyboard::keyEvent(const LKeyboardKeyEvent &event)
 {
-    //sendKeyEvent(event.keyCode(), event.state());
+    sendKeyEvent(event);
 
     const bool L_CTRL      { isKeyCodePressed(KEY_LEFTCTRL) };
     const bool L_SHIFT     { isKeyCodePressed(KEY_LEFTSHIFT) };
     const bool mods        { isKeyCodePressed(KEY_LEFTALT) && L_CTRL };
     const xkb_keysym_t sym { keySymbol(event.keyCode()) };
 
-    if (event.state() == Released)
+    if (event.state() == LKeyboardKeyEvent::Released)
     {
         if (event.keyCode() == KEY_F1 && !mods)
             LLauncher::launch("weston-terminal");

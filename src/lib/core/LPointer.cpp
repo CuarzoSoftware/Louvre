@@ -31,7 +31,7 @@ LCursorRole *LPointer::lastCursorRequest() const
 
 bool LPointer::lastCursorRequestWasHide() const
 {
-    return imp()->lastCursorRequestWasHide;
+    return imp()->state.check(LPointerPrivate::LastCursorRequestWasHide);
 }
 
 void LPointer::setFocus(LSurface *surface)
@@ -49,84 +49,172 @@ void LPointer::setFocus(LSurface *surface, const LPoint &localPos)
         if (focus() == surface)
             return;
 
+#ifdef TODO
+        if (imp()->pendingSwipeEnd)
+            sendSwipeEndEvent(LPointerSwipeEndEvent(0, true));
+
+        if (imp()->pendingPinchEnd)
+            sendPinchEndEvent(LPointerPinchEndEvent(0, true));
+
+        if (imp()->pendingHoldEnd)
+            sendHoldEndEvent(LPointerHoldEndEvent(0, true));
+#endif
+
         imp()->sendLeaveEvent(focus());
 
-        Float24 x = wl_fixed_from_int(localPos.x());
-        Float24 y = wl_fixed_from_int(localPos.y());
+        LPointerEnterEvent enterEvent;
+        enterEvent.localPos = localPos;
         imp()->pointerFocusSurface = nullptr;
 
-        for (Wayland::GSeat *s : surface->client()->seatGlobals())
+        for (auto gSeat : surface->client()->seatGlobals())
         {
-            if (s->pointerResource())
+            for (auto rPointer : gSeat->pointerResources())
             {
-                UInt32 serial = LTime::nextSerial();
                 imp()->pointerFocusSurface = surface;
-                s->pointerResource()->imp()->serials.enter = serial;
-                s->pointerResource()->enter(serial,
-                                            surface->surfaceResource(),
-                                            x,
-                                            y);
-                s->pointerResource()->frame();
+                rPointer->enter(enterEvent, surface->surfaceResource());
+                rPointer->frame();
             }
         }
-
-        surface->client()->dataDevice().imp()->sendDNDEnterEventS(surface, x, y);
     }
     else
     {
+#ifdef TODO
         // Remove focus from focused surface
+        if (imp()->pendingSwipeEnd)
+            sendSwipeEndEvent(LPointerSwipeEndEvent());
+
+        if (imp()->pendingPinchEnd)
+            sendPinchEndEvent(LPointerPinchEndEvent());
+
+        if (imp()->pendingHoldEnd)
+            sendHoldEndEvent(LPointerHoldEndEvent());
+#endif
         imp()->sendLeaveEvent(focus());
         imp()->pointerFocusSurface = nullptr;
     }
-
 }
 
-void LPointer::sendMoveEvent()
-{
-    if (focus())
-        sendMoveEvent(cursor()->pos() - focus()->rolePos());
-}
-
-void LPointer::sendMoveEvent(const LPoint &localPos)
+void LPointer::sendMoveEvent(const LPointerMoveEvent &event)
 {
     if (!focus())
         return;
 
-    Float24 x = wl_fixed_from_int(localPos.x());
-    Float24 y = wl_fixed_from_int(localPos.y());
-
-    if (seat()->dndManager()->focus())
-        seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDMotionEventS(x, y);
-
-    for (Wayland::GSeat *s : focus()->client()->seatGlobals())
+    for (auto gSeat : focus()->client()->seatGlobals())
     {
-        if (s->pointerResource())
+        for (auto rPointer : gSeat->pointerResources())
         {
-            UInt32 ms = LTime::ms();
-            s->pointerResource()->motion(ms, x, y);
-            s->pointerResource()->frame();
+            rPointer->motion(event);
+            rPointer->frame();
+
+#ifdef TODO
+            if (p->relativePointerResource())
+                p->relativePointerResource()->relative_motion(event);
+#endif
         }
-    }   
+    }
 }
 
-void LPointer::sendButtonEvent(Button button, ButtonState state)
+void LPointer::sendButtonEvent(const LPointerButtonEvent &event)
 {
     if (!focus())
         return;
 
-    for (Wayland::GSeat *s : focus()->client()->seatGlobals())
+    for (auto gSeat : focus()->client()->seatGlobals())
     {
-        if (s->pointerResource())
+        for (auto rPointer : gSeat->pointerResources())
         {
-            UInt32 serial = LTime::nextSerial();
-            UInt32 ms = LTime::ms();
-            s->pointerResource()->imp()->serials.button = serial;
-            s->pointerResource()->button(serial, ms, button, state);
-            s->pointerResource()->frame();
+            rPointer->button(event);
+            rPointer->frame();
+        }
+    }
+}
+
+void LPointer::sendScrollEvent(const LPointerScrollEvent &event)
+{
+    if (!focus())
+        return;
+
+    const UInt32 naturalX { naturalScrollingXEnabled() ? WL_POINTER_AXIS_RELATIVE_DIRECTION_INVERTED : WL_POINTER_AXIS_RELATIVE_DIRECTION_IDENTICAL };
+    const UInt32 naturalY { naturalScrollingYEnabled() ? WL_POINTER_AXIS_RELATIVE_DIRECTION_INVERTED : WL_POINTER_AXIS_RELATIVE_DIRECTION_IDENTICAL };
+    const bool stopX { event.axes().x() == 0.f && imp()->axisXprev != 0.f };
+    const bool stopY { event.axes().y() == 0.f && imp()->axisYprev != 0.f };
+
+    for (auto gSeat : focus()->client()->seatGlobals())
+    {
+        for (auto rPointer : gSeat->pointerResources())
+        {
+            // Since 5
+            if (rPointer->axisSource(event.source()))
+            {
+                Float24 aX, aY, dX ,dY;
+
+                if (rPointer->axisRelativeDirection(WL_POINTER_AXIS_HORIZONTAL_SCROLL, naturalX))
+                {
+                    rPointer->axisRelativeDirection(WL_POINTER_AXIS_VERTICAL_SCROLL, naturalY);
+                    aX = wl_fixed_from_double(event.axes().x());
+                    aY = wl_fixed_from_double(event.axes().y());
+                    dX = wl_fixed_from_double(event.axes120().x());
+                    dY = wl_fixed_from_double(event.axes120().y());
+                }
+                // Less than v9
+                else
+                {
+                    if (naturalScrollingXEnabled())
+                    {
+                        aX = wl_fixed_from_double(-event.axes().x());
+                        dX = wl_fixed_from_double(-event.axes120().x());
+                    }
+                    else
+                    {
+                        aX = wl_fixed_from_double(event.axes().x());
+                        dX = wl_fixed_from_double(event.axes120().x());
+                    }
+
+                    if (naturalScrollingYEnabled())
+                    {
+                        aY = wl_fixed_from_double(-event.axes().y());
+                        dY = wl_fixed_from_double(-event.axes120().y());
+                    }
+                    else
+                    {
+                        aY = wl_fixed_from_double(event.axes().y());
+                        dY = wl_fixed_from_double(event.axes120().y());
+                    }
+                }
+
+                if (event.source() == LPointerScrollEvent::Wheel)
+                {
+                    if (!rPointer->axisValue120(WL_POINTER_AXIS_HORIZONTAL_SCROLL, dX))
+                    {
+                        rPointer->axisDiscrete(WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
+                        rPointer->axisDiscrete(WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
+                    }
+                    else
+                        rPointer->axisValue120(WL_POINTER_AXIS_VERTICAL_SCROLL, dY);
+                }
+
+                if (stopX)
+                    rPointer->axisStop(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL);
+                else
+                    rPointer->axis(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
+
+                if (stopY)
+                    rPointer->axisStop(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL);
+                else
+                    rPointer->axis(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
+
+                rPointer->frame();
+            }
+            // Since 1
+            else
+                rPointer->axis(event.ms(),
+                               wl_fixed_from_double(event.axes().x()),
+                               wl_fixed_from_double(event.axes().y()));
         }
     }
 
-    focus()->client()->flush();
+    imp()->axisXprev = event.axes().x();
+    imp()->axisYprev = event.axes().y();
 }
 
 void LPointer::startResizingToplevel(LToplevelRole *toplevel,
@@ -275,6 +363,26 @@ void LPointer::dismissPopups()
     }
 }
 
+void LPointer::enableNaturalScrollingX(bool enabled)
+{
+    imp()->state.setFlag(LPointerPrivate::NaturalScrollX, enabled);
+}
+
+void LPointer::enableNaturalScrollingY(bool enabled)
+{
+    imp()->state.setFlag(LPointerPrivate::NaturalScrollY, enabled);
+}
+
+bool LPointer::naturalScrollingXEnabled() const
+{
+    return imp()->state.check(LPointerPrivate::NaturalScrollX);
+}
+
+bool LPointer::naturalScrollingYEnabled() const
+{
+    return imp()->state.check(LPointerPrivate::NaturalScrollY);
+}
+
 const std::vector<LPointer::Button> &LPointer::pressedKeys() const
 {
     return imp()->pressedButtons;
@@ -315,67 +423,6 @@ const LPoint &LPointer::movingToplevelInitPointerPos() const
     return imp()->movingToplevelInitPointerPos;
 }
 
-void LPointer::sendAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, AxisSource source)
-{
-    // If no surface has focus
-    if (!focus())
-        return;
-
-    Float24 aX = wl_fixed_from_double(axisX);
-    Float24 aY = wl_fixed_from_double(axisY);
-    Float24 dX = wl_fixed_from_int(discreteX);
-    Float24 dY = wl_fixed_from_int(discreteY);
-
-    UInt32 ms = LTime::ms();
-
-    for (Wayland::GSeat *s : focus()->client()->seatGlobals())
-    {
-        if (s->pointerResource())
-        {
-            // Since 5
-            if (s->pointerResource()->axisSource(source))
-            {
-                s->pointerResource()->axisRelativeDirection(WL_POINTER_AXIS_HORIZONTAL_SCROLL, 0 /* 0 = IDENTICAL */);
-                s->pointerResource()->axisRelativeDirection(WL_POINTER_AXIS_VERTICAL_SCROLL, 0 /* 0 = IDENTICAL */);
-
-                if (source == LPointer::AxisSource::Wheel)
-                {
-                    if (!s->pointerResource()->axisValue120(WL_POINTER_AXIS_HORIZONTAL_SCROLL, dX))
-                    {
-                        s->pointerResource()->axisDiscrete(WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
-                        s->pointerResource()->axisDiscrete(WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
-                    }
-                    else
-                        s->pointerResource()->axisValue120(WL_POINTER_AXIS_VERTICAL_SCROLL, dY);
-                }
-
-                if (axisX == 0.0 && imp()->axisXprev != 0.0)
-                    s->pointerResource()->axisStop(ms, WL_POINTER_AXIS_HORIZONTAL_SCROLL);
-                else
-                    s->pointerResource()->axis(ms, WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
-
-                if (axisY == 0.0 && imp()->axisYprev != 0.0)
-                   s->pointerResource()->axisStop(ms, WL_POINTER_AXIS_VERTICAL_SCROLL);
-                else
-                    s->pointerResource()->axis(ms, WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
-
-                s->pointerResource()->frame();
-            }
-            // Since 1
-            else
-            {
-                s->pointerResource()->axis(
-                    ms,
-                    aX,
-                    aY);
-            }
-        }
-    }
-
-    imp()->axisXprev = axisX;
-    imp()->axisYprev = axisY;
-}
-
 LSurface *LPointer::surfaceAt(const LPoint &point)
 {
     retry:
@@ -401,22 +448,17 @@ LSurface *LPointer::focus() const
 
 void LPointer::LPointerPrivate::sendLeaveEvent(LSurface *surface)
 {
-    if (seat()->dndManager()->focus() && seat()->dndManager()->focus() == surface)
-        seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDLeaveEvent();
-
     if (!surface)
         return;
 
-    for (Wayland::GSeat *s : surface->client()->seatGlobals())
-    {
-        if (s->pointerResource())
-        {
-            UInt32 serial = LTime::nextSerial();
-            s->pointerResource()->imp()->serials.leave = serial;
-            s->pointerResource()->leave(serial,
-                                        surface->surfaceResource());
+    LPointerLeaveEvent leaveEvent;
 
-            s->pointerResource()->frame();
+    for (auto gSeat : surface->client()->seatGlobals())
+    {
+        for (auto rPointer : gSeat->pointerResources())
+        {
+            rPointer->leave(leaveEvent, surface->surfaceResource());
+            rPointer->frame();
         }
     }
 }

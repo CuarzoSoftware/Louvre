@@ -12,13 +12,15 @@ public:
     /**
      * @brief Constructor of the LObject class.
      */
-    inline LObject() : m_isAlive{std::make_unique<bool>(true)}
-    {}
+    inline LObject() {};
 
     /**
      * @brief Destructor of the LObject class.
      */
-    ~LObject();
+    inline ~LObject()
+    {
+        *m_isAlive = false;
+    }
 
     /**
      * @brief Quick access to the global compositor instance.
@@ -54,14 +56,13 @@ public:
      *
      * @return Pointer to the boolean variable indicating the object's existence.
      */
-    inline const bool *isAlive() const
+    inline std::shared_ptr<const bool> isAlive() const
     {
-        return m_isAlive.get();
+        return m_isAlive;
     }
 
 private:
-    friend class LCompositor;
-    std::unique_ptr<bool> m_isAlive;
+    std::shared_ptr<bool> m_isAlive { std::make_shared<bool>(true) };
 };
 
 #endif // LOBJECT_H

@@ -9,23 +9,14 @@ public:
     RKeyboard(GSeat *gSeat, Int32 id);
     ~RKeyboard();
 
-    struct LastEventSerials
-    {
-        UInt32 leave = 0;
-        UInt32 enter = 0;
-        UInt32 modifiers = 0;
-        UInt32 key = 0;
-    };
-
     GSeat *seatGlobal() const;
-    const LastEventSerials &serials() const;
 
     // Since 1
     bool keymap(UInt32 format, Int32 fd, UInt32 size);
-    bool enter(UInt32 serial, RSurface *rSurface, wl_array *keys);
-    bool leave(UInt32 serial, RSurface *rSurface);
-    bool key(UInt32 serial, UInt32 time, UInt32 key, UInt32 state);
-    bool modifiers(UInt32 serial, UInt32 modsDepressed, UInt32 modsLatched, UInt32 modsLocked, UInt32 group);
+    bool enter(const LKeyboardEnterEvent &event, RSurface *rSurface, wl_array *keys);
+    bool leave(const LKeyboardLeaveEvent &event, RSurface *rSurface);
+    bool key(const LKeyboardKeyEvent &event);
+    bool modifiers(const LKeyboardModifiersEvent &event);
 
     // Since 4
     bool repeatInfo(Int32 rate, Int32 delay);
