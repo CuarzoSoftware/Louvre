@@ -12,10 +12,8 @@ public:
     /**
      * @brief Constructor of the LObject class.
      */
-    inline LObject()
-    {
-        m_isAlive = new bool(true);
-    }
+    inline LObject() : m_isAlive{std::make_unique<bool>(true)}
+    {}
 
     /**
      * @brief Destructor of the LObject class.
@@ -58,12 +56,12 @@ public:
      */
     inline const bool *isAlive() const
     {
-        return m_isAlive;
+        return m_isAlive.get();
     }
 
 private:
     friend class LCompositor;
-    bool *m_isAlive;
+    std::unique_ptr<bool> m_isAlive;
 };
 
 #endif // LOBJECT_H

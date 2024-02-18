@@ -126,15 +126,7 @@ LPRIVATE_CLASS(LCompositor)
     void sendPendingToplevelsConfiguration();
     void sendPresentationTime();
 
-    std::vector<bool*> removedObjectsAliveIndicators;
-    inline void destroyRemovedObjectsAliveIndicators()
-    {
-        while (!removedObjectsAliveIndicators.empty())
-        {
-            delete removedObjectsAliveIndicators.back();
-            removedObjectsAliveIndicators.pop_back();
-        }
-    }
+    std::vector<std::unique_ptr<bool>> removedObjectsAliveIndicators;
 };
 
 #endif // LCOMPOSITORPRIVATE_H
