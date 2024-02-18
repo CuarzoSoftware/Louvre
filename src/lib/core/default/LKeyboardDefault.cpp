@@ -1,3 +1,4 @@
+#include <LKeyboardKeyEvent.h>
 #include <LKeyboard.h>
 #include <LCompositor.h>
 #include <LSeat.h>
@@ -10,26 +11,19 @@
 
 using namespace Louvre;
 
-//! [keyModifiersEvent]
-void LKeyboard::keyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
-{
-    sendModifiersEvent(depressed, latched, locked, group);
-}
-//! [keyModifiersEvent]
-
 //! [keyEvent]
-void LKeyboard::keyEvent(UInt32 keyCode, KeyState keyState)
+void LKeyboard::keyEvent(const LKeyboardKeyEvent &event)
 {
-    sendKeyEvent(keyCode, keyState);
+    //sendKeyEvent(event.keyCode(), event.state());
 
     const bool L_CTRL      { isKeyCodePressed(KEY_LEFTCTRL) };
     const bool L_SHIFT     { isKeyCodePressed(KEY_LEFTSHIFT) };
     const bool mods        { isKeyCodePressed(KEY_LEFTALT) && L_CTRL };
-    const xkb_keysym_t sym { keySymbol(keyCode) };
+    const xkb_keysym_t sym { keySymbol(event.keyCode()) };
 
-    if (keyState == Released)
+    if (event.state() == Released)
     {
-        if (keyCode == KEY_F1 && !mods)
+        if (event.keyCode() == KEY_F1 && !mods)
             LLauncher::launch("weston-terminal");
         else if (L_CTRL && (sym == XKB_KEY_q || sym == XKB_KEY_Q))
         {
@@ -42,7 +36,7 @@ void LKeyboard::keyEvent(UInt32 keyCode, KeyState keyState)
                 focus()->setMinimized(true);
         }
         // Screenshot
-        else if (L_CTRL && L_SHIFT && keyCode == KEY_3)
+        else if (L_CTRL && L_SHIFT && event.keyCode() == KEY_3)
         {
             if (cursor()->output() && cursor()->output()->bufferTexture(0))
             {
@@ -63,7 +57,7 @@ void LKeyboard::keyEvent(UInt32 keyCode, KeyState keyState)
                 cursor()->output()->bufferTexture(0)->save(path);
             }
         }
-        else if (keyCode == KEY_ESC && L_CTRL && L_SHIFT)
+        else if (event.keyCode() == KEY_ESC && L_CTRL && L_SHIFT)
         {
             compositor()->finish();
             return;

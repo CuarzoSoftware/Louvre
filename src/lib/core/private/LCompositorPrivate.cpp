@@ -296,7 +296,7 @@ bool LCompositor::LCompositorPrivate::initInputBackend()
     // Check if there is a pre-loaded input backend
     if (inputBackend)
     {
-        if (!inputBackend->initialize())
+        if (!inputBackend->backendInitialize())
         {
             dlclose(inputBackendHandle);
             inputBackendHandle = nullptr;
@@ -328,7 +328,7 @@ bool LCompositor::LCompositorPrivate::initInputBackend()
 
         if (loadInputBackend(backendPathName))
         {
-            if (!inputBackend->initialize())
+            if (!inputBackend->backendInitialize())
             {
                 dlclose(inputBackendHandle);
                 inputBackendHandle = nullptr;
@@ -371,7 +371,7 @@ void LCompositor::LCompositorPrivate::unitInputBackend(bool closeLib)
 {
     if (inputBackend && isInputBackendInitialized)
     {
-        inputBackend->uninitialize();
+        inputBackend->backendUninitialize();
         LLog::debug("[LCompositorPrivate::unitInputBackend] Input backend uninitialized successfully.");
     }
 

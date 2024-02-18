@@ -18,6 +18,11 @@ public:
 
     struct Params;
 
+    struct Events
+    {
+
+    };
+
     /**
      * @brief Constructor of the LClient class.
      *

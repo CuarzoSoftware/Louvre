@@ -313,22 +313,6 @@ void LScene::enableHandleWaylandPointerEvents(bool enabled)
     imp()->handleWaylandPointerEvents = enabled;
 }
 
-void LScene::handleKeyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
-{
-    // Prevent recursive calls
-    if (imp()->handlingKeyModifiersEvent)
-        return;
-
-    imp()->listChanged = false;
-    imp()->handlingKeyModifiersEvent = true;
-    LView::LViewPrivate::removeFlagWithChildren(mainView(), LVS::KeyModifiersDone);
-    imp()->handleKeyModifiersEvent(mainView(), depressed, latched, locked, group);
-    imp()->handlingKeyModifiersEvent = false;
-
-    if (handleWaylandKeyboardEventsEnabled())
-        seat()->keyboard()->sendModifiersEvent(depressed, latched, locked, group);
-}
-
 void LScene::handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState)
 {
     // Prevent recursive calls

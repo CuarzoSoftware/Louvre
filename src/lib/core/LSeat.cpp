@@ -77,7 +77,7 @@ UInt32 LSeat::graphicBackendId() const
 
 LSeat::InputCapabilitiesFlags LSeat::inputBackendCapabilities() const
 {
-    return compositor()->imp()->inputBackend->getCapabilities();
+    return compositor()->imp()->inputBackend->backendGetCapabilities();
 }
 
 const char *LSeat::name() const
@@ -90,12 +90,12 @@ const char *LSeat::name() const
 
 void *LSeat::inputBackendContextHandle() const
 {
-    return compositor()->imp()->inputBackend->getContextHandle();
+    return compositor()->imp()->inputBackend->backendGetContextHandle();
 }
 
 UInt32 LSeat::inputBackendId() const
 {
-    return compositor()->imp()->inputBackend->id();
+    return compositor()->imp()->inputBackend->backendGetId();
 }
 
 LSeat::InputCapabilitiesFlags LSeat::inputCapabilities() const

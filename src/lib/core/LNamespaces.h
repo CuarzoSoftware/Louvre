@@ -614,14 +614,15 @@ namespace Louvre
 
     struct LInputBackendInterface
     {
-        UInt32 (*id)();
-        bool (*initialize)();
-        UInt32 (*getCapabilities)();
-        void *(*getContextHandle)();
-        void (*uninitialize)();
-        void (*suspend)();
-        void (*forceUpdate)();
-        void (*resume)();
+        UInt32                             (*backendGetId)();
+        void *                             (*backendGetContextHandle)();
+        UInt32                             (*backendGetCapabilities)();
+        const std::vector<LInputDevice*> * (*backendGetDevices)();
+        bool                               (*backendInitialize)();
+        void                               (*backendUninitialize)();
+        void                               (*backendSuspend)();
+        void                               (*backendResume)();
+        void                               (*backendForceUpdate)();
     };
 
     inline const std::string getenvString(const char *env)

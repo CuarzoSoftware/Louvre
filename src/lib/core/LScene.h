@@ -203,18 +203,6 @@ public:
     void enableHandleWaylandPointerEvents(bool enabled);
 
     /**
-     * @brief Handle key modifiers event.
-     *
-     * This method should be integrated into LKeyboard::keyModifiersEvent() to manage key modifiers events.
-     *
-     * @param depressed The bitfield representing depressed modifiers.
-     * @param latched The bitfield representing latched modifiers.
-     * @param locked The bitfield representing locked modifiers.
-     * @param group The keyboard group.
-     */
-    void handleKeyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group);
-
-    /**
      * @brief Handle key event.
      *
      * This method should be integrated into LKeyboard::keyEvent() to handle key events.

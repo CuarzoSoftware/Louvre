@@ -80,6 +80,11 @@ RKeyboard *LKeyboard::grabbingKeyboardResource() const
     return imp()->grabbingKeyboardResource;
 }
 
+const LKeyboardModifiersEvent::Modifiers &LKeyboard::modifiers() const
+{
+    return imp()->currentModifiersState;
+}
+
 bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layout, const char *variant, const char *options)
 {
     const char *METHOD_NAME = "LKeyboard::setKeymap";
@@ -240,13 +245,9 @@ LSurface *LKeyboard::focus() const
     return imp()->keyboardFocusSurface;
 }
 
-const LKeyboard::KeyboardModifiersState &LKeyboard::modifiersState() const
-{
-    return imp()->modifiersState;
-}
-
 void LKeyboard::setFocus(LSurface *surface)
 {
+    /*
     if (grabbingSurface())
         return;
 
@@ -330,6 +331,7 @@ void LKeyboard::setFocus(LSurface *surface)
     }
 
     focusChanged();
+*/
 }
 
 void LKeyboard::sendKeyEvent(UInt32 keyCode, KeyState keyState)
@@ -356,35 +358,6 @@ void LKeyboard::sendKeyEvent(UInt32 keyCode, KeyState keyState)
             s->keyboardResource()->key(serial, ms, keyCode, keyState);
         }
     }
-}
-
-void LKeyboard::sendModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
-{
-    if (!focus())
-        return;
-
-    UInt32 serial = LTime::nextSerial();
-
-    if (grabbingSurface())
-    {
-        grabbingKeyboardResource()->imp()->serials.modifiers = serial;
-        grabbingKeyboardResource()->modifiers(serial, depressed, latched, locked, group);
-        return;
-    }
-
-    for (Wayland::GSeat *s : focus()->client()->seatGlobals())
-    {
-        if (s->keyboardResource())
-        {
-            s->keyboardResource()->imp()->serials.modifiers = serial;
-            s->keyboardResource()->modifiers(serial, depressed, latched, locked, group);
-        }
-    }
-}
-
-void LKeyboard::sendModifiersEvent()
-{
-    sendModifiersEvent(imp()->modifiersState.depressed, imp()->modifiersState.latched, imp()->modifiersState.locked, imp()->modifiersState.group);
 }
 
 xkb_keysym_t LKeyboard::keySymbol(UInt32 keyCode)

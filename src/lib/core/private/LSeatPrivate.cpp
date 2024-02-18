@@ -24,7 +24,7 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
     compositor()->imp()->lock();
 
     if (compositor()->isInputBackendInitialized())
-        compositor()->imp()->inputBackend->resume();
+        compositor()->imp()->inputBackend->backendResume();
 
     // Restore Wayland events
     epoll_ctl(compositor()->imp()->epollFd,
@@ -59,7 +59,7 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
         return;
 
     if (compositor()->isInputBackendInitialized())
-        compositor()->imp()->inputBackend->suspend();
+        compositor()->imp()->inputBackend->backendSuspend();
 
     compositor()->imp()->unlock();
 

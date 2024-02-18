@@ -227,7 +227,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
      * even if the session is disabled. Failing to do so may lead to unexpected bugs and result in a compositor crash. */
 
     if (!seat()->enabled())
-        imp()->inputBackend->forceUpdate();
+        imp()->inputBackend->backendForceUpdate();
 
     for (Int32 i = 0; i < nEvents; i++)
     {

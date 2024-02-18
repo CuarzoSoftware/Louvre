@@ -1,6 +1,7 @@
 #ifndef LKEYBOARD_H
 #define LKEYBOARD_H
 
+#include <LKeyboardModifiersEvent.h>
 #include <LObject.h>
 #include <vector>
 #include <xkbcommon/xkbcommon.h>
@@ -30,26 +31,6 @@ public:
      * Configuration parameters passed in the LCompositor::createKeyboardRequest() virtual constructor.
      */
     struct Params;
-
-    /**
-     * @brief Keyboard modifiers.
-     *
-     * Stores the status of keyboard modifiers (Ctrl, Shift, Alt, etc).
-     */
-    struct KeyboardModifiersState
-    {
-        /// Active modifiers when physically pressed
-        UInt32 depressed;
-
-        /// Hooked modifiers that will be disabled after a non-modifier key is pressed
-        UInt32 latched;
-
-        /// Active modifiers until they are pressed again (e.g. the Shift key)
-        UInt32 locked;
-
-        /// Group the above states (use this value if the source of a modifier change is not of your interest)
-        UInt32 group;
-    };
 
     /**
      * @brief Key states.
@@ -142,11 +123,11 @@ public:
     Protocols::Wayland::RKeyboard* grabbingKeyboardResource() const;
 
     /**
-     * @brief State of the keyboard modifiers.
+     * @brief Current keyboard modifiers state.
      *
-     * @returns An instance of KeyboardModifiersState, which stores the state of the keyboard modifiers.
+     * @returns An instance of LKeyboardModifiersEvent::Modifiers, which stores the state of the keyboard modifiers.
      */
-    const KeyboardModifiersState &modifiersState() const;
+    const LKeyboardModifiersEvent::Modifiers &modifiers() const;
 
     /**
      * @brief Keyboard map file descriptor.
@@ -278,33 +259,6 @@ public:
      */
     void sendKeyEvent(UInt32 keyCode, KeyState keyState);
 
-    /**
-     * @brief Send custom modifier states.
-     *
-     * This method allows you to send custom modifier states to the currently focused surface.
-     *
-     * The parameters are equivalent to those described in LKeyboard::KeyboardModifiersState.
-     */
-    void sendModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group);
-
-    /**
-     * @brief Send the current modifiers state.
-     *
-     * Sends the modifiers states to the focused surface.
-     *
-     * @note Louvre internally stores and updates the modifiers state, which can be accessed with modifiersState().
-     */
-    void sendModifiersEvent();
-
-    /**
-     * @brief Notifies a change in the modifiers state.
-     *
-     * Override this virtual method if you want to be notified when the modifiers state changes.
-     *
-     * #### Default implementation
-     * @snippet LKeyboardDefault.cpp keyModifiersEvent
-     */
-    virtual void keyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group);
 
     /**
      * @brief Notifies a key state change.
@@ -314,7 +268,7 @@ public:
      * #### Default implementation
      * @snippet LKeyboardDefault.cpp keyEvent
      */
-    virtual void keyEvent(UInt32 keyCode, KeyState keyState);
+    virtual void keyEvent(const LKeyboardKeyEvent &event);
 
     /**
      * @brief Notifies that the focused surface changed.

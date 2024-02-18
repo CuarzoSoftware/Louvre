@@ -149,7 +149,7 @@ if get_option('build_examples')
     freetype_dep = dependency('freetype2')
     icuuc_dep = cpp.find_library('icuuc')
 
-    subdir('examples/louvre-weston-clone')
+    #subdir('examples/louvre-weston-clone')
     subdir('examples/louvre-default')
-    subdir('examples/louvre-views')
+    #subdir('examples/louvre-views')
 endif
