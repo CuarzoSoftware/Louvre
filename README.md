@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Louvre is released under the MIT license." />
   </a>
   <a href="https://github.com/CuarzoSoftware/Louvre">
-    <img src="https://img.shields.io/badge/version-1.2.0-brightgreen" alt="Current Louvre version." />
+    <img src="https://img.shields.io/badge/version-1.2.1-brightgreen" alt="Current Louvre version." />
   </a>
 </p>
 
@@ -22,6 +22,7 @@ Louvre is a high-performance C++ library designed for building Wayland composito
 * [🕹️ Examples](https://cuarzosoftware.github.io/Louvre/md_md__examples.html)
 * [📦 Downloads](https://cuarzosoftware.github.io/Louvre/md_md__downloads.html)
 * [💬 Contact](https://cuarzosoftware.github.io/Louvre/md_md__contact.html)
+* [🖼️ Gallery](https://github.com/CuarzoSoftware/Louvre/blob/gallery/README.md)
 
 Creating a Wayland compositor can be a daunting undertaking, often spanning months or even years of dedication. This challenging task involves mastering Linux input and graphic APIs, managing graphic buffers, and meticulously implementing numerous Wayland protocols and their respective interfaces.
 

@@ -17,7 +17,7 @@ void RGammaControl::RGammaControlPrivate::destroy(wl_client *client, wl_resource
 
 void RGammaControl::RGammaControlPrivate::set_gamma(wl_client *client, wl_resource *resource, Int32 fd)
 {
-    L_UNUSED(client)
+L_UNUSED(client)
 
     RGammaControl *rGammaControl { (RGammaControl*)wl_resource_get_user_data(resource) };
 
@@ -49,7 +49,7 @@ void RGammaControl::RGammaControlPrivate::set_gamma(wl_client *client, wl_resour
     LGammaTable gammaTable {output->gammaSize()};
     gammaTable.m_gammaControlResource = rGammaControl;
 
-    const ssize_t bytesToRead {(const ssize_t) (gammaTable.size() * 3 * sizeof(UInt16)) };
+    const ssize_t bytesToRead {(ssize_t) (gammaTable.size() * 3 * sizeof(UInt16)) };
     const ssize_t n { pread(fd, gammaTable.red(), bytesToRead, 0) };
     close(fd);
 
@@ -66,7 +66,7 @@ void RGammaControl::RGammaControlPrivate::set_gamma(wl_client *client, wl_resour
         return;
     }
 
-    const auto isResAlive { rGammaControl->isAlive() };
+    auto isResAlive { rGammaControl->isAlive() };
 
     output->setGammaRequest(rGammaControl->client(), &gammaTable);
 

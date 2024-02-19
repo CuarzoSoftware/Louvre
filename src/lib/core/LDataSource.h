@@ -2,7 +2,7 @@
 #define LDATASOURCE_H
 
 #include <LObject.h>
-#include <bits/types/FILE.h>
+#include <stdio.h>
 
 /**
  * @brief Data source exchanged between clients

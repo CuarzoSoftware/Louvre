@@ -1,3 +1,20 @@
+Louvre (1.2.1-1)
+
+  # Internal Changes
+
+  * Replaced raw boolean pointer of LObject alive indicator with std::shared_ptr - Thanks to @Paraworker.
+
+  # Building
+
+  * Fixed header include problem preventing Louvre from building on Musl-based distros - Thanks to @ahmadraniri1994 for reporting the issue.
+
+  # Documentation
+
+  * Added a link to a curated list of compositors using Louvre into README.md - Suggested by @wiki-me.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Mon, 19 Feb 2024 13:02:10 -0300
+
+
 Louvre (1.2.0-1)
 
   # New Protocols

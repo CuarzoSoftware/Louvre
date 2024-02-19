@@ -21,7 +21,7 @@
 #include <xkbcommon/xkbcommon-names.h>
 #include <sys/mman.h>
 
-#include <sys/poll.h>
+#include <poll.h>
 #include <sys/eventfd.h>
 
 #include <LCursor.h>

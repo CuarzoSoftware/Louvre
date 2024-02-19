@@ -6,7 +6,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/prctl.h>
-#include <sys/poll.h>
+#include <poll.h>
 
 using namespace Louvre;
 
