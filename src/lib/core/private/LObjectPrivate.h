@@ -1,4 +1,0 @@
-#ifndef LOBJECTPRIVATE_H
-#define LOBJECTPRIVATE_H
-
-#endif // LOBJECTPRIVATE_H
