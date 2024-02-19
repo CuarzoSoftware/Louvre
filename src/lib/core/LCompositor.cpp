@@ -194,8 +194,6 @@ bool LCompositor::start()
 
 Int32 LCompositor::processLoop(Int32 msTimeout)
 {
-    imp()->removedObjectsAliveIndicators.clear();
-
     if (state() == CompositorState::Uninitialized)
         return 0;
 

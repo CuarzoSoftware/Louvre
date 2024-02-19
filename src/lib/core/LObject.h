@@ -12,13 +12,12 @@ public:
     /**
      * @brief Constructor of the LObject class.
      */
-    inline LObject() : m_isAlive{std::make_unique<bool>(true)}
-    {}
+    inline LObject() {}
 
     /**
      * @brief Destructor of the LObject class.
      */
-    ~LObject();
+    inline ~LObject() {};
 
     /**
      * @brief Quick access to the global compositor instance.
@@ -45,23 +44,21 @@ public:
     }
 
     /**
-     * @brief Get a pointer to a boolean variable indicating the object's existence.
+     * @brief Object's liveness status.
      *
-     * The boolean variable is not immediately destroyed when the object is destructed,
-     * making it safe to check its value even after the object is no longer present.
-     * Developers may destroy an object during processing a request; therefore,
-     * Louvre internally uses this property to verify its existence before accessing it.
+     * This method returns a shared pointer to a constant boolean, allowing external
+     * entities to monitor the liveness status of the object. The boolean's value is set to
+     * `false` when the object is destroyed.
      *
-     * @return Pointer to the boolean variable indicating the object's existence.
+     * @return A shared pointer to a constant boolean representing the liveness status.
      */
-    inline const bool *isAlive() const
+    inline std::shared_ptr<const bool> isAlive() const
     {
-        return m_isAlive.get();
+        return m_isAlive;
     }
 
 private:
-    friend class LCompositor;
-    std::unique_ptr<bool> m_isAlive;
+    std::shared_ptr<bool> m_isAlive { std::make_shared<bool>(true) };
 };
 
 #endif // LOBJECT_H

@@ -123,8 +123,6 @@ LPRIVATE_CLASS(LCompositor)
 
     void sendPendingToplevelsConfiguration();
     void sendPresentationTime();
-
-    std::vector<std::unique_ptr<bool>> removedObjectsAliveIndicators;
 };
 
 #endif // LCOMPOSITORPRIVATE_H
