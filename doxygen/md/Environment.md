@@ -14,7 +14,7 @@ $ LOUVRE_ENABLE_LIBSEAT=0 gdb /path/to/your/compositor
 
 ## Wayland Configuration
 
-By default, Louvre uses the `wayland-0` Unix domain socket for Wayland communication. If you need to customize this socket's name, you can employ the **LOUVRE_WAYLAND_DISPLAY** environment variable. For instance, you can change it to a name like `wayland-1`.
+By default, Louvre uses the `wayland-2` Unix domain socket for Wayland communication. If you need to override this socket's name, you can employ the **LOUVRE_WAYLAND_DISPLAY** environment variable.
 
 Keep in mind that for clients to successfully establish a connection, you must also update the **WAYLAND_DISPLAY** environment variable to match the chosen value.
 
