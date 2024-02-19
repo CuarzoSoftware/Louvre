@@ -12,12 +12,15 @@ public:
     /**
      * @brief Constructor of the LObject class.
      */
-    inline LObject() {}
+    inline LObject() = default;
 
     /**
      * @brief Destructor of the LObject class.
      */
-    inline ~LObject() {};
+    inline ~LObject()
+    {
+        *m_isAlive = false;
+    }
 
     /**
      * @brief Quick access to the global compositor instance.
