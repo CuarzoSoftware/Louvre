@@ -179,6 +179,11 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
             for (auto rKeyboard : gSeat->keyboardResources())
                 rKeyboard->keymap(keymapFormat(), keymapFd(), keymapSize());
 
+    // Update LED idx
+    imp()->leds[0] = xkb_keymap_led_get_index(imp()->xkbKeymap, XKB_LED_NAME_NUM);
+    imp()->leds[1] = xkb_keymap_led_get_index(imp()->xkbKeymap, XKB_LED_NAME_CAPS);
+    imp()->leds[2] = xkb_keymap_led_get_index(imp()->xkbKeymap, XKB_LED_NAME_SCROLL);
+
     return true;
 
     fail:

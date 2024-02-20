@@ -640,6 +640,7 @@ namespace Louvre
         void                               (*backendUninitialize)();
         void                               (*backendSuspend)();
         void                               (*backendResume)();
+        void                               (*backendSetLeds)(UInt32);
         void                               (*backendForceUpdate)();
     };
 

@@ -15,6 +15,7 @@ public:
     static void                                 backendSuspend();
     static void                                 backendResume();
     static void                                 backendForceUpdate();
+    static void                                 backendSetLeds(UInt32 leds);
     static Int32                                processInput(int, unsigned int, void *);
 };
 

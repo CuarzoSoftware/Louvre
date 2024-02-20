@@ -33,6 +33,7 @@ LPRIVATE_CLASS(LKeyboard)
     LKeyboardModifiersEvent::Modifiers prevModifiersState    { 0 };
     bool modifiersChanged { true };
 
+    Int32 leds[3] { -1, -1, -1 };
     std::vector<UInt32> pressedKeys;
 
     // Since 4

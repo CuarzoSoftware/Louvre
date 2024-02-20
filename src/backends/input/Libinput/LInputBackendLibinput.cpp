@@ -547,6 +547,14 @@ void LInputBackend::backendForceUpdate()
     processInput(0, 0, LCompositor::compositor()->seat());
 }
 
+void LInputBackend::backendSetLeds(UInt32 leds)
+{
+    const LSeat *seat { LCompositor::compositor()->seat() };
+    const BACKEND_DATA *data { (BACKEND_DATA*)seat->imp()->inputBackendData };
+    for (auto device : data->pluggedDevices)
+        libinput_device_led_update((libinput_device*)device->m_backendData, (libinput_led)leds);
+}
+
 void LInputBackend::backendResume()
 {
     const LSeat *seat { LCompositor::compositor()->seat() };
@@ -615,6 +623,7 @@ extern "C" LInputBackendInterface *getAPI()
     API.backendUninitialize     = &LInputBackend::backendUninitialize;
     API.backendSuspend          = &LInputBackend::backendSuspend;
     API.backendResume           = &LInputBackend::backendResume;
+    API.backendSetLeds          = &LInputBackend::backendSetLeds;
     API.backendForceUpdate      = &LInputBackend::backendForceUpdate;
     return &API;
 }
