@@ -25,10 +25,9 @@ GPointerGestures::GPointerGestures
     LPRIVATE_INIT_UNIQUE(GPointerGestures)
 {
     this->client()->imp()->pointerGesturesGlobals.push_back(this);
-    imp()->clientLink = std::prev(this->client()->imp()->pointerGesturesGlobals.end());
 }
 
 GPointerGestures::~GPointerGestures()
 {
-    client()->imp()->pointerGesturesGlobals.erase(imp()->clientLink);
+    LVectorRemoveOneUnordered(client()->imp()->pointerGesturesGlobals, this);
 }

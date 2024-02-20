@@ -17,7 +17,10 @@ LPRIVATE_CLASS(LPointer)
     {
         LastCursorRequestWasHide = 1 << 0,
         NaturalScrollX           = 1 << 1,
-        NaturalScrollY           = 1 << 2
+        NaturalScrollY           = 1 << 2,
+        PendingSwipeEndEvent     = 1 << 3,
+        PendingPinchEndEvent     = 1 << 4,
+        PendingHoldEndEvent      = 1 << 5
     };
 
     LBitset<StateFlags> state { NaturalScrollX | NaturalScrollY };

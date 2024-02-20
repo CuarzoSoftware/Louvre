@@ -38,8 +38,8 @@ RPointer::~RPointer()
 
     while (!relativePointerResources().empty())
     {
-        imp()->rRelativePointers.back()->imp()->rPointer = nullptr;
-        imp()->rRelativePointers.pop_back();
+        imp()->relativePointerResources.back()->imp()->rPointer = nullptr;
+        imp()->relativePointerResources.pop_back();
     }
 }
 
@@ -50,7 +50,22 @@ GSeat *RPointer::seatGlobal() const
 
 const std::vector<RelativePointer::RRelativePointer *> &RPointer::relativePointerResources() const
 {
-    return imp()->rRelativePointers;
+    return imp()->relativePointerResources;
+}
+
+const std::vector<PointerGestures::RGestureSwipe *> &RPointer::gestureSwipeResources() const
+{
+    return imp()->gestureSwipeResources;
+}
+
+const std::vector<PointerGestures::RGesturePinch *> &RPointer::gesturePinchResources() const
+{
+    return imp()->gesturePinchResources;
+}
+
+const std::vector<PointerGestures::RGestureHold *> &RPointer::gestureHoldResources() const
+{
+    return imp()->gestureHoldResources;
 }
 
 bool RPointer::enter(const LPointerEnterEvent &event, RSurface *rSurface)

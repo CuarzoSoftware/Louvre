@@ -290,6 +290,18 @@ public:
      */
     void sendScrollEvent(const LPointerScrollEvent &event);
 
+    // TODO
+    void sendSwipeBeginEvent(const LPointerSwipeBeginEvent &event);
+    void sendSwipeUpdateEvent(const LPointerSwipeUpdateEvent &event);
+    void sendSwipeEndEvent(const LPointerSwipeEndEvent &event);
+
+    void sendPinchBeginEvent(const LPointerPinchBeginEvent &event);
+    void sendPinchUpdateEvent(const LPointerPinchUpdateEvent &event);
+    void sendPinchEndEvent(const LPointerPinchEndEvent &event);
+
+    void sendHoldBeginEvent(const LPointerHoldBeginEvent &event);
+    void sendHoldEndEvent(const LPointerHoldEndEvent &event);
+
 ///@}
 
     /**
@@ -517,6 +529,18 @@ public:
      * @snippet LPointerDefault.cpp setCursorRequest
      */
     virtual void setCursorRequest(LCursorRole *cursorRole);
+
+    // TODO
+    virtual void pointerSwipeBeginEvent(const LPointerSwipeBeginEvent &event);
+    virtual void pointerSwipeUpdateEvent(const LPointerSwipeUpdateEvent &event);
+    virtual void pointerSwipeEndEvent(const LPointerSwipeEndEvent &event);
+
+    virtual void pointerPinchBeginEvent(const LPointerPinchBeginEvent &event);
+    virtual void pointerPinchUpdateEvent(const LPointerPinchUpdateEvent &event);
+    virtual void pointerPinchEndEvent(const LPointerPinchEndEvent &event);
+
+    virtual void pointerHoldBeginEvent(const LPointerHoldBeginEvent &event);
+    virtual void pointerHoldEndEvent(const LPointerHoldEndEvent &event);
 
 ///@}
 

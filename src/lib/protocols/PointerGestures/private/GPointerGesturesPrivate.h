@@ -19,8 +19,6 @@ static void release(wl_client *client, wl_resource *resource);
 #if LOUVRE_POINTER_GESTURES_VERSION >= 3
 static void get_hold_gesture(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *pointer);
 #endif
-
-std::list<GPointerGestures*>::iterator clientLink;
 };
 
 #endif // GPOINTERGESTURESPRIVATE_H

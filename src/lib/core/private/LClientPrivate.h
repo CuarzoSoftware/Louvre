@@ -33,6 +33,7 @@ LPRIVATE_CLASS(LClient)
     std::vector<GammaControl::GGammaControlManager*> gammaControlManagerGlobals;
     std::vector<TearingControl::GTearingControlManager*> tearingControlManagerGlobals;
     std::vector<RelativePointer::GRelativePointerManager*> relativePointerManagerGlobals;
+    std::vector<PointerGestures::GPointerGestures*> pointerGesturesGlobals;
 
     // Singleton Globals
     Wayland::GDataDeviceManager *dataDeviceManagerGlobal { nullptr };

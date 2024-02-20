@@ -4,8 +4,7 @@ using namespace Louvre;
 
 void RGestureHold::RGestureHoldPrivate::resource_destroy(wl_resource *resource)
 {
-    RGestureHold *rGestureHold = (RGestureHold*)wl_resource_get_user_data(resource);
-    delete rGestureHold;
+    delete (RGestureHold*)wl_resource_get_user_data(resource);
 }
 
 void RGestureHold::RGestureHoldPrivate::destroy(wl_client *client, wl_resource *resource)

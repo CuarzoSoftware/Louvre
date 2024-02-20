@@ -19,13 +19,13 @@ RRelativePointer::RRelativePointer(Wayland::RPointer *rPointer, Int32 id, UInt32
     LPRIVATE_INIT_UNIQUE(RRelativePointer)
 {
     imp()->rPointer = rPointer;
-    rPointer->imp()->rRelativePointers.push_back(this);
+    rPointer->imp()->relativePointerResources.push_back(this);
 }
 
 RRelativePointer::~RRelativePointer()
 {
     if (pointerResource())
-        LVectorRemoveOneUnordered(pointerResource()->imp()->rRelativePointers, this);
+        LVectorRemoveOneUnordered(pointerResource()->imp()->relativePointerResources, this);
 }
 
 RPointer *RRelativePointer::pointerResource() const

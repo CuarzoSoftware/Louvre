@@ -12,6 +12,9 @@ public:
 
     GSeat *seatGlobal() const;
     const std::vector<Protocols::RelativePointer::RRelativePointer*> &relativePointerResources() const;
+    const std::vector<Protocols::PointerGestures::RGestureSwipe*> &gestureSwipeResources() const;
+    const std::vector<Protocols::PointerGestures::RGesturePinch*> &gesturePinchResources() const;
+    const std::vector<Protocols::PointerGestures::RGestureHold*> &gestureHoldResources() const;
 
     // Since 1
     bool enter(const LPointerEnterEvent &event, RSurface *rSurface);

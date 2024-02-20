@@ -3,6 +3,7 @@
 #include <protocols/PointerGestures/pointer-gestures-unstable-v1.h>
 #include <LPointerSwipeUpdateEvent.h>
 #include <private/LCompositorPrivate.h>
+#include <private/LClientPrivate.h>
 
 static struct zwp_pointer_gesture_swipe_v1_interface zwp_pointer_gesture_swipe_v1_implementation =
 {
@@ -20,13 +21,13 @@ RGestureSwipe::RGestureSwipe(Wayland::RPointer *rPointer, Int32 id, UInt32 versi
     LPRIVATE_INIT_UNIQUE(RGestureSwipe)
 {
     imp()->rPointer = rPointer;
-    rPointer->imp()->rGestureSwipe = this;
+    rPointer->imp()->gestureSwipeResources.push_back(this);
 }
 
 RGestureSwipe::~RGestureSwipe()
 {
     if (pointerResource())
-        pointerResource()->imp()->rGestureSwipe = nullptr;
+        LVectorRemoveOneUnordered(pointerResource()->imp()->gestureSwipeResources, this);
 }
 
 RPointer *RGestureSwipe::pointerResource() const
@@ -34,20 +35,24 @@ RPointer *RGestureSwipe::pointerResource() const
     return imp()->rPointer;
 }
 
-const RGestureSwipe::SerialEvents &RGestureSwipe::serialEvents() const
-{
-    return imp()->serialEvents;
-}
-
 bool RGestureSwipe::begin(const LPointerSwipeBeginEvent &event, Wayland::RSurface *rSurface)
 {
-    imp()->serialEvents.begin = event;
+    auto &clientEvent = client()->imp()->events.pointer.swipeBegin;
+
+    if (clientEvent.serial() != event.serial())
+        clientEvent = event;
+
     zwp_pointer_gesture_swipe_v1_send_begin(resource(), event.serial(), event.ms(), rSurface->resource(), event.fingers());
     return true;
 }
 
 bool RGestureSwipe::update(const LPointerSwipeUpdateEvent &event)
 {
+    auto &clientEvent = client()->imp()->events.pointer.swipeUpdate;
+
+    if (clientEvent.serial() != event.serial())
+        clientEvent = event;
+
     zwp_pointer_gesture_swipe_v1_send_update(
         resource(),
         event.ms(),
@@ -58,13 +63,16 @@ bool RGestureSwipe::update(const LPointerSwipeUpdateEvent &event)
 
 bool RGestureSwipe::end(const LPointerSwipeEndEvent &event)
 {
-    imp()->serialEvents.end = event;
+    auto &clientPointerEvents = client()->imp()->events.pointer;
+
+    if (clientPointerEvents.swipeEnd.serial() != event.serial())
+        clientPointerEvents.swipeEnd = event;
 
     if (event.fingers() == 0)
-        imp()->serialEvents.end.setFingers(imp()->serialEvents.begin.fingers());
+        clientPointerEvents.swipeEnd.setFingers(clientPointerEvents.swipeBegin.fingers());
 
     if (event.device() == &compositor()->imp()->fakeDevice)
-        imp()->serialEvents.end.setDevice(imp()->serialEvents.begin.device());
+        clientPointerEvents.swipeEnd.setDevice(clientPointerEvents.swipeBegin.device());
 
     zwp_pointer_gesture_swipe_v1_send_end(
         resource(),

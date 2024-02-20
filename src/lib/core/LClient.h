@@ -270,6 +270,13 @@ public:
      */
     const std::vector<Protocols::RelativePointer::GRelativePointerManager*> &relativePointerManagerGlobals() const;
 
+    /**
+     * Resources created when the client binds to the
+     * [zwp_pointer_gestures_v1](https://wayland.app/protocols/pointer-gestures-unstable-v1#zwp_pointer_gestures_v1) global
+     * of the Pointer Gestures protocol.
+     */
+    const std::vector<Protocols::PointerGestures::GPointerGestures*> &pointerGesturesGlobals() const;
+
     // TODO
     const Events &events() const;
 

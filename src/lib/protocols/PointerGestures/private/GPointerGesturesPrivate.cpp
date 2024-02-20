@@ -32,29 +32,20 @@ void GPointerGestures::GPointerGesturesPrivate::bind(wl_client *client, void *da
 
 void GPointerGestures::GPointerGesturesPrivate::resource_destroy(wl_resource *resource)
 {
-    GPointerGestures *gPointerGestures = (GPointerGestures*)wl_resource_get_user_data(resource);
-    delete gPointerGestures;
+    delete (GPointerGestures*)wl_resource_get_user_data(resource);
 }
 
 void GPointerGestures::GPointerGesturesPrivate::get_swipe_gesture(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *pointer)
 {
     L_UNUSED(client)
-    Wayland::RPointer *rPointer = (Wayland::RPointer*)wl_resource_get_user_data(pointer);
-
-    if (rPointer->gestureSwipeResource())
-        return;
-
+    Wayland::RPointer *rPointer { (Wayland::RPointer*)wl_resource_get_user_data(pointer) };
     new RGestureSwipe(rPointer, id, wl_resource_get_version(resource));
 }
 
 void GPointerGestures::GPointerGesturesPrivate::get_pinch_gesture(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *pointer)
 {
     L_UNUSED(client)
-    Wayland::RPointer *rPointer = (Wayland::RPointer*)wl_resource_get_user_data(pointer);
-
-    if (rPointer->gesturePinchResource())
-        return;
-
+    Wayland::RPointer *rPointer { (Wayland::RPointer*)wl_resource_get_user_data(pointer) };
     new RGesturePinch(rPointer, id, wl_resource_get_version(resource));
 }
 
@@ -70,11 +61,7 @@ void GPointerGestures::GPointerGesturesPrivate::release(wl_client *client, wl_re
 void GPointerGestures::GPointerGesturesPrivate::get_hold_gesture(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *pointer)
 {
     L_UNUSED(client)
-    Wayland::RPointer *rPointer = (Wayland::RPointer*)wl_resource_get_user_data(pointer);
-
-    if (rPointer->gestureHoldResource())
-        return;
-
+    Wayland::RPointer *rPointer { (Wayland::RPointer*)wl_resource_get_user_data(pointer) };
     new RGestureHold(rPointer, id, wl_resource_get_version(resource));
 }
 #endif

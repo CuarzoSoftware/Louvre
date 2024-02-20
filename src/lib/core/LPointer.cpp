@@ -1,6 +1,9 @@
 #include <protocols/Wayland/private/RPointerPrivate.h>
 #include <protocols/Wayland/GSeat.h>
 #include <protocols/RelativePointer/RRelativePointer.h>
+#include <protocols/PointerGestures/RGestureSwipe.h>
+#include <protocols/PointerGestures/RGesturePinch.h>
+#include <protocols/PointerGestures/RGestureHold.h>
 #include <private/LDataDevicePrivate.h>
 #include <private/LClientPrivate.h>
 #include <private/LPointerPrivate.h>
@@ -16,6 +19,7 @@
 
 using namespace Louvre;
 using namespace Louvre::Protocols;
+using S = Louvre::LPointer::LPointerPrivate::StateFlags;
 
 LPointer::LPointer(const void *params) : LPRIVATE_INIT_UNIQUE(LPointer)
 {
@@ -32,7 +36,7 @@ LCursorRole *LPointer::lastCursorRequest() const
 
 bool LPointer::lastCursorRequestWasHide() const
 {
-    return imp()->state.check(LPointerPrivate::LastCursorRequestWasHide);
+    return imp()->state.check(S::LastCursorRequestWasHide);
 }
 
 void LPointer::setFocus(LSurface *surface)
@@ -50,16 +54,14 @@ void LPointer::setFocus(LSurface *surface, const LPoint &localPos)
         if (focus() == surface)
             return;
 
-#ifdef TODO
-        if (imp()->pendingSwipeEnd)
+        if (imp()->state.check(S::PendingSwipeEndEvent))
             sendSwipeEndEvent(LPointerSwipeEndEvent(0, true));
 
-        if (imp()->pendingPinchEnd)
+        if (imp()->state.check(S::PendingPinchEndEvent))
             sendPinchEndEvent(LPointerPinchEndEvent(0, true));
 
-        if (imp()->pendingHoldEnd)
+        if (imp()->state.check(S::PendingHoldEndEvent))
             sendHoldEndEvent(LPointerHoldEndEvent(0, true));
-#endif
 
         imp()->sendLeaveEvent(focus());
 
@@ -79,17 +81,15 @@ void LPointer::setFocus(LSurface *surface, const LPoint &localPos)
     }
     else
     {
-#ifdef TODO
-        // Remove focus from focused surface
-        if (imp()->pendingSwipeEnd)
+        if (imp()->state.check(S::PendingSwipeEndEvent))
             sendSwipeEndEvent(LPointerSwipeEndEvent());
 
-        if (imp()->pendingPinchEnd)
+        if (imp()->state.check(S::PendingPinchEndEvent))
             sendPinchEndEvent(LPointerPinchEndEvent());
 
-        if (imp()->pendingHoldEnd)
+        if (imp()->state.check(S::PendingHoldEndEvent))
             sendHoldEndEvent(LPointerHoldEndEvent());
-#endif
+
         imp()->sendLeaveEvent(focus());
         imp()->pointerFocusSurface = nullptr;
     }
@@ -214,6 +214,121 @@ void LPointer::sendScrollEvent(const LPointerScrollEvent &event)
 
     imp()->axisXprev = event.axes().x();
     imp()->axisYprev = event.axes().y();
+}
+
+void LPointer::sendSwipeBeginEvent(const LPointerSwipeBeginEvent &event)
+{
+    if (!focus() || imp()->state.check(S::PendingSwipeEndEvent))
+        return;
+
+    for (auto gSeat : focus()->client()->seatGlobals())
+    {
+        for (auto rPointer : gSeat->pointerResources())
+        {
+            for (auto rGestureSwipe : rPointer->gestureSwipeResources())
+            {
+                imp()->state.add(S::PendingSwipeEndEvent);
+                rGestureSwipe->begin(event, focus()->surfaceResource());
+            }
+        }
+    }
+}
+
+void LPointer::sendSwipeUpdateEvent(const LPointerSwipeUpdateEvent &event)
+{
+    if (!focus() || !imp()->state.check(S::PendingSwipeEndEvent))
+        return;
+
+    for (auto gSeat : focus()->client()->seatGlobals())
+        for (auto rPointer : gSeat->pointerResources())
+            for (auto rGestureSwipe :  rPointer->gestureSwipeResources())
+                rGestureSwipe->update(event);
+}
+
+void LPointer::sendSwipeEndEvent(const LPointerSwipeEndEvent &event)
+{
+    if (!focus() || !imp()->state.check(S::PendingSwipeEndEvent))
+        return;
+
+    imp()->state.remove(S::PendingSwipeEndEvent);
+
+    for (auto gSeat : focus()->client()->seatGlobals())
+        for (auto rPointer : gSeat->pointerResources())
+            for (auto rGestureSwipe :  rPointer->gestureSwipeResources())
+                rGestureSwipe->end(event);
+}
+
+void LPointer::sendPinchBeginEvent(const LPointerPinchBeginEvent &event)
+{
+    if (!focus() || imp()->state.check(S::PendingPinchEndEvent))
+        return;
+
+    for (auto gSeat : focus()->client()->seatGlobals())
+    {
+        for (auto rPointer : gSeat->pointerResources())
+        {
+            for (auto rGesturePinch : rPointer->gesturePinchResources())
+            {
+                imp()->state.add(S::PendingPinchEndEvent);
+                rGesturePinch->begin(event, focus()->surfaceResource());
+            }
+        }
+    }
+}
+
+void LPointer::sendPinchUpdateEvent(const LPointerPinchUpdateEvent &event)
+{
+    if (!focus() || !imp()->state.check(S::PendingPinchEndEvent))
+        return;
+
+    for (auto gSeat : focus()->client()->seatGlobals())
+        for (auto rPointer : gSeat->pointerResources())
+            for (auto rGesturePinch :  rPointer->gesturePinchResources())
+                rGesturePinch->update(event);
+}
+
+void LPointer::sendPinchEndEvent(const LPointerPinchEndEvent &event)
+{
+    if (!focus() || !imp()->state.check(S::PendingPinchEndEvent))
+        return;
+
+    imp()->state.remove(S::PendingPinchEndEvent);
+
+    for (auto gSeat : focus()->client()->seatGlobals())
+        for (auto rPointer : gSeat->pointerResources())
+            for (auto rGesturePinch :  rPointer->gesturePinchResources())
+                rGesturePinch->end(event);
+}
+
+void LPointer::sendHoldBeginEvent(const LPointerHoldBeginEvent &event)
+{
+    if (!focus() || imp()->state.check(S::PendingHoldEndEvent))
+        return;
+
+    for (auto gSeat : focus()->client()->seatGlobals())
+    {
+        for (auto rPointer : gSeat->pointerResources())
+        {
+            for (auto rGestureHold : rPointer->gestureHoldResources())
+            {
+                imp()->state.add(S::PendingHoldEndEvent);
+                rGestureHold->begin(event, focus()->surfaceResource());
+            }
+        }
+    }
+}
+
+void LPointer::sendHoldEndEvent(const LPointerHoldEndEvent &event)
+{
+    if (!focus() || !imp()->state.check(S::PendingHoldEndEvent))
+        return;
+
+    imp()->state.remove(S::PendingHoldEndEvent);
+
+    for (auto gSeat : focus()->client()->seatGlobals())
+        for (auto rPointer : gSeat->pointerResources())
+            for (auto rGestureHold : rPointer->gestureHoldResources())
+                rGestureHold->end(event);
 }
 
 void LPointer::startResizingToplevel(LToplevelRole *toplevel,

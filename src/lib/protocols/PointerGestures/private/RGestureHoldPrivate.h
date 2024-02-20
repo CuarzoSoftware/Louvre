@@ -10,8 +10,7 @@ LPRIVATE_CLASS(RGestureHold)
 static void resource_destroy(wl_resource *resource);
 static void destroy(wl_client *client, wl_resource *resource);
 
-RPointer *rPointer = nullptr;
-SerialEvents serialEvents;
+RPointer *rPointer { nullptr };
 };
 
 #endif // RGESTUREHOLDPRIVATE_H

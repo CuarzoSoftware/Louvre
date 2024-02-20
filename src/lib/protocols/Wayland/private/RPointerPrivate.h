@@ -13,7 +13,10 @@ LPRIVATE_CLASS(RPointer)
 #endif
 
     GSeat *gSeat;
-    std::vector<Protocols::RelativePointer::RRelativePointer*> rRelativePointers;
+    std::vector<Protocols::RelativePointer::RRelativePointer*> relativePointerResources;
+    std::vector<Protocols::PointerGestures::RGestureSwipe*> gestureSwipeResources;
+    std::vector<Protocols::PointerGestures::RGesturePinch*> gesturePinchResources;
+    std::vector<Protocols::PointerGestures::RGestureHold*> gestureHoldResources;
 };
 
 #endif // RPOINTERPRIVATE_H

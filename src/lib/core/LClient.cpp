@@ -116,6 +116,11 @@ const std::vector<RelativePointer::GRelativePointerManager *> &LClient::relative
     return imp()->relativePointerManagerGlobals;
 }
 
+const std::vector<PointerGestures::GPointerGestures *> &LClient::pointerGesturesGlobals() const
+{
+    return imp()->pointerGesturesGlobals;
+}
+
 const LClient::Events &LClient::events() const
 {
     return imp()->events;

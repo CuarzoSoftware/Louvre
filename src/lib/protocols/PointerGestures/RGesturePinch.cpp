@@ -3,6 +3,7 @@
 #include <protocols/PointerGestures/pointer-gestures-unstable-v1.h>
 #include <LPointerPinchUpdateEvent.h>
 #include <private/LCompositorPrivate.h>
+#include <private/LClientPrivate.h>
 
 static struct zwp_pointer_gesture_pinch_v1_interface zwp_pointer_gesture_pinch_v1_implementation =
 {
@@ -20,13 +21,13 @@ RGesturePinch::RGesturePinch(Wayland::RPointer *rPointer, Int32 id, UInt32 versi
     LPRIVATE_INIT_UNIQUE(RGesturePinch)
 {
     imp()->rPointer = rPointer;
-    rPointer->imp()->rGesturePinch = this;
+    rPointer->imp()->gesturePinchResources.push_back(this);
 }
 
 RGesturePinch::~RGesturePinch()
 {
     if (pointerResource())
-        pointerResource()->imp()->rGesturePinch = nullptr;
+        LVectorRemoveOneUnordered(pointerResource()->imp()->gesturePinchResources, this);
 }
 
 RPointer *RGesturePinch::pointerResource() const
@@ -34,20 +35,24 @@ RPointer *RGesturePinch::pointerResource() const
     return imp()->rPointer;
 }
 
-const RGesturePinch::SerialEvents &RGesturePinch::serialEvents() const
-{
-    return imp()->serialEvents;
-}
-
 bool RGesturePinch::begin(const LPointerPinchBeginEvent &event, Wayland::RSurface *rSurface)
 {
-    imp()->serialEvents.begin = event;
+    auto &clientEvent = client()->imp()->events.pointer.pinchBegin;
+
+    if (clientEvent.serial() != event.serial())
+        clientEvent = event;
+
     zwp_pointer_gesture_pinch_v1_send_begin(resource(), event.serial(), event.ms(), rSurface->resource(), event.fingers());
     return true;
 }
 
 bool RGesturePinch::update(const LPointerPinchUpdateEvent &event)
 {
+    auto &clientEvent = client()->imp()->events.pointer.pinchUpdate;
+
+    if (clientEvent.serial() != event.serial())
+        clientEvent = event;
+
     zwp_pointer_gesture_pinch_v1_send_update(
         resource(),
         event.ms(),
@@ -60,13 +65,16 @@ bool RGesturePinch::update(const LPointerPinchUpdateEvent &event)
 
 bool RGesturePinch::end(const LPointerPinchEndEvent &event)
 {
-    imp()->serialEvents.end = event;
+    auto &clientPointerEvents = client()->imp()->events.pointer;
+
+    if (clientPointerEvents.pinchEnd.serial() != event.serial())
+        clientPointerEvents.pinchEnd = event;
 
     if (event.fingers() == 0)
-        imp()->serialEvents.end.setFingers(imp()->serialEvents.begin.fingers());
+        clientPointerEvents.pinchEnd.setFingers(clientPointerEvents.pinchBegin.fingers());
 
     if (event.device() == &compositor()->imp()->fakeDevice)
-        imp()->serialEvents.end.setDevice(imp()->serialEvents.begin.device());
+        clientPointerEvents.pinchEnd.setDevice(clientPointerEvents.pinchBegin.device());
 
     zwp_pointer_gesture_pinch_v1_send_end(
         resource(),
