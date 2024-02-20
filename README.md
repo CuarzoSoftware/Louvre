@@ -1,4 +1,4 @@
-# Louvre Gallery
+# Projects Using Louvre
 
 Welcome to the list of compositors using Louvre. If you'd like to showcase your compositor, follow the steps below:
 
