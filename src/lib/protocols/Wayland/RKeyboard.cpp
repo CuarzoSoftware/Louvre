@@ -35,7 +35,7 @@ RKeyboard::RKeyboard
     const LKeyboard *lKeyboard { seat()->keyboard() };
     repeatInfo(lKeyboard->repeatRate(), lKeyboard->repeatDelay());
     keymap(lKeyboard->keymapFormat(), lKeyboard->keymapFd(), lKeyboard->keymapSize());
-    gSeat->imp()->rKeyboards.push_back(this);
+    gSeat->imp()->keyboardResources.push_back(this);
 }
 
 RKeyboard::~RKeyboard()
@@ -44,7 +44,7 @@ RKeyboard::~RKeyboard()
         seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
 
     if (seatGlobal())
-        LVectorRemoveOneUnordered(seatGlobal()->imp()->rKeyboards, this);
+        LVectorRemoveOneUnordered(seatGlobal()->imp()->keyboardResources, this);
 }
 
 GSeat *RKeyboard::seatGlobal() const

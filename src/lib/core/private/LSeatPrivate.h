@@ -21,24 +21,24 @@ struct LSeat::Params
 
 LPRIVATE_CLASS(LSeat)
 
-    Int32 ttyNumber = -1;
+    Int32 ttyNumber                         { -1 };
 
-    // Wayland
-    LPointer *pointer                               = nullptr;
-    LKeyboard *keyboard                             = nullptr;
+    LPointer *pointer                       { nullptr };
+    LKeyboard *keyboard                     { nullptr };
+    LTouch *touch                           { nullptr };
 
-    LToplevelRole *activeToplevel                   = nullptr;
-    InputCapabilitiesFlags capabilities             = Pointer | Keyboard;
+    LToplevelRole *activeToplevel           { nullptr };
+    InputCapabilitiesFlags capabilities     { Pointer | Keyboard | Touch };
 
     // Data device
-    LDataSource *dataSelection                      = nullptr;
-    LDNDManager *dndManager                         = nullptr;
+    LDataSource *dataSelection              { nullptr };
+    LDNDManager *dndManager                 { nullptr };
 
-    void *inputBackendData                          = nullptr;
+    void *inputBackendData                  { nullptr };
 
-    libseat *libseatHandle                          = nullptr;
+    libseat *libseatHandle                  { nullptr };
     libseat_seat_listener listener;
-    bool enabled                                    = false;
+    bool enabled                            { false };
 
     bool initLibseat();
     static void seatEnabled(libseat *seat, void *data);

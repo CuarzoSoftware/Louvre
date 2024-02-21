@@ -9,6 +9,7 @@
 #include <private/LToplevelRolePrivate.h>
 #include <LKeyboard.h>
 #include <LPointer.h>
+#include <LTouch.h>
 #include <LTime.h>
 #include <LTimer.h>
 #include <LLog.h>
@@ -443,6 +444,9 @@ void LCompositor::LCompositorPrivate::unitSeat()
         if (seat->pointer())
             LCompositor::compositor()->destroyPointerRequest(seat->pointer());
 
+        if (seat->touch())
+            LCompositor::compositor()->destroyTouchRequest(seat->touch());
+
         if (seat->dndManager())
             LCompositor::compositor()->destroyDNDManagerRequest(seat->dndManager());
 
@@ -462,6 +466,13 @@ void LCompositor::LCompositorPrivate::unitSeat()
             delete seat->imp()->pointer;
             seat->imp()->pointer = nullptr;
             LLog::debug("[LCompositorPrivate::unitSeat] Pointer uninitialized successfully.");
+        }
+
+        if (seat->touch())
+        {
+            delete seat->imp()->touch;
+            seat->imp()->touch = nullptr;
+            LLog::debug("[LCompositorPrivate::unitSeat] Touch uninitialized successfully.");
         }
 
         if (seat->dndManager())

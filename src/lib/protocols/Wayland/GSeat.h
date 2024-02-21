@@ -17,6 +17,7 @@ public:
 
     const std::vector<RKeyboard*> &keyboardResources() const;
     const std::vector<RPointer*> &pointerResources() const;
+    const std::vector<RTouch *> &touchResources() const;
 
     RDataDevice *dataDeviceResource() const;
 

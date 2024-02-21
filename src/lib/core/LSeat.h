@@ -186,6 +186,13 @@ public:
     LKeyboard *keyboard() const;
 
     /**
+     * @brief Access to touch events.
+     *
+     * Access to the LTouch instance used to receive touch events from the backend and redirect them to clients.
+     */
+    LTouch *touch() const;
+
+    /**
      * @brief Access to the drag & drop session manager.
      *
      * Access to the LDNDManager instance used to handle drag & drop sessions.

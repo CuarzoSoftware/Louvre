@@ -1,6 +1,7 @@
 #include <private/LSeatPrivate.h>
 #include <private/LPointerPrivate.h>
 #include <private/LKeyboardPrivate.h>
+#include <private/LTouchPrivate.h>
 #include <private/LDNDManagerPrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
@@ -48,6 +49,9 @@ LSeat::LSeat(const void *params) : LPRIVATE_INIT_UNIQUE(LSeat)
 
     LKeyboard::Params keyboardParams;
     imp()->keyboard = compositor()->createKeyboardRequest(&keyboardParams);
+
+    LTouch::Params touchParams;
+    imp()->touch = compositor()->createTouchRequest(&touchParams);
 
     imp()->enabled = true;
 }
@@ -127,6 +131,11 @@ LPointer *LSeat::pointer() const
 LKeyboard *LSeat::keyboard() const
 {
     return imp()->keyboard;
+}
+
+LTouch *LSeat::touch() const
+{
+    return imp()->touch;
 }
 
 LDataSource *LSeat::dataSelection() const

@@ -1,6 +1,9 @@
 #include <protocols/Wayland/private/RPointerPrivate.h>
 #include <protocols/Wayland/private/GSeatPrivate.h>
 #include <protocols/RelativePointer/private/RRelativePointerPrivate.h>
+#include <protocols/PointerGestures/private/RGestureSwipePrivate.h>
+#include <protocols/PointerGestures/private/RGesturePinchPrivate.h>
+#include <protocols/PointerGestures/private/RGestureHoldPrivate.h>
 #include <private/LClientPrivate.h>
 
 static struct wl_pointer_interface pointer_implementation =
@@ -28,18 +31,36 @@ RPointer::RPointer
     LPRIVATE_INIT_UNIQUE(RPointer)
 {
     imp()->gSeat = gSeat;
-    gSeat->imp()->rPointers.push_back(this);
+    gSeat->imp()->pointerResources.push_back(this);
 }
 
 RPointer::~RPointer()
 {
     if (seatGlobal())
-        LVectorRemoveOneUnordered(seatGlobal()->imp()->rPointers, this);
+        LVectorRemoveOneUnordered(seatGlobal()->imp()->pointerResources, this);
 
     while (!relativePointerResources().empty())
     {
         imp()->relativePointerResources.back()->imp()->rPointer = nullptr;
         imp()->relativePointerResources.pop_back();
+    }
+
+    while (!gestureSwipeResources().empty())
+    {
+        imp()->gestureSwipeResources.back()->imp()->rPointer = nullptr;
+        imp()->gestureSwipeResources.pop_back();
+    }
+
+    while (!gesturePinchResources().empty())
+    {
+        imp()->gesturePinchResources.back()->imp()->rPointer = nullptr;
+        imp()->gesturePinchResources.pop_back();
+    }
+
+    while (!gestureHoldResources().empty())
+    {
+        imp()->gestureHoldResources.back()->imp()->rPointer = nullptr;
+        imp()->gestureHoldResources.pop_back();
     }
 }
 

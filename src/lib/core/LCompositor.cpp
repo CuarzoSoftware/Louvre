@@ -490,11 +490,6 @@ const std::vector<LClient *> &LCompositor::clients() const
     return imp()->clients;
 }
 
-UInt32 LCompositor::nextSerial()
-{
-    return LTime::nextSerial();
-}
-
 EGLDisplay LCompositor::eglDisplay()
 {
     return LCompositor::compositor()->imp()->mainEGLDisplay;

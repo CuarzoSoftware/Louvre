@@ -1,5 +1,6 @@
 #include <protocols/Wayland/private/RKeyboardPrivate.h>
 #include <protocols/Wayland/private/RPointerPrivate.h>
+#include <protocols/Wayland/private/RTouchPrivate.h>
 #include <protocols/Wayland/private/RDataDevicePrivate.h>
 #include <protocols/Wayland/private/GSeatPrivate.h>
 #include <private/LClientPrivate.h>
@@ -38,13 +39,19 @@ GSeat::~GSeat()
     while (!keyboardResources().empty())
     {
         keyboardResources().back()->imp()->gSeat = nullptr;
-        imp()->rKeyboards.pop_back();
+        imp()->keyboardResources.pop_back();
     }
 
     while (!pointerResources().empty())
     {
         pointerResources().back()->imp()->gSeat = nullptr;
-        imp()->rPointers.pop_back();
+        imp()->pointerResources.pop_back();
+    }
+
+    while (!touchResources().empty())
+    {
+        touchResources().back()->imp()->gSeat = nullptr;
+        imp()->touchResources.pop_back();
     }
 
     if (dataDeviceResource())
@@ -53,12 +60,17 @@ GSeat::~GSeat()
 
 const std::vector<RKeyboard *> &GSeat::keyboardResources() const
 {
-    return imp()->rKeyboards;
+    return imp()->keyboardResources;
 }
 
 const std::vector<RPointer*> &GSeat::pointerResources() const
 {
-    return imp()->rPointers;
+    return imp()->pointerResources;
+}
+
+const std::vector<RTouch *> &GSeat::touchResources() const
+{
+    return imp()->touchResources;
 }
 
 RDataDevice *GSeat::dataDeviceResource() const

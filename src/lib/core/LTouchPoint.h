@@ -1,4 +1,3 @@
-#if 1 == 2
 #ifndef LTOUCHPOINT_H
 #define LTOUCHPOINT_H
 
@@ -23,8 +22,6 @@
 class Louvre::LTouchPoint : public LObject
 {
 public:
-
-    LCLASS_NO_COPY(LTouchPoint)
 
     /**
      * @brief Get the unique identifier of the touch point.
@@ -127,4 +124,3 @@ LPRIVATE_IMP_UNIQUE(LTouchPoint)
 };
 
 #endif // LTOUCHPOINT_H
-#endif

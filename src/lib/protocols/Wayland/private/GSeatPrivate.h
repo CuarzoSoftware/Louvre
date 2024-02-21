@@ -15,9 +15,10 @@ LPRIVATE_CLASS(GSeat)
     static void release(wl_client *client, wl_resource *resource);
 #endif
 
-    std::vector<RKeyboard*> rKeyboards;
-    std::vector<RPointer*> rPointers;
-    RDataDevice *rDataDevice = nullptr;
+    std::vector<RPointer*> pointerResources;
+    std::vector<RKeyboard*> keyboardResources;
+    std::vector<RTouch*> touchResources;
+    RDataDevice *rDataDevice { nullptr };
 };
 
 #endif // GSEATPRIVATE_H

@@ -13,9 +13,11 @@
 #include <private/LSeatPrivate.h>
 #include <private/LPointerPrivate.h>
 #include <private/LKeyboardPrivate.h>
+#include <private/LTouchPointPrivate.h>
 #include <private/LSubsurfaceRolePrivate.h>
 #include <LDNDIconRole.h>
 #include <LCursorRole.h>
+#include <LTouch.h>
 
 using namespace Protocols::Wayland;
 
@@ -103,6 +105,14 @@ RSurface::~RSurface()
     // Clear pointer focus
     if (seat()->pointer()->imp()->pointerFocusSurface == lSurface)
         seat()->pointer()->setFocus(nullptr);
+
+    // Clear touch points
+    for (LTouchPoint *tp : seat()->touch()->touchPoints())
+        if (tp->surface() == lSurface)
+        {
+            tp->imp()->resetSerials();
+            tp->imp()->surface = nullptr;
+        }
 
     // Clear dragging surface
     if (seat()->pointer()->imp()->draggingSurface == lSurface)

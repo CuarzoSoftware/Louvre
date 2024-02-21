@@ -1,10 +1,12 @@
 #include <LTouchUpEvent.h>
 #include <LCompositor.h>
+#include <LSeat.h>
+#include <LTouch.h>
 
 using namespace Louvre;
 
 void LTouchUpEvent::notify()
 {
-    /*if (compositor()->state() == LCompositor::Initialized)
-        seat()->touch()->touchUpEvent(*this);*/
+    if (compositor()->state() == LCompositor::Initialized)
+        seat()->touch()->touchUpEvent(*this);
 }

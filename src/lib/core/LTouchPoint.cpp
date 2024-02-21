@@ -1,4 +1,3 @@
-#if 1 == 2
 #include <private/LTouchPointPrivate.h>
 #include <protocols/Wayland/private/RTouchPrivate.h>
 #include <protocols/Wayland/GSeat.h>
@@ -129,4 +128,3 @@ bool LTouchPoint::sendUpEvent(const LTouchUpEvent &event)
 
     return true;
 }
-#endif

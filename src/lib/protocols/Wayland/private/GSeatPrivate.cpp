@@ -1,8 +1,9 @@
-#include <protocols/Wayland/RKeyboard.h>
-#include <LSeat.h>
-#include <private/LClientPrivate.h>
-#include <protocols/Wayland/RPointer.h>
 #include <protocols/Wayland/private/GSeatPrivate.h>
+#include <protocols/Wayland/RKeyboard.h>
+#include <protocols/Wayland/RPointer.h>
+#include <protocols/Wayland/RTouch.h>
+#include <private/LClientPrivate.h>
+#include <LSeat.h>
 
 static struct wl_seat_interface seat_implementation =
 {
@@ -28,19 +29,18 @@ void GSeat::GSeatPrivate::bind(wl_client *client, void *data, UInt32 version, UI
 
 void GSeat::GSeatPrivate::resource_destroy(wl_resource *resource)
 {
-    GSeat *gSeat = (GSeat*)wl_resource_get_user_data(resource);
-    delete gSeat;
+    delete (GSeat*)wl_resource_get_user_data(resource);
 }
 
 void GSeat::GSeatPrivate::get_pointer(wl_client *client, wl_resource *resource, UInt32 id)
 {
     L_UNUSED(client);
 
-    GSeat *gSeat = (GSeat*)wl_resource_get_user_data(resource);
+    GSeat *gSeat { (GSeat*)wl_resource_get_user_data(resource) };
 
     if (!(seat()->inputCapabilities() & LSeat::Pointer))
     {
-        wl_resource_post_error(resource,WL_SEAT_ERROR_MISSING_CAPABILITY,"get_pointer called on seat without the matching capability.");
+        wl_resource_post_error(resource,WL_SEAT_ERROR_MISSING_CAPABILITY, "get_pointer called on seat without the matching capability.");
         return;
     }
 
@@ -51,7 +51,7 @@ void GSeat::GSeatPrivate::get_keyboard(wl_client *client, wl_resource *resource,
 {
     L_UNUSED(client);
 
-    GSeat *gSeat = (GSeat*)wl_resource_get_user_data(resource);
+    GSeat *gSeat { (GSeat*)wl_resource_get_user_data(resource) };
 
     if (!(seat()->inputCapabilities() & LSeat::Keyboard))
     {
@@ -67,11 +67,15 @@ void GSeat::GSeatPrivate::get_touch(wl_client *client, wl_resource *resource, UI
     L_UNUSED(client);
     L_UNUSED(id);
 
+    GSeat *gSeat { (GSeat*)wl_resource_get_user_data(resource) };
+
     if (!(seat()->inputCapabilities() & LSeat::Touch))
     {
         wl_resource_post_error(resource, WL_SEAT_ERROR_MISSING_CAPABILITY, "get_touch called on seat without the matching capability.");
         return;
     }
+
+    new RTouch(gSeat, id);
 }
 
 #if LOUVRE_WL_SEAT_VERSION >= 5

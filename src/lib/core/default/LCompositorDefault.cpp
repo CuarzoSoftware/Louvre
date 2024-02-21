@@ -18,6 +18,7 @@
 #include <LSubsurfaceRole.h>
 #include <LPointer.h>
 #include <LKeyboard.h>
+#include <LTouch.h>
 #include <LSurface.h>
 #include <LDNDManager.h>
 #include <LOutput.h>
@@ -174,6 +175,13 @@ LKeyboard *LCompositor::createKeyboardRequest(const void *params)
 }
 //! [createKeyboardRequest]
 
+//! [createTouchRequest]
+LTouch *LCompositor::createTouchRequest(const void *params)
+{
+    return new LTouch(params);
+}
+//! [createTouchRequest]
+
 //! [createDNDManagerRequest]
 LDNDManager *LCompositor::createDNDManagerRequest(const void *params)
 {
@@ -250,6 +258,13 @@ void LCompositor::destroyPointerRequest(LPointer *pointer)
     L_UNUSED(pointer);
 }
 //! [destroyPointerRequest]
+
+//! [destroyTouchRequest]
+void LCompositor::destroyTouchRequest(LTouch *touch)
+{
+    L_UNUSED(touch);
+}
+//! [destroyTouchRequest]
 
 //! [destroyKeyboardRequest]
 void LCompositor::destroyKeyboardRequest(LKeyboard *keyboard)
