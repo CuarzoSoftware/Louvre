@@ -26,13 +26,7 @@ void GPointerGestures::GPointerGesturesPrivate::bind(wl_client *client, void *da
                          &zwp_pointer_gestures_v1_interface,
                          version,
                          id,
-                         &zwp_pointer_gestures_v1_implementation,
-                         &GPointerGestures::GPointerGesturesPrivate::resource_destroy);
-}
-
-void GPointerGestures::GPointerGesturesPrivate::resource_destroy(wl_resource *resource)
-{
-    delete (GPointerGestures*)wl_resource_get_user_data(resource);
+                         &zwp_pointer_gestures_v1_implementation);
 }
 
 void GPointerGestures::GPointerGesturesPrivate::get_swipe_gesture(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *pointer)

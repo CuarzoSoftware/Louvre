@@ -1,6 +1,9 @@
 #include <protocols/Wayland/private/RDataOfferPrivate.h>
 #include <protocols/Wayland/RDataDevice.h>
+#include <protocols/Wayland/GSeat.h>
 #include <private/LDataOfferPrivate.h>
+#include <protocols/Wayland/private/RDataDevicePrivate.h>
+#include <LClient.h>
 
 using namespace Louvre::Protocols::Wayland;
 
@@ -26,8 +29,7 @@ RDataOffer::RDataOffer
         &wl_data_offer_interface,
         rDataDevice->version(),
         id,
-        &dataOffer_implementation,
-        &RDataOffer::RDataOfferPrivate::resource_destroy
+        &dataOffer_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RDataOffer)
 {
@@ -37,6 +39,10 @@ RDataOffer::RDataOffer
 
 RDataOffer::~RDataOffer()
 {
+    for (GSeat *s : client()->seatGlobals())
+        if (s->dataDeviceResource() && s->dataDeviceResource()->dataOffered() == dataOffer())
+            s->dataDeviceResource()->imp()->dataOffered = nullptr;
+
     delete imp()->lDataOffer;
 }
 

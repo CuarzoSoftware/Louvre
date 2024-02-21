@@ -2,6 +2,7 @@
 #include <LLauncher.h>
 #include <LLog.h>
 #include <unistd.h>
+#include <LObject.h>
 
 using namespace Louvre;
 

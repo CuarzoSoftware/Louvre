@@ -4,12 +4,6 @@
 #include <LTexture.h>
 #include <fcntl.h>
 
-void RLinuxBufferParams::RLinuxBufferParamsPrivate::resource_destroy(wl_resource *resource)
-{
-    RLinuxBufferParams *rLinuxBufferParams = (RLinuxBufferParams*)wl_resource_get_user_data(resource);
-    delete rLinuxBufferParams;
-}
-
 void RLinuxBufferParams::RLinuxBufferParamsPrivate::destroy(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);

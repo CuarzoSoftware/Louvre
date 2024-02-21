@@ -20,14 +20,7 @@ void GXdgWmBase::GXdgWmBasePrivate::bind(wl_client *client, void *data, UInt32 v
                    &xdg_wm_base_interface,
                    version,
                    id,
-                   &xdg_wm_base_implementation,
-                   &GXdgWmBase::GXdgWmBasePrivate::resource_destroy);
-}
-
-void GXdgWmBase::GXdgWmBasePrivate::resource_destroy(wl_resource *resource)
-{
-    GXdgWmBase *gXdgWmBase = (GXdgWmBase*)wl_resource_get_user_data(resource);
-    delete gXdgWmBase;
+                   &xdg_wm_base_implementation);
 }
 
 void GXdgWmBase::GXdgWmBasePrivate::destroy(wl_client *client, wl_resource *resource)

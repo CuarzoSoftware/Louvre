@@ -247,7 +247,7 @@ UInt32 LKeyboard::keymapFormat() const
 
 LSurface *LKeyboard::focus() const
 {
-    return imp()->keyboardFocusSurface;
+    return imp()->focus.lock().get();
 }
 
 void LKeyboard::setFocus(LSurface *surface)
@@ -272,7 +272,7 @@ void LKeyboard::setFocus(LSurface *surface)
         if (!focus() || (focus() && focus()->client() != surface->client()))
             surface->client()->dataDevice().sendSelectionEvent();
 
-        imp()->keyboardFocusSurface = nullptr;
+        imp()->focus.reset();
 
         // Pack currently pressed keys
         wl_array keys;
@@ -288,7 +288,7 @@ void LKeyboard::setFocus(LSurface *surface)
         {
             for (auto rKeyboard : gSeat->keyboardResources())
             {
-                imp()->keyboardFocusSurface = surface;
+                imp()->focus = surface->weakRef<LSurface>();
                 rKeyboard->enter(enterEvent, surface->surfaceResource(), &keys);
                 rKeyboard->modifiers(modifiersEvent);
             }
@@ -308,7 +308,7 @@ void LKeyboard::setFocus(LSurface *surface)
                     rKeyboard->leave(leaveEvent, focus()->surfaceResource());
         }
 
-        imp()->keyboardFocusSurface = nullptr;
+        imp()->focus.reset();
     }
 
     focusChanged();

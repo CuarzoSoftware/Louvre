@@ -3,11 +3,6 @@
 #include <protocols/Wayland/RSurface.h>
 #include <private/LSurfacePrivate.h>
 
-void RTearingControl::RTearingControlPrivate::resource_destroy(wl_resource *resource)
-{
-    delete (RTearingControl*)wl_resource_get_user_data(resource);
-}
-
 void RTearingControl::RTearingControlPrivate::destroy(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);

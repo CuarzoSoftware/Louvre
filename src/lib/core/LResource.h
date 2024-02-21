@@ -17,70 +17,13 @@ class Louvre::LResource : public LObject
 {
 public:
     /**
-     * @brief Constructor for LResource using an existing **wl_resource**.
-     *
-     * @note This constructor should be used for already created **wl_resources**. If you need to create a new **wl_resource** use the other constructors instead.
-     *
-     * @param resource Pointer to the wl_resource struct to wrap.
-     */
-    LResource(wl_resource *resource);
-
-    /**
-     * @brief Constructor for LResource using **wl_client** and other parameters.
-     *
-     * This constructor creates an LResource and registers it with the provided parameters.
-     *
-     * @param client The **wl_client** associated with the resource.
-     * @param interface Pointer to the **wl_interface** provided by the protocol.
-     * @param version Version of the global interface.
-     * @param id ID of the resource; passing 0 automatically generates an increasing ID.
-     * @param implementation Pointer to the interface implementation (struct with callback functions to handle client requests).
-     * @param destroy Callback function to handle resource destruction.
-     */
-    LResource(wl_client *client,
-              const wl_interface *interface,
-              Int32 version,
-              UInt32 id,
-              const void *implementation,
-              wl_resource_destroy_func_t destroy);
-
-    /**
-     * @brief Constructor for LResource using LClient and other parameters.
-     *
-     * This constructor creates an LResource and registers it with the provided parameters.
-     *
-     * @param client The LClient associated with the resource.
-     * @param interface Pointer to the wl_interface provided by the protocol.
-     * @param version Version of the global interface.
-     * @param id ID of the resource; passing 0 automatically generates an increasing ID.
-     * @param implementation Pointer to the interface implementation (struct with callback functions to handle client requests).
-     * @param destroy Callback function to handle resource destruction.
-     */
-    LResource(LClient *client,
-              const wl_interface *interface,
-              Int32 version,
-              UInt32 id,
-              const void *implementation,
-              wl_resource_destroy_func_t destroy);
-
-    /**
-     * @brief Destructor for LResource.
-     */
-    ~LResource();
-
-    /// @cond OMIT
-    LResource(const LResource&) = delete;
-    LResource& operator= (const LResource&) = delete;
-    /// @endcond
-
-    /**
      * @brief Retrieve the wrapped **wl_resource** pointer.
      *
      * This method returns the original **wl_resource** pointer associated with this LResource.
      *
      * @return A pointer to the wrapped **wl_resource**.
      */
-    wl_resource *resource() const;
+    inline wl_resource *resource() const { return m_resource; };
 
     /**
      * @brief Retrieve the client that owns this resource.
@@ -89,7 +32,7 @@ public:
      *
      * @return A pointer to the owning LClient.
      */
-    LClient *client() const;
+    inline LClient *client() const { return m_client; }
 
     /**
      * @brief Retrieve the version of the global interface.
@@ -116,7 +59,65 @@ public:
      */
     void destroy();
 
-    LPRIVATE_IMP_UNIQUE(LResource)
+protected:
+
+    /**
+     * @brief Constructor for LResource using an existing **wl_resource**.
+     *
+     * @note This constructor should be used for already created **wl_resources**. If you need to create a new **wl_resource** use the other constructors instead.
+     *
+     * @param resource Pointer to the wl_resource struct to wrap.
+     */
+    LResource(wl_resource *resource);
+
+    /**
+     * @brief Constructor for LResource using **wl_client** and other parameters.
+     *
+     * This constructor creates an LResource and registers it with the provided parameters.
+     *
+     * @param client The **wl_client** associated with the resource.
+     * @param interface Pointer to the **wl_interface** provided by the protocol.
+     * @param version Version of the global interface.
+     * @param id ID of the resource; passing 0 automatically generates an increasing ID.
+     * @param implementation Pointer to the interface implementation (struct with callback functions to handle client requests).
+     * @param destroy Callback function to handle resource destruction.
+     */
+    LResource(wl_client *client,
+              const wl_interface *interface,
+              Int32 version,
+              UInt32 id,
+              const void *implementation);
+
+    /**
+     * @brief Constructor for LResource using LClient and other parameters.
+     *
+     * This constructor creates an LResource and registers it with the provided parameters.
+     *
+     * @param client The LClient associated with the resource.
+     * @param interface Pointer to the wl_interface provided by the protocol.
+     * @param version Version of the global interface.
+     * @param id ID of the resource; passing 0 automatically generates an increasing ID.
+     * @param implementation Pointer to the interface implementation (struct with callback functions to handle client requests).
+     */
+    LResource(LClient *client,
+              const wl_interface *interface,
+              Int32 version,
+              UInt32 id,
+              const void *implementation);
+
+    /// @cond OMIT
+    LResource(const LResource&) = delete;
+    LResource& operator= (const LResource&) = delete;
+    /// @endcond
+
+    /**
+     * @brief Destructor for LResource.
+     */
+    virtual ~LResource() {};
+
+private:
+    LClient *m_client;
+    wl_resource *m_resource;
 };
 
 #endif // LRESOURCE_H

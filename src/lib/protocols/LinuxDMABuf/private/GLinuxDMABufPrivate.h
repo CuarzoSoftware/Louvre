@@ -8,7 +8,6 @@ using namespace Louvre::Protocols::LinuxDMABuf;
 
 LPRIVATE_CLASS(GLinuxDMABuf)
     static void bind(wl_client *client, void *data, UInt32 version, UInt32 id);
-    static void resource_destroy(wl_resource *resource);
     static void destroy(wl_client *client, wl_resource *resource);
     static void create_params(wl_client *client, wl_resource *resource, UInt32 id);
 

@@ -17,14 +17,7 @@ void GSubcompositor::GSubcompositorPrivate::bind(wl_client *client, void *data, 
                        &wl_subcompositor_interface,
                        version,
                        id,
-                       &subcompositor_implementation,
-                       &GSubcompositor::GSubcompositorPrivate::resource_destroy);
-}
-
-void GSubcompositor::GSubcompositorPrivate::resource_destroy(wl_resource *resource)
-{
-    GSubcompositor *gSubcompositor = (GSubcompositor*)wl_resource_get_user_data(resource);
-    delete gSubcompositor;
+                       &subcompositor_implementation);
 }
 
 void GSubcompositor::GSubcompositorPrivate::destroy(wl_client *client, wl_resource *resource)

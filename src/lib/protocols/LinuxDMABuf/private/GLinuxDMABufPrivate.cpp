@@ -22,14 +22,7 @@ void GLinuxDMABuf::GLinuxDMABufPrivate::bind(wl_client *client, void *data, UInt
                      &zwp_linux_dmabuf_v1_interface,
                      version,
                      id,
-                     &zwp_linux_dmabuf_v1_implementation,
-                     &GLinuxDMABuf::GLinuxDMABufPrivate::resource_destroy);
-}
-
-void GLinuxDMABuf::GLinuxDMABufPrivate::resource_destroy(wl_resource *resource)
-{
-    GLinuxDMABuf *gLinuxDMABuf = (GLinuxDMABuf*)wl_resource_get_user_data(resource);
-    delete gLinuxDMABuf;
+                     &zwp_linux_dmabuf_v1_implementation);
 }
 
 void GLinuxDMABuf::GLinuxDMABufPrivate::destroy(wl_client *client, wl_resource *resource)

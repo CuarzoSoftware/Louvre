@@ -15,13 +15,7 @@ void GFractionalScaleManager::GFractionalScaleManagerPrivate::bind(wl_client *cl
                      &wp_fractional_scale_manager_v1_interface,
                      version,
                      id,
-                     &wp_fractional_scale_manager_v1_implementation,
-                     &GFractionalScaleManager::GFractionalScaleManagerPrivate::resource_destroy);
-}
-
-void GFractionalScaleManager::GFractionalScaleManagerPrivate::resource_destroy(wl_resource *resource)
-{
-    delete (GFractionalScaleManager*)wl_resource_get_user_data(resource);
+                     &wp_fractional_scale_manager_v1_implementation);
 }
 
 void GFractionalScaleManager::GFractionalScaleManagerPrivate::destroy(wl_client *client, wl_resource *resource)

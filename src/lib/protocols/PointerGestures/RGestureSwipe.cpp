@@ -16,8 +16,7 @@ RGestureSwipe::RGestureSwipe(Wayland::RPointer *rPointer, Int32 id, UInt32 versi
         &zwp_pointer_gesture_swipe_v1_interface,
         version,
         id,
-        &zwp_pointer_gesture_swipe_v1_implementation,
-        &RGestureSwipe::RGestureSwipePrivate::resource_destroy),
+        &zwp_pointer_gesture_swipe_v1_implementation),
     LPRIVATE_INIT_UNIQUE(RGestureSwipe)
 {
     imp()->rPointer = rPointer;

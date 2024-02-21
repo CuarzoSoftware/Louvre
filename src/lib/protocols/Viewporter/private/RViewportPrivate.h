@@ -7,7 +7,6 @@
 using namespace Louvre::Protocols::Viewporter;
 
 LPRIVATE_CLASS(RViewport)
-static void resource_destroy(wl_resource *resource);
 static void destroy(wl_client *client, wl_resource *resource);
 static void set_source(wl_client *client, wl_resource *resource, Float24 x, Float24 y, Float24 width, Float24 height);
 static void set_destination(wl_client *client, wl_resource *resource, Int32 width, Int32 height);

@@ -17,8 +17,7 @@ void GGammaControlManager::GGammaControlManagerPrivate::bind(wl_client *client, 
                     &zwlr_gamma_control_manager_v1_interface,
                     version,
                     id,
-                    &gamma_control_manager_implementation,
-                    &GGammaControlManager::GGammaControlManagerPrivate::resource_destroy);
+                    &gamma_control_manager_implementation);
 }
 
 void GGammaControlManager::GGammaControlManagerPrivate::get_gamma_control(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *output)
@@ -28,12 +27,6 @@ void GGammaControlManager::GGammaControlManagerPrivate::get_gamma_control(wl_cli
     Wayland::GOutput *gOutput = (Wayland::GOutput*)wl_resource_get_user_data(output);
 
     new RGammaControl(gOutput, wl_resource_get_version(resource), id);
-}
-
-
-void GGammaControlManager::GGammaControlManagerPrivate::resource_destroy(wl_resource *resource)
-{
-    delete (GGammaControlManager*)wl_resource_get_user_data(resource);
 }
 
 void GGammaControlManager::GGammaControlManagerPrivate::destroy(wl_client *client, wl_resource *resource)

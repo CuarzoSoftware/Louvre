@@ -23,13 +23,7 @@ void GSeat::GSeatPrivate::bind(wl_client *client, void *data, UInt32 version, UI
               &wl_seat_interface,
               version,
               id,
-              &seat_implementation,
-              &GSeat::GSeatPrivate::resource_destroy);
-}
-
-void GSeat::GSeatPrivate::resource_destroy(wl_resource *resource)
-{
-    delete (GSeat*)wl_resource_get_user_data(resource);
+              &seat_implementation);
 }
 
 void GSeat::GSeatPrivate::get_pointer(wl_client *client, wl_resource *resource, UInt32 id)

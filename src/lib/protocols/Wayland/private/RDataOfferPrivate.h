@@ -6,7 +6,6 @@
 using namespace Louvre::Protocols::Wayland;
 
 LPRIVATE_CLASS(RDataOffer)
-    static void resource_destroy(wl_resource *resource);
     static void destroy(wl_client *client, wl_resource *resource);
     static void accept(wl_client *client, wl_resource *resource, UInt32 serial, const char *mime_type);
     static void receive(wl_client *client, wl_resource *resource, const char *mime_type, Int32 fd);
@@ -16,8 +15,8 @@ LPRIVATE_CLASS(RDataOffer)
     static void set_actions(wl_client *client, wl_resource *resource, UInt32 dnd_actions, UInt32 preferred_action);
     #endif
 
-    LDataOffer *lDataOffer = nullptr;
-    RDataDevice *rDataDevice = nullptr;
+    LDataOffer *lDataOffer { nullptr };
+    RDataDevice *rDataDevice { nullptr };
 };
 
 #endif // RDATAOFFERPRIVATE_H

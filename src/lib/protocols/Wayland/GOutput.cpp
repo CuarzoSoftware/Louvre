@@ -14,8 +14,7 @@ GOutput::GOutput
     const wl_interface *interface,
     Int32 version,
     UInt32 id,
-    const void *implementation,
-    wl_resource_destroy_func_t destroy
+    const void *implementation
 )
     :LResource
     (
@@ -23,8 +22,7 @@ GOutput::GOutput
         interface,
         version,
         id,
-        implementation,
-        destroy
+        implementation
     ),
     LPRIVATE_INIT_UNIQUE(GOutput)
 {

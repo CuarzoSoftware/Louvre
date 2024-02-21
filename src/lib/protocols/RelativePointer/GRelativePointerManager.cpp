@@ -10,8 +10,7 @@ GRelativePointerManager::GRelativePointerManager
         const wl_interface *interface,
         Int32 version,
         UInt32 id,
-        const void *implementation,
-        wl_resource_destroy_func_t destroy
+        const void *implementation
         )
     :LResource
     (
@@ -19,9 +18,8 @@ GRelativePointerManager::GRelativePointerManager
         interface,
         version,
         id,
-        implementation,
-        destroy
-        ),
+        implementation
+    ),
     LPRIVATE_INIT_UNIQUE(GRelativePointerManager)
 {
     this->client()->imp()->relativePointerManagerGlobals.push_back(this);

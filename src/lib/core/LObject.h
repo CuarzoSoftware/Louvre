@@ -9,18 +9,6 @@
 class Louvre::LObject
 {
 public:
-    /**
-     * @brief Constructor of the LObject class.
-     */
-    inline LObject() = default;
-
-    /**
-     * @brief Destructor of the LObject class.
-     */
-    inline ~LObject()
-    {
-        *m_isAlive = false;
-    }
 
     /**
      * @brief Quick access to the global compositor instance.
@@ -46,22 +34,41 @@ public:
         return LCompositor::compositor()->cursor();
     }
 
-    /**
-     * @brief Object's liveness status.
-     *
-     * This method returns a shared pointer to a constant boolean, allowing external
-     * entities to monitor the liveness status of the object. The boolean's value is set to
-     * `false` when the object is destroyed.
-     *
-     * @return A shared pointer to a constant boolean representing the liveness status.
-     */
-    inline std::shared_ptr<const bool> isAlive() const
+    inline std::weak_ptr<const LObject> weakRef() const
     {
-        return m_isAlive;
+        return m_sharedPtr;
     }
 
+    inline std::weak_ptr<LObject> weakRef()
+    {
+        return m_sharedPtr;
+    }
+
+    template <class T>
+    inline std::weak_ptr<const T> weakRef() const
+    {
+        return std::static_pointer_cast<const T>(m_sharedPtr);
+    }
+
+    template <class T>
+    inline std::weak_ptr<T> weakRef()
+    {
+        return std::static_pointer_cast<T>(m_sharedPtr);
+    }
+
+protected:
+
+    /**
+     * @brief Constructor of the LObject class.
+     */
+    inline LObject() = default;
+
+    /**
+     * @brief Destructor of the LObject class.
+     */
+    inline ~LObject() = default;
 private:
-    std::shared_ptr<bool> m_isAlive { std::make_shared<bool>(true) };
+    std::shared_ptr<LObject> m_sharedPtr { this, [](auto){}};
 };
 
 #endif // LOBJECT_H

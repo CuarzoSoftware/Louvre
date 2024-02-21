@@ -5,12 +5,6 @@
 #include <LSurface.h>
 #include <LClient.h>
 
-void RSubsurface::RSubsurfacePrivate::resource_destroy(wl_resource *resource)
-{
-    RSubsurface *rSubsurface = (RSubsurface*)wl_resource_get_user_data(resource);
-    delete rSubsurface;
-}
-
 void RSubsurface::RSubsurfacePrivate::destroy(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);

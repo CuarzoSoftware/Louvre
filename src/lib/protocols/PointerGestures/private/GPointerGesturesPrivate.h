@@ -8,7 +8,6 @@ using namespace Louvre::Protocols::PointerGestures;
 
 LPRIVATE_CLASS(GPointerGestures)
 static void bind(wl_client *client, void *data, UInt32 version, UInt32 id);
-static void resource_destroy(wl_resource *resource);
 static void get_swipe_gesture(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *pointer);
 static void get_pinch_gesture(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *pointer);
 

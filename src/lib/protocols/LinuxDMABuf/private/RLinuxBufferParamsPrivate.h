@@ -6,7 +6,6 @@
 using namespace Louvre::Protocols::LinuxDMABuf;
 
 LPRIVATE_CLASS(RLinuxBufferParams)
-    static void resource_destroy(wl_resource *resource);
     static void destroy(wl_client *client, wl_resource *resource);
     static void add(wl_client *client, wl_resource *resource, Int32 fd, UInt32 plane_idx, UInt32 offset, UInt32 stride, UInt32 modifier_hi, UInt32 modifier_lo);
     static void create(wl_client *client, wl_resource *resource, Int32 width, Int32 height, UInt32 format, UInt32 flags);

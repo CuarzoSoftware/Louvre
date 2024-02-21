@@ -28,8 +28,7 @@ RDataDevice::RDataDevice
         &wl_data_device_interface,
         gDataDeviceManager->version(),
         id,
-        &dataDevice_implementation,
-        &RDataDevice::RDataDevicePrivate::resource_destroy
+        &dataDevice_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RDataDevice)
 {

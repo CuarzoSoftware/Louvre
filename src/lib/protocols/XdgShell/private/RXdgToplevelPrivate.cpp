@@ -4,12 +4,6 @@
 #include <private/LToplevelRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 
-void RXdgToplevel::RXdgToplevelPrivate::destroy_resource(wl_resource *resource)
-{
-    RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
-    delete rXdgToplevel;
-}
-
 void RXdgToplevel::RXdgToplevelPrivate::destroy(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);

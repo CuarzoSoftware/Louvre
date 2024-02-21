@@ -44,17 +44,18 @@ public:
     };
 
     /// @cond OMIT
-    inline LInputDevice(LSeat::InputCapabilitiesFlags capabilities = 0,
+    LInputDevice(LSeat::InputCapabilitiesFlags capabilities = 0,
                         const std::string &name = "Unknown",
                         UInt32 vendorId = 0,
                         UInt32 productId = 0,
-                        void *backendData = nullptr):
+                 void *backendData = nullptr) :
         m_capabilities(capabilities),
         m_name(name),
         m_vendorId(vendorId),
         m_productId(productId),
         m_backendData(backendData)
     {}
+
     LInputDevice(const LInputDevice&) = delete;
     LInputDevice& operator= (const LInputDevice&) = delete;
     /// @endcond

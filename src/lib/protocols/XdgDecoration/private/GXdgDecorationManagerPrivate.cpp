@@ -22,14 +22,7 @@ void GXdgDecorationManager::GXdgDecorationManagerPrivate::bind(wl_client *client
                               &zxdg_decoration_manager_v1_interface,
                               version,
                               id,
-                              &xdg_decoration_manager_implementation,
-                              &GXdgDecorationManager::GXdgDecorationManagerPrivate::resource_destroy);
-}
-
-void GXdgDecorationManager::GXdgDecorationManagerPrivate::resource_destroy(wl_resource *resource)
-{
-    GXdgDecorationManager *gXdgDecorationManager = (GXdgDecorationManager*)wl_resource_get_user_data(resource);
-    delete gXdgDecorationManager;
+                              &xdg_decoration_manager_implementation);
 }
 
 void GXdgDecorationManager::GXdgDecorationManagerPrivate::destroy(wl_client *client, wl_resource *resource)

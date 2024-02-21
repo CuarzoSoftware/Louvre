@@ -67,13 +67,13 @@ void LPointer::setFocus(LSurface *surface, const LPoint &localPos)
 
         LPointerEnterEvent enterEvent;
         enterEvent.localPos = localPos;
-        imp()->pointerFocusSurface = nullptr;
+        imp()->focus.reset();
 
         for (auto gSeat : surface->client()->seatGlobals())
         {
             for (auto rPointer : gSeat->pointerResources())
             {
-                imp()->pointerFocusSurface = surface;
+                imp()->focus = surface->weakRef<LSurface>();
                 rPointer->enter(enterEvent, surface->surfaceResource());
                 rPointer->frame();
             }
@@ -91,7 +91,7 @@ void LPointer::setFocus(LSurface *surface, const LPoint &localPos)
             sendHoldEndEvent(LPointerHoldEndEvent());
 
         imp()->sendLeaveEvent(focus());
-        imp()->pointerFocusSurface = nullptr;
+        imp()->focus.reset();
     }
 }
 
@@ -464,7 +464,10 @@ void LPointer::stopMovingToplevel()
 
 void LPointer::setDraggingSurface(LSurface *surface)
 {
-    imp()->draggingSurface = surface;
+    if (surface)
+        imp()->draggingSurface = surface->weakRef<LSurface>();
+    else
+        imp()->draggingSurface.reset();
 }
 
 void LPointer::dismissPopups()
@@ -514,7 +517,7 @@ bool LPointer::isButtonPressed(Button button) const
 
 LSurface *LPointer::draggingSurface() const
 {
-    return imp()->draggingSurface;
+    return imp()->draggingSurface.lock().get();
 }
 
 LToplevelRole *LPointer::resizingToplevel() const
@@ -557,7 +560,7 @@ LSurface *LPointer::surfaceAt(const LPoint &point)
 
 LSurface *LPointer::focus() const
 {
-    return imp()->pointerFocusSurface;
+    return imp()->focus.lock().get();
 }
 
 void LPointer::LPointerPrivate::sendLeaveEvent(LSurface *surface)

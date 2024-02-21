@@ -19,8 +19,7 @@ void GViewporter::GViewporterPrivate::bind(wl_client *client, void *data, UInt32
                     &wp_viewporter_interface,
                     version,
                     id,
-                    &viewporter_implementation,
-                    &GViewporter::GViewporterPrivate::resource_destroy);
+                    &viewporter_implementation);
 }
 
 void GViewporter::GViewporterPrivate::get_viewport(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface)
@@ -36,12 +35,6 @@ void GViewporter::GViewporterPrivate::get_viewport(wl_client *client, wl_resourc
     }
 
     new RViewport(rSurface, wl_resource_get_version(resource), id);
-}
-
-
-void GViewporter::GViewporterPrivate::resource_destroy(wl_resource *resource)
-{
-    delete (GViewporter*)wl_resource_get_user_data(resource);
 }
 
 void GViewporter::GViewporterPrivate::destroy(wl_client *client, wl_resource *resource)

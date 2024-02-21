@@ -8,12 +8,6 @@
 #include <private/LPopupRolePrivate.h>
 #include <LPositioner.h>
 
-void RXdgSurface::RXdgSurfacePrivate::resource_destroy(wl_resource *resource)
-{
-    RXdgSurface *rXdgSurface = (RXdgSurface*)wl_resource_get_user_data(resource);
-    delete rXdgSurface;
-}
-
 void RXdgSurface::RXdgSurfacePrivate::destroy(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);

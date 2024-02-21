@@ -25,8 +25,7 @@ RPointer::RPointer
         &wl_pointer_interface,
         gSeat->version(),
         id,
-        &pointer_implementation,
-        &RPointer::RPointerPrivate::resource_destroy
+        &pointer_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RPointer)
 {

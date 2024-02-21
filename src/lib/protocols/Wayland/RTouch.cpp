@@ -21,8 +21,7 @@ RTouch::RTouch
         &wl_touch_interface,
         gSeat->version(),
         id,
-        &touch_implementation,
-        &RTouch::RTouchPrivate::resource_destroy
+        &touch_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RTouch)
 {

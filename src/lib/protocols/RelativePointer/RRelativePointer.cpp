@@ -14,8 +14,7 @@ RRelativePointer::RRelativePointer(Wayland::RPointer *rPointer, Int32 id, UInt32
         &zwp_relative_pointer_v1_interface,
         version,
         id,
-        &zwp_relative_pointer_v1_implementation,
-        &RRelativePointer::RRelativePointerPrivate::resource_destroy),
+        &zwp_relative_pointer_v1_implementation),
     LPRIVATE_INIT_UNIQUE(RRelativePointer)
 {
     imp()->rPointer = rPointer;

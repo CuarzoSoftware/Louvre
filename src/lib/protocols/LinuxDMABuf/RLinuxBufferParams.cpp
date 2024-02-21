@@ -26,8 +26,7 @@ RLinuxBufferParams::RLinuxBufferParams
         &zwp_linux_buffer_params_v1_interface,
         gLinuxDMABuf->version(),
         id,
-        &zwp_linux_buffer_params_v1_implementation,
-        &RLinuxBufferParams::RLinuxBufferParamsPrivate::resource_destroy
+        &zwp_linux_buffer_params_v1_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RLinuxBufferParams)
 {

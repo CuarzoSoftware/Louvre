@@ -12,8 +12,7 @@ public:
                const wl_interface *interface,
                Int32 version,
                UInt32 id,
-               const void *implementation,
-               wl_resource_destroy_func_t destroy);
+               const void *implementation);
 
     ~GXdgWmBase();
 

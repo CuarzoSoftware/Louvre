@@ -33,14 +33,7 @@ void GOutput::GOutputPrivate::bind(wl_client *client, void *output, UInt32 versi
                 &wl_output_interface,
                 version,
                 id,
-                &output_implementation,
-                &GOutput::GOutputPrivate::resource_destroy);
-}
-
-void GOutput::GOutputPrivate::resource_destroy(wl_resource *resource)
-{
-    GOutput *gOutput = (GOutput*)wl_resource_get_user_data(resource);
-    delete gOutput;
+                &output_implementation);
 }
 
 #if LOUVRE_WL_OUTPUT_VERSION >= 3

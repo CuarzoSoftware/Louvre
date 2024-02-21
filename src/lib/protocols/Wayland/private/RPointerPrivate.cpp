@@ -8,12 +8,6 @@
 
 using namespace Louvre;
 
-void RPointer::RPointerPrivate::resource_destroy(wl_resource *resource)
-{
-    RPointer *rPointer = (RPointer*)wl_resource_get_user_data(resource);
-    delete rPointer;
-}
-
 void RPointer::RPointerPrivate::set_cursor(wl_client *client, wl_resource *resource, UInt32 serial, wl_resource *surface, Int32 hotspot_x, Int32 hotspot_y)
 {
 #ifdef TODO

@@ -15,8 +15,7 @@ RGestureHold::RGestureHold(Wayland::RPointer *rPointer, Int32 id, UInt32 version
         &zwp_pointer_gesture_hold_v1_interface,
         version,
         id,
-        &zwp_pointer_gesture_hold_v1_implementation,
-        &RGestureHold::RGestureHoldPrivate::resource_destroy),
+        &zwp_pointer_gesture_hold_v1_implementation),
     LPRIVATE_INIT_UNIQUE(RGestureHold)
 {
     imp()->rPointer = rPointer;

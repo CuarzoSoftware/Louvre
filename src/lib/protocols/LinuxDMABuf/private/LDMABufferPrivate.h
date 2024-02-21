@@ -7,11 +7,9 @@ using namespace Louvre;
 using namespace std;
 
 LPRIVATE_CLASS(LDMABuffer)
-    static void resource_destroy(wl_resource *resource);
     static void destroy(wl_client *client, wl_resource *resource);
-
-    LTexture *texture = nullptr;
-    LDMAPlanes *planes = nullptr;
+    LTexture *texture { nullptr };
+    LDMAPlanes *planes { nullptr };
 };
 
 #endif // LDMABUFFERPRIVATE_H

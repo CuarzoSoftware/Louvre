@@ -27,8 +27,7 @@ RDataSource::RDataSource
         &wl_data_source_interface,
         gDataDeviceManager->version(),
         id,
-        &dataSource_implementation,
-        &RDataSource::RDataSourcePrivate::resource_destroy
+        &dataSource_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RDataSource)
 {

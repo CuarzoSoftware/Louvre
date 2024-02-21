@@ -23,8 +23,7 @@ LDMABuffer::LDMABuffer
         &wl_buffer_interface,
         1,
         id,
-        &wl_dma_buffer_implementation,
-        &LDMABuffer::LDMABufferPrivate::resource_destroy
+        &wl_dma_buffer_implementation
     ),
     LPRIVATE_INIT_UNIQUE(LDMABuffer)
 {

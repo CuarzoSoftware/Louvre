@@ -14,8 +14,7 @@ RCallback::RCallback
         &wl_callback_interface,
         LOUVRE_WL_CALLBACK_VERSION,
         id,
-        NULL,
-        &RCallbackPrivate::resource_destroy
+        NULL
     ),
     LPRIVATE_INIT_UNIQUE(RCallback)
 {

@@ -6,7 +6,6 @@
 using namespace Louvre::Protocols::Wayland;
 
 LPRIVATE_CLASS(RSurface)
-    static void resource_destroy(wl_resource *resource);
     static void attach(wl_client *client, wl_resource *resource, wl_resource *buffer, Int32 x, Int32 y);
     static void frame(wl_client *client, wl_resource *resource, UInt32 callback);
     static void destroy(wl_client *client, wl_resource *resource);
@@ -34,7 +33,7 @@ LPRIVATE_CLASS(RSurface)
     static void handleOffset(LSurface *lSurface, Int32 x, Int32 y);
     static void apply_commit(LSurface *surface, CommitOrigin origin = Itself);
 
-    LSurface *lSurface { nullptr };
+    std::unique_ptr<LSurface> lSurface;
     Viewporter::RViewport *rViewport { nullptr };
     FractionalScale::RFractionalScale *rFractionalScale { nullptr };
     TearingControl::RTearingControl *rTearingControl { nullptr };

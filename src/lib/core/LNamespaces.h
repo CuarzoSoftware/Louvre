@@ -133,12 +133,12 @@ static inline void LVectorRemoveAllUnordered(std::vector<T>& vec, T val)
 namespace Louvre
 {
     // API Classes
+    class LObject;
     class LAnimation;
     class LGraphicBackend;
     class LInputBackend;
     class LClient;
     class LCompositor;
-    class LObject;
     class LOutput;
     class LOutputManager;
     class LOutputMode;

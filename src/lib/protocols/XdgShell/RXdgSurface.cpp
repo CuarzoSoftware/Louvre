@@ -28,8 +28,7 @@ RXdgSurface::RXdgSurface
         &xdg_surface_interface,
         gXdgWmBase->version(),
         id,
-        &xdg_surface_implementation,
-        &RXdgSurfacePrivate::resource_destroy
+        &xdg_surface_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RXdgSurface)
 {

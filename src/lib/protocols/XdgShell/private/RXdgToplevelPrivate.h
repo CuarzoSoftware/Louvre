@@ -6,7 +6,6 @@
 using namespace Louvre::Protocols::XdgShell;
 
 LPRIVATE_CLASS(RXdgToplevel)
-    static void destroy_resource(wl_resource *resource);
     static void destroy(wl_client *client, wl_resource *resource);
     static void set_parent(wl_client *client, wl_resource *resource, wl_resource *parent);
     static void set_title(wl_client *client, wl_resource *resource, const char *title);
@@ -22,8 +21,8 @@ LPRIVATE_CLASS(RXdgToplevel)
     static void unset_fullscreen(wl_client *client, wl_resource *resource);
     static void set_minimized(wl_client *client, wl_resource *resource);
 
-    RXdgSurface *rXdgSurface = nullptr;
-    LToplevelRole *lToplevelRole = nullptr;
+    RXdgSurface *rXdgSurface { nullptr };
+    LToplevelRole *lToplevelRole { nullptr };
 };
 
 #endif // RXDGTOPLEVELPRIVATE_H

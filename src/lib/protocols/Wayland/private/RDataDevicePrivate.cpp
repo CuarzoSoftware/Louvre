@@ -17,12 +17,6 @@
 #include <fcntl.h>
 #include <LKeyboard.h>
 
-void RDataDevice::RDataDevicePrivate::resource_destroy(wl_resource *resource)
-{
-    RDataDevice *rDataDevice = (RDataDevice*)wl_resource_get_user_data(resource);
-    delete rDataDevice;
-}
-
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 2
 void RDataDevice::RDataDevicePrivate::release(wl_client *client, wl_resource *resource)
 {

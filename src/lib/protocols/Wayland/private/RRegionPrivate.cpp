@@ -1,12 +1,6 @@
 #include <protocols/Wayland/private/RRegionPrivate.h>
 #include <pixman.h>
 
-void RRegion::RRegionPrivate::resource_destroy(wl_resource *resource)
-{
-    RRegion *rRegion = (RRegion*)wl_resource_get_user_data(resource);
-    delete rRegion;
-}
-
 void RRegion::RRegionPrivate::destroy(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);

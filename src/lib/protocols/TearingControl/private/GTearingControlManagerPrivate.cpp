@@ -18,8 +18,7 @@ void GTearingControlManager::GTearingControlManagerPrivate::bind(wl_client *clie
                              &wp_tearing_control_manager_v1_interface,
                              version,
                              id,
-                             &tearing_control_manager_implementation,
-                             &GTearingControlManager::GTearingControlManagerPrivate::resource_destroy);
+                             &tearing_control_manager_implementation);
 }
 
 void GTearingControlManager::GTearingControlManagerPrivate::get_tearing_control(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface)
@@ -37,12 +36,6 @@ void GTearingControlManager::GTearingControlManagerPrivate::get_tearing_control(
     }
 
     new RTearingControl(rSurface, wl_resource_get_version(resource), id);
-}
-
-
-void GTearingControlManager::GTearingControlManagerPrivate::resource_destroy(wl_resource *resource)
-{
-    delete (GTearingControlManager*)wl_resource_get_user_data(resource);
 }
 
 void GTearingControlManager::GTearingControlManagerPrivate::destroy(wl_client *client, wl_resource *resource)

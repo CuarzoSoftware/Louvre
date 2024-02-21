@@ -12,12 +12,6 @@
 #include <LSeat.h>
 #include <LKeyboard.h>
 
-void RXdgPopup::RXdgPopupPrivate::destroy_resource(wl_resource *resource)
-{
-    RXdgPopup *rXdgPopup = (RXdgPopup*)wl_resource_get_user_data(resource);
-    delete rXdgPopup;
-}
-
 void RXdgPopup::RXdgPopupPrivate::destroy(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);

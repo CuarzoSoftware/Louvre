@@ -24,9 +24,8 @@ RTearingControl::RTearingControl
         &wp_tearing_control_v1_interface,
         version,
         id,
-        &tearing_control_implementation,
-        &RTearingControl::RTearingControlPrivate::resource_destroy
-        ),
+        &tearing_control_implementation
+    ),
     LPRIVATE_INIT_UNIQUE(RTearingControl)
 {
     imp()->rSurface = rSurface;

@@ -2,12 +2,6 @@
 #include <protocols/XdgDecoration/xdg-decoration-unstable-v1.h>
 #include <private/LToplevelRolePrivate.h>
 
-void RXdgToplevelDecoration::RXdgToplevelDecorationPrivate::resource_destroy(wl_resource *resource)
-{
-    RXdgToplevelDecoration *rXdgToplevelDecoration = (RXdgToplevelDecoration*)wl_resource_get_user_data(resource);
-    delete rXdgToplevelDecoration;
-}
-
 void RXdgToplevelDecoration::RXdgToplevelDecorationPrivate::destroy(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);

@@ -30,14 +30,7 @@ void GDataDeviceManager::GDataDeviceManagerPrivate::bind(wl_client *client, void
         &wl_data_device_manager_interface,
         version,
         id,
-        &dataDeviceManager_implementation,
-        &GDataDeviceManager::GDataDeviceManagerPrivate::resource_destroy);
-}
-
-void GDataDeviceManager::GDataDeviceManagerPrivate::resource_destroy(wl_resource *resource)
-{
-    GDataDeviceManager *gDataDeviceManager = (GDataDeviceManager*)wl_resource_get_user_data(resource);
-    delete gDataDeviceManager;
+        &dataDeviceManager_implementation);
 }
 
 void GDataDeviceManager::GDataDeviceManagerPrivate::create_data_source(wl_client *client, wl_resource *resource, UInt32 id)

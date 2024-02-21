@@ -19,8 +19,7 @@ void GCompositor::GCompositorPrivate::bind(wl_client *client, void *data, UInt32
                     &wl_compositor_interface,
                     version,
                     id,
-                    &compositor_implementation,
-                    &GCompositor::GCompositorPrivate::resource_destroy);
+                    &compositor_implementation);
 }
 
 void GCompositor::GCompositorPrivate::create_surface(wl_client *client, wl_resource *resource, UInt32 id)
@@ -35,10 +34,4 @@ void GCompositor::GCompositorPrivate::create_region (wl_client *client, wl_resou
     L_UNUSED(client);
     GCompositor *gCompositor = (GCompositor*)wl_resource_get_user_data(resource);
     new RRegion(gCompositor, id);
-}
-
-void GCompositor::GCompositorPrivate::resource_destroy(wl_resource *resource)
-{
-    GCompositor *gCompositor = (GCompositor*)wl_resource_get_user_data(resource);
-    delete gCompositor;
 }

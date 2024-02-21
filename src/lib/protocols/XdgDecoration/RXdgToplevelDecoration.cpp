@@ -26,8 +26,7 @@ RXdgToplevelDecoration::RXdgToplevelDecoration
         &zxdg_toplevel_decoration_v1_interface,
         gXdgDecorationManager->version(),
         id,
-        &xdg_toplevel_decoration_implementation,
-        &RXdgToplevelDecoration::RXdgToplevelDecorationPrivate::resource_destroy
+        &xdg_toplevel_decoration_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RXdgToplevelDecoration)
 {

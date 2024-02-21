@@ -16,13 +16,7 @@ void GRelativePointerManager::GRelativePointerManagerPrivate::bind(wl_client *cl
                          &zwp_relative_pointer_manager_v1_interface,
                          version,
                          id,
-                         &zwp_relative_pointer_manager_v1_implementation,
-                         &GRelativePointerManager::GRelativePointerManagerPrivate::resource_destroy);
-}
-
-void GRelativePointerManager::GRelativePointerManagerPrivate::resource_destroy(wl_resource *resource)
-{
-    delete (GRelativePointerManager*)wl_resource_get_user_data(resource);
+                         &zwp_relative_pointer_manager_v1_implementation);
 }
 
 void GRelativePointerManager::GRelativePointerManagerPrivate::destroy(wl_client *client, wl_resource *resource)

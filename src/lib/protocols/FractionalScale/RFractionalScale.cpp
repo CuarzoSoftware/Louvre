@@ -21,8 +21,7 @@ RFractionalScale::RFractionalScale
         &wp_fractional_scale_v1_interface,
         version,
         id,
-        &wp_fractional_scale_v1_implementation,
-        &RFractionalScale::RFractionalScalePrivate::resource_destroy
+        &wp_fractional_scale_v1_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RFractionalScale)
 {

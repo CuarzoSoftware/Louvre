@@ -23,8 +23,7 @@ RViewport::RViewport
         &wp_viewport_interface,
         version,
         id,
-        &viewport_implementation,
-        &RViewport::RViewportPrivate::resource_destroy
+        &viewport_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RViewport)
 {

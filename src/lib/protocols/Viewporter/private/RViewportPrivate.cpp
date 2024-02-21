@@ -1,11 +1,6 @@
 #include <protocols/Viewporter/viewporter.h>
 #include <protocols/Viewporter/private/RViewportPrivate.h>
 
-void RViewport::RViewportPrivate::resource_destroy(wl_resource *resource)
-{
-    delete (RViewport*)wl_resource_get_user_data(resource);
-}
-
 void RViewport::RViewportPrivate::destroy(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);

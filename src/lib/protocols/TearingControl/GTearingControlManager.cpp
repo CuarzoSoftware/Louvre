@@ -9,8 +9,7 @@ GTearingControlManager::GTearingControlManager
         const wl_interface *interface,
         Int32 version,
         UInt32 id,
-        const void *implementation,
-        wl_resource_destroy_func_t destroy
+        const void *implementation
     )
     :LResource
     (
@@ -18,9 +17,8 @@ GTearingControlManager::GTearingControlManager
         interface,
         version,
         id,
-        implementation,
-        destroy
-        ),
+        implementation
+    ),
     LPRIVATE_INIT_UNIQUE(GTearingControlManager)
 {
     client->imp()->tearingControlManagerGlobals.push_back(this);

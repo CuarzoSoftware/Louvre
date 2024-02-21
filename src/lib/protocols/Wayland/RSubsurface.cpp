@@ -31,8 +31,7 @@ RSubsurface::RSubsurface
         &wl_subsurface_interface,
         subcompositor->version(),
         id,
-        &subsurface_implementation,
-        &RSubsurface::RSubsurfacePrivate::resource_destroy
+        &subsurface_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RSubsurface)
 {

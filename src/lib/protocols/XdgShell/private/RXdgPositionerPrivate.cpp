@@ -2,12 +2,6 @@
 #include <private/LPositionerPrivate.h>
 #include <protocols/XdgShell/xdg-shell.h>
 
-void RXdgPositioner::RXdgPositionerPrivate::destroy_resource(wl_resource *resource)
-{
-    RXdgPositioner *rXdgPositioner = (RXdgPositioner*)wl_resource_get_user_data(resource);
-    delete rXdgPositioner;
-}
-
 void RXdgPositioner::RXdgPositionerPrivate::destroy(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);

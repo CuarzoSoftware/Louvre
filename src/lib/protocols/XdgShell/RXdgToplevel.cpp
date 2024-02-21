@@ -34,8 +34,7 @@ RXdgToplevel::RXdgToplevel
         &xdg_toplevel_interface,
         rXdgSurface->version(),
         id,
-        &xdg_toplevel_implementation,
-        &RXdgToplevelPrivate::destroy_resource
+        &xdg_toplevel_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RXdgToplevel)
 {

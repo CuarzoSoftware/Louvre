@@ -7,7 +7,6 @@
 using namespace Louvre::Protocols::XdgShell;
 
 LPRIVATE_CLASS(RXdgPositioner)
-    static void destroy_resource(wl_resource *resource);
     static void destroy(wl_client *client, wl_resource *resource);
     static void set_size(wl_client *client, wl_resource *resource, Int32 width, Int32 height);
     static void set_anchor_rect(wl_client *client, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height);

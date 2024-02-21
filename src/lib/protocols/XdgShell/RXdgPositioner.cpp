@@ -36,8 +36,7 @@ RXdgPositioner::RXdgPositioner
         &xdg_positioner_interface,
         gXdgWmBase->version(),
         id,
-        &xdg_positioner_implementation,
-        &RXdgPositioner::RXdgPositionerPrivate::destroy_resource
+        &xdg_positioner_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RXdgPositioner)
 {}

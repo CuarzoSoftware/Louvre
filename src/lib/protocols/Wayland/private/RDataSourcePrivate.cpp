@@ -10,12 +10,6 @@
 #include <LClient.h>
 #include <cstring>
 
-void RDataSource::RDataSourcePrivate::resource_destroy(wl_resource *resource)
-{
-    RDataSource *rDataSource = (RDataSource*)wl_resource_get_user_data(resource);
-    delete rDataSource;
-}
-
 void RDataSource::RDataSourcePrivate::destroy(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);

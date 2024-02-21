@@ -16,8 +16,7 @@ RGesturePinch::RGesturePinch(Wayland::RPointer *rPointer, Int32 id, UInt32 versi
         &zwp_pointer_gesture_pinch_v1_interface,
         version,
         id,
-        &zwp_pointer_gesture_pinch_v1_implementation,
-        &RGesturePinch::RGesturePinchPrivate::resource_destroy),
+        &zwp_pointer_gesture_pinch_v1_implementation),
     LPRIVATE_INIT_UNIQUE(RGesturePinch)
 {
     imp()->rPointer = rPointer;

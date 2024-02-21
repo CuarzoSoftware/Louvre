@@ -80,14 +80,7 @@ public:
     LEvent *copy() const;
 
 protected:
-    inline LEvent(Type type, Subtype subtype, UInt32 serial, UInt32 ms, UInt64 us) :
-        m_type(type),
-        m_subtype(subtype),
-        m_serial(serial),
-        m_ms(ms),
-        m_us(us)
-    {}
-
+    LEvent(Type type, Subtype subtype, UInt32 serial, UInt32 ms, UInt64 us);
     Type m_type;
     Subtype m_subtype;
     UInt32 m_serial;

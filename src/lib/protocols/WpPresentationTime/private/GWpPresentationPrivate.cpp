@@ -16,14 +16,7 @@ void GWpPresentation::GWpPresentationPrivate::bind(wl_client *client, void *data
                         &wp_presentation_interface,
                         version,
                         id,
-                        &presentation_implementation,
-                        &GWpPresentation::GWpPresentationPrivate::resource_destroy);
-}
-
-void GWpPresentation::GWpPresentationPrivate::resource_destroy(wl_resource *resource)
-{
-    GWpPresentation *gWpPresentation = (GWpPresentation*)wl_resource_get_user_data(resource);
-    delete gWpPresentation;
+                        &presentation_implementation);
 }
 
 void GWpPresentation::GWpPresentationPrivate::destroy(wl_client *client, wl_resource *resource)

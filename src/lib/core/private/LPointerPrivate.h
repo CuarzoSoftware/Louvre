@@ -27,8 +27,8 @@ LPRIVATE_CLASS(LPointer)
 
     void sendLeaveEvent(LSurface *surface);
 
-    LSurface *pointerFocusSurface = nullptr;
-    LSurface *draggingSurface = nullptr;
+    std::weak_ptr<LSurface> focus;
+    std::weak_ptr<LSurface> draggingSurface;
     LToplevelRole *movingToplevel = nullptr;
     LToplevelRole *resizingToplevel = nullptr;
 

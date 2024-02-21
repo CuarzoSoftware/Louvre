@@ -6,7 +6,6 @@
 using namespace Louvre::Protocols::GammaControl;
 
 LPRIVATE_CLASS(RGammaControl)
-static void resource_destroy(wl_resource *resource);
 static void destroy(wl_client *client, wl_resource *resource);
 static void set_gamma(wl_client *client, wl_resource *resource, Int32 fd);
 Wayland::GOutput *gOutput = nullptr;

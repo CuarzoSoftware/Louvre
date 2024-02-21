@@ -26,8 +26,7 @@ RKeyboard::RKeyboard
         &wl_keyboard_interface,
         gSeat->version(),
         id,
-        &keyboard_implementation,
-        &RKeyboard::RKeyboardPrivate::resource_destroy
+        &keyboard_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RKeyboard)
 {

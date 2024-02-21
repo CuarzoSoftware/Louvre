@@ -18,8 +18,7 @@ RWpPresentationFeedback::RWpPresentationFeedback
         &wp_presentation_feedback_interface,
         gWpPresentation->version(),
         id,
-        nullptr,
-        &RWpPresentationFeedbackPrivate::resource_destroy
+        nullptr
     ),
     LPRIVATE_INIT_UNIQUE(RWpPresentationFeedback)
 {

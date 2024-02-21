@@ -4,11 +4,6 @@
 #include <private/LOutputPrivate.h>
 #include <fcntl.h>
 
-void RGammaControl::RGammaControlPrivate::resource_destroy(wl_resource *resource)
-{
-    delete (RGammaControl*)wl_resource_get_user_data(resource);
-}
-
 void RGammaControl::RGammaControlPrivate::destroy(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);
@@ -17,7 +12,7 @@ void RGammaControl::RGammaControlPrivate::destroy(wl_client *client, wl_resource
 
 void RGammaControl::RGammaControlPrivate::set_gamma(wl_client *client, wl_resource *resource, Int32 fd)
 {
-L_UNUSED(client)
+    L_UNUSED(client)
 
     RGammaControl *rGammaControl { (RGammaControl*)wl_resource_get_user_data(resource) };
 
@@ -66,10 +61,10 @@ L_UNUSED(client)
         return;
     }
 
-    auto isResAlive { rGammaControl->isAlive() };
+    auto weakRef { rGammaControl->weakRef() };
 
     output->setGammaRequest(rGammaControl->client(), &gammaTable);
 
-    if (*isResAlive && output->imp()->gammaTable.m_gammaControlResource != rGammaControl)
+    if (!weakRef.expired() && output->imp()->gammaTable.m_gammaControlResource != rGammaControl)
         rGammaControl->failed();
 }

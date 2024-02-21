@@ -24,8 +24,7 @@ RGammaControl::RGammaControl
         &zwlr_gamma_control_v1_interface,
         version,
         id,
-        &gamma_control_implementation,
-        &RGammaControl::RGammaControlPrivate::resource_destroy
+        &gamma_control_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RGammaControl)
 {

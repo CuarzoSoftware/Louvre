@@ -26,8 +26,7 @@ RRegion::RRegion
         &wl_region_interface,
         gCompositor->version(),
         id,
-        &region_implementation,
-        &RRegion::RRegionPrivate::resource_destroy
+        &region_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RRegion)
 {}

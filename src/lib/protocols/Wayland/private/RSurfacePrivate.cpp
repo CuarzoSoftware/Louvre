@@ -11,12 +11,6 @@
 
 using Changes = LSurface::LSurfacePrivate::ChangesToNotify;
 
-void RSurface::RSurfacePrivate::resource_destroy(wl_resource *resource)
-{
-    RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
-    delete rSurface;
-}
-
 void RSurface::RSurfacePrivate::handleOffset(LSurface *lSurface, Int32 x, Int32 y)
 {
     if (lSurface->role())

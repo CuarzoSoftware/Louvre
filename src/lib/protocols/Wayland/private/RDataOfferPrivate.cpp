@@ -11,17 +11,6 @@
 #include <cstring>
 #include <stdio.h>
 
-void RDataOffer::RDataOfferPrivate::resource_destroy(wl_resource *resource)
-{
-    RDataOffer *rDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
-
-    for (GSeat *s : rDataOffer->client()->seatGlobals())
-        if (s->dataDeviceResource() && s->dataDeviceResource()->dataOffered() == rDataOffer->dataOffer())
-            s->dataDeviceResource()->imp()->dataOffered = nullptr;
-
-    delete rDataOffer;
-}
-
 void RDataOffer::RDataOfferPrivate::destroy(wl_client *client, wl_resource *resource)
 {
     L_UNUSED(client);

@@ -59,15 +59,14 @@ RSurface::RSurface
         &wl_surface_interface,
         gCompositor->version(),
         id,
-        &surface_implementation,
-        &RSurface::RSurfacePrivate::resource_destroy
+        &surface_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RSurface)
 {
     // Create surface
     LSurface::Params params;
     params.surfaceResource = this;
-    imp()->lSurface = compositor()->createSurfaceRequest(&params);
+    imp()->lSurface.reset(compositor()->createSurfaceRequest(&params));
 
     // Append surface
     client()->imp()->surfaces.push_back(surface());
@@ -98,14 +97,6 @@ RSurface::~RSurface()
         rCallback->destroy();
     }
 
-    // Clear keyboard focus
-    if (seat()->keyboard()->focus() == lSurface)
-        seat()->keyboard()->setFocus(nullptr);
-
-    // Clear pointer focus
-    if (seat()->pointer()->imp()->pointerFocusSurface == lSurface)
-        seat()->pointer()->setFocus(nullptr);
-
     // Clear touch points
     for (LTouchPoint *tp : seat()->touch()->touchPoints())
         if (tp->surface() == lSurface)
@@ -113,10 +104,6 @@ RSurface::~RSurface()
             tp->imp()->resetSerials();
             tp->imp()->surface = nullptr;
         }
-
-    // Clear dragging surface
-    if (seat()->pointer()->imp()->draggingSurface == lSurface)
-        seat()->pointer()->imp()->draggingSurface = nullptr;
 
     if (seat()->pointer()->imp()->lastCursorRequest == lSurface->cursorRole())
         seat()->pointer()->imp()->lastCursorRequest = nullptr;
@@ -186,13 +173,11 @@ RSurface::~RSurface()
 
     compositor()->imp()->surfacesListChanged = true;
     lSurface->imp()->stateFlags.add(LSurface::LSurfacePrivate::Destroyed);
-
-    delete lSurface;
 }
 
 LSurface *RSurface::surface() const
 {
-    return imp()->lSurface;
+    return imp()->lSurface.get();
 }
 
 FractionalScale::RFractionalScale *RSurface::fractionalScaleResource() const

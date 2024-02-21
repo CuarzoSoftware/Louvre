@@ -31,8 +31,7 @@ RXdgPopup::RXdgPopup
         &xdg_popup_interface,
         rXdgSurface->version(),
         id,
-        &xdg_popup_implementation,
-        &RXdgPopup::RXdgPopupPrivate::destroy_resource
+        &xdg_popup_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RXdgPopup)
 {
