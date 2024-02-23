@@ -29,18 +29,9 @@ LPRIVATE_CLASS(LPointer)
 
     std::weak_ptr<LSurface> focus;
     std::weak_ptr<LSurface> draggingSurface;
-    LToplevelRole *movingToplevel = nullptr;
-    LToplevelRole *resizingToplevel = nullptr;
-
-    LPoint movingToplevelInitPos;
-    LPoint movingToplevelInitPointerPos;
-    LRect movingToplevelConstraintBounds;
-
     std::vector<Button> pressedButtons;
-
     Float32 axisXprev;
     Float32 axisYprev;
-
     LCursorRole *lastCursorRequest = nullptr;
 };
 

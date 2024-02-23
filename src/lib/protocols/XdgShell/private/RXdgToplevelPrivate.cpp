@@ -3,6 +3,7 @@
 #include <protocols/XdgShell/xdg-shell.h>
 #include <private/LToplevelRolePrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <LClient.h>
 
 void RXdgToplevel::RXdgToplevelPrivate::destroy(wl_client *client, wl_resource *resource)
 {
@@ -69,13 +70,18 @@ void RXdgToplevel::RXdgToplevelPrivate::move(wl_client *client, wl_resource *res
 {
     L_UNUSED(client);
     L_UNUSED(seat);
-    L_UNUSED(serial);
-    RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
+
+    const RXdgToplevel *rXdgToplevel { (RXdgToplevel*)wl_resource_get_user_data(resource) };
 
     if (!rXdgToplevel->toplevelRole()->surface()->toplevel())
         return;
 
-    rXdgToplevel->toplevelRole()->startMoveRequest();
+    const LEvent *triggererEvent = rXdgToplevel->client()->findEventBySerial(serial);
+
+    if (!triggererEvent)
+        return;
+
+    rXdgToplevel->toplevelRole()->startMoveRequest(*triggererEvent);
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::resize(wl_client *client, wl_resource *resource, wl_resource *seat, UInt32 serial, UInt32 edges)

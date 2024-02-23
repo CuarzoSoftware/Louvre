@@ -112,14 +112,6 @@ RSurface::~RSurface()
     if (seat()->imp()->activeToplevel == lSurface->toplevel())
         seat()->imp()->activeToplevel = nullptr;
 
-    // Clear moving toplevel
-    if (seat()->pointer()->imp()->movingToplevel == lSurface->toplevel())
-        seat()->pointer()->imp()->movingToplevel = nullptr;
-
-    // Clear resizing toplevel
-    if (seat()->pointer()->imp()->resizingToplevel == lSurface->toplevel())
-        seat()->pointer()->imp()->resizingToplevel = nullptr;
-
     // Clear drag
     if (seat()->dndManager()->icon() && seat()->dndManager()->icon()->surface() == lSurface)
         seat()->dndManager()->imp()->icon = nullptr;

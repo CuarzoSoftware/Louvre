@@ -32,7 +32,7 @@ const std::list<LTouchPoint *> &LTouch::touchPoints() const
     return imp()->touchPoints;
 }
 
-LTouchPoint *LTouch::createTouchPoint(const LTouchDownEvent &event)
+LTouchPoint *LTouch::createOrGetTouchPoint(const LTouchDownEvent &event)
 {
     for (LTouchPoint *tp : touchPoints())
         if (tp->id() == event.id())

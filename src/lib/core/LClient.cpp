@@ -4,6 +4,50 @@
 #include <LCompositor.h>
 #include <LClient.h>
 
+const LEvent *LClient::findEventBySerial(UInt32 serial) const
+{
+    if (imp()->events.keyboard.enter.serial() == serial)
+        return &imp()->events.keyboard.enter;
+    else if (imp()->events.keyboard.leave.serial() == serial)
+        return &imp()->events.keyboard.leave;
+    else if (imp()->events.keyboard.key.serial() == serial)
+        return &imp()->events.keyboard.key;
+    else if (imp()->events.keyboard.modifiers.serial() == serial)
+        return &imp()->events.keyboard.modifiers;
+
+    else if (imp()->events.pointer.enter.serial() == serial)
+        return &imp()->events.pointer.enter;
+    else if (imp()->events.pointer.leave.serial() == serial)
+        return &imp()->events.pointer.leave;
+    else if (imp()->events.pointer.button.serial() == serial)
+        return &imp()->events.pointer.button;
+
+    else if (imp()->events.pointer.swipeBegin.serial() == serial)
+        return &imp()->events.pointer.swipeBegin;
+    else if (imp()->events.pointer.swipeEnd.serial() == serial)
+        return &imp()->events.pointer.swipeEnd;
+
+    else if (imp()->events.pointer.pinchBegin.serial() == serial)
+        return &imp()->events.pointer.pinchBegin;
+    else if (imp()->events.pointer.pinchEnd.serial() == serial)
+        return &imp()->events.pointer.pinchEnd;
+
+    else if (imp()->events.pointer.holdBegin.serial() == serial)
+        return &imp()->events.pointer.holdBegin;
+    else if (imp()->events.pointer.holdEnd.serial() == serial)
+        return &imp()->events.pointer.holdEnd;
+
+    for (auto it = imp()->events.touch.down.begin(); it != imp()->events.touch.down.end(); it++)
+        if (it->serial() == serial)
+            return &(*it);
+
+    for (auto it = imp()->events.touch.up.begin(); it != imp()->events.touch.up.end(); it++)
+        if (it->serial() == serial)
+            return &(*it);
+
+    return nullptr;
+}
+
 LClient::LClient(const void *params) : LPRIVATE_INIT_UNIQUE(LClient)
 {
     imp()->client = ((Params*)params)->client;

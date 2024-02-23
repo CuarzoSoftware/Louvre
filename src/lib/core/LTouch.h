@@ -84,7 +84,7 @@ public:
      * @param event The touch down event used to create the touch point.
      * @return A pointer to the newly created or existing touch point.
      */
-    LTouchPoint *createTouchPoint(const LTouchDownEvent &event);
+    LTouchPoint *createOrGetTouchPoint(const LTouchDownEvent &event);
 
     /**
      * @brief Get the touch point that matches the specified id.

@@ -116,11 +116,6 @@ bool RPointer::leave(const LPointerLeaveEvent &event, RSurface *rSurface)
 
 bool RPointer::motion(const LPointerMoveEvent &event)
 {
-    auto &clientEvent = client()->imp()->events.pointer.move;
-
-    if (clientEvent.serial() != event.serial())
-        clientEvent = event;
-
     wl_pointer_send_motion(resource(),
                            event.ms(),
                            wl_fixed_from_double(event.localPos.x()),

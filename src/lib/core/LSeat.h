@@ -171,6 +171,10 @@ public:
      */
     LToplevelRole *activeToplevel() const;
 
+    // TODO
+    const std::vector<LToplevelResizeSession*> &toplevelResizeSessions() const;
+    const std::vector<LToplevelMoveSession*> &toplevelMoveSessions() const;
+
     /**
      * @brief Access to pointer events.
      *

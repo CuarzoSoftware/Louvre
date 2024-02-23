@@ -12,6 +12,7 @@
 #include <LCursorRole.h>
 #include <LPointerMoveEvent.h>
 #include <LPointerButtonEvent.h>
+#include <LToplevelMoveSession.h>
 
 using namespace Louvre;
 
@@ -49,25 +50,25 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
 
     if (activeResizing)
         return;
+    */
 
-    bool activeMoving = false;
+    bool activeMoving { false };
 
-    for (LToplevelMoveSession *session : seat()->moveSessions())
+    for (LToplevelMoveSession *session : seat()->toplevelMoveSessions())
     {
         if (session->triggeringEvent().type() != LEvent::Type::Touch)
         {
             activeMoving = true;
-            session->setMovePointPos(cursor()->pos());
+            session->updateDragPoint(cursor()->pos());
             session->toplevel()->surface()->repaintOutputs();
 
             if (session->toplevel()->maximized())
-                session->toplevel()->configure(session->toplevel()->pendingState() &~ LToplevelRole::Maximized);
+                session->toplevel()->configure(session->toplevel()->pendingStates() &~ LToplevelRole::Maximized);
         }
     }
 
     if (activeMoving)
         return;
-    */
 
     // If a surface had the left pointer button held down
     if (draggingSurface())
@@ -181,11 +182,16 @@ void LPointer::pointerButtonEvent(const LPointerButtonEvent &event)
         for (std::list<LToplevelResizeSession*>::const_iterator it = seat()->resizeSessions().begin(); it != seat()->resizeSessions().end(); it++)
             if ((*it)->triggeringEvent().type() != LEvent::Type::Touch)
                 it = (*it)->stop();
+        */
 
         // Stop pointer toplevel moving sessions
-        for (std::list<LToplevelMoveSession*>::const_iterator it = seat()->moveSessions().begin(); it != seat()->moveSessions().end(); it++)
+        for (auto it = seat()->toplevelMoveSessions().begin(); it != seat()->toplevelMoveSessions().end();)
+        {
             if ((*it)->triggeringEvent().type() != LEvent::Type::Touch)
-                it = (*it)->stop();*/
+                it = (*it)->stop();
+            else
+                it++;
+        }
 
         // We stop sending events to the surface on which the left button was being held down
         setDraggingSurface(nullptr);

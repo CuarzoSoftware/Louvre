@@ -1,12 +1,17 @@
 #include <protocols/XdgShell/private/RXdgSurfacePrivate.h>
 #include <protocols/XdgShell/RXdgToplevel.h>
 #include <private/LBaseSurfaceRolePrivate.h>
+#include <LToplevelMoveSession.h>
+#include <LToplevelResizeSession.h>
 #include <LCompositor.h>
 #include <LCursor.h>
 #include <LOutput.h>
 #include <LSeat.h>
 #include <LPointer.h>
 #include <LKeyboard.h>
+#include <LTouch.h>
+#include <LTouchPoint.h>
+#include <LTouchDownEvent.h>
 
 using namespace Louvre;
 
@@ -19,18 +24,40 @@ const LPoint &LToplevelRole::rolePos() const
 //! [rolePos]
 
 //! [startMoveRequest]
-void LToplevelRole::startMoveRequest()
+void LToplevelRole::startMoveRequest(const LEvent &triggeringEvent)
 {
-    if (!fullscreen() && seat()->pointer()->focus() == surface())
-        seat()->pointer()->startMovingToplevel(this, cursor()->pos());
+    if (fullscreen())
+        return;
+
+    if (triggeringEvent.type() == LEvent::Type::Touch)
+    {
+        if (triggeringEvent.subtype() != LEvent::Subtype::Down)
+            return;
+
+        if (!cursor()->output())
+            return;
+
+        auto touchDownEvent = (const LTouchDownEvent&)triggeringEvent;
+        auto touchPoint = seat()->touch()->findTouchPoint(touchDownEvent.id());
+
+        if (!touchPoint)
+            return;
+
+        const LPoint initDragPoint = LTouch::toGlobal(cursor()->output(), touchPoint->pos());
+
+        startMoveSession(triggeringEvent, initDragPoint);
+    }
+    else
+        startMoveSession(triggeringEvent, cursor()->pos());
 }
 //! [startMoveRequest]
 
 //! [startResizeRequest]
 void LToplevelRole::startResizeRequest(ResizeEdge edge)
 {
+    /* TODO
     if (!fullscreen() && seat()->pointer()->focus() == surface())
-        seat()->pointer()->startResizingToplevel(this, edge, cursor()->pos());
+        seat()->pointer()->startResizingToplevel(this, edge, cursor()->pos()); */
 }
 //! [startResizeRequest]
 
@@ -199,11 +226,11 @@ void LToplevelRole::setMinimizedRequest()
     if (surface() == seat()->keyboard()->focus())
         seat()->keyboard()->setFocus(nullptr);
 
-    if (this == seat()->pointer()->movingToplevel())
-        seat()->pointer()->stopMovingToplevel();
+    if (moveSession())
+        moveSession()->stop();
 
-    if (this == seat()->pointer()->resizingToplevel())
-        seat()->pointer()->stopResizingToplevel();
+    if (resizeSession())
+        resizeSession()->stop();
 }
 //! [setMinimizedRequest]
 

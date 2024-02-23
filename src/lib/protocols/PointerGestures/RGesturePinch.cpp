@@ -47,11 +47,6 @@ bool RGesturePinch::begin(const LPointerPinchBeginEvent &event, Wayland::RSurfac
 
 bool RGesturePinch::update(const LPointerPinchUpdateEvent &event)
 {
-    auto &clientEvent = client()->imp()->events.pointer.pinchUpdate;
-
-    if (clientEvent.serial() != event.serial())
-        clientEvent = event;
-
     zwp_pointer_gesture_pinch_v1_send_update(
         resource(),
         event.ms(),

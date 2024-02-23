@@ -30,6 +30,9 @@ LPRIVATE_CLASS(LSeat)
     LToplevelRole *activeToplevel           { nullptr };
     InputCapabilitiesFlags capabilities     { Pointer | Keyboard | Touch };
 
+    std::vector<LToplevelResizeSession*> resizeSessions;
+    std::vector<LToplevelMoveSession*> moveSessions;
+
     // Data device
     LDataSource *dataSelection              { nullptr };
     LDNDManager *dndManager                 { nullptr };

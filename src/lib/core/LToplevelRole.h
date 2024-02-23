@@ -24,6 +24,15 @@ public:
     struct Params;
 
     /**
+     * @brief Edge constraint when resizing a Toplevel
+     */
+    enum ResizeEdgeSize : Int32
+    {
+        /// Disables the constraint on the specified edge.
+        EdgeDisabled = std::numeric_limits<Int32>::min()
+    };
+
+    /**
      * @brief LToplevelRole class constructor.
      *
      * @param params Internal library parameters provided in the virtual LCompositor::createToplevelRoleRequest() constructor.
@@ -334,6 +343,98 @@ public:
      */
     Protocols::XdgShell::RXdgSurface *xdgSurfaceResource() const;
 
+    /**
+     * @name Interactive toplevel Movement
+     *
+     * These utility methods simplify the management of interactive toplevel moving sessions.
+     *
+     * @note Using these methods is optional.
+     *
+     * @see LToplevelRole::startMoveRequest()
+     */
+
+    ///@{
+
+    /**
+     * @brief Initiate an interactive toplevel moving session.
+     *
+     * This method initiates an interactive moving session for a toplevel surface.\n
+     * You can confine the Toplevel's placement within a rectangle by specifying values for L, T, R, and B.\n
+     * If you don't wish to restrict any edges, set their values to LPointer::EdgeDisabled.
+     *
+     * To update the Toplevel's position, use the updateMovingToplevelPos() method.
+     * Once the position change is complete, use the stopMovingToplevel() method to conclude the session.
+     *
+     * @note The session will automatically cease if the toplevel is destroyed.
+     *
+     * @see See an example of its use in LToplevelRole::startMoveRequest().
+     *
+     * @param toplevel The toplevel whose size will change.
+     * @param globalDragPoint Current move point position (cursor position, touch point position, etc). TODO
+     * @param L Restriction for the left edge.
+     * @param T Restriction for the top edge.
+     * @param R Restriction for the right edge.
+     * @param B Restriction for the bottom edge.
+     */
+    bool startMoveSession(const LEvent &triggerigEvent,
+                          const LPoint &globalDragPoint,
+                          Int32 L = LToplevelRole::EdgeDisabled, Int32 T = LToplevelRole::EdgeDisabled,
+                          Int32 R = LToplevelRole::EdgeDisabled, Int32 B = LToplevelRole::EdgeDisabled);
+
+    // TODO
+    LToplevelMoveSession *moveSession() const;
+
+    ///@}
+
+    /**
+     * @name Interactive Toplevel Resizing
+     *
+     * These utility methods simplify the management of interactive toplevel resizing sessions.
+     *
+     * @note Using these methods is optional.
+     *
+     * @see LToplevelRole::startResizeRequest()
+     * @see LToplevelRole::geometryChanged()
+     */
+
+    ///@{
+
+    /**
+     * @brief Start an interactive toplevel resizing session.
+     *
+     * This method starts an interactive resizing session on a toplevel surface from one of its edges or corners.\n
+     * You can restrict the space in which the surface expands by defining a rectangle given by the L, T, R, and B values.\n
+     * If you do not want to restrict an edge, assign its value to LPointer::EdgeDisabled.
+     *
+     * To update the position and size of the Toplevel, call updateResizingToplevelSize() when the pointer moves and
+     * updateResizingToplevelPos() when the toplevel size changes.\n
+     * Once finished, call stopResizingToplevel() to end the session.
+     *
+     * @note The session will automatically cease if the toplevel is destroyed.
+     *
+     * @see See an example of its use in LToplevelRole::startResizeRequest().
+     *
+     * @param toplevel Toplevel that will change size.
+     * @param edge Edge or corner from which the resizing will be performed.
+     * @param pointerPos Current pointer position.
+     * @param minSize Minimum toplevel size.
+     * @param L Restriction of the left edge.
+     * @param T Restriction of the top edge.
+     * @param R Restriction of the right edge.
+     * @param B Restriction of the bottom edge.
+     */
+    bool startResizeSession(const LEvent &triggeringEvent,
+                            LToplevelRole::ResizeEdge edge,
+                            const LPoint &resizePointPos,
+                            const LSize &minSize = LSize(0, 0),
+                            Int32 L = EdgeDisabled, Int32 T = EdgeDisabled,
+                            Int32 R = EdgeDisabled, Int32 B = EdgeDisabled);
+
+    // TODO
+    LToplevelResizeSession *resizeSession() const;
+
+    ///@}
+
 /// @name Virtual Methods
 /// @{
     /**
@@ -356,10 +457,12 @@ public:
      *
      * @see LPointer::startMovingToplevel()
      *
+     * TODO
+     *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp startMoveRequest
      */
-    virtual void startMoveRequest();
+    virtual void startMoveRequest(const LEvent &triggeringEvent);
 
     /**
      * @brief Request to start an interactive resize session

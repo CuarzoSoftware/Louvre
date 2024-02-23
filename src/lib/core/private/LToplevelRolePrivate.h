@@ -7,6 +7,7 @@
 #include <protocols/XdgShell/xdg-shell.h>
 #include <private/LSeatPrivate.h>
 #include <private/LCompositorPrivate.h>
+#include <private/LToplevelMoveSessionPrivate.h>
 #include <LToplevelRole.h>
 #include <LCompositor.h>
 #include <LTime.h>
@@ -72,6 +73,9 @@ LSize resizingInitWindowSize;
 LSize resizingMinSize;
 LToplevelRole::ResizeEdge resizingEdge;
 LRect resizingConstraintBounds;
+
+LToplevelResizeSession *resizeSession { nullptr };
+LToplevelMoveSession::Factory::UniqueMoveSession moveSession;
 
 inline void applyPendingChanges()
 {

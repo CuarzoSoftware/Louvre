@@ -123,6 +123,16 @@ LToplevelRole *LSeat::activeToplevel() const
     return imp()->activeToplevel;
 }
 
+const std::vector<LToplevelResizeSession *> &LSeat::toplevelResizeSessions() const
+{
+    return imp()->resizeSessions;
+}
+
+const std::vector<LToplevelMoveSession *> &LSeat::toplevelMoveSessions() const
+{
+    return imp()->moveSessions;
+}
+
 LPointer *LSeat::pointer() const
 {
     return imp()->pointer;

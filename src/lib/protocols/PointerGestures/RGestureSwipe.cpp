@@ -47,11 +47,6 @@ bool RGestureSwipe::begin(const LPointerSwipeBeginEvent &event, Wayland::RSurfac
 
 bool RGestureSwipe::update(const LPointerSwipeUpdateEvent &event)
 {
-    auto &clientEvent = client()->imp()->events.pointer.swipeUpdate;
-
-    if (clientEvent.serial() != event.serial())
-        clientEvent = event;
-
     zwp_pointer_gesture_swipe_v1_send_update(
         resource(),
         event.ms(),

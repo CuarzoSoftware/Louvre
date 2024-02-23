@@ -43,15 +43,12 @@ public:
     struct PointerEvents
     {
         LPointerEnterEvent enter;
-        LPointerMoveEvent move;
         LPointerLeaveEvent leave;
         LPointerButtonEvent button;
-        LPointerScrollEvent scroll;
+
         LPointerSwipeBeginEvent swipeBegin;
-        LPointerSwipeUpdateEvent swipeUpdate;
         LPointerSwipeEndEvent swipeEnd;
         LPointerPinchBeginEvent pinchBegin;
-        LPointerPinchUpdateEvent pinchUpdate;
         LPointerPinchEndEvent pinchEnd;
         LPointerHoldBeginEvent holdBegin;
         LPointerHoldEndEvent holdEnd;
@@ -67,11 +64,8 @@ public:
 
     struct TouchEvents
     {
-        LTouchDownEvent down;
-        LTouchMoveEvent move;
-        LTouchUpEvent up;
-        LTouchFrameEvent frame;
-        LTouchCancelEvent cancel;
+        std::vector<LTouchDownEvent> down;
+        std::vector<LTouchUpEvent> up;
     };
 
     struct Events
@@ -80,6 +74,8 @@ public:
         KeyboardEvents keyboard;
         TouchEvents touch;
     };
+
+    const LEvent *findEventBySerial(UInt32 serial) const;
 
     /**
      * @brief Constructor of the LClient class.

@@ -2,6 +2,7 @@
 #include <protocols/Wayland/private/GSeatPrivate.h>
 #include <protocols/Wayland/RSurface.h>
 #include <private/LClientPrivate.h>
+#include <algorithm>
 
 static struct wl_touch_interface touch_implementation =
 {
@@ -42,10 +43,20 @@ GSeat *RTouch::seatGlobal() const
 
 bool RTouch::down(const LTouchDownEvent &event, RSurface *rSurface)
 {
-    auto &clientEvent = client()->imp()->events.touch.down;
+    auto &clientEvents = client()->imp()->events.touch.down;
 
-    if (clientEvent.serial() != event.serial())
-        clientEvent = event;
+    auto it = std::find_if(
+        clientEvents.begin(),
+        clientEvents.end(),
+        [event](const LTouchDownEvent &ev)
+    {
+        return ev.id() == event.id();
+    });
+
+    if (it == clientEvents.end())
+        clientEvents.push_back(event);
+    else if (it->serial() != event.serial())
+        *it = event;
 
     wl_touch_send_down(resource(),
                        event.serial(),
@@ -59,10 +70,20 @@ bool RTouch::down(const LTouchDownEvent &event, RSurface *rSurface)
 
 bool RTouch::up(const LTouchUpEvent &event)
 {
-    auto &clientEvent = client()->imp()->events.touch.up;
+    auto &clientEvents = client()->imp()->events.touch.up;
 
-    if (clientEvent.serial() != event.serial())
-        clientEvent = event;
+    auto it = std::find_if(
+        clientEvents.begin(),
+        clientEvents.end(),
+        [event](const LTouchUpEvent &ev)
+        {
+            return ev.id() == event.id();
+        });
+
+    if (it == clientEvents.end())
+        clientEvents.push_back(event);
+    else if (it->serial() != event.serial())
+        *it = event;
 
     wl_touch_send_up(resource(), event.serial(), event.ms(), event.id());
     return true;
