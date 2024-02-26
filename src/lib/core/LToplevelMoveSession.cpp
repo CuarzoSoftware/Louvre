@@ -1,36 +1,39 @@
 #include <LToplevelMoveSession.h>
 #include <private/LToplevelRolePrivate.h>
 #include <private/LSeatPrivate.h>
-#include <LEvent.h>
+#include <LPointerEnterEvent.h>
 #include <algorithm>
 
 using namespace Louvre;
 
-LToplevelMoveSession::LToplevelMoveSession(LToplevelRole *toplevel, const LEvent &triggeringEvent, const LPoint &initDragPos, const LBox &bounds) :
-    m_initPos(toplevel->surface()->pos()),
-    m_initDragPos(initDragPos),
-    m_bounds(bounds),
-    m_toplevel(toplevel->weakRef<LToplevelRole>())
-{
-    m_triggeringEvent.reset(triggeringEvent.copy());
-    seat()->imp()->moveSessions.push_back(this);
-}
+LToplevelMoveSession::LToplevelMoveSession() : m_triggeringEvent(std::make_unique<LPointerEnterEvent>()) {}
 
 LToplevelMoveSession::~LToplevelMoveSession()
 {
-    if (!stopped)
-    {
-        auto it = std::find(seat()->imp()->moveSessions.begin(), seat()->imp()->moveSessions.end(), this);
-        auto nextIt = seat()->imp()->moveSessions.end();
+    if (m_isActive)
+        LVectorRemoveOneUnordered(seat()->imp()->moveSessions, this);
+}
 
-        if (it != seat()->imp()->moveSessions.end())
-            nextIt = seat()->imp()->moveSessions.erase(it);
-    }
+bool LToplevelMoveSession::start(const LEvent &triggeringEvent, const LPoint &initDragPoint, Int32 L, Int32 T, Int32 R, Int32 B)
+{
+    if (m_isActive)
+        return false;
+
+    m_bounds = {L, T, R, B};
+    m_initDragPoint = initDragPoint;
+    m_triggeringEvent.reset(triggeringEvent.copy());
+    m_initPos = m_toplevel->surface()->pos();
+    m_isActive = true;
+    seat()->imp()->moveSessions.push_back(this);
+    return true;
 }
 
 void LToplevelMoveSession::updateDragPoint(const LPoint &pos)
 {
-    LPoint newPos { m_initPos - m_initDragPos + pos };
+    if (!m_isActive)
+        return;
+
+    LPoint newPos { m_initPos - m_initDragPoint + pos };
 
     if (m_bounds.x2 != LToplevelRole::EdgeDisabled && newPos.x() > m_bounds.x2)
         newPos.setX(m_bounds.x2);
@@ -49,13 +52,10 @@ void LToplevelMoveSession::updateDragPoint(const LPoint &pos)
 
 const std::vector<LToplevelMoveSession*>::const_iterator LToplevelMoveSession::stop()
 {
+    if (!m_isActive)
+        return seat()->imp()->moveSessions.end();
+
+    m_isActive = false;
     auto it = std::find(seat()->imp()->moveSessions.begin(), seat()->imp()->moveSessions.end(), this);
-    auto nextIt = seat()->imp()->moveSessions.end();
-
-    if (it != seat()->imp()->moveSessions.end())
-        nextIt = seat()->imp()->moveSessions.erase(it);
-
-    stopped = true;
-    toplevel()->imp()->moveSession.reset();
-    return nextIt;
+    return seat()->imp()->moveSessions.erase(it);
 }

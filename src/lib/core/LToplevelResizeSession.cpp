@@ -1,23 +1,24 @@
 #include <LToplevelResizeSession.h>
 #include <private/LToplevelRolePrivate.h>
 #include <private/LSeatPrivate.h>
+#include <LPointerEnterEvent.h>
 #include <LSurface.h>
-#include <LEvent.h>
 
 using namespace Louvre;
 
-LToplevelResizeSession::LToplevelResizeSession() {}
+LToplevelResizeSession::LToplevelResizeSession() : m_triggeringEvent(std::make_unique<LPointerEnterEvent>()) {}
 
 LToplevelResizeSession::~LToplevelResizeSession()
 {
-    delete m_triggeringEvent;
+    if (m_isActive)
+        LVectorRemoveOneUnordered(seat()->imp()->resizeSessions, this);
 }
 
 void LToplevelResizeSession::handleGeometryChange()
 {
+    /*
     if (!m_toplevel->resizing() && m_stopped)
     {
-        /*TODO destroy(); */
         return;
     }
 
@@ -32,19 +33,19 @@ void LToplevelResizeSession::handleGeometryChange()
 
     if (m_stopped)
         m_toplevel->configure(m_toplevel->pendingStates() & ~LToplevelRole::Resizing);
+    */
 }
 
-void LToplevelResizeSession::setResizePointPos(const LPoint &resizePoint)
+void LToplevelResizeSession::updateDragPoint(const LPoint &point)
 {
-    if (m_stopped)
+    if (!m_isActive)
         return;
 
-    m_currentResizePointPos = resizePoint;
-    LSize newSize = toplevel()->calculateResizeSize(m_initResizePointPos - resizePoint,
-                                                    m_initSize,
-                                                    m_edge);
-    LPoint pos = toplevel()->surface()->pos();
-    LSize size = toplevel()->windowGeometry().size();
+    m_currentDragPoint = point;
+    LSize newSize = { toplevel()->calculateResizeSize(m_initDragPoint - point, m_initSize, m_edge) };
+
+    const LPoint &pos { toplevel()->surface()->pos() };
+    const LSize &size { toplevel()->size() };
 
     // Top
     if (m_bounds.y1 != LToplevelRole::EdgeDisabled && (m_edge == LToplevelRole::Top || m_edge == LToplevelRole::TopLeft || m_edge == LToplevelRole::TopRight))
@@ -79,29 +80,43 @@ void LToplevelResizeSession::setResizePointPos(const LPoint &resizePoint)
         newSize.setH(m_minSize.h());
 
     toplevel()->configure(newSize, LToplevelRole::Activated | LToplevelRole::Resizing);
+
+    // todo save serial
 }
 
-void LToplevelResizeSession::stop()
+bool LToplevelResizeSession::start(const LEvent &triggeringEvent, LToplevelRole::ResizeEdge edge, const LPoint &initDragPoint, const LSize &minSize, Int32 L, Int32 T, Int32 R, Int32 B)
 {
-    /* TODO
-    toplevel()->configure(toplevel()->pendingState() & ~LToplevelRole::Resizing);
+    if (m_isActive)
+        return false;
 
-    if (imp()->stopped)
+    m_triggeringEvent.reset(triggeringEvent.copy());
+    m_minSize = minSize;
+    m_bounds = {L,T,R,B};
+    m_edge = edge;
+    m_initSize = m_toplevel->size();
+    m_initDragPoint = initDragPoint;
+    m_currentDragPoint = initDragPoint;
+
+    if (L != LToplevelRole::EdgeDisabled && m_toplevel->surface()->pos().x() < L)
+        m_toplevel->surface()->setX(L);
+
+    if (T != LToplevelRole::EdgeDisabled && m_toplevel->surface()->pos().y() < T)
+        m_toplevel->surface()->setY(T);
+
+    m_initPos = m_toplevel->surface()->pos();
+
+    m_toplevel->configure(m_toplevel->pendingStates() | LToplevelRole::Activated | LToplevelRole::Resizing);
+    seat()->imp()->resizeSessions.push_back(this);
+    return true;
+}
+
+const std::vector<LToplevelResizeSession*>::const_iterator LToplevelResizeSession::stop()
+{
+    if (!m_isActive)
         return seat()->imp()->resizeSessions.begin();
 
-    std::list<LToplevelResizeSession*>::iterator it = imp()->unlink();
-    imp()->stopped = true;
-
-    return it;
-    */
-}
-
-LToplevelRole *LToplevelResizeSession::toplevel() const
-{
-    return m_toplevel;
-}
-
-const LEvent &LToplevelResizeSession::triggeringEvent() const
-{
-    return *m_triggeringEvent;
+    m_isActive = false;
+    toplevel()->configure(toplevel()->pendingStates() & ~LToplevelRole::Resizing);
+    auto it = std::find(seat()->imp()->resizeSessions.begin(), seat()->imp()->resizeSessions.end(), this);
+    return seat()->imp()->resizeSessions.erase(it);
 }

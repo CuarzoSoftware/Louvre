@@ -1,6 +1,7 @@
 #ifndef LPOINTERPRIVATE_H
 #define LPOINTERPRIVATE_H
 
+#include <LSurface.h>
 #include <LPointer.h>
 #include <LBitset.h>
 
@@ -27,8 +28,8 @@ LPRIVATE_CLASS(LPointer)
 
     void sendLeaveEvent(LSurface *surface);
 
-    std::weak_ptr<LSurface> focus;
-    std::weak_ptr<LSurface> draggingSurface;
+    LWeak<LSurface> focus;
+    LWeak<LSurface> draggingSurface;
     std::vector<Button> pressedButtons;
     Float32 axisXprev;
     Float32 axisYprev;

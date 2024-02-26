@@ -355,34 +355,8 @@ public:
 
     ///@{
 
-    /**
-     * @brief Initiate an interactive toplevel moving session.
-     *
-     * This method initiates an interactive moving session for a toplevel surface.\n
-     * You can confine the Toplevel's placement within a rectangle by specifying values for L, T, R, and B.\n
-     * If you don't wish to restrict any edges, set their values to LPointer::EdgeDisabled.
-     *
-     * To update the Toplevel's position, use the updateMovingToplevelPos() method.
-     * Once the position change is complete, use the stopMovingToplevel() method to conclude the session.
-     *
-     * @note The session will automatically cease if the toplevel is destroyed.
-     *
-     * @see See an example of its use in LToplevelRole::startMoveRequest().
-     *
-     * @param toplevel The toplevel whose size will change.
-     * @param globalDragPoint Current move point position (cursor position, touch point position, etc). TODO
-     * @param L Restriction for the left edge.
-     * @param T Restriction for the top edge.
-     * @param R Restriction for the right edge.
-     * @param B Restriction for the bottom edge.
-     */
-    bool startMoveSession(const LEvent &triggerigEvent,
-                          const LPoint &globalDragPoint,
-                          Int32 L = LToplevelRole::EdgeDisabled, Int32 T = LToplevelRole::EdgeDisabled,
-                          Int32 R = LToplevelRole::EdgeDisabled, Int32 B = LToplevelRole::EdgeDisabled);
-
     // TODO
-    LToplevelMoveSession *moveSession() const;
+    LToplevelMoveSession &moveSession() const;
 
     ///@}
 
@@ -416,7 +390,7 @@ public:
      *
      * @param toplevel Toplevel that will change size.
      * @param edge Edge or corner from which the resizing will be performed.
-     * @param pointerPos Current pointer position.
+     * @param globalDragPoint Current move point position (cursor position, touch point position, etc). TODO
      * @param minSize Minimum toplevel size.
      * @param L Restriction of the left edge.
      * @param T Restriction of the top edge.
@@ -425,7 +399,7 @@ public:
      */
     bool startResizeSession(const LEvent &triggeringEvent,
                             LToplevelRole::ResizeEdge edge,
-                            const LPoint &resizePointPos,
+                            const LPoint &globalDragPoint,
                             const LSize &minSize = LSize(0, 0),
                             Int32 L = EdgeDisabled, Int32 T = EdgeDisabled,
                             Int32 R = EdgeDisabled, Int32 B = EdgeDisabled);

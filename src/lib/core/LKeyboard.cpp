@@ -247,7 +247,7 @@ UInt32 LKeyboard::keymapFormat() const
 
 LSurface *LKeyboard::focus() const
 {
-    return imp()->focus.lock().get();
+    return imp()->focus.get();
 }
 
 void LKeyboard::setFocus(LSurface *surface)

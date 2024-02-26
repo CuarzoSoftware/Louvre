@@ -234,6 +234,7 @@ namespace Louvre
     class LTimer;
     class LLauncher;
     class LGammaTable;
+    template <class T> class LWeak;
     template <class TA, class TB> class LPointTemplate;
     template <class TA, class TB> class LRectTemplate;
     template <class T> class LBitset;
@@ -455,6 +456,18 @@ namespace Louvre
         UInt32 minor; ///< Minor version.
         UInt32 patch; ///< Patch version.
         UInt32 build; ///< Build number.
+    };
+
+    struct LWeakData
+    {
+        UInt32 counter;
+        bool isAlive;
+    };
+
+    class PrivateUtils
+    {
+    public:
+        static LWeakData *getObjectData(const LObject *object);
     };
 
     namespace Protocols

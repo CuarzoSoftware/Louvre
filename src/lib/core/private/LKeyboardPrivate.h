@@ -18,7 +18,7 @@ struct LKeyboard::Params
 
 LPRIVATE_CLASS(LKeyboard)
 
-    std::weak_ptr<LSurface> focus;
+    LWeak<LSurface> focus;
 
     // XKB
     xkb_context *xkbContext         { nullptr };

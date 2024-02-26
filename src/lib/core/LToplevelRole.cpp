@@ -5,7 +5,6 @@
 #include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LSeatPrivate.h>
-#include <private/LToplevelMoveSessionPrivate.h>
 #include <protocols/XdgShell/xdg-shell.h>
 #include <LToplevelResizeSession.h>
 #include <LCompositor.h>
@@ -30,6 +29,7 @@ LToplevelRole::LToplevelRole(const void *params) :
 {
     imp()->currentConf.commited = true;
     imp()->toplevel = this;
+    imp()->moveSession.m_toplevel = this;
 }
 
 LToplevelRole::~LToplevelRole()
@@ -104,24 +104,9 @@ RXdgSurface *LToplevelRole::xdgSurfaceResource() const
     return xdgToplevelResource()->xdgSurfaceResource();
 }
 
-bool LToplevelRole::startMoveSession(const LEvent &triggeringEvent, const LPoint &globalDragPoint, Int32 L, Int32 T, Int32 R, Int32 B)
+LToplevelMoveSession &LToplevelRole::moveSession() const
 {
-    if (moveSession())
-        return false;
-
-    const LBox bounds {L, T, R, B};
-
-    imp()->moveSession = LToplevelMoveSession::Factory::makeUnique(
-        this,
-        triggeringEvent,
-        globalDragPoint,
-        bounds);
-    return true;
-}
-
-LToplevelMoveSession *LToplevelRole::moveSession() const
-{
-    return imp()->moveSession.get();
+    return imp()->moveSession;
 }
 
 bool LToplevelRole::startResizeSession(const LEvent &triggeringEvent, ResizeEdge edge, const LPoint &resizePointPos, const LSize &minSize, Int32 L, Int32 T, Int32 R, Int32 B)
@@ -137,13 +122,13 @@ bool LToplevelRole::startResizeSession(const LEvent &triggeringEvent, ResizeEdge
 
     imp()->resizeSession = new LToplevelResizeSession();
     imp()->resizeSession->m_toplevel = this;
-    imp()->resizeSession->m_triggeringEvent = triggeringEvent.copy();
+    imp()->resizeSession->m_triggeringEvent.reset(triggeringEvent.copy());
     imp()->resizeSession->m_minSize = minSize;
     imp()->resizeSession->m_bounds = {L,T,R,B};
     imp()->resizeSession->m_edge = edge;
     imp()->resizeSession->m_initSize = windowGeometry().size();
-    imp()->resizeSession->m_initResizePointPos = resizePointPos;
-    imp()->resizeSession->m_currentResizePointPos = resizePointPos;
+    imp()->resizeSession->m_initDragPoint = resizePointPos;
+    imp()->resizeSession->m_currentDragPoint = resizePointPos;
 
     if (L != EdgeDisabled && surface()->pos().x() < L)
         surface()->setX(L);
@@ -300,8 +285,7 @@ void LToplevelRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrig
 
         surface()->imp()->setParent(nullptr);
 
-        if (moveSession())
-            moveSession()->stop();
+        moveSession().stop();
 
         if (resizeSession())
             resizeSession()->stop();

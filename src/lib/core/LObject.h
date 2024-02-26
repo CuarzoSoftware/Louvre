@@ -2,6 +2,7 @@
 #define LOBJECT_H
 
 #include <LCompositor.h>
+#include <LWeak.h>
 
 /**
  * @brief Base class for Louvre objects.
@@ -34,26 +35,26 @@ public:
         return LCompositor::compositor()->cursor();
     }
 
-    inline std::weak_ptr<const LObject> weakRef() const
+    inline LWeak<const LObject> weakRef() const
     {
-        return m_sharedPtr;
+        return LWeak<const LObject>(this);
     }
 
-    inline std::weak_ptr<LObject> weakRef()
+    inline LWeak<LObject> weakRef()
     {
-        return m_sharedPtr;
-    }
-
-    template <class T>
-    inline std::weak_ptr<const T> weakRef() const
-    {
-        return std::static_pointer_cast<const T>(m_sharedPtr);
+        return LWeak<LObject>(this);
     }
 
     template <class T>
-    inline std::weak_ptr<T> weakRef()
+    inline LWeak<const T> weakRef() const
     {
-        return std::static_pointer_cast<T>(m_sharedPtr);
+        return LWeak<const T>((const T*)this);
+    }
+
+    template <class T>
+    inline LWeak<T> weakRef()
+    {
+        return LWeak<T>((T*)this);
     }
 
 protected:
@@ -66,9 +67,19 @@ protected:
     /**
      * @brief Destructor of the LObject class.
      */
-    inline ~LObject() = default;
+    inline ~LObject()
+    {
+        if (m_weakData->counter == 1)
+            delete m_weakData;
+        else
+        {
+            m_weakData->counter--;
+            m_weakData->isAlive = false;
+        }
+    }
 private:
-    std::shared_ptr<LObject> m_sharedPtr { this, [](auto){}};
+    friend class Louvre::PrivateUtils;
+    LWeakData *m_weakData { new LWeakData({1, true}) };
 };
 
 #endif // LOBJECT_H

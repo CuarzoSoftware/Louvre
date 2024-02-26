@@ -386,7 +386,7 @@ bool LPointer::isButtonPressed(Button button) const
 
 LSurface *LPointer::draggingSurface() const
 {
-    return imp()->draggingSurface.lock().get();
+    return imp()->draggingSurface.get();
 }
 
 LSurface *LPointer::surfaceAt(const LPoint &point)
@@ -409,7 +409,7 @@ LSurface *LPointer::surfaceAt(const LPoint &point)
 
 LSurface *LPointer::focus() const
 {
-    return imp()->focus.lock().get();
+    return imp()->focus.get();
 }
 
 void LPointer::LPointerPrivate::sendLeaveEvent(LSurface *surface)

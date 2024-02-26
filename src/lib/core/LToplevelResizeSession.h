@@ -6,10 +6,33 @@
 class Louvre::LToplevelResizeSession : public LObject
 {
 public:
-    void setResizePointPos(const LPoint &pos);
-    void stop();
-    LToplevelRole *toplevel() const;
-    const LEvent &triggeringEvent() const;
+    // TODO: add doc
+
+    bool start(const LEvent &triggeringEvent,
+               LToplevelRole::ResizeEdge edge,
+               const LPoint &initDragPoint,
+               const LSize &minSize = LSize(0, 0),
+               Int32 L = LToplevelRole::EdgeDisabled, Int32 T = LToplevelRole::EdgeDisabled,
+               Int32 R = LToplevelRole::EdgeDisabled, Int32 B = LToplevelRole::EdgeDisabled);
+
+    void updateDragPoint(const LPoint &pos);
+
+    const std::vector<LToplevelResizeSession*>::const_iterator stop();
+
+    inline LToplevelRole *toplevel() const
+    {
+        return m_toplevel;
+    }
+
+    inline const LEvent &triggeringEvent() const
+    {
+        return *m_triggeringEvent.get();
+    }
+
+    inline bool isActive() const
+    {
+        return m_isActive;
+    }
 
 private:
     friend class LToplevelRole;
@@ -20,12 +43,12 @@ private:
     LPoint m_initPos;
     LSize m_initSize;
     LSize m_minSize;
-    LPoint m_initResizePointPos;
-    LPoint m_currentResizePointPos;
+    LPoint m_initDragPoint;
+    LPoint m_currentDragPoint;
     LToplevelRole::ResizeEdge m_edge;
     LBox m_bounds;
-    LEvent *m_triggeringEvent { nullptr };
-    bool m_stopped { false };
+    std::unique_ptr<LEvent> m_triggeringEvent;
+    bool m_isActive { false };
 };
 
 #endif // LTOPLEVELRESIZESESSION_H

@@ -65,6 +65,6 @@ void RGammaControl::RGammaControlPrivate::set_gamma(wl_client *client, wl_resour
 
     output->setGammaRequest(rGammaControl->client(), &gammaTable);
 
-    if (!weakRef.expired() && output->imp()->gammaTable.m_gammaControlResource != rGammaControl)
+    if (!weakRef.get() && output->imp()->gammaTable.m_gammaControlResource != rGammaControl)
         rGammaControl->failed();
 }

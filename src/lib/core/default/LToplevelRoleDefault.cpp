@@ -45,10 +45,10 @@ void LToplevelRole::startMoveRequest(const LEvent &triggeringEvent)
 
         const LPoint initDragPoint = LTouch::toGlobal(cursor()->output(), touchPoint->pos());
 
-        startMoveSession(triggeringEvent, initDragPoint);
+        moveSession().start(triggeringEvent, initDragPoint);
     }
     else
-        startMoveSession(triggeringEvent, cursor()->pos());
+        moveSession().start(triggeringEvent, cursor()->pos());
 }
 //! [startMoveRequest]
 
@@ -226,8 +226,7 @@ void LToplevelRole::setMinimizedRequest()
     if (surface() == seat()->keyboard()->focus())
         seat()->keyboard()->setFocus(nullptr);
 
-    if (moveSession())
-        moveSession()->stop();
+    moveSession().stop();
 
     if (resizeSession())
         resizeSession()->stop();
