@@ -35,6 +35,16 @@ public:
         return LCompositor::compositor()->cursor();
     }
 
+    inline LObject(const LObject &)
+    {
+        init();
+    }
+
+    inline LObject &operator=(const LObject &)
+    {
+        return *this;
+    }
+
     inline LWeak<const LObject> weakRef() const
     {
         return LWeak<const LObject>(this);
@@ -62,7 +72,10 @@ protected:
     /**
      * @brief Constructor of the LObject class.
      */
-    inline LObject() = default;
+    inline LObject()
+    {
+        init();
+    }
 
     /**
      * @brief Destructor of the LObject class.
@@ -78,6 +91,11 @@ protected:
         }
     }
 private:
+    inline void init()
+    {
+        m_weakData = new LWeakData({1, true});
+    }
+
     friend class Louvre::PrivateUtils;
     LWeakData *m_weakData { new LWeakData({1, true}) };
 };

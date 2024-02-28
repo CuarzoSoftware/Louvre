@@ -3,13 +3,15 @@
 
 #include <LNamespaces.h>
 
+// Todo add doc
+
 template <class T>
 class Louvre::LWeak
 {
     static_assert(std::is_base_of<LObject, T>::value, "LWeak template error: Type must be a subclass of LObject.");
 
 public:
-    LWeak(T *object = nullptr)
+    inline LWeak(T *object = nullptr)
     {
         if (object)
         {
@@ -18,6 +20,37 @@ public:
             m_data->counter++;
             m_object = object;
         }
+    }
+
+    inline ~LWeak()
+    {
+        clear();
+    }
+
+    inline LWeak(const LWeak &other)
+    {
+        copy(other);
+    }
+
+    inline LWeak &operator=(const LWeak &other)
+    {
+        copy(other);
+        return *this;
+    }
+
+    inline T *get() const
+    {
+        if (m_data && m_data->isAlive)
+            return m_object;
+        return nullptr;
+    }
+
+    inline UInt32 count() const
+    {
+        if (m_data)
+            return m_data->counter;
+
+        return 0;
     }
 
     void reset(T *object  = nullptr)
@@ -30,35 +63,22 @@ public:
             m_data = PrivateUtils::getObjectData(obj);
             m_data->counter++;
             m_object = object;
-            return;
         }
     }
 
-    inline LWeak(const LWeak &other)
-    {
-        copy(other);
-    }
-
-    inline LWeak &operator=(const LWeak &other)
-    {
-        copy(other);
-    }
-
-    inline T *get() const
-    {
-        if (m_data && m_data->isAlive)
-            return m_object;
-        return nullptr;
-    }
 private:
     friend class LObject;
 
     inline void copy(const LWeak &other)
     {
         clear();
-        m_data = other.m_data;
-        m_object = other.m_object;
-        m_data->counter++;
+
+        if (other.m_data)
+        {
+            m_data = other.m_data;
+            m_object = other.m_object;
+            m_data->counter++;
+        }
     }
 
     inline void clear()

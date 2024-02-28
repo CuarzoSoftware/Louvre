@@ -155,3 +155,7 @@ if get_option('build_examples')
     subdir('examples/louvre-default')
     #subdir('examples/louvre-views')
 endif
+
+if get_option('build_tests')
+    subdir('tests')
+endif
