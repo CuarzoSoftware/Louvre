@@ -458,16 +458,10 @@ namespace Louvre
         UInt32 build; ///< Build number.
     };
 
-    struct LWeakData
-    {
-        UInt32 counter;
-        bool isAlive;
-    };
-
     class PrivateUtils
     {
     public:
-        static LWeakData *getObjectData(const LObject *object);
+        static std::vector<void *> &getObjectData(const LObject *object);
     };
 
     namespace Protocols

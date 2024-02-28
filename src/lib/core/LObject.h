@@ -35,10 +35,7 @@ public:
         return LCompositor::compositor()->cursor();
     }
 
-    inline LObject(const LObject &)
-    {
-        init();
-    }
+    inline LObject(const LObject &) {}
 
     inline LObject &operator=(const LObject &)
     {
@@ -72,32 +69,21 @@ protected:
     /**
      * @brief Constructor of the LObject class.
      */
-    inline LObject()
-    {
-        init();
-    }
+    inline LObject() = default;
 
     /**
      * @brief Destructor of the LObject class.
      */
-    inline ~LObject()
+    inline virtual ~LObject()
     {
-        if (m_weakData->counter == 1)
-            delete m_weakData;
-        else
+        for (auto weak : m_weakRefs)
         {
-            m_weakData->counter--;
-            m_weakData->isAlive = false;
+            ((LWeak<LObject>*)weak)->m_object = nullptr;
         }
     }
 private:
-    inline void init()
-    {
-        m_weakData = new LWeakData({1, true});
-    }
-
     friend class Louvre::PrivateUtils;
-    LWeakData *m_weakData { new LWeakData({1, true}) };
+    mutable std::vector<void*> m_weakRefs;
 };
 
 #endif // LOBJECT_H

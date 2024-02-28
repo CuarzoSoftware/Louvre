@@ -30,13 +30,12 @@ void LWeak_test_03()
     {
         LObjectTest obj;
         weak = obj.weakRef<LObjectTest>();
-        LAssert("LWeak::count() should be 2", weak.count() == 2);
+        LAssert("LWeak::count() should be 1", weak.count() == 1);
         LAssert("LWeak::get() should be != nullptr", weak.get() != nullptr);
-
         auto weaks(obj);
     }
 
-    LAssert("LWeak::count() should be 1", weak.count() == 1);
+    LAssert("LWeak::count() should be 0", weak.count() == 0);
     LAssert("LWeak::get() should be nullptr", weak.get() == nullptr);
 }
 
@@ -49,10 +48,10 @@ void LWeak_test_04()
 
     {
         auto weak2 = weak;
-        LAssert("LWeak::count() should be 3", weak.count() == 3);
+        LAssert("LWeak::count() should be 2", weak.count() == 2);
     }
 
-    LAssert("LWeak::count() should be 2", weak.count() == 2);
+    LAssert("LWeak::count() should be 1", weak.count() == 1);
 }
 
 void LWeak_test_05()
@@ -65,10 +64,10 @@ void LWeak_test_05()
     {
         LWeak<LObjectTest> weak2;
         weak2 = weak;
-        LAssert("LWeak::count() should be 3", weak.count() == 3);
+        LAssert("LWeak::count() should be 2", weak.count() == 2);
     }
 
-    LAssert("LWeak::count() should be 2", weak.count() == 2);
+    LAssert("LWeak::count() should be 1", weak.count() == 1);
 }
 
 void LWeak_test_06()
@@ -79,13 +78,13 @@ void LWeak_test_06()
     LWeak<LObjectTest> weak { &obj };
     auto weak2 = weak;
 
-    LAssert("LWeak::count() should be 3", weak.count() == 3);
+    LAssert("LWeak::count() should be 2", weak.count() == 2);
     weak.reset(&obj);
-    LAssert("LWeak::count() should be 3", weak.count() == 3);
-    LAssert("LWeak::count() 2 should be 3", weak2.count() == 3);
+    LAssert("LWeak::count() should be 2", weak.count() == 2);
+    LAssert("LWeak::count() 2 should be 2", weak2.count() == 2);
     weak.reset();
     LAssert("LWeak::count() should be 0", weak.count() == 0);
-    LAssert("LWeak::count() 2 should be 2", weak2.count() == 2);
+    LAssert("LWeak::count() 2 should be 1", weak2.count() == 1);
 }
 
 void LWeak_run_tests()

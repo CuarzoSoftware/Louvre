@@ -3,7 +3,7 @@
 
 #include <LObject.h>
 
-class Louvre::LEvent : public LObject
+class Louvre::LEvent
 {
 public:
 
@@ -75,6 +75,16 @@ public:
     inline UInt64 us() const
     {
         return m_us;
+    }
+
+    inline LCompositor *compositor() const
+    {
+        return LCompositor::compositor();
+    }
+
+    inline LSeat *seat() const
+    {
+        return compositor()->seat();
     }
 
     LEvent *copy() const;

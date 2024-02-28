@@ -28,19 +28,15 @@ RTearingControl::RTearingControl
     ),
     LPRIVATE_INIT_UNIQUE(RTearingControl)
 {
-    imp()->rSurface = rSurface;
-    rSurface->imp()->rTearingControl = this;
+    imp()->rSurface.reset(rSurface);
+    rSurface->imp()->rTearingControl.reset(this);
 }
 
-RTearingControl::~RTearingControl()
-{
-    if (surfaceResource())
-        surfaceResource()->imp()->rTearingControl = nullptr;
-}
+RTearingControl::~RTearingControl() {}
 
 RSurface *RTearingControl::surfaceResource() const
 {
-    return imp()->rSurface;
+    return imp()->rSurface.get();
 }
 
 bool RTearingControl::preferVSync() const

@@ -3,7 +3,7 @@
 
 using namespace Louvre;
 
-LWeakData *PrivateUtils::getObjectData(const LObject *object)
+std::vector<void *> &PrivateUtils::getObjectData(const LObject *object)
 {
-    return object->m_weakData;
+    return object->m_weakRefs;
 }

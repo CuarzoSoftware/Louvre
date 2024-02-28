@@ -1,6 +1,9 @@
 #ifndef RSURFACEPRIVATE_H
 #define RSURFACEPRIVATE_H
 
+#include <protocols/TearingControl/RTearingControl.h>
+#include <protocols/FractionalScale/RFractionalScale.h>
+#include <protocols/Viewporter/RViewport.h>
 #include <protocols/Wayland/RSurface.h>
 
 using namespace Louvre::Protocols::Wayland;
@@ -34,9 +37,9 @@ LPRIVATE_CLASS(RSurface)
     static void apply_commit(LSurface *surface, CommitOrigin origin = Itself);
 
     std::unique_ptr<LSurface> lSurface;
-    Viewporter::RViewport *rViewport { nullptr };
-    FractionalScale::RFractionalScale *rFractionalScale { nullptr };
-    TearingControl::RTearingControl *rTearingControl { nullptr };
+    LWeak<Viewporter::RViewport> rViewport;
+    LWeak<FractionalScale::RFractionalScale> rFractionalScale;
+    LWeak<TearingControl::RTearingControl> rTearingControl;
 };
 
 #endif // RSURFACEPRIVATE_H

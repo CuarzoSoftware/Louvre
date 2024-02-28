@@ -11,45 +11,28 @@ void LObject_test_01()
 {
     LSetTestName("LObject_test_01");
     LObjectTest obj;
-    LWeakData *weakData = PrivateUtils::getObjectData(&obj);
-    LAssert("LObject weak data counter should be 1", weakData->counter == 1);
-    LAssert("LObject weak data isAlive should be true", weakData->isAlive);
+    auto &weakRefs = PrivateUtils::getObjectData(&obj);
+    LAssert("LObject weak refs count should be 0", weakRefs.size() == 0);
 }
 
 void LObject_test_02()
 {
     LSetTestName("LObject_test_02");
     LObjectTest obj;
-    LWeakData *weakData = PrivateUtils::getObjectData(&obj);
+    auto &weakRefs = PrivateUtils::getObjectData(&obj);
 
     {
-        LWeak<LObjectTest> weak(&obj);
-        LAssert("LObject weak data counter should be 2", weakData->counter == 2);
+        LWeak<LObjectTest> weak { &obj };
+        LAssert("LObject weak refs count should be 1", weakRefs.size() == 1);
     }
 
-    LAssert("LObject weak data counter should be 1", weakData->counter == 1);
-}
-
-void LObject_test_03()
-{
-    LSetTestName("LObject_test_03");
-    LWeakData *weakData;
-    LWeak<LObjectTest> weak;
-
-    {
-        LObjectTest obj;
-        weak.reset(&obj);
-        weakData = PrivateUtils::getObjectData(&obj);
-    }
-
-    LAssert("LObject weak data isAlive should be false", weakData->isAlive == false);
+    LAssert("LObject weak data counter should be 0", weakRefs.size() == 0);
 }
 
 void LObject_run_tests()
 {
     LObject_test_01();
     LObject_test_02();
-    LObject_test_03();
 }
 
 #endif // LOBJECT_TEST_H

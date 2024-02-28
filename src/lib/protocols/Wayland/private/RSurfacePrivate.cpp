@@ -174,7 +174,7 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
     /*******************************************
      ***************** VSYNC *******************
      *******************************************/
-    bool preferVSync = surface->surfaceResource()->imp()->rTearingControl == nullptr || surface->surfaceResource()->imp()->rTearingControl->preferVSync();
+    bool preferVSync = surface->surfaceResource()->imp()->rTearingControl.get() == nullptr || surface->surfaceResource()->imp()->rTearingControl.get()->preferVSync();
 
     if (imp->stateFlags.check(LSurface::LSurfacePrivate::VSync) != preferVSync)
     {

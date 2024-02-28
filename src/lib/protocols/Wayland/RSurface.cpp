@@ -77,7 +77,7 @@ RSurface::RSurface
 
 RSurface::~RSurface()
 {
-    LSurface *lSurface = this->surface();
+    LSurface *lSurface { this->surface() };
 
     lSurface->imp()->setKeyboardGrabToParent();
 
@@ -130,15 +130,6 @@ RSurface::~RSurface()
         delete lCursor;
     }
 
-    if (imp()->rViewport)
-        imp()->rViewport->imp()->rSurface = nullptr;
-
-    if (imp()->rFractionalScale)
-        imp()->rFractionalScale->imp()->rSurface = nullptr;
-
-    if (imp()->rTearingControl)
-        imp()->rTearingControl->imp()->rSurface = nullptr;
-
     while(!lSurface->children().empty())
         lSurface->imp()->removeChild(lSurface->imp()->children.back());
 
@@ -174,17 +165,17 @@ LSurface *RSurface::surface() const
 
 FractionalScale::RFractionalScale *RSurface::fractionalScaleResource() const
 {
-    return imp()->rFractionalScale;
+    return imp()->rFractionalScale.get();
 }
 
 TearingControl::RTearingControl *RSurface::tearingControlResource() const
 {
-    return imp()->rTearingControl;
+    return imp()->rTearingControl.get();
 }
 
 Viewporter::RViewport *RSurface::viewportResource() const
 {
-    return imp()->rViewport;
+    return imp()->rViewport.get();
 }
 
 bool RSurface::enter(GOutput *gOutput)

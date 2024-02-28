@@ -27,19 +27,15 @@ RViewport::RViewport
     ),
     LPRIVATE_INIT_UNIQUE(RViewport)
 {
-    imp()->rSurface = rSurface;
+    imp()->rSurface.reset(rSurface);
     rSurface->imp()->rViewport = this;
 }
 
-RViewport::~RViewport()
-{
-    if (imp()->rSurface)
-        imp()->rSurface->imp()->rViewport = nullptr;
-}
+RViewport::~RViewport() {}
 
 RSurface *RViewport::surfaceResource() const
 {
-    return imp()->rSurface;
+    return imp()->rSurface.get();
 }
 
 const LSize &RViewport::dstSize() const

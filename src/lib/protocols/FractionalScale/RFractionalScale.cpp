@@ -25,19 +25,15 @@ RFractionalScale::RFractionalScale
     ),
     LPRIVATE_INIT_UNIQUE(RFractionalScale)
 {
-    imp()->rSurface = rSurface;
-    rSurface->imp()->rFractionalScale = this;
+    imp()->rSurface.reset(rSurface);
+    rSurface->imp()->rFractionalScale.reset(this);
 }
 
-RFractionalScale::~RFractionalScale()
-{
-    if (imp()->rSurface)
-        imp()->rSurface->imp()->rFractionalScale = nullptr;
-}
+RFractionalScale::~RFractionalScale() {}
 
 RSurface *RFractionalScale::surfaceResource() const
 {
-    return imp()->rSurface;
+    return imp()->rSurface.get();
 }
 
 bool RFractionalScale::preferredScale(Float32 scale)

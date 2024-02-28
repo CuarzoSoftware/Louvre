@@ -15,10 +15,10 @@ public:
     {
         if (object)
         {
-            const LObject *obj { object };
-            m_data = PrivateUtils::getObjectData(obj);
-            m_data->counter++;
+            auto &refs = (std::vector<LWeak<T>*>&)PrivateUtils::getObjectData(object);
+            refs.push_back(this);
             m_object = object;
+            return;
         }
     }
 
@@ -40,29 +40,30 @@ public:
 
     inline T *get() const
     {
-        if (m_data && m_data->isAlive)
-            return m_object;
-        return nullptr;
+        return m_object;
     }
 
-    inline UInt32 count() const
+    inline UInt64 count() const
     {
-        if (m_data)
-            return m_data->counter;
+        if (m_object)
+        {
+            const auto &refs = (std::vector<LWeak<T>*>&)PrivateUtils::getObjectData(m_object);
+            return refs.size();
+        }
 
         return 0;
     }
 
-    void reset(T *object  = nullptr)
+    void reset(T *object = nullptr)
     {
         clear();
 
         if (object)
         {
-            const LObject *obj { object };
-            m_data = PrivateUtils::getObjectData(obj);
-            m_data->counter++;
+            auto &refs = (std::vector<LWeak<T>*>&)PrivateUtils::getObjectData(object);
+            refs.push_back(this);
             m_object = object;
+            return;
         }
     }
 
@@ -73,29 +74,26 @@ private:
     {
         clear();
 
-        if (other.m_data)
+        if (other.m_object)
         {
-            m_data = other.m_data;
+            auto &refs = (std::vector<LWeak<T>*>&)PrivateUtils::getObjectData(other.m_object);
+            refs.push_back(this);
             m_object = other.m_object;
-            m_data->counter++;
+            return;
         }
     }
 
     inline void clear()
     {
-        if (m_data)
+        if (m_object)
         {
-            if (m_data->counter == 1)
-                delete m_data;
-            else
-                m_data->counter--;
-
-            m_data = nullptr;
+            auto &refs = (std::vector<LWeak<T>*>&)PrivateUtils::getObjectData(m_object);
+            LVectorRemoveOneUnordered(refs, this);
+            m_object = nullptr;
         }
     }
 
-    LWeakData *m_data { nullptr };
-    T *m_object;
+    T *m_object { nullptr };
 };
 
 #endif // LWEAK_H

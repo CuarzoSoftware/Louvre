@@ -29,6 +29,7 @@ LEvent *LEvent::copy() const
     switch (m_type)
     {
     case Type::Pointer:
+    {
         switch (m_subtype)
         {
         case Subtype::Enter:
@@ -57,8 +58,18 @@ LEvent *LEvent::copy() const
             return (LEvent*)new LPointerHoldBeginEvent((const LPointerHoldBeginEvent&)*this);
         case Subtype::HoldEnd:
             return (LEvent*)new LPointerHoldEndEvent((const LPointerHoldEndEvent&)*this);
+        case Subtype::Cancel:
+        case Subtype::Up:
+        case Subtype::Down:
+        case Subtype::Key:
+        case Subtype::Modifiers:
+        case Subtype::Frame:
+            return nullptr;
         }
+        break;
+    }
     case Type::Keyboard:
+    {
         switch (m_subtype)
         {
         case Subtype::Enter:
@@ -69,8 +80,27 @@ LEvent *LEvent::copy() const
             return (LEvent*)new LKeyboardKeyEvent((const LKeyboardKeyEvent&)*this);
         case Subtype::Modifiers:
             return (LEvent*)new LKeyboardModifiersEvent((const LKeyboardModifiersEvent&)*this);
+        case Subtype::Up:
+        case Subtype::Down:
+        case Subtype::Move:
+        case Subtype::Button:
+        case Subtype::Scroll:
+        case Subtype::Frame:
+        case Subtype::Cancel:
+        case Subtype::SwipeBegin:
+        case Subtype::SwipeUpdate:
+        case Subtype::SwipeEnd:
+        case Subtype::PinchBegin:
+        case Subtype::PinchUpdate:
+        case Subtype::PinchEnd:
+        case Subtype::HoldBegin:
+        case Subtype::HoldEnd:
+            return nullptr;
         }
+        break;
+    }
     case Type::Touch:
+    {
         switch (m_subtype)
         {
         case Subtype::Down:
@@ -83,7 +113,24 @@ LEvent *LEvent::copy() const
             return (LEvent*)new LTouchFrameEvent((const LTouchFrameEvent&)*this);
         case Subtype::Cancel:
             return (LEvent*)new LTouchCancelEvent((const LTouchCancelEvent&)*this);
+        case Subtype::Enter:
+        case Subtype::Leave:
+        case Subtype::Button:
+        case Subtype::Key:
+        case Subtype::Modifiers:
+        case Subtype::Scroll:
+        case Subtype::SwipeBegin:
+        case Subtype::SwipeUpdate:
+        case Subtype::SwipeEnd:
+        case Subtype::PinchBegin:
+        case Subtype::PinchUpdate:
+        case Subtype::PinchEnd:
+        case Subtype::HoldBegin:
+        case Subtype::HoldEnd:
+            return nullptr;
         }
+        break;
+    }
     }
 
     return nullptr;
