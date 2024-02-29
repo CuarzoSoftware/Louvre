@@ -13,6 +13,7 @@
 #include <LPointerMoveEvent.h>
 #include <LPointerButtonEvent.h>
 #include <LToplevelMoveSession.h>
+#include <LToplevelResizeSession.h>
 
 using namespace Louvre;
 
@@ -36,21 +37,21 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
         seat()->dndManager()->icon()->surface()->setPos(cursor()->pos());
         seat()->dndManager()->icon()->surface()->repaintOutputs();
     }
+    */
 
     bool activeResizing = false;
 
-    for (LToplevelResizeSession *session : seat()->resizeSessions())
+    for (LToplevelResizeSession *session : seat()->toplevelResizeSessions())
     {
         if (session->triggeringEvent().type() != LEvent::Type::Touch)
         {
             activeResizing = true;
-            session->setResizePointPos(cursor()->pos());
+            session->updateDragPoint(cursor()->pos());
         }
     }
 
     if (activeResizing)
         return;
-    */
 
     bool activeMoving { false };
 
@@ -177,12 +178,14 @@ void LPointer::pointerButtonEvent(const LPointerButtonEvent &event)
     // Left button released
     else
     {
-        /*
         // Stop pointer toplevel resizing sessions
-        for (std::list<LToplevelResizeSession*>::const_iterator it = seat()->resizeSessions().begin(); it != seat()->resizeSessions().end(); it++)
+        for (auto it = seat()->toplevelResizeSessions().begin(); it != seat()->toplevelResizeSessions().end();)
+        {
             if ((*it)->triggeringEvent().type() != LEvent::Type::Touch)
                 it = (*it)->stop();
-        */
+            else
+                it++;
+        }
 
         // Stop pointer toplevel moving sessions
         for (auto it = seat()->toplevelMoveSessions().begin(); it != seat()->toplevelMoveSessions().end();)

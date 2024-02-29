@@ -74,11 +74,18 @@ protected:
     /**
      * @brief Destructor of the LObject class.
      */
-    inline virtual ~LObject()
+    virtual ~LObject()
     {
-        for (auto weak : m_weakRefs)
+        while (!m_weakRefs.empty())
         {
-            ((LWeak<LObject>*)weak)->m_object = nullptr;
+            LWeak<LObject> *weak = (LWeak<LObject>*)m_weakRefs.back();
+            m_weakRefs.pop_back();
+
+            if (weak->m_onDestroyCallback)
+                weak->m_onDestroyCallback(weak);
+
+            if (weak->m_object == this)
+                weak->m_object = nullptr;
         }
     }
 private:

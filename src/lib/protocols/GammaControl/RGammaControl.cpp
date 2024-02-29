@@ -28,7 +28,7 @@ RGammaControl::RGammaControl
     ),
     LPRIVATE_INIT_UNIQUE(RGammaControl)
 {
-    imp()->gOutput = gOutput;
+    imp()->gOutput.reset(gOutput);
     outputGlobal()->imp()->gammaControlResources.push_back(this);
 
     if (!outputGlobal()->output() || outputGlobal()->output()->gammaSize() == 0)
@@ -44,9 +44,9 @@ RGammaControl::~RGammaControl()
 
     for (LOutput *o : compositor()->outputs())
     {
-        if (o->imp()->gammaTable.m_gammaControlResource == this)
+        if (o->imp()->gammaTable.m_gammaControlResource.get() == this)
         {
-            o->imp()->gammaTable.m_gammaControlResource = nullptr;
+            o->imp()->gammaTable.m_gammaControlResource.reset();
             o->setGammaRequest(client(), nullptr);
         }
     }
@@ -54,7 +54,7 @@ RGammaControl::~RGammaControl()
 
 GOutput *RGammaControl::outputGlobal() const
 {
-    return imp()->gOutput;
+    return imp()->gOutput.get();
 }
 
 bool RGammaControl::gammaSize(UInt32 size)

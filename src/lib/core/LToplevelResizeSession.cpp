@@ -16,24 +16,23 @@ LToplevelResizeSession::~LToplevelResizeSession()
 
 void LToplevelResizeSession::handleGeometryChange()
 {
-    /*
-    if (!m_toplevel->resizing() && m_stopped)
-    {
-        return;
-    }
-
     if (!m_toplevel->resizing())
         return;
 
-    if (m_edge ==  LToplevelRole::Top || m_edge == LToplevelRole::TopLeft || m_edge == LToplevelRole::TopRight)
+    if (!m_isActive && m_lastSerial < m_toplevel->currentConfigureSerial())
+    {
+        m_lastSerial = 0;
+        return;
+    }
+
+    if (m_edge == LToplevelRole::Top || m_edge == LToplevelRole::TopLeft || m_edge == LToplevelRole::TopRight)
         m_toplevel->surface()->setY(m_initPos.y() + (m_initSize.h() - m_toplevel->windowGeometry().h()));
 
-    if (m_edge ==  LToplevelRole::Left || m_edge == LToplevelRole::TopLeft || m_edge == LToplevelRole::BottomLeft)
+    if (m_edge == LToplevelRole::Left || m_edge == LToplevelRole::TopLeft || m_edge == LToplevelRole::BottomLeft)
         m_toplevel->surface()->setX(m_initPos.x() + (m_initSize.w() - m_toplevel->windowGeometry().w()));
 
-    if (m_stopped)
+    if (!m_isActive)
         m_toplevel->configure(m_toplevel->pendingStates() & ~LToplevelRole::Resizing);
-    */
 }
 
 void LToplevelResizeSession::updateDragPoint(const LPoint &point)
@@ -80,8 +79,7 @@ void LToplevelResizeSession::updateDragPoint(const LPoint &point)
         newSize.setH(m_minSize.h());
 
     toplevel()->configure(newSize, LToplevelRole::Activated | LToplevelRole::Resizing);
-
-    // todo save serial
+    m_lastSerial = m_toplevel->pendingConfigureSerial();
 }
 
 bool LToplevelResizeSession::start(const LEvent &triggeringEvent, LToplevelRole::ResizeEdge edge, const LPoint &initDragPoint, const LSize &minSize, Int32 L, Int32 T, Int32 R, Int32 B)
@@ -89,6 +87,7 @@ bool LToplevelResizeSession::start(const LEvent &triggeringEvent, LToplevelRole:
     if (m_isActive)
         return false;
 
+    m_isActive = true;
     m_triggeringEvent.reset(triggeringEvent.copy());
     m_minSize = minSize;
     m_bounds = {L,T,R,B};
@@ -106,6 +105,7 @@ bool LToplevelResizeSession::start(const LEvent &triggeringEvent, LToplevelRole:
     m_initPos = m_toplevel->surface()->pos();
 
     m_toplevel->configure(m_toplevel->pendingStates() | LToplevelRole::Activated | LToplevelRole::Resizing);
+    m_lastSerial = m_toplevel->pendingConfigureSerial();
     seat()->imp()->resizeSessions.push_back(this);
     return true;
 }

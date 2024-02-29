@@ -96,12 +96,17 @@ void RXdgToplevel::RXdgToplevelPrivate::resize(wl_client *client, wl_resource *r
         return;
     }
 
-    RXdgToplevel *rXdgToplevel = (RXdgToplevel*)wl_resource_get_user_data(resource);
+    RXdgToplevel *rXdgToplevel { (RXdgToplevel*)wl_resource_get_user_data(resource) };
 
     if (!rXdgToplevel->toplevelRole()->surface()->toplevel())
         return;
 
-    rXdgToplevel->toplevelRole()->startResizeRequest((LToplevelRole::ResizeEdge)edges);
+    const LEvent *triggererEvent = rXdgToplevel->client()->findEventBySerial(serial);
+
+    if (!triggererEvent)
+        return;
+
+    rXdgToplevel->toplevelRole()->startResizeRequest(*triggererEvent, (LToplevelRole::ResizeEdge)edges);
 }
 
 void RXdgToplevel::RXdgToplevelPrivate::set_max_size(wl_client *client, wl_resource *resource, Int32 width, Int32 height)

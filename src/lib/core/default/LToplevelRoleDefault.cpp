@@ -43,21 +43,47 @@ void LToplevelRole::startMoveRequest(const LEvent &triggeringEvent)
         if (!touchPoint)
             return;
 
+        if (touchPoint->surface() != surface())
+            return;
+
         const LPoint initDragPoint = LTouch::toGlobal(cursor()->output(), touchPoint->pos());
 
         moveSession().start(triggeringEvent, initDragPoint);
     }
-    else
+    else if (surface()->hasPointerFocus())
         moveSession().start(triggeringEvent, cursor()->pos());
 }
 //! [startMoveRequest]
 
 //! [startResizeRequest]
-void LToplevelRole::startResizeRequest(ResizeEdge edge)
+void LToplevelRole::startResizeRequest(const LEvent &triggeringEvent, ResizeEdge edge)
 {
-    /* TODO
-    if (!fullscreen() && seat()->pointer()->focus() == surface())
-        seat()->pointer()->startResizingToplevel(this, edge, cursor()->pos()); */
+    if (fullscreen())
+        return;
+
+    if (triggeringEvent.type() == LEvent::Type::Touch)
+    {
+        if (triggeringEvent.subtype() != LEvent::Subtype::Down)
+            return;
+
+        if (!cursor()->output())
+            return;
+
+        auto touchDownEvent = (const LTouchDownEvent&)triggeringEvent;
+        auto touchPoint = seat()->touch()->findTouchPoint(touchDownEvent.id());
+
+        if (!touchPoint)
+            return;
+
+        if (touchPoint->surface() != surface())
+            return;
+
+        const LPoint initDragPoint = LTouch::toGlobal(cursor()->output(), touchPoint->pos());
+
+        resizeSession().start(triggeringEvent, edge, initDragPoint);
+    }
+    else if (surface()->hasPointerFocus())
+        resizeSession().start(triggeringEvent, edge, cursor()->pos());
 }
 //! [startResizeRequest]
 
@@ -96,8 +122,7 @@ void LToplevelRole::appIdChanged()
 //! [geometryChanged]
 void LToplevelRole::geometryChanged()
 {
-    if (resizing())
-        updateResizingPos();
+    /* No default implementation */
 }
 //! [geometryChanged]
 
@@ -220,16 +245,14 @@ void LToplevelRole::setMinimizedRequest()
 {
     surface()->setMinimized(true);
 
-    if (surface() == seat()->pointer()->focus())
+    if (surface()->hasPointerFocus())
         seat()->pointer()->setFocus(nullptr);
 
-    if (surface() == seat()->keyboard()->focus())
+    if (surface()->hasKeyboardFocus())
         seat()->keyboard()->setFocus(nullptr);
 
     moveSession().stop();
-
-    if (resizeSession())
-        resizeSession()->stop();
+    resizeSession().stop();
 }
 //! [setMinimizedRequest]
 

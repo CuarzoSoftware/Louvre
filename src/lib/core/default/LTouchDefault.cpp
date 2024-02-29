@@ -8,7 +8,7 @@
 #include <LTouchUpEvent.h>
 #include <LTouchFrameEvent.h>
 #include <LTouchCancelEvent.h>
-// TODO #include <LToplevelResizeSession.h>
+#include <LToplevelResizeSession.h>
 #include <LToplevelMoveSession.h>
 #include <LTouchPoint.h>
 #include <LCursor.h>
@@ -71,10 +71,9 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
         }
     }*/
 
-    /* TODO
-    bool activeResizing = false;
+    bool activeResizing { false };
 
-    for (LToplevelResizeSession *session : seat()->resizeSessions())
+    for (LToplevelResizeSession *session : seat()->toplevelResizeSessions())
     {
         if (session->triggeringEvent().type() == LEvent::Type::Touch && session->triggeringEvent().subtype() == LEvent::Subtype::Down)
         {
@@ -83,20 +82,19 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
             if (touchDownEvent.id() == tp->id())
             {
                 activeResizing = true;
-                session->setResizePointPos(globalPos);
+                session->updateDragPoint(globalPos);
                 session->toplevel()->surface()->repaintOutputs();
 
                 if (session->toplevel()->maximized())
-                    session->toplevel()->configure(session->toplevel()->pendingState() &~ LToplevelRole::Maximized);
+                    session->toplevel()->configure(session->toplevel()->pendingStates() &~ LToplevelRole::Maximized);
             }
         }
     }
 
     if (activeResizing)
         return;
-    */
 
-    bool activeMoving = false;
+    bool activeMoving { false };
 
     for (auto session : seat()->toplevelMoveSessions())
     {
@@ -119,10 +117,9 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
     if (activeMoving)
         return;
 
-    // Send the event
     if (tp->surface())
     {
-        event.localPos = globalPos -tp->surface()->rolePos();
+        event.localPos = globalPos - tp->surface()->rolePos();
         tp->sendMoveEvent(event);
     }
     else
@@ -146,17 +143,24 @@ void LTouch::touchUpEvent(const LTouchUpEvent &event)
         if (touchDownEvent.id() == tp->id())
             dnd->drop();
     }
+    */
 
     // Stop touch toplevel resizing sessions
-    for (std::list<LToplevelResizeSession*>::const_iterator it = seat()->resizeSessions().begin(); it != seat()->resizeSessions().end(); it++)
+    for (auto it = seat()->toplevelResizeSessions().begin(); it != seat()->toplevelResizeSessions().end();)
+    {
         if ((*it)->triggeringEvent().type() == LEvent::Type::Touch && (*it)->triggeringEvent().subtype() == LEvent::Subtype::Down)
         {
             LTouchDownEvent &downEvent = (LTouchDownEvent&)(*it)->triggeringEvent();
 
             if (downEvent.id() == tp->id())
+            {
                 it = (*it)->stop();
+                continue;
+            }
         }
-    */
+
+        it++;
+    }
 
     for (auto it = seat()->toplevelMoveSessions().begin(); it != seat()->toplevelMoveSessions().end();)
     {
@@ -186,13 +190,16 @@ void LTouch::touchFrameEvent(const LTouchFrameEvent &event)
 
 void LTouch::touchCancelEvent(const LTouchCancelEvent &event)
 {
-    /* TODO
     // Stop touch toplevel resizing sessions
-    for (std::list<LToplevelResizeSession*>::const_iterator it = seat()->resizeSessions().begin(); it != seat()->resizeSessions().end(); it++)
+    for (auto it = seat()->toplevelResizeSessions().begin(); it != seat()->toplevelResizeSessions().end();)
+    {
         if ((*it)->triggeringEvent().type() == LEvent::Type::Touch)
-                it = (*it)->stop();
-    */
+            it = (*it)->stop();
+        else
+            it++;
+    }
 
+    // Stop touch toplevel moving sessions
     for (auto it = seat()->toplevelMoveSessions().begin(); it != seat()->toplevelMoveSessions().end();)
     {
         if ((*it)->triggeringEvent().type() == LEvent::Type::Touch)

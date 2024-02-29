@@ -30,16 +30,13 @@ LToplevelRole::LToplevelRole(const void *params) :
     imp()->currentConf.commited = true;
     imp()->toplevel = this;
     imp()->moveSession.m_toplevel = this;
+    imp()->resizeSession.m_toplevel = this;
 }
 
 LToplevelRole::~LToplevelRole()
 {
     if (surface())
         surface()->imp()->setMapped(false);
-
-    // TODO
-    if (resizeSession())
-        resizeSession()->stop();
 
     if (seat()->activeToplevel() == this)
         seat()->imp()->activeToplevel = nullptr;
@@ -109,41 +106,7 @@ LToplevelMoveSession &LToplevelRole::moveSession() const
     return imp()->moveSession;
 }
 
-bool LToplevelRole::startResizeSession(const LEvent &triggeringEvent, ResizeEdge edge, const LPoint &resizePointPos, const LSize &minSize, Int32 L, Int32 T, Int32 R, Int32 B)
-{
-    if (resizeSession())
-    {
-        /* TODO
-        if (resizeSession()->m_stopped)
-            resizeSession()->destroy();
-        else
-            return false;*/
-    }
-
-    imp()->resizeSession = new LToplevelResizeSession();
-    imp()->resizeSession->m_toplevel = this;
-    imp()->resizeSession->m_triggeringEvent.reset(triggeringEvent.copy());
-    imp()->resizeSession->m_minSize = minSize;
-    imp()->resizeSession->m_bounds = {L,T,R,B};
-    imp()->resizeSession->m_edge = edge;
-    imp()->resizeSession->m_initSize = windowGeometry().size();
-    imp()->resizeSession->m_initDragPoint = resizePointPos;
-    imp()->resizeSession->m_currentDragPoint = resizePointPos;
-
-    if (L != EdgeDisabled && surface()->pos().x() < L)
-        surface()->setX(L);
-
-    if (T != EdgeDisabled && surface()->pos().y() < T)
-        surface()->setY(T);
-
-    imp()->resizeSession->m_initPos = surface()->pos();
-
-    configure(LToplevelRole::Activated | LToplevelRole::Resizing);
-    seat()->imp()->resizeSessions.push_back(imp()->resizeSession);
-    return true;
-}
-
-LToplevelResizeSession *LToplevelRole::resizeSession() const
+LToplevelResizeSession &LToplevelRole::resizeSession() const
 {
     return imp()->resizeSession;
 }
@@ -255,6 +218,7 @@ void LToplevelRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrig
     if (xdgSurfaceResource()->imp()->hasPendingWindowGeometry)
     {
         xdgSurfaceResource()->imp()->hasPendingWindowGeometry = false;
+        resizeSession().handleGeometryChange();
         geometryChanged();
     }
 
@@ -286,9 +250,7 @@ void LToplevelRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrig
         surface()->imp()->setParent(nullptr);
 
         moveSession().stop();
-
-        if (resizeSession())
-            resizeSession()->stop();
+        resizeSession().stop();
 
         if (seat()->activeToplevel() == this)
             seat()->imp()->activeToplevel = nullptr;
@@ -362,6 +324,16 @@ const LSize &LToplevelRole::minSize() const
 void LToplevelRole::configure(Int32 width, Int32 height, StateFlags flags)
 {
     imp()->configure(width, height, flags);
+}
+
+UInt32 LToplevelRole::pendingConfigureSerial() const
+{
+    return imp()->pendingSendConf.serial;
+}
+
+UInt32 LToplevelRole::currentConfigureSerial() const
+{
+    return imp()->currentConf.serial;
 }
 
 void LToplevelRole::close() const
@@ -445,19 +417,6 @@ LSize LToplevelRole::calculateResizeSize(const LPoint &cursorPosDelta, const LSi
     }
 
         return newSize;
-}
-
-void LToplevelRole::updateResizingPos()
-{
-    LSize s = imp()->resizingInitWindowSize;
-    LPoint p = imp()->resizingInitPos;
-    LToplevelRole::ResizeEdge edge =  imp()->resizingEdge;
-
-    if (edge ==  LToplevelRole::Top || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::TopRight)
-        surface()->setY(p.y() + (s.h() - windowGeometry().h()));
-
-    if (edge ==  LToplevelRole::Left || edge ==  LToplevelRole::TopLeft || edge ==  LToplevelRole::BottomLeft)
-        surface()->setX(p.x() + (s.w() - windowGeometry().w()));
 }
 
 static char *trim(char *s)

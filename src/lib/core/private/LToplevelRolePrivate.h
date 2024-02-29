@@ -8,6 +8,7 @@
 #include <private/LSeatPrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <LToplevelMoveSession.h>
+#include <LToplevelResizeSession.h>
 #include <LToplevelRole.h>
 #include <LCompositor.h>
 #include <LTime.h>
@@ -74,7 +75,7 @@ LSize resizingMinSize;
 LToplevelRole::ResizeEdge resizingEdge;
 LRect resizingConstraintBounds;
 
-LToplevelResizeSession *resizeSession { nullptr };
+LToplevelResizeSession resizeSession;
 LToplevelMoveSession moveSession;
 
 inline void applyPendingChanges()
@@ -124,6 +125,9 @@ inline void configure(Int32 width, Int32 height, StateFlags flags)
     if (height < 0)
         height = 0;
 
+    if (!hasConfToSend)
+        pendingSendConf.serial = LTime::nextSerial();
+
     hasConfToSend = true;
     pendingSendConf.size.setW(width);
     pendingSendConf.size.setH(height);
@@ -143,7 +147,6 @@ inline void sendConfiguration()
     toplevel->surface()->requestNextFrame(false);
 
     pendingSendConf.commited = false;
-    pendingSendConf.serial = LTime::nextSerial();
 
     if (forceRemoveActivatedFlag)
     {

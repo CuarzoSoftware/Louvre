@@ -168,6 +168,26 @@ public:
     void configure(Int32 width, Int32 height, StateFlags flags);
 
     /**
+     * @brief Retrieves the serial number of the last configure() method call.
+     *
+     * Returns the serial number for the configuration initiated by the configure() method,
+     * pending acknowledgment from the client. Use LClient::ping() and LClient::pong() to monitor
+     * and handle cases where the configure request is not acknowledged within a specified timeframe.
+     *
+     * @return The serial number of the pending configuration.
+     */
+    UInt32 pendingConfigureSerial() const;
+
+    /**
+     * @brief The last acknowledged configure serial.
+     *
+     * Returns the serial number of the most recent configure call that the client has acknowledged.
+     *
+     * @return The serial number of the last acknowledged configure call.
+     */
+    UInt32 currentConfigureSerial() const;
+
+    /**
      * @brief Closes the Toplevel.
      *
      * Requests to close the toplevel (equivalent to pressing the close button on the window).
@@ -210,15 +230,6 @@ public:
      * @returns The toplevel size given the current parameters
      */
     LSize calculateResizeSize(const LPoint &cursorPosDelta, const LSize &initialSize, ResizeEdge edge);
-
-    /**
-     * @brief Update the position of the toplevel during an interactive resizing session.
-     *
-     * This method should be called each time the toplevel size changes during a resizing session.
-     *
-     * @see See an example of its use in the default implementation of LToplevelRole::geometryChanged().
-     */
-    void updateResizingPos();
 
     /**
      * @brief Get the application ID associated with the toplevel window.
@@ -373,39 +384,8 @@ public:
 
     ///@{
 
-    /**
-     * @brief Start an interactive toplevel resizing session.
-     *
-     * This method starts an interactive resizing session on a toplevel surface from one of its edges or corners.\n
-     * You can restrict the space in which the surface expands by defining a rectangle given by the L, T, R, and B values.\n
-     * If you do not want to restrict an edge, assign its value to LPointer::EdgeDisabled.
-     *
-     * To update the position and size of the Toplevel, call updateResizingToplevelSize() when the pointer moves and
-     * updateResizingToplevelPos() when the toplevel size changes.\n
-     * Once finished, call stopResizingToplevel() to end the session.
-     *
-     * @note The session will automatically cease if the toplevel is destroyed.
-     *
-     * @see See an example of its use in LToplevelRole::startResizeRequest().
-     *
-     * @param toplevel Toplevel that will change size.
-     * @param edge Edge or corner from which the resizing will be performed.
-     * @param globalDragPoint Current move point position (cursor position, touch point position, etc). TODO
-     * @param minSize Minimum toplevel size.
-     * @param L Restriction of the left edge.
-     * @param T Restriction of the top edge.
-     * @param R Restriction of the right edge.
-     * @param B Restriction of the bottom edge.
-     */
-    bool startResizeSession(const LEvent &triggeringEvent,
-                            LToplevelRole::ResizeEdge edge,
-                            const LPoint &globalDragPoint,
-                            const LSize &minSize = LSize(0, 0),
-                            Int32 L = EdgeDisabled, Int32 T = EdgeDisabled,
-                            Int32 R = EdgeDisabled, Int32 B = EdgeDisabled);
-
     // TODO
-    LToplevelResizeSession *resizeSession() const;
+    LToplevelResizeSession &resizeSession() const;
 
     ///@}
 
@@ -447,10 +427,12 @@ public:
      *
      * @param edge Which edge or corner is being dragged.
      *
+     * TODO add params
+     *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp startResizeRequest
      */
-    virtual void startResizeRequest(ResizeEdge edge);
+    virtual void startResizeRequest(const LEvent &triggeringEvent, ResizeEdge edge);
 
     /**
      * @brief Resizing state change

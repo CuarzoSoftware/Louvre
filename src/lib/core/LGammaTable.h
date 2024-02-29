@@ -1,8 +1,10 @@
 #ifndef LGAMMATABLE_H
 #define LGAMMATABLE_H
 
+#include <protocols/GammaControl/RGammaControl.h>
 #include <LNamespaces.h>
 #include <string.h>
+#include <LWeak.h>
 
 /**
  * @brief Gamma correction table for outputs.
@@ -164,7 +166,7 @@ private:
     UInt16 *m_table {nullptr};
 
     // This is only set for tables created by a client and is not copied across tables
-    Protocols::GammaControl::RGammaControl *m_gammaControlResource {nullptr};
+    LWeak<Protocols::GammaControl::RGammaControl> m_gammaControlResource;
     /// @endcond OMIT
 };
 

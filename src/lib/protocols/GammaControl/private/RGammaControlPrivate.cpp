@@ -23,7 +23,7 @@ void RGammaControl::RGammaControlPrivate::set_gamma(wl_client *client, wl_resour
         return;
     }
 
-    LOutput *output { rGammaControl->outputGlobal()->output() };
+    LOutput &output { *rGammaControl->outputGlobal()->output() };
 
     const Int32 flags { fcntl(fd, F_GETFL, 0) };
 
@@ -41,8 +41,8 @@ void RGammaControl::RGammaControlPrivate::set_gamma(wl_client *client, wl_resour
         return;
     }
 
-    LGammaTable gammaTable {output->gammaSize()};
-    gammaTable.m_gammaControlResource = rGammaControl;
+    LGammaTable gammaTable {output.gammaSize()};
+    gammaTable.m_gammaControlResource.reset(rGammaControl);
 
     const ssize_t bytesToRead {(ssize_t) (gammaTable.size() * 3 * sizeof(UInt16)) };
     const ssize_t n { pread(fd, gammaTable.red(), bytesToRead, 0) };
@@ -63,8 +63,8 @@ void RGammaControl::RGammaControlPrivate::set_gamma(wl_client *client, wl_resour
 
     auto weakRef { rGammaControl->weakRef() };
 
-    output->setGammaRequest(rGammaControl->client(), &gammaTable);
+    output.setGammaRequest(rGammaControl->client(), &gammaTable);
 
-    if (!weakRef.get() && output->imp()->gammaTable.m_gammaControlResource != rGammaControl)
+    if (!weakRef.get() && output.imp()->gammaTable.m_gammaControlResource.get() != rGammaControl)
         rGammaControl->failed();
 }
