@@ -24,12 +24,18 @@ void LTouch::touchDownEvent(const LTouchDownEvent &event)
     if (surface)
     {
         event.localPos = globalPos - surface->rolePos();
-        seat()->keyboard()->setFocus(surface);
+
+        if (!seat()->keyboard()->focus() || !surface->isSubchildOf(seat()->keyboard()->focus()))
+            seat()->keyboard()->setFocus(surface);
+
         tp->sendDownEvent(event, surface);
         surface->raise();
     }
     else
+    {
         tp->sendDownEvent(event);
+        seat()->dismissPopups();
+    }
 }
 
 void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
@@ -41,35 +47,34 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
 
     const LPointF globalPos { toGlobal(cursor()->output(), event.pos()) };
 
-    /* TODO
     // Handle DND session
-    LDNDManager *dnd = seat()->dndManager();
+    LDNDManager &dnd { *seat()->dndManager() };
 
-    if (dnd->dragging() && dnd->triggererEvent().type() == LEvent::Type::Touch)
+    if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch && dnd.triggeringEvent().subtype() == LEvent::Subtype::Down)
     {
-        LTouchDownEvent &touchDownEvent = (LTouchDownEvent&)dnd->triggererEvent();
+        const auto &touchDownEvent = (const LTouchDownEvent&)dnd.triggeringEvent();
 
         if (touchDownEvent.id() == tp->id())
         {
-            if (dnd->icon())
+            if (dnd.icon())
             {
-                dnd->icon()->surface()->setPos(globalPos);
-                dnd->icon()->surface()->repaintOutputs();
+                dnd.icon()->surface()->setPos(globalPos);
+                dnd.icon()->surface()->repaintOutputs();
             }
 
-            LSurface *surface = surfaceAt(globalPos);
+            LSurface *surface { surfaceAt(globalPos) };
 
             if (surface)
             {
-                if (dnd->focus() == surface)
-                    dnd->sendMoveEvent(globalPos - surface->rolePos(), event.ms());
+                if (dnd.focus() == surface)
+                    dnd.sendMoveEvent(globalPos - surface->rolePos(), event.ms());
                 else
-                    dnd->setFocus(surface, globalPos - surface->rolePos());
+                    dnd.setFocus(surface, globalPos - surface->rolePos());
             }
             else
-                dnd->setFocus(nullptr, LPoint());
+                dnd.setFocus(nullptr, LPoint());
         }
-    }*/
+    }
 
     bool activeResizing { false };
 
@@ -133,17 +138,15 @@ void LTouch::touchUpEvent(const LTouchUpEvent &event)
     if (!tp)
         return;
 
-    /* TODO
-    LDNDManager *dnd = seat()->dndManager();
+    LDNDManager &dnd { *seat()->dndManager() };
 
-    if (dnd->dragging() && dnd->triggererEvent().type() == LEvent::Type::Touch)
+    if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch && dnd.triggeringEvent().subtype() == LEvent::Subtype::Down)
     {
-        LTouchDownEvent &touchDownEvent = (LTouchDownEvent&)dnd->triggererEvent();
+        const auto &touchDownEvent { (const LTouchDownEvent&)dnd.triggeringEvent() };
 
         if (touchDownEvent.id() == tp->id())
-            dnd->drop();
+            dnd.drop();
     }
-    */
 
     // Stop touch toplevel resizing sessions
     for (auto it = seat()->toplevelResizeSessions().begin(); it != seat()->toplevelResizeSessions().end();)
@@ -190,6 +193,11 @@ void LTouch::touchFrameEvent(const LTouchFrameEvent &event)
 
 void LTouch::touchCancelEvent(const LTouchCancelEvent &event)
 {
+    LDNDManager &dnd { *seat()->dndManager() };
+
+    if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch)
+        dnd.drop();
+
     // Stop touch toplevel resizing sessions
     for (auto it = seat()->toplevelResizeSessions().begin(); it != seat()->toplevelResizeSessions().end();)
     {

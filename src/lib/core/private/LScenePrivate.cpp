@@ -220,7 +220,7 @@ LPoint LScene::LScenePrivate::viewLocalPos(LView *view, const LPoint &pos)
         return pos - view->pos();
 }
 
-bool LScene::LScenePrivate::handlePointerButton(LView *view, LPointer::Button button, LPointer::ButtonState state)
+bool LScene::LScenePrivate::handlePointerButton(LView *view, LPointerButtonEvent::Button button, LPointerButtonEvent::State state)
 {
     if (listChanged)
         goto listChangedErr;

@@ -39,9 +39,6 @@ RKeyboard::RKeyboard
 
 RKeyboard::~RKeyboard()
 {
-    if (seat()->keyboard()->grabbingKeyboardResource() == this)
-        seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
-
     if (seatGlobal())
         LVectorRemoveOneUnordered(seatGlobal()->imp()->keyboardResources, this);
 }
@@ -53,12 +50,18 @@ GSeat *RKeyboard::seatGlobal() const
 
 bool RKeyboard::keymap(UInt32 format, Int32 fd, UInt32 size)
 {
+    if (destroyed())
+        return true;
+
     wl_keyboard_send_keymap(resource(), format, fd, size);
     return true;
 }
 
 bool RKeyboard::enter(const LKeyboardEnterEvent &event, RSurface *rSurface, wl_array *keys)
 {
+    if (destroyed() || rSurface->destroyed())
+        return true;
+
     auto &clientEvent = client()->imp()->events.keyboard.enter;
 
     if (clientEvent.serial() != event.serial())
@@ -70,6 +73,9 @@ bool RKeyboard::enter(const LKeyboardEnterEvent &event, RSurface *rSurface, wl_a
 
 bool RKeyboard::leave(const LKeyboardLeaveEvent &event, RSurface *rSurface)
 {
+    if (destroyed() || rSurface->destroyed())
+        return true;
+
     auto &clientEvent = client()->imp()->events.keyboard.leave;
 
     if (clientEvent.serial() != event.serial())
@@ -81,6 +87,9 @@ bool RKeyboard::leave(const LKeyboardLeaveEvent &event, RSurface *rSurface)
 
 bool RKeyboard::key(const LKeyboardKeyEvent &event)
 {
+    if (destroyed())
+        return true;
+
     auto &clientEvent = client()->imp()->events.keyboard.key;
 
     if (clientEvent.serial() != event.serial())
@@ -92,6 +101,9 @@ bool RKeyboard::key(const LKeyboardKeyEvent &event)
 
 bool RKeyboard::modifiers(const LKeyboardModifiersEvent &event)
 {
+    if (destroyed())
+        return true;
+
     auto &clientEvent = client()->imp()->events.keyboard.modifiers;
 
     if (clientEvent.serial() != event.serial())

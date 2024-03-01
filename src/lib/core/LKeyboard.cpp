@@ -4,6 +4,7 @@
 #include <private/LClientPrivate.h>
 #include <private/LDataDevicePrivate.h>
 #include <private/LKeyboardPrivate.h>
+#include <private/LSurfacePrivate.h>
 #include <LObject.h>
 #include <LCompositor.h>
 #include <LDNDManager.h>
@@ -58,26 +59,22 @@ LKeyboard::~LKeyboard()
     }
 }
 
-void LKeyboard::setGrabbingSurface(LSurface *surface, Wayland::RKeyboard *keyboardResource)
+void LKeyboard::setGrab(LSurface *surface)
 {
-    imp()->grabbingSurface = nullptr;
-    imp()->grabbingKeyboardResource = nullptr;
+    if (imp()->grab.get() == surface)
+        return;
 
-    if (surface)
-    {
-        imp()->grabbingSurface = surface;
-        imp()->grabbingKeyboardResource = keyboardResource;
-    }
+    if (imp()->focus.get() == surface)
+        imp()->focus.reset();
+
+    imp()->grab.reset();
+    setFocus(surface);
+    imp()->grab.reset(surface);
 }
 
-LSurface *LKeyboard::grabbingSurface() const
+LSurface *LKeyboard::grab() const
 {
-    return imp()->grabbingSurface;
-}
-
-RKeyboard *LKeyboard::grabbingKeyboardResource() const
-{
-    return imp()->grabbingKeyboardResource;
+    return imp()->grab.get();
 }
 
 const LKeyboardModifiersEvent::Modifiers &LKeyboard::modifiers() const
@@ -252,7 +249,7 @@ LSurface *LKeyboard::focus() const
 
 void LKeyboard::setFocus(LSurface *surface)
 {
-    if (grabbingSurface())
+    if (imp()->grab.get())
         return;
 
     if (surface)
@@ -318,16 +315,6 @@ void LKeyboard::sendKeyEvent(const LKeyboardKeyEvent &event)
 {
     if (!focus())
         return;
-
-    if (grabbingSurface())
-    {
-        grabbingKeyboardResource()->key(event);
-
-        if (imp()->modifiersChanged)
-            grabbingKeyboardResource()->modifiers(LKeyboardModifiersEvent(modifiers()));
-
-        return;
-    }
 
     const LKeyboardModifiersEvent modifiersEvent { modifiers() };
 

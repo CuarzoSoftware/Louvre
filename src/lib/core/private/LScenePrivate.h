@@ -30,7 +30,7 @@ LPRIVATE_CLASS(LScene)
     LPoint viewLocalPos(LView *view, const LPoint &pos);
     bool pointerIsOverView(LView *view, const LPoint &pos);
     bool handlePointerMove(LView *view, const LPoint &pos, LView **firstViewFound);
-    bool handlePointerButton(LView *view, LPointer::Button button, LPointer::ButtonState state);
+    bool handlePointerButton(LView *view, LPointerButtonEvent::Button button, LPointerButtonEvent::State state);
     bool handlePointerAxisEvent(LView *view, Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source);
     bool handleKeyModifiersEvent(LView *view, UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group);
     bool handleKeyEvent(LView *view, UInt32 keyCode, UInt32 keyState);

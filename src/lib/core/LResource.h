@@ -59,6 +59,12 @@ public:
      */
     void destroy();
 
+    // TODO
+    inline bool destroyed() const
+    {
+        return m_destroyed;
+    }
+
 protected:
 
     /**
@@ -118,6 +124,7 @@ protected:
 private:
     LClient *m_client;
     wl_resource *m_resource;
+    bool m_destroyed { false };
 };
 
 #endif // LRESOURCE_H

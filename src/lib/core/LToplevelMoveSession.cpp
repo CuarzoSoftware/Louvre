@@ -11,7 +11,7 @@ LToplevelMoveSession::LToplevelMoveSession() : m_triggeringEvent(std::make_uniqu
 LToplevelMoveSession::~LToplevelMoveSession()
 {
     if (m_isActive)
-        LVectorRemoveOneUnordered(seat()->imp()->moveSessions, this);
+        LVectorRemoveOneUnordered(LCompositor::compositor()->seat()->imp()->moveSessions, this);
 }
 
 bool LToplevelMoveSession::start(const LEvent &triggeringEvent, const LPoint &initDragPoint, Int32 L, Int32 T, Int32 R, Int32 B)
@@ -24,7 +24,7 @@ bool LToplevelMoveSession::start(const LEvent &triggeringEvent, const LPoint &in
     m_triggeringEvent.reset(triggeringEvent.copy());
     m_initPos = m_toplevel->surface()->pos();
     m_isActive = true;
-    seat()->imp()->moveSessions.push_back(this);
+    LCompositor::compositor()->seat()->imp()->moveSessions.push_back(this);
     return true;
 }
 
@@ -53,9 +53,11 @@ void LToplevelMoveSession::updateDragPoint(const LPoint &pos)
 const std::vector<LToplevelMoveSession*>::const_iterator LToplevelMoveSession::stop()
 {
     if (!m_isActive)
-        return seat()->imp()->moveSessions.end();
+        return LCompositor::compositor()->seat()->imp()->moveSessions.end();
 
     m_isActive = false;
-    auto it = std::find(seat()->imp()->moveSessions.begin(), seat()->imp()->moveSessions.end(), this);
-    return seat()->imp()->moveSessions.erase(it);
+    auto it = std::find(LCompositor::compositor()->seat()->imp()->moveSessions.begin(),
+                        LCompositor::compositor()->seat()->imp()->moveSessions.end(),
+                        this);
+    return LCompositor::compositor()->seat()->imp()->moveSessions.erase(it);
 }

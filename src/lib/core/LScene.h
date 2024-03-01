@@ -169,7 +169,7 @@ public:
      * @param button The button involved in the event.
      * @param state The state of the button (pressed or released).
      */
-    void handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonState state);
+    void handlePointerButtonEvent(LPointerButtonEvent::Button button, LPointerButtonEvent::State state);
 
     /**
      * @brief Handle pointer axis event.

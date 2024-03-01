@@ -153,6 +153,16 @@ LDataSource *LSeat::dataSelection() const
     return imp()->dataSelection;
 }
 
+void LSeat::dismissPopups()
+{
+    std::list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();
+    for (; s!= compositor()->surfaces().rend(); s++)
+    {
+        if ((*s)->popup())
+            (*s)->popup()->dismiss();
+    }
+}
+
 LDNDManager *LSeat::dndManager() const
 {
     return imp()->dndManager;

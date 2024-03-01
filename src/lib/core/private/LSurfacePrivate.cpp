@@ -494,14 +494,20 @@ bool LSurface::LSurfacePrivate::hasBufferOrPendingBuffer()
 
 void LSurface::LSurfacePrivate::setKeyboardGrabToParent()
 {
-    if (seat()->keyboard()->grabbingSurface() && surfaceResource->surface() == seat()->keyboard()->grabbingSurface() && surfaceResource->surface()->parent())
+    if (seat()->keyboard()->grab() == surfaceResource->surface())
     {
-        if (surfaceResource->surface()->parent()->popup())
-            seat()->keyboard()->setGrabbingSurface(surfaceResource->surface()->parent(), seat()->keyboard()->grabbingKeyboardResource());
-        else
+        if (surfaceResource->surface()->parent())
         {
-            seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
-            seat()->keyboard()->setFocus(surfaceResource->surface()->parent());
+            if (surfaceResource->surface()->parent()->popup())
+                seat()->keyboard()->setGrab(surfaceResource->surface()->parent());
+            else
+            {
+                seat()->keyboard()->imp()->grab = nullptr;
+                seat()->keyboard()->imp()->focus = nullptr;
+                seat()->keyboard()->setFocus(surfaceResource->surface()->parent());
+            }
         }
+        else
+            seat()->keyboard()->setGrab(nullptr);
     }
 }

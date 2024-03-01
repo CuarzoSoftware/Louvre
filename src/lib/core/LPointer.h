@@ -4,6 +4,7 @@
 #include <LObject.h>
 #include <LPoint.h>
 #include <LToplevelRole.h>
+#include <LPointerButtonEvent.h>
 #include <linux/input-event-codes.h>
 #include <limits>
 #include <vector>
@@ -30,54 +31,6 @@ public:
      * Configuration parameters provided in the virtual LCompositor::createPointerRequest() virtual constructor.
      */
     struct Params;
-
-    /**
-     * @brief Pointer buttons.
-     *
-     * Enumeration of common pointer buttons.
-     *
-     * You can find the complete list of pointer button codes in the [`<linux/input-event-codes.h>`](https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h) header.
-     */
-    enum Button : UInt32
-    {
-        /// Left button
-        Left = BTN_LEFT,
-
-        /// Right button
-        Right = BTN_RIGHT,
-
-        /// Middle button
-        Middle = BTN_MIDDLE,
-
-        /// Side button
-        Side = BTN_SIDE,
-
-        /// Extra button
-        Extra = BTN_EXTRA,
-
-        /// Forward button
-        Forward = BTN_FORWARD,
-
-        /// Back button
-        Back = BTN_BACK,
-
-        /// Task button
-        Task = BTN_TASK
-    };
-
-    /**
-     * @brief Pointer button states.
-     *
-     * Possible states of a pointer button.
-     */
-    enum ButtonState : UInt32
-    {
-        /// Button released
-        Released = 0,
-
-        /// Button pressed
-        Pressed = 1
-    };
 
     /**
      * @brief Source of a scroll event
@@ -220,15 +173,6 @@ public:
      */
     bool lastCursorRequestWasHide() const;
 
-    /**
-     * @brief Close all popups.
-     *
-     * This method closes all active Popup surfaces in reverse order of creation.
-     *
-     * @see LPopupRole::sendPopupDoneEvent()
-     */
-    void dismissPopups();
-
     // TODO
     void enableNaturalScrollingX(bool enabled);
     void enableNaturalScrollingY(bool enabled);
@@ -238,12 +182,12 @@ public:
     /**
      * @brief Vector of pressed buttons.
      */
-    const std::vector<Button> &pressedKeys() const;
+    const std::vector<LPointerButtonEvent::Button> &pressedKeys() const;
 
     /**
      * @brief Check if a button is pressed.
      */
-    bool isButtonPressed(Button button) const;
+    bool isButtonPressed(LPointerButtonEvent::Button button) const;
 
     /**
      * @name Client Events

@@ -30,7 +30,7 @@ LPRIVATE_CLASS(LPointer)
 
     LWeak<LSurface> focus;
     LWeak<LSurface> draggingSurface;
-    std::vector<Button> pressedButtons;
+    std::vector<LPointerButtonEvent::Button> pressedButtons;
     Float32 axisXprev;
     Float32 axisYprev;
     LCursorRole *lastCursorRequest = nullptr;

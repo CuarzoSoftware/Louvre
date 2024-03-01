@@ -775,7 +775,7 @@ public:
      * @param button The button that triggered the event (e.g., left button, right button, etc.).
      * @param state The state of the button (e.g., pressed, released, etc.).
      */
-    virtual void pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state);
+    virtual void pointerButtonEvent(LPointerButtonEvent::Button button, LPointerButtonEvent::State state);
 
     /**
      * @brief Handle the pointer axis event within the view.

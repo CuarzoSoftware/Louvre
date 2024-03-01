@@ -3,7 +3,7 @@
 
 #include <LToplevelRole.h>
 
-class Louvre::LToplevelMoveSession : public LObject
+class Louvre::LToplevelMoveSession
 {
 public:
 

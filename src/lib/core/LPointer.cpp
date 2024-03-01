@@ -339,16 +339,6 @@ void LPointer::setDraggingSurface(LSurface *surface)
         imp()->draggingSurface.reset();
 }
 
-void LPointer::dismissPopups()
-{
-    std::list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();
-    for (; s!= compositor()->surfaces().rend(); s++)
-    {
-        if ((*s)->popup())
-            (*s)->popup()->dismiss();
-    }
-}
-
 void LPointer::enableNaturalScrollingX(bool enabled)
 {
     imp()->state.setFlag(LPointerPrivate::NaturalScrollX, enabled);
@@ -369,18 +359,16 @@ bool LPointer::naturalScrollingYEnabled() const
     return imp()->state.check(LPointerPrivate::NaturalScrollY);
 }
 
-const std::vector<LPointer::Button> &LPointer::pressedKeys() const
+const std::vector<LPointerButtonEvent::Button> &LPointer::pressedKeys() const
 {
     return imp()->pressedButtons;
 }
 
-bool LPointer::isButtonPressed(Button button) const
+bool LPointer::isButtonPressed(LPointerButtonEvent::Button button) const
 {
-    for (Button btn : imp()->pressedButtons)
-    {
+    for (auto btn : imp()->pressedButtons)
         if (btn == button)
             return true;
-    }
     return false;
 }
 

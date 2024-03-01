@@ -211,6 +211,15 @@ public:
      */
     LDataSource *dataSelection() const;
 
+    /**
+     * @brief Close all popups.
+     *
+     * This method closes all active Popup surfaces in reverse order of creation.
+     *
+     * @see LPopupRole::dismiss()
+     */
+    void dismissPopups();
+
 /// @name Session
 /// @{
     /**

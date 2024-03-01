@@ -33,47 +33,57 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
                                                  UInt32 serial)
 {
     L_UNUSED(client);
-    L_UNUSED(serial);
 
-    RDataSource *rDataSource = nullptr;
-    RDataDevice *rDataDevice = (RDataDevice*)wl_resource_get_user_data(resource);
-    RSurface *rOriginSurface = (RSurface*)wl_resource_get_user_data(origin);
-    LSurface *lOriginSurface = rOriginSurface->surface();
-    LDNDManager *dndManager = seat()->dndManager();
+    RDataSource *rDataSource { nullptr };
+    RDataDevice *rDataDevice { (RDataDevice*)wl_resource_get_user_data(resource) };
+    RSurface *rOriginSurface { (RSurface*)wl_resource_get_user_data(origin) };
+    LDNDManager &dndManager { *seat()->dndManager() };
 
     if (source)
         rDataSource = (RDataSource*)wl_resource_get_user_data(source);
 
-    // Cancel if there is dragging going on or if there is no focused surface from this client
-    if (dndManager->dragging() || seat()->pointer()->focus() != lOriginSurface)
+    // Cancel if already dragging
+    if (dndManager.dragging())
     {
         if (rDataSource)
             rDataSource->cancelled();
-
-        LLog::debug("[RDataDevicePrivate::start_drag] Invalid start drag request. Ignoring it.");
         return;
     }
 
-    seat()->pointer()->setDraggingSurface(nullptr);
-    dndManager->imp()->dropped = false;
+    const LEvent *event { rDataDevice->client()->findEventBySerial(serial) };
+
+    if (!event)
+    {
+        LLog::warning("[RDataDevicePrivate::start_drag] Start drag & drop request without serial match. Ignoring it.");
+
+        if (rDataSource)
+            rDataSource->cancelled();
+
+        return;
+    }
+
+    dndManager.imp()->dropped = false;
 
     // Removes pevious data source if any
-    dndManager->cancel();
+    dndManager.cancel();
+
+    dndManager.imp()->triggeringEvent.reset(event->copy());
 
     // Check if there is an icon
     if (icon)
     {
-        RSurface *rSurface = (RSurface*)wl_resource_get_user_data(icon);
-        LSurface *lIcon = rSurface->surface();
+        RSurface *rSurface { (RSurface*)wl_resource_get_user_data(icon) };
+        LSurface *lIcon { rSurface->surface() };
 
         if (lIcon->imp()->pending.role || (lIcon->roleId() != LSurface::Role::Undefined && lIcon->roleId() != LSurface::Role::DNDIcon))
         {
+            dndManager.cancel();
             wl_resource_post_error(resource, WL_DATA_DEVICE_ERROR_ROLE, "Given wl_surface has another role.");
             return;
         }
 
         // Retry if the compositor surfaces list changes
-        retry:
+    retry:
         compositor()->imp()->surfacesListChanged = false;
         for (LSurface *s : compositor()->surfaces())
             if (s->dndIcon())
@@ -89,38 +99,34 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
         lIcon->imp()->setPendingRole(compositor()->createDNDIconRoleRequest(&dndIconRoleParams));
         lIcon->imp()->applyPendingRole();
         lIcon->imp()->stateFlags.add(LSurface::LSurfacePrivate::Mapped);
-        dndManager->imp()->icon = lIcon->dndIcon();
+        dndManager.imp()->icon = lIcon->dndIcon();
     }
     else
-        dndManager->imp()->icon = nullptr;
+        dndManager.imp()->icon = nullptr;
 
-    dndManager->imp()->origin = lOriginSurface;
+    dndManager.imp()->origin = rOriginSurface->surface();
 
     // If source is null all drag events are sent only to the origin surface
     if (source)
     {
-        RDataSource *rDataSource = (RDataSource*)wl_resource_get_user_data(source);
+        RDataSource *rDataSource { (RDataSource*)wl_resource_get_user_data(source) };
 
         // Check if DND action was set
         if (rDataSource->version() >= 3 && rDataSource->dataSource()->dndActions() == LOUVRE_DND_NO_ACTION_SET)
         {
-            dndManager->cancel();
+            dndManager.cancel();
             return;
         }
 
-        dndManager->imp()->source = rDataSource->dataSource();
+        dndManager.imp()->source = rDataSource->dataSource();
     }
     else
-        dndManager->imp()->source = nullptr;
+        dndManager.imp()->source = nullptr;
 
-    dndManager->imp()->srcDataDevice = rDataDevice;
+    dndManager.imp()->srcDataDevice = rDataDevice;
 
     // Notify
-    dndManager->startDragRequest();
-
-    if (dndManager->imp()->origin && seat()->pointer()->focus())
-        seat()->pointer()->focus()->client()->dataDevice().imp()->sendDNDEnterEventS(
-            seat()->pointer()->focus(), 0, 0);
+    dndManager.startDragRequest();
 }
 
 void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resource *resource, wl_resource *source, UInt32 serial)

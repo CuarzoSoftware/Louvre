@@ -51,6 +51,22 @@ RXdgPopup::RXdgPopup
 
 RXdgPopup::~RXdgPopup()
 {
+    if (popupRole()->surface())
+    {
+        for (LSurface *child : popupRole()->surface()->children())
+        {
+            if (child->popup() && child->mapped())
+            {
+                wl_resource_post_error(
+                    xdgSurfaceResource()->resource(),
+                    XDG_WM_BASE_ERROR_NOT_THE_TOPMOST_POPUP,
+                    "The client tried to map or destroy a non-topmost popup.");
+            }
+        }
+
+        popupRole()->surface()->imp()->setKeyboardGrabToParent();
+    }
+
     compositor()->destroyPopupRoleRequest(imp()->lPopupRole);
 
     if (xdgSurfaceResource())

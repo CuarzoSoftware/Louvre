@@ -77,6 +77,8 @@ public:
     /**
      * @brief Set the surface that grabs keyboard events.
      *
+     * TODO: Update doc
+     *
      * This method redirects all keyboard events to the given surface, preventing other surfaces from gain focus with setFocus().\n
      * If the surface grabbing the keyboard is destroyed the grab is automatically assigned to its parent.\n
      * For example, an LPopupRole can request to make a keyboard grab with LPopupRole::grabSeatRequest().
@@ -86,7 +88,7 @@ public:
      * @param surface The surface that will grab the keyboard events or `nullptr` to disable it.
      * @param keyboardResource The specific `wl_keyboard` resource created by the client to which events must be sent.
      */
-    void setGrabbingSurface(LSurface* surface, Protocols::Wayland::RKeyboard* keyboardResource);
+    void setGrab(LSurface* surface);
 
     /**
      * @brief Get the current surface that is grabbing the keyboard events.
@@ -96,17 +98,7 @@ public:
      *
      * @returns The surface that is grabbing keyboard events, or `nullptr` if no grab is active.
      */
-    LSurface* grabbingSurface() const;
-
-    /**
-     * @brief Get the current `wl_keyboard` resource used during the keyboard grab.
-     *
-     * This method returns the `wl_keyboard` resource to which keyboard events are sent during the grab.
-     * If no grab is active, it returns `nullptr`.
-     *
-     * @returns The `wl_keyboard` resource used during the keyboard grab, or `nullptr` if no grab is active.
-     */
-    Protocols::Wayland::RKeyboard* grabbingKeyboardResource() const;
+    LSurface* grab() const;
 
     /**
      * @brief Current keyboard modifiers state.

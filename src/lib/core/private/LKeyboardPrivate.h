@@ -41,8 +41,7 @@ LPRIVATE_CLASS(LKeyboard)
     Int32 repeatDelay   { 500 };
 
     // Grab
-    LSurface *grabbingSurface { nullptr };
-    Wayland::RKeyboard *grabbingKeyboardResource { nullptr };
+    LWeak<LSurface> grab;
 };
 
 #endif // LKEYBOARDPRIVATE_H

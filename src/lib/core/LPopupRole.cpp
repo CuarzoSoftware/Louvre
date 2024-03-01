@@ -61,7 +61,7 @@ void LPopupRole::dismiss()
     std::list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();
     for (; s!= compositor()->surfaces().rend(); s++)
     {
-        if ((*s)->popup() && (*s)->client() == surface()->client())
+        if ((*s)->popup() && ((*s)->isSubchildOf(surface()) || *s == surface() ))
         {
             if (!imp()->dismissed)
             {

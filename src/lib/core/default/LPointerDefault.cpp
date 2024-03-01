@@ -20,26 +20,21 @@ using namespace Louvre;
 //! [pointerMoveEvent]
 void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
 {
-    // TODO
-
     // Update the cursor position
     cursor()->move(event.delta().x(), event.delta().y());
 
     // Schedule repaint on outputs that intersect with the cursor if hardware composition is not supported.
     cursor()->repaintOutputs(true);
 
-    /*
-
-    bool activeDND = seat()->dndManager()->dragging() && seat()->dndManager()->triggererEvent().type() != LEvent::Type::Touch;
+    bool activeDND { seat()->dndManager()->dragging() && seat()->dndManager()->triggeringEvent().type() != LEvent::Type::Touch };
 
     if (seat()->dndManager()->icon() && activeDND)
     {
         seat()->dndManager()->icon()->surface()->setPos(cursor()->pos());
         seat()->dndManager()->icon()->surface()->repaintOutputs();
     }
-    */
 
-    bool activeResizing = false;
+    bool activeResizing { false };
 
     for (LToplevelResizeSession *session : seat()->toplevelResizeSessions())
     {
@@ -80,7 +75,7 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
     }
 
     // Find the first surface under the cursor
-    LSurface *surface = surfaceAt(cursor()->pos());
+    LSurface *surface { surfaceAt(cursor()->pos()) };
 
     if (surface)
     {
@@ -91,7 +86,6 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
         else
             setFocus(surface, event.localPos);
 
-                    /*
         if (activeDND)
         {
             if (seat()->dndManager()->focus() == surface)
@@ -99,14 +93,13 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
             else
                 seat()->dndManager()->setFocus(surface, event.localPos);
         }
-*/
     }
     else
     {
         setFocus(nullptr);
 
-        //if (activeDND)
-            //seat()->dndManager()->setFocus(nullptr, LPointF());
+        if (activeDND)
+            seat()->dndManager()->setFocus(nullptr, LPointF());
 
         cursor()->useDefault();
         cursor()->setVisible(true);
@@ -117,16 +110,19 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
 //! [pointerButtonEvent]
 void LPointer::pointerButtonEvent(const LPointerButtonEvent &event)
 {
-    // TODO
+    const bool activeDND { seat()->dndManager()->dragging() && seat()->dndManager()->triggeringEvent().type() != LEvent::Type::Touch };
 
-    //bool activeDND = seat()->dndManager()->dragging() && seat()->dndManager()->triggererEvent().type() != LEvent::Type::Touch;
-
-    //if (activeDND && event.state() == LPointerButtonEvent::Released && event.button() == LPointerButtonEvent::Left)
-    //    seat()->dndManager()->drop();
+    if (activeDND && event.state() == LPointerButtonEvent::Released && event.button() == LPointerButtonEvent::Left)
+    {
+        seat()->dndManager()->drop();
+        seat()->keyboard()->setFocus(nullptr);
+        setFocus(nullptr);
+        setDraggingSurface(nullptr);
+    }
 
     if (!focus())
     {
-        LSurface *surface = surfaceAt(cursor()->pos());
+        LSurface *surface { surfaceAt(cursor()->pos()) };
 
         if (surface)
         {
@@ -135,21 +131,22 @@ void LPointer::pointerButtonEvent(const LPointerButtonEvent &event)
             sendButtonEvent(event);
 
             if (!surface->popup())
-                dismissPopups();
+                seat()->dismissPopups();
         }
         else
         {
             seat()->keyboard()->setFocus(nullptr);
-            dismissPopups();
+            seat()->dismissPopups();
         }
 
         return;
     }
 
-    sendButtonEvent(event);
-
     if (event.button() != LPointerButtonEvent::Left)
+    {
+        sendButtonEvent(event);
         return;
+    }
 
     // Left button pressed
     if (event.state() == LPointerButtonEvent::Pressed)
@@ -165,7 +162,9 @@ void LPointer::pointerButtonEvent(const LPointerButtonEvent &event)
             focus()->toplevel()->configure(focus()->toplevel()->pendingStates() | LToplevelRole::Activated);
 
         if (!focus()->popup())
-            dismissPopups();
+            seat()->dismissPopups();
+
+        sendButtonEvent(event);
 
         if (focus() == compositor()->surfaces().back())
             return;
@@ -178,6 +177,8 @@ void LPointer::pointerButtonEvent(const LPointerButtonEvent &event)
     // Left button released
     else
     {
+        sendButtonEvent(event);
+
         // Stop pointer toplevel resizing sessions
         for (auto it = seat()->toplevelResizeSessions().begin(); it != seat()->toplevelResizeSessions().end();)
         {

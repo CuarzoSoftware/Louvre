@@ -147,6 +147,7 @@ public:
     /**
      * @brief Request to initiate a keyboard grab.
      *
+     * TODO Update doc
      * This virtual method is triggered when the client requests to initiate a keyboard grab for this popup.\n
      * Override this virtual method if you need to be notified when such a grab request occurs.
      *
@@ -154,11 +155,11 @@ public:
      *       Additionally, if the surface undergoing the grab is destroyed, then the keyboard grab is transferred to its parent surface.
      *
      * #### Default Implementation
-     * @snippet LPopupRoleDefault.cpp grabSeatRequest
+     * @snippet LPopupRoleDefault.cpp grabKeyboardRequest
      *
      * @param seatGlobal A pointer to the client Wayland seat resource associated with the grab request.
      */
-    virtual void grabSeatRequest(Protocols::Wayland::GSeat *seatGlobal);
+    virtual void grabKeyboardRequest(const LEvent &triggeringEvent);
 
     /**
      * @brief Handle configuration requests for the popup.

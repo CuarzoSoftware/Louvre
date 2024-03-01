@@ -2,6 +2,9 @@
 #include <private/LPopupRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LBaseSurfaceRolePrivate.h>
+#include <LTouchDownEvent.h>
+#include <LTouchPoint.h>
+#include <LTouch.h>
 #include <LPositioner.h>
 #include <LSeat.h>
 #include <LKeyboard.h>
@@ -470,14 +473,43 @@ const LPoint &LPopupRole::rolePos() const
 }
 //! [rolePos]
 
-//! [grabSeatRequest]
-void LPopupRole::grabSeatRequest(Wayland::GSeat *seatGlobal)
+//! [grabKeyboardRequest]
+void LPopupRole::grabKeyboardRequest(const LEvent &triggeringEvent)
 {
-    /* The grabSeatRequest() is only triggered if the request has been
-     * originated from some client event, such as a pointer click or key press*/
-    //seat()->keyboard()->setGrabbingSurface(surface(), seatGlobal->keyboardResource());
+    if (triggeringEvent.type() == LEvent::Type::Pointer)
+    {
+        if (!seat()->pointer()->focus())
+            return;
+
+        if (seat()->pointer()->focus()->client() != surface()->client())
+            return;
+    }
+    else if (triggeringEvent.type() == LEvent::Type::Keyboard)
+    {
+        if (!seat()->keyboard()->focus())
+            return;
+
+        if (seat()->keyboard()->focus()->client() != surface()->client())
+            return;
+    }
+    else if (triggeringEvent.type() == LEvent::Type::Touch)
+    {
+        if (triggeringEvent.subtype() != LEvent::Subtype::Down)
+            return;
+
+        const auto &touchDownEvent { (const LTouchDownEvent &)triggeringEvent };
+        const auto *touchPoint { seat()->touch()->findTouchPoint(touchDownEvent.id()) };
+
+        if (!touchPoint->surface())
+            return;
+
+        if (touchPoint->surface()->client() != surface()->client())
+            return;
+    }
+
+    seat()->keyboard()->setGrab(surface());
 }
-//! [grabSeatRequest]
+//! [grabKeyboardRequest]
 
 //! [configureRequest]
 void LPopupRole::configureRequest()
@@ -487,7 +519,7 @@ void LPopupRole::configureRequest()
 
     // Calculate the relative position of the Popup with respect to its parent position,
     // calling rolePos() also determines LPositioner::unconstrainedSize().
-    LPoint relativePosition = rolePos() - surface()->parent()->pos();
+    const LPoint relativePosition { rolePos() - surface()->parent()->pos() };
 
     // Configure the Popup using the calculated relative position and unconstrained size.
     configure(LRect(relativePosition, positioner().unconstrainedSize()));

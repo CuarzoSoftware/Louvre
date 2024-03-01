@@ -3,7 +3,7 @@
 
 #include <LToplevelRole.h>
 
-class Louvre::LToplevelResizeSession : public LObject
+class Louvre::LToplevelResizeSession
 {
 public:
     // TODO: add doc

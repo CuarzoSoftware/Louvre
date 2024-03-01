@@ -11,7 +11,7 @@ LToplevelResizeSession::LToplevelResizeSession() : m_triggeringEvent(std::make_u
 LToplevelResizeSession::~LToplevelResizeSession()
 {
     if (m_isActive)
-        LVectorRemoveOneUnordered(seat()->imp()->resizeSessions, this);
+        LVectorRemoveOneUnordered(LCompositor::compositor()->seat()->imp()->resizeSessions, this);
 }
 
 void LToplevelResizeSession::handleGeometryChange()
@@ -106,17 +106,17 @@ bool LToplevelResizeSession::start(const LEvent &triggeringEvent, LToplevelRole:
 
     m_toplevel->configure(m_toplevel->pendingStates() | LToplevelRole::Activated | LToplevelRole::Resizing);
     m_lastSerial = m_toplevel->pendingConfigureSerial();
-    seat()->imp()->resizeSessions.push_back(this);
+    LCompositor::compositor()->seat()->imp()->resizeSessions.push_back(this);
     return true;
 }
 
 const std::vector<LToplevelResizeSession*>::const_iterator LToplevelResizeSession::stop()
 {
     if (!m_isActive)
-        return seat()->imp()->resizeSessions.begin();
+        return LCompositor::compositor()->seat()->imp()->resizeSessions.begin();
 
     m_isActive = false;
     toplevel()->configure(toplevel()->pendingStates() & ~LToplevelRole::Resizing);
-    auto it = std::find(seat()->imp()->resizeSessions.begin(), seat()->imp()->resizeSessions.end(), this);
-    return seat()->imp()->resizeSessions.erase(it);
+    auto it = std::find(LCompositor::compositor()->seat()->imp()->resizeSessions.begin(), LCompositor::compositor()->seat()->imp()->resizeSessions.end(), this);
+    return LCompositor::compositor()->seat()->imp()->resizeSessions.erase(it);
 }

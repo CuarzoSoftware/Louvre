@@ -3,6 +3,7 @@
 
 #include <LObject.h>
 
+// TODO: add doc
 class Louvre::LEvent
 {
 public:
@@ -36,6 +37,8 @@ public:
         HoldBegin,
         HoldEnd
     };
+
+    virtual ~LEvent() = default;
 
     inline Type type() const
     {

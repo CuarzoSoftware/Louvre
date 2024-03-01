@@ -487,7 +487,7 @@ void LView::pointerLeaveEvent()
 {
 }
 
-void LView::pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state)
+void LView::pointerButtonEvent(LPointerButtonEvent::Button button, LPointerButtonEvent::State state)
 {
     L_UNUSED(button);
     L_UNUSED(state);
