@@ -7,6 +7,7 @@ Welcome to the list of compositors using Louvre. If you'd like to showcase your 
 * [Crystals](https://github.com/CuarzoSoftware/Crystals) : A floating window manager for CuarzoOS (Work in Progress).
 * [Gogh](https://github.com/xTrayambak/gogh) : A minimal Wayland compositor (Work in Progress).
 * [Jorge](https://github.com/diego-est/jorge) : A Louvre Wayland compositor (Work in Progress).
+* [Lawz](https://github.com/aman333nolawz/Lawz) : A little Wayland compositor (Work in Progress).
 * [Louvre Views](https://cuarzosoftware.github.io/Louvre/md_md__examples.html#views) : Example compositor resembling macOS aesthetics.
 * [Louvre Weston Clone](https://cuarzosoftware.github.io/Louvre/md_md__examples.html#weston) : Example compositor mimicking Weston.
 
