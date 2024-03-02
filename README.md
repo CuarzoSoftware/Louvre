@@ -10,6 +10,7 @@ Welcome to the list of compositors using Louvre. If you'd like to showcase your 
 * [Lawz](https://github.com/aman333nolawz/Lawz) : A little Wayland compositor (Work in Progress).
 * [Louvre Views](https://cuarzosoftware.github.io/Louvre/md_md__examples.html#views) : Example compositor resembling macOS aesthetics.
 * [Louvre Weston Clone](https://cuarzosoftware.github.io/Louvre/md_md__examples.html#weston) : Example compositor mimicking Weston.
+* [Womp](https://github.com/diego-est/womp) : A glorified Kiosk Wayland compositor.
 
 ## Add Your Compositor
 
