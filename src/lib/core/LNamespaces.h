@@ -185,6 +185,7 @@ namespace Louvre
     class LKeyboard;
     class LTouch;
     class LCursor;
+    class LClientCursor;
     class LXCursor;
     class LInputDevice;
     class LEvent;
@@ -461,7 +462,8 @@ namespace Louvre
     class PrivateUtils
     {
     public:
-        static std::vector<void *> &getObjectData(const LObject *object);
+        static std::vector<void *> &getObjectData(const LObject *object) noexcept;
+        static bool isObjectDestroyed(const LObject *object) noexcept;
     };
 
     namespace Protocols

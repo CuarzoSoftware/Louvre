@@ -29,16 +29,6 @@ LPointer::LPointer(const void *params) : LPRIVATE_INIT_UNIQUE(LPointer)
 
 LPointer::~LPointer() {}
 
-LCursorRole *LPointer::lastCursorRequest() const
-{
-    return imp()->lastCursorRequest;
-}
-
-bool LPointer::lastCursorRequestWasHide() const
-{
-    return imp()->state.check(S::LastCursorRequestWasHide);
-}
-
 void LPointer::setFocus(LSurface *surface)
 {
     if (surface)
@@ -400,7 +390,7 @@ LSurface *LPointer::focus() const
     return imp()->focus.get();
 }
 
-void LPointer::LPointerPrivate::sendLeaveEvent(LSurface *surface)
+void LPointer::LPointerPrivate::sendLeaveEvent(LSurface *surface) noexcept
 {
     if (!surface)
         return;

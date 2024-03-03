@@ -73,6 +73,10 @@ public:
      */
     void setTextureB(const LTexture *texture, const LPointF &hotspot);
 
+    // TODO
+    void setCursor(const LClientCursor &clientCursor) noexcept;
+    const LClientCursor *clientCursor() const noexcept;
+
     /**
      * @brief Get the current cursor texture.
      */

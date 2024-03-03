@@ -105,9 +105,6 @@ RSurface::~RSurface()
             tp->imp()->surface = nullptr;
         }
 
-    if (seat()->pointer()->imp()->lastCursorRequest == lSurface->cursorRole())
-        seat()->pointer()->imp()->lastCursorRequest = nullptr;
-
     // Clear active toplevel focus
     if (seat()->imp()->activeToplevel == lSurface->toplevel())
         seat()->imp()->activeToplevel = nullptr;

@@ -3,6 +3,7 @@
 
 #include <LClient.h>
 #include <LDataDevice.h>
+#include <LClientCursor.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols;
@@ -12,12 +13,22 @@ struct LClient::Params
     wl_client *client;
 };
 
-LPRIVATE_CLASS(LClient)
+class LClient::LClientPrivate
+{
+public:
+    LClientPrivate(LClient *lClient, wl_client *wlClient) noexcept :
+        client {wlClient},
+        lastCursorRequest {lClient}
+    {}
+    ~LClientPrivate() noexcept = default;
+    LClientPrivate(const LClientPrivate&) = delete;
+    LClientPrivate &operator=(const LClientPrivate&) = delete;
 
-    wl_client *client { nullptr };
+    wl_client *client;
     LDataDevice dataDevice;
     std::vector<LSurface*> surfaces;
     Events events;
+    LClientCursor lastCursorRequest;
 
     // Globals
     std::vector<Wayland::GCompositor*> compositorGlobals;

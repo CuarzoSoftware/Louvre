@@ -153,26 +153,6 @@ public:
      */
     LSurface *surfaceAt(const LPoint &point);
 
-    /**
-     * @brief Retrieve the last LCursorRole provided in the most recent setCursorRequest() call.
-     *
-     * If the cursor role has been destroyed or if a client has requested to hide the cursor, this method returns `nullptr`.
-     *
-     * @return A pointer to the last LCursorRole, or `nullptr` if the cursor role has been destroyed or the client requested to hide the cursor.
-     *
-     * @note To distinguish whether the last cursor was destroyed or the request was to hide it, use the lastCursorRequestWasHide() method.
-     */
-    LCursorRole *lastCursorRequest() const;
-
-    /**
-     * @brief Determine if the intention of the most recent setCursorRequest() was to hide the cursor.
-     *
-     * This method returns `true` if the most recent setCursorRequest() was intended to hide the cursor; otherwise, it returns `false`.
-     *
-     * @return `true` if the last cursor request was to hide the cursor; otherwise, `false`.
-     */
-    bool lastCursorRequestWasHide() const;
-
     // TODO
     void enableNaturalScrollingX(bool enabled);
     void enableNaturalScrollingY(bool enabled);
@@ -300,7 +280,7 @@ public:
      * #### Default Implementation
      * @snippet LPointerDefault.cpp setCursorRequest
      */
-    virtual void setCursorRequest(LCursorRole *cursorRole);
+    virtual void setCursorRequest(const LClientCursor &clientCursor);
 
     // TODO
     virtual void pointerSwipeBeginEvent(const LPointerSwipeBeginEvent &event);

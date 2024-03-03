@@ -16,24 +16,21 @@ LPRIVATE_CLASS(LPointer)
 
     enum StateFlags
     {
-        LastCursorRequestWasHide = 1 << 0,
-        NaturalScrollX           = 1 << 1,
-        NaturalScrollY           = 1 << 2,
-        PendingSwipeEndEvent     = 1 << 3,
-        PendingPinchEndEvent     = 1 << 4,
-        PendingHoldEndEvent      = 1 << 5
+        NaturalScrollX           = 1 << 0,
+        NaturalScrollY           = 1 << 1,
+        PendingSwipeEndEvent     = 1 << 2,
+        PendingPinchEndEvent     = 1 << 3,
+        PendingHoldEndEvent      = 1 << 4
     };
 
+    void sendLeaveEvent(LSurface *surface) noexcept;
+
     LBitset<StateFlags> state { NaturalScrollX | NaturalScrollY };
-
-    void sendLeaveEvent(LSurface *surface);
-
     LWeak<LSurface> focus;
     LWeak<LSurface> draggingSurface;
     std::vector<LPointerButtonEvent::Button> pressedButtons;
     Float32 axisXprev;
     Float32 axisYprev;
-    LCursorRole *lastCursorRequest = nullptr;
 };
 
 #endif // LPOINTERPRIVATE_H

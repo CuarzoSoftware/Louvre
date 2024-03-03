@@ -87,6 +87,8 @@ void LCursor::useDefault()
     if (compositor()->state() == LCompositor::Uninitializing)
         return;
 
+    imp()->clientCursor.reset();
+
     if (imp()->texture == imp()->defaultTexture && imp()->hotspotB == imp()->defaultHotspotB)
         return;
 
@@ -98,7 +100,7 @@ void LCursor::replaceDefaultB(const LTexture *texture, const LPointF &hotspot)
     if (compositor()->state() == LCompositor::Uninitializing)
         return;
 
-    bool update = imp()->defaultTexture == imp()->texture;
+    const bool update { imp()->defaultTexture == imp()->texture };
 
     if (!texture)
     {
@@ -117,6 +119,8 @@ void LCursor::replaceDefaultB(const LTexture *texture, const LPointF &hotspot)
 
 void LCursor::setTextureB(const LTexture *texture, const LPointF &hotspot)
 {
+    imp()->clientCursor.reset();
+
     if (!texture)
         return;
 
@@ -132,6 +136,24 @@ void LCursor::setTextureB(const LTexture *texture, const LPointF &hotspot)
 
     imp()->hotspotB = hotspot;
     imp()->update();
+}
+
+void LCursor::setCursor(const LClientCursor &clientCursor) noexcept
+{
+    if (clientCursor.cursorRole())
+    {
+        setTextureB(clientCursor.cursorRole()->surface()->texture(), clientCursor.cursorRole()->hotspotB());
+        imp()->clientCursor = clientCursor.weakRef<const LClientCursor>();
+    }
+    else
+        useDefault();
+
+    setVisible(clientCursor.visible());
+}
+
+const LClientCursor *LCursor::clientCursor() const noexcept
+{
+    return imp()->clientCursor.get();
 }
 
 void LCursor::move(Float32 x, Float32 y)
@@ -195,14 +217,14 @@ void LCursor::repaintOutputs(bool nonHardwareOnly)
         if (!nonHardwareOnly || !hasHardwareSupport(o))
             o->repaint();
 
-    if (seat()->pointer()->lastCursorRequest())
+    if (clientCursor() && clientCursor()->cursorRole() && clientCursor()->cursorRole()->surface())
     {
         for (LOutput *output : compositor()->outputs())
         {
             if (output == cursor()->output())
-                seat()->pointer()->lastCursorRequest()->surface()->sendOutputEnterEvent(output);
+                clientCursor()->cursorRole()->surface()->sendOutputEnterEvent(output);
             else
-                seat()->pointer()->lastCursorRequest()->surface()->sendOutputLeaveEvent(output);
+                clientCursor()->cursorRole()->surface()->sendOutputLeaveEvent(output);
         }
     }
 }

@@ -4,7 +4,7 @@
 #include <LCompositor.h>
 #include <LClient.h>
 
-const LEvent *LClient::findEventBySerial(UInt32 serial) const
+const LEvent *LClient::findEventBySerial(UInt32 serial) const noexcept
 {
     if (imp()->events.keyboard.enter.serial() == serial)
         return &imp()->events.keyboard.enter;
@@ -48,15 +48,19 @@ const LEvent *LClient::findEventBySerial(UInt32 serial) const
     return nullptr;
 }
 
-LClient::LClient(const void *params) : LPRIVATE_INIT_UNIQUE(LClient)
+const LClientCursor &LClient::lastCursorRequest() const noexcept
 {
-    imp()->client = ((Params*)params)->client;
+    return imp()->lastCursorRequest;
+}
+
+LClient::LClient(const void *params) noexcept : m_imp { std::make_unique<LClientPrivate>(this, ((Params*)params)->client)}
+{
     dataDevice().imp()->client = this;
 }
 
-LClient::~LClient() {}
+LClient::~LClient() noexcept {}
 
-bool LClient::ping(UInt32 serial) const
+bool LClient::ping(UInt32 serial) const noexcept
 {
     if (imp()->xdgWmBaseGlobals.empty())
         return false;
@@ -65,107 +69,107 @@ bool LClient::ping(UInt32 serial) const
     return true;
 }
 
-wl_client *LClient::client() const
+wl_client *LClient::client() const noexcept
 {
     return imp()->client;
 }
 
-LDataDevice &LClient::dataDevice() const
+LDataDevice &LClient::dataDevice() const noexcept
 {
     return imp()->dataDevice;
 }
 
-const std::vector<LSurface *> &LClient::surfaces() const
+const std::vector<LSurface *> &LClient::surfaces() const noexcept
 {
     return imp()->surfaces;
 }
 
-void LClient::flush()
+void LClient::flush() noexcept
 {
     wl_client_flush(client());
 }
 
-void LClient::destroy()
+void LClient::destroy() noexcept
 {
     wl_client_destroy(client());
 }
 
-const std::vector<Wayland::GOutput*> &LClient::outputGlobals() const
+const std::vector<Wayland::GOutput*> &LClient::outputGlobals() const noexcept
 {
     return imp()->outputGlobals;
 }
 
-const std::vector<Wayland::GCompositor*> &LClient::compositorGlobals() const
+const std::vector<Wayland::GCompositor*> &LClient::compositorGlobals() const noexcept
 {
     return imp()->compositorGlobals;
 }
 
-const std::vector<Wayland::GSubcompositor*> &LClient::subcompositorGlobals() const
+const std::vector<Wayland::GSubcompositor*> &LClient::subcompositorGlobals() const noexcept
 {
     return imp()->subcompositorGlobals;
 }
 
-const std::vector<Wayland::GSeat*> &LClient::seatGlobals() const
+const std::vector<Wayland::GSeat*> &LClient::seatGlobals() const noexcept
 {
     return imp()->seatGlobals;
 }
 
-const Wayland::GDataDeviceManager *LClient::dataDeviceManagerGlobal() const
+const Wayland::GDataDeviceManager *LClient::dataDeviceManagerGlobal() const noexcept
 {
     return imp()->dataDeviceManagerGlobal;
 }
 
-const std::vector<XdgShell::GXdgWmBase *> &LClient::xdgWmBaseGlobals() const
+const std::vector<XdgShell::GXdgWmBase *> &LClient::xdgWmBaseGlobals() const noexcept
 {
     return imp()->xdgWmBaseGlobals;
 }
 
-const std::vector<WpPresentationTime::GWpPresentation *> &LClient::wpPresentationTimeGlobals() const
+const std::vector<WpPresentationTime::GWpPresentation *> &LClient::wpPresentationTimeGlobals() const noexcept
 {
     return imp()->wpPresentationTimeGlobals;
 }
 
-const std::vector<LinuxDMABuf::GLinuxDMABuf *> &LClient::linuxDMABufGlobals() const
+const std::vector<LinuxDMABuf::GLinuxDMABuf *> &LClient::linuxDMABufGlobals() const noexcept
 {
     return imp()->linuxDMABufGlobals;
 }
 
-const std::vector<FractionalScale::GFractionalScaleManager *> &LClient::fractionalScaleManagerGlobals() const
+const std::vector<FractionalScale::GFractionalScaleManager *> &LClient::fractionalScaleManagerGlobals() const noexcept
 {
     return imp()->fractionalScaleManagerGlobals;
 }
 
-const std::vector<GammaControl::GGammaControlManager *> &LClient::gammaControlManagerGlobals() const
+const std::vector<GammaControl::GGammaControlManager *> &LClient::gammaControlManagerGlobals() const noexcept
 {
     return imp()->gammaControlManagerGlobals;
 }
 
-const std::vector<TearingControl::GTearingControlManager *> &LClient::tearingControlManagerGlobals() const
+const std::vector<TearingControl::GTearingControlManager *> &LClient::tearingControlManagerGlobals() const noexcept
 {
     return imp()->tearingControlManagerGlobals;
 }
 
-const std::vector<Viewporter::GViewporter *> &LClient::viewporterGlobals() const
+const std::vector<Viewporter::GViewporter *> &LClient::viewporterGlobals() const noexcept
 {
     return imp()->viewporterGlobals;
 }
 
-const std::vector<XdgDecoration::GXdgDecorationManager *> &LClient::xdgDecorationManagerGlobals() const
+const std::vector<XdgDecoration::GXdgDecorationManager *> &LClient::xdgDecorationManagerGlobals() const noexcept
 {
     return imp()->xdgDecorationManagerGlobals;
 }
 
-const std::vector<RelativePointer::GRelativePointerManager *> &LClient::relativePointerManagerGlobals() const
+const std::vector<RelativePointer::GRelativePointerManager *> &LClient::relativePointerManagerGlobals() const noexcept
 {
     return imp()->relativePointerManagerGlobals;
 }
 
-const std::vector<PointerGestures::GPointerGestures *> &LClient::pointerGesturesGlobals() const
+const std::vector<PointerGestures::GPointerGestures *> &LClient::pointerGesturesGlobals() const noexcept
 {
     return imp()->pointerGesturesGlobals;
 }
 
-const LClient::Events &LClient::events() const
+const LClient::Events &LClient::events() const noexcept
 {
     return imp()->events;
 }

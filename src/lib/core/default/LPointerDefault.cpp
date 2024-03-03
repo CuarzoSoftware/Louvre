@@ -4,6 +4,7 @@
 #include <LCompositor.h>
 #include <LCursor.h>
 #include <LOutput.h>
+#include <LClient.h>
 #include <LPopupRole.h>
 #include <LTime.h>
 #include <LKeyboard.h>
@@ -14,6 +15,7 @@
 #include <LPointerButtonEvent.h>
 #include <LToplevelMoveSession.h>
 #include <LToplevelResizeSession.h>
+#include <LClientCursor.h>
 
 using namespace Louvre;
 
@@ -26,7 +28,7 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
     // Schedule repaint on outputs that intersect with the cursor if hardware composition is not supported.
     cursor()->repaintOutputs(true);
 
-    bool activeDND { seat()->dndManager()->dragging() && seat()->dndManager()->triggeringEvent().type() != LEvent::Type::Touch };
+    const bool activeDND { seat()->dndManager()->dragging() && seat()->dndManager()->triggeringEvent().type() != LEvent::Type::Touch };
 
     if (seat()->dndManager()->icon() && activeDND)
     {
@@ -93,6 +95,8 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
             else
                 seat()->dndManager()->setFocus(surface, event.localPos);
         }
+
+        cursor()->setCursor(surface->client()->lastCursorRequest());
     }
     else
     {
@@ -275,18 +279,20 @@ void LPointer::pointerHoldEndEvent(const LPointerHoldEndEvent &event)
 //! [pointerHoldEndEvent]
 
 //! [setCursorRequest]
-void LPointer::setCursorRequest(LCursorRole *cursorRole)
+void LPointer::setCursorRequest(const LClientCursor &clientCursor)
 {
-    if (cursorRole)
+    if (seat()->dndManager()->dragging())
     {
-        cursor()->setTextureB(
-                    cursorRole->surface()->texture(),
-                    cursorRole->hotspotB());
+        if (seat()->dndManager()->origin()->client() == clientCursor.client())
+            cursor()->setCursor(clientCursor);
 
-        cursor()->setVisible(true);
+        return;
     }
-    // If `nullptr` is provided, it indicates that the client intends to hide the cursor.
-    else
-        cursor()->setVisible(false);
+
+    //if (!focus())
+    //    return;
+
+    //if (focus()->client() == clientCursor.client())
+        cursor()->setCursor(clientCursor);
 }
 //! [setCursorRequest]

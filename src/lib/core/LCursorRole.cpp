@@ -2,8 +2,10 @@
 #include <private/LCursorRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LPointerPrivate.h>
+#include <private/LClientPrivate.h>
 #include <LDNDManager.h>
 #include <LCursorRole.h>
+#include <LClientCursor.h>
 #include <LSurface.h>
 #include <LCompositor.h>
 #include <LCursor.h>
@@ -22,8 +24,10 @@ LCursorRole::LCursorRole(const void *params) :
 
 LCursorRole::~LCursorRole()
 {
-    if (seat()->pointer()->imp()->lastCursorRequest == this)
-        seat()->pointer()->imp()->lastCursorRequest = nullptr;
+    notifyDestruction();
+
+    if (cursor()->clientCursor() && cursor()->clientCursor()->cursorRole() == this)
+        cursor()->useDefault();
 
     if (surface())
         surface()->imp()->setMapped(false);
@@ -53,20 +57,20 @@ void LCursorRole::handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin)
     {
         surface()->imp()->setMapped(true);
 
-        // Notify that the cursor changed content
-        if (seat()->pointer()->imp()->lastCursorRequest == this && (
-           (seat()->pointer()->focus() && seat()->pointer()->focus()->client() == surface()->client()) ||
-           (seat()->dndManager()->origin() && seat()->dndManager()->origin()->client() == surface()->client())))
-        {
-            seat()->pointer()->imp()->state.remove(LPointer::LPointerPrivate::LastCursorRequestWasHide);
-            seat()->pointer()->setCursorRequest(this);
-        }
+        if (cursor()->clientCursor() && cursor()->clientCursor()->cursorRole() == this)
+            cursor()->setCursor(*cursor()->clientCursor());
     }
     else
+    {
+        if (cursor()->clientCursor() && cursor()->clientCursor()->cursorRole() == this)
+            cursor()->useDefault();
+
         surface()->imp()->setMapped(false);
+    }
 }
 
 void LCursorRole::handleSurfaceOffset(Int32 x, Int32 y)
 {
-    imp()->pendingHotspotOffset = LPoint(x,y);
+    imp()->pendingHotspotOffset.setX(x);
+    imp()->pendingHotspotOffset.setY(y);
 }

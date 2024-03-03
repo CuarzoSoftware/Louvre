@@ -4,6 +4,7 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <private/LOutputPrivate.h>
+#include <LClientCursor.h>
 #include <LCursor.h>
 #include <algorithm>
 
@@ -17,14 +18,14 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
     LPointF pos;
     LPointF hotspotB;
     LSizeF size;
-    LOutput *output                                     = nullptr;
-    std::vector<LOutput*>intersectedOutputs;
     bool isVisible                                      = true;
-
-    UInt32 lastTextureSerial                            = 0;
     bool textureChanged                                 = false;
     bool posChanged                                     = false;
     bool hasFb                                          = true;
+    UInt32 lastTextureSerial                            = 0;
+    LOutput *output                                     = nullptr;
+    LWeak<const LClientCursor> clientCursor;
+    std::vector<LOutput*>intersectedOutputs;   
     LTexture *texture                                   = nullptr;
     LPointF defaultHotspotB;
     LTexture *defaultTexture                            = nullptr;
@@ -112,7 +113,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
         if (!cursor()->output())
             return;
 
-        if (!textureChanged && !posChanged)
+        if (!textureChanged && !posChanged && isVisible)
             return;
 
         LPointF newHotspotS;
@@ -124,7 +125,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
 
         for (LOutput *o : compositor()->outputs())
         {
-            if (o->rect().intersects(rect))
+            if (isVisible && o->rect().intersects(rect))
             {
                 bool found = (std::find(intersectedOutputs.begin(), intersectedOutputs.end(), o) != intersectedOutputs.end());
 

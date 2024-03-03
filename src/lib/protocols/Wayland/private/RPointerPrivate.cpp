@@ -2,43 +2,34 @@
 #include <private/LCursorRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LPointerPrivate.h>
+#include <private/LClientPrivate.h>
 #include <LDNDManager.h>
 #include <LCompositor.h>
 #include <LSeat.h>
+#include <LCursor.h>
+#include <LLog.h>
 
 using namespace Louvre;
 
 void RPointer::RPointerPrivate::set_cursor(wl_client *client, wl_resource *resource, UInt32 serial, wl_resource *surface, Int32 hotspot_x, Int32 hotspot_y)
 {
-#ifdef TODO
     L_UNUSED(client);
 
-    RPointer *rPointer = (RPointer*)wl_resource_get_user_data(resource);
+    const RPointer *rPointer { (RPointer*)wl_resource_get_user_data(resource) };
+    const LClient *lClient { rPointer->client() };
 
-    if (seat()->dndManager()->origin())
+    if (lClient->events().pointer.enter.serial() != serial)
     {
-        if (rPointer->client() == seat()->dndManager()->origin()->client())
-            goto skipCheck;
-
+        LLog::warning("[RPointer::RPointerPrivate::set_cursor] Set cursor request without valid pointer enter event serial. Ignoring it.");
         return;
     }
 
-    if (serial != rPointer->serials().enter)
-        return;
-
-    if (!seat()->pointer()->focus() ||
-        seat()->pointer()->focus()->client() != rPointer->client())
-        return;
-
-    skipCheck:
-
     if (surface)
     {
-        Wayland::RSurface *rSurface = (Wayland::RSurface*)wl_resource_get_user_data(surface);
-        LSurface *lSurface = rSurface->surface();
+        const Wayland::RSurface *rSurface { (Wayland::RSurface*)wl_resource_get_user_data(surface) };
+        LSurface *lSurface { rSurface->surface() };
 
-        if (lSurface->imp()->pending.role ||
-            (lSurface->roleId() != LSurface::Role::Undefined && lSurface->roleId() != LSurface::Role::Cursor))
+        if (lSurface->imp()->pending.role || (lSurface->roleId() != LSurface::Role::Undefined && lSurface->roleId() != LSurface::Role::Cursor))
         {
             wl_resource_post_error(resource, WL_POINTER_ERROR_ROLE, "Given wl_surface has another role.");
             return;
@@ -46,24 +37,30 @@ void RPointer::RPointerPrivate::set_cursor(wl_client *client, wl_resource *resou
 
         LCursorRole::Params cursorRoleParams;
         cursorRoleParams.surface = lSurface;
-
-        LCursorRole *lCursor = compositor()->createCursorRoleRequest(&cursorRoleParams);
+        LCursorRole *lCursor { compositor()->createCursorRoleRequest(&cursorRoleParams) };
         lCursor->imp()->currentHotspot.setX(hotspot_x);
         lCursor->imp()->currentHotspot.setY(hotspot_y);
         lCursor->imp()->currentHotspotB = lCursor->imp()->currentHotspot * lSurface->bufferScale();
         lSurface->imp()->setPendingRole(lCursor);
         lSurface->imp()->applyPendingRole();
-        seat()->pointer()->imp()->lastCursorRequest = lCursor;
-        seat()->pointer()->imp()->lastCursorRequestWasHide = false;
-        seat()->pointer()->setCursorRequest(lCursor);
+
+        if (&lClient->imp()->lastCursorRequest == cursor()->clientCursor())
+            cursor()->useDefault();
+
+        lClient->imp()->lastCursorRequest.m_role.reset(lCursor);
+        lClient->imp()->lastCursorRequest.m_triggeringEvent = lClient->events().pointer.enter;
+        lClient->imp()->lastCursorRequest.m_visible = true;
+        seat()->pointer()->setCursorRequest(lClient->imp()->lastCursorRequest);
+        return;
     }
-    else
-    {
-        seat()->pointer()->imp()->lastCursorRequestWasHide = true;
-        seat()->pointer()->imp()->lastCursorRequest = nullptr;
-        seat()->pointer()->setCursorRequest(nullptr);
-    }
-#endif
+
+    if (&lClient->imp()->lastCursorRequest == cursor()->clientCursor())
+        cursor()->useDefault();
+
+    lClient->imp()->lastCursorRequest.m_role.reset();
+    lClient->imp()->lastCursorRequest.m_triggeringEvent = lClient->events().pointer.enter;
+    lClient->imp()->lastCursorRequest.m_visible = false;
+    seat()->pointer()->setCursorRequest(lClient->imp()->lastCursorRequest);
 }
 
 #if LOUVRE_WL_SEAT_VERSION >= 3

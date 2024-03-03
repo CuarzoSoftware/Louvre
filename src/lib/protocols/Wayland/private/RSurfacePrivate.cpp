@@ -290,8 +290,7 @@ void RSurface::RSurfacePrivate::set_buffer_transform(wl_client *client, wl_resou
 {
     L_UNUSED(client);
 
-    RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
-    LSurface *lSurface = rSurface->surface();
+    const RSurface *rSurface { (RSurface*)wl_resource_get_user_data(resource) };
 
     if (transform < 0 || transform > 7)
     {
@@ -299,7 +298,7 @@ void RSurface::RSurfacePrivate::set_buffer_transform(wl_client *client, wl_resou
         return;
     }
 
-    lSurface->imp()->pending.transform = (LFramebuffer::Transform)transform;
+    rSurface->surface()->imp()->pending.transform = (LFramebuffer::Transform)transform;
 }
 #endif
 
@@ -314,9 +313,8 @@ void RSurface::RSurfacePrivate::set_buffer_scale(wl_client *client, wl_resource 
         return;
     }
 
-    RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
-    LSurface *lSurface = rSurface->surface();
-    lSurface->imp()->pending.bufferScale = scale;
+    const RSurface *rSurface { (RSurface*)wl_resource_get_user_data(resource) };
+    rSurface->surface()->imp()->pending.bufferScale = scale;
 }
 #endif
 
@@ -337,10 +335,9 @@ void RSurface::RSurfacePrivate::damage_buffer(wl_client *client, wl_resource *re
     if (height <= 0)
         return;
 
-    RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
-    LSurface *lSurface = rSurface->surface();
-    lSurface->imp()->pendingDamageB.push_back(LRect(x, y, width, height));
-    lSurface->imp()->changesToNotify.add(Changes::DamageRegionChanged);
+    const RSurface *rSurface { (RSurface*)wl_resource_get_user_data(resource) };
+    rSurface->surface()->imp()->pendingDamageB.push_back(LRect(x, y, width, height));
+    rSurface->surface()->imp()->changesToNotify.add(Changes::DamageRegionChanged);
 }
 #endif
 
@@ -348,8 +345,7 @@ void RSurface::RSurfacePrivate::damage_buffer(wl_client *client, wl_resource *re
 void RSurface::RSurfacePrivate::offset(wl_client *client, wl_resource *resource, Int32 x, Int32 y)
 {
     L_UNUSED(client);
-    RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
-    LSurface *lSurface = rSurface->surface();
-    handleOffset(lSurface, x, y);
+    const RSurface *rSurface { (RSurface*)wl_resource_get_user_data(resource) };
+    handleOffset(rSurface->surface(), x, y);
 }
 #endif
