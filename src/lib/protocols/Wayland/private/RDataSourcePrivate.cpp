@@ -2,10 +2,8 @@
 #include <protocols/Wayland/RDataOffer.h>
 #include <protocols/Wayland/RDataDevice.h>
 #include <protocols/Wayland/GSeat.h>
-#include <private/LDataOfferPrivate.h>
-#include <private/LDataSourcePrivate.h>
-#include <private/LDataDevicePrivate.h>
-#include <LDNDManager.h>
+#include <LClipboard.h>
+#include <LDND.h>
 #include <LSeat.h>
 #include <LClient.h>
 #include <cstring>
@@ -19,16 +17,22 @@ void RDataSource::RDataSourcePrivate::destroy(wl_client *client, wl_resource *re
 void RDataSource::RDataSourcePrivate::offer(wl_client *client, wl_resource *resource, const char *mime_type)
 {
     L_UNUSED(client);
-    LDataSource::LSource source;
-    source.mimeType = strdup(mime_type);
-    RDataSource *rDataSource = (RDataSource*)wl_resource_get_user_data(resource);
-    source.tmp = NULL;
-    rDataSource->dataSource()->imp()->sources.push_back(source);
+    RDataSource *rDataSource { static_cast<RDataSource*>(wl_resource_get_user_data(resource)) };
+    rDataSource->imp()->mimeTypes.emplace_back(mime_type);
+
+    if (rDataSource == seat()->clipboard()->m_dataSource.get())
+    {
+        rDataSource->requestPersistentMimeType(rDataSource->imp()->mimeTypes.back());
+
+        if (seat()->clipboard()->m_dataOffer.get())
+            seat()->clipboard()->m_dataOffer.get()->offer(mime_type);
+    }
 }
 
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
 void RDataSource::RDataSourcePrivate::set_actions(wl_client *client, wl_resource *resource, UInt32 dnd_actions)
 {
+    /* TODO
     L_UNUSED(client);
 
     if (dnd_actions > 8)
@@ -37,12 +41,18 @@ void RDataSource::RDataSourcePrivate::set_actions(wl_client *client, wl_resource
         return;
     }
 
-    RDataSource *rDataSource = (RDataSource*)wl_resource_get_user_data(resource);
+    RDataSource *rDataSource { static_cast<RDataSource*>(wl_resource_get_user_data(resource)) };
 
-    if (rDataSource->dataSource()->imp()->dndActions == dnd_actions)
+    if (rDataSource->usage() != RDataSource::DND)
+    {
+        wl_resource_post_error(resource, WL_DATA_SOURCE_ERROR_INVALID_SOURCE, "Source usage is not DND.");
+        return;
+    }
+
+    if (rDataSource->actions() == dnd_actions)
         return;
 
-    rDataSource->dataSource()->imp()->dndActions = dnd_actions;
+    rDataSource->imp()->actions = dnd_actions;
 
     if (seat()->dndManager()->dstClient())
         for (GSeat *s : seat()->dndManager()->dstClient()->seatGlobals())
@@ -51,6 +61,6 @@ void RDataSource::RDataSourcePrivate::set_actions(wl_client *client, wl_resource
                 s->dataDeviceResource()->dataOffered()->dataOfferResource()->sourceActions(dnd_actions);
                 s->dataDeviceResource()->dataOffered()->imp()->updateDNDAction();
             }
-
+    */
 }
 #endif

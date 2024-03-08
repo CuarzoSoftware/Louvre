@@ -333,20 +333,36 @@ public:
     virtual LTouch *createTouchRequest(const void *params);
 
     /**
-     * @brief Virtual constructor for creating the LDNDManager instance during LSeat initialization.
+     * @brief Virtual constructor for creating the LDND instance during LSeat initialization.
      *
      * This method is called during LSeat initialization.
-     * The LDNDManager class provides virtual methods that notify the start and end of
+     * The LDND class provides virtual methods that notify the start and end of
      * Drag & Drop sessions between clients.
      *
      * @param params Internal Louvre parameters for creating the DND manager.
      *
-     * @return An instance of LDNDManager or a subclass of LDNDManager.
+     * @return An instance of LDND or a subclass of LDND.
      *
      * @par Default Implementation
-     * @snippet LCompositorDefault.cpp createDNDManagerRequest
+     * @snippet LCompositorDefault.cpp createDNDRequest
      */
-    virtual LDNDManager *createDNDManagerRequest(const void *params);
+    virtual LDND *createDNDRequest(const void *params);
+
+    /**
+     * @brief Virtual constructor for creating the LClipboard instance during LSeat initialization.
+     *
+     * This method is called during LSeat initialization.
+     * The LClipboard class provides virtual methods that notify client requests to
+     * set the clipboard.
+     *
+     * @param params Internal Louvre parameters for creating the LClipboard.
+     *
+     * @return An instance of LClipboard or a subclass of LClipboard.
+     *
+     * @par Default Implementation
+     * @snippet LCompositorDefault.cpp createClipboardRequest
+     */
+    virtual LClipboard *createClipboardRequest(const void *params);
 
     /**
      * @brief Virtual constructor for creating LToplevelRole instances when a client creates a toplevel role for a surface.
@@ -524,16 +540,28 @@ public:
     virtual void destroyTouchRequest(LTouch *touch);
 
     /**
-     * @brief Virtual destructor for the LDNDManager class.
+     * @brief Virtual destructor for the LDND class.
      *
      * This method is called during the compositor uninitialization.
      *
-     * @param dndManager The LDNDManager instance to be destroyed.
+     * @param dnd The unique LDND instance to be destroyed.
      *
      * @par Default Implementation
-     * @snippet LCompositorDefault.cpp destroyDNDManagerRequest
+     * @snippet LCompositorDefault.cpp destroyDNDRequest
      */
-    virtual void destroyDNDManagerRequest(LDNDManager *dndManager);
+    virtual void destroyDNDRequest(LDND *dnd);
+
+    /**
+     * @brief Virtual destructor for the LClipboard class.
+     *
+     * This method is called during the compositor uninitialization.
+     *
+     * @param dndManager The LDND instance to be destroyed.
+     *
+     * @par Default Implementation
+     * @snippet LCompositorDefault.cpp destroyDNDRequest
+     */
+    virtual void destroyClipboardRequest(LClipboard *clipboard);
 
     /**
      * @brief Virtual destructor for the LToplevelRole class.

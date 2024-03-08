@@ -1,8 +1,7 @@
 #include <protocols/Wayland/private/RDataOfferPrivate.h>
+#include <protocols/Wayland/private/RDataDevicePrivate.h>
 #include <protocols/Wayland/RDataDevice.h>
 #include <protocols/Wayland/GSeat.h>
-#include <private/LDataOfferPrivate.h>
-#include <protocols/Wayland/private/RDataDevicePrivate.h>
 #include <LClient.h>
 
 using namespace Louvre::Protocols::Wayland;
@@ -21,7 +20,8 @@ struct wl_data_offer_interface dataOffer_implementation =
 RDataOffer::RDataOffer
 (
     RDataDevice *rDataDevice,
-    UInt32 id
+    UInt32 id,
+    RDataSource::Usage usage
 )
     :LResource
     (
@@ -34,26 +34,27 @@ RDataOffer::RDataOffer
     LPRIVATE_INIT_UNIQUE(RDataOffer)
 {
     imp()->rDataDevice = rDataDevice;
-    imp()->lDataOffer = new LDataOffer(this);
+    imp()->usage = usage;
 }
 
 RDataOffer::~RDataOffer()
 {
+    /* TODO
     for (GSeat *s : client()->seatGlobals())
         if (s->dataDeviceResource() && s->dataDeviceResource()->dataOffered() == dataOffer())
             s->dataDeviceResource()->imp()->dataOffered = nullptr;
 
-    delete imp()->lDataOffer;
-}
-
-LDataOffer *RDataOffer::dataOffer() const
-{
-    return imp()->lDataOffer;
+    delete imp()->lDataOffer; */
 }
 
 RDataDevice *RDataOffer::dataDeviceResource() const
 {
     return imp()->rDataDevice;
+}
+
+RDataSource::Usage RDataOffer::usage() const noexcept
+{
+    return imp()->usage;
 }
 
 bool RDataOffer::offer(const char *mimeType)

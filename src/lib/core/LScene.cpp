@@ -6,7 +6,7 @@
 #include <LOutput.h>
 #include <LCursor.h>
 #include <LSeat.h>
-#include <LDNDManager.h>
+#include <LDND.h>
 #include <LDNDIconRole.h>
 #include <LPointer.h>
 #include <LCompositor.h>

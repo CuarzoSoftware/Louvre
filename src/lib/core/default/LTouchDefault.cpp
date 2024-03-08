@@ -1,6 +1,6 @@
 #include <private/LTouchPrivate.h>
 #include <LKeyboard.h>
-#include <LDNDManager.h>
+#include <LDND.h>
 #include <LDNDIconRole.h>
 #include <LInputDevice.h>
 #include <LTouchDownEvent.h>
@@ -48,7 +48,7 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
     const LPointF globalPos { toGlobal(cursor()->output(), event.pos()) };
 
     // Handle DND session
-    LDNDManager &dnd { *seat()->dndManager() };
+    LDND &dnd { *seat()->dnd() };
 
     if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch && dnd.triggeringEvent().subtype() == LEvent::Subtype::Down)
     {
@@ -138,7 +138,7 @@ void LTouch::touchUpEvent(const LTouchUpEvent &event)
     if (!tp)
         return;
 
-    LDNDManager &dnd { *seat()->dndManager() };
+    LDND &dnd { *seat()->dnd() };
 
     if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch && dnd.triggeringEvent().subtype() == LEvent::Subtype::Down)
     {
@@ -193,7 +193,7 @@ void LTouch::touchFrameEvent(const LTouchFrameEvent &event)
 
 void LTouch::touchCancelEvent(const LTouchCancelEvent &event)
 {
-    LDNDManager &dnd { *seat()->dndManager() };
+    LDND &dnd { *seat()->dnd() };
 
     if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch)
         dnd.drop();

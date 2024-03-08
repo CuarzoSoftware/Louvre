@@ -4,7 +4,6 @@
 #include <protocols/PointerGestures/RGestureSwipe.h>
 #include <protocols/PointerGestures/RGesturePinch.h>
 #include <protocols/PointerGestures/RGestureHold.h>
-#include <private/LDataDevicePrivate.h>
 #include <private/LClientPrivate.h>
 #include <private/LPointerPrivate.h>
 #include <private/LToplevelRolePrivate.h>
@@ -15,7 +14,7 @@
 #include <LPopupRole.h>
 #include <LTime.h>
 #include <LKeyboard.h>
-#include <LDNDManager.h>
+#include <LDND.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols;

@@ -2,14 +2,34 @@
 #define RDATASOURCE_H
 
 #include <LResource.h>
+#include <stdio.h>
 
 class Louvre::Protocols::Wayland::RDataSource : public LResource
 {
 public:
+
+    enum Usage
+    {
+        Undefined,
+        Clipboard,
+        DND
+    };
+
+    struct MimeTypeFile
+    {
+        std::string mimeType;
+        FILE *tmp = NULL;
+    };
+
     RDataSource(GDataDeviceManager *gDataDeviceManager, UInt32 id);
     ~RDataSource();
 
-    LDataSource *dataSource() const;
+    void requestPersistentMimeType(MimeTypeFile &mimeType) noexcept;
+
+    Usage usage() const noexcept;
+
+    // DND only
+    UInt32 actions() const noexcept;
 
     // Since 1
     bool target(const char *mimeType);

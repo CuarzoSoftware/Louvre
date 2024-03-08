@@ -15,10 +15,10 @@ struct DestroyedToplevel
     std::list<LOutput*>outputs;
 };
 
-class Compositor : public LCompositor
+class Compositor final : public LCompositor
 {
 public:
-    Compositor();
+    Compositor() noexcept;
 
     LSeat *createSeatRequest(const void *params) override;
     LOutput *createOutputRequest(const void *params) override;
@@ -30,8 +30,8 @@ public:
     void destroySurfaceRequest(LSurface *surface) override;
     void cursorInitialized() override;
 
-    LXCursor *pointerCursor = nullptr;
-    Clock *clock = nullptr;
+    LXCursor *pointerCursor { nullptr };
+    Clock *clock { nullptr };
 
     std::list<DestroyedToplevel>destroyedToplevels;
 };

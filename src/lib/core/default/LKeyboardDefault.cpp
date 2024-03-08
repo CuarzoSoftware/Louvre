@@ -2,7 +2,7 @@
 #include <LKeyboard.h>
 #include <LCompositor.h>
 #include <LSeat.h>
-#include <LDNDManager.h>
+#include <LDND.h>
 #include <LClient.h>
 #include <LCursor.h>
 #include <LOutput.h>
@@ -63,11 +63,11 @@ void LKeyboard::keyEvent(const LKeyboardKeyEvent &event)
             return;
         }
         else if (L_CTRL && !L_SHIFT)
-            seat()->dndManager()->setPreferredAction(LDNDManager::Copy);
+            seat()->dnd()->setPreferredAction(LDND::Copy);
         else if (!L_CTRL && L_SHIFT)
-            seat()->dndManager()->setPreferredAction(LDNDManager::Move);
+            seat()->dnd()->setPreferredAction(LDND::Move);
         else if (!L_CTRL && !L_SHIFT)
-            seat()->dndManager()->setPreferredAction(LDNDManager::NoAction);
+            seat()->dnd()->setPreferredAction(LDND::NoAction);
     }
 
     // Key pressed
@@ -75,11 +75,11 @@ void LKeyboard::keyEvent(const LKeyboardKeyEvent &event)
     {
         // CTRL sets Copy as the preferred action in drag & drop session
         if (L_CTRL)
-            seat()->dndManager()->setPreferredAction(LDNDManager::Copy);
+            seat()->dnd()->setPreferredAction(LDND::Copy);
 
         // SHIFT sets the Move as the preferred action in drag & drop session
         else if (L_SHIFT)
-            seat()->dndManager()->setPreferredAction(LDNDManager::Move);
+            seat()->dnd()->setPreferredAction(LDND::Move);
     }
 }
 //! [keyEvent]

@@ -64,7 +64,7 @@ RXdgPopup::~RXdgPopup()
             }
         }
 
-        popupRole()->surface()->imp()->setKeyboardGrabToParent();
+        popupRole()->surface()->imp()->setKeyboardGrabToParent();        
     }
 
     compositor()->destroyPopupRoleRequest(imp()->lPopupRole);

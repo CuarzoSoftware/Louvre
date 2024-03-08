@@ -3,8 +3,6 @@
 #include <protocols/Wayland/RDataDevice.h>
 #include <protocols/Wayland/GSeat.h>
 #include <private/LClientPrivate.h>
-#include <LDataSource.h>
-#include <LDataDevice.h>
 #include <LCompositor.h>
 #include <LLog.h>
 
@@ -17,13 +15,8 @@ struct wl_data_device_manager_interface dataDeviceManager_implementation =
 void GDataDeviceManager::GDataDeviceManagerPrivate::bind(wl_client *client, void *data, UInt32 version, UInt32 id)
 {
     L_UNUSED(data);
-    LClient *lClient = compositor()->getClientFromNativeResource(client);
 
-    if (lClient->dataDeviceManagerGlobal())
-    {
-        LLog::warning("[GDataDeviceManagerPrivate::bind] Client bound twice to the wl_data_device_manager singleton global. Ignoring it...");
-        return;
-    }
+    LClient *lClient { compositor()->getClientFromNativeResource(client) };
 
     new GDataDeviceManager(
         lClient,
@@ -36,14 +29,14 @@ void GDataDeviceManager::GDataDeviceManagerPrivate::bind(wl_client *client, void
 void GDataDeviceManager::GDataDeviceManagerPrivate::create_data_source(wl_client *client, wl_resource *resource, UInt32 id)
 {
     L_UNUSED(client);
-    GDataDeviceManager *gDataDeviceManager = (GDataDeviceManager*)wl_resource_get_user_data(resource);
+    GDataDeviceManager *gDataDeviceManager { (GDataDeviceManager*)wl_resource_get_user_data(resource) };
     new RDataSource(gDataDeviceManager, id);
 }
 
 void GDataDeviceManager::GDataDeviceManagerPrivate::get_data_device(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *seat)
 {
     L_UNUSED(client);
-    GSeat *gSeat = (GSeat*)wl_resource_get_user_data(seat);
+    GSeat *gSeat { static_cast<GSeat*>(wl_resource_get_user_data(seat)) };
 
     if (gSeat->dataDeviceResource())
     {
@@ -51,6 +44,6 @@ void GDataDeviceManager::GDataDeviceManagerPrivate::get_data_device(wl_client *c
         return;
     }
 
-    GDataDeviceManager *gDataDeviceManager = (GDataDeviceManager*)wl_resource_get_user_data(resource);
+    GDataDeviceManager *gDataDeviceManager { static_cast<GDataDeviceManager*>(wl_resource_get_user_data(resource)) };
     new RDataDevice(gDataDeviceManager, gSeat, id);
 }

@@ -5,10 +5,10 @@
 
 using namespace Louvre;
 
-class Popup : public LPopupRole
+class Popup final : public LPopupRole
 {
 public:
-    Popup(const void *params);
+    Popup(const void *params) noexcept;
 
     void configureRequest() override;
 };

@@ -20,7 +20,8 @@
 #include <LKeyboard.h>
 #include <LTouch.h>
 #include <LSurface.h>
-#include <LDNDManager.h>
+#include <LDND.h>
+#include <LClipboard.h>
 #include <LOutput.h>
 #include <LSeat.h>
 #include <LPopupRole.h>
@@ -182,12 +183,19 @@ LTouch *LCompositor::createTouchRequest(const void *params)
 }
 //! [createTouchRequest]
 
-//! [createDNDManagerRequest]
-LDNDManager *LCompositor::createDNDManagerRequest(const void *params)
+//! [createDNDRequest]
+LDND *LCompositor::createDNDRequest(const void *params)
 {
-    return new LDNDManager(params);
+    return new LDND(params);
 }
-//! [createDNDManagerRequest]
+//! [createDNDRequest]
+
+//! [createClipboardRequest]
+LClipboard *LCompositor::createClipboardRequest(const void *params)
+{
+    return new LClipboard(params);
+}
+//! [createClipboardRequest]
 
 //! [createToplevelRoleRequest]
 LToplevelRole *LCompositor::createToplevelRoleRequest(const void *params)
@@ -273,12 +281,19 @@ void LCompositor::destroyKeyboardRequest(LKeyboard *keyboard)
 }
 //! [destroyKeyboardRequest]
 
-//! [destroyDNDManagerRequest]
-void LCompositor::destroyDNDManagerRequest(LDNDManager *dndManager)
+//! [destroyDNDRequest]
+void LCompositor::destroyDNDRequest(LDND *dnd)
 {
-    L_UNUSED(dndManager);
+    L_UNUSED(dnd);
 }
-//! [destroyDNDManagerRequest]
+//! [destroyDNDRequest]
+
+//! [destroyClipboardRequest]
+void LCompositor::destroyClipboardRequest(LClipboard *clipboard)
+{
+    L_UNUSED(clipboard);
+}
+//! [destroyClipboardRequest]
 
 //! [destroyToplevelRoleRequest]
 void LCompositor::destroyToplevelRoleRequest(LToplevelRole *toplevel)

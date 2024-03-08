@@ -198,18 +198,13 @@ public:
 
     /**
      * @brief Access to the drag & drop session manager.
-     *
-     * Access to the LDNDManager instance used to handle drag & drop sessions.
      */
-    LDNDManager *dndManager() const;
+    LDND *dnd() const;
 
     /**
-     * @brief Access to the clipboard.
-     *
-     * Access to the clipboard (data source) assigned by the last client.\n
-     * @returns `nullptr` if the clipboard has not been assigned.
+     * @brief Access to the clipboard manager.
      */
-    LDataSource *dataSelection() const;
+    LClipboard *clipboard() const noexcept;
 
     /**
      * @brief Close all popups.
@@ -293,21 +288,6 @@ public:
      * @snippet LSeatDefault.cpp initialized
      */
     virtual void initialized();
-
-    /**
-     * @brief Request to set the clipboard.
-     *
-     * Reimplement this virtual method if you want to control which clients can set the clipboard.\n
-     * The default implementation allows clients to set the clipboard only if one of their surfaces has pointer or keyboard focus.\n
-     *
-     * Returning `true` grants the client permission to set the clipboard and `false` prohibits it.\n
-     *
-     * @param device Data device that makes the request.
-     *
-     * #### Default Implementation
-     * @snippet LSeatDefault.cpp setSelectionRequest
-     */
-    virtual bool setSelectionRequest(LDataDevice *device);
 
     /**
      * @brief Native input backend events

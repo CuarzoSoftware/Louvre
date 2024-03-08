@@ -5,19 +5,19 @@
 
 using namespace Louvre;
 
-class ToplevelRole : public LToplevelRole
+class ToplevelRole final : public LToplevelRole
 {
 public:
-    ToplevelRole(const void *params);
+    ToplevelRole(const void *params) noexcept;
 
-    void configureRequest() override;
-    void setMaximizedRequest() override;
-    void setFullscreenRequest(LOutput *output) override;
-    void unsetFullscreenRequest() override;
-    void maximizedChanged() override;
-    void fullscreenChanged() override;
-    void startMoveRequest() override;
-    void startResizeRequest(ResizeEdge edge) override;
+    void configureRequest() noexcept override;
+    void setMaximizedRequest() noexcept override;
+    void setFullscreenRequest(LOutput *output) noexcept override;
+    void unsetFullscreenRequest() noexcept override;
+    void maximizedChanged() noexcept override;
+    void fullscreenChanged() noexcept override;
+    void startMoveRequest(const LEvent &triggeringEvent) noexcept override;
+    void startResizeRequest(const LEvent &triggeringEvent, ResizeEdge edge) noexcept override;
 
     LRect rectBeforeFullscreen;
     StateFlags statesBeforeFullscreen;

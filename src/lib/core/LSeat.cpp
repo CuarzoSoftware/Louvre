@@ -2,7 +2,6 @@
 #include <private/LPointerPrivate.h>
 #include <private/LKeyboardPrivate.h>
 #include <private/LTouchPrivate.h>
-#include <private/LDNDManagerPrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
 
@@ -40,19 +39,11 @@ LSeat::LSeat(const void *params) : LPRIVATE_INIT_UNIQUE(LSeat)
 {
     L_UNUSED(params);
     compositor()->imp()->seat = this;
-
-    LDNDManager::Params dndManagerParams;
-    imp()->dndManager = compositor()->createDNDManagerRequest(&dndManagerParams);
-
-    LPointer::Params pointerParams;
-    imp()->pointer = compositor()->createPointerRequest(&pointerParams);
-
-    LKeyboard::Params keyboardParams;
-    imp()->keyboard = compositor()->createKeyboardRequest(&keyboardParams);
-
-    LTouch::Params touchParams;
-    imp()->touch = compositor()->createTouchRequest(&touchParams);
-
+    imp()->dnd = compositor()->createDNDRequest(nullptr);
+    imp()->pointer = compositor()->createPointerRequest(nullptr);
+    imp()->keyboard = compositor()->createKeyboardRequest(nullptr);
+    imp()->touch = compositor()->createTouchRequest(nullptr);
+    imp()->clipboard = compositor()->createClipboardRequest(nullptr);
     imp()->enabled = true;
 }
 
@@ -148,11 +139,6 @@ LTouch *LSeat::touch() const
     return imp()->touch;
 }
 
-LDataSource *LSeat::dataSelection() const
-{
-    return imp()->dataSelection;
-}
-
 void LSeat::dismissPopups()
 {
     std::list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();
@@ -163,9 +149,14 @@ void LSeat::dismissPopups()
     }
 }
 
-LDNDManager *LSeat::dndManager() const
+LDND *LSeat::dnd() const
 {
-    return imp()->dndManager;
+    return imp()->dnd;
+}
+
+LClipboard *LSeat::clipboard() const noexcept
+{
+    return imp()->clipboard;
 }
 
 void LSeat::setTTY(UInt32 tty)

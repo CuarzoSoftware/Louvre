@@ -6,10 +6,10 @@
 
 using namespace Louvre;
 
-class Output : public LOutput
+class Output final : public LOutput
 {
 public:
-    Output(const void *params);
+    Output(const void *params) noexcept;
 
     LTexture *backgroundTexture = nullptr;
     Int32 topbarHeight;
@@ -18,8 +18,8 @@ public:
     Float32 terminalIconAlpha = 1.0f;
     Float32 terminalIconAlphaPrev = 1.0f;
 
-    void loadWallpaper();
-    void fullDamage();
+    void loadWallpaper() noexcept;
+    void fullDamage() noexcept;
     void initializeGL() override;
     void resizeGL() override;
     void moveGL() override;

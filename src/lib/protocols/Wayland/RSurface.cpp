@@ -69,7 +69,6 @@ RSurface::RSurface
     imp()->lSurface.reset(compositor()->createSurfaceRequest(&params));
 
     // Append surface
-    client()->imp()->surfaces.push_back(surface());
     compositor()->imp()->surfaces.push_back(surface());
     surface()->imp()->compositorLink = std::prev(compositor()->imp()->surfaces.end());
     compositor()->imp()->surfacesListChanged = true;
@@ -109,10 +108,6 @@ RSurface::~RSurface()
     if (seat()->imp()->activeToplevel == lSurface->toplevel())
         seat()->imp()->activeToplevel = nullptr;
 
-    // Clear drag
-    if (seat()->dndManager()->icon() && seat()->dndManager()->icon()->surface() == lSurface)
-        seat()->dndManager()->imp()->icon = nullptr;
-
     if (lSurface->dndIcon())
     {
         LDNDIconRole *ldndIcon = lSurface->dndIcon();
@@ -144,9 +139,6 @@ RSurface::~RSurface()
 
     if (lSurface->imp()->pending.role)
         lSurface->imp()->pending.role->imp()->surface = nullptr;
-
-    // Remove surface from its client list
-    LVectorRemoveOneUnordered(lSurface->client()->imp()->surfaces, lSurface);
 
     // Remove the surface from the compositor list
     compositor()->imp()->surfaces.erase(lSurface->imp()->compositorLink);

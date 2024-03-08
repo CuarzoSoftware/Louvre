@@ -1,9 +1,10 @@
-#include "Pointer.h"
-#include "Compositor.h"
-#include "Output.h"
+#include <LToplevelMoveSession.h>
+#include <LToplevelResizeSession.h>
+#include <LPointerMoveEvent.h>
 #include <LDNDIconRole.h>
-#include <LDNDManager.h>
+#include <LDND.h>
 #include <LKeyboard.h>
+#include <LClient.h>
 #include <LSeat.h>
 #include <LTime.h>
 #include <LCursor.h>
@@ -12,19 +13,25 @@
 #include <math.h>
 #include <unistd.h>
 
-Pointer::Pointer(const void *params) : LPointer(params) {}
+#include "Pointer.h"
+#include "Compositor.h"
+#include "Output.h"
 
-void Pointer::pointerMoveEvent(Float32 x, Float32 y, bool absolute)
+Pointer::Pointer(const void *params) noexcept : LPointer(params) {}
+
+void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)
 {
-    if (absolute)
-        cursor()->setPos(x, y);
-    else
-        cursor()->move(x, y);
-
-    Output *cursorOutput { (Output*)cursor()->output() };
-    Compositor *c { (Compositor*)compositor() };
+    Output *cursorOutput { static_cast<Output*>(cursor()->output()) };
+    Compositor *c { static_cast<Compositor*>(compositor()) };
     bool pointerOverTerminalIcon { false };
 
+    // Update the cursor position
+    cursor()->move(event.delta().x(), event.delta().y());
+
+    // Schedule repaint on outputs that intersect with the cursor if hardware composition is not supported.
+    cursor()->repaintOutputs(true);
+
+    // Update terminal icon
     if (cursorOutput)
     {
         pointerOverTerminalIcon = cursorOutput->terminalIconRect.containsPoint(cursor()->pos());
@@ -54,124 +61,143 @@ void Pointer::pointerMoveEvent(Float32 x, Float32 y, bool absolute)
         }
     }
 
-    // Repaint cursor outputs if hardware composition is not supported
-    for (LOutput *output : cursor()->intersectedOutputs())
+    const bool activeDND { seat()->dnd()->dragging() && seat()->dnd()->triggeringEvent().type() != LEvent::Type::Touch };
+
+    if (seat()->dnd()->icon() && activeDND)
     {
-        if (!cursor()->hasHardwareSupport(output))
-            output->repaint();
+        seat()->dnd()->icon()->surface()->setPos(cursor()->pos());
+        seat()->dnd()->icon()->surface()->repaintOutputs();
     }
 
-    // Update the drag & drop icon (if there was one)
-    if (seat()->dndManager()->icon())
+    bool activeResizing { false };
+
+    for (LToplevelResizeSession *session : seat()->toplevelResizeSessions())
     {
-        seat()->dndManager()->icon()->surface()->setPos(cursor()->pos());
-        seat()->dndManager()->icon()->surface()->repaintOutputs();
+        if (session->triggeringEvent().type() != LEvent::Type::Touch)
+        {
+            activeResizing = true;
+            session->updateDragPoint(cursor()->pos());
+        }
     }
 
-    // Update the toplevel size (if there was one being resized)
-    if (resizingToplevel())
-    {
-        updateResizingToplevelSize(cursor()->pos());
+    if (activeResizing)
         return;
-    }
 
-    // Update the toplevel pos (if there was one being moved interactively)
-    if (movingToplevel())
+    bool activeMoving { false };
+
+    for (LToplevelMoveSession *session : seat()->toplevelMoveSessions())
     {
-        updateMovingToplevelPos(cursor()->pos());
+        if (session->triggeringEvent().type() != LEvent::Type::Touch)
+        {
+            activeMoving = true;
+            session->updateDragPoint(cursor()->pos());
+            session->toplevel()->surface()->repaintOutputs();
 
-        movingToplevel()->surface()->repaintOutputs();
-
-        if (movingToplevel()->maximized())
-            movingToplevel()->configure(movingToplevel()->pendingStates() &~ LToplevelRole::Maximized);
-
-        return;
+            if (session->toplevel()->maximized())
+                session->toplevel()->configure(session->toplevel()->pendingStates() &~ LToplevelRole::Maximized);
+        }
     }
 
-    // DO NOT GET CONFUSED! If we are in a drag & drop session, we call setDragginSurface(NULL) in case there is a surface being dragged.
-    if (seat()->dndManager()->dragging())
-        setDraggingSurface(nullptr);
+    if (activeMoving)
+        return;
 
-    // If there was a surface holding the left pointer button
+    // If a surface had the left pointer button held down
     if (draggingSurface())
     {
-        sendMoveEvent();
+        event.localPos = cursor()->pos() - draggingSurface()->rolePos();
+        sendMoveEvent(event);
         return;
     }
 
     // Find the first surface under the cursor
-    LSurface *surface = surfaceAt(cursor()->pos());
+    LSurface *surface { surfaceAt(cursor()->pos()) };
 
-    if (!surface)
+    if (surface)
+    {
+        event.localPos = cursor()->pos() - surface->rolePos();
+
+        if (focus() == surface)
+            sendMoveEvent(event);
+        else
+            setFocus(surface, event.localPos);
+
+        if (activeDND)
+        {
+            if (seat()->dnd()->focus() == surface)
+                seat()->dnd()->sendMoveEvent(event.localPos, event.ms());
+            else
+                seat()->dnd()->setFocus(surface, event.localPos);
+        }
+
+        cursor()->setCursor(surface->client()->lastCursorRequest());
+    }
+    else
     {
         setFocus(nullptr);
 
         if (!pointerOverTerminalIcon)
             cursor()->useDefault();
 
+        if (activeDND)
+            seat()->dnd()->setFocus(nullptr, LPointF());
+
+        cursor()->useDefault();
         cursor()->setVisible(true);
-    }
-    else
-    {
-        if (focus() == surface)
-            sendMoveEvent();
-        else
-            setFocus(surface);
     }
 }
 
-void Pointer::pointerButtonEvent(Button button, ButtonState state)
+void Pointer::pointerButtonEvent(const LPointerButtonEvent &event)
 {
-    Output *cursorOutput = (Output*)cursor()->output();
+    Output *cursorOutput { static_cast<Output*>(cursor()->output()) };
     bool pointerOverTerminalIcon { false };
+    const bool activeDND { seat()->dnd()->dragging() && seat()->dnd()->triggeringEvent().type() != LEvent::Type::Touch };
 
     if (cursorOutput)
         pointerOverTerminalIcon = cursorOutput->terminalIconRect.containsPoint(cursor()->pos());
 
-    if (state == Released && button == Left)
-    {
-        seat()->dndManager()->drop();
-
+    if (event.state() == LPointerButtonEvent::Released && event.button() == LPointerButtonEvent::Left)
         if (pointerOverTerminalIcon)
             LLauncher::launch("weston-terminal");
+
+    if (activeDND && event.state() == LPointerButtonEvent::Released && event.button() == LPointerButtonEvent::Left)
+    {
+        seat()->dnd()->drop();
+        seat()->keyboard()->setFocus(nullptr);
+        setFocus(nullptr);
+        setDraggingSurface(nullptr);
     }
 
     if (!focus() && !pointerOverTerminalIcon)
     {
-        LSurface *surface = surfaceAt(cursor()->pos());
+        LSurface *surface { surfaceAt(cursor()->pos()) };
 
         if (surface)
         {
-            if (seat()->keyboard()->grabbingSurface() && seat()->keyboard()->grabbingSurface()->client() != surface->client())
-            {
-                seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
-                dismissPopups();
-            }
-
-            if (!seat()->keyboard()->focus() || !surface->isSubchildOf(seat()->keyboard()->focus()))
-                seat()->keyboard()->setFocus(surface);
-
+            cursor()->setCursor(surface->client()->lastCursorRequest());
+            seat()->keyboard()->setFocus(surface);
             setFocus(surface);
-            sendButtonEvent(button, state);
+            sendButtonEvent(event);
+
+            if (!surface->popup())
+                seat()->dismissPopups();
         }
-        // If no surface under the cursor
         else
         {
-            seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
             seat()->keyboard()->setFocus(nullptr);
-            dismissPopups();
+            seat()->dismissPopups();
         }
 
         return;
     }
 
-    sendButtonEvent(button, state);
-
-    if (button != Left)
+    if (event.button() != LPointerButtonEvent::Left)
+    {
+        sendButtonEvent(event);
         return;
+    }
 
     // Left button pressed
-    if (state == Pressed)
+    if (event.state() == LPointerButtonEvent::Pressed)
     {
         if (pointerOverTerminalIcon)
         {
@@ -181,18 +207,9 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
             return;
         }
 
-        /* We save the pointer focus surface in order to continue sending events to it even when the cursor
-         * is outside of it (while the left button is being held down)*/
+        // We save the pointer focus surface to continue sending events to it even when the cursor
+        // is outside of it (while the left button is being held down)
         setDraggingSurface(focus());
-
-        if (seat()->keyboard()->grabbingSurface() && seat()->keyboard()->grabbingSurface()->client() != focus()->client())
-        {
-            seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
-            dismissPopups();
-        }
-
-        if (!focus()->popup())
-            dismissPopups();
 
         if (!seat()->keyboard()->focus() || !focus()->isSubchildOf(seat()->keyboard()->focus()))
             seat()->keyboard()->setFocus(focus());
@@ -200,7 +217,11 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
         if (focus()->toplevel() && !focus()->toplevel()->activated())
             focus()->toplevel()->configure(focus()->toplevel()->pendingStates() | LToplevelRole::Activated);
 
-        // Raise surface
+        if (!focus()->popup())
+            seat()->dismissPopups();
+
+        sendButtonEvent(event);
+
         if (focus() == compositor()->surfaces().back())
             return;
 
@@ -220,15 +241,31 @@ void Pointer::pointerButtonEvent(Button button, ButtonState state)
             return;
         }
 
-        stopResizingToplevel();
-        stopMovingToplevel();
+        sendButtonEvent(event);
+
+        // Stop pointer toplevel resizing sessions
+        for (auto it = seat()->toplevelResizeSessions().begin(); it != seat()->toplevelResizeSessions().end();)
+        {
+            if ((*it)->triggeringEvent().type() != LEvent::Type::Touch)
+                it = (*it)->stop();
+            else
+                it++;
+        }
+
+        // Stop pointer toplevel moving sessions
+        for (auto it = seat()->toplevelMoveSessions().begin(); it != seat()->toplevelMoveSessions().end();)
+        {
+            if ((*it)->triggeringEvent().type() != LEvent::Type::Touch)
+                it = (*it)->stop();
+            else
+                it++;
+        }
 
         // We stop sending events to the surface on which the left button was being held down
         setDraggingSurface(nullptr);
 
         if (!focus()->inputRegion().containsPoint(cursor()->pos() - focus()->rolePos()))
         {
-            seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
             setFocus(nullptr);
             cursor()->useDefault();
             cursor()->setVisible(true);

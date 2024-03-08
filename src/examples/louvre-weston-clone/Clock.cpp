@@ -7,7 +7,7 @@
 #include "Clock.h"
 #include "Output.h"
 
-Clock::Clock()
+Clock::Clock() noexcept
 {
     loadedFont = loadFont("Arial");
 

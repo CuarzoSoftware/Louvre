@@ -11,8 +11,7 @@
 #include "Seat.h"
 #include "Popup.h"
 
-
-Compositor::Compositor():LCompositor(){}
+Compositor::Compositor() noexcept : LCompositor(){}
 
 void Compositor::cursorInitialized()
 {

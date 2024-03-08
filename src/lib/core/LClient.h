@@ -128,24 +128,6 @@ public:
     wl_client *client() const noexcept;
 
     /**
-     * @brief Get the LDataDevice class for clipboard and drag & drop operations.
-     *
-     * The LDataDevice class is a wrapper for the [wl_data_device](https://wayland.app/protocols/wayland#wl_data_device) interface of the Wayland protocol. It is used for managing clipboard operations and facilitating drag & drop sessions.
-     *
-     * @return A reference to the LDataDevice class for clipboard and drag & drop operations.
-     */
-    LDataDevice &dataDevice() const noexcept;
-
-    /**
-     * @brief Surfaces created by the client.
-     *
-     * This method returns a constant reference to a vector of LSurface pointers, representing the surfaces created by the client.
-     *
-     * @return A constant reference to the vector of surfaces created by the client.
-     */
-    const std::vector<LSurface*>& surfaces() const noexcept;
-
-    /**
      * @brief Immediately flushes pending events.
      *
      * Use this method to forcefully and immediately flush any pending Wayland client events.
@@ -197,7 +179,7 @@ public:
      * the [wl_data_device_manager](https://wayland.app/protocols/wayland#wl_data_device_manager)
      * singleton global of the Wayland protocol.
      */
-    const Protocols::Wayland::GDataDeviceManager* dataDeviceManagerGlobal() const noexcept;
+    const std::vector<Protocols::Wayland::GDataDeviceManager*> &dataDeviceManagerGlobals() const noexcept;
 
     /**
      * Resources created when the client binds to the

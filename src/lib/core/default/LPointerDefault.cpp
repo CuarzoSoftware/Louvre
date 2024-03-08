@@ -8,7 +8,7 @@
 #include <LPopupRole.h>
 #include <LTime.h>
 #include <LKeyboard.h>
-#include <LDNDManager.h>
+#include <LDND.h>
 #include <LDNDIconRole.h>
 #include <LCursorRole.h>
 #include <LPointerMoveEvent.h>
@@ -28,12 +28,12 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
     // Schedule repaint on outputs that intersect with the cursor if hardware composition is not supported.
     cursor()->repaintOutputs(true);
 
-    const bool activeDND { seat()->dndManager()->dragging() && seat()->dndManager()->triggeringEvent().type() != LEvent::Type::Touch };
+    const bool activeDND { seat()->dnd()->dragging() && seat()->dnd()->triggeringEvent().type() != LEvent::Type::Touch };
 
-    if (seat()->dndManager()->icon() && activeDND)
+    if (seat()->dnd()->icon() && activeDND)
     {
-        seat()->dndManager()->icon()->surface()->setPos(cursor()->pos());
-        seat()->dndManager()->icon()->surface()->repaintOutputs();
+        seat()->dnd()->icon()->surface()->setPos(cursor()->pos());
+        seat()->dnd()->icon()->surface()->repaintOutputs();
     }
 
     bool activeResizing { false };
@@ -90,10 +90,10 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
 
         if (activeDND)
         {
-            if (seat()->dndManager()->focus() == surface)
-                seat()->dndManager()->sendMoveEvent(event.localPos, event.ms());
+            if (seat()->dnd()->focus() == surface)
+                seat()->dnd()->sendMoveEvent(event.localPos, event.ms());
             else
-                seat()->dndManager()->setFocus(surface, event.localPos);
+                seat()->dnd()->setFocus(surface, event.localPos);
         }
 
         cursor()->setCursor(surface->client()->lastCursorRequest());
@@ -103,7 +103,7 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
         setFocus(nullptr);
 
         if (activeDND)
-            seat()->dndManager()->setFocus(nullptr, LPointF());
+            seat()->dnd()->setFocus(nullptr, LPointF());
 
         cursor()->useDefault();
         cursor()->setVisible(true);
@@ -114,11 +114,11 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
 //! [pointerButtonEvent]
 void LPointer::pointerButtonEvent(const LPointerButtonEvent &event)
 {
-    const bool activeDND { seat()->dndManager()->dragging() && seat()->dndManager()->triggeringEvent().type() != LEvent::Type::Touch };
+    const bool activeDND { seat()->dnd()->dragging() && seat()->dnd()->triggeringEvent().type() != LEvent::Type::Touch };
 
     if (activeDND && event.state() == LPointerButtonEvent::Released && event.button() == LPointerButtonEvent::Left)
     {
-        seat()->dndManager()->drop();
+        seat()->dnd()->drop();
         seat()->keyboard()->setFocus(nullptr);
         setFocus(nullptr);
         setDraggingSurface(nullptr);
@@ -130,6 +130,7 @@ void LPointer::pointerButtonEvent(const LPointerButtonEvent &event)
 
         if (surface)
         {
+            cursor()->setCursor(surface->client()->lastCursorRequest());
             seat()->keyboard()->setFocus(surface);
             setFocus(surface);
             sendButtonEvent(event);
@@ -281,9 +282,9 @@ void LPointer::pointerHoldEndEvent(const LPointerHoldEndEvent &event)
 //! [setCursorRequest]
 void LPointer::setCursorRequest(const LClientCursor &clientCursor)
 {
-    if (seat()->dndManager()->dragging())
+    if (seat()->dnd()->dragging())
     {
-        if (seat()->dndManager()->origin()->client() == clientCursor.client())
+        if (seat()->dnd()->origin()->client() == clientCursor.client())
             cursor()->setCursor(clientCursor);
 
         return;

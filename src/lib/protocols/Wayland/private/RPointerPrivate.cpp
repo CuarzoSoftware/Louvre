@@ -3,7 +3,7 @@
 #include <private/LSurfacePrivate.h>
 #include <private/LPointerPrivate.h>
 #include <private/LClientPrivate.h>
-#include <LDNDManager.h>
+#include <LDND.h>
 #include <LCompositor.h>
 #include <LSeat.h>
 #include <LCursor.h>

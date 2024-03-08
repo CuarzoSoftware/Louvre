@@ -4,7 +4,7 @@
 #include "Output.h"
 #include "Popup.h"
 
-Popup::Popup(const void *params) : LPopupRole(params) {}
+Popup::Popup(const void *params) noexcept : LPopupRole(params) {}
 
 void Popup::configureRequest()
 {

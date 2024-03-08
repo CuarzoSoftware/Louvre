@@ -166,10 +166,9 @@ namespace Louvre
     class LSceneTouchPoint;
 
     // Data
-    class LDataDevice;
-    class LDataSource;
-    class LDataOffer;
-    class LDNDManager;
+    class LDND;
+    class LDNDSession;
+    class LClipboard;
 
     // Surface roles
     class LBaseSurfaceRole;

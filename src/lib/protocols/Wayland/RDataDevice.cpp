@@ -4,6 +4,7 @@
 #include <protocols/Wayland/RDataOffer.h>
 #include <protocols/Wayland/RSurface.h>
 #include <private/LCompositorPrivate.h>
+#include <LClipboard.h>
 
 using namespace Louvre::Protocols::Wayland;
 
@@ -47,19 +48,41 @@ GSeat *RDataDevice::seatGlobal() const
     return imp()->gSeat;
 }
 
-LDataOffer *RDataDevice::dataOffered() const
-{
-    return imp()->dataOffered;
-}
-
 const RDataDevice::LastEventSerials &RDataDevice::serials() const
 {
     return imp()->serials;
 }
 
-bool RDataDevice::dataOffer(RDataOffer *id)
+RDataOffer *RDataDevice::createOffer(RDataSource::Usage usage) noexcept
 {
-    wl_data_device_send_data_offer(resource(), id->resource());
+    LClipboard &clipboard { *seat()->clipboard() };
+
+    if (usage == RDataSource::Clipboard)
+    {
+        if (clipboard.mimeTypes().empty())
+            return nullptr;
+
+        if (clipboard.m_dataOffer.get() && clipboard.m_dataOffer.get()->dataDeviceResource())
+            clipboard.m_dataOffer.get()->dataDeviceResource()->selection(nullptr);
+
+        RDataOffer *offer { new RDataOffer(this, 0, RDataSource::Clipboard) };
+        clipboard.m_dataOffer.reset(offer);
+        dataOffer(offer);
+
+        for (const auto &mimeType : seat()->clipboard()->mimeTypes())
+            offer->offer(mimeType.mimeType.c_str());
+
+        selection(offer);
+
+        return offer;
+    }
+
+    return nullptr;
+}
+
+bool RDataDevice::dataOffer(RDataOffer *offer)
+{
+    wl_data_device_send_data_offer(resource(), offer->resource());
     return true;
 }
 
@@ -87,8 +110,12 @@ bool RDataDevice::drop()
     return true;
 }
 
-bool RDataDevice::selection(RDataOffer *id)
+bool RDataDevice::selection(RDataOffer *offer)
 {
-    wl_data_device_send_selection(resource(), id->resource());
+    if (offer)
+        wl_data_device_send_selection(resource(), offer->resource());
+    else
+        wl_data_device_send_selection(resource(), NULL);
+
     return true;
 }

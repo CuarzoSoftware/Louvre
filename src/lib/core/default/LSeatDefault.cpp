@@ -3,7 +3,6 @@
 #include <LSeat.h>
 #include <LPointer.h>
 #include <LKeyboard.h>
-#include <LDataDevice.h>
 #include <LCursor.h>
 #include <LLog.h>
 
@@ -15,15 +14,6 @@ void LSeat::initialized()
     setInputCapabilities(inputBackendCapabilities());
 }
 //! [initialized]
-
-//! [setSelectionRequest]
-bool LSeat::setSelectionRequest(LDataDevice *device)
-{
-    // Let the client set the clipboard only if one of its surfaces has pointer or keyboard focus
-    return (pointer()->focus() && pointer()->focus()->client() == device->client()) ||
-           (keyboard()->focus() && keyboard()->focus()->client() == device->client());
-}
-//! [setSelectionRequest]
 
 //! [nativeInputEvent]
 void LSeat::nativeInputEvent(void *event)

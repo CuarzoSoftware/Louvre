@@ -35,7 +35,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
 
     inline void setOutput(LOutput *out)
     {
-        bool up = false;
+        bool up { false };
 
         if (!output)
             up = true;
@@ -80,31 +80,6 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
             return;
 
         posChanged = true;
-        return;
-
-        LPointF newHotspotS;
-        newHotspotS = (hotspotB*size)/LSizeF(texture->sizeB());
-
-        LPointF newPosS = pos - newHotspotS;
-
-        rect.setPos(newPosS);
-        rect.setSize(size);
-
-        for (LOutput *o : compositor()->outputs())
-        {
-            if (o->rect().intersects(rect))
-            {
-                bool found = (std::find(intersectedOutputs.begin(), intersectedOutputs.end(), o) != intersectedOutputs.end());
-
-                if (!found)
-                {
-                    textureChanged = true;
-                    intersectedOutputs.push_back(o);
-                }
-            }
-            else
-                LVectorRemoveOneUnordered(intersectedOutputs, o);
-        }
     }
 
     // Called once per main loop iteration
@@ -113,13 +88,12 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
         if (!cursor()->output())
             return;
 
-        if (!textureChanged && !posChanged && isVisible)
+        if (!textureChanged && !posChanged)
             return;
 
-        LPointF newHotspotS;
-        newHotspotS = (hotspotB*size)/LSizeF(texture->sizeB());
+        const LPointF newHotspotS { (hotspotB*size)/LSizeF(texture->sizeB()) };
+        const LPointF newPosS { pos - newHotspotS };
 
-        LPointF newPosS = pos - newHotspotS;
         rect.setPos(newPosS);
         rect.setSize(size);
 
@@ -127,7 +101,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
         {
             if (isVisible && o->rect().intersects(rect))
             {
-                bool found = (std::find(intersectedOutputs.begin(), intersectedOutputs.end(), o) != intersectedOutputs.end());
+                const bool found { std::find(intersectedOutputs.begin(), intersectedOutputs.end(), o) != intersectedOutputs.end() };
 
                 if (!found)
                     intersectedOutputs.push_back(o);
@@ -146,13 +120,13 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
 
             if (cursor()->hasHardwareSupport(o))
             {
-                LPointF p = newPosS - LPointF(o->pos());
+                LPointF p { newPosS - LPointF(o->pos()) };
 
                 if (o->transform() == LFramebuffer::Flipped)
                     p.setX(o->rect().w() - p.x() - size.w());
                 else if (o->transform() == LFramebuffer::Rotated270)
                 {
-                    Float32 tmp = p.x();
+                    const Float32 tmp { p.x() };
                     p.setX(o->rect().h() - p.y() - size.h());
                     p.setY(tmp);
                 }
@@ -163,13 +137,13 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
                 }
                 else if (o->transform() == LFramebuffer::Rotated90)
                 {
-                    Float32 tmp = p.x();
+                    const Float32 tmp { p.x() };
                     p.setX(p.y());
                     p.setY(o->rect().w() - tmp - size.h());
                 }
                 else if (o->transform() == LFramebuffer::Flipped270)
                 {
-                    Float32 tmp = p.x();
+                    const Float32 tmp { p.x() };
                     p.setX(o->rect().h() - p.y() - size.h());
                     p.setY(o->rect().w() - tmp - size.w());
                 }
@@ -177,7 +151,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
                     p.setY(o->rect().h() - p.y() - size.y());
                 else if (o->transform() == LFramebuffer::Flipped90)
                 {
-                    Float32 tmp = p.x();
+                    const Float32 tmp { p.x() };
                     p.setX(p.y());
                     p.setY(tmp);
                 }
@@ -193,7 +167,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
 
 inline static void texture2Buffer(LCursor *cursor, const LSizeF &size, LFramebuffer::Transform transform)
 {
-    LPainter *painter = cursor->compositor()->imp()->painter;
+    LPainter *painter { cursor->compositor()->imp()->painter };
     glBindFramebuffer(GL_FRAMEBUFFER, cursor->imp()->glFramebuffer);
     LRect src;
 

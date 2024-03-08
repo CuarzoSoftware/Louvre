@@ -15,8 +15,8 @@ LPRIVATE_CLASS(RDataOffer)
     static void set_actions(wl_client *client, wl_resource *resource, UInt32 dnd_actions, UInt32 preferred_action);
     #endif
 
-    LDataOffer *lDataOffer { nullptr };
     RDataDevice *rDataDevice { nullptr };
+    RDataSource::Usage usage;
 };
 
 #endif // RDATAOFFERPRIVATE_H

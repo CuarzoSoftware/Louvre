@@ -1,12 +1,9 @@
 #include <protocols/Wayland/private/RDataDevicePrivate.h>
-#include <private/LDataSourcePrivate.h>
+#include <protocols/Wayland/private/RDataSourcePrivate.h>
 #include <private/LDNDIconRolePrivate.h>
 #include <private/LSurfacePrivate.h>
-#include <private/LDNDManagerPrivate.h>
-#include <private/LDataDevicePrivate.h>
 #include <private/LSeatPrivate.h>
 #include <private/LCompositorPrivate.h>
-#include <protocols/Wayland/RDataSource.h>
 #include <protocols/Wayland/GSeat.h>
 #include <protocols/Wayland/RPointer.h>
 #include <protocols/Wayland/RKeyboard.h>
@@ -16,6 +13,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <LKeyboard.h>
+#include <LClipboard.h>
 
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 2
 void RDataDevice::RDataDevicePrivate::release(wl_client *client, wl_resource *resource)
@@ -32,6 +30,7 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
                                                  wl_resource *icon,
                                                  UInt32 serial)
 {
+    /* TODO
     L_UNUSED(client);
 
     RDataSource *rDataSource { nullptr };
@@ -127,78 +126,84 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
 
     // Notify
     dndManager.startDragRequest();
+    */
 }
 
 void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resource *resource, wl_resource *source, UInt32 serial)
 {
     L_UNUSED(client);
-    L_UNUSED(serial);
 
-    RDataDevice *rDataDevice = (RDataDevice*)wl_resource_get_user_data(resource);
+    RDataDevice *rDataDevice { static_cast<RDataDevice*>(wl_resource_get_user_data(resource)) };
 
     if (source)
     {
-        RDataSource *rDataSource = (RDataSource*)wl_resource_get_user_data(source);
+        RDataSource *rDataSource { static_cast<RDataSource*>(wl_resource_get_user_data(source)) };
 
-        // If this source is already used for clipboard
-        if (rDataSource->dataSource() == seat()->dataSelection())
-            return;
-
-        // Ask the developer if the client should set the clipboard
-        if (!seat()->setSelectionRequest(&rDataDevice->client()->dataDevice()))
+        if (seat()->clipboard()->m_dataSource.get() == rDataSource)
         {
+            LLog::warning("[RDataDevicePrivate::set_selection] Set clipboard request already made with the same data source. Ignoring it.");
+            return;
+        }
+
+        if (rDataSource->usage() != RDataSource::Undefined)
+        {
+            wl_resource_post_error(rDataSource->resource(), WL_DATA_DEVICE_ERROR_USED_SOURCE, "Source already used.");
+            return;
+        }
+
+        const LEvent *triggeringEvent { rDataDevice->client()->findEventBySerial(serial) };
+
+        if (!triggeringEvent)
+        {
+            LLog::warning("[RDataDevicePrivate::set_selection] Set clipboard request without valid triggering event. Ignoring it.");
             rDataSource->cancelled();
             return;
         }
 
-#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
-        // Check if was prevously used for DND
-        if (rDataSource->version() >= 3 && rDataSource->dataSource()->dndActions() != LOUVRE_DND_NO_ACTION_SET)
+        // Ask the user if the client should set the clipboard
+        if (!seat()->clipboard()->setClipboardRequest(rDataDevice->client(), *triggeringEvent))
         {
-            wl_resource_post_error(rDataSource->resource(), WL_DATA_SOURCE_ERROR_INVALID_SOURCE, "Source for selection was previusly used for DND.");
+            LLog::debug("[RDataDevicePrivate::set_selection] Set clipboard request denied by user.");
+            rDataSource->cancelled();
             return;
         }
-#endif
 
-        // Delete previous selected data source if already destroyed by client
-        if (seat()->dataSelection())
+        rDataSource->imp()->usage = RDataSource::Clipboard;
+
+        if (seat()->clipboard()->m_dataSource.get())
         {
-            if (seat()->dataSelection()->dataSourceResource())
-                seat()->dataSelection()->dataSourceResource()->cancelled();
-            else
-            {
-                delete seat()->imp()->dataSelection;
-            }
+            if (seat()->clipboard()->m_dataSource.get()->client() != rDataSource->client())
+                seat()->clipboard()->m_dataSource.get()->cancelled();
+
+            seat()->clipboard()->m_dataSource.reset();
         }
 
-        // Mark current source as selected
-        seat()->imp()->dataSelection = rDataSource->dataSource();
+        seat()->clipboard()->clear();
 
         // Ask client to write to the compositor fds
-        for (LDataSource::LSource &s : rDataSource->dataSource()->imp()->sources)
-        {
-            if (!s.tmp && (
-                    strcmp(s.mimeType, "x-special/gnome-copied-files") == 0 ||
-                    strcmp(s.mimeType, "text/uri-list") == 0 ||
-                    strcmp(s.mimeType, "UTF8_STRING") == 0 ||
-                    strcmp(s.mimeType, "COMPOUND_TEXT") == 0 ||
-                    strcmp(s.mimeType, "TEXT") == 0 ||
-                    strcmp(s.mimeType, "STRING") == 0 ||
-                    strcmp(s.mimeType, "text/plain;charset=utf-8") == 0 ||
-                    strcmp(s.mimeType, "text/plain") == 0))
-            {
-                s.tmp = tmpfile();
-                rDataSource->send(s.mimeType, fileno(s.tmp));
-            }
-        }
+        for (auto &mimeType : rDataSource->imp()->mimeTypes)
+            rDataSource->requestPersistentMimeType(mimeType);
+
+        seat()->clipboard()->m_dataSource.reset(rDataSource);
 
         // If a client already has keyboard focus, send it the current clipboard
         if (seat()->keyboard()->focus())
-            seat()->keyboard()->focus()->client()->dataDevice().sendSelectionEvent();
+        {
+            LClient &client { *seat()->keyboard()->focus()->client() };
+
+            for (auto *seat : client.seatGlobals())
+            {
+                if (seat->dataDeviceResource())
+                {
+                    seat->dataDeviceResource()->createOffer(RDataSource::Clipboard);
+                    break;
+                }
+            }
+        }
     }
     else
     {
-        /* A NULL source should unset the clipboard, but we keep a copy of the contents
-         * then we don't let clients unset the clipboard. */
+        // A NULL source should unset the clipboard, but we keep a copy of the contents
+        // then we don't let clients unset the clipboard.
     }
 }

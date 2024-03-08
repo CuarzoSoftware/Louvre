@@ -130,7 +130,7 @@ protected:
             m_weakRefs.pop_back();
 
             if (weak->m_onDestroyCallback)
-                weak->m_onDestroyCallback(this);
+                (*weak->m_onDestroyCallback)(this);
         }
     }
 private:

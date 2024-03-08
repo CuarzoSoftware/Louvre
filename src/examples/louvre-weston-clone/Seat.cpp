@@ -4,7 +4,7 @@
 #include "Seat.h"
 #include "Output.h"
 
-Seat::Seat(const void *params) : LSeat(params){}
+Seat::Seat(const void *params) noexcept : LSeat(params){}
 
 void Seat::enabledChanged()
 {

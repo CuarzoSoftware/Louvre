@@ -37,8 +37,8 @@ void LToplevelRole::startMoveRequest(const LEvent &triggeringEvent)
         if (!cursor()->output())
             return;
 
-        auto touchDownEvent = (const LTouchDownEvent&)triggeringEvent;
-        auto touchPoint = seat()->touch()->findTouchPoint(touchDownEvent.id());
+        const LTouchDownEvent& touchDownEvent { static_cast<const LTouchDownEvent&>(triggeringEvent) };
+        LTouchPoint *touchPoint { seat()->touch()->findTouchPoint(touchDownEvent.id()) };
 
         if (!touchPoint)
             return;
@@ -46,7 +46,7 @@ void LToplevelRole::startMoveRequest(const LEvent &triggeringEvent)
         if (touchPoint->surface() != surface())
             return;
 
-        const LPoint initDragPoint = LTouch::toGlobal(cursor()->output(), touchPoint->pos());
+        const LPoint initDragPoint { LTouch::toGlobal(cursor()->output(), touchPoint->pos()) };
 
         moveSession().start(triggeringEvent, initDragPoint);
     }
@@ -69,8 +69,8 @@ void LToplevelRole::startResizeRequest(const LEvent &triggeringEvent, ResizeEdge
         if (!cursor()->output())
             return;
 
-        auto touchDownEvent = (const LTouchDownEvent&)triggeringEvent;
-        auto touchPoint = seat()->touch()->findTouchPoint(touchDownEvent.id());
+        const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(triggeringEvent) };
+        LTouchPoint *touchPoint { seat()->touch()->findTouchPoint(touchDownEvent.id()) };
 
         if (!touchPoint)
             return;
@@ -78,7 +78,7 @@ void LToplevelRole::startResizeRequest(const LEvent &triggeringEvent, ResizeEdge
         if (touchPoint->surface() != surface())
             return;
 
-        const LPoint initDragPoint = LTouch::toGlobal(cursor()->output(), touchPoint->pos());
+        const LPoint initDragPoint { LTouch::toGlobal(cursor()->output(), touchPoint->pos()) };
 
         resizeSession().start(triggeringEvent, edge, initDragPoint);
     }

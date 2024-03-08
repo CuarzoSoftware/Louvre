@@ -9,7 +9,7 @@ using namespace Louvre;
 class Clock
 {
 public:
-    Clock();
+    Clock() noexcept;
     bool loadFont(const char *fontName);
     void updateClockText();
     void updateClockTexture();

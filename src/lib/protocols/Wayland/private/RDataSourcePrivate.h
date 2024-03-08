@@ -13,7 +13,12 @@ LPRIVATE_CLASS(RDataSource)
     static void set_actions(wl_client *client, wl_resource *resource, UInt32 dnd_actions);
     #endif
 
-    LDataSource *lDataSource { nullptr };
+    Usage usage { Undefined };
+    std::vector<MimeTypeFile> mimeTypes;
+
+    // DND only
+    UInt32 actions { 0 };
+    std::shared_ptr<LDNDSession> dndSession;
 };
 
 #endif // RDATASOURCEPRIVATE_H

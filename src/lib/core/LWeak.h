@@ -44,6 +44,9 @@ public:
     inline ~LWeak() noexcept
     {
         clear();
+
+        if (m_onDestroyCallback)
+            delete m_onDestroyCallback;
     }
 
     /**
@@ -110,11 +113,20 @@ public:
     /**
      * @brief Set the onDestroy callback function, pass `nullptr` to disable it.
      *
-     * @param callback The callback function to be called when the referenced object is destroyed.
+     * @note callback functions are not copied across LWeak instances.
+     *
+     * @param callback The callback function to be called when the referenced object is destroyed. Passing `nullptr` disables the callback.
      */
-    void setOnDestroyCallback(Callback callback) noexcept
+    void setOnDestroyCallback(const Callback &callback) noexcept
     {
-        m_onDestroyCallback = callback;
+        if (m_onDestroyCallback)
+        {
+            delete m_onDestroyCallback;
+            m_onDestroyCallback = nullptr;
+        }
+
+        if (callback)
+            m_onDestroyCallback = new Callback(callback);
     }
 
 private:
@@ -154,7 +166,7 @@ private:
 
     T *m_object { nullptr };
     UInt64 m_index { 0 };
-    Callback m_onDestroyCallback { nullptr };
+    Callback *m_onDestroyCallback { nullptr };
     /// @endcond OMIT
 };
 

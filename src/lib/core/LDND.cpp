@@ -1,38 +1,48 @@
-#include "LLog.h"
 #include <protocols/Wayland/private/RDataOfferPrivate.h>
 #include <protocols/Wayland/private/RDataDevicePrivate.h>
 #include <protocols/Wayland/GSeat.h>
 #include <protocols/Wayland/RDataDevice.h>
 #include <protocols/Wayland/RDataSource.h>
-#include <private/LDNDManagerPrivate.h>
-#include <private/LDataOfferPrivate.h>
-#include <private/LDataDevicePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <LDNDIconRole.h>
+#include <LDNDSession.h>
 #include <LClient.h>
-#include <LDataSource.h>
 #include <LSeat.h>
 #include <LPointer.h>
+#include <LDND.h>
 #include <LTimer.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::Wayland;
 
-void LDNDManager::setFocus(LSurface *surface, const LPointF &localPos)
+void LDND::setFocus(LSurface *surface, const LPointF &localPos) noexcept
 {
+    /* TODO
+    if (!m_session)
+        return;
+
     if (!surface)
     {
-        imp()->sendLeaveEvent(focus());
+        sendLeaveEvent(focus());
         return;
     }
+    else
+    {
+        // If the source is NULL, only surfaces from the src client are allowed to gain focus
+        if (!source() && surface->client() != origin()->client())
+        {
+            sendLeaveEvent(focus());
+            return;
+        }
+    }
 
-    if (surface == focus() || seat()->dndManager()->imp()->dropped)
+    if (surface == focus())
         return;
     else
     {
-        imp()->sendLeaveEvent(focus());
-        imp()->focus = surface;
+        sendLeaveEvent(focus());
+        focus = surface;
     }
 
     const Float24 x { wl_fixed_from_double(localPos.x()) };
@@ -86,10 +96,12 @@ void LDNDManager::setFocus(LSurface *surface, const LPointF &localPos)
             }
         }
     }
+*/
 }
 
-void LDNDManager::sendMoveEvent(const LPointF &localPos, UInt32 ms)
+void LDND::sendMoveEvent(const LPointF &localPos, UInt32 ms) noexcept
 {
+    /* TODO
     if (!focus() || seat()->dndManager()->imp()->dropped)
         return;
 
@@ -99,70 +111,59 @@ void LDNDManager::sendMoveEvent(const LPointF &localPos, UInt32 ms)
     for (GSeat *gSeat : focus()->client()->seatGlobals())
         if (gSeat->dataDeviceResource())
             gSeat->dataDeviceResource()->motion(ms, x, y);
+    */
 }
 
-const LEvent &LDNDManager::triggeringEvent() const
+const LEvent &LDND::triggeringEvent() const noexcept
 {
-    return *imp()->triggeringEvent.get();
+    return *m_triggeringEvent.get();
 }
 
-LDNDManager::LDNDManager(const void *params) : LPRIVATE_INIT_UNIQUE(LDNDManager)
+LDNDIconRole *LDND::icon() const noexcept
 {
-    L_UNUSED(params);
+    if (m_session)
+        return m_session->icon.get();
+    return nullptr;
 }
 
-LDNDManager::~LDNDManager() {}
-
-LDNDIconRole *LDNDManager::icon() const
+LSurface *LDND::origin() const noexcept
 {
-    return imp()->icon;
+    if (m_session)
+        return m_session->origin.get();
+    return nullptr;
 }
 
-LSurface *LDNDManager::origin() const
+LSurface *LDND::focus() const noexcept
 {
-    return imp()->origin;
+    if (m_session)
+        return m_session->focus.get();
+    return nullptr;
 }
 
-LSurface *LDNDManager::focus() const
+bool LDND::dragging() const noexcept
 {
-    return imp()->focus;
+    return m_session.get() != nullptr;
 }
 
-LDataSource *LDNDManager::source() const
+void LDND::cancel() noexcept
 {
-    return imp()->source;
-}
+    if (m_session)
+        return;
 
-Wayland::RDataDevice *LDNDManager::srcDataDevice() const
-{
-    return imp()->srcDataDevice;
-}
-
-LClient *LDNDManager::dstClient() const
-{
-    return imp()->dstClient;
-}
-
-bool LDNDManager::dragging() const
-{
-    return imp()->origin != nullptr && !imp()->dropped;
-}
-
-void LDNDManager::cancel()
-{
-    if (source())
+    if (m_session->source.get())
     {
-        source()->dataSourceResource()->cancelled();
-        source()->dataSourceResource()->dndFinished();
+        m_session->source.get()->cancelled();
+        m_session->source.get()->dndFinished();
     }
 
-    imp()->sendLeaveEvent(focus());
-    imp()->clear();
+    sendLeaveEvent(focus());
     cancelled();
+    m_session.reset();
 }
 
-void LDNDManager::drop()
+void LDND::drop() noexcept
 {
+    /* TODO
     if (!dragging())
         return;
 
@@ -214,24 +215,41 @@ void LDNDManager::drop()
             cancel();
         }
     }
+*/
 }
 
 // Since 3
 
-LDNDManager::Action LDNDManager::preferredAction() const
+LDND::Action LDND::preferredAction() const noexcept
 {
-    return imp()->preferredAction;
+    return (Action)m_compositorAction;
 }
 
-void LDNDManager::setPreferredAction(LDNDManager::Action action)
+void LDND::setPreferredAction(LDND::Action action) noexcept
 {
-    if (imp()->preferredAction == action)
+    if (m_compositorAction == action)
         return;
 
-    imp()->preferredAction = action;
+    m_compositorAction = action;
 
-    if (focus())
-        for (Wayland::GSeat *s : focus()->client()->seatGlobals())
-            if (s->dataDeviceResource() && s->dataDeviceResource()->dataOffered())
-                s->dataDeviceResource()->dataOffered()->imp()->updateDNDAction();
+    if (m_session)
+    {
+        m_session->compositorAction = action;
+        m_session->updateActions();
+    }
+}
+
+void LDND::sendLeaveEvent(LSurface *surface) noexcept
+{
+    /* TODO
+    matchedMimeType = false;
+    focus = nullptr;
+
+    if (!surface)
+        return;
+
+    for (auto seatGlobal : surface->client()->seatGlobals())
+        if (seatGlobal->dataDeviceResource())
+            seatGlobal->dataDeviceResource()->leave();
+    */
 }

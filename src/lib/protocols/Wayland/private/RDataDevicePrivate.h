@@ -14,7 +14,6 @@ LPRIVATE_CLASS(RDataDevice)
     #endif
 
     GSeat *gSeat { nullptr };
-    LDataOffer *dataOffered { nullptr };
     LastEventSerials serials;
 };
 

@@ -1,12 +1,12 @@
+#include "LLog.h"
 #include <protocols/Wayland/private/RDataOfferPrivate.h>
 #include <protocols/Wayland/private/RDataSourcePrivate.h>
 #include <protocols/Wayland/private/RDataDevicePrivate.h>
 #include <protocols/Wayland/GSeat.h>
-#include <private/LDNDManagerPrivate.h>
-#include <private/LDataOfferPrivate.h>
-#include <private/LDataDevicePrivate.h>
+#include <LClipboard.h>
 #include <LClient.h>
 #include <LSeat.h>
+#include <LDND.h>
 #include <unistd.h>
 #include <cstring>
 #include <stdio.h>
@@ -19,27 +19,30 @@ void RDataOffer::RDataOfferPrivate::destroy(wl_client *client, wl_resource *reso
 
 void RDataOffer::RDataOfferPrivate::accept(wl_client *client, wl_resource *resource, UInt32 serial, const char *mime_type)
 {
+    /* TODO DND ONLY
     L_UNUSED(client);
     L_UNUSED(serial);
 
     RDataOffer *lRDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
 
-    if (!seat()->dndManager()->focus())
+    if (!seat()->dnd()->focus())
         return;
 
-    if (seat()->dndManager()->focus()->client() != lRDataOffer->client())
+    if (seat()->dnd()->focus()->client() != lRDataOffer->client())
         return;
 
-    if (seat()->dndManager()->source())
+    if (seat()->dnd()->source())
     {
-        seat()->dndManager()->source()->dataSourceResource()->target(mime_type);
-        seat()->dndManager()->imp()->matchedMimeType = mime_type != NULL;
+        seat()->dnd()->source()->dataSourceResource()->target(mime_type);
+        seat()->dnd()->imp()->matchedMimeType = mime_type != NULL;
     }
+    */
 }
 
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
 void RDataOffer::RDataOfferPrivate::finish(wl_client *client, wl_resource *resource)
 {
+    /* TODO DND ONLY
     L_UNUSED(client);
 
     RDataOffer *lRDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
@@ -65,43 +68,50 @@ void RDataOffer::RDataOfferPrivate::finish(wl_client *client, wl_resource *resou
         seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDLeaveEvent();
 
     seat()->dndManager()->imp()->clear();
+    */
 }
 #endif
 
-void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *resource, const char *mime_type, Int32 fd)
+void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *resource, const char *requestedMimeType, Int32 fd)
 {
     L_UNUSED(client);
 
-    RDataOffer *rDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
+    RDataOffer *rDataOffer { static_cast<RDataOffer*>(wl_resource_get_user_data(resource)) };
 
+    /*
     // If used in drag n drop
     if (rDataOffer->dataOffer()->usedFor() == LDataOffer::DND && seat()->dndManager()->source())
     {
         // Ask the source client to write the data to the FD given the mime type
         seat()->dndManager()->source()->dataSourceResource()->send(mime_type, fd);
-    }
+    }*/
 
     // If used in clipboard
-    else if (rDataOffer->dataOffer()->usedFor() == LDataOffer::Selection && seat()->dataSelection())
+    if (rDataOffer->usage() == RDataSource::Clipboard)
     {
         // Louvre keeps a copy of the source clipboard for each mime type (so we don't ask the source client to write the data)
-        for (LDataSource::LSource &s : seat()->dataSelection()->imp()->sources)
+        for (const auto &mimeType : seat()->clipboard()->mimeTypes())
         {
-            if (strcmp(s.mimeType, mime_type) == 0)
+            if (mimeType.mimeType == requestedMimeType)
             {
-                if (s.tmp)
+                if (seat()->clipboard()->m_dataSource.get())
                 {
-                    fseek(s.tmp, 0L, SEEK_END);
+                    seat()->clipboard()->m_dataSource.get()->send(requestedMimeType, fd);
+                    seat()->clipboard()->m_dataSource.get()->client()->flush();
+                }
+                else if (mimeType.tmp)
+                {
+                    fseek(mimeType.tmp, 0L, SEEK_END);
 
-                    Int32 total = ftell(s.tmp);
+                    Int64 total { ftell(mimeType.tmp) };
 
                     // If pointer is at the beggining means the source client has not written any data
                     if (total == 0)
                         break;
 
-                    rewind(s.tmp);
+                    rewind(mimeType.tmp);
 
-                    Int32 written = 0, readN = 0, toRead = 0, offset = 0;
+                    Int64 written = 0, readN = 0, toRead = 0, offset = 0;
                     UChar8 buffer[1024];
 
                     while (total > 0)
@@ -111,7 +121,7 @@ void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *reso
                         else
                             toRead = 1024;
 
-                        readN = fread(buffer, sizeof(UChar8), toRead, s.tmp);
+                        readN = fread(buffer, sizeof(UChar8), toRead, mimeType.tmp);
 
                         if (readN != toRead)
                             break;
@@ -134,11 +144,7 @@ void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *reso
                         total -= readN;
                     }
                 }
-                else if (seat()->dataSelection()->dataSourceResource())
-                {
-                    // Ask the source client to write the data to the FD given the mime type
-                    seat()->dataSelection()->dataSourceResource()->send(mime_type, fd);
-                }
+
 
                 break;
             }
@@ -151,6 +157,7 @@ void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *reso
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
 void RDataOffer::RDataOfferPrivate::set_actions(wl_client *client, wl_resource *resource, UInt32 dnd_actions, UInt32 preferred_action)
 {
+    /* TODO
     L_UNUSED(client);
 
     RDataOffer *rDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
@@ -185,5 +192,6 @@ void RDataOffer::RDataOfferPrivate::set_actions(wl_client *client, wl_resource *
     rDataOffer->dataOffer()->imp()->acceptedActions = dnd_actions;
     rDataOffer->dataOffer()->imp()->preferredAction = preferred_action;
     rDataOffer->dataOffer()->imp()->updateDNDAction();
+    */
 }
 #endif

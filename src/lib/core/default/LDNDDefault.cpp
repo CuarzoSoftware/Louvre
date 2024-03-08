@@ -1,8 +1,7 @@
-#include <LDNDManager.h>
+#include <LDND.h>
 #include <LSeat.h>
 #include <LPointer.h>
 #include <LCompositor.h>
-#include <LDataSource.h>
 #include <LDNDIconRole.h>
 #include <LPointerButtonEvent.h>
 #include <LCursor.h>
@@ -13,7 +12,7 @@
 using namespace Louvre;
 
 //! [startDragRequest]
-void LDNDManager::startDragRequest()
+void LDND::startDragRequest() noexcept
 {
     // Left pointer button click
     if (triggeringEvent().type() == LEvent::Type::Pointer && origin()->hasPointerFocus() && seat()->pointer()->isButtonPressed(LPointerButtonEvent::Left))
@@ -44,7 +43,7 @@ void LDNDManager::startDragRequest()
 //! [startDragRequest]
 
 //! [cancelled]
-void LDNDManager::cancelled()
+void LDND::cancelled() noexcept
 {
     if (icon())
         icon()->surface()->repaintOutputs();

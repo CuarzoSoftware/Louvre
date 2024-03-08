@@ -17,10 +17,10 @@ class Louvre::LRectTemplate
 public:
 
     /// Initializes the vector with (0,0,0,0).
-    inline LRectTemplate() {}
+    inline constexpr LRectTemplate() noexcept {}
 
     /// Initializes the vector with (x,y,width,height).
-    inline LRectTemplate(TA x, TA y, TA width, TA height)
+    inline constexpr LRectTemplate(TA x, TA y, TA width, TA height) noexcept
     {
         m_topLeft.m_x       = x;
         m_topLeft.m_y       = y;
@@ -29,47 +29,47 @@ public:
     }
 
     /// Initializes the vector with (topLeft.x(),topLeft.y(),bottomRight.x(),bottomRight.y()).
-    inline LRectTemplate(const LPointTemplate<TA,TB> &topLeft, const LPointTemplate<TA,TB> &bottomRight) : m_topLeft(topLeft), m_bottomRight(bottomRight){}
+    inline constexpr LRectTemplate(const LPointTemplate<TA,TB> &topLeft, const LPointTemplate<TA,TB> &bottomRight) noexcept : m_topLeft(topLeft), m_bottomRight(bottomRight){}
 
     /// Initializes the vector with (topLeft.x(),topLeft.y(),bottomRight.x(),bottomRight.y()).
-    inline LRectTemplate(TA topLeft, const LPointTemplate<TA,TB> &bottomRight) : m_topLeft(topLeft), m_bottomRight(bottomRight){}
+    inline constexpr LRectTemplate(TA topLeft, const LPointTemplate<TA,TB> &bottomRight) noexcept : m_topLeft(topLeft), m_bottomRight(bottomRight){}
 
     /// Initializes the vector with (topLeft.x(),topLeft.y(),bottomRight.x(),bottomRight.y()).
-    inline LRectTemplate(const LPointTemplate<TA,TB> &topLeft, TA bottomRight) : m_topLeft(topLeft), m_bottomRight(bottomRight){}
+    inline constexpr LRectTemplate(const LPointTemplate<TA,TB> &topLeft, TA bottomRight) noexcept : m_topLeft(topLeft), m_bottomRight(bottomRight){}
 
     /// Initializes the vector with (all,all,all,all).
-    inline LRectTemplate(TA all) : m_topLeft(all), m_bottomRight(all){}
+    inline constexpr LRectTemplate(TA all) noexcept : m_topLeft(all), m_bottomRight(all){}
 
     /// Initializes the vector with (p.x(),p.y(),p.x(),p.y()).
-    inline LRectTemplate(const LPointTemplate<TA,TB> &p) : m_topLeft(p), m_bottomRight(p){}
+    inline constexpr LRectTemplate(const LPointTemplate<TA,TB> &p) noexcept : m_topLeft(p), m_bottomRight(p){}
 
     /// Copy constructor
-    inline LRectTemplate(const LRectTemplate<TB,TA> &r)
+    inline constexpr LRectTemplate(const LRectTemplate<TB,TA> &r) noexcept
     {
         m_topLeft = r.m_topLeft;
         m_bottomRight = r.m_bottomRight;
     }
 
     /// First vector component
-    inline TA x()       const   {return m_topLeft.m_x;}
+    inline constexpr TA x()       const noexcept   {return m_topLeft.m_x;}
 
     /// Second vector component
-    inline TA y()       const   {return m_topLeft.m_y;}
+    inline constexpr TA y()       const noexcept   {return m_topLeft.m_y;}
 
     /// Third vector component
-    inline TA w()       const   {return m_bottomRight.m_x;}
+    inline constexpr TA w()       const noexcept   {return m_bottomRight.m_x;}
 
     /// Fourth vector component
-    inline TA h()       const   {return m_bottomRight.m_y;}
+    inline constexpr TA h()       const noexcept   {return m_bottomRight.m_y;}
 
     /// Third vector component
-    inline TA width()   const   {return m_bottomRight.m_x;}
+    inline constexpr TA width()   const noexcept   {return m_bottomRight.m_x;}
 
     /// Fourth vector component
-    inline TA height()  const   {return m_bottomRight.m_y;}
+    inline constexpr TA height()  const noexcept   {return m_bottomRight.m_y;}
 
     /// The multiplication of the third and fourth component (width*height)
-    inline TA area()    const   {return m_bottomRight.m_x*m_bottomRight.m_y;}
+    inline constexpr TA area()    const noexcept   {return m_bottomRight.m_x*m_bottomRight.m_y;}
 
     /**
      * Returns true if the rectangle contains the point.
@@ -77,7 +77,7 @@ public:
      * @param point The 2D vector to check
      * @param inclusive If true, the edges of the rectangle are considered as part of the rectangle.
      */
-    inline bool containsPoint(const LPointTemplate<TA,TB> &point, bool inclusive = true) const
+    inline constexpr bool containsPoint(const LPointTemplate<TA,TB> &point, bool inclusive = true) const noexcept
     {
         if(inclusive)
         {
@@ -99,7 +99,7 @@ public:
      * @param rect Rectangle to intersect
      * @param inclusive If true, the edges of the rectangle are considered
      */
-    inline bool intersects(const LRectTemplate &rect, bool inclusive = true) const
+    inline constexpr bool intersects(const LRectTemplate &rect, bool inclusive = true) const noexcept
     {
         if(inclusive)
         {
@@ -116,79 +116,79 @@ public:
     }
 
     /// 2D vector given by the (x,y) components of the rectangle
-    inline const LPointTemplate<TA,TB> &topLeft() const {return m_topLeft;}
+    inline constexpr const LPointTemplate<TA,TB> &topLeft() const noexcept {return m_topLeft;}
 
     /// 2D vector given by the (w,h) components of the rectangle
-    inline const LSize &bottomRight() const   {return m_bottomRight;}
+    inline constexpr const LSize &bottomRight() const noexcept {return m_bottomRight;}
 
     /// 2D vector given by the (x,y) components of the rectangle
-    inline const LPointTemplate<TA,TB> &TL()    const   {return m_topLeft;}
+    inline constexpr const LPointTemplate<TA,TB> &TL() const noexcept {return m_topLeft;}
 
     /// 2D vector given by the (w,h) components of the rectangle
-    inline const LSize &BR() const   {return m_bottomRight;}
+    inline constexpr const LSize &BR() const noexcept {return m_bottomRight;}
 
     /// 2D vector given by the (x,y) components of the rectangle
-    inline const LPointTemplate<TA,TB> &pos()    const   {return m_topLeft;}
+    inline constexpr const LPointTemplate<TA,TB> &pos() const noexcept {return m_topLeft;}
 
     /// 2D vector given by the (w,h) components of the rectangle
-    inline const LSize &size() const   {return m_bottomRight;}
+    inline constexpr const LSize &size() const noexcept {return m_bottomRight;}
 
     /// Asigns the first component
-    inline void setX(TA x){m_topLeft.m_x = x;}
+    inline constexpr void setX(TA x) noexcept {m_topLeft.m_x = x;}
 
     /// Asigns the second component
-    inline void setY(TA y){m_topLeft.m_y = y;}
+    inline constexpr void setY(TA y) noexcept {m_topLeft.m_y = y;}
 
     /// Asigns the third component
-    inline void setW(TA width){m_bottomRight.m_x = width;}
+    inline constexpr void setW(TA width) noexcept {m_bottomRight.m_x = width;}
 
     /// Asigns the fourth component
-    inline void setH(TA height){m_bottomRight.m_y = height;}
+    inline constexpr void setH(TA height) noexcept {m_bottomRight.m_y = height;}
 
     /// Asigns the third component
-    inline void setWidth(TA width){m_bottomRight.m_x = width;}
+    inline constexpr void setWidth(TA width) noexcept {m_bottomRight.m_x = width;}
 
     /// Asigns the fourth component
-    inline void setHeight(TA height){m_bottomRight.m_y = height;}
+    inline constexpr void setHeight(TA height) noexcept {m_bottomRight.m_y = height;}
 
     /// Asigns the (x,y) components
-    inline void setTL(const LPointTemplate<TA,TB> &p){m_topLeft = p;}
+    inline constexpr void setTL(const LPointTemplate<TA,TB> &p) noexcept {m_topLeft = p;}
 
     /// Asigns the (w,h) components
-    inline void setBR(const LPointTemplate<TA,TB> &p){m_bottomRight = p;}
+    inline constexpr void setBR(const LPointTemplate<TA,TB> &p) noexcept {m_bottomRight = p;}
 
     /// Asigns the (x,y) components
-    inline void setTL(const LPointTemplate<TB,TA> &p){m_topLeft = p;}
+    inline constexpr void setTL(const LPointTemplate<TB,TA> &p) noexcept {m_topLeft = p;}
 
     /// Asigns the (w,h) components
-    inline void setBR(const LPointTemplate<TB,TA> &p){m_bottomRight = p;}
+    inline constexpr void setBR(const LPointTemplate<TB,TA> &p) noexcept {m_bottomRight = p;}
 
     /// Asigns the (x,y) components
-    inline void setTopLeft(const LPointTemplate<TA,TB> &p){m_topLeft = p;}
+    inline constexpr void setTopLeft(const LPointTemplate<TA,TB> &p) noexcept {m_topLeft = p;}
 
     /// Asigns the (w,h) components
-    inline void setBottomRight(const LPointTemplate<TA,TB> &p){m_bottomRight = p;}
+    inline constexpr void setBottomRight(const LPointTemplate<TA,TB> &p) noexcept {m_bottomRight = p;}
 
     /// Asigns the (x,y) components
-    inline void setTopLeft(const LPointTemplate<TB,TA> &p){m_topLeft = p;}
+    inline constexpr void setTopLeft(const LPointTemplate<TB,TA> &p) noexcept {m_topLeft = p;}
 
     /// Asigns the (w,h) components
-    inline void setBottomRight(const LPointTemplate<TB,TA> &p){m_bottomRight = p;}
+    inline constexpr void setBottomRight(const LPointTemplate<TB,TA> &p) noexcept {m_bottomRight = p;}
 
     /// Asigns the (x,y) components
-    inline void setPos(const LPointTemplate<TA,TB> &p){m_topLeft = p;}
+    inline constexpr void setPos(const LPointTemplate<TA,TB> &p) noexcept {m_topLeft = p;}
 
     /// Asigns the (w,h) components
-    inline void setSize(const LPointTemplate<TA,TB> &p){m_bottomRight = p;}
+    inline constexpr void setSize(const LPointTemplate<TA,TB> &p) noexcept {m_bottomRight = p;}
 
     /// Asigns the (x,y) components
-    inline void setPos(const LPointTemplate<TB,TA> &p){m_topLeft = p;}
+    inline constexpr void setPos(const LPointTemplate<TB,TA> &p) noexcept {m_topLeft = p;}
 
     /// Asigns the (w,h) components
-    inline void setSize(const LPointTemplate<TB,TA> &p){m_bottomRight = p;}
+    inline constexpr void setSize(const LPointTemplate<TB,TA> &p) noexcept {m_bottomRight = p;}
 
     /// Returns true if the resulting rectangle has an area of 0.
-    inline bool clip(const LRectTemplate &rect)
+    inline constexpr bool clip(const LRectTemplate &rect) noexcept
     {
         TA x0 = x();
         TA x1 = x0 + w();
@@ -230,7 +230,7 @@ public:
         return (w() == 0 || h() == 0 );
     }
 
-    inline LRectTemplate &operator+=(TA factor)
+    inline constexpr LRectTemplate &operator+=(TA factor) noexcept
     {
         m_topLeft.m_x += factor;
         m_topLeft.m_y += factor;
@@ -239,7 +239,7 @@ public:
         return *this;
     }
 
-    inline LRectTemplate &operator-=(TA factor)
+    inline constexpr LRectTemplate &operator-=(TA factor) noexcept
     {
         m_topLeft.m_x -= factor;
         m_topLeft.m_y -= factor;
@@ -248,7 +248,7 @@ public:
         return *this;
     }
 
-    inline LRectTemplate &operator*=(TA factor)
+    inline constexpr LRectTemplate &operator*=(TA factor) noexcept
     {
         m_topLeft.m_x *= factor;
         m_topLeft.m_y *= factor;
@@ -257,7 +257,7 @@ public:
         return *this;
     }
 
-    inline LRectTemplate &operator/=(TA factor)
+    inline constexpr LRectTemplate &operator/=(TA factor) noexcept
     {
         m_topLeft.m_x /= factor;
         m_topLeft.m_y /= factor;
@@ -266,7 +266,7 @@ public:
         return *this;
     }
 
-    inline LRectTemplate &operator+=(TB factor)
+    inline constexpr LRectTemplate &operator+=(TB factor) noexcept
     {
         m_topLeft.m_x += factor;
         m_topLeft.m_y += factor;
@@ -275,7 +275,7 @@ public:
         return *this;
     }
 
-    inline LRectTemplate &operator-=(TB factor)
+    inline constexpr LRectTemplate &operator-=(TB factor) noexcept
     {
         m_topLeft.m_x -= factor;
         m_topLeft.m_y -= factor;
@@ -284,7 +284,7 @@ public:
         return *this;
     }
 
-    inline LRectTemplate &operator*=(TB factor)
+    inline constexpr LRectTemplate &operator*=(TB factor) noexcept
     {
         m_topLeft.m_x *= factor;
         m_topLeft.m_y *= factor;
@@ -293,7 +293,7 @@ public:
         return *this;
     }
 
-    inline LRectTemplate &operator/=(TB factor)
+    inline constexpr LRectTemplate &operator/=(TB factor) noexcept
     {
         m_topLeft.m_x /= factor;
         m_topLeft.m_y /= factor;
@@ -302,7 +302,7 @@ public:
         return *this;
     }
 
-    inline LRectTemplate &operator+=(const LRectTemplate &r)
+    inline constexpr LRectTemplate &operator+=(const LRectTemplate &r) noexcept
     {
         m_topLeft.m_x += r.m_topLeft.m_x;
         m_topLeft.m_y += r.m_topLeft.m_y;
@@ -311,7 +311,7 @@ public:
         return *this;
     }
 
-    inline LRectTemplate &operator-=(const LRectTemplate &r)
+    inline constexpr LRectTemplate &operator-=(const LRectTemplate &r) noexcept
     {
         m_topLeft.m_x -= r.m_topLeft.m_x;
         m_topLeft.m_y -= r.m_topLeft.m_y;
@@ -320,7 +320,7 @@ public:
         return *this;
     }
 
-    inline LRectTemplate &operator*=(const LRectTemplate &r)
+    inline constexpr LRectTemplate &operator*=(const LRectTemplate &r) noexcept
     {
         m_topLeft.m_x *= r.m_topLeft.m_x;
         m_topLeft.m_y *= r.m_topLeft.m_y;
@@ -329,7 +329,7 @@ public:
         return *this;
     }
 
-    inline LRectTemplate &operator/=(const LRectTemplate &r)
+    inline constexpr LRectTemplate &operator/=(const LRectTemplate &r) noexcept
     {
         m_topLeft.m_x /= r.m_topLeft.m_x;
         m_topLeft.m_y /= r.m_topLeft.m_y;
@@ -338,100 +338,100 @@ public:
         return *this;
     }
 
-    inline LRectTemplate operator+(TA factor) const
+    inline constexpr LRectTemplate operator+(TA factor) const noexcept
     {
         return LRectTemplate(m_topLeft.m_x+factor,m_topLeft.m_y+factor,m_bottomRight.m_x+factor,m_bottomRight.m_y+factor);
     }
 
-    inline LRectTemplate operator-(TA factor) const
+    inline constexpr LRectTemplate operator-(TA factor) const noexcept
     {
         return LRectTemplate(m_topLeft.m_x-factor,m_topLeft.m_y-factor,m_bottomRight.m_x-factor,m_bottomRight.m_y-factor);
     }
 
-    inline LRectTemplate operator*(TA factor) const
+    inline constexpr LRectTemplate operator*(TA factor) const noexcept
     {
         return LRectTemplate(m_topLeft.m_x*factor,m_topLeft.m_y*factor,m_bottomRight.m_x*factor,m_bottomRight.m_y*factor);
     }
 
-    inline LRectTemplate operator/(TA factor) const
+    inline constexpr LRectTemplate operator/(TA factor) const noexcept
     {
         return LRectTemplate(m_topLeft.m_x/factor,m_topLeft.m_y/factor,m_bottomRight.m_x/factor,m_bottomRight.m_y/factor);
     }
 
-    inline LRectTemplate operator+(TB factor) const
+    inline constexpr LRectTemplate operator+(TB factor) const noexcept
     {
         return LRectTemplate(m_topLeft.m_x+factor,m_topLeft.m_y+factor,m_bottomRight.m_x+factor,m_bottomRight.m_y+factor);
     }
 
-    inline LRectTemplate operator-(TB factor) const
+    inline constexpr LRectTemplate operator-(TB factor) const noexcept
     {
         return LRectTemplate(m_topLeft.m_x-factor,m_topLeft.m_y-factor,m_bottomRight.m_x-factor,m_bottomRight.m_y-factor);
     }
 
-    inline LRectTemplate operator*(TB factor) const
+    inline constexpr LRectTemplate operator*(TB factor) const noexcept
     {
         return LRectTemplate(m_topLeft.m_x*factor,m_topLeft.m_y*factor,m_bottomRight.m_x*factor,m_bottomRight.m_y*factor);
     }
 
-    inline LRectTemplate operator/(TB factor) const
+    inline constexpr LRectTemplate operator/(TB factor) const noexcept
     {
         return LRectTemplate(m_topLeft.m_x/factor,m_topLeft.m_y/factor,m_bottomRight.m_x/factor,m_bottomRight.m_y/factor);
     }
 
-    inline LRectTemplate operator+(const LRectTemplate &r) const
+    inline constexpr LRectTemplate operator+(const LRectTemplate &r) const noexcept
     {
         return LRectTemplate(m_topLeft.m_x+r.m_topLeft.m_x,m_topLeft.m_y+r.m_topLeft.m_y,m_bottomRight.m_x+r.m_bottomRight.m_x,m_bottomRight.m_y+r.m_bottomRight.m_y);
     }
 
-    inline LRectTemplate operator-(const LRectTemplate &r) const
+    inline constexpr LRectTemplate operator-(const LRectTemplate &r) const noexcept
     {
         return LRectTemplate(m_topLeft.m_x-r.m_topLeft.m_x,m_topLeft.m_y-r.m_topLeft.m_y,m_bottomRight.m_x-r.m_bottomRight.m_x,m_bottomRight.m_y-r.m_bottomRight.m_y);
     }
 
-    inline LRectTemplate operator*(const LRectTemplate &r) const
+    inline constexpr LRectTemplate operator*(const LRectTemplate &r) const noexcept
     {
         return LRectTemplate(m_topLeft.m_x*r.m_topLeft.m_x,m_topLeft.m_y*r.m_topLeft.m_y,m_bottomRight.m_x*r.m_bottomRight.m_x,m_bottomRight.m_y*r.m_bottomRight.m_y);
     }
 
-    inline LRectTemplate operator/(const LRectTemplate &r) const
+    inline constexpr LRectTemplate operator/(const LRectTemplate &r) const noexcept
     {
         return LRectTemplate(m_topLeft.m_x/r.m_topLeft.m_x,m_topLeft.m_y/r.m_topLeft.m_y,m_bottomRight.m_x/r.m_bottomRight.m_x,m_bottomRight.m_y/r.m_bottomRight.m_y);
     }
 
-    inline bool operator==(const LRectTemplate &p) const
+    inline constexpr bool operator==(const LRectTemplate &p) const noexcept
     {
         return m_topLeft.m_x == p.m_topLeft.m_x && m_topLeft.m_y == p.m_topLeft.m_y && m_bottomRight.m_x == p.m_bottomRight.m_x && m_bottomRight.m_y == p.m_bottomRight.m_y;
     }
 
-    inline bool operator!=(const LRectTemplate &p) const
+    inline constexpr bool operator!=(const LRectTemplate &p) const noexcept
     {
         return m_topLeft.m_x != p.m_topLeft.m_x || m_topLeft.m_y != p.m_topLeft.m_y || m_bottomRight.m_x != p.m_bottomRight.m_x || m_bottomRight.m_y != p.m_bottomRight.m_y;
     }
 
     /*******************************************************************/
 
-    inline LRectTemplate &operator+=(const LPointTemplate<TA,TB> &p)
+    inline constexpr LRectTemplate &operator+=(const LPointTemplate<TA,TB> &p) noexcept
     {
         m_topLeft += p;
         m_bottomRight += p;
         return *this;
     }
 
-    inline LRectTemplate &operator-=(const LPointTemplate<TA,TB> &p)
+    inline constexpr LRectTemplate &operator-=(const LPointTemplate<TA,TB> &p) noexcept
     {
         m_topLeft -= p;
         m_bottomRight -= p;
         return *this;
     }
 
-    inline LRectTemplate &operator*=(const LPointTemplate<TA,TB> &p)
+    inline constexpr LRectTemplate &operator*=(const LPointTemplate<TA,TB> &p) noexcept
     {
         m_topLeft *= p;
         m_bottomRight *= p;
         return *this;
     }
 
-    inline LRectTemplate &operator/=(const LPointTemplate<TA,TB> &p)
+    inline constexpr LRectTemplate &operator/=(const LPointTemplate<TA,TB> &p) noexcept
     {
         m_topLeft /= p;
         m_bottomRight /= p;

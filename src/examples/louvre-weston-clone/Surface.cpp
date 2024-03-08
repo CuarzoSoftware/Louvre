@@ -6,7 +6,7 @@
 #include "LCursor.h"
 #include "Output.h"
 
-Surface::Surface(const void *params) : LSurface(params) {}
+Surface::Surface(const void *params) noexcept : LSurface(params) {}
 
 void Surface::mappingChanged()
 {

@@ -1,6 +1,7 @@
 #ifndef RDATADEVICE_H
 #define RDATADEVICE_H
 
+#include <protocols/Wayland/RDataSource.h>
 #include <LResource.h>
 
 class Louvre::Protocols::Wayland::RDataDevice : public LResource
@@ -15,16 +16,16 @@ public:
     };
 
     GSeat *seatGlobal() const;
-    LDataOffer *dataOffered() const;
     const LastEventSerials &serials() const;
+    RDataOffer *createOffer(RDataSource::Usage usage) noexcept;
 
     // Since 1
-    bool dataOffer(RDataOffer *id);
+    bool dataOffer(RDataOffer *offer);
     bool enter(UInt32 serial, RSurface *surface, Float24 x, Float24 y, RDataOffer *id);
     bool leave();
     bool motion(UInt32 time, Float24 x, Float24 y);
     bool drop();
-    bool selection(RDataOffer *id);
+    bool selection(RDataOffer *offer);
 
     LPRIVATE_IMP_UNIQUE(RDataDevice)
 };

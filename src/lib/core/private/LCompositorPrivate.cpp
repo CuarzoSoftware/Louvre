@@ -7,6 +7,7 @@
 #include <private/LCursorPrivate.h>
 #include <private/LAnimationPrivate.h>
 #include <private/LToplevelRolePrivate.h>
+#include <LClipboard.h>
 #include <LKeyboard.h>
 #include <LPointer.h>
 #include <LTouch.h>
@@ -447,8 +448,11 @@ void LCompositor::LCompositorPrivate::unitSeat()
         if (seat->touch())
             LCompositor::compositor()->destroyTouchRequest(seat->touch());
 
-        if (seat->dndManager())
-            LCompositor::compositor()->destroyDNDManagerRequest(seat->dndManager());
+        if (seat->dnd())
+            LCompositor::compositor()->destroyDNDRequest(seat->dnd());
+
+        if (seat->clipboard())
+            LCompositor::compositor()->destroyClipboardRequest(seat->clipboard());
 
         LCompositor::compositor()->destroySeatRequest(seat);
 
@@ -475,11 +479,18 @@ void LCompositor::LCompositorPrivate::unitSeat()
             LLog::debug("[LCompositorPrivate::unitSeat] Touch uninitialized successfully.");
         }
 
-        if (seat->dndManager())
+        if (seat->dnd())
         {
-            delete seat->imp()->dndManager;
-            seat->imp()->dndManager = nullptr;
+            delete seat->imp()->dnd;
+            seat->imp()->dnd = nullptr;
             LLog::debug("[LCompositorPrivate::unitSeat] DND Manager uninitialized successfully.");
+        }
+
+        if (seat->clipboard())
+        {
+            delete seat->imp()->clipboard;
+            seat->imp()->clipboard = nullptr;
+            LLog::debug("[LCompositorPrivate::unitSeat] Clipboard Manager uninitialized successfully.");
         }
 
         delete seat;

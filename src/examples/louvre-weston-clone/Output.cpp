@@ -1,23 +1,25 @@
-#include "Output.h"
+#include <LPointerMoveEvent.h>
 #include <LRenderBuffer.h>
-#include "TerminalIcon.h"
-#include <Compositor.h>
 #include <LPainter.h>
-#include <Surface.h>
 #include <LToplevelRole.h>
-#include <LTime.h>
 #include <LCursor.h>
-#include <LLog.h>
 #include <LOpenGL.h>
-#include <unistd.h>
 #include <LSeat.h>
 #include <LPointer.h>
-#include <LDNDManager.h>
+#include <LDND.h>
 #include <LDNDIconRole.h>
+#include <LTime.h>
+#include <LLog.h>
+#include <unistd.h>
 
-Output::Output(const void *params) : LOutput(params){}
+#include "TerminalIcon.h"
+#include "Compositor.h"
+#include "Surface.h"
+#include "Output.h"
 
-void Output::loadWallpaper()
+Output::Output(const void *params) noexcept : LOutput(params){}
+
+void Output::loadWallpaper() noexcept
 {
     LTexture *background { LOpenGL::loadTexture(std::filesystem::path(getenvString("HOME")) / ".config/Louvre/wallpaper.jpg") };
 
@@ -31,7 +33,7 @@ void Output::loadWallpaper()
     }
 }
 
-void Output::fullDamage()
+void Output::fullDamage() noexcept
 {
     Compositor *c { (Compositor*)compositor() };
 
@@ -143,7 +145,7 @@ void Output::paintGL()
 
     // Check if surface moved under cursor
     if (seat()->pointer()->surfaceAt(cursor()->pos()) != seat()->pointer()->focus())
-        seat()->pointer()->pointerMoveEvent(0, 0, false);
+        seat()->pointer()->pointerMoveEvent(LPointerMoveEvent());
 
     if (c->clock && c->clock->texture && redrawClock)
     {
@@ -156,8 +158,8 @@ void Output::paintGL()
         newDamage.addRect(dstClockRect);
     }
 
-    if (seat()->dndManager()->icon())
-        seat()->dndManager()->icon()->surface()->raise();
+    if (seat()->dnd()->icon())
+        seat()->dnd()->icon()->surface()->raise();
 
     /*********************************************************
      ***************** CALC SURFACES DAMAGE ******************

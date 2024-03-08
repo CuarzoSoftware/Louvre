@@ -2,7 +2,7 @@
 #define LSEATPRIVATE_H
 
 #include <LSeat.h>
-#include <private/LDNDManagerPrivate.h>
+#include <LDND.h>
 
 #ifdef  __cplusplus
 extern "C" {
@@ -13,6 +13,8 @@ extern "C" {
 #ifdef  __cplusplus
 }
 #endif
+
+using namespace Louvre;
 
 struct LSeat::Params
 {
@@ -26,16 +28,14 @@ LPRIVATE_CLASS(LSeat)
     LPointer *pointer                       { nullptr };
     LKeyboard *keyboard                     { nullptr };
     LTouch *touch                           { nullptr };
+    LDND *dnd                               { nullptr };
+    LClipboard *clipboard                   { nullptr };
 
     LToplevelRole *activeToplevel           { nullptr };
     InputCapabilitiesFlags capabilities     { Pointer | Keyboard | Touch };
 
     std::vector<LToplevelResizeSession*> resizeSessions;
     std::vector<LToplevelMoveSession*> moveSessions;
-
-    // Data device
-    LDataSource *dataSelection              { nullptr };
-    LDNDManager *dndManager                 { nullptr };
 
     void *inputBackendData                  { nullptr };
 

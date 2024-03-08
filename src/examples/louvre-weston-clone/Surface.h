@@ -7,10 +7,10 @@
 using namespace Louvre;
 using namespace std;
 
-class Surface : public LSurface
+class Surface final : public LSurface
 {
 public:
-    Surface(const void *params);
+    Surface(const void *params) noexcept;
     void mappingChanged() override;
     void orderChanged() override;
     void minimizedChanged() override;

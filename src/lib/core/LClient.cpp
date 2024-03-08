@@ -1,5 +1,6 @@
+#include <protocols/Wayland/RDataDevice.h>
+#include <protocols/Wayland/GSeat.h>
 #include <protocols/XdgShell/GXdgWmBase.h>
-#include <private/LDataDevicePrivate.h>
 #include <private/LClientPrivate.h>
 #include <LCompositor.h>
 #include <LClient.h>
@@ -45,6 +46,10 @@ const LEvent *LClient::findEventBySerial(UInt32 serial) const noexcept
         if (it->serial() == serial)
             return &(*it);
 
+    for (auto *seat : seatGlobals())
+        if (seat->dataDeviceResource() && seat->dataDeviceResource()->serials().enter == serial)
+            return &imp()->events.keyboard.enter;
+
     return nullptr;
 }
 
@@ -53,10 +58,7 @@ const LClientCursor &LClient::lastCursorRequest() const noexcept
     return imp()->lastCursorRequest;
 }
 
-LClient::LClient(const void *params) noexcept : m_imp { std::make_unique<LClientPrivate>(this, ((Params*)params)->client)}
-{
-    dataDevice().imp()->client = this;
-}
+LClient::LClient(const void *params) noexcept : m_imp { std::make_unique<LClientPrivate>(this, ((Params*)params)->client)} {}
 
 LClient::~LClient() noexcept {}
 
@@ -72,16 +74,6 @@ bool LClient::ping(UInt32 serial) const noexcept
 wl_client *LClient::client() const noexcept
 {
     return imp()->client;
-}
-
-LDataDevice &LClient::dataDevice() const noexcept
-{
-    return imp()->dataDevice;
-}
-
-const std::vector<LSurface *> &LClient::surfaces() const noexcept
-{
-    return imp()->surfaces;
 }
 
 void LClient::flush() noexcept
@@ -114,9 +106,9 @@ const std::vector<Wayland::GSeat*> &LClient::seatGlobals() const noexcept
     return imp()->seatGlobals;
 }
 
-const Wayland::GDataDeviceManager *LClient::dataDeviceManagerGlobal() const noexcept
+const std::vector<Wayland::GDataDeviceManager*> &LClient::dataDeviceManagerGlobals() const noexcept
 {
-    return imp()->dataDeviceManagerGlobal;
+    return imp()->dataDeviceManagerGlobals;
 }
 
 const std::vector<XdgShell::GXdgWmBase *> &LClient::xdgWmBaseGlobals() const noexcept

@@ -1,8 +1,8 @@
 #include <protocols/Wayland/private/RDataSourcePrivate.h>
 #include <protocols/Wayland/GDataDeviceManager.h>
-#include <private/LDataSourcePrivate.h>
 #include <private/LCompositorPrivate.h>
-#include <LDNDManager.h>
+#include <LClipboard.h>
+#include <LDND.h>
 #include <LSeat.h>
 
 using namespace Louvre::Protocols::Wayland;
@@ -30,12 +30,20 @@ RDataSource::RDataSource
         &dataSource_implementation
     ),
     LPRIVATE_INIT_UNIQUE(RDataSource)
-{
-    imp()->lDataSource = new LDataSource(this);
-}
+{}
 
 RDataSource::~RDataSource()
 {
+    if (seat()->clipboard()->m_dataSource.get() == this)
+    {
+        seat()->clipboard()->clear();
+
+        for (auto &mimeType : imp()->mimeTypes)
+            if (mimeType.tmp != NULL)
+                seat()->clipboard()->m_persistentMimeTypes.push_back(mimeType);
+    }
+
+    /* TODO
     // Check if being used by a Drag & Drop
     if (dataSource() == seat()->dndManager()->source())
         seat()->dndManager()->cancel();
@@ -47,12 +55,29 @@ RDataSource::~RDataSource()
     {
         dataSource()->imp()->removeClientOnlySources();
         dataSource()->imp()->dataSourceResource = nullptr;
+    }*/
+}
+
+void RDataSource::requestPersistentMimeType(MimeTypeFile &mimeType) noexcept
+{
+    if (mimeType.tmp != NULL)
+        return;
+
+    if (seat()->clipboard()->persistentMimeTypeFilter(mimeType.mimeType))
+    {
+        mimeType.tmp = tmpfile();
+        send(mimeType.mimeType.c_str(), fileno(mimeType.tmp));
     }
 }
 
-LDataSource *RDataSource::dataSource() const
+RDataSource::Usage RDataSource::usage() const noexcept
 {
-    return imp()->lDataSource;
+    return imp()->usage;
+}
+
+UInt32 RDataSource::actions() const noexcept
+{
+    return imp()->actions;
 }
 
 bool RDataSource::target(const char *mimeType)

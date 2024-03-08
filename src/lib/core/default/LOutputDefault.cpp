@@ -3,7 +3,7 @@
 #include <LCompositor.h>
 #include <LSurface.h>
 #include <LSeat.h>
-#include <LDNDManager.h>
+#include <LDND.h>
 #include <LDNDIconRole.h>
 #include <LCursor.h>
 #include <LPointer.h>
@@ -24,9 +24,8 @@ void LOutput::paintGL()
     LPainter::TextureParams params;
     p->clearScreen();
 
-    if (seat()->dndManager()->icon())
-        seat()->dndManager()->icon()->surface()->raise();
-
+    if (seat()->dnd()->icon())
+        seat()->dnd()->icon()->surface()->raise();
 
     // Draw every surface
     for (LSurface *s : compositor()->surfaces())
@@ -39,9 +38,9 @@ void LOutput::paintGL()
         }
 
         // Current surface rect
-        LRect currentRect = LRect(
+        const LRect currentRect {
             s->rolePos(),  // Role pos in surface coords
-            s->size());    // Surface size in surface coords
+            s->size()};    // Surface size in surface coords
 
         // Calc which outputs intersect the surface
         for (LOutput *o : compositor()->outputs())

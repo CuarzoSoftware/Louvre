@@ -5,10 +5,10 @@
 
 using namespace Louvre;
 
-class Seat : public LSeat
+class Seat final : public LSeat
 {
 public:
-    Seat(const void *params);
+    Seat(const void *params) noexcept;
     void enabledChanged() override;
 };
 

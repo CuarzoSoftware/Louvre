@@ -1,13 +1,14 @@
 #include <protocols/Wayland/private/RKeyboardPrivate.h>
+#include <protocols/Wayland/RDataDevice.h>
 #include <protocols/Wayland/GSeat.h>
 #include <private/LSeatPrivate.h>
 #include <private/LClientPrivate.h>
-#include <private/LDataDevicePrivate.h>
 #include <private/LKeyboardPrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <LClipboard.h>
 #include <LObject.h>
 #include <LCompositor.h>
-#include <LDNDManager.h>
+#include <LDND.h>
 #include <LClient.h>
 #include <LCursor.h>
 #include <LOutput.h>
@@ -266,8 +267,7 @@ void LKeyboard::setFocus(LSurface *surface)
                     rKeyboard->leave(leaveEvent, focus()->surfaceResource());
         }
 
-        if (!focus() || (focus() && focus()->client() != surface->client()))
-            surface->client()->dataDevice().sendSelectionEvent();
+        const bool clientChanged { !seat()->clipboard()->m_dataOffer.get() || seat()->clipboard()->m_dataOffer.get()->client() != surface->client()};
 
         imp()->focus.reset();
 
@@ -280,12 +280,19 @@ void LKeyboard::setFocus(LSurface *surface)
 
         LKeyboardEnterEvent enterEvent;
         LKeyboardModifiersEvent modifiersEvent { modifiers() };
+        bool selectionSent { false };
 
         for (auto gSeat : surface->client()->seatGlobals())
         {
+            if (clientChanged && !selectionSent && gSeat->dataDeviceResource())
+            {
+                gSeat->dataDeviceResource()->createOffer(RDataSource::Clipboard);
+                selectionSent = true;
+            }
+
             for (auto rKeyboard : gSeat->keyboardResources())
             {
-                imp()->focus = surface->weakRef<LSurface>();
+                imp()->focus.reset(surface);
                 rKeyboard->enter(enterEvent, surface->surfaceResource(), &keys);
                 rKeyboard->modifiers(modifiersEvent);
             }

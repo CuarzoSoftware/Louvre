@@ -2,7 +2,6 @@
 #define LCLIENTPRIVATE_H
 
 #include <LClient.h>
-#include <LDataDevice.h>
 #include <LClientCursor.h>
 
 using namespace Louvre;
@@ -25,8 +24,6 @@ public:
     LClientPrivate &operator=(const LClientPrivate&) = delete;
 
     wl_client *client;
-    LDataDevice dataDevice;
-    std::vector<LSurface*> surfaces;
     Events events;
     LClientCursor lastCursorRequest;
 
@@ -35,6 +32,7 @@ public:
     std::vector<Wayland::GOutput*> outputGlobals;
     std::vector<Wayland::GSeat*> seatGlobals;
     std::vector<Wayland::GSubcompositor*> subcompositorGlobals;
+    std::vector<Wayland::GDataDeviceManager*> dataDeviceManagerGlobals;
     std::vector<XdgShell::GXdgWmBase*> xdgWmBaseGlobals;
     std::vector<XdgDecoration::GXdgDecorationManager*> xdgDecorationManagerGlobals;
     std::vector<WpPresentationTime::GWpPresentation*> wpPresentationTimeGlobals;
@@ -45,9 +43,6 @@ public:
     std::vector<TearingControl::GTearingControlManager*> tearingControlManagerGlobals;
     std::vector<RelativePointer::GRelativePointerManager*> relativePointerManagerGlobals;
     std::vector<PointerGestures::GPointerGestures*> pointerGesturesGlobals;
-
-    // Singleton Globals
-    Wayland::GDataDeviceManager *dataDeviceManagerGlobal { nullptr };
 };
 
 #endif // LCLIENTPRIVATE_H
