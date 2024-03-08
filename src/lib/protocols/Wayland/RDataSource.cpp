@@ -1,5 +1,6 @@
 #include <protocols/Wayland/private/RDataSourcePrivate.h>
 #include <protocols/Wayland/GDataDeviceManager.h>
+#include <protocols/Wayland/RDataDevice.h>
 #include <private/LCompositorPrivate.h>
 #include <LClipboard.h>
 #include <LDND.h>
@@ -38,9 +39,14 @@ RDataSource::~RDataSource()
     {
         seat()->clipboard()->clear();
 
+        // Save persistent MIME types
         for (auto &mimeType : imp()->mimeTypes)
             if (mimeType.tmp != NULL)
                 seat()->clipboard()->m_persistentMimeTypes.push_back(mimeType);
+
+        // Update current offer
+        if (seat()->clipboard()->m_dataOffer.get() && seat()->clipboard()->m_dataOffer.get()->dataDeviceResource())
+            seat()->clipboard()->m_dataOffer.get()->dataDeviceResource()->createOffer(RDataSource::Clipboard);
     }
 
     /* TODO

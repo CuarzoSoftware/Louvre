@@ -125,10 +125,17 @@ bool RPointer::motion(const LPointerMoveEvent &event)
 
 bool RPointer::button(const LPointerButtonEvent &event)
 {
-    auto &clientEvent = client()->imp()->events.pointer.button;
+    auto &clientEvents = client()->imp()->events.pointer;
 
-    if (clientEvent.serial() != event.serial())
-        clientEvent = event;
+    if (clientEvents.button[clientEvents.buttonIndex].serial() != event.serial())
+    {
+        if (clientEvents.buttonIndex == 4)
+            clientEvents.buttonIndex = 0;
+        else
+            clientEvents.buttonIndex++;
+
+        clientEvents.button[clientEvents.buttonIndex] = event;
+    }
 
     wl_pointer_send_button(resource(), event.serial(), event.ms(), event.button(), event.state());
     return true;

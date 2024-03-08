@@ -11,19 +11,24 @@ const LEvent *LClient::findEventBySerial(UInt32 serial) const noexcept
         return &imp()->events.keyboard.enter;
     else if (imp()->events.keyboard.leave.serial() == serial)
         return &imp()->events.keyboard.leave;
-    else if (imp()->events.keyboard.key.serial() == serial)
-        return &imp()->events.keyboard.key;
-    else if (imp()->events.keyboard.modifiers.serial() == serial)
+
+    for (UInt8 i = 0; i < 5; i++)
+        if (imp()->events.keyboard.key[i].serial() == serial)
+            return &imp()->events.keyboard.key[i];
+
+    if (imp()->events.keyboard.modifiers.serial() == serial)
         return &imp()->events.keyboard.modifiers;
 
     else if (imp()->events.pointer.enter.serial() == serial)
         return &imp()->events.pointer.enter;
     else if (imp()->events.pointer.leave.serial() == serial)
         return &imp()->events.pointer.leave;
-    else if (imp()->events.pointer.button.serial() == serial)
-        return &imp()->events.pointer.button;
 
-    else if (imp()->events.pointer.swipeBegin.serial() == serial)
+    for (UInt8 i = 0; i < 5; i++)
+        if (imp()->events.pointer.button[i].serial() == serial)
+            return &imp()->events.pointer.button[i];
+
+    if (imp()->events.pointer.swipeBegin.serial() == serial)
         return &imp()->events.pointer.swipeBegin;
     else if (imp()->events.pointer.swipeEnd.serial() == serial)
         return &imp()->events.pointer.swipeEnd;

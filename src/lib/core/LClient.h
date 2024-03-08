@@ -44,7 +44,8 @@ public:
     {
         LPointerEnterEvent enter;
         LPointerLeaveEvent leave;
-        LPointerButtonEvent button;
+        LPointerButtonEvent button[5];
+        UInt8 buttonIndex { 0 };
 
         LPointerSwipeBeginEvent swipeBegin;
         LPointerSwipeEndEvent swipeEnd;
@@ -57,7 +58,8 @@ public:
     struct KeyboardEvents
     {
         LKeyboardEnterEvent enter;
-        LKeyboardKeyEvent key;
+        LKeyboardKeyEvent key[5];
+        UInt8 keyIndex { 0 };
         LKeyboardLeaveEvent leave;
         LKeyboardModifiersEvent modifiers;
     };

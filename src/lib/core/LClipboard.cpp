@@ -9,9 +9,15 @@
 
 using namespace Louvre;
 
-bool LClipboard::setClipboardRequest(LClient *client, const LEvent &triggeringEvent)
+bool LClipboard::setClipboardRequest(LClient *client, const LEvent *triggeringEvent)
 {
-    switch (triggeringEvent.type())
+    if (!triggeringEvent)
+    {
+        /* Request without valid triggering event */
+        return false;
+    }
+
+    switch (triggeringEvent->type())
     {
     case LEvent::Type::Pointer:
         return !seat()->pointer()->focus() || seat()->pointer()->focus()->client() == client;

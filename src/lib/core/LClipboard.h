@@ -27,7 +27,7 @@ public:
      * #### Default Implementation
      * @snippet LClipboardDefault.cpp setClipboardRequest
      */
-    virtual bool setClipboardRequest(LClient *client, const LEvent &triggeringEvent);
+    virtual bool setClipboardRequest(LClient *client, const LEvent *triggeringEvent);
     virtual bool persistentMimeTypeFilter(const std::string &mimeType);
     const std::vector<Protocols::Wayland::RDataSource::MimeTypeFile> &mimeTypes() const noexcept;
 

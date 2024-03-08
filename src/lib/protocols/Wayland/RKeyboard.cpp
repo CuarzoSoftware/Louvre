@@ -90,10 +90,17 @@ bool RKeyboard::key(const LKeyboardKeyEvent &event)
     if (destroyed())
         return true;
 
-    auto &clientEvent = client()->imp()->events.keyboard.key;
+    auto &clientEvents = client()->imp()->events.keyboard;
 
-    if (clientEvent.serial() != event.serial())
-        clientEvent = event;
+    if (clientEvents.key[clientEvents.keyIndex].serial() != event.serial())
+    {
+        if (clientEvents.keyIndex == 4)
+            clientEvents.keyIndex = 0;
+        else
+            clientEvents.keyIndex++;
+
+        clientEvents.key[clientEvents.keyIndex] = event;
+    }
 
     wl_keyboard_send_key(resource(), event.serial(), event.ms(), event.keyCode(), event.state());
     return true;

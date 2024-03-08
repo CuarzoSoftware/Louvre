@@ -60,10 +60,10 @@ RDataOffer *RDataDevice::createOffer(RDataSource::Usage usage) noexcept
     if (usage == RDataSource::Clipboard)
     {
         if (clipboard.mimeTypes().empty())
+        {
+            selection(nullptr);
             return nullptr;
-
-        if (clipboard.m_dataOffer.get() && clipboard.m_dataOffer.get()->dataDeviceResource())
-            clipboard.m_dataOffer.get()->dataDeviceResource()->selection(nullptr);
+        }
 
         RDataOffer *offer { new RDataOffer(this, 0, RDataSource::Clipboard) };
         clipboard.m_dataOffer.reset(offer);

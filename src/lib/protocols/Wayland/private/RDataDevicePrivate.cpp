@@ -154,30 +154,17 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resour
         const LEvent *triggeringEvent { rDataDevice->client()->findEventBySerial(serial) };
 
         if (!triggeringEvent)
-        {
-            LLog::warning("[RDataDevicePrivate::set_selection] Set clipboard request without valid triggering event. Ignoring it.");
-            rDataSource->cancelled();
-            return;
-        }
+            LLog::warning("[RDataDevicePrivate::set_selection] Set clipboard request without valid triggering event. Letting the user decide...");
 
         // Ask the user if the client should set the clipboard
-        if (!seat()->clipboard()->setClipboardRequest(rDataDevice->client(), *triggeringEvent))
+        if (!seat()->clipboard()->setClipboardRequest(rDataDevice->client(), triggeringEvent))
         {
             LLog::debug("[RDataDevicePrivate::set_selection] Set clipboard request denied by user.");
-            rDataSource->cancelled();
             return;
         }
 
         rDataSource->imp()->usage = RDataSource::Clipboard;
-
-        if (seat()->clipboard()->m_dataSource.get())
-        {
-            if (seat()->clipboard()->m_dataSource.get()->client() != rDataSource->client())
-                seat()->clipboard()->m_dataSource.get()->cancelled();
-
-            seat()->clipboard()->m_dataSource.reset();
-        }
-
+        seat()->clipboard()->m_dataSource.reset();
         seat()->clipboard()->clear();
 
         // Ask client to write to the compositor fds

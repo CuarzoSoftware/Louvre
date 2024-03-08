@@ -1,4 +1,3 @@
-#include "LLog.h"
 #include <protocols/Wayland/private/RDataOfferPrivate.h>
 #include <protocols/Wayland/private/RDataSourcePrivate.h>
 #include <protocols/Wayland/private/RDataDevicePrivate.h>
@@ -97,7 +96,6 @@ void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *reso
                 if (seat()->clipboard()->m_dataSource.get())
                 {
                     seat()->clipboard()->m_dataSource.get()->send(requestedMimeType, fd);
-                    seat()->clipboard()->m_dataSource.get()->client()->flush();
                 }
                 else if (mimeType.tmp)
                 {
