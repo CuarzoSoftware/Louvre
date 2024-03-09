@@ -1,10 +1,13 @@
 #include <protocols/Wayland/private/RDataDevicePrivate.h>
+#include <protocols/Wayland/private/RDataSourcePrivate.h>
 #include <protocols/Wayland/private/GSeatPrivate.h>
 #include <protocols/Wayland/GDataDeviceManager.h>
 #include <protocols/Wayland/RDataOffer.h>
 #include <protocols/Wayland/RSurface.h>
 #include <private/LCompositorPrivate.h>
 #include <LClipboard.h>
+#include <LDNDSession.h>
+#include <LDND.h>
 
 using namespace Louvre::Protocols::Wayland;
 
@@ -76,6 +79,19 @@ RDataOffer *RDataDevice::createOffer(RDataSource::Usage usage) noexcept
 
         return offer;
     }
+    else if (usage == RDataSource::DND)
+    {
+        if (!seat()->dnd()->m_session.get() || !seat()->dnd()->m_session.get()->source.get())
+            return nullptr;
+
+        RDataOffer *offer { new RDataOffer(this, 0, RDataSource::DND) };
+        dataOffer(offer);
+
+        for (const auto &mimeType : seat()->dnd()->m_session.get()->source.get()->imp()->mimeTypes)
+            offer->offer(mimeType.mimeType.c_str());
+
+        return offer;
+    }
 
     return nullptr;
 }
@@ -86,9 +102,13 @@ bool RDataDevice::dataOffer(RDataOffer *offer)
     return true;
 }
 
-bool RDataDevice::enter(UInt32 serial, RSurface *surface, Float24 x, Float24 y, RDataOffer *id)
+bool RDataDevice::enter(UInt32 serial, RSurface *surface, Float24 x, Float24 y, RDataOffer *offer)
 {
-    wl_data_device_send_enter(resource(), serial, surface->resource(), x, y, id->resource());
+    wl_data_device_send_enter(resource(),
+                              serial,
+                              surface->resource(),
+                              x, y,
+                              offer == nullptr ? NULL : offer->resource());
     return true;
 }
 
@@ -112,10 +132,6 @@ bool RDataDevice::drop()
 
 bool RDataDevice::selection(RDataOffer *offer)
 {
-    if (offer)
-        wl_data_device_send_selection(resource(), offer->resource());
-    else
-        wl_data_device_send_selection(resource(), NULL);
-
+    wl_data_device_send_selection(resource(), offer == nullptr ? NULL : offer->resource());
     return true;
 }

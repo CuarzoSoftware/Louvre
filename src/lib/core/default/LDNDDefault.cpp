@@ -15,12 +15,13 @@ using namespace Louvre;
 void LDND::startDragRequest() noexcept
 {
     // Left pointer button click
-    if (triggeringEvent().type() == LEvent::Type::Pointer && origin()->hasPointerFocus() && seat()->pointer()->isButtonPressed(LPointerButtonEvent::Left))
+    if (triggeringEvent().type() != LEvent::Type::Touch && origin()->hasPointerFocus() && seat()->pointer()->isButtonPressed(LPointerButtonEvent::Left))
     {
         seat()->pointer()->setDraggingSurface(nullptr);
 
         if (icon())
             icon()->surface()->setPos(cursor()->pos());
+
         return;
     }
     // Touch down event

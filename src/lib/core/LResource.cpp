@@ -4,7 +4,7 @@
 
 using namespace Louvre;
 
-LResource::LResource(wl_resource *resource) :
+LResource::LResource(wl_resource *resource) noexcept :
     m_client(compositor()->getClientFromNativeResource(wl_resource_get_client(resource))),
     m_resource(resource)
 {}
@@ -13,7 +13,7 @@ LResource::LResource(wl_client *client,
                      const wl_interface *interface,
                      Int32 version,
                      UInt32 id,
-                     const void *implementation):
+                     const void *implementation) noexcept :
     m_client(compositor()->getClientFromNativeResource(client)),
     m_resource(wl_resource_create(client, interface, version, id))
 {
@@ -25,7 +25,7 @@ LResource::LResource(wl_client *client,
     });
 }
 
-LResource::LResource(LClient *client, const wl_interface *interface, Int32 version, UInt32 id, const void *implementation) :
+LResource::LResource(LClient *client, const wl_interface *interface, Int32 version, UInt32 id, const void *implementation) noexcept :
     m_client(client),
     m_resource(wl_resource_create(client->client(), interface, version, id))
 
@@ -38,17 +38,17 @@ LResource::LResource(LClient *client, const wl_interface *interface, Int32 versi
     });
 }
 
-Int32 LResource::version() const
+Int32 LResource::version() const noexcept
 {
     return wl_resource_get_version(resource());
 }
 
-UInt32 LResource::id() const
+UInt32 LResource::id() const noexcept
 {
     return wl_resource_get_id(resource());
 }
 
-void LResource::destroy()
+void LResource::destroy() noexcept
 {
     wl_resource_destroy(resource());
 }

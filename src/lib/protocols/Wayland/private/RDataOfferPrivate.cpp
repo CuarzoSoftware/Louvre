@@ -3,6 +3,7 @@
 #include <protocols/Wayland/private/RDataDevicePrivate.h>
 #include <protocols/Wayland/GSeat.h>
 #include <LClipboard.h>
+#include <LDNDSession.h>
 #include <LClient.h>
 #include <LSeat.h>
 #include <LDND.h>
@@ -18,56 +19,34 @@ void RDataOffer::RDataOfferPrivate::destroy(wl_client *client, wl_resource *reso
 
 void RDataOffer::RDataOfferPrivate::accept(wl_client *client, wl_resource *resource, UInt32 serial, const char *mime_type)
 {
-    /* TODO DND ONLY
     L_UNUSED(client);
     L_UNUSED(serial);
 
-    RDataOffer *lRDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
+    RDataOffer *rDataOffer { static_cast<RDataOffer*>(wl_resource_get_user_data(resource)) };
 
-    if (!seat()->dnd()->focus())
-        return;
+    rDataOffer->imp()->matchedMimeType = mime_type != NULL;
 
-    if (seat()->dnd()->focus()->client() != lRDataOffer->client())
-        return;
-
-    if (seat()->dnd()->source())
-    {
-        seat()->dnd()->source()->dataSourceResource()->target(mime_type);
-        seat()->dnd()->imp()->matchedMimeType = mime_type != NULL;
-    }
-    */
+    if (rDataOffer->imp()->dndSession.get() && rDataOffer->imp()->dndSession.get()->source.get())
+        rDataOffer->imp()->dndSession.get()->source.get()->target(mime_type);
 }
 
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
 void RDataOffer::RDataOfferPrivate::finish(wl_client *client, wl_resource *resource)
 {
-    /* TODO DND ONLY
     L_UNUSED(client);
 
-    RDataOffer *lRDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
+    RDataOffer *rDataOffer { static_cast<RDataOffer*>(wl_resource_get_user_data(resource)) };
 
-    if (lRDataOffer->dataOffer()->usedFor() != LDataOffer::DND)
+    if (rDataOffer->usage() != RDataSource::DND)
     {
         wl_resource_post_error(resource, WL_DATA_OFFER_ERROR_INVALID_FINISH, "Data offer not used for DND.");
         return;
     }
 
-    if (!seat()->dndManager()->focus())
-        return;
+    if (rDataOffer->imp()->dndSession.get() && rDataOffer->imp()->dndSession.get()->source.get())
+        rDataOffer->imp()->dndSession.get()->source.get()->dndFinished();
 
-    if (seat()->dndManager()->focus()->client() != lRDataOffer->client())
-        return;
-
-    lRDataOffer->dataOffer()->imp()->hasFinished = true;
-
-    if (seat()->dndManager()->source())
-        seat()->dndManager()->source()->dataSourceResource()->dndFinished();
-
-    if (seat()->dndManager()->focus())
-        seat()->dndManager()->focus()->client()->dataDevice().imp()->sendDNDLeaveEvent();
-
-    seat()->dndManager()->imp()->clear();
-    */
+    rDataOffer->imp()->dndSession.reset();
 }
 #endif
 
@@ -77,16 +56,12 @@ void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *reso
 
     RDataOffer *rDataOffer { static_cast<RDataOffer*>(wl_resource_get_user_data(resource)) };
 
-    /*
-    // If used in drag n drop
-    if (rDataOffer->dataOffer()->usedFor() == LDataOffer::DND && seat()->dndManager()->source())
+    if (rDataOffer->usage() == RDataSource::DND)
     {
-        // Ask the source client to write the data to the FD given the mime type
-        seat()->dndManager()->source()->dataSourceResource()->send(mime_type, fd);
-    }*/
-
-    // If used in clipboard
-    if (rDataOffer->usage() == RDataSource::Clipboard)
+        if (rDataOffer->imp()->dndSession.get() && rDataOffer->imp()->dndSession.get()->source.get())
+            rDataOffer->imp()->dndSession.get()->source.get()->send(requestedMimeType, fd);
+    }
+    else if (rDataOffer->usage() == RDataSource::Clipboard)
     {
         // Louvre keeps a copy of the source clipboard for each mime type (so we don't ask the source client to write the data)
         for (const auto &mimeType : seat()->clipboard()->mimeTypes())
@@ -143,7 +118,6 @@ void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *reso
                     }
                 }
 
-
                 break;
             }
         }
@@ -155,41 +129,31 @@ void RDataOffer::RDataOfferPrivate::receive(wl_client *client, wl_resource *reso
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
 void RDataOffer::RDataOfferPrivate::set_actions(wl_client *client, wl_resource *resource, UInt32 dnd_actions, UInt32 preferred_action)
 {
-    /* TODO
     L_UNUSED(client);
 
-    RDataOffer *rDataOffer = (RDataOffer*)wl_resource_get_user_data(resource);
+    RDataOffer *rDataOffer { static_cast<RDataOffer*>(wl_resource_get_user_data(resource)) };
 
-    if (rDataOffer->dataOffer()->imp()->acceptedActions == dnd_actions && rDataOffer->dataOffer()->imp()->preferredAction == preferred_action)
-        return;
-
-    if (rDataOffer->dataOffer()->usedFor() != LDataOffer::DND)
+    if (rDataOffer->usage() != RDataSource::DND)
     {
         wl_resource_post_error(resource, -1, "Data offer not being used for DND.");
         return;
     }
 
-    if (dnd_actions > 8)
+    if (rDataOffer->actions() == dnd_actions && rDataOffer->preferredAction() == preferred_action)
+        return;
+
+    dnd_actions &= LDND::Copy | LDND::Move | LDND::Ask;
+
+    if (preferred_action != LDND::NoAction && preferred_action != LDND::Copy && preferred_action != LDND::Move && preferred_action != LDND::Ask)
     {
-        wl_resource_post_error(resource, WL_DATA_OFFER_ERROR_INVALID_ACTION, "Invalid dnd_actions.");
+        wl_resource_post_error(resource, WL_DATA_OFFER_ERROR_INVALID_ACTION, "Invalid preferred_action.");
         return;
     }
 
-    if (preferred_action != 0 && preferred_action != 1 && preferred_action != 2 && preferred_action != 4)
-    {
-        wl_resource_post_error(resource, WL_DATA_OFFER_ERROR_INVALID_ACTION_MASK, "Invalid preferred_action.");
-        return;
-    }
+    rDataOffer->imp()->actions = dnd_actions;
+    rDataOffer->imp()->preferredAction = preferred_action;
 
-    if (!seat()->dndManager()->focus())
-        return;
-
-    if (seat()->dndManager()->focus()->client() != rDataOffer->client())
-        return;
-
-    rDataOffer->dataOffer()->imp()->acceptedActions = dnd_actions;
-    rDataOffer->dataOffer()->imp()->preferredAction = preferred_action;
-    rDataOffer->dataOffer()->imp()->updateDNDAction();
-    */
+    if (rDataOffer->imp()->dndSession.get())
+        rDataOffer->imp()->dndSession.get()->updateActions();
 }
 #endif

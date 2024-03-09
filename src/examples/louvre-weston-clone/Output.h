@@ -19,11 +19,12 @@ public:
     Float32 terminalIconAlphaPrev = 1.0f;
 
     void loadWallpaper() noexcept;
-    void fullDamage() noexcept;
-    void initializeGL() override;
-    void resizeGL() override;
-    void moveGL() override;
-    void paintGL() override;
+    void fullDamage()  noexcept;
+    void initializeGL() noexcept override;
+    void resizeGL() noexcept override;
+    void moveGL() noexcept override;
+    void paintGL() noexcept override;
+    void setGammaRequest(LClient *client, const LGammaTable *gamma) noexcept override;
 
     // List of new damage calculated in prev frames
     bool damageListCreated = false;

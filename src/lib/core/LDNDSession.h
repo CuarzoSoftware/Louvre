@@ -1,6 +1,8 @@
 #ifndef LDNDSESSION_H
 #define LDNDSESSION_H
 
+#include <LDND.h>
+#include <LSeat.h>
 #include <LSurface.h>
 #include <LDNDIconRole.h>
 #include <protocols/Wayland/RDataOffer.h>
@@ -12,9 +14,35 @@ using namespace Louvre::Protocols::Wayland;
 class Louvre::LDNDSession : public LObject
 {
 public:
-    UInt32 compositorAction { 0 };
-    bool matchedMimeType { false };
-    bool dropped { false };
+    LDNDSession()
+    {
+        source.setOnDestroyCallback([this](auto)
+        {
+            if (seat()->dnd()->m_session.get() == this)
+            {
+                seat()->dnd()->cancel();
+            }
+        });
+
+        origin.setOnDestroyCallback([this](auto)
+        {
+            if (seat()->dnd()->m_session.get() == this)
+            {
+                seat()->dnd()->cancel();
+            }
+        });
+
+        srcDataDevice.setOnDestroyCallback([this](auto)
+        {
+            if (seat()->dnd()->m_session.get() == this)
+            {
+                seat()->dnd()->cancel();
+            }
+        });
+    }
+
+    UInt32 compositorAction { seat()->dnd()->preferredAction() };
+    UInt32 action { 0 };
     LWeak<LSurface> focus;
     LWeak<LSurface> origin;
     LWeak<LDNDIconRole> icon;
@@ -25,7 +53,34 @@ public:
 
     void updateActions()
     {
+        if (!source.get() || !offer.get())
+            return;
 
+        offer.get()->sourceActions(source.get()->actions());
+        action = 0;
+
+        if (source.get()->version() >= 3 && offer.get()->version() >= 3)
+            action = source.get()->actions() & offer.get()->actions();
+        else if (source.get()->version() >= 3)
+            action = source.get()->actions();
+        else if (offer.get()->version() >= 3)
+            action = offer.get()->actions();
+
+        if (!compositorAction && (offer.get()->preferredAction() & action))
+            action &= offer.get()->preferredAction();
+
+        if (compositorAction & action)
+            action &= compositorAction;
+
+        if (action & LDND::Copy)
+            action = LDND::Copy;
+        else if (action & LDND::Move)
+            action = LDND::Move;
+        else if (action & LDND::Ask)
+            action = LDND::Ask;
+
+        source.get()->action(action);
+        offer.get()->action(action);
     }
 };
 

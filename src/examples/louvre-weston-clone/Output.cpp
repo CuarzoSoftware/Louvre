@@ -51,7 +51,7 @@ void Output::fullDamage() noexcept
     newDamage.addRect(rect());
 }
 
-void Output::initializeGL()
+void Output::initializeGL() noexcept
 {
     terminalIconTexture = new LTexture();
 
@@ -67,7 +67,7 @@ void Output::initializeGL()
     repaint();
 }
 
-void Output::resizeGL()
+void Output::resizeGL() noexcept
 {
     Int32 x { 0 };
 
@@ -94,7 +94,7 @@ void Output::resizeGL()
     loadWallpaper();
 }
 
-void Output::moveGL()
+void Output::moveGL() noexcept
 {
     fullDamage();
 }
@@ -117,7 +117,7 @@ void repaintChildren(LSurface *s)
     }
 }
 
-void Output::paintGL()
+void Output::paintGL() noexcept
 {
     LPainter::TextureParams params;
     Compositor *c { (Compositor*)compositor() };
@@ -477,4 +477,10 @@ void Output::paintGL()
 
     setBufferDamage(&newDamage);
     newDamage.clear();
+}
+
+void Output::setGammaRequest(LClient *client, const LGammaTable *gamma) noexcept
+{
+    L_UNUSED(client)
+    setGamma(gamma);
 }

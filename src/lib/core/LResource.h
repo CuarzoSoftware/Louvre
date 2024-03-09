@@ -23,7 +23,7 @@ public:
      *
      * @return A pointer to the wrapped **wl_resource**.
      */
-    inline wl_resource *resource() const { return m_resource; };
+    inline wl_resource *resource() const noexcept { return m_resource; };
 
     /**
      * @brief Retrieve the client that owns this resource.
@@ -32,7 +32,7 @@ public:
      *
      * @return A pointer to the owning LClient.
      */
-    inline LClient *client() const { return m_client; }
+    inline LClient *client() const noexcept { return m_client; }
 
     /**
      * @brief Retrieve the version of the global interface.
@@ -41,7 +41,7 @@ public:
      *
      * @return The version of the global interface.
      */
-    Int32 version() const;
+    Int32 version() const noexcept;
 
     /**
      * @brief Retrieve the ID of the resource.
@@ -50,17 +50,17 @@ public:
      *
      * @return The ID of the resource.
      */
-    UInt32 id() const;
+    UInt32 id() const noexcept;
 
     /**
      * @brief Destroy the resource.
      *
      * This method destroys the resource, equivalent to calling **wl_resource_destroy()**.
      */
-    void destroy();
+    void destroy() noexcept;
 
     // TODO
-    inline bool destroyed() const
+    inline bool destroyed() const noexcept
     {
         return m_destroyed;
     }
@@ -74,7 +74,7 @@ protected:
      *
      * @param resource Pointer to the wl_resource struct to wrap.
      */
-    LResource(wl_resource *resource);
+    LResource(wl_resource *resource) noexcept;
 
     /**
      * @brief Constructor for LResource using **wl_client** and other parameters.
@@ -92,7 +92,7 @@ protected:
               const wl_interface *interface,
               Int32 version,
               UInt32 id,
-              const void *implementation);
+              const void *implementation) noexcept;
 
     /**
      * @brief Constructor for LResource using LClient and other parameters.
@@ -109,7 +109,7 @@ protected:
               const wl_interface *interface,
               Int32 version,
               UInt32 id,
-              const void *implementation);
+              const void *implementation) noexcept;
 
     /// @cond OMIT
     LResource(const LResource&) = delete;
@@ -119,7 +119,7 @@ protected:
     /**
      * @brief Destructor for LResource.
      */
-    virtual ~LResource() {};
+    virtual ~LResource() noexcept = default;
 
 private:
     LClient *m_client;

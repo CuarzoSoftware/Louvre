@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <LKeyboard.h>
 #include <LClipboard.h>
+#include <LDNDSession.h>
 
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 2
 void RDataDevice::RDataDevicePrivate::release(wl_client *client, wl_resource *resource)
@@ -30,103 +31,80 @@ void RDataDevice::RDataDevicePrivate::start_drag(wl_client *client,
                                                  wl_resource *icon,
                                                  UInt32 serial)
 {
-    /* TODO
     L_UNUSED(client);
 
-    RDataSource *rDataSource { nullptr };
-    RDataDevice *rDataDevice { (RDataDevice*)wl_resource_get_user_data(resource) };
-    RSurface *rOriginSurface { (RSurface*)wl_resource_get_user_data(origin) };
-    LDNDManager &dndManager { *seat()->dndManager() };
+    const LEvent *triggeringEvent;
+    LDNDSession *session = new LDNDSession();
+    session->origin.reset(static_cast<RSurface*>(wl_resource_get_user_data(origin))->surface());
+    session->srcDataDevice.reset(static_cast<RDataDevice*>(wl_resource_get_user_data(resource)));
 
     if (source)
-        rDataSource = (RDataSource*)wl_resource_get_user_data(source);
-
-    // Cancel if already dragging
-    if (dndManager.dragging())
     {
-        if (rDataSource)
-            rDataSource->cancelled();
-        return;
+        session->source.reset(static_cast<RDataSource*>(wl_resource_get_user_data(source)));
+
+        if (session->source.get()->usage() != RDataSource::Undefined)
+        {
+            wl_resource_post_error(resource, WL_DATA_DEVICE_ERROR_USED_SOURCE, "Source already used.");
+            goto fail;
+        }
+
+        session->source.get()->imp()->usage = RDataSource::DND;
     }
 
-    const LEvent *event { rDataDevice->client()->findEventBySerial(serial) };
+    if (seat()->dnd()->dragging())
+    {   
+        LLog::warning("[RDataDevicePrivate::start_drag] Start drag request cancelled. There already is an active drag & drop session.");
+        goto fail;
+    }
 
-    if (!event)
+    triggeringEvent = session->srcDataDevice.get()->client()->findEventBySerial(serial);
+
+    if (!triggeringEvent)
     {
         LLog::warning("[RDataDevicePrivate::start_drag] Start drag & drop request without serial match. Ignoring it.");
-
-        if (rDataSource)
-            rDataSource->cancelled();
-
-        return;
+        goto fail;
     }
-
-    dndManager.imp()->dropped = false;
-
-    // Removes pevious data source if any
-    dndManager.cancel();
-
-    dndManager.imp()->triggeringEvent.reset(event->copy());
 
     // Check if there is an icon
     if (icon)
     {
-        RSurface *rSurface { (RSurface*)wl_resource_get_user_data(icon) };
-        LSurface *lIcon { rSurface->surface() };
+        LSurface *iconSurface { static_cast<RSurface*>(wl_resource_get_user_data(icon))->surface() };
 
-        if (lIcon->imp()->pending.role || (lIcon->roleId() != LSurface::Role::Undefined && lIcon->roleId() != LSurface::Role::DNDIcon))
+        if (iconSurface->imp()->pending.role || (iconSurface->roleId() != LSurface::Role::Undefined && iconSurface->roleId() != LSurface::Role::DNDIcon))
         {
-            dndManager.cancel();
             wl_resource_post_error(resource, WL_DATA_DEVICE_ERROR_ROLE, "Given wl_surface has another role.");
-            return;
+            goto fail;
         }
-
-        // Retry if the compositor surfaces list changes
-    retry:
-        compositor()->imp()->surfacesListChanged = false;
-        for (LSurface *s : compositor()->surfaces())
-            if (s->dndIcon())
-            {
-                s->imp()->setMapped(false);
-
-                if (compositor()->imp()->surfacesListChanged)
-                    goto retry;
-            }
 
         LDNDIconRole::Params dndIconRoleParams;
-        dndIconRoleParams.surface = lIcon;
-        lIcon->imp()->setPendingRole(compositor()->createDNDIconRoleRequest(&dndIconRoleParams));
-        lIcon->imp()->applyPendingRole();
-        lIcon->imp()->stateFlags.add(LSurface::LSurfacePrivate::Mapped);
-        dndManager.imp()->icon = lIcon->dndIcon();
+        dndIconRoleParams.surface = iconSurface;
+        iconSurface->imp()->setPendingRole(compositor()->createDNDIconRoleRequest(&dndIconRoleParams));
+        iconSurface->imp()->applyPendingRole();
+        iconSurface->imp()->stateFlags.add(LSurface::LSurfacePrivate::Mapped);
+        session->icon.reset(iconSurface->dndIcon());
     }
-    else
-        dndManager.imp()->icon = nullptr;
 
-    dndManager.imp()->origin = rOriginSurface->surface();
+    // Check if DND action was set
+    if (session->source.get() && session->source.get()->version() >= 3 && session->source.get()->actions() == 0)
+        goto fail;
 
-    // If source is null all drag events are sent only to the origin surface
-    if (source)
-    {
-        RDataSource *rDataSource { (RDataSource*)wl_resource_get_user_data(source) };
+    seat()->dnd()->m_triggeringEvent.reset(triggeringEvent->copy());
+    seat()->dnd()->m_session.reset(session);
 
-        // Check if DND action was set
-        if (rDataSource->version() >= 3 && rDataSource->dataSource()->dndActions() == LOUVRE_DND_NO_ACTION_SET)
-        {
-            dndManager.cancel();
-            return;
-        }
+    if (session->source.get())
+        session->source.get()->imp()->dndSession = seat()->dnd()->m_session;
 
-        dndManager.imp()->source = rDataSource->dataSource();
-    }
-    else
-        dndManager.imp()->source = nullptr;
+    seat()->dnd()->startDragRequest();
+    return;
 
-    dndManager.imp()->srcDataDevice = rDataDevice;
+    fail:
+    if (session->source.get())
+        session->source.get()->cancelled();
 
-    // Notify
-    dndManager.startDragRequest();
-    */
+    if (session->icon.get())
+        session->icon.get()->surface()->imp()->setMapped(false);
+
+    delete session;
 }
 
 void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resource *resource, wl_resource *source, UInt32 serial)

@@ -21,7 +21,7 @@ public:
 
     // Since 1
     bool dataOffer(RDataOffer *offer);
-    bool enter(UInt32 serial, RSurface *surface, Float24 x, Float24 y, RDataOffer *id);
+    bool enter(UInt32 serial, RSurface *surface, Float24 x, Float24 y, RDataOffer *offer);
     bool leave();
     bool motion(UInt32 time, Float24 x, Float24 y);
     bool drop();

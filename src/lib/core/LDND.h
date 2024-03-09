@@ -167,7 +167,9 @@ public:
     virtual void cancelled() noexcept;
 
 private:
-    void sendLeaveEvent(LSurface *surface) noexcept;
+    friend class Protocols::Wayland::RDataDevice;
+    friend class LDNDSession;
+    void sendLeaveEvent() noexcept;
     std::unique_ptr<LEvent> m_triggeringEvent { std::make_unique<LPointerButtonEvent>() };
     std::shared_ptr<LDNDSession> m_session;
     UInt32 m_compositorAction { NoAction };

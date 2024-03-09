@@ -17,6 +17,10 @@ LPRIVATE_CLASS(RDataOffer)
 
     RDataDevice *rDataDevice { nullptr };
     RDataSource::Usage usage;
+    std::shared_ptr<LDNDSession> dndSession;
+    UInt32 actions { 0 };
+    UInt32 preferredAction { 0 };
+    bool matchedMimeType { false };
 };
 
 #endif // RDATAOFFERPRIVATE_H

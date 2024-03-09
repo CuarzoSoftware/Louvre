@@ -4,6 +4,7 @@
 #include <protocols/Wayland/GSeat.h>
 #include <LClient.h>
 
+using namespace Louvre;
 using namespace Louvre::Protocols::Wayland;
 
 struct wl_data_offer_interface dataOffer_implementation =
@@ -55,6 +56,21 @@ RDataDevice *RDataOffer::dataDeviceResource() const
 RDataSource::Usage RDataOffer::usage() const noexcept
 {
     return imp()->usage;
+}
+
+UInt32 RDataOffer::actions() const noexcept
+{
+    return imp()->actions;
+}
+
+UInt32 RDataOffer::preferredAction() const noexcept
+{
+    return imp()->preferredAction;
+}
+
+bool RDataOffer::matchedMimeType() const noexcept
+{
+    return imp()->matchedMimeType;
 }
 
 bool RDataOffer::offer(const char *mimeType)

@@ -18,21 +18,20 @@ using namespace Louvre::Protocols::Wayland;
 
 void LDND::setFocus(LSurface *surface, const LPointF &localPos) noexcept
 {
-    /* TODO
-    if (!m_session)
+    if (!m_session.get())
         return;
 
     if (!surface)
     {
-        sendLeaveEvent(focus());
+        sendLeaveEvent();
         return;
     }
     else
     {
         // If the source is NULL, only surfaces from the src client are allowed to gain focus
-        if (!source() && surface->client() != origin()->client())
+        if (!m_session->source.get() && surface->client() != origin()->client())
         {
-            sendLeaveEvent(focus());
+            sendLeaveEvent();
             return;
         }
     }
@@ -41,77 +40,65 @@ void LDND::setFocus(LSurface *surface, const LPointF &localPos) noexcept
         return;
     else
     {
-        sendLeaveEvent(focus());
-        focus = surface;
-    }
+        sendLeaveEvent();
 
-    const Float24 x { wl_fixed_from_double(localPos.x()) };
-    const Float24 y { wl_fixed_from_double(localPos.y()) };
-
-    if (source())
-    {
-        const UInt32 serial { LTime::nextSerial() };
-
-        for (GSeat *gSeat : focus()->client()->seatGlobals())
+        for (auto *gSeat : surface->client()->seatGlobals())
         {
             if (gSeat->dataDeviceResource())
             {
-                RDataOffer *rDataOffer = new RDataOffer(gSeat->dataDeviceResource(), 0);
-
-                rDataOffer->dataOffer()->imp()->usedFor = LDataOffer::DND;
-                gSeat->dataDeviceResource()->imp()->dataOffered = rDataOffer->dataOffer();
-                gSeat->dataDeviceResource()->dataOffer(rDataOffer);
-
-                for (const LDataSource::LSource &s : source()->sources())
-                    rDataOffer->offer(s.mimeType);
-
-                gSeat->dataDeviceResource()->imp()->serials.enter = serial;
-                gSeat->dataDeviceResource()->enter(serial,
-                                                   surface->surfaceResource(),
-                                                   x,
-                                                   y,
-                                                   rDataOffer);
-
-                rDataOffer->sourceActions(source()->dndActions());
+                m_session->focus.reset(surface);
+                m_session->dstDataDevice.reset(gSeat->dataDeviceResource());
+                break;
             }
         }
     }
-    // If source is NULL, enter, leave and motion events are sent only to the client that
-    // initiated the drag and the client is expected to handle the data passing internally
-    else if (origin() == focus())
-    {
-        const UInt32 serial { LTime::nextSerial() };
 
-        for (GSeat *gSeat : focus()->client()->seatGlobals())
-        {
-            if (gSeat->dataDeviceResource())
-            {
-                gSeat->dataDeviceResource()->imp()->serials.enter = serial;
-                gSeat->dataDeviceResource()->enter(
-                    serial,
-                    surface->surfaceResource(),
-                    x,
-                    y,
-                    NULL);
-            }
-        }
-    }
-*/
-}
-
-void LDND::sendMoveEvent(const LPointF &localPos, UInt32 ms) noexcept
-{
-    /* TODO
-    if (!focus() || seat()->dndManager()->imp()->dropped)
+    // If the client has zero data devices
+    if (!focus())
         return;
 
     const Float24 x { wl_fixed_from_double(localPos.x()) };
     const Float24 y { wl_fixed_from_double(localPos.y()) };
+    const UInt32 serial { LTime::nextSerial() };
 
-    for (GSeat *gSeat : focus()->client()->seatGlobals())
-        if (gSeat->dataDeviceResource())
-            gSeat->dataDeviceResource()->motion(ms, x, y);
-    */
+    if (m_session->source.get())
+    {
+        m_session->offer.reset(m_session->dstDataDevice.get()->createOffer(RDataSource::DND));
+        m_session->offer.get()->imp()->dndSession = m_session;
+
+        m_session->dstDataDevice.get()->imp()->serials.enter = serial;
+        m_session->dstDataDevice.get()->enter(
+            serial,
+            surface->surfaceResource(),
+            x,
+            y,
+            m_session->offer.get());
+
+        m_session->offer.get()->sourceActions(m_session->source.get()->actions());
+    }
+    /* If source is NULL, enter, leave and motion events are sent only to the client that
+     * initiated the drag and the client is expected to handle the data passing internally */
+    else
+    {
+        m_session->dstDataDevice.get()->imp()->serials.enter = serial;
+        m_session->dstDataDevice.get()->enter(
+            serial,
+            focus()->surfaceResource(),
+            x,
+            y,
+            nullptr);
+    }
+}
+
+void LDND::sendMoveEvent(const LPointF &localPos, UInt32 ms) noexcept
+{
+    if (!focus() || !m_session.get() || !m_session.get()->dstDataDevice.get())
+        return;
+
+    m_session.get()->dstDataDevice.get()->motion(
+        ms,
+        wl_fixed_from_double(localPos.x()),
+        wl_fixed_from_double(localPos.y()));
 }
 
 const LEvent &LDND::triggeringEvent() const noexcept
@@ -147,7 +134,7 @@ bool LDND::dragging() const noexcept
 
 void LDND::cancel() noexcept
 {
-    if (m_session)
+    if (!m_session.get())
         return;
 
     if (m_session->source.get())
@@ -156,16 +143,18 @@ void LDND::cancel() noexcept
         m_session->source.get()->dndFinished();
     }
 
-    sendLeaveEvent(focus());
+    sendLeaveEvent();
     cancelled();
     m_session.reset();
 }
 
 void LDND::drop() noexcept
 {
-    /* TODO
     if (!dragging())
         return;
+
+    if (icon() && icon()->surface())
+        icon()->surface()->imp()->setMapped(false);
 
     if (!focus())
     {
@@ -173,56 +162,20 @@ void LDND::drop() noexcept
         return;
     }
 
-    if (!imp()->dropped)
-    {
-        imp()->dropped = true;
+    if (m_session->dstDataDevice.get())
+        m_session->dstDataDevice.get()->drop();
 
-        LTimer::oneShot(100, [this](LTimer *)
-        {
-            if (source() && imp()->dropped)
-                cancel();
-        });
+    if (m_session->source.get())
+        m_session->source.get()->dndDropPerformed();
 
-        compositor()->imp()->unlockPoll();
-
-        if (icon() && icon()->surface())
-            icon()->surface()->imp()->setMapped(false);
-
-        if (imp()->focus)
-        {
-            for (Wayland::GSeat *s : imp()->focus->client()->seatGlobals())
-            {
-                if (s->dataDeviceResource())
-                {
-                    if (!imp()->matchedMimeType && s->dataDeviceResource()->version() >= 3)
-                    {
-                        cancel();
-                        return;
-                    }
-
-                    s->dataDeviceResource()->drop();
-                }
-            }
-
-            if (source())
-                source()->dataSourceResource()->dndDropPerformed();
-        }
-        else
-        {
-            if (source())
-                source()->dataSourceResource()->dndDropPerformed();
-
-            cancel();
-        }
-    }
-*/
+    m_session.reset();
 }
 
 // Since 3
 
 LDND::Action LDND::preferredAction() const noexcept
 {
-    return (Action)m_compositorAction;
+    return static_cast<Action>(m_compositorAction);
 }
 
 void LDND::setPreferredAction(LDND::Action action) noexcept
@@ -239,17 +192,22 @@ void LDND::setPreferredAction(LDND::Action action) noexcept
     }
 }
 
-void LDND::sendLeaveEvent(LSurface *surface) noexcept
+void LDND::sendLeaveEvent() noexcept
 {
-    /* TODO
-    matchedMimeType = false;
-    focus = nullptr;
-
-    if (!surface)
+    if (!m_session.get())
         return;
 
-    for (auto seatGlobal : surface->client()->seatGlobals())
-        if (seatGlobal->dataDeviceResource())
-            seatGlobal->dataDeviceResource()->leave();
-    */
+    m_session->focus.reset();
+
+    if (m_session->dstDataDevice.get())
+    {
+        m_session->dstDataDevice.get()->leave();
+        m_session->dstDataDevice.reset();
+    }
+
+    if (m_session->offer.get())
+    {
+        m_session->offer.get()->imp()->dndSession.reset();
+        m_session->offer.reset();
+    }
 }

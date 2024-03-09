@@ -13,6 +13,11 @@ public:
     RDataDevice *dataDeviceResource() const;
     RDataSource::Usage usage() const noexcept;
 
+    // DND only
+    UInt32 actions() const noexcept;
+    UInt32 preferredAction() const noexcept;
+    bool matchedMimeType() const noexcept;
+
     // Since 1
     bool offer(const char *mimeType);
 
