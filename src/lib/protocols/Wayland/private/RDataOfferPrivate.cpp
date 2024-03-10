@@ -46,6 +46,9 @@ void RDataOffer::RDataOfferPrivate::finish(wl_client *client, wl_resource *resou
     if (rDataOffer->imp()->dndSession.get() && rDataOffer->imp()->dndSession.get()->source.get())
         rDataOffer->imp()->dndSession.get()->source.get()->dndFinished();
 
+    if (rDataOffer->dataDeviceResource())
+        rDataOffer->dataDeviceResource()->leave();
+
     rDataOffer->imp()->dndSession.reset();
 }
 #endif

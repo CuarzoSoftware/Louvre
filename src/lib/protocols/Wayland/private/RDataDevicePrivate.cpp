@@ -142,6 +142,10 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resour
         }
 
         rDataSource->imp()->usage = RDataSource::Clipboard;
+
+        if (seat()->clipboard()->m_dataSource.get())
+            seat()->clipboard()->m_dataSource.get()->cancelled();
+
         seat()->clipboard()->m_dataSource.reset();
         seat()->clipboard()->clear();
 

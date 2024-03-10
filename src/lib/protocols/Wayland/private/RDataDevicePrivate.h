@@ -1,6 +1,7 @@
 #ifndef RDATADEVICEPRIVATE_H
 #define RDATADEVICEPRIVATE_H
 
+#include <protocols/Wayland/GSeat.h>
 #include <protocols/Wayland/RDataDevice.h>
 
 using namespace Louvre::Protocols::Wayland;
@@ -13,7 +14,7 @@ LPRIVATE_CLASS(RDataDevice)
     static void release(wl_client *client, wl_resource *resource);
     #endif
 
-    GSeat *gSeat { nullptr };
+    LWeak<GSeat> gSeat;
     LastEventSerials serials;
 };
 

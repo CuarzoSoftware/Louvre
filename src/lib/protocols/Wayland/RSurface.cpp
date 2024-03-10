@@ -1,4 +1,4 @@
-#include <protocols/WpPresentationTime/private/RWpPresentationFeedbackPrivate.h>
+#include <protocols/PresentationTime/private/RPresentationFeedbackPrivate.h>
 #include <protocols/Viewporter/private/RViewportPrivate.h>
 #include <protocols/FractionalScale/private/RFractionalScalePrivate.h>
 #include <protocols/TearingControl/private/RTearingControlPrivate.h>
@@ -86,15 +86,9 @@ RSurface::~RSurface()
     // Unmap
     lSurface->imp()->setMapped(false);
 
-    for (WpPresentationTime::RWpPresentationFeedback *wPf : lSurface->imp()->wpPresentationFeedbackResources)
-        wPf->imp()->lSurface = nullptr;
-
     // Destroy pending frame callbacks
     while (!lSurface->imp()->frameCallbacks.empty())
-    {
-        Wayland::RCallback *rCallback = lSurface->imp()->frameCallbacks.front();
-        rCallback->destroy();
-    }
+        lSurface->imp()->frameCallbacks.front()->destroy();
 
     // Clear touch points
     for (LTouchPoint *tp : seat()->touch()->touchPoints())

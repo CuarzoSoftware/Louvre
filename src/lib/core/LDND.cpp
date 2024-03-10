@@ -153,6 +153,8 @@ void LDND::drop() noexcept
     if (!dragging())
         return;
 
+    m_session->dropped = true;
+
     if (icon() && icon()->surface())
         icon()->surface()->imp()->setMapped(false);
 
@@ -162,11 +164,23 @@ void LDND::drop() noexcept
         return;
     }
 
+    const bool cancelled { m_session->offer.get() && m_session->offer.get()->version() >= 3 && !m_session->offer.get()->matchedMimeType() };
+
     if (m_session->dstDataDevice.get())
-        m_session->dstDataDevice.get()->drop();
+    {
+        if (!cancelled)
+            m_session->dstDataDevice.get()->drop();
+
+        m_session->dstDataDevice.get()->leave();
+    }
 
     if (m_session->source.get())
+    {
         m_session->source.get()->dndDropPerformed();
+
+        if (cancelled)
+            m_session->source.get()->cancelled();
+    }
 
     m_session.reset();
 }

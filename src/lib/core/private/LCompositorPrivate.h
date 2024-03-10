@@ -15,6 +15,9 @@
 
 LPRIVATE_CLASS(LCompositor)
 
+    CompositorState state { CompositorState::Uninitialized };
+    Int32 epollFd;
+    LCompositor *compositor;
     LVersion version;
     std::filesystem::path defaultAssetsPath;
     std::filesystem::path defaultBackendsPath;
@@ -32,23 +35,21 @@ LPRIVATE_CLASS(LCompositor)
     std::vector<RemovedGlobal>removedGlobals;
     void processRemovedGlobals();
     void removeGlobal(wl_global *global);
-
-    CompositorState state { CompositorState::Uninitialized };
-    LCompositor *compositor;
     void unitCompositor();
 
     bool initWayland();
         wl_display *display { nullptr };
         wl_event_loop *eventLoop { nullptr };
-        epoll_event events[3];
-        Int32 epollFd;
         wl_listener clientConnectedListener;
         wl_event_source *clientDisconnectedEventSource;
+        epoll_event events[3];
     void unitWayland();
 
-    bool initSeat();
-        LSeat *seat { nullptr };
-    void unitSeat();
+    bool surfacesListChanged { false };
+    bool animationsVectorChanged { false };
+    bool pollUnlocked { false };
+    bool isGraphicBackendInitialized { false };
+    std::vector<GLuint>nativeTexturesToDestroy;
 
     bool initGraphicBackend();
         PFNEGLBINDWAYLANDDISPLAYWL eglBindWaylandDisplayWL { NULL };
@@ -60,18 +61,20 @@ LPRIVATE_CLASS(LCompositor)
         void *graphicBackendData { nullptr };
         LCursor *cursor { nullptr };
         LPainter *painter { nullptr };
-        bool isGraphicBackendInitialized { false };
+        LOutput *currentOutput { nullptr };
     void unitGraphicBackend(bool closeLib);
+
+    bool initSeat();
+        LSeat *seat { nullptr };
+    void unitSeat();
 
     bool initInputBackend();
         LInputDevice fakeDevice { LSeat::Pointer | LSeat::Keyboard | LSeat::Touch };
         void *inputBackendHandle { nullptr };
         LInputBackendInterface *inputBackend { nullptr };
-        bool isInputBackendInitialized { false };
     void unitInputBackend(bool closeLib);
 
     // Event FD to force unlock main loop poll
-    bool pollUnlocked { false };
     void unlockPoll();
 
     // Threads sync
@@ -93,9 +96,7 @@ LPRIVATE_CLASS(LCompositor)
     std::vector<LOutput*>outputs;
     std::vector<LView*>views;
     std::vector<LTexture*>textures;
-    bool surfacesListChanged { false };
     std::vector<LAnimation*>animations;
-    bool animationsVectorChanged { false };
     std::vector<LTimer*>oneShotTimers;
 
     bool runningAnimations();
@@ -113,7 +114,6 @@ LPRIVATE_CLASS(LCompositor)
     void addRenderBufferToDestroy(std::thread::id thread, LRenderBuffer::LRenderBufferPrivate::ThreadData &data);
     static LPainter *findPainter();
 
-    std::vector<GLuint>nativeTexturesToDestroy;
     inline static void destroyNativeTextures(std::vector<GLuint> &vector)
     {
         while (!vector.empty())
@@ -125,6 +125,7 @@ LPRIVATE_CLASS(LCompositor)
 
     void sendPendingToplevelsConfiguration();
     void sendPresentationTime();
+    bool isInputBackendInitialized { false };
 };
 
 #endif // LCOMPOSITORPRIVATE_H

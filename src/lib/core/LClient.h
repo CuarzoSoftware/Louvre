@@ -204,7 +204,7 @@ public:
      * [wp_presentation](https://wayland.app/protocols/presentation-time#wp_presentation) global of the
      * PresentationTime protocol.
      */
-    const std::vector<Protocols::WpPresentationTime::GWpPresentation*> &wpPresentationTimeGlobals() const noexcept;
+    const std::vector<Protocols::PresentationTime::GPresentation*> &presentationTimeGlobals() const noexcept;
 
     /**
      * Resources created when the client binds to the

@@ -1,5 +1,5 @@
-#include <protocols/WpPresentationTime/private/RWpPresentationFeedbackPrivate.h>
-#include <protocols/WpPresentationTime/presentation-time.h>
+#include <protocols/PresentationTime/private/RPresentationFeedbackPrivate.h>
+#include <protocols/PresentationTime/presentation-time.h>
 #include <protocols/LinuxDMABuf/private/LDMABufferPrivate.h>
 #include <protocols/Wayland/private/RSurfacePrivate.h>
 #include <protocols/Wayland/private/GOutputPrivate.h>
@@ -365,59 +365,54 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
 void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output)
 {
-    if (wpPresentationFeedbackResources.empty())
+    if (presentationFeedbackResources.empty())
         return;
 
-    // Check if the surface is visible in the given output
-    for (LOutput *lOutput : surfaceResource->surface()->outputs())
+    for (std::size_t i = 0; i < presentationFeedbackResources.size();)
     {
-        if (lOutput != output)
-            continue;
+        auto *feedback { presentationFeedbackResources[i] };
 
-        for (Wayland::GOutput *gOutput : surfaceResource->client()->outputGlobals())
+        if (feedback->imp()->commitId == -2 || (feedback->imp()->outputSet && !feedback->imp()->output.get()))
         {
-            if (gOutput->output() != output)
-                continue;
-
-            while (!wpPresentationFeedbackResources.empty())
-            {
-                WpPresentationTime::RWpPresentationFeedback *rFeed = wpPresentationFeedbackResources.back();
-                rFeed->sync_output(gOutput);
-                rFeed->presented(output->imp()->presentationTime.time.tv_sec >> 32,
-                                 output->imp()->presentationTime.time.tv_sec & 0xffffffff,
-                                 (UInt32)output->imp()->presentationTime.time.tv_nsec,
-                                 output->imp()->presentationTime.period,
-                                 output->imp()->presentationTime.frame >> 32,
-                                 output->imp()->presentationTime.frame & 0xffffffff,
-                                output->imp()->presentationTime.flags);
-                rFeed->imp()->lSurface = nullptr;
-                wpPresentationFeedbackResources.pop_back();
-                wl_resource_destroy(rFeed->resource());
-            }
-
-            return;
+            feedback->discarded();
+            feedback->imp()->surface.reset();
+            presentationFeedbackResources[i] = std::move(presentationFeedbackResources.back());
+            presentationFeedbackResources.pop_back();
+            wl_resource_destroy(feedback->resource());
+            continue;
         }
-    }
+        else if (feedback->imp()->output.get() == output)
+        {
+            for (Wayland::GOutput *gOutput : surfaceResource->client()->outputGlobals())
+                if (gOutput->output() == output)
+                    feedback->syncOutput(gOutput);
 
-    while (!wpPresentationFeedbackResources.empty())
-    {
-        WpPresentationTime::RWpPresentationFeedback *rFeed = wpPresentationFeedbackResources.back();
-        rFeed->discarded();
-        rFeed->imp()->lSurface = nullptr;
-        wpPresentationFeedbackResources.pop_back();
-        wl_resource_destroy(rFeed->resource());
+            feedback->presented(output->imp()->presentationTime.time.tv_sec >> 32,
+                             output->imp()->presentationTime.time.tv_sec & 0xffffffff,
+                             (UInt32)output->imp()->presentationTime.time.tv_nsec,
+                             output->imp()->presentationTime.period,
+                             output->imp()->presentationTime.frame >> 32,
+                             output->imp()->presentationTime.frame & 0xffffffff,
+                             output->imp()->presentationTime.flags);
+            feedback->imp()->surface.reset();
+            presentationFeedbackResources[i] = std::move(presentationFeedbackResources.back());
+            presentationFeedbackResources.pop_back();
+            wl_resource_destroy(feedback->resource());
+            continue;
+        }
+
+        i++;
     }
 }
 
 void LSurface::LSurfacePrivate::sendPreferredScale()
 {
-    Int32 wlScale = 0;
-    Float32 wlFracScale = 0.f;
-
-    LFramebuffer::Transform transform = LFramebuffer::Normal;
-
     if (outputs.empty())
         return;
+
+    Int32 wlScale { 0 };
+    Float32 wlFracScale { 0.f };
+    LFramebuffer::Transform transform { LFramebuffer::Normal };
 
     for (LOutput *o : outputs)
     {
@@ -502,8 +497,8 @@ void LSurface::LSurfacePrivate::setKeyboardGrabToParent()
                 seat()->keyboard()->setGrab(surfaceResource->surface()->parent());
             else
             {
-                seat()->keyboard()->imp()->grab = nullptr;
-                seat()->keyboard()->imp()->focus = nullptr;
+                seat()->keyboard()->imp()->grab.reset();
+                seat()->keyboard()->imp()->focus.reset();
                 seat()->keyboard()->setFocus(surfaceResource->surface()->parent());
             }
         }

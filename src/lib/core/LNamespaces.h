@@ -21,7 +21,7 @@
 #define LOUVRE_WL_SUBCOMPOSITOR_VERSION 1
 #define LOUVRE_XDG_WM_BASE_VERSION 2
 #define LOUVRE_XDG_DECORATION_MANAGER_VERSION 1
-#define LOUVRE_WP_PRESENTATION_VERSION 1
+#define LOUVRE_PRESENTATION_VERSION 1
 #define LOUVRE_LINUX_DMA_BUF_VERSION 3
 #define LOUVRE_VIEWPORTER_VERSION 1
 #define LOUVRE_FRACTIONAL_SCALE_VERSION 1
@@ -504,11 +504,11 @@ namespace Louvre
             class RXdgToplevelDecoration;
         };
 
-        namespace WpPresentationTime
+        namespace PresentationTime
         {
-            class GWpPresentation;
+            class GPresentation;
 
-            class RWpPresentationFeedback;
+            class RPresentationFeedback;
         };
 
         namespace LinuxDMABuf

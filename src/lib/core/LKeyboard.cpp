@@ -269,6 +269,9 @@ void LKeyboard::setFocus(LSurface *surface)
 
         const bool clientChanged { !seat()->clipboard()->m_dataOffer.get() || seat()->clipboard()->m_dataOffer.get()->client() != surface->client()};
 
+        if (clientChanged && seat()->clipboard()->m_dataOffer.get() && seat()->clipboard()->m_dataOffer.get()->dataDeviceResource())
+            seat()->clipboard()->m_dataOffer.get()->dataDeviceResource()->selection(nullptr);
+
         imp()->focus.reset();
 
         // Pack currently pressed keys
@@ -311,6 +314,9 @@ void LKeyboard::setFocus(LSurface *surface)
                 for (auto rKeyboard : gSeat->keyboardResources())
                     rKeyboard->leave(leaveEvent, focus()->surfaceResource());
         }
+
+        if (seat()->clipboard()->m_dataOffer.get() && seat()->clipboard()->m_dataOffer.get()->dataDeviceResource())
+            seat()->clipboard()->m_dataOffer.get()->dataDeviceResource()->selection(nullptr);
 
         imp()->focus.reset();
     }

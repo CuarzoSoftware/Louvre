@@ -1,49 +1,49 @@
-#include <protocols/WpPresentationTime/private/RWpPresentationFeedbackPrivate.h>
-#include <protocols/WpPresentationTime/private/GWpPresentationPrivate.h>
-#include <protocols/WpPresentationTime/presentation-time.h>
+#include <protocols/PresentationTime/private/RPresentationFeedbackPrivate.h>
+#include <protocols/PresentationTime/private/GPresentationPrivate.h>
+#include <protocols/PresentationTime/presentation-time.h>
 
 #include <protocols/Wayland/GOutput.h>
 
 #include <private/LSurfacePrivate.h>
 
-RWpPresentationFeedback::RWpPresentationFeedback
+RPresentationFeedback::RPresentationFeedback
 (
-    GWpPresentation *gWpPresentation,
+    GPresentation *gPresentation,
     LSurface *lSurface,
     UInt32 id
 )
     :LResource
     (
-        gWpPresentation->client(),
+        gPresentation->client(),
         &wp_presentation_feedback_interface,
-        gWpPresentation->version(),
+        gPresentation->version(),
         id,
         nullptr
     ),
-    LPRIVATE_INIT_UNIQUE(RWpPresentationFeedback)
+    LPRIVATE_INIT_UNIQUE(RPresentationFeedback)
 {
-    imp()->lSurface = lSurface;
-    this->lSurface()->imp()->wpPresentationFeedbackResources.push_back(this);
+    imp()->surface.reset(lSurface);
+    surface()->imp()->presentationFeedbackResources.push_back(this);
 }
 
-RWpPresentationFeedback::~RWpPresentationFeedback()
+RPresentationFeedback::~RPresentationFeedback()
 {
-    if (lSurface())
-        LVectorRemoveOne(lSurface()->imp()->wpPresentationFeedbackResources, this);
+    if (surface())
+        LVectorRemoveOne(surface()->imp()->presentationFeedbackResources, this);
 }
 
-Louvre::LSurface *RWpPresentationFeedback::lSurface() const
+Louvre::LSurface *RPresentationFeedback::surface() const
 {
-    return imp()->lSurface;
+    return imp()->surface.get();
 }
 
-bool RWpPresentationFeedback::sync_output(Wayland::GOutput *gOutput) const
+bool RPresentationFeedback::syncOutput(Wayland::GOutput *gOutput) const
 {
     wp_presentation_feedback_send_sync_output(resource(), gOutput->resource());
     return true;
 }
 
-bool RWpPresentationFeedback::presented(UInt32 tv_sec_hi,
+bool RPresentationFeedback::presented(UInt32 tv_sec_hi,
                                         UInt32 tv_sec_lo,
                                         UInt32 tv_nsec,
                                         UInt32 refresh,
@@ -62,7 +62,7 @@ bool RWpPresentationFeedback::presented(UInt32 tv_sec_hi,
     return true;
 }
 
-bool RWpPresentationFeedback::discarded() const
+bool RPresentationFeedback::discarded() const
 {
     wp_presentation_feedback_send_discarded(resource());
     return true;

@@ -36,19 +36,15 @@ RDataDevice::RDataDevice
     ),
     LPRIVATE_INIT_UNIQUE(RDataDevice)
 {
-    imp()->gSeat = gSeat;
-    gSeat->imp()->rDataDevice = this;
+    imp()->gSeat.reset(gSeat);
+    gSeat->imp()->rDataDevice.reset(this);
 }
 
-RDataDevice::~RDataDevice()
-{
-    if (seatGlobal())
-        seatGlobal()->imp()->rDataDevice = nullptr;
-}
+RDataDevice::~RDataDevice() {}
 
 GSeat *RDataDevice::seatGlobal() const
 {
-    return imp()->gSeat;
+    return imp()->gSeat.get();
 }
 
 const RDataDevice::LastEventSerials &RDataDevice::serials() const

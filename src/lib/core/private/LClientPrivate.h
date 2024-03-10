@@ -35,7 +35,7 @@ public:
     std::vector<Wayland::GDataDeviceManager*> dataDeviceManagerGlobals;
     std::vector<XdgShell::GXdgWmBase*> xdgWmBaseGlobals;
     std::vector<XdgDecoration::GXdgDecorationManager*> xdgDecorationManagerGlobals;
-    std::vector<WpPresentationTime::GWpPresentation*> wpPresentationTimeGlobals;
+    std::vector<PresentationTime::GPresentation*> presentationTimeGlobals;
     std::vector<LinuxDMABuf::GLinuxDMABuf*> linuxDMABufGlobals;
     std::vector<Viewporter::GViewporter*> viewporterGlobals;
     std::vector<FractionalScale::GFractionalScaleManager*> fractionalScaleManagerGlobals;

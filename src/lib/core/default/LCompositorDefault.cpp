@@ -5,7 +5,7 @@
 #include <protocols/XdgShell/private/GXdgWmBasePrivate.h>
 #include <protocols/XdgDecoration/private/GXdgDecorationManagerPrivate.h>
 #include <protocols/LinuxDMABuf/private/GLinuxDMABufPrivate.h>
-#include <protocols/WpPresentationTime/private/GWpPresentationPrivate.h>
+#include <protocols/PresentationTime/private/GPresentationPrivate.h>
 #include <protocols/Viewporter/private/GViewporterPrivate.h>
 #include <protocols/FractionalScale/private/GFractionalScaleManagerPrivate.h>
 #include <protocols/GammaControl/private/GGammaControlManagerPrivate.h>
@@ -59,7 +59,7 @@ bool LCompositor::createGlobalsRequest()
                      LOUVRE_LINUX_DMA_BUF_VERSION, this, &GLinuxDMABuf::GLinuxDMABufPrivate::bind);
 
     wl_global_create(display(), &wp_presentation_interface,
-                     LOUVRE_WP_PRESENTATION_VERSION, this, &GWpPresentation::GWpPresentationPrivate::bind);
+                     LOUVRE_PRESENTATION_VERSION, this, &GPresentation::GPresentationPrivate::bind);
 
     wl_global_create(display(), &wp_viewporter_interface,
                      LOUVRE_VIEWPORTER_VERSION, this, &GViewporter::GViewporterPrivate::bind);

@@ -95,12 +95,13 @@ LPRIVATE_CLASS(LSurface)
     std::list<LSurface*>::iterator pendingParentLink;
     std::vector<Wayland::RCallback*>frameCallbacks;
     UInt32 damageId;
+    UInt32 commitId { 0 };
     std::list<LSurface*>::iterator compositorLink;
     Int32 lastSentPreferredBufferScale      { -1 };
     LFramebuffer::Transform lastSentPreferredTransform { LFramebuffer::Normal };
     std::vector<LOutput*> outputs;
 
-    std::vector<WpPresentationTime::RWpPresentationFeedback*> wpPresentationFeedbackResources;
+    std::vector<PresentationTime::RPresentationFeedback*> presentationFeedbackResources;
     void sendPresentationFeedback(LOutput *output);
     void setBufferScale(Int32 scale);
     void setPendingParent(LSurface *pendParent);

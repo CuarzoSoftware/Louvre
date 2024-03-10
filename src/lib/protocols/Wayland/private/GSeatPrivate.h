@@ -1,6 +1,7 @@
 #ifndef GSEATPRIVATE_H
 #define GSEATPRIVATE_H
 
+#include <protocols/Wayland/RDataDevice.h>
 #include <protocols/Wayland/GSeat.h>
 
 using namespace Louvre::Protocols::Wayland;
@@ -17,7 +18,7 @@ LPRIVATE_CLASS(GSeat)
     std::vector<RPointer*> pointerResources;
     std::vector<RKeyboard*> keyboardResources;
     std::vector<RTouch*> touchResources;
-    RDataDevice *rDataDevice { nullptr };
+    LWeak<RDataDevice> rDataDevice;
 };
 
 #endif // GSEATPRIVATE_H

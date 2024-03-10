@@ -1,3 +1,4 @@
+#include <protocols/PresentationTime/private/RPresentationFeedbackPrivate.h>
 #include <protocols/Wayland/private/RSurfacePrivate.h>
 #include <protocols/Wayland/RRegion.h>
 #include <protocols/Wayland/RCallback.h>
@@ -68,6 +69,11 @@ void RSurface::RSurfacePrivate::apply_commit(LSurface *surface, CommitOrigin ori
          return;
 
     LSurface::LSurfacePrivate *imp = surface->imp();
+    imp->commitId++;
+
+    for (auto *presentation : imp->presentationFeedbackResources)
+         if (presentation->imp()->commitId == -1)
+             presentation->imp()->commitId = imp->commitId;
 
     auto &changes = imp->changesToNotify;
 

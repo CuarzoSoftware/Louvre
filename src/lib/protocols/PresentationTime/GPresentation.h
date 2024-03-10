@@ -1,23 +1,23 @@
-#ifndef PRESENTATION_H
-#define PRESENTATION_H
+#ifndef GPRESENTATION_H
+#define GPRESENTATION_H
 
 #include <LResource.h>
 
-class Louvre::Protocols::WpPresentationTime::GWpPresentation : public LResource
+class Louvre::Protocols::PresentationTime::GPresentation : public LResource
 {
 public:
-    GWpPresentation(wl_client *client,
+    GPresentation(wl_client *client,
                     const wl_interface *interface,
                     Int32 version,
                     UInt32 id,
                     const void *implementation);
 
-    ~GWpPresentation();
+    ~GPresentation();
 
     // Since 1
     bool clockId(UInt32 clockId);
 
-    LPRIVATE_IMP_UNIQUE(GWpPresentation)
+    LPRIVATE_IMP_UNIQUE(GPresentation)
 };
 
-#endif // PRESENTATION_H
+#endif // GPRESENTATION_H

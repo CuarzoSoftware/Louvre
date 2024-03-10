@@ -16,33 +16,14 @@ class Louvre::LDNDSession : public LObject
 public:
     LDNDSession()
     {
-        source.setOnDestroyCallback([this](auto)
-        {
-            if (seat()->dnd()->m_session.get() == this)
-            {
-                seat()->dnd()->cancel();
-            }
-        });
-
-        origin.setOnDestroyCallback([this](auto)
-        {
-            if (seat()->dnd()->m_session.get() == this)
-            {
-                seat()->dnd()->cancel();
-            }
-        });
-
-        srcDataDevice.setOnDestroyCallback([this](auto)
-        {
-            if (seat()->dnd()->m_session.get() == this)
-            {
-                seat()->dnd()->cancel();
-            }
-        });
+        source.setOnDestroyCallback([this](auto) { cancel(); });
+        origin.setOnDestroyCallback([this](auto) { cancel(); });
+        srcDataDevice.setOnDestroyCallback([this](auto) { cancel(); });
     }
 
     UInt32 compositorAction { seat()->dnd()->preferredAction() };
     UInt32 action { 0 };
+    bool dropped { false };
     LWeak<LSurface> focus;
     LWeak<LSurface> origin;
     LWeak<LDNDIconRole> icon;
@@ -81,6 +62,14 @@ public:
 
         source.get()->action(action);
         offer.get()->action(action);
+    }
+
+    void cancel()
+    {
+        if (seat()->dnd()->m_session.get() == this)
+        {
+            seat()->dnd()->cancel();
+        }
     }
 };
 

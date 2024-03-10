@@ -1,3 +1,4 @@
+#include <protocols/PresentationTime/private/RPresentationFeedbackPrivate.h>
 #include <protocols/LinuxDMABuf/private/LDMABufferPrivate.h>
 #include <protocols/Wayland/RCallback.h>
 #include <protocols/Wayland/GOutput.h>
@@ -287,6 +288,20 @@ void LSurface::requestNextFrame(bool clearDamage)
 {
     if (imp()->stateFlags.check(LSurfacePrivate::Destroyed))
         return;
+
+    for (auto *presentation : imp()->presentationFeedbackResources)
+    {
+        if (presentation->imp()->commitId >= 0 && !presentation->imp()->output.get())
+        {
+            if (presentation->imp()->commitId == imp()->commitId && compositor()->imp()->currentOutput)
+            {
+                presentation->imp()->outputSet = true;
+                presentation->imp()->output.reset(compositor()->imp()->currentOutput);
+            }
+            else
+                presentation->imp()->commitId = -2;
+        }
+    }
 
     if (clearDamage)
     {

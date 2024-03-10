@@ -1,6 +1,7 @@
 #ifndef RDATAOFFERPRIVATE_H
 #define RDATAOFFERPRIVATE_H
 
+#include <protocols/Wayland/RDataDevice.h>
 #include <protocols/Wayland/RDataOffer.h>
 
 using namespace Louvre::Protocols::Wayland;
@@ -15,7 +16,7 @@ LPRIVATE_CLASS(RDataOffer)
     static void set_actions(wl_client *client, wl_resource *resource, UInt32 dnd_actions, UInt32 preferred_action);
     #endif
 
-    RDataDevice *rDataDevice { nullptr };
+    LWeak<RDataDevice> rDataDevice;
     RDataSource::Usage usage;
     std::shared_ptr<LDNDSession> dndSession;
     UInt32 actions { 0 };

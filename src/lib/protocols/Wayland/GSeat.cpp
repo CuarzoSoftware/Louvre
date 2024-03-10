@@ -51,9 +51,6 @@ GSeat::~GSeat()
         touchResources().back()->imp()->gSeat = nullptr;
         imp()->touchResources.pop_back();
     }
-
-    if (dataDeviceResource())
-        dataDeviceResource()->imp()->gSeat = nullptr;
 }
 
 const std::vector<RKeyboard *> &GSeat::keyboardResources() const
@@ -73,7 +70,7 @@ const std::vector<RTouch *> &GSeat::touchResources() const
 
 RDataDevice *GSeat::dataDeviceResource() const
 {
-    return imp()->rDataDevice;
+    return imp()->rDataDevice.get();
 }
 
 bool GSeat::capabilities(UInt32 capabilities)

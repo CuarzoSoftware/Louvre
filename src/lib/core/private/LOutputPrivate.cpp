@@ -80,7 +80,9 @@ void LOutput::LOutputPrivate::backendPaintGL()
     stateFlags.remove(PendingRepaint);
     painter->bindFramebuffer(&fb);
 
+    compositor()->imp()->currentOutput = output;
     output->paintGL();
+    compositor()->imp()->currentOutput = nullptr;
 
     if (stateFlags.check(HasDamage) && (stateFlags.checkAll(UsingFractionalScale | FractionalOversamplingEnabled) || output->hasBufferDamageSupport()))
     {

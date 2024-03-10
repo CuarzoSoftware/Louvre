@@ -121,9 +121,9 @@ const std::vector<XdgShell::GXdgWmBase *> &LClient::xdgWmBaseGlobals() const noe
     return imp()->xdgWmBaseGlobals;
 }
 
-const std::vector<WpPresentationTime::GWpPresentation *> &LClient::wpPresentationTimeGlobals() const noexcept
+const std::vector<PresentationTime::GPresentation *> &LClient::presentationTimeGlobals() const noexcept
 {
-    return imp()->wpPresentationTimeGlobals;
+    return imp()->presentationTimeGlobals;
 }
 
 const std::vector<LinuxDMABuf::GLinuxDMABuf *> &LClient::linuxDMABufGlobals() const noexcept

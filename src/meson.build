@@ -83,7 +83,7 @@ globals = [
     'Wayland',
     'XdgDecoration',
     'XdgShell',
-    'WpPresentationTime',
+    'PresentationTime',
     'Viewporter',
     'FractionalScale',
     'GammaControl',

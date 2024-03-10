@@ -1,12 +1,12 @@
-#include <protocols/WpPresentationTime/private/GWpPresentationPrivate.h>
-#include <protocols/WpPresentationTime/presentation-time.h>
+#include <protocols/PresentationTime/private/GPresentationPrivate.h>
+#include <protocols/PresentationTime/presentation-time.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 #include <LSeat.h>
 
-using namespace Louvre::Protocols::WpPresentationTime;
+using namespace Louvre::Protocols::PresentationTime;
 
-GWpPresentation::GWpPresentation
+GPresentation::GPresentation
 (
     wl_client *client,
     const wl_interface *interface,
@@ -22,9 +22,9 @@ GWpPresentation::GWpPresentation
         id,
         implementation
     ),
-    LPRIVATE_INIT_UNIQUE(GWpPresentation)
+    LPRIVATE_INIT_UNIQUE(GPresentation)
 {
-    this->client()->imp()->wpPresentationTimeGlobals.push_back(this);
+    this->client()->imp()->presentationTimeGlobals.push_back(this);
 
     if (seat()->outputs().empty())
         clockId(CLOCK_MONOTONIC);
@@ -32,12 +32,12 @@ GWpPresentation::GWpPresentation
         clockId(compositor()->imp()->graphicBackend->outputGetClock(seat()->outputs().front()));
 }
 
-GWpPresentation::~GWpPresentation()
+GPresentation::~GPresentation()
 {
-    LVectorRemoveOneUnordered(client()->imp()->wpPresentationTimeGlobals, this);
+    LVectorRemoveOneUnordered(client()->imp()->presentationTimeGlobals, this);
 }
 
-bool GWpPresentation::clockId(UInt32 clockId)
+bool GPresentation::clockId(UInt32 clockId)
 {
     wp_presentation_send_clock_id(resource(), clockId);
     return true;

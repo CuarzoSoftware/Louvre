@@ -48,20 +48,6 @@ RDataSource::~RDataSource()
         if (seat()->clipboard()->m_dataOffer.get() && seat()->clipboard()->m_dataOffer.get()->dataDeviceResource())
             seat()->clipboard()->m_dataOffer.get()->dataDeviceResource()->createOffer(RDataSource::Clipboard);
     }
-
-    /* TODO
-    // Check if being used by a Drag & Drop
-    if (dataSource() == seat()->dndManager()->source())
-        seat()->dndManager()->cancel();
-
-    // Check if used by clipboard
-    if (dataSource() != seat()->dataSelection())
-        delete imp()->lDataSource;
-    else
-    {
-        dataSource()->imp()->removeClientOnlySources();
-        dataSource()->imp()->dataSourceResource = nullptr;
-    }*/
 }
 
 void RDataSource::requestPersistentMimeType(MimeTypeFile &mimeType) noexcept

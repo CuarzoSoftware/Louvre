@@ -3,6 +3,7 @@
 #include <protocols/Wayland/RDataDevice.h>
 #include <protocols/Wayland/GSeat.h>
 #include <LClient.h>
+#include <LDNDSession.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::Wayland;
@@ -34,23 +35,19 @@ RDataOffer::RDataOffer
     ),
     LPRIVATE_INIT_UNIQUE(RDataOffer)
 {
-    imp()->rDataDevice = rDataDevice;
+    imp()->rDataDevice.reset(rDataDevice);
     imp()->usage = usage;
 }
 
 RDataOffer::~RDataOffer()
 {
-    /* TODO
-    for (GSeat *s : client()->seatGlobals())
-        if (s->dataDeviceResource() && s->dataDeviceResource()->dataOffered() == dataOffer())
-            s->dataDeviceResource()->imp()->dataOffered = nullptr;
-
-    delete imp()->lDataOffer; */
+    if (imp()->dndSession.get() && imp()->dndSession.get()->dropped && imp()->dndSession.get()->source.get())
+        imp()->dndSession.get()->source.get()->cancelled();
 }
 
 RDataDevice *RDataOffer::dataDeviceResource() const
 {
-    return imp()->rDataDevice;
+    return imp()->rDataDevice.get();
 }
 
 RDataSource::Usage RDataOffer::usage() const noexcept
