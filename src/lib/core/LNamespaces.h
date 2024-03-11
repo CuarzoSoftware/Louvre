@@ -414,6 +414,27 @@ namespace Louvre
     };
 
     /**
+     * @brief Alpha blending function
+     *
+     * OpenGL blend function. Refer to the documentation
+     * of [glBlendFuncSeparate()](https://docs.gl/es2/glBlendFuncSeparate) for more information.
+     */
+    struct LBlendFunc
+    {
+        /// Source RGB factor for blending
+        GLenum sRGBFactor;
+
+        /// Destination RGB factor for blending
+        GLenum dRGBFactor;
+
+        /// Source alpha factor for blending
+        GLenum sAlphaFactor;
+
+        /// Destination alpha factor for blendin
+        GLenum dAlphaFactor;
+    };
+
+    /**
      * @brief ID values for the graphic backends shipped with Louvre.
      *
      * These IDs are returned by LSeat::graphicBackendId() to identify

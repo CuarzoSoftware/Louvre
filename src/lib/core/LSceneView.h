@@ -80,13 +80,6 @@ public:
     void addDamage(LOutput *output, const LRegion &damage);
 
     /**
-     * @brief Check if the view is the main view of an LScene.
-     *
-     * @return True if it is the maint view of an LScene, false otherwise.
-     */
-    bool isLScene() const;
-
-    /**
      * @brief Render the scene.
      *
      * This method initiates rendering for the view, excluding specified regions if provided.

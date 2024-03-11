@@ -238,8 +238,9 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     surfBL.enableAutoBlendFunc(false);
     surfBR.enableAutoBlendFunc(false);
 
-    surfBL.setBlendFunc(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
-    surfBR.setBlendFunc(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
+    LBlendFunc blendFunc { GL_ONE, GL_ZERO, GL_ONE, GL_ZERO };
+    surfBL.setBlendFunc(blendFunc);
+    surfBR.setBlendFunc(blendFunc);
 
     // Masks to make the lower corners of the toplevel round
     maskBL.setPos(0, 0);
@@ -252,8 +253,9 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     maskBR.enableAutoBlendFunc(false);
 
     // This blending func makes the alpha of the toplevel be replaced by the one of the mask
-    maskBL.setBlendFunc(GL_ZERO, GL_SRC_ALPHA, GL_ZERO, GL_SRC_ALPHA);
-    maskBR.setBlendFunc(GL_ZERO, GL_SRC_ALPHA, GL_ZERO, GL_SRC_ALPHA);
+    blendFunc = { GL_ZERO, GL_SRC_ALPHA, GL_ZERO, GL_SRC_ALPHA };
+    maskBL.setBlendFunc(blendFunc);
+    maskBR.setBlendFunc(blendFunc);
 
     resizeTL.onPointerEnter = &onPointerEnterResizeArea;
     resizeTR.onPointerEnter = &onPointerEnterResizeArea;

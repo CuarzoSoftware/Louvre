@@ -1,14 +1,11 @@
 #include <private/LSolidColorViewPrivate.h>
 #include <private/LPainterPrivate.h>
-#include <private/LViewPrivate.h>
 
 Louvre::LSolidColorView::LSolidColorView(LView *parent) :
     LView(LView::SolidColor, parent),
     LPRIVATE_INIT_UNIQUE(LSolidColorView)
 {
     imp()->color = {0, 0, 0};
-    LView *nativeView = (LView*)this;
-    nativeView->imp()->opacity = 1.f;
 }
 
 Louvre::LSolidColorView::LSolidColorView(Float32 r, Float32 g, Float32 b, Float32 a, LView *parent) :
@@ -22,8 +19,7 @@ Louvre::LSolidColorView::LSolidColorView(Float32 r, Float32 g, Float32 b, Float3
     else if(a > 1.f)
         a = 1.f;
 
-    LView *nativeView = (LView*)this;
-    nativeView->imp()->opacity = a;
+    m_opacity = a;
 }
 
 LSolidColorView::LSolidColorView(const LRGBF &color, Float32 a, LView *parent) :
@@ -37,8 +33,7 @@ LSolidColorView::LSolidColorView(const LRGBF &color, Float32 a, LView *parent) :
     else if(a > 1.f)
         a = 1.f;
 
-    LView *nativeView = (LView*)this;
-    nativeView->imp()->opacity = a;
+    m_opacity = a;
 }
 
 LSolidColorView::~LSolidColorView() {}
@@ -53,8 +48,7 @@ void LSolidColorView::setColor(Float32 r, Float32 g, Float32 b)
     if (imp()->color.r != r || imp()->color.g != g || imp()->color.b != b)
     {
         imp()->color = {r, g, b};
-        LView *nativeView = this;
-        nativeView->imp()->markAsChangedOrder(false);
+        markAsChangedOrder(false);
         repaint();
     }
 }

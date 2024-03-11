@@ -73,7 +73,7 @@ Client::Client(const void *params) : LClient(params),
 
         for (LSurface *s : compositor()->surfaces())
             if (s->client() == this)
-                static_cast<Surface*>(s)->view.setColorFactor(color, color, color, 1.f);
+                static_cast<Surface*>(s)->view.setColorFactor({color, color, color, 1.f});
 
         compositor()->repaintAllOutputs();
     },
@@ -88,7 +88,7 @@ Client::Client(const void *params) : LClient(params),
         {
             if (s->client() == this)
             {
-                static_cast<Surface*>(s)->view.setColorFactor(color, color, color, 1.f);
+                static_cast<Surface*>(s)->view.setColorFactor({color, color, color, 1.f});
                 static_cast<Surface*>(s)->requestNextFrame(false);
             }
         }

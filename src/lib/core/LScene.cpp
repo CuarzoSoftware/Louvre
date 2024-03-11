@@ -1,6 +1,5 @@
 #include <private/LSceneTouchPointPrivate.h>
 #include <private/LScenePrivate.h>
-#include <private/LViewPrivate.h>
 #include <private/LSceneViewPrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <LToplevelMoveSession.h>
@@ -19,14 +18,15 @@
 #include <LTouchPoint.h>
 #include <unistd.h>
 
-using LVS = LView::LViewPrivate::LViewState;
+using LVS = LView::LViewState;
 using LSS = LScene::LScenePrivate::State;
 
 LScene::LScene() : LPRIVATE_INIT_UNIQUE(LScene)
 {
     imp()->view.setPos(0);
     LView *baseView = &imp()->view;
-    baseView->imp()->scene = this;
+    baseView->m_scene = this;
+    baseView->m_state.add(LVS::IsScene);
 }
 
 LScene::~LScene() {}
@@ -118,7 +118,7 @@ void LScene::handlePointerMoveEvent(const LPointerMoveEvent &event, EventOptions
 
     imp()->state.remove(LSS::ChildrenListChanged | LSS::PointerIsBlocked);
     imp()->state.add(LSS::HandlingPointerMoveEvent);
-    LView::LViewPrivate::removeFlagWithChildren(mainView(), LVS::PointerMoveDone);
+    LView::removeFlagWithChildren(mainView(), LVS::PointerMoveDone);
     imp()->handlePointerMove(mainView());
     imp()->state.remove(LSS::HandlingPointerMoveEvent);
 
@@ -244,7 +244,7 @@ void LScene::handlePointerButtonEvent(const LPointerButtonEvent &event, EventOpt
     imp()->state.add(LSS::HandlingPointerButtonEvent);
 
     for (LView *view : imp()->pointerFocus)
-        view->imp()->removeFlag(LVS::PointerButtonDone);
+        view->m_state.remove(LVS::PointerButtonDone);
 
 retry:
 
@@ -252,10 +252,10 @@ retry:
 
     for (LView *view : imp()->pointerFocus)
     {
-        if (view->imp()->hasFlag(LVS::PointerButtonDone))
+        if (view->m_state.check(LVS::PointerButtonDone))
             continue;
 
-        view->imp()->addFlag(LVS::PointerButtonDone);
+        view->m_state.add(LVS::PointerButtonDone);
         view->pointerButtonEvent(event);
 
         if (imp()->state.check(LSS::PointerFocusVectorChanged))
@@ -386,7 +386,7 @@ void LScene::handlePointerScrollEvent(const LPointerScrollEvent &event, EventOpt
     imp()->state.add(handlingEventFlag);
 
     for (LView *view : imp()->pointerFocus)
-        view->imp()->removeFlag(LVS::PointerScrollDone);
+        view->m_state.remove(LVS::PointerScrollDone);
 
 retry:
 
@@ -394,10 +394,10 @@ retry:
 
     for (LView *view : imp()->pointerFocus)
     {
-        if (view->imp()->hasFlag(LVS::PointerScrollDone))
+        if (view->m_state.check(LVS::PointerScrollDone))
                 continue;
 
-        view->imp()->addFlag(LVS::PointerScrollDone);
+        view->m_state.add(LVS::PointerScrollDone);
         view->pointerScrollEvent(event);
 
         if (imp()->state.check(LSS::PointerFocusVectorChanged))
@@ -425,7 +425,7 @@ void LScene::handlePointerSwipeBeginEvent(const LPointerSwipeBeginEvent &event, 
     imp()->pointerSwipeEndEvent.setDevice(event.device());
 
     for (LView *view : imp()->pointerFocus)
-        view->imp()->removeFlag(LVS::PointerSwipeBeginDone);
+        view->m_state.remove(LVS::PointerSwipeBeginDone);
 
 retry:
 
@@ -433,14 +433,14 @@ retry:
 
     for (LView *view : imp()->pointerFocus)
     {
-        if (view->imp()->hasFlag(LVS::PointerSwipeBeginDone))
+        if (view->m_state.check(LVS::PointerSwipeBeginDone))
             continue;
 
-        view->imp()->addFlag(LVS::PointerSwipeBeginDone);
+        view->m_state.add(LVS::PointerSwipeBeginDone);
 
-        if (!view->imp()->hasFlag(LVS::PendingSwipeEnd))
+        if (!view->m_state.check(LVS::PendingSwipeEnd))
         {
-            view->imp()->addFlag(LVS::PendingSwipeEnd);
+            view->m_state.add(LVS::PendingSwipeEnd);
             view->pointerSwipeBeginEvent(event);
         }
 
@@ -467,7 +467,7 @@ void LScene::handlePointerSwipeUpdateEvent(const LPointerSwipeUpdateEvent &event
     imp()->state.add(handlingEventFlag);
 
     for (LView *view : imp()->pointerFocus)
-        view->imp()->removeFlag(LVS::PointerSwipeUpdateDone);
+        view->m_state.remove(LVS::PointerSwipeUpdateDone);
 
 retry:
 
@@ -475,12 +475,12 @@ retry:
 
     for (LView *view : imp()->pointerFocus)
     {
-        if (view->imp()->hasFlag(LVS::PointerSwipeUpdateDone))
+        if (view->m_state.check(LVS::PointerSwipeUpdateDone))
             continue;
 
-        view->imp()->addFlag(LVS::PointerSwipeUpdateDone);
+        view->m_state.add(LVS::PointerSwipeUpdateDone);
 
-        if (view->imp()->hasFlag(LVS::PendingSwipeEnd))
+        if (view->m_state.check(LVS::PendingSwipeEnd))
             view->pointerSwipeUpdateEvent(event);
 
         if (imp()->state.check(LSS::PointerFocusVectorChanged))
@@ -506,7 +506,7 @@ void LScene::handlePointerSwipeEndEvent(const LPointerSwipeEndEvent &event, Even
     imp()->state.add(handlingEventFlag);
 
     for (LView *view : imp()->pointerFocus)
-        view->imp()->removeFlag(LVS::PointerSwipeEndDone);
+        view->m_state.remove(LVS::PointerSwipeEndDone);
 
 retry:
 
@@ -514,14 +514,14 @@ retry:
 
     for (LView *view : imp()->pointerFocus)
     {
-        if (view->imp()->hasFlag(LVS::PointerSwipeEndDone))
+        if (view->m_state.check(LVS::PointerSwipeEndDone))
             continue;
 
-        view->imp()->addFlag(LVS::PointerSwipeEndDone);
+        view->m_state.add(LVS::PointerSwipeEndDone);
 
-        if (view->imp()->hasFlag(LVS::PendingSwipeEnd))
+        if (view->m_state.check(LVS::PendingSwipeEnd))
         {
-            view->imp()->removeFlag(LVS::PendingSwipeEnd);
+            view->m_state.remove(LVS::PendingSwipeEnd);
             view->pointerSwipeEndEvent(event);
         }
 
@@ -550,7 +550,7 @@ void LScene::handlePointerPinchBeginEvent(const LPointerPinchBeginEvent &event, 
     imp()->pointerPinchEndEvent.setDevice(event.device());
 
     for (LView *view : imp()->pointerFocus)
-        view->imp()->removeFlag(LVS::PointerPinchBeginDone);
+        view->m_state.remove(LVS::PointerPinchBeginDone);
 
 retry:
 
@@ -558,14 +558,14 @@ retry:
 
     for (LView *view : imp()->pointerFocus)
     {
-        if (view->imp()->hasFlag(LVS::PointerPinchBeginDone))
+        if (view->m_state.check(LVS::PointerPinchBeginDone))
             continue;
 
-        view->imp()->addFlag(LVS::PointerPinchBeginDone);
+        view->m_state.add(LVS::PointerPinchBeginDone);
 
-        if (!view->imp()->hasFlag(LVS::PendingPinchEnd))
+        if (!view->m_state.check(LVS::PendingPinchEnd))
         {
-            view->imp()->addFlag(LVS::PendingPinchEnd);
+            view->m_state.add(LVS::PendingPinchEnd);
             view->pointerPinchBeginEvent(event);
         }
 
@@ -592,7 +592,7 @@ void LScene::handlePointerPinchUpdateEvent(const LPointerPinchUpdateEvent &event
     imp()->state.add(handlingEventFlag);
 
     for (LView *view : imp()->pointerFocus)
-        view->imp()->removeFlag(LVS::PointerPinchUpdateDone);
+        view->m_state.remove(LVS::PointerPinchUpdateDone);
 
 retry:
 
@@ -600,12 +600,12 @@ retry:
 
     for (LView *view : imp()->pointerFocus)
     {
-        if (view->imp()->hasFlag(LVS::PointerPinchUpdateDone))
+        if (view->m_state.check(LVS::PointerPinchUpdateDone))
             continue;
 
-        view->imp()->addFlag(LVS::PointerPinchUpdateDone);
+        view->m_state.add(LVS::PointerPinchUpdateDone);
 
-        if (view->imp()->hasFlag(LVS::PendingPinchEnd))
+        if (view->m_state.check(LVS::PendingPinchEnd))
             view->pointerPinchUpdateEvent(event);
 
         if (imp()->state.check(LSS::PointerFocusVectorChanged))
@@ -631,7 +631,7 @@ void LScene::handlePointerPinchEndEvent(const LPointerPinchEndEvent &event, Even
     imp()->state.add(handlingEventFlag);
 
     for (LView *view : imp()->pointerFocus)
-        view->imp()->removeFlag(LVS::PointerPinchEndDone);
+        view->m_state.remove(LVS::PointerPinchEndDone);
 
 retry:
 
@@ -639,14 +639,14 @@ retry:
 
     for (LView *view : imp()->pointerFocus)
     {
-        if (view->imp()->hasFlag(LVS::PointerPinchEndDone))
+        if (view->m_state.check(LVS::PointerPinchEndDone))
             continue;
 
-        view->imp()->addFlag(LVS::PointerPinchEndDone);
+        view->m_state.add(LVS::PointerPinchEndDone);
 
-        if (view->imp()->hasFlag(LVS::PendingPinchEnd))
+        if (view->m_state.check(LVS::PendingPinchEnd))
         {
-            view->imp()->removeFlag(LVS::PendingPinchEnd);
+            view->m_state.remove(LVS::PendingPinchEnd);
             view->pointerPinchEndEvent(event);
         }
 
@@ -675,7 +675,7 @@ void LScene::handlePointerHoldBeginEvent(const LPointerHoldBeginEvent &event, Ev
     imp()->pointerHoldEndEvent.setDevice(event.device());
 
     for (LView *view : imp()->pointerFocus)
-        view->imp()->removeFlag(LVS::PointerHoldBeginDone);
+        view->m_state.remove(LVS::PointerHoldBeginDone);
 
 retry:
 
@@ -683,14 +683,14 @@ retry:
 
     for (LView *view : imp()->pointerFocus)
     {
-        if (view->imp()->hasFlag(LVS::PointerHoldBeginDone))
+        if (view->m_state.check(LVS::PointerHoldBeginDone))
             continue;
 
-        view->imp()->addFlag(LVS::PointerHoldBeginDone);
+        view->m_state.add(LVS::PointerHoldBeginDone);
 
-        if (!view->imp()->hasFlag(LVS::PendingHoldEnd))
+        if (!view->m_state.check(LVS::PendingHoldEnd))
         {
-            view->imp()->addFlag(LVS::PendingHoldEnd);
+            view->m_state.add(LVS::PendingHoldEnd);
             view->pointerHoldBeginEvent(event);
         }
 
@@ -717,7 +717,7 @@ void LScene::handlePointerHoldEndEvent(const LPointerHoldEndEvent &event, EventO
     imp()->state.add(handlingEventFlag);
 
     for (LView *view : imp()->pointerFocus)
-        view->imp()->removeFlag(LVS::PointerHoldEndDone);
+        view->m_state.remove(LVS::PointerHoldEndDone);
 
 retry:
 
@@ -725,14 +725,14 @@ retry:
 
     for (LView *view : imp()->pointerFocus)
     {
-        if (view->imp()->hasFlag(LVS::PointerHoldEndDone))
+        if (view->m_state.check(LVS::PointerHoldEndDone))
             continue;
 
-        view->imp()->addFlag(LVS::PointerHoldEndDone);
+        view->m_state.add(LVS::PointerHoldEndDone);
 
-        if (view->imp()->hasFlag(LVS::PendingHoldEnd))
+        if (view->m_state.check(LVS::PendingHoldEnd))
         {
-            view->imp()->removeFlag(LVS::PendingHoldEnd);
+            view->m_state.remove(LVS::PendingHoldEnd);
             view->pointerHoldEndEvent(event);
         }
 
@@ -759,7 +759,7 @@ void LScene::handleKeyboardKeyEvent(const LKeyboardKeyEvent &event, EventOptions
     imp()->state.add(handlingEventFlag);
 
     for (LView *view : imp()->keyboardFocus)
-        view->imp()->removeFlag(LVS::KeyDone);
+        view->m_state.remove(LVS::KeyDone);
 
 retry:
 
@@ -767,10 +767,10 @@ retry:
 
     for (LView *view : imp()->keyboardFocus)
     {
-        if (view->imp()->hasFlag(LVS::KeyDone))
+        if (view->m_state.check(LVS::KeyDone))
             continue;
 
-        view->imp()->addFlag(LVS::KeyDone);
+        view->m_state.add(LVS::KeyDone);
         view->keyEvent(event);
 
         if (imp()->state.check(LSS::KeyboardFocusVectorChanged))
@@ -876,7 +876,7 @@ void LScene::handleTouchDownEvent(const LTouchDownEvent &event, const LPointF &g
     imp()->state.remove(LSS::ChildrenListChanged);
     imp()->state.remove(LSS::TouchIsBlocked);
 
-    LView::LViewPrivate::removeFlagWithChildren(mainView(), LVS::TouchDownDone);
+    LView::removeFlagWithChildren(mainView(), LVS::TouchDownDone);
     imp()->handleTouchDown(mainView());
 
     if (!(options & WaylandEvents))
@@ -939,7 +939,7 @@ void LScene::handleTouchMoveEvent(const LTouchMoveEvent &event, const LPointF &g
     imp()->state.remove(LSS::ChildrenListChanged | LSS::TouchIsBlocked);
 
     for (LView *view : imp()->currentTouchPoint->views())
-        view->imp()->removeFlag(LVS::TouchMoveDone);
+        view->m_state.remove(LVS::TouchMoveDone);
 
 retry:
 
@@ -947,10 +947,10 @@ retry:
 
     for (LView *view : imp()->currentTouchPoint->views())
     {
-        if (view->imp()->hasFlag(LVS::TouchMoveDone))
+        if (view->m_state.check(LVS::TouchMoveDone))
             continue;
 
-        view->imp()->addFlag(LVS::TouchMoveDone);
+        view->m_state.add(LVS::TouchMoveDone);
         event.localPos = imp()->viewLocalPos(view, globalPos);
         view->touchMoveEvent(event);
 
@@ -1088,7 +1088,7 @@ void LScene::handleTouchUpEvent(const LTouchUpEvent &event, EventOptionsFlags op
     imp()->state.remove(LSS::ChildrenListChanged | LSS::TouchIsBlocked);
 
     for (LView *view : imp()->currentTouchPoint->views())
-        view->imp()->removeFlag(LVS::TouchUpDone);
+        view->m_state.remove(LVS::TouchUpDone);
 
 retry:
 
@@ -1096,10 +1096,10 @@ retry:
 
     for (LView *view : imp()->currentTouchPoint->views())
     {
-        if (view->imp()->hasFlag(LVS::TouchUpDone))
+        if (view->m_state.check(LVS::TouchUpDone))
             continue;
 
-        view->imp()->addFlag(LVS::TouchUpDone);
+        view->m_state.add(LVS::TouchUpDone);
         view->touchUpEvent(event);
 
         if (imp()->currentTouchPoint->imp()->listChanged)
@@ -1181,7 +1181,7 @@ void LScene::handleTouchFrameEvent(const LTouchFrameEvent &event, EventOptionsFl
     imp()->state.remove(LSS::ChildrenListChanged | LSS::TouchIsBlocked);
 
     for (LView *view : imp()->currentTouchPoint->views())
-        view->imp()->removeFlag(LVS::TouchFrameDone);
+        view->m_state.remove(LVS::TouchFrameDone);
 
 retry:
 
@@ -1189,10 +1189,10 @@ retry:
 
     for (LView *view : imp()->currentTouchPoint->views())
     {
-        if (view->imp()->hasFlag(LVS::TouchFrameDone))
+        if (view->m_state.check(LVS::TouchFrameDone))
             continue;
 
-        view->imp()->addFlag(LVS::TouchFrameDone);
+        view->m_state.add(LVS::TouchFrameDone);
         view->touchFrameEvent(event);
 
         if (imp()->currentTouchPoint->imp()->listChanged)
@@ -1231,7 +1231,7 @@ void LScene::handleTouchCancelEvent(const LTouchCancelEvent &event, EventOptions
     imp()->state.add(handlingEventFlag);
 
     for (LView *view : imp()->currentTouchPoint->views())
-        view->imp()->removeFlag(LVS::TouchCancelDone);
+        view->m_state.remove(LVS::TouchCancelDone);
 
 retry:
 
@@ -1239,10 +1239,10 @@ retry:
 
     for (LView *view : imp()->currentTouchPoint->views())
     {
-        if (view->imp()->hasFlag(LVS::TouchCancelDone))
+        if (view->m_state.check(LVS::TouchCancelDone))
             continue;
 
-        view->imp()->addFlag(LVS::TouchCancelDone);
+        view->m_state.add(LVS::TouchCancelDone);
         view->touchCancelEvent(event);
 
         if (imp()->currentTouchPoint->imp()->listChanged)

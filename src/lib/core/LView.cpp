@@ -1,5 +1,4 @@
 #include <private/LCompositorPrivate.h>
-#include <private/LViewPrivate.h>
 #include <private/LScenePrivate.h>
 #include <private/LSceneViewPrivate.h>
 #include <private/LSceneTouchPointPrivate.h>
@@ -10,12 +9,10 @@
 
 using namespace Louvre;
 
-using LVS = LView::LViewPrivate::LViewState;
+using LVS = LView::LViewState;
 
-LView::LView(UInt32 type, LView *parent) : LPRIVATE_INIT_UNIQUE(LView)
+LView::LView(UInt32 type, LView *parent) : m_type(type)
 {
-    imp()->type = type;
-    imp()->view = this;
     compositor()->imp()->views.push_back(this);
     setParent(parent);
 }
@@ -30,12 +27,12 @@ LView::~LView()
     LVectorRemoveOneUnordered(compositor()->imp()->views, this);
 }
 
-void LView::enableKeyboardEvents(bool enabled)
+void LView::enableKeyboardEvents(bool enabled) noexcept
 {
     if (enabled == keyboardEventsEnabled())
         return;
 
-    imp()->setFlag(LVS::KeyboardEvents, enabled);
+    m_state.setFlag(LVS::KeyboardEvents, enabled);
 
     if (scene())
     {
@@ -48,21 +45,291 @@ void LView::enableKeyboardEvents(bool enabled)
     }
 }
 
-bool LView::keyboardEventsEnabled() const
-{
-    return imp()->hasFlag(LVS::KeyboardEvents);
-}
-
-void LView::enableTouchEvents(bool enabled)
+void LView::enableTouchEvents(bool enabled) noexcept
 {
     if (enabled == touchEventsEnabled())
         return;
 
-    imp()->setFlag(LVS::TouchEvents, enabled);
+    m_state.setFlag(LVS::TouchEvents, enabled);
 
     if (scene())
     {
         if (!enabled)
+        {
+            // TODO: unsafe ?
+            for (auto *tp : scene()->touchPoints())
+            {
+                for (auto it = tp->imp()->views.begin(); it != tp->imp()->views.end();)
+                {
+                    if ((*it) == this)
+                    {
+                        it = tp->imp()->views.erase(it);
+                        tp->imp()->listChanged = true;
+                        touchCancelEvent(LTouchCancelEvent());
+                    }
+                    else
+                        it++;
+                }
+            }
+        }
+    }
+}
+
+LSceneTouchPoint *LView::findTouchPoint(Int32 id) const noexcept
+{
+    if (scene())
+        for (auto *tp : scene()->touchPoints())
+            if (tp->id() == id)
+                return tp;
+
+    return nullptr;
+}
+
+void LView::enablePointerEvents(bool enabled) noexcept
+{
+    if (enabled == pointerEventsEnabled())
+        return;
+
+    m_state.setFlag(LVS::PointerEvents, enabled);
+
+    if (!enabled)
+    {
+        if (m_state.check(LVS::PointerIsOver))
+        {
+            if (scene())
+            {
+                if (m_state.check(LVS::PendingSwipeEnd))
+                {
+                    m_state.remove(LVS::PendingSwipeEnd);
+                    scene()->imp()->pointerSwipeEndEvent.setCancelled(true);
+                    scene()->imp()->pointerSwipeEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
+                    scene()->imp()->pointerSwipeEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
+                    scene()->imp()->pointerSwipeEndEvent.setSerial(LTime::nextSerial());
+                    pointerSwipeEndEvent(scene()->imp()->pointerSwipeEndEvent);
+                }
+
+                if (m_state.check(LVS::PendingPinchEnd))
+                {
+                    m_state.check(LVS::PendingPinchEnd);
+                    scene()->imp()->pointerPinchEndEvent.setCancelled(true);
+                    scene()->imp()->pointerPinchEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
+                    scene()->imp()->pointerPinchEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
+                    scene()->imp()->pointerPinchEndEvent.setSerial(LTime::nextSerial());
+                    pointerPinchEndEvent(scene()->imp()->pointerPinchEndEvent);
+                }
+
+                if (m_state.check(LVS::PendingHoldEnd))
+                {
+                    m_state.remove(LVS::PendingHoldEnd);
+                    scene()->imp()->pointerHoldEndEvent.setCancelled(true);
+                    scene()->imp()->pointerHoldEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
+                    scene()->imp()->pointerHoldEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
+                    scene()->imp()->pointerHoldEndEvent.setSerial(LTime::nextSerial());
+                    pointerHoldEndEvent(scene()->imp()->pointerHoldEndEvent);
+                }
+
+                LVectorRemoveOne(scene()->imp()->pointerFocus, this);
+                scene()->imp()->state.add(LScene::LScenePrivate::PointerFocusVectorChanged);
+            }
+
+            m_state.remove(LVS::PointerIsOver);
+        }
+    }
+}
+
+void LView::repaint() const noexcept
+{
+    if (m_state.check(LVS::RepaintCalled))
+        return;
+
+    for (LOutput *o : outputs())
+        o->repaint();
+
+    m_state.add(LVS::RepaintCalled);
+}
+
+void LView::setParent(LView *view) noexcept
+{
+    if (parent() == view || view == this)
+        return;
+
+    LScene *s { scene() };
+
+    if (s)
+        s->imp()->state.add(LScene::LScenePrivate::ChildrenListChanged);
+
+    if (parent())
+        parent()->m_children.erase(m_parentLink);
+
+    if (view)
+    {
+        view->m_children.push_back(this);
+        m_parentLink = std::prev(view->m_children.end());
+
+        if (view->scene() != s)
+            sceneChanged(view->scene());
+    }
+    else
+    {
+        damageScene(parentSceneView());
+
+        if (s != nullptr)
+            sceneChanged(nullptr);
+    }
+
+    markAsChangedOrder();
+    m_parent = view;
+}
+
+void LView::insertAfter(LView *prev, bool switchParent) noexcept
+{
+    if (prev == this)
+        return;
+
+    // If prev == nullptr, insert to the front of current parent children list
+    if (!prev)
+    {
+        // If no parent, is a no-op
+        if (!parent())
+            return;
+
+        // Already in front
+        if (parent()->children().front() == this)
+            return;
+
+        parent()->m_children.erase(m_parentLink);
+        parent()->m_children.push_front(this);
+        m_parentLink = parent()->m_children.begin();
+        markAsChangedOrder();
+        repaint();
+    }
+    else
+    {
+        if (switchParent)
+            setParent(prev->parent());
+        else if (prev->parent() != parent())
+            return;
+
+        markAsChangedOrder();
+        repaint();
+
+        if (!parent())
+            return;
+
+        if (prev == parent()->children().back())
+        {
+            parent()->m_children.erase(m_parentLink);
+            parent()->m_children.push_back(this);
+            m_parentLink = std::prev(parent()->m_children.end());
+        }
+        else
+        {
+            parent()->m_children.erase(m_parentLink);
+            m_parentLink = parent()->m_children.insert(std::next(prev->m_parentLink), this);
+        }
+    }
+}
+
+
+
+void LView::removeThread(std::thread::id thread)
+{
+    auto it { m_threadsMap.find(thread) };
+
+    if (it != m_threadsMap.end())
+    {
+        if (it->second.o)
+            leftOutput(it->second.o);
+        m_threadsMap.erase(it);
+    }
+
+    if (type() != Scene)
+        return;
+
+    LSceneView *sceneView { static_cast<LSceneView*>(this) };
+
+    auto sit { sceneView->imp()->threadsMap.find(thread) };
+
+    if (sit != sceneView->imp()->threadsMap.end())
+        sceneView->imp()->threadsMap.erase(sit);
+}
+
+void LView::markAsChangedOrder(bool includeChildren)
+{
+    for (auto &pair : m_threadsMap)
+        pair.second.changedOrder = true;
+
+    if (includeChildren)
+        for (LView *child : children())
+            child->markAsChangedOrder();
+}
+
+void LView::damageScene(LSceneView *scene)
+{
+    if (scene)
+    {
+        for (auto &pair : m_threadsMap)
+        {
+            if (!pair.second.prevMapped)
+                continue;
+
+            if (pair.second.o)
+                scene->addDamage(pair.second.o, pair.second.prevClipping);
+        }
+
+        for (LView *child : children())
+            child->damageScene(child->parentSceneView());
+    }
+}
+
+void LView::sceneChanged(LScene *newScene)
+{
+    if (scene())
+    {
+        if (m_state.check(KeyboardEvents))
+        {
+            LVectorRemoveOneUnordered(scene()->imp()->keyboardFocus, this);
+            scene()->imp()->state.add(LScene::LScenePrivate::KeyboardFocusVectorChanged);
+        }
+
+        if (m_state.check(PointerIsOver))
+        {
+            if (m_state.check(PendingSwipeEnd))
+            {
+                m_state.remove(PendingSwipeEnd);
+                scene()->imp()->pointerSwipeEndEvent.setCancelled(true);
+                scene()->imp()->pointerSwipeEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
+                scene()->imp()->pointerSwipeEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
+                scene()->imp()->pointerSwipeEndEvent.setSerial(LTime::nextSerial());
+                pointerSwipeEndEvent(scene()->imp()->pointerSwipeEndEvent);
+            }
+
+            if (m_state.check(PendingPinchEnd))
+            {
+                m_state.remove(PendingPinchEnd);
+                scene()->imp()->pointerPinchEndEvent.setCancelled(true);
+                scene()->imp()->pointerPinchEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
+                scene()->imp()->pointerPinchEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
+                scene()->imp()->pointerPinchEndEvent.setSerial(LTime::nextSerial());
+                pointerPinchEndEvent(scene()->imp()->pointerPinchEndEvent);
+            }
+
+            if (m_state.check(PendingHoldEnd))
+            {
+                m_state.remove(PendingHoldEnd);
+                scene()->imp()->pointerHoldEndEvent.setCancelled(true);
+                scene()->imp()->pointerHoldEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
+                scene()->imp()->pointerHoldEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
+                scene()->imp()->pointerHoldEndEvent.setSerial(LTime::nextSerial());
+                pointerHoldEndEvent(scene()->imp()->pointerHoldEndEvent);
+            }
+
+            LVectorRemoveOne(scene()->imp()->pointerFocus, this);
+            scene()->imp()->state.add(LScene::LScenePrivate::PointerFocusVectorChanged);
+            m_state.remove(PointerIsOver);
+        }
+
+        if (m_state.check(TouchEvents))
         {
             for (auto *tp : scene()->touchPoints())
             {
@@ -81,528 +348,19 @@ void LView::enableTouchEvents(bool enabled)
             }
         }
     }
-}
 
-bool LView::touchEventsEnabled() const
-{
-    return imp()->hasFlag(LVS::TouchEvents);
-}
-
-LSceneTouchPoint *LView::findTouchPoint(Int32 id) const
-{
-    if (scene())
-        for (auto *tp : scene()->touchPoints())
-            if (tp->id() == id)
-                return tp;
-
-    return nullptr;
-}
-
-bool LView::pointerEventsEnabled() const
-{
-    return imp()->hasFlag(LVS::PointerEvents);
-}
-
-void LView::enablePointerEvents(bool enabled)
-{
-    if (enabled == pointerEventsEnabled())
-        return;
-
-    imp()->setFlag(LVS::PointerEvents, enabled);
-
-    if (!enabled)
+    if (newScene)
     {
-        if (imp()->hasFlag(LVS::PointerIsOver))
+        if (m_state.check(KeyboardEvents))
         {
-            if (scene())
-            {
-                if (imp()->hasFlag(LVS::PendingSwipeEnd))
-                {
-                    imp()->removeFlag(LVS::PendingSwipeEnd);
-                    scene()->imp()->pointerSwipeEndEvent.setCancelled(true);
-                    scene()->imp()->pointerSwipeEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
-                    scene()->imp()->pointerSwipeEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
-                    scene()->imp()->pointerSwipeEndEvent.setSerial(LTime::nextSerial());
-                    pointerSwipeEndEvent(scene()->imp()->pointerSwipeEndEvent);
-                }
-
-                if (imp()->hasFlag(LVS::PendingPinchEnd))
-                {
-                    imp()->removeFlag(LVS::PendingPinchEnd);
-                    scene()->imp()->pointerPinchEndEvent.setCancelled(true);
-                    scene()->imp()->pointerPinchEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
-                    scene()->imp()->pointerPinchEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
-                    scene()->imp()->pointerPinchEndEvent.setSerial(LTime::nextSerial());
-                    pointerPinchEndEvent(scene()->imp()->pointerPinchEndEvent);
-                }
-
-                if (imp()->hasFlag(LVS::PendingHoldEnd))
-                {
-                    imp()->removeFlag(LVS::PendingHoldEnd);
-                    scene()->imp()->pointerHoldEndEvent.setCancelled(true);
-                    scene()->imp()->pointerHoldEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
-                    scene()->imp()->pointerHoldEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
-                    scene()->imp()->pointerHoldEndEvent.setSerial(LTime::nextSerial());
-                    pointerHoldEndEvent(scene()->imp()->pointerHoldEndEvent);
-                }
-
-                LVectorRemoveOne(scene()->imp()->pointerFocus, this);
-                scene()->imp()->state.add(LScene::LScenePrivate::PointerFocusVectorChanged);
-            }
-
-            imp()->removeFlag(LVS::PointerIsOver);
+            newScene->imp()->keyboardFocus.push_back(this);
+            scene()->imp()->state.add(LScene::LScenePrivate::KeyboardFocusVectorChanged);
         }
     }
-}
 
-void LView::damageAll()
-{
-    imp()->markAsChangedOrder(false);
+    m_scene = newScene;
 
-    if (mapped())
-        repaint();
-}
-
-LScene *LView::scene() const
-{
-    // Only the LScene mainView has this variable assigned
-    if (imp()->scene)
-        return imp()->scene;
-
-    if (parent())
-        return parent()->scene();
-
-    return nullptr;
-}
-
-LSceneView *LView::parentSceneView() const
-{
-    if (parent())
-    {
-        if (parent()->type() == Scene)
-            return (LSceneView*)parent();
-
-        return parent()->parentSceneView();
-    }
-    return nullptr;
-}
-
-UInt32 LView::type() const
-{
-    return imp()->type;
-}
-
-void LView::repaint()
-{
-    if (imp()->hasFlag(LVS::RepaintCalled))
-        return;
-
-    for (LOutput *o : outputs())
-        o->repaint();
-
-    imp()->addFlag(LVS::RepaintCalled);
-}
-
-LView *LView::parent() const
-{
-    return imp()->parent;
-}
-
-void LView::setParent(LView *view)
-{
-    if (parent() == view || view == this)
-        return;
-
-    LScene *s { scene() };
-
-    if (s)
-        s->imp()->state.add(LScene::LScenePrivate::ChildrenListChanged);
-
-    if (parent())
-        parent()->imp()->children.erase(imp()->parentLink);
-
-    if (view)
-    {
-        view->imp()->children.push_back(this);
-        imp()->parentLink = std::prev(view->imp()->children.end());
-
-        if (view->scene() != s)
-            imp()->sceneChanged(view->scene());
-    }
-    else
-    {
-        imp()->damageScene(parentSceneView());
-
-        if (s != nullptr)
-            imp()->sceneChanged(nullptr);
-    }
-
-    imp()->markAsChangedOrder();
-    imp()->parent = view;
-}
-
-void LView::insertAfter(LView *prev, bool switchParent)
-{
-    if (prev == this)
-        return;
-
-    // If prev == nullptr, insert to the front of current parent children list
-    if (!prev)
-    {
-        // If no parent, is a no-op
-        if (!parent())
-            return;
-
-        // Already in front
-        if (parent()->children().front() == this)
-            return;
-
-        parent()->imp()->children.erase(imp()->parentLink);
-        parent()->imp()->children.push_front(this);
-        imp()->parentLink = parent()->imp()->children.begin();
-
-        imp()->markAsChangedOrder();
-
-        repaint();
-    }
-    else
-    {
-        if (switchParent)
-        {
-            setParent(prev->parent());
-        }
-        else
-        {
-            if (prev->parent() != parent())
-                return;
-        }
-
-        imp()->markAsChangedOrder();
-
-        repaint();
-
-        if (!parent())
-            return;
-
-        if (prev == parent()->children().back())
-        {
-            parent()->imp()->children.erase(imp()->parentLink);
-            parent()->imp()->children.push_back(this);
-            imp()->parentLink = std::prev(parent()->imp()->children.end());
-        }
-        else
-        {
-            parent()->imp()->children.erase(imp()->parentLink);
-            imp()->parentLink = parent()->imp()->children.insert(std::next(prev->imp()->parentLink), this);
-        }
-    }
-}
-
-std::list<Louvre::LView *> &LView::children() const
-{
-    return imp()->children;
-}
-
-bool LView::parentOffsetEnabled() const
-{
-    return imp()->hasFlag(LVS::ParentOffset);
-}
-
-void LView::enableParentOffset(bool enabled)
-{
-    if (mapped() && enabled != imp()->hasFlag(LVS::ParentOffset))
-        repaint();
-
-    imp()->setFlag(LVS::ParentOffset, enabled);
-}
-
-const LPoint &LView::pos() const
-{
-    imp()->tmpPoint = nativePos();
-
-    if (parent())
-    {
-        if (parentScalingEnabled())
-            imp()->tmpPoint *= parent()->scalingVector(parent()->type() == Scene);
-
-        if (parentOffsetEnabled())
-            imp()->tmpPoint += parent()->pos();
-    }
-
-    return imp()->tmpPoint;
-}
-
-const LSize &LView::size() const
-{
-    imp()->tmpSize = nativeSize();
-
-    if (scalingEnabled())
-        imp()->tmpSize *= scalingVector(true);
-
-    if (parent() && parentScalingEnabled())
-        imp()->tmpSize *= parent()->scalingVector(parent()->type() == Scene);
-
-    return imp()->tmpSize;
-}
-
-bool LView::clippingEnabled() const
-{
-    return imp()->hasFlag(LVS::Clipping);
-}
-
-void LView::enableClipping(bool enabled)
-{
-    if (imp()->hasFlag(LVS::Clipping) != enabled)
-    {
-        imp()->setFlag(LVS::Clipping, enabled);
-        repaint();
-    }
-}
-
-const LRect &LView::clippingRect() const
-{
-    return imp()->clippingRect;
-}
-
-void LView::setClippingRect(const LRect &rect)
-{
-    if (rect != imp()->clippingRect)
-    {
-        imp()->clippingRect = rect;
-        repaint();
-    }
-}
-
-bool LView::parentClippingEnabled() const
-{
-    return imp()->hasFlag(LVS::ParentClipping);
-}
-
-void LView::enableParentClipping(bool enabled)
-{
-    if (mapped() && enabled != imp()->hasFlag(LVS::ParentClipping))
-        repaint();
-
-    imp()->setFlag(LVS::ParentClipping, enabled);
-}
-
-bool LView::scalingEnabled() const
-{
-    return imp()->hasFlag(LVS::Scaling);
-}
-
-void LView::enableScaling(bool enabled)
-{
-    if (mapped() && enabled != imp()->hasFlag(LVS::Scaling))
-        repaint();
-
-    imp()->setFlag(LVS::Scaling, enabled);
-}
-
-bool LView::parentScalingEnabled() const
-{
-    return imp()->hasFlag(LVS::ParentScaling);
-}
-
-void LView::enableParentScaling(bool enabled)
-{
-    if (mapped() && enabled != imp()->hasFlag(LVS::ParentScaling))
-        repaint();
-
-    return imp()->setFlag(LVS::ParentScaling, enabled);
-}
-
-const LSizeF &LView::scalingVector(bool forceIgnoreParent) const
-{
-    if (forceIgnoreParent)
-        return imp()->scalingVector;
-
-    imp()->tmpPointF = imp()->scalingVector;
-
-    if (parent() && parentScalingEnabled())
-        imp()->tmpPointF *= parent()->scalingVector(parent()->type() == Scene);
-
-    return imp()->tmpPointF;
-}
-
-void LView::setScalingVector(const LSizeF &scalingVector)
-{
-    if (mapped() && scalingVector != imp()->scalingVector)
-        repaint();
-
-    imp()->scalingVector = scalingVector;
-}
-
-bool LView::visible() const
-{
-    return imp()->hasFlag(LVS::Visible);
-}
-
-void LView::setVisible(bool visible)
-{
-    bool prev = mapped();
-    imp()->setFlag(LVS::Visible, visible);
-
-    if (prev != mapped())
-        repaint();
-}
-
-bool LView::mapped() const
-{
-    if (type() == Scene && !parent())
-        return visible();
-
-    return visible() && nativeMapped() && parent() && parent()->mapped();
-}
-
-Float32 LView::opacity(bool forceIgnoreParent) const
-{
-    if (forceIgnoreParent)
-        return imp()->opacity;
-
-    if (parentOpacityEnabled() && parent())
-        return imp()->opacity * parent()->opacity(parent()->type() == Scene);
-
-    return imp()->opacity;
-}
-
-void LView::setOpacity(Float32 opacity)
-{
-    if (opacity < 0.f)
-        opacity = 0.f;
-    else if(opacity > 1.f)
-        opacity = 1.f;
-
-    if (mapped() && opacity != imp()->opacity)
-        repaint();
-
-    imp()->opacity = opacity;
-}
-
-bool LView::parentOpacityEnabled() const
-{
-    return imp()->hasFlag(LVS::ParentOpacity);
-}
-
-void LView::enableParentOpacity(bool enabled)
-{
-    if (mapped() && imp()->hasFlag(LVS::ParentOpacity) != enabled)
-        repaint();
-
-    imp()->setFlag(LVS::ParentOpacity, enabled);
-}
-
-bool LView::forceRequestNextFrameEnabled() const
-{
-    return imp()->hasFlag(LVS::ForceRequestNextFrame);
-}
-
-void LView::enableForceRequestNextFrame(bool enabled) const
-{
-    imp()->setFlag(LVS::ForceRequestNextFrame, enabled);
-}
-
-void LView::setBlendFunc(GLenum sRGBFactor, GLenum dRGBFactor, GLenum sAlphaFactor, GLenum dAlphaFactor)
-{
-    if (imp()->sRGBFactor != sRGBFactor || imp()->dRGBFactor != dRGBFactor ||
-        imp()->sAlphaFactor != sAlphaFactor || imp()->dAlphaFactor != dAlphaFactor)
-    {
-        imp()->sRGBFactor = sRGBFactor;
-        imp()->dRGBFactor = dRGBFactor;
-        imp()->sAlphaFactor = sAlphaFactor;
-        imp()->dAlphaFactor = dAlphaFactor;
-        repaint();
-    }
-}
-
-void LView::enableAutoBlendFunc(bool enabled)
-{
-    if (enabled == imp()->hasFlag(LVS::AutoBlendFunc))
-        return;
-
-    imp()->setFlag(LVS::AutoBlendFunc, enabled);
-    repaint();
-}
-
-bool LView::autoBlendFuncEnabled() const
-{
-    return imp()->hasFlag(LVS::AutoBlendFunc);
-}
-
-void LView::setColorFactor(Float32 r, Float32 g, Float32 b, Float32 a)
-{
-    if (imp()->colorFactor.r != r ||
-        imp()->colorFactor.g != g ||
-        imp()->colorFactor.b != b ||
-        imp()->colorFactor.a != a)
-    {
-        imp()->colorFactor = {r, g, b, a};
-        repaint();
-        imp()->setFlag(LVS::ColorFactor, r != 1.f || g != 1.f || b != 1.f || a != 1.f);
-    }
-}
-
-const LRGBAF &LView::colorFactor()
-{
-    return imp()->colorFactor;
-}
-
-bool LView::pointerIsOver() const
-{
-    return imp()->hasFlag(LVS::PointerIsOver);
-}
-
-void LView::enableBlockPointer(bool enabled)
-{
-    imp()->setFlag(LVS::BlockPointer, enabled);
-}
-
-bool LView::blockPointerEnabled() const
-{
-    return imp()->hasFlag(LVS::BlockPointer);
-}
-
-void LView::enableBlockTouch(bool enabled)
-{
-    imp()->setFlag(LVS::BlockTouch, enabled);
-}
-
-bool LView::blockTouchEnabled() const
-{
-    return imp()->hasFlag(LVS::BlockTouch);
-}
-
-LBox LView::boundingBox() const
-{
-    LBox box =
-    {
-        pos().x(),
-        pos().y(),
-        pos().x() + size().w(),
-        pos().y() + size().h(),
-    };
-
-    LBox childBox;
-
+    // TODO: UNSAFE
     for (LView *child : children())
-    {
-        if (!child->mapped())
-            continue;
-
-        childBox = child->boundingBox();
-
-        if (childBox.x1 < box.x1)
-            box.x1 = childBox.x1;
-
-        if (childBox.y1 < box.y1)
-            box.y1 = childBox.y1;
-
-        if (childBox.x2 > box.x2)
-            box.x2 = childBox.x2;
-
-        if (childBox.y2 > box.y2)
-            box.y2 = childBox.y2;
-    }
-
-    return box;
+        child->sceneChanged(newScene);
 }

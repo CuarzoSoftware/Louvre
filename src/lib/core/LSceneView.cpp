@@ -1,6 +1,5 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LSceneViewPrivate.h>
-#include <private/LViewPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <LFramebuffer.h>
 #include <LRenderBuffer.h>
@@ -76,12 +75,6 @@ void LSceneView::addDamage(LOutput *output, const LRegion &damage)
         oD->manuallyAddedDamage.addRegion(damage);
 
     output->repaint();
-}
-
-bool LSceneView::isLScene() const
-{
-    LView *nativeView = (LSceneView*)this;
-    return nativeView->imp()->scene != nullptr;
 }
 
 void LSceneView::render(const LRegion *exclude)

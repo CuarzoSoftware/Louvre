@@ -7,7 +7,6 @@
 #include <private/LOutputPrivate.h>
 #include <private/LCursorPrivate.h>
 #include <private/LAnimationPrivate.h>
-#include <private/LViewPrivate.h>
 
 #include <LNamespaces.h>
 #include <LPopupRole.h>
@@ -17,6 +16,7 @@
 #include <LPointer.h>
 #include <LKeyboard.h>
 #include <LDND.h>
+#include <LView.h>
 #include <LLog.h>
 #include <LTime.h>
 #include <LTimer.h>
@@ -33,7 +33,7 @@
 
 using namespace Louvre::Protocols::Wayland;
 
-static LCompositor *s_compositor = nullptr;
+static LCompositor *s_compositor { nullptr };
 
 LCompositor::LCompositor() : LPRIVATE_INIT_UNIQUE(LCompositor)
 {
@@ -441,7 +441,7 @@ void LCompositor::removeOutput(LOutput *output)
                 s->sendOutputLeaveEvent(output);
 
             for (LView *v : imp()->views)
-                v->imp()->removeThread(v, o->threadId());
+                v->removeThread(o->threadId());
 
             LVectorRemoveOne(imp()->outputs, output);
 

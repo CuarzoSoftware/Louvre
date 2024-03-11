@@ -18,7 +18,7 @@
 #include "Output.h"
 #include "Workspace.h"
 
-#define WORKSPACE_ANIM_MS 600
+#define WORKSPACE_ANIM_MS 300
 #define WORKSPACE_ANIM_EASE 5.f
 
 Toplevel::Toplevel(const void *params) : LToplevelRole(params),

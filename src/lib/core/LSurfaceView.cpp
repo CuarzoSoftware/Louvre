@@ -1,5 +1,4 @@
 #include <private/LSurfaceViewPrivate.h>
-#include <private/LViewPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <LSubsurfaceRole.h>
@@ -231,25 +230,23 @@ void LSurfaceView::requestNextFrame(LOutput *output)
     if (!imp()->surface || !output)
         return;
 
-    LView *view = this;
-
     if (forceRequestNextFrameEnabled())
     {
         imp()->surface->requestNextFrame();
-        view->imp()->threadsMap[output->threadId()].lastRenderedDamageId = imp()->surface->damageId();
+        m_threadsMap[output->threadId()].lastRenderedDamageId = imp()->surface->damageId();
         return;
     }
 
     if (!imp()->primary)
         return;
 
-    bool clearDamage = true;
+    bool clearDamage { true };
 
     for (LOutput *o : surface()->outputs())
     {
         // If the view is visible on another output and has not rendered the new damage
         // prevent clearing the damage immediately
-        if (o != output && (view->imp()->threadsMap[o->threadId()].lastRenderedDamageId < imp()->surface->damageId()))
+        if (o != output && (m_threadsMap[o->threadId()].lastRenderedDamageId < imp()->surface->damageId()))
         {
             clearDamage = false;
             o->repaint();
@@ -264,7 +261,7 @@ void LSurfaceView::requestNextFrame(LOutput *output)
             imp()->surface->parent()->requestNextFrame(false);
     }
 
-    view->imp()->threadsMap[output->threadId()].lastRenderedDamageId = imp()->surface->damageId();
+    m_threadsMap[output->threadId()].lastRenderedDamageId = imp()->surface->damageId();
 }
 
 const LRegion *LSurfaceView::damage() const

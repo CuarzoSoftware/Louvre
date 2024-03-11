@@ -1,6 +1,5 @@
 #include <private/LTextureViewPrivate.h>
 #include <private/LTexturePrivate.h>
-#include <private/LViewPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <LTexture.h>
 #include <LCompositor.h>

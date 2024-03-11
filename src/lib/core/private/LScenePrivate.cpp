@@ -1,5 +1,4 @@
 #include <private/LScenePrivate.h>
-#include <private/LViewPrivate.h>
 #include <private/LSceneViewPrivate.h>
 #include <private/LSceneTouchPointPrivate.h>
 #include <LOutput.h>
@@ -10,7 +9,7 @@
 #include <LCursor.h>
 #include <LLog.h>
 
-using LVS = LView::LViewPrivate::LViewState;
+using LVS = LView::LViewState;
 using LSS = LScene::LScenePrivate::State;
 
 LView *LScene::LScenePrivate::viewAt(LView *view, const LPoint &pos, LView::Type type, LSeat::InputCapabilitiesFlags flags)
@@ -120,11 +119,11 @@ bool LScene::LScenePrivate::handlePointerMove(LView *view)
 
     if (!state.check(LSS::PointerIsBlocked) && pointIsOverView(view, cursor()->pos(), LSeat::Pointer))
     {
-        if (!view->imp()->hasFlag(LVS::PointerMoveDone))
+        if (!view->m_state.check(LVS::PointerMoveDone))
         {
-            view->imp()->addFlag(LVS::PointerMoveDone);
+            view->m_state.add(LVS::PointerMoveDone);
 
-            if (view->imp()->hasFlag(LVS::PointerIsOver))
+            if (view->m_state.check(LVS::PointerIsOver))
             {
                 LVectorRemoveOne(pointerFocus, view);
                 pointerFocus.push_back(view);
@@ -136,7 +135,7 @@ bool LScene::LScenePrivate::handlePointerMove(LView *view)
             }
             else
             {
-                view->imp()->addFlag(LVS::PointerIsOver);
+                view->m_state.add(LVS::PointerIsOver);
                 pointerFocus.push_back(view);
                 currentPointerEnterEvent.localPos = viewLocalPos(view, cursor()->pos());
                 view->pointerEnterEvent(currentPointerEnterEvent);
@@ -151,17 +150,17 @@ bool LScene::LScenePrivate::handlePointerMove(LView *view)
     }
     else
     {
-        if (!view->imp()->hasFlag(LVS::PointerMoveDone))
+        if (!view->m_state.check(LVS::PointerMoveDone))
         {
-            view->imp()->addFlag(LVS::PointerMoveDone);
+            view->m_state.add(LVS::PointerMoveDone);
 
-            if (view->imp()->hasFlag(LVS::PointerIsOver))
+            if (view->m_state.check(LVS::PointerIsOver))
             {
-                view->imp()->removeFlag(LVS::PointerIsOver);
+                view->m_state.remove(LVS::PointerIsOver);
 
-                if (view->imp()->hasFlag(LVS::PendingSwipeEnd))
+                if (view->m_state.check(LVS::PendingSwipeEnd))
                 {
-                    view->imp()->removeFlag(LVS::PendingSwipeEnd);
+                    view->m_state.remove(LVS::PendingSwipeEnd);
                     pointerSwipeEndEvent.setCancelled(true);
                     pointerSwipeEndEvent.setMs(currentPointerMoveEvent.ms());
                     pointerSwipeEndEvent.setUs(currentPointerMoveEvent.us());
@@ -169,9 +168,9 @@ bool LScene::LScenePrivate::handlePointerMove(LView *view)
                     view->pointerSwipeEndEvent(pointerSwipeEndEvent);
                 }
 
-                if (view->imp()->hasFlag(LVS::PendingPinchEnd))
+                if (view->m_state.check(LVS::PendingPinchEnd))
                 {
-                    view->imp()->removeFlag(LVS::PendingPinchEnd);
+                    view->m_state.remove(LVS::PendingPinchEnd);
                     pointerPinchEndEvent.setCancelled(true);
                     pointerPinchEndEvent.setMs(currentPointerMoveEvent.ms());
                     pointerPinchEndEvent.setUs(currentPointerMoveEvent.us());
@@ -179,9 +178,9 @@ bool LScene::LScenePrivate::handlePointerMove(LView *view)
                     view->pointerPinchEndEvent(pointerPinchEndEvent);
                 }
 
-                if (view->imp()->hasFlag(LVS::PendingHoldEnd))
+                if (view->m_state.check(LVS::PendingHoldEnd))
                 {
-                    view->imp()->removeFlag(LVS::PendingHoldEnd);
+                    view->m_state.remove(LVS::PendingHoldEnd);
                     pointerHoldEndEvent.setCancelled(true);
                     pointerHoldEndEvent.setMs(currentPointerMoveEvent.ms());
                     pointerHoldEndEvent.setUs(currentPointerMoveEvent.us());
@@ -226,9 +225,9 @@ bool LScene::LScenePrivate::handleTouchDown(LView *view)
 
     if (!state.check(TouchIsBlocked) && pointIsOverView(view, touchGlobalPos, LSeat::Touch))
     {
-        if (!view->imp()->hasFlag(LVS::TouchDownDone))
+        if (!view->m_state.check(LVS::TouchDownDone))
         {
-            view->imp()->addFlag(LVS::TouchDownDone);
+            view->m_state.add(LVS::TouchDownDone);
 
             LVectorRemoveOne(currentTouchPoint->imp()->views, view);
             currentTouchPoint->imp()->views.push_back(view);
