@@ -6,9 +6,9 @@
 #include <protocols/Wayland/RSurface.h>
 #include <private/LCompositorPrivate.h>
 #include <LSurface.h>
+#include <LBitset.h>
 #include <vector>
 #include <string>
-#include <LBitset.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols;
@@ -84,6 +84,7 @@ LPRIVATE_CLASS(LSurface)
 
     Wayland::RSurface *surfaceResource      { nullptr };
     LSurfaceView *lastPointerEventView      { nullptr };
+    LSurfaceView *lastTouchEventView        { nullptr };
 
     LTexture *textureBackup;
     LSurface *parent                        { nullptr };

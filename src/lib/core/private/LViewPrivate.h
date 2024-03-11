@@ -13,31 +13,52 @@ using namespace Louvre;
 
 LPRIVATE_CLASS(LView)
 
-    enum LViewState : UInt32
+    enum LViewState : UInt64
     {
-        /* Sometimes view ordering can change while a scene is emitting an event,
-         * in such cases it must start again. These flags are for preventing re-sending
-         * the event to the same view */
-        PointerMoveDone         = 1 << 0,
-        PointerButtonDone       = 1 << 2,
-        PointerAxisDone         = 1 << 3,
-        KeyModifiersDone        = 1 << 4,
-        KeyDone                 = 1 << 5,
+        IsScene                 = 1UL << 0,
 
-        RepaintCalled           = 1 << 6,
-        ColorFactor             = 1 << 7,
-        Visible                 = 1 << 8,
-        Input                   = 1 << 9,
-        Scaling                 = 1 << 10,
-        ParentScaling           = 1 << 11,
-        ParentOffset            = 1 << 12,
-        Clipping                = 1 << 13,
-        ParentClipping          = 1 << 14,
-        ParentOpacity           = 1 << 15,
-        ForceRequestNextFrame   = 1 << 16,
-        PointerIsOver           = 1 << 17,
-        BlockPointer            = 1 << 18,
-        AutoBlendFunc           = 1 << 19
+        PointerEvents           = 1UL << 1,
+        KeyboardEvents          = 1UL << 2,
+        TouchEvents             = 1UL << 3,
+
+        BlockPointer            = 1UL << 4,
+        BlockTouch              = 1UL << 5,
+
+        RepaintCalled           = 1UL << 6,
+        ColorFactor             = 1UL << 7,
+        Visible                 = 1UL << 8,
+        Scaling                 = 1UL << 9,
+        ParentScaling           = 1UL << 10,
+        ParentOffset            = 1UL << 11,
+        Clipping                = 1UL << 12,
+        ParentClipping          = 1UL << 13,
+        ParentOpacity           = 1UL << 14,
+        ForceRequestNextFrame   = 1UL << 15,
+        AutoBlendFunc           = 1UL << 16,
+
+        PointerIsOver           = 1UL << 17,
+
+        PendingSwipeEnd         = 1UL << 18,
+        PendingPinchEnd         = 1UL << 19,
+        PendingHoldEnd          = 1UL << 20,
+
+        PointerMoveDone         = 1UL << 21,
+        PointerButtonDone       = 1UL << 22,
+        PointerScrollDone       = 1UL << 23,
+        PointerSwipeBeginDone   = 1UL << 24,
+        PointerSwipeUpdateDone  = 1UL << 25,
+        PointerSwipeEndDone     = 1UL << 26,
+        PointerPinchBeginDone   = 1UL << 27,
+        PointerPinchUpdateDone  = 1UL << 28,
+        PointerPinchEndDone     = 1UL << 28,
+        PointerHoldBeginDone    = 1UL << 30,
+        PointerHoldEndDone      = 1UL << 31,
+        KeyDone                 = 1UL << 32,
+        TouchDownDone           = 1UL << 33,
+        TouchMoveDone           = 1UL << 34,
+        TouchUpDone             = 1UL << 35,
+        TouchFrameDone          = 1UL << 36,
+        TouchCancelDone         = 1UL << 37,
     };
 
     // This is used for detecting changes on a view since the last time it was drawn on a specific output
@@ -73,7 +94,8 @@ LPRIVATE_CLASS(LView)
         bool isFullyTrans;
     };
 
-    UInt32 state { Visible | ParentOffset | ParentOpacity | BlockPointer | AutoBlendFunc };
+    LView *view;
+    UInt64 state { Visible | ParentOffset | ParentOpacity | BlockPointer | AutoBlendFunc };
     ViewCache cache;
 
     UInt32 type;
@@ -95,28 +117,30 @@ LPRIVATE_CLASS(LView)
 
     std::map<std::thread::id,ViewThreadData>threadsMap;
     LScene *scene { nullptr };
+    LScene *currentScene { nullptr };
     std::list<LView*>::iterator parentLink;
 
     void removeThread(Louvre::LView *view, std::thread::id thread);
     void markAsChangedOrder(bool includeChildren = true);
     void damageScene(LSceneView *s);
+    void sceneChanged(LScene *newScene);
 
-    inline void removeFlag(UInt32 flag)
+    inline void removeFlag(UInt64 flag)
     {
         state &= ~flag;
     }
 
-    inline void addFlag(UInt32 flag)
+    inline void addFlag(UInt64 flag)
     {
         state |= flag;
     }
 
-    inline bool hasFlag(UInt32 flag)
+    inline bool hasFlag(UInt64 flag)
     {
         return state & flag;
     }
 
-    inline void setFlag(UInt32 flag, bool enable)
+    inline void setFlag(UInt64 flag, bool enable)
     {
         if (enable)
             addFlag(flag);
@@ -124,7 +148,7 @@ LPRIVATE_CLASS(LView)
             removeFlag(flag);
     }
 
-    inline static void removeFlagWithChildren(LView *view, UInt32 flag)
+    inline static void removeFlagWithChildren(LView *view, UInt64 flag)
     {
         view->imp()->removeFlag(flag);
 

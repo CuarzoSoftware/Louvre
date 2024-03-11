@@ -20,20 +20,20 @@
 
 void LCompositor::LCompositorPrivate::processRemovedGlobals()
 {
-    std::vector<RemovedGlobal>::iterator it;
-    for (it = removedGlobals.begin(); it != removedGlobals.end();)
+    for (std::size_t i = 0; i < removedGlobals.size();)
     {
-        RemovedGlobal &rg = *it;
+        RemovedGlobal &rg { removedGlobals[i] };
 
         if (rg.iters >= LOUVRE_GLOBAL_ITERS_BEFORE_DESTROY)
         {
             wl_global_destroy(rg.global);
-            it = removedGlobals.erase(it);
+            removedGlobals[i] = std::move(removedGlobals.back());
+            removedGlobals.pop_back();
         }
         else
         {
             rg.iters++;
-            ++it;
+            ++i;
         }
     }
 }
@@ -41,11 +41,7 @@ void LCompositor::LCompositorPrivate::processRemovedGlobals()
 void LCompositor::LCompositorPrivate::removeGlobal(wl_global *global)
 {
     wl_global_remove(global);
-
-    removedGlobals.push_back({
-        .global = global,
-        .iters = 0
-    });
+    removedGlobals.emplace_back(global, 0);
 }
 
 static wl_iterator_result resourceDestroyIterator(wl_resource *resource, void *data)

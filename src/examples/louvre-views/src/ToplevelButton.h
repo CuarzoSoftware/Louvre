@@ -6,7 +6,7 @@
 
 class ToplevelView;
 
-class ToplevelButton : public UITextureView
+class ToplevelButton final : public UITextureView
 {
 public:
     enum ButtonType
@@ -24,9 +24,9 @@ public:
     ButtonType buttonType;
     bool pressed { false };
 
-    void pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state) override;
-    void pointerLeaveEvent() override;
-    void pointerMoveEvent(const LPoint &) override;
+    void pointerButtonEvent(const LPointerButtonEvent &event) override;
+    void pointerLeaveEvent(const LPointerLeaveEvent &) override;
+    void pointerMoveEvent(const LPointerMoveEvent &) override;
 };
 
 #endif // TOPLEVELBUTTON_H

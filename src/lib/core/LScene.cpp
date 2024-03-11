@@ -1,7 +1,10 @@
+#include <private/LSceneTouchPointPrivate.h>
 #include <private/LScenePrivate.h>
 #include <private/LViewPrivate.h>
 #include <private/LSceneViewPrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <LToplevelMoveSession.h>
+#include <LToplevelResizeSession.h>
 #include <LSurfaceView.h>
 #include <LOutput.h>
 #include <LCursor.h>
@@ -12,9 +15,12 @@
 #include <LCompositor.h>
 #include <LLauncher.h>
 #include <LClient.h>
+#include <LTouch.h>
+#include <LTouchPoint.h>
 #include <unistd.h>
 
 using LVS = LView::LViewPrivate::LViewState;
+using LSS = LScene::LScenePrivate::State;
 
 LScene::LScene() : LPRIVATE_INIT_UNIQUE(LScene)
 {
@@ -24,6 +30,29 @@ LScene::LScene() : LPRIVATE_INIT_UNIQUE(LScene)
 }
 
 LScene::~LScene() {}
+
+const std::vector<LView *> &LScene::pointerFocus() const
+{
+    return imp()->pointerFocus;
+}
+
+const std::vector<LView *> &LScene::keyboardFocus() const
+{
+    return imp()->keyboardFocus;
+}
+
+const std::vector<LSceneTouchPoint *> &LScene::touchPoints() const
+{
+    return imp()->touchPoints;
+}
+
+LSceneTouchPoint *LScene::findTouchPoint(Int32 id) const
+{
+    for (LSceneTouchPoint *tp : imp()->touchPoints)
+        if (id == tp->id())
+            return tp;
+    return nullptr;
+}
 
 void LScene::handleInitializeGL(LOutput *output)
 {
@@ -66,302 +95,720 @@ void LScene::handleUninitializeGL(LOutput *output)
     imp()->mutex.unlock();
 }
 
-#ifdef TODO
-LView *LScene::handlePointerMoveEvent(Float32 x, Float32 y, bool absolute, LPoint *outLocalPos)
+void LScene::handlePointerMoveEvent(const LPointerMoveEvent &event, EventOptionsFlags options)
 {
     // Prevent recursive calls
-    if (imp()->handlingPointerMove)
-        return nullptr;
+    if (imp()->state.check(LSS::HandlingPointerMoveEvent))
+        return;
 
-    LSurface *surface = nullptr;
-    LView *view = nullptr;
-    LPoint localPos;
+    imp()->currentPointerMoveEvent = event;
 
-    if (absolute)
-        cursor()->setPos(x, y);
-    else
-        cursor()->move(x, y);
+    imp()->currentPointerEnterEvent.setDevice(event.device());
+    imp()->currentPointerEnterEvent.setMs(event.ms());
+    imp()->currentPointerEnterEvent.setUs(event.us());
+    imp()->currentPointerEnterEvent.setSerial(event.serial());
 
-    imp()->listChanged = false;
-    imp()->pointerIsBlocked = false;
+    imp()->currentPointerLeaveEvent.setDevice(event.device());
+    imp()->currentPointerLeaveEvent.setMs(event.ms());
+    imp()->currentPointerLeaveEvent.setUs(event.us());
+    imp()->currentPointerLeaveEvent.setSerial(event.serial());
 
-    imp()->handlingPointerMove = true;
+    cursor()->move(event.delta());
+    cursor()->repaintOutputs(true);
+
+    imp()->state.remove(LSS::ChildrenListChanged | LSS::PointerIsBlocked);
+    imp()->state.add(LSS::HandlingPointerMoveEvent);
     LView::LViewPrivate::removeFlagWithChildren(mainView(), LVS::PointerMoveDone);
-    imp()->handlePointerMove(mainView(), cursor()->pos(), &view);
-    imp()->handlingPointerMove = false;
+    imp()->handlePointerMove(mainView());
+    imp()->state.remove(LSS::HandlingPointerMoveEvent);
 
-    if (view)
+    if (!(options & WaylandEvents))
+        return;
+
+    LSurface *surface { nullptr };
+    LSurfaceView *firstSurfaceView { nullptr };
+    LPointF localPos;
+
+    for (LView *view : pointerFocus())
     {
-        localPos = imp()->viewLocalPos(view, cursor()->pos());
-
-        if (outLocalPos)
-            *outLocalPos = localPos;
-
         if (view->type() == LView::Surface)
         {
-            LSurfaceView *surfaceView = (LSurfaceView*)view;
-            surface = surfaceView->surface();
+            firstSurfaceView = static_cast<LSurfaceView*>(view);
+            break;
         }
     }
 
-    if (!handleWaylandPointerEventsEnabled())
-        return view;
-
-    // Repaint cursor outputs if hardware composition is not supported
-    cursor()->repaintOutputs(true);
-
-    // Update the drag & drop icon (if there was one)
-    if (seat()->dndManager()->icon())
+    if (firstSurfaceView)
     {
-        seat()->dndManager()->icon()->surface()->setPos(cursor()->pos());
-        seat()->dndManager()->icon()->surface()->repaintOutputs();
+        localPos = imp()->viewLocalPos(firstSurfaceView , cursor()->pos());
+        surface = firstSurfaceView->surface();
     }
 
-    // Update the toplevel size (if there was one being resized)
-    if (seat()->pointer()->resizingToplevel())
+    const bool activeDND { seat()->dnd()->dragging() && seat()->dnd()->triggeringEvent().type() != LEvent::Type::Touch };
+
+    if (seat()->dnd()->icon())
     {
-        seat()->pointer()->updateResizingToplevelSize(cursor()->pos());
-        return view;
+        seat()->dnd()->icon()->surface()->setPos(cursor()->pos());
+        seat()->dnd()->icon()->surface()->repaintOutputs();
     }
 
-    // Update the toplevel pos (if there was one being moved interactively)
-    if (seat()->pointer()->movingToplevel())
+    bool activeResizing { false };
+
+    for (LToplevelResizeSession *session : seat()->toplevelResizeSessions())
     {
-        seat()->pointer()->updateMovingToplevelPos(cursor()->pos());
-
-        seat()->pointer()->movingToplevel()->surface()->repaintOutputs();
-
-        if (seat()->pointer()->movingToplevel()->maximized())
-            seat()->pointer()->movingToplevel()->configure(seat()->pointer()->movingToplevel()->pendingStates() &~ LToplevelRole::Maximized);
-
-        return view;
+        if (session->triggeringEvent().type() != LEvent::Type::Touch)
+        {
+            activeResizing = true;
+            session->updateDragPoint(cursor()->pos());
+        }
     }
 
-    // DO NOT GET CONFUSED! If we are in a drag & drop session, we call setDragginSurface(NULL) in case there is a surface being dragged.
-    if (seat()->dndManager()->dragging())
+    if (activeResizing)
+        return;
+
+    bool activeMoving { false };
+
+    for (LToplevelMoveSession *session : seat()->toplevelMoveSessions())
+    {
+        if (session->triggeringEvent().type() != LEvent::Type::Touch)
+        {
+            activeMoving = true;
+            session->updateDragPoint(cursor()->pos());
+            session->toplevel()->surface()->repaintOutputs();
+
+            if (session->toplevel()->maximized())
+                session->toplevel()->configure(session->toplevel()->pendingStates() &~ LToplevelRole::Maximized);
+        }
+    }
+
+    if (activeMoving)
+        return;
+
+    if (activeDND)
         seat()->pointer()->setDraggingSurface(nullptr);
 
-    // If there was a surface holding the left pointer button
+    // If a surface has the left pointer button held down
     if (seat()->pointer()->draggingSurface())
     {
         if (seat()->pointer()->draggingSurface()->imp()->lastPointerEventView)
-            seat()->pointer()->sendMoveEvent(imp()->viewLocalPos(seat()->pointer()->draggingSurface()->imp()->lastPointerEventView, cursor()->pos()));
+        {
+            imp()->currentPointerMoveEvent.localPos = imp()->viewLocalPos(seat()->pointer()->draggingSurface()->imp()->lastPointerEventView, cursor()->pos());
+            seat()->pointer()->sendMoveEvent(imp()->currentPointerMoveEvent);
+        }
         else
-            seat()->pointer()->sendMoveEvent();
+        {
+            imp()->currentPointerMoveEvent.localPos = cursor()->pos() - seat()->pointer()->draggingSurface()->rolePos();
+            seat()->pointer()->sendMoveEvent(imp()->currentPointerMoveEvent);
+        }
 
-        return view;
+        return;
     }
 
-    if (!surface)
+    if (surface)
     {
-        seat()->pointer()->setFocus(nullptr);
+        surface->imp()->lastPointerEventView = firstSurfaceView;
+
+        if (activeDND)
+        {
+            if (seat()->dnd()->focus() == surface)
+                seat()->dnd()->sendMoveEvent(localPos, event.ms());
+            else
+                seat()->dnd()->setFocus(surface, localPos);
+        }
+        else
+        {
+            if (seat()->pointer()->focus() == surface)
+            {
+                imp()->currentPointerMoveEvent.localPos = localPos;
+                seat()->pointer()->sendMoveEvent(imp()->currentPointerMoveEvent);
+            }
+            else
+                seat()->pointer()->setFocus(surface, localPos);
+        }
     }
     else
     {
-        surface->imp()->lastPointerEventView = (LSurfaceView*)view;
-
-        if (seat()->pointer()->focus() == surface)
-            seat()->pointer()->sendMoveEvent(localPos);
+        if (activeDND)
+            seat()->dnd()->setFocus(nullptr, LPointF());
         else
-            seat()->pointer()->setFocus(surface, localPos);
+            seat()->pointer()->setFocus(nullptr);
     }
-
-    return view;
 }
 
-void LScene::handlePointerButtonEvent(LPointer::Button button, LPointer::ButtonState state)
+void LScene::handlePointerButtonEvent(const LPointerButtonEvent &event, EventOptionsFlags options)
 {
     // Prevent recursive calls
-    if (imp()->handlingPointerButton)
+    if (imp()->state.check(LSS::HandlingPointerButtonEvent))
         return;
 
-    imp()->listChanged = false;
-    imp()->handlingPointerButton = true;
-    LView::LViewPrivate::removeFlagWithChildren(mainView(), LVS::PointerButtonDone);
-    imp()->handlePointerButton(mainView(), button, state);
-    imp()->handlingPointerButton = false;
+    imp()->state.add(LSS::HandlingPointerButtonEvent);
 
-    if (!handleWaylandPointerEventsEnabled())
-        return;
+    for (LView *view : imp()->pointerFocus)
+        view->imp()->removeFlag(LVS::PointerButtonDone);
 
-    if (button == LPointer::Left && state == LPointer::Released)
-        seat()->dndManager()->drop();
+retry:
 
-    if (!seat()->pointer()->focus())
+    imp()->state.remove(LSS::PointerFocusVectorChanged);
+
+    for (LView *view : imp()->pointerFocus)
     {
-        LSurface *surface = nullptr;
-        LView *view = viewAt(cursor()->pos());
+        if (view->imp()->hasFlag(LVS::PointerButtonDone))
+            continue;
+
+        view->imp()->addFlag(LVS::PointerButtonDone);
+        view->pointerButtonEvent(event);
+
+        if (imp()->state.check(LSS::PointerFocusVectorChanged))
+            goto retry;
+    }
+
+    imp()->state.remove(LSS::HandlingPointerButtonEvent);
+
+    if (!(options & WaylandEvents))
+        return;
+
+    const bool activeDND { seat()->dnd()->dragging() && seat()->dnd()->triggeringEvent().type() != LEvent::Type::Touch };
+    LPointer &pointer { *seat()->pointer() };
+    LKeyboard &keyboard { *seat()->keyboard() };
+    LDND &dnd{ *seat()->dnd() };
+
+    if (activeDND && event.state() == LPointerButtonEvent::Released && event.button() == LPointerButtonEvent::Left)
+    {
+        dnd.drop();
+        keyboard.setFocus(nullptr);
+        pointer.setFocus(nullptr);
+        pointer.setDraggingSurface(nullptr);
+    }
+
+    if (!pointer.focus())
+    {
+        LSurface *surface { nullptr };
+        LView *view { viewAt(cursor()->pos(), LView::Undefined, LSeat::Pointer) };
 
         if (view && view->type() == LView::Surface)
-        {
-            LSurfaceView *surfaceView = (LSurfaceView*)view;
-            surface = surfaceView->surface();
-        }
+            surface = static_cast<LSurfaceView*>(view)->surface();
 
         if (surface)
         {
-            if (seat()->keyboard()->grabbingSurface() && seat()->keyboard()->grabbingSurface()->client() != surface->client())
-            {
-                seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
-                seat()->pointer()->dismissPopups();
-            }
+            keyboard.setFocus(surface);
+            pointer.setFocus(surface, imp()->viewLocalPos(view, cursor()->pos()));
+            pointer.sendButtonEvent(event);
 
-            if (!seat()->keyboard()->focus() || !surface->isSubchildOf(seat()->keyboard()->focus()))
-                seat()->keyboard()->setFocus(surface);
-
-            seat()->pointer()->setFocus(surface, imp()->viewLocalPos(view, cursor()->pos()));
-            seat()->pointer()->sendButtonEvent(button, state);
+            if (!surface->popup())
+                seat()->dismissPopups();
         }
-        // If no surface under the cursor
         else
         {
-            seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
-            seat()->pointer()->dismissPopups();
+            keyboard.setFocus(nullptr);
+            seat()->dismissPopups();
         }
 
         return;
     }
 
-    seat()->pointer()->sendButtonEvent(button, state);
-
-    if (button != LPointer::Button::Left)
+    if (event.button() != LPointerButtonEvent::Left)
+    {
+        pointer.sendButtonEvent(event);
         return;
+    }
 
     // Left button pressed
-    if (state == LPointer::ButtonState::Pressed)
+    if (event.state() == LPointerButtonEvent::Pressed)
     {
-        /* We save the pointer focus surface in order to continue sending events to it even when the cursor
-         * is outside of it (while the left button is being held down)*/
-        seat()->pointer()->setDraggingSurface(seat()->pointer()->focus());
+        // We save the pointer focus surface to continue sending events to it even when the cursor
+        // is outside of it (while the left button is being held down)
+        pointer.setDraggingSurface(seat()->pointer()->focus());
 
-        if (seat()->keyboard()->grabbingSurface() && seat()->keyboard()->grabbingSurface()->client() != seat()->pointer()->focus()->client())
-        {
-            seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
-            seat()->pointer()->dismissPopups();
-        }
+        if (!keyboard.focus() || !pointer.focus()->isSubchildOf(keyboard.focus()))
+            keyboard.setFocus(seat()->pointer()->focus());
 
-        if (!seat()->pointer()->focus()->popup())
-            seat()->pointer()->dismissPopups();
+        if (pointer.focus()->toplevel() && !pointer.focus()->toplevel()->activated())
+            pointer.focus()->toplevel()->configure(pointer.focus()->toplevel()->pendingStates() | LToplevelRole::Activated);
 
-        if (!seat()->keyboard()->focus() || !seat()->pointer()->focus()->isSubchildOf(seat()->keyboard()->focus()))
-            seat()->keyboard()->setFocus(seat()->pointer()->focus());
+        if (!pointer.focus()->popup())
+            seat()->dismissPopups();
 
-        if (seat()->pointer()->focus()->toplevel() && !seat()->pointer()->focus()->toplevel()->activated())
-            seat()->pointer()->focus()->toplevel()->configure(seat()->pointer()->focus()->toplevel()->pendingStates() | LToplevelRole::Activated);
+        pointer.sendButtonEvent(event);
 
-        // Raise surface
-        if (seat()->pointer()->focus() == compositor()->surfaces().back())
+        if (pointer.focus() == compositor()->surfaces().back())
             return;
 
-        if (seat()->pointer()->focus()->parent())
-            seat()->pointer()->focus()->topmostParent()->raise();
+        if (pointer.focus()->parent())
+            pointer.focus()->topmostParent()->raise();
         else
-            seat()->pointer()->focus()->raise();
+            pointer.focus()->raise();
     }
     // Left button released
     else
     {
-        seat()->pointer()->stopResizingToplevel();
-        seat()->pointer()->stopMovingToplevel();
+        pointer.sendButtonEvent(event);
+
+        // Stop pointer toplevel resizing sessions
+        for (auto it = seat()->toplevelResizeSessions().begin(); it != seat()->toplevelResizeSessions().end();)
+        {
+            if ((*it)->triggeringEvent().type() != LEvent::Type::Touch)
+                it = (*it)->stop();
+            else
+                it++;
+        }
+
+        // Stop pointer toplevel moving sessions
+        for (auto it = seat()->toplevelMoveSessions().begin(); it != seat()->toplevelMoveSessions().end();)
+        {
+            if ((*it)->triggeringEvent().type() != LEvent::Type::Touch)
+                it = (*it)->stop();
+            else
+                it++;
+        }
 
         // We stop sending events to the surface on which the left button was being held down
-        seat()->pointer()->setDraggingSurface(nullptr);
+        pointer.setDraggingSurface(nullptr);
 
-        if (seat()->pointer()->focus()->imp()->lastPointerEventView)
+        if (pointer.focus()->imp()->lastPointerEventView)
         {
-            if (!imp()->pointerIsOverView(seat()->pointer()->focus()->imp()->lastPointerEventView, cursor()->pos()))
-            {
-                seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
-                seat()->pointer()->setFocus(nullptr);
-            }
+            if (!imp()->pointIsOverView(pointer.focus()->imp()->lastPointerEventView, cursor()->pos(), LSeat::Pointer))
+                pointer.setFocus(nullptr);
         }
         else
-        {
-            if (!seat()->pointer()->focus()->inputRegion().containsPoint(cursor()->pos() - seat()->pointer()->focus()->pos()))
-            {
-                seat()->keyboard()->setGrabbingSurface(nullptr, nullptr);
-                seat()->pointer()->setFocus(nullptr);
-            }
-        }
+            if (!pointer.focus()->inputRegion().containsPoint(cursor()->pos() - pointer.focus()->pos()))
+                pointer.setFocus(nullptr);
     }
 }
 
-void LScene::handlePointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, LPointer::AxisSource source)
+void LScene::handlePointerScrollEvent(const LPointerScrollEvent &event, EventOptionsFlags options)
 {
+    auto &&handlingEventFlag { LSS::HandlingPointerScrollEvent };
+
     // Prevent recursive calls
-    if (imp()->handlingPointerAxisEvent)
+    if (imp()->state.check(handlingEventFlag))
         return;
 
-    imp()->listChanged = false;
-    imp()->handlingPointerAxisEvent = true;
-    LView::LViewPrivate::removeFlagWithChildren(mainView(), LVS::PointerAxisDone);
-    imp()->handlePointerAxisEvent(mainView(), axisX, axisY, discreteX, discreteY, source);
-    imp()->handlingPointerAxisEvent = false;
+    imp()->state.add(handlingEventFlag);
 
-    if (!handleWaylandPointerEventsEnabled())
-        return;
+    for (LView *view : imp()->pointerFocus)
+        view->imp()->removeFlag(LVS::PointerScrollDone);
 
-    seat()->pointer()->sendAxisEvent(axisX, axisY, discreteX, discreteY, source);
-}
-#endif
+retry:
 
-bool LScene::handleWaylandPointerEventsEnabled() const
-{
-    return imp()->handleWaylandPointerEvents;
-}
+    imp()->state.remove(LSS::PointerFocusVectorChanged);
 
-void LScene::enableHandleWaylandPointerEvents(bool enabled)
-{
-    imp()->handleWaylandPointerEvents = enabled;
-}
-
-#ifdef TODO
-void LScene::handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState)
-{
-    // Prevent recursive calls
-    if (imp()->handlingKeyEvent)
-        return;
-
-    imp()->listChanged = false;
-    imp()->handlingKeyEvent = true;
-    LView::LViewPrivate::removeFlagWithChildren(mainView(), LVS::KeyDone);
-    imp()->handleKeyEvent(mainView(), keyCode, keyState);
-    imp()->handlingKeyEvent = false;
-
-    if (handleWaylandKeyboardEventsEnabled())
-        seat()->keyboard()->sendKeyEvent(keyCode, keyState);
-
-    if (!auxKeyboardImplementationEnabled())
-        return;
-
-    bool L_CTRL = seat()->keyboard()->isKeyCodePressed(KEY_LEFTCTRL);
-    bool L_SHIFT = seat()->keyboard()->isKeyCodePressed(KEY_LEFTSHIFT);
-    bool mods = seat()->keyboard()->isKeyCodePressed(KEY_LEFTALT) && L_CTRL;
-
-    if (keyState == LKeyboard::Released)
+    for (LView *view : imp()->pointerFocus)
     {
-        // Terminates client connection
-        if (L_CTRL && seat()->keyboard()->keySymbol(keyCode) == XKB_KEY_q)
+        if (view->imp()->hasFlag(LVS::PointerScrollDone))
+                continue;
+
+        view->imp()->addFlag(LVS::PointerScrollDone);
+        view->pointerScrollEvent(event);
+
+        if (imp()->state.check(LSS::PointerFocusVectorChanged))
+            goto retry;
+    }
+
+    imp()->state.remove(handlingEventFlag);
+
+    if (!(options & WaylandEvents))
+        return;
+
+    seat()->pointer()->sendScrollEvent(event);
+}
+
+void LScene::handlePointerSwipeBeginEvent(const LPointerSwipeBeginEvent &event, EventOptionsFlags options)
+{
+    auto &&handlingEventFlag { LSS::HandlingPointerSwipeBeginEvent };
+
+    // Prevent recursive calls
+    if (imp()->state.check(handlingEventFlag))
+        return;
+
+    imp()->state.add(handlingEventFlag);
+    imp()->pointerSwipeEndEvent.setFingers(event.fingers());
+    imp()->pointerSwipeEndEvent.setDevice(event.device());
+
+    for (LView *view : imp()->pointerFocus)
+        view->imp()->removeFlag(LVS::PointerSwipeBeginDone);
+
+retry:
+
+    imp()->state.remove(LSS::PointerFocusVectorChanged);
+
+    for (LView *view : imp()->pointerFocus)
+    {
+        if (view->imp()->hasFlag(LVS::PointerSwipeBeginDone))
+            continue;
+
+        view->imp()->addFlag(LVS::PointerSwipeBeginDone);
+
+        if (!view->imp()->hasFlag(LVS::PendingSwipeEnd))
         {
-            if (seat()->keyboard()->focus())
-                seat()->keyboard()->focus()->client()->destroy();
+            view->imp()->addFlag(LVS::PendingSwipeEnd);
+            view->pointerSwipeBeginEvent(event);
         }
 
-        // Minimizes currently focused surface
-        else if (L_CTRL && seat()->keyboard()->keySymbol(keyCode) == XKB_KEY_m)
+        if (imp()->state.check(LSS::PointerFocusVectorChanged))
+            goto retry;
+    }
+
+    imp()->state.remove(handlingEventFlag);
+
+    if (!(options & WaylandEvents))
+        return;
+
+    seat()->pointer()->sendSwipeBeginEvent(event);
+}
+
+void LScene::handlePointerSwipeUpdateEvent(const LPointerSwipeUpdateEvent &event, EventOptionsFlags options)
+{
+    auto &&handlingEventFlag { LSS::HandlingPointerSwipeUpdateEvent };
+
+    // Prevent recursive calls
+    if (imp()->state.check(handlingEventFlag))
+        return;
+
+    imp()->state.add(handlingEventFlag);
+
+    for (LView *view : imp()->pointerFocus)
+        view->imp()->removeFlag(LVS::PointerSwipeUpdateDone);
+
+retry:
+
+    imp()->state.remove(LSS::PointerFocusVectorChanged);
+
+    for (LView *view : imp()->pointerFocus)
+    {
+        if (view->imp()->hasFlag(LVS::PointerSwipeUpdateDone))
+            continue;
+
+        view->imp()->addFlag(LVS::PointerSwipeUpdateDone);
+
+        if (view->imp()->hasFlag(LVS::PendingSwipeEnd))
+            view->pointerSwipeUpdateEvent(event);
+
+        if (imp()->state.check(LSS::PointerFocusVectorChanged))
+            goto retry;
+    }
+
+    imp()->state.remove(handlingEventFlag);
+
+    if (!(options & WaylandEvents))
+        return;
+
+    seat()->pointer()->sendSwipeUpdateEvent(event);
+}
+
+void LScene::handlePointerSwipeEndEvent(const LPointerSwipeEndEvent &event, EventOptionsFlags options)
+{
+    auto &&handlingEventFlag { LSS::HandlingPointerSwipeEndEvent };
+
+    // Prevent recursive calls
+    if (imp()->state.check(handlingEventFlag))
+        return;
+
+    imp()->state.add(handlingEventFlag);
+
+    for (LView *view : imp()->pointerFocus)
+        view->imp()->removeFlag(LVS::PointerSwipeEndDone);
+
+retry:
+
+    imp()->state.remove(LSS::PointerFocusVectorChanged);
+
+    for (LView *view : imp()->pointerFocus)
+    {
+        if (view->imp()->hasFlag(LVS::PointerSwipeEndDone))
+            continue;
+
+        view->imp()->addFlag(LVS::PointerSwipeEndDone);
+
+        if (view->imp()->hasFlag(LVS::PendingSwipeEnd))
         {
-            if (seat()->keyboard()->focus() && seat()->keyboard()->focus()->toplevel() && !seat()->keyboard()->focus()->toplevel()->fullscreen())
-                seat()->keyboard()->focus()->toplevel()->setMinimizedRequest();
+            view->imp()->removeFlag(LVS::PendingSwipeEnd);
+            view->pointerSwipeEndEvent(event);
         }
 
-        // Terminates the compositor
-        else if (keyCode == KEY_ESC && L_CTRL && L_SHIFT)
-            compositor()->finish();
+        if (imp()->state.check(LSS::PointerFocusVectorChanged))
+            goto retry;
+    }
 
+    imp()->state.remove(handlingEventFlag);
+
+    if (!(options & WaylandEvents))
+        return;
+
+    seat()->pointer()->sendSwipeEndEvent(event);
+}
+
+void LScene::handlePointerPinchBeginEvent(const LPointerPinchBeginEvent &event, EventOptionsFlags options)
+{
+    auto &&handlingEventFlag { LSS::HandlingPointerPinchBeginEvent };
+
+    // Prevent recursive calls
+    if (imp()->state.check(handlingEventFlag))
+        return;
+
+    imp()->state.add(handlingEventFlag);
+    imp()->pointerPinchEndEvent.setFingers(event.fingers());
+    imp()->pointerPinchEndEvent.setDevice(event.device());
+
+    for (LView *view : imp()->pointerFocus)
+        view->imp()->removeFlag(LVS::PointerPinchBeginDone);
+
+retry:
+
+    imp()->state.remove(LSS::PointerFocusVectorChanged);
+
+    for (LView *view : imp()->pointerFocus)
+    {
+        if (view->imp()->hasFlag(LVS::PointerPinchBeginDone))
+            continue;
+
+        view->imp()->addFlag(LVS::PointerPinchBeginDone);
+
+        if (!view->imp()->hasFlag(LVS::PendingPinchEnd))
+        {
+            view->imp()->addFlag(LVS::PendingPinchEnd);
+            view->pointerPinchBeginEvent(event);
+        }
+
+        if (imp()->state.check(LSS::PointerFocusVectorChanged))
+            goto retry;
+    }
+
+    imp()->state.remove(handlingEventFlag);
+
+    if (!(options & WaylandEvents))
+        return;
+
+    seat()->pointer()->sendPinchBeginEvent(event);
+}
+
+void LScene::handlePointerPinchUpdateEvent(const LPointerPinchUpdateEvent &event, EventOptionsFlags options)
+{
+    auto &&handlingEventFlag { LSS::HandlingPointerPinchUpdateEvent };
+
+    // Prevent recursive calls
+    if (imp()->state.check(handlingEventFlag))
+        return;
+
+    imp()->state.add(handlingEventFlag);
+
+    for (LView *view : imp()->pointerFocus)
+        view->imp()->removeFlag(LVS::PointerPinchUpdateDone);
+
+retry:
+
+    imp()->state.remove(LSS::PointerFocusVectorChanged);
+
+    for (LView *view : imp()->pointerFocus)
+    {
+        if (view->imp()->hasFlag(LVS::PointerPinchUpdateDone))
+            continue;
+
+        view->imp()->addFlag(LVS::PointerPinchUpdateDone);
+
+        if (view->imp()->hasFlag(LVS::PendingPinchEnd))
+            view->pointerPinchUpdateEvent(event);
+
+        if (imp()->state.check(LSS::PointerFocusVectorChanged))
+            goto retry;
+    }
+
+    imp()->state.remove(handlingEventFlag);
+
+    if (!(options & WaylandEvents))
+        return;
+
+    seat()->pointer()->sendPinchUpdateEvent(event);
+}
+
+void LScene::handlePointerPinchEndEvent(const LPointerPinchEndEvent &event, EventOptionsFlags options)
+{
+    auto &&handlingEventFlag { LSS::HandlingPointerPinchEndEvent };
+
+    // Prevent recursive calls
+    if (imp()->state.check(handlingEventFlag))
+        return;
+
+    imp()->state.add(handlingEventFlag);
+
+    for (LView *view : imp()->pointerFocus)
+        view->imp()->removeFlag(LVS::PointerPinchEndDone);
+
+retry:
+
+    imp()->state.remove(LSS::PointerFocusVectorChanged);
+
+    for (LView *view : imp()->pointerFocus)
+    {
+        if (view->imp()->hasFlag(LVS::PointerPinchEndDone))
+            continue;
+
+        view->imp()->addFlag(LVS::PointerPinchEndDone);
+
+        if (view->imp()->hasFlag(LVS::PendingPinchEnd))
+        {
+            view->imp()->removeFlag(LVS::PendingPinchEnd);
+            view->pointerPinchEndEvent(event);
+        }
+
+        if (imp()->state.check(LSS::PointerFocusVectorChanged))
+            goto retry;
+    }
+
+    imp()->state.remove(handlingEventFlag);
+
+    if (!(options & WaylandEvents))
+        return;
+
+    seat()->pointer()->sendPinchEndEvent(event);
+}
+
+void LScene::handlePointerHoldBeginEvent(const LPointerHoldBeginEvent &event, EventOptionsFlags options)
+{
+    auto &&handlingEventFlag { LSS::HandlingPointerHoldBeginEvent };
+
+    // Prevent recursive calls
+    if (imp()->state.check(handlingEventFlag))
+        return;
+
+    imp()->state.add(handlingEventFlag);
+    imp()->pointerHoldEndEvent.setFingers(event.fingers());
+    imp()->pointerHoldEndEvent.setDevice(event.device());
+
+    for (LView *view : imp()->pointerFocus)
+        view->imp()->removeFlag(LVS::PointerHoldBeginDone);
+
+retry:
+
+    imp()->state.remove(LSS::PointerFocusVectorChanged);
+
+    for (LView *view : imp()->pointerFocus)
+    {
+        if (view->imp()->hasFlag(LVS::PointerHoldBeginDone))
+            continue;
+
+        view->imp()->addFlag(LVS::PointerHoldBeginDone);
+
+        if (!view->imp()->hasFlag(LVS::PendingHoldEnd))
+        {
+            view->imp()->addFlag(LVS::PendingHoldEnd);
+            view->pointerHoldBeginEvent(event);
+        }
+
+        if (imp()->state.check(LSS::PointerFocusVectorChanged))
+            goto retry;
+    }
+
+    imp()->state.remove(handlingEventFlag);
+
+    if (!(options & WaylandEvents))
+        return;
+
+    seat()->pointer()->sendHoldBeginEvent(event);
+}
+
+void LScene::handlePointerHoldEndEvent(const LPointerHoldEndEvent &event, EventOptionsFlags options)
+{
+    auto &&handlingEventFlag { LSS::HandlingPointerHoldEndEvent };
+
+    // Prevent recursive calls
+    if (imp()->state.check(handlingEventFlag))
+        return;
+
+    imp()->state.add(handlingEventFlag);
+
+    for (LView *view : imp()->pointerFocus)
+        view->imp()->removeFlag(LVS::PointerHoldEndDone);
+
+retry:
+
+    imp()->state.remove(LSS::PointerFocusVectorChanged);
+
+    for (LView *view : imp()->pointerFocus)
+    {
+        if (view->imp()->hasFlag(LVS::PointerHoldEndDone))
+            continue;
+
+        view->imp()->addFlag(LVS::PointerHoldEndDone);
+
+        if (view->imp()->hasFlag(LVS::PendingHoldEnd))
+        {
+            view->imp()->removeFlag(LVS::PendingHoldEnd);
+            view->pointerHoldEndEvent(event);
+        }
+
+        if (imp()->state.check(LSS::PointerFocusVectorChanged))
+            goto retry;
+    }
+
+    imp()->state.remove(handlingEventFlag);
+
+    if (!(options & WaylandEvents))
+        return;
+
+    seat()->pointer()->sendHoldEndEvent(event);
+}
+
+void LScene::handleKeyboardKeyEvent(const LKeyboardKeyEvent &event, EventOptionsFlags options)
+{
+    auto &&handlingEventFlag { LSS::HandlingKeyboardKeyEvent };
+
+    // Prevent recursive calls
+    if (imp()->state.check(handlingEventFlag))
+        return;
+
+    imp()->state.add(handlingEventFlag);
+
+    for (LView *view : imp()->keyboardFocus)
+        view->imp()->removeFlag(LVS::KeyDone);
+
+retry:
+
+    imp()->state.remove(LSS::KeyboardFocusVectorChanged);
+
+    for (LView *view : imp()->keyboardFocus)
+    {
+        if (view->imp()->hasFlag(LVS::KeyDone))
+            continue;
+
+        view->imp()->addFlag(LVS::KeyDone);
+        view->keyEvent(event);
+
+        if (imp()->state.check(LSS::KeyboardFocusVectorChanged))
+            goto retry;
+    }
+
+    imp()->state.remove(handlingEventFlag);
+
+    if (options & WaylandEvents)
+        seat()->keyboard()->sendKeyEvent(event);
+
+    if (!(options & AuxFunc))
+        return;
+
+    LKeyboard &keyboard { *seat()->keyboard() };
+    const bool L_CTRL      { keyboard .isKeyCodePressed(KEY_LEFTCTRL) };
+    const bool L_SHIFT     { keyboard .isKeyCodePressed(KEY_LEFTSHIFT) };
+    const bool mods        { keyboard .isKeyCodePressed(KEY_LEFTALT) && L_CTRL };
+    const xkb_keysym_t sym { keyboard .keySymbol(event.keyCode()) };
+
+    if (event.state() == LKeyboardKeyEvent::Released)
+    {
+        if (event.keyCode() == KEY_F1 && !mods)
+            LLauncher::launch("weston-terminal");
+        else if (L_CTRL && (sym == XKB_KEY_q || sym == XKB_KEY_Q))
+        {
+            if (keyboard.focus())
+                keyboard.focus()->client()->destroy();
+        }
+        else if (L_CTRL && (sym == XKB_KEY_m || sym == XKB_KEY_M))
+        {
+            if (keyboard.focus() && keyboard.focus()->toplevel() && !keyboard.focus()->toplevel()->fullscreen())
+                keyboard.focus()->setMinimized(true);
+        }
         // Screenshot
-        else if (L_CTRL && L_SHIFT && keyCode == KEY_3)
+        else if (L_CTRL && L_SHIFT && event.keyCode() == KEY_3)
         {
-            if (cursor() && cursor()->output() && cursor()->output()->bufferTexture(0))
+            if (cursor()->output() && cursor()->output()->bufferTexture(0))
             {
                 std::filesystem::path path { getenvString("HOME") };
 
@@ -380,51 +827,462 @@ void LScene::handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState)
                 cursor()->output()->bufferTexture(0)->save(path);
             }
         }
-
+        else if (event.keyCode() == KEY_ESC && L_CTRL && L_SHIFT)
+        {
+            compositor()->finish();
+            return;
+        }
         else if (L_CTRL && !L_SHIFT)
-            seat()->dndManager()->setPreferredAction(LDNDManager::Copy);
+            seat()->dnd()->setPreferredAction(LDND::Copy);
         else if (!L_CTRL && L_SHIFT)
-            seat()->dndManager()->setPreferredAction(LDNDManager::Move);
+            seat()->dnd()->setPreferredAction(LDND::Move);
         else if (!L_CTRL && !L_SHIFT)
-            seat()->dndManager()->setPreferredAction(LDNDManager::NoAction);
+            seat()->dnd()->setPreferredAction(LDND::NoAction);
     }
 
-    // Key press
+    // Key pressed
     else
     {
-        // Launches weston-terminal
-        if (keyCode == KEY_F1 && !mods)
-            LLauncher::launch("weston-terminal");
-
-        // CTRL sets Copy as the preferred action in drag & drop sesión
+        // CTRL sets Copy as the preferred action in drag & drop session
         if (L_CTRL)
-            seat()->dndManager()->setPreferredAction(LDNDManager::Copy);
+            seat()->dnd()->setPreferredAction(LDND::Copy);
 
-        // SHIFT sets the Move as the preferred action in drag & drop sesión
+        // SHIFT sets the Move as the preferred action in drag & drop session
         else if (L_SHIFT)
-            seat()->dndManager()->setPreferredAction(LDNDManager::Move);
+            seat()->dnd()->setPreferredAction(LDND::Move);
     }
 }
-#endif
 
-bool LScene::handleWaylandKeyboardEventsEnabled() const
+void LScene::handleTouchDownEvent(const LTouchDownEvent &event, const LPointF &globalPos, EventOptionsFlags options)
 {
-    return imp()->handleWaylandKeyboardEvents;
+    auto &&handlingEventFlag { LSS::HandlingTouchEvent };
+
+    // Prevent recursive calls
+    if (imp()->state.check(handlingEventFlag))
+        return;
+
+    imp()->state.add(handlingEventFlag);
+
+    imp()->currentTouchPoint = findTouchPoint(event.id());
+
+    if (!imp()->currentTouchPoint)
+        imp()->currentTouchPoint = new LSceneTouchPoint(this, event);
+
+    imp()->currentTouchPoint->imp()->isPressed = true;
+    imp()->currentTouchPoint->imp()->pos = event.pos();
+    imp()->touchDownEvent = event;
+    imp()->touchGlobalPos = globalPos;
+
+    imp()->state.remove(LSS::ChildrenListChanged);
+    imp()->state.remove(LSS::TouchIsBlocked);
+
+    LView::LViewPrivate::removeFlagWithChildren(mainView(), LVS::TouchDownDone);
+    imp()->handleTouchDown(mainView());
+
+    if (!(options & WaylandEvents))
+    {
+        imp()->state.remove(handlingEventFlag);
+        return;
+    }
+
+    LTouch &touch { *seat()->touch() };
+    LTouchPoint *tp { touch.createOrGetTouchPoint(event) };
+
+    // Check if a surface was touched
+    LSurfaceView *surfaceView { nullptr };
+
+    for (LView *view : imp()->currentTouchPoint->views())
+    {
+        if (view->type() == LView::Surface)
+        {
+            surfaceView = static_cast<LSurfaceView*>(view);
+            surfaceView->surface()->imp()->lastTouchEventView = surfaceView;
+            break;
+        }
+    }
+
+    if (surfaceView)
+    {
+        event.localPos = globalPos - surfaceView->pos();
+
+        if (!seat()->keyboard()->focus() || !surfaceView->surface()->isSubchildOf(seat()->keyboard()->focus()))
+            seat()->keyboard()->setFocus(surfaceView->surface());
+
+        tp->sendDownEvent(event, surfaceView->surface());
+        surfaceView->surface()->raise();
+    }
+    else
+    {
+        tp->sendDownEvent(event);
+        seat()->dismissPopups();
+    }
+
+    imp()->state.remove(handlingEventFlag);
 }
 
-void LScene::enableHandleWaylandKeyboardEvents(bool enabled)
+void LScene::handleTouchMoveEvent(const LTouchMoveEvent &event, const LPointF &globalPos, EventOptionsFlags options)
 {
-    imp()->handleWaylandKeyboardEvents = enabled;
+    auto &&handlingEventFlag { LSS::HandlingTouchEvent };
+
+    // Prevent recursive calls
+    if (imp()->state.check(handlingEventFlag))
+        return;
+
+    imp()->state.add(handlingEventFlag);
+    imp()->currentTouchPoint = findTouchPoint(event.id());
+
+    if (!imp()->currentTouchPoint)
+        goto skipViews;
+
+    imp()->currentTouchPoint->imp()->pos = event.pos();
+    imp()->touchGlobalPos = globalPos;
+    imp()->state.remove(LSS::ChildrenListChanged | LSS::TouchIsBlocked);
+
+    for (LView *view : imp()->currentTouchPoint->views())
+        view->imp()->removeFlag(LVS::TouchMoveDone);
+
+retry:
+
+    imp()->currentTouchPoint->imp()->listChanged = false;
+
+    for (LView *view : imp()->currentTouchPoint->views())
+    {
+        if (view->imp()->hasFlag(LVS::TouchMoveDone))
+            continue;
+
+        view->imp()->addFlag(LVS::TouchMoveDone);
+        event.localPos = imp()->viewLocalPos(view, globalPos);
+        view->touchMoveEvent(event);
+
+        if (imp()->currentTouchPoint->imp()->listChanged)
+            goto retry;
+    }
+
+skipViews:
+
+    if (!(options & WaylandEvents))
+    {
+        imp()->state.remove(handlingEventFlag);
+        return;
+    }
+
+    LTouchPoint *tp { seat()->touch()->findTouchPoint(event.id()) };
+
+    if (!tp)
+    {
+        imp()->state.remove(handlingEventFlag);
+        return;
+    }
+
+    // Handle DND session
+    LDND &dnd { *seat()->dnd() };
+
+    if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch && dnd.triggeringEvent().subtype() == LEvent::Subtype::Down)
+    {
+        const auto &touchDownEvent { static_cast<const LTouchDownEvent&>(dnd.triggeringEvent()) };
+
+        if (touchDownEvent.id() == tp->id())
+        {
+            if (dnd.icon())
+            {
+                dnd.icon()->surface()->setPos(globalPos);
+                dnd.icon()->surface()->repaintOutputs();
+            }
+
+            LSurfaceView *surfaceView { static_cast<LSurfaceView*>(viewAt(globalPos, LView::Surface, LSeat::Pointer | LSeat::Touch)) };
+
+            if (surfaceView)
+            {
+                if (dnd.focus() == surfaceView->surface())
+                    dnd.sendMoveEvent(imp()->viewLocalPos(surfaceView, globalPos), event.ms());
+                else
+                    dnd.setFocus(surfaceView->surface(), imp()->viewLocalPos(surfaceView, globalPos));
+            }
+            else
+                dnd.setFocus(nullptr, LPoint());
+        }
+    }
+
+    bool activeResizing { false };
+
+    for (LToplevelResizeSession *session : seat()->toplevelResizeSessions())
+    {
+        if (session->triggeringEvent().type() == LEvent::Type::Touch && session->triggeringEvent().subtype() == LEvent::Subtype::Down)
+        {
+            const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(session->triggeringEvent()) };
+
+            if (touchDownEvent.id() == tp->id())
+            {
+                activeResizing = true;
+                session->updateDragPoint(globalPos);
+                session->toplevel()->surface()->repaintOutputs();
+
+                if (session->toplevel()->maximized())
+                    session->toplevel()->configure(session->toplevel()->pendingStates() &~ LToplevelRole::Maximized);
+            }
+        }
+    }
+
+    if (activeResizing)
+    {
+        imp()->state.remove(handlingEventFlag);
+        return;
+    }
+
+    bool activeMoving { false };
+
+    for (LToplevelMoveSession *session : seat()->toplevelMoveSessions())
+    {
+        if (session->triggeringEvent().type() == LEvent::Type::Touch && session->triggeringEvent().subtype() == LEvent::Subtype::Down)
+        {
+            const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(session->triggeringEvent()) };
+
+            if (touchDownEvent.id() == tp->id())
+            {
+                activeMoving = true;
+                session->updateDragPoint(globalPos);
+                session->toplevel()->surface()->repaintOutputs();
+
+                if (session->toplevel()->maximized())
+                    session->toplevel()->configure(session->toplevel()->pendingStates() &~ LToplevelRole::Maximized);
+            }
+        }
+    }
+
+    if (activeMoving)
+    {
+        imp()->state.remove(handlingEventFlag);
+        return;
+    }
+
+    if (tp->surface())
+    {
+        if (tp->surface()->imp()->lastTouchEventView)
+            event.localPos = imp()->viewLocalPos(tp->surface()->imp()->lastTouchEventView, globalPos);
+        else
+            event.localPos = globalPos - tp->surface()->rolePos();
+
+        tp->sendMoveEvent(event);
+    }
+    else
+        tp->sendMoveEvent(event);
+
+    imp()->state.remove(handlingEventFlag);
 }
 
-bool LScene::auxKeyboardImplementationEnabled() const
+void LScene::handleTouchUpEvent(const LTouchUpEvent &event, EventOptionsFlags options)
 {
-    return imp()->auxKeyboardImplementationEnabled;
+    auto &&handlingEventFlag { LSS::HandlingTouchEvent };
+
+    // Prevent recursive calls
+    if (imp()->state.check(handlingEventFlag))
+        return;
+
+    imp()->state.add(handlingEventFlag);
+    imp()->currentTouchPoint = findTouchPoint(event.id());
+
+    if (!imp()->currentTouchPoint)
+        goto skipViews;
+
+    imp()->currentTouchPoint->imp()->isPressed = true;
+    imp()->state.remove(LSS::ChildrenListChanged | LSS::TouchIsBlocked);
+
+    for (LView *view : imp()->currentTouchPoint->views())
+        view->imp()->removeFlag(LVS::TouchUpDone);
+
+retry:
+
+    imp()->currentTouchPoint->imp()->listChanged = false;
+
+    for (LView *view : imp()->currentTouchPoint->views())
+    {
+        if (view->imp()->hasFlag(LVS::TouchUpDone))
+            continue;
+
+        view->imp()->addFlag(LVS::TouchUpDone);
+        view->touchUpEvent(event);
+
+        if (imp()->currentTouchPoint->imp()->listChanged)
+            goto retry;
+    }
+
+skipViews:
+
+    if (!(options & WaylandEvents))
+    {
+        imp()->state.remove(handlingEventFlag);
+        return;
+    }
+
+    LTouchPoint *tp { seat()->touch()->findTouchPoint(event.id()) };
+
+    if (!tp)
+    {
+        imp()->state.remove(handlingEventFlag);
+        return;
+    }
+
+    LDND &dnd { *seat()->dnd() };
+
+    if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch && dnd.triggeringEvent().subtype() == LEvent::Subtype::Down)
+    {
+        const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(dnd.triggeringEvent()) };
+
+        if (touchDownEvent.id() == tp->id())
+            dnd.drop();
+    }
+
+    // Stop touch toplevel resizing sessions
+    for (auto it = seat()->toplevelResizeSessions().begin(); it != seat()->toplevelResizeSessions().end();)
+    {
+        if ((*it)->triggeringEvent().type() == LEvent::Type::Touch && (*it)->triggeringEvent().subtype() == LEvent::Subtype::Down)
+        {
+            const LTouchDownEvent &downEvent { static_cast<const LTouchDownEvent&>((*it)->triggeringEvent()) };
+
+            if (downEvent.id() == tp->id())
+            {
+                it = (*it)->stop();
+                continue;
+            }
+        }
+
+        it++;
+    }
+
+    for (auto it = seat()->toplevelMoveSessions().begin(); it != seat()->toplevelMoveSessions().end();)
+    {
+        if ((*it)->triggeringEvent().type() == LEvent::Type::Touch && (*it)->triggeringEvent().subtype() == LEvent::Subtype::Down)
+        {
+            const LTouchDownEvent &downEvent { static_cast<const LTouchDownEvent&>((*it)->triggeringEvent()) };
+
+            if (downEvent.id() == tp->id())
+            {
+                it = (*it)->stop();
+                continue;
+            }
+        }
+
+        it++;
+    }
+
+    tp->sendUpEvent(event);
+    imp()->state.remove(handlingEventFlag);
 }
 
-void LScene::enableAuxKeyboardImplementation(bool enabled)
+void LScene::handleTouchFrameEvent(const LTouchFrameEvent &event, EventOptionsFlags options)
 {
-    imp()->auxKeyboardImplementationEnabled = enabled;
+    auto &&handlingEventFlag { LSS::HandlingTouchEvent };
+
+    // Prevent recursive calls
+    if (imp()->state.check(handlingEventFlag))
+        return;
+
+    imp()->state.add(handlingEventFlag);
+    imp()->state.remove(LSS::ChildrenListChanged | LSS::TouchIsBlocked);
+
+    for (LView *view : imp()->currentTouchPoint->views())
+        view->imp()->removeFlag(LVS::TouchFrameDone);
+
+retry:
+
+    imp()->currentTouchPoint->imp()->listChanged = false;
+
+    for (LView *view : imp()->currentTouchPoint->views())
+    {
+        if (view->imp()->hasFlag(LVS::TouchFrameDone))
+            continue;
+
+        view->imp()->addFlag(LVS::TouchFrameDone);
+        view->touchFrameEvent(event);
+
+        if (imp()->currentTouchPoint->imp()->listChanged)
+        {
+            imp()->currentTouchPoint->imp()->listChanged = false;
+            goto retry;
+        }
+    }
+
+    for (auto it = imp()->touchPoints.begin(); it != imp()->touchPoints.end();)
+    {
+        if (!(*it)->isPressed())
+            it = (*it)->destroy();
+        else
+            it++;
+    }
+
+    if (!(options & WaylandEvents))
+    {
+        imp()->state.remove(handlingEventFlag);
+        return;
+    }
+
+    seat()->touch()->sendFrameEvent(event);
+    imp()->state.remove(handlingEventFlag);
+}
+
+void LScene::handleTouchCancelEvent(const LTouchCancelEvent &event, EventOptionsFlags options)
+{
+    auto &&handlingEventFlag { LSS::HandlingTouchEvent };
+
+    // Prevent recursive calls
+    if (imp()->state.check(handlingEventFlag))
+        return;
+
+    imp()->state.add(handlingEventFlag);
+
+    for (LView *view : imp()->currentTouchPoint->views())
+        view->imp()->removeFlag(LVS::TouchCancelDone);
+
+retry:
+
+    imp()->currentTouchPoint->imp()->listChanged = false;
+
+    for (LView *view : imp()->currentTouchPoint->views())
+    {
+        if (view->imp()->hasFlag(LVS::TouchCancelDone))
+            continue;
+
+        view->imp()->addFlag(LVS::TouchCancelDone);
+        view->touchCancelEvent(event);
+
+        if (imp()->currentTouchPoint->imp()->listChanged)
+            goto retry;
+    }
+
+    while (!imp()->touchPoints.empty())
+        imp()->touchPoints.back()->destroy();
+
+    if (!(options & WaylandEvents))
+    {
+        imp()->state.remove(handlingEventFlag);
+        return;
+    }
+
+    LDND &dnd { *seat()->dnd() };
+
+    if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch)
+        dnd.drop();
+
+    // Stop touch toplevel resizing sessions
+    for (auto it = seat()->toplevelResizeSessions().begin(); it != seat()->toplevelResizeSessions().end();)
+    {
+        if ((*it)->triggeringEvent().type() == LEvent::Type::Touch)
+            it = (*it)->stop();
+        else
+            it++;
+    }
+
+    // Stop touch toplevel moving sessions
+    for (auto it = seat()->toplevelMoveSessions().begin(); it != seat()->toplevelMoveSessions().end();)
+    {
+        if ((*it)->triggeringEvent().type() == LEvent::Type::Touch)
+            it = (*it)->stop();
+        else
+            it++;
+    }
+
+    seat()->touch()->sendCancelEvent(event);
+    imp()->state.remove(handlingEventFlag);
 }
 
 LSceneView *LScene::mainView() const
@@ -432,7 +1290,7 @@ LSceneView *LScene::mainView() const
     return &imp()->view;
 }
 
-LView *LScene::viewAt(const LPoint &pos)
+LView *LScene::viewAt(const LPoint &pos, LView::Type type, LSeat::InputCapabilitiesFlags flags)
 {
-    return imp()->viewAt(mainView(), pos);
+    return imp()->viewAt(mainView(), pos, type, flags);
 }

@@ -15,7 +15,7 @@ class Toplevel;
 class InputRect;
 class ToplevelButton;
 
-class ToplevelView : public LLayerView
+class ToplevelView final : public LLayerView
 {
 public:
     ToplevelView(Toplevel *toplevel);
@@ -68,7 +68,7 @@ public:
     bool nativeMapped() const override;
     const LPoint &nativePos() const override;
 
-    void keyEvent(UInt32 keyCode, UInt32 keyState) override;
+    void keyEvent(const LKeyboardKeyEvent &event) override;
 };
 
 #endif // TOPLEVELVIEW_H

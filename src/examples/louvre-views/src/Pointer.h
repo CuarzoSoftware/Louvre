@@ -5,14 +5,13 @@
 
 using namespace Louvre;
 
-class Pointer : public LPointer
+class Pointer final : public LPointer
 {
 public:
     Pointer(const void *params);
-    void pointerMoveEvent(Float32 x, Float32 y, bool absolute) override;
-    void pointerButtonEvent(Button button, ButtonState state) override;
-    void pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, AxisSource source) override;
-    void setCursorRequest(LCursorRole *cursorRole) override;
+    void pointerMoveEvent(const LPointerMoveEvent &event) override;
+    void pointerButtonEvent(const LPointerButtonEvent &event) override;
+    void pointerScrollEvent(const LPointerScrollEvent &event) override;
     LView *cursorOwner { nullptr };
 };
 

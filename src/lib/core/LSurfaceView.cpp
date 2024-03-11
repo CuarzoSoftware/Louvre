@@ -13,7 +13,8 @@ LSurfaceView::LSurfaceView(LSurface *surface, LView *parent) :
 {
     imp()->surface = surface;
     surface->imp()->views.push_back(this);
-    enableInput(true);
+    enablePointerEvents(true);
+    enableTouchEvents(true);
 }
 
 LSurfaceView::~LSurfaceView()

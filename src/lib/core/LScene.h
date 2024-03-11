@@ -1,6 +1,8 @@
 #ifndef LSCENE_H
 #define LSCENE_H
 
+#include <LView.h>
+#include <LSeat.h>
 #include <LObject.h>
 #include <LPointer.h>
 #include <LKeyboard.h>
@@ -88,6 +90,16 @@ class YourCustomOutput : public LOutput
 class Louvre::LScene : public LObject
 {
 public:
+
+    using EventOptionsFlags = UInt8;
+
+    enum EventOptions : EventOptionsFlags
+    {
+        Disabled        = 0,
+        WaylandEvents   = 1 << 0,
+        AuxFunc         = 1 << 1
+    };
+
     /**
      * @brief Default constructor for LScene.
      */
@@ -102,6 +114,12 @@ public:
      * @brief Destructor for LScene.
      */
     ~LScene();
+
+    // TODO ADD DOC
+    const std::vector<LView*> &pointerFocus() const;
+    const std::vector<LView*> &keyboardFocus() const;
+    const std::vector<LSceneTouchPoint*> &touchPoints() const;
+    LSceneTouchPoint *findTouchPoint(Int32 id) const;
 
     /**
      * @brief Handle the OpenGL initialization for an LOutput.
@@ -153,101 +171,155 @@ public:
      *
      * This method should be integrated into LPointer::pointerMoveEvent() to effectively manage pointer movement events.
      *
-     * @param x The x-component of the new pointer position or delta from its previous position.
-     * @param y The y-component of the new pointer position or delta from its previous position.
-     * @param absolute If `true`, the (x, y) values represent absolute coordinates; if `false`, they are deltas from the previous position.
-     * @param localPos Local pos of the first view found under the cursor.
+     * @param event The pointer move event to handle.
+     * @param outLocalPos Stores the local position of the first view found under the cursor. Pass `nullptr` if not needed.
      * @return The first LView found under the cursor.
      */
-    LView *handlePointerMoveEvent(Float32 x, Float32 y, bool absolute, LPoint *localPos = nullptr);
+    void handlePointerMoveEvent(const LPointerMoveEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
 
     /**
      * @brief Handle pointer button event.
      *
      * This method should be integrated into LPointer::pointerButtonEvent() to handle pointer button events.
      *
-     * @param button The button involved in the event.
-     * @param state The state of the button (pressed or released).
+     * @param event The pointer button event to handle.
      */
-    void handlePointerButtonEvent(LPointerButtonEvent::Button button, LPointerButtonEvent::State state);
+    void handlePointerButtonEvent(const LPointerButtonEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
 
     /**
-     * @brief Handle pointer axis event.
+     * @brief Handle pointer scroll event.
      *
-     * This method should be integrated into LPointer::pointerAxisEvent() to manage pointer axis events.
+     * This method should be integrated into LPointer::pointerScrollEvent() to manage pointer scroll events.
      *
-     * @param axisX The x-axis value of the event.
-     * @param axisY The y-axis value of the event.
-     * @param discreteX The discrete value on the x-axis.
-     * @param discreteY The discrete value on the y-axis.
-     * @param source The source of the event.
+     * @param event The pointer scroll event to handle.
      */
-    void handlePointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, LPointer::AxisSource source);
+    void handlePointerScrollEvent(const LPointerScrollEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
 
     /**
-     * @brief Check if handling of Wayland pointer events is enabled.
+     * @brief Handle pointer swipe begin event.
      *
-     * This method allows you to check whether the handling of Wayland pointer events is currently enabled.
+     * This method should be integrated into LPointer::pointerSwipeBeginEvent() to manage pointer swipe begin events.
      *
-     * @return True if Wayland pointer events handling is enabled, false otherwise.
+     * @param event The pointer swipe begin event to handle.
      */
-    bool handleWaylandPointerEventsEnabled() const;
+    void handlePointerSwipeBeginEvent(const LPointerSwipeBeginEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
 
     /**
-     * @brief Enable or disable handling of Wayland pointer events.
+     * @brief Handle pointer swipe update event.
      *
-     * This method enables or disables the handling of Wayland pointer events by LScene.
+     * This method should be integrated into LPointer::pointerSwipeUpdateEvent() to manage pointer swipe update events.
      *
-     * @param enabled True to enable handling of Wayland pointer events, false to disable.
+     * @param event The pointer swipe update event to handle.
      */
-    void enableHandleWaylandPointerEvents(bool enabled);
+    void handlePointerSwipeUpdateEvent(const LPointerSwipeUpdateEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
 
     /**
-     * @brief Handle key event.
+     * @brief Handle pointer swipe end event.
+     *
+     * This method should be integrated into LPointer::pointerSwipeEndEvent() to manage pointer swipe end events.
+     *
+     * @param event The pointer swipe end event to handle.
+     */
+    void handlePointerSwipeEndEvent(const LPointerSwipeEndEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+
+    /**
+     * @brief Handle pointer pinch begin event.
+     *
+     * This method should be integrated into LPointer::pointerPinchBeginEvent() to manage pointer pinch begin events.
+     *
+     * @param event The pointer pinch begin event to handle.
+     */
+    void handlePointerPinchBeginEvent(const LPointerPinchBeginEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+
+    /**
+     * @brief Handle pointer pinch update event.
+     *
+     * This method should be integrated into LPointer::pointerPinchUpdateEvent() to manage pointer pinch update events.
+     *
+     * @param event The pointer pinch update event to handle.
+     */
+    void handlePointerPinchUpdateEvent(const LPointerPinchUpdateEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+
+    /**
+     * @brief Handle pointer pinch end event.
+     *
+     * This method should be integrated into LPointer::pointerPinchEndEvent() to manage pointer pinch end events.
+     *
+     * @param event The pointer pinch end event to handle.
+     */
+    void handlePointerPinchEndEvent(const LPointerPinchEndEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+
+    /**
+     * @brief Handle pointer hold begin event.
+     *
+     * This method should be integrated into LPointer::pointerHoldBeginEvent() to manage pointer hold begin events.
+     *
+     * @param event The pointer hold begin event to handle.
+     */
+    void handlePointerHoldBeginEvent(const LPointerHoldBeginEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+
+    /**
+     * @brief Handle pointer hold end event.
+     *
+     * This method should be integrated into LPointer::pointerHoldEndEvent() to manage pointer hold end events.
+     *
+     * @param event The pointer hold end event to handle.
+     */
+    void handlePointerHoldEndEvent(const LPointerHoldEndEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+
+    /**
+     * @brief Handle keyboard key event.
      *
      * This method should be integrated into LKeyboard::keyEvent() to handle key events.
-     *
-     * @param keyCode The code of the key involved in the event.
-     * @param keyState The state of the key (pressed or released).
      */
-    //void handleKeyEvent(UInt32 keyCode, LKeyboard::KeyState keyState);
+    void handleKeyboardKeyEvent(const LKeyboardKeyEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
 
     /**
-     * @brief Check if handling of Wayland keyboard events is enabled.
+     * @brief Handle touch down event.
      *
-     * This method allows you to check whether the handling of Wayland keyboard events is currently enabled.
+     * This method should be integrated into LTouch::touchDownEvent() to manage touch down events.
      *
-     * @return True if Wayland keyboard events handling is enabled, false otherwise.
+     * @param event The touch down event to handle.
+     * @param globalPos The event position transformed to global coordinates.
      */
-    bool handleWaylandKeyboardEventsEnabled() const;
+    void handleTouchDownEvent(const LTouchDownEvent &event, const LPointF &globalPos, EventOptionsFlags options = WaylandEvents | AuxFunc);
 
     /**
-     * @brief Enable or disable handling of Wayland keyboard events.
+     * @brief Handle touch move event.
      *
-     * This method enables or disables the handling of Wayland keyboard events by LScene.
+     * This method should be integrated into LTouch::touchMoveEvent() to manage touch move events.
      *
-     * @param enabled True to enable handling of Wayland keyboard events, false to disable.
+     * @param event The touch move event to handle.
+     * @param globalPos The event position transformed to global coordinates.
      */
-    void enableHandleWaylandKeyboardEvents(bool enabled);
+    void handleTouchMoveEvent(const LTouchMoveEvent &event, const LPointF &globalPos, EventOptionsFlags options = WaylandEvents | AuxFunc);
 
     /**
-     * @brief Check if auxiliary keyboard implementation is enabled.
+     * @brief Handle touch up event.
      *
-     * This method allows you to check whether auxiliary keyboard functions, such as closing the compositor with Ctrl + Alt + Esc,
-     * executing `weston-terminal` with F1, or modifying the drag-and-drop action with Shift, Alt, or Ctrl keys, are currently enabled.
+     * This method should be integrated into LTouch::touchUpEvent() to manage touch up events.
      *
-     * @return True if auxiliary keyboard implementation is enabled, false otherwise.
+     * @param event The touch up event to handle.
      */
-    bool auxKeyboardImplementationEnabled() const;
+    void handleTouchUpEvent(const LTouchUpEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
 
     /**
-     * @brief Enable or disable auxiliary keyboard implementation.
+     * @brief Handle touch frame event.
      *
-     * This method enables or disables auxiliary keyboard functions, such as custom key actions.
+     * This method should be integrated into LTouch::touchFrameEvent() to manage touch frame events.
      *
-     * @param enabled True to enable auxiliary keyboard implementation, false to disable.
+     * @param event The touch frame event to handle.
      */
-    void enableAuxKeyboardImplementation(bool enabled);
+    void handleTouchFrameEvent(const LTouchFrameEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+
+    /**
+     * @brief Handle touch cancel event.
+     *
+     * This method should be integrated into LTouch::touchCancelEvent() to manage touch cancel events.
+     *
+     * @param event The touch cancel event to handle.
+     */
+    void handleTouchCancelEvent(const LTouchCancelEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
 
     /**
      * @brief Retrieve the main view of the scene.
@@ -264,9 +336,12 @@ public:
      * This method returns the LView instance that occupies the given position within the scene.
      *
      * @param pos The position to query.
+     * @param type The type of view to search for. Passing LView::Type::Undefined disables the filter.
+     * @param flags Additional filter for searching only views with pointer and/or touch events enabled.
+     *
      * @return A pointer to the LView at the specified position, or nullptr if no view is found.
      */
-    LView *viewAt(const LPoint &pos);
+    LView *viewAt(const LPoint &pos, LView::Type type = LView::Undefined, LSeat::InputCapabilitiesFlags flags = 0);
 
 LPRIVATE_IMP_UNIQUE(LScene)
 };

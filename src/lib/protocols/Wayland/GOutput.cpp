@@ -26,8 +26,8 @@ GOutput::GOutput
     ),
     LPRIVATE_INIT_UNIQUE(GOutput)
 {
-    imp()->lOutput = output;
-    this->client()->imp()->outputGlobals.push_back(this);
+    imp()->output.reset(output);
+    client()->imp()->outputGlobals.push_back(this);
     sendConfiguration();
 }
 
@@ -42,11 +42,14 @@ GOutput::~GOutput()
 
 LOutput *GOutput::output() const
 {
-    return imp()->lOutput;
+    return imp()->output.get();
 }
 
 void GOutput::sendConfiguration()
 {
+    if (!output())
+        return;
+
     geometry(
         output()->pos().x(),
         output()->pos().y(),

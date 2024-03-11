@@ -14,7 +14,7 @@ DockApp::DockApp(App *app, Dock *dock) :
     setParent(&dock->appsContainer);
     setTexture(app->texture);
     setBufferScale(2);
-    enableInput(true);
+    enablePointerEvents(true);
     enableBlockPointer(false);
 
     dot.setPos((size().w() - dot.size().w()) / 2, size().h() - 2);
@@ -31,15 +31,15 @@ DockApp::~DockApp()
     dock->update();
 }
 
-void DockApp::pointerEnterEvent(const LPoint &)
+void DockApp::pointerEnterEvent(const LPointerEnterEvent &)
 {
     G::tooltip()->setText(app->name.c_str());
     G::tooltip()->targetView = this;
     dock->update();
 }
 
-void DockApp::pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state)
+void DockApp::pointerButtonEvent(const LPointerButtonEvent &event)
 {
-    if (button == LPointer::Left && state == LPointer::Released)
+    if (event.button() == LPointerButtonEvent::Left && event.state() == LPointerButtonEvent::Released)
         app->dockIconClicked();
 }

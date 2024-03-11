@@ -8,6 +8,7 @@
 #include <LTextureView.h>
 #include <LOutputMode.h>
 #include <LSeat.h>
+#include <LPointerMoveEvent.h>
 
 #include "Global.h"
 #include "Output.h"
@@ -446,7 +447,7 @@ void Output::paintGL()
     // Check pointer events before painting
     if (G::compositor()->updatePointerBeforePaint)
     {
-        seat()->pointer()->pointerMoveEvent(0, 0, false);
+        seat()->pointer()->pointerMoveEvent(LPointerMoveEvent());
         G::compositor()->updatePointerBeforePaint = false;
     }
 

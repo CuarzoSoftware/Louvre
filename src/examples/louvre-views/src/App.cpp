@@ -132,9 +132,9 @@ void App::dockIconClicked()
     }
     else if (state == Running)
     {
-        for (Surface *surf : (std::vector<Surface*>&)client->surfaces())
+        for (Surface *surf : G::surfaces())
         {
-            if ((Client*)surf->client() == client)
+            if (surf->client() == client)
             {
                 if (surf->minimized())
                 {

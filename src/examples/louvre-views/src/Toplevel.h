@@ -12,7 +12,7 @@ class Workspace;
 
 using namespace Louvre;
 
-class Toplevel : public LToplevelRole
+class Toplevel final : public LToplevelRole
 {
 public:
     Toplevel(const void *params);
@@ -24,8 +24,8 @@ public:
     const LPoint &rolePos() const override;
     void configureRequest() override;
 
-    void startResizeRequest(ResizeEdge edge) override;
-    void startMoveRequest() override;
+    void startResizeRequest(const LEvent &triggeringEvent, ResizeEdge edge) override;
+    void startMoveRequest(const LEvent &triggeringEvent) override;
 
     void setMaximizedRequest() override;
     void unsetMaximizedRequest() override;

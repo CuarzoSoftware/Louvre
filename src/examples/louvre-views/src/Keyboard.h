@@ -5,13 +5,12 @@
 
 using namespace Louvre;
 
-class Keyboard : public LKeyboard
+class Keyboard final : public LKeyboard
 {
 public:
     Keyboard(const void *params);
 
-    void keyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group) override;
-    void keyEvent(UInt32 keyCode, KeyState keyState) override;
+    void keyEvent(const LKeyboardKeyEvent &event) override;
     void focusChanged() override;
 };
 

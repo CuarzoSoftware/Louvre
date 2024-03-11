@@ -1,3 +1,4 @@
+#include <LKeyboardKeyEvent.h>
 #include <LTextureView.h>
 #include <LSceneView.h>
 #include <LAnimation.h>
@@ -27,7 +28,7 @@ static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &
     Pointer *pointer = (Pointer*)view->seat()->pointer();
     LXCursor *cursor = (LXCursor*)data;
 
-    if (pointer->resizingToplevel() || pointer->movingToplevel())
+    if (!view->seat()->toplevelMoveSessions().empty() || !view->seat()->toplevelResizeSessions().empty())
         return;
 
     if (data)
@@ -44,7 +45,7 @@ static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &
         if (view->toplevel->fullscreen() && !view->fullscreenTopbarAnim.running() && view->fullscreenTopbarVisibility == 0.f)
         {
             // Stop if the user is interacting with a popup
-            if (view->seat()->keyboard()->grabbingSurface())
+            if (view->seat()->keyboard()->grab())
                 return;
 
             view->fullscreenTopbarAnim.setDuration(256);
@@ -117,7 +118,7 @@ static void onPointerLeaveResizeArea(InputRect *rect, void *data)
     }
 }
 
-static void onPointerButtonResizeArea(InputRect *rect, void *data, LPointer::Button button, LPointer::ButtonState state)
+static void onPointerButtonResizeArea(InputRect *rect, void *data, UInt32 button, UInt32 state)
 {
     ToplevelView *view = (ToplevelView*)rect->parent();
     Pointer *pointer = (Pointer*)view->seat()->pointer();
@@ -126,10 +127,10 @@ static void onPointerButtonResizeArea(InputRect *rect, void *data, LPointer::But
     if (toplevel->fullscreen())
         return;
 
-    if (button != LPointer::Left)
+    if (button != LPointerButtonEvent::Left)
         return;
 
-    if (state == LPointer::Pressed)
+    if (state == LPointerButtonEvent::Pressed)
     {
         pointer->setFocus(toplevel->surface());
         view->seat()->keyboard()->setFocus(toplevel->surface());
@@ -139,9 +140,9 @@ static void onPointerButtonResizeArea(InputRect *rect, void *data, LPointer::But
         toplevel->surface()->raise();
 
         if (data)
-            toplevel->startResizeRequest((LToplevelRole::ResizeEdge)rect->id);
+            toplevel->startResizeRequest(LPointerButtonEvent(),(LToplevelRole::ResizeEdge)rect->id);
         else
-            toplevel->startMoveRequest();
+            toplevel->startMoveRequest(LPointerButtonEvent());
     }
     // Maximize / unmaximize on topbar double click
     else if (!data)
@@ -305,7 +306,7 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
         ToplevelView *view = (ToplevelView*)data;
         Pointer *pointer = (Pointer*)view->seat()->pointer();
 
-        if (view->seat()->pointer()->resizingToplevel())
+        if (!view->seat()->toplevelResizeSessions().empty())
             return;
 
         view->closeButton.update();
@@ -320,7 +321,7 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     {
         ToplevelView *view = (ToplevelView*)data;
 
-        if (view->seat()->pointer()->resizingToplevel())
+        if (!view->seat()->toplevelResizeSessions().empty())
             return;
 
         view->closeButton.update();
@@ -716,10 +717,8 @@ const LPoint &ToplevelView::nativePos() const
     return toplevel->rolePos();
 }
 
-void ToplevelView::keyEvent(UInt32 keyCode, UInt32 keyState)
+void ToplevelView::keyEvent(const LKeyboardKeyEvent &event)
 {
-    L_UNUSED(keyState);
-
-    if (keyCode == KEY_LEFTALT)
+    if (event.keyCode() == KEY_LEFTALT)
         maximizeButton.update();
 }

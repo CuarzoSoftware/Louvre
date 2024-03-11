@@ -1,28 +1,37 @@
 #include <private/LScenePrivate.h>
 #include <private/LViewPrivate.h>
 #include <private/LSceneViewPrivate.h>
+#include <private/LSceneTouchPointPrivate.h>
 #include <LOutput.h>
 #include <LCompositor.h>
 #include <LPainter.h>
 #include <LSurfaceView.h>
 #include <LFramebuffer.h>
+#include <LCursor.h>
 #include <LLog.h>
 
 using LVS = LView::LViewPrivate::LViewState;
+using LSS = LScene::LScenePrivate::State;
 
-LView *LScene::LScenePrivate::viewAt(LView *view, const LPoint &pos)
+LView *LScene::LScenePrivate::viewAt(LView *view, const LPoint &pos, LView::Type type, LSeat::InputCapabilitiesFlags flags)
 {
-    LView *v = nullptr;
+    LView *v { nullptr };
 
     for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
     {
-        v = viewAt(*it, pos);
+        v = viewAt(*it, pos, type, flags);
 
         if (v)
             return v;
     }
 
-    if (!view->mapped() || !view->inputEnabled())
+    if (!view->mapped())
+        return nullptr;
+
+    if (type != LView::Undefined && view->type() != type)
+        return nullptr;
+
+    if ((flags & LSeat::Touch && !view->touchEventsEnabled()) && (flags & LSeat::Pointer && !view->pointerEventsEnabled()))
         return nullptr;
 
     if (view->clippingEnabled() && !view->clippingRect().containsPoint(pos))
@@ -34,7 +43,10 @@ LView *LScene::LScenePrivate::viewAt(LView *view, const LPoint &pos)
     if (pointClippedByParentScene(view, pos))
         return nullptr;
 
-    if ((view->scalingEnabled() || view->parentScalingEnabled()) && view->scalingVector() != LSizeF(1.f,1.f))
+    if (flags == 0)
+        return view;
+
+    if ((view->scalingEnabled() || view->parentScalingEnabled()) && view->scalingVector() != LSizeF(1.f, 1.f))
     {
         if (view->scalingVector().area() == 0.f)
             return nullptr;
@@ -97,120 +109,103 @@ bool LScene::LScenePrivate::pointClippedByParentScene(LView *view, const LPoint 
     return pointClippedByParentScene(parentScene, point);
 }
 
-bool LScene::LScenePrivate::pointerIsOverView(LView *view, const LPoint &pos)
+bool LScene::LScenePrivate::handlePointerMove(LView *view)
 {
-    if (!view->mapped() || !view->inputEnabled())
-        return false;
-
-    if (view->clippingEnabled() && !view->clippingRect().containsPoint(pos))
-        return false;
-
-    if (pointClippedByParent(view, pos))
-        return false;
-
-    if (pointClippedByParentScene(view, pos))
-        return false;
-
-    if ((view->scalingEnabled() || view->parentScalingEnabled()) && view->scalingVector() != LSizeF(1.f,1.f))
-    {
-        if (view->scalingVector().area() == 0.f)
-            return false;
-
-        if (view->inputRegion())
-        {
-            if (view->inputRegion()->containsPoint((pos - view->pos())/view->scalingVector()))
-                return true;
-        }
-        else
-        {
-            if (LRect(view->pos(), view->size()).containsPoint((pos - view->pos())/view->scalingVector()))
-                return true;
-        }
-    }
-    else
-    {
-        if (view->inputRegion())
-        {
-            if (view->inputRegion()->containsPoint(pos - view->pos()))
-                return true;
-        }
-        else
-        {
-            if (LRect(view->pos(), view->size()).containsPoint(pos))
-                return true;
-        }
-    }
-
-    return false;
-}
-
-bool LScene::LScenePrivate::handlePointerMove(LView *view, const LPoint &pos, LView **firstViewFound)
-{
-    if (listChanged)
+    if (state.check(LSS::ChildrenListChanged))
         goto listChangedErr;
 
     for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
-        if (!handlePointerMove(*it, pos, firstViewFound))
+        if (!handlePointerMove(*it))
             return false;
 
-    if (!pointerIsBlocked && pointerIsOverView(view, pos))
+    if (!state.check(LSS::PointerIsBlocked) && pointIsOverView(view, cursor()->pos(), LSeat::Pointer))
     {
-        if (!(*firstViewFound))
-            *firstViewFound = view;
-
-        if (!(view->imp()->state & LVS::PointerMoveDone))
+        if (!view->imp()->hasFlag(LVS::PointerMoveDone))
         {
-            view->imp()->state |= LVS::PointerMoveDone;
+            view->imp()->addFlag(LVS::PointerMoveDone);
 
-            if (view->pointerIsOver())
+            if (view->imp()->hasFlag(LVS::PointerIsOver))
             {
-                view->pointerMoveEvent(viewLocalPos(view, pos));
+                LVectorRemoveOne(pointerFocus, view);
+                pointerFocus.push_back(view);
+                currentPointerMoveEvent.localPos = viewLocalPos(view, cursor()->pos());
+                view->pointerMoveEvent(currentPointerMoveEvent);
 
-                if (listChanged)
+                if (state.check(LSS::ChildrenListChanged))
                     goto listChangedErr;
             }
             else
             {
                 view->imp()->addFlag(LVS::PointerIsOver);
-                view->pointerEnterEvent(viewLocalPos(view, pos));
+                pointerFocus.push_back(view);
+                currentPointerEnterEvent.localPos = viewLocalPos(view, cursor()->pos());
+                view->pointerEnterEvent(currentPointerEnterEvent);
 
-                if (listChanged)
+                if (state.check(LSS::ChildrenListChanged))
                     goto listChangedErr;
             }
         }
 
         if (view->blockPointerEnabled())
-            pointerIsBlocked = true;
+            state.add(LSS::PointerIsBlocked);
     }
     else
     {
-        if (!(view->imp()->state & LVS::PointerMoveDone))
+        if (!view->imp()->hasFlag(LVS::PointerMoveDone))
         {
-            view->imp()->state |= LVS::PointerMoveDone;
+            view->imp()->addFlag(LVS::PointerMoveDone);
 
-            if (view->pointerIsOver())
+            if (view->imp()->hasFlag(LVS::PointerIsOver))
             {
                 view->imp()->removeFlag(LVS::PointerIsOver);
-                view->pointerLeaveEvent();
 
-                if (listChanged)
+                if (view->imp()->hasFlag(LVS::PendingSwipeEnd))
+                {
+                    view->imp()->removeFlag(LVS::PendingSwipeEnd);
+                    pointerSwipeEndEvent.setCancelled(true);
+                    pointerSwipeEndEvent.setMs(currentPointerMoveEvent.ms());
+                    pointerSwipeEndEvent.setUs(currentPointerMoveEvent.us());
+                    pointerSwipeEndEvent.setSerial(LTime::nextSerial());
+                    view->pointerSwipeEndEvent(pointerSwipeEndEvent);
+                }
+
+                if (view->imp()->hasFlag(LVS::PendingPinchEnd))
+                {
+                    view->imp()->removeFlag(LVS::PendingPinchEnd);
+                    pointerPinchEndEvent.setCancelled(true);
+                    pointerPinchEndEvent.setMs(currentPointerMoveEvent.ms());
+                    pointerPinchEndEvent.setUs(currentPointerMoveEvent.us());
+                    pointerPinchEndEvent.setSerial(LTime::nextSerial());
+                    view->pointerPinchEndEvent(pointerPinchEndEvent);
+                }
+
+                if (view->imp()->hasFlag(LVS::PendingHoldEnd))
+                {
+                    view->imp()->removeFlag(LVS::PendingHoldEnd);
+                    pointerHoldEndEvent.setCancelled(true);
+                    pointerHoldEndEvent.setMs(currentPointerMoveEvent.ms());
+                    pointerHoldEndEvent.setUs(currentPointerMoveEvent.us());
+                    pointerHoldEndEvent.setSerial(LTime::nextSerial());
+                    view->pointerHoldEndEvent(pointerHoldEndEvent);
+                }
+
+                LVectorRemoveOne(pointerFocus, view);
+                view->pointerLeaveEvent(currentPointerLeaveEvent);
+
+                if (state.check(LSS::ChildrenListChanged))
                     goto listChangedErr;
             }
         }
     }
 
-    // Hides unused warning
-    (void)firstViewFound;
-
     return true;
 
     // If a list was modified, start again, serials are used to prevent resend events
-    listChangedErr:
-    listChanged = false;
-    handlePointerMove(&this->view, pos, nullptr);
+listChangedErr:
+    state.remove(LSS::ChildrenListChanged);
+    handlePointerMove(&this->view);
     return false;
 }
-
 
 LPoint LScene::LScenePrivate::viewLocalPos(LView *view, const LPoint &pos)
 {
@@ -220,116 +215,39 @@ LPoint LScene::LScenePrivate::viewLocalPos(LView *view, const LPoint &pos)
         return pos - view->pos();
 }
 
-bool LScene::LScenePrivate::handlePointerButton(LView *view, LPointerButtonEvent::Button button, LPointerButtonEvent::State state)
+bool LScene::LScenePrivate::handleTouchDown(LView *view)
 {
-    if (listChanged)
+    if (state.check(ChildrenListChanged))
         goto listChangedErr;
 
     for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
-        if (!handlePointerButton(*it, button, state))
+        if (!handleTouchDown(*it))
             return false;
 
-    if (view->imp()->state & LVS::PointerButtonDone)
-        return true;
+    if (!state.check(TouchIsBlocked) && pointIsOverView(view, touchGlobalPos, LSeat::Touch))
+    {
+        if (!view->imp()->hasFlag(LVS::TouchDownDone))
+        {
+            view->imp()->addFlag(LVS::TouchDownDone);
 
-    view->imp()->state |= LVS::PointerButtonDone;
+            LVectorRemoveOne(currentTouchPoint->imp()->views, view);
+            currentTouchPoint->imp()->views.push_back(view);
+            touchDownEvent.localPos = viewLocalPos(view, touchGlobalPos);
+            view->touchDownEvent(touchDownEvent);
 
-    if (view->imp()->hasFlag(LVS::PointerIsOver))
-        view->pointerButtonEvent(button, state);
+            if (state.check(ChildrenListChanged))
+                goto listChangedErr;
+        }
 
-    if (listChanged)
-        goto listChangedErr;
+        if (view->blockTouchEnabled())
+            state.add(TouchIsBlocked);
+    }
 
     return true;
 
-    // If a list was modified, start again, serials are used to prevent resend events
-    listChangedErr:
-    listChanged = false;
-    handlePointerButton(&this->view, button, state);
-    return false;
-}
-
-bool LScene::LScenePrivate::handlePointerAxisEvent(LView *view, Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source)
-{
-    if (listChanged)
-        goto listChangedErr;
-
-    for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
-        if (!handlePointerAxisEvent(*it, axisX, axisY, discreteX, discreteY, source))
-            return false;
-
-    if (view->imp()->state & LVS::PointerAxisDone)
-        return true;
-
-    view->imp()->state |= LVS::PointerAxisDone;
-
-    if (view->imp()->hasFlag(LVS::PointerIsOver))
-        view->pointerAxisEvent(axisX, axisY, discreteX, discreteY, source);
-
-    if (listChanged)
-        goto listChangedErr;
-
-    return true;
-
-    // If a list was modified, start again, serials are used to prevent resend events
-    listChangedErr:
-    listChanged = false;
-    handlePointerAxisEvent(&this->view, axisX, axisY, discreteX, discreteY, source);
-    return false;
-}
-
-bool LScene::LScenePrivate::handleKeyModifiersEvent(LView *view, UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
-{
-    if (listChanged)
-        goto listChangedErr;
-
-    for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
-        if (!handleKeyModifiersEvent(*it, depressed, latched, locked, group))
-            return false;
-
-    if (view->imp()->state & LVS::KeyModifiersDone)
-        return true;
-
-    view->imp()->state |= LVS::KeyModifiersDone;
-
-    view->keyModifiersEvent(depressed, latched, locked, group);
-
-    if (listChanged)
-        goto listChangedErr;
-
-    return true;
-
-    // If a list was modified, start again, serials are used to prevent resend events
-    listChangedErr:
-    listChanged = false;
-    handleKeyModifiersEvent(&this->view, depressed, latched, locked, group);
-    return false;
-}
-
-bool LScene::LScenePrivate::handleKeyEvent(LView *view, UInt32 keyCode, UInt32 keyState)
-{
-    if (listChanged)
-        goto listChangedErr;
-
-    for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
-        if (!handleKeyEvent(*it, keyCode, keyState))
-            return false;
-
-    if (view->imp()->state & LVS::KeyDone)
-        return true;
-
-    view->imp()->state |= LVS::KeyDone;
-
-    view->keyEvent(keyCode, keyState);
-
-    if (listChanged)
-        goto listChangedErr;
-
-    return true;
-
-    // If a list was modified, start again, serials are used to prevent resend events
-    listChangedErr:
-    listChanged = false;
-    handleKeyEvent(&this->view, keyCode, keyState);
+// If a list was modified, start again, serials are used to prevent resend events
+listChangedErr:
+    state.remove(ChildrenListChanged);
+    handleTouchDown(&this->view);
     return false;
 }

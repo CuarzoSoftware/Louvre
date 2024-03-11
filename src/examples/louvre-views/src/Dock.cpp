@@ -30,7 +30,7 @@ Dock::Dock(Output *output) :
     enableParentOffset(false);
 
     // Enable input so it shows/hides when the cursor is over
-    enableInput(true);
+    enablePointerEvents(true);
 
     // Allow views behind to get pointer events
     enableBlockPointer(false);
@@ -213,16 +213,13 @@ void Dock::hide()
     anim.start();
 }
 
-void Dock::pointerEnterEvent(const LPoint &localPos)
+void Dock::pointerEnterEvent(const LPointerEnterEvent &)
 {
-    L_UNUSED(localPos);
     showResistanceCount = 0;
 }
 
-void Dock::pointerMoveEvent(const LPoint &localPos)
+void Dock::pointerMoveEvent(const LPointerMoveEvent &)
 {
-    L_UNUSED(localPos);
-
     if (visiblePercent == 1.f && !G::pointer()->cursorOwner)
     {
         cursor()->useDefault();
@@ -235,7 +232,7 @@ void Dock::pointerMoveEvent(const LPoint &localPos)
         showResistanceCount++;   
 }
 
-void Dock::pointerLeaveEvent()
+void Dock::pointerLeaveEvent(const LPointerLeaveEvent &)
 {
     G::tooltip()->hide();
     showResistanceCount = 0;

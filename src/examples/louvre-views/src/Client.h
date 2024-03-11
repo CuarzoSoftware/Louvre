@@ -9,14 +9,14 @@ class App;
 
 using namespace Louvre;
 
-class Client : public LClient
+class Client final : public LClient
 {
 public:
     Client(const void *params);
     ~Client();
 
     // Used to check if the client is alive
-    void pong(UInt32 serial) override;
+    void pong(UInt32 serial) noexcept override;
 
     void createNonPinnedApp();
 

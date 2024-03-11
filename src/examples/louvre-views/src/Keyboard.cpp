@@ -16,12 +16,7 @@
 
 Keyboard::Keyboard(const void *params) : LKeyboard(params) {}
 
-void Keyboard::keyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
-{
-    G::scene()->handleKeyModifiersEvent(depressed, latched, locked, group);
-}
-
-void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
+void Keyboard::keyEvent(const LKeyboardKeyEvent &event)
 {
     Output *output  { (Output*)cursor()->output()     };
 
@@ -30,19 +25,19 @@ void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
     bool LEFT_ALT   { isKeyCodePressed(KEY_LEFTALT)   };
     bool LEFT_CTRL  { isKeyCodePressed(KEY_LEFTCTRL)  };
 
-    if (output && keyState == Pressed)
+    if (output && event.state() == LKeyboardKeyEvent::Pressed)
     {
         /* Switch workspace */
 
         if (LEFT_ALT && LEFT_CTRL && output->currentWorkspace)
         {
-            if (keyCode == KEY_RIGHT && std::next(output->currentWorkspace->outputLink) != output->workspaces.end())
+            if (event.keyCode() == KEY_RIGHT && std::next(output->currentWorkspace->outputLink) != output->workspaces.end())
             {
                 if (!output->animatedFullscreenToplevel)
                     output->setWorkspace(*std::next(output->currentWorkspace->outputLink), 600.f, 2.3f);
                 return;
             }
-            else if (keyCode == KEY_LEFT && output->currentWorkspace != output->workspaces.front())
+            else if (event.keyCode() == KEY_LEFT && output->currentWorkspace != output->workspaces.front())
             {
                 if (!output->animatedFullscreenToplevel)
                     output->setWorkspace(*std::prev(output->currentWorkspace->outputLink), 600.f, 2.3f);
@@ -52,7 +47,7 @@ void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
 
         if (LEFT_META && LEFT_SHIFT)
         {
-            switch (keyCode)
+            switch (event.keyCode())
             {
 
             /*********** Turn ON / OFF V-Sync *********/
@@ -110,7 +105,7 @@ void Keyboard::keyEvent(UInt32 keyCode, KeyState keyState)
         }
     }
 
-    G::scene()->handleKeyEvent(keyCode, keyState);
+    G::scene()->handleKeyboardKeyEvent(event);
 }
 
 void Keyboard::focusChanged()

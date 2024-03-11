@@ -1,8 +1,3 @@
-#include <private/LTouchPrivate.h>
-#include <LKeyboard.h>
-#include <LDND.h>
-#include <LDNDIconRole.h>
-#include <LInputDevice.h>
 #include <LTouchDownEvent.h>
 #include <LTouchMoveEvent.h>
 #include <LTouchUpEvent.h>
@@ -11,9 +6,16 @@
 #include <LToplevelResizeSession.h>
 #include <LToplevelMoveSession.h>
 #include <LTouchPoint.h>
+#include <LTouch.h>
+#include <LKeyboard.h>
+#include <LDNDIconRole.h>
+#include <LDND.h>
 #include <LCursor.h>
 #include <LOutput.h>
-#include <LLog.h>
+#include <LSurface.h>
+#include <LSeat.h>
+
+using namespace Louvre;
 
 void LTouch::touchDownEvent(const LTouchDownEvent &event)
 {
@@ -52,7 +54,7 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
 
     if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch && dnd.triggeringEvent().subtype() == LEvent::Subtype::Down)
     {
-        const auto &touchDownEvent = (const LTouchDownEvent&)dnd.triggeringEvent();
+        const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(dnd.triggeringEvent()) };
 
         if (touchDownEvent.id() == tp->id())
         {
@@ -82,7 +84,7 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
     {
         if (session->triggeringEvent().type() == LEvent::Type::Touch && session->triggeringEvent().subtype() == LEvent::Subtype::Down)
         {
-            LTouchDownEvent &touchDownEvent = (LTouchDownEvent&)session->triggeringEvent();
+            const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(session->triggeringEvent()) };
 
             if (touchDownEvent.id() == tp->id())
             {
@@ -101,11 +103,11 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
 
     bool activeMoving { false };
 
-    for (auto session : seat()->toplevelMoveSessions())
+    for (LToplevelMoveSession *session : seat()->toplevelMoveSessions())
     {
         if (session->triggeringEvent().type() == LEvent::Type::Touch && session->triggeringEvent().subtype() == LEvent::Subtype::Down)
         {
-            auto touchDownEvent { (const LTouchDownEvent&)session->triggeringEvent() };
+            const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(session->triggeringEvent()) };
 
             if (touchDownEvent.id() == tp->id())
             {
@@ -142,7 +144,7 @@ void LTouch::touchUpEvent(const LTouchUpEvent &event)
 
     if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch && dnd.triggeringEvent().subtype() == LEvent::Subtype::Down)
     {
-        const auto &touchDownEvent { (const LTouchDownEvent&)dnd.triggeringEvent() };
+        const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(dnd.triggeringEvent()) };
 
         if (touchDownEvent.id() == tp->id())
             dnd.drop();
@@ -153,7 +155,7 @@ void LTouch::touchUpEvent(const LTouchUpEvent &event)
     {
         if ((*it)->triggeringEvent().type() == LEvent::Type::Touch && (*it)->triggeringEvent().subtype() == LEvent::Subtype::Down)
         {
-            LTouchDownEvent &downEvent = (LTouchDownEvent&)(*it)->triggeringEvent();
+            const LTouchDownEvent &downEvent { static_cast<const LTouchDownEvent&>((*it)->triggeringEvent()) };
 
             if (downEvent.id() == tp->id())
             {
@@ -169,7 +171,7 @@ void LTouch::touchUpEvent(const LTouchUpEvent &event)
     {
         if ((*it)->triggeringEvent().type() == LEvent::Type::Touch && (*it)->triggeringEvent().subtype() == LEvent::Subtype::Down)
         {
-            auto downEvent = (const LTouchDownEvent&)(*it)->triggeringEvent();
+            const LTouchDownEvent &downEvent { static_cast<const LTouchDownEvent&>((*it)->triggeringEvent()) };
 
             if (downEvent.id() == tp->id())
             {

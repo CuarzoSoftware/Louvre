@@ -153,7 +153,7 @@ if get_option('build_examples')
 
     subdir('examples/louvre-default')
     subdir('examples/louvre-weston-clone')
-    #subdir('examples/louvre-views')
+    subdir('examples/louvre-views')
 endif
 
 if get_option('build_tests')

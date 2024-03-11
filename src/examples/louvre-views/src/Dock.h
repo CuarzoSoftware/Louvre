@@ -10,7 +10,7 @@ using namespace Louvre;
 
 class Output;
 
-class Dock : public LLayerView
+class Dock final : public LLayerView
 {
 public:
     Dock(Output *output);
@@ -31,9 +31,9 @@ public:
     LSolidColorView separator;
     LLayerView itemsContainer;
 
-    void pointerEnterEvent(const LPoint &localPos) override;
-    void pointerMoveEvent(const LPoint &localPos) override;
-    void pointerLeaveEvent() override;
+    void pointerEnterEvent(const LPointerEnterEvent &) override;
+    void pointerMoveEvent(const LPointerMoveEvent &) override;
+    void pointerLeaveEvent(const LPointerLeaveEvent &) override;
 
     // Output of this dock
     Output *output = nullptr;

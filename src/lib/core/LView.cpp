@@ -2,6 +2,8 @@
 #include <private/LViewPrivate.h>
 #include <private/LScenePrivate.h>
 #include <private/LSceneViewPrivate.h>
+#include <private/LSceneTouchPointPrivate.h>
+#include <LTouchCancelEvent.h>
 #include <LOutput.h>
 #include <LLog.h>
 #include <string.h>
@@ -13,6 +15,7 @@ using LVS = LView::LViewPrivate::LViewState;
 LView::LView(UInt32 type, LView *parent) : LPRIVATE_INIT_UNIQUE(LView)
 {
     imp()->type = type;
+    imp()->view = this;
     compositor()->imp()->views.push_back(this);
     setParent(parent);
 }
@@ -25,6 +28,131 @@ LView::~LView()
         children().front()->setParent(nullptr);
 
     LVectorRemoveOneUnordered(compositor()->imp()->views, this);
+}
+
+void LView::enableKeyboardEvents(bool enabled)
+{
+    if (enabled == keyboardEventsEnabled())
+        return;
+
+    imp()->setFlag(LVS::KeyboardEvents, enabled);
+
+    if (scene())
+    {
+        if (enabled)
+            scene()->imp()->keyboardFocus.push_back(this);
+        else
+            LVectorRemoveOne(scene()->imp()->keyboardFocus, this);
+
+        scene()->imp()->state.add(LScene::LScenePrivate::KeyboardFocusVectorChanged);
+    }
+}
+
+bool LView::keyboardEventsEnabled() const
+{
+    return imp()->hasFlag(LVS::KeyboardEvents);
+}
+
+void LView::enableTouchEvents(bool enabled)
+{
+    if (enabled == touchEventsEnabled())
+        return;
+
+    imp()->setFlag(LVS::TouchEvents, enabled);
+
+    if (scene())
+    {
+        if (!enabled)
+        {
+            for (auto *tp : scene()->touchPoints())
+            {
+                for (auto it = tp->imp()->views.begin(); it != tp->views().end();)
+                {
+                    if ((*it) == this)
+                    {
+                        LView *v = *it;
+                        it = tp->imp()->views.erase(it);
+                        tp->imp()->listChanged = true;
+                        v->touchCancelEvent(LTouchCancelEvent());
+                    }
+                    else
+                        it++;
+                }
+            }
+        }
+    }
+}
+
+bool LView::touchEventsEnabled() const
+{
+    return imp()->hasFlag(LVS::TouchEvents);
+}
+
+LSceneTouchPoint *LView::findTouchPoint(Int32 id) const
+{
+    if (scene())
+        for (auto *tp : scene()->touchPoints())
+            if (tp->id() == id)
+                return tp;
+
+    return nullptr;
+}
+
+bool LView::pointerEventsEnabled() const
+{
+    return imp()->hasFlag(LVS::PointerEvents);
+}
+
+void LView::enablePointerEvents(bool enabled)
+{
+    if (enabled == pointerEventsEnabled())
+        return;
+
+    imp()->setFlag(LVS::PointerEvents, enabled);
+
+    if (!enabled)
+    {
+        if (imp()->hasFlag(LVS::PointerIsOver))
+        {
+            if (scene())
+            {
+                if (imp()->hasFlag(LVS::PendingSwipeEnd))
+                {
+                    imp()->removeFlag(LVS::PendingSwipeEnd);
+                    scene()->imp()->pointerSwipeEndEvent.setCancelled(true);
+                    scene()->imp()->pointerSwipeEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
+                    scene()->imp()->pointerSwipeEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
+                    scene()->imp()->pointerSwipeEndEvent.setSerial(LTime::nextSerial());
+                    pointerSwipeEndEvent(scene()->imp()->pointerSwipeEndEvent);
+                }
+
+                if (imp()->hasFlag(LVS::PendingPinchEnd))
+                {
+                    imp()->removeFlag(LVS::PendingPinchEnd);
+                    scene()->imp()->pointerPinchEndEvent.setCancelled(true);
+                    scene()->imp()->pointerPinchEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
+                    scene()->imp()->pointerPinchEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
+                    scene()->imp()->pointerPinchEndEvent.setSerial(LTime::nextSerial());
+                    pointerPinchEndEvent(scene()->imp()->pointerPinchEndEvent);
+                }
+
+                if (imp()->hasFlag(LVS::PendingHoldEnd))
+                {
+                    imp()->removeFlag(LVS::PendingHoldEnd);
+                    scene()->imp()->pointerHoldEndEvent.setCancelled(true);
+                    scene()->imp()->pointerHoldEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
+                    scene()->imp()->pointerHoldEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
+                    scene()->imp()->pointerHoldEndEvent.setSerial(LTime::nextSerial());
+                    pointerHoldEndEvent(scene()->imp()->pointerHoldEndEvent);
+                }
+
+                LVectorRemoveOne(scene()->imp()->pointerFocus, this);
+                scene()->imp()->state.add(LScene::LScenePrivate::PointerFocusVectorChanged);
+            }
+
+            imp()->removeFlag(LVS::PointerIsOver);
+        }
+    }
 }
 
 void LView::damageAll()
@@ -88,7 +216,7 @@ void LView::setParent(LView *view)
     LScene *s { scene() };
 
     if (s)
-        s->imp()->listChanged = true;
+        s->imp()->state.add(LScene::LScenePrivate::ChildrenListChanged);
 
     if (parent())
         parent()->imp()->children.erase(imp()->parentLink);
@@ -97,10 +225,16 @@ void LView::setParent(LView *view)
     {
         view->imp()->children.push_back(this);
         imp()->parentLink = std::prev(view->imp()->children.end());
+
+        if (view->scene() != s)
+            imp()->sceneChanged(view->scene());
     }
     else
     {
         imp()->damageScene(parentSceneView());
+
+        if (s != nullptr)
+            imp()->sceneChanged(nullptr);
     }
 
     imp()->markAsChangedOrder();
@@ -250,16 +384,6 @@ void LView::enableParentClipping(bool enabled)
         repaint();
 
     imp()->setFlag(LVS::ParentClipping, enabled);
-}
-
-bool LView::inputEnabled() const
-{
-    return imp()->hasFlag(LVS::Input);
-}
-
-void LView::enableInput(bool enabled)
-{
-    imp()->setFlag(LVS::Input, enabled);
 }
 
 bool LView::scalingEnabled() const
@@ -438,6 +562,16 @@ bool LView::blockPointerEnabled() const
     return imp()->hasFlag(LVS::BlockPointer);
 }
 
+void LView::enableBlockTouch(bool enabled)
+{
+    imp()->setFlag(LVS::BlockTouch, enabled);
+}
+
+bool LView::blockTouchEnabled() const
+{
+    return imp()->hasFlag(LVS::BlockTouch);
+}
+
 LBox LView::boundingBox() const
 {
     LBox box =
@@ -471,47 +605,4 @@ LBox LView::boundingBox() const
     }
 
     return box;
-}
-
-void LView::pointerEnterEvent(const LPoint &localPos)
-{
-    L_UNUSED(localPos);
-}
-
-void LView::pointerMoveEvent(const LPoint &localPos)
-{
-    L_UNUSED(localPos);
-}
-
-void LView::pointerLeaveEvent()
-{
-}
-
-void LView::pointerButtonEvent(LPointerButtonEvent::Button button, LPointerButtonEvent::State state)
-{
-    L_UNUSED(button);
-    L_UNUSED(state);
-}
-
-void LView::pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, UInt32 source)
-{
-    L_UNUSED(axisX);
-    L_UNUSED(axisY);
-    L_UNUSED(discreteX);
-    L_UNUSED(discreteY);
-    L_UNUSED(source);
-}
-
-void LView::keyModifiersEvent(UInt32 depressed, UInt32 latched, UInt32 locked, UInt32 group)
-{
-    L_UNUSED(depressed);
-    L_UNUSED(latched);
-    L_UNUSED(locked);
-    L_UNUSED(group);
-}
-
-void LView::keyEvent(UInt32 keyCode, UInt32 keyState)
-{
-    L_UNUSED(keyCode);
-    L_UNUSED(keyState);
 }

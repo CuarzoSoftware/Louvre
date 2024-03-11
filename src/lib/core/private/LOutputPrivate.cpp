@@ -251,14 +251,10 @@ void LOutput::LOutputPrivate::updateRect()
 void LOutput::LOutputPrivate::updateGlobals()
 {
     for (LClient *c : compositor()->clients())
-    {
-        for (GOutput *gOutput : c->outputGlobals())
-        {
-            if (output == gOutput->output())
-            {
-                gOutput->sendConfiguration();
-                break;
-            }
-        }
-    }
+        for (GOutput *global : c->outputGlobals())
+            if (output == global->output())
+                global->sendConfiguration();
+
+    for (LSurface *s : compositor()->surfaces())
+        s->imp()->sendPreferredScale();
 }

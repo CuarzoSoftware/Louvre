@@ -1,8 +1,5 @@
 #include <protocols/Wayland/private/GOutputPrivate.h>
 #include <LCompositor.h>
-#include <LOutput.h>
-#include <LClient.h>
-#include <LLog.h>
 
 static struct wl_output_interface output_implementation =
 {
@@ -13,20 +10,8 @@ static struct wl_output_interface output_implementation =
 
 void GOutput::GOutputPrivate::bind(wl_client *client, void *output, UInt32 version, UInt32 id)
 {
-    LOutput *lOutput = (LOutput*)output;
-    LClient *lClient = compositor()->getClientFromNativeResource(client);
-
-    if (!lClient)
-        return;
-
-    for (GOutput *g : lClient->outputGlobals())
-    {
-        if (g->output() == lOutput)
-        {
-            LLog::warning("[GOutputPrivate::bind] Client already bound to output %s. Ignoring it...", lOutput->name());
-            return;
-        }
-    }
+    LOutput *lOutput { static_cast<LOutput*>(output) };
+    LClient *lClient { compositor()->getClientFromNativeResource(client) };
 
     new GOutput(lOutput,
                 lClient,

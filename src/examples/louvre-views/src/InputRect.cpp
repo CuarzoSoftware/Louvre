@@ -1,33 +1,35 @@
 #include "InputRect.h"
+#include <LPointerMoveEvent.h>
+#include <LPointerEnterEvent.h>
 
 InputRect::InputRect(LView *parent, void *userData, UInt32 id) : LLayerView(parent)
 {
     this->id = id;
     this->userData = userData;
     enableBlockPointer(true);
-    enableInput(true);
+    enablePointerEvents(true);
 }
 
-void InputRect::pointerEnterEvent(const LPoint &localPos)
+void InputRect::pointerEnterEvent(const LPointerEnterEvent &event)
 {
     if (onPointerEnter)
-        onPointerEnter(this, userData, localPos);
+        onPointerEnter(this, userData, event.localPos);
 }
 
-void InputRect::pointerLeaveEvent()
+void InputRect::pointerLeaveEvent(const LPointerLeaveEvent &)
 {
     if (onPointerLeave)
         onPointerLeave(this, userData);
 }
 
-void InputRect::pointerMoveEvent(const LPoint &localPos)
+void InputRect::pointerMoveEvent(const LPointerMoveEvent &event)
 {
     if (onPointerMove)
-        onPointerMove(this, userData, localPos);
+        onPointerMove(this, userData, event.localPos);
 }
 
-void InputRect::pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state)
+void InputRect::pointerButtonEvent(const LPointerButtonEvent &event)
 {
     if (onPointerButton)
-        onPointerButton(this, userData, button, state);
+        onPointerButton(this, userData, event.button(), event.state());
 }

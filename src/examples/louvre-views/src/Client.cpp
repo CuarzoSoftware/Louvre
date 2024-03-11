@@ -71,8 +71,9 @@ Client::Client(const void *params) : LClient(params),
         else
             color = 0.2f + 0.8 * anim->value();
 
-        for (Surface *s : (std::vector<Surface*>&)surfaces())
-            s->view.setColorFactor(color, color, color, 1.f);
+        for (LSurface *s : compositor()->surfaces())
+            if (s->client() == this)
+                static_cast<Surface*>(s)->view.setColorFactor(color, color, color, 1.f);
 
         compositor()->repaintAllOutputs();
     },
@@ -83,10 +84,13 @@ Client::Client(const void *params) : LClient(params),
         if (unresponsiveCount > 0)
             color = 0.2f;
 
-        for (Surface *s : (std::vector<Surface*>&)surfaces())
+        for (LSurface *s : compositor()->surfaces())
         {
-            s->view.setColorFactor(color, color, color, 1.f);
-            s->requestNextFrame(false);
+            if (s->client() == this)
+            {
+                static_cast<Surface*>(s)->view.setColorFactor(color, color, color, 1.f);
+                static_cast<Surface*>(s)->requestNextFrame(false);
+            }
         }
 
         compositor()->repaintAllOutputs();
@@ -175,7 +179,7 @@ Client::~Client()
     }
 }
 
-void Client::pong(UInt32 serial)
+void Client::pong(UInt32 serial) noexcept
 {
     lastPong = serial;
 }

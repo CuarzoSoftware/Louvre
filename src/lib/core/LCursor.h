@@ -124,6 +124,17 @@ public:
     void move(Float32 dx, Float32 dy);
 
     /**
+     * @brief Move the cursor.
+     *
+     * Adjusts the cursor position by a delta (dx, dy) in surface coordinates.
+     *
+     * @param delta Delta in surface coordinates.
+     *
+     * @note Louvre automatically repositions the cursor if the new position is not within any output.
+     */
+    void move(const LPointF &delta);
+
+    /**
      * @brief Set the cursor position.
      *
      * Sets the cursor position in surface coordinates.

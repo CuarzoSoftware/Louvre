@@ -83,11 +83,6 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
     {
         event.localPos = cursor()->pos() - surface->rolePos();
 
-        if (focus() == surface)
-            sendMoveEvent(event);
-        else
-            setFocus(surface, event.localPos);
-
         if (activeDND)
         {
             if (seat()->dnd()->focus() == surface)
@@ -95,18 +90,26 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
             else
                 seat()->dnd()->setFocus(surface, event.localPos);
         }
+        else
+        {
+            if (focus() == surface)
+                sendMoveEvent(event);
+            else
+                setFocus(surface, event.localPos);
+        }
 
         cursor()->setCursor(surface->client()->lastCursorRequest());
     }
     else
     {
-        setFocus(nullptr);
-
         if (activeDND)
             seat()->dnd()->setFocus(nullptr, LPointF());
-
-        cursor()->useDefault();
-        cursor()->setVisible(true);
+        else
+        {
+            setFocus(nullptr);
+            cursor()->useDefault();
+            cursor()->setVisible(true);
+        }
     }
 }
 //! [pointerMoveEvent]
@@ -290,10 +293,7 @@ void LPointer::setCursorRequest(const LClientCursor &clientCursor)
         return;
     }
 
-    //if (!focus())
-    //    return;
-
-    //if (focus()->client() == clientCursor.client())
+    if (focus() && focus()->client() == clientCursor.client())
         cursor()->setCursor(clientCursor);
 }
 //! [setCursorRequest]

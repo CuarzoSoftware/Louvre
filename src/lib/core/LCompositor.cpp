@@ -446,23 +446,24 @@ void LCompositor::removeOutput(LOutput *output)
             LVectorRemoveOne(imp()->outputs, output);
 
             // Remove all wl_outputs from clients
-            for (LClient *c : clients())
+            for (LClient *client : clients())
             {
-                for (GOutput *g : c->outputGlobals())
+                for (std::size_t i = 0; i < client->imp()->outputGlobals.size();)
                 {
-                    if (output == g->output())
-                    {
-                        LVectorRemoveOneUnordered(g->client()->imp()->outputGlobals, g);
-                        g->imp()->lOutput = nullptr;
+                    auto *global {client->imp()->outputGlobals[i]};
 
-                        // Break because clients can bind to to a wl_output global just once
-                        // TODO: this is not true
-                        break;
+                    if (output == global->output())
+                    {
+                        global->imp()->output.reset();
+                        client->imp()->outputGlobals[i] = std::move(client->imp()->outputGlobals.back());
+                        client->imp()->outputGlobals.pop_back();
+                        continue;
                     }
+
+                    i++;
                 }
             }
 
-            // Safely remove global
             imp()->removeGlobal(output->imp()->global);
             LVectorRemoveOneUnordered(cursor()->imp()->intersectedOutputs, output);
 

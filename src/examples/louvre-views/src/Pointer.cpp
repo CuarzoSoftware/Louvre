@@ -9,7 +9,7 @@
 #include <LSurface.h>
 #include <LOutput.h>
 #include <LSeat.h>
-#include <LDNDManager.h>
+#include <LClient.h>
 
 #include "Global.h"
 #include "Pointer.h"
@@ -17,85 +17,35 @@
 
 Pointer::Pointer(const void *params) : LPointer(params) {}
 
-void Pointer::pointerMoveEvent(Float32 x, Float32 y, bool absolute)
+void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)
 {
-    LView *view { G::scene()->handlePointerMoveEvent(x, y, absolute) };
+    G::scene()->handlePointerMoveEvent(event);
 
-    if (cursor()->output() && (movingToplevel() || resizingToplevel()))
-        cursor()->output()->repaint();
-
-    if (resizingToplevel() || cursorOwner)
-        return;
-
-    // Let the client set the cursor during DND
-    if (seat()->dndManager()->dragging())
-        return;
-
-    if (view)
+    for (LView *view : G::scene()->pointerFocus())
     {
         if (view->type() == LView::Surface)
         {
-            LSurfaceView *surfView = (LSurfaceView*)view;
-
-            if (lastCursorRequest() && lastCursorRequest()->surface()->client() == surfView->surface()->client())
-            {
-                cursor()->setTextureB(lastCursorRequest()->surface()->texture(), lastCursorRequest()->hotspotB());
-                cursor()->setVisible(true);
-            }
-            else
-            {
-                if (lastCursorRequestWasHide())
-                    cursor()->setVisible(false);
-                else
-                {
-                    cursor()->setVisible(true);
-                    cursor()->useDefault();
-                }
-            }
+            cursor()->setCursor(static_cast<LSurfaceView*>(view)->surface()->client()->lastCursorRequest());
+            return;
         }
-
-        return;
     }
 
-    cursor()->useDefault();
     cursor()->setVisible(true);
+    cursor()->useDefault();
 }
 
-void Pointer::pointerButtonEvent(Button button, ButtonState state)
+void Pointer::pointerButtonEvent(const LPointerButtonEvent &event)
 {
-    if (button == LPointer::Left && state == LPointer::Released)
+    if (event.button() == LPointerButtonEvent::Left && event.state() == LPointerButtonEvent::Released)
     {
         G::enableDocks(true);
         G::compositor()->updatePointerBeforePaint = true;
     }
 
-    G::scene()->handlePointerButtonEvent(button, state);
+    G::scene()->handlePointerButtonEvent(event);
 }
 
-void Pointer::pointerAxisEvent(Float64 axisX, Float64 axisY, Int32 discreteX, Int32 discreteY, AxisSource source)
+void Pointer::pointerScrollEvent(const LPointerScrollEvent &event)
 {
-    Float32 speed = 0.6f;
-    G::scene()->handlePointerAxisEvent(-axisX * speed,
-                                       -axisY * speed,
-                                       -discreteX * speed,
-                                       -discreteY * speed,
-                                       source);
-}
-
-void Pointer::setCursorRequest(LCursorRole *cursorRole)
-{
-    if (resizingToplevel() || cursorOwner)
-        return;
-
-    if (cursorRole)
-    {
-        cursor()->setTextureB(
-                    cursorRole->surface()->texture(),
-                    cursorRole->hotspotB());
-
-        cursor()->setVisible(true);
-    }
-    // If nullptr means the client wants to hide the cursor
-    else
-        cursor()->setVisible(false);
+    G::scene()->handlePointerScrollEvent(event);
 }

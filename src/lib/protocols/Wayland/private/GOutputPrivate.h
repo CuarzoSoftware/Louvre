@@ -2,6 +2,7 @@
 #define GOUTPUTPRIVATE_H
 
 #include <protocols/Wayland//GOutput.h>
+#include <LOutput.h>
 
 using namespace Louvre::Protocols::Wayland;
 
@@ -12,7 +13,7 @@ static void bind(wl_client *client, void *output, UInt32 version, UInt32 id);
 static void release(wl_client *client, wl_resource *resource);
 #endif
 
-LOutput *lOutput { nullptr };
+LWeak<LOutput> output;
 std::vector<GammaControl::RGammaControl*> gammaControlResources;
 };
 

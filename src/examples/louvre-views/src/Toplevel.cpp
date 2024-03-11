@@ -4,6 +4,11 @@
 #include <LLog.h>
 #include <unistd.h>
 #include <LSeat.h>
+#include <LTouchDownEvent.h>
+#include <LTouch.h>
+#include <LTouchPoint.h>
+#include <LToplevelMoveSession.h>
+#include <LToplevelResizeSession.h>
 
 #include "Compositor.h"
 #include "Toplevel.h"
@@ -73,29 +78,72 @@ void Toplevel::configureRequest()
         configure(0, pendingStates() | Activated);
 }
 
-void Toplevel::startResizeRequest(ResizeEdge edge)
+void Toplevel::startResizeRequest(const LEvent &triggeringEvent, ResizeEdge edge)
 {
-    // Disable interactive resizing in fullscreen mode
     if (fullscreen())
         return;
 
-    G::enableDocks(false);
-    seat()->pointer()->startResizingToplevel(this,
-                                             edge,
-                                             cursor()->pos(),
-                                             LSize(128, 128),
-                                             LPointer::EdgeDisabled,
-                                             TOPBAR_HEIGHT);
+    if (triggeringEvent.type() == LEvent::Type::Touch)
+    {
+        if (triggeringEvent.subtype() != LEvent::Subtype::Down)
+            return;
+
+        if (!cursor()->output())
+            return;
+
+        const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(triggeringEvent) };
+        LTouchPoint *touchPoint { seat()->touch()->findTouchPoint(touchDownEvent.id()) };
+
+        if (!touchPoint)
+            return;
+
+        if (touchPoint->surface() != surface())
+            return;
+
+        const LPoint initDragPoint { LTouch::toGlobal(cursor()->output(), touchPoint->pos()) };
+
+        if (resizeSession().start(triggeringEvent, edge, initDragPoint, LSize(128, 128), EdgeDisabled, TOPBAR_HEIGHT))
+            G::enableDocks(false);
+    }
+    else if (surface()->hasPointerFocus())
+    {
+        if (resizeSession().start(triggeringEvent, edge, cursor()->pos(), LSize(128, 128), EdgeDisabled, TOPBAR_HEIGHT))
+            G::enableDocks(false);
+    }
 }
 
-void Toplevel::startMoveRequest()
+void Toplevel::startMoveRequest(const LEvent &triggeringEvent)
 {
-    // Disable interactive moving in fullscreen mode
     if (fullscreen())
         return;
 
-    G::enableDocks(false);
-    seat()->pointer()->startMovingToplevel(this, cursor()->pos(), LPointer::EdgeDisabled, TOPBAR_HEIGHT);
+    if (triggeringEvent.type() == LEvent::Type::Touch)
+    {
+        if (triggeringEvent.subtype() != LEvent::Subtype::Down)
+            return;
+
+        if (!cursor()->output())
+            return;
+
+        const LTouchDownEvent& touchDownEvent { static_cast<const LTouchDownEvent&>(triggeringEvent) };
+        LTouchPoint *touchPoint { seat()->touch()->findTouchPoint(touchDownEvent.id()) };
+
+        if (!touchPoint)
+            return;
+
+        if (touchPoint->surface() != surface())
+            return;
+
+        const LPoint initDragPoint { LTouch::toGlobal(cursor()->output(), touchPoint->pos()) };
+
+        if (moveSession().start(triggeringEvent, initDragPoint, EdgeDisabled, TOPBAR_HEIGHT))
+            G::enableDocks(false);
+    }
+    else if (surface()->hasPointerFocus())
+    {
+        if (moveSession().start(triggeringEvent, cursor()->pos(), EdgeDisabled, TOPBAR_HEIGHT))
+            G::enableDocks(false);
+    }
 }
 
 void Toplevel::setMaximizedRequest()
@@ -153,7 +201,7 @@ void Toplevel::maximizedChanged()
         surface()->setPos(dstRect.pos());
     else
     {
-        if (!seat()->pointer()->movingToplevel() && !seat()->pointer()->resizingToplevel())
+        if (seat()->toplevelResizeSessions().empty() && seat()->toplevelMoveSessions().empty())
             surface()->setPos(prevRect.pos());
     }
 
@@ -352,9 +400,6 @@ void Toplevel::decorationModeChanged()
 
 void Toplevel::geometryChanged()
 {
-    if (resizing())
-        updateResizingPos();
-
     if (decoratedView)
     {
         decoratedView->updateTitle();

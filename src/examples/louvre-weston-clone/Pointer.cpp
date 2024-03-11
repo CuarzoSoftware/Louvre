@@ -67,6 +67,7 @@ void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)
     {
         seat()->dnd()->icon()->surface()->setPos(cursor()->pos());
         seat()->dnd()->icon()->surface()->repaintOutputs();
+        cursor()->setCursor(seat()->dnd()->icon()->surface()->client()->lastCursorRequest());
     }
 
     bool activeResizing { false };
@@ -116,11 +117,6 @@ void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)
     {
         event.localPos = cursor()->pos() - surface->rolePos();
 
-        if (focus() == surface)
-            sendMoveEvent(event);
-        else
-            setFocus(surface, event.localPos);
-
         if (activeDND)
         {
             if (seat()->dnd()->focus() == surface)
@@ -128,21 +124,29 @@ void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)
             else
                 seat()->dnd()->setFocus(surface, event.localPos);
         }
+        else
+        {
+            if (focus() == surface)
+                sendMoveEvent(event);
+            else
+                setFocus(surface, event.localPos);
 
-        cursor()->setCursor(surface->client()->lastCursorRequest());
+            if (!pointerOverTerminalIcon)
+                cursor()->setCursor(surface->client()->lastCursorRequest());
+        }
     }
     else
     {
         setFocus(nullptr);
 
-        if (!pointerOverTerminalIcon)
+        if (!pointerOverTerminalIcon && !activeDND)
+        {
             cursor()->useDefault();
+            cursor()->setVisible(true);
+        }
 
         if (activeDND)
             seat()->dnd()->setFocus(nullptr, LPointF());
-
-        cursor()->useDefault();
-        cursor()->setVisible(true);
     }
 }
 

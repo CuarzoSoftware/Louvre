@@ -7,13 +7,15 @@
 #include <LKeyboard.h>
 #include <LSeat.h>
 #include <LCursor.h>
+#include <LToplevelMoveSession.h>
+#include <LToplevelResizeSession.h>
 
 ToplevelButton::ToplevelButton(LView *parent, ToplevelView *toplevelView, ButtonType type) : UITextureView(G::ButtonDisabled, parent)
 {
     this->toplevelView = toplevelView;
     this->buttonType = type;
     setBufferScale(2);
-    enableInput(true);
+    enablePointerEvents(true);
     update();
 }
 
@@ -102,12 +104,12 @@ void ToplevelButton::update()
     }
 }
 
-void ToplevelButton::pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state)
+void ToplevelButton::pointerButtonEvent(const LPointerButtonEvent &event)
 {
-    if (button != LPointer::Button::Left)
+    if (event.button() != LPointerButtonEvent::Left)
         return;
 
-    if (pressed && state == LPointer::Released)
+    if (pressed && event.state() == LPointerButtonEvent::Released)
     {
         if (buttonType == Close)
         {
@@ -143,12 +145,11 @@ void ToplevelButton::pointerButtonEvent(LPointer::Button button, LPointer::Butto
         }
     }
 
-    pressed = state == LPointer::Pressed;
-
+    pressed = event.state() == LPointerButtonEvent::Pressed;
     update();
 }
 
-void ToplevelButton::pointerLeaveEvent()
+void ToplevelButton::pointerLeaveEvent(const LPointerLeaveEvent &)
 {
     if (!pressed)
         return;
@@ -157,8 +158,8 @@ void ToplevelButton::pointerLeaveEvent()
     update();
 }
 
-void ToplevelButton::pointerMoveEvent(const LPoint &)
+void ToplevelButton::pointerMoveEvent(const LPointerMoveEvent &)
 {
-    if (!G::pointer()->resizingToplevel() && !G::pointer()->movingToplevel())
+    if (!toplevelView->toplevel->resizeSession().isActive() && !toplevelView->toplevel->moveSession().isActive())
         cursor()->useDefault();
 }

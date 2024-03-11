@@ -232,8 +232,6 @@ void LSurface::sendOutputEnterEvent(LOutput *output)
     if (!output)
         return;
 
-    imp()->sendPreferredScale();
-
     // Check if already sent
     for (LOutput *o : imp()->outputs)
         if (o == output)
@@ -241,15 +239,11 @@ void LSurface::sendOutputEnterEvent(LOutput *output)
 
     imp()->outputs.push_back(output);
 
-    for (GOutput *g : client()->outputGlobals())
-    {
-        if (g->output() == output)
-        {
-            surfaceResource()->enter(g);
-            imp()->sendPreferredScale();
-            return;
-        }
-    }
+    for (GOutput *global : client()->outputGlobals())
+        if (global->output() == output)
+            surfaceResource()->enter(global);
+
+    imp()->sendPreferredScale();
 }
 
 void LSurface::sendOutputLeaveEvent(LOutput *output)
@@ -260,20 +254,18 @@ void LSurface::sendOutputLeaveEvent(LOutput *output)
     if (!output)
         return;
 
-    for (LOutput *o : imp()->outputs)
+    for (std::size_t i = 0; i < imp()->outputs.size(); i++)
     {
-        if (o == output)
+        if (imp()->outputs[i] == output)
         {
-            LVectorRemoveOneUnordered(imp()->outputs, o);
-            for (GOutput *g : client()->outputGlobals())
-            {
-                if (g->output() == output)
-                {
-                    surfaceResource()->leave(g);
-                    imp()->sendPreferredScale();
-                    return;
-                }
-            }
+            imp()->outputs[i] = std::move(imp()->outputs.back());
+            imp()->outputs.pop_back();
+
+            for (GOutput *global : client()->outputGlobals())
+                if (global->output() == output)
+                    surfaceResource()->leave(global);
+
+            imp()->sendPreferredScale();
             return;
         }
     }

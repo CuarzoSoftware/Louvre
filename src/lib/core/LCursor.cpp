@@ -161,6 +161,11 @@ void LCursor::move(Float32 x, Float32 y)
     imp()->setPos(imp()->pos + LPointF(x,y));
 }
 
+void LCursor::move(const LPointF &delta)
+{
+    imp()->setPos(imp()->pos + delta);
+}
+
 void Louvre::LCursor::setPos(const LPointF &pos)
 {
     imp()->setPos(pos);

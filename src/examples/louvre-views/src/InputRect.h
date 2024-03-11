@@ -5,7 +5,7 @@
 
 using namespace Louvre;
 
-class InputRect : public LLayerView
+class InputRect final : public LLayerView
 {
 public:
     InputRect(LView *parent = nullptr, void *userData = nullptr, UInt32 id = 0);
@@ -15,12 +15,12 @@ public:
     void (*onPointerEnter)(InputRect *, void *, const LPoint &localPos) = nullptr;
     void (*onPointerLeave)(InputRect *, void *) = nullptr;
     void (*onPointerMove)(InputRect *, void *, const LPoint &localPos) = nullptr;
-    void (*onPointerButton)(InputRect *, void *, LPointer::Button button, LPointer::ButtonState state) = nullptr;
+    void (*onPointerButton)(InputRect *, void *, UInt32 button, UInt32 state) = nullptr;
 
-    void pointerEnterEvent(const LPoint &localPos) override;
-    void pointerLeaveEvent() override;
-    void pointerMoveEvent(const LPoint &localPos) override;
-    void pointerButtonEvent(LPointer::Button button, LPointer::ButtonState state) override;
+    void pointerEnterEvent(const LPointerEnterEvent &event) override;
+    void pointerLeaveEvent(const LPointerLeaveEvent &) override;
+    void pointerMoveEvent(const LPointerMoveEvent &event) override;
+    void pointerButtonEvent(const LPointerButtonEvent &event) override;
 };
 
 #endif // INPUTRECT_H

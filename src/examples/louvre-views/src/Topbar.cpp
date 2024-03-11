@@ -22,10 +22,10 @@ Topbar::Topbar(Output *output) :
     this->output = output;
     output->topbar = this;
     enableParentOffset(false);
-    enableInput(true);
+    enablePointerEvents(true);
     enableBlockPointer(false);
 
-    background.enableInput(false);
+    background.enablePointerEvents(false);
     background.enableBlockPointer(false);
     background.setPos(0, 0);
 
@@ -33,18 +33,18 @@ Topbar::Topbar(Output *output) :
     logo.setCustomColor(0.1f, 0.1f, 0.1f);
     logo.setPos(12, 5);
 
-    clock.enableInput(false);
+    clock.enablePointerEvents(false);
     clock.setBufferScale(2);
 
-    outputInfo.enableInput(false);
+    outputInfo.enablePointerEvents(false);
     outputInfo.setBufferScale(2);
 
     oversamplingLabel.enableCustomColor(true);
-    oversamplingLabel.enableInput(false);
+    oversamplingLabel.enablePointerEvents(false);
     oversamplingLabel.setBufferScale(2);
 
     vSyncLabel.enableCustomColor(true);
-    vSyncLabel.enableInput(false);
+    vSyncLabel.enablePointerEvents(false);
     vSyncLabel.setBufferScale(2);
 
     appName.setBufferScale(2);
@@ -99,16 +99,14 @@ void Topbar::updateOutputInfo()
     outputInfo.setTexture(G::font()->regular->renderText(info, 22));
 }
 
-void Topbar::pointerEnterEvent(const LPoint &localPos)
+void Topbar::pointerEnterEvent(const LPointerEnterEvent &)
 {
-    L_UNUSED(localPos);
-
-    if (!G::pointer()->resizingToplevel() && !G::pointer()->movingToplevel() && !G::pointer()->cursorOwner)
+    if (seat()->toplevelResizeSessions().empty() && seat()->toplevelMoveSessions().empty() && !G::pointer()->cursorOwner)
         cursor()->useDefault();
 }
 
-void Topbar::pointerMoveEvent(const LPoint &)
+void Topbar::pointerMoveEvent(const LPointerMoveEvent &)
 {
-    if (!G::pointer()->resizingToplevel() && !G::pointer()->movingToplevel() && !G::pointer()->cursorOwner)
+    if (seat()->toplevelResizeSessions().empty() && seat()->toplevelMoveSessions().empty() && !G::pointer()->cursorOwner)
         cursor()->useDefault();
 }

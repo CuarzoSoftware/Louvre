@@ -9,7 +9,7 @@ class Output;
 
 using namespace Louvre;
 
-class Topbar : public LLayerView
+class Topbar final : public LLayerView
 {
 public:
     Topbar(Output *output);
@@ -41,8 +41,8 @@ public:
     // Current app title
     LTextureView appName;
 
-    void pointerEnterEvent(const LPoint &localPos) override;
-    void pointerMoveEvent(const LPoint &) override;
+    void pointerEnterEvent(const LPointerEnterEvent &) override;
+    void pointerMoveEvent(const LPointerMoveEvent &) override;
 };
 
 #endif // TOPBAR_H
