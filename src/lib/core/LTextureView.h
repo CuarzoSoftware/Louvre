@@ -52,14 +52,27 @@ public:
      * @param x The x-coordinate of the position.
      * @param y The y-coordinate of the position.
      */
-    virtual void setPos(Int32 x, Int32 y);
+    inline void setPos(Int32 x, Int32 y) noexcept
+    {
+        if (x == m_nativePos.x() && y == m_nativePos.y())
+            return;
+
+        m_nativePos.setX(x);
+        m_nativePos.setY(y);
+
+        if (mapped())
+            repaint();
+    }
 
     /**
      * @brief Set the position of the LTextureView using an LPoint object.
      *
      * @param pos The position as an LPoint object.
      */
-    void setPos(const LPoint &pos);
+    inline void setPos(const LPoint &pos) noexcept
+    {
+        setPos(pos.x(), pos.y());
+    }
 
     /**
      * @brief Set the input region of the LTextureView.
@@ -84,7 +97,20 @@ public:
      *
      * @param scale The buffer scale factor.
      */
-    virtual void setBufferScale(Float32 scale);
+    inline void setBufferScale(Float32 scale) noexcept
+    {
+        if (scale < 0.25f)
+            scale = 0.25f;
+
+        if (scale == m_bufferScale)
+            return;
+
+        m_bufferScale = scale;
+        updateDimensions();
+
+        if (mapped())
+            repaint();
+    }
 
     /**
      * @brief Set the LTexture for the LTextureView.
@@ -93,28 +119,42 @@ public:
      *
      * @param texture The LTexture to be used as the view's texture.
      */
-    void setTexture(LTexture *texture);
+    void setTexture(LTexture *texture) noexcept;
 
     /**
      * @brief Get the current LTexture used by the LTextureView.
      *
      * @return A pointer to the current LTexture used by the view.
      */
-    virtual LTexture *texture() const;
+    inline LTexture *texture() const noexcept
+    {
+        return m_texture;
+    }
 
     /**
      * @brief Enable or disable the custom destination size for the LTextureView.
      *
      * @param enabled True to enable custom destination size, false to disable.
      */
-    virtual void enableDstSize(bool enabled);
+    inline void enableDstSize(bool enabled) noexcept
+    {
+        if (enabled != dstSizeEnabled())
+        {
+            m_state.setFlag(CustomDstSize, enabled);
+            updateDimensions();
+            repaint();
+        }
+    }
 
     /**
      * @brief Check if the custom destination size is enabled for the LTextureView.
      *
      * @return True if custom destination size is enabled, false otherwise.
      */
-    virtual bool dstSizeEnabled() const;
+    inline bool dstSizeEnabled() const noexcept
+    {
+        return m_state.check(CustomDstSize);
+    }
 
     /**
      * @brief Set the custom destination size of the LTextureView.
@@ -122,14 +162,34 @@ public:
      * @param w The width of the custom destination size.
      * @param h The height of the custom destination size.
      */
-    virtual void setDstSize(Int32 w, Int32 h);
+    inline void setDstSize(Int32 w, Int32 h) noexcept
+    {
+        if (w < 0)
+            w = 0;
+
+        if (h < 0)
+            h = 0;
+
+        if (w == m_customDstSize.w() && h == m_customDstSize.h())
+            return;
+
+        m_customDstSize.setW(w);
+        m_customDstSize.setH(h);
+        updateDimensions();
+
+        if (dstSizeEnabled() && mapped())
+            repaint();
+    }
 
     /**
      * @brief Set the custom destination size of the LTextureView using an LSize object.
      *
      * @param dstSize The custom destination size as an LSize object.
      */
-    void setDstSize(const LSize &dstSize);
+    inline void setDstSize(const LSize &dstSize) noexcept
+    {
+        setDstSize(dstSize.w(), dstSize.h());
+    }
 
     /**
      * @brief Enable or disable custom coloring for texture rendering.
@@ -139,7 +199,14 @@ public:
      *
      * @param enabled A boolean value indicating whether custom coloring should be enabled (true) or disabled (false).
      */
-    void enableCustomColor(bool enabled);
+    inline void enableCustomColor(bool enabled) noexcept
+    {
+        if (customColorEnabled() != enabled)
+        {
+            m_state.setFlag(CustomColor, enabled);
+            damageAll();
+        }
+    }
 
     /**
      * @brief Check if custom coloring for texture rendering is enabled.
@@ -148,18 +215,10 @@ public:
      *
      * @return `true` if custom coloring is enabled, `false` otherwise.
      */
-    bool customColorEnabled() const;
-
-    /**
-     * @brief Set a custom color for texture rendering while preserving the texture's alpha channel.
-     *
-     * This method sets a custom color for the texture rendering process, replacing the original texture color while keeping the texture's alpha channel intact.
-     *
-     * @param r The red component of the custom color (0.0 to 1.0).
-     * @param g The green component of the custom color (0.0 to 1.0).
-     * @param b The blue component of the custom color (0.0 to 1.0).
-     */
-    void setCustomColor(Float32 r, Float32 g, Float32 b);
+    inline bool customColorEnabled() const noexcept
+    {
+        return m_state.check(CustomColor);
+    }
 
     /**
      * @brief Set a custom color for texture rendering using an LRGBF object.
@@ -168,7 +227,16 @@ public:
      *
      * @param color The LRGBF object representing the custom color.
      */
-    void setCustomColor(const LRGBF &color);
+    inline void setCustomColor(const LRGBF &color) noexcept
+    {
+        if (m_customColor.r == color.r && m_customColor.g == color.g && m_customColor.b == color.b)
+            return;
+
+        m_customColor = color;
+
+        if (customColorEnabled())
+            damageAll();
+    }
 
     /**
      * @brief Get the current custom color used for texture rendering.
@@ -178,7 +246,10 @@ public:
      *
      * @return A constant reference to the LRGBF object representing the current custom color.
      */
-    const LRGBF &customColor() const;
+    inline const LRGBF &customColor() const noexcept
+    {
+        return m_customColor;
+    }
 
     /**
      * @brief Enables or disables the use of a custom source rect.
@@ -191,7 +262,15 @@ public:
      * @param enabled If `true`, the custom source rectangle is enabled; if `false`, the entire
      *                texture is used as the source.
      */
-    void enableSrcRect(bool enabled);
+    inline void enableSrcRect(bool enabled) noexcept
+    {
+        if (srcRectEnabled() == enabled)
+            return;
+
+        m_state.setFlag(CustomSrcRect, enabled);
+        damageAll();
+        updateDimensions();
+    }
 
     /**
      * @brief Checks if the use of the source rect (srcRect()) is enabled.
@@ -203,7 +282,10 @@ public:
      * @see enableSrcRect()
      * @see setSrcRect()
      */
-    bool srcRectEnabled() const;
+    inline bool srcRectEnabled() const noexcept
+    {
+        return m_state.check(CustomSrcRect);
+    }
 
     /**
      * @brief Sets the source rect of the texture to use.
@@ -215,7 +297,17 @@ public:
      *
      * @param srcRect The source rect in surface coordinates.
      */
-    void setSrcRect(const LRectF &srcRect);
+    inline void setSrcRect(const LRectF &srcRect) noexcept
+    {
+        if (m_customSrcRect == srcRect)
+            return;
+
+        m_customSrcRect = srcRect;
+        updateDimensions();
+
+        if (srcRectEnabled())
+            damageAll();
+    }
 
     /**
      * @brief Gets the source rect set with setSrcRect().
@@ -224,7 +316,10 @@ public:
      *
      * @return A constant reference to the source rect specified using setSrcRect().
      */
-    const LRectF &srcRect() const;
+    inline const LRectF &srcRect() const noexcept
+    {
+        return m_srcRect;
+    }
 
     /**
      * @brief Sets the transform of the texture.
@@ -239,31 +334,56 @@ public:
      *
      * @param transform The transform to be applied for proper display.
      */
-    void setTransform(LFramebuffer::Transform transform);
+    inline void setTransform(LFramebuffer::Transform transform) noexcept
+    {
+        if (m_transform == transform)
+            return;
+
+        m_transform = transform;
+        damageAll();
+        updateDimensions();
+    }
 
     /**
      * @brief Gets the transform set with setTransform().
      *
      * The default value is LFramebuffer::Normal.
      */
-    LFramebuffer::Transform transform() const;
+    inline LFramebuffer::Transform transform() const noexcept
+    {
+        return m_transform;
+    }
 
-    virtual bool nativeMapped() const override;
-    virtual const LPoint &nativePos() const override;
-    virtual const LSize &nativeSize() const override;
-    virtual Float32 bufferScale() const override;
-    virtual void enteredOutput(LOutput *output) override;
-    virtual void leftOutput(LOutput *output) override;
-    virtual const std::vector<LOutput*> &outputs() const override;
-    virtual bool isRenderable() const override;
-    virtual void requestNextFrame(LOutput *output) override;
-    virtual const LRegion *damage() const override;
-    virtual const LRegion *translucentRegion() const override;
-    virtual const LRegion *opaqueRegion() const override;
-    virtual const LRegion *inputRegion() const override;
-    virtual void paintEvent(const PaintEventParams &params) override;
+    virtual bool nativeMapped() const noexcept override;
+    virtual const LPoint &nativePos() const noexcept override;
+    virtual const LSize &nativeSize() const noexcept override;
+    virtual Float32 bufferScale() const noexcept override;
+    virtual void enteredOutput(LOutput *output) noexcept override;
+    virtual void leftOutput(LOutput *output) noexcept override;
+    virtual const std::vector<LOutput*> &outputs() const noexcept override;
+    virtual bool isRenderable() const noexcept override;
+    virtual void requestNextFrame(LOutput *output) noexcept override;
+    virtual const LRegion *damage() const noexcept override;
+    virtual const LRegion *translucentRegion() const noexcept override;
+    virtual const LRegion *opaqueRegion() const noexcept override;
+    virtual const LRegion *inputRegion() const noexcept override;
+    virtual void paintEvent(const PaintEventParams &params) noexcept override;
 
-    LPRIVATE_IMP_UNIQUE(LTextureView)
+protected:
+    LTexture *m_texture { nullptr };
+    std::vector<LOutput*> m_outputs;
+    std::unique_ptr<LRegion> m_inputRegion;
+    std::unique_ptr<LRegion> m_translucentRegion;
+    mutable LRectF m_customSrcRect {0.f, 0.f, 1.f, 1.f};
+    mutable LRectF m_srcRect {0.f, 0.f, 1.f, 1.f};
+    LRGBF m_customColor;
+    LPoint m_nativePos;
+    mutable LSize m_dstSize {1, 1};
+    mutable LSize m_customDstSize {1, 1};
+    Float32 m_bufferScale { 1.f };
+    LFramebuffer::Transform m_transform { LFramebuffer::Normal };
+    mutable UInt32 m_textureSerial { 0 };
+    void updateDimensions() const noexcept;
 };
 
 #endif // LTEXTUREVIEW_H

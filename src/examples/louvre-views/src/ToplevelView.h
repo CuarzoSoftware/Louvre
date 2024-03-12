@@ -65,8 +65,8 @@ public:
     void updateTitle();
     void updateGeometry();
 
-    bool nativeMapped() const override;
-    const LPoint &nativePos() const override;
+    bool nativeMapped() const noexcept override;
+    const LPoint &nativePos() const noexcept override;
 
     void keyEvent(const LKeyboardKeyEvent &event) override;
 };

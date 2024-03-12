@@ -36,7 +36,7 @@ public:
     void hide();
     void update();
 
-    bool nativeMapped() const override;
+    bool nativeMapped() const noexcept override;
 };
 
 #endif // TOOLTIP_H

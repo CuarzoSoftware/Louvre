@@ -15,7 +15,7 @@ Tooltip::Tooltip() : LLayerView(&G::compositor()->tooltipsLayer)
     label.setParent(this);
     label.setBufferScale(2);
     label.enableCustomColor(true);
-    label.setCustomColor(0.2f, 0.2f, 0.2f);
+    label.setCustomColor({0.2f, 0.2f, 0.2f});
 }
 
 void Tooltip::setText(const char *text)
@@ -77,7 +77,7 @@ void Tooltip::update()
     setPos(globalPos.x() - (size().w() / 2), globalPos.y() - size().h() - arrow.size().h());
 }
 
-bool Tooltip::nativeMapped() const
+bool Tooltip::nativeMapped() const noexcept
 {
     return label.texture() != nullptr || targetView != nullptr;
 }

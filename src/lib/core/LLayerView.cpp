@@ -62,72 +62,72 @@ void LLayerView::setInputRegion(const LRegion *region) const
     }
 }
 
-bool LLayerView::nativeMapped() const
+bool LLayerView::nativeMapped() const noexcept
 {
     return true;
 }
 
-const LPoint &LLayerView::nativePos() const
+const LPoint &LLayerView::nativePos() const noexcept
 {
     return imp()->nativePos;
 }
 
-const LSize &LLayerView::nativeSize() const
+const LSize &LLayerView::nativeSize() const noexcept
 {
     return imp()->nativeSize;
 }
 
-Float32 LLayerView::bufferScale() const
+Float32 LLayerView::bufferScale() const noexcept
 {
     return 1.f;
 }
 
-void LLayerView::enteredOutput(LOutput *output)
+void LLayerView::enteredOutput(LOutput *output) noexcept
 {
     LVectorPushBackIfNonexistent(imp()->outputs, output);
 }
 
-void LLayerView::leftOutput(LOutput *output)
+void LLayerView::leftOutput(LOutput *output) noexcept
 {
     LVectorRemoveOneUnordered(imp()->outputs, output);
 }
 
-const std::vector<LOutput*> &LLayerView::outputs() const
+const std::vector<LOutput*> &LLayerView::outputs() const noexcept
 {
     return imp()->outputs;
 }
 
-bool LLayerView::isRenderable() const
+bool LLayerView::isRenderable() const noexcept
 {
     return false;
 }
 
-void LLayerView::requestNextFrame(LOutput *output)
+void LLayerView::requestNextFrame(LOutput *output) noexcept
 {
     L_UNUSED(output);
 }
 
-const LRegion *LLayerView::damage() const
+const LRegion *LLayerView::damage() const noexcept
 {
     return &imp()->dummyRegion;
 }
 
-const LRegion *LLayerView::translucentRegion() const
+const LRegion *LLayerView::translucentRegion() const noexcept
 {
     return &imp()->dummyRegion;
 }
 
-const LRegion *LLayerView::opaqueRegion() const
+const LRegion *LLayerView::opaqueRegion() const noexcept
 {
     return &imp()->dummyRegion;
 }
 
-const LRegion *LLayerView::inputRegion() const
+const LRegion *LLayerView::inputRegion() const noexcept
 {
     return imp()->inputRegion;
 }
 
-void LLayerView::paintEvent(const PaintEventParams &)
+void LLayerView::paintEvent(const PaintEventParams &) noexcept
 {
     /* It is not renderable */
 }

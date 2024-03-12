@@ -289,7 +289,7 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
 
     // Title label
     title.setBufferScale(2);
-    title.setCustomColor(0.1f, 0.1f, 0.1f);
+    title.setCustomColor({0.1f, 0.1f, 0.1f});
     title.enableCustomColor(true);
 
     // Buttons
@@ -431,7 +431,7 @@ void ToplevelView::updateGeometry()
 
         if (lastActiveState != toplevel->activated())
         {
-            title.setCustomColor(0.1f, 0.1f, 0.1f);
+            title.setCustomColor({0.1f, 0.1f, 0.1f});
 
             decoTL.setTextureIndex(G::DecorationActiveTL);
             decoT.setTextureIndex(G::DecorationActiveT);
@@ -460,7 +460,7 @@ void ToplevelView::updateGeometry()
 
         if (lastActiveState != toplevel->activated())
         {
-            title.setCustomColor(0.7f, 0.7f, 0.7f);
+            title.setCustomColor({0.7f, 0.7f, 0.7f});
 
             decoTL.setTextureIndex(G::DecorationInactiveTL);
             decoT.setTextureIndex(G::DecorationInactiveT);
@@ -709,12 +709,12 @@ void ToplevelView::updateGeometry()
 
 }
 
-bool ToplevelView::nativeMapped() const
+bool ToplevelView::nativeMapped() const noexcept
 {
     return toplevel->surface()->mapped();
 }
 
-const LPoint &ToplevelView::nativePos() const
+const LPoint &ToplevelView::nativePos() const noexcept
 {
     return toplevel->rolePos();
 }

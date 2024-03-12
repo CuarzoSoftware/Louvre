@@ -234,72 +234,72 @@ void LSceneView::setScale(Float32 scale)
     }
 }
 
-bool LSceneView::nativeMapped() const
+bool LSceneView::nativeMapped() const noexcept
 {
     return true;
 }
 
-const LPoint &LSceneView::nativePos() const
+const LPoint &LSceneView::nativePos() const noexcept
 {
     return imp()->customPos;
 }
 
-const LSize &LSceneView::nativeSize() const
+const LSize &LSceneView::nativeSize() const noexcept
 {
     return imp()->fb->rect().size();
 }
 
-Float32 LSceneView::bufferScale() const
+Float32 LSceneView::bufferScale() const noexcept
 {
     return imp()->fb->scale();
 }
 
-void LSceneView::enteredOutput(LOutput *output)
+void LSceneView::enteredOutput(LOutput *output) noexcept
 {
     LVectorPushBackIfNonexistent(imp()->outputs, output);
 }
 
-void LSceneView::leftOutput(LOutput *output)
+void LSceneView::leftOutput(LOutput *output) noexcept
 {
     LVectorRemoveOneUnordered(imp()->outputs, output);
 }
 
-const std::vector<LOutput *> &LSceneView::outputs() const
+const std::vector<LOutput *> &LSceneView::outputs() const noexcept
 {
     return imp()->outputs;
 }
 
-bool LSceneView::isRenderable() const
+bool LSceneView::isRenderable() const noexcept
 {
     return true;
 }
 
-void LSceneView::requestNextFrame(LOutput *output)
+void LSceneView::requestNextFrame(LOutput *output) noexcept
 {
     L_UNUSED(output);
 }
 
-const LRegion *LSceneView::damage() const
+const LRegion *LSceneView::damage() const noexcept
 {
     return &imp()->currentThreadData->newDamage;
 }
 
-const LRegion *LSceneView::translucentRegion() const
+const LRegion *LSceneView::translucentRegion() const noexcept
 {
     return &imp()->currentThreadData->translucentTransposedSum;
 }
 
-const LRegion *LSceneView::opaqueRegion() const
+const LRegion *LSceneView::opaqueRegion() const noexcept
 {
     return &imp()->currentThreadData->opaqueTransposedSum;
 }
 
-const LRegion *LSceneView::inputRegion() const
+const LRegion *LSceneView::inputRegion() const noexcept
 {
     return &imp()->input;
 }
 
-void LSceneView::paintEvent(const PaintEventParams &params)
+void LSceneView::paintEvent(const PaintEventParams &params) noexcept
 {
     params.painter->bindTextureMode({
         .texture = imp()->fb->texture(imp()->fb->currentBufferIndex()),

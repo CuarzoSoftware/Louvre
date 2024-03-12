@@ -114,72 +114,72 @@ void LSolidColorView::setInputRegion(const LRegion *region) const
     }
 }
 
-bool LSolidColorView::nativeMapped() const
+bool LSolidColorView::nativeMapped() const noexcept
 {
     return true;
 }
 
-const LPoint &LSolidColorView::nativePos() const
+const LPoint &LSolidColorView::nativePos() const noexcept
 {
     return imp()->nativePos;
 }
 
-const LSize &LSolidColorView::nativeSize() const
+const LSize &LSolidColorView::nativeSize() const noexcept
 {
     return imp()->nativeSize;
 }
 
-Float32 LSolidColorView::bufferScale() const
+Float32 LSolidColorView::bufferScale() const noexcept
 {
     return 1.f;
 }
 
-void LSolidColorView::enteredOutput(LOutput *output)
+void LSolidColorView::enteredOutput(LOutput *output) noexcept
 {
     LVectorPushBackIfNonexistent(imp()->outputs, output);
 }
 
-void LSolidColorView::leftOutput(LOutput *output)
+void LSolidColorView::leftOutput(LOutput *output) noexcept
 {
     LVectorRemoveOneUnordered(imp()->outputs, output);
 }
 
-const std::vector<LOutput *> &LSolidColorView::outputs() const
+const std::vector<LOutput *> &LSolidColorView::outputs() const noexcept
 {
     return imp()->outputs;
 }
 
-bool LSolidColorView::isRenderable() const
+bool LSolidColorView::isRenderable() const noexcept
 {
     return true;
 }
 
-void LSolidColorView::requestNextFrame(LOutput *output)
+void LSolidColorView::requestNextFrame(LOutput *output) noexcept
 {
     L_UNUSED(output);
 }
 
-const LRegion *LSolidColorView::damage() const
+const LRegion *LSolidColorView::damage() const noexcept
 {
     return &imp()->emptyRegion;
 }
 
-const LRegion *LSolidColorView::translucentRegion() const
+const LRegion *LSolidColorView::translucentRegion() const noexcept
 {
     return &imp()->emptyRegion;
 }
 
-const LRegion *LSolidColorView::opaqueRegion() const
+const LRegion *LSolidColorView::opaqueRegion() const noexcept
 {
     return &imp()->opaqueRegion;
 }
 
-const LRegion *LSolidColorView::inputRegion() const
+const LRegion *LSolidColorView::inputRegion() const noexcept
 {
     return imp()->inputRegion;
 }
 
-void LSolidColorView::paintEvent(const PaintEventParams &params)
+void LSolidColorView::paintEvent(const PaintEventParams &params) noexcept
 {
     params.painter->setColor(color());
     params.painter->bindColorMode();

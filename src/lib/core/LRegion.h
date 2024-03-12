@@ -375,6 +375,9 @@ public:
      */
     void transform(const LSize &size, LFramebuffer::Transform transform) noexcept;
 
+    // TODO returns an empty region
+    static const LRegion &EmptyRegion() noexcept;
+
     /// @cond OMIT
     static void multiply(LRegion *dst, LRegion *src, Float32 factor) noexcept;
     mutable pixman_region32_t m_region;

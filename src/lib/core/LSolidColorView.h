@@ -109,20 +109,20 @@ public:
      */
     virtual void setInputRegion(const LRegion *region) const;
 
-    virtual bool nativeMapped() const override;
-    virtual const LPoint &nativePos() const override;
-    virtual const LSize &nativeSize() const override;
-    virtual Float32 bufferScale() const override;
-    virtual void enteredOutput(LOutput *output) override;
-    virtual void leftOutput(LOutput *output) override;
-    virtual const std::vector<LOutput*> &outputs() const override;
-    virtual bool isRenderable() const override;
-    virtual void requestNextFrame(LOutput *output) override;
-    virtual const LRegion *damage() const override;
-    virtual const LRegion *translucentRegion() const override;
-    virtual const LRegion *opaqueRegion() const override;
-    virtual const LRegion *inputRegion() const override;
-    virtual void paintEvent(const PaintEventParams &params) override;
+    virtual bool nativeMapped() const noexcept override;
+    virtual const LPoint &nativePos() const noexcept override;
+    virtual const LSize &nativeSize() const noexcept override;
+    virtual Float32 bufferScale() const noexcept override;
+    virtual void enteredOutput(LOutput *output) noexcept override;
+    virtual void leftOutput(LOutput *output) noexcept override;
+    virtual const std::vector<LOutput*> &outputs() const noexcept override;
+    virtual bool isRenderable() const noexcept override;
+    virtual void requestNextFrame(LOutput *output) noexcept override;
+    virtual const LRegion *damage() const noexcept override;
+    virtual const LRegion *translucentRegion() const noexcept override;
+    virtual const LRegion *opaqueRegion() const noexcept override;
+    virtual const LRegion *inputRegion() const noexcept override;
+    virtual void paintEvent(const PaintEventParams &params) noexcept override;
 
 LPRIVATE_IMP_UNIQUE(LSolidColorView)
 };

@@ -1,325 +1,143 @@
-#include <private/LTextureViewPrivate.h>
 #include <private/LTexturePrivate.h>
 #include <private/LPainterPrivate.h>
-#include <LTexture.h>
+#include <LTextureView.h>
 #include <LCompositor.h>
 
-LTextureView::LTextureView(LTexture *texture, LView *parent) :
-    LView(LView::Texture, parent),
-    LPRIVATE_INIT_UNIQUE(LTextureView)
+LTextureView::LTextureView(LTexture *texture, LView *parent) : LView(LView::Texture, parent)
 {
     setTexture(texture);
 }
 
 LTextureView::~LTextureView()
 {
-    if (imp()->texture)
-        LVectorRemoveOneUnordered(imp()->texture->imp()->textureViews, this);
-
-    if (imp()->inputRegion)
-        delete imp()->inputRegion;
-
-    if (imp()->translucentRegion)
-        delete imp()->translucentRegion;
-}
-
-void LTextureView::setPos(Int32 x, Int32 y)
-{
-    if (mapped() && (x != imp()->nativePos.x() || y != imp()->nativePos.y()))
-        repaint();
-
-    imp()->nativePos.setX(x);
-    imp()->nativePos.setY(y);
-}
-
-void LTextureView::setPos(const LPoint &pos)
-{
-    setPos(pos.x(), pos.y());
+    if (m_texture)
+        LVectorRemoveOneUnordered(m_texture->imp()->textureViews, this);
 }
 
 void LTextureView::setInputRegion(const LRegion *region)
 {
     if (region)
     {
-        if (imp()->inputRegion)
-            *imp()->inputRegion = *region;
+        if (m_inputRegion)
+            *m_inputRegion = *region;
         else
-        {
-            imp()->inputRegion = new LRegion();
-            *imp()->inputRegion = *region;
-        }
+            m_inputRegion = std::make_unique<LRegion>(*region);
     }
     else
-    {
-        if (imp()->inputRegion)
-        {
-            delete imp()->inputRegion;
-            imp()->inputRegion = nullptr;
-        }
-    }
+        m_inputRegion.reset();
 }
 
 void LTextureView::setTranslucentRegion(const LRegion *region)
 {
     if (region)
     {
-        if (imp()->translucentRegion)
-            *imp()->translucentRegion = *region;
+        if (m_translucentRegion)
+            *m_translucentRegion = *region;
         else
-        {
-            imp()->translucentRegion = new LRegion();
-            *imp()->translucentRegion = *region;
-        }
+            m_translucentRegion = std::make_unique<LRegion>(*region);
     }
     else
-    {
-        if (imp()->translucentRegion)
-        {
-            delete imp()->translucentRegion;
-            imp()->translucentRegion = nullptr;
-        }
-    }
+        m_translucentRegion.reset();
 }
 
-void LTextureView::setBufferScale(Float32 scale)
+void LTextureView::setTexture(LTexture *texture) noexcept
 {
-    if (scale < 0.5f)
-        scale = 0.5f;
-
-    if (mapped() && scale != imp()->bufferScale)
-        repaint();
-
-    imp()->bufferScale = scale;
-    imp()->updateDimensions();
-}
-
-void LTextureView::setTexture(LTexture *texture)
-{
-    if (texture != imp()->texture)
-    {
-        if (imp()->texture)
-            LVectorRemoveOneUnordered(imp()->texture->imp()->textureViews, this);
-
-        imp()->texture = texture;
-
-        if (imp()->texture)
-        {
-            imp()->textureSerial = imp()->texture->imp()->serial;
-            imp()->texture->imp()->textureViews.push_back(this);
-        }
-
-        imp()->updateDimensions();
-        damageAll();
-    }
-}
-
-LTexture *LTextureView::texture() const
-{
-    return imp()->texture;
-}
-
-void LTextureView::enableDstSize(bool enabled)
-{
-    if (enabled != imp()->dstSizeEnabled)
-    {
-        imp()->dstSizeEnabled = enabled;
-        imp()->updateDimensions();
-        repaint();
-    }
-}
-
-bool LTextureView::dstSizeEnabled() const
-{
-    return imp()->dstSizeEnabled;
-}
-
-void LTextureView::setDstSize(Int32 w, Int32 h)
-{
-    if (w < 0)
-        w = 0;
-
-    if (h < 0)
-        h = 0;
-
-    if (w == imp()->customDstSize.w() && h == imp()->customDstSize.h())
+    if (texture == m_texture)
         return;
 
-    imp()->customDstSize.setW(w);
-    imp()->customDstSize.setH(h);
-    imp()->updateDimensions();
+    if (m_texture)
+        LVectorRemoveOneUnordered(m_texture->imp()->textureViews, this);
 
-    if (mapped() && dstSizeEnabled())
-        repaint();
-}
+    m_texture = texture;
 
-void LTextureView::setDstSize(const LSize &dstSize)
-{
-    setDstSize(dstSize.w(), dstSize.h());
-}
-
-void LTextureView::enableCustomColor(bool enabled)
-{
-    if (imp()->customColorEnabled != enabled)
+    if (m_texture)
     {
-        imp()->customColorEnabled = enabled;
-        damageAll();
+        m_textureSerial = m_texture->imp()->serial;
+        m_texture->imp()->textureViews.push_back(this);
     }
-}
 
-bool LTextureView::customColorEnabled() const
-{
-    return imp()->customColorEnabled;
-}
-
-void LTextureView::setCustomColor(Float32 r, Float32 g, Float32 b)
-{
-    if (imp()->customColor.r == r && imp()->customColor.g == g && imp()->customColor.b == b)
-        return;
-
-    imp()->customColor.r = r;
-    imp()->customColor.g = g;
-    imp()->customColor.b = b;
-
-    if (imp()->customColorEnabled)
-        damageAll();
-}
-
-void LTextureView::setCustomColor(const LRGBF &color)
-{
-    setCustomColor(color.r, color.g, color.b);
-}
-
-const LRGBF &LTextureView::customColor() const
-{
-    return imp()->customColor;
-}
-
-void LTextureView::enableSrcRect(bool enabled)
-{
-    if (imp()->srcRectEnabled == enabled)
-        return;
-
-    imp()->srcRectEnabled = enabled;
+    updateDimensions();
     damageAll();
-    imp()->updateDimensions();
 }
 
-bool LTextureView::srcRectEnabled() const
+bool LTextureView::nativeMapped() const noexcept
 {
-    return imp()->srcRectEnabled;
+    return m_texture != nullptr;
 }
 
-void LTextureView::setSrcRect(const LRectF &srcRect)
+const LPoint &LTextureView::nativePos() const noexcept
 {
-    if (imp()->customSrcRect == srcRect)
-        return;
-
-    imp()->customSrcRect = srcRect;
-    imp()->updateDimensions();
-
-    if (imp()->srcRectEnabled)
-        damageAll();
+    return m_nativePos;
 }
 
-const LRectF &LTextureView::srcRect() const
+const LSize &LTextureView::nativeSize() const noexcept
 {
-    return imp()->srcRect;
-}
-
-void LTextureView::setTransform(LFramebuffer::Transform transform)
-{
-    if (imp()->transform == transform)
-        return;
-
-    imp()->transform = transform;
-    damageAll();
-    imp()->updateDimensions();
-}
-
-LFramebuffer::Transform LTextureView::transform() const
-{
-    return imp()->transform;
-}
-
-bool LTextureView::nativeMapped() const
-{
-    return imp()->texture != nullptr;
-}
-
-const LPoint &LTextureView::nativePos() const
-{
-    return imp()->nativePos;
-}
-
-const LSize &LTextureView::nativeSize() const
-{
-
-    if (imp()->texture && imp()->texture->imp()->serial != imp()->textureSerial)
+    if (m_texture && m_texture->imp()->serial != m_textureSerial)
     {
-        imp()->textureSerial = imp()->texture->imp()->serial;
-        imp()->updateDimensions();
+        m_textureSerial = m_texture->imp()->serial;
+        updateDimensions();
     }
 
-    return imp()->dstSize;
+    return m_dstSize;
 }
 
-Float32 LTextureView::bufferScale() const
+Float32 LTextureView::bufferScale() const noexcept
 {
-    return imp()->bufferScale;
+    return m_bufferScale;
 }
 
-void LTextureView::enteredOutput(LOutput *output)
+void LTextureView::enteredOutput(LOutput *output) noexcept
 {
-    LVectorPushBackIfNonexistent(imp()->outputs, output);
+    LVectorPushBackIfNonexistent(m_outputs, output);
 }
 
-void LTextureView::leftOutput(LOutput *output)
+void LTextureView::leftOutput(LOutput *output) noexcept
 {
-    LVectorRemoveOneUnordered(imp()->outputs, output);
+    LVectorRemoveOneUnordered(m_outputs, output);
 }
 
-const std::vector<LOutput *> &LTextureView::outputs() const
+const std::vector<LOutput *> &LTextureView::outputs() const noexcept
 {
-    return imp()->outputs;
+    return m_outputs;
 }
 
-bool LTextureView::isRenderable() const
+bool LTextureView::isRenderable() const noexcept
 {
     return true;
 }
 
-void LTextureView::requestNextFrame(LOutput *output)
+void LTextureView::requestNextFrame(LOutput *output) noexcept
 {
     L_UNUSED(output);
 }
 
-const LRegion *LTextureView::damage() const
+const LRegion *LTextureView::damage() const noexcept
 {
-    return &imp()->emptyRegion;
+    return &LRegion::EmptyRegion();
 }
 
-const LRegion *LTextureView::translucentRegion() const
+const LRegion *LTextureView::translucentRegion() const noexcept
 {
-    return imp()->translucentRegion;
+    return m_translucentRegion.get();
 }
 
-const LRegion *LTextureView::opaqueRegion() const
+const LRegion *LTextureView::opaqueRegion() const noexcept
 {
     return nullptr;
 }
 
-const LRegion *LTextureView::inputRegion() const
+const LRegion *LTextureView::inputRegion() const noexcept
 {
-    return imp()->inputRegion;
+    return m_inputRegion.get();
 }
 
-void LTextureView::paintEvent(const PaintEventParams &params)
+void LTextureView::paintEvent(const PaintEventParams &params) noexcept
 {
-    if (!imp()->texture)
+    if (!m_texture)
         return;
 
     params.painter->bindTextureMode({
-        .texture = imp()->texture,
+        .texture = m_texture,
         .pos = pos(),
         .srcRect = srcRect(),
         .dstSize = size(),
@@ -330,4 +148,39 @@ void LTextureView::paintEvent(const PaintEventParams &params)
     params.painter->enableCustomTextureColor(customColorEnabled());
     params.painter->setColor(customColor());
     params.painter->drawRegion(*params.region);
+}
+
+void LTextureView::updateDimensions() const noexcept
+{
+    if (dstSizeEnabled())
+        m_dstSize = m_customDstSize;
+    else if (m_texture)
+    {
+        if (LFramebuffer::is90Transform(m_transform))
+        {
+            m_dstSize.setW(roundf(Float32(m_texture->sizeB().h()) / m_bufferScale));
+            m_dstSize.setH(roundf(Float32(m_texture->sizeB().w()) / m_bufferScale));
+        }
+        else
+        {
+            m_dstSize.setW(roundf(Float32(m_texture->sizeB().w()) / m_bufferScale));
+            m_dstSize.setH(roundf(Float32(m_texture->sizeB().h()) / m_bufferScale));
+        }
+    }
+
+    if (srcRectEnabled())
+        m_srcRect = m_customSrcRect;
+    else if (m_texture)
+    {
+        if (LFramebuffer::is90Transform(m_transform))
+        {
+            m_srcRect.setW(Float32(m_texture->sizeB().h()) / m_bufferScale);
+            m_srcRect.setH(Float32(m_texture->sizeB().w()) / m_bufferScale);
+        }
+        else
+        {
+            m_srcRect.setW(Float32(m_texture->sizeB().w()) / m_bufferScale);
+            m_srcRect.setH(Float32(m_texture->sizeB().h()) / m_bufferScale);
+        }
+    }
 }

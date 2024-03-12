@@ -164,7 +164,7 @@ const LRectF &LSurfaceView::srcRect() const
     return imp()->surface->srcRect();
 }
 
-bool LSurfaceView::nativeMapped() const
+bool LSurfaceView::nativeMapped() const noexcept
 {
     if (!imp()->surface)
         return false;
@@ -172,7 +172,7 @@ bool LSurfaceView::nativeMapped() const
     return imp()->surface->mapped();
 }
 
-const LPoint &LSurfaceView::nativePos() const
+const LPoint &LSurfaceView::nativePos() const noexcept
 {
     if (customPosEnabled() || !imp()->surface)
         return imp()->customPos;
@@ -180,7 +180,7 @@ const LPoint &LSurfaceView::nativePos() const
     return imp()->surface->rolePos();
 }
 
-const LSize &LSurfaceView::nativeSize() const
+const LSize &LSurfaceView::nativeSize() const noexcept
 {
     if (!imp()->surface)
         return imp()->customPos;
@@ -188,7 +188,7 @@ const LSize &LSurfaceView::nativeSize() const
     return imp()->surface->size();
 }
 
-Float32 LSurfaceView::bufferScale() const
+Float32 LSurfaceView::bufferScale() const noexcept
 {
     if (!imp()->surface)
         return 1;
@@ -196,7 +196,7 @@ Float32 LSurfaceView::bufferScale() const
     return imp()->surface->bufferScale();
 }
 
-void LSurfaceView::enteredOutput(LOutput *output)
+void LSurfaceView::enteredOutput(LOutput *output) noexcept
 {
     if (imp()->primary && imp()->surface)
         imp()->surface->sendOutputEnterEvent(output);
@@ -204,7 +204,7 @@ void LSurfaceView::enteredOutput(LOutput *output)
         LVectorPushBackIfNonexistent(imp()->nonPrimaryOutputs, output);
 }
 
-void LSurfaceView::leftOutput(LOutput *output)
+void LSurfaceView::leftOutput(LOutput *output) noexcept
 {
     if (imp()->primary && imp()->surface)
         imp()->surface->sendOutputLeaveEvent(output);
@@ -212,7 +212,7 @@ void LSurfaceView::leftOutput(LOutput *output)
         LVectorRemoveOneUnordered(imp()->nonPrimaryOutputs, output);
 }
 
-const std::vector<LOutput *> &LSurfaceView::outputs() const
+const std::vector<LOutput *> &LSurfaceView::outputs() const noexcept
 {
     if (imp()->primary && imp()->surface)
         return imp()->surface->outputs();
@@ -220,12 +220,12 @@ const std::vector<LOutput *> &LSurfaceView::outputs() const
         return imp()->nonPrimaryOutputs;
 }
 
-bool LSurfaceView::isRenderable() const
+bool LSurfaceView::isRenderable() const noexcept
 {
     return true;
 }
 
-void LSurfaceView::requestNextFrame(LOutput *output)
+void LSurfaceView::requestNextFrame(LOutput *output) noexcept
 {
     if (!imp()->surface || !output)
         return;
@@ -264,7 +264,7 @@ void LSurfaceView::requestNextFrame(LOutput *output)
     m_threadsMap[output->threadId()].lastRenderedDamageId = imp()->surface->damageId();
 }
 
-const LRegion *LSurfaceView::damage() const
+const LRegion *LSurfaceView::damage() const noexcept
 {
     if (!imp()->surface)
         return nullptr;
@@ -272,7 +272,7 @@ const LRegion *LSurfaceView::damage() const
     return &imp()->surface->damage();
 }
 
-const LRegion *LSurfaceView::translucentRegion() const
+const LRegion *LSurfaceView::translucentRegion() const noexcept
 {
     if (imp()->customTranslucentRegionEnabled || !imp()->surface)
         return imp()->customTranslucentRegion;
@@ -280,7 +280,7 @@ const LRegion *LSurfaceView::translucentRegion() const
     return &imp()->surface->translucentRegion();
 }
 
-const LRegion *LSurfaceView::opaqueRegion() const
+const LRegion *LSurfaceView::opaqueRegion() const noexcept
 {
     if (imp()->customTranslucentRegionEnabled || !imp()->surface)
         return nullptr;
@@ -288,7 +288,7 @@ const LRegion *LSurfaceView::opaqueRegion() const
     return &imp()->surface->opaqueRegion();
 }
 
-const LRegion *LSurfaceView::inputRegion() const
+const LRegion *LSurfaceView::inputRegion() const noexcept
 {
     if (customInputRegionEnabled() || !imp()->surface)
         return imp()->customInputRegion;
@@ -296,7 +296,7 @@ const LRegion *LSurfaceView::inputRegion() const
     return &imp()->surface->inputRegion();
 }
 
-void LSurfaceView::paintEvent(const PaintEventParams &params)
+void LSurfaceView::paintEvent(const PaintEventParams &params) noexcept
 {
     if (!imp()->surface)
         return;

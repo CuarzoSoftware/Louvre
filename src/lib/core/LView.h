@@ -206,6 +206,11 @@ public:
         TouchUpDone             = 1UL << 35,
         TouchFrameDone          = 1UL << 36,
         TouchCancelDone         = 1UL << 37,
+
+        // LTextureView
+        CustomColor             = 1UL << 38,
+        CustomDstSize           = 1UL << 39,
+        CustomSrcRect           = 1UL << 40,
     };
 
     // This is used for detecting changes on a view since the last time it was drawn on a specific output
@@ -1030,7 +1035,7 @@ public:
      *
      * @return `true` if the view should be rendered without considering visible(), otherwise `false`.
      */
-    virtual bool nativeMapped() const = 0;
+    virtual bool nativeMapped() const noexcept = 0;
 
     /**
      * @brief Get the position of the view without any transformations applied.
@@ -1039,7 +1044,7 @@ public:
      *
      * @return The position of the view as an LPoint object.
      */
-    virtual const LPoint &nativePos() const = 0;
+    virtual const LPoint &nativePos() const noexcept = 0;
 
     /**
      * @brief Get the size of the view without any transformations applied.
@@ -1048,7 +1053,7 @@ public:
      *
      * @return The size of the view as an LSize object.
      */
-    virtual const LSize &nativeSize() const = 0;
+    virtual const LSize &nativeSize() const noexcept = 0;
 
     /**
      * @brief Get the scale of the view buffer content.
@@ -1057,7 +1062,7 @@ public:
      *
      * @return The buffer scale as an Int32 value.
      */
-    virtual Float32 bufferScale() const = 0;
+    virtual Float32 bufferScale() const noexcept = 0;
 
     /**
      * @brief Indicate that the view is visible on the given output.
@@ -1066,7 +1071,7 @@ public:
      *
      * @param output The LOutput where the view is visible.
      */
-    virtual void enteredOutput(LOutput *output) = 0;
+    virtual void enteredOutput(LOutput *output) noexcept = 0;
 
     /**
      * @brief Indicate that the view is no longer visible on the given output.
@@ -1075,7 +1080,7 @@ public:
      *
      * @param output The LOutput from which the view is no longer visible.
      */
-    virtual void leftOutput(LOutput *output) = 0;
+    virtual void leftOutput(LOutput *output) noexcept = 0;
 
     /**
      * @brief Get a vector of output pointers on which the view is currently visible.
@@ -1085,7 +1090,7 @@ public:
      *
      * @return A reference to a vector of LOutput pointers representing the outputs where the view is visible.
      */
-    virtual const std::vector<LOutput*> &outputs() const = 0;
+    virtual const std::vector<LOutput*> &outputs() const noexcept = 0;
 
     /**
      * @brief Check if the view is itself renderable.
@@ -1097,7 +1102,7 @@ public:
      *
      * @return `true` if the view is renderable; otherwise, `false`.
      */
-    virtual bool isRenderable() const = 0;
+    virtual bool isRenderable() const noexcept = 0;
 
     /**
      * @brief Notify that the view has been rendered on the given output.
@@ -1107,7 +1112,7 @@ public:
      *
      * @param output The LOutput on which the view is rendered.
      */
-    virtual void requestNextFrame(LOutput *output) = 0;
+    virtual void requestNextFrame(LOutput *output) noexcept = 0;
 
     /**
      * @brief Get the region within the view rect that needs to be repainted.
@@ -1121,7 +1126,7 @@ public:
      * @return A pointer to the LRegion specifying the damaged area within the view,
      *         or `nullptr` if the entire view rect is damaged.
      */
-    virtual const LRegion *damage() const = 0;
+    virtual const LRegion *damage() const noexcept = 0;
 
     /**
      * Returns the translucent region within the view rectangle.\n
@@ -1130,7 +1135,7 @@ public:
      * If `nullptr` is returned, the entire view rect will be
      * considered translucent.
      */
-    virtual const LRegion *translucentRegion() const = 0;
+    virtual const LRegion *translucentRegion() const noexcept = 0;
 
     /**
      * Returns the opaque region within the view rectangle.
@@ -1139,7 +1144,7 @@ public:
      * If `nullptr` is returned, the inverse of the translucent
      * region will be considered opaque.
      */
-    virtual const LRegion *opaqueRegion() const = 0;
+    virtual const LRegion *opaqueRegion() const noexcept = 0;
 
     /**
      * Region within the view rect that can receive input events (when the inputEnabled() property is enabled).\n
@@ -1147,7 +1152,7 @@ public:
      * without any scaling, clipping, or offset transformations.\n
      * If `nullptr` is returned, the entire view rect will receive input.
      */
-    virtual const LRegion *inputRegion() const = 0;
+    virtual const LRegion *inputRegion() const noexcept = 0;
 
     /**
      * @brief Request to paint a region of the view to the current framebuffer.
@@ -1157,7 +1162,7 @@ public:
      *
      * @note Alternatively, you have the option to use your own custom OpenGL shaders/program for rendering, in place of the provided LPainter.
      */
-    virtual void paintEvent(const PaintEventParams &params) = 0;
+    virtual void paintEvent(const PaintEventParams &params) noexcept = 0;
 
     /**
      * @brief Handle a pointer enter event within the view.

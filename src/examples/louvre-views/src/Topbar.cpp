@@ -30,7 +30,7 @@ Topbar::Topbar(Output *output) :
     background.setPos(0, 0);
 
     logo.enableCustomColor(true);
-    logo.setCustomColor(0.1f, 0.1f, 0.1f);
+    logo.setCustomColor({0.1f, 0.1f, 0.1f});
     logo.setPos(12, 5);
 
     clock.enablePointerEvents(false);
@@ -60,14 +60,14 @@ Topbar::~Topbar()
 void Topbar::update()
 {
     if (output->scale() != output->fractionalScale() && output->fractionalOversamplingEnabled())
-        oversamplingLabel.setCustomColor(0.1f, 0.8f, 0.1f);
+        oversamplingLabel.setCustomColor({0.1f, 0.8f, 0.1f});
     else
-        oversamplingLabel.setCustomColor(0.8f, 0.1f, 0.1f);
+        oversamplingLabel.setCustomColor({0.8f, 0.1f, 0.1f});
 
     if (output->vSyncEnabled())
-        vSyncLabel.setCustomColor(0.1f, 0.8f, 0.1f);
+        vSyncLabel.setCustomColor({0.1f, 0.8f, 0.1f});
     else
-        vSyncLabel.setCustomColor(0.8f, 0.1f, 0.1f);
+        vSyncLabel.setCustomColor({0.8f, 0.1f, 0.1f});
 
     setVisible(true);
     setPos(output->pos().x(), output->pos().y());
