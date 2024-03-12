@@ -2,6 +2,7 @@
 #define LTEXTUREVIEW_H
 
 #include <LView.h>
+#include <LTexture.h>
 
 /**
  * @brief View for displaying textures
@@ -44,7 +45,7 @@ public:
     /**
      * @brief Destructor for the LTextureView.
      */
-    ~LTextureView();
+    ~LTextureView() = default;
 
     /**
      * @brief Set the position of the LTextureView.
@@ -128,7 +129,7 @@ public:
      */
     inline LTexture *texture() const noexcept
     {
-        return m_texture;
+        return m_texture.get();
     }
 
     /**
@@ -370,7 +371,7 @@ public:
     virtual void paintEvent(const PaintEventParams &params) noexcept override;
 
 protected:
-    LTexture *m_texture { nullptr };
+    LWeak<LTexture> m_texture;
     std::vector<LOutput*> m_outputs;
     std::unique_ptr<LRegion> m_inputRegion;
     std::unique_ptr<LRegion> m_translucentRegion;

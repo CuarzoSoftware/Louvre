@@ -5,13 +5,13 @@
 
 LTextureView::LTextureView(LTexture *texture, LView *parent) : LView(LView::Texture, parent)
 {
-    setTexture(texture);
-}
+    m_texture.setOnDestroyCallback([this](auto)
+    {
+        updateDimensions();
+        damageAll();
+    });
 
-LTextureView::~LTextureView()
-{
-    if (m_texture)
-        LVectorRemoveOneUnordered(m_texture->imp()->textureViews, this);
+    setTexture(texture);
 }
 
 void LTextureView::setInputRegion(const LRegion *region)
@@ -42,19 +42,13 @@ void LTextureView::setTranslucentRegion(const LRegion *region)
 
 void LTextureView::setTexture(LTexture *texture) noexcept
 {
-    if (texture == m_texture)
+    if (texture == m_texture.get())
         return;
 
-    if (m_texture)
-        LVectorRemoveOneUnordered(m_texture->imp()->textureViews, this);
+    m_texture.reset(texture);
 
-    m_texture = texture;
-
-    if (m_texture)
-    {
-        m_textureSerial = m_texture->imp()->serial;
-        m_texture->imp()->textureViews.push_back(this);
-    }
+    if (m_texture.get())
+        m_textureSerial = m_texture.get()->imp()->serial;
 
     updateDimensions();
     damageAll();
@@ -62,7 +56,7 @@ void LTextureView::setTexture(LTexture *texture) noexcept
 
 bool LTextureView::nativeMapped() const noexcept
 {
-    return m_texture != nullptr;
+    return m_texture.get() != nullptr;
 }
 
 const LPoint &LTextureView::nativePos() const noexcept
@@ -72,9 +66,9 @@ const LPoint &LTextureView::nativePos() const noexcept
 
 const LSize &LTextureView::nativeSize() const noexcept
 {
-    if (m_texture && m_texture->imp()->serial != m_textureSerial)
+    if (m_texture.get() && m_texture.get()->imp()->serial != m_textureSerial)
     {
-        m_textureSerial = m_texture->imp()->serial;
+        m_textureSerial = m_texture.get()->imp()->serial;
         updateDimensions();
     }
 
@@ -133,11 +127,11 @@ const LRegion *LTextureView::inputRegion() const noexcept
 
 void LTextureView::paintEvent(const PaintEventParams &params) noexcept
 {
-    if (!m_texture)
+    if (!m_texture.get())
         return;
 
     params.painter->bindTextureMode({
-        .texture = m_texture,
+        .texture = m_texture.get(),
         .pos = pos(),
         .srcRect = srcRect(),
         .dstSize = size(),
@@ -154,33 +148,33 @@ void LTextureView::updateDimensions() const noexcept
 {
     if (dstSizeEnabled())
         m_dstSize = m_customDstSize;
-    else if (m_texture)
+    else if (m_texture.get())
     {
         if (LFramebuffer::is90Transform(m_transform))
         {
-            m_dstSize.setW(roundf(Float32(m_texture->sizeB().h()) / m_bufferScale));
-            m_dstSize.setH(roundf(Float32(m_texture->sizeB().w()) / m_bufferScale));
+            m_dstSize.setW(roundf(Float32(m_texture.get()->sizeB().h()) / m_bufferScale));
+            m_dstSize.setH(roundf(Float32(m_texture.get()->sizeB().w()) / m_bufferScale));
         }
         else
         {
-            m_dstSize.setW(roundf(Float32(m_texture->sizeB().w()) / m_bufferScale));
-            m_dstSize.setH(roundf(Float32(m_texture->sizeB().h()) / m_bufferScale));
+            m_dstSize.setW(roundf(Float32(m_texture.get()->sizeB().w()) / m_bufferScale));
+            m_dstSize.setH(roundf(Float32(m_texture.get()->sizeB().h()) / m_bufferScale));
         }
     }
 
     if (srcRectEnabled())
         m_srcRect = m_customSrcRect;
-    else if (m_texture)
+    else if (m_texture.get())
     {
         if (LFramebuffer::is90Transform(m_transform))
         {
-            m_srcRect.setW(Float32(m_texture->sizeB().h()) / m_bufferScale);
-            m_srcRect.setH(Float32(m_texture->sizeB().w()) / m_bufferScale);
+            m_srcRect.setW(Float32(m_texture.get()->sizeB().h()) / m_bufferScale);
+            m_srcRect.setH(Float32(m_texture.get()->sizeB().w()) / m_bufferScale);
         }
         else
         {
-            m_srcRect.setW(Float32(m_texture->sizeB().w()) / m_bufferScale);
-            m_srcRect.setH(Float32(m_texture->sizeB().h()) / m_bufferScale);
+            m_srcRect.setW(Float32(m_texture.get()->sizeB().w()) / m_bufferScale);
+            m_srcRect.setH(Float32(m_texture.get()->sizeB().h()) / m_bufferScale);
         }
     }
 }

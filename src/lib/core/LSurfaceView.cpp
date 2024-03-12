@@ -1,4 +1,3 @@
-#include <private/LSurfaceViewPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <LSubsurfaceRole.h>
@@ -6,11 +5,9 @@
 
 using namespace Louvre;
 
-LSurfaceView::LSurfaceView(LSurface *surface, LView *parent) :
-    LView(LView::Surface, parent),
-    LPRIVATE_INIT_UNIQUE(LSurfaceView)
+LSurfaceView::LSurfaceView(LSurface *surface, LView *parent) : LView(LView::Surface, parent), m_surface(surface)
 {
-    imp()->surface = surface;
+    setPrimary(true);
     surface->imp()->views.push_back(this);
     enablePointerEvents(true);
     enableTouchEvents(true);
@@ -18,206 +15,72 @@ LSurfaceView::LSurfaceView(LSurface *surface, LView *parent) :
 
 LSurfaceView::~LSurfaceView()
 {
-    if (imp()->customInputRegion)
-        delete imp()->customInputRegion;
-
-    if (imp()->customTranslucentRegion)
-        delete imp()->customTranslucentRegion;
-
     if (surface())
-    {
         LVectorRemoveOneUnordered(surface()->imp()->views, this);
-
-        if (surface()->imp()->lastPointerEventView == this)
-            surface()->imp()->lastPointerEventView = nullptr;
-    }
-}
-
-LSurface *LSurfaceView::surface() const
-{
-    return imp()->surface;
-}
-
-bool LSurfaceView::primary() const
-{
-    return imp()->primary;
-}
-
-void LSurfaceView::setPrimary(bool primary)
-{
-    imp()->primary = primary;
-}
-
-bool LSurfaceView::customPosEnabled() const
-{
-    return imp()->customPosEnabled;
-}
-
-void LSurfaceView::enableCustomPos(bool enable)
-{
-    imp()->customPosEnabled = enable;
-}
-
-bool LSurfaceView::customInputRegionEnabled() const
-{
-    return imp()->customInputRegionEnabled;
-}
-
-void LSurfaceView::enableCustomInputRegion(bool enabled)
-{
-    if (enabled != imp()->customInputRegionEnabled && mapped())
-        repaint();
-
-    imp()->customInputRegionEnabled = enabled;
-}
-
-void LSurfaceView::setCustomPos(const LPoint &pos)
-{
-    setCustomPos(pos.x(), pos.y());
-}
-
-void LSurfaceView::setCustomPos(Int32 x, Int32 y)
-{
-    if (customPosEnabled() && (x != imp()->customPos.x() || y != imp()->customPos.y()) && mapped())
-        repaint();
-
-    imp()->customPos.setX(x);
-    imp()->customPos.setY(y);
-}
-
-const LPoint &LSurfaceView::customPos() const
-{
-    return imp()->customPos;
-}
-
-void LSurfaceView::setCustomInputRegion(const LRegion *region)
-{
-    if (region)
-    {
-        if (imp()->customInputRegion)
-            *imp()->customInputRegion = *region;
-        else
-        {
-            imp()->customInputRegion = new LRegion();
-            *imp()->customInputRegion = *region;
-        }
-    }
-    else
-    {
-        if (imp()->customInputRegion)
-        {
-            delete imp()->customInputRegion;
-            imp()->customInputRegion = nullptr;
-        }
-    }
-}
-
-const LRegion *LSurfaceView::customInputRegion() const
-{
-    return imp()->customInputRegion;
-}
-
-void LSurfaceView::enableCustomTranslucentRegion(bool enabled)
-{
-    if (enabled != imp()->customTranslucentRegionEnabled)
-    {
-        imp()->customTranslucentRegionEnabled = enabled;
-        repaint();
-    }
-}
-
-bool LSurfaceView::customTranslucentRegionEnabled() const
-{
-    return imp()->customTranslucentRegionEnabled;
-}
-
-void LSurfaceView::setCustomTranslucentRegion(const LRegion *region)
-{
-    if (imp()->customTranslucentRegionEnabled)
-        repaint();
-
-    if (region)
-    {
-        if (imp()->customTranslucentRegion)
-            *imp()->customTranslucentRegion = *region;
-        else
-        {
-            imp()->customTranslucentRegion = new LRegion();
-            *imp()->customTranslucentRegion = *region;
-        }
-    }
-    else
-    {
-        if (imp()->customTranslucentRegion)
-        {
-            delete imp()->customTranslucentRegion;
-            imp()->customTranslucentRegion = nullptr;
-        }
-    }
 }
 
 const LRectF &LSurfaceView::srcRect() const
 {
-    if (!imp()->surface)
-        return imp()->customSrcRect;
+    if (surface())
+        return surface()->srcRect();
 
-    return imp()->surface->srcRect();
+    return m_tmpSrcRect;
 }
 
 bool LSurfaceView::nativeMapped() const noexcept
 {
-    if (!imp()->surface)
-        return false;
+    if (surface())
+        return surface()->mapped();
 
-    return imp()->surface->mapped();
+    return false;
 }
 
 const LPoint &LSurfaceView::nativePos() const noexcept
 {
-    if (customPosEnabled() || !imp()->surface)
-        return imp()->customPos;
+    if (customPosEnabled() || !surface())
+        return m_customPos;
 
-    return imp()->surface->rolePos();
+    return surface()->rolePos();
 }
 
 const LSize &LSurfaceView::nativeSize() const noexcept
 {
-    if (!imp()->surface)
-        return imp()->customPos;
+    if (surface())
+        return surface()->size();
 
-    return imp()->surface->size();
+    return m_tmpSize;
 }
 
 Float32 LSurfaceView::bufferScale() const noexcept
 {
-    if (!imp()->surface)
-        return 1;
+    if (surface())
+        return surface()->bufferScale();
 
-    return imp()->surface->bufferScale();
+    return 1;
 }
 
 void LSurfaceView::enteredOutput(LOutput *output) noexcept
 {
-    if (imp()->primary && imp()->surface)
-        imp()->surface->sendOutputEnterEvent(output);
-    else
-        LVectorPushBackIfNonexistent(imp()->nonPrimaryOutputs, output);
+    if (primary() && surface())
+        surface()->sendOutputEnterEvent(output);
+
+    LVectorPushBackIfNonexistent(m_nonPrimaryOutputs, output);
 }
 
 void LSurfaceView::leftOutput(LOutput *output) noexcept
 {
-    if (imp()->primary && imp()->surface)
-        imp()->surface->sendOutputLeaveEvent(output);
-    else
-        LVectorRemoveOneUnordered(imp()->nonPrimaryOutputs, output);
+    if (primary() && surface())
+        surface()->sendOutputLeaveEvent(output);
+
+    LVectorRemoveOneUnordered(m_nonPrimaryOutputs, output);
 }
 
 const std::vector<LOutput *> &LSurfaceView::outputs() const noexcept
 {
-    if (imp()->primary && imp()->surface)
-        return imp()->surface->outputs();
+    if (primary() && surface())
+        return surface()->outputs();
     else
-        return imp()->nonPrimaryOutputs;
+        return m_nonPrimaryOutputs;
 }
 
 bool LSurfaceView::isRenderable() const noexcept
@@ -227,17 +90,17 @@ bool LSurfaceView::isRenderable() const noexcept
 
 void LSurfaceView::requestNextFrame(LOutput *output) noexcept
 {
-    if (!imp()->surface || !output)
+    if (!surface() || !output)
         return;
 
     if (forceRequestNextFrameEnabled())
     {
-        imp()->surface->requestNextFrame();
-        m_threadsMap[output->threadId()].lastRenderedDamageId = imp()->surface->damageId();
+        surface()->requestNextFrame();
+        m_threadsMap[output->threadId()].lastRenderedDamageId = surface()->damageId();
         return;
     }
 
-    if (!imp()->primary)
+    if (!primary())
         return;
 
     bool clearDamage { true };
@@ -246,7 +109,7 @@ void LSurfaceView::requestNextFrame(LOutput *output) noexcept
     {
         // If the view is visible on another output and has not rendered the new damage
         // prevent clearing the damage immediately
-        if (o != output && (m_threadsMap[o->threadId()].lastRenderedDamageId < imp()->surface->damageId()))
+        if (o != output && (m_threadsMap[o->threadId()].lastRenderedDamageId < surface()->damageId()))
         {
             clearDamage = false;
             o->repaint();
@@ -255,58 +118,58 @@ void LSurfaceView::requestNextFrame(LOutput *output) noexcept
 
     if (clearDamage)
     {
-        imp()->surface->requestNextFrame();
+        surface()->requestNextFrame();
 
-        if (imp()->surface->subsurface() && imp()->surface->subsurface()->isSynced() && imp()->surface->parent())
-            imp()->surface->parent()->requestNextFrame(false);
+        if (surface()->subsurface() && surface()->subsurface()->isSynced() && surface()->parent())
+            surface()->parent()->requestNextFrame(false);
     }
 
-    m_threadsMap[output->threadId()].lastRenderedDamageId = imp()->surface->damageId();
+    m_threadsMap[output->threadId()].lastRenderedDamageId = surface()->damageId();
 }
 
 const LRegion *LSurfaceView::damage() const noexcept
 {
-    if (!imp()->surface)
-        return nullptr;
+    if (surface())
+        return &surface()->damage();
 
-    return &imp()->surface->damage();
+    return nullptr;
 }
 
 const LRegion *LSurfaceView::translucentRegion() const noexcept
 {
-    if (imp()->customTranslucentRegionEnabled || !imp()->surface)
-        return imp()->customTranslucentRegion;
+    if (customTranslucentRegionEnabled() || !surface())
+        return m_customTranslucentRegion.get();
 
-    return &imp()->surface->translucentRegion();
+    return &surface()->translucentRegion();
 }
 
 const LRegion *LSurfaceView::opaqueRegion() const noexcept
 {
-    if (imp()->customTranslucentRegionEnabled || !imp()->surface)
+    if (customTranslucentRegionEnabled() || !surface())
         return nullptr;
 
-    return &imp()->surface->opaqueRegion();
+    return &surface()->opaqueRegion();
 }
 
 const LRegion *LSurfaceView::inputRegion() const noexcept
 {
-    if (customInputRegionEnabled() || !imp()->surface)
-        return imp()->customInputRegion;
+    if (customInputRegionEnabled() || !surface())
+        return m_customInputRegion.get();
 
-    return &imp()->surface->inputRegion();
+    return &surface()->inputRegion();
 }
 
 void LSurfaceView::paintEvent(const PaintEventParams &params) noexcept
 {
-    if (!imp()->surface)
+    if (!surface())
         return;
 
     params.painter->bindTextureMode({
-        .texture = imp()->surface->texture(),
+        .texture = surface()->texture(),
         .pos = pos(),
         .srcRect = srcRect(),
         .dstSize = size(),
-        .srcTransform = imp()->surface->bufferTransform(),
+        .srcTransform = surface()->bufferTransform(),
         .srcScale = bufferScale(),
     });
 

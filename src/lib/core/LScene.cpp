@@ -190,9 +190,9 @@ void LScene::handlePointerMoveEvent(const LPointerMoveEvent &event, EventOptions
     // If a surface has the left pointer button held down
     if (seat()->pointer()->draggingSurface())
     {
-        if (seat()->pointer()->draggingSurface()->imp()->lastPointerEventView)
+        if (seat()->pointer()->draggingSurface()->imp()->lastPointerEventView.get())
         {
-            imp()->currentPointerMoveEvent.localPos = imp()->viewLocalPos(seat()->pointer()->draggingSurface()->imp()->lastPointerEventView, cursor()->pos());
+            imp()->currentPointerMoveEvent.localPos = imp()->viewLocalPos(seat()->pointer()->draggingSurface()->imp()->lastPointerEventView.get(), cursor()->pos());
             seat()->pointer()->sendMoveEvent(imp()->currentPointerMoveEvent);
         }
         else
@@ -206,7 +206,7 @@ void LScene::handlePointerMoveEvent(const LPointerMoveEvent &event, EventOptions
 
     if (surface)
     {
-        surface->imp()->lastPointerEventView = firstSurfaceView;
+        surface->imp()->lastPointerEventView.reset(firstSurfaceView);
 
         if (activeDND)
         {
@@ -364,9 +364,9 @@ retry:
         // We stop sending events to the surface on which the left button was being held down
         pointer.setDraggingSurface(nullptr);
 
-        if (pointer.focus()->imp()->lastPointerEventView)
+        if (pointer.focus()->imp()->lastPointerEventView.get())
         {
-            if (!imp()->pointIsOverView(pointer.focus()->imp()->lastPointerEventView, cursor()->pos(), LSeat::Pointer))
+            if (!imp()->pointIsOverView(pointer.focus()->imp()->lastPointerEventView.get(), cursor()->pos(), LSeat::Pointer))
                 pointer.setFocus(nullptr);
         }
         else
@@ -896,7 +896,7 @@ void LScene::handleTouchDownEvent(const LTouchDownEvent &event, const LPointF &g
         if (view->type() == LView::Surface)
         {
             surfaceView = static_cast<LSurfaceView*>(view);
-            surfaceView->surface()->imp()->lastTouchEventView = surfaceView;
+            surfaceView->surface()->imp()->lastTouchEventView.reset(surfaceView);
             break;
         }
     }
@@ -1057,8 +1057,8 @@ skipViews:
 
     if (tp->surface())
     {
-        if (tp->surface()->imp()->lastTouchEventView)
-            event.localPos = imp()->viewLocalPos(tp->surface()->imp()->lastTouchEventView, globalPos);
+        if (tp->surface()->imp()->lastTouchEventView.get())
+            event.localPos = imp()->viewLocalPos(tp->surface()->imp()->lastTouchEventView.get(), globalPos);
         else
             event.localPos = globalPos - tp->surface()->rolePos();
 

@@ -25,9 +25,6 @@ LTexture::LTexture() : LPRIVATE_INIT_UNIQUE(LTexture)
 
 LTexture::~LTexture()
 {
-    while (!imp()->textureViews.empty())
-        imp()->textureViews.back()->setTexture(nullptr);
-
     imp()->deleteTexture();
     LVectorRemoveOneUnordered(compositor()->imp()->textures, this);
 }

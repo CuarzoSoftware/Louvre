@@ -5,6 +5,7 @@
 #include <protocols/Viewporter/RViewport.h>
 #include <protocols/Wayland/RSurface.h>
 #include <private/LCompositorPrivate.h>
+#include <LSurfaceView.h>
 #include <LSurface.h>
 #include <LBitset.h>
 #include <vector>
@@ -83,8 +84,8 @@ LPRIVATE_CLASS(LSurface)
     LRegion currentDamageB;
 
     Wayland::RSurface *surfaceResource      { nullptr };
-    LSurfaceView *lastPointerEventView      { nullptr };
-    LSurfaceView *lastTouchEventView        { nullptr };
+    LWeak<LSurfaceView> lastPointerEventView;
+    LWeak<LSurfaceView> lastTouchEventView;
 
     LTexture *textureBackup;
     LSurface *parent                        { nullptr };

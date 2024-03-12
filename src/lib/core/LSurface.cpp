@@ -2,7 +2,6 @@
 #include <protocols/LinuxDMABuf/private/LDMABufferPrivate.h>
 #include <protocols/Wayland/RCallback.h>
 #include <protocols/Wayland/GOutput.h>
-#include <private/LSurfaceViewPrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
@@ -24,9 +23,6 @@ LSurface::LSurface(const void *params) : LPRIVATE_INIT_UNIQUE(LSurface)
 LSurface::~LSurface()
 {
     imp()->lastPointerEventView = nullptr;
-
-    for (LSurfaceView *view : imp()->views)
-        view->imp()->surface = nullptr;
 
     if (imp()->texture && imp()->texture != imp()->textureBackup && imp()->texture->imp()->pendingDelete)
         delete imp()->texture;

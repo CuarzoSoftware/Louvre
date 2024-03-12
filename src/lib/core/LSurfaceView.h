@@ -1,6 +1,7 @@
 #ifndef LSURFACEVIEW_H
 #define LSURFACEVIEW_H
 
+#include <LSurface.h>
 #include <LView.h>
 
 /**
@@ -48,7 +49,10 @@ public:
      *
      * @return Pointer to the LSurface associated with the view.
      */
-    LSurface *surface() const;
+    inline LSurface *surface() const noexcept
+    {
+        return m_surface.get();
+    }
 
     /**
      * @brief Check if the view is a primary view.
@@ -58,7 +62,10 @@ public:
      *
      * @return True if the view is a primary view, false otherwise.
      */
-    virtual bool primary() const;
+    inline bool primary() const noexcept
+    {
+        return m_state.check(Primary);
+    }
 
     /**
      * @brief Set the view as a primary view.
@@ -67,7 +74,10 @@ public:
      *
      * @param primary True to set the view as a primary view, false otherwise.
      */
-    virtual void setPrimary(bool primary);
+    inline void setPrimary(bool primary) noexcept
+    {
+        m_state.setFlag(Primary, primary);
+    }
 
     /**
      * @brief Check if custom position is enabled for the view.
@@ -77,7 +87,10 @@ public:
      *
      * @return True if custom position is enabled, false otherwise.
      */
-    virtual bool customPosEnabled() const;
+    inline bool customPosEnabled() const noexcept
+    {
+        return m_state.check(CustomPos);
+    }
 
     /**
      * @brief Enable or disable custom position for the view.
@@ -86,7 +99,10 @@ public:
      *
      * @param enable True to enable custom position, false to disable.
      */
-    virtual void enableCustomPos(bool enable);
+    inline void enableCustomPos(bool enable) noexcept
+    {
+        m_state.setFlag(CustomPos, enable);
+    }
 
     /**
      * @brief Check if custom input region is enabled for the view.
@@ -96,7 +112,10 @@ public:
      *
      * @return True if custom input region is enabled, false otherwise.
      */
-    virtual bool customInputRegionEnabled() const;
+    inline bool customInputRegionEnabled() const noexcept
+    {
+        return m_state.check(CustomInputRegion);
+    }
 
     /**
      * @brief Enable or disable custom input region for the view.
@@ -105,7 +124,16 @@ public:
      *
      * @param enabled True to enable custom input region, false to disable.
      */
-    virtual void enableCustomInputRegion(bool enabled);
+    inline void enableCustomInputRegion(bool enabled) noexcept
+    {
+        if (enabled == m_state.check(CustomInputRegion))
+            return;
+
+        if (mapped())
+            repaint();
+
+        m_state.setFlag(CustomInputRegion, enabled);
+    }
 
     /**
      * @brief Set a custom position for the view.
@@ -114,7 +142,10 @@ public:
      *
      * @param pos The custom position as an LPoint object.
      */
-    void setCustomPos(const LPoint &pos);
+    inline void setCustomPos(const LPoint &pos) noexcept
+    {
+        setCustomPos(pos.x(), pos.y());
+    }
 
     /**
      * @brief Set a custom position for the view.
@@ -124,14 +155,27 @@ public:
      * @param x The X coordinate of the custom position.
      * @param y The Y coordinate of the custom position.
      */
-    virtual void setCustomPos(Int32 x, Int32 y);
+    inline void setCustomPos(Int32 x, Int32 y) noexcept
+    {
+        if (x == m_customPos.x() && y == m_customPos.y())
+            return;
+
+        m_customPos.setX(x);
+        m_customPos.setY(y);
+
+        if (customPosEnabled() && mapped())
+            repaint();
+    }
 
     /**
      * @brief Get the custom position set for the view.
      *
      * @return The custom position as an LPoint object.
      */
-    virtual const LPoint &customPos() const;
+    inline const LPoint &customPos() const noexcept
+    {
+        return m_customPos;
+    }
 
     /**
      * @brief Set a custom input region for the view.
@@ -140,14 +184,28 @@ public:
      *
      * @param region Pointer to the custom input region as an LRegion object.
      */
-    virtual void setCustomInputRegion(const LRegion *region);
+    inline void setCustomInputRegion(const LRegion *region) noexcept
+    {
+        if (region)
+        {
+            if (m_customInputRegion)
+                *m_customInputRegion = *region;
+            else
+                m_customInputRegion = std::make_unique<LRegion>(*region);
+        }
+        else
+            m_customInputRegion.reset();
+    }
 
     /**
      * @brief Get the custom input region set for the view.
      *
      * @return Pointer to the custom input region as an LRegion object.
      */
-    virtual const LRegion *customInputRegion() const;
+    inline const LRegion *customInputRegion() const noexcept
+    {
+        return m_customInputRegion.get();
+    }
 
     /**
      * @brief Enable or disable the custom translucent region for the view.
@@ -157,14 +215,26 @@ public:
      *
      * @param enabled True to enable the custom translucent region, false to disable.
      */
-    virtual void enableCustomTranslucentRegion(bool enabled);
+    inline void enableCustomTranslucentRegion(bool enabled) noexcept
+    {
+        if (enabled == customTranslucentRegionEnabled())
+            return;
+
+        m_state.setFlag(CustomTranslucentRegion, enabled);
+
+        if (mapped())
+            repaint();
+    }
 
     /**
      * @brief Check if the custom translucent region is enabled for the view.
      *
      * @return True if the custom translucent region is enabled, false otherwise.
      */
-    virtual bool customTranslucentRegionEnabled() const;
+    inline bool customTranslucentRegionEnabled() const noexcept
+    {
+        return m_state.check(CustomTranslucentRegion);
+    }
 
     /**
      * @brief Set a custom translucent region for the view.
@@ -173,7 +243,21 @@ public:
      *
      * @param region Pointer to the custom translucent region as an LRegion object.
      */
-    virtual void setCustomTranslucentRegion(const LRegion *region);
+    inline void setCustomTranslucentRegion(const LRegion *region) noexcept
+    {
+        if (region)
+        {
+            if (m_customTranslucentRegion)
+                *m_customTranslucentRegion = *region;
+            else
+                m_customTranslucentRegion = std::make_unique<LRegion>(*region);
+        }
+        else
+            m_customTranslucentRegion.reset();
+
+        if (customTranslucentRegionEnabled() && mapped())
+            repaint();
+    }
 
     /**
      * @brief Gets the source rect of the surface, equivalent to LSurface::srcRect().
@@ -195,7 +279,13 @@ public:
     virtual const LRegion *inputRegion() const noexcept override;
     virtual void paintEvent(const PaintEventParams &params) noexcept override;
 
-    LPRIVATE_IMP_UNIQUE(LSurfaceView)
+protected:
+    std::unique_ptr<LRegion> m_customInputRegion;
+    std::unique_ptr<LRegion> m_customTranslucentRegion;
+    std::vector<LOutput*> m_nonPrimaryOutputs;
+    LWeak<LSurface> m_surface;
+    LRectF m_tmpSrcRect { 0.f, 0.f, 1.f, 1.f};
+    LPoint m_customPos;
 };
 
 #endif // LSURFACEVIEW_H

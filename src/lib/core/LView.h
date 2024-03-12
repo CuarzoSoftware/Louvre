@@ -211,6 +211,12 @@ public:
         CustomColor             = 1UL << 38,
         CustomDstSize           = 1UL << 39,
         CustomSrcRect           = 1UL << 40,
+
+        // LSurfaceView
+        Primary                 = 1UL << 41,
+        CustomPos               = 1UL << 42,
+        CustomInputRegion       = 1UL << 43,
+        CustomTranslucentRegion = 1UL << 44,
     };
 
     // This is used for detecting changes on a view since the last time it was drawn on a specific output
