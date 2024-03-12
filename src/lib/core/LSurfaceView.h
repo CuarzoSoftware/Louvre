@@ -37,12 +37,12 @@ public:
      * @param surface Pointer to the LSurface associated with this view.
      * @param parent Pointer to the parent LView. Default value is nullptr.
      */
-    LSurfaceView(LSurface *surface, LView *parent = nullptr);
+    LSurfaceView(LSurface *surface, LView *parent = nullptr) noexcept;
 
     /**
      * @brief LSurfaceView class destructor.
      */
-    ~LSurfaceView();
+    ~LSurfaceView() noexcept;
 
     /**
      * @brief Get the LSurface associated with the view.
@@ -129,7 +129,7 @@ public:
         if (enabled == m_state.check(CustomInputRegion))
             return;
 
-        if (mapped())
+        if (!repaintCalled() && mapped())
             repaint();
 
         m_state.setFlag(CustomInputRegion, enabled);
@@ -163,7 +163,7 @@ public:
         m_customPos.setX(x);
         m_customPos.setY(y);
 
-        if (customPosEnabled() && mapped())
+        if (!repaintCalled() && customPosEnabled() && mapped())
             repaint();
     }
 
@@ -222,7 +222,7 @@ public:
 
         m_state.setFlag(CustomTranslucentRegion, enabled);
 
-        if (mapped())
+        if (!repaintCalled() && mapped())
             repaint();
     }
 
@@ -255,7 +255,7 @@ public:
         else
             m_customTranslucentRegion.reset();
 
-        if (customTranslucentRegionEnabled() && mapped())
+        if (!repaintCalled() && customTranslucentRegionEnabled() && mapped())
             repaint();
     }
 

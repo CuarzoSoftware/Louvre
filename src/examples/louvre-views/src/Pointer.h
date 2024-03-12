@@ -12,6 +12,7 @@ public:
     void pointerMoveEvent(const LPointerMoveEvent &event) override;
     void pointerButtonEvent(const LPointerButtonEvent &event) override;
     void pointerScrollEvent(const LPointerScrollEvent &event) override;
+    void setCursorRequest(const LClientCursor &clientCursor) override;
     LView *cursorOwner { nullptr };
 };
 

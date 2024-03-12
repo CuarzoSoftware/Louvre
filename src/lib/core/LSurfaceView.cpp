@@ -5,7 +5,7 @@
 
 using namespace Louvre;
 
-LSurfaceView::LSurfaceView(LSurface *surface, LView *parent) : LView(LView::Surface, parent), m_surface(surface)
+LSurfaceView::LSurfaceView(LSurface *surface, LView *parent) noexcept : LView(LView::Surface, parent), m_surface(surface)
 {
     setPrimary(true);
     surface->imp()->views.push_back(this);
@@ -13,7 +13,7 @@ LSurfaceView::LSurfaceView(LSurface *surface, LView *parent) : LView(LView::Surf
     enableTouchEvents(true);
 }
 
-LSurfaceView::~LSurfaceView()
+LSurfaceView::~LSurfaceView() noexcept
 {
     if (surface())
         LVectorRemoveOneUnordered(surface()->imp()->views, this);

@@ -11,13 +11,13 @@ using namespace Louvre;
 
 using LVS = LView::LViewState;
 
-LView::LView(UInt32 type, LView *parent) : m_type(type)
+LView::LView(UInt32 type, LView *parent) noexcept : m_type(type)
 {
     compositor()->imp()->views.push_back(this);
     setParent(parent);
 }
 
-LView::~LView()
+LView::~LView() noexcept
 {
     setParent(nullptr);
 

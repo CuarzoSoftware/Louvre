@@ -40,12 +40,12 @@ public:
      * @param texture The LTexture to be used as the view's texture. Default is nullptr.
      * @param parent The parent LView of the LTextureView. Default is nullptr.
      */
-    LTextureView(LTexture *texture = nullptr, LView *parent = nullptr);
+    LTextureView(LTexture *texture = nullptr, LView *parent = nullptr) noexcept;
 
     /**
      * @brief Destructor for the LTextureView.
      */
-    ~LTextureView() = default;
+    ~LTextureView() noexcept = default;
 
     /**
      * @brief Set the position of the LTextureView.
@@ -61,7 +61,7 @@ public:
         m_nativePos.setX(x);
         m_nativePos.setY(y);
 
-        if (mapped())
+        if (!repaintCalled() && mapped())
             repaint();
     }
 
@@ -109,7 +109,7 @@ public:
         m_bufferScale = scale;
         updateDimensions();
 
-        if (mapped())
+        if (!repaintCalled() && mapped())
             repaint();
     }
 
@@ -178,7 +178,7 @@ public:
         m_customDstSize.setH(h);
         updateDimensions();
 
-        if (dstSizeEnabled() && mapped())
+        if (!repaintCalled() && dstSizeEnabled() && mapped())
             repaint();
     }
 

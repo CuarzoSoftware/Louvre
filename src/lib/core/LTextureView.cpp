@@ -3,7 +3,7 @@
 #include <LTextureView.h>
 #include <LCompositor.h>
 
-LTextureView::LTextureView(LTexture *texture, LView *parent) : LView(LView::Texture, parent)
+LTextureView::LTextureView(LTexture *texture, LView *parent) noexcept : LView(LView::Texture, parent)
 {
     m_texture.setOnDestroyCallback([this](auto)
     {

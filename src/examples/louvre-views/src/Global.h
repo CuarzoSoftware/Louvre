@@ -60,6 +60,11 @@ class App;
 class Tooltip;
 class Surface;
 
+enum ID
+{
+    Wallpaper = 1
+};
+
 class G
 {
 public:

@@ -93,6 +93,8 @@ public:
         return LWeak<T>(static_cast<T*>(this));
     }
 
+    UInt64 id { 0 };
+
 protected:
 
     /**

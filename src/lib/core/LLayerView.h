@@ -23,12 +23,12 @@ public:
      *
      * @param parent The parent view, if any.
      */
-    LLayerView(LView *parent = nullptr);
+    LLayerView(LView *parent = nullptr) noexcept;
 
     /**
      * @brief Destructor for LLayerView.
      */
-    ~LLayerView();
+    ~LLayerView() noexcept = default;
 
     /**
      * @brief Set the position of the view.
@@ -36,7 +36,37 @@ public:
      * @param x The x-coordinate in surface coordinates.
      * @param y The y-coordinate in surface coordinates.
      */
-    virtual void setPos(Int32 x, Int32 y);
+    inline void setPos(Int32 x, Int32 y) noexcept
+    {
+        if (x == m_nativePos.x() && y == m_nativePos.y())
+            return;
+
+        if (!repaintCalled() && mapped())
+            repaint();
+
+        m_nativePos.setX(x);
+        m_nativePos.setY(y);
+    }
+
+    /**
+     * @brief Set the position of the view.
+     *
+     * @param pos The position as an LPoint in surface coordinates.
+     */
+    inline void setPos(const LPoint &pos) noexcept
+    {
+        setPos(pos.x(), pos.y());
+    }
+
+    /**
+     * @brief Set the size of the view.
+     *
+     * @param size The size as an LSize in surface coordinates.
+     */
+    inline void setSize(const LSize &size) noexcept
+    {
+        setSize(size.w(), size.h());
+    }
 
     /**
      * @brief Set the size of the view.
@@ -44,28 +74,35 @@ public:
      * @param w The width in surface coordinates.
      * @param h The height in surface coordinates.
      */
-    virtual void setSize(Int32 w, Int32 h);
+    inline void setSize(Int32 w, Int32 h) noexcept
+    {
+        if (w == m_nativeSize.w() && h == m_nativeSize.h())
+            return;
+
+        m_nativeSize.setW(w);
+        m_nativeSize.setH(h);
+
+        if (!repaintCalled() && mapped())
+            repaint();
+    }
 
     /**
      * @brief Set the input region for the view.
      *
      * @param region The input region to be set.
      */
-    virtual void setInputRegion(const LRegion *region) const;
-
-    /**
-     * @brief Set the position of the view.
-     *
-     * @param pos The position as an LPoint in surface coordinates.
-     */
-    void setPos(const LPoint &pos);
-
-    /**
-     * @brief Set the size of the view.
-     *
-     * @param size The size as an LSize in surface coordinates.
-     */
-    void setSize(const LSize &size);
+    inline void setInputRegion(const LRegion *region) noexcept
+    {
+        if (region)
+        {
+            if (m_inputRegion)
+                *m_inputRegion = *region;
+            else
+                m_inputRegion = std::make_unique<LRegion>(*region);
+        }
+        else
+            m_inputRegion.reset();
+    }
 
     virtual bool nativeMapped() const noexcept override;
     virtual const LPoint &nativePos() const noexcept override;
@@ -82,7 +119,11 @@ public:
     virtual const LRegion *inputRegion() const noexcept override;
     virtual void paintEvent(const PaintEventParams &params) noexcept override;
 
-    LPRIVATE_IMP_UNIQUE(LLayerView)
+protected:
+    std::vector<LOutput*> m_outputs;
+    std::unique_ptr<LRegion> m_inputRegion;
+    LPoint m_nativePos;
+    LSize m_nativeSize { 256, 256 };
 };
 
 #endif // LLAYERVIEW_H

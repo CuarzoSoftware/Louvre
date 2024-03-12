@@ -125,7 +125,7 @@ public:
      * @param type Type ID of the view, such as those listed in LView::Type.
      * @param parent Parent view.
      */
-    LView(UInt32 type, LView *parent = nullptr);
+    LView(UInt32 type, LView *parent = nullptr) noexcept;
 
     /// @cond OMIT
     LView(const LView&) = delete;
@@ -135,7 +135,7 @@ public:
     /**
      * @brief Destructor for the LView class.
      */
-    virtual ~LView();
+    virtual ~LView() noexcept;
 
     /// Types of views included with Louvre
     enum Type : UInt8
@@ -302,7 +302,7 @@ public:
     {
         markAsChangedOrder(false);
 
-        if (mapped())
+        if (!repaintCalled() && mapped())
             repaint();
     }
 
@@ -431,7 +431,7 @@ public:
 
         m_state.setFlag(ParentOffset, enabled);
 
-        if (mapped())
+        if (!repaintCalled() && mapped())
             repaint();
     }
 
@@ -547,7 +547,7 @@ public:
         {
             m_clippingRect = rect;
 
-            if (mapped())
+            if (!repaintCalled() && mapped())
                 repaint();
         }
     }
@@ -580,7 +580,7 @@ public:
         if (enabled == m_state.check(ParentClipping))
             return;
 
-        if (mapped())
+        if (!repaintCalled() && mapped())
             repaint();
 
         m_state.setFlag(ParentClipping, enabled);
@@ -614,7 +614,7 @@ public:
         if (enabled == m_state.check(Scaling))
             return;
 
-        if (mapped())
+        if (!repaintCalled() && mapped())
             repaint();
 
         m_state.setFlag(Scaling, enabled);
@@ -648,7 +648,7 @@ public:
         if (enabled == m_state.check(ParentScaling))
             return;
 
-        if (mapped())
+        if (!repaintCalled() && mapped())
             repaint();
 
         return m_state.setFlag(ParentScaling, enabled);
@@ -692,7 +692,7 @@ public:
 
         m_scalingVector = scalingVector;
 
-        if (mapped())
+        if (!repaintCalled() && mapped())
             repaint();
     }
 
@@ -726,7 +726,7 @@ public:
         const bool prev { mapped() };
         m_state.setFlag(Visible, visible);
 
-        if (prev != mapped())
+        if (!repaintCalled() && prev != mapped())
             repaint();
     }
 
@@ -783,7 +783,7 @@ public:
         if (opacity == m_opacity)
             return;
 
-        if (mapped())
+        if (!repaintCalled() && mapped())
             repaint();
 
         m_opacity = opacity;
@@ -817,7 +817,7 @@ public:
         if (m_state.check(ParentOpacity) == enabled)
             return;
 
-        if (mapped())
+        if (!repaintCalled() && mapped())
             repaint();
 
         m_state.setFlag(ParentOpacity, enabled);
@@ -888,7 +888,7 @@ public:
         if (enabled == m_state.check(AutoBlendFunc))
             return;
 
-        if (mapped())
+        if (!repaintCalled() && mapped())
             repaint();
 
         m_state.setFlag(AutoBlendFunc, enabled);
@@ -1327,6 +1327,11 @@ protected:
     mutable LSizeF m_tmpSizeF;
     ViewCache m_cache;
     std::unordered_map<std::thread::id,ViewThreadData> m_threadsMap;
+
+    inline bool repaintCalled() const noexcept
+    {
+        return m_state.check(RepaintCalled);
+    }
 
     inline static void removeFlagWithChildren(LView *view, UInt64 flag)
     {

@@ -1,3 +1,4 @@
+#include <LClientCursor.h>
 #include <LScene.h>
 #include <LCursor.h>
 #include <LXCursor.h>
@@ -10,6 +11,7 @@
 #include <LOutput.h>
 #include <LSeat.h>
 #include <LClient.h>
+#include <LDND.h>
 
 #include "Global.h"
 #include "Pointer.h"
@@ -21,17 +23,30 @@ void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)
 {
     G::scene()->handlePointerMoveEvent(event);
 
-    for (LView *view : G::scene()->pointerFocus())
+    if (cursorOwner || !seat()->toplevelResizeSessions().empty())
+        return;
+
+    if (seat()->dnd()->dragging())
     {
-        if (view->type() == LView::Surface)
-        {
-            cursor()->setCursor(static_cast<LSurfaceView*>(view)->surface()->client()->lastCursorRequest());
-            return;
-        }
+        cursor()->setCursor(seat()->dnd()->origin()->client()->lastCursorRequest());
+        return;
     }
 
-    cursor()->setVisible(true);
-    cursor()->useDefault();
+    if (seat()->toplevelMoveSessions().empty())
+    {
+        if (G::scene()->pointerFocus().empty())
+            return;
+
+        if (G::scene()->pointerFocus().front()->id == Wallpaper)
+        {
+            cursor()->setVisible(true);
+            cursor()->useDefault();
+            return;
+        }
+
+        if (G::scene()->pointerFocus().front()->type() == LView::Surface)
+            cursor()->setCursor(static_cast<LSurfaceView*>(G::scene()->pointerFocus().back())->surface()->client()->lastCursorRequest());
+    }
 }
 
 void Pointer::pointerButtonEvent(const LPointerButtonEvent &event)
@@ -48,4 +63,21 @@ void Pointer::pointerButtonEvent(const LPointerButtonEvent &event)
 void Pointer::pointerScrollEvent(const LPointerScrollEvent &event)
 {
     G::scene()->handlePointerScrollEvent(event);
+}
+
+void Pointer::setCursorRequest(const LClientCursor &clientCursor)
+{
+    if (cursorOwner || !seat()->toplevelResizeSessions().empty())
+        return;
+
+    if (seat()->dnd()->dragging())
+    {
+        if (seat()->dnd()->origin()->client() == clientCursor.client())
+            cursor()->setCursor(clientCursor);
+
+        return;
+    }
+
+    if (focus() && focus()->client() == clientCursor.client())
+        cursor()->setCursor(clientCursor);
 }

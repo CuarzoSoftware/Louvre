@@ -408,7 +408,9 @@ void Output::initializeGL()
     topbar->update();
     dock->update();
     wallpaperView->setPos(pos());
-
+    wallpaperView->enablePointerEvents(true);
+    wallpaperView->enableBlockPointer(true);
+    wallpaperView->id = Wallpaper;
     G::compositor()->scene.handleInitializeGL(this);
 }
 
