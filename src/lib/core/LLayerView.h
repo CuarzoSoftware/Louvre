@@ -41,11 +41,11 @@ public:
         if (x == m_nativePos.x() && y == m_nativePos.y())
             return;
 
-        if (!repaintCalled() && mapped())
-            repaint();
-
         m_nativePos.setX(x);
         m_nativePos.setY(y);
+
+        if (!repaintCalled() && mapped())
+            repaint();
     }
 
     /**
@@ -111,7 +111,6 @@ public:
     virtual void enteredOutput(LOutput *output) noexcept override;
     virtual void leftOutput(LOutput *output) noexcept override;
     virtual const std::vector<LOutput*> &outputs() const noexcept override;
-    virtual bool isRenderable() const noexcept override;
     virtual void requestNextFrame(LOutput *output) noexcept override;
     virtual const LRegion *damage() const noexcept override;
     virtual const LRegion *translucentRegion() const noexcept override;

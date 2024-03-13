@@ -3,7 +3,7 @@
 #include <LTextureView.h>
 #include <LCompositor.h>
 
-LTextureView::LTextureView(LTexture *texture, LView *parent) noexcept : LView(LView::Texture, parent)
+LTextureView::LTextureView(LTexture *texture, LView *parent) noexcept : LView(LView::Texture, true, parent)
 {
     m_texture.setOnDestroyCallback([this](auto)
     {
@@ -93,11 +93,6 @@ void LTextureView::leftOutput(LOutput *output) noexcept
 const std::vector<LOutput *> &LTextureView::outputs() const noexcept
 {
     return m_outputs;
-}
-
-bool LTextureView::isRenderable() const noexcept
-{
-    return true;
 }
 
 void LTextureView::requestNextFrame(LOutput *output) noexcept

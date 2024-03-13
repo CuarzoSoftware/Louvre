@@ -6,14 +6,14 @@
 #include <LOutput.h>
 
 LSceneView::LSceneView(LFramebuffer *framebuffer, LView *parent) :
-    LView(Scene, parent),
+    LView(Scene, true, parent),
     LPRIVATE_INIT_UNIQUE(LSceneView)
 {
     imp()->fb = framebuffer;
 }
 
 LSceneView::LSceneView(const LSize &sizeB, Float32 bufferScale, LView *parent) :
-    LView(Scene, parent),
+    LView(Scene, true, parent),
     LPRIVATE_INIT_UNIQUE(LSceneView)
 {
     imp()->fb = new LRenderBuffer(sizeB);
@@ -267,11 +267,6 @@ void LSceneView::leftOutput(LOutput *output) noexcept
 const std::vector<LOutput *> &LSceneView::outputs() const noexcept
 {
     return imp()->outputs;
-}
-
-bool LSceneView::isRenderable() const noexcept
-{
-    return true;
 }
 
 void LSceneView::requestNextFrame(LOutput *output) noexcept

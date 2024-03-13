@@ -2,7 +2,7 @@
 
 using namespace Louvre;
 
-LLayerView::LLayerView(LView *parent) noexcept : LView(LView::Layer, parent) {}
+LLayerView::LLayerView(LView *parent) noexcept : LView(LView::Layer, false, parent) {}
 
 bool LLayerView::nativeMapped() const noexcept
 {
@@ -37,11 +37,6 @@ void LLayerView::leftOutput(LOutput *output) noexcept
 const std::vector<LOutput*> &LLayerView::outputs() const noexcept
 {
     return m_outputs;
-}
-
-bool LLayerView::isRenderable() const noexcept
-{
-    return false;
 }
 
 void LLayerView::requestNextFrame(LOutput *output) noexcept

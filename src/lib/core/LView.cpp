@@ -11,8 +11,9 @@ using namespace Louvre;
 
 using LVS = LView::LViewState;
 
-LView::LView(UInt32 type, LView *parent) noexcept : m_type(type)
+LView::LView(UInt32 type, bool renderable, LView *parent) noexcept : m_type(type)
 {
+    m_state.setFlag(IsRenderable, renderable);
     compositor()->imp()->views.push_back(this);
     setParent(parent);
 }

@@ -10,7 +10,7 @@ Tooltip::Tooltip() : LLayerView(&G::compositor()->tooltipsLayer)
     enableParentOffset(false);
 
     center.setParent(this);
-    center.setColor(0.97f, 0.97f, 0.97f);
+    center.setColor({0.97f, 0.97f, 0.97f});
 
     label.setParent(this);
     label.setBufferScale(2);

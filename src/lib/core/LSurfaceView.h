@@ -271,7 +271,6 @@ public:
     virtual void enteredOutput(LOutput *output) noexcept override;
     virtual void leftOutput(LOutput *output) noexcept override;
     virtual const std::vector<LOutput*> &outputs() const noexcept override;
-    virtual bool isRenderable() const noexcept override;
     virtual void requestNextFrame(LOutput *output) noexcept override;
     virtual const LRegion *damage() const noexcept override;
     virtual const LRegion *translucentRegion() const noexcept override;

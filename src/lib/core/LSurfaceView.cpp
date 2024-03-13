@@ -5,7 +5,7 @@
 
 using namespace Louvre;
 
-LSurfaceView::LSurfaceView(LSurface *surface, LView *parent) noexcept : LView(LView::Surface, parent), m_surface(surface)
+LSurfaceView::LSurfaceView(LSurface *surface, LView *parent) noexcept : LView(LView::Surface, true, parent), m_surface(surface)
 {
     setPrimary(true);
     surface->imp()->views.push_back(this);
@@ -81,11 +81,6 @@ const std::vector<LOutput *> &LSurfaceView::outputs() const noexcept
         return surface()->outputs();
     else
         return m_nonPrimaryOutputs;
-}
-
-bool LSurfaceView::isRenderable() const noexcept
-{
-    return true;
 }
 
 void LSurfaceView::requestNextFrame(LOutput *output) noexcept

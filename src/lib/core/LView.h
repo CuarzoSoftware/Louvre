@@ -125,7 +125,7 @@ public:
      * @param type Type ID of the view, such as those listed in LView::Type.
      * @param parent Parent view.
      */
-    LView(UInt32 type, LView *parent = nullptr) noexcept;
+    LView(UInt32 type, bool renderable, LView *parent = nullptr) noexcept;
 
     /// @cond OMIT
     LView(const LView&) = delete;
@@ -162,61 +162,63 @@ public:
     /// @cond OMIT
     enum LViewState : UInt64
     {
+        // LView
         IsScene                 = 1UL << 0,
+        IsRenderable            = 1UL << 1,
 
-        PointerEvents           = 1UL << 1,
-        KeyboardEvents          = 1UL << 2,
-        TouchEvents             = 1UL << 3,
+        PointerEvents           = 1UL << 2,
+        KeyboardEvents          = 1UL << 3,
+        TouchEvents             = 1UL << 4,
 
-        BlockPointer            = 1UL << 4,
-        BlockTouch              = 1UL << 5,
+        BlockPointer            = 1UL << 5,
+        BlockTouch              = 1UL << 6,
 
-        RepaintCalled           = 1UL << 6,
-        ColorFactor             = 1UL << 7,
-        Visible                 = 1UL << 8,
-        Scaling                 = 1UL << 9,
-        ParentScaling           = 1UL << 10,
-        ParentOffset            = 1UL << 11,
-        Clipping                = 1UL << 12,
-        ParentClipping          = 1UL << 13,
-        ParentOpacity           = 1UL << 14,
-        ForceRequestNextFrame   = 1UL << 15,
-        AutoBlendFunc           = 1UL << 16,
+        RepaintCalled           = 1UL << 7,
+        ColorFactor             = 1UL << 8,
+        Visible                 = 1UL << 9,
+        Scaling                 = 1UL << 10,
+        ParentScaling           = 1UL << 11,
+        ParentOffset            = 1UL << 12,
+        Clipping                = 1UL << 13,
+        ParentClipping          = 1UL << 14,
+        ParentOpacity           = 1UL << 15,
+        ForceRequestNextFrame   = 1UL << 16,
+        AutoBlendFunc           = 1UL << 17,
 
-        PointerIsOver           = 1UL << 17,
+        PointerIsOver           = 1UL << 18,
 
-        PendingSwipeEnd         = 1UL << 18,
-        PendingPinchEnd         = 1UL << 19,
-        PendingHoldEnd          = 1UL << 20,
+        PendingSwipeEnd         = 1UL << 19,
+        PendingPinchEnd         = 1UL << 20,
+        PendingHoldEnd          = 1UL << 21,
 
-        PointerMoveDone         = 1UL << 21,
-        PointerButtonDone       = 1UL << 22,
-        PointerScrollDone       = 1UL << 23,
-        PointerSwipeBeginDone   = 1UL << 24,
-        PointerSwipeUpdateDone  = 1UL << 25,
-        PointerSwipeEndDone     = 1UL << 26,
-        PointerPinchBeginDone   = 1UL << 27,
-        PointerPinchUpdateDone  = 1UL << 28,
-        PointerPinchEndDone     = 1UL << 28,
-        PointerHoldBeginDone    = 1UL << 30,
-        PointerHoldEndDone      = 1UL << 31,
-        KeyDone                 = 1UL << 32,
-        TouchDownDone           = 1UL << 33,
-        TouchMoveDone           = 1UL << 34,
-        TouchUpDone             = 1UL << 35,
-        TouchFrameDone          = 1UL << 36,
-        TouchCancelDone         = 1UL << 37,
+        PointerMoveDone         = 1UL << 22,
+        PointerButtonDone       = 1UL << 23,
+        PointerScrollDone       = 1UL << 24,
+        PointerSwipeBeginDone   = 1UL << 25,
+        PointerSwipeUpdateDone  = 1UL << 26,
+        PointerSwipeEndDone     = 1UL << 27,
+        PointerPinchBeginDone   = 1UL << 28,
+        PointerPinchUpdateDone  = 1UL << 29,
+        PointerPinchEndDone     = 1UL << 30,
+        PointerHoldBeginDone    = 1UL << 31,
+        PointerHoldEndDone      = 1UL << 32,
+        KeyDone                 = 1UL << 33,
+        TouchDownDone           = 1UL << 34,
+        TouchMoveDone           = 1UL << 35,
+        TouchUpDone             = 1UL << 36,
+        TouchFrameDone          = 1UL << 37,
+        TouchCancelDone         = 1UL << 38,
 
         // LTextureView
-        CustomColor             = 1UL << 38,
-        CustomDstSize           = 1UL << 39,
-        CustomSrcRect           = 1UL << 40,
+        CustomColor             = 1UL << 39,
+        CustomDstSize           = 1UL << 40,
+        CustomSrcRect           = 1UL << 41,
 
         // LSurfaceView
-        Primary                 = 1UL << 41,
-        CustomPos               = 1UL << 42,
-        CustomInputRegion       = 1UL << 43,
-        CustomTranslucentRegion = 1UL << 44,
+        Primary                 = 1UL << 42,
+        CustomPos               = 1UL << 43,
+        CustomInputRegion       = 1UL << 44,
+        CustomTranslucentRegion = 1UL << 45,
     };
 
     // This is used for detecting changes on a view since the last time it was drawn on a specific output
@@ -352,6 +354,18 @@ public:
      * @returns The identifier representing the type of view.
      */
     inline UInt32 type() const noexcept { return m_type; }
+
+    /**
+     * @brief Check if the view is itself renderable.
+     *
+     * This property indicates whether the view is capable of rendering its content (check paintEvent()).
+     * For example, all view types included in Louvre are renderable,
+     * except for LLayerView, which serves as a container for other views
+     * but does not produce any output by itself.
+     *
+     * @return `true` if the view is renderable; otherwise, `false`.
+     */
+    inline bool isRenderable() const noexcept { return m_state.check(IsRenderable); };
 
     /**
      * @brief Schedule a repaint for all outputs where this view is currently visible.
@@ -1097,18 +1111,6 @@ public:
      * @return A reference to a vector of LOutput pointers representing the outputs where the view is visible.
      */
     virtual const std::vector<LOutput*> &outputs() const noexcept = 0;
-
-    /**
-     * @brief Check if the view is itself renderable.
-     *
-     * This property indicates whether the view is capable of rendering its content (check paintEvent()).
-     * For example, all view types included in Louvre are renderable,
-     * except for LLayerView, which serves as a container for other views
-     * but does not produce any output by itself.
-     *
-     * @return `true` if the view is renderable; otherwise, `false`.
-     */
-    virtual bool isRenderable() const noexcept = 0;
 
     /**
      * @brief Notify that the view has been rendered on the given output.
