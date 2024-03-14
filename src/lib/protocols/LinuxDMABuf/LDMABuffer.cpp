@@ -37,7 +37,7 @@ LDMABuffer::~LDMABuffer()
         for (LSurface *s : compositor()->surfaces())
             if (s->texture() == texture())
             {
-                texture()->imp()->pendingDelete = true;
+                texture()->m_pendingDelete = true;
                 goto skipDeleteTexture;
             }
 

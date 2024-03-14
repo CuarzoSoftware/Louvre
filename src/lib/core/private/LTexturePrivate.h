@@ -7,42 +7,10 @@
 
 using namespace Louvre;
 
-LPRIVATE_CLASS(LTexture)
-    LTexture *texture;
-    void deleteTexture();
-
-    BufferSourceType sourceType                         = CPU;
-    LSize sizeB;
-    UInt32 format                                       = 0;
-    void *graphicBackendData                            = nullptr;
-
-    // Increases each time the texture is modified
-    UInt32 serial                                       = 0;
-    bool pendingDelete = false;
-
-    // Wrapper for a native OpenGL ES 2.0 texture.
-    GLuint nativeId = 0;
-    GLenum nativeTarget = 0;
-    LOutput *nativeOutput = nullptr;
-
-    // Utility functions   
-    inline bool setDataB(GLuint textureId, GLenum target, UInt32 format, const LSize &size, LOutput *output)
-    {
-        if (sourceType == Framebuffer)
-            return false;
-
-        deleteTexture();
-        sourceType = Native;
-        graphicBackendData = &nativeId;
-        nativeId = textureId;
-        nativeTarget = target;
-        nativeOutput = output;
-        this->format = format;
-        sizeB = size;
-        return true;
-    }
-
-    inline static void setTextureParams(GLuint textureId, GLenum target, GLenum wrapS, GLenum wrapT, GLenum minFilter, GLenum magFilter)
+class LTexture::LTexturePrivate
+{
+public:
+    inline static void setTextureParams(GLuint textureId, GLenum target, GLenum wrapS, GLenum wrapT, GLenum minFilter, GLenum magFilter) noexcept
     {
         glBindTexture(target, textureId);
         glTexParameteri(target, GL_TEXTURE_WRAP_S, wrapS);
@@ -51,7 +19,7 @@ LPRIVATE_CLASS(LTexture)
         glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilter);
     }
 
-    inline static void readPixels(const LRect &src, const LPoint &dstOffset, Int32 dstWidth, GLenum format, GLenum type, UChar8 *buffer)
+    inline static void readPixels(const LRect &src, const LPoint &dstOffset, Int32 dstWidth, GLenum format, GLenum type, UChar8 *buffer) noexcept
     {
         glPixelStorei(GL_PACK_ALIGNMENT, 4);
         glPixelStorei(GL_PACK_ROW_LENGTH, dstWidth);

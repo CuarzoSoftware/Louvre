@@ -582,7 +582,7 @@ inline void scaleCursor(LTexture *texture, const LRect &src, const LRect &dst, L
     shaderSetMode(0);
     shaderSetActiveTexture(0);
     shaderSetTransform(transform);
-    texture->imp()->setTextureParams(textureId, target, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
+    LTexture::LTexturePrivate::setTextureParams(textureId, target, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
     shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
     shaderSetSrcRect(src.x(), src.y(), src.w(), src.h());
     shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
@@ -605,7 +605,7 @@ inline void scaleTexture(LTexture *texture, const LRect &src, const LSize &dst)
     shaderSetSrcRect(src.x(), src.y() + src.h(), src.w(), -src.h());
     shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
     shaderSetTransform(LFramebuffer::Normal);
-    texture->imp()->setTextureParams(textureId, target, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
+    LTexture::LTexturePrivate::setTextureParams(textureId, target, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 

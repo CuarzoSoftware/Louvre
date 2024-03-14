@@ -124,14 +124,14 @@ void LCursor::setTextureB(const LTexture *texture, const LPointF &hotspot)
     if (!texture)
         return;
 
-    if (imp()->texture == texture && imp()->lastTextureSerial == texture->imp()->serial && hotspot == imp()->hotspotB)
+    if (imp()->texture == texture && imp()->lastTextureSerial == texture->serial() && hotspot == imp()->hotspotB)
         return;
 
-    if (imp()->texture != texture || imp()->lastTextureSerial != texture->imp()->serial)
+    if (imp()->texture != texture || imp()->lastTextureSerial != texture->serial())
     {
         imp()->texture = (LTexture*)texture;
         imp()->textureChanged = true;
-        imp()->lastTextureSerial = texture->imp()->serial;
+        imp()->lastTextureSerial = texture->serial();
     }
 
     imp()->hotspotB = hotspot;

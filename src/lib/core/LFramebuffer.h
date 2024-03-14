@@ -94,7 +94,7 @@ public:
     /**
      * @brief Destructor for the LFramebuffer class.
      */
-    virtual ~LFramebuffer() {};
+    virtual ~LFramebuffer() noexcept = default;
 
     /**
      * @brief Get the scale by which the framebuffer dimensions must be interpreted.

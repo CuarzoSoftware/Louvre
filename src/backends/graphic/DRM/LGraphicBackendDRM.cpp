@@ -462,7 +462,7 @@ bool LGraphicBackend::textureCreateFromCPUBuffer(LTexture *texture, const LSize 
 
     if (bkndBuffer)
     {
-        texture->imp()->graphicBackendData = bkndBuffer;
+        texture->m_graphicBackendData = bkndBuffer;
         return true;
     }
 
@@ -476,10 +476,10 @@ bool LGraphicBackend::textureCreateFromWaylandDRM(LTexture *texture, void *wlBuf
 
     if (bkndBuffer)
     {
-        texture->imp()->graphicBackendData = bkndBuffer;
-        texture->imp()->format = srmBufferGetFormat(bkndBuffer);
-        texture->imp()->sizeB.setW(srmBufferGetWidth(bkndBuffer));
-        texture->imp()->sizeB.setH(srmBufferGetHeight(bkndBuffer));
+        texture->m_graphicBackendData = bkndBuffer;
+        texture->m_format = srmBufferGetFormat(bkndBuffer);
+        texture->m_sizeB.setW(srmBufferGetWidth(bkndBuffer));
+        texture->m_sizeB.setH(srmBufferGetHeight(bkndBuffer));
         return true;
     }
 
@@ -493,10 +493,10 @@ bool LGraphicBackend::textureCreateFromDMA(LTexture *texture, const LDMAPlanes *
 
     if (bkndBuffer)
     {
-        texture->imp()->graphicBackendData = bkndBuffer;
-        texture->imp()->format = srmBufferGetFormat(bkndBuffer);
-        texture->imp()->sizeB.setW(srmBufferGetWidth(bkndBuffer));
-        texture->imp()->sizeB.setH(srmBufferGetHeight(bkndBuffer));
+        texture->m_graphicBackendData = bkndBuffer;
+        texture->m_format = srmBufferGetFormat(bkndBuffer);
+        texture->m_sizeB.setW(srmBufferGetWidth(bkndBuffer));
+        texture->m_sizeB.setH(srmBufferGetHeight(bkndBuffer));
         return true;
     }
 
@@ -505,7 +505,7 @@ bool LGraphicBackend::textureCreateFromDMA(LTexture *texture, const LDMAPlanes *
 
 bool LGraphicBackend::textureUpdateRect(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels)
 {
-    SRMBuffer *bkndBuffer = (SRMBuffer*)texture->imp()->graphicBackendData;
+    SRMBuffer *bkndBuffer = (SRMBuffer*)texture->m_graphicBackendData;
     return srmBufferWrite(bkndBuffer, stride, dst.x(), dst.y(), dst.w(), dst.h(), pixels);
 }
 
@@ -524,18 +524,18 @@ UInt32 LGraphicBackend::textureGetID(LOutput *output, LTexture *texture)
         bkndRendererDevice = srmCoreGetAllocatorDevice(bknd->core);
     }
 
-    return srmBufferGetTextureID(bkndRendererDevice, (SRMBuffer*)texture->imp()->graphicBackendData);
+    return srmBufferGetTextureID(bkndRendererDevice, (SRMBuffer*)texture->m_graphicBackendData);
 }
 
 GLenum LGraphicBackend::textureGetTarget(LTexture *texture)
 {
-    SRMBuffer *bkndBuffer = (SRMBuffer*)texture->imp()->graphicBackendData;
+    SRMBuffer *bkndBuffer = (SRMBuffer*)texture->m_graphicBackendData;
     return srmBufferGetTextureTarget(bkndBuffer);
 }
 
 void LGraphicBackend::textureDestroy(LTexture *texture)
 {
-    SRMBuffer *buffer = (SRMBuffer*)texture->imp()->graphicBackendData;
+    SRMBuffer *buffer = (SRMBuffer*)texture->m_graphicBackendData;
 
     if (buffer)
         srmBufferDestroy(buffer);
@@ -568,7 +568,7 @@ void LGraphicBackend::outputUninitialize(LOutput *output)
             if (bkndOutput->textures[i])
             {
                 // Do not destroy connectors native buffer
-                bkndOutput->textures[i]->imp()->graphicBackendData = nullptr;
+                bkndOutput->textures[i]->m_graphicBackendData = nullptr;
                 delete bkndOutput->textures[i];
                 bkndOutput->textures[i] = nullptr;
             }
@@ -685,10 +685,10 @@ LTexture *LGraphicBackend::outputGetBuffer(LOutput *output, UInt32 bufferIndex)
         return bkndOutput->textures[bufferIndex];
 
     LTexture *tex = new LTexture();
-    tex->imp()->graphicBackendData = buffer;
-    tex->imp()->format = srmBufferGetFormat(buffer);
-    tex->imp()->sizeB.setW(srmBufferGetWidth(buffer));
-    tex->imp()->sizeB.setH(srmBufferGetHeight(buffer));
+    tex->m_graphicBackendData = buffer;
+    tex->m_format = srmBufferGetFormat(buffer);
+    tex->m_sizeB.setW(srmBufferGetWidth(buffer));
+    tex->m_sizeB.setH(srmBufferGetHeight(buffer));
     bkndOutput->textures[bufferIndex] = tex;
     return tex;
 }

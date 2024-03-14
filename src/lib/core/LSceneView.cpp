@@ -1,72 +1,10 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <LSceneView.h>
-#include <LFramebuffer.h>
-#include <LRenderBuffer.h>
-#include <LOutput.h>
 
 using namespace Louvre;
 
-LSceneView::LSceneView(LFramebuffer *framebuffer, LView *parent) :
-    LView(LView::Scene, true, parent)
-{
-    m_fb = framebuffer;
-}
-
-void LSceneView::drawBackground(bool addToOpaqueSum)
-{
-    auto &ctd {* m_currentThreadData.get() };
-    LRegion backgroundDamage;
-    pixman_region32_subtract(&backgroundDamage.m_region,
-                             &ctd.newDamage.m_region,
-                             &ctd.opaqueSum.m_region);
-    ctd.p->setColor({.r = m_clearColor.r, .g = m_clearColor.g, .b = m_clearColor.b});
-    ctd.p->setAlpha(m_clearColor.a);
-    ctd.p->bindColorMode();
-    ctd.p->drawRegion(backgroundDamage);
-
-    if (addToOpaqueSum)
-        ctd.opaqueSum.addRegion(backgroundDamage);
-}
-
-void LSceneView::clearTmpVariables(ThreadData &ctd)
-{
-    ctd.newDamage.clear();
-    ctd.opaqueSum.clear();
-}
-
-void LSceneView::damageAll(ThreadData &ctd)
-{
-    ctd.newDamage.clear();
-    ctd.newDamage.addRect(m_fb->rect());
-    ctd.newDamage.addRect(m_fb->rect());
-}
-
-void LSceneView::checkRectChange(ThreadData &ctd)
-{
-    if (ctd.prevRect.size() != m_fb->rect().size())
-    {
-        damageAll(ctd);
-        ctd.prevRect.setSize(m_fb->rect().size());
-    }
-
-    if (ctd.o && ((ctd.o->fractionalOversamplingEnabled() != ctd.oversampling && ctd.o->usingFractionalScale()) || ctd.o->usingFractionalScale() != ctd.fractionalScale))
-    {
-        ctd.fractionalScale = ctd.o->usingFractionalScale();
-        ctd.oversampling = ctd.o->fractionalOversamplingEnabled();
-        damageAll(ctd);
-    }
-}
-
-LSceneView::LSceneView(const LSize &sizeB, Float32 bufferScale, LView *parent) :
-    LView(LView::Scene, true, parent)
-{
-    LRenderBuffer *rb { new LRenderBuffer(sizeB) };
-    rb->setScale(bufferScale);
-    m_fb = rb;
-}
-
-LSceneView::~LSceneView()
+LSceneView::~LSceneView() noexcept
 {
     // Need to remove children before LView destructor
     // or compositor crashes when children add damage
@@ -77,37 +15,9 @@ LSceneView::~LSceneView()
         delete m_fb;
 }
 
-void LSceneView::damageAll(LOutput *output)
+void LSceneView::render(const LRegion *exclude) noexcept
 {
-    if (!output)
-        return;
-
-    ThreadData &oD { m_sceneThreadsMap[output->threadId()] };
-
-    if (isLScene())
-        oD.manuallyAddedDamage.addRect(output->rect());
-    else
-        oD.manuallyAddedDamage.addRect(LRect(pos(), size()));
-
-    output->repaint();
-}
-
-void LSceneView::addDamage(LOutput *output, const LRegion &damage)
-{
-    if (!output)
-        return;
-
-    ThreadData &oD { m_sceneThreadsMap[output->threadId()] };
-
-    if (oD.o)
-        oD.manuallyAddedDamage.addRegion(damage);
-
-    output->repaint();
-}
-
-void LSceneView::render(const LRegion *exclude)
-{
-    LPainter *painter = compositor()->imp()->threadsMap[std::this_thread::get_id()].painter;
+    LPainter *painter { compositor()->imp()->threadsMap[std::this_thread::get_id()].painter };
 
     if (!painter)
         return;
@@ -119,6 +29,10 @@ void LSceneView::render(const LRegion *exclude)
         static_cast<LRenderBuffer*>(m_fb)->setPos(pos());
 
     m_currentThreadData.reset(&m_sceneThreadsMap[std::this_thread::get_id()]);
+
+    if (!m_currentThreadData.get())
+        return;
+
     auto &ctd { *m_currentThreadData.get() };
 
     // If painter was not cached
@@ -207,48 +121,6 @@ void LSceneView::render(const LRegion *exclude)
     painter->bindFramebuffer(prevFb);
 }
 
-LTexture *LSceneView::texture(Int32 index) const
-{
-    return (LTexture*)m_fb->texture(index);
-}
-
-void LSceneView::setPos(Int32 x, Int32 y) noexcept
-{
-    if (x != m_customPos.x() || y != m_customPos.y())
-    {
-        m_customPos.setX(x);
-        m_customPos.setY(y);
-
-        if (!isLScene())
-            static_cast<LRenderBuffer*>(m_fb)->setPos(m_customPos);
-
-        repaint();
-    }
-}
-
-void LSceneView::setSizeB(const LSize &size)
-{
-    if (!isLScene() && size != m_fb->sizeB())
-    {
-        static_cast<LRenderBuffer*>(m_fb)->setSizeB(size);
-
-        for (LOutput *o : compositor()->outputs())
-            damageAll(o);
-        repaint();
-    }
-}
-
-void LSceneView::setScale(Float32 scale)
-{
-    if (!isLScene() && bufferScale() != scale)
-    {
-        static_cast<LRenderBuffer*>(m_fb)->setScale(scale);
-        for (LOutput *o : compositor()->outputs())
-            damageAll(o);
-        repaint();
-    }
-}
-
 bool LSceneView::nativeMapped() const noexcept
 {
     return true;
@@ -334,7 +206,7 @@ void LSceneView::paintEvent(const PaintEventParams &params) noexcept
     params.painter->drawRegion(*params.region);
 }
 
-void LSceneView::calcNewDamage(LView *view)
+void LSceneView::calcNewDamage(LView *view) noexcept
 {
     auto &ctd { *m_currentThreadData.get() };
 
@@ -557,7 +429,7 @@ void LSceneView::calcNewDamage(LView *view)
     ctd.opaqueSum.addRegion(cache.opaque);
 }
 
-void LSceneView::drawOpaqueDamage(LView *view)
+void LSceneView::drawOpaqueDamage(LView *view) noexcept
 {
     auto &ctd { *m_currentThreadData.get() };
 
@@ -590,7 +462,7 @@ void LSceneView::drawOpaqueDamage(LView *view)
     view->paintEvent(m_paintParams);
 }
 
-void LSceneView::drawTranslucentDamage(LView *view)
+void LSceneView::drawTranslucentDamage(LView *view) noexcept
 {
     auto &ctd { *m_currentThreadData.get() };
     auto &cache { view->m_cache };
@@ -636,13 +508,4 @@ drawChildrenOnly:
             drawTranslucentDamage(*it);
 }
 
-void LSceneView::parentClipping(LView *parent, LRegion *region)
-{
-    if (!parent)
-        return;
 
-    region->clip(parent->pos(), parent->size());
-
-    if (parent->parentClippingEnabled())
-        parentClipping(parent->parent(), region);
-}

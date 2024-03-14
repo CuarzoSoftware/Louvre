@@ -1,6 +1,9 @@
 #ifndef LSCENEVIEW_H
 #define LSCENEVIEW_H
 
+#include <LRenderBuffer.h>
+#include <LPainter.h>
+#include <LOutput.h>
 #include <LView.h>
 
 /**
@@ -28,7 +31,12 @@ public:
      * @param bufferScale The scale factor applied to the framebuffer.
      * @param parent The parent view that will contain this scene view.
      */
-    LSceneView(const LSize &sizeB, Float32 bufferScale, LView *parent = nullptr);
+    inline LSceneView(const LSize &sizeB, Float32 bufferScale, LView *parent = nullptr) noexcept :
+        LView(LView::Scene, true, parent),
+        m_fb(new LRenderBuffer(sizeB))
+    {
+        static_cast<LRenderBuffer*>(m_fb)->setScale(bufferScale);
+    }
 
     /// @cond OMIT
     LSceneView(const LSceneView&) = delete;
@@ -38,7 +46,7 @@ public:
     /**
      * @brief Destructor for the LSceneView.
      */
-    ~LSceneView();
+    ~LSceneView() noexcept;
 
     /**
      * @brief Retrieve the clear color of the scene view.
@@ -74,7 +82,20 @@ public:
      *
      * @param output The output for which to apply damage.
      */
-    void damageAll(LOutput *output);
+    inline void damageAll(LOutput *output) noexcept
+    {
+        if (!output)
+            return;
+
+        ThreadData &td { m_sceneThreadsMap[output->threadId()] };
+
+        if (isLScene())
+            td.manuallyAddedDamage.addRect(output->rect());
+        else
+            td.manuallyAddedDamage.addRect(LRect(pos(), size()));
+
+        output->repaint();
+    }
 
     /**
      * @brief Add specific damage areas to the scene view for a specific output.
@@ -82,7 +103,18 @@ public:
      * @param output The output for which to add damage areas.
      * @param damage The damaged regions to be added.
      */
-    void addDamage(LOutput *output, const LRegion &damage);
+    inline void addDamage(LOutput *output, const LRegion &damage) noexcept
+    {
+        if (!output)
+            return;
+
+        ThreadData &td { m_sceneThreadsMap[output->threadId()] };
+
+        if (td.o)
+            td.manuallyAddedDamage.addRegion(damage);
+
+        output->repaint();
+    }
 
     /**
      * @brief Render the scene.
@@ -93,7 +125,7 @@ public:
      *
      * @param exclude Regions to be excluded from rendering.
      */
-    virtual void render(const LRegion *exclude = nullptr);
+    void render(const LRegion *exclude = nullptr) noexcept;
 
     /**
      * @brief Retrieve the texture associated with the view.
@@ -105,7 +137,10 @@ public:
      * @param index The index of the texture to retrieve (default is 0).
      * @return A pointer to the texture associated with the view.
      */
-    virtual LTexture *texture(Int32 index = 0) const;
+    inline LTexture *texture(Int32 index = 0) const noexcept
+    {
+        return (LTexture*)m_fb->texture(index);
+    }
 
     /**
      * @brief Set the position of the scene.
@@ -123,7 +158,20 @@ public:
      * @param x The X-coordinate of the new position.
      * @param y The Y-coordinate of the new position.
      */
-    void setPos(Int32 x, Int32 y) noexcept;
+    inline void setPos(Int32 x, Int32 y) noexcept
+    {
+        if (x != m_customPos.x() || y != m_customPos.y())
+        {
+            m_customPos.setX(x);
+            m_customPos.setY(y);
+
+            if (!isLScene())
+                static_cast<LRenderBuffer*>(m_fb)->setPos(m_customPos);
+
+            if (!repaintCalled() && mapped())
+                repaint();
+        }
+    }
 
     /**
      * @brief Set the size of the scene framebuffer.
@@ -134,14 +182,33 @@ public:
      *
      * @param size The new size of the framebuffer.
      */
-    void setSizeB(const LSize &size);
+    inline void setSizeB(const LSize &size) noexcept
+    {
+        if (!isLScene() && size != m_fb->sizeB())
+        {
+            static_cast<LRenderBuffer*>(m_fb)->setSizeB(size);
+
+            for (LOutput *o : compositor()->outputs())
+                damageAll(o);
+            repaint();
+        }
+    }
 
     /**
      * @brief Set the scale factor for the scene framebuffer.
      *
      * @param scale The new scale factor to be applied.
      */
-    void setScale(Float32 scale);
+    inline void setScale(Float32 scale) noexcept
+    {
+        if (!isLScene() && bufferScale() != scale)
+        {
+            static_cast<LRenderBuffer*>(m_fb)->setScale(scale);
+            for (LOutput *o : compositor()->outputs())
+                damageAll(o);
+            repaint();
+        }
+    }
 
     virtual bool nativeMapped() const noexcept override;
     virtual const LPoint &nativePos() const noexcept override;
@@ -188,16 +255,74 @@ protected:
 private:
     friend class LScene;
     friend class LView;
-    LSceneView(LFramebuffer *framebuffer = nullptr, LView *parent = nullptr);
+    inline LSceneView(LFramebuffer *framebuffer = nullptr, LView *parent = nullptr) noexcept :
+        LView(LView::Scene, true, parent),
+        m_fb(framebuffer)
+    {}
 
-    void calcNewDamage(LView *view);
-    void drawOpaqueDamage(LView *view);
-    void drawTranslucentDamage(LView *view);
-    void parentClipping(LView *parent, LRegion *region);
-    void drawBackground(bool addToOpaqueSum);
-    void clearTmpVariables(ThreadData &ctd);
-    void damageAll(ThreadData &ctd);
-    void checkRectChange(ThreadData &ctd);
+    void calcNewDamage(LView *view) noexcept;
+    void drawOpaqueDamage(LView *view) noexcept;
+    void drawTranslucentDamage(LView *view) noexcept;
+
+    inline void parentClipping(LView *parent, LRegion *region) noexcept
+    {
+        if (!parent)
+            return;
+
+        region->clip(parent->pos(), parent->size());
+
+        if (parent->parentClippingEnabled())
+            parentClipping(parent->parent(), region);
+    }
+
+    inline void drawBackground(bool addToOpaqueSum) noexcept
+    {
+        auto &ctd {* m_currentThreadData.get() };
+        LRegion backgroundDamage;
+        pixman_region32_subtract(&backgroundDamage.m_region,
+                                 &ctd.newDamage.m_region,
+                                 &ctd.opaqueSum.m_region);
+        ctd.p->setColor({.r = m_clearColor.r, .g = m_clearColor.g, .b = m_clearColor.b});
+        ctd.p->setAlpha(m_clearColor.a);
+        ctd.p->bindColorMode();
+        ctd.p->drawRegion(backgroundDamage);
+
+        if (addToOpaqueSum)
+            ctd.opaqueSum.addRegion(backgroundDamage);
+    }
+
+    inline void clearTmpVariables(ThreadData &ctd) noexcept
+    {
+        ctd.newDamage.clear();
+        ctd.opaqueSum.clear();
+    }
+
+    inline void damageAll(ThreadData &ctd) noexcept
+    {
+        ctd.newDamage.clear();
+        ctd.newDamage.addRect(m_fb->rect());
+    }
+
+    inline void checkRectChange(ThreadData &ctd) noexcept
+    {
+        bool needsDamage { false };
+
+        if (ctd.prevRect.size() != m_fb->rect().size())
+        {
+            ctd.prevRect.setSize(m_fb->rect().size());
+            needsDamage = true;
+        }
+
+        if (ctd.o && ((ctd.o->fractionalOversamplingEnabled() != ctd.oversampling && ctd.o->usingFractionalScale()) || ctd.o->usingFractionalScale() != ctd.fractionalScale))
+        {
+            ctd.fractionalScale = ctd.o->usingFractionalScale();
+            ctd.oversampling = ctd.o->fractionalOversamplingEnabled();
+            needsDamage = true;
+        }
+
+        if (needsDamage)
+            damageAll(ctd);
+    }
 
 /// @endcond
 };

@@ -17,19 +17,18 @@
 using namespace Louvre;
 using namespace std;
 
-LTexture::LTexture() : LPRIVATE_INIT_UNIQUE(LTexture)
+LTexture::LTexture() noexcept
 {
-    imp()->texture = this;
     compositor()->imp()->textures.push_back(this);
 }
 
-LTexture::~LTexture()
+LTexture::~LTexture() noexcept
 {
-    imp()->deleteTexture();
+    reset();
     LVectorRemoveOneUnordered(compositor()->imp()->textures, this);
 }
 
-UInt32 LTexture::waylandFormatToDRM(UInt32 waylandFormat)
+UInt32 LTexture::waylandFormatToDRM(UInt32 waylandFormat) noexcept
 {
     if (waylandFormat == WL_SHM_FORMAT_ARGB8888)
         return DRM_FORMAT_ARGB8888;
@@ -39,7 +38,7 @@ UInt32 LTexture::waylandFormatToDRM(UInt32 waylandFormat)
     return waylandFormat;
 }
 
-UInt32 LTexture::formatBytesPerPixel(UInt32 format)
+UInt32 LTexture::formatBytesPerPixel(UInt32 format) noexcept
 {
     switch (format)
     {
@@ -87,7 +86,7 @@ UInt32 LTexture::formatBytesPerPixel(UInt32 format)
     }
 }
 
-UInt32 LTexture::formatPlanes(UInt32 format)
+UInt32 LTexture::formatPlanes(UInt32 format) noexcept
 {
     switch (format)
     {
@@ -131,69 +130,69 @@ UInt32 LTexture::formatPlanes(UInt32 format)
     }
 }
 
-bool LTexture::setDataB(const LSize &size, UInt32 stride, UInt32 format, const void *buffer)
+bool LTexture::setDataB(const LSize &size, UInt32 stride, UInt32 format, const void *buffer) noexcept
 {
-    if (imp()->sourceType == Framebuffer)
+    if (m_sourceType == Framebuffer)
         return false;
 
-    imp()->deleteTexture();
+    reset();
 
     if (compositor()->imp()->graphicBackend->textureCreateFromCPUBuffer(this, size, stride, format, buffer))
     {
-        imp()->format = format;
-        imp()->sizeB = size;
-        imp()->sourceType = CPU;
+        m_format = format;
+        m_sizeB = size;
+        m_sourceType = CPU;
         return true;
     }
 
     return false;
 }
 
-bool LTexture::setData(void *wlDRMBuffer)
+bool LTexture::setData(void *wlDRMBuffer) noexcept
 {
-    if (imp()->sourceType == Framebuffer)
+    if (m_sourceType == Framebuffer)
         return false;
 
-    imp()->deleteTexture();
+    reset();
 
     if (compositor()->imp()->graphicBackend->textureCreateFromWaylandDRM(this, wlDRMBuffer))
     {
-        imp()->sourceType = WL_DRM;
+        m_sourceType = WL_DRM;
         return true;
     }
 
     return false;
 }
 
-bool LTexture::setDataB(const LDMAPlanes *planes)
+bool LTexture::setDataB(const LDMAPlanes *planes) noexcept
 {
-    if (imp()->sourceType == Framebuffer)
+    if (m_sourceType == Framebuffer)
         return false;
 
-    imp()->deleteTexture();
+    reset();
 
     if (compositor()->imp()->graphicBackend->textureCreateFromDMA(this, planes))
     {
-        imp()->sourceType = DMA;
+        m_sourceType = DMA;
         return true;
     }
 
     return false;
 }
 
-bool LTexture::updateRect(const LRect &rect, UInt32 stride, const void *buffer)
+bool LTexture::updateRect(const LRect &rect, UInt32 stride, const void *buffer) noexcept
 {
 
-    if (initialized() && imp()->sourceType != Framebuffer)
+    if (initialized() && m_sourceType != Framebuffer)
     {
-        imp()->serial++;
+        m_serial++;
         return compositor()->imp()->graphicBackend->textureUpdateRect(this, stride, rect, buffer);
     }
 
     return false;
 }
 
-LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQualityScaling) const
+LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQualityScaling) const noexcept
 {
     if (!initialized())
         return nullptr;
@@ -280,7 +279,7 @@ LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQualitySc
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
         GLuint texCopy;
         glGenTextures(1, &texCopy);
-        imp()->setTextureParams(texCopy, GL_TEXTURE_2D, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
+        LTexture::LTexturePrivate::setTextureParams(texCopy, GL_TEXTURE_2D, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dstSize.w(), dstSize.h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texCopy, 0);
         glDisable(GL_BLEND);
@@ -312,7 +311,7 @@ LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQualitySc
         }
 
         glUniform4f(painter->imp()->currentUniformsScaler->samplerBounds, x1, y1, x2, y2);
-        imp()->setTextureParams(textureId, textureTarget, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
+        LTexture::LTexturePrivate::setTextureParams(textureId, textureTarget, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
         glUniform2f(painter->imp()->currentUniformsScaler->pixelSize, pixSizeW, pixSizeH);
         glUniform2i(painter->imp()->currentUniformsScaler->iters, wScale, hScale);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -321,13 +320,13 @@ LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQualitySc
         if (compositor()->imp()->graphicBackend->backendGetRendererGPUs() == 1)
         {
             glFlush();
-            ret = textureCopy->imp()->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
+            ret = textureCopy->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
         }
         else
         {
             UChar8 *cpuBuffer = (UChar8*)malloc(dstSize.w() * dstSize.h() * 4);
             GLenum glFormat = painter->imp()->openGLExtensions.EXT_read_format_bgra ? GL_BGRA_EXT : GL_RGBA;
-            imp()->readPixels(LRect(0, dstSize), 0, dstSize.w(), glFormat, GL_UNSIGNED_BYTE, cpuBuffer);
+            LTexture::LTexturePrivate::readPixels(LRect(0, dstSize), 0, dstSize.w(), glFormat, GL_UNSIGNED_BYTE, cpuBuffer);
             textureCopy = new LTexture();
 
             if (glFormat == GL_BGRA_EXT)
@@ -388,13 +387,13 @@ LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQualitySc
 
             GLuint texCopy;
             glGenTextures(1, &texCopy);
-            imp()->setTextureParams(texCopy, GL_TEXTURE_2D,
+            LTexture::LTexturePrivate::setTextureParams(texCopy, GL_TEXTURE_2D,
                                     GL_REPEAT, GL_REPEAT,
                                     GL_LINEAR, GL_LINEAR);
             glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, srcRect.x(), srcRect.y(), srcRect.w(), srcRect.h(), 0);
             glFlush();
             textureCopy = new LTexture();
-            ret = textureCopy->imp()->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
+            ret = textureCopy->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
             glDeleteFramebuffers(1, &framebuffer);
         }
         // Scaled draw to new texture fb
@@ -405,7 +404,7 @@ LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQualitySc
             glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
             GLuint texCopy;
             glGenTextures(1, &texCopy);
-            imp()->setTextureParams(texCopy, GL_TEXTURE_2D,
+            LTexture::LTexturePrivate::setTextureParams(texCopy, GL_TEXTURE_2D,
                                     GL_REPEAT, GL_REPEAT,
                                     GL_LINEAR, GL_LINEAR);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dstSize.w(), dstSize.h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -413,7 +412,7 @@ LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQualitySc
             painter->imp()->scaleTexture((LTexture*)this, srcRect, dstSize);
             glFlush();
             textureCopy = new LTexture();
-            ret = textureCopy->imp()->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
+            ret = textureCopy->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
             glDeleteFramebuffers(1, &framebuffer);
         }
     }
@@ -459,7 +458,7 @@ LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQualitySc
 
         UChar8 *cpuBuffer = (UChar8*)malloc(dstSize.w() * dstSize.h() * 4);
         GLenum glFormat = painter->imp()->openGLExtensions.EXT_read_format_bgra ? GL_BGRA_EXT : GL_RGBA;
-        imp()->readPixels(LRect(0, dstSize), 0, dstSize.w(), glFormat, GL_UNSIGNED_BYTE, cpuBuffer);
+        LTexture::LTexturePrivate::readPixels(LRect(0, dstSize), 0, dstSize.w(), glFormat, GL_UNSIGNED_BYTE, cpuBuffer);
         textureCopy = new LTexture();
 
         if (glFormat == GL_BGRA_EXT)
@@ -498,7 +497,7 @@ LTexture *LTexture::copyB(const LSize &dst, const LRect &src, bool highQualitySc
     return nullptr;
 }
 
-bool LTexture::save(const std::filesystem::path &name) const
+bool LTexture::save(const std::filesystem::path &name) const noexcept
 {
     if (name.empty())
     {
@@ -556,7 +555,7 @@ bool LTexture::save(const std::filesystem::path &name) const
         }
 
         buffer = (UChar8 *)malloc(sizeB().w()*sizeB().h()*4);
-        imp()->readPixels(LRect(0, sizeB()),
+        LTexture::LTexturePrivate::readPixels(LRect(0, sizeB()),
                           0, sizeB().w(),
                           GL_RGBA,
                           GL_UNSIGNED_BYTE, buffer);
@@ -593,7 +592,7 @@ bool LTexture::save(const std::filesystem::path &name) const
 
         painter->imp()->scaleTexture((LTexture*)this, LSize(sizeB().w(), -sizeB().h()), sizeB());
         buffer = (UChar8 *)malloc(sizeB().w()*sizeB().h()*4);
-        imp()->readPixels(LRect(0, sizeB()),
+        LTexture::LTexturePrivate::readPixels(LRect(0, sizeB()),
                           0, sizeB().w(),
                           GL_RGBA,
                           GL_UNSIGNED_BYTE, buffer);
@@ -604,7 +603,6 @@ bool LTexture::save(const std::filesystem::path &name) const
     save:
 
     {
-
         const Int32 ret { stbi_write_png(name.c_str(), sizeB().w(), sizeB().h(), 4, buffer, sizeB().w() * 4) };
         free(buffer);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -624,29 +622,14 @@ bool LTexture::save(const std::filesystem::path &name) const
     return false;
 }
 
-const LSize &LTexture::sizeB() const
-{
-    return imp()->sizeB;
-}
-
-bool LTexture::initialized() const
-{
-    return imp()->graphicBackendData != nullptr;
-}
-
-GLuint LTexture::id(LOutput *output) const
+GLuint LTexture::id(LOutput *output) const noexcept
 {
     if (initialized())
     {
         if (sourceType() == Framebuffer)
-        {
-            LRenderBuffer *fb = (LRenderBuffer*)imp()->graphicBackendData;
-            return fb->imp()->getTextureId();
-        }
+            return static_cast<LRenderBuffer*>(m_graphicBackendData)->imp()->getTextureId();
         else if (sourceType() == Native)
-        {
-            return imp()->nativeId;
-        }
+            return m_nativeId;
         else
             return compositor()->imp()->graphicBackend->textureGetID(output, (LTexture*)this);
     }
@@ -654,28 +637,56 @@ GLuint LTexture::id(LOutput *output) const
     return 0;
 }
 
-GLenum LTexture::target() const
+GLenum LTexture::backendTarget() const noexcept
 {
-    if (initialized())
+    return compositor()->imp()->graphicBackend->textureGetTarget((LTexture*)this);
+}
+
+void LTexture::reset() noexcept
+{
+    if (cursor())
     {
-        if (sourceType() == Framebuffer)
-            return GL_TEXTURE_2D;
-
-        else if (sourceType() == Native)
-            return imp()->nativeTarget;
-
-        return compositor()->imp()->graphicBackend->textureGetTarget((LTexture*)this);
+        if (this == cursor()->imp()->defaultTexture)
+            compositor()->cursor()->replaceDefaultB(nullptr, 0);
+        if (this == cursor()->texture())
+            cursor()->imp()->texture = cursor()->imp()->defaultTexture;
     }
 
-    return GL_TEXTURE_2D;
+    m_serial++;
+
+    if (sourceType() == Framebuffer)
+        return;
+
+    if (sourceType() == Native)
+    {
+        if (m_nativeOutput.get())
+            m_nativeOutput.get()->imp()->nativeTexturesToDestroy.push_back(m_nativeId);
+        else
+            compositor()->imp()->nativeTexturesToDestroy.push_back(m_nativeId);
+
+        m_graphicBackendData = nullptr;
+        return;
+    }
+
+    if (m_graphicBackendData)
+    {
+        compositor()->imp()->graphicBackend->textureDestroy(this);
+        m_graphicBackendData = nullptr;
+    }
 }
 
-LTexture::BufferSourceType LTexture::sourceType() const
+bool LTexture::setDataB(GLuint textureId, GLenum target, UInt32 format, const LSize &size, LOutput *output) noexcept
 {
-    return imp()->sourceType;
-}
+    if (m_sourceType == Framebuffer)
+        return false;
 
-UInt32 LTexture::format() const
-{
-    return imp()->format;
+    reset();
+    m_sourceType = Native;
+    m_graphicBackendData = &m_nativeId;
+    m_nativeId = textureId;
+    m_nativeTarget = target;
+    m_nativeOutput.reset(output);
+    m_format = format;
+    m_sizeB = size;
+    return true;
 }

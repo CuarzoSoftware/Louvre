@@ -9,14 +9,14 @@
 LRenderBuffer::LRenderBuffer(const LSize &sizeB, bool alpha) : LPRIVATE_INIT_UNIQUE(LRenderBuffer)
 {
     m_type = Render;
-    imp()->texture.imp()->sourceType = LTexture::Framebuffer;
+    imp()->texture.m_sourceType = LTexture::Framebuffer;
 
     if (alpha)
-        imp()->texture.imp()->format = DRM_FORMAT_BGRA8888;
+        imp()->texture.m_format = DRM_FORMAT_BGRA8888;
     else
-        imp()->texture.imp()->format = DRM_FORMAT_BGRX8888;
+        imp()->texture.m_format = DRM_FORMAT_BGRX8888;
 
-    imp()->texture.imp()->graphicBackendData = this;
+    imp()->texture.m_graphicBackendData = this;
     setSizeB(sizeB);
 }
 
@@ -42,9 +42,9 @@ void LRenderBuffer::setSizeB(const LSize &sizeB)
     imp()->rect.setW(roundf(Float32(imp()->sizeB.w()) * imp()->scale));
     imp()->rect.setH(roundf(Float32(imp()->sizeB.h()) * imp()->scale));
 
-    if (imp()->texture.imp()->sizeB != sizeB)
+    if (imp()->texture.sizeB() != sizeB)
     {
-        imp()->texture.imp()->sizeB = sizeB;
+        imp()->texture.m_sizeB = sizeB;
 
         for (auto &pair : imp()->threadsMap)
             if (pair.second.textureId)
@@ -124,7 +124,7 @@ GLuint LRenderBuffer::id() const
         glGenTextures(1, &data.textureId);
         LTexture::LTexturePrivate::setTextureParams(data.textureId, GL_TEXTURE_2D, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
 
-        if (imp()->texture.imp()->format == DRM_FORMAT_BGRA8888)
+        if (imp()->texture.format() == DRM_FORMAT_BGRA8888)
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imp()->texture.sizeB().w(), imp()->texture.sizeB().h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
         else
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imp()->texture.sizeB().w(), imp()->texture.sizeB().h(), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);

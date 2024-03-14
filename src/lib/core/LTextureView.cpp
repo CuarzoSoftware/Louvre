@@ -39,7 +39,7 @@ void LTextureView::setTexture(LTexture *texture) noexcept
     m_texture.reset(texture);
 
     if (m_texture.get())
-        m_textureSerial = m_texture.get()->imp()->serial;
+        m_textureSerial = m_texture.get()->serial();
 
     updateDimensions();
     damageAll();
@@ -57,9 +57,9 @@ const LPoint &LTextureView::nativePos() const noexcept
 
 const LSize &LTextureView::nativeSize() const noexcept
 {
-    if (m_texture.get() && m_texture.get()->imp()->serial != m_textureSerial)
+    if (m_texture.get() && m_texture.get()->serial() != m_textureSerial)
     {
-        m_textureSerial = m_texture.get()->imp()->serial;
+        m_textureSerial = m_texture.get()->serial();
         updateDimensions();
     }
 
