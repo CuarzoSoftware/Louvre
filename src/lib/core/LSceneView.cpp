@@ -1,24 +1,69 @@
 #include <private/LCompositorPrivate.h>
-#include <private/LSceneViewPrivate.h>
 #include <private/LPainterPrivate.h>
+#include <LSceneView.h>
 #include <LFramebuffer.h>
 #include <LRenderBuffer.h>
 #include <LOutput.h>
 
+using namespace Louvre;
+
 LSceneView::LSceneView(LFramebuffer *framebuffer, LView *parent) :
-    LView(Scene, true, parent),
-    LPRIVATE_INIT_UNIQUE(LSceneView)
+    LView(LView::Scene, true, parent)
 {
-    imp()->fb = framebuffer;
+    m_fb = framebuffer;
+}
+
+void LSceneView::drawBackground(bool addToOpaqueSum)
+{
+    auto &ctd {* m_currentThreadData.get() };
+    LRegion backgroundDamage;
+    pixman_region32_subtract(&backgroundDamage.m_region,
+                             &ctd.newDamage.m_region,
+                             &ctd.opaqueSum.m_region);
+    ctd.p->setColor({.r = m_clearColor.r, .g = m_clearColor.g, .b = m_clearColor.b});
+    ctd.p->setAlpha(m_clearColor.a);
+    ctd.p->bindColorMode();
+    ctd.p->drawRegion(backgroundDamage);
+
+    if (addToOpaqueSum)
+        ctd.opaqueSum.addRegion(backgroundDamage);
+}
+
+void LSceneView::clearTmpVariables(ThreadData &ctd)
+{
+    ctd.newDamage.clear();
+    ctd.opaqueSum.clear();
+}
+
+void LSceneView::damageAll(ThreadData &ctd)
+{
+    ctd.newDamage.clear();
+    ctd.newDamage.addRect(m_fb->rect());
+    ctd.newDamage.addRect(m_fb->rect());
+}
+
+void LSceneView::checkRectChange(ThreadData &ctd)
+{
+    if (ctd.prevRect.size() != m_fb->rect().size())
+    {
+        damageAll(ctd);
+        ctd.prevRect.setSize(m_fb->rect().size());
+    }
+
+    if (ctd.o && ((ctd.o->fractionalOversamplingEnabled() != ctd.oversampling && ctd.o->usingFractionalScale()) || ctd.o->usingFractionalScale() != ctd.fractionalScale))
+    {
+        ctd.fractionalScale = ctd.o->usingFractionalScale();
+        ctd.oversampling = ctd.o->fractionalOversamplingEnabled();
+        damageAll(ctd);
+    }
 }
 
 LSceneView::LSceneView(const LSize &sizeB, Float32 bufferScale, LView *parent) :
-    LView(Scene, true, parent),
-    LPRIVATE_INIT_UNIQUE(LSceneView)
+    LView(LView::Scene, true, parent)
 {
-    imp()->fb = new LRenderBuffer(sizeB);
-    LRenderBuffer *rb = (LRenderBuffer*)imp()->fb;
+    LRenderBuffer *rb { new LRenderBuffer(sizeB) };
     rb->setScale(bufferScale);
+    m_fb = rb;
 }
 
 LSceneView::~LSceneView()
@@ -29,24 +74,7 @@ LSceneView::~LSceneView()
         children().front()->setParent(nullptr);
 
     if (!isLScene())
-        delete imp()->fb;
-}
-
-const LRGBAF &LSceneView::clearColor() const
-{
-    return imp()->clearColor;
-}
-
-void LSceneView::setClearColor(Float32 r, Float32 g, Float32 b, Float32 a)
-{
-    imp()->clearColor = {r, g, b, a};
-    repaint();
-}
-
-void LSceneView::setClearColor(const LRGBAF &color)
-{
-    imp()->clearColor = color;
-    repaint();
+        delete m_fb;
 }
 
 void LSceneView::damageAll(LOutput *output)
@@ -54,12 +82,12 @@ void LSceneView::damageAll(LOutput *output)
     if (!output)
         return;
 
-    LSceneViewPrivate::ThreadData *oD = &imp()->threadsMap[output->threadId()];
+    ThreadData &oD { m_sceneThreadsMap[output->threadId()] };
 
     if (isLScene())
-        oD->manuallyAddedDamage.addRect(output->rect());
+        oD.manuallyAddedDamage.addRect(output->rect());
     else
-        oD->manuallyAddedDamage.addRect(LRect(pos(), size()));
+        oD.manuallyAddedDamage.addRect(LRect(pos(), size()));
 
     output->repaint();
 }
@@ -69,10 +97,10 @@ void LSceneView::addDamage(LOutput *output, const LRegion &damage)
     if (!output)
         return;
 
-    LSceneViewPrivate::ThreadData *oD = &imp()->threadsMap[output->threadId()];
+    ThreadData &oD { m_sceneThreadsMap[output->threadId()] };
 
-    if (oD->o)
-        oD->manuallyAddedDamage.addRegion(damage);
+    if (oD.o)
+        oD.manuallyAddedDamage.addRegion(damage);
 
     output->repaint();
 }
@@ -84,101 +112,96 @@ void LSceneView::render(const LRegion *exclude)
     if (!painter)
         return;
 
-    LFramebuffer *prevFb = painter->boundFramebuffer();
-
-    painter->bindFramebuffer(imp()->fb);
+    LFramebuffer *prevFb { painter->boundFramebuffer() };
+    painter->bindFramebuffer(m_fb);
 
     if (!isLScene())
-    {
-        LRenderBuffer *rb = (LRenderBuffer*)imp()->fb;
-        rb->setPos(pos());
-    }
+        static_cast<LRenderBuffer*>(m_fb)->setPos(pos());
 
-    LSceneViewPrivate::ThreadData *oD = &imp()->threadsMap[std::this_thread::get_id()];
-    imp()->currentThreadData = oD;
+    m_currentThreadData.reset(&m_sceneThreadsMap[std::this_thread::get_id()]);
+    auto &ctd { *m_currentThreadData.get() };
 
     // If painter was not cached
-    if (!oD->p)
+    if (!ctd.p)
     {
-        for (Int32 i = 0; i < imp()->fb->buffersCount() - 1; i++)
-            oD->prevDamageList.push_back(new LRegion());
+        for (Int32 i = 0; i < m_fb->buffersCount() - 1; i++)
+            ctd.prevDamageList.push_back(new LRegion());
 
-        oD->c = compositor();
-        oD->p = painter;
-        oD->o = painter->imp()->output;
+        ctd.p = painter;
+        ctd.o = painter->imp()->output;
     }
 
-    imp()->clearTmpVariables(oD);
-    imp()->checkRectChange(oD);
+    clearTmpVariables(ctd);
+    checkRectChange(ctd);
 
     // Add manual damage
-    if (!oD->manuallyAddedDamage.empty())
+    if (!ctd.manuallyAddedDamage.empty())
     {
-        oD->newDamage.addRegion(oD->manuallyAddedDamage);
-        oD->manuallyAddedDamage.clear();
+        ctd.newDamage.addRegion(ctd.manuallyAddedDamage);
+        ctd.manuallyAddedDamage.clear();
     }
 
     // If extra opaque
     if (exclude)
     {
-        oD->prevExternalExclude.subtractRegion(*exclude);
-        oD->newDamage.addRegion(oD->prevExternalExclude);
-        oD->prevExternalExclude = *exclude;
-        oD->opaqueTransposedSum.addRegion(*exclude);
+        ctd.prevExternalExclude.subtractRegion(*exclude);
+        ctd.newDamage.addRegion(ctd.prevExternalExclude);
+        ctd.prevExternalExclude = *exclude;
+        ctd.opaqueSum.addRegion(*exclude);
     }
     else
     {
-        if (!oD->prevExternalExclude.empty())
+        if (!ctd.prevExternalExclude.empty())
         {
-            oD->newDamage.addRegion(oD->prevExternalExclude);
-            oD->prevExternalExclude.clear();
+            ctd.newDamage.addRegion(ctd.prevExternalExclude);
+            ctd.prevExternalExclude.clear();
         }
     }
 
     for (std::list<LView*>::const_reverse_iterator it = children().crbegin(); it != children().crend(); it++)
-        imp()->calcNewDamage(*it);
+        calcNewDamage(*it);
 
     // Save new damage for next frame and add old damage to current damage
-    if (imp()->fb->buffersCount() > 1)
+    if (m_fb->buffersCount() > 1)
     {
         // Sum damage generated in other frames into this region
 
         // This list contains NUM_FB - 1 regions, so if triple buffering then 2 regions (the prev ones to this current frame)
-        for (std::list<LRegion*>::iterator it = std::next(oD->prevDamageList.begin()); it != oD->prevDamageList.end(); it++)
-            (*oD->prevDamageList.front()).addRegion(*(*it));
+        for (std::list<LRegion*>::iterator it = std::next(ctd.prevDamageList.begin()); it != ctd.prevDamageList.end(); it++)
+            (*ctd.prevDamageList.front()).addRegion(*(*it));
 
-        pixman_region32_t tmp = oD->prevDamageList.front()->m_region;
-        oD->prevDamageList.front()->m_region = oD->newDamage.m_region;
-        oD->newDamage.m_region = tmp;
-        oD->newDamage.addRegion(*oD->prevDamageList.front());
+        pixman_region32_t tmp = ctd.prevDamageList.front()->m_region;
+        ctd.prevDamageList.front()->m_region = ctd.newDamage.m_region;
+        ctd.newDamage.m_region = tmp;
+        ctd.newDamage.addRegion(*ctd.prevDamageList.front());
 
-        LRegion *front = oD->prevDamageList.front();
-        oD->prevDamageList.pop_front();
-        oD->prevDamageList.push_back(front);
+        LRegion *front = ctd.prevDamageList.front();
+        ctd.prevDamageList.pop_front();
+        ctd.prevDamageList.push_back(front);
     }
 
     glDisable(GL_BLEND);
 
     for (std::list<LView*>::const_reverse_iterator it = children().crbegin(); it != children().crend(); it++)
-        imp()->drawOpaqueDamage(*it);
+        drawOpaqueDamage(*it);
 
     painter->imp()->shaderSetColorFactorEnabled(0);
-    imp()->drawBackground(!isLScene() && imp()->clearColor.a >= 1.f);
+    drawBackground(!isLScene() && m_clearColor.a >= 1.f);
 
     glEnable(GL_BLEND);
 
     for (std::list<LView*>::const_iterator it = children().cbegin(); it != children().cend(); it++)
-        imp()->drawTranslucentDamage(*it);
+        drawTranslucentDamage(*it);
 
     if (!isLScene())
     {
-        oD->opaqueTransposedSum.clip(imp()->fb->rect());
-        oD->translucentTransposedSum = oD->opaqueTransposedSum;
-        oD->translucentTransposedSum.inverse(imp()->fb->rect());
+        ctd.opaqueSum.clip(m_fb->rect());
+        ctd.translucentSum = ctd.opaqueSum;
+        ctd.translucentSum.inverse(m_fb->rect());
     }
     else
     {
-        imp()->fb->setFramebufferDamage(&oD->newDamage);
+        m_fb->setFramebufferDamage(&ctd.newDamage);
     }
 
     painter->bindFramebuffer(prevFb);
@@ -186,36 +209,29 @@ void LSceneView::render(const LRegion *exclude)
 
 LTexture *LSceneView::texture(Int32 index) const
 {
-    return (LTexture*)imp()->fb->texture(index);
+    return (LTexture*)m_fb->texture(index);
 }
 
-void LSceneView::setPos(const LPoint &pos)
+void LSceneView::setPos(Int32 x, Int32 y) noexcept
 {
-    setPos(pos.x(), pos.y());
-}
-
-void LSceneView::setPos(Int32 x, Int32 y)
-{
-    if (x != imp()->customPos.x() || y != imp()->customPos.y())
+    if (x != m_customPos.x() || y != m_customPos.y())
     {
-        imp()->customPos.setX(x);
-        imp()->customPos.setY(y);
+        m_customPos.setX(x);
+        m_customPos.setY(y);
 
         if (!isLScene())
-        {
-            LRenderBuffer *rb = (LRenderBuffer*)imp()->fb;
-            rb->setPos(imp()->customPos);
-        }
+            static_cast<LRenderBuffer*>(m_fb)->setPos(m_customPos);
+
         repaint();
     }
 }
 
 void LSceneView::setSizeB(const LSize &size)
 {
-    if (!isLScene() && size != imp()->fb->sizeB())
+    if (!isLScene() && size != m_fb->sizeB())
     {
-        LRenderBuffer *rb = (LRenderBuffer*)imp()->fb;
-        rb->setSizeB(size);
+        static_cast<LRenderBuffer*>(m_fb)->setSizeB(size);
+
         for (LOutput *o : compositor()->outputs())
             damageAll(o);
         repaint();
@@ -226,8 +242,7 @@ void LSceneView::setScale(Float32 scale)
 {
     if (!isLScene() && bufferScale() != scale)
     {
-        LRenderBuffer *rb = (LRenderBuffer*)imp()->fb;
-        rb->setScale(scale);
+        static_cast<LRenderBuffer*>(m_fb)->setScale(scale);
         for (LOutput *o : compositor()->outputs())
             damageAll(o);
         repaint();
@@ -241,32 +256,32 @@ bool LSceneView::nativeMapped() const noexcept
 
 const LPoint &LSceneView::nativePos() const noexcept
 {
-    return imp()->customPos;
+    return m_customPos;
 }
 
 const LSize &LSceneView::nativeSize() const noexcept
 {
-    return imp()->fb->rect().size();
+    return m_fb->rect().size();
 }
 
 Float32 LSceneView::bufferScale() const noexcept
 {
-    return imp()->fb->scale();
+    return m_fb->scale();
 }
 
 void LSceneView::enteredOutput(LOutput *output) noexcept
 {
-    LVectorPushBackIfNonexistent(imp()->outputs, output);
+    LVectorPushBackIfNonexistent(m_outputs, output);
 }
 
 void LSceneView::leftOutput(LOutput *output) noexcept
 {
-    LVectorRemoveOneUnordered(imp()->outputs, output);
+    LVectorRemoveOneUnordered(m_outputs, output);
 }
 
 const std::vector<LOutput *> &LSceneView::outputs() const noexcept
 {
-    return imp()->outputs;
+    return m_outputs;
 }
 
 void LSceneView::requestNextFrame(LOutput *output) noexcept
@@ -276,35 +291,358 @@ void LSceneView::requestNextFrame(LOutput *output) noexcept
 
 const LRegion *LSceneView::damage() const noexcept
 {
-    return &imp()->currentThreadData->newDamage;
+    if (m_currentThreadData.get())
+        return &m_currentThreadData.get()->newDamage;
+
+    return nullptr;
 }
 
 const LRegion *LSceneView::translucentRegion() const noexcept
 {
-    return &imp()->currentThreadData->translucentTransposedSum;
+    if (m_currentThreadData.get())
+        return &m_currentThreadData.get()->translucentSum;
+
+    return nullptr;
 }
 
 const LRegion *LSceneView::opaqueRegion() const noexcept
 {
-    return &imp()->currentThreadData->opaqueTransposedSum;
+    if (m_currentThreadData.get())
+        return &m_currentThreadData.get()->opaqueSum;
+
+    return nullptr;
 }
 
 const LRegion *LSceneView::inputRegion() const noexcept
 {
-    return &imp()->input;
+    // TODO: add custom input region
+    return nullptr;
 }
 
 void LSceneView::paintEvent(const PaintEventParams &params) noexcept
 {
     params.painter->bindTextureMode({
-        .texture = imp()->fb->texture(imp()->fb->currentBufferIndex()),
+        .texture = m_fb->texture(m_fb->currentBufferIndex()),
         .pos = pos(),
-        .srcRect = LRectF(LPointF(), imp()->fb->sizeB()) / bufferScale(),
+        .srcRect = LRectF(LPointF(), m_fb->sizeB()) / bufferScale(),
         .dstSize = size(),
-        .srcTransform = imp()->fb->transform(),
+        .srcTransform = m_fb->transform(),
         .srcScale = bufferScale(),
     });
 
     params.painter->enableCustomTextureColor(false);
     params.painter->drawRegion(*params.region);
+}
+
+void LSceneView::calcNewDamage(LView *view)
+{
+    auto &ctd { *m_currentThreadData.get() };
+
+    // Children first
+    if (view->type() == Scene)
+    {
+        LSceneView &sceneView { static_cast<LSceneView&>(*view) };
+
+        if (view->m_cache.scalingEnabled)
+            sceneView.render(nullptr);
+        else
+            sceneView.render(&ctd.opaqueSum);
+    }
+    else
+    {
+        for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
+            calcNewDamage(*it);
+    }
+
+    // Quick view cache handle to reduce verbosity
+    LView::ViewCache &cache { view->m_cache };
+
+    view->m_state.remove(RepaintCalled);
+
+    cache.voD = &view->m_threadsMap[std::this_thread::get_id()];
+    cache.voD->o = ctd.o;
+    cache.mapped = view->mapped();
+    cache.rect.setPos(view->pos());
+    cache.rect.setSize(view->size());
+    cache.scalingVector = view->scalingVector();
+    cache.scalingEnabled = (view->scalingEnabled() || view->parentScalingEnabled()) && cache.scalingVector != LSizeF(1.f, 1.f);
+
+    LRegion vRegion {cache.rect};
+
+    if (view->clippingEnabled())
+        vRegion.clip(view->clippingRect());
+
+    if (view->parent() && view->parentClippingEnabled())
+        vRegion.clip(view->parent()->pos(), view->parent()->size());
+
+    // Update view intersected outputs
+    for (LOutput *o : compositor()->outputs())
+    {
+        LRegion r { vRegion };
+        r.clip(o->rect());
+
+        if (!r.empty())
+            view->enteredOutput(o);
+        else
+            view->leftOutput(o);
+    }
+
+    if (!view->isRenderable())
+        return;
+
+    cache.opacity = view->opacity();
+
+    if (view->m_colorFactor.a <= 0.f || cache.rect.size().area() == 0 || cache.opacity <= 0.f || cache.scalingVector.w() == 0.f || cache.scalingVector.y() == 0.f || (view->clippingEnabled() && view->clippingRect().area() == 0))
+        cache.mapped = false;
+
+    const bool mappingChanged { cache.mapped != cache.voD->prevMapped };
+
+    if (ctd.o && !mappingChanged && !cache.mapped)
+    {
+        if (view->forceRequestNextFrameEnabled())
+            view->requestNextFrame(ctd.o);
+        return;
+    }
+
+    const bool opacityChanged { cache.opacity != cache.voD->prevOpacity };
+
+    cache.localRect = LRect(cache.rect.pos() - m_fb->rect().pos(), cache.rect.size());
+
+    const bool rectChanged { cache.localRect != cache.voD->prevLocalRect };
+
+    bool colorFactorChanged { cache.voD->prevColorFactorEnabled != view->m_state.check(ColorFactor) };
+
+    if (!colorFactorChanged && view->m_state.check(ColorFactor))
+    {
+        colorFactorChanged = cache.voD->prevColorFactor.r != view->m_colorFactor.r ||
+                             cache.voD->prevColorFactor.g != view->m_colorFactor.g ||
+                             cache.voD->prevColorFactor.b != view->m_colorFactor.b ||
+                             cache.voD->prevColorFactor.a != view->m_colorFactor.a;
+    }
+
+    // If rect or order changed (set current rect and prev rect as damage)
+    if (mappingChanged || rectChanged || cache.voD->changedOrder || opacityChanged || cache.scalingEnabled || colorFactorChanged)
+    {
+        cache.damage.addRect(cache.rect);
+
+        if (cache.voD->changedOrder)
+            cache.voD->changedOrder = false;
+
+        if (mappingChanged)
+            cache.voD->prevMapped = cache.mapped;
+
+        if (rectChanged)
+        {
+            cache.voD->prevRect = cache.rect;
+            cache.voD->prevLocalRect = cache.localRect;
+        }
+
+        if (opacityChanged)
+            cache.voD->prevOpacity = cache.opacity;
+
+        if (colorFactorChanged)
+        {
+            cache.voD->prevColorFactorEnabled = view->m_state.check(ColorFactor);
+            cache.voD->prevColorFactor = view->m_colorFactor;
+        }
+
+        if (!cache.mapped)
+        {
+            ctd.newDamage.addRegion(cache.voD->prevClipping);
+            return;
+        }
+    }
+    else if (view->damage())
+    {
+        cache.damage = *view->damage();
+
+        // Scene views already have their damage transposed
+        if (view->type() != Scene)
+            cache.damage.offset(cache.rect.pos());
+    }
+    else
+    {
+        cache.damage.clear();
+    }
+
+    // Calculates the non clipped region
+
+    LRegion currentClipping { cache.rect };
+
+    if (view->parentClippingEnabled())
+        parentClipping(view->parent(), &currentClipping);
+
+    if (view->clippingEnabled())
+        currentClipping.clip(view->clippingRect());
+
+    // Calculates the new exposed view region if parent clipping or clipped region has grown
+
+    /* LRegion newExposedClipping = currentClipping;
+     * newExposedClipping.subtractRegion(cache.voD->prevClipping);*/
+
+    LRegion newExposedClipping;
+    pixman_region32_subtract(&newExposedClipping.m_region,
+                             &currentClipping.m_region,
+                             &cache.voD->prevClipping.m_region);
+
+    cache.damage.addRegion(newExposedClipping);
+
+    // Add exposed now non clipped region to new output damage
+    cache.voD->prevClipping.subtractRegion(currentClipping);
+    ctd.newDamage.addRegion(cache.voD->prevClipping);
+
+    // Saves current clipped region for next frame
+    cache.voD->prevClipping = currentClipping;
+
+    // Clip current damage to current visible region
+    cache.damage.intersectRegion(currentClipping);
+
+    // Remove previus opaque region to view damage
+    cache.damage.subtractRegion(ctd.opaqueSum);
+
+    // Add clipped damage to new damage
+    ctd.newDamage.addRegion(cache.damage);
+
+    if (cache.opacity < 1.f || cache.scalingEnabled || view->colorFactor().a < 1.f)
+    {
+        cache.translucent.clear();
+        cache.translucent.addRect(cache.rect);
+        cache.opaque.clear();
+    }
+    else
+    {
+        // Store tansposed traslucent region
+        if (view->translucentRegion())
+        {
+            cache.translucent = *view->translucentRegion();
+
+            if (view->type() != Scene)
+                cache.translucent.offset(cache.rect.pos());
+        }
+        else
+        {
+            cache.translucent.clear();
+            cache.translucent.addRect(cache.rect);
+        }
+
+        // Store tansposed opaque region
+        if (view->opaqueRegion())
+        {
+            cache.opaque = *view->opaqueRegion();
+
+            if (view->type() != Scene)
+                cache.opaque.offset(cache.rect.pos());
+        }
+        else
+        {
+            cache.opaque = cache.translucent;
+            cache.opaque.inverse(cache.rect);
+        }
+    }
+
+    // Clip opaque and translucent regions to current visible region
+    cache.opaque.intersectRegion(currentClipping);
+    cache.translucent.intersectRegion(currentClipping);
+
+    // Check if view is ocludded
+    currentClipping.subtractRegion(ctd.opaqueSum);
+
+    cache.occluded = currentClipping.empty();
+
+    if (ctd.o && (!cache.occluded || view->forceRequestNextFrameEnabled()))
+        view->requestNextFrame(ctd.o);
+
+    // Store sum of previus opaque regions (this will later be clipped when painting opaque and translucent regions)
+    cache.opaqueOverlay = ctd.opaqueSum;
+    ctd.opaqueSum.addRegion(cache.opaque);
+}
+
+void LSceneView::drawOpaqueDamage(LView *view)
+{
+    auto &ctd { *m_currentThreadData.get() };
+
+    // Children first
+    if (view->type() != Scene)
+        for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
+            drawOpaqueDamage(*it);
+
+    LView::ViewCache &cache { view->m_cache };
+
+    if (!view->isRenderable() || !cache.mapped || cache.occluded || cache.opacity < 1.f || view->m_colorFactor.a < 1.f)
+        return;
+
+    cache.opaque.intersectRegion(ctd.newDamage);
+    cache.opaque.subtractRegion(cache.opaqueOverlay);
+
+    if (view->m_state.check(ColorFactor))
+    {
+        ctd.p->imp()->shaderSetColorFactor(view->m_colorFactor.r,
+                                          view->m_colorFactor.g,
+                                          view->m_colorFactor.b,
+                                          view->m_colorFactor.a);
+    }
+    else
+        ctd.p->imp()->shaderSetColorFactorEnabled(0);
+
+    ctd.p->imp()->shaderSetAlpha(1.f);
+    m_paintParams.painter = ctd.p;
+    m_paintParams.region = &cache.opaque;
+    view->paintEvent(m_paintParams);
+}
+
+void LSceneView::drawTranslucentDamage(LView *view)
+{
+    auto &ctd { *m_currentThreadData.get() };
+    auto &cache { view->m_cache };
+
+    if (!view->isRenderable() || !cache.mapped || cache.occluded)
+        goto drawChildrenOnly;
+
+    if (view->autoBlendFuncEnabled())
+    {
+        if (ctd.p->boundFramebuffer()->id() != 0)
+            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+        else
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+    else
+        glBlendFuncSeparate(view->blendFunc().sRGBFactor,
+                            view->blendFunc().dRGBFactor,
+                            view->blendFunc().sAlphaFactor,
+                            view->blendFunc().dAlphaFactor);
+
+    if (view->m_state.check(ColorFactor))
+    {
+        ctd.p->imp()->shaderSetColorFactor(view->m_colorFactor.r,
+                                          view->m_colorFactor.g,
+                                          view->m_colorFactor.b,
+                                          view->m_colorFactor.a);
+    }
+    else
+        ctd.p->imp()->shaderSetColorFactorEnabled(0);
+
+    cache.occluded = true;
+    cache.translucent.intersectRegion(ctd.newDamage);
+    cache.translucent.subtractRegion(cache.opaqueOverlay);
+
+    ctd.p->imp()->shaderSetAlpha(cache.opacity);
+    m_paintParams.painter = ctd.p;
+    m_paintParams.region = &cache.translucent;
+    view->paintEvent(m_paintParams);
+
+drawChildrenOnly:
+    if (view->type() != Scene)
+        for (std::list<LView*>::const_iterator it = view->children().cbegin(); it != view->children().cend(); it++)
+            drawTranslucentDamage(*it);
+}
+
+void LSceneView::parentClipping(LView *parent, LRegion *region)
+{
+    if (!parent)
+        return;
+
+    region->clip(parent->pos(), parent->size());
+
+    if (parent->parentClippingEnabled())
+        parentClipping(parent->parent(), region);
 }

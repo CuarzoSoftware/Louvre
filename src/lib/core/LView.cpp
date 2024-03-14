@@ -1,6 +1,5 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LScenePrivate.h>
-#include <private/LSceneViewPrivate.h>
 #include <private/LSceneTouchPointPrivate.h>
 #include <LTouchCancelEvent.h>
 #include <LOutput.h>
@@ -11,7 +10,7 @@ using namespace Louvre;
 
 using LVS = LView::LViewState;
 
-LView::LView(UInt32 type, bool renderable, LView *parent) noexcept : m_type(type)
+LView::LView(UInt32 type, bool renderable, LView *parent) noexcept  : m_type(type)
 {
     m_state.setFlag(IsRenderable, renderable);
     compositor()->imp()->views.push_back(this);
@@ -231,8 +230,6 @@ void LView::insertAfter(LView *prev, bool switchParent) noexcept
     }
 }
 
-
-
 void LView::removeThread(std::thread::id thread)
 {
     auto it { m_threadsMap.find(thread) };
@@ -249,10 +246,10 @@ void LView::removeThread(std::thread::id thread)
 
     LSceneView *sceneView { static_cast<LSceneView*>(this) };
 
-    auto sit { sceneView->imp()->threadsMap.find(thread) };
+    auto sit { sceneView->m_sceneThreadsMap.find(thread) };
 
-    if (sit != sceneView->imp()->threadsMap.end())
-        sceneView->imp()->threadsMap.erase(sit);
+    if (sit != sceneView->m_sceneThreadsMap.end())
+        sceneView->m_sceneThreadsMap.erase(sit);
 }
 
 void LView::markAsChangedOrder(bool includeChildren)

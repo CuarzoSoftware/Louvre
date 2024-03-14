@@ -1,6 +1,5 @@
 #include <private/LSceneTouchPointPrivate.h>
 #include <private/LScenePrivate.h>
-#include <private/LSceneViewPrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <LToplevelMoveSession.h>
 #include <LToplevelResizeSession.h>
@@ -57,14 +56,14 @@ LSceneTouchPoint *LScene::findTouchPoint(Int32 id) const
 void LScene::handleInitializeGL(LOutput *output)
 {
     imp()->mutex.lock();
-    imp()->view.imp()->fb = output->framebuffer();
+    imp()->view.m_fb = output->framebuffer();
     imp()->mutex.unlock();
 }
 
 void LScene::handlePaintGL(LOutput *output)
 {
     imp()->mutex.lock();
-    imp()->view.imp()->fb = output->framebuffer();
+    imp()->view.m_fb = output->framebuffer();
     imp()->view.render();
     imp()->mutex.unlock();
 }
@@ -72,7 +71,7 @@ void LScene::handlePaintGL(LOutput *output)
 void LScene::handleMoveGL(LOutput *output)
 {
     imp()->mutex.lock();
-    imp()->view.imp()->fb = output->framebuffer();
+    imp()->view.m_fb = output->framebuffer();
     imp()->view.damageAll(output);
     imp()->mutex.unlock();
 }
@@ -80,18 +79,17 @@ void LScene::handleMoveGL(LOutput *output)
 void LScene::handleResizeGL(LOutput *output)
 {
     imp()->mutex.lock();
+    imp()->view.m_fb = output->framebuffer();
     imp()->view.damageAll(output);
     imp()->mutex.unlock();
 }
 
 void LScene::handleUninitializeGL(LOutput *output)
 {
-    L_UNUSED(output);
     imp()->mutex.lock();
-    auto it = imp()->view.imp()->threadsMap.find(output->threadId());
-
-    if (it != imp()->view.imp()->threadsMap.end())
-        imp()->view.imp()->threadsMap.erase(it);
+    auto it { imp()->view.m_sceneThreadsMap.find(output->threadId()) };
+    if (it != imp()->view.m_sceneThreadsMap.end())
+        imp()->view.m_sceneThreadsMap.erase(it);
     imp()->mutex.unlock();
 }
 

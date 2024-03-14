@@ -1,5 +1,4 @@
 #include <private/LScenePrivate.h>
-#include <private/LSceneViewPrivate.h>
 #include <private/LSceneTouchPointPrivate.h>
 #include <LOutput.h>
 #include <LCompositor.h>
@@ -102,7 +101,7 @@ bool LScene::LScenePrivate::pointClippedByParentScene(LView *view, const LPoint 
     if (parentScene->isLScene())
         return false;
 
-    if (!parentScene->imp()->fb->rect().containsPoint(point))
+    if (!parentScene->m_fb->rect().containsPoint(point))
         return true;
 
     return pointClippedByParentScene(parentScene, point);

@@ -9,6 +9,7 @@ DockApp::DockApp(App *app, Dock *dock) :
     LTextureView(),
     dot(G::DockDot, this)
 {
+    id = DockAppType;
     this->app = app;
     this->dock = dock;
     setParent(&dock->appsContainer);

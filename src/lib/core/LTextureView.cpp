@@ -3,16 +3,7 @@
 #include <LTextureView.h>
 #include <LCompositor.h>
 
-LTextureView::LTextureView(LTexture *texture, LView *parent) noexcept : LView(LView::Texture, true, parent)
-{
-    m_texture.setOnDestroyCallback([this](auto)
-    {
-        updateDimensions();
-        damageAll();
-    });
 
-    setTexture(texture);
-}
 
 void LTextureView::setInputRegion(const LRegion *region)
 {

@@ -292,7 +292,7 @@ void Surface::minimizedChanged()
                 }
 
                 // Scale and move fullsize view to the dock
-                LRegion trans = minimizedTransRegion;
+                LRegion trans { minimizedTransRegion };
                 trans.multiply((1.f - easeOut));
                 thumbnailFullsizeView->setTranslucentRegion(&trans);
                 thumbnailFullsizeView->setDstSize((thumbnailFullsizeView->texture()->sizeB() / thumbnailFullsizeView->bufferScale()) * (1.f - easeOut));

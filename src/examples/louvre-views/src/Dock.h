@@ -4,6 +4,7 @@
 #include <LLayerView.h>
 #include <LSolidColorView.h>
 #include <LAnimation.h>
+#include "Global.h"
 #include "UITextureView.h"
 
 using namespace Louvre;
@@ -21,15 +22,17 @@ public:
     void hide();
 
     // Dock textures container
-    LLayerView dockContainer;
+    LLayerView dockContainer { this };
 
     // Dock textures
-    UITextureView dockLeft, dockCenter, dockRight;
+    UITextureView dockLeft   { G::DockL, &dockContainer };
+    UITextureView dockCenter { G::DockC, &dockContainer };
+    UITextureView dockRight  { G::DockR, &dockContainer };
 
     // Container for apps and minimized windows
-    LLayerView appsContainer;
-    LSolidColorView separator;
-    LLayerView itemsContainer;
+    LLayerView appsContainer { &dockContainer };
+    LSolidColorView separator { 0.f, 0.f, 0.f, 0.2f, &appsContainer };
+    LLayerView itemsContainer { &dockContainer };
 
     void pointerEnterEvent(const LPointerEnterEvent &) override;
     void pointerMoveEvent(const LPointerMoveEvent &) override;

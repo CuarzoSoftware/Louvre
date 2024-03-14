@@ -2,7 +2,7 @@
 
 using namespace Louvre;
 
-LLayerView::LLayerView(LView *parent) noexcept : LView(LView::Layer, false, parent) {}
+
 
 bool LLayerView::nativeMapped() const noexcept
 {

@@ -40,7 +40,16 @@ public:
      * @param texture The LTexture to be used as the view's texture. Default is nullptr.
      * @param parent The parent LView of the LTextureView. Default is nullptr.
      */
-    LTextureView(LTexture *texture = nullptr, LView *parent = nullptr) noexcept;
+    inline LTextureView(LTexture *texture = nullptr, LView *parent = nullptr) noexcept : LView(LView::Texture, true, parent)
+    {
+        m_texture.setOnDestroyCallback([this](auto)
+                                       {
+                                           updateDimensions();
+                                           damageAll();
+                                       });
+
+        setTexture(texture);
+    }
 
     /**
      * @brief Destructor for the LTextureView.

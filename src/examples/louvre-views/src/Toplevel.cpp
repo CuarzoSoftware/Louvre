@@ -102,12 +102,12 @@ void Toplevel::startResizeRequest(const LEvent &triggeringEvent, ResizeEdge edge
 
         const LPoint initDragPoint { LTouch::toGlobal(cursor()->output(), touchPoint->pos()) };
 
-        if (resizeSession().start(triggeringEvent, edge, initDragPoint, LSize(128, 128), EdgeDisabled, TOPBAR_HEIGHT))
+        if (resizeSession().start(triggeringEvent, edge, initDragPoint, LSize(150, 150), EdgeDisabled, TOPBAR_HEIGHT))
             G::enableDocks(false);
     }
     else if (surface()->hasPointerFocus())
     {
-        if (resizeSession().start(triggeringEvent, edge, cursor()->pos(), LSize(128, 128), EdgeDisabled, TOPBAR_HEIGHT))
+        if (resizeSession().start(triggeringEvent, edge, cursor()->pos(), LSize(150, 150), EdgeDisabled, TOPBAR_HEIGHT))
             G::enableDocks(false);
     }
 }

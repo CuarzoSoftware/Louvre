@@ -23,7 +23,7 @@ public:
      *
      * @param parent The parent view, if any.
      */
-    LLayerView(LView *parent = nullptr) noexcept;
+    inline LLayerView(LView *parent = nullptr) noexcept : LView(LView::Layer, false, parent) {}
 
     /**
      * @brief Destructor for LLayerView.

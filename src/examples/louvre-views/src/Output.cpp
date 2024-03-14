@@ -410,7 +410,7 @@ void Output::initializeGL()
     wallpaperView->setPos(pos());
     wallpaperView->enablePointerEvents(true);
     wallpaperView->enableBlockPointer(true);
-    wallpaperView->id = Wallpaper;
+    wallpaperView->id = WallpaperType;
     G::compositor()->scene.handleInitializeGL(this);
 }
 

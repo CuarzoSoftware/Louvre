@@ -62,7 +62,10 @@ class Surface;
 
 enum ID
 {
-    Wallpaper = 1
+    WallpaperType = 1,
+    DockSeparatorType = 2,
+    DockItemType = 3,
+    DockAppType = 4
 };
 
 class G
@@ -188,7 +191,7 @@ public:
     static Compositor *compositor();
     static LScene *scene();
     static Pointer *pointer();
-    static std::vector<Output*>&outputs();
+    static const std::vector<Output*>&outputs();
     static std::list<Surface*>&surfaces();
 
     // Dock

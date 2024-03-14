@@ -14,15 +14,9 @@
 
 // Add it to the overlayLayer so it is always on top
 Dock::Dock(Output *output) :
-    LLayerView(&G::compositor()->overlayLayer),
-    dockContainer(this),
-    dockLeft(G::DockL, &dockContainer),
-    dockCenter(G::DockC, &dockContainer),
-    dockRight(G::DockR, &dockContainer),
-    appsContainer(&dockContainer),
-    separator(0.f, 0.f, 0.f, 0.2f, &appsContainer),
-    itemsContainer(&dockContainer)
+    LLayerView(&G::compositor()->overlayLayer)
 {
+    separator.id = DockSeparatorType;
     this->output = output;
     output->dock = this;
 
@@ -83,27 +77,28 @@ void Dock::update()
     if (!alive)
         return;
 
-    Int32 dockWidth = DOCK_PADDING;
+    Int32 dockWidth { DOCK_PADDING };
 
     if (itemsContainer.children().empty())
         separator.setParent(nullptr);
     else
-        separator.insertAfter(appsContainer.children().back());
-
-    for (LView *it : appsContainer.children())
     {
-        DockApp *item = (DockApp*)it;
+        separator.setParent(nullptr);
+        separator.setParent(&appsContainer);
+    }
 
-        if ((LSolidColorView*)item == &separator)
+    for (LView *item : appsContainer.children())
+    {
+        if (item->id == DockSeparatorType)
         {
-            item->setPos(dockWidth, DOCK_PADDING + (DOCK_ITEM_HEIGHT - item->size().h())/2);
+            static_cast<LSolidColorView*>(item)->setPos(dockWidth, DOCK_PADDING + (DOCK_ITEM_HEIGHT - item->size().h())/2);
             dockWidth += DOCK_SPACING;
         }
-        else
-        {               
-            item->setPos(dockWidth, - 2 - item->app->dockAppsAnimationOffset.y() + DOCK_PADDING + (DOCK_ITEM_HEIGHT - item->size().h())/2);
-
-            item->dot.setVisible(item->app->state == App::Running && item->app->dockAppsAnimationOffset.y() == 0);
+        else if(item->id == DockAppType)
+        {
+            DockApp &dockApp { static_cast<DockApp&>(*item) };
+            dockApp.setPos(dockWidth, - 2 - dockApp.app->dockAppsAnimationOffset.y() + DOCK_PADDING + (DOCK_ITEM_HEIGHT - item->size().h())/2);
+            dockApp.dot.setVisible(dockApp.app->state == App::Running && dockApp.app->dockAppsAnimationOffset.y() == 0);
 
             if (pointerIsOver() && G::tooltip()->targetView == item)
                 G::tooltip()->show(item->pos().x() + item->size().w() / 2, item->pos().y());
@@ -111,22 +106,22 @@ void Dock::update()
 
         dockWidth += item->size().w();
 
-        if (it != appsContainer.children().back())
+        if (item != appsContainer.children().back())
             dockWidth += DOCK_SPACING;
     }
 
     for (LView *it : itemsContainer.children())
     {
-        LTextureView *item = (LTextureView*)it;
+        LTextureView &item { static_cast<LTextureView&>(*it) };
 
-        item->setPos(dockWidth, DOCK_PADDING + (DOCK_ITEM_HEIGHT - item->size().h())/2);
-        dockWidth += item->size().w();
+        item.setPos(dockWidth, DOCK_PADDING + (DOCK_ITEM_HEIGHT - item.size().h())/2);
+        dockWidth += item.size().w();
 
         if (it != itemsContainer.children().back())
             dockWidth += DOCK_SPACING;
 
-        if (pointerIsOver() && G::tooltip()->targetView == item)
-            G::tooltip()->show(item->pos().x() + item->size().w() / 2, item->pos().y() - 8);
+        if (pointerIsOver() && G::tooltip()->targetView == it)
+            G::tooltip()->show(item.pos().x() + item.size().w() / 2, item.pos().y() - 8);
     }
 
     dockWidth += DOCK_PADDING;

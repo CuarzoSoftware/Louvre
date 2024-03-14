@@ -22,7 +22,7 @@ public:
      *
      * @param parent The parent view that will contain this solid color view.
      */
-    inline LSolidColorView(LView *parent) noexcept :
+    inline LSolidColorView(LView *parent = nullptr) noexcept :
         LView(LView::SolidColor, true, parent),
         m_color(0.f, 0.f, 0.f)
     {}

@@ -125,7 +125,7 @@ public:
      * @param type Type ID of the view, such as those listed in LView::Type.
      * @param parent Parent view.
      */
-    LView(UInt32 type, bool renderable, LView *parent = nullptr) noexcept;
+    explicit LView(UInt32 type, bool renderable, LView *parent) noexcept;
 
     /// @cond OMIT
     LView(const LView&) = delete;

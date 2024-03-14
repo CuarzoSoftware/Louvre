@@ -11,7 +11,7 @@ using namespace Louvre;
 class DockItem final : public LTextureView
 {
 public:
-    DockItem(class Surface *surface, Dock *dock);
+    DockItem(class Surface *surface, Dock *dock) noexcept;
     ~DockItem();
 
     void pointerEnterEvent(const LPointerEnterEvent &) override;

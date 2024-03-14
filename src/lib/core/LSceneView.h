@@ -45,24 +45,29 @@ public:
      *
      * @return The clear color in RGBA format.
      */
-    const LRGBAF &clearColor() const;
-
-    /**
-     * @brief Set the clear color of the scene view using individual RGBA components.
-     *
-     * @param r The red color component (0.0 to 1.0).
-     * @param g The green color component (0.0 to 1.0).
-     * @param b The blue color component (0.0 to 1.0).
-     * @param a The alpha value (0.0 to 1.0).
-     */
-    void setClearColor(Float32 r, Float32 g, Float32 b, Float32 a);
+    inline const LRGBAF &clearColor() const noexcept
+    {
+        return m_clearColor;
+    }
 
     /**
      * @brief Set the clear color of the scene view using an LRGBAF color.
      *
      * @param color The clear color in LRGBAF format.
      */
-    void setClearColor(const LRGBAF &color);
+    inline void setClearColor(const LRGBAF &color) noexcept
+    {
+        if (m_clearColor.r == color.r &&
+            m_clearColor.g == color.g &&
+            m_clearColor.b == color.b &&
+            m_clearColor.a == color.a)
+            return;
+
+        m_clearColor = color;
+
+        if (!repaintCalled() && mapped())
+            repaint();
+    }
 
     /**
      * @brief Apply damage to all areas of the scene view for a specific output.
@@ -107,7 +112,10 @@ public:
      *
      * @param pos The new position of the scene.
      */
-    void setPos(const LPoint &pos);
+    inline void setPos(const LPoint &pos) noexcept
+    {
+        setPos(pos.x(), pos.y());
+    }
 
     /**
      * @brief Set the position of the scene using X and Y coordinates.
@@ -115,7 +123,7 @@ public:
      * @param x The X-coordinate of the new position.
      * @param y The Y-coordinate of the new position.
      */
-    void setPos(Int32 x, Int32 y);
+    void setPos(Int32 x, Int32 y) noexcept;
 
     /**
      * @brief Set the size of the scene framebuffer.
@@ -149,11 +157,49 @@ public:
     virtual const LRegion *inputRegion() const noexcept override;
     virtual void paintEvent(const PaintEventParams &params) noexcept override;
 
-LPRIVATE_IMP_UNIQUE(LSceneView)
-    /// @cond OMIT
+/// @cond OMIT
+protected:
+    class ThreadData : public LObject
+    {
+    public:
+        std::list<LRegion*>prevDamageList;
+        LRegion newDamage;
+        LRegion manuallyAddedDamage;
+        LRegion prevExternalExclude;
+        LRegion opaqueSum;
+        LRegion translucentSum;
+        LRect prevRect;
+        LPainter *p { nullptr };
+        LOutput *o { nullptr };
+        LBox *boxes { nullptr };
+        Int32 n, w, h;
+        bool oversampling = false;
+        bool fractionalScale = false;
+    };
+
+    std::unordered_map<std::thread::id, ThreadData> m_sceneThreadsMap;
+    LWeak<ThreadData> m_currentThreadData;
+    LFramebuffer *m_fb { nullptr };
+    LRGBAF m_clearColor {0.f, 0.f, 0.f, 0.f};
+    LPoint m_customPos;
+    std::vector<LOutput*> m_outputs;
+    PaintEventParams m_paintParams;
+
+private:
     friend class LScene;
+    friend class LView;
     LSceneView(LFramebuffer *framebuffer = nullptr, LView *parent = nullptr);
-    /// @endcond
+
+    void calcNewDamage(LView *view);
+    void drawOpaqueDamage(LView *view);
+    void drawTranslucentDamage(LView *view);
+    void parentClipping(LView *parent, LRegion *region);
+    void drawBackground(bool addToOpaqueSum);
+    void clearTmpVariables(ThreadData &ctd);
+    void damageAll(ThreadData &ctd);
+    void checkRectChange(ThreadData &ctd);
+
+/// @endcond
 };
 
 #endif // LSCENEVIEW_H

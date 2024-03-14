@@ -576,8 +576,8 @@ void ToplevelView::updateGeometry()
         const LSize tlSize { toplevel->windowGeometry().size().w() - 2 * clip, toplevel->windowGeometry().size().h() - 2 * clip };
 
         setSize(
-            tlSize.w() < 128 ? 128 : tlSize.w(),
-            tlSize.h() < 128 ? 128 : tlSize.h());
+            tlSize.w() < 150 ? 149 : tlSize.w(),
+            tlSize.h() < 150 ? 149 : tlSize.h());
 
         const LSize size { nativeSize() };
 

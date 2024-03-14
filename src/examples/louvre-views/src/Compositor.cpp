@@ -34,7 +34,7 @@ Compositor::Compositor() : LCompositor(),
     softwareCursor(nullptr, &cursorLayer)
 {
     // Set black as default background color
-    scene.mainView()->setClearColor(0.f, 0.f, 0.f, 1.f);
+    scene.mainView()->setClearColor({0.f, 0.f, 0.f, 1.f});
 
     // Setup software cursor
     softwareCursor.enableDstSize(true);

@@ -8,10 +8,11 @@
 #include "Dock.h"
 #include "Tooltip.h"
 
-DockItem::DockItem(class Surface *surface, Dock *dock) : LTextureView(surface->thumbnailTex, &dock->itemsContainer)
+DockItem::DockItem(class Surface *surface, Dock *dck) noexcept : LTextureView(surface->thumbnailTex, &dck->itemsContainer)
 {
+    id = DockItemType;
     surface->minimizedViews.push_back(this);
-    this->dock = dock;
+    this->dock = dck;
     this->surface = surface;
     setBufferScale(4);
     enableScaling(true);
