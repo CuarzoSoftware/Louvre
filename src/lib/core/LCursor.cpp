@@ -1,7 +1,6 @@
 #include <private/LCursorPrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LCompositorPrivate.h>
-#include <private/LXCursorPrivate.h>
 #include <private/LTexturePrivate.h>
 #include <private/LPainterPrivate.h>
 

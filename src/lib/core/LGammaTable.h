@@ -162,11 +162,11 @@ private:
     friend class Protocols::GammaControl::RGammaControl;
     friend class LOutput;
 
-    UInt32 m_size {0};
-    UInt16 *m_table {nullptr};
-
     // This is only set for tables created by a client and is not copied across tables
     LWeak<Protocols::GammaControl::RGammaControl> m_gammaControlResource;
+    UInt16 *m_table {nullptr};
+    UInt32 m_size {0};
+
     /// @endcond OMIT
 };
 

@@ -1,7 +1,7 @@
 #ifndef LX11CURSOR_H
 #define LX11CURSOR_H
 
-#include <LNamespaces.h>
+#include <LTexture.h>
 
 /**
  * @brief XCursor Icons and Themes
@@ -36,7 +36,7 @@ public:
      *
      * @warning The destructor releases any resources associated with an LXCursor instance, including its texture.
      */
-    ~LXCursor();
+    ~LXCursor() = default;
 
     /// @cond OMIT
     LXCursor(const LXCursor&) = delete;
@@ -46,16 +46,24 @@ public:
     /**
      * @brief Get the cursor's texture.
      */
-    const LTexture *texture() const;
+    inline const LTexture *texture() const noexcept
+    {
+        return &m_texture;
+    }
 
     /**
      * @brief Get the cursor's hotspot in buffer coordinates.
      */
-    const LPoint &hotspotB() const;
+    inline const LPoint &hotspotB() const noexcept
+    {
+        return m_hotspotB;
+    }
 
-    LPRIVATE_IMP_UNIQUE(LXCursor)
+private:
     /// @cond OMIT
-    LXCursor();
+    LXCursor() = default;
+    LTexture m_texture;
+    LPoint m_hotspotB;
     /// @endcond
 };
 

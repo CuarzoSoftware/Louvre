@@ -1,72 +1,56 @@
-#include <private/LTimerPrivate.h>
 #include <private/LCompositorPrivate.h>
+#include <LTimer.h>
 #include <LLog.h>
 
-LTimer::LTimer(const Callback &onTimeout) : LPRIVATE_INIT_UNIQUE(LTimer)
+LTimer::LTimer(const Callback &onTimeout) noexcept : m_onTimeoutCallback(onTimeout)
 {
-    imp()->onTimeoutCallback = onTimeout;
-
-    if (compositor()->display())
-        imp()->waylandEventSource = wl_event_loop_add_timer(LCompositor::eventLoop(), &LTimer::LTimerPrivate::waylandTimeoutCallback, this);
+    if (compositor() && compositor()->display())
+        m_waylandEventSource = wl_event_loop_add_timer(LCompositor::eventLoop(), &LTimer::waylandTimeoutCallback, this);
 }
 
-LTimer::~LTimer()
+LTimer::~LTimer() noexcept
 {
     if (compositor()->display())
     {
-        wl_event_source_timer_update(imp()->waylandEventSource, 0);
-        wl_event_source_remove(imp()->waylandEventSource);
+        wl_event_source_timer_update(m_waylandEventSource, 0);
+        wl_event_source_remove(m_waylandEventSource);
     }
 
-    if (imp()->destroyOnTimeout)
+    if (m_destroyOnTimeout)
         LVectorRemoveOneUnordered(compositor()->imp()->oneShotTimers, this);
 }
 
-void LTimer::oneShot(UInt32 intervalMs, const Callback &onTimeout)
+bool LTimer::oneShot(UInt32 intervalMs, const Callback &onTimeout) noexcept
 {
     if (!onTimeout)
     {
         LLog::error("[LTimer::oneShot] Cannot create one shot LTimer without onTimeout callback.");
-        return;
+        return false;
     }
 
-    if (!compositor()->display())
+    if (!compositor() || !compositor()->display())
     {
         LLog::error("[LTimer::oneShot] Failed to create one shot LTimer, no active LCompositor instance.");
-        return;
+        return false;
     }
 
-    LTimer *timer = new LTimer(onTimeout);
-    timer->imp()->destroyOnTimeout = true;
+    LTimer *timer { new LTimer(onTimeout) };
+    timer->m_destroyOnTimeout = true;
     compositor()->imp()->oneShotTimers.push_back(timer);
     timer->start(intervalMs);
+    return true;
 }
 
-void LTimer::setCallback(const Callback &onTimeout)
-{
-    imp()->onTimeoutCallback = onTimeout;
-}
-
-UInt32 LTimer::interval() const
-{
-    return imp()->interval;
-}
-
-bool LTimer::running() const
-{
-    return imp()->running;
-}
-
-void LTimer::cancel()
+void LTimer::cancel() noexcept
 {
     if (running())
     {
-        imp()->running = false;
+        m_running = false;
 
-        if (compositor()->display())
-            wl_event_source_timer_update(imp()->waylandEventSource, 0);
+        if (compositor() && compositor()->display())
+            wl_event_source_timer_update(m_waylandEventSource, 0);
 
-        if (imp()->destroyOnTimeout)
+        if (m_destroyOnTimeout)
         {
             delete this;
             return;
@@ -74,19 +58,19 @@ void LTimer::cancel()
     }
 }
 
-void LTimer::stop()
+void LTimer::stop() noexcept
 {
     if (running())
     {
-        imp()->running = false;
+        m_running = false;
 
-        if (compositor()->display())
-            wl_event_source_timer_update(imp()->waylandEventSource, 0);
+        if (compositor() && compositor()->display())
+            wl_event_source_timer_update(m_waylandEventSource, 0);
 
-        if (imp()->onTimeoutCallback)
-            imp()->onTimeoutCallback(this);
+        if (m_onTimeoutCallback)
+            m_onTimeoutCallback(this);
 
-        if (!imp()->running && imp()->destroyOnTimeout)
+        if (!m_running && m_destroyOnTimeout)
         {
             delete this;
             return;
@@ -94,22 +78,33 @@ void LTimer::stop()
     }
 }
 
-void LTimer::start(UInt32 intervalMs)
+bool LTimer::start(UInt32 intervalMs) noexcept
 {
-    if (!compositor()->display())
+    if (!compositor() || !compositor()->display())
     {
         LLog::error("[LTimer::oneShot] Failed to start LTimer, no active LCompositor instance.");
-        return;
+        return false;
     }
 
-    if (!imp()->waylandEventSource)
-        imp()->waylandEventSource = wl_event_loop_add_timer(LCompositor::eventLoop(), &LTimer::LTimerPrivate::waylandTimeoutCallback, this);
+    if (!m_onTimeoutCallback)
+        return false;
 
-    imp()->interval = intervalMs;
-    imp()->running = true;
+    if (!m_waylandEventSource)
+        m_waylandEventSource = wl_event_loop_add_timer(LCompositor::eventLoop(), &LTimer::waylandTimeoutCallback, this);
+
+    m_interval = intervalMs;
+    m_running = true;
 
     if (intervalMs > 0)
-        wl_event_source_timer_update(imp()->waylandEventSource, intervalMs);
+        wl_event_source_timer_update(m_waylandEventSource, intervalMs);
     else
-        imp()->waylandTimeoutCallback(this);
+        waylandTimeoutCallback(this);
+
+    return true;
+}
+
+Int32 LTimer::waylandTimeoutCallback(void *data) noexcept
+{
+    static_cast<LTimer*>(data)->stop();
+    return 0;
 }

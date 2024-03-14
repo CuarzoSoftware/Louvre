@@ -7,7 +7,7 @@
 /**
  * @brief Weak reference to an LObject pointer
  *
- * The LWeak class template provides a mechanism for creating weak references to subclasses of LObject.
+ * The LWeak class template provides a mechanism for creating weak pointer references to subclasses of LObject.
  * It is conceptually similar to `std::weak_ptr` but is specifically tailored for LObject subclasses, avoiding
  * the pointer indirection and associated performance overhead of the `std::weak_ptr` thread-safe mechanisms.
  *
