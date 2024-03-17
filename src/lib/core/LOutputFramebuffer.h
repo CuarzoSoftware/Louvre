@@ -19,26 +19,34 @@
  * @see LOutput::hasBufferDamageSupport()
  * @see LOutput::setBufferDamage()
  */
-class Louvre::LOutputFramebuffer : public LFramebuffer
+class Louvre::LOutputFramebuffer final : public LFramebuffer
 {
 public:
     /// @cond OMIT
-    LOutputFramebuffer(LOutput *output);
-    ~LOutputFramebuffer();
+    inline LOutputFramebuffer(LOutput *output) noexcept : m_output(output)
+    {
+        m_type = Output;
+    }
+    ~LOutputFramebuffer() noexcept = default;
     /// @endcond
 
-    LOutput *output() const;
-    Float32 scale() const override;
-    const LSize &sizeB() const override;
-    const LRect &rect() const override;
-    GLuint id() const override;
-    Int32 buffersCount() const override;
-    Int32 currentBufferIndex() const override;
-    const LTexture *texture(Int32 index = 0) const override;
-    void setFramebufferDamage(const LRegion *damage) override;
-    Transform transform() const override;
+    inline LOutput *output() const noexcept
+    {
+        return m_output;
+    }
 
-    LPRIVATE_IMP_UNIQUE(LOutputFramebuffer)
+    Float32 scale() const noexcept override;
+    const LSize &sizeB() const noexcept override;
+    const LRect &rect() const noexcept override;
+    GLuint id() const noexcept override;
+    Int32 buffersCount() const noexcept override;
+    Int32 currentBufferIndex() const noexcept override;
+    const LTexture *texture(Int32 index = 0) const noexcept override;
+    void setFramebufferDamage(const LRegion *damage) noexcept override;
+    Transform transform() const noexcept override;
+
+private:
+    LOutput *m_output;
 };
 
 #endif // LOUTPUTFRAMEBUFFER_H

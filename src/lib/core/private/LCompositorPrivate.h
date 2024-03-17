@@ -1,10 +1,10 @@
 #ifndef LCOMPOSITORPRIVATE_H
 #define LCOMPOSITORPRIVATE_H
 
-#include <private/LRenderBufferPrivate.h>
 #include <LCompositor.h>
 #include <LOutput.h>
 #include <LInputDevice.h>
+#include <LRenderBuffer.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <sys/epoll.h>
@@ -12,6 +12,8 @@
 #include <unistd.h>
 #include <string>
 #include <filesystem>
+
+using namespace Louvre;
 
 LPRIVATE_CLASS(LCompositor)
 
@@ -106,12 +108,12 @@ LPRIVATE_CLASS(LCompositor)
     struct ThreadData
     {
         LPainter *painter { nullptr };
-        std::vector<LRenderBuffer::LRenderBufferPrivate::ThreadData> renderBuffersToDestroy;
+        std::vector<LRenderBuffer::ThreadData> renderBuffersToDestroy;
     };
 
     std::map<std::thread::id, ThreadData> threadsMap;
     void destroyPendingRenderBuffers(std::thread::id *id);
-    void addRenderBufferToDestroy(std::thread::id thread, LRenderBuffer::LRenderBufferPrivate::ThreadData &data);
+    void addRenderBufferToDestroy(std::thread::id thread, LRenderBuffer::ThreadData &data);
     static LPainter *findPainter();
 
     inline static void destroyNativeTextures(std::vector<GLuint> &vector)

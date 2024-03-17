@@ -1,14 +1,16 @@
 #ifndef LOUTPUTPRIVATE_H
 #define LOUTPUTPRIVATE_H
 
-#include <private/LRenderBufferPrivate.h>
 #include <LOutputFramebuffer.h>
+#include <LRenderBuffer.h>
 #include <LOutput.h>
 #include <LBitset.h>
 #include <LGammaTable.h>
 #include <atomic>
 #include <mutex>
 #include <functional>
+
+using namespace Louvre;
 
 struct LOutput::Params
 {

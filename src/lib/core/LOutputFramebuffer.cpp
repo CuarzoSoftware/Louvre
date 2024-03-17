@@ -1,64 +1,52 @@
-#include <private/LOutputFramebufferPrivate.h>
 #include <private/LOutputPrivate.h>
+#include <LOutputFramebuffer.h>
 
-LOutputFramebuffer::LOutputFramebuffer(LOutput *output) :
-LPRIVATE_INIT_UNIQUE(LOutputFramebuffer)
+using namespace Louvre;
+
+Float32 LOutputFramebuffer::scale() const noexcept
 {
-    m_type = Output;
-    imp()->output = output;
+    return m_output->imp()->scale;
 }
 
-LOutputFramebuffer::~LOutputFramebuffer() {}
-
-LOutput *LOutputFramebuffer::output() const
+const LSize &LOutputFramebuffer::sizeB() const noexcept
 {
-    return imp()->output;
+    return m_output->imp()->sizeB;
 }
 
-Float32 LOutputFramebuffer::scale() const
+const LRect &LOutputFramebuffer::rect() const noexcept
 {
-    return imp()->output->imp()->scale;
+    return m_output->imp()->rect;
 }
 
-const LSize &LOutputFramebuffer::sizeB() const
+GLuint LOutputFramebuffer::id() const noexcept
 {
-    return imp()->output->imp()->sizeB;
-}
-
-const LRect &LOutputFramebuffer::rect() const
-{
-    return imp()->output->imp()->rect;
-}
-
-GLuint LOutputFramebuffer::id() const
-{
-    if (imp()->output->usingFractionalScale() && imp()->output->fractionalOversamplingEnabled())
-        return imp()->output->imp()->fractionalFb.id();
+    if (m_output->usingFractionalScale() && m_output->fractionalOversamplingEnabled())
+        return m_output->imp()->fractionalFb.id();
 
     return 0;
 }
 
-Int32 LOutputFramebuffer::buffersCount() const
+Int32 LOutputFramebuffer::buffersCount() const noexcept
 {
-    return imp()->output->buffersCount();
+    return m_output->buffersCount();
 }
 
-Int32 LOutputFramebuffer::currentBufferIndex() const
+Int32 LOutputFramebuffer::currentBufferIndex() const noexcept
 {
-    return imp()->output->currentBuffer();
+    return m_output->currentBuffer();
 }
 
-const LTexture *LOutputFramebuffer::texture(Int32 index) const
+const LTexture *LOutputFramebuffer::texture(Int32 index) const noexcept
 {
-    return imp()->output->bufferTexture(index);
+    return m_output->bufferTexture(index);
 }
 
-void LOutputFramebuffer::setFramebufferDamage(const LRegion *damage)
+void LOutputFramebuffer::setFramebufferDamage(const LRegion *damage) noexcept
 {
-    imp()->output->setBufferDamage(damage);
+    m_output->setBufferDamage(damage);
 }
 
-LFramebuffer::Transform LOutputFramebuffer::transform() const
+LFramebuffer::Transform LOutputFramebuffer::transform() const noexcept
 {
-    return imp()->output->imp()->transform;
+    return m_output->imp()->transform;
 }

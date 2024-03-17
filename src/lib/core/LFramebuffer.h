@@ -27,7 +27,7 @@ public:
         Render
     };
    
-    inline Type type() const
+    inline Type type() const noexcept
     {
         return m_type;
     }
@@ -65,21 +65,19 @@ public:
         Flipped270 = 7
     };
 
-    static inline bool is90Transform(Transform transform)
+    static inline constexpr bool is90Transform(Transform transform) noexcept
     {
         return transform & Rotated90;
     }
 
-    static inline Transform requiredTransform(Transform from, Transform to)
+    static inline constexpr Transform requiredTransform(Transform from, Transform to) noexcept
     {
-        Int32 bitmask = Rotated270;
-        Int32 flip = (from & ~bitmask) ^ (to & ~bitmask);
+        const Int32 bitmask { Rotated270 };
+        const Int32 flip { (from & ~bitmask) ^ (to & ~bitmask) };
         Int32 rotation;
 
         if (flip)
-        {
             rotation = ((to & bitmask) + (from & bitmask)) & bitmask;
-        }
         else
         {
             rotation = (to & bitmask) - (from & bitmask);
@@ -88,7 +86,7 @@ public:
                 rotation += 4;
         }
 
-        return (LFramebuffer::Transform)(flip | rotation);
+        return static_cast<LFramebuffer::Transform>(flip | rotation);
     }
 
     /**
@@ -104,7 +102,7 @@ public:
      *
      * @returns The scale factor for the framebuffer.
      */
-    virtual Float32 scale() const = 0;
+    virtual Float32 scale() const noexcept = 0;
 
     /**
      * @brief Get the size of the framebuffer in buffer coordinates.
@@ -113,7 +111,7 @@ public:
      *
      * @returns The size of the framebuffer in buffer coordinates.
      */
-    virtual const LSize &sizeB() const = 0;
+    virtual const LSize &sizeB() const noexcept = 0;
 
     /**
      * @brief Get the position and size of the framebuffer in surface coordinates.
@@ -122,7 +120,7 @@ public:
      *
      * @returns The rect representing the position and size of the framebuffer in surface coordinates.
      */
-    virtual const LRect &rect() const = 0;
+    virtual const LRect &rect() const noexcept = 0;
 
     /**
      * @brief Get the OpenGL framebuffer ID.
@@ -131,7 +129,7 @@ public:
      *
      * @returns The OpenGL framebuffer ID.
      */
-    virtual GLuint id() const = 0;
+    virtual GLuint id() const noexcept = 0;
 
     /**
      * @brief Get the number of framebuffers represented by this instance.
@@ -140,7 +138,7 @@ public:
      *
      * @returns The number of framebuffers.
      */
-    virtual Int32 buffersCount() const = 0;
+    virtual Int32 buffersCount() const noexcept = 0;
 
     /**
      * @brief Get the index of the framebuffer where the rendering is stored.
@@ -149,7 +147,7 @@ public:
      *
      * @returns The index of the framebuffer used for rendering.
      */
-    virtual Int32 currentBufferIndex() const = 0;
+    virtual Int32 currentBufferIndex() const noexcept = 0;
 
     /**
      * @brief Get the OpenGL texture ID of a specific framebuffer index.
@@ -159,7 +157,7 @@ public:
      * @param index The index of the framebuffer.
      * @returns The OpenGL texture ID of the specified framebuffer index.
      */
-    virtual const LTexture *texture(Int32 index = 0) const = 0;
+    virtual const LTexture *texture(Int32 index = 0) const noexcept = 0;
 
     /**
      * @brief Set the damaged region
@@ -169,7 +167,7 @@ public:
      *
      * @param damage A pointer to the LRegion object representing the changed region.
      */
-    virtual void setFramebufferDamage(const LRegion *damage) = 0;
+    virtual void setFramebufferDamage(const LRegion *damage) noexcept = 0;
 
     /**
      * @brief Get the framebuffer transformation.
@@ -178,7 +176,7 @@ public:
      *
      * @return The framebuffer transformation.
      */
-    virtual Transform transform() const = 0;
+    virtual Transform transform() const noexcept = 0;
    
 protected:
     Type m_type;

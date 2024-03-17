@@ -659,13 +659,12 @@ void LCompositor::LCompositorPrivate::destroyPendingRenderBuffers(std::thread::i
 
     while (!threadData.renderBuffersToDestroy.empty())
     {
-        glDeleteTextures(1, &threadData.renderBuffersToDestroy.back().textureId);
         glDeleteFramebuffers(1, &threadData.renderBuffersToDestroy.back().framebufferId);
         threadData.renderBuffersToDestroy.pop_back();
     }
 }
 
-void LCompositor::LCompositorPrivate::addRenderBufferToDestroy(std::thread::id thread, LRenderBuffer::LRenderBufferPrivate::ThreadData &data)
+void LCompositor::LCompositorPrivate::addRenderBufferToDestroy(std::thread::id thread, LRenderBuffer::ThreadData &data)
 {
     ThreadData &threadData = threadsMap[thread];
     threadData.renderBuffersToDestroy.push_back(data);

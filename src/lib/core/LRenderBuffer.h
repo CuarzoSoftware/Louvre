@@ -1,6 +1,7 @@
 #ifndef LRENDERBUFFER_H
 #define LRENDERBUFFER_H
 
+#include <LTexture.h>
 #include <LFramebuffer.h>
 
 /**
@@ -12,7 +13,7 @@
  *
  * @note A framebuffer possess properties such as position, size, and buffer scale. LPainter uses these properties to properly position and scale the rendered content.
  */
-class Louvre::LRenderBuffer : public LFramebuffer
+class Louvre::LRenderBuffer final : public LFramebuffer
 {
 public:   
     /**
@@ -23,7 +24,7 @@ public:
      * @param sizeB The size of the framebuffer in buffer coordinates.
      * @param alpha Employ a format with an alpha component.
      */
-    LRenderBuffer(const LSize &sizeB, bool alpha = true);
+    LRenderBuffer(const LSize &sizeB, bool alpha = true) noexcept;
 
     /// @cond OMIT
     LRenderBuffer(const LRenderBuffer&) = delete;
@@ -33,7 +34,7 @@ public:
     /**
      * @brief Destructor for LRenderBuffer.
      */
-    ~LRenderBuffer();
+    ~LRenderBuffer() noexcept;
 
     /**
      * @brief Retrieve the OpenGL ID of the framebuffer.
@@ -42,7 +43,7 @@ public:
      *
      * @return The OpenGL ID of the framebuffer.
      */
-    GLuint id() const override;
+    GLuint id() const noexcept override;
 
     /**
      * @brief Retrieve the texture associated with the framebuffer.
@@ -53,7 +54,7 @@ public:
      * @param index The index of the texture (default is 0).
      * @return A pointer to the texture associated with the framebuffer.
      */
-    const LTexture *texture(Int32 index = 0) const override;
+    const LTexture *texture(Int32 index = 0) const noexcept override;
 
     /**
      * @brief Set the size of the framebuffer in buffer coordinates.
@@ -62,7 +63,7 @@ public:
      *
      * @param sizeB The new size of the framebuffer in buffer coordinates.
      */
-    void setSizeB(const LSize &sizeB);
+    void setSizeB(const LSize &sizeB) noexcept;
 
     /**
      * @brief Retrieve the size of the framebuffer in buffer coordinates.
@@ -71,7 +72,7 @@ public:
      *
      * @return The size of the framebuffer.
      */
-    const LSize &sizeB() const override;
+    const LSize &sizeB() const noexcept override;
 
     /**
      * @brief Retrieve the size of the framebuffer.
@@ -80,7 +81,10 @@ public:
      *
      * @return The size of the framebuffer.
      */
-    const LSize &size() const;
+    inline const LSize &size() const noexcept
+    {
+        return m_rect.size();
+    }
 
     /**
      * @brief Set the position of the framebuffer.
@@ -89,7 +93,10 @@ public:
      *
      * @param pos The new position of the framebuffer.
      */
-    void setPos(const LPoint &pos);
+    inline void setPos(const LPoint &pos) noexcept
+    {
+        m_rect.setPos(pos);
+    }
 
     /**
      * @brief Retrieve the position of the framebuffer.
@@ -98,7 +105,10 @@ public:
      *
      * @return The position of the framebuffer.
      */
-    const LPoint &pos() const;
+    inline const LPoint &pos() const noexcept
+    {
+        return m_rect.pos();
+    }
 
     /**
      * @brief Retrieve the position and size of the framebuffer in surface coordinates.
@@ -107,7 +117,7 @@ public:
      *
      * @return The position and size of the framebuffer in surface coordinates.
      */
-    const LRect &rect() const override;
+    const LRect &rect() const noexcept override;
 
     /**
      * @brief Set the buffer scale to properly scale the rendered content.
@@ -116,7 +126,18 @@ public:
      *
      * @param scale The buffer scale factor.
      */
-    void setScale(Float32 scale) const;
+    inline void setScale(Float32 scale) noexcept
+    {
+        if (scale < 0.25f)
+            scale = 0.25;
+
+        if (m_scale != scale)
+        {
+            m_rect.setW(roundf(Float32(m_texture.sizeB().w())/scale));
+            m_rect.setH(roundf(Float32(m_texture.sizeB().h())/scale));
+            m_scale = scale;
+        }
+    }
 
     /**
      * @brief Retrieve the buffer scale of the framebuffer.
@@ -125,14 +146,23 @@ public:
      *
      * @return The buffer scale factor.
      */
-    Float32 scale() const override;
+    Float32 scale() const noexcept override;
 
-    Int32 buffersCount() const override;
-    Int32 currentBufferIndex() const override;
-    void setFramebufferDamage(const LRegion *damage) override;
-    Transform transform() const override;
+    Int32 buffersCount() const noexcept override;
+    Int32 currentBufferIndex() const noexcept override;
+    void setFramebufferDamage(const LRegion *damage) noexcept override;
+    Transform transform() const noexcept override;
 
-LPRIVATE_IMP_UNIQUE(LRenderBuffer)
+private:
+    friend class LCompositor;
+    struct ThreadData
+    {
+        GLuint framebufferId = 0;
+    };
+    mutable LTexture m_texture;
+    LRect m_rect;
+    Float32 m_scale { 1.f };
+    mutable std::unordered_map<std::thread::id, ThreadData> m_threadsMap;
 };
 
 #endif // LRENDERBUFFER_H

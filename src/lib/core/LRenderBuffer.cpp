@@ -1,146 +1,117 @@
-#include <private/LRenderBufferPrivate.h>
 #include <private/LTexturePrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LCompositorPrivate.h>
+#include <LRenderBuffer.h>
 #include <LCompositor.h>
 #include <GLES2/gl2.h>
 #include <LLog.h>
 
-LRenderBuffer::LRenderBuffer(const LSize &sizeB, bool alpha) : LPRIVATE_INIT_UNIQUE(LRenderBuffer)
+using namespace Louvre;
+
+LRenderBuffer::LRenderBuffer(const LSize &sizeB, bool alpha) noexcept
 {
     m_type = Render;
-    imp()->texture.m_sourceType = LTexture::Framebuffer;
+    m_texture.m_sourceType = LTexture::Framebuffer;
 
     if (alpha)
-        imp()->texture.m_format = DRM_FORMAT_BGRA8888;
+        m_texture.m_format = DRM_FORMAT_BGRA8888;
     else
-        imp()->texture.m_format = DRM_FORMAT_BGRX8888;
+        m_texture.m_format = DRM_FORMAT_BGRX8888;
 
-    imp()->texture.m_graphicBackendData = this;
+    m_texture.m_graphicBackendData = this;
+    m_texture.m_sizeB.setW(1);
+    m_texture.m_sizeB.setH(1);
     setSizeB(sizeB);
 }
 
-LRenderBuffer::~LRenderBuffer()
+LRenderBuffer::~LRenderBuffer() noexcept
 {
-    for (auto &pair : imp()->threadsMap)
-        if (pair.second.textureId)
+    for (auto &pair : m_threadsMap)
+        compositor()->imp()->addRenderBufferToDestroy(pair.first, pair.second);
+}
+
+void LRenderBuffer::setSizeB(const LSize &sizeB) noexcept
+{
+    const LSize newSize {sizeB.w() <= 0 ? 1 : sizeB.w(), sizeB.h() <= 0 ? 1 : sizeB.h()};
+
+    if (m_texture.sizeB() != newSize)
+    {
+        m_texture.m_sizeB = newSize;
+
+        m_rect.setW(roundf(Float32(m_texture.m_sizeB.w()) * m_scale));
+        m_rect.setH(roundf(Float32(m_texture.m_sizeB.h()) * m_scale));
+
+        for (auto &pair : m_threadsMap)
             compositor()->imp()->addRenderBufferToDestroy(pair.first, pair.second);
-}
 
-void LRenderBuffer::setSizeB(const LSize &sizeB)
-{
-    if (LFramebuffer::is90Transform(imp()->transform))
-    {
-        imp()->sizeB.setW(sizeB.h());
-        imp()->sizeB.setH(sizeB.w());
-    }
-    else
-    {
-        imp()->sizeB = sizeB;
-    }
-
-    imp()->rect.setW(roundf(Float32(imp()->sizeB.w()) * imp()->scale));
-    imp()->rect.setH(roundf(Float32(imp()->sizeB.h()) * imp()->scale));
-
-    if (imp()->texture.sizeB() != sizeB)
-    {
-        imp()->texture.m_sizeB = sizeB;
-
-        for (auto &pair : imp()->threadsMap)
-            if (pair.second.textureId)
-                compositor()->imp()->addRenderBufferToDestroy(pair.first, pair.second);
-
-        imp()->threadsMap.clear();
+        m_texture.reset();
+        m_threadsMap.clear();
     }
 }
 
-const LTexture *LRenderBuffer::texture(Int32 index) const
+const LTexture *LRenderBuffer::texture(Int32 index) const noexcept
 {
     L_UNUSED(index);
-    return &imp()->texture;
+    return &m_texture;
 }
 
-void LRenderBuffer::setFramebufferDamage(const LRegion *damage)
+void LRenderBuffer::setFramebufferDamage(const LRegion *damage) noexcept
 {
     L_UNUSED(damage);
 }
 
-LFramebuffer::Transform LRenderBuffer::transform() const
+LFramebuffer::Transform LRenderBuffer::transform() const noexcept
 {
     return LFramebuffer::Normal;
 }
 
-void LRenderBuffer::setScale(Float32 scale) const
+Float32 LRenderBuffer::scale() const noexcept
 {
-    if (scale < 0.25f)
-        scale = 0.25;
-
-    if (imp()->scale != scale)
-    {
-        imp()->rect.setW(roundf(Float32(imp()->sizeB.w())/scale));
-        imp()->rect.setH(roundf(Float32(imp()->sizeB.h())/scale));
-        imp()->scale = scale;
-    }
+    return m_scale;
 }
 
-void LRenderBuffer::setPos(const LPoint &pos)
+const LSize &LRenderBuffer::sizeB() const noexcept
 {
-    imp()->rect.setPos(pos);
+    return m_texture.sizeB();
 }
 
-const LPoint &LRenderBuffer::pos() const
+const LRect &LRenderBuffer::rect() const noexcept
 {
-    return imp()->rect.pos();
+    return m_rect;
 }
 
-Float32 LRenderBuffer::scale() const
+GLuint LRenderBuffer::id() const noexcept
 {
-    return imp()->scale;
-}
+    ThreadData &data { m_threadsMap[std::this_thread::get_id()] };
 
-const LSize &LRenderBuffer::sizeB() const
-{
-    return imp()->sizeB;
-}
-
-const LSize &LRenderBuffer::size() const
-{
-    return imp()->rect.size();
-}
-
-const LRect &LRenderBuffer::rect() const
-{
-    return imp()->rect;
-}
-
-GLuint LRenderBuffer::id() const
-{
-    LRenderBufferPrivate::ThreadData &data = imp()->threadsMap[std::this_thread::get_id()];
-
-    if (!data.textureId)
+    if (!data.framebufferId)
     {
         glGenFramebuffers(1, &data.framebufferId);
         glBindFramebuffer(GL_FRAMEBUFFER, data.framebufferId);
-        glGenTextures(1, &data.textureId);
-        LTexture::LTexturePrivate::setTextureParams(data.textureId, GL_TEXTURE_2D, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
 
-        if (imp()->texture.format() == DRM_FORMAT_BGRA8888)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imp()->texture.sizeB().w(), imp()->texture.sizeB().h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-        else
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imp()->texture.sizeB().w(), imp()->texture.sizeB().h(), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        if (!m_texture.m_nativeId)
+        {
+            glGenTextures(1, &m_texture.m_nativeId);
+            LTexture::LTexturePrivate::setTextureParams(m_texture.m_nativeId, GL_TEXTURE_2D, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, data.textureId, 0);
+            if (m_texture.format() == DRM_FORMAT_BGRA8888)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_texture.sizeB().w(), m_texture.sizeB().h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+            else
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_texture.sizeB().w(), m_texture.sizeB().h(), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        }
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture.m_nativeId, 0);
     }
 
     return data.framebufferId;
 }
 
-Int32 LRenderBuffer::buffersCount() const
+Int32 LRenderBuffer::buffersCount() const noexcept
 {
     return 1;
 }
 
-Int32 LRenderBuffer::currentBufferIndex() const
+Int32 LRenderBuffer::currentBufferIndex() const noexcept
 {
     return 0;
 }

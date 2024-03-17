@@ -5,7 +5,6 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LCursorPrivate.h>
 #include <private/LOutputPrivate.h>
-#include <private/LRenderBufferPrivate.h>
 #include <LTextureView.h>
 #include <LRect.h>
 #include <LLog.h>
@@ -627,7 +626,7 @@ GLuint LTexture::id(LOutput *output) const noexcept
     if (initialized())
     {
         if (sourceType() == Framebuffer)
-            return static_cast<LRenderBuffer*>(m_graphicBackendData)->imp()->getTextureId();
+            return m_nativeId;
         else if (sourceType() == Native)
             return m_nativeId;
         else
@@ -655,7 +654,15 @@ void LTexture::reset() noexcept
     m_serial++;
 
     if (sourceType() == Framebuffer)
+    {
+        if (m_nativeId)
+        {
+            LLog::debug("[LTexture::reset] Native texture %d deleted.", m_nativeId);
+            glDeleteTextures(1, &m_nativeId);
+            m_nativeId = 0;
+        }
         return;
+    }
 
     if (sourceType() == Native)
     {

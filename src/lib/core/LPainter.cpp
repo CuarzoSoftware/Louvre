@@ -1,5 +1,4 @@
 #include <private/LPainterPrivate.h>
-#include <private/LOutputFramebufferPrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LTexturePrivate.h>
 #include <private/LOutputPrivate.h>

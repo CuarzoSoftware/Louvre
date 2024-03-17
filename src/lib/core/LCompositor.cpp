@@ -265,13 +265,13 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         while (!outputs().empty())
             removeOutput(outputs().back());
 
+        for (LTexture *texture : imp()->textures)
+            texture->reset();
+
         imp()->unitInputBackend(true);
 
         if (imp()->cursor)
             delete imp()->cursor;
-
-        for (LTexture *texture : imp()->textures)
-            texture->reset();
 
         imp()->unitGraphicBackend(true);
         imp()->unitSeat();
