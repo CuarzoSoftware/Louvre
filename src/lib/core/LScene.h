@@ -95,9 +95,9 @@ public:
 
     enum EventOptions : EventOptionsFlags
     {
-        Disabled        = 0,
-        WaylandEvents   = 1 << 0,
-        AuxFunc         = 1 << 1
+        Disabled        = static_cast<UInt8>(0),
+        WaylandEvents   = static_cast<UInt8>(1) << 0,
+        AuxFunc         = static_cast<UInt8>(1) << 1
     };
 
     /**

@@ -36,11 +36,11 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
 
     enum StateFlags : UInt32
     {
-        UsingFractionalScale                = 1 << 0,
-        FractionalOversamplingEnabled       = 1 << 1,
-        PendingRepaint                      = 1 << 2,
-        HasUnhandledPresentationTime        = 1 << 3,
-        HasDamage                           = 1 << 4
+        UsingFractionalScale                = static_cast<UInt32>(1) << 0,
+        FractionalOversamplingEnabled       = static_cast<UInt32>(1) << 1,
+        PendingRepaint                      = static_cast<UInt32>(1) << 2,
+        HasUnhandledPresentationTime        = static_cast<UInt32>(1) << 3,
+        HasDamage                           = static_cast<UInt32>(1) << 4
     };
 
     LOutputPrivate(LOutput *output);

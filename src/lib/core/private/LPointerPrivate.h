@@ -16,11 +16,11 @@ LPRIVATE_CLASS(LPointer)
 
     enum StateFlags
     {
-        NaturalScrollX           = 1 << 0,
-        NaturalScrollY           = 1 << 1,
-        PendingSwipeEndEvent     = 1 << 2,
-        PendingPinchEndEvent     = 1 << 3,
-        PendingHoldEndEvent      = 1 << 4
+        NaturalScrollX           = static_cast<UInt32>(1) << 0,
+        NaturalScrollY           = static_cast<UInt32>(1) << 1,
+        PendingSwipeEndEvent     = static_cast<UInt32>(1) << 2,
+        PendingPinchEndEvent     = static_cast<UInt32>(1) << 3,
+        PendingHoldEndEvent      = static_cast<UInt32>(1) << 4
     };
 
     void sendLeaveEvent(LSurface *surface) noexcept;
