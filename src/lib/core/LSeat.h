@@ -180,31 +180,46 @@ public:
      *
      * Access to the LPointer instance used to receive pointer events from the backend and redirect them to clients.
      */
-    LPointer *pointer() const;
+    inline LPointer *pointer() const noexcept
+    {
+        return m_pointer;
+    }
 
     /**
      * @brief Access to keyboard events.
      *
      * Access to the LKeyboard instance used to receive keyboard events from the backend and redirect them to clients.
      */
-    LKeyboard *keyboard() const;
+    inline LKeyboard *keyboard() const noexcept
+    {
+        return m_keyboard;
+    }
 
     /**
      * @brief Access to touch events.
      *
      * Access to the LTouch instance used to receive touch events from the backend and redirect them to clients.
      */
-    LTouch *touch() const;
+    inline LTouch *touch() const noexcept
+    {
+        return m_touch;
+    }
 
     /**
      * @brief Access to the drag & drop session manager.
      */
-    LDND *dnd() const;
+    inline LDND *dnd() const noexcept
+    {
+        return m_dnd;
+    }
 
     /**
      * @brief Access to the clipboard manager.
      */
-    LClipboard *clipboard() const noexcept;
+    inline LClipboard *clipboard() const noexcept
+    {
+        return m_clipboard;
+    }
 
     /**
      * @brief Close all popups.
@@ -370,6 +385,13 @@ public:
 /// @}
 
     LPRIVATE_IMP_UNIQUE(LSeat)
+
+    friend class LCompositor;
+    LPointer *m_pointer { nullptr };
+    LKeyboard *m_keyboard { nullptr };
+    LTouch *m_touch { nullptr };
+    LDND *m_dnd { nullptr };
+    LClipboard *m_clipboard { nullptr };
 };
 
 #endif // LSEAT_H

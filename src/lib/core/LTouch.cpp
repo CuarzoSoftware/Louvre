@@ -4,13 +4,16 @@
 #include <LSeat.h>
 #include <LPointer.h>
 #include <LOutput.h>
+#include <cassert>
 
 using namespace Louvre;
 
-LTouch::LTouch(const void *params) :
-    LPRIVATE_INIT_UNIQUE(LTouch)
+LTouch::LTouch(const void *params) : LPRIVATE_INIT_UNIQUE(LTouch)
 {
-    L_UNUSED(params);
+    assert(params != nullptr && "Invalid parameter passed to LTouch() constructor. LTouch can only be created from LCompositor::createTouchRequest().");
+    LTouch **ptr { (LTouch**) params };
+    assert(*ptr == nullptr && *ptr == seat()->touch() && "Only a single LTouch() instance can exist.");
+    *ptr = this;
 }
 
 LTouch::~LTouch()

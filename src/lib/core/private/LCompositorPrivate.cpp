@@ -456,36 +456,36 @@ void LCompositor::LCompositorPrivate::unitSeat()
 
         if (seat->keyboard())
         {
-            delete seat->imp()->keyboard;
-            seat->imp()->keyboard = nullptr;
+            delete seat->m_keyboard;
+            seat->m_keyboard = nullptr;
             LLog::debug("[LCompositorPrivate::unitSeat] Keyboard uninitialized successfully.");
         }
 
         if (seat->pointer())
         {
-            delete seat->imp()->pointer;
-            seat->imp()->pointer = nullptr;
+            delete seat->m_pointer;
+            seat->m_pointer = nullptr;
             LLog::debug("[LCompositorPrivate::unitSeat] Pointer uninitialized successfully.");
         }
 
         if (seat->touch())
         {
-            delete seat->imp()->touch;
-            seat->imp()->touch = nullptr;
+            delete seat->m_touch;
+            seat->m_touch = nullptr;
             LLog::debug("[LCompositorPrivate::unitSeat] Touch uninitialized successfully.");
         }
 
         if (seat->dnd())
         {
-            delete seat->imp()->dnd;
-            seat->imp()->dnd = nullptr;
+            delete seat->m_dnd;
+            seat->m_dnd = nullptr;
             LLog::debug("[LCompositorPrivate::unitSeat] DND Manager uninitialized successfully.");
         }
 
         if (seat->clipboard())
         {
-            delete seat->imp()->clipboard;
-            seat->imp()->clipboard = nullptr;
+            delete seat->m_clipboard;
+            seat->m_clipboard = nullptr;
             LLog::debug("[LCompositorPrivate::unitSeat] Clipboard Manager uninitialized successfully.");
         }
 

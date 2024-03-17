@@ -23,6 +23,7 @@
 
 #include <poll.h>
 #include <sys/eventfd.h>
+#include <cassert>
 
 #include <LCursor.h>
 #include <LToplevelRole.h>
@@ -39,11 +40,22 @@ LSeat::LSeat(const void *params) : LPRIVATE_INIT_UNIQUE(LSeat)
 {
     L_UNUSED(params);
     compositor()->imp()->seat = this;
-    imp()->dnd = compositor()->createDNDRequest(nullptr);
-    imp()->pointer = compositor()->createPointerRequest(nullptr);
-    imp()->keyboard = compositor()->createKeyboardRequest(nullptr);
-    imp()->touch = compositor()->createTouchRequest(nullptr);
-    imp()->clipboard = compositor()->createClipboardRequest(nullptr);
+
+    compositor()->createDNDRequest(&m_dnd);
+    assert(m_dnd != nullptr && "Please ensure that LCompositor::createDNDRequest() returns a valid LDND instance or a compatible subtype.");
+
+    compositor()->createPointerRequest(&m_pointer);
+    assert(m_pointer != nullptr && "Please ensure that LCompositor::createPointerRequest() returns a valid LPointer instance or a compatible subtype.");
+
+    compositor()->createKeyboardRequest(&m_keyboard);
+    assert(m_keyboard != nullptr && "Please ensure that LCompositor::createKeyboardRequest() returns a valid LKeyboard instance or a compatible subtype.");
+
+    compositor()->createTouchRequest(&m_touch);
+    assert(m_touch != nullptr && "Please ensure that LCompositor::createTouchRequest() returns a valid LTouch instance or a compatible subtype.");
+
+    compositor()->createClipboardRequest(&m_clipboard);
+    assert(m_clipboard != nullptr && "Please ensure that LCompositor::createClipboardRequest() returns a valid LClipboard instance or a compatible subtype.");
+
     imp()->enabled = true;
 }
 
@@ -124,21 +136,6 @@ const std::vector<LToplevelMoveSession *> &LSeat::toplevelMoveSessions() const
     return imp()->moveSessions;
 }
 
-LPointer *LSeat::pointer() const
-{
-    return imp()->pointer;
-}
-
-LKeyboard *LSeat::keyboard() const
-{
-    return imp()->keyboard;
-}
-
-LTouch *LSeat::touch() const
-{
-    return imp()->touch;
-}
-
 void LSeat::dismissPopups()
 {
     std::list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();
@@ -149,15 +146,7 @@ void LSeat::dismissPopups()
     }
 }
 
-LDND *LSeat::dnd() const
-{
-    return imp()->dnd;
-}
 
-LClipboard *LSeat::clipboard() const noexcept
-{
-    return imp()->clipboard;
-}
 
 void LSeat::setTTY(UInt32 tty)
 {

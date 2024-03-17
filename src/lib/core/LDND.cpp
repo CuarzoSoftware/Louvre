@@ -12,9 +12,18 @@
 #include <LPointer.h>
 #include <LDND.h>
 #include <LTimer.h>
+#include <cassert>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::Wayland;
+
+LDND::LDND(const void *params) noexcept
+{
+    assert(params != nullptr && "Invalid parameter passed to LDND() constructor. LDND can only be created from LCompositor::createDNDRequest().");
+    LDND **ptr { (LDND**) params };
+    assert(*ptr == nullptr && *ptr == seat()->dnd() && "Only a single LDND() instance can exist.");
+    *ptr = this;
+}
 
 void LDND::setFocus(LSurface *surface, const LPointF &localPos) noexcept
 {

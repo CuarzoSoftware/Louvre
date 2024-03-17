@@ -4,10 +4,10 @@ using namespace Louvre;
 
 void LInputDevice::notifyPlugged()
 {
-    seat()->inputDevicePlugged(this);
+    LCompositor::compositor()->seat()->inputDevicePlugged(this);
 }
 
 void LInputDevice::notifyUnplugged()
 {
-    seat()->inputDeviceUnplugged(this);
+    LCompositor::compositor()->seat()->inputDeviceUnplugged(this);
 }

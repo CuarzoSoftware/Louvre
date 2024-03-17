@@ -3,6 +3,7 @@
 
 #include <LCompositor.h>
 #include <LWeak.h>
+#include <cassert>
 
 /**
  * @brief Base class for Louvre objects.

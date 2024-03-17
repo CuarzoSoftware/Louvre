@@ -38,7 +38,7 @@ public:
         HoldEnd
     };
 
-    virtual ~LEvent() = default;
+    ~LEvent() = default;
 
     inline Type type() const
     {

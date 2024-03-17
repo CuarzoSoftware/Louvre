@@ -6,10 +6,24 @@
 #include <LKeyboard.h>
 #include <LTouch.h>
 #include <LTouchPoint.h>
+#include <cassert>
 
 using namespace Louvre;
 
-bool LClipboard::setClipboardRequest(LClient *client, const LEvent *triggeringEvent)
+LClipboard::LClipboard(const void *params) noexcept
+{
+    assert(params != nullptr && "Invalid parameter passed to LClipboard() constructor. LClipboard can only be created from LCompositor::createClipboardRequest().");
+    LClipboard**ptr { (LClipboard**) params };
+    assert(*ptr == nullptr && *ptr == seat()->clipboard() && "Only a single LClipboard() instance can exist.");
+    *ptr = this;
+}
+
+LClipboard::~LClipboard() noexcept
+{
+    clear();
+}
+
+bool LClipboard::setClipboardRequest(LClient *client, const LEvent *triggeringEvent) noexcept
 {
     if (!triggeringEvent)
     {
@@ -33,7 +47,7 @@ bool LClipboard::setClipboardRequest(LClient *client, const LEvent *triggeringEv
     return false;
 }
 
-bool LClipboard::persistentMimeTypeFilter(const std::string &mimeType)
+bool LClipboard::persistentMimeTypeFilter(const std::string &mimeType) const noexcept
 {
     return
         mimeType == "image/png" ||

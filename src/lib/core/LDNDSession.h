@@ -14,25 +14,14 @@ using namespace Louvre::Protocols::Wayland;
 class Louvre::LDNDSession : public LObject
 {
 public:
-    LDNDSession()
+    inline LDNDSession() noexcept
     {
         source.setOnDestroyCallback([this](auto) { cancel(); });
         origin.setOnDestroyCallback([this](auto) { cancel(); });
         srcDataDevice.setOnDestroyCallback([this](auto) { cancel(); });
     }
 
-    UInt32 compositorAction { seat()->dnd()->preferredAction() };
-    UInt32 action { 0 };
-    bool dropped { false };
-    LWeak<LSurface> focus;
-    LWeak<LSurface> origin;
-    LWeak<LDNDIconRole> icon;
-    LWeak<RDataDevice> srcDataDevice;
-    LWeak<RDataDevice> dstDataDevice;
-    LWeak<RDataSource> source;
-    LWeak<RDataOffer> offer;
-
-    void updateActions()
+    void updateActions() noexcept
     {
         if (!source.get() || !offer.get())
             return;
@@ -64,13 +53,22 @@ public:
         offer.get()->action(action);
     }
 
-    void cancel()
+    inline void cancel() noexcept
     {
         if (seat()->dnd()->m_session.get() == this)
-        {
             seat()->dnd()->cancel();
-        }
     }
+
+    UInt32 compositorAction { seat()->dnd()->preferredAction() };
+    UInt32 action { 0 };
+    bool dropped { false };
+    LWeak<LSurface> focus;
+    LWeak<LSurface> origin;
+    LWeak<LDNDIconRole> icon;
+    LWeak<RDataDevice> srcDataDevice;
+    LWeak<RDataDevice> dstDataDevice;
+    LWeak<RDataSource> source;
+    LWeak<RDataOffer> offer;
 };
 
 #endif // LDNDSESSION_H

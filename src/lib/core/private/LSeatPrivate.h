@@ -25,12 +25,6 @@ LPRIVATE_CLASS(LSeat)
 
     Int32 ttyNumber                         { -1 };
 
-    LPointer *pointer                       { nullptr };
-    LKeyboard *keyboard                     { nullptr };
-    LTouch *touch                           { nullptr };
-    LDND *dnd                               { nullptr };
-    LClipboard *clipboard                   { nullptr };
-
     LToplevelRole *activeToplevel           { nullptr };
     InputCapabilitiesFlags capabilities     { Pointer | Keyboard | Touch };
 

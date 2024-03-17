@@ -231,6 +231,7 @@ public:
     class LTexturePrivate;
 
 private:
+    friend class LCompositor;
     friend class LRenderBuffer;
     friend class LGraphicBackend;
     friend class LDMABuffer;

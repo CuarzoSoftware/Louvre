@@ -18,13 +18,14 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <cassert>
 
-LKeyboard::LKeyboard(const void *params):
-    LPRIVATE_INIT_UNIQUE(LKeyboard)
+LKeyboard::LKeyboard(const void *params): LPRIVATE_INIT_UNIQUE(LKeyboard)
 {
-    L_UNUSED(params);
-
-    seat()->imp()->keyboard = this;
+    assert(params != nullptr && "Invalid parameter passed to LKeyboard() constructor. LKeyboard can only be created from LCompositor::createKeyboardRequest().");
+    LKeyboard **ptr { (LKeyboard**) params };
+    assert(*ptr == nullptr && *ptr == seat()->keyboard() && "Only a single LKeyboard() instance can exist.");
+    *ptr = this;
 
     // Create XKB context
     imp()->xkbContext = xkb_context_new(XKB_CONTEXT_NO_FLAGS);

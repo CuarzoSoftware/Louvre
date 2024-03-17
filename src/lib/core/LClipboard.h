@@ -7,12 +7,8 @@
 class Louvre::LClipboard : public LObject
 {
 public:
-    LClipboard(const void *params) noexcept { L_UNUSED(params) };
-
-    virtual ~LClipboard() noexcept
-    {
-        clear();
-    };
+    LClipboard(const void *params) noexcept;
+    ~LClipboard() noexcept;
 
     /**
      * @brief Request to set the clipboard.
@@ -27,8 +23,10 @@ public:
      * #### Default Implementation
      * @snippet LClipboardDefault.cpp setClipboardRequest
      */
-    virtual bool setClipboardRequest(LClient *client, const LEvent *triggeringEvent);
-    virtual bool persistentMimeTypeFilter(const std::string &mimeType);
+    virtual bool setClipboardRequest(LClient *client, const LEvent *triggeringEvent) noexcept;
+
+    // TODO: add doc and default imp
+    virtual bool persistentMimeTypeFilter(const std::string &mimeType) const noexcept;
     const std::vector<Protocols::Wayland::RDataSource::MimeTypeFile> &mimeTypes() const noexcept;
 
 private:

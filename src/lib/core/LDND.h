@@ -28,14 +28,14 @@ public:
      *
      * @param params Internal library parameters passed in the LCompositor::createDNDManagerRequest() virtual constructor.
      */
-    inline LDND(const void *params) noexcept { L_UNUSED(params) }
+    LDND(const void *params) noexcept;
 
     /**
      * @brief Destructor of the LDNDManager class.
      *
      * Invoked internally by the library after LCompositor::destroyDNDManagerRequest() is called.
      */
-    virtual ~LDND() noexcept {}
+    ~LDND() noexcept = default;
 
     /// @cond OMIT
     LDND(const LDND&) = delete;

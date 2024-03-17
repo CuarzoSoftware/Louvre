@@ -21,7 +21,7 @@
  * Configuration methods for device parameters may not be available for all devices. You can ascertain this by checking their return values,
  * which can be one of three outcomes: Success, Unsupported, or Invalid.
  */
-class Louvre::LInputDevice : public LObject
+class Louvre::LInputDevice
 {
 public:
 
