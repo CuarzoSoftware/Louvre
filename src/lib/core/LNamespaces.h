@@ -279,6 +279,9 @@ namespace Louvre
     /// @brief 24 bits Wayland float
     typedef wl_fixed_t      Float24;
 
+    /// @brief Unsigned integer capable of holding a pointer
+    typedef uintptr_t       UIntPtr;
+
     /// 2D vector of 32 bits integers
     using LPoint = LPointTemplate<Int32,Float32>;
 

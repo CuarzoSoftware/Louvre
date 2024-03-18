@@ -10,7 +10,7 @@
 
 DockItem::DockItem(class Surface *surface, Dock *dck) noexcept : LTextureView(surface->thumbnailTex, &dck->itemsContainer)
 {
-    id = DockItemType;
+    setUserData(DockItemType);
     surface->minimizedViews.push_back(this);
     this->dock = dck;
     this->surface = surface;

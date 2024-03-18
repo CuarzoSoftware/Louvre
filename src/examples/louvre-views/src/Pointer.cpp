@@ -37,7 +37,7 @@ void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)
         if (G::scene()->pointerFocus().empty())
             return;
 
-        if (G::scene()->pointerFocus().front()->id == WallpaperType)
+        if (G::scene()->pointerFocus().front()->userData() == WallpaperType)
         {
             cursor()->setVisible(true);
             cursor()->useDefault();

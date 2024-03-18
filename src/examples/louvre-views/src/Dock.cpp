@@ -16,7 +16,7 @@
 Dock::Dock(Output *output) :
     LLayerView(&G::compositor()->overlayLayer)
 {
-    separator.id = DockSeparatorType;
+    separator.setUserData(DockSeparatorType);
     this->output = output;
     output->dock = this;
 
@@ -89,12 +89,12 @@ void Dock::update()
 
     for (LView *item : appsContainer.children())
     {
-        if (item->id == DockSeparatorType)
+        if (item->userData() == DockSeparatorType)
         {
             static_cast<LSolidColorView*>(item)->setPos(dockWidth, DOCK_PADDING + (DOCK_ITEM_HEIGHT - item->size().h())/2);
             dockWidth += DOCK_SPACING;
         }
-        else if(item->id == DockAppType)
+        else if(item->userData() == DockAppType)
         {
             DockApp &dockApp { static_cast<DockApp&>(*item) };
             dockApp.setPos(dockWidth, - 2 - dockApp.app->dockAppsAnimationOffset.y() + DOCK_PADDING + (DOCK_ITEM_HEIGHT - item->size().h())/2);

@@ -44,6 +44,27 @@ public:
     }
 
     /**
+     * @brief Allows you to store an unsigned integer value capable
+     * of storing a pointer.
+     *
+     * @param data The unsigned integer value to be stored.
+     */
+    inline void setUserData(UIntPtr data) const noexcept
+    {
+        m_userData = data;
+    }
+
+    /**
+     * @brief Retrieves the stored unsigned integer value.
+     *
+     * @return The stored unsigned integer value.
+     */
+    inline UIntPtr userData() const noexcept
+    {
+        return m_userData;
+    }
+
+    /**
      * @brief Copy constructor (each object has its own individual LWeak reference count).
      */
     inline LObject(const LObject &) noexcept {}
@@ -94,8 +115,6 @@ public:
         return LWeak<T>(static_cast<T*>(this));
     }
 
-    UInt64 id { 0 };
-
 protected:
 
     /**
@@ -139,6 +158,7 @@ protected:
 private:
     friend class Louvre::PrivateUtils;
     mutable std::vector<void*> m_weakRefs;
+    mutable UIntPtr m_userData { 0 };
     bool m_destroyed { false };
 };
 
