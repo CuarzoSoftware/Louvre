@@ -1,6 +1,5 @@
-#include <private/LTouchPointPrivate.h>
-#include <private/LTouchPrivate.h>
-#include <LTouchDownEvent.h>
+#include <LTouchPoint.h>
+#include <LTouch.h>
 #include <LSeat.h>
 #include <LPointer.h>
 #include <LOutput.h>
@@ -8,7 +7,7 @@
 
 using namespace Louvre;
 
-LTouch::LTouch(const void *params) : LPRIVATE_INIT_UNIQUE(LTouch)
+LTouch::LTouch(const void *params)
 {
     assert(params != nullptr && "Invalid parameter passed to LTouch() constructor. LTouch can only be created from LCompositor::createTouchRequest().");
     LTouch **ptr { (LTouch**) params };
@@ -20,8 +19,8 @@ LTouch::~LTouch()
 {
     while (!touchPoints().empty())
     {
-        delete touchPoints().back();
-        imp()->touchPoints.pop_back();
+        delete m_touchPoints.back();
+        m_touchPoints.pop_back();
     }
 }
 
@@ -30,9 +29,9 @@ LSurface *LTouch::surfaceAt(const LPoint &point)
     return seat()->pointer()->surfaceAt(point);
 }
 
-const std::list<LTouchPoint *> &LTouch::touchPoints() const
+const std::vector<LTouchPoint*> &LTouch::touchPoints() const
 {
-    return imp()->touchPoints;
+    return m_touchPoints;
 }
 
 LTouchPoint *LTouch::createOrGetTouchPoint(const LTouchDownEvent &event)
@@ -66,12 +65,12 @@ LPointF LTouch::toGlobal(LOutput *output, const LPointF &touchPointPos)
         point = output->size() * touchPointPos;
         break;
     case LFramebuffer::Rotated270:
-        point.setX(output->size().w() * (1.f - touchPointPos.y()));
-        point.setY(output->size().h() * touchPointPos.x());
-        break;
-    case LFramebuffer::Rotated90:
         point.setX(output->size().w() * touchPointPos.y());
         point.setY(output->size().h() * (1.f - touchPointPos.x()));
+        break;
+    case LFramebuffer::Rotated90:
+        point.setX(output->size().w() * (1.f - touchPointPos.y()));
+        point.setY(output->size().h() * touchPointPos.x());
         break;
     case LFramebuffer::Rotated180:
         point.setX(output->size().w() * (1.f - touchPointPos.x()));
@@ -85,11 +84,11 @@ LPointF LTouch::toGlobal(LOutput *output, const LPointF &touchPointPos)
         point.setX(output->size().w() * (1.f - touchPointPos.x()));
         point.setY(output->size().h() * touchPointPos.y());
         break;
-    case LFramebuffer::Flipped90:
+    case LFramebuffer::Flipped270:
         point.setX(output->size().w() * (1.f - touchPointPos.y()));
         point.setY(output->size().h() * (1.f - touchPointPos.x()));
         break;
-    case LFramebuffer::Flipped270:
+    case LFramebuffer::Flipped90:
         point.setX(output->size().w() * touchPointPos.y());
         point.setY(output->size().h() * touchPointPos.x());
         break;
@@ -103,14 +102,17 @@ void LTouch::sendFrameEvent(const LTouchFrameEvent &event)
     L_UNUSED(event);
 
     LTouchPoint *tp;
-    for (std::list<LTouchPoint*>::iterator it = imp()->touchPoints.begin(); it != imp()->touchPoints.end(); it++)
+
+    for (auto it = m_touchPoints.begin(); it != m_touchPoints.end();)
     {
         tp = *it;
-        tp->imp()->sendTouchFrameEvent();
+        tp->sendTouchFrameEvent();
 
-        if (!tp->isPressed())
+        if (tp->pressed())
+            it++;
+        else
         {
-            it = imp()->touchPoints.erase(tp->imp()->link);
+            it = m_touchPoints.erase(it);
             delete tp;
         }
     }
@@ -124,8 +126,8 @@ void LTouch::sendCancelEvent(const LTouchCancelEvent &event)
     while (!touchPoints().empty())
     {
         tp = touchPoints().back();
-        tp->imp()->sendTouchCancelEvent();
-        imp()->touchPoints.pop_back();
+        tp->sendTouchCancelEvent();
+        m_touchPoints.pop_back();
         delete tp;
     }
 }

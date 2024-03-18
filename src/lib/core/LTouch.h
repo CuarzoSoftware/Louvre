@@ -72,7 +72,7 @@ public:
      *
      * @return A constant reference to the list of currently active touchpoints.
      */
-    const std::list<LTouchPoint*> &touchPoints() const;
+    const std::vector<LTouchPoint*> &touchPoints() const;
 
     /**
      * @brief Creates a new touch point or returns an existing one with the same id.
@@ -176,7 +176,9 @@ public:
      */
     virtual void touchCancelEvent(const LTouchCancelEvent &event);
 
-    LPRIVATE_IMP_UNIQUE(LTouch)
+private:
+    friend class LTouchPoint;
+    mutable std::vector<LTouchPoint*> m_touchPoints;
 };
 
 #endif // LTOUCH_H

@@ -13,7 +13,6 @@
 #include <private/LSeatPrivate.h>
 #include <private/LPointerPrivate.h>
 #include <private/LKeyboardPrivate.h>
-#include <private/LTouchPointPrivate.h>
 #include <private/LSubsurfaceRolePrivate.h>
 #include <LDNDIconRole.h>
 #include <LCursorRole.h>
@@ -89,14 +88,6 @@ RSurface::~RSurface()
     // Destroy pending frame callbacks
     while (!lSurface->imp()->frameCallbacks.empty())
         lSurface->imp()->frameCallbacks.front()->destroy();
-
-    // Clear touch points
-    for (LTouchPoint *tp : seat()->touch()->touchPoints())
-        if (tp->surface() == lSurface)
-        {
-            tp->imp()->resetSerials();
-            tp->imp()->surface = nullptr;
-        }
 
     // Clear active toplevel focus
     if (seat()->imp()->activeToplevel == lSurface->toplevel())

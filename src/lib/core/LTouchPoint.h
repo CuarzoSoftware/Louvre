@@ -1,8 +1,10 @@
 #ifndef LTOUCHPOINT_H
 #define LTOUCHPOINT_H
 
-#include <LObject.h>
-#include <LPoint.h>
+#include <LTouchDownEvent.h>
+#include <LTouchMoveEvent.h>
+#include <LTouchUpEvent.h>
+#include <LSurface.h>
 
 /**
  * @brief Touch point within a touch device.
@@ -30,7 +32,10 @@ public:
      *
      * @return The unique identifier of the touch point.
      */
-    Int32 id() const;
+    inline Int32 id() const noexcept
+    {
+        return m_lastDownEvent.id();
+    }
 
     /**
      * @brief Check if the touch point is currently being pressed.
@@ -42,7 +47,10 @@ public:
      *
      * @return True if the touch point is currently pressed, false otherwise.
      */
-    bool isPressed() const;
+    inline bool pressed() const noexcept
+    {
+        return m_pressed;
+    }
 
     /**
      * @brief Get the surface currently being touched by this touch point.
@@ -52,25 +60,37 @@ public:
      *
      * @return A pointer to the LSurface being touched by this touch point, or nullptr if no surface is assigned.
      */
-    LSurface *surface() const;
+    inline LSurface *surface() const noexcept
+    {
+        return m_surface.get();
+    }
 
     /**
      * @brief Get the last touch-down event sent with sendDownEvent().
      * @return The last touch-down event.
      */
-    const LTouchDownEvent &lastDownEvent() const;
+    inline const LTouchDownEvent &lastDownEvent() const noexcept
+    {
+        return m_lastDownEvent;
+    }
 
     /**
      * @brief Get the last touch move event sent with sendMoveEvent().
      * @return The last touch move event.
      */
-    const LTouchMoveEvent &lastMoveEvent() const;
+    inline const LTouchMoveEvent &lastMoveEvent() const noexcept
+    {
+        return m_lastMoveEvent;
+    }
 
     /**
      * @brief Get the last touch-up event sent with sendUpEvent().
      * @return The last touch-up event.
      */
-    const LTouchUpEvent &lastUpEvent() const;
+    inline const LTouchUpEvent &lastUpEvent() const noexcept
+    {
+        return m_lastUpEvent;
+    }
 
     /**
      * @brief Get the position of the touch point assigned by the last touch-down or move event.
@@ -79,7 +99,10 @@ public:
      *
      * @return A constant reference to the position of the touch point.
      */
-    const LPointF &pos() const;
+    inline const LPointF &pos() const noexcept
+    {
+        return m_pos;
+    }
 
     /**
      * @brief Mark the touch point as pressed.
@@ -95,7 +118,7 @@ public:
      * @param surface The surface to which the event should be sent. If nullptr, unsets the surface.
      * @return True on success, false if the IDs don't match.
      */
-    bool sendDownEvent(const LTouchDownEvent &event, LSurface *surface = nullptr);
+    bool sendDownEvent(const LTouchDownEvent &event, LSurface *surface = nullptr) noexcept;
 
     /**
      * @brief Notify the client about the movement of the touch point if there is an assigned surface.
@@ -105,7 +128,7 @@ public:
      * @param event The touch move event containing information about the touch point movement.
      * @return True on success, false if the IDs don't match.
      */
-    bool sendMoveEvent(const LTouchMoveEvent &event);
+    bool sendMoveEvent(const LTouchMoveEvent &event) noexcept;
 
     /**
      * @brief Notify the client about the touch point being released if there is an assigned surface.
@@ -115,12 +138,22 @@ public:
      * @param event The touch-up event containing information about the touch point release.
      * @return True on success, false if the IDs don't match.
      */
-    bool sendUpEvent(const LTouchUpEvent &event);
+    bool sendUpEvent(const LTouchUpEvent &event) noexcept;
 
-LPRIVATE_IMP_UNIQUE(LTouchPoint)
+private:
     friend class LTouch;
-    LTouchPoint(const LTouchDownEvent &event);
-    ~LTouchPoint();
+    LTouchPoint(const LTouchDownEvent &event) noexcept;
+    inline ~LTouchPoint() noexcept = default;
+    void sendTouchDownEvent(const LTouchDownEvent &event) noexcept;
+    void sendTouchFrameEvent() noexcept;
+    void sendTouchCancelEvent() noexcept;
+    void resetSerials() noexcept;
+    LWeak<LSurface> m_surface;
+    LTouchDownEvent m_lastDownEvent;
+    LTouchMoveEvent m_lastMoveEvent;
+    LTouchUpEvent m_lastUpEvent;
+    LPointF m_pos;
+    bool m_pressed { true };
 };
 
 #endif // LTOUCHPOINT_H

@@ -1,76 +1,76 @@
-#include <private/LTouchPointPrivate.h>
 #include <protocols/Wayland/private/RTouchPrivate.h>
 #include <protocols/Wayland/GSeat.h>
-#include <private/LTouchPrivate.h>
 #include <LCompositor.h>
 #include <LTouchMoveEvent.h>
 #include <LTouchDownEvent.h>
 #include <LTouchPoint.h>
 #include <LTouchUpEvent.h>
+#include <LTouch.h>
 #include <LClient.h>
 #include <LSeat.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::Wayland;
 
-LTouchPoint::LTouchPoint(const LTouchDownEvent &event) :
-    LPRIVATE_INIT_UNIQUE(LTouchPoint)
+LTouchPoint::LTouchPoint(const LTouchDownEvent &event) noexcept : m_lastDownEvent(event)
 {
-    imp()->lastDownEvent = event;
-    seat()->touch()->imp()->touchPoints.push_back(this);
-    imp()->link = std::prev(seat()->touch()->imp()->touchPoints.end());
+    seat()->touch()->m_touchPoints.push_back(this);
+
+    m_surface.setOnDestroyCallback([this](auto)
+    {
+        resetSerials();
+    });
 }
 
-LTouchPoint::~LTouchPoint() {}
-
-Int32 LTouchPoint::id() const
+void LTouchPoint::sendTouchDownEvent(const LTouchDownEvent &event) noexcept
 {
-    return imp()->lastDownEvent.id();
+    if (!surface())
+        return;
+
+    for (GSeat *s : surface()->client()->seatGlobals())
+        for (RTouch *t : s->touchResources())
+            t->down(event, surface()->surfaceResource());
 }
 
-bool LTouchPoint::isPressed() const
+void LTouchPoint::sendTouchFrameEvent() noexcept
 {
-    return imp()->isPressed;
+    if (!surface())
+        return;
+
+    for (GSeat *s : surface()->client()->seatGlobals())
+        for (RTouch *t : s->touchResources())
+            t->frame();
 }
 
-LSurface *LTouchPoint::surface() const
+void LTouchPoint::sendTouchCancelEvent() noexcept
 {
-    return imp()->surface;
+    if (!surface())
+        return;
+
+    for (GSeat *s : surface()->client()->seatGlobals())
+        for (RTouch *t : s->touchResources())
+            t->cancel();
 }
 
-const LTouchDownEvent &LTouchPoint::lastDownEvent() const
+void LTouchPoint::resetSerials() noexcept
 {
-    return imp()->lastDownEvent;
+    m_lastDownEvent.setSerial(0);
+    m_lastUpEvent.setSerial(0);
+    m_lastMoveEvent.setSerial(0);
 }
 
-const LTouchMoveEvent &LTouchPoint::lastMoveEvent() const
-{
-    return imp()->lastMoveEvent;
-}
-
-const LTouchUpEvent &LTouchPoint::lastUpEvent() const
-{
-    return imp()->lastUpEvent;
-}
-
-const LPointF &LTouchPoint::pos() const
-{
-    return imp()->pos;
-}
-
-bool LTouchPoint::sendDownEvent(const LTouchDownEvent &event, LSurface *surface)
+bool LTouchPoint::sendDownEvent(const LTouchDownEvent &event, LSurface *surf) noexcept
 {
     if (event.id() != id())
         return false;
 
-    imp()->isPressed = true;
-    imp()->lastDownEvent = event;
-    imp()->pos = event.pos();
+    m_pressed = true;
+    m_lastDownEvent = event;
+    m_pos = event.pos();
 
-    // Detach prev sourface
-    if (imp()->surface && (!surface || imp()->surface != surface))
+    if (surface() && (!surf || surface() != surf))
     {
-        for (GSeat *s : imp()->surface->client()->seatGlobals())
+        for (GSeat *s : surface()->client()->seatGlobals())
         {
             for (RTouch *t : s->touchResources())
             {
@@ -79,30 +79,27 @@ bool LTouchPoint::sendDownEvent(const LTouchDownEvent &event, LSurface *surface)
             }
         }
 
-        imp()->resetSerials();
+        resetSerials();
     }
 
-    imp()->surface = surface;
-
-    if (imp()->surface)
-        imp()->sendTouchDownEvent(event);
-
+    m_surface.reset(surf);
+    sendTouchDownEvent(event);
     return true;
 }
 
-bool LTouchPoint::sendMoveEvent(const LTouchMoveEvent &event)
+bool LTouchPoint::sendMoveEvent(const LTouchMoveEvent &event) noexcept
 {
     if (event.id() != id())
         return false;
 
-    imp()->lastMoveEvent = event;
-    imp()->pos = event.pos();
+    m_lastMoveEvent = event;
+    m_pos = event.pos();
 
     if (!surface())
         return true;
 
-    Float24 x = wl_fixed_from_double(event.localPos.x());
-    Float24 y = wl_fixed_from_double(event.localPos.y());
+    const Float24 x { wl_fixed_from_double(event.localPos.x()) };
+    const Float24 y { wl_fixed_from_double(event.localPos.y()) };
 
     for (GSeat *s : surface()->client()->seatGlobals())
         for (RTouch *t : s->touchResources())
@@ -111,13 +108,13 @@ bool LTouchPoint::sendMoveEvent(const LTouchMoveEvent &event)
     return true;
 }
 
-bool LTouchPoint::sendUpEvent(const LTouchUpEvent &event)
+bool LTouchPoint::sendUpEvent(const LTouchUpEvent &event) noexcept
 {
     if (event.id() != id())
         return false;
 
-    imp()->lastUpEvent = event;
-    imp()->isPressed = false;
+    m_lastUpEvent = event;
+    m_pressed = false;
 
     if (!surface())
         return true;
