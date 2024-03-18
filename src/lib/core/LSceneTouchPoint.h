@@ -10,7 +10,10 @@ public:
 
     // TODO DISABLE COPY
 
-    LScene *scene() const;
+    inline LScene *scene() const noexcept
+    {
+        return m_scene;
+    }
 
     /**
      * @brief Get the unique identifier of the touch point.
@@ -19,20 +22,29 @@ public:
      *
      * @return The unique identifier of the touch point.
      */
-    Int32 id() const;
+    inline Int32 id() const noexcept
+    {
+        return m_id;
+    }
 
     /**
      * @brief Check if the touch point is currently being pressed.
      * @return True if the touch point is currently pressed, false otherwise.
      */
-    bool isPressed() const;
+    inline bool pressed() const noexcept
+    {
+        return m_pressed;
+    }
 
     /**
      * @brief Touched views
      *
      * Touched by this touch point. Updated each time a touch down event is handled.
      */
-    const std::vector<LView*> &views() const;
+    inline const std::vector<LView*> &views() const noexcept
+    {
+        return m_views;
+    }
 
     /**
      * @brief Get the position of the touch point assigned by the last touch-down or move event.
@@ -41,13 +53,23 @@ public:
      *
      * @return A constant reference to the position of the touch point.
      */
-    const LPointF &pos() const;
+    inline const LPointF &pos() const noexcept
+    {
+        return m_pos;
+    }
 
-    LPRIVATE_IMP_UNIQUE(LSceneTouchPoint)
+private:
     friend class LScene;
+    friend class LView;
     LSceneTouchPoint(LScene *scene, const LTouchDownEvent &event);
-    ~LSceneTouchPoint();
+    inline ~LSceneTouchPoint() noexcept = default;
     std::vector<LSceneTouchPoint*>::iterator destroy();
+    std::vector<LView*> m_views;
+    LScene *m_scene { nullptr };
+    LPointF m_pos;
+    Int32 m_id { 0 };
+    bool m_pressed { true };
+    bool m_listChanged { false };
 };
 
 

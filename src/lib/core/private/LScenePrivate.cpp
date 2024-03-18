@@ -1,5 +1,5 @@
 #include <private/LScenePrivate.h>
-#include <private/LSceneTouchPointPrivate.h>
+#include <LSceneTouchPoint.h>
 #include <LOutput.h>
 #include <LCompositor.h>
 #include <LPainter.h>
@@ -228,8 +228,8 @@ bool LScene::LScenePrivate::handleTouchDown(LView *view)
         {
             view->m_state.add(LVS::TouchDownDone);
 
-            LVectorRemoveOne(currentTouchPoint->imp()->views, view);
-            currentTouchPoint->imp()->views.push_back(view);
+            LVectorRemoveOne(currentTouchPoint->m_views, view);
+            currentTouchPoint->m_views.push_back(view);
             touchDownEvent.localPos = viewLocalPos(view, touchGlobalPos);
             view->touchDownEvent(touchDownEvent);
 

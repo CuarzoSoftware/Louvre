@@ -1,6 +1,7 @@
 #ifndef LCOMPOSITORPRIVATE_H
 #define LCOMPOSITORPRIVATE_H
 
+#include <private/LBackendPrivate.h>
 #include <LCompositor.h>
 #include <LOutput.h>
 #include <LInputDevice.h>

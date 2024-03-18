@@ -1,6 +1,6 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LScenePrivate.h>
-#include <private/LSceneTouchPointPrivate.h>
+#include <LSceneTouchPoint.h>
 #include <LTouchCancelEvent.h>
 #include <LOutput.h>
 #include <LLog.h>
@@ -56,12 +56,12 @@ void LView::enableTouchEvents(bool enabled) noexcept
         {
             for (auto *tp : scene()->touchPoints())
             {
-                for (auto it = tp->imp()->views.begin(); it != tp->imp()->views.end();)
+                for (auto it = tp->m_views.begin(); it != tp->m_views.end();)
                 {
                     if (*it == this)
                     {
-                        it = tp->imp()->views.erase(it);
-                        tp->imp()->listChanged = true;
+                        it = tp->m_views.erase(it);
+                        tp->m_listChanged = true;
                     }
                     else
                         it++;
@@ -265,12 +265,12 @@ void LView::sceneChanged(LScene *newScene)
         {
             for (auto *tp : scene()->touchPoints())
             {
-                for (auto it = tp->imp()->views.begin(); it != tp->views().end();)
+                for (auto it = tp->m_views.begin(); it != tp->m_views.end();)
                 {
                     if (*it == this)
                     {
-                        it = tp->imp()->views.erase(it);
-                        tp->imp()->listChanged = true;
+                        it = tp->m_views.erase(it);
+                        tp->m_listChanged = true;
                     }
                     else
                         it++;

@@ -1,6 +1,6 @@
-#include <private/LSceneTouchPointPrivate.h>
 #include <private/LScenePrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <LSceneTouchPoint.h>
 #include <LToplevelMoveSession.h>
 #include <LToplevelResizeSession.h>
 #include <LSurfaceView.h>
@@ -866,8 +866,8 @@ void LScene::handleTouchDownEvent(const LTouchDownEvent &event, const LPointF &g
     if (!imp()->currentTouchPoint)
         imp()->currentTouchPoint = new LSceneTouchPoint(this, event);
 
-    imp()->currentTouchPoint->imp()->isPressed = true;
-    imp()->currentTouchPoint->imp()->pos = event.pos();
+    imp()->currentTouchPoint->m_pressed = true;
+    imp()->currentTouchPoint->m_pos = event.pos();
     imp()->touchDownEvent = event;
     imp()->touchGlobalPos = globalPos;
 
@@ -932,7 +932,7 @@ void LScene::handleTouchMoveEvent(const LTouchMoveEvent &event, const LPointF &g
     if (!imp()->currentTouchPoint)
         goto skipViews;
 
-    imp()->currentTouchPoint->imp()->pos = event.pos();
+    imp()->currentTouchPoint->m_pos = event.pos();
     imp()->touchGlobalPos = globalPos;
     imp()->state.remove(LSS::ChildrenListChanged | LSS::TouchIsBlocked);
 
@@ -941,7 +941,7 @@ void LScene::handleTouchMoveEvent(const LTouchMoveEvent &event, const LPointF &g
 
 retry:
 
-    imp()->currentTouchPoint->imp()->listChanged = false;
+    imp()->currentTouchPoint->m_listChanged = false;
 
     for (LView *view : imp()->currentTouchPoint->views())
     {
@@ -952,7 +952,7 @@ retry:
         event.localPos = imp()->viewLocalPos(view, globalPos);
         view->touchMoveEvent(event);
 
-        if (imp()->currentTouchPoint->imp()->listChanged)
+        if (imp()->currentTouchPoint->m_listChanged)
             goto retry;
     }
 
@@ -1082,7 +1082,7 @@ void LScene::handleTouchUpEvent(const LTouchUpEvent &event, EventOptionsFlags op
     if (!imp()->currentTouchPoint)
         goto skipViews;
 
-    imp()->currentTouchPoint->imp()->isPressed = true;
+    imp()->currentTouchPoint->m_pressed = true;
     imp()->state.remove(LSS::ChildrenListChanged | LSS::TouchIsBlocked);
 
     for (LView *view : imp()->currentTouchPoint->views())
@@ -1090,7 +1090,7 @@ void LScene::handleTouchUpEvent(const LTouchUpEvent &event, EventOptionsFlags op
 
 retry:
 
-    imp()->currentTouchPoint->imp()->listChanged = false;
+    imp()->currentTouchPoint->m_listChanged = false;
 
     for (LView *view : imp()->currentTouchPoint->views())
     {
@@ -1100,7 +1100,7 @@ retry:
         view->m_state.add(LVS::TouchUpDone);
         view->touchUpEvent(event);
 
-        if (imp()->currentTouchPoint->imp()->listChanged)
+        if (imp()->currentTouchPoint->m_listChanged)
             goto retry;
     }
 
@@ -1183,7 +1183,7 @@ void LScene::handleTouchFrameEvent(const LTouchFrameEvent &event, EventOptionsFl
 
 retry:
 
-    imp()->currentTouchPoint->imp()->listChanged = false;
+    imp()->currentTouchPoint->m_listChanged = false;
 
     for (LView *view : imp()->currentTouchPoint->views())
     {
@@ -1193,16 +1193,16 @@ retry:
         view->m_state.add(LVS::TouchFrameDone);
         view->touchFrameEvent(event);
 
-        if (imp()->currentTouchPoint->imp()->listChanged)
+        if (imp()->currentTouchPoint->m_listChanged)
         {
-            imp()->currentTouchPoint->imp()->listChanged = false;
+            imp()->currentTouchPoint->m_listChanged = false;
             goto retry;
         }
     }
 
     for (auto it = imp()->touchPoints.begin(); it != imp()->touchPoints.end();)
     {
-        if (!(*it)->isPressed())
+        if (!(*it)->pressed())
             it = (*it)->destroy();
         else
             it++;
@@ -1233,7 +1233,7 @@ void LScene::handleTouchCancelEvent(const LTouchCancelEvent &event, EventOptions
 
 retry:
 
-    imp()->currentTouchPoint->imp()->listChanged = false;
+    imp()->currentTouchPoint->m_listChanged = false;
 
     for (LView *view : imp()->currentTouchPoint->views())
     {
@@ -1243,7 +1243,7 @@ retry:
         view->m_state.add(LVS::TouchCancelDone);
         view->touchCancelEvent(event);
 
-        if (imp()->currentTouchPoint->imp()->listChanged)
+        if (imp()->currentTouchPoint->m_listChanged)
             goto retry;
     }
 
