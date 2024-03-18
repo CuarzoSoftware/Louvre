@@ -6,8 +6,8 @@
 #include <private/LSurfacePrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LCursorPrivate.h>
-#include <private/LAnimationPrivate.h>
 
+#include <LAnimation.h>
 #include <LNamespaces.h>
 #include <LPopupRole.h>
 #include <LToplevelRole.h>
@@ -280,7 +280,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         retry:
         for (LAnimation *a : imp()->animations)
         {
-            if (a->imp()->destroyOnFinish)
+            if (a->m_destroyOnFinish)
             {
                 delete a;
                 goto retry;

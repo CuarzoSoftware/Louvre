@@ -22,35 +22,35 @@ struct LSurface::Params
 LPRIVATE_CLASS(LSurface)
 
     // Changes that are notified at the end of a commit after all changes are applied
-    enum ChangesToNotify : UInt32
+    enum ChangesToNotify : UInt16
     {
-        NoChanges                   = static_cast<UInt32>(0),
-        BufferSizeChanged           = static_cast<UInt32>(1) << 0,
-        BufferScaleChanged          = static_cast<UInt32>(1) << 1,
-        BufferTransformChanged      = static_cast<UInt32>(1) << 2,
-        DamageRegionChanged         = static_cast<UInt32>(1) << 3,
-        OpaqueRegionChanged         = static_cast<UInt32>(1) << 4,
-        InputRegionChanged          = static_cast<UInt32>(1) << 5,
-        SourceRectChanged           = static_cast<UInt32>(1) << 6,
-        SizeChanged                 = static_cast<UInt32>(1) << 7,
-        VSyncChanged                = static_cast<UInt32>(1) << 8
+        NoChanges                   = static_cast<UInt16>(0),
+        BufferSizeChanged           = static_cast<UInt16>(1) << 0,
+        BufferScaleChanged          = static_cast<UInt16>(1) << 1,
+        BufferTransformChanged      = static_cast<UInt16>(1) << 2,
+        DamageRegionChanged         = static_cast<UInt16>(1) << 3,
+        OpaqueRegionChanged         = static_cast<UInt16>(1) << 4,
+        InputRegionChanged          = static_cast<UInt16>(1) << 5,
+        SourceRectChanged           = static_cast<UInt16>(1) << 6,
+        SizeChanged                 = static_cast<UInt16>(1) << 7,
+        VSyncChanged                = static_cast<UInt16>(1) << 8
     };
 
     LBitset<ChangesToNotify> changesToNotify;
 
-    enum StateFlags : UInt32
+    enum StateFlags : UInt16
     {
-        ViewportIsScaled           = static_cast<UInt32>(1) << 0,
-        ViewportIsCropped          = static_cast<UInt32>(1) << 1,
-        Destroyed                  = static_cast<UInt32>(1) << 2,
-        Damaged                    = static_cast<UInt32>(1) << 3,
-        Minimized                  = static_cast<UInt32>(1) << 4,
-        ReceiveInput               = static_cast<UInt32>(1) << 5,
-        InfiniteInput              = static_cast<UInt32>(1) << 6,
-        BufferReleased             = static_cast<UInt32>(1) << 7,
-        BufferAttached             = static_cast<UInt32>(1) << 8,
-        Mapped                     = static_cast<UInt32>(1) << 9,
-        VSync                      = static_cast<UInt32>(1) << 10
+        ViewportIsScaled           = static_cast<UInt16>(1) << 0,
+        ViewportIsCropped          = static_cast<UInt16>(1) << 1,
+        Destroyed                  = static_cast<UInt16>(1) << 2,
+        Damaged                    = static_cast<UInt16>(1) << 3,
+        Minimized                  = static_cast<UInt16>(1) << 4,
+        ReceiveInput               = static_cast<UInt16>(1) << 5,
+        InfiniteInput              = static_cast<UInt16>(1) << 6,
+        BufferReleased             = static_cast<UInt16>(1) << 7,
+        BufferAttached             = static_cast<UInt16>(1) << 8,
+        Mapped                     = static_cast<UInt16>(1) << 9,
+        VSync                      = static_cast<UInt16>(1) << 10
     };
 
     LBitset<StateFlags> stateFlags { ReceiveInput | InfiniteInput | BufferReleased | VSync };

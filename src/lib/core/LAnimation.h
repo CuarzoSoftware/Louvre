@@ -4,6 +4,7 @@
 #include <LCompositor.h>
 #include <LObject.h>
 #include <functional>
+#include <LTime.h>
 
 /**
  * @brief Time-based animations.
@@ -61,7 +62,12 @@ public:
      * @param onUpdate A callback function triggered each time the value() property changes. `nullptr` can be passed if not used.
      * @param onFinish A callback function triggered once the value() property reaches 1.f. `nullptr` can be passed if not used.
      */
-    static void oneShot(UInt32 durationMs, const Callback &onUpdate = nullptr, const Callback &onFinish = nullptr);
+    inline static void oneShot(UInt32 durationMs, const Callback &onUpdate = nullptr, const Callback &onFinish = nullptr) noexcept
+    {
+        LAnimation *anim { new LAnimation(durationMs, onUpdate, onFinish) };
+        anim->m_destroyOnFinish = true;
+        anim->start();
+    }
 
     /**
      * @brief Sets the `onUpdate()` callback handler function.
@@ -70,7 +76,13 @@ public:
      *
      * @param onUpdate A reference to the callback function. Pass `nullptr` to disable the callback.
      */
-    void setOnUpdateCallback(const Callback &onUpdate);
+    inline void setOnUpdateCallback(const Callback &onUpdate) noexcept
+    {
+        if (m_running)
+            return;
+
+        m_onUpdate = onUpdate;
+    }
 
     /**
      * @brief Sets the `onFinish()` callback handler function.
@@ -79,7 +91,13 @@ public:
      *
      * @param onFinish A reference to the callback function. Pass `nullptr` to disable the callback.
      */
-    void setOnFinishCallback(const Callback &onFinish);
+    inline void setOnFinishCallback(const Callback &onFinish) noexcept
+    {
+        if (m_running)
+            return;
+
+        m_onFinish = onFinish;
+    }
 
     /**
      * @brief Sets the duration of the animation in milliseconds.
@@ -90,7 +108,13 @@ public:
      *
      * @param durationMs The duration of the animation in milliseconds.
      */
-    void setDuration(UInt32 durationMs);
+    inline void setDuration(UInt32 durationMs) noexcept
+    {
+        if (m_running)
+            return;
+
+        m_duration = durationMs;
+    }
 
     /**
      * @brief Returns the duration of the animation in milliseconds.
@@ -99,7 +123,10 @@ public:
      *
      * @return The duration of the animation in milliseconds.
      */
-    UInt32 duration() const;
+    inline UInt32 duration() const noexcept
+    {
+        return m_duration;
+    }
 
     /**
      * @brief Returns a number linearly interpolated from 0 to 1.
@@ -108,12 +135,24 @@ public:
      *
      * @return The interpolated completion value ranging from 0 to 1.
      */
-    Float32 value() const;
+    inline Float32 value() const noexcept
+    {
+        return m_value;
+    }
 
     /**
      * @brief Starts the animation.
      */
-    void start();
+    inline void start() noexcept
+    {
+        if (m_running)
+            return;
+
+        m_value = 0.f;
+        m_beginTime = LTime::ms();
+        m_running = true;
+        compositor()->repaintAllOutputs();
+    }
 
     /**
      * @brief Halts the animation before its duration is reached.
@@ -121,16 +160,42 @@ public:
      * The stop() method can be used to stop the animation before its duration is reached.
      * If called before the animation finishes, the `onFinish()` callback is triggered immediately, and the value() property is set to 1.
      */
-    void stop();
+    inline void stop()
+    {
+        if (!m_running)
+            return;
+
+        m_value = 1.f;
+        m_running = false;
+
+        if (m_onFinish)
+            m_onFinish(this);
+
+        if (m_destroyOnFinish)
+            m_pendingDestroy = true;
+    }
 
     /**
      * @brief Checks if the animation is currently running.
      *
      * @return `true` if running, `false` otherwise.
      */
-    bool running() const;
+    inline bool running() const noexcept
+    {
+        return m_running;
+    }
 
-LPRIVATE_IMP_UNIQUE(LAnimation)
+private:
+    friend class LCompositor;
+    Callback m_onUpdate { nullptr };
+    Float32 m_value { 0.f };
+    UInt32 m_duration;
+    UInt32 m_beginTime;
+    bool m_running { false };
+    bool m_processed { false };
+    bool m_pendingDestroy { false };
+    bool m_destroyOnFinish = false;
+    Callback m_onFinish { nullptr };
 };
 
 #endif // LANIMATION_H

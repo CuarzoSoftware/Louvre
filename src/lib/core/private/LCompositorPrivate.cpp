@@ -5,8 +5,8 @@
 #include <private/LOutputPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <private/LCursorPrivate.h>
-#include <private/LAnimationPrivate.h>
 #include <private/LToplevelRolePrivate.h>
+#include <LAnimation.h>
 #include <LClipboard.h>
 #include <LKeyboard.h>
 #include <LPointer.h>
@@ -588,13 +588,13 @@ void LCompositor::LCompositorPrivate::insertSurfaceBefore(LSurface *nextSurface,
 
 bool LCompositor::LCompositorPrivate::runningAnimations()
 {
-    bool running = false;
+    bool running { false };
 
     for (LAnimation *anim : animations)
     {
-        anim->imp()->processed = false;
+        anim->m_processed = false;
 
-        if (anim->imp()->running || anim->imp()->pendingDestroy)
+        if (anim->m_running || anim->m_pendingDestroy)
             running = true;
     }
 
@@ -604,47 +604,48 @@ bool LCompositor::LCompositorPrivate::runningAnimations()
 void LCompositor::LCompositorPrivate::processAnimations()
 {
     Int64 elapsed;
+    Int64 duration;
     retry:
     animationsVectorChanged = false;
     for (LAnimation *a : animations)
     {
-        if (a->imp()->processed)
+        if (a->m_processed)
             continue;
 
-        if (a->imp()->pendingDestroy)
+        if (a->m_pendingDestroy)
         {
             delete a;
             goto retry;
         }
 
-        a->imp()->processed = true;
+        a->m_processed = true;
 
-        if (!a->imp()->running)
+        if (!a->m_running)
             continue;
 
-        elapsed = (Int64)LTime::ms() - (Int64)a->imp()->beginTime;
+        elapsed = static_cast<Int64>(LTime::ms()) - static_cast<Int64>(a->m_beginTime);
+        duration = static_cast<Int64>(a->m_duration);
 
-        if (elapsed > (Int64)a->imp()->duration)
-            elapsed = a->imp()->duration;
+        if (elapsed >= duration)
+            a->m_value = 1.f;
+        else
+            a->m_value = static_cast<Float32>(elapsed)/static_cast<Float32>(duration);
 
-        a->imp()->value = (Float32)elapsed/(Float32)a->imp()->duration;
-
-        if (a->imp()->onUpdate)
+        if (a->m_onUpdate)
         {
-            a->imp()->onUpdate(a);
+            a->m_onUpdate(a);
 
             if (animationsVectorChanged)
                 goto retry;
         }
 
-        if (a->imp()->value == 1.f)
+        if (a->m_value == 1.f)
         {
             a->stop();
 
             if (animationsVectorChanged)
                 goto retry;
         }
-
     }
 }
 
