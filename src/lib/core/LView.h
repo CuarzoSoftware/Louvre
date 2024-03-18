@@ -125,7 +125,7 @@ public:
      * @param type Type ID of the view, such as those listed in LView::Type.
      * @param parent Parent view.
      */
-    explicit LView(UInt32 type, bool renderable, LView *parent) noexcept;
+    LView(UInt32 type, bool renderable, LView *parent) noexcept;
 
     /// @cond OMIT
     LView(const LView&) = delete;
@@ -163,62 +163,63 @@ public:
     enum LViewState : UInt64
     {
         // LView
-        IsScene                 = static_cast<UInt64>(1) << 0,
-        IsRenderable            = static_cast<UInt64>(1) << 1,
+        Destroyed               = static_cast<UInt64>(1) << 0,
+        IsScene                 = static_cast<UInt64>(1) << 1,
+        IsRenderable            = static_cast<UInt64>(1) << 2,
 
-        PointerEvents           = static_cast<UInt64>(1) << 2,
-        KeyboardEvents          = static_cast<UInt64>(1) << 3,
-        TouchEvents             = static_cast<UInt64>(1) << 4,
+        PointerEvents           = static_cast<UInt64>(1) << 3,
+        KeyboardEvents          = static_cast<UInt64>(1) << 4,
+        TouchEvents             = static_cast<UInt64>(1) << 5,
 
-        BlockPointer            = static_cast<UInt64>(1) << 5,
-        BlockTouch              = static_cast<UInt64>(1) << 6,
+        BlockPointer            = static_cast<UInt64>(1) << 6,
+        BlockTouch              = static_cast<UInt64>(1) << 7,
 
-        RepaintCalled           = static_cast<UInt64>(1) << 7,
-        ColorFactor             = static_cast<UInt64>(1) << 8,
-        Visible                 = static_cast<UInt64>(1) << 9,
-        Scaling                 = static_cast<UInt64>(1) << 10,
-        ParentScaling           = static_cast<UInt64>(1) << 11,
-        ParentOffset            = static_cast<UInt64>(1) << 12,
-        Clipping                = static_cast<UInt64>(1) << 13,
-        ParentClipping          = static_cast<UInt64>(1) << 14,
-        ParentOpacity           = static_cast<UInt64>(1) << 15,
-        ForceRequestNextFrame   = static_cast<UInt64>(1) << 16,
-        AutoBlendFunc           = static_cast<UInt64>(1) << 17,
+        RepaintCalled           = static_cast<UInt64>(1) << 8,
+        ColorFactor             = static_cast<UInt64>(1) << 9,
+        Visible                 = static_cast<UInt64>(1) << 10,
+        Scaling                 = static_cast<UInt64>(1) << 11,
+        ParentScaling           = static_cast<UInt64>(1) << 12,
+        ParentOffset            = static_cast<UInt64>(1) << 13,
+        Clipping                = static_cast<UInt64>(1) << 14,
+        ParentClipping          = static_cast<UInt64>(1) << 15,
+        ParentOpacity           = static_cast<UInt64>(1) << 16,
+        ForceRequestNextFrame   = static_cast<UInt64>(1) << 17,
+        AutoBlendFunc           = static_cast<UInt64>(1) << 18,
 
-        PointerIsOver           = static_cast<UInt64>(1) << 18,
+        PointerIsOver           = static_cast<UInt64>(1) << 19,
 
-        PendingSwipeEnd         = static_cast<UInt64>(1) << 19,
-        PendingPinchEnd         = static_cast<UInt64>(1) << 20,
-        PendingHoldEnd          = static_cast<UInt64>(1) << 21,
+        PendingSwipeEnd         = static_cast<UInt64>(1) << 20,
+        PendingPinchEnd         = static_cast<UInt64>(1) << 21,
+        PendingHoldEnd          = static_cast<UInt64>(1) << 22,
 
-        PointerMoveDone         = static_cast<UInt64>(1) << 22,
-        PointerButtonDone       = static_cast<UInt64>(1) << 23,
-        PointerScrollDone       = static_cast<UInt64>(1) << 24,
-        PointerSwipeBeginDone   = static_cast<UInt64>(1) << 25,
-        PointerSwipeUpdateDone  = static_cast<UInt64>(1) << 26,
-        PointerSwipeEndDone     = static_cast<UInt64>(1) << 27,
-        PointerPinchBeginDone   = static_cast<UInt64>(1) << 28,
-        PointerPinchUpdateDone  = static_cast<UInt64>(1) << 29,
-        PointerPinchEndDone     = static_cast<UInt64>(1) << 30,
-        PointerHoldBeginDone    = static_cast<UInt64>(1) << 31,
-        PointerHoldEndDone      = static_cast<UInt64>(1) << 32,
-        KeyDone                 = static_cast<UInt64>(1) << 33,
-        TouchDownDone           = static_cast<UInt64>(1) << 34,
-        TouchMoveDone           = static_cast<UInt64>(1) << 35,
-        TouchUpDone             = static_cast<UInt64>(1) << 36,
-        TouchFrameDone          = static_cast<UInt64>(1) << 37,
-        TouchCancelDone         = static_cast<UInt64>(1) << 38,
+        PointerMoveDone         = static_cast<UInt64>(1) << 23,
+        PointerButtonDone       = static_cast<UInt64>(1) << 24,
+        PointerScrollDone       = static_cast<UInt64>(1) << 25,
+        PointerSwipeBeginDone   = static_cast<UInt64>(1) << 26,
+        PointerSwipeUpdateDone  = static_cast<UInt64>(1) << 27,
+        PointerSwipeEndDone     = static_cast<UInt64>(1) << 28,
+        PointerPinchBeginDone   = static_cast<UInt64>(1) << 29,
+        PointerPinchUpdateDone  = static_cast<UInt64>(1) << 30,
+        PointerPinchEndDone     = static_cast<UInt64>(1) << 31,
+        PointerHoldBeginDone    = static_cast<UInt64>(1) << 32,
+        PointerHoldEndDone      = static_cast<UInt64>(1) << 33,
+        KeyDone                 = static_cast<UInt64>(1) << 34,
+        TouchDownDone           = static_cast<UInt64>(1) << 35,
+        TouchMoveDone           = static_cast<UInt64>(1) << 36,
+        TouchUpDone             = static_cast<UInt64>(1) << 37,
+        TouchFrameDone          = static_cast<UInt64>(1) << 38,
+        TouchCancelDone         = static_cast<UInt64>(1) << 39,
 
         // LTextureView
-        CustomColor             = static_cast<UInt64>(1) << 39,
-        CustomDstSize           = static_cast<UInt64>(1) << 40,
-        CustomSrcRect           = static_cast<UInt64>(1) << 41,
+        CustomColor             = static_cast<UInt64>(1) << 40,
+        CustomDstSize           = static_cast<UInt64>(1) << 41,
+        CustomSrcRect           = static_cast<UInt64>(1) << 42,
 
         // LSurfaceView
-        Primary                 = static_cast<UInt64>(1) << 42,
-        CustomPos               = static_cast<UInt64>(1) << 43,
-        CustomInputRegion       = static_cast<UInt64>(1) << 44,
-        CustomTranslucentRegion = static_cast<UInt64>(1) << 45,
+        Primary                 = static_cast<UInt64>(1) << 43,
+        CustomPos               = static_cast<UInt64>(1) << 44,
+        CustomInputRegion       = static_cast<UInt64>(1) << 45,
+        CustomTranslucentRegion = static_cast<UInt64>(1) << 46,
     };
 
     // This is used for detecting changes on a view since the last time it was drawn on a specific output
@@ -393,18 +394,11 @@ public:
     void setParent(LView* view) noexcept;
 
     /**
-     * @brief Insert the view after the 'prev' view.
+     * @brief Inserts the view after the specified 'prev' view.
      *
-     * This method inserts the view after the 'prev' view in the parent's children list.
-     * If 'switchParent' is `true`, the view will be assigned the same parent as the 'prev' view.
-     * If 'switchParent' is `false`, the view will only be reinserted if it shares the same parent with the 'prev' view.
-     * If 'prev' is set to `nullptr`, the view will be inserted at the beginning of its current parent's children list,
-     * regardless of the value of 'switchParent'.
-     *
-     * @param prev The view after which this view will be inserted.
-     * @param switchParent If `true`, the view will be assigned the same parent as the 'prev' view.
+     * @param prev The view after which this view will be inserted. If set to `nullptr`, the view will be inserted at the beginning of its current parent's children list.
      */
-    void insertAfter(LView *prev, bool switchParent = true) noexcept;
+    void insertAfter(LView *prev) noexcept;
 
     /**
      * @brief Get the list of child views.
@@ -1017,13 +1011,16 @@ public:
      */
     inline LBox boundingBox() const noexcept
     {
-        LBox box =
-            {
-                pos().x(),
-                pos().y(),
-                pos().x() + size().w(),
-                pos().y() + size().h(),
-            };
+        const LPoint &p { pos() };
+        const LPoint &s { size() };
+
+        LBox box
+        {
+            p.x(),
+            p.y(),
+            p.x() + s.w(),
+            p.y() + s.h(),
+        };
 
         LBox childBox;
 
@@ -1345,7 +1342,7 @@ protected:
 
     void removeThread(std::thread::id thread);
     void markAsChangedOrder(bool includeChildren = true);
-    void damageScene(LSceneView *scene);
+    void damageScene(LSceneView *scene, bool includeChildren);
     void sceneChanged(LScene *newScene);
 };
 

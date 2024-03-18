@@ -202,9 +202,12 @@ void Surface::orderChanged()
     }
 
     if (prev)
-        v->insertAfter(prev->getView(), false);
+    {
+        if (prev->getView()->parent() == getView()->parent())
+            v->insertAfter(prev->getView());
+    }
     else
-        v->insertAfter(nullptr, false);
+        v->insertAfter(nullptr);
 }
 
 void Surface::roleChanged()

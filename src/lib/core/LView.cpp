@@ -8,8 +8,6 @@
 
 using namespace Louvre;
 
-using LVS = LView::LViewState;
-
 LView::LView(UInt32 type, bool renderable, LView *parent) noexcept  : m_type(type)
 {
     m_state.setFlag(IsRenderable, renderable);
@@ -32,7 +30,7 @@ void LView::enableKeyboardEvents(bool enabled) noexcept
     if (enabled == keyboardEventsEnabled())
         return;
 
-    m_state.setFlag(LVS::KeyboardEvents, enabled);
+    m_state.setFlag(KeyboardEvents, enabled);
 
     if (scene())
     {
@@ -50,22 +48,20 @@ void LView::enableTouchEvents(bool enabled) noexcept
     if (enabled == touchEventsEnabled())
         return;
 
-    m_state.setFlag(LVS::TouchEvents, enabled);
+    m_state.setFlag(TouchEvents, enabled);
 
     if (scene())
     {
         if (!enabled)
         {
-            // TODO: unsafe ?
             for (auto *tp : scene()->touchPoints())
             {
                 for (auto it = tp->imp()->views.begin(); it != tp->imp()->views.end();)
                 {
-                    if ((*it) == this)
+                    if (*it == this)
                     {
                         it = tp->imp()->views.erase(it);
                         tp->imp()->listChanged = true;
-                        touchCancelEvent(LTouchCancelEvent());
                     }
                     else
                         it++;
@@ -90,62 +86,32 @@ void LView::enablePointerEvents(bool enabled) noexcept
     if (enabled == pointerEventsEnabled())
         return;
 
-    m_state.setFlag(LVS::PointerEvents, enabled);
+    m_state.setFlag(PointerEvents, enabled);
 
     if (!enabled)
     {
-        if (m_state.check(LVS::PointerIsOver))
+        if (m_state.check(PointerIsOver))
         {
             if (scene())
             {
-                if (m_state.check(LVS::PendingSwipeEnd))
-                {
-                    m_state.remove(LVS::PendingSwipeEnd);
-                    scene()->imp()->pointerSwipeEndEvent.setCancelled(true);
-                    scene()->imp()->pointerSwipeEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
-                    scene()->imp()->pointerSwipeEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
-                    scene()->imp()->pointerSwipeEndEvent.setSerial(LTime::nextSerial());
-                    pointerSwipeEndEvent(scene()->imp()->pointerSwipeEndEvent);
-                }
-
-                if (m_state.check(LVS::PendingPinchEnd))
-                {
-                    m_state.check(LVS::PendingPinchEnd);
-                    scene()->imp()->pointerPinchEndEvent.setCancelled(true);
-                    scene()->imp()->pointerPinchEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
-                    scene()->imp()->pointerPinchEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
-                    scene()->imp()->pointerPinchEndEvent.setSerial(LTime::nextSerial());
-                    pointerPinchEndEvent(scene()->imp()->pointerPinchEndEvent);
-                }
-
-                if (m_state.check(LVS::PendingHoldEnd))
-                {
-                    m_state.remove(LVS::PendingHoldEnd);
-                    scene()->imp()->pointerHoldEndEvent.setCancelled(true);
-                    scene()->imp()->pointerHoldEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
-                    scene()->imp()->pointerHoldEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
-                    scene()->imp()->pointerHoldEndEvent.setSerial(LTime::nextSerial());
-                    pointerHoldEndEvent(scene()->imp()->pointerHoldEndEvent);
-                }
-
                 LVectorRemoveOne(scene()->imp()->pointerFocus, this);
                 scene()->imp()->state.add(LScene::LScenePrivate::PointerFocusVectorChanged);
             }
 
-            m_state.remove(LVS::PointerIsOver);
+            m_state.remove(PointerIsOver | PendingSwipeEnd | PendingPinchEnd | PendingHoldEnd);
         }
     }
 }
 
 void LView::repaint() const noexcept
 {
-    if (m_state.check(LVS::RepaintCalled))
+    if (m_state.check(RepaintCalled))
         return;
 
     for (LOutput *o : outputs())
         o->repaint();
 
-    m_state.add(LVS::RepaintCalled);
+    m_state.add(RepaintCalled);
 }
 
 void LView::setParent(LView *view) noexcept
@@ -171,7 +137,7 @@ void LView::setParent(LView *view) noexcept
     }
     else
     {
-        damageScene(parentSceneView());
+        damageScene(parentSceneView(), true);
 
         if (s != nullptr)
             sceneChanged(nullptr);
@@ -181,35 +147,14 @@ void LView::setParent(LView *view) noexcept
     m_parent = view;
 }
 
-void LView::insertAfter(LView *prev, bool switchParent) noexcept
+void LView::insertAfter(LView *prev) noexcept
 {
     if (prev == this)
         return;
 
-    // If prev == nullptr, insert to the front of current parent children list
-    if (!prev)
+    if (prev)
     {
-        // If no parent, is a no-op
-        if (!parent())
-            return;
-
-        // Already in front
-        if (parent()->children().front() == this)
-            return;
-
-        parent()->m_children.erase(m_parentLink);
-        parent()->m_children.push_front(this);
-        m_parentLink = parent()->m_children.begin();
-        markAsChangedOrder();
-        repaint();
-    }
-    else
-    {
-        if (switchParent)
-            setParent(prev->parent());
-        else if (prev->parent() != parent())
-            return;
-
+        setParent(prev->parent());
         markAsChangedOrder();
         repaint();
 
@@ -227,6 +172,24 @@ void LView::insertAfter(LView *prev, bool switchParent) noexcept
             parent()->m_children.erase(m_parentLink);
             m_parentLink = parent()->m_children.insert(std::next(prev->m_parentLink), this);
         }
+    }
+
+    // If prev == nullptr, insert to the front of current parent children list
+    else
+    {
+        // If no parent, is a no-op
+        if (!parent())
+            return;
+
+        // Already in front
+        if (parent()->children().front() == this)
+            return;
+
+        parent()->m_children.erase(m_parentLink);
+        parent()->m_children.push_front(this);
+        m_parentLink = parent()->m_children.begin();
+        markAsChangedOrder();
+        repaint();
     }
 }
 
@@ -262,7 +225,7 @@ void LView::markAsChangedOrder(bool includeChildren)
             child->markAsChangedOrder();
 }
 
-void LView::damageScene(LSceneView *scene)
+void LView::damageScene(LSceneView *scene, bool includeChildren)
 {
     if (scene)
     {
@@ -275,8 +238,9 @@ void LView::damageScene(LSceneView *scene)
                 scene->addDamage(pair.second.o, pair.second.prevClipping);
         }
 
-        for (LView *child : children())
-            child->damageScene(child->parentSceneView());
+        if (includeChildren)
+            for (LView *child : children())
+                child->damageScene(child->parentSceneView(), includeChildren);
     }
 }
 
@@ -292,39 +256,9 @@ void LView::sceneChanged(LScene *newScene)
 
         if (m_state.check(PointerIsOver))
         {
-            if (m_state.check(PendingSwipeEnd))
-            {
-                m_state.remove(PendingSwipeEnd);
-                scene()->imp()->pointerSwipeEndEvent.setCancelled(true);
-                scene()->imp()->pointerSwipeEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
-                scene()->imp()->pointerSwipeEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
-                scene()->imp()->pointerSwipeEndEvent.setSerial(LTime::nextSerial());
-                pointerSwipeEndEvent(scene()->imp()->pointerSwipeEndEvent);
-            }
-
-            if (m_state.check(PendingPinchEnd))
-            {
-                m_state.remove(PendingPinchEnd);
-                scene()->imp()->pointerPinchEndEvent.setCancelled(true);
-                scene()->imp()->pointerPinchEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
-                scene()->imp()->pointerPinchEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
-                scene()->imp()->pointerPinchEndEvent.setSerial(LTime::nextSerial());
-                pointerPinchEndEvent(scene()->imp()->pointerPinchEndEvent);
-            }
-
-            if (m_state.check(PendingHoldEnd))
-            {
-                m_state.remove(PendingHoldEnd);
-                scene()->imp()->pointerHoldEndEvent.setCancelled(true);
-                scene()->imp()->pointerHoldEndEvent.setMs(scene()->imp()->currentPointerMoveEvent.ms());
-                scene()->imp()->pointerHoldEndEvent.setUs(scene()->imp()->currentPointerMoveEvent.us());
-                scene()->imp()->pointerHoldEndEvent.setSerial(LTime::nextSerial());
-                pointerHoldEndEvent(scene()->imp()->pointerHoldEndEvent);
-            }
-
             LVectorRemoveOne(scene()->imp()->pointerFocus, this);
             scene()->imp()->state.add(LScene::LScenePrivate::PointerFocusVectorChanged);
-            m_state.remove(PointerIsOver);
+            m_state.remove(PointerIsOver | PendingHoldEnd | PendingPinchEnd | PendingSwipeEnd);
         }
 
         if (m_state.check(TouchEvents))
@@ -333,12 +267,10 @@ void LView::sceneChanged(LScene *newScene)
             {
                 for (auto it = tp->imp()->views.begin(); it != tp->views().end();)
                 {
-                    if ((*it) == this)
+                    if (*it == this)
                     {
-                        LView *v = *it;
                         it = tp->imp()->views.erase(it);
                         tp->imp()->listChanged = true;
-                        v->touchCancelEvent(LTouchCancelEvent());
                     }
                     else
                         it++;
@@ -358,7 +290,6 @@ void LView::sceneChanged(LScene *newScene)
 
     m_scene = newScene;
 
-    // TODO: UNSAFE
     for (LView *child : children())
         child->sceneChanged(newScene);
 }

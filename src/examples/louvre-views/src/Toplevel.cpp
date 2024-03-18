@@ -339,7 +339,7 @@ void Toplevel::fullscreenChanged()
         surf()->view.setCustomTranslucentRegion(&empty);
 
         animView.enableDstSize(true);
-        animView.insertAfter(&capture, true);
+        animView.insertAfter(&capture);
         animView.setTranslucentRegion(nullptr);
         animView.setVisible(false);
 
