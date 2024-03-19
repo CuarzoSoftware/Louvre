@@ -1,11 +1,10 @@
-#include <protocols/Wayland/private/GOutputPrivate.h>
-
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 #include <private/LSeatPrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LCursorPrivate.h>
+#include <protocols/Wayland/GOutput.h>
 
 #include <LAnimation.h>
 #include <LNamespaces.h>
@@ -35,6 +34,21 @@ using namespace Louvre::Protocols::Wayland;
 
 static LCompositor *s_compositor { nullptr };
 
+LCompositor *Louvre::compositor() noexcept
+{
+    return s_compositor;
+}
+
+LSeat *Louvre::seat() noexcept
+{
+    return s_compositor->seat();
+}
+
+LCursor *Louvre::cursor() noexcept
+{
+    return s_compositor->cursor();
+}
+
 LCompositor::LCompositor() : LPRIVATE_INIT_UNIQUE(LCompositor)
 {
     setenv("WAYLAND_DISPLAY", "wayland-2", 0);
@@ -54,7 +68,6 @@ LCompositor::LCompositor() : LPRIVATE_INIT_UNIQUE(LCompositor)
         s_compositor = this;
 
     LLog::init();
-    imp()->compositor = this;
     imp()->eglBindWaylandDisplayWL = (PFNEGLBINDWAYLANDDISPLAYWL) eglGetProcAddress ("eglBindWaylandDisplayWL");
     imp()->eglQueryWaylandBufferWL = (PFNEGLQUERYWAYLANDBUFFERWL) eglGetProcAddress ("eglQueryWaylandBufferWL");
 
@@ -70,11 +83,6 @@ LCompositor::LCompositor() : LPRIVATE_INIT_UNIQUE(LCompositor)
 }
 
 LCompositor::~LCompositor() = default;
-
-LCompositor *LCompositor::compositor()
-{
-    return s_compositor;
-}
 
 const LVersion &LCompositor::version()
 {
@@ -347,17 +355,17 @@ void LCompositor::LCompositorPrivate::raiseChildren(LSurface *surface)
 
 wl_display *LCompositor::display()
 {
-    return LCompositor::compositor()->imp()->display;
+    return compositor()->imp()->display;
 }
 
 wl_event_loop *LCompositor::eventLoop()
 {
-    return LCompositor::compositor()->imp()->eventLoop;
+    return compositor()->imp()->eventLoop;
 }
 
 wl_event_source *LCompositor::addFdListener(int fd, void *userData, int (*callback)(int, unsigned int, void *), UInt32 flags)
 {
-    return wl_event_loop_add_fd(LCompositor::compositor()->imp()->eventLoop, fd, flags, callback, userData);
+    return wl_event_loop_add_fd(compositor()->imp()->eventLoop, fd, flags, callback, userData);
 }
 
 void LCompositor::removeFdListener(wl_event_source *source)
@@ -457,7 +465,7 @@ void LCompositor::removeOutput(LOutput *output)
 
                     if (output == global->output())
                     {
-                        global->imp()->output.reset();
+                        global->m_output.reset();
                         client->imp()->outputGlobals[i] = std::move(client->imp()->outputGlobals.back());
                         client->imp()->outputGlobals.pop_back();
                         continue;
@@ -496,12 +504,12 @@ const std::vector<LClient *> &LCompositor::clients() const
 
 EGLDisplay LCompositor::eglDisplay()
 {
-    return LCompositor::compositor()->imp()->mainEGLDisplay;
+    return compositor()->imp()->mainEGLDisplay;
 }
 
 EGLContext LCompositor::eglContext()
 {
-    return LCompositor::compositor()->imp()->mainEGLContext;
+    return compositor()->imp()->mainEGLContext;
 }
 
 void LCompositor::flushClients()

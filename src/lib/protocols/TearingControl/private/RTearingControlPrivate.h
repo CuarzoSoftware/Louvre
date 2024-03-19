@@ -3,6 +3,7 @@
 
 #include <protocols/TearingControl/RTearingControl.h>
 #include <protocols/Wayland/RSurface.h>
+#include <LWeak.h>
 
 using namespace Louvre::Protocols::TearingControl;
 

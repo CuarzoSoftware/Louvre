@@ -3,19 +3,14 @@
 
 #include <LResource.h>
 
-class Louvre::Protocols::Wayland::RSurface : public LResource
+class Louvre::Protocols::Wayland::RSurface final : public LResource
 {
 public:
-    RSurface(GCompositor *gCompositor, UInt32 id);
-    ~RSurface();
 
-    LSurface *surface() const;
-    Viewporter::RViewport *viewportResource() const;
-    FractionalScale::RFractionalScale *fractionalScaleResource() const;
-    TearingControl::RTearingControl *tearingControlResource() const;
-
-    /// @brief Commit origin
-    /// Indicates who requests to commit a surface
+    /**
+     * @brief Commit origin
+     * Indicates who requests to commit a surface
+     */
     enum CommitOrigin
     {
         /// @brief The commit is requested by the surface itself
@@ -25,15 +20,76 @@ public:
         Parent
     };
 
+    RSurface(GCompositor *compositorRes, UInt32 id);
+    ~RSurface();
+
+    LSurface *surface() const noexcept
+    {
+        return m_surface.get();
+    }
+
+    Viewporter::RViewport *viewportRes() const noexcept
+    {
+        return m_viewportRes.get();
+    }
+
+    FractionalScale::RFractionalScale *fractionalScaleRes() const noexcept
+    {
+        return m_fractionalScaleRes.get();
+    }
+
+    TearingControl::RTearingControl *tearingControlRes() const noexcept
+    {
+        return m_tearingControlRes.get();
+    }
+
+    /******************** REQUESTS ********************/
+
+    static void attach(wl_client *client, wl_resource *resource, wl_resource *buffer, Int32 x, Int32 y);
+    static void frame(wl_client *client, wl_resource *resource, UInt32 callback);
+    static void destroy(wl_client *client, wl_resource *resource);
+    static void commit(wl_client *client, wl_resource *resource);
+    static void damage(wl_client *client, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height);
+    static void set_opaque_region(wl_client *client, wl_resource *resource, wl_resource *region);
+    static void set_input_region(wl_client *client, wl_resource *resource, wl_resource *region);
+
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 2
+    static void set_buffer_transform(wl_client *client, wl_resource *resource, Int32 transform);
+#endif
+
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 3
+    static void set_buffer_scale(wl_client *client, wl_resource *resource, Int32 scale);
+#endif
+
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 4
+    static void damage_buffer(wl_client *client, wl_resource *resource, Int32 x, Int32 y, Int32 w, Int32 h);
+#endif
+
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 5
+    static void offset(wl_client *client, wl_resource *resource, Int32 x, Int32 y);
+#endif
+
+    static void handleOffset(LSurface *lSurface, Int32 x, Int32 y);
+    static void apply_commit(LSurface *surface, CommitOrigin origin = Itself);
+
+    /******************** EVENTS ********************/
+
     // Since 1
-    bool enter(GOutput *gOutput);
-    bool leave(GOutput *gOutput);
+    bool enter(GOutput *outputRes) noexcept;
+    bool leave(GOutput *outputRes) noexcept;
 
     // Since 6
-    bool preferredBufferScale(Int32 scale);
-    bool preferredBufferTransform(UInt32 transform);
+    bool preferredBufferScale(Int32 scale) noexcept;
+    bool preferredBufferTransform(UInt32 transform) noexcept;
 
-    LPRIVATE_IMP_UNIQUE(RSurface)
+private:
+    friend class Viewporter::RViewport;
+    friend class FractionalScale::RFractionalScale;
+    friend class TearingControl::RTearingControl;
+    std::unique_ptr<LSurface> m_surface;
+    LWeak<Viewporter::RViewport> m_viewportRes;
+    LWeak<FractionalScale::RFractionalScale> m_fractionalScaleRes;
+    LWeak<TearingControl::RTearingControl> m_tearingControlRes;
 };
 
 #endif // RSURFACE_H

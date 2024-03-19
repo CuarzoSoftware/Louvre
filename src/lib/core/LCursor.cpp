@@ -142,7 +142,7 @@ void LCursor::setCursor(const LClientCursor &clientCursor) noexcept
     if (clientCursor.cursorRole())
     {
         setTextureB(clientCursor.cursorRole()->surface()->texture(), clientCursor.cursorRole()->hotspotB());
-        imp()->clientCursor = clientCursor.weakRef<const LClientCursor>();
+        imp()->clientCursor.reset(&clientCursor);
     }
     else
         useDefault();

@@ -1,6 +1,7 @@
 #include <protocols/Wayland/private/RDataSourcePrivate.h>
 #include <protocols/Wayland/GDataDeviceManager.h>
 #include <protocols/Wayland/RDataDevice.h>
+#include <protocols/Wayland/RDataOffer.h>
 #include <private/LCompositorPrivate.h>
 #include <LClipboard.h>
 #include <LDND.h>
@@ -50,7 +51,7 @@ RDataSource::~RDataSource()
     }
 }
 
-void RDataSource::requestPersistentMimeType(MimeTypeFile &mimeType) noexcept
+void RDataSource::requestPersistentMimeType(LClipboard::MimeTypeFile &mimeType) noexcept
 {
     if (mimeType.tmp != NULL)
         return;

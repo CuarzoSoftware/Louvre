@@ -1,5 +1,6 @@
 #include <protocols/Wayland/private/RKeyboardPrivate.h>
 #include <protocols/Wayland/RDataDevice.h>
+#include <protocols/Wayland/RDataOffer.h>
 #include <protocols/Wayland/GSeat.h>
 #include <private/LSeatPrivate.h>
 #include <private/LClientPrivate.h>
@@ -175,7 +176,7 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
 
     for (auto client : compositor()->clients())
         for (auto gSeat : client->seatGlobals())
-            for (auto rKeyboard : gSeat->keyboardResources())
+            for (auto rKeyboard : gSeat->keyboardRes())
                 rKeyboard->keymap(keymapFormat(), keymapFd(), keymapSize());
 
     // Update LED idx
@@ -223,7 +224,7 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
 
     for (auto client : compositor()->clients())
         for (auto gSeat : client->seatGlobals())
-            for (auto rKeyboard : gSeat->keyboardResources())
+            for (auto rKeyboard : gSeat->keyboardRes())
                 rKeyboard->keymap(keymapFormat(), keymapFd(), keymapSize());
 
     return false;
@@ -264,7 +265,7 @@ void LKeyboard::setFocus(LSurface *surface)
             LKeyboardLeaveEvent leaveEvent;
 
             for (auto gSeat : focus()->client()->seatGlobals())
-                for (auto rKeyboard : gSeat->keyboardResources())
+                for (auto rKeyboard : gSeat->keyboardRes())
                     rKeyboard->leave(leaveEvent, focus()->surfaceResource());
         }
 
@@ -288,13 +289,13 @@ void LKeyboard::setFocus(LSurface *surface)
 
         for (auto gSeat : surface->client()->seatGlobals())
         {
-            if (clientChanged && !selectionSent && gSeat->dataDeviceResource())
+            if (clientChanged && !selectionSent && gSeat->dataDeviceRes())
             {
-                gSeat->dataDeviceResource()->createOffer(RDataSource::Clipboard);
+                gSeat->dataDeviceRes()->createOffer(RDataSource::Clipboard);
                 selectionSent = true;
             }
 
-            for (auto rKeyboard : gSeat->keyboardResources())
+            for (auto rKeyboard : gSeat->keyboardRes())
             {
                 imp()->focus.reset(surface);
                 rKeyboard->enter(enterEvent, surface->surfaceResource(), &keys);
@@ -312,7 +313,7 @@ void LKeyboard::setFocus(LSurface *surface)
             LKeyboardLeaveEvent leaveEvent;
 
             for (auto gSeat : focus()->client()->seatGlobals())
-                for (auto rKeyboard : gSeat->keyboardResources())
+                for (auto rKeyboard : gSeat->keyboardRes())
                     rKeyboard->leave(leaveEvent, focus()->surfaceResource());
         }
 
@@ -334,7 +335,7 @@ void LKeyboard::sendKeyEvent(const LKeyboardKeyEvent &event)
 
     for (auto gSeat : focus()->client()->seatGlobals())
     {
-        for (auto rKeyboard : gSeat->keyboardResources())
+        for (auto rKeyboard : gSeat->keyboardRes())
         {
             rKeyboard->key(event);
 
@@ -410,6 +411,6 @@ void LKeyboard::setRepeatInfo(Int32 rate, Int32 msDelay)
 
     for (auto client : compositor()->clients())
         for (auto gSeat : client->seatGlobals())
-            for (auto rKeyboard : gSeat->keyboardResources())
+            for (auto rKeyboard : gSeat->keyboardRes())
                 rKeyboard->repeatInfo(rate, msDelay);
 }

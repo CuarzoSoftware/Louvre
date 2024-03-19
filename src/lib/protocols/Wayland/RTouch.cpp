@@ -1,6 +1,6 @@
 #include <protocols/Wayland/private/RTouchPrivate.h>
-#include <protocols/Wayland/private/GSeatPrivate.h>
 #include <protocols/Wayland/RSurface.h>
+#include <protocols/Wayland/GSeat.h>
 #include <private/LClientPrivate.h>
 #include <algorithm>
 
@@ -27,13 +27,13 @@ RTouch::RTouch
     LPRIVATE_INIT_UNIQUE(RTouch)
 {
     imp()->gSeat = gSeat;
-    gSeat->imp()->touchResources.push_back(this);
+    gSeat->m_touchRes.emplace_back(this);
 }
 
 RTouch::~RTouch()
 {
     if (seatGlobal())
-        LVectorRemoveOneUnordered(seatGlobal()->imp()->touchResources, this);
+        LVectorRemoveOneUnordered(seatGlobal()->m_touchRes, this);
 }
 
 GSeat *RTouch::seatGlobal() const

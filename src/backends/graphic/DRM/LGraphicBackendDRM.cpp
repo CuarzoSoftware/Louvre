@@ -308,19 +308,18 @@ UInt32 LGraphicBackend::backendGetId()
 
 void *LGraphicBackend::backendGetContextHandle()
 {
-    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
+    Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
     return bknd->core;
 }
 
 bool LGraphicBackend::backendInitialize()
 {
     setenv("SRM_FORCE_LEGACY_API", "1", 0);
-    LCompositor *compositor = LCompositor::compositor();
-    libseatEnabled = compositor->seat()->imp()->initLibseat();
+    libseatEnabled = compositor()->seat()->imp()->initLibseat();
 
     Backend *bknd = new Backend();
-    compositor->imp()->graphicBackendData = bknd;
-    bknd->core = srmCoreCreate(&srmInterface, compositor);
+    compositor()->imp()->graphicBackendData = bknd;
+    bknd->core = srmCoreCreate(&srmInterface, compositor());
     SRMVersion *version;
 
     if (!bknd->core)
@@ -373,7 +372,7 @@ bool LGraphicBackend::backendInitialize()
                                             bknd,
                                             &monitorEventHandler);
 
-    compositor->imp()->graphicBackendData = bknd;
+    compositor()->imp()->graphicBackendData = bknd;
     return true;
 
     fail:
@@ -383,8 +382,7 @@ bool LGraphicBackend::backendInitialize()
 
 void LGraphicBackend::backendUninitialize()
 {
-    LCompositor *compositor = LCompositor::compositor();
-    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
     LCompositor::removeFdListener(bknd->monitor);
 
     // Find connected outputs
@@ -406,50 +404,43 @@ void LGraphicBackend::backendUninitialize()
 
 void LGraphicBackend::backendSuspend()
 {
-    LCompositor *compositor = LCompositor::compositor();
-    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
     srmCoreSuspend(bknd->core);
 }
 
 void LGraphicBackend::backendResume()
 {
-    LCompositor *compositor = LCompositor::compositor();
-    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
     srmCoreResume(bknd->core);
 }
 
 const std::vector<LOutput*> *LGraphicBackend::backendGetConnectedOutputs()
 {
-    LCompositor *compositor = LCompositor::compositor();
-    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
     return &bknd->connectedOutputs;
 }
 
 UInt32 LGraphicBackend::backendGetRendererGPUs()
 {
-    LCompositor *compositor = LCompositor::compositor();
-    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
     return bknd->rendererGPUs;
 }
 
 const std::vector<LDMAFormat> *LGraphicBackend::backendGetDMAFormats()
 {
-    LCompositor *compositor = LCompositor::compositor();
-    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
     return &bknd->dmaFormats;
 }
 
 EGLDisplay LGraphicBackend::backendGetAllocatorEGLDisplay()
 {
-    LCompositor *compositor = LCompositor::compositor();
-    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
     return srmDeviceGetEGLDisplay(srmCoreGetAllocatorDevice(bknd->core));
 }
 
 EGLContext LGraphicBackend::backendGetAllocatorEGLContext()
 {
-    LCompositor *compositor = LCompositor::compositor();
-    Backend *bknd = (Backend*)compositor->imp()->graphicBackendData;
+    Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
     return srmDeviceGetEGLContext(srmCoreGetAllocatorDevice(bknd->core));
 }
 
@@ -457,7 +448,7 @@ EGLContext LGraphicBackend::backendGetAllocatorEGLContext()
 
 bool LGraphicBackend::textureCreateFromCPUBuffer(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels)
 {
-    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
+    Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
     SRMBuffer *bkndBuffer = srmBufferCreateFromCPU(bknd->core, NULL, size.w(), size.h(), stride, pixels, format);
 
     if (bkndBuffer)
@@ -471,7 +462,7 @@ bool LGraphicBackend::textureCreateFromCPUBuffer(LTexture *texture, const LSize 
 
 bool LGraphicBackend::textureCreateFromWaylandDRM(LTexture *texture, void *wlBuffer)
 {
-    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
+    Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
     SRMBuffer *bkndBuffer = srmBufferCreateFromWaylandDRM(bknd->core, wlBuffer);
 
     if (bkndBuffer)
@@ -488,7 +479,7 @@ bool LGraphicBackend::textureCreateFromWaylandDRM(LTexture *texture, void *wlBuf
 
 bool LGraphicBackend::textureCreateFromDMA(LTexture *texture, const LDMAPlanes *planes)
 {
-    Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
+    Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
     SRMBuffer *bkndBuffer = srmBufferCreateFromDMA(bknd->core, NULL, (SRMBufferDMAData*)planes);
 
     if (bkndBuffer)
@@ -520,7 +511,7 @@ UInt32 LGraphicBackend::textureGetID(LOutput *output, LTexture *texture)
     }
     else
     {
-        Backend *bknd = (Backend*)LCompositor::compositor()->imp()->graphicBackendData;
+        Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
         bkndRendererDevice = srmCoreGetAllocatorDevice(bknd->core);
     }
 

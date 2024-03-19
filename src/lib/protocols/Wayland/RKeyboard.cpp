@@ -1,5 +1,5 @@
 #include <protocols/Wayland/private/RKeyboardPrivate.h>
-#include <protocols/Wayland/private/GSeatPrivate.h>
+#include <protocols/Wayland/GSeat.h>
 #include <private/LKeyboardPrivate.h>
 #include <private/LClientPrivate.h>
 #include <LCompositor.h>
@@ -34,13 +34,13 @@ RKeyboard::RKeyboard
     const LKeyboard *lKeyboard { seat()->keyboard() };
     repeatInfo(lKeyboard->repeatRate(), lKeyboard->repeatDelay());
     keymap(lKeyboard->keymapFormat(), lKeyboard->keymapFd(), lKeyboard->keymapSize());
-    gSeat->imp()->keyboardResources.push_back(this);
+    gSeat->m_keyboardRes.emplace_back(this);
 }
 
 RKeyboard::~RKeyboard()
 {
     if (seatGlobal())
-        LVectorRemoveOneUnordered(seatGlobal()->imp()->keyboardResources, this);
+        LVectorRemoveOneUnordered(seatGlobal()->m_keyboardRes, this);
 }
 
 GSeat *RKeyboard::seatGlobal() const
@@ -50,18 +50,12 @@ GSeat *RKeyboard::seatGlobal() const
 
 bool RKeyboard::keymap(UInt32 format, Int32 fd, UInt32 size)
 {
-    if (destroyed())
-        return true;
-
     wl_keyboard_send_keymap(resource(), format, fd, size);
     return true;
 }
 
 bool RKeyboard::enter(const LKeyboardEnterEvent &event, RSurface *rSurface, wl_array *keys)
 {
-    if (destroyed() || rSurface->destroyed())
-        return true;
-
     auto &clientEvent = client()->imp()->events.keyboard.enter;
 
     if (clientEvent.serial() != event.serial())
@@ -73,9 +67,6 @@ bool RKeyboard::enter(const LKeyboardEnterEvent &event, RSurface *rSurface, wl_a
 
 bool RKeyboard::leave(const LKeyboardLeaveEvent &event, RSurface *rSurface)
 {
-    if (destroyed() || rSurface->destroyed())
-        return true;
-
     auto &clientEvent = client()->imp()->events.keyboard.leave;
 
     if (clientEvent.serial() != event.serial())
@@ -87,9 +78,6 @@ bool RKeyboard::leave(const LKeyboardLeaveEvent &event, RSurface *rSurface)
 
 bool RKeyboard::key(const LKeyboardKeyEvent &event)
 {
-    if (destroyed())
-        return true;
-
     auto &clientEvents = client()->imp()->events.keyboard;
 
     if (clientEvents.key[clientEvents.keyIndex].serial() != event.serial())
@@ -108,9 +96,6 @@ bool RKeyboard::key(const LKeyboardKeyEvent &event)
 
 bool RKeyboard::modifiers(const LKeyboardModifiersEvent &event)
 {
-    if (destroyed())
-        return true;
-
     auto &clientEvent = client()->imp()->events.keyboard.modifiers;
 
     if (clientEvent.serial() != event.serial())

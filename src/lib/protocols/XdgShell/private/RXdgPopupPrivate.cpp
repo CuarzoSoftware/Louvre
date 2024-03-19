@@ -1,7 +1,6 @@
 #include <protocols/XdgShell/private/RXdgPopupPrivate.h>
 #include <protocols/XdgShell/private/RXdgSurfacePrivate.h>
 #include <protocols/XdgShell/private/RXdgPositionerPrivate.h>
-#include <protocols/Wayland/private/GSeatPrivate.h>
 #include <protocols/Wayland/RPointer.h>
 #include <protocols/Wayland/RKeyboard.h>
 #include <protocols/XdgShell/xdg-shell.h>

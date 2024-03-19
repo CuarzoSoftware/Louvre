@@ -1,5 +1,4 @@
 #include <protocols/Wayland/private/RSubsurfacePrivate.h>
-#include <protocols/Wayland/private/RSurfacePrivate.h>
 #include <private/LSubsurfaceRolePrivate.h>
 #include <LCompositor.h>
 #include <LSurface.h>
@@ -25,7 +24,7 @@ static void onPendingPlaceAboveDestroy(wl_listener *listener, void *data)
     wl_resource *resource = (wl_resource*)data;
     RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
 
-    for (LSurface *s : LCompositor::compositor()->surfaces())
+    for (LSurface *s : compositor()->surfaces())
         if (s->roleId() == LSurface::Subsurface)
             if (s->subsurface()->imp()->pendingPlaceAbove == rSurface->surface())
                 s->subsurface()->imp()->pendingPlaceAbove = nullptr;
@@ -59,7 +58,7 @@ static void onPendingPlaceBelowDestroy(wl_listener *listener, void *data)
     wl_resource *resource = (wl_resource*)data;
     RSurface *rSurface = (RSurface*)wl_resource_get_user_data(resource);
 
-    for (LSurface *s : LCompositor::compositor()->surfaces())
+    for (LSurface *s : compositor()->surfaces())
     {
         if (s->roleId() == LSurface::Subsurface)
         {
@@ -142,7 +141,7 @@ void RSubsurface::RSubsurfacePrivate::set_desync(wl_client *client, wl_resource 
         if (rSubsurface->subsurfaceRole()->imp()->hasCache)
         {
             rSubsurface->subsurfaceRole()->imp()->hasCache = false;
-            RSurface::RSurfacePrivate::apply_commit(rSubsurface->subsurfaceRole()->surface());
+            RSurface::apply_commit(rSubsurface->subsurfaceRole()->surface());
         }
     }
 }

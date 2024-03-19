@@ -1,6 +1,7 @@
 #ifndef LSCENEVIEW_H
 #define LSCENEVIEW_H
 
+#include <LCompositor.h>
 #include <LRenderBuffer.h>
 #include <LPainter.h>
 #include <LOutput.h>

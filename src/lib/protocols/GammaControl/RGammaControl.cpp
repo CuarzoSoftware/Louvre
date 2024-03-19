@@ -1,6 +1,6 @@
 #include <protocols/GammaControl/private/RGammaControlPrivate.h>
 #include <protocols/GammaControl/wlr-gamma-control-unstable-v1.h>
-#include <protocols/Wayland/private/GOutputPrivate.h>
+#include <protocols/Wayland/GOutput.h>
 #include <private/LOutputPrivate.h>
 #include <LCompositor.h>
 
@@ -29,7 +29,7 @@ RGammaControl::RGammaControl
     LPRIVATE_INIT_UNIQUE(RGammaControl)
 {
     imp()->gOutput.reset(gOutput);
-    outputGlobal()->imp()->gammaControlResources.push_back(this);
+    gOutput->m_gammaControlRes.push_back(this);
 
     if (!outputGlobal()->output() || outputGlobal()->output()->gammaSize() == 0)
         failed();
@@ -40,7 +40,7 @@ RGammaControl::RGammaControl
 RGammaControl::~RGammaControl()
 {
     if (outputGlobal())
-        LVectorRemoveOneUnordered(outputGlobal()->imp()->gammaControlResources, this);
+        LVectorRemoveOneUnordered(imp()->gOutput.get()->m_gammaControlRes, this);
 
     for (LOutput *o : compositor()->outputs())
     {
@@ -52,7 +52,7 @@ RGammaControl::~RGammaControl()
     }
 }
 
-GOutput *RGammaControl::outputGlobal() const
+Protocols::Wayland::GOutput *RGammaControl::outputGlobal() const
 {
     return imp()->gOutput.get();
 }

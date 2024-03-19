@@ -3,6 +3,7 @@
 
 #include <LInputEvent.h>
 
+/// @cond OMIT
 class Louvre::LTouchEvent : public LInputEvent
 {
 protected:
@@ -10,5 +11,6 @@ protected:
         LInputEvent(Type::Touch, subtype, serial, ms, us, device)
     {}
 };
+/// @endcond
 
 #endif // LTOUCHEVENT_H

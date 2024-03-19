@@ -1,4 +1,4 @@
-#include <protocols/Wayland/private/GOutputPrivate.h>
+#include <protocols/Wayland/GOutput.h>
 #include <private/LOutputPrivate.h>
 #include <private/LOutputModePrivate.h>
 #include <private/LCompositorPrivate.h>
@@ -10,6 +10,8 @@
 
 #include <LTime.h>
 #include <iostream>
+
+using namespace Louvre::Protocols::Wayland;
 
 LOutput::LOutputPrivate::LOutputPrivate(LOutput *output) : fb(output) {}
 
@@ -35,7 +37,7 @@ void LOutput::LOutputPrivate::backendInitializeGL()
                                              &wl_output_interface,
                                              LOUVRE_WL_OUTPUT_VERSION,
                                              output,
-                                             &Protocols::Wayland::GOutput::GOutputPrivate::bind);
+                                             &Protocols::Wayland::GOutput::bind);
 
     output->setScale(output->imp()->fractionalScale);
     lastPos = rect.pos();

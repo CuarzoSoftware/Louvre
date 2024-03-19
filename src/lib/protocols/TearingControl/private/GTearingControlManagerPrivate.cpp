@@ -21,13 +21,11 @@ void GTearingControlManager::GTearingControlManagerPrivate::bind(wl_client *clie
                              &tearing_control_manager_implementation);
 }
 
-void GTearingControlManager::GTearingControlManagerPrivate::get_tearing_control(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface)
+void GTearingControlManager::GTearingControlManagerPrivate::get_tearing_control(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *surface)
 {
-    L_UNUSED(client);
+    Wayland::RSurface *surfaceRes { static_cast<Wayland::RSurface*>(wl_resource_get_user_data(surface)) };
 
-    Wayland::RSurface *rSurface = (Wayland::RSurface*)wl_resource_get_user_data(surface);
-
-    if (rSurface->tearingControlResource())
+    if (surfaceRes->tearingControlRes())
     {
         wl_resource_post_error(resource,
                                WP_TEARING_CONTROL_MANAGER_V1_ERROR_TEARING_CONTROL_EXISTS,
@@ -35,7 +33,7 @@ void GTearingControlManager::GTearingControlManagerPrivate::get_tearing_control(
         return;
     }
 
-    new RTearingControl(rSurface, wl_resource_get_version(resource), id);
+    new RTearingControl(surfaceRes, wl_resource_get_version(resource), id);
 }
 
 void GTearingControlManager::GTearingControlManagerPrivate::destroy(wl_client *client, wl_resource *resource)

@@ -3,6 +3,9 @@
 
 #include <LOutput.h>
 #include <LRect.h>
+#include <LWeak.h>
+
+#include <filesystem>
 #include <drm_fourcc.h>
 #include <GL/gl.h>
 

@@ -1,6 +1,6 @@
 #include <protocols/Viewporter/private/RViewportPrivate.h>
 #include <protocols/Viewporter/viewporter.h>
-#include <protocols/Wayland/private/RSurfacePrivate.h>
+#include <protocols/Wayland/RSurface.h>
 
 using namespace Louvre;
 
@@ -13,7 +13,7 @@ static struct wp_viewport_interface viewport_implementation =
 
 RViewport::RViewport
     (
-        RSurface *rSurface,
+        Wayland::RSurface *rSurface,
         Int32 version,
         UInt32 id
     )
@@ -28,12 +28,12 @@ RViewport::RViewport
     LPRIVATE_INIT_UNIQUE(RViewport)
 {
     imp()->rSurface.reset(rSurface);
-    rSurface->imp()->rViewport = this;
+    rSurface->m_viewportRes.reset(this);
 }
 
 RViewport::~RViewport() {}
 
-RSurface *RViewport::surfaceResource() const
+Protocols::Wayland::RSurface *RViewport::surfaceResource() const
 {
     return imp()->rSurface.get();
 }

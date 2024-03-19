@@ -201,7 +201,7 @@ void Clock::updateClockTexture()
 
     free(buffer);
 
-    for (Output *o : (std::vector<Output*>&)LCompositor::compositor()->outputs())
+    for (Output *o : (std::vector<Output*>&)compositor()->outputs())
     {
         o->redrawClock = true;
         o->repaint();

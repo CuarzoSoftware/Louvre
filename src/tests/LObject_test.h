@@ -11,7 +11,7 @@ void LObject_test_01()
 {
     LSetTestName("LObject_test_01");
     LObjectTest obj;
-    auto &weakRefs = PrivateUtils::getObjectData(&obj);
+    auto &weakRefs = LWeakUtils::objectRefs(&obj);
     LAssert("LObject weak refs count should be 0", weakRefs.size() == 0);
 }
 
@@ -19,7 +19,7 @@ void LObject_test_02()
 {
     LSetTestName("LObject_test_02");
     LObjectTest obj;
-    auto &weakRefs = PrivateUtils::getObjectData(&obj);
+    auto &weakRefs = LWeakUtils::objectRefs(&obj);
 
     {
         LWeak<LObjectTest> weak { &obj };

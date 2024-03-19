@@ -99,7 +99,7 @@ bool LSeat::LSeatPrivate::initLibseat()
 
     listener.enable_seat = &LSeat::LSeatPrivate::seatEnabled;
     listener.disable_seat = &LSeat::LSeatPrivate::seatDisabled;
-    libseatHandle = libseat_open_seat(&listener, LCompositor::compositor()->seat());
+    libseatHandle = libseat_open_seat(&listener, seat());
 
     if (!libseatHandle)
         return false;
@@ -121,9 +121,9 @@ bool LSeat::LSeatPrivate::initLibseat()
               compositor()->imp()->events[1].data.fd,
               &compositor()->imp()->events[1]);
 
-    LCompositor::compositor()->imp()->lock();
+    compositor()->imp()->lock();
     dispatchSeat();
-    LCompositor::compositor()->imp()->unlock();
+    compositor()->imp()->unlock();
 
     LLog::debug("[LSeatPrivate::initLibseat] Using libseat.");
     return true;

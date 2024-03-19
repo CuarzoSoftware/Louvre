@@ -22,19 +22,17 @@ void GViewporter::GViewporterPrivate::bind(wl_client *client, void *data, UInt32
                     &viewporter_implementation);
 }
 
-void GViewporter::GViewporterPrivate::get_viewport(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface)
+void GViewporter::GViewporterPrivate::get_viewport(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *surface)
 {
-    L_UNUSED(client);
+    Wayland::RSurface *surfaceRes { static_cast<Wayland::RSurface*>(wl_resource_get_user_data(surface)) };
 
-    Wayland::RSurface *rSurface = (Wayland::RSurface*)wl_resource_get_user_data(surface);
-
-    if (rSurface->viewportResource())
+    if (surfaceRes->viewportRes())
     {
         wl_resource_post_error(resource, WP_VIEWPORTER_ERROR_VIEWPORT_EXISTS, "The surface already has a viewport object associated.");
         return;
     }
 
-    new RViewport(rSurface, wl_resource_get_version(resource), id);
+    new RViewport(surfaceRes, wl_resource_get_version(resource), id);
 }
 
 void GViewporter::GViewporterPrivate::destroy(wl_client *client, wl_resource *resource)

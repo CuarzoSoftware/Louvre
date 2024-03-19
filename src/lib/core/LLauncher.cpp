@@ -124,7 +124,7 @@ pid_t LLauncher::startDaemon(const std::string &name)
         goto error;
     }
 
-    if (LCompositor::compositor())
+    if (compositor())
     {
         LLog::error("[LLauncher::startDaemon] Failed to start daemon. Must be launched before an LCompositor instance is created.");
         goto error;

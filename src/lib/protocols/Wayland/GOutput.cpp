@@ -1,51 +1,52 @@
-#include <protocols/Wayland/private/GOutputPrivate.h>
 #include <protocols/GammaControl/private/RGammaControlPrivate.h>
+#include <protocols/Wayland/GOutput.h>
 #include <private/LClientPrivate.h>
-#include <LCompositor.h>
-#include <LOutputMode.h>
 #include <private/LOutputPrivate.h>
+#include <LOutputMode.h>
 
 using namespace Protocols::Wayland;
 
-GOutput::GOutput
-(
-    LOutput *output,
-    LClient *lClient,
-    const wl_interface *interface,
-    Int32 version,
-    UInt32 id,
-    const void *implementation
-)
-    :LResource
-    (
-        lClient,
-        interface,
-        version,
-        id,
-        implementation
-    ),
-    LPRIVATE_INIT_UNIQUE(GOutput)
+static const struct wl_output_interface imp
 {
-    imp()->output.reset(output);
-    client()->imp()->outputGlobals.push_back(this);
+#if LOUVRE_WL_OUTPUT_VERSION >= 3
+    .release = &GOutput::release
+#endif
+};
+
+GOutput::GOutput(LOutput *output, wl_client *client, Int32 version, UInt32 id ) noexcept :
+    LResource( client, &wl_output_interface, version, id, &imp),
+    m_output(output)
+{
+    this->client()->imp()->outputGlobals.push_back(this);
     sendConfiguration();
 }
 
-GOutput::~GOutput()
+GOutput::~GOutput() noexcept
 {
     if (output())
         LVectorRemoveOneUnordered(client()->imp()->outputGlobals, this);
 
-    for (GammaControl::RGammaControl *rGammaControl : imp()->gammaControlResources)
-        rGammaControl->imp()->gOutput = nullptr;
+    for (auto *gammaControlRes : m_gammaControlRes)
+        gammaControlRes->imp()->gOutput = nullptr;
 }
 
-LOutput *GOutput::output() const
+/******************** REQUESTS ********************/
+
+void GOutput::bind(wl_client *client, void *output, UInt32 version, UInt32 id) noexcept
 {
-    return imp()->output.get();
+    new GOutput(static_cast<LOutput*>(output), client, version, id);
 }
 
-void GOutput::sendConfiguration()
+#if LOUVRE_WL_OUTPUT_VERSION >= 3
+void GOutput::release(wl_client */*client*/, wl_resource *resource) noexcept
+{
+    wl_resource_destroy(resource);
+}
+#endif
+
+/******************** EVENTS ********************/
+
+void GOutput::sendConfiguration() noexcept
 {
     if (!output())
         return;
@@ -75,7 +76,7 @@ void GOutput::sendConfiguration()
 }
 
 bool GOutput::geometry(Int32 x, Int32 y, Int32 physicalWidth, Int32 physicalHeight,
-                       Int32 subpixel, const char *make, const char *model, Int32 transform)
+                       Int32 subpixel, const char *make, const char *model, Int32 transform) noexcept
 {
     wl_output_send_geometry(
         resource(),
@@ -89,7 +90,7 @@ bool GOutput::geometry(Int32 x, Int32 y, Int32 physicalWidth, Int32 physicalHeig
     return true;
 }
 
-bool GOutput::mode(UInt32 flags, Int32 width, Int32 height, Int32 refresh)
+bool GOutput::mode(UInt32 flags, Int32 width, Int32 height, Int32 refresh) noexcept
 {
     wl_output_send_mode(
         resource(),
@@ -100,7 +101,7 @@ bool GOutput::mode(UInt32 flags, Int32 width, Int32 height, Int32 refresh)
     return true;
 }
 
-bool GOutput::done()
+bool GOutput::done() noexcept
 {
 #if LOUVRE_WL_OUTPUT_VERSION >= 2
     if (version() >= 2)
@@ -112,7 +113,7 @@ bool GOutput::done()
     return false;
 }
 
-bool GOutput::scale(Int32 factor)
+bool GOutput::scale(Int32 factor) noexcept
 {
 #if LOUVRE_WL_OUTPUT_VERSION >= 2
     if (version() >= 2)
@@ -125,7 +126,7 @@ bool GOutput::scale(Int32 factor)
     return false;
 }
 
-bool GOutput::name(const char *name)
+bool GOutput::name(const char *name) noexcept
 {
 #if LOUVRE_WL_OUTPUT_VERSION >= 4
     if (version() >= 4)
@@ -138,7 +139,7 @@ bool GOutput::name(const char *name)
     return false;
 }
 
-bool GOutput::description(const char *description)
+bool GOutput::description(const char *description) noexcept
 {
 #if LOUVRE_WL_OUTPUT_VERSION >= 4
     if (version() >= 4)

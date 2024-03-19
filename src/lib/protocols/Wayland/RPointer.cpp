@@ -1,9 +1,9 @@
 #include <protocols/Wayland/private/RPointerPrivate.h>
-#include <protocols/Wayland/private/GSeatPrivate.h>
 #include <protocols/RelativePointer/private/RRelativePointerPrivate.h>
 #include <protocols/PointerGestures/private/RGestureSwipePrivate.h>
 #include <protocols/PointerGestures/private/RGesturePinchPrivate.h>
 #include <protocols/PointerGestures/private/RGestureHoldPrivate.h>
+#include <protocols/Wayland/GSeat.h>
 #include <private/LClientPrivate.h>
 
 static struct wl_pointer_interface pointer_implementation =
@@ -30,13 +30,13 @@ RPointer::RPointer
     LPRIVATE_INIT_UNIQUE(RPointer)
 {
     imp()->gSeat = gSeat;
-    gSeat->imp()->pointerResources.push_back(this);
+    gSeat->m_pointerRes.emplace_back(this);
 }
 
 RPointer::~RPointer()
 {
     if (seatGlobal())
-        LVectorRemoveOneUnordered(seatGlobal()->imp()->pointerResources, this);
+        LVectorRemoveOneUnordered(seatGlobal()->m_pointerRes, this);
 
     while (!relativePointerResources().empty())
     {

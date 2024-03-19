@@ -24,7 +24,7 @@
 
 using namespace Louvre;
 
-LEvent *LEvent::copy() const
+LEvent *LEvent::copy() const noexcept
 {
     switch (m_type)
     {
@@ -136,7 +136,7 @@ LEvent *LEvent::copy() const
     return nullptr;
 }
 
-LEvent::LEvent(Type type, Subtype subtype, UInt32 serial, UInt32 ms, UInt64 us) :
+LEvent::LEvent(Type type, Subtype subtype, UInt32 serial, UInt32 ms, UInt64 us) noexcept :
     m_type(type),
     m_subtype(subtype),
     m_serial(serial),

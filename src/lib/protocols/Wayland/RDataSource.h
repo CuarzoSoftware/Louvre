@@ -1,6 +1,7 @@
 #ifndef RDATASOURCE_H
 #define RDATASOURCE_H
 
+#include <LClipboard.h>
 #include <LResource.h>
 #include <stdio.h>
 
@@ -15,16 +16,10 @@ public:
         DND
     };
 
-    struct MimeTypeFile
-    {
-        std::string mimeType;
-        FILE *tmp = NULL;
-    };
-
     RDataSource(GDataDeviceManager *gDataDeviceManager, UInt32 id);
     ~RDataSource();
 
-    void requestPersistentMimeType(MimeTypeFile &mimeType) noexcept;
+    void requestPersistentMimeType(LClipboard::MimeTypeFile &mimeType) noexcept;
 
     Usage usage() const noexcept;
 

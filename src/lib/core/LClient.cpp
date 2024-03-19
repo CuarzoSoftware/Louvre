@@ -52,7 +52,7 @@ const LEvent *LClient::findEventBySerial(UInt32 serial) const noexcept
             return &(*it);
 
     for (auto *seat : seatGlobals())
-        if (seat->dataDeviceResource() && seat->dataDeviceResource()->serials().enter == serial)
+        if (seat->dataDeviceRes() && seat->dataDeviceRes()->serials().enter == serial)
             return &imp()->events.keyboard.enter;
 
     return nullptr;

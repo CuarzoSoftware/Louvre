@@ -1,85 +1,103 @@
 #include <protocols/Wayland/private/RKeyboardPrivate.h>
 #include <protocols/Wayland/private/RPointerPrivate.h>
 #include <protocols/Wayland/private/RTouchPrivate.h>
-#include <protocols/Wayland/private/RDataDevicePrivate.h>
-#include <protocols/Wayland/private/GSeatPrivate.h>
+#include <protocols/Wayland/GSeat.h>
 #include <private/LClientPrivate.h>
 #include <LCompositor.h>
 #include <LSeat.h>
 
-GSeat::GSeat
-(
+static const struct wl_seat_interface imp
+{
+    .get_pointer = &GSeat::get_pointer,
+    .get_keyboard = &GSeat::get_keyboard,
+    .get_touch = &GSeat::get_touch,
+#if LOUVRE_WL_SEAT_VERSION >= 5
+    .release = &GSeat::release
+#endif
+};
+
+GSeat::GSeat(
     wl_client *client,
-    const wl_interface *interface,
     Int32 version,
-    UInt32 id,
-    const void *implementation
-)
+    UInt32 id) noexcept
     :LResource
     (
         client,
-        interface,
+        &wl_seat_interface,
         version,
         id,
-        implementation
-    ),
-    LPRIVATE_INIT_UNIQUE(GSeat)
+        &imp
+    )
 {
     this->client()->imp()->seatGlobals.push_back(this);
     capabilities(seat()->inputCapabilities());
     name(seat()->name());
 }
 
-GSeat::~GSeat()
+GSeat::~GSeat() noexcept
 {
     LVectorRemoveOneUnordered(client()->imp()->seatGlobals, this);
 
-    while (!keyboardResources().empty())
+    while (!keyboardRes().empty())
     {
-        keyboardResources().back()->imp()->gSeat = nullptr;
-        imp()->keyboardResources.pop_back();
+        keyboardRes().back()->imp()->gSeat = nullptr;
+        m_keyboardRes.pop_back();
     }
 
-    while (!pointerResources().empty())
+    while (!pointerRes().empty())
     {
-        pointerResources().back()->imp()->gSeat = nullptr;
-        imp()->pointerResources.pop_back();
+        pointerRes().back()->imp()->gSeat = nullptr;
+        m_pointerRes.pop_back();
     }
 
-    while (!touchResources().empty())
+    while (!touchRes().empty())
     {
-        touchResources().back()->imp()->gSeat = nullptr;
-        imp()->touchResources.pop_back();
+        touchRes().back()->imp()->gSeat = nullptr;
+        m_touchRes.pop_back();
     }
 }
 
-const std::vector<RKeyboard *> &GSeat::keyboardResources() const
+/******************** REQUESTS ********************/
+
+void GSeat::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
 {
-    return imp()->keyboardResources;
+    new GSeat(client, version, id);
 }
 
-const std::vector<RPointer*> &GSeat::pointerResources() const
+void GSeat::get_pointer(wl_client */*client*/, wl_resource *resource, UInt32 id) noexcept
 {
-    return imp()->pointerResources;
+    // WL_SEAT_ERROR_MISSING_CAPABILITY check not needed
+    new RPointer(static_cast<GSeat*>(wl_resource_get_user_data(resource)), id);
 }
 
-const std::vector<RTouch *> &GSeat::touchResources() const
+void GSeat::get_keyboard(wl_client */*client*/, wl_resource *resource, UInt32 id) noexcept
 {
-    return imp()->touchResources;
+    // WL_SEAT_ERROR_MISSING_CAPABILITY check not needed
+    new RKeyboard(static_cast<GSeat*>(wl_resource_get_user_data(resource)), id);
 }
 
-RDataDevice *GSeat::dataDeviceResource() const
+void GSeat::get_touch(wl_client */*client*/, wl_resource *resource, UInt32 id) noexcept
 {
-    return imp()->rDataDevice.get();
+    // WL_SEAT_ERROR_MISSING_CAPABILITY check not needed
+    new RTouch(static_cast<GSeat*>(wl_resource_get_user_data(resource)), id);
 }
 
-bool GSeat::capabilities(UInt32 capabilities)
+#if LOUVRE_WL_SEAT_VERSION >= 5
+void GSeat::release(wl_client */*client*/, wl_resource *resource) noexcept
+{
+    wl_resource_destroy(resource);
+}
+#endif
+
+/******************** EVENTS ********************/
+
+bool GSeat::capabilities(UInt32 capabilities) noexcept
 {
     wl_seat_send_capabilities(resource(), capabilities);
     return true;
 }
 
-bool GSeat::name(const char *name)
+bool GSeat::name(const char *name) noexcept
 {
 #if LOUVRE_WL_SEAT_VERSION >= 2
     if (version() >= 2)

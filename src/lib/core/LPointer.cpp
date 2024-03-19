@@ -63,9 +63,9 @@ void LPointer::setFocus(LSurface *surface, const LPoint &localPos)
 
         for (auto gSeat : surface->client()->seatGlobals())
         {
-            for (auto rPointer : gSeat->pointerResources())
+            for (auto rPointer : gSeat->pointerRes())
             {
-                imp()->focus = surface->weakRef<LSurface>();
+                imp()->focus.reset(surface);
                 rPointer->enter(enterEvent, surface->surfaceResource());
                 rPointer->frame();
             }
@@ -94,7 +94,7 @@ void LPointer::sendMoveEvent(const LPointerMoveEvent &event)
 
     for (auto gSeat : focus()->client()->seatGlobals())
     {
-        for (auto rPointer : gSeat->pointerResources())
+        for (auto rPointer : gSeat->pointerRes())
         {
             rPointer->motion(event);
             rPointer->frame();
@@ -112,7 +112,7 @@ void LPointer::sendButtonEvent(const LPointerButtonEvent &event)
 
     for (auto gSeat : focus()->client()->seatGlobals())
     {
-        for (auto rPointer : gSeat->pointerResources())
+        for (auto rPointer : gSeat->pointerRes())
         {
             rPointer->button(event);
             rPointer->frame();
@@ -132,7 +132,7 @@ void LPointer::sendScrollEvent(const LPointerScrollEvent &event)
 
     for (auto gSeat : focus()->client()->seatGlobals())
     {
-        for (auto rPointer : gSeat->pointerResources())
+        for (auto rPointer : gSeat->pointerRes())
         {
             // Since 5
             if (rPointer->axisSource(event.source()))
@@ -215,7 +215,7 @@ void LPointer::sendSwipeBeginEvent(const LPointerSwipeBeginEvent &event)
 
     for (auto gSeat : focus()->client()->seatGlobals())
     {
-        for (auto rPointer : gSeat->pointerResources())
+        for (auto rPointer : gSeat->pointerRes())
         {
             for (auto rGestureSwipe : rPointer->gestureSwipeResources())
             {
@@ -232,7 +232,7 @@ void LPointer::sendSwipeUpdateEvent(const LPointerSwipeUpdateEvent &event)
         return;
 
     for (auto gSeat : focus()->client()->seatGlobals())
-        for (auto rPointer : gSeat->pointerResources())
+        for (auto rPointer : gSeat->pointerRes())
             for (auto rGestureSwipe :  rPointer->gestureSwipeResources())
                 rGestureSwipe->update(event);
 }
@@ -245,7 +245,7 @@ void LPointer::sendSwipeEndEvent(const LPointerSwipeEndEvent &event)
     imp()->state.remove(S::PendingSwipeEndEvent);
 
     for (auto gSeat : focus()->client()->seatGlobals())
-        for (auto rPointer : gSeat->pointerResources())
+        for (auto rPointer : gSeat->pointerRes())
             for (auto rGestureSwipe :  rPointer->gestureSwipeResources())
                 rGestureSwipe->end(event);
 }
@@ -257,7 +257,7 @@ void LPointer::sendPinchBeginEvent(const LPointerPinchBeginEvent &event)
 
     for (auto gSeat : focus()->client()->seatGlobals())
     {
-        for (auto rPointer : gSeat->pointerResources())
+        for (auto rPointer : gSeat->pointerRes())
         {
             for (auto rGesturePinch : rPointer->gesturePinchResources())
             {
@@ -274,7 +274,7 @@ void LPointer::sendPinchUpdateEvent(const LPointerPinchUpdateEvent &event)
         return;
 
     for (auto gSeat : focus()->client()->seatGlobals())
-        for (auto rPointer : gSeat->pointerResources())
+        for (auto rPointer : gSeat->pointerRes())
             for (auto rGesturePinch :  rPointer->gesturePinchResources())
                 rGesturePinch->update(event);
 }
@@ -287,7 +287,7 @@ void LPointer::sendPinchEndEvent(const LPointerPinchEndEvent &event)
     imp()->state.remove(S::PendingPinchEndEvent);
 
     for (auto gSeat : focus()->client()->seatGlobals())
-        for (auto rPointer : gSeat->pointerResources())
+        for (auto rPointer : gSeat->pointerRes())
             for (auto rGesturePinch :  rPointer->gesturePinchResources())
                 rGesturePinch->end(event);
 }
@@ -299,7 +299,7 @@ void LPointer::sendHoldBeginEvent(const LPointerHoldBeginEvent &event)
 
     for (auto gSeat : focus()->client()->seatGlobals())
     {
-        for (auto rPointer : gSeat->pointerResources())
+        for (auto rPointer : gSeat->pointerRes())
         {
             for (auto rGestureHold : rPointer->gestureHoldResources())
             {
@@ -318,17 +318,14 @@ void LPointer::sendHoldEndEvent(const LPointerHoldEndEvent &event)
     imp()->state.remove(S::PendingHoldEndEvent);
 
     for (auto gSeat : focus()->client()->seatGlobals())
-        for (auto rPointer : gSeat->pointerResources())
+        for (auto rPointer : gSeat->pointerRes())
             for (auto rGestureHold : rPointer->gestureHoldResources())
                 rGestureHold->end(event);
 }
 
 void LPointer::setDraggingSurface(LSurface *surface)
 {
-    if (surface)
-        imp()->draggingSurface = surface->weakRef<LSurface>();
-    else
-        imp()->draggingSurface.reset();
+    imp()->draggingSurface.reset(surface);
 }
 
 void LPointer::enableNaturalScrollingX(bool enabled)
@@ -401,7 +398,7 @@ void LPointer::LPointerPrivate::sendLeaveEvent(LSurface *surface) noexcept
 
     for (auto gSeat : surface->client()->seatGlobals())
     {
-        for (auto rPointer : gSeat->pointerResources())
+        for (auto rPointer : gSeat->pointerRes())
         {
             rPointer->leave(leaveEvent, surface->surfaceResource());
             rPointer->frame();

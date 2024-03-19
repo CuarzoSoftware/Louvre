@@ -113,6 +113,14 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resour
 
     RDataDevice *rDataDevice { static_cast<RDataDevice*>(wl_resource_get_user_data(resource)) };
 
+    const LEvent *triggeringEvent { rDataDevice->client()->findEventBySerial(serial) };
+
+    if (!triggeringEvent)
+    {
+        LLog::warning("[RDataDevicePrivate::set_selection] Set clipboard request without valid triggering event. Ignoring it.");
+        return;
+    }
+
     if (source)
     {
         RDataSource *rDataSource { static_cast<RDataSource*>(wl_resource_get_user_data(source)) };
@@ -129,13 +137,8 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resour
             return;
         }
 
-        const LEvent *triggeringEvent { rDataDevice->client()->findEventBySerial(serial) };
-
-        if (!triggeringEvent)
-            LLog::warning("[RDataDevicePrivate::set_selection] Set clipboard request without valid triggering event. Letting the user decide...");
-
         // Ask the user if the client should set the clipboard
-        if (!seat()->clipboard()->setClipboardRequest(rDataDevice->client(), triggeringEvent))
+        if (!seat()->clipboard()->setClipboardRequest(rDataDevice->client(), *triggeringEvent))
         {
             LLog::debug("[RDataDevicePrivate::set_selection] Set clipboard request denied by user.");
             return;
@@ -162,9 +165,9 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resour
 
             for (auto *seat : client.seatGlobals())
             {
-                if (seat->dataDeviceResource())
+                if (seat->dataDeviceRes())
                 {
-                    seat->dataDeviceResource()->createOffer(RDataSource::Clipboard);
+                    seat->dataDeviceRes()->createOffer(RDataSource::Clipboard);
                     break;
                 }
             }
@@ -172,7 +175,7 @@ void RDataDevice::RDataDevicePrivate::set_selection(wl_client *client, wl_resour
     }
     else
     {
-        // A NULL source should unset the clipboard, but we keep a copy of the contents
-        // then we don't let clients unset the clipboard.
+        /* A NULL source should unset the clipboard, but we keep a copy of the contents
+         * then we don't let clients unset the clipboard. */
     }
 }

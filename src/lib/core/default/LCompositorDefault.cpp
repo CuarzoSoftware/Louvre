@@ -1,7 +1,4 @@
-#include <protocols/Wayland/private/GSeatPrivate.h>
-#include <protocols/Wayland/private/GCompositorPrivate.h>
 #include <protocols/Wayland/private/GSubcompositorPrivate.h>
-#include <protocols/Wayland/private/GDataDeviceManagerPrivate.h>
 #include <protocols/XdgShell/private/GXdgWmBasePrivate.h>
 #include <protocols/XdgDecoration/private/GXdgDecorationManagerPrivate.h>
 #include <protocols/LinuxDMABuf/private/GLinuxDMABufPrivate.h>
@@ -12,6 +9,9 @@
 #include <protocols/TearingControl/private/GTearingControlManagerPrivate.h>
 #include <protocols/RelativePointer/private/GRelativePointerManagerPrivate.h>
 #include <protocols/PointerGestures/private/GPointerGesturesPrivate.h>
+#include <protocols/Wayland/GCompositor.h>
+#include <protocols/Wayland/GDataDeviceManager.h>
+#include <protocols/Wayland/GSeat.h>
 #include <LCompositor.h>
 #include <LToplevelRole.h>
 #include <LCursor.h>
@@ -38,16 +38,16 @@ using namespace Louvre;
 bool LCompositor::createGlobalsRequest()
 {
     wl_global_create(display(), &wl_compositor_interface,
-                     LOUVRE_WL_COMPOSITOR_VERSION, this, &GCompositor::GCompositorPrivate::bind);
+                     LOUVRE_WL_COMPOSITOR_VERSION, this, &GCompositor::bind);
 
     wl_global_create(display(), &wl_seat_interface,
-                     LOUVRE_WL_SEAT_VERSION, this, &GSeat::GSeatPrivate::bind);
+                     LOUVRE_WL_SEAT_VERSION, this, &GSeat::bind);
 
     wl_global_create(display(), &wl_subcompositor_interface,
                      LOUVRE_WL_SUBCOMPOSITOR_VERSION, this, &GSubcompositor::GSubcompositorPrivate::bind);
 
     wl_global_create(display(), &wl_data_device_manager_interface,
-                     LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION, this, &GDataDeviceManager::GDataDeviceManagerPrivate::bind);
+                     LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION, this, &GDataDeviceManager::bind);
 
     wl_global_create(display(), &xdg_wm_base_interface,
                      LOUVRE_XDG_WM_BASE_VERSION, this, &GXdgWmBase::GXdgWmBasePrivate::bind);

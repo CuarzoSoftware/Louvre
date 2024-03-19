@@ -51,7 +51,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
 
     inline void setPos(const LPointF &pos)
     {
-        for (LOutput *output : LCompositor::compositor()->outputs())
+        for (LOutput *output : compositor()->outputs())
             if (output->rect().containsPoint(pos) && output)
                 setOutput(output);
 
@@ -167,7 +167,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
 
 inline static void texture2Buffer(LCursor *cursor, const LSizeF &size, LFramebuffer::Transform transform)
 {
-    LPainter *painter { cursor->compositor()->imp()->painter };
+    LPainter *painter { compositor()->imp()->painter };
     glBindFramebuffer(GL_FRAMEBUFFER, cursor->imp()->glFramebuffer);
     LRect src;
 

@@ -66,16 +66,6 @@ public:
     /// @endcond
 
     /**
-     * @brief Get the static LCompositor instance.
-     *
-     * This method provides access to the single LCompositor instance that can exist per process.\n
-     * You can also access it from any Louvre object with `object->compositor()`.
-     *
-     * @return A pointer to the LCompositor instance.
-     */
-    static LCompositor *compositor();
-
-    /**
      * @brief Get the current Louvre version.
      */
     static const LVersion &version();

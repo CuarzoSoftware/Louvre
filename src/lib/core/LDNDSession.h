@@ -1,6 +1,8 @@
 #ifndef LDNDSESSION_H
 #define LDNDSESSION_H
 
+/// @cond OMIT
+
 #include <LDND.h>
 #include <LSeat.h>
 #include <LSurface.h>
@@ -71,4 +73,5 @@ public:
     LWeak<RDataOffer> offer;
 };
 
+/// @endcond
 #endif // LDNDSESSION_H

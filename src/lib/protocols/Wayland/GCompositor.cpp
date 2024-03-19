@@ -1,30 +1,51 @@
-#include <protocols/Wayland/private/GCompositorPrivate.h>
+#include <protocols/Wayland/GCompositor.h>
+#include <protocols/Wayland/RSurface.h>
+#include <protocols/Wayland/RRegion.h>
 #include <private/LClientPrivate.h>
+#include <LCompositor.h>
 
 using namespace Louvre::Protocols::Wayland;
 
+static const struct wl_compositor_interface imp
+{
+    .create_surface = &GCompositor::create_surface,
+    .create_region = &GCompositor::create_region
+};
+
+void GCompositor::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GCompositor(client, version, id);
+}
+
+void GCompositor::create_surface(wl_client */*client*/, wl_resource *resource, UInt32 id)
+{
+    new RSurface(static_cast<GCompositor*>(wl_resource_get_user_data(resource)), id);
+}
+
+void GCompositor::create_region(wl_client */*client*/, wl_resource *resource, UInt32 id) noexcept
+{
+    new RRegion(static_cast<GCompositor*>(wl_resource_get_user_data(resource)), id);
+}
+
 GCompositor::GCompositor
 (
-    LClient *client,
-    const wl_interface *interface,
+    wl_client *client,
     Int32 version,
-    UInt32 id,
-    const void *implementation
-)
+    UInt32 id
+) noexcept
     :LResource
     (
         client,
-        interface,
+        &wl_compositor_interface,
         version,
         id,
-        implementation
-    ),
-    LPRIVATE_INIT_UNIQUE(GCompositor)
+        &imp
+    )
 {
-    client->imp()->compositorGlobals.push_back(this);
+    this->client()->imp()->compositorGlobals.push_back(this);
 }
 
-GCompositor::~GCompositor()
+GCompositor::~GCompositor() noexcept
 {
     LVectorRemoveOneUnordered(client()->imp()->compositorGlobals, this);
 }

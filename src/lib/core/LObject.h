@@ -1,118 +1,48 @@
 #ifndef LOBJECT_H
 #define LOBJECT_H
 
-#include <LCompositor.h>
-#include <LWeak.h>
-#include <cassert>
+#include <LNamespaces.h>
 
 /**
  * @brief Base class for Louvre objects.
  *
- * LObject is the base class of many Louvre classes. It can be used in conjunction with LWeak to
- * create weak pointer references, which are automatically set to `nullptr` when the object is destroyed.
- * You can also set a custom callback upon destruction, see LWeak::setOnDestroyCallback().
- *
- * To notify destruction in advance, you can call notifyDestruction() from the subclass destructor.
- * After calling it, no more references can be made from the object.
+ * @see LWeak
  */
 class Louvre::LObject
 {
 public:
 
     /**
-     * @brief Quick access to the global compositor instance.
-     */
-    inline static LCompositor *compositor() noexcept
-    {
-        return LCompositor::compositor();
-    }
-
-    /**
-     * @brief Quick access to the global seat instance.
-     */
-    inline static LSeat *seat() noexcept
-    {
-        return LCompositor::compositor()->seat();
-    }
-
-    /**
-     * @brief Quick access to the global cursor instance.
-     */
-    inline static LCursor *cursor() noexcept
-    {
-        return LCompositor::compositor()->cursor();
-    }
-
-    /**
-     * @brief Allows you to store an unsigned integer value capable
-     * of storing a pointer.
+     * @brief Copy constructor
      *
-     * @param data The unsigned integer value to be stored.
+     * @note The user data and LWeak references are not copied.
      */
-    inline void setUserData(UIntPtr data) const noexcept
-    {
-        m_userData = data;
-    }
-
-    /**
-     * @brief Retrieves the stored unsigned integer value.
-     *
-     * @return The stored unsigned integer value.
-     */
-    inline UIntPtr userData() const noexcept
-    {
-        return m_userData;
-    }
-
-    /**
-     * @brief Copy constructor (each object has its own individual LWeak reference count).
-     */
-    inline LObject(const LObject &) noexcept {}
+    LObject(const LObject &) noexcept {}
 
     /**
      * @brief Assignment operator (each object has its own individual LWeak reference count).
+     *
+     * @note The user data and LWeak references are not copied.
      */
-    inline LObject &operator=(const LObject &) noexcept
+    LObject &operator=(const LObject &) noexcept
     {
         return *this;
     }
 
     /**
-     * @brief Return an LWeak reference of type const LObject.
+     * @brief Store an unsigned integer value/pointer.
      */
-    inline LWeak<const LObject> weakRef() const noexcept
+    void setUserData(UIntPtr data) const noexcept
     {
-        return LWeak<const LObject>(this);
+        m_userData = data;
     }
 
     /**
-     * @brief Return an LWeak reference of type LObject.
+     * @brief Retrieves the stored unsigned integer value/pointer.
      */
-    inline LWeak<LObject> weakRef() noexcept
+    UIntPtr userData() const noexcept
     {
-        return LWeak<LObject>(this);
-    }
-
-    /**
-     * @brief Return an LWeak reference of type const T.
-     *
-     * @tparam T The type to create an LWeak reference for.
-     */
-    template <class T>
-    inline LWeak<const T> weakRef() const noexcept
-    {
-        return LWeak<const T>(static_cast<const T*>(this));
-    }
-
-    /**
-     * @brief Return an LWeak reference of type T.
-     *
-     * @tparam T The type to create an LWeak reference for.
-     */
-    template <class T>
-    inline LWeak<T> weakRef() noexcept
-    {
-        return LWeak<T>(static_cast<T*>(this));
+        return m_userData;
     }
 
 protected:
@@ -120,46 +50,30 @@ protected:
     /**
      * @brief Constructor of the LObject class.
      */
-    inline LObject() noexcept = default;
+    LObject() noexcept = default;
 
     /**
      * @brief Destructor of the LObject class.
      */
-    virtual ~LObject() noexcept
-    {
-        notifyDestruction();
-    }
+    virtual ~LObject() noexcept;
 
     /**
-     * @brief Notifies object destruction to references and sets them to `nullptr`.
+     * @brief Notifies the object destruction.
      *
      * This method can be invoked from a subclass destructor to notify the object's imminent destruction
      * to all associated LWeak references in advance. If not invoked, the base LObject automatically calls it.
      *
-     * After invocation, all references are set to `nullptr`, preventing the creation of additional references for this object.
+     * After invocation, all LWeak references are set to `nullptr`, preventing the creation of additional references for this object.
      */
-    inline void notifyDestruction() noexcept
-    {
-        if (m_destroyed)
-            return;
+    void notifyDestruction() noexcept;
 
-        m_destroyed = true;
-
-        while (!m_weakRefs.empty())
-        {
-            LWeak<LObject> *weak { (LWeak<LObject>*)m_weakRefs.back() };
-            weak->m_object = nullptr;
-            m_weakRefs.pop_back();
-
-            if (weak->m_onDestroyCallback)
-                (*weak->m_onDestroyCallback)(this);
-        }
-    }
+    /// @cond OMIT
 private:
-    friend class Louvre::PrivateUtils;
+    friend class LWeakUtils;
     mutable std::vector<void*> m_weakRefs;
     mutable UIntPtr m_userData { 0 };
     bool m_destroyed { false };
+    /// @endcond
 };
 
 #endif // LOBJECT_H

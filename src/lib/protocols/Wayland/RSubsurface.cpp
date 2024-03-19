@@ -1,8 +1,6 @@
 #include <protocols/Wayland/private/RSubsurfacePrivate.h>
-#include <protocols/Wayland/private/RSurfacePrivate.h>
-
+#include <protocols/Wayland/RSurface.h>
 #include <protocols/Wayland/GSubcompositor.h>
-
 #include <private/LSubsurfaceRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <LCompositor.h>

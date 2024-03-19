@@ -1,9 +1,9 @@
 #include <protocols/PresentationTime/private/RPresentationFeedbackPrivate.h>
 #include <protocols/PresentationTime/presentation-time.h>
 #include <protocols/LinuxDMABuf/private/LDMABufferPrivate.h>
-#include <protocols/Wayland/private/RSurfacePrivate.h>
-#include <protocols/Wayland/private/GOutputPrivate.h>
 #include <protocols/FractionalScale/RFractionalScale.h>
+#include <protocols/Wayland/RSurface.h>
+#include <protocols/Wayland/GOutput.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LTexturePrivate.h>
@@ -436,8 +436,8 @@ void LSurface::LSurfacePrivate::sendPreferredScale()
         surfaceResource->preferredBufferTransform(lastSentPreferredTransform);
     }
 
-    if (surfaceResource->fractionalScaleResource())
-        surfaceResource->fractionalScaleResource()->preferredScale(wlFracScale);
+    if (surfaceResource->fractionalScaleRes())
+        surfaceResource->fractionalScaleRes()->preferredScale(wlFracScale);
 }
 
 void LSurface::LSurfacePrivate::setPendingParent(LSurface *pendParent)
@@ -583,9 +583,9 @@ void LSurface::LSurfacePrivate::updateDamage()
 
 bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB)
 {
-    LSize prevSizeB = sizeB;
-    LSize prevSize = size;
-    LRectF prevSrcRect = srcRect;
+    const LSize prevSizeB { sizeB };
+    const LSize prevSize { size };
+    const LRectF prevSrcRect { srcRect };
 
     if (LFramebuffer::is90Transform(current.transform))
     {
@@ -601,23 +601,23 @@ bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB)
     if (prevSizeB != sizeB)
         changesToNotify.add(BufferSizeChanged);
 
-    if (surfaceResource->viewportResource())
+    if (surfaceResource->viewportRes())
     {
-        bool usingViewportSrc = false;
+        bool usingViewportSrc { false };
 
         // Using the viewport source rect
-        if (surfaceResource->viewportResource()->srcRect().x() != -1.f ||
-            surfaceResource->viewportResource()->srcRect().y() != -1.f ||
-            surfaceResource->viewportResource()->srcRect().w() != -1.f ||
-            surfaceResource->viewportResource()->srcRect().h() != -1.f)
+        if (surfaceResource->viewportRes()->srcRect().x() != -1.f ||
+            surfaceResource->viewportRes()->srcRect().y() != -1.f ||
+            surfaceResource->viewportRes()->srcRect().w() != -1.f ||
+            surfaceResource->viewportRes()->srcRect().h() != -1.f)
         {
             usingViewportSrc = true;
 
-            srcRect = surfaceResource->viewportResource()->srcRect();
+            srcRect = surfaceResource->viewportRes()->srcRect();
 
             if (srcRect.x() < 0.f || srcRect.y() < 0.f || srcRect.w() <= 0.f || srcRect.h() <= 0.f)
             {
-                wl_resource_post_error(surfaceResource->viewportResource()->resource(),
+                wl_resource_post_error(surfaceResource->viewportRes()->resource(),
                                        WP_VIEWPORT_ERROR_BAD_VALUE,
                                        "Invalid source rect (%f, %f, %f, %f).",
                                        srcRect.x(), srcRect.y(), srcRect.w(), srcRect.h());
@@ -626,7 +626,7 @@ bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB)
 
             if (roundf((srcRect.x() + srcRect.w()) * Float32(current.bufferScale)) > sizeB.w() || roundf((srcRect.y() + srcRect.h()) * Float32(current.bufferScale)) > sizeB.h())
             {
-                wl_resource_post_error(surfaceResource->viewportResource()->resource(),
+                wl_resource_post_error(surfaceResource->viewportRes()->resource(),
                                        WP_VIEWPORT_ERROR_OUT_OF_BUFFER,
                                        "Source rectangle extends outside of the content area rect.");
                 return false;
@@ -646,13 +646,13 @@ bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB)
         }
 
         // Using the viewport destination size
-        if (surfaceResource->viewportResource()->dstSize().w() != -1 || surfaceResource->viewportResource()->dstSize().h() != -1)
+        if (surfaceResource->viewportRes()->dstSize().w() != -1 || surfaceResource->viewportRes()->dstSize().h() != -1)
         {
-            size = surfaceResource->viewportResource()->dstSize();
+            size = surfaceResource->viewportRes()->dstSize();
 
             if (size.w() <= 0 || size.h() <= 0)
             {
-                wl_resource_post_error(surfaceResource->viewportResource()->resource(),
+                wl_resource_post_error(surfaceResource->viewportRes()->resource(),
                                        WP_VIEWPORT_ERROR_BAD_VALUE,
                                        "Invalid destination size (%d, %d).",
                                        size.w(), size.h());
@@ -669,7 +669,7 @@ bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB)
             {
                 if (fmod(srcRect.w(), 1.f) != 0.f || fmod(srcRect.h(), 1.f) != 0.f)
                 {
-                    wl_resource_post_error(surfaceResource->viewportResource()->resource(),
+                    wl_resource_post_error(surfaceResource->viewportRes()->resource(),
                                            WP_VIEWPORT_ERROR_BAD_SIZE,
                                            "Destination size is not integer");
                     return false;

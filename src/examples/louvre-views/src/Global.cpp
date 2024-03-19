@@ -22,10 +22,7 @@ static Tooltip *_tooltip;
 static G::Textures _textures;
 static G::ToplevelRegions _toplevelRegions;
 
-Compositor *G::compositor()
-{
-    return (Compositor*)LCompositor::compositor();
-}
+
 
 LScene *G::scene()
 {
@@ -154,7 +151,7 @@ void G::loadCursors()
     xCursors.arrow = LXCursor::loadXCursorB("arrow");
 
     if (xCursors.arrow)
-        LCompositor::compositor()->cursor()->replaceDefaultB(xCursors.arrow->texture(), xCursors.arrow->hotspotB());
+        cursor()->replaceDefaultB(xCursors.arrow->texture(), xCursors.arrow->hotspotB());
 
     xCursors.hand2 = LXCursor::loadXCursorB("hand2");
     xCursors.top_left_corner = LXCursor::loadXCursorB("top_left_corner");

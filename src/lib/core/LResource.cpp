@@ -20,7 +20,6 @@ LResource::LResource(wl_client *client,
     wl_resource_set_implementation(m_resource, implementation, this, [](wl_resource *res)
     {
         LResource *resource = (LResource*)wl_resource_get_user_data(res);
-        resource->m_destroyed = true;
         delete resource;
     });
 }
@@ -33,7 +32,6 @@ LResource::LResource(LClient *client, const wl_interface *interface, Int32 versi
     wl_resource_set_implementation(m_resource, implementation, this, [](wl_resource *res)
     {
         LResource *resource = (LResource*)wl_resource_get_user_data(res);
-        resource->m_destroyed = true;
         delete resource;
     });
 }
@@ -48,7 +46,7 @@ UInt32 LResource::id() const noexcept
     return wl_resource_get_id(resource());
 }
 
-void LResource::destroy() noexcept
+void LResource::destroy()
 {
     wl_resource_destroy(resource());
 }

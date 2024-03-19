@@ -20,7 +20,6 @@ LPRIVATE_CLASS(LCompositor)
 
     CompositorState state { CompositorState::Uninitialized };
     Int32 epollFd;
-    LCompositor *compositor;
     LVersion version;
     std::filesystem::path defaultAssetsPath;
     std::filesystem::path defaultBackendsPath;

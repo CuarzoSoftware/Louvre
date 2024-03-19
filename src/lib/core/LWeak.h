@@ -4,6 +4,15 @@
 #include <LNamespaces.h>
 #include <functional>
 
+/// @cond OMIT
+class Louvre::LWeakUtils
+{
+public:
+    static std::vector<void *> &objectRefs(const LObject *object) noexcept;
+    static bool isObjectDestroyed(const LObject *object) noexcept;
+};
+/// @endcond
+
 /**
  * @brief Weak reference to an LObject pointer
  *
@@ -12,28 +21,31 @@
  * the pointer indirection and associated performance overhead of the `std::weak_ptr` thread-safe mechanisms.
  *
  * When the object being referenced is destroyed, an optional on destroy callback event is emitted, and get() returns `nullptr`.
- *
- * @see LObject::weakRef()
  */
 template <class T>
 class Louvre::LWeak
 {
-    static_assert(std::is_base_of<LObject, T>::value, "LWeak template error: Type must be a subclass of LObject.");
-
 public:
 
     /**
      * Callback function type used to handle the `OnDestroy()` event.
      */
-    using Callback = std::function<void(T*)>;
+    using OnDestroyCallback = std::function<void(T*)>;
+
+    /**
+     * @brief Creates an empty LWeak
+     */
+    LWeak() noexcept = default;
 
     /**
      * @brief Creates a reference for the given LObject, or initializes an empty LWeak if `nullptr` is passed.
      *
      * @param object The LObject to create a reference for, or `nullptr` to initialize an empty LWeak.
      */
-    inline LWeak(T *object = nullptr) noexcept
+    LWeak(T *object) noexcept
     {
+        static_assert(std::is_base_of<LObject, T>::value, "LWeak template error: Type must be a subclass of LObject.");
+
         if (object)
             pushBackTo(object);
     }
@@ -41,7 +53,7 @@ public:
     /**
      * @brief Destructor, removes the LWeak from the LObject references.
      */
-    inline ~LWeak() noexcept
+    ~LWeak() noexcept
     {
         clear();
 
@@ -54,7 +66,7 @@ public:
      *
      * @param other The LWeak object to copy from.
      */
-    inline LWeak(const LWeak &other) noexcept
+    LWeak(const LWeak<T> &other) noexcept
     {
         copy(other);
     }
@@ -65,7 +77,7 @@ public:
      * @param other The LWeak object to assign from.
      * @return Reference to the updated LWeak object.
      */
-    inline LWeak &operator=(const LWeak &other) noexcept
+    LWeak<T> &operator=(const LWeak<T> &other) noexcept
     {
         copy(other);
         return *this;
@@ -76,7 +88,7 @@ public:
      *
      * @return Raw pointer to the referenced LObject.
      */
-    inline T *get() const noexcept
+    T *get() const noexcept
     {
         return m_object;
     }
@@ -86,11 +98,11 @@ public:
      *
      * @return The number of existing references to the current LObject, if no object is set returns 0.
      */
-    inline UInt64 count() const noexcept
+    UInt64 count() const noexcept
     {
         if (m_object)
         {
-            const auto &refs = (std::vector<LWeak<T>*>&)PrivateUtils::getObjectData(m_object);
+            const auto &refs = (std::vector<LWeak<T>*>&)LWeakUtils::objectRefs((const LObject*)m_object);
             return refs.size();
         }
 
@@ -104,6 +116,8 @@ public:
      */
     void reset(T *object = nullptr) noexcept
     {
+        static_assert(std::is_base_of<LObject, T>::value, "LWeak template error: Type must be a subclass of LObject.");
+
         clear();
 
         if (object)
@@ -117,7 +131,7 @@ public:
      *
      * @param callback The callback function to be called when the referenced object is destroyed. Passing `nullptr` disables the callback.
      */
-    void setOnDestroyCallback(const Callback &callback) noexcept
+    void setOnDestroyCallback(const OnDestroyCallback &callback) noexcept
     {
         if (m_onDestroyCallback)
         {
@@ -126,14 +140,14 @@ public:
         }
 
         if (callback)
-            m_onDestroyCallback = new Callback(callback);
+            m_onDestroyCallback = new OnDestroyCallback(callback);
     }
 
 private:
     /// @cond OMIT
     friend class LObject;
 
-    inline void copy(const LWeak &other) noexcept
+    void copy(const LWeak<T> &other) noexcept
     {
         clear();
 
@@ -141,11 +155,11 @@ private:
             pushBackTo(other.m_object);
     }
 
-    inline void clear() noexcept
+    void clear() noexcept
     {
         if (m_object)
         {
-            auto &refs = (std::vector<LWeak<T>*>&)PrivateUtils::getObjectData(m_object);
+            auto &refs = (std::vector<LWeak<T>*>&)LWeakUtils::objectRefs((const LObject*)m_object);
             refs.back()->m_index = m_index;
             refs[m_index] = refs.back();
             refs.pop_back();
@@ -153,20 +167,20 @@ private:
         }
     }
 
-    inline void pushBackTo(T *object) noexcept
+    void pushBackTo(T *object) noexcept
     {
-        if (PrivateUtils::isObjectDestroyed(object))
+        if (LWeakUtils::isObjectDestroyed((const LObject*)object))
             return;
 
         m_object = object;
-        auto &refs = (std::vector<LWeak<T>*>&)PrivateUtils::getObjectData(m_object);
+        auto &refs = (std::vector<LWeak<T>*>&)LWeakUtils::objectRefs((const LObject*)m_object);
         refs.push_back(this);
         m_index = refs.size() - 1;
     }
 
     T *m_object { nullptr };
     UInt64 m_index { 0 };
-    Callback *m_onDestroyCallback { nullptr };
+    OnDestroyCallback *m_onDestroyCallback { nullptr };
     /// @endcond OMIT
 };
 

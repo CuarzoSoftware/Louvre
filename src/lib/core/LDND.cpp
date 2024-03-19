@@ -53,10 +53,10 @@ void LDND::setFocus(LSurface *surface, const LPointF &localPos) noexcept
 
         for (auto *gSeat : surface->client()->seatGlobals())
         {
-            if (gSeat->dataDeviceResource())
+            if (gSeat->dataDeviceRes())
             {
                 m_session->focus.reset(surface);
-                m_session->dstDataDevice.reset(gSeat->dataDeviceResource());
+                m_session->dstDataDevice.reset(gSeat->dataDeviceRes());
                 break;
             }
         }

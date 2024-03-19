@@ -5,6 +5,7 @@
 #include <LNamespaces.h>
 #include <LRegion.h>
 #include <LFramebuffer.h>
+#include <filesystem>
 
 using namespace Louvre;
 
@@ -188,7 +189,11 @@ public:
     };
 
     // Quick handles
-    static Compositor *compositor();
+    static Compositor *compositor()
+    {
+        return (Compositor*)Louvre::compositor();
+    }
+
     static LScene *scene();
     static Pointer *pointer();
     static const std::vector<Output*>&outputs();

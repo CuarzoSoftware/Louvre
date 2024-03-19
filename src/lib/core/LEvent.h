@@ -1,104 +1,138 @@
 #ifndef LEVENT_H
 #define LEVENT_H
 
-#include <LObject.h>
+#include <LNamespaces.h>
 
-// TODO: add doc
+/**
+ *  @brief Base event class.
+ */
 class Louvre::LEvent
 {
 public:
 
+    /**
+     * @brief Defines the type of event.
+     */
     enum class Type : UInt8
     {
-        Pointer,
-        Keyboard,
-        Touch
+        Pointer, ///< Pointer event type.
+        Keyboard, ///< Keyboard event type.
+        Touch ///< Touch event type.
     };
 
+    /**
+     * @brief Defines the subtype of event.
+     */
     enum class Subtype : UInt8
     {
-        Enter,
-        Leave,
-        Up,
-        Down,
-        Move,
-        Button,
-        Key,
-        Modifiers,
-        Scroll,
-        Frame,
-        Cancel,
-        SwipeBegin,
-        SwipeUpdate,
-        SwipeEnd,
-        PinchBegin,
-        PinchUpdate,
-        PinchEnd,
-        HoldBegin,
-        HoldEnd
+        Enter, ///< Enter event subtype.
+        Leave, ///< Leave event subtype.
+        Up, ///< Up event subtype.
+        Down, ///< Down event subtype.
+        Move, ///< Move event subtype.
+        Button, ///< Button event subtype.
+        Key, ///< Key event subtype.
+        Modifiers, ///< Modifiers event subtype.
+        Scroll, ///< Scroll event subtype.
+        Frame, ///< Frame event subtype.
+        Cancel, ///< Cancel event subtype.
+        SwipeBegin, ///< SwipeBegin event subtype.
+        SwipeUpdate, ///< SwipeUpdate event subtype.
+        SwipeEnd, ///< SwipeEnd event subtype.
+        PinchBegin, ///< PinchBegin event subtype.
+        PinchUpdate, ///< PinchUpdate event subtype.
+        PinchEnd, ///< PinchEnd event subtype.
+        HoldBegin, ///< HoldBegin event subtype.
+        HoldEnd ///< HoldEnd event subtype.
     };
 
-    ~LEvent() = default;
+    /**
+     * @brief Destructor.
+     */
+    inline ~LEvent() noexcept = default ;
 
-    inline Type type() const
+    /**
+     * @brief Retrieves the type of the event.
+     */
+    inline Type type() const noexcept
     {
         return m_type;
     }
 
-    inline Subtype subtype() const
+    /**
+     * @brief Retrieves the subtype of the event.
+     */
+    inline Subtype subtype() const noexcept
     {
         return m_subtype;
     }
 
-    inline void setSerial(UInt32 serial)
+    /**
+     * @brief Sets the serial of the event.
+     */
+    inline void setSerial(UInt32 serial) noexcept
     {
         m_serial = serial;
     }
 
-    inline UInt32 serial() const
+    /**
+     * @brief Retrieves the serial of the event.
+     */
+    inline UInt32 serial() const noexcept
     {
         return m_serial;
     }
 
-    inline void setMs(UInt32 ms)
+    /**
+     * @brief Sets the time the event was generated in milliseconds.
+     */
+    inline void setMs(UInt32 ms) noexcept
     {
         m_ms = ms;
     }
 
-    inline UInt32 ms() const
+    /**
+     * @brief Retrieves the time the event was generated in milliseconds.
+     */
+    inline UInt32 ms() const noexcept
     {
         return m_ms;
     }
 
-    inline void setUs(UInt32 us)
+    /**
+     * @brief Sets the time the event was generated in microseconds.
+     */
+    inline void setUs(UInt32 us) noexcept
     {
         m_us = us;
     }
 
-    inline UInt64 us() const
+    /**
+     * @brief Retrieves the time the event was generated in microseconds.
+     */
+    inline UInt64 us() const noexcept
     {
         return m_us;
     }
 
-    inline LCompositor *compositor() const
-    {
-        return LCompositor::compositor();
-    }
-
-    inline LSeat *seat() const
-    {
-        return compositor()->seat();
-    }
-
-    LEvent *copy() const;
+    /**
+     * @brief Creates a deep copy of the event.
+     *
+     * @return A pointer to the copied event.
+     *
+     * @note The returned event must be deleted when no longer used.
+     */
+    LEvent *copy() const noexcept;
 
 protected:
-    LEvent(Type type, Subtype subtype, UInt32 serial, UInt32 ms, UInt64 us);
+    /// @cond OMIT
+    LEvent(Type type, Subtype subtype, UInt32 serial, UInt32 ms, UInt64 us) noexcept;
     Type m_type;
     Subtype m_subtype;
     UInt32 m_serial;
     UInt32 m_ms;
     UInt64 m_us;
+    /// @endcond
 };
 
 #endif // LEVENT_H

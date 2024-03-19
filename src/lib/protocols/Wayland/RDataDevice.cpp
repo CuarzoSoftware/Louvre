@@ -1,9 +1,9 @@
 #include <protocols/Wayland/private/RDataDevicePrivate.h>
 #include <protocols/Wayland/private/RDataSourcePrivate.h>
-#include <protocols/Wayland/private/GSeatPrivate.h>
 #include <protocols/Wayland/GDataDeviceManager.h>
 #include <protocols/Wayland/RDataOffer.h>
 #include <protocols/Wayland/RSurface.h>
+#include <protocols/Wayland/GSeat.h>
 #include <private/LCompositorPrivate.h>
 #include <LClipboard.h>
 #include <LDNDSession.h>
@@ -37,7 +37,7 @@ RDataDevice::RDataDevice
     LPRIVATE_INIT_UNIQUE(RDataDevice)
 {
     imp()->gSeat.reset(gSeat);
-    gSeat->imp()->rDataDevice.reset(this);
+    gSeat->m_dataDeviceRes.reset(this);
 }
 
 RDataDevice::~RDataDevice() {}

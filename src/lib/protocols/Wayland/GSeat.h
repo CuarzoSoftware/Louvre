@@ -3,30 +3,64 @@
 
 #include <LResource.h>
 
-class Louvre::Protocols::Wayland::GSeat : public LResource
+class Louvre::Protocols::Wayland::GSeat final : public LResource
 {
 public:
-    GSeat(wl_client *client,
-          const wl_interface *interface,
-          Int32 version,
-          UInt32 id,
-          const void *implementation);
 
-    ~GSeat();
+    const std::vector<RKeyboard*> &keyboardRes() const noexcept
+    {
+        return m_keyboardRes;
+    }
 
-    const std::vector<RKeyboard*> &keyboardResources() const;
-    const std::vector<RPointer*> &pointerResources() const;
-    const std::vector<RTouch *> &touchResources() const;
+    const std::vector<RPointer*> &pointerRes() const noexcept
+    {
+        return m_pointerRes;
+    }
 
-    RDataDevice *dataDeviceResource() const;
+    const std::vector<RTouch *> &touchRes() const noexcept
+    {
+        return m_touchRes;
+    }
+
+    RDataDevice *dataDeviceRes() const noexcept
+    {
+        return m_dataDeviceRes.get();
+    }
+
+    /******************** REQUESTS ********************/
+
+    static void bind(wl_client *client, void *data, UInt32 version, UInt32 id) noexcept;
+    static void get_pointer(wl_client *client, wl_resource *resource, UInt32 id) noexcept;
+    static void get_keyboard(wl_client *client, wl_resource *resource, UInt32 id) noexcept;
+    static void get_touch(wl_client *client, wl_resource *resource, UInt32 id) noexcept;
+#if LOUVRE_WL_SEAT_VERSION >= 5
+    static void release(wl_client *client, wl_resource *resource) noexcept;
+#endif
+
+    /******************** EVENTS ********************/
 
     // Since 1
-    bool capabilities(UInt32 capabilities);
+    bool capabilities(UInt32 capabilities) noexcept;
 
     // Since 2
-    bool name(const char *name);
+    bool name(const char *name) noexcept;
 
-    LPRIVATE_IMP_UNIQUE(GSeat)
+private:
+    friend class RPointer;
+    friend class RKeyboard;
+    friend class RTouch;
+    friend class RDataDevice;
+
+    GSeat(wl_client *client,
+          Int32 version,
+          UInt32 id) noexcept;
+
+    ~GSeat() noexcept;
+
+    std::vector<RPointer*> m_pointerRes;
+    std::vector<RKeyboard*> m_keyboardRes;
+    std::vector<RTouch*> m_touchRes;
+    LWeak<RDataDevice> m_dataDeviceRes;
 };
 
 #endif // GSEAT_H

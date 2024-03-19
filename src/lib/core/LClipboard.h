@@ -1,33 +1,68 @@
 #ifndef LCLIPBOARD_H
 #define LCLIPBOARD_H
 
-#include <protocols/Wayland/RDataSource.h>
-#include <protocols/Wayland/RDataOffer.h>
+#include <LObject.h>
+#include <LWeak.h>
 
+/**
+ * @brief Clipboard manager.
+ *
+ * LClipboard lets you manage which clients can set the clipboard
+ * and also specify which MIME types to make persistent.
+ *
+ * Clients can access the clipboard when one of their surfaces acquires keyboard focus.
+ */
 class Louvre::LClipboard : public LObject
 {
 public:
-    LClipboard(const void *params) noexcept;
-    ~LClipboard() noexcept;
 
     /**
-     * @brief Request to set the clipboard.
-     *
-     * Reimplement this virtual method if you want to control which clients can set the clipboard.\n
-     * The default implementation allows clients to set the clipboard only if one of their surfaces has pointer or keyboard focus.\n
+     * @brief Structure representing a Clipboard MIME type.
+     */
+    struct MimeTypeFile
+    {
+        std::string mimeType; /**< Mime type string. */
+        FILE *tmp { NULL }; /**< Clipboard content for the MIME type (can be NULL). */
+    };
+
+    /**
+     * @param params Parameters from LCompositor::createClipboardRequest().
+     */
+    LClipboard(const void *params) noexcept;
+
+    inline ~LClipboard() noexcept
+    {
+        clear();
+    }
+
+    /**
+     * @brief Client request to set the clipboard.
      *
      * Returning `true` grants the client permission to set the clipboard and `false` prohibits it.\n
-     *
-     * @param device Data device that makes the request.
+     * Only a single client can set the clipboard at a time.
      *
      * #### Default Implementation
      * @snippet LClipboardDefault.cpp setClipboardRequest
      */
-    virtual bool setClipboardRequest(LClient *client, const LEvent *triggeringEvent) noexcept;
+    virtual bool setClipboardRequest(LClient *client, const LEvent &triggeringEvent) noexcept;
 
-    // TODO: add doc and default imp
+    /**
+     * @brief Filter of persistent clipboard MIME types.
+     *
+     * Keep the clipboard data for specific MIME types even after the
+     * client owning the clipboard data is disconnected.
+     *
+     * @return `true` to make the mime type persistent, `false` otherwise.
+     *
+     * #### Default Implementation
+     * @snippet LClipboardDefault.cpp persistentMimeTypeFilter
+     */
     virtual bool persistentMimeTypeFilter(const std::string &mimeType) const noexcept;
-    const std::vector<Protocols::Wayland::RDataSource::MimeTypeFile> &mimeTypes() const noexcept;
+
+    /**
+     * @brief Access to the current clipboard MIME types.
+     */
+    const std::vector<MimeTypeFile> &mimeTypes() const noexcept;
 
 private:
     friend class Protocols::Wayland::RDataDevice;
@@ -36,8 +71,9 @@ private:
     friend class LKeyboard;
     LWeak<Protocols::Wayland::RDataSource> m_dataSource;
     LWeak<Protocols::Wayland::RDataOffer> m_dataOffer;
-    std::vector<Protocols::Wayland::RDataSource::MimeTypeFile> m_persistentMimeTypes;
-    void clear();
+    std::vector<MimeTypeFile> m_persistentMimeTypes;
+    void clear() noexcept;
+    /// @endcond
 };
 
 #endif // LCLIPBOARD_H

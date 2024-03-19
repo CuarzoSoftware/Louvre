@@ -3,6 +3,7 @@
 
 #include <protocols/Wayland/RSurface.h>
 #include <protocols/FractionalScale/RFractionalScale.h>
+#include <LWeak.h>
 
 using namespace Louvre::Protocols::FractionalScale;
 

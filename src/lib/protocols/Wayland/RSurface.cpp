@@ -1,74 +1,67 @@
 #include <protocols/PresentationTime/private/RPresentationFeedbackPrivate.h>
-#include <protocols/Viewporter/private/RViewportPrivate.h>
-#include <protocols/FractionalScale/private/RFractionalScalePrivate.h>
-#include <protocols/TearingControl/private/RTearingControlPrivate.h>
-#include <protocols/Wayland/private/RSurfacePrivate.h>
-#include <protocols/Wayland/GCompositor.h>
+#include <protocols/TearingControl/RTearingControl.h>
 #include <protocols/Wayland/GOutput.h>
+#include <protocols/Wayland/RRegion.h>
 #include <protocols/Wayland/RCallback.h>
+#include <protocols/Wayland/GCompositor.h>
+#include <protocols/Wayland/RSurface.h>
 #include <private/LBaseSurfaceRolePrivate.h>
-#include <private/LCompositorPrivate.h>
-#include <private/LClientPrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LSeatPrivate.h>
-#include <private/LPointerPrivate.h>
-#include <private/LKeyboardPrivate.h>
-#include <private/LSubsurfaceRolePrivate.h>
-#include <LDNDIconRole.h>
 #include <LCursorRole.h>
-#include <LTouch.h>
+#include <LDNDIconRole.h>
+#include <LLog.h>
 
-using namespace Protocols::Wayland;
+using namespace Louvre::Protocols::Wayland;
 
-struct wl_surface_interface surface_implementation =
+static const struct wl_surface_interface imp =
 {
-    .destroy                = &RSurface::RSurfacePrivate::destroy,
-    .attach                 = &RSurface::RSurfacePrivate::attach,
-    .damage                 = &RSurface::RSurfacePrivate::damage,
-    .frame                  = &RSurface::RSurfacePrivate::frame,
-    .set_opaque_region      = &RSurface::RSurfacePrivate::set_opaque_region,
-    .set_input_region       = &RSurface::RSurfacePrivate::set_input_region,
-    .commit                 = &RSurface::RSurfacePrivate::commit,
+    .destroy                = &RSurface::destroy,
+    .attach                 = &RSurface::attach,
+    .damage                 = &RSurface::damage,
+    .frame                  = &RSurface::frame,
+    .set_opaque_region      = &RSurface::set_opaque_region,
+    .set_input_region       = &RSurface::set_input_region,
+    .commit                 = &RSurface::commit,
 
 #if LOUVRE_WL_COMPOSITOR_VERSION >= 2
-    .set_buffer_transform   = &RSurface::RSurfacePrivate::set_buffer_transform,
+    .set_buffer_transform   = &RSurface::set_buffer_transform,
 #endif
 
 #if LOUVRE_WL_COMPOSITOR_VERSION >= 3
-    .set_buffer_scale       = &RSurface::RSurfacePrivate::set_buffer_scale,
+    .set_buffer_scale       = &RSurface::set_buffer_scale,
 #endif
 
 #if LOUVRE_WL_COMPOSITOR_VERSION >= 4
-    .damage_buffer          = &RSurface::RSurfacePrivate::damage_buffer,
+    .damage_buffer          = &RSurface::damage_buffer,
 #endif
 
 #if LOUVRE_WL_COMPOSITOR_VERSION >= 5
-    .offset                 = &RSurface::RSurfacePrivate::offset
+    .offset                 = &RSurface::offset
 #endif
 };
 
 RSurface::RSurface
 (
-    GCompositor *gCompositor,
+    GCompositor *compositorRes,
     UInt32 id
 )
     :LResource
     (
-        gCompositor->client(),
+        compositorRes->client(),
         &wl_surface_interface,
-        gCompositor->version(),
+        compositorRes->version(),
         id,
-        &surface_implementation
-    ),
-    LPRIVATE_INIT_UNIQUE(RSurface)
+        &imp
+    )
 {
     // Create surface
     LSurface::Params params;
     params.surfaceResource = this;
-    imp()->lSurface.reset(compositor()->createSurfaceRequest(&params));
+    m_surface.reset(compositor()->createSurfaceRequest(&params));
 
     // Append surface
-    compositor()->imp()->surfaces.push_back(surface());
+    compositor()->imp()->surfaces.emplace_back(surface());
     surface()->imp()->compositorLink = std::prev(compositor()->imp()->surfaces.end());
     compositor()->imp()->surfacesListChanged = true;
 }
@@ -132,39 +125,389 @@ RSurface::~RSurface()
     lSurface->imp()->stateFlags.add(LSurface::LSurfacePrivate::Destroyed);
 }
 
-LSurface *RSurface::surface() const
+/******************** REQUESTS ********************/
+
+using Changes = LSurface::LSurfacePrivate::ChangesToNotify;
+
+void RSurface::handleOffset(LSurface *surface, Int32 x, Int32 y)
 {
-    return imp()->lSurface.get();
+    if (surface->role())
+        surface->role()->handleSurfaceOffset(x, y);
 }
 
-FractionalScale::RFractionalScale *RSurface::fractionalScaleResource() const
+void RSurface::attach(wl_client */*client*/, wl_resource *resource, wl_resource *buffer, Int32 x, Int32 y)
 {
-    return imp()->rFractionalScale.get();
+    const auto &surfaceRes { *static_cast<const RSurface*>(wl_resource_get_user_data(resource)) };
+
+    surfaceRes.surface()->imp()->stateFlags.add(LSurface::LSurfacePrivate::BufferAttached);
+
+    if (surfaceRes.surface()->role())
+        surfaceRes.surface()->role()->handleSurfaceBufferAttach(buffer, x, y);
+
+    surfaceRes.surface()->imp()->pending.buffer = buffer;
+
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 5
+    if (surfaceRes.version() < 5)
+        handleOffset(surfaceRes.surface(), x, y);
+    else
+        if (x != 0 || y != 0)
+            wl_resource_post_error(resource, WL_SURFACE_ERROR_INVALID_OFFSET, "Buffer offset is invalid. Check wl_surface::offset (v5).");
+#else
+    handleOffset(surfaceRes.surface(), x, y);
+#endif
 }
 
-TearingControl::RTearingControl *RSurface::tearingControlResource() const
+void RSurface::frame(wl_client *client, wl_resource *resource, UInt32 callback)
 {
-    return imp()->rTearingControl.get();
+    auto &imp { *static_cast<const RSurface*>(wl_resource_get_user_data(resource))->surface()->imp() };
+    new Wayland::RCallback(client, callback, &imp.frameCallbacks);
 }
 
-Viewporter::RViewport *RSurface::viewportResource() const
+void RSurface::destroy(wl_client */*client*/, wl_resource *resource)
 {
-    return imp()->rViewport.get();
+    wl_resource_destroy(resource);
 }
 
-bool RSurface::enter(GOutput *gOutput)
+void RSurface::commit(wl_client */*client*/, wl_resource *resource)
 {
-    wl_surface_send_enter(resource(), gOutput->resource());
+    apply_commit(static_cast<const RSurface*>(wl_resource_get_user_data(resource))->surface());
+}
+
+// The origin params indicates who requested the commit for this surface (itself or its parent surface)
+void RSurface::apply_commit(LSurface *surface, CommitOrigin origin)
+{
+    // Check if the surface role wants to apply the commit
+    if (surface->role() && !surface->role()->acceptCommitRequest(origin))
+        return;
+
+    auto &imp { *surface->imp() };
+
+    imp.commitId++;
+
+    for (auto *presentation : imp.presentationFeedbackResources)
+        if (presentation->imp()->commitId == -1)
+            presentation->imp()->commitId = imp.commitId;
+
+    auto &changes { imp.changesToNotify };
+
+    /**************************************
+     *********** PENDING CHILDREN *********
+     **************************************/
+    imp.applyPendingChildren();
+
+    /********************************************
+     *********** NOTIFY PARENT COMMIT ***********
+     ********************************************/
+
+    for (LSurface *s : surface->children())
+        if (s->role())
+            s->role()->handleParentCommit();
+
+    if (imp.stateFlags.check(LSurface::LSurfacePrivate::BufferAttached))
+    {
+        imp.current.buffer = imp.pending.buffer;
+
+        if (imp.current.buffer)
+            imp.stateFlags.remove(LSurface::LSurfacePrivate::BufferReleased);
+
+        imp.stateFlags.remove(LSurface::LSurfacePrivate::BufferAttached);
+    }
+
+    // Mark the next frame as commited
+    if (!imp.frameCallbacks.empty())
+    {
+        surface->requestedRepaint();
+        for (RCallback *callback : imp.frameCallbacks)
+            callback->commited = true;
+    }
+
+    /*****************************************
+     *********** BUFFER TO TEXTURE ***********
+     *****************************************/
+
+    // Turn buffer into OpenGL texture and process damage
+    if (imp.current.buffer)
+    {
+        if (!imp.stateFlags.check(LSurface::LSurfacePrivate::BufferReleased))
+        {
+            // Returns false on wl_client destroy
+            if (!imp.bufferToTexture())
+            {
+                LLog::error("[RSurface::apply_commit] Failed to convert buffer to OpenGL texture.");
+                return;
+            }
+        }
+    }
+
+    /************************************
+     *********** INPUT REGION ***********
+     ************************************/
+    if (surface->receiveInput())
+    {
+        if (imp.stateFlags.check(LSurface::LSurfacePrivate::InfiniteInput))
+        {
+            if (changes.check(Changes::SizeChanged))
+            {
+                imp.currentInputRegion.clear();
+                imp.currentInputRegion.addRect(0, 0, surface->size());
+            }
+        }
+        else if (changes.check(Changes::SizeChanged | Changes::InputRegionChanged))
+        {
+            pixman_region32_intersect_rect(&imp.currentInputRegion.m_region,
+                                           &imp.pendingInputRegion.m_region,
+                                           0, 0, surface->size().w(), surface->size().h());
+        }
+    }
+    else
+    {
+        /******************************************
+         *********** CLEAR INPUT REGION ***********
+         ******************************************/
+        imp.currentInputRegion.clear();
+    }
+
+    /************************************
+     ********** OPAQUE REGION ***********
+     ************************************/
+    if (changes.check(Changes::BufferSizeChanged | Changes::SizeChanged | Changes::OpaqueRegionChanged))
+    {
+
+        if (surface->texture()->format() == DRM_FORMAT_XRGB8888)
+        {
+            imp.pendingOpaqueRegion.clear();
+            imp.pendingOpaqueRegion.addRect(0, 0, surface->size());
+        }
+
+        pixman_region32_intersect_rect(&imp.currentOpaqueRegion.m_region,
+                                       &imp.pendingOpaqueRegion.m_region,
+                                       0, 0, surface->size().w(), surface->size().h());
+
+        /*****************************************
+         ********** TRANSLUCENT REGION ***********
+         *****************************************/
+        pixman_box32_t box {0, 0, surface->size().w(), surface->size().h()};
+        pixman_region32_inverse(&imp.currentTranslucentRegion.m_region, &imp.currentOpaqueRegion.m_region, &box);
+    }
+
+    /*******************************************
+     ***************** VSYNC *******************
+     *******************************************/
+    const bool preferVSync { surface->surfaceResource()->tearingControlRes() == nullptr || surface->surfaceResource()->tearingControlRes()->preferVSync() };
+
+    if (imp.stateFlags.check(LSurface::LSurfacePrivate::VSync) != preferVSync)
+    {
+        changes.add(Changes::VSyncChanged);
+        imp.stateFlags.setFlag(LSurface::LSurfacePrivate::VSync, preferVSync);
+    }
+
+    /*******************************************
+     *********** NOTIFY COMMIT TO ROLE *********
+     *******************************************/
+    if (surface->role())
+        surface->role()->handleSurfaceCommit(origin);
+    else if (imp.pending.role)
+        imp.pending.role->handleSurfaceCommit(origin);
+
+    LWeak<LSurface> ref { surface };
+
+    if (changes.check(Changes::BufferSizeChanged))
+    {
+        surface->bufferSizeChanged();
+
+        if (!ref.get())
+            return;
+    }
+
+    if (changes.check(Changes::SizeChanged))
+    {
+        surface->sizeChanged();
+
+        if (!ref.get())
+            return;
+    }
+
+    if (changes.check(Changes::SourceRectChanged))
+    {
+        surface->srcRectChanged();
+
+        if (!ref.get())
+            return;
+    }
+
+    if (changes.check(Changes::BufferScaleChanged))
+    {
+        surface->bufferScaleChanged();
+
+        if (!ref.get())
+            return;
+    }
+
+    if (changes.check(Changes::BufferTransformChanged))
+    {
+        surface->bufferTransformChanged();
+
+        if (!ref.get())
+            return;
+    }
+
+    if (changes.check(Changes::DamageRegionChanged))
+    {
+        surface->damageChanged();
+
+        if (!ref.get())
+            return;
+    }
+
+    if (changes.check(Changes::InputRegionChanged))
+    {
+        surface->inputRegionChanged();
+
+        if (!ref.get())
+            return;
+    }
+
+    if (changes.check(Changes::OpaqueRegionChanged))
+    {
+        surface->opaqueRegionChanged();
+
+        if (!ref.get())
+            return;
+    }
+
+    if (changes.check(Changes::VSyncChanged))
+    {
+        surface->preferVSyncChanged();
+
+        if (!ref.get())
+            return;
+    }
+
+    changes.set(Changes::NoChanges);
+}
+
+void RSurface::damage(wl_client */*client*/, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height)
+{
+    auto &imp { *static_cast<const RSurface*>(wl_resource_get_user_data(resource))->surface()->imp() };
+
+    // Ignore rects with invalid or crazy sizes
+    if (width > LOUVRE_MAX_SURFACE_SIZE)
+        width = LOUVRE_MAX_SURFACE_SIZE;
+    if (width <= 0)
+        return;
+
+    if (height > LOUVRE_MAX_SURFACE_SIZE)
+        height = LOUVRE_MAX_SURFACE_SIZE;
+    if (height <= 0)
+        return;
+
+    imp.pendingDamage.emplace_back(x, y, width, height);
+    imp.changesToNotify.add(Changes::DamageRegionChanged);
+}
+
+void RSurface::set_opaque_region(wl_client */*client*/, wl_resource *resource, wl_resource *region)
+{
+    auto &imp { *static_cast<const RSurface*>(wl_resource_get_user_data(resource))->surface()->imp() };
+
+    if (region)
+        imp.pendingOpaqueRegion = static_cast<const RRegion*>(wl_resource_get_user_data(region))->region();
+    else
+        imp.pendingOpaqueRegion.clear();
+
+    imp.changesToNotify.add(Changes::OpaqueRegionChanged);
+}
+
+void RSurface::set_input_region(wl_client */*client*/, wl_resource *resource, wl_resource *region)
+{
+    auto &imp { *static_cast<const RSurface*>(wl_resource_get_user_data(resource))->surface()->imp() };
+
+    if (region)
+    {
+        imp.pendingInputRegion = static_cast<const RRegion*>(wl_resource_get_user_data(region))->region();
+        imp.stateFlags.remove(LSurface::LSurfacePrivate::InfiniteInput);
+    }
+    else
+    {
+        imp.pendingInputRegion.clear();
+        imp.stateFlags.add(LSurface::LSurfacePrivate::InfiniteInput);
+    }
+
+    imp.changesToNotify.add(Changes::InputRegionChanged);
+}
+
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 2
+void RSurface::set_buffer_transform(wl_client */*client*/, wl_resource *resource, Int32 transform)
+{
+    if (transform < 0 || transform > 7)
+    {
+        wl_resource_post_error(resource, WL_SURFACE_ERROR_INVALID_TRANSFORM, "Invalid framebuffer transform %d.", transform);
+        return;
+    }
+
+    auto &imp { *static_cast<const RSurface*>(wl_resource_get_user_data(resource))->surface()->imp() };
+    imp.pending.transform = static_cast<LFramebuffer::Transform>(transform);
+}
+#endif
+
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 3
+void RSurface::set_buffer_scale(wl_client */*client*/, wl_resource *resource, Int32 scale)
+{
+    if (scale <= 0)
+    {
+        wl_resource_post_error(resource, WL_SURFACE_ERROR_INVALID_SCALE, "Buffer scale must be >= 1.");
+        return;
+    }
+
+    auto &imp { *static_cast<const RSurface*>(wl_resource_get_user_data(resource))->surface()->imp() };
+    imp.pending.bufferScale = scale;
+}
+#endif
+
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 4
+void RSurface::damage_buffer(wl_client */*client*/, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height)
+{
+    // Ignore rects with invalid or crazy sizes
+
+    if (width > LOUVRE_MAX_SURFACE_SIZE)
+        width = LOUVRE_MAX_SURFACE_SIZE;
+    if (width <= 0)
+        return;
+
+    if (height > LOUVRE_MAX_SURFACE_SIZE)
+        height = LOUVRE_MAX_SURFACE_SIZE;
+    if (height <= 0)
+        return;
+
+    auto &imp { *static_cast<const RSurface*>(wl_resource_get_user_data(resource))->surface()->imp() };
+    imp.pendingDamageB.emplace_back(x, y, width, height);
+    imp.changesToNotify.add(Changes::DamageRegionChanged);
+}
+#endif
+
+#if LOUVRE_WL_COMPOSITOR_VERSION >= 5
+void RSurface::offset(wl_client */*client*/, wl_resource *resource, Int32 x, Int32 y)
+{
+    handleOffset(static_cast<const RSurface*>(wl_resource_get_user_data(resource))->surface(),
+                 x,
+                 y);
+}
+#endif
+
+/******************** EVENTS ********************/
+
+bool RSurface::enter(GOutput *outputRes) noexcept
+{
+    wl_surface_send_enter(resource(), outputRes->resource());
     return true;
 }
 
-bool RSurface::leave(GOutput *gOutput)
+bool RSurface::leave(GOutput *outputRes) noexcept
 {
-    wl_surface_send_leave(resource(), gOutput->resource());
+    wl_surface_send_leave(resource(), outputRes->resource());
     return true;
 }
 
-bool RSurface::preferredBufferScale(Int32 scale)
+bool RSurface::preferredBufferScale(Int32 scale) noexcept
 {
 #if LOUVRE_WL_COMPOSITOR_VERSION >= 6
     if (version() >= 6)
@@ -177,7 +520,7 @@ bool RSurface::preferredBufferScale(Int32 scale)
     return false;
 }
 
-bool RSurface::preferredBufferTransform(UInt32 transform)
+bool RSurface::preferredBufferTransform(UInt32 transform) noexcept
 {
 #if LOUVRE_WL_COMPOSITOR_VERSION >= 6
     if (version() >= 6)

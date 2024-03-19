@@ -1,45 +1,68 @@
-#include <protocols/Wayland/private/RRegionPrivate.h>
 #include <protocols/Wayland/GCompositor.h>
-#include <LCompositor.h>
-#include <LClient.h>
-#include <LRegion.h>
-#include <pixman.h>
+#include <protocols/Wayland/RRegion.h>
 
-using namespace Louvre;
 using namespace Louvre::Protocols::Wayland;
 
-struct wl_region_interface region_implementation =
+static const struct wl_region_interface imp =
 {
-    .destroy = &RRegion::RRegionPrivate::destroy,
-    .add = &RRegion::RRegionPrivate::add,
-    .subtract = &RRegion::RRegionPrivate::subtract
+    .destroy = &RRegion::destroy,
+    .add = &RRegion::add,
+    .subtract = &RRegion::subtract
 };
 
-RRegion::RRegion
-(
-    GCompositor *gCompositor,
+RRegion::RRegion(
+    GCompositor *compositorRes,
     UInt32 id
-)
+) noexcept
     :LResource
     (
-        gCompositor->client(),
+        compositorRes->client(),
         &wl_region_interface,
-        gCompositor->version(),
+        compositorRes->version(),
         id,
-        &region_implementation
-    ),
-    LPRIVATE_INIT_UNIQUE(RRegion)
+        &imp
+    )
 {}
 
-RRegion::~RRegion() {}
-
-const LRegion &RRegion::region() const
+void RRegion::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {
-    if (!imp()->pendingSubtract.empty())
-    {
-        pixman_region32_subtract(&imp()->added.m_region, &imp()->added.m_region, &imp()->pendingSubtract.m_region);
-        imp()->pendingSubtract.clear();
-    }
+    wl_resource_destroy(resource);
+}
 
-    return imp()->added;
+void RRegion::add(wl_client */*client*/, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height) noexcept
+{
+    if (width > LOUVRE_MAX_SURFACE_SIZE)
+        width = LOUVRE_MAX_SURFACE_SIZE;
+    else if (width <= 0)
+        return;
+
+    if (height > LOUVRE_MAX_SURFACE_SIZE)
+        height = LOUVRE_MAX_SURFACE_SIZE;
+    else if (height <= 0)
+        return;
+
+    auto &regionRes { *static_cast<RRegion*>(wl_resource_get_user_data(resource)) };
+
+    pixman_region32_union_rect(&regionRes.m_region.m_region,
+                               &regionRes.m_region.m_region,
+                               x, y, width, height);
+}
+
+void RRegion::subtract(wl_client */*client*/, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height) noexcept
+{
+    if (width > LOUVRE_MAX_SURFACE_SIZE)
+        width = LOUVRE_MAX_SURFACE_SIZE;
+    else if (width <= 0)
+        return;
+
+    if (height > LOUVRE_MAX_SURFACE_SIZE)
+        height = LOUVRE_MAX_SURFACE_SIZE;
+    else if (height <= 0)
+        return;
+
+    auto &regionRes { *static_cast<RRegion*>(wl_resource_get_user_data(resource)) };
+
+    pixman_region32_union_rect(&regionRes.m_subtract.m_region,
+                               &regionRes.m_subtract.m_region,
+                               x, y, width, height);
 }

@@ -4,7 +4,7 @@
 #include <private/LSurfacePrivate.h>
 #include <private/LCursorPrivate.h>
 
-#include <protocols/Wayland/private/GOutputPrivate.h>
+#include <protocols/Wayland/GOutput.h>
 #include <protocols/GammaControl/RGammaControl.h>
 
 #include <string.h>

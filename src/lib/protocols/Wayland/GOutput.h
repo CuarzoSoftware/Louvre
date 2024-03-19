@@ -3,39 +3,55 @@
 
 #include <LResource.h>
 
-class Louvre::Protocols::Wayland::GOutput : public LResource
+class Louvre::Protocols::Wayland::GOutput final : public LResource
 {
 public:
-    GOutput(LOutput *output,
-            LClient *lClient,
-            const wl_interface *interface,
-            Int32 version,
-            UInt32 id,
-            const void *implementation);
 
-    ~GOutput();
+    LOutput *output() const noexcept
+    {
+        return m_output.get();
+    }
 
-    LOutput *output() const;
+    /******************** REQUESTS ********************/
+
+    static void bind(wl_client *client, void *output, UInt32 version, UInt32 id) noexcept;
+#if LOUVRE_WL_OUTPUT_VERSION >= 3
+    static void release(wl_client *client, wl_resource *resource) noexcept;
+#endif
+
+    /******************** EVENTS ********************/
 
     // Send all events
-    void sendConfiguration();
+    void sendConfiguration() noexcept;
 
     // Since 1
     bool geometry(Int32 x, Int32 y,
                   Int32 physicalWidth, Int32 physicalHeight,
                   Int32 subpixel, const char *make,
-                  const char *model, Int32 transform);
-    bool mode(UInt32 flags, Int32 width, Int32 height, Int32 refresh);
+                  const char *model, Int32 transform) noexcept;
+    bool mode(UInt32 flags, Int32 width, Int32 height, Int32 refresh) noexcept;
 
     // Since 2
-    bool done();
-    bool scale(Int32 factor);
+    bool done() noexcept;
+    bool scale(Int32 factor) noexcept;
 
     // Since 4
-    bool name(const char *name);
-    bool description(const char *description);
+    bool name(const char *name) noexcept;
+    bool description(const char *description) noexcept;
 
-    LPRIVATE_IMP_UNIQUE(GOutput)
+private:
+    friend class GammaControl::RGammaControl;
+    friend class Louvre::LCompositor;
+
+    GOutput(LOutput *output,
+            wl_client *client,
+            Int32 version,
+            UInt32 id) noexcept;
+
+    ~GOutput() noexcept;
+
+    LWeak<LOutput> m_output;
+    std::vector<GammaControl::RGammaControl*> m_gammaControlRes;
 };
 
 #endif // GOUTPUT_H

@@ -1,6 +1,6 @@
 #include <protocols/FractionalScale/private/RFractionalScalePrivate.h>
 #include <protocols/FractionalScale/fractional-scale-v1.h>
-#include <protocols/Wayland/private/RSurfacePrivate.h>
+#include <protocols/Wayland/RSurface.h>
 
 using namespace Louvre;
 
@@ -26,12 +26,12 @@ RFractionalScale::RFractionalScale
     LPRIVATE_INIT_UNIQUE(RFractionalScale)
 {
     imp()->rSurface.reset(rSurface);
-    rSurface->imp()->rFractionalScale.reset(this);
+    rSurface->m_fractionalScaleRes.reset(this);
 }
 
 RFractionalScale::~RFractionalScale() {}
 
-RSurface *RFractionalScale::surfaceResource() const
+Protocols::Wayland::RSurface *RFractionalScale::surfaceResource() const
 {
     return imp()->rSurface.get();
 }

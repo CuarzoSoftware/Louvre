@@ -14,7 +14,7 @@ LPRIVATE_CLASS(RDataSource)
     #endif
 
     Usage usage { Undefined };
-    std::vector<MimeTypeFile> mimeTypes;
+    std::vector<LClipboard::MimeTypeFile> mimeTypes;
 
     // DND only
     UInt32 actions { 0 };

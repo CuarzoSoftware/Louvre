@@ -61,7 +61,7 @@ void RGammaControl::RGammaControlPrivate::set_gamma(wl_client *client, wl_resour
         return;
     }
 
-    auto weakRef { rGammaControl->weakRef() };
+    LWeak<Protocols::GammaControl::RGammaControl>weakRef { rGammaControl };
 
     output.setGammaRequest(rGammaControl->client(), &gammaTable);
 

@@ -1,12 +1,13 @@
 #ifndef LVIEW_H
 #define LVIEW_H
 
-#include <GL/gl.h>
 #include <LObject.h>
 #include <LBitset.h>
 #include <LRegion.h>
 #include <LPointer.h>
 #include <LFramebuffer.h>
+#include <GL/gl.h>
+#include <thread>
 
 /**
  * @brief Base class for LScene views.

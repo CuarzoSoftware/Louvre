@@ -54,11 +54,10 @@ static wl_iterator_result resourceDestroyIterator(wl_resource *resource, void *d
 static void clientDisconnectedEvent(wl_listener *listener, void *data)
 {
     delete listener;
-    LCompositor *compositor { LCompositor::compositor() };
     wl_client *client { (wl_client*)data };
 
-    LClient *disconnectedClient { compositor->getClientFromNativeResource(client) };
-    compositor->destroyClientRequest(disconnectedClient);
+    LClient *disconnectedClient { compositor()->getClientFromNativeResource(client) };
+    compositor()->destroyClientRequest(disconnectedClient);
 
     wl_resource *lastCreatedResource { NULL };
 
@@ -73,14 +72,13 @@ static void clientDisconnectedEvent(wl_listener *listener, void *data)
             wl_resource_destroy(lastCreatedResource);
     }
 
-    LVectorRemoveOneUnordered(compositor->imp()->clients, disconnectedClient);
+    LVectorRemoveOneUnordered(compositor()->imp()->clients, disconnectedClient);
     delete disconnectedClient;
 }
 
 static void clientConnectedEvent(wl_listener *listener, void *data)
 {
     L_UNUSED(listener);
-    LCompositor *compositor { LCompositor::compositor() };
     wl_client *client { (wl_client*)data };
     LClient::Params *params { new LClient::Params };
     params->client = client;
@@ -92,10 +90,10 @@ static void clientConnectedEvent(wl_listener *listener, void *data)
     wl_client_add_destroy_listener(client, destroyListener);
 
     // Let the developer create his own client implementation
-    LClient *newClient { compositor->createClientRequest(params) };
+    LClient *newClient { compositor()->createClientRequest(params) };
 
     // Append client to the compositor list
-    compositor->imp()->clients.push_back(newClient);
+    compositor()->imp()->clients.push_back(newClient);
 }
 
 bool LCompositor::LCompositorPrivate::initWayland()
@@ -138,7 +136,7 @@ bool LCompositor::LCompositorPrivate::initWayland()
         }
     }
 
-    if (!compositor->createGlobalsRequest())
+    if (!compositor()->createGlobalsRequest())
     {
         LLog::fatal("[LCompositorPrivate::initWayland] Failed to create globals.");
         return false;
@@ -146,13 +144,13 @@ bool LCompositor::LCompositorPrivate::initWayland()
 
     eventLoop = wl_display_get_event_loop(display);
 
-    compositor->imp()->events[2].events = EPOLLIN | EPOLLOUT;
-    compositor->imp()->events[2].data.fd = wl_event_loop_get_fd(eventLoop);
+    compositor()->imp()->events[2].events = EPOLLIN | EPOLLOUT;
+    compositor()->imp()->events[2].data.fd = wl_event_loop_get_fd(eventLoop);
 
-    epoll_ctl(compositor->imp()->epollFd,
+    epoll_ctl(compositor()->imp()->epollFd,
               EPOLL_CTL_ADD,
-              compositor->imp()->events[2].data.fd,
-              &compositor->imp()->events[2]);
+              compositor()->imp()->events[2].data.fd,
+              &compositor()->imp()->events[2]);
 
     // Listen for client connections
     clientConnectedListener.notify = &clientConnectedEvent;
@@ -282,7 +280,7 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
 
     painter = new LPainter();
     cursor = new LCursor();
-    compositor->cursorInitialized();
+    compositor()->cursorInitialized();
 
     return true;
 }
@@ -425,7 +423,7 @@ bool LCompositor::LCompositorPrivate::initSeat()
 
     // Ask the developer to return a LSeat
     LSeat::Params seatParams;
-    seat = LCompositor::compositor()->createSeatRequest(&seatParams);
+    seat = compositor()->createSeatRequest(&seatParams);
     return true;
 }
 
@@ -436,21 +434,21 @@ void LCompositor::LCompositorPrivate::unitSeat()
         // Notify first
 
         if (seat->keyboard())
-            LCompositor::compositor()->destroyKeyboardRequest(seat->keyboard());
+            compositor()->destroyKeyboardRequest(seat->keyboard());
 
         if (seat->pointer())
-            LCompositor::compositor()->destroyPointerRequest(seat->pointer());
+            compositor()->destroyPointerRequest(seat->pointer());
 
         if (seat->touch())
-            LCompositor::compositor()->destroyTouchRequest(seat->touch());
+            compositor()->destroyTouchRequest(seat->touch());
 
         if (seat->dnd())
-            LCompositor::compositor()->destroyDNDRequest(seat->dnd());
+            compositor()->destroyDNDRequest(seat->dnd());
 
         if (seat->clipboard())
-            LCompositor::compositor()->destroyClipboardRequest(seat->clipboard());
+            compositor()->destroyClipboardRequest(seat->clipboard());
 
-        LCompositor::compositor()->destroySeatRequest(seat);
+        compositor()->destroySeatRequest(seat);
 
         // Then destroy
 
@@ -697,11 +695,11 @@ LPainter *LCompositor::LCompositorPrivate::findPainter()
     LPainter *painter = nullptr;
     std::thread::id threadId = std::this_thread::get_id();
 
-    if (threadId == LCompositor::compositor()->mainThreadId())
-        painter = LCompositor::compositor()->imp()->painter;
+    if (threadId == compositor()->mainThreadId())
+        painter = compositor()->imp()->painter;
     else
     {
-        for (LOutput *o : LCompositor::compositor()->outputs())
+        for (LOutput *o : compositor()->outputs())
         {
             if (o->state() == LOutput::Initialized && o->imp()->threadId == threadId)
             {

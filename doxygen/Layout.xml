@@ -42,7 +42,6 @@
     
   </navindex>
   
-    <!-- Layout definition for a class page -->
   <class>
   	<includes visible="$SHOW_INCLUDE_FILES"/>
     <briefdescription visible="yes"/>
@@ -78,8 +77,8 @@
       <privatestaticmethods title=""/>
       <privateattributes title=""/>
       <privatestaticattributes title=""/>
-      <friends title=""/>
-      <related title="" subtitle=""/>
+      <friends visible="no" title=""/>
+      <related visible="no" title="" subtitle=""/>
       <membergroups visible="yes"/>
     </memberdecl>
     <memberdef>
@@ -95,4 +94,5 @@
     <usedfiles visible="$SHOW_USED_FILES"/>
     <authorsection visible="yes"/>
   </class>
+
 </doxygenlayout>

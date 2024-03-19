@@ -1,4 +1,4 @@
-#include <protocols/Wayland/private/RSurfacePrivate.h>
+#include <protocols/Wayland/RSurface.h>
 #include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LSubsurfaceRolePrivate.h>
 #include <private/LSurfacePrivate.h>
@@ -94,7 +94,7 @@ void LSubsurfaceRole::handleParentCommit()
     }
 
     if (isSynced() && imp()->hasCache)
-        Wayland::RSurface::RSurfacePrivate::apply_commit(surface(), Wayland::RSurface::Parent);
+        Wayland::RSurface::apply_commit(surface(), Wayland::RSurface::Parent);
 }
 
 void LSubsurfaceRole::handleParentChange()

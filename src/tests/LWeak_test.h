@@ -29,7 +29,7 @@ void LWeak_test_03()
 
     {
         LObjectTest obj;
-        weak = obj.weakRef<LObjectTest>();
+        weak.reset(&obj);
         LAssert("LWeak::count() should be 1", weak.count() == 1);
         LAssert("LWeak::get() should be != nullptr", weak.get() != nullptr);
         auto weaks(obj);

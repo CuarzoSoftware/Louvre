@@ -25,10 +25,10 @@ static void onPointerLeaveResizeArea(InputRect *rect, void *data);
 static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &)
 {
     ToplevelView *view = (ToplevelView*)rect->parent();
-    Pointer *pointer = (Pointer*)view->seat()->pointer();
+    Pointer *pointer = (Pointer*)seat()->pointer();
     LXCursor *cursor = (LXCursor*)data;
 
-    if (!view->seat()->toplevelMoveSessions().empty() || !view->seat()->toplevelResizeSessions().empty())
+    if (!seat()->toplevelMoveSessions().empty() || !seat()->toplevelResizeSessions().empty())
         return;
 
     if (data)
@@ -45,7 +45,7 @@ static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &
         if (view->toplevel->fullscreen() && !view->fullscreenTopbarAnim.running() && view->fullscreenTopbarVisibility == 0.f)
         {
             // Stop if the user is interacting with a popup
-            if (view->seat()->keyboard()->grab())
+            if (seat()->keyboard()->grab())
                 return;
 
             view->fullscreenTopbarAnim.setDuration(256);
@@ -78,7 +78,7 @@ static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &
 static void onPointerLeaveResizeArea(InputRect *rect, void *data)
 {
     ToplevelView *view = (ToplevelView*)rect->parent();
-    Pointer *pointer = (Pointer*)view->seat()->pointer();
+    Pointer *pointer = (Pointer*)seat()->pointer();
 
     if (data)
     {
@@ -121,7 +121,7 @@ static void onPointerLeaveResizeArea(InputRect *rect, void *data)
 static void onPointerButtonResizeArea(InputRect *rect, void *data, UInt32 button, UInt32 state)
 {
     ToplevelView *view = (ToplevelView*)rect->parent();
-    Pointer *pointer = (Pointer*)view->seat()->pointer();
+    Pointer *pointer = (Pointer*)seat()->pointer();
     Toplevel *toplevel = view->toplevel;
 
     if (toplevel->fullscreen())
@@ -133,7 +133,7 @@ static void onPointerButtonResizeArea(InputRect *rect, void *data, UInt32 button
     if (state == LPointerButtonEvent::Pressed)
     {
         pointer->setFocus(toplevel->surface());
-        view->seat()->keyboard()->setFocus(toplevel->surface());
+        seat()->keyboard()->setFocus(toplevel->surface());
 
         if (!toplevel->activated())
             toplevel->configure(toplevel->pendingStates() | LToplevelRole::Activated);
@@ -306,9 +306,9 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     buttonsContainer.onPointerEnter = [](InputRect *, void *data, const LPoint &)
     {
         ToplevelView *view = (ToplevelView*)data;
-        Pointer *pointer = (Pointer*)view->seat()->pointer();
+        Pointer *pointer = (Pointer*)seat()->pointer();
 
-        if (!view->seat()->toplevelResizeSessions().empty())
+        if (!seat()->toplevelResizeSessions().empty())
             return;
 
         view->closeButton.update();
@@ -316,14 +316,14 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
         view->maximizeButton.update();
 
         if (!pointer->cursorOwner)
-            view->cursor()->useDefault();
+            cursor()->useDefault();
     };
 
     buttonsContainer.onPointerLeave = [](InputRect *, void *data)
     {
         ToplevelView *view = (ToplevelView*)data;
 
-        if (!view->seat()->toplevelResizeSessions().empty())
+        if (!seat()->toplevelResizeSessions().empty())
             return;
 
         view->closeButton.update();

@@ -1,6 +1,6 @@
 #include <protocols/TearingControl/private/RTearingControlPrivate.h>
 #include <protocols/TearingControl/tearing-control-v1.h>
-#include <protocols/Wayland/private/RSurfacePrivate.h>
+#include <protocols/Wayland/RSurface.h>
 #include <private/LSurfacePrivate.h>
 #include <LCompositor.h>
 
@@ -29,12 +29,12 @@ RTearingControl::RTearingControl
     LPRIVATE_INIT_UNIQUE(RTearingControl)
 {
     imp()->rSurface.reset(rSurface);
-    rSurface->imp()->rTearingControl.reset(this);
+    rSurface->m_tearingControlRes.reset(this);
 }
 
 RTearingControl::~RTearingControl() {}
 
-RSurface *RTearingControl::surfaceResource() const
+Wayland::RSurface *RTearingControl::surfaceResource() const
 {
     return imp()->rSurface.get();
 }

@@ -2,6 +2,7 @@
 #define LRESOURCE_H
 
 #include <LObject.h>
+#include <LWeak.h>
 
 /**
  * @brief Wrapper for native **wl_resource** structs
@@ -23,7 +24,7 @@ public:
      *
      * @return A pointer to the wrapped **wl_resource**.
      */
-    inline wl_resource *resource() const noexcept { return m_resource; };
+    wl_resource *resource() const noexcept { return m_resource; };
 
     /**
      * @brief Retrieve the client that owns this resource.
@@ -32,7 +33,7 @@ public:
      *
      * @return A pointer to the owning LClient.
      */
-    inline LClient *client() const noexcept { return m_client; }
+    LClient *client() const noexcept { return m_client; }
 
     /**
      * @brief Retrieve the version of the global interface.
@@ -57,13 +58,7 @@ public:
      *
      * This method destroys the resource, equivalent to calling **wl_resource_destroy()**.
      */
-    void destroy() noexcept;
-
-    // TODO
-    inline bool destroyed() const noexcept
-    {
-        return m_destroyed;
-    }
+    void destroy();
 
 protected:
 
@@ -119,12 +114,11 @@ protected:
     /**
      * @brief Destructor for LResource.
      */
-    virtual ~LResource() noexcept = default;
+    ~LResource() = default;
 
 private:
     LClient *m_client;
     wl_resource *m_resource;
-    bool m_destroyed { false };
 };
 
 #endif // LRESOURCE_H

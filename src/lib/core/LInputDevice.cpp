@@ -1,13 +1,14 @@
 #include <LInputDevice.h>
+#include <LCompositor.h>
 
 using namespace Louvre;
 
 void LInputDevice::notifyPlugged()
 {
-    LCompositor::compositor()->seat()->inputDevicePlugged(this);
+    compositor()->seat()->inputDevicePlugged(this);
 }
 
 void LInputDevice::notifyUnplugged()
 {
-    LCompositor::compositor()->seat()->inputDeviceUnplugged(this);
+    compositor()->seat()->inputDeviceUnplugged(this);
 }

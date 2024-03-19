@@ -489,7 +489,7 @@ UInt32 LInputBackend::backendGetId()
 bool LInputBackend::backendInitialize()
 {
     Int32 fd;
-    const LSeat *seat { LCompositor::compositor()->seat() };
+    const LSeat *seat { compositor()->seat() };
     libseatEnabled = seat->imp()->initLibseat();
 
     BACKEND_DATA *data { new BACKEND_DATA };
@@ -523,42 +523,37 @@ fail:
 
 UInt32 LInputBackend::backendGetCapabilities()
 {
-    const LSeat *seat { LCompositor::compositor()->seat() };
-    const BACKEND_DATA *data { (BACKEND_DATA*)seat->imp()->inputBackendData };
+    const BACKEND_DATA *data { (BACKEND_DATA*)seat()->imp()->inputBackendData };
     return data->capabilities;
 }
 
 void *LInputBackend::backendGetContextHandle()
 {
-    const LSeat *seat { LCompositor::compositor()->seat() };
-    const BACKEND_DATA *data { (BACKEND_DATA*)seat->imp()->inputBackendData };
+    const BACKEND_DATA *data { (BACKEND_DATA*)seat()->imp()->inputBackendData };
     return data->li;
 }
 
 void LInputBackend::backendSuspend()
 {
-    const LSeat *seat { LCompositor::compositor()->seat() };
-    const BACKEND_DATA *data { (BACKEND_DATA*)seat->imp()->inputBackendData };
+    const BACKEND_DATA *data { (BACKEND_DATA*)seat()->imp()->inputBackendData };
     libinput_suspend(data->li);
 }
 
 void LInputBackend::backendForceUpdate()
 {
-    processInput(0, 0, LCompositor::compositor()->seat());
+    processInput(0, 0, seat());
 }
 
 void LInputBackend::backendSetLeds(UInt32 leds)
 {
-    const LSeat *seat { LCompositor::compositor()->seat() };
-    const BACKEND_DATA *data { (BACKEND_DATA*)seat->imp()->inputBackendData };
+    const BACKEND_DATA *data { (BACKEND_DATA*)seat()->imp()->inputBackendData };
     for (auto device : data->pluggedDevices)
         libinput_device_led_update((libinput_device*)device->m_backendData, (libinput_led)leds);
 }
 
 void LInputBackend::backendResume()
 {
-    const LSeat *seat { LCompositor::compositor()->seat() };
-    const BACKEND_DATA *data { (BACKEND_DATA*)seat->imp()->inputBackendData };
+    const BACKEND_DATA *data { (BACKEND_DATA*)seat()->imp()->inputBackendData };
 
     if (libinput_resume(data->li) == -1)
     {
@@ -569,8 +564,7 @@ void LInputBackend::backendResume()
 
 void LInputBackend::backendUninitialize()
 {
-    LSeat *seat = LCompositor::compositor()->seat();
-    BACKEND_DATA *data = (BACKEND_DATA*)seat->imp()->inputBackendData;
+    BACKEND_DATA *data = (BACKEND_DATA*)seat()->imp()->inputBackendData;
 
     if (!data)
         return;
@@ -601,13 +595,12 @@ void LInputBackend::backendUninitialize()
         udev_unref(data->ud);
 
     delete data;
-    seat->imp()->inputBackendData = nullptr;
+    seat()->imp()->inputBackendData = nullptr;
 }
 
 const std::vector<LInputDevice *> *LInputBackend::backendGetDevices()
 {
-    const LSeat *seat { LCompositor::compositor()->seat() };
-    const BACKEND_DATA *data { (BACKEND_DATA*)seat->imp()->inputBackendData };
+    const BACKEND_DATA *data { (BACKEND_DATA*)seat()->imp()->inputBackendData };
     return &data->pluggedDevices;
 }
 

@@ -27,9 +27,9 @@ void GFractionalScaleManager::GFractionalScaleManagerPrivate::destroy(wl_client 
 void GFractionalScaleManager::GFractionalScaleManagerPrivate::get_fractional_scale(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface)
 {
     L_UNUSED(client);
-    Wayland::RSurface *rSurface = (Wayland::RSurface*)wl_resource_get_user_data(surface);
+    Wayland::RSurface *surfaceRes { static_cast<Wayland::RSurface*>(wl_resource_get_user_data(surface)) };
 
-    if (rSurface->fractionalScaleResource())
+    if (surfaceRes->fractionalScaleRes())
     {
         wl_resource_post_error(resource,
                                WP_FRACTIONAL_SCALE_MANAGER_V1_ERROR_FRACTIONAL_SCALE_EXISTS,
@@ -37,6 +37,6 @@ void GFractionalScaleManager::GFractionalScaleManagerPrivate::get_fractional_sca
         return;
     }
 
-    new RFractionalScale(rSurface, id, wl_resource_get_version(resource));
+    new RFractionalScale(surfaceRes, id, wl_resource_get_version(resource));
 }
 

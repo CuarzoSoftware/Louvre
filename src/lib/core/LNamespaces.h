@@ -126,7 +126,7 @@ static inline void LVectorRemoveAllUnordered(std::vector<T>& vec, T val)
 }
 
 /**
- * @namespace Louvre
+ * @ingroup g_touch_events
  * @brief Namespaces
  * @page Namespaces
  */
@@ -214,6 +214,7 @@ namespace Louvre
     class LKeyboardKeyEvent;
     class LKeyboardModifiersEvent;
 
+
     class LTouchEvent;
     class LTouchDownEvent;
     class LTouchMoveEvent;
@@ -234,6 +235,7 @@ namespace Louvre
     class LTimer;
     class LLauncher;
     class LGammaTable;
+    class LWeakUtils;
     template <class T> class LWeak;
     template <class TA, class TB> class LPointTemplate;
     template <class TA, class TB> class LRectTemplate;
@@ -327,7 +329,6 @@ namespace Louvre
     };
 
     /**
-     * @cond OMIT
      * @brief Structure representing DMA format and modifier.
      *
      * The LDMAFormat struct contains information about DMA format and modifier.
@@ -342,8 +343,6 @@ namespace Louvre
         /// The modifier value specifying the memory layout.
         UInt64 modifier;
     };
-
-    /// @endcond
 
     /**
      * @brief Direct Memory Access (DMA) planes.
@@ -482,12 +481,7 @@ namespace Louvre
         UInt32 build; ///< Build number.
     };
 
-    class PrivateUtils
-    {
-    public:
-        static std::vector<void *> &getObjectData(const LObject *object) noexcept;
-        static bool isObjectDestroyed(const LObject *object) noexcept;
-    };
+    /// @cond OMIT
 
     namespace Protocols
     {
@@ -588,7 +582,38 @@ namespace Louvre
         };
     }
 
-    inline const std::string getenvString(const char *env)
+    /// @endcond
+
+    /**
+     * @brief Get the static LCompositor instance.
+     *
+     * This method provides access to the single LCompositor instance that can exist per process.\n
+     * You can also access it from any Louvre object with `object->compositor()`.
+     *
+     * @return A pointer to the LCompositor instance.
+     */
+    LCompositor *compositor() noexcept;
+
+    /**
+     * @brief Gets the compositor cursor.
+     *
+     * This method must be accessed within or after the initialized() or cursorInitialized() events.
+     * If the cursor has not yet been initialized, this method returns `nullptr`.
+     *
+     * @return A pointer to the LCursor instance or `nullptr` if not yet initialized.
+     */
+    LCursor *cursor() noexcept;
+
+    /**
+     * @brief Gets the compositor seat.
+     *
+     * The seat provides access to the LPointer, LKeyboard, LTouch, and LOutput instances.
+     *
+     * @return A pointer to the LSeat instance.
+     */
+    LSeat *seat() noexcept;
+
+    inline const std::string getenvString(const char *env) noexcept
     {
         const char *val { getenv(env) };
 
@@ -597,7 +622,6 @@ namespace Louvre
 
         return std::string();
     }
-    /// @endcond
 };
 
 #endif // LNAMESPACES_H
