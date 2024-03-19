@@ -3,16 +3,21 @@
 
 #include <LResource.h>
 
-class Louvre::Protocols::Wayland::RCallback : public LResource
+class Louvre::Protocols::Wayland::RCallback final : public LResource
 {
 public:
-    RCallback(wl_client *client, UInt32 id, std::vector<RCallback*> *vec);
-    ~RCallback();
 
-    bool commited = false;
-    bool done(UInt32 data);
+    /******************** EVENTS ********************/
 
-    LPRIVATE_IMP_UNIQUE(RCallback)
+    bool done(UInt32 data) noexcept;
+
+private:
+    friend class Louvre::LSurface;
+    friend class Louvre::Protocols::Wayland::RSurface;
+    RCallback(wl_client *client, UInt32 id, std::vector<RCallback*> *vector = nullptr) noexcept;
+    ~RCallback() noexcept;
+    std::vector<RCallback*> *m_vector;
+    bool m_commited { false };
 };
 
 #endif // RCALLBACK_H

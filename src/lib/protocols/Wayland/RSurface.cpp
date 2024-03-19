@@ -218,7 +218,7 @@ void RSurface::apply_commit(LSurface *surface, CommitOrigin origin)
     {
         surface->requestedRepaint();
         for (RCallback *callback : imp.frameCallbacks)
-            callback->commited = true;
+            callback->m_commited = true;
     }
 
     /*****************************************

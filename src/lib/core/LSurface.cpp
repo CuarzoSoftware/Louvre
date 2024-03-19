@@ -300,7 +300,7 @@ void LSurface::requestNextFrame(bool clearDamage)
 
     while (!imp()->frameCallbacks.empty())
     {
-        if (!imp()->frameCallbacks.front()->commited)
+        if (!imp()->frameCallbacks.front()->m_commited)
             break;
 
         imp()->frameCallbacks.front()->done(LTime::ms());

@@ -1,4 +1,4 @@
-#include <protocols/Wayland/private/RCallbackPrivate.h>
+#include <protocols/Wayland/RCallback.h>
 
 using namespace Louvre::Protocols::Wayland;
 
@@ -6,8 +6,8 @@ RCallback::RCallback
 (
     wl_client *client,
     UInt32 id,
-    std::vector<RCallback *> *vec
-)
+    std::vector<RCallback *> *vector
+) noexcept
     :LResource
     (
         client,
@@ -16,22 +16,21 @@ RCallback::RCallback
         id,
         NULL
     ),
-    LPRIVATE_INIT_UNIQUE(RCallback)
+    m_vector(vector)
 {
-    if (vec)
-    {
-        imp()->vec = vec;
-        imp()->vec->push_back(this);
-    }
+    if (m_vector)
+        m_vector->push_back(this);
 }
 
-RCallback::~RCallback()
+RCallback::~RCallback() noexcept
 {
-    if (imp()->vec)
-        LVectorRemoveOne(*imp()->vec, this);
+    if (m_vector)
+        LVectorRemoveOne(*m_vector, this);
 }
 
-bool RCallback::done(UInt32 data)
+/******************** EVENTS ********************/
+
+bool RCallback::done(UInt32 data) noexcept
 {
     wl_callback_send_done(resource(), data);
     return true;
