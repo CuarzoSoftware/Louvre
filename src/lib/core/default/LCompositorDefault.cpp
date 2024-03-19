@@ -1,4 +1,3 @@
-#include <protocols/Wayland/private/GSubcompositorPrivate.h>
 #include <protocols/XdgShell/private/GXdgWmBasePrivate.h>
 #include <protocols/XdgDecoration/private/GXdgDecorationManagerPrivate.h>
 #include <protocols/LinuxDMABuf/private/GLinuxDMABufPrivate.h>
@@ -9,9 +8,12 @@
 #include <protocols/TearingControl/private/GTearingControlManagerPrivate.h>
 #include <protocols/RelativePointer/private/GRelativePointerManagerPrivate.h>
 #include <protocols/PointerGestures/private/GPointerGesturesPrivate.h>
+
+#include <protocols/Wayland/GSubcompositor.h>
 #include <protocols/Wayland/GCompositor.h>
 #include <protocols/Wayland/GDataDeviceManager.h>
 #include <protocols/Wayland/GSeat.h>
+
 #include <LCompositor.h>
 #include <LToplevelRole.h>
 #include <LCursor.h>
@@ -33,21 +35,22 @@
 #include <cstring>
 
 using namespace Louvre;
+using namespace Louvre::Protocols;
 
 //! [createGlobalsRequest]
 bool LCompositor::createGlobalsRequest()
 {
     wl_global_create(display(), &wl_compositor_interface,
-                     LOUVRE_WL_COMPOSITOR_VERSION, this, &GCompositor::bind);
+                     LOUVRE_WL_COMPOSITOR_VERSION, this, &Wayland::GCompositor::bind);
 
     wl_global_create(display(), &wl_seat_interface,
-                     LOUVRE_WL_SEAT_VERSION, this, &GSeat::bind);
+                     LOUVRE_WL_SEAT_VERSION, this, &Wayland::GSeat::bind);
 
     wl_global_create(display(), &wl_subcompositor_interface,
-                     LOUVRE_WL_SUBCOMPOSITOR_VERSION, this, &GSubcompositor::GSubcompositorPrivate::bind);
+                     LOUVRE_WL_SUBCOMPOSITOR_VERSION, this, &Wayland::GSubcompositor::bind);
 
     wl_global_create(display(), &wl_data_device_manager_interface,
-                     LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION, this, &GDataDeviceManager::bind);
+                     LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION, this, &Wayland::GDataDeviceManager::bind);
 
     wl_global_create(display(), &xdg_wm_base_interface,
                      LOUVRE_XDG_WM_BASE_VERSION, this, &GXdgWmBase::GXdgWmBasePrivate::bind);

@@ -3,18 +3,22 @@
 
 #include <LResource.h>
 
-class Louvre::Protocols::Wayland::GSubcompositor : public LResource
+class Louvre::Protocols::Wayland::GSubcompositor final : public LResource
 {
 public:
+
+    /******************** REQUESTS ********************/
+
+    static void bind(wl_client *client, void *data, UInt32 version, UInt32 id) noexcept;
+    static void destroy(wl_client *client, wl_resource *resource) noexcept;
+    static void get_subsurface(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface, wl_resource *parent) noexcept;
+
+private:
     GSubcompositor(wl_client *client,
-                   const wl_interface *interface,
                    Int32 version,
-                   UInt32 id,
-                   const void *implementation);
+                   UInt32 id) noexcept;
 
-    ~GSubcompositor();
-
-    LPRIVATE_IMP_UNIQUE(GSubcompositor)
+    ~GSubcompositor() noexcept;
 };
 
 #endif // GSUBCOMPOSITOR_H
