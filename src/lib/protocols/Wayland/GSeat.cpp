@@ -1,10 +1,12 @@
-#include <protocols/Wayland/private/RKeyboardPrivate.h>
-#include <protocols/Wayland/private/RPointerPrivate.h>
-#include <protocols/Wayland/private/RTouchPrivate.h>
+#include <protocols/Wayland/RTouch.h>
+#include <protocols/Wayland/RPointer.h>
+#include <protocols/Wayland/RKeyboard.h>
 #include <protocols/Wayland/GSeat.h>
 #include <private/LClientPrivate.h>
 #include <LCompositor.h>
 #include <LSeat.h>
+
+using namespace Louvre::Protocols::Wayland;
 
 static const struct wl_seat_interface imp
 {
@@ -37,24 +39,6 @@ GSeat::GSeat(
 GSeat::~GSeat() noexcept
 {
     LVectorRemoveOneUnordered(client()->imp()->seatGlobals, this);
-
-    while (!keyboardRes().empty())
-    {
-        keyboardRes().back()->imp()->gSeat = nullptr;
-        m_keyboardRes.pop_back();
-    }
-
-    while (!pointerRes().empty())
-    {
-        pointerRes().back()->imp()->gSeat = nullptr;
-        m_pointerRes.pop_back();
-    }
-
-    while (!touchRes().empty())
-    {
-        touchRes().back()->imp()->gSeat = nullptr;
-        m_touchRes.pop_back();
-    }
 }
 
 /******************** REQUESTS ********************/
@@ -91,10 +75,9 @@ void GSeat::release(wl_client */*client*/, wl_resource *resource) noexcept
 
 /******************** EVENTS ********************/
 
-bool GSeat::capabilities(UInt32 capabilities) noexcept
+void GSeat::capabilities(UInt32 capabilities) noexcept
 {
     wl_seat_send_capabilities(resource(), capabilities);
-    return true;
 }
 
 bool GSeat::name(const char *name) noexcept

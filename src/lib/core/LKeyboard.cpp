@@ -1,4 +1,4 @@
-#include <protocols/Wayland/private/RKeyboardPrivate.h>
+#include <protocols/Wayland/RKeyboard.h>
 #include <protocols/Wayland/RDataDevice.h>
 #include <protocols/Wayland/RDataOffer.h>
 #include <protocols/Wayland/GSeat.h>
@@ -20,6 +20,8 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <cassert>
+
+using namespace Louvre::Protocols::Wayland;
 
 LKeyboard::LKeyboard(const void *params): LPRIVATE_INIT_UNIQUE(LKeyboard)
 {
@@ -271,8 +273,8 @@ void LKeyboard::setFocus(LSurface *surface)
 
         const bool clientChanged { !seat()->clipboard()->m_dataOffer.get() || seat()->clipboard()->m_dataOffer.get()->client() != surface->client()};
 
-        if (clientChanged && seat()->clipboard()->m_dataOffer.get() && seat()->clipboard()->m_dataOffer.get()->dataDeviceResource())
-            seat()->clipboard()->m_dataOffer.get()->dataDeviceResource()->selection(nullptr);
+        if (clientChanged && seat()->clipboard()->m_dataOffer.get() && seat()->clipboard()->m_dataOffer.get()->dataDeviceRes())
+            seat()->clipboard()->m_dataOffer.get()->dataDeviceRes()->selection(nullptr);
 
         imp()->focus.reset();
 
@@ -317,8 +319,8 @@ void LKeyboard::setFocus(LSurface *surface)
                     rKeyboard->leave(leaveEvent, focus()->surfaceResource());
         }
 
-        if (seat()->clipboard()->m_dataOffer.get() && seat()->clipboard()->m_dataOffer.get()->dataDeviceResource())
-            seat()->clipboard()->m_dataOffer.get()->dataDeviceResource()->selection(nullptr);
+        if (seat()->clipboard()->m_dataOffer.get() && seat()->clipboard()->m_dataOffer.get()->dataDeviceRes())
+            seat()->clipboard()->m_dataOffer.get()->dataDeviceRes()->selection(nullptr);
 
         imp()->focus.reset();
     }

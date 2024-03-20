@@ -75,7 +75,7 @@ void GOutput::sendConfiguration() noexcept
     }
 }
 
-bool GOutput::geometry(Int32 x, Int32 y, Int32 physicalWidth, Int32 physicalHeight,
+void GOutput::geometry(Int32 x, Int32 y, Int32 physicalWidth, Int32 physicalHeight,
                        Int32 subpixel, const char *make, const char *model, Int32 transform) noexcept
 {
     wl_output_send_geometry(
@@ -87,10 +87,9 @@ bool GOutput::geometry(Int32 x, Int32 y, Int32 physicalWidth, Int32 physicalHeig
         make,
         model,
         transform);
-    return true;
 }
 
-bool GOutput::mode(UInt32 flags, Int32 width, Int32 height, Int32 refresh) noexcept
+void GOutput::mode(UInt32 flags, Int32 width, Int32 height, Int32 refresh) noexcept
 {
     wl_output_send_mode(
         resource(),
@@ -98,7 +97,6 @@ bool GOutput::mode(UInt32 flags, Int32 width, Int32 height, Int32 refresh) noexc
         width,
         height,
         refresh);
-    return true;
 }
 
 bool GOutput::done() noexcept

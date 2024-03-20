@@ -30,8 +30,7 @@ RCallback::~RCallback() noexcept
 
 /******************** EVENTS ********************/
 
-bool RCallback::done(UInt32 data) noexcept
+void RCallback::done(UInt32 data) noexcept
 {
     wl_callback_send_done(resource(), data);
-    return true;
 }

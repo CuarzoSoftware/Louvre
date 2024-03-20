@@ -1,4 +1,4 @@
-#include <protocols/Wayland/private/RKeyboardPrivate.h>
+#include <protocols/Wayland/RKeyboard.h>
 #include <protocols/Wayland/GSeat.h>
 #include <private/LKeyboardPrivate.h>
 #include <private/LClientPrivate.h>
@@ -6,79 +6,81 @@
 #include <LSeat.h>
 #include <LTime.h>
 
-using namespace Louvre;
+using namespace Louvre::Protocols::Wayland;
 
-static struct wl_keyboard_interface keyboard_implementation =
+static const  struct wl_keyboard_interface imp
 {
 #if LOUVRE_WL_SEAT_VERSION >= 3
-    .release = &RKeyboard::RKeyboardPrivate::release
+    .release = &RKeyboard::release
 #endif
 };
 
 RKeyboard::RKeyboard
 (
-    GSeat *gSeat,
+    GSeat *seatRes,
     Int32 id
-)
+) noexcept
     :LResource
     (
-        gSeat->client(),
+        seatRes->client(),
         &wl_keyboard_interface,
-        gSeat->version(),
+        seatRes->version(),
         id,
-        &keyboard_implementation
+        &imp
     ),
-    LPRIVATE_INIT_UNIQUE(RKeyboard)
+    m_seatRes(seatRes)
 {
-    imp()->gSeat = gSeat;
-    const LKeyboard *lKeyboard { seat()->keyboard() };
-    repeatInfo(lKeyboard->repeatRate(), lKeyboard->repeatDelay());
-    keymap(lKeyboard->keymapFormat(), lKeyboard->keymapFd(), lKeyboard->keymapSize());
-    gSeat->m_keyboardRes.emplace_back(this);
+    repeatInfo(seat()->keyboard()->repeatRate(), seat()->keyboard()->repeatDelay());
+    keymap(seat()->keyboard()->keymapFormat(), seat()->keyboard()->keymapFd(), seat()->keyboard()->keymapSize());
+    seatRes->m_keyboardRes.emplace_back(this);
 }
 
-RKeyboard::~RKeyboard()
+RKeyboard::~RKeyboard() noexcept
 {
-    if (seatGlobal())
-        LVectorRemoveOneUnordered(seatGlobal()->m_keyboardRes, this);
+    if (seatRes())
+        LVectorRemoveOneUnordered(seatRes()->m_keyboardRes, this);
 }
 
-GSeat *RKeyboard::seatGlobal() const
-{
-    return imp()->gSeat;
-}
+/******************** REQUESTS********************/
 
-bool RKeyboard::keymap(UInt32 format, Int32 fd, UInt32 size)
+#if LOUVRE_WL_SEAT_VERSION >= 3
+void RKeyboard::release(wl_client */*client*/, wl_resource *resource) noexcept
+{
+    wl_resource_destroy(resource);
+}
+#endif
+
+/******************** EVENTS ********************/
+
+
+void RKeyboard::keymap(UInt32 format, Int32 fd, UInt32 size) noexcept
 {
     wl_keyboard_send_keymap(resource(), format, fd, size);
-    return true;
 }
 
-bool RKeyboard::enter(const LKeyboardEnterEvent &event, RSurface *rSurface, wl_array *keys)
+void RKeyboard::enter(const LKeyboardEnterEvent &event, RSurface *surfaceRes, wl_array *keys) noexcept
 {
-    auto &clientEvent = client()->imp()->events.keyboard.enter;
+    auto &clientEvent { client()->imp()->events.keyboard.enter };
 
     if (clientEvent.serial() != event.serial())
         clientEvent = event;
 
-    wl_keyboard_send_enter(resource(), event.serial(), rSurface->resource(), keys);
-    return true;
+    wl_keyboard_send_enter(resource(), event.serial(), surfaceRes->resource(), keys);
 }
 
-bool RKeyboard::leave(const LKeyboardLeaveEvent &event, RSurface *rSurface)
+void RKeyboard::leave(const LKeyboardLeaveEvent &event, RSurface *surfaceRes) noexcept
 {
-    auto &clientEvent = client()->imp()->events.keyboard.leave;
+    auto &clientEvent { client()->imp()->events.keyboard.leave };
 
     if (clientEvent.serial() != event.serial())
         clientEvent = event;
 
-    wl_keyboard_send_leave(resource(), event.serial(), rSurface->resource());
-    return true;
+    wl_keyboard_send_leave(resource(), event.serial(), surfaceRes->resource());
 }
 
-bool RKeyboard::key(const LKeyboardKeyEvent &event)
+void RKeyboard::key(const LKeyboardKeyEvent &event) noexcept
 {
-    auto &clientEvents = client()->imp()->events.keyboard;
+    auto &clientEvents { client()->imp()->events.keyboard };
 
     if (clientEvents.key[clientEvents.keyIndex].serial() != event.serial())
     {
@@ -91,12 +93,11 @@ bool RKeyboard::key(const LKeyboardKeyEvent &event)
     }
 
     wl_keyboard_send_key(resource(), event.serial(), event.ms(), event.keyCode(), event.state());
-    return true;
 }
 
-bool RKeyboard::modifiers(const LKeyboardModifiersEvent &event)
+void RKeyboard::modifiers(const LKeyboardModifiersEvent &event) noexcept
 {
-    auto &clientEvent = client()->imp()->events.keyboard.modifiers;
+    auto &clientEvent { client()->imp()->events.keyboard.modifiers };
 
     if (clientEvent.serial() != event.serial())
         clientEvent = event;
@@ -107,10 +108,9 @@ bool RKeyboard::modifiers(const LKeyboardModifiersEvent &event)
                                event.modifiers().latched,
                                event.modifiers().locked,
                                event.modifiers().group);
-    return true;
 }
 
-bool RKeyboard::repeatInfo(Int32 rate, Int32 delay)
+bool RKeyboard::repeatInfo(Int32 rate, Int32 delay) noexcept
 {
 #if LOUVRE_WL_SEAT_VERSION >= 4
     if (version() >= 4)

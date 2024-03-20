@@ -40,7 +40,7 @@ public:
     /******************** EVENTS ********************/
 
     // Since 1
-    bool capabilities(UInt32 capabilities) noexcept;
+    void capabilities(UInt32 capabilities) noexcept;
 
     // Since 2
     bool name(const char *name) noexcept;

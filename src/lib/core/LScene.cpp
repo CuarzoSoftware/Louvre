@@ -144,10 +144,16 @@ void LScene::handlePointerMoveEvent(const LPointerMoveEvent &event, EventOptions
 
     const bool activeDND { seat()->dnd()->dragging() && seat()->dnd()->triggeringEvent().type() != LEvent::Type::Touch };
 
-    if (seat()->dnd()->icon())
+    if (activeDND)
     {
-        seat()->dnd()->icon()->surface()->setPos(cursor()->pos());
-        seat()->dnd()->icon()->surface()->repaintOutputs();
+        if (seat()->dnd()->icon())
+        {
+            seat()->dnd()->icon()->surface()->setPos(cursor()->pos());
+            seat()->dnd()->icon()->surface()->repaintOutputs();
+        }
+
+        seat()->pointer()->setDraggingSurface(nullptr);
+        seat()->pointer()->setFocus(nullptr);
     }
 
     bool activeResizing { false };
@@ -181,9 +187,6 @@ void LScene::handlePointerMoveEvent(const LPointerMoveEvent &event, EventOptions
 
     if (activeMoving)
         return;
-
-    if (activeDND)
-        seat()->pointer()->setDraggingSurface(nullptr);
 
     // If a surface has the left pointer button held down
     if (seat()->pointer()->draggingSurface())
@@ -265,17 +268,21 @@ retry:
     if (!(options & WaylandEvents))
         return;
 
-    const bool activeDND { seat()->dnd()->dragging() && seat()->dnd()->triggeringEvent().type() != LEvent::Type::Touch };
     LPointer &pointer { *seat()->pointer() };
     LKeyboard &keyboard { *seat()->keyboard() };
     LDND &dnd{ *seat()->dnd() };
 
-    if (activeDND && event.state() == LPointerButtonEvent::Released && event.button() == LPointerButtonEvent::Left)
+    const bool activeDND { dnd.dragging() && dnd.triggeringEvent().type() != LEvent::Type::Touch };
+
+    if (activeDND)
     {
-        dnd.drop();
+        if (event.state() == LPointerButtonEvent::Released && event.button() == LPointerButtonEvent::Left)
+            dnd.drop();
+
         keyboard.setFocus(nullptr);
         pointer.setFocus(nullptr);
         pointer.setDraggingSurface(nullptr);
+        return;
     }
 
     if (!pointer.focus())

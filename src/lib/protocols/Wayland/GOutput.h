@@ -25,11 +25,11 @@ public:
     void sendConfiguration() noexcept;
 
     // Since 1
-    bool geometry(Int32 x, Int32 y,
+    void geometry(Int32 x, Int32 y,
                   Int32 physicalWidth, Int32 physicalHeight,
                   Int32 subpixel, const char *make,
                   const char *model, Int32 transform) noexcept;
-    bool mode(UInt32 flags, Int32 width, Int32 height, Int32 refresh) noexcept;
+    void mode(UInt32 flags, Int32 width, Int32 height, Int32 refresh) noexcept;
 
     // Since 2
     bool done() noexcept;

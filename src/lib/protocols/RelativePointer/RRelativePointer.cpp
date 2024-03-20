@@ -1,6 +1,6 @@
 #include <protocols/RelativePointer/private/RRelativePointerPrivate.h>
-#include <protocols/Wayland/private/RPointerPrivate.h>
 #include <protocols/RelativePointer/relative-pointer-unstable-v1.h>
+#include <protocols/Wayland/RPointer.h>
 #include <LPointerMoveEvent.h>
 
 static struct zwp_relative_pointer_v1_interface zwp_relative_pointer_v1_implementation =
@@ -18,13 +18,13 @@ RRelativePointer::RRelativePointer(Wayland::RPointer *rPointer, Int32 id, UInt32
     LPRIVATE_INIT_UNIQUE(RRelativePointer)
 {
     imp()->rPointer = rPointer;
-    rPointer->imp()->relativePointerResources.push_back(this);
+    rPointer->m_relativePointerRes.emplace_back(this);
 }
 
 RRelativePointer::~RRelativePointer()
 {
     if (pointerResource())
-        LVectorRemoveOneUnordered(pointerResource()->imp()->relativePointerResources, this);
+        LVectorRemoveOneUnordered(pointerResource()->m_relativePointerRes, this);
 }
 
 RPointer *RRelativePointer::pointerResource() const

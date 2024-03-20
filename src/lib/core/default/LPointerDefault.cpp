@@ -30,10 +30,18 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
 
     const bool activeDND { seat()->dnd()->dragging() && seat()->dnd()->triggeringEvent().type() != LEvent::Type::Touch };
 
-    if (seat()->dnd()->icon() && activeDND)
+    if (activeDND)
     {
-        seat()->dnd()->icon()->surface()->setPos(cursor()->pos());
-        seat()->dnd()->icon()->surface()->repaintOutputs();
+        if (seat()->dnd()->icon())
+        {
+            seat()->dnd()->icon()->surface()->setPos(cursor()->pos());
+            seat()->dnd()->icon()->surface()->repaintOutputs();
+            cursor()->setCursor(seat()->dnd()->icon()->surface()->client()->lastCursorRequest());
+        }
+
+        seat()->keyboard()->setFocus(nullptr);
+        setDraggingSurface(nullptr);
+        setFocus(nullptr);
     }
 
     bool activeResizing { false };
@@ -119,12 +127,14 @@ void LPointer::pointerButtonEvent(const LPointerButtonEvent &event)
 {
     const bool activeDND { seat()->dnd()->dragging() && seat()->dnd()->triggeringEvent().type() != LEvent::Type::Touch };
 
-    if (activeDND && event.state() == LPointerButtonEvent::Released && event.button() == LPointerButtonEvent::Left)
+    if (activeDND)
     {
-        seat()->dnd()->drop();
+        if (event.state() == LPointerButtonEvent::Released && event.button() == LPointerButtonEvent::Left)
+            seat()->dnd()->drop();
         seat()->keyboard()->setFocus(nullptr);
         setFocus(nullptr);
         setDraggingSurface(nullptr);
+        return;
     }
 
     if (!focus())

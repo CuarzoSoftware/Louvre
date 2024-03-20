@@ -1,131 +1,168 @@
-#include <protocols/Wayland/private/RPointerPrivate.h>
 #include <protocols/RelativePointer/private/RRelativePointerPrivate.h>
 #include <protocols/PointerGestures/private/RGestureSwipePrivate.h>
 #include <protocols/PointerGestures/private/RGesturePinchPrivate.h>
 #include <protocols/PointerGestures/private/RGestureHoldPrivate.h>
+#include <protocols/Wayland/RPointer.h>
 #include <protocols/Wayland/GSeat.h>
+#include <private/LCursorRolePrivate.h>
 #include <private/LClientPrivate.h>
+#include <private/LSurfacePrivate.h>
+#include <LCursor.h>
+#include <LLog.h>
 
-static struct wl_pointer_interface pointer_implementation =
+using namespace Louvre::Protocols::Wayland;
+
+static const struct wl_pointer_interface imp
 {
-    .set_cursor = &RPointer::RPointerPrivate::set_cursor,
+    .set_cursor = &RPointer::set_cursor,
 #if LOUVRE_WL_SEAT_VERSION >= 3
-    .release = &RPointer::RPointerPrivate::release
+    .release = &RPointer::release
 #endif
 };
 
 RPointer::RPointer
 (
-    GSeat *gSeat,
+    GSeat *seatRes,
     Int32 id
-)
+) noexcept
     :LResource
     (
-        gSeat->client(),
+        seatRes->client(),
         &wl_pointer_interface,
-        gSeat->version(),
+        seatRes->version(),
         id,
-        &pointer_implementation
+        &imp
     ),
-    LPRIVATE_INIT_UNIQUE(RPointer)
+    m_seatRes(seatRes)
 {
-    imp()->gSeat = gSeat;
-    gSeat->m_pointerRes.emplace_back(this);
+    seatRes->m_pointerRes.emplace_back(this);
 }
 
-RPointer::~RPointer()
+RPointer::~RPointer() noexcept
 {
-    if (seatGlobal())
-        LVectorRemoveOneUnordered(seatGlobal()->m_pointerRes, this);
+    if (seatRes())
+        LVectorRemoveOneUnordered(seatRes()->m_pointerRes, this);
 
-    while (!relativePointerResources().empty())
+    while (!relativePointerRes().empty())
     {
-        imp()->relativePointerResources.back()->imp()->rPointer = nullptr;
-        imp()->relativePointerResources.pop_back();
+        m_relativePointerRes.back()->imp()->rPointer = nullptr;
+        m_relativePointerRes.pop_back();
     }
 
-    while (!gestureSwipeResources().empty())
+    while (!gestureSwipeRes().empty())
     {
-        imp()->gestureSwipeResources.back()->imp()->rPointer = nullptr;
-        imp()->gestureSwipeResources.pop_back();
+        m_gestureSwipeRes.back()->imp()->rPointer = nullptr;
+        m_gestureSwipeRes.pop_back();
     }
 
-    while (!gesturePinchResources().empty())
+    while (!gesturePinchRes().empty())
     {
-        imp()->gesturePinchResources.back()->imp()->rPointer = nullptr;
-        imp()->gesturePinchResources.pop_back();
+        m_gesturePinchRes.back()->imp()->rPointer = nullptr;
+        m_gesturePinchRes.pop_back();
     }
 
-    while (!gestureHoldResources().empty())
+    while (!gestureHoldRes().empty())
     {
-        imp()->gestureHoldResources.back()->imp()->rPointer = nullptr;
-        imp()->gestureHoldResources.pop_back();
+        m_gestureHoldRes.back()->imp()->rPointer = nullptr;
+        m_gestureHoldRes.pop_back();
     }
 }
 
-GSeat *RPointer::seatGlobal() const
+/******************** REQUESTS ********************/
+
+void RPointer::set_cursor(wl_client */*client*/, wl_resource *resource, UInt32 serial, wl_resource *wlSurface, Int32 hotspot_x, Int32 hotspot_y)
 {
-    return imp()->gSeat;
+    const RPointer &pointerRes { *static_cast<RPointer*>(wl_resource_get_user_data(resource)) };
+    const LClient &client { *pointerRes.client() };
+
+    if (client.events().pointer.enter.serial() != serial)
+    {
+        LLog::warning("[RPointer::RPointerPrivate::set_cursor] Set cursor request without valid pointer enter event serial. Ignoring it.");
+        return;
+    }
+
+    if (wlSurface)
+    {
+        const RSurface *surfaceRes { static_cast<RSurface*>(wl_resource_get_user_data(wlSurface)) };
+        LSurface &surface { *surfaceRes->surface() };
+
+        if (surface.imp()->pending.role || (surface.roleId() != LSurface::Role::Undefined && surface.roleId() != LSurface::Role::Cursor))
+        {
+            wl_resource_post_error(resource, WL_POINTER_ERROR_ROLE, "Given wl_surface has another role.");
+            return;
+        }
+
+        LCursorRole::Params cursorRoleParams { &surface };
+        LCursorRole *cursorRole { compositor()->createCursorRoleRequest(&cursorRoleParams) };
+        cursorRole->imp()->currentHotspot.setX(hotspot_x);
+        cursorRole->imp()->currentHotspot.setY(hotspot_y);
+        cursorRole->imp()->currentHotspotB = cursorRole->imp()->currentHotspot * surface.bufferScale();
+        surface.imp()->setPendingRole(cursorRole);
+        surface.imp()->applyPendingRole();
+
+        if (&client.imp()->lastCursorRequest == cursor()->clientCursor())
+            cursor()->useDefault();
+
+        client.imp()->lastCursorRequest.m_role.reset(cursorRole);
+        client.imp()->lastCursorRequest.m_triggeringEvent = client.events().pointer.enter;
+        client.imp()->lastCursorRequest.m_visible = true;
+        seat()->pointer()->setCursorRequest(client.imp()->lastCursorRequest);
+        return;
+    }
+
+    if (&client.imp()->lastCursorRequest == cursor()->clientCursor())
+        cursor()->useDefault();
+
+    client.imp()->lastCursorRequest.m_role.reset();
+    client.imp()->lastCursorRequest.m_triggeringEvent = client.events().pointer.enter;
+    client.imp()->lastCursorRequest.m_visible = false;
+    seat()->pointer()->setCursorRequest(client.imp()->lastCursorRequest);
 }
 
-const std::vector<RelativePointer::RRelativePointer *> &RPointer::relativePointerResources() const
+#if LOUVRE_WL_SEAT_VERSION >= 3
+void RPointer::release(wl_client */*client*/, wl_resource *resource) noexcept
 {
-    return imp()->relativePointerResources;
+    wl_resource_destroy(resource);
 }
+#endif
 
-const std::vector<PointerGestures::RGestureSwipe *> &RPointer::gestureSwipeResources() const
-{
-    return imp()->gestureSwipeResources;
-}
+/******************** EVENTS ********************/
 
-const std::vector<PointerGestures::RGesturePinch *> &RPointer::gesturePinchResources() const
+void RPointer::enter(const LPointerEnterEvent &event, RSurface *surfaceRes) noexcept
 {
-    return imp()->gesturePinchResources;
-}
-
-const std::vector<PointerGestures::RGestureHold *> &RPointer::gestureHoldResources() const
-{
-    return imp()->gestureHoldResources;
-}
-
-bool RPointer::enter(const LPointerEnterEvent &event, RSurface *rSurface)
-{
-    auto &clientEvent = client()->imp()->events.pointer.enter;
+    auto &clientEvent { client()->imp()->events.pointer.enter };
 
     if (clientEvent.serial() != event.serial())
         clientEvent = event;
 
     wl_pointer_send_enter(resource(),
                           event.serial(),
-                          rSurface->resource(),
+                          surfaceRes->resource(),
                           wl_fixed_from_double(event.localPos.x()),
                           wl_fixed_from_double(event.localPos.y()));
-    return true;
 }
 
-bool RPointer::leave(const LPointerLeaveEvent &event, RSurface *rSurface)
+void RPointer::leave(const LPointerLeaveEvent &event, RSurface *surfaceRes) noexcept
 {
-    auto &clientEvent = client()->imp()->events.pointer.leave;
+    auto &clientEvent { client()->imp()->events.pointer.leave };
 
     if (clientEvent.serial() != event.serial())
         clientEvent = event;
 
-    wl_pointer_send_leave(resource(), event.serial(), rSurface->resource());
-    return true;
+    wl_pointer_send_leave(resource(), event.serial(), surfaceRes->resource());
 }
 
-bool RPointer::motion(const LPointerMoveEvent &event)
+void RPointer::motion(const LPointerMoveEvent &event) noexcept
 {
     wl_pointer_send_motion(resource(),
                            event.ms(),
                            wl_fixed_from_double(event.localPos.x()),
                            wl_fixed_from_double(event.localPos.y()));
-    return true;
 }
 
-bool RPointer::button(const LPointerButtonEvent &event)
+void RPointer::button(const LPointerButtonEvent &event) noexcept
 {
-    auto &clientEvents = client()->imp()->events.pointer;
+    auto &clientEvents { client()->imp()->events.pointer };
 
     if (clientEvents.button[clientEvents.buttonIndex].serial() != event.serial())
     {
@@ -138,16 +175,14 @@ bool RPointer::button(const LPointerButtonEvent &event)
     }
 
     wl_pointer_send_button(resource(), event.serial(), event.ms(), event.button(), event.state());
-    return true;
 }
 
-bool RPointer::axis(UInt32 time, UInt32 axis, Float24 value)
+void RPointer::axis(UInt32 time, UInt32 axis, Float24 value) noexcept
 {
     wl_pointer_send_axis(resource(), time, axis, value);
-    return true;
 }
 
-bool RPointer::frame()
+bool RPointer::frame() noexcept
 {
 #if LOUVRE_WL_SEAT_VERSION >= 5
     if (version() >= 5)
@@ -159,7 +194,7 @@ bool RPointer::frame()
     return false;
 }
 
-bool RPointer::axisSource(UInt32 axisSource)
+bool RPointer::axisSource(UInt32 axisSource) noexcept
 {
 #if LOUVRE_WL_SEAT_VERSION >= 5
     if (version() >= 5)
@@ -172,7 +207,7 @@ bool RPointer::axisSource(UInt32 axisSource)
     return false;
 }
 
-bool RPointer::axisStop(UInt32 time, UInt32 axis)
+bool RPointer::axisStop(UInt32 time, UInt32 axis) noexcept
 {
 #if LOUVRE_WL_SEAT_VERSION >= 5
     if (version() >= 5)
@@ -186,7 +221,7 @@ bool RPointer::axisStop(UInt32 time, UInt32 axis)
     return false;
 }
 
-bool RPointer::axisDiscrete(UInt32 axis, Int32 discrete)
+bool RPointer::axisDiscrete(UInt32 axis, Int32 discrete) noexcept
 {
 #if LOUVRE_WL_SEAT_VERSION >= 5
     if (version() >= 5)
@@ -200,7 +235,7 @@ bool RPointer::axisDiscrete(UInt32 axis, Int32 discrete)
     return false;
 }
 
-bool RPointer::axisValue120(UInt32 axis, Int32 value120)
+bool RPointer::axisValue120(UInt32 axis, Int32 value120) noexcept
 {
 #if LOUVRE_WL_SEAT_VERSION >= 8
     if (version() >= 8)
@@ -214,7 +249,7 @@ bool RPointer::axisValue120(UInt32 axis, Int32 value120)
     return false;
 }
 
-bool RPointer::axisRelativeDirection(UInt32 axis, UInt32 direction)
+bool RPointer::axisRelativeDirection(UInt32 axis, UInt32 direction) noexcept
 {
 #if LOUVRE_WL_SEAT_VERSION >= 9
     if (version() >= 9)

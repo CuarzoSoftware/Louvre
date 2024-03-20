@@ -1,8 +1,8 @@
-#include <protocols/Wayland/private/RDataOfferPrivate.h>
-#include <protocols/Wayland/private/RDataDevicePrivate.h>
 #include <protocols/Wayland/GSeat.h>
 #include <protocols/Wayland/RDataDevice.h>
 #include <protocols/Wayland/RDataSource.h>
+#include <protocols/Wayland/RDataDevice.h>
+#include <protocols/Wayland/RDataOffer.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <LDNDIconRole.h>
@@ -73,9 +73,9 @@ void LDND::setFocus(LSurface *surface, const LPointF &localPos) noexcept
     if (m_session->source.get())
     {
         m_session->offer.reset(m_session->dstDataDevice.get()->createOffer(RDataSource::DND));
-        m_session->offer.get()->imp()->dndSession = m_session;
+        m_session->offer.get()->m_dndSession = m_session;
 
-        m_session->dstDataDevice.get()->imp()->serials.enter = serial;
+        m_session->dstDataDevice.get()->m_enterSerial = serial;
         m_session->dstDataDevice.get()->enter(
             serial,
             surface->surfaceResource(),
@@ -89,7 +89,7 @@ void LDND::setFocus(LSurface *surface, const LPointF &localPos) noexcept
      * initiated the drag and the client is expected to handle the data passing internally */
     else
     {
-        m_session->dstDataDevice.get()->imp()->serials.enter = serial;
+        m_session->dstDataDevice.get()->m_enterSerial = serial;
         m_session->dstDataDevice.get()->enter(
             serial,
             focus()->surfaceResource(),
@@ -230,7 +230,7 @@ void LDND::sendLeaveEvent() noexcept
 
     if (m_session->offer.get())
     {
-        m_session->offer.get()->imp()->dndSession.reset();
+        m_session->offer.get()->m_dndSession.reset();
         m_session->offer.reset();
     }
 }

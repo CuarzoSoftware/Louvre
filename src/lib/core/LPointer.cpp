@@ -1,4 +1,4 @@
-#include <protocols/Wayland/private/RPointerPrivate.h>
+#include <protocols/Wayland/RPointer.h>
 #include <protocols/Wayland/GSeat.h>
 #include <protocols/RelativePointer/RRelativePointer.h>
 #include <protocols/PointerGestures/RGestureSwipe.h>
@@ -99,7 +99,7 @@ void LPointer::sendMoveEvent(const LPointerMoveEvent &event)
             rPointer->motion(event);
             rPointer->frame();
 
-            for (auto rRelativePointer : rPointer->relativePointerResources())
+            for (auto rRelativePointer : rPointer->relativePointerRes())
                 rRelativePointer->relativeMotion(event);
         }
     }
@@ -217,7 +217,7 @@ void LPointer::sendSwipeBeginEvent(const LPointerSwipeBeginEvent &event)
     {
         for (auto rPointer : gSeat->pointerRes())
         {
-            for (auto rGestureSwipe : rPointer->gestureSwipeResources())
+            for (auto rGestureSwipe : rPointer->gestureSwipeRes())
             {
                 imp()->state.add(S::PendingSwipeEndEvent);
                 rGestureSwipe->begin(event, focus()->surfaceResource());
@@ -233,7 +233,7 @@ void LPointer::sendSwipeUpdateEvent(const LPointerSwipeUpdateEvent &event)
 
     for (auto gSeat : focus()->client()->seatGlobals())
         for (auto rPointer : gSeat->pointerRes())
-            for (auto rGestureSwipe :  rPointer->gestureSwipeResources())
+            for (auto rGestureSwipe :  rPointer->gestureSwipeRes())
                 rGestureSwipe->update(event);
 }
 
@@ -246,7 +246,7 @@ void LPointer::sendSwipeEndEvent(const LPointerSwipeEndEvent &event)
 
     for (auto gSeat : focus()->client()->seatGlobals())
         for (auto rPointer : gSeat->pointerRes())
-            for (auto rGestureSwipe :  rPointer->gestureSwipeResources())
+            for (auto rGestureSwipe :  rPointer->gestureSwipeRes())
                 rGestureSwipe->end(event);
 }
 
@@ -259,7 +259,7 @@ void LPointer::sendPinchBeginEvent(const LPointerPinchBeginEvent &event)
     {
         for (auto rPointer : gSeat->pointerRes())
         {
-            for (auto rGesturePinch : rPointer->gesturePinchResources())
+            for (auto rGesturePinch : rPointer->gesturePinchRes())
             {
                 imp()->state.add(S::PendingPinchEndEvent);
                 rGesturePinch->begin(event, focus()->surfaceResource());
@@ -275,7 +275,7 @@ void LPointer::sendPinchUpdateEvent(const LPointerPinchUpdateEvent &event)
 
     for (auto gSeat : focus()->client()->seatGlobals())
         for (auto rPointer : gSeat->pointerRes())
-            for (auto rGesturePinch :  rPointer->gesturePinchResources())
+            for (auto rGesturePinch :  rPointer->gesturePinchRes())
                 rGesturePinch->update(event);
 }
 
@@ -288,7 +288,7 @@ void LPointer::sendPinchEndEvent(const LPointerPinchEndEvent &event)
 
     for (auto gSeat : focus()->client()->seatGlobals())
         for (auto rPointer : gSeat->pointerRes())
-            for (auto rGesturePinch :  rPointer->gesturePinchResources())
+            for (auto rGesturePinch :  rPointer->gesturePinchRes())
                 rGesturePinch->end(event);
 }
 
@@ -301,7 +301,7 @@ void LPointer::sendHoldBeginEvent(const LPointerHoldBeginEvent &event)
     {
         for (auto rPointer : gSeat->pointerRes())
         {
-            for (auto rGestureHold : rPointer->gestureHoldResources())
+            for (auto rGestureHold : rPointer->gestureHoldRes())
             {
                 imp()->state.add(S::PendingHoldEndEvent);
                 rGestureHold->begin(event, focus()->surfaceResource());
@@ -319,7 +319,7 @@ void LPointer::sendHoldEndEvent(const LPointerHoldEndEvent &event)
 
     for (auto gSeat : focus()->client()->seatGlobals())
         for (auto rPointer : gSeat->pointerRes())
-            for (auto rGestureHold : rPointer->gestureHoldResources())
+            for (auto rGestureHold : rPointer->gestureHoldRes())
                 rGestureHold->end(event);
 }
 

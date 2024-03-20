@@ -1,6 +1,6 @@
 #include <protocols/PointerGestures/private/RGestureSwipePrivate.h>
-#include <protocols/Wayland/private/RPointerPrivate.h>
 #include <protocols/PointerGestures/pointer-gestures-unstable-v1.h>
+#include <protocols/Wayland/RPointer.h>
 #include <LPointerSwipeUpdateEvent.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
@@ -20,13 +20,13 @@ RGestureSwipe::RGestureSwipe(Wayland::RPointer *rPointer, Int32 id, UInt32 versi
     LPRIVATE_INIT_UNIQUE(RGestureSwipe)
 {
     imp()->rPointer = rPointer;
-    rPointer->imp()->gestureSwipeResources.push_back(this);
+    rPointer->m_gestureSwipeRes.emplace_back(this);
 }
 
 RGestureSwipe::~RGestureSwipe()
 {
     if (pointerResource())
-        LVectorRemoveOneUnordered(pointerResource()->imp()->gestureSwipeResources, this);
+        LVectorRemoveOneUnordered(pointerResource()->m_gestureSwipeRes, this);
 }
 
 RPointer *RGestureSwipe::pointerResource() const

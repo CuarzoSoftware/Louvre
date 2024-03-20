@@ -20,9 +20,6 @@ public:
         Parent
     };
 
-    RSurface(GCompositor *compositorRes, UInt32 id);
-    ~RSurface();
-
     LSurface *surface() const noexcept
     {
         return m_surface.get();
@@ -75,17 +72,20 @@ public:
     /******************** EVENTS ********************/
 
     // Since 1
-    bool enter(GOutput *outputRes) noexcept;
-    bool leave(GOutput *outputRes) noexcept;
+    void enter(GOutput *outputRes) noexcept;
+    void leave(GOutput *outputRes) noexcept;
 
     // Since 6
     bool preferredBufferScale(Int32 scale) noexcept;
     bool preferredBufferTransform(UInt32 transform) noexcept;
 
 private:
-    friend class Viewporter::RViewport;
-    friend class FractionalScale::RFractionalScale;
-    friend class TearingControl::RTearingControl;
+    friend class Louvre::Protocols::Wayland::GCompositor;
+    friend class Louvre::Protocols::Viewporter::RViewport;
+    friend class Louvre::Protocols::FractionalScale::RFractionalScale;
+    friend class Louvre::Protocols::TearingControl::RTearingControl;
+    RSurface(GCompositor *compositorRes, UInt32 id);
+    ~RSurface();
     std::unique_ptr<LSurface> m_surface;
     LWeak<Viewporter::RViewport> m_viewportRes;
     LWeak<FractionalScale::RFractionalScale> m_fractionalScaleRes;

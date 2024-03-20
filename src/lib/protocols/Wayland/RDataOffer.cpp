@@ -1,5 +1,4 @@
-#include <protocols/Wayland/private/RDataOfferPrivate.h>
-#include <protocols/Wayland/private/RDataDevicePrivate.h>
+#include <protocols/Wayland/RDataOffer.h>
 #include <protocols/Wayland/RDataDevice.h>
 #include <protocols/Wayland/GSeat.h>
 #include <LClient.h>
@@ -8,75 +7,190 @@
 using namespace Louvre;
 using namespace Louvre::Protocols::Wayland;
 
-struct wl_data_offer_interface dataOffer_implementation =
+static const struct wl_data_offer_interface imp
 {
-   .accept = &RDataOffer::RDataOfferPrivate::accept,
-   .receive = &RDataOffer::RDataOfferPrivate::receive,
-   .destroy = &RDataOffer::RDataOfferPrivate::destroy,
+    .accept = &RDataOffer::accept,
+    .receive = &RDataOffer::receive,
+    .destroy = &RDataOffer::destroy,
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
-   .finish = &RDataOffer::RDataOfferPrivate::finish,
-   .set_actions = &RDataOffer::RDataOfferPrivate::set_actions
+    .finish = &RDataOffer::finish,
+    .set_actions = &RDataOffer::set_actions
 #endif
 };
 
 RDataOffer::RDataOffer
 (
-    RDataDevice *rDataDevice,
+    RDataDevice *dataDeviceRes,
     UInt32 id,
     RDataSource::Usage usage
-)
+) noexcept
     :LResource
     (
-        rDataDevice->client(),
+        dataDeviceRes->client(),
         &wl_data_offer_interface,
-        rDataDevice->version(),
+        dataDeviceRes->version(),
         id,
-        &dataOffer_implementation
+        &imp
     ),
-    LPRIVATE_INIT_UNIQUE(RDataOffer)
+    m_dataDeviceRes(dataDeviceRes),
+    m_usage(usage)
+{}
+
+RDataOffer::~RDataOffer() noexcept
 {
-    imp()->rDataDevice.reset(rDataDevice);
-    imp()->usage = usage;
+    if (m_dndSession.get() && m_dndSession.get()->dropped && m_dndSession.get()->source.get())
+        m_dndSession.get()->source.get()->cancelled();
 }
 
-RDataOffer::~RDataOffer()
+/******************** REQUESTS ********************/
+
+void RDataOffer::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {
-    if (imp()->dndSession.get() && imp()->dndSession.get()->dropped && imp()->dndSession.get()->source.get())
-        imp()->dndSession.get()->source.get()->cancelled();
+    wl_resource_destroy(resource);
 }
 
-RDataDevice *RDataOffer::dataDeviceResource() const
+void RDataOffer::accept(wl_client */*client*/, wl_resource *resource, UInt32 /*serial*/, const char *mime_type) noexcept
 {
-    return imp()->rDataDevice.get();
+    auto &dataOfferRes { *static_cast<RDataOffer*>(wl_resource_get_user_data(resource)) };
+    dataOfferRes.m_matchedMimeType = mime_type != NULL;
+
+    if (dataOfferRes.m_dndSession.get() && dataOfferRes.m_dndSession.get()->source.get())
+        dataOfferRes.m_dndSession.get()->source.get()->target(mime_type);
 }
 
-RDataSource::Usage RDataOffer::usage() const noexcept
+#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
+void RDataOffer::finish(wl_client */*client*/, wl_resource *resource) noexcept
 {
-    return imp()->usage;
+    auto &dataOfferRes { *static_cast<RDataOffer*>(wl_resource_get_user_data(resource)) };
+
+    if (dataOfferRes.usage() != RDataSource::DND)
+    {
+        wl_resource_post_error(resource, WL_DATA_OFFER_ERROR_INVALID_FINISH, "Data offer not used for DND.");
+        return;
+    }
+
+    if (dataOfferRes.m_dndSession.get() && dataOfferRes.m_dndSession.get()->source.get())
+        dataOfferRes.m_dndSession.get()->source.get()->dndFinished();
+
+    if (dataOfferRes.dataDeviceRes())
+        dataOfferRes.dataDeviceRes()->leave();
+
+    dataOfferRes.m_dndSession.reset();
+}
+#endif
+
+void RDataOffer::receive(wl_client */*client*/, wl_resource *resource, const char *requestedMimeType, Int32 fd) noexcept
+{
+    auto &dataOfferRes { *static_cast<RDataOffer*>(wl_resource_get_user_data(resource)) };
+
+    if (dataOfferRes.usage() == RDataSource::DND)
+    {
+        if (dataOfferRes.m_dndSession.get() && dataOfferRes.m_dndSession.get()->source.get())
+            dataOfferRes.m_dndSession.get()->source.get()->send(requestedMimeType, fd);
+    }
+    else if (dataOfferRes.usage() == RDataSource::Clipboard)
+    {
+        // Louvre keeps a copy of the source clipboard for each mime type (so we don't ask the source client to write the data)
+        for (const auto &mimeType : seat()->clipboard()->mimeTypes())
+        {
+            if (mimeType.mimeType == requestedMimeType)
+            {
+                if (seat()->clipboard()->m_dataSource.get())
+                {
+                    seat()->clipboard()->m_dataSource.get()->send(requestedMimeType, fd);
+                }
+                else if (mimeType.tmp)
+                {
+                    fseek(mimeType.tmp, 0L, SEEK_END);
+
+                    Int64 total { ftell(mimeType.tmp) };
+
+                    // If pointer is at the beggining means the source client has not written any data
+                    if (total == 0)
+                        break;
+
+                    rewind(mimeType.tmp);
+
+                    Int64 written = 0, readN = 0, toRead = 0, offset = 0;
+                    UChar8 buffer[1024];
+
+                    while (total > 0)
+                    {
+                        if (total < 1024)
+                            toRead = total;
+                        else
+                            toRead = 1024;
+
+                        readN = fread(buffer, sizeof(UChar8), toRead, mimeType.tmp);
+
+                        if (readN != toRead)
+                            break;
+
+                        offset = 0;
+
+                    retryWrite:
+                        written = write(fd, &buffer[offset], readN);
+
+                        if (written > 0)
+                            offset += written;
+                        else if (written == -1)
+                            break;
+                        else if (written == 0)
+                            goto retryWrite;
+
+                        if (offset != readN)
+                            goto retryWrite;
+
+                        total -= readN;
+                    }
+                }
+
+                break;
+            }
+        }
+    }
+
+    close(fd);
 }
 
-UInt32 RDataOffer::actions() const noexcept
+#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
+void RDataOffer::set_actions(wl_client */*client*/, wl_resource *resource, UInt32 dnd_actions, UInt32 preferred_action) noexcept
 {
-    return imp()->actions;
-}
+    auto &dataOfferRes { *static_cast<RDataOffer*>(wl_resource_get_user_data(resource)) };
 
-UInt32 RDataOffer::preferredAction() const noexcept
-{
-    return imp()->preferredAction;
-}
+    if (dataOfferRes.usage() != RDataSource::DND)
+    {
+        wl_resource_post_error(resource, -1, "Data offer not being used for DND.");
+        return;
+    }
 
-bool RDataOffer::matchedMimeType() const noexcept
-{
-    return imp()->matchedMimeType;
-}
+    if (dataOfferRes.actions() == dnd_actions && dataOfferRes.preferredAction() == preferred_action)
+        return;
 
-bool RDataOffer::offer(const char *mimeType)
+    dnd_actions &= LDND::Copy | LDND::Move | LDND::Ask;
+
+    if (preferred_action != LDND::NoAction && preferred_action != LDND::Copy && preferred_action != LDND::Move && preferred_action != LDND::Ask)
+    {
+        wl_resource_post_error(resource, WL_DATA_OFFER_ERROR_INVALID_ACTION, "Invalid preferred_action.");
+        return;
+    }
+
+    dataOfferRes.m_actions = dnd_actions;
+    dataOfferRes.m_preferredAction = preferred_action;
+
+    if (dataOfferRes.m_dndSession.get())
+        dataOfferRes.m_dndSession.get()->updateActions();
+}
+#endif
+
+/******************** EVENTS ********************/
+
+void RDataOffer::offer(const char *mimeType) noexcept
 {
     wl_data_offer_send_offer(resource(), mimeType);
-    return true;
 }
 
-bool RDataOffer::sourceActions(UInt32 sourceActions)
+bool RDataOffer::sourceActions(UInt32 sourceActions) noexcept
 {
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
     if (version() >= 3)
@@ -89,7 +203,7 @@ bool RDataOffer::sourceActions(UInt32 sourceActions)
     return false;
 }
 
-bool RDataOffer::action(UInt32 dndAction)
+bool RDataOffer::action(UInt32 dndAction) noexcept
 {
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
     if (version() >= 3)

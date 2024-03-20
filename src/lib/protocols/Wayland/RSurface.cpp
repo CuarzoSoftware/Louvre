@@ -495,16 +495,14 @@ void RSurface::offset(wl_client */*client*/, wl_resource *resource, Int32 x, Int
 
 /******************** EVENTS ********************/
 
-bool RSurface::enter(GOutput *outputRes) noexcept
+void RSurface::enter(GOutput *outputRes) noexcept
 {
     wl_surface_send_enter(resource(), outputRes->resource());
-    return true;
 }
 
-bool RSurface::leave(GOutput *outputRes) noexcept
+void RSurface::leave(GOutput *outputRes) noexcept
 {
     wl_surface_send_leave(resource(), outputRes->resource());
-    return true;
 }
 
 bool RSurface::preferredBufferScale(Int32 scale) noexcept

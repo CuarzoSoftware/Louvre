@@ -7,9 +7,6 @@
 class Louvre::Protocols::Wayland::RRegion final : public LResource
 {
 public:
-    RRegion(GCompositor *compositorRes, UInt32 id) noexcept;
-    ~RRegion() noexcept = default;
-
     const LRegion &region() const noexcept
     {
         if (!m_subtract.empty())
@@ -28,6 +25,9 @@ public:
     static void subtract(wl_client *client, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height) noexcept;
 
 private:
+    friend class Louvre::Protocols::Wayland::GCompositor;
+    RRegion(GCompositor *compositorRes, UInt32 id) noexcept;
+    ~RRegion() noexcept = default;
     mutable LRegion m_region;
     mutable LRegion m_subtract;
 };

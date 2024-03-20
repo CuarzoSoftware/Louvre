@@ -2,29 +2,39 @@
 #define RTOUCH_H
 
 #include <LResource.h>
-#include <LTouchDownEvent.h>
-#include <LTouchUpEvent.h>
 
 class Louvre::Protocols::Wayland::RTouch : public LResource
 {
 public:
-    RTouch(GSeat *gSeat, Int32 id);
-    ~RTouch();
+    GSeat *seatRes() const noexcept
+    {
+        return m_seatRes.get();
+    }
 
-    GSeat *seatGlobal() const;
+    /******************** REQUESTS ********************/
+
+#if LOUVRE_WL_SEAT_VERSION >= 3
+    static void release(wl_client *client, wl_resource *resource) noexcept;
+#endif
+
+    /******************** EVENTS ********************/
 
     // Since 1
-    bool down(const LTouchDownEvent &event, RSurface *rSurface);
-    bool up(const LTouchUpEvent &event);
-    bool motion(UInt32 time, Int32 id, Float24 x, Float24 y);
-    bool frame();
-    bool cancel();
+    void down(const LTouchDownEvent &event, RSurface *surfaceRes) noexcept;
+    void up(const LTouchUpEvent &event) noexcept;
+    void motion(UInt32 time, Int32 id, Float24 x, Float24 y) noexcept;
+    void frame() noexcept;
+    void cancel() noexcept;
 
     // Since 6
-    bool shape(Int32 id, Float24 major, Float24 minor);
-    bool orientation(Int32 id, Float24 orientation);
+    bool shape(Int32 id, Float24 major, Float24 minor) noexcept;
+    bool orientation(Int32 id, Float24 orientation) noexcept;
 
-    LPRIVATE_IMP_UNIQUE(RTouch)
+private:
+    friend class Louvre::Protocols::Wayland::GSeat;
+    RTouch(GSeat *seatRes, Int32 id) noexcept;
+    ~RTouch() noexcept;
+    LWeak<GSeat> m_seatRes;
 };
 
 #endif // RTOUCH_H

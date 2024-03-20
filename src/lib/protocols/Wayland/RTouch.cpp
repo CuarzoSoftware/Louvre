@@ -1,49 +1,53 @@
-#include <protocols/Wayland/private/RTouchPrivate.h>
+#include <protocols/Wayland/RTouch.h>
 #include <protocols/Wayland/RSurface.h>
 #include <protocols/Wayland/GSeat.h>
 #include <private/LClientPrivate.h>
 #include <algorithm>
 
-static struct wl_touch_interface touch_implementation =
+using namespace Louvre::Protocols::Wayland;
+
+static const struct wl_touch_interface imp
 {
 #if LOUVRE_WL_SEAT_VERSION >= 3
-        .release = &RTouch::RTouchPrivate::release
+    .release = &RTouch::release
 #endif
 };
 
 RTouch::RTouch
     (
-        GSeat *gSeat,
+        GSeat *seatRes,
         Int32 id
-    )
+    ) noexcept
     :LResource
     (
-        gSeat->client(),
+        seatRes->client(),
         &wl_touch_interface,
-        gSeat->version(),
+        seatRes->version(),
         id,
-        &touch_implementation
+        &imp
     ),
-    LPRIVATE_INIT_UNIQUE(RTouch)
+    m_seatRes(seatRes)
 {
-    imp()->gSeat = gSeat;
-    gSeat->m_touchRes.emplace_back(this);
+    seatRes->m_touchRes.emplace_back(this);
 }
 
-RTouch::~RTouch()
+RTouch::~RTouch() noexcept
 {
-    if (seatGlobal())
-        LVectorRemoveOneUnordered(seatGlobal()->m_touchRes, this);
+    if (seatRes())
+        LVectorRemoveOneUnordered(seatRes()->m_touchRes, this);
 }
 
-GSeat *RTouch::seatGlobal() const
+#if LOUVRE_WL_SEAT_VERSION >= 3
+void RTouch::release(wl_client */*client*/, wl_resource *resource) noexcept
 {
-    return imp()->gSeat;
+    wl_resource_destroy(resource);
 }
+#endif
 
-bool RTouch::down(const LTouchDownEvent &event, RSurface *rSurface)
+
+void RTouch::down(const LTouchDownEvent &event, RSurface *surfaceRes) noexcept
 {
-    auto &clientEvents = client()->imp()->events.touch.down;
+    auto &clientEvents { client()->imp()->events.touch.down };
 
     auto it = std::find_if(
         clientEvents.begin(),
@@ -61,16 +65,15 @@ bool RTouch::down(const LTouchDownEvent &event, RSurface *rSurface)
     wl_touch_send_down(resource(),
                        event.serial(),
                        event.ms(),
-                       rSurface->resource(),
+                       surfaceRes->resource(),
                        event.id(),
                        wl_fixed_from_double(event.localPos.x()),
                        wl_fixed_from_double(event.localPos.y()));
-    return true;
 }
 
-bool RTouch::up(const LTouchUpEvent &event)
+void RTouch::up(const LTouchUpEvent &event) noexcept
 {
-    auto &clientEvents = client()->imp()->events.touch.up;
+    auto &clientEvents { client()->imp()->events.touch.up };
 
     auto it = std::find_if(
         clientEvents.begin(),
@@ -86,28 +89,24 @@ bool RTouch::up(const LTouchUpEvent &event)
         *it = event;
 
     wl_touch_send_up(resource(), event.serial(), event.ms(), event.id());
-    return true;
 }
 
-bool RTouch::motion(UInt32 time, Int32 id, Float24 x, Float24 y)
+void RTouch::motion(UInt32 time, Int32 id, Float24 x, Float24 y) noexcept
 {
     wl_touch_send_motion(resource(), time, id, x, y);
-    return true;
 }
 
-bool RTouch::frame()
+void RTouch::frame() noexcept
 {
     wl_touch_send_frame(resource());
-    return true;
 }
 
-bool RTouch::cancel()
+void RTouch::cancel() noexcept
 {
     wl_touch_send_cancel(resource());
-    return true;
 }
 
-bool RTouch::shape(Int32 id, Float24 major, Float24 minor)
+bool RTouch::shape(Int32 id, Float24 major, Float24 minor) noexcept
 {
 #if LOUVRE_WL_SEAT_VERSION >= 6
     if (version() >= 6)
@@ -122,7 +121,7 @@ bool RTouch::shape(Int32 id, Float24 major, Float24 minor)
     return false;
 }
 
-bool RTouch::orientation(Int32 id, Float24 orientation)
+bool RTouch::orientation(Int32 id, Float24 orientation) noexcept
 {
 #if LOUVRE_WL_SEAT_VERSION >= 6
     if (version() >= 6)

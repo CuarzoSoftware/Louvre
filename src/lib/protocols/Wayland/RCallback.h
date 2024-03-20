@@ -9,7 +9,7 @@ public:
 
     /******************** EVENTS ********************/
 
-    bool done(UInt32 data) noexcept;
+    void done(UInt32 data) noexcept;
 
 private:
     friend class Louvre::LSurface;

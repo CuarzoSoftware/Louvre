@@ -1,4 +1,4 @@
-#include <protocols/Wayland/private/RTouchPrivate.h>
+#include <protocols/Wayland/RTouch.h>
 #include <protocols/Wayland/GSeat.h>
 #include <LCompositor.h>
 #include <LTouchMoveEvent.h>

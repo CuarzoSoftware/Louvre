@@ -5,7 +5,7 @@
 #include <LResource.h>
 #include <stdio.h>
 
-class Louvre::Protocols::Wayland::RDataSource : public LResource
+class Louvre::Protocols::Wayland::RDataSource final : public LResource
 {
 public:
 
@@ -16,27 +16,53 @@ public:
         DND
     };
 
-    RDataSource(GDataDeviceManager *gDataDeviceManager, UInt32 id);
-    ~RDataSource();
+    void requestPersistentMimeType(LClipboard::MimeTypeFile &mimeType);
+    Usage usage() const noexcept
+    {
+        return m_usage;
+    }
 
-    void requestPersistentMimeType(LClipboard::MimeTypeFile &mimeType) noexcept;
+    /******************** DND ONLY ********************/
 
-    Usage usage() const noexcept;
+    UInt32 actions() const noexcept
+    {
+        return m_actions;
+    }
 
-    // DND only
-    UInt32 actions() const noexcept;
+    /******************** REQUESTS ********************/
+
+    static void destroy(wl_client *client, wl_resource *resource) noexcept;
+    static void offer(wl_client *client, wl_resource *resource, const char *mime_type);
+#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
+    static void set_actions(wl_client *client, wl_resource *resource, UInt32 dnd_actions) noexcept;
+#endif
+
+    /******************** EVENTS ********************/
 
     // Since 1
-    bool target(const char *mimeType);
-    bool send(const char *mimeType, Int32 fd);
-    bool cancelled();
+    void target(const char *mimeType) noexcept;
+    void send(const char *mimeType, Int32 fd) noexcept;
+    void cancelled() noexcept;
 
     // Since 3
-    bool dndDropPerformed();
-    bool dndFinished();
-    bool action(UInt32 dndAction);
+    bool dndDropPerformed() noexcept;
+    bool dndFinished() noexcept;
+    bool action(UInt32 dndAction) noexcept;
 
-    LPRIVATE_IMP_UNIQUE(RDataSource)
+private:
+    friend class Louvre::Protocols::Wayland::GDataDeviceManager;
+    friend class Louvre::Protocols::Wayland::RDataDevice;
+    friend class Louvre::LClipboard;
+    RDataSource(GDataDeviceManager *dataDeviceManagerRes, UInt32 id) noexcept;
+    ~RDataSource() noexcept;
+
+    Usage m_usage { Undefined };
+    std::vector<LClipboard::MimeTypeFile> m_mimeTypes;
+
+    /******************** DND ONLY ********************/
+
+    UInt32 m_actions { 0 };
+    std::shared_ptr<LDNDSession> m_dndSession;
 };
 
 #endif // RDATASOURCE_H

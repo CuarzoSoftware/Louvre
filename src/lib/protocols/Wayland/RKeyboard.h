@@ -3,25 +3,38 @@
 
 #include <LResource.h>
 
-class Louvre::Protocols::Wayland::RKeyboard : public LResource
+class Louvre::Protocols::Wayland::RKeyboard final : public LResource
 {
 public:
-    RKeyboard(GSeat *gSeat, Int32 id);
-    ~RKeyboard();
 
-    GSeat *seatGlobal() const;
+    GSeat *seatRes() const noexcept
+    {
+        return m_seatRes.get();
+    }
+
+    /******************** REQUESTS ********************/
+
+#if LOUVRE_WL_SEAT_VERSION >= 3
+    static void release(wl_client *client, wl_resource *resource) noexcept;
+#endif
+
+    /******************** EVENTS ********************/
 
     // Since 1
-    bool keymap(UInt32 format, Int32 fd, UInt32 size);
-    bool enter(const LKeyboardEnterEvent &event, RSurface *rSurface, wl_array *keys);
-    bool leave(const LKeyboardLeaveEvent &event, RSurface *rSurface);
-    bool key(const LKeyboardKeyEvent &event);
-    bool modifiers(const LKeyboardModifiersEvent &event);
+    void keymap(UInt32 format, Int32 fd, UInt32 size) noexcept;
+    void enter(const LKeyboardEnterEvent &event, RSurface *surfaceRes, wl_array *keys) noexcept;
+    void leave(const LKeyboardLeaveEvent &event, RSurface *surfaceRes) noexcept;
+    void key(const LKeyboardKeyEvent &event) noexcept;
+    void modifiers(const LKeyboardModifiersEvent &event) noexcept;
 
     // Since 4
-    bool repeatInfo(Int32 rate, Int32 delay);
+    bool repeatInfo(Int32 rate, Int32 delay) noexcept;
 
-    LPRIVATE_IMP_UNIQUE(RKeyboard)
+private:
+    friend class Louvre::Protocols::Wayland::GSeat;
+    RKeyboard(GSeat *seatRes, Int32 id) noexcept;
+    ~RKeyboard() noexcept;
+    LWeak<GSeat> m_seatRes;
 };
 
 #endif // RKEYBOARD_H

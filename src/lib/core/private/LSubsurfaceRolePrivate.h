@@ -20,10 +20,8 @@ LPRIVATE_CLASS(LSubsurfaceRole)
     bool hasPendingLocalPos                                             = true;
 
     // Pending reordering
-    LSurface *pendingPlaceAbove                                         = nullptr;
-    wl_listener pendingPlaceAboveDestroyListener;
-    LSurface *pendingPlaceBelow                                         = nullptr;
-    wl_listener pendingPlaceBelowDestroyListener;
+    LWeak<LSurface> pendingPlaceAbove;
+    LWeak<LSurface> pendingPlaceBelow;
 };
 
 #endif // LSUBSURFACEROLEPRIVATE_H

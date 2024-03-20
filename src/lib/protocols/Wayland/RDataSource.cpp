@@ -1,57 +1,55 @@
-#include <protocols/Wayland/private/RDataSourcePrivate.h>
 #include <protocols/Wayland/GDataDeviceManager.h>
 #include <protocols/Wayland/RDataDevice.h>
 #include <protocols/Wayland/RDataOffer.h>
 #include <private/LCompositorPrivate.h>
+#include <LDNDSession.h>
 #include <LClipboard.h>
-#include <LDND.h>
 #include <LSeat.h>
 
 using namespace Louvre::Protocols::Wayland;
 
-struct wl_data_source_interface dataSource_implementation =
+static const struct wl_data_source_interface imp
 {
-    .offer = &RDataSource::RDataSourcePrivate::offer,
-    .destroy = &RDataSource::RDataSourcePrivate::destroy,
+    .offer = &RDataSource::offer,
+    .destroy = &RDataSource::destroy,
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
-    .set_actions = &RDataSource::RDataSourcePrivate::set_actions,
+    .set_actions = &RDataSource::set_actions,
 #endif
 };
 
 RDataSource::RDataSource
 (
-    GDataDeviceManager *gDataDeviceManager,
+    GDataDeviceManager *dataDeviceManagerRes,
     UInt32 id
-)
+) noexcept
     :LResource
     (
-        gDataDeviceManager->client(),
+        dataDeviceManagerRes->client(),
         &wl_data_source_interface,
-        gDataDeviceManager->version(),
+        dataDeviceManagerRes->version(),
         id,
-        &dataSource_implementation
-    ),
-    LPRIVATE_INIT_UNIQUE(RDataSource)
+        &imp
+    )
 {}
 
-RDataSource::~RDataSource()
+RDataSource::~RDataSource() noexcept
 {
     if (seat()->clipboard()->m_dataSource.get() == this)
     {
         seat()->clipboard()->clear();
 
         // Save persistent MIME types
-        for (auto &mimeType : imp()->mimeTypes)
+        for (auto &mimeType : m_mimeTypes)
             if (mimeType.tmp != NULL)
                 seat()->clipboard()->m_persistentMimeTypes.push_back(mimeType);
 
         // Update current offer
-        if (seat()->clipboard()->m_dataOffer.get() && seat()->clipboard()->m_dataOffer.get()->dataDeviceResource())
-            seat()->clipboard()->m_dataOffer.get()->dataDeviceResource()->createOffer(RDataSource::Clipboard);
+        if (seat()->clipboard()->m_dataOffer.get() && seat()->clipboard()->m_dataOffer.get()->dataDeviceRes())
+            seat()->clipboard()->m_dataOffer.get()->dataDeviceRes()->createOffer(RDataSource::Clipboard);
     }
 }
 
-void RDataSource::requestPersistentMimeType(LClipboard::MimeTypeFile &mimeType) noexcept
+void RDataSource::requestPersistentMimeType(LClipboard::MimeTypeFile &mimeType)
 {
     if (mimeType.tmp != NULL)
         return;
@@ -63,35 +61,68 @@ void RDataSource::requestPersistentMimeType(LClipboard::MimeTypeFile &mimeType) 
     }
 }
 
-RDataSource::Usage RDataSource::usage() const noexcept
+/******************** REQUESTS ********************/
+
+void RDataSource::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {
-    return imp()->usage;
+    wl_resource_destroy(resource);
 }
 
-UInt32 RDataSource::actions() const noexcept
+void RDataSource::offer(wl_client */*client*/, wl_resource *resource, const char *mime_type)
 {
-    return imp()->actions;
+    auto &dataSourceRes { *static_cast<RDataSource*>(wl_resource_get_user_data(resource)) };
+    dataSourceRes.m_mimeTypes.emplace_back(mime_type);
+
+    if (&dataSourceRes == seat()->clipboard()->m_dataSource.get())
+    {
+        dataSourceRes.requestPersistentMimeType(dataSourceRes.m_mimeTypes.back());
+
+        if (seat()->clipboard()->m_dataOffer.get())
+            seat()->clipboard()->m_dataOffer.get()->offer(mime_type);
+    }
 }
 
-bool RDataSource::target(const char *mimeType)
+#if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
+void RDataSource::set_actions(wl_client */*client*/, wl_resource *resource, UInt32 dnd_actions) noexcept
+{
+    auto &dataSourceRes { *static_cast<RDataSource*>(wl_resource_get_user_data(resource)) };
+
+    if (dataSourceRes.usage() == RDataSource::Clipboard)
+    {
+        wl_resource_post_error(resource, WL_DATA_SOURCE_ERROR_INVALID_SOURCE, "Source usage is not DND.");
+        return;
+    }
+
+    dnd_actions &= LDND::Copy | LDND::Move | LDND::Ask;
+
+    if (dataSourceRes.actions() == dnd_actions)
+        return;
+
+    dataSourceRes.m_actions = dnd_actions;
+
+    if (dataSourceRes.m_dndSession.get())
+        dataSourceRes.m_dndSession.get()->updateActions();
+}
+#endif
+
+/******************** EVENTS ********************/
+
+void RDataSource::target(const char *mimeType) noexcept
 {
     wl_data_source_send_target(resource(), mimeType);
-    return true;
 }
 
-bool RDataSource::send(const char *mimeType, Int32 fd)
+void RDataSource::send(const char *mimeType, Int32 fd) noexcept
 {
     wl_data_source_send_send(resource(), mimeType, fd);
-    return true;
 }
 
-bool RDataSource::cancelled()
+void RDataSource::cancelled() noexcept
 {
     wl_data_source_send_cancelled(resource());
-    return true;
 }
 
-bool RDataSource::dndDropPerformed()
+bool RDataSource::dndDropPerformed() noexcept
 {
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
     if (version() >= 3)
@@ -103,7 +134,7 @@ bool RDataSource::dndDropPerformed()
     return false;
 }
 
-bool RDataSource::dndFinished()
+bool RDataSource::dndFinished() noexcept
 {
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
     if (version() >= 3)
@@ -115,7 +146,7 @@ bool RDataSource::dndFinished()
     return false;
 }
 
-bool RDataSource::action(UInt32 dndAction)
+bool RDataSource::action(UInt32 dndAction) noexcept
 {
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
     if (version() >= 3)

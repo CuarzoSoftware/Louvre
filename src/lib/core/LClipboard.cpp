@@ -1,4 +1,4 @@
-#include <protocols/Wayland/private/RDataSourcePrivate.h>
+#include <protocols/Wayland/RDataSource.h>
 #include <LClipboard.h>
 #include <LSeat.h>
 #include <cassert>
@@ -16,7 +16,7 @@ LClipboard::LClipboard(const void *params) noexcept
 const std::vector<LClipboard::MimeTypeFile> &LClipboard::mimeTypes() const noexcept
 {
     if (m_dataSource.get())
-        return m_dataSource.get()->imp()->mimeTypes;
+        return m_dataSource.get()->m_mimeTypes;
 
     return m_persistentMimeTypes;
 }

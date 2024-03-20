@@ -69,28 +69,26 @@ void LSubsurfaceRole::handleParentCommit()
         localPosChanged();
     }
 
-    if (imp()->pendingPlaceAbove)
+    if (imp()->pendingPlaceAbove.get())
     {
-        compositor()->imp()->insertSurfaceAfter(imp()->pendingPlaceAbove, surface());
+        compositor()->imp()->insertSurfaceAfter(imp()->pendingPlaceAbove.get(), surface());
         surface()->parent()->imp()->children.erase(surface()->imp()->parentLink);
         surface()->imp()->parentLink = surface()->parent()->imp()->children.insert(
-            std::next(imp()->pendingPlaceAbove->imp()->parentLink),
+            std::next(imp()->pendingPlaceAbove.get()->imp()->parentLink),
             surface());
-        placedAbove(imp()->pendingPlaceAbove);
-        imp()->pendingPlaceAbove = nullptr;
-        wl_list_remove(&imp()->pendingPlaceAboveDestroyListener.link);
+        placedAbove(imp()->pendingPlaceAbove.get());
+        imp()->pendingPlaceAbove.reset();
     }
 
-    if (imp()->pendingPlaceBelow)
+    if (imp()->pendingPlaceBelow.get())
     {
-        compositor()->imp()->insertSurfaceBefore(imp()->pendingPlaceBelow, surface());
+        compositor()->imp()->insertSurfaceBefore(imp()->pendingPlaceBelow.get(), surface());
         surface()->parent()->imp()->children.erase(surface()->imp()->parentLink);
         surface()->imp()->parentLink = surface()->parent()->imp()->children.insert(
-            imp()->pendingPlaceBelow->imp()->parentLink,
+            imp()->pendingPlaceBelow.get()->imp()->parentLink,
             surface());
-        placedBelow(imp()->pendingPlaceBelow);
-        imp()->pendingPlaceBelow = nullptr;
-        wl_list_remove(&imp()->pendingPlaceBelowDestroyListener.link);
+        placedBelow(imp()->pendingPlaceBelow.get());
+        imp()->pendingPlaceBelow.reset();
     }
 
     if (isSynced() && imp()->hasCache)

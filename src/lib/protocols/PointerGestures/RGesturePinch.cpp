@@ -1,6 +1,6 @@
 #include <protocols/PointerGestures/private/RGesturePinchPrivate.h>
-#include <protocols/Wayland/private/RPointerPrivate.h>
 #include <protocols/PointerGestures/pointer-gestures-unstable-v1.h>
+#include <protocols/Wayland/RPointer.h>
 #include <LPointerPinchUpdateEvent.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
@@ -20,13 +20,13 @@ RGesturePinch::RGesturePinch(Wayland::RPointer *rPointer, Int32 id, UInt32 versi
     LPRIVATE_INIT_UNIQUE(RGesturePinch)
 {
     imp()->rPointer = rPointer;
-    rPointer->imp()->gesturePinchResources.push_back(this);
+    rPointer->m_gesturePinchRes.emplace_back(this);
 }
 
 RGesturePinch::~RGesturePinch()
 {
     if (pointerResource())
-        LVectorRemoveOneUnordered(pointerResource()->imp()->gesturePinchResources, this);
+        LVectorRemoveOneUnordered(pointerResource()->m_gesturePinchRes, this);
 }
 
 RPointer *RGesturePinch::pointerResource() const

@@ -1,6 +1,6 @@
 #include <protocols/PointerGestures/private/RGestureHoldPrivate.h>
-#include <protocols/Wayland/private/RPointerPrivate.h>
 #include <protocols/PointerGestures/pointer-gestures-unstable-v1.h>
+#include <protocols/Wayland/RPointer.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 
@@ -19,13 +19,13 @@ RGestureHold::RGestureHold(Wayland::RPointer *rPointer, Int32 id, UInt32 version
     LPRIVATE_INIT_UNIQUE(RGestureHold)
 {
     imp()->rPointer = rPointer;
-    rPointer->imp()->gestureHoldResources.push_back(this);
+    rPointer->m_gestureHoldRes.emplace_back(this);
 }
 
 RGestureHold::~RGestureHold()
 {
     if (pointerResource())
-        LVectorRemoveOneUnordered(pointerResource()->imp()->gestureHoldResources, this);
+        LVectorRemoveOneUnordered(pointerResource()->m_gestureHoldRes, this);
 }
 
 RPointer *RGestureHold::pointerResource() const
