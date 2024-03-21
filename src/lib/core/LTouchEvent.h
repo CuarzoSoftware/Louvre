@@ -3,14 +3,21 @@
 
 #include <LInputEvent.h>
 
-/// @cond OMIT
+/**
+ * @brief Base class for touch events.
+ *
+ * All touch events share the same LEvent::Type::Touch type.
+ */
 class Louvre::LTouchEvent : public LInputEvent
 {
 protected:
-    inline LTouchEvent(Subtype subtype, UInt32 serial, UInt32 ms, UInt64 us, LInputDevice *device) :
+
+    /// @cond OMIT
+    LTouchEvent(Subtype subtype, UInt32 serial, UInt32 ms, UInt64 us, LInputDevice *device) noexcept :
         LInputEvent(Type::Touch, subtype, serial, ms, us, device)
     {}
+    /// @endcond
+
 };
-/// @endcond
 
 #endif // LTOUCHEVENT_H

@@ -4,12 +4,13 @@
 #include <LTouchDownEvent.h>
 #include <LTouchMoveEvent.h>
 #include <LTouchUpEvent.h>
-#include <LSurface.h>
+#include <LObject.h>
+#include <LWeak.h>
 
 /**
  * @brief Touch point within a touch device.
  *
- * An instance of this class is created using LTouch::createTouchPoint() and is typically destroyed after calling
+ * An instance of this class is created using LTouch::createOrGetTouchPoint() and is typically destroyed after calling
  * LTouch::sendFrameEvent() when the touch point is no longer pressed, or when invoking LTouch::sendCancelEvent().
  *
  * A touch point can be assigned to a single surface at a time or none at all. This assignment is performed using the
@@ -21,7 +22,7 @@
  *       Both LTouchDownEvent and LTouchMoveEvent contain a mutable variable named localPos. Be sure to set its value properly to
  *       the local surface coordinate before dispatching these events.
  */
-class Louvre::LTouchPoint : public LObject
+class Louvre::LTouchPoint final : public LObject
 {
 public:
 
@@ -32,7 +33,7 @@ public:
      *
      * @return The unique identifier of the touch point.
      */
-    inline Int32 id() const noexcept
+    Int32 id() const noexcept
     {
         return m_lastDownEvent.id();
     }
@@ -45,9 +46,9 @@ public:
      *
      * If LTouch::sendFrameEvent() is called and the touch point is no longer pressed, it will be automatically destroyed.
      *
-     * @return True if the touch point is currently pressed, false otherwise.
+     * @return `true` if the touch point is currently pressed, `false` otherwise.
      */
-    inline bool pressed() const noexcept
+    bool pressed() const noexcept
     {
         return m_pressed;
     }
@@ -56,38 +57,35 @@ public:
      * @brief Get the surface currently being touched by this touch point.
      *
      * The surface associated with this touch point is set using the sendDownEvent() method. If no surface is assigned to this touch point,
-     * the method returns nullptr.
+     * the method returns `nullptr`.
      *
-     * @return A pointer to the LSurface being touched by this touch point, or nullptr if no surface is assigned.
+     * @return A pointer to the LSurface being touched by this touch point, or `nullptr` if no surface is assigned.
      */
-    inline LSurface *surface() const noexcept
+    LSurface *surface() const noexcept
     {
         return m_surface.get();
     }
 
     /**
-     * @brief Get the last touch-down event sent with sendDownEvent().
-     * @return The last touch-down event.
+     * @brief Gets the last touch-down event sent with sendDownEvent().
      */
-    inline const LTouchDownEvent &lastDownEvent() const noexcept
+    const LTouchDownEvent &lastDownEvent() const noexcept
     {
         return m_lastDownEvent;
     }
 
     /**
-     * @brief Get the last touch move event sent with sendMoveEvent().
-     * @return The last touch move event.
+     * @brief Gets the last touch move event sent with sendMoveEvent().
      */
-    inline const LTouchMoveEvent &lastMoveEvent() const noexcept
+    const LTouchMoveEvent &lastMoveEvent() const noexcept
     {
         return m_lastMoveEvent;
     }
 
     /**
-     * @brief Get the last touch-up event sent with sendUpEvent().
-     * @return The last touch-up event.
+     * @brief Gets the last touch-up event sent with sendUpEvent().
      */
-    inline const LTouchUpEvent &lastUpEvent() const noexcept
+    const LTouchUpEvent &lastUpEvent() const noexcept
     {
         return m_lastUpEvent;
     }
@@ -99,7 +97,7 @@ public:
      *
      * @return A constant reference to the position of the touch point.
      */
-    inline const LPointF &pos() const noexcept
+    const LPointF &pos() const noexcept
     {
         return m_pos;
     }
@@ -109,14 +107,14 @@ public:
      *
      * If a surface is specified, the event is sent to that surface. If the surface is different from the current surface,
      * the previous surface receives a touch-up event and a frame event.
-     * If the surface parameter is nullptr, it unsets the current surface.
+     * If the surface parameter is `nullptr`, it unsets the current surface.
      * If the current assigned surface is destroyed, it is automatically unset.
      *
      * @note The LTouchDownEvent::localPos mutable variable must be set to represent the position in local surface coordinates.
      *
      * @param event The touch-down event with information about the touch point
-     * @param surface The surface to which the event should be sent. If nullptr, unsets the surface.
-     * @return True on success, false if the IDs don't match.
+     * @param surface The surface to which the event should be sent. If `nullptr`, unsets the surface.
+     * @return `true` on success, `false` if the IDs don't match.
      */
     bool sendDownEvent(const LTouchDownEvent &event, LSurface *surface = nullptr) noexcept;
 
@@ -126,7 +124,7 @@ public:
      * @note The LTouchMoveEvent::localPos mutable variable must be set to represent the position in local surface coordinates.
      *
      * @param event The touch move event containing information about the touch point movement.
-     * @return True on success, false if the IDs don't match.
+     * @return `true` on success, `false` if the IDs don't match.
      */
     bool sendMoveEvent(const LTouchMoveEvent &event) noexcept;
 
@@ -136,14 +134,15 @@ public:
      * If LTouch::sendFrameEvent() is called and the touch point is no longer pressed, it is automatically destroyed.
      *
      * @param event The touch-up event containing information about the touch point release.
-     * @return True on success, false if the IDs don't match.
+     * @return `true` on success, `false` if the IDs don't match.
      */
     bool sendUpEvent(const LTouchUpEvent &event) noexcept;
 
+    /// @cond OMIT
 private:
     friend class LTouch;
     LTouchPoint(const LTouchDownEvent &event) noexcept;
-    inline ~LTouchPoint() noexcept = default;
+    ~LTouchPoint() noexcept = default;
     void sendTouchDownEvent(const LTouchDownEvent &event) noexcept;
     void sendTouchFrameEvent() noexcept;
     void sendTouchCancelEvent() noexcept;
@@ -154,6 +153,7 @@ private:
     LTouchUpEvent m_lastUpEvent;
     LPointF m_pos;
     bool m_pressed { true };
+    /// @endcond
 };
 
 #endif // LTOUCHPOINT_H

@@ -4,7 +4,7 @@
 #include <LObject.h>
 #include <LPoint.h>
 
-class Louvre::LSceneTouchPoint : public LObject
+class Louvre::LSceneTouchPoint final : public LObject
 {
 public:
 
@@ -61,9 +61,9 @@ public:
 private:
     friend class LScene;
     friend class LView;
-    LSceneTouchPoint(LScene *scene, const LTouchDownEvent &event);
+    LSceneTouchPoint(LScene *scene, const LTouchDownEvent &event) noexcept;
     inline ~LSceneTouchPoint() noexcept = default;
-    std::vector<LSceneTouchPoint*>::iterator destroy();
+    std::vector<LSceneTouchPoint*>::iterator destroy() noexcept;
     std::vector<LView*> m_views;
     LScene *m_scene { nullptr };
     LPointF m_pos;

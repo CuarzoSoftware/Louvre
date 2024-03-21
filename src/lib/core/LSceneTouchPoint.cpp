@@ -5,7 +5,7 @@
 
 using namespace Louvre;
 
-LSceneTouchPoint::LSceneTouchPoint(LScene *scene, const LTouchDownEvent &event) :
+LSceneTouchPoint::LSceneTouchPoint(LScene *scene, const LTouchDownEvent &event) noexcept :
     m_scene(scene),
     m_pos(event.pos()),
     m_id(event.id())
@@ -13,7 +13,7 @@ LSceneTouchPoint::LSceneTouchPoint(LScene *scene, const LTouchDownEvent &event) 
     scene->imp()->touchPoints.push_back(this);
 }
 
-std::vector<LSceneTouchPoint*>::iterator LSceneTouchPoint::destroy()
+std::vector<LSceneTouchPoint*>::iterator LSceneTouchPoint::destroy() noexcept
 {
     std::vector<LSceneTouchPoint*>::iterator it = std::find(m_scene->imp()->touchPoints.begin(), m_scene->imp()->touchPoints.end(), this);
     it = m_scene->imp()->touchPoints.erase(it);
