@@ -2,10 +2,12 @@
 #define LKEYBOARDKEYEVENT_H
 
 #include <LKeyboardEvent.h>
-#include <LKeyboard.h>
 #include <LTime.h>
 
-class Louvre::LKeyboardKeyEvent : public LKeyboardEvent
+/**
+ * @brief Keyboard key event.
+ */
+class Louvre::LKeyboardKeyEvent final : public LKeyboardEvent
 {
 public:
 
@@ -23,36 +25,62 @@ public:
         Pressed = 1
     };
 
-    inline LKeyboardKeyEvent(UInt32 keyCode = 0, State state = Pressed, UInt32 serial = LTime::nextSerial(), UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) :
+    /**
+     * @brief Constructor for LKeyboardKeyEvent.
+     *
+     * @param keyCode The raw key code.
+     * @param state The state of the key (Pressed or Released).
+     * @param serial The serial number of the event.
+     * @param ms The millisecond timestamp of the event.
+     * @param us The microsecond timestamp of the event.
+     * @param device The input device that originated the event.
+     */
+    LKeyboardKeyEvent(UInt32 keyCode = 0, State state = Pressed, UInt32 serial = LTime::nextSerial(),
+                      UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) noexcept :
         LKeyboardEvent(LEvent::Subtype::Key, serial, ms, us, device),
         m_key(keyCode),
         m_state(state)
     {}
 
-    inline void setKeyCode(UInt32 keyCode)
+    /**
+     * @brief Sets the raw key code.
+     */
+    void setKeyCode(UInt32 keyCode) noexcept
     {
         m_key = keyCode;
     }
 
-    inline UInt32 keyCode() const
+    /**
+     * @brief Gets the raw key code.
+     */
+    UInt32 keyCode() const noexcept
     {
         return m_key;
     }
 
-    inline void setState(State state)
+    /**
+     * @brief Sets the state of the key.
+     */
+    void setState(State state) noexcept
     {
         m_state = state;
     }
 
-    inline State state() const
+    /**
+     * @brief Gets the state of the key.
+     */
+    State state() const noexcept
     {
         return m_state;
     }
+
+    /// @cond OMIT
 protected:
     UInt32 m_key;
     State m_state;
 private:
     friend class LInputBackend;
     void notify();
+    /// @endcond
 };
 #endif // LKEYBOARDKEYEVENT_H

@@ -5,6 +5,7 @@
 #include <private/LPointerPrivate.h>
 #include <private/LPopupRolePrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <LKeyboard.h>
 #include <LCompositor.h>
 #include <LClient.h>
 #include <LLog.h>
@@ -55,6 +56,8 @@ RXdgPopup::RXdgPopup
 
 RXdgPopup::~RXdgPopup()
 {
+    compositor()->destroyPopupRoleRequest(popupRole());
+
     if (popupRole()->surface())
     {
         for (LSurface *child : popupRole()->surface()->children())
@@ -68,10 +71,9 @@ RXdgPopup::~RXdgPopup()
             }
         }
 
-        popupRole()->surface()->imp()->setKeyboardGrabToParent();        
+        popupRole()->surface()->imp()->setKeyboardGrabToParent();
+        popupRole()->surface()->imp()->setMapped(false);
     }
-
-    compositor()->destroyPopupRoleRequest(popupRole());
 }
 
 /******************** REQUESTS ********************/

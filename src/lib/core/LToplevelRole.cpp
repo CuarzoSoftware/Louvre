@@ -33,14 +33,7 @@ LToplevelRole::LToplevelRole(const void *params) :
     imp()->resizeSession.m_toplevel = this;
 }
 
-LToplevelRole::~LToplevelRole()
-{
-    if (surface())
-        surface()->imp()->setMapped(false);
-
-    if (seat()->activeToplevel() == this)
-        seat()->imp()->activeToplevel = nullptr;
-}
+LToplevelRole::~LToplevelRole() {}
 
 bool LToplevelRole::maximized() const
 {

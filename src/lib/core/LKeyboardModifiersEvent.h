@@ -4,14 +4,17 @@
 #include <LKeyboardEvent.h>
 #include <LTime.h>
 
-class Louvre::LKeyboardModifiersEvent : public LKeyboardEvent
+/**
+ * @brief Keyboard modifiers event.
+ *
+ * Keyboard modifiers events are automatically sent to client surfaces when they acquire keyboard focus.
+ */
+class Louvre::LKeyboardModifiersEvent final : public LKeyboardEvent
 {
 public:
 
     /**
      * @brief Keyboard modifiers.
-     *
-     * Stores the status of keyboard modifiers (Ctrl, Shift, Alt, etc).
      */
     struct Modifiers
     {
@@ -28,25 +31,42 @@ public:
         UInt32 group = 0;
     };
 
-    inline LKeyboardModifiersEvent(const Modifiers &modifiers = {0, 0, 0, 0},
+    /**
+     * @brief Constructor for LKeyboardModifiersEvent.
+     *
+     * @param modifiers The keyboard modifiers to be set.
+     * @param serial The serial number of the event.
+     * @param ms The millisecond timestamp of the event.
+     * @param us The microsecond timestamp of the event.
+     * @param device The input device that originated the event.
+     */
+    LKeyboardModifiersEvent(const Modifiers &modifiers = {0, 0, 0, 0},
                                    UInt32 serial = LTime::nextSerial(), UInt32 ms = LTime::ms(),
-                                   UInt64 us = LTime::us(), LInputDevice *device = nullptr) :
+                                   UInt64 us = LTime::us(), LInputDevice *device = nullptr) noexcept:
         LKeyboardEvent(LEvent::Subtype::Modifiers, serial, ms, us, device),
         m_modifiers(modifiers)
     {}
 
-    inline void setModifiers(const Modifiers &modifiers)
+    /**
+     * @brief Sets the keyboard modifiers for this event.
+     */
+    void setModifiers(const Modifiers &modifiers) noexcept
     {
         m_modifiers = modifiers;
     }
 
-    inline const Modifiers &modifiers() const
+    /**
+     * @brief Gets the keyboard modifiers for this event.
+     */
+    const Modifiers &modifiers() const noexcept
     {
         return m_modifiers;
     }
 
 protected:
+    /// @cond OMIT
     Modifiers m_modifiers;
+    /// @endcond
 };
 
 #endif // LKEYBOARDMODIFIERSEVENT_H

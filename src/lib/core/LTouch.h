@@ -7,22 +7,22 @@
  * @brief Class for handling touch input events
  *
  * The LTouch class facilitates the management of touch input events, allowing you to redirect them to client surfaces.
- * Touch events commence with a touch-down event, which can be utilized to create a new touch point using createTouchPoint().
- * Each touch point is assigned a unique ID obtained from the touch-down event. Invoking createTouchPoint() with an already
+ * Touch events commence with a touch-down event, which can be utilized to create a new touch point using createOrGetTouchPoint().
+ * Each touch point is assigned a unique ID obtained from the touch-down event. Invoking createOrGetTouchPoint() with an already
  * used ID returns the existing touch point associated with that ID. All touch points are initially marked as pressed and can
- * be accessed through the touchPoints() list.
+ * be accessed through the touchPoints() vector.
  *
  * Once a touch point is created, you can associate it with a surface using LTouchPoint::sendDownEvent(). Only a single surface
  * can be assigned to a touch point at a time, or none at all. Touch-down and move events received from the input backend contain
  * information about the current physical position of the touchpoint on the touch device, represented in a coordinate space
  * ranging from 0 to 1 for both x and y axes, with the top-left corner as the origin.
  *
- * There is no universal method to associate a touch device with an output. To achieve this, utilize information from the events
- * input device and transform touch point positions to output coordinates by multiplying them by the output size.
+ * There is no universal method to associate a touch device with an output. To achieve this, you could use information from the events
+ * input device and transform touch point positions to output coordinates with the toGlobal() aux method.
  *
  * After a touch point is created, subsequent touch-down, move, and up events may occur. These events can be forwarded to clients
  * using the methods provided by LTouchPoint. Clients are expected to wait for a frame event to process them, which can be triggered
- * by calling sendFrameEvent(). Following this event, all touch events that are no longer pressed are automatically destroyed.
+ * by calling sendFrameEvent().
  *
  * The input backend can also notify of a cancel event, typically triggered when a touch device is unplugged or an error occurs.
  * You can forward this event to clients using the sendCancelEvent() method. After invoking this method, all touch points are

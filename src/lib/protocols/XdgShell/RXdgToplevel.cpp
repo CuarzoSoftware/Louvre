@@ -55,8 +55,14 @@ RXdgToplevel::RXdgToplevel
 }
 
 RXdgToplevel::~RXdgToplevel()
-{
+{    
     compositor()->destroyToplevelRoleRequest(toplevelRole());
+
+    if (toplevelRole()->surface())
+        toplevelRole()->surface()->imp()->setMapped(false);
+
+    if (seat()->activeToplevel() == toplevelRole())
+        seat()->imp()->activeToplevel = nullptr;
 }
 
 void RXdgToplevel::destroy(wl_client */*client*/, wl_resource *resource)

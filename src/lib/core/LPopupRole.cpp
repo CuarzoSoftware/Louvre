@@ -28,8 +28,7 @@ LPopupRole::LPopupRole(const void *params) :
 
 LPopupRole::~LPopupRole()
 {
-    if (surface())
-        surface()->imp()->setMapped(false);
+
 }
 
 bool LPopupRole::isTopmostPopup() const

@@ -6,6 +6,7 @@
 #include <private/LDNDIconRolePrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <LKeyboard.h>
 #include <LClipboard.h>
 #include <LDNDSession.h>
 #include <LDND.h>

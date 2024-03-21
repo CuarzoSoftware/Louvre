@@ -21,8 +21,7 @@ LSubsurfaceRole::LSubsurfaceRole
 
 LSubsurfaceRole::~LSubsurfaceRole()
 {
-    if (surface())
-        surface()->imp()->setMapped(false);
+
 }
 
 bool LSubsurfaceRole::isSynced() const

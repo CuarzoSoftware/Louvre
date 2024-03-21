@@ -3,7 +3,7 @@
 
 using namespace Louvre;
 
-void LInputEvent::setDevice(LInputDevice *device)
+void LInputEvent::setDevice(LInputDevice *device) noexcept
 {
     if (device)
         m_device = device;

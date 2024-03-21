@@ -49,12 +49,12 @@ public:
     /**
      * @brief Destructor.
      */
-    inline ~LEvent() noexcept = default ;
+    ~LEvent() noexcept = default;
 
     /**
      * @brief Retrieves the type of the event.
      */
-    inline Type type() const noexcept
+    Type type() const noexcept
     {
         return m_type;
     }
@@ -62,7 +62,7 @@ public:
     /**
      * @brief Retrieves the subtype of the event.
      */
-    inline Subtype subtype() const noexcept
+    Subtype subtype() const noexcept
     {
         return m_subtype;
     }
@@ -70,7 +70,7 @@ public:
     /**
      * @brief Sets the serial of the event.
      */
-    inline void setSerial(UInt32 serial) noexcept
+    void setSerial(UInt32 serial) noexcept
     {
         m_serial = serial;
     }
@@ -78,7 +78,7 @@ public:
     /**
      * @brief Retrieves the serial of the event.
      */
-    inline UInt32 serial() const noexcept
+    UInt32 serial() const noexcept
     {
         return m_serial;
     }
@@ -86,7 +86,7 @@ public:
     /**
      * @brief Sets the time the event was generated in milliseconds.
      */
-    inline void setMs(UInt32 ms) noexcept
+    void setMs(UInt32 ms) noexcept
     {
         m_ms = ms;
     }
@@ -94,7 +94,7 @@ public:
     /**
      * @brief Retrieves the time the event was generated in milliseconds.
      */
-    inline UInt32 ms() const noexcept
+    UInt32 ms() const noexcept
     {
         return m_ms;
     }
@@ -102,7 +102,7 @@ public:
     /**
      * @brief Sets the time the event was generated in microseconds.
      */
-    inline void setUs(UInt32 us) noexcept
+    void setUs(UInt32 us) noexcept
     {
         m_us = us;
     }
@@ -110,7 +110,7 @@ public:
     /**
      * @brief Retrieves the time the event was generated in microseconds.
      */
-    inline UInt64 us() const noexcept
+    UInt64 us() const noexcept
     {
         return m_us;
     }

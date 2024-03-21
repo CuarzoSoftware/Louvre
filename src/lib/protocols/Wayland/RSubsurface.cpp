@@ -45,6 +45,9 @@ RSubsurface::RSubsurface
 RSubsurface::~RSubsurface()
 {
     compositor()->destroySubsurfaceRoleRequest(m_subsurfaceRole.get());
+
+    if (subsurfaceRole()->surface())
+        subsurfaceRole()->surface()->imp()->setMapped(false);
 }
 
 /******************** REQUESTS ********************/
