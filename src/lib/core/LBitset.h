@@ -50,7 +50,7 @@ public:
      *
      * @param flags Initial flags to set (default is 0)
      */
-    inline LBitset(Flag flags = 0) : m_flags(flags) {}
+    LBitset(Flag flags = 0) noexcept : m_flags(flags) {}
 
     /**
      * @brief Add new flags to the bitfield
@@ -59,7 +59,7 @@ public:
      *
      * @param flags The flag or combination of flags to be added
      */
-    inline void add(Flag flags)
+    void add(Flag flags) noexcept
     {
         m_flags |= flags;
     }
@@ -71,7 +71,7 @@ public:
      *
      * @param flags The flag or combination of flags to be removed
      */
-    inline void remove(Flag flags)
+    void remove(Flag flags) noexcept
     {
         m_flags &= ~flags;
     }
@@ -84,7 +84,7 @@ public:
      * @param flags The flag or combination of flags to be checked
      * @return `true` if at least one flag is set, otherwise `false`
      */
-    inline bool check(Flag flags) const
+    bool check(Flag flags) const noexcept
     {
         return (m_flags & flags) != 0;
     }
@@ -97,7 +97,7 @@ public:
      * @param flags The flag or combination of flags to be checked
      * @return `true` if all specified flags are set, otherwise `false`
      */
-    inline bool checkAll(Flag flags) const
+    bool checkAll(Flag flags) const noexcept
     {
         return (m_flags & flags) == flags;
     }
@@ -109,7 +109,7 @@ public:
      *
      * @return The current set of flags
      */
-    inline Flag get() const
+    Flag get() const noexcept
     {
         return m_flags;
     }
@@ -121,7 +121,7 @@ public:
      *
      * @param flags The new flag or combination of flags to be set
      */
-    inline void set(Flag flags)
+    void set(Flag flags) noexcept
     {
         m_flags = flags;
     }
@@ -134,7 +134,7 @@ public:
      * @param flag The flag to be set or unset
      * @param enable If `true`, set the flag, if `false`, remove the flag
      */
-    inline void setFlag(Flag flag, bool enable)
+    void setFlag(Flag flag, bool enable) noexcept
     {
         if (enable)
             add(flag);

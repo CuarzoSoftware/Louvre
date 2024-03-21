@@ -1,5 +1,6 @@
 #include <protocols/Viewporter/GViewporter.h>
 #include <protocols/Viewporter/RViewport.h>
+#include <protocols/Wayland/RSurface.h>
 #include <private/LClientPrivate.h>
 
 using namespace Louvre::Protocols::Viewporter;

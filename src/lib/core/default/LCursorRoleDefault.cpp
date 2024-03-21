@@ -1,5 +1,3 @@
-#include <private/LBaseSurfaceRolePrivate.h>
-
 #include <LCursorRole.h>
 #include <LSurface.h>
 

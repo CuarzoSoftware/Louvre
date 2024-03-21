@@ -65,6 +65,10 @@ class class_name::CAT(class_name,Private){ \
 #define LPRIVATE_INIT_UNIQUE(class_name) \
     m_imp(std::make_unique<CAT(class_name,Private)>())
 
+#define LCLASS_NO_COPY(class_name) \
+    class_name(const class_name&) = delete; \
+    class_name &operator=(const class_name&) = delete;
+
 template <typename T>
 static inline void LVectorRemoveOne(std::vector<T>& vec, T val)
 {
@@ -126,7 +130,6 @@ static inline void LVectorRemoveAllUnordered(std::vector<T>& vec, T val)
 }
 
 /**
- * @ingroup g_touch_events
  * @brief Namespaces
  * @page Namespaces
  */
@@ -579,6 +582,14 @@ namespace Louvre
             class GRelativePointerManager;
 
             class RRelativePointer;
+        };
+
+        namespace SessionLock
+        {
+            class GSessionLockManager;
+
+            class RSessionLock;
+            class RSessionLockSurface;
         };
     }
 

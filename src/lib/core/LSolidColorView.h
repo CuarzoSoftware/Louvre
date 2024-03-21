@@ -22,7 +22,7 @@ public:
      *
      * @param parent The parent view that will contain this solid color view.
      */
-    inline LSolidColorView(LView *parent = nullptr) noexcept :
+    LSolidColorView(LView *parent = nullptr) noexcept :
         LView(LView::SolidColor, true, parent),
         m_color(0.f, 0.f, 0.f)
     {}
@@ -36,7 +36,7 @@ public:
      * @param a The alpha value (0.0 to 1.0).
      * @param parent The parent view that will contain this solid color view.
      */
-    inline LSolidColorView(Float32 r = 0.f, Float32 g = 0.f, Float32 b = 0.f, Float32 a = 1.f, LView *parent = nullptr) noexcept :
+    LSolidColorView(Float32 r = 0.f, Float32 g = 0.f, Float32 b = 0.f, Float32 a = 1.f, LView *parent = nullptr) noexcept :
         LView(SolidColor, true, parent),
         m_color(r, g, b)
     {
@@ -55,7 +55,7 @@ public:
      * @param a The alpha value (0.0 to 1.0).
      * @param parent The parent view that will contain this solid color view.
      */
-    inline LSolidColorView(const LRGBF &color, Float32 a = 1.f, LView *parent = nullptr) noexcept :
+    LSolidColorView(const LRGBF &color, Float32 a = 1.f, LView *parent = nullptr) noexcept :
         LView(SolidColor, true, parent),
         m_color(color)
     {
@@ -77,7 +77,7 @@ public:
      *
      * @param color The new color for the view in RGB format.
      */
-    inline void setColor(const LRGBF &color) noexcept
+    void setColor(const LRGBF &color) noexcept
     {
         if (m_color.r != color.r || m_color.g != color.g || m_color.b != color.b)
         {
@@ -92,7 +92,7 @@ public:
      *
      * @return The current color of the view in RGB format.
      */
-    inline const LRGBF &color() const noexcept
+    const LRGBF &color() const noexcept
     {
         return m_color;
     }
@@ -102,7 +102,7 @@ public:
      *
      * @param pos The new position of the view.
      */
-    inline void setPos(const LPoint &pos) noexcept
+    void setPos(const LPoint &pos) noexcept
     {
         setPos(pos.x(), pos.y());
     }
@@ -113,7 +113,7 @@ public:
      * @param x The X-coordinate of the new position.
      * @param y The Y-coordinate of the new position.
      */
-    inline void setPos(Int32 x, Int32 y) noexcept
+    void setPos(Int32 x, Int32 y) noexcept
     {
         if (x == m_nativePos.x() && y == m_nativePos.y())
             return;
@@ -130,7 +130,7 @@ public:
      *
      * @param size The new size of the view.
      */
-    inline void setSize(const LSize &size) noexcept
+    void setSize(const LSize &size) noexcept
     {
         setSize(size.w(), size.h());
     }
@@ -141,7 +141,7 @@ public:
      * @param w The new width of the view.
      * @param h The new height of the view.
      */
-    inline void setSize(Int32 w, Int32 h) noexcept
+    void setSize(Int32 w, Int32 h) noexcept
     {
         if (w != m_nativeSize.w() || h != m_nativeSize.h())
         {
@@ -158,7 +158,7 @@ public:
      *
      * @param region The new input region for the view.
      */
-    inline void setInputRegion(const LRegion *region) noexcept
+    void setInputRegion(const LRegion *region) noexcept
     {
         if (region)
         {

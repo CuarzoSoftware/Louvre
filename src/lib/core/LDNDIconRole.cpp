@@ -1,5 +1,4 @@
 #include <private/LDNDIconRolePrivate.h>
-#include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 
 #include <LSurface.h>
@@ -8,8 +7,8 @@
 using namespace Louvre;
 
 LDNDIconRole::LDNDIconRole(const void *params) :
-    LBaseSurfaceRole(((Params*)params)->surface->surfaceResource(),
-                     ((Params*)params)->surface,
+    LBaseSurfaceRole(static_cast<const Params*>(params)->surface->surfaceResource(),
+                     static_cast<const Params*>(params)->surface,
                     LSurface::Role::DNDIcon),
     LPRIVATE_INIT_UNIQUE(LDNDIconRole)
 {
@@ -37,7 +36,7 @@ void LDNDIconRole::handleSurfaceOffset(Int32 x, Int32 y)
     imp()->pendingHotspotOffset = LPoint(x,y);
 }
 
-void LDNDIconRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin)
+void LDNDIconRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
 {
     L_UNUSED(origin);
 

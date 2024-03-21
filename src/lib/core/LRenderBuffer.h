@@ -3,6 +3,7 @@
 
 #include <LTexture.h>
 #include <LFramebuffer.h>
+#include <thread>
 
 /**
  * @brief Custom render destination framebuffer
@@ -81,7 +82,7 @@ public:
      *
      * @return The size of the framebuffer.
      */
-    inline const LSize &size() const noexcept
+    const LSize &size() const noexcept
     {
         return m_rect.size();
     }
@@ -93,7 +94,7 @@ public:
      *
      * @param pos The new position of the framebuffer.
      */
-    inline void setPos(const LPoint &pos) noexcept
+    void setPos(const LPoint &pos) noexcept
     {
         m_rect.setPos(pos);
     }
@@ -105,7 +106,7 @@ public:
      *
      * @return The position of the framebuffer.
      */
-    inline const LPoint &pos() const noexcept
+    const LPoint &pos() const noexcept
     {
         return m_rect.pos();
     }
@@ -126,7 +127,7 @@ public:
      *
      * @param scale The buffer scale factor.
      */
-    inline void setScale(Float32 scale) noexcept
+    void setScale(Float32 scale) noexcept
     {
         if (scale < 0.25f)
             scale = 0.25;

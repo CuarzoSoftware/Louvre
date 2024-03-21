@@ -128,8 +128,8 @@ public:
     LPRIVATE_IMP_UNIQUE(LSubsurfaceRole)
 
     /// @cond OMIT
-    bool acceptCommitRequest(Protocols::Wayland::RSurface::CommitOrigin origin) override;
-    void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
+    bool acceptCommitRequest(LBaseSurfaceRole::CommitOrigin origin) override;
+    void handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin) override;
     void handleParentCommit() override;
     void handleParentChange() override;
     void handleParentMappingChange() override;

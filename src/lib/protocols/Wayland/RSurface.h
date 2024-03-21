@@ -1,24 +1,12 @@
 #ifndef RSURFACE_H
 #define RSURFACE_H
 
+#include <LBaseSurfaceRole.h>
 #include <LResource.h>
 
 class Louvre::Protocols::Wayland::RSurface final : public LResource
 {
 public:
-
-    /**
-     * @brief Commit origin
-     * Indicates who requests to commit a surface
-     */
-    enum CommitOrigin
-    {
-        /// @brief The commit is requested by the surface itself
-        Itself,
-
-        /// @brief The commit is requested by the parent surface
-        Parent
-    };
 
     LSurface *surface() const noexcept
     {
@@ -67,7 +55,7 @@ public:
 #endif
 
     static void handleOffset(LSurface *lSurface, Int32 x, Int32 y);
-    static void apply_commit(LSurface *surface, CommitOrigin origin = Itself);
+    static void apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin origin = LBaseSurfaceRole::CommitOrigin::Itself);
 
     /******************** EVENTS ********************/
 

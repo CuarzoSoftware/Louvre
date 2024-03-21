@@ -1,5 +1,6 @@
 #include <protocols/PointerGestures/GPointerGestures.h>
 #include <protocols/PointerGestures/RGestureSwipe.h>
+#include <protocols/Wayland/RSurface.h>
 #include <protocols/Wayland/RPointer.h>
 #include <LPointerSwipeUpdateEvent.h>
 #include <private/LCompositorPrivate.h>

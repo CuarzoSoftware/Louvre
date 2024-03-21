@@ -3,7 +3,6 @@
 #include <protocols/XdgShell/xdg-shell.h>
 #include <private/LPopupRolePrivate.h>
 #include <private/LSurfacePrivate.h>
-#include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LPositionerPrivate.h>
 #include <private/LPointerPrivate.h>
 #include <LRect.h>
@@ -17,18 +16,18 @@
 using namespace Louvre;
 
 LPopupRole::LPopupRole(const void *params) :
-    LBaseSurfaceRole(((LPopupRole::Params*)params)->popup,
-                     ((LPopupRole::Params*)params)->surface,
-                       LSurface::Role::Popup),
+    LBaseSurfaceRole(static_cast<const LPopupRole::Params*>(params)->popup,
+                     static_cast<const LPopupRole::Params*>(params)->surface,
+                     LSurface::Role::Popup),
     LPRIVATE_INIT_UNIQUE(LPopupRole)
 {
-    imp()->positioner.imp()->data = ((LPopupRole::Params*)params)->positioner->imp()->data;
+    imp()->positioner.imp()->data = static_cast<const LPopupRole::Params*>(params)->positioner->imp()->data;
     imp()->positioner.setUnconstrainedSize(imp()->positioner.size());
 }
 
 LPopupRole::~LPopupRole()
 {
-
+    // TODO inline
 }
 
 bool LPopupRole::isTopmostPopup() const
@@ -90,7 +89,7 @@ const LPositioner &LPopupRole::positioner() const
     return imp()->positioner;
 }
 
-void LPopupRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin)
+void LPopupRole::handleSurfaceCommit(CommitOrigin origin)
 {
     L_UNUSED(origin);
 

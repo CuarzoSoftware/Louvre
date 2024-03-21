@@ -27,7 +27,7 @@ public:
         Render
     };
    
-    inline Type type() const noexcept
+    Type type() const noexcept
     {
         return m_type;
     }
@@ -65,12 +65,12 @@ public:
         Flipped270 = 7
     };
 
-    static inline constexpr bool is90Transform(Transform transform) noexcept
+    static constexpr bool is90Transform(Transform transform) noexcept
     {
         return transform & Rotated90;
     }
 
-    static inline constexpr Transform requiredTransform(Transform from, Transform to) noexcept
+    static constexpr Transform requiredTransform(Transform from, Transform to) noexcept
     {
         const Int32 bitmask { Rotated270 };
         const Int32 flip { (from & ~bitmask) ^ (to & ~bitmask) };

@@ -1,8 +1,8 @@
 #ifndef LBASESURFACEROLE_H
 #define LBASESURFACEROLE_H
 
-#include <protocols/Wayland/RSurface.h>
 #include <LObject.h>
+#include <LWeak.h>
 #include <LPoint.h>
 
  /**
@@ -43,6 +43,19 @@ class Louvre::LBaseSurfaceRole : public LObject
 public:
 
     /**
+     * @brief Commit origin
+     * Indicates who requests to commit a surface
+     */
+    enum CommitOrigin
+    {
+        /// @brief The commit is requested by the surface itself
+        Itself,
+
+        /// @brief The commit is requested by the parent surface
+        Parent
+    };
+
+    /**
      * @brief Constructor of LBaseSurfaceRole class.
      *
      * @param resource Resource granted by the role's protocol interface. If the role does not have a resource, the one accessible with LSurface::resource() should be passed.
@@ -51,15 +64,16 @@ public:
      *
      * @note The ID range [0,1000] is reserved for roles offered by the library.
      */
-    LBaseSurfaceRole(LResource *resource, LSurface *surface, UInt32 roleId);
+    LBaseSurfaceRole(LResource *resource, LSurface *surface, UInt32 roleId) noexcept;
 
     /**
      * @brief The LBaseSurfaceRole class destructor.
      */
-    virtual ~LBaseSurfaceRole();
+    ~LBaseSurfaceRole();
 
-    LBaseSurfaceRole(const LBaseSurfaceRole&) = delete;
-    LBaseSurfaceRole& operator= (const LBaseSurfaceRole&) = delete;
+    /// @cond OMIT
+    LCLASS_NO_COPY(LBaseSurfaceRole)
+    /// @endcond
 
     /**
      * @brief Position of the surface given its role.
@@ -77,17 +91,26 @@ public:
      *
      * Returns the ID of the role given in the constructor argument. The LSurface class returns this value with the LSurface::roleId() method.
      */
-    UInt32 roleId() const;
+    UInt32 roleId() const noexcept
+    {
+        return m_roleId;
+    }
 
     /**
      * @brief Returns the surface that has acquired the role provided in the constructor.
      */
-    LSurface *surface() const;
+    LSurface *surface() const noexcept
+    {
+        return m_surface.get();
+    }
 
     /**
      * @brief Returns the Wayland resource for this role given in the constructor.
      */
-    LResource *resource() const;
+    LResource *resource() const
+    {
+        return m_resource.get();
+    }
 
 protected:
 
@@ -109,14 +132,14 @@ protected:
      * @param origin Origin of the request. In some protocols the commit is called by other surfaces. For example, surfaces with the ***subsurface*** role only accept commits from their parent
      * if they are in synchronous mode.
      */
-    virtual bool acceptCommitRequest(Protocols::Wayland::RSurface::CommitOrigin origin);
+    virtual bool acceptCommitRequest(CommitOrigin origin);
 
     /**
      * @brief Notifies a surface commit.
      *
      * Access to the **wl_surface::commit** request of the surface. It should be used by protocols that require atomic changes via commits.
      */
-    virtual void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin);
+    virtual void handleSurfaceCommit(CommitOrigin origin);
 
     /**
      * @brief Notifies a new surface buffer attachment.
@@ -153,7 +176,12 @@ protected:
      */
     virtual void handleParentChange();
 
-    LPRIVATE_IMP_UNIQUE(LBaseSurfaceRole)
+private:
+    /// @cond OMIT
+    LWeak<LSurface> m_surface;
+    LWeak<LResource> m_resource;
+    UInt32 m_roleId;
+    /// @encond
 };
 
 #endif // LBASESURFACEROLE_H

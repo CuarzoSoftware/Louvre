@@ -1,7 +1,6 @@
 #include <protocols/XdgDecoration/RXdgToplevelDecoration.h>
 #include <protocols/XdgShell/RXdgToplevel.h>
 #include <private/LToplevelRolePrivate.h>
-#include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LSeatPrivate.h>
 #include <protocols/XdgShell/xdg-shell.h>
@@ -101,7 +100,7 @@ LToplevelResizeSession &LToplevelRole::resizeSession() const
     return imp()->resizeSession;
 }
 
-void LToplevelRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin)
+void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
 {
     L_UNUSED(origin);
 

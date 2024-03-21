@@ -1,4 +1,4 @@
-#include <private/LResourcePrivate.h>
+#include <LResource.h>
 #include <LCompositor.h>
 #include <LClient.h>
 

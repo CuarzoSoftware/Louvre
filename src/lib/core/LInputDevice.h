@@ -65,7 +65,7 @@ public:
      *
      * This method returns the capabilities of the input device, represented as a combination of flags.
      */
-    inline LSeat::InputCapabilitiesFlags capabilities() const
+    LSeat::InputCapabilitiesFlags capabilities() const
     {
         return m_capabilities;
     }
@@ -73,7 +73,7 @@ public:
     /**
      * @brief Get the name of the input device.
      */
-    inline const std::string &name() const
+    const std::string &name() const
     {
         return m_name;
     }
@@ -81,7 +81,7 @@ public:
     /**
      * @brief Get the product ID of the input device.
      */
-    inline UInt32 productId() const
+    UInt32 productId() const
     {
         return m_productId;
     }
@@ -89,12 +89,12 @@ public:
     /**
      * @brief Get the vendor ID of the input device.
      */
-    inline UInt32 vendorId() const
+    UInt32 vendorId() const
     {
         return m_vendorId;
     }
 
-    inline void *backendData() const
+    void *backendData() const
     {
         return m_backendData;
     }

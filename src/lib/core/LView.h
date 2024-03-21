@@ -4,7 +4,6 @@
 #include <LObject.h>
 #include <LBitset.h>
 #include <LRegion.h>
-#include <LPointer.h>
 #include <LFramebuffer.h>
 #include <GL/gl.h>
 #include <thread>
@@ -260,14 +259,14 @@ public:
     // Disabled by default TODO
     void enableKeyboardEvents(bool enabled) noexcept;
 
-    inline bool keyboardEventsEnabled() const noexcept
+    bool keyboardEventsEnabled() const noexcept
     {
         return m_state.check(KeyboardEvents);
     }
 
     // Disabled by default TODO
     void enableTouchEvents(bool enabled) noexcept;
-    inline bool touchEventsEnabled() const noexcept
+    bool touchEventsEnabled() const noexcept
     {
         return m_state.check(TouchEvents);
     }
@@ -282,7 +281,7 @@ public:
      *
      * @returns `true` if the view receives pointer and touch events, `false` otherwise.
      */
-    inline bool pointerEventsEnabled() const noexcept
+    bool pointerEventsEnabled() const noexcept
     {
         return m_state.check(PointerEvents);
     }
@@ -302,7 +301,7 @@ public:
     /**
      * @brief Forces a complete repaint of the view in the next rendering frame.
      */
-    inline void damageAll() noexcept
+    void damageAll() noexcept
     {
         markAsChangedOrder(false);
 
@@ -315,7 +314,7 @@ public:
      *
      * @returns A pointer to the scene that contains this view, or `nullptr` if the view is not part of any scene.
      */
-    inline LScene *scene() const noexcept
+    LScene *scene() const noexcept
     {
         return m_scene;
     }
@@ -325,7 +324,7 @@ public:
      *
      * @return True if it is the maint view of an LScene, false otherwise.
      */
-    inline bool isLScene() const noexcept
+    bool isLScene() const noexcept
     {
         return m_state.check(IsScene);
     }
@@ -335,7 +334,7 @@ public:
      *
      * @returns A pointer to the LSceneView that contains this view, or `nullptr` if the view is not part of any LSceneView.
      */
-    inline LSceneView *parentSceneView() const noexcept
+    LSceneView *parentSceneView() const noexcept
     {
         if (parent())
         {
@@ -355,7 +354,7 @@ public:
      *
      * @returns The identifier representing the type of view.
      */
-    inline UInt32 type() const noexcept { return m_type; }
+    UInt32 type() const noexcept { return m_type; }
 
     /**
      * @brief Check if the view is itself renderable.
@@ -367,7 +366,7 @@ public:
      *
      * @return `true` if the view is renderable; otherwise, `false`.
      */
-    inline bool isRenderable() const noexcept { return m_state.check(IsRenderable); };
+    bool isRenderable() const noexcept { return m_state.check(IsRenderable); };
 
     /**
      * @brief Schedule a repaint for all outputs where this view is currently visible.
@@ -382,7 +381,7 @@ public:
      *
      * @returns A pointer to the parent view, or `nullptr` if the view has no parent.
      */
-    inline LView *parent() const noexcept { return m_parent; };
+    LView *parent() const noexcept { return m_parent; };
 
     /**
      * @brief Set the new parent for the view and insert it at the end of its children list.
@@ -408,7 +407,7 @@ public:
      *
      * @returns A reference to the list of child views.
      */
-    inline const std::list<LView*> &children() const noexcept { return m_children; };
+    const std::list<LView*> &children() const noexcept { return m_children; };
 
     /**
      * @brief Check if the parent's offset is applied to the view position.
@@ -419,7 +418,7 @@ public:
      *
      * @returns `true` if the parent's offset is applied to the view position, `false` otherwise.
      */
-    inline bool parentOffsetEnabled() const noexcept
+    bool parentOffsetEnabled() const noexcept
     {
         return m_state.check(ParentOffset);
     }
@@ -433,7 +432,7 @@ public:
      *
      * @param enabled If `true`, the parent's offset will be applied to the view position.
      */
-    inline void enableParentOffset(bool enabled) noexcept
+    void enableParentOffset(bool enabled) noexcept
     {
         if (enabled == m_state.check(ParentOffset))
             return;
@@ -451,7 +450,7 @@ public:
      *
      * @returns The position of the view.
      */
-    inline const LPoint& pos() const noexcept
+    const LPoint& pos() const noexcept
     {
         m_tmpPoint = nativePos();
 
@@ -474,7 +473,7 @@ public:
      *
      * @returns The size of the view.
      */
-    inline const LSize &size() const noexcept
+    const LSize &size() const noexcept
     {
         m_tmpSize = nativeSize();
 
@@ -498,7 +497,7 @@ public:
      *
      * @returns `true` if the view is being clipped to the clipping rectangle, `false` otherwise.
      */
-    inline bool clippingEnabled() const noexcept
+    bool clippingEnabled() const noexcept
     {
         return m_state.check(Clipping);
     }
@@ -515,7 +514,7 @@ public:
      * @param enabled If `true`, the view will be clipped to the clippingRect() property.
      *                If `false`, clipping will be disabled, and the full view will be visible.
      */
-    inline void enableClipping(bool enabled) noexcept
+    void enableClipping(bool enabled) noexcept
     {
         if (m_state.check(Clipping) != enabled)
         {
@@ -533,7 +532,7 @@ public:
      *
      * @returns A constant reference to the current clipping rectangle.
      */
-    inline const LRect &clippingRect() const noexcept
+    const LRect &clippingRect() const noexcept
     {
         return m_clippingRect;
     }
@@ -550,7 +549,7 @@ public:
      *
      * @param rect The clipping rectangle to set for the view using the clippingRect() property.
      */
-    inline void setClippingRect(const LRect &rect) noexcept
+    void setClippingRect(const LRect &rect) noexcept
     {
         if (rect != m_clippingRect)
         {
@@ -570,7 +569,7 @@ public:
      *
      * @returns `true` if the view is clipped to the current parent view rect, `false` otherwise.
      */
-    inline bool parentClippingEnabled() const noexcept
+    bool parentClippingEnabled() const noexcept
     {
         return m_state.check(ParentClipping);
     }
@@ -584,7 +583,7 @@ public:
      *
      * @param enabled If `true`, the view will be clipped to the current parent view rect.
      */
-    inline void enableParentClipping(bool enabled) noexcept
+    void enableParentClipping(bool enabled) noexcept
     {
         if (enabled == m_state.check(ParentClipping))
             return;
@@ -604,7 +603,7 @@ public:
      *
      * @returns `true` if the view's size is scaled, `false` otherwise.
      */
-    inline bool scalingEnabled() const noexcept
+    bool scalingEnabled() const noexcept
     {
         return m_state.check(Scaling);
     }
@@ -618,7 +617,7 @@ public:
      *
      * @param enabled If `true`, the view's size will be scaled.
      */
-    inline void enableScaling(bool enabled) noexcept
+    void enableScaling(bool enabled) noexcept
     {
         if (enabled == m_state.check(Scaling))
             return;
@@ -638,7 +637,7 @@ public:
      *
      * @returns `true` if the size and position are scaled by the parent's scaling vector, `false` otherwise.
      */
-    inline bool parentScalingEnabled() const noexcept
+    bool parentScalingEnabled() const noexcept
     {
         return m_state.check(ParentScaling);
     }
@@ -652,7 +651,7 @@ public:
      *
      * @param enabled If `true`, the view's size and position will be scaled by the parent's scaling vector.
      */
-    inline void enableParentScaling(bool enabled) noexcept
+    void enableParentScaling(bool enabled) noexcept
     {
         if (enabled == m_state.check(ParentScaling))
             return;
@@ -671,7 +670,7 @@ public:
      * @param forceIgnoreParent If set to `false`, the vector is multiplied by the parent scaling vector.
      * @returns The scaling vector for the view's size.
      */
-    inline const LSizeF &scalingVector(bool forceIgnoreParent = false) const noexcept
+    const LSizeF &scalingVector(bool forceIgnoreParent = false) const noexcept
     {
         if (forceIgnoreParent)
             return m_scalingVector;
@@ -694,7 +693,7 @@ public:
      * @warning Scaling should be used with moderation, preferably during animations, as damage tracking is disabled due to precision loss caused by scaling.
      * This means the entire view is repainted if changes occur, which can be inefficient.
      */
-    inline void setScalingVector(const LSizeF &scalingVector) noexcept
+    void setScalingVector(const LSizeF &scalingVector) noexcept
     {
         if (scalingVector == m_scalingVector)
             return;
@@ -713,7 +712,7 @@ public:
      *
      * @returns `true` if the view is marked as visible, `false` otherwise.
      */
-    inline bool visible() const noexcept
+    bool visible() const noexcept
     {
         return m_state.check(Visible);
     }
@@ -727,7 +726,7 @@ public:
      *
      * @param visible If `true`, the view will be marked as visible, if `false`, it will be marked as not visible.
      */
-    inline void setVisible(bool visible) noexcept
+    void setVisible(bool visible) noexcept
     {
         if (m_state.check(Visible) == visible)
             return;
@@ -746,7 +745,7 @@ public:
      *
      * @returns `true` if the view should be rendered, `false` otherwise.
      */
-    inline bool mapped() const noexcept
+    bool mapped() const noexcept
     {
         if (type() == Scene && !parent())
             return visible();
@@ -762,7 +761,7 @@ public:
      * @param forceIgnoreParent If set to `false`, the opacity is multiplied by the parent's opacity.
      * @returns The view's opacity value in the range [0.0, 1.0].
      */
-    inline Float32 opacity(bool forceIgnoreParent = false) const noexcept
+    Float32 opacity(bool forceIgnoreParent = false) const noexcept
     {
         if (forceIgnoreParent)
             return m_opacity;
@@ -782,7 +781,7 @@ public:
      *
      * @param opacity The opacity value in the range [0.0, 1.0].
      */
-    inline void setOpacity(Float32 opacity) noexcept
+    void setOpacity(Float32 opacity) noexcept
     {
         if (opacity < 0.f)
             opacity = 0.f;
@@ -807,7 +806,7 @@ public:
      *
      * @returns `true` if the view's opacity is multiplied by its parent's opacity, `false` otherwise.
      */
-    inline bool parentOpacityEnabled() const noexcept
+    bool parentOpacityEnabled() const noexcept
     {
         return m_state.check(ParentOpacity);
     }
@@ -821,7 +820,7 @@ public:
      *
      * @param enabled If `true`, the view's opacity will be multiplied by its parent's opacity, if `false`, it will not be affected by the parent's opacity.
      */
-    inline void enableParentOpacity(bool enabled) noexcept
+    void enableParentOpacity(bool enabled) noexcept
     {
         if (m_state.check(ParentOpacity) == enabled)
             return;
@@ -840,7 +839,7 @@ public:
      *
      * @return `true` if requestNextFrame() is forced to be called, otherwise, `false`.
      */
-    inline bool forceRequestNextFrameEnabled() const noexcept
+    bool forceRequestNextFrameEnabled() const noexcept
     {
         return m_state.check(ForceRequestNextFrame);
     }
@@ -853,7 +852,7 @@ public:
      *
      * @param enabled `true` to enable requestNextFrame(), `false` to disable.
      */
-    inline void enableForceRequestNextFrame(bool enabled) noexcept
+    void enableForceRequestNextFrame(bool enabled) noexcept
     {
         m_state.setFlag(ForceRequestNextFrame, enabled);
     }
@@ -866,7 +865,7 @@ public:
      *
      * @note Requires autoBlendFuncEnabled() to be disabled.
      */
-    inline void setBlendFunc(const LBlendFunc &blendFunc) noexcept
+    void setBlendFunc(const LBlendFunc &blendFunc) noexcept
     {
         if (blendFunc.sRGBFactor != m_blendFunc.sRGBFactor || blendFunc.dRGBFactor != m_blendFunc.dRGBFactor ||
             blendFunc.sAlphaFactor != m_blendFunc.sAlphaFactor || blendFunc.dAlphaFactor != m_blendFunc.dAlphaFactor)
@@ -877,7 +876,7 @@ public:
     }
 
     // TODO add doc
-    inline const LBlendFunc &blendFunc() const noexcept
+    const LBlendFunc &blendFunc() const noexcept
     {
         return m_blendFunc;
     }
@@ -892,7 +891,7 @@ public:
      *
      * @param enabled `true` to enable automatic blend function adjustment, `false` to disable.
      */
-    inline void enableAutoBlendFunc(bool enabled) noexcept
+    void enableAutoBlendFunc(bool enabled) noexcept
     {
         if (enabled == m_state.check(AutoBlendFunc))
             return;
@@ -908,7 +907,7 @@ public:
      *
      * @return `true` if automatic blend function adjustment is enabled, `false` otherwise.
      */
-    inline bool autoBlendFuncEnabled() const noexcept
+    bool autoBlendFuncEnabled() const noexcept
     {
         return m_state.check(AutoBlendFunc);
     }
@@ -920,7 +919,7 @@ public:
      * This method allows you to set a color factor that influences the resulting color of every painting operation.
      * By default, the color factor is (1.0, 1.0, 1.0, 1.0), which has no effect on the colors.
      */
-    inline void setColorFactor(const LRGBAF &colorFactor) noexcept
+    void setColorFactor(const LRGBAF &colorFactor) noexcept
     {
         if (m_colorFactor.r != colorFactor.r ||
             m_colorFactor.g != colorFactor.g ||
@@ -938,7 +937,7 @@ public:
      *
      * This method returns the current color factor of the view set with setColorFactor().
      */
-    inline const LRGBAF &colorFactor() const noexcept
+    const LRGBAF &colorFactor() const noexcept
     {
         return m_colorFactor;
     }
@@ -950,7 +949,7 @@ public:
      *
      * @return `true` if the pointer/cursor is inside the input region; otherwise, `false`.
      */
-    inline bool pointerIsOver() const noexcept
+    bool pointerIsOver() const noexcept
     {
         return m_state.check(PointerIsOver);
     }
@@ -962,7 +961,7 @@ public:
      *
      * @param enabled `true` to enable blocking; `false` to disable.
      */
-    inline void enableBlockPointer(bool enabled) noexcept
+    void enableBlockPointer(bool enabled) noexcept
     {
         m_state.setFlag(BlockPointer, enabled);
     }
@@ -972,7 +971,7 @@ public:
      *
      * @return `true` if blocking is enabled; otherwise, `false`.
      */
-    inline bool blockPointerEnabled() const noexcept
+    bool blockPointerEnabled() const noexcept
     {
         return m_state.check(BlockPointer);
     }
@@ -987,7 +986,7 @@ public:
      *
      * @param enabled `true` to enable blocking; `false` to disable.
      */
-    inline void enableBlockTouch(bool enabled) noexcept
+    void enableBlockTouch(bool enabled) noexcept
     {
         m_state.setFlag(BlockTouch, enabled);
     }
@@ -997,7 +996,7 @@ public:
      *
      * @return `true` if blocking is enabled; otherwise, `false`.
      */
-    inline bool blockTouchEnabled() const noexcept
+    bool blockTouchEnabled() const noexcept
     {
         return m_state.check(BlockTouch);
     }
@@ -1010,7 +1009,7 @@ public:
      *
      * @return The bounding box of the view and its mapped children.
      */
-    inline LBox boundingBox() const noexcept
+    LBox boundingBox() const noexcept
     {
         const LPoint &p { pos() };
         const LPoint &s { size() };
@@ -1328,12 +1327,12 @@ protected:
     ViewCache m_cache;
     std::unordered_map<std::thread::id,ViewThreadData> m_threadsMap;
 
-    inline bool repaintCalled() const noexcept
+    bool repaintCalled() const noexcept
     {
         return m_state.check(RepaintCalled);
     }
 
-    inline static void removeFlagWithChildren(LView *view, UInt64 flag)
+    static void removeFlagWithChildren(LView *view, UInt64 flag)
     {
         view->m_state.remove(flag);
 

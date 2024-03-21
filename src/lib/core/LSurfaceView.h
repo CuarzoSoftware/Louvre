@@ -1,7 +1,6 @@
 #ifndef LSURFACEVIEW_H
 #define LSURFACEVIEW_H
 
-#include <LSurface.h>
 #include <LView.h>
 
 /**
@@ -49,7 +48,7 @@ public:
      *
      * @return Pointer to the LSurface associated with the view.
      */
-    inline LSurface *surface() const noexcept
+    LSurface *surface() const noexcept
     {
         return m_surface.get();
     }
@@ -62,7 +61,7 @@ public:
      *
      * @return True if the view is a primary view, false otherwise.
      */
-    inline bool primary() const noexcept
+    bool primary() const noexcept
     {
         return m_state.check(Primary);
     }
@@ -74,7 +73,7 @@ public:
      *
      * @param primary True to set the view as a primary view, false otherwise.
      */
-    inline void setPrimary(bool primary) noexcept
+    void setPrimary(bool primary) noexcept
     {
         m_state.setFlag(Primary, primary);
     }
@@ -87,7 +86,7 @@ public:
      *
      * @return True if custom position is enabled, false otherwise.
      */
-    inline bool customPosEnabled() const noexcept
+    bool customPosEnabled() const noexcept
     {
         return m_state.check(CustomPos);
     }
@@ -99,7 +98,7 @@ public:
      *
      * @param enable True to enable custom position, false to disable.
      */
-    inline void enableCustomPos(bool enable) noexcept
+    void enableCustomPos(bool enable) noexcept
     {
         m_state.setFlag(CustomPos, enable);
     }
@@ -112,7 +111,7 @@ public:
      *
      * @return True if custom input region is enabled, false otherwise.
      */
-    inline bool customInputRegionEnabled() const noexcept
+    bool customInputRegionEnabled() const noexcept
     {
         return m_state.check(CustomInputRegion);
     }
@@ -124,7 +123,7 @@ public:
      *
      * @param enabled True to enable custom input region, false to disable.
      */
-    inline void enableCustomInputRegion(bool enabled) noexcept
+    void enableCustomInputRegion(bool enabled) noexcept
     {
         if (enabled == m_state.check(CustomInputRegion))
             return;
@@ -142,7 +141,7 @@ public:
      *
      * @param pos The custom position as an LPoint object.
      */
-    inline void setCustomPos(const LPoint &pos) noexcept
+    void setCustomPos(const LPoint &pos) noexcept
     {
         setCustomPos(pos.x(), pos.y());
     }
@@ -155,7 +154,7 @@ public:
      * @param x The X coordinate of the custom position.
      * @param y The Y coordinate of the custom position.
      */
-    inline void setCustomPos(Int32 x, Int32 y) noexcept
+    void setCustomPos(Int32 x, Int32 y) noexcept
     {
         if (x == m_customPos.x() && y == m_customPos.y())
             return;
@@ -172,7 +171,7 @@ public:
      *
      * @return The custom position as an LPoint object.
      */
-    inline const LPoint &customPos() const noexcept
+    const LPoint &customPos() const noexcept
     {
         return m_customPos;
     }
@@ -184,7 +183,7 @@ public:
      *
      * @param region Pointer to the custom input region as an LRegion object.
      */
-    inline void setCustomInputRegion(const LRegion *region) noexcept
+    void setCustomInputRegion(const LRegion *region) noexcept
     {
         if (region)
         {
@@ -202,7 +201,7 @@ public:
      *
      * @return Pointer to the custom input region as an LRegion object.
      */
-    inline const LRegion *customInputRegion() const noexcept
+    const LRegion *customInputRegion() const noexcept
     {
         return m_customInputRegion.get();
     }
@@ -215,7 +214,7 @@ public:
      *
      * @param enabled True to enable the custom translucent region, false to disable.
      */
-    inline void enableCustomTranslucentRegion(bool enabled) noexcept
+    void enableCustomTranslucentRegion(bool enabled) noexcept
     {
         if (enabled == customTranslucentRegionEnabled())
             return;
@@ -231,7 +230,7 @@ public:
      *
      * @return True if the custom translucent region is enabled, false otherwise.
      */
-    inline bool customTranslucentRegionEnabled() const noexcept
+    bool customTranslucentRegionEnabled() const noexcept
     {
         return m_state.check(CustomTranslucentRegion);
     }
@@ -243,7 +242,7 @@ public:
      *
      * @param region Pointer to the custom translucent region as an LRegion object.
      */
-    inline void setCustomTranslucentRegion(const LRegion *region) noexcept
+    void setCustomTranslucentRegion(const LRegion *region) noexcept
     {
         if (region)
         {

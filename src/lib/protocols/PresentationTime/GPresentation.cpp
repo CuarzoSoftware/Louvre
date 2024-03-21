@@ -1,5 +1,6 @@
 #include <protocols/PresentationTime/RPresentationFeedback.h>
 #include <protocols/PresentationTime/GPresentation.h>
+#include <protocols/Wayland/RSurface.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 #include <LSeat.h>

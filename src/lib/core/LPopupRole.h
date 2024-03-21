@@ -188,7 +188,7 @@ public:
     LPRIVATE_IMP_UNIQUE(LPopupRole)
 
     /// @cond OMIT
-    void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
+    void handleSurfaceCommit(CommitOrigin origin) override;
     /// @endcond
 };
 

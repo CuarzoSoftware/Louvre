@@ -1,4 +1,5 @@
 #include <protocols/Wayland/RKeyboard.h>
+#include <protocols/Wayland/RSurface.h>
 #include <protocols/Wayland/GSeat.h>
 #include <private/LKeyboardPrivate.h>
 #include <private/LClientPrivate.h>

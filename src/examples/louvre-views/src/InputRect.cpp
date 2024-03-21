@@ -1,6 +1,7 @@
-#include "InputRect.h"
+#include <LPointer.h>
 #include <LPointerMoveEvent.h>
 #include <LPointerEnterEvent.h>
+#include "InputRect.h"
 
 InputRect::InputRect(LView *parent, void *userData, UInt32 id) : LLayerView(parent)
 {

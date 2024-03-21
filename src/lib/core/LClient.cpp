@@ -63,9 +63,9 @@ const LClientCursor &LClient::lastCursorRequest() const noexcept
     return imp()->lastCursorRequest;
 }
 
-LClient::LClient(const void *params) noexcept : m_imp { std::make_unique<LClientPrivate>(this, ((Params*)params)->client)} {}
+LClient::LClient(const void *params) : m_imp { std::make_unique<LClientPrivate>(this, ((Params*)params)->client)} {}
 
-LClient::~LClient() noexcept {}
+LClient::~LClient() {}
 
 bool LClient::ping(UInt32 serial) const noexcept
 {

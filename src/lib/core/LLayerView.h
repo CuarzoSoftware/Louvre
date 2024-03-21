@@ -23,7 +23,7 @@ public:
      *
      * @param parent The parent view, if any.
      */
-    inline LLayerView(LView *parent = nullptr) noexcept : LView(LView::Layer, false, parent) {}
+    LLayerView(LView *parent = nullptr) noexcept : LView(LView::Layer, false, parent) {}
 
     /**
      * @brief Destructor for LLayerView.
@@ -36,7 +36,7 @@ public:
      * @param x The x-coordinate in surface coordinates.
      * @param y The y-coordinate in surface coordinates.
      */
-    inline void setPos(Int32 x, Int32 y) noexcept
+    void setPos(Int32 x, Int32 y) noexcept
     {
         if (x == m_nativePos.x() && y == m_nativePos.y())
             return;
@@ -53,7 +53,7 @@ public:
      *
      * @param pos The position as an LPoint in surface coordinates.
      */
-    inline void setPos(const LPoint &pos) noexcept
+    void setPos(const LPoint &pos) noexcept
     {
         setPos(pos.x(), pos.y());
     }
@@ -63,7 +63,7 @@ public:
      *
      * @param size The size as an LSize in surface coordinates.
      */
-    inline void setSize(const LSize &size) noexcept
+    void setSize(const LSize &size) noexcept
     {
         setSize(size.w(), size.h());
     }
@@ -74,7 +74,7 @@ public:
      * @param w The width in surface coordinates.
      * @param h The height in surface coordinates.
      */
-    inline void setSize(Int32 w, Int32 h) noexcept
+    void setSize(Int32 w, Int32 h) noexcept
     {
         if (w == m_nativeSize.w() && h == m_nativeSize.h())
             return;
@@ -91,7 +91,7 @@ public:
      *
      * @param region The input region to be set.
      */
-    inline void setInputRegion(const LRegion *region) noexcept
+    void setInputRegion(const LRegion *region) noexcept
     {
         if (region)
         {

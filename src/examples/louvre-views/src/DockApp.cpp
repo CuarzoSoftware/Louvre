@@ -1,3 +1,4 @@
+#include <LPointer.h>
 #include <algorithm>
 #include "DockApp.h"
 #include "App.h"

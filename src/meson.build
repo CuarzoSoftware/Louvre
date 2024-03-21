@@ -89,7 +89,8 @@ globals = [
     'GammaControl',
     'TearingControl',
     'RelativePointer',
-    'PointerGestures'
+    'PointerGestures',
+    'SessionLock'
 ]
 
 foreach g : globals

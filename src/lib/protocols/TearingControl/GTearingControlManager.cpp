@@ -1,5 +1,6 @@
 #include <protocols/TearingControl/GTearingControlManager.h>
 #include <protocols/TearingControl/RTearingControl.h>
+#include <protocols/Wayland/RSurface.h>
 #include <private/LClientPrivate.h>
 
 using namespace Louvre::Protocols::TearingControl;

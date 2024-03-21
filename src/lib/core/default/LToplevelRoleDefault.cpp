@@ -1,6 +1,5 @@
 #include <protocols/XdgShell/RXdgSurface.h>
 #include <protocols/XdgShell/RXdgToplevel.h>
-#include <private/LBaseSurfaceRolePrivate.h>
 #include <LToplevelMoveSession.h>
 #include <LToplevelResizeSession.h>
 #include <LCompositor.h>

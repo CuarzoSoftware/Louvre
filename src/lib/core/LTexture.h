@@ -1,7 +1,7 @@
 #ifndef LTEXTURE_H
 #define LTEXTURE_H
 
-#include <LOutput.h>
+#include <LObject.h>
 #include <LRect.h>
 #include <LWeak.h>
 
@@ -155,7 +155,7 @@ public:
      *
      * @return The size of the texture.
      */
-    inline const LSize &sizeB() const noexcept
+    const LSize &sizeB() const noexcept
     {
         return m_sizeB;
     }
@@ -167,7 +167,7 @@ public:
      *
      * @return `true` if the texture has been initialized, `false` otherwise.
      */
-    inline bool initialized() const noexcept
+    bool initialized() const noexcept
     {
         return m_graphicBackendData != nullptr;
     }
@@ -187,7 +187,7 @@ public:
      *
      * @return The OpenGL texture target.
      */
-    inline GLenum target() const noexcept
+    GLenum target() const noexcept
     {
         if (initialized())
         {
@@ -208,7 +208,7 @@ public:
      *
      * @return The texture source type as an LTexture::BufferSourceType enum value.
      */
-    inline BufferSourceType sourceType() const noexcept
+    BufferSourceType sourceType() const noexcept
     {
         return m_sourceType;
     }
@@ -220,13 +220,13 @@ public:
      *
      * @return The DRM format of the texture.
      */
-    inline UInt32 format() const noexcept
+    UInt32 format() const noexcept
     {
         return m_format;
     }
 
     // TODO: add doc
-    inline UInt32 serial() const noexcept
+    UInt32 serial() const noexcept
     {
         return m_serial;
     }

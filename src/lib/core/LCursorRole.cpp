@@ -1,4 +1,3 @@
-#include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LCursorRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LPointerPrivate.h>
@@ -14,9 +13,9 @@
 using namespace Louvre;
 
 LCursorRole::LCursorRole(const void *params) :
-    LBaseSurfaceRole(((Params*)params)->surface->surfaceResource(),
-                       ((Params*)params)->surface,
-                       LSurface::Role::Cursor),
+    LBaseSurfaceRole(static_cast<const Params*>(params)->surface->surfaceResource(),
+                     static_cast<const Params*>(params)->surface,
+                     LSurface::Role::Cursor),
     LPRIVATE_INIT_UNIQUE(LCursorRole)
 {
     surface()->imp()->stateFlags.remove(LSurface::LSurfacePrivate::ReceiveInput);
@@ -43,7 +42,7 @@ const LPoint &LCursorRole::hotspotB() const
     return imp()->currentHotspotB;
 }
 
-void LCursorRole::handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin)
+void LCursorRole::handleSurfaceCommit(CommitOrigin origin)
 {
     L_UNUSED(origin);
 

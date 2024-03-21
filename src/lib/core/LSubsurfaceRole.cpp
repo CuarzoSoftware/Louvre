@@ -1,5 +1,4 @@
 #include <protocols/Wayland/RSurface.h>
-#include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LSubsurfaceRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LCompositorPrivate.h>
@@ -12,17 +11,14 @@ LSubsurfaceRole::LSubsurfaceRole
 )
     :LBaseSurfaceRole
     (
-        ((LSubsurfaceRole::Params*)params)->subsurface,
-        ((LSubsurfaceRole::Params*)params)->surface,
+        static_cast<const LSubsurfaceRole::Params*>(params)->subsurface,
+        static_cast<const LSubsurfaceRole::Params*>(params)->surface,
         LSurface::Role::Subsurface
     ),
     LPRIVATE_INIT_UNIQUE(LSubsurfaceRole)
 {}
 
-LSubsurfaceRole::~LSubsurfaceRole()
-{
-
-}
+LSubsurfaceRole::~LSubsurfaceRole(){/* TODO: inline */}
 
 bool LSubsurfaceRole::isSynced() const
 {
@@ -34,15 +30,15 @@ const LPoint &LSubsurfaceRole::localPos() const
     return imp()->currentLocalPos;
 }
 
-bool LSubsurfaceRole::acceptCommitRequest(Wayland::RSurface::CommitOrigin origin)
+bool LSubsurfaceRole::acceptCommitRequest(LBaseSurfaceRole::CommitOrigin origin)
 {
     if (isSynced())
     {
         imp()->hasCache = true;
-        return origin == Wayland::RSurface::Parent;
+        return origin == LBaseSurfaceRole::CommitOrigin::Parent;
     }
     else
-        return origin == Wayland::RSurface::Itself;
+        return origin == LBaseSurfaceRole::CommitOrigin::Itself;
 }
 
 static void checkMapping(LSurface *surface)
@@ -52,7 +48,7 @@ static void checkMapping(LSurface *surface)
                                 surface->buffer());
 }
 
-void LSubsurfaceRole::handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin)
+void LSubsurfaceRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
 {
     L_UNUSED(origin);
     imp()->hasCache = false;
@@ -91,7 +87,7 @@ void LSubsurfaceRole::handleParentCommit()
     }
 
     if (isSynced() && imp()->hasCache)
-        Wayland::RSurface::apply_commit(surface(), Wayland::RSurface::Parent);
+        Wayland::RSurface::apply_commit(surface(), LBaseSurfaceRole::CommitOrigin::Parent);
 }
 
 void LSubsurfaceRole::handleParentChange()

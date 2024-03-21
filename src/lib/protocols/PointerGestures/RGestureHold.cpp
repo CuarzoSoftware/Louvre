@@ -1,5 +1,6 @@
 #include <protocols/PointerGestures/GPointerGestures.h>
 #include <protocols/PointerGestures/RGestureHold.h>
+#include <protocols/Wayland/RSurface.h>
 #include <protocols/Wayland/RPointer.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>

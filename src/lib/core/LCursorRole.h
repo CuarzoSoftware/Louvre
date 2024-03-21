@@ -75,7 +75,7 @@ public:
     LPRIVATE_IMP_UNIQUE(LCursorRole)
 
     /// @cond OMIT
-    virtual void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
+    virtual void handleSurfaceCommit(CommitOrigin origin) override;
     virtual void handleSurfaceOffset(Int32 x, Int32 y) override;
     /// @endcond
 };

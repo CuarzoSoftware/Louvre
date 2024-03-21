@@ -1,10 +1,8 @@
 #ifndef LANIMATION_H
 #define LANIMATION_H
 
-#include <LCompositor.h>
 #include <LObject.h>
 #include <functional>
-#include <LTime.h>
 
 /**
  * @brief Time-based animations.
@@ -19,7 +17,7 @@
  *
  * After the animation finishes, the `onFinish()` callback is triggered, and the value() property has a value of 1.f.\n
  */
-class Louvre::LAnimation : public LObject
+class Louvre::LAnimation final : public LObject
 {
 public:
 
@@ -49,8 +47,7 @@ public:
     ~LAnimation();
 
     /// @cond OMIT
-    LAnimation(const LAnimation&) = delete;
-    LAnimation& operator= (const LAnimation&) = delete;
+    LCLASS_NO_COPY(LAnimation)
     /// @endcond
 
     /**
@@ -62,12 +59,7 @@ public:
      * @param onUpdate A callback function triggered each time the value() property changes. `nullptr` can be passed if not used.
      * @param onFinish A callback function triggered once the value() property reaches 1.f. `nullptr` can be passed if not used.
      */
-    inline static void oneShot(UInt32 durationMs, const Callback &onUpdate = nullptr, const Callback &onFinish = nullptr) noexcept
-    {
-        LAnimation *anim { new LAnimation(durationMs, onUpdate, onFinish) };
-        anim->m_destroyOnFinish = true;
-        anim->start();
-    }
+    static void oneShot(UInt32 durationMs, const Callback &onUpdate = nullptr, const Callback &onFinish = nullptr) noexcept;
 
     /**
      * @brief Sets the `onUpdate()` callback handler function.
@@ -76,13 +68,7 @@ public:
      *
      * @param onUpdate A reference to the callback function. Pass `nullptr` to disable the callback.
      */
-    inline void setOnUpdateCallback(const Callback &onUpdate) noexcept
-    {
-        if (m_running)
-            return;
-
-        m_onUpdate = onUpdate;
-    }
+    void setOnUpdateCallback(const Callback &onUpdate) noexcept;
 
     /**
      * @brief Sets the `onFinish()` callback handler function.
@@ -91,13 +77,7 @@ public:
      *
      * @param onFinish A reference to the callback function. Pass `nullptr` to disable the callback.
      */
-    inline void setOnFinishCallback(const Callback &onFinish) noexcept
-    {
-        if (m_running)
-            return;
-
-        m_onFinish = onFinish;
-    }
+    void setOnFinishCallback(const Callback &onFinish) noexcept;
 
     /**
      * @brief Sets the duration of the animation in milliseconds.
@@ -108,7 +88,7 @@ public:
      *
      * @param durationMs The duration of the animation in milliseconds.
      */
-    inline void setDuration(UInt32 durationMs) noexcept
+    void setDuration(UInt32 durationMs) noexcept
     {
         if (m_running)
             return;
@@ -123,7 +103,7 @@ public:
      *
      * @return The duration of the animation in milliseconds.
      */
-    inline UInt32 duration() const noexcept
+    UInt32 duration() const noexcept
     {
         return m_duration;
     }
@@ -135,7 +115,7 @@ public:
      *
      * @return The interpolated completion value ranging from 0 to 1.
      */
-    inline Float32 value() const noexcept
+    Float32 value() const noexcept
     {
         return m_value;
     }
@@ -143,16 +123,7 @@ public:
     /**
      * @brief Starts the animation.
      */
-    inline void start() noexcept
-    {
-        if (m_running)
-            return;
-
-        m_value = 0.f;
-        m_beginTime = LTime::ms();
-        m_running = true;
-        compositor()->repaintAllOutputs();
-    }
+    void start() noexcept;
 
     /**
      * @brief Halts the animation before its duration is reached.
@@ -160,27 +131,14 @@ public:
      * The stop() method can be used to stop the animation before its duration is reached.
      * If called before the animation finishes, the `onFinish()` callback is triggered immediately, and the value() property is set to 1.
      */
-    inline void stop()
-    {
-        if (!m_running)
-            return;
-
-        m_value = 1.f;
-        m_running = false;
-
-        if (m_onFinish)
-            m_onFinish(this);
-
-        if (m_destroyOnFinish)
-            m_pendingDestroy = true;
-    }
+    void stop();
 
     /**
      * @brief Checks if the animation is currently running.
      *
      * @return `true` if running, `false` otherwise.
      */
-    inline bool running() const noexcept
+    bool running() const noexcept
     {
         return m_running;
     }

@@ -1,6 +1,7 @@
 #include <private/LCompositorPrivate.h>
 #include <LAnimation.h>
 #include <algorithm>
+#include <LTime.h>
 
 using namespace Louvre;
 
@@ -22,4 +23,53 @@ LAnimation::~LAnimation()
         compositor()->imp()->animationsVectorChanged = true;
         compositor()->imp()->animations.erase(it);
     }
+}
+
+void LAnimation::oneShot(UInt32 durationMs, const Callback &onUpdate, const Callback &onFinish) noexcept
+{
+    LAnimation *anim { new LAnimation(durationMs, onUpdate, onFinish) };
+    anim->m_destroyOnFinish = true;
+    anim->start();
+}
+
+void LAnimation::setOnUpdateCallback(const Callback &onUpdate) noexcept
+{
+    if (m_running)
+        return;
+
+    m_onUpdate = onUpdate;
+}
+
+void LAnimation::setOnFinishCallback(const Callback &onFinish) noexcept
+{
+    if (m_running)
+        return;
+
+    m_onFinish = onFinish;
+}
+
+void LAnimation::start() noexcept
+{
+    if (m_running)
+        return;
+
+    m_value = 0.f;
+    m_beginTime = LTime::ms();
+    m_running = true;
+    compositor()->repaintAllOutputs();
+}
+
+void LAnimation::stop()
+{
+    if (!m_running)
+        return;
+
+    m_value = 1.f;
+    m_running = false;
+
+    if (m_onFinish)
+        m_onFinish(this);
+
+    if (m_destroyOnFinish)
+        m_pendingDestroy = true;
 }

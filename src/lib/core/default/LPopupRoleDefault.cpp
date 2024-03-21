@@ -1,7 +1,6 @@
 #include <protocols/Wayland/GSeat.h>
 #include <private/LPopupRolePrivate.h>
 #include <private/LSurfacePrivate.h>
-#include <private/LBaseSurfaceRolePrivate.h>
 #include <LTouchDownEvent.h>
 #include <LTouchPoint.h>
 #include <LTouch.h>

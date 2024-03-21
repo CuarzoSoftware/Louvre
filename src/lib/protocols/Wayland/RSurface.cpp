@@ -5,7 +5,6 @@
 #include <protocols/Wayland/RCallback.h>
 #include <protocols/Wayland/GCompositor.h>
 #include <protocols/Wayland/RSurface.h>
-#include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LSeatPrivate.h>
 #include <LCursorRole.h>
@@ -112,12 +111,6 @@ RSurface::~RSurface()
     // Clear parent and pending parent
     lSurface->imp()->setParent(nullptr);
 
-    if (lSurface->imp()->current.role)
-        lSurface->imp()->current.role->imp()->surface = nullptr;
-
-    if (lSurface->imp()->pending.role)
-        lSurface->imp()->pending.role->imp()->surface = nullptr;
-
     // Remove the surface from the compositor list
     compositor()->imp()->surfaces.erase(lSurface->imp()->compositorLink);
 
@@ -174,7 +167,7 @@ void RSurface::commit(wl_client */*client*/, wl_resource *resource)
 }
 
 // The origin params indicates who requested the commit for this surface (itself or its parent surface)
-void RSurface::apply_commit(LSurface *surface, CommitOrigin origin)
+void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin origin)
 {
     // Check if the surface role wants to apply the commit
     if (surface->role() && !surface->role()->acceptCommitRequest(origin))

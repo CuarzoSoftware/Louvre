@@ -1,6 +1,4 @@
 #include <private/LDNDIconRolePrivate.h>
-#include <private/LBaseSurfaceRolePrivate.h>
-
 #include <LSurface.h>
 
 using namespace Louvre;

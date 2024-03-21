@@ -1,3 +1,4 @@
+#include <LCompositor.h>
 #include <LLog.h>
 #include <unistd.h>
 #include <string.h>

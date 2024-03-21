@@ -2,7 +2,7 @@
 #define LTEXTUREVIEW_H
 
 #include <LView.h>
-#include <LTexture.h>
+#include <LWeak.h>
 
 /**
  * @brief View for displaying textures
@@ -40,7 +40,7 @@ public:
      * @param texture The LTexture to be used as the view's texture. Default is nullptr.
      * @param parent The parent LView of the LTextureView. Default is nullptr.
      */
-    inline LTextureView(LTexture *texture = nullptr, LView *parent = nullptr) noexcept : LView(LView::Texture, true, parent)
+    LTextureView(LTexture *texture = nullptr, LView *parent = nullptr) noexcept : LView(LView::Texture, true, parent)
     {
         m_texture.setOnDestroyCallback([this](auto)
                                        {
@@ -62,7 +62,7 @@ public:
      * @param x The x-coordinate of the position.
      * @param y The y-coordinate of the position.
      */
-    inline void setPos(Int32 x, Int32 y) noexcept
+    void setPos(Int32 x, Int32 y) noexcept
     {
         if (x == m_nativePos.x() && y == m_nativePos.y())
             return;
@@ -79,7 +79,7 @@ public:
      *
      * @param pos The position as an LPoint object.
      */
-    inline void setPos(const LPoint &pos) noexcept
+    void setPos(const LPoint &pos) noexcept
     {
         setPos(pos.x(), pos.y());
     }
@@ -107,7 +107,7 @@ public:
      *
      * @param scale The buffer scale factor.
      */
-    inline void setBufferScale(Float32 scale) noexcept
+    void setBufferScale(Float32 scale) noexcept
     {
         if (scale < 0.25f)
             scale = 0.25f;
@@ -136,7 +136,7 @@ public:
      *
      * @return A pointer to the current LTexture used by the view.
      */
-    inline LTexture *texture() const noexcept
+    LTexture *texture() const noexcept
     {
         return m_texture.get();
     }
@@ -146,7 +146,7 @@ public:
      *
      * @param enabled True to enable custom destination size, false to disable.
      */
-    inline void enableDstSize(bool enabled) noexcept
+    void enableDstSize(bool enabled) noexcept
     {
         if (enabled != dstSizeEnabled())
         {
@@ -161,7 +161,7 @@ public:
      *
      * @return True if custom destination size is enabled, false otherwise.
      */
-    inline bool dstSizeEnabled() const noexcept
+    bool dstSizeEnabled() const noexcept
     {
         return m_state.check(CustomDstSize);
     }
@@ -172,7 +172,7 @@ public:
      * @param w The width of the custom destination size.
      * @param h The height of the custom destination size.
      */
-    inline void setDstSize(Int32 w, Int32 h) noexcept
+    void setDstSize(Int32 w, Int32 h) noexcept
     {
         if (w < 0)
             w = 0;
@@ -196,7 +196,7 @@ public:
      *
      * @param dstSize The custom destination size as an LSize object.
      */
-    inline void setDstSize(const LSize &dstSize) noexcept
+    void setDstSize(const LSize &dstSize) noexcept
     {
         setDstSize(dstSize.w(), dstSize.h());
     }
@@ -209,7 +209,7 @@ public:
      *
      * @param enabled A boolean value indicating whether custom coloring should be enabled (true) or disabled (false).
      */
-    inline void enableCustomColor(bool enabled) noexcept
+    void enableCustomColor(bool enabled) noexcept
     {
         if (customColorEnabled() != enabled)
         {
@@ -225,7 +225,7 @@ public:
      *
      * @return `true` if custom coloring is enabled, `false` otherwise.
      */
-    inline bool customColorEnabled() const noexcept
+    bool customColorEnabled() const noexcept
     {
         return m_state.check(CustomColor);
     }
@@ -237,7 +237,7 @@ public:
      *
      * @param color The LRGBF object representing the custom color.
      */
-    inline void setCustomColor(const LRGBF &color) noexcept
+    void setCustomColor(const LRGBF &color) noexcept
     {
         if (m_customColor.r == color.r && m_customColor.g == color.g && m_customColor.b == color.b)
             return;
@@ -256,7 +256,7 @@ public:
      *
      * @return A constant reference to the LRGBF object representing the current custom color.
      */
-    inline const LRGBF &customColor() const noexcept
+    const LRGBF &customColor() const noexcept
     {
         return m_customColor;
     }
@@ -272,7 +272,7 @@ public:
      * @param enabled If `true`, the custom source rectangle is enabled; if `false`, the entire
      *                texture is used as the source.
      */
-    inline void enableSrcRect(bool enabled) noexcept
+    void enableSrcRect(bool enabled) noexcept
     {
         if (srcRectEnabled() == enabled)
             return;
@@ -292,7 +292,7 @@ public:
      * @see enableSrcRect()
      * @see setSrcRect()
      */
-    inline bool srcRectEnabled() const noexcept
+    bool srcRectEnabled() const noexcept
     {
         return m_state.check(CustomSrcRect);
     }
@@ -307,7 +307,7 @@ public:
      *
      * @param srcRect The source rect in surface coordinates.
      */
-    inline void setSrcRect(const LRectF &srcRect) noexcept
+    void setSrcRect(const LRectF &srcRect) noexcept
     {
         if (m_customSrcRect == srcRect)
             return;
@@ -326,7 +326,7 @@ public:
      *
      * @return A constant reference to the source rect specified using setSrcRect().
      */
-    inline const LRectF &srcRect() const noexcept
+    const LRectF &srcRect() const noexcept
     {
         return m_srcRect;
     }
@@ -344,7 +344,7 @@ public:
      *
      * @param transform The transform to be applied for proper display.
      */
-    inline void setTransform(LFramebuffer::Transform transform) noexcept
+    void setTransform(LFramebuffer::Transform transform) noexcept
     {
         if (m_transform == transform)
             return;
@@ -359,7 +359,7 @@ public:
      *
      * The default value is LFramebuffer::Normal.
      */
-    inline LFramebuffer::Transform transform() const noexcept
+    LFramebuffer::Transform transform() const noexcept
     {
         return m_transform;
     }

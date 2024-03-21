@@ -40,6 +40,7 @@ public:
 
     struct Params;
 
+    // TODO add doc
     struct PointerEvents
     {
         LPointerEnterEvent enter;
@@ -82,12 +83,12 @@ public:
      *
      * @param params Internal library parameters passed in the LCompositor::createClientRequest() virtual constructor.
      */
-    LClient(const void *params) noexcept;
+    LClient(const void *params);
 
     /**
      * @brief Destructor of the LClient class.
      */
-    virtual ~LClient() noexcept;
+    ~LClient();
 
     /// @cond OMIT
     LClient(const LClient&) = delete;

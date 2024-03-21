@@ -663,7 +663,7 @@ public:
     LPRIVATE_IMP_UNIQUE(LToplevelRole)
 
     /// @cond OMIT
-    void handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin origin) override;
+    void handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin) override;
     /// @endcond
 };
 

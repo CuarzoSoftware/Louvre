@@ -1,50 +1,34 @@
-#include <private/LBaseSurfaceRolePrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <LBaseSurfaceRole.h>
 #include <LCompositor.h>
 
 using namespace Louvre;
 
-LBaseSurfaceRole::LBaseSurfaceRole(LResource *resource, LSurface *surface, UInt32 roleId) : LPRIVATE_INIT_UNIQUE(LBaseSurfaceRole)
-{
-    imp()->resource = resource;
-    imp()->surface = surface;
-    imp()->roleId = roleId;
-}
+LBaseSurfaceRole::LBaseSurfaceRole(LResource *resource, LSurface *surface, UInt32 roleId) noexcept:
+    m_surface(surface),
+    m_resource(resource),
+    m_roleId(roleId)
+{}
 
 LBaseSurfaceRole::~LBaseSurfaceRole()
 {
-    if (imp()->surface)
+    if (surface())
     {
-        LSurface *surface = imp()->surface;
-        imp()->surface = nullptr;
-        surface->imp()->setPendingRole(nullptr);
-        surface->imp()->applyPendingRole();
-        surface->imp()->setMapped(false);
+        auto &tmp { *surface() };
+        m_surface.reset();
+        tmp.imp()->setPendingRole(nullptr);
+        tmp.imp()->applyPendingRole();
+        tmp.imp()->setMapped(false);
     }   
 }
 
-UInt32 LBaseSurfaceRole::roleId() const
-{
-    return imp()->roleId;
-}
-
-LSurface *LBaseSurfaceRole::surface() const
-{
-    return imp()->surface;
-}
-
-LResource *LBaseSurfaceRole::resource() const
-{
-    return imp()->resource;
-}
-
-bool LBaseSurfaceRole::acceptCommitRequest(Wayland::RSurface::CommitOrigin origin)
+bool LBaseSurfaceRole::acceptCommitRequest(CommitOrigin origin)
 {
     L_UNUSED(origin);
     return true;
 }
 
-void LBaseSurfaceRole::handleSurfaceCommit(Wayland::RSurface::CommitOrigin origin)
+void LBaseSurfaceRole::handleSurfaceCommit(CommitOrigin origin)
 {
     L_UNUSED(origin);
 
