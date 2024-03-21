@@ -1,18 +1,22 @@
-#include <protocols/XdgShell/private/RXdgPopupPrivate.h>
-#include <protocols/XdgShell/private/RXdgSurfacePrivate.h>
-#include <protocols/XdgShell/private/RXdgPositionerPrivate.h>
+#include <protocols/XdgShell/RXdgPopup.h>
+#include <protocols/XdgShell/RXdgSurface.h>
+#include <protocols/XdgShell/RXdgPositioner.h>
 #include <protocols/XdgShell/xdg-shell.h>
 #include <private/LPointerPrivate.h>
 #include <private/LPopupRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <LCompositor.h>
+#include <LClient.h>
+#include <LLog.h>
 
-static struct xdg_popup_interface xdg_popup_implementation =
+using namespace Louvre::Protocols::XdgShell;
+
+static const struct xdg_popup_interface imp
 {
-    .destroy = &RXdgPopup::RXdgPopupPrivate::destroy,
-    .grab = &RXdgPopup::RXdgPopupPrivate::grab,
+    .destroy = &RXdgPopup::destroy,
+    .grab = &RXdgPopup::grab,
 #if LOUVRE_XDG_WM_BASE_VERSION >= 3
-    .reposition = &RXdgPopup::RXdgPopupPrivate::reposition
+    .reposition = &RXdgPopup::reposition
 #else
     .reposition = NULL
 #endif
@@ -20,33 +24,33 @@ static struct xdg_popup_interface xdg_popup_implementation =
 
 RXdgPopup::RXdgPopup
 (
-    RXdgSurface *rXdgSurface,
-    RXdgSurface *rXdgParentSurface,
-    RXdgPositioner *rXdgPositioner,
+    RXdgSurface *xdgSurfaceRes,
+    RXdgSurface *xdgParentSurfaceRes,
+    RXdgPositioner *xdgPositionerRes,
     UInt32 id
 )
     :LResource
     (
-        rXdgSurface->client(),
+        xdgSurfaceRes->client(),
         &xdg_popup_interface,
-        rXdgSurface->version(),
+        xdgSurfaceRes->version(),
         id,
-        &xdg_popup_implementation
+        &imp
     ),
-    LPRIVATE_INIT_UNIQUE(RXdgPopup)
+    m_xdgSurfaceRes(xdgSurfaceRes)
 {
-    imp()->rXdgSurface = rXdgSurface;
-    rXdgSurface->imp()->rXdgPopup = this;
+    xdgSurfaceRes->m_xdgPopupRes.reset(this);
 
-    LPopupRole::Params popupRoleParams;
-    popupRoleParams.popup = this;
-    popupRoleParams.surface = rXdgSurface->surface();
-    popupRoleParams.positioner = &rXdgPositioner->imp()->lPositioner;
+    LPopupRole::Params popupRoleParams
+    {
+        this,
+        xdgSurfaceRes->surface(),
+        &xdgPositionerRes->m_positioner
+    };
 
-    imp()->lPopupRole = compositor()->createPopupRoleRequest(&popupRoleParams);
-
-    rXdgSurface->surface()->imp()->setParent(rXdgParentSurface->surface());
-    rXdgSurface->surface()->imp()->setPendingRole(imp()->lPopupRole);
+    m_popupRole.reset(compositor()->createPopupRoleRequest(&popupRoleParams));
+    xdgSurfaceRes->surface()->imp()->setParent(xdgParentSurfaceRes->surface());
+    xdgSurfaceRes->surface()->imp()->setPendingRole(popupRole());
 }
 
 RXdgPopup::~RXdgPopup()
@@ -58,7 +62,7 @@ RXdgPopup::~RXdgPopup()
             if (child->popup() && child->mapped())
             {
                 wl_resource_post_error(
-                    xdgSurfaceResource()->resource(),
+                    xdgSurfaceRes()->resource(),
                     XDG_WM_BASE_ERROR_NOT_THE_TOPMOST_POPUP,
                     "The client tried to map or destroy a non-topmost popup.");
             }
@@ -67,37 +71,67 @@ RXdgPopup::~RXdgPopup()
         popupRole()->surface()->imp()->setKeyboardGrabToParent();        
     }
 
-    compositor()->destroyPopupRoleRequest(imp()->lPopupRole);
-
-    if (xdgSurfaceResource())
-        xdgSurfaceResource()->imp()->rXdgPopup = nullptr;
-
-    delete imp()->lPopupRole;
+    compositor()->destroyPopupRoleRequest(popupRole());
 }
 
-RXdgSurface *RXdgPopup::xdgSurfaceResource() const
+/******************** REQUESTS ********************/
+
+void RXdgPopup::destroy(wl_client */*client*/, wl_resource *resource)
 {
-    return imp()->rXdgSurface;
+    wl_resource_destroy(resource);
 }
 
-LPopupRole *RXdgPopup::popupRole() const
+void RXdgPopup::grab(wl_client */*client*/, wl_resource *resource, wl_resource */*seat*/, UInt32 serial)
 {
-    return imp()->lPopupRole;
+    auto &res { *static_cast<RXdgPopup*>(wl_resource_get_user_data(resource)) };
+
+    if (!res.popupRole()->surface())
+    {
+        LLog::warning("[RXdgPopup::grab] XDG Popup keyboard grab request without surface. Ignoring it.");
+        return;
+    }
+
+    const LEvent *triggeringEvent { res.client()->findEventBySerial(serial) };
+
+    if (!triggeringEvent)
+    {
+        LLog::warning("[RXdgPopup::grab] XDG Popup keyboard grab request without valid event serial. Ignoring it.");
+        res.popupRole()->dismiss();
+        return;
+    }
+
+    // TODO use LWeak
+    res.popupRole()->grabKeyboardRequest(*triggeringEvent);
+
+    // Check if the user accepted the grab
+    if (seat()->keyboard()->grab() != res.popupRole()->surface())
+        res.popupRole()->dismiss();
 }
 
-bool RXdgPopup::configure(Int32 x, Int32 y, Int32 width, Int32 height)
+#if LOUVRE_XDG_WM_BASE_VERSION >= 3
+void RXdgPopup::reposition(wl_client *client, wl_resource *resource, wl_resource *positioner, UInt32 token)
+{
+    L_UNUSED(client);
+    RXdgPopup *rXdgPopup = (RXdgPopup*)wl_resource_get_user_data(resource);
+    RXdgPositioner *rXdgPositioner = (RXdgPositioner*)wl_resource_get_user_data(positioner);
+    rXdgPopup->popupRole()->imp()->positioner.imp()->data = rXdgPositioner->positioner().imp()->data;
+    rXdgPopup->popupRole()->repositionRequest(token);
+}
+#endif
+
+/******************** EVENTS ********************/
+
+void RXdgPopup::configure(Int32 x, Int32 y, Int32 width, Int32 height) noexcept
 {
     xdg_popup_send_configure(resource(), x, y, width, height);
-    return true;
 }
 
-bool RXdgPopup::popupDone()
+void RXdgPopup::popupDone() noexcept
 {
     xdg_popup_send_popup_done(resource());
-    return true;
 }
 
-bool RXdgPopup::repositioned(UInt32 token)
+bool RXdgPopup::repositioned(UInt32 token) noexcept
 {
 #if LOUVRE_XDG_WM_BASE_VERSION >= 3
     if (version() >= 3)

@@ -1,32 +1,49 @@
-#include <protocols/RelativePointer/private/GRelativePointerManagerPrivate.h>
-#include <protocols/RelativePointer/relative-pointer-unstable-v1.h>
+#include <protocols/RelativePointer/GRelativePointerManager.h>
+#include <protocols/RelativePointer/RRelativePointer.h>
 #include <private/LClientPrivate.h>
 
 using namespace Louvre::Protocols::RelativePointer;
 
+static const struct zwp_relative_pointer_manager_v1_interface imp
+{
+    .destroy = &GRelativePointerManager::destroy,
+    .get_relative_pointer = &GRelativePointerManager::get_relative_pointer
+};
+
 GRelativePointerManager::GRelativePointerManager
-    (
-        wl_client *client,
-        const wl_interface *interface,
+    (wl_client *client,
         Int32 version,
-        UInt32 id,
-        const void *implementation
-        )
+        UInt32 id) noexcept
     :LResource
     (
         client,
-        interface,
+        &zwp_relative_pointer_manager_v1_interface,
         version,
         id,
-        implementation
-    ),
-    LPRIVATE_INIT_UNIQUE(GRelativePointerManager)
+        &imp
+    )
 {
     this->client()->imp()->relativePointerManagerGlobals.push_back(this);
 }
 
-GRelativePointerManager::~GRelativePointerManager()
+GRelativePointerManager::~GRelativePointerManager() noexcept
 {
     LVectorRemoveOneUnordered(client()->imp()->relativePointerManagerGlobals, this);
 }
 
+void GRelativePointerManager::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GRelativePointerManager(client, version, id);
+}
+
+void GRelativePointerManager::destroy(wl_client */*client*/, wl_resource *resource) noexcept
+{
+    wl_resource_destroy(resource);
+}
+
+void GRelativePointerManager::get_relative_pointer(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *pointer) noexcept
+{
+    new RRelativePointer(static_cast<Wayland::RPointer*>(wl_resource_get_user_data(pointer)),
+                         id,
+                         wl_resource_get_version(resource));
+}

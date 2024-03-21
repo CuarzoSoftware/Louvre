@@ -2,22 +2,66 @@
 #define RXDGSURFACE_H
 
 #include <LResource.h>
+#include <LRect.h>
 
-class Louvre::Protocols::XdgShell::RXdgSurface : public LResource
+class Louvre::Protocols::XdgShell::RXdgSurface final : public LResource
 {
 public:
-    RXdgSurface(GXdgWmBase *gXdgWmBase, LSurface *lSurface, UInt32 id);
-    ~RXdgSurface();
+    GXdgWmBase *xdgWmBaseRes() const noexcept
+    {
+        return m_xdgWmBaseRes.get();
+    }
 
-    GXdgWmBase *xdgWmBaseGlobal() const;
-    LSurface *surface() const;
-    RXdgToplevel *xdgToplevelResource() const;
-    RXdgPopup *xdgPopupResource() const;
+    LSurface *surface() const noexcept
+    {
+        return m_surface.get();
+    }
+
+    RXdgToplevel *xdgToplevelRes() const noexcept
+    {
+        return m_xdgToplevelRes.get();
+    }
+
+    RXdgPopup *xdgPopupRes() const noexcept
+    {
+        return m_xdgPopupRes.get();
+    }
+
+    const LRect &windowGeometry() const noexcept
+    {
+        return m_currentWindowGeometry;
+    }
+
+    /******************** REQUESTS ********************/
+
+    static void destroy(wl_client *client, wl_resource *resource) ;
+    static void get_toplevel(wl_client *client,wl_resource *resource, UInt32 id);
+    static void get_popup(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *parent, wl_resource *positioner);
+    static void set_window_geometry(wl_client *client, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height);
+    static void ack_configure(wl_client *client, wl_resource *resource, UInt32 serial);
+
+    /******************** EVENTS ********************/
 
     // Since 1
-    bool configure(UInt32 serial) const;
+    void configure(UInt32 serial) noexcept;
 
-    LPRIVATE_IMP_UNIQUE(RXdgSurface)
+private:
+    friend class Louvre::Protocols::XdgShell::GXdgWmBase;
+    friend class Louvre::Protocols::XdgShell::RXdgToplevel;
+    friend class Louvre::Protocols::XdgShell::RXdgPopup;
+    friend class Louvre::LToplevelRole;
+    friend class Louvre::LPopupRole;
+
+    RXdgSurface(GXdgWmBase *xdgWmBaseRes, LSurface *surface, UInt32 id) noexcept;
+    ~RXdgSurface() noexcept;
+    LWeak<GXdgWmBase> m_xdgWmBaseRes;
+    LWeak<LSurface> m_surface;
+    LWeak<RXdgPopup> m_xdgPopupRes;
+    LWeak<RXdgToplevel> m_xdgToplevelRes;
+    LRect m_currentWindowGeometry;
+    LRect m_pendingWindowGeometry;
+    bool m_windowGeometrySet { false };
+    bool m_hasPendingWindowGeometry { false };
 };
 
 #endif // RXDGSURFACE_H

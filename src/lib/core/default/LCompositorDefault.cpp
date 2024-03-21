@@ -1,19 +1,17 @@
-#include <protocols/XdgShell/private/GXdgWmBasePrivate.h>
-#include <protocols/XdgDecoration/private/GXdgDecorationManagerPrivate.h>
-#include <protocols/LinuxDMABuf/private/GLinuxDMABufPrivate.h>
-#include <protocols/PresentationTime/private/GPresentationPrivate.h>
-#include <protocols/Viewporter/private/GViewporterPrivate.h>
-#include <protocols/FractionalScale/private/GFractionalScaleManagerPrivate.h>
-#include <protocols/GammaControl/private/GGammaControlManagerPrivate.h>
-#include <protocols/TearingControl/private/GTearingControlManagerPrivate.h>
-#include <protocols/RelativePointer/private/GRelativePointerManagerPrivate.h>
-#include <protocols/PointerGestures/private/GPointerGesturesPrivate.h>
-
-#include <protocols/Wayland/GSubcompositor.h>
-#include <protocols/Wayland/GCompositor.h>
+#include <protocols/RelativePointer/GRelativePointerManager.h>
+#include <protocols/FractionalScale/GFractionalScaleManager.h>
+#include <protocols/TearingControl/GTearingControlManager.h>
+#include <protocols/XdgDecoration/GXdgDecorationManager.h>
+#include <protocols/GammaControl/GGammaControlManager.h>
+#include <protocols/PointerGestures/GPointerGestures.h>
+#include <protocols/PresentationTime/GPresentation.h>
 #include <protocols/Wayland/GDataDeviceManager.h>
+#include <protocols/LinuxDMABuf/GLinuxDMABuf.h>
+#include <protocols/Viewporter/GViewporter.h>
+#include <protocols/Wayland/GSubcompositor.h>
+#include <protocols/XdgShell/GXdgWmBase.h>
+#include <protocols/Wayland/GCompositor.h>
 #include <protocols/Wayland/GSeat.h>
-
 #include <LCompositor.h>
 #include <LToplevelRole.h>
 #include <LCursor.h>
@@ -53,34 +51,34 @@ bool LCompositor::createGlobalsRequest()
                      LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION, this, &Wayland::GDataDeviceManager::bind);
 
     wl_global_create(display(), &xdg_wm_base_interface,
-                     LOUVRE_XDG_WM_BASE_VERSION, this, &GXdgWmBase::GXdgWmBasePrivate::bind);
+                     LOUVRE_XDG_WM_BASE_VERSION, this, &XdgShell::GXdgWmBase::bind);
 
     wl_global_create(display(), &zxdg_decoration_manager_v1_interface,
-                     LOUVRE_XDG_DECORATION_MANAGER_VERSION, this, &GXdgDecorationManager::GXdgDecorationManagerPrivate::bind);
+                     LOUVRE_XDG_DECORATION_MANAGER_VERSION, this, &XdgDecoration::GXdgDecorationManager::bind);
 
     wl_global_create(display(), &zwp_linux_dmabuf_v1_interface,
-                     LOUVRE_LINUX_DMA_BUF_VERSION, this, &GLinuxDMABuf::GLinuxDMABufPrivate::bind);
+                     LOUVRE_LINUX_DMA_BUF_VERSION, this, &LinuxDMABuf::GLinuxDMABuf::bind);
 
     wl_global_create(display(), &wp_presentation_interface,
-                     LOUVRE_PRESENTATION_VERSION, this, &GPresentation::GPresentationPrivate::bind);
+                     LOUVRE_PRESENTATION_VERSION, this, &PresentationTime::GPresentation::bind);
 
     wl_global_create(display(), &wp_viewporter_interface,
-                     LOUVRE_VIEWPORTER_VERSION, this, &GViewporter::GViewporterPrivate::bind);
+                     LOUVRE_VIEWPORTER_VERSION, this, &Viewporter::GViewporter::bind);
 
     wl_global_create(display(), &wp_fractional_scale_manager_v1_interface,
-                     LOUVRE_FRACTIONAL_SCALE_VERSION, this, &GFractionalScaleManager::GFractionalScaleManagerPrivate::bind);
+                     LOUVRE_FRACTIONAL_SCALE_VERSION, this, &FractionalScale::GFractionalScaleManager::bind);
 
     wl_global_create(display(), &zwlr_gamma_control_manager_v1_interface,
-                     LOUVRE_GAMMA_CONTROL_MANAGER_VERSION, this, &GGammaControlManager::GGammaControlManagerPrivate::bind);
+                     LOUVRE_GAMMA_CONTROL_MANAGER_VERSION, this, &GammaControl::GGammaControlManager::bind);
 
     wl_global_create(display(), &wp_tearing_control_manager_v1_interface,
-                     LOUVRE_TEARING_CONTROL_MANAGER_VERSION, this, &GTearingControlManager::GTearingControlManagerPrivate::bind);
+                     LOUVRE_TEARING_CONTROL_MANAGER_VERSION, this, &TearingControl::GTearingControlManager::bind);
 
     wl_global_create(display(), &zwp_relative_pointer_manager_v1_interface,
-                     LOUVRE_RELATIVE_POINTER_MANAGER_VERSION, this, &GRelativePointerManager::GRelativePointerManagerPrivate::bind);
+                     LOUVRE_RELATIVE_POINTER_MANAGER_VERSION, this, &RelativePointer::GRelativePointerManager::bind);
 
     wl_global_create(display(), &zwp_pointer_gestures_v1_interface,
-                     LOUVRE_POINTER_GESTURES_VERSION, this, &GPointerGestures::GPointerGesturesPrivate::bind);
+                     LOUVRE_POINTER_GESTURES_VERSION, this, &PointerGestures::GPointerGestures::bind);
 
     wl_display_init_shm(display());
 

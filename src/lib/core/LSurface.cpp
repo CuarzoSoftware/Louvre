@@ -1,5 +1,4 @@
-#include <protocols/PresentationTime/private/RPresentationFeedbackPrivate.h>
-#include <protocols/LinuxDMABuf/private/LDMABufferPrivate.h>
+#include <protocols/PresentationTime/RPresentationFeedback.h>
 #include <protocols/Wayland/RCallback.h>
 #include <protocols/Wayland/GOutput.h>
 #include <private/LSurfacePrivate.h>
@@ -279,15 +278,15 @@ void LSurface::requestNextFrame(bool clearDamage)
 
     for (auto *presentation : imp()->presentationFeedbackResources)
     {
-        if (presentation->imp()->commitId >= 0 && !presentation->imp()->output.get())
+        if (presentation->m_commitId >= 0 && !presentation->m_output.get())
         {
-            if (presentation->imp()->commitId == imp()->commitId && compositor()->imp()->currentOutput)
+            if (presentation->m_commitId == imp()->commitId && compositor()->imp()->currentOutput)
             {
-                presentation->imp()->outputSet = true;
-                presentation->imp()->output.reset(compositor()->imp()->currentOutput);
+                presentation->m_outputSet = true;
+                presentation->m_output.reset(compositor()->imp()->currentOutput);
             }
             else
-                presentation->imp()->commitId = -2;
+                presentation->m_commitId = -2;
         }
     }
 
@@ -359,7 +358,7 @@ LSurface *LSurface::topmostParent() const
     return findTopmostParent(parent());
 }
 
-const list<LSurface *> &LSurface::children() const
+const std::list<LSurface *> &LSurface::children() const
 {
     return imp()->children;
 }

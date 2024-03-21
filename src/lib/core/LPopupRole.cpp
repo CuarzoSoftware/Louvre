@@ -1,4 +1,4 @@
-#include <protocols/XdgShell/private/RXdgSurfacePrivate.h>
+#include <protocols/XdgShell/RXdgSurface.h>
 #include <protocols/XdgShell/RXdgPopup.h>
 #include <protocols/XdgShell/xdg-shell.h>
 #include <private/LPopupRolePrivate.h>
@@ -47,13 +47,13 @@ bool LPopupRole::isTopmostPopup() const
 
 void LPopupRole::configure(const LRect &rect) const
 {
-    XdgShell::RXdgPopup *res = (XdgShell::RXdgPopup*)resource();
+    auto &res { *static_cast<XdgShell::RXdgPopup*>(resource()) };
 
-    if (!res->xdgSurfaceResource())
+    if (!res.xdgSurfaceRes())
         return;
 
-    res->configure(rect.x(), rect.y(), rect.w(), rect.h());
-    res->xdgSurfaceResource()->configure(LTime::nextSerial());
+    res.configure(rect.x(), rect.y(), rect.w(), rect.h());
+    res.xdgSurfaceRes()->configure(LTime::nextSerial());
 }
 
 void LPopupRole::dismiss()
@@ -78,12 +78,12 @@ void LPopupRole::dismiss()
 
 const LRect &LPopupRole::windowGeometry() const
 {
-    return xdgSurfaceResource()->imp()->currentWindowGeometry;
+    return xdgSurfaceResource()->windowGeometry();
 }
 
 const LSize &LPopupRole::size() const
 {
-    return xdgSurfaceResource()->imp()->currentWindowGeometry.size();
+    return xdgSurfaceResource()->windowGeometry().size();
 }
 
 const LPositioner &LPopupRole::positioner() const
@@ -116,16 +116,16 @@ void LPopupRole::handleSurfaceCommit(Protocols::Wayland::RSurface::CommitOrigin 
     }
 
     // Cambios double-buffered
-    if (xdgSurfaceResource()->imp()->hasPendingWindowGeometry)
+    if (xdgSurfaceResource()->m_hasPendingWindowGeometry)
     {
-        xdgSurfaceResource()->imp()->hasPendingWindowGeometry = false;
-        xdgSurfaceResource()->imp()->currentWindowGeometry = xdgSurfaceResource()->imp()->pendingWindowGeometry;
+        xdgSurfaceResource()->m_hasPendingWindowGeometry = false;
+        xdgSurfaceResource()->m_currentWindowGeometry = xdgSurfaceResource()->m_pendingWindowGeometry;
         geometryChanged();
     }
     // Si nunca ha asignado la geometría, usa el tamaño de la superficie
-    else if (!xdgSurfaceResource()->imp()->windowGeometrySet)
+    else if (!xdgSurfaceResource()->m_windowGeometrySet)
     {
-        xdgSurfaceResource()->imp()->currentWindowGeometry = LRect(0, surface()->size());
+        xdgSurfaceResource()->m_currentWindowGeometry = LRect(0, surface()->size());
         geometryChanged();
     }
 
@@ -162,10 +162,10 @@ const LRect &LPopupRole::positionerBounds() const
 
 XdgShell::RXdgPopup *LPopupRole::xdgPopupResource() const
 {
-    return (XdgShell::RXdgPopup*)resource();
+    return static_cast<XdgShell::RXdgPopup*>(resource());
 }
 
 XdgShell::RXdgSurface *LPopupRole::xdgSurfaceResource() const
 {
-    return xdgPopupResource()->xdgSurfaceResource();
+    return xdgPopupResource()->xdgSurfaceRes();
 }

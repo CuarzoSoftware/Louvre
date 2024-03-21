@@ -341,10 +341,7 @@ bool LGraphicBackend::backendInitialize()
     SRMListForeach (fmtIt, srmCoreGetSharedDMATextureFormats(bknd->core))
     {
         SRMFormat *fmt = (SRMFormat*)srmListItemGetData(fmtIt);
-        bknd->dmaFormats.push_back({
-            .format = fmt->format,
-            .modifier = fmt->modifier
-        });
+        bknd->dmaFormats.emplace_back(fmt->format, fmt->modifier);
     }
 
     // Find connected outputs

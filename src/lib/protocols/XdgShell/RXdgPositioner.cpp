@@ -1,23 +1,22 @@
-#include <protocols/XdgShell/private/RXdgPositionerPrivate.h>
+#include <protocols/XdgShell/RXdgPositioner.h>
 #include <protocols/XdgShell/GXdgWmBase.h>
-#include <protocols/XdgShell/xdg-shell.h>
 #include <private/LPositionerPrivate.h>
 
 using namespace Louvre::Protocols::XdgShell;
 
-static struct xdg_positioner_interface xdg_positioner_implementation =
+static const struct xdg_positioner_interface imp
 {
-    .destroy = &RXdgPositioner::RXdgPositionerPrivate::destroy,
-    .set_size = &RXdgPositioner::RXdgPositionerPrivate::set_size,
-    .set_anchor_rect = &RXdgPositioner::RXdgPositionerPrivate::set_anchor_rect,
-    .set_anchor = &RXdgPositioner::RXdgPositionerPrivate::set_anchor,
-    .set_gravity = &RXdgPositioner::RXdgPositionerPrivate::set_gravity,
-    .set_constraint_adjustment = &RXdgPositioner::RXdgPositionerPrivate::set_constraint_adjustment,
-    .set_offset = &RXdgPositioner::RXdgPositionerPrivate::set_offset,
+    .destroy = &RXdgPositioner::destroy,
+    .set_size = &RXdgPositioner::set_size,
+    .set_anchor_rect = &RXdgPositioner::set_anchor_rect,
+    .set_anchor = &RXdgPositioner::set_anchor,
+    .set_gravity = &RXdgPositioner::set_gravity,
+    .set_constraint_adjustment = &RXdgPositioner::set_constraint_adjustment,
+    .set_offset = &RXdgPositioner::set_offset,
 #if LOUVRE_XDG_WM_BASE_VERSION >= 3
-    .set_reactive = &RXdgPositioner::RXdgPositionerPrivate::set_reactive,
-    .set_parent_size = &RXdgPositioner::RXdgPositionerPrivate::set_parent_size,
-    .set_parent_configure = &RXdgPositioner::RXdgPositionerPrivate::set_parent_configure
+    .set_reactive = &RXdgPositioner::set_reactive,
+    .set_parent_size = &RXdgPositioner::set_parent_size,
+    .set_parent_configure = &RXdgPositioner::set_parent_configure
 #else
     .set_reactive = NULL,
     .set_parent_size = NULL,
@@ -27,28 +26,20 @@ static struct xdg_positioner_interface xdg_positioner_implementation =
 
 RXdgPositioner::RXdgPositioner
 (
-    GXdgWmBase *gXdgWmBase,
+    GXdgWmBase *xdgWmBaseRes,
     UInt32 id
-)
+) noexcept
     :LResource
     (
-        gXdgWmBase->client(),
+        xdgWmBaseRes->client(),
         &xdg_positioner_interface,
-        gXdgWmBase->version(),
+        xdgWmBaseRes->version(),
         id,
-        &xdg_positioner_implementation
-    ),
-    LPRIVATE_INIT_UNIQUE(RXdgPositioner)
+        &imp
+    )
 {}
 
-RXdgPositioner::~RXdgPositioner() {}
-
-const LPositioner &RXdgPositioner::positioner() const
-{
-    return imp()->lPositioner;
-}
-
-bool RXdgPositioner::isValid()
+bool RXdgPositioner::validate()
 {
     if (positioner().size().w() <= 0 || positioner().size().h() <= 0)
     {
@@ -75,4 +66,52 @@ bool RXdgPositioner::isValid()
     }
 
     return true;
+}
+
+/******************** REQUESTS ********************/
+
+void RXdgPositioner::destroy(wl_client */*client*/, wl_resource *resource) noexcept
+{
+    wl_resource_destroy(resource);
+}
+
+void RXdgPositioner::set_size(wl_client */*client*/, wl_resource *resource, Int32 width, Int32 height) noexcept
+{
+    auto &data { static_cast<RXdgPositioner*>(wl_resource_get_user_data(resource))->positioner().imp()->data };
+    data.size.setW(width);
+    data.size.setH(height);
+}
+
+void RXdgPositioner::set_anchor_rect(wl_client */*client*/, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height) noexcept
+{
+    auto &data { static_cast<RXdgPositioner*>(wl_resource_get_user_data(resource))->positioner().imp()->data };
+    data.anchorRect.setX(x);
+    data.anchorRect.setY(y);
+    data.anchorRect.setW(width);
+    data.anchorRect.setH(height);
+}
+
+void RXdgPositioner::set_anchor(wl_client */*client*/, wl_resource *resource, UInt32 anchor) noexcept
+{
+    auto &data { static_cast<RXdgPositioner*>(wl_resource_get_user_data(resource))->positioner().imp()->data };
+    data.anchor = anchor;
+}
+
+void RXdgPositioner::set_gravity(wl_client */*client*/, wl_resource *resource, UInt32 gravity) noexcept
+{
+    auto &data { static_cast<RXdgPositioner*>(wl_resource_get_user_data(resource))->positioner().imp()->data };
+    data.gravity = gravity;
+}
+
+void RXdgPositioner::set_constraint_adjustment(wl_client */*client*/, wl_resource *resource, UInt32 constraintAdjustment) noexcept
+{
+    auto &data { static_cast<RXdgPositioner*>(wl_resource_get_user_data(resource))->positioner().imp()->data };
+    data.constraintAdjustment = constraintAdjustment;
+}
+
+void RXdgPositioner::set_offset(wl_client */*client*/, wl_resource *resource, Int32 x, Int32 y) noexcept
+{
+    auto &data { static_cast<RXdgPositioner*>(wl_resource_get_user_data(resource))->positioner().imp()->data };
+    data.offset.setX(x);
+    data.offset.setY(y);
 }

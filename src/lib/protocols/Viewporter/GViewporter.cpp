@@ -1,30 +1,59 @@
-#include <protocols/Viewporter/private/GViewporterPrivate.h>
+#include <protocols/Viewporter/GViewporter.h>
+#include <protocols/Viewporter/RViewport.h>
 #include <private/LClientPrivate.h>
 
-using namespace Louvre::Protocols::Wayland;
+using namespace Louvre::Protocols::Viewporter;
+
+static const struct wp_viewporter_interface imp
+{
+    .destroy = &GViewporter::destroy,
+    .get_viewport = &GViewporter::get_viewport
+};
 
 GViewporter::GViewporter
     (
-        LClient *client,
-        const wl_interface *interface,
+        wl_client *client,
         Int32 version,
-        UInt32 id,
-        const void *implementation
-        )
+        UInt32 id
+    ) noexcept
     :LResource
     (
         client,
-        interface,
+        &wp_viewporter_interface,
         version,
         id,
-        implementation
-    ),
-    LPRIVATE_INIT_UNIQUE(GViewporter)
+        &imp
+    )
 {
-    client->imp()->viewporterGlobals.push_back(this);
+    this->client()->imp()->viewporterGlobals.push_back(this);
 }
 
-GViewporter::~GViewporter()
+GViewporter::~GViewporter() noexcept
 {
     LVectorRemoveOneUnordered(client()->imp()->viewporterGlobals, this);
+}
+
+/******************** REQUESTS ********************/
+
+void GViewporter::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GViewporter(client, version, id);
+}
+
+void GViewporter::get_viewport(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *surface) noexcept
+{
+    auto *surfaceRes { static_cast<Wayland::RSurface*>(wl_resource_get_user_data(surface)) };
+
+    if (surfaceRes->viewportRes())
+    {
+        wl_resource_post_error(resource, WP_VIEWPORTER_ERROR_VIEWPORT_EXISTS, "The surface already has a viewport object associated.");
+        return;
+    }
+
+    new RViewport(surfaceRes, wl_resource_get_version(resource), id);
+}
+
+void GViewporter::destroy(wl_client */*client*/, wl_resource *resource) noexcept
+{
+    wl_resource_destroy(resource);
 }

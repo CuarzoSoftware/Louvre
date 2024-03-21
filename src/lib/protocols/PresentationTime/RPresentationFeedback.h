@@ -3,28 +3,40 @@
 
 #include <LResource.h>
 
-class Louvre::Protocols::PresentationTime::RPresentationFeedback : public LResource
+class Louvre::Protocols::PresentationTime::RPresentationFeedback final : public LResource
 {
 public:
-    RPresentationFeedback(GPresentation *gPresentation,
-                            LSurface *lSurface,
-                            UInt32 id);
+    LSurface *surface() const noexcept
+    {
+        return m_surface.get();
+    }
 
-    ~RPresentationFeedback();
+    /******************** EVENTS ********************/
 
-    LSurface *surface() const;
-
-    bool syncOutput(Wayland::GOutput *gOutput) const;
-    bool presented(UInt32 tv_sec_hi,
+    void syncOutput(Wayland::GOutput *outputRes) noexcept;
+    void presented(UInt32 tv_sec_hi,
                    UInt32 tv_sec_lo,
                    UInt32 tv_nsec,
                    UInt32 refresh,
                    UInt32 seq_hi,
                    UInt32 seq_lo,
-                   UInt32 flags) const;
-    bool discarded() const;
+                   UInt32 flags) noexcept;
+    void discarded() noexcept;
 
-    LPRIVATE_IMP_UNIQUE(RPresentationFeedback)
+private:
+    friend class Louvre::Protocols::PresentationTime::GPresentation;
+    friend class Louvre::Protocols::Wayland::RSurface;
+    friend class Louvre::LSurface;
+    RPresentationFeedback(GPresentation *presentarionRes,
+                          LSurface *surface,
+                          UInt32 id) noexcept;
+
+    ~RPresentationFeedback() noexcept;
+
+    LWeak<LSurface> m_surface;
+    LWeak<LOutput> m_output;
+    Int64 m_commitId { -1 };
+    bool m_outputSet { false };
 };
 
 #endif // RPRESENTATIONFEEDBACK_H

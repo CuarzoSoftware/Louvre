@@ -2,22 +2,26 @@
 #define GPRESENTATION_H
 
 #include <LResource.h>
+#include <protocols/PresentationTime/presentation-time.h>
 
-class Louvre::Protocols::PresentationTime::GPresentation : public LResource
+class Louvre::Protocols::PresentationTime::GPresentation final : public LResource
 {
 public:
-    GPresentation(wl_client *client,
-                    const wl_interface *interface,
-                    Int32 version,
-                    UInt32 id,
-                    const void *implementation);
 
-    ~GPresentation();
+    /******************** REQUESTS ********************/
+
+    static void bind(wl_client *client, void *data, UInt32 version, UInt32 id) noexcept;
+    static void destroy(wl_client *client, wl_resource *resource) noexcept;
+    static void feedback(wl_client *client, wl_resource *resource, wl_resource *surface, UInt32 id) noexcept;
+
+    /******************** EVENTS ********************/
 
     // Since 1
-    bool clockId(UInt32 clockId);
+    void clockId(UInt32 clockId) noexcept;
 
-    LPRIVATE_IMP_UNIQUE(GPresentation)
+private:
+    GPresentation(wl_client *client, Int32 version, UInt32 id) noexcept;
+    ~GPresentation() noexcept;
 };
 
 #endif // GPRESENTATION_H

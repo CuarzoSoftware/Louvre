@@ -1,49 +1,68 @@
-#include <protocols/Viewporter/private/RViewportPrivate.h>
-#include <protocols/Viewporter/viewporter.h>
+#include <protocols/Viewporter/GViewporter.h>
+#include <protocols/Viewporter/RViewport.h>
 #include <protocols/Wayland/RSurface.h>
 
-using namespace Louvre;
+using namespace Louvre::Protocols::Viewporter;
 
-static struct wp_viewport_interface viewport_implementation =
+static const struct wp_viewport_interface imp
 {
-    .destroy = &RViewport::RViewportPrivate::destroy,
-    .set_source = &RViewport::RViewportPrivate::set_source,
-    .set_destination = &RViewport::RViewportPrivate::set_destination
+    .destroy = &RViewport::destroy,
+    .set_source = &RViewport::set_source,
+    .set_destination = &RViewport::set_destination
 };
 
 RViewport::RViewport
     (
-        Wayland::RSurface *rSurface,
+        Wayland::RSurface *surfaceRes,
         Int32 version,
         UInt32 id
-    )
+    ) noexcept
     :LResource
     (
-        rSurface->client(),
+        surfaceRes->client(),
         &wp_viewport_interface,
         version,
         id,
-        &viewport_implementation
+        &imp
     ),
-    LPRIVATE_INIT_UNIQUE(RViewport)
+    m_surfaceRes(surfaceRes)
 {
-    imp()->rSurface.reset(rSurface);
-    rSurface->m_viewportRes.reset(this);
+    surfaceRes->m_viewportRes.reset(this);
 }
 
-RViewport::~RViewport() {}
+/******************** REQUESTS ********************/
 
-Protocols::Wayland::RSurface *RViewport::surfaceResource() const
+void RViewport::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {
-    return imp()->rSurface.get();
+    wl_resource_destroy(resource);
 }
 
-const LSize &RViewport::dstSize() const
+void RViewport::set_source(wl_client */*client*/, wl_resource *resource, Float24 x, Float24 y, Float24 width, Float24 height) noexcept
 {
-    return imp()->dstSize;
+    auto &res { *static_cast<RViewport*>(wl_resource_get_user_data(resource)) };
+
+    if (!res.surfaceRes())
+    {
+        wl_resource_post_error(resource, WP_VIEWPORT_ERROR_NO_SURFACE, "The wl_surface was destroyed.");
+        return;
+    }
+
+    res.m_srcRect.setX(wl_fixed_to_double(x));
+    res.m_srcRect.setY(wl_fixed_to_double(y));
+    res.m_srcRect.setW(wl_fixed_to_double(width));
+    res.m_srcRect.setH(wl_fixed_to_double(height));
 }
 
-const LRectF &RViewport::srcRect() const
+void RViewport::set_destination(wl_client */*client*/, wl_resource *resource, Int32 width, Int32 height) noexcept
 {
-    return imp()->srcRect;
+    auto &res { *static_cast<RViewport*>(wl_resource_get_user_data(resource)) };
+
+    if (!res.surfaceRes())
+    {
+        wl_resource_post_error(resource, WP_VIEWPORT_ERROR_NO_SURFACE, "The wl_surface was destroyed.");
+        return;
+    }
+
+    res.m_dstSize.setW(width);
+    res.m_dstSize.setH(height);
 }

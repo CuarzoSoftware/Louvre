@@ -1,36 +1,33 @@
-#include <protocols/LinuxDMABuf/private/LDMABufferPrivate.h>
-#include <protocols/LinuxDMABuf/private/RLinuxBufferParamsPrivate.h>
-
+#include <protocols/LinuxDMABuf/RLinuxBufferParams.h>
+#include <protocols/LinuxDMABuf/LDMABuffer.h>
 #include <LCompositor.h>
-#include <private/LSurfacePrivate.h>
-#include <private/LTexturePrivate.h>
+#include <LSurface.h>
 
+using namespace Louvre::Protocols::Wayland;
 using namespace Louvre;
 
-static struct wl_buffer_interface wl_dma_buffer_implementation
+static const struct wl_buffer_interface imp
 {
-    .destroy = &LDMABuffer::LDMABufferPrivate::destroy
+    .destroy = &LDMABuffer::destroy
 };
 
 LDMABuffer::LDMABuffer
 (
-    RLinuxBufferParams *rLinuxBufferParams,
+    RLinuxBufferParams *bufferParamsRes,
     UInt32 id
-)
+) noexcept
     :LResource
     (
-        rLinuxBufferParams->client(),
+        bufferParamsRes->client(),
         &wl_buffer_interface,
         1,
         id,
-        &wl_dma_buffer_implementation
+        &imp
     ),
-    LPRIVATE_INIT_UNIQUE(LDMABuffer)
-{
-    imp()->planes = rLinuxBufferParams->imp()->planes;
-}
+    m_dmaPlanes(std::move(bufferParamsRes->m_dmaPlanes))
+{}
 
-LDMABuffer::~LDMABuffer()
+LDMABuffer::~LDMABuffer() noexcept
 {
     if (texture())
     {
@@ -38,27 +35,21 @@ LDMABuffer::~LDMABuffer()
             if (s->texture() == texture())
             {
                 texture()->m_pendingDelete = true;
-                goto skipDeleteTexture;
+                return;
             }
 
-        delete imp()->texture;
+        delete m_texture;
     }
-
-    skipDeleteTexture:
-    delete imp()->planes;
 }
 
-const LDMAPlanes *LDMABuffer::planes() const
+bool LDMABuffer::isDMABuffer(wl_resource *buffer) noexcept
 {
-    return imp()->planes;
+    return wl_resource_instance_of(buffer, &wl_buffer_interface, &imp);
 }
 
-LTexture *LDMABuffer::texture() const
-{
-    return imp()->texture;
-}
+/******************** REQUESTS ********************/
 
-bool isDMABuffer(wl_resource *buffer)
+void LDMABuffer::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {
-    return wl_resource_instance_of(buffer, &wl_buffer_interface, &wl_dma_buffer_implementation);
+    wl_resource_destroy(resource);
 }

@@ -1,4 +1,4 @@
-#include <protocols/GammaControl/private/RGammaControlPrivate.h>
+#include <protocols/GammaControl/RGammaControl.h>
 #include <protocols/Wayland/GOutput.h>
 #include <private/LClientPrivate.h>
 #include <private/LOutputPrivate.h>
@@ -17,7 +17,7 @@ GOutput::GOutput(LOutput *output, wl_client *client, Int32 version, UInt32 id ) 
     LResource( client, &wl_output_interface, version, id, &imp),
     m_output(output)
 {
-    this->client()->imp()->outputGlobals.push_back(this);
+    this->client()->imp()->outputGlobals.emplace_back(this);
     sendConfiguration();
 }
 
@@ -25,9 +25,6 @@ GOutput::~GOutput() noexcept
 {
     if (output())
         LVectorRemoveOneUnordered(client()->imp()->outputGlobals, this);
-
-    for (auto *gammaControlRes : m_gammaControlRes)
-        gammaControlRes->imp()->gOutput = nullptr;
 }
 
 /******************** REQUESTS ********************/

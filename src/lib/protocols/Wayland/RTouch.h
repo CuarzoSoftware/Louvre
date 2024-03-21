@@ -3,7 +3,7 @@
 
 #include <LResource.h>
 
-class Louvre::Protocols::Wayland::RTouch : public LResource
+class Louvre::Protocols::Wayland::RTouch final : public LResource
 {
 public:
     GSeat *seatRes() const noexcept

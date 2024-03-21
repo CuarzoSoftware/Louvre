@@ -1,4 +1,4 @@
-#include <protocols/PresentationTime/private/RPresentationFeedbackPrivate.h>
+#include <protocols/PresentationTime/RPresentationFeedback.h>
 #include <protocols/TearingControl/RTearingControl.h>
 #include <protocols/Wayland/GOutput.h>
 #include <protocols/Wayland/RRegion.h>
@@ -185,8 +185,8 @@ void RSurface::apply_commit(LSurface *surface, CommitOrigin origin)
     imp.commitId++;
 
     for (auto *presentation : imp.presentationFeedbackResources)
-        if (presentation->imp()->commitId == -1)
-            presentation->imp()->commitId = imp.commitId;
+        if (presentation->m_commitId == -1)
+            presentation->m_commitId = imp.commitId;
 
     auto &changes { imp.changesToNotify };
 

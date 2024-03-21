@@ -3,16 +3,31 @@
 
 #include <LResource.h>
 
-class Louvre::Protocols::TearingControl::RTearingControl : public LResource
+class Louvre::Protocols::TearingControl::RTearingControl final : public LResource
 {
 public:
-    RTearingControl(Wayland::RSurface *rSurface, Int32 version, UInt32 id);
-    ~RTearingControl();
 
-    Wayland::RSurface *surfaceResource() const;
-    bool preferVSync() const;
+    Wayland::RSurface *surfaceRes() const noexcept
+    {
+        return m_surfaceRes.get();
+    }
 
-    LPRIVATE_IMP_UNIQUE(RTearingControl)
+    bool preferVSync() const noexcept
+    {
+        return m_preferVSync;
+    }
+
+    /******************** REQUESTS ********************/
+
+    static void destroy(wl_client *client, wl_resource *resource) noexcept;
+    static void set_presentation_hint(wl_client *client, wl_resource *resource, UInt32 hint) noexcept;
+
+private:
+    friend class Louvre::Protocols::TearingControl::GTearingControlManager;
+    RTearingControl(Wayland::RSurface *surfaceRes, Int32 version, UInt32 id) noexcept;
+    ~RTearingControl() noexcept = default;
+    LWeak<Wayland::RSurface> m_surfaceRes;
+    bool m_preferVSync { true };
 };
 
 #endif // RTEARINGCONTROL_H

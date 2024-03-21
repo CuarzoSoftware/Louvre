@@ -1,52 +1,56 @@
-#include <protocols/PointerGestures/private/RGestureHoldPrivate.h>
-#include <protocols/PointerGestures/pointer-gestures-unstable-v1.h>
+#include <protocols/PointerGestures/GPointerGestures.h>
+#include <protocols/PointerGestures/RGestureHold.h>
 #include <protocols/Wayland/RPointer.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 
-static struct zwp_pointer_gesture_hold_v1_interface zwp_pointer_gesture_hold_v1_implementation =
+using namespace Louvre::Protocols::PointerGestures;
+
+static const struct zwp_pointer_gesture_hold_v1_interface imp
 {
-    .destroy = &RGestureHold::RGestureHoldPrivate::destroy
+    .destroy = &RGestureHold::destroy
 };
 
-RGestureHold::RGestureHold(Wayland::RPointer *rPointer, Int32 id, UInt32 version) :
+RGestureHold::RGestureHold(Wayland::RPointer *pointerRes, Int32 id, UInt32 version) noexcept :
     LResource(
-        rPointer->client(),
+        pointerRes->client(),
         &zwp_pointer_gesture_hold_v1_interface,
         version,
         id,
-        &zwp_pointer_gesture_hold_v1_implementation),
-    LPRIVATE_INIT_UNIQUE(RGestureHold)
+        &imp),
+    m_pointerRes(pointerRes)
 {
-    imp()->rPointer = rPointer;
-    rPointer->m_gestureHoldRes.emplace_back(this);
+    pointerRes->m_gestureHoldRes.emplace_back(this);
 }
 
-RGestureHold::~RGestureHold()
+RGestureHold::~RGestureHold() noexcept
 {
-    if (pointerResource())
-        LVectorRemoveOneUnordered(pointerResource()->m_gestureHoldRes, this);
+    if (pointerRes())
+        LVectorRemoveOneUnordered(pointerRes()->m_gestureHoldRes, this);
 }
 
-RPointer *RGestureHold::pointerResource() const
+/******************** REQUESTS ********************/
+
+void RGestureHold::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {
-    return imp()->rPointer;
+    wl_resource_destroy(resource);
 }
 
-bool RGestureHold::begin(const LPointerHoldBeginEvent &event, Wayland::RSurface *rSurface)
+/******************** EVENTS ********************/
+
+void RGestureHold::begin(const LPointerHoldBeginEvent &event, Wayland::RSurface *surfaceRes) noexcept
 {
-    auto &clientEvent = client()->imp()->events.pointer.holdBegin;
+    auto &clientEvent { client()->imp()->events.pointer.holdBegin };
 
     if (clientEvent.serial() != event.serial())
         clientEvent = event;
 
-    zwp_pointer_gesture_hold_v1_send_begin(resource(), event.serial(), event.ms(), rSurface->resource(), event.fingers());
-    return true;
+    zwp_pointer_gesture_hold_v1_send_begin(resource(), event.serial(), event.ms(), surfaceRes->resource(), event.fingers());
 }
 
-bool RGestureHold::end(const LPointerHoldEndEvent &event)
+void RGestureHold::end(const LPointerHoldEndEvent &event) noexcept
 {
-    auto &clientPointerEvents = client()->imp()->events.pointer;
+    auto &clientPointerEvents { client()->imp()->events.pointer };
 
     if (clientPointerEvents.holdEnd.serial() != event.serial())
         clientPointerEvents.holdEnd = event;
@@ -62,5 +66,4 @@ bool RGestureHold::end(const LPointerHoldEndEvent &event)
         event.serial(),
         event.ms(),
         event.cancelled());
-    return true;
 }

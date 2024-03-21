@@ -2,25 +2,34 @@
 #define GLINUXDMABUF_H
 
 #include <LResource.h>
+#include <protocols/LinuxDMABuf/linux-dmabuf-unstable-v1.h>
 
-class Louvre::Protocols::LinuxDMABuf::GLinuxDMABuf : public LResource
+class Louvre::Protocols::LinuxDMABuf::GLinuxDMABuf final : public LResource
 {
 public:
-    GLinuxDMABuf(wl_client *client,
-                 const wl_interface *interface,
-                 Int32 version,
-                 UInt32 id,
-                 const void *implementation);
 
-    ~GLinuxDMABuf();
+    /******************** REQUESTS ********************/
+
+    static void bind(wl_client *client, void *data, UInt32 version, UInt32 id) noexcept;
+    static void destroy(wl_client *client, wl_resource *resource) noexcept;
+    static void create_params(wl_client *client, wl_resource *resource, UInt32 id) noexcept;
+
+#if LOUVRE_LINUX_DMA_BUF_VERSION >= 4
+    static void get_default_feedback(wl_client *client, wl_resource *resource, UInt32 id);
+    static void get_surface_feedback(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface);
+#endif
+
+    /******************** EVENTS ********************/
 
     // Since 1
-    bool format(UInt32 format);
+    void format(UInt32 format) noexcept;
 
     // Since 3
-    bool modifier(UInt32 format, UInt32 mod_hi, UInt32 mod_lo);
+    bool modifier(UInt32 format, UInt32 mod_hi, UInt32 mod_lo) noexcept;
 
-    LPRIVATE_IMP_UNIQUE(GLinuxDMABuf)
+private:
+    GLinuxDMABuf(wl_client *client, Int32 version, UInt32 id) noexcept;
+    ~GLinuxDMABuf() noexcept;
 };
 
 #endif // GLINUXDMABUF_H

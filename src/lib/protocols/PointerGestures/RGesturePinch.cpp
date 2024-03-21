@@ -1,51 +1,55 @@
-#include <protocols/PointerGestures/private/RGesturePinchPrivate.h>
-#include <protocols/PointerGestures/pointer-gestures-unstable-v1.h>
+#include <protocols/PointerGestures/GPointerGestures.h>
+#include <protocols/PointerGestures/RGesturePinch.h>
 #include <protocols/Wayland/RPointer.h>
-#include <LPointerPinchUpdateEvent.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
+#include <LPointerPinchUpdateEvent.h>
 
-static struct zwp_pointer_gesture_pinch_v1_interface zwp_pointer_gesture_pinch_v1_implementation =
+using namespace Louvre::Protocols::PointerGestures;
+
+static const struct zwp_pointer_gesture_pinch_v1_interface imp
 {
-    .destroy = &RGesturePinch::RGesturePinchPrivate::destroy
+    .destroy = &RGesturePinch::destroy
 };
 
-RGesturePinch::RGesturePinch(Wayland::RPointer *rPointer, Int32 id, UInt32 version) :
+RGesturePinch::RGesturePinch(Wayland::RPointer *pointerRes, Int32 id, UInt32 version) noexcept :
     LResource(
-        rPointer->client(),
+        pointerRes->client(),
         &zwp_pointer_gesture_pinch_v1_interface,
         version,
         id,
-        &zwp_pointer_gesture_pinch_v1_implementation),
-    LPRIVATE_INIT_UNIQUE(RGesturePinch)
+        &imp),
+    m_pointerRes(pointerRes)
 {
-    imp()->rPointer = rPointer;
-    rPointer->m_gesturePinchRes.emplace_back(this);
+    pointerRes->m_gesturePinchRes.emplace_back(this);
 }
 
-RGesturePinch::~RGesturePinch()
+RGesturePinch::~RGesturePinch() noexcept
 {
-    if (pointerResource())
-        LVectorRemoveOneUnordered(pointerResource()->m_gesturePinchRes, this);
+    if (pointerRes())
+        LVectorRemoveOneUnordered(pointerRes()->m_gesturePinchRes, this);
 }
 
-RPointer *RGesturePinch::pointerResource() const
+/******************** REQUESTS ********************/
+
+void RGesturePinch::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {
-    return imp()->rPointer;
+    wl_resource_destroy(resource);
 }
 
-bool RGesturePinch::begin(const LPointerPinchBeginEvent &event, Wayland::RSurface *rSurface)
+/******************** EVENTS ********************/
+
+void RGesturePinch::begin(const LPointerPinchBeginEvent &event, Wayland::RSurface *surfaceRes) noexcept
 {
-    auto &clientEvent = client()->imp()->events.pointer.pinchBegin;
+    auto &clientEvent { client()->imp()->events.pointer.pinchBegin };
 
     if (clientEvent.serial() != event.serial())
         clientEvent = event;
 
-    zwp_pointer_gesture_pinch_v1_send_begin(resource(), event.serial(), event.ms(), rSurface->resource(), event.fingers());
-    return true;
+    zwp_pointer_gesture_pinch_v1_send_begin(resource(), event.serial(), event.ms(), surfaceRes->resource(), event.fingers());
 }
 
-bool RGesturePinch::update(const LPointerPinchUpdateEvent &event)
+void RGesturePinch::update(const LPointerPinchUpdateEvent &event) noexcept
 {
     zwp_pointer_gesture_pinch_v1_send_update(
         resource(),
@@ -54,12 +58,11 @@ bool RGesturePinch::update(const LPointerPinchUpdateEvent &event)
         wl_fixed_from_double(event.delta().y()),
         wl_fixed_from_double(event.scale()),
         wl_fixed_from_double(event.rotation()));
-    return true;
 }
 
-bool RGesturePinch::end(const LPointerPinchEndEvent &event)
+void RGesturePinch::end(const LPointerPinchEndEvent &event) noexcept
 {
-    auto &clientPointerEvents = client()->imp()->events.pointer;
+    auto &clientPointerEvents { client()->imp()->events.pointer };
 
     if (clientPointerEvents.pinchEnd.serial() != event.serial())
         clientPointerEvents.pinchEnd = event;
@@ -75,5 +78,4 @@ bool RGesturePinch::end(const LPointerPinchEndEvent &event)
         event.serial(),
         event.ms(),
         event.cancelled());
-    return true;
 }

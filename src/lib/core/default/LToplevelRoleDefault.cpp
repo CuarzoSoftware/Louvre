@@ -1,4 +1,4 @@
-#include <protocols/XdgShell/private/RXdgSurfacePrivate.h>
+#include <protocols/XdgShell/RXdgSurface.h>
 #include <protocols/XdgShell/RXdgToplevel.h>
 #include <private/LBaseSurfaceRolePrivate.h>
 #include <LToplevelMoveSession.h>
@@ -18,7 +18,7 @@ using namespace Louvre;
 //! [rolePos]
 const LPoint &LToplevelRole::rolePos() const
 {
-    m_rolePos = surface()->pos() - xdgSurfaceResource()->imp()->currentWindowGeometry.topLeft();
+    m_rolePos = surface()->pos() - windowGeometry().topLeft();
     return m_rolePos;
 }
 //! [rolePos]
@@ -257,8 +257,9 @@ void LToplevelRole::setMinimizedRequest()
 //! [setMinimizedRequest]
 
 //! [showWindowMenuRequest]
-void LToplevelRole::showWindowMenuRequest(Int32 x, Int32 y)
+void LToplevelRole::showWindowMenuRequest(const LEvent &triggeringEvent, Int32 x, Int32 y)
 {
+    L_UNUSED(triggeringEvent);
     L_UNUSED(x);
     L_UNUSED(y);
 

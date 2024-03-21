@@ -3,21 +3,33 @@
 
 #include <LResource.h>
 
-class Louvre::Protocols::XdgDecoration::RXdgToplevelDecoration : public LResource
+class Louvre::Protocols::XdgDecoration::RXdgToplevelDecoration final : public LResource
 {
 public:
-    RXdgToplevelDecoration(GXdgDecorationManager *gXdgDecorationManager,
-                           LToplevelRole *lToplevelRole,
-                           UInt32 id);
+    LToplevelRole *toplevelRole() const noexcept
+    {
+        return m_toplevelRole.get();
+    }
 
-    ~RXdgToplevelDecoration();
+    /******************** REQUESTS ********************/
 
-    LToplevelRole *toplevelRole() const;
+    static void destroy(wl_client *client, wl_resource *resource);
+    static void set_mode(wl_client *client, wl_resource *resource, UInt32 mode);
+    static void unset_mode(wl_client *client, wl_resource *resource);
+
+    /******************** EVENTS ********************/
 
     // Since 1
-    bool configure(UInt32 mode);
+    void configure(UInt32 mode) noexcept;
 
-    LPRIVATE_IMP_UNIQUE(RXdgToplevelDecoration)
+private:
+    friend class Louvre::Protocols::XdgDecoration::GXdgDecorationManager;
+    RXdgToplevelDecoration(GXdgDecorationManager *xdgDecorationManagerRes,
+                           LToplevelRole *toplevelRole,
+                           UInt32 id) noexcept;
+
+    ~RXdgToplevelDecoration();
+    LWeak<LToplevelRole> m_toplevelRole;
 };
 
 #endif // RXDGTOPLEVELDECORATION_H

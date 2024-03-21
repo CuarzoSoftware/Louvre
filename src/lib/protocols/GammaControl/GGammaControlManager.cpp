@@ -1,30 +1,52 @@
-#include <protocols/GammaControl/private/GGammaControlManagerPrivate.h>
+#include <protocols/GammaControl/GGammaControlManager.h>
+#include <protocols/GammaControl/RGammaControl.h>
 #include <private/LClientPrivate.h>
 
 using namespace Louvre::Protocols::GammaControl;
 
-GGammaControlManager::GGammaControlManager
-    (
-        LClient *client,
-        const wl_interface *interface,
-        Int32 version,
-        UInt32 id,
-        const void *implementation
-        )
+static const struct zwlr_gamma_control_manager_v1_interface imp
+{
+    .get_gamma_control = &GGammaControlManager::get_gamma_control,
+    .destroy = &GGammaControlManager::destroy
+};
+
+GGammaControlManager::GGammaControlManager(
+    wl_client *client,
+    Int32 version,
+    UInt32 id
+) noexcept
     :LResource
     (
         client,
-        interface,
+        &zwlr_gamma_control_manager_v1_interface,
         version,
         id,
-        implementation
-        ),
-    LPRIVATE_INIT_UNIQUE(GGammaControlManager)
+        &imp
+    )
 {
-    client->imp()->gammaControlManagerGlobals.push_back(this);
+    this->client()->imp()->gammaControlManagerGlobals.emplace_back(this);
 }
 
-GGammaControlManager::~GGammaControlManager()
+GGammaControlManager::~GGammaControlManager() noexcept
 {
     LVectorRemoveOneUnordered(client()->imp()->gammaControlManagerGlobals, this);
+}
+
+void GGammaControlManager::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GGammaControlManager(client, version, id);
+}
+
+void GGammaControlManager::get_gamma_control(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *output) noexcept
+{
+    new RGammaControl(static_cast<Wayland::GOutput*>(wl_resource_get_user_data(output)),
+                      wl_resource_get_version(resource),
+                      id);
+}
+
+/******************** REQUESTS ********************/
+
+void GGammaControlManager::destroy(wl_client */*client*/, wl_resource *resource) noexcept
+{
+    wl_resource_destroy(resource);
 }

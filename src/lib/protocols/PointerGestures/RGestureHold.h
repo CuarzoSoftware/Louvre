@@ -2,22 +2,30 @@
 #define RGESTUREHOLD_H
 
 #include <LResource.h>
-#include <LPointerHoldBeginEvent.h>
-#include <LPointerHoldEndEvent.h>
 
-class Louvre::Protocols::PointerGestures::RGestureHold : public LResource
+class Louvre::Protocols::PointerGestures::RGestureHold final : public LResource
 {
 public:
-    RGestureHold(Protocols::Wayland::RPointer *rPointer, Int32 id, UInt32 version);
-    ~RGestureHold();
+    Wayland::RPointer *pointerRes() const noexcept
+    {
+        return m_pointerRes.get();
+    }
 
-    Protocols::Wayland::RPointer *pointerResource() const;
+    /******************** REQUESTS ********************/
+
+    static void destroy(wl_client *client, wl_resource *resource) noexcept;
+
+    /******************** EVENTS ********************/
 
     // Since 1
-    bool begin(const LPointerHoldBeginEvent &event, Protocols::Wayland::RSurface *rSurface);
-    bool end(const LPointerHoldEndEvent &event);
+    void begin(const LPointerHoldBeginEvent &event, Wayland::RSurface *surfaceRes) noexcept;
+    void end(const LPointerHoldEndEvent &event) noexcept;
 
-    LPRIVATE_IMP_UNIQUE(RGestureHold)
+private:
+    friend class Louvre::Protocols::PointerGestures::GPointerGestures;
+    RGestureHold(Wayland::RPointer *pointerRes, Int32 id, UInt32 version) noexcept;
+    ~RGestureHold() noexcept;
+    LWeak<Wayland::RPointer> m_pointerRes;
 };
 
 #endif // RGESTUREHOLD_H

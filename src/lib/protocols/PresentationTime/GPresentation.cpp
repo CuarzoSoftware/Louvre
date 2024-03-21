@@ -1,28 +1,31 @@
-#include <protocols/PresentationTime/private/GPresentationPrivate.h>
-#include <protocols/PresentationTime/presentation-time.h>
+#include <protocols/PresentationTime/RPresentationFeedback.h>
+#include <protocols/PresentationTime/GPresentation.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 #include <LSeat.h>
 
 using namespace Louvre::Protocols::PresentationTime;
 
+static const struct wp_presentation_interface imp
+{
+    .destroy = &GPresentation::destroy,
+    .feedback = &GPresentation::feedback
+};
+
 GPresentation::GPresentation
 (
     wl_client *client,
-    const wl_interface *interface,
     Int32 version,
-    UInt32 id,
-    const void *implementation
-)
+    UInt32 id
+) noexcept
     :LResource
     (
         client,
-        interface,
+        &wp_presentation_interface,
         version,
         id,
-        implementation
-    ),
-    LPRIVATE_INIT_UNIQUE(GPresentation)
+        &imp
+    )
 {
     this->client()->imp()->presentationTimeGlobals.push_back(this);
 
@@ -32,13 +35,33 @@ GPresentation::GPresentation
         clockId(compositor()->imp()->graphicBackend->outputGetClock(seat()->outputs().front()));
 }
 
-GPresentation::~GPresentation()
+GPresentation::~GPresentation() noexcept
 {
     LVectorRemoveOneUnordered(client()->imp()->presentationTimeGlobals, this);
 }
 
-bool GPresentation::clockId(UInt32 clockId)
+/******************** REQUESTS ********************/
+
+void GPresentation::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GPresentation(client, version, id);
+}
+
+void GPresentation::destroy(wl_client */*client*/, wl_resource *resource) noexcept
+{
+    wl_resource_destroy(resource);
+}
+
+void GPresentation::feedback(wl_client */*client*/, wl_resource *resource, wl_resource *surface, UInt32 id) noexcept
+{
+    new RPresentationFeedback(static_cast<GPresentation*>(wl_resource_get_user_data(resource)),
+                              static_cast<Wayland::RSurface*>(wl_resource_get_user_data(surface))->surface(),
+                              id);
+}
+
+/******************** EVENTS ********************/
+
+void GPresentation::clockId(UInt32 clockId) noexcept
 {
     wp_presentation_send_clock_id(resource(), clockId);
-    return true;
 }

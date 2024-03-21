@@ -1,45 +1,43 @@
-#include <protocols/TearingControl/private/RTearingControlPrivate.h>
-#include <protocols/TearingControl/tearing-control-v1.h>
+#include <protocols/TearingControl/GTearingControlManager.h>
+#include <protocols/TearingControl/RTearingControl.h>
 #include <protocols/Wayland/RSurface.h>
-#include <private/LSurfacePrivate.h>
-#include <LCompositor.h>
 
-using namespace Louvre;
+using namespace Louvre::Protocols::TearingControl;
 
-static struct wp_tearing_control_v1_interface tearing_control_implementation =
+static const struct wp_tearing_control_v1_interface imp
 {
-    .set_presentation_hint = &RTearingControl::RTearingControlPrivate::set_presentation_hint,
-    .destroy = &RTearingControl::RTearingControlPrivate::destroy,
+    .set_presentation_hint = &RTearingControl::set_presentation_hint,
+    .destroy = &RTearingControl::destroy,
 };
 
 RTearingControl::RTearingControl
     (
-        Wayland::RSurface *rSurface,
+        Wayland::RSurface *surfaceRes,
         Int32 version,
         UInt32 id
-    )
+    ) noexcept
     :LResource
     (
-        rSurface->client(),
+        surfaceRes->client(),
         &wp_tearing_control_v1_interface,
         version,
         id,
-        &tearing_control_implementation
+        &imp
     ),
-    LPRIVATE_INIT_UNIQUE(RTearingControl)
+    m_surfaceRes(surfaceRes)
 {
-    imp()->rSurface.reset(rSurface);
-    rSurface->m_tearingControlRes.reset(this);
+    surfaceRes->m_tearingControlRes.reset(this);
 }
 
-RTearingControl::~RTearingControl() {}
+/******************** REQUESTS ********************/
 
-Wayland::RSurface *RTearingControl::surfaceResource() const
+void RTearingControl::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {
-    return imp()->rSurface.get();
+    wl_resource_destroy(resource);
 }
 
-bool RTearingControl::preferVSync() const
+void RTearingControl::set_presentation_hint(wl_client */*client*/, wl_resource *resource, UInt32 hint) noexcept
 {
-    return imp()->preferVSync;
+    auto &res { *static_cast<RTearingControl*>(wl_resource_get_user_data(resource)) };
+    res.m_preferVSync = hint == WP_TEARING_CONTROL_V1_PRESENTATION_HINT_VSYNC;
 }

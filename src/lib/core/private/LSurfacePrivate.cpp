@@ -1,7 +1,6 @@
-#include <protocols/PresentationTime/private/RPresentationFeedbackPrivate.h>
-#include <protocols/PresentationTime/presentation-time.h>
-#include <protocols/LinuxDMABuf/private/LDMABufferPrivate.h>
+#include <protocols/PresentationTime/RPresentationFeedback.h>
 #include <protocols/FractionalScale/RFractionalScale.h>
+#include <protocols/LinuxDMABuf/LDMABuffer.h>
 #include <protocols/Wayland/RSurface.h>
 #include <protocols/Wayland/GOutput.h>
 #include <private/LCompositorPrivate.h>
@@ -76,7 +75,9 @@ void LSurface::LSurfacePrivate::setMapped(bool state)
         /* We create a copy of the childrens list
          * because a child could be removed
          * when handleParentMappingChange() is called */
-        list<LSurface*> childrenTmp = children;
+
+        // TODO: improve this
+        std::list<LSurface*> childrenTmp = children;
 
         for (LSurface *c : childrenTmp)
         {
@@ -326,7 +327,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     }
 
     // DMA-Buf
-    else if (isDMABuffer(current.buffer))
+    else if (LDMABuffer::isDMABuffer(current.buffer))
     {
         LDMABuffer *dmaBuffer = (LDMABuffer*)wl_resource_get_user_data(current.buffer);
         widthB = dmaBuffer->planes()->width;
@@ -337,7 +338,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
         if (!dmaBuffer->texture())
         {
-            dmaBuffer->imp()->texture = new LTexture();
+            dmaBuffer->m_texture = new LTexture();
             dmaBuffer->texture()->setDataB(dmaBuffer->planes());
         }
 
@@ -372,16 +373,16 @@ void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output)
     {
         auto *feedback { presentationFeedbackResources[i] };
 
-        if (feedback->imp()->commitId == -2 || (feedback->imp()->outputSet && !feedback->imp()->output.get()))
+        if (feedback->m_commitId == -2 || (feedback->m_outputSet && !feedback->m_output.get()))
         {
             feedback->discarded();
-            feedback->imp()->surface.reset();
+            feedback->m_surface.reset();
             presentationFeedbackResources[i] = std::move(presentationFeedbackResources.back());
             presentationFeedbackResources.pop_back();
             wl_resource_destroy(feedback->resource());
             continue;
         }
-        else if (feedback->imp()->output.get() == output)
+        else if (feedback->m_output.get() == output)
         {
             for (Wayland::GOutput *gOutput : surfaceResource->client()->outputGlobals())
                 if (gOutput->output() == output)
@@ -394,7 +395,7 @@ void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output)
                              output->imp()->presentationTime.frame >> 32,
                              output->imp()->presentationTime.frame & 0xffffffff,
                              output->imp()->presentationTime.flags);
-            feedback->imp()->surface.reset();
+            feedback->m_surface.reset();
             presentationFeedbackResources[i] = std::move(presentationFeedbackResources.back());
             presentationFeedbackResources.pop_back();
             wl_resource_destroy(feedback->resource());

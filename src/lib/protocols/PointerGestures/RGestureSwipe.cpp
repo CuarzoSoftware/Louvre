@@ -1,63 +1,62 @@
-#include <protocols/PointerGestures/private/RGestureSwipePrivate.h>
-#include <protocols/PointerGestures/pointer-gestures-unstable-v1.h>
+#include <protocols/PointerGestures/GPointerGestures.h>
+#include <protocols/PointerGestures/RGestureSwipe.h>
 #include <protocols/Wayland/RPointer.h>
 #include <LPointerSwipeUpdateEvent.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 
-static struct zwp_pointer_gesture_swipe_v1_interface zwp_pointer_gesture_swipe_v1_implementation =
+using namespace Louvre::Protocols::PointerGestures;
+
+static const struct zwp_pointer_gesture_swipe_v1_interface imp
 {
-    .destroy = &RGestureSwipe::RGestureSwipePrivate::destroy
+    .destroy = &RGestureSwipe::destroy
 };
 
-RGestureSwipe::RGestureSwipe(Wayland::RPointer *rPointer, Int32 id, UInt32 version) :
+RGestureSwipe::RGestureSwipe(Wayland::RPointer *pointerRes, Int32 id, UInt32 version) noexcept :
     LResource(
-        rPointer->client(),
+        pointerRes->client(),
         &zwp_pointer_gesture_swipe_v1_interface,
         version,
         id,
-        &zwp_pointer_gesture_swipe_v1_implementation),
-    LPRIVATE_INIT_UNIQUE(RGestureSwipe)
+        &imp),
+    m_pointerRes(pointerRes)
 {
-    imp()->rPointer = rPointer;
-    rPointer->m_gestureSwipeRes.emplace_back(this);
+    pointerRes->m_gestureSwipeRes.emplace_back(this);
 }
 
-RGestureSwipe::~RGestureSwipe()
+RGestureSwipe::~RGestureSwipe() noexcept
 {
-    if (pointerResource())
-        LVectorRemoveOneUnordered(pointerResource()->m_gestureSwipeRes, this);
+    if (pointerRes())
+        LVectorRemoveOneUnordered(pointerRes()->m_gestureSwipeRes, this);
 }
 
-RPointer *RGestureSwipe::pointerResource() const
+void RGestureSwipe::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {
-    return imp()->rPointer;
+    wl_resource_destroy(resource);
 }
 
-bool RGestureSwipe::begin(const LPointerSwipeBeginEvent &event, Wayland::RSurface *rSurface)
+void RGestureSwipe::begin(const LPointerSwipeBeginEvent &event, Wayland::RSurface *surfaceRes) noexcept
 {
-    auto &clientEvent = client()->imp()->events.pointer.swipeBegin;
+    auto &clientEvent { client()->imp()->events.pointer.swipeBegin };
 
     if (clientEvent.serial() != event.serial())
         clientEvent = event;
 
-    zwp_pointer_gesture_swipe_v1_send_begin(resource(), event.serial(), event.ms(), rSurface->resource(), event.fingers());
-    return true;
+    zwp_pointer_gesture_swipe_v1_send_begin(resource(), event.serial(), event.ms(), surfaceRes->resource(), event.fingers());
 }
 
-bool RGestureSwipe::update(const LPointerSwipeUpdateEvent &event)
+void RGestureSwipe::update(const LPointerSwipeUpdateEvent &event) noexcept
 {
     zwp_pointer_gesture_swipe_v1_send_update(
         resource(),
         event.ms(),
         wl_fixed_from_double(event.delta().x()),
         wl_fixed_from_double(event.delta().y()));
-    return true;
 }
 
-bool RGestureSwipe::end(const LPointerSwipeEndEvent &event)
+void RGestureSwipe::end(const LPointerSwipeEndEvent &event) noexcept
 {
-    auto &clientPointerEvents = client()->imp()->events.pointer;
+    auto &clientPointerEvents { client()->imp()->events.pointer };
 
     if (clientPointerEvents.swipeEnd.serial() != event.serial())
         clientPointerEvents.swipeEnd = event;
@@ -73,5 +72,4 @@ bool RGestureSwipe::end(const LPointerSwipeEndEvent &event)
         event.serial(),
         event.ms(),
         event.cancelled());
-    return true;
 }

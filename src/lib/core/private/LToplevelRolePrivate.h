@@ -56,7 +56,7 @@ void setTitle(const char *title);
 std::string appId;
 std::string title;
 
-RXdgToplevelDecoration *xdgDecoration                           { nullptr };
+LWeak<RXdgToplevelDecoration> xdgDecoration                     { nullptr };
 DecorationMode decorationMode                                   { ClientSide };
 UInt32 pendingDecorationMode                                    { ClientSide };
 UInt32 lastDecorationModeConfigureSerial                        { 0 };
@@ -225,15 +225,15 @@ inline void sendConfiguration()
     res->configure(pendingSendConf.size.w(), pendingSendConf.size.h(), &dummy);
     wl_array_release(&dummy);
 
-    if (res->xdgSurfaceResource())
+    if (res->xdgSurfaceRes())
     {
-        if (pendingDecorationMode != 0 && xdgDecoration)
+        if (pendingDecorationMode != 0 && xdgDecoration.get())
         {
-            xdgDecoration->configure(pendingDecorationMode);
+            xdgDecoration.get()->configure(pendingDecorationMode);
             lastDecorationModeConfigureSerial = pendingSendConf.serial;
         }
 
-        res->xdgSurfaceResource()->configure(pendingSendConf.serial);
+        res->xdgSurfaceRes()->configure(pendingSendConf.serial);
     }
 }
 };

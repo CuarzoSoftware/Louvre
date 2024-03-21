@@ -3,19 +3,31 @@
 
 #include <LResource.h>
 
-class Louvre::Protocols::GammaControl::RGammaControl : public LResource
+class Louvre::Protocols::GammaControl::RGammaControl final : public LResource
 {
 public:
-    RGammaControl(Wayland::GOutput *gOutput, Int32 version, UInt32 id);
-    ~RGammaControl();
 
-    Wayland::GOutput *outputGlobal() const;
+    Wayland::GOutput *outputRes() const noexcept
+    {
+        return m_outputRes.get();
+    }
+
+    /******************** REQUESTS ********************/
+
+    static void destroy(wl_client *client, wl_resource *resource);
+    static void set_gamma(wl_client *client, wl_resource *resource, Int32 fd);
+
+    /******************** EVENTS ********************/
 
     // Since 1
-    bool gammaSize(UInt32 size);
-    bool failed();
+    void gammaSize(UInt32 size) noexcept;
+    void failed() noexcept;
 
-    LPRIVATE_IMP_UNIQUE(RGammaControl)
+private:
+    friend class Louvre::Protocols::GammaControl::GGammaControlManager;
+    RGammaControl(Wayland::GOutput *outputRes, Int32 version, UInt32 id) noexcept;
+    ~RGammaControl();
+    LWeak<Wayland::GOutput> m_outputRes;
 };
 
 #endif // RGAMMACONTROL_H

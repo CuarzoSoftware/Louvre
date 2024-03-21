@@ -1,33 +1,42 @@
-#include <protocols/LinuxDMABuf/private/GLinuxDMABufPrivate.h>
-#include <protocols/LinuxDMABuf/linux-dmabuf-unstable-v1.h>
+#include <protocols/LinuxDMABuf/GLinuxDMABuf.h>
+#include <protocols/LinuxDMABuf/RLinuxBufferParams.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 
 using namespace Louvre::Protocols::LinuxDMABuf;
 
-GLinuxDMABuf::GLinuxDMABuf
-(
+static const struct zwp_linux_dmabuf_v1_interface imp
+{
+    .destroy = &GLinuxDMABuf::destroy,
+    .create_params = &GLinuxDMABuf::create_params,
+#if LOUVRE_LINUX_DMA_BUF_VERSION >= 4
+    .get_default_feedback = &GLinuxDMABuf::get_default_feedback,
+    .get_surface_feedback = &GLinuxDMABuf::get_surface_feedback
+#else
+    .get_default_feedback = NULL,
+    .get_surface_feedback = NULL
+#endif
+};
+
+GLinuxDMABuf::GLinuxDMABuf(
     wl_client *client,
-    const wl_interface *interface,
     Int32 version,
-    UInt32 id,
-    const void *implementation
-)
+    UInt32 id
+) noexcept
     :LResource
     (
         client,
-        interface,
+        &zwp_linux_dmabuf_v1_interface,
         version,
         id,
-        implementation
-    ),
-    LPRIVATE_INIT_UNIQUE(GLinuxDMABuf)
+        &imp
+    )
 {
-    this->client()->imp()->linuxDMABufGlobals.push_back(this);
+    this->client()->imp()->linuxDMABufGlobals.emplace_back(this);
 
     if (version < 3)
     {
-        Int64 prevFormat = -1;
+        Int64 prevFormat { -1 };
 
         for (const LDMAFormat &dmaFormat : *compositor()->imp()->graphicBackend->backendGetDMAFormats())
         {
@@ -47,18 +56,41 @@ GLinuxDMABuf::GLinuxDMABuf
     }
 }
 
-GLinuxDMABuf::~GLinuxDMABuf()
+GLinuxDMABuf::~GLinuxDMABuf() noexcept
 {
     LVectorRemoveOneUnordered(client()->imp()->linuxDMABufGlobals, this);
 }
 
-bool GLinuxDMABuf::format(UInt32 format)
+/******************** REQUESTS ********************/
+
+void GLinuxDMABuf::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
 {
-    zwp_linux_dmabuf_v1_send_format(resource(), format);
-    return true;
+    new GLinuxDMABuf(client, version, id);
 }
 
-bool GLinuxDMABuf::modifier(UInt32 format, UInt32 mod_hi, UInt32 mod_lo)
+void GLinuxDMABuf::destroy(wl_client */*client*/, wl_resource *resource) noexcept
+{
+    wl_resource_destroy(resource);
+}
+
+void GLinuxDMABuf::create_params(wl_client */*client*/, wl_resource *resource, UInt32 id) noexcept
+{
+    new RLinuxBufferParams(static_cast<GLinuxDMABuf*>(wl_resource_get_user_data(resource)), id);
+}
+
+#if LOUVRE_LINUX_DMA_BUF_VERSION >= 4
+void GLinuxDMABuf::GLinuxDMABufPrivate::get_default_feedback(wl_client *client, wl_resource *resource, UInt32 id) {}
+void GLinuxDMABuf::GLinuxDMABufPrivate::get_surface_feedback(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface) {}
+#endif
+
+/******************** EVENTS ********************/
+
+void GLinuxDMABuf::format(UInt32 format) noexcept
+{
+    zwp_linux_dmabuf_v1_send_format(resource(), format);
+}
+
+bool GLinuxDMABuf::modifier(UInt32 format, UInt32 mod_hi, UInt32 mod_lo) noexcept
 {
 #if LOUVRE_LINUX_DMA_BUF_VERSION >= 3
     if (version() >= 3)

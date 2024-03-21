@@ -3,26 +3,47 @@
 
 #include <LResource.h>
 
-class Louvre::Protocols::XdgShell::RXdgPopup : public LResource
+class Louvre::Protocols::XdgShell::RXdgPopup final : public LResource
 {
 public:
-    RXdgPopup(RXdgSurface *rXdgSurface,
-              RXdgSurface *rXdgParentSurface,
-              RXdgPositioner *rXdgPositioner,
+    RXdgSurface *xdgSurfaceRes() const noexcept
+    {
+        return m_xdgSurfaceRes.get();
+    }
+
+    LPopupRole *popupRole() const noexcept
+    {
+        return m_popupRole.get();
+    }
+
+    /******************** REQUESTS ********************/
+
+    static void destroy(wl_client *client, wl_resource *resource);
+    static void grab(wl_client *client, wl_resource *resource, wl_resource *seat, UInt32 serial);
+
+#if LOUVRE_XDG_WM_BASE_VERSION >= 3
+    static void reposition(wl_client *client, wl_resource *resource, wl_resource *positioner, UInt32 token);
+#endif
+
+    /******************** EVENTS ********************/
+
+    // Since 1
+    void configure(Int32 x, Int32 y, Int32 width, Int32 height) noexcept;
+    void popupDone() noexcept;
+
+    // Since 3
+    bool repositioned(UInt32 token) noexcept;
+
+private:
+    friend class Louvre::Protocols::XdgShell::RXdgSurface;
+    RXdgPopup(RXdgSurface *xdgSurfaceRes,
+              RXdgSurface *xdgParentSurfaceRes,
+              RXdgPositioner *xdgPositionerRes,
               UInt32 id);
     ~RXdgPopup();
 
-    RXdgSurface *xdgSurfaceResource() const;
-    LPopupRole *popupRole() const;
-
-    // Since 1
-    bool configure(Int32 x, Int32 y, Int32 width, Int32 height);
-    bool popupDone();
-
-    // Since 3
-    bool repositioned(UInt32 token);
-
-    LPRIVATE_IMP_UNIQUE(RXdgPopup)
+    std::unique_ptr<LPopupRole> m_popupRole;
+    LWeak<RXdgSurface> m_xdgSurfaceRes;
 };
 
 #endif // RXDGPOPUP_H

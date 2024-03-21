@@ -1,7 +1,3 @@
-#include <protocols/RelativePointer/private/RRelativePointerPrivate.h>
-#include <protocols/PointerGestures/private/RGestureSwipePrivate.h>
-#include <protocols/PointerGestures/private/RGesturePinchPrivate.h>
-#include <protocols/PointerGestures/private/RGestureHoldPrivate.h>
 #include <protocols/Wayland/RPointer.h>
 #include <protocols/Wayland/GSeat.h>
 #include <private/LCursorRolePrivate.h>
@@ -42,30 +38,6 @@ RPointer::~RPointer() noexcept
 {
     if (seatRes())
         LVectorRemoveOneUnordered(seatRes()->m_pointerRes, this);
-
-    while (!relativePointerRes().empty())
-    {
-        m_relativePointerRes.back()->imp()->rPointer = nullptr;
-        m_relativePointerRes.pop_back();
-    }
-
-    while (!gestureSwipeRes().empty())
-    {
-        m_gestureSwipeRes.back()->imp()->rPointer = nullptr;
-        m_gestureSwipeRes.pop_back();
-    }
-
-    while (!gesturePinchRes().empty())
-    {
-        m_gesturePinchRes.back()->imp()->rPointer = nullptr;
-        m_gesturePinchRes.pop_back();
-    }
-
-    while (!gestureHoldRes().empty())
-    {
-        m_gestureHoldRes.back()->imp()->rPointer = nullptr;
-        m_gestureHoldRes.pop_back();
-    }
 }
 
 /******************** REQUESTS ********************/

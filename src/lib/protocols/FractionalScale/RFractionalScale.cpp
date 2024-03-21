@@ -1,47 +1,48 @@
-#include <protocols/FractionalScale/private/RFractionalScalePrivate.h>
+#include <protocols/FractionalScale/RFractionalScale.h>
 #include <protocols/FractionalScale/fractional-scale-v1.h>
 #include <protocols/Wayland/RSurface.h>
 
-using namespace Louvre;
+using namespace Louvre::Protocols::FractionalScale;
 
-static struct wp_fractional_scale_v1_interface wp_fractional_scale_v1_implementation
+static const struct wp_fractional_scale_v1_interface imp
 {
-    .destroy = &RFractionalScale::RFractionalScalePrivate::destroy
+    .destroy = &RFractionalScale::destroy
 };
 
 RFractionalScale::RFractionalScale
     (
-        Wayland::RSurface *rSurface,
+        Wayland::RSurface *surfaceRes,
         UInt32 id,
         Int32 version
-    )
+    ) noexcept
     :LResource
     (
-        rSurface->client(),
+        surfaceRes->client(),
         &wp_fractional_scale_v1_interface,
         version,
         id,
-        &wp_fractional_scale_v1_implementation
+        &imp
     ),
-    LPRIVATE_INIT_UNIQUE(RFractionalScale)
+    m_surfaceRes(surfaceRes)
 {
-    imp()->rSurface.reset(rSurface);
-    rSurface->m_fractionalScaleRes.reset(this);
+    surfaceRes->m_fractionalScaleRes.reset(this);
 }
 
-RFractionalScale::~RFractionalScale() {}
+/******************** REQUESTS ********************/
 
-Protocols::Wayland::RSurface *RFractionalScale::surfaceResource() const
+
+void RFractionalScale::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {
-    return imp()->rSurface.get();
+    wl_resource_destroy(resource);
 }
 
-bool RFractionalScale::preferredScale(Float32 scale)
-{
-    if (scale == imp()->lastScale)
-        return true;
+/******************** EVENTS ********************/
 
-    imp()->lastScale = scale;
+void RFractionalScale::preferredScale(Float32 scale) noexcept
+{
+    if (scale == m_lastScale)
+        return;
+
+    m_lastScale = scale;
     wp_fractional_scale_v1_send_preferred_scale(resource(), (UInt32)(roundf(scale * 120.f)));
-    return true;
 }

@@ -546,7 +546,7 @@ public:
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp showWindowMenuRequest
      */
-    virtual void showWindowMenuRequest(Int32 x, Int32 y);
+    virtual void showWindowMenuRequest(const LEvent &triggeringEvent, Int32 x, Int32 y);
 
     /**
      * @brief Change in fullscreen mode state

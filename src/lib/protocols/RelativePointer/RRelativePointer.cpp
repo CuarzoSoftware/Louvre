@@ -1,38 +1,39 @@
-#include <protocols/RelativePointer/private/RRelativePointerPrivate.h>
+#include <protocols/RelativePointer/RRelativePointer.h>
 #include <protocols/RelativePointer/relative-pointer-unstable-v1.h>
 #include <protocols/Wayland/RPointer.h>
 #include <LPointerMoveEvent.h>
 
-static struct zwp_relative_pointer_v1_interface zwp_relative_pointer_v1_implementation =
+using namespace Louvre::Protocols::RelativePointer;
+
+static const struct zwp_relative_pointer_v1_interface imp
 {
-    .destroy = &RRelativePointer::RRelativePointerPrivate::destroy
+    .destroy = &RRelativePointer::destroy
 };
 
-RRelativePointer::RRelativePointer(Wayland::RPointer *rPointer, Int32 id, UInt32 version) :
+RRelativePointer::RRelativePointer(Wayland::RPointer *pointerRes, Int32 id, UInt32 version) noexcept :
     LResource(
-        rPointer->client(),
+        pointerRes->client(),
         &zwp_relative_pointer_v1_interface,
         version,
         id,
-        &zwp_relative_pointer_v1_implementation),
-    LPRIVATE_INIT_UNIQUE(RRelativePointer)
+        &imp),
+    m_pointerRes(pointerRes)
 {
-    imp()->rPointer = rPointer;
-    rPointer->m_relativePointerRes.emplace_back(this);
+    pointerRes->m_relativePointerRes.emplace_back(this);
 }
 
-RRelativePointer::~RRelativePointer()
+RRelativePointer::~RRelativePointer() noexcept
 {
-    if (pointerResource())
-        LVectorRemoveOneUnordered(pointerResource()->m_relativePointerRes, this);
+    if (pointerRes())
+        LVectorRemoveOneUnordered(pointerRes()->m_relativePointerRes, this);
 }
 
-RPointer *RRelativePointer::pointerResource() const
+void RRelativePointer::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {
-    return imp()->rPointer;
+    wl_resource_destroy(resource);
 }
 
-bool RRelativePointer::relativeMotion(const Louvre::LPointerMoveEvent &event)
+void RRelativePointer::relativeMotion(const Louvre::LPointerMoveEvent &event) noexcept
 {
     zwp_relative_pointer_v1_send_relative_motion(
         resource(),
@@ -42,5 +43,4 @@ bool RRelativePointer::relativeMotion(const Louvre::LPointerMoveEvent &event)
         wl_fixed_from_double(event.delta().y()),
         wl_fixed_from_double(event.deltaUnaccelerated().x()),
         wl_fixed_from_double(event.deltaUnaccelerated().y()));
-    return true;
 }

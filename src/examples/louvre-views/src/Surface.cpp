@@ -386,7 +386,7 @@ LTexture *Surface::renderThumbnail(LRegion *transRegion)
     {
         if (next->parent() == this && next->subsurface())
         {
-            tmpChildren.push_back({&next->view, next->view.parent()});
+            tmpChildren.emplace_back(&next->view, next->view.parent());
             next->view.enableParentOffset(false);
             next->view.setParent(&tmpView);
         }

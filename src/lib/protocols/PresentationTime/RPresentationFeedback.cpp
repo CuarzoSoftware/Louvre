@@ -1,55 +1,47 @@
-#include <protocols/PresentationTime/private/RPresentationFeedbackPrivate.h>
-#include <protocols/PresentationTime/private/GPresentationPrivate.h>
-#include <protocols/PresentationTime/presentation-time.h>
-
+#include <protocols/PresentationTime/RPresentationFeedback.h>
+#include <protocols/PresentationTime/GPresentation.h>
 #include <protocols/Wayland/GOutput.h>
-
 #include <private/LSurfacePrivate.h>
+
+using namespace Louvre::Protocols::PresentationTime;
 
 RPresentationFeedback::RPresentationFeedback
 (
-    GPresentation *gPresentation,
-    LSurface *lSurface,
+    GPresentation *presentationRes,
+    LSurface *surface,
     UInt32 id
-)
+) noexcept
     :LResource
     (
-        gPresentation->client(),
+        presentationRes->client(),
         &wp_presentation_feedback_interface,
-        gPresentation->version(),
+        presentationRes->version(),
         id,
         nullptr
     ),
-    LPRIVATE_INIT_UNIQUE(RPresentationFeedback)
+    m_surface(surface)
 {
-    imp()->surface.reset(lSurface);
-    surface()->imp()->presentationFeedbackResources.push_back(this);
+    surface->imp()->presentationFeedbackResources.push_back(this);
 }
 
-RPresentationFeedback::~RPresentationFeedback()
+RPresentationFeedback::~RPresentationFeedback() noexcept
 {
     if (surface())
         LVectorRemoveOne(surface()->imp()->presentationFeedbackResources, this);
 }
 
-Louvre::LSurface *RPresentationFeedback::surface() const
+void RPresentationFeedback::syncOutput(Wayland::GOutput *outputRes) noexcept
 {
-    return imp()->surface.get();
+    wp_presentation_feedback_send_sync_output(resource(), outputRes->resource());
 }
 
-bool RPresentationFeedback::syncOutput(Wayland::GOutput *gOutput) const
-{
-    wp_presentation_feedback_send_sync_output(resource(), gOutput->resource());
-    return true;
-}
-
-bool RPresentationFeedback::presented(UInt32 tv_sec_hi,
+void RPresentationFeedback::presented(UInt32 tv_sec_hi,
                                         UInt32 tv_sec_lo,
                                         UInt32 tv_nsec,
                                         UInt32 refresh,
                                         UInt32 seq_hi,
                                         UInt32 seq_lo,
-                                        UInt32 flags) const
+                                        UInt32 flags) noexcept
 {
     wp_presentation_feedback_send_presented(resource(),
                                             tv_sec_hi,
@@ -59,11 +51,9 @@ bool RPresentationFeedback::presented(UInt32 tv_sec_hi,
                                             seq_hi,
                                             seq_lo,
                                             flags);
-    return true;
 }
 
-bool RPresentationFeedback::discarded() const
+void RPresentationFeedback::discarded() noexcept
 {
     wp_presentation_feedback_send_discarded(resource());
-    return true;
 }
