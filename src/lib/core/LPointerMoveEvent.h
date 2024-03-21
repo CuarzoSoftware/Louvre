@@ -5,64 +5,106 @@
 #include <LPoint.h>
 #include <LTime.h>
 
-class Louvre::LPointerMoveEvent : public LPointerEvent
+/**
+ * @brief Pointer movement event.
+ */
+class Louvre::LPointerMoveEvent final : public LPointerEvent
 {
 public:
-    inline LPointerMoveEvent(const LPointF &delta = LPointF(0.f, 0.f), const LPointF &deltaUnaccelerated = LPointF(0.f, 0.f),
-                             UInt32 serial = LTime::nextSerial(), UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) :
+    /**
+     * @brief Constructs an LPointerMoveEvent object.
+     *
+     * @param delta The movement delta of the pointer.
+     * @param deltaUnaccelerated The unaccelerated movement delta of the pointer.
+     * @param serial The serial number of the event.
+     * @param ms The millisecond timestamp of the event.
+     * @param us The microsecond timestamp of the event.
+     * @param device The input device that originated the event.
+     */
+    LPointerMoveEvent(const LPointF &delta = LPointF(0.f, 0.f), const LPointF &deltaUnaccelerated = LPointF(0.f, 0.f),
+                             UInt32 serial = LTime::nextSerial(), UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) noexcept :
         LPointerEvent(LEvent::Subtype::Move, serial, ms, us, device),
         m_delta(delta),
         m_deltaUnaccelerated(deltaUnaccelerated)
     {}
 
-    inline void setDelta(const LPointF &delta)
+    /**
+     * @brief Sets the movement delta of the pointer.
+     */
+    void setDelta(const LPointF &delta) noexcept
     {
         m_delta = delta;
     }
 
-    inline void setDx(Float32 dx)
+    /**
+     * @brief Sets the movement delta along the x-axis of the pointer.
+     */
+    void setDx(Float32 dx) noexcept
     {
         m_delta.setX(dx);
     }
 
-    inline void setDy(Float32 dy)
+    /**
+     * @brief Sets the movement delta along the y-axis of the pointer.
+     */
+    void setDy(Float32 dy) noexcept
     {
         m_delta.setY(dy);
     }
 
-    const LPointF &delta() const
+    /**
+     * @brief Gets the movement delta of the pointer.
+     */
+    const LPointF &delta() const noexcept
     {
         return m_delta;
     }
 
-    inline void setDeltaUnaccelerated(const LPointF &deltaUnaccelerated)
+    /**
+     * @brief Sets the unaccelerated movement delta of the pointer.
+     */
+    void setDeltaUnaccelerated(const LPointF &deltaUnaccelerated) noexcept
     {
         m_deltaUnaccelerated = deltaUnaccelerated;
     }
 
-    inline void setDxUnaccelerated(Float32 dx)
+    /**
+     * @brief Sets the unaccelerated movement delta along the x-axis of the pointer.
+     */
+    void setDxUnaccelerated(Float32 dx) noexcept
     {
         m_deltaUnaccelerated.setX(dx);
     }
 
-    inline void setDyUnaccelerated(Float32 dy)
+    /**
+     * @brief Sets the unaccelerated movement delta along the y-axis of the pointer.
+     */
+    void setDyUnaccelerated(Float32 dy) noexcept
     {
         m_deltaUnaccelerated.setY(dy);
     }
 
-    const LPointF &deltaUnaccelerated() const
+    /**
+     * @brief Gets the unaccelerated movement delta of the pointer.
+     */
+    const LPointF &deltaUnaccelerated() const noexcept
     {
         return m_deltaUnaccelerated;
     }
 
+    /**
+     * @brief The surface or view local position where the pointer is positioned in surface coordinates.
+     */
     mutable LPointF localPos;
 
+    /// @cond OMIT
 protected:
     LPointF m_delta;
     LPointF m_deltaUnaccelerated;
 private:
     friend class LInputBackend;
     void notify();
+    /// @endcond
 };
 
 #endif // LPOINTERMOVEEVENT_H

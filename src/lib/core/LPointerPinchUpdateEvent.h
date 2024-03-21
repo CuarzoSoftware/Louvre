@@ -5,12 +5,28 @@
 #include <LPoint.h>
 #include <LTime.h>
 
-class Louvre::LPointerPinchUpdateEvent : public LPointerEvent
+/**
+ * @brief Pointer pinch update gesture event.
+ */
+class Louvre::LPointerPinchUpdateEvent final : public LPointerEvent
 {
 public:
-    inline LPointerPinchUpdateEvent(UInt32 fingers = 0, const LPointF &delta = LPointF(0.f, 0.f), const LPointF &deltaUnaccelerated = LPointF(0.f, 0.f),
+    /**
+     * @brief Constructs an LPointerPinchUpdateEvent object.
+     *
+     * @param fingers The number of fingers involved in the pinch gesture.
+     * @param delta The movement delta of the pinch gesture.
+     * @param deltaUnaccelerated The unaccelerated movement delta of the pinch gesture.
+     * @param scale The scale factor of the pinch gesture.
+     * @param rotation The rotation angle of the pinch gesture.
+     * @param serial The serial number of the event.
+     * @param ms The millisecond timestamp of the event.
+     * @param us The microsecond timestamp of the event.
+     * @param device The input device that originated the event.
+     */
+    LPointerPinchUpdateEvent(UInt32 fingers = 0, const LPointF &delta = LPointF(0.f, 0.f), const LPointF &deltaUnaccelerated = LPointF(0.f, 0.f),
                                     Float32 scale = 1.f, Float32 rotation = 0.f,
-                                    UInt32 serial = LTime::nextSerial(), UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) :
+                                    UInt32 serial = LTime::nextSerial(), UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) noexcept :
         LPointerEvent(LEvent::Subtype::PinchUpdate, serial, ms, us, device),
         m_fingers(fingers),
         m_delta(delta),
@@ -19,76 +35,126 @@ public:
         m_rotation(rotation)
     {}
 
-    inline void setFingers(UInt32 fingers)
+    /**
+     * @brief Sets the number of fingers involved in the pinch gesture.
+     */
+    void setFingers(UInt32 fingers) noexcept
     {
         m_fingers = fingers;
     }
 
-    inline UInt32 fingers() const
+    /**
+     * @brief Gets the number of fingers involved in the pinch gesture.
+     */
+    UInt32 fingers() const noexcept
     {
         return m_fingers;
     }
 
-    inline void setDelta(const LPointF &delta)
+    /**
+     * @brief Sets the movement delta of the pinch gesture.
+     */
+    void setDelta(const LPointF &delta) noexcept
     {
         m_delta = delta;
     }
 
-    inline void setDx(Float32 dx)
+    /**
+     * @brief Sets the movement delta along the x-axis of the pinch gesture.
+     */
+    void setDx(Float32 dx) noexcept
     {
         m_delta.setX(dx);
     }
 
-    inline void setDy(Float32 dy)
+    /**
+     * @brief Sets the movement delta along the y-axis of the pinch gesture.
+     */
+    void setDy(Float32 dy) noexcept
     {
         m_delta.setY(dy);
     }
 
-    const LPointF &delta() const
+    /**
+     * @brief Gets the movement delta of the pinch gesture.
+     */
+    const LPointF &delta() const noexcept
     {
         return m_delta;
     }
 
-    inline void setDeltaUnaccelerated(const LPointF &deltaUnaccelerated)
+    /**
+     * @brief Sets the unaccelerated movement delta of the pinch gesture.
+     */
+    void setDeltaUnaccelerated(const LPointF &deltaUnaccelerated) noexcept
     {
         m_deltaUnaccelerated = deltaUnaccelerated;
     }
 
-    inline void setDxUnaccelerated(Float32 dx)
+    /**
+     * @brief Sets the unaccelerated movement delta along the x-axis of the pinch gesture.
+     */
+    void setDxUnaccelerated(Float32 dx) noexcept
     {
         m_deltaUnaccelerated.setX(dx);
     }
 
-    inline void setDyUnaccelerated(Float32 dy)
+    /**
+     * @brief Sets the unaccelerated movement delta along the y-axis of the pinch gesture.
+     */
+    void setDyUnaccelerated(Float32 dy) noexcept
     {
         m_deltaUnaccelerated.setY(dy);
     }
 
-    const LPointF &deltaUnaccelerated() const
+    /**
+     * @brief Gets the unaccelerated movement delta of the pinch gesture.
+     */
+    const LPointF &deltaUnaccelerated() const noexcept
     {
         return m_deltaUnaccelerated;
     }
 
-    inline void setScale(Float32 scale)
+    /**
+     * @brief Sets the scale factor of the pinch gesture.
+     */
+    void setScale(Float32 scale) noexcept
     {
         m_scale = scale;
     }
 
-    inline Float32 scale() const
+    /**
+     * @brief Gets the scale factor of the pinch gesture.
+     *
+     * The scale begins at 1.0, and if e.g. the fingers moved together by 50% then the scale will become 0.5,
+     * if they move twice as far apart as initially the scale becomes 2.0, etc.
+     */
+    Float32 scale() const noexcept
     {
         return m_scale;
     }
 
-    inline void setRotation(Float32 rotation)
+    /**
+     * @brief Sets the rotation angle of the pinch gesture.
+     */
+    void setRotation(Float32 rotation) noexcept
     {
         m_rotation = rotation;
     }
 
-    inline Float32 rotation() const
+    /**
+     * @brief Gets the rotation angle of the pinch gesture.
+     *
+     * The angle delta is defined as the change in angle of the line formed by the 2 fingers of a pinch gesture.
+     * Clockwise rotation is represented by a positive delta, counter-clockwise by a negative delta.
+     * If e.g. the fingers are on the 12 and 6 location of a clock face plate and they move to the 1 resp. 7 location in a single event then the angle delta is 30 degrees.
+     */
+    Float32 rotation() const noexcept
     {
         return m_rotation;
     }
 
+    /// @cond OMIT
 protected:
     UInt32 m_fingers;
     LPointF m_delta;
@@ -98,6 +164,7 @@ protected:
 private:
     friend class LInputBackend;
     void notify();
+    /// @endcond
 };
 
 #endif // LPOINTERPINCHUPDATEEVENT_H

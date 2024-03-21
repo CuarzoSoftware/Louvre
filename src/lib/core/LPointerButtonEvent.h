@@ -5,7 +5,10 @@
 #include <linux/input-event-codes.h>
 #include <LTime.h>
 
-class Louvre::LPointerButtonEvent : public LPointerEvent
+/**
+ * @brief Pointer button event.
+ */
+class Louvre::LPointerButtonEvent final : public LPointerEvent
 {
 public:
 
@@ -57,39 +60,63 @@ public:
         Pressed = 1
     };
 
-    inline LPointerButtonEvent(Button button = Left, State state = Pressed, UInt32 serial = LTime::nextSerial(),
-                               UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) :
+    /**
+     * @brief Constructs an LPointerButtonEvent object.
+     *
+     * @param button The button associated with the event.
+     * @param state The state of the button.
+     * @param serial The serial number of the event.
+     * @param ms The millisecond timestamp of the event.
+     * @param us The microsecond timestamp of the event.
+     * @param device The input device that originated the event.
+     */
+    LPointerButtonEvent(Button button = Left, State state = Pressed, UInt32 serial = LTime::nextSerial(),
+                               UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) noexcept :
         LPointerEvent(LEvent::Subtype::Button, serial, ms, us, device),
         m_button(button),
         m_state(state)
     {}
 
-    inline void setButton(Button button)
+    /**
+     * @brief Sets the button code associated with the event.
+     */
+    void setButton(Button button) noexcept
     {
         m_button = button;
     }
 
-    inline Button button() const
+    /**
+     * @brief Gets the button code associated with the event.
+     */
+    Button button() const noexcept
     {
         return m_button;
     }
 
-    inline void setState(State state)
+    /**
+     * @brief Sets the state of the button.
+     */
+    void setState(State state) noexcept
     {
         m_state = state;
     }
 
-    inline State state() const
+    /**
+     * @brief Gets the state of the button.
+     */
+    State state() const noexcept
     {
         return m_state;
     }
 
+    /// @cond OMIT
 protected:
     Button m_button;
     State m_state;
 private:
     friend class LInputBackend;
     void notify();
+    /// @endcond
 };
 
 #endif // LPOINTERBUTTONEVENT_H

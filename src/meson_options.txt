@@ -1,4 +1,4 @@
 option('build_examples', type : 'boolean', value : true)
-option('build_tests', type : 'boolean', value : true)
+option('build_tests', type : 'boolean', value : false)
 option('default_graphic_backend', type : 'string', value : 'drm')
 option('default_input_backend', type : 'string', value : 'libinput')
