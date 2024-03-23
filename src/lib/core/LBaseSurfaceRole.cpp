@@ -22,6 +22,11 @@ LBaseSurfaceRole::~LBaseSurfaceRole()
     }   
 }
 
+LClient *LBaseSurfaceRole::client() const noexcept
+{
+    return resource() == nullptr ? nullptr : resource()->client();
+}
+
 bool LBaseSurfaceRole::acceptCommitRequest(CommitOrigin origin)
 {
     L_UNUSED(origin);

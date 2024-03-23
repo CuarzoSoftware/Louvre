@@ -6,20 +6,10 @@
 #include <thread>
 
 /**
- * @brief Louvre's primary class and resource factory.
+ * @brief Louvre's core and resources factory.
  *
- * The LCompositor class initializes Louvre's Wayland event loop and backend systems.\n
- * After calling start(), the initialized() virtual method is invoked to indicate successful initialization.
- * Any initial setup should be done there or later to prevent issues.
- *
- * LCompositor also follows the factory design pattern, using virtual methods as constructors and destructors for various library classes.
- * Each of those classes has multiple virtual methods that handle events.
- * To customize a class's behavior for a specific event, subclass it and override the corresponding virtual method.
- * To make the library use your custom subclass, override its virtual constructor in LCompositor.
- *
- * For example, consider the LOutput class, created within LCompositor::createOutputRequest().
- * To use your custom LOutput subclass, override LCompositor::createOutputRequest() and return an instance of your subclass.
- * This way, the library will use your custom LOutput subclass for output-related events.
+ * The LCompositor class manages the main event loop, backend systems, and provides virtual constructors
+ * for Louvre objects with interfaces you can override.
  */
 class Louvre::LCompositor
 {
@@ -66,7 +56,7 @@ public:
     /// @endcond
 
     /**
-     * @brief Get the current Louvre version.
+     * @brief Gets the current Louvre version.
      */
     static const LVersion &version();
 
@@ -172,7 +162,7 @@ public:
     /**
      * @brief Notifies a successful compositor initialization.
      *
-     * Use this event to handle the successful initialization of the compositor after calling the start() method.
+     * Use this event to handle the successful initialization of the compositor after calling start().
      * Here you should perform initial configuration tasks, such as setting up outputs, as demonstrated in the default implementation.
      *
      * @par Default Implementation
@@ -183,7 +173,7 @@ public:
     /**
      * @brief Notifies the uninitialization of the compositor.
      *
-     * This event is called just before the compositor is uninitialized when finish() is called. At this point, both the input and graphic
+     * This event is called right before the compositor is uninitialized when finish() is called. At this point, both the input and graphic
      * backends, along with other resources such as connected clients and initialized outputs, are still operational.
      * Use this opportunity to release any compositor-specific resources that you may have created.
      *
@@ -219,19 +209,31 @@ public:
 
     /**
      * @name Virtual Constructors
-     * Virtual constructors are used to dynamically instantiate variants of a base or abstract class.
-     * The compositor uses virtual constructors to create and keep track of resources like LSurface, LOutput, LKeyboard, etc,
-     * and for letting you use your own subclasses and override their virtual methods.
+     *
+     * Virtual constructors for Louvre objects that provide an interface you can override such as LSurface, LOutput, LKeyboard, etc.
      */
 
 ///@{
 
     /**
-     * @brief Virtual constructor for creating LOutput instances when needed by the graphic backend.
+     * @brief LSessionLockManager virtual constructor.
      *
-     * This method is invoked by the graphic backend when it needs to create a new output.
+     * Invoked once during the LCompositor initialization.
      *
-     * @return An instance of LOutput or a subclass of LOutput.
+     * @param params Internal Louvre parameters required by the object.
+     * @note Must return a new instance of the object's base class or derived class. `nullptr` is not allowed.
+     *
+     * @par Default Implementation
+     * @snippet LCompositorDefault.cpp createSessionLockManagerRequest
+     */
+    virtual LSessionLockManager *createSessionLockManagerRequest(const void *params);
+
+    /**
+     * @brief LOutput virtual constructor.
+     *
+     * Invoked by the graphic backend when it needs to create a new output.
+     *
+     * @param params Internal Louvre parameters required by the object.
      *
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createOutputRequest
@@ -239,41 +241,12 @@ public:
     virtual LOutput *createOutputRequest(const void *params);
 
     /**
-     * @brief Virtual constructor for creating LClient instances when a new client connects.
+     * @brief LSeat virtual constructor.
      *
-     * This method is called when a new client establishes a connection with the compositor.
+     * Invoked once during the LCompositor initialization.
      *
-     * @param params Internal Louvre parameters for creating the client.
-     *
-     * @return An instance of LClient or a subclass of LClient.
-     *
-     * @par Default Implementation
-     * @snippet LCompositorDefault.cpp createClientRequest
-     */
-    virtual LClient *createClientRequest(const void *params);
-
-    /**
-     * @brief Virtual constructor for creating LSurface instances when a client creates a new surface.
-     *
-     * This method is called when a client creates a new surface.
-     *
-     * @param params Internal Louvre parameters for creating the surface.
-     *
-     * @return An instance of LSurface or a subclass of LSurface.
-     *
-     * @par Default Implementation
-     * @snippet LCompositorDefault.cpp createSurfaceRequest
-     */
-    virtual LSurface *createSurfaceRequest(const void *params);
-
-    /**
-     * @brief Virtual constructor for creating the LSeat instance during compositor initialization.
-     *
-     * This method is called during the compositor initialization. The LSeat class provides virtual methods to access native events generated by the input backend, handle output hotplugging events, TTY switching events, and more.
-     *
-     * @param params Internal Louvre parameters for creating the seat.
-     *
-     * @return An instance of LSeat or a subclass of LSeat.
+     * @param params Internal Louvre parameters required by the object.
+     * @note Must return a new instance of the object's base class or derived class. `nullptr` is not allowed.
      *
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createSeatRequest
@@ -281,13 +254,12 @@ public:
     virtual LSeat *createSeatRequest(const void *params);
 
     /**
-     * @brief Virtual constructor for creating the LPointer instance during LSeat initialization.
+     * @brief LPointer virtual constructor.
      *
-     * This method is called during LSeat initialization. The LPointer class provides virtual methods to listen to pointer events generated by the input backend.
+     * Invoked once during the LSeat initialization.
      *
-     * @param params Internal Louvre parameters for creating the pointer.
-     *
-     * @return An instance of LPointer or a subclass of LPointer.
+     * @param params Internal Louvre parameters required by the object.
+     * @note Must return a new instance of the object's base class or derived class. `nullptr` is not allowed.
      *
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createPointerRequest
@@ -295,13 +267,12 @@ public:
     virtual LPointer *createPointerRequest(const void *params);
 
     /**
-     * @brief Virtual constructor for creating the LKeyboard instance during LSeat initialization.
+     * @brief LKeyboard virtual constructor.
      *
-     * This method is called during LSeat initialization. The LKeyboard class provides virtual methods to listen to keyboard events generated by the input backend.
+     * Invoked once during the LSeat initialization.
      *
-     * @param params Internal Louvre parameters for creating the keyboard.
-     *
-     * @return An instance of LKeyboard or a subclass of LKeyboard.
+     * @param params Internal Louvre parameters required by the object.
+     * @note Must return a new instance of the object's base class or derived class. `nullptr` is not allowed.
      *
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createKeyboardRequest
@@ -309,13 +280,12 @@ public:
     virtual LKeyboard *createKeyboardRequest(const void *params);
 
     /**
-     * @brief Virtual constructor for creating the LTouch instance during LSeat initialization.
+     * @brief LTouch virtual constructor.
      *
-     * This method is called during LSeat initialization. The LTouch class provides virtual methods to listen to touch events generated by the input backend.
+     * Invoked once during the LSeat initialization.
      *
-     * @param params Internal Louvre parameters for creating the LTouch instance.
-     *
-     * @return An instance of LTouch or subclass of LTouch.
+     * @param params Internal Louvre parameters required by the object.
+     * @note Must return a new instance of the object's base class or derived class. `nullptr` is not allowed.
      *
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createTouchRequest
@@ -323,15 +293,12 @@ public:
     virtual LTouch *createTouchRequest(const void *params);
 
     /**
-     * @brief Virtual constructor for creating the LDND instance during LSeat initialization.
+     * @brief LDND virtual constructor.
      *
-     * This method is called during LSeat initialization.
-     * The LDND class provides virtual methods that notify the start and end of
-     * Drag & Drop sessions between clients.
+     * Invoked once during the LSeat initialization.
      *
-     * @param params Internal Louvre parameters for creating the DND manager.
-     *
-     * @return An instance of LDND or a subclass of LDND.
+     * @param params Internal Louvre parameters required by the object.
+     * @note Must return a new instance of the object's base class or derived class. `nullptr` is not allowed.
      *
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createDNDRequest
@@ -339,34 +306,51 @@ public:
     virtual LDND *createDNDRequest(const void *params);
 
     /**
-     * @brief Virtual constructor for creating the LClipboard instance during LSeat initialization.
+     * @brief LClipboard virtual constructor.
      *
-     * This method is called during LSeat initialization.
-     * The LClipboard class provides virtual methods that notify client requests to
-     * set the clipboard.
+     * Invoked once during the LSeat initialization.
      *
-     * @param params Internal Louvre parameters for creating the LClipboard.
-     *
-     * @return An instance of LClipboard or a subclass of LClipboard.
+     * @param params Internal Louvre parameters required by the object.
+     * @note Must return a new instance of the object's base class or derived class. `nullptr` is not allowed.
      *
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createClipboardRequest
      */
     virtual LClipboard *createClipboardRequest(const void *params);
 
-    // TODO
-    virtual LSessionLockManager *createSessionLockManagerRequest(const void *params);
+    /**
+     * @brief LClient virtual constructor.
+     *
+     * Invoked when a new client establishes a connection with the compositor.
+     *
+     * @param params Internal Louvre parameters required by the object.
+     * @note Must return a new instance of the object's base class or derived class. `nullptr` is not allowed.
+     *
+     * @par Default Implementation
+     * @snippet LCompositorDefault.cpp createClientRequest
+     */
+    virtual LClient *createClientRequest(const void *params);
 
     /**
-     * @brief Virtual constructor for creating LToplevelRole instances when a client creates a toplevel role for a surface.
+     * @brief LSurface virtual constructor.
      *
-     * This method is called when a client creates a toplevel role for a surface.
-     * The LToplevelRole class provides virtual methods to notify changes in geometry, state (activated, maximized, fullscreen, etc.),
-     * the start of interactive moving and resizing sessions, and more.
+     * Invoked when a client creates a new surface.
      *
-     * @param params Internal Louvre parameters for creating the toplevel role.
+     * @param params Internal Louvre parameters required by the object.
+     * @note Must return a new instance of the object's base class or derived class. `nullptr` is not allowed.
      *
-     * @return An instance of LToplevelRole or a subclass of LToplevelRole.
+     * @par Default Implementation
+     * @snippet LCompositorDefault.cpp createSurfaceRequest
+     */
+    virtual LSurface *createSurfaceRequest(const void *params);
+
+    /**
+     * @brief LToplevelRole virtual constructor.
+     *
+     * Invoked when a client creates a toplevel role for a surface.
+     *
+     * @param params Internal Louvre parameters required by the object.
+     * @note Must return a new instance of the object's base class or derived class. `nullptr` is not allowed.
      *
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createToplevelRoleRequest
@@ -374,15 +358,12 @@ public:
     virtual LToplevelRole *createToplevelRoleRequest(const void *params);
 
     /**
-     * @brief Virtual constructor for creating LPopupRole instances when a client creates a Popup role for a surface.
+     * @brief LPopupRole virtual constructor.
      *
-     * This method is called when a client creates a Popup role for a surface.
-     * The LPopupRole class provides virtual methods to notify changes in geometry, repositioning based on its LPositioner,
-     * input grabbing requests, and more.
+     * Invoked when a client creates a popup role for a surface.
      *
-     * @param params Internal Louvre parameters for creating the Popup role.
-     *
-     * @return An instance of LPopupRole or a subclass of LPopupRole.
+     * @param params Internal Louvre parameters required by the object.
+     * @note Must return a new instance of the object's base class or derived class. `nullptr` is not allowed.
      *
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createPopupRoleRequest
@@ -390,15 +371,12 @@ public:
     virtual LPopupRole *createPopupRoleRequest(const void *params);
 
     /**
-     * @brief Virtual constructor for creating LSubsurfaceRole instances when a client creates a Subsurface role for a surface.
+     * @brief LSubsurfaceRole virtual constructor.
      *
-     * This method is called when a client creates a Subsurface role for a surface.
-     * The LSubsurfaceRole class provides virtual methods to notify changes in its local position relative to its parent,
-     * rearrangement on the stack of sibling surfaces, and more.
+     * Invoked when a client creates a subsurface role for a surface.
      *
-     * @param params Internal Louvre parameters for creating the Subsurface role.
-     *
-     * @return An instance of LSubsurfaceRole or a subclass of LSubsurfaceRole.
+     * @param params Internal Louvre parameters required by the object.
+     * @note Must return a new instance of the object's base class or derived class. `nullptr` is not allowed.
      *
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createSubsurfaceRoleRequest
@@ -406,14 +384,12 @@ public:
     virtual LSubsurfaceRole *createSubsurfaceRoleRequest(const void *params);
 
     /**
-     * @brief Virtual constructor for creating LCursorRole instances when a client wants to use a surface as a cursor.
+     * @brief LCursorRole virtual constructor.
      *
-     * This method is called when a client wants to use a surface as a cursor by invoking the LPointer::setCursorRequest() method.
-     * The LCursorRole class provides a virtual method that notifies changes in the hotspot of the cursor.
+     * Invoked when a client creates a cursor role for a surface.
      *
-     * @param params Internal Louvre parameters for creating the Cursor role.
-     *
-     * @return An instance of LCursorRole or a subclass of LCursorRole.
+     * @param params Internal Louvre parameters required by the object.
+     * @note Must return a new instance of the object's base class or derived class. `nullptr` is not allowed.
      *
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createCursorRoleRequest
@@ -421,26 +397,35 @@ public:
     virtual LCursorRole *createCursorRoleRequest(const void *params);
 
     /**
-     * @brief Virtual constructor for creating LDNDIconRole instances when a client wants to use a surface as an icon for a Drag & Drop session.
+     * @brief LDNDIconRole virtual constructor.
      *
-     * This method is called when a client wants to use a surface as an icon for a Drag & Drop session.
-     * Similar to LCursorRole, the LDNDIconRole class provides a virtual method that notifies changes in the hotspot of the icon being dragged.
+     * Invoked when a client creates a drag & drop icon role for a surface.
      *
-     * @param params Optional parameters for creating the DND icon role.
-     *
-     * @return An instance of LDNDIconRole or a subclass of LDNDIconRole.
+     * @param params Internal Louvre parameters required by the object.
+     * @note Must return a new instance of the object's base class or derived class. `nullptr` is not allowed.
      *
      * @par Default Implementation
      * @snippet LCompositorDefault.cpp createDNDIconRoleRequest
      */
     virtual LDNDIconRole *createDNDIconRoleRequest(const void *params);
 
-    // TODO
+    /**
+     * @brief LSessionLockRole virtual constructor.
+     *
+     * Invoked when a client creates a session lock role for a surface.
+     *
+     * @param params Internal Louvre parameters required by the object.
+     * @note Must return a new instance of the object's base class or derived class. `nullptr` is not allowed.
+     *
+     * @par Default Implementation
+     * @snippet LCompositorDefault.cpp createSessionLockRoleRequest
+     */
     virtual LSessionLockRole *createSessionLockRoleRequest(const void *params);
 ///@}
 
     /**
      * @name Virtual Destructors
+     *
      * Virtual destructors are used by the compositor to provide early notification of the destruction of a resource.
      *
      * @warning The compositor automatically handles the destruction of the resource provided as an argument. Therefore, you should not call `delete`.

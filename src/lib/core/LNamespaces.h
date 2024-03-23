@@ -620,11 +620,14 @@ namespace Louvre
     /**
      * @brief Gets the compositor seat.
      *
-     * The seat provides access to the LPointer, LKeyboard, LTouch, and LOutput instances.
+     * The seat provides access to the LClipboard, LDND, LPointer, LKeyboard, LTouch, and LOutput instances.
      *
      * @return A pointer to the LSeat instance.
      */
     LSeat *seat() noexcept;
+
+    // TODO
+    LSessionLockManager *sessionLockManager() noexcept;
 
     inline const std::string getenvString(const char *env) noexcept
     {

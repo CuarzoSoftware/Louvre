@@ -19,6 +19,7 @@
 #include <EGL/egl.h>
 #include <dlfcn.h>
 #include <string.h>
+#include <cassert>
 
 void LCompositor::LCompositorPrivate::processRemovedGlobals()
 {
@@ -158,8 +159,9 @@ bool LCompositor::LCompositorPrivate::initWayland()
     clientConnectedListener.notify = &clientConnectedEvent;
     wl_display_add_client_created_listener(display, &clientConnectedListener);
 
-    // TODO validate
-    sessionLockManager = compositor()->createSessionLockManagerRequest(nullptr);
+    compositor()->createSessionLockManagerRequest(&sessionLockManager);
+    assert(sessionLockManager != nullptr && "Please ensure that LCompositor::createSessionLockManagerRequest() returns a valid LSessionLockManager instance or a compatible subtype.");
+
     return true;
 }
 

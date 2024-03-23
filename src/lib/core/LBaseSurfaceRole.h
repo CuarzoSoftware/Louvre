@@ -44,7 +44,6 @@ public:
 
     /**
      * @brief Commit origin
-     * Indicates who requests to commit a surface
      */
     enum CommitOrigin
     {
@@ -58,7 +57,7 @@ public:
     /**
      * @brief Constructor of LBaseSurfaceRole class.
      *
-     * @param resource Resource granted by the role's protocol interface. If the role does not have a resource, the one accessible with LSurface::resource() should be passed.
+     * @param resource Resource granted by the role's protocol interface. If the role does not have a resource, the one accessible with LSurface::surfaceResource() should be passed.
      * @param surface Surface that will acquire the role.
      * @param roleId ID of the role, later accessible with the LSurface::roleId() method. Must be a value greater than 1000.
      *
@@ -112,10 +111,17 @@ public:
         return m_resource.get();
     }
 
+    /**
+     * @brief Client owner of the surface role.
+     */
+    LClient *client() const noexcept;
+
+    /// @cond OMIT
 protected:
 
     friend class Protocols::Wayland::RSurface;
     friend class Louvre::LSurface;
+    /// @endcond
 
     /**
      * @brief Variable that stores the surface position given the role.
@@ -176,12 +182,12 @@ protected:
      */
     virtual void handleParentChange();
 
-private:
     /// @cond OMIT
+private:
     LWeak<LSurface> m_surface;
     LWeak<LResource> m_resource;
     UInt32 m_roleId;
-    /// @encond
+    /// @endcond
 };
 
 #endif // LBASESURFACEROLE_H

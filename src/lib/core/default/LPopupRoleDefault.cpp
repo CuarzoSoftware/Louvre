@@ -1,6 +1,7 @@
 #include <protocols/Wayland/GSeat.h>
 #include <private/LPopupRolePrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <LSessionLockManager.h>
 #include <LTouchDownEvent.h>
 #include <LTouchPoint.h>
 #include <LTouch.h>
@@ -475,6 +476,9 @@ const LPoint &LPopupRole::rolePos() const
 //! [grabKeyboardRequest]
 void LPopupRole::grabKeyboardRequest(const LEvent &triggeringEvent)
 {
+    if (sessionLockManager()->state() != LSessionLockManager::Unlocked && sessionLockManager()->client() != client())
+        return;
+
     if (triggeringEvent.type() == LEvent::Type::Pointer)
     {
         if (!seat()->pointer()->focus())

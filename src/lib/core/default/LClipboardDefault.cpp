@@ -9,7 +9,7 @@
 using namespace Louvre;
 
 //! [setClipboardRequest]
-bool LClipboard::setClipboardRequest(LClient *client, const LEvent &triggeringEvent) noexcept
+bool LClipboard::setClipboardRequest(LClient *client, const LEvent &triggeringEvent)
 {
     switch (triggeringEvent.type())
     {
@@ -28,7 +28,7 @@ bool LClipboard::setClipboardRequest(LClient *client, const LEvent &triggeringEv
 //! [setClipboardRequest]
 
 //! [persistentMimeTypeFilter]
-bool LClipboard::persistentMimeTypeFilter(const std::string &mimeType) const noexcept
+bool LClipboard::persistentMimeTypeFilter(const std::string &mimeType) const
 {
     return
         mimeType == "image/png" ||

@@ -16,15 +16,7 @@ using namespace Louvre;
 //! [keyEvent]
 void LKeyboard::keyEvent(const LKeyboardKeyEvent &event)
 {
-    const bool sessionLocked { compositor()->sessionLockManager()->state() != LSessionLockManager::Unlocked };
-
-    if (sessionLocked)
-    {
-        if (cursor()->output() && cursor()->output()->sessionLockRole())
-            setGrab(cursor()->output()->sessionLockRole()->surface());
-        else
-            setGrab(nullptr);
-    }
+    const bool sessionLocked { sessionLockManager()->state() != LSessionLockManager::Unlocked };
 
     sendKeyEvent(event);
 
@@ -40,6 +32,12 @@ void LKeyboard::keyEvent(const LKeyboardKeyEvent &event)
             compositor()->finish();
             return;
         }
+        else if (L_CTRL && !L_SHIFT)
+            seat()->dnd()->setPreferredAction(LDND::Copy);
+        else if (!L_CTRL && L_SHIFT)
+            seat()->dnd()->setPreferredAction(LDND::Move);
+        else if (!L_CTRL && !L_SHIFT)
+            seat()->dnd()->setPreferredAction(LDND::NoAction);
 
         if (sessionLocked)
             return;
@@ -78,16 +76,10 @@ void LKeyboard::keyEvent(const LKeyboardKeyEvent &event)
                 cursor()->output()->bufferTexture(0)->save(path);
             }
         }
-        else if (L_CTRL && !L_SHIFT)
-            seat()->dnd()->setPreferredAction(LDND::Copy);
-        else if (!L_CTRL && L_SHIFT)
-            seat()->dnd()->setPreferredAction(LDND::Move);
-        else if (!L_CTRL && !L_SHIFT)
-            seat()->dnd()->setPreferredAction(LDND::NoAction);
     }
 
     // Key pressed
-    else if (!sessionLocked)
+    else
     {
         // CTRL sets Copy as the preferred action in drag & drop session
         if (L_CTRL)

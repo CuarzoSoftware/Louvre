@@ -204,11 +204,12 @@ LClipboard *LCompositor::createClipboardRequest(const void *params)
 }
 //! [createClipboardRequest]
 
-// TODO
+//! [createSessionLockManagerRequest]
 LSessionLockManager *LCompositor::createSessionLockManagerRequest(const void *params)
 {
     return new LSessionLockManager(params);
 }
+//! [createSessionLockManagerRequest]
 
 //! [createToplevelRoleRequest]
 LToplevelRole *LCompositor::createToplevelRoleRequest(const void *params)
@@ -246,11 +247,12 @@ LDNDIconRole *LCompositor::createDNDIconRoleRequest(const void *params)
 
 //! [createDNDIconRoleRequest]
 
-// TODO
+//! [createSessionLockRoleRequest]
 LSessionLockRole *LCompositor::createSessionLockRoleRequest(const void *params)
 {
     return new LSessionLockRole(params);
 }
+//! [createSessionLockRoleRequest]
 
 //! [destroyOutputRequest]
 void LCompositor::destroyOutputRequest(LOutput *output)
@@ -315,11 +317,12 @@ void LCompositor::destroyClipboardRequest(LClipboard *clipboard)
 }
 //! [destroyClipboardRequest]
 
-// TODO
+//! [destroySessionLockManagerRequest]
 void LCompositor::destroySessionLockManagerRequest(LSessionLockManager *sessionLockManager)
 {
     L_UNUSED(sessionLockManager);
 }
+//! [destroySessionLockManagerRequest]
 
 //! [destroyToplevelRoleRequest]
 void LCompositor::destroyToplevelRoleRequest(LToplevelRole *toplevel)
@@ -356,8 +359,10 @@ void LCompositor::destroyDNDIconRoleRequest(LDNDIconRole *icon)
 }
 //! [destroyDNDIconRoleRequest]
 
-// TODO
+//! [destroySessionLockRoleRequest]
 void LCompositor::destroySessionLockRoleRequest(LSessionLockRole *sessionLockRole)
 {
     L_UNUSED(sessionLockRole);
 }
+//! [destroySessionLockRoleRequest]
+

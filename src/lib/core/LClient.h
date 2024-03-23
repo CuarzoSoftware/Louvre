@@ -38,9 +38,10 @@ class Louvre::LClient : public LObject
 {
 public:
 
+    /// @cond OMIT
+
     struct Params;
 
-    // TODO add doc
     struct PointerEvents
     {
         LPointerEnterEvent enter;
@@ -78,6 +79,10 @@ public:
         TouchEvents touch;
     };
 
+    const Events &events() const noexcept;
+
+    /// @endcond
+
     /**
      * @brief Constructor of the LClient class.
      *
@@ -91,8 +96,7 @@ public:
     ~LClient();
 
     /// @cond OMIT
-    LClient(const LClient&) = delete;
-    LClient& operator= (const LClient&) = delete;
+    LCLASS_NO_COPY(LClient)
     /// @endcond
 
     /**
@@ -263,9 +267,28 @@ public:
      */
     const std::vector<Protocols::SessionLock::GSessionLockManager*> &sessionLockManagerGlobals() const noexcept;
 
-    // TODO
-    const Events &events() const noexcept;
+    /**
+     * @brief Searches for an event that matches the given serial.
+     *
+     * This method searches for an event with the specified serial in the client events history.
+     * If a matching event is found, a pointer to that event is returned; otherwise, `nullptr` is returned.
+     *
+     * @note The event pointer returned should not be manually freed.
+     *
+     * @param serial The serial number to search for.
+     * @return A pointer to the event matching the serial, or `nullptr` if not found.
+     */
     const LEvent *findEventBySerial(UInt32 serial) const noexcept;
+
+    /**
+     * @brief Retrieves the last cursor requested by the client.
+     *
+     * This function returns a reference to the last cursor that the client requested to set.
+     *
+     * @see LPointer::setCursorRequest()
+     *
+     * @return A reference to the last cursor requested by the client.
+     */
     const LClientCursor &lastCursorRequest() const noexcept;
 
     LPRIVATE_IMP_UNIQUE(LClient)

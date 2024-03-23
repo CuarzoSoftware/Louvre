@@ -4,6 +4,7 @@
 
 using namespace Louvre;
 
+//! [rolePos]
 const LPoint &LSessionLockRole::rolePos() const
 {
     if (output())
@@ -14,3 +15,4 @@ const LPoint &LSessionLockRole::rolePos() const
 
     return m_rolePos;
 }
+//! [rolePos]

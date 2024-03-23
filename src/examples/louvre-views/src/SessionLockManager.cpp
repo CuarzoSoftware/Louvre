@@ -9,6 +9,7 @@
 #include <LSessionLockRole.h>
 #include <LTouchCancelEvent.h>
 #include <LDND.h>
+#include <LSceneView.h>
 
 void SessionLockManager::stateChanged()
 {
@@ -19,7 +20,7 @@ void SessionLockManager::stateChanged()
     G::compositor()->workspacesLayer.setVisible(!locked);
     G::compositor()->fullscreenLayer.setVisible(!locked);
 
-    if (state() != Unlocked)
+    if (locked)
     {
         if (cursor()->output() && cursor()->output()->sessionLockRole())
         {

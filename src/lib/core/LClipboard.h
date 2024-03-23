@@ -26,14 +26,23 @@ public:
     };
 
     /**
-     * @param params Parameters from LCompositor::createClipboardRequest().
+     * @brief Constructor.
+     *
+     * @see LCompositor::createClipboardRequest().
      */
-    LClipboard(const void *params) noexcept;
+    LClipboard(const void *params);
 
-    inline ~LClipboard() noexcept
+    /**
+     * @brief Desructor.
+     */
+    ~LClipboard()
     {
         clear();
     }
+
+    /// @cond OMIT
+    LCLASS_NO_COPY(LClipboard)
+    /// @endcond
 
     /**
      * @brief Client request to set the clipboard.
@@ -44,7 +53,7 @@ public:
      * #### Default Implementation
      * @snippet LClipboardDefault.cpp setClipboardRequest
      */
-    virtual bool setClipboardRequest(LClient *client, const LEvent &triggeringEvent) noexcept;
+    virtual bool setClipboardRequest(LClient *client, const LEvent &triggeringEvent);
 
     /**
      * @brief Filter of persistent clipboard MIME types.
@@ -52,18 +61,19 @@ public:
      * Keep the clipboard data for specific MIME types even after the
      * client owning the clipboard data is disconnected.
      *
-     * @return `true` to make the mime type persistent, `false` otherwise.
+     * @return `true` to make the MIME type persistent, `false` otherwise.
      *
      * #### Default Implementation
      * @snippet LClipboardDefault.cpp persistentMimeTypeFilter
      */
-    virtual bool persistentMimeTypeFilter(const std::string &mimeType) const noexcept;
+    virtual bool persistentMimeTypeFilter(const std::string &mimeType) const ;
 
     /**
      * @brief Access to the current clipboard MIME types.
      */
     const std::vector<MimeTypeFile> &mimeTypes() const noexcept;
 
+    /// @cond OMIT
 private:
     friend class Protocols::Wayland::RDataDevice;
     friend class Protocols::Wayland::RDataSource;

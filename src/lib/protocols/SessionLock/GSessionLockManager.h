@@ -12,7 +12,7 @@ public:
 
     static void bind(wl_client *client, void *data, UInt32 version, UInt32 id) noexcept;
     static void destroy(wl_client *client, wl_resource *resource) noexcept;
-    static void lock(wl_client *client, wl_resource *resource, UInt32 id);
+    static void lock(wl_client *client, wl_resource *resource, UInt32 id) noexcept;
 
 private:
     GSessionLockManager(wl_client *client, Int32 version, UInt32 id) noexcept;

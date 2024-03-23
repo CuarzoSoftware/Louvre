@@ -8,7 +8,7 @@
  * @brief Manages session lock requests and state changes.
  *
  * Clients using the [Session Lock](https://wayland.app/protocols/ext-session-lock-v1) protocol can request the compositor to lock the user session and display
- * custom graphics (LSessionLockRole s) such as an authentication form to allow the user to unlock the session.
+ * arbitrary graphics (see LSessionLockRole) such as an authentication form to allow the user to unlock the session.\n
  * This class allows you to accept/decline such requests (see lockRequest()) and monitor changes in the session state (stateChanged()).
  */
 class Louvre::LSessionLockManager : public LObject

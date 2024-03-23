@@ -8,12 +8,19 @@
 #include <LTouch.h>
 #include <LTouchDownEvent.h>
 #include <LTouchPoint.h>
+#include <LSessionLockManager.h>
 
 using namespace Louvre;
 
 //! [startDragRequest]
 void LDND::startDragRequest() noexcept
 {
+    if (sessionLockManager()->state() != LSessionLockManager::Unlocked && sessionLockManager()->client() != origin()->client())
+    {
+        cancel();
+        return;
+    }
+
     // Left pointer button click
     if (triggeringEvent().type() != LEvent::Type::Touch && origin()->hasPointerFocus() && seat()->pointer()->isButtonPressed(LPointerButtonEvent::Left))
     {

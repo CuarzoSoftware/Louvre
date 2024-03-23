@@ -1,5 +1,8 @@
 #include <LTouchCancelEvent.h>
 #include <LSessionLockManager.h>
+#include <LSessionLockRole.h>
+#include <LOutput.h>
+#include <LCursor.h>
 #include <LSeat.h>
 #include <LClipboard.h>
 #include <LKeyboard.h>
@@ -13,6 +16,9 @@ using namespace Louvre;
 bool LSessionLockManager::lockRequest(LClient *client)
 {
     L_UNUSED(client);
+
+    /* Deny all requests by default. */
+
     return false;
 }
 //! [lockRequest]
@@ -26,10 +32,20 @@ void LSessionLockManager::stateChanged()
         break;
     case Locked:
         seat()->dnd()->cancel();
-        seat()->pointer()->setFocus(nullptr);
-        seat()->keyboard()->setFocus(nullptr);
-        seat()->keyboard()->setGrab(nullptr);
         seat()->touch()->sendCancelEvent(LTouchCancelEvent());
+        seat()->keyboard()->setGrab(nullptr);
+        seat()->pointer()->setDraggingSurface(nullptr);
+
+        if (cursor()->output() && cursor()->output()->sessionLockRole())
+        {
+            seat()->pointer()->setFocus(cursor()->output()->sessionLockRole()->surface());
+            seat()->keyboard()->setFocus(cursor()->output()->sessionLockRole()->surface());
+        }
+        else
+        {
+            seat()->pointer()->setFocus(nullptr);
+            seat()->keyboard()->setFocus(nullptr);
+        }
         break;
     case DeadLocked:
         break;

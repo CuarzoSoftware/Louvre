@@ -1,3 +1,4 @@
+#include <LSessionLockManager.h>
 #include <private/LScenePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <LSceneTouchPoint.h>
@@ -123,6 +124,7 @@ void LScene::handlePointerMoveEvent(const LPointerMoveEvent &event, EventOptions
     if (!(options & WaylandEvents))
         return;
 
+    const bool sessionLocked { sessionLockManager()->state() != LSessionLockManager::Unlocked };
     LSurface *surface { nullptr };
     LSurfaceView *firstSurfaceView { nullptr };
     LPointF localPos;
@@ -138,8 +140,11 @@ void LScene::handlePointerMoveEvent(const LPointerMoveEvent &event, EventOptions
 
     if (firstSurfaceView)
     {
-        localPos = imp()->viewLocalPos(firstSurfaceView , cursor()->pos());
-        surface = firstSurfaceView->surface();
+        if (!sessionLocked || (sessionLockManager()->client() == firstSurfaceView->surface()->client()))
+        {
+            localPos = imp()->viewLocalPos(firstSurfaceView , cursor()->pos());
+            surface = firstSurfaceView->surface();
+        }
     }
 
     const bool activeDND { seat()->dnd()->dragging() && seat()->dnd()->triggeringEvent().type() != LEvent::Type::Touch };
@@ -272,6 +277,7 @@ retry:
     LKeyboard &keyboard { *seat()->keyboard() };
     LDND &dnd{ *seat()->dnd() };
 
+    const bool sessionLocked { sessionLockManager()->state() != LSessionLockManager::Unlocked };
     const bool activeDND { dnd.dragging() && dnd.triggeringEvent().type() != LEvent::Type::Touch };
 
     if (activeDND)
@@ -295,6 +301,9 @@ retry:
 
         if (surface)
         {
+            if (sessionLocked && sessionLockManager()->client() != surface->client())
+                return;
+
             keyboard.setFocus(surface);
             pointer.setFocus(surface, imp()->viewLocalPos(view, cursor()->pos()));
             pointer.sendButtonEvent(event);
@@ -790,6 +799,7 @@ retry:
     if (!(options & AuxFunc))
         return;
 
+    const bool sessionLocked { sessionLockManager()->state() != LSessionLockManager::Unlocked };
     LKeyboard &keyboard { *seat()->keyboard() };
     const bool L_CTRL      { keyboard .isKeyCodePressed(KEY_LEFTCTRL) };
     const bool L_SHIFT     { keyboard .isKeyCodePressed(KEY_LEFTSHIFT) };
@@ -798,6 +808,21 @@ retry:
 
     if (event.state() == LKeyboardKeyEvent::Released)
     {
+        if (event.keyCode() == KEY_ESC && L_CTRL && L_SHIFT)
+        {
+            compositor()->finish();
+            return;
+        }
+        else if (L_CTRL && !L_SHIFT)
+            seat()->dnd()->setPreferredAction(LDND::Copy);
+        else if (!L_CTRL && L_SHIFT)
+            seat()->dnd()->setPreferredAction(LDND::Move);
+        else if (!L_CTRL && !L_SHIFT)
+            seat()->dnd()->setPreferredAction(LDND::NoAction);
+
+        if (sessionLocked)
+            return;
+
         if (event.keyCode() == KEY_F1 && !mods)
             LLauncher::launch("weston-terminal");
         else if (L_CTRL && (sym == XKB_KEY_q || sym == XKB_KEY_Q))
@@ -832,17 +857,6 @@ retry:
                 cursor()->output()->bufferTexture(0)->save(path);
             }
         }
-        else if (event.keyCode() == KEY_ESC && L_CTRL && L_SHIFT)
-        {
-            compositor()->finish();
-            return;
-        }
-        else if (L_CTRL && !L_SHIFT)
-            seat()->dnd()->setPreferredAction(LDND::Copy);
-        else if (!L_CTRL && L_SHIFT)
-            seat()->dnd()->setPreferredAction(LDND::Move);
-        else if (!L_CTRL && !L_SHIFT)
-            seat()->dnd()->setPreferredAction(LDND::NoAction);
     }
 
     // Key pressed
@@ -890,6 +904,7 @@ void LScene::handleTouchDownEvent(const LTouchDownEvent &event, const LPointF &g
         return;
     }
 
+    const bool sessionLocked { sessionLockManager()->state() != LSessionLockManager::Unlocked };
     LTouch &touch { *seat()->touch() };
     LTouchPoint *tp { touch.createOrGetTouchPoint(event) };
 
@@ -908,6 +923,9 @@ void LScene::handleTouchDownEvent(const LTouchDownEvent &event, const LPointF &g
 
     if (surfaceView)
     {
+        if (sessionLocked && sessionLockManager()->client() != surfaceView->surface()->client())
+            goto end;
+
         event.localPos = globalPos - surfaceView->pos();
 
         if (!seat()->keyboard()->focus() || !surfaceView->surface()->isSubchildOf(seat()->keyboard()->focus()))
@@ -922,6 +940,7 @@ void LScene::handleTouchDownEvent(const LTouchDownEvent &event, const LPointF &g
         seat()->dismissPopups();
     }
 
+    end:
     imp()->state.remove(handlingEventFlag);
 }
 

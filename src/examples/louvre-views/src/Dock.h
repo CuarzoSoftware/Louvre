@@ -52,6 +52,8 @@ public:
     UInt32 showResistanceCount = 0;
 
     bool alive = true;
+
+    bool nativeMapped() const noexcept override;
 };
 
 #endif // DOCK_H

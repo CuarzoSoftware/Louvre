@@ -27,28 +27,10 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
     // Update the cursor position
     cursor()->move(event.delta().x(), event.delta().y());
 
-    // Schedule repaint on outputs that intersect with the cursor if hardware composition is not supported.
+    // Schedule repaint on outputs that intersect with the cursor where hardware composition is not supported.
     cursor()->repaintOutputs(true);
 
     const bool sessionLocked { compositor()->sessionLockManager()->state() != LSessionLockManager::Unlocked };
-
-    if (sessionLocked)
-    {
-        if (cursor()->output() && cursor()->output()->sessionLockRole())
-        {
-            event.localPos = cursor()->pos() - cursor()->output()->sessionLockRole()->rolePos();
-            if (focus() == cursor()->output()->sessionLockRole()->surface())
-                sendMoveEvent(event);
-            else
-                setFocus(cursor()->output()->sessionLockRole()->surface(), event.localPos);
-        }
-        else
-            setFocus(nullptr);
-
-        seat()->dnd()->drop();
-        return;
-    }
-
     const bool activeDND { seat()->dnd()->dragging() && seat()->dnd()->triggeringEvent().type() != LEvent::Type::Touch };
 
     if (activeDND)
@@ -110,6 +92,9 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
 
     if (surface)
     {
+        if (sessionLocked && surface->client() != sessionLockManager()->client())
+            return;
+
         event.localPos = cursor()->pos() - surface->rolePos();
 
         if (activeDND)
@@ -146,6 +131,7 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
 //! [pointerButtonEvent]
 void LPointer::pointerButtonEvent(const LPointerButtonEvent &event)
 {
+    const bool sessionLocked { sessionLockManager()->state() != LSessionLockManager::Unlocked };
     const bool activeDND { seat()->dnd()->dragging() && seat()->dnd()->triggeringEvent().type() != LEvent::Type::Touch };
 
     if (activeDND)
@@ -164,6 +150,9 @@ void LPointer::pointerButtonEvent(const LPointerButtonEvent &event)
 
         if (surface)
         {
+            if (sessionLocked && surface->client() != sessionLockManager()->client())
+                return;
+
             cursor()->setCursor(surface->client()->lastCursorRequest());
             seat()->keyboard()->setFocus(surface);
             setFocus(surface);

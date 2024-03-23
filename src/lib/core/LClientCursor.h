@@ -10,19 +10,23 @@
 /**
  * @brief Parameters used in a set cursor request.
  *
- * This class encapsulates the parameters requested by the client through LPointer::setCursorRequest().
- * Retrieve the last cursor request for a specific client using LClient::lastCursorRequest().
+ * This class encapsulates the parameters requested by the client through LPointer::setCursorRequest().\n
+ * Retrieve the last cursor request for a specific client using LClient::lastCursorRequest().\n
  * Clients create an LCursorRole for the compositor to use as the cursor, and this class holds a referende to it and also the pointer enter event that triggered the request,
- * and also a promerty indicating if the lcient intends to hide the cursor or not.
+ * and also a promerty indicating if the lcient intends to hide the cursor or not.\n
  * It gets overridden when the client makes another LPointer::setCursorRequest() or when the associated LCursorRole is destroyed.
  *
  * When assigned to LCursor through LCursor::setCursor(), the LCursor texture and hotspot automatically change based on the values
- * of the LCursorRole, excluding the cursor size, which remains user-defined.
+ * of the LCursorRole, excluding the cursor size, which remains user-defined.\n
  * If the LCursorRole surface is unmapped or destroyed after being assigned to an LCursor, the default cursor is restored automatically.
  */
-class Louvre::LClientCursor : public LObject
+class Louvre::LClientCursor final : public LObject
 {
 public:
+
+    /// @cond OMIT
+    LCLASS_NO_COPY(LClientCursor)
+    /// @endcond
 
     /**
      * @brief Indicates if the client wants to hide the cursor.
@@ -33,7 +37,7 @@ public:
      *
      * @return `true` if the client intends to hide the cursor, `false` otherwise.
      */
-    inline bool visible() const noexcept
+    bool visible() const noexcept
     {
         return m_visible;
     }
@@ -43,7 +47,7 @@ public:
      *
      * @return The triggering LPointerEnterEvent.
      */
-    inline const LPointerEnterEvent &triggeringEvent() const noexcept
+    const LPointerEnterEvent &triggeringEvent() const noexcept
     {
         return m_triggeringEvent;
     }
@@ -55,7 +59,7 @@ public:
      *
      * @return The associated LCursorRole or `nullptr` if no set cursor request has been made or the LCursorRole is destroyed.
      */
-    inline LCursorRole *cursorRole() const noexcept
+    LCursorRole *cursorRole() const noexcept
     {
         return m_role.get();
     }
@@ -65,7 +69,7 @@ public:
      *
      * @return The associated LClient.
      */
-    inline LClient *client() const noexcept
+    LClient *client() const noexcept
     {
         return m_client;
     }
@@ -75,8 +79,8 @@ private:
     friend class LClient;
     friend class LCursorRole;
     friend class Protocols::Wayland::RPointer;
-    inline LClientCursor(LClient *client) noexcept : m_client(client) {}
-    inline ~LClientCursor() noexcept = default;
+    LClientCursor(LClient *client) noexcept : m_client(client) {}
+    ~LClientCursor() noexcept = default;
 
     LWeak<LCursorRole> m_role;
     LPointerEnterEvent m_triggeringEvent;

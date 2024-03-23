@@ -3,11 +3,17 @@
 #include <private/LOutputPrivate.h>
 #include <LSessionLockManager.h>
 #include <LSessionLockRole.h>
+#include <cassert>
 
 using namespace Louvre;
 
 LSessionLockManager::LSessionLockManager(const void *params)
 {
+    assert(params != nullptr && "Invalid parameter passed to LSessionLockManager constructor. LSessionLockManager can only be created from LCompositor::createSessionLockManagerRequest().");
+    LSessionLockManager**ptr { (LSessionLockManager**) params };
+    assert(*ptr == nullptr && *ptr == compositor()->sessionLockManager() && "Only a single LSessionLockManager instance can exist.");
+    *ptr = this;
+
     m_sessionLockRes.setOnDestroyCallback([this](auto)
     {
         if (m_state == Locked)

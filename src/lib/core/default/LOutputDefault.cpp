@@ -22,7 +22,7 @@ void LOutput::initializeGL()
 //! [paintGL]
 void LOutput::paintGL()
 {
-    const bool sessionLocked { compositor()->sessionLockManager()->state() != LSessionLockManager::Unlocked };
+    const bool sessionLocked { sessionLockManager()->state() != LSessionLockManager::Unlocked };
 
     LPainter *p { painter() };
     LPainter::TextureParams params;
@@ -31,29 +31,19 @@ void LOutput::paintGL()
     if (seat()->dnd()->icon())
         seat()->dnd()->icon()->surface()->raise();
 
-    if (sessionLockRole())
-        sessionLockRole()->surface()->raise();
-
     // Draw every surface
     for (LSurface *s : compositor()->surfaces())
     {
+        if (sessionLocked && s->client() != sessionLockManager()->client())
+            continue;
+
         // Skip some surfaces
         if (!s->mapped() || s->minimized() || s->cursorRole())
         {
-            s->requestNextFrame();
-            continue;
-        }
+            if (s->cursorRole())
+                s->requestNextFrame();
 
-        // Check if the session is locked
-        if (sessionLocked)
-        {
-            if (sessionLockRole())
-            {
-                if (sessionLockRole()->surface() != s && !s->isSubchildOf(sessionLockRole()->surface()))
-                    continue;
-            }
-            else
-                break;
+            continue;
         }
 
         // Current surface rect

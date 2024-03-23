@@ -41,13 +41,19 @@ LCompositor *Louvre::compositor() noexcept
 
 LSeat *Louvre::seat() noexcept
 {
-    return s_compositor->seat();
+    return s_compositor->imp()->seat;
 }
 
 LCursor *Louvre::cursor() noexcept
 {
-    return s_compositor->cursor();
+    return s_compositor->imp()->cursor;
 }
+
+LSessionLockManager *Louvre::sessionLockManager() noexcept
+{
+    return s_compositor->imp()->sessionLockManager;
+}
+
 
 LCompositor::LCompositor() : LPRIVATE_INIT_UNIQUE(LCompositor)
 {

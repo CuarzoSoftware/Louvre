@@ -56,6 +56,7 @@ void LSessionLockRole::handleSurfaceCommit(CommitOrigin /*origin*/)
     {
         case RSessionLock::Undefined:
         {
+            // The session is already locked
             if (compositor()->sessionLockManager()->state() == LSessionLockManager::Locked)
             {
                 sessionLockRes.finished();
@@ -95,6 +96,7 @@ void LSessionLockRole::handleSurfaceCommit(CommitOrigin /*origin*/)
                     role->output()->imp()->sessionLockRole.reset(role);
                     role->surface()->sendOutputEnterEvent(role->output());
                     surface()->imp()->setMapped(true);
+                    role->output()->repaint();
                 }
 
                 compositor()->sessionLockManager()->stateChanged();
@@ -108,7 +110,13 @@ void LSessionLockRole::handleSurfaceCommit(CommitOrigin /*origin*/)
         } break;
         case RSessionLock::Locked:
         {
-            surface()->imp()->setMapped(true);
+            if (output() && output()->state() != LOutput::Uninitialized)
+            {
+                output()->imp()->sessionLockRole.reset(this);
+                surface()->sendOutputEnterEvent(output());
+                surface()->imp()->setMapped(true);
+                output()->repaint();
+            }
         } break;
         case RSessionLock::Finished:
         break;

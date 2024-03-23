@@ -8,6 +8,7 @@
 #include "DockApp.h"
 #include "src/Tooltip.h"
 
+#include <LSessionLockManager.h>
 #include <LTextureView.h>
 #include <LCursor.h>
 #include <LLog.h>
@@ -232,4 +233,9 @@ void Dock::pointerLeaveEvent(const LPointerLeaveEvent &)
     G::tooltip()->hide();
     showResistanceCount = 0;
     hide();
+}
+
+bool Dock::nativeMapped() const noexcept
+{
+    return compositor()->sessionLockManager()->state() == LSessionLockManager::Unlocked;
 }

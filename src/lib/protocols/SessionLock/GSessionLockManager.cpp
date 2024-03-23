@@ -40,7 +40,7 @@ void GSessionLockManager::destroy(wl_client */*client*/, wl_resource *resource) 
     wl_resource_destroy(resource);
 }
 
-void GSessionLockManager::lock(wl_client */*client*/, wl_resource *resource, UInt32 id)
+void GSessionLockManager::lock(wl_client */*client*/, wl_resource *resource, UInt32 id) noexcept
 {
     new RSessionLock(static_cast<GSessionLockManager*>(wl_resource_get_user_data(resource)), id);
 }

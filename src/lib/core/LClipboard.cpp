@@ -5,7 +5,7 @@
 
 using namespace Louvre;
 
-LClipboard::LClipboard(const void *params) noexcept
+LClipboard::LClipboard(const void *params)
 {
     assert(params != nullptr && "Invalid parameter passed to LClipboard() constructor. LClipboard can only be created from LCompositor::createClipboardRequest().");
     LClipboard**ptr { (LClipboard**) params };

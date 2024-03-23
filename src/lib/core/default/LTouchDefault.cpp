@@ -1,3 +1,4 @@
+#include <LSessionLockManager.h>
 #include <LTouchDownEvent.h>
 #include <LTouchMoveEvent.h>
 #include <LTouchUpEvent.h>
@@ -19,12 +20,19 @@ using namespace Louvre;
 
 void LTouch::touchDownEvent(const LTouchDownEvent &event)
 {
+    if (!cursor()->output()) return;
+
+    const bool sessionLocked { sessionLockManager()->state() != LSessionLockManager::Unlocked };
+
     LTouchPoint *tp { createOrGetTouchPoint(event) };
     const LPointF globalPos { toGlobal(cursor()->output(), event.pos()) };
     LSurface *surface { surfaceAt(globalPos) };
 
     if (surface)
     {
+        if (sessionLocked && surface->client() != sessionLockManager()->client())
+            return;
+
         event.localPos = globalPos - surface->rolePos();
 
         if (!seat()->keyboard()->focus() || !surface->isSubchildOf(seat()->keyboard()->focus()))
@@ -42,6 +50,8 @@ void LTouch::touchDownEvent(const LTouchDownEvent &event)
 
 void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
 {
+    if (!cursor()->output()) return;
+
     LTouchPoint *tp { findTouchPoint(event.id()) };
 
     if (!tp)
