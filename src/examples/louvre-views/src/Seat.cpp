@@ -1,3 +1,4 @@
+#include <LSessionLockManager.h>
 #include <LCursor.h>
 #include <LScene.h>
 #include <libinput.h>
@@ -36,7 +37,7 @@ void Seat::enabledChanged()
 
 void Seat::nativeInputEvent(void *event)
 {
-    if (inputBackendId() != LInputBackendLibinput)
+    if (inputBackendId() != LInputBackendLibinput || compositor()->sessionLockManager()->state() != LSessionLockManager::Unlocked)
         return;
 
     libinput_event *ev { (libinput_event*)event };

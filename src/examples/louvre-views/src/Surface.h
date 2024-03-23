@@ -22,6 +22,8 @@ public:
 
     inline class Toplevel *tl() const {return (class Toplevel*)toplevel();};
 
+    static class Surface *searchSessionLockParent(Surface *parent);
+
     LView *getView() const;
 
     void parentChanged() override;

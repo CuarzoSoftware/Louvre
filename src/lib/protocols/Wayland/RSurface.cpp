@@ -294,6 +294,8 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
         imp.stateFlags.setFlag(LSurface::LSurfacePrivate::VSync, preferVSync);
     }
 
+    LWeak<LSurface> ref { surface };
+
     /*******************************************
      *********** NOTIFY COMMIT TO ROLE *********
      *******************************************/
@@ -301,8 +303,6 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
         surface->role()->handleSurfaceCommit(origin);
     else if (imp.pending.role)
         imp.pending.role->handleSurfaceCommit(origin);
-
-    LWeak<LSurface> ref { surface };
 
     if (changes.check(Changes::BufferSizeChanged))
     {

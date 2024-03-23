@@ -117,7 +117,10 @@ public:
         Cursor = 4,
 
         /// LDNDIconRole
-        DNDIcon = 5
+        DNDIcon = 5,
+
+        /// LSessionLockRole
+        SessionLock = 6
     };
 
     /**
@@ -168,6 +171,13 @@ public:
      * @returns A pointer to an instance of LSubsurfaceRole or `nullptr` if it has a different role.
      */
     LSubsurfaceRole *subsurface() const;
+
+    /**
+     * @brief Session Lock role
+     *
+     * @returns A pointer to an instance of LSessionLockRole or `nullptr` if it has a different role.
+     */
+    LSessionLockRole *sessionLock() const;
 
     /**
      * @brief Constructor of the LSurface class.

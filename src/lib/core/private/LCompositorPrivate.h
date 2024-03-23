@@ -45,6 +45,7 @@ LPRIVATE_CLASS(LCompositor)
         wl_listener clientConnectedListener;
         wl_event_source *clientDisconnectedEventSource;
         epoll_event events[3];
+        LSessionLockManager *sessionLockManager { nullptr };
     void unitWayland();
 
     bool surfacesListChanged { false };
@@ -125,7 +126,7 @@ LPRIVATE_CLASS(LCompositor)
         }
     }
 
-    void sendPendingToplevelsConfiguration();
+    void sendPendingConfigurations();
     void sendPresentationTime();
     bool isInputBackendInitialized { false };
 };

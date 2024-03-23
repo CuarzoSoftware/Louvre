@@ -217,6 +217,9 @@ public:
     LOutput& operator= (const LOutput&) = delete;
     /// @endcond
 
+    // TODO
+    LSessionLockRole *sessionLockRole() const noexcept;
+
     /**
      * @brief Get the current state of the LOutput.
      *

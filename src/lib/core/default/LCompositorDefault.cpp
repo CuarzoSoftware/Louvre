@@ -4,6 +4,7 @@
 #include <protocols/XdgDecoration/GXdgDecorationManager.h>
 #include <protocols/GammaControl/GGammaControlManager.h>
 #include <protocols/PointerGestures/GPointerGestures.h>
+#include <protocols/SessionLock/GSessionLockManager.h>
 #include <protocols/PresentationTime/GPresentation.h>
 #include <protocols/Wayland/GDataDeviceManager.h>
 #include <protocols/LinuxDMABuf/GLinuxDMABuf.h>
@@ -12,6 +13,8 @@
 #include <protocols/XdgShell/GXdgWmBase.h>
 #include <protocols/Wayland/GCompositor.h>
 #include <protocols/Wayland/GSeat.h>
+#include <LSessionLockManager.h>
+#include <LSessionLockRole.h>
 #include <LCompositor.h>
 #include <LToplevelRole.h>
 #include <LCursor.h>
@@ -79,6 +82,9 @@ bool LCompositor::createGlobalsRequest()
 
     wl_global_create(display(), &zwp_pointer_gestures_v1_interface,
                      LOUVRE_POINTER_GESTURES_VERSION, this, &PointerGestures::GPointerGestures::bind);
+
+    wl_global_create(display(), &ext_session_lock_manager_v1_interface,
+                     LOUVRE_SESSION_LOCK_MANAGER_VERSION, this, &SessionLock::GSessionLockManager::bind);
 
     wl_display_init_shm(display());
 
@@ -198,6 +204,12 @@ LClipboard *LCompositor::createClipboardRequest(const void *params)
 }
 //! [createClipboardRequest]
 
+// TODO
+LSessionLockManager *LCompositor::createSessionLockManagerRequest(const void *params)
+{
+    return new LSessionLockManager(params);
+}
+
 //! [createToplevelRoleRequest]
 LToplevelRole *LCompositor::createToplevelRoleRequest(const void *params)
 {
@@ -231,7 +243,14 @@ LDNDIconRole *LCompositor::createDNDIconRoleRequest(const void *params)
 {
     return new LDNDIconRole(params);
 }
+
 //! [createDNDIconRoleRequest]
+
+// TODO
+LSessionLockRole *LCompositor::createSessionLockRoleRequest(const void *params)
+{
+    return new LSessionLockRole(params);
+}
 
 //! [destroyOutputRequest]
 void LCompositor::destroyOutputRequest(LOutput *output)
@@ -296,6 +315,12 @@ void LCompositor::destroyClipboardRequest(LClipboard *clipboard)
 }
 //! [destroyClipboardRequest]
 
+// TODO
+void LCompositor::destroySessionLockManagerRequest(LSessionLockManager *sessionLockManager)
+{
+    L_UNUSED(sessionLockManager);
+}
+
 //! [destroyToplevelRoleRequest]
 void LCompositor::destroyToplevelRoleRequest(LToplevelRole *toplevel)
 {
@@ -320,7 +345,7 @@ void LCompositor::destroySubsurfaceRoleRequest(LSubsurfaceRole *subsurface)
 //! [destroyCursorRoleRequest]
 void LCompositor::destroyCursorRoleRequest(LCursorRole *cursorRole)
 {
-     L_UNUSED(cursorRole);
+    L_UNUSED(cursorRole);
 }
 //! [destroyCursorRoleRequest]
 
@@ -330,3 +355,9 @@ void LCompositor::destroyDNDIconRoleRequest(LDNDIconRole *icon)
     L_UNUSED(icon)
 }
 //! [destroyDNDIconRoleRequest]
+
+// TODO
+void LCompositor::destroySessionLockRoleRequest(LSessionLockRole *sessionLockRole)
+{
+    L_UNUSED(sessionLockRole);
+}

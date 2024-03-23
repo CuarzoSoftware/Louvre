@@ -5,6 +5,7 @@
 #include <private/LPainterPrivate.h>
 #include <private/LCursorPrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <LSessionLockRole.h>
 #include <LSeat.h>
 #include <LClient.h>
 
@@ -45,6 +46,10 @@ void LOutput::LOutputPrivate::backendInitializeGL()
     cursor()->imp()->textureChanged = true;
     cursor()->imp()->update();
     output->imp()->state = LOutput::Initialized;
+
+    if (sessionLockRole.get() && sessionLockRole.get()->surface())
+        sessionLockRole.get()->surface()->imp()->setMapped(true);
+
     output->initializeGL();
     compositor()->flushClients();
 }
@@ -209,6 +214,9 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
     if (callLock)
        compositor()->imp()->lock();
 
+    if (sessionLockRole.get() && sessionLockRole.get()->surface())
+       sessionLockRole.get()->surface()->imp()->setMapped(false);
+
     output->uninitializeGL();
     compositor()->flushClients();
     output->imp()->state = LOutput::Uninitialized;
@@ -259,4 +267,7 @@ void LOutput::LOutputPrivate::updateGlobals()
 
     for (LSurface *s : compositor()->surfaces())
         s->imp()->sendPreferredScale();
+
+    if (output->sessionLockRole())
+        output->sessionLockRole()->configure(output->size());
 }

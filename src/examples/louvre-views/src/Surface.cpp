@@ -50,6 +50,19 @@ Surface::~Surface()
         delete thumbnailTex;
 }
 
+Surface *Surface::searchSessionLockParent(Surface *parent)
+{
+    if (parent)
+    {
+        if (parent->sessionLock())
+            return parent;
+
+        return searchSessionLockParent(static_cast<Surface*>(parent->parent()));
+    }
+
+    return nullptr;
+}
+
 LView *Surface::getView() const
 {
     if (tl() && tl()->decoratedView)
@@ -68,6 +81,14 @@ void Surface::parentChanged()
 
     if (parent())
     {
+        Surface *sessionLockParent { searchSessionLockParent(static_cast<Surface*>(parent())) };
+
+        if (sessionLockParent)
+        {
+            getView()->setParent(sessionLockParent->getView()->parent());
+            return;
+        }
+
         class Toplevel *tl = G::searchFullscreenParent((Surface*)parent());
 
         if (tl)
@@ -229,6 +250,10 @@ void Surface::roleChanged()
     else if (roleId() == LSurface::Toplevel || roleId() == LSurface::Popup)
     {
         sendOutputEnterEvent(cursor()->output());
+    }
+    else if (roleId() == LSurface::SessionLock)
+    {
+        getView()->setParent(&G::compositor()->overlayLayer);
     }
 }
 

@@ -354,6 +354,9 @@ public:
      */
     virtual LClipboard *createClipboardRequest(const void *params);
 
+    // TODO
+    virtual LSessionLockManager *createSessionLockManagerRequest(const void *params);
+
     /**
      * @brief Virtual constructor for creating LToplevelRole instances when a client creates a toplevel role for a surface.
      *
@@ -432,6 +435,8 @@ public:
      */
     virtual LDNDIconRole *createDNDIconRoleRequest(const void *params);
 
+    // TODO
+    virtual LSessionLockRole *createSessionLockRoleRequest(const void *params);
 ///@}
 
     /**
@@ -553,6 +558,9 @@ public:
      */
     virtual void destroyClipboardRequest(LClipboard *clipboard);
 
+    // TODO
+    virtual void destroySessionLockManagerRequest(LSessionLockManager *sessionLockManager);
+
     /**
      * @brief Virtual destructor for the LToplevelRole class.
      *
@@ -612,6 +620,9 @@ public:
      * @snippet LCompositorDefault.cpp destroyDNDIconRoleRequest
      */
     virtual void destroyDNDIconRoleRequest(LDNDIconRole *icon);
+
+    // TODO
+    virtual void destroySessionLockRoleRequest(LSessionLockRole *sessionLockRole);
 
 ///@}
 
@@ -703,6 +714,9 @@ public:
      * @return A pointer to the LSeat instance.
      */
     LSeat *seat() const;
+
+    // TODO
+    LSessionLockManager *sessionLockManager() const noexcept;
 
     /**
      * @brief Schedule a new rendering frame for each output in the compositor.

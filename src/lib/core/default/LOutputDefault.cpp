@@ -7,6 +7,8 @@
 #include <LDNDIconRole.h>
 #include <LCursor.h>
 #include <LPointer.h>
+#include <LSessionLockManager.h>
+#include <LSessionLockRole.h>
 
 using namespace Louvre;
 
@@ -20,12 +22,17 @@ void LOutput::initializeGL()
 //! [paintGL]
 void LOutput::paintGL()
 {
+    const bool sessionLocked { compositor()->sessionLockManager()->state() != LSessionLockManager::Unlocked };
+
     LPainter *p { painter() };
     LPainter::TextureParams params;
     p->clearScreen();
 
     if (seat()->dnd()->icon())
         seat()->dnd()->icon()->surface()->raise();
+
+    if (sessionLockRole())
+        sessionLockRole()->surface()->raise();
 
     // Draw every surface
     for (LSurface *s : compositor()->surfaces())
@@ -35,6 +42,18 @@ void LOutput::paintGL()
         {
             s->requestNextFrame();
             continue;
+        }
+
+        // Check if the session is locked
+        if (sessionLocked)
+        {
+            if (sessionLockRole())
+            {
+                if (sessionLockRole()->surface() != s && !s->isSubchildOf(sessionLockRole()->surface()))
+                    continue;
+            }
+            else
+                break;
         }
 
         // Current surface rect

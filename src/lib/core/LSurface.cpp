@@ -61,6 +61,14 @@ LSubsurfaceRole *LSurface::subsurface() const
         return nullptr;
 }
 
+LSessionLockRole *LSurface::sessionLock() const
+{
+    if (roleId() == LSurface::Role::SessionLock)
+        return (LSessionLockRole*)imp()->current.role;
+    else
+        return nullptr;
+}
+
 LDNDIconRole *LSurface::dndIcon() const
 {
     if (roleId() == LSurface::Role::DNDIcon)

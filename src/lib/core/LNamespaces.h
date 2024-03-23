@@ -29,6 +29,7 @@
 #define LOUVRE_TEARING_CONTROL_MANAGER_VERSION 1
 #define LOUVRE_RELATIVE_POINTER_MANAGER_VERSION 1
 #define LOUVRE_POINTER_GESTURES_VERSION 3
+#define LOUVRE_SESSION_LOCK_MANAGER_VERSION 1
 
 #define L_UNUSED(object){(void)object;}
 
@@ -149,6 +150,7 @@ namespace Louvre
     class LPositioner;
     class LRegion;
     class LResource;
+    class LSessionLockManager;
     class LSurface;
     class LTexture;
 
@@ -180,6 +182,7 @@ namespace Louvre
     class LToplevelRole;
     class LPopupRole;
     class LSubsurfaceRole;
+    class LSessionLockRole;
 
     // Input related
     class LSeat;
@@ -216,7 +219,6 @@ namespace Louvre
     class LKeyboardLeaveEvent;
     class LKeyboardKeyEvent;
     class LKeyboardModifiersEvent;
-
 
     class LTouchEvent;
     class LTouchDownEvent;

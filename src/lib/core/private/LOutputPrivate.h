@@ -97,6 +97,9 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
 
     LGammaTable gammaTable {0};
 
+    // TODO
+    LWeak<LSessionLockRole> sessionLockRole;
+
     // API for the graphic backend
     void *graphicBackendData {nullptr};
     void backendInitializeGL();

@@ -35,6 +35,11 @@ LKeyboard::LKeyboard(const void *params): LPRIVATE_INIT_UNIQUE(LKeyboard)
 
     // Set the default keymap
     setKeymap();
+
+    imp()->focus.setOnDestroyCallback([this](auto)
+    {
+        focusChanged();
+    });
 }
 
 LKeyboard::~LKeyboard()

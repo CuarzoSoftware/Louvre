@@ -6,6 +6,8 @@
 #include <private/LPainterPrivate.h>
 #include <private/LCursorPrivate.h>
 #include <private/LToplevelRolePrivate.h>
+#include <LSessionLockManager.h>
+#include <LSessionLockRole.h>
 #include <LAnimation.h>
 #include <LClipboard.h>
 #include <LKeyboard.h>
@@ -155,6 +157,9 @@ bool LCompositor::LCompositorPrivate::initWayland()
     // Listen for client connections
     clientConnectedListener.notify = &clientConnectedEvent;
     wl_display_add_client_created_listener(display, &clientConnectedListener);
+
+    // TODO validate
+    sessionLockManager = compositor()->createSessionLockManagerRequest(nullptr);
     return true;
 }
 
@@ -164,6 +169,13 @@ void LCompositor::LCompositorPrivate::unitWayland()
     {
         wl_display_destroy(display);
         display = nullptr;
+    }
+
+    if (sessionLockManager)
+    {
+        compositor()->destroySessionLockManagerRequest(sessionLockManager);
+        delete sessionLockManager;
+        sessionLockManager = nullptr;
     }
 }
 
@@ -712,11 +724,15 @@ LPainter *LCompositor::LCompositorPrivate::findPainter()
     return painter;
 }
 
-void LCompositor::LCompositorPrivate::sendPendingToplevelsConfiguration()
+void LCompositor::LCompositorPrivate::sendPendingConfigurations()
 {
     for (LSurface *s : surfaces)
+    {
         if (s->toplevel())
             s->toplevel()->imp()->sendConfiguration();
+        else if (s->sessionLock())
+            s->sessionLock()->sendPendingConfiguration();
+    }
 }
 
 void  LCompositor::LCompositorPrivate::sendPresentationTime()

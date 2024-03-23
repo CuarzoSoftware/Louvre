@@ -1,3 +1,5 @@
+#include <LSessionLockManager.h>
+#include <LSessionLockRole.h>
 #include <LKeyboardKeyEvent.h>
 #include <LKeyboard.h>
 #include <LCompositor.h>
@@ -14,6 +16,16 @@ using namespace Louvre;
 //! [keyEvent]
 void LKeyboard::keyEvent(const LKeyboardKeyEvent &event)
 {
+    const bool sessionLocked { compositor()->sessionLockManager()->state() != LSessionLockManager::Unlocked };
+
+    if (sessionLocked)
+    {
+        if (cursor()->output() && cursor()->output()->sessionLockRole())
+            setGrab(cursor()->output()->sessionLockRole()->surface());
+        else
+            setGrab(nullptr);
+    }
+
     sendKeyEvent(event);
 
     const bool L_CTRL      { isKeyCodePressed(KEY_LEFTCTRL) };
@@ -23,6 +35,15 @@ void LKeyboard::keyEvent(const LKeyboardKeyEvent &event)
 
     if (event.state() == LKeyboardKeyEvent::Released)
     {
+        if (event.keyCode() == KEY_ESC && L_CTRL && L_SHIFT)
+        {
+            compositor()->finish();
+            return;
+        }
+
+        if (sessionLocked)
+            return;
+
         if (event.keyCode() == KEY_F1 && !mods)
             LLauncher::launch("weston-terminal");
         else if (L_CTRL && (sym == XKB_KEY_q || sym == XKB_KEY_Q))
@@ -57,11 +78,6 @@ void LKeyboard::keyEvent(const LKeyboardKeyEvent &event)
                 cursor()->output()->bufferTexture(0)->save(path);
             }
         }
-        else if (event.keyCode() == KEY_ESC && L_CTRL && L_SHIFT)
-        {
-            compositor()->finish();
-            return;
-        }
         else if (L_CTRL && !L_SHIFT)
             seat()->dnd()->setPreferredAction(LDND::Copy);
         else if (!L_CTRL && L_SHIFT)
@@ -71,7 +87,7 @@ void LKeyboard::keyEvent(const LKeyboardKeyEvent &event)
     }
 
     // Key pressed
-    else
+    else if (!sessionLocked)
     {
         // CTRL sets Copy as the preferred action in drag & drop session
         if (L_CTRL)

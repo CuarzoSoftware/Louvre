@@ -256,6 +256,13 @@ public:
      */
     const std::vector<Protocols::PointerGestures::GPointerGestures*> &pointerGesturesGlobals() const noexcept;
 
+    /**
+     * Resources created when the client binds to the
+     * [ext_session_lock_manager_v1](https://wayland.app/protocols/ext-session-lock-v1#ext_session_lock_manager_v1) global
+     * of the Session Lock protocol.
+     */
+    const std::vector<Protocols::SessionLock::GSessionLockManager*> &sessionLockManagerGlobals() const noexcept;
+
     // TODO
     const Events &events() const noexcept;
     const LEvent *findEventBySerial(UInt32 serial) const noexcept;

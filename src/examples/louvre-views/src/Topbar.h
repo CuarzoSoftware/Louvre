@@ -43,6 +43,7 @@ public:
 
     void pointerEnterEvent(const LPointerEnterEvent &) override;
     void pointerMoveEvent(const LPointerMoveEvent &) override;
+    bool nativeMapped() const noexcept override;
 };
 
 #endif // TOPBAR_H

@@ -1,3 +1,4 @@
+#include <LSessionLockManager.h>
 #include <LAnimation.h>
 #include <LTextureView.h>
 #include <LOutputMode.h>
@@ -109,4 +110,9 @@ void Topbar::pointerMoveEvent(const LPointerMoveEvent &)
 {
     if (seat()->toplevelResizeSessions().empty() && seat()->toplevelMoveSessions().empty() && !G::pointer()->cursorOwner)
         cursor()->useDefault();
+}
+
+bool Topbar::nativeMapped() const noexcept
+{
+    return compositor()->sessionLockManager()->state() == LSessionLockManager::Unlocked;
 }

@@ -19,6 +19,7 @@
 #include "Topbar.h"
 #include "ToplevelView.h"
 #include "Popup.h"
+#include "SessionLockManager.h"
 
 #include <LOpenGL.h>
 
@@ -147,6 +148,11 @@ LPointer *Compositor::createPointerRequest(const void *params)
 LKeyboard *Compositor::createKeyboardRequest(const void *params)
 {
     return new Keyboard(params);
+}
+
+LSessionLockManager *Compositor::createSessionLockManagerRequest(const void *params)
+{
+    return new SessionLockManager(params);
 }
 
 LToplevelRole *Compositor::createToplevelRoleRequest(const void *params)

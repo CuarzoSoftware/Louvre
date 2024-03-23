@@ -383,6 +383,11 @@ LSeat *LCompositor::seat() const
     return imp()->seat;
 }
 
+LSessionLockManager *LCompositor::sessionLockManager() const noexcept
+{
+    return imp()->sessionLockManager;
+}
+
 void LCompositor::repaintAllOutputs()
 {
     for (LOutput *o : imp()->outputs)
@@ -514,7 +519,7 @@ EGLContext LCompositor::eglContext()
 
 void LCompositor::flushClients()
 {
-    compositor()->imp()->sendPendingToplevelsConfiguration();
+    compositor()->imp()->sendPendingConfigurations();
     wl_display_flush_clients(LCompositor::display());
 }
 

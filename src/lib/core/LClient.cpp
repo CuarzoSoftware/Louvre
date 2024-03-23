@@ -166,6 +166,11 @@ const std::vector<PointerGestures::GPointerGestures *> &LClient::pointerGestures
     return imp()->pointerGesturesGlobals;
 }
 
+const std::vector<SessionLock::GSessionLockManager *> &LClient::sessionLockManagerGlobals() const noexcept
+{
+    return imp()->sessionLockManagerGlobals;
+}
+
 const LClient::Events &LClient::events() const noexcept
 {
     return imp()->events;

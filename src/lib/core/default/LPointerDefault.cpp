@@ -16,6 +16,8 @@
 #include <LToplevelMoveSession.h>
 #include <LToplevelResizeSession.h>
 #include <LClientCursor.h>
+#include <LSessionLockManager.h>
+#include <LSessionLockRole.h>
 
 using namespace Louvre;
 
@@ -27,6 +29,25 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
 
     // Schedule repaint on outputs that intersect with the cursor if hardware composition is not supported.
     cursor()->repaintOutputs(true);
+
+    const bool sessionLocked { compositor()->sessionLockManager()->state() != LSessionLockManager::Unlocked };
+
+    if (sessionLocked)
+    {
+        if (cursor()->output() && cursor()->output()->sessionLockRole())
+        {
+            event.localPos = cursor()->pos() - cursor()->output()->sessionLockRole()->rolePos();
+            if (focus() == cursor()->output()->sessionLockRole()->surface())
+                sendMoveEvent(event);
+            else
+                setFocus(cursor()->output()->sessionLockRole()->surface(), event.localPos);
+        }
+        else
+            setFocus(nullptr);
+
+        seat()->dnd()->drop();
+        return;
+    }
 
     const bool activeDND { seat()->dnd()->dragging() && seat()->dnd()->triggeringEvent().type() != LEvent::Type::Touch };
 

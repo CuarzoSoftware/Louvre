@@ -27,6 +27,7 @@ public:
     LSeat *createSeatRequest(const void *params) override;
     LPointer *createPointerRequest(const void *params) override;
     LKeyboard *createKeyboardRequest(const void *params) override;
+    LSessionLockManager *createSessionLockManagerRequest(const void *params) override;
     LToplevelRole *createToplevelRoleRequest(const void *params) override;
     LPopupRole *createPopupRoleRequest(const void *params) override;
 

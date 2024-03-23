@@ -43,6 +43,11 @@ LOutput::LOutput(const void *params) : m_imp(std::make_unique<LOutputPrivate>(th
         p->callback(this);
 }
 
+LSessionLockRole *LOutput::sessionLockRole() const noexcept
+{
+    return imp()->sessionLockRole.get();
+}
+
 LOutput::~LOutput() {}
 
 bool LOutput::fractionalOversamplingEnabled() const

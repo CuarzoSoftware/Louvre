@@ -43,6 +43,7 @@ public:
     std::vector<TearingControl::GTearingControlManager*> tearingControlManagerGlobals;
     std::vector<RelativePointer::GRelativePointerManager*> relativePointerManagerGlobals;
     std::vector<PointerGestures::GPointerGestures*> pointerGesturesGlobals;
+    std::vector<SessionLock::GSessionLockManager*> sessionLockManagerGlobals;
 };
 
 #endif // LCLIENTPRIVATE_H
