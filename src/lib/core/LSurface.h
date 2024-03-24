@@ -29,6 +29,7 @@
  * - LSubsurfaceRole (derived from the Wayland protocol)
  * - LPopupRole (derived from the XDG Shell protocol)
  * - LToplevelRole (derived from the XDG Shell protocol)
+ * - LSessionLockRole (derived from the Session Lock protocol)
  *
  * The surface's role can be accessed using the role() method or, if you already know the role in advance or wish to verify whether it matches one of them,
  * through the dedicated functions: cursorRole(), dndIcon(), popup(), toplevel(), and subsurface().\n
@@ -119,9 +120,95 @@ public:
         /// LDNDIconRole
         DNDIcon = 5,
 
-        /// LSessionLockRole
+        /// LSessionLockRole (since v2.0.0)
         SessionLock = 6
     };
+
+    /**
+     * @brief Pointer constraint modes.
+     */
+    enum PointerConstraintMode
+    {
+        /// No pointer constraint, the pointer is free to move anywhere.
+        Free,
+
+        /// Lock the pointer position somewhere inside pointerConstraintRegion().
+        Lock,
+
+        /// Confine the pointer to pointerConstraintRegion().
+        Confine
+    };
+
+    /**
+     * @brief Indicates the mode in which the client wants to constrain the pointer.
+     *
+     * Returns the current mode in which the client wants to constrain the pointer
+     * when the surface acquires pointer focus.
+     *
+     * @return PointerConstraintMode The current pointer constraint mode.
+     */
+    PointerConstraintMode pointerConstraintMode() const noexcept;
+
+    /**
+     * @brief Invoked when pointerConstraintMode() changes.
+     *
+     * Each time the pointer constraint mode changes,
+     * the pointer constraint is disabled and enablePointerConstraint()
+     * must be called again to enable it.
+     */
+    virtual void pointerConstraintModeChanged() {}
+
+    /**
+     * @brief Region within the surface where the pointer should be locked or confined if pointer constraint is enabled.
+     *
+     * Returns the region within the surface where the pointer should be locked
+     * or confined if the pointer constraint is enabled.
+     *
+     * @return const LRegion& The region where the pointer should be constrained.
+     * @see LRegion::closestIntersectionPoint()
+     */
+    const LRegion &pointerConstraintRegion() const noexcept;
+
+    /**
+     * @brief Notifies a change in pointerConstraintRegion().
+     */
+    virtual void pointerConstraintRegionChanged() {};
+
+    /**
+     * @brief Notifies the client if the pointer is constrained.
+     *
+     * The surface must have pointer focus prior to calling this method
+     * and have either a Lock or Confine PointerConstraintMode;
+     * otherwise, it is a no-op.
+     *
+     * @param enabled Boolean indicating if the pointer constraint is enabled.
+     */
+    void enablePointerConstraint(bool enabled) noexcept;
+
+    /**
+     * @brief Indicates if the compositor enabled the pointer constraint for this surface.
+     *
+     * It is automatically set to false if the surface loses pointer focus
+     * or the pointerConstraintMode() property changes.
+     *
+     * @return bool True if the pointer constraint is enabled for this surface, false otherwise.
+     */
+    bool pointerConstraintEnabled() const noexcept;
+
+    /**
+     * @brief Indicates where the pointer currently is within the surface if the pointer Lock constrain mode is enabled.
+     *
+     * If pointerConstraintMode() is not Locked or the client has never set this property,
+     * it returns (-1, -1).
+     *
+     * @return const LPointF& The current position of the locked pointer.
+     */
+    const LPointF &lockedPointerPosHint() const noexcept;
+
+    /**
+     * @brief Notifies a change in lockedPointerPosHint().
+     */
+    virtual void lockedPointerPosHintChanged() {};
 
     /**
      * @brief ID of the role
