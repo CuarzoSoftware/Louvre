@@ -6,6 +6,7 @@
 #include <vector>
 #include <xkbcommon/xkbcommon.h>
 #include <linux/input-event-codes.h>
+#include <memory>
 
 /**
  * @brief Class for handling keyboard events.

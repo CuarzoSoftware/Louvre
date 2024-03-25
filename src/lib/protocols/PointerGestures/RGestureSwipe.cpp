@@ -5,6 +5,7 @@
 #include <LPointerSwipeUpdateEvent.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
+#include <LUtils.h>
 
 using namespace Louvre::Protocols::PointerGestures;
 

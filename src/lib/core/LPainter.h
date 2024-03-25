@@ -5,6 +5,7 @@
 #include <LPoint.h>
 #include <LFramebuffer.h>
 #include <LRect.h>
+#include <memory>
 
 /**
  * @brief Utility for Painting Operations

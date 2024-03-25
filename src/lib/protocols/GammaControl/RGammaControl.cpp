@@ -3,6 +3,7 @@
 #include <protocols/Wayland/GOutput.h>
 #include <private/LOutputPrivate.h>
 #include <LCompositor.h>
+#include <LUtils.h>
 #include <fcntl.h>
 
 using namespace Louvre::Protocols::GammaControl;

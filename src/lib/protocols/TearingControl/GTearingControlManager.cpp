@@ -2,6 +2,7 @@
 #include <protocols/TearingControl/RTearingControl.h>
 #include <protocols/Wayland/RSurface.h>
 #include <private/LClientPrivate.h>
+#include <LUtils.h>
 
 using namespace Louvre::Protocols::TearingControl;
 

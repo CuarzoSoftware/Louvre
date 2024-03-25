@@ -3,6 +3,7 @@
 #include <protocols/Wayland/RRegion.h>
 #include <private/LClientPrivate.h>
 #include <LCompositor.h>
+#include <LUtils.h>
 
 using namespace Louvre::Protocols::Wayland;
 

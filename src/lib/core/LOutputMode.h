@@ -2,6 +2,7 @@
 #define LOUTPUTMODE_H
 
 #include <LObject.h>
+#include <memory>
 
 /**
  * @brief Output resolution and refresh rate.

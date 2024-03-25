@@ -5,6 +5,7 @@
 #include <private/LSurfacePrivate.h>
 #include <LCursor.h>
 #include <LLog.h>
+#include <LUtils.h>
 
 using namespace Louvre::Protocols::Wayland;
 

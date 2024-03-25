@@ -2,7 +2,7 @@
 #include <protocols/Wayland/RSurface.h>
 #include <protocols/Wayland/GSeat.h>
 #include <private/LClientPrivate.h>
-#include <algorithm>
+#include <LUtils.h>
 
 using namespace Louvre::Protocols::Wayland;
 

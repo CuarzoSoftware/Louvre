@@ -10,6 +10,7 @@
 #include <LDNDIconRole.h>
 #include <LTime.h>
 #include <LLog.h>
+#include <LUtils.h>
 #include <unistd.h>
 
 #include "TerminalIcon.h"

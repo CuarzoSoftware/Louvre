@@ -2,6 +2,7 @@
 #define LDNDICONROLE_H
 
 #include <LBaseSurfaceRole.h>
+#include <memory>
 
 /**
  * @brief Drag & drop icon role for surfaces

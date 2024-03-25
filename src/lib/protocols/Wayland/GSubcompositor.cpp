@@ -2,6 +2,7 @@
 #include <protocols/Wayland/RSubsurface.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LClientPrivate.h>
+#include <LUtils.h>
 
 using namespace Louvre::Protocols::Wayland;
 

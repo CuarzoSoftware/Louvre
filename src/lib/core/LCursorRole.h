@@ -2,6 +2,7 @@
 #define LCURSORROLE_H
 
 #include <LBaseSurfaceRole.h>
+#include <memory>
 
 /**
  * @brief Cursor role for surfaces

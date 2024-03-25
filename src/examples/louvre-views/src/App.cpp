@@ -3,6 +3,7 @@
 #include <LTexture.h>
 #include <LCursor.h>
 #include <LLauncher.h>
+#include <LUtils.h>
 #include <LLog.h>
 
 #include <unistd.h>

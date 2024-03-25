@@ -6,6 +6,7 @@
 #include <LSurfaceView.h>
 #include <LFramebuffer.h>
 #include <LCursor.h>
+#include <LUtils.h>
 #include <LLog.h>
 
 using LVS = LView::LViewState;

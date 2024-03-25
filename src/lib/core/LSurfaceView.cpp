@@ -2,6 +2,7 @@
 #include <private/LSurfacePrivate.h>
 #include <LSubsurfaceRole.h>
 #include <LOutput.h>
+#include <LUtils.h>
 
 using namespace Louvre;
 

@@ -171,6 +171,11 @@ const std::vector<SessionLock::GSessionLockManager *> &LClient::sessionLockManag
     return imp()->sessionLockManagerGlobals;
 }
 
+const std::vector<PointerConstraints::GPointerConstraints *> &LClient::pointerConstraintsGlobals() const noexcept
+{
+    return imp()->pointerConstraintsGlobals;
+}
+
 const LClient::Events &LClient::events() const noexcept
 {
     return imp()->events;

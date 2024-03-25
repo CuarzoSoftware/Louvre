@@ -2,6 +2,7 @@
 #define LOBJECT_H
 
 #include <LNamespaces.h>
+#include <vector>
 
 /**
  * @brief Base class for Louvre objects.

@@ -4,6 +4,7 @@
 #include <LCursor.h>
 #include <LOpenGL.h>
 #include <LSeat.h>
+#include <LUtils.h>
 #include <stdio.h>
 
 #include "Global.h"
@@ -21,8 +22,6 @@ static std::vector<App*>_apps;
 static Tooltip *_tooltip;
 static G::Textures _textures;
 static G::ToplevelRegions _toplevelRegions;
-
-
 
 LScene *G::scene()
 {

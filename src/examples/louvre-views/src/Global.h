@@ -6,6 +6,7 @@
 #include <LRegion.h>
 #include <LFramebuffer.h>
 #include <filesystem>
+#include <list>
 
 using namespace Louvre;
 

@@ -5,6 +5,7 @@
 #include <LSessionLockRole.h>
 #include <LCompositor.h>
 #include <LOutput.h>
+#include <LUtils.h>
 
 using namespace Louvre::Protocols::SessionLock;
 

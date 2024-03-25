@@ -268,6 +268,13 @@ public:
     const std::vector<Protocols::SessionLock::GSessionLockManager*> &sessionLockManagerGlobals() const noexcept;
 
     /**
+     * Resources created when the client binds to the
+     * [zwp_pointer_constraints_v1](https://wayland.app/protocols/pointer-constraints-unstable-v1#zwp_pointer_constraints_v1) global
+     * of the Pointer Constraints protocol.
+     */
+    const std::vector<Protocols::PointerConstraints::GPointerConstraints*> &pointerConstraintsGlobals() const noexcept;
+
+    /**
      * @brief Searches for an event that matches the given serial.
      *
      * This method searches for an event with the specified serial in the client events history.

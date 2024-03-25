@@ -2,6 +2,7 @@
 #define RGESTUREHOLD_H
 
 #include <LResource.h>
+#include <LWeak.h>
 
 class Louvre::Protocols::PointerGestures::RGestureHold final : public LResource
 {

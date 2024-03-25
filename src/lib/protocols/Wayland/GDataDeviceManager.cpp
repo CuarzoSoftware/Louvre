@@ -4,6 +4,7 @@
 #include <protocols/Wayland/GSeat.h>
 #include <private/LClientPrivate.h>
 #include <LCompositor.h>
+#include <LUtils.h>
 #include <LLog.h>
 
 using namespace Louvre::Protocols::Wayland;

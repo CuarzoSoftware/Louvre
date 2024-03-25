@@ -2,6 +2,7 @@
 #define LSUBSURFACEROLE_H
 
 #include <LBaseSurfaceRole.h>
+#include <memory>
 
 /**
  * @brief Subsurface role for surfaces

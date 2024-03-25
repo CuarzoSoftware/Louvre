@@ -2,6 +2,7 @@
 #define RPRESENTATIONFEEDBACK_H
 
 #include <LResource.h>
+#include <LWeak.h>
 
 class Louvre::Protocols::PresentationTime::RPresentationFeedback final : public LResource
 {

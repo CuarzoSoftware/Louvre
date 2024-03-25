@@ -2,6 +2,7 @@
 #define GSEAT_H
 
 #include <LResource.h>
+#include <LWeak.h>
 
 class Louvre::Protocols::Wayland::GSeat final : public LResource
 {

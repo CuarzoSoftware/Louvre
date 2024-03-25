@@ -3,6 +3,7 @@
 
 #include <LObject.h>
 #include <LRect.h>
+#include <memory>
 
 /*!
  * @brief Positioning rules for a Popup

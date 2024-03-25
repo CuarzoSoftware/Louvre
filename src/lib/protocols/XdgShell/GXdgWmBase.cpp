@@ -3,6 +3,7 @@
 #include <protocols/XdgShell/RXdgSurface.h>
 #include <private/LClientPrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <LUtils.h>
 
 using namespace Louvre::Protocols::XdgShell;
 

@@ -1,8 +1,7 @@
 #include <LLayerView.h>
+#include <LUtils.h>
 
 using namespace Louvre;
-
-
 
 bool LLayerView::nativeMapped() const noexcept
 {

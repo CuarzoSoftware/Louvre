@@ -3,6 +3,7 @@
 #include <private/LToplevelRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LClientPrivate.h>
+#include <LUtils.h>
 
 using namespace Louvre::Protocols::XdgDecoration;
 

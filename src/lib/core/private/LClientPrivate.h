@@ -44,6 +44,7 @@ public:
     std::vector<RelativePointer::GRelativePointerManager*> relativePointerManagerGlobals;
     std::vector<PointerGestures::GPointerGestures*> pointerGesturesGlobals;
     std::vector<SessionLock::GSessionLockManager*> sessionLockManagerGlobals;
+    std::vector<PointerConstraints::GPointerConstraints*> pointerConstraintsGlobals;
 };
 
 #endif // LCLIENTPRIVATE_H

@@ -20,6 +20,7 @@
 #include <LTouchUpEvent.h>
 #include <LTouchFrameEvent.h>
 #include <LTouchCancelEvent.h>
+#include <LUtils.h>
 #include <LLog.h>
 
 #include <unordered_map>

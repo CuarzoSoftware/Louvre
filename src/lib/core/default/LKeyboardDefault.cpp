@@ -9,6 +9,7 @@
 #include <LCursor.h>
 #include <LOutput.h>
 #include <LLauncher.h>
+#include <LUtils.h>
 #include <unistd.h>
 
 using namespace Louvre;

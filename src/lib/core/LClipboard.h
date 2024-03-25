@@ -3,6 +3,8 @@
 
 #include <LObject.h>
 #include <LWeak.h>
+#include <string>
+#include <stdio.h>
 
 /**
  * @brief Clipboard manager.

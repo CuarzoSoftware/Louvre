@@ -2,6 +2,8 @@
 #define RXDGPOPUP_H
 
 #include <LResource.h>
+#include <LWeak.h>
+#include <memory>
 
 class Louvre::Protocols::XdgShell::RXdgPopup final : public LResource
 {

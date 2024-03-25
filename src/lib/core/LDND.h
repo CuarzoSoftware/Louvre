@@ -3,6 +3,7 @@
 
 #include <LObject.h>
 #include <LPointerButtonEvent.h>
+#include <memory>
 
 /**
  * @brief Class for handling drag & drop sessions

@@ -1,4 +1,5 @@
 #include <protocols/Wayland/RCallback.h>
+#include <LUtils.h>
 
 using namespace Louvre::Protocols::Wayland;
 

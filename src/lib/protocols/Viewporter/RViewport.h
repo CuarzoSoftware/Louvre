@@ -3,6 +3,7 @@
 
 #include <LResource.h>
 #include <LRect.h>
+#include <LWeak.h>
 
 class Louvre::Protocols::Viewporter::RViewport final : public LResource
 {

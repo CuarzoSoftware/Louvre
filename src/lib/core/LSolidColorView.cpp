@@ -1,5 +1,6 @@
 #include <LSolidColorView.h>
 #include <LPainter.h>
+#include <LUtils.h>
 
 using namespace Louvre;
 

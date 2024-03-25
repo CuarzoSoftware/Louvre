@@ -4,6 +4,7 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <LNamespaces.h>
+#include <vector>
 
 class Louvre::LGraphicBackend
 {

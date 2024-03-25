@@ -9,6 +9,7 @@
 #include <LOutputMode.h>
 #include <LSeat.h>
 #include <LPointerMoveEvent.h>
+#include <LUtils.h>
 
 #include "Global.h"
 #include "Output.h"

@@ -3,6 +3,7 @@
 
 #include <LClipboard.h>
 #include <LResource.h>
+#include <memory>
 #include <stdio.h>
 
 class Louvre::Protocols::Wayland::RDataSource final : public LResource

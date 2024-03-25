@@ -2,6 +2,7 @@
 #define RTOUCH_H
 
 #include <LResource.h>
+#include <LWeak.h>
 
 class Louvre::Protocols::Wayland::RTouch final : public LResource
 {

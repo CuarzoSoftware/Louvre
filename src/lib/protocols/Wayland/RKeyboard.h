@@ -2,6 +2,7 @@
 #define RKEYBOARD_H
 
 #include <LResource.h>
+#include <LWeak.h>
 
 class Louvre::Protocols::Wayland::RKeyboard final : public LResource
 {

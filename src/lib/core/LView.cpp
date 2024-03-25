@@ -3,6 +3,7 @@
 #include <LSceneTouchPoint.h>
 #include <LTouchCancelEvent.h>
 #include <LOutput.h>
+#include <LUtils.h>
 #include <LLog.h>
 #include <string.h>
 

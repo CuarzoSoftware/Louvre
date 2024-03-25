@@ -3,6 +3,7 @@
 #include <private/LSeatPrivate.h>
 #include <LPointerEnterEvent.h>
 #include <algorithm>
+#include <LUtils.h>
 
 using namespace Louvre;
 

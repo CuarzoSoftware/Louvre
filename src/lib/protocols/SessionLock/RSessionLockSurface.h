@@ -2,6 +2,8 @@
 #define RSESSIONLOCKSURFACE_H
 
 #include <LResource.h>
+#include <LWeak.h>
+#include <memory>
 
 class Louvre::Protocols::SessionLock::RSessionLockSurface final : public LResource
 {

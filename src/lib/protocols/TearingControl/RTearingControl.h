@@ -2,6 +2,7 @@
 #define RTEARINGCONTROL_H
 
 #include <LResource.h>
+#include <LWeak.h>
 
 class Louvre::Protocols::TearingControl::RTearingControl final : public LResource
 {

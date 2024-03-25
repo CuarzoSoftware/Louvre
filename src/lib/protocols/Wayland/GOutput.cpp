@@ -3,6 +3,7 @@
 #include <private/LClientPrivate.h>
 #include <private/LOutputPrivate.h>
 #include <LOutputMode.h>
+#include <LUtils.h>
 
 using namespace Protocols::Wayland;
 

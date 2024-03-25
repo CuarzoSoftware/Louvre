@@ -1,6 +1,7 @@
 #include <protocols/RelativePointer/GRelativePointerManager.h>
 #include <protocols/RelativePointer/RRelativePointer.h>
 #include <private/LClientPrivate.h>
+#include <LUtils.h>
 
 using namespace Louvre::Protocols::RelativePointer;
 

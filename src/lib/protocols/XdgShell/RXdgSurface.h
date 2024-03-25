@@ -2,6 +2,7 @@
 #define RXDGSURFACE_H
 
 #include <LResource.h>
+#include <LWeak.h>
 #include <LRect.h>
 
 class Louvre::Protocols::XdgShell::RXdgSurface final : public LResource

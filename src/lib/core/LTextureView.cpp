@@ -2,8 +2,7 @@
 #include <private/LPainterPrivate.h>
 #include <LTextureView.h>
 #include <LCompositor.h>
-
-
+#include <LUtils.h>
 
 void LTextureView::setInputRegion(const LRegion *region)
 {

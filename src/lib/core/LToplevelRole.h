@@ -5,6 +5,8 @@
 #include <LBaseSurfaceRole.h>
 #include <LSize.h>
 #include <LRect.h>
+#include <string>
+#include <memory>
 
 /**
  * @brief Toplevel role for surfaces

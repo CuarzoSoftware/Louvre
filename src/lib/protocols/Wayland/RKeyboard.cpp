@@ -6,6 +6,7 @@
 #include <LCompositor.h>
 #include <LSeat.h>
 #include <LTime.h>
+#include <LUtils.h>
 
 using namespace Louvre::Protocols::Wayland;
 

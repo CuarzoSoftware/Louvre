@@ -1,5 +1,6 @@
 #include <private/LCompositorPrivate.h>
 #include <LTimer.h>
+#include <LUtils.h>
 #include <LLog.h>
 
 LTimer::LTimer(const Callback &onTimeout) noexcept : m_onTimeoutCallback(onTimeout)

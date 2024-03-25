@@ -1,6 +1,7 @@
 #include <private/LPointerPrivate.h>
 #include <LPointerButtonEvent.h>
 #include <LCompositor.h>
+#include <LUtils.h>
 #include <LSeat.h>
 
 using namespace Louvre;

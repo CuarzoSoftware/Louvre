@@ -2,6 +2,7 @@
 #define RGAMMACONTROL_H
 
 #include <LResource.h>
+#include <LWeak.h>
 
 class Louvre::Protocols::GammaControl::RGammaControl final : public LResource
 {

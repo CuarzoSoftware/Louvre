@@ -3,6 +3,7 @@
 
 #include <LBaseSurfaceRole.h>
 #include <LResource.h>
+#include <memory>
 
 class Louvre::Protocols::Wayland::RSurface final : public LResource
 {

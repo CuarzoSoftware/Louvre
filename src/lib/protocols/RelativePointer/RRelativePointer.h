@@ -2,6 +2,7 @@
 #define RRELATIVEPOINTER_H
 
 #include <LResource.h>
+#include <LWeak.h>
 
 class Louvre::Protocols::RelativePointer::RRelativePointer final : public LResource
 {

@@ -2,6 +2,7 @@
 #define RGESTURESWIPE_H
 
 #include <LResource.h>
+#include <LWeak.h>
 
 class Louvre::Protocols::PointerGestures::RGestureSwipe final : public LResource
 {

@@ -1,5 +1,6 @@
 #include <protocols/RelativePointer/GRelativePointerManager.h>
 #include <protocols/FractionalScale/GFractionalScaleManager.h>
+#include <protocols/PointerConstraints/GPointerConstraints.h>
 #include <protocols/TearingControl/GTearingControlManager.h>
 #include <protocols/XdgDecoration/GXdgDecorationManager.h>
 #include <protocols/GammaControl/GGammaControlManager.h>
@@ -85,6 +86,9 @@ bool LCompositor::createGlobalsRequest()
 
     wl_global_create(display(), &ext_session_lock_manager_v1_interface,
                      LOUVRE_SESSION_LOCK_MANAGER_VERSION, this, &SessionLock::GSessionLockManager::bind);
+
+    /*wl_global_create(display(), &zwp_pointer_constraints_v1_interface,
+                     LOUVRE_POINTER_CONSTRAINTS_VERSION, this, &PointerConstraints::GPointerConstraints::bind);*/
 
     wl_display_init_shm(display());
 

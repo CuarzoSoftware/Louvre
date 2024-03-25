@@ -2,6 +2,7 @@
 #define RLINUXBUFFERPARAMS_H
 
 #include <LResource.h>
+#include <memory>
 
 class Louvre::Protocols::LinuxDMABuf::RLinuxBufferParams final : public LResource
 {

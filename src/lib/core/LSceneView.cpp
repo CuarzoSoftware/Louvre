@@ -1,6 +1,7 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <LSceneView.h>
+#include <LUtils.h>
 
 using namespace Louvre;
 

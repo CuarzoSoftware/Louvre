@@ -2,17 +2,12 @@
 #define LNAMESPACES_H
 
 #include <protocols/Wayland/wayland.h>
-#include <list>
-#include <vector>
-#include <memory>
-#include <algorithm>
-#include <string>
 
 #define LOUVRE_MAX_SURFACE_SIZE 10000000
 #define LOUVRE_GLOBAL_ITERS_BEFORE_DESTROY 5
 #define LOUVRE_MAX_DMA_PLANES 4
 
-// Globals
+/* Protocols Globals Versions */
 #define LOUVRE_WL_COMPOSITOR_VERSION 6
 #define LOUVRE_WL_CALLBACK_VERSION 1
 #define LOUVRE_WL_SEAT_VERSION 9
@@ -30,6 +25,7 @@
 #define LOUVRE_RELATIVE_POINTER_MANAGER_VERSION 1
 #define LOUVRE_POINTER_GESTURES_VERSION 3
 #define LOUVRE_SESSION_LOCK_MANAGER_VERSION 1
+#define LOUVRE_POINTER_CONSTRAINTS_VERSION 1
 
 #define L_UNUSED(object){(void)object;}
 
@@ -45,7 +41,7 @@
         CAT(class_name,Private) &operator=(const CAT(class_name,Private)&) = delete;
 
 #define LPRIVATE_CLASS_NO_COPY(class_name) \
-class class_name::CAT(class_name,Private){ \
+    class class_name::CAT(class_name,Private){ \
         public: \
         CAT(class_name,Private)(const CAT(class_name,Private)&) = delete; \
         CAT(class_name,Private) &operator=(const CAT(class_name,Private)&) = delete;
@@ -69,66 +65,6 @@ class class_name::CAT(class_name,Private){ \
 #define LCLASS_NO_COPY(class_name) \
     class_name(const class_name&) = delete; \
     class_name &operator=(const class_name&) = delete;
-
-template <typename T>
-static inline void LVectorRemoveOne(std::vector<T>& vec, T val)
-{
-    auto it = std::find(vec.begin(), vec.end(), val);
-    if (it != vec.end())
-        vec.erase(it);
-}
-
-template <typename T>
-static inline void LVectorRemoveAll(std::vector<T>& vec, T val)
-{
-    for (auto it = vec.begin(); it != vec.end();)
-    {
-        if (*it == val)
-            it = vec.erase(it);
-        else
-            it++;
-    }
-}
-
-template <typename T>
-static inline void LVectorRemoveOneUnordered(std::vector<T>& vec, T val)
-{
-    auto it = std::find(vec.begin(), vec.end(), val);
-    if (it != vec.end())
-    {
-        *it = std::move(vec.back());
-        vec.pop_back();
-    }
-}
-
-template <typename T>
-static inline void LVectorPushBackIfNonexistent(std::vector<T>& vec, T val)
-{
-    auto it = std::find(vec.begin(), vec.end(), val);
-    if (it == vec.end())
-    {
-        vec.push_back(val);
-    }
-}
-
-template <typename T>
-static inline void LVectorRemoveAllUnordered(std::vector<T>& vec, T val)
-{
-    for (auto it = vec.begin(); it != vec.end();)
-    {
-        retry:
-        if (*it == val)
-        {
-            *it = std::move(vec.back());
-            vec.pop_back();
-
-            if (it != vec.end())
-                goto retry;
-        }
-        else
-            it++;
-    }
-}
 
 /**
  * @brief Namespaces
@@ -593,6 +529,14 @@ namespace Louvre
             class RSessionLock;
             class RSessionLockSurface;
         };
+
+        namespace PointerConstraints
+        {
+            class GPointerConstraints;
+
+            class RLockedPointer;
+            class RConfinedPointer;
+        }
     }
 
     /// @endcond
@@ -628,16 +572,6 @@ namespace Louvre
 
     // TODO
     LSessionLockManager *sessionLockManager() noexcept;
-
-    inline const std::string getenvString(const char *env) noexcept
-    {
-        const char *val { getenv(env) };
-
-        if (val != NULL)
-            return std::string(val);
-
-        return std::string();
-    }
 };
 
 #endif // LNAMESPACES_H

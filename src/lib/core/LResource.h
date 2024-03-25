@@ -2,7 +2,6 @@
 #define LRESOURCE_H
 
 #include <LObject.h>
-#include <LWeak.h>
 
 /**
  * @brief Wrapper for native **wl_resource** structs

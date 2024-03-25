@@ -16,6 +16,7 @@
 #include <LClient.h>
 #include <LTouch.h>
 #include <LTouchPoint.h>
+#include <LUtils.h>
 #include <unistd.h>
 
 using LVS = LView::LViewState;

@@ -7,6 +7,7 @@
 #include <LClientCursor.h>
 #include <LCursor.h>
 #include <algorithm>
+#include <LUtils.h>
 
 using namespace Louvre;
 

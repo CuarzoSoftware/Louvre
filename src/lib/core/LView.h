@@ -7,6 +7,9 @@
 #include <LFramebuffer.h>
 #include <GL/gl.h>
 #include <thread>
+#include <vector>
+#include <list>
+#include <unordered_map>
 
 /**
  * @brief Base class for LScene views.

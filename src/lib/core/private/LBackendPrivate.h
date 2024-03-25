@@ -2,6 +2,7 @@
 #define LBACKENDPRIVATE_H
 
 #include <LNamespaces.h>
+#include <vector>
 
 namespace Louvre
 {

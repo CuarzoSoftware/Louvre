@@ -4,6 +4,8 @@
 #include <LNamespaces.h>
 #include <filesystem>
 #include <thread>
+#include <vector>
+#include <list>
 
 /**
  * @brief Louvre's core and resources factory.

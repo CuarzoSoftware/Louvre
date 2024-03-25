@@ -2,6 +2,8 @@
 #define RXDGTOPLEVEL_H
 
 #include <LResource.h>
+#include <LWeak.h>
+#include <memory>
 
 class Louvre::Protocols::XdgShell::RXdgToplevel final : public LResource
 {

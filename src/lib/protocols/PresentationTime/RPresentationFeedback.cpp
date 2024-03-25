@@ -2,6 +2,7 @@
 #include <protocols/PresentationTime/GPresentation.h>
 #include <protocols/Wayland/GOutput.h>
 #include <private/LSurfacePrivate.h>
+#include <LUtils.h>
 
 using namespace Louvre::Protocols::PresentationTime;
 

@@ -1,6 +1,7 @@
 #include <protocols/GammaControl/GGammaControlManager.h>
 #include <protocols/GammaControl/RGammaControl.h>
 #include <private/LClientPrivate.h>
+#include <LUtils.h>
 
 using namespace Louvre::Protocols::GammaControl;
 

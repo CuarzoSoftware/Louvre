@@ -5,6 +5,7 @@
 #include <private/LClientPrivate.h>
 #include <LCompositor.h>
 #include <LSeat.h>
+#include <LUtils.h>
 
 using namespace Louvre::Protocols::Wayland;
 
