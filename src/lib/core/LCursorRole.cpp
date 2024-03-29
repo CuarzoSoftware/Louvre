@@ -52,20 +52,10 @@ void LCursorRole::handleSurfaceCommit(CommitOrigin origin)
 
     hotspotChanged();
 
-    if (surface()->buffer())
-    {
-        surface()->imp()->setMapped(true);
+    surface()->imp()->setMapped(surface()->buffer() != nullptr);
 
-        if (cursor()->clientCursor() && cursor()->clientCursor()->cursorRole() == this)
-            cursor()->setCursor(*cursor()->clientCursor());
-    }
-    else
-    {
-        if (cursor()->clientCursor() && cursor()->clientCursor()->cursorRole() == this)
-            cursor()->useDefault();
-
-        surface()->imp()->setMapped(false);
-    }
+    if (cursor()->clientCursor() && cursor()->clientCursor()->cursorRole() == this)
+        cursor()->setCursor(*cursor()->clientCursor());
 }
 
 void LCursorRole::handleSurfaceOffset(Int32 x, Int32 y)

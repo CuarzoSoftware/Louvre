@@ -147,7 +147,7 @@ void LCursor::setCursor(const LClientCursor &clientCursor) noexcept
     else
         useDefault();
 
-    setVisible(clientCursor.visible());
+    setVisible(clientCursor.visible() && clientCursor.cursorRole() && clientCursor.cursorRole()->surface() && clientCursor.cursorRole()->surface()->mapped());
 }
 
 const LClientCursor *LCursor::clientCursor() const noexcept
