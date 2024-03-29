@@ -27,6 +27,49 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
     // Update the cursor position
     cursor()->move(event.delta().x(), event.delta().y());
 
+    bool pointerConstrained { false };
+
+    if (focus())
+    {
+        LPointF fpos { focus()->rolePos() };
+
+        // Attempt to enable the pointer constraint mode if the cursor is within the constrained region.
+        if (focus()->pointerConstraintMode() != LSurface::PointerConstraintMode::Free)
+        {
+            if (focus()->pointerConstraintRegion().containsPoint(cursor()->pos() - fpos))
+                focus()->enablePointerConstraint(true);
+        }
+
+        if (focus()->pointerConstraintEnabled())
+        {
+            if (focus()->pointerConstraintMode() == LSurface::PointerConstraintMode::Lock)
+            {
+                if (focus()->lockedPointerPosHint().x() >= 0.f)
+                    cursor()->setPos(fpos + focus()->lockedPointerPosHint());
+                else
+                {
+                    cursor()->move(-event.delta().x(), -event.delta().y());
+
+                    const LPointF closestPoint {
+                        focus()->pointerConstraintRegion().closestPointFrom(cursor()->pos() - fpos)
+                    };
+
+                    cursor()->setPos(fpos + closestPoint);
+                }
+            }
+            else /* Confined */
+            {
+                const LPointF closestPoint {
+                    focus()->pointerConstraintRegion().closestPointFrom(cursor()->pos() - fpos)
+                };
+
+                cursor()->setPos(fpos + closestPoint);
+            }
+
+            pointerConstrained = true;
+        }
+    }
+
     // Schedule repaint on outputs that intersect with the cursor where hardware composition is not supported.
     cursor()->repaintOutputs(true);
 
@@ -88,7 +131,7 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
     }
 
     // Find the first surface under the cursor
-    LSurface *surface { surfaceAt(cursor()->pos()) };
+    LSurface *surface { pointerConstrained ? focus() : surfaceAt(cursor()->pos()) };
 
     if (surface)
     {
@@ -228,7 +271,7 @@ void LPointer::pointerButtonEvent(const LPointerButtonEvent &event)
         // We stop sending events to the surface on which the left button was being held down
         setDraggingSurface(nullptr);
 
-        if (!focus()->inputRegion().containsPoint(cursor()->pos() - focus()->rolePos()))
+        if (!focus()->pointerConstraintEnabled() && !focus()->inputRegion().containsPoint(cursor()->pos() - focus()->rolePos()))
         {
             setFocus(nullptr);
             cursor()->useDefault();

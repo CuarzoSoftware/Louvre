@@ -1,4 +1,8 @@
 #include <protocols/PointerConstraints/GPointerConstraints.h>
+#include <protocols/PointerConstraints/RConfinedPointer.h>
+#include <protocols/PointerConstraints/RLockedPointer.h>
+#include <protocols/Wayland/RSurface.h>
+#include <private/LSurfacePrivate.h>
 #include <private/LClientPrivate.h>
 #include <LUtils.h>
 
@@ -45,12 +49,52 @@ void GPointerConstraints::destroy(wl_client */*client*/, wl_resource *resource) 
     wl_resource_destroy(resource);
 }
 
-void GPointerConstraints::lock_pointer(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface, wl_resource *pointer, wl_resource *region, UInt32 lifetime) noexcept
+void GPointerConstraints::lock_pointer(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *surface, wl_resource *pointer, wl_resource *region, UInt32 lifetime) noexcept
 {
+    auto &surfaceRes { *static_cast<Wayland::RSurface*>(wl_resource_get_user_data(surface)) };
 
+    if (surfaceRes.surface()->imp()->lockedPointerRes.get() || surfaceRes.surface()->imp()->confinedPointerRes.get())
+    {
+        wl_resource_post_error(resource, ZWP_POINTER_CONSTRAINTS_V1_ERROR_ALREADY_CONSTRAINED,
+                               "Pointer constraint already requested on that surface.");
+        return;
+    }
+
+    if (lifetime != ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT && lifetime != ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT)
+    {
+        wl_resource_post_error(resource, -1, "Invalid lifetime value.");
+        return;
+    }
+
+    new RLockedPointer(static_cast<GPointerConstraints*>(wl_resource_get_user_data(resource)),
+                       surfaceRes.surface(),
+                       static_cast<Wayland::RPointer*>(wl_resource_get_user_data(pointer)),
+                       region == NULL ? nullptr : static_cast<Wayland::RRegion*>(wl_resource_get_user_data(region)),
+                       lifetime,
+                       id);
 }
 
-void GPointerConstraints::confine_pointer(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface, wl_resource *pointer, wl_resource *region, UInt32 lifetime) noexcept
+void GPointerConstraints::confine_pointer(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *surface, wl_resource *pointer, wl_resource *region, UInt32 lifetime) noexcept
 {
+    auto &surfaceRes { *static_cast<Wayland::RSurface*>(wl_resource_get_user_data(surface)) };
 
+    if (surfaceRes.surface()->imp()->lockedPointerRes.get() || surfaceRes.surface()->imp()->confinedPointerRes.get())
+    {
+        wl_resource_post_error(resource, ZWP_POINTER_CONSTRAINTS_V1_ERROR_ALREADY_CONSTRAINED,
+                               "Pointer constraint already requested on that surface.");
+        return;
+    }
+
+    if (lifetime != ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT && lifetime != ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT)
+    {
+        wl_resource_post_error(resource, -1, "Invalid lifetime value.");
+        return;
+    }
+
+    new RConfinedPointer(static_cast<GPointerConstraints*>(wl_resource_get_user_data(resource)),
+                       surfaceRes.surface(),
+                       static_cast<Wayland::RPointer*>(wl_resource_get_user_data(pointer)),
+                       region == NULL ? nullptr : static_cast<Wayland::RRegion*>(wl_resource_get_user_data(region)),
+                       lifetime,
+                       id);
 }

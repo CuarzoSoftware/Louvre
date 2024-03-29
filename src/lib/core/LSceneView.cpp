@@ -473,10 +473,14 @@ void LSceneView::drawTranslucentDamage(LView *view) noexcept
 
     if (view->autoBlendFuncEnabled())
     {
-        if (ctd.p->boundFramebuffer()->id() != 0)
+        /*if (ctd.p->boundFramebuffer()->id() != 0)
             glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+        else*/
+
+        if (view->type() == LView::Type::Surface)
+            glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
         else
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+          glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
     }
     else
         glBlendFuncSeparate(view->blendFunc().sRGBFactor,

@@ -316,7 +316,7 @@ void LPainter::drawRect(const LRect &rect)
 void LPainter::drawRegion(const LRegion &region)
 {
     Int32 n;
-    LBox *box = region.boxes(&n);
+    const LBox *box = region.boxes(&n);
     for (Int32 i = 0; i < n; i++)
     {
         imp()->setViewport(box->x1,

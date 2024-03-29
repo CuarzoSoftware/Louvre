@@ -232,7 +232,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
                 UInt32 pixelSize = LTexture::formatBytesPerPixel(format);
 
                 Int32 n;
-                LBox *boxes = onlyPending.boxes(&n);
+                const LBox *boxes = onlyPending.boxes(&n);
                 LRect rect;
                 for (Int32 i = 0; i < n; i++)
                 {
@@ -284,7 +284,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
                 UInt32 pixelSize = LTexture::formatBytesPerPixel(format);
 
                 Int32 n;
-                LBox *boxes = onlyPending.boxes(&n);
+                const LBox *boxes = onlyPending.boxes(&n);
                 LRect rect;
                 for (Int32 i = 0; i < n; i++)
                 {

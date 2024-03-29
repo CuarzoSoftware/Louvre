@@ -114,6 +114,57 @@ void LScene::handlePointerMoveEvent(const LPointerMoveEvent &event, EventOptions
     imp()->currentPointerLeaveEvent.setSerial(event.serial());
 
     cursor()->move(event.delta());
+
+    LWeak<LSurface> surface;
+    LWeak<LSurfaceView> firstSurfaceView;
+
+    if ((options & (WaylandEvents | PointerConstraints)) == (WaylandEvents | PointerConstraints) && seat()->pointer()->focus() && seat()->pointer()->focus()->imp()->lastPointerEventView.get())
+    {
+        surface.reset(seat()->pointer()->focus());
+        firstSurfaceView.reset(seat()->pointer()->focus()->imp()->lastPointerEventView.get());
+
+        const LPointF pos { firstSurfaceView.get()->pos() };
+        LPointF scalingVector { 1.f, 1.f };
+
+        if ((firstSurfaceView.get()->scalingEnabled() || firstSurfaceView.get()->parentScalingEnabled()) && firstSurfaceView.get()->scalingVector().area() != 0.f)
+            scalingVector = firstSurfaceView.get()->scalingVector();
+
+        const LPointF scaledPosDiff { (cursor()->pos() - pos) / scalingVector };
+
+        if (surface.get()->pointerConstraintMode() != LSurface::PointerConstraintMode::Free)
+        {
+            if (surface.get()->pointerConstraintRegion().containsPoint(scaledPosDiff))
+                surface.get()->enablePointerConstraint(true);
+        }
+
+        if (surface.get()->pointerConstraintEnabled())
+        {
+            if (surface.get()->pointerConstraintMode() == LSurface::PointerConstraintMode::Lock)
+            {
+                if (surface.get()->lockedPointerPosHint().x() >= 0.f)
+                    cursor()->setPos(pos + surface.get()->lockedPointerPosHint() * scalingVector);
+                else
+                {
+                    cursor()->move(-event.delta().x(), -event.delta().y());
+
+                    const LPointF closestPoint {
+                        surface.get()->pointerConstraintRegion().closestPointFrom((cursor()->pos() - pos) / scalingVector, 0.5f) * scalingVector
+                    };
+
+                    cursor()->setPos(pos + closestPoint);
+                }
+            }
+            else
+            {
+                const LPointF closestPoint {
+                    surface.get()->pointerConstraintRegion().closestPointFrom(scaledPosDiff, 0.5f) * scalingVector
+                };
+
+                cursor()->setPos(pos + closestPoint);
+            }
+        }
+    }
+
     cursor()->repaintOutputs(true);
 
     imp()->state.remove(LSS::ChildrenListChanged | LSS::PointerIsBlocked);
@@ -126,25 +177,26 @@ void LScene::handlePointerMoveEvent(const LPointerMoveEvent &event, EventOptions
         return;
 
     const bool sessionLocked { sessionLockManager()->state() != LSessionLockManager::Unlocked };
-    LSurface *surface { nullptr };
-    LSurfaceView *firstSurfaceView { nullptr };
     LPointF localPos;
 
-    for (LView *view : pointerFocus())
+    if (!firstSurfaceView.get() || !surface.get() || !surface.get()->hasPointerFocus() || !surface.get()->pointerConstraintEnabled())
     {
-        if (view->type() == LView::Surface)
+        for (LView *view : pointerFocus())
         {
-            firstSurfaceView = static_cast<LSurfaceView*>(view);
-            break;
+            if (view->type() == LView::Surface)
+            {
+                firstSurfaceView = static_cast<LSurfaceView*>(view);
+                break;
+            }
         }
     }
 
-    if (firstSurfaceView)
+    if (firstSurfaceView.get())
     {
-        if (!sessionLocked || (sessionLockManager()->client() == firstSurfaceView->surface()->client()))
+        if (!sessionLocked || (sessionLockManager()->client() == firstSurfaceView.get()->surface()->client()))
         {
-            localPos = imp()->viewLocalPos(firstSurfaceView , cursor()->pos());
-            surface = firstSurfaceView->surface();
+            localPos = imp()->viewLocalPos(firstSurfaceView.get() , cursor()->pos());
+            surface = firstSurfaceView.get()->surface();
         }
     }
 
@@ -211,26 +263,26 @@ void LScene::handlePointerMoveEvent(const LPointerMoveEvent &event, EventOptions
         return;
     }
 
-    if (surface)
+    if (surface.get())
     {
-        surface->imp()->lastPointerEventView.reset(firstSurfaceView);
+        surface.get()->imp()->lastPointerEventView.reset(firstSurfaceView.get());
 
         if (activeDND)
         {
-            if (seat()->dnd()->focus() == surface)
+            if (seat()->dnd()->focus() == surface.get())
                 seat()->dnd()->sendMoveEvent(localPos, event.ms());
             else
-                seat()->dnd()->setFocus(surface, localPos);
+                seat()->dnd()->setFocus(surface.get(), localPos);
         }
         else
         {
-            if (seat()->pointer()->focus() == surface)
+            if (seat()->pointer()->focus() == surface.get())
             {
                 imp()->currentPointerMoveEvent.localPos = localPos;
                 seat()->pointer()->sendMoveEvent(imp()->currentPointerMoveEvent);
             }
             else
-                seat()->pointer()->setFocus(surface, localPos);
+                seat()->pointer()->setFocus(surface.get(), localPos);
         }
     }
     else

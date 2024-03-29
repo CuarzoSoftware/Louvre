@@ -205,6 +205,61 @@ const LRegion &LRegion::EmptyRegion() noexcept
     return m_emptyRegion;
 }
 
+LPointF LRegion::closestPointFrom(const LPointF &point, Float32 margin) const noexcept
+{
+    if (empty())
+        return point;
+
+    Float32 smallestDistance { std::numeric_limits<Float32>::max() };
+    LPointF closestPoint;
+    Float32 distance;
+    LPointF tmpPoint;
+
+    Int32 n;
+    const LBox *box = boxes(&n);
+
+    UInt8 in;
+    for (Int32 i = 0; i < n; i++)
+    {
+        in = 0;
+
+        if (point.x() <= box->x1)
+            tmpPoint.setX(Float32(box->x1) + margin);
+        else if (point.x() >= box->x2)
+            tmpPoint.setX(Float32(box->x2) - margin);
+        else
+        {
+            in++;
+            tmpPoint.setX(point.x());
+        }
+
+        if (point.y() <= box->y1)
+            tmpPoint.setY(Float32(box->y1) + margin);
+        else if (point.y() >= box->y2)
+            tmpPoint.setY(Float32(box->y2) - margin);
+        else
+        {
+            in++;
+            tmpPoint.setY(point.y());
+        }
+
+        if (in == 2)
+            return tmpPoint;
+
+        distance = point.distanceFrom(tmpPoint);
+
+        if (distance < smallestDistance)
+        {
+            smallestDistance = distance;
+            closestPoint = tmpPoint;
+        }
+
+        box++;
+    }
+
+    return closestPoint;
+}
+
 void LRegion::multiply(LRegion *dst, LRegion *src, Float32 factor) noexcept
 {
     if (dst == src)

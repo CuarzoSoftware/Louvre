@@ -581,7 +581,7 @@ void LGraphicBackend::outputSetBufferDamage(LOutput *output, LRegion &region)
         return;
 
     Int32 n;
-    LBox *boxes = region.boxes(&n);
+    const LBox *boxes = region.boxes(&n);
 
 #if SRM_VERSION_MINOR >= 5
     srmConnectorSetBufferDamageBoxes(bkndOutput->conn, (SRMBox*)boxes, n);

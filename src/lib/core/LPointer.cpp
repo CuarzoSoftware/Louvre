@@ -4,11 +4,13 @@
 #include <protocols/PointerGestures/RGestureSwipe.h>
 #include <protocols/PointerGestures/RGesturePinch.h>
 #include <protocols/PointerGestures/RGestureHold.h>
+#include <protocols/PointerConstraints/RLockedPointer.h>
 #include <private/LClientPrivate.h>
 #include <private/LPointerPrivate.h>
 #include <private/LToplevelRolePrivate.h>
 #include <private/LSeatPrivate.h>
 #include <private/LCompositorPrivate.h>
+#include <private/LSurfacePrivate.h>
 #include <LCursor.h>
 #include <LOutput.h>
 #include <LPopupRole.h>
@@ -92,15 +94,22 @@ void LPointer::sendMoveEvent(const LPointerMoveEvent &event)
     if (!focus())
         return;
 
+    Wayland::RPointer *lockedPointer { nullptr };
+
+    if (focus()->pointerConstraintEnabled() && focus()->pointerConstraintMode() == LSurface::Lock)
+        lockedPointer = focus()->imp()->lockedPointerRes.get()->pointerRes();
+
     for (auto gSeat : focus()->client()->seatGlobals())
     {
         for (auto rPointer : gSeat->pointerRes())
         {
-            rPointer->motion(event);
-            rPointer->frame();
+            if (lockedPointer != rPointer)
+                rPointer->motion(event);
 
             for (auto rRelativePointer : rPointer->relativePointerRes())
                 rRelativePointer->relativeMotion(event);
+
+            rPointer->frame();
         }
     }
 }
@@ -393,6 +402,8 @@ void LPointer::LPointerPrivate::sendLeaveEvent(LSurface *surface) noexcept
 {
     if (!surface)
         return;
+
+    surface->enablePointerConstraint(false);
 
     LPointerLeaveEvent leaveEvent;
 

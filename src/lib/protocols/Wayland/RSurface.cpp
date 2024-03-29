@@ -243,6 +243,7 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
             {
                 imp.currentInputRegion.clear();
                 imp.currentInputRegion.addRect(0, 0, surface->size());
+                changes.add(Changes::InputRegionChanged);
             }
         }
         else if (changes.check(Changes::SizeChanged | Changes::InputRegionChanged))
@@ -250,6 +251,7 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
             pixman_region32_intersect_rect(&imp.currentInputRegion.m_region,
                                            &imp.pendingInputRegion.m_region,
                                            0, 0, surface->size().w(), surface->size().h());
+            changes.add(Changes::InputRegionChanged);
         }
     }
     else
@@ -258,6 +260,31 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
          *********** CLEAR INPUT REGION ***********
          ******************************************/
         imp.currentInputRegion.clear();
+        imp.pendingPointerConstraintRegion.reset();
+        imp.pointerConstraintRegion.clear();
+    }
+
+    /******************************************
+     *********** POINTER CONSTRAINT ***********
+     ******************************************/
+
+    if (surface->pointerConstraintMode() != LSurface::Free)
+    {
+        if (changes.check(Changes::PointerConstraintRegionChanged | Changes::InputRegionChanged))
+        {
+            if (imp.pendingPointerConstraintRegion.get())
+            {
+                imp.pointerConstraintRegion = *imp.pendingPointerConstraintRegion.get();
+                imp.pointerConstraintRegion.intersectRegion(imp.currentInputRegion);
+            }
+            else
+                imp.pointerConstraintRegion = imp.currentInputRegion;
+
+            changes.add(Changes::PointerConstraintRegionChanged);
+        }
+
+        if (changes.check(Changes::LockedPointerPosHintChanged))
+            imp.current.lockedPointerPosHint = imp.pending.lockedPointerPosHint;
     }
 
     /************************************
@@ -355,6 +382,22 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     if (changes.check(Changes::InputRegionChanged))
     {
         surface->inputRegionChanged();
+
+        if (!ref.get())
+            return;
+    }
+
+    if (changes.check(Changes::PointerConstraintRegionChanged))
+    {
+        surface->pointerConstraintRegionChanged();
+
+        if (!ref.get())
+            return;
+    }
+
+    if (changes.check(Changes::LockedPointerPosHintChanged))
+    {
+        surface->lockedPointerPosHintChanged();
 
         if (!ref.get())
             return;

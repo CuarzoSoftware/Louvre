@@ -8,6 +8,7 @@ using namespace Louvre;
 
 #include "LObject_test.h"
 #include "LWeak_test.h"
+#include "LRegion_test.h"
 
 int main(int, char *[])
 {
@@ -16,6 +17,7 @@ int main(int, char *[])
     LCompositor compositor;
     LObject_run_tests();
     LWeak_run_tests();
+    LRegion_run_tests();
 
     return 0;
 }

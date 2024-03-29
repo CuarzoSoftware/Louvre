@@ -139,76 +139,6 @@ public:
         Confine
     };
 
-    /**
-     * @brief Indicates the mode in which the client wants to constrain the pointer.
-     *
-     * Returns the current mode in which the client wants to constrain the pointer
-     * when the surface acquires pointer focus.
-     *
-     * @return PointerConstraintMode The current pointer constraint mode.
-     */
-    PointerConstraintMode pointerConstraintMode() const noexcept;
-
-    /**
-     * @brief Invoked when pointerConstraintMode() changes.
-     *
-     * Each time the pointer constraint mode changes,
-     * the pointer constraint is disabled and enablePointerConstraint()
-     * must be called again to enable it.
-     */
-    virtual void pointerConstraintModeChanged() {}
-
-    /**
-     * @brief Region within the surface where the pointer should be locked or confined if pointer constraint is enabled.
-     *
-     * Returns the region within the surface where the pointer should be locked
-     * or confined if the pointer constraint is enabled.
-     *
-     * @return const LRegion& The region where the pointer should be constrained.
-     * @see LRegion::closestIntersectionPoint()
-     */
-    const LRegion &pointerConstraintRegion() const noexcept;
-
-    /**
-     * @brief Notifies a change in pointerConstraintRegion().
-     */
-    virtual void pointerConstraintRegionChanged() {};
-
-    /**
-     * @brief Notifies the client if the pointer is constrained.
-     *
-     * The surface must have pointer focus prior to calling this method
-     * and have either a Lock or Confine PointerConstraintMode;
-     * otherwise, it is a no-op.
-     *
-     * @param enabled Boolean indicating if the pointer constraint is enabled.
-     */
-    void enablePointerConstraint(bool enabled) noexcept;
-
-    /**
-     * @brief Indicates if the compositor enabled the pointer constraint for this surface.
-     *
-     * It is automatically set to false if the surface loses pointer focus
-     * or the pointerConstraintMode() property changes.
-     *
-     * @return bool True if the pointer constraint is enabled for this surface, false otherwise.
-     */
-    bool pointerConstraintEnabled() const noexcept;
-
-    /**
-     * @brief Indicates where the pointer currently is within the surface if the pointer Lock constrain mode is enabled.
-     *
-     * If pointerConstraintMode() is not Locked or the client has never set this property,
-     * it returns (-1, -1).
-     *
-     * @return const LPointF& The current position of the locked pointer.
-     */
-    const LPointF &lockedPointerPosHint() const noexcept;
-
-    /**
-     * @brief Notifies a change in lockedPointerPosHint().
-     */
-    virtual void lockedPointerPosHintChanged() {};
 
     /**
      * @brief ID of the role
@@ -622,6 +552,97 @@ public:
      * @return A pointer to the next LSurface or `nullptr` if the current surface is the last in the list.
      */
     LSurface *nextSurface() const;
+
+    /**
+     * @name Pointer Constraints
+     *
+     * Functionality related to pointer constraints.
+     *
+     * @see LPointer::pointerMoveEvent()
+     */
+
+    ///@{
+
+    /**
+     * @brief Current pointer constraint mode.
+     *
+     * Returns the current mode in which the client wants to constrain the pointer.
+     *
+     * @note The pointer constraint is not enabled automatically, see enablePointerConstraint().
+     */
+    PointerConstraintMode pointerConstraintMode() const noexcept;
+
+    /**
+     * @brief Invoked when pointerConstraintMode() changes.
+     *
+     * Each time the pointer constraint mode changes,
+     * the pointer constraint is disabled and enablePointerConstraint()
+     * must be called again to enable it.
+     *
+     * #### Default implementation
+     * @snippet LSurfaceDefault.cpp pointerConstraintModeChanged
+     */
+    virtual void pointerConstraintModeChanged();
+
+    /**
+     * @brief Region within the surface where the pointer should be locked or confined if pointer constraint is enabled.
+     *
+     * Returns the region within the surface where the pointer should be locked
+     * or confined if the pointer constraint is enabled.
+     *
+     * @return const LRegion& The region where the pointer should be constrained.
+     * @see LRegion::closestPointFrom()
+     */
+    const LRegion &pointerConstraintRegion() const noexcept;
+
+    /**
+     * @brief Notifies a change in pointerConstraintRegion().
+     *
+     * #### Default implementation
+     * @snippet LSurfaceDefault.cpp pointerConstraintRegionChanged
+     */
+    virtual void pointerConstraintRegionChanged();
+
+    /**
+     * @brief Notifies the client if the pointer is constrained.
+     *
+     * The surface must have pointer focus prior to calling this method
+     * and have either a @ref Lock or @ref Confine @ref PointerConstraintMode,
+     * otherwise, it is a no-op.
+     *
+     * @param enabled Boolean indicating if the pointer constraint is enabled.
+     */
+    void enablePointerConstraint(bool enabled);
+
+    /**
+     * @brief Indicates if the compositor enabled the pointer constraint for this surface.
+     *
+     * It is automatically set to `false` if the surface loses pointer focus
+     * or the pointerConstraintMode() property changes.
+     *
+     * @see enablePointerConstraint()
+     *
+     * @return `true` if the pointer constraint is enabled for this surface, `false` otherwise.
+     */
+    bool pointerConstraintEnabled() const noexcept;
+
+    /**
+     * @brief Indicates where the pointer currently is within the surface if the pointer @ref Lock constrain mode is enabled.
+     *
+     * If pointerConstraintMode() is not @ref Lock or the client has never set this property,
+     * it returns `(-1.f, -1.f)`.
+     */
+    const LPointF &lockedPointerPosHint() const noexcept;
+
+    /**
+     * @brief Notifies a change in lockedPointerPosHint().
+     *
+     * #### Default implementation
+     * @snippet LSurfaceDefault.cpp lockedPointerPosHintChanged
+     */
+    virtual void lockedPointerPosHintChanged();
+
+    ///@}
 
 /// @name Virtual Methods
 /// @{

@@ -100,7 +100,12 @@ inline void applyPendingChanges()
             if (seat()->activeToplevel() && seat()->activeToplevel() != toplevel)
             {
                 seat()->activeToplevel()->imp()->forceRemoveActivatedFlag = true;
-                seat()->activeToplevel()->imp()->hasConfToSend = true;
+
+                if (!seat()->activeToplevel()->imp()->hasConfToSend)
+                {
+                    seat()->activeToplevel()->imp()->pendingSendConf.serial = LTime::nextSerial();
+                    seat()->activeToplevel()->imp()->hasConfToSend = true;
+                }
             }
 
             seat()->imp()->activeToplevel = toplevel;
@@ -150,7 +155,7 @@ inline void sendConfiguration()
 
     if (forceRemoveActivatedFlag)
     {
-        pendingSendConf.flags = pendingSendConf.flags & ~LToplevelRole::Activated;
+        pendingSendConf.flags &= ~LToplevelRole::Activated;
         forceRemoveActivatedFlag = false;
     }
 

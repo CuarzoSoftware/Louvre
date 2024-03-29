@@ -9,6 +9,27 @@
 
 using namespace Louvre;
 
+//! [pointerConstraintModeChanged]
+void LSurface::pointerConstraintModeChanged()
+{
+    /* No default implementation */
+}
+//! [pointerConstraintModeChanged]
+
+//! [pointerConstraintRegionChanged]
+void LSurface::pointerConstraintRegionChanged()
+{
+    /* No default implementation */
+}
+//! [pointerConstraintRegionChanged]
+
+//! [lockedPointerPosHintChanged]
+void LSurface::lockedPointerPosHintChanged()
+{
+    /* No default implementation */
+}
+//! [lockedPointerPosHintChanged]
+
 //! [damageChanged]
 void LSurface::damageChanged()
 {

@@ -95,9 +95,10 @@ public:
 
     enum EventOptions : EventOptionsFlags
     {
-        Disabled        = static_cast<UInt8>(0),
-        WaylandEvents   = static_cast<UInt8>(1) << 0,
-        AuxFunc         = static_cast<UInt8>(1) << 1
+        Disabled            = static_cast<UInt8>(0),
+        WaylandEvents       = static_cast<UInt8>(1) << 0,
+        PointerConstraints  = static_cast<UInt8>(1) << 1,
+        AuxFunc             = static_cast<UInt8>(1) << 2
     };
 
     /**
@@ -175,7 +176,7 @@ public:
      * @param outLocalPos Stores the local position of the first view found under the cursor. Pass `nullptr` if not needed.
      * @return The first LView found under the cursor.
      */
-    void handlePointerMoveEvent(const LPointerMoveEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+    void handlePointerMoveEvent(const LPointerMoveEvent &event, EventOptionsFlags options = WaylandEvents | PointerConstraints | AuxFunc);
 
     /**
      * @brief Handle pointer button event.
@@ -184,7 +185,7 @@ public:
      *
      * @param event The pointer button event to handle.
      */
-    void handlePointerButtonEvent(const LPointerButtonEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+    void handlePointerButtonEvent(const LPointerButtonEvent &event, EventOptionsFlags options = WaylandEvents | PointerConstraints | AuxFunc);
 
     /**
      * @brief Handle pointer scroll event.
@@ -193,7 +194,7 @@ public:
      *
      * @param event The pointer scroll event to handle.
      */
-    void handlePointerScrollEvent(const LPointerScrollEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+    void handlePointerScrollEvent(const LPointerScrollEvent &event, EventOptionsFlags options = WaylandEvents | PointerConstraints | AuxFunc);
 
     /**
      * @brief Handle pointer swipe begin event.
@@ -202,7 +203,7 @@ public:
      *
      * @param event The pointer swipe begin event to handle.
      */
-    void handlePointerSwipeBeginEvent(const LPointerSwipeBeginEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+    void handlePointerSwipeBeginEvent(const LPointerSwipeBeginEvent &event, EventOptionsFlags options = WaylandEvents | PointerConstraints | AuxFunc);
 
     /**
      * @brief Handle pointer swipe update event.
@@ -211,7 +212,7 @@ public:
      *
      * @param event The pointer swipe update event to handle.
      */
-    void handlePointerSwipeUpdateEvent(const LPointerSwipeUpdateEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+    void handlePointerSwipeUpdateEvent(const LPointerSwipeUpdateEvent &event, EventOptionsFlags options = WaylandEvents | PointerConstraints | AuxFunc);
 
     /**
      * @brief Handle pointer swipe end event.
@@ -220,7 +221,7 @@ public:
      *
      * @param event The pointer swipe end event to handle.
      */
-    void handlePointerSwipeEndEvent(const LPointerSwipeEndEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+    void handlePointerSwipeEndEvent(const LPointerSwipeEndEvent &event, EventOptionsFlags options = WaylandEvents | PointerConstraints | AuxFunc);
 
     /**
      * @brief Handle pointer pinch begin event.
@@ -229,7 +230,7 @@ public:
      *
      * @param event The pointer pinch begin event to handle.
      */
-    void handlePointerPinchBeginEvent(const LPointerPinchBeginEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+    void handlePointerPinchBeginEvent(const LPointerPinchBeginEvent &event, EventOptionsFlags options = WaylandEvents | PointerConstraints | AuxFunc);
 
     /**
      * @brief Handle pointer pinch update event.
@@ -238,7 +239,7 @@ public:
      *
      * @param event The pointer pinch update event to handle.
      */
-    void handlePointerPinchUpdateEvent(const LPointerPinchUpdateEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+    void handlePointerPinchUpdateEvent(const LPointerPinchUpdateEvent &event, EventOptionsFlags options = WaylandEvents | PointerConstraints | AuxFunc);
 
     /**
      * @brief Handle pointer pinch end event.
@@ -247,7 +248,7 @@ public:
      *
      * @param event The pointer pinch end event to handle.
      */
-    void handlePointerPinchEndEvent(const LPointerPinchEndEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+    void handlePointerPinchEndEvent(const LPointerPinchEndEvent &event, EventOptionsFlags options = WaylandEvents | PointerConstraints | AuxFunc);
 
     /**
      * @brief Handle pointer hold begin event.
@@ -256,7 +257,7 @@ public:
      *
      * @param event The pointer hold begin event to handle.
      */
-    void handlePointerHoldBeginEvent(const LPointerHoldBeginEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+    void handlePointerHoldBeginEvent(const LPointerHoldBeginEvent &event, EventOptionsFlags options = WaylandEvents | PointerConstraints | AuxFunc);
 
     /**
      * @brief Handle pointer hold end event.
@@ -265,14 +266,14 @@ public:
      *
      * @param event The pointer hold end event to handle.
      */
-    void handlePointerHoldEndEvent(const LPointerHoldEndEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+    void handlePointerHoldEndEvent(const LPointerHoldEndEvent &event, EventOptionsFlags options = WaylandEvents | PointerConstraints | AuxFunc);
 
     /**
      * @brief Handle keyboard key event.
      *
      * This method should be integrated into LKeyboard::keyEvent() to handle key events.
      */
-    void handleKeyboardKeyEvent(const LKeyboardKeyEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+    void handleKeyboardKeyEvent(const LKeyboardKeyEvent &event, EventOptionsFlags options = WaylandEvents | PointerConstraints | AuxFunc);
 
     /**
      * @brief Handle touch down event.
@@ -282,7 +283,7 @@ public:
      * @param event The touch down event to handle.
      * @param globalPos The event position transformed to global coordinates.
      */
-    void handleTouchDownEvent(const LTouchDownEvent &event, const LPointF &globalPos, EventOptionsFlags options = WaylandEvents | AuxFunc);
+    void handleTouchDownEvent(const LTouchDownEvent &event, const LPointF &globalPos, EventOptionsFlags options = WaylandEvents | PointerConstraints | AuxFunc);
 
     /**
      * @brief Handle touch move event.
@@ -292,7 +293,7 @@ public:
      * @param event The touch move event to handle.
      * @param globalPos The event position transformed to global coordinates.
      */
-    void handleTouchMoveEvent(const LTouchMoveEvent &event, const LPointF &globalPos, EventOptionsFlags options = WaylandEvents | AuxFunc);
+    void handleTouchMoveEvent(const LTouchMoveEvent &event, const LPointF &globalPos, EventOptionsFlags options = WaylandEvents | PointerConstraints | AuxFunc);
 
     /**
      * @brief Handle touch up event.
@@ -301,7 +302,7 @@ public:
      *
      * @param event The touch up event to handle.
      */
-    void handleTouchUpEvent(const LTouchUpEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+    void handleTouchUpEvent(const LTouchUpEvent &event, EventOptionsFlags options = WaylandEvents | PointerConstraints | AuxFunc);
 
     /**
      * @brief Handle touch frame event.
@@ -310,7 +311,7 @@ public:
      *
      * @param event The touch frame event to handle.
      */
-    void handleTouchFrameEvent(const LTouchFrameEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+    void handleTouchFrameEvent(const LTouchFrameEvent &event, EventOptionsFlags options = WaylandEvents | PointerConstraints | AuxFunc);
 
     /**
      * @brief Handle touch cancel event.
@@ -319,7 +320,7 @@ public:
      *
      * @param event The touch cancel event to handle.
      */
-    void handleTouchCancelEvent(const LTouchCancelEvent &event, EventOptionsFlags options = WaylandEvents | AuxFunc);
+    void handleTouchCancelEvent(const LTouchCancelEvent &event, EventOptionsFlags options = WaylandEvents | PointerConstraints | AuxFunc);
 
     /**
      * @brief Retrieve the main view of the scene.

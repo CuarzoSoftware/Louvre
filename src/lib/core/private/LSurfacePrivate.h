@@ -24,36 +24,44 @@ LPRIVATE_CLASS(LSurface)
     // Changes that are notified at the end of a commit after all changes are applied
     enum ChangesToNotify : UInt16
     {
-        NoChanges                   = static_cast<UInt16>(0),
-        BufferSizeChanged           = static_cast<UInt16>(1) << 0,
-        BufferScaleChanged          = static_cast<UInt16>(1) << 1,
-        BufferTransformChanged      = static_cast<UInt16>(1) << 2,
-        DamageRegionChanged         = static_cast<UInt16>(1) << 3,
-        OpaqueRegionChanged         = static_cast<UInt16>(1) << 4,
-        InputRegionChanged          = static_cast<UInt16>(1) << 5,
-        SourceRectChanged           = static_cast<UInt16>(1) << 6,
-        SizeChanged                 = static_cast<UInt16>(1) << 7,
-        VSyncChanged                = static_cast<UInt16>(1) << 8
+        NoChanges                       = static_cast<UInt16>(0),
+        BufferSizeChanged               = static_cast<UInt16>(1) << 0,
+        BufferScaleChanged              = static_cast<UInt16>(1) << 1,
+        BufferTransformChanged          = static_cast<UInt16>(1) << 2,
+        DamageRegionChanged             = static_cast<UInt16>(1) << 3,
+        OpaqueRegionChanged             = static_cast<UInt16>(1) << 4,
+        InputRegionChanged              = static_cast<UInt16>(1) << 5,
+        SourceRectChanged               = static_cast<UInt16>(1) << 6,
+        SizeChanged                     = static_cast<UInt16>(1) << 7,
+        VSyncChanged                    = static_cast<UInt16>(1) << 8,
+        PointerConstraintRegionChanged  = static_cast<UInt16>(1) << 9,
+        LockedPointerPosHintChanged     = static_cast<UInt16>(1) << 10
     };
 
     LBitset<ChangesToNotify> changesToNotify;
 
     enum StateFlags : UInt16
     {
-        ViewportIsScaled           = static_cast<UInt16>(1) << 0,
-        ViewportIsCropped          = static_cast<UInt16>(1) << 1,
-        Destroyed                  = static_cast<UInt16>(1) << 2,
-        Damaged                    = static_cast<UInt16>(1) << 3,
-        Minimized                  = static_cast<UInt16>(1) << 4,
-        ReceiveInput               = static_cast<UInt16>(1) << 5,
-        InfiniteInput              = static_cast<UInt16>(1) << 6,
-        BufferReleased             = static_cast<UInt16>(1) << 7,
-        BufferAttached             = static_cast<UInt16>(1) << 8,
-        Mapped                     = static_cast<UInt16>(1) << 9,
-        VSync                      = static_cast<UInt16>(1) << 10
+        ViewportIsScaled            = static_cast<UInt16>(1) << 0,
+        ViewportIsCropped           = static_cast<UInt16>(1) << 1,
+        Destroyed                   = static_cast<UInt16>(1) << 2,
+        Damaged                     = static_cast<UInt16>(1) << 3,
+        Minimized                   = static_cast<UInt16>(1) << 4,
+        ReceiveInput                = static_cast<UInt16>(1) << 5,
+        InfiniteInput               = static_cast<UInt16>(1) << 6,
+        BufferReleased              = static_cast<UInt16>(1) << 7,
+        BufferAttached              = static_cast<UInt16>(1) << 8,
+        Mapped                      = static_cast<UInt16>(1) << 9,
+        VSync                       = static_cast<UInt16>(1) << 10
     };
 
-    LBitset<StateFlags> stateFlags { ReceiveInput | InfiniteInput | BufferReleased | VSync };
+    LBitset<StateFlags> stateFlags
+    {
+        ReceiveInput |
+        InfiniteInput |
+        BufferReleased |
+        VSync
+    };
 
     struct State
     {
@@ -61,9 +69,16 @@ LPRIVATE_CLASS(LSurface)
         wl_resource *buffer                 { nullptr };
         Int32 bufferScale                   { 1 };
         LFramebuffer::Transform transform   { LFramebuffer::Normal };
+        LPointF lockedPointerPosHint        { -1.f, -1.f };
     };
 
+    std::unique_ptr<LRegion> pendingPointerConstraintRegion;
+    LRegion pointerConstraintRegion;
+
     State current, pending;
+
+    LWeak<Protocols::PointerConstraints::RLockedPointer> lockedPointerRes;
+    LWeak<Protocols::PointerConstraints::RConfinedPointer> confinedPointerRes;
 
     LRectF srcRect                          { 0, 0, 1, 1 };
     LSize size                              { 1, 1 };

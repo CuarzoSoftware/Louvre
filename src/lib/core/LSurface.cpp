@@ -1,4 +1,6 @@
 #include <protocols/PresentationTime/RPresentationFeedback.h>
+#include <protocols/PointerConstraints/RLockedPointer.h>
+#include <protocols/PointerConstraints/RConfinedPointer.h>
 #include <protocols/Wayland/RCallback.h>
 #include <protocols/Wayland/GOutput.h>
 #include <private/LSurfacePrivate.h>
@@ -204,6 +206,57 @@ const LRectF &LSurface::srcRect() const
 LFramebuffer::Transform LSurface::bufferTransform() const
 {
     return imp()->current.transform;
+}
+
+LSurface::PointerConstraintMode LSurface::pointerConstraintMode() const noexcept
+{
+    if (imp()->lockedPointerRes.get())
+        return PointerConstraintMode::Lock;
+    else if (imp()->confinedPointerRes.get())
+        return PointerConstraintMode::Confine;
+
+    return PointerConstraintMode::Free;
+}
+
+const LRegion &LSurface::pointerConstraintRegion() const noexcept
+{
+    return imp()->pointerConstraintRegion;
+}
+
+void LSurface::enablePointerConstraint(bool enabled)
+{
+    if (enabled && !hasPointerFocus())
+        return;
+
+    if (imp()->lockedPointerRes.get())
+    {
+        if (enabled)
+            imp()->lockedPointerRes.get()->locked();
+        else
+            imp()->lockedPointerRes.get()->unlocked();
+    }
+    else if (imp()->confinedPointerRes.get())
+    {
+        if (enabled)
+            imp()->confinedPointerRes.get()->confined();
+        else
+            imp()->confinedPointerRes.get()->unconfined();
+    }
+}
+
+bool LSurface::pointerConstraintEnabled() const noexcept
+{
+    if (imp()->lockedPointerRes.get())
+        return imp()->lockedPointerRes.get()->constrained();
+    else if (imp()->confinedPointerRes.get())
+        return imp()->confinedPointerRes.get()->constrained();
+
+    return false;
+}
+
+const LPointF &LSurface::lockedPointerPosHint() const noexcept
+{
+    return imp()->current.lockedPointerPosHint;
 }
 
 LSurface::Role LSurface::roleId() const
