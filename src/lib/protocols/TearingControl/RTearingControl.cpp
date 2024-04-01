@@ -1,3 +1,4 @@
+#include <protocols/TearingControl/tearing-control-v1.h>
 #include <protocols/TearingControl/GTearingControlManager.h>
 #include <protocols/TearingControl/RTearingControl.h>
 #include <protocols/Wayland/RSurface.h>

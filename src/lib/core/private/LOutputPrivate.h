@@ -24,7 +24,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     std::mutex pageflipMutex {};
 
     // TODO: Replace with vector
-    wl_global *global = nullptr;
+    LWeak<LGlobal> global;
 
     struct PresentationTime
     {

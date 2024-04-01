@@ -1,3 +1,4 @@
+#include <protocols/PresentationTime/presentation-time.h>
 #include <protocols/PresentationTime/RPresentationFeedback.h>
 #include <protocols/PresentationTime/GPresentation.h>
 #include <protocols/Wayland/RSurface.h>
@@ -14,6 +15,21 @@ static const struct wp_presentation_interface imp
     .feedback = &GPresentation::feedback
 };
 
+void GPresentation::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GPresentation(client, version, id);
+}
+
+Int32 GPresentation::maxVersion() noexcept
+{
+    return LOUVRE_PRESENTATION_VERSION;
+}
+
+const wl_interface *GPresentation::interface() noexcept
+{
+    return &wp_presentation_interface;
+}
+
 GPresentation::GPresentation
 (
     wl_client *client,
@@ -23,7 +39,7 @@ GPresentation::GPresentation
     :LResource
     (
         client,
-        &wp_presentation_interface,
+        interface(),
         version,
         id,
         &imp
@@ -43,11 +59,6 @@ GPresentation::~GPresentation() noexcept
 }
 
 /******************** REQUESTS ********************/
-
-void GPresentation::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
-{
-    new GPresentation(client, version, id);
-}
 
 void GPresentation::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {

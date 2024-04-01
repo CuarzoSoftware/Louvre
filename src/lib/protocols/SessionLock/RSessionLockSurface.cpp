@@ -1,3 +1,4 @@
+#include <protocols/SessionLock/ext-session-lock-v1.h>
 #include <protocols/SessionLock/GSessionLockManager.h>
 #include <protocols/SessionLock/RSessionLockSurface.h>
 #include <protocols/SessionLock/RSessionLock.h>

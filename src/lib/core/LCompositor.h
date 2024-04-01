@@ -63,9 +63,47 @@ public:
     static const LVersion &version();
 
     /**
+     * @brief Creates and adds a global to the compositor.
+     *
+     * This method creates and adds a global to the compositor. Globals implemented by Louvre can be found in `<protocols/{protocol}/G{global}.h>`.
+     *
+     * Louvre automatically creates all the supported globals during compositor initialization. See LCompositor::createGlobalsRequest().
+     *
+     * @tparam Global The type of global to create. It should be a subclass of Louvre::LResource.
+     * @param data Optional user data to associate with the global.
+     * @return Pointer to the created LGlobal instance, which can be later removed with removeGlobal().
+     */
+    template<class Global>
+    LGlobal *createGlobal(void *data = nullptr)
+    {
+        static_assert(std::is_base_of_v<Louvre::LResource, Global> == true);
+
+        return globalCreate(Global::interface(),
+                            Global::maxVersion(),
+                            data,
+                            &Global::bind);
+    }
+
+    /**
+     * @brief Safely removes a global.
+     *
+     * This method performs a lazy removal of an LGlobal created with createGlobal(), ensuring clients are notified before it is destroyed.
+     *
+     * @note Calling LCompositor::removeGlobal() isn't mandatory as globals are automatically destroyed during the compositor's uninitialization.
+     *
+     * @warning After calling this method, the LGlobal instance must no longer be used as it is going to be destroyed.
+     *
+     * @param global Pointer to the LGlobal instance to remove.
+     */
+    void removeGlobal(LGlobal *global);
+
+    /**
      * @brief Wayland globals initialization.
      *
-     * Override this method if you want to remove or add custom Wayland globals when initializing the compositor.
+     * Override this method if you want to remove or add custom Wayland globals.
+     *
+     * @see createGlobal()
+     * @see removeGlobal()
      *
      * @return `true` on success, `false` on failure (prevents the compositor from starting).
      *
@@ -813,6 +851,9 @@ public:
     std::thread::id mainThreadId() const;
 
     LPRIVATE_IMP_UNIQUE(LCompositor)
+
+    LGlobal *globalCreate(const wl_interface *interface, Int32 version, void *data, wl_global_bind_func_t bind);
+
 };
 
 #endif // LCOMPOSITOR_H

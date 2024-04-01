@@ -1,6 +1,5 @@
 #include <protocols/XdgShell/RXdgToplevel.h>
 #include <protocols/XdgShell/RXdgSurface.h>
-#include <protocols/XdgShell/xdg-shell.h>
 #include <protocols/Wayland/GOutput.h>
 #include <private/LToplevelRolePrivate.h>
 #include <private/LSurfacePrivate.h>

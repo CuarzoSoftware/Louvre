@@ -1,3 +1,4 @@
+#include <protocols/Viewporter/viewporter.h>
 #include <protocols/Viewporter/GViewporter.h>
 #include <protocols/Viewporter/RViewport.h>
 #include <protocols/Wayland/RSurface.h>

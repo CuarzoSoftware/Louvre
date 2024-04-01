@@ -1,3 +1,4 @@
+#include <protocols/PresentationTime/presentation-time.h>
 #include <protocols/PresentationTime/RPresentationFeedback.h>
 #include <protocols/PresentationTime/GPresentation.h>
 #include <protocols/Wayland/GOutput.h>

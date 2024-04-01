@@ -1,3 +1,4 @@
+#include <protocols/XdgShell/xdg-shell.h>
 #include <protocols/XdgShell/RXdgPositioner.h>
 #include <protocols/XdgShell/GXdgWmBase.h>
 #include <private/LPositionerPrivate.h>

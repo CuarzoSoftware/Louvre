@@ -1,3 +1,4 @@
+#include <protocols/SessionLock/ext-session-lock-v1.h>
 #include <protocols/SessionLock/GSessionLockManager.h>
 #include <protocols/SessionLock/RSessionLock.h>
 #include <private/LClientPrivate.h>
@@ -11,11 +12,26 @@ static const struct ext_session_lock_manager_v1_interface imp
     .lock = &GSessionLockManager::lock
 };
 
+void GSessionLockManager::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GSessionLockManager(client, version, id);
+}
+
+Int32 GSessionLockManager::maxVersion() noexcept
+{
+    return LOUVRE_SESSION_LOCK_MANAGER_VERSION;
+}
+
+const wl_interface *GSessionLockManager::interface() noexcept
+{
+    return &ext_session_lock_manager_v1_interface;
+}
+
 GSessionLockManager::GSessionLockManager(wl_client *client, Int32 version, UInt32 id) noexcept :
     LResource
     (
         client,
-        &ext_session_lock_manager_v1_interface,
+        interface(),
         version,
         id,
         &imp
@@ -30,11 +46,6 @@ GSessionLockManager::~GSessionLockManager() noexcept
 }
 
 /******************** REQUESTS ********************/
-
-void GSessionLockManager::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
-{
-    new GSessionLockManager(client, version, id);
-}
 
 void GSessionLockManager::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {

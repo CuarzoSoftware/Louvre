@@ -12,6 +12,21 @@ static const struct wl_subcompositor_interface imp
     .get_subsurface = &GSubcompositor::get_subsurface
 };
 
+void GSubcompositor::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GSubcompositor(client, version, id);
+}
+
+Int32 GSubcompositor::maxVersion() noexcept
+{
+    return LOUVRE_WL_SUBCOMPOSITOR_VERSION;
+}
+
+const wl_interface *GSubcompositor::interface() noexcept
+{
+    return &wl_subcompositor_interface;
+}
+
 GSubcompositor::GSubcompositor
     (
         wl_client *client,
@@ -35,11 +50,6 @@ GSubcompositor::~GSubcompositor() noexcept
 }
 
 /******************** REQUESTS ********************/
-
-void GSubcompositor::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
-{
-    new GSubcompositor(client, version, id);
-}
 
 void GSubcompositor::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {

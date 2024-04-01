@@ -1,5 +1,5 @@
-#include <protocols/RelativePointer/RRelativePointer.h>
 #include <protocols/RelativePointer/relative-pointer-unstable-v1.h>
+#include <protocols/RelativePointer/RRelativePointer.h>
 #include <protocols/Wayland/RPointer.h>
 #include <LPointerMoveEvent.h>
 #include <LUtils.h>

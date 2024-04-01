@@ -16,6 +16,7 @@
 #include <LKeyboard.h>
 #include <LDND.h>
 #include <LView.h>
+#include <LGlobal.h>
 #include <LLog.h>
 #include <LTime.h>
 #include <LTimer.h>
@@ -54,6 +55,14 @@ LSessionLockManager *Louvre::sessionLockManager() noexcept
     return s_compositor->imp()->sessionLockManager;
 }
 
+void LCompositor::removeGlobal(LGlobal *global)
+{
+    if (global->m_removed)
+        return;
+
+    global->m_removed = true;
+    wl_global_remove(global->m_global);
+}
 
 LCompositor::LCompositor() : LPRIVATE_INIT_UNIQUE(LCompositor)
 {
@@ -486,7 +495,9 @@ void LCompositor::removeOutput(LOutput *output)
                 }
             }
 
-            imp()->removeGlobal(output->imp()->global);
+            if (output->imp()->global.get())
+                removeGlobal(output->imp()->global.get());
+
             LVectorRemoveOneUnordered(cursor()->imp()->intersectedOutputs, output);
 
             if (cursor()->imp()->output == output)
@@ -540,4 +551,10 @@ LClient *LCompositor::getClientFromNativeResource(wl_client *client)
 std::thread::id LCompositor::mainThreadId() const
 {
     return imp()->threadId;
+}
+
+LGlobal *LCompositor::globalCreate(const wl_interface *interface, Int32 version, void *data, wl_global_bind_func_t bind)
+{
+    imp()->globals.emplace_back(new LGlobal(wl_global_create(display(), interface, version, data, bind)));
+    return imp()->globals.back();
 }

@@ -13,6 +13,7 @@
 #include <LKeyboard.h>
 #include <LPointer.h>
 #include <LTouch.h>
+#include <LGlobal.h>
 #include <LTime.h>
 #include <LTimer.h>
 #include <LLog.h>
@@ -23,28 +24,22 @@
 
 void LCompositor::LCompositorPrivate::processRemovedGlobals()
 {
-    for (std::size_t i = 0; i < removedGlobals.size();)
+    for (auto it = globals.begin(); it != globals.end();)
     {
-        RemovedGlobal &rg { removedGlobals[i] };
+        if ((*it)->m_removed)
+        {
+            if ((*it)->m_destroyRoundtrips == 3)
+            {
+                delete *it;
+                it = globals.erase(it);
+                continue;
+            }
+            else
+                (*it)->m_destroyRoundtrips++;
+        }
 
-        if (rg.iters >= LOUVRE_GLOBAL_ITERS_BEFORE_DESTROY)
-        {
-            wl_global_destroy(rg.global);
-            removedGlobals[i] = std::move(removedGlobals.back());
-            removedGlobals.pop_back();
-        }
-        else
-        {
-            rg.iters++;
-            ++i;
-        }
+        it++;
     }
-}
-
-void LCompositor::LCompositorPrivate::removeGlobal(wl_global *global)
-{
-    wl_global_remove(global);
-    removedGlobals.emplace_back(global, 0);
 }
 
 static wl_iterator_result resourceDestroyIterator(wl_resource *resource, void *data)
@@ -145,6 +140,7 @@ bool LCompositor::LCompositorPrivate::initWayland()
         return false;
     }
 
+    wl_display_init_shm(display);
     eventLoop = wl_display_get_event_loop(display);
 
     compositor()->imp()->events[2].events = EPOLLIN | EPOLLOUT;
@@ -169,6 +165,11 @@ void LCompositor::LCompositorPrivate::unitWayland()
 {
     if (display)
     {
+        while (!globals.empty())
+        {
+            delete globals.back();
+            globals.pop_back();
+        }
         wl_display_destroy(display);
         display = nullptr;
     }

@@ -1,3 +1,4 @@
+#include <protocols/GammaControl/wlr-gamma-control-unstable-v1.h>
 #include <protocols/GammaControl/GGammaControlManager.h>
 #include <protocols/GammaControl/RGammaControl.h>
 #include <private/LClientPrivate.h>
@@ -11,6 +12,21 @@ static const struct zwlr_gamma_control_manager_v1_interface imp
     .destroy = &GGammaControlManager::destroy
 };
 
+void GGammaControlManager::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GGammaControlManager(client, version, id);
+}
+
+Int32 GGammaControlManager::maxVersion() noexcept
+{
+    return LOUVRE_GAMMA_CONTROL_MANAGER_VERSION;
+}
+
+const wl_interface *GGammaControlManager::interface() noexcept
+{
+    return &zwlr_gamma_control_manager_v1_interface;
+}
+
 GGammaControlManager::GGammaControlManager(
     wl_client *client,
     Int32 version,
@@ -19,7 +35,7 @@ GGammaControlManager::GGammaControlManager(
     :LResource
     (
         client,
-        &zwlr_gamma_control_manager_v1_interface,
+        interface(),
         version,
         id,
         &imp
@@ -31,11 +47,6 @@ GGammaControlManager::GGammaControlManager(
 GGammaControlManager::~GGammaControlManager() noexcept
 {
     LVectorRemoveOneUnordered(client()->imp()->gammaControlManagerGlobals, this);
-}
-
-void GGammaControlManager::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
-{
-    new GGammaControlManager(client, version, id);
 }
 
 void GGammaControlManager::get_gamma_control(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *output) noexcept

@@ -3,6 +3,12 @@
 
 #include <LObject.h>
 
+#define LGLOBAL_INTERFACE \
+    friend class Louvre::LCompositor;\
+    static void bind(wl_client *client, void *data, UInt32 version, UInt32 id) noexcept;\
+    static Int32 maxVersion() noexcept;\
+    static const wl_interface *interface() noexcept;\
+
 /**
  * @brief Wrapper for native **wl_resource** structs
  *

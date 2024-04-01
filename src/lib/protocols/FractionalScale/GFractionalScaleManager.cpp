@@ -1,3 +1,4 @@
+#include <protocols/FractionalScale/fractional-scale-v1.h>
 #include <protocols/FractionalScale/GFractionalScaleManager.h>
 #include <protocols/FractionalScale/RFractionalScale.h>
 #include <protocols/Wayland/RSurface.h>
@@ -12,6 +13,21 @@ static const struct wp_fractional_scale_manager_v1_interface imp
     .get_fractional_scale = &GFractionalScaleManager::get_fractional_scale
 };
 
+void GFractionalScaleManager::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GFractionalScaleManager(client, version, id);
+}
+
+Int32 GFractionalScaleManager::maxVersion() noexcept
+{
+    return LOUVRE_FRACTIONAL_SCALE_MANAGER_VERSION;
+}
+
+const wl_interface *GFractionalScaleManager::interface() noexcept
+{
+    return &wp_fractional_scale_manager_v1_interface;
+}
+
 GFractionalScaleManager::GFractionalScaleManager
     (
         wl_client *client,
@@ -21,7 +37,7 @@ GFractionalScaleManager::GFractionalScaleManager
     :LResource
     (
         client,
-        &wp_fractional_scale_manager_v1_interface,
+        interface(),
         version,
         id,
         &imp
@@ -36,11 +52,6 @@ GFractionalScaleManager::~GFractionalScaleManager() noexcept
 }
 
 /******************** REQUESTS ********************/
-
-void GFractionalScaleManager::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
-{
-    new GFractionalScaleManager(client, version, id);
-}
 
 void GFractionalScaleManager::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {

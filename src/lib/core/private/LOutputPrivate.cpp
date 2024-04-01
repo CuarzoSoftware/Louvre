@@ -8,7 +8,7 @@
 #include <LSessionLockRole.h>
 #include <LSeat.h>
 #include <LClient.h>
-
+#include <LGlobal.h>
 #include <LTime.h>
 #include <iostream>
 
@@ -34,11 +34,7 @@ void LOutput::LOutputPrivate::backendInitializeGL()
     painter->imp()->output = output;
     painter->bindFramebuffer(output->framebuffer());
 
-    output->imp()->global = wl_global_create(compositor()->display(),
-                                             &wl_output_interface,
-                                             LOUVRE_WL_OUTPUT_VERSION,
-                                             output,
-                                             &Protocols::Wayland::GOutput::bind);
+    output->imp()->global.reset(compositor()->createGlobal<Protocols::Wayland::GOutput>(output));
 
     output->setScale(output->imp()->fractionalScale);
     lastPos = rect.pos();

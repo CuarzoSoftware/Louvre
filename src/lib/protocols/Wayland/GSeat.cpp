@@ -19,6 +19,21 @@ static const struct wl_seat_interface imp
 #endif
 };
 
+void GSeat::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GSeat(client, version, id);
+}
+
+Int32 GSeat::maxVersion() noexcept
+{
+    return LOUVRE_WL_SEAT_VERSION;
+}
+
+const wl_interface *GSeat::interface() noexcept
+{
+    return &wl_seat_interface;
+}
+
 GSeat::GSeat(
     wl_client *client,
     Int32 version,
@@ -26,7 +41,7 @@ GSeat::GSeat(
     :LResource
     (
         client,
-        &wl_seat_interface,
+        interface(),
         version,
         id,
         &imp
@@ -43,11 +58,6 @@ GSeat::~GSeat() noexcept
 }
 
 /******************** REQUESTS ********************/
-
-void GSeat::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
-{
-    new GSeat(client, version, id);
-}
 
 void GSeat::get_pointer(wl_client */*client*/, wl_resource *resource, UInt32 id) noexcept
 {

@@ -119,6 +119,9 @@ bool LScene::LScenePrivate::handlePointerMove(LView *view)
 
     if (!state.check(LSS::PointerIsBlocked) && pointIsOverView(view, cursor()->pos(), LSeat::Pointer))
     {
+        if (view->blockPointerEnabled())
+            state.add(LSS::PointerIsBlocked);
+
         if (!view->m_state.check(LVS::PointerMoveDone))
         {
             view->m_state.add(LVS::PointerMoveDone);
@@ -144,56 +147,59 @@ bool LScene::LScenePrivate::handlePointerMove(LView *view)
                     goto listChangedErr;
             }
         }
-
-        if (view->blockPointerEnabled())
-            state.add(LSS::PointerIsBlocked);
     }
-    else
+    else if (!view->m_state.check(LVS::PointerMoveDone))
     {
-        if (!view->m_state.check(LVS::PointerMoveDone))
+        view->m_state.add(LVS::PointerMoveDone);
+
+        if (view->m_state.check(LVS::PointerIsOver))
         {
-            view->m_state.add(LVS::PointerMoveDone);
+            view->m_state.remove(LVS::PointerIsOver);
 
-            if (view->m_state.check(LVS::PointerIsOver))
+            if (view->m_state.check(LVS::PendingSwipeEnd))
             {
-                view->m_state.remove(LVS::PointerIsOver);
-
-                if (view->m_state.check(LVS::PendingSwipeEnd))
-                {
-                    view->m_state.remove(LVS::PendingSwipeEnd);
-                    pointerSwipeEndEvent.setCancelled(true);
-                    pointerSwipeEndEvent.setMs(currentPointerMoveEvent.ms());
-                    pointerSwipeEndEvent.setUs(currentPointerMoveEvent.us());
-                    pointerSwipeEndEvent.setSerial(LTime::nextSerial());
-                    view->pointerSwipeEndEvent(pointerSwipeEndEvent);
-                }
-
-                if (view->m_state.check(LVS::PendingPinchEnd))
-                {
-                    view->m_state.remove(LVS::PendingPinchEnd);
-                    pointerPinchEndEvent.setCancelled(true);
-                    pointerPinchEndEvent.setMs(currentPointerMoveEvent.ms());
-                    pointerPinchEndEvent.setUs(currentPointerMoveEvent.us());
-                    pointerPinchEndEvent.setSerial(LTime::nextSerial());
-                    view->pointerPinchEndEvent(pointerPinchEndEvent);
-                }
-
-                if (view->m_state.check(LVS::PendingHoldEnd))
-                {
-                    view->m_state.remove(LVS::PendingHoldEnd);
-                    pointerHoldEndEvent.setCancelled(true);
-                    pointerHoldEndEvent.setMs(currentPointerMoveEvent.ms());
-                    pointerHoldEndEvent.setUs(currentPointerMoveEvent.us());
-                    pointerHoldEndEvent.setSerial(LTime::nextSerial());
-                    view->pointerHoldEndEvent(pointerHoldEndEvent);
-                }
-
-                LVectorRemoveOne(pointerFocus, view);
-                view->pointerLeaveEvent(currentPointerLeaveEvent);
+                view->m_state.remove(LVS::PendingSwipeEnd);
+                pointerSwipeEndEvent.setCancelled(true);
+                pointerSwipeEndEvent.setMs(currentPointerMoveEvent.ms());
+                pointerSwipeEndEvent.setUs(currentPointerMoveEvent.us());
+                pointerSwipeEndEvent.setSerial(LTime::nextSerial());
+                view->pointerSwipeEndEvent(pointerSwipeEndEvent);
 
                 if (state.check(LSS::ChildrenListChanged))
                     goto listChangedErr;
             }
+
+            if (view->m_state.check(LVS::PendingPinchEnd))
+            {
+                view->m_state.remove(LVS::PendingPinchEnd);
+                pointerPinchEndEvent.setCancelled(true);
+                pointerPinchEndEvent.setMs(currentPointerMoveEvent.ms());
+                pointerPinchEndEvent.setUs(currentPointerMoveEvent.us());
+                pointerPinchEndEvent.setSerial(LTime::nextSerial());
+                view->pointerPinchEndEvent(pointerPinchEndEvent);
+
+                if (state.check(LSS::ChildrenListChanged))
+                    goto listChangedErr;
+            }
+
+            if (view->m_state.check(LVS::PendingHoldEnd))
+            {
+                view->m_state.remove(LVS::PendingHoldEnd);
+                pointerHoldEndEvent.setCancelled(true);
+                pointerHoldEndEvent.setMs(currentPointerMoveEvent.ms());
+                pointerHoldEndEvent.setUs(currentPointerMoveEvent.us());
+                pointerHoldEndEvent.setSerial(LTime::nextSerial());
+                view->pointerHoldEndEvent(pointerHoldEndEvent);
+
+                if (state.check(LSS::ChildrenListChanged))
+                    goto listChangedErr;
+            }
+
+            LVectorRemoveOne(pointerFocus, view);
+            view->pointerLeaveEvent(currentPointerLeaveEvent);
+
+            if (state.check(LSS::ChildrenListChanged))
+                goto listChangedErr;
         }
     }
 

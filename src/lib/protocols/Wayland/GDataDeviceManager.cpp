@@ -20,6 +20,40 @@ void GDataDeviceManager::bind(wl_client *client, void */*data*/, UInt32 version,
     new GDataDeviceManager(client, version, id);
 }
 
+Int32 GDataDeviceManager::maxVersion() noexcept
+{
+    return LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION;
+}
+
+const wl_interface *GDataDeviceManager::interface() noexcept
+{
+    return &wl_data_device_manager_interface;
+}
+
+GDataDeviceManager::GDataDeviceManager
+    (
+        wl_client *client,
+        Int32 version,
+        UInt32 id) noexcept
+    :LResource
+    (
+        client,
+        interface(),
+        version,
+        id,
+        &imp
+        )
+{
+    this->client()->imp()->dataDeviceManagerGlobals.push_back(this);
+}
+
+GDataDeviceManager::~GDataDeviceManager() noexcept
+{
+    LVectorRemoveOneUnordered(client()->imp()->dataDeviceManagerGlobals, this);
+}
+
+/******************** REQUESTS ********************/
+
 void GDataDeviceManager::create_data_source(wl_client */*client*/, wl_resource *resource, UInt32 id) noexcept
 {
     new RDataSource(static_cast<GDataDeviceManager*>(wl_resource_get_user_data(resource)), id);
@@ -36,26 +70,4 @@ void GDataDeviceManager::get_data_device(wl_client */*client*/, wl_resource *res
     }
 
     new RDataDevice(static_cast<GDataDeviceManager*>(wl_resource_get_user_data(resource)), seatRes, id);
-}
-
-GDataDeviceManager::GDataDeviceManager
-(
-    wl_client *client,
-    Int32 version,
-    UInt32 id) noexcept
-    :LResource
-    (
-        client,
-        &wl_data_device_manager_interface,
-        version,
-        id,
-        &imp
-    )
-{
-    this->client()->imp()->dataDeviceManagerGlobals.push_back(this);
-}
-
-GDataDeviceManager::~GDataDeviceManager() noexcept
-{
-    LVectorRemoveOneUnordered(client()->imp()->dataDeviceManagerGlobals, this);
 }

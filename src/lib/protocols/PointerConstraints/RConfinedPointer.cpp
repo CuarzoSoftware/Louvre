@@ -1,3 +1,4 @@
+#include <protocols/PointerConstraints/pointer-constraints-unstable-v1.h>
 #include <protocols/PointerConstraints/GPointerConstraints.h>
 #include <protocols/PointerConstraints/RConfinedPointer.h>
 #include <protocols/Wayland/RPointer.h>

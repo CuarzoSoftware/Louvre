@@ -1,3 +1,4 @@
+#include <protocols/XdgShell/xdg-shell.h>
 #include <protocols/XdgShell/RXdgPositioner.h>
 #include <protocols/XdgShell/GXdgWmBase.h>
 #include <protocols/XdgShell/RXdgSurface.h>
@@ -15,6 +16,21 @@ static const struct xdg_wm_base_interface imp
     .pong = &GXdgWmBase::pong
 };
 
+void GXdgWmBase::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GXdgWmBase(client, version, id);
+}
+
+Int32 GXdgWmBase::maxVersion() noexcept
+{
+    return LOUVRE_XDG_WM_BASE_VERSION;
+}
+
+const wl_interface *GXdgWmBase::interface() noexcept
+{
+    return &xdg_wm_base_interface;
+}
+
 XdgShell::GXdgWmBase::GXdgWmBase
 (
     wl_client *client,
@@ -24,7 +40,7 @@ XdgShell::GXdgWmBase::GXdgWmBase
     :LResource
     (
         client,
-        &xdg_wm_base_interface,
+        interface(),
         version,
         id,
         &imp
@@ -39,11 +55,6 @@ GXdgWmBase::~GXdgWmBase() noexcept
 }
 
 /******************** REQUESTS ********************/
-
-void GXdgWmBase::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
-{
-    new GXdgWmBase(client, version, id);
-}
 
 void GXdgWmBase::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {

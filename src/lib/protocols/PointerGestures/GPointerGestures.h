@@ -2,15 +2,10 @@
 #define GPOINTERGESTURES_H
 
 #include <LResource.h>
-#include <protocols/PointerGestures/pointer-gestures-unstable-v1.h>
 
 class Louvre::Protocols::PointerGestures::GPointerGestures final : public LResource
 {
 public:
-
-    /******************** REQUESTS ********************/
-
-    static void bind(wl_client *client, void *data, UInt32 version, UInt32 id) noexcept;
     static void get_swipe_gesture(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *pointer) noexcept;
     static void get_pinch_gesture(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *pointer) noexcept;
 
@@ -23,6 +18,7 @@ public:
 #endif
 
 private:
+    LGLOBAL_INTERFACE
     GPointerGestures(wl_client *client, Int32 version, UInt32 id) noexcept;
     ~GPointerGestures() noexcept;
 };

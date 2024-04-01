@@ -1,3 +1,4 @@
+#include <protocols/TearingControl/tearing-control-v1.h>
 #include <protocols/TearingControl/GTearingControlManager.h>
 #include <protocols/TearingControl/RTearingControl.h>
 #include <protocols/Wayland/RSurface.h>
@@ -12,6 +13,21 @@ static const struct wp_tearing_control_manager_v1_interface imp
     .get_tearing_control = &GTearingControlManager::get_tearing_control,
 };
 
+void GTearingControlManager::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GTearingControlManager(client, version, id);
+}
+
+Int32 GTearingControlManager::maxVersion() noexcept
+{
+    return LOUVRE_TEARING_CONTROL_MANAGER_VERSION;
+}
+
+const wl_interface *GTearingControlManager::interface() noexcept
+{
+    return &wp_tearing_control_manager_v1_interface;
+}
+
 GTearingControlManager::GTearingControlManager
     (
         wl_client *client,
@@ -21,7 +37,7 @@ GTearingControlManager::GTearingControlManager
     :LResource
     (
         client,
-        &wp_tearing_control_manager_v1_interface,
+        interface(),
         version,
         id,
         &imp
@@ -36,11 +52,6 @@ GTearingControlManager::~GTearingControlManager() noexcept
 }
 
 /******************** REQUESTS ********************/
-
-void GTearingControlManager::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
-{
-    new GTearingControlManager(client, version, id);
-}
 
 void GTearingControlManager::get_tearing_control(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *surface) noexcept
 {

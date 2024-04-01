@@ -1,3 +1,4 @@
+#include <protocols/PointerGestures/pointer-gestures-unstable-v1.h>
 #include <protocols/PointerGestures/GPointerGestures.h>
 #include <protocols/PointerGestures/RGestureSwipe.h>
 #include <protocols/Wayland/RSurface.h>

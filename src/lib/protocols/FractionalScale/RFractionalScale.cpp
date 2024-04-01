@@ -1,5 +1,5 @@
-#include <protocols/FractionalScale/RFractionalScale.h>
 #include <protocols/FractionalScale/fractional-scale-v1.h>
+#include <protocols/FractionalScale/RFractionalScale.h>
 #include <protocols/Wayland/RSurface.h>
 
 using namespace Louvre::Protocols::FractionalScale;

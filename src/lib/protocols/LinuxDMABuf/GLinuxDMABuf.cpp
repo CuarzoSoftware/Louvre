@@ -1,3 +1,4 @@
+#include <protocols/LinuxDMABuf/linux-dmabuf-unstable-v1.h>
 #include <protocols/LinuxDMABuf/GLinuxDMABuf.h>
 #include <protocols/LinuxDMABuf/RLinuxBufferParams.h>
 #include <private/LCompositorPrivate.h>
@@ -19,6 +20,21 @@ static const struct zwp_linux_dmabuf_v1_interface imp
 #endif
 };
 
+void GLinuxDMABuf::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GLinuxDMABuf(client, version, id);
+}
+
+Int32 GLinuxDMABuf::maxVersion() noexcept
+{
+    return LOUVRE_LINUX_DMA_BUF_VERSION;
+}
+
+const wl_interface *GLinuxDMABuf::interface() noexcept
+{
+    return &zwp_linux_dmabuf_v1_interface;
+}
+
 GLinuxDMABuf::GLinuxDMABuf(
     wl_client *client,
     Int32 version,
@@ -27,7 +43,7 @@ GLinuxDMABuf::GLinuxDMABuf(
     :LResource
     (
         client,
-        &zwp_linux_dmabuf_v1_interface,
+        interface(),
         version,
         id,
         &imp
@@ -63,11 +79,6 @@ GLinuxDMABuf::~GLinuxDMABuf() noexcept
 }
 
 /******************** REQUESTS ********************/
-
-void GLinuxDMABuf::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
-{
-    new GLinuxDMABuf(client, version, id);
-}
 
 void GLinuxDMABuf::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {

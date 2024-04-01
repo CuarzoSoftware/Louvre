@@ -1,3 +1,4 @@
+#include <protocols/XdgDecoration/xdg-decoration-unstable-v1.h>
 #include <protocols/XdgDecoration/GXdgDecorationManager.h>
 #include <protocols/XdgShell/RXdgToplevel.h>
 #include <private/LToplevelRolePrivate.h>
@@ -13,6 +14,21 @@ static const struct zxdg_decoration_manager_v1_interface imp
     .get_toplevel_decoration = &GXdgDecorationManager::get_toplevel_decoration
 };
 
+void GXdgDecorationManager::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GXdgDecorationManager(client, version, id);
+}
+
+Int32 GXdgDecorationManager::maxVersion() noexcept
+{
+    return LOUVRE_XDG_DECORATION_MANAGER_VERSION;
+}
+
+const wl_interface *GXdgDecorationManager::interface() noexcept
+{
+    return &zxdg_decoration_manager_v1_interface;
+}
+
 GXdgDecorationManager::GXdgDecorationManager(
     wl_client *client,
     Int32 version,
@@ -20,7 +36,7 @@ GXdgDecorationManager::GXdgDecorationManager(
     :LResource
     (
         client,
-        &zxdg_decoration_manager_v1_interface,
+        interface(),
         version,
         id,
         &imp
@@ -32,11 +48,6 @@ GXdgDecorationManager::GXdgDecorationManager(
 GXdgDecorationManager::~GXdgDecorationManager() noexcept
 {
     LVectorRemoveOneUnordered(client()->imp()->xdgDecorationManagerGlobals, this);
-}
-
-void GXdgDecorationManager::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
-{
-    new GXdgDecorationManager(client, version, id);
 }
 
 void GXdgDecorationManager::destroy(wl_client */*client*/, wl_resource *resource) noexcept

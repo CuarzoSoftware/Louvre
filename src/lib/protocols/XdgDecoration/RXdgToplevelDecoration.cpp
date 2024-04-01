@@ -1,5 +1,5 @@
-#include <protocols/XdgDecoration/RXdgToplevelDecoration.h>
 #include <protocols/XdgDecoration/xdg-decoration-unstable-v1.h>
+#include <protocols/XdgDecoration/RXdgToplevelDecoration.h>
 #include <protocols/XdgDecoration/GXdgDecorationManager.h>
 #include <private/LToplevelRolePrivate.h>
 

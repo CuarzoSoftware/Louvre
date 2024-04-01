@@ -28,7 +28,7 @@ Dock::Dock(Output *output) :
     enablePointerEvents(true);
 
     // Allow views behind to get pointer events
-    enableBlockPointer(false);
+    enableBlockPointer(true);
 
     separator.setSize(1, DOCK_ITEM_HEIGHT);
 

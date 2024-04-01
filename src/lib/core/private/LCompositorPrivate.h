@@ -26,17 +26,8 @@ LPRIVATE_CLASS(LCompositor)
     std::string defaultGraphicBackendName;
     std::string defaultInputBackendName;
 
-    /* We do not destroy globals immediatly as suggested here:
-     * https://wayland.freedesktop.org/docs/html/apc.html#Server-wayland-server_8c_1a7f93649ba31c12220ee77982a37aa270
-     * we wait some loop iterations (LOUVRE_GLOBAL_ITERS_BEFORE_DESTROY) before calling wl_global_destroy */
-    struct RemovedGlobal
-    {
-        wl_global *global;
-        UChar8 iters;
-    };
-    std::vector<RemovedGlobal>removedGlobals;
+    std::vector<LGlobal*> globals;
     void processRemovedGlobals();
-    void removeGlobal(wl_global *global);
     void unitCompositor();
 
     bool initWayland();

@@ -163,6 +163,11 @@ void LScene::handlePointerMoveEvent(const LPointerMoveEvent &event, EventOptions
                 cursor()->setPos(pos + closestPoint);
             }
         }
+        else
+        {
+            surface.reset();
+            firstSurfaceView.reset();
+        }
     }
 
     cursor()->repaintOutputs(true);

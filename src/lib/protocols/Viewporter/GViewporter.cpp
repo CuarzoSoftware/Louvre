@@ -1,3 +1,4 @@
+#include <protocols/Viewporter/viewporter.h>
 #include <protocols/Viewporter/GViewporter.h>
 #include <protocols/Viewporter/RViewport.h>
 #include <protocols/Wayland/RSurface.h>
@@ -12,6 +13,21 @@ static const struct wp_viewporter_interface imp
     .get_viewport = &GViewporter::get_viewport
 };
 
+void GViewporter::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GViewporter(client, version, id);
+}
+
+Int32 GViewporter::maxVersion() noexcept
+{
+    return LOUVRE_VIEWPORTER_VERSION;
+}
+
+const wl_interface *GViewporter::interface() noexcept
+{
+    return &wp_viewporter_interface;
+}
+
 GViewporter::GViewporter
     (
         wl_client *client,
@@ -21,7 +37,7 @@ GViewporter::GViewporter
     :LResource
     (
         client,
-        &wp_viewporter_interface,
+        interface(),
         version,
         id,
         &imp
@@ -36,11 +52,6 @@ GViewporter::~GViewporter() noexcept
 }
 
 /******************** REQUESTS ********************/
-
-void GViewporter::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
-{
-    new GViewporter(client, version, id);
-}
 
 void GViewporter::get_viewport(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *surface) noexcept
 {

@@ -1,3 +1,4 @@
+#include <protocols/PointerGestures/pointer-gestures-unstable-v1.h>
 #include <protocols/PointerGestures/GPointerGestures.h>
 #include <protocols/PointerGestures/RGestureSwipe.h>
 #include <protocols/PointerGestures/RGesturePinch.h>
@@ -21,6 +22,21 @@ static const struct zwp_pointer_gestures_v1_interface imp
 #endif
 };
 
+void GPointerGestures::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GPointerGestures(client, version, id);
+}
+
+Int32 GPointerGestures::maxVersion() noexcept
+{
+    return LOUVRE_POINTER_GESTURES_VERSION;
+}
+
+const wl_interface *GPointerGestures::interface() noexcept
+{
+    return &zwp_pointer_gestures_v1_interface;
+}
+
 GPointerGestures::GPointerGestures
     (
         wl_client *client,
@@ -30,7 +46,7 @@ GPointerGestures::GPointerGestures
     :LResource
     (
         client,
-        &zwp_pointer_gestures_v1_interface,
+        interface(),
         version,
         id,
         &imp
@@ -45,11 +61,6 @@ GPointerGestures::~GPointerGestures() noexcept
 }
 
 /******************** REQUESTS ********************/
-
-void GPointerGestures::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
-{
-    new GPointerGestures(client, version, id);
-}
 
 void GPointerGestures::get_swipe_gesture(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *pointer) noexcept
 {

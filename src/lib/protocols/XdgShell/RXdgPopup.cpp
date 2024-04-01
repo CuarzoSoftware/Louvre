@@ -1,7 +1,7 @@
+#include <protocols/XdgShell/xdg-shell.h>
 #include <protocols/XdgShell/RXdgPopup.h>
 #include <protocols/XdgShell/RXdgSurface.h>
 #include <protocols/XdgShell/RXdgPositioner.h>
-#include <protocols/XdgShell/xdg-shell.h>
 #include <private/LPointerPrivate.h>
 #include <private/LPopupRolePrivate.h>
 #include <private/LSurfacePrivate.h>

@@ -1,3 +1,4 @@
+#include <protocols/LinuxDMABuf/linux-dmabuf-unstable-v1.h>
 #include <protocols/LinuxDMABuf/RLinuxBufferParams.h>
 #include <protocols/LinuxDMABuf/GLinuxDMABuf.h>
 #include <protocols/LinuxDMABuf/LDMABuffer.h>

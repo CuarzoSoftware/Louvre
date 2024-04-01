@@ -14,8 +14,23 @@ static const struct wl_output_interface imp
 #endif
 };
 
+void GOutput::bind(wl_client *client, void *output, UInt32 version, UInt32 id) noexcept
+{
+    new GOutput(static_cast<LOutput*>(output), client, version, id);
+}
+
+Int32 GOutput::maxVersion() noexcept
+{
+    return LOUVRE_WL_OUTPUT_VERSION;
+}
+
+const wl_interface *GOutput::interface() noexcept
+{
+    return &wl_output_interface;
+}
+
 GOutput::GOutput(LOutput *output, wl_client *client, Int32 version, UInt32 id ) noexcept :
-    LResource( client, &wl_output_interface, version, id, &imp),
+    LResource(client, interface(), version, id, &imp),
     m_output(output)
 {
     this->client()->imp()->outputGlobals.emplace_back(this);
@@ -29,11 +44,6 @@ GOutput::~GOutput() noexcept
 }
 
 /******************** REQUESTS ********************/
-
-void GOutput::bind(wl_client *client, void *output, UInt32 version, UInt32 id) noexcept
-{
-    new GOutput(static_cast<LOutput*>(output), client, version, id);
-}
 
 #if LOUVRE_WL_OUTPUT_VERSION >= 3
 void GOutput::release(wl_client */*client*/, wl_resource *resource) noexcept

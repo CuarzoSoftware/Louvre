@@ -2,7 +2,6 @@
 #define GLINUXDMABUF_H
 
 #include <LResource.h>
-#include <protocols/LinuxDMABuf/linux-dmabuf-unstable-v1.h>
 
 class Louvre::Protocols::LinuxDMABuf::GLinuxDMABuf final : public LResource
 {
@@ -10,7 +9,6 @@ public:
 
     /******************** REQUESTS ********************/
 
-    static void bind(wl_client *client, void *data, UInt32 version, UInt32 id) noexcept;
     static void destroy(wl_client *client, wl_resource *resource) noexcept;
     static void create_params(wl_client *client, wl_resource *resource, UInt32 id) noexcept;
 
@@ -28,6 +26,7 @@ public:
     bool modifier(UInt32 format, UInt32 mod_hi, UInt32 mod_lo) noexcept;
 
 private:
+    LGLOBAL_INTERFACE
     GLinuxDMABuf(wl_client *client, Int32 version, UInt32 id) noexcept;
     ~GLinuxDMABuf() noexcept;
 };

@@ -1,3 +1,4 @@
+#include <protocols/PointerConstraints/pointer-constraints-unstable-v1.h>
 #include <protocols/PointerConstraints/GPointerConstraints.h>
 #include <protocols/PointerConstraints/RConfinedPointer.h>
 #include <protocols/PointerConstraints/RLockedPointer.h>
@@ -15,6 +16,21 @@ static const struct zwp_pointer_constraints_v1_interface imp
     .confine_pointer = &GPointerConstraints::confine_pointer
 };
 
+void GPointerConstraints::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GPointerConstraints(client, version, id);
+}
+
+Int32 GPointerConstraints::maxVersion() noexcept
+{
+    return LOUVRE_POINTER_CONSTRAINTS_VERSION;
+}
+
+const wl_interface *GPointerConstraints::interface() noexcept
+{
+    return &zwp_pointer_constraints_v1_interface;
+}
+
 GPointerConstraints::GPointerConstraints(
     wl_client *client,
     Int32 version,
@@ -23,7 +39,7 @@ GPointerConstraints::GPointerConstraints(
     :LResource
     (
         client,
-        &zwp_pointer_constraints_v1_interface,
+        interface(),
         version,
         id,
         &imp
@@ -38,11 +54,6 @@ GPointerConstraints::~GPointerConstraints() noexcept
 }
 
 /******************** REQUESTS ********************/
-
-void GPointerConstraints::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
-{
-    new GPointerConstraints(client, version, id);
-}
 
 void GPointerConstraints::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 {

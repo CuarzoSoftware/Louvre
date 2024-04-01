@@ -13,7 +13,7 @@ RCallback::RCallback
     (
         client,
         &wl_callback_interface,
-        LOUVRE_WL_CALLBACK_VERSION,
+        1,
         id,
         NULL
     ),

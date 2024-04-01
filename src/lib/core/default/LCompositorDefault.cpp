@@ -42,55 +42,53 @@ using namespace Louvre::Protocols;
 //! [createGlobalsRequest]
 bool LCompositor::createGlobalsRequest()
 {
-    wl_global_create(display(), &wl_compositor_interface,
-                     LOUVRE_WL_COMPOSITOR_VERSION, this, &Wayland::GCompositor::bind);
+    // Allow clients to create surfaces and regions
+    createGlobal<Wayland::GCompositor>();
 
-    wl_global_create(display(), &wl_seat_interface,
-                     LOUVRE_WL_SEAT_VERSION, this, &Wayland::GSeat::bind);
+    // Allow clients to receive pointer, keyboard, and touch events
+    createGlobal<Wayland::GSeat>();
 
-    wl_global_create(display(), &wl_subcompositor_interface,
-                     LOUVRE_WL_SUBCOMPOSITOR_VERSION, this, &Wayland::GSubcompositor::bind);
+    // Provides detailed information of pointer movement
+    createGlobal<RelativePointer::GRelativePointerManager>();
 
-    wl_global_create(display(), &wl_data_device_manager_interface,
-                     LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION, this, &Wayland::GDataDeviceManager::bind);
+    // Allow clients to request setting pointer constraints
+    createGlobal<PointerConstraints::GPointerConstraints>();
 
-    wl_global_create(display(), &xdg_wm_base_interface,
-                     LOUVRE_XDG_WM_BASE_VERSION, this, &XdgShell::GXdgWmBase::bind);
+    // Allow clients to receive swipe, pinch, and hold pointer gestures
+    createGlobal<PointerGestures::GPointerGestures>();
 
-    wl_global_create(display(), &zxdg_decoration_manager_v1_interface,
-                     LOUVRE_XDG_DECORATION_MANAGER_VERSION, this, &XdgDecoration::GXdgDecorationManager::bind);
+    // Enable drag & drop and clipboard data sharing between clients
+    createGlobal<Wayland::GDataDeviceManager>();
 
-    wl_global_create(display(), &zwp_linux_dmabuf_v1_interface,
-                     LOUVRE_LINUX_DMA_BUF_VERSION, this, &LinuxDMABuf::GLinuxDMABuf::bind);
+    // Allow clients to create subsurface roles
+    createGlobal<Wayland::GSubcompositor>();
 
-    wl_global_create(display(), &wp_presentation_interface,
-                     LOUVRE_PRESENTATION_VERSION, this, &PresentationTime::GPresentation::bind);
+    // Allow clients to create toplevel and popup roles
+    createGlobal<XdgShell::GXdgWmBase>();
 
-    wl_global_create(display(), &wp_viewporter_interface,
-                     LOUVRE_VIEWPORTER_VERSION, this, &Viewporter::GViewporter::bind);
+    // Allow negotiation of server-side or client-side decorations
+    createGlobal<XdgDecoration::GXdgDecorationManager>();
 
-    wl_global_create(display(), &wp_fractional_scale_manager_v1_interface,
-                     LOUVRE_FRACTIONAL_SCALE_VERSION, this, &FractionalScale::GFractionalScaleManager::bind);
+    // Allow clients to adjust their surfaces buffers to fractional scales
+    createGlobal<FractionalScale::GFractionalScaleManager>();
 
-    wl_global_create(display(), &zwlr_gamma_control_manager_v1_interface,
-                     LOUVRE_GAMMA_CONTROL_MANAGER_VERSION, this, &GammaControl::GGammaControlManager::bind);
+    // Allow clients to request setting the gamma LUT of outputs
+    createGlobal<GammaControl::GGammaControlManager>();
 
-    wl_global_create(display(), &wp_tearing_control_manager_v1_interface,
-                     LOUVRE_TEARING_CONTROL_MANAGER_VERSION, this, &TearingControl::GTearingControlManager::bind);
+    // Allow clients to create DMA buffers
+    createGlobal<LinuxDMABuf::GLinuxDMABuf>();
 
-    wl_global_create(display(), &zwp_relative_pointer_manager_v1_interface,
-                     LOUVRE_RELATIVE_POINTER_MANAGER_VERSION, this, &RelativePointer::GRelativePointerManager::bind);
+    // Provides detailed information of how the surfaces are presented
+    createGlobal<PresentationTime::GPresentation>();
 
-    wl_global_create(display(), &zwp_pointer_gestures_v1_interface,
-                     LOUVRE_POINTER_GESTURES_VERSION, this, &PointerGestures::GPointerGestures::bind);
+    // Allows clients to request locking the user session with arbitrary graphics
+    createGlobal<SessionLock::GSessionLockManager>();
 
-    wl_global_create(display(), &ext_session_lock_manager_v1_interface,
-                     LOUVRE_SESSION_LOCK_MANAGER_VERSION, this, &SessionLock::GSessionLockManager::bind);
+    // Allows clients to notify their preference of vsync for specific surfaces
+    createGlobal<TearingControl::GTearingControlManager>();
 
-    wl_global_create(display(), &zwp_pointer_constraints_v1_interface,
-                     LOUVRE_POINTER_CONSTRAINTS_VERSION, this, &PointerConstraints::GPointerConstraints::bind);
-
-    wl_display_init_shm(display());
+    // Allow clients to clip and scale buffers
+    createGlobal<Viewporter::GViewporter>();
 
     return true;
 }

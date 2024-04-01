@@ -1,3 +1,4 @@
+#include <protocols/RelativePointer/relative-pointer-unstable-v1.h>
 #include <protocols/RelativePointer/GRelativePointerManager.h>
 #include <protocols/RelativePointer/RRelativePointer.h>
 #include <private/LClientPrivate.h>
@@ -11,6 +12,21 @@ static const struct zwp_relative_pointer_manager_v1_interface imp
     .get_relative_pointer = &GRelativePointerManager::get_relative_pointer
 };
 
+void GRelativePointerManager::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
+{
+    new GRelativePointerManager(client, version, id);
+}
+
+Int32 GRelativePointerManager::maxVersion() noexcept
+{
+    return LOUVRE_RELATIVE_POINTER_MANAGER_VERSION;
+}
+
+const wl_interface *GRelativePointerManager::interface() noexcept
+{
+    return &zwp_relative_pointer_manager_v1_interface;
+}
+
 GRelativePointerManager::GRelativePointerManager
     (wl_client *client,
         Int32 version,
@@ -18,7 +34,7 @@ GRelativePointerManager::GRelativePointerManager
     :LResource
     (
         client,
-        &zwp_relative_pointer_manager_v1_interface,
+        interface(),
         version,
         id,
         &imp
@@ -30,11 +46,6 @@ GRelativePointerManager::GRelativePointerManager
 GRelativePointerManager::~GRelativePointerManager() noexcept
 {
     LVectorRemoveOneUnordered(client()->imp()->relativePointerManagerGlobals, this);
-}
-
-void GRelativePointerManager::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
-{
-    new GRelativePointerManager(client, version, id);
 }
 
 void GRelativePointerManager::destroy(wl_client */*client*/, wl_resource *resource) noexcept

@@ -7,10 +7,7 @@
 class Louvre::Protocols::FractionalScale::RFractionalScale final : public LResource
 {
 public:
-    Wayland::RSurface *surfaceRes() const noexcept
-    {
-        return m_surfaceRes.get();
-    }
+    Wayland::RSurface *surfaceRes() const noexcept { return m_surfaceRes.get(); }
 
     /******************** REQUESTS ********************/
 
@@ -22,7 +19,7 @@ public:
     void preferredScale(Float32 scale) noexcept;
 
 private:
-    friend class Louvre::Protocols::FractionalScale::GFractionalScaleManager;
+    friend class GFractionalScaleManager;
     RFractionalScale(Wayland::RSurface *surfaceRes, UInt32 id, Int32 version) noexcept;
     ~RFractionalScale() noexcept = default;
     LWeak<Wayland::RSurface> m_surfaceRes;
