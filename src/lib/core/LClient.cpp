@@ -176,6 +176,11 @@ const std::vector<PointerConstraints::GPointerConstraints *> &LClient::pointerCo
     return imp()->pointerConstraintsGlobals;
 }
 
+const std::vector<XdgOutput::GXdgOutputManager *> &LClient::xdgOutputManagerGlobals() const noexcept
+{
+    return imp()->xdgOutputManagerGlobals;
+}
+
 const LClient::Events &LClient::events() const noexcept
 {
     return imp()->events;

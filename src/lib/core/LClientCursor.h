@@ -8,17 +8,18 @@
 #include <LSurface.h>
 
 /**
- * @brief Parameters used in a set cursor request.
+ * @brief Encapsulates parameters used in a set cursor request.
  *
- * This class encapsulates the parameters requested by the client through LPointer::setCursorRequest().\n
- * Retrieve the last cursor request for a specific client using LClient::lastCursorRequest().\n
- * Clients create an LCursorRole for the compositor to use as the cursor, and this class holds a referende to it and also the pointer enter event that triggered the request,
- * and also a promerty indicating if the lcient intends to hide the cursor or not.\n
- * It gets overridden when the client makes another LPointer::setCursorRequest() or when the associated LCursorRole is destroyed.
+ * The LClientCursor class encapsulates the parameters requested by the client through LPointer::setCursorRequest().\n
+ * You can retrieve the last cursor request for a specific client using LClient::lastCursorRequest().
  *
- * When assigned to LCursor through LCursor::setCursor(), the LCursor texture and hotspot automatically change based on the values
- * of the LCursorRole, excluding the cursor size, which remains user-defined.\n
- * If the LCursorRole surface is unmapped or destroyed after being assigned to an LCursor, the default cursor is restored automatically.
+ * Clients create an LCursorRole for the compositor to use as the cursor. This class holds a reference to it along with the LPointerEnterEvent that triggered the request.\n
+ * Additionally, it includes a property indicating whether the client intends to hide the cursor or not.\n
+ * This information gets overridden when the client makes another LPointer::setCursorRequest() or when the associated LCursorRole is destroyed.
+ *
+ * When assigned to an LCursor through LCursor::setCursor(), the LCursor's texture and hotspot automatically change based on the values
+ * of the associated LCursorRole. However, the cursor size remains user-defined.\n
+ * If the LCursorRole surface is unmapped or destroyed after being assigned to an LCursor, the default cursor is automatically restored.
  */
 class Louvre::LClientCursor final : public LObject
 {

@@ -9,6 +9,7 @@ class Louvre::Protocols::Wayland::GOutput final : public LResource
 public:
 
     LOutput *output() const noexcept { return m_output.get(); }
+    const std::vector<XdgOutput::RXdgOutput*> &xdgOutputRes() const noexcept { return m_xdgOutputRes; }
 
     /******************** REQUESTS ********************/
 
@@ -34,11 +35,13 @@ public:
     bool description(const char *description) noexcept;
 
 private:
+    friend class XdgOutput::RXdgOutput;
     friend class GammaControl::RGammaControl;
     LGLOBAL_INTERFACE
     GOutput(LOutput *output, wl_client *client, Int32 version, UInt32 id) noexcept;
     ~GOutput() noexcept;
     LWeak<LOutput> m_output;
+    std::vector<XdgOutput::RXdgOutput*> m_xdgOutputRes;
     std::vector<GammaControl::RGammaControl*> m_gammaControlRes;
 };
 

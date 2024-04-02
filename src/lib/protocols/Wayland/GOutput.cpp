@@ -1,4 +1,5 @@
 #include <protocols/GammaControl/RGammaControl.h>
+#include <protocols/XdgOutput/RXdgOutput.h>
 #include <protocols/Wayland/GOutput.h>
 #include <private/LClientPrivate.h>
 #include <private/LOutputPrivate.h>
@@ -75,12 +76,29 @@ void GOutput::sendConfiguration() noexcept
         output()->currentMode()->sizeB().h(),
         output()->currentMode()->refreshRate());
 
+    for (auto *xdgOutput : xdgOutputRes())
+    {
+        xdgOutput->logicalPosition(output()->pos());
+        xdgOutput->logicalPosition(output()->size());
+
+        if (xdgOutput->name(output()->name()))
+            xdgOutput->description(output()->model());
+    }
+
     if (scale(output()->imp()->scale))
     {
         if (name(output()->name()))
             description(output()->description());
+
+        for (auto *xdgOutput : xdgOutputRes())
+            if (xdgOutput->version() <= 2)
+                xdgOutput->done();
+
         done();
     }
+    else
+        for (auto *xdgOutput : xdgOutputRes())
+            xdgOutput->done();
 }
 
 void GOutput::geometry(Int32 x, Int32 y, Int32 physicalWidth, Int32 physicalHeight,

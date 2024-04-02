@@ -7,6 +7,7 @@
 #include <protocols/PointerGestures/GPointerGestures.h>
 #include <protocols/SessionLock/GSessionLockManager.h>
 #include <protocols/PresentationTime/GPresentation.h>
+#include <protocols/XdgOutput/GXdgOutputManager.h>
 #include <protocols/Wayland/GDataDeviceManager.h>
 #include <protocols/LinuxDMABuf/GLinuxDMABuf.h>
 #include <protocols/Viewporter/GViewporter.h>
@@ -65,6 +66,9 @@ bool LCompositor::createGlobalsRequest()
 
     // Allow clients to create toplevel and popup roles
     createGlobal<XdgShell::GXdgWmBase>();
+
+    // Provides additional info about outputs
+    createGlobal<XdgOutput::GXdgOutputManager>();
 
     // Allow negotiation of server-side or client-side decorations
     createGlobal<XdgDecoration::GXdgDecorationManager>();

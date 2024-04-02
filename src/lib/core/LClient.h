@@ -275,6 +275,13 @@ public:
     const std::vector<Protocols::PointerConstraints::GPointerConstraints*> &pointerConstraintsGlobals() const noexcept;
 
     /**
+     * Resources created when the client binds to the
+     * [zxdg_output_manager_v1](https://wayland.app/protocols/xdg-output-unstable-v1#zxdg_output_manager_v1) global
+     * of the XDG Output protocol.
+     */
+    const std::vector<Protocols::XdgOutput::GXdgOutputManager*> &xdgOutputManagerGlobals() const noexcept;
+
+    /**
      * @brief Searches for an event that matches the given serial.
      *
      * This method searches for an event with the specified serial in the client events history.
