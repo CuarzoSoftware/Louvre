@@ -181,6 +181,11 @@ const std::vector<XdgOutput::GXdgOutputManager *> &LClient::xdgOutputManagerGlob
     return imp()->xdgOutputManagerGlobals;
 }
 
+const std::vector<ScreenCopy::GScreenCopyManager *> &LClient::screenCopyManagerGlobals() const noexcept
+{
+    return imp()->screenCopyManagerGlobals;
+}
+
 const LClient::Events &LClient::events() const noexcept
 {
     return imp()->events;

@@ -316,6 +316,9 @@ public:
      */
     void setBufferDamage(const LRegion *damage);
 
+    // TODO
+    const LRegion &bufferDamage() const noexcept;
+
     /**
      * @brief Gets the layout of RGB subpixels for a single pixel on a display.
      *
@@ -538,6 +541,11 @@ public:
      * @note Since the dimensions provided by this method are in buffer coordinates, they are not affected by the output scale.
      */
     const LSize &sizeB() const;
+
+    // TODO
+    // Size of target buffer without transforms
+    const LSize &realBufferSize() const noexcept;
+    const std::vector<LScreenCopyFrame*> &screenCopyFrames() const noexcept;
 
     /**
      * @brief Get the output rect.

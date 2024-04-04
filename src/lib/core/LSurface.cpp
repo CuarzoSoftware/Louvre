@@ -19,10 +19,22 @@ LSurface::LSurface(const void *params) : LPRIVATE_INIT_UNIQUE(LSurface)
     imp()->texture = new LTexture();
     imp()->textureBackup = imp()->texture;
     imp()->surfaceResource = ((LSurface::Params*)params)->surfaceResource;
+    imp()->current.onBufferDestroyListener.notify = [](wl_listener *listener, void *)
+    {
+        LSurfacePrivate::State *state { (LSurfacePrivate::State *)listener };
+        state->buffer = nullptr;
+    };
+    imp()->pending.onBufferDestroyListener.notify = imp()->current.onBufferDestroyListener.notify;
 }
 
 LSurface::~LSurface()
 {
+    if (imp()->pending.buffer)
+        wl_list_remove(&imp()->pending.onBufferDestroyListener.link);
+
+    if (imp()->current.buffer)
+        wl_list_remove(&imp()->current.onBufferDestroyListener.link);
+
     imp()->lastPointerEventView = nullptr;
 
     if (imp()->texture && imp()->texture != imp()->textureBackup && imp()->texture->m_pendingDelete)

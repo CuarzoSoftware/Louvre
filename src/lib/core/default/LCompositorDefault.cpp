@@ -37,6 +37,8 @@
 #include <LDNDIconRole.h>
 #include <cstring>
 
+#include <protocols/ScreenCopy/GScreenCopyManager.h>
+
 using namespace Louvre;
 using namespace Louvre::Protocols;
 
@@ -93,6 +95,8 @@ bool LCompositor::createGlobalsRequest()
 
     // Allow clients to clip and scale buffers
     createGlobal<Viewporter::GViewporter>();
+
+    createGlobal<ScreenCopy::GScreenCopyManager>();
 
     return true;
 }

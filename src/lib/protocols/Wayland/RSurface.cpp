@@ -137,7 +137,13 @@ void RSurface::attach(wl_client */*client*/, wl_resource *resource, wl_resource 
     if (surfaceRes.surface()->role())
         surfaceRes.surface()->role()->handleSurfaceBufferAttach(buffer, x, y);
 
+    if (surfaceRes.surface()->imp()->pending.buffer)
+        wl_list_remove(&surfaceRes.surface()->imp()->pending.onBufferDestroyListener.link);
+
     surfaceRes.surface()->imp()->pending.buffer = buffer;
+
+    if (buffer)
+        wl_resource_add_destroy_listener(buffer, &surfaceRes.surface()->imp()->pending.onBufferDestroyListener);
 
 #if LOUVRE_WL_COMPOSITOR_VERSION >= 5
     if (surfaceRes.version() < 5)
@@ -198,10 +204,16 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
 
     if (imp.stateFlags.check(LSurface::LSurfacePrivate::BufferAttached))
     {
+        if (imp.current.buffer)
+            wl_list_remove(&imp.current.onBufferDestroyListener.link);
+
         imp.current.buffer = imp.pending.buffer;
 
         if (imp.current.buffer)
+        {
+            wl_resource_add_destroy_listener(imp.current.buffer, &imp.current.onBufferDestroyListener);
             imp.stateFlags.remove(LSurface::LSurfacePrivate::BufferReleased);
+        }
 
         imp.stateFlags.remove(LSurface::LSurfacePrivate::BufferAttached);
     }

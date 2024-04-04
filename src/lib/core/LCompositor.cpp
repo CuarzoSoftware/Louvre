@@ -169,7 +169,7 @@ bool LCompositor::start()
     imp()->state = CompositorState::Initializing;
 
     compositor()->imp()->epollFd = epoll_create1(EPOLL_CLOEXEC);
-    compositor()->imp()->events[1].data.fd = -1;
+    compositor()->imp()->events[LEV_LIBSEAT].data.fd = -1;
 
     if (!imp()->initWayland())
     {
@@ -200,13 +200,13 @@ bool LCompositor::start()
     imp()->state = CompositorState::Initialized;
     initialized();
 
-    imp()->events[0].events = EPOLLIN;
-    imp()->events[0].data.fd = eventfd(0, EFD_NONBLOCK);
+    imp()->events[LEV_UNLOCK].events = EPOLLIN;
+    imp()->events[LEV_UNLOCK].data.fd = eventfd(0, EFD_NONBLOCK);
 
     epoll_ctl(compositor()->imp()->epollFd,
               EPOLL_CTL_ADD,
-              compositor()->imp()->events[0].data.fd,
-              &compositor()->imp()->events[0]);
+              compositor()->imp()->events[LEV_UNLOCK].data.fd,
+              &compositor()->imp()->events[LEV_UNLOCK]);
 
     return true;
 
@@ -223,11 +223,11 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
     if (!seat()->enabled())
         msTimeout = 100;
 
-    epoll_event events[3];
+    epoll_event events[4];
 
     Int32 nEvents = epoll_wait(imp()->epollFd,
                          events,
-                         3,
+                         4,
                          msTimeout);
 
     imp()->lock();
@@ -247,27 +247,37 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
     if (!seat()->enabled())
         imp()->inputBackend->backendForceUpdate();
 
+    bool flush { false };
+
     for (Int32 i = 0; i < nEvents; i++)
     {
-        // Wayland
-        if (events[i].data.fd == imp()->events[2].data.fd)
+        // Backend + User
+        if (events[i].data.fd == imp()->events[LEV_AUX].data.fd)
         {
             if (seat()->enabled())
             {
-                wl_event_loop_dispatch(imp()->eventLoop, 0);
-                cursor()->imp()->textureUpdate();
-                flushClients();
+                wl_event_loop_dispatch(imp()->auxEventLoop, 0);
+                flush = true;
+            }
+        }
+        // Wayland
+        else if (events[i].data.fd == imp()->events[LEV_WAYLAND].data.fd)
+        {
+            if (seat()->enabled())
+            {
+                wl_event_loop_dispatch(imp()->waylandEventLoop, 0);
+                flush = true;
             }
         }
         // Event fd
-        else if (events[i].data.fd == imp()->events[0].data.fd)
+        else if (events[i].data.fd == imp()->events[LEV_UNLOCK].data.fd)
         {
             UInt64 eventValue;
             ssize_t n = read(imp()->events[0].data.fd, &eventValue, sizeof(eventValue));
             L_UNUSED(n);
             imp()->pollUnlocked = false;
         }
-        else if (events[i].data.fd == imp()->events[1].data.fd)
+        else if (events[i].data.fd == imp()->events[LEV_LIBSEAT].data.fd)
         {
             seat()->imp()->dispatchSeat();
         }
@@ -275,6 +285,12 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
 
     if (seat()->enabled())
     {
+        if (flush)
+        {
+            cursor()->imp()->textureUpdate();
+            flushClients();
+        }
+
         imp()->destroyPendingRenderBuffers(nullptr);
         imp()->destroyNativeTextures(imp()->nativeTexturesToDestroy);
     }
@@ -373,14 +389,9 @@ wl_display *LCompositor::display()
     return compositor()->imp()->display;
 }
 
-wl_event_loop *LCompositor::eventLoop()
-{
-    return compositor()->imp()->eventLoop;
-}
-
 wl_event_source *LCompositor::addFdListener(int fd, void *userData, int (*callback)(int, unsigned int, void *), UInt32 flags)
 {
-    return wl_event_loop_add_fd(compositor()->imp()->eventLoop, fd, flags, callback, userData);
+    return wl_event_loop_add_fd(compositor()->imp()->auxEventLoop, fd, flags, callback, userData);
 }
 
 void LCompositor::removeFdListener(wl_event_source *source)

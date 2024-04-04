@@ -141,15 +141,24 @@ bool LCompositor::LCompositorPrivate::initWayland()
     }
 
     wl_display_init_shm(display);
-    eventLoop = wl_display_get_event_loop(display);
+    waylandEventLoop = wl_display_get_event_loop(display);
+    auxEventLoop = wl_event_loop_create();
 
-    compositor()->imp()->events[2].events = EPOLLIN | EPOLLOUT;
-    compositor()->imp()->events[2].data.fd = wl_event_loop_get_fd(eventLoop);
+    compositor()->imp()->events[LEV_WAYLAND].events = EPOLLIN | EPOLLOUT;
+    compositor()->imp()->events[LEV_WAYLAND].data.fd = wl_event_loop_get_fd(waylandEventLoop);
 
     epoll_ctl(compositor()->imp()->epollFd,
               EPOLL_CTL_ADD,
-              compositor()->imp()->events[2].data.fd,
-              &compositor()->imp()->events[2]);
+              compositor()->imp()->events[LEV_WAYLAND].data.fd,
+              &compositor()->imp()->events[LEV_WAYLAND]);
+
+    compositor()->imp()->events[LEV_AUX].events = EPOLLIN | EPOLLOUT;
+    compositor()->imp()->events[LEV_AUX].data.fd = wl_event_loop_get_fd(auxEventLoop);
+
+    epoll_ctl(compositor()->imp()->epollFd,
+              EPOLL_CTL_ADD,
+              compositor()->imp()->events[LEV_AUX].data.fd,
+              &compositor()->imp()->events[LEV_AUX]);
 
     // Listen for client connections
     clientConnectedListener.notify = &clientConnectedEvent;
@@ -163,6 +172,12 @@ bool LCompositor::LCompositorPrivate::initWayland()
 
 void LCompositor::LCompositorPrivate::unitWayland()
 {
+    if (auxEventLoop)
+    {
+        wl_event_loop_destroy(auxEventLoop);
+        auxEventLoop = nullptr;
+    }
+
     if (display)
     {
         while (!globals.empty())

@@ -13,7 +13,7 @@ Clock::Clock() noexcept
 
     if (loadedFont)
     {
-        clockTimer = wl_event_loop_add_timer(LCompositor::eventLoop(), &Clock::timerCallback, this);
+        clockTimer = wl_event_loop_add_timer(wl_display_get_event_loop(LCompositor::display()), &Clock::timerCallback, this);
         wl_event_source_timer_update(clockTimer, 1);
         LLog::debug("[louvre-weston-clone] Created clock timer.");
     }

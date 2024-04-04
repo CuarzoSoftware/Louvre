@@ -234,12 +234,17 @@ void LOutput::setBufferDamage(const LRegion *damage)
 {
     if (!damage)
     {
-        imp()->stateFlags.remove(LOutputPrivate::HasDamage);
+        imp()->damage.clear();
+        imp()->damage.addRect(rect());
         return;
     }
 
     imp()->damage = *damage;
-    imp()->stateFlags.add(LOutputPrivate::HasDamage);
+}
+
+const LRegion &LOutput::bufferDamage() const noexcept
+{
+    return imp()->damage;
 }
 
 void LOutput::setScale(Float32 scale)
@@ -307,6 +312,16 @@ const LSize &LOutput::physicalSize() const
 const LSize &LOutput::sizeB() const
 {
     return imp()->sizeB;
+}
+
+const LSize &LOutput::realBufferSize() const noexcept
+{
+    return usingFractionalScale() ? imp()->fractionalFb.sizeB() : currentMode()->sizeB();
+}
+
+const std::vector<LScreenCopyFrame *> &LOutput::screenCopyFrames() const noexcept
+{
+    return imp()->screenCopyFrames;
 }
 
 const LRect &LOutput::rect() const

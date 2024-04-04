@@ -65,8 +65,9 @@ LPRIVATE_CLASS(LSurface)
 
     struct State
     {
-        LBaseSurfaceRole *role              { nullptr };
+        wl_listener onBufferDestroyListener;
         wl_resource *buffer                 { nullptr };
+        LBaseSurfaceRole *role              { nullptr };
         Int32 bufferScale                   { 1 };
         LFramebuffer::Transform transform   { LFramebuffer::Normal };
         LPointF lockedPointerPosHint        { -1.f, -1.f };

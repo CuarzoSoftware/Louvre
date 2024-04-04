@@ -46,6 +46,7 @@ public:
     std::vector<PointerGestures::GPointerGestures*> pointerGesturesGlobals;
     std::vector<SessionLock::GSessionLockManager*> sessionLockManagerGlobals;
     std::vector<PointerConstraints::GPointerConstraints*> pointerConstraintsGlobals;
+    std::vector<ScreenCopy::GScreenCopyManager*> screenCopyManagerGlobals;
 };
 
 #endif // LCLIENTPRIVATE_H

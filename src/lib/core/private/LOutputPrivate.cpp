@@ -1,4 +1,5 @@
 #include <protocols/Wayland/GOutput.h>
+#include <protocols/ScreenCopy/RScreenCopyFrame.h>
 #include <private/LOutputPrivate.h>
 #include <private/LOutputModePrivate.h>
 #include <private/LCompositorPrivate.h>
@@ -6,6 +7,7 @@
 #include <private/LCursorPrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <LSessionLockRole.h>
+#include <LScreenCopyFrame.h>
 #include <LSeat.h>
 #include <LClient.h>
 #include <LGlobal.h>
@@ -84,10 +86,16 @@ void LOutput::LOutputPrivate::backendPaintGL()
     painter->bindFramebuffer(&fb);
 
     compositor()->imp()->currentOutput = output;
+
+    if (seat()->enabled() && output->screenCopyFrames().empty())
+        wl_event_loop_dispatch(compositor()->imp()->waylandEventLoop, 0);
+
+    damage.clear();
+    damage.addRect(output->rect());
     output->paintGL();
     compositor()->imp()->currentOutput = nullptr;
 
-    if (stateFlags.check(HasDamage) && (stateFlags.checkAll(UsingFractionalScale | FractionalOversamplingEnabled) || output->hasBufferDamageSupport()))
+    if (!damage.empty() && (stateFlags.checkAll(UsingFractionalScale | FractionalOversamplingEnabled) || output->hasBufferDamageSupport()))
     {
         damage.offset(-rect.pos().x(), -rect.pos().y());
         damage.transform(rect.size(), transform);
@@ -141,12 +149,7 @@ void LOutput::LOutputPrivate::backendPaintGL()
         });
 
         glDisable(GL_BLEND);
-
-        if (stateFlags.check(HasDamage))
-            painter->drawRegion(damage);
-        else
-            painter->drawRect(LRect(0, output->currentMode()->sizeB()));
-
+        painter->drawRegion(damage);
         stateFlags.add(UsingFractionalScale);
         transform = prevTrasform;
         scale = prevScale;
@@ -154,7 +157,6 @@ void LOutput::LOutputPrivate::backendPaintGL()
         updateRect();
     }
 
-    stateFlags.remove(HasDamage);
     compositor()->flushClients();
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
     compositor()->imp()->destroyNativeTextures(nativeTexturesToDestroy);
@@ -266,4 +268,36 @@ void LOutput::LOutputPrivate::updateGlobals()
 
     if (output->sessionLockRole())
         output->sessionLockRole()->configure(output->size());
+}
+
+void LOutput::LOutputPrivate::preProcessScreenCopyFrames() noexcept
+{
+    for (std::size_t i = 0; i < screenCopyFrames.size();)
+    {
+        if (!screenCopyFrames[i]->m_frame.m_bufferContainer.m_buffer || output->realBufferSize() != screenCopyFrames[i]->m_frame.m_sentBufferSize)
+        {
+            screenCopyFrames[i]->m_frame.failed();
+            screenCopyFrames[i] = screenCopyFrames.back();
+            screenCopyFrames.pop_back();
+        }
+        else
+            i++;
+    }
+}
+
+void LOutput::LOutputPrivate::postProcessScreenCopyFrames() noexcept
+{
+    for (std::size_t i = 0; i < screenCopyFrames.size();)
+    {
+        if (!screenCopyFrames[i]->m_frame.m_waitForDamage && !screenCopyFrames[i]->m_frame.m_handled)
+            screenCopyFrames[i]->m_frame.failed();
+
+        if (screenCopyFrames[i]->m_frame.m_handled)
+        {
+            screenCopyFrames[i] = screenCopyFrames.back();
+            screenCopyFrames.pop_back();
+        }
+        else
+            i++;
+    }
 }

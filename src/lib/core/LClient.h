@@ -282,6 +282,13 @@ public:
     const std::vector<Protocols::XdgOutput::GXdgOutputManager*> &xdgOutputManagerGlobals() const noexcept;
 
     /**
+     * Resources created when the client binds to the
+     * [zwlr_screencopy_manager_v1](https://wayland.app/protocols/wlr-screencopy-unstable-v1#zwlr_screencopy_manager_v1) global
+     * of the wlroots Screen Copy protocol.
+     */
+    const std::vector<Protocols::ScreenCopy::GScreenCopyManager*> &screenCopyManagerGlobals() const noexcept;
+
+    /**
      * @brief Searches for an event that matches the given serial.
      *
      * This method searches for an event with the specified serial in the client events history.

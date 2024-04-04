@@ -110,7 +110,11 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
                 if (cursor()->hasHardwareSupport(o) && (textureChanged || !found))
                 {
                     texture2Buffer(cursor(), size * o->fractionalScale(), o->transform());
-                    compositor()->imp()->graphicBackend->outputSetCursorTexture(o, buffer);
+
+                    if (cursor()->hwCompositingEnabled(o))
+                        compositor()->imp()->graphicBackend->outputSetCursorTexture(o, buffer);
+                    else
+                        compositor()->imp()->graphicBackend->outputSetCursorTexture(o, nullptr);
                 }
             }
             else

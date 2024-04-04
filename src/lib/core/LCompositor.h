@@ -694,13 +694,6 @@ public:
     static wl_display *display();
 
     /**
-     * @brief Get the main `wl_event_loop` used by the compositor.
-     *
-     * @return The main `wl_event_loop`.
-     */
-    static wl_event_loop *eventLoop();
-
-    /**
      * @brief Add a pollable file descriptor to the compositor's event loop.
      *
      * @param fd The file descriptor to be added.

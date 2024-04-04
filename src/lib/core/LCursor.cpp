@@ -17,6 +17,24 @@
 
 using namespace Louvre;
 
+void LCursor::enableHwCompositing(LOutput *output, bool enabled) noexcept
+{
+    if (!output || output->imp()->stateFlags.check(LOutput::LOutputPrivate::HwCursorEnabled) == enabled)
+        return;
+
+    output->imp()->stateFlags.setFlag(LOutput::LOutputPrivate::HwCursorEnabled, enabled);
+    imp()->textureChanged = true;
+    imp()->update();
+}
+
+bool LCursor::hwCompositingEnabled(LOutput *output) const noexcept
+{
+    if (!output)
+        return false;
+
+    return hasHardwareSupport(output) && output->imp()->stateFlags.check(LOutput::LOutputPrivate::HwCursorEnabled);
+}
+
 LCursor::LCursor() : LPRIVATE_INIT_UNIQUE(LCursor)
 {
     compositor()->imp()->cursor = this;
@@ -218,7 +236,7 @@ void LCursor::setVisible(bool state)
 void LCursor::repaintOutputs(bool nonHardwareOnly)
 {
     for (LOutput *o : intersectedOutputs())
-        if (!nonHardwareOnly || !hasHardwareSupport(o))
+        if (!nonHardwareOnly || !hwCompositingEnabled(o))
             o->repaint();
 
     if (clientCursor() && clientCursor()->cursorRole() && clientCursor()->cursorRole()->surface())

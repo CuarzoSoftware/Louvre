@@ -26,11 +26,16 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
     if (compositor()->isInputBackendInitialized())
         compositor()->imp()->inputBackend->backendResume();
 
-    // Restore Wayland events
+    // Restore Wayland and Aux events
     epoll_ctl(compositor()->imp()->epollFd,
               EPOLL_CTL_ADD,
-              compositor()->imp()->events[2].data.fd,
-              &compositor()->imp()->events[2]);
+              compositor()->imp()->events[LEV_WAYLAND].data.fd,
+              &compositor()->imp()->events[LEV_WAYLAND]);
+
+    epoll_ctl(compositor()->imp()->epollFd,
+              EPOLL_CTL_ADD,
+              compositor()->imp()->events[LEV_AUX].data.fd,
+              &compositor()->imp()->events[LEV_AUX]);
 
     LLog::debug("[LSeatPrivate::seatEnabled] %s enabled.", libseat_seat_name(seat));
 
@@ -70,10 +75,15 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
 
     libseat_disable_seat(seat);
 
-    // Disable Wayland events
+    // Disable Wayland and Aux events
     epoll_ctl(compositor()->imp()->epollFd,
               EPOLL_CTL_DEL,
-              compositor()->imp()->events[2].data.fd,
+              compositor()->imp()->events[LEV_WAYLAND].data.fd,
+              NULL);
+
+    epoll_ctl(compositor()->imp()->epollFd,
+              EPOLL_CTL_DEL,
+              compositor()->imp()->events[LEV_AUX].data.fd,
               NULL);
 
     LLog::debug("[LSeatPrivate::seatDisabled] %s disabled.", libseat_seat_name(seat));
@@ -113,13 +123,13 @@ bool LSeat::LSeatPrivate::initLibseat()
         return false;
     }
 
-    compositor()->imp()->events[1].events = EPOLLIN;
-    compositor()->imp()->events[1].data.fd = fd;
+    compositor()->imp()->events[LEV_LIBSEAT].events = EPOLLIN;
+    compositor()->imp()->events[LEV_LIBSEAT].data.fd = fd;
 
     epoll_ctl(compositor()->imp()->epollFd,
               EPOLL_CTL_ADD,
-              compositor()->imp()->events[1].data.fd,
-              &compositor()->imp()->events[1]);
+              compositor()->imp()->events[LEV_LIBSEAT].data.fd,
+              &compositor()->imp()->events[LEV_LIBSEAT]);
 
     compositor()->imp()->lock();
     dispatchSeat();

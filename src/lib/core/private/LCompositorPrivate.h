@@ -32,10 +32,15 @@ LPRIVATE_CLASS(LCompositor)
 
     bool initWayland();
         wl_display *display { nullptr };
-        wl_event_loop *eventLoop { nullptr };
+        wl_event_loop *waylandEventLoop { nullptr }; // Wayland events only
+        wl_event_loop *auxEventLoop { nullptr }; // Backends + User events
         wl_listener clientConnectedListener;
         wl_event_source *clientDisconnectedEventSource;
-        epoll_event events[3];
+#define LEV_UNLOCK 0
+#define LEV_LIBSEAT 1
+#define LEV_AUX 2
+#define LEV_WAYLAND 3
+        epoll_event events[4]; // [0] Unlock [1] Libseat [2] Aux [3] Wayland
         LSessionLockManager *sessionLockManager { nullptr };
     void unitWayland();
 
