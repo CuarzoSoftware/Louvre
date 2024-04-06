@@ -57,6 +57,9 @@ LSceneTouchPoint *LScene::findTouchPoint(Int32 id) const
 
 void LScene::handleInitializeGL(LOutput *output)
 {
+    if (!output)
+        return;
+
     imp()->mutex.lock();
     imp()->view.m_fb = output->framebuffer();
     imp()->mutex.unlock();
@@ -64,6 +67,9 @@ void LScene::handleInitializeGL(LOutput *output)
 
 void LScene::handlePaintGL(LOutput *output)
 {
+    if (!output)
+        return;
+
     imp()->mutex.lock();
     imp()->view.m_fb = output->framebuffer();
     imp()->view.render();
@@ -72,6 +78,9 @@ void LScene::handlePaintGL(LOutput *output)
 
 void LScene::handleMoveGL(LOutput *output)
 {
+    if (!output)
+        return;
+
     imp()->mutex.lock();
     imp()->view.m_fb = output->framebuffer();
     imp()->view.damageAll(output);
@@ -80,6 +89,9 @@ void LScene::handleMoveGL(LOutput *output)
 
 void LScene::handleResizeGL(LOutput *output)
 {
+    if (!output)
+        return;
+
     imp()->mutex.lock();
     imp()->view.m_fb = output->framebuffer();
     imp()->view.damageAll(output);
@@ -88,6 +100,9 @@ void LScene::handleResizeGL(LOutput *output)
 
 void LScene::handleUninitializeGL(LOutput *output)
 {
+    if (!output)
+        return;
+
     imp()->mutex.lock();
     auto it { imp()->view.m_sceneThreadsMap.find(output->threadId()) };
     if (it != imp()->view.m_sceneThreadsMap.end())

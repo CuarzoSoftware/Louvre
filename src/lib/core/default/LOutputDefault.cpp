@@ -76,15 +76,6 @@ void LOutput::paintGL()
         // Notify the client it can now render a new surface frame
         s->requestNextFrame();
     }
-
-    // Manualy draw the cursor if hardware composition is not supported
-    if (!cursor()->hasHardwareSupport(this))
-    {
-        p->drawTexture(
-            cursor()->texture(),                  
-            LRect(0, cursor()->texture()->sizeB()),
-            cursor()->rect());
-    }
 }
 //! [paintGL]
 

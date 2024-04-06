@@ -108,11 +108,12 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
                     intersectedOutputs.push_back(o);
 
                 if (cursor()->hasHardwareSupport(o) && (textureChanged || !found))
-                {
-                    texture2Buffer(cursor(), size * o->fractionalScale(), o->transform());
-
-                    if (cursor()->hwCompositingEnabled(o))
+                {                    
+                    if (cursor()->enabled(o) && cursor()->hwCompositingEnabled(o))
+                    {
+                        texture2Buffer(cursor(), size * o->fractionalScale(), o->transform());
                         compositor()->imp()->graphicBackend->outputSetCursorTexture(o, buffer);
+                    }
                     else
                         compositor()->imp()->graphicBackend->outputSetCursorTexture(o, nullptr);
                 }
@@ -123,7 +124,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
                 compositor()->imp()->graphicBackend->outputSetCursorTexture(o, nullptr);
             }
 
-            if (cursor()->hasHardwareSupport(o))
+            if (cursor()->enabled(o) && cursor()->hasHardwareSupport(o))
             {
                 LPointF p { newPosS - LPointF(o->pos()) };
 

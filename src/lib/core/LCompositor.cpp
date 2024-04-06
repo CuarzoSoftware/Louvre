@@ -85,6 +85,7 @@ LCompositor::LCompositor() : LPRIVATE_INIT_UNIQUE(LCompositor)
     LLog::init();
     imp()->eglBindWaylandDisplayWL = (PFNEGLBINDWAYLANDDISPLAYWL) eglGetProcAddress ("eglBindWaylandDisplayWL");
     imp()->eglQueryWaylandBufferWL = (PFNEGLQUERYWAYLANDBUFFERWL) eglGetProcAddress ("eglQueryWaylandBufferWL");
+    imp()->glEGLImageTargetRenderbufferStorageOES = (PFNGLEGLIMAGETARGETTEXTURE2DOESPROC) eglGetProcAddress ("glEGLImageTargetRenderbufferStorageOES");
 
     imp()->defaultAssetsPath = LOUVRE_DEFAULT_ASSETS_PATH;
     imp()->defaultBackendsPath = LOUVRE_DEFAULT_BACKENDS_PATH;

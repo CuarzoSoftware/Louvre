@@ -319,9 +319,9 @@ const LSize &LOutput::realBufferSize() const noexcept
     return usingFractionalScale() ? imp()->fractionalFb.sizeB() : currentMode()->sizeB();
 }
 
-const std::vector<LScreenCopyFrame *> &LOutput::screenCopyFrames() const noexcept
+const std::vector<LScreenshotRequest *> &LOutput::screenshotRequests() const noexcept
 {
-    return imp()->screenCopyFrames;
+    return imp()->screenshotRequests;
 }
 
 const LRect &LOutput::rect() const

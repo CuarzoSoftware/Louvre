@@ -27,8 +27,6 @@ public:
     void paintGL() override;
     void uninitializeGL() override;
     void setGammaRequest(LClient *client, const LGammaTable *gamma) override;
-
-    void enableSoftwareCursor(bool enable);
     void loadWallpaper();
 
     void setWorkspace(Workspace *ws, UInt32 animMs, Float32 curve = 2.f, Float32 start = 0.f);

@@ -545,7 +545,7 @@ public:
     // TODO
     // Size of target buffer without transforms
     const LSize &realBufferSize() const noexcept;
-    const std::vector<LScreenCopyFrame*> &screenCopyFrames() const noexcept;
+    const std::vector<LScreenshotRequest*> &screenshotRequests() const noexcept;
 
     /**
      * @brief Get the output rect.

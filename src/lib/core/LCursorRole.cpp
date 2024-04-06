@@ -55,7 +55,10 @@ void LCursorRole::handleSurfaceCommit(CommitOrigin origin)
     surface()->imp()->setMapped(surface()->buffer() != nullptr);
 
     if (cursor()->clientCursor() && cursor()->clientCursor()->cursorRole() == this)
+    {
+        client()->imp()->lastCursorRequest.m_visible = surface()->mapped();
         cursor()->setCursor(*cursor()->clientCursor());
+    }
 }
 
 void LCursorRole::handleSurfaceOffset(Int32 x, Int32 y)

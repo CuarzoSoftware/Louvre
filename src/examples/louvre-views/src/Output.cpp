@@ -10,7 +10,7 @@
 #include <LSeat.h>
 #include <LPointerMoveEvent.h>
 #include <LUtils.h>
-#include <LScreenCopyFrame.h>
+#include <LScreenshotRequest.h>
 
 #include "Global.h"
 #include "Output.h"
@@ -456,81 +456,10 @@ void Output::paintGL()
     }
 
     updateFractionalOversampling();
+    G::compositor()->scene.handlePaintGL(this);
 
-    bool copyWithCursor { false };
-    bool copyWithoutCursor { false };
-
-    for (LScreenCopyFrame *frame : screenCopyFrames())
-    {
-        if (frame->compositeCursor())
-            copyWithCursor = true;
-        else
-            copyWithoutCursor = true;
-    }
-
-    // No screen copy requests
-    if (!copyWithCursor && !copyWithoutCursor)
-    {
-        cursor()->enableHwCompositing(this, true);
-        enableSoftwareCursor(!cursor()->hwCompositingEnabled(this));
-        G::compositor()->scene.handlePaintGL(this);
-    }
-
-    // Only with cursor
-    else if (copyWithCursor && !copyWithoutCursor)
-    {
-        cursor()->enableHwCompositing(this, false);
-        enableSoftwareCursor(!cursor()->hwCompositingEnabled(this));
-        G::compositor()->scene.handlePaintGL(this);
-
-        for (LScreenCopyFrame *frame : screenCopyFrames())
-            frame->copy();
-    }
-    // Only without cursor
-    else if (!copyWithCursor && copyWithoutCursor)
-    {
-        cursor()->enableHwCompositing(this, true);
-
-        if (cursor()->hwCompositingEnabled(this) || !cursor()->visible())
-        {
-            enableSoftwareCursor(false);
-            G::compositor()->scene.handlePaintGL(this);
-
-            for (LScreenCopyFrame *frame : screenCopyFrames())
-                frame->copy();
-        }
-        else
-        {
-            // First render without cursor
-            enableSoftwareCursor(false);
-            G::compositor()->scene.handlePaintGL(this);
-
-            for (LScreenCopyFrame *frame : screenCopyFrames())
-                frame->copy();
-
-            // Then with
-            enableSoftwareCursor(true);
-            G::compositor()->scene.handlePaintGL(this);
-        }
-    }
-    else
-    {
-        // First without cursor
-        cursor()->enableHwCompositing(this, false);
-        enableSoftwareCursor(false);
-        G::compositor()->scene.handlePaintGL(this);
-        for (LScreenCopyFrame *frame : screenCopyFrames())
-            if (!frame->compositeCursor())
-                frame->copy();
-
-        // Then with
-        enableSoftwareCursor(true);
-        G::compositor()->scene.handlePaintGL(this);
-        for (LScreenCopyFrame *frame : screenCopyFrames())
-            if (frame->compositeCursor())
-                frame->copy();
-    }
-
+    for (auto *screenshotRequest : screenshotRequests())
+        screenshotRequest->accept(true);
 }
 
 void Output::uninitializeGL()
@@ -625,17 +554,4 @@ void Output::setGammaRequest(LClient *client, const LGammaTable *gamma)
 {
     L_UNUSED(client);
     setGamma(gamma);
-}
-
-void Output::enableSoftwareCursor(bool enable)
-{
-    if (enable)
-    {
-        G::compositor()->softwareCursor.setTexture(cursor()->texture());
-        G::compositor()->softwareCursor.setPos(cursor()->rect().pos());
-        G::compositor()->softwareCursor.setDstSize(cursor()->rect().size());
-        G::compositor()->softwareCursor.setVisible(cursor()->visible());
-    }
-    else
-        G::compositor()->softwareCursor.setTexture(nullptr);
 }

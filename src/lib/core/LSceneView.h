@@ -6,6 +6,7 @@
 #include <LPainter.h>
 #include <LOutput.h>
 #include <LView.h>
+#include <LCursor.h>
 
 /**
  * @brief View for rendering other views
@@ -314,11 +315,15 @@ private:
             needsDamage = true;
         }
 
-        if (ctd.o && ((ctd.o->fractionalOversamplingEnabled() != ctd.oversampling && ctd.o->usingFractionalScale()) || ctd.o->usingFractionalScale() != ctd.fractionalScale))
+        if (ctd.o)
         {
-            ctd.fractionalScale = ctd.o->usingFractionalScale();
-            ctd.oversampling = ctd.o->fractionalOversamplingEnabled();
-            needsDamage = true;
+            ctd.newDamage.addRegion(cursor()->damage(ctd.o));
+            if ((ctd.o->fractionalOversamplingEnabled() != ctd.oversampling && ctd.o->usingFractionalScale()) || ctd.o->usingFractionalScale() != ctd.fractionalScale)
+            {
+                ctd.fractionalScale = ctd.o->usingFractionalScale();
+                ctd.oversampling = ctd.o->fractionalOversamplingEnabled();
+                needsDamage = true;
+            }
         }
 
         if (needsDamage)

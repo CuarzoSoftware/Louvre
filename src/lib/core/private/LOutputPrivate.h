@@ -40,7 +40,12 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
         FractionalOversamplingEnabled       = static_cast<UInt32>(1) << 1,
         PendingRepaint                      = static_cast<UInt32>(1) << 2,
         HasUnhandledPresentationTime        = static_cast<UInt32>(1) << 3,
-        HwCursorEnabled                     = static_cast<UInt32>(1) << 4
+        CursorEnabled                       = static_cast<UInt32>(1) << 4,
+        HwCursorEnabled                     = static_cast<UInt32>(1) << 5,
+        CursorRenderedInPrevFrame           = static_cast<UInt32>(1) << 6,
+        CursorNeedsRendering                = static_cast<UInt32>(1) << 7,
+        ScreenshotsWithCursor               = static_cast<UInt32>(1) << 8,
+        ScreenshotsWithoutCursor            = static_cast<UInt32>(1) << 9,
     };
 
     LOutputPrivate(LOutput *output);
@@ -49,7 +54,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     LPainter *painter { nullptr };
 
     // Using bitset instead of a booleans to save some bytes
-    LBitset<StateFlags> stateFlags { FractionalOversamplingEnabled | HwCursorEnabled};
+    LBitset<StateFlags> stateFlags { FractionalOversamplingEnabled | HwCursorEnabled | CursorEnabled };
 
     // The current state of the output
     State state { Uninitialized };
@@ -98,15 +103,17 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     LGammaTable gammaTable {0};
 
     // TODO
+    UInt32 prevCursorSerial;
+    LRect prevCursorRect;
+    LRegion cursorDamage;
+    void calculateCursorDamage() noexcept;
+    void drawCursor() noexcept;
+
+    // TODO
     LWeak<LSessionLockRole> sessionLockRole;
 
-    std::vector<LScreenCopyFrame*> screenCopyFrames;
-
-    // Remove invalid frames
-    void preProcessScreenCopyFrames() noexcept;
-
-    // Remove handled or rejected frames
-    void postProcessScreenCopyFrames() noexcept;
+    std::vector<LScreenshotRequest*> screenshotRequests;
+    void validateScreenshotRequests() noexcept;
 
     // API for the graphic backend
     void *graphicBackendData {nullptr};

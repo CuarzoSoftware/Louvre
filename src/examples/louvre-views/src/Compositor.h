@@ -59,7 +59,6 @@ public:
 
     // Layer for the cursor (when hw comp is not avalaible)
     LLayerView cursorLayer;
-    LTextureView softwareCursor;
 
     // Timer for updating the clock every minute
     LTimer clockMinuteTimer;

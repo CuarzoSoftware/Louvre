@@ -31,14 +31,10 @@ Compositor::Compositor() : LCompositor(),
     fullscreenLayer(scene.mainView()),
     overlayLayer(scene.mainView()),
     tooltipsLayer(scene.mainView()),
-    cursorLayer(scene.mainView()),
-    softwareCursor(nullptr, &cursorLayer)
+    cursorLayer(scene.mainView())
 {
     // Set black as default background color
     scene.mainView()->setClearColor({0.f, 0.f, 0.f, 1.f});
-
-    // Setup software cursor
-    softwareCursor.enableDstSize(true);
 }
 
 Compositor::~Compositor() {}

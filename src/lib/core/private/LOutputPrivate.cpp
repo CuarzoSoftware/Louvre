@@ -7,7 +7,6 @@
 #include <private/LCursorPrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <LSessionLockRole.h>
-#include <LScreenCopyFrame.h>
 #include <LSeat.h>
 #include <LClient.h>
 #include <LGlobal.h>
@@ -87,12 +86,15 @@ void LOutput::LOutputPrivate::backendPaintGL()
 
     compositor()->imp()->currentOutput = output;
 
-    if (seat()->enabled() && output->screenCopyFrames().empty())
+    if (seat()->enabled() && output->screenshotRequests().empty())
         wl_event_loop_dispatch(compositor()->imp()->waylandEventLoop, 0);
 
     damage.clear();
     damage.addRect(output->rect());
+    calculateCursorDamage();
     output->paintGL();
+    validateScreenshotRequests();
+    drawCursor();
     compositor()->imp()->currentOutput = nullptr;
 
     if (!damage.empty() && (stateFlags.checkAll(UsingFractionalScale | FractionalOversamplingEnabled) || output->hasBufferDamageSupport()))
@@ -155,6 +157,13 @@ void LOutput::LOutputPrivate::backendPaintGL()
         scale = prevScale;
         rect.setPos(prevPos);
         updateRect();
+    }
+
+    while (!screenshotRequests.empty())
+    {
+        LRegion dmg(screenshotRequests.back()->resource().rectB());
+        screenshotRequests.back()->copy(dmg);
+        screenshotRequests.pop_back();
     }
 
     compositor()->flushClients();
@@ -270,34 +279,55 @@ void LOutput::LOutputPrivate::updateGlobals()
         output->sessionLockRole()->configure(output->size());
 }
 
-void LOutput::LOutputPrivate::preProcessScreenCopyFrames() noexcept
+void LOutput::LOutputPrivate::calculateCursorDamage() noexcept
 {
-    for (std::size_t i = 0; i < screenCopyFrames.size();)
+    // TODO: calc damage
+    cursorDamage.clear();
+    cursorDamage.addRect(prevCursorRect);
+    cursorDamage.addRect(cursor()->rect());
+    cursorDamage.clip(output->rect());
+    prevCursorRect = cursor()->rect();
+
+    if (!cursor()->hwCompositingEnabled(output) && cursor()->visible())
+        stateFlags.add(CursorNeedsRendering);
+}
+
+void LOutput::LOutputPrivate::drawCursor() noexcept
+{
+    // Manualy draw the cursor if hardware composition is not supported
+    if (stateFlags.check(CursorNeedsRendering))
     {
-        if (!screenCopyFrames[i]->m_frame.m_bufferContainer.m_buffer || output->realBufferSize() != screenCopyFrames[i]->m_frame.m_sentBufferSize)
-        {
-            screenCopyFrames[i]->m_frame.failed();
-            screenCopyFrames[i] = screenCopyFrames.back();
-            screenCopyFrames.pop_back();
-        }
-        else
-            i++;
+        stateFlags.remove(CursorNeedsRendering);
+        painter->drawTexture(
+            cursor()->texture(),
+            LRect(0, cursor()->texture()->sizeB()),
+            cursor()->rect());
     }
 }
 
-void LOutput::LOutputPrivate::postProcessScreenCopyFrames() noexcept
+void LOutput::LOutputPrivate::validateScreenshotRequests() noexcept
 {
-    for (std::size_t i = 0; i < screenCopyFrames.size();)
+    stateFlags.remove(ScreenshotsWithCursor | ScreenshotsWithoutCursor);
+    for (std::size_t i = 0; i < screenshotRequests.size();)
     {
-        if (!screenCopyFrames[i]->m_frame.m_waitForDamage && !screenCopyFrames[i]->m_frame.m_handled)
-            screenCopyFrames[i]->m_frame.failed();
-
-        if (screenCopyFrames[i]->m_frame.m_handled)
+        if (!screenshotRequests[i]->resource().accepted() ||
+            !screenshotRequests[i]->resource().m_bufferContainer.buffer ||
+            screenshotRequests[i]->resource().m_initOutputModeSize != output->currentMode()->sizeB() ||
+            screenshotRequests[i]->resource().m_initOutputSize != output->size() ||
+            screenshotRequests[i]->resource().m_initOutputTransform != output->transform())
         {
-            screenCopyFrames[i] = screenCopyFrames.back();
-            screenCopyFrames.pop_back();
+            screenshotRequests[i]->resource().failed();
+            screenshotRequests[i] = screenshotRequests.back();
+            screenshotRequests.pop_back();
         }
         else
+        {
+            if (screenshotRequests[i]->resource().compositeCursor())
+                stateFlags.add(ScreenshotsWithCursor);
+            else
+                stateFlags.add(ScreenshotsWithoutCursor);
+
             i++;
+        }
     }
 }

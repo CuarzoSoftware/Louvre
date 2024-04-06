@@ -25,7 +25,7 @@
 #define LOUVRE_POINTER_GESTURES_VERSION 3
 #define LOUVRE_SESSION_LOCK_MANAGER_VERSION 1
 #define LOUVRE_POINTER_CONSTRAINTS_VERSION 1
-#define LOUVRE_SCREEN_COPY_MANAGER_VERSION 1
+#define LOUVRE_SCREEN_COPY_MANAGER_VERSION 3
 
 #define L_UNUSED(object){(void)object;}
 
@@ -90,13 +90,14 @@ namespace Louvre
     class LSessionLockManager;
     class LSurface;
     class LTexture;
-    class LScreenCopyFrame;
+    class LScreenshotRequest;
 
     // Painter
     class LPainter;
     class LRenderBuffer;
     class LFramebuffer;
     class LOutputFramebuffer;
+    class LGLFramebuffer;
 
     // Views
     class LScene;

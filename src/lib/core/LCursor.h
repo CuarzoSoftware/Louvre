@@ -33,11 +33,17 @@ class Louvre::LCursor : public LObject
 {
 public:
 
+    // TODO
+    bool enabled(LOutput *output) const noexcept;
+    void enable(LOutput *output, bool enable) noexcept;
+
     // TODO : enable/disable hardware cursor plane
     void enableHwCompositing(LOutput *output, bool enabled) noexcept;
 
     // Returns true if hw cursor supported and enabled
     bool hwCompositingEnabled(LOutput *output) const noexcept;
+
+    const LRegion &damage(LOutput *output) const noexcept;
 
     /// @cond OMIT
     LCursor(const LCursor&) = delete;

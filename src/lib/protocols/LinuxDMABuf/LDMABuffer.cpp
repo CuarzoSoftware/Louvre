@@ -40,6 +40,11 @@ LDMABuffer::~LDMABuffer() noexcept
 
         delete m_texture;
     }
+    else
+    {
+        for (UInt32 i = 0; i < planes()->num_fds; i++)
+            close(planes()->fds[i]);
+    }
 }
 
 bool LDMABuffer::isDMABuffer(wl_resource *buffer) noexcept

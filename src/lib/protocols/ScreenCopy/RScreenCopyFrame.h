@@ -1,17 +1,31 @@
 #ifndef RSCREENCOPYFRAME_H
 #define RSCREENCOPYFRAME_H
 
-#include <LScreenCopyFrame.h>
+#include <LScreenshotRequest.h>
 #include <LResource.h>
+#include <LBitset.h>
 #include <LWeak.h>
 #include <LRect.h>
 
 class Louvre::Protocols::ScreenCopy::RScreenCopyFrame final : public LResource
 {
-public:    
-    Wayland::GOutput *outputRes() const noexcept { return m_outputRes.get(); }
-    const LRect &region() const noexcept { return m_region; };
-    bool overlayCursor() const noexcept { return m_overlayCursor; };
+public:
+    enum StateFlags : UInt8
+    {
+        CompositeCursor     = static_cast<UInt8>(1) << 0,
+        AlreadyUsed         = static_cast<UInt8>(1) << 1,
+        WaitForDamage       = static_cast<UInt8>(1) << 2,
+        Accepted            = static_cast<UInt8>(1) << 3
+    };
+
+    LOutput *output()       const noexcept { return m_output.get(); }
+    const LRect &rect()     const noexcept { return m_rect; };
+    const LRect &rectB()    const noexcept { return m_rectB; };
+    bool compositeCursor()  const noexcept { return m_stateFlags.check(CompositeCursor); };
+    bool alreadyUsed()      const noexcept { return m_stateFlags.check(AlreadyUsed); };
+    bool waitForDamage()    const noexcept { return m_stateFlags.check(WaitForDamage); };
+    bool accepted()           const noexcept { return m_stateFlags.check(Accepted); };
+    wl_resource *buffer()   const noexcept { return m_bufferContainer.buffer; };
 
     /******************** REQUESTS ********************/
 
@@ -31,6 +45,7 @@ public:
 
     // Since 2
     bool damage(const LRect &rect) noexcept;
+    bool damage(const LRegion &region) noexcept;
 
     // Since 3
     bool linuxDMABuf(UInt32 format, const LSize &size) noexcept;
@@ -38,27 +53,26 @@ public:
 
 private:
     friend class GScreenCopyManager;
-    friend class Louvre::LScreenCopyFrame;
     friend class Louvre::LOutput;
+    friend class Louvre::LScreenshotRequest;
     RScreenCopyFrame(Wayland::GOutput *outputRes, bool overlayCursor, const LRect &region, UInt32 id, Int32 version) noexcept;
     ~RScreenCopyFrame() noexcept;
-    LWeak<Wayland::GOutput> m_outputRes;
+    static void copyCommon(wl_resource *resource, wl_resource *buffer, bool waitForDamage) noexcept;
+    LWeak<LOutput> m_output;
 
     struct BufferContainer
     {
-        wl_listener onBufferDestroyListener;
-        wl_resource *m_buffer;
+        wl_listener onDestroy;
+        wl_resource *buffer { nullptr };
     } m_bufferContainer;
 
-    LScreenCopyFrame m_frame;
-    wl_listener m_onBufferDestroy;
-    LRect m_region;
-    LSize m_sentBufferSize;
-    Int32 m_sentBufferStride;
-    bool m_overlayCursor;
-    bool m_used { false };
-    bool m_handled { false };
-    bool m_waitForDamage;
+    LScreenshotRequest m_frame;
+    LRect m_rect, m_rectB;
+    LSize m_initOutputModeSize;
+    LSize m_initOutputSize;
+    Int32 m_initOutputTransform;
+    Int32 m_stride;
+    LBitset<StateFlags> m_stateFlags;
 };
 
 #endif // RSCREENCOPYFRAME_H

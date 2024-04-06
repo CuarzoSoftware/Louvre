@@ -1,8 +1,10 @@
 #include <protocols/ScreenCopy/wlr-screencopy-unstable-v1.h>
 #include <protocols/ScreenCopy/RScreenCopyFrame.h>
+#include <protocols/LinuxDMABuf/LDMABuffer.h>
 #include <protocols/Wayland/GOutput.h>
 #include <private/LOutputPrivate.h>
 #include <private/LPainterPrivate.h>
+#include <LOutputMode.h>
 
 using namespace Louvre::Protocols::ScreenCopy;
 
@@ -34,73 +36,142 @@ RScreenCopyFrame::RScreenCopyFrame
         id,
         &imp
     ),
-    m_outputRes(outputRes),
+    m_output(outputRes->output()),
     m_frame(*this),
-    m_region(region),
-    m_overlayCursor(overlayCursor)
+    m_rect(region)
 {
-    m_bufferContainer.onBufferDestroyListener.notify = [](wl_listener *listener, void *)
+
+    m_stateFlags.setFlag(CompositeCursor, overlayCursor);
+
+    m_bufferContainer.onDestroy.notify = [](wl_listener *listener, void *)
     {
         BufferContainer *bufferContainer { (BufferContainer *)listener };
-        bufferContainer->m_buffer = nullptr;
+        bufferContainer->buffer = nullptr;
     };
 
-    /*
-    LRegion bufferRegion(region);
-    bufferRegion.transform(outputRes->output()->size(), LFramebuffer::requiredTransform(LFramebuffer::Normal, outputRes->output()->transform()));*/
+    m_initOutputModeSize = output()->currentMode()->sizeB();
+    m_initOutputSize = output()->size();
+    m_initOutputTransform = output()->transform();
 
-    if (outputRes->output()->painter()->imp()->openGLExtensions.EXT_read_format_bgra)
+    LSizeF scale;
+
+    if (LFramebuffer::is90Transform(output()->transform()))
+    {
+        scale.setW(Float32(m_initOutputModeSize.w())/Float32(m_initOutputSize.h()));
+        scale.setH(Float32(m_initOutputModeSize.h())/Float32(m_initOutputSize.w()));
+    }
+    else
+    {
+        scale.setW(Float32(m_initOutputModeSize.w())/Float32(m_initOutputSize.w()));
+        scale.setH(Float32(m_initOutputModeSize.h())/Float32(m_initOutputSize.h()));
+    }
+
+    LRegion bufferRegion(m_rect);
+    bufferRegion.transform(m_initOutputSize, output()->transform());
+    bufferRegion.multiply(scale.x(), scale.y());
+
+    bufferRegion.clip(0, m_initOutputModeSize);
+    const LBox &extents { bufferRegion.extents() };
+    m_rectB.setX(extents.x1);
+    m_rectB.setY(extents.y1);
+    m_rectB.setW(extents.x2 - extents.x1);
+    m_rectB.setH(extents.y2 - extents.y1);
+    m_stride = m_rectB.w() * 4;
+
+    printf("RECTB %d %d %d %d\n", m_rectB.x(), m_rectB.y(), m_rectB.w(), m_rectB.h());
+
+    if (output()->painter()->imp()->openGLExtensions.EXT_read_format_bgra)
     {
         buffer(WL_SHM_FORMAT_XRGB8888,
-               outputRes->output()->realBufferSize(),
-               outputRes->output()->realBufferSize().w() * 4);
+               m_rectB.size(),
+               m_stride);
     }
     else
     {
         buffer(WL_SHM_FORMAT_XBGR8888,
-               outputRes->output()->realBufferSize(),
-               outputRes->output()->realBufferSize().w() * 4);
+               m_rectB.size(),
+               m_stride);
     }
+
+    LTexture *outputTexture;
+
+    if ((outputTexture = output()->bufferTexture(0)))
+        linuxDMABuf(outputTexture->format(), m_rectB.size());
+
+    bufferDone();
 }
 
 RScreenCopyFrame::~RScreenCopyFrame() noexcept
 {
-    if (m_bufferContainer.m_buffer)
-        wl_list_remove(&m_bufferContainer.onBufferDestroyListener.link);
+    if (m_bufferContainer.buffer)
+        wl_list_remove(&m_bufferContainer.onDestroy.link);
 }
 
-/******************** REQUESTS ********************/
-
-void RScreenCopyFrame::copy(wl_client */*client*/, wl_resource *resource, wl_resource *buffer) noexcept
+void RScreenCopyFrame::copyCommon(wl_resource *resource, wl_resource *buffer, bool waitForDamage) noexcept
 {
     auto &res { *static_cast<RScreenCopyFrame*>(wl_resource_get_user_data(resource)) };
 
-    if (res.m_used)
+    if (!res.output())
+    {
+        res.failed();
+        return;
+    }
+
+    if (res.alreadyUsed())
     {
         wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_ALREADY_USED, "The object has already been used to copy a wl_buffer.");
         return;
     }
 
-    res.m_used = true;
+    res.m_stateFlags.setFlag(WaitForDamage, waitForDamage);
+    res.m_stateFlags.add(AlreadyUsed);
 
     if (wl_shm_buffer_get(buffer))
     {
-        wl_shm_buffer *shm_buffer { wl_shm_buffer_get(buffer) };
+        wl_shm_buffer *shmBuffer { wl_shm_buffer_get(buffer) };
 
-        if ((res.outputRes()->output()->painter()->imp()->openGLExtensions.EXT_read_format_bgra && wl_shm_buffer_get_format(shm_buffer) != WL_SHM_FORMAT_XRGB8888) ||
-            (!res.outputRes()->output()->painter()->imp()->openGLExtensions.EXT_read_format_bgra && wl_shm_buffer_get_format(shm_buffer) != WL_SHM_FORMAT_XBGR8888))
+        if ((res.output()->painter()->imp()->openGLExtensions.EXT_read_format_bgra && wl_shm_buffer_get_format(shmBuffer) != WL_SHM_FORMAT_XRGB8888) ||
+            (!res.output()->painter()->imp()->openGLExtensions.EXT_read_format_bgra && wl_shm_buffer_get_format(shmBuffer) != WL_SHM_FORMAT_XBGR8888))
         {
             wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer format.");
             return;
         }
 
-        if (res.m_sentBufferStride != wl_shm_buffer_get_stride(shm_buffer))
+        if (res.m_stride != wl_shm_buffer_get_stride(shmBuffer))
         {
             wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer stride.");
             return;
         }
 
-        if (res.m_sentBufferSize.w() != wl_shm_buffer_get_width(shm_buffer) || res.m_sentBufferSize.h() != wl_shm_buffer_get_height(shm_buffer))
+        if (res.rectB().w() != wl_shm_buffer_get_width(shmBuffer) || res.rectB().h() != wl_shm_buffer_get_height(shmBuffer))
+        {
+            wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer size.");
+            return;
+        }
+    }
+    else if (LDMABuffer::isDMABuffer(buffer))
+    {
+        LDMABuffer *dmaBuffer { static_cast<LDMABuffer*>(wl_resource_get_user_data(buffer)) };
+
+        if (!res.output()->bufferTexture(0))
+        {
+            wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Linux DMA buffers are not supported.");
+            return;
+        }
+
+        if (dmaBuffer->texture())
+        {
+            wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Buffer already used by surfaces.");
+            return;
+        }
+
+        if (dmaBuffer->planes()->num_fds != 1 || res.output()->bufferTexture(0)->format() != dmaBuffer->planes()->format)
+        {
+            wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer format.");
+            return;
+        }
+
+        if (static_cast<Int32>(dmaBuffer->planes()->width) != res.rectB().w() || static_cast<Int32>(dmaBuffer->planes()->height) != res.rectB().h())
         {
             wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer size.");
             return;
@@ -112,10 +183,16 @@ void RScreenCopyFrame::copy(wl_client */*client*/, wl_resource *resource, wl_res
         return;
     }
 
-    res.m_waitForDamage = false;
-    res.m_bufferContainer.m_buffer = buffer;
-    wl_resource_add_destroy_listener(buffer, &res.m_bufferContainer.onBufferDestroyListener);
-    res.outputRes()->output()->imp()->screenCopyFrames.emplace_back(&res.m_frame);
+    res.m_bufferContainer.buffer = buffer;
+    wl_resource_add_destroy_listener(buffer, &res.m_bufferContainer.onDestroy);
+    res.output()->imp()->screenshotRequests.emplace_back(&res.m_frame);
+}
+
+/******************** REQUESTS ********************/
+
+void RScreenCopyFrame::copy(wl_client */*client*/, wl_resource *resource, wl_resource *buffer) noexcept
+{
+    RScreenCopyFrame::copyCommon(resource, buffer, false);
 }
 
 void RScreenCopyFrame::destroy(wl_client */*client*/, wl_resource *resource) noexcept
@@ -126,7 +203,7 @@ void RScreenCopyFrame::destroy(wl_client */*client*/, wl_resource *resource) noe
 #if LOUVRE_SCREEN_COPY_MANAGER_VERSION >= 2
 void RScreenCopyFrame::copy_with_damage(wl_client */*client*/, wl_resource *resource, wl_resource *buffer) noexcept
 {
-
+    RScreenCopyFrame::copyCommon(resource, buffer, true);
 }
 #endif
 
@@ -134,8 +211,6 @@ void RScreenCopyFrame::copy_with_damage(wl_client */*client*/, wl_resource *reso
 
 void RScreenCopyFrame::buffer(UInt32 shmFormat, const LSize &size, UInt32 stride) noexcept
 {
-    m_sentBufferSize = outputRes()->output()->realBufferSize();
-    m_sentBufferStride = stride;
     zwlr_screencopy_frame_v1_send_buffer(resource(), shmFormat, size.w(), size.h(), stride);
 }
 
@@ -146,20 +221,12 @@ void RScreenCopyFrame::flags(UInt32 flags) noexcept
 
 void RScreenCopyFrame::ready(UInt32 tvSecHi, UInt32 tvSecLow, UInt32 tvNsec) noexcept
 {
-    if (!m_handled)
-    {
-        zwlr_screencopy_frame_v1_send_ready(resource(), tvSecHi, tvSecLow, tvNsec);
-        m_handled = true;
-    }
+    zwlr_screencopy_frame_v1_send_ready(resource(), tvSecHi, tvSecLow, tvNsec);
 }
 
 void RScreenCopyFrame::failed() noexcept
 {
-    if (!m_handled)
-    {
-        zwlr_screencopy_frame_v1_send_failed(resource());
-        m_handled = true;
-    }
+    zwlr_screencopy_frame_v1_send_failed(resource());
 }
 
 bool RScreenCopyFrame::damage(const LRect &rect) noexcept
@@ -172,6 +239,33 @@ bool RScreenCopyFrame::damage(const LRect &rect) noexcept
     }
 #else
     L_UNUSED(rect)
+#endif
+    return false;
+}
+
+bool RScreenCopyFrame::damage(const LRegion &region) noexcept
+{
+#if LOUVRE_SCREEN_COPY_MANAGER_VERSION >= 2
+    if (version() >= 2)
+    {
+        Int32 n;
+        const LBox *box { region.boxes(&n) };
+
+        while (n > 0)
+        {
+            zwlr_screencopy_frame_v1_send_damage(
+                resource(),
+                box->x1,
+                box->y1,
+                box->x2 - box->x1,
+                box->y2 - box->y1);
+            box++;
+            n--;
+        }
+        return true;
+    }
+#else
+    L_UNUSED(region)
 #endif
     return false;
 }

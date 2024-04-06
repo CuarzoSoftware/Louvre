@@ -144,6 +144,8 @@ void Output::paintGL() noexcept
         lastRect = rect();
     }
 
+    newDamage.addRegion(cursor()->damage(this));
+
     // Check if surface moved under cursor
     if (seat()->pointer()->surfaceAt(cursor()->pos()) != seat()->pointer()->focus())
         seat()->pointer()->pointerMoveEvent(LPointerMoveEvent());

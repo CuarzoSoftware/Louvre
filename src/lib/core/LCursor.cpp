@@ -17,6 +17,24 @@
 
 using namespace Louvre;
 
+bool LCursor::enabled(LOutput *output) const noexcept
+{
+    if (!output)
+        return false;
+
+    return output->imp()->stateFlags.check(LOutput::LOutputPrivate::CursorEnabled);
+}
+
+void LCursor::enable(LOutput *output, bool enabled) noexcept
+{
+    if (!output || output->imp()->stateFlags.check(LOutput::LOutputPrivate::CursorEnabled) == enabled)
+        return;
+
+    output->imp()->stateFlags.setFlag(LOutput::LOutputPrivate::CursorEnabled, enabled);
+    imp()->textureChanged = true;
+    imp()->update();
+}
+
 void LCursor::enableHwCompositing(LOutput *output, bool enabled) noexcept
 {
     if (!output || output->imp()->stateFlags.check(LOutput::LOutputPrivate::HwCursorEnabled) == enabled)
@@ -33,6 +51,14 @@ bool LCursor::hwCompositingEnabled(LOutput *output) const noexcept
         return false;
 
     return hasHardwareSupport(output) && output->imp()->stateFlags.check(LOutput::LOutputPrivate::HwCursorEnabled);
+}
+
+const LRegion &LCursor::damage(LOutput *output) const noexcept
+{
+    if (!output)
+        return LRegion::EmptyRegion();
+
+    return output->imp()->cursorDamage;
 }
 
 LCursor::LCursor() : LPRIVATE_INIT_UNIQUE(LCursor)
@@ -161,11 +187,13 @@ void LCursor::setCursor(const LClientCursor &clientCursor) noexcept
     {
         setTextureB(clientCursor.cursorRole()->surface()->texture(), clientCursor.cursorRole()->hotspotB());
         imp()->clientCursor.reset(&clientCursor);
+        setVisible(clientCursor.visible());
     }
     else
+    {
+        setVisible(clientCursor.visible());
         useDefault();
-
-    setVisible(clientCursor.visible() && clientCursor.cursorRole() && clientCursor.cursorRole()->surface() && clientCursor.cursorRole()->surface()->mapped());
+    }
 }
 
 const LClientCursor *LCursor::clientCursor() const noexcept
