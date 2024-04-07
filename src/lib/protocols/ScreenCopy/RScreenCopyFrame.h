@@ -25,7 +25,7 @@ public:
     bool compositeCursor()  const noexcept { return m_stateFlags.check(CompositeCursor); };
     bool alreadyUsed()      const noexcept { return m_stateFlags.check(AlreadyUsed); };
     bool waitForDamage()    const noexcept { return m_stateFlags.check(WaitForDamage); };
-    bool accepted()           const noexcept { return m_stateFlags.check(Accepted); };
+    bool accepted()         const noexcept { return m_stateFlags.check(Accepted); };
     wl_resource *buffer()   const noexcept { return m_bufferContainer.buffer; };
 
     /******************** REQUESTS ********************/
@@ -41,7 +41,7 @@ public:
     // Since 1
     void buffer(UInt32 shmFormat, const LSize &size, UInt32 stride) noexcept;
     void flags(UInt32 flags) noexcept;
-    void ready(UInt32 tvSecHi, UInt32 tvSecLow, UInt32 tvNsec) noexcept;
+    void ready(const timespec &time) noexcept;
     void failed() noexcept;
 
     // Since 2

@@ -31,12 +31,6 @@ void LScreenshotRequest::accept(bool accept) noexcept
     resource().m_stateFlags.setFlag(RScreenCopyFrame::Accepted, accept);
 }
 
-LScreenshotRequest::~LScreenshotRequest() noexcept
-{
-    if (resource().output())
-        LVectorRemoveOneUnordered(resource().output()->imp()->screenshotRequests, this);
-}
-
 Int8 LScreenshotRequest::copy() noexcept
 {
     LRegion damage;
@@ -193,7 +187,6 @@ Int8 LScreenshotRequest::copy() noexcept
         resource().damage(damage);
     }
 
-    const timespec t { LTime::ns() };
-    resource().ready(t.tv_sec >> 32, t.tv_sec & 0xffffffff, t.tv_nsec);
+    resource().ready(resource().output()->imp()->presentationTime.time);
     return 1;
 }

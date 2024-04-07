@@ -6,6 +6,7 @@
 #include <private/LOutputPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <LOutputMode.h>
+#include <LUtils.h>
 
 using namespace Louvre::Protocols::ScreenCopy;
 
@@ -113,6 +114,9 @@ RScreenCopyFrame::~RScreenCopyFrame() noexcept
 {
     if (m_bufferContainer.buffer)
         wl_list_remove(&m_bufferContainer.onDestroy.link);
+
+    if (output())
+        LVectorRemoveOneUnordered(output()->imp()->screenshotRequests, &m_frame);
 }
 
 void RScreenCopyFrame::copyCommon(wl_resource *resource, wl_resource *buffer, bool waitForDamage) noexcept
@@ -227,9 +231,12 @@ void RScreenCopyFrame::flags(UInt32 flags) noexcept
     zwlr_screencopy_frame_v1_send_flags(resource(), flags);
 }
 
-void RScreenCopyFrame::ready(UInt32 tvSecHi, UInt32 tvSecLow, UInt32 tvNsec) noexcept
+void RScreenCopyFrame::ready(const timespec &time) noexcept
 {
-    zwlr_screencopy_frame_v1_send_ready(resource(), tvSecHi, tvSecLow, tvNsec);
+    zwlr_screencopy_frame_v1_send_ready(resource(),
+                                        time.tv_sec >> 32,
+                                        time.tv_sec & 0xffffffff,
+                                        time.tv_nsec);
 }
 
 void RScreenCopyFrame::failed() noexcept

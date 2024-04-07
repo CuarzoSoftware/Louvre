@@ -54,11 +54,13 @@ void LOutput::LOutputPrivate::backendInitializeGL()
 
 void LOutput::LOutputPrivate::damageToBufferCoords() noexcept
 {
-    const bool hwCursorPrev { cursor()->hwCompositingEnabled(output) };
     cursor()->enableHwCompositing(output, screenshotCursorTimeout == 0);
 
-    if (hwCursorPrev != cursor()->hwCompositingEnabled(output))
+    if (screenshotCursorTimeout > 0 && cursor()->visible() && cursor()->enabled(output))
+    {
         damage.addRect(prevCursorRect);
+        stateFlags.add(CursorNeedsRendering);
+    }
 
     if (!damage.empty() &&
         (stateFlags.checkAll(UsingFractionalScale | FractionalOversamplingEnabled) ||
@@ -160,24 +162,20 @@ void LOutput::LOutputPrivate::handleScreenshotRequests(bool withCursor) noexcept
     {
         if (screenshotRequests[i]->resource().compositeCursor() == withCursor)
         {
-            const Int8 res { screenshotRequests[i]->copy() };
-
             // Wait for damage
-            if (res == 0)
-            {
-                i++;
-            }
+            if (screenshotRequests[i]->copy() == 0)
+                screenshotRequests[i]->resource().m_stateFlags.remove(ScreenCopy::RScreenCopyFrame::Accepted);
 
             // Fail or success
             else
             {
                 screenshotRequests[i] = screenshotRequests.back();
                 screenshotRequests.pop_back();
+                continue;
             }
-            break;
         }
-        else
-            i++;
+
+        i++;
     }
 }
 
@@ -238,7 +236,6 @@ void LOutput::LOutputPrivate::blitFramebuffers() noexcept
         }
     }
 }
-
 
 void LOutput::LOutputPrivate::backendPaintGL()
 {
@@ -345,6 +342,12 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
     if (sessionLockRole.get() && sessionLockRole.get()->surface())
        sessionLockRole.get()->surface()->imp()->setMapped(false);
 
+    while (!screenshotRequests.empty())
+    {
+       screenshotRequests.back()->resource().failed();
+       screenshotRequests.pop_back();
+    }
+
     output->uninitializeGL();
     compositor()->flushClients();
     output->imp()->state = LOutput::Uninitialized;
@@ -403,15 +406,22 @@ void LOutput::LOutputPrivate::updateGlobals()
 
 void LOutput::LOutputPrivate::calculateCursorDamage() noexcept
 {
-    // TODO: calc damage
     cursorDamage.clear();
-    cursorDamage.addRect(prevCursorRect);
-    cursorDamage.addRect(cursor()->rect());
-    cursorDamage.clip(output->rect());
-    prevCursorRect = cursor()->rect();
 
-    if (!cursor()->hwCompositingEnabled(output) && cursor()->visible())
+    if (cursor()->enabled(output) && !cursor()->hwCompositingEnabled(output) && cursor()->visible())
+    {
         stateFlags.add(CursorNeedsRendering);
+        cursorDamage.addRect(cursor()->rect());
+    }
+
+    if (stateFlags.check(CursorRenderedInPrevFrame))
+    {
+        stateFlags.remove(CursorRenderedInPrevFrame);
+        cursorDamage.addRect(prevCursorRect);
+    }
+
+    prevCursorRect = cursor()->rect();
+    cursorDamage.clip(output->rect());
 }
 
 void LOutput::LOutputPrivate::drawCursor() noexcept
@@ -419,7 +429,9 @@ void LOutput::LOutputPrivate::drawCursor() noexcept
     // Manualy draw the cursor if hardware composition is not supported
     if (stateFlags.check(CursorNeedsRendering))
     {
+        glEnable(GL_BLEND);
         stateFlags.remove(CursorNeedsRendering);
+        stateFlags.add(CursorRenderedInPrevFrame);
         painter->enableCustomTextureColor(false);
         painter->bindTextureMode(
         {
