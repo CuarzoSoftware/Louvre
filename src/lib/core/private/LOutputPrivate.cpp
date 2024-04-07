@@ -1,14 +1,15 @@
 #include <protocols/Wayland/GOutput.h>
 #include <protocols/ScreenCopy/RScreenCopyFrame.h>
+#include <protocols/ScreenCopy/GScreenCopyManager.h>
 #include <private/LOutputPrivate.h>
 #include <private/LOutputModePrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <private/LCursorPrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <private/LClientPrivate.h>
 #include <LSessionLockRole.h>
 #include <LSeat.h>
-#include <LClient.h>
 #include <LGlobal.h>
 #include <LTime.h>
 #include <iostream>
@@ -50,6 +51,194 @@ void LOutput::LOutputPrivate::backendInitializeGL()
     output->initializeGL();
     compositor()->flushClients();
 }
+
+void LOutput::LOutputPrivate::damageToBufferCoords() noexcept
+{
+    const bool hwCursorPrev { cursor()->hwCompositingEnabled(output) };
+    cursor()->enableHwCompositing(output, screenshotCursorTimeout == 0);
+
+    if (hwCursorPrev != cursor()->hwCompositingEnabled(output))
+        damage.addRect(prevCursorRect);
+
+    if (!damage.empty() &&
+        (stateFlags.checkAll(UsingFractionalScale | FractionalOversamplingEnabled) ||
+         output->hasBufferDamageSupport() ||
+         compositor()->imp()->screenshotManagers > 0 ||
+         stateFlags.check(ScreenshotsWithCursor | ScreenshotsWithoutCursor)))
+    {
+        damage.offset(-rect.pos().x(), -rect.pos().y());
+        damage.transform(rect.size(), transform);
+
+        LRegion tmp; Int32 n;
+        const LBox *box { damage.boxes(&n) };
+        while (n > 0)
+        {
+            tmp.addRect(floorf(Float32(box->x1) * fractionalScale) - 2, floorf(Float32(box->y1) * fractionalScale) - 2,
+                        ceilf(Float32(box->x2 - box->x1) * fractionalScale) + 4, ceilf(Float32(box->y2 - box->y1) * fractionalScale) + 4);
+            n--; box++;
+        }
+
+        damage = std::move(tmp);
+        damage.clip(LRect(0, output->currentMode()->sizeB()));
+
+        if (output->hasBufferDamageSupport())
+            compositor()->imp()->graphicBackend->outputSetBufferDamage(output, damage);
+
+        if (compositor()->imp()->screenshotManagers > 0)
+        {
+            for (LClient *client : compositor()->clients())
+            {
+                for (auto *screenCpyManager : client->imp()->screenCopyManagerGlobals)
+                {
+                    auto &outputDamage { screenCpyManager->damage[output] };
+
+                    if (!outputDamage.firstFrame)
+                        outputDamage.damage.addRegion(damage);
+                }
+            }
+        }
+    }
+}
+
+void LOutput::LOutputPrivate::blitFractionalScaleFb(bool cursorOnly) noexcept
+{
+    stateFlags.remove(UsingFractionalScale);
+    const LFramebuffer::Transform prevTrasform { transform };
+    transform = LFramebuffer::Normal;
+    const Float32 prevScale { scale };
+    const Float32 prevFracScale { fractionalScale };
+    scale = 1.f;
+    const LPoint prevPos { rect.pos() };
+    const LSize prevSize { rect.size() };
+    rect.setPos(LPoint(0));
+    updateRect();
+    painter->bindFramebuffer(&fb);
+    painter->enableCustomTextureColor(false);
+    painter->bindTextureMode({
+        .texture = fractionalFb.texture(0),
+        .pos = rect.pos(),
+        .srcRect = LRect(0, fractionalFb.sizeB()),
+        .dstSize = rect.size(),
+        .srcTransform = LFramebuffer::Normal,
+        .srcScale = 1.f
+    });
+
+    glDisable(GL_BLEND);
+
+    if (cursorOnly)
+    {
+        LRegion cursorDamage { prevCursorRect };
+        cursorDamage.offset(-prevPos.x(), -prevPos.y());
+        cursorDamage.transform(prevSize, prevTrasform);
+        LRegion tmp; Int32 n;
+        const LBox *box { cursorDamage.boxes(&n) };
+        while (n > 0)
+        {
+            tmp.addRect(floorf(Float32(box->x1) * prevFracScale) - 2, floorf(Float32(box->y1) * prevFracScale) - 2,
+                        ceilf(Float32(box->x2 - box->x1) * prevFracScale) + 4, ceilf(Float32(box->y2 - box->y1) * prevFracScale) + 4);
+            n--; box++;
+        }
+
+        cursorDamage = std::move(tmp);
+        cursorDamage.clip(LRect(0, output->currentMode()->sizeB()));
+
+        painter->drawRegion(cursorDamage);
+    }
+    else
+        painter->drawRegion(damage);
+
+    stateFlags.add(UsingFractionalScale);
+    transform = prevTrasform;
+    scale = prevScale;
+    rect.setPos(prevPos);
+    updateRect();
+}
+
+void LOutput::LOutputPrivate::handleScreenshotRequests(bool withCursor) noexcept
+{
+    for (std::size_t i = 0; i < screenshotRequests.size();)
+    {
+        if (screenshotRequests[i]->resource().compositeCursor() == withCursor)
+        {
+            const Int8 res { screenshotRequests[i]->copy() };
+
+            // Wait for damage
+            if (res == 0)
+            {
+                i++;
+            }
+
+            // Fail or success
+            else
+            {
+                screenshotRequests[i] = screenshotRequests.back();
+                screenshotRequests.pop_back();
+            }
+            break;
+        }
+        else
+            i++;
+    }
+}
+
+void LOutput::LOutputPrivate::blitFramebuffers() noexcept
+{
+    if (stateFlags.checkAll(UsingFractionalScale | FractionalOversamplingEnabled))
+    {
+        if (stateFlags.checkAll(ScreenshotsWithCursor | ScreenshotsWithoutCursor))
+        {
+            blitFractionalScaleFb(false);
+            handleScreenshotRequests(false);
+            painter->bindFramebuffer(&fractionalFb);
+            drawCursor();
+            blitFractionalScaleFb(true);
+            handleScreenshotRequests(true);
+        }
+        else if (stateFlags.check(ScreenshotsWithCursor) && !stateFlags.check(ScreenshotsWithoutCursor))
+        {
+            drawCursor();
+            blitFractionalScaleFb(false);
+            handleScreenshotRequests(true);
+        }
+        else if (!stateFlags.check(ScreenshotsWithCursor) && stateFlags.check(ScreenshotsWithoutCursor))
+        {
+            blitFractionalScaleFb(false);
+            handleScreenshotRequests(false);
+            drawCursor();
+            blitFractionalScaleFb(true);
+        }
+        else
+        {
+            drawCursor();
+            blitFractionalScaleFb(false);
+        }
+    }
+    else
+    {
+        if (stateFlags.checkAll(ScreenshotsWithCursor | ScreenshotsWithoutCursor))
+        {
+            handleScreenshotRequests(false);
+            painter->bindFramebuffer(&fb);
+            drawCursor();
+            handleScreenshotRequests(true);
+        }
+        else if (stateFlags.check(ScreenshotsWithCursor) && !stateFlags.check(ScreenshotsWithoutCursor))
+        {
+            drawCursor();
+            handleScreenshotRequests(true);
+        }
+        else if (!stateFlags.check(ScreenshotsWithCursor) && stateFlags.check(ScreenshotsWithoutCursor))
+        {
+            handleScreenshotRequests(false);
+            drawCursor();
+        }
+        else
+        {
+            drawCursor();
+        }
+    }
+}
+
 
 void LOutput::LOutputPrivate::backendPaintGL()
 {
@@ -94,77 +283,9 @@ void LOutput::LOutputPrivate::backendPaintGL()
     calculateCursorDamage();
     output->paintGL();
     validateScreenshotRequests();
-    drawCursor();
     compositor()->imp()->currentOutput = nullptr;
-
-    if (!damage.empty() && (stateFlags.checkAll(UsingFractionalScale | FractionalOversamplingEnabled) || output->hasBufferDamageSupport()))
-    {
-        damage.offset(-rect.pos().x(), -rect.pos().y());
-        damage.transform(rect.size(), transform);
-
-        pixman_region32_t tmp;
-        pixman_region32_init(&tmp);
-
-        Int32 n;
-        pixman_box32_t *rects = pixman_region32_rectangles(&damage.m_region, &n);
-
-        for (Int32 i = 0; i < n; i++)
-        {
-            pixman_region32_union_rect(
-                &tmp,
-                &tmp,
-                floorf(Float32(rects->x1) * fractionalScale) - 2,
-                floorf(Float32(rects->y1) * fractionalScale) - 2,
-                ceilf(Float32(rects->x2 - rects->x1) * fractionalScale) + 4,
-                ceilf(Float32(rects->y2 - rects->y1) * fractionalScale) + 4);
-            rects++;
-        }
-
-        pixman_region32_fini(&damage.m_region);
-        damage.m_region = tmp;
-
-        damage.clip(LRect(0, output->currentMode()->sizeB()));
-
-        if (output->hasBufferDamageSupport())
-            compositor()->imp()->graphicBackend->outputSetBufferDamage(output, damage);
-    }
-
-    if (stateFlags.checkAll(UsingFractionalScale | FractionalOversamplingEnabled))
-    {
-        stateFlags.remove(UsingFractionalScale);
-        LFramebuffer::Transform prevTrasform = transform;
-        transform = LFramebuffer::Normal;
-        Float32 prevScale = scale;
-        scale = 1.f;
-        LPoint prevPos = rect.pos();
-        rect.setPos(LPoint(0));
-        updateRect();
-        painter->bindFramebuffer(&fb);
-        painter->enableCustomTextureColor(false);
-        painter->bindTextureMode({
-            .texture = fractionalFb.texture(0),
-            .pos = rect.pos(),
-            .srcRect = LRect(0, fractionalFb.sizeB()),
-            .dstSize = rect.size(),
-            .srcTransform = LFramebuffer::Normal,
-            .srcScale = 1.f
-        });
-
-        glDisable(GL_BLEND);
-        painter->drawRegion(damage);
-        stateFlags.add(UsingFractionalScale);
-        transform = prevTrasform;
-        scale = prevScale;
-        rect.setPos(prevPos);
-        updateRect();
-    }
-
-    while (!screenshotRequests.empty())
-    {
-        LRegion dmg(screenshotRequests.back()->resource().rectB());
-        screenshotRequests.back()->copy(dmg);
-        screenshotRequests.pop_back();
-    }
+    damageToBufferCoords();
+    blitFramebuffers();
 
     compositor()->flushClients();
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
@@ -238,6 +359,7 @@ void LOutput::LOutputPrivate::backendPageFlipped()
 {
     pageflipMutex.lock();
     stateFlags.add(HasUnhandledPresentationTime);
+    frame++;
     pageflipMutex.unlock();
 }
 
@@ -298,10 +420,17 @@ void LOutput::LOutputPrivate::drawCursor() noexcept
     if (stateFlags.check(CursorNeedsRendering))
     {
         stateFlags.remove(CursorNeedsRendering);
-        painter->drawTexture(
-            cursor()->texture(),
-            LRect(0, cursor()->texture()->sizeB()),
-            cursor()->rect());
+        painter->enableCustomTextureColor(false);
+        painter->bindTextureMode(
+        {
+            .texture = cursor()->texture(),
+            .pos = cursor()->rect().pos(),
+            .srcRect = LRect(0, cursor()->texture()->sizeB()),
+            .dstSize = cursor()->rect().size(),
+            .srcTransform = LFramebuffer::Normal,
+            .srcScale = 1.f
+        });
+        painter->drawRect(cursor()->rect());
     }
 }
 
@@ -330,4 +459,9 @@ void LOutput::LOutputPrivate::validateScreenshotRequests() noexcept
             i++;
         }
     }
+
+    if (stateFlags.check(ScreenshotsWithCursor))
+        screenshotCursorTimeout = 5;
+    else if (screenshotCursorTimeout > 0)
+        screenshotCursorTimeout--;
 }

@@ -126,6 +126,7 @@ LPRIVATE_CLASS(LCompositor)
     void sendPendingConfigurations();
     void sendPresentationTime();
     bool isInputBackendInitialized { false };
+    UInt8 screenshotManagers { 0 };
 };
 
 #endif // LCOMPOSITORPRIVATE_H

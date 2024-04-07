@@ -2,6 +2,7 @@
 #include <protocols/ScreenCopy/GScreenCopyManager.h>
 #include <protocols/ScreenCopy/RScreenCopyFrame.h>
 #include <protocols/Wayland/GOutput.h>
+#include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 #include <LOutput.h>
 #include <LUtils.h>
@@ -46,11 +47,13 @@ GScreenCopyManager::GScreenCopyManager
     )
 {
     this->client()->imp()->screenCopyManagerGlobals.emplace_back(this);
+    compositor()->imp()->screenshotManagers++;
 }
 
 GScreenCopyManager::~GScreenCopyManager() noexcept
 {
     LVectorRemoveOneUnordered(client()->imp()->screenCopyManagerGlobals, this);
+    compositor()->imp()->screenshotManagers--;
 }
 
 /******************** REQUESTS ********************/
@@ -65,7 +68,8 @@ void GScreenCopyManager::capture_output(wl_client */*client*/, wl_resource *reso
     auto &res { *static_cast<GScreenCopyManager*>(wl_resource_get_user_data(resource)) };
     auto *outputRes { static_cast<Wayland::GOutput*>(wl_resource_get_user_data(output)) };
 
-    new RScreenCopyFrame(outputRes,
+    new RScreenCopyFrame(&res,
+                         outputRes->output(),
                          overlayCursor == 1,
                          LRect(LPoint(), outputRes->output()->size()),
                          id,
@@ -77,7 +81,8 @@ void GScreenCopyManager::capture_output_region(wl_client */*client*/, wl_resourc
     auto &res { *static_cast<GScreenCopyManager*>(wl_resource_get_user_data(resource)) };
     auto *outputRes { static_cast<Wayland::GOutput*>(wl_resource_get_user_data(output)) };
 
-    new RScreenCopyFrame(outputRes,
+    new RScreenCopyFrame(&res,
+                         outputRes->output(),
                          overlayCursor == 1,
                          LRect(x, y, width, height),
                          id,

@@ -1,5 +1,6 @@
 #include <protocols/ScreenCopy/wlr-screencopy-unstable-v1.h>
 #include <protocols/ScreenCopy/RScreenCopyFrame.h>
+#include <protocols/ScreenCopy/GScreenCopyManager.h>
 #include <protocols/LinuxDMABuf/LDMABuffer.h>
 #include <protocols/Wayland/GOutput.h>
 #include <private/LCompositorPrivate.h>
@@ -36,35 +37,48 @@ LScreenshotRequest::~LScreenshotRequest() noexcept
         LVectorRemoveOneUnordered(resource().output()->imp()->screenshotRequests, this);
 }
 
-void LScreenshotRequest::copy(const LRegion &bufferRegion) noexcept
+Int8 LScreenshotRequest::copy() noexcept
 {
+    LRegion damage;
+
     if (wl_shm_buffer_get(resource().buffer()))
     {
+        if (resource().screenCopyManagerRes())
+        {
+            auto &outputDamage { resource().screenCopyManagerRes()->damage[resource().output()] };
+            outputDamage.damage.clip(resource().rectB());
+
+            // No damage, wait...
+            if (resource().waitForDamage() && outputDamage.damage.empty())
+                return 0;
+
+            damage = std::move(outputDamage.damage);
+        }
+        else
+        {
+            // No damage tracking
+            damage.addRect(resource().rectB());
+        }
+
         wl_shm_buffer *shm_buffer = wl_shm_buffer_get(resource().buffer());
         wl_shm_buffer_begin_access(shm_buffer);
         UInt8 *pixels { static_cast<UInt8*>(wl_shm_buffer_get_data(shm_buffer)) };
-        Int32 n;
-        const LBox *box { bufferRegion.boxes(&n)};
         const GLenum format { static_cast<GLenum>(resource().output()->painter()->imp()->openGLExtensions.EXT_read_format_bgra ? GL_BGRA : GL_RGBA) };
         const Int32 screenH { resource().output()->currentMode()->sizeB().h() };
         glPixelStorei(GL_PACK_ALIGNMENT, 4);
         glPixelStorei(GL_PACK_ROW_LENGTH, wl_shm_buffer_get_width(shm_buffer));
+        glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
+        glPixelStorei(GL_PACK_SKIP_ROWS, 0);
 
-        for (Int32 i = 0; i < n; i++)
-        {
-            glPixelStorei(GL_PACK_SKIP_PIXELS, box->x1 - resource().rectB().x());
-            glPixelStorei(GL_PACK_SKIP_ROWS, box->y1 - resource().rectB().y());
-            glReadPixels(box->x1,
-                         screenH - box->y2,
-                         box->x2 - box->x1,
-                         box->y2 - box->y1,
-                         format,
-                         GL_UNSIGNED_BYTE,
-                         pixels);
-            box++;
-        }
+        glReadPixels(resource().rectB().x(),
+                     screenH - (resource().rectB().y() + resource().rectB().h()),
+                     resource().rectB().w(),
+                     resource().rectB().h(),
+                     format,
+                     GL_UNSIGNED_BYTE,
+                     pixels);
+
         wl_shm_buffer_end_access(shm_buffer);
-
         resource().flags(ZWLR_SCREENCOPY_FRAME_V1_FLAGS_Y_INVERT);
     }
     else
@@ -97,7 +111,7 @@ void LScreenshotRequest::copy(const LRegion &bufferRegion) noexcept
         if (image == EGL_NO_IMAGE)
         {
             resource().failed();
-            return;
+            return -1;
         }
 
         GLuint rb, fb;
@@ -117,7 +131,29 @@ void LScreenshotRequest::copy(const LRegion &bufferRegion) noexcept
             glDeleteRenderbuffers(1, &rb);
             eglDestroyImage(compositor()->eglDisplay(), image);
             resource().failed();
-            return;
+            return -1;
+        }
+
+        if (resource().screenCopyManagerRes())
+        {
+            auto &outputDamage { resource().screenCopyManagerRes()->damage[resource().output()] };
+            outputDamage.damage.clip(resource().rectB());
+
+            // No damage, wait...
+            if (resource().waitForDamage() && outputDamage.damage.empty())
+            {
+                glDeleteFramebuffers(1, &fb);
+                glDeleteRenderbuffers(1, &rb);
+                eglDestroyImage(compositor()->eglDisplay(), image);
+                return 0;
+            }
+
+            damage = std::move(outputDamage.damage);
+        }
+        else
+        {
+            // No damage tracking
+            damage.addRect(resource().rectB());
         }
 
         LGLFramebuffer glFb(
@@ -142,16 +178,22 @@ void LScreenshotRequest::copy(const LRegion &bufferRegion) noexcept
             .srcScale = 1.f,
         });
         glDisable(GL_BLEND);
-        p.drawRegion(bufferRegion);
-        p.bindFramebuffer(prevFb);
+        p.drawRect(resource().rectB());
         glFinish();
+        p.bindFramebuffer(prevFb);
         glDeleteFramebuffers(1, &fb);
         glDeleteRenderbuffers(1, &rb);
         eglDestroyImage(compositor()->eglDisplay(), image);
         resource().flags(0);
     }
 
+    if (resource().waitForDamage())
+    {
+        damage.offset(-resource().rectB().x(), -resource().rectB().y());
+        resource().damage(damage);
+    }
+
     const timespec t { LTime::ns() };
-    resource().damage(LRect(0, resource().rectB().size()));
     resource().ready(t.tv_sec >> 32, t.tv_sec & 0xffffffff, t.tv_nsec);
+    return 1;
 }

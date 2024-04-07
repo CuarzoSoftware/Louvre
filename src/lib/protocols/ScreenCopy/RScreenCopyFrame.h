@@ -18,6 +18,7 @@ public:
         Accepted            = static_cast<UInt8>(1) << 3
     };
 
+    GScreenCopyManager *screenCopyManagerRes() const noexcept { return m_screenCopyManagerRes.get(); }
     LOutput *output()       const noexcept { return m_output.get(); }
     const LRect &rect()     const noexcept { return m_rect; };
     const LRect &rectB()    const noexcept { return m_rectB; };
@@ -55,10 +56,11 @@ private:
     friend class GScreenCopyManager;
     friend class Louvre::LOutput;
     friend class Louvre::LScreenshotRequest;
-    RScreenCopyFrame(Wayland::GOutput *outputRes, bool overlayCursor, const LRect &region, UInt32 id, Int32 version) noexcept;
+    RScreenCopyFrame(GScreenCopyManager *screenCopyManagerRes, LOutput *output, bool overlayCursor, const LRect &region, UInt32 id, Int32 version) noexcept;
     ~RScreenCopyFrame() noexcept;
     static void copyCommon(wl_resource *resource, wl_resource *buffer, bool waitForDamage) noexcept;
     LWeak<LOutput> m_output;
+    LWeak<GScreenCopyManager> m_screenCopyManagerRes;
 
     struct BufferContainer
     {

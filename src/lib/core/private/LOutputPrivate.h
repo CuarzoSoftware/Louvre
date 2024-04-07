@@ -89,8 +89,12 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     LSize lastSize;
 
     /* Damage set with LOutput::setBufferDamage(), used in fractional scaling with oversampling or when
-     * the graphic backend uses DUMB buffers or CPU copy. Cleared after page flip. */
+     * the graphic backend uses DUMB buffers or CPU copy. */
+    UInt64 frame { 0 };
     LRegion damage;
+    void damageToBufferCoords() noexcept;
+    void blitFramebuffers() noexcept;
+    void blitFractionalScaleFb(bool cursorOnly) noexcept;
 
     // Thread sync stuff
     std::atomic<bool> callLock;
@@ -114,8 +118,11 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
 
     std::vector<LScreenshotRequest*> screenshotRequests;
     void validateScreenshotRequests() noexcept;
+    void handleScreenshotRequests(bool withCursor) noexcept;
+    UInt8 screenshotCursorTimeout { 0 };
 
     // API for the graphic backend
+
     void *graphicBackendData {nullptr};
     void backendInitializeGL();
     void backendPaintGL();

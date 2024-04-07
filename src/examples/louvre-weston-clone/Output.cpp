@@ -1,4 +1,5 @@
 #include <LPointerMoveEvent.h>
+#include <LScreenshotRequest.h>
 #include <LRenderBuffer.h>
 #include <LPainter.h>
 #include <LToplevelRole.h>
@@ -477,6 +478,9 @@ void Output::paintGL() noexcept
             ++it;
         }
     }
+
+    for (LScreenshotRequest *ssReq : screenshotRequests())
+        ssReq->accept(true);
 
     setBufferDamage(&newDamage);
     newDamage.clear();

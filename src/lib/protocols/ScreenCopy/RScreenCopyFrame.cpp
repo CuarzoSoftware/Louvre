@@ -1,4 +1,5 @@
 #include <protocols/ScreenCopy/wlr-screencopy-unstable-v1.h>
+#include <protocols/ScreenCopy/GScreenCopyManager.h>
 #include <protocols/ScreenCopy/RScreenCopyFrame.h>
 #include <protocols/LinuxDMABuf/LDMABuffer.h>
 #include <protocols/Wayland/GOutput.h>
@@ -22,7 +23,8 @@ static const struct zwlr_screencopy_frame_v1_interface imp
 
 RScreenCopyFrame::RScreenCopyFrame
     (
-        Wayland::GOutput *outputRes,
+        GScreenCopyManager *screenCopyManagerRes,
+        LOutput *output,
         bool overlayCursor,
         const LRect &region,
         UInt32 id,
@@ -30,17 +32,17 @@ RScreenCopyFrame::RScreenCopyFrame
     ) noexcept
     :LResource
     (
-        outputRes->client(),
+        screenCopyManagerRes->client(),
         &zwlr_screencopy_frame_v1_interface,
         version,
         id,
         &imp
     ),
-    m_output(outputRes->output()),
+    m_output(output),
+    m_screenCopyManagerRes(screenCopyManagerRes),
     m_frame(*this),
     m_rect(region)
 {
-
     m_stateFlags.setFlag(CompositeCursor, overlayCursor);
 
     m_bufferContainer.onDestroy.notify = [](wl_listener *listener, void *)
@@ -49,13 +51,21 @@ RScreenCopyFrame::RScreenCopyFrame
         bufferContainer->buffer = nullptr;
     };
 
-    m_initOutputModeSize = output()->currentMode()->sizeB();
-    m_initOutputSize = output()->size();
-    m_initOutputTransform = output()->transform();
+    m_initOutputModeSize = output->currentMode()->sizeB();
+    m_initOutputSize = output->size();
+    m_initOutputTransform = output->transform();
+
+    auto &damage { screenCopyManagerRes->damage[output] };
+
+    if (damage.firstFrame)
+    {
+        damage.damage.addRect(0, m_initOutputModeSize);
+        damage.firstFrame = false;
+    }
 
     LSizeF scale;
 
-    if (LFramebuffer::is90Transform(output()->transform()))
+    if (LFramebuffer::is90Transform(output->transform()))
     {
         scale.setW(Float32(m_initOutputModeSize.w())/Float32(m_initOutputSize.h()));
         scale.setH(Float32(m_initOutputModeSize.h())/Float32(m_initOutputSize.w()));
@@ -67,7 +77,7 @@ RScreenCopyFrame::RScreenCopyFrame
     }
 
     LRegion bufferRegion(m_rect);
-    bufferRegion.transform(m_initOutputSize, output()->transform());
+    bufferRegion.transform(m_initOutputSize, output->transform());
     bufferRegion.multiply(scale.x(), scale.y());
 
     bufferRegion.clip(0, m_initOutputModeSize);
@@ -78,9 +88,7 @@ RScreenCopyFrame::RScreenCopyFrame
     m_rectB.setH(extents.y2 - extents.y1);
     m_stride = m_rectB.w() * 4;
 
-    printf("RECTB %d %d %d %d\n", m_rectB.x(), m_rectB.y(), m_rectB.w(), m_rectB.h());
-
-    if (output()->painter()->imp()->openGLExtensions.EXT_read_format_bgra)
+    if (output->painter()->imp()->openGLExtensions.EXT_read_format_bgra)
     {
         buffer(WL_SHM_FORMAT_XRGB8888,
                m_rectB.size(),
@@ -95,7 +103,7 @@ RScreenCopyFrame::RScreenCopyFrame
 
     LTexture *outputTexture;
 
-    if ((outputTexture = output()->bufferTexture(0)))
+    if ((outputTexture = output->bufferTexture(0)))
         linuxDMABuf(outputTexture->format(), m_rectB.size());
 
     bufferDone();

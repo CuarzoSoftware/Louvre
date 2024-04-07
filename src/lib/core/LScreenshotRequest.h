@@ -49,7 +49,7 @@ private:
     friend class LOutput;
     LScreenshotRequest(Protocols::ScreenCopy::RScreenCopyFrame &screenCopyFrameRes) noexcept : m_screenCopyFrameRes(screenCopyFrameRes) {};
     ~LScreenshotRequest() noexcept;
-    void copy(const LRegion &bufferRegion) noexcept;
+    Int8 copy() noexcept;
     Protocols::ScreenCopy::RScreenCopyFrame &m_screenCopyFrameRes;
     /// @endcond
 };
