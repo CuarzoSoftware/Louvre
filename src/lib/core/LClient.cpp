@@ -186,6 +186,11 @@ const std::vector<ScreenCopy::GScreenCopyManager *> &LClient::screenCopyManagerG
     return imp()->screenCopyManagerGlobals;
 }
 
+const std::vector<LayerShell::GLayerShell *> &LClient::layerShellGlobals() const noexcept
+{
+    return imp()->layerShellGlobals;
+}
+
 const LClient::Events &LClient::events() const noexcept
 {
     return imp()->events;

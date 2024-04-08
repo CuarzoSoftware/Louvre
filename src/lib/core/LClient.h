@@ -289,6 +289,13 @@ public:
     const std::vector<Protocols::ScreenCopy::GScreenCopyManager*> &screenCopyManagerGlobals() const noexcept;
 
     /**
+     * Resources created when the client binds to the
+     * [zwlr_layer_shell_v1](https://wayland.app/protocols/wlr-layer-shell-unstable-v1#zwlr_layer_shell_v1) global
+     * of the wlroots Layer Shell protocol.
+     */
+    const std::vector<Protocols::LayerShell::GLayerShell*> &layerShellGlobals() const noexcept;
+
+    /**
      * @brief Searches for an event that matches the given serial.
      *
      * This method searches for an event with the specified serial in the client events history.

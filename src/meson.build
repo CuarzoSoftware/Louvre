@@ -92,7 +92,8 @@ globals = [
     'RelativePointer',
     'PointerGestures',
     'SessionLock',
-    'ScreenCopy'
+    'ScreenCopy',
+    'LayerShell'
 ]
 
 foreach g : globals

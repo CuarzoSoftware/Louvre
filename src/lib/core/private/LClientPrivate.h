@@ -28,11 +28,12 @@ public:
     LClientCursor lastCursorRequest;
 
     // Globals
-    std::vector<Wayland::GCompositor*> compositorGlobals;
-    std::vector<Wayland::GOutput*> outputGlobals;
     std::vector<Wayland::GSeat*> seatGlobals;
-    std::vector<Wayland::GSubcompositor*> subcompositorGlobals;
+    std::vector<Wayland::GOutput*> outputGlobals;
+    std::vector<ScreenCopy::GScreenCopyManager*> screenCopyManagerGlobals;
     std::vector<Wayland::GDataDeviceManager*> dataDeviceManagerGlobals;
+    std::vector<Wayland::GCompositor*> compositorGlobals;
+    std::vector<Wayland::GSubcompositor*> subcompositorGlobals;
     std::vector<XdgShell::GXdgWmBase*> xdgWmBaseGlobals;
     std::vector<XdgDecoration::GXdgDecorationManager*> xdgDecorationManagerGlobals;
     std::vector<XdgOutput::GXdgOutputManager*> xdgOutputManagerGlobals;
@@ -46,7 +47,7 @@ public:
     std::vector<PointerGestures::GPointerGestures*> pointerGesturesGlobals;
     std::vector<SessionLock::GSessionLockManager*> sessionLockManagerGlobals;
     std::vector<PointerConstraints::GPointerConstraints*> pointerConstraintsGlobals;
-    std::vector<ScreenCopy::GScreenCopyManager*> screenCopyManagerGlobals;
+    std::vector<LayerShell::GLayerShell*> layerShellGlobals;
 };
 
 #endif // LCLIENTPRIVATE_H

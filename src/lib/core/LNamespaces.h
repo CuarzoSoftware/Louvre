@@ -26,6 +26,7 @@
 #define LOUVRE_SESSION_LOCK_MANAGER_VERSION 1
 #define LOUVRE_POINTER_CONSTRAINTS_VERSION 1
 #define LOUVRE_SCREEN_COPY_MANAGER_VERSION 3
+#define LOUVRE_LAYER_SHELL_VERSION 5
 
 #define L_UNUSED(object){(void)object;}
 
@@ -553,6 +554,13 @@ namespace Louvre
 
             class RLockedPointer;
             class RConfinedPointer;
+        };
+
+        namespace LayerShell
+        {
+            class GLayerShell;
+
+            class RLayerSurface;
         }
     }
 
