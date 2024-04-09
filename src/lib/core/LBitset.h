@@ -2,6 +2,7 @@
 #define LBITSET_H
 
 #include <LNamespaces.h>
+#include <LUtils.h>
 
 /**
  * @brief Compact way of storing and managing conditions or states
@@ -32,14 +33,12 @@
  * }
  * @endcode
  */
+
 template <class T>
 class Louvre::LBitset
 {
-    using Flag = typename std::conditional<
-        std::is_enum<T>::value,
-        typename std::underlying_type<T>::type,
-        T
-        >::type;
+    static_assert(std::is_integral<T>::value || std::is_enum<T>::value, "Type is not integral or enum.");
+    using Flag = Louvre::numerical_underlying_type<T>::type;
 
 public:
 
@@ -140,6 +139,54 @@ public:
             add(flag);
         else
             remove(flag);
+    }
+
+    /**
+     * @brief Conversion operator.
+     *
+     * Allows you to access the bitset as its underlying type and pass it to functions, for example.
+     *
+     * @return Flag The converted value of the bitset.
+     */
+    operator Flag() const
+    {
+        return m_flags;
+    }
+
+    /**
+     * @brief Performs a bitwise OR operation with another LBitset.
+     *
+     * @param flags The LBitset containing flags to perform the operation with.
+     * @return LBitset<Flag>& A reference to the modified LBitset after the operation.
+     */
+    LBitset<T>& operator|=(const Flag& flags)
+    {
+        m_flags |= flags;
+        return *this;
+    }
+
+    /**
+     * @brief Performs a bitwise AND operation with another LBitset.
+     *
+     * @param flags The LBitset containing flags to perform the operation with.
+     * @return LBitset<Flag>& A reference to the modified LBitset after the operation.
+     */
+    LBitset<T>& operator&=(const Flag& flags)
+    {
+        m_flags &= flags;
+        return *this;
+    }
+
+    /**
+     * @brief Performs a bitwise XOR operation with another LBitset.
+     *
+     * @param flags The LBitset containing flags to perform the operation with.
+     * @return LBitset<Flag>& A reference to the modified LBitset after the operation.
+     */
+    LBitset<T>& operator^=(const Flag& flags)
+    {
+        m_flags ^= flags;
+        return *this;
     }
 
 private:

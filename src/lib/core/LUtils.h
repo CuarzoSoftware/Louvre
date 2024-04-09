@@ -7,6 +7,24 @@
 
 namespace Louvre
 {
+    template<typename, bool>
+    struct _numerical_underlying_type{};
+
+    template<typename T>
+    struct _numerical_underlying_type<T, true>
+    {
+        using type = std::underlying_type<T>::type;
+    };
+
+    template<typename T>
+    struct _numerical_underlying_type<T, false>
+    {
+        using type = T;
+    };
+
+    template<typename T>
+    struct numerical_underlying_type : _numerical_underlying_type<T, std::is_enum<T>::value> {};
+
     template <typename T>
     static inline void LVectorRemoveOne(std::vector<T>& vec, T val) noexcept
     {
