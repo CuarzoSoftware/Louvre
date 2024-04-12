@@ -1,7 +1,7 @@
 #ifndef LDNDICONROLEPRIVATE_H
 #define LDNDICONROLEPRIVATE_H
 
-#include <roles/LDNDIconRole.h>
+#include <LDNDIconRole.h>
 
 using namespace Louvre;
 

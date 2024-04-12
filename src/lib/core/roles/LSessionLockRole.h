@@ -33,7 +33,7 @@ public:
      */
     LOutput *output() const noexcept
     {
-        return m_output.get();
+        return m_output;
     }
 
     /**

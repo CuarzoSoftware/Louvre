@@ -8,7 +8,7 @@ class Louvre::Protocols::Wayland::RDataDevice final : public LResource
 public:
     GSeat *seatRes() const noexcept
     {
-        return m_seatRes.get();
+        return m_seatRes;
     }
 
     UInt32 enterSerial() const noexcept

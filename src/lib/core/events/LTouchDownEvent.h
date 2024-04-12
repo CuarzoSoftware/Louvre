@@ -1,7 +1,7 @@
 #ifndef LTOUCHDOWNEVENT_H
 #define LTOUCHDOWNEVENT_H
 
-#include <events/LTouchEvent.h>
+#include <LTouchEvent.h>
 #include <LPoint.h>
 #include <LTime.h>
 

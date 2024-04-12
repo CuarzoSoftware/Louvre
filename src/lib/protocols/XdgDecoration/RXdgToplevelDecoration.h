@@ -9,7 +9,7 @@ class Louvre::Protocols::XdgDecoration::RXdgToplevelDecoration final : public LR
 public:
     LToplevelRole *toplevelRole() const noexcept
     {
-        return m_toplevelRole.get();
+        return m_toplevelRole;
     }
 
     /******************** REQUESTS ********************/

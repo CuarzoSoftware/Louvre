@@ -11,7 +11,7 @@ public:
     const std::vector<RKeyboard*> &keyboardRes() const noexcept { return m_keyboardRes; }
     const std::vector<RPointer*> &pointerRes() const noexcept { return m_pointerRes; }
     const std::vector<RTouch *> &touchRes() const noexcept { return m_touchRes; }
-    RDataDevice *dataDeviceRes() const noexcept { return m_dataDeviceRes.get(); }
+    RDataDevice *dataDeviceRes() const noexcept { return m_dataDeviceRes; }
 
     /******************** REQUESTS ********************/
 

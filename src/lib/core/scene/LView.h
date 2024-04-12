@@ -4,7 +4,7 @@
 #include <LObject.h>
 #include <LBitset.h>
 #include <LRegion.h>
-#include <framebuffers/LFramebuffer.h>
+#include <LFramebuffer.h>
 #include <GL/gl.h>
 #include <thread>
 #include <vector>

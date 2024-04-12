@@ -25,21 +25,21 @@ public:
 
     void updateActions() noexcept
     {
-        if (!source.get() || !offer.get())
+        if (!source || !offer)
             return;
 
-        offer.get()->sourceActions(source.get()->actions());
+        offer->sourceActions(source->actions());
         action = 0;
 
-        if (source.get()->version() >= 3 && offer.get()->version() >= 3)
-            action = source.get()->actions() & offer.get()->actions();
-        else if (source.get()->version() >= 3)
-            action = source.get()->actions();
-        else if (offer.get()->version() >= 3)
-            action = offer.get()->actions();
+        if (source->version() >= 3 && offer->version() >= 3)
+            action = source->actions() & offer->actions();
+        else if (source->version() >= 3)
+            action = source->actions();
+        else if (offer->version() >= 3)
+            action = offer->actions();
 
-        if (!compositorAction && (offer.get()->preferredAction() & action))
-            action &= offer.get()->preferredAction();
+        if (!compositorAction && (offer->preferredAction() & action))
+            action &= offer->preferredAction();
 
         if (compositorAction & action)
             action &= compositorAction;
@@ -51,8 +51,8 @@ public:
         else if (action & LDND::Ask)
             action = LDND::Ask;
 
-        source.get()->action(action);
-        offer.get()->action(action);
+        source->action(action);
+        offer->action(action);
     }
 
     inline void cancel() noexcept

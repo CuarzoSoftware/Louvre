@@ -9,7 +9,7 @@ class Louvre::Protocols::Wayland::RTouch final : public LResource
 public:
     GSeat *seatRes() const noexcept
     {
-        return m_seatRes.get();
+        return m_seatRes;
     }
 
     /******************** REQUESTS ********************/

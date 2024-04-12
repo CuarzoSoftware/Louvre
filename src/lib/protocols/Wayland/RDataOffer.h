@@ -9,7 +9,7 @@ public:
 
     RDataDevice *dataDeviceRes() const noexcept
     {
-        return m_dataDeviceRes.get();
+        return m_dataDeviceRes;
     }
 
     RDataSource::Usage usage() const noexcept

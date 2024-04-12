@@ -7,7 +7,7 @@
 class Louvre::Protocols::FractionalScale::RFractionalScale final : public LResource
 {
 public:
-    Wayland::RSurface *surfaceRes() const noexcept { return m_surfaceRes.get(); }
+    Wayland::RSurface *surfaceRes() const noexcept { return m_surfaceRes; }
 
     /******************** REQUESTS ********************/
 

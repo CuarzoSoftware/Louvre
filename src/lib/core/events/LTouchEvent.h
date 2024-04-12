@@ -1,7 +1,7 @@
 #ifndef LTOUCHEVENT_H
 #define LTOUCHEVENT_H
 
-#include <events/LInputEvent.h>
+#include <LInputEvent.h>
 
 /**
  * @brief Base class for touch events.

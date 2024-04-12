@@ -18,7 +18,7 @@ void LWeak_test_02()
 {
     LSetTestName("LWeak_test_02");
     LWeak<LObject> weak;
-    LAssert("LWeak::get() should be nullptr", weak.get() == nullptr);
+    LAssert("LWeak::get() should be nullptr", weak == nullptr);
 }
 
 void LWeak_test_03()
@@ -31,12 +31,12 @@ void LWeak_test_03()
         LObjectTest obj;
         weak.reset(&obj);
         LAssert("LWeak::count() should be 1", weak.count() == 1);
-        LAssert("LWeak::get() should be != nullptr", weak.get() != nullptr);
+        LAssert("LWeak::get() should be != nullptr", weak != nullptr);
         auto weaks(obj);
     }
 
     LAssert("LWeak::count() should be 0", weak.count() == 0);
-    LAssert("LWeak::get() should be nullptr", weak.get() == nullptr);
+    LAssert("LWeak::get() should be nullptr", weak == nullptr);
 }
 
 void LWeak_test_04()
@@ -122,13 +122,13 @@ void LWeak_test_08()
         weak[3].reset(&obj);
 
         for (int i = 0; i < 4; i++)
-            LAssert("Weak ref get() should NOT return nullptr", weak[i].get() != nullptr);
+            LAssert("Weak ref get() should NOT return nullptr", weak[i] != nullptr);
     }
 
     LAssert("Weak ref 3 count() should be 0", weak[2].count() == 0);
 
     for (int i = 0; i < 4; i++)
-        LAssert("Weak ref get() should return nullptr", weak[i].get() == nullptr);
+        LAssert("Weak ref get() should return nullptr", weak[i] == nullptr);
 }
 
 void LWeak_test_09()
@@ -153,7 +153,7 @@ void LWeak_test_09()
     {
         notifyCount++;
         weak2.reset(obj);
-        LAssert("Weak 2 get() should return nullptr", weak2.get() == nullptr);
+        LAssert("Weak 2 get() should return nullptr", weak2 == nullptr);
     });
 
     {

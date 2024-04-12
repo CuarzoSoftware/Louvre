@@ -10,22 +10,22 @@ class Louvre::Protocols::XdgShell::RXdgSurface final : public LResource
 public:
     GXdgWmBase *xdgWmBaseRes() const noexcept
     {
-        return m_xdgWmBaseRes.get();
+        return m_xdgWmBaseRes;
     }
 
     LSurface *surface() const noexcept
     {
-        return m_surface.get();
+        return m_surface;
     }
 
     RXdgToplevel *xdgToplevelRes() const noexcept
     {
-        return m_xdgToplevelRes.get();
+        return m_xdgToplevelRes;
     }
 
     RXdgPopup *xdgPopupRes() const noexcept
     {
-        return m_xdgPopupRes.get();
+        return m_xdgPopupRes;
     }
 
     const LRect &windowGeometry() const noexcept

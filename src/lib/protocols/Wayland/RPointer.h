@@ -10,7 +10,7 @@ public:
 
     GSeat *seatRes() const noexcept
     {
-        return m_seatRes.get();
+        return m_seatRes;
     }
 
     const std::vector<Protocols::RelativePointer::RRelativePointer*> &relativePointerRes() const noexcept

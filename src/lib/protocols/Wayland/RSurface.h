@@ -1,7 +1,7 @@
 #ifndef RSURFACE_H
 #define RSURFACE_H
 
-#include <roles/LBaseSurfaceRole.h>
+#include <LBaseSurfaceRole.h>
 #include <LResource.h>
 #include <memory>
 
@@ -16,17 +16,17 @@ public:
 
     Viewporter::RViewport *viewportRes() const noexcept
     {
-        return m_viewportRes.get();
+        return m_viewportRes;
     }
 
     FractionalScale::RFractionalScale *fractionalScaleRes() const noexcept
     {
-        return m_fractionalScaleRes.get();
+        return m_fractionalScaleRes;
     }
 
     TearingControl::RTearingControl *tearingControlRes() const noexcept
     {
-        return m_tearingControlRes.get();
+        return m_tearingControlRes;
     }
 
     /******************** REQUESTS ********************/

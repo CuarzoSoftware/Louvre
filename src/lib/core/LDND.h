@@ -2,7 +2,7 @@
 #define LDNDMANAGER_H
 
 #include <LObject.h>
-#include <events/LPointerButtonEvent.h>
+#include <LPointerButtonEvent.h>
 #include <memory>
 
 /**

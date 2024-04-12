@@ -4,7 +4,7 @@
 #include <LNamespaces.h>
 #include <LRect.h>
 #include <pixman.h>
-#include <framebuffers/LFramebuffer.h>
+#include <LFramebuffer.h>
 
 /**
  * @brief Collection of non-overlapping rectangles

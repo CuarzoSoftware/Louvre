@@ -9,7 +9,7 @@ class Louvre::Protocols::PresentationTime::RPresentationFeedback final : public 
 public:
     LSurface *surface() const noexcept
     {
-        return m_surface.get();
+        return m_surface;
     }
 
     /******************** EVENTS ********************/

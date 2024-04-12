@@ -10,7 +10,7 @@ public:
 
     Wayland::GOutput *outputRes() const noexcept
     {
-        return m_outputRes.get();
+        return m_outputRes;
     }
 
     /******************** REQUESTS ********************/

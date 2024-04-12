@@ -7,9 +7,9 @@
 #include <protocols/XdgShell/xdg-shell.h>
 #include <private/LSeatPrivate.h>
 #include <private/LCompositorPrivate.h>
-#include <roles/LToplevelMoveSession.h>
-#include <roles/LToplevelResizeSession.h>
-#include <roles/LToplevelRole.h>
+#include <LToplevelMoveSession.h>
+#include <LToplevelResizeSession.h>
+#include <LToplevelRole.h>
 #include <LCompositor.h>
 #include <LTime.h>
 #include <queue>
@@ -68,7 +68,7 @@ inline void applyPendingChanges(LBitset<ConfigurationChanges> changes)
     previous = current;
     current = uncommited;
 
-    const LBitset<State> stateChanges { static_cast<State>((previous.state.get() ^ current.state.get())) };
+    const LBitset<State> stateChanges { previous.state ^ current.state };
 
     if (stateChanges.check(Activated))
     {
@@ -184,11 +184,11 @@ inline void sendConfiguration()
     if (pending.decorationMode == NoPreferredMode)
         pending.decorationMode = ClientSide;
 
-    if (xdgDecoration.get())
+    if (xdgDecoration)
     {
         if (current.decorationMode != pending.decorationMode || !stateFlags.check(InitDecorationModeSent))
         {
-            xdgDecoration.get()->configure(pending.decorationMode);
+            xdgDecoration->configure(pending.decorationMode);
             stateFlags.add(InitDecorationModeSent);
         }
     }

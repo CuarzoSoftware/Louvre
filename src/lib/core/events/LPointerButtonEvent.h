@@ -1,7 +1,7 @@
 #ifndef LPOINTERBUTTONEVENT_H
 #define LPOINTERBUTTONEVENT_H
 
-#include <events/LPointerEvent.h>
+#include <LPointerEvent.h>
 #include <linux/input-event-codes.h>
 #include <LTime.h>
 

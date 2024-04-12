@@ -1,7 +1,7 @@
 #ifndef LPOINTERPINCHBEGINEVENT_H
 #define LPOINTERPINCHBEGINEVENT_H
 
-#include <events/LPointerEvent.h>
+#include <LPointerEvent.h>
 #include <LTime.h>
 
 /**

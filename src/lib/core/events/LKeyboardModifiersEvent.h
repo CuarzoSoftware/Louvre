@@ -1,7 +1,7 @@
 #ifndef LKEYBOARDMODIFIERSEVENT_H
 #define LKEYBOARDMODIFIERSEVENT_H
 
-#include <events/LKeyboardEvent.h>
+#include <LKeyboardEvent.h>
 #include <LTime.h>
 
 /**

@@ -29,14 +29,14 @@ void LBitset_test_02()
 {
     LSetTestName("LBitset_test_02");
     LBitset<Flags> bitset;
-    LAssert("LBitset value should be 0", bitset.get() == 0 && bitset == 0);
+    LAssert("LBitset value should be 0", bitset == 0 && bitset == 0);
 }
 
 void LBitset_test_03()
 {
     LSetTestName("LBitset_test_03");
     LBitset<Flags> bitset { A | C };
-    LAssert("LBitset value should be A | C", bitset.get() == (A | C) && bitset == (A | C));
+    LAssert("LBitset value should be A | C", bitset == (A | C) && bitset == (A | C));
 }
 
 void LBitset_test_04()
@@ -44,18 +44,18 @@ void LBitset_test_04()
     LSetTestName("LBitset_test_03");
     LBitset<Flags> bitset;
     bitset.add(A);
-    LAssert("LBitset value should be A", bitset.get() == (A) && bitset == (A));
+    LAssert("LBitset value should be A", bitset == (A) && bitset == (A));
     bitset |= B;
-    LAssert("LBitset value should be A | B", bitset.get() == (A | B) && bitset == (A | B));
+    LAssert("LBitset value should be A | B", bitset == (A | B) && bitset == (A | B));
     bitset = bitset | C;
-    LAssert("LBitset value should be A | B | C", bitset.get() == (A | B | C) && bitset == (A | B | C));
+    LAssert("LBitset value should be A | B | C", bitset == (A | B | C) && bitset == (A | B | C));
     bitset &= C;
-    LAssert("LBitset value should be C", bitset.get() == (C) && bitset == (C));
+    LAssert("LBitset value should be C", bitset == (C) && bitset == (C));
     bitset.remove(C);
-    LAssert("LBitset value should be 0", bitset.get() == 0 && bitset == 0);
+    LAssert("LBitset value should be 0", bitset == 0 && bitset == 0);
     bitset = A | B | C | D | E | F;
     bitset =~bitset;
-    LAssert("LBitset value should be G | H", bitset.get() == (G | H) && bitset == (G | H));
+    LAssert("LBitset value should be G | H", bitset == (G | H) && bitset == (G | H));
 }
 
 void LBitset_run_tests()

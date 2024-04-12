@@ -100,7 +100,7 @@ public:
      */
     LSurface *surface() const noexcept
     {
-        return m_surface.get();
+        return m_surface;
     }
 
     /**
@@ -108,7 +108,7 @@ public:
      */
     LResource *resource() const
     {
-        return m_resource.get();
+        return m_resource;
     }
 
     /**

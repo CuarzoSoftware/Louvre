@@ -10,7 +10,7 @@ public:
 
     Wayland::RSurface *surfaceRes() const noexcept
     {
-        return m_surfaceRes.get();
+        return m_surfaceRes;
     }
 
     bool preferVSync() const noexcept

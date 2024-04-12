@@ -5,7 +5,7 @@
 
 #include <private/LTexturePrivate.h>
 #include <private/LOutputPrivate.h>
-#include <framebuffers/LOutputFramebuffer.h>
+#include <LOutputFramebuffer.h>
 #include <LPainter.h>
 #include <LRect.h>
 #include <GL/gl.h>

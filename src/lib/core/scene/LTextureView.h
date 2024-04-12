@@ -1,7 +1,7 @@
 #ifndef LTEXTUREVIEW_H
 #define LTEXTUREVIEW_H
 
-#include <scene/LView.h>
+#include <LView.h>
 #include <LWeak.h>
 
 /**

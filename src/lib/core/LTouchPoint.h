@@ -1,9 +1,9 @@
 #ifndef LTOUCHPOINT_H
 #define LTOUCHPOINT_H
 
-#include <events/LTouchDownEvent.h>
-#include <events/LTouchMoveEvent.h>
-#include <events/LTouchUpEvent.h>
+#include <LTouchDownEvent.h>
+#include <LTouchMoveEvent.h>
+#include <LTouchUpEvent.h>
 #include <LObject.h>
 #include <LWeak.h>
 
@@ -63,7 +63,7 @@ public:
      */
     LSurface *surface() const noexcept
     {
-        return m_surface.get();
+        return m_surface;
     }
 
     /**

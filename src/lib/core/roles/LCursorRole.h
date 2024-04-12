@@ -1,7 +1,7 @@
 #ifndef LCURSORROLE_H
 #define LCURSORROLE_H
 
-#include <roles/LBaseSurfaceRole.h>
+#include <LBaseSurfaceRole.h>
 #include <memory>
 
 /**

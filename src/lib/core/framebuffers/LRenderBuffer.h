@@ -2,7 +2,7 @@
 #define LRENDERBUFFER_H
 
 #include <LTexture.h>
-#include <framebuffers/LFramebuffer.h>
+#include <LFramebuffer.h>
 #include <thread>
 
 /**

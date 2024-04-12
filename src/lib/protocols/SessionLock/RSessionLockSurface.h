@@ -16,7 +16,7 @@ public:
 
     RSessionLock *sessionLockRes() const noexcept
     {
-        return m_sessionLockRes.get();
+        return m_sessionLockRes;
     }
 
     /******************** REQUESTS ********************/

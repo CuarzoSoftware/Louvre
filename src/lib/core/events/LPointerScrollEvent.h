@@ -1,7 +1,7 @@
 #ifndef LPOINTERAXISEVENT_H
 #define LPOINTERAXISEVENT_H
 
-#include <events/LPointerEvent.h>
+#include <LPointerEvent.h>
 #include <LPointer.h>
 #include <LTime.h>
 

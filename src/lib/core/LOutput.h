@@ -5,7 +5,7 @@
 #include <LSize.h>
 #include <LRect.h>
 #include <LRegion.h>
-#include <framebuffers/LFramebuffer.h>
+#include <LFramebuffer.h>
 
 #include <thread>
 #include <GLES2/gl2.h>

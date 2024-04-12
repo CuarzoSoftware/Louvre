@@ -10,7 +10,7 @@ public:
 
     Wayland::RPointer *pointerRes() const noexcept
     {
-        return m_pointerRes.get();
+        return m_pointerRes;
     }
 
     UInt32 lifetime() const noexcept
@@ -20,7 +20,7 @@ public:
 
     LSurface *surface() const noexcept
     {
-        return m_surface.get();
+        return m_surface;
     }
 
     bool constrained() const noexcept

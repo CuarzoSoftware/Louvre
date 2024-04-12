@@ -10,7 +10,7 @@ public:
 
     Wayland::RPointer *pointerRes() const noexcept
     {
-        return m_pointerRes.get();
+        return m_pointerRes;
     }
 
     /******************** REQUESTS ********************/

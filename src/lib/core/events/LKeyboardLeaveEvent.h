@@ -1,7 +1,7 @@
 #ifndef LKEYBOARDLEAVEEVENT_H
 #define LKEYBOARDLEAVEEVENT_H
 
-#include <events/LKeyboardEvent.h>
+#include <LKeyboardEvent.h>
 #include <LTime.h>
 
 /**

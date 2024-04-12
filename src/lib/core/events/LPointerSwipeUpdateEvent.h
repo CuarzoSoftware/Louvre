@@ -1,7 +1,7 @@
 #ifndef LPOINTERSWIPEUPDATEEVENT_H
 #define LPOINTERSWIPEUPDATEEVENT_H
 
-#include <events/LPointerEvent.h>
+#include <LPointerEvent.h>
 #include <LPoint.h>
 #include <LTime.h>
 

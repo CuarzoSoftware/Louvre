@@ -1,7 +1,7 @@
 #ifndef LINPUTEVENT_H
 #define LINPUTEVENT_H
 
-#include <events/LEvent.h>
+#include <LEvent.h>
 
 /**
  * @brief Base class for input events.

@@ -1,7 +1,7 @@
 #ifndef LPOINTERLEAVEEVENT_H
 #define LPOINTERLEAVEEVENT_H
 
-#include <events/LPointerEvent.h>
+#include <LPointerEvent.h>
 #include <LPoint.h>
 #include <LTime.h>
 

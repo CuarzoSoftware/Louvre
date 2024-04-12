@@ -11,7 +11,7 @@ public:
 
     RXdgSurface *xdgSurfaceRes() const noexcept
     {
-        return m_xdgSurfaceRes.get();
+        return m_xdgSurfaceRes;
     }
 
     LToplevelRole *toplevelRole() const noexcept

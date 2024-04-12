@@ -1,7 +1,7 @@
 #ifndef LTOUCHCANCELEVENT_H
 #define LTOUCHCANCELEVENT_H
 
-#include <events/LTouchEvent.h>
+#include <LTouchEvent.h>
 #include <LTime.h>
 
 /**

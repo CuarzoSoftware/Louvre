@@ -1,7 +1,7 @@
 #ifndef LTOUCHFRAMEEVENT_H
 #define LTOUCHFRAMEEVENT_H
 
-#include <events/LTouchEvent.h>
+#include <LTouchEvent.h>
 #include <LTime.h>
 
 /**

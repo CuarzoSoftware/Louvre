@@ -15,7 +15,7 @@ public:
 
     LSurface *surface() const noexcept
     {
-        return m_surface.get();
+        return m_surface;
     }
 
     bool constrained() const noexcept

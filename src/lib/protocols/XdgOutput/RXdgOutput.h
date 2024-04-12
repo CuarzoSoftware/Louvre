@@ -7,7 +7,7 @@
 class Louvre::Protocols::XdgOutput::RXdgOutput final : public LResource
 {
 public:
-    Wayland::GOutput *outputRes() const noexcept { return m_outputRes.get(); }
+    Wayland::GOutput *outputRes() const noexcept { return m_outputRes; }
 
     /******************** REQUESTS ********************/
 

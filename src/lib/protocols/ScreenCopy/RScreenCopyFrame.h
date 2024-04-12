@@ -18,8 +18,8 @@ public:
         Accepted            = static_cast<UInt8>(1) << 3
     };
 
-    GScreenCopyManager *screenCopyManagerRes() const noexcept { return m_screenCopyManagerRes.get(); }
-    LOutput *output()       const noexcept { return m_output.get(); }
+    GScreenCopyManager *screenCopyManagerRes() const noexcept { return m_screenCopyManagerRes; }
+    LOutput *output()       const noexcept { return m_output; }
     const LRect &rect()     const noexcept { return m_rect; };
     const LRect &rectB()    const noexcept { return m_rectB; };
     bool compositeCursor()  const noexcept { return m_stateFlags.check(CompositeCursor); };

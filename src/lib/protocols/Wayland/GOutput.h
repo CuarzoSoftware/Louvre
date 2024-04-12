@@ -8,7 +8,7 @@ class Louvre::Protocols::Wayland::GOutput final : public LResource
 {
 public:
 
-    LOutput *output() const noexcept { return m_output.get(); }
+    LOutput *output() const noexcept { return m_output; }
     const std::vector<XdgOutput::RXdgOutput*> &xdgOutputRes() const noexcept { return m_xdgOutputRes; }
 
     /******************** REQUESTS ********************/

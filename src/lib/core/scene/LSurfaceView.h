@@ -1,7 +1,7 @@
 #ifndef LSURFACEVIEW_H
 #define LSURFACEVIEW_H
 
-#include <scene/LView.h>
+#include <LView.h>
 
 /**
  * @brief View for displaying surfaces.

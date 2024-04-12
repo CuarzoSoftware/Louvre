@@ -3,8 +3,8 @@
 
 #include <LObject.h>
 #include <LPoint.h>
-#include <roles/LCursorRole.h>
-#include <events/LPointerEnterEvent.h>
+#include <LCursorRole.h>
+#include <LPointerEnterEvent.h>
 #include <LSurface.h>
 
 /**
@@ -62,7 +62,7 @@ public:
      */
     LCursorRole *cursorRole() const noexcept
     {
-        return m_role.get();
+        return m_role;
     }
 
     /**

@@ -10,7 +10,7 @@ class Louvre::Protocols::Viewporter::RViewport final : public LResource
 public:
     Wayland::RSurface *surfaceRes() const noexcept
     {
-        return m_surfaceRes.get();
+        return m_surfaceRes;
     }
 
     const LSize &dstSize() const noexcept

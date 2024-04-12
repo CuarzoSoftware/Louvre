@@ -1,7 +1,7 @@
 #ifndef LPOINTERHOLDENDEVENT_H
 #define LPOINTERHOLDENDEVENT_H
 
-#include <events/LPointerEvent.h>
+#include <LPointerEvent.h>
 #include <LTime.h>
 
 /**

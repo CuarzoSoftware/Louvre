@@ -10,7 +10,7 @@ class Louvre::Protocols::XdgShell::RXdgPopup final : public LResource
 public:
     RXdgSurface *xdgSurfaceRes() const noexcept
     {
-        return m_xdgSurfaceRes.get();
+        return m_xdgSurfaceRes;
     }
 
     LPopupRole *popupRole() const noexcept

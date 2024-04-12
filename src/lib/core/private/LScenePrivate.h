@@ -1,13 +1,13 @@
 #ifndef LSCENEPRIVATE_H
 #define LSCENEPRIVATE_H
 
-#include <events/LPointerEnterEvent.h>
-#include <events/LPointerHoldEndEvent.h>
-#include <events/LPointerLeaveEvent.h>
-#include <events/LPointerMoveEvent.h>
-#include <events/LPointerPinchEndEvent.h>
-#include <events/LPointerSwipeEndEvent.h>
-#include <events/LTouchDownEvent.h>
+#include <LPointerEnterEvent.h>
+#include <LPointerHoldEndEvent.h>
+#include <LPointerLeaveEvent.h>
+#include <LPointerMoveEvent.h>
+#include <LPointerPinchEndEvent.h>
+#include <LPointerSwipeEndEvent.h>
+#include <LTouchDownEvent.h>
 #include <LSceneView.h>
 #include <LScene.h>
 #include <LBitset.h>

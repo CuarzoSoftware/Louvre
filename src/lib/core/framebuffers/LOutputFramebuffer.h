@@ -1,7 +1,7 @@
 #ifndef LOUTPUTFRAMEBUFFER_H
 #define LOUTPUTFRAMEBUFFER_H
 
-#include <framebuffers/LFramebuffer.h>
+#include <LFramebuffer.h>
 
 /**
  * @brief An output framebuffer
