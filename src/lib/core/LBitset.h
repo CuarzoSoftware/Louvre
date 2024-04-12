@@ -49,7 +49,7 @@ public:
      *
      * @param flags Initial flags to set (default is 0)
      */
-    LBitset(Flag flags = 0) noexcept : m_flags(flags) {}
+    constexpr LBitset(Flag flags = 0) noexcept : m_flags(flags) {}
 
     /**
      * @brief Add new flags to the bitfield
@@ -58,7 +58,7 @@ public:
      *
      * @param flags The flag or combination of flags to be added
      */
-    void add(Flag flags) noexcept
+    constexpr void add(Flag flags) noexcept
     {
         m_flags |= flags;
     }
@@ -70,7 +70,7 @@ public:
      *
      * @param flags The flag or combination of flags to be removed
      */
-    void remove(Flag flags) noexcept
+    constexpr void remove(Flag flags) noexcept
     {
         m_flags &= ~flags;
     }
@@ -83,7 +83,7 @@ public:
      * @param flags The flag or combination of flags to be checked
      * @return `true` if at least one flag is set, otherwise `false`
      */
-    bool check(Flag flags) const noexcept
+    constexpr bool check(Flag flags) const noexcept
     {
         return (m_flags & flags) != 0;
     }
@@ -96,7 +96,7 @@ public:
      * @param flags The flag or combination of flags to be checked
      * @return `true` if all specified flags are set, otherwise `false`
      */
-    bool checkAll(Flag flags) const noexcept
+    constexpr bool checkAll(Flag flags) const noexcept
     {
         return (m_flags & flags) == flags;
     }
@@ -108,7 +108,7 @@ public:
      *
      * @return The current set of flags
      */
-    Flag get() const noexcept
+    constexpr Flag get() const noexcept
     {
         return m_flags;
     }
@@ -120,7 +120,7 @@ public:
      *
      * @param flags The new flag or combination of flags to be set
      */
-    void set(Flag flags) noexcept
+    constexpr void set(Flag flags) noexcept
     {
         m_flags = flags;
     }
@@ -133,7 +133,7 @@ public:
      * @param flag The flag to be set or unset
      * @param enable If `true`, set the flag, if `false`, remove the flag
      */
-    void setFlag(Flag flag, bool enable) noexcept
+    constexpr void setFlag(Flag flag, bool enable) noexcept
     {
         if (enable)
             add(flag);
@@ -142,26 +142,14 @@ public:
     }
 
     /**
-     * @brief Conversion operator.
-     *
-     * Allows you to access the bitset as its underlying type and pass it to functions, for example.
-     *
-     * @return Flag The converted value of the bitset.
-     */
-    operator Flag() const
-    {
-        return m_flags;
-    }
-
-    /**
      * @brief Performs a bitwise OR operation with another LBitset.
      *
      * @param flags The LBitset containing flags to perform the operation with.
      * @return LBitset<Flag>& A reference to the modified LBitset after the operation.
      */
-    LBitset<T>& operator|=(const Flag& flags)
+    constexpr LBitset<T>& operator|=(T flags) noexcept
     {
-        m_flags |= flags;
+        m_flags |= Flag(flags);
         return *this;
     }
 
@@ -171,9 +159,9 @@ public:
      * @param flags The LBitset containing flags to perform the operation with.
      * @return LBitset<Flag>& A reference to the modified LBitset after the operation.
      */
-    LBitset<T>& operator&=(const Flag& flags)
+    constexpr LBitset<T>& operator&=(T flags) noexcept
     {
-        m_flags &= flags;
+        m_flags &= Flag(flags);
         return *this;
     }
 
@@ -183,10 +171,40 @@ public:
      * @param flags The LBitset containing flags to perform the operation with.
      * @return LBitset<Flag>& A reference to the modified LBitset after the operation.
      */
-    LBitset<T>& operator^=(const Flag& flags)
+    constexpr LBitset<T>& operator^=(T flags) noexcept
     {
-        m_flags ^= flags;
+        m_flags ^= Flag(flags);
         return *this;
+    }
+
+    friend constexpr T operator~(T flag) noexcept
+    {
+        return T(~Flag(flag));
+    }
+
+    friend constexpr T operator&(T a, T b) noexcept
+    {
+        return T(Flag(a) & Flag(b));
+    }
+
+    friend constexpr T operator|(T a, T b) noexcept
+    {
+        return T(Flag(a) | Flag(b));
+    }
+
+    friend constexpr T operator^(T a, T b) noexcept
+    {
+        return T(Flag(a) ^ Flag(b));
+    }
+
+    constexpr operator T() const noexcept
+    {
+        return T(m_flags);
+    }
+
+    constexpr LBitset<T> operator ~() const noexcept
+    {
+        return LBitset<T>(~m_flags);
     }
 
 private:

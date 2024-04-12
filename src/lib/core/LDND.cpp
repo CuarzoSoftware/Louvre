@@ -27,7 +27,7 @@ LDND::LDND(const void *params) noexcept
 
 void LDND::setFocus(LSurface *surface, const LPointF &localPos) noexcept
 {
-    if (!m_session.get())
+    if (!m_session)
         return;
 
     if (!surface)
@@ -38,7 +38,7 @@ void LDND::setFocus(LSurface *surface, const LPointF &localPos) noexcept
     else
     {
         // If the source is NULL, only surfaces from the src client are allowed to gain focus
-        if (!m_session->source.get() && surface->client() != origin()->client())
+        if (!m_session->source && surface->client() != origin()->client())
         {
             sendLeaveEvent();
             return;
@@ -70,27 +70,27 @@ void LDND::setFocus(LSurface *surface, const LPointF &localPos) noexcept
     const Float24 y { wl_fixed_from_double(localPos.y()) };
     const UInt32 serial { LTime::nextSerial() };
 
-    if (m_session->source.get())
+    if (m_session->source)
     {
-        m_session->offer.reset(m_session->dstDataDevice.get()->createOffer(RDataSource::DND));
-        m_session->offer.get()->m_dndSession = m_session;
+        m_session->offer.reset(m_session->dstDataDevice->createOffer(RDataSource::DND));
+        m_session->offer->m_dndSession = m_session;
 
-        m_session->dstDataDevice.get()->m_enterSerial = serial;
-        m_session->dstDataDevice.get()->enter(
+        m_session->dstDataDevice->m_enterSerial = serial;
+        m_session->dstDataDevice->enter(
             serial,
             surface->surfaceResource(),
             x,
             y,
-            m_session->offer.get());
+            m_session->offer);
 
-        m_session->offer.get()->sourceActions(m_session->source.get()->actions());
+        m_session->offer->sourceActions(m_session->source->actions());
     }
     /* If source is NULL, enter, leave and motion events are sent only to the client that
      * initiated the drag and the client is expected to handle the data passing internally */
     else
     {
-        m_session->dstDataDevice.get()->m_enterSerial = serial;
-        m_session->dstDataDevice.get()->enter(
+        m_session->dstDataDevice->m_enterSerial = serial;
+        m_session->dstDataDevice->enter(
             serial,
             focus()->surfaceResource(),
             x,
@@ -101,10 +101,10 @@ void LDND::setFocus(LSurface *surface, const LPointF &localPos) noexcept
 
 void LDND::sendMoveEvent(const LPointF &localPos, UInt32 ms) noexcept
 {
-    if (!focus() || !m_session.get() || !m_session.get()->dstDataDevice.get())
+    if (!focus() || !m_session || !m_session->dstDataDevice)
         return;
 
-    m_session.get()->dstDataDevice.get()->motion(
+    m_session->dstDataDevice->motion(
         ms,
         wl_fixed_from_double(localPos.x()),
         wl_fixed_from_double(localPos.y()));
@@ -112,44 +112,44 @@ void LDND::sendMoveEvent(const LPointF &localPos, UInt32 ms) noexcept
 
 const LEvent &LDND::triggeringEvent() const noexcept
 {
-    return *m_triggeringEvent.get();
+    return *m_triggeringEvent;
 }
 
 LDNDIconRole *LDND::icon() const noexcept
 {
     if (m_session)
-        return m_session->icon.get();
+        return m_session->icon;
     return nullptr;
 }
 
 LSurface *LDND::origin() const noexcept
 {
     if (m_session)
-        return m_session->origin.get();
+        return m_session->origin;
     return nullptr;
 }
 
 LSurface *LDND::focus() const noexcept
 {
     if (m_session)
-        return m_session->focus.get();
+        return m_session->focus;
     return nullptr;
 }
 
 bool LDND::dragging() const noexcept
 {
-    return m_session.get() != nullptr;
+    return m_session != nullptr;
 }
 
 void LDND::cancel() noexcept
 {
-    if (!m_session.get())
+    if (!m_session)
         return;
 
-    if (m_session->source.get())
+    if (m_session->source)
     {
-        m_session->source.get()->cancelled();
-        m_session->source.get()->dndFinished();
+        m_session->source->cancelled();
+        m_session->source->dndFinished();
     }
 
     sendLeaveEvent();
@@ -173,22 +173,22 @@ void LDND::drop() noexcept
         return;
     }
 
-    const bool cancelled { m_session->offer.get() && m_session->offer.get()->version() >= 3 && !m_session->offer.get()->matchedMimeType() };
+    const bool cancelled { m_session->offer && m_session->offer->version() >= 3 && !m_session->offer->matchedMimeType() };
 
-    if (m_session->dstDataDevice.get())
+    if (m_session->dstDataDevice)
     {
         if (!cancelled)
-            m_session->dstDataDevice.get()->drop();
+            m_session->dstDataDevice->drop();
 
-        m_session->dstDataDevice.get()->leave();
+        m_session->dstDataDevice->leave();
     }
 
-    if (m_session->source.get())
+    if (m_session->source)
     {
-        m_session->source.get()->dndDropPerformed();
+        m_session->source->dndDropPerformed();
 
         if (cancelled)
-            m_session->source.get()->cancelled();
+            m_session->source->cancelled();
     }
 
     m_session.reset();
@@ -217,20 +217,20 @@ void LDND::setPreferredAction(LDND::Action action) noexcept
 
 void LDND::sendLeaveEvent() noexcept
 {
-    if (!m_session.get())
+    if (!m_session)
         return;
 
     m_session->focus.reset();
 
-    if (m_session->dstDataDevice.get())
+    if (m_session->dstDataDevice)
     {
-        m_session->dstDataDevice.get()->leave();
+        m_session->dstDataDevice->leave();
         m_session->dstDataDevice.reset();
     }
 
-    if (m_session->offer.get())
+    if (m_session->offer)
     {
-        m_session->offer.get()->m_dndSession.reset();
+        m_session->offer->m_dndSession.reset();
         m_session->offer.reset();
     }
 }

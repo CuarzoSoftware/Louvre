@@ -71,10 +71,10 @@ LKeyboard::~LKeyboard()
 
 void LKeyboard::setGrab(LSurface *surface)
 {
-    if (imp()->grab.get() == surface)
+    if (imp()->grab == surface)
         return;
 
-    if (imp()->focus.get() == surface)
+    if (imp()->focus == surface)
         imp()->focus.reset();
 
     imp()->grab.reset();
@@ -84,7 +84,7 @@ void LKeyboard::setGrab(LSurface *surface)
 
 LSurface *LKeyboard::grab() const
 {
-    return imp()->grab.get();
+    return imp()->grab;
 }
 
 const LKeyboardModifiersEvent::Modifiers &LKeyboard::modifiers() const
@@ -254,12 +254,12 @@ UInt32 LKeyboard::keymapFormat() const
 
 LSurface *LKeyboard::focus() const
 {
-    return imp()->focus.get();
+    return imp()->focus;
 }
 
 void LKeyboard::setFocus(LSurface *surface)
 {
-    if (imp()->grab.get())
+    if (imp()->grab)
         return;
 
     if (surface)
@@ -276,10 +276,10 @@ void LKeyboard::setFocus(LSurface *surface)
                     rKeyboard->leave(leaveEvent, focus()->surfaceResource());
         }
 
-        const bool clientChanged { !seat()->clipboard()->m_dataOffer.get() || seat()->clipboard()->m_dataOffer.get()->client() != surface->client()};
+        const bool clientChanged { !seat()->clipboard()->m_dataOffer || seat()->clipboard()->m_dataOffer->client() != surface->client()};
 
-        if (clientChanged && seat()->clipboard()->m_dataOffer.get() && seat()->clipboard()->m_dataOffer.get()->dataDeviceRes())
-            seat()->clipboard()->m_dataOffer.get()->dataDeviceRes()->selection(nullptr);
+        if (clientChanged && seat()->clipboard()->m_dataOffer && seat()->clipboard()->m_dataOffer->dataDeviceRes())
+            seat()->clipboard()->m_dataOffer->dataDeviceRes()->selection(nullptr);
 
         imp()->focus.reset();
 
@@ -324,8 +324,8 @@ void LKeyboard::setFocus(LSurface *surface)
                     rKeyboard->leave(leaveEvent, focus()->surfaceResource());
         }
 
-        if (seat()->clipboard()->m_dataOffer.get() && seat()->clipboard()->m_dataOffer.get()->dataDeviceRes())
-            seat()->clipboard()->m_dataOffer.get()->dataDeviceRes()->selection(nullptr);
+        if (seat()->clipboard()->m_dataOffer && seat()->clipboard()->m_dataOffer->dataDeviceRes())
+            seat()->clipboard()->m_dataOffer->dataDeviceRes()->selection(nullptr);
 
         imp()->focus.reset();
     }

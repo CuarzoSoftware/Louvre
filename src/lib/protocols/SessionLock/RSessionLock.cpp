@@ -88,7 +88,7 @@ void RSessionLock::unlock_and_destroy(wl_client */*client*/, wl_resource *resour
         return;
     }
 
-    if (compositor()->sessionLockManager()->m_sessionLockRes.get() == &res)
+    if (compositor()->sessionLockManager()->m_sessionLockRes == &res)
     {
 
         for (LSessionLockRole *role : res.roles())

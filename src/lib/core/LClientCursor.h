@@ -3,8 +3,8 @@
 
 #include <LObject.h>
 #include <LPoint.h>
-#include <LCursorRole.h>
-#include <LPointerEnterEvent.h>
+#include <roles/LCursorRole.h>
+#include <events/LPointerEnterEvent.h>
 #include <LSurface.h>
 
 /**

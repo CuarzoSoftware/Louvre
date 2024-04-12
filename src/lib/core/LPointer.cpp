@@ -97,7 +97,7 @@ void LPointer::sendMoveEvent(const LPointerMoveEvent &event)
     Wayland::RPointer *lockedPointer { nullptr };
 
     if (focus()->pointerConstraintEnabled() && focus()->pointerConstraintMode() == LSurface::Lock)
-        lockedPointer = focus()->imp()->lockedPointerRes.get()->pointerRes();
+        lockedPointer = focus()->imp()->lockedPointerRes->pointerRes();
 
     for (auto gSeat : focus()->client()->seatGlobals())
     {
@@ -372,7 +372,7 @@ bool LPointer::isButtonPressed(LPointerButtonEvent::Button button) const
 
 LSurface *LPointer::draggingSurface() const
 {
-    return imp()->draggingSurface.get();
+    return imp()->draggingSurface;
 }
 
 LSurface *LPointer::surfaceAt(const LPoint &point)
@@ -395,7 +395,7 @@ LSurface *LPointer::surfaceAt(const LPoint &point)
 
 LSurface *LPointer::focus() const
 {
-    return imp()->focus.get();
+    return imp()->focus;
 }
 
 void LPointer::LPointerPrivate::sendLeaveEvent(LSurface *surface) noexcept

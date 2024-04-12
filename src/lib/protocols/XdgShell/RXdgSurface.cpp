@@ -34,7 +34,7 @@ RXdgSurface::RXdgSurface
     m_xdgWmBaseRes(xdgWmBaseRes),
     m_surface(surface)
 {
-    m_xdgWmBaseRes.get()->m_xdgSurfacesCount++;
+    m_xdgWmBaseRes->m_xdgSurfacesCount++;
 }
 
 RXdgSurface::~RXdgSurface() noexcept
@@ -155,32 +155,24 @@ void RXdgSurface::ack_configure(wl_client */*client*/, wl_resource *resource, UI
     if (res.surface()->roleId() == LSurface::Role::Toplevel)
     {
         auto &toplevel { *res.surface()->toplevel() };
-        LWeak<LToplevelRole> ref { &toplevel };
-
-        if (toplevel.imp()->xdgDecoration.get() && toplevel.imp()->pendingDecorationMode != 0 && toplevel.imp()->lastDecorationModeConfigureSerial == serial)
-        {
-            if (toplevel.imp()->decorationMode != toplevel.imp()->pendingDecorationMode)
-            {
-                toplevel.imp()->decorationMode = static_cast<LToplevelRole::DecorationMode>(toplevel.imp()->pendingDecorationMode);
-                toplevel.decorationModeChanged();
-
-                if (!ref.get())
-                    return;
-            }
-
-            toplevel.imp()->pendingDecorationMode = 0;
-        }
 
         while (!toplevel.imp()->sentConfs.empty())
         {
             if (toplevel.imp()->sentConfs.front().serial == serial)
             {
-                toplevel.imp()->pendingApplyConf = toplevel.imp()->sentConfs.front();
+                toplevel.imp()->stateFlags.add(LToplevelRole::LToplevelRolePrivate::HasUncommitedConfiguration);
+                toplevel.imp()->uncommited = toplevel.imp()->sentConfs.front();
+
+                if (!toplevel.imp()->xdgDecoration)
+                    toplevel.imp()->uncommited.decorationMode = LToplevelRole::ClientSide;
+
                 toplevel.imp()->sentConfs.pop_front();
 
                 // Some clients don't invoke wl_surface_commit when their toplevel states change, so we apply it here only if the geometry size hasn't changed
-                if (toplevel.decorationMode() == LToplevelRole::ServerSide && toplevel.surface() && toplevel.surface()->mapped() && toplevel.imp()->pendingApplyConf.size == toplevel.windowGeometry().size())
-                    toplevel.imp()->applyPendingChanges();
+                if (toplevel.imp()->uncommited.decorationMode == LToplevelRole::ServerSide &&
+                    toplevel.surface() && toplevel.surface()->mapped() &&
+                    toplevel.imp()->uncommited.size == toplevel.imp()->current.size)
+                    toplevel.imp()->applyPendingChanges(0);
 
                 return;
             }

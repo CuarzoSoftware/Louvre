@@ -89,7 +89,7 @@ void Surface::minimizedChanged()
         }
 
         if (toplevel())
-            toplevel()->configure(toplevel()->pendingStates() &~ LToplevelRole::Activated);
+            toplevel()->configureState(toplevel()->pending().state &~ LToplevelRole::Activated);
     }
     else
     {
@@ -97,6 +97,6 @@ void Surface::minimizedChanged()
         raise();
 
         if (toplevel())
-            toplevel()->configure(LToplevelRole::Activated);
+            toplevel()->configureState(LToplevelRole::Activated);
     }
 }

@@ -5,7 +5,7 @@
 #include <protocols/Viewporter/RViewport.h>
 #include <protocols/Wayland/RSurface.h>
 #include <private/LCompositorPrivate.h>
-#include <LSurfaceView.h>
+#include <scene/LSurfaceView.h>
 #include <LSurface.h>
 #include <LBitset.h>
 #include <vector>

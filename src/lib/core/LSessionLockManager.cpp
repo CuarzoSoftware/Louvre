@@ -26,12 +26,12 @@ LSessionLockManager::LSessionLockManager(const void *params)
 
 LClient *LSessionLockManager::client() const noexcept
 {
-    return m_sessionLockRes.get() == nullptr ? nullptr : m_sessionLockRes.get()->client();
+    return m_sessionLockRes == nullptr ? nullptr : m_sessionLockRes->client();
 }
 
 const std::vector<LSessionLockRole *> &LSessionLockManager::roles() const noexcept
 {
-    return m_sessionLockRes.get() == nullptr ? m_dummy : m_sessionLockRes.get()->roles();
+    return m_sessionLockRes == nullptr ? m_dummy : m_sessionLockRes->roles();
 }
 
 void LSessionLockManager::forceUnlock()
@@ -39,7 +39,7 @@ void LSessionLockManager::forceUnlock()
     if (state() == Unlocked)
         return;
 
-    if (m_sessionLockRes.get())
+    if (m_sessionLockRes)
     {
         for (LSessionLockRole *role : roles())
             if (role->surface())
@@ -48,7 +48,7 @@ void LSessionLockManager::forceUnlock()
         for (LOutput *output : seat()->outputs())
             output->imp()->sessionLockRole.reset();
 
-        m_sessionLockRes.get()->finished();
+        m_sessionLockRes->finished();
         m_sessionLockRes.reset();
     }
 

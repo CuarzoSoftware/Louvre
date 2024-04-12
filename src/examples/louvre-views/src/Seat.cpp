@@ -169,7 +169,8 @@ void Seat::outputUnplugged(LOutput *output)
             if (s->toplevel())
             {
                 Toplevel *tl = (Toplevel*)s->toplevel();
-                tl->configure(tl->prevRect.size(), LToplevelRole::Activated);
+                tl->configureSize(tl->prevRect.size());
+                tl->configureState(LToplevelRole::Activated);
                 tl->quickUnfullscreen = false;
                 tl->surf()->client()->flush();
             }

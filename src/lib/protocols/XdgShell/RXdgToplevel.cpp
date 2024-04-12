@@ -162,7 +162,7 @@ void RXdgToplevel::set_max_size(wl_client */*client*/, wl_resource *resource, In
     auto &toplevelPriv { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole()->imp() };
     toplevelPriv.pendingMaxSize.setW(width);
     toplevelPriv.pendingMaxSize.setH(height);
-    toplevelPriv.hasPendingMaxSize = true;
+    toplevelPriv.stateFlags.add(LToplevelRole::LToplevelRolePrivate::HasPendingMaxSize);
 }
 
 void RXdgToplevel::set_min_size(wl_client */*client*/, wl_resource *resource, Int32 width, Int32 height)
@@ -177,7 +177,7 @@ void RXdgToplevel::set_min_size(wl_client */*client*/, wl_resource *resource, In
     auto &toplevelPriv { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole()->imp() };
     toplevelPriv.pendingMinSize.setW(width);
     toplevelPriv.pendingMinSize.setH(height);
-    toplevelPriv.hasPendingMinSize = true;
+    toplevelPriv.stateFlags.add(LToplevelRole::LToplevelRolePrivate::HasPendingMinSize);
 }
 
 void RXdgToplevel::set_maximized(wl_client */*client*/, wl_resource *resource)
@@ -193,8 +193,8 @@ void RXdgToplevel::set_maximized(wl_client */*client*/, wl_resource *resource)
 
     res.toplevelRole()->setMaximizedRequest();
 
-    if (!res.toplevelRole()->imp()->hasConfToSend)
-        res.toplevelRole()->configure(res.toplevelRole()->pendingStates());
+    if (!res.toplevelRole()->imp()->stateFlags.check(LToplevelRole::LToplevelRolePrivate::HasConfigurationToSend))
+        res.toplevelRole()->configureState(res.toplevelRole()->pending().state);
 }
 
 void RXdgToplevel::unset_maximized(wl_client */*client*/, wl_resource *resource)
@@ -212,8 +212,8 @@ void RXdgToplevel::unset_maximized(wl_client */*client*/, wl_resource *resource)
 
     res.toplevelRole()->unsetMaximizedRequest();
 
-    if (!res.toplevelRole()->imp()->hasConfToSend)
-        res.toplevelRole()->configure(res.toplevelRole()->pendingStates());
+    if (!res.toplevelRole()->imp()->stateFlags.check(LToplevelRole::LToplevelRolePrivate::HasConfigurationToSend))
+        res.toplevelRole()->configureState(res.toplevelRole()->pending().state);
 }
 
 void RXdgToplevel::set_fullscreen(wl_client */*client*/, wl_resource *resource, wl_resource *wlOutput)
@@ -236,8 +236,8 @@ void RXdgToplevel::set_fullscreen(wl_client */*client*/, wl_resource *resource, 
     // TODO: use LWeak
     res.toplevelRole()->setFullscreenRequest(output);
 
-    if (!res.toplevelRole()->imp()->hasConfToSend)
-        res.toplevelRole()->configure(res.toplevelRole()->pendingStates());
+    if (!res.toplevelRole()->imp()->stateFlags.check(LToplevelRole::LToplevelRolePrivate::HasConfigurationToSend))
+        res.toplevelRole()->configureState(res.toplevelRole()->pending().state);
 }
 
 void RXdgToplevel::unset_fullscreen(wl_client */*client*/, wl_resource *resource)
@@ -258,8 +258,8 @@ void RXdgToplevel::unset_fullscreen(wl_client */*client*/, wl_resource *resource
 
     res.toplevelRole()->unsetFullscreenRequest();
 
-    if (!res.toplevelRole()->imp()->hasConfToSend)
-        res.toplevelRole()->configure(res.toplevelRole()->pendingStates());
+    if (!res.toplevelRole()->imp()->stateFlags.check(LToplevelRole::LToplevelRolePrivate::HasConfigurationToSend))
+        res.toplevelRole()->configureState(res.toplevelRole()->pending().state);
 }
 
 void RXdgToplevel::set_minimized(wl_client */*client*/, wl_resource *resource)

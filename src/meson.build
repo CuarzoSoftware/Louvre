@@ -62,21 +62,27 @@ dl_dep              = cpp.find_library('dl')
 
 # -------------- HEADERS --------------
 
-include_paths = [
-    include_directories('./lib'),
-    include_directories('./lib/core')
-]
+include_paths = [include_directories('./lib/')]
 
 # All headers
 headers = run_command('find', './lib', '-type', 'f', '-name', '*.h', check : false).stdout().strip().split('\n')
 
 # Public and private API headers
-headers_classes = run_command('find', './lib/core', '-type', 'f', '-name', '*.h', '-maxdepth', '1', check : false).stdout().strip().split('\n')
-headers_classes_private = run_command('find', './lib/core/private', '-type', 'f', '-name', '*.h', '-maxdepth', '1', check : false).stdout().strip().split('\n')
-headers_other = run_command('find', './lib/other', '-type', 'f', '-name', '*.h', '-maxdepth', '1', check : false).stdout().strip().split('\n')
-install_headers(headers_classes, install_dir : HEADERS_INSTALL_PATH)
-install_headers(headers_classes_private, install_dir : join_paths(HEADERS_INSTALL_PATH, 'private'))
-install_headers(headers_other, install_dir : join_paths(HEADERS_INSTALL_PATH, 'other'))
+header_dirs = [
+    ['./lib/core', ''],
+    ['./lib/core/private', 'private'],
+    ['./lib/core/roles', ''],
+    ['./lib/core/events', ''],
+    ['./lib/core/scene', ''],
+    ['./lib/core/framebuffers', ''],
+    ['./lib/other', 'other'],
+]
+
+foreach header_dir : header_dirs
+    header_files = run_command('find', header_dir[0], '-type', 'f', '-name', '*.h', '-maxdepth', '1', check : false).stdout().strip().split('\n')
+    install_headers(header_files, install_dir : join_paths(HEADERS_INSTALL_PATH, header_dir[1]))
+    include_paths += include_directories(header_dir[0])
+endforeach
 
 globals = [
     'LinuxDMABuf',

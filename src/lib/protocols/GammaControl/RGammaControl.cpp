@@ -45,7 +45,7 @@ RGammaControl::~RGammaControl()
 
     for (LOutput *o : compositor()->outputs())
     {
-        if (o->imp()->gammaTable.m_gammaControlResource.get() == this)
+        if (o->imp()->gammaTable.m_gammaControlResource == this)
         {
             o->imp()->gammaTable.m_gammaControlResource.reset();
             o->setGammaRequest(client(), nullptr);
@@ -113,7 +113,7 @@ void RGammaControl::set_gamma(wl_client */*client*/, wl_resource *resource, Int3
 
     output.setGammaRequest(res->client(), &gammaTable);
 
-    if (!weakRef.get() && output.imp()->gammaTable.m_gammaControlResource.get() != res)
+    if (!weakRef && output.imp()->gammaTable.m_gammaControlResource != res)
         res->failed();
 }
 

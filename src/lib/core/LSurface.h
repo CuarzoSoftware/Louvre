@@ -5,7 +5,7 @@
 #include <LTexture.h>
 #include <LRegion.h>
 #include <LRect.h>
-#include <LFramebuffer.h>
+#include <framebuffers/LFramebuffer.h>
 
 #include <list>
 #include <mutex>

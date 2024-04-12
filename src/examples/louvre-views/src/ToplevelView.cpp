@@ -136,7 +136,7 @@ static void onPointerButtonResizeArea(InputRect *rect, void *data, UInt32 button
         seat()->keyboard()->setFocus(toplevel->surface());
 
         if (!toplevel->activated())
-            toplevel->configure(toplevel->pendingStates() | LToplevelRole::Activated);
+            toplevel->configureState(toplevel->pending().state | LToplevelRole::Activated);
         toplevel->surface()->raise();
 
         if (data)

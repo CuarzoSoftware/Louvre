@@ -33,14 +33,10 @@ RXdgToplevelDecoration::RXdgToplevelDecoration(
 
 RXdgToplevelDecoration::~RXdgToplevelDecoration()
 {
-    if (toplevelRole())
+    if (toplevelRole() && toplevelRole()->current().decorationMode == LToplevelRole::ServerSide)
     {
-        if (toplevelRole()->decorationMode() == LToplevelRole::DecorationMode::ServerSide)
-        {
-            toplevelRole()->imp()->pendingDecorationMode = LToplevelRole::DecorationMode::ClientSide;
-            toplevelRole()->imp()->decorationMode = LToplevelRole::DecorationMode::ClientSide;
-            toplevelRole()->decorationModeChanged();
-        }
+        toplevelRole()->imp()->preferredDecorationMode = LToplevelRole::ClientSide;
+        toplevelRole()->configureDecorationMode(LToplevelRole::ClientSide);
     }
 }
 

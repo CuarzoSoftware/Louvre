@@ -45,8 +45,8 @@ void LOutput::LOutputPrivate::backendInitializeGL()
     cursor()->imp()->update();
     output->imp()->state = LOutput::Initialized;
 
-    if (sessionLockRole.get() && sessionLockRole.get()->surface())
-        sessionLockRole.get()->surface()->imp()->setMapped(true);
+    if (sessionLockRole && sessionLockRole->surface())
+        sessionLockRole->surface()->imp()->setMapped(true);
 
     output->initializeGL();
     compositor()->flushClients();
@@ -339,8 +339,8 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
     if (callLock)
        compositor()->imp()->lock();
 
-    if (sessionLockRole.get() && sessionLockRole.get()->surface())
-       sessionLockRole.get()->surface()->imp()->setMapped(false);
+    if (sessionLockRole && sessionLockRole->surface())
+       sessionLockRole->surface()->imp()->setMapped(false);
 
     while (!screenshotRequests.empty())
     {

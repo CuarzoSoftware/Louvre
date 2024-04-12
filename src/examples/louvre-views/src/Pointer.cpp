@@ -17,7 +17,11 @@
 #include "Pointer.h"
 #include "Compositor.h"
 
-Pointer::Pointer(const void *params) : LPointer(params) {}
+Pointer::Pointer(const void *params) : LPointer(params)
+{
+    enableNaturalScrollingX(true);
+    enableNaturalScrollingY(true);
+}
 
 void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)
 {

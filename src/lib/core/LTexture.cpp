@@ -666,8 +666,8 @@ void LTexture::reset() noexcept
 
     if (sourceType() == Native)
     {
-        if (m_nativeOutput.get())
-            m_nativeOutput.get()->imp()->nativeTexturesToDestroy.push_back(m_nativeId);
+        if (m_nativeOutput)
+            m_nativeOutput->imp()->nativeTexturesToDestroy.push_back(m_nativeId);
         else
             compositor()->imp()->nativeTexturesToDestroy.push_back(m_nativeId);
 

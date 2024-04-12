@@ -3,7 +3,7 @@
 
 #include <LObject.h>
 #include <LPoint.h>
-#include <LFramebuffer.h>
+#include <framebuffers/LFramebuffer.h>
 #include <LRect.h>
 #include <memory>
 

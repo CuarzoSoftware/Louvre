@@ -222,9 +222,9 @@ LFramebuffer::Transform LSurface::bufferTransform() const
 
 LSurface::PointerConstraintMode LSurface::pointerConstraintMode() const noexcept
 {
-    if (imp()->lockedPointerRes.get())
+    if (imp()->lockedPointerRes)
         return PointerConstraintMode::Lock;
-    else if (imp()->confinedPointerRes.get())
+    else if (imp()->confinedPointerRes)
         return PointerConstraintMode::Confine;
 
     return PointerConstraintMode::Free;
@@ -240,28 +240,28 @@ void LSurface::enablePointerConstraint(bool enabled)
     if (enabled && !hasPointerFocus())
         return;
 
-    if (imp()->lockedPointerRes.get())
+    if (imp()->lockedPointerRes)
     {
         if (enabled)
-            imp()->lockedPointerRes.get()->locked();
+            imp()->lockedPointerRes->locked();
         else
-            imp()->lockedPointerRes.get()->unlocked();
+            imp()->lockedPointerRes->unlocked();
     }
-    else if (imp()->confinedPointerRes.get())
+    else if (imp()->confinedPointerRes)
     {
         if (enabled)
-            imp()->confinedPointerRes.get()->confined();
+            imp()->confinedPointerRes->confined();
         else
-            imp()->confinedPointerRes.get()->unconfined();
+            imp()->confinedPointerRes->unconfined();
     }
 }
 
 bool LSurface::pointerConstraintEnabled() const noexcept
 {
-    if (imp()->lockedPointerRes.get())
-        return imp()->lockedPointerRes.get()->constrained();
-    else if (imp()->confinedPointerRes.get())
-        return imp()->confinedPointerRes.get()->constrained();
+    if (imp()->lockedPointerRes)
+        return imp()->lockedPointerRes->constrained();
+    else if (imp()->confinedPointerRes)
+        return imp()->confinedPointerRes->constrained();
 
     return false;
 }
@@ -351,7 +351,7 @@ void LSurface::requestNextFrame(bool clearDamage)
 
     for (auto *presentation : imp()->presentationFeedbackResources)
     {
-        if (presentation->m_commitId >= 0 && !presentation->m_output.get())
+        if (presentation->m_commitId >= 0 && !presentation->m_output)
         {
             if (presentation->m_commitId == imp()->commitId && compositor()->imp()->currentOutput)
             {

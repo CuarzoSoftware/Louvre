@@ -284,9 +284,9 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     {
         if (changes.check(Changes::PointerConstraintRegionChanged | Changes::InputRegionChanged))
         {
-            if (imp.pendingPointerConstraintRegion.get())
+            if (imp.pendingPointerConstraintRegion)
             {
-                imp.pointerConstraintRegion = *imp.pendingPointerConstraintRegion.get();
+                imp.pointerConstraintRegion = *imp.pendingPointerConstraintRegion;
                 imp.pointerConstraintRegion.intersectRegion(imp.currentInputRegion);
             }
             else
@@ -347,7 +347,7 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     {
         surface->bufferSizeChanged();
 
-        if (!ref.get())
+        if (!ref)
             return;
     }
 
@@ -355,7 +355,7 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     {
         surface->sizeChanged();
 
-        if (!ref.get())
+        if (!ref)
             return;
     }
 
@@ -363,7 +363,7 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     {
         surface->srcRectChanged();
 
-        if (!ref.get())
+        if (!ref)
             return;
     }
 
@@ -371,7 +371,7 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     {
         surface->bufferScaleChanged();
 
-        if (!ref.get())
+        if (!ref)
             return;
     }
 
@@ -379,7 +379,7 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     {
         surface->bufferTransformChanged();
 
-        if (!ref.get())
+        if (!ref)
             return;
     }
 
@@ -387,7 +387,7 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     {
         surface->damageChanged();
 
-        if (!ref.get())
+        if (!ref)
             return;
     }
 
@@ -395,7 +395,7 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     {
         surface->inputRegionChanged();
 
-        if (!ref.get())
+        if (!ref)
             return;
     }
 
@@ -403,7 +403,7 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     {
         surface->pointerConstraintRegionChanged();
 
-        if (!ref.get())
+        if (!ref)
             return;
     }
 
@@ -411,7 +411,7 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     {
         surface->lockedPointerPosHintChanged();
 
-        if (!ref.get())
+        if (!ref)
             return;
     }
 
@@ -419,7 +419,7 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     {
         surface->opaqueRegionChanged();
 
-        if (!ref.get())
+        if (!ref)
             return;
     }
 
@@ -427,7 +427,7 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     {
         surface->preferVSyncChanged();
 
-        if (!ref.get())
+        if (!ref)
             return;
     }
 

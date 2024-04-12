@@ -36,14 +36,14 @@ RConfinedPointer::RConfinedPointer(
 
     if (regionRes)
     {
-        m_surface.get()->imp()->pendingPointerConstraintRegion = std::make_unique<LRegion>(regionRes->region());
-        m_surface.get()->imp()->pointerConstraintRegion = regionRes->region();
-        m_surface.get()->imp()->pointerConstraintRegion.intersectRegion(
-            m_surface.get()->imp()->currentInputRegion);
+        m_surface->imp()->pendingPointerConstraintRegion = std::make_unique<LRegion>(regionRes->region());
+        m_surface->imp()->pointerConstraintRegion = regionRes->region();
+        m_surface->imp()->pointerConstraintRegion.intersectRegion(
+            m_surface->imp()->currentInputRegion);
     }
     else
     {
-        m_surface.get()->imp()->pointerConstraintRegion = m_surface.get()->imp()->currentInputRegion;
+        m_surface->imp()->pointerConstraintRegion = m_surface->imp()->currentInputRegion;
     }
 
     surface->pointerConstraintModeChanged();

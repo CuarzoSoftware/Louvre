@@ -198,7 +198,7 @@ void LCursor::setCursor(const LClientCursor &clientCursor) noexcept
 
 const LClientCursor *LCursor::clientCursor() const noexcept
 {
-    return imp()->clientCursor.get();
+    return imp()->clientCursor;
 }
 
 void LCursor::move(Float32 x, Float32 y)

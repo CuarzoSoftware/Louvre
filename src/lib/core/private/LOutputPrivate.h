@@ -1,8 +1,8 @@
 #ifndef LOUTPUTPRIVATE_H
 #define LOUTPUTPRIVATE_H
 
-#include <LOutputFramebuffer.h>
-#include <LRenderBuffer.h>
+#include <framebuffers/LOutputFramebuffer.h>
+#include <framebuffers/LRenderBuffer.h>
 #include <LOutput.h>
 #include <LBitset.h>
 #include <LGammaTable.h>

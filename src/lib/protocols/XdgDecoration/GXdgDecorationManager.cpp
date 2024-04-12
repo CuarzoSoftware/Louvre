@@ -59,7 +59,7 @@ void GXdgDecorationManager::get_toplevel_decoration(wl_client */*client*/, wl_re
 {
     auto &xdgToplevelRoleRes { *static_cast<XdgShell::RXdgToplevel*>(wl_resource_get_user_data(toplevel)) };
 
-    if (xdgToplevelRoleRes.toplevelRole()->imp()->xdgDecoration.get())
+    if (xdgToplevelRoleRes.toplevelRole()->imp()->xdgDecoration)
     {
         wl_resource_post_error(resource, ZXDG_TOPLEVEL_DECORATION_V1_ERROR_ALREADY_CONSTRUCTED,
                                "Multiple XDG Toplevel Decorations for a Toplevel not supported.");

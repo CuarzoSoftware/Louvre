@@ -507,8 +507,8 @@ void LCompositor::removeOutput(LOutput *output)
                 }
             }
 
-            if (output->imp()->global.get())
-                removeGlobal(output->imp()->global.get());
+            if (output->imp()->global)
+                removeGlobal(output->imp()->global);
 
             LVectorRemoveOneUnordered(cursor()->imp()->intersectedOutputs, output);
 

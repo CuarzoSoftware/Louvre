@@ -93,6 +93,16 @@ public:
         return m_object;
     }
 
+    operator T*() const noexcept
+    {
+        return m_object;
+    }
+
+    T* operator->() const noexcept
+    {
+        return m_object;
+    }
+
     /**
      * @brief Return the number of existing references to the current LObject.
      *

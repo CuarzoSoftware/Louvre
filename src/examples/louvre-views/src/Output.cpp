@@ -132,7 +132,10 @@ void Output::updateWorkspacesPos()
             ws->setPos(offset, 0);
 
             if (ws->toplevel)
-                ws->toplevel->configure(size(), ws->toplevel->pendingStates());
+            {
+                ws->toplevel->configureSize(size());
+                ws->toplevel->configureState(ws->toplevel->pending().state);
+            }
         }
 
         offset += size().w() + spacing;
@@ -156,7 +159,7 @@ void Output::updateFractionalOversampling()
 
         for (LSurface *surf : currentWorkspace->toplevel->surf()->children())
         {
-            if (surf->toplevel() && surf->toplevel()->decorationMode() == LToplevelRole::ServerSide && surf->mapped() && !surf->minimized())
+            if (surf->toplevel() && surf->toplevel()->current().decorationMode == LToplevelRole::ServerSide && surf->mapped() && !surf->minimized())
             {
                 oversampling = true;
                 goto checkChange;
@@ -309,7 +312,8 @@ void Output::initializeGL()
                     transReg.multiply(regScale.x(), regScale.y());
                     tl->animView.setTranslucentRegion(&transReg);
 
-                    tl->configure(tl->prevRect.size(), LToplevelRole::Activated);
+                    tl->configureSize(tl->prevRect.size());
+                    tl->configureState(LToplevelRole::Activated);
                 }
 
                 if (tl->decoratedView)
@@ -342,7 +346,7 @@ void Output::initializeGL()
 
                 seat()->pointer()->setFocus(tl->surface());
                 seat()->keyboard()->setFocus(tl->surface());
-                tl->configure(tl->pendingStates() | LToplevelRole::Activated);
+                tl->configureState(tl->pending().state | LToplevelRole::Activated);
             }
 
             if (animatedFullscreenToplevel)
@@ -486,7 +490,8 @@ void Output::uninitializeGL()
         tl->outputUnplugConfigureCount = 0;
         tl->prevStates = LToplevelRole::Activated;
         tl->prevRect.setPos(LPoint(0, TOPBAR_HEIGHT));
-        tl->configure(tl->prevRect.size(), LToplevelRole::Activated);
+        tl->configureSize(tl->prevRect.size());
+        tl->configureState(LToplevelRole::Activated);
         tl->quickUnfullscreen = true;
         tl->unsetFullscreen();
         tl->surf()->localOutputPos = tl->prevRect.pos() - pos();

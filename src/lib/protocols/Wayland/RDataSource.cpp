@@ -34,7 +34,7 @@ RDataSource::RDataSource
 
 RDataSource::~RDataSource() noexcept
 {
-    if (seat()->clipboard()->m_dataSource.get() == this)
+    if (seat()->clipboard()->m_dataSource == this)
     {
         seat()->clipboard()->clear();
 
@@ -44,8 +44,8 @@ RDataSource::~RDataSource() noexcept
                 seat()->clipboard()->m_persistentMimeTypes.push_back(mimeType);
 
         // Update current offer
-        if (seat()->clipboard()->m_dataOffer.get() && seat()->clipboard()->m_dataOffer.get()->dataDeviceRes())
-            seat()->clipboard()->m_dataOffer.get()->dataDeviceRes()->createOffer(RDataSource::Clipboard);
+        if (seat()->clipboard()->m_dataOffer && seat()->clipboard()->m_dataOffer->dataDeviceRes())
+            seat()->clipboard()->m_dataOffer->dataDeviceRes()->createOffer(RDataSource::Clipboard);
     }
 }
 
@@ -73,12 +73,12 @@ void RDataSource::offer(wl_client */*client*/, wl_resource *resource, const char
     auto &dataSourceRes { *static_cast<RDataSource*>(wl_resource_get_user_data(resource)) };
     dataSourceRes.m_mimeTypes.emplace_back(mime_type);
 
-    if (&dataSourceRes == seat()->clipboard()->m_dataSource.get())
+    if (&dataSourceRes == seat()->clipboard()->m_dataSource)
     {
         dataSourceRes.requestPersistentMimeType(dataSourceRes.m_mimeTypes.back());
 
-        if (seat()->clipboard()->m_dataOffer.get())
-            seat()->clipboard()->m_dataOffer.get()->offer(mime_type);
+        if (seat()->clipboard()->m_dataOffer)
+            seat()->clipboard()->m_dataOffer->offer(mime_type);
     }
 }
 
@@ -100,8 +100,8 @@ void RDataSource::set_actions(wl_client */*client*/, wl_resource *resource, UInt
 
     dataSourceRes.m_actions = dnd_actions;
 
-    if (dataSourceRes.m_dndSession.get())
-        dataSourceRes.m_dndSession.get()->updateActions();
+    if (dataSourceRes.m_dndSession)
+        dataSourceRes.m_dndSession->updateActions();
 }
 #endif
 

@@ -4,7 +4,7 @@
 #include <LNamespaces.h>
 #include <LRect.h>
 #include <pixman.h>
-#include <LFramebuffer.h>
+#include <framebuffers/LFramebuffer.h>
 
 /**
  * @brief Collection of non-overlapping rectangles
@@ -20,7 +20,7 @@ public:
     /**
      * @brief Constructor for creating an empty LRegion.
      */
-    constexpr LRegion() noexcept
+    LRegion() noexcept
     {
         pixman_region32_init(&m_region);
     }
@@ -28,7 +28,7 @@ public:
     /**
      * @brief Initialize the region with a rect.
      */
-    constexpr LRegion(const LRect &rect) noexcept
+    LRegion(const LRect &rect) noexcept
     {
         pixman_region32_init_rect(&m_region, rect.x(), rect.y(), rect.w(), rect.h());
     }
@@ -46,14 +46,14 @@ public:
      *
      * @param other The LRegion to copy from.
      */
-    constexpr LRegion(const LRegion &other) noexcept
+    LRegion(const LRegion &other) noexcept
     {
         pixman_region32_init(&m_region);
         pixman_region32_copy(&m_region, &other.m_region);
     }
 
     // TODO: add doc
-    constexpr LRegion(const LRegion &&other) noexcept
+    LRegion(const LRegion &&other) noexcept
     {
         m_region = other.m_region;
         pixman_region32_init(&other.m_region);

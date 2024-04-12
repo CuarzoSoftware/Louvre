@@ -4,7 +4,7 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LSeatPrivate.h>
 #include <LKeyboard.h>
-#include <LKeyboardModifiersEvent.h>
+#include <events/LKeyboardModifiersEvent.h>
 #include <vector>
 #include <algorithm>
 

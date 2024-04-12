@@ -15,8 +15,8 @@ LClipboard::LClipboard(const void *params)
 
 const std::vector<LClipboard::MimeTypeFile> &LClipboard::mimeTypes() const noexcept
 {
-    if (m_dataSource.get())
-        return m_dataSource.get()->m_mimeTypes;
+    if (m_dataSource)
+        return m_dataSource->m_mimeTypes;
 
     return m_persistentMimeTypes;
 }

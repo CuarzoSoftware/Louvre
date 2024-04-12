@@ -19,32 +19,24 @@ public:
     ~Toplevel();
 
     // Quick parse handles
-    inline class Surface *surf() const {return (Surface*)surface();};
+    inline class Surface *surf() const {return (Surface*)surface();}
 
     const LPoint &rolePos() const override;
     void configureRequest() override;
-
+    void configurationChanged(LBitset<ConfigurationChanges> changes) override;
     void startResizeRequest(const LEvent &triggeringEvent, ResizeEdge edge) override;
     void startMoveRequest(const LEvent &triggeringEvent) override;
-
     void setMaximizedRequest() override;
     void unsetMaximizedRequest() override;
-    void maximizedChanged() override;
-
+    void maximizedChanged();
+    void activatedChanged();
     void setFullscreenRequest(LOutput *output) override;
     void unsetFullscreenRequest() override;
-    void fullscreenChanged() override;
-
+    void fullscreenChanged();
     void setMinimizedRequest() override;
-
-    void decorationModeChanged() override;
     void preferredDecorationModeChanged() override;
-
-    void geometryChanged() override;
-
-    void activatedChanged() override;
+    void decorationModeChanged();
     void titleChanged() override;
-
     void unsetFullscreen();
 
     bool destructorCalled { false };

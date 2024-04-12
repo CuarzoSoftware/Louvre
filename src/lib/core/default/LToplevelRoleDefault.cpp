@@ -86,23 +86,71 @@ void LToplevelRole::startResizeRequest(const LEvent &triggeringEvent, ResizeEdge
 }
 //! [startResizeRequest]
 
-//! [resizingChanged]
-void LToplevelRole::resizingChanged()
-{
-    /* No default implementation */
-}
-//! [resizingChanged]
-
 //! [configureRequest]
 void LToplevelRole::configureRequest()
 {
-    // Request the client to draw its own window decorations
-    setDecorationMode(ClientSide);
-
-    // Activates the toplevel with size (0,0) so that the client can decide the size
-    configure(LSize(0,0), pendingStates() | Activated);
+    // Using (0,0) allows the client to decide the size
+    configureSize(0,0);
+    configureState(pending().state | Activated);
+    configureDecorationMode(ClientSide);
 }
 //! [configureRequest]
+
+void LToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
+{
+    surface()->repaintOutputs();
+
+    if (!changes.check(StateChanged))
+        return;
+
+    const LBitset<State> stateChanges { current().state ^ previous().state };
+
+    if (stateChanges.check(Activated))
+    {
+        if (activated())
+            seat()->keyboard()->setFocus(surface());
+    }
+
+    if (stateChanges.check(Maximized))
+    {
+        if (maximized())
+        {
+            if (cursor()->output())
+            {
+                surface()->raise();
+                surface()->setPos(cursor()->output()->pos());
+                surface()->setMinimized(false);
+            }
+            else
+            {
+                configureSize(0, 0);
+                configureState(pending().state & ~Maximized);
+            }
+        }
+
+        return;
+    }
+
+    if (stateChanges.check(Fullscreen))
+    {
+        if (fullscreen())
+        {
+            if (cursor()->output())
+            {
+                surface()->setPos(cursor()->output()->pos());
+                surface()->raise();
+            }
+            else
+            {
+                configureSize(0, 0);
+                configureState(pending().state & ~Fullscreen);
+            }
+        }
+
+        return;
+    }
+
+}
 
 //! [titleChanged]
 void LToplevelRole::titleChanged()
@@ -118,20 +166,6 @@ void LToplevelRole::appIdChanged()
 }
 //! [appIdChanged]
 
-//! [geometryChanged]
-void LToplevelRole::geometryChanged()
-{
-    /* No default implementation */
-}
-//! [geometryChanged]
-
-//! [decorationModeChanged]
-void LToplevelRole::decorationModeChanged()
-{
-    /* No default implementation */
-}
-//! [decorationModeChanged]
-
 //! [preferredDecorationModeChanged]
 void LToplevelRole::preferredDecorationModeChanged()
 {
@@ -145,33 +179,17 @@ void LToplevelRole::setMaximizedRequest()
     if (!cursor()->output())
         return;
 
-    configure(cursor()->output()->size(), Activated | Maximized);
+    configureSize(cursor()->output()->size());
+    configureState(Activated | Maximized);
 }
 //! [setMaximizedRequest]
 
 //! [unsetMaximizedRequest]
 void LToplevelRole::unsetMaximizedRequest()
 {
-    configure(pendingStates() &~ Maximized);
+    configureState(pending().state &~ Maximized);
 }
 //! [unsetMaximizedRequest]
-
-//! [maximizedChanged]
-void LToplevelRole::maximizedChanged()
-{
-    if (maximized())
-    {
-        if (cursor()->output())
-        {
-            surface()->raise();
-            surface()->setPos(cursor()->output()->pos());
-            surface()->setMinimized(false);
-        }
-        else
-            configure(LSize(0, 0), pendingStates() & ~Maximized);
-    }
-}
-//! [maximizedChanged]
 
 //! [setFullscreenRequest]
 void LToplevelRole::setFullscreenRequest(LOutput *preferredOutput)
@@ -181,63 +199,17 @@ void LToplevelRole::setFullscreenRequest(LOutput *preferredOutput)
     if (!output)
         return;
 
-    configure(output->size(), Activated | Fullscreen);
+    configureSize(output->size());
+    configureState(Activated | Fullscreen);
 }
 //! [setFullscreenRequest]
 
 //! [unsetFullscreenRequest]
 void LToplevelRole::unsetFullscreenRequest()
 {
-    configure(pendingStates() &~ Fullscreen);
+    configureState(pending().state &~ Fullscreen);
 }
 //! [unsetFullscreenRequest]
-
-//! [fullscreenChanged]
-void LToplevelRole::fullscreenChanged()
-{
-    if (fullscreen())
-    {
-        if (cursor()->output())
-        {
-            surface()->setPos(cursor()->output()->pos());
-            surface()->raise();
-        }
-        else
-            configure(LSize(0, 0), pendingStates() & ~Fullscreen);
-    }
-}
-//! [fullscreenChanged]
-
-//! [activatedChanged]
-void LToplevelRole::activatedChanged()
-{
-    if (activated())
-        seat()->keyboard()->setFocus(surface());
-
-    surface()->repaintOutputs();
-}
-//! [activatedChanged]
-
-//! [stateChanged]
-void LToplevelRole::statesChanged()
-{
-    /* No default implementation */
-}
-//! [stateChanged]
-
-//! [maxSizeChanged]
-void LToplevelRole::maxSizeChanged()
-{
-    /* No default implementation */
-}
-//! [maxSizeChanged]
-
-//! [minSizeChanged]
-void LToplevelRole::minSizeChanged()
-{
-    /* No default implementation */
-}
-//! [minSizeChanged]
 
 //! [setMinimizedRequest]
 void LToplevelRole::setMinimizedRequest()

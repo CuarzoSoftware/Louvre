@@ -15,10 +15,62 @@
 
 ToplevelRole::ToplevelRole(const void *params) noexcept : LToplevelRole(params) {}
 
+void ToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
+{
+    if (!changes.check(StateChanged))
+        return;
+
+    const LBitset<State> stateChanges { current().state ^ previous().state };
+    Output *output { static_cast<Output*>(cursor()->output()) };
+
+    if (stateChanges.check(Maximized))
+    {
+        if (maximized())
+        {
+            if (output)
+            {
+                surface()->raise();
+                surface()->setPos(output->pos() + LPoint(0, 32));
+                surface()->setMinimized(false);
+            }
+            else
+            {
+                configureSize(0, 0);
+                configureState(pending().state & ~Maximized);
+            }
+        }
+    }
+
+    if (stateChanges.check(Fullscreen))
+    {
+        if (fullscreen())
+        {
+            if (output)
+            {
+                surface()->setPos(output->pos());
+                output->fullscreenSurface = surface();
+                surface()->raise();
+            }
+            else
+            {
+                configureSize(0, 0);
+                configureState(pending().state & ~Fullscreen);
+            }
+        }
+        else if (output)
+        {
+            surface()->setPos(rectBeforeFullscreen.pos());
+            if (output->fullscreenSurface == surface())
+                output->fullscreenSurface = nullptr;
+        }
+    }
+}
+
 void ToplevelRole::configureRequest() noexcept
 {
-    setDecorationMode(ClientSide);
-    configure(0, Activated | pendingStates());
+    configureSize(0, 0);
+    configureState(Activated | pending().state);
+    configureDecorationMode(ClientSide);
 }
 
 void ToplevelRole::setMaximizedRequest() noexcept
@@ -29,7 +81,8 @@ void ToplevelRole::setMaximizedRequest() noexcept
         return;
 
     const LSize size { output->size() - LSize(0, 32) };
-    configure(size, LToplevelRole::Activated | LToplevelRole::Maximized);
+    configureSize(size);
+    configureState(LToplevelRole::Activated | LToplevelRole::Maximized);
 }
 
 void ToplevelRole::setFullscreenRequest(LOutput *preferredOutput) noexcept
@@ -39,58 +92,17 @@ void ToplevelRole::setFullscreenRequest(LOutput *preferredOutput) noexcept
     if (!output)
         output = cursor()->output();
 
-    statesBeforeFullscreen = states();
+    statesBeforeFullscreen = current().state;
     rectBeforeFullscreen = LRect(surface()->pos(), windowGeometry().size());
 
-    configure(output->size(), LToplevelRole::Activated | LToplevelRole::Fullscreen);
+    configureSize(output->size());
+    configureState(LToplevelRole::Activated | LToplevelRole::Fullscreen);
 }
 
 void ToplevelRole::unsetFullscreenRequest() noexcept
 {
-    configure(rectBeforeFullscreen.size(), statesBeforeFullscreen);
-}
-
-void ToplevelRole::maximizedChanged() noexcept
-{
-    const LOutput *output { cursor()->output() };
-
-    if (maximized())
-    {
-        if (output)
-        {
-            surface()->raise();
-            surface()->setPos(output->pos() + LPoint(0, 32));
-            surface()->setMinimized(false);
-        }
-        else
-            configure(LSize(0, 0), pendingStates() & ~Maximized);
-    }
-}
-
-void ToplevelRole::fullscreenChanged() noexcept
-{
-    Output *output { (Output*)cursor()->output() };
-
-    if (fullscreen())
-    {
-        if (output)
-        {
-            surface()->setPos(output->pos());
-            output->fullscreenSurface = surface();
-            surface()->raise();
-        }
-        else
-            configure(LSize(0, 0), pendingStates() & ~Fullscreen);
-    }
-    else if (output)
-    {
-        surface()->setPos(rectBeforeFullscreen.pos());
-        if (output->fullscreenSurface == surface())
-           output->fullscreenSurface = nullptr;
-    }
-
-    if (output)
-        output->fullDamage();
+    configureSize(rectBeforeFullscreen.size());
+    configureState(statesBeforeFullscreen);
 }
 
 void ToplevelRole::startMoveRequest(const LEvent &triggeringEvent) noexcept

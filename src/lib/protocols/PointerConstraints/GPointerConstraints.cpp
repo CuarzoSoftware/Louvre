@@ -64,7 +64,7 @@ void GPointerConstraints::lock_pointer(wl_client */*client*/, wl_resource *resou
 {
     auto &surfaceRes { *static_cast<Wayland::RSurface*>(wl_resource_get_user_data(surface)) };
 
-    if (surfaceRes.surface()->imp()->lockedPointerRes.get() || surfaceRes.surface()->imp()->confinedPointerRes.get())
+    if (surfaceRes.surface()->imp()->lockedPointerRes || surfaceRes.surface()->imp()->confinedPointerRes)
     {
         wl_resource_post_error(resource, ZWP_POINTER_CONSTRAINTS_V1_ERROR_ALREADY_CONSTRAINED,
                                "Pointer constraint already requested on that surface.");
@@ -89,7 +89,7 @@ void GPointerConstraints::confine_pointer(wl_client */*client*/, wl_resource *re
 {
     auto &surfaceRes { *static_cast<Wayland::RSurface*>(wl_resource_get_user_data(surface)) };
 
-    if (surfaceRes.surface()->imp()->lockedPointerRes.get() || surfaceRes.surface()->imp()->confinedPointerRes.get())
+    if (surfaceRes.surface()->imp()->lockedPointerRes || surfaceRes.surface()->imp()->confinedPointerRes)
     {
         wl_resource_post_error(resource, ZWP_POINTER_CONSTRAINTS_V1_ERROR_ALREADY_CONSTRAINED,
                                "Pointer constraint already requested on that surface.");

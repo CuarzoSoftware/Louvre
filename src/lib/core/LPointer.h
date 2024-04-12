@@ -3,8 +3,8 @@
 
 #include <LObject.h>
 #include <LPoint.h>
-#include <LToplevelRole.h>
-#include <LPointerButtonEvent.h>
+#include <roles/LToplevelRole.h>
+#include <events/LPointerButtonEvent.h>
 #include <linux/input-event-codes.h>
 #include <limits>
 #include <vector>

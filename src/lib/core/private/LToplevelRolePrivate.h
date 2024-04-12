@@ -7,9 +7,9 @@
 #include <protocols/XdgShell/xdg-shell.h>
 #include <private/LSeatPrivate.h>
 #include <private/LCompositorPrivate.h>
-#include <LToplevelMoveSession.h>
-#include <LToplevelResizeSession.h>
-#include <LToplevelRole.h>
+#include <roles/LToplevelMoveSession.h>
+#include <roles/LToplevelResizeSession.h>
+#include <roles/LToplevelRole.h>
 #include <LCompositor.h>
 #include <LTime.h>
 #include <queue>
@@ -25,28 +25,21 @@ struct LToplevelRole::Params
 };
 
 LPRIVATE_CLASS(LToplevelRole)
-struct ToplevelConfiguration
+
+enum StateFlags : UInt8
 {
-    bool commited                                               { false };
-    LSize size                                                  { 0, 0 };
-    StateFlags flags                                            { NoState };
-    UInt32 serial                                               { 0 };
+    HasConfigurationToSend      = static_cast<UInt8>(1) << 0,
+    HasUncommitedConfiguration  = static_cast<UInt8>(1) << 1,
+    HasPendingMinSize           = static_cast<UInt8>(1) << 2,
+    HasPendingMaxSize           = static_cast<UInt8>(1) << 3,
+    ForceRemoveActivatedFlag    = static_cast<UInt8>(1) << 4,
+    InitDecorationModeSent      = static_cast<UInt8>(1) << 5,
 };
 
 LToplevelRole *toplevel;
-
-bool hasConfToSend { false };
-ToplevelConfiguration
-    currentConf,        // Current ACKed conf
-    pendingApplyConf,   // ACKed conf not yet made the current conf
-    pendingSendConf;    // Conf not yet sent to the client
-std::list<ToplevelConfiguration>sentConfs;
-
-/* Used to forcefully remove the activated flag when another toplevel is activated */
-bool forceRemoveActivatedFlag { false };
-
-bool hasPendingMinSize                                          { false };
-bool hasPendingMaxSize                                          { false };
+LBitset<StateFlags> stateFlags;
+Configuration current, pending, previous, uncommited;
+std::list<Configuration> sentConfs;
 
 LSize currentMinSize, pendingMinSize;
 LSize currentMaxSize, pendingMaxSize;
@@ -56,135 +49,97 @@ void setTitle(const char *title);
 std::string appId;
 std::string title;
 
-LWeak<RXdgToplevelDecoration> xdgDecoration                     { nullptr };
-DecorationMode decorationMode                                   { ClientSide };
-UInt32 pendingDecorationMode                                    { ClientSide };
-UInt32 lastDecorationModeConfigureSerial                        { 0 };
-LToplevelRole::DecorationMode preferredDecorationMode           { NoPreferredMode };
+LWeak<RXdgToplevelDecoration> xdgDecoration { nullptr };
+DecorationMode preferredDecorationMode { NoPreferredMode };
 
 // Request before the role is applied
-StateFlags prevRoleRequest { 0 };
+LBitset<State> prevRoleRequest { 0 };
 LOutput *prevRoleFullscreenRequestOutput { nullptr };
-
-// Resizing
-LPoint resizingInitPos;
-LPoint resizingInitPointerPos;
-LPoint resizingCurrentPointerPos;
-LSize resizingInitWindowSize;
-LSize resizingMinSize;
-LToplevelRole::ResizeEdge resizingEdge;
-LRect resizingConstraintBounds;
 
 LToplevelResizeSession resizeSession;
 LToplevelMoveSession moveSession;
 
-inline void applyPendingChanges()
+inline void applyPendingChanges(LBitset<ConfigurationChanges> changes)
 {
-    if (!pendingApplyConf.commited)
+    if (!stateFlags.check(HasUncommitedConfiguration))
+        return;
+
+    stateFlags.remove(HasUncommitedConfiguration);
+    previous = current;
+    current = uncommited;
+
+    const LBitset<State> stateChanges { static_cast<State>((previous.state.get() ^ current.state.get())) };
+
+    if (stateChanges.check(Activated))
     {
-        pendingApplyConf.commited = true;
-        pendingApplyConf.size = toplevel->windowGeometry().size();
-
-        const UInt32 prevState { currentConf.flags };
-        currentConf = pendingApplyConf;
-        pendingSendConf = currentConf;
-
-        if ((prevState & LToplevelRole::Maximized) != (currentConf.flags & LToplevelRole::Maximized))
-            toplevel->maximizedChanged();
-
-        if ((prevState & LToplevelRole::Fullscreen) != (currentConf.flags & LToplevelRole::Fullscreen))
-            toplevel->fullscreenChanged();
-
-        if (currentConf.flags & LToplevelRole::Activated)
+        if (current.state.check(Activated))
         {
             if (seat()->activeToplevel() && seat()->activeToplevel() != toplevel)
             {
-                seat()->activeToplevel()->imp()->forceRemoveActivatedFlag = true;
+                seat()->activeToplevel()->imp()->stateFlags.add(ForceRemoveActivatedFlag);
 
-                if (!seat()->activeToplevel()->imp()->hasConfToSend)
+                if (!seat()->activeToplevel()->imp()->stateFlags.check(HasConfigurationToSend))
                 {
-                    seat()->activeToplevel()->imp()->pendingSendConf.serial = LTime::nextSerial();
-                    seat()->activeToplevel()->imp()->hasConfToSend = true;
+                    seat()->activeToplevel()->imp()->pending.serial = LTime::nextSerial();
+                    seat()->activeToplevel()->imp()->stateFlags.add(HasConfigurationToSend);
                 }
             }
 
             seat()->imp()->activeToplevel = toplevel;
         }
-
-        if ((prevState & LToplevelRole::Activated) != (currentConf.flags & LToplevelRole::Activated))
-            toplevel->activatedChanged();
-
-        if ((prevState & LToplevelRole::Resizing) != (currentConf.flags & LToplevelRole::Resizing))
-            toplevel->resizingChanged();
-
-        if (prevState != currentConf.flags)
-            toplevel->statesChanged();
     }
-}
 
-inline void configure(Int32 width, Int32 height, StateFlags flags)
-{
-    if (width < 0)
-        width = 0;
+    if (previous.decorationMode != current.decorationMode)
+        changes |= DecorationModeChanged;
 
-    if (height < 0)
-        height = 0;
+    if (stateChanges)
+        changes |= StateChanged;
 
-    if (!hasConfToSend)
-        pendingSendConf.serial = LTime::nextSerial();
-
-    hasConfToSend = true;
-    pendingSendConf.size.setW(width);
-    pendingSendConf.size.setH(height);
-    pendingSendConf.flags = flags;
-    compositor()->imp()->unlockPoll();
+    toplevel->configurationChanged(changes);
 }
 
 inline void sendConfiguration()
 {
-    if (!hasConfToSend)
+    if (!stateFlags.check(HasConfigurationToSend))
         return;
 
-    hasConfToSend = false;
+    stateFlags.remove(HasConfigurationToSend);
 
-    XdgShell::RXdgToplevel *res = (XdgShell::RXdgToplevel*)toplevel->resource();
-
+    auto &xdgToplevelRes { *static_cast<XdgShell::RXdgToplevel*>(toplevel->resource()) };
     toplevel->surface()->requestNextFrame(false);
 
-    pendingSendConf.commited = false;
-
-    if (forceRemoveActivatedFlag)
+    if (stateFlags.check(ForceRemoveActivatedFlag))
     {
-        pendingSendConf.flags &= ~LToplevelRole::Activated;
-        forceRemoveActivatedFlag = false;
+        pending.state.remove(LToplevelRole::Activated);
+        stateFlags.remove(ForceRemoveActivatedFlag);
     }
 
     wl_array dummy;
     wl_array_init(&dummy);
     UInt32 index = 0;
 
-    if (pendingSendConf.flags & LToplevelRole::Activated)
+    if (pending.state & LToplevelRole::Activated)
     {
         wl_array_add(&dummy, sizeof(xdg_toplevel_state));
         xdg_toplevel_state *s = (xdg_toplevel_state*)dummy.data;
         s[index] = XDG_TOPLEVEL_STATE_ACTIVATED;
         index++;
     }
-    if (pendingSendConf.flags & LToplevelRole::Fullscreen)
+    if (pending.state & LToplevelRole::Fullscreen)
     {
         wl_array_add(&dummy, sizeof(xdg_toplevel_state));
         xdg_toplevel_state *s = (xdg_toplevel_state*)dummy.data;
         s[index] = XDG_TOPLEVEL_STATE_FULLSCREEN;
         index++;
     }
-    if (pendingSendConf.flags & LToplevelRole::Maximized)
+    if (pending.state & LToplevelRole::Maximized)
     {
         wl_array_add(&dummy, sizeof(xdg_toplevel_state));
         xdg_toplevel_state *s = (xdg_toplevel_state*)dummy.data;
         s[index] = XDG_TOPLEVEL_STATE_MAXIMIZED;
         index++;
     }
-    if (pendingSendConf.flags & LToplevelRole::Resizing)
+    if (pending.state & LToplevelRole::Resizing)
     {
         wl_array_add(&dummy, sizeof(xdg_toplevel_state));
         xdg_toplevel_state *s = (xdg_toplevel_state*)dummy.data;
@@ -195,28 +150,28 @@ inline void sendConfiguration()
 #if LOUVRE_XDG_WM_BASE_VERSION >= 2
     if (toplevel->resource()->version() >= 2)
     {
-        if (pendingSendConf.flags & LToplevelRole::TiledBottom)
+        if (pending.state & LToplevelRole::TiledBottom)
         {
             wl_array_add(&dummy, sizeof(xdg_toplevel_state));
             xdg_toplevel_state *s = (xdg_toplevel_state*)dummy.data;
             s[index] = XDG_TOPLEVEL_STATE_TILED_BOTTOM;
             index++;
         }
-        if (pendingSendConf.flags & LToplevelRole::TiledLeft)
+        if (pending.state & LToplevelRole::TiledLeft)
         {
             wl_array_add(&dummy, sizeof(xdg_toplevel_state));
             xdg_toplevel_state *s = (xdg_toplevel_state*)dummy.data;
             s[index] = XDG_TOPLEVEL_STATE_TILED_LEFT;
             index++;
         }
-        if (pendingSendConf.flags & LToplevelRole::TiledRight)
+        if (pending.state & LToplevelRole::TiledRight)
         {
             wl_array_add(&dummy, sizeof(xdg_toplevel_state));
             xdg_toplevel_state *s = (xdg_toplevel_state*)dummy.data;
             s[index] = XDG_TOPLEVEL_STATE_TILED_RIGHT;
             index++;
         }
-        if (pendingSendConf.flags & LToplevelRole::TiledTop)
+        if (pending.state & LToplevelRole::TiledTop)
         {
             wl_array_add(&dummy, sizeof(xdg_toplevel_state));
             xdg_toplevel_state *s = (xdg_toplevel_state*)dummy.data;
@@ -226,20 +181,27 @@ inline void sendConfiguration()
     }
 #endif
 
-    sentConfs.push_back(pendingSendConf);
-    res->configure(pendingSendConf.size.w(), pendingSendConf.size.h(), &dummy);
+    if (pending.decorationMode == NoPreferredMode)
+        pending.decorationMode = ClientSide;
+
+    if (xdgDecoration.get())
+    {
+        if (current.decorationMode != pending.decorationMode || !stateFlags.check(InitDecorationModeSent))
+        {
+            xdgDecoration.get()->configure(pending.decorationMode);
+            stateFlags.add(InitDecorationModeSent);
+        }
+    }
+    else
+        pending.decorationMode = ClientSide;
+
+    xdgToplevelRes.configure(pending.size.w(), pending.size.h(), &dummy);
     wl_array_release(&dummy);
 
-    if (res->xdgSurfaceRes())
-    {
-        if (pendingDecorationMode != 0 && xdgDecoration.get())
-        {
-            xdgDecoration.get()->configure(pendingDecorationMode);
-            lastDecorationModeConfigureSerial = pendingSendConf.serial;
-        }
+    if (xdgToplevelRes.xdgSurfaceRes())
+        xdgToplevelRes.xdgSurfaceRes()->configure(pending.serial);
 
-        res->xdgSurfaceRes()->configure(pendingSendConf.serial);
-    }
+    sentConfs.push_back(pending);
 }
 };
 

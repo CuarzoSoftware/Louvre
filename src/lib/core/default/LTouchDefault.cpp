@@ -103,7 +103,7 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
                 session->toplevel()->surface()->repaintOutputs();
 
                 if (session->toplevel()->maximized())
-                    session->toplevel()->configure(session->toplevel()->pendingStates() &~ LToplevelRole::Maximized);
+                    session->toplevel()->configureState(session->toplevel()->pending().state &~ LToplevelRole::Maximized);
             }
         }
     }
@@ -126,7 +126,7 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
                 session->toplevel()->surface()->repaintOutputs();
 
                 if (session->toplevel()->maximized())
-                    session->toplevel()->configure(session->toplevel()->pendingStates() &~ LToplevelRole::Maximized);
+                    session->toplevel()->configureState(session->toplevel()->pending().state &~ LToplevelRole::Maximized);
             }
         }
     }

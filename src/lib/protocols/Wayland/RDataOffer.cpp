@@ -38,8 +38,8 @@ RDataOffer::RDataOffer
 
 RDataOffer::~RDataOffer() noexcept
 {
-    if (m_dndSession.get() && m_dndSession.get()->dropped && m_dndSession.get()->source.get())
-        m_dndSession.get()->source.get()->cancelled();
+    if (m_dndSession && m_dndSession->dropped && m_dndSession->source)
+        m_dndSession->source->cancelled();
 }
 
 /******************** REQUESTS ********************/
@@ -54,8 +54,8 @@ void RDataOffer::accept(wl_client */*client*/, wl_resource *resource, UInt32 /*s
     auto &dataOfferRes { *static_cast<RDataOffer*>(wl_resource_get_user_data(resource)) };
     dataOfferRes.m_matchedMimeType = mime_type != NULL;
 
-    if (dataOfferRes.m_dndSession.get() && dataOfferRes.m_dndSession.get()->source.get())
-        dataOfferRes.m_dndSession.get()->source.get()->target(mime_type);
+    if (dataOfferRes.m_dndSession && dataOfferRes.m_dndSession->source)
+        dataOfferRes.m_dndSession->source->target(mime_type);
 }
 
 #if LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION >= 3
@@ -69,8 +69,8 @@ void RDataOffer::finish(wl_client */*client*/, wl_resource *resource) noexcept
         return;
     }
 
-    if (dataOfferRes.m_dndSession.get() && dataOfferRes.m_dndSession.get()->source.get())
-        dataOfferRes.m_dndSession.get()->source.get()->dndFinished();
+    if (dataOfferRes.m_dndSession && dataOfferRes.m_dndSession->source)
+        dataOfferRes.m_dndSession->source->dndFinished();
 
     if (dataOfferRes.dataDeviceRes())
         dataOfferRes.dataDeviceRes()->leave();
@@ -85,8 +85,8 @@ void RDataOffer::receive(wl_client */*client*/, wl_resource *resource, const cha
 
     if (dataOfferRes.usage() == RDataSource::DND)
     {
-        if (dataOfferRes.m_dndSession.get() && dataOfferRes.m_dndSession.get()->source.get())
-            dataOfferRes.m_dndSession.get()->source.get()->send(requestedMimeType, fd);
+        if (dataOfferRes.m_dndSession && dataOfferRes.m_dndSession->source)
+            dataOfferRes.m_dndSession->source->send(requestedMimeType, fd);
     }
     else if (dataOfferRes.usage() == RDataSource::Clipboard)
     {
@@ -95,9 +95,9 @@ void RDataOffer::receive(wl_client */*client*/, wl_resource *resource, const cha
         {
             if (mimeType.mimeType == requestedMimeType)
             {
-                if (seat()->clipboard()->m_dataSource.get())
+                if (seat()->clipboard()->m_dataSource)
                 {
-                    seat()->clipboard()->m_dataSource.get()->send(requestedMimeType, fd);
+                    seat()->clipboard()->m_dataSource->send(requestedMimeType, fd);
                 }
                 else if (mimeType.tmp)
                 {
@@ -178,8 +178,8 @@ void RDataOffer::set_actions(wl_client */*client*/, wl_resource *resource, UInt3
     dataOfferRes.m_actions = dnd_actions;
     dataOfferRes.m_preferredAction = preferred_action;
 
-    if (dataOfferRes.m_dndSession.get())
-        dataOfferRes.m_dndSession.get()->updateActions();
+    if (dataOfferRes.m_dndSession)
+        dataOfferRes.m_dndSession->updateActions();
 }
 #endif
 

@@ -373,7 +373,7 @@ void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output)
     {
         auto *feedback { presentationFeedbackResources[i] };
 
-        if (feedback->m_commitId == -2 || (feedback->m_outputSet && !feedback->m_output.get()))
+        if (feedback->m_commitId == -2 || (feedback->m_outputSet && !feedback->m_output))
         {
             feedback->discarded();
             feedback->m_surface.reset();
@@ -382,7 +382,7 @@ void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output)
             wl_resource_destroy(feedback->resource());
             continue;
         }
-        else if (feedback->m_output.get() == output)
+        else if (feedback->m_output == output)
         {
             for (Wayland::GOutput *gOutput : surfaceResource->client()->outputGlobals())
                 if (gOutput->output() == output)

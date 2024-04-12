@@ -1,7 +1,7 @@
 #ifndef LKEYBOARD_H
 #define LKEYBOARD_H
 
-#include <LKeyboardModifiersEvent.h>
+#include <events/LKeyboardModifiersEvent.h>
 #include <LObject.h>
 #include <vector>
 #include <xkbcommon/xkbcommon.h>

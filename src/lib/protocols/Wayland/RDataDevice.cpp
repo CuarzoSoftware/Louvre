@@ -68,13 +68,13 @@ RDataOffer *RDataDevice::createOffer(RDataSource::Usage usage) noexcept
     }
     else if (usage == RDataSource::DND)
     {
-        if (!seat()->dnd()->m_session.get() || !seat()->dnd()->m_session.get()->source.get())
+        if (!seat()->dnd()->m_session || !seat()->dnd()->m_session->source)
             return nullptr;
 
         RDataOffer *offer { new RDataOffer(this, 0, RDataSource::DND) };
         dataOffer(offer);
 
-        for (const auto &mimeType : seat()->dnd()->m_session.get()->source.get()->m_mimeTypes)
+        for (const auto &mimeType : seat()->dnd()->m_session->source->m_mimeTypes)
             offer->offer(mimeType.mimeType.c_str());
 
         return offer;
@@ -108,13 +108,13 @@ void RDataDevice::start_drag(wl_client */*client*/,
     {
         session->source.reset(static_cast<RDataSource*>(wl_resource_get_user_data(source)));
 
-        if (session->source.get()->usage() != RDataSource::Undefined)
+        if (session->source->usage() != RDataSource::Undefined)
         {
             wl_resource_post_error(resource, WL_DATA_DEVICE_ERROR_USED_SOURCE, "Source already used.");
             goto fail;
         }
 
-        session->source.get()->m_usage = RDataSource::DND;
+        session->source->m_usage = RDataSource::DND;
     }
 
     if (seat()->dnd()->dragging())
@@ -123,7 +123,7 @@ void RDataDevice::start_drag(wl_client */*client*/,
         goto fail;
     }
 
-    triggeringEvent = session->srcDataDevice.get()->client()->findEventBySerial(serial);
+    triggeringEvent = session->srcDataDevice->client()->findEventBySerial(serial);
 
     if (!triggeringEvent)
     {
@@ -151,24 +151,24 @@ void RDataDevice::start_drag(wl_client */*client*/,
     }
 
     // Check if DND action was set
-    if (session->source.get() && session->source.get()->version() >= 3 && session->source.get()->actions() == 0)
+    if (session->source && session->source->version() >= 3 && session->source->actions() == 0)
         goto fail;
 
     seat()->dnd()->m_triggeringEvent.reset(triggeringEvent->copy());
     seat()->dnd()->m_session.reset(session);
 
-    if (session->source.get())
-        session->source.get()->m_dndSession = seat()->dnd()->m_session;
+    if (session->source)
+        session->source->m_dndSession = seat()->dnd()->m_session;
 
     seat()->dnd()->startDragRequest();
     return;
 
 fail:
-    if (session->source.get())
-        session->source.get()->cancelled();
+    if (session->source)
+        session->source->cancelled();
 
-    if (session->icon.get())
-        session->icon.get()->surface()->imp()->setMapped(false);
+    if (session->icon)
+        session->icon->surface()->imp()->setMapped(false);
 
     delete session;
 }
@@ -191,7 +191,7 @@ void RDataDevice::set_selection(wl_client *client, wl_resource *resource, wl_res
     {
         RDataSource *rDataSource { static_cast<RDataSource*>(wl_resource_get_user_data(source)) };
 
-        if (seat()->clipboard()->m_dataSource.get() == rDataSource)
+        if (seat()->clipboard()->m_dataSource == rDataSource)
         {
             LLog::warning("[RDataDevicePrivate::set_selection] Set clipboard request already made with the same data source. Ignoring it.");
             return;
@@ -212,8 +212,8 @@ void RDataDevice::set_selection(wl_client *client, wl_resource *resource, wl_res
 
         rDataSource->m_usage = RDataSource::Clipboard;
 
-        if (seat()->clipboard()->m_dataSource.get())
-            seat()->clipboard()->m_dataSource.get()->cancelled();
+        if (seat()->clipboard()->m_dataSource)
+            seat()->clipboard()->m_dataSource->cancelled();
 
         seat()->clipboard()->m_dataSource.reset();
         seat()->clipboard()->clear();

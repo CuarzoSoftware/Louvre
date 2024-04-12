@@ -5,7 +5,7 @@
 #include <LCompositor.h>
 #include <LOutput.h>
 #include <LInputDevice.h>
-#include <LRenderBuffer.h>
+#include <framebuffers/LRenderBuffer.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <sys/epoll.h>

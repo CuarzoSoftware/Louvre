@@ -53,9 +53,9 @@ bool RLinuxBufferParams::createCommon(Int32 width, Int32 height, UInt32 format, 
         return false;
     }
 
-    m_dmaPlanes.get()->format = format;
-    m_dmaPlanes.get()->width = width;
-    m_dmaPlanes.get()->height = height;
+    m_dmaPlanes->format = format;
+    m_dmaPlanes->width = width;
+    m_dmaPlanes->height = height;
     return true;
 }
 
@@ -99,12 +99,12 @@ void RLinuxBufferParams::add(wl_client */*client*/,
 
     const UInt32 planeCount { plane_idx + 1 };
     if (res->dmaPlanes()->num_fds < planeCount)
-        res->m_dmaPlanes.get()->num_fds = planeCount;
+        res->m_dmaPlanes->num_fds = planeCount;
 
-    res->m_dmaPlanes.get()->fds[plane_idx] = fd;
-    res->m_dmaPlanes.get()->offsets[plane_idx] = offset;
-    res->m_dmaPlanes.get()->strides[plane_idx] = stride;
-    res->m_dmaPlanes.get()->modifiers[plane_idx] = (static_cast<UInt64>(modifier_hi) << 32) | static_cast<UInt64>(modifier_lo);
+    res->m_dmaPlanes->fds[plane_idx] = fd;
+    res->m_dmaPlanes->offsets[plane_idx] = offset;
+    res->m_dmaPlanes->strides[plane_idx] = stride;
+    res->m_dmaPlanes->modifiers[plane_idx] = (static_cast<UInt64>(modifier_hi) << 32) | static_cast<UInt64>(modifier_lo);
 }
 
 void RLinuxBufferParams::create(wl_client */*client*/, wl_resource *resource, Int32 width, Int32 height, UInt32 format, UInt32 flags) noexcept

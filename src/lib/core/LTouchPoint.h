@@ -1,9 +1,9 @@
 #ifndef LTOUCHPOINT_H
 #define LTOUCHPOINT_H
 
-#include <LTouchDownEvent.h>
-#include <LTouchMoveEvent.h>
-#include <LTouchUpEvent.h>
+#include <events/LTouchDownEvent.h>
+#include <events/LTouchMoveEvent.h>
+#include <events/LTouchUpEvent.h>
 #include <LObject.h>
 #include <LWeak.h>
 

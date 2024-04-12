@@ -238,7 +238,7 @@ bool Compositor::checkUpdateOutputUnplug()
                 {
                     Toplevel *tl = (Toplevel*) s->toplevel();
 
-                    if (tl->fullscreen() || tl->maximized())
+                    if (tl->current().state.check(LToplevelRole::Fullscreen | LToplevelRole::Maximized))
                     {
                         outputUnplugHandled = false;
 
@@ -247,7 +247,7 @@ bool Compositor::checkUpdateOutputUnplug()
                             tl->surf()->client()->destroy();
                             return outputUnplugHandled;
                         }
-                        tl->configure(LToplevelRole::Activated);
+                        tl->configureState(LToplevelRole::Activated);
                         tl->surf()->client()->flush();
                         tl->surf()->requestNextFrame(false);
                         tl->outputUnplugConfigureCount++;

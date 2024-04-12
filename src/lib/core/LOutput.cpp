@@ -45,7 +45,7 @@ LOutput::LOutput(const void *params) : m_imp(std::make_unique<LOutputPrivate>(th
 
 LSessionLockRole *LOutput::sessionLockRole() const noexcept
 {
-    return imp()->sessionLockRole.get();
+    return imp()->sessionLockRole;
 }
 
 LOutput::~LOutput() {}
@@ -118,17 +118,17 @@ bool LOutput::setGamma(const LGammaTable *gamma)
         if (gamma->size() != gammaSize())
             return false;
 
-        if (imp()->gammaTable.m_gammaControlResource.get() && imp()->gammaTable.m_gammaControlResource.get() != gamma->m_gammaControlResource.get())
-            imp()->gammaTable.m_gammaControlResource.get()->failed();
+        if (imp()->gammaTable.m_gammaControlResource && imp()->gammaTable.m_gammaControlResource != gamma->m_gammaControlResource)
+            imp()->gammaTable.m_gammaControlResource->failed();
 
         imp()->gammaTable = *gamma;
         imp()->gammaTable.m_gammaControlResource = gamma->m_gammaControlResource;
     }
     else
     {
-        if (imp()->gammaTable.m_gammaControlResource.get())
+        if (imp()->gammaTable.m_gammaControlResource)
         {
-            imp()->gammaTable.m_gammaControlResource.get()->failed();
+            imp()->gammaTable.m_gammaControlResource->failed();
             imp()->gammaTable.m_gammaControlResource = nullptr;
         }
 

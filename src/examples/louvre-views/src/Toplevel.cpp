@@ -67,15 +67,38 @@ const LPoint &Toplevel::rolePos() const
 
 void Toplevel::configureRequest()
 {
-    if (!preferredDecorationMode())
-        setDecorationMode(ServerSide);
-    else
-        setDecorationMode((DecorationMode) preferredDecorationMode());
+    configureSize(0, 0);
+    configureDecorationMode(preferredDecorationMode());
+    configureState(pending().state | Activated);
+}
 
-    if (surf()->firstMap)
-        configure(0, Activated);
-    else
-        configure(0, pendingStates() | Activated);
+void Toplevel::configurationChanged(LBitset<ConfigurationChanges> changes)
+{
+    if (changes.check(DecorationModeChanged))
+        decorationModeChanged();
+
+    if (changes.check(StateChanged))
+    {
+        const LBitset<State> stateChanges { current().state ^ previous().state };
+
+        if (stateChanges.check(Activated))
+            activatedChanged();
+
+        if (stateChanges.check(Maximized))
+            maximizedChanged();
+
+        if (stateChanges.check(Fullscreen))
+            fullscreenChanged();
+    }
+
+    if (changes.check(WindowGeometryChanged))
+    {
+        if (decoratedView)
+        {
+            decoratedView->updateTitle();
+            decoratedView->updateGeometry();
+        }
+    }
 }
 
 void Toplevel::startResizeRequest(const LEvent &triggeringEvent, ResizeEdge edge)
@@ -150,10 +173,7 @@ void Toplevel::setMaximizedRequest()
 {
     // Already in maximized mode
     if (maximized())
-    {
-        configure(pendingStates());
         return;
-    }
 
     Output *output { (Output*)cursor()->output() };
 
@@ -181,29 +201,25 @@ void Toplevel::setMaximizedRequest()
     if (decoratedView)
         dstRect.setSize(dstRect.size() + LSize(2, 2 - TOPLEVEL_TOPBAR_HEIGHT));
 
-    configure(dstRect.size(), Activated | Maximized);
+    configureSize(dstRect.size());
+    configureState(Activated | Maximized);
 }
 
 void Toplevel::unsetMaximizedRequest()
 {
     if (!maximized())
-    {
-        configure(pendingStates());
         return;
-    }
 
-    configure(prevRect.size(), pendingStates() & ~Maximized);
+    configureSize(prevRect.size());
+    configureState(pending().state & ~Maximized);
 }
 
 void Toplevel::maximizedChanged()
 {
     if (maximized())
         surface()->setPos(dstRect.pos());
-    else
-    {
-        if (seat()->toplevelResizeSessions().empty() && seat()->toplevelMoveSessions().empty())
-            surface()->setPos(prevRect.pos());
-    }
+    else if (seat()->toplevelResizeSessions().empty() && seat()->toplevelMoveSessions().empty())
+        surface()->setPos(prevRect.pos());
 
     surface()->raise();
     G::compositor()->updatePointerBeforePaint = true;
@@ -215,14 +231,14 @@ void Toplevel::setFullscreenRequest(LOutput *output)
 
     if (animScene)
     {
-        configure(pendingStates());
+        configureState(pending().state);
         return;
     }
 
     // Already in fullscreen mode
     if (fullscreen() || !surf || surf->firstMap)
     {
-        configure(pendingStates());
+        configureState(pending().state);
         return;
     }
 
@@ -241,7 +257,7 @@ void Toplevel::setFullscreenRequest(LOutput *output)
 
     if (dstOutput->animatedFullscreenToplevel)
     {
-        configure(pendingStates());
+        configureState(pending().state);
         return;
     }
 
@@ -249,8 +265,9 @@ void Toplevel::setFullscreenRequest(LOutput *output)
     dstRect = LRect(dstOutput->pos(), dstOutput->size());
 
     fullscreenOutput = dstOutput;
-    prevStates = states();
-    configure(dstRect.size(), Activated | Fullscreen);
+    prevStates = current().state;
+    configureSize(dstRect.size());
+    configureState(Activated | Fullscreen);
 
     LBox box = surf->getView()->boundingBox();
     prevBoundingRect = LRect(box.x1,
@@ -269,7 +286,7 @@ void Toplevel::unsetFullscreenRequest()
 {
     if (!fullscreen() || !fullscreenOutput || fullscreenOutput->animatedFullscreenToplevel)
     {
-        configure(pendingStates());
+        configureState(pending().state);
         return;
     }
 
@@ -294,7 +311,8 @@ void Toplevel::unsetFullscreenRequest()
     surf()->getView()->enableParentOffset(parentOffsetEnabled);
     G::reparentWithSubsurfaces(surf(), &fullscreenWorkspace->surfaces, true);
     capture.setVisible(false);
-    configure(prevRect.size(), prevStates);
+    configureSize(prevRect.size());
+    configureState(prevStates);
 }
 
 void Toplevel::fullscreenChanged()
@@ -303,7 +321,7 @@ void Toplevel::fullscreenChanged()
     {
         if (!fullscreenOutput)
         {
-            configure(pendingStates() &~ Fullscreen);
+            configureState(pending().state &~ Fullscreen);
             return;
         }
 
@@ -373,7 +391,7 @@ void Toplevel::setMinimizedRequest()
 
 void Toplevel::decorationModeChanged()
 {
-    if (decorationMode() == ClientSide)
+    if (current().decorationMode == ClientSide)
     {
         LView *prevParent = decoratedView->parent();
         delete decoratedView;
@@ -396,15 +414,6 @@ void Toplevel::decorationModeChanged()
 
     if (!fullscreen() && rolePos().y() < TOPBAR_HEIGHT)
         surface()->setY(TOPBAR_HEIGHT);
-}
-
-void Toplevel::geometryChanged()
-{
-    if (decoratedView)
-    {
-        decoratedView->updateTitle();
-        decoratedView->updateGeometry();
-    }
 }
 
 void Toplevel::activatedChanged()
@@ -484,10 +493,6 @@ void Toplevel::unsetFullscreen()
 
 void Toplevel::preferredDecorationModeChanged()
 {
-    if (preferredDecorationMode() == decorationMode() || preferredDecorationMode() == 0)
-        return;
-
-    setDecorationMode((DecorationMode)preferredDecorationMode());
-    configure(pendingStates());
+    configureDecorationMode(preferredDecorationMode());
 }
 

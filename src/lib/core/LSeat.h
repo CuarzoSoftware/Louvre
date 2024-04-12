@@ -2,7 +2,7 @@
 #define LSEAT_H
 
 #include <LObject.h>
-#include <LToplevelRole.h>
+#include <roles/LToplevelRole.h>
 #include <LSurface.h>
 
 struct libseat;
