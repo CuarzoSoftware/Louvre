@@ -1,6 +1,7 @@
-#include <protocols/LinuxDMABuf/linux-dmabuf-unstable-v1.h>
+#include <protocols/LinuxDMABuf/linux-dmabuf-v1.h>
 #include <protocols/LinuxDMABuf/GLinuxDMABuf.h>
 #include <protocols/LinuxDMABuf/RLinuxBufferParams.h>
+#include <protocols/LinuxDMABuf/RLinuxDMABufFeedback.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 #include <LUtils.h>
@@ -64,7 +65,7 @@ GLinuxDMABuf::GLinuxDMABuf(
             }
         }
     }
-    else
+    else if (version == 3)
     {
         for (const LDMAFormat &dmaFormat : *compositor()->imp()->graphicBackend->backendGetDMAFormats())
             modifier(dmaFormat.format,
@@ -91,8 +92,14 @@ void GLinuxDMABuf::create_params(wl_client */*client*/, wl_resource *resource, U
 }
 
 #if LOUVRE_LINUX_DMA_BUF_VERSION >= 4
-void GLinuxDMABuf::GLinuxDMABufPrivate::get_default_feedback(wl_client *client, wl_resource *resource, UInt32 id) {}
-void GLinuxDMABuf::GLinuxDMABufPrivate::get_surface_feedback(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface) {}
+void GLinuxDMABuf::get_default_feedback(wl_client */*client*/, wl_resource *resource, UInt32 id)
+{
+    new RLinuxDMABufFeedback(static_cast<GLinuxDMABuf*>(wl_resource_get_user_data(resource)), id);
+}
+void GLinuxDMABuf::get_surface_feedback(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource */*surface*/)
+{
+    new RLinuxDMABufFeedback(static_cast<GLinuxDMABuf*>(wl_resource_get_user_data(resource)), id);
+}
 #endif
 
 /******************** EVENTS ********************/

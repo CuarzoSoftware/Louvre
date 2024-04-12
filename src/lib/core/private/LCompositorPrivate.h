@@ -127,6 +127,17 @@ LPRIVATE_CLASS(LCompositor)
     void sendPresentationTime();
     bool isInputBackendInitialized { false };
     UInt8 screenshotManagers { 0 };
+
+    struct DMAFeedback
+    {
+        Int32 tableFd { -1 };
+        UInt32 tableSize;
+        dev_t device;
+        wl_array formatIndices;
+    } dmaFeedback;
+
+    void initDMAFeedback() noexcept;
+    void unitDMAFeedback() noexcept;
 };
 
 #endif // LCOMPOSITORPRIVATE_H

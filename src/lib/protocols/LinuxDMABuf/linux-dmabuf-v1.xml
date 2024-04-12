@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<protocol name="linux_dmabuf_unstable_v1">
+<protocol name="linux_dmabuf_v1">
 
   <copyright>
     Copyright © 2014, 2015 Collabora, Ltd.
@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zwp_linux_dmabuf_v1" version="4">
+  <interface name="zwp_linux_dmabuf_v1" version="5">
     <description summary="factory for creating dmabuf-based wl_buffers">
       Following the interfaces from:
       https://www.khronos.org/registry/egl/extensions/EXT/EGL_EXT_image_dma_buf_import.txt
@@ -86,14 +86,10 @@
       For all DRM formats and unless specified in another protocol extension,
       pre-multiplied alpha is used for pixel values.
 
-      Warning! The protocol described in this file is experimental and
-      backward incompatible changes may be made. Backward compatible changes
-      may be added together with the corresponding interface version bump.
-      Backward incompatible changes are done by bumping the version number in
-      the protocol and interface names and resetting the interface version.
-      Once the protocol is to be declared stable, the 'z' prefix and the
-      version number in the protocol and interface names are removed and the
-      interface version number is reset.
+      Unless specified otherwise in another protocol extension, implicit
+      synchronization is used. In other words, compositors and clients must
+      wait and signal fences implicitly passed via the DMA-BUF's reservation
+      mechanism.
     </description>
 
     <request name="destroy" type="destructor">
@@ -190,7 +186,7 @@
     </request>
   </interface>
 
-  <interface name="zwp_linux_buffer_params_v1" version="4">
+  <interface name="zwp_linux_buffer_params_v1" version="5">
     <description summary="parameters for creating a dmabuf-based wl_buffer">
       This temporary object is a collection of dmabufs and other
       parameters that together form a single logical buffer. The temporary
@@ -249,6 +245,9 @@
 
         Starting from version 4, the invalid_format protocol error is sent if
         the format + modifier pair was not advertised as supported.
+
+        Starting from version 5, the invalid_format protocol error is sent if
+        all planes don't use the same modifier.
 
         This request raises the PLANE_IDX error if plane_idx is too large.
         The error PLANE_SET is raised if attempting to set a plane that
@@ -344,7 +343,7 @@
         successful. It provides the new wl_buffer referencing the dmabuf(s).
 
         Upon receiving this event, the client should destroy the
-        zlinux_dmabuf_params object.
+        zwp_linux_buffer_params_v1 object.
       </description>
       <arg name="buffer" type="new_id" interface="wl_buffer"
            summary="the newly created wl_buffer"/>
@@ -357,7 +356,7 @@
         has not been fulfilled.
 
         Upon receiving this event, the client should destroy the
-        zlinux_buffer_params object.
+        zwp_linux_buffer_params_v1 object.
       </description>
     </event>
 
@@ -397,7 +396,7 @@
     </request>
   </interface>
 
-  <interface name="zwp_linux_dmabuf_feedback_v1" version="4">
+  <interface name="zwp_linux_dmabuf_feedback_v1" version="5">
     <description summary="dmabuf feedback">
       This object advertises dmabuf parameters feedback. This includes the
       preferred devices and the supported formats/modifiers.
@@ -413,16 +412,16 @@
       configuration. In particular, compositors should avoid sending the exact
       same parameters multiple times in a row.
 
-      The tranche_target_device and tranche_modifier events are grouped by
+      The tranche_target_device and tranche_formats events are grouped by
       tranches of preference. For each tranche, a tranche_target_device, one
-      tranche_flags and one or more tranche_modifier events are sent, followed
+      tranche_flags and one or more tranche_formats events are sent, followed
       by a tranche_done event finishing the list. The tranches are sent in
       descending order of preference. All formats and modifiers in the same
       tranche have the same preference.
 
       To send parameters, the compositor sends one main_device event, tranches
       (each consisting of one tranche_target_device event, one tranche_flags
-      event, tranche_modifier events and then a tranche_done event), then one
+      event, tranche_formats events and then a tranche_done event), then one
       done event.
     </description>
 
@@ -495,9 +494,9 @@
 
     <event name="tranche_done">
       <description summary="a preference tranche has been sent">
-        This event splits tranche_target_device and tranche_modifier events in
+        This event splits tranche_target_device and tranche_formats events in
         preference tranches. It is sent after a set of tranche_target_device
-        and tranche_modifier events; it represents the end of a tranche. The
+        and tranche_formats events; it represents the end of a tranche. The
         next tranche will have a lower preference.
       </description>
     </event>
@@ -584,4 +583,3 @@
   </interface>
 
 </protocol>
-

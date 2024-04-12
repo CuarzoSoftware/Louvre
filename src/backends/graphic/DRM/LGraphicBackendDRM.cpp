@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include <fcntl.h>
@@ -58,6 +59,7 @@ struct Backend
     std::vector<LDMAFormat>dmaFormats;
     std::list<DEVICE_FD_ID> devices;
     UInt32 rendererGPUs {0};
+    dev_t allocatorDeviceId;
 };
 
 struct Output
@@ -317,6 +319,7 @@ bool LGraphicBackend::backendInitialize()
     setenv("SRM_FORCE_LEGACY_API", "1", 0);
     libseatEnabled = compositor()->seat()->imp()->initLibseat();
 
+    struct stat stat;
     Backend *bknd = new Backend();
     compositor()->imp()->graphicBackendData = bknd;
     bknd->core = srmCoreCreate(&srmInterface, compositor());
@@ -335,6 +338,14 @@ bool LGraphicBackend::backendInitialize()
         LLog::fatal("[%s] You are currently using SRM v0.5.1, which has serious bugs causing issues with the refresh rate and hardware cursor plane updates. Consider upgrading to v0.5.2 or a later version.", BKND_NAME);
         srmCoreDestroy(bknd->core);
         goto fail;
+    }
+
+    if (fstat(srmDeviceGetFD(srmCoreGetAllocatorDevice(bknd->core)), &stat) == 0)
+        bknd->allocatorDeviceId = stat.st_rdev;
+    else
+    {
+        bknd->allocatorDeviceId = -1;
+        LLog::fatal("[%s] Failed to get allocator device ID.", BKND_NAME);
     }
 
     // Fill DMA formats (LDMAFormat = SRMFormat)
@@ -439,6 +450,12 @@ EGLContext LGraphicBackend::backendGetAllocatorEGLContext()
 {
     Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
     return srmDeviceGetEGLContext(srmCoreGetAllocatorDevice(bknd->core));
+}
+
+dev_t LGraphicBackend::backendGetAllocatorDeviceId()
+{
+    Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
+    return bknd->allocatorDeviceId;
 }
 
 /* TEXTURES */
@@ -870,6 +887,7 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.backendGetDMAFormats            = &LGraphicBackend::backendGetDMAFormats;
     API.backendGetAllocatorEGLDisplay   = &LGraphicBackend::backendGetAllocatorEGLDisplay;
     API.backendGetAllocatorEGLContext   = &LGraphicBackend::backendGetAllocatorEGLContext;
+    API.backendGetAllocatorDeviceId     = &LGraphicBackend::backendGetAllocatorDeviceId;
 
     /* TEXTURES */
     API.textureCreateFromCPUBuffer      = &LGraphicBackend::textureCreateFromCPUBuffer;

@@ -20,6 +20,7 @@ struct LGraphicBackendInterface
     const std::vector<LDMAFormat>*      (*backendGetDMAFormats)();
     EGLDisplay                          (*backendGetAllocatorEGLDisplay)();
     EGLContext                          (*backendGetAllocatorEGLContext)();
+    dev_t                               (*backendGetAllocatorDeviceId)();
 
     /* TEXTURES */
     bool                                (*textureCreateFromCPUBuffer)(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels);

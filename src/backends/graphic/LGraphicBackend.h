@@ -20,6 +20,7 @@ public:
     static const std::vector<LDMAFormat>*   backendGetDMAFormats();
     static EGLDisplay                       backendGetAllocatorEGLDisplay();
     static EGLContext                       backendGetAllocatorEGLContext();
+    static dev_t                            backendGetAllocatorDeviceId();
 
     /* TEXTURES */
     static bool                             textureCreateFromCPUBuffer(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels);

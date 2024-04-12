@@ -1,6 +1,7 @@
 #include <protocols/XdgOutput/xdg-output-unstable-v1.h>
 #include <protocols/XdgOutput/RXdgOutput.h>
 #include <protocols/Wayland/GOutput.h>
+#include <LOutput.h>
 #include <LPoint.h>
 #include <LUtils.h>
 
@@ -28,7 +29,19 @@ RXdgOutput::RXdgOutput
     m_outputRes(outputRes)
 {
     outputRes->m_xdgOutputRes.emplace_back(this);
-    outputRes->sendConfiguration();
+
+    if (outputRes->output())
+    {
+        logicalPosition(outputRes->output()->pos());
+        logicalSize(outputRes->output()->size());
+        name(outputRes->output()->name());
+        description(outputRes->output()->model());
+
+        if (version >= 3 && outputRes->version() >= 2)
+            outputRes->done();
+        else
+            done();
+    }
 }
 
 RXdgOutput::~RXdgOutput() noexcept

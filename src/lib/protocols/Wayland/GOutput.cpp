@@ -81,7 +81,7 @@ void GOutput::sendConfiguration() noexcept
         xdgOutput->logicalPosition(output()->pos());
         xdgOutput->logicalSize(output()->size());
 
-        if (xdgOutput->name(output()->name()))
+        if (xdgOutput->name(output()->name()) && xdgOutput->version() > 2)
             xdgOutput->description(output()->model());
     }
 

@@ -21,6 +21,9 @@
 #include <dlfcn.h>
 #include <string.h>
 #include <cassert>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 void LCompositor::LCompositorPrivate::processRemovedGlobals()
 {
@@ -310,6 +313,7 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
 
     painter = new LPainter();
     cursor = new LCursor();
+    initDMAFeedback();
     compositor()->cursorInitialized();
 
     return true;
@@ -415,6 +419,8 @@ void LCompositor::LCompositorPrivate::unitInputBackend(bool closeLib)
 
 void LCompositor::LCompositorPrivate::unitGraphicBackend(bool closeLib)
 {
+    unitDMAFeedback();
+
     if (painter)
     {
         delete painter;
@@ -753,7 +759,7 @@ void LCompositor::LCompositorPrivate::sendPendingConfigurations()
     }
 }
 
-void  LCompositor::LCompositorPrivate::sendPresentationTime()
+void LCompositor::LCompositorPrivate::sendPresentationTime()
 {
     for (LOutput *o : outputs)
     {
@@ -762,5 +768,105 @@ void  LCompositor::LCompositorPrivate::sendPresentationTime()
             for (LSurface *s : surfaces)
                 s->imp()->sendPresentationFeedback(o);
         o->imp()->pageflipMutex.unlock();
+    }
+}
+
+void LCompositor::LCompositorPrivate::initDMAFeedback() noexcept
+{
+    if (graphicBackend->backendGetDMAFormats()->empty())
+    {
+        LLog::warning("[LCompositorPrivate::initDMAFeedback] DMA formats not available.");
+        return;
+    }
+
+    char name[] = "/louvre-XXXXXXXX";
+    Int32 i, rw;
+    UInt8 *map, *ptr;
+    UInt16 formatIndex { 0 };
+retryName:
+    i = 8;
+    while (i < 15)
+        name[i++] = 48 + ((LTime::ms() + rand()) % 10);
+    name[i] = '\0';
+
+    rw = shm_open(name, O_RDWR | O_CREAT | O_EXCL, 0600);
+
+    if (rw < 0)
+    {
+        if (errno == EEXIST)
+            goto retryName;
+        else
+            goto err;
+    }
+
+    dmaFeedback.tableFd = shm_open(name, O_RDONLY, 0);
+
+    if (dmaFeedback.tableFd < 0)
+    {
+        shm_unlink(name);
+        close(rw);
+        goto err;
+    }
+
+    shm_unlink(name);
+
+    if (fchmod(rw, 0) != 0) {
+        close(rw);
+        close(dmaFeedback.tableFd);
+        goto err;
+    }
+
+    dmaFeedback.tableSize = 16 * graphicBackend->backendGetDMAFormats()->size();
+
+    int ret;
+    do {
+        ret = ftruncate(rw, dmaFeedback.tableSize);
+    } while (ret < 0 && errno == EINTR);
+    if (ret < 0) {
+        close(rw);
+        close(dmaFeedback.tableFd);
+        goto err;
+    }
+
+    map = (UInt8*)mmap(NULL, dmaFeedback.tableSize, PROT_READ | PROT_WRITE, MAP_SHARED, rw, 0);
+
+    if (map == MAP_FAILED)
+    {
+        close(rw);
+        close(dmaFeedback.tableFd);
+        goto err;
+    }
+
+    wl_array_init(&dmaFeedback.formatIndices);
+    dmaFeedback.device = graphicBackend->backendGetAllocatorDeviceId();
+
+    ptr = map;
+    for (const auto &format : *graphicBackend->backendGetDMAFormats())
+    {
+        *(UInt16*)wl_array_add(&dmaFeedback.formatIndices, sizeof(UInt16)) = formatIndex;
+        memcpy(ptr, &format.format, sizeof(UInt32));
+        ptr+=8;
+        memcpy(ptr, &format.modifier, sizeof(UInt64));
+        ptr+=8;
+        formatIndex++;
+    }
+
+    munmap(map, dmaFeedback.tableSize);
+    close(rw);
+
+    LLog::debug("[LCompositorPrivate::initDMAFeedback] DMA Feedback formats table created successfully.");
+    return;
+err:
+    dmaFeedback.tableFd = -1;
+    LLog::error("[LCompositorPrivate::initDMAFeedback] Failed to create DMA Feedback formats table: %s.", name);
+}
+
+void LCompositor::LCompositorPrivate::unitDMAFeedback() noexcept
+{
+    if (dmaFeedback.tableFd != -1)
+    {
+        close(dmaFeedback.tableFd);
+        dmaFeedback.tableFd = -1;
+        wl_array_release(&dmaFeedback.formatIndices);
     }
 }
