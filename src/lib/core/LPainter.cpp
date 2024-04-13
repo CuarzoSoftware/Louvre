@@ -743,6 +743,7 @@ LFramebuffer *LPainter::boundFramebuffer() const
 void LPainter::LPainterPrivate::updateExtensions()
 {
     openGLExtensions.EXT_read_format_bgra = LOpenGL::hasExtension("GL_EXT_read_format_bgra");
+    openGLExtensions.OES_EGL_image = LOpenGL::hasExtension("GL_OES_EGL_image");
 }
 
 void LPainter::LPainterPrivate::updateCPUFormats()

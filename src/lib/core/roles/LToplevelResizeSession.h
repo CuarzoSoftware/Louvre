@@ -73,7 +73,9 @@ private:
     LBox m_bounds;
     UInt32 m_lastSerial { 0 };
     std::unique_ptr<LEvent> m_triggeringEvent;
+    UInt8 m_unresponsiveCount { 0 };
     bool m_isActive { false };
+    bool m_lastSerialHandled { true };
 };
 
 #endif // LTOPLEVELRESIZESESSION_H

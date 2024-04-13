@@ -61,45 +61,60 @@ LToplevelMoveSession moveSession;
 
 inline void applyPendingChanges(LBitset<ConfigurationChanges> changes)
 {
-    if (!stateFlags.check(HasUncommitedConfiguration))
-        return;
-
-    stateFlags.remove(HasUncommitedConfiguration);
-    previous = current;
-    current = uncommited;
-
-    const LBitset<State> stateChanges { previous.state ^ current.state };
-
-    if (stateChanges.check(Activated))
+    if (stateFlags.check(HasUncommitedConfiguration))
     {
-        if (current.state.check(Activated))
+        stateFlags.remove(HasUncommitedConfiguration);
+        previous = current;
+        current = uncommited;
+
+        const LBitset<State> stateChanges { previous.state ^ current.state };
+
+        if (stateChanges.check(Activated))
         {
-            if (seat()->activeToplevel() && seat()->activeToplevel() != toplevel)
+            if (current.state.check(Activated))
             {
-                seat()->activeToplevel()->imp()->stateFlags.add(ForceRemoveActivatedFlag);
-
-                if (!seat()->activeToplevel()->imp()->stateFlags.check(HasConfigurationToSend))
+                if (seat()->activeToplevel() && seat()->activeToplevel() != toplevel)
                 {
-                    seat()->activeToplevel()->imp()->pending.serial = LTime::nextSerial();
-                    seat()->activeToplevel()->imp()->stateFlags.add(HasConfigurationToSend);
-                }
-            }
+                    seat()->activeToplevel()->imp()->stateFlags.add(ForceRemoveActivatedFlag);
 
-            seat()->imp()->activeToplevel = toplevel;
+                    if (!seat()->activeToplevel()->imp()->stateFlags.check(HasConfigurationToSend))
+                    {
+                        seat()->activeToplevel()->imp()->pending.serial = LTime::nextSerial();
+                        seat()->activeToplevel()->imp()->stateFlags.add(HasConfigurationToSend);
+                    }
+                }
+
+                seat()->imp()->activeToplevel = toplevel;
+            }
         }
+
+        if (previous.decorationMode != current.decorationMode)
+            changes |= DecorationModeChanged;
+
+        if (stateChanges)
+            changes |= StateChanged;
     }
 
-    if (previous.decorationMode != current.decorationMode)
-        changes |= DecorationModeChanged;
+    if (changes.check(WindowGeometryChanged))
+        resizeSession.handleGeometryChange();
 
-    if (stateChanges)
-        changes |= StateChanged;
-
-    toplevel->configurationChanged(changes);
+    if (changes)
+        toplevel->configurationChanged(changes);
 }
 
 inline void sendConfiguration()
 {
+    if (!resizeSession.m_isActive && !resizeSession.m_lastSerialHandled)
+    {
+        if (resizeSession.m_unresponsiveCount > 9)
+            resizeSession.m_lastSerialHandled = true;
+        else
+        {
+            resizeSession.m_unresponsiveCount++;
+            toplevel->configureState(pending.state & ~Resizing);
+        }
+    }
+
     if (!stateFlags.check(HasConfigurationToSend))
         return;
 

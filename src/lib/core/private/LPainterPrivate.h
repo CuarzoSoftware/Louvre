@@ -130,6 +130,7 @@ GLenum textureTarget = GL_TEXTURE_2D;
 struct OpenGLExtensions
 {
     bool EXT_read_format_bgra;
+    bool OES_EGL_image;
 } openGLExtensions;
 
 void updateExtensions();

@@ -17,23 +17,25 @@ LToplevelResizeSession::~LToplevelResizeSession()
 
 void LToplevelResizeSession::handleGeometryChange()
 {
-    if (!m_toplevel->resizing())
-        return;
-
-    if (!m_isActive && m_lastSerial < m_toplevel->current().serial)
+    if (m_isActive || !m_lastSerialHandled)
     {
-        m_lastSerial = 0;
-        return;
+        if (m_edge == LToplevelRole::Top || m_edge == LToplevelRole::TopLeft || m_edge == LToplevelRole::TopRight)
+            m_toplevel->surface()->setY(m_initPos.y() + (m_initSize.h() - m_toplevel->windowGeometry().h()));
+
+        if (m_edge == LToplevelRole::Left || m_edge == LToplevelRole::TopLeft || m_edge == LToplevelRole::BottomLeft)
+            m_toplevel->surface()->setX(m_initPos.x() + (m_initSize.w() - m_toplevel->windowGeometry().w()));
+
+        if (!m_isActive)
+        {
+            if (m_toplevel->resizing())
+                toplevel()->configureState(toplevel()->pending().state & ~LToplevelRole::Resizing);
+            else
+            {
+                m_lastSerialHandled = true;
+                m_lastSerial = 0;
+            }
+        }
     }
-
-    if (m_edge == LToplevelRole::Top || m_edge == LToplevelRole::TopLeft || m_edge == LToplevelRole::TopRight)
-        m_toplevel->surface()->setY(m_initPos.y() + (m_initSize.h() - m_toplevel->windowGeometry().h()));
-
-    if (m_edge == LToplevelRole::Left || m_edge == LToplevelRole::TopLeft || m_edge == LToplevelRole::BottomLeft)
-        m_toplevel->surface()->setX(m_initPos.x() + (m_initSize.w() - m_toplevel->windowGeometry().w()));
-
-    if (!m_isActive)
-        m_toplevel->configureState(m_toplevel->pending().state & ~LToplevelRole::Resizing);
 }
 
 void LToplevelResizeSession::updateDragPoint(const LPoint &point)
@@ -89,6 +91,7 @@ bool LToplevelResizeSession::start(const LEvent &triggeringEvent, LToplevelRole:
     if (m_isActive)
         return false;
 
+    m_lastSerialHandled = false;
     m_isActive = true;
     m_triggeringEvent.reset(triggeringEvent.copy());
     m_minSize = minSize;
@@ -117,6 +120,7 @@ const std::vector<LToplevelResizeSession*>::const_iterator LToplevelResizeSessio
     if (!m_isActive)
         return seat()->imp()->resizeSessions.begin();
 
+    m_unresponsiveCount = 0;
     m_isActive = false;
     toplevel()->configureState(toplevel()->pending().state & ~LToplevelRole::Resizing);
     auto it = std::find(seat()->imp()->resizeSessions.begin(), seat()->imp()->resizeSessions.end(), this);

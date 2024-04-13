@@ -104,7 +104,7 @@ RScreenCopyFrame::RScreenCopyFrame
 
     LTexture *outputTexture;
 
-    if ((outputTexture = output->bufferTexture(0)))
+    if ((outputTexture = output->bufferTexture(0)) && output->painter()->imp()->openGLExtensions.OES_EGL_image)
         linuxDMABuf(outputTexture->format(), m_rectB.size());
 
     bufferDone();

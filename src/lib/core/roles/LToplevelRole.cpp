@@ -234,7 +234,6 @@ void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
 
     if (imp()->stateFlags.check(LToplevelRolePrivate::HasPendingMaxSize))
     {
-        imp()->stateFlags.add(LToplevelRolePrivate::HasUncommitedConfiguration);
         changes.add(MaxSizeChanged);
         imp()->stateFlags.remove(LToplevelRolePrivate::HasPendingMaxSize);
         imp()->currentMaxSize = imp()->pendingMaxSize;
@@ -242,7 +241,6 @@ void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
 
     if (imp()->stateFlags.check(LToplevelRolePrivate::HasPendingMinSize))
     {
-        imp()->stateFlags.add(LToplevelRolePrivate::HasUncommitedConfiguration);
         changes.add(MinSizeChanged);
         imp()->stateFlags.remove(LToplevelRolePrivate::HasPendingMinSize);
         imp()->currentMinSize = imp()->pendingMinSize;
@@ -263,9 +261,7 @@ void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
     if (xdgSurfaceResource()->m_hasPendingWindowGeometry)
     {
         changes.add(WindowGeometryChanged);
-        imp()->stateFlags.add(LToplevelRolePrivate::HasUncommitedConfiguration);
         xdgSurfaceResource()->m_hasPendingWindowGeometry = false;
-        resizeSession().handleGeometryChange();
     }
 
     imp()->applyPendingChanges(changes);
