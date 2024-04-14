@@ -52,7 +52,9 @@ LPRIVATE_CLASS(LSurface)
         BufferReleased              = static_cast<UInt16>(1) << 7,
         BufferAttached              = static_cast<UInt16>(1) << 8,
         Mapped                      = static_cast<UInt16>(1) << 9,
-        VSync                       = static_cast<UInt16>(1) << 10
+        VSync                       = static_cast<UInt16>(1) << 10,
+        ChildrenListChanged         = static_cast<UInt16>(1) << 11,
+        ParentCommitNotified        = static_cast<UInt16>(1) << 12
     };
 
     LBitset<StateFlags> stateFlags

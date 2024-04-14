@@ -70,13 +70,15 @@ void RSubsurface::place_above(wl_client */*client*/, wl_resource *resource, wl_r
     LSubsurfaceRole *subsurfaceRole { static_cast<RSubsurface*>(wl_resource_get_user_data(resource))->subsurfaceRole() };
     LSurface *siblingSurface { static_cast<RSurface*>(wl_resource_get_user_data(sibling))->surface() };
 
-    if (siblingSurface->parent() == subsurfaceRole->surface()->parent() && siblingSurface != subsurfaceRole->surface())
+    const bool siblingIsParent { subsurfaceRole->surface()->parent() && subsurfaceRole->surface()->parent() == siblingSurface };
+
+    if (siblingIsParent  || (siblingSurface->parent() == subsurfaceRole->surface()->parent() && siblingSurface != subsurfaceRole->surface()))
     {
         subsurfaceRole->imp()->pendingPlaceAbove.reset(siblingSurface);
         return;
     }
 
-    wl_resource_post_error(resource, WL_SUBSURFACE_ERROR_BAD_SURFACE, "Subsurface is not sibling.");
+    wl_resource_post_error(resource, WL_SUBSURFACE_ERROR_BAD_SURFACE, "Subsurface is not sibling or parent.");
 }
 
 void RSubsurface::place_below(wl_client */*client*/, wl_resource *resource, wl_resource *sibling)

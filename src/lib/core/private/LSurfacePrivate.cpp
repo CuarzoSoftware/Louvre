@@ -137,6 +137,8 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
         else if (child->imp()->pending.role)
             child->imp()->pending.role->handleParentChange();
     }
+
+    surface->orderChanged();
 }
 
 bool LSurface::LSurfacePrivate::bufferToTexture()

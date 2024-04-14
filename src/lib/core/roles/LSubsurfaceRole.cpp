@@ -67,22 +67,44 @@ void LSubsurfaceRole::handleParentCommit()
     if (imp()->pendingPlaceAbove)
     {
         compositor()->imp()->insertSurfaceAfter(imp()->pendingPlaceAbove, surface());
-        surface()->parent()->imp()->children.erase(surface()->imp()->parentLink);
-        surface()->imp()->parentLink = surface()->parent()->imp()->children.insert(
-            std::next(imp()->pendingPlaceAbove->imp()->parentLink),
-            surface());
-        placedAbove(imp()->pendingPlaceAbove);
+
+        if (imp()->pendingPlaceAbove == surface()->parent())
+        {
+            if (surface()->parent()->children().front() != surface())
+            {
+                surface()->parent()->imp()->children.erase(surface()->imp()->parentLink);
+                surface()->parent()->imp()->children.push_front(surface());
+                surface()->imp()->parentLink = surface()->parent()->imp()->children.begin();
+                surface()->parent()->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
+                placedAbove(imp()->pendingPlaceAbove);
+            }
+        }
+        else if (*std::next(imp()->pendingPlaceAbove->imp()->parentLink) != surface())
+        {
+            surface()->parent()->imp()->children.erase(surface()->imp()->parentLink);
+            surface()->imp()->parentLink = surface()->parent()->imp()->children.insert(
+                std::next(imp()->pendingPlaceAbove->imp()->parentLink),
+                surface());
+            surface()->parent()->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
+            placedAbove(imp()->pendingPlaceAbove);
+        }
+
         imp()->pendingPlaceAbove.reset();
     }
 
     if (imp()->pendingPlaceBelow)
     {
-        compositor()->imp()->insertSurfaceBefore(imp()->pendingPlaceBelow, surface());
-        surface()->parent()->imp()->children.erase(surface()->imp()->parentLink);
-        surface()->imp()->parentLink = surface()->parent()->imp()->children.insert(
-            imp()->pendingPlaceBelow->imp()->parentLink,
-            surface());
-        placedBelow(imp()->pendingPlaceBelow);
+        if (*std::prev(imp()->pendingPlaceAbove->imp()->parentLink) != surface())
+        {
+            compositor()->imp()->insertSurfaceBefore(imp()->pendingPlaceBelow, surface());
+            surface()->parent()->imp()->children.erase(surface()->imp()->parentLink);
+            surface()->imp()->parentLink = surface()->parent()->imp()->children.insert(
+                imp()->pendingPlaceBelow->imp()->parentLink,
+                surface());
+            surface()->parent()->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
+            placedBelow(imp()->pendingPlaceBelow);
+        }
+
         imp()->pendingPlaceBelow.reset();
     }
 

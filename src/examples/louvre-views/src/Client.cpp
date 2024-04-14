@@ -111,7 +111,7 @@ Client::Client(const void *params) : LClient(params),
                     LLog::warning("[louvre-views] Destroyed unresponsive client %lu.", (UInt64)client());
                     destroy();
 
-                    /* Be careful, the time is destroyed, so return */
+                    /* Be careful, the timer is destroyed, so return */
                     return;
                 }
                 else if (unresponsiveCount == 0)

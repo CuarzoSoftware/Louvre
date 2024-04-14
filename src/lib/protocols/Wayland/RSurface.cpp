@@ -199,8 +199,22 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
      ********************************************/
 
     for (LSurface *s : surface->children())
-        if (s->role())
+        s->imp()->stateFlags.remove(LSurface::LSurfacePrivate::ParentCommitNotified);
+
+    retryParentCommitNotif:
+    imp.stateFlags.remove(LSurface::LSurfacePrivate::ChildrenListChanged);
+
+    for (LSurface *s : surface->children())
+    {
+        if (s->role() && !s->imp()->stateFlags.check(LSurface::LSurfacePrivate::ParentCommitNotified))
+        {
+            s->imp()->stateFlags.add(LSurface::LSurfacePrivate::ParentCommitNotified);
             s->role()->handleParentCommit();
+
+            if (imp.stateFlags.check(LSurface::LSurfacePrivate::ChildrenListChanged))
+                goto retryParentCommitNotif;
+        }
+    }
 
     if (imp.stateFlags.check(LSurface::LSurfacePrivate::BufferAttached))
     {
