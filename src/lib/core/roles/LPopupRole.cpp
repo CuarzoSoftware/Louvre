@@ -123,8 +123,13 @@ void LPopupRole::handleSurfaceCommit(CommitOrigin origin)
     // Si nunca ha asignado la geometría, usa el tamaño de la superficie
     else if (!xdgSurfaceResource()->m_windowGeometrySet)
     {
-        xdgSurfaceResource()->m_currentWindowGeometry = LRect(0, surface()->size());
-        geometryChanged();
+        const LRect newGeometry { xdgSurfaceResource()->calculateGeometryWithSubsurfaces() };
+
+        if (newGeometry != xdgSurfaceResource()->m_currentWindowGeometry)
+        {
+            xdgSurfaceResource()->m_currentWindowGeometry = newGeometry;
+            geometryChanged();
+        }
     }
 
     // Request configure

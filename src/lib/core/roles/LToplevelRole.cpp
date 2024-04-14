@@ -5,6 +5,7 @@
 #include <private/LSeatPrivate.h>
 #include <protocols/XdgShell/xdg-shell.h>
 #include <LToplevelResizeSession.h>
+#include <LSubsurfaceRole.h>
 #include <LCompositor.h>
 #include <LOutput.h>
 #include <LPoint.h>
@@ -248,12 +249,16 @@ void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
 
     if (xdgSurfaceResource()->m_hasPendingWindowGeometry)
         xdgSurfaceResource()->m_currentWindowGeometry = xdgSurfaceResource()->m_pendingWindowGeometry;
-    // If never assigned, use the surface size
-    else if (!xdgSurfaceResource()->m_windowGeometrySet &&
-             xdgSurfaceResource()->m_currentWindowGeometry.size() != surface()->size())
+    // If never assigned, use the surface + subsurfaces bounds
+    else if (!xdgSurfaceResource()->m_windowGeometrySet)
     {
-        xdgSurfaceResource()->m_hasPendingWindowGeometry = true;
-        xdgSurfaceResource()->m_currentWindowGeometry = LRect(0, surface()->size());
+        const LRect newGeometry { xdgSurfaceResource()->calculateGeometryWithSubsurfaces() };
+
+        if (xdgSurfaceResource()->m_currentWindowGeometry != newGeometry)
+        {
+            xdgSurfaceResource()->m_currentWindowGeometry = newGeometry;
+            xdgSurfaceResource()->m_hasPendingWindowGeometry = true;
+        }
     }
 
     /* Then notify all changes */

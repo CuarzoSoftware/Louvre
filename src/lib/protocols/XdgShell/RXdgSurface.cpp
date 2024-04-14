@@ -5,6 +5,7 @@
 #include <protocols/XdgShell/RXdgPopup.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LToplevelRolePrivate.h>
+#include <LSubsurfaceRole.h>
 
 using namespace Louvre::Protocols::XdgShell;
 
@@ -44,6 +45,25 @@ RXdgSurface::~RXdgSurface() noexcept
 }
 
 /******************** REQUESTS ********************/
+
+LRect RXdgSurface::calculateGeometryWithSubsurfaces() noexcept
+{
+    if (!surface())
+        return LRect(0,0,1,1);
+
+    LRegion region { LRect(0, 0, surface()->size().w(), surface()->size().h()) };
+
+    for (LSurface *child : surface()->children())
+        if (child->subsurface() && child->mapped())
+            region.addRect(child->subsurface()->localPos(), child->size());
+
+    return LRect(
+        region.extents().x1,
+        region.extents().y1,
+        region.extents().x2 - region.extents().x1,
+        region.extents().y2 - region.extents().y1
+    );
+}
 
 void RXdgSurface::destroy(wl_client */*client*/, wl_resource *resource)
 {

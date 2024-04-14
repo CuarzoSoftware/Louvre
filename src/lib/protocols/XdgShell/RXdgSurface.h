@@ -33,6 +33,8 @@ public:
         return m_currentWindowGeometry;
     }
 
+    LRect calculateGeometryWithSubsurfaces() noexcept;
+
     /******************** REQUESTS ********************/
 
     static void destroy(wl_client *client, wl_resource *resource) ;
