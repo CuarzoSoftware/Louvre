@@ -1,6 +1,7 @@
 #ifndef LTOPLEVELROLEPRIVATE_H
 #define LTOPLEVELROLEPRIVATE_H
 
+#include <LLog.h>
 #include <protocols/XdgDecoration/RXdgToplevelDecoration.h>
 #include <protocols/XdgShell/RXdgSurface.h>
 #include <protocols/XdgShell/RXdgToplevel.h>
@@ -104,17 +105,6 @@ inline void applyPendingChanges(LBitset<ConfigurationChanges> changes)
 
 inline void sendConfiguration()
 {
-    if (!resizeSession.m_isActive && !resizeSession.m_lastSerialHandled)
-    {
-        if (resizeSession.m_unresponsiveCount > 9)
-            resizeSession.m_lastSerialHandled = true;
-        else
-        {
-            resizeSession.m_unresponsiveCount++;
-            toplevel->configureState(pending.state & ~Resizing);
-        }
-    }
-
     if (!stateFlags.check(HasConfigurationToSend))
         return;
 
@@ -129,72 +119,46 @@ inline void sendConfiguration()
         stateFlags.remove(ForceRemoveActivatedFlag);
     }
 
-    wl_array dummy;
-    wl_array_init(&dummy);
-    UInt32 index = 0;
+    UInt32 stateArr[8];
+
+    wl_array dummy
+    {
+        .size = 0,
+        .alloc = 0,
+        .data = (void*)stateArr
+    };
 
     if (pending.state & LToplevelRole::Activated)
-    {
-        wl_array_add(&dummy, sizeof(xdg_toplevel_state));
-        xdg_toplevel_state *s = (xdg_toplevel_state*)dummy.data;
-        s[index] = XDG_TOPLEVEL_STATE_ACTIVATED;
-        index++;
-    }
+        stateArr[dummy.alloc++] = XDG_TOPLEVEL_STATE_ACTIVATED;
+
     if (pending.state & LToplevelRole::Fullscreen)
-    {
-        wl_array_add(&dummy, sizeof(xdg_toplevel_state));
-        xdg_toplevel_state *s = (xdg_toplevel_state*)dummy.data;
-        s[index] = XDG_TOPLEVEL_STATE_FULLSCREEN;
-        index++;
-    }
+        stateArr[dummy.alloc++] = XDG_TOPLEVEL_STATE_FULLSCREEN;
+
     if (pending.state & LToplevelRole::Maximized)
-    {
-        wl_array_add(&dummy, sizeof(xdg_toplevel_state));
-        xdg_toplevel_state *s = (xdg_toplevel_state*)dummy.data;
-        s[index] = XDG_TOPLEVEL_STATE_MAXIMIZED;
-        index++;
-    }
+        stateArr[dummy.alloc++] = XDG_TOPLEVEL_STATE_MAXIMIZED;
+
     if (pending.state & LToplevelRole::Resizing)
-    {
-        wl_array_add(&dummy, sizeof(xdg_toplevel_state));
-        xdg_toplevel_state *s = (xdg_toplevel_state*)dummy.data;
-        s[index] = XDG_TOPLEVEL_STATE_RESIZING;
-        index++;
-    }
+        stateArr[dummy.alloc++] = XDG_TOPLEVEL_STATE_RESIZING;
 
 #if LOUVRE_XDG_WM_BASE_VERSION >= 2
     if (toplevel->resource()->version() >= 2)
     {
         if (pending.state & LToplevelRole::TiledBottom)
-        {
-            wl_array_add(&dummy, sizeof(xdg_toplevel_state));
-            xdg_toplevel_state *s = (xdg_toplevel_state*)dummy.data;
-            s[index] = XDG_TOPLEVEL_STATE_TILED_BOTTOM;
-            index++;
-        }
+            stateArr[dummy.alloc++] = XDG_TOPLEVEL_STATE_TILED_BOTTOM;
+
         if (pending.state & LToplevelRole::TiledLeft)
-        {
-            wl_array_add(&dummy, sizeof(xdg_toplevel_state));
-            xdg_toplevel_state *s = (xdg_toplevel_state*)dummy.data;
-            s[index] = XDG_TOPLEVEL_STATE_TILED_LEFT;
-            index++;
-        }
+            stateArr[dummy.alloc++] = XDG_TOPLEVEL_STATE_TILED_LEFT;
+
         if (pending.state & LToplevelRole::TiledRight)
-        {
-            wl_array_add(&dummy, sizeof(xdg_toplevel_state));
-            xdg_toplevel_state *s = (xdg_toplevel_state*)dummy.data;
-            s[index] = XDG_TOPLEVEL_STATE_TILED_RIGHT;
-            index++;
-        }
+            stateArr[dummy.alloc++] = XDG_TOPLEVEL_STATE_TILED_RIGHT;
+
         if (pending.state & LToplevelRole::TiledTop)
-        {
-            wl_array_add(&dummy, sizeof(xdg_toplevel_state));
-            xdg_toplevel_state *s = (xdg_toplevel_state*)dummy.data;
-            s[index] = XDG_TOPLEVEL_STATE_TILED_TOP;
-            index++;
-        }
+            stateArr[dummy.alloc++] = XDG_TOPLEVEL_STATE_TILED_TOP;
     }
 #endif
+
+    dummy.size = dummy.alloc * sizeof(UInt32);
+    dummy.alloc = dummy.size;
 
     if (pending.decorationMode == NoPreferredMode)
         pending.decorationMode = ClientSide;
@@ -211,7 +175,6 @@ inline void sendConfiguration()
         pending.decorationMode = ClientSide;
 
     xdgToplevelRes.configure(pending.size.w(), pending.size.h(), &dummy);
-    wl_array_release(&dummy);
 
     if (xdgToplevelRes.xdgSurfaceRes())
         xdgToplevelRes.xdgSurfaceRes()->configure(pending.serial);

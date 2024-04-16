@@ -1,3 +1,5 @@
+#include <LToplevelMoveSession.h>
+#include <LToplevelResizeSession.h>
 #include <LClientCursor.h>
 #include <LScene.h>
 #include <LCursor.h>
@@ -27,7 +29,7 @@ void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)
 {
     G::scene()->handlePointerMoveEvent(event);
 
-    if (cursorOwner || !seat()->toplevelResizeSessions().empty())
+    if (cursorOwner)
         return;
 
     if (seat()->dnd()->dragging())
@@ -36,21 +38,38 @@ void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)
         return;
     }
 
-    if (seat()->toplevelMoveSessions().empty())
+    for (auto *moveSession : seat()->toplevelMoveSessions())
     {
-        if (G::scene()->pointerFocus().empty())
-            return;
-
-        if (G::scene()->pointerFocus().front()->userData() == WallpaperType)
+        if (moveSession->triggeringEvent().type() != LEvent::Type::Touch)
         {
-            cursor()->setVisible(true);
-            cursor()->useDefault();
+            if (moveSession->toplevel()->decorationMode() == LToplevelRole::ClientSide)
+                cursor()->setCursor(moveSession->toplevel()->client()->lastCursorRequest());
             return;
         }
-
-        if (G::scene()->pointerFocus().front()->type() == LView::Surface)
-            cursor()->setCursor(static_cast<LSurfaceView*>(G::scene()->pointerFocus().back())->surface()->client()->lastCursorRequest());
     }
+
+    for (auto *resizeSession : seat()->toplevelResizeSessions())
+    {
+        if (resizeSession->triggeringEvent().type() != LEvent::Type::Touch)
+        {
+            if (resizeSession->toplevel()->decorationMode() == LToplevelRole::ClientSide)
+                cursor()->setCursor(resizeSession->toplevel()->client()->lastCursorRequest());
+            return;
+        }
+    }
+
+    if (G::scene()->pointerFocus().empty())
+        return;
+
+    if (G::scene()->pointerFocus().front()->userData() == WallpaperType)
+    {
+        cursor()->setVisible(true);
+        cursor()->useDefault();
+        return;
+    }
+
+    if (G::scene()->pointerFocus().front()->type() == LView::Surface)
+        cursor()->setCursor(static_cast<LSurfaceView*>(G::scene()->pointerFocus().back())->surface()->client()->lastCursorRequest());
 }
 
 void Pointer::pointerButtonEvent(const LPointerButtonEvent &event)

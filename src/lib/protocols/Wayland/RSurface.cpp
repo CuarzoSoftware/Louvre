@@ -219,7 +219,15 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     if (imp.stateFlags.check(LSurface::LSurfacePrivate::BufferAttached))
     {
         if (imp.current.buffer)
+        {
             wl_list_remove(&imp.current.onBufferDestroyListener.link);
+
+            if (!wl_shm_buffer_get(imp.current.buffer) && imp.current.buffer != imp.pending.buffer)
+            {
+                wl_buffer_send_release(imp.current.buffer);
+                wl_client_flush(wl_resource_get_client(imp.current.buffer));
+            }
+        }
 
         imp.current.buffer = imp.pending.buffer;
 
@@ -235,7 +243,7 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     // Mark the next frame as commited
     if (!imp.frameCallbacks.empty())
     {
-        surface->requestedRepaint();
+        //surface->requestedRepaint();
         for (RCallback *callback : imp.frameCallbacks)
             callback->m_commited = true;
     }
@@ -247,14 +255,11 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     // Turn buffer into OpenGL texture and process damage
     if (imp.current.buffer)
     {
-        if (!imp.stateFlags.check(LSurface::LSurfacePrivate::BufferReleased))
+        // Returns false on wl_client destroy
+        if (!imp.bufferToTexture())
         {
-            // Returns false on wl_client destroy
-            if (!imp.bufferToTexture())
-            {
-                LLog::error("[RSurface::apply_commit] Failed to convert buffer to OpenGL texture.");
-                return;
-            }
+            LLog::error("[RSurface::apply_commit] Failed to convert buffer to OpenGL texture.");
+            return;
         }
     }
 

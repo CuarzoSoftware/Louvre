@@ -2,6 +2,7 @@
 #define LTOPLEVELRESIZESESSION_H
 
 #include <LToplevelRole.h>
+#include <LTimer.h>
 
 class Louvre::LToplevelResizeSession
 {
@@ -71,11 +72,11 @@ private:
     LPoint m_currentDragPoint;
     LToplevelRole::ResizeEdge m_edge;
     LBox m_bounds;
-    UInt32 m_lastSerial { 0 };
     std::unique_ptr<LEvent> m_triggeringEvent;
-    UInt8 m_unresponsiveCount { 0 };
+    UInt32 m_lastSerial { 0 };
     bool m_isActive { false };
     bool m_lastSerialHandled { true };
+    LTimer m_ackTimer;
 };
 
 #endif // LTOPLEVELRESIZESESSION_H

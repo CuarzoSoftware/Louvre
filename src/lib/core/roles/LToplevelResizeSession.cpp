@@ -4,10 +4,17 @@
 #include <LPointerEnterEvent.h>
 #include <LSurface.h>
 #include <LUtils.h>
+#include <LLog.h>
 
 using namespace Louvre;
 
-LToplevelResizeSession::LToplevelResizeSession() : m_triggeringEvent(std::make_unique<LPointerEnterEvent>()) {}
+LToplevelResizeSession::LToplevelResizeSession() : m_triggeringEvent(std::make_unique<LPointerEnterEvent>())
+{
+    m_ackTimer.setCallback([this](auto)
+    {
+        m_lastSerialHandled = true;
+    });
+}
 
 LToplevelResizeSession::~LToplevelResizeSession()
 {
@@ -17,7 +24,7 @@ LToplevelResizeSession::~LToplevelResizeSession()
 
 void LToplevelResizeSession::handleGeometryChange()
 {
-    if (m_isActive || !m_lastSerialHandled)
+    if (!m_lastSerialHandled)
     {
         if (m_edge == LToplevelRole::Top || m_edge == LToplevelRole::TopLeft || m_edge == LToplevelRole::TopRight)
             m_toplevel->surface()->setY(m_initPos.y() + (m_initSize.h() - m_toplevel->windowGeometry().h()));
@@ -25,15 +32,10 @@ void LToplevelResizeSession::handleGeometryChange()
         if (m_edge == LToplevelRole::Left || m_edge == LToplevelRole::TopLeft || m_edge == LToplevelRole::BottomLeft)
             m_toplevel->surface()->setX(m_initPos.x() + (m_initSize.w() - m_toplevel->windowGeometry().w()));
 
-        if (!m_isActive)
+        if (!m_isActive && (!m_toplevel->resizing() || m_lastSerial < m_toplevel->current().serial) )
         {
-            if (m_toplevel->resizing())
-                toplevel()->configureState(toplevel()->pending().state & ~LToplevelRole::Resizing);
-            else
-            {
-                m_lastSerialHandled = true;
-                m_lastSerial = 0;
-            }
+            m_ackTimer.cancel();
+            m_lastSerialHandled = true;
         }
     }
 }
@@ -91,6 +93,7 @@ bool LToplevelResizeSession::start(const LEvent &triggeringEvent, LToplevelRole:
     if (m_isActive)
         return false;
 
+    m_ackTimer.cancel();
     m_lastSerialHandled = false;
     m_isActive = true;
     m_triggeringEvent.reset(triggeringEvent.copy());
@@ -120,9 +123,13 @@ const std::vector<LToplevelResizeSession*>::const_iterator LToplevelResizeSessio
     if (!m_isActive)
         return seat()->imp()->resizeSessions.begin();
 
-    m_unresponsiveCount = 0;
     m_isActive = false;
     toplevel()->configureState(toplevel()->pending().state & ~LToplevelRole::Resizing);
+    m_lastSerialHandled = toplevel()->pending().size == toplevel()->current().size;
+
+    if (!m_lastSerialHandled)
+        m_ackTimer.start(600);
+
     auto it = std::find(seat()->imp()->resizeSessions.begin(), seat()->imp()->resizeSessions.end(), this);
     return seat()->imp()->resizeSessions.erase(it);
 }

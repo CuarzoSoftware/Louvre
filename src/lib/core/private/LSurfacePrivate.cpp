@@ -172,6 +172,12 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     // SHM
     if (wl_shm_buffer_get(current.buffer))
     {
+        if (!stateFlags.check(BufferReleased))
+        {
+            wl_buffer_send_release(current.buffer);
+            stateFlags.add(BufferReleased);
+        }
+
         if (texture && texture != textureBackup && texture->m_pendingDelete)
             delete texture;
 
@@ -316,6 +322,9 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     // WL_DRM
     else if (compositor()->imp()->eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.buffer, EGL_TEXTURE_FORMAT, &format))
     {
+        /* Unlike SHM buffers, the current buffer is released after
+         * a different buffer is commited */
+
         if (texture && texture != textureBackup && texture->m_pendingDelete)
             delete texture;
 
@@ -331,6 +340,9 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     // DMA-Buf
     else if (LDMABuffer::isDMABuffer(current.buffer))
     {
+        /* Unlike SHM buffers, the current buffer is released after
+         * a different buffer is commited */
+
         LDMABuffer *dmaBuffer = (LDMABuffer*)wl_resource_get_user_data(current.buffer);
         widthB = dmaBuffer->planes()->width;
         heightB = dmaBuffer->planes()->height;
@@ -360,9 +372,8 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
     pendingDamageB.clear();
     pendingDamage.clear();
-    wl_buffer_send_release(current.buffer);
     damageId = LTime::nextSerial();
-    stateFlags.add(Damaged | BufferReleased);
+    stateFlags.add(Damaged);
     return true;
 }
 
