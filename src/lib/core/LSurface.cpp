@@ -16,6 +16,8 @@ using namespace Louvre::Protocols::Wayland;
 
 LSurface::LSurface(const void *params) : LPRIVATE_INIT_UNIQUE(LSurface)
 {
+    imp()->pendingDamage.reserve(LOUVRE_MAX_DAMAGE_RECTS);
+    imp()->pendingDamageB.reserve(LOUVRE_MAX_DAMAGE_RECTS);
     imp()->texture = new LTexture();
     imp()->textureBackup = imp()->texture;
     imp()->surfaceResource = ((LSurface::Params*)params)->surfaceResource;

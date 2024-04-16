@@ -204,6 +204,9 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         }
         else if (!pendingDamageB.empty() || !pendingDamage.empty())
         {
+            simplifyDamage(pendingDamageB);
+            simplifyDamage(pendingDamage);
+
             LRegion onlyPending;
 
             if (stateFlags.check(ViewportIsScaled | ViewportIsCropped))
@@ -286,7 +289,6 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
                 onlyPending.clip(LRect(0, sizeB));
                 currentDamageB.addRegion(onlyPending);
-
                 onlyPending.transform(sizeB, current.transform);
 
                 UInt32 pixelSize = LTexture::formatBytesPerPixel(format);
@@ -313,10 +315,12 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         else
         {
             wl_shm_buffer_end_access(shm_buffer);
+            wl_client_flush(wl_resource_get_client(current.buffer));
             return true;
         }
 
         wl_shm_buffer_end_access(shm_buffer);
+        wl_client_flush(wl_resource_get_client(current.buffer));
     }
 
     // WL_DRM
@@ -532,6 +536,9 @@ void LSurface::LSurfacePrivate::updateDamage()
     }
     else if (!pendingDamageB.empty() || !pendingDamage.empty())
     {
+        simplifyDamage(pendingDamageB);
+        simplifyDamage(pendingDamage);
+
         if (stateFlags.check(ViewportIsScaled | ViewportIsCropped))
         {
             Float32 xInvScale = (Float32(current.bufferScale) * srcRect.w())/Float32(size.w());
@@ -722,4 +729,41 @@ bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB)
         changesToNotify.add(SourceRectChanged);
 
     return true;
+}
+
+void LSurface::LSurfacePrivate::simplifyDamage(std::vector<LRect> &vec) noexcept
+{
+    if (vec.size() >= LOUVRE_MAX_DAMAGE_RECTS)
+    {
+        LBox extents;
+        Int32 x2, y2;
+        extents.x1 = vec.back().x();
+        extents.y1 = vec.back().y();
+        extents.x2 = extents.x1 + vec.back().w();
+        extents.y2 = extents.y1 + vec.back().h();
+        vec.pop_back();
+
+        while (!vec.empty())
+        {
+            if (vec.back().x() < extents.x1)
+                extents.x1 = vec.back().x();
+
+            if (vec.back().y() < extents.y1)
+                extents.y1 = vec.back().y();
+
+            x2 = vec.back().x() + vec.back().w();
+
+            if (x2 > extents.x2)
+                extents.x2 = x2;
+
+            y2 = vec.back().y() + vec.back().h();
+
+            if (y2 > extents.y2)
+                extents.y2 = y2;
+
+            vec.pop_back();
+        }
+
+        vec.emplace_back(extents.x1, extents.y1, extents.x2 - extents.x1, extents.y2 - extents.y1);
+    }
 }

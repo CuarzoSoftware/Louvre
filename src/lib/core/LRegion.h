@@ -407,6 +407,27 @@ public:
     LPointF closestPointFrom(const LPointF &point, Float32 padding = 0.f) const noexcept;
 
     /**
+     * @brief Replace the rectangles with a single enclosing one if the number is >= threshold.
+     *
+     * @param threshold The threshold value. If the number of rectangles is greater than or equal to this value, the rectangles
+     *                  will be simplified to a single enclosing rectangle.
+     */
+    void simplifyToExtents(Int32 threshold) noexcept
+    {
+        Int32 n;
+        boxes(&n);
+        if (n >= threshold)
+        {
+            LBox ext { extents() };
+            clear();
+            addRect(ext.x1,
+                    ext.y1,
+                    ext.x2 - ext.x1,
+                    ext.y2 - ext.y1);
+        }
+    }
+
+    /**
      * @brief Const reference to an empty region.
      */
     static const LRegion &EmptyRegion() noexcept;

@@ -140,6 +140,7 @@ LPRIVATE_CLASS(LSurface)
     void setKeyboardGrabToParent();
     void updateDamage();
     bool updateDimensions(Int32 widthB, Int32 heightB);
+    void simplifyDamage(std::vector<LRect> &vec) noexcept;
 };
 
 #endif // LSURFACEPRIVATE_H
