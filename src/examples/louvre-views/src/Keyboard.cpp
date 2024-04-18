@@ -99,6 +99,12 @@ void Keyboard::keyEvent(const LKeyboardKeyEvent &event)
                     output->repaint();
                 }
                 break;
+
+            /**** Toggle SSD ****/
+
+            case KEY_D:
+                G::enableSSD(!G::SSD());
+                break;
             default:
                 break;
             }

@@ -113,11 +113,12 @@ void RXdgPopup::grab(wl_client */*client*/, wl_resource *resource, wl_resource *
 #if LOUVRE_XDG_WM_BASE_VERSION >= 3
 void RXdgPopup::reposition(wl_client *client, wl_resource *resource, wl_resource *positioner, UInt32 token)
 {
+    /*
     L_UNUSED(client);
     RXdgPopup *rXdgPopup = (RXdgPopup*)wl_resource_get_user_data(resource);
     RXdgPositioner *rXdgPositioner = (RXdgPositioner*)wl_resource_get_user_data(positioner);
     rXdgPopup->popupRole()->imp()->positioner.imp()->data = rXdgPositioner->positioner().imp()->data;
-    rXdgPopup->popupRole()->repositionRequest(token);
+    rXdgPopup->popupRole()->repositionRequest(token);*/
 }
 #endif
 

@@ -29,6 +29,7 @@ RLinuxDMABufFeedback::RLinuxDMABufFeedback(
     {
         wl_array dev {
             .size = sizeof(feedback.device),
+            .alloc = 0,
             .data = (void *)&feedback.device,
         };
 

@@ -89,34 +89,37 @@ public:
     /**
      * @brief Flags indicating the possible states of a Toplevel.
      */
-    enum State : UInt8
+    enum State : UInt16
     {
         /// No state
-        NoState     = static_cast<UInt8>(0),
+        NoState     = static_cast<UInt16>(0),
 
         /// Maximized
-        Maximized   = static_cast<UInt8>(1),
+        Maximized   = static_cast<UInt16>(1),
 
         /// Fullscreen mode
-        Fullscreen  = static_cast<UInt8>(1) << 1,
+        Fullscreen  = static_cast<UInt16>(1) << 1,
 
         /// In interactive resizing
-        Resizing    = static_cast<UInt8>(1) << 2,
+        Resizing    = static_cast<UInt16>(1) << 2,
 
         /// Activated (its decorations stand out from others)
-        Activated   = static_cast<UInt8>(1) << 3,
+        Activated   = static_cast<UInt16>(1) << 3,
 
         /// Tiled left (since 2)
-        TiledLeft   = static_cast<UInt8>(1) << 4,
+        TiledLeft   = static_cast<UInt16>(1) << 4,
 
         /// Tiled right (since 2)
-        TiledRight  = static_cast<UInt8>(1) << 5,
+        TiledRight  = static_cast<UInt16>(1) << 5,
 
         /// Tiled top (since 2)
-        TiledTop    = static_cast<UInt8>(1) << 6,
+        TiledTop    = static_cast<UInt16>(1) << 6,
 
         /// Tiled bottom (since 2)
-        TiledBottom = static_cast<UInt8>(1) << 7
+        TiledBottom = static_cast<UInt16>(1) << 7,
+
+        /// Suspended (since 6)
+        Suspended   = static_cast<UInt16>(1) << 8,
     };
 
     /// Decoration mode
@@ -130,6 +133,15 @@ public:
 
         /// Decorations are drawn by the compositor
         ServerSide = 2
+    };
+
+    /// Compositor capabilities TODO
+    enum Capabilities : UInt8
+    {
+        WindowMenuCap  = static_cast<UInt8>(1) << 0,
+        MaximizeCap    = static_cast<UInt8>(1) << 1,
+        FullscreenCap  = static_cast<UInt8>(1) << 2,
+        MinimizeCap    = static_cast<UInt8>(1) << 3
     };
 
     /**
@@ -163,6 +175,13 @@ public:
         MinSizeChanged            = static_cast<UInt8>(1) << 3,
         MaxSizeChanged            = static_cast<UInt8>(1) << 4,
     };
+
+
+    /// The states supported by the toplevel
+    /// Activated, Maximized, Fullscreen and Resizing are always supported
+    /// If any of the tiled states is supported all are supported.
+    /// The Suspended state is independent of other states.
+    const LBitset<State> supportedStates() const noexcept;
 
     /**
      * @brief Retrieves the last configuration acknowledged by the client.

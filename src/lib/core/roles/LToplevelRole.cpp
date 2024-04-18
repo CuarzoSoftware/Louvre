@@ -30,9 +30,20 @@ LToplevelRole::LToplevelRole(const void *params) :
     imp()->toplevel = this;
     imp()->moveSession.m_toplevel = this;
     imp()->resizeSession.m_toplevel = this;
+
+    if (resource()->version() >= 2)
+        imp()->supportedStates.add(TiledLeft | TiledTop | TiledRight | TiledBottom);
+
+    if (resource()->version() >= 6)
+        imp()->supportedStates.add(Suspended);
 }
 
 LToplevelRole::~LToplevelRole() {}
+
+const LBitset<LToplevelRole::State> LToplevelRole::supportedStates() const noexcept
+{
+    return imp()->supportedStates;
+}
 
 const LToplevelRole::Configuration &LToplevelRole::current() const noexcept
 {
@@ -307,12 +318,7 @@ void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
         // Clean Up
         imp()->setAppId("");
         imp()->setTitle("");
-        imp()->current.size = LSize();
-        imp()->current.state = NoState;
-        imp()->current.serial = 0;
-        imp()->current.decorationMode = ClientSide;
-        imp()->pending = imp()->current;
-        imp()->previous = imp()->current;
+
         imp()->sentConfs.clear();
         imp()->stateFlags.remove(LToplevelRolePrivate::HasPendingMaxSize | LToplevelRolePrivate::HasPendingMinSize);
         imp()->currentMinSize = LSize();
@@ -324,15 +330,29 @@ void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
         xdgSurfaceResource()->m_windowGeometrySet = false;
         xdgSurfaceResource()->m_pendingWindowGeometry = LRect();
         xdgSurfaceResource()->m_currentWindowGeometry = LRect();
+
+        LBitset<ConfigurationChanges> changes { WindowGeometryChanged | StateChanged | MaxSizeChanged | MinSizeChanged };
+
+        if (imp()->current.decorationMode != ClientSide)
+        {
+            imp()->current.decorationMode = ClientSide;
+            changes.add(DecorationModeChanged);
+        }
+
+        imp()->current.size = LSize();
+        imp()->current.state = NoState;
+        imp()->current.serial = 0;
+        imp()->pending = imp()->current;
+
+        configurationChanged(changes);
+
+        imp()->previous = imp()->current;
         return;
     }
 
     // Request map
     if (!surface()->mapped() && surface()->buffer())
-    {
         surface()->imp()->setMapped(true);
-        return;
-    }
 }
 
 const std::string &LToplevelRole::appId() const

@@ -164,6 +164,15 @@ void RSurface::frame(wl_client *client, wl_resource *resource, UInt32 callback)
 
 void RSurface::destroy(wl_client */*client*/, wl_resource *resource)
 {
+    const auto &surfaceRes { *static_cast<const RSurface*>(wl_resource_get_user_data(resource)) };
+
+    if ((surfaceRes.surface()->role() && surfaceRes.surface()->role()->resource() != &surfaceRes)
+        || (surfaceRes.surface()->imp()->pending.role && surfaceRes.surface()->imp()->pending.role->resource() != &surfaceRes))
+    {
+        wl_resource_post_error(resource, 0, "Surface destroyed before role.");
+        return;
+    }
+
     wl_resource_destroy(resource);
 }
 

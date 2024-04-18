@@ -14,6 +14,5 @@ void Popup::configureRequest()
     else
         setPositionerBounds(cursor()->output() != nullptr ? cursor()->output()->rect() + LRect(0, TOPBAR_HEIGHT, 0, -TOPBAR_HEIGHT) : LRect());
 
-    LPoint relativePosition { rolePos() - surface()->parent()->pos() };
-    configure(LRect(relativePosition, positioner().unconstrainedSize()));
+    configure(calculateUnconstrainedRect());
 }

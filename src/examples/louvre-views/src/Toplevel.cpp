@@ -67,6 +67,9 @@ const LPoint &Toplevel::rolePos() const
 
 void Toplevel::configureRequest()
 {
+    if (cursor()->output())
+        surface()->sendOutputEnterEvent(cursor()->output());
+
     configureSize(0, 0);
     configureDecorationMode(preferredDecorationMode());
     configureState(pending().state | Activated);

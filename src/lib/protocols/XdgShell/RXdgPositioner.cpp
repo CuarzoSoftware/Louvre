@@ -95,19 +95,19 @@ void RXdgPositioner::set_anchor_rect(wl_client */*client*/, wl_resource *resourc
 void RXdgPositioner::set_anchor(wl_client */*client*/, wl_resource *resource, UInt32 anchor) noexcept
 {
     auto &data { static_cast<RXdgPositioner*>(wl_resource_get_user_data(resource))->positioner().imp()->data };
-    data.anchor = anchor;
+    data.anchor = static_cast<LPositioner::Anchor>(anchor);
 }
 
 void RXdgPositioner::set_gravity(wl_client */*client*/, wl_resource *resource, UInt32 gravity) noexcept
 {
     auto &data { static_cast<RXdgPositioner*>(wl_resource_get_user_data(resource))->positioner().imp()->data };
-    data.gravity = gravity;
+    data.gravity = static_cast<LPositioner::Gravity>(gravity);
 }
 
 void RXdgPositioner::set_constraint_adjustment(wl_client */*client*/, wl_resource *resource, UInt32 constraintAdjustment) noexcept
 {
     auto &data { static_cast<RXdgPositioner*>(wl_resource_get_user_data(resource))->positioner().imp()->data };
-    data.constraintAdjustment = constraintAdjustment;
+    data.constraintAdjustments = static_cast<LPositioner::ConstraintAdjustments>(constraintAdjustment);
 }
 
 void RXdgPositioner::set_offset(wl_client */*client*/, wl_resource *resource, Int32 x, Int32 y) noexcept

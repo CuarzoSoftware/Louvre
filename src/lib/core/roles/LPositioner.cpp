@@ -28,17 +28,17 @@ const LPoint &LPositioner::offset() const
     return imp()->data.offset;
 }
 
-UInt32 LPositioner::anchor() const
+LPositioner::Anchor LPositioner::anchor() const
 {
     return imp()->data.anchor;
 }
 
-UInt32 LPositioner::gravity() const
+LPositioner::Gravity LPositioner::gravity() const
 {
     return imp()->data.gravity;
 }
 
-LPositioner::ConstraintAdjustments LPositioner::constraintAdjustment() const
+LBitset<LPositioner::ConstraintAdjustments> LPositioner::constraintAdjustments() const noexcept
 {
-    return imp()->data.constraintAdjustment;
+    return imp()->data.constraintAdjustments;
 }

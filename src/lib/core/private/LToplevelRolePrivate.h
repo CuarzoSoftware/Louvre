@@ -50,6 +50,8 @@ void setTitle(const char *title);
 std::string appId;
 std::string title;
 
+LBitset<State> supportedStates { Activated | Maximized | Fullscreen | Resizing };
+
 LWeak<RXdgToplevelDecoration> xdgDecoration { nullptr };
 DecorationMode preferredDecorationMode { NoPreferredMode };
 

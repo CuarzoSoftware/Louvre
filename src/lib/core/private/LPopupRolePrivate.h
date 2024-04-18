@@ -14,6 +14,7 @@ struct LPopupRole::Params
 };
 
 LPRIVATE_CLASS(LPopupRole)
+    LRect configuration;
     LRect positionerBounds;
     LPositioner positioner;
     bool dismissed = false;

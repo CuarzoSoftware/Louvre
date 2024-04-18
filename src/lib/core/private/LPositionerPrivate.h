@@ -13,9 +13,9 @@ LPRIVATE_CLASS(LPositioner)
         LRect anchorRect;
         LPoint offset;
 
-        UInt32 anchor = Anchor::NoAnchor;
-        UInt32 gravity = Gravity::NoGravity;
-        UInt32 constraintAdjustment = ConstraintAdjustment::NoAdjustment;
+        Anchor anchor = Anchor::NoAnchor;
+        Gravity gravity = Gravity::NoGravity;
+        ConstraintAdjustments constraintAdjustments = ConstraintAdjustments::NoAdjustment;
 
         // Since 3
         bool isReactive = false;

@@ -20,7 +20,5 @@ void Popup::configureRequest()
             output->rect().h() - 32
             ) : LRect());
 
-    LPoint p { rolePos() - surface()->parent()->pos() };
-    configure(LRect(p, positioner().size()));
-    surface()->raise();
+    configure(calculateUnconstrainedRect());
 }

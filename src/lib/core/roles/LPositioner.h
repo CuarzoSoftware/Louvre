@@ -3,6 +3,7 @@
 
 #include <LObject.h>
 #include <LRect.h>
+#include <LBitset.h>
 #include <memory>
 
 /*!
@@ -46,9 +47,6 @@ public:
     LPositioner();
     ~LPositioner();
     /// @endcond
-
-    /// Constraint Adjustments.
-    typedef UInt32 ConstraintAdjustments;
 
     /*!
      * @brief Anchor point.
@@ -121,11 +119,11 @@ public:
     };
 
     /*!
-     * @brief Constraint adjustment.
+     * @brief Constraint adjustments.
      *
      * Rules for handling a constrained Popup.
      */
-    enum ConstraintAdjustment : ConstraintAdjustments
+    enum ConstraintAdjustments : UInt32
     {
         /// Original position is not modified
         NoAdjustment = 0,
@@ -190,21 +188,21 @@ public:
      *
      * Point on the anchor rect defined by LPositioner::Anchor enum.
      */
-    UInt32 anchor() const;
+    Anchor anchor() const;
 
     /*!
      * @brief Popup gravity.
      *
      * Direction in which the Popup is trying to move, defined in LPositioner::Gravity.
      */
-    UInt32 gravity() const;
+    Gravity gravity() const;
 
     /*!
      * @brief Constraint adjustment rules.
      *
      * Flags with the rules to use in case the Popup is constrained, defined in LPositioner::ConstraintAdjustment.
      */
-    ConstraintAdjustments constraintAdjustment() const;
+    LBitset<ConstraintAdjustments> constraintAdjustments() const noexcept;
 
     LPRIVATE_IMP_UNIQUE(LPositioner)
 };

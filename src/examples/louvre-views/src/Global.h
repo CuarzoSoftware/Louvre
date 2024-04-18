@@ -236,6 +236,9 @@ public:
     static void arrangeOutputs();
     static class Toplevel *searchFullscreenParent(Surface *parent);
     static void repositionNonVisibleToplevelChildren(Output *target, Surface *toplevel);
+
+    static bool SSD() noexcept;
+    static void enableSSD(bool enabled) noexcept;
 };
 
 #endif // SHARED_H

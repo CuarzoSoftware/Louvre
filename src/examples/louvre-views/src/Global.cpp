@@ -22,6 +22,7 @@ static std::vector<App*>_apps;
 static Tooltip *_tooltip;
 static G::Textures _textures;
 static G::ToplevelRegions _toplevelRegions;
+static bool _SSD { true };
 
 LScene *G::scene()
 {
@@ -604,4 +605,21 @@ void G::repositionNonVisibleToplevelChildren(Output *target, Surface *toplevel)
 
         G::repositionNonVisibleToplevelChildren(target, s);
     }
+}
+
+bool G::SSD() noexcept
+{
+    return _SSD;
+}
+
+void G::enableSSD(bool enabled) noexcept
+{
+    if (_SSD == enabled)
+        return;
+
+    _SSD = enabled;
+    for (LSurface *s : compositor()->surfaces())
+        if (s->toplevel())
+            s->toplevel()->configureDecorationMode(_SSD ? LToplevelRole::ServerSide : LToplevelRole::ClientSide);
+
 }

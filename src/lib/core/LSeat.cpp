@@ -145,8 +145,6 @@ void LSeat::dismissPopups()
     }
 }
 
-
-
 void LSeat::setTTY(UInt32 tty)
 {
     if (imp()->libseatHandle)

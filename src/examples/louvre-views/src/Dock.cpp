@@ -149,7 +149,7 @@ void Dock::show()
     if (anim.running() || visiblePercent != 0.f)
         return;
 
-    dockContainer.setVisible(true);
+    dockContainer.setParent(this);
 
     anim.setDuration(250);
 
@@ -200,7 +200,7 @@ void Dock::hide()
     anim.setOnFinishCallback(
     [this](LAnimation *)
     {
-        dockContainer.setVisible(false);
+        dockContainer.setParent(nullptr);
         G::tooltip()->hide();
         G::tooltip()->targetView = nullptr;
         setInputRegion(nullptr);

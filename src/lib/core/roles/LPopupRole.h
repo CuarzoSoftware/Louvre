@@ -2,6 +2,7 @@
 #define LPOPUPROLE_H
 
 #include <LBaseSurfaceRole.h>
+#include <LBitset.h>
 #include <LRect.h>
 
 /**
@@ -21,6 +22,19 @@ class Louvre::LPopupRole : public LBaseSurfaceRole
 {
 public:
     struct Params;
+
+    enum ConstrainedEdges : UInt8
+    {
+        ConstrainedL = static_cast<UInt8>(1) << 0,
+        ConstrainedT = static_cast<UInt8>(1) << 1,
+        ConstrainedR = static_cast<UInt8>(1) << 2,
+        ConstrainedB = static_cast<UInt8>(1) << 3,
+    };
+
+    // TODO: check if given rect is constrained given positionerBounds()
+    LBitset<ConstrainedEdges> constrainedEdges(const LRect &rect) const noexcept;
+
+    LRect calculateUnconstrainedRect(const LPoint *futureParentPos = nullptr) const noexcept;
 
     /**
      * @brief Constructor for LPopupRole class.
@@ -99,6 +113,9 @@ public:
      * @param rect The suggested position and size for the configuration.
      */
     void configure(const LRect &rect) const;
+
+
+    const LPoint &localPos() const noexcept;
 
     /**
      * @brief Dismiss the popup.
