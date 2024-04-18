@@ -62,7 +62,7 @@ public:
      * @brief Forces the session to unlock.
      *
      * If the locking client dies without unlocking the session, the session remains locked (@ref DeadLocked state).
-     * This method allows the compositor to forcibly unlock the session, ideally after a fallback authentication verification.
+     * This method allows the compositor to forcibly unlock the session, ideally after a fallback user authentication mechanism.
      */
     void forceUnlock();
 
@@ -96,6 +96,7 @@ public:
 private:
     friend class Protocols::SessionLock::RSessionLock;
     friend class LSessionLockRole;
+    friend class LOutput;
     LWeak<Protocols::SessionLock::RSessionLock> m_sessionLockRes;
     State m_state { Unlocked };
     std::vector<LSessionLockRole*> m_dummy;

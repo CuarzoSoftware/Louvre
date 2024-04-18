@@ -2,6 +2,8 @@
 #define RSESSIONLOCK_H
 
 #include <LResource.h>
+#include <LTimer.h>
+#include <LWeak.h>
 
 class Louvre::Protocols::SessionLock::RSessionLock final : public LResource
 {
@@ -24,6 +26,8 @@ public:
         return m_reply;
     }
 
+    bool makeLockRequest();
+
     /******************** REQUESTS ********************/
 
     static void destroy(wl_client *client, wl_resource *resource);
@@ -37,11 +41,15 @@ public:
     void finished() noexcept;
 
 private:
+    friend class Louvre::LOutput;
+    friend class Louvre::LSessionLockRole;
     friend class Louvre::Protocols::SessionLock::GSessionLockManager;
     friend class Louvre::Protocols::SessionLock::RSessionLockSurface;
     RSessionLock(GSessionLockManager *sessionLockManagerRes, UInt32 id) noexcept;
-    ~RSessionLock() noexcept = default;
+    ~RSessionLock() noexcept { m_timer.cancel(); }
+    LTimer m_timer;
     std::vector<LSessionLockRole*> m_roles;
+    std::vector<LOutput*> m_pendingRepaint;
     Reply m_reply { Undefined };
     bool m_lockedOnce { false };
 };

@@ -1,6 +1,7 @@
 #include <protocols/Wayland/GOutput.h>
 #include <protocols/ScreenCopy/RScreenCopyFrame.h>
 #include <protocols/ScreenCopy/GScreenCopyManager.h>
+#include <protocols/SessionLock/RSessionLock.h>
 #include <private/LOutputPrivate.h>
 #include <private/LOutputModePrivate.h>
 #include <private/LCompositorPrivate.h>
@@ -8,6 +9,7 @@
 #include <private/LCursorPrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LClientPrivate.h>
+#include <LSessionLockManager.h>
 #include <LSessionLockRole.h>
 #include <LSeat.h>
 #include <LGlobal.h>
@@ -279,6 +281,7 @@ void LOutput::LOutputPrivate::backendPaintGL()
     damage.addRect(output->rect());
     calculateCursorDamage();
     output->paintGL();
+    removeFromSessionLockPendingRepaint();
     validateScreenshotRequests();
     compositor()->imp()->currentOutput = nullptr;
     damageToBufferCoords();
@@ -349,6 +352,7 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
     }
 
     output->uninitializeGL();
+    removeFromSessionLockPendingRepaint();
     compositor()->flushClients();
     output->imp()->state = LOutput::Uninitialized;
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
@@ -476,4 +480,15 @@ void LOutput::LOutputPrivate::validateScreenshotRequests() noexcept
         screenshotCursorTimeout = 5;
     else if (screenshotCursorTimeout > 0)
         screenshotCursorTimeout--;
+}
+
+void LOutput::LOutputPrivate::removeFromSessionLockPendingRepaint() noexcept
+{
+    if (sessionLockManager()->state() == LSessionLockManager::Locked && !sessionLockManager()->m_sessionLockRes->m_lockedOnce)
+    {
+        LVectorRemoveOneUnordered(sessionLockManager()->m_sessionLockRes->m_pendingRepaint, output);
+
+        if (sessionLockManager()->m_sessionLockRes->m_pendingRepaint.empty())
+            sessionLockManager()->m_sessionLockRes->locked();
+    }
 }

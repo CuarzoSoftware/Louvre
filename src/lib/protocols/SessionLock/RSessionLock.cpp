@@ -33,6 +33,15 @@ RSessionLock::RSessionLock(GSessionLockManager *sessionLockManagerRes,
 
     if (compositor()->sessionLockManager()->state() == LSessionLockManager::Locked)
         finished();
+    else
+    {
+        m_timer.setCallback([this](auto)
+        {
+            makeLockRequest();
+        });
+
+        m_timer.start(2000);
+    }
 }
 
 void RSessionLock::destroy(wl_client */*client*/, wl_resource *resource)
@@ -117,4 +126,38 @@ void RSessionLock::finished() noexcept
 {
     m_reply = Finished;
     ext_session_lock_v1_send_finished(resource());
+}
+
+bool RSessionLock::makeLockRequest()
+{
+    m_timer.cancel();
+
+    // Ask the user if the session should be locked
+    if (sessionLockManager()->lockRequest(client()))
+    {
+        sessionLockManager()->m_state = LSessionLockManager::Locked;
+        sessionLockManager()->m_sessionLockRes.reset(this);
+
+        m_reply = RSessionLock::Locked;
+
+        for (LSessionLockRole *role : roles())
+        {
+            role->output()->imp()->sessionLockRole.reset(role);
+            role->output()->repaint();
+            role->surface()->sendOutputEnterEvent(role->output());
+            role->surface()->imp()->setMapped(true);
+            role->surface()->requestNextFrame(false);
+        }
+
+        sessionLockManager()->stateChanged();
+
+        // The locked event is sent later after all outputs have been repainted
+        for (LOutput *output : compositor()->outputs())
+            m_pendingRepaint.emplace_back(output);
+
+        return true;
+    }
+
+    finished();
+    return false;
 }

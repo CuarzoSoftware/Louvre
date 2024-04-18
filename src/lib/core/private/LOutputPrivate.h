@@ -115,6 +115,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
 
     // TODO
     LWeak<LSessionLockRole> sessionLockRole;
+    void removeFromSessionLockPendingRepaint() noexcept;
 
     std::vector<LScreenshotRequest*> screenshotRequests;
     void validateScreenshotRequests() noexcept;
