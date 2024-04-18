@@ -40,12 +40,12 @@
  * if this still doesn't solve the problem, the Popup is configured to adjust its size and if finally none of these options work, the original position is used.\n
  * For more information on LPositioner rules, you can analyze the implementation of LPopupRole::rolePos() or consult the documentation of the [xdg_shell::positioner](https://wayland.app/protocols/xdg-shell#xdg_positioner) interface.
  */
-class Louvre::LPositioner : public LObject
+class Louvre::LPositioner
 {
 public:
     /// @cond OMIT
-    LPositioner();
-    ~LPositioner();
+    LPositioner() noexcept = default;
+    ~LPositioner() noexcept = default;
     /// @endcond
 
     /*!
@@ -152,59 +152,76 @@ public:
      *
      * Size of the Popup to be positioned (window geometry) in surface coordinates.
      */
-    const LSize &size() const;
-
-    /*!
-     * @brief Unconstrained size in surface coordinates.
-     *
-     * This method returns the unconstrained size of the Popup calculated in the last LPopupRole::rolePos() call.\n
-     * It initial value matches the size() property provided by the client.
-     */
-    const LSize &unconstrainedSize() const;
-
-    /*!
-     * @brief Set the unconstrained size in surface coordinates.
-     *
-     * This method is used in LPopupRole::rolePos() to store the resulting Popup unconstrained size.
-     */
-    void setUnconstrainedSize(const LSize &size) const;
+    const LSize &size() const
+    {
+        return m_size;
+    }
 
     /*!
      * @brief Anchor rect in surface coordinates.
      *
      * Anchor rect relative to the parent's geometry origin in surface coordinates.
      */
-    const LRect &anchorRect() const;
+    const LRect &anchorRect() const
+    {
+        return m_anchorRect;
+    }
 
     /*!
      * @brief Additional offset in surface coordinates.
      *
      * Additional offset in surface coordinates added to the Popup's position calculated by the rules.
      */
-    const LPoint &offset() const;
+    const LPoint &offset() const noexcept
+    {
+        return m_offset;
+    }
 
     /*!
      * @brief Anchor point.
      *
      * Point on the anchor rect defined by LPositioner::Anchor enum.
      */
-    Anchor anchor() const;
+    Anchor anchor() const noexcept
+    {
+        return m_anchor;
+    }
 
     /*!
      * @brief Popup gravity.
      *
      * Direction in which the Popup is trying to move, defined in LPositioner::Gravity.
      */
-    Gravity gravity() const;
+    Gravity gravity() const noexcept
+    {
+        return m_gravity;
+    }
 
     /*!
      * @brief Constraint adjustment rules.
      *
      * Flags with the rules to use in case the Popup is constrained, defined in LPositioner::ConstraintAdjustment.
      */
-    LBitset<ConstraintAdjustments> constraintAdjustments() const noexcept;
+    LBitset<ConstraintAdjustments> constraintAdjustments() const noexcept
+    {
+        return m_constraintAdjustments;
+    }
 
-    LPRIVATE_IMP_UNIQUE(LPositioner)
+private:
+    friend class LPopupRole;
+    friend class Protocols::XdgShell::RXdgPositioner;
+    LSize m_size;
+    LRect m_anchorRect;
+    LPoint m_offset;
+
+    Anchor m_anchor { Anchor::NoAnchor };
+    Gravity m_gravity { Gravity::NoGravity };
+    LBitset<ConstraintAdjustments> m_constraintAdjustments { ConstraintAdjustments::NoAdjustment };
+
+    // Since 3
+    bool isReactive { false };
+    LSize parentSize;
+    UInt32 parentConfigureSerial;
 };
 
 #endif // LPOSITIONER_H

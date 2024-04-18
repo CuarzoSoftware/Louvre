@@ -480,7 +480,7 @@ void LSceneView::drawTranslucentDamage(LView *view) noexcept
         if (view->type() == LView::Type::Surface)
             glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
         else
-          glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
     }
     else
         glBlendFuncSeparate(view->blendFunc().sRGBFactor,

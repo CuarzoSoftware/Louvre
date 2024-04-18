@@ -256,12 +256,10 @@ void Output::initializeGL()
                 // Scaling vector for the black toplevel background container so it matches cSize
                 LSizeF sVector;
 
-                Float32 val = powf(anim->value(), 1.f);
-                //Float32 valSlow = powf(anim->value(), 12.f);
-                Float32 inv = 1.f - val;
-
                 if (tl->fullscreen())
                 {
+                    Float32 val = 1.f - pow(1.f - anim->value(), 4.f);
+                    Float32 inv = 1.f - val;
                     tl->animView.enableSrcRect(false);
                     tl->animView.setVisible(true);
                     tl->animScene->render();
@@ -280,6 +278,8 @@ void Output::initializeGL()
                 }
                 else
                 {
+                    Float32 val = pow(anim->value(), 4.f);
+                    Float32 inv = 1.f - val;
                     tl->animScene->setPos(pos());
                     LPoint animPos = (pos() * inv) + (tl->prevBoundingRect.pos() * val);
                     tl->surf()->setPos(0);

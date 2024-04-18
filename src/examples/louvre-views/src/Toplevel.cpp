@@ -490,7 +490,7 @@ void Toplevel::unsetFullscreen()
     animView.setTranslucentRegion(nullptr);
     animView.setOpacity(1.f);
 
-    fullscreenOutput->setWorkspace(fullscreenOutput->workspaces.front(), WORKSPACE_ANIM_MS, WORKSPACE_ANIM_EASE);
+    fullscreenOutput->setWorkspace(fullscreenOutput->workspaces.front(), WORKSPACE_ANIM_MS, 2.f);
     G::scene()->mainView()->damageAll(fullscreenOutput);
 }
 

@@ -3,18 +3,17 @@
 #include <protocols/XdgShell/xdg-shell.h>
 #include <private/LPopupRolePrivate.h>
 #include <private/LSurfacePrivate.h>
-#include <private/LPositionerPrivate.h>
 #include <private/LPointerPrivate.h>
-#include <LRect.h>
+#include <LPositioner.h>
 #include <LCompositor.h>
 #include <LOutput.h>
 #include <LSeat.h>
 #include <LPointer.h>
 #include <LKeyboard.h>
 #include <LTime.h>
+#include <LRect.h>
 
 using namespace Louvre;
-
 
 struct Config
 {
@@ -379,8 +378,7 @@ LPopupRole::LPopupRole(const void *params) :
                      LSurface::Role::Popup),
     LPRIVATE_INIT_UNIQUE(LPopupRole)
 {
-    imp()->positioner.imp()->data = static_cast<const LPopupRole::Params*>(params)->positioner->imp()->data;
-    imp()->positioner.setUnconstrainedSize(imp()->positioner.size());
+    imp()->positioner = *static_cast<const LPopupRole::Params*>(params)->positioner;
 }
 
 LPopupRole::~LPopupRole()
