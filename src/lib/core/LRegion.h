@@ -3,6 +3,8 @@
 
 #include <LNamespaces.h>
 #include <LRect.h>
+#include <cstdio>
+#include <cstring>
 #include <pixman.h>
 #include <LFramebuffer.h>
 
@@ -42,7 +44,7 @@ public:
     }
 
     /**
-     * @brief Copy constructor for creating an LRegion by copying another LRegion.
+     * @brief Copy constructor.
      *
      * @param other The LRegion to copy from.
      */
@@ -52,26 +54,22 @@ public:
         pixman_region32_copy(&m_region, &other.m_region);
     }
 
-    // TODO: add doc
-    LRegion(const LRegion &&other) noexcept
+    /**
+     * @brief Move constructor.
+     *
+     * Constructs an LRegion by moving the contents from another LRegion, leaving the source LRegion empty.\n
+     * The source LRegion remains valid and can be used afterwards.
+     *
+     * @param other The LRegion to move from.
+     */
+    LRegion(LRegion &&other) noexcept
     {
         m_region = other.m_region;
         pixman_region32_init(&other.m_region);
     }
 
-    LRegion &operator=(const LRegion &&other) noexcept
-    {
-        if (&other != this)
-        {
-            pixman_region32_fini(&m_region);
-            m_region = other.m_region;
-            pixman_region32_init(&other.m_region);
-        }
-        return *this;
-    }
-
     /**
-     * @brief Assignment operator.
+     * @brief Copy assignment operator.
      *
      * @param other The LRegion to assign from.
      * @return A reference to the modified LRegion.
@@ -80,6 +78,26 @@ public:
     {
         if (&other != this)
             pixman_region32_copy(&m_region, &other.m_region);
+        return *this;
+    }
+
+    /**
+     * @brief Move assignment operator.
+     *
+     * Assigns the contents of another LRegion to this LRegion by moving, leaving the source LRegion empty.\n
+     * The source LRegion remains valid and can be used afterwards.
+     *
+     * @param other The LRegion to move from.
+     * @return A reference to this LRegion after the move.
+     */
+    LRegion &operator=(LRegion &&other) noexcept
+    {
+        if (&other != this)
+        {
+            pixman_region32_fini(&m_region);
+            m_region = other.m_region;
+            pixman_region32_init(&other.m_region);
+        }
         return *this;
     }
 
@@ -170,7 +188,7 @@ public:
         pixman_region32_t tmp;
         pixman_region32_init_rect(&tmp, rect.x(), rect.y(), rect.w(), rect.h());
         pixman_region32_subtract(&m_region, &m_region, &tmp);
-        pixman_region32_fini(&tmp);
+        pixman_region32_fini(&tmp);        
     }
 
     /**
@@ -430,7 +448,11 @@ public:
     /**
      * @brief Const reference to an empty region.
      */
-    static const LRegion &EmptyRegion() noexcept;
+    static const LRegion &EmptyRegion() noexcept
+    {
+        static LRegion emptyRegion;
+        return emptyRegion;
+    }
 
     /// @cond OMIT
     static void multiply(LRegion *dst, LRegion *src, Float32 factor) noexcept;

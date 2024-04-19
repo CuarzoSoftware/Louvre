@@ -81,7 +81,7 @@ private:
     friend class LCursorRole;
     friend class Protocols::Wayland::RPointer;
     LClientCursor(LClient *client) noexcept : m_client(client) {}
-    ~LClientCursor() noexcept = default;
+    ~LClientCursor() noexcept;
 
     LWeak<LCursorRole> m_role;
     LPointerEnterEvent m_triggeringEvent;

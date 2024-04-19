@@ -36,9 +36,35 @@ void LRegion_test_01()
     LAssert("closestPoint should be (160, 10)", closestPoint == LPointF(160, 10));
 }
 
+void LRegion_test_02()
+{
+    LSetTestName("LRegion_test_02");
+
+    LRegion regionA(LRect(0, 0, 100, 100));
+    Int32 n;
+    regionA.boxes(&n);
+    LAssert("regionA should contain 1 box", n == 1);
+
+    LRegion regionB { std::move(regionA) };
+    regionB.boxes(&n);
+    LAssert("regionB should contain 1 box", n == 1);
+
+    regionA.boxes(&n);
+    LAssert("regionA should contain 0 boxes", n == 0);
+
+    regionA = std::move(regionB);
+
+    regionB.boxes(&n);
+    LAssert("regionB should contain 0 boxes", n == 0);
+
+    regionA.boxes(&n);
+    LAssert("regionA should contain 1 box", n == 1);
+}
+
 void LRegion_run_tests()
 {
     LRegion_test_01();
+    LRegion_test_02();
 }
 
 #endif // LREGION_TEST_H

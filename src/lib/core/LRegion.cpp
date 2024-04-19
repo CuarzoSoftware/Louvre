@@ -2,8 +2,6 @@
 
 using namespace Louvre;
 
-static LRegion m_emptyRegion;
-
 void LRegion::multiply(Float32 factor) noexcept
 {
     if (factor == 1.f)
@@ -198,11 +196,6 @@ void LRegion::transform(const LSize &size, LFramebuffer::Transform transform) no
 
     pixman_region32_fini(&m_region);
     m_region = tmp;
-}
-
-const LRegion &LRegion::EmptyRegion() noexcept
-{
-    return m_emptyRegion;
 }
 
 LPointF LRegion::closestPointFrom(const LPointF &point, Float32 margin) const noexcept

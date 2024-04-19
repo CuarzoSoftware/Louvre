@@ -17,7 +17,7 @@
  *
  * After the animation finishes, the `onFinish()` callback is triggered, and the value() property has a value of 1.f.\n
  */
-class Louvre::LAnimation final : public LObject
+class Louvre::LAnimation : public LObject
 {
 public:
 
@@ -42,7 +42,7 @@ public:
      *
      * Destroys an animation object. If the animation is currently running at the
      * time of destruction, the `onFinish()` callback is invoked immediately before
-     * the object is deleted.
+     * the object is destroyed.
      */
     ~LAnimation();
 
