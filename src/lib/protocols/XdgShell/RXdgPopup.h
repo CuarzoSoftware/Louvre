@@ -30,7 +30,7 @@ public:
     /******************** EVENTS ********************/
 
     // Since 1
-    void configure(Int32 x, Int32 y, Int32 width, Int32 height) noexcept;
+    void configure(const LRect &rect) noexcept;
     void popupDone() noexcept;
 
     // Since 3

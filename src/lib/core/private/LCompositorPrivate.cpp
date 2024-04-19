@@ -6,6 +6,7 @@
 #include <private/LPainterPrivate.h>
 #include <private/LCursorPrivate.h>
 #include <private/LToplevelRolePrivate.h>
+#include <private/LPopupRolePrivate.h>
 #include <LSessionLockManager.h>
 #include <LSessionLockRole.h>
 #include <LAnimation.h>
@@ -754,6 +755,8 @@ void LCompositor::LCompositorPrivate::sendPendingConfigurations()
     {
         if (s->toplevel())
             s->toplevel()->imp()->sendConfiguration();
+        else if (s->popup())
+            s->popup()->imp()->sendConfiguration();
         else if (s->sessionLock())
             s->sessionLock()->sendPendingConfiguration();
     }

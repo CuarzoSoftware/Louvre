@@ -38,6 +38,7 @@ public:
     LTexture *renderThumbnail(LRegion *transRegion = nullptr);
     void unminimize(DockItem *clickedItem);
 
+    LAnimation firstMapAnim;
     bool firstMap = true;
     LSurfaceView view;
 

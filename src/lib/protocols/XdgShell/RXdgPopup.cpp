@@ -111,22 +111,35 @@ void RXdgPopup::grab(wl_client */*client*/, wl_resource *resource, wl_resource *
 }
 
 #if LOUVRE_XDG_WM_BASE_VERSION >= 3
-void RXdgPopup::reposition(wl_client *client, wl_resource *resource, wl_resource *positioner, UInt32 token)
+void RXdgPopup::reposition(wl_client */*client*/, wl_resource *resource, wl_resource *positioner, UInt32 token)
 {
-    /*
-    L_UNUSED(client);
-    RXdgPopup *rXdgPopup = (RXdgPopup*)wl_resource_get_user_data(resource);
-    RXdgPositioner *rXdgPositioner = (RXdgPositioner*)wl_resource_get_user_data(positioner);
-    rXdgPopup->popupRole()->imp()->positioner.imp()->data = rXdgPositioner->positioner().imp()->data;
-    rXdgPopup->popupRole()->repositionRequest(token);*/
+    RXdgPopup &res { *static_cast<RXdgPopup*>(wl_resource_get_user_data(resource)) };
+
+    if (!res.popupRole()->surface() || !res.popupRole()->surface()->popup())
+    {
+        LLog::warning("[RXdgPopup::grab] XDG Popup keyboard grab request without surface. Ignoring it.");
+        return;
+    }
+
+    RXdgPositioner &xdgPositionerRes { *static_cast<RXdgPositioner*>(wl_resource_get_user_data(positioner)) };
+
+    if (!xdgPositionerRes.validate())
+        return;
+
+    res.popupRole()->imp()->positioner = xdgPositionerRes.m_positioner;
+    res.popupRole()->imp()->repositionToken = token;
+    res.popupRole()->imp()->stateFlags.add(LPopupRole::LPopupRolePrivate::HasPendingReposition | LPopupRole::LPopupRolePrivate::CanBeConfigured);
+    res.popupRole()->configureRequest();
+    if (!res.popupRole()->imp()->stateFlags.check(LPopupRole::LPopupRolePrivate::HasConfigurationToSend))
+        res.popupRole()->configure(res.popupRole()->calculateUnconstrainedRect());
 }
 #endif
 
 /******************** EVENTS ********************/
 
-void RXdgPopup::configure(Int32 x, Int32 y, Int32 width, Int32 height) noexcept
+void RXdgPopup::configure(const LRect &rect) noexcept
 {
-    xdg_popup_send_configure(resource(), x, y, width, height);
+    xdg_popup_send_configure(resource(), rect.x(), rect.y(), rect.w(), rect.h());
 }
 
 void RXdgPopup::popupDone() noexcept

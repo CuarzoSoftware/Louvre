@@ -5,6 +5,7 @@
 #include <protocols/XdgShell/RXdgPopup.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LToplevelRolePrivate.h>
+#include <private/LPopupRolePrivate.h>
 #include <LSubsurfaceRole.h>
 
 using namespace Louvre::Protocols::XdgShell;
@@ -144,13 +145,13 @@ void RXdgSurface::set_window_geometry(wl_client */*client*/, wl_resource *resour
 
     if (!res.xdgPopupRes() && !res.xdgToplevelRes())
     {
-        wl_resource_post_error(resource, 0, "Can not set window geometry with no role.");
+        wl_resource_post_error(resource, XDG_SURFACE_ERROR_NOT_CONSTRUCTED, "Can not set window geometry with no role.");
         return;
     }
 
     if (width <= 0 || height <= 0)
     {
-        wl_resource_post_error(resource, 0, "Invalid window geometry size.");
+        wl_resource_post_error(resource, XDG_SURFACE_ERROR_INVALID_SIZE, "Invalid window geometry size.");
         return;
     }
 
@@ -168,7 +169,7 @@ void RXdgSurface::ack_configure(wl_client */*client*/, wl_resource *resource, UI
 
     if (!res.surface() || (!res.xdgPopupRes() && !res.xdgToplevelRes()))
     {
-        wl_resource_post_error(resource, 0, "Can not ack xdg_surface with no role.");
+        wl_resource_post_error(resource, XDG_SURFACE_ERROR_NOT_CONSTRUCTED, "Can not ack xdg_surface with no role.");
         return;
     }
 
@@ -188,23 +189,35 @@ void RXdgSurface::ack_configure(wl_client */*client*/, wl_resource *resource, UI
 
                 toplevel.imp()->sentConfs.pop_front();
 
-                // Some clients don't invoke wl_surface_commit when their toplevel states change, so we apply it here only if the geometry size hasn't changed
-                if (toplevel.imp()->uncommited.decorationMode == LToplevelRole::ServerSide &&
-                    toplevel.surface() && toplevel.surface()->mapped() &&
-                    toplevel.imp()->uncommited.size == toplevel.imp()->current.size)
+                if (toplevel.imp()->uncommited.size == toplevel.imp()->current.size)
                     toplevel.imp()->applyPendingChanges(0);
-
                 return;
             }
 
             toplevel.imp()->sentConfs.pop_front();
         }
 
-        wl_resource_post_error(res.resource(), 0, "Invalid xdg_surface serial ack.");
+        wl_resource_post_error(res.resource(), XDG_SURFACE_ERROR_INVALID_SERIAL, "Invalid xdg_surface serial ack.");
     }
     else if (res.surface()->roleId() == LSurface::Role::Popup)
     {
-        /* TODO: Do popups ACK really matter? We only care about their window geometry. */
+        auto &popup { *res.surface()->popup() };
+
+        while (!popup.imp()->sentConfs.empty())
+        {
+            if (popup.imp()->sentConfs.front().serial == serial)
+            {
+                popup.imp()->previous = popup.imp()->current;
+                popup.imp()->current = popup.imp()->sentConfs.front();
+                popup.imp()->sentConfs.pop_front();
+                popup.configurationChanged();
+                return;
+            }
+
+            popup.imp()->sentConfs.pop_front();
+        }
+
+        wl_resource_post_error(res.resource(), XDG_SURFACE_ERROR_INVALID_SERIAL, "Invalid xdg_surface serial ack.");
     }
     else
         wl_resource_post_error(res.resource(), XDG_SURFACE_ERROR_NOT_CONSTRUCTED, "wl_surface does not have a role yet.");

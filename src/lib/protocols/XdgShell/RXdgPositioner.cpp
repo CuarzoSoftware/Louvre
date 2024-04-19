@@ -116,3 +116,36 @@ void RXdgPositioner::set_offset(wl_client */*client*/, wl_resource *resource, In
     positioner.m_offset.setX(x);
     positioner.m_offset.setY(y);
 }
+
+#if LOUVRE_XDG_WM_BASE_VERSION >= 3
+
+void RXdgPositioner::set_reactive(wl_client */*client*/, wl_resource *resource)
+{
+    auto &positioner { static_cast<RXdgPositioner*>(wl_resource_get_user_data(resource))->m_positioner };
+    positioner.m_reactive = true;
+}
+
+void RXdgPositioner::set_parent_size(wl_client */*client*/, wl_resource *resource, Int32 parent_width, Int32 parent_height)
+{
+    auto &positioner { static_cast<RXdgPositioner*>(wl_resource_get_user_data(resource))->m_positioner };
+    positioner.m_hasParentSize = true;
+
+    if (parent_width < 0)
+        positioner.m_parentSize.setW(0);
+    else
+        positioner.m_parentSize.setW(parent_width);
+
+    if (parent_height < 0)
+        positioner.m_parentSize.setH(0);
+    else
+        positioner.m_parentSize.setH(parent_height);
+}
+
+void RXdgPositioner::set_parent_configure(wl_client */*client*/, wl_resource *resource, UInt32 serial)
+{
+    auto &positioner { static_cast<RXdgPositioner*>(wl_resource_get_user_data(resource))->m_positioner };
+    positioner.m_hasParentConfigureSerial = true;
+    positioner.m_parentConfigureSerial = serial;
+}
+
+#endif

@@ -188,6 +188,21 @@ static void updateFinalRectPos(Config &config) noexcept
         config.popup->positioner().offset());
 }
 
+const LPopupRole::Configuration &LPopupRole::current() const noexcept
+{
+    return imp()->current;
+}
+
+const LPopupRole::Configuration &LPopupRole::pending() const noexcept
+{
+    return imp()->pending;
+}
+
+const LPopupRole::Configuration &LPopupRole::previous() const noexcept
+{
+    return imp()->previous;
+}
+
 LBitset<LPopupRole::ConstrainedEdges> LPopupRole::constrainedEdges(const LRect &rect) const noexcept
 {
     LBitset<LPopupRole::ConstrainedEdges> edges;
@@ -378,6 +393,7 @@ LPopupRole::LPopupRole(const void *params) :
                      LSurface::Role::Popup),
     LPRIVATE_INIT_UNIQUE(LPopupRole)
 {
+    imp()->popup = this;
     imp()->positioner = *static_cast<const LPopupRole::Params*>(params)->positioner;
 }
 
@@ -401,19 +417,24 @@ bool LPopupRole::isTopmostPopup() const
 
 void LPopupRole::configure(const LRect &rect) const
 {
-    imp()->configuration = rect;
     auto &res { *static_cast<XdgShell::RXdgPopup*>(resource()) };
 
     if (!res.xdgSurfaceRes())
         return;
 
-    res.configure(rect.x(), rect.y(), rect.w(), rect.h());
-    res.xdgSurfaceRes()->configure(LTime::nextSerial());
-}
+    if (!imp()->stateFlags.check(LPopupRolePrivate::CanBeConfigured))
+        return;
 
-const LPoint &LPopupRole::localPos() const noexcept
-{
-    return imp()->configuration.pos();
+    if (!positioner().reactive())
+        imp()->stateFlags.remove(LPopupRolePrivate::CanBeConfigured);
+
+    if (!imp()->stateFlags.check(LPopupRolePrivate::HasConfigurationToSend))
+    {
+        imp()->stateFlags.add(LPopupRolePrivate::HasConfigurationToSend);
+        imp()->pending.serial = LTime::nextSerial();
+    }
+
+    imp()->pending.rect = rect;
 }
 
 void LPopupRole::dismiss()
@@ -423,11 +444,11 @@ void LPopupRole::dismiss()
     {
         if ((*s)->popup() && ((*s)->isSubchildOf(surface()) || *s == surface() ))
         {
-            if (!imp()->dismissed)
+            if (!imp()->stateFlags.check(LPopupRolePrivate::Dismissed))
             {
                 XdgShell::RXdgPopup *res = (XdgShell::RXdgPopup*)resource();
                 res->popupDone();
-                imp()->dismissed = true;
+                imp()->stateFlags.add(LPopupRolePrivate::Dismissed);
             }
 
             if ((*s) == surface())
@@ -441,11 +462,6 @@ const LRect &LPopupRole::windowGeometry() const
     return xdgSurfaceResource()->windowGeometry();
 }
 
-const LSize &LPopupRole::size() const
-{
-    return xdgSurfaceResource()->windowGeometry().size();
-}
-
 const LPositioner &LPopupRole::positioner() const
 {
     return imp()->positioner;
@@ -455,15 +471,13 @@ void LPopupRole::handleSurfaceCommit(CommitOrigin origin)
 {
     L_UNUSED(origin);
 
-    // Commit inicial para asignar rol y padre
     if (surface()->imp()->pending.role)
     {
-        // Based on xdg_surface documentation
         if (surface()->imp()->hasBufferOrPendingBuffer())
         {
             wl_resource_post_error(surface()->surfaceResource()->resource(),
-                                   0,
-                                   "wl_surface attach before first xdg_surface configure");
+                                   XDG_SURFACE_ERROR_UNCONFIGURED_BUFFER,
+                                   "Attaching a buffer to an unconfigured surface");
             return;
         }
 
@@ -471,7 +485,11 @@ void LPopupRole::handleSurfaceCommit(CommitOrigin origin)
             surface()->imp()->pendingParent->imp()->applyPendingChildren();
 
         surface()->imp()->applyPendingRole();
-        surface()->popup()->configureRequest();
+        imp()->stateFlags.add(LPopupRolePrivate::CanBeConfigured);
+        configureRequest();
+        if (!imp()->stateFlags.check(LPopupRolePrivate::HasConfigurationToSend))
+            configure(calculateUnconstrainedRect());
+        imp()->current.rect = imp()->pending.rect;
         return;
     }
 
@@ -497,7 +515,11 @@ void LPopupRole::handleSurfaceCommit(CommitOrigin origin)
     // Request configure
     if (!surface()->mapped() && !surface()->buffer())
     {
+        imp()->stateFlags.add(LPopupRolePrivate::CanBeConfigured);
         configureRequest();
+        if (!imp()->stateFlags.check(LPopupRolePrivate::HasConfigurationToSend))
+            configure(calculateUnconstrainedRect());
+        imp()->current.rect = imp()->pending.rect;
         return;
     }
 
@@ -511,7 +533,7 @@ void LPopupRole::handleSurfaceCommit(CommitOrigin origin)
     }
 
     // Request map
-    if (!surface()->mapped() && surface()->buffer() && surface()->parent())
+    if (!surface()->mapped() && surface()->buffer() && surface()->parent() && surface()->parent()->mapped())
         surface()->imp()->setMapped(true);
 }
 

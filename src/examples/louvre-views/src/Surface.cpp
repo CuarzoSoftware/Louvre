@@ -163,12 +163,52 @@ void Surface::mappingChanged()
                     }
 
                     cursor()->output()->repaint();
+
+                    firstMapAnim.setOnUpdateCallback([this](LAnimation *anim){
+                        const Float32 ease { 1.f - pow(1.f - anim->value(), 6.f) };
+                        view.setOpacity(1.f);
+                        getView()->setOpacity(ease);
+
+                        Surface *next = (Surface*)nextSurface();
+
+                        while (next)
+                        {
+                            if (next->isSubchildOf(this) && !next->minimized())
+                            {
+                                next->view.setOpacity(1.f);
+                                next->getView()->setOpacity(ease);
+                            }
+
+                            next = (Surface*)next->nextSurface();
+                        }
+
+                        repaintOutputs();
+                    });
+
+                    firstMapAnim.setOnFinishCallback([this](LAnimation *){
+                        getView()->setOpacity(1.f);
+                        view.setOpacity(1.f);
+
+                        Surface *next = (Surface*)nextSurface();
+
+                        while (next)
+                        {
+                            if (next->isSubchildOf(this) && !next->minimized())
+                            {
+                                next->view.setOpacity(1.f);
+                                next->getView()->setOpacity(1.f);
+                            }
+
+                            next = (Surface*)next->nextSurface();
+                        }
+                        repaintOutputs();
+                    });
+
+                    firstMapAnim.setDuration(400);
+                    firstMapAnim.start();
                 });
 
-                firstMapTimer.start(200);
-
-                toplevel()->configureState(LToplevelRole::Activated);
-
+                firstMapTimer.start(1);
                 requestNextFrame(false);
 
                 LSurface *next = this;

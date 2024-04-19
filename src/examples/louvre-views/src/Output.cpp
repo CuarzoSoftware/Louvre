@@ -278,7 +278,7 @@ void Output::initializeGL()
                 }
                 else
                 {
-                    Float32 val = pow(anim->value(), 4.f);
+                    Float32 val = 1.f - pow(1.f - anim->value(), 2.f);
                     Float32 inv = 1.f - val;
                     tl->animScene->setPos(pos());
                     LPoint animPos = (pos() * inv) + (tl->prevBoundingRect.pos() * val);

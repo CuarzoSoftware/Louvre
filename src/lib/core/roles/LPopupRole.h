@@ -31,6 +31,32 @@ public:
         ConstrainedB = static_cast<UInt8>(1) << 3,
     };
 
+    struct Configuration
+    {
+        LRect rect;
+
+        /**
+         * @brief Serial number of the configuration.
+         */
+        UInt32 serial;
+    };
+
+    /**
+     * @brief Retrieves the last configuration acknowledged by the client.
+     */
+    const Configuration &current() const noexcept;
+
+    /**
+     * @brief Retrieves the most recent configuration parameters not yet acknowledged by the client.
+     * @note When no configuration is sent, it should be equal to the current configuration.
+     */
+    const Configuration &pending() const noexcept;
+
+    /**
+     * @brief Retrieves the configuration preceding the current one.
+     */
+    const Configuration &previous() const noexcept;
+
     // TODO: check if given rect is constrained given positionerBounds()
     LBitset<ConstrainedEdges> constrainedEdges(const LRect &rect) const noexcept;
 
@@ -61,13 +87,6 @@ public:
      * The window geometry is a rect within the popup that excludes its decorations (typically shadows).
      */
     const LRect &windowGeometry() const;
-
-    /**
-     * @brief Retrieve the current size in surface coordinates.
-     *
-     * This size corresponds to the value returned by `windowGeometry().size()`.
-     */
-    const LSize &size() const;
 
     /**
      * @brief Get the positioning rules for the popup.
@@ -113,9 +132,6 @@ public:
      * @param rect The suggested position and size for the configuration.
      */
     void configure(const LRect &rect) const;
-
-
-    const LPoint &localPos() const noexcept;
 
     /**
      * @brief Dismiss the popup.
@@ -198,6 +214,10 @@ public:
      * @snippet LPopupRoleDefault.cpp configureRequest
      */
     virtual void configureRequest();
+
+    // TODO
+    virtual void configurationChanged() {}
+
 
     ///@}
 

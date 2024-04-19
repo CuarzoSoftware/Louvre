@@ -71,7 +71,7 @@ void Toplevel::configureRequest()
         surface()->sendOutputEnterEvent(cursor()->output());
 
     configureSize(0, 0);
-    configureDecorationMode(preferredDecorationMode());
+    configureDecorationMode(G::SSD() ? ServerSide : ClientSide);
     configureState(pending().state | Activated);
 }
 
@@ -496,6 +496,6 @@ void Toplevel::unsetFullscreen()
 
 void Toplevel::preferredDecorationModeChanged()
 {
-    configureDecorationMode(preferredDecorationMode());
+    //configureDecorationMode(preferredDecorationMode());
 }
 

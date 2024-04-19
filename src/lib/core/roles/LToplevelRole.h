@@ -177,11 +177,14 @@ public:
     };
 
 
+    const Configuration *findConfiguration(UInt32 serial) const noexcept;
+
+
     /// The states supported by the toplevel
     /// Activated, Maximized, Fullscreen and Resizing are always supported
     /// If any of the tiled states is supported all are supported.
     /// The Suspended state is independent of other states.
-    const LBitset<State> supportedStates() const noexcept;
+    LBitset<State> supportedStates() const noexcept;
 
     /**
      * @brief Retrieves the last configuration acknowledged by the client.

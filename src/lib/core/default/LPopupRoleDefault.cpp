@@ -19,7 +19,15 @@ using namespace Louvre;
 //! [rolePos]
 const LPoint &LPopupRole::rolePos() const
 {
-    m_rolePos = surface()->parent()->rolePos() + localPos() - windowGeometry().topLeft();
+    if (positioner().reactive())
+    {
+        const LRect rect { calculateUnconstrainedRect() };
+
+        if (rect != current().rect)
+            configure(rect);
+    }
+
+    m_rolePos = surface()->parent()->rolePos() + current().rect.pos() - windowGeometry().topLeft();
 
     if (surface()->parent()->toplevel())
         m_rolePos += surface()->parent()->toplevel()->windowGeometry().pos();

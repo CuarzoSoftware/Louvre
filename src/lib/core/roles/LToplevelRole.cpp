@@ -40,7 +40,21 @@ LToplevelRole::LToplevelRole(const void *params) :
 
 LToplevelRole::~LToplevelRole() {}
 
-const LBitset<LToplevelRole::State> LToplevelRole::supportedStates() const noexcept
+const LToplevelRole::Configuration *LToplevelRole::findConfiguration(UInt32 serial) const noexcept
+{
+    for (auto &conf : imp()->sentConfs)
+        if (conf.serial == serial)
+            return &conf;
+
+    if (current().serial == serial)
+        return &current();
+    if (pending().serial == serial)
+        return &current();
+
+    return nullptr;
+}
+
+LBitset<LToplevelRole::State> LToplevelRole::supportedStates() const noexcept
 {
     return imp()->supportedStates;
 }

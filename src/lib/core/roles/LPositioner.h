@@ -207,6 +207,31 @@ public:
         return m_constraintAdjustments;
     }
 
+    bool reactive() const noexcept
+    {
+        return m_reactive;
+    }
+
+    bool hasParentSize() const noexcept
+    {
+        return m_hasParentSize;
+    }
+
+    const LSize &parentSize() const noexcept
+    {
+        return m_parentSize;
+    }
+
+    bool hasParentConfigureSerial() const noexcept
+    {
+        return m_hasParentConfigureSerial;
+    }
+
+    UInt32 parentConfigureSerial() const noexcept
+    {
+        return m_parentConfigureSerial;
+    }
+
 private:
     friend class LPopupRole;
     friend class Protocols::XdgShell::RXdgPositioner;
@@ -219,9 +244,11 @@ private:
     LBitset<ConstraintAdjustments> m_constraintAdjustments { ConstraintAdjustments::NoAdjustment };
 
     // Since 3
-    bool isReactive { false };
-    LSize parentSize;
-    UInt32 parentConfigureSerial;
+    LSize m_parentSize;
+    UInt32 m_parentConfigureSerial;
+    bool m_reactive { false };
+    bool m_hasParentSize { false };
+    bool m_hasParentConfigureSerial { false };
 };
 
 #endif // LPOSITIONER_H

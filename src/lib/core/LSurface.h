@@ -8,7 +8,6 @@
 #include <LFramebuffer.h>
 
 #include <list>
-#include <mutex>
 
 /**
  * @brief A client "window"
