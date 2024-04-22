@@ -94,9 +94,10 @@ public:
         if (isLScene())
             td.manuallyAddedDamage.addRect(output->rect());
         else
+        {
             td.manuallyAddedDamage.addRect(LRect(pos(), size()));
-
-        output->repaint();
+            output->repaint();
+        }
     }
 
     /**
@@ -115,7 +116,8 @@ public:
         if (td.o)
             td.manuallyAddedDamage.addRegion(damage);
 
-        output->repaint();
+        if (!isLScene())
+            output->repaint();
     }
 
     /**

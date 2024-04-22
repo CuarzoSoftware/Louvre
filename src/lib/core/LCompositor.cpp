@@ -23,13 +23,9 @@
 
 #include <sys/eventfd.h>
 #include <poll.h>
-#include <stdio.h>
 #include <thread>
 #include <unistd.h>
 #include <dlfcn.h>
-#include <csignal>
-#include <iostream>
-#include <ostream>
 
 using namespace Louvre::Protocols::Wayland;
 
@@ -66,26 +62,15 @@ void LCompositor::removeGlobal(LGlobal *global)
 
 LCompositor::LCompositor() : LPRIVATE_INIT_UNIQUE(LCompositor)
 {
-    setenv("WAYLAND_DISPLAY", "wayland-2", 0);
-    setenv("MOZ_ENABLE_WAYLAND", "1", 0);
-    setenv("QT_QPA_PLATFORM", "wayland-egl", 0);
-
-    char *wdisplay = getenv("WAYLAND_DISPLAY");
-
-    if (wdisplay)
-    {
-        // For Firefox
-        setenv("DISPLAY", wdisplay, 0);
-        setenv("LOUVRE_WAYLAND_DISPLAY", wdisplay, 0);
-    }
-
     if (!s_compositor)
         s_compositor = this;
 
     LLog::init();
     imp()->eglBindWaylandDisplayWL = (PFNEGLBINDWAYLANDDISPLAYWL) eglGetProcAddress ("eglBindWaylandDisplayWL");
     imp()->eglQueryWaylandBufferWL = (PFNEGLQUERYWAYLANDBUFFERWL) eglGetProcAddress ("eglQueryWaylandBufferWL");
-    imp()->glEGLImageTargetRenderbufferStorageOES = (PFNGLEGLIMAGETARGETTEXTURE2DOESPROC) eglGetProcAddress ("glEGLImageTargetRenderbufferStorageOES");
+    imp()->glEGLImageTargetRenderbufferStorageOES = (PFNGLEGLIMAGETARGETRENDERBUFFERSTORAGEOESPROC) eglGetProcAddress ("glEGLImageTargetRenderbufferStorageOES");
+    imp()->glEGLImageTargetTexture2DOES = (PFNGLEGLIMAGETARGETTEXTURE2DOESPROC) eglGetProcAddress ("glEGLImageTargetTexture2DOES");
+
 
     imp()->defaultAssetsPath = LOUVRE_DEFAULT_ASSETS_PATH;
     imp()->defaultBackendsPath = LOUVRE_DEFAULT_BACKENDS_PATH;
@@ -197,6 +182,12 @@ bool LCompositor::start()
     }
 
     seat()->initialized();
+
+    if (!compositor()->createGlobalsRequest())
+    {
+        LLog::fatal("[LCompositorPrivate::initWayland] Failed to create globals.");
+        goto fail;
+    }
 
     imp()->state = CompositorState::Initialized;
     initialized();

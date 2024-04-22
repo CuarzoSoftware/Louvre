@@ -75,7 +75,7 @@ Int8 LScreenshotRequest::copy() noexcept
         wl_shm_buffer_end_access(shm_buffer);
         resource().flags(ZWLR_SCREENCOPY_FRAME_V1_FLAGS_Y_INVERT);
     }
-    else
+    else // DMA buffer
     {
         LDMABuffer *dmaBuffer { static_cast<LDMABuffer*>(wl_resource_get_user_data(resource().buffer())) };
         UInt32 i { 0 };

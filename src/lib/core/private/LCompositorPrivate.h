@@ -53,7 +53,9 @@ LPRIVATE_CLASS(LCompositor)
     bool initGraphicBackend();
         PFNEGLBINDWAYLANDDISPLAYWL eglBindWaylandDisplayWL { NULL };
         PFNEGLQUERYWAYLANDBUFFERWL eglQueryWaylandBufferWL { NULL };
-        PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetRenderbufferStorageOES { NULL };
+        PFNGLEGLIMAGETARGETRENDERBUFFERSTORAGEOESPROC glEGLImageTargetRenderbufferStorageOES { NULL };
+        PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOES { NULL };
+
         EGLDisplay mainEGLDisplay { EGL_NO_DISPLAY };
         EGLContext mainEGLContext { EGL_NO_CONTEXT };
         LGraphicBackendInterface *graphicBackend { nullptr };

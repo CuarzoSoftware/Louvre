@@ -3,8 +3,6 @@
 
 #include <LNamespaces.h>
 #include <LRect.h>
-#include <cstdio>
-#include <cstring>
 #include <pixman.h>
 #include <LFramebuffer.h>
 

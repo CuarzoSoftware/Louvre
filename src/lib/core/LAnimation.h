@@ -122,6 +122,8 @@ public:
 
     /**
      * @brief Starts the animation.
+     *
+     * If the animation is already running, calling this method a no-op.
      */
     void start() noexcept;
 

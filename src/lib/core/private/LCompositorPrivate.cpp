@@ -138,12 +138,6 @@ bool LCompositor::LCompositorPrivate::initWayland()
         }
     }
 
-    if (!compositor()->createGlobalsRequest())
-    {
-        LLog::fatal("[LCompositorPrivate::initWayland] Failed to create globals.");
-        return false;
-    }
-
     wl_display_init_shm(display);
     waylandEventLoop = wl_display_get_event_loop(display);
     auxEventLoop = wl_event_loop_create();
@@ -247,7 +241,7 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
         loadEnvBackend:
 
         std::filesystem::path backendsPath { getenvString("LOUVRE_BACKENDS_PATH") };
-        std::filesystem::path backendName  { getenvString("LOUVRE_INPUT_BACKEND")};
+        std::filesystem::path backendName  { getenvString("LOUVRE_GRAPHIC_BACKEND")};
 
         bool usingEnvs = !backendsPath.empty() || !backendName.empty();
 

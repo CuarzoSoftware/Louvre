@@ -4,15 +4,20 @@
 #include <LNamespaces.h>
 
 /**
- * @brief Client request to take a screenshot.
+ * @brief Request to capture an LOutput frame
  *
- * Clients using the [Wlr Screencopy](https://wayland.app/protocols/wlr-screencopy-unstable-v1) protocol can request
- * to take a screenshot of a specific region of an LOutput.
+ * Clients using the [Wlr Screencopy](https://wayland.app/protocols/wlr-screencopy-unstable-v1) protocol can request to capture a specific region of an LOutput.
  *
- * The requests are only for the result of the current LOutput::paintGL() event and should only be handled within that event.\n
- * Use LOutput::screenshotRequests() to access the current requests and accept() to allow/deny the capture.
+ * The LScreenshotRequest class represents a single frame wanted to be captured, and must be handled within an LOuput::paintGL() event.\n
+ * This means that for screencasting, clients make a new LScreenshotRequest for each paint event.\n
+ * If a request is accepted within a paint event, Louvre later copies the rendered frame to the client's buffer.
  *
- * @note By default, all captures are denied unless accept(true) is called within a LOutput::paintGL() event.
+ * @note All requests are initially denied unless accept(true) is called.
+ *
+ * Within an paint event, the LOutput::screenshotRequests() vector contains the requests made for the current frame being rendered, which
+ * can be more than one if multiple clients are requesting to capture the frame.
+ *
+ * @note It's recommended to apply a global filter to permit only a single well-known client to use this protocol, such as the `xdg-desktop-portal-wlr`.
  */
 class Louvre::LScreenshotRequest
 {

@@ -46,6 +46,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
         CursorNeedsRendering                = static_cast<UInt32>(1) << 7,
         ScreenshotsWithCursor               = static_cast<UInt32>(1) << 8,
         ScreenshotsWithoutCursor            = static_cast<UInt32>(1) << 9,
+        NeedsFullRepaint                    = static_cast<UInt32>(1) << 10,
     };
 
     LOutputPrivate(LOutput *output);

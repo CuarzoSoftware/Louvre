@@ -29,11 +29,15 @@ void LKeyboardKeyEvent::notify()
         }
 
         // Update LEDS
-        UInt32 ledsMask { 0 };
-        for (UInt32 i = 0; i < 3; i++)
-            if (xkb_state_led_index_is_active(keyboard.xkbKeymapState, keyboard.leds[i]) == 1)
-                ledsMask |= 1 << i;
-        compositor()->imp()->inputBackend->backendSetLeds(ledsMask);
+
+        if (compositor()->imp()->inputBackend->backendSetLeds)
+        {
+            UInt32 ledsMask { 0 };
+            for (UInt32 i = 0; i < 3; i++)
+                if (xkb_state_led_index_is_active(keyboard.xkbKeymapState, keyboard.leds[i]) == 1)
+                    ledsMask |= 1 << i;
+            compositor()->imp()->inputBackend->backendSetLeds(ledsMask);
+        }
     }
 
     if (state() == State::Pressed)

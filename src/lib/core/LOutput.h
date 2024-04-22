@@ -219,6 +219,7 @@ public:
 
     // TODO
     LSessionLockRole *sessionLockRole() const noexcept;
+    bool needsFullRepaint() const noexcept;
 
     /**
      * @brief Get the current state of the LOutput.

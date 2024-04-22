@@ -42,12 +42,13 @@ void Output::loadWallpaper()
     {
         if (wallpaperView->texture())
         {
-            if (bufferSize == wallpaperView->texture()->sizeB())
+            if (true || bufferSize == wallpaperView->texture()->sizeB())
             {
                 wallpaperView->enableDstSize(true);
                 wallpaperView->setDstSize(size());
                 return;
             }
+
 
             delete wallpaperView->texture();
         }
@@ -452,6 +453,9 @@ void Output::paintGL()
         return;
     }
 
+    if (needsFullRepaint())
+        G::scene()->mainView()->damageAll(this);
+
     // Check pointer events before painting
     if (G::compositor()->updatePointerBeforePaint)
     {
@@ -460,7 +464,7 @@ void Output::paintGL()
     }
 
     updateFractionalOversampling();
-    G::compositor()->scene.handlePaintGL(this);
+    G::scene()->handlePaintGL(this);
 
     for (auto *screenshotRequest : screenshotRequests())
         screenshotRequest->accept(true);

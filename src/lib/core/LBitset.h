@@ -128,7 +128,7 @@ public:
     /**
      * @brief Set or unset a specific flag in the bitfield
      *
-     * Modifies the specified flag in the bitfield. If `enable` is `true`, the flag is set, otherwise, it is removed.
+     * Modifies the specified flag (or flags) in the bitfield. If `enable` is `true`, the flag is set, otherwise, it is removed.
      *
      * @param flag The flag to be set or unset
      * @param enable If `true`, set the flag, if `false`, remove the flag
@@ -145,7 +145,7 @@ public:
      * @brief Performs a bitwise OR operation with another LBitset.
      *
      * @param flags The LBitset containing flags to perform the operation with.
-     * @return LBitset<Flag>& A reference to the modified LBitset after the operation.
+     * @return A reference to the modified LBitset after the operation.
      */
     constexpr LBitset<T>& operator|=(T flags) noexcept
     {
@@ -157,7 +157,7 @@ public:
      * @brief Performs a bitwise AND operation with another LBitset.
      *
      * @param flags The LBitset containing flags to perform the operation with.
-     * @return LBitset<Flag>& A reference to the modified LBitset after the operation.
+     * @return A reference to the modified LBitset after the operation.
      */
     constexpr LBitset<T>& operator&=(T flags) noexcept
     {
@@ -169,7 +169,7 @@ public:
      * @brief Performs a bitwise XOR operation with another LBitset.
      *
      * @param flags The LBitset containing flags to perform the operation with.
-     * @return LBitset<Flag>& A reference to the modified LBitset after the operation.
+     * @return A reference to the modified LBitset after the operation.
      */
     constexpr LBitset<T>& operator^=(T flags) noexcept
     {

@@ -7,15 +7,10 @@
 #include <protocols/Wayland/GOutput.h>
 #include <protocols/GammaControl/RGammaControl.h>
 
-#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
 
 #include <LToplevelRole.h>
 #include <LRegion.h>
@@ -24,7 +19,6 @@
 #include <LTime.h>
 #include <LLog.h>
 #include <LOutputFramebuffer.h>
-#include <string>
 
 using namespace Louvre;
 
@@ -46,6 +40,11 @@ LOutput::LOutput(const void *params) : m_imp(std::make_unique<LOutputPrivate>(th
 LSessionLockRole *LOutput::sessionLockRole() const noexcept
 {
     return imp()->sessionLockRole;
+}
+
+bool LOutput::needsFullRepaint() const noexcept
+{
+    return imp()->stateFlags.check(LOutput::LOutputPrivate::NeedsFullRepaint);
 }
 
 LOutput::~LOutput() {}

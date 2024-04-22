@@ -3,7 +3,6 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <assert.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -15,7 +14,6 @@
 #include <gbm.h>
 #include <drm.h>
 #include <drm_fourcc.h>
-#include <unordered_map>
 
 #include <LGraphicBackend.h>
 #include <private/LCompositorPrivate.h>

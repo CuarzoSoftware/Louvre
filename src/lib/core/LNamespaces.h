@@ -70,7 +70,6 @@
 
 /**
  * @brief Namespaces
- * @page Namespaces
  */
 namespace Louvre
 {
@@ -395,8 +394,9 @@ namespace Louvre
      */
     enum LGraphicBackendID : UInt32
     {
-        LGraphicBackendDRM = 0,     ///< ID for the DRM graphic backend.
-        LGraphicBackendX11 = 1      ///< ID for the X11 graphic backend.
+        LGraphicBackendDRM = 0,    ///< ID for the DRM graphic backend.
+        LGraphicBackendX11 = 1,    ///< ID for the X11 graphic backend.
+        LGraphicBackendWayland = 2 ///< ID for the Wayland graphic backend.
     };
 
     /**
@@ -413,7 +413,8 @@ namespace Louvre
     enum LInputBackendID : UInt32
     {
         LInputBackendLibinput = 0, ///< ID for the Libinput input backend.
-        LInputBackendX11 = 1       ///< ID for the X11 input backend.
+        LInputBackendX11 = 1,      ///< ID for the X11 input backend.
+        LInputBackendWayland = 2   ///< ID for the Wayland input backend.
     };
 
     /**
@@ -426,8 +427,6 @@ namespace Louvre
         UInt32 patch; ///< Patch version.
         UInt32 build; ///< Build number.
     };
-
-    /// @cond OMIT
 
     namespace Protocols
     {
@@ -565,38 +564,42 @@ namespace Louvre
         }
     }
 
-    /// @endcond
-
     /**
-     * @brief Get the static LCompositor instance.
+     * @brief Gets the static LCompositor instance.
      *
      * This method provides access to the single LCompositor instance that can exist per process.\n
-     * You can also access it from any Louvre object with `object->compositor()`.
      *
-     * @return A pointer to the LCompositor instance.
+     * @return A pointer to the LCompositor instance or `nullptr` if not yet created.
      */
     LCompositor *compositor() noexcept;
 
     /**
-     * @brief Gets the compositor cursor.
+     * @brief Gets the compositor's cursor.
      *
-     * This method must be accessed within or after the initialized() or cursorInitialized() events.
-     * If the cursor has not yet been initialized, this method returns `nullptr`.
+     * @warning Must be accessed within or after the LCompositor::initialized() or LCompositor::cursorInitialized() events.
      *
      * @return A pointer to the LCursor instance or `nullptr` if not yet initialized.
      */
     LCursor *cursor() noexcept;
 
     /**
-     * @brief Gets the compositor seat.
+     * @brief Gets the compositor's seat.
      *
      * The seat provides access to the LClipboard, LDND, LPointer, LKeyboard, LTouch, and LOutput instances.
+     *
+     * @warning Must be accessed within or after the LCompositor::initialized() event.
      *
      * @return A pointer to the LSeat instance.
      */
     LSeat *seat() noexcept;
 
-    // TODO
+    /**
+     * @brief Gets the compositor's session lock manager.
+     *
+     * @warning Must be accessed within or after the LCompositor::initialized() event.
+     *
+     * @return A pointer to the LSessionLockManager instance.
+     */
     LSessionLockManager *sessionLockManager() noexcept;
 };
 

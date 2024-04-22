@@ -521,7 +521,7 @@ void ToplevelView::updateGeometry()
 
         clipTop.setSize(size);
         decoT.setDstSize(size.w(), decoT.nativeSize().h());
-        decoT.setPos(0, -decoT.nativeSize().h() + (TOPLEVEL_TOPBAR_HEIGHT + TOPLEVEL_TOP_CLAMP_OFFSET_Y) * fullscreenTopbarVisibility);
+        decoT.setPos(0, -(decoT.nativeSize().h() + 1) + (TOPLEVEL_TOPBAR_HEIGHT + TOPLEVEL_TOP_CLAMP_OFFSET_Y) * fullscreenTopbarVisibility);
         buttonsContainer.setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT * (1.f - fullscreenTopbarVisibility));
 
         // Set topbar center translucent regions
@@ -539,7 +539,7 @@ void ToplevelView::updateGeometry()
 
         decoT.setTranslucentRegion(&transT);
 
-        topbarInput.setPos(0, - TOPLEVEL_TOPBAR_HEIGHT * (1.f - fullscreenTopbarVisibility));
+        topbarInput.setPos(0, - (TOPLEVEL_TOPBAR_HEIGHT) * (1.f - fullscreenTopbarVisibility));
         topbarInput.setSize(size.w(), TOPLEVEL_TOPBAR_HEIGHT + 1);
     }
     else
@@ -702,7 +702,12 @@ void ToplevelView::updateGeometry()
         if (titleWidth > (topbarInput.size().w() - 128) * 2)
             px = 64;
 
-        title.setPos(px, topbarInput.size().h() - (TOPLEVEL_TOPBAR_HEIGHT + title.size().h()) / 2 );
+        Int32 h { topbarInput.size().h() - (TOPLEVEL_TOPBAR_HEIGHT + title.size().h()) / 2 };
+
+        if (toplevel->fullscreen())
+            h -= 2;
+
+        title.setPos(px, h);
     }
 
     lastFullscreenState = toplevel->fullscreen();

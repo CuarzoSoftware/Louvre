@@ -42,57 +42,6 @@
     
   </navindex>
   
-  <class>
-  	<includes visible="$SHOW_INCLUDE_FILES"/>
-    <briefdescription visible="yes"/>
-    <detaileddescription title=""/>
-    <inheritancegraph visible="yes"/>
-    <collaborationgraph visible="$COLLABORATION_GRAPH"/>
-    <allmemberslink visible="yes"/>
-    <memberdecl>
-      <nestedclasses visible="yes" title=""/>
-      <publictypes title=""/>
-      <publicslots title=""/>
-      <signals title=""/>
-      <publicmethods title=""/>
-      <publicstaticmethods title=""/>
-      <publicattributes title=""/>
-      <publicstaticattributes title=""/>
-      <protectedtypes title=""/>
-      <protectedslots title=""/>
-      <protectedmethods title=""/>
-      <protectedstaticmethods title=""/>
-      <protectedattributes title=""/>
-      <protectedstaticattributes title=""/>
-      <packagetypes title=""/>
-      <packagemethods title=""/>
-      <packagestaticmethods title=""/>
-      <packageattributes title=""/>
-      <packagestaticattributes title=""/>
-      <properties title=""/>
-      <events title=""/>
-      <privatetypes title=""/>
-      <privateslots title=""/>
-      <privatemethods title=""/>
-      <privatestaticmethods title=""/>
-      <privateattributes title=""/>
-      <privatestaticattributes title=""/>
-      <friends visible="no" title=""/>
-      <related visible="no" title="" subtitle=""/>
-      <membergroups visible="yes"/>
-    </memberdecl>
-    <memberdef>
-      <typedefs title=""/>
-      <enums title=""/>
-      <constructors title=""/>
-      <functions title=""/>
-      <related title=""/>
-      <variables title=""/>
-      <properties title=""/>
-      <events title=""/>
-    </memberdef>
-    <usedfiles visible="$SHOW_USED_FILES"/>
-    <authorsection visible="yes"/>
-  </class>
+
 
 </doxygenlayout>

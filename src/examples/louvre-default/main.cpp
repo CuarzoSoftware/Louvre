@@ -10,14 +10,9 @@ int main(int, char *[])
 {
     setenv("LOUVRE_DEBUG", "1", 0);
     setenv("SRM_DEBUG", "1", 0);
-    setenv("WAYLAND_DISPLAY", "wayland-0", 0);
     setenv("MOZ_ENABLE_WAYLAND", "1", 1);
     setenv("QT_QPA_PLATFORM", "wayland-egl", 1);
-
-    char *display = getenv("WAYLAND_DISPLAY");
-
-    if (display)
-        setenv("DISPLAY", display, 1);
+    setenv("LOUVRE_WAYLAND_DISPLAY", "wayland-2", 0);
 
     LLauncher::startDaemon();
 

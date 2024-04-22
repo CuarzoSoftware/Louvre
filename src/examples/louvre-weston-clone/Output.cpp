@@ -139,7 +139,7 @@ void Output::paintGL() noexcept
     }
 
     // Damage the entire output if rect changed
-    if (lastRect != rect())
+    if (needsFullRepaint() || lastRect != rect())
     {
         fullDamage();
         lastRect = rect();

@@ -52,6 +52,9 @@ Dock::Dock(Output *output) :
     }
 
     update();
+
+    if (seat()->graphicBackendId() == LGraphicBackendWayland)
+        show();
 }
 
 Dock::~Dock()
@@ -184,7 +187,7 @@ void Dock::show()
 
 void Dock::hide()
 {
-    if (anim.running() || visiblePercent != 1.f)
+    if (seat()->graphicBackendId() == LGraphicBackendWayland || anim.running() || visiblePercent != 1.f)
         return;
 
     anim.setDuration(250);
@@ -225,7 +228,7 @@ void Dock::pointerMoveEvent(const LPointerMoveEvent &)
     if (showResistanceCount > showResistance)
         show();
     else
-        showResistanceCount++;   
+        showResistanceCount++;
 }
 
 void Dock::pointerLeaveEvent(const LPointerLeaveEvent &)

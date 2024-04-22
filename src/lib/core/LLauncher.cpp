@@ -103,19 +103,6 @@ static Int32 daemonLoop()
 
 pid_t LLauncher::startDaemon(const std::string &name)
 {
-    setenv("WAYLAND_DISPLAY", "wayland-2", 0);
-    setenv("MOZ_ENABLE_WAYLAND", "1", 0);
-    setenv("QT_QPA_PLATFORM", "wayland-egl", 0);
-
-    char *wdisplay = getenv("WAYLAND_DISPLAY");
-
-    if (wdisplay)
-    {
-        // For Firefox
-        setenv("DISPLAY", wdisplay, 0);
-        setenv("LOUVRE_WAYLAND_DISPLAY", wdisplay, 0);
-    }
-
     LLog::init();
 
     if (daemonPID != -1)
@@ -152,6 +139,11 @@ pid_t LLauncher::startDaemon(const std::string &name)
     }
     else if (daemonPID == 0)
     {
+        char *display = getenv("LOUVRE_WAYLAND_DISPLAY");
+
+        if (display)
+            setenv("WAYLAND_DISPLAY", display , 1);
+
         prctl(PR_SET_NAME, name.c_str(), 0, 0, 0);
         Int32 ret = daemonLoop();
         close(pipeA[0]);
