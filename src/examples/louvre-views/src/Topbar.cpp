@@ -80,6 +80,12 @@ void Topbar::update()
     vSyncLabel.setPos(clock.nativePos().x() - vSyncLabel.size().w() - 8, clock.nativePos().y());
     oversamplingLabel.setPos(vSyncLabel.nativePos().x() - oversamplingLabel.size().w() - 8, vSyncLabel.nativePos().y());
     outputInfo.setPos(oversamplingLabel.nativePos().x() - outputInfo.size().w() - 8, oversamplingLabel.nativePos().y());
+
+    const Int32 appNameX2 { appName.pos().x() + appName.size().w() };
+    outputInfo.setVisible(outputInfo.pos().x() > appNameX2);
+    oversamplingLabel.setVisible(oversamplingLabel.pos().x() > appNameX2);
+    vSyncLabel.setVisible(vSyncLabel.pos().x() > appNameX2);
+    clock.setVisible(clock.pos().x() > appNameX2);
 }
 
 void Topbar::updateOutputInfo()

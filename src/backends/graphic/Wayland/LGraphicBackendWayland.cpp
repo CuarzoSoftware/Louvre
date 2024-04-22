@@ -80,8 +80,10 @@ public:
     inline static zxdg_decoration_manager_v1 *xdgDecorationManager { nullptr };
     inline static zxdg_toplevel_decoration_v1 *xdgDecoration { nullptr };
     inline static std::vector<wl_output*> waylandOutputs;
+    inline static std::vector<wl_output*> surfaceOutputs;
 
     inline static wl_registry_listener registryListener;
+    inline static wl_surface_listener surfaceListener;
     inline static wl_output_listener outputListener;
     inline static xdg_wm_base_listener xdgWmBaseListener;
     inline static xdg_surface_listener xdgSurfaceListener;
@@ -122,6 +124,8 @@ public:
 
         registryListener.global = registryHandleGlobal;
         registryListener.global_remove = registryHandleGlobalRemove;
+        surfaceListener.enter = surfaceHandleEnter;
+        surfaceListener.leave = surfaceHandleLeave;
         outputListener.geometry = [](auto, auto, auto, auto, auto, auto, auto, auto, auto, auto){};
         outputListener.mode = outputHandleMode;
         outputListener.scale = outputHandleScale;
@@ -199,6 +203,7 @@ public:
         windowEGLContext = eglCreateContext(eglDisplay, eglConfig, eglContext, eglContextAttribs);
         surface = wl_compositor_create_surface(compositor);
         wl_proxy_set_queue((wl_proxy*)surface, queue);
+        wl_surface_add_listener(surface, &surfaceListener, nullptr);
 
         xdgSurface = xdg_wm_base_get_xdg_surface(xdgWmBase, surface);
         wl_proxy_set_queue((wl_proxy*)xdgSurface, queue);
@@ -243,7 +248,10 @@ public:
                 eventfd_t value;
                 eventfd_read(fd[0].fd, &value);
                 output->imp()->stateFlags.add(LOutput::LOutputPrivate::NeedsFullRepaint);
-                wl_surface_set_buffer_scale(surface, pendingBufferScale);
+
+                if (wl_surface_get_version(surface) >= 3)
+                    wl_surface_set_buffer_scale(surface, pendingBufferScale);
+
                 output->setScale(pendingBufferScale);
 
                 if (pendingSurfaceSize != shared.surfaceSize || pendingBufferScale != shared.bufferScale)
@@ -696,11 +704,11 @@ public:
         return true;
     }
 
-    static void registryHandleGlobal(void */*data*/, struct wl_registry *registry, uint32_t name, const char *interface, uint32_t /*version*/)
+    static void registryHandleGlobal(void */*data*/, wl_registry *registry, UInt32 name, const char *interface, UInt32 version)
     {
         if (!compositor && strcmp(interface, wl_compositor_interface.name) == 0)
         {
-            compositor = (wl_compositor*)wl_registry_bind(registry, name, &wl_compositor_interface, 3);
+            compositor = (wl_compositor*)wl_registry_bind(registry, name, &wl_compositor_interface, version >= 3 ? 3 : 1);
             wl_proxy_set_queue((wl_proxy*)compositor, queue);
         }
 
@@ -717,7 +725,7 @@ public:
             wl_proxy_set_queue((wl_proxy*)xdgDecorationManager, queue);
         }
 
-        else if (strcmp(interface, wl_output_interface.name) == 0)
+        else if (version >= 2 && strcmp(interface, wl_output_interface.name) == 0)
         {
             WaylandOutput *output { new WaylandOutput() };
             output->name = name;
@@ -737,13 +745,44 @@ public:
 
             if (waylandOutput->name == name)
             {
+                LVectorRemoveOneUnordered(surfaceOutputs, waylandOutputs[i]);
                 waylandOutputs[i] = waylandOutputs.back();
                 waylandOutputs.pop_back();
                 wl_proxy_destroy((wl_proxy*)waylandOutputs[i]);
                 delete waylandOutput;
+                updateSurfaceScale();
                 return;
             }
         }
+    }
+
+    static void surfaceHandleEnter(void */*data*/, wl_surface */*surface*/, wl_output *output)
+    {
+        LVectorPushBackIfNonexistent(surfaceOutputs, output);
+        updateSurfaceScale();
+    }
+
+    static void surfaceHandleLeave(void */*data*/, wl_surface */*surface*/, wl_output *output)
+    {
+        LVectorRemoveOneUnordered(surfaceOutputs, output);
+        updateSurfaceScale();
+    }
+
+    static void updateSurfaceScale()
+    {
+        const Int32 oldScale { pendingBufferScale };
+        pendingBufferScale = 1;
+
+        for (auto *output : surfaceOutputs)
+        {
+            WaylandOutput &outputData { *static_cast<WaylandOutput*>(wl_output_get_user_data(output)) };
+
+            if (pendingBufferScale < outputData.bufferScale)
+                pendingBufferScale = outputData.bufferScale;
+        }
+
+        if (pendingBufferScale != oldScale)
+            outputRepaint(nullptr);
     }
 
     static void outputHandleMode(void *data, wl_output *, UInt32 /*flags*/, Int32 /*width*/, Int32 /*height*/, Int32 refresh)
@@ -756,18 +795,10 @@ public:
     {
         WaylandOutput &output { *static_cast<WaylandOutput*>(data) };
         output.bufferScale = scale;
+        updateSurfaceScale();
     }
 
-    static void outputHandleDone(void *data, wl_output *)
-    {
-        WaylandOutput &output { *static_cast<WaylandOutput*>(data) };
-
-        if (shared.bufferScale != output.bufferScale)
-        {
-            pendingBufferScale = output.bufferScale;
-            outputRepaint(nullptr);
-        }
-    }
+    static void outputHandleDone(void *, wl_output *) {}
 
     static void xdgWmBaseHandlePing(void */*data*/, xdg_wm_base *wm_base, UInt32 serial)
     {
