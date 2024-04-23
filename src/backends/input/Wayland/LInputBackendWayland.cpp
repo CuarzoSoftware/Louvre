@@ -35,43 +35,52 @@ using namespace Louvre;
 
 struct WaylandBackendShared
 {
+    std::mutex mutex;
+    pollfd fd[3];
     LSize surfaceSize { 1024, 512 };
     LSize bufferSize { 1024, 512 };
     Int32 bufferScale { 1 };
-};
-
-struct Backend
-{
-    wl_display *display { nullptr };
-    wl_registry *registry;
-    wl_seat *seat { nullptr };
-    wl_pointer *pointer { nullptr };
-    LInputDevice device;
-    std::vector<LInputDevice*> devices;
-    LPointerMoveEvent pointerMoveEvent;
-    LPointerButtonEvent pointerButtonEvent;
-    LPointerScrollEvent pointerScrollEvent;
-    LKeyboardKeyEvent keyboardKeyEvent;
-
-    wl_registry_listener registryListener;
-    wl_seat_listener seatListener;
-    wl_pointer_listener pointerListener;
-
-    wl_event_source *eventSource { nullptr };
+    wl_buffer *cursorBuffer { nullptr };
+    wl_surface *cursorSurface { nullptr };
+    bool cursorChangedHotspot { false };
+    bool cursorChangedBuffer { false };
+    bool cursorVisible { false };
+    LPoint cursorHotspot;
 };
 
 class Louvre::LInputBackend
 {
 public:
 
-    static Backend &backend()
-    {
-        return *static_cast<Backend*>( seat()->imp()->inputBackendData );
-    }
+    static inline wl_display *display { nullptr };
+    static inline wl_event_queue *queue;
+    static inline wl_registry *registry;
+    static inline wl_seat *seat { nullptr };
+    static inline wl_pointer *pointer { nullptr };
+    static inline LInputDevice device;
+    static inline std::vector<LInputDevice*> devices;
+
+    static inline wl_registry_listener registryListener;
+    static inline wl_seat_listener seatListener;
+    static inline wl_pointer_listener pointerListener;
+
+    static inline wl_event_source *eventSource { nullptr };
+
+    static inline LPointerMoveEvent pointerMoveEvent;
+    static inline LPointerButtonEvent pointerButtonEvent;
+    static inline LPointerScrollEvent pointerScrollEvent;
+    static inline LKeyboardKeyEvent keyboardKeyEvent;
+
+    static inline UInt32 enterSerial;
 
     static WaylandBackendShared &shared()
     {
         return *static_cast<WaylandBackendShared*>( compositor()->imp()->graphicBackendData );
+    }
+
+    static void unlockRenderThread()
+    {
+        eventfd_write(shared().fd[0].fd, 1);
     }
 
     static UInt32 backendGetId()
@@ -86,134 +95,204 @@ public:
 
     static void *backendGetContextHandle()
     {
-        return backend().display;
+        return display;
     }
 
     static const std::vector<LInputDevice*> *backendGetDevices()
     {
-        return &backend().devices;
+        return &devices;
     }
 
     static void setupListeners()
     {
-        backend().registryListener.global        = registryHandleGlobal;
-        backend().registryListener.global_remove = registryHandleGlobalRemove;
-        backend().seatListener.capabilities      = seatHandleCapabilities;
-        backend().seatListener.name              = seatHandleName;
-        backend().pointerListener.enter          = pointerHandleEnter;
-        backend().pointerListener.leave          = pointerHandleLeave;
-        backend().pointerListener.motion         = pointerHandleMotion;
-        backend().pointerListener.button         = pointerHandleButton;
-        backend().pointerListener.axis           = pointerHandleAxis;
+        registryListener.global        = registryHandleGlobal;
+        registryListener.global_remove = registryHandleGlobalRemove;
+        seatListener.capabilities      = seatHandleCapabilities;
+        seatListener.name              = seatHandleName;
+        pointerListener.enter          = pointerHandleEnter;
+        pointerListener.leave          = pointerHandleLeave;
+        pointerListener.motion         = pointerHandleMotion;
+        pointerListener.button         = pointerHandleButton;
+        pointerListener.axis           = pointerHandleAxis;
     }
 
     static void setupEvents()
     {
-        backend().device.m_capabilities = LSeat::InputCapabilities::Pointer | LSeat::InputCapabilities::Keyboard | LSeat::InputCapabilities::Touch;
-        backend().device.m_name = "Louvre Input Device";
-        backend().devices.push_back(&backend().device);
-        backend().pointerMoveEvent.setDevice(&backend().device);
-        backend().pointerButtonEvent.setDevice(&backend().device);
-        backend().pointerScrollEvent.setDevice(&backend().device);
-        backend().pointerScrollEvent.setSource(LPointerScrollEvent::Wheel);
-        backend().keyboardKeyEvent.setDevice(&backend().device);
+        device.m_capabilities = LSeat::InputCapabilities::Pointer | LSeat::InputCapabilities::Keyboard | LSeat::InputCapabilities::Touch;
+        device.m_name = "Louvre Input Device";
+        devices.push_back(&device);
+        pointerMoveEvent.setDevice(&device);
+        pointerButtonEvent.setDevice(&device);
+        pointerScrollEvent.setDevice(&device);
+        pointerScrollEvent.setSource(LPointerScrollEvent::Wheel);
+        keyboardKeyEvent.setDevice(&device);
+    }
+
+    static void updateCursor()
+    {
+        shared().mutex.lock();
+
+        if ((!shared().cursorChangedBuffer && !shared().cursorChangedHotspot) || !pointer || !shared().cursorSurface)
+        {
+            shared().mutex.unlock();
+            return;
+        }
+
+        if (shared().cursorChangedBuffer)
+        {
+            wl_surface_damage(shared().cursorSurface, 0, 0, 512, 512);
+            wl_surface_set_buffer_scale(shared().cursorSurface, shared().bufferScale);
+            wl_surface_commit(shared().cursorSurface);
+        }
+
+        wl_pointer_set_cursor(pointer,
+                              enterSerial,
+                              shared().cursorVisible ? shared().cursorSurface : NULL,
+                              shared().cursorHotspot.x() / shared().bufferScale,
+                              shared().cursorHotspot.y() / shared().bufferScale);
+
+        shared().cursorChangedBuffer = false;
+        shared().cursorChangedHotspot = false;
+
+        shared().mutex.unlock();
     }
 
     static bool initWayland()
     {
         setupListeners();
-        backend().display = static_cast<wl_display*>(seat()->graphicBackendContextHandle());
-        backend().registry = wl_display_get_registry(backend().display);
-        wl_registry_add_listener(backend().registry, &backend().registryListener, nullptr);
-        wl_display_roundtrip(backend().display);
+        display = static_cast<wl_display*>(Louvre::seat()->graphicBackendContextHandle());
+        queue = wl_display_create_queue(display);
+        registry = wl_display_get_registry(display);
+        wl_proxy_set_queue((wl_proxy*)registry, queue);
+        wl_registry_add_listener(registry, &registryListener, nullptr);
 
-        if (!backend().seat)
+        if (shared().cursorSurface)
+        {
+            wl_proxy_set_queue((wl_proxy*)shared().cursorBuffer, queue);
+            wl_proxy_set_queue((wl_proxy*)shared().cursorSurface, queue);
+        }
+
+        wl_display_roundtrip_queue(display, queue);
+
+        if (!seat)
         {
             LLog::error("[%s] Failed to get wl_seat v1.", BKND_NAME);
             return false;
         }
 
-        backend().eventSource = compositor()->addFdListener(
-            wl_display_get_fd(backend().display),
+        shared().fd[2].fd = eventfd(0, O_CLOEXEC | O_NONBLOCK);
+
+        eventSource = compositor()->addFdListener(
+            shared().fd[2].fd,
             nullptr,
             LInputBackend::processInput,
-            WL_EVENT_READABLE);
+            POLLIN);
+
+        // TODO
+        compositor()->addFdListener(
+            shared().fd[1].fd,
+            nullptr,
+            LInputBackend::processInput,
+            POLLIN);
 
         return true;
     }
 
     static bool backendInitialize()
     {
-        if (seat()->graphicBackendId() != LGraphicBackendWayland)
+        if (Louvre::seat()->graphicBackendId() != LGraphicBackendWayland)
         {
             LLog::error("[%s] The Wayland input backend requires the Wayland graphic backend.", BKND_NAME);
             return false;
         }
 
-        Backend *backend { new Backend() };
-        seat()->imp()->inputBackendData = backend;
+        Louvre::seat()->imp()->inputBackendData = &shared();
+
+        shared().mutex.lock();
+
         setupEvents();
 
         if (!initWayland())
         {
-            delete backend;
+            shared().mutex.unlock();
             return false;
         }
+
+        shared().mutex.unlock();
 
         return true;
     }
 
     static void backendUninitialize()
     {
-        if (backend().eventSource)
-            compositor()->removeFdListener(backend().eventSource);
-
-        delete &backend();
+        if (eventSource)
+            compositor()->removeFdListener(eventSource);
     }
 
     static void backendSuspend()
     {
-        if (backend().eventSource)
+        if (eventSource)
         {
-            compositor()->removeFdListener(backend().eventSource);
-            backend().eventSource = nullptr;
+            compositor()->removeFdListener(eventSource);
+            eventSource = nullptr;
         }
     }
 
     static void backendResume()
     {
-        if (!backend().eventSource)
+        if (!eventSource)
         {
-            backend().eventSource = compositor()->addFdListener(
-                wl_display_get_fd(backend().display),
+            eventSource = compositor()->addFdListener(
+                wl_display_get_fd(display),
                 nullptr,
                 LInputBackend::processInput,
-                WL_EVENT_READABLE | WL_EVENT_WRITABLE);
+                POLLIN);
         }
     }
 
     static void backendForceUpdate()
     {
-        processInput(0, WL_EVENT_READABLE | WL_EVENT_WRITABLE, nullptr);
+        processInput(-1, 0, nullptr);
     }
 
-    static Int32 processInput(Int32, UInt32 mask, void *)
+    static Int32 processInput(Int32 fd, UInt32 /*mask*/, void *)
     {
-        if (mask & WL_EVENT_READABLE)
-            wl_display_dispatch(backend().display);
+        if (fd == shared().fd[2].fd)
+        {
+            eventfd_t val;
+            eventfd_read(fd, &val);
+        }
+        else
+        {
+            while (wl_display_prepare_read_queue(display, queue) != 0)
+                wl_display_dispatch_queue_pending(display, queue);
+            wl_display_flush(display);
 
-        if (mask & WL_EVENT_WRITABLE)
-            wl_display_flush(backend().display);
+            unlockRenderThread();
+
+            pollfd f = shared().fd[1];
+
+            poll(&f, 1, 1);
+
+            if (f.revents & POLLIN)
+                wl_display_read_events(display);
+            else
+                wl_display_cancel_read(display);
+        }
+
+        updateCursor();
+        wl_display_dispatch_queue_pending(display, queue);
 
         return 0;
     }
 
     static void registryHandleGlobal(void */*data*/, wl_registry *registry, uint32_t name, const char *interface, uint32_t /*version*/)
     {
-        if (!backend().seat && strcmp(interface, wl_seat_interface.name) == 0)
+        if (!seat && strcmp(interface, wl_seat_interface.name) == 0)
         {
-            backend().seat = static_cast<wl_seat*>(wl_registry_bind(registry, name, &wl_seat_interface, 1));
-            wl_seat_add_listener(backend().seat, &backend().seatListener, nullptr);
+            seat = static_cast<wl_seat*>(wl_registry_bind(registry, name, &wl_seat_interface, 1));
+            wl_proxy_set_queue((wl_proxy*)seat, queue);
+            wl_seat_add_listener(seat, &seatListener, nullptr);
         }
     }
 
@@ -224,10 +303,11 @@ public:
 
     static void seatHandleCapabilities(void *, wl_seat *, UInt32 capabilities)
     {
-        if (!backend().pointer && capabilities & LSeat::InputCapabilities::Pointer)
+        if (!pointer && capabilities & LSeat::InputCapabilities::Pointer)
         {
-            backend().pointer = wl_seat_get_pointer(backend().seat);
-            wl_pointer_add_listener(backend().pointer, &backend().pointerListener, nullptr);
+            pointer = wl_seat_get_pointer(seat);
+            wl_proxy_set_queue((wl_proxy*)pointer, queue);
+            wl_pointer_add_listener(pointer, &pointerListener, nullptr);
         }
     }
 
@@ -235,7 +315,8 @@ public:
 
     static void pointerHandleEnter(void *, wl_pointer *, UInt32 serial, wl_surface *, Float24 /*x*/, Float24 /*y*/)
     {
-        wl_pointer_set_cursor(backend().pointer, serial, NULL, 0, 0);
+        enterSerial = serial;
+        shared().cursorChangedBuffer = true;
     }
 
     static void pointerHandleLeave(void *, wl_pointer *, UInt32 /*serial*/, wl_surface *) {}
@@ -244,37 +325,37 @@ public:
     {
         LPointF delta { (Float32)wl_fixed_to_double(x), (Float32)wl_fixed_to_double(y) };
         //delta *= (Float32)shared().bufferScale;
-        backend().pointerMoveEvent.setDelta(delta - cursor()->pos());
-        backend().pointerMoveEvent.setDeltaUnaccelerated(backend().pointerMoveEvent.delta());
-        backend().pointerMoveEvent.setSerial(LTime::nextSerial());
-        backend().pointerMoveEvent.setMs(time);
-        backend().pointerMoveEvent.setUs(LTime::us());
-        backend().pointerMoveEvent.notify();
+        pointerMoveEvent.setDelta(delta - cursor()->pos());
+        pointerMoveEvent.setDeltaUnaccelerated(pointerMoveEvent.delta());
+        pointerMoveEvent.setSerial(LTime::nextSerial());
+        pointerMoveEvent.setMs(time);
+        pointerMoveEvent.setUs(LTime::us());
+        pointerMoveEvent.notify();
     }
 
     static void pointerHandleButton(void *, wl_pointer *, UInt32 serial, UInt32 time, UInt32 button, UInt32 state)
     {
-        backend().pointerButtonEvent.setButton((LPointerButtonEvent::Button)button);
-        backend().pointerButtonEvent.setState((LPointerButtonEvent::State)state);
-        backend().pointerButtonEvent.setSerial(serial);
-        backend().pointerButtonEvent.setMs(time);
-        backend().pointerButtonEvent.setUs(LTime::us());
-        backend().pointerButtonEvent.notify();
+        pointerButtonEvent.setButton((LPointerButtonEvent::Button)button);
+        pointerButtonEvent.setState((LPointerButtonEvent::State)state);
+        pointerButtonEvent.setSerial(serial);
+        pointerButtonEvent.setMs(time);
+        pointerButtonEvent.setUs(LTime::us());
+        pointerButtonEvent.notify();
     }
 
     static void pointerHandleAxis(void *, wl_pointer *, UInt32 time, UInt32 axis, Float24 value)
     {
         Float32 val = wl_fixed_to_double(value);
-        backend().pointerScrollEvent.setSerial(LTime::nextSerial());
-        backend().pointerScrollEvent.setMs(time);
-        backend().pointerScrollEvent.setUs(LTime::us());
+        pointerScrollEvent.setSerial(LTime::nextSerial());
+        pointerScrollEvent.setMs(time);
+        pointerScrollEvent.setUs(LTime::us());
 
         if (axis == WL_POINTER_AXIS_HORIZONTAL_SCROLL)
-            backend().pointerScrollEvent.setX(val);
+            pointerScrollEvent.setX(val);
         else
-            backend().pointerScrollEvent.setY(val);
+            pointerScrollEvent.setY(val);
 
-        backend().pointerScrollEvent.notify();
+        pointerScrollEvent.notify();
     }
 
 };

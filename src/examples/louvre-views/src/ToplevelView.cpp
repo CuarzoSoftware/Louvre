@@ -691,7 +691,7 @@ void ToplevelView::updateGeometry()
         resizeBR.setSize(TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS, TOPLEVEL_RESIZE_INPUT_MARGIN + TOPLEVEL_BORDER_RADIUS);
 
         topbarInput.setPos(0, - TOPLEVEL_TOPBAR_HEIGHT);
-        topbarInput.setSize(size.w(), TOPLEVEL_TOPBAR_HEIGHT);
+        topbarInput.setSize(size.w(), TOPLEVEL_TOPBAR_HEIGHT - 1);
     }
 
     // Update title pos

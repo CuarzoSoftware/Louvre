@@ -3,22 +3,33 @@
 #include <fcntl.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
+#include <sys/mman.h>
 #include <wayland-client.h>
 #include <LLog.h>
 #include <SRM/SRMFormat.h>
 #include <xdg-shell-client.h>
 #include <xdg-decoration-unstable-v1-client.h>
 #include <wayland-egl.h>
+#include <LCursor.h>
 
 using namespace Louvre;
 
 #define BKND_NAME "WAYLAND BACKEND"
+#define CURSOR_SIZE 64 * 64 * 4
 
 struct WaylandBackendShared
 {
+    std::mutex mutex;
+    pollfd fd[3];
     LSize surfaceSize { 1024, 512 };
     LSize bufferSize { 1024, 512 };
     Int32 bufferScale { 1 };
+    wl_buffer *cursorBuffer { nullptr };
+    wl_surface *cursorSurface { nullptr };
+    bool cursorChangedHotspot { false };
+    bool cursorChangedBuffer { false };
+    bool cursorVisible { false };
+    LPoint cursorHotspot;
 };
 
 struct Texture
@@ -68,7 +79,6 @@ class Louvre::LGraphicBackend
 {
 public:
     inline static WaylandBackendShared shared;
-    inline static wl_event_queue *queue;
     inline static wl_display *display;
     inline static wl_registry *registry;
     inline static wl_compositor *compositor { nullptr };
@@ -94,13 +104,19 @@ public:
     inline static EGLSurface eglSurface;
     inline static std::thread renderThread;
     inline static UInt32 refreshRate { 60000 };
-    inline static LSize physicalSize { 1000, 500 };
+    inline static LSize physicalSize { 0, 0 };
     inline static LSize pendingSurfaceSize { 1024, 512 };
     inline static Int32 pendingBufferScale { 1 };
     inline static std::vector<LOutput*> dummyOutputs;
     inline static std::vector<LOutputMode *> dummyOutputModes;
-    inline static pollfd fd[2];
     inline static Int8 windowInitialized { 0 };
+    inline static bool repaint { false };
+
+    // Cursor
+    inline static wl_shm *shm { nullptr };
+    inline static wl_shm_pool *shmPool { nullptr };
+    inline static Int32 cursorMapFd { -1 };
+    inline static UInt8 *cursorMap { nullptr };
 
     static UInt32 backendGetId()
     {
@@ -110,6 +126,40 @@ public:
     static void *backendGetContextHandle()
     {
         return display;
+    }
+
+    static void unlockInputThread()
+    {
+        if (shared.fd[2].fd != -1)
+            eventfd_write(shared.fd[2].fd, 1);
+    }
+
+    static bool initCursor()
+    {
+        if (!shm)
+            return false;
+
+        cursorMapFd = Louvre::createSHM(CURSOR_SIZE);
+
+        if (cursorMapFd < 0)
+            return false;
+
+        cursorMap = (UInt8*)mmap(NULL, CURSOR_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, cursorMapFd, 0);
+
+        if (cursorMap == MAP_FAILED)
+        {
+            cursorMap = nullptr;
+            close(cursorMapFd);
+            return false;
+        }
+
+        shmPool = wl_shm_create_pool(shm, cursorMapFd, CURSOR_SIZE);
+        shared.cursorBuffer = wl_shm_pool_create_buffer(shmPool, 0, 64, 64, 64 * 4, WL_SHM_FORMAT_ARGB8888);
+        shared.cursorSurface = wl_compositor_create_surface(compositor);
+        wl_surface_attach(shared.cursorSurface, shared.cursorBuffer, 0, 0);
+        wl_display_roundtrip(display);
+
+        return true;
     }
 
     static bool initWayland()
@@ -135,12 +185,10 @@ public:
         xdgToplevelListener.close = xdgToplevelHandleClose;
         xdgToplevelListener.configure = xdgToplevelHandleConfigure;
 
-        queue = wl_display_create_queue(display);
         registry = wl_display_get_registry(display);
-        wl_proxy_set_queue((wl_proxy*)registry, queue);
         wl_registry_add_listener(registry, &registryListener, nullptr);
-        wl_display_dispatch_queue(display, queue);
-        wl_display_roundtrip_queue(display, queue);
+        wl_display_dispatch(display);
+        wl_display_roundtrip(display);
 
         if (!compositor)
         {
@@ -154,9 +202,11 @@ public:
             return false;
         }
 
-        fd[1].fd = wl_display_get_fd(display);
-        fd[1].events = POLLIN;
-        fd[1].revents = 0;
+        initCursor();
+
+        shared.fd[1].fd = wl_display_get_fd(display);
+        shared.fd[1].events = WL_EVENT_READABLE | WL_EVENT_WRITABLE;
+        shared.fd[1].revents = 0;
 
         return true;
     }
@@ -185,9 +235,10 @@ public:
             .backendData = nullptr
         };
 
-        fd[0].fd = eventfd(0, O_CLOEXEC);
-        fd[0].events = POLLIN;
-        fd[0].revents = 0;
+        shared.fd[2].fd = -1;
+        shared.fd[0].fd = eventfd(0, O_CLOEXEC | O_NONBLOCK);
+        shared.fd[0].events = POLLIN;
+        shared.fd[0].revents = 0;
 
         dummyOutputs.push_back(Louvre::compositor()->createOutputRequest(&params));
         renderThread = std::thread(renderLoop);
@@ -202,15 +253,12 @@ public:
     {
         windowEGLContext = eglCreateContext(eglDisplay, eglConfig, eglContext, eglContextAttribs);
         surface = wl_compositor_create_surface(compositor);
-        wl_proxy_set_queue((wl_proxy*)surface, queue);
         wl_surface_add_listener(surface, &surfaceListener, nullptr);
 
         xdgSurface = xdg_wm_base_get_xdg_surface(xdgWmBase, surface);
-        wl_proxy_set_queue((wl_proxy*)xdgSurface, queue);
         xdg_surface_add_listener(xdgSurface, &xdgSurfaceListener, nullptr);
 
         xdgToplevel = xdg_surface_get_toplevel(xdgSurface);
-        wl_proxy_set_queue((wl_proxy*)xdgToplevel, queue);
         xdg_toplevel_add_listener(xdgToplevel, &xdgToplevelListener, nullptr);
 
         if (xdgDecorationManager)
@@ -221,7 +269,7 @@ public:
 
         wl_surface_attach(surface, NULL, 0, 0);
         wl_surface_commit(surface);
-        wl_display_roundtrip_queue(display, queue);
+        wl_display_roundtrip(display);
 
         shared.surfaceSize = pendingSurfaceSize;
         shared.bufferScale = pendingBufferScale;
@@ -229,7 +277,7 @@ public:
         eglWindow = wl_egl_window_create(surface, shared.bufferSize.w(), shared.bufferSize.h());
         eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig,(EGLNativeWindowType) eglWindow, NULL);
         eglMakeCurrent(eglDisplay, eglSurface, eglSurface, windowEGLContext);
-        wl_display_roundtrip_queue(display, queue);
+        wl_display_roundtrip(display);
     }
 
     static void renderLoop()
@@ -238,15 +286,30 @@ public:
         LOutput *output { dummyOutputs.front() };
         output->imp()->updateRect();
         windowInitialized = 1;
+        eventfd_t value;
 
         while (true)
         {
-            poll(fd, 2, -1);
+            while (wl_display_prepare_read(display) != 0)
+                wl_display_dispatch_pending(display);
+            wl_display_flush(display);
 
-            if (output->state() == LOutput::Initialized && fd[0].revents & POLLIN)
+            poll(shared.fd, 2, -1);
+
+            if (shared.fd[0].revents & POLLIN)
+                eventfd_read(shared.fd[0].fd, &value);
+
+            if (shared.fd[1].revents & POLLIN)
             {
-                eventfd_t value;
-                eventfd_read(fd[0].fd, &value);
+                wl_display_read_events(display);
+                unlockInputThread();
+            }
+            else
+                wl_display_cancel_read(display);
+
+            if (output->state() == LOutput::Initialized && repaint)
+            {
+                repaint = false;
                 output->imp()->stateFlags.add(LOutput::LOutputPrivate::NeedsFullRepaint);
 
                 if (wl_surface_get_version(surface) >= 3)
@@ -267,19 +330,20 @@ public:
 
                 output->imp()->backendPaintGL();
                 eglSwapBuffers(eglDisplay, eglSurface);
+
                 output->imp()->presentationTime.flags = SRM_PRESENTATION_TIME_FLAGS_VSYNC;
                 output->imp()->presentationTime.frame = 0;
                 output->imp()->presentationTime.period = 0;
                 clock_gettime(CLOCK_MONOTONIC, &output->imp()->presentationTime.time);
                 output->imp()->backendPageFlipped();
+
             }
             else if (output->state() == LOutput::PendingInitialize)
                 output->imp()->backendInitializeGL();
             else if (output->state() == LOutput::PendingUninitialize)
                 output->imp()->backendUninitializeGL();
 
-            wl_display_dispatch_queue_pending(display, queue);
-            wl_display_flush(display);
+            wl_display_dispatch_pending(display);
         }
     }
 
@@ -547,7 +611,8 @@ public:
 
     static bool outputRepaint(LOutput */*output*/)
     {
-        eventfd_write(fd[0].fd, 1);
+        eventfd_write(shared.fd[0].fd, 1);
+        repaint = true;
         return true;
     }
 
@@ -569,7 +634,7 @@ public:
     /* OUTPUT PROPS */
     static const char *outputGetName(LOutput */*output*/)
     {
-        return "Louvre-Window-1";
+        return "Wayland-EGL-1";
     }
 
     static const char *outputGetManufacturerName(LOutput */*output*/)
@@ -654,19 +719,43 @@ public:
         return CLOCK_MONOTONIC;
     }
 
-    static bool outputHasHardwareCursorSupport(LOutput *output)
+    static bool outputHasHardwareCursorSupport(LOutput */*output*/)
     {
-        return false;
+        return cursorMap != nullptr;
     }
 
-    static void outputSetCursorTexture(LOutput *output, UChar8 *buffer)
+    static void outputSetCursorTexture(LOutput */*output*/, UChar8 *buffer)
     {
+        shared.mutex.lock();
+        if (buffer)
+        {
+            memcpy(cursorMap, buffer, CURSOR_SIZE);
+            shared.cursorVisible = true;
+            shared.cursorChangedBuffer = true;
+        }
+        else
+        {
+            shared.cursorVisible = false;
+            shared.cursorChangedBuffer = true;
+        }
 
+        unlockInputThread();
+        shared.mutex.unlock();
     }
 
-    static void outputSetCursorPosition(LOutput *output, const LPoint &position)
+    static void outputSetCursorPosition(LOutput */*output*/, const LPoint &/*position*/)
     {
+        static LPointF prevHotspotB;
 
+        if (prevHotspotB != cursor()->hotspotB())
+        {
+            prevHotspotB = cursor()->hotspotB();
+            shared.mutex.lock();
+            shared.cursorHotspot = cursor()->hotspotB();
+            shared.cursorChangedHotspot = true;
+            unlockInputThread();
+            shared.mutex.unlock();
+        }
     }
 
     static const LOutputMode *outputGetPreferredMode(LOutput */*output*/)
@@ -707,22 +796,22 @@ public:
     static void registryHandleGlobal(void */*data*/, wl_registry *registry, UInt32 name, const char *interface, UInt32 version)
     {
         if (!compositor && strcmp(interface, wl_compositor_interface.name) == 0)
-        {
             compositor = (wl_compositor*)wl_registry_bind(registry, name, &wl_compositor_interface, version >= 3 ? 3 : 1);
-            wl_proxy_set_queue((wl_proxy*)compositor, queue);
-        }
 
         else if (!xdgWmBase && strcmp(interface, xdg_wm_base_interface.name) == 0)
         {
             xdgWmBase = (xdg_wm_base*)wl_registry_bind(registry, name, &xdg_wm_base_interface, 1);
-            wl_proxy_set_queue((wl_proxy*)xdgWmBase, queue);
             xdg_wm_base_add_listener(xdgWmBase, &xdgWmBaseListener, nullptr);
         }
 
         else if (!xdgDecorationManager && strcmp(interface, zxdg_decoration_manager_v1_interface.name) == 0)
         {
             xdgDecorationManager = (zxdg_decoration_manager_v1*)wl_registry_bind(registry, name, &zxdg_decoration_manager_v1_interface, 1);
-            wl_proxy_set_queue((wl_proxy*)xdgDecorationManager, queue);
+        }
+
+        else if (!shm && strcmp(interface, wl_shm_interface.name) == 0)
+        {
+            shm = (wl_shm*)wl_registry_bind(registry, name, &wl_shm_interface, 1);
         }
 
         else if (version >= 2 && strcmp(interface, wl_output_interface.name) == 0)
@@ -731,7 +820,6 @@ public:
             output->name = name;
             waylandOutputs.emplace_back((wl_output*)wl_registry_bind(registry, name, &wl_output_interface, 2));
             wl_output_add_listener(waylandOutputs.back(), &outputListener, output);
-            wl_proxy_set_queue((wl_proxy*)waylandOutputs.back(), queue);
             wl_proxy_set_user_data((wl_proxy*)waylandOutputs.back(), output);
         }
     }
@@ -756,14 +844,18 @@ public:
         }
     }
 
-    static void surfaceHandleEnter(void */*data*/, wl_surface */*surface*/, wl_output *output)
+    static void surfaceHandleEnter(void */*data*/, wl_surface *surface, wl_output *output)
     {
+        if (surface == shared.cursorSurface)
+            return;
         LVectorPushBackIfNonexistent(surfaceOutputs, output);
         updateSurfaceScale();
     }
 
     static void surfaceHandleLeave(void */*data*/, wl_surface */*surface*/, wl_output *output)
     {
+        if (surface == shared.cursorSurface)
+            return;
         LVectorRemoveOneUnordered(surfaceOutputs, output);
         updateSurfaceScale();
     }

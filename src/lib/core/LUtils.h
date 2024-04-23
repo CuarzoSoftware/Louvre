@@ -94,6 +94,8 @@ namespace Louvre
 
         return std::string();
     }
+
+    int createSHM(std::size_t size);
 };
 
 #endif // LUTILS_H
