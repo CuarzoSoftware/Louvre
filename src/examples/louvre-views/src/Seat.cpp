@@ -152,6 +152,9 @@ void Seat::outputUnplugged(LOutput *output)
         x += o->size().w();
     }
 
+    if (G::outputs().empty())
+        return;
+
     Output *firstOutput = G::outputs().front();
 
     std::list<Surface*> surfs = G::surfaces();

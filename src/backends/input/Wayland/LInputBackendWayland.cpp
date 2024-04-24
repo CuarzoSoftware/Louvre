@@ -4,14 +4,6 @@
 #include <LPointerMoveEvent.h>
 #include <LPointerButtonEvent.h>
 #include <LPointerScrollEvent.h>
-#include <LPointerSwipeBeginEvent.h>
-#include <LPointerSwipeUpdateEvent.h>
-#include <LPointerSwipeEndEvent.h>
-#include <LPointerPinchBeginEvent.h>
-#include <LPointerPinchUpdateEvent.h>
-#include <LPointerPinchEndEvent.h>
-#include <LPointerHoldBeginEvent.h>
-#include <LPointerHoldEndEvent.h>
 #include <LKeyboardKeyEvent.h>
 #include <LTouchDownEvent.h>
 #include <LTouchMoveEvent.h>
@@ -27,24 +19,11 @@
 #include <cstring>
 #include <fcntl.h>
 
+#include "../../graphic/Wayland/WaylandBackendShared.h"
+
 #define BKND_NAME "WAYLAND BACKEND"
 
 using namespace Louvre;
-
-struct WaylandBackendShared
-{
-    std::mutex mutex;
-    pollfd fd[3];
-    LSize surfaceSize { 1024, 512 };
-    LSize bufferSize { 1024, 512 };
-    Int32 bufferScale { 1 };
-    wl_buffer *cursorBuffer { nullptr };
-    wl_surface *cursorSurface { nullptr };
-    bool cursorChangedHotspot { false };
-    bool cursorChangedBuffer { false };
-    bool cursorVisible { false };
-    LPoint cursorHotspot;
-};
 
 class Louvre::LInputBackend
 {
@@ -66,7 +45,8 @@ public:
     static inline wl_keyboard_listener keyboardListener;
     static inline wl_touch_listener touchListener;
 
-    static inline wl_event_source *eventSource { nullptr };
+    static inline wl_event_source *waylandEventSource { nullptr };
+    static inline wl_event_source *eventfdEventSource { nullptr };
 
     static inline LPointerMoveEvent pointerMoveEvent;
     static inline LPointerButtonEvent pointerButtonEvent;
@@ -170,8 +150,8 @@ public:
         wl_pointer_set_cursor(pointer,
                               pointerEnterSerial,
                               shared().cursorVisible ? shared().cursorSurface : NULL,
-                              shared().cursorHotspot.x() / shared().bufferScale,
-                              shared().cursorHotspot.y() / shared().bufferScale);
+                              shared().cursorHotspot.x(),
+                              shared().cursorHotspot.y());
 
         shared().cursorChangedBuffer = false;
         shared().cursorChangedHotspot = false;
@@ -201,20 +181,77 @@ public:
 
         shared().fd[2].fd = eventfd(0, O_CLOEXEC | O_NONBLOCK);
 
-        eventSource = compositor()->addFdListener(
+        eventfdEventSource = compositor()->addFdListener(
             shared().fd[2].fd,
             nullptr,
             LInputBackend::processInput,
             POLLIN);
 
-        // TODO
-        compositor()->addFdListener(
+        waylandEventSource = compositor()->addFdListener(
             shared().fd[1].fd,
             nullptr,
             LInputBackend::processInput,
             POLLIN);
 
         return true;
+    }
+
+    static void unitWayland()
+    {
+        if (eventfdEventSource)
+        {
+            compositor()->removeFdListener(eventfdEventSource);
+            eventfdEventSource = nullptr;
+            shared().fd[2].fd = -1;
+        }
+
+        if (waylandEventSource)
+        {
+            compositor()->removeFdListener(waylandEventSource);
+            waylandEventSource = nullptr;
+        }
+
+        if (touch)
+        {
+            wl_touch_destroy(touch);
+            touch = nullptr;
+        }
+
+        if (keyboard)
+        {
+            wl_keyboard_destroy(keyboard);
+            keyboard = nullptr;
+        }
+
+        if (pointer)
+        {
+            wl_pointer_destroy(pointer);
+            pointer = nullptr;
+        }
+
+        if (seat)
+        {
+            wl_seat_destroy(seat);
+            seat = nullptr;
+        }
+
+        if (registry)
+        {
+            wl_registry_destroy(registry);
+            registry = nullptr;
+        }
+
+        if (shared().cursorSurface)
+            wl_proxy_set_queue((wl_proxy*)shared().cursorSurface, NULL);
+
+        if (queue)
+        {
+            wl_event_queue_destroy(queue);
+            queue = nullptr;
+        }
+
+        devices.clear();
+        display = nullptr;
     }
 
     static bool backendInitialize()
@@ -244,37 +281,21 @@ public:
 
     static void backendUninitialize()
     {
-        if (eventSource)
-            compositor()->removeFdListener(eventSource);
+        shared().mutex.lock();
+        unitWayland();
+        Louvre::seat()->imp()->inputBackendData = nullptr;
+        shared().mutex.unlock();
     }
 
-    static void backendSuspend()
-    {
-        if (eventSource)
-        {
-            compositor()->removeFdListener(eventSource);
-            eventSource = nullptr;
-        }
-    }
-
-    static void backendResume()
-    {
-        if (!eventSource)
-        {
-            eventSource = compositor()->addFdListener(
-                wl_display_get_fd(display),
-                nullptr,
-                LInputBackend::processInput,
-                POLLIN);
-        }
-    }
+    static void backendSuspend(){}
+    static void backendResume() {}
 
     static void backendForceUpdate()
     {
         processInput(-1, 0, nullptr);
     }
 
-    static Int32 processInput(Int32 fd, UInt32 /*mask*/, void *)
+    static Int32 processInput(Int32 fd, UInt32 mask, void *)
     {
         if (fd == shared().fd[2].fd)
         {
@@ -283,17 +304,23 @@ public:
         }
         else
         {
+            if (mask & (WL_EVENT_ERROR | WL_EVENT_HANGUP))
+            {
+                Louvre::compositor()->finish();
+                return 0;
+            }
+
             while (wl_display_prepare_read_queue(display, queue) != 0)
                 wl_display_dispatch_queue_pending(display, queue);
             wl_display_flush(display);
 
             unlockRenderThread();
 
-            pollfd f = shared().fd[1];
+            pollfd waylandFd { shared().fd[1] };
 
-            poll(&f, 1, 1);
+            poll(&waylandFd, 1, 1);
 
-            if (f.revents & POLLIN)
+            if (waylandFd.revents & POLLIN)
                 wl_display_read_events(display);
             else
                 wl_display_cancel_read(display);
@@ -301,7 +328,6 @@ public:
 
         updateCursor();
         wl_display_dispatch_queue_pending(display, queue);
-
         return 0;
     }
 
@@ -315,10 +341,7 @@ public:
         }
     }
 
-    static void registryHandleGlobalRemove(void */*data*/, struct wl_registry */*registry*/, uint32_t /*name*/)
-    {
-        // TODO
-    }
+    static void registryHandleGlobalRemove(void */*data*/, struct wl_registry */*registry*/, uint32_t /*name*/) {}
 
     static void seatHandleCapabilities(void *, wl_seat *, UInt32 capabilities)
     {

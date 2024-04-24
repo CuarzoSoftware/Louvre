@@ -1,37 +1,26 @@
-#include "LOutputMode.h"
-#include "LTime.h"
-#include <cstring>
-#include <fcntl.h>
+#include <xdg-decoration-unstable-v1-client.h>
+#include <xdg-shell-client.h>
+#include <wayland-client.h>
+#include <wayland-egl.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
-#include <sys/mman.h>
-#include <wayland-client.h>
-#include <LLog.h>
+
+#include <LOutputMode.h>
 #include <SRM/SRMFormat.h>
-#include <xdg-shell-client.h>
-#include <xdg-decoration-unstable-v1-client.h>
-#include <wayland-egl.h>
 #include <LCursor.h>
+#include <LTime.h>
+#include <LLog.h>
+
+#include <sys/mman.h>
+#include <cstring>
+#include <fcntl.h>
+
+#include "WaylandBackendShared.h"
 
 using namespace Louvre;
 
 #define BKND_NAME "WAYLAND BACKEND"
 #define CURSOR_SIZE 64 * 64 * 4
-
-struct WaylandBackendShared
-{
-    std::mutex mutex;
-    pollfd fd[3];
-    LSize surfaceSize { 1024, 512 };
-    LSize bufferSize { 1024, 512 };
-    Int32 bufferScale { 1 };
-    wl_buffer *cursorBuffer { nullptr };
-    wl_surface *cursorSurface { nullptr };
-    bool cursorChangedHotspot { false };
-    bool cursorChangedBuffer { false };
-    bool cursorVisible { false };
-    LPoint cursorHotspot;
-};
 
 struct Texture
 {
@@ -99,10 +88,11 @@ public:
     inline static xdg_wm_base_listener xdgWmBaseListener;
     inline static xdg_surface_listener xdgSurfaceListener;
     inline static xdg_toplevel_listener xdgToplevelListener;
-    inline static EGLDisplay eglDisplay;
-    inline static EGLContext eglContext, windowEGLContext;
-    inline static EGLConfig eglConfig;
-    inline static EGLSurface eglSurface;
+    inline static EGLDisplay eglDisplay { EGL_NO_DISPLAY };
+    inline static EGLContext eglContext { EGL_NO_CONTEXT };
+    inline static EGLContext windowEGLContext { EGL_NO_CONTEXT };
+    inline static EGLConfig eglConfig { EGL_NO_CONFIG_KHR };
+    inline static EGLSurface eglSurface { EGL_NO_SURFACE };
     inline static std::thread renderThread;
     inline static UInt32 refreshRate { 60000 };
     inline static Int32 refreshRateLimit { 0 };
@@ -162,8 +152,46 @@ public:
         shared.cursorSurface = wl_compositor_create_surface(compositor);
         wl_surface_attach(shared.cursorSurface, shared.cursorBuffer, 0, 0);
         wl_display_roundtrip(display);
-
         return true;
+    }
+
+    static void unitCursor()
+    {
+        if (shared.cursorSurface)
+        {
+            wl_surface_destroy(shared.cursorSurface);
+            shared.cursorSurface = nullptr;
+        }
+
+        if (shared.cursorBuffer)
+        {
+            wl_buffer_destroy(shared.cursorBuffer);
+            shared.cursorBuffer = nullptr;
+        }
+
+        if (shmPool)
+        {
+            wl_shm_pool_destroy(shmPool);
+            shmPool = nullptr;
+        }
+
+        if (cursorMap)
+        {
+            munmap(cursorMap, CURSOR_SIZE);
+            cursorMap = nullptr;
+        }
+
+        if (cursorMapFd >= 0)
+        {
+            close(cursorMapFd);
+            cursorMapFd = -1;
+        }
+
+        if (shm)
+        {
+            wl_shm_destroy(shm);
+            shm = nullptr;
+        }
     }
 
     static bool initWayland()
@@ -215,16 +243,95 @@ public:
         return true;
     }
 
+    static void unitWayland()
+    {
+        unitCursor();
+        shared.fd[1].fd = -1;
+
+        if (xdgWmBase)
+        {
+            xdg_wm_base_destroy(xdgWmBase);
+            xdgWmBase = nullptr;
+        }
+
+        if (compositor)
+        {
+            wl_compositor_destroy(compositor);
+            compositor = nullptr;
+        }
+
+        if (registry)
+        {
+            wl_registry_destroy(registry);
+            registry = nullptr;
+        }
+
+        if (display)
+        {
+            wl_display_disconnect(display);
+            display = 0;
+        }
+    }
+
     static bool initEGL()
     {
-        /* TODO: Check steps */
         EGLint major, minor, n;
         eglDisplay = eglGetDisplay(display);
-        eglInitialize(eglDisplay, &major, &minor);
-        eglBindAPI(EGL_OPENGL_ES_API);
-        eglChooseConfig(eglDisplay, eglConfigAttribs, &eglConfig, 1, &n);
+
+        if (eglDisplay == EGL_NO_DISPLAY)
+        {
+            LLog::fatal("[%s] Failed to get EGL display.", BKND_NAME);
+            return false;
+        }
+
+        if (!eglInitialize(eglDisplay, &major, &minor))
+        {
+            LLog::fatal("[%s] Failed to initialize EGL display.", BKND_NAME);
+            goto errDisplay;
+        }
+
+        if (!eglBindAPI(EGL_OPENGL_ES_API))
+        {
+            LLog::fatal("[%s] Failed to bind OpenGL ES API.", BKND_NAME);
+            goto errTerminate;
+        }
+
+        if (!eglChooseConfig(eglDisplay, eglConfigAttribs, &eglConfig, 1, &n) || n != 1)
+        {
+            LLog::fatal("[%s] Failed to get EGL config.", BKND_NAME);
+            goto errTerminate;
+        }
+
         eglContext = eglCreateContext(eglDisplay, eglConfig, EGL_NO_CONTEXT, eglContextAttribs);
+
+        if (eglContext == EGL_NO_CONTEXT)
+        {
+            LLog::fatal("[%s] Failed to get EGL context.", BKND_NAME);
+            goto errTerminate;
+        }
+
         return true;
+
+    errTerminate:
+        eglTerminate(eglDisplay);
+    errDisplay:
+        eglDisplay = EGL_NO_DISPLAY;
+        return false;
+    }
+
+    static void unitEGL()
+    {
+        if (eglContext != EGL_NO_CONTEXT)
+        {
+            eglDestroyContext(eglDisplay, eglContext);
+            eglContext = EGL_NO_CONTEXT;
+        }
+
+        if (eglDisplay != EGL_NO_DISPLAY)
+        {
+            eglTerminate(eglDisplay);
+            eglDisplay = EGL_NO_DISPLAY;
+        }
     }
 
     static bool initRenderThread()
@@ -251,6 +358,24 @@ public:
             usleep(10000);
 
         return windowInitialized == 1;
+    }
+
+    static void unitRenderThread()
+    {
+        windowInitialized = 0;
+
+        eventfd_write(shared.fd[0].fd, 1);
+        renderThread.join();
+
+        close(shared.fd[0].fd);
+        shared.fd[0].fd = -1;
+
+        seat()->outputUnplugged(dummyOutputs.front());
+        Louvre::compositor()->destroyOutputRequest(dummyOutputs.front());
+        delete dummyOutputs.front();
+        dummyOutputs.clear();
+        delete dummyOutputModes.front();
+        dummyOutputModes.clear();
     }
 
     static void createWindow()
@@ -284,6 +409,65 @@ public:
         wl_display_roundtrip(display);
     }
 
+    static void destroyWindow()
+    {
+        eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+
+        if (eglSurface != EGL_NO_SURFACE)
+        {
+            eglDestroySurface(eglDisplay, eglSurface);
+            eglSurface = EGL_NO_SURFACE;
+        }
+
+        if (eglWindow)
+        {
+            wl_egl_window_destroy(eglWindow);
+            eglWindow = nullptr;
+        }
+
+        if (surface)
+        {
+            wl_surface_destroy(surface);
+            surface = nullptr;
+        }
+
+        if (xdgDecoration)
+        {
+            zxdg_toplevel_decoration_v1_destroy(xdgDecoration);
+            xdgDecoration = nullptr;
+        }
+
+        if (xdgDecorationManager)
+        {
+            zxdg_decoration_manager_v1_destroy(xdgDecorationManager);
+            xdgDecorationManager = nullptr;
+        }
+
+        if (xdgToplevel)
+        {
+            xdg_toplevel_destroy(xdgToplevel);
+            xdgToplevel = nullptr;
+        }
+
+        if (xdgSurface)
+        {
+            xdg_surface_destroy(xdgSurface);
+            xdgSurface = nullptr;
+        }
+
+        if (surface)
+        {
+            wl_surface_destroy(surface);
+            surface = nullptr;
+        }
+
+        if (windowEGLContext != EGL_NO_CONTEXT)
+        {
+            eglDestroyContext(eglDisplay, windowEGLContext);
+            windowEGLContext = EGL_NO_CONTEXT;
+        }
+    }
+
     static void renderLoop()
     {
         createWindow();
@@ -292,10 +476,11 @@ public:
         windowInitialized = 1;
         eventfd_t value;
 
-        while (true)
+        while (windowInitialized == 1)
         {
             while (wl_display_prepare_read(display) != 0)
                 wl_display_dispatch_pending(display);
+
             wl_display_flush(display);
 
             poll(shared.fd, 2, -1);
@@ -369,6 +554,8 @@ public:
 
             wl_display_dispatch_pending(display);
         }
+
+        destroyWindow();
     }
 
     static bool backendInitialize()
@@ -392,7 +579,10 @@ public:
 
     static void backendUninitialize()
     {
-        /* TODO */
+        unitRenderThread();
+        unitEGL();
+        unitWayland();
+        Louvre::compositor()->imp()->graphicBackendData = nullptr;
     }
 
     static void backendSuspend()
@@ -791,7 +981,7 @@ public:
         {
             prevHotspotB = cursor()->hotspotB();
             shared.mutex.lock();
-            shared.cursorHotspot = cursor()->hotspotB();
+            shared.cursorHotspot = cursor()->pos() - cursor()->rect().pos();
             shared.cursorChangedHotspot = true;
             unlockInputThread();
             shared.mutex.unlock();
