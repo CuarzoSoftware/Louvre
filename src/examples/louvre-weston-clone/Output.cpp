@@ -76,10 +76,13 @@ void Output::resizeGL() noexcept
     // Set double scale to outputs with DPI >= 200
     for (Output *output : (std::vector<Output*>&)compositor()->outputs())
     {
-        if (output->dpi() >= 200)
-            output->setScale(2);
-        else
-            output->setScale(1);
+        if (seat()->graphicBackendId() == LGraphicBackendDRM)
+        {
+            if (output->dpi() >= 200)
+                output->setScale(2);
+            else
+                output->setScale(1);
+        }
 
         output->setPos(LPoint(x, 0));
         output->fullDamage();
@@ -87,13 +90,16 @@ void Output::resizeGL() noexcept
         x += output->rect().w();
     }
 
-    if (backgroundTexture)
+    if (seat()->graphicBackendId() == LGraphicBackendDRM)
     {
-        delete backgroundTexture;
-        backgroundTexture = nullptr;
-    }
+        if (backgroundTexture)
+        {
+            delete backgroundTexture;
+            backgroundTexture = nullptr;
+        }
 
-    loadWallpaper();
+        loadWallpaper();
+    }
 }
 
 void Output::moveGL() noexcept

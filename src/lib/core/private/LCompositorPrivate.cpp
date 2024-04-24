@@ -249,7 +249,12 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
             backendsPath = LOUVRE_DEFAULT_BACKENDS_PATH;
 
         if (backendName.empty())
-            backendName = LOUVRE_DEFAULT_GRAPHIC_BACKEND;
+        {
+            if (getenv("WAYLAND_DISPLAY"))
+                backendName = "wayland";
+            else
+                backendName = LOUVRE_DEFAULT_GRAPHIC_BACKEND;
+        }
 
         std::filesystem::path backendPathName { backendsPath / "graphic" / backendName };
         backendPathName += ".so";
@@ -344,7 +349,12 @@ bool LCompositor::LCompositorPrivate::initInputBackend()
             backendsPath = LOUVRE_DEFAULT_BACKENDS_PATH;
 
         if (backendName.empty())
-            backendName = LOUVRE_DEFAULT_INPUT_BACKEND;
+        {
+            if (getenv("WAYLAND_DISPLAY"))
+                backendName = "wayland";
+            else
+                backendName = LOUVRE_DEFAULT_INPUT_BACKEND;
+        }
 
         std::filesystem::path backendPathName = { backendsPath / "input" / backendName};
         backendPathName += ".so";

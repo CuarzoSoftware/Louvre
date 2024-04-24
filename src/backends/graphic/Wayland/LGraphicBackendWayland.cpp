@@ -389,6 +389,8 @@ public:
 
         xdgToplevel = xdg_surface_get_toplevel(xdgSurface);
         xdg_toplevel_add_listener(xdgToplevel, &xdgToplevelListener, nullptr);
+        xdg_toplevel_set_app_id(xdgToplevel, "org.CuarzoSoftware.Louvre");
+        xdg_toplevel_set_title(xdgToplevel, "Louvre-EGL-1");
 
         if (xdgDecorationManager)
         {

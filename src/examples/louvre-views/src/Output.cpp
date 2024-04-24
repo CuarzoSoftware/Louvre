@@ -42,7 +42,7 @@ void Output::loadWallpaper()
     {
         if (wallpaperView->texture())
         {
-            if (true || bufferSize == wallpaperView->texture()->sizeB())
+            if (seat()->graphicBackendId() != LGraphicBackendDRM || bufferSize == wallpaperView->texture()->sizeB())
             {
                 wallpaperView->enableDstSize(true);
                 wallpaperView->setDstSize(size());
