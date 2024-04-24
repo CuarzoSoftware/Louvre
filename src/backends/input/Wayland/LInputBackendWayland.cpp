@@ -1,9 +1,6 @@
-#include <wayland-client.h>
-#include <cstring>
 #include <private/LCompositorPrivate.h>
 #include <private/LSeatPrivate.h>
 #include <private/LKeyboardPrivate.h>
-#include <LInputDevice.h>
 #include <LPointerMoveEvent.h>
 #include <LPointerButtonEvent.h>
 #include <LPointerScrollEvent.h>
@@ -21,12 +18,13 @@
 #include <LTouchUpEvent.h>
 #include <LTouchFrameEvent.h>
 #include <LTouchCancelEvent.h>
+#include <LInputDevice.h>
 #include <LUtils.h>
 #include <LCursor.h>
 #include <LLog.h>
 
-
-#include <libinput.h>
+#include <wayland-client.h>
+#include <cstring>
 #include <fcntl.h>
 
 #define BKND_NAME "WAYLAND BACKEND"
@@ -57,12 +55,16 @@ public:
     static inline wl_registry *registry;
     static inline wl_seat *seat { nullptr };
     static inline wl_pointer *pointer { nullptr };
+    static inline wl_keyboard *keyboard { nullptr };
+    static inline wl_touch *touch { nullptr };
     static inline LInputDevice device;
     static inline std::vector<LInputDevice*> devices;
 
     static inline wl_registry_listener registryListener;
     static inline wl_seat_listener seatListener;
     static inline wl_pointer_listener pointerListener;
+    static inline wl_keyboard_listener keyboardListener;
+    static inline wl_touch_listener touchListener;
 
     static inline wl_event_source *eventSource { nullptr };
 
@@ -70,8 +72,13 @@ public:
     static inline LPointerButtonEvent pointerButtonEvent;
     static inline LPointerScrollEvent pointerScrollEvent;
     static inline LKeyboardKeyEvent keyboardKeyEvent;
+    static inline LTouchDownEvent touchDownEvent;
+    static inline LTouchUpEvent touchUpEvent;
+    static inline LTouchMoveEvent touchMoveEvent;
+    static inline LTouchFrameEvent touchFrameEvent;
+    static inline LTouchCancelEvent touchCancelEvent;
 
-    static inline UInt32 enterSerial;
+    static inline UInt32 pointerEnterSerial;
 
     static WaylandBackendShared &shared()
     {
@@ -105,15 +112,25 @@ public:
 
     static void setupListeners()
     {
-        registryListener.global        = registryHandleGlobal;
-        registryListener.global_remove = registryHandleGlobalRemove;
-        seatListener.capabilities      = seatHandleCapabilities;
-        seatListener.name              = seatHandleName;
-        pointerListener.enter          = pointerHandleEnter;
-        pointerListener.leave          = pointerHandleLeave;
-        pointerListener.motion         = pointerHandleMotion;
-        pointerListener.button         = pointerHandleButton;
-        pointerListener.axis           = pointerHandleAxis;
+        registryListener.global         = registryHandleGlobal;
+        registryListener.global_remove  = registryHandleGlobalRemove;
+        seatListener.capabilities       = seatHandleCapabilities;
+        seatListener.name               = seatHandleName;
+        pointerListener.enter           = pointerHandleEnter;
+        pointerListener.leave           = pointerHandleLeave;
+        pointerListener.motion          = pointerHandleMotion;
+        pointerListener.button          = pointerHandleButton;
+        pointerListener.axis            = pointerHandleAxis;
+        keyboardListener.keymap         = [](auto, auto, auto, auto, auto){};
+        keyboardListener.enter          = keyboardHandleEnter;
+        keyboardListener.leave          = keyboardHandleLeave;
+        keyboardListener.key            = keyboardHandleKey;
+        keyboardListener.modifiers      = [](auto, auto, auto, auto, auto, auto, auto){};
+        touchListener.down              = touchHandleDown;
+        touchListener.up                = touchHandleUp;
+        touchListener.motion            = touchHandleMotion;
+        touchListener.frame             = touchHandleFrame;
+        touchListener.cancel            = touchHandleCancel;
     }
 
     static void setupEvents()
@@ -126,6 +143,11 @@ public:
         pointerScrollEvent.setDevice(&device);
         pointerScrollEvent.setSource(LPointerScrollEvent::Wheel);
         keyboardKeyEvent.setDevice(&device);
+        touchDownEvent.setDevice(&device);
+        touchUpEvent.setDevice(&device);
+        touchMoveEvent.setDevice(&device);
+        touchFrameEvent.setDevice(&device);
+        touchCancelEvent.setDevice(&device);
     }
 
     static void updateCursor()
@@ -146,7 +168,7 @@ public:
         }
 
         wl_pointer_set_cursor(pointer,
-                              enterSerial,
+                              pointerEnterSerial,
                               shared().cursorVisible ? shared().cursorSurface : NULL,
                               shared().cursorHotspot.x() / shared().bufferScale,
                               shared().cursorHotspot.y() / shared().bufferScale);
@@ -167,10 +189,7 @@ public:
         wl_registry_add_listener(registry, &registryListener, nullptr);
 
         if (shared().cursorSurface)
-        {
-            wl_proxy_set_queue((wl_proxy*)shared().cursorBuffer, queue);
             wl_proxy_set_queue((wl_proxy*)shared().cursorSurface, queue);
-        }
 
         wl_display_roundtrip_queue(display, queue);
 
@@ -309,13 +328,27 @@ public:
             wl_proxy_set_queue((wl_proxy*)pointer, queue);
             wl_pointer_add_listener(pointer, &pointerListener, nullptr);
         }
+
+        if (!keyboard && capabilities & LSeat::InputCapabilities::Keyboard)
+        {
+            keyboard = wl_seat_get_keyboard(seat);
+            wl_proxy_set_queue((wl_proxy*)keyboard, queue);
+            wl_keyboard_add_listener(keyboard, &keyboardListener, nullptr);
+        }
+
+        if (!touch && capabilities & LSeat::InputCapabilities::Touch)
+        {
+            touch = wl_seat_get_touch(seat);
+            wl_proxy_set_queue((wl_proxy*)touch, queue);
+            wl_touch_add_listener(touch, &touchListener, nullptr);
+        }
     }
 
     static void seatHandleName(void *, wl_seat *, const char *) {}
 
     static void pointerHandleEnter(void *, wl_pointer *, UInt32 serial, wl_surface *, Float24 /*x*/, Float24 /*y*/)
     {
-        enterSerial = serial;
+        pointerEnterSerial = serial;
         shared().cursorChangedBuffer = true;
     }
 
@@ -323,9 +356,50 @@ public:
 
     static void pointerHandleMotion(void *, wl_pointer *, UInt32 time, Float24 x, Float24 y)
     {
-        LPointF delta { (Float32)wl_fixed_to_double(x), (Float32)wl_fixed_to_double(y) };
-        //delta *= (Float32)shared().bufferScale;
-        pointerMoveEvent.setDelta(delta - cursor()->pos());
+        LPointF pos { (Float32)wl_fixed_to_double(x), (Float32)wl_fixed_to_double(y) };
+
+        if (cursor()->output())
+        {
+            Float32 tmp;
+            const LSizeF sizeF { shared().surfaceSize };
+            switch (cursor()->output()->transform())
+            {
+            case LFramebuffer::Normal:
+                break;
+            case LFramebuffer::Rotated90:
+                tmp = pos.y();
+                pos.setY(pos.x());
+                pos.setX(sizeF.h() - tmp);
+                break;
+            case LFramebuffer::Rotated180:
+                pos.setY(sizeF.h() - pos.y());
+                pos.setX(sizeF.w() - pos.x());
+                break;
+            case LFramebuffer::Rotated270:
+                tmp = pos.y();
+                pos.setY(sizeF.w() - pos.x());
+                pos.setX(tmp);
+                break;
+            case LFramebuffer::Flipped:
+                pos.setX(sizeF.w() - pos.x());
+                break;
+            case LFramebuffer::Flipped90:
+                tmp = pos.y();
+                pos.setY(pos.x());
+                pos.setX(tmp);
+                break;
+            case LFramebuffer::Flipped180:
+                pos.setY(sizeF.h() - pos.y());
+                break;
+            case LFramebuffer::Flipped270:
+                tmp = pos.y();
+                pos.setY(sizeF.w() - pos.x());
+                pos.setX(sizeF.h() - tmp);
+                break;
+            }
+        }
+
+        pointerMoveEvent.setDelta(pos - cursor()->pos());
         pointerMoveEvent.setDeltaUnaccelerated(pointerMoveEvent.delta());
         pointerMoveEvent.setSerial(LTime::nextSerial());
         pointerMoveEvent.setMs(time);
@@ -358,6 +432,106 @@ public:
         pointerScrollEvent.notify();
     }
 
+    static void keyboardHandleEnter(void *data, wl_keyboard *keyboard, UInt32 /*serial*/, wl_surface *, wl_array *keysArr)
+    {
+        if (keysArr->size == 0)
+            return;
+
+        UInt32 *key { static_cast<UInt32*>(keysArr->data)};
+        std::size_t n { keysArr->size/sizeof(*key) };
+        while (n > 0)
+        {
+            keyboardHandleKey(data, keyboard, LTime::nextSerial(), LTime::ms(), *key, WL_KEYBOARD_KEY_STATE_PRESSED);
+            n--;
+            key++;
+        }
+    }
+
+    static void keyboardHandleLeave(void *, wl_keyboard*, UInt32 /*serial*/, wl_surface *) {}
+
+    static void keyboardHandleKey(void *, wl_keyboard*, UInt32 serial, UInt32 time, UInt32 key, UInt32 state)
+    {
+        keyboardKeyEvent.setState((LKeyboardKeyEvent::State)state);
+        keyboardKeyEvent.setKeyCode(key);
+        keyboardKeyEvent.setSerial(serial);
+        keyboardKeyEvent.setMs(time);
+        keyboardKeyEvent.setUs(LTime::us());
+        keyboardKeyEvent.notify();
+    }
+
+    static LPointF normalizedTouchPoint(Float24 x, Float24 y)
+    {
+        LPointF point((Float32)wl_fixed_to_double(x), (Float32) wl_fixed_to_double(y));
+
+        if (point.x() < 0.f)
+            point.setX(0.f);
+
+        if (point.y() < 0.f)
+            point.setY(0.f);
+
+        if (point.x() > shared().surfaceSize.w())
+            point.setX(shared().surfaceSize.w());
+
+        if (point.y() > shared().surfaceSize.h())
+            point.setY(shared().surfaceSize.h());
+
+        if (shared().surfaceSize.w() != 0)
+            point.setX(point.x()/Float64(shared().surfaceSize.w()));
+
+        if (shared().surfaceSize.h() != 0)
+            point.setY(point.y()/Float64(shared().surfaceSize.h()));
+
+        return point;
+    }
+
+    static void touchHandleDown(void *, wl_touch *, UInt32 serial, UInt32 time, wl_surface*, Int32 id, Float24 x, Float24 y)
+    {
+        const LPointF normalizedPoint { normalizedTouchPoint(x, y) };
+        touchDownEvent.setId(id);
+        touchDownEvent.setSerial(serial);
+        touchDownEvent.setMs(time);
+        touchDownEvent.setUs(LTime::us());
+        touchDownEvent.setX(normalizedPoint.x());
+        touchDownEvent.setY(normalizedPoint.y());
+        touchDownEvent.notify();
+    }
+
+    static void touchHandleUp(void *, wl_touch *, UInt32 serial, UInt32 time, Int32 id)
+    {
+        touchUpEvent.setId(id);
+        touchUpEvent.setSerial(serial);
+        touchUpEvent.setMs(time);
+        touchUpEvent.setUs(LTime::us());
+        touchUpEvent.notify();
+    }
+
+    static void touchHandleMotion(void *, wl_touch *, UInt32 time, Int32 id, Float24 x, Float24 y)
+    {
+        const LPointF normalizedPoint { normalizedTouchPoint(x, y) };
+        touchMoveEvent.setId(id);
+        touchMoveEvent.setSerial(LTime::nextSerial());
+        touchMoveEvent.setMs(time);
+        touchMoveEvent.setUs(LTime::us());
+        touchMoveEvent.setX(normalizedPoint.x());
+        touchMoveEvent.setY(normalizedPoint.y());
+        touchMoveEvent.notify();
+    }
+
+    static void touchHandleFrame(void *, wl_touch *)
+    {
+        touchFrameEvent.setSerial(LTime::nextSerial());
+        touchFrameEvent.setMs(LTime::ms());
+        touchFrameEvent.setUs(LTime::us());
+        touchFrameEvent.notify();
+    }
+
+    static void touchHandleCancel(void *, wl_touch *)
+    {
+        touchCancelEvent.setSerial(LTime::nextSerial());
+        touchCancelEvent.setMs(LTime::ms());
+        touchCancelEvent.setUs(LTime::us());
+        touchCancelEvent.notify();
+    }
 };
 
 extern "C" LInputBackendInterface *getAPI()

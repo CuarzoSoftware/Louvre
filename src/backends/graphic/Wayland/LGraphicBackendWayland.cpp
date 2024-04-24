@@ -1,4 +1,5 @@
 #include "LOutputMode.h"
+#include "LTime.h"
 #include <cstring>
 #include <fcntl.h>
 #include <private/LCompositorPrivate.h>
@@ -104,13 +105,16 @@ public:
     inline static EGLSurface eglSurface;
     inline static std::thread renderThread;
     inline static UInt32 refreshRate { 60000 };
+    inline static Int32 refreshRateLimit { 0 };
     inline static LSize physicalSize { 0, 0 };
     inline static LSize pendingSurfaceSize { 1024, 512 };
     inline static Int32 pendingBufferScale { 1 };
     inline static std::vector<LOutput*> dummyOutputs;
     inline static std::vector<LOutputMode *> dummyOutputModes;
     inline static Int8 windowInitialized { 0 };
+    inline static Int64 lastFrameUsec { 0 };
     inline static bool repaint { false };
+    inline static bool vSync { true };
 
     // Cursor
     inline static wl_shm *shm { nullptr };
@@ -309,6 +313,8 @@ public:
 
             if (output->state() == LOutput::Initialized && repaint)
             {
+                eglSwapInterval(eglDisplay, vSync);
+
                 repaint = false;
                 output->imp()->stateFlags.add(LOutput::LOutputPrivate::NeedsFullRepaint);
 
@@ -329,7 +335,25 @@ public:
                 }
 
                 output->imp()->backendPaintGL();
+
                 eglSwapBuffers(eglDisplay, eglSurface);
+
+                if (!vSync && refreshRateLimit >= 0)
+                {
+                    Int64 diff {LTime::us() - lastFrameUsec};
+                    Int64 target;
+                    if (refreshRateLimit == 0)
+                        target = (1000000/((2 * refreshRate)/1000));
+                    else
+                        target = (1000000/refreshRateLimit);
+
+                    target -= diff;
+
+                    if (target > 0)
+                        usleep(target);
+
+                    lastFrameUsec = LTime::us();
+                }
 
                 output->imp()->presentationTime.flags = SRM_PRESENTATION_TIME_FLAGS_VSYNC;
                 output->imp()->presentationTime.frame = 0;
@@ -691,27 +715,28 @@ public:
 
     static bool outputHasVSyncControlSupport(LOutput */*output*/)
     {
-        return false;
+        return true;
     }
 
     static bool outputIsVSyncEnabled(LOutput */*output*/)
     {
-        return true;
+        return vSync;
     }
 
     static bool outputEnableVSync(LOutput */*output*/, bool enabled)
     {
-        return enabled;
+        vSync = enabled;
+        return true;
     }
 
-    static void outputSetRefreshRateLimit(LOutput */*output*/, Int32 /*hz*/)
+    static void outputSetRefreshRateLimit(LOutput */*output*/, Int32 hz)
     {
-
+        refreshRateLimit = hz;
     }
 
     static Int32 outputGetRefreshRateLimit(LOutput */*output*/)
     {
-        return 0;
+        return refreshRateLimit;
     }
 
     static clockid_t outputGetClock(LOutput */*output*/)
@@ -730,6 +755,21 @@ public:
         if (buffer)
         {
             memcpy(cursorMap, buffer, CURSOR_SIZE);
+            wl_buffer_destroy(shared.cursorBuffer);
+            LSize size { cursor()->rect().size() * shared.bufferScale };
+
+            if (size.w() > 64)
+                size.setW(64);
+
+            if (size.h() > 64)
+                size.setH(64);
+
+            shared.cursorBuffer = wl_shm_pool_create_buffer(shmPool,
+                                                            0,
+                                                            size.w(),
+                                                            size.h(),
+                                                            64 * 4, WL_SHM_FORMAT_ARGB8888);
+            wl_surface_attach(shared.cursorSurface, shared.cursorBuffer, 0, 0);
             shared.cursorVisible = true;
             shared.cursorChangedBuffer = true;
         }
