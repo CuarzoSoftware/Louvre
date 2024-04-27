@@ -143,12 +143,12 @@ LFramebuffer *LOutput::framebuffer() const
     return &imp()->fb;
 }
 
-LFramebuffer::Transform LOutput::transform() const
+LTransform LOutput::transform() const
 {
     return imp()->transform;
 }
 
-void LOutput::setTransform(LFramebuffer::Transform transform)
+void LOutput::setTransform(LTransform transform)
 {
     if (transform == imp()->transform)
         return;

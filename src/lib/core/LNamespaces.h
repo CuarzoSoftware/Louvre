@@ -98,7 +98,7 @@ namespace Louvre
     class LRenderBuffer;
     class LFramebuffer;
     class LOutputFramebuffer;
-    class LGLFramebuffer;
+    class LFramebufferWrapper;
 
     // Views
     class LScene;
@@ -337,6 +337,16 @@ namespace Louvre
 
         /// The blue component of the RGB color (range: 0.0 to 1.0).
         Float32 b;
+
+        constexpr bool operator==(const LRGBF &other) const noexcept
+        {
+            return r == other.r && g == other.g && b == other.b;
+        }
+
+        constexpr bool operator!=(const LRGBF &other) const noexcept
+        {
+            return r != other.r || g != other.g || b != other.b;
+        }
     };
 
     /**
@@ -358,6 +368,16 @@ namespace Louvre
 
         /// The alpha component of the RGBA color (range: 0.0 to 1.0).
         Float32 a;
+
+        constexpr bool operator==(const LRGBAF &other) const noexcept
+        {
+            return r == other.r && g == other.g && b == other.b && a == other.a;
+        }
+
+        constexpr bool operator!=(const LRGBAF &other) const noexcept
+        {
+            return r != other.r || g != other.g || b != other.b || a != other.a;
+        }
     };
 
     /**
@@ -427,6 +447,78 @@ namespace Louvre
         UInt32 patch; ///< Patch version.
         UInt32 build; ///< Build number.
     };
+
+    /**
+     * @brief Enumeration for Framebuffer Transformations
+     *
+     * This enumeration defines different transformations that can be applied to a framebuffer.
+     * These transformations include rotations and flips for adjusting the orientation of the framebuffer.
+     */
+    enum class LTransform : Int32
+    {
+        /// No transformation
+        Normal = 0,
+
+        /// Rotate 90 degrees counter-clockwise
+        Rotated90 = 1,
+
+        /// Rotate 180 degrees counter-clockwise
+        Rotated180 = 2,
+
+        /// Rotate 270 degrees counter-clockwise
+        Rotated270 = 3,
+
+        /// Flipped (swap left and right sides)
+        Flipped = 4,
+
+        /// Flip and rotate 90 degrees counter-clockwise
+        Flipped90 = 5,
+
+        /// Flip and rotate 180 degrees counter-clockwise
+        Flipped180 = 6,
+
+        /// Flip and rotate 270 degrees counter-clockwise
+        Flipped270 = 7
+    };
+
+    /**
+     * @brief Checks if the transformation results in swapping the width and height.
+     *
+     * @param transform The transformation to check.
+     * @return `true` if the transformation swaps width and height, `false` otherwise.
+     */
+    static inline constexpr bool is90Transform(LTransform transform) noexcept
+    {
+        return static_cast<Int32>(transform) & static_cast<Int32>(LTransform::Rotated90);
+    }
+
+    /**
+     * @brief Calculates the required transformation to transition from one orientation to another.
+     *
+     * This function computes the transformation needed to convert from one orientation (from) to another (to).
+     *
+     * @param from The initial orientation.
+     * @param to The target orientation.
+     * @return The required transformation to transition from 'from' to 'to'.
+     */
+    static inline constexpr LTransform requiredTransform(LTransform from, LTransform to) noexcept
+    {
+        const Int32 bitmask { static_cast<Int32>(LTransform::Rotated270) };
+        const Int32 flip { (static_cast<Int32>(from) & ~bitmask) ^ (static_cast<Int32>(to) & ~bitmask) };
+        Int32 rotation;
+
+        if (flip)
+            rotation = ((static_cast<Int32>(to) & bitmask) + (static_cast<Int32>(from) & bitmask)) & bitmask;
+        else
+        {
+            rotation = (static_cast<Int32>(to) & bitmask) - (static_cast<Int32>(from) & bitmask);
+
+            if (rotation < 0)
+                rotation += 4;
+        }
+
+        return static_cast<LTransform>(flip | rotation);
+    }
 
     namespace Protocols
     {

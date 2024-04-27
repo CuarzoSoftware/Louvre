@@ -6,13 +6,12 @@
 #include <thread>
 
 /**
- * @brief Custom render destination framebuffer
+ * @brief Represents a custom render destination framebuffer.
  *
- * The LRenderBuffer can be utilized to render to a framebuffer instead of an LOutput and then use that rendered content as a texture.\n
- * Essentially, it acts as a wrapper for an OpenGL framebuffer with additional functionality. You can obtain the OpenGL framebuffer ID using the id() method.
- * It can also be utilized with an LPainter by using LPainter::bindFramebuffer().
+ * The LRenderBuffer provides a means to render to a framebuffer instead of an LOutput, allowing the resulting content to be used as a texture.\n
+ * It can be employed with an LPainter via LPainter::bindFramebuffer().
  *
- * @note A framebuffer possess properties such as position, size, and buffer scale. LPainter uses these properties to properly position and scale the rendered content.
+ * @note The framebuffer possesses properties such as position, size, and scale factor. These properties are utilized by LPainter to appropriately position and scale the rendered content.
  */
 class Louvre::LRenderBuffer final : public LFramebuffer
 {
@@ -27,10 +26,7 @@ public:
      */
     LRenderBuffer(const LSize &sizeB, bool alpha = true) noexcept;
 
-    /// @cond OMIT
-    LRenderBuffer(const LRenderBuffer&) = delete;
-    LRenderBuffer& operator= (const LRenderBuffer&) = delete;
-    /// @endcond
+    LCLASS_NO_COPY(LRenderBuffer)
 
     /**
      * @brief Destructor for LRenderBuffer.
@@ -55,7 +51,7 @@ public:
      * @param index The index of the texture (default is 0).
      * @return A pointer to the texture associated with the framebuffer.
      */
-    const LTexture *texture(Int32 index = 0) const noexcept override;
+    LTexture *texture(Int32 index = 0) const noexcept override;
 
     /**
      * @brief Set the size of the framebuffer in buffer coordinates.
@@ -140,19 +136,11 @@ public:
         }
     }
 
-    /**
-     * @brief Retrieve the buffer scale of the framebuffer.
-     *
-     * This method returns the buffer scale factor of the framebuffer.
-     *
-     * @return The buffer scale factor.
-     */
     Float32 scale() const noexcept override;
-
     Int32 buffersCount() const noexcept override;
     Int32 currentBufferIndex() const noexcept override;
     void setFramebufferDamage(const LRegion *damage) noexcept override;
-    Transform transform() const noexcept override;
+    LTransform transform() const noexcept override;
 
 private:
     friend class LCompositor;
@@ -160,7 +148,7 @@ private:
     {
         GLuint framebufferId = 0;
     };
-    mutable LTexture m_texture;
+    mutable LTexture m_texture { true };
     LRect m_rect;
     Float32 m_scale { 1.f };
     mutable std::unordered_map<std::thread::id, ThreadData> m_threadsMap;

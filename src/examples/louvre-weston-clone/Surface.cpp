@@ -40,7 +40,7 @@ void Surface::mappingChanged()
         {
             Compositor *c { (Compositor*)compositor() };
             DestroyedToplevel destroyed;
-            destroyed.texture = texture()->copyB();
+            destroyed.texture = texture()->copy();
             destroyed.rect = LRect(rolePos(), size());
             destroyed.ms = LTime::ms();
 

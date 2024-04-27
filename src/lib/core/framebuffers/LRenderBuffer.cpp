@@ -10,7 +10,7 @@ using namespace Louvre;
 
 LRenderBuffer::LRenderBuffer(const LSize &sizeB, bool alpha) noexcept
 {
-    m_type = Render;
+    m_type = RenderBuffer;
     m_texture.m_sourceType = LTexture::Framebuffer;
 
     if (alpha)
@@ -49,7 +49,7 @@ void LRenderBuffer::setSizeB(const LSize &sizeB) noexcept
     }
 }
 
-const LTexture *LRenderBuffer::texture(Int32 index) const noexcept
+LTexture *LRenderBuffer::texture(Int32 index) const noexcept
 {
     L_UNUSED(index);
     return &m_texture;
@@ -60,9 +60,9 @@ void LRenderBuffer::setFramebufferDamage(const LRegion *damage) noexcept
     L_UNUSED(damage);
 }
 
-LFramebuffer::Transform LRenderBuffer::transform() const noexcept
+LTransform LRenderBuffer::transform() const noexcept
 {
-    return LFramebuffer::Normal;
+    return LTransform::Normal;
 }
 
 Float32 LRenderBuffer::scale() const noexcept

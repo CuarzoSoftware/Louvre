@@ -36,7 +36,7 @@ Int32 LOutputFramebuffer::currentBufferIndex() const noexcept
     return m_output->currentBuffer();
 }
 
-const LTexture *LOutputFramebuffer::texture(Int32 index) const noexcept
+LTexture *LOutputFramebuffer::texture(Int32 index) const noexcept
 {
     return m_output->bufferTexture(index);
 }
@@ -46,7 +46,7 @@ void LOutputFramebuffer::setFramebufferDamage(const LRegion *damage) noexcept
     m_output->setBufferDamage(damage);
 }
 
-LFramebuffer::Transform LOutputFramebuffer::transform() const noexcept
+LTransform LOutputFramebuffer::transform() const noexcept
 {
     return m_output->imp()->transform;
 }

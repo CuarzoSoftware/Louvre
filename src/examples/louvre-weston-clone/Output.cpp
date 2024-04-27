@@ -30,7 +30,7 @@ void Output::loadWallpaper() noexcept
 
     if (background)
     {
-        backgroundTexture = background->copyB(sizeB());
+        backgroundTexture = background->copy(sizeB());
         delete background;
     }
 }
@@ -57,7 +57,7 @@ void Output::initializeGL() noexcept
 {
     terminalIconTexture = new LTexture();
 
-    if (!terminalIconTexture->setDataB(LSize(64,64), 64*4, DRM_FORMAT_ABGR8888, terminalIconPixels()))
+    if (!terminalIconTexture->setDataFromMainMemory(LSize(64,64), 64*4, DRM_FORMAT_ABGR8888, terminalIconPixels()))
     {
         LLog::error("Failed to create terminal icon.");
         delete terminalIconTexture;
@@ -355,7 +355,7 @@ void Output::paintGL() noexcept
         params.dstSize = size();
         params.srcRect = LRectF(0, backgroundTexture->sizeB());
         params.pos = pos();
-        params.srcTransform = LFramebuffer::Normal;
+        params.srcTransform = LTransform::Normal;
         params.srcScale = 1.f;
         p->bindTextureMode(params);
         p->drawRegion(backgroundDamage);
@@ -431,7 +431,7 @@ void Output::paintGL() noexcept
                 params.dstSize = terminalIconRect.size();
                 params.srcRect = LRect(0, terminalIconTexture->sizeB());
                 params.pos = terminalIconRect.pos();
-                params.srcTransform = LFramebuffer::Normal;
+                params.srcTransform = LTransform::Normal;
                 params.srcScale = 1.f;
                 p->setAlpha(terminalIconAlpha);
                 p->bindTextureMode(params);
@@ -445,7 +445,7 @@ void Output::paintGL() noexcept
             params.dstSize = dstClockRect.size();
             params.srcRect = LRect(0, c->clock->texture->sizeB());
             params.pos = dstClockRect.pos();
-            params.srcTransform = LFramebuffer::Normal;
+            params.srcTransform = LTransform::Normal;
             params.srcScale = 1.f;
             p->enableCustomTextureColor(true);
             p->setColor({.r = 0.1f, .g = 0.1f, .b = 0.1f});
@@ -467,7 +467,7 @@ void Output::paintGL() noexcept
         params.dstSize = (*it).rect.size();
         params.srcRect = LRect(0, (*it).texture->sizeB());
         params.pos = (*it).rect.pos();
-        params.srcTransform = LFramebuffer::Normal;
+        params.srcTransform = LTransform::Normal;
         params.srcScale = 1.f;
         p->bindTextureMode(params);
         p->setAlpha(alpha);

@@ -45,7 +45,7 @@ public:
         /**
          * @brief Texture to be drawn.
          */
-        const LTexture *texture;
+        LTexture *texture;
 
         /**
          * @brief Position of the texture (destination rect) in global compositor coordinates.
@@ -67,10 +67,10 @@ public:
         /**
          * @brief Transform applied to the texture.
          *
-         * For example, if the texture is rotated 90 degrees counterclockwise, use LFramebuffer::Rotated90.
-         * LPainter will apply the inverse transform (LFramebuffer::Rotated270).
+         * For example, if the texture is rotated 90 degrees counterclockwise, use LTransform::Rotated90.
+         * LPainter will apply the inverse transform (LTransform::Rotated270).
          */
-        LFramebuffer::Transform srcTransform = LFramebuffer::Normal;
+        LTransform srcTransform = LTransform::Normal;
 
         /**
          * @brief Scale factor of the texture.
@@ -130,6 +130,9 @@ public:
      */
     bool customTextureColorEnabled() const;
 
+    bool autoBlendFuncEnabled() const noexcept;
+    void enableAutoBlendFunc(bool enabled) const noexcept;
+
     /**
      * @brief Sets the alpha value.
      *
@@ -143,26 +146,12 @@ public:
     /**
      * @brief Sets the color.
      *
-     * If the current mode is texture mode and customTextureColorEnabled() is enabled, this value replaces the texture RGB values while keeping the alpha intact.
+     * If the current mode is texture mode and customTextureColorEnabled() is enabled, this value replaces the texture RGB values while keeping the alpha intact.\n
      * If the current mode is color mode, this is the color to be drawn.
      *
      * @param color The color to be set.
      */
     void setColor(const LRGBF &color);
-
-    /**
-     * @brief Sets the color factor.
-     *
-     * This factor multiplies each component of the destination color. Setting all components to 1.0f disables it.
-     *
-     * @param color The color factor to be set.
-     */
-    void setColorFactor(const LRGBAF &color);
-
-    /// @cond OMIT
-    LPainter(const LPainter&) = delete;
-    LPainter& operator= (const LPainter&) = delete;
-    /// @endcond
 
     /**
      * @brief Bind the specified framebuffer for rendering.
@@ -183,120 +172,6 @@ public:
      * @return A pointer to the currently bound framebuffer.
      */
     LFramebuffer *boundFramebuffer() const;
-
-    /**
-     * @brief Draw a texture.
-     *
-     * This method allows you to draw a texture or sub-rect of a texture on the bound frambuffer.
-     *
-     * @note Using 1 as the `srcScale` means that the `src` rect is in buffer coordinates.
-     *
-     * @param texture Texture to draw.
-     * @param src The portion of the texture to draw specified in surface coordinates.
-     * @param dst The destination rect where the texture will be drawn specified in surface coordinates.
-     * @param srcScale Scaling factor for the source texture (default is 1.0).
-     * @param alpha Alpha value for blending the texture (range [0.0, 1.0]).
-     */
-    void drawTexture(const LTexture *texture, const LRect &src, const LRect &dst,
-                     Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
-
-    /**
-     * @brief Draw a texture.
-     *
-     * This method allows you to draw a texture or sub-rect of a texture on the bound frambuffer.
-     *
-     * @note Using 1 as the `srcScale` means that the `src` rect is in buffer coordinates.
-     *
-     * @param texture Texture to draw.
-     * @param srcX X-coordinate of the source rect.
-     * @param srcY Y-coordinate of the source rect.
-     * @param srcW Width of the source rect.
-     * @param srcH Height of the source rect.
-     * @param dstX X-coordinate of the destination rect.
-     * @param dstY Y-coordinate of the destination rect.
-     * @param dstW Width of the destination rect.
-     * @param dstH Height of the destination rect.
-     * @param srcScale Scaling factor for the source texture (default is 1.0).
-     * @param alpha Alpha value for blending the texture (range [0.0, 1.0]).
-     */
-    void drawTexture(const LTexture *texture,
-                     Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
-                     Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                     Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
-
-    /**
-     * @brief Draw a texture with a custom solid color.
-     *
-     * This method draws a rect or sub-rect of a texture, replacing its original color while maintaining its alpha channel.
-     *
-     * @note Using 1 as the `srcScale` means that the `src` rect is in buffer coordinates.
-     *
-     * @param texture Texture to draw.
-     * @param color The solid color that will replace the original texture color.
-     * @param src The portion of the texture to draw specified in surface coordinates.
-     * @param dst The destination rect where the texture will be drawn specified in surface coordinates.
-     * @param srcScale Scaling factor for the source texture (default is 1.0).
-     * @param alpha Alpha value for blending the texture (range [0.0, 1.0]).
-     */
-    void drawColorTexture(const LTexture *texture, const LRGBF &color, const LRect &src, const LRect &dst,
-                          Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
-
-    /**
-     * @brief Draw a texture with a custom solid color.
-     *
-     * This method draws a rect or sub-rect of a texture, replacing its original color while maintaining its alpha channel.
-     *
-     * @note Using 1 as the `srcScale` means that the `src` rect is in buffer coordinates.
-     *
-     * @param texture Texture to draw.
-     * @param r The red component of the solid color (0.0 to 1.0).
-     * @param g The green component of the solid color (0.0 to 1.0).
-     * @param b The blue component of the solid color (0.0 to 1.0).
-     * @param srcX X-coordinate of the source rect.
-     * @param srcY Y-coordinate of the source rect.
-     * @param srcW Width of the source rect.
-     * @param srcH Height of the source rect.
-     * @param dstX X-coordinate of the destination rect.
-     * @param dstY Y-coordinate of the destination rect.
-     * @param dstW Width of the destination rect.
-     * @param dstH Height of the destination rect.
-     * @param srcScale Scaling factor for the source texture (default is 1.0).
-     * @param alpha Alpha value for blending the texture (range [0.0, 1.0]).
-     */
-    void drawColorTexture(const LTexture *texture, Float32 r, Float32 g, Float32 b,
-                          Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
-                          Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                          Float32 srcScale = 1.0f, Float32 alpha = 1.0f);
-
-    /**
-     * @brief Draw a solid color rect.
-     *
-     * This method draws a solid colored rect.
-     *
-     * @param dst The destination rect where the color will be drawn specified in surface coordinates.
-     * @param r Red component value (range [0.0, 1.0]).
-     * @param g Green component value (range [0.0, 1.0]).
-     * @param b Blue component value (range [0.0, 1.0]).
-     * @param a Alpha component value (range [0.0, 1.0]).
-     */
-    void drawColor(const LRect &dst, Float32 r, Float32 g, Float32 b, Float32 a);
-
-    /**
-     * @brief Draw a solid color rect.
-     *
-     * This method draws a solid colored rect.
-     *
-     * @param dstX X-coordinate of the destination rect.
-     * @param dstY Y-coordinate of the destination rect.
-     * @param dstW Width of the destination rect.
-     * @param dstH Height of the destination rect.
-     * @param r Red component value (range [0.0, 1.0]).
-     * @param g Green component value (range [0.0, 1.0]).
-     * @param b Blue component value (range [0.0, 1.0]).
-     * @param a Alpha component value (range [0.0, 1.0]).
-     */
-    void drawColor(Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                   Float32 r, Float32 g, Float32 b, Float32 a);
 
     /**
      * @brief Set the viewport.
@@ -332,17 +207,29 @@ public:
     void setClearColor(const LRGBAF &color);
 
     /**
-     * @brief Set the color factor.
+     * @brief Sets the color factor.
      *
-     * This method allows you to set a color factor that influences the resulting color of every painting operation.
-     * By default, the color factor is (1.0, 1.0, 1.0, 1.0), which has no effect on the colors.
+     * This method multiplies each component of the source color by the specified factor.
      *
-     * @param r Value of the red component (range [0.0, 1.0]).
-     * @param g Value of the green component (range [0.0, 1.0]).
-     * @param b Value of the blue component (range [0.0, 1.0]).
-     * @param a Value of the alpha component (range [0.0, 1.0]).
+     * @note Setting all components to 1.0 disables the effect.
+     *
+     * @param r The value of the red component (range: [0.0, 1.0]).
+     * @param g The value of the green component (range: [0.0, 1.0]).
+     * @param b The value of the blue component (range: [0.0, 1.0]).
+     * @param a The value of the alpha component (range: [0.0, 1.0]).
      */
-    void setColorFactor(Float32 r, Float32 g, Float32 b, Float32 a);
+    void setColorFactor(Float32 r, Float32 g, Float32 b, Float32 a) noexcept;
+
+    /**
+     * @brief Sets the color factor.
+     *
+     * This method multiplies each component of the source color by the specified factor.
+     *
+     * @note Setting all components to 1.0 disables the effect.
+     *
+     * @param factor The color factor to be set.
+     */
+    void setColorFactor(const LRGBAF &factor) noexcept;
 
     /**
      * @brief Clear the framebuffer.
@@ -358,14 +245,14 @@ public:
      */
     void bindProgram();
 
+    void setBlendFunc(const LBlendFunc &blendFunc) const noexcept;
+
     LPRIVATE_IMP_UNIQUE(LPainter)
 
-    /// @cond OMIT
     friend class LCompositor;
     friend class LOutput;
     LPainter();
     ~LPainter();
-    /// @endcond
 };
 
 #endif // LPAINTER_H

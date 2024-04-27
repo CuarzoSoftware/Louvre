@@ -288,6 +288,8 @@ private:
                                  &ctd.opaqueSum.m_region);
         ctd.p->setColor({.r = m_clearColor.r, .g = m_clearColor.g, .b = m_clearColor.b});
         ctd.p->setAlpha(m_clearColor.a);
+        ctd.p->enableAutoBlendFunc(true);
+        ctd.p->setColorFactor(1.f, 1.f, 1.f, 1.f);
         ctd.p->bindColorMode();
         ctd.p->drawRegion(backgroundDamage);
 

@@ -521,7 +521,7 @@ void RSurface::set_buffer_transform(wl_client */*client*/, wl_resource *resource
     }
 
     auto &imp { *static_cast<const RSurface*>(wl_resource_get_user_data(resource))->surface()->imp() };
-    imp.pending.transform = static_cast<LFramebuffer::Transform>(transform);
+    imp.pending.transform = static_cast<LTransform>(transform);
 }
 #endif
 
@@ -594,12 +594,12 @@ bool RSurface::preferredBufferScale(Int32 scale) noexcept
     return false;
 }
 
-bool RSurface::preferredBufferTransform(UInt32 transform) noexcept
+bool RSurface::preferredBufferTransform(LTransform transform) noexcept
 {
 #if LOUVRE_WL_COMPOSITOR_VERSION >= 6
     if (version() >= 6)
     {
-        wl_surface_send_preferred_buffer_transform(resource(), transform);
+        wl_surface_send_preferred_buffer_transform(resource(), static_cast<UInt32>(transform));
         return true;
     }
 #endif

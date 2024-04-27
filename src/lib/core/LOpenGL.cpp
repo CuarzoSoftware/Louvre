@@ -132,7 +132,7 @@ LTexture *LOpenGL::loadTexture(const std::filesystem::path &file)
 
     LTexture *texture { new LTexture() };
 
-    if (!texture->setDataB(LSize(width, height), width * 4, DRM_FORMAT_ABGR8888, image))
+    if (!texture->setDataFromMainMemory(LSize(width, height), width * 4, DRM_FORMAT_ABGR8888, image))
     {
         UInt8 pix { 0 };
 
@@ -143,7 +143,7 @@ LTexture *LOpenGL::loadTexture(const std::filesystem::path &file)
             image[i] = pix;
         }
 
-        texture->setDataB(LSize(width, height), width * 4, DRM_FORMAT_ARGB8888, image);
+        texture->setDataFromMainMemory(LSize(width, height), width * 4, DRM_FORMAT_ARGB8888, image);
     }
 
     free(image);

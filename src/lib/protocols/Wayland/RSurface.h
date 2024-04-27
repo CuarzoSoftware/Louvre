@@ -66,7 +66,7 @@ public:
 
     // Since 6
     bool preferredBufferScale(Int32 scale) noexcept;
-    bool preferredBufferTransform(UInt32 transform) noexcept;
+    bool preferredBufferTransform(LTransform transform) noexcept;
 
 private:
     friend class Louvre::Protocols::Wayland::GCompositor;

@@ -180,7 +180,7 @@ LTexture *TextRenderer::renderText(const char *text, Int32 fontSize, Int32 maxWi
 
     LTexture *texture = new LTexture();
 
-    if (!texture->setDataB(bufferSize, bufferSize.w()*4, DRM_FORMAT_ABGR8888, buffer))
+    if (!texture->setDataFromMainMemory(bufferSize, bufferSize.w()*4, DRM_FORMAT_ABGR8888, buffer))
     {
         if (clippedText != text)
             delete[] clippedText;

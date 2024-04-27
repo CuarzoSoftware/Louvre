@@ -191,7 +191,7 @@ void Clock::updateClockTexture()
         character++;
     }
 
-    if (!texture->setDataB(LSize(bufferWidth, bufferHeight), bufferWidth*4, DRM_FORMAT_ABGR8888, buffer))
+    if (!texture->setDataFromMainMemory(LSize(bufferWidth, bufferHeight), bufferWidth*4, DRM_FORMAT_ABGR8888, buffer))
     {
         free(buffer);
         delete texture;

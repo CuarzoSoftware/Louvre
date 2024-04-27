@@ -116,7 +116,7 @@ void LCompositor::initialized()
     {
         // Set scale 2 to outputs with DPI >= 200
         output->setScale(output->dpi() >= 200 ? 2.f : 1.f);
-        output->setTransform(LFramebuffer::Normal);
+        output->setTransform(LTransform::Normal);
 
         output->setPos(LPoint(totalWidth, 0));
         totalWidth += output->size().w();

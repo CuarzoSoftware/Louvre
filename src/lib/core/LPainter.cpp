@@ -29,325 +29,6 @@ static void makeExternalShader(std::string &shader)
     }
 }
 
-void LPainter::bindTextureMode(const TextureParams &p)
-{
-    GLenum target = p.texture->target();
-    imp()->switchTarget(target);
-
-    Float32 fbScale;
-
-    if (imp()->fb->type() == LFramebuffer::Output)
-    {
-        LOutputFramebuffer *outputFB = (LOutputFramebuffer*)imp()->fb;
-
-        if (outputFB->output()->usingFractionalScale())
-        {
-            if (outputFB->output()->fractionalOversamplingEnabled())
-            {
-                fbScale = imp()->fb->scale();
-            }
-            else
-            {
-                fbScale = outputFB->output()->fractionalScale();
-            }
-        }
-        else
-        {
-            fbScale = imp()->fb->scale();
-        }
-    }
-    else
-    {
-        fbScale = imp()->fb->scale();
-    }
-
-    LPoint pos = p.pos - imp()->fb->rect().pos();
-    Float32 srcDstX, srcDstY;
-    Float32 srcW, srcH;
-    Float32 srcDstW, srcDstH;
-    Float32 srcFbX1, srcFbY1, srcFbX2, srcFbY2;
-    Float32 srcFbW, srcFbH;
-    Float32 srcRectW = p.srcRect.w() <= 0.f ? 0.001f : p.srcRect.w();
-    Float32 srcRectH = p.srcRect.h() <= 0.f ? 0.001f : p.srcRect.h();
-
-    bool xFlip = false;
-    bool yFlip = false;
-
-    LFramebuffer::Transform invTrans = LFramebuffer::requiredTransform(p.srcTransform, imp()->fb->transform());
-    bool rotate = LFramebuffer::is90Transform(invTrans);
-
-    if (LFramebuffer::is90Transform(p.srcTransform))
-    {
-        srcH = Float32(p.texture->sizeB().w()) / p.srcScale;
-        srcW = Float32(p.texture->sizeB().h()) / p.srcScale;
-        yFlip = !yFlip;
-        xFlip = !xFlip;
-    }
-    else
-    {
-        srcW = (Float32(p.texture->sizeB().w()) / p.srcScale);
-        srcH = (Float32(p.texture->sizeB().h()) / p.srcScale);
-    }
-
-    srcDstW = (Float32(p.dstSize.w()) * srcW) / srcRectW;
-    srcDstX = (Float32(p.dstSize.w()) * p.srcRect.x()) / srcRectW;
-    srcDstH = (Float32(p.dstSize.h()) * srcH) / srcRectH;
-    srcDstY = (Float32(p.dstSize.h()) * p.srcRect.y()) / srcRectH;
-
-    switch (invTrans)
-    {
-    case LFramebuffer::Normal:
-        break;
-    case LFramebuffer::Rotated90:
-        xFlip = !xFlip;
-        break;
-    case LFramebuffer::Rotated180:
-        xFlip = !xFlip;
-        yFlip = !yFlip;
-        break;
-    case LFramebuffer::Rotated270:
-        yFlip = !yFlip;
-        break;
-    case LFramebuffer::Flipped:
-        xFlip = !xFlip;
-        break;
-    case LFramebuffer::Flipped90:
-        xFlip = !xFlip;
-        yFlip = !yFlip;
-        break;
-    case LFramebuffer::Flipped180:
-        yFlip = !yFlip;
-        break;
-    case LFramebuffer::Flipped270:
-        break;
-    default:
-        return;
-    }
-
-    Float32 screenH = Float32(imp()->fb->rect().h());
-    Float32 screenW = Float32(imp()->fb->rect().w());
-
-    switch (imp()->fb->transform())
-    {
-    case LFramebuffer::Normal:
-        srcFbX1 = pos.x() - srcDstX;
-        srcFbX2 = srcFbX1 + srcDstW;
-
-        if (imp()->fbId == 0)
-        {
-            srcFbY1 = screenH - pos.y() + srcDstY;
-            srcFbY2 = srcFbY1 - srcDstH;
-        }
-        else
-        {
-            srcFbY1 = pos.y() - srcDstY;
-            srcFbY2 = srcFbY1 + srcDstH;
-        }
-        break;
-    case LFramebuffer::Rotated90:
-        srcFbX2 = pos.y() - srcDstY;
-        srcFbX1 = srcFbX2 + srcDstH;
-
-        if (imp()->fbId == 0)
-        {
-            srcFbY1 = pos.x() - srcDstX;
-            srcFbY2 = srcFbY1 + srcDstW;
-        }
-        else
-        {
-            srcFbY2 = screenW - pos.x() + srcDstX;
-            srcFbY1 = srcFbY2 - srcDstW;
-            yFlip = !yFlip;
-        }
-        break;
-    case LFramebuffer::Rotated180:
-        srcFbX2 = screenW - pos.x() + srcDstX;
-        srcFbX1 = srcFbX2 - srcDstW;
-
-        if (imp()->fbId == 0)
-        {
-            srcFbY2 = pos.y() - srcDstY;
-            srcFbY1 = srcFbY2 + srcDstH;
-        }
-        else
-        {
-            srcFbY2 = screenH - pos.y() + srcDstY;
-            srcFbY1 = srcFbY2 - srcDstH;
-        }
-        break;
-    case LFramebuffer::Rotated270:
-        srcFbX1 = screenH - pos.y() + srcDstY;
-        srcFbX2 = srcFbX1 - srcDstH;
-
-        if (imp()->fbId == 0)
-        {
-            srcFbY2 = screenW - pos.x() + srcDstX;
-            srcFbY1 = srcFbY2 - srcDstW;
-        }
-        else
-        {
-            srcFbY1 = pos.x() - srcDstX;
-            srcFbY2 = srcFbY1 + srcDstW;
-            yFlip = !yFlip;
-        }
-        break;
-    case LFramebuffer::Flipped:
-        srcFbX2 = screenW - pos.x() + srcDstX;
-        srcFbX1 = srcFbX2 - srcDstW;
-
-        if (imp()->fbId == 0)
-        {
-            srcFbY1 = screenH - pos.y() + srcDstY;
-            srcFbY2 = srcFbY1 - srcDstH;
-        }
-        else
-        {
-            srcFbY1 = pos.y() - srcDstY;
-            srcFbY2 = srcFbY1 + srcDstH;
-        }
-        break;
-    case LFramebuffer::Flipped90:
-        srcFbX2 = pos.y() - srcDstY;
-        srcFbX1 = srcFbX2 + srcDstH;
-
-        if (imp()->fbId == 0)
-        {
-            srcFbY2 = screenW - pos.x() + srcDstX;
-            srcFbY1 = srcFbY2 - srcDstW;
-        }
-        else
-        {
-            srcFbY1 = pos.x() - srcDstX;
-            srcFbY2 = srcFbY1 + srcDstW;
-            yFlip = !yFlip;
-        }
-        break;
-    case LFramebuffer::Flipped180:
-        if (imp()->fbId == 0)
-        {
-            srcFbX1 = pos.x() - srcDstX;
-            srcFbY1 = pos.y() - srcDstY + srcDstH;
-            srcFbX2 = pos.x() - srcDstX + srcDstW;
-            srcFbY2 = pos.y() - srcDstY;
-        }
-        else
-        {
-            srcFbY2 = screenH - pos.y() + srcDstY;
-            srcFbY1 = srcFbY2 - srcDstH;
-            srcFbX1 = pos.x() - srcDstX;
-            srcFbX2 = pos.x() - srcDstX + srcDstW;
-        }
-        break;
-    case LFramebuffer::Flipped270:
-        srcFbX1 = screenH - pos.y() + srcDstY;
-        srcFbX2 = srcFbX1 - srcDstH;
-
-        if (imp()->fbId == 0)
-        {
-            srcFbY1 = pos.x() - srcDstX;
-            srcFbY2 = srcFbY1 + srcDstW;
-        }
-        else
-        {
-            srcFbY2 = screenW - pos.x() + srcDstX;
-            srcFbY1 = srcFbY2 - srcDstW;
-            yFlip = !yFlip;
-        }
-        break;
-    default:
-        return;
-    }
-
-    imp()->shaderSetTransform(rotate);
-
-    if (xFlip)
-    {
-        srcW = srcFbX2;
-        srcFbX2 = srcFbX1;
-        srcFbX1 = srcW;
-    }
-
-    if (yFlip)
-    {
-        srcH = srcFbY2;
-        srcFbY2 = srcFbY1;
-        srcFbY1 = srcH;
-    }
-
-    srcFbX1 *= fbScale;
-    srcFbY1 *= fbScale;
-
-    srcFbW = srcFbX2 * fbScale - srcFbX1;
-    srcFbH = srcFbY2 * fbScale - srcFbY1;
-
-    imp()->srcRect.x = srcFbX1;
-    imp()->srcRect.y = srcFbY1;
-
-    imp()->srcRect.w = srcFbW;
-    imp()->srcRect.h = srcFbH;
-
-    glActiveTexture(GL_TEXTURE0);
-    imp()->shaderSetMode(3);
-    imp()->shaderSetActiveTexture(0);
-    glBindTexture(target, p.texture->id(imp()->output));
-    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-}
-
-void LPainter::bindColorMode()
-{
-    imp()->shaderSetMode(1);
-}
-
-void LPainter::drawBox(const LBox &box)
-{
-    imp()->setViewport(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-}
-
-void LPainter::drawRect(const LRect &rect)
-{
-    imp()->setViewport(rect.x(), rect.y(), rect.w(), rect.h());
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-}
-
-void LPainter::drawRegion(const LRegion &region)
-{
-    Int32 n;
-    const LBox *box = region.boxes(&n);
-    for (Int32 i = 0; i < n; i++)
-    {
-        imp()->setViewport(box->x1,
-                           box->y1,
-                           box->x2 - box->x1,
-                           box->y2 - box->y1);
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-        box++;
-    }
-}
-
-void LPainter::enableCustomTextureColor(bool enabled)
-{
-    imp()->shaderSetTexColorEnabled(enabled);
-}
-
-bool LPainter::customTextureColorEnabled() const
-{
-    return imp()->currentState->texColorEnabled;
-}
-
-void LPainter::setAlpha(Float32 alpha)
-{
-    imp()->shaderSetAlpha(alpha);
-}
-
-void LPainter::setColor(const LRGBF &color)
-{
-    imp()->shaderSetColor(color.r, color.g, color.b);
-}
-
 LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
 {
     imp()->painter = this;
@@ -363,17 +44,17 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
         precision mediump int;
         uniform mediump vec2 texSize;
         uniform mediump vec4 srcRect;
-        uniform mediump int transform;
         attribute mediump vec4 vertexPosition;
         varying mediump vec2 v_texcoord;
-        uniform mediump int mode;
+        uniform lowp int mode;
+        uniform bool has90deg;
 
         void main()
         {
-            if (mode == 3)
-            {
-                gl_Position = vec4(vertexPosition.xy, 0.0, 1.0);
+            gl_Position = vec4(vertexPosition.xy, 0.0, 1.0);
 
+            if (mode == 1)
+            {
                 if (vertexPosition.x == -1.0)
                     v_texcoord.x = srcRect.x;
                 else
@@ -384,149 +65,72 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
                 else
                     v_texcoord.y = srcRect.w;
 
-                if (transform == 1)
+                if (has90deg)
                     v_texcoord.yx = v_texcoord;
 
                 return;
             }
 
-            // Normal
-            if (transform == 0)
-                gl_Position = vec4(vertexPosition.xy, 0.0, 1.0);
-
-            // Counter270
-            else if (transform == 3)
+            if (mode == 0)
             {
-                // TL > TR
-                if (vertexPosition.x == -1.0 && vertexPosition.y == 1.0)
-                    gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
-                // BL > TL
-                else if (vertexPosition.x == -1.0 && vertexPosition.y == -1.0)
-                    gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
-                // BR > BL
-                else if (vertexPosition.x == 1.0 && vertexPosition.y == -1.0)
-                    gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
-                // TR > BR
-                else
-                    gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
+                v_texcoord.x = (srcRect.x + vertexPosition.z*srcRect.z) / texSize.x;
+                v_texcoord.y = (srcRect.y + srcRect.w - vertexPosition.w*srcRect.w) / texSize.y;
             }
-
-            // Clock180
-            else if (transform == 2)
-            {
-                // TL > BR
-                if (vertexPosition.x == -1.0 && vertexPosition.y == 1.0)
-                    gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
-                // BL > TR
-                else if (vertexPosition.x == -1.0 && vertexPosition.y == -1.0)
-                    gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
-                // BR > TL
-                else if (vertexPosition.x == 1.0 && vertexPosition.y == -1.0)
-                    gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
-                // TR > BL
-                else
-                    gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
-            }
-
-            // Counter90
-            else if (transform == 1)
-            {
-                // TL > BL
-                if (vertexPosition.x == -1.0 && vertexPosition.y == 1.0)
-                    gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
-                // BL > BR
-                else if (vertexPosition.x == -1.0 && vertexPosition.y == -1.0)
-                    gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
-                // BR > TR
-                else if (vertexPosition.x == 1.0 && vertexPosition.y == -1.0)
-                    gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
-                // TR > TL
-                else
-                    gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
-            }
-
-            // Flipped
-            else if (transform == 4)
-                gl_Position = vec4(-vertexPosition.x, vertexPosition.y, 0.0, 1.0);
-
-            // Flipped270
-            else if (transform == 7)
-            {
-                // TL > BR
-                if (vertexPosition.x == -1.0 && vertexPosition.y == 1.0)
-                    gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
-                // BL > BL
-                else if (vertexPosition.x == -1.0 && vertexPosition.y == -1.0)
-                    gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
-                // BR > TL
-                else if (vertexPosition.x == 1.0 && vertexPosition.y == -1.0)
-                    gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
-                // TR > TR
-                else
-                    gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
-            }
-
-            // Flipped180
-            else if (transform == 6)
-                gl_Position = vec4(vertexPosition.x, -vertexPosition.y, 0.0, 1.0);
-
-            // Flipped90
-            else if (transform == 5)
-            {
-                // TL > TL
-                if (vertexPosition.x == -1.0 && vertexPosition.y == 1.0)
-                    gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
-                // BL > TR
-                else if (vertexPosition.x == -1.0 && vertexPosition.y == -1.0)
-                    gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
-                // BR > BR
-                else if (vertexPosition.x == 1.0 && vertexPosition.y == -1.0)
-                    gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
-                // TR > BL
-                else
-                    gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
-            }
-
-            v_texcoord.x = (srcRect.x + vertexPosition.z*srcRect.z) / texSize.x;
-            v_texcoord.y = (srcRect.y + srcRect.w - vertexPosition.w*srcRect.w) / texSize.y;
         }
         )";
 
     GLchar fShaderStr[] =R"(
         uniform mediump sampler2D tex;
         uniform bool colorFactorEnabled;
-        uniform mediump int mode;
+        uniform lowp int mode;
         uniform mediump float alpha;
         uniform mediump vec3 color;
-        uniform mediump vec4 colorFactor;
         varying mediump vec2 v_texcoord;
         uniform bool texColorEnabled;
+        uniform bool premultipliedAlpha;
 
         void main()
         {
             // Texture
-            if (mode == 3 || mode == 0)
+            if (mode != 2)
             {
                 if (texColorEnabled)
                 {
                     gl_FragColor.xyz = color;
                     gl_FragColor.w = texture2D(tex, v_texcoord).w;
+                    if (alpha != 1.0)
+                        gl_FragColor.w *= alpha;
+                    return;
                 }
-                else
+
+                if (premultipliedAlpha)
+                {
                     gl_FragColor = texture2D(tex, v_texcoord);
 
-                gl_FragColor.w *= alpha;
+                    if (alpha != 1.0)
+                        gl_FragColor *= alpha;
+
+                    if (colorFactorEnabled)
+                        gl_FragColor.xyz *= color;
+                }
+                else
+                {
+                    gl_FragColor = texture2D(tex, v_texcoord);
+
+                    if (alpha != 1.0)
+                        gl_FragColor.w *= alpha;
+
+                    if (colorFactorEnabled)
+                        gl_FragColor.xyz *= color;
+                }
             }
 
             // Solid color
-            else if (mode == 1)
+            else
             {
                 gl_FragColor.xyz = color;
                 gl_FragColor.w = alpha;
             }
-
-            if (colorFactorEnabled)
-                gl_FragColor *= colorFactor;
         }
         )";
 
@@ -537,7 +141,7 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
         precision highp float;
         precision highp int;
         uniform highp sampler2D tex;
-        uniform highp int mode;
+        uniform lowp int mode;
         uniform highp vec4 samplerBounds;
         uniform highp vec2 pixelSize;
         uniform highp ivec2 iters;
@@ -695,7 +299,7 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
     imp()->currentUniforms = &imp()->uniforms;
     imp()->setupProgram();
 
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     glEnable(GL_BLEND);
     glEnable(GL_SCISSOR_TEST);
@@ -708,7 +312,6 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
     glDisable(GL_SAMPLE_COVERAGE);
     glDisable(GL_SAMPLE_ALPHA_TO_ONE);
 
-    imp()->shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
     imp()->shaderSetAlpha(1.f);
 }
 
@@ -721,23 +324,52 @@ LPainter::~LPainter()
     glDeleteShader(imp()->vertexShader);
 }
 
-void LPainter::bindFramebuffer(LFramebuffer *framebuffer)
+void LPainter::LPainterPrivate::setupProgram()
 {
-    if (!framebuffer)
-    {
-        imp()->fbId = 0;
-        imp()->fb = nullptr;
-        return;
-    }
+    glBindAttribLocation(currentProgram, 0, "vertexPosition");
 
-    imp()->fbId = framebuffer->id();
-    glBindFramebuffer(GL_FRAMEBUFFER, imp()->fbId);
-    imp()->fb = framebuffer;
+    // Use the program object
+    glUseProgram(currentProgram);
+
+    // Load the vertex data
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, square);
+
+    // Enables the vertex array
+    glEnableVertexAttribArray(0);
+
+    // Get Uniform Variables
+    currentUniforms->texSize = glGetUniformLocation(currentProgram, "texSize");
+    currentUniforms->srcRect = glGetUniformLocation(currentProgram, "srcRect");
+    currentUniforms->activeTexture = glGetUniformLocation(currentProgram, "tex");
+    currentUniforms->mode = glGetUniformLocation(currentProgram, "mode");
+    currentUniforms->color= glGetUniformLocation(currentProgram, "color");
+    currentUniforms->texColorEnabled = glGetUniformLocation(currentProgram, "texColorEnabled");
+    currentUniforms->colorFactorEnabled = glGetUniformLocation(currentProgram, "colorFactorEnabled");
+    currentUniforms->alpha = glGetUniformLocation(currentProgram, "alpha");
+    currentUniforms->premultipliedAlpha = glGetUniformLocation(currentProgram, "premultipliedAlpha");
+    currentUniforms->has90deg = glGetUniformLocation(currentProgram, "has90deg");
 }
 
-LFramebuffer *LPainter::boundFramebuffer() const
+void LPainter::LPainterPrivate::setupProgramScaler()
 {
-    return imp()->fb;
+    glBindAttribLocation(currentProgram, 0, "vertexPosition");
+
+    // Use the program object
+    glUseProgram(currentProgram);
+
+    // Load the vertex data
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, square);
+
+    // Enables the vertex array
+    glEnableVertexAttribArray(0);
+
+    // Get Uniform Variables
+    currentUniformsScaler->texSize = glGetUniformLocation(currentProgram, "texSize");
+    currentUniformsScaler->srcRect = glGetUniformLocation(currentProgram, "srcRect");
+    currentUniformsScaler->activeTexture = glGetUniformLocation(currentProgram, "tex");
+    currentUniformsScaler->pixelSize = glGetUniformLocation(currentProgram, "pixelSize");
+    currentUniformsScaler->samplerBounds = glGetUniformLocation(currentProgram, "samplerBounds");
+    currentUniformsScaler->iters = glGetUniformLocation(currentProgram, "iters");
 }
 
 void LPainter::LPainterPrivate::updateExtensions()
@@ -773,112 +405,359 @@ void LPainter::LPainterPrivate::updateCPUFormats()
     }
 }
 
-void LPainter::LPainterPrivate::setupProgram()
+void LPainter::bindTextureMode(const TextureParams &p)
 {
-    glBindAttribLocation(currentProgram, 0, "vertexPosition");
+    GLenum target = p.texture->target();
+    imp()->switchTarget(target);
+    imp()->userState.texture = p.texture;
+    imp()->userState.mode = LPainterPrivate::TextureMode;
+    imp()->updateBlendingParams();
 
-    // Use the program object
-    glUseProgram(currentProgram);
+    Float32 fbScale;
 
-    // Load the vertex data
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, square);
+    if (imp()->fb->type() == LFramebuffer::Output)
+    {
+        LOutputFramebuffer *outputFB = (LOutputFramebuffer*)imp()->fb;
 
-    // Enables the vertex array
-    glEnableVertexAttribArray(0);
+        if (outputFB->output()->usingFractionalScale())
+        {
+            if (outputFB->output()->fractionalOversamplingEnabled())
+            {
+                fbScale = imp()->fb->scale();
+            }
+            else
+            {
+                fbScale = outputFB->output()->fractionalScale();
+            }
+        }
+        else
+        {
+            fbScale = imp()->fb->scale();
+        }
+    }
+    else
+    {
+        fbScale = imp()->fb->scale();
+    }
 
-    // Get Uniform Variables
-    currentUniforms->texSize = glGetUniformLocation(currentProgram, "texSize");
-    currentUniforms->srcRect = glGetUniformLocation(currentProgram, "srcRect");
-    currentUniforms->activeTexture = glGetUniformLocation(currentProgram, "tex");
-    currentUniforms->mode = glGetUniformLocation(currentProgram, "mode");
-    currentUniforms->color= glGetUniformLocation(currentProgram, "color");
-    currentUniforms->texColorEnabled = glGetUniformLocation(currentProgram, "texColorEnabled");
-    currentUniforms->colorFactor = glGetUniformLocation(currentProgram, "colorFactor");
-    currentUniforms->colorFactorEnabled = glGetUniformLocation(currentProgram, "colorFactorEnabled");
-    currentUniforms->alpha = glGetUniformLocation(currentProgram, "alpha");
-    currentUniforms->transform = glGetUniformLocation(currentProgram, "transform");
+    LPoint pos = p.pos - imp()->fb->rect().pos();
+    Float32 srcDstX, srcDstY;
+    Float32 srcW, srcH;
+    Float32 srcDstW, srcDstH;
+    Float32 srcFbX1, srcFbY1, srcFbX2, srcFbY2;
+    Float32 srcFbW, srcFbH;
+    Float32 srcRectW = p.srcRect.w() <= 0.f ? 0.001f : p.srcRect.w();
+    Float32 srcRectH = p.srcRect.h() <= 0.f ? 0.001f : p.srcRect.h();
+
+    bool xFlip = false;
+    bool yFlip = false;
+
+    LTransform invTrans = Louvre::requiredTransform(p.srcTransform, imp()->fb->transform());
+    bool rotate = Louvre::is90Transform(invTrans);
+
+    if (Louvre::is90Transform(p.srcTransform))
+    {
+        srcH = Float32(p.texture->sizeB().w()) / p.srcScale;
+        srcW = Float32(p.texture->sizeB().h()) / p.srcScale;
+        yFlip = !yFlip;
+        xFlip = !xFlip;
+    }
+    else
+    {
+        srcW = (Float32(p.texture->sizeB().w()) / p.srcScale);
+        srcH = (Float32(p.texture->sizeB().h()) / p.srcScale);
+    }
+
+    srcDstW = (Float32(p.dstSize.w()) * srcW) / srcRectW;
+    srcDstX = (Float32(p.dstSize.w()) * p.srcRect.x()) / srcRectW;
+    srcDstH = (Float32(p.dstSize.h()) * srcH) / srcRectH;
+    srcDstY = (Float32(p.dstSize.h()) * p.srcRect.y()) / srcRectH;
+
+    switch (invTrans)
+    {
+    case LTransform::Normal:
+        break;
+    case LTransform::Rotated90:
+        xFlip = !xFlip;
+        break;
+    case LTransform::Rotated180:
+        xFlip = !xFlip;
+        yFlip = !yFlip;
+        break;
+    case LTransform::Rotated270:
+        yFlip = !yFlip;
+        break;
+    case LTransform::Flipped:
+        xFlip = !xFlip;
+        break;
+    case LTransform::Flipped90:
+        xFlip = !xFlip;
+        yFlip = !yFlip;
+        break;
+    case LTransform::Flipped180:
+        yFlip = !yFlip;
+        break;
+    case LTransform::Flipped270:
+        break;
+    default:
+        return;
+    }
+
+    Float32 screenH = Float32(imp()->fb->rect().h());
+    Float32 screenW = Float32(imp()->fb->rect().w());
+
+    switch (imp()->fb->transform())
+    {
+    case LTransform::Normal:
+        srcFbX1 = pos.x() - srcDstX;
+        srcFbX2 = srcFbX1 + srcDstW;
+
+        if (imp()->fbId == 0)
+        {
+            srcFbY1 = screenH - pos.y() + srcDstY;
+            srcFbY2 = srcFbY1 - srcDstH;
+        }
+        else
+        {
+            srcFbY1 = pos.y() - srcDstY;
+            srcFbY2 = srcFbY1 + srcDstH;
+        }
+        break;
+    case LTransform::Rotated90:
+        srcFbX2 = pos.y() - srcDstY;
+        srcFbX1 = srcFbX2 + srcDstH;
+
+        if (imp()->fbId == 0)
+        {
+            srcFbY1 = pos.x() - srcDstX;
+            srcFbY2 = srcFbY1 + srcDstW;
+        }
+        else
+        {
+            srcFbY2 = screenW - pos.x() + srcDstX;
+            srcFbY1 = srcFbY2 - srcDstW;
+            yFlip = !yFlip;
+        }
+        break;
+    case LTransform::Rotated180:
+        srcFbX2 = screenW - pos.x() + srcDstX;
+        srcFbX1 = srcFbX2 - srcDstW;
+
+        if (imp()->fbId == 0)
+        {
+            srcFbY2 = pos.y() - srcDstY;
+            srcFbY1 = srcFbY2 + srcDstH;
+        }
+        else
+        {
+            srcFbY2 = screenH - pos.y() + srcDstY;
+            srcFbY1 = srcFbY2 - srcDstH;
+        }
+        break;
+    case LTransform::Rotated270:
+        srcFbX1 = screenH - pos.y() + srcDstY;
+        srcFbX2 = srcFbX1 - srcDstH;
+
+        if (imp()->fbId == 0)
+        {
+            srcFbY2 = screenW - pos.x() + srcDstX;
+            srcFbY1 = srcFbY2 - srcDstW;
+        }
+        else
+        {
+            srcFbY1 = pos.x() - srcDstX;
+            srcFbY2 = srcFbY1 + srcDstW;
+            yFlip = !yFlip;
+        }
+        break;
+    case LTransform::Flipped:
+        srcFbX2 = screenW - pos.x() + srcDstX;
+        srcFbX1 = srcFbX2 - srcDstW;
+
+        if (imp()->fbId == 0)
+        {
+            srcFbY1 = screenH - pos.y() + srcDstY;
+            srcFbY2 = srcFbY1 - srcDstH;
+        }
+        else
+        {
+            srcFbY1 = pos.y() - srcDstY;
+            srcFbY2 = srcFbY1 + srcDstH;
+        }
+        break;
+    case LTransform::Flipped90:
+        srcFbX2 = pos.y() - srcDstY;
+        srcFbX1 = srcFbX2 + srcDstH;
+
+        if (imp()->fbId == 0)
+        {
+            srcFbY2 = screenW - pos.x() + srcDstX;
+            srcFbY1 = srcFbY2 - srcDstW;
+        }
+        else
+        {
+            srcFbY1 = pos.x() - srcDstX;
+            srcFbY2 = srcFbY1 + srcDstW;
+            yFlip = !yFlip;
+        }
+        break;
+    case LTransform::Flipped180:
+        if (imp()->fbId == 0)
+        {
+            srcFbX1 = pos.x() - srcDstX;
+            srcFbY1 = pos.y() - srcDstY + srcDstH;
+            srcFbX2 = pos.x() - srcDstX + srcDstW;
+            srcFbY2 = pos.y() - srcDstY;
+        }
+        else
+        {
+            srcFbY2 = screenH - pos.y() + srcDstY;
+            srcFbY1 = srcFbY2 - srcDstH;
+            srcFbX1 = pos.x() - srcDstX;
+            srcFbX2 = pos.x() - srcDstX + srcDstW;
+        }
+        break;
+    case LTransform::Flipped270:
+        srcFbX1 = screenH - pos.y() + srcDstY;
+        srcFbX2 = srcFbX1 - srcDstH;
+
+        if (imp()->fbId == 0)
+        {
+            srcFbY1 = pos.x() - srcDstX;
+            srcFbY2 = srcFbY1 + srcDstW;
+        }
+        else
+        {
+            srcFbY2 = screenW - pos.x() + srcDstX;
+            srcFbY1 = srcFbY2 - srcDstW;
+            yFlip = !yFlip;
+        }
+        break;
+    default:
+        return;
+    }
+
+    imp()->shaderSetHas90Deg(rotate);
+
+    if (xFlip)
+    {
+        srcW = srcFbX2;
+        srcFbX2 = srcFbX1;
+        srcFbX1 = srcW;
+    }
+
+    if (yFlip)
+    {
+        srcH = srcFbY2;
+        srcFbY2 = srcFbY1;
+        srcFbY1 = srcH;
+    }
+
+    srcFbX1 *= fbScale;
+    srcFbY1 *= fbScale;
+
+    srcFbW = srcFbX2 * fbScale - srcFbX1;
+    srcFbH = srcFbY2 * fbScale - srcFbY1;
+
+    imp()->srcRect.setX(srcFbX1);
+    imp()->srcRect.setY(srcFbY1);
+    imp()->srcRect.setW(srcFbW);
+    imp()->srcRect.setH(srcFbH);
+
+    glActiveTexture(GL_TEXTURE0);
+    imp()->shaderSetMode(LPainterPrivate::TextureMode);
+    imp()->shaderSetActiveTexture(0);
+    glBindTexture(target, p.texture->id(imp()->output));
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
-void LPainter::LPainterPrivate::setupProgramScaler()
+void LPainter::bindColorMode()
 {
-    glBindAttribLocation(currentProgram, 0, "vertexPosition");
-
-    // Use the program object
-    glUseProgram(currentProgram);
-
-    // Load the vertex data
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, square);
-
-    // Enables the vertex array
-    glEnableVertexAttribArray(0);
-
-    // Get Uniform Variables
-    currentUniformsScaler->texSize = glGetUniformLocation(currentProgram, "texSize");
-    currentUniformsScaler->srcRect = glGetUniformLocation(currentProgram, "srcRect");
-    currentUniformsScaler->activeTexture = glGetUniformLocation(currentProgram, "tex");
-    currentUniformsScaler->pixelSize = glGetUniformLocation(currentProgram, "pixelSize");
-    currentUniformsScaler->samplerBounds = glGetUniformLocation(currentProgram, "samplerBounds");
-    currentUniformsScaler->iters = glGetUniformLocation(currentProgram, "iters");
+    imp()->userState.mode = LPainterPrivate::ColorMode;
+    imp()->updateBlendingParams();
 }
 
-void LPainter::drawTexture(const LTexture *texture,
-                           const LRect &src, const LRect &dst,
-                           Float32 srcScale, Float32 alpha)
+void LPainter::drawBox(const LBox &box)
 {
-    imp()->drawTexture(texture, src.x(), src.y(), src.w(), src.h(), dst.x(), dst.y(), dst.w(), dst.h(), srcScale, alpha);
+    imp()->setViewport(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void LPainter::drawTexture(const LTexture *texture,
-                           Int32 srcX,
-                           Int32 srcY,
-                           Int32 srcW,
-                           Int32 srcH,
-                           Int32 dstX,
-                           Int32 dstY,
-                           Int32 dstW,
-                           Int32 dstH,
-                           Float32 srcScale,
-                           Float32 alpha)
+void LPainter::drawRect(const LRect &rect)
 {
-
-    imp()->drawTexture(texture, srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH, srcScale, alpha);
+    imp()->setViewport(rect.x(), rect.y(), rect.w(), rect.h());
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void LPainter::drawColorTexture(const LTexture *texture, const LRGBF &color, const LRect &src, const LRect &dst, Float32 srcScale, Float32 alpha)
+void LPainter::drawRegion(const LRegion &region)
 {
-    imp()->drawColorTexture(texture,
-                            color.r, color.g, color.b,
-                            src.x(), src.y(), src.w(), src.h(),
-                            dst.x(), dst.y(), dst.w(), dst.h(),
-                            srcScale,
-                            alpha);
+    Int32 n;
+    const LBox *box = region.boxes(&n);
+    for (Int32 i = 0; i < n; i++)
+    {
+        imp()->setViewport(box->x1,
+                           box->y1,
+                           box->x2 - box->x1,
+                           box->y2 - box->y1);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+        box++;
+    }
 }
 
-void LPainter::drawColorTexture(const LTexture *texture,
-                                Float32 r, Float32 g, Float32 b,
-                                Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
-                                Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                                Float32 srcScale, Float32 alpha)
+void LPainter::enableCustomTextureColor(bool enabled)
 {
-
-    imp()->drawColorTexture(texture, r, g, b,
-                            srcX, srcY, srcW, srcH,
-                            dstX, dstY, dstW, dstH,
-                            srcScale, alpha);
+    imp()->userState.customTextureColor = enabled;
+    imp()->updateBlendingParams();
 }
 
-void LPainter::drawColor(const LRect &dst,
-                         Float32 r, Float32 g, Float32 b, Float32 a)
+bool LPainter::customTextureColorEnabled() const
 {
-    imp()->drawColor(dst.x(), dst.y(), dst.w(), dst.h(),
-                     r, g, b, a);
+    return imp()->userState.customTextureColor;
 }
 
-void LPainter::drawColor(Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                         Float32 r, Float32 g, Float32 b, Float32 a)
+bool LPainter::autoBlendFuncEnabled() const noexcept
 {
-    imp()->drawColor(dstX, dstY, dstW, dstH,
-                     r, g, b, a);
+    return imp()->userState.autoBlendFunc;
+}
+
+void LPainter::enableAutoBlendFunc(bool enabled) const noexcept
+{
+    imp()->userState.autoBlendFunc = enabled;
+    imp()->updateBlendingParams();
+}
+
+void LPainter::setAlpha(Float32 alpha)
+{
+    imp()->userState.alpha = alpha;
+    imp()->updateBlendingParams();
+}
+
+void LPainter::setColor(const LRGBF &color)
+{
+    imp()->userState.color = color;
+    imp()->updateBlendingParams();
+}
+
+void LPainter::bindFramebuffer(LFramebuffer *framebuffer)
+{
+    if (!framebuffer)
+    {
+        imp()->fbId = 0;
+        imp()->fb = nullptr;
+        return;
+    }
+
+    imp()->fbId = framebuffer->id();
+    glBindFramebuffer(GL_FRAMEBUFFER, imp()->fbId);
+    imp()->fb = framebuffer;
+}
+
+LFramebuffer *LPainter::boundFramebuffer() const
+{
+    return imp()->fb;
 }
 
 void LPainter::setViewport(const LRect &rect)
@@ -896,9 +775,18 @@ void LPainter::setClearColor(Float32 r, Float32 g, Float32 b, Float32 a)
     glClearColor(r,g,b,a);
 }
 
-void LPainter::setColorFactor(Float32 r, Float32 g, Float32 b, Float32 a)
+void LPainter::setColorFactor(Float32 r, Float32 g, Float32 b, Float32 a) noexcept
 {
-    imp()->shaderSetColorFactor(r, g, b, a);
+    imp()->userState.colorFactor = {r, g, b, a};
+    imp()->shaderSetColorFactorEnabled(r != 1.f || g != 1.f || b != 1.f || a != 1.f);
+    imp()->updateBlendingParams();
+}
+
+void LPainter::setColorFactor(const LRGBAF &factor) noexcept
+{
+    imp()->userState.colorFactor = factor;
+    imp()->shaderSetColorFactorEnabled(factor.r != 1.f || factor.g != 1.f || factor.b != 1.f || factor.a != 1.f);
+    imp()->updateBlendingParams();
 }
 
 void LPainter::clearScreen()
@@ -915,4 +803,12 @@ void LPainter::clearScreen()
 void LPainter::bindProgram()
 {
     glUseProgram(imp()->programObject);
+}
+
+void LPainter::setBlendFunc(const LBlendFunc &blendFunc) const noexcept
+{
+    imp()->userState.customBlendFunc = blendFunc;
+
+    if (!imp()->userState.autoBlendFunc)
+        glBlendFuncSeparate(blendFunc.sRGBFactor, blendFunc.dRGBFactor, blendFunc.sAlphaFactor, blendFunc.dAlphaFactor);
 }

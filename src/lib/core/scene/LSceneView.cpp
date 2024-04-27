@@ -447,17 +447,14 @@ void LSceneView::drawOpaqueDamage(LView *view) noexcept
     cache.opaque.intersectRegion(ctd.newDamage);
     cache.opaque.subtractRegion(cache.opaqueOverlay);
 
-    if (view->m_state.check(ColorFactor))
-    {
-        ctd.p->imp()->shaderSetColorFactor(view->m_colorFactor.r,
-                                          view->m_colorFactor.g,
-                                          view->m_colorFactor.b,
-                                          view->m_colorFactor.a);
-    }
-    else
-        ctd.p->imp()->shaderSetColorFactorEnabled(0);
+    ctd.p->enableAutoBlendFunc(view->autoBlendFuncEnabled());
 
-    ctd.p->imp()->shaderSetAlpha(1.f);
+    if (view->m_state.check(ColorFactor))
+        ctd.p->setColorFactor(view->m_colorFactor);
+    else
+        ctd.p->setColorFactor(1.f, 1.f, 1.f, 1.f);
+
+    ctd.p->setAlpha(1.f);
     m_paintParams.painter = ctd.p;
     m_paintParams.region = &cache.opaque;
     view->paintEvent(m_paintParams);
@@ -471,39 +468,21 @@ void LSceneView::drawTranslucentDamage(LView *view) noexcept
     if (!view->isRenderable() || !cache.mapped || cache.occluded)
         goto drawChildrenOnly;
 
-    if (view->autoBlendFuncEnabled())
-    {
-        // TODO: handle pre mult alpha
-        if (ctd.p->boundFramebuffer()->id() != 0)
-            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
-        else
+    ctd.p->enableAutoBlendFunc(view->autoBlendFuncEnabled());
 
-        //if (view->type() == LView::Type::Surface)
-        //    glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
-        //else
-            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
-    }
-    else
-        glBlendFuncSeparate(view->blendFunc().sRGBFactor,
-                            view->blendFunc().dRGBFactor,
-                            view->blendFunc().sAlphaFactor,
-                            view->blendFunc().dAlphaFactor);
+    if (!view->autoBlendFuncEnabled())
+        ctd.p->setBlendFunc(view->blendFunc());
 
     if (view->m_state.check(ColorFactor))
-    {
-        ctd.p->imp()->shaderSetColorFactor(view->m_colorFactor.r,
-                                          view->m_colorFactor.g,
-                                          view->m_colorFactor.b,
-                                          view->m_colorFactor.a);
-    }
+        ctd.p->setColorFactor(view->m_colorFactor);
     else
-        ctd.p->imp()->shaderSetColorFactorEnabled(0);
+        ctd.p->setColorFactor(1.f, 1.f, 1.f, 1.f);
 
     cache.occluded = true;
     cache.translucent.intersectRegion(ctd.newDamage);
     cache.translucent.subtractRegion(cache.opaqueOverlay);
 
-    ctd.p->imp()->shaderSetAlpha(cache.opacity);
+    ctd.p->setAlpha(cache.opacity);
     m_paintParams.painter = ctd.p;
     m_paintParams.region = &cache.translucent;
     view->paintEvent(m_paintParams);

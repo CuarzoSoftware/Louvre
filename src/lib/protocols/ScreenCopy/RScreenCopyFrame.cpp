@@ -66,7 +66,7 @@ RScreenCopyFrame::RScreenCopyFrame
 
     LSizeF scale;
 
-    if (LFramebuffer::is90Transform(output->transform()))
+    if (Louvre::is90Transform(output->transform()))
     {
         scale.setW(Float32(m_initOutputModeSize.w())/Float32(m_initOutputSize.h()));
         scale.setH(Float32(m_initOutputModeSize.h())/Float32(m_initOutputSize.w()));

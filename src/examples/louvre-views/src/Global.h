@@ -161,7 +161,7 @@ public:
         LRectF customSrcRect;
         Float32 bufferScale = 1.f;
         LSize customDstSize;
-        LFramebuffer::Transform transform = LFramebuffer::Normal;
+        LTransform transform = LTransform::Normal;
         LRGBF customColor;
         bool enableCustomColor = false;
         bool enableCustomSrcRect = true;
@@ -225,7 +225,7 @@ public:
     // Fonts
     static void loadFonts();
     static Fonts *font();
-    static const char *transformName(LFramebuffer::Transform transform);
+    static const char *transformName(LTransform transform);
 
     // Utils
     static LTexture *loadAssetsTexture(const std::filesystem::path &file, bool exitOnFail = true);

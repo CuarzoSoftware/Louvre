@@ -87,7 +87,7 @@ void LRegion::multiply(Float32 xFactor, Float32 yFactor) noexcept
     m_region = tmp;
 }
 
-void LRegion::transform(const LSize &size, LFramebuffer::Transform transform) noexcept
+void LRegion::transform(const LSize &size, LTransform transform) noexcept
 {
     pixman_region32_intersect_rect(&m_region, &m_region, 0, 0, size.w(), size.h());
 
@@ -97,9 +97,9 @@ void LRegion::transform(const LSize &size, LFramebuffer::Transform transform) no
 
     switch (transform)
     {
-    case LFramebuffer::Normal:
+    case LTransform::Normal:
         return;
-    case LFramebuffer::Flipped270:
+    case LTransform::Flipped270:
         pixman_region32_init(&tmp);
         boxes = (LBox*)pixman_region32_rectangles(&m_region, &n);
         for (i = 0; i < n; i++)
@@ -112,7 +112,7 @@ void LRegion::transform(const LSize &size, LFramebuffer::Transform transform) no
             boxes++;
         }
         break;
-    case LFramebuffer::Flipped90:
+    case LTransform::Flipped90:
         pixman_region32_init(&tmp);
         boxes = (LBox*)pixman_region32_rectangles(&m_region, &n);
         for (i = 0; i < n; i++)
@@ -125,7 +125,7 @@ void LRegion::transform(const LSize &size, LFramebuffer::Transform transform) no
             boxes++;
         }
         break;
-    case LFramebuffer::Flipped180:
+    case LTransform::Flipped180:
         pixman_region32_init(&tmp);
         boxes = (LBox*)pixman_region32_rectangles(&m_region, &n);
         for (i = 0; i < n; i++)
@@ -138,7 +138,7 @@ void LRegion::transform(const LSize &size, LFramebuffer::Transform transform) no
             boxes++;
         }
         break;
-    case LFramebuffer::Rotated180:
+    case LTransform::Rotated180:
         pixman_region32_init(&tmp);
         boxes = (LBox*)pixman_region32_rectangles(&m_region, &n);
         for (i = 0; i < n; i++)
@@ -151,7 +151,7 @@ void LRegion::transform(const LSize &size, LFramebuffer::Transform transform) no
             boxes++;
         }
         break;
-    case LFramebuffer::Flipped:
+    case LTransform::Flipped:
         pixman_region32_init(&tmp);
         boxes = (LBox*)pixman_region32_rectangles(&m_region, &n);
         for (i = 0; i < n; i++)
@@ -164,7 +164,7 @@ void LRegion::transform(const LSize &size, LFramebuffer::Transform transform) no
             boxes++;
         }
         break;
-    case LFramebuffer::Rotated90:
+    case LTransform::Rotated90:
         pixman_region32_init(&tmp);
         boxes = (LBox*)pixman_region32_rectangles(&m_region, &n);
         for (i = 0; i < n; i++)
@@ -177,7 +177,7 @@ void LRegion::transform(const LSize &size, LFramebuffer::Transform transform) no
             boxes++;
         }
         break;
-    case LFramebuffer::Rotated270:
+    case LTransform::Rotated270:
         pixman_region32_init(&tmp);
         boxes = (LBox*)pixman_region32_rectangles(&m_region, &n);
         for (i = 0; i < n; i++)

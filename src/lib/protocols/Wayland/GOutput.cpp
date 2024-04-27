@@ -99,7 +99,7 @@ void GOutput::sendConfiguration() noexcept
 }
 
 void GOutput::geometry(Int32 x, Int32 y, Int32 physicalWidth, Int32 physicalHeight,
-                       Int32 subpixel, const char *make, const char *model, Int32 transform) noexcept
+                       Int32 subpixel, const char *make, const char *model, LTransform transform) noexcept
 {
     wl_output_send_geometry(
         resource(),
@@ -109,7 +109,7 @@ void GOutput::geometry(Int32 x, Int32 y, Int32 physicalWidth, Int32 physicalHeig
         subpixel,
         make,
         model,
-        transform);
+        static_cast<Int32>(transform));
 }
 
 void GOutput::mode(UInt32 flags, Int32 width, Int32 height, Int32 refresh) noexcept

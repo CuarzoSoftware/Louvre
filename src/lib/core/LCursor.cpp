@@ -65,7 +65,7 @@ LCursor::LCursor() : LPRIVATE_INIT_UNIQUE(LCursor)
 {
     compositor()->imp()->cursor = this;
 
-    if (!imp()->louvreTexture.setDataB(
+    if (!imp()->louvreTexture.setDataFromMainMemory(
             LSize(LOUVRE_DEFAULT_CURSOR_WIDTH, LOUVRE_DEFAULT_CURSOR_HEIGHT),
             LOUVRE_DEFAULT_CURSOR_STRIDE,
             DRM_FORMAT_ARGB8888,

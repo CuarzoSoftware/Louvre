@@ -410,7 +410,7 @@ public:
      * @param size The size used for clipping and transformation.
      * @param transform The transform to be applied to the rectangles.
      */
-    void transform(const LSize &size, LFramebuffer::Transform transform) noexcept;
+    void transform(const LSize &size, LTransform transform) noexcept;
 
     /**
      * @brief Returns the point within the region closest to the given point.

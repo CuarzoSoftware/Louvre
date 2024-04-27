@@ -76,7 +76,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     Float32 scale { 1.f };
 
     // Transform set with LOutput::setTransform()
-    LFramebuffer::Transform transform { LFramebuffer::Normal };
+    LTransform transform { LTransform::Normal };
 
     // Rect in surface coordinates
     LRect rect;
@@ -101,10 +101,6 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     std::atomic<bool> callLock;
     std::atomic<bool> callLockACK;
     std::thread::id threadId;
-
-    // Raw native OpenGL textures that need to be destroyed from this thread
-    std::vector<GLuint>nativeTexturesToDestroy;
-
     LGammaTable gammaTable {0};
 
     // TODO

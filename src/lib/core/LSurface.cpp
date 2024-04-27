@@ -18,7 +18,7 @@ LSurface::LSurface(const void *params) : LPRIVATE_INIT_UNIQUE(LSurface)
 {
     imp()->pendingDamage.reserve(LOUVRE_MAX_DAMAGE_RECTS);
     imp()->pendingDamageB.reserve(LOUVRE_MAX_DAMAGE_RECTS);
-    imp()->texture = new LTexture();
+    imp()->texture = new LTexture(true);
     imp()->textureBackup = imp()->texture;
     imp()->surfaceResource = ((LSurface::Params*)params)->surfaceResource;
     imp()->current.onBufferDestroyListener.notify = [](wl_listener *listener, void *)
@@ -217,7 +217,7 @@ const LRectF &LSurface::srcRect() const
     return imp()->srcRect;
 }
 
-LFramebuffer::Transform LSurface::bufferTransform() const
+LTransform LSurface::bufferTransform() const
 {
     return imp()->current.transform;
 }

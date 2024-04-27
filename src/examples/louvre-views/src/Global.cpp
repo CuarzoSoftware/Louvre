@@ -180,8 +180,8 @@ void G::loadTextures()
 
     if (tmp)
     {
-        LTexture *hires = tmp->copyB(LSize(DOCK_ITEM_HEIGHT * 4));
-        _textures.defaultAppIcon = hires->copyB(LSize(DOCK_ITEM_HEIGHT * 2));
+        LTexture *hires = tmp->copy(LSize(DOCK_ITEM_HEIGHT * 4));
+        _textures.defaultAppIcon = hires->copy(LSize(DOCK_ITEM_HEIGHT * 2));
         delete hires;
         delete tmp;
     }
@@ -213,7 +213,7 @@ void G::loadTextures()
     conf->customSrcRect = LRectF(172.f - 16.f - 70.f, 59.5f, 70.f, 74.f);
     conf->customDstSize = LSize(70, 74);
     conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Flipped;
+    conf->transform = LTransform::Flipped;
 
     conf = &_textures.UIConf[DecorationActiveT];
     conf->texture = texture;
@@ -232,7 +232,7 @@ void G::loadTextures()
     conf->customSrcRect = LRectF(172.f - 16.f - 48.f, 133.f, 48.f, 2.f);
     conf->customDstSize = LSize(48, 1);
     conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Flipped;
+    conf->transform = LTransform::Flipped;
 
     conf = &_textures.UIConf[DecorationActiveBL];
     conf->texture = texture;
@@ -245,7 +245,7 @@ void G::loadTextures()
     conf->customSrcRect = LRectF(172.f - 16.f - 82.f, 134.f, 82.f, 80.f);
     conf->customDstSize = LSize(82, 80);
     conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Flipped;
+    conf->transform = LTransform::Flipped;
 
     conf = &_textures.UIConf[DecorationActiveB];
     conf->texture = texture;
@@ -264,7 +264,7 @@ void G::loadTextures()
     conf->customSrcRect = LRectF(172.f - 100.5f - 56.f, 58.5f, 56.f, 63.f);
     conf->customDstSize = LSize(56, 63);
     conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Flipped;
+    conf->transform = LTransform::Flipped;
 
     conf = &_textures.UIConf[DecorationInactiveT];
     conf->texture = texture;
@@ -283,7 +283,7 @@ void G::loadTextures()
     conf->customSrcRect = LRectF(172.f - 100.5f - 71.f, 122.f, 71.f, 66.f);
     conf->customDstSize = LSize(71, 66);
     conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Flipped;
+    conf->transform = LTransform::Flipped;
 
     conf = &_textures.UIConf[DecorationInactiveL];
     conf->texture = texture;
@@ -296,7 +296,7 @@ void G::loadTextures()
     conf->customSrcRect = LRectF(172.f - 100.5f - 41.f, 121.5f, 41.f, 0.5f);
     conf->customDstSize = LSize(41, 1);
     conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Flipped;
+    conf->transform = LTransform::Flipped;
 
     conf = &_textures.UIConf[DecorationInactiveB];
     conf->texture = texture;
@@ -309,21 +309,21 @@ void G::loadTextures()
     conf->customSrcRect = LRectF(172.f - 11.f, 0.f, 11.f, 11.f);
     conf->customDstSize = LSize(11, 11);
     conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Flipped180;
+    conf->transform = LTransform::Flipped180;
 
     conf = &_textures.UIConf[DecorationMaskBR];
     conf->texture = texture;
     conf->customSrcRect = LRectF(0.f, 0.f, 11.f, 11.f);
     conf->customDstSize = LSize(11, 11);
     conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Rotated180;
+    conf->transform = LTransform::Rotated180;
 
     conf = &_textures.UIConf[TooltipT];
     conf->texture = texture;
     conf->customSrcRect = LRectF(-0.5f, 216.f - 0.5f - 21.f, 1.f, 21.f);
     conf->customDstSize = LSize(1, 21);
     conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Rotated180;
+    conf->transform = LTransform::Rotated180;
 
     conf = &_textures.UIConf[TooltipL];
     conf->texture = texture;
@@ -336,7 +336,7 @@ void G::loadTextures()
     conf->customSrcRect = LRectF(0.5f, 0.f, 21.f, 0.5f);
     conf->customDstSize = LSize(21, 1);
     conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Flipped;
+    conf->transform = LTransform::Flipped;
 
     conf = &_textures.UIConf[TooltipB];
     conf->texture = texture;
@@ -349,21 +349,21 @@ void G::loadTextures()
     conf->customSrcRect = LRectF(216.f - 21.f - 0.5f, 150.5f, 21.f, 21.f);
     conf->customDstSize = LSize(21, 21);
     conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Rotated90;
+    conf->transform = LTransform::Rotated90;
 
     conf = &_textures.UIConf[TooltipTR];
     conf->texture = texture;
     conf->customSrcRect = LRectF(0.5f, 172.f - 0.5f - 21.f, 21.f, 21.f);
     conf->customDstSize = LSize(21, 21);
     conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Flipped90;
+    conf->transform = LTransform::Flipped90;
 
     conf = &_textures.UIConf[TooltipBR];
     conf->texture = texture;
     conf->customSrcRect = LRectF(0.5f, 0.5f, 21.f, 21.f);
     conf->customDstSize = LSize(21, 21);
     conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Rotated270;
+    conf->transform = LTransform::Rotated270;
 
     conf = &_textures.UIConf[TooltipBL];
     conf->texture = texture;
@@ -382,21 +382,21 @@ void G::loadTextures()
     conf->customSrcRect = LRectF(216.f - 0.5f - 56.f, 16.f, 56.f, 133.f);
     conf->customDstSize = LSize(56, 133);
     conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Rotated90;
+    conf->transform = LTransform::Rotated90;
 
     conf = &_textures.UIConf[DockC];
     conf->texture = texture;
     conf->customSrcRect = LRectF(216.f - 0.5f, 16.f, 0.5f, 133.f);
     conf->customDstSize = LSize(1, 133);
     conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Rotated90;
+    conf->transform = LTransform::Rotated90;
 
     conf = &_textures.UIConf[DockR];
     conf->texture = texture;
     conf->customSrcRect = LRectF(0.5f, 23.f, 56.f, 133.f);
     conf->customDstSize = LSize(56, 133);
     conf->bufferScale = bufferScale;
-    conf->transform = LFramebuffer::Rotated270;
+    conf->transform = LTransform::Rotated270;
 
     conf = &_textures.UIConf[DockDot];
     conf->texture = texture;
@@ -467,25 +467,25 @@ G::Fonts *G::font()
     return &_fonts;
 }
 
-const char *G::transformName(LFramebuffer::Transform transform)
+const char *G::transformName(LTransform transform)
 {
     switch (transform)
     {
-    case LFramebuffer::Normal:
+    case LTransform::Normal:
         return "No Transform";
-    case LFramebuffer::Rotated90:
+    case LTransform::Rotated90:
         return "Rotated 90°";
-    case LFramebuffer::Rotated180:
+    case LTransform::Rotated180:
         return "Rotated 180°";
-    case LFramebuffer::Rotated270:
+    case LTransform::Rotated270:
         return "Rotated 270°";
-    case LFramebuffer::Flipped:
+    case LTransform::Flipped:
         return "Flipped";
-    case LFramebuffer::Flipped90:
+    case LTransform::Flipped90:
         return "Flipped & Rotated 90°";
-    case LFramebuffer::Flipped180:
+    case LTransform::Flipped180:
         return "Flipped & Rotated 180°";
-    case LFramebuffer::Flipped270:
+    case LTransform::Flipped270:
         return "Flipped & Rotated 270°";
     }
 

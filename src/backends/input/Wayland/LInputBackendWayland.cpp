@@ -387,34 +387,34 @@ public:
             const LSizeF sizeF { shared().surfaceSize };
             switch (cursor()->output()->transform())
             {
-            case LFramebuffer::Normal:
+            case LTransform::Normal:
                 break;
-            case LFramebuffer::Rotated90:
+            case LTransform::Rotated90:
                 tmp = pos.y();
                 pos.setY(pos.x());
                 pos.setX(sizeF.h() - tmp);
                 break;
-            case LFramebuffer::Rotated180:
+            case LTransform::Rotated180:
                 pos.setY(sizeF.h() - pos.y());
                 pos.setX(sizeF.w() - pos.x());
                 break;
-            case LFramebuffer::Rotated270:
+            case LTransform::Rotated270:
                 tmp = pos.y();
                 pos.setY(sizeF.w() - pos.x());
                 pos.setX(tmp);
                 break;
-            case LFramebuffer::Flipped:
+            case LTransform::Flipped:
                 pos.setX(sizeF.w() - pos.x());
                 break;
-            case LFramebuffer::Flipped90:
+            case LTransform::Flipped90:
                 tmp = pos.y();
                 pos.setY(pos.x());
                 pos.setX(tmp);
                 break;
-            case LFramebuffer::Flipped180:
+            case LTransform::Flipped180:
                 pos.setY(sizeF.h() - pos.y());
                 break;
-            case LFramebuffer::Flipped270:
+            case LTransform::Flipped270:
                 tmp = pos.y();
                 pos.setY(sizeF.w() - pos.x());
                 pos.setX(sizeF.h() - tmp);

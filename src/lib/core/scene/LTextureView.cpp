@@ -135,7 +135,7 @@ void LTextureView::updateDimensions() const noexcept
         m_dstSize = m_customDstSize;
     else if (m_texture)
     {
-        if (LFramebuffer::is90Transform(m_transform))
+        if (Louvre::is90Transform(m_transform))
         {
             m_dstSize.setW(roundf(Float32(m_texture->sizeB().h()) / m_bufferScale));
             m_dstSize.setH(roundf(Float32(m_texture->sizeB().w()) / m_bufferScale));
@@ -151,7 +151,7 @@ void LTextureView::updateDimensions() const noexcept
         m_srcRect = m_customSrcRect;
     else if (m_texture)
     {
-        if (LFramebuffer::is90Transform(m_transform))
+        if (Louvre::is90Transform(m_transform))
         {
             m_srcRect.setW(Float32(m_texture->sizeB().h()) / m_bufferScale);
             m_srcRect.setH(Float32(m_texture->sizeB().w()) / m_bufferScale);

@@ -48,7 +48,6 @@ LPRIVATE_CLASS(LCompositor)
     bool animationsVectorChanged { false };
     bool pollUnlocked { false };
     bool isGraphicBackendInitialized { false };
-    std::vector<GLuint>nativeTexturesToDestroy;
 
     bool initGraphicBackend();
         PFNEGLBINDWAYLANDDISPLAYWL eglBindWaylandDisplayWL { NULL };
@@ -115,15 +114,6 @@ LPRIVATE_CLASS(LCompositor)
     void destroyPendingRenderBuffers(std::thread::id *id);
     void addRenderBufferToDestroy(std::thread::id thread, LRenderBuffer::ThreadData &data);
     static LPainter *findPainter();
-
-    inline static void destroyNativeTextures(std::vector<GLuint> &vector)
-    {
-        while (!vector.empty())
-        {
-            glDeleteTextures(1, &vector.back());
-            vector.pop_back();
-        }
-    }
 
     void sendPendingConfigurations();
     void sendPresentationTime();

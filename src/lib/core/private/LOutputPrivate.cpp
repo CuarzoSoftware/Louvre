@@ -107,8 +107,8 @@ void LOutput::LOutputPrivate::damageToBufferCoords() noexcept
 void LOutput::LOutputPrivate::blitFractionalScaleFb(bool cursorOnly) noexcept
 {
     stateFlags.remove(UsingFractionalScale);
-    const LFramebuffer::Transform prevTrasform { transform };
-    transform = LFramebuffer::Normal;
+    const LTransform prevTrasform { transform };
+    transform = LTransform::Normal;
     const Float32 prevScale { scale };
     const Float32 prevFracScale { fractionalScale };
     scale = 1.f;
@@ -123,7 +123,7 @@ void LOutput::LOutputPrivate::blitFractionalScaleFb(bool cursorOnly) noexcept
         .pos = rect.pos(),
         .srcRect = LRect(0, fractionalFb.sizeB()),
         .dstSize = rect.size(),
-        .srcTransform = LFramebuffer::Normal,
+        .srcTransform = LTransform::Normal,
         .srcScale = 1.f
     });
 
@@ -289,7 +289,6 @@ void LOutput::LOutputPrivate::backendPaintGL()
 
     compositor()->flushClients();
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
-    compositor()->imp()->destroyNativeTextures(nativeTexturesToDestroy);
 
     if (callLock)
         compositor()->imp()->unlock();
@@ -356,7 +355,6 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
     compositor()->flushClients();
     output->imp()->state = LOutput::Uninitialized;
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
-    compositor()->imp()->destroyNativeTextures(nativeTexturesToDestroy);
 
     if (callLock)
         compositor()->imp()->unlock();
@@ -382,7 +380,7 @@ void LOutput::LOutputPrivate::updateRect()
         sizeB = compositor()->imp()->graphicBackend->outputGetCurrentMode(output)->sizeB();
 
     // Swap width with height
-    if (LFramebuffer::is90Transform(transform))
+    if (Louvre::is90Transform(transform))
     {
         Int32 tmpW = sizeB.w();
         sizeB.setW(sizeB.h());
@@ -443,7 +441,7 @@ void LOutput::LOutputPrivate::drawCursor() noexcept
             .pos = cursor()->rect().pos(),
             .srcRect = LRect(0, cursor()->texture()->sizeB()),
             .dstSize = cursor()->rect().size(),
-            .srcTransform = LFramebuffer::Normal,
+            .srcTransform = LTransform::Normal,
             .srcScale = 1.f
         });
         painter->drawRect(cursor()->rect());

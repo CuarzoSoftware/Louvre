@@ -4,6 +4,7 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <private/LOutputPrivate.h>
+#include <LFramebufferWrapper.h>
 #include <LClientCursor.h>
 #include <LCursor.h>
 #include <algorithm>
@@ -11,7 +12,7 @@
 
 using namespace Louvre;
 
-inline static void texture2Buffer(LCursor *cursor, const LSizeF &size, LFramebuffer::Transform transform);
+inline static void texture2Buffer(LCursor *cursor, const LSizeF &size, LTransform transform);
 
 LPRIVATE_CLASS_NO_COPY(LCursor)
     LCursorPrivate();
@@ -32,6 +33,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
     LTexture *defaultTexture                            = nullptr;
     LTexture louvreTexture;
     GLuint glFramebuffer, glRenderbuffer;
+    LFramebufferWrapper fb { 0, LSize(64, 64) };
     UChar8 buffer[64*64*4];
 
     inline void setOutput(LOutput *out)
@@ -128,34 +130,34 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
             {
                 LPointF p { newPosS - LPointF(o->pos()) };
 
-                if (o->transform() == LFramebuffer::Flipped)
+                if (o->transform() == LTransform::Flipped)
                     p.setX(o->rect().w() - p.x() - size.w());
-                else if (o->transform() == LFramebuffer::Rotated270)
+                else if (o->transform() == LTransform::Rotated270)
                 {
                     const Float32 tmp { p.x() };
                     p.setX(o->rect().h() - p.y() - size.h());
                     p.setY(tmp);
                 }
-                else if (o->transform() == LFramebuffer::Rotated180)
+                else if (o->transform() == LTransform::Rotated180)
                 {
                     p.setX(o->rect().w() - p.x() - size.w());
                     p.setY(o->rect().h() - p.y() - size.h());
                 }
-                else if (o->transform() == LFramebuffer::Rotated90)
+                else if (o->transform() == LTransform::Rotated90)
                 {
                     const Float32 tmp { p.x() };
                     p.setX(p.y());
                     p.setY(o->rect().w() - tmp - size.h());
                 }
-                else if (o->transform() == LFramebuffer::Flipped270)
+                else if (o->transform() == LTransform::Flipped270)
                 {
                     const Float32 tmp { p.x() };
                     p.setX(o->rect().h() - p.y() - size.h());
                     p.setY(o->rect().w() - tmp - size.w());
                 }
-                else if (o->transform() == LFramebuffer::Flipped180)
+                else if (o->transform() == LTransform::Flipped180)
                     p.setY(o->rect().h() - p.y() - size.y());
-                else if (o->transform() == LFramebuffer::Flipped90)
+                else if (o->transform() == LTransform::Flipped90)
                 {
                     const Float32 tmp { p.x() };
                     p.setX(p.y());
@@ -171,28 +173,28 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
     }
 };
 
-inline static void texture2Buffer(LCursor *cursor, const LSizeF &size, LFramebuffer::Transform transform)
+inline static void texture2Buffer(LCursor *cursor, const LSizeF &size, LTransform transform)
 {
     LPainter *painter { compositor()->imp()->painter };
     glBindFramebuffer(GL_FRAMEBUFFER, cursor->imp()->glFramebuffer);
-    LRect src;
-
-    if (transform == LFramebuffer::Normal ||
-        transform == LFramebuffer::Flipped ||
-        transform == LFramebuffer::Flipped180 ||
-        transform == LFramebuffer::Rotated180)
-        src = LRect(0, 0, cursor->texture()->sizeB().w(), -cursor->texture()->sizeB().h());
-    else if (transform == LFramebuffer::Rotated90 ||
-             transform == LFramebuffer::Rotated270 ||
-             transform == LFramebuffer::Flipped90 ||
-             transform == LFramebuffer::Flipped270)
-        src = LRect(0, 0, -cursor->texture()->sizeB().w(), cursor->texture()->sizeB().h());
-
-    painter->imp()->scaleCursor(
-        cursor->texture(),
-        src,
-        LRect(0, size),
-        transform);
+    cursor->imp()->fb.setId(cursor->imp()->glFramebuffer);
+    painter->bindFramebuffer(&cursor->imp()->fb);
+    painter->enableCustomTextureColor(false);
+    painter->setAlpha(1.f);
+    painter->setColorFactor(1.f, 1.f, 1.f, 1.f);
+    painter->setClearColor(0.f, 0.f, 0.f, 0.f);
+    painter->clearScreen();
+    painter->bindTextureMode({
+        .texture = cursor->texture(),
+        .pos = LPoint(0, 0),
+        .srcRect = LRect(0, 0, cursor->texture()->sizeB().w(), cursor->texture()->sizeB().h()),
+        .dstSize = size,
+        .srcTransform = Louvre::requiredTransform(transform, LTransform::Normal),
+        .srcScale = 1.f,
+    });
+    glDisable(GL_BLEND);
+    painter->drawRect(LRect(0, size));
+    glEnable(GL_BLEND);
 
     if (painter->imp()->openGLExtensions.EXT_read_format_bgra)
         glReadPixels(0, 0, 64, 64, GL_BGRA_EXT , GL_UNSIGNED_BYTE, cursor->imp()->buffer);
@@ -210,7 +212,6 @@ inline static void texture2Buffer(LCursor *cursor, const LSizeF &size, LFramebuf
             cursor->imp()->buffer[i+2] = tmp;
         }
     }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 #endif // LCURSORPRIVATE_H

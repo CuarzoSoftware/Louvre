@@ -320,7 +320,7 @@ void Surface::minimizedChanged()
 
         // Create a smaller scaled version for the dock
         Float32 s { float(DOCK_ITEM_HEIGHT) };
-        thumbnailTex = thumbnailFullSizeTex->copyB(LSize((s * thumbnailFullSizeTex->sizeB().w()) /thumbnailFullSizeTex->sizeB().h(), s) * 3.5f);
+        thumbnailTex = thumbnailFullSizeTex->copy(LSize((s * thumbnailFullSizeTex->sizeB().w()) /thumbnailFullSizeTex->sizeB().h(), s) * 3.5f);
 
         // Create a view for thumbnailFullSizeTex (we only need one)
         thumbnailFullsizeView = new LTextureView(thumbnailFullSizeTex, getView()->parent());
@@ -349,8 +349,7 @@ void Surface::minimizedChanged()
         minimizeAnim.setOnUpdateCallback(
             [this, dstDockItem](LAnimation *anim)
             {
-                // Transform linear curve to ease out
-                Float32 easeOut = 1.f - powf(1.f - anim->value(), 2.f);
+                Float32 easeOut = 1.f - powf(1.f - anim->value(), 3.f);
 
                 // Animate all docks items
                 for (DockItem *item : minimizedViews)
@@ -467,7 +466,7 @@ LTexture *Surface::renderThumbnail(LRegion *transRegion)
         transRegion->offset(LPoint() - tmpView.pos());
     }
 
-    LTexture *renderedThumbnail = tmpView.texture()->copyB();
+    LTexture *renderedThumbnail = tmpView.texture()->copy();
     getView()->enableParentOffset(true);
     getView()->setParent(prevParent);
 

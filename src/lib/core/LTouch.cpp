@@ -61,34 +61,34 @@ LPointF LTouch::toGlobal(LOutput *output, const LPointF &touchPointPos)
 
     switch (output->transform())
     {
-    case LFramebuffer::Normal:
+    case LTransform::Normal:
         point = output->size() * touchPointPos;
         break;
-    case LFramebuffer::Rotated270:
+    case LTransform::Rotated270:
         point.setX(output->size().w() * touchPointPos.y());
         point.setY(output->size().h() * (1.f - touchPointPos.x()));
         break;
-    case LFramebuffer::Rotated90:
+    case LTransform::Rotated90:
         point.setX(output->size().w() * (1.f - touchPointPos.y()));
         point.setY(output->size().h() * touchPointPos.x());
         break;
-    case LFramebuffer::Rotated180:
+    case LTransform::Rotated180:
         point.setX(output->size().w() * (1.f - touchPointPos.x()));
         point.setY(output->size().h() * (1.f - touchPointPos.y()));
         break;
-    case LFramebuffer::Flipped180:
+    case LTransform::Flipped180:
         point.setX(output->size().w() * touchPointPos.x());
         point.setY(output->size().h() * (1.f - touchPointPos.y()));
         break;
-    case LFramebuffer::Flipped:
+    case LTransform::Flipped:
         point.setX(output->size().w() * (1.f - touchPointPos.x()));
         point.setY(output->size().h() * touchPointPos.y());
         break;
-    case LFramebuffer::Flipped270:
+    case LTransform::Flipped270:
         point.setX(output->size().w() * (1.f - touchPointPos.y()));
         point.setY(output->size().h() * (1.f - touchPointPos.x()));
         break;
-    case LFramebuffer::Flipped90:
+    case LTransform::Flipped90:
         point.setX(output->size().w() * touchPointPos.y());
         point.setY(output->size().h() * touchPointPos.x());
         break;

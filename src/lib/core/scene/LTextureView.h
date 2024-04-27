@@ -301,7 +301,7 @@ public:
      * @brief Sets the source rect of the texture to use.
      *
      * The source rect must be specified in surface coordinates, taking into
-     * account the space generated after the inverse transform() (from transform() to LFramebuffer::Normal) is applied.
+     * account the space generated after the inverse transform() (from transform() to LTransform::Normal) is applied.
      *
      * @note The source rect is used only if srcRectEnabled() is set to `true`.
      *
@@ -336,7 +336,7 @@ public:
      *
      * Use this method to tell the scene the transformation that the texture's content **ALREADY HAS** and not the transformation you want to apply.
      *
-     * For example, pass LFramebuffer::Rotated90 if the texture's content is rotated 90 degrees **counter-clockwise**, and the scene
+     * For example, pass LTransform::Rotated90 if the texture's content is rotated 90 degrees **counter-clockwise**, and the scene
      * (if the current LOutput has a normal transform) will apply a 90-degree **clockwise** rotation to display it normally.
      *
      * Changing the transform affects how the source rectangle is defined and may also swap the original width
@@ -344,7 +344,7 @@ public:
      *
      * @param transform The transform to be applied for proper display.
      */
-    void setTransform(LFramebuffer::Transform transform) noexcept
+    void setTransform(LTransform transform) noexcept
     {
         if (m_transform == transform)
             return;
@@ -357,9 +357,9 @@ public:
     /**
      * @brief Gets the transform set with setTransform().
      *
-     * The default value is LFramebuffer::Normal.
+     * The default value is LTransform::Normal.
      */
-    LFramebuffer::Transform transform() const noexcept
+    LTransform transform() const noexcept
     {
         return m_transform;
     }
@@ -390,7 +390,7 @@ protected:
     mutable LSize m_dstSize {1, 1};
     mutable LSize m_customDstSize {1, 1};
     Float32 m_bufferScale { 1.f };
-    LFramebuffer::Transform m_transform { LFramebuffer::Normal };
+    LTransform m_transform { LTransform::Normal };
     mutable UInt32 m_textureSerial { 0 };
     void updateDimensions() const noexcept;
 };

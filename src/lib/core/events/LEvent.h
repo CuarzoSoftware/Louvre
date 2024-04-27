@@ -125,14 +125,12 @@ public:
     LEvent *copy() const noexcept;
 
 protected:
-    /// @cond OMIT
     LEvent(Type type, Subtype subtype, UInt32 serial, UInt32 ms, UInt64 us) noexcept;
     Type m_type;
     Subtype m_subtype;
     UInt32 m_serial;
     UInt32 m_ms;
     UInt64 m_us;
-    /// @endcond
 };
 
 #endif // LEVENT_H

@@ -200,7 +200,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
             currentDamageB.addRect(LRect(0, sizeB));
             currentDamage.clear();
             currentDamage.addRect(LRect(0, size));
-            texture->setDataB(LSize(widthB, heightB), stride, format, pixels);
+            texture->setDataFromMainMemory(LSize(widthB, heightB), stride, format, pixels);
         }
         else if (!pendingDamageB.empty() || !pendingDamage.empty())
         {
@@ -258,7 +258,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
                     boxes++;
                 }
 
-                onlyPending.transform(sizeB, LFramebuffer::requiredTransform(current.transform, LFramebuffer::Normal));
+                onlyPending.transform(sizeB, Louvre::requiredTransform(current.transform, LTransform::Normal));
                 currentDamageB.addRegion(onlyPending);
                 currentDamage = currentDamageB;
                 currentDamage.offset(-xOffset - 2, -yOffset - 2);
@@ -338,7 +338,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         if (!updateDimensions(widthB, heightB))
             return false;
         updateDamage();
-        texture->setData(current.buffer);
+        texture->setDataFromWaylandDRM(current.buffer);
     }
 
     // DMA-Buf
@@ -356,8 +356,8 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
 
         if (!dmaBuffer->texture())
         {
-            dmaBuffer->m_texture = new LTexture();
-            dmaBuffer->texture()->setDataB(dmaBuffer->planes());
+            dmaBuffer->m_texture = new LTexture(true);
+            dmaBuffer->texture()->setDataFromDMA(*dmaBuffer->planes());
         }
 
         updateDamage();
@@ -430,7 +430,7 @@ void LSurface::LSurfacePrivate::sendPreferredScale()
 
     Int32 wlScale { 0 };
     Float32 wlFracScale { 0.f };
-    LFramebuffer::Transform transform { LFramebuffer::Normal };
+    LTransform transform { LTransform::Normal };
 
     for (LOutput *o : outputs)
     {
@@ -608,7 +608,7 @@ bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB)
     const LSize prevSize { size };
     const LRectF prevSrcRect { srcRect };
 
-    if (LFramebuffer::is90Transform(current.transform))
+    if (Louvre::is90Transform(current.transform))
     {
         sizeB.setW(heightB);
         sizeB.setH(widthB);

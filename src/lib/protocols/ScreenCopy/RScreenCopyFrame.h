@@ -72,7 +72,7 @@ private:
     LRect m_rect, m_rectB;
     LSize m_initOutputModeSize;
     LSize m_initOutputSize;
-    Int32 m_initOutputTransform;
+    LTransform m_initOutputTransform;
     Int32 m_stride;
     LBitset<StateFlags> m_stateFlags;
 };

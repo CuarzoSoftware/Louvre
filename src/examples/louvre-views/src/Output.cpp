@@ -28,7 +28,7 @@ void Output::loadWallpaper()
 {
     LSize bufferSize;
 
-    if (LFramebuffer::is90Transform(transform()))
+    if (Louvre::is90Transform(transform()))
     {
         bufferSize.setW(currentMode()->sizeB().h());
         bufferSize.setH(currentMode()->sizeB().w());
@@ -85,7 +85,7 @@ void Output::loadWallpaper()
             srcB.setW((tmpWallpaper->sizeB().h() * bufferSize.w()) / bufferSize.h());
             srcB.setX((tmpWallpaper->sizeB().w() - srcB.w()) / 2);
         }
-        wallpaperView->setTexture(tmpWallpaper->copyB(bufferSize, srcB));
+        wallpaperView->setTexture(tmpWallpaper->copy(bufferSize, srcB));
         wallpaperView->enableDstSize(true);
         wallpaperView->setDstSize(size());
         delete tmpWallpaper;
@@ -253,9 +253,6 @@ void Output::initializeGL()
 
                 // Current fullscreen size
                 LSize cSize;
-
-                // Scaling vector for the black toplevel background container so it matches cSize
-                LSizeF sVector;
 
                 if (tl->fullscreen())
                 {

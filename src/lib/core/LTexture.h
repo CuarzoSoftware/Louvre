@@ -14,7 +14,8 @@
  *
  * The LTexture class is an abstraction of an OpenGL texture.
  * It provides a unified interface for generating and updating textures from buffers in main memory, `wl_drm` buffers, and DMA buffers.
- * The current texture buffer content is destroyed and replaced every time any of the setData() variants is used.
+ *
+ * @warning The texture internal buffer storage is destroyed and replaced every time any of the setData() variants is used.
  *
  * @see To create a texture from an image file use LOpenGL::loadTexture().
  */
@@ -44,14 +45,11 @@ public:
     };
 
     /**
-     * @brief Create an empty texture.
+     * @brief Creates an empty texture.
      */
-    LTexture() noexcept;
+    LTexture(bool premultipliedAlpha = false) noexcept;
 
-    /// @cond OMIT
-    LTexture(const LTexture&) = delete;
-    LTexture& operator= (const LTexture&) = delete;
-    /// @endcond
+    LCLASS_NO_COPY(LTexture)
 
     /**
      * @brief The LTexture class destructor.
@@ -93,15 +91,15 @@ public:
      * @param buffer The pointer to the main memory buffer.
      * @return `true` if the data was successfully set, `false` otherwise.
      */
-    bool setDataB(const LSize &size, UInt32 stride, UInt32 format, const void *buffer) noexcept;
+    bool setDataFromMainMemory(const LSize &size, UInt32 stride, UInt32 format, const void *buffer) noexcept;
 
     /**
      * @brief Set the data of the texture from a `wl_drm` buffer.
      *
-     * @param wlDRMBuffer The pointer to the `wl_drm` buffer.
+     * @param buffer The pointer to the `wl_drm` buffer.
      * @return `true` if the data was successfully set, `false` otherwise.
      */
-    bool setData(void *wlDRMBuffer) noexcept;
+    bool setDataFromWaylandDRM(wl_resource *buffer) noexcept;
 
     /**
      * @brief Set the data of the texture from DMA planes.
@@ -109,7 +107,7 @@ public:
      * @param planes The pointer to the DMA planes struct.
      * @return `true` if the data was successfully set, `false` otherwise.
      */
-    bool setDataB(const LDMAPlanes *planes) noexcept;
+    bool setDataFromDMA(const LDMAPlanes &planes) noexcept;
 
     /**
      * @brief Update a specific area of the texture with the provided buffer.
@@ -125,20 +123,17 @@ public:
     bool updateRect(const LRect &rect, UInt32 stride, const void *buffer) noexcept;
 
     /**
-     * @brief Create a copy of the texture.
-     *
-     * The destination size (dst) is the size of the copied texture, and the source (src) is the rectangular area within the texture to be copied.
-     * Using both parameters, a clipped and scaled copy version can be created from the texture.\n
-     * Using negative values for the source rect size (srcW and srcH) causes the texture to be mirrored along the given axis.
+     * @brief Creates a copy of the texture.
      *
      * @note The resulting texture is independent of the original and must be freed separately.
      *
-     * @param dst The destination size of the copied texture. Passing an empty Louvre::LSize means the same texture size is used.
-     * @param src The rectangular area within the texture to be copied. Passing an empty Louvre::LRect means the entire texture is used.
-     * @param highQualityScaling Set this value to `true` to enable high-quality scaling, which produces better results when resizing to a significantly different size from the original.
-     * @return A pointer to the copied LTexture object.
+     * @param dst The destination size of the copied texture. Pass (0,0) to use the same size as the original texture.
+     * @param src The rectangular area within the texture to be copied. Pass (0,0,0,0) to copy the entire texture.
+     * @param highQualityScaling Set this parameter to `true` to enable high-quality scaling, which produces better results when resizing to a significantly different size from the original.
+     *
+     * @return A pointer to the copied LTexture object or `nullptr` on failure.
      */
-    LTexture *copyB(const LSize &dst = LSize(), const LRect &src = LRect(), bool highQualityScaling = true) const noexcept;
+    LTexture *copy(const LSize &dst = LSize(), const LRect &src = LRect(), bool highQualityScaling = true) const noexcept;
 
     /**
      * @brief Save the texture as a PNG file.
@@ -175,7 +170,7 @@ public:
     /**
      * @brief Get the OpenGL texture ID for a specific output.
      *
-     * If nullptr is passed as output, a texture for the main thread is returned.
+     * If `nullptr` is passed as output, a texture for the main thread is returned.
      *
      * @param output The specific output for which to get the texture ID.
      * @return The OpenGL texture ID or 0 if fails.
@@ -225,10 +220,43 @@ public:
         return m_format;
     }
 
-    // TODO: add doc
+    /**
+     * @brief Get the serial number of the texture.
+     *
+     * The serial number is incremented each time the texture's backing storage, or its pixel data changes.
+     *
+     * @return The serial number of the texture.
+     */
     UInt32 serial() const noexcept
     {
         return m_serial;
+    }
+
+    /**
+     * @brief Indicates whether the RGB components are pre-multiplied by the alpha component.
+     *
+     * This flag is crucial for proper blending of textures within LPainter and LScene.\n
+     * By default, Wayland clients typically use pre-multiplied alpha, but user-defined textures may not adhere to this convention.
+     *
+     * To modify this value, use setPremultipliedAlpha().
+     *
+     * @return `true` if the RGB components are pre-multiplied by the alpha component, `false` otherwise.
+     */
+    bool premultipliedAlpha() const noexcept
+    {
+        return m_premultipliedAlpha;
+    }
+
+    /**
+     * @brief Sets a hint indicating whether the RGB components are pre-multiplied by the alpha component.
+     *
+     * This function allows you to modify the pre-multiplied alpha flag.
+     *
+     * @param premultipledAlpha `true` to indicate pre-multiplied alpha, `false` otherwise.
+     */
+    void setPremultipliedAlpha(bool premultipledAlpha) const noexcept
+    {
+        m_premultipliedAlpha = premultipledAlpha;
     }
 
     class LTexturePrivate;
@@ -241,16 +269,17 @@ private:
     friend class LSurface;
 
     void *m_graphicBackendData { nullptr };
+    LSize m_sizeB;
     UInt32 m_format { 0 };
     BufferSourceType m_sourceType { CPU };
     UInt32 m_serial { 0 };
-    LSize m_sizeB;
 
     // Native OpenGL Texture
     GLenum m_nativeTarget { 0 };
     LWeak<LOutput> m_nativeOutput;
     GLuint m_nativeId { 0 };
     bool m_pendingDelete { false };
+    mutable bool m_premultipliedAlpha;
 
     GLenum backendTarget() const noexcept;
     void reset() noexcept;

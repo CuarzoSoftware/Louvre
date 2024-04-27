@@ -369,7 +369,7 @@ public:
      *
      * @return The buffer transform applied to the surface.
      */
-    LFramebuffer::Transform bufferTransform() const;
+    LTransform bufferTransform() const;
 
     /**
      * @brief Gets the source rect of the surface in surface coordinates.

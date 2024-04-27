@@ -156,7 +156,7 @@
  *
  * <center><IMG SRC="https://lh3.googleusercontent.com/pw/ABLVV85bV4h-OcbW1DozgUCQp4PbMoWOd2E2MNRQveEhw5r2p_mjnVRLbziTJ-egMu9D0eSIbMyLNmXECbupfa1gmQZMAidIS1pT5ahbeoL6hcsa6O3QlYc=w2400"></center>
  *
- * Given that you rotated the screen 90° clockwise, it is necessary to apply a transform that rotates the screen 90° counter-clockwise (Louvre::LFramebuffer::Rotated90).
+ * Given that you rotated the screen 90° clockwise, it is necessary to apply a transform that rotates the screen 90° counter-clockwise (Louvre::LTransform::Rotated90).
  * If you apply this to the pink screen, then you would see the following:
  *
  * <center><IMG SRC="https://lh3.googleusercontent.com/pw/ABLVV84Tm3VGwuNHqbAumAVrzZVgBtKSOo24y8PDk5Y47hIlLmO7uSzIMLeE0f9y-5DOQh1nOI9-qz48c_fnlgkM3CILC-GFB2qttGaE671Xke_jcF6DlVY=w2400"></center>
@@ -239,11 +239,11 @@ public:
      * @brief Get the framebuffer transformation.
      *
      * This method returns the current framebuffer transformation applied with setTransform().
-     * The default value is LFramebuffer::Normal.
+     * The default value is LTransform::Normal.
      *
      * @return The framebuffer transformation.
      */
-    LFramebuffer::Transform transform() const;
+    LTransform transform() const;
 
     /**
      * @brief Set the framebuffer transformation.
@@ -253,7 +253,7 @@ public:
      *
      * @param transform The framebuffer transformation to apply.
      */
-    void setTransform(LFramebuffer::Transform transform);
+    void setTransform(LTransform transform);
 
     /**
      * @brief Return the index of the current buffer.

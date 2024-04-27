@@ -18,7 +18,7 @@ LXCursor *LXCursor::loadXCursorB(const char *cursor, const char *theme, Int32 su
     newCursor->m_hotspotB.setX((Int32)x11Cursor->xhot);
     newCursor->m_hotspotB.setY((Int32)x11Cursor->yhot);
 
-    if (!newCursor->m_texture.setDataB(LSize((Int32)x11Cursor->width,
+    if (!newCursor->m_texture.setDataFromMainMemory(LSize((Int32)x11Cursor->width,
                                                    (Int32)x11Cursor->height),
                                                     x11Cursor->width * 4,
                                                     DRM_FORMAT_ABGR8888,

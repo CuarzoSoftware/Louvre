@@ -74,10 +74,10 @@ void Keyboard::keyEvent(const LKeyboardKeyEvent &event)
             /********** Change output transform **********/
 
             case KEY_T:
-                if (output->transform() == LFramebuffer::Flipped270)
-                    output->setTransform(LFramebuffer::Normal);
+                if (output->transform() == LTransform::Flipped270)
+                    output->setTransform(LTransform::Normal);
                 else
-                    output->setTransform((LFramebuffer::Transform)(output->transform() + 1));
+                    output->setTransform((LTransform)((Int32)output->transform() + 1));
                 break;
 
             /**** Increase fractional scaling by 0.25 ****/

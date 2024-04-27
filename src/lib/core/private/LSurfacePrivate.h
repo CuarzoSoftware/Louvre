@@ -71,7 +71,7 @@ LPRIVATE_CLASS(LSurface)
         wl_resource *buffer                 { nullptr };
         LBaseSurfaceRole *role              { nullptr };
         Int32 bufferScale                   { 1 };
-        LFramebuffer::Transform transform   { LFramebuffer::Normal };
+        LTransform transform   { LTransform::Normal };
         LPointF lockedPointerPosHint        { -1.f, -1.f };
     };
 
@@ -118,7 +118,7 @@ LPRIVATE_CLASS(LSurface)
     UInt32 commitId { 0 };
     std::list<LSurface*>::iterator compositorLink;
     Int32 lastSentPreferredBufferScale      { -1 };
-    LFramebuffer::Transform lastSentPreferredTransform { LFramebuffer::Normal };
+    LTransform lastSentPreferredTransform { LTransform::Normal };
     std::vector<LOutput*> outputs;
 
     std::vector<PresentationTime::RPresentationFeedback*> presentationFeedbackResources;

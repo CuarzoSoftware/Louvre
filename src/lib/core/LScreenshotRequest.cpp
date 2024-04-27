@@ -6,7 +6,7 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <private/LOutputPrivate.h>
-#include <LGLFramebuffer.h>
+#include <LFramebufferWrapper.h>
 #include <LOutputMode.h>
 #include <LUtils.h>
 #include <LTime.h>
@@ -150,7 +150,7 @@ Int8 LScreenshotRequest::copy() noexcept
             damage.addRect(resource().rectB());
         }
 
-        LGLFramebuffer glFb(
+        LFramebufferWrapper glFb(
             fb,
             LSize((Int32)dmaBuffer->planes()->width, (Int32)dmaBuffer->planes()->height),
             resource().rectB().pos());
@@ -168,7 +168,7 @@ Int8 LScreenshotRequest::copy() noexcept
             .pos = LPoint(0, 0),
             .srcRect = LRectF(0, outputTexture->sizeB()),
             .dstSize = glFb.rect().size(),
-            .srcTransform = LFramebuffer::Normal,
+            .srcTransform = LTransform::Normal,
             .srcScale = 1.f,
         });
         glDisable(GL_BLEND);

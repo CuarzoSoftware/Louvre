@@ -308,7 +308,7 @@ void Toplevel::unsetFullscreenRequest()
     surf()->setPos(0, 0);
     tmp.setPos(fullscreenOutput->pos());
     tmp.render();
-    capture.setTexture(tmp.texture()->copyB());
+    capture.setTexture(tmp.texture()->copy());
     capture.setBufferScale(tmp.bufferScale());
     surf()->setPos(prevPos);
     surf()->getView()->enableParentOffset(parentOffsetEnabled);
@@ -331,7 +331,7 @@ void Toplevel::fullscreenChanged()
         if (animScene)
             delete animScene;
 
-        animScene = new LSceneView(fullscreenOutput->size() * 0.75f, 0.75f);
+        animScene = new LSceneView(fullscreenOutput->size(), 1.f);
         quickUnfullscreen = false;
         fullscreenOutput->animatedFullscreenToplevel = this;
         surf()->sendOutputEnterEvent(fullscreenOutput);

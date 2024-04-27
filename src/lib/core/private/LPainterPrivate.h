@@ -14,18 +14,14 @@
 using namespace Louvre;
 
 LPRIVATE_CLASS(LPainter)
-GLuint vertexShader, fragmentShader, fragmentShaderExternal, fragmentShaderScaler, fragmentShaderScalerExternal;
 
-// Square (left for vertex, right for fragment)
-GLfloat square[16] =
-    {  //  VERTEX       FRAGMENT
-        -1.0f,  1.0f,   0.f, 1.f, // TL
-        -1.0f, -1.0f,   0.f, 0.f, // BL
-        1.0f, -1.0f,   1.f, 0.f, // BR
-        1.0f,  1.0f,   1.f, 1.f  // TR
+enum ShaderMode : GLint
+{
+    LegacyMode = 0,
+    TextureMode = 1,
+    ColorMode = 2
 };
 
-// Uniform variables
 struct Uniforms
 {
     GLuint
@@ -34,11 +30,11 @@ struct Uniforms
         activeTexture,
         mode,
         color,
-        colorFactor,
         colorFactorEnabled,
         texColorEnabled,
         alpha,
-        transform;
+        premultipliedAlpha,
+        has90deg;
 } uniforms, uniformsExternal;
 
 Uniforms *currentUniforms;
@@ -56,68 +52,49 @@ struct UniformsScaler
 
 UniformsScaler *currentUniformsScaler;
 
-struct LGLVec2F
+struct UserState
 {
-    GLfloat x, y;
+    TextureParams textureParams;
+    ShaderMode mode { TextureMode };
+    LWeak<LTexture> texture;
+    LBlendFunc customBlendFunc { GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA };
+    Float32 alpha { 1.f };
+    LRGBF color { 1.f, 1.f, 1.f };
+    LRGBAF colorFactor { 1.f, 1.f, 1.f, 1.f };
+    bool autoBlendFunc { true };
+    bool customTextureColor { false };
+} userState;
+
+LRectF srcRect;
+
+static inline GLfloat square[]
+{
+    //  VERTEX     FRAGMENT
+   -1.0f,  1.0f,   0.f, 1.f, // TL
+   -1.0f, -1.0f,   0.f, 0.f, // BL
+    1.0f, -1.0f,   1.f, 0.f, // BR
+    1.0f,  1.0f,   1.f, 1.f  // TR
 };
 
-struct LGLVec4F
-{
-    GLfloat x, y, w, h;
-};
+GLuint vertexShader, fragmentShader, fragmentShaderExternal, fragmentShaderScaler, fragmentShaderScalerExternal;
 
-struct LGLColor
-{
-    GLfloat r, g, b;
-};
-
-struct LGLPoint
-{
-    Int32 x, y;
-};
-
-struct LGLSize
-{
-    Int32 w, h;
-};
-
-struct LGLSizeF
-{
-    Float32 w, h;
-};
-
-struct LGLRect
-{
-    Int32 x, y, w, h;
-};
-
-struct LGLRectF
-{
-    Float32 x, y, w, h;
-};
-
-// For mode 3
-LGLRectF srcRect;
-
-#if LPAINTER_TRACK_UNIFORMS == 1
 struct ShaderState
 {
-    LGLSizeF texSize;
-    LGLRectF srcRect;
+    LSizeF texSize;
+    LRectF srcRect;
     GLuint activeTexture;
-    GLint mode;
-    LGLColor color;
-    LGLVec4F colorFactor;
-    bool colorFactorEnabled = false;
-    bool texColorEnabled = false;
+    ShaderMode mode;
+    LRGBF color;
+    bool colorFactorEnabled { false };
+    bool texColorEnabled { false };
+    bool premultipliedAlpha { false };
+    bool has90deg { false };
     GLfloat alpha;
-    GLint transform;
     GLfloat scale;
 };
 
 ShaderState state, stateExternal;
 ShaderState *currentState;
-#endif
 
 // Program
 GLuint programObject, programObjectExternal, programObjectScaler, programObjectScalerExternal, currentProgram;
@@ -147,161 +124,99 @@ void updateCPUFormats();
 void setupProgram();
 void setupProgramScaler();
 
-// Shader state update
-
-inline void shaderSetTransform(GLint transform)
+void shaderSetPremultipliedAlpha(bool premultipliedAlpha) noexcept
 {
-#if LPAINTER_TRACK_UNIFORMS == 1
-    if (currentState->transform != transform)
+    if (currentState->premultipliedAlpha != premultipliedAlpha)
     {
-        currentState->transform = transform;
-        glUniform1i(currentUniforms->transform, transform);
+        currentState->premultipliedAlpha = premultipliedAlpha;
+        glUniform1i(currentUniforms->premultipliedAlpha, premultipliedAlpha);
     }
-#else
-    glUniform1i(currentUniforms->transform, transform);
-#endif
 }
 
-inline void shaderSetTexSize(Float32 w, Float32 h)
+void shaderSetTexSize(const LSizeF &size) noexcept
 {
-#if LPAINTER_TRACK_UNIFORMS == 1
-    if (currentState->texSize.w != w || currentState->texSize.h != h)
+    if (currentState->texSize != size)
     {
-        currentState->texSize.w = w;
-        currentState->texSize.h = h;
-        glUniform2f(currentUniforms->texSize, w, h);
+        currentState->texSize = size;
+        glUniform2f(currentUniforms->texSize, size.w(), size.h());
     }
-#else
-    glUniform2f(currentUniforms->texSize, w, h);
-#endif
 }
 
-inline void shaderSetSrcRect(Float32 x, Float32 y, Float32 w, Float32 h)
+void shaderSetSrcRect(const LRectF &rect) noexcept
 {
-#if LPAINTER_TRACK_UNIFORMS == 1
-    if (currentState->srcRect.x != x ||
-        currentState->srcRect.y != y ||
-        currentState->srcRect.w != w ||
-        currentState->srcRect.h != h)
+    if (currentState->srcRect != rect)
     {
-        currentState->srcRect.x = x;
-        currentState->srcRect.y = y;
-        currentState->srcRect.w = w;
-        currentState->srcRect.h = h;
-        glUniform4f(currentUniforms->srcRect, x, y, w, h);
+        currentState->srcRect = rect;
+        glUniform4f(currentUniforms->srcRect, rect.x(), rect.y(), rect.w(), rect.h());
     }
-#else
-    glUniform4f(currentUniforms->srcRect, x, y, w, h);
-#endif
 }
 
-inline void shaderSetActiveTexture(GLuint unit)
+void shaderSetActiveTexture(GLuint unit) noexcept
 {
-#if LPAINTER_TRACK_UNIFORMS == 1
     if (currentState->activeTexture != unit)
     {
         currentState->activeTexture = unit;
         glUniform1i(currentUniforms->activeTexture, unit);
     }
-#else
-    glUniform1i(currentUniforms->activeTexture, unit);
-#endif
 }
 
-inline void shaderSetMode(GLint mode)
+void shaderSetMode(ShaderMode mode) noexcept
 {
-#if LPAINTER_TRACK_UNIFORMS == 1
     if (currentState->mode != mode)
     {
         currentState->mode = mode;
         glUniform1i(currentUniforms->mode, mode);
     }
-#else
-    glUniform1i(currentUniforms->mode, mode);
-#endif
 }
 
-inline void shaderSetColor(Float32 r, Float32 g, Float32 b)
+void shaderSetColor(const LRGBF &color) noexcept
 {
-#if LPAINTER_TRACK_UNIFORMS == 1
-    if (currentState->color.r != r ||
-        currentState->color.g != g ||
-        currentState->color.b != b)
+    if (currentState->color != color)
     {
-        currentState->color.r = r;
-        currentState->color.g = g;
-        currentState->color.b = b;
-        glUniform3f(currentUniforms->color, r, g, b);
+        currentState->color = color;
+        glUniform3f(currentUniforms->color, color.r, color.g, color.b);
     }
-#else
-    glUniform3f(currentUniforms->color, r, g, b);
-#endif
 }
 
-inline void shaderSetColorFactor(Float32 r, Float32 g, Float32 b, Float32 a)
+void shaderSetColorFactorEnabled(bool enabled) noexcept
 {
-#if LPAINTER_TRACK_UNIFORMS == 1
-    if (currentState->colorFactor.x != r ||
-        currentState->colorFactor.y != g ||
-        currentState->colorFactor.w != b ||
-        currentState->colorFactor.h != a)
-    {
-        currentState->colorFactor.x = r;
-        currentState->colorFactor.y = g;
-        currentState->colorFactor.w = b;
-        currentState->colorFactor.h = a;
-        glUniform4f(currentUniforms->colorFactor, r, g, b, a);
-    }
-
-    shaderSetColorFactorEnabled(r != 1.f || g != 1.f || b != 1.f || a != 1.f);
-#else
-    glUniform4f(currentUniforms->colorFactor, r, g, b, a);
-    shaderSetColorFactorEnabled(r != 1.f || g != 1.f || b != 1.f || a != 1.f);
-#endif
-}
-
-inline void shaderSetColorFactorEnabled(bool enabled)
-{
-#if LPAINTER_TRACK_UNIFORMS == 1
     if (currentState->colorFactorEnabled != enabled)
     {
         currentState->colorFactorEnabled = enabled;
         glUniform1i(currentUniforms->colorFactorEnabled, enabled);
     }
-#else
-    glUniform1i(currentUniforms->colorFactorEnabled, enabled);
-#endif
 }
 
-inline void shaderSetTexColorEnabled(bool enabled)
+void shaderSetTexColorEnabled(bool enabled) noexcept
 {
-#if LPAINTER_TRACK_UNIFORMS == 1
     if (currentState->texColorEnabled != enabled)
     {
         currentState->texColorEnabled = enabled;
         glUniform1i(currentUniforms->texColorEnabled, enabled);
     }
-#else
-    glUniform1i(currentUniforms->texColorEnabled, enabled);
-#endif
 }
 
-inline void shaderSetAlpha(Float32 a)
+void shaderSetHas90Deg(bool enabled) noexcept
 {
-#if LPAINTER_TRACK_UNIFORMS == 1
+    if (currentState->has90deg != enabled)
+    {
+        currentState->has90deg = enabled;
+        glUniform1i(currentUniforms->has90deg, enabled);
+    }
+}
+
+void shaderSetAlpha(Float32 a) noexcept
+{
     if (currentState->alpha != a)
     {
         currentState->alpha = a;
         glUniform1f(currentUniforms->alpha, a);
     }
-#else
-    glUniform1f(currentUniforms->alpha, a);
-#endif
 }
 
 // GL params
 
-inline void switchTarget(GLenum target)
+void switchTarget(GLenum target) noexcept
 {
     if (textureTarget != target)
     {
@@ -310,53 +225,43 @@ inline void switchTarget(GLenum target)
             currentProgram = programObject;
             currentUniforms = &uniforms;
             glUseProgram(currentProgram);
-#if LPAINTER_TRACK_UNIFORMS == 1
             currentState = &state;
-            shaderSetColorFactor(stateExternal.colorFactor.x,
-                                 stateExternal.colorFactor.y,
-                                 stateExternal.colorFactor.w,
-                                 stateExternal.colorFactor.h);
+            shaderSetColorFactorEnabled(stateExternal.colorFactorEnabled);
             shaderSetAlpha(stateExternal.alpha);
             shaderSetMode(stateExternal.mode);
-            shaderSetColor(stateExternal.color.r,
-                           stateExternal.color.g,
-                           stateExternal.color.b);
+            shaderSetColor(stateExternal.color);
             shaderSetTexColorEnabled(stateExternal.texColorEnabled);
-#endif
+            shaderSetPremultipliedAlpha(stateExternal.premultipliedAlpha);
+            shaderSetHas90Deg(stateExternal.has90deg);
         }
         else
         {
             currentProgram = programObjectExternal;
             currentUniforms = &uniformsExternal;
             glUseProgram(currentProgram);
-#if LPAINTER_TRACK_UNIFORMS == 1
             currentState = &stateExternal;
-            shaderSetColorFactor(state.colorFactor.x,
-                                 state.colorFactor.y,
-                                 state.colorFactor.w,
-                                 state.colorFactor.h);
+            shaderSetColorFactorEnabled(state.colorFactorEnabled);
             shaderSetAlpha(state.alpha);
             shaderSetMode(state.mode);
-            shaderSetColor(state.color.r,
-                           state.color.g,
-                           state.color.b);
+            shaderSetColor(state.color);
             shaderSetTexColorEnabled(state.texColorEnabled);
-#endif
+            shaderSetPremultipliedAlpha(state.premultipliedAlpha);
+            shaderSetHas90Deg(state.has90deg);
         }
 
         textureTarget = target;
     }
 }
 
-inline void setViewport(Int32 x, Int32 y, Int32 w, Int32 h)
+void setViewport(Int32 x, Int32 y, Int32 w, Int32 h) noexcept
 {
     x -= fb->rect().x();
     y -= fb->rect().y();
 
-    if (fb->transform() == LFramebuffer::Normal)
+    if (fb->transform() == LTransform::Normal)
     {
     }
-    else if (fb->transform() == LFramebuffer::Rotated270)
+    else if (fb->transform() == LTransform::Rotated270)
     {
         Float32 tmp = x;
         x = fb->rect().h() - y - h;
@@ -365,12 +270,12 @@ inline void setViewport(Int32 x, Int32 y, Int32 w, Int32 h)
         w = h;
         h = tmp;
     }
-    else if (fb->transform() == LFramebuffer::Rotated180)
+    else if (fb->transform() == LTransform::Rotated180)
     {
         x = fb->rect().w() - x - w;
         y = fb->rect().h() - y - h;
     }
-    else if (fb->transform() == LFramebuffer::Rotated90)
+    else if (fb->transform() == LTransform::Rotated90)
     {
         Float32 tmp = x;
         x = y;
@@ -379,11 +284,11 @@ inline void setViewport(Int32 x, Int32 y, Int32 w, Int32 h)
         w = h;
         h = tmp;
     }
-    else if (fb->transform() == LFramebuffer::Flipped)
+    else if (fb->transform() == LTransform::Flipped)
     {
         x = fb->rect().w() - x - w;
     }
-    else if (fb->transform() == LFramebuffer::Flipped270)
+    else if (fb->transform() == LTransform::Flipped270)
     {
         Float32 tmp = x;
         x = fb->rect().h() - y - h;
@@ -392,11 +297,11 @@ inline void setViewport(Int32 x, Int32 y, Int32 w, Int32 h)
         w = h;
         h = tmp;
     }
-    else if (fb->transform() == LFramebuffer::Flipped180)
+    else if (fb->transform() == LTransform::Flipped180)
     {
         y = fb->rect().h() - y - h;
     }
-    else if (fb->transform() == LFramebuffer::Flipped90)
+    else if (fb->transform() == LTransform::Flipped90)
     {
         Float32 tmp = x;
         x = y;
@@ -408,7 +313,7 @@ inline void setViewport(Int32 x, Int32 y, Int32 w, Int32 h)
 
     if (fbId == 0)
     {
-        if (LFramebuffer::is90Transform(fb->transform()))
+        if (Louvre::is90Transform(fb->transform()))
             y = fb->rect().w() - y - h;
         else
             y = fb->rect().h() - y - h;
@@ -444,190 +349,142 @@ inline void setViewport(Int32 x, Int32 y, Int32 w, Int32 h)
     glScissor(x, y, w, h);
     glViewport(x, y, w, h);
 
-    if (currentState->mode == 3)
+    if (currentState->mode == TextureMode)
     {
-        shaderSetSrcRect(
-            (Float32(x) - srcRect.x) / srcRect.w,
-            (Float32(y2) - srcRect.y) / srcRect.h,
-            (Float32(x2) - srcRect.x) / srcRect.w,
-            (Float32(y) - srcRect.y) / srcRect.h);
+        shaderSetSrcRect(LRectF(
+            (Float32(x) - srcRect.x()) / srcRect.w(),
+            (Float32(y2) - srcRect.y()) / srcRect.h(),
+            (Float32(x2) - srcRect.x()) / srcRect.w(),
+            (Float32(y) - srcRect.y()) / srcRect.h()));
     }
-    else
-        shaderSetTransform(fb->transform());
 }
 
-inline void drawTexture(const LTexture *texture,
-                        Int32 srcX,
-                        Int32 srcY,
-                        Int32 srcW,
-                        Int32 srcH,
-                        Int32 dstX,
-                        Int32 dstY,
-                        Int32 dstW,
-                        Int32 dstH,
-                        Float32 srcScale,
-                        Float32 alpha)
+void updateBlendingParams()
 {
-    if (!texture || srcScale <= 0.f)
-        return;
+    shaderSetMode(userState.mode);
 
-    if (alpha < 0.f)
-        alpha = 0.f;
-
-    GLenum target = texture->target();
-    switchTarget(target);
-
-    setViewport(dstX, dstY, dstW, dstH);
-    glActiveTexture(GL_TEXTURE0);
-
-    shaderSetTexColorEnabled(false);
-    shaderSetAlpha(alpha);
-    shaderSetMode(0);
-    shaderSetActiveTexture(0);
-
-    if (fbId != 0)
-        shaderSetSrcRect(srcX, srcY + srcH, srcW, -srcH);
-    else
-        shaderSetSrcRect(srcX, srcY, srcW, srcH);
-
-    glBindTexture(target, texture->id(output));
-    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    if (srcScale == 1.f)
-        shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
-    else if (srcScale == 2.f)
+    if (userState.mode == TextureMode)
     {
-        shaderSetTexSize(texture->sizeB().w() >> 1,
-                         texture->sizeB().h() >> 1);
+        /* Texture with replaced color */
+        if (userState.customTextureColor)
+        {
+            shaderSetTexColorEnabled(true);
+            LRGBF color { userState.color };
+            const Float32 alpha { userState.alpha * userState.colorFactor.a};
+            color.r *= userState.colorFactor.r;
+            color.g *= userState.colorFactor.g;
+            color.b *= userState.colorFactor.b;
+
+            if (userState.autoBlendFunc)
+            {
+                glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            }
+            else
+            {
+                glBlendFuncSeparate(userState.customBlendFunc.sRGBFactor,
+                                    userState.customBlendFunc.dRGBFactor,
+                                    userState.customBlendFunc.sAlphaFactor,
+                                    userState.customBlendFunc.dAlphaFactor);
+            }
+
+            shaderSetColor(color);
+            shaderSetAlpha(alpha);
+        }
+
+        /* Normal texture */
+        else
+        {
+            shaderSetTexColorEnabled(false);
+
+            /* Texture has premultiplied alpha */
+            if (userState.texture.get() && userState.texture->premultipliedAlpha())
+            {
+                if (userState.autoBlendFunc)
+                {
+                    LRGBF colorFactor;
+                    const Float32 alpha { userState.alpha * userState.colorFactor.a };
+                    colorFactor.r = userState.colorFactor.r * alpha;
+                    colorFactor.g = userState.colorFactor.g * alpha;
+                    colorFactor.b = userState.colorFactor.b * alpha;
+                    shaderSetPremultipliedAlpha(true);
+                    glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+                    shaderSetColor(colorFactor);
+                    shaderSetAlpha(alpha);
+                }
+                else
+                {
+                    const LRGBF colorFactor {
+                        userState.colorFactor.r,
+                        userState.colorFactor.g,
+                        userState.colorFactor.b
+                    };
+                    const Float32 alpha { userState.alpha * userState.colorFactor.a };
+                    shaderSetPremultipliedAlpha(false);
+                    glBlendFuncSeparate(userState.customBlendFunc.sRGBFactor,
+                                        userState.customBlendFunc.dRGBFactor,
+                                        userState.customBlendFunc.sAlphaFactor,
+                                        userState.customBlendFunc.dAlphaFactor);
+                    shaderSetColor(colorFactor);
+                    shaderSetAlpha(alpha);
+                }
+            }
+            else
+            {
+                const LRGBF colorFactor {
+                    userState.colorFactor.r,
+                    userState.colorFactor.g,
+                    userState.colorFactor.b
+                };
+                const Float32 alpha { userState.alpha * userState.colorFactor.a };
+                shaderSetPremultipliedAlpha(false);
+
+                if (userState.autoBlendFunc)
+                {
+                    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+                }
+                else
+                {
+                    glBlendFuncSeparate(userState.customBlendFunc.sRGBFactor,
+                                        userState.customBlendFunc.dRGBFactor,
+                                        userState.customBlendFunc.sAlphaFactor,
+                                        userState.customBlendFunc.dAlphaFactor);
+                }
+
+                shaderSetColor(colorFactor);
+                shaderSetAlpha(alpha);
+            }
+        }
     }
+
+    /* Solid color mode */
     else
     {
-        shaderSetTexSize(
-            texture->sizeB().w()/srcScale,
-            texture->sizeB().h()/srcScale);
+        LRGBF color { userState.color };
+        Float32 alpha { userState.alpha };
+
+        alpha *= userState.colorFactor.a;
+        color.r *= userState.colorFactor.r;
+        color.g *= userState.colorFactor.g;
+        color.b *= userState.colorFactor.b;
+
+        if (userState.autoBlendFunc)
+        {
+            color.r *= alpha;
+            color.g *= alpha;
+            color.b *= alpha;
+            glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        }
+        else
+        {
+            glBlendFuncSeparate(userState.customBlendFunc.sRGBFactor,
+                                userState.customBlendFunc.dRGBFactor,
+                                userState.customBlendFunc.sAlphaFactor,
+                                userState.customBlendFunc.dAlphaFactor);
+        }
+
+        shaderSetColor(color);
+        shaderSetAlpha(alpha);
     }
-
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-}
-
-inline void drawColorTexture(const LTexture *texture,
-                             Float32 r, Float32 g, Float32 b,
-                             Int32 srcX, Int32 srcY, Int32 srcW, Int32 srcH,
-                             Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                             Float32 srcScale, Float32 alpha)
-{
-    GLenum target = texture->target();
-    switchTarget(target);
-
-    setViewport(dstX, dstY, dstW, dstH);
-    glActiveTexture(GL_TEXTURE0);
-
-    shaderSetTexColorEnabled(true);
-    shaderSetAlpha(alpha);
-    shaderSetColor(r, g, b);
-    shaderSetMode(0);
-    shaderSetActiveTexture(0);
-
-    if (fbId != 0)
-        shaderSetSrcRect(srcX, srcY + srcH, srcW, -srcH);
-    else
-        shaderSetSrcRect(srcX, srcY, srcW, srcH);
-
-    glBindTexture(target, texture->id(output));
-    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    if (srcScale == 1.f)
-        shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
-    else if (srcScale == 2.f)
-    {
-        shaderSetTexSize(texture->sizeB().w() >> 1,
-                         texture->sizeB().h() >> 1);
-    }
-    else
-    {
-        shaderSetTexSize(
-            texture->sizeB().w()/srcScale,
-            texture->sizeB().h()/srcScale);
-    }
-
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-}
-
-inline void drawColor(Int32 dstX, Int32 dstY, Int32 dstW, Int32 dstH,
-                      Float32 r, Float32 g, Float32 b, Float32 a)
-{
-    switchTarget(GL_TEXTURE_2D);
-    setViewport(dstX, dstY, dstW, dstH);
-    shaderSetAlpha(a);
-    shaderSetColor(r, g, b);
-    shaderSetMode(1);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-}
-
-inline void scaleCursor(LTexture *texture, const LRect &src, const LRect &dst, LFramebuffer::Transform transform)
-{
-    GLenum target = texture->target();
-    GLuint textureId = texture->id(output);
-    switchTarget(target);
-    glDisable(GL_BLEND);
-    glScissor(0,0,64,64);
-    glViewport(0,0,64,64);
-    glClearColor(0,0,0,0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glScissor(dst.x(),dst.y(),dst.w(),dst.h());
-    glViewport(dst.x(),dst.y(),dst.w(),dst.h());
-    glActiveTexture(GL_TEXTURE0);
-    shaderSetAlpha(1.f);
-    shaderSetMode(0);
-    shaderSetActiveTexture(0);
-    shaderSetTransform(transform);
-    LTexture::LTexturePrivate::setTextureParams(textureId, target, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
-    shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
-    shaderSetSrcRect(src.x(), src.y(), src.w(), src.h());
-    shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-}
-
-inline void scaleTexture(LTexture *texture, const LRect &src, const LSize &dst)
-{
-    GLenum target = texture->target();
-    GLuint textureId = texture->id(output);
-    switchTarget(target);
-    glDisable(GL_BLEND);
-    glScissor(0, 0, dst.w(), dst.h());
-    glViewport(0, 0, dst.w(), dst.h());
-    glActiveTexture(GL_TEXTURE0);
-    shaderSetAlpha(1.f);
-    shaderSetMode(0);
-    shaderSetActiveTexture(0);
-    shaderSetTexSize(texture->sizeB().w(), texture->sizeB().h());
-    shaderSetSrcRect(src.x(), src.y() + src.h(), src.w(), -src.h());
-    shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
-    shaderSetTransform(LFramebuffer::Normal);
-    LTexture::LTexturePrivate::setTextureParams(textureId, target, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-}
-
-inline void scaleTexture(GLuint textureId, GLenum textureTarget, GLuint framebufferId, GLint minFilter, const LSize &texSize, const LRect &src, const LSize &dst)
-{
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
-    switchTarget(textureTarget);
-    glDisable(GL_BLEND);
-    glScissor(0, 0, dst.w(), dst.h());
-    glViewport(0, 0, dst.w(), dst.h());
-    glActiveTexture(GL_TEXTURE0);
-    shaderSetAlpha(1.f);
-    shaderSetMode(0);
-    shaderSetActiveTexture(0);
-    shaderSetTexSize(texSize.w(), texSize.h());
-    shaderSetSrcRect(src.x(), src.y() + src.h(), src.w(), -src.h());
-    shaderSetColorFactor(1.f, 1.f, 1.f, 1.f);
-    shaderSetTransform(LFramebuffer::Normal);
-    LTexture::LTexturePrivate::setTextureParams(textureId, textureTarget, GL_REPEAT, GL_REPEAT, minFilter, minFilter);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 };
 
