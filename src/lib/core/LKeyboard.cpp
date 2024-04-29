@@ -23,11 +23,11 @@
 
 using namespace Louvre::Protocols::Wayland;
 
-LKeyboard::LKeyboard(const void *params): LPRIVATE_INIT_UNIQUE(LKeyboard)
+LKeyboard::LKeyboard(const void *params) noexcept : LFactoryObject(FactoryObjectType), LPRIVATE_INIT_UNIQUE(LKeyboard)
 {
-    assert(params != nullptr && "Invalid parameter passed to LKeyboard() constructor. LKeyboard can only be created from LCompositor::createKeyboardRequest().");
+    assert(params != nullptr && "Invalid parameter passed to LKeyboard constructor.");
     LKeyboard **ptr { (LKeyboard**) params };
-    assert(*ptr == nullptr && *ptr == seat()->keyboard() && "Only a single LKeyboard() instance can exist.");
+    assert(*ptr == nullptr && *ptr == seat()->keyboard() && "Only a single LKeyboard instance can exist.");
     *ptr = this;
 
     // Create XKB context

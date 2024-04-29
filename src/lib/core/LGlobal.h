@@ -41,7 +41,6 @@ public:
         return m_global;
     }
 
-    /// @cond OMIT
 private:
     friend class LCompositor;
     LGlobal(wl_global *global) noexcept;
@@ -49,7 +48,6 @@ private:
     wl_global *m_global;
     bool m_removed { false };
     UInt8 m_destroyRoundtrips { 0 };
-    /// @endcond
 };
 
 #endif // LGLOBAL_H

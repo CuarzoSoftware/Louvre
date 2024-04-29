@@ -60,7 +60,7 @@ void LCompositor::removeGlobal(LGlobal *global)
     wl_global_remove(global->m_global);
 }
 
-LCompositor::LCompositor() : LPRIVATE_INIT_UNIQUE(LCompositor)
+LCompositor::LCompositor() noexcept : LPRIVATE_INIT_UNIQUE(LCompositor)
 {
     if (!s_compositor)
         s_compositor = this;
@@ -103,6 +103,26 @@ const std::filesystem::path &LCompositor::defaultAssetsPath() const
 const std::string &LCompositor::defaultGraphicBackendName() const
 {
     return imp()->defaultGraphicBackendName;
+}
+
+void *LCompositor::graphicBackendContextHandle() const
+{
+    return compositor()->imp()->graphicBackend->backendGetContextHandle();
+}
+
+UInt32 LCompositor::graphicBackendId() const
+{
+    return compositor()->imp()->graphicBackend->backendGetId();
+}
+
+void *LCompositor::inputBackendContextHandle() const
+{
+    return compositor()->imp()->inputBackend->backendGetContextHandle();
+}
+
+UInt32 LCompositor::inputBackendId() const
+{
+    return compositor()->imp()->inputBackend->backendGetId();
 }
 
 const std::string &LCompositor::defaultInputBackendName() const
@@ -180,8 +200,6 @@ bool LCompositor::start()
         LLog::fatal("[LCompositor::start] Failed to init input backend.");
         goto fail;
     }
-
-    seat()->initialized();
 
     if (!compositor()->createGlobalsRequest())
     {

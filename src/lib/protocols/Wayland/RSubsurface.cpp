@@ -3,6 +3,7 @@
 #include <protocols/Wayland/GSubcompositor.h>
 #include <private/LSubsurfaceRolePrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <private/LFactory.h>
 #include <LCompositor.h>
 
 using namespace Louvre::Protocols::Wayland;
@@ -34,7 +35,7 @@ RSubsurface::RSubsurface
     )
 {
     LSubsurfaceRole::Params subsurfaceRoleParams { this, surface };
-    m_subsurfaceRole.reset(compositor()->createSubsurfaceRoleRequest(&subsurfaceRoleParams));
+    m_subsurfaceRole.reset(LFactory::createObject<LSubsurfaceRole>(&subsurfaceRoleParams));
 
     // Based on wl_subsurface doc, parent should be applied when parent commits
     surface->imp()->setPendingParent(parent);
@@ -44,7 +45,7 @@ RSubsurface::RSubsurface
 
 RSubsurface::~RSubsurface()
 {
-    compositor()->destroySubsurfaceRoleRequest(m_subsurfaceRole.get());
+    compositor()->onAnticipatedObjectDestruction(m_subsurfaceRole.get());
 
     if (subsurfaceRole()->surface())
         subsurfaceRole()->surface()->imp()->setMapped(false);

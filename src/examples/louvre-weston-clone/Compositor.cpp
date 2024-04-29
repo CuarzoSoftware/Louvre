@@ -13,22 +13,41 @@
 
 Compositor::Compositor() noexcept : LCompositor(){}
 
+LFactoryObject *Compositor::createObjectRequest(LFactoryObject::Type type, const void *params)
+{
+    if (type == LFactoryObject::Type::LSurface)
+        return new Surface(params);
+
+    if (type == LFactoryObject::Type::LToplevelRole)
+        return new ToplevelRole(params);
+
+    if (type == LFactoryObject::Type::LPopupRole)
+        return new Popup(params);
+
+    if (type == LFactoryObject::Type::LOutput)
+        return new Output(params);
+
+    if (type == LFactoryObject::Type::LSeat)
+        return new Seat(params);
+
+    if (type == LFactoryObject::Type::LPointer)
+        return new Pointer(params);
+
+    return nullptr;
+}
+
 void Compositor::cursorInitialized()
 {
-    pointerCursor = LXCursor::loadXCursorB("hand2");
+    pointerCursor = LXCursor::load("hand2");
 }
 
-LSeat           *Compositor::createSeatRequest(const void *params)         { return new Seat(params); }
-LOutput         *Compositor::createOutputRequest(const void *params)       { return new Output(params); }
-LSurface        *Compositor::createSurfaceRequest(const void *params)      { return new Surface(params); }
-LToplevelRole   *Compositor::createToplevelRoleRequest(const void *params) { return new ToplevelRole(params); }
-LPopupRole      *Compositor::createPopupRoleRequest(const void *params)    { return new Popup(params); }
-LPointer        *Compositor::createPointerRequest(const void *params)      { return new Pointer(params); }
-
-void Compositor::destroySurfaceRequest(LSurface *s)
+void Compositor::onAnticipatedObjectDestruction(LFactoryObject *object)
 {
-    for (Output *output : (const std::vector<Output*>&)outputs())
-        if (s == output->fullscreenSurface)
-            output->fullscreenSurface = nullptr;
+    if (object->factoryObjectType() == LFactoryObject::Type::LSurface)
+    {
+        Surface *surface {static_cast<Surface*>(object)};
+        for (Output *output : (const std::vector<Output*>&)outputs())
+            if (surface == output->fullscreenSurface)
+                output->fullscreenSurface = nullptr;
+    }
 }
-

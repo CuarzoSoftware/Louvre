@@ -33,24 +33,23 @@ public:
 
     struct Params;
 
+    static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LSubsurfaceRole;
+
     /**
      * @brief Constructor for the LSubsurfaceRole class.
      *
      * @param params Internal parameters of the library passed in the virtual constructor LCompositor::createSubsurfaceRoleRequest().
      */
-    LSubsurfaceRole(const void *params);
+    LSubsurfaceRole(const void *params) noexcept;
 
     /**
      * @brief Destructor for the LSubsurfaceRole class.
      *
      * Invoked after LCompositor::destroySubsurfaceRoleRequest().
      */
-    virtual ~LSubsurfaceRole();
+    ~LSubsurfaceRole();
 
-    /// @cond OMIT
-    LSubsurfaceRole(const LSubsurfaceRole&) = delete;
-    LSubsurfaceRole& operator= (const LSubsurfaceRole&) = delete;
-    /// @endcond
+    LCLASS_NO_COPY(LSubsurfaceRole)
 
     /**
      * @brief Current mode.

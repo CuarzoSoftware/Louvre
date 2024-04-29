@@ -3,6 +3,7 @@
 #include <protocols/Wayland/GOutput.h>
 #include <private/LToplevelRolePrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <private/LFactory.h>
 #include <LCompositor.h>
 #include <LClient.h>
 
@@ -49,13 +50,13 @@ RXdgToplevel::RXdgToplevel
         xdgSurfaceRes->surface()
     };
 
-    m_toplevelRole.reset(compositor()->createToplevelRoleRequest(&toplevelRoleParams));
+    m_toplevelRole.reset(LFactory::createObject<LToplevelRole>(&toplevelRoleParams));
     xdgSurfaceRes->surface()->imp()->setPendingRole(toplevelRole());
 }
 
 RXdgToplevel::~RXdgToplevel()
-{    
-    compositor()->destroyToplevelRoleRequest(toplevelRole());
+{
+    compositor()->onAnticipatedObjectDestruction(toplevelRole());
 
     if (toplevelRole()->surface())
         toplevelRole()->surface()->imp()->setMapped(false);

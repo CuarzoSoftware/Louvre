@@ -23,12 +23,14 @@ public:
 
     struct Params;
 
+    static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LDNDIconRole;
+
     /**
      * @brief Constructor of the LDNDIconRole class.
      *
      * @param params Internal library parameters passed in the LCompositor::createDNDIconRoleRequest() virtual constructor.
      */
-    LDNDIconRole(const void *params);
+    LDNDIconRole(const void *params) noexcept;
 
     /**
      * @brief Destructor of the LDNDIconRole class.

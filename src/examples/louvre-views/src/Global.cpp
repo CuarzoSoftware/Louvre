@@ -148,20 +148,20 @@ Tooltip *G::tooltip()
 
 void G::loadCursors()
 {
-    xCursors.arrow = LXCursor::loadXCursorB("arrow");
+    xCursors.arrow = LXCursor::load("arrow");
 
     if (xCursors.arrow)
         cursor()->replaceDefaultB(xCursors.arrow->texture(), xCursors.arrow->hotspotB());
 
-    xCursors.hand2 = LXCursor::loadXCursorB("hand2");
-    xCursors.top_left_corner = LXCursor::loadXCursorB("top_left_corner");
-    xCursors.top_right_corner= LXCursor::loadXCursorB("top_right_corner");
-    xCursors.bottom_left_corner = LXCursor::loadXCursorB("bottom_left_corner");
-    xCursors.bottom_right_corner = LXCursor::loadXCursorB("bottom_right_corner");
-    xCursors.left_side = LXCursor::loadXCursorB("left_side");
-    xCursors.top_side = LXCursor::loadXCursorB("top_side");
-    xCursors.right_side = LXCursor::loadXCursorB("right_side");
-    xCursors.bottom_side = LXCursor::loadXCursorB("bottom_side");
+    xCursors.hand2 = LXCursor::load("hand2");
+    xCursors.top_left_corner = LXCursor::load("top_left_corner");
+    xCursors.top_right_corner= LXCursor::load("top_right_corner");
+    xCursors.bottom_left_corner = LXCursor::load("bottom_left_corner");
+    xCursors.bottom_right_corner = LXCursor::load("bottom_right_corner");
+    xCursors.left_side = LXCursor::load("left_side");
+    xCursors.top_side = LXCursor::load("top_side");
+    xCursors.right_side = LXCursor::load("right_side");
+    xCursors.bottom_side = LXCursor::load("bottom_side");
 }
 
 G::Cursors &G::cursors()

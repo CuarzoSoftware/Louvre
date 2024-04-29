@@ -12,7 +12,7 @@
 using LVS = LView::LViewState;
 using LSS = LScene::LScenePrivate::State;
 
-LView *LScene::LScenePrivate::viewAt(LView *view, const LPoint &pos, LView::Type type, LSeat::InputCapabilitiesFlags flags)
+LView *LScene::LScenePrivate::viewAt(LView *view, const LPoint &pos, LView::Type type, LBitset<InputFilter> flags)
 {
     LView *v { nullptr };
 
@@ -30,7 +30,7 @@ LView *LScene::LScenePrivate::viewAt(LView *view, const LPoint &pos, LView::Type
     if (type != LView::Undefined && view->type() != type)
         return nullptr;
 
-    if ((flags & LSeat::Touch && !view->touchEventsEnabled()) && (flags & LSeat::Pointer && !view->pointerEventsEnabled()))
+    if ((flags.check(InputFilter::Touch) && !view->touchEventsEnabled()) && (flags.check(InputFilter::Pointer) && !view->pointerEventsEnabled()))
         return nullptr;
 
     if (view->clippingEnabled() && !view->clippingRect().containsPoint(pos))
@@ -117,7 +117,7 @@ bool LScene::LScenePrivate::handlePointerMove(LView *view)
         if (!handlePointerMove(*it))
             return false;
 
-    if (!state.check(LSS::PointerIsBlocked) && pointIsOverView(view, cursor()->pos(), LSeat::Pointer))
+    if (!state.check(LSS::PointerIsBlocked) && pointIsOverView(view, cursor()->pos(), InputFilter::Pointer))
     {
         if (view->blockPointerEnabled())
             state.add(LSS::PointerIsBlocked);
@@ -229,7 +229,7 @@ bool LScene::LScenePrivate::handleTouchDown(LView *view)
         if (!handleTouchDown(*it))
             return false;
 
-    if (!state.check(TouchIsBlocked) && pointIsOverView(view, touchGlobalPos, LSeat::Touch))
+    if (!state.check(TouchIsBlocked) && pointIsOverView(view, touchGlobalPos, InputFilter::Touch))
     {
         if (!view->m_state.check(LVS::TouchDownDone))
         {

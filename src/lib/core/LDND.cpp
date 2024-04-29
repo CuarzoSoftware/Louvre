@@ -17,11 +17,11 @@
 using namespace Louvre;
 using namespace Louvre::Protocols::Wayland;
 
-LDND::LDND(const void *params) noexcept
+LDND::LDND(const void *params) noexcept : LFactoryObject(FactoryObjectType)
 {
-    assert(params != nullptr && "Invalid parameter passed to LDND() constructor. LDND can only be created from LCompositor::createDNDRequest().");
+    assert(params != nullptr && "Invalid parameter passed to LDND constructor.");
     LDND **ptr { (LDND**) params };
-    assert(*ptr == nullptr && *ptr == seat()->dnd() && "Only a single LDND() instance can exist.");
+    assert(*ptr == nullptr && *ptr == seat()->dnd() && "Only a single LDND instance can exist.");
     *ptr = this;
 }
 

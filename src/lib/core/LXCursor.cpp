@@ -4,7 +4,7 @@
 
 using namespace Louvre;
 
-LXCursor *LXCursor::loadXCursorB(const char *cursor, const char *theme, Int32 suggestedSize)
+LXCursor *LXCursor::load(const char *cursor, const char *theme, Int32 suggestedSize) noexcept
 {
     XcursorImage *x11Cursor =  XcursorLibraryLoadImage(cursor, theme, suggestedSize);
 

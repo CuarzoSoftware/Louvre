@@ -7,9 +7,9 @@
 
 using namespace Louvre;
 
-LSessionLockManager::LSessionLockManager(const void *params)
+LSessionLockManager::LSessionLockManager(const void *params) noexcept : LFactoryObject(FactoryObjectType)
 {
-    assert(params != nullptr && "Invalid parameter passed to LSessionLockManager constructor. LSessionLockManager can only be created from LCompositor::createSessionLockManagerRequest().");
+    assert(params != nullptr && "Invalid parameter passed to LSessionLockManager constructor.");
     LSessionLockManager**ptr { (LSessionLockManager**) params };
     assert(*ptr == nullptr && *ptr == compositor()->sessionLockManager() && "Only a single LSessionLockManager instance can exist.");
     *ptr = this;

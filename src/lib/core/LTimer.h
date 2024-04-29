@@ -31,7 +31,7 @@ public:
      *
      * If the timer is destroyed while it is running, the associated callback function is not invoked.
      */
-    ~LTimer() noexcept;
+    ~LTimer();
 
     /**
      * @brief Create a one-shot timer that is automatically started and destroyed on timeout or cancellation.

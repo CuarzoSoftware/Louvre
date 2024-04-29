@@ -3,77 +3,78 @@
 
 #include <LSeat.h>
 #include <LObject.h>
-#include <libinput.h>
 
 /**
  * @brief Input Device
  *
- * This class represents an input device, offering methods for querying device information and configuring its properties.
- * The complete list of available devices can be accessed through LSeat::inputDevices() or any of the LInputEvent subtypes to identify the originating device.
+ * This class represents an input device, providing essential information for identification.\n
+ * The complete list of available devices can be accessed through LSeat::inputDevices().\n
+ * To listen to hot-plugging events, use LSeat::inputDevicePlugged() and LSeat::inputDeviceUnplugged().\n
+ * Each subtype of LInputEvent provides access to the input device that generated it through LInputEvent::device().
+ *
+ * @note LInputDevice instances are not destroyed when the device is unplugged, but its nativeHandle() returns `nullptr`.
  *
  * ### Capabilities
  *
- * Devices aren't categorized by type, instead by the events they generate, such as pointer, keyboard, touch events, or a combination of these.
- * To retrieve device capabilities, use the capabilities() method.
+ * Devices are not categorized by type, but by their capabilities. Each device may have more than one, use hasCapability() to check for a specific capability.
  *
  * ### Configuration
  *
- * Configuration methods for device parameters may not be available for all devices. You can ascertain this by checking their return values,
- * which can be one of three outcomes: Success, Unsupported, or Invalid.
+ * Louvre does not provide a generic API for configuring input device parameters. Instead, nativeHandle() can be employed to access
+ * the data structure used by the input backend. For example, if the LInputBackendLibinput backend is used, the native handle represents
+ * a [libinput_device](https://wayland.freedesktop.org/libinput/doc/latest/api/structlibinput__device.html) struct, which can be configured
+ * through the libinput API.
+ *
+ * @warning nativeHandle() can return `nullptr` in cases where the input backend does not provide a handle or the input device has been unplugged.
  */
 class Louvre::LInputDevice
 {
 public:
 
     /**
-     * @brief Enumerates the status of configuration operations.
-     *
-     * This enumeration defines the possible outcomes of device configuration operations.
-     * The values correspond to those provided by the LIBINPUT_CONFIG_STATUS enumeration.
+     * @brief Input device capabilities
      */
-    enum ConfigurationStatus
+    enum Capability : UInt32
     {
-        /// The configuration operation was successful.
-        Success = LIBINPUT_CONFIG_STATUS_SUCCESS,
+        /// Pointer
+        Pointer = 0,
 
-        /// The configuration operation is not supported on the device.
-        Unsupported = LIBINPUT_CONFIG_STATUS_UNSUPPORTED,
+        /// Keyboard
+        Keyboard = 1,
 
-        /// The configuration provided is invalid or not allowed.
-        Invalid = LIBINPUT_CONFIG_STATUS_INVALID
+        /// Touch
+        Touch = 2,
+
+        /// Tablet Tool
+        TabletTool = 3,
+
+        /// Tablet Pad
+        TabletPad = 4,
+
+        /// Gestures
+        Gestures = 5,
+
+        /// Switch
+        Switch = 6,
     };
 
-    /// @cond OMIT
-    LInputDevice(LSeat::InputCapabilitiesFlags capabilities = 0,
-                        const std::string &name = "Unknown",
-                        UInt32 vendorId = 0,
-                        UInt32 productId = 0,
-                 void *backendData = nullptr) :
-        m_capabilities(capabilities),
-        m_name(name),
-        m_vendorId(vendorId),
-        m_productId(productId),
-        m_backendData(backendData)
-    {}
-
-    LInputDevice(const LInputDevice&) = delete;
-    LInputDevice& operator= (const LInputDevice&) = delete;
-    /// @endcond
+    LCLASS_NO_COPY(LInputDevice)
 
     /**
-     * @brief Get the capabilities of the input device.
+     * @brief Checks if the device has a given capability.
      *
-     * This method returns the capabilities of the input device, represented as a combination of flags.
+     * @param capability The capability to check.
+     * @return `true` if the device has the capability, otherwise `false`.
      */
-    LSeat::InputCapabilitiesFlags capabilities() const
+    bool hasCapability(Capability capability) const noexcept
     {
-        return m_capabilities;
+        return m_capabilities & (1 << capability);
     }
 
     /**
      * @brief Get the name of the input device.
      */
-    const std::string &name() const
+    const std::string &name() const noexcept
     {
         return m_name;
     }
@@ -81,7 +82,7 @@ public:
     /**
      * @brief Get the product ID of the input device.
      */
-    UInt32 productId() const
+    UInt32 productId() const noexcept
     {
         return m_productId;
     }
@@ -89,23 +90,45 @@ public:
     /**
      * @brief Get the vendor ID of the input device.
      */
-    UInt32 vendorId() const
+    UInt32 vendorId() const noexcept
     {
         return m_vendorId;
     }
 
-    void *backendData() const
+    /**
+     * @brief Provides access to the native data structure used by the input backend.
+     *
+     * If the backend is LInputBackendLibinput, it returns a pointer to a `libinput_device` struct.\n
+     * If the backend is LInputBackendWayland, it returns `nullptr`.
+     *
+     * @warning This method can return `nullptr` in cases where the input backend does not provide a handle or the input device has been unplugged.
+     *
+     * @return A pointer to the native data structure.
+     */
+    void *nativeHandle() const noexcept
     {
-        return m_backendData;
+        return m_nativeHandle;
     }
 
 private:
+    LInputDevice(UInt32 capabilities = 0,
+                 const std::string &name = "Unknown",
+                 UInt32 vendorId = 0,
+                 UInt32 productId = 0,
+                 void *nativeHandle = nullptr) noexcept :
+        m_capabilities(capabilities),
+        m_name(name),
+        m_vendorId(vendorId),
+        m_productId(productId),
+        m_nativeHandle(nativeHandle)
+    {}
+    friend class LCompositor;
     friend class LInputBackend;
-    LSeat::InputCapabilitiesFlags m_capabilities;
+    UInt32 m_capabilities;
     std::string m_name;
     UInt32 m_vendorId;
     UInt32 m_productId;
-    void *m_backendData;
+    void *m_nativeHandle;
     void notifyPlugged();
     void notifyUnplugged();
 };

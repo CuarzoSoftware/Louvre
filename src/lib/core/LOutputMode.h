@@ -14,12 +14,9 @@
 class Louvre::LOutputMode : LObject
 {
 public:
-    /// @cond OMIT
-    LOutputMode(LOutput *output);
+    LOutputMode(LOutput *output) noexcept;
     ~LOutputMode();
-    LOutputMode(const LOutputMode&) = delete;
-    LOutputMode& operator= (const LOutputMode&) = delete;
-    /// @endcond
+    LCLASS_NO_COPY(LOutputMode)
 
     /**
      * @brief Get the output associated with this mode.

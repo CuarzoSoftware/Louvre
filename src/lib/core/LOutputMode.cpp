@@ -4,7 +4,7 @@
 
 using namespace Louvre;
 
-LOutputMode::LOutputMode(LOutput *output) :
+LOutputMode::LOutputMode(LOutput *output) noexcept :
     LPRIVATE_INIT_UNIQUE(LOutputMode)
 {
     imp()->output = output;

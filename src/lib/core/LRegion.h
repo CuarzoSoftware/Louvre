@@ -452,10 +452,8 @@ public:
         return emptyRegion;
     }
 
-    /// @cond OMIT
     static void multiply(LRegion *dst, LRegion *src, Float32 factor) noexcept;
     mutable pixman_region32_t m_region;
-    /// @endcond
 };
 
 #endif // LREGION_H

@@ -138,7 +138,6 @@ public:
      */
     bool sendUpEvent(const LTouchUpEvent &event) noexcept;
 
-    /// @cond OMIT
 private:
     friend class LTouch;
     LTouchPoint(const LTouchDownEvent &event) noexcept;
@@ -153,7 +152,6 @@ private:
     LTouchUpEvent m_lastUpEvent;
     LPointF m_pos;
     bool m_pressed { true };
-    /// @endcond
 };
 
 #endif // LTOUCHPOINT_H

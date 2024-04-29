@@ -3,6 +3,7 @@
 
 #include <LResource.h>
 #include <LPointer.h>
+#include <LWeak.h>
 
 class Louvre::Protocols::Wayland::RPointer final : public LResource
 {

@@ -1,8 +1,8 @@
 #ifndef LDNDMANAGER_H
 #define LDNDMANAGER_H
 
-#include <LObject.h>
 #include <LPointerButtonEvent.h>
+#include <LFactoryObject.h>
 #include <memory>
 
 /**
@@ -12,10 +12,11 @@
  * It has virtual methods that notify when a client wants to start or cancels a drag & drop session, methods to
  * "drop" or cancel a data offering, and more.
  */
-class Louvre::LDND : public LObject
+class Louvre::LDND : public LFactoryObject
 {
 public:
-    struct Params;
+
+    static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LDND;
 
     // TODO: Add doc
     void setFocus(LSurface *surface, const LPointF &localPos) noexcept;
@@ -31,17 +32,7 @@ public:
      */
     LDND(const void *params) noexcept;
 
-    /**
-     * @brief Destructor of the LDNDManager class.
-     *
-     * Invoked internally by the library after LCompositor::destroyDNDManagerRequest() is called.
-     */
-    ~LDND() noexcept = default;
-
-    /// @cond OMIT
-    LDND(const LDND&) = delete;
-    LDND& operator= (const LDND&) = delete;
-    /// @endcond
+    LCLASS_NO_COPY(LDND)
 
     /**
      * @brief Action flags for drag & drop sessions.

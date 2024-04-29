@@ -5,6 +5,10 @@
 #include <LCompositor.h>
 #include <LClient.h>
 
+LClient::LClient(const void *params) noexcept : LFactoryObject(FactoryObjectType), m_imp { std::make_unique<LClientPrivate>(this, ((Params*)params)->client) } {}
+
+LClient::~LClient() {}
+
 const LEvent *LClient::findEventBySerial(UInt32 serial) const noexcept
 {
     if (imp()->events.keyboard.enter.serial() == serial)
@@ -62,10 +66,6 @@ const LClientCursor &LClient::lastCursorRequest() const noexcept
 {
     return imp()->lastCursorRequest;
 }
-
-LClient::LClient(const void *params) : m_imp { std::make_unique<LClientPrivate>(this, ((Params*)params)->client)} {}
-
-LClient::~LClient() {}
 
 bool LClient::ping(UInt32 serial) const noexcept
 {

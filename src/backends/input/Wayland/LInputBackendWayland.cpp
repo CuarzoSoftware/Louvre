@@ -75,11 +75,6 @@ public:
         return LInputBackendWayland;
     }
 
-    static UInt32 backendGetCapabilities()
-    {
-        return LSeat::InputCapabilities::Pointer | LSeat::InputCapabilities::Keyboard | LSeat::InputCapabilities::Touch;
-    }
-
     static void *backendGetContextHandle()
     {
         return display;
@@ -115,7 +110,7 @@ public:
 
     static void setupEvents()
     {
-        device.m_capabilities = LSeat::InputCapabilities::Pointer | LSeat::InputCapabilities::Keyboard | LSeat::InputCapabilities::Touch;
+        device.m_capabilities = 7;
         device.m_name = "Louvre Input Device";
         devices.push_back(&device);
         pointerMoveEvent.setDevice(&device);
@@ -162,7 +157,7 @@ public:
     static bool initWayland()
     {
         setupListeners();
-        display = static_cast<wl_display*>(Louvre::seat()->graphicBackendContextHandle());
+        display = static_cast<wl_display*>(compositor()->graphicBackendContextHandle());
         queue = wl_display_create_queue(display);
         registry = wl_display_get_registry(display);
         wl_proxy_set_queue((wl_proxy*)registry, queue);
@@ -256,13 +251,13 @@ public:
 
     static bool backendInitialize()
     {
-        if (Louvre::seat()->graphicBackendId() != LGraphicBackendWayland)
+        if (compositor()->graphicBackendId() != LGraphicBackendWayland)
         {
             LLog::error("[%s] The Wayland input backend requires the Wayland graphic backend.", BKND_NAME);
             return false;
         }
 
-        Louvre::seat()->imp()->inputBackendData = &shared();
+        compositor()->imp()->inputBackendData = &shared();
 
         shared().mutex.lock();
 
@@ -283,7 +278,7 @@ public:
     {
         shared().mutex.lock();
         unitWayland();
-        Louvre::seat()->imp()->inputBackendData = nullptr;
+        compositor()->imp()->inputBackendData = nullptr;
         shared().mutex.unlock();
     }
 
@@ -345,21 +340,21 @@ public:
 
     static void seatHandleCapabilities(void *, wl_seat *, UInt32 capabilities)
     {
-        if (!pointer && capabilities & LSeat::InputCapabilities::Pointer)
+        if (!pointer && capabilities & WL_SEAT_CAPABILITY_POINTER)
         {
             pointer = wl_seat_get_pointer(seat);
             wl_proxy_set_queue((wl_proxy*)pointer, queue);
             wl_pointer_add_listener(pointer, &pointerListener, nullptr);
         }
 
-        if (!keyboard && capabilities & LSeat::InputCapabilities::Keyboard)
+        if (!keyboard && capabilities & WL_SEAT_CAPABILITY_KEYBOARD)
         {
             keyboard = wl_seat_get_keyboard(seat);
             wl_proxy_set_queue((wl_proxy*)keyboard, queue);
             wl_keyboard_add_listener(keyboard, &keyboardListener, nullptr);
         }
 
-        if (!touch && capabilities & LSeat::InputCapabilities::Touch)
+        if (!touch && capabilities & WL_SEAT_CAPABILITY_TOUCH)
         {
             touch = wl_seat_get_touch(seat);
             wl_proxy_set_queue((wl_proxy*)touch, queue);
@@ -561,7 +556,6 @@ extern "C" LInputBackendInterface *getAPI()
 {
     static LInputBackendInterface API;
     API.backendGetId            = &LInputBackend::backendGetId;
-    API.backendGetCapabilities  = &LInputBackend::backendGetCapabilities;
     API.backendGetContextHandle = &LInputBackend::backendGetContextHandle;
     API.backendGetDevices       = &LInputBackend::backendGetDevices;
     API.backendInitialize       = &LInputBackend::backendInitialize;

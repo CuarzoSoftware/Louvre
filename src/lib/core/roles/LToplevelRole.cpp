@@ -21,10 +21,11 @@
 using namespace Louvre;
 using namespace Louvre::Protocols::XdgShell;
 
-LToplevelRole::LToplevelRole(const void *params) :
-    LBaseSurfaceRole(((LToplevelRole::Params*)params)->toplevel,
-                       ((LToplevelRole::Params*)params)->surface,
-                       LSurface::Role::Toplevel),
+LToplevelRole::LToplevelRole(const void *params) noexcept :
+    LBaseSurfaceRole(FactoryObjectType,
+        ((LToplevelRole::Params*)params)->toplevel,
+        ((LToplevelRole::Params*)params)->surface,
+        LSurface::Role::Toplevel),
     LPRIVATE_INIT_UNIQUE(LToplevelRole)
 {
     imp()->toplevel = this;
@@ -38,7 +39,10 @@ LToplevelRole::LToplevelRole(const void *params) :
         imp()->supportedStates.add(Suspended);
 }
 
-LToplevelRole::~LToplevelRole() {}
+LToplevelRole::~LToplevelRole()
+{
+    // Required by pimpl
+}
 
 const LToplevelRole::Configuration *LToplevelRole::findConfiguration(UInt32 serial) const noexcept
 {

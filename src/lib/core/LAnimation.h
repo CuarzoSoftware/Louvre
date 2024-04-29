@@ -35,7 +35,7 @@ public:
      * @param onUpdate A callback function triggered each time the value() property changes. `nullptr` can be passed if not used.
      * @param onFinish A callback function triggered once the value() property reaches 1.f. `nullptr` can be passed if not used.
      */
-    LAnimation(UInt32 durationMs = 0, const Callback &onUpdate = nullptr, const Callback &onFinish = nullptr);
+    LAnimation(UInt32 durationMs = 0, const Callback &onUpdate = nullptr, const Callback &onFinish = nullptr) noexcept;
 
     /**
      * @brief Destructor for the LAnimation class.
@@ -46,9 +46,7 @@ public:
      */
     ~LAnimation();
 
-    /// @cond OMIT
     LCLASS_NO_COPY(LAnimation)
-    /// @endcond
 
     /**
      * @brief Creates and launches a one-time animation with automatic cleanup.

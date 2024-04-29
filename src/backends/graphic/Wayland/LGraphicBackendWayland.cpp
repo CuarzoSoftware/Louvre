@@ -4,6 +4,7 @@
 #include <wayland-egl.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
+#include <private/LFactory.h>
 
 #include <LOutputMode.h>
 #include <SRM/SRMFormat.h>
@@ -351,7 +352,7 @@ public:
         shared.fd[0].events = POLLIN;
         shared.fd[0].revents = 0;
 
-        dummyOutputs.push_back(Louvre::compositor()->createOutputRequest(&params));
+        dummyOutputs.push_back(LFactory::createObject<LOutput>(&params));
         renderThread = std::thread(renderLoop);
 
         while (!windowInitialized)
@@ -371,7 +372,7 @@ public:
         shared.fd[0].fd = -1;
 
         seat()->outputUnplugged(dummyOutputs.front());
-        Louvre::compositor()->destroyOutputRequest(dummyOutputs.front());
+        Louvre::compositor()->onAnticipatedObjectDestruction(dummyOutputs.front());
         delete dummyOutputs.front();
         dummyOutputs.clear();
         delete dummyOutputModes.front();

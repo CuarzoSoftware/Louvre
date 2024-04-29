@@ -367,7 +367,7 @@ retry:
     if (!pointer.focus())
     {
         LSurface *surface { nullptr };
-        LView *view { viewAt(cursor()->pos(), LView::Undefined, LSeat::Pointer) };
+        LView *view { viewAt(cursor()->pos(), LView::Undefined, InputFilter::Pointer) };
 
         if (view && view->type() == LView::Surface)
             surface = static_cast<LSurfaceView*>(view)->surface();
@@ -453,7 +453,7 @@ retry:
 
         if (pointer.focus()->imp()->lastPointerEventView)
         {
-            if (!imp()->pointIsOverView(pointer.focus()->imp()->lastPointerEventView, cursor()->pos(), LSeat::Pointer))
+            if (!imp()->pointIsOverView(pointer.focus()->imp()->lastPointerEventView, cursor()->pos(), InputFilter::Pointer))
                 pointer.setFocus(nullptr);
         }
         else
@@ -1086,7 +1086,7 @@ skipViews:
                 dnd.icon()->surface()->repaintOutputs();
             }
 
-            LSurfaceView *surfaceView { static_cast<LSurfaceView*>(viewAt(globalPos, LView::Surface, LSeat::Pointer | LSeat::Touch)) };
+            LSurfaceView *surfaceView { static_cast<LSurfaceView*>(viewAt(globalPos, LView::Surface, InputFilter::Pointer | InputFilter::Touch)) };
 
             if (surfaceView)
             {
@@ -1387,7 +1387,7 @@ LSceneView *LScene::mainView() const
     return &imp()->view;
 }
 
-LView *LScene::viewAt(const LPoint &pos, LView::Type type, LSeat::InputCapabilitiesFlags flags)
+LView *LScene::viewAt(const LPoint &pos, LView::Type type, LBitset<InputFilter> filter)
 {
-    return imp()->viewAt(mainView(), pos, type, flags);
+    return imp()->viewAt(mainView(), pos, type, filter);
 }

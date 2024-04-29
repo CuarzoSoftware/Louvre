@@ -5,11 +5,11 @@
 
 using namespace Louvre;
 
-LClipboard::LClipboard(const void *params)
+LClipboard::LClipboard(const void *params) noexcept : LFactoryObject(FactoryObjectType)
 {
-    assert(params != nullptr && "Invalid parameter passed to LClipboard() constructor. LClipboard can only be created from LCompositor::createClipboardRequest().");
+    assert(params != nullptr && "Invalid parameter passed to LClipboard constructor.");
     LClipboard**ptr { (LClipboard**) params };
-    assert(*ptr == nullptr && *ptr == seat()->clipboard() && "Only a single LClipboard() instance can exist.");
+    assert(*ptr == nullptr && *ptr == seat()->clipboard() && "Only a single LClipboard instance can exist.");
     *ptr = this;
 }
 

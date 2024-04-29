@@ -49,14 +49,12 @@ public:
      */
     Protocols::ScreenCopy::RScreenCopyFrame &resource() const noexcept { return m_screenCopyFrameRes; }
 private:
-    /// @cond OMIT
     friend class Protocols::ScreenCopy::RScreenCopyFrame;
     friend class LOutput;
     LScreenshotRequest(Protocols::ScreenCopy::RScreenCopyFrame &screenCopyFrameRes) noexcept : m_screenCopyFrameRes(screenCopyFrameRes) {};
     ~LScreenshotRequest() noexcept = default;
     Int8 copy() noexcept;
     Protocols::ScreenCopy::RScreenCopyFrame &m_screenCopyFrameRes;
-    /// @endcond
 };
 
 #endif // LSCREENSHOTREQUEST_H

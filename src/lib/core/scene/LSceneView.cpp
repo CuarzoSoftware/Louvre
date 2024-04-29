@@ -100,7 +100,6 @@ void LSceneView::render(const LRegion *exclude) noexcept
     for (std::list<LView*>::const_reverse_iterator it = children().crbegin(); it != children().crend(); it++)
         drawOpaqueDamage(*it);
 
-    painter->imp()->shaderSetColorFactorEnabled(0);
     drawBackground(!isLScene() && m_clearColor.a >= 1.f);
 
     glEnable(GL_BLEND);

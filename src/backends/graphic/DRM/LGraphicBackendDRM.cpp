@@ -24,6 +24,7 @@
 #include <private/LTexturePrivate.h>
 #include <private/LCursorPrivate.h>
 #include <private/LSeatPrivate.h>
+#include <private/LFactory.h>
 
 #include <LTime.h>
 #include <LGammaTable.h>
@@ -185,7 +186,7 @@ static void initConnector(Backend *bknd, SRMConnector *conn)
         .backendData = bkndOutput
     };
 
-    compositor->createOutputRequest(&params);
+    LFactory::createObject<LOutput>(&params);
 }
 
 static void uninitConnector(Backend *bknd, SRMConnector *conn)
@@ -209,7 +210,7 @@ static void uninitConnector(Backend *bknd, SRMConnector *conn)
         bkndOutput->modes.pop_back();
     }
 
-    compositor->destroyOutputRequest(output);
+    compositor->onAnticipatedObjectDestruction(output);
     LVectorRemoveOne(bknd->connectedOutputs, output);
     delete output;
     delete bkndOutput;

@@ -70,8 +70,9 @@ LPRIVATE_CLASS(LCompositor)
     void unitSeat();
 
     bool initInputBackend();
-        LInputDevice fakeDevice { LSeat::Pointer | LSeat::Keyboard | LSeat::Touch };
+        LInputDevice fakeDevice { 7 };
         void *inputBackendHandle { nullptr };
+        void *inputBackendData { nullptr };
         LInputBackendInterface *inputBackend { nullptr };
     void unitInputBackend(bool closeLib);
 

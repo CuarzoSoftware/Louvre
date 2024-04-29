@@ -9,7 +9,7 @@ LTimer::LTimer(const Callback &onTimeout) noexcept : m_onTimeoutCallback(onTimeo
         m_waylandEventSource = wl_event_loop_add_timer(compositor()->imp()->waylandEventLoop, &LTimer::waylandTimeoutCallback, this);
 }
 
-LTimer::~LTimer() noexcept
+LTimer::~LTimer()
 {
     if (compositor()->display())
     {

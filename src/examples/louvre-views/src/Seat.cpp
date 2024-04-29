@@ -37,7 +37,7 @@ void Seat::enabledChanged()
 
 void Seat::nativeInputEvent(void *event)
 {
-    if (inputBackendId() != LInputBackendLibinput || compositor()->sessionLockManager()->state() != LSessionLockManager::Unlocked)
+    if (compositor()->inputBackendId() != LInputBackendLibinput || compositor()->sessionLockManager()->state() != LSessionLockManager::Unlocked)
         return;
 
     libinput_event *ev { (libinput_event*)event };

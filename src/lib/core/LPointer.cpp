@@ -23,11 +23,11 @@ using namespace Louvre;
 using namespace Louvre::Protocols;
 using S = Louvre::LPointer::LPointerPrivate::StateFlags;
 
-LPointer::LPointer(const void *params) : LPRIVATE_INIT_UNIQUE(LPointer)
+LPointer::LPointer(const void *params) noexcept : LFactoryObject(FactoryObjectType), LPRIVATE_INIT_UNIQUE(LPointer)
 {
-    assert(params != nullptr && "Invalid parameter passed to LPointer() constructor. LPointer can only be created from LCompositor::createPointerRequest().");
+    assert(params != nullptr && "Invalid parameter passed to LPointer constructor.");
     LPointer **ptr { (LPointer**) params };
-    assert(*ptr == nullptr && *ptr == seat()->pointer() && "Only a single LPointer() instance can exist.");
+    assert(*ptr == nullptr && *ptr == seat()->pointer() && "Only a single LPointer instance can exist.");
     *ptr = this;
 }
 

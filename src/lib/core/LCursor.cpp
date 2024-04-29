@@ -61,7 +61,7 @@ const LRegion &LCursor::damage(LOutput *output) const noexcept
     return output->imp()->cursorDamage;
 }
 
-LCursor::LCursor() : LPRIVATE_INIT_UNIQUE(LCursor)
+LCursor::LCursor() noexcept : LPRIVATE_INIT_UNIQUE(LCursor)
 {
     compositor()->imp()->cursor = this;
 

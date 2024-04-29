@@ -48,7 +48,7 @@ GSeat::GSeat(
     )
 {
     this->client()->imp()->seatGlobals.push_back(this);
-    capabilities(seat()->inputCapabilities());
+    capabilities(7);
     name(seat()->name());
 }
 

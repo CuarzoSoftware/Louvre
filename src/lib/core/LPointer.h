@@ -1,12 +1,11 @@
 #ifndef LPOINTER_H
 #define LPOINTER_H
 
-#include <LObject.h>
-#include <LPoint.h>
-#include <LToplevelRole.h>
 #include <LPointerButtonEvent.h>
+#include <LFactoryObject.h>
+#include <LPoint.h>
 #include <linux/input-event-codes.h>
-#include <limits>
+#include <memory>
 #include <vector>
 
 /**
@@ -22,15 +21,11 @@
  * This action automatically removes focus from any previously focused surface.
  * Subsequently, all pointer events are directed to the currently focused surface.
  */
-class Louvre::LPointer : public LObject
+class Louvre::LPointer : public LFactoryObject
 {
 public:
-    /**
-     * @brief Constructor parameters.
-     *
-     * Configuration parameters provided in the virtual LCompositor::createPointerRequest() virtual constructor.
-     */
-    struct Params;
+
+    static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LPointer;
 
     /**
      * @brief Source of a scroll event
@@ -59,19 +54,16 @@ public:
      *
      * @param params Internal library parameters provided in the LCompositor::createPointerRequest() virtual constructor.
      */
-    LPointer(const void *params);
+    LPointer(const void *params) noexcept;
 
     /**
      * @brief LPointer class destructor.
      *
      * Invoked internally by the library after notification of its destruction with LCompositor::destroyPointerRequest().
      */
-    virtual ~LPointer();
+    ~LPointer();
 
-    /// @cond OMIT
-    LPointer(const LPointer&) = delete;
-    LPointer& operator= (const LPointer&) = delete;
-    /// @endcond
+    LCLASS_NO_COPY(LPointer)
 
     /**
      * @brief Get the surface with pointer focus.

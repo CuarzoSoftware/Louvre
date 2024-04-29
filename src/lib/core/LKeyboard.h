@@ -1,12 +1,12 @@
 #ifndef LKEYBOARD_H
 #define LKEYBOARD_H
 
+#include <LFactoryObject.h>
 #include <LKeyboardModifiersEvent.h>
-#include <LObject.h>
-#include <vector>
 #include <xkbcommon/xkbcommon.h>
 #include <linux/input-event-codes.h>
 #include <memory>
+#include <vector>
 
 /**
  * @brief Class for handling keyboard events.
@@ -22,16 +22,11 @@
  * As a result, all subsequent keyboard events sent with sendKeyEvent() or sendModifiersEvent() will be
  * directed to the currently focused surface.
  */
-class Louvre::LKeyboard : public LObject
+class Louvre::LKeyboard : public LFactoryObject
 {
 public:
 
-    /**
-     * @brief Constructor parameters.
-     *
-     * Configuration parameters passed in the LCompositor::createKeyboardRequest() virtual constructor.
-     */
-    struct Params;
+    static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LKeyboard;
 
     /**
      * @brief Constructor of the LKeyboard class.
@@ -40,19 +35,16 @@ public:
      *
      * @param params Internal library parameters passed in the LCompositor::createKeyboardRequest() virtual constructor.
      */
-    LKeyboard(const void *params);
+    LKeyboard(const void *params) noexcept;
 
     /**
      * @brief Destructor of the LKeyboard class.
      *
      * Invoked internally by the library after LCompositor::destroyKeyboardRequest() is called.
      */
-    virtual ~LKeyboard();
+    ~LKeyboard();
 
-    /// @cond OMIT
-    LKeyboard(const LKeyboard&) = delete;
-    LKeyboard& operator= (const LKeyboard&) = delete;
-    /// @endcond
+    LCLASS_NO_COPY(LKeyboard)
 
     /**
      * @brief Set keyboard focus.

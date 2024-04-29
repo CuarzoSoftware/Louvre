@@ -1,6 +1,6 @@
 #include <LGammaTable.h>
 
-void Louvre::LGammaTable::fill(Float64 gamma, Float64 brightness, Float64 contrast)
+void Louvre::LGammaTable::fill(Float64 gamma, Float64 brightness, Float64 contrast) noexcept
 {
     if (size() == 0)
         return;

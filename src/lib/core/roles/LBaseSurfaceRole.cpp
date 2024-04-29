@@ -4,7 +4,8 @@
 
 using namespace Louvre;
 
-LBaseSurfaceRole::LBaseSurfaceRole(LResource *resource, LSurface *surface, UInt32 roleId) noexcept:
+LBaseSurfaceRole::LBaseSurfaceRole(Type type, LResource *resource, LSurface *surface, UInt32 roleId) noexcept :
+    LFactoryObject(type),
     m_surface(surface),
     m_resource(resource),
     m_roleId(roleId)

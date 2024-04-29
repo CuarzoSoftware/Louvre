@@ -5,20 +5,19 @@
 
 using namespace Louvre;
 
-LSubsurfaceRole::LSubsurfaceRole
-(
-    const void *params
-)
-    :LBaseSurfaceRole
-    (
+LSubsurfaceRole::LSubsurfaceRole(const void *params) noexcept :
+    LBaseSurfaceRole(
+        FactoryObjectType,
         static_cast<const LSubsurfaceRole::Params*>(params)->subsurface,
         static_cast<const LSubsurfaceRole::Params*>(params)->surface,
-        LSurface::Role::Subsurface
-    ),
+        LSurface::Role::Subsurface),
     LPRIVATE_INIT_UNIQUE(LSubsurfaceRole)
 {}
 
-LSubsurfaceRole::~LSubsurfaceRole(){/* TODO: inline */}
+LSubsurfaceRole::~LSubsurfaceRole()
+{
+    // Required by pimpl
+}
 
 bool LSubsurfaceRole::isSynced() const
 {

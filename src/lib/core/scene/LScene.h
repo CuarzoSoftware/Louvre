@@ -101,15 +101,19 @@ public:
         AuxFunc             = static_cast<UInt8>(1) << 2
     };
 
+    enum InputFilter : UInt8
+    {
+        Pointer     = static_cast<UInt8>(1) << 0,
+        Keyboard    = static_cast<UInt8>(1) << 1,
+        Touch       = static_cast<UInt8>(1) << 2,
+    };
+
     /**
      * @brief Default constructor for LScene.
      */
     LScene();
 
-    /// @cond OMIT
-    LScene(const LScene&) = delete;
-    LScene& operator= (const LScene&) = delete;
-    /// @endcond
+    LCLASS_NO_COPY(LScene)
 
     /**
      * @brief Destructor for LScene.
@@ -338,11 +342,11 @@ public:
      *
      * @param pos The position to query.
      * @param type The type of view to search for. Passing LView::Type::Undefined disables the filter.
-     * @param flags Additional filter for searching only views with pointer and/or touch events enabled.
+     * @param filter Additional flags for searching only views with pointer and/or touch events enabled. 0 disables it.
      *
      * @return A pointer to the LView at the specified position, or nullptr if no view is found.
      */
-    LView *viewAt(const LPoint &pos, LView::Type type = LView::Undefined, LSeat::InputCapabilitiesFlags flags = 0);
+    LView *viewAt(const LPoint &pos, LView::Type type = LView::Undefined, LBitset<InputFilter> filter = 0);
 
 LPRIVATE_IMP_UNIQUE(LScene)
 };

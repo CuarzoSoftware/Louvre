@@ -68,13 +68,11 @@ protected:
      */
     void notifyDestruction() noexcept;
 
-    /// @cond OMIT
 private:
     friend class LWeakUtils;
     mutable std::vector<void*> m_weakRefs;
     mutable UIntPtr m_userData { 0 };
     bool m_destroyed { false };
-    /// @endcond
 };
 
 #endif // LOBJECT_H

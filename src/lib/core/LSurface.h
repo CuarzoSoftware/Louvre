@@ -1,7 +1,7 @@
 #ifndef LSURFACE_H
 #define LSURFACE_H
 
-#include <LObject.h>
+#include <LFactoryObject.h>
 #include <LTexture.h>
 #include <LRegion.h>
 #include <LRect.h>
@@ -88,11 +88,13 @@
  * In some cases, such as in the LPopupRole or LSubsurfaceRole role, the position set with setPos() is not taken into account.\n
  * You can see the positioning rules of each role in detail by viewing the documentation of rolePos() for each one.
  */
-class Louvre::LSurface : public LObject
+class Louvre::LSurface : public LFactoryObject
 {
 public:
 
     struct Params;
+
+    static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LSurface;
 
     /**
      * @brief ID of library roles
@@ -200,19 +202,16 @@ public:
      *
      * @param params Internal parameters of the library provided in the virtual constructor LCompositor::createSurfaceRequest().
      */
-    LSurface(const void *params);
+    LSurface(const void *params) noexcept;
 
     /**
      * @brief Destructor of the LSurface class.
      *
      * Invoked after LCompositor::destroySurfaceRequest().
      */
-    virtual ~LSurface();
+    ~LSurface();
 
-    /// @cond OMIT
-    LSurface(const LSurface&) = delete;
-    LSurface& operator= (const LSurface&) = delete;
-    /// @endcond
+    LCLASS_NO_COPY(LSurface)
 
     /**
      * @brief Assigns the position.

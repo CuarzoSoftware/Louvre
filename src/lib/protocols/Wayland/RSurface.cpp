@@ -7,6 +7,7 @@
 #include <protocols/Wayland/RSurface.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LSeatPrivate.h>
+#include <private/LFactory.h>
 #include <LCursorRole.h>
 #include <LDNDIconRole.h>
 #include <LLog.h>
@@ -57,7 +58,7 @@ RSurface::RSurface
     // Create surface
     LSurface::Params params;
     params.surfaceResource = this;
-    m_surface.reset(compositor()->createSurfaceRequest(&params));
+    m_surface.reset(LFactory::createObject<LSurface>(&params));
 
     // Append surface
     compositor()->imp()->surfaces.emplace_back(surface());
@@ -72,7 +73,7 @@ RSurface::~RSurface()
     lSurface->imp()->setKeyboardGrabToParent();
 
     // Notify from client
-    compositor()->destroySurfaceRequest(lSurface);
+    compositor()->onAnticipatedObjectDestruction(lSurface);
 
     // Unmap
     lSurface->imp()->setMapped(false);
@@ -88,14 +89,14 @@ RSurface::~RSurface()
     if (lSurface->dndIcon())
     {
         LDNDIconRole *ldndIcon = lSurface->dndIcon();
-        compositor()->destroyDNDIconRoleRequest(ldndIcon);
+        compositor()->onAnticipatedObjectDestruction(ldndIcon);
         delete ldndIcon;
     }
 
     if (lSurface->cursorRole())
     {
         LCursorRole *lCursor = lSurface->cursorRole();
-        compositor()->destroyCursorRoleRequest(lCursor);
+        compositor()->onAnticipatedObjectDestruction(lCursor);
         delete lCursor;
     }
 

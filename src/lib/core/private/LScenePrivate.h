@@ -64,14 +64,14 @@ LPRIVATE_CLASS(LScene)
 
     bool pointClippedByParent(LView *parent, const LPoint &point);
     bool pointClippedByParentScene(LView *view, const LPoint &point);
-    LView *viewAt(LView *view, const LPoint &pos, LView::Type type, LSeat::InputCapabilitiesFlags flags);
+    LView *viewAt(LView *view, const LPoint &pos, LView::Type type, LBitset<LScene::InputFilter> flags);
     LPoint viewLocalPos(LView *view, const LPoint &pos);
     bool handlePointerMove(LView *view);
     bool handleTouchDown(LView *view);
 
-    inline bool pointIsOverView(LView *view, const LPointF &pos, LSeat::InputCapabilitiesFlags flags)
+    bool pointIsOverView(LView *view, const LPointF &pos, LBitset<LScene::InputFilter> flags)
     {
-        if (!view->mapped() || (flags & LSeat::Pointer && !view->pointerEventsEnabled()) || (flags & LSeat::Touch && !view->touchEventsEnabled()))
+        if (!view->mapped() || (flags.check(InputFilter::Pointer) && !view->pointerEventsEnabled()) || (flags.check(InputFilter::Touch) && !view->touchEventsEnabled()))
             return false;
 
         if (view->clippingEnabled() && !view->clippingRect().containsPoint(pos))

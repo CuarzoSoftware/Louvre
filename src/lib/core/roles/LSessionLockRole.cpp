@@ -11,8 +11,9 @@
 using namespace Louvre::Protocols::SessionLock;
 using namespace Louvre;
 
-LSessionLockRole::LSessionLockRole(const void *params) :
+LSessionLockRole::LSessionLockRole(const void *params) noexcept :
     LBaseSurfaceRole(
+        FactoryObjectType,
         static_cast<const Params*>(params)->resource,
         static_cast<const Params*>(params)->surface,
         LSurface::SessionLock

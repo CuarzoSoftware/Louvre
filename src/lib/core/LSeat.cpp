@@ -33,28 +33,22 @@
 #include <LClient.h>
 #include <LLog.h>
 
+#include <private/LFactory.h>
+
 using namespace Louvre;
 
-LSeat::LSeat(const void *params) : LPRIVATE_INIT_UNIQUE(LSeat)
+LSeat::LSeat(const void *params) : LFactoryObject(FactoryObjectType), LPRIVATE_INIT_UNIQUE(LSeat)
 {
-    L_UNUSED(params);
-    compositor()->imp()->seat = this;
+    assert(params != nullptr && "Invalid parameter passed to LSeat constructor.");
+    LSeat**ptr { (LSeat**) params };
+    assert(*ptr == nullptr && *ptr == seat() && "Only a single LSeat instance can exist.");
+    *ptr = this;
 
-    compositor()->createDNDRequest(&m_dnd);
-    assert(m_dnd != nullptr && "Please ensure that LCompositor::createDNDRequest() returns a valid LDND instance or a compatible subtype.");
-
-    compositor()->createPointerRequest(&m_pointer);
-    assert(m_pointer != nullptr && "Please ensure that LCompositor::createPointerRequest() returns a valid LPointer instance or a compatible subtype.");
-
-    compositor()->createKeyboardRequest(&m_keyboard);
-    assert(m_keyboard != nullptr && "Please ensure that LCompositor::createKeyboardRequest() returns a valid LKeyboard instance or a compatible subtype.");
-
-    compositor()->createTouchRequest(&m_touch);
-    assert(m_touch != nullptr && "Please ensure that LCompositor::createTouchRequest() returns a valid LTouch instance or a compatible subtype.");
-
-    compositor()->createClipboardRequest(&m_clipboard);
-    assert(m_clipboard != nullptr && "Please ensure that LCompositor::createClipboardRequest() returns a valid LClipboard instance or a compatible subtype.");
-
+    LFactory::createObject<LDND>(&m_dnd);
+    LFactory::createObject<LPointer>(&m_pointer);
+    LFactory::createObject<LKeyboard>(&m_keyboard);
+    LFactory::createObject<LTouch>(&m_touch);
+    LFactory::createObject<LClipboard>(&m_clipboard);
     imp()->enabled = true;
 }
 
@@ -71,53 +65,12 @@ const std::vector<LOutput *> &LSeat::outputs() const
     return *compositor()->imp()->graphicBackend->backendGetConnectedOutputs();
 }
 
-void *LSeat::graphicBackendContextHandle() const
-{
-    return compositor()->imp()->graphicBackend->backendGetContextHandle();
-}
-
-UInt32 LSeat::graphicBackendId() const
-{
-    return compositor()->imp()->graphicBackend->backendGetId();
-}
-
-LSeat::InputCapabilitiesFlags LSeat::inputBackendCapabilities() const
-{
-    return compositor()->imp()->inputBackend->backendGetCapabilities();
-}
-
 const char *LSeat::name() const
 {
     if (imp()->libseatHandle)
         return libseat_seat_name(imp()->libseatHandle);
 
     return "seat0";
-}
-
-void *LSeat::inputBackendContextHandle() const
-{
-    return compositor()->imp()->inputBackend->backendGetContextHandle();
-}
-
-UInt32 LSeat::inputBackendId() const
-{
-    return compositor()->imp()->inputBackend->backendGetId();
-}
-
-LSeat::InputCapabilitiesFlags LSeat::inputCapabilities() const
-{
-    return imp()->capabilities;
-}
-
-void LSeat::setInputCapabilities(LSeat::InputCapabilitiesFlags capabilitiesFlags)
-{
-    imp()->capabilities = capabilitiesFlags;
-
-    for (LClient *c : compositor()->clients())
-    {
-        for (Wayland::GSeat *s : c->seatGlobals())
-            s->capabilities(capabilitiesFlags);
-    }
 }
 
 LToplevelRole *LSeat::activeToplevel() const

@@ -4,14 +4,12 @@
 #include <LNamespaces.h>
 #include <functional>
 
-/// @cond OMIT
 class Louvre::LWeakUtils
 {
 public:
     static std::vector<void *> &objectRefs(const LObject *object) noexcept;
     static bool isObjectDestroyed(const LObject *object) noexcept;
 };
-/// @endcond
 
 /**
  * @brief Weak reference to an LObject pointer
@@ -154,7 +152,6 @@ public:
     }
 
 private:
-    /// @cond OMIT
     friend class LObject;
 
     void copy(const LWeak<T> &other) noexcept
@@ -191,7 +188,6 @@ private:
     T *m_object { nullptr };
     UInt64 m_index { 0 };
     OnDestroyCallback *m_onDestroyCallback { nullptr };
-    /// @endcond OMIT
 };
 
 #endif // LWEAK_H

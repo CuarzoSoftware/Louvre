@@ -12,10 +12,11 @@
 
 using namespace Louvre;
 
-LCursorRole::LCursorRole(const void *params) :
-    LBaseSurfaceRole(static_cast<const Params*>(params)->surface->surfaceResource(),
-                     static_cast<const Params*>(params)->surface,
-                     LSurface::Role::Cursor),
+LCursorRole::LCursorRole(const void *params) noexcept :
+    LBaseSurfaceRole(FactoryObjectType,
+        static_cast<const Params*>(params)->surface->surfaceResource(),
+        static_cast<const Params*>(params)->surface,
+        LSurface::Role::Cursor),
     LPRIVATE_INIT_UNIQUE(LCursorRole)
 {
     surface()->imp()->stateFlags.remove(LSurface::LSurfacePrivate::ReceiveInput);

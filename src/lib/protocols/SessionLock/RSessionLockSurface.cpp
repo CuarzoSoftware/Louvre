@@ -3,6 +3,7 @@
 #include <protocols/SessionLock/RSessionLockSurface.h>
 #include <protocols/SessionLock/RSessionLock.h>
 #include <private/LSurfacePrivate.h>
+#include <private/LFactory.h>
 #include <LSessionLockRole.h>
 #include <LCompositor.h>
 #include <LOutput.h>
@@ -34,7 +35,7 @@ RSessionLockSurface::RSessionLockSurface(RSessionLock *sessionLockRes, LSurface 
         output
     };
 
-    m_sessionLockRole.reset(compositor()->createSessionLockRoleRequest(&params));
+    m_sessionLockRole.reset(LFactory::createObject<LSessionLockRole>(&params));
     sessionLockRes->m_roles.push_back(sessionLockRole());
     surface->imp()->setPendingRole(sessionLockRole());
     surface->imp()->applyPendingRole();
@@ -43,7 +44,7 @@ RSessionLockSurface::RSessionLockSurface(RSessionLock *sessionLockRes, LSurface 
 
 RSessionLockSurface::~RSessionLockSurface()
 {
-    compositor()->destroySessionLockRoleRequest(sessionLockRole());
+    compositor()->onAnticipatedObjectDestruction(sessionLockRole());
 
     if (sessionLockRole()->surface())
         sessionLockRole()->surface()->imp()->setMapped(false);

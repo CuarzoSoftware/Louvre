@@ -7,11 +7,6 @@
 
 using namespace Louvre;
 
-struct LPointer::Params
-{
-    /* Add here any required constructor param */
-};
-
 LPRIVATE_CLASS(LPointer)
 
     enum StateFlags
@@ -25,10 +20,10 @@ LPRIVATE_CLASS(LPointer)
 
     void sendLeaveEvent(LSurface *surface) noexcept;
 
-    LBitset<StateFlags> state { NaturalScrollX | NaturalScrollY };
     LWeak<LSurface> focus;
     LWeak<LSurface> draggingSurface;
     std::vector<LPointerButtonEvent::Button> pressedButtons;
+    LBitset<StateFlags> state { NaturalScrollX | NaturalScrollY };
     Float32 axisXprev;
     Float32 axisYprev;
 };

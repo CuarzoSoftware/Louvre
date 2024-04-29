@@ -23,24 +23,11 @@
 
 #include <LOpenGL.h>
 
-Compositor::Compositor() : LCompositor(),
-    scene(),
-    backgroundLayer(scene.mainView()),
-    surfacesLayer(scene.mainView()),
-    workspacesLayer(scene.mainView()),
-    fullscreenLayer(scene.mainView()),
-    overlayLayer(scene.mainView()),
-    tooltipsLayer(scene.mainView()),
-    cursorLayer(scene.mainView())
+void Compositor::initialized()
 {
     // Set black as default background color
     scene.mainView()->setClearColor({0.f, 0.f, 0.f, 1.f});
-}
 
-Compositor::~Compositor() {}
-
-void Compositor::initialized()
-{
     // Change the keyboard map to "latam"
     seat()->keyboard()->setKeymap(NULL, NULL, "latam", NULL);
 
@@ -55,7 +42,7 @@ void Compositor::initialized()
     {
         if (G::font()->regular)
         {
-            char text[128];
+            char text[64];
             time_t rawtime;
             struct tm *timeinfo;
             time(&rawtime);
@@ -116,60 +103,51 @@ void Compositor::uninitialized()
             kill(c->pid, SIGKILL);
 }
 
-LClient *Compositor::createClientRequest(const void *params)
+LFactoryObject *Compositor::createObjectRequest(LFactoryObject::Type type, const void *params)
 {
-    return new Client(params);
+    if (type == LFactoryObject::Type::LSurface)
+        return new Surface(params);
+
+    if (type == LFactoryObject::Type::LToplevelRole)
+        return new Toplevel(params);
+
+    if (type == LFactoryObject::Type::LPopupRole)
+        return new Popup(params);
+
+    if (type == LFactoryObject::Type::LClient)
+        return new Client(params);
+
+    if (type == LFactoryObject::Type::LOutput)
+        return new Output(params);
+
+    if (type == LFactoryObject::Type::LSeat)
+        return new Seat(params);
+
+    if (type == LFactoryObject::Type::LPointer)
+        return new Pointer(params);
+
+    if (type == LFactoryObject::Type::LKeyboard)
+        return new Keyboard(params);
+
+    if (type == LFactoryObject::Type::LSessionLockManager)
+        return new SessionLockManager(params);
+
+    return nullptr;
 }
 
-LOutput *Compositor::createOutputRequest(const void *params)
+void Compositor::onAnticipatedObjectDestruction(LFactoryObject *object)
 {
-    return new Output(params);
-}
+    if (object->factoryObjectType() == LFactoryObject::Type::LClient)
+    {
+        static_cast<Client*>(object)->destroyed = true;
+        return;
+    }
 
-LSurface *Compositor::createSurfaceRequest(const void *params)
-{
-    return new Surface(params);
-}
-
-LSeat *Compositor::createSeatRequest(const void *params)
-{
-    return new Seat(params);
-}
-
-LPointer *Compositor::createPointerRequest(const void *params)
-{
-    return new Pointer(params);
-}
-
-LKeyboard *Compositor::createKeyboardRequest(const void *params)
-{
-    return new Keyboard(params);
-}
-
-LSessionLockManager *Compositor::createSessionLockManagerRequest(const void *params)
-{
-    return new SessionLockManager(params);
-}
-
-LToplevelRole *Compositor::createToplevelRoleRequest(const void *params)
-{
-    return new Toplevel(params);
-}
-
-LPopupRole *Compositor::createPopupRoleRequest(const void *params)
-{
-    return new Popup(params);
-}
-
-void Compositor::destroyClientRequest(LClient *client)
-{
-    Client *c = (Client*)client;
-    c->destroyed = true;
-}
-
-void Compositor::destroyPopupRoleRequest(LPopupRole *popup)
-{
-    fadeOutSurface(popup, 50);
+    if (object->factoryObjectType() == LFactoryObject::Type::LPopupRole)
+    {
+        fadeOutSurface(static_cast<LPopupRole*>(object), 50);
+        return;
+    }
 }
 
 void Compositor::fadeOutSurface(LBaseSurfaceRole *role, UInt32 ms)
@@ -232,36 +210,36 @@ bool Compositor::checkUpdateOutputUnplug()
 
         for (Surface *s : G::surfaces())
         {
-            if (!s->outputUnplugHandled)
+            if (s->outputUnplugHandled)
+                continue;
+
+            if (s->toplevel())
             {
-                if (s->toplevel())
+                Toplevel *tl = (Toplevel*) s->toplevel();
+
+                if (tl->current().state.check(LToplevelRole::Fullscreen | LToplevelRole::Maximized))
                 {
-                    Toplevel *tl = (Toplevel*) s->toplevel();
+                    outputUnplugHandled = false;
 
-                    if (tl->current().state.check(LToplevelRole::Fullscreen | LToplevelRole::Maximized))
+                    if (tl->outputUnplugConfigureCount > 128)
                     {
-                        outputUnplugHandled = false;
-
-                        if (tl->outputUnplugConfigureCount > 128)
-                        {
-                            tl->surf()->client()->destroy();
-                            return outputUnplugHandled;
-                        }
-                        tl->configureState(LToplevelRole::Activated);
-                        tl->surf()->client()->flush();
-                        tl->surf()->requestNextFrame(false);
-                        tl->outputUnplugConfigureCount++;
+                        tl->surf()->client()->destroy();
+                        return outputUnplugHandled;
                     }
-                    else
-                        s->outputUnplugHandled = true;
-
-                    if (tl->decoratedView)
-                        tl->decoratedView->updateGeometry();
+                    tl->configureState(LToplevelRole::Activated);
+                    tl->surf()->client()->flush();
+                    tl->surf()->requestNextFrame(false);
+                    tl->outputUnplugConfigureCount++;
                 }
                 else
-                {
                     s->outputUnplugHandled = true;
-                }
+
+                if (tl->decoratedView)
+                    tl->decoratedView->updateGeometry();
+            }
+            else
+            {
+                s->outputUnplugHandled = true;
             }
         }
 

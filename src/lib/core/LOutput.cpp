@@ -22,7 +22,7 @@
 
 using namespace Louvre;
 
-LOutput::LOutput(const void *params) : m_imp(std::make_unique<LOutputPrivate>(this))
+LOutput::LOutput(const void *params) noexcept : LFactoryObject(FactoryObjectType), m_imp(std::make_unique<LOutputPrivate>(this))
 {
     imp()->output = this;
     imp()->rect.setX(0);
@@ -37,6 +37,8 @@ LOutput::LOutput(const void *params) : m_imp(std::make_unique<LOutputPrivate>(th
         p->callback(this);
 }
 
+LOutput::~LOutput() {}
+
 LSessionLockRole *LOutput::sessionLockRole() const noexcept
 {
     return imp()->sessionLockRole;
@@ -46,8 +48,6 @@ bool LOutput::needsFullRepaint() const noexcept
 {
     return imp()->stateFlags.check(LOutput::LOutputPrivate::NeedsFullRepaint);
 }
-
-LOutput::~LOutput() {}
 
 bool LOutput::fractionalOversamplingEnabled() const
 {

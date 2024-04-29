@@ -3,7 +3,7 @@
 using namespace Louvre;
 
 //! [pong]
-void LClient::pong(UInt32 serial) noexcept
+void LClient::pong(UInt32 serial)
 {
     L_UNUSED(serial);
 

@@ -1,7 +1,8 @@
 #ifndef COMPOSITOR_H
 #define COMPOSITOR_H
 
-#include "LTextureView.h"
+#include <LTextureView.h>
+#include <LSceneView.h>
 #include <LLayerView.h>
 #include <LCompositor.h>
 #include <LScene.h>
@@ -15,50 +16,22 @@ class Tooltip;
 class Compositor : public LCompositor
 {
 public:
-    Compositor();
-    ~Compositor();
-
     void initialized() override;
     void uninitialized() override;
 
-    LClient *createClientRequest(const void *params) override;
-    LOutput *createOutputRequest(const void *params) override;
-    LSurface *createSurfaceRequest(const void *params) override;
-    LSeat *createSeatRequest(const void *params) override;
-    LPointer *createPointerRequest(const void *params) override;
-    LKeyboard *createKeyboardRequest(const void *params) override;
-    LSessionLockManager *createSessionLockManagerRequest(const void *params) override;
-    LToplevelRole *createToplevelRoleRequest(const void *params) override;
-    LPopupRole *createPopupRoleRequest(const void *params) override;
-
-    // Virtual destructors
-    void destroyClientRequest(LClient *client) override;
-    void destroyPopupRoleRequest(LPopupRole *popup) override;
-
+    LFactoryObject *createObjectRequest(LFactoryObject::Type type, const void *params) override;
+    void onAnticipatedObjectDestruction(LFactoryObject *object) override;
     void fadeOutSurface(LBaseSurfaceRole *role, UInt32 ms);
 
     // Global scene used to render all outputs
-    LScene scene;
-
-    // Layer for views that are always at the bottom like wallpapers
-    LLayerView backgroundLayer;
-
-    // Layer where client windows are stacked
-    LLayerView surfacesLayer;
-
-    LLayerView workspacesLayer;
-
-    // Layer for fullscreen toplevels
-    LLayerView fullscreenLayer;
-
-    // Layer for views that are always at the top like the dock, topbar or DND icons
-    LLayerView overlayLayer;
-
-    // Layer for tooltips and non client popups
-    LLayerView tooltipsLayer;
-
-    // Layer for the cursor (when hw comp is not avalaible)
-    LLayerView cursorLayer;
+    LScene scene {};
+    LLayerView backgroundLayer { scene.mainView() };
+    LLayerView surfacesLayer { scene.mainView() };
+    LLayerView workspacesLayer { scene.mainView() };
+    LLayerView fullscreenLayer { scene.mainView() };
+    LLayerView overlayLayer { scene.mainView() };
+    LLayerView tooltipsLayer { scene.mainView() };
+    LLayerView cursorLayer { scene.mainView() };
 
     // Timer for updating the clock every minute
     LTimer clockMinuteTimer;

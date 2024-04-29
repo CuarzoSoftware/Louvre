@@ -5,6 +5,7 @@
 #include <private/LPointerPrivate.h>
 #include <private/LPopupRolePrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <private/LFactory.h>
 #include <LKeyboard.h>
 #include <LCompositor.h>
 #include <LClient.h>
@@ -49,14 +50,14 @@ RXdgPopup::RXdgPopup
         &xdgPositionerRes->m_positioner
     };
 
-    m_popupRole.reset(compositor()->createPopupRoleRequest(&popupRoleParams));
+    m_popupRole.reset(LFactory::createObject<LPopupRole>(&popupRoleParams));
     xdgSurfaceRes->surface()->imp()->setParent(xdgParentSurfaceRes->surface());
     xdgSurfaceRes->surface()->imp()->setPendingRole(popupRole());
 }
 
 RXdgPopup::~RXdgPopup()
 {
-    compositor()->destroyPopupRoleRequest(popupRole());
+    compositor()->onAnticipatedObjectDestruction(popupRole());
 
     if (popupRole()->surface())
     {

@@ -111,10 +111,7 @@ protected:
               UInt32 id,
               const void *implementation) noexcept;
 
-    /// @cond OMIT
-    LResource(const LResource&) = delete;
-    LResource& operator= (const LResource&) = delete;
-    /// @endcond
+    LCLASS_NO_COPY(LResource)
 
     /**
      * @brief Destructor for LResource.

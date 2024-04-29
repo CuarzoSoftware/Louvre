@@ -14,7 +14,7 @@
 
 using namespace Louvre::Protocols::Wayland;
 
-LSurface::LSurface(const void *params) : LPRIVATE_INIT_UNIQUE(LSurface)
+LSurface::LSurface(const void *params) noexcept : LFactoryObject(FactoryObjectType), LPRIVATE_INIT_UNIQUE(LSurface)
 {
     imp()->pendingDamage.reserve(LOUVRE_MAX_DAMAGE_RECTS);
     imp()->pendingDamageB.reserve(LOUVRE_MAX_DAMAGE_RECTS);

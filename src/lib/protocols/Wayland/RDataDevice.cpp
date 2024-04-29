@@ -6,6 +6,7 @@
 #include <private/LDNDIconRolePrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <private/LFactory.h>
 #include <LKeyboard.h>
 #include <LClipboard.h>
 #include <LDNDSession.h>
@@ -144,7 +145,7 @@ void RDataDevice::start_drag(wl_client */*client*/,
 
         LDNDIconRole::Params dndIconRoleParams;
         dndIconRoleParams.surface = iconSurface;
-        iconSurface->imp()->setPendingRole(compositor()->createDNDIconRoleRequest(&dndIconRoleParams));
+        iconSurface->imp()->setPendingRole(LFactory::createObject<LDNDIconRole>(&dndIconRoleParams));
         iconSurface->imp()->applyPendingRole();
         iconSurface->imp()->stateFlags.add(LSurface::LSurfacePrivate::Mapped);
         session->icon.reset(iconSurface->dndIcon());

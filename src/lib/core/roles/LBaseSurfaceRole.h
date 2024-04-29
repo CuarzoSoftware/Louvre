@@ -1,7 +1,7 @@
 #ifndef LBASESURFACEROLE_H
 #define LBASESURFACEROLE_H
 
-#include <LObject.h>
+#include <LFactoryObject.h>
 #include <LWeak.h>
 #include <LPoint.h>
 
@@ -38,7 +38,7 @@
   *
   * By following these steps, you can create a custom role and assign it to a surface dynamically during runtime.
   */
-class Louvre::LBaseSurfaceRole : public LObject
+class Louvre::LBaseSurfaceRole : public LFactoryObject
 {
 public:
 
@@ -63,16 +63,14 @@ public:
      *
      * @note The ID range [0,1000] is reserved for roles offered by the library.
      */
-    LBaseSurfaceRole(LResource *resource, LSurface *surface, UInt32 roleId) noexcept;
+    LBaseSurfaceRole(LFactoryObject::Type type, LResource *resource, LSurface *surface, UInt32 roleId) noexcept;
 
     /**
      * @brief The LBaseSurfaceRole class destructor.
      */
     ~LBaseSurfaceRole();
 
-    /// @cond OMIT
     LCLASS_NO_COPY(LBaseSurfaceRole)
-    /// @endcond
 
     /**
      * @brief Position of the surface given its role.

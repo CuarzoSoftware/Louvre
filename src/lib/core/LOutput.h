@@ -1,7 +1,7 @@
 #ifndef LOUTPUT_H
 #define LOUTPUT_H
 
-#include <LObject.h>
+#include <LFactoryObject.h>
 #include <LSize.h>
 #include <LRect.h>
 #include <LRegion.h>
@@ -166,11 +166,13 @@
  * The global coordinate space of the compositor is structured in such a way that you can continue rendering in the same manner
  * as if the screens were in their normal transform state. Therefore, there's no need to worry about rotating or flipping the elements you draw.
  */
-class Louvre::LOutput : public LObject
+class Louvre::LOutput : public LFactoryObject
 {
 public:
 
     struct Params;
+
+    static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LOutput;
 
     /**
      * @brief Enumeration of possible states for an LOutput.
@@ -203,19 +205,14 @@ public:
     /**
      * @brief Constructor of the LOutput class.
      */
-    LOutput(const void *params);
+    LOutput(const void *params) noexcept;
 
     /**
      * @brief Destructor of the LOutput class.
-     *
-     * Invoked internally by the library after LCompositor::destroyOutputRequest() is called.
      */
-    virtual ~LOutput();
+    ~LOutput();
 
-    /// @cond OMIT
-    LOutput(const LOutput&) = delete;
-    LOutput& operator= (const LOutput&) = delete;
-    /// @endcond
+    LCLASS_NO_COPY(LOutput)
 
     // TODO
     LSessionLockRole *sessionLockRole() const noexcept;

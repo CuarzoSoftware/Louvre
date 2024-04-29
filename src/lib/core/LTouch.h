@@ -1,7 +1,7 @@
 #ifndef LTOUCH_H
 #define LTOUCH_H
 
-#include <LObject.h>
+#include <LFactoryObject.h>
 
 /**
  * @brief Class for handling touch input events
@@ -28,28 +28,27 @@
  * You can forward this event to clients using the sendCancelEvent() method. After invoking this method, all touch points are
  * destroyed, even if they haven't been released before with a touch-up event.
  */
-class Louvre::LTouch : public LObject
+class Louvre::LTouch : public LFactoryObject
 {
 public:
-    struct Params;
+
+    static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LTouch;
 
     /**
      * @brief Constructor of the LTouch class.
      *
      * @param params Internal parameters of the library provided in the virtual constructor LCompositor::createTouchRequest().
      */
-    LTouch(const void *params);
+    LTouch(const void *params) noexcept;
 
-    /// @cond OMIT
-    // TODO LCLASS_NO_COPY(LTouch)
-    /// @endcond
+    LCLASS_NO_COPY(LTouch)
 
     /**
      * @brief Destructor of the LTouch class.
      *
      * Invoked after LCompositor::destroyTouchRequest().
      */
-    virtual ~LTouch();
+    ~LTouch();
 
     /**
      * @brief Look for a surface.

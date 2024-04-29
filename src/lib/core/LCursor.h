@@ -45,10 +45,7 @@ public:
 
     const LRegion &damage(LOutput *output) const noexcept;
 
-    /// @cond OMIT
-    LCursor(const LCursor&) = delete;
-    LCursor& operator= (const LCursor&) = delete;
-    /// @endcond
+    LCLASS_NO_COPY(LCursor)
 
     /**
      * @brief Load the default cursor.
@@ -270,21 +267,10 @@ public:
 
     LPRIVATE_IMP_UNIQUE(LCursor)
 
-    /// @cond OMIT
     friend class Louvre::LCompositor;
     friend class Louvre::LOutput;
-
-    /**
-     * @brief Constructor of the LCursor class.
-     * @param output The output on which the cursor is initialized.
-     */
-    LCursor();
-
-    /**
-     * @brief Desctructor of the LCursor class.
-     */
+    LCursor() noexcept;
     ~LCursor();
-    /// @endcond
 };
 
 #endif // LCURSOR_H

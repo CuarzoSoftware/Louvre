@@ -21,12 +21,14 @@ class Louvre::LSessionLockRole : public LBaseSurfaceRole
 {
 public:
 
+    static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LSessionLockRole;
+
     /**
      * @brief Constructor.
      *
      * @see LCompositor::createSessionLockRoleRequest()
      */
-    LSessionLockRole(const void *params);
+    LSessionLockRole(const void *params) noexcept;
 
     /**
      * @brief The output the surface belongs to.

@@ -387,10 +387,11 @@ LRect LPopupRole::calculateUnconstrainedRect(const LPoint *futureParentPos) cons
     return conf.finalRect;
 }
 
-LPopupRole::LPopupRole(const void *params) :
-    LBaseSurfaceRole(static_cast<const LPopupRole::Params*>(params)->popup,
-                     static_cast<const LPopupRole::Params*>(params)->surface,
-                     LSurface::Role::Popup),
+LPopupRole::LPopupRole(const void *params) noexcept :
+    LBaseSurfaceRole(FactoryObjectType,
+        static_cast<const LPopupRole::Params*>(params)->popup,
+        static_cast<const LPopupRole::Params*>(params)->surface,
+        LSurface::Role::Popup),
     LPRIVATE_INIT_UNIQUE(LPopupRole)
 {
     imp()->popup = this;
@@ -399,7 +400,7 @@ LPopupRole::LPopupRole(const void *params) :
 
 LPopupRole::~LPopupRole()
 {
-    // TODO inline
+    // Required by pimpl
 }
 
 bool LPopupRole::isTopmostPopup() const

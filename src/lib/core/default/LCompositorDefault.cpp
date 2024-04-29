@@ -82,7 +82,7 @@ bool LCompositor::createGlobalsRequest()
     createGlobal<GammaControl::GGammaControlManager>();
 
     // Allow clients to create DMA buffers
-    if (seat()->graphicBackendId() == LGraphicBackendDRM)
+    if (graphicBackendId() == LGraphicBackendDRM)
         createGlobal<LinuxDMABuf::GLinuxDMABuf>();
 
     // Provides detailed information of how the surfaces are presented
@@ -152,228 +152,21 @@ void LCompositor::cursorInitialized()
 }
 //! [cursorInitialized]
 
-//! [createOutputRequest]
-LOutput *LCompositor::createOutputRequest(const void *params)
+//! [createObjectRequest]
+LFactoryObject *LCompositor::createObjectRequest(LFactoryObject::Type objectType, const void *params)
 {
-    return new LOutput(params);
-}
-//! [createOutputRequest]
+    L_UNUSED(objectType)
+    L_UNUSED(params)
 
-//! [createClientRequest]
-LClient *LCompositor::createClientRequest(const void *params)
+    /* If nullptr is returned, Louvre creates an instance of the base class */
+    return nullptr;
+}
+//! [createObjectRequest]
+
+
+//! [onAnticipatedObjectDestruction]
+void LCompositor::onAnticipatedObjectDestruction(LFactoryObject *object)
 {
-    return new LClient(params);
+    L_UNUSED(object)
 }
-//! [createClientRequest]
-
-//! [createSurfaceRequest]
-LSurface *LCompositor::createSurfaceRequest(const void *params)
-{
-    return new LSurface(params);
-}
-//! [createSurfaceRequest]
-
-//! [createSeatRequest]
-LSeat *LCompositor::createSeatRequest(const void *params)
-{
-    return new LSeat(params);
-}
-//! [createSeatRequest]
-
-//! [createPointerRequest]
-LPointer *LCompositor::createPointerRequest(const void *params)
-{
-    return new LPointer(params);
-}
-//! [createPointerRequest]
-
-//! [createKeyboardRequest]
-LKeyboard *LCompositor::createKeyboardRequest(const void *params)
-{
-    return new LKeyboard(params);
-}
-//! [createKeyboardRequest]
-
-//! [createTouchRequest]
-LTouch *LCompositor::createTouchRequest(const void *params)
-{
-    return new LTouch(params);
-}
-//! [createTouchRequest]
-
-//! [createDNDRequest]
-LDND *LCompositor::createDNDRequest(const void *params)
-{
-    return new LDND(params);
-}
-//! [createDNDRequest]
-
-//! [createClipboardRequest]
-LClipboard *LCompositor::createClipboardRequest(const void *params)
-{
-    return new LClipboard(params);
-}
-//! [createClipboardRequest]
-
-//! [createSessionLockManagerRequest]
-LSessionLockManager *LCompositor::createSessionLockManagerRequest(const void *params)
-{
-    return new LSessionLockManager(params);
-}
-//! [createSessionLockManagerRequest]
-
-//! [createToplevelRoleRequest]
-LToplevelRole *LCompositor::createToplevelRoleRequest(const void *params)
-{
-    return new LToplevelRole(params);
-}
-//! [createToplevelRoleRequest]
-
-//! [createPopupRoleRequest]
-LPopupRole *LCompositor::createPopupRoleRequest(const void *params)
-{
-    return new LPopupRole(params);
-}
-//! [createPopupRoleRequest]
-
-//! [createSubsurfaceRoleRequest]
-LSubsurfaceRole *LCompositor::createSubsurfaceRoleRequest(const void *params)
-{
-    return new LSubsurfaceRole(params);
-}
-//! [createSubsurfaceRoleRequest]
-
-//! [createCursorRoleRequest]
-LCursorRole *LCompositor::createCursorRoleRequest(const void *params)
-{
-    return new LCursorRole(params);
-}
-//! [createCursorRoleRequest]
-
-//! [createDNDIconRoleRequest]
-LDNDIconRole *LCompositor::createDNDIconRoleRequest(const void *params)
-{
-    return new LDNDIconRole(params);
-}
-
-//! [createDNDIconRoleRequest]
-
-//! [createSessionLockRoleRequest]
-LSessionLockRole *LCompositor::createSessionLockRoleRequest(const void *params)
-{
-    return new LSessionLockRole(params);
-}
-//! [createSessionLockRoleRequest]
-
-//! [destroyOutputRequest]
-void LCompositor::destroyOutputRequest(LOutput *output)
-{
-    L_UNUSED(output);
-}
-//! [destroyOutputRequest]
-
-//! [destroyClientRequest]
-void LCompositor::destroyClientRequest(LClient *client)
-{
-    L_UNUSED(client);
-}
-//! [destroyClientRequest]
-
-//! [destroySurfaceRequest]
-void LCompositor::destroySurfaceRequest(LSurface *surface)
-{
-    L_UNUSED(surface);
-}
-//! [destroySurfaceRequest]
-
-//! [destroySeatRequest]
-void LCompositor::destroySeatRequest(LSeat *seat)
-{
-    L_UNUSED(seat);
-}
-//! [destroySeatRequest]
-
-//! [destroyPointerRequest]
-void LCompositor::destroyPointerRequest(LPointer *pointer)
-{
-    L_UNUSED(pointer);
-}
-//! [destroyPointerRequest]
-
-//! [destroyTouchRequest]
-void LCompositor::destroyTouchRequest(LTouch *touch)
-{
-    L_UNUSED(touch);
-}
-//! [destroyTouchRequest]
-
-//! [destroyKeyboardRequest]
-void LCompositor::destroyKeyboardRequest(LKeyboard *keyboard)
-{
-    L_UNUSED(keyboard);
-}
-//! [destroyKeyboardRequest]
-
-//! [destroyDNDRequest]
-void LCompositor::destroyDNDRequest(LDND *dnd)
-{
-    L_UNUSED(dnd);
-}
-//! [destroyDNDRequest]
-
-//! [destroyClipboardRequest]
-void LCompositor::destroyClipboardRequest(LClipboard *clipboard)
-{
-    L_UNUSED(clipboard);
-}
-//! [destroyClipboardRequest]
-
-//! [destroySessionLockManagerRequest]
-void LCompositor::destroySessionLockManagerRequest(LSessionLockManager *sessionLockManager)
-{
-    L_UNUSED(sessionLockManager);
-}
-//! [destroySessionLockManagerRequest]
-
-//! [destroyToplevelRoleRequest]
-void LCompositor::destroyToplevelRoleRequest(LToplevelRole *toplevel)
-{
-    L_UNUSED(toplevel);
-}
-//! [destroyToplevelRoleRequest]
-
-//! [destroyPopupRoleRequest]
-void LCompositor::destroyPopupRoleRequest(LPopupRole *popup)
-{
-    L_UNUSED(popup);
-}
-//! [destroyPopupRoleRequest]
-
-//! [destroySubsurfaceRoleRequest]
-void LCompositor::destroySubsurfaceRoleRequest(LSubsurfaceRole *subsurface)
-{
-    L_UNUSED(subsurface);
-}
-//! [destroySubsurfaceRoleRequest]
-
-//! [destroyCursorRoleRequest]
-void LCompositor::destroyCursorRoleRequest(LCursorRole *cursorRole)
-{
-    L_UNUSED(cursorRole);
-}
-//! [destroyCursorRoleRequest]
-
-//! [destroyDNDIconRoleRequest]
-void LCompositor::destroyDNDIconRoleRequest(LDNDIconRole *icon)
-{
-    L_UNUSED(icon)
-}
-//! [destroyDNDIconRoleRequest]
-
-//! [destroySessionLockRoleRequest]
-void LCompositor::destroySessionLockRoleRequest(LSessionLockRole *sessionLockRole)
-{
-    L_UNUSED(sessionLockRole);
-}
-//! [destroySessionLockRoleRequest]
-
+//! [onAnticipatedObjectDestruction]

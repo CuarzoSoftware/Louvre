@@ -7,6 +7,7 @@
 #include <private/LCursorPrivate.h>
 #include <private/LToplevelRolePrivate.h>
 #include <private/LPopupRolePrivate.h>
+#include <private/LFactory.h>
 #include <LSessionLockManager.h>
 #include <LSessionLockRole.h>
 #include <LAnimation.h>
@@ -25,6 +26,8 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
+#include <private/LFactory.h>
 
 void LCompositor::LCompositorPrivate::processRemovedGlobals()
 {
@@ -59,7 +62,7 @@ static void clientDisconnectedEvent(wl_listener *listener, void *data)
     wl_client *client { (wl_client*)data };
 
     LClient *disconnectedClient { compositor()->getClientFromNativeResource(client) };
-    compositor()->destroyClientRequest(disconnectedClient);
+    compositor()->onAnticipatedObjectDestruction(disconnectedClient);
 
     wl_resource *lastCreatedResource { NULL };
 
@@ -87,15 +90,11 @@ static void clientConnectedEvent(wl_listener *listener, void *data)
 
     wl_listener *destroyListener { new wl_listener() };
     destroyListener->notify = clientDisconnectedEvent;
-
-    // Listen for client disconnection
     wl_client_add_destroy_listener(client, destroyListener);
 
-    // Let the developer create his own client implementation
-    LClient *newClient { compositor()->createClientRequest(params) };
-
     // Append client to the compositor list
-    compositor()->imp()->clients.push_back(newClient);
+    compositor()->imp()->clients.push_back(
+        LFactory::createObject<LClient>(params));
 }
 
 bool LCompositor::LCompositorPrivate::initWayland()
@@ -161,10 +160,7 @@ bool LCompositor::LCompositorPrivate::initWayland()
     // Listen for client connections
     clientConnectedListener.notify = &clientConnectedEvent;
     wl_display_add_client_created_listener(display, &clientConnectedListener);
-
-    compositor()->createSessionLockManagerRequest(&sessionLockManager);
-    assert(sessionLockManager != nullptr && "Please ensure that LCompositor::createSessionLockManagerRequest() returns a valid LSessionLockManager instance or a compatible subtype.");
-
+    LFactory::createObject<LSessionLockManager>(&sessionLockManager);
     return true;
 }
 
@@ -189,7 +185,7 @@ void LCompositor::LCompositorPrivate::unitWayland()
 
     if (sessionLockManager)
     {
-        compositor()->destroySessionLockManagerRequest(sessionLockManager);
+        compositor()->onAnticipatedObjectDestruction(sessionLockManager);
         delete sessionLockManager;
         sessionLockManager = nullptr;
     }
@@ -461,10 +457,7 @@ void LCompositor::LCompositorPrivate::unitGraphicBackend(bool closeLib)
 bool LCompositor::LCompositorPrivate::initSeat()
 {
     unitSeat();
-
-    // Ask the developer to return a LSeat
-    LSeat::Params seatParams;
-    seat = compositor()->createSeatRequest(&seatParams);
+    LFactory::createObject<LSeat>(&seat);
     return true;
 }
 
@@ -475,21 +468,21 @@ void LCompositor::LCompositorPrivate::unitSeat()
         // Notify first
 
         if (seat->keyboard())
-            compositor()->destroyKeyboardRequest(seat->keyboard());
+            compositor()->onAnticipatedObjectDestruction(seat->keyboard());
 
         if (seat->pointer())
-            compositor()->destroyPointerRequest(seat->pointer());
+            compositor()->onAnticipatedObjectDestruction(seat->pointer());
 
         if (seat->touch())
-            compositor()->destroyTouchRequest(seat->touch());
+            compositor()->onAnticipatedObjectDestruction(seat->touch());
 
         if (seat->dnd())
-            compositor()->destroyDNDRequest(seat->dnd());
+            compositor()->onAnticipatedObjectDestruction(seat->dnd());
 
         if (seat->clipboard())
-            compositor()->destroyClipboardRequest(seat->clipboard());
+            compositor()->onAnticipatedObjectDestruction(seat->clipboard());
 
-        compositor()->destroySeatRequest(seat);
+        compositor()->onAnticipatedObjectDestruction(seat);
 
         // Then destroy
 

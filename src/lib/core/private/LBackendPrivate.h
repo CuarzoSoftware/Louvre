@@ -86,7 +86,6 @@ struct LInputBackendInterface
 {
     UInt32                             (*backendGetId)();
     void *                             (*backendGetContextHandle)();
-    UInt32                             (*backendGetCapabilities)();
     const std::vector<LInputDevice*> * (*backendGetDevices)();
     bool                               (*backendInitialize)();
     void                               (*backendUninitialize)();

@@ -9,9 +9,8 @@
 class Louvre::LTime
 {
 public:
-    /// @cond OMIT
+
     LTime() = delete;
-    /// @endcond
 
     /**
      * @brief Serial.

@@ -26,6 +26,8 @@ public:
 
     struct Params;
 
+    static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LToplevelRole;
+
     /**
      * @brief Edge constraint when resizing a Toplevel
      */
@@ -40,18 +42,16 @@ public:
      *
      * @param params Internal library parameters provided in the virtual LCompositor::createToplevelRoleRequest() constructor.
      */
-    LToplevelRole(const void *params);
+    LToplevelRole(const void *params) noexcept;
 
     /**
      * @brief LToplevelRole class destructor.
      *
      * Invoked after LCompositor::destroyToplevelRoleRequest().
      */
-    virtual ~LToplevelRole();
+    ~LToplevelRole();
 
-    /// @cond OMIT
     LCLASS_NO_COPY(LToplevelRole)
-    /// @endcond
 
     /**
      * @brief Resizing border/corner.

@@ -1,9 +1,7 @@
 #ifndef LCLIENT_H
 #define LCLIENT_H
 
-#include <LObject.h>
-#include <LRegion.h>
-#include <LSurface.h>
+#include <LFactoryObject.h>
 #include <LPointerEnterEvent.h>
 #include <LPointerLeaveEvent.h>
 #include <LPointerMoveEvent.h>
@@ -34,13 +32,12 @@
  * It allows managing client connections, accessing its resources created through various Wayland protocols,
  * handling ping/pong events, and more.
  */
-class Louvre::LClient : public LObject
+class Louvre::LClient : public LFactoryObject
 {
 public:
-
-    /// @cond OMIT
-
     struct Params;
+
+    static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LClient;
 
     struct PointerEvents
     {
@@ -81,28 +78,24 @@ public:
 
     const Events &events() const noexcept;
 
-    /// @endcond
-
     /**
      * @brief Constructor of the LClient class.
      *
      * @param params Internal library parameters passed in the LCompositor::createClientRequest() virtual constructor.
      */
-    LClient(const void *params);
+    LClient(const void *params) noexcept;
 
     /**
      * @brief Destructor of the LClient class.
      */
     ~LClient();
 
-    /// @cond OMIT
     LCLASS_NO_COPY(LClient)
-    /// @endcond
 
     /**
      * @brief Sends a Ping event to the client for responsiveness detection.
      *
-     * This method sends a Ping event to the client, which is expected to acknowledge it by invoking the `pong()` virtual method.
+     * This method sends a Ping event to the client, which is expected to acknowledge it by invoking the `pong()` virtual method.\n
      * It is primarily used to detect if a client is unresponsive.
      *
      * @note Not all clients may support this mechanism. If the client does not support it, this method returns `false`, and you should not wait for a pong() response.
@@ -123,21 +116,19 @@ public:
      * @par Default Implementation
      * @snippet LClientDefault.cpp pong
      */
-    virtual void pong(UInt32 serial) noexcept;
+    virtual void pong(UInt32 serial);
 
     /**
      * @brief Native `wl_client` struct of the client.
      *
      * This method returns a pointer to the native `wl_client` struct associated with the client. The `wl_client` struct is part of the original Wayland library.
-     *
-     * @return A pointer to the native `wl_client` struct of the client.
      */
     wl_client *client() const noexcept;
 
     /**
      * @brief Immediately flushes pending events.
      *
-     * Use this method to forcefully and immediately flush any pending Wayland client events.
+     * Use this method to forcefully and immediately flush any pending Wayland client events.\n
      * It ensures that all pending events in the client's event queue are processed and handled without delay.
      */
     void flush() noexcept;
@@ -296,22 +287,22 @@ public:
     const std::vector<Protocols::LayerShell::GLayerShell*> &layerShellGlobals() const noexcept;
 
     /**
-     * @brief Searches for an event that matches the given serial.
+     * @brief Finds an event sent by the compositor matching the given serial number.
      *
-     * This method searches for an event with the specified serial in the client events history.
-     * If a matching event is found, a pointer to that event is returned; otherwise, `nullptr` is returned.
+     * This method searches for an event sent by the compositor with the specified serial number in the client's event history.
+     * If a matching event is found, a pointer to that event is returned, otherwise, `nullptr` is returned.
      *
-     * @note The event pointer returned should not be manually freed.
+     * @note The returned event pointer should not be manually deallocated.
      *
      * @param serial The serial number to search for.
-     * @return A pointer to the event matching the serial, or `nullptr` if not found.
+     * @return A pointer to the event matching the serial number sent by the compositor, or nullptr if not found.
      */
     const LEvent *findEventBySerial(UInt32 serial) const noexcept;
 
     /**
      * @brief Retrieves the last cursor requested by the client.
      *
-     * This function returns a reference to the last cursor that the client requested to set.
+     * This method returns a reference to the last cursor that the client requested to set.
      *
      * @see LPointer::setCursorRequest()
      *

@@ -3,6 +3,7 @@
 #include <private/LCursorRolePrivate.h>
 #include <private/LClientPrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <private/LFactory.h>
 #include <LCursor.h>
 #include <LLog.h>
 #include <LUtils.h>
@@ -66,7 +67,7 @@ void RPointer::set_cursor(wl_client */*client*/, wl_resource *resource, UInt32 s
         }
 
         LCursorRole::Params cursorRoleParams { &surface };
-        LCursorRole *cursorRole { compositor()->createCursorRoleRequest(&cursorRoleParams) };
+        LCursorRole *cursorRole { LFactory::createObject<LCursorRole>(&cursorRoleParams) };
         cursorRole->imp()->currentHotspot.setX(hotspot_x);
         cursorRole->imp()->currentHotspot.setY(hotspot_y);
         cursorRole->imp()->currentHotspotB = cursorRole->imp()->currentHotspot * surface.bufferScale();

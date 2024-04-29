@@ -118,6 +118,9 @@ void LOutput::LOutputPrivate::blitFractionalScaleFb(bool cursorOnly) noexcept
     updateRect();
     painter->bindFramebuffer(&fb);
     painter->enableCustomTextureColor(false);
+    painter->enableAutoBlendFunc(true);
+    painter->setAlpha(1.f);
+    painter->setColorFactor(1.f, 1.f, 1.f, 1.f);
     painter->bindTextureMode({
         .texture = fractionalFb.texture(0),
         .pos = rect.pos(),
@@ -435,6 +438,9 @@ void LOutput::LOutputPrivate::drawCursor() noexcept
         stateFlags.remove(CursorNeedsRendering);
         stateFlags.add(CursorRenderedInPrevFrame);
         painter->enableCustomTextureColor(false);
+        painter->enableAutoBlendFunc(true);
+        painter->setAlpha(1.f);
+        painter->setColorFactor(1.f, 1.f, 1.f, 1.f);
         painter->bindTextureMode(
         {
             .texture = cursor()->texture(),

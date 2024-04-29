@@ -8,13 +8,6 @@
 
 using namespace Louvre;
 
-//! [initialized]
-void LSeat::initialized()
-{
-    setInputCapabilities(inputBackendCapabilities());
-}
-//! [initialized]
-
 //! [nativeInputEvent]
 void LSeat::nativeInputEvent(void *event)
 {
@@ -71,7 +64,6 @@ void LSeat::outputUnplugged(LOutput *output)
 void LSeat::inputDevicePlugged(LInputDevice *device)
 {
     L_UNUSED(device);
-    setInputCapabilities(inputBackendCapabilities());
 }
 //! [inputDevicePlugged]
 
@@ -79,6 +71,5 @@ void LSeat::inputDevicePlugged(LInputDevice *device)
 void LSeat::inputDeviceUnplugged(LInputDevice *device)
 {
     L_UNUSED(device);
-    setInputCapabilities(inputBackendCapabilities());
 }
 //! [inputDeviceUnplugged]

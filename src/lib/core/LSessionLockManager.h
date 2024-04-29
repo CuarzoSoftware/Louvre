@@ -1,7 +1,7 @@
 #ifndef LSESSIONLOCKMANAGER_H
 #define LSESSIONLOCKMANAGER_H
 
-#include <LObject.h>
+#include <LFactoryObject.h>
 #include <LWeak.h>
 
 /**
@@ -11,9 +11,11 @@
  * arbitrary graphics (see LSessionLockRole) such as an authentication form to allow the user to unlock the session.\n
  * This class allows you to accept/decline such requests (see lockRequest()) and monitor changes in the session state (stateChanged()).
  */
-class Louvre::LSessionLockManager : public LObject
+class Louvre::LSessionLockManager : public LFactoryObject
 {
 public:
+
+    static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LSessionLockManager;
 
     /**
      * @brief Represents the state of the session.
@@ -32,7 +34,7 @@ public:
      *
      * @param params Internal library parameters provided in the virtual LCompositor::createSessionLockManagerRequest() constructor.
      */
-    LSessionLockManager(const void *params);
+    LSessionLockManager(const void *params) noexcept;
 
     /**
      * @brief Gets the client locking the session.

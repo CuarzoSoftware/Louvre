@@ -16,22 +16,14 @@ extern "C" {
 
 using namespace Louvre;
 
-struct LSeat::Params
-{
-    /* Add here any required constructor param */
-};
-
 LPRIVATE_CLASS(LSeat)
 
     Int32 ttyNumber                         { -1 };
 
     LToplevelRole *activeToplevel           { nullptr };
-    InputCapabilitiesFlags capabilities     { Pointer | Keyboard | Touch };
 
     std::vector<LToplevelResizeSession*> resizeSessions;
     std::vector<LToplevelMoveSession*> moveSessions;
-
-    void *inputBackendData                  { nullptr };
 
     libseat *libseatHandle                  { nullptr };
     libseat_seat_listener listener;

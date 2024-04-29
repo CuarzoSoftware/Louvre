@@ -25,9 +25,7 @@ class Louvre::LClientCursor final : public LObject
 {
 public:
 
-    /// @cond OMIT
     LCLASS_NO_COPY(LClientCursor)
-    /// @endcond
 
     /**
      * @brief Indicates if the client wants to hide the cursor.
@@ -76,18 +74,15 @@ public:
     }
 
 private:
-    /// @cond OMIT
     friend class LClient;
     friend class LCursorRole;
     friend class Protocols::Wayland::RPointer;
     LClientCursor(LClient *client) noexcept : m_client(client) {}
     ~LClientCursor() noexcept;
-
     LWeak<LCursorRole> m_role;
     LPointerEnterEvent m_triggeringEvent;
     LClient *m_client;
     bool m_visible { true };
-    /// @endcond OMIT
 };
 
 #endif // LCLIENTCURSOR_H

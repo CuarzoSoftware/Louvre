@@ -75,6 +75,7 @@ namespace Louvre
 {
     // API Classes
     class LObject;
+    class LFactoryObject;
     class LGlobal;
     class LAnimation;
     class LGraphicBackend;

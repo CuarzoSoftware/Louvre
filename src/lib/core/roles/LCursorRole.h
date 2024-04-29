@@ -21,24 +21,23 @@ class Louvre::LCursorRole : public LBaseSurfaceRole
 public:
     struct Params;
 
+    static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LCursorRole;
+
     /**
      * @brief Constructor of the LCursorRole class.
      *
      * @param params Internal library parameters passed in the LCompositor::createCursorRoleRequest() virtual constructor.
      */
-    LCursorRole(const void *params);
+    LCursorRole(const void *params) noexcept;
 
     /**
      * @brief Destructor of the LCursorRole class.
      *
      * Invoked internally by the library after LCompositor::destroyCursorRoleRequest() is called.
      */
-    virtual ~LCursorRole();
+    ~LCursorRole();
 
-    /// @cond OMIT
-    LCursorRole(const LCursorRole&) = delete;
-    LCursorRole& operator= (const LCursorRole&) = delete;
-    /// @endcond
+    LCLASS_NO_COPY(LCursorRole)
 
     /**
      * @brief Position of the surface given the role.
@@ -75,10 +74,8 @@ public:
 
     LPRIVATE_IMP_UNIQUE(LCursorRole)
 
-    /// @cond OMIT
     virtual void handleSurfaceCommit(CommitOrigin origin) override;
     virtual void handleSurfaceOffset(Int32 x, Int32 y) override;
-    /// @endcond
 };
 
 #endif // LCURSORROLE_H

@@ -6,10 +6,11 @@
 
 using namespace Louvre;
 
-LDNDIconRole::LDNDIconRole(const void *params) :
-    LBaseSurfaceRole(static_cast<const Params*>(params)->surface->surfaceResource(),
-                     static_cast<const Params*>(params)->surface,
-                    LSurface::Role::DNDIcon),
+LDNDIconRole::LDNDIconRole(const void *params) noexcept :
+    LBaseSurfaceRole(FactoryObjectType,
+        static_cast<const Params*>(params)->surface->surfaceResource(),
+        static_cast<const Params*>(params)->surface,
+        LSurface::Role::DNDIcon),
     LPRIVATE_INIT_UNIQUE(LDNDIconRole)
 {
     surface()->imp()->stateFlags.remove(LSurface::LSurfacePrivate::ReceiveInput);

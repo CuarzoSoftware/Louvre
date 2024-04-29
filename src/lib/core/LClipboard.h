@@ -1,7 +1,7 @@
 #ifndef LCLIPBOARD_H
 #define LCLIPBOARD_H
 
-#include <LObject.h>
+#include <LFactoryObject.h>
 #include <LWeak.h>
 #include <string>
 #include <stdio.h>
@@ -14,9 +14,11 @@
  *
  * Clients can access the clipboard when one of their surfaces acquires keyboard focus.
  */
-class Louvre::LClipboard : public LObject
+class Louvre::LClipboard : public LFactoryObject
 {
 public:
+
+    static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LClipboard;
 
     /**
      * @brief Structure representing a Clipboard MIME type.
@@ -32,7 +34,7 @@ public:
      *
      * @see LCompositor::createClipboardRequest().
      */
-    LClipboard(const void *params);
+    LClipboard(const void *params) noexcept;
 
     /**
      * @brief Desructor.
@@ -42,9 +44,7 @@ public:
         clear();
     }
 
-    /// @cond OMIT
     LCLASS_NO_COPY(LClipboard)
-    /// @endcond
 
     /**
      * @brief Client request to set the clipboard.
@@ -75,7 +75,6 @@ public:
      */
     const std::vector<MimeTypeFile> &mimeTypes() const noexcept;
 
-    /// @cond OMIT
 private:
     friend class Protocols::Wayland::RDataDevice;
     friend class Protocols::Wayland::RDataSource;
@@ -85,7 +84,6 @@ private:
     LWeak<Protocols::Wayland::RDataOffer> m_dataOffer;
     std::vector<MimeTypeFile> m_persistentMimeTypes;
     void clear() noexcept;
-    /// @endcond
 };
 
 #endif // LCLIPBOARD_H

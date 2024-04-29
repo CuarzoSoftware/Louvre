@@ -5,7 +5,7 @@
 
 using namespace Louvre;
 
-LAnimation::LAnimation(UInt32 durationMs, const Callback &onUpdate, const Callback &onFinish) :
+LAnimation::LAnimation(UInt32 durationMs, const Callback &onUpdate, const Callback &onFinish) noexcept :
     m_onUpdate(onUpdate),
     m_duration(durationMs),
     m_onFinish(onFinish)

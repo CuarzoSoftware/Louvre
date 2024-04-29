@@ -7,11 +7,11 @@
 
 using namespace Louvre;
 
-LTouch::LTouch(const void *params)
+LTouch::LTouch(const void *params) noexcept : LFactoryObject(FactoryObjectType)
 {
-    assert(params != nullptr && "Invalid parameter passed to LTouch() constructor. LTouch can only be created from LCompositor::createTouchRequest().");
+    assert(params != nullptr && "Invalid parameter passed to LTouch constructor.");
     LTouch **ptr { (LTouch**) params };
-    assert(*ptr == nullptr && *ptr == seat()->touch() && "Only a single LTouch() instance can exist.");
+    assert(*ptr == nullptr && *ptr == seat()->touch() && "Only a single LTouch instance can exist.");
     *ptr = this;
 }
 

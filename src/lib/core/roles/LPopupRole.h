@@ -23,6 +23,8 @@ class Louvre::LPopupRole : public LBaseSurfaceRole
 public:
     struct Params;
 
+    static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LPopupRole;
+
     enum ConstrainedEdges : UInt8
     {
         ConstrainedL = static_cast<UInt8>(1) << 0,
@@ -66,18 +68,16 @@ public:
      * @brief Constructor for LPopupRole class.
      * @param params Internal library parameters provided in the LCompositor::createPopupRoleRequest() virtual constructor.
      */
-    LPopupRole(const void *params);
+    LPopupRole(const void *params) noexcept;
 
     /**
      * @brief Destructor of LPopupRole class.
      *
      * Invoked after LCompositor::destroyPopupRoleRequest().
      */
-    virtual ~LPopupRole();
+    ~LPopupRole();
 
-    /// @cond OMIT
     LCLASS_NO_COPY(LPopupRole)
-    /// @endcond
 
     /**
      * @brief Window geometry in surface coordinates.
