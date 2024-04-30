@@ -39,6 +39,7 @@ public:
     void titleChanged() override;
     void unsetFullscreen();
 
+    bool requestedFullscreenOnFirstMap { false };
     bool destructorCalled { false };
     bool quickUnfullscreen { false };
 

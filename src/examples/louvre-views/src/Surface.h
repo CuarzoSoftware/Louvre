@@ -35,6 +35,8 @@ public:
     void damageChanged() override;
     void preferVSyncChanged() override;
 
+    void onToplevelFirstMap() noexcept;
+
     LTexture *renderThumbnail(LRegion *transRegion = nullptr);
     void unminimize(DockItem *clickedItem);
 
@@ -58,7 +60,7 @@ public:
 
     bool fadedOut = false;
 
-    LTimer firstMapTimer;
+    LTimer firstMapTimer { [this](auto) { onToplevelFirstMap(); } };
 };
 
 #endif // SURFACE_H

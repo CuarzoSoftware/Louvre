@@ -168,6 +168,11 @@ LToplevelRole::DecorationMode LToplevelRole::preferredDecorationMode() const
     return imp()->preferredDecorationMode;
 }
 
+bool LToplevelRole::supportServerSideDecorations() const noexcept
+{
+    return imp()->xdgDecoration.get() != nullptr;
+}
+
 RXdgToplevel *LToplevelRole::xdgToplevelResource() const
 {
     return static_cast<RXdgToplevel*>(resource());

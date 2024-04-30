@@ -285,7 +285,8 @@ void LView::sceneChanged(LScene *newScene)
         if (m_state.check(KeyboardEvents))
         {
             newScene->imp()->keyboardFocus.push_back(this);
-            scene()->imp()->state.add(LScene::LScenePrivate::KeyboardFocusVectorChanged);
+            if (scene())
+                scene()->imp()->state.add(LScene::LScenePrivate::KeyboardFocusVectorChanged);
         }
     }
 

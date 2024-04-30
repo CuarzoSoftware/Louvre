@@ -203,6 +203,8 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
 {
     toplevel->decoratedView = this;
 
+    enableKeyboardEvents(true);
+
     class Surface *surf = toplevel->surf();
     setParent(surf->view.parent());
     surf->view.setPrimary(true);

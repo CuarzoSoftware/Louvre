@@ -307,6 +307,8 @@ public:
      */
     DecorationMode preferredDecorationMode() const;
 
+    bool supportServerSideDecorations() const noexcept;
+
     /**
      *  @brief [xdg_toplevel](https://wayland.app/protocols/xdg-shell#xdg_toplevel) resource from the [XDG Shell](https://wayland.app/protocols/xdg-shell) protocol.
      */

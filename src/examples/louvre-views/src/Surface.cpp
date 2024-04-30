@@ -22,6 +22,53 @@ Surface::Surface(const void *params) :
     minimizeAnim(500)
 {
     view.setVisible(false);
+
+    firstMapAnim.setOnUpdateCallback([this](LAnimation *anim){
+
+        const Float32 ease { 1.f - pow(1.f - anim->value(), 6.f) };
+        view.setOpacity(1.f);
+        getView()->setOpacity(ease);
+
+        Surface *next = (Surface*)nextSurface();
+
+        while (next)
+        {
+            if (next->isSubchildOf(this) && !next->minimized())
+            {
+                next->view.setOpacity(1.f);
+                next->getView()->setOpacity(ease);
+            }
+
+            next = (Surface*)next->nextSurface();
+        }
+
+        repaintOutputs();
+    });
+
+    firstMapAnim.setOnFinishCallback([this](LAnimation *){
+        getView()->setOpacity(1.f);
+        view.setOpacity(1.f);
+
+        Surface *next = (Surface*)nextSurface();
+
+        while (next)
+        {
+            if (next->isSubchildOf(this) && !next->minimized())
+            {
+                next->view.setOpacity(1.f);
+                next->getView()->setOpacity(1.f);
+            }
+
+            next = (Surface*)next->nextSurface();
+        }
+        repaintOutputs();
+
+        if (tl() && tl()->requestedFullscreenOnFirstMap)
+        {
+            tl()->requestedFullscreenOnFirstMap = false;
+            tl()->setFullscreenRequest(nullptr);
+        }
+    });
 }
 
 Surface::~Surface()
@@ -111,130 +158,51 @@ void Surface::mappingChanged()
 
     if (mapped())
     {
-        if (firstMap)
+        compositor()->repaintAllOutputs();
+
+        if (!firstMap)
+            return;
+
+        Client *client { static_cast<Client*>(this->client()) };
+
+        if (client->app)
         {
             // Stop dock App icon animation
-            Client *cli = (Client*)client();
-
-            if (cli->app)
-            {
-                if (cli->app->state != App::Running)
-                    cli->app->state = App::Running;
-            }
-            // If no App then is a non pinned dock App
-            else
-            {
-                cli->createNonPinnedApp();
-                seat()->keyboard()->focusChanged();
-            }
-
-            if (toplevel())
-            {
-                firstMapTimer.setCallback([this](LTimer*)
-                {
-                    if (!cursor()->output() ||!toplevel() || !mapped() || minimized())
-                        return;
-
-                    LPoint outputPosG = cursor()->output()->pos() + LPoint(0, TOPBAR_HEIGHT);
-                    LSize outputSizeG = cursor()->output()->size() - LSize(0, TOPBAR_HEIGHT);
-
-                    setPos(outputPosG + (outputSizeG - toplevel()->windowGeometry().size())/2);
-
-                    if (pos().x() < outputPosG.x())
-                        setX(outputPosG.x());
-
-                    if (pos().y() < TOPBAR_HEIGHT)
-                        setY(TOPBAR_HEIGHT);
-
-                    Surface *next = (Surface*)nextSurface();
-
-                    view.setVisible(true);
-                    getView()->setVisible(true);
-
-                    while (next)
-                    {
-                        if (next->isSubchildOf(this) && !next->minimized())
-                        {
-                            view.setVisible(true);
-                            next->getView()->setVisible(true);
-                        }
-
-                        next = (Surface*)next->nextSurface();
-                    }
-
-                    cursor()->output()->repaint();
-
-                    firstMapAnim.setOnUpdateCallback([this](LAnimation *anim){
-                        const Float32 ease { 1.f - pow(1.f - anim->value(), 6.f) };
-                        view.setOpacity(1.f);
-                        getView()->setOpacity(ease);
-
-                        Surface *next = (Surface*)nextSurface();
-
-                        while (next)
-                        {
-                            if (next->isSubchildOf(this) && !next->minimized())
-                            {
-                                next->view.setOpacity(1.f);
-                                next->getView()->setOpacity(ease);
-                            }
-
-                            next = (Surface*)next->nextSurface();
-                        }
-
-                        repaintOutputs();
-                    });
-
-                    firstMapAnim.setOnFinishCallback([this](LAnimation *){
-                        getView()->setOpacity(1.f);
-                        view.setOpacity(1.f);
-
-                        Surface *next = (Surface*)nextSurface();
-
-                        while (next)
-                        {
-                            if (next->isSubchildOf(this) && !next->minimized())
-                            {
-                                next->view.setOpacity(1.f);
-                                next->getView()->setOpacity(1.f);
-                            }
-
-                            next = (Surface*)next->nextSurface();
-                        }
-                        repaintOutputs();
-                    });
-
-                    firstMapAnim.setDuration(400);
-                    firstMapAnim.start();
-                });
-
-                firstMapTimer.start(1);
-                requestNextFrame(false);
-
-                LSurface *next = this;
-
-                while (next)
-                {
-                    if (next->isSubchildOf(this))
-                        next->requestNextFrame(false);
-
-                    next = next->nextSurface();
-                }
-            }
-
-            if (dndIcon())
-                setPos(cursor()->pos());
-
-            firstMap = false;
-            requestNextFrame(false);
-
-            Surface *par = (Surface*)parent();
-
-            if ((!dndIcon() && !toplevel() && !subsurface()) || (subsurface() && par && par->view.visible()))
-                getView()->setVisible(true);
+            if (client->app->state != App::Running)
+                client->app->state = App::Running;
+        }
+        else
+        {   // If no App then is a non pinned dock App
+            client->createNonPinnedApp();
+            seat()->keyboard()->focusChanged();
         }
 
-        compositor()->repaintAllOutputs();
+        if (toplevel())
+        {
+            firstMapTimer.start(10);
+            requestNextFrame(false);
+
+            LSurface *next { this };
+
+            while (next)
+            {
+                if (next->isSubchildOf(this))
+                    next->requestNextFrame(false);
+
+                next = next->nextSurface();
+            }
+        }
+
+        if (dndIcon())
+            setPos(cursor()->pos());
+
+        firstMap = false;
+        requestNextFrame(false);
+
+        Surface *parent { static_cast<Surface*>(this->parent()) };
+
+        if ((!dndIcon() && !toplevel() && !subsurface()) || (subsurface() && parent && parent->view.visible()))
+            getView()->setVisible(true);
     }
     else
     {
@@ -250,25 +218,24 @@ void Surface::mappingChanged()
 
 void Surface::orderChanged()
 {
-    Surface *prev = (Surface*)prevSurface();
+    Surface *prevSurface { static_cast<Surface*>(this->prevSurface()) };
+    LView *view { getView() };
 
-    LView *v = getView();
-
-    while (prev != nullptr)
+    while (prevSurface != nullptr)
     {
-        if (prev->getView()->parent() == v->parent())
+        if (prevSurface->getView()->parent() == view->parent())
             break;
 
-        prev = (Surface*)prev->prevSurface();
+        prevSurface = static_cast<Surface*>(prevSurface->prevSurface());
     }
 
-    if (prev)
+    if (prevSurface)
     {
-        if (prev->getView()->parent() == getView()->parent())
-            v->insertAfter(prev->getView());
+        if (prevSurface->getView()->parent() == getView()->parent())
+            view->insertAfter(prevSurface->getView());
     }
     else
-        v->insertAfter(nullptr);
+        view->insertAfter(nullptr);
 }
 
 void Surface::roleChanged()
@@ -319,7 +286,7 @@ void Surface::minimizedChanged()
         thumbnailFullSizeTex = renderThumbnail(&minimizedTransRegion);
 
         // Create a smaller scaled version for the dock
-        Float32 s { float(DOCK_ITEM_HEIGHT) };
+        Float32 s {Float32(DOCK_ITEM_HEIGHT) };
         thumbnailTex = thumbnailFullSizeTex->copy(LSize((s * thumbnailFullSizeTex->sizeB().w()) /thumbnailFullSizeTex->sizeB().h(), s) * 3.5f);
 
         // Create a view for thumbnailFullSizeTex (we only need one)
@@ -340,7 +307,7 @@ void Surface::minimizedChanged()
         // Create a dock item for each output dock
         for (Output *o : G::outputs())
         {
-            DockItem *minView = new DockItem(this, o->dock);
+            DockItem *minView { new DockItem(this, o->dock) };
 
             if (cursor()->output() == o)
                 dstDockItem = minView;
@@ -397,7 +364,7 @@ void Surface::minimizedChanged()
         // Destroy minimized views
         while (!minimizedViews.empty())
         {
-            Dock *dock = minimizedViews.back()->dock;
+            Dock *dock { minimizedViews.back()->dock };
             delete minimizedViews.back();
             dock->update();
         }
@@ -427,14 +394,14 @@ void Surface::minimizedChanged()
 
 LTexture *Surface::renderThumbnail(LRegion *transRegion)
 {
-    LBox box = getView()->boundingBox();
+    LBox box { getView()->boundingBox() };
 
     minimizeStartRect = LRect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 
     LSceneView tmpView(minimizeStartRect.size() * 2, 2);
     tmpView.setPos(minimizeStartRect.pos());
 
-    LView *prevParent = getView()->parent();
+    LView *prevParent { getView()->parent() };
     getView()->setParent(&tmpView);
 
     struct TMPList
@@ -445,7 +412,7 @@ LTexture *Surface::renderThumbnail(LRegion *transRegion)
 
     std::list<TMPList>tmpChildren;
 
-    Surface *next = this;
+    Surface *next { this };
     while ((next = (Surface*)next->nextSurface()))
     {
         if (next->parent() == this && next->subsurface())
@@ -466,7 +433,7 @@ LTexture *Surface::renderThumbnail(LRegion *transRegion)
         transRegion->offset(LPoint() - tmpView.pos());
     }
 
-    LTexture *renderedThumbnail = tmpView.texture()->copy();
+    LTexture *renderedThumbnail { tmpView.texture()->copy() };
     getView()->enableParentOffset(true);
     getView()->setParent(prevParent);
 
@@ -498,8 +465,7 @@ void Surface::unminimize(DockItem *clickedItem)
     minimizeAnim.setOnUpdateCallback(
     [this, clickedItem](LAnimation *anim)
     {
-        // Transform linear curve to ease out
-        Float32 exp = powf(anim->value(), 2.f);
+        const Float32 exp { powf(anim->value(), 2.f) };
 
         // Animate all docks items
         for (DockItem *item : minimizedViews)
@@ -508,7 +474,7 @@ void Surface::unminimize(DockItem *clickedItem)
             item->dock->update();
         }
 
-        LRegion trans = minimizedTransRegion;
+        LRegion trans { minimizedTransRegion };
         trans.multiply(exp);
         thumbnailFullsizeView->setTranslucentRegion(&trans);
         thumbnailFullsizeView->setDstSize((thumbnailFullsizeView->texture()->sizeB() / thumbnailFullsizeView->bufferScale()) * exp);
@@ -539,4 +505,51 @@ void Surface::preferVSyncChanged()
         tl()->fullscreenOutput->enableVSync(preferVSync());
         tl()->fullscreenOutput->topbar->update();
     }
+}
+
+void Surface::onToplevelFirstMap() noexcept
+{
+    if (!cursor()->output() ||!toplevel() || !mapped() || minimized())
+        return;
+
+    const LPoint outputPosG { cursor()->output()->pos() + LPoint(0, TOPBAR_HEIGHT) };
+    const LSize outputSizeG { cursor()->output()->size() - LSize(0, TOPBAR_HEIGHT) };
+    LSize tlSize { toplevel()->windowGeometry().size() };
+
+    if (tl()->supportServerSideDecorations())
+        tlSize += LSize(0, TOPLEVEL_TOPBAR_HEIGHT);
+
+    setPos(outputPosG + (outputSizeG - tlSize)/2);
+
+    if (pos().x() < outputPosG.x())
+        setX(outputPosG.x());
+
+    if (pos().y() < TOPBAR_HEIGHT)
+        setY(TOPBAR_HEIGHT);
+
+    if (!tl()->pending().state.check(LToplevelRole::Fullscreen) && tl()->supportServerSideDecorations() &&
+        outputSizeG.h() <= tlSize.h())
+    {
+        tl()->setMaximizedRequest();
+    }
+
+    Surface *next { static_cast<Surface*>(nextSurface()) };
+    view.setVisible(true);
+    getView()->setVisible(true);
+
+    while (next)
+    {
+        if (next->isSubchildOf(this) && !next->minimized())
+        {
+            view.setVisible(true);
+            next->getView()->setVisible(true);
+        }
+
+        next = static_cast<Surface*>(next->nextSurface());
+    }
+
+    cursor()->output()->repaint();
+
+    firstMapAnim.setDuration(400);
+    firstMapAnim.start();
 }

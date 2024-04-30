@@ -201,7 +201,7 @@ void Toplevel::setMaximizedRequest()
 
     dstRect.setPos(output->pos() + LPoint(0, TOPBAR_HEIGHT) + (output->size() - LSize(0, TOPBAR_HEIGHT) - dstRect.size()) / 2);
 
-    if (decoratedView)
+    if (supportServerSideDecorations())
         dstRect.setSize(dstRect.size() + LSize(2, 2 - TOPLEVEL_TOPBAR_HEIGHT));
 
     configureSize(dstRect.size());
@@ -232,18 +232,15 @@ void Toplevel::setFullscreenRequest(LOutput *output)
 {
     Surface *surf = (Surface*)surface();
 
-    if (animScene)
+    if (surf->firstMap)
     {
-        configureState(pending().state);
+        requestedFullscreenOnFirstMap = true;
         return;
     }
 
     // Already in fullscreen mode
-    if (fullscreen() || !surf || surf->firstMap)
-    {
-        configureState(pending().state);
+    if (animScene || fullscreen() || !surf)
         return;
-    }
 
     Output *dstOutput;
 
