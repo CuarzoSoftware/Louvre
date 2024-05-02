@@ -66,6 +66,7 @@ struct UserState
 } userState;
 
 LRectF srcRect;
+bool needsBlendFuncUpdate { true };
 
 static inline GLfloat square[]
 {
@@ -338,8 +339,8 @@ void setViewport(Int32 x, Int32 y, Int32 w, Int32 h) noexcept
     else
         fbScale = fb->scale();
 
-    Int32 x2 = floorf(Float32(x + w) * fbScale);
-    Int32 y2 = floorf(Float32(y + h) * fbScale);
+    const Int32 x2 = floorf(Float32(x + w) * fbScale);
+    const Int32 y2 = floorf(Float32(y + h) * fbScale);
 
     x = floorf(Float32(x) * fbScale);
     y = floorf(Float32(y) * fbScale);
@@ -361,6 +362,7 @@ void setViewport(Int32 x, Int32 y, Int32 w, Int32 h) noexcept
 
 void updateBlendingParams()
 {
+    needsBlendFuncUpdate = false;
     shaderSetMode(userState.mode);
 
     if (userState.mode == TextureMode)

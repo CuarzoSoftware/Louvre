@@ -142,6 +142,17 @@ void Workspace::clipChildren()
     clipChildrenViews(this, rect);
 }
 
+void Workspace::show(bool show)
+{
+    if (show == (parent() != nullptr))
+        return;
+
+    if (show)
+        setParent(output->workspacesContainer);
+    else
+        setParent(nullptr);
+}
+
 Int32 Workspace::getIndex() const
 {
     Int32 index = 0;

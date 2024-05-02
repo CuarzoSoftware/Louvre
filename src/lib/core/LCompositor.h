@@ -117,7 +117,7 @@ public:
      * @param objectType Indicates the type of the class instance to return.
      * @param params An opaque data type that should be passed to the object's constructor.
      *
-     * @return If `nullptr is returned, Louvre will create an instance of the object using the base class.
+     * @return If `nullptr` is returned, Louvre will create an instance of the object using the base class.
      */
     virtual LFactoryObject *createObjectRequest(LFactoryObject::Type objectType, const void *params);
 

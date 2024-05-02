@@ -322,6 +322,10 @@ void Surface::minimizedChanged()
                 for (DockItem *item : minimizedViews)
                 {
                     item->setScalingVector(easeOut);
+
+                    if (!item->dock->dockContainer.parent())
+                        item->dock->dockContainer.setParent(item->dock);
+
                     item->dock->update();
                 }
 
@@ -342,6 +346,9 @@ void Surface::minimizedChanged()
                 item->setScalingVector(1.f);
                 item->enableScaling(false);
                 item->dock->update();
+
+                if (item->dock->visiblePercent == 0.f)
+                    item->dock->dockContainer.setParent(nullptr);
             }
 
             // Hide the resized fullsize view
@@ -470,6 +477,9 @@ void Surface::unminimize(DockItem *clickedItem)
         // Animate all docks items
         for (DockItem *item : minimizedViews)
         {
+            if (!item->dock->dockContainer.parent())
+                item->dock->dockContainer.setParent(item->dock);
+
             item->setScalingVector(1.f - exp);
             item->dock->update();
         }
@@ -487,6 +497,10 @@ void Surface::unminimize(DockItem *clickedItem)
     minimizeAnim.setOnFinishCallback(
     [this](LAnimation *)
     {
+        for (DockItem *item : minimizedViews)
+            if (item->dock->visiblePercent == 0.f)
+                item->dock->dockContainer.setParent(nullptr);
+
         setMinimized(false);
     });
 

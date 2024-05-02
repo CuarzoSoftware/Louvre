@@ -55,6 +55,7 @@ void Seat::nativeInputEvent(void *event)
             if (output->animatedFullscreenToplevel)
                 return;
 
+            output->showAllWorkspaces();
             output->workspaceAnim.stop();
             output->swippingWorkspace = true;
             output->workspaceOffset = output->workspacesContainer->nativePos().x();

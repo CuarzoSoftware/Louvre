@@ -212,6 +212,19 @@ void Output::updateFractionalOversampling()
     }
 }
 
+void Output::showAllWorkspaces()
+{
+    for (auto *ws : workspaces)
+        ws->show(true);
+}
+
+void Output::hideAllWorkspacesExceptCurrent()
+{
+    for (auto *ws : workspaces)
+        if (ws != currentWorkspace)
+            ws->show(false);
+}
+
 void Output::initializeGL()
 {
     workspaceAnim.setDuration(400);
@@ -219,6 +232,7 @@ void Output::initializeGL()
         [this](LAnimation *anim)
         {
             repaint();
+            showAllWorkspaces();
 
             if (swippingWorkspace)
             {
@@ -322,6 +336,8 @@ void Output::initializeGL()
     workspaceAnim.setOnFinishCallback(
         [this](LAnimation *)
         {
+            hideAllWorkspacesExceptCurrent();
+
             if (currentWorkspace->toplevel)
             {
                 Toplevel *tl = currentWorkspace->toplevel;

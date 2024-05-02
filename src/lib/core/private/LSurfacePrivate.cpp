@@ -104,7 +104,10 @@ void LSurface::LSurfacePrivate::applyPendingRole()
 
 void LSurface::LSurfacePrivate::applyPendingChildren()
 {
-    LSurface *surface = surfaceResource->surface();
+    if (pendingChildren.empty())
+        return;
+
+    LSurface *surface { surfaceResource->surface() };
 
     while (!pendingChildren.empty())
     {
@@ -121,9 +124,7 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
         if (surface->children().empty())
             compositor()->imp()->insertSurfaceAfter(surface, child);
         else
-        {
             compositor()->imp()->insertSurfaceAfter(surface->children().back(), child);
-        }
 
         children.push_back(child);
         child->imp()->pendingParent = nullptr;

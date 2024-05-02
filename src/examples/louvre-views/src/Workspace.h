@@ -27,6 +27,7 @@ public:
     void stealChildren();
     void returnChildren();
     void clipChildren();
+    void show(bool show);
 
     Int32 getIndex() const;
 };

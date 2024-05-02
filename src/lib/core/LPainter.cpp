@@ -409,9 +409,17 @@ void LPainter::bindTextureMode(const TextureParams &p)
 {
     GLenum target = p.texture->target();
     imp()->switchTarget(target);
+
+    if (imp()->userState.mode != LPainterPrivate::TextureMode)
+    {
+        imp()->userState.mode = LPainterPrivate::TextureMode;
+        imp()->needsBlendFuncUpdate = true;
+    }
+
+    if (!imp()->userState.texture.get() || imp()->userState.texture.get()->premultipliedAlpha() != p.texture->premultipliedAlpha())
+        imp()->needsBlendFuncUpdate = true;
+
     imp()->userState.texture = p.texture;
-    imp()->userState.mode = LPainterPrivate::TextureMode;
-    imp()->updateBlendingParams();
 
     Float32 fbScale;
 
@@ -676,24 +684,36 @@ void LPainter::bindTextureMode(const TextureParams &p)
 
 void LPainter::bindColorMode()
 {
+    if (imp()->userState.mode == LPainterPrivate::ColorMode)
+        return;
+
     imp()->userState.mode = LPainterPrivate::ColorMode;
-    imp()->updateBlendingParams();
+    imp()->needsBlendFuncUpdate = true;
 }
 
 void LPainter::drawBox(const LBox &box)
 {
+    if (imp()->needsBlendFuncUpdate)
+        imp()->updateBlendingParams();
+
     imp()->setViewport(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 void LPainter::drawRect(const LRect &rect)
 {
+    if (imp()->needsBlendFuncUpdate)
+        imp()->updateBlendingParams();
+
     imp()->setViewport(rect.x(), rect.y(), rect.w(), rect.h());
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 void LPainter::drawRegion(const LRegion &region)
 {
+    if (imp()->needsBlendFuncUpdate)
+        imp()->updateBlendingParams();
+
     Int32 n;
     const LBox *box = region.boxes(&n);
     for (Int32 i = 0; i < n; i++)
@@ -709,8 +729,11 @@ void LPainter::drawRegion(const LRegion &region)
 
 void LPainter::enableCustomTextureColor(bool enabled)
 {
+    if (imp()->userState.customTextureColor == enabled)
+        return;
+
     imp()->userState.customTextureColor = enabled;
-    imp()->updateBlendingParams();
+    imp()->needsBlendFuncUpdate = true;
 }
 
 bool LPainter::customTextureColorEnabled() const
@@ -725,20 +748,29 @@ bool LPainter::autoBlendFuncEnabled() const noexcept
 
 void LPainter::enableAutoBlendFunc(bool enabled) const noexcept
 {
+    if (imp()->userState.autoBlendFunc == enabled)
+        return;
+
     imp()->userState.autoBlendFunc = enabled;
-    imp()->updateBlendingParams();
+    imp()->needsBlendFuncUpdate = true;
 }
 
 void LPainter::setAlpha(Float32 alpha)
 {
+    if (imp()->userState.alpha == alpha)
+        return;
+
     imp()->userState.alpha = alpha;
-    imp()->updateBlendingParams();
+    imp()->needsBlendFuncUpdate = true;
 }
 
 void LPainter::setColor(const LRGBF &color)
 {
+    if (imp()->userState.color == color)
+        return;
+
     imp()->userState.color = color;
-    imp()->updateBlendingParams();
+    imp()->needsBlendFuncUpdate = true;
 }
 
 void LPainter::bindFramebuffer(LFramebuffer *framebuffer)
@@ -777,16 +809,25 @@ void LPainter::setClearColor(Float32 r, Float32 g, Float32 b, Float32 a)
 
 void LPainter::setColorFactor(Float32 r, Float32 g, Float32 b, Float32 a) noexcept
 {
+    if (imp()->userState.colorFactor.r == r &&
+        imp()->userState.colorFactor.g == g &&
+        imp()->userState.colorFactor.b == b &&
+        imp()->userState.colorFactor.a == a)
+        return;
+
     imp()->userState.colorFactor = {r, g, b, a};
     imp()->shaderSetColorFactorEnabled(r != 1.f || g != 1.f || b != 1.f || a != 1.f);
-    imp()->updateBlendingParams();
+    imp()->needsBlendFuncUpdate = true;
 }
 
 void LPainter::setColorFactor(const LRGBAF &factor) noexcept
 {
+    if (imp()->userState.colorFactor == factor)
+        return;
+
     imp()->userState.colorFactor = factor;
     imp()->shaderSetColorFactorEnabled(factor.r != 1.f || factor.g != 1.f || factor.b != 1.f || factor.a != 1.f);
-    imp()->updateBlendingParams();
+    imp()->needsBlendFuncUpdate = true;
 }
 
 void LPainter::clearScreen()
