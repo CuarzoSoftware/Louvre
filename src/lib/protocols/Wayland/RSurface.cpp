@@ -253,9 +253,10 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     // Mark the next frame as commited
     if (!imp.frameCallbacks.empty())
     {
-        //surface->requestedRepaint();
         for (RCallback *callback : imp.frameCallbacks)
             callback->m_commited = true;
+
+        surface->requestedRepaint();
     }
 
     /*****************************************
