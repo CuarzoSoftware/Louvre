@@ -207,9 +207,10 @@ void LPointer::sendScrollEvent(const LPointerScrollEvent &event)
             }
             // Since 1
             else
-                rPointer->axis(event.ms(),
-                               wl_fixed_from_double(event.axes().x()),
-                               wl_fixed_from_double(event.axes().y()));
+            {
+                rPointer->axis(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL, wl_fixed_from_double(event.axes().x()));
+                rPointer->axis(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL, wl_fixed_from_double(event.axes().y()));
+            }
         }
     }
 

@@ -116,7 +116,7 @@ public:
         pointerMoveEvent.setDevice(&device);
         pointerButtonEvent.setDevice(&device);
         pointerScrollEvent.setDevice(&device);
-        pointerScrollEvent.setSource(LPointerScrollEvent::Wheel);
+        pointerScrollEvent.setSource(LPointerScrollEvent::Continuous);
         keyboardKeyEvent.setDevice(&device);
         touchDownEvent.setDevice(&device);
         touchUpEvent.setDevice(&device);

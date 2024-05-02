@@ -77,6 +77,7 @@ public:
     inline static wl_surface *surface;
     inline static xdg_surface *xdgSurface;
     inline static xdg_toplevel *xdgToplevel;
+    inline static wl_region *opaqueRegion { nullptr };
     inline static wl_egl_window *eglWindow;
     inline static zxdg_decoration_manager_v1 *xdgDecorationManager { nullptr };
     inline static zxdg_toplevel_decoration_v1 *xdgDecoration { nullptr };
@@ -385,6 +386,12 @@ public:
         surface = wl_compositor_create_surface(compositor);
         wl_surface_add_listener(surface, &surfaceListener, nullptr);
 
+        opaqueRegion = wl_compositor_create_region(compositor);
+        wl_region_add(opaqueRegion,
+            0, 0,
+            std::numeric_limits<std::int32_t>::max(),
+            std::numeric_limits<std::int32_t>::max());
+
         xdgSurface = xdg_wm_base_get_xdg_surface(xdgWmBase, surface);
         xdg_surface_add_listener(xdgSurface, &xdgSurfaceListener, nullptr);
 
@@ -426,6 +433,12 @@ public:
         {
             wl_egl_window_destroy(eglWindow);
             eglWindow = nullptr;
+        }
+
+        if (opaqueRegion)
+        {
+            wl_region_destroy(opaqueRegion);
+            opaqueRegion = nullptr;
         }
 
         if (surface)
@@ -524,6 +537,7 @@ public:
 
                 output->imp()->backendPaintGL();
 
+                wl_surface_set_opaque_region(surface, opaqueRegion);
                 eglSwapBuffers(eglDisplay, eglSurface);
 
                 if (!vSync && refreshRateLimit >= 0)
