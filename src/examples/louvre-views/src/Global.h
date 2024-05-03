@@ -1,7 +1,6 @@
 #ifndef SHARED_H
 #define SHARED_H
 
-#include <map>
 #include <LNamespaces.h>
 #include <LRegion.h>
 #include <LFramebuffer.h>
@@ -9,6 +8,8 @@
 #include <list>
 
 using namespace Louvre;
+
+#define DEBUG_ANIM_SPEED 1.8f
 
 #define TOPBAR_HEIGHT 26
 

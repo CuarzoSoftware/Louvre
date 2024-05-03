@@ -91,6 +91,7 @@ public:
         return m_object;
     }
 
+    // TODO
     operator T*() const noexcept
     {
         return m_object;

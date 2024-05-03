@@ -317,7 +317,7 @@ public:
      */
     void offset(Int32 x, Int32 y) noexcept
     {
-        if (x == 0 && x == 0)
+        if (x == 0 && y == 0)
             return;
 
         pixman_region32_translate(&m_region, x, y);

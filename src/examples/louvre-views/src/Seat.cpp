@@ -1,4 +1,5 @@
 #include <LSessionLockManager.h>
+#include <LInputDevice.h>
 #include <LCursor.h>
 #include <LScene.h>
 #include <libinput.h>
@@ -83,6 +84,7 @@ void Seat::nativeInputEvent(void *event)
             return;
 
         output->workspaceAnim.stop();
+        output->showAllWorkspaces();
 
         Float32 offset = fabs(output->currentWorkspace->pos().x());
         Float32 weight = powf(1.f - offset/swipeMargin, 3.f);
@@ -182,4 +184,12 @@ void Seat::outputUnplugged(LOutput *output)
     }
 
     firstOutput->setWorkspace(firstOutput->workspaces.front(), 560, 4.f);
+}
+
+void Seat::inputDevicePlugged(LInputDevice *device)
+{
+    if (compositor()->inputBackendId() == LInputBackendLibinput && device->nativeHandle())
+        libinput_device_config_dwt_set_enabled(
+            static_cast<libinput_device*>(device->nativeHandle()),
+            LIBINPUT_CONFIG_DWT_DISABLED);
 }

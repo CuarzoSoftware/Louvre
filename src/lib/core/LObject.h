@@ -18,7 +18,10 @@ public:
      *
      * @note The user data and LWeak references are not copied.
      */
-    LObject(const LObject &) noexcept {}
+    LObject(const LObject &) noexcept
+    {
+        m_weakRefs.reserve(10);
+    }
 
     /**
      * @brief Assignment operator (each object has its own individual LWeak reference count).

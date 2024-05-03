@@ -19,7 +19,7 @@
 Surface::Surface(const void *params) :
     LSurface(params),
     view(this, &G::compositor()->surfacesLayer),
-    minimizeAnim(500)
+    minimizeAnim(400 * DEBUG_ANIM_SPEED)
 {
     view.setVisible(false);
 
@@ -316,12 +316,12 @@ void Surface::minimizedChanged()
         minimizeAnim.setOnUpdateCallback(
             [this, dstDockItem](LAnimation *anim)
             {
-                Float32 easeOut = 1.f - powf(1.f - anim->value(), 3.f);
+                const Float32 x { 1.f - powf(1.f - anim->value(), 3.f) };
 
                 // Animate all docks items
                 for (DockItem *item : minimizedViews)
                 {
-                    item->setScalingVector(easeOut);
+                    item->setScalingVector(x);
 
                     if (!item->dock->dockContainer.parent())
                         item->dock->dockContainer.setParent(item->dock);
@@ -331,11 +331,11 @@ void Surface::minimizedChanged()
 
                 // Scale and move fullsize view to the dock
                 LRegion trans { minimizedTransRegion };
-                trans.multiply((1.f - easeOut));
+                trans.multiply(1.f - x);
                 thumbnailFullsizeView->setTranslucentRegion(&trans);
-                thumbnailFullsizeView->setDstSize((thumbnailFullsizeView->texture()->sizeB() / thumbnailFullsizeView->bufferScale()) * (1.f - easeOut));
-                thumbnailFullsizeView->setPos((dstDockItem->pos() + dstDockItem->size()) * easeOut +
-                         minimizeStartRect.pos() * (1.f - easeOut));
+                thumbnailFullsizeView->setDstSize((thumbnailFullsizeView->texture()->sizeB() / thumbnailFullsizeView->bufferScale()) * (1.f - x));
+                thumbnailFullsizeView->setPos((dstDockItem->pos() + dstDockItem->size()) * x +
+                         minimizeStartRect.pos() * (1.f - x));
             });
 
         minimizeAnim.setOnFinishCallback([this](LAnimation *)
@@ -472,7 +472,7 @@ void Surface::unminimize(DockItem *clickedItem)
     minimizeAnim.setOnUpdateCallback(
     [this, clickedItem](LAnimation *anim)
     {
-        const Float32 exp { powf(anim->value(), 2.f) };
+        const Float32 x { 1.f - powf(1.f - anim->value(), 3.f) };
 
         // Animate all docks items
         for (DockItem *item : minimizedViews)
@@ -480,18 +480,18 @@ void Surface::unminimize(DockItem *clickedItem)
             if (!item->dock->dockContainer.parent())
                 item->dock->dockContainer.setParent(item->dock);
 
-            item->setScalingVector(1.f - exp);
+            item->setScalingVector(1.f - x);
             item->dock->update();
         }
 
         LRegion trans { minimizedTransRegion };
-        trans.multiply(exp);
+        trans.multiply(x);
         thumbnailFullsizeView->setTranslucentRegion(&trans);
-        thumbnailFullsizeView->setDstSize((thumbnailFullsizeView->texture()->sizeB() / thumbnailFullsizeView->bufferScale()) * exp);
+        thumbnailFullsizeView->setDstSize((thumbnailFullsizeView->texture()->sizeB() / thumbnailFullsizeView->bufferScale()) * x);
 
         // Scale and move fullsize view to the dock
-        thumbnailFullsizeView->setPos((clickedItem->pos() + clickedItem->size()) * (1.f - exp) +
-                 minimizeStartRect.pos() * exp);
+        thumbnailFullsizeView->setPos((clickedItem->pos() + clickedItem->size()) * (1.f - x) +
+                 minimizeStartRect.pos() * x);
     });
 
     minimizeAnim.setOnFinishCallback(
@@ -564,6 +564,6 @@ void Surface::onToplevelFirstMap() noexcept
 
     cursor()->output()->repaint();
 
-    firstMapAnim.setDuration(400);
+    firstMapAnim.setDuration(400 *DEBUG_ANIM_SPEED);
     firstMapAnim.start();
 }

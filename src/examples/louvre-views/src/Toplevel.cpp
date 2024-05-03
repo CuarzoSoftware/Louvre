@@ -186,6 +186,9 @@ void Toplevel::setMaximizedRequest()
     if (!fullscreen())
         prevRect = LRect(surface()->pos(), windowGeometry().size());
 
+    if (windowGeometry().size().area() == 0)
+        prevRect.setSize(output->size() - LSize(0, TOPBAR_HEIGHT));
+
     if (prevRect.y() < TOPBAR_HEIGHT)
         prevRect.setY(TOPBAR_HEIGHT);
 
@@ -328,7 +331,7 @@ void Toplevel::fullscreenChanged()
         if (animScene)
             delete animScene;
 
-        animScene = new LSceneView(fullscreenOutput->size(), 1.f);
+        animScene = new LSceneView(fullscreenOutput->sizeB(), fullscreenOutput->scale());
         quickUnfullscreen = false;
         fullscreenOutput->animatedFullscreenToplevel = this;
         surf()->sendOutputEnterEvent(fullscreenOutput);
@@ -470,7 +473,7 @@ void Toplevel::unsetFullscreen()
     if (animScene)
         delete animScene;
 
-    animScene = new LSceneView(fullscreenOutput->size() * 0.75f, 0.75f);
+    animScene = new LSceneView(fullscreenOutput->sizeB(), fullscreenOutput->scale());
     animScene->setPos(fullscreenOutput->pos());
     G::reparentWithSubsurfaces(surf(), animScene, true);
     fullscreenOutput->animatedFullscreenToplevel = this;

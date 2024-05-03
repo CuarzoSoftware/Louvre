@@ -53,7 +53,7 @@ public:
      */
     virtual ~LCompositor();
 
-    LCLASS_NO_COPY(LCompositor);
+    LCLASS_NO_COPY(LCompositor)
 
     /**
      * @brief Notifies a successful compositor initialization.

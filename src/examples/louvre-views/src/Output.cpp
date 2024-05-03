@@ -105,7 +105,7 @@ void Output::setWorkspace(Workspace *ws, UInt32 animMs, Float32 curve, Float32 s
     animStart = start;
     easingCurve = curve;
     workspaceAnim.stop();
-    workspaceAnim.setDuration(animMs);
+    workspaceAnim.setDuration(animMs * DEBUG_ANIM_SPEED);
     currentWorkspace = ws;
 
     if (currentWorkspace->toplevel && currentWorkspace->toplevel->surf())
@@ -145,7 +145,8 @@ void Output::updateWorkspacesPos()
 
 void Output::updateFractionalOversampling()
 {
-    bool oversampling = false;
+    bool oversampling { dpi() < 200 };
+    bool fullscreenOrSubsurface { false };
 
     if (!usingFractionalScale() || swippingWorkspace || workspaceAnim.running())
         goto checkChange;
@@ -154,7 +155,7 @@ void Output::updateFractionalOversampling()
     {
         if (currentWorkspace->toplevel->decoratedView && currentWorkspace->toplevel->decoratedView->fullscreenTopbarVisibility != 0.f)
         {
-            oversampling = true;
+            fullscreenOrSubsurface = true;
             goto checkChange;
         }
 
@@ -162,7 +163,7 @@ void Output::updateFractionalOversampling()
         {
             if (surf->toplevel() && surf->toplevel()->current().decorationMode == LToplevelRole::ServerSide && surf->mapped() && !surf->minimized())
             {
-                oversampling = true;
+                fullscreenOrSubsurface = true;
                 goto checkChange;
             }
         }
@@ -180,7 +181,7 @@ void Output::updateFractionalOversampling()
                 {
                     if (o == this)
                     {
-                        oversampling = true;
+                        fullscreenOrSubsurface = true;
                         goto checkChange;
                     }
                 }
@@ -193,7 +194,7 @@ void Output::updateFractionalOversampling()
                     {
                         if (o == this)
                         {
-                            oversampling = true;
+                            fullscreenOrSubsurface = true;
                             goto checkChange;
                         }
                     }
@@ -203,6 +204,8 @@ void Output::updateFractionalOversampling()
     }
 
     checkChange:
+
+    oversampling = oversampling || fullscreenOrSubsurface;
 
     if (oversampling != fractionalOversamplingEnabled())
     {

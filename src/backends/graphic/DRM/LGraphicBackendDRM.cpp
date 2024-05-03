@@ -149,7 +149,6 @@ static void initConnector(Backend *bknd, SRMConnector *conn)
     if (srmConnectorGetUserData(conn))
        return;
 
-    LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
     Output *bkndOutput = new Output();
 
     LOutput::Params params

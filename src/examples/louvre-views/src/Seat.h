@@ -13,6 +13,7 @@ public:
     void enabledChanged() override;
     void nativeInputEvent(void *event) override;
     void outputUnplugged(LOutput *output) override;
+    void inputDevicePlugged(LInputDevice *device) override;
 
     // Last swipe dx
     Float32 dx = 0.f;

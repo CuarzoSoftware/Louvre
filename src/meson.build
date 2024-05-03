@@ -32,12 +32,14 @@ add_project_arguments([
     '-DLOUVRE_DEFAULT_GRAPHIC_BACKEND="@0@"'.format(get_option('default_graphic_backend')),
     '-DLOUVRE_DEFAULT_INPUT_BACKEND="@0@"'.format(get_option('default_input_backend')),
     '-DLOUVRE_DEFAULT_ASSETS_PATH="@0@"'.format(ASSETS_INSTALL_PATH),
-    '-pedantic-errors',
-    '-Wno-missing-field-initializers'
+    '-Wno-missing-field-initializers',
+    '-Wlogical-op'
 ], language: 'cpp')
 
 if get_option('buildtype') == 'custom'
-    proj_args = ['-Ofast', '-s', '-march=native', '-fno-strict-aliasing']
+    proj_args = ['-Ofast', '-finline-functions', '-flto', '-funroll-loops', '-ffast-math', '-s', 
+    '-march=native', '-fno-strict-aliasing', '-fdefer-pop', '-fmerge-constants', '-fthread-jumps',
+    '-floop-optimize', '-fcrossjumping', '-fif-conversion', '-fguess-branch-probability']
     add_project_arguments(proj_args, language : 'c')
     add_project_arguments(proj_args, language : 'cpp')
 endif
