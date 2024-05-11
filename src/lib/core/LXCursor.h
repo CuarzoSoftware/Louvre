@@ -4,13 +4,20 @@
 #include <LTexture.h>
 
 /**
- * @brief XCursor Icons and Themes
+ * @brief An XCursor icon.
  *
- * The LXCursor class enables the search and loading of [XCursor](https://www.x.org/archive/X11R7.7/doc/man/man3/Xcursor.3.xhtml)
- * icons from installed themes on your machine.\n
- * It provides functionality to retrieve the icon's texture and hotspot, making it suitable for use with LCursor.
+ * XCursor icons are widely used for cursor themes in Linux.\n
+ * This class facilitates loading icons installed on the system and retrieving
+ * their hotspot and texture, which can then be applied to LCursor.
  *
- * @see LCompositor::cursorInitialized()
+ * Example usage:
+ * @code
+ *  LXCursor *handCursor { LXCursor::load("hand2", "Adwaita", 64) };
+ *
+ *  if (handCursor)
+ *      cursor()->setTextureB(handCursor->texture(),
+ *                            handCursor->hotspotB());
+ * @endcode
  */
 class Louvre::LXCursor
 {
@@ -32,9 +39,9 @@ public:
     static LXCursor *load(const char *cursor, const char *theme = NULL, Int32 suggestedSize = 64) noexcept;
 
     /**
-     * @brief Destructor of the LXCursor class.
+     * @brief Destructor
      *
-     * @warning The destructor releases any resources associated with an LXCursor instance, including its texture.
+     * Release the icon resources, including the texture.
      */
     ~LXCursor() = default;
 
@@ -58,7 +65,7 @@ public:
 
 private:
     LXCursor() noexcept = default;
-    LTexture m_texture;
+    LTexture m_texture { true };
     LPoint m_hotspotB;
 };
 

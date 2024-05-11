@@ -16,7 +16,7 @@ class Toplevel;
 class Topbar;
 class Workspace;
 
-class Output : public LOutput
+class Output final : public LOutput
 {
 public:
     Output(const void *params);
@@ -27,9 +27,9 @@ public:
     void paintGL() override;
     void uninitializeGL() override;
     void setGammaRequest(LClient *client, const LGammaTable *gamma) override;
-    void loadWallpaper();
 
-    void setWorkspace(Workspace *ws, UInt32 animMs, Float32 curve = 2.f, Float32 start = 0.f);
+    void loadWallpaper();
+    void setWorkspace(Workspace *ws, UInt32 animMs, Float64 curve = 2.0, Float64 start = 0.0);
     void updateWorkspacesPos();
     void updateFractionalOversampling();
     void showAllWorkspaces();
@@ -40,15 +40,15 @@ public:
 
     // Workspace switch/restore animation
     LAnimation workspaceAnim;
-    Float32 easingCurve = 2.f;
-    Float32 animStart = 0.f;
+    Float64 easingCurve { 2.0 };
+    Float64 animStart { 0.0 };
     Toplevel *animatedFullscreenToplevel = nullptr;
 
     // X workspaces offset
-    Float32 workspaceOffset = 0.f;
+    Float64 workspaceOffset { 0.0 };
 
     // True if 3 finger swipe
-    bool swippingWorkspace = false;
+    bool swipingWorkspace = false;
 
     // Main workspace and one for each fullscreen toplevel
     std::list<Workspace*>workspaces;

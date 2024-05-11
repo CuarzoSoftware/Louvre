@@ -6,6 +6,7 @@
 
 /**
  * @brief View for displaying textures
+ * @ingroup scene
  *
  * The LTextureView class enables you to use an LTexture as a view within a scene.\n
  * You can set the view's texture using setTexture(), and passing `nullptr` unsets the texture, effectively unmapping the view.\n

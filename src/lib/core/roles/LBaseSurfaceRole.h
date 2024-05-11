@@ -7,6 +7,7 @@
 
  /**
   * @brief Base class for surface roles.
+  * @ingroup roles
   *
   * A role defines the type and functionality of a surface. Some commonly known roles are LToplevelRole and LPopupRole.
   *

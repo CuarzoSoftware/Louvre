@@ -100,7 +100,7 @@ void Output::loadWallpaper()
     wallpaperView->setPos(pos());
 }
 
-void Output::setWorkspace(Workspace *ws, UInt32 animMs, Float32 curve, Float32 start)
+void Output::setWorkspace(Workspace *ws, UInt32 animMs, Float64 curve, Float64 start)
 {
     animStart = start;
     easingCurve = curve;
@@ -148,7 +148,7 @@ void Output::updateFractionalOversampling()
     bool oversampling { dpi() < 200 };
     bool fullscreenOrSubsurface { false };
 
-    if (!usingFractionalScale() || swippingWorkspace || workspaceAnim.running())
+    if (!usingFractionalScale() || swipingWorkspace || workspaceAnim.running())
         goto checkChange;
 
     if (currentWorkspace->toplevel)
@@ -237,7 +237,7 @@ void Output::initializeGL()
             repaint();
             showAllWorkspaces();
 
-            if (swippingWorkspace)
+            if (swipingWorkspace)
             {
                 anim->stop();
                 return;
@@ -247,9 +247,8 @@ void Output::initializeGL()
             for (Workspace *ws : workspaces)
                 ws->setVisible(LRect(ws->pos() + pos(), size()).intersects(rect()));
 
-            Float32 ease = 1.f - powf(animStart + (1.f - animStart) * anim->value(), easingCurve);
-
-            workspaceOffset = workspaceOffset * ease + Float32( - currentWorkspace->nativePos().x()) * (1.f - ease);
+            const Float64 ease { 1.0 - pow(animStart + (1.0 - animStart) * anim->value(), easingCurve) };
+            workspaceOffset = workspaceOffset * ease + Float64( - currentWorkspace->nativePos().x()) * (1.0 - ease);
             workspacesContainer->setPos(workspaceOffset, 0);
 
             for (Output *o : G::outputs())
@@ -273,7 +272,7 @@ void Output::initializeGL()
 
                 if (tl->fullscreen())
                 {
-                    Float32 val = 1.f - pow(1.f - anim->value(), 4.f);
+                    Float32 val = 1.f - pow(1.0 - anim->value(), 4.0);
                     Float32 inv = 1.f - val;
                     tl->animView.enableSrcRect(false);
                     tl->animView.setVisible(true);
@@ -410,7 +409,7 @@ void Output::initializeGL()
 
             returnChildren:
             for (Output *o : G::outputs())
-                if (!o->swippingWorkspace)
+                if (!o->swipingWorkspace)
                     o->currentWorkspace->returnChildren();
 
             updateWorkspacesPos();

@@ -5,6 +5,7 @@
 
 /**
  * @brief Container of views
+ * @ingroup scene
  *
  * The LLayerView is a non-renderable LView. Unlike other views, it doesn't have content to render on its own.
  * Instead, it functions as a container for other views, allowing you to stack a group of views together or apply clipping to them.

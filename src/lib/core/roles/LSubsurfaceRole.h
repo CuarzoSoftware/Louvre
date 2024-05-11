@@ -6,6 +6,7 @@
 
 /**
  * @brief Subsurface role for surfaces
+ * @ingroup roles
  *
  * The LSubsurfaceRole class defines a role for surfaces that allows them to be positioned relative to their parent surfaces.
  * They are always children of other surfaces and get their position based on their parent's position plus an offset defined by the localPos() function.

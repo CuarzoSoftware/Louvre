@@ -6,6 +6,7 @@
 
 /**
  * @brief Cursor role for surfaces
+ * @ingroup roles
  *
  * The LCursorRole class is a role for surfaces that allows the compositor to use them as cursors.\n
  * Clients create the role by requesting [set_cursor](https://wayland.app/protocols/wayland#wl_pointer:request:set_cursor)

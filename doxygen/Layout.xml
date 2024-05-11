@@ -30,10 +30,6 @@
     	<tab type="namespacemembers" visible="no" title="" intro=""/>
   	</tab>
     
-    <tab type="classes" visible="no" title="API">
-      <tab type="classes" visible="yes" title="📖 Classes"/>
-    </tab>
-
     <tab type="usergroup" visible="yes" title="📖 Classes" url="annotated.html"/>
     <tab type="usergroup" visible="yes" title="🕹️ Examples" url="md_md__examples.html"/>
     <tab type="usergroup" visible="yes" title="📦 Downloads" url="md_md__downloads.html"/>
@@ -42,6 +38,4 @@
     
   </navindex>
   
-
-
 </doxygenlayout>

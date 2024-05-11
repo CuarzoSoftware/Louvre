@@ -655,13 +655,15 @@ void LCompositor::LCompositorPrivate::processAnimations()
         if (!a->m_running)
             continue;
 
-        elapsed = static_cast<Int64>(LTime::ms()) - static_cast<Int64>(a->m_beginTime);
+        elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - a->m_beginTime).count();
+
         duration = static_cast<Int64>(a->m_duration);
 
         if (elapsed >= duration)
-            a->m_value = 1.f;
+            a->m_value = 1.0;
         else
-            a->m_value = static_cast<Float32>(elapsed)/static_cast<Float32>(duration);
+            a->m_value = static_cast<Float64>(elapsed)/static_cast<Float64>(duration);
 
         if (a->m_onUpdate)
         {
@@ -671,7 +673,7 @@ void LCompositor::LCompositorPrivate::processAnimations()
                 goto retry;
         }
 
-        if (a->m_value == 1.f)
+        if (a->m_value == 1.0)
         {
             a->stop();
 

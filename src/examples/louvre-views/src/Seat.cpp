@@ -58,7 +58,7 @@ void Seat::nativeInputEvent(void *event)
 
             output->showAllWorkspaces();
             output->workspaceAnim.stop();
-            output->swippingWorkspace = true;
+            output->swipingWorkspace = true;
             output->workspaceOffset = output->workspacesContainer->nativePos().x();
 
             for (Output *o : G::outputs())
@@ -116,7 +116,7 @@ void Seat::nativeInputEvent(void *event)
 
         if (libinput_event_gesture_get_finger_count(gev) > 2)
         {
-            output->swippingWorkspace = false;
+            output->swipingWorkspace = false;
 
             if (output->animatedFullscreenToplevel)
                 return;

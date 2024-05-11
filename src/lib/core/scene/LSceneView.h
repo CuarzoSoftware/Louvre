@@ -10,6 +10,7 @@
 
 /**
  * @brief View for rendering other views
+ * @ingroup scene
  *
  * An LSceneView is a unique type of view. Instead of rendering its content directly into an LOutput,
  * it possesses its own framebuffer. This capability allows for advanced blending effects, such as applying masks (check LView::setBlendFunc()).

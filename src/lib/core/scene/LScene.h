@@ -8,6 +8,9 @@
 #include <LKeyboard.h>
 
 /**
+ * @brief Scene
+ * @ingroup scene
+ *
  * The LScene class is an optional utility that significantly simplifies rendering.
  * It encompasses a primary LSceneView which can host multiple children and even nested scenes.
  * A single LScene can drive multiple outputs and also manage pointer and keyboard Wayland events, while also providing per-view input events.

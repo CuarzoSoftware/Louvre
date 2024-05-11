@@ -53,8 +53,8 @@ void LAnimation::start() noexcept
     if (m_running)
         return;
 
-    m_value = 0.f;
-    m_beginTime = LTime::ms();
+    m_value = 0.0;
+    m_beginTime = std::chrono::steady_clock::now();
     m_running = true;
     compositor()->repaintAllOutputs();
 }
@@ -64,7 +64,7 @@ void LAnimation::stop()
     if (!m_running)
         return;
 
-    m_value = 1.f;
+    m_value = 1.0;
     m_running = false;
 
     if (m_onFinish)

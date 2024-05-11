@@ -6,6 +6,7 @@
 
 /**
  * @brief Surface displayed during a session lock.
+ * @ingroup roles
  *
  * LSessionLockRole can be used by clients to display arbitrary graphics while the session is locked.\n
  * When a client requests to lock a session (see LSessionLockManager::lockRequest()), it first creates an LSessionLockRole

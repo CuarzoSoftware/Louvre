@@ -11,6 +11,7 @@
 
 /**
  * @brief Toplevel role for surfaces
+ * @ingroup roles
  *
  * The toplevel surface role represents the thypical desktop windows that usually have a title and buttons to close, minimize and maximize.\n
  *

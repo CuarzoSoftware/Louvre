@@ -4,7 +4,8 @@
 #include <LNamespaces.h>
 
 /**
- *  @brief Base event class.
+ * @brief Base event class.
+ * @ingroup events
  */
 class Louvre::LEvent
 {

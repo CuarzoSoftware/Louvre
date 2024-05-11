@@ -7,6 +7,7 @@
 
 /**
  * @brief Popup role for surfaces
+ * @ingroup roles
  *
  * The LPopupRole class is a role for surfaces commonly used by clients to display context menus and tooltips.\n
  * <center><img src="https://lh3.googleusercontent.com/6caGayutKKWqndpd6ogno2lPw8XGELxnFums4gvkWZKOJYO0762yVG3mHLrc1rw63r1eEJabEdW9F5AA2BDTFCtpB_hiPlTY4FkKlHfH1B-2MdLvXCD6RuwZOZvhOl6EhydtsOYGPw=w2400"></center>

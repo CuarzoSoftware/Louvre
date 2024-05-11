@@ -73,7 +73,7 @@
  */
 namespace Louvre
 {
-    // API Classes
+    /// @defgroup core Core
     class LObject;
     class LFactoryObject;
     class LGlobal;
@@ -94,14 +94,14 @@ namespace Louvre
     class LTexture;
     class LScreenshotRequest;
 
-    // Painter
+    /// @defgroup painter Painter
     class LPainter;
     class LRenderBuffer;
     class LFramebuffer;
     class LOutputFramebuffer;
     class LFramebufferWrapper;
 
-    // Views
+    /// @defgroup scene Scene
     class LScene;
     class LView;
     class LLayerView;
@@ -116,7 +116,7 @@ namespace Louvre
     class LDNDSession;
     class LClipboard;
 
-    // Surface roles
+    /// @defgroup roles Roles
     class LBaseSurfaceRole;
     class LCursorRole;
     class LDNDIconRole;
@@ -125,14 +125,18 @@ namespace Louvre
     class LSubsurfaceRole;
     class LSessionLockRole;
 
-    // Input related
+    /// @defgroup cursor Cursor
+    class LCursor;
+    class LClientCursor;
+    class LXCursor;
+
+    /// @defgroup input Input
     class LSeat;
     class LPointer;
     class LKeyboard;
     class LTouch;
-    class LCursor;
-    class LClientCursor;
-    class LXCursor;
+
+    /// @defgroup events Events
     class LInputDevice;
     class LEvent;
     class LInputEvent;
@@ -183,11 +187,10 @@ namespace Louvre
     class LGammaTable;
     class LWeakUtils;
     template <class T> class LWeak;
-    template <class TA, class TB> class LPointTemplate;
-    template <class TA, class TB> class LRectTemplate;
+    template <class T> class LPointTemplate;
+    template <class T> class LRectTemplate;
     template <class T> class LBitset;
 
-    // Types
     /// @brief 64 bits unsigned integer
     typedef uint64_t        UInt64;
 
@@ -231,22 +234,22 @@ namespace Louvre
     typedef uintptr_t       UIntPtr;
 
     /// 2D vector of 32 bits integers
-    using LPoint = LPointTemplate<Int32,Float32>;
+    using LPoint = LPointTemplate<Int32>;
 
     /// 2D vector of 32 bits integers
     using LSize = LPoint;
 
     /// 2D vector of 32 bits floats
-    using LPointF = LPointTemplate<Float32,Int32>;
+    using LPointF = LPointTemplate<Float32>;
 
     /// 2D vector of 32 bits floats
     using LSizeF = LPointF;
 
     /// 4D vector of 32 bits integers
-    using LRect = LRectTemplate<Int32,Float32>;
+    using LRect = LRectTemplate<Int32>;
 
     /// 4D vector of 32 bits floats
-    using LRectF = LRectTemplate<Float32,Int32>;
+    using LRectF = LRectTemplate<Float32>;
 
     typedef void* EGLContext;
     typedef void* EGLDisplay;

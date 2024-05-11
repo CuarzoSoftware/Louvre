@@ -6,6 +6,7 @@
 
 /**
  * @brief Drag & drop icon role for surfaces
+ * @ingroup roles
  *
  * The LDNDIconRole class is a role for surfaces that allows the compositor to use them as icons for drag & drop sessions.\n
  * Clients create the role through the [start_drag](https://wayland.app/protocols/wayland#wl_data_device:request:start_drag)

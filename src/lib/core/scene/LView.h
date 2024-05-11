@@ -13,6 +13,7 @@
 
 /**
  * @brief Base class for LScene views.
+ * @ingroup scene
  *
  * The LView class provides a base interface for creating views that can be shown in an LScene.\n
  * This class should be used for creating custom views that are different from those shipped with the library.\n

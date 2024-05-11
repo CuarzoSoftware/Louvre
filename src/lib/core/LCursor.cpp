@@ -11,9 +11,7 @@
 #include <LPainter.h>
 #include <LLog.h>
 
-#include <string.h>
 #include <other/cursor.h>
-#include <algorithm>
 
 using namespace Louvre;
 
