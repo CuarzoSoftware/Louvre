@@ -60,14 +60,12 @@ public:
         return m_cancelled;
     }
 
-    /// @cond OMIT
 protected:
     UInt32 m_fingers;
     bool m_cancelled;
 private:
     friend class LInputBackend;
     void notify();
-    /// @endcond
 };
 
 #endif // LPOINTERPINCHENDEVENT_H

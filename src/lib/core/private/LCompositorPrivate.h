@@ -90,8 +90,15 @@ LPRIVATE_CLASS(LCompositor)
     bool loadInputBackend(const std::filesystem::path &path);
 
     void raiseChildren(LSurface *surface);
-    void insertSurfaceAfter(LSurface *prevSurface, LSurface *surfaceToInsert);
-    void insertSurfaceBefore(LSurface *nextSurface, LSurface *surfaceToInsert);
+
+    enum InsertOptions : UInt8
+    {
+        UpdateSurfaces  = static_cast<UInt8>(1) << 0,
+        UpdateLayers    = static_cast<UInt8>(1) << 1
+    };
+
+    void insertSurfaceAfter(LSurface *prevSurface, LSurface *surfaceToInsert, LBitset<InsertOptions> options);
+    void insertSurfaceBefore(LSurface *nextSurface, LSurface *surfaceToInsert, LBitset<InsertOptions> options);
 
     std::list<LSurface*>surfaces;
     std::vector<LClient*>clients;
@@ -131,6 +138,8 @@ LPRIVATE_CLASS(LCompositor)
 
     void initDMAFeedback() noexcept;
     void unitDMAFeedback() noexcept;
+
+    std::list<LSurface*> layers[5];
 };
 
 #endif // LCOMPOSITORPRIVATE_H

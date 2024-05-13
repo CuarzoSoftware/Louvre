@@ -27,7 +27,7 @@ void LSurface::LSurfacePrivate::setParent(LSurface *parent)
     if (parent == this->parent)
         return;
 
-    LSurface *surface = surfaceResource->surface();
+    LSurface *surface { surfaceResource->surface() };
 
     if (parent == nullptr)
     {
@@ -37,10 +37,15 @@ void LSurface::LSurfacePrivate::setParent(LSurface *parent)
 
     this->parent = parent;
 
+    if (parent->layer() != surface->layer())
+        setLayer(parent->layer());
+
+    using OP = LCompositor::LCompositorPrivate::InsertOptions;
+
     if (parent->children().empty())
-        compositor()->imp()->insertSurfaceAfter(parent, surface);
+        compositor()->imp()->insertSurfaceAfter(parent, surface, OP::UpdateSurfaces | OP::UpdateLayers);
     else
-        compositor()->imp()->insertSurfaceAfter(parent->children().back(), surface);
+        compositor()->imp()->insertSurfaceAfter(parent->children().back(), surface, OP::UpdateSurfaces | OP::UpdateLayers);
 
     parent->imp()->children.push_back(surface);
     surface->imp()->parentLink = std::prev(parent->imp()->children.end());
@@ -65,7 +70,7 @@ void LSurface::LSurfacePrivate::setMapped(bool state)
     if (stateFlags.check(Destroyed))
         return;
 
-    LSurface *surface = surfaceResource->surface();
+    LSurface *surface { surfaceResource->surface() };
 
     if (stateFlags.check(Mapped) != state)
     {
@@ -77,7 +82,7 @@ void LSurface::LSurfacePrivate::setMapped(bool state)
          * when handleParentMappingChange() is called */
 
         // TODO: improve this
-        std::list<LSurface*> childrenTmp = children;
+        std::list<LSurface*> childrenTmp { children };
 
         for (LSurface *c : childrenTmp)
         {
@@ -104,6 +109,8 @@ void LSurface::LSurfacePrivate::applyPendingRole()
 
 void LSurface::LSurfacePrivate::applyPendingChildren()
 {
+    using OP = LCompositor::LCompositorPrivate::InsertOptions;
+
     if (pendingChildren.empty())
         return;
 
@@ -111,7 +118,7 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
 
     while (!pendingChildren.empty())
     {
-        LSurface *child = pendingChildren.front();
+        LSurface *child { pendingChildren.front() };
         pendingChildren.pop_front();
 
         if (child->imp()->pendingParent != surface)
@@ -121,10 +128,13 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
         if (child->imp()->parent)
             child->imp()->parent->imp()->children.erase(child->imp()->parentLink);
 
+        if (child->layer() != surface->layer())
+            child->imp()->setLayer(surface->layer());
+
         if (surface->children().empty())
-            compositor()->imp()->insertSurfaceAfter(surface, child);
+            compositor()->imp()->insertSurfaceAfter(surface, child, OP::UpdateSurfaces | OP::UpdateLayers);
         else
-            compositor()->imp()->insertSurfaceAfter(surface->children().back(), child);
+            compositor()->imp()->insertSurfaceAfter(surface->children().back(), child, OP::UpdateSurfaces | OP::UpdateLayers);
 
         children.push_back(child);
         child->imp()->pendingParent = nullptr;
@@ -767,4 +777,48 @@ void LSurface::LSurfacePrivate::simplifyDamage(std::vector<LRect> &vec) noexcept
 
         vec.emplace_back(extents.x1, extents.y1, extents.x2 - extents.x1, extents.y2 - extents.y1);
     }
+}
+
+void LSurface::LSurfacePrivate::setLayer(LSurfaceLayer newLayer)
+{
+    const bool layerChanged { layer != newLayer };
+
+    compositor()->imp()->layers[layer].erase(layerLink);
+    layer = newLayer;
+    compositor()->imp()->layers[layer].emplace_back(surfaceResource->surface());
+    layerLink = std::prev(compositor()->imp()->layers[layer].end());
+    LSurface *prev { prevSurfaceInLayers() };
+
+    if (prev)
+        compositor()->imp()->insertSurfaceAfter(prev, surfaceResource->surface(), LCompositor::LCompositorPrivate::UpdateSurfaces);
+
+    if (layerChanged)
+        surfaceResource->surface()->layerChanged();
+
+    for (LSurface *child : pendingChildren)
+        child->imp()->setLayer(layer);
+
+    for (LSurface *child : children)
+        child->imp()->setLayer(layer);
+}
+
+LSurface *LSurface::LSurfacePrivate::prevSurfaceInLayers() noexcept
+{
+    if (surfaceResource->surface() != compositor()->layer(layer).front())
+        return *std::prev(layerLink);
+
+    Int32 prevlayer { layer - 1 };
+
+    while (prevlayer >= 0)
+    {
+        if (compositor()->layer((LSurfaceLayer)prevlayer).empty())
+        {
+            prevlayer--;
+            continue;
+        }
+
+        return compositor()->layer((LSurfaceLayer)prevlayer).back();
+    }
+
+    return nullptr;
 }

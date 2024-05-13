@@ -5,7 +5,6 @@
 
 /**
  * @brief View for displaying surfaces.
- * @ingroup scene
  *
  * The LSurfaceView class can be used to display client surfaces on a scene.
  * By default, it inherits the damage, input, translucent, and opaque regions, as well as the surface position

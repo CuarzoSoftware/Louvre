@@ -71,6 +71,7 @@ void RPointer::set_cursor(wl_client */*client*/, wl_resource *resource, UInt32 s
         cursorRole->imp()->currentHotspot.setX(hotspot_x);
         cursorRole->imp()->currentHotspot.setY(hotspot_y);
         cursorRole->imp()->currentHotspotB = cursorRole->imp()->currentHotspot * surface.bufferScale();
+        surface.imp()->setLayer(LLayerOverlay);
         surface.imp()->setPendingRole(cursorRole);
         surface.imp()->applyPendingRole();
 

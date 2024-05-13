@@ -4,8 +4,7 @@
 #include <LNamespaces.h>
 
 /**
- * @brief Base event class.
- * @ingroup events
+ * @brief Base class for events.
  */
 class Louvre::LEvent
 {
@@ -126,7 +125,13 @@ public:
     LEvent *copy() const noexcept;
 
 protected:
-    LEvent(Type type, Subtype subtype, UInt32 serial, UInt32 ms, UInt64 us) noexcept;
+    LEvent(Type type, Subtype subtype, UInt32 serial, UInt32 ms, UInt64 us) noexcept :
+        m_type(type),
+        m_subtype(subtype),
+        m_serial(serial),
+        m_ms(ms),
+        m_us(us)
+    {}
     Type m_type;
     Subtype m_subtype;
     UInt32 m_serial;

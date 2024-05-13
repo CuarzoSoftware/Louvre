@@ -1,4 +1,4 @@
-# 💬 Contact
+# 💬 Contact {#ContactPage}
 
 ### Bugs
 

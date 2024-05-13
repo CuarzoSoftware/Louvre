@@ -40,13 +40,11 @@ public:
         return m_id;
     }
 
-    /// @cond OMIT
 protected:
     Int32 m_id;
 private:
     friend class LInputBackend;
     void notify();
-    /// @endcond
 };
 
 #endif // LTOUCHUPEVENT_H

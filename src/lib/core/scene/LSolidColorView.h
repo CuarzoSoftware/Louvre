@@ -5,7 +5,6 @@
 
 /**
  * @brief View for displaying solid color rects.
- * @ingroup scene
  *
  * This class provides functionality to display solid color rectangles within a scene.
  */

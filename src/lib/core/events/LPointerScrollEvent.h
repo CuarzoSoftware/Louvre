@@ -153,7 +153,6 @@ public:
         return m_source;
     }
 
-    /// @cond OMIT
 protected:
     LPointF m_axes;
     LPointF m_axes120;
@@ -161,7 +160,6 @@ protected:
 private:
     friend class LInputBackend;
     void notify();
-    /// @endcond
 };
 
 #endif // LPOINTERAXISEVENT_H

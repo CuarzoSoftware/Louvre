@@ -5,19 +5,13 @@
 
 /**
  * @brief Container of views
- * @ingroup scene
  *
- * The LLayerView is a non-renderable LView. Unlike other views, it doesn't have content to render on its own.
+ * The LLayerView is a non-renderable LView. Unlike other views, it doesn't have content to render on its own.\n
  * Instead, it functions as a container for other views, allowing you to stack a group of views together or apply clipping to them.
  */
 class Louvre::LLayerView : public LView
 {
 public:
-
-    /// @cond OMIT
-    LLayerView(const LLayerView&) = delete;
-    LLayerView& operator= (const LLayerView&) = delete;
-    /// @endcond
 
     /**
      * @brief Constructor for LLayerView.
@@ -26,13 +20,15 @@ public:
      */
     LLayerView(LView *parent = nullptr) noexcept : LView(LView::Layer, false, parent) {}
 
+    LCLASS_NO_COPY(LLayerView)
+
     /**
      * @brief Destructor for LLayerView.
      */
     ~LLayerView() noexcept = default;
 
     /**
-     * @brief Set the position of the view.
+     * @brief Sets the position of the view.
      *
      * @param x The x-coordinate in surface coordinates.
      * @param y The y-coordinate in surface coordinates.
@@ -50,9 +46,9 @@ public:
     }
 
     /**
-     * @brief Set the position of the view.
+     * @brief Sets the position of the view.
      *
-     * @param pos The position as an LPoint in surface coordinates.
+     * @param pos The position in surface coordinates.
      */
     void setPos(const LPoint &pos) noexcept
     {
@@ -60,9 +56,9 @@ public:
     }
 
     /**
-     * @brief Set the size of the view.
+     * @brief Sets the size of the view.
      *
-     * @param size The size as an LSize in surface coordinates.
+     * @param size The size in surface coordinates.
      */
     void setSize(const LSize &size) noexcept
     {
@@ -70,27 +66,27 @@ public:
     }
 
     /**
-     * @brief Set the size of the view.
+     * @brief Sets the size of the view.
      *
-     * @param w The width in surface coordinates.
-     * @param h The height in surface coordinates.
+     * @param width The width in surface coordinates.
+     * @param height The height in surface coordinates.
      */
-    void setSize(Int32 w, Int32 h) noexcept
+    void setSize(Int32 width, Int32 height) noexcept
     {
-        if (w == m_nativeSize.w() && h == m_nativeSize.h())
+        if (width == m_nativeSize.w() && height == m_nativeSize.h())
             return;
 
-        m_nativeSize.setW(w);
-        m_nativeSize.setH(h);
+        m_nativeSize.setW(width);
+        m_nativeSize.setH(height);
 
         if (!repaintCalled() && mapped())
             repaint();
     }
 
     /**
-     * @brief Set the input region for the view.
+     * @brief Sets the input region of the view.
      *
-     * @param region The input region to be set.
+     * @param region The input region to be set or `nullptr`.
      */
     void setInputRegion(const LRegion *region) noexcept
     {

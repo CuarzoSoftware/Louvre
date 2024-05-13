@@ -145,6 +145,7 @@ void RDataDevice::start_drag(wl_client */*client*/,
 
         LDNDIconRole::Params dndIconRoleParams;
         dndIconRoleParams.surface = iconSurface;
+        iconSurface->imp()->setLayer(LLayerOverlay);
         iconSurface->imp()->setPendingRole(LFactory::createObject<LDNDIconRole>(&dndIconRoleParams));
         iconSurface->imp()->applyPendingRole();
         iconSurface->imp()->stateFlags.add(LSurface::LSurfacePrivate::Mapped);

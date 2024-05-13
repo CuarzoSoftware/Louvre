@@ -1,4 +1,4 @@
-# 🏠 Home
+# 🏠 Home {#MainPage}
 
 Louvre is a high-performance C++ library designed for building Wayland compositors with a strong emphasis on ease of development.
 

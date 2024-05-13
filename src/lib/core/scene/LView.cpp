@@ -72,16 +72,6 @@ void LView::enableTouchEvents(bool enabled) noexcept
     }
 }
 
-LSceneTouchPoint *LView::findTouchPoint(Int32 id) const noexcept
-{
-    if (scene())
-        for (auto *tp : scene()->touchPoints())
-            if (tp->id() == id)
-                return tp;
-
-    return nullptr;
-}
-
 void LView::enablePointerEvents(bool enabled) noexcept
 {
     if (enabled == pointerEventsEnabled())

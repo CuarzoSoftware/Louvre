@@ -574,12 +574,10 @@ void ToplevelView::updateGeometry()
             buttonsContainer.enableBlockPointer(true);
         }
 
-        const Int32 clip { 1 };
-        const LSize tlSize { toplevel->windowGeometry().size().w() - 2 * clip, toplevel->windowGeometry().size().h() - 2 * clip };
+        const Int32 clip { 0 };
+        const LSize tlSize { toplevel->windowGeometry().size().w(), toplevel->windowGeometry().size().h() };
 
-        setSize(
-            tlSize.w() < 150 ? 149 : tlSize.w(),
-            tlSize.h() < 150 ? 149 : tlSize.h());
+        setSize(tlSize);
 
         const LSize size { nativeSize() };
 

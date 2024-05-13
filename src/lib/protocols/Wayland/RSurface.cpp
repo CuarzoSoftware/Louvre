@@ -60,9 +60,28 @@ RSurface::RSurface
     params.surfaceResource = this;
     m_surface.reset(LFactory::createObject<LSurface>(&params));
 
-    // Append surface
-    compositor()->imp()->surfaces.emplace_back(surface());
-    surface()->imp()->compositorLink = std::prev(compositor()->imp()->surfaces.end());
+    // Add to middle layer by default
+    compositor()->imp()->layers[LLayerMiddle].emplace_back(surface());
+    surface()->imp()->layerLink = std::prev(compositor()->imp()->layers[LLayerMiddle].end());
+
+    LSurface *prev { surface()->imp()->prevSurfaceInLayers() };
+
+    if (prev)
+    {
+        if (prev->nextSurface())
+            surface()->imp()->compositorLink = compositor()->imp()->surfaces.insert(prev->nextSurface()->imp()->compositorLink, surface());
+        else
+        {
+            compositor()->imp()->surfaces.emplace_back(surface());
+            surface()->imp()->compositorLink = std::prev(compositor()->imp()->surfaces.end());
+        }
+    }
+    else
+    {
+        compositor()->imp()->surfaces.emplace_front(surface());
+        surface()->imp()->compositorLink = compositor()->imp()->surfaces.begin();
+    }
+
     compositor()->imp()->surfacesListChanged = true;
 }
 
@@ -88,16 +107,13 @@ RSurface::~RSurface()
 
     if (lSurface->dndIcon())
     {
-        LDNDIconRole *ldndIcon = lSurface->dndIcon();
-        compositor()->onAnticipatedObjectDestruction(ldndIcon);
-        delete ldndIcon;
+        compositor()->onAnticipatedObjectDestruction(lSurface->dndIcon());
+        delete lSurface->dndIcon();
     }
-
-    if (lSurface->cursorRole())
+    else if (lSurface->cursorRole())
     {
-        LCursorRole *lCursor = lSurface->cursorRole();
-        compositor()->onAnticipatedObjectDestruction(lCursor);
-        delete lCursor;
+        compositor()->onAnticipatedObjectDestruction(lSurface->cursorRole());
+        delete lSurface->cursorRole();
     }
 
     while(!lSurface->children().empty())
@@ -114,6 +130,7 @@ RSurface::~RSurface()
 
     // Remove the surface from the compositor list
     compositor()->imp()->surfaces.erase(lSurface->imp()->compositorLink);
+    compositor()->imp()->layers[lSurface->imp()->layer].erase(lSurface->imp()->layerLink);
 
     compositor()->imp()->surfacesListChanged = true;
     lSurface->imp()->stateFlags.add(LSurface::LSurfacePrivate::Destroyed);

@@ -10,7 +10,6 @@
 
 /**
  * @brief View for rendering other views
- * @ingroup scene
  *
  * An LSceneView is a unique type of view. Instead of rendering its content directly into an LOutput,
  * it possesses its own framebuffer. This capability allows for advanced blending effects, such as applying masks (check LView::setBlendFunc()).
@@ -34,17 +33,14 @@ public:
      * @param bufferScale The scale factor applied to the framebuffer.
      * @param parent The parent view that will contain this scene view.
      */
-    inline LSceneView(const LSize &sizeB, Float32 bufferScale, LView *parent = nullptr) noexcept :
+    LSceneView(const LSize &sizeB, Float32 bufferScale, LView *parent = nullptr) noexcept :
         LView(LView::Scene, true, parent),
         m_fb(new LRenderBuffer(sizeB))
     {
         static_cast<LRenderBuffer*>(m_fb)->setScale(bufferScale);
     }
 
-    /// @cond OMIT
-    LSceneView(const LSceneView&) = delete;
-    LSceneView& operator= (const LSceneView&) = delete;
-    /// @endcond
+    LCLASS_NO_COPY(LSceneView)
 
     /**
      * @brief Destructor for the LSceneView.
@@ -56,7 +52,7 @@ public:
      *
      * @return The clear color in RGBA format.
      */
-    inline const LRGBAF &clearColor() const noexcept
+    const LRGBAF &clearColor() const noexcept
     {
         return m_clearColor;
     }
@@ -66,7 +62,7 @@ public:
      *
      * @param color The clear color in LRGBAF format.
      */
-    inline void setClearColor(const LRGBAF &color) noexcept
+    void setClearColor(const LRGBAF &color) noexcept
     {
         if (m_clearColor.r == color.r &&
             m_clearColor.g == color.g &&
@@ -85,7 +81,7 @@ public:
      *
      * @param output The output for which to apply damage.
      */
-    inline void damageAll(LOutput *output) noexcept
+    void damageAll(LOutput *output) noexcept
     {
         if (!output)
             return;
@@ -107,7 +103,7 @@ public:
      * @param output The output for which to add damage areas.
      * @param damage The damaged regions to be added.
      */
-    inline void addDamage(LOutput *output, const LRegion &damage) noexcept
+    void addDamage(LOutput *output, const LRegion &damage) noexcept
     {
         if (!output)
             return;
@@ -142,7 +138,7 @@ public:
      * @param index The index of the texture to retrieve (default is 0).
      * @return A pointer to the texture associated with the view.
      */
-    inline LTexture *texture(Int32 index = 0) const noexcept
+    LTexture *texture(Int32 index = 0) const noexcept
     {
         return (LTexture*)m_fb->texture(index);
     }
@@ -152,7 +148,7 @@ public:
      *
      * @param pos The new position of the scene.
      */
-    inline void setPos(const LPoint &pos) noexcept
+    void setPos(const LPoint &pos) noexcept
     {
         setPos(pos.x(), pos.y());
     }
@@ -163,7 +159,7 @@ public:
      * @param x The X-coordinate of the new position.
      * @param y The Y-coordinate of the new position.
      */
-    inline void setPos(Int32 x, Int32 y) noexcept
+    void setPos(Int32 x, Int32 y) noexcept
     {
         if (x != m_customPos.x() || y != m_customPos.y())
         {
@@ -187,7 +183,7 @@ public:
      *
      * @param size The new size of the framebuffer.
      */
-    inline void setSizeB(const LSize &size) noexcept
+    void setSizeB(const LSize &size) noexcept
     {
         if (!isLScene() && size != m_fb->sizeB())
         {
@@ -204,7 +200,7 @@ public:
      *
      * @param scale The new scale factor to be applied.
      */
-    inline void setScale(Float32 scale) noexcept
+    void setScale(Float32 scale) noexcept
     {
         if (!isLScene() && bufferScale() != scale)
         {
@@ -229,7 +225,6 @@ public:
     virtual const LRegion *inputRegion() const noexcept override;
     virtual void paintEvent(const PaintEventParams &params) noexcept override;
 
-/// @cond OMIT
 protected:
     class ThreadData : public LObject
     {
@@ -260,7 +255,7 @@ protected:
 private:
     friend class LScene;
     friend class LView;
-    inline LSceneView(LFramebuffer *framebuffer = nullptr, LView *parent = nullptr) noexcept :
+    LSceneView(LFramebuffer *framebuffer = nullptr, LView *parent = nullptr) noexcept :
         LView(LView::Scene, true, parent),
         m_fb(framebuffer)
     {}
@@ -269,7 +264,7 @@ private:
     void drawOpaqueDamage(LView *view) noexcept;
     void drawTranslucentDamage(LView *view) noexcept;
 
-    inline void parentClipping(LView *parent, LRegion *region) noexcept
+    void parentClipping(LView *parent, LRegion *region) noexcept
     {
         if (!parent)
             return;
@@ -280,7 +275,7 @@ private:
             parentClipping(parent->parent(), region);
     }
 
-    inline void drawBackground(bool addToOpaqueSum) noexcept
+    void drawBackground(bool addToOpaqueSum) noexcept
     {
         auto &ctd {* m_currentThreadData.get() };
         LRegion backgroundDamage;
@@ -298,19 +293,19 @@ private:
             ctd.opaqueSum.addRegion(backgroundDamage);
     }
 
-    inline void clearTmpVariables(ThreadData &ctd) noexcept
+    void clearTmpVariables(ThreadData &ctd) noexcept
     {
         ctd.newDamage.clear();
         ctd.opaqueSum.clear();
     }
 
-    inline void damageAll(ThreadData &ctd) noexcept
+    void damageAll(ThreadData &ctd) noexcept
     {
         ctd.newDamage.clear();
         ctd.newDamage.addRect(m_fb->rect());
     }
 
-    inline void checkRectChange(ThreadData &ctd) noexcept
+    void checkRectChange(ThreadData &ctd) noexcept
     {
         bool needsDamage { false };
 
@@ -334,8 +329,6 @@ private:
         if (needsDamage)
             damageAll(ctd);
     }
-
-/// @endcond
 };
 
 #endif // LSCENEVIEW_H

@@ -64,9 +64,7 @@ public:
     }
 
 protected:
-    /// @cond OMIT
     Modifiers m_modifiers;
-    /// @endcond
 };
 
 #endif // LKEYBOARDMODIFIERSEVENT_H

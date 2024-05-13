@@ -588,34 +588,57 @@ bool LCompositor::LCompositorPrivate::loadInputBackend(const std::filesystem::pa
     return true;
 }
 
-void LCompositor::LCompositorPrivate::insertSurfaceAfter(LSurface *prevSurface, LSurface *surfaceToInsert)
+void LCompositor::LCompositorPrivate::insertSurfaceAfter(LSurface *prevSurface, LSurface *surfaceToInsert, LBitset<InsertOptions> options)
 {
-    if (surfaceToInsert->prevSurface() == prevSurface)
-        return;
-
-    surfaces.erase(surfaceToInsert->imp()->compositorLink);
-
-    if (prevSurface == surfaces.back())
+    if (options.check(UpdateLayers))
     {
-        surfaces.push_back(surfaceToInsert);
-        surfaceToInsert->imp()->compositorLink = std::prev(surfaces.end());
-    }
-    else
-        surfaceToInsert->imp()->compositorLink = surfaces.insert(std::next(prevSurface->imp()->compositorLink), surfaceToInsert);
+        assert(prevSurface->layer() == surfaceToInsert->layer() && "Surfaces do not belong to the same layer.");
+        auto &layer { layers[prevSurface->layer()] };
+        layer.erase(surfaceToInsert->imp()->layerLink);
 
-    surfacesListChanged = true;
-    surfaceToInsert->orderChanged();
+        if (prevSurface == layer.back())
+        {
+            layer.emplace_back(surfaceToInsert);
+            surfaceToInsert->imp()->layerLink = std::prev(layer.end());
+        }
+        else
+            surfaceToInsert->imp()->layerLink = layer.insert(std::next(prevSurface->imp()->layerLink), surfaceToInsert);
+    }
+
+    if (options.check(UpdateSurfaces) && surfaceToInsert->prevSurface() != prevSurface)
+    {
+        surfaces.erase(surfaceToInsert->imp()->compositorLink);
+
+        if (prevSurface == surfaces.back())
+        {
+            surfaces.push_back(surfaceToInsert);
+            surfaceToInsert->imp()->compositorLink = std::prev(surfaces.end());
+        }
+        else
+            surfaceToInsert->imp()->compositorLink = surfaces.insert(std::next(prevSurface->imp()->compositorLink), surfaceToInsert);
+
+        surfacesListChanged = true;
+        surfaceToInsert->orderChanged();
+    }
 }
 
-void LCompositor::LCompositorPrivate::insertSurfaceBefore(LSurface *nextSurface, LSurface *surfaceToInsert)
+void LCompositor::LCompositorPrivate::insertSurfaceBefore(LSurface *nextSurface, LSurface *surfaceToInsert, LBitset<InsertOptions> options)
 {
-    if (surfaceToInsert->nextSurface() == nextSurface)
-        return;
+    if (options.check(UpdateLayers))
+    {
+        assert(nextSurface->layer() == surfaceToInsert->layer() && "Surfaces do not belong to the same layer.");
+        auto &layer { layers[nextSurface->layer()] };
+        layer.erase(surfaceToInsert->imp()->layerLink);
+        surfaceToInsert->imp()->layerLink = layer.insert(nextSurface->imp()->layerLink, surfaceToInsert);
+    }
 
-    surfaces.erase(surfaceToInsert->imp()->compositorLink);
-    surfaceToInsert->imp()->compositorLink = surfaces.insert(nextSurface->imp()->compositorLink, surfaceToInsert);
-    surfacesListChanged = true;
-    surfaceToInsert->orderChanged();
+    if (options.check(UpdateSurfaces) && surfaceToInsert->nextSurface() != nextSurface)
+    {
+        surfaces.erase(surfaceToInsert->imp()->compositorLink);
+        surfaceToInsert->imp()->compositorLink = surfaces.insert(nextSurface->imp()->compositorLink, surfaceToInsert);
+        surfacesListChanged = true;
+        surfaceToInsert->orderChanged();
+    }
 }
 
 bool LCompositor::LCompositorPrivate::runningAnimations()

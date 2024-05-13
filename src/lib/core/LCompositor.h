@@ -453,6 +453,9 @@ public:
      */
     const std::list<LSurface*> &surfaces() const;
 
+    // Todo
+    const std::list<LSurface*> &layer(LSurfaceLayer layer) const noexcept;
+
     /**
      * @brief Get a list of all initialized outputs.
      *

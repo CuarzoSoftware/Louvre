@@ -97,14 +97,12 @@ public:
      */
     mutable LPointF localPos;
 
-    /// @cond OMIT
 protected:
     LPointF m_delta;
     LPointF m_deltaUnaccelerated;
 private:
     friend class LInputBackend;
     void notify();
-    /// @endcond
 };
 
 #endif // LPOINTERMOVEEVENT_H

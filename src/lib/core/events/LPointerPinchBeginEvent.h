@@ -42,13 +42,11 @@ public:
         return m_fingers;
     }
 
-    /// @cond OMIT
 protected:
     UInt32 m_fingers;
 private:
     friend class LInputBackend;
     void notify();
-    /// @endcond
 };
 
 #endif // LPOINTERPINCHBEGINEVENT_H

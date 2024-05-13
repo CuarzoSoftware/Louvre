@@ -534,6 +534,11 @@ const std::list<LSurface *> &LCompositor::surfaces() const
     return imp()->surfaces;
 }
 
+const std::list<LSurface *> &LCompositor::layer(LSurfaceLayer layer) const noexcept
+{
+    return imp()->layers[layer];
+}
+
 const std::vector<LOutput *> &LCompositor::outputs() const
 {
     return imp()->outputs;

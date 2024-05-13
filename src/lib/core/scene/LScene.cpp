@@ -110,7 +110,7 @@ void LScene::handleUninitializeGL(LOutput *output)
     imp()->mutex.unlock();
 }
 
-void LScene::handlePointerMoveEvent(const LPointerMoveEvent &event, EventOptionsFlags options)
+void LScene::handlePointerMoveEvent(const LPointerMoveEvent &event, LBitset<EventOptions> options)
 {
     // Prevent recursive calls
     if (imp()->state.check(LSS::HandlingPointerMoveEvent))
@@ -314,7 +314,7 @@ void LScene::handlePointerMoveEvent(const LPointerMoveEvent &event, EventOptions
     }
 }
 
-void LScene::handlePointerButtonEvent(const LPointerButtonEvent &event, EventOptionsFlags options)
+void LScene::handlePointerButtonEvent(const LPointerButtonEvent &event, LBitset<EventOptions> options)
 {
     // Prevent recursive calls
     if (imp()->state.check(LSS::HandlingPointerButtonEvent))
@@ -462,7 +462,7 @@ retry:
     }
 }
 
-void LScene::handlePointerScrollEvent(const LPointerScrollEvent &event, EventOptionsFlags options)
+void LScene::handlePointerScrollEvent(const LPointerScrollEvent &event, LBitset<EventOptions> options)
 {
     auto &&handlingEventFlag { LSS::HandlingPointerScrollEvent };
 
@@ -499,7 +499,7 @@ retry:
     seat()->pointer()->sendScrollEvent(event);
 }
 
-void LScene::handlePointerSwipeBeginEvent(const LPointerSwipeBeginEvent &event, EventOptionsFlags options)
+void LScene::handlePointerSwipeBeginEvent(const LPointerSwipeBeginEvent &event, LBitset<EventOptions> options)
 {
     auto &&handlingEventFlag { LSS::HandlingPointerSwipeBeginEvent };
 
@@ -543,7 +543,7 @@ retry:
     seat()->pointer()->sendSwipeBeginEvent(event);
 }
 
-void LScene::handlePointerSwipeUpdateEvent(const LPointerSwipeUpdateEvent &event, EventOptionsFlags options)
+void LScene::handlePointerSwipeUpdateEvent(const LPointerSwipeUpdateEvent &event, LBitset<EventOptions> options)
 {
     auto &&handlingEventFlag { LSS::HandlingPointerSwipeUpdateEvent };
 
@@ -582,7 +582,7 @@ retry:
     seat()->pointer()->sendSwipeUpdateEvent(event);
 }
 
-void LScene::handlePointerSwipeEndEvent(const LPointerSwipeEndEvent &event, EventOptionsFlags options)
+void LScene::handlePointerSwipeEndEvent(const LPointerSwipeEndEvent &event, LBitset<EventOptions> options)
 {
     auto &&handlingEventFlag { LSS::HandlingPointerSwipeEndEvent };
 
@@ -624,7 +624,7 @@ retry:
     seat()->pointer()->sendSwipeEndEvent(event);
 }
 
-void LScene::handlePointerPinchBeginEvent(const LPointerPinchBeginEvent &event, EventOptionsFlags options)
+void LScene::handlePointerPinchBeginEvent(const LPointerPinchBeginEvent &event, LBitset<EventOptions> options)
 {
     auto &&handlingEventFlag { LSS::HandlingPointerPinchBeginEvent };
 
@@ -668,7 +668,7 @@ retry:
     seat()->pointer()->sendPinchBeginEvent(event);
 }
 
-void LScene::handlePointerPinchUpdateEvent(const LPointerPinchUpdateEvent &event, EventOptionsFlags options)
+void LScene::handlePointerPinchUpdateEvent(const LPointerPinchUpdateEvent &event, LBitset<EventOptions> options)
 {
     auto &&handlingEventFlag { LSS::HandlingPointerPinchUpdateEvent };
 
@@ -707,7 +707,7 @@ retry:
     seat()->pointer()->sendPinchUpdateEvent(event);
 }
 
-void LScene::handlePointerPinchEndEvent(const LPointerPinchEndEvent &event, EventOptionsFlags options)
+void LScene::handlePointerPinchEndEvent(const LPointerPinchEndEvent &event, LBitset<EventOptions> options)
 {
     auto &&handlingEventFlag { LSS::HandlingPointerPinchEndEvent };
 
@@ -749,7 +749,7 @@ retry:
     seat()->pointer()->sendPinchEndEvent(event);
 }
 
-void LScene::handlePointerHoldBeginEvent(const LPointerHoldBeginEvent &event, EventOptionsFlags options)
+void LScene::handlePointerHoldBeginEvent(const LPointerHoldBeginEvent &event, LBitset<EventOptions> options)
 {
     auto &&handlingEventFlag { LSS::HandlingPointerHoldBeginEvent };
 
@@ -793,7 +793,7 @@ retry:
     seat()->pointer()->sendHoldBeginEvent(event);
 }
 
-void LScene::handlePointerHoldEndEvent(const LPointerHoldEndEvent &event, EventOptionsFlags options)
+void LScene::handlePointerHoldEndEvent(const LPointerHoldEndEvent &event, LBitset<EventOptions> options)
 {
     auto &&handlingEventFlag { LSS::HandlingPointerHoldEndEvent };
 
@@ -835,7 +835,7 @@ retry:
     seat()->pointer()->sendHoldEndEvent(event);
 }
 
-void LScene::handleKeyboardKeyEvent(const LKeyboardKeyEvent &event, EventOptionsFlags options)
+void LScene::handleKeyboardKeyEvent(const LKeyboardKeyEvent &event, LBitset<EventOptions> options)
 {
     auto &&handlingEventFlag { LSS::HandlingKeyboardKeyEvent };
 
@@ -945,7 +945,7 @@ retry:
     }
 }
 
-void LScene::handleTouchDownEvent(const LTouchDownEvent &event, const LPointF &globalPos, EventOptionsFlags options)
+void LScene::handleTouchDownEvent(const LTouchDownEvent &event, const LPointF &globalPos, LBitset<EventOptions> options)
 {
     auto &&handlingEventFlag { LSS::HandlingTouchEvent };
 
@@ -1017,7 +1017,7 @@ void LScene::handleTouchDownEvent(const LTouchDownEvent &event, const LPointF &g
     imp()->state.remove(handlingEventFlag);
 }
 
-void LScene::handleTouchMoveEvent(const LTouchMoveEvent &event, const LPointF &globalPos, EventOptionsFlags options)
+void LScene::handleTouchMoveEvent(const LTouchMoveEvent &event, const LPointF &globalPos, LBitset<EventOptions> options)
 {
     auto &&handlingEventFlag { LSS::HandlingTouchEvent };
 
@@ -1167,7 +1167,7 @@ skipViews:
     imp()->state.remove(handlingEventFlag);
 }
 
-void LScene::handleTouchUpEvent(const LTouchUpEvent &event, EventOptionsFlags options)
+void LScene::handleTouchUpEvent(const LTouchUpEvent &event, LBitset<EventOptions> options)
 {
     auto &&handlingEventFlag { LSS::HandlingTouchEvent };
 
@@ -1266,7 +1266,7 @@ skipViews:
     imp()->state.remove(handlingEventFlag);
 }
 
-void LScene::handleTouchFrameEvent(const LTouchFrameEvent &event, EventOptionsFlags options)
+void LScene::handleTouchFrameEvent(const LTouchFrameEvent &event, LBitset<EventOptions> options)
 {
     auto &&handlingEventFlag { LSS::HandlingTouchEvent };
 
@@ -1317,7 +1317,7 @@ retry:
     imp()->state.remove(handlingEventFlag);
 }
 
-void LScene::handleTouchCancelEvent(const LTouchCancelEvent &event, EventOptionsFlags options)
+void LScene::handleTouchCancelEvent(const LTouchCancelEvent &event, LBitset<EventOptions> options)
 {
     auto &&handlingEventFlag { LSS::HandlingTouchEvent };
 

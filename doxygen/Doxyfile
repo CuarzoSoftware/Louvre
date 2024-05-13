@@ -171,7 +171,7 @@ ALWAYS_DETAILED_SEC    = YES
 # operators of the base classes will not be shown.
 # The default value is: NO.
 
-INLINE_INHERITED_MEMB  = YES
+INLINE_INHERITED_MEMB  = NO
 
 # If the FULL_PATH_NAMES tag is set to YES, doxygen will prepend the full path
 # before files name in the file list and in the header files. If set to NO the
@@ -420,7 +420,7 @@ SIP_SUPPORT            = NO
 # should set this option to NO.
 # The default value is: YES.
 
-IDL_PROPERTY_SUPPORT   = YES
+IDL_PROPERTY_SUPPORT   = NO
 
 # If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC
 # tag is set to YES then doxygen will reuse the documentation of the first
@@ -428,7 +428,7 @@ IDL_PROPERTY_SUPPORT   = YES
 # all members of a group must be documented explicitly.
 # The default value is: NO.
 
-DISTRIBUTE_GROUP_DOC   = YES
+DISTRIBUTE_GROUP_DOC   = NO
 
 # If one adds a struct or class to a group and this option is enabled, then also
 # any nested class or struct is added to the same group. By default this option
@@ -444,7 +444,7 @@ GROUP_NESTED_COMPOUNDS = NO
 # \nosubgrouping command.
 # The default value is: YES.
 
-SUBGROUPING            = YES
+SUBGROUPING            = NO
 
 # When the INLINE_GROUPED_CLASSES tag is set to YES, classes, structs and unions
 # are shown inside the group in which they are included (e.g. using \ingroup)
@@ -455,7 +455,7 @@ SUBGROUPING            = YES
 # SEPARATE_MEMBER_PAGES.
 # The default value is: NO.
 
-INLINE_GROUPED_CLASSES = YES
+INLINE_GROUPED_CLASSES = NO
 
 # When the INLINE_SIMPLE_STRUCTS tag is set to YES, structs, classes, and unions
 # with only public data fields or simple typedef fields will be shown inline in
@@ -542,13 +542,13 @@ EXTRACT_PRIV_VIRTUAL   = NO
 # scope will be included in the documentation.
 # The default value is: NO.
 
-EXTRACT_PACKAGE        = YES
+EXTRACT_PACKAGE        = NO
 
 # If the EXTRACT_STATIC tag is set to YES, all static members of a file will be
 # included in the documentation.
 # The default value is: NO.
 
-EXTRACT_STATIC         = YES
+EXTRACT_STATIC         = NO
 
 # If the EXTRACT_LOCAL_CLASSES tag is set to YES, classes (and structs) defined
 # locally in source files will be included in the documentation. If set to NO,
@@ -564,7 +564,7 @@ EXTRACT_LOCAL_CLASSES  = YES
 # included.
 # The default value is: NO.
 
-EXTRACT_LOCAL_METHODS  = YES
+EXTRACT_LOCAL_METHODS  = NO
 
 # If this flag is set to YES, the members of anonymous namespaces will be
 # extracted and appear in the documentation as a namespace called
@@ -573,7 +573,7 @@ EXTRACT_LOCAL_METHODS  = YES
 # are hidden.
 # The default value is: NO.
 
-EXTRACT_ANON_NSPACES   = YES
+EXTRACT_ANON_NSPACES   = NO
 
 # If this flag is set to YES, the name of an unnamed parameter in a declaration
 # will be determined by the corresponding definition. By default unnamed
@@ -604,14 +604,14 @@ HIDE_UNDOC_CLASSES     = YES
 # documentation.
 # The default value is: NO.
 
-HIDE_FRIEND_COMPOUNDS  = NO
+HIDE_FRIEND_COMPOUNDS  = YES
 
 # If the HIDE_IN_BODY_DOCS tag is set to YES, doxygen will hide any
 # documentation blocks found inside the body of a function. If set to NO, these
 # blocks will be appended to the function's detailed documentation block.
 # The default value is: NO.
 
-HIDE_IN_BODY_DOCS      = NO
+HIDE_IN_BODY_DOCS      = YES
 
 # The INTERNAL_DOCS tag determines if documentation that is typed after a
 # \internal command is included. If the tag is set to NO then the documentation
@@ -661,14 +661,14 @@ SHOW_HEADERFILE        = YES
 # the files that are included by a file in the documentation of that file.
 # The default value is: YES.
 
-SHOW_INCLUDE_FILES     = YES
+SHOW_INCLUDE_FILES     = NO
 
 # If the SHOW_GROUPED_MEMB_INC tag is set to YES then Doxygen will add for each
 # grouped member an include statement to the documentation, telling the reader
 # which file to include in order to use the member.
 # The default value is: NO.
 
-SHOW_GROUPED_MEMB_INC  = YES
+SHOW_GROUPED_MEMB_INC  = NO
 
 # If the FORCE_LOCAL_INCLUDES tag is set to YES then doxygen will list include
 # files with double quotes in the documentation rather than with sharp brackets.
@@ -740,26 +740,26 @@ STRICT_PROTO_MATCHING  = NO
 # list. This list is created by putting \todo commands in the documentation.
 # The default value is: YES.
 
-GENERATE_TODOLIST      = YES
+GENERATE_TODOLIST      = NO
 
 # The GENERATE_TESTLIST tag can be used to enable (YES) or disable (NO) the test
 # list. This list is created by putting \test commands in the documentation.
 # The default value is: YES.
 
-GENERATE_TESTLIST      = YES
+GENERATE_TESTLIST      = NO
 
 # The GENERATE_BUGLIST tag can be used to enable (YES) or disable (NO) the bug
 # list. This list is created by putting \bug commands in the documentation.
 # The default value is: YES.
 
-GENERATE_BUGLIST       = YES
+GENERATE_BUGLIST       = NO
 
 # The GENERATE_DEPRECATEDLIST tag can be used to enable (YES) or disable (NO)
 # the deprecated list. This list is created by putting \deprecated commands in
 # the documentation.
 # The default value is: YES.
 
-GENERATE_DEPRECATEDLIST= YES
+GENERATE_DEPRECATEDLIST= NO
 
 # The ENABLED_SECTIONS tag can be used to enable conditional documentation
 # sections, marked by \if <section_label> ... \endif and \cond <section_label>
@@ -873,7 +873,7 @@ WARN_IF_DOC_ERROR      = YES
 # parameters have no documentation without warning.
 # The default value is: YES.
 
-WARN_IF_INCOMPLETE_DOC = YES
+WARN_IF_INCOMPLETE_DOC = NO
 
 # This WARN_NO_PARAMDOC option can be enabled to get warnings for functions that
 # are documented, but have no documentation for their parameters or return

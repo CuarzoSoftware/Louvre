@@ -1,4 +1,4 @@
-# 🕹️ Examples
+# 🕹️ Examples {#ExamplesPage}
 
 Louvre provides three illustrative examples that demonstrate its capabilities and various usage scenarios:
 

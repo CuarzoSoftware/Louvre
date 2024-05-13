@@ -56,6 +56,8 @@ void LSubsurfaceRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
 
 void LSubsurfaceRole::handleParentCommit()
 {
+    using OP = LCompositor::LCompositorPrivate::InsertOptions;
+
     if (imp()->hasPendingLocalPos)
     {
         imp()->hasPendingLocalPos = false;
@@ -65,7 +67,7 @@ void LSubsurfaceRole::handleParentCommit()
 
     if (imp()->pendingPlaceAbove)
     {
-        compositor()->imp()->insertSurfaceAfter(imp()->pendingPlaceAbove, surface());
+        compositor()->imp()->insertSurfaceAfter(imp()->pendingPlaceAbove, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
 
         if (imp()->pendingPlaceAbove == surface()->parent())
         {
@@ -95,7 +97,7 @@ void LSubsurfaceRole::handleParentCommit()
     {
         if (*std::prev(imp()->pendingPlaceAbove->imp()->parentLink) != surface())
         {
-            compositor()->imp()->insertSurfaceBefore(imp()->pendingPlaceBelow, surface());
+            compositor()->imp()->insertSurfaceBefore(imp()->pendingPlaceBelow, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
             surface()->parent()->imp()->children.erase(surface()->imp()->parentLink);
             surface()->imp()->parentLink = surface()->parent()->imp()->children.insert(
                 imp()->pendingPlaceBelow->imp()->parentLink,

@@ -154,7 +154,6 @@ public:
         return m_rotation;
     }
 
-    /// @cond OMIT
 protected:
     UInt32 m_fingers;
     LPointF m_delta;
@@ -164,7 +163,6 @@ protected:
 private:
     friend class LInputBackend;
     void notify();
-    /// @endcond
 };
 
 #endif // LPOINTERPINCHUPDATEEVENT_H

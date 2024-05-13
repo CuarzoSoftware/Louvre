@@ -4,13 +4,19 @@
 #include <LObject.h>
 #include <LPoint.h>
 
+/**
+ * @brief Touch point managed within an LScene.
+ */
 class Louvre::LSceneTouchPoint final : public LObject
 {
 public:
 
-    // TODO DISABLE COPY
+    LCLASS_NO_COPY(LSceneTouchPoint)
 
-    inline LScene *scene() const noexcept
+    /**
+     * @brief Scene this touch point belongs to.
+     */
+    LScene *scene() const noexcept
     {
         return m_scene;
     }
@@ -22,16 +28,15 @@ public:
      *
      * @return The unique identifier of the touch point.
      */
-    inline Int32 id() const noexcept
+    Int32 id() const noexcept
     {
         return m_id;
     }
 
     /**
      * @brief Check if the touch point is currently being pressed.
-     * @return True if the touch point is currently pressed, false otherwise.
      */
-    inline bool pressed() const noexcept
+    bool pressed() const noexcept
     {
         return m_pressed;
     }
@@ -39,9 +44,9 @@ public:
     /**
      * @brief Touched views
      *
-     * Touched by this touch point. Updated each time a touch down event is handled.
+     * Vector of views being touched by this touch point.
      */
-    inline const std::vector<LView*> &views() const noexcept
+    const std::vector<LView*> &views() const noexcept
     {
         return m_views;
     }
@@ -53,7 +58,7 @@ public:
      *
      * @return A constant reference to the position of the touch point.
      */
-    inline const LPointF &pos() const noexcept
+    const LPointF &pos() const noexcept
     {
         return m_pos;
     }
@@ -62,7 +67,7 @@ private:
     friend class LScene;
     friend class LView;
     LSceneTouchPoint(LScene *scene, const LTouchDownEvent &event) noexcept;
-    inline ~LSceneTouchPoint() noexcept = default;
+    ~LSceneTouchPoint() noexcept = default;
     std::vector<LSceneTouchPoint*>::iterator destroy() noexcept;
     std::vector<LView*> m_views;
     LScene *m_scene { nullptr };

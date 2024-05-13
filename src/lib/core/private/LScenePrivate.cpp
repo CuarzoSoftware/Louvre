@@ -30,7 +30,10 @@ LView *LScene::LScenePrivate::viewAt(LView *view, const LPoint &pos, LView::Type
     if (type != LView::Undefined && view->type() != type)
         return nullptr;
 
-    if ((flags.check(InputFilter::Touch) && !view->touchEventsEnabled()) && (flags.check(InputFilter::Pointer) && !view->pointerEventsEnabled()))
+    if (flags != 0 &&
+        !((flags.check(InputFilter::Touch) && view->touchEventsEnabled()) ||
+          (flags.check(InputFilter::Pointer) && view->pointerEventsEnabled()) ||
+          (flags.check(InputFilter::Keyboard) && view->keyboardEventsEnabled())))
         return nullptr;
 
     if (view->clippingEnabled() && !view->clippingRect().containsPoint(pos))

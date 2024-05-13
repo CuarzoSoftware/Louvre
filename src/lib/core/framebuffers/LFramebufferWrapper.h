@@ -27,12 +27,11 @@ public:
     LFramebufferWrapper(GLuint id,
                    const LSize &sizeB,
                    const LPoint &pos = LPoint(0,0),
-                   Float32 scale = 1.f) noexcept :
+                        Float32 scale = 1.f) noexcept : LFramebuffer(Wrapper),
         m_sizeB(sizeB),
         m_fbId(id),
         m_scale(scale)
     {
-        m_type = Wrapper;
         m_rect.setPos(pos);
         updateDimensions();
     }

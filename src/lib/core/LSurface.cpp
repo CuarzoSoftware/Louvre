@@ -273,6 +273,11 @@ const LPointF &LSurface::lockedPointerPosHint() const noexcept
     return imp()->current.lockedPointerPosHint;
 }
 
+LSurfaceLayer LSurface::layer() const noexcept
+{
+    return imp()->layer;
+}
+
 LSurface::Role LSurface::roleId() const
 {
     if (role())
@@ -497,12 +502,9 @@ void LSurface::raise()
         return;
 
     if (parent())
-    {
         parent()->raise();
-        return;
-    }
-
-    compositor()->imp()->raiseChildren(this);
+    else
+        imp()->setLayer(layer());
 }
 
 LSurface *LSurface::prevSurface() const

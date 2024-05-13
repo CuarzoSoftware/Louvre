@@ -73,7 +73,6 @@
  */
 namespace Louvre
 {
-    /// @defgroup core Core
     class LObject;
     class LFactoryObject;
     class LGlobal;
@@ -94,14 +93,12 @@ namespace Louvre
     class LTexture;
     class LScreenshotRequest;
 
-    /// @defgroup painter Painter
     class LPainter;
     class LRenderBuffer;
     class LFramebuffer;
     class LOutputFramebuffer;
     class LFramebufferWrapper;
 
-    /// @defgroup scene Scene
     class LScene;
     class LView;
     class LLayerView;
@@ -116,7 +113,6 @@ namespace Louvre
     class LDNDSession;
     class LClipboard;
 
-    /// @defgroup roles Roles
     class LBaseSurfaceRole;
     class LCursorRole;
     class LDNDIconRole;
@@ -125,18 +121,15 @@ namespace Louvre
     class LSubsurfaceRole;
     class LSessionLockRole;
 
-    /// @defgroup cursor Cursor
     class LCursor;
     class LClientCursor;
     class LXCursor;
 
-    /// @defgroup input Input
     class LSeat;
     class LPointer;
     class LKeyboard;
     class LTouch;
 
-    /// @defgroup events Events
     class LInputDevice;
     class LEvent;
     class LInputEvent;
@@ -523,6 +516,15 @@ namespace Louvre
 
         return static_cast<LTransform>(flip | rotation);
     }
+
+    enum LSurfaceLayer
+    {
+        LLayerBackground    = 0,
+        LLayerBottom        = 1,
+        LLayerMiddle        = 2,
+        LLayerTop           = 3,
+        LLayerOverlay       = 4
+    };
 
     namespace Protocols
     {

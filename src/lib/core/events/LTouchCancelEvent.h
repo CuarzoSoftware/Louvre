@@ -23,11 +23,9 @@ public:
         LTouchEvent(LEvent::Subtype::Cancel, serial, ms, us, device)
     {}
 
-    /// @cond OMIT
 private:
     friend class LInputBackend;
     void notify();
-    /// @endcond
 };
 
 #endif // LTOUCHCANCELEVENT_H

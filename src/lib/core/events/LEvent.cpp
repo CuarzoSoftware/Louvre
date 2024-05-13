@@ -136,10 +136,4 @@ LEvent *LEvent::copy() const noexcept
     return nullptr;
 }
 
-LEvent::LEvent(Type type, Subtype subtype, UInt32 serial, UInt32 ms, UInt64 us) noexcept :
-    m_type(type),
-    m_subtype(subtype),
-    m_serial(serial),
-    m_ms(ms),
-    m_us(us)
-{}
+

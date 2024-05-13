@@ -11,13 +11,9 @@
 class Louvre::LTouchEvent : public LInputEvent
 {
 protected:
-
-    /// @cond OMIT
     LTouchEvent(Subtype subtype, UInt32 serial, UInt32 ms, UInt64 us, LInputDevice *device) noexcept :
         LInputEvent(Type::Touch, subtype, serial, ms, us, device)
     {}
-    /// @endcond
-
 };
 
 #endif // LTOUCHEVENT_H

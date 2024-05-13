@@ -9,6 +9,13 @@
 
 using namespace Louvre;
 
+//! [layerChanged]
+void LSurface::layerChanged()
+{
+    repaintOutputs();
+}
+//! [layerChanged]
+
 //! [pointerConstraintModeChanged]
 void LSurface::pointerConstraintModeChanged()
 {

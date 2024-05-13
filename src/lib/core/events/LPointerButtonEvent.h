@@ -109,14 +109,12 @@ public:
         return m_state;
     }
 
-    /// @cond OMIT
 protected:
     Button m_button;
     State m_state;
 private:
     friend class LInputBackend;
     void notify();
-    /// @endcond
 };
 
 #endif // LPOINTERBUTTONEVENT_H

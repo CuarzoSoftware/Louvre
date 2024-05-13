@@ -19,9 +19,10 @@ public:
         client {wlClient},
         lastCursorRequest {lClient}
     {}
+
+    LCLASS_NO_COPY(LClientPrivate)
+
     ~LClientPrivate() noexcept = default;
-    LClientPrivate(const LClientPrivate&) = delete;
-    LClientPrivate &operator=(const LClientPrivate&) = delete;
 
     wl_client *client;
     Events events;

@@ -91,10 +91,10 @@ public:
     /**
      * @brief Get the OpenGL texture ID of a specific framebuffer index.
      *
-     * This method must return the OpenGL texture ID associated with the specified framebuffer index.
+     * This method must return the OpenGL texture ID associated with the specified framebuffer index or 0 if not available.
      *
      * @param index The index of the framebuffer.
-     * @returns The OpenGL texture ID of the specified framebuffer index.
+     * @returns The OpenGL texture ID of the specified framebuffer index or 0 if not available.
      */
     virtual LTexture *texture(Int32 index = 0) const = 0;
 
@@ -114,7 +114,7 @@ public:
     virtual LTransform transform() const = 0;
 
     /**
-     * @brief Gets the type of the framebuffer.
+     * @brief Get the type of LFramebuffer.
      */
     Type type() const noexcept
     {
@@ -122,6 +122,7 @@ public:
     }
 
 protected:
+    LFramebuffer(Type type) noexcept : m_type(type) {}
     Type m_type;
 };
 

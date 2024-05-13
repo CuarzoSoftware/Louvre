@@ -6,7 +6,6 @@
 
 /**
  * @brief View for displaying textures
- * @ingroup scene
  *
  * The LTextureView class enables you to use an LTexture as a view within a scene.\n
  * You can set the view's texture using setTexture(), and passing `nullptr` unsets the texture, effectively unmapping the view.\n
@@ -30,10 +29,6 @@
 class Louvre::LTextureView : public LView
 {
 public:
-    /// @cond OMIT
-    LTextureView(const LTextureView&) = delete;
-    LTextureView& operator= (const LTextureView&) = delete;
-    /// @endcond
 
     /**
      * @brief Construct an LTextureView with an optional LTexture and parent LView.
@@ -44,13 +39,15 @@ public:
     LTextureView(LTexture *texture = nullptr, LView *parent = nullptr) noexcept : LView(LView::Texture, true, parent)
     {
         m_texture.setOnDestroyCallback([this](auto)
-                                       {
-                                           updateDimensions();
-                                           damageAll();
-                                       });
+        {
+            updateDimensions();
+            damageAll();
+        });
 
         setTexture(texture);
     }
+
+    LCLASS_NO_COPY(LTextureView)
 
     /**
      * @brief Destructor for the LTextureView.

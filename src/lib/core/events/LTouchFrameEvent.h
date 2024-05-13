@@ -25,11 +25,9 @@ public:
         LTouchEvent(LEvent::Subtype::Frame, serial, ms, us, device)
     {}
 
-    /// @cond OMIT
 private:
     friend class LInputBackend;
     void notify();
-    /// @endcond
 };
 
 #endif // LTOUCHFRAMEEVENT_H

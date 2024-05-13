@@ -140,6 +140,9 @@ public:
         Confine
     };
 
+    // TODO
+    LSurfaceLayer layer() const noexcept;
+    virtual void layerChanged();
 
     /**
      * @brief ID of the role

@@ -9,14 +9,13 @@
 #include <thread>
 #include <vector>
 #include <list>
-#include <unordered_map>
+#include <map>
 
 /**
  * @brief Base class for LScene views.
- * @ingroup scene
  *
  * The LView class provides a base interface for creating views that can be shown in an LScene.\n
- * This class should be used for creating custom views that are different from those shipped with the library.\n
+ * This class should be used for creating custom views that are different from those shipped with Louvre.\n
  *
  * Louvre provides a pre-made set of views for most common purposes:
  *
@@ -96,12 +95,12 @@
  *
  * ### Input region
  *
- * To define which parts of the view can receive pointer or touch events, the inputRegion() must be implemented.
+ * To define which parts of the view can receive pointer or touch events, the inputRegion() must be implemented.\n
  * If `nullptr` is returned, the entire view is considered capable of receiving events.
  *
  * ## Input events
  *
- * Scenes can trigger specific input events on views through the pointerEnterEvent(), pointerMoveEvent(), keyEvent(), and other related methods.
+ * Scenes can trigger specific input events on views through the pointerEnterEvent(), pointerMoveEvent(), keyEvent(), and other related methods.\n
  * Implement these virtual methods to listen and respond to those events if needed.
  */
 class Louvre::LView : public LObject
@@ -131,15 +130,12 @@ public:
      */
     LView(UInt32 type, bool renderable, LView *parent) noexcept;
 
-    /// @cond OMIT
-    LView(const LView&) = delete;
-    LView& operator= (const LView&) = delete;
-    /// @endcond
+    LCLASS_NO_COPY(LView)
 
     /**
      * @brief Destructor for the LView class.
      */
-    virtual ~LView() noexcept;
+    ~LView() noexcept;
 
     /// Types of views included with Louvre
     enum Type : UInt8
@@ -163,119 +159,17 @@ public:
         Scene
     };
 
-    /// @cond OMIT
-    enum LViewState : UInt64
-    {
-        // LView
-        Destroyed               = static_cast<UInt64>(1) << 0,
-        IsScene                 = static_cast<UInt64>(1) << 1,
-        IsRenderable            = static_cast<UInt64>(1) << 2,
-
-        PointerEvents           = static_cast<UInt64>(1) << 3,
-        KeyboardEvents          = static_cast<UInt64>(1) << 4,
-        TouchEvents             = static_cast<UInt64>(1) << 5,
-
-        BlockPointer            = static_cast<UInt64>(1) << 6,
-        BlockTouch              = static_cast<UInt64>(1) << 7,
-
-        RepaintCalled           = static_cast<UInt64>(1) << 8,
-        ColorFactor             = static_cast<UInt64>(1) << 9,
-        Visible                 = static_cast<UInt64>(1) << 10,
-        Scaling                 = static_cast<UInt64>(1) << 11,
-        ParentScaling           = static_cast<UInt64>(1) << 12,
-        ParentOffset            = static_cast<UInt64>(1) << 13,
-        Clipping                = static_cast<UInt64>(1) << 14,
-        ParentClipping          = static_cast<UInt64>(1) << 15,
-        ParentOpacity           = static_cast<UInt64>(1) << 16,
-        ForceRequestNextFrame   = static_cast<UInt64>(1) << 17,
-        AutoBlendFunc           = static_cast<UInt64>(1) << 18,
-
-        PointerIsOver           = static_cast<UInt64>(1) << 19,
-
-        PendingSwipeEnd         = static_cast<UInt64>(1) << 20,
-        PendingPinchEnd         = static_cast<UInt64>(1) << 21,
-        PendingHoldEnd          = static_cast<UInt64>(1) << 22,
-
-        PointerMoveDone         = static_cast<UInt64>(1) << 23,
-        PointerButtonDone       = static_cast<UInt64>(1) << 24,
-        PointerScrollDone       = static_cast<UInt64>(1) << 25,
-        PointerSwipeBeginDone   = static_cast<UInt64>(1) << 26,
-        PointerSwipeUpdateDone  = static_cast<UInt64>(1) << 27,
-        PointerSwipeEndDone     = static_cast<UInt64>(1) << 28,
-        PointerPinchBeginDone   = static_cast<UInt64>(1) << 29,
-        PointerPinchUpdateDone  = static_cast<UInt64>(1) << 30,
-        PointerPinchEndDone     = static_cast<UInt64>(1) << 31,
-        PointerHoldBeginDone    = static_cast<UInt64>(1) << 32,
-        PointerHoldEndDone      = static_cast<UInt64>(1) << 33,
-        KeyDone                 = static_cast<UInt64>(1) << 34,
-        TouchDownDone           = static_cast<UInt64>(1) << 35,
-        TouchMoveDone           = static_cast<UInt64>(1) << 36,
-        TouchUpDone             = static_cast<UInt64>(1) << 37,
-        TouchFrameDone          = static_cast<UInt64>(1) << 38,
-        TouchCancelDone         = static_cast<UInt64>(1) << 39,
-
-        // LTextureView
-        CustomColor             = static_cast<UInt64>(1) << 40,
-        CustomDstSize           = static_cast<UInt64>(1) << 41,
-        CustomSrcRect           = static_cast<UInt64>(1) << 42,
-
-        // LSurfaceView
-        Primary                 = static_cast<UInt64>(1) << 43,
-        CustomPos               = static_cast<UInt64>(1) << 44,
-        CustomInputRegion       = static_cast<UInt64>(1) << 45,
-        CustomTranslucentRegion = static_cast<UInt64>(1) << 46,
-    };
-
-    // This is used for detecting changes on a view since the last time it was drawn on a specific output
-    struct ViewThreadData
-    {
-        LRegion prevClipping;
-        LRGBAF prevColorFactor;
-        LRect prevRect;
-        LRect prevLocalRect;
-        LOutput *o { nullptr };
-        Float32 prevOpacity { 1.f };
-        UInt32 lastRenderedDamageId { 0 };
-        bool prevColorFactorEnabled { false };
-        bool changedOrder { true };
-        bool prevMapped { false };
-    };
-
-    // This is used to prevent invoking heavy methods
-    struct ViewCache
-    {
-        ViewThreadData *voD;
-        LRect rect;
-        LRect localRect;
-        LRegion damage;
-        LRegion translucent;
-        LRegion opaque;
-        LRegion opaqueOverlay;
-        Float32 opacity;
-        LSizeF scalingVector;
-        bool mapped { false };
-        bool occluded { false };
-        bool scalingEnabled;
-    };
-
-    /// @endcond OMIT
-
-    // Disabled by default TODO
-    void enableKeyboardEvents(bool enabled) noexcept;
-
-    bool keyboardEventsEnabled() const noexcept
-    {
-        return m_state.check(KeyboardEvents);
-    }
-
-    // Disabled by default TODO
-    void enableTouchEvents(bool enabled) noexcept;
-    bool touchEventsEnabled() const noexcept
-    {
-        return m_state.check(TouchEvents);
-    }
-
-    LSceneTouchPoint *findTouchPoint(Int32 id) const noexcept;
+    /**
+     * @brief Enable or disable pointer events for the view.
+     *
+     * If enabled, the view will receive pointer events.\n
+     * Only views with this property enabled can appear on the pointerFocus() list after an LScene::handlePointerMoveEvent().
+     *
+     * Disabled by default in all view types except for LSurfaceView.
+     *
+     * @param enabled If `true`, the view will receive pointer events.
+     */
+    void enablePointerEvents(bool enabled) noexcept;
 
     /**
      * @brief Check if the view receives pointer and touch events.
@@ -291,16 +185,94 @@ public:
     }
 
     /**
-     * @brief Enable or disable pointer events for the view.
+     * @brief Checks if the pointer/cursor is inside the view's input region.
      *
-     * If enabled, the view will receive pointer events.\n
-     * Only views with this property enabled can appear on the pointerFocus() list after an LScene::handlePointerMoveEvent().
+     * @warning Even if the pointer is over the input region it may return `false` if another view with block pointer enabled is in front.\n
      *
-     * Disabled by default in all view types except for LSurfaceView.
-     *
-     * @param enabled If `true`, the view will receive pointer events.
+     * @return `true` if the pointer/cursor is inside the input region; otherwise, `false`.
      */
-    void enablePointerEvents(bool enabled) noexcept;
+    bool pointerIsOver() const noexcept
+    {
+        return m_state.check(PointerIsOver);
+    }
+
+    /**
+     * @brief Enable or disable blocking of pointer or touch events to views behind the view's input region.
+     *
+     * If set to `true`, pointer or touch events will not be sent to views behind the view's input region.
+     *
+     * @param enabled `true` to enable blocking; `false` to disable.
+     */
+    void enableBlockPointer(bool enabled) noexcept
+    {
+        m_state.setFlag(BlockPointer, enabled);
+    }
+
+    /**
+     * @brief Checks if blocking of pointer or touch events to views behind the view's input region is enabled.
+     *
+     * @return `true` if blocking is enabled; otherwise, `false`.
+     */
+    bool blockPointerEnabled() const noexcept
+    {
+        return m_state.check(BlockPointer);
+    }
+
+    /**
+     * @brief Toggles keyboard events.
+     *
+     * When enabled, the view will receive keyboard events and will be added to its parent LScene::keyboardFocus() vector.\n
+     * Unlike pointer or touch events, keyboard events for views do not have focus semantics, this means that when enabled,
+     * the view will always receive all keyboard events emitted by its parent scene.\n
+     *
+     * Keyboard events are disabled by default.
+     *
+     * @param enabled `true` to enable keyboard events, `false` to disable.
+     */
+    void enableKeyboardEvents(bool enabled) noexcept;
+
+    /**
+     * @brief Checks if keyboard events are enabled.
+     *
+     * @return `true` if keyboard events are enabled, `false` otherwise.
+     *         Keyboard events are disabled by default.
+     */
+    bool keyboardEventsEnabled() const noexcept
+    {
+        return m_state.check(KeyboardEvents);
+    }
+
+    // Disabled by default TODO
+    void enableTouchEvents(bool enabled) noexcept;
+    bool touchEventsEnabled() const noexcept
+    {
+        return m_state.check(TouchEvents);
+    }
+
+    /**
+     * @brief Enable or disable blocking of touch events to views behind the view's input region.
+     *
+     * If set to `true`, touch events will not be sent to views behind the view's input region.
+     * This will block touch events only if the touchEventsEnabled() property is also enabled.
+     *
+     * Enabled by default.
+     *
+     * @param enabled `true` to enable blocking; `false` to disable.
+     */
+    void enableBlockTouch(bool enabled) noexcept
+    {
+        m_state.setFlag(BlockTouch, enabled);
+    }
+
+    /**
+     * @brief Checks if blocking of touch events to views behind the view's input region is enabled.
+     *
+     * @return `true` if blocking is enabled; otherwise, `false`.
+     */
+    bool blockTouchEnabled() const noexcept
+    {
+        return m_state.check(BlockTouch);
+    }
 
     /**
      * @brief Forces a complete repaint of the view in the next rendering frame.
@@ -947,65 +919,6 @@ public:
     }
 
     /**
-     * @brief Checks if the pointer/cursor is inside the view's input region.
-     *
-     * @warning Even if the pointer is over the input region it may return `false` if another view with block pointer enabled is in front.\n
-     *
-     * @return `true` if the pointer/cursor is inside the input region; otherwise, `false`.
-     */
-    bool pointerIsOver() const noexcept
-    {
-        return m_state.check(PointerIsOver);
-    }
-
-    /**
-     * @brief Enable or disable blocking of pointer or touch events to views behind the view's input region.
-     *
-     * If set to `true`, pointer or touch events will not be sent to views behind the view's input region.
-     *
-     * @param enabled `true` to enable blocking; `false` to disable.
-     */
-    void enableBlockPointer(bool enabled) noexcept
-    {
-        m_state.setFlag(BlockPointer, enabled);
-    }
-
-    /**
-     * @brief Checks if blocking of pointer or touch events to views behind the view's input region is enabled.
-     *
-     * @return `true` if blocking is enabled; otherwise, `false`.
-     */
-    bool blockPointerEnabled() const noexcept
-    {
-        return m_state.check(BlockPointer);
-    }
-
-    /**
-     * @brief Enable or disable blocking of touch events to views behind the view's input region.
-     *
-     * If set to `true`, touch events will not be sent to views behind the view's input region.
-     * This will block touch events only if the touchEventsEnabled() property is also enabled.
-     *
-     * Enabled by default.
-     *
-     * @param enabled `true` to enable blocking; `false` to disable.
-     */
-    void enableBlockTouch(bool enabled) noexcept
-    {
-        m_state.setFlag(BlockTouch, enabled);
-    }
-
-    /**
-     * @brief Checks if blocking of touch events to views behind the view's input region is enabled.
-     *
-     * @return `true` if blocking is enabled; otherwise, `false`.
-     */
-    bool blockTouchEnabled() const noexcept
-    {
-        return m_state.check(BlockTouch);
-    }
-
-    /**
      * @brief Get the bounding box of the view and all its mapped children.
      *
      * This method returns a box containing the view and all its mapped children, even if the children
@@ -1281,30 +1194,124 @@ public:
     /**
      * @brief Handle a touch move event within the view.
      *
-     * This event is only triggered if touchDownEvent() was called before.
+     * This event is only triggered if a touchDownEvent() was emitted before.
      */
     virtual void touchMoveEvent(const LTouchMoveEvent &event) { L_UNUSED(event) };
 
     /**
      * @brief Handle a touch up event within the view.
      *
-     * This event is only triggered if touchDownEvent() was called before.
+     * This event is only triggered if a touchDownEvent() was emitted before.
      */
     virtual void touchUpEvent(const LTouchUpEvent &event) { L_UNUSED(event) };
 
     /**
      * @brief Handle a touch frame event within the view.
      *
-     * This event is only triggered if touchDownEvent() was called before.
+     * This event is only triggered if a touchDownEvent() was emitted before.
      */
     virtual void touchFrameEvent(const LTouchFrameEvent &event) { L_UNUSED(event) };
 
     /**
      * @brief Handle a touch cancel event within the view.
      *
-     * This event is only triggered if touchDownEvent() was called before.
+     * This event is only triggered if a touchDownEvent() was emitted before.
      */
     virtual void touchCancelEvent(const LTouchCancelEvent &event) { L_UNUSED(event) };
+
+    enum LViewState : UInt64
+    {
+        // LView
+        Destroyed               = static_cast<UInt64>(1) << 0,
+        IsScene                 = static_cast<UInt64>(1) << 1,
+        IsRenderable            = static_cast<UInt64>(1) << 2,
+
+        PointerEvents           = static_cast<UInt64>(1) << 3,
+        KeyboardEvents          = static_cast<UInt64>(1) << 4,
+        TouchEvents             = static_cast<UInt64>(1) << 5,
+
+        BlockPointer            = static_cast<UInt64>(1) << 6,
+        BlockTouch              = static_cast<UInt64>(1) << 7,
+
+        RepaintCalled           = static_cast<UInt64>(1) << 8,
+        ColorFactor             = static_cast<UInt64>(1) << 9,
+        Visible                 = static_cast<UInt64>(1) << 10,
+        Scaling                 = static_cast<UInt64>(1) << 11,
+        ParentScaling           = static_cast<UInt64>(1) << 12,
+        ParentOffset            = static_cast<UInt64>(1) << 13,
+        Clipping                = static_cast<UInt64>(1) << 14,
+        ParentClipping          = static_cast<UInt64>(1) << 15,
+        ParentOpacity           = static_cast<UInt64>(1) << 16,
+        ForceRequestNextFrame   = static_cast<UInt64>(1) << 17,
+        AutoBlendFunc           = static_cast<UInt64>(1) << 18,
+
+        PointerIsOver           = static_cast<UInt64>(1) << 19,
+
+        PendingSwipeEnd         = static_cast<UInt64>(1) << 20,
+        PendingPinchEnd         = static_cast<UInt64>(1) << 21,
+        PendingHoldEnd          = static_cast<UInt64>(1) << 22,
+
+        PointerMoveDone         = static_cast<UInt64>(1) << 23,
+        PointerButtonDone       = static_cast<UInt64>(1) << 24,
+        PointerScrollDone       = static_cast<UInt64>(1) << 25,
+        PointerSwipeBeginDone   = static_cast<UInt64>(1) << 26,
+        PointerSwipeUpdateDone  = static_cast<UInt64>(1) << 27,
+        PointerSwipeEndDone     = static_cast<UInt64>(1) << 28,
+        PointerPinchBeginDone   = static_cast<UInt64>(1) << 29,
+        PointerPinchUpdateDone  = static_cast<UInt64>(1) << 30,
+        PointerPinchEndDone     = static_cast<UInt64>(1) << 31,
+        PointerHoldBeginDone    = static_cast<UInt64>(1) << 32,
+        PointerHoldEndDone      = static_cast<UInt64>(1) << 33,
+        KeyDone                 = static_cast<UInt64>(1) << 34,
+        TouchDownDone           = static_cast<UInt64>(1) << 35,
+        TouchMoveDone           = static_cast<UInt64>(1) << 36,
+        TouchUpDone             = static_cast<UInt64>(1) << 37,
+        TouchFrameDone          = static_cast<UInt64>(1) << 38,
+        TouchCancelDone         = static_cast<UInt64>(1) << 39,
+
+        // LTextureView
+        CustomColor             = static_cast<UInt64>(1) << 40,
+        CustomDstSize           = static_cast<UInt64>(1) << 41,
+        CustomSrcRect           = static_cast<UInt64>(1) << 42,
+
+        // LSurfaceView
+        Primary                 = static_cast<UInt64>(1) << 43,
+        CustomPos               = static_cast<UInt64>(1) << 44,
+        CustomInputRegion       = static_cast<UInt64>(1) << 45,
+        CustomTranslucentRegion = static_cast<UInt64>(1) << 46,
+    };
+
+    // This is used for detecting changes on a view since the last time it was drawn on a specific output
+    struct ViewThreadData
+    {
+        LRegion prevClipping;
+        LRGBAF prevColorFactor;
+        LRect prevRect;
+        LRect prevLocalRect;
+        LOutput *o { nullptr };
+        Float32 prevOpacity { 1.f };
+        UInt32 lastRenderedDamageId { 0 };
+        bool prevColorFactorEnabled { false };
+        bool changedOrder { true };
+        bool prevMapped { false };
+    };
+
+    // This is used to prevent invoking heavy methods
+    struct ViewCache
+    {
+        ViewThreadData *voD;
+        LRect rect;
+        LRect localRect;
+        LRegion damage;
+        LRegion translucent;
+        LRegion opaque;
+        LRegion opaqueOverlay;
+        Float32 opacity;
+        LSizeF scalingVector;
+        bool mapped { false };
+        bool occluded { false };
+        bool scalingEnabled;
+    };
 
 protected:
     friend class LScene;
@@ -1329,7 +1336,7 @@ protected:
     mutable LSize m_tmpSize;
     mutable LSizeF m_tmpSizeF;
     ViewCache m_cache;
-    std::unordered_map<std::thread::id,ViewThreadData> m_threadsMap;
+    std::map<std::thread::id,ViewThreadData> m_threadsMap;
 
     bool repaintCalled() const noexcept
     {

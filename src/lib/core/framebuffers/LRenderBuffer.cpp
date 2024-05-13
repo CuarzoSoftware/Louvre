@@ -8,9 +8,8 @@
 
 using namespace Louvre;
 
-LRenderBuffer::LRenderBuffer(const LSize &sizeB, bool alpha) noexcept
+LRenderBuffer::LRenderBuffer(const LSize &sizeB, bool alpha) noexcept : LFramebuffer(RenderBuffer)
 {
-    m_type = RenderBuffer;
     m_texture.m_sourceType = LTexture::Framebuffer;
 
     if (alpha)

@@ -74,13 +74,11 @@ public:
         return m_state;
     }
 
-    /// @cond OMIT
 protected:
     UInt32 m_key;
     State m_state;
 private:
     friend class LInputBackend;
     void notify();
-    /// @endcond
 };
 #endif // LKEYBOARDKEYEVENT_H

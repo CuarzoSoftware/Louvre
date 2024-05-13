@@ -6,6 +6,7 @@
 #include <protocols/XdgShell/RXdgSurface.h>
 #include <protocols/XdgShell/RXdgToplevel.h>
 #include <protocols/XdgShell/xdg-shell.h>
+#include <private/LSurfacePrivate.h>
 #include <private/LSeatPrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <LToplevelMoveSession.h>
@@ -13,7 +14,6 @@
 #include <LToplevelRole.h>
 #include <LCompositor.h>
 #include <LTime.h>
-#include <queue>
 
 using namespace Louvre;
 using namespace Louvre::Protocols;
@@ -89,6 +89,18 @@ inline void applyPendingChanges(LBitset<ConfigurationChanges> changes)
 
                 seat()->imp()->activeToplevel = toplevel;
             }
+        }
+
+        if (stateChanges.check(Fullscreen))
+        {
+            LSurfaceLayer defaultLayer { LLayerMiddle };
+
+            if (toplevel->surface()->parent())
+                defaultLayer = toplevel->surface()->parent()->layer();
+            else if (toplevel->surface()->imp()->pendingParent)
+                defaultLayer = toplevel->surface()->imp()->pendingParent->layer();
+
+            toplevel->surface()->imp()->setLayer(current.state.check(Fullscreen) ? LLayerTop : defaultLayer);
         }
 
         if (previous.decorationMode != current.decorationMode)

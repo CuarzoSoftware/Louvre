@@ -22,10 +22,7 @@
 class Louvre::LOutputFramebuffer final : public LFramebuffer
 {
 public:
-    LOutputFramebuffer(LOutput *output) noexcept : m_output(output)
-    {
-        m_type = Output;
-    }
+    LCLASS_NO_COPY(LOutputFramebuffer)
 
     LOutput *output() const noexcept
     {
@@ -43,6 +40,8 @@ public:
     LTransform transform() const noexcept override;
 
 private:
+    friend class LOutput;
+    LOutputFramebuffer(LOutput *output) noexcept : LFramebuffer(Output), m_output(output) {}
     LOutput *m_output;
 };
 

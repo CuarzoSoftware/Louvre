@@ -92,14 +92,12 @@ public:
      */
     mutable LPointF localPos;
 
-    /// @cond OMIT
 protected:
     Int32 m_id;
     LPointF m_pos;
 private:
     friend class LInputBackend;
     void notify();
-    /// @endcond
 };
 
 #endif // LTOUCHDOWNEVENT_H

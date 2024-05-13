@@ -9,7 +9,6 @@
 #include <LSurface.h>
 #include <LBitset.h>
 #include <vector>
-#include <string>
 
 using namespace Louvre;
 using namespace Louvre::Protocols;
@@ -71,7 +70,7 @@ LPRIVATE_CLASS(LSurface)
         wl_resource *buffer                 { nullptr };
         LBaseSurfaceRole *role              { nullptr };
         Int32 bufferScale                   { 1 };
-        LTransform transform   { LTransform::Normal };
+        LTransform transform                { LTransform::Normal };
         LPointF lockedPointerPosHint        { -1.f, -1.f };
     };
 
@@ -117,11 +116,17 @@ LPRIVATE_CLASS(LSurface)
     UInt32 damageId;
     UInt32 commitId { 0 };
     std::list<LSurface*>::iterator compositorLink;
+    std::list<LSurface*>::iterator layerLink;
+    LSurfaceLayer layer { LLayerMiddle };
     Int32 lastSentPreferredBufferScale      { -1 };
     LTransform lastSentPreferredTransform { LTransform::Normal };
     std::vector<LOutput*> outputs;
 
     std::vector<PresentationTime::RPresentationFeedback*> presentationFeedbackResources;
+
+    // Find the prev surface using layers (returns nullptr if no prev surface)
+    LSurface *prevSurfaceInLayers() noexcept;
+    void setLayer(LSurfaceLayer layer);
     void sendPresentationFeedback(LOutput *output);
     void setBufferScale(Int32 scale);
     void setPendingParent(LSurface *pendParent);
