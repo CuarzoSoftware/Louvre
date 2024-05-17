@@ -374,8 +374,9 @@ void LPainter::LPainterPrivate::setupProgramScaler()
 
 void LPainter::LPainterPrivate::updateExtensions()
 {
-    openGLExtensions.EXT_read_format_bgra = LOpenGL::hasExtension("GL_EXT_read_format_bgra");
-    openGLExtensions.OES_EGL_image = LOpenGL::hasExtension("GL_OES_EGL_image");
+    const char *exts = (const char*)glGetString(GL_EXTENSIONS);
+    openGLExtensions.EXT_read_format_bgra = LOpenGL::hasExtension(exts, "GL_EXT_read_format_bgra");
+    openGLExtensions.OES_EGL_image = LOpenGL::hasExtension(exts, "GL_OES_EGL_image");
 }
 
 void LPainter::LPainterPrivate::updateCPUFormats()

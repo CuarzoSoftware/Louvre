@@ -120,6 +120,7 @@ namespace Louvre
     class LPopupRole;
     class LSubsurfaceRole;
     class LSessionLockRole;
+    class LLayerRole;
 
     class LCursor;
     class LClientCursor;
@@ -482,7 +483,7 @@ namespace Louvre
      * @brief Checks if the transformation results in swapping the width and height.
      *
      * @param transform The transformation to check.
-     * @return `true` if the transformation swaps width and height, `false` otherwise.
+     * @return `true` if the transformation includes a 90° or 270° rotation, `false` otherwise.
      */
     static inline constexpr bool is90Transform(LTransform transform) noexcept
     {
@@ -490,25 +491,22 @@ namespace Louvre
     }
 
     /**
-     * @brief Calculates the required transformation to transition from one orientation to another.
+     * @brief Required transform to transition from transform 'a' to 'b'
      *
-     * This function computes the transformation needed to convert from one orientation (from) to another (to).
-     *
-     * @param from The initial orientation.
-     * @param to The target orientation.
-     * @return The required transformation to transition from 'from' to 'to'.
+     * @param a The initial transform.
+     * @param b The target transform.
      */
-    static inline constexpr LTransform requiredTransform(LTransform from, LTransform to) noexcept
+    static inline constexpr LTransform requiredTransform(LTransform a, LTransform b) noexcept
     {
         const Int32 bitmask { static_cast<Int32>(LTransform::Rotated270) };
-        const Int32 flip { (static_cast<Int32>(from) & ~bitmask) ^ (static_cast<Int32>(to) & ~bitmask) };
+        const Int32 flip { (static_cast<Int32>(a) & ~bitmask) ^ (static_cast<Int32>(b) & ~bitmask) };
         Int32 rotation;
 
         if (flip)
-            rotation = ((static_cast<Int32>(to) & bitmask) + (static_cast<Int32>(from) & bitmask)) & bitmask;
+            rotation = ((static_cast<Int32>(b) & bitmask) + (static_cast<Int32>(a) & bitmask)) & bitmask;
         else
         {
-            rotation = (static_cast<Int32>(to) & bitmask) - (static_cast<Int32>(from) & bitmask);
+            rotation = (static_cast<Int32>(b) & bitmask) - (static_cast<Int32>(a) & bitmask);
 
             if (rotation < 0)
                 rotation += 4;
@@ -517,6 +515,7 @@ namespace Louvre
         return static_cast<LTransform>(flip | rotation);
     }
 
+    // TODO: add doc
     enum LSurfaceLayer
     {
         LLayerBackground    = 0,

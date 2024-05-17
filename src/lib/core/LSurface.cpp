@@ -498,7 +498,7 @@ bool LSurface::isSubchildOf(LSurface *parent) const
 
 void LSurface::raise()
 {
-    if (imp()->stateFlags.check(LSurfacePrivate::Destroyed))
+    if (!compositor()->imp()->surfaceRaiseAllowed || imp()->stateFlags.check(LSurfacePrivate::Destroyed))
         return;
 
     if (parent())

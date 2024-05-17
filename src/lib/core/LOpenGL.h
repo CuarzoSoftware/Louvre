@@ -72,7 +72,7 @@ public:
      * @param extension The name of the OpenGL extension to check.
      * @return `true` if the extension is available, `false` otherwise.
      */
-    static bool hasExtension(const char *extension);
+    static bool hasExtension(const char *extensions, const char *extension);
 };
 
 #endif // LOPENGL_H

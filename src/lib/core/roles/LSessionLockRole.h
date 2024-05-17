@@ -49,7 +49,6 @@ public:
      */
     virtual const LPoint &rolePos() const override;
 
-    /// @cond OMIT
 private:
     struct Params
     {
@@ -63,6 +62,7 @@ private:
         LSize size;
         UInt32 serial { 0 };
     };
+
     friend class Louvre::Protocols::SessionLock::RSessionLockSurface;
     friend class Louvre::LCompositor;
     friend class Louvre::LOutput;
@@ -76,7 +76,6 @@ private:
     UInt32 m_pendingSerial;
     bool m_hasPendingConf { false };
     bool m_isComplete { false };
-    /// @endcond
 };
 
 #endif // LSESSIONLOCKROLE_H

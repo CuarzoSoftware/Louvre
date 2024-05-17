@@ -6,7 +6,6 @@
 #include <LRegion.h>
 #include <LRect.h>
 #include <LFramebuffer.h>
-
 #include <list>
 
 /**
@@ -122,7 +121,10 @@ public:
         DNDIcon = 5,
 
         /// LSessionLockRole (since v2.0.0)
-        SessionLock = 6
+        SessionLock = 6,
+
+        /// LLayerRole (since v2.0.0)
+        Layer = 7
     };
 
     /**
@@ -525,12 +527,12 @@ public:
     bool isSubchildOf(LSurface *parent) const;
 
     /**
-     * @brief Moves a surface to the top of the compositor's surfaces list
+     * @brief Raises the surface within its current layer.
      *
-     * This method repositions the specified surface at the end of the surfaces list managed by the compositor.
-     * As a result, the surface should be rendered last in a frame, effectively placing it in front of all other surfaces.
-     * If the surface being raised is a parent of other surfaces, those child surfaces will also be raised,
-     * ensuring that the existing hierarchical order required by certain protocols is maintained.
+     * This method reinserts the surface at the end of its current layer's list, ensuring its position above other surfaces within the same layer.\n
+     * If the surface is parent of other surfaces, those child surfaces will also be raised to maintain the hierarchical order required by certain protocols.
+     *
+     * @note Calling this method during the handling of an `orderChanged()` event is not allowed, and doing so will result in a no-op.
      */
     void raise();
 

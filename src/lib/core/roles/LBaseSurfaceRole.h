@@ -115,12 +115,9 @@ public:
      */
     LClient *client() const noexcept;
 
-    /// @cond OMIT
 protected:
-
     friend class Protocols::Wayland::RSurface;
     friend class Louvre::LSurface;
-    /// @endcond
 
     /**
      * @brief Variable that stores the surface position given the role.
@@ -181,12 +178,10 @@ protected:
      */
     virtual void handleParentChange();
 
-    /// @cond OMIT
 private:
     LWeak<LSurface> m_surface;
     LWeak<LResource> m_resource;
     UInt32 m_roleId;
-    /// @endcond
 };
 
 #endif // LBASESURFACEROLE_H

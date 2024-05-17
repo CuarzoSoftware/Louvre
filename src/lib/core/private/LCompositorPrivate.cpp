@@ -14,6 +14,7 @@
 #include <LClipboard.h>
 #include <LKeyboard.h>
 #include <LPointer.h>
+#include <LOpenGL.h>
 #include <LTouch.h>
 #include <LGlobal.h>
 #include <LTime.h>
@@ -304,14 +305,17 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
                    EGL_NO_SURFACE,
                    eglContext());
 
-    if (eglBindWaylandDisplayWL)
+    char const *eglExts = eglQueryString(mainEGLDisplay, EGL_EXTENSIONS);
+
+    WL_bind_wayland_display = LOpenGL::hasExtension(eglExts, "EGL_WL_bind_wayland_display");
+
+    if (WL_bind_wayland_display)
         eglBindWaylandDisplayWL(eglDisplay(), display);
 
     painter = new LPainter();
     cursor = new LCursor();
     initDMAFeedback();
     compositor()->cursorInitialized();
-
     return true;
 }
 
@@ -592,33 +596,58 @@ void LCompositor::LCompositorPrivate::insertSurfaceAfter(LSurface *prevSurface, 
 {
     if (options.check(UpdateLayers))
     {
-        assert(prevSurface->layer() == surfaceToInsert->layer() && "Surfaces do not belong to the same layer.");
-        auto &layer { layers[prevSurface->layer()] };
-        layer.erase(surfaceToInsert->imp()->layerLink);
-
-        if (prevSurface == layer.back())
+        if (prevSurface)
         {
-            layer.emplace_back(surfaceToInsert);
-            surfaceToInsert->imp()->layerLink = std::prev(layer.end());
+            assert(prevSurface->layer() == surfaceToInsert->layer() && "Surfaces do not belong to the same layer.");
+            auto &layer { layers[prevSurface->layer()] };
+            layer.erase(surfaceToInsert->imp()->layerLink);
+
+            if (prevSurface == layer.back())
+            {
+                layer.emplace_back(surfaceToInsert);
+                surfaceToInsert->imp()->layerLink = std::prev(layer.end());
+            }
+            else
+                surfaceToInsert->imp()->layerLink = layer.insert(std::next(prevSurface->imp()->layerLink), surfaceToInsert);
         }
         else
-            surfaceToInsert->imp()->layerLink = layer.insert(std::next(prevSurface->imp()->layerLink), surfaceToInsert);
+        {
+            auto &layer { layers[surfaceToInsert->layer()] };
+            layer.erase(surfaceToInsert->imp()->layerLink);
+            layer.emplace_front(surfaceToInsert);
+            surfaceToInsert->imp()->layerLink = layer.begin();
+        }
     }
 
     if (options.check(UpdateSurfaces) && surfaceToInsert->prevSurface() != prevSurface)
     {
-        surfaces.erase(surfaceToInsert->imp()->compositorLink);
-
-        if (prevSurface == surfaces.back())
+        if (prevSurface)
         {
-            surfaces.push_back(surfaceToInsert);
-            surfaceToInsert->imp()->compositorLink = std::prev(surfaces.end());
+            surfaces.erase(surfaceToInsert->imp()->compositorLink);
+
+            if (prevSurface == surfaces.back())
+            {
+                surfaces.push_back(surfaceToInsert);
+                surfaceToInsert->imp()->compositorLink = std::prev(surfaces.end());
+            }
+            else
+                surfaceToInsert->imp()->compositorLink = surfaces.insert(std::next(prevSurface->imp()->compositorLink), surfaceToInsert);
+
+            surfacesListChanged = true;
+            compositor()->imp()->surfaceRaiseAllowed = false;
+            surfaceToInsert->orderChanged();
+            compositor()->imp()->surfaceRaiseAllowed = true;
         }
         else
-            surfaceToInsert->imp()->compositorLink = surfaces.insert(std::next(prevSurface->imp()->compositorLink), surfaceToInsert);
-
-        surfacesListChanged = true;
-        surfaceToInsert->orderChanged();
+        {
+            surfaces.erase(surfaceToInsert->imp()->compositorLink);
+            surfaces.emplace_front(surfaceToInsert);
+            surfaceToInsert->imp()->compositorLink = surfaces.begin();
+            surfacesListChanged = true;
+            compositor()->imp()->surfaceRaiseAllowed = false;
+            surfaceToInsert->orderChanged();
+            compositor()->imp()->surfaceRaiseAllowed = true;
+        }
     }
 }
 
@@ -637,7 +666,9 @@ void LCompositor::LCompositorPrivate::insertSurfaceBefore(LSurface *nextSurface,
         surfaces.erase(surfaceToInsert->imp()->compositorLink);
         surfaceToInsert->imp()->compositorLink = surfaces.insert(nextSurface->imp()->compositorLink, surfaceToInsert);
         surfacesListChanged = true;
+        compositor()->imp()->surfaceRaiseAllowed = false;
         surfaceToInsert->orderChanged();
+        compositor()->imp()->surfaceRaiseAllowed = true;
     }
 }
 

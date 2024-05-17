@@ -711,7 +711,7 @@ public:
         return true;
     }
 
-    static bool textureCreateFromWaylandDRM(LTexture *texture,void *wlBuffer)
+    static bool textureCreateFromWaylandDRM(LTexture *texture, void *wlBuffer)
     {
         EGLint format, width, height;
         GLenum target { GL_TEXTURE_2D };

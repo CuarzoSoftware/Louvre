@@ -3,10 +3,16 @@
 
 #include <LResource.h>
 #include <LWeak.h>
+#include <memory>
 
 class Louvre::Protocols::LayerShell::RLayerSurface final : public LResource
 {
 public:
+
+    LLayerRole *layerRole() const noexcept
+    {
+        return m_layerRole.get();
+    }
 
     /******************** REQUESTS ********************/
 
@@ -33,9 +39,10 @@ public:
     void closed() noexcept;
 
 private:
-    friend class Louvre::Protocols::GammaControl::GGammaControlManager;
-    RLayerSurface(Wayland::GOutput *outputRes, Int32 version, UInt32 id) noexcept;
+    friend class GLayerShell;
+    RLayerSurface(UInt32 id, GLayerShell *layerShellRes, LSurface *surface, LOutput *output, LSurfaceLayer layer, const char *nameSpace) noexcept;
     ~RLayerSurface();
+    std::unique_ptr<LLayerRole> m_layerRole;
 };
 
 #endif // RLAYERSURFACE_H

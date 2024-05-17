@@ -128,13 +128,11 @@ public:
 
     LPRIVATE_IMP_UNIQUE(LSubsurfaceRole)
 
-    /// @cond OMIT
     bool acceptCommitRequest(LBaseSurfaceRole::CommitOrigin origin) override;
     void handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin) override;
     void handleParentCommit() override;
     void handleParentChange() override;
     void handleParentMappingChange() override;
-    /// @endcond
 };
 
 #endif // LSUBSURFACEROLE_H

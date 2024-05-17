@@ -15,6 +15,7 @@ public:
         LCursorRole,
         LDNDIconRole,
         LSessionLockRole,
+        LLayerRole,
         LClient,
         LOutput,
         LSeat,

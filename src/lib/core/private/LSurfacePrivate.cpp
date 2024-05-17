@@ -149,7 +149,9 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
             child->imp()->pending.role->handleParentChange();
     }
 
+    compositor()->imp()->surfaceRaiseAllowed = false;
     surface->orderChanged();
+    compositor()->imp()->surfaceRaiseAllowed = true;
 }
 
 bool LSurface::LSurfacePrivate::bufferToTexture()
@@ -335,7 +337,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     }
 
     // WL_DRM
-    else if (compositor()->imp()->eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.buffer, EGL_TEXTURE_FORMAT, &format))
+    else if (compositor()->imp()->WL_bind_wayland_display && compositor()->imp()->eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.buffer, EGL_TEXTURE_FORMAT, &format))
     {
         /* Unlike SHM buffers, the current buffer is released after
          * a different buffer is commited */
@@ -789,8 +791,7 @@ void LSurface::LSurfacePrivate::setLayer(LSurfaceLayer newLayer)
     layerLink = std::prev(compositor()->imp()->layers[layer].end());
     LSurface *prev { prevSurfaceInLayers() };
 
-    if (prev)
-        compositor()->imp()->insertSurfaceAfter(prev, surfaceResource->surface(), LCompositor::LCompositorPrivate::UpdateSurfaces);
+    compositor()->imp()->insertSurfaceAfter(prev, surfaceResource->surface(), LCompositor::LCompositorPrivate::UpdateSurfaces);
 
     if (layerChanged)
         surfaceResource->surface()->layerChanged();

@@ -150,9 +150,8 @@ LTexture *LOpenGL::loadTexture(const std::filesystem::path &file)
     return texture;
 }
 
-bool LOpenGL::hasExtension(const char *extension)
+bool LOpenGL::hasExtension(const char *extensions, const char *extension)
 {
-    const char *extensions = (const char*)glGetString(GL_EXTENSIONS);
     size_t extlen = strlen(extension);
     const char *end = extensions + strlen(extensions);
 

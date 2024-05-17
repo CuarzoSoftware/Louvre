@@ -11,6 +11,7 @@
 #include <protocols/Wayland/GDataDeviceManager.h>
 #include <protocols/LinuxDMABuf/GLinuxDMABuf.h>
 #include <protocols/Viewporter/GViewporter.h>
+#include <protocols/LayerShell/GLayerShell.h>
 #include <protocols/Wayland/GSubcompositor.h>
 #include <protocols/XdgShell/GXdgWmBase.h>
 #include <protocols/Wayland/GCompositor.h>
@@ -98,6 +99,8 @@ bool LCompositor::createGlobalsRequest()
     createGlobal<Viewporter::GViewporter>();
 
     createGlobal<ScreenCopy::GScreenCopyManager>();
+
+    //createGlobal<LayerShell::GLayerShell>();
 
     return true;
 }

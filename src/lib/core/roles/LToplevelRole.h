@@ -184,7 +184,7 @@ public:
     /// The states supported by the toplevel
     /// Activated, Maximized, Fullscreen and Resizing are always supported
     /// If any of the tiled states is supported all are supported.
-    /// The Suspended state is independent of other states.
+    /// The Suspended state support is independent of other states.
     LBitset<State> supportedStates() const noexcept;
 
     /**

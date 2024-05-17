@@ -377,22 +377,6 @@ void LCompositor::finish()
     imp()->unlockPoll();
 }
 
-void LCompositor::LCompositorPrivate::raiseChildren(LSurface *surface)
-{
-    if (surface->nextSurface())
-    {
-        surfaces.erase(surface->imp()->compositorLink);
-        surfaces.push_back(surface);
-        surface->imp()->compositorLink = std::prev(surfaces.end());
-        surfacesListChanged = true;
-        surface->orderChanged();
-    }
-
-    // Rise its children
-    for (LSurface *children : surface->children())
-        raiseChildren(children);
-}
-
 wl_display *LCompositor::display()
 {
     return compositor()->imp()->display;

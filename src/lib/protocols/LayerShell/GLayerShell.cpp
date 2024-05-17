@@ -65,7 +65,7 @@ void GLayerShell::get_layer_surface(wl_client */*client*/, wl_resource *resource
 
     if (layer > 3)
     {
-        wl_resource_post_error(resource, ZWLR_LAYER_SHELL_V1_ERROR_INVALID_LAYER, "layer value is invalid.");
+        wl_resource_post_error(resource, ZWLR_LAYER_SHELL_V1_ERROR_INVALID_LAYER, "Invalid layer value.");
         return;
     }
 
@@ -81,14 +81,15 @@ void GLayerShell::get_layer_surface(wl_client */*client*/, wl_resource *resource
         return;
     }
 
-    /*
+    const LSurfaceLayer surfaceLayer { static_cast<LSurfaceLayer>(layer < 2 ? layer : layer + 1) };
+
     new RLayerSurface(
         id,
-        wl_resource_get_version(resource),
-        &surfaceRes,
+        static_cast<GLayerShell*>(wl_resource_get_user_data(resource)),
+        surfaceRes.surface(),
         output == NULL ? nullptr : static_cast<Wayland::GOutput*>(wl_resource_get_user_data(output))->output(),
-        layer,
-        name_space);*/
+        surfaceLayer,
+        name_space);
 }
 
 #if LOUVRE_LAYER_SHELL_VERSION >= 3

@@ -50,6 +50,7 @@ LPRIVATE_CLASS(LCompositor)
     bool isGraphicBackendInitialized { false };
 
     bool initGraphicBackend();
+        bool WL_bind_wayland_display { false };
         PFNEGLBINDWAYLANDDISPLAYWL eglBindWaylandDisplayWL { NULL };
         PFNEGLQUERYWAYLANDBUFFERWL eglQueryWaylandBufferWL { NULL };
         PFNGLEGLIMAGETARGETRENDERBUFFERSTORAGEOESPROC glEGLImageTargetRenderbufferStorageOES { NULL };
@@ -88,8 +89,6 @@ LPRIVATE_CLASS(LCompositor)
 
     bool loadGraphicBackend(const std::filesystem::path &path);
     bool loadInputBackend(const std::filesystem::path &path);
-
-    void raiseChildren(LSurface *surface);
 
     enum InsertOptions : UInt8
     {
@@ -140,6 +139,8 @@ LPRIVATE_CLASS(LCompositor)
     void unitDMAFeedback() noexcept;
 
     std::list<LSurface*> layers[5];
+
+    bool surfaceRaiseAllowed { true };
 };
 
 #endif // LCOMPOSITORPRIVATE_H
