@@ -171,7 +171,7 @@ private:
 
     void handleSurfaceCommit(CommitOrigin origin) noexcept override;
 
-    LBitset<Flags> m_flags;
+    LBitset<Flags> m_flags { HasPendingInitialConf };
     AtomicProps m_atomicProps[2];
     UInt8 m_currentAtomicPropsIndex { 0 };
     LWeak<LOutput> m_output;

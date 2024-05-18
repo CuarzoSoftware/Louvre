@@ -1,7 +1,5 @@
 #include <LLayerRole.h>
-#include <private/LSurfacePrivate.h>
-#include <protocols/LayerShell/RLayerSurface.h>
-#include <LTime.h>
+#include <LCursor.h>
 
 using namespace Louvre;
 
@@ -10,37 +8,21 @@ void LLayerRole::atomicPropsChanged(LBitset<AtomicPropChanges> changes, const At
 
 }
 
-void LLayerRole::handleSurfaceCommit(CommitOrigin origin) noexcept
+void LLayerRole::configureRequest()
 {
-    auto &res { *static_cast<LayerShell::RLayerSurface*>(resource()) };
+    if (!output())
+        setOutput(cursor()->output());
 
-    if (m_flags.check(HasPendingLayer))
+    LSize newSize { size() };
+
+    if (output())
     {
-        m_flags.remove(HasPendingLayer);
-        surface()->imp()->setLayer(pendingProps().layer);
+        if (newSize.w() == 0)
+            newSize.setW(output()->size().w());
+
+        if (newSize.h() == 0)
+            newSize.setH(output()->size().h());
     }
 
-    printf("LAYER %d\n", pendingProps().layer);
-
-
-    if (surface()->mapped())
-    {
-        if (!surface()->buffer())
-            surface()->imp()->setMapped(false);
-    }
-    else
-    {
-        if (surface()->buffer())
-            surface()->imp()->setMapped(true);
-        else
-        {
-            LSize size;
-
-            if (output())
-            {
-                size = output()->size();
-            }
-            res.configure(LTime::nextSerial(), size);
-        }
-    }
+    configureSize(newSize);
 }

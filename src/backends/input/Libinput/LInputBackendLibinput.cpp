@@ -19,6 +19,7 @@
 #include <LTouchUpEvent.h>
 #include <LTouchFrameEvent.h>
 #include <LTouchCancelEvent.h>
+#include <LCursor.h>
 #include <LUtils.h>
 #include <LLog.h>
 
@@ -76,6 +77,7 @@ public:
     static inline LTouchUpEvent touchUpEvent;
     static inline LTouchFrameEvent touchFrameEvent;
     static inline LTouchCancelEvent touchCancelEvent;
+    static inline Float32 dx, dy;
 
     static Int32 openRestricted(const char *path, int flags, void */*data*/)
     {
@@ -159,6 +161,33 @@ public:
                 pointerMoveEvent.setDy(libinput_event_pointer_get_dy(pointerEvent));
                 pointerMoveEvent.setDxUnaccelerated(libinput_event_pointer_get_dx_unaccelerated(pointerEvent));
                 pointerMoveEvent.setDyUnaccelerated(libinput_event_pointer_get_dy_unaccelerated(pointerEvent));
+                pointerMoveEvent.setMs(libinput_event_pointer_get_time(pointerEvent));
+                pointerMoveEvent.setUs(libinput_event_pointer_get_time_usec(pointerEvent));
+                pointerMoveEvent.setSerial(LTime::nextSerial());
+                pointerMoveEvent.notify();
+                break;
+            case LIBINPUT_EVENT_POINTER_MOTION_ABSOLUTE:
+                dev = libinput_event_get_device(ev);
+                inputDevice = (LInputDevice*)libinput_device_get_user_data(dev);
+                pointerEvent = libinput_event_get_pointer_event(ev);
+                pointerMoveEvent.setDevice(inputDevice);
+
+                if (cursor() && cursor()->output())
+                {
+                    dx = Float32(cursor()->output()->pos().x()) +
+                                 libinput_event_pointer_get_absolute_x_transformed(pointerEvent, cursor()->output()->size().w()) -
+                                 cursor()->pos().x();
+                    dy = Float32(cursor()->output()->pos().y()) +
+                                 libinput_event_pointer_get_absolute_y_transformed(pointerEvent, cursor()->output()->size().h()) -
+                                 cursor()->pos().y();
+                }
+                else
+                    dx = dy = 0.f;
+
+                pointerMoveEvent.setDx(dx);
+                pointerMoveEvent.setDy(dy);
+                pointerMoveEvent.setDxUnaccelerated(dx);
+                pointerMoveEvent.setDyUnaccelerated(dy);
                 pointerMoveEvent.setMs(libinput_event_pointer_get_time(pointerEvent));
                 pointerMoveEvent.setUs(libinput_event_pointer_get_time_usec(pointerEvent));
                 pointerMoveEvent.setSerial(LTime::nextSerial());

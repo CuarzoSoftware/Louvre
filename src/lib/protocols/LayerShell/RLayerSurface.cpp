@@ -69,7 +69,7 @@ void RLayerSurface::set_size(wl_client */*client*/, wl_resource *resource, UInt3
         height = LOUVRE_MAX_SURFACE_SIZE;
 
     res.layerRole()->pendingProps().size.setW(width);
-    res.layerRole()->pendingProps().size.setW(height);
+    res.layerRole()->pendingProps().size.setH(height);
     res.layerRole()->m_flags.add(LLayerRole::HasPendingSize);
 }
 

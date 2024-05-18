@@ -390,6 +390,9 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     else if (imp.pending.role)
         imp.pending.role->handleSurfaceCommit(origin);
 
+    if (!ref)
+        return;
+
     if (changes.check(Changes::BufferSizeChanged))
     {
         surface->bufferSizeChanged();
