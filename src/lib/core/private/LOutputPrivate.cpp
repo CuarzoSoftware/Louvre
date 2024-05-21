@@ -11,10 +11,11 @@
 #include <private/LClientPrivate.h>
 #include <LSessionLockManager.h>
 #include <LSessionLockRole.h>
+#include <LExclusiveZone.h>
+#include <LLayerRole.h>
 #include <LSeat.h>
 #include <LGlobal.h>
 #include <LTime.h>
-#include <iostream>
 
 using namespace Louvre::Protocols::Wayland;
 
@@ -393,6 +394,7 @@ void LOutput::LOutputPrivate::updateRect()
     rect.setSize(sizeB);
     rect.setW(roundf(Float32(rect.w())/scale));
     rect.setH(roundf(Float32(rect.h())/scale));
+    updateExclusiveZones();
 }
 
 void LOutput::LOutputPrivate::updateGlobals()
@@ -494,5 +496,87 @@ void LOutput::LOutputPrivate::removeFromSessionLockPendingRepaint() noexcept
 
         if (sessionLockManager()->m_sessionLockRes->m_pendingRepaint.empty())
             sessionLockManager()->m_sessionLockRes->locked();
+    }
+}
+
+void LOutput::LOutputPrivate::updateExclusiveZones() noexcept
+{
+    exclusiveEdges = {0, 0, 0, 0};
+
+    LRect prev;
+
+    for (LExclusiveZone *zone : exclusiveZones)
+    {
+        if (zone->size() <= 0)
+            continue;
+
+        if (zone->m_layerRole)
+            prev = zone->m_rect;
+
+        switch (zone->edge())
+        {
+        case LEdgeNone:
+            break;
+        case LEdgeLeft:
+            zone->m_rect.setX(exclusiveEdges.left);
+            zone->m_rect.setY(exclusiveEdges.top);
+            zone->m_rect.setW(zone->size());
+            zone->m_rect.setH(rect.h() - exclusiveEdges.top - exclusiveEdges.bottom);
+            exclusiveEdges.left += zone->size();
+            break;
+        case LEdgeTop:
+            zone->m_rect.setX(exclusiveEdges.left);
+            zone->m_rect.setY(exclusiveEdges.top);
+            zone->m_rect.setH(zone->size());
+            zone->m_rect.setW(rect.w() - exclusiveEdges.left - exclusiveEdges.right);
+            exclusiveEdges.top += zone->size();
+            break;
+        case LEdgeRight:
+            zone->m_rect.setY(exclusiveEdges.top);
+            zone->m_rect.setH(rect.h() - exclusiveEdges.top - exclusiveEdges.bottom);
+            zone->m_rect.setW(zone->size());
+            exclusiveEdges.right += zone->size();
+            zone->m_rect.setX(rect.w() - exclusiveEdges.right);
+            break;
+        case LEdgeBottom:
+            zone->m_rect.setX(exclusiveEdges.left);
+            zone->m_rect.setW(rect.w() - exclusiveEdges.left - exclusiveEdges.right);
+            zone->m_rect.setH(zone->size());
+            exclusiveEdges.bottom += zone->size();
+            zone->m_rect.setY(rect.h() - exclusiveEdges.bottom);
+            break;
+        }
+
+        if (zone->m_layerRole && prev != zone->m_rect)
+            zone->m_layerRole->configureRequest();
+    }
+
+    availableGeometry.setX(exclusiveEdges.left);
+    availableGeometry.setY(exclusiveEdges.top);
+    availableGeometry.setW(rect.w() - exclusiveEdges.left - exclusiveEdges.right);
+    availableGeometry.setH(rect.h() - exclusiveEdges.top - exclusiveEdges.bottom);
+
+    for (LExclusiveZone *zone : exclusiveZones)
+    {
+        if (zone->m_layerRole)
+            prev = zone->m_rect;
+
+        if (zone->edge() == LEdgeNone)
+        {
+            if (zone->size() >= 0)
+                zone->m_rect = availableGeometry;
+            else
+                zone->m_rect = LRect(0, rect.size());
+        }
+        else
+        {
+            if (zone->size() == 0)
+                zone->m_rect = availableGeometry;
+            else if ( zone->size() < 0)
+                zone->m_rect = LRect(0, rect.size());
+        }
+
+        if (zone->m_layerRole && prev != zone->m_rect)
+            zone->m_layerRole->configureRequest();
     }
 }

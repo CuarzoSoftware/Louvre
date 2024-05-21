@@ -7,7 +7,7 @@
 class Louvre::LToplevelResizeSession
 {
 public:
-    // TODO: add doc
+    // TODO: add doc (and update)
 
     /**
      * @brief Start an interactive toplevel resizing session.
@@ -37,8 +37,7 @@ public:
                LToplevelRole::ResizeEdge edge,
                const LPoint &initDragPoint,
                const LSize &minSize = LSize(0, 0),
-               Int32 L = LToplevelRole::EdgeDisabled, Int32 T = LToplevelRole::EdgeDisabled,
-               Int32 R = LToplevelRole::EdgeDisabled, Int32 B = LToplevelRole::EdgeDisabled);
+               const LMargin &constraints = { LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled });
 
     void updateDragPoint(const LPoint &pos);
 

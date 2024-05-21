@@ -44,9 +44,8 @@ void Output::fullDamage() noexcept
     else
         redrawClock = true;
 
-    topbarHeight = 32;
     terminalIconRect.setPos(LPoint(9, 4));
-    terminalIconRect.setSize(LSize(topbarHeight) - LSize(2*terminalIconRect.pos().y()));
+    terminalIconRect.setSize(LSize(topbarExclusiveZone.size()) - LSize(2*terminalIconRect.pos().y()));
     terminalIconRect.setPos(rect().pos() + terminalIconRect.pos());
 
     newDamage.clear();
@@ -408,7 +407,7 @@ void Output::paintGL() noexcept
         topbarRegion.addRect(LRect(rect().x(),
                                    rect().y(),
                                    rect().w(),
-                                   topbarHeight));
+                                   topbarExclusiveZone.size()));
         topbarRegion.intersectRegion(newDamage);
         p->bindColorMode();
         p->setColor({

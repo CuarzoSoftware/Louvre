@@ -2,6 +2,7 @@
 #define LLAYERROLE_H
 
 #include <LBaseSurfaceRole.h>
+#include <LExclusiveZone.h>
 #include <LBitset.h>
 #include <LOutput.h>
 #include <list>
@@ -13,15 +14,6 @@ public:
     struct Params;
 
     static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LLayerRole;
-
-    enum Edge : UInt32
-    {
-        NoEdge  = static_cast<UInt32>(0) << 0,
-        Top     = static_cast<UInt32>(1) << 0,
-        Bottom  = static_cast<UInt32>(1) << 1,
-        Left    = static_cast<UInt32>(1) << 2,
-        Right   = static_cast<UInt32>(1) << 3,
-    };
 
     enum KeyboardInteractivity
     {
@@ -41,22 +33,14 @@ public:
         ExclusiveEdgeChanged            = static_cast<UInt32>(1) << 6,
     };
 
-    struct Margin
-    {
-        Int32 left   {0};
-        Int32 right  {0};
-        Int32 top    {0};
-        Int32 bottom {0};
-    };
-
     struct AtomicProps
     {
         LSize size;
-        LBitset<Edge> anchor;
+        LBitset<LEdge> anchor;
         Int32 exclusiveZone;
-        Margin margin;
+        LMargin margin;
         KeyboardInteractivity keyboardInteractivity;
-        Edge exclusiveEdge;
+        LEdge exclusiveEdge { LEdgeNone };
         LSurfaceLayer layer;
     };
 
@@ -98,17 +82,22 @@ public:
         return atomicProps().size;
     }
 
-    LBitset<Edge> anchor() const noexcept
+    LBitset<LEdge> anchor() const noexcept
     {
         return atomicProps().anchor;
     }
 
-    Int32 exclusiveZone() const noexcept
+    const LExclusiveZone &exclusiveZone() const noexcept
+    {
+        return m_exclusiveZone;
+    }
+
+    Int32 exclusiveZoneSize() const noexcept
     {
         return atomicProps().exclusiveZone;
     }
 
-    const Margin &margin() const noexcept
+    const LMargin &margin() const noexcept
     {
         return atomicProps().margin;
     }
@@ -118,7 +107,7 @@ public:
         return atomicProps().keyboardInteractivity;
     }
 
-    Edge exclusiveEdge() const noexcept
+    LEdge exclusiveEdge() const noexcept
     {
         return atomicProps().exclusiveEdge;
     }
@@ -130,12 +119,12 @@ public:
 
     LOutput *output() const noexcept
     {
-        return m_output.get();
+        return m_exclusiveZone.output();
     }
 
     void setOutput(LOutput *output) noexcept
     {
-        m_output.reset(output);
+        m_exclusiveZone.setOutput(output);
     }
 
     const std::string &nameSpace() noexcept
@@ -169,12 +158,14 @@ private:
         return m_atomicProps[1 - m_currentAtomicPropsIndex];
     }
 
+    LEdge edgesToSingleEdge() const noexcept;
+
     void handleSurfaceCommit(CommitOrigin origin) noexcept override;
 
+    LExclusiveZone m_exclusiveZone { LEdgeNone, 0, this };
     LBitset<Flags> m_flags { HasPendingInitialConf };
     AtomicProps m_atomicProps[2];
     UInt8 m_currentAtomicPropsIndex { 0 };
-    LWeak<LOutput> m_output;
     Configuration m_pendingConf, m_lastACKConf;
     std::list<Configuration> m_sentConfs;
     std::string m_namespace;

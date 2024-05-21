@@ -101,12 +101,6 @@ void RXdgSurface::get_toplevel(wl_client */*client*/, wl_resource *resource, UIn
 
 void RXdgSurface::get_popup(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *parent, wl_resource *positioner)
 {
-    if (!parent)
-    {
-        wl_resource_post_error(positioner, XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT, "xdg_popup's without parent not supported");
-        return;
-    }
-
     auto *xdgPositionerRes { static_cast<RXdgPositioner*>(wl_resource_get_user_data(positioner)) };
 
     if (!xdgPositionerRes->validate())
@@ -126,9 +120,9 @@ void RXdgSurface::get_popup(wl_client */*client*/, wl_resource *resource, UInt32
         return;
     }
 
-    auto *xdgParentSurfaceRes { static_cast<RXdgSurface*>(wl_resource_get_user_data(parent)) };
+    auto *xdgParentSurfaceRes { parent == nullptr ? nullptr : static_cast<RXdgSurface*>(wl_resource_get_user_data(parent)) };
 
-    if (res->surface()->imp()->isInChildrenOrPendingChildren(xdgParentSurfaceRes->surface()))
+    if (xdgParentSurfaceRes && res->surface()->imp()->isInChildrenOrPendingChildren(xdgParentSurfaceRes->surface()))
     {
         wl_resource_post_error(positioner,
                                XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT,

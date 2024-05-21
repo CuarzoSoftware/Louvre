@@ -37,15 +37,23 @@ void LSurface::LSurfacePrivate::setParent(LSurface *parent)
 
     this->parent = parent;
 
-    if (parent->layer() != surface->layer())
-        setLayer(parent->layer());
+    const bool isSubsurfaceOrToplevel {
+        surface->subsurface() != nullptr  ||
+        surface->toplevel() != nullptr ||
+        (pending.role && (pending.role->roleId() == LSurface::Role::Subsurface || pending.role->roleId() == LSurface::Role::Toplevel))};
 
     using OP = LCompositor::LCompositorPrivate::InsertOptions;
 
-    if (parent->children().empty())
-        compositor()->imp()->insertSurfaceAfter(parent, surface, OP::UpdateSurfaces | OP::UpdateLayers);
-    else
-        compositor()->imp()->insertSurfaceAfter(parent->children().back(), surface, OP::UpdateSurfaces | OP::UpdateLayers);
+    if (isSubsurfaceOrToplevel)
+    {
+        if (parent->layer() != surface->layer())
+            setLayer(parent->layer());
+
+        if (parent->children().empty())
+            compositor()->imp()->insertSurfaceAfter(parent, surface, OP::UpdateSurfaces | OP::UpdateLayers);
+        else
+            compositor()->imp()->insertSurfaceAfter(parent->children().back(), surface, OP::UpdateSurfaces | OP::UpdateLayers);
+    }
 
     parent->imp()->children.push_back(surface);
     surface->imp()->parentLink = std::prev(parent->imp()->children.end());
@@ -128,13 +136,21 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
         if (child->imp()->parent)
             child->imp()->parent->imp()->children.erase(child->imp()->parentLink);
 
-        if (child->layer() != surface->layer())
-            child->imp()->setLayer(surface->layer());
+        const bool isSubsurfaceOrToplevel {
+            child->subsurface() != nullptr  ||
+            child->toplevel() != nullptr ||
+            (child->imp()->pending.role && (child->imp()->pending.role->roleId() == LSurface::Role::Subsurface || child->imp()->pending.role->roleId() == LSurface::Role::Toplevel))};
 
-        if (surface->children().empty())
-            compositor()->imp()->insertSurfaceAfter(surface, child, OP::UpdateSurfaces | OP::UpdateLayers);
-        else
-            compositor()->imp()->insertSurfaceAfter(surface->children().back(), child, OP::UpdateSurfaces | OP::UpdateLayers);
+        if (isSubsurfaceOrToplevel)
+        {
+            if (child->layer() != surface->layer())
+                child->imp()->setLayer(surface->layer());
+
+            if (surface->children().empty())
+                compositor()->imp()->insertSurfaceAfter(surface, child, OP::UpdateSurfaces | OP::UpdateLayers);
+            else
+                compositor()->imp()->insertSurfaceAfter(surface->children().back(), child, OP::UpdateSurfaces | OP::UpdateLayers);
+        }
 
         children.push_back(child);
         child->imp()->pendingParent = nullptr;
@@ -149,9 +165,9 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
             child->imp()->pending.role->handleParentChange();
     }
 
-    compositor()->imp()->surfaceRaiseAllowed = false;
+    compositor()->imp()->surfaceRaiseAllowedCounter++;
     surface->orderChanged();
-    compositor()->imp()->surfaceRaiseAllowed = true;
+    compositor()->imp()->surfaceRaiseAllowedCounter--;
 }
 
 bool LSurface::LSurfacePrivate::bufferToTexture()
@@ -797,10 +813,12 @@ void LSurface::LSurfacePrivate::setLayer(LSurfaceLayer newLayer)
         surfaceResource->surface()->layerChanged();
 
     for (LSurface *child : pendingChildren)
-        child->imp()->setLayer(layer);
+        if (child->subsurface() || child->toplevel() || (child->imp()->pending.role && (child->imp()->pending.role->roleId() == Role::Subsurface || child->imp()->pending.role->roleId() == Role::Toplevel)))
+            child->imp()->setLayer(layer);
 
     for (LSurface *child : children)
-        child->imp()->setLayer(layer);
+        if (child->subsurface() || child->toplevel() || (child->imp()->pending.role && (child->imp()->pending.role->roleId() == Role::Subsurface || child->imp()->pending.role->roleId() == Role::Toplevel)))
+            child->imp()->setLayer(layer);
 }
 
 LSurface *LSurface::LSurfacePrivate::prevSurfaceInLayers() noexcept

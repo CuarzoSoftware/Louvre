@@ -500,3 +500,25 @@ void LToplevelRole::LToplevelRolePrivate::setTitle(const char *newTitle)
     title = text;
     toplevel->titleChanged();
 }
+
+LMargin LToplevelRole::calculateConstraintsFromOutput(LOutput *output) const noexcept
+{
+    LMargin constraints {EdgeDisabled, EdgeDisabled, EdgeDisabled, EdgeDisabled};
+
+    if (output)
+    {
+        if (output->exclusiveEdges().left != 0)
+            constraints.left = output->pos().x() + output->exclusiveEdges().left;
+
+        if (output->exclusiveEdges().top != 0)
+            constraints.top = output->pos().y() + output->exclusiveEdges().top;
+
+        if (output->exclusiveEdges().right != 0)
+            constraints.right = output->pos().x() + output->size().w() - output->exclusiveEdges().right;
+
+        if (output->exclusiveEdges().bottom != 0)
+            constraints.bottom = output->pos().y() + output->size().h() - output->exclusiveEdges().bottom;
+    }
+
+    return constraints;
+}

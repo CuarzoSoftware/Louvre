@@ -88,7 +88,7 @@ void LToplevelResizeSession::updateDragPoint(const LPoint &point)
     m_lastSerial = m_toplevel->pending().serial;
 }
 
-bool LToplevelResizeSession::start(const LEvent &triggeringEvent, LToplevelRole::ResizeEdge edge, const LPoint &initDragPoint, const LSize &minSize, Int32 L, Int32 T, Int32 R, Int32 B)
+bool LToplevelResizeSession::start(const LEvent &triggeringEvent, LToplevelRole::ResizeEdge edge, const LPoint &initDragPoint, const LSize &minSize, const LMargin &constraints)
 {
     if (m_isActive)
         return false;
@@ -98,17 +98,17 @@ bool LToplevelResizeSession::start(const LEvent &triggeringEvent, LToplevelRole:
     m_isActive = true;
     m_triggeringEvent.reset(triggeringEvent.copy());
     m_minSize = minSize;
-    m_bounds = {L,T,R,B};
+    m_bounds = (const LBox &)constraints;
     m_edge = edge;
     m_initSize = m_toplevel->windowGeometry().size();
     m_initDragPoint = initDragPoint;
     m_currentDragPoint = initDragPoint;
 
-    if (L != LToplevelRole::EdgeDisabled && m_toplevel->surface()->pos().x() < L)
-        m_toplevel->surface()->setX(L);
+    if (m_bounds.x1 != LToplevelRole::EdgeDisabled && m_toplevel->surface()->pos().x() < m_bounds.x1)
+        m_toplevel->surface()->setX(m_bounds.x1);
 
-    if (T != LToplevelRole::EdgeDisabled && m_toplevel->surface()->pos().y() < T)
-        m_toplevel->surface()->setY(T);
+    if (m_bounds.y1 != LToplevelRole::EdgeDisabled && m_toplevel->surface()->pos().y() < m_bounds.y1)
+        m_toplevel->surface()->setY(m_bounds.y1);
 
     m_initPos = m_toplevel->surface()->pos();
 

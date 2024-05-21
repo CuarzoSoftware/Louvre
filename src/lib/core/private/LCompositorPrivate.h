@@ -96,6 +96,7 @@ LPRIVATE_CLASS(LCompositor)
         UpdateLayers    = static_cast<UInt8>(1) << 1
     };
 
+    void notifyOrderChangeFromSurface(LSurface *from);
     void insertSurfaceAfter(LSurface *prevSurface, LSurface *surfaceToInsert, LBitset<InsertOptions> options);
     void insertSurfaceBefore(LSurface *nextSurface, LSurface *surfaceToInsert, LBitset<InsertOptions> options);
 
@@ -140,7 +141,7 @@ LPRIVATE_CLASS(LCompositor)
 
     std::list<LSurface*> layers[5];
 
-    bool surfaceRaiseAllowed { true };
+    UInt32 surfaceRaiseAllowedCounter { 0 };
 };
 
 #endif // LCOMPOSITORPRIVATE_H

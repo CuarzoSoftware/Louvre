@@ -1,6 +1,8 @@
 #include <protocols/LayerShell/wlr-layer-shell-unstable-v1.h>
 #include <protocols/LayerShell/GLayerShell.h>
 #include <protocols/LayerShell/RLayerSurface.h>
+#include <protocols/XdgShell/RXdgPopup.h>
+#include <protocols/XdgShell/RXdgSurface.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LLayerRolePrivate.h>
 #include <private/LFactory.h>
@@ -75,8 +77,7 @@ void RLayerSurface::set_size(wl_client */*client*/, wl_resource *resource, UInt3
 
 void RLayerSurface::set_anchor(wl_client */*client*/, wl_resource *resource, UInt32 anchor)
 {
-    using Edge = LLayerRole::Edge;
-    anchor &= Edge::Top | Edge::Bottom | Edge::Left | Edge::Right;
+    anchor &= LEdgeTop | LEdgeBottom | LEdgeLeft | LEdgeRight;
     auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
     res.layerRole()->pendingProps().anchor = anchor;
     res.layerRole()->m_flags.add(LLayerRole::HasPendingAnchor);
@@ -114,7 +115,22 @@ void RLayerSurface::set_keyboard_interactivity(wl_client */*client*/, wl_resourc
 
 void RLayerSurface::get_popup(wl_client */*client*/, wl_resource *resource, wl_resource *popup)
 {
+    auto &popupSurface { *static_cast<XdgShell::RXdgPopup*>(wl_resource_get_user_data(popup))->xdgSurfaceRes()->surface() };
+    auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
 
+    if (popupSurface.imp()->parent || popupSurface.imp()->pendingParent)
+    {
+        wl_resource_post_error(resource, 0, "Popup already has a parent.");
+        return;
+    }
+
+    if (popupSurface.imp()->isInChildrenOrPendingChildren(res.layerRole()->surface()))
+    {
+        wl_resource_post_error(resource, 0, "Popup can not have a child surface as parent.");
+        return;
+    }
+
+    popupSurface.imp()->setPendingParent(res.layerRole()->surface());
 }
 
 void RLayerSurface::ack_configure(wl_client */*client*/, wl_resource *resource, UInt32 serial)
@@ -152,7 +168,7 @@ void RLayerSurface::set_exclusive_edge(wl_client */*client*/, wl_resource *resou
     }
 
     auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
-    res.layerRole()->pendingProps().exclusiveEdge = (LLayerRole::Edge)edge;
+    res.layerRole()->pendingProps().exclusiveEdge = (LEdge)edge;
     res.layerRole()->m_flags.add(LLayerRole::HasPendingExclusiveEdge);
 }
 #endif

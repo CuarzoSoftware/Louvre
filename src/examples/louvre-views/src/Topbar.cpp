@@ -11,24 +11,15 @@
 #include "TextRenderer.h"
 
 Topbar::Topbar(Output *output) :
-    LLayerView(&G::compositor()->overlayLayer),
-    background(0.95f, 0.95f, 1.f, 1.f, this),
-    logo(G::Logo, &background),
-    clock(G::compositor()->clockTexture, &background),
-    outputInfo(nullptr, &background),
-    oversamplingLabel(G::compositor()->oversamplingLabelTexture, &background),
-    vSyncLabel(G::compositor()->vSyncLabelTexture, &background),
-    appName(G::textures()->defaultTopbarAppName, &background)
+    LSolidColorView(0.95f, 0.95f, 1.f, 1.f, &G::compositor()->overlayLayer)
 {
     this->output = output;
     output->topbar = this;
+    exclusiveZone.setOutput(output);
+
     enableParentOffset(false);
     enablePointerEvents(true);
     enableBlockPointer(false);
-
-    background.enablePointerEvents(false);
-    background.enableBlockPointer(false);
-    background.setPos(0, 0);
 
     logo.enableCustomColor(true);
     logo.setCustomColor({0.1f, 0.1f, 0.1f});
@@ -71,11 +62,9 @@ void Topbar::update()
         vSyncLabel.setCustomColor({0.8f, 0.1f, 0.1f});
 
     setVisible(true);
-    setPos(output->pos().x(), output->pos().y());
-    background.setSize(output->size().w(), TOPBAR_HEIGHT);
-    setSize(output->size().w(), TOPBAR_HEIGHT);
-    background.setVisible(true);
-    appName.setPos(42, 1 + (background.size().h() - appName.size().h()) / 2);
+    setPos(output->pos() + exclusiveZone.rect().pos());
+    setSize(exclusiveZone.rect().size());
+    appName.setPos(42, 1 + (size().h() - appName.size().h()) / 2);
     clock.setPos(size().w() - clock.size().w() - 8, 1 + (size().h() - clock.size().h()) / 2);
     vSyncLabel.setPos(clock.nativePos().x() - vSyncLabel.size().w() - 8, clock.nativePos().y());
     oversamplingLabel.setPos(vSyncLabel.nativePos().x() - oversamplingLabel.size().w() - 8, vSyncLabel.nativePos().y());

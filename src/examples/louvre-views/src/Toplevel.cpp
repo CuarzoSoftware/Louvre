@@ -104,51 +104,24 @@ void Toplevel::configurationChanged(LBitset<ConfigurationChanges> changes)
     }
 }
 
-void Toplevel::startResizeRequest(const LEvent &triggeringEvent, ResizeEdge edge)
-{
-    if (fullscreen())
-        return;
-
-    if (triggeringEvent.type() == LEvent::Type::Touch)
-    {
-        if (triggeringEvent.subtype() != LEvent::Subtype::Down)
-            return;
-
-        if (!cursor()->output())
-            return;
-
-        const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(triggeringEvent) };
-        LTouchPoint *touchPoint { seat()->touch()->findTouchPoint(touchDownEvent.id()) };
-
-        if (!touchPoint)
-            return;
-
-        if (touchPoint->surface() != surface())
-            return;
-
-        const LPoint initDragPoint { LTouch::toGlobal(cursor()->output(), touchPoint->pos()) };
-
-        if (resizeSession().start(triggeringEvent, edge, initDragPoint, LSize(150, 150), EdgeDisabled, TOPBAR_HEIGHT))
-            G::enableDocks(false);
-    }
-    else if (surface()->hasPointerFocus())
-    {
-        if (resizeSession().start(triggeringEvent, edge, cursor()->pos(), LSize(150, 150), EdgeDisabled, TOPBAR_HEIGHT))
-            G::enableDocks(false);
-    }
-}
-
 void Toplevel::startMoveRequest(const LEvent &triggeringEvent)
 {
     if (fullscreen())
         return;
 
+    LOutput *activeOutput { cursor()->output() };
+
+    LMargin constraints { calculateConstraintsFromOutput(activeOutput) };
+
+    if (current().decorationMode == ServerSide && constraints.bottom != EdgeDisabled)
+        constraints.bottom -= TOPLEVEL_TOPBAR_HEIGHT;
+
     if (triggeringEvent.type() == LEvent::Type::Touch)
     {
         if (triggeringEvent.subtype() != LEvent::Subtype::Down)
             return;
 
-        if (!cursor()->output())
+        if (!activeOutput)
             return;
 
         const LTouchDownEvent& touchDownEvent { static_cast<const LTouchDownEvent&>(triggeringEvent) };
@@ -160,16 +133,54 @@ void Toplevel::startMoveRequest(const LEvent &triggeringEvent)
         if (touchPoint->surface() != surface())
             return;
 
-        const LPoint initDragPoint { LTouch::toGlobal(cursor()->output(), touchPoint->pos()) };
+        const LPoint initDragPoint { LTouch::toGlobal(activeOutput, touchPoint->pos()) };
 
-        if (moveSession().start(triggeringEvent, initDragPoint, EdgeDisabled, TOPBAR_HEIGHT))
-            G::enableDocks(false);
+        moveSession().start(triggeringEvent, initDragPoint, constraints);
     }
     else if (surface()->hasPointerFocus())
     {
-        if (moveSession().start(triggeringEvent, cursor()->pos(), EdgeDisabled, TOPBAR_HEIGHT))
-            G::enableDocks(false);
+        moveSession().start(triggeringEvent, cursor()->pos(), constraints);
     }
+}
+
+void Toplevel::startResizeRequest(const LEvent &triggeringEvent, ResizeEdge edge)
+{
+    if (fullscreen())
+        return;
+
+    LOutput *activeOutput { cursor()->output() };
+    const LSize minSize { 150, 150 };
+    LMargin constraints { calculateConstraintsFromOutput(activeOutput) };
+
+    if (current().decorationMode == ServerSide && constraints.bottom != EdgeDisabled)
+        constraints.bottom -= TOPLEVEL_TOPBAR_HEIGHT;
+
+    if (triggeringEvent.type() == LEvent::Type::Touch)
+    {
+        if (triggeringEvent.subtype() != LEvent::Subtype::Down)
+            return;
+
+        if (!activeOutput)
+            return;
+
+        const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(triggeringEvent) };
+        LTouchPoint *touchPoint { seat()->touch()->findTouchPoint(touchDownEvent.id()) };
+
+        if (!touchPoint)
+            return;
+
+        if (touchPoint->surface() != surface())
+            return;
+
+        const LPoint initDragPoint { LTouch::toGlobal(activeOutput, touchPoint->pos()) };
+
+        resizeSession().start(triggeringEvent, edge, initDragPoint, minSize, constraints);
+    }
+    else if (surface()->hasPointerFocus())
+        resizeSession().start(triggeringEvent, edge, cursor()->pos(), minSize, constraints);
+
+    if (resizeSession().isActive())
+        G::enableDocks(false);
 }
 
 void Toplevel::setMaximizedRequest()
@@ -178,7 +189,7 @@ void Toplevel::setMaximizedRequest()
     if (maximized())
         return;
 
-    Output *output { (Output*)cursor()->output() };
+    Output *output { static_cast<Output*>(cursor()->output()) };
 
     if (!output)
         return;
@@ -187,25 +198,25 @@ void Toplevel::setMaximizedRequest()
         prevRect = LRect(surface()->pos(), windowGeometry().size());
 
     if (windowGeometry().size().area() == 0)
-        prevRect.setSize(output->size() - LSize(0, TOPBAR_HEIGHT));
+        prevRect.setSize(output->availableGeometry().size());
 
-    if (prevRect.y() < TOPBAR_HEIGHT)
-        prevRect.setY(TOPBAR_HEIGHT);
+    if (prevRect.y() < output->pos().y() + output->availableGeometry().y())
+        prevRect.setY(output->pos().y() + output->availableGeometry().y());
 
     if (maxSize().w() == 0 || maxSize().w() >= output->rect().w())
-        dstRect.setW(output->rect().w());
+        dstRect.setW(output->availableGeometry().w());
     else
         dstRect.setW(maxSize().w());
 
-    if (maxSize().h() == 0 || maxSize().h() >= output->rect().h() - TOPBAR_HEIGHT)
-        dstRect.setH(output->rect().h() - TOPBAR_HEIGHT);
+    if (maxSize().h() == 0 || maxSize().h() >= output->availableGeometry().h())
+        dstRect.setH(output->availableGeometry().h());
     else
         dstRect.setH(maxSize().h());
 
-    dstRect.setPos(output->pos() + LPoint(0, TOPBAR_HEIGHT) + (output->size() - LSize(0, TOPBAR_HEIGHT) - dstRect.size()) / 2);
+    dstRect.setPos(output->pos() + output->availableGeometry().pos() + (output->availableGeometry().size() - dstRect.size()) / 2);
 
     if (supportServerSideDecorations())
-        dstRect.setSize(dstRect.size() + LSize(2, 2 - TOPLEVEL_TOPBAR_HEIGHT));
+        dstRect.setSize(dstRect.size() - LSize(0, TOPLEVEL_TOPBAR_HEIGHT));
 
     configureSize(dstRect.size());
     configureState(Activated | Maximized);

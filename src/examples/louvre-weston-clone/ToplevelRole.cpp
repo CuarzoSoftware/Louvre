@@ -30,7 +30,7 @@ void ToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
             if (output)
             {
                 surface()->raise();
-                surface()->setPos(output->pos() + LPoint(0, 32));
+                surface()->setPos(output->pos() + output->availableGeometry().pos());
                 surface()->setMinimized(false);
             }
             else
@@ -62,6 +62,8 @@ void ToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
             surface()->setPos(rectBeforeFullscreen.pos());
             if (output->fullscreenSurface == surface())
                 output->fullscreenSurface = nullptr;
+
+            output->fullDamage();
         }
     }
 }
@@ -80,8 +82,7 @@ void ToplevelRole::setMaximizedRequest() noexcept
     if (!output)
         return;
 
-    const LSize size { output->size() - LSize(0, 32) };
-    configureSize(size);
+    configureSize(output->availableGeometry().size());
     configureState(LToplevelRole::Activated | LToplevelRole::Maximized);
 }
 
@@ -103,64 +104,4 @@ void ToplevelRole::unsetFullscreenRequest() noexcept
 {
     configureSize(rectBeforeFullscreen.size());
     configureState(statesBeforeFullscreen);
-}
-
-void ToplevelRole::startMoveRequest(const LEvent &triggeringEvent) noexcept
-{
-    if (fullscreen())
-        return;
-
-    if (triggeringEvent.type() == LEvent::Type::Touch)
-    {
-        if (triggeringEvent.subtype() != LEvent::Subtype::Down)
-           return;
-
-        if (!cursor()->output())
-           return;
-
-        const LTouchDownEvent& touchDownEvent { static_cast<const LTouchDownEvent&>(triggeringEvent) };
-        LTouchPoint *touchPoint { seat()->touch()->findTouchPoint(touchDownEvent.id()) };
-
-        if (!touchPoint)
-           return;
-
-        if (touchPoint->surface() != surface())
-           return;
-
-        const LPoint initDragPoint { LTouch::toGlobal(cursor()->output(), touchPoint->pos()) };
-
-        moveSession().start(triggeringEvent, initDragPoint, EdgeDisabled, 32);
-    }
-    else if (surface()->hasPointerFocus())
-        moveSession().start(triggeringEvent, cursor()->pos(), EdgeDisabled, 32);
-}
-
-void ToplevelRole::startResizeRequest(const LEvent &triggeringEvent, ResizeEdge edge) noexcept
-{
-    if (fullscreen())
-        return;
-
-    if (triggeringEvent.type() == LEvent::Type::Touch)
-    {
-        if (triggeringEvent.subtype() != LEvent::Subtype::Down)
-           return;
-
-        if (!cursor()->output())
-           return;
-
-        const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(triggeringEvent) };
-        LTouchPoint *touchPoint { seat()->touch()->findTouchPoint(touchDownEvent.id()) };
-
-        if (!touchPoint)
-           return;
-
-        if (touchPoint->surface() != surface())
-           return;
-
-        const LPoint initDragPoint { LTouch::toGlobal(cursor()->output(), touchPoint->pos()) };
-
-        resizeSession().start(triggeringEvent, edge, initDragPoint, LSize(128, 128), EdgeDisabled, 32);
-    }
-    else if (surface()->hasPointerFocus())
-        resizeSession().start(triggeringEvent, edge, cursor()->pos(), LSize(128, 128), EdgeDisabled, 32);
 }

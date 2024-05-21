@@ -472,6 +472,27 @@ void LPopupRole::handleSurfaceCommit(CommitOrigin origin)
 {
     L_UNUSED(origin);
 
+    if (surface()->imp()->pendingParent)
+    {
+        if (surface()->imp()->isInChildrenOrPendingChildren(surface()->imp()->pendingParent))
+        {
+            wl_resource_post_error(xdgSurfaceResource()->resource(),
+                                   XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT,
+                                   "Parent can not be child or equal to surface.");
+            return;
+        }
+
+        surface()->imp()->pendingParent->imp()->applyPendingChildren();
+    }
+
+    if (!surface()->parent())
+    {
+        wl_resource_post_error(xdgSurfaceResource()->resource(),
+                               XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT,
+                               "Popup has no parent.");
+        return;
+    }
+
     if (surface()->imp()->pending.role)
     {
         if (surface()->imp()->hasBufferOrPendingBuffer())
@@ -486,6 +507,7 @@ void LPopupRole::handleSurfaceCommit(CommitOrigin origin)
             surface()->imp()->pendingParent->imp()->applyPendingChildren();
 
         surface()->imp()->applyPendingRole();
+        surface()->imp()->setLayer(LLayerOverlay);
         imp()->stateFlags.add(LPopupRolePrivate::CanBeConfigured);
         configureRequest();
         if (!imp()->stateFlags.check(LPopupRolePrivate::HasConfigurationToSend))

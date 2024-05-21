@@ -172,6 +172,7 @@ namespace Louvre
 
     // Other
     class LDMABuffer;
+    class LExclusiveZone;
 
     // Utils
     class LLog;
@@ -269,6 +270,24 @@ namespace Louvre
 
         /// The y-coordinate of the bottom-right corner of the box.
         Int32 y2;
+    };
+
+    // TODO: add doc
+    struct LMargin
+    {
+        Int32 left {0};
+        Int32 top {0};
+        Int32 right {0};
+        Int32 bottom {0};
+    };
+
+    enum LEdge : UInt32
+    {
+        LEdgeNone    = 0,
+        LEdgeTop     = static_cast<UInt32>(1) << 0,
+        LEdgeBottom  = static_cast<UInt32>(1) << 1,
+        LEdgeLeft    = static_cast<UInt32>(1) << 2,
+        LEdgeRight   = static_cast<UInt32>(1) << 3,
     };
 
     /**

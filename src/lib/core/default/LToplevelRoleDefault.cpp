@@ -28,12 +28,16 @@ void LToplevelRole::startMoveRequest(const LEvent &triggeringEvent)
     if (fullscreen())
         return;
 
+    LOutput *activeOutput { cursor()->output() };
+
+    const LMargin constraints { calculateConstraintsFromOutput(activeOutput) };
+
     if (triggeringEvent.type() == LEvent::Type::Touch)
     {
         if (triggeringEvent.subtype() != LEvent::Subtype::Down)
             return;
 
-        if (!cursor()->output())
+        if (!activeOutput)
             return;
 
         const LTouchDownEvent& touchDownEvent { static_cast<const LTouchDownEvent&>(triggeringEvent) };
@@ -45,12 +49,14 @@ void LToplevelRole::startMoveRequest(const LEvent &triggeringEvent)
         if (touchPoint->surface() != surface())
             return;
 
-        const LPoint initDragPoint { LTouch::toGlobal(cursor()->output(), touchPoint->pos()) };
+        const LPoint initDragPoint { LTouch::toGlobal(activeOutput, touchPoint->pos()) };
 
-        moveSession().start(triggeringEvent, initDragPoint);
+        moveSession().start(triggeringEvent, initDragPoint, constraints);
     }
     else if (surface()->hasPointerFocus())
-        moveSession().start(triggeringEvent, cursor()->pos());
+    {
+        moveSession().start(triggeringEvent, cursor()->pos(), constraints);
+    }
 }
 //! [startMoveRequest]
 
@@ -60,12 +66,16 @@ void LToplevelRole::startResizeRequest(const LEvent &triggeringEvent, ResizeEdge
     if (fullscreen())
         return;
 
+    LOutput *activeOutput { cursor()->output() };
+    const LSize minSize { 150, 150 };
+    const LMargin constraints { calculateConstraintsFromOutput(activeOutput) };
+
     if (triggeringEvent.type() == LEvent::Type::Touch)
     {
         if (triggeringEvent.subtype() != LEvent::Subtype::Down)
             return;
 
-        if (!cursor()->output())
+        if (!activeOutput)
             return;
 
         const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(triggeringEvent) };
@@ -77,12 +87,12 @@ void LToplevelRole::startResizeRequest(const LEvent &triggeringEvent, ResizeEdge
         if (touchPoint->surface() != surface())
             return;
 
-        const LPoint initDragPoint { LTouch::toGlobal(cursor()->output(), touchPoint->pos()) };
+        const LPoint initDragPoint { LTouch::toGlobal(activeOutput, touchPoint->pos()) };
 
-        resizeSession().start(triggeringEvent, edge, initDragPoint);
+        resizeSession().start(triggeringEvent, edge, initDragPoint, minSize, constraints);
     }
     else if (surface()->hasPointerFocus())
-        resizeSession().start(triggeringEvent, edge, cursor()->pos());
+        resizeSession().start(triggeringEvent, edge, cursor()->pos(), minSize, constraints);
 }
 //! [startResizeRequest]
 
@@ -111,14 +121,16 @@ void LToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
             seat()->keyboard()->setFocus(surface());
     }
 
+    LOutput *activeOutput { cursor()->output() };
+
     if (stateChanges.check(Maximized))
     {
         if (maximized())
         {
-            if (cursor()->output())
+            if (activeOutput)
             {
                 surface()->raise();
-                surface()->setPos(cursor()->output()->pos());
+                surface()->setPos(activeOutput->pos() + activeOutput->availableGeometry().pos());
                 surface()->setMinimized(false);
             }
             else
@@ -135,9 +147,9 @@ void LToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
     {
         if (fullscreen())
         {
-            if (cursor()->output())
+            if (activeOutput)
             {
-                surface()->setPos(cursor()->output()->pos());
+                surface()->setPos(activeOutput->pos());
                 surface()->raise();
             }
             else
@@ -179,7 +191,7 @@ void LToplevelRole::setMaximizedRequest()
     if (!cursor()->output())
         return;
 
-    configureSize(cursor()->output()->size());
+    configureSize(cursor()->output()->availableGeometry().size());
     configureState(Activated | Maximized);
 }
 //! [setMaximizedRequest]

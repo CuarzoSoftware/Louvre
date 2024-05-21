@@ -15,14 +15,13 @@ void LLayerRole::configureRequest()
 
     LSize newSize { size() };
 
-    if (output())
-    {
-        if (newSize.w() == 0)
-            newSize.setW(output()->size().w());
+    const LBitset<LEdge> edge { exclusiveZone().edge() };
 
-        if (newSize.h() == 0)
-            newSize.setH(output()->size().h());
-    }
+    if (newSize.w() == 0 || edge == 0 || edge.check(LEdgeTop | LEdgeBottom))
+        newSize.setW(exclusiveZone().rect().w());
+
+    if (newSize.h() == 0 || edge == 0 || edge.check(LEdgeLeft | LEdgeRight))
+        newSize.setH(exclusiveZone().rect().h());
 
     configureSize(newSize);
 }

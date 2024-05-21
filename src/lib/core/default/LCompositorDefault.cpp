@@ -100,7 +100,7 @@ bool LCompositor::createGlobalsRequest()
 
     createGlobal<ScreenCopy::GScreenCopyManager>();
 
-    //createGlobal<LayerShell::GLayerShell>();
+    createGlobal<LayerShell::GLayerShell>();
     return true;
 }
 //! [createGlobalsRequest]

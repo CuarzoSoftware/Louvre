@@ -51,7 +51,10 @@ RXdgPopup::RXdgPopup
     };
 
     m_popupRole.reset(LFactory::createObject<LPopupRole>(&popupRoleParams));
-    xdgSurfaceRes->surface()->imp()->setParent(xdgParentSurfaceRes->surface());
+
+    if (xdgParentSurfaceRes)
+        xdgSurfaceRes->surface()->imp()->setPendingParent(xdgParentSurfaceRes->surface());
+
     xdgSurfaceRes->surface()->imp()->setPendingRole(popupRole());
 }
 

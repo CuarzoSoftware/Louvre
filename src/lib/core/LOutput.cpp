@@ -49,6 +49,16 @@ bool LOutput::needsFullRepaint() const noexcept
     return imp()->stateFlags.check(LOutput::LOutputPrivate::NeedsFullRepaint);
 }
 
+const LRect &LOutput::availableGeometry() const noexcept
+{
+    return imp()->availableGeometry;
+}
+
+const LMargin &LOutput::exclusiveEdges() const noexcept
+{
+    return imp()->exclusiveEdges;
+}
+
 bool LOutput::fractionalOversamplingEnabled() const
 {
     return imp()->stateFlags.check(LOutputPrivate::FractionalOversamplingEnabled);

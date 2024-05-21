@@ -7,6 +7,7 @@
 #include <LBitset.h>
 #include <LGammaTable.h>
 #include <atomic>
+#include <list>
 #include <mutex>
 #include <functional>
 
@@ -131,6 +132,11 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     bool initialize();
     void updateRect();
     void updateGlobals();
+
+    std::list<LExclusiveZone*> exclusiveZones;
+    LRect availableGeometry;
+    LMargin exclusiveEdges;
+    void updateExclusiveZones() noexcept;
 };
 
 #endif // LOUTPUTPRIVATE_H

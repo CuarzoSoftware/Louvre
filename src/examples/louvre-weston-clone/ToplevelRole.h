@@ -15,8 +15,6 @@ public:
     void setMaximizedRequest() noexcept override;
     void setFullscreenRequest(LOutput *output) noexcept override;
     void unsetFullscreenRequest() noexcept override;
-    void startMoveRequest(const LEvent &triggeringEvent) noexcept override;
-    void startResizeRequest(const LEvent &triggeringEvent, ResizeEdge edge) noexcept override;
 
     LRect rectBeforeFullscreen;
     LBitset<State> statesBeforeFullscreen;

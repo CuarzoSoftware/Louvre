@@ -592,6 +592,21 @@ bool LCompositor::LCompositorPrivate::loadInputBackend(const std::filesystem::pa
     return true;
 }
 
+void LCompositor::LCompositorPrivate::notifyOrderChangeFromSurface(LSurface *from)
+{
+    compositor()->imp()->surfaceRaiseAllowedCounter++;
+
+    if (from)
+        for (auto it = from->imp()->compositorLink; it != surfaces.end(); it++)
+            (*it)->orderChanged();
+    else
+        for (LSurface *surface : surfaces)
+            surface->orderChanged();
+
+    compositor()->imp()->surfaceRaiseAllowedCounter--;
+}
+
+
 void LCompositor::LCompositorPrivate::insertSurfaceAfter(LSurface *prevSurface, LSurface *surfaceToInsert, LBitset<InsertOptions> options)
 {
     if (options.check(UpdateLayers))
@@ -632,11 +647,6 @@ void LCompositor::LCompositorPrivate::insertSurfaceAfter(LSurface *prevSurface, 
             }
             else
                 surfaceToInsert->imp()->compositorLink = surfaces.insert(std::next(prevSurface->imp()->compositorLink), surfaceToInsert);
-
-            surfacesListChanged = true;
-            compositor()->imp()->surfaceRaiseAllowed = false;
-            surfaceToInsert->orderChanged();
-            compositor()->imp()->surfaceRaiseAllowed = true;
         }
         else
         {
@@ -644,11 +654,11 @@ void LCompositor::LCompositorPrivate::insertSurfaceAfter(LSurface *prevSurface, 
             surfaces.emplace_front(surfaceToInsert);
             surfaceToInsert->imp()->compositorLink = surfaces.begin();
             surfacesListChanged = true;
-            compositor()->imp()->surfaceRaiseAllowed = false;
-            surfaceToInsert->orderChanged();
-            compositor()->imp()->surfaceRaiseAllowed = true;
         }
+
+        notifyOrderChangeFromSurface(prevSurface);
     }
+
 }
 
 void LCompositor::LCompositorPrivate::insertSurfaceBefore(LSurface *nextSurface, LSurface *surfaceToInsert, LBitset<InsertOptions> options)
@@ -666,9 +676,7 @@ void LCompositor::LCompositorPrivate::insertSurfaceBefore(LSurface *nextSurface,
         surfaces.erase(surfaceToInsert->imp()->compositorLink);
         surfaceToInsert->imp()->compositorLink = surfaces.insert(nextSurface->imp()->compositorLink, surfaceToInsert);
         surfacesListChanged = true;
-        compositor()->imp()->surfaceRaiseAllowed = false;
-        surfaceToInsert->orderChanged();
-        compositor()->imp()->surfaceRaiseAllowed = true;
+        notifyOrderChangeFromSurface(surfaceToInsert);
     }
 }
 
@@ -926,3 +934,4 @@ void LCompositor::LCompositorPrivate::unitDMAFeedback() noexcept
         wl_array_release(&dmaFeedback.formatIndices);
     }
 }
+

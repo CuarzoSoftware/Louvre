@@ -498,10 +498,10 @@ bool LSurface::isSubchildOf(LSurface *parent) const
 
 void LSurface::raise()
 {
-    if (!compositor()->imp()->surfaceRaiseAllowed || imp()->stateFlags.check(LSurfacePrivate::Destroyed))
+    if (compositor()->imp()->surfaceRaiseAllowedCounter > 0 || imp()->stateFlags.check(LSurfacePrivate::Destroyed))
         return;
 
-    if (parent())
+    if (parent() && (subsurface() || toplevel() || (imp()->pending.role && (imp()->pending.role->roleId() == Role::Subsurface || imp()->pending.role->roleId() == Role::Toplevel))))
         parent()->raise();
     else
         imp()->setLayer(layer());

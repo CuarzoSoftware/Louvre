@@ -1,6 +1,7 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
+#include <LExclusiveZone.h>
 #include <LOutput.h>
 #include <LRegion.h>
 
@@ -12,7 +13,7 @@ public:
     Output(const void *params) noexcept;
 
     LTexture *backgroundTexture = nullptr;
-    Int32 topbarHeight;
+    LExclusiveZone topbarExclusiveZone {LEdgeTop, 32, this};
     LTexture *terminalIconTexture = nullptr;
     LRect terminalIconRect;
     Float32 terminalIconAlpha = 1.0f;

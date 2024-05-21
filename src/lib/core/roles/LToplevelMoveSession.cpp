@@ -15,12 +15,12 @@ LToplevelMoveSession::~LToplevelMoveSession()
         LVectorRemoveOneUnordered(compositor()->seat()->imp()->moveSessions, this);
 }
 
-bool LToplevelMoveSession::start(const LEvent &triggeringEvent, const LPoint &initDragPoint, Int32 L, Int32 T, Int32 R, Int32 B)
+bool LToplevelMoveSession::start(const LEvent &triggeringEvent, const LPoint &initDragPoint, const LMargin &constraints)
 {
     if (m_isActive)
         return false;
 
-    m_bounds = {L, T, R, B};
+    m_bounds = (const LBox&)constraints;
     m_initDragPoint = initDragPoint;
     m_triggeringEvent.reset(triggeringEvent.copy());
     m_initPos = m_toplevel->surface()->pos();
@@ -36,14 +36,14 @@ void LToplevelMoveSession::updateDragPoint(const LPoint &pos)
 
     LPoint newPos { m_initPos - m_initDragPoint + pos };
 
-    if (m_bounds.x2 != LToplevelRole::EdgeDisabled && newPos.x() > m_bounds.x2)
-        newPos.setX(m_bounds.x2);
+    if (m_bounds.x2 != LToplevelRole::EdgeDisabled && newPos.x() + m_toplevel->windowGeometry().w() > m_bounds.x2)
+        newPos.setX(m_bounds.x2 - m_toplevel->windowGeometry().w());
 
     if (m_bounds.x1 != LToplevelRole::EdgeDisabled && newPos.x() < m_bounds.x1)
         newPos.setX(m_bounds.x1);
 
-    if (m_bounds.y2 != LToplevelRole::EdgeDisabled && newPos.y() > m_bounds.y2)
-        newPos.setY(m_bounds.y2);
+    if (m_bounds.y2 != LToplevelRole::EdgeDisabled && newPos.y() + m_toplevel->windowGeometry().h() > m_bounds.y2)
+        newPos.setY(m_bounds.y2 - m_toplevel->windowGeometry().h());
 
     if (m_bounds.y1 != LToplevelRole::EdgeDisabled && newPos.y() < m_bounds.y1)
         newPos.setY(m_bounds.y1);
