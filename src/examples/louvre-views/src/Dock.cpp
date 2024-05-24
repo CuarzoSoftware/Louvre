@@ -14,12 +14,9 @@
 #include <LLog.h>
 
 // Add it to the overlayLayer so it is always on top
-Dock::Dock(Output *output) :
-    LLayerView(&G::compositor()->overlayLayer)
+Dock::Dock(Output *output) : LLayerView(), output(output)
 {
     separator.setUserData(DockSeparatorType);
-    this->output = output;
-    output->dock = this;
 
     // Detach it from the overlay layer just in case we want to move in the future
     enableParentOffset(false);
@@ -31,6 +28,16 @@ Dock::Dock(Output *output) :
     enableBlockPointer(true);
 
     separator.setSize(1, DOCK_ITEM_HEIGHT);
+}
+
+void Dock::initialize() noexcept
+{
+    setParent(&G::compositor()->overlayLayer);
+    dockLeft.setTextureIndex(G::DockL);
+    dockCenter.setTextureIndex(G::DockC);
+    dockRight.setTextureIndex(G::DockR);
+
+    initialized = true;
 
     // Create app items
     for (App *app : G::apps())
@@ -39,9 +46,9 @@ Dock::Dock(Output *output) :
     // Clone items from another already existing dock
     for (Output *o : G::outputs())
     {
-        if (o != output && o->dock)
+        if (o != output)
         {
-            for (LView *v : o->dock->itemsContainer.children())
+            for (LView *v : o->dock.itemsContainer.children())
             {
                 DockItem *item = (DockItem*)v;
                 DockItem *itemClone = new DockItem(item->surface, this);
@@ -54,9 +61,8 @@ Dock::Dock(Output *output) :
     update();
 }
 
-Dock::~Dock()
+void Dock::uninitialize() noexcept
 {
-    alive = false;
     anim.stop();
 
     while (!itemsContainer.children().empty())
@@ -70,12 +76,12 @@ Dock::~Dock()
         delete appsContainer.children().back();
     }
 
-    output->dock = nullptr;
+    setParent(nullptr);
 }
 
 void Dock::update()
 {
-    if (!alive)
+    if (!initialized)
         return;
 
     Int32 dockWidth { DOCK_PADDING };

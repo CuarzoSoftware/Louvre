@@ -22,7 +22,7 @@ public:
         OnDemand = 2
     };
 
-    enum AtomicPropChanges
+    enum AtomsChanges
     {
         SizeChanged                     = static_cast<UInt32>(1) << 0,
         AnchorChanged                   = static_cast<UInt32>(1) << 1,
@@ -33,13 +33,13 @@ public:
         ExclusiveEdgeChanged            = static_cast<UInt32>(1) << 6,
     };
 
-    struct AtomicProps
+    struct Atoms
     {
         LSize size;
         LBitset<LEdge> anchor;
         Int32 exclusiveZone;
         LMargin margin;
-        KeyboardInteractivity keyboardInteractivity;
+        KeyboardInteractivity keyboardInteractivity { NoInteractivity };
         LEdge exclusiveEdge { LEdgeNone };
         LSurfaceLayer layer;
     };
@@ -58,7 +58,7 @@ public:
 
     virtual const LPoint &rolePos() const override;
     virtual void configureRequest();
-    virtual void atomicPropsChanged(LBitset<AtomicPropChanges> changes, const AtomicProps &prevAtomicProps);
+    virtual void atomsChanged(LBitset<AtomsChanges> changes, const Atoms &prevAtoms);
     void configureSize(const LSize &size) noexcept;
     void configureSize(Int32 width, Int32 height) noexcept;
 
@@ -72,19 +72,19 @@ public:
         return m_pendingConf;
     }
 
-    const AtomicProps &atomicProps() const noexcept
+    const Atoms &atoms() const noexcept
     {
-        return m_atomicProps[m_currentAtomicPropsIndex];
+        return m_atoms[m_currentAtomsIndex];
     }
 
     const LSize &size() const noexcept
     {
-        return atomicProps().size;
+        return atoms().size;
     }
 
     LBitset<LEdge> anchor() const noexcept
     {
-        return atomicProps().anchor;
+        return atoms().anchor;
     }
 
     const LExclusiveZone &exclusiveZone() const noexcept
@@ -94,35 +94,35 @@ public:
 
     Int32 exclusiveZoneSize() const noexcept
     {
-        return atomicProps().exclusiveZone;
+        return atoms().exclusiveZone;
     }
 
     const LMargin &margin() const noexcept
     {
-        return atomicProps().margin;
+        return atoms().margin;
     }
 
     KeyboardInteractivity keyboardInteractivity() const noexcept
     {
-        return atomicProps().keyboardInteractivity;
+        return atoms().keyboardInteractivity;
     }
 
     LEdge exclusiveEdge() const noexcept
     {
-        return atomicProps().exclusiveEdge;
+        return atoms().exclusiveEdge;
     }
 
     LSurfaceLayer layer() const noexcept
     {
-        return atomicProps().layer;
+        return atoms().layer;
     }
 
-    LOutput *output() const noexcept
+    LOutput *exclusiveOutput() const override
     {
         return m_exclusiveZone.output();
     }
 
-    void setOutput(LOutput *output) noexcept
+    void setExclusiveOutput(LOutput *output) noexcept
     {
         m_exclusiveZone.setOutput(output);
     }
@@ -131,6 +131,8 @@ public:
     {
         return m_namespace;
     }
+
+    void close() noexcept;
 
 private:
     friend class Louvre::Protocols::LayerShell::RLayerSurface;
@@ -146,26 +148,27 @@ private:
         HasPendingExclusiveEdge         = static_cast<UInt32>(1) << 6,
         HasPendingInitialConf           = static_cast<UInt32>(1) << 7,
         HasConfToSend                   = static_cast<UInt32>(1) << 8,
+        ClosedSent                      = static_cast<UInt32>(1) << 9,
     };
 
-    AtomicProps &currentProps() noexcept
+    Atoms &currentAtoms() noexcept
     {
-        return m_atomicProps[m_currentAtomicPropsIndex];
+        return m_atoms[m_currentAtomsIndex];
     }
 
-    AtomicProps &pendingProps() noexcept
+    Atoms &pendingAtoms() noexcept
     {
-        return m_atomicProps[1 - m_currentAtomicPropsIndex];
+        return m_atoms[1 - m_currentAtomsIndex];
     }
 
     LEdge edgesToSingleEdge() const noexcept;
 
     void handleSurfaceCommit(CommitOrigin origin) noexcept override;
 
-    LExclusiveZone m_exclusiveZone { LEdgeNone, 0, this };
+    LExclusiveZone m_exclusiveZone { LEdgeNone, 0 };
     LBitset<Flags> m_flags { HasPendingInitialConf };
-    AtomicProps m_atomicProps[2];
-    UInt8 m_currentAtomicPropsIndex { 0 };
+    Atoms m_atoms[2];
+    UInt8 m_currentAtomsIndex { 0 };
     Configuration m_pendingConf, m_lastACKConf;
     std::list<Configuration> m_sentConfs;
     std::string m_namespace;

@@ -203,6 +203,13 @@ public:
     LSessionLockRole *sessionLock() const;
 
     /**
+     * @brief Layer role
+     *
+     * @returns A pointer to an instance of LLayerRole or `nullptr` if it has a different role.
+     */
+    LLayerRole *layerRole() const noexcept;
+
+    /**
      * @brief Constructor of the LSurface class.
      *
      * @param params Internal parameters of the library provided in the virtual constructor LCompositor::createSurfaceRequest().
@@ -396,6 +403,13 @@ public:
      * @return `true` if the surface has keyboard focus, `false` otherwise.
      */
     bool hasKeyboardFocus() const;
+
+    /**
+     * @brief Check if the surface is grabbing the keyboard
+     *
+     * @return `true` if the surface is grabbing the keyboard, `false` otherwise.
+     */
+    bool hasKeyboardGrab() const noexcept;
 
     /**
      * @brief OpenGL texture

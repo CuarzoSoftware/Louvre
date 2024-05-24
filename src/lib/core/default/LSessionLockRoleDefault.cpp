@@ -7,12 +7,9 @@ using namespace Louvre;
 //! [rolePos]
 const LPoint &LSessionLockRole::rolePos() const
 {
-    if (output())
-        return output()->pos();
+    if (exclusiveOutput())
+        return exclusiveOutput()->pos();
 
-    if (surface())
-        return surface()->pos();
-
-    return m_rolePos;
+    return surface()->pos();
 }
 //! [rolePos]

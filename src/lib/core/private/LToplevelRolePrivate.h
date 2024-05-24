@@ -62,6 +62,8 @@ LOutput *prevRoleFullscreenRequestOutput { nullptr };
 LToplevelResizeSession resizeSession;
 LToplevelMoveSession moveSession;
 
+LWeak<LOutput> exclusiveOutput;
+
 inline void applyPendingChanges(LBitset<ConfigurationChanges> changes)
 {
     if (stateFlags.check(HasUncommitedConfiguration))

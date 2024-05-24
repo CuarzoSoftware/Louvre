@@ -29,6 +29,20 @@ public:
 
     static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LToplevelRole;
 
+    // TODO
+    void setExclusiveOutput(LOutput *output) noexcept;
+    virtual LOutput *exclusiveOutput() const override;
+
+    void setPrevRect(const LRect &rect) noexcept
+    {
+        m_prevRect = rect;
+    }
+
+    const LRect &prevRect() const noexcept
+    {
+        return m_prevRect;
+    }
+
     /**
      * @brief Edge constraint when resizing a Toplevel
      */
@@ -529,10 +543,8 @@ public:
 /// @}
 
     LPRIVATE_IMP_UNIQUE(LToplevelRole)
-
-    /// @cond OMIT
     void handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin) override;
-    /// @endcond
+    LRect m_prevRect;
 };
 
 #endif // LTOPLEVELROLE_H

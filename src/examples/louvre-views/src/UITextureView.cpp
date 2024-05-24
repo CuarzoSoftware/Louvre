@@ -3,6 +3,8 @@
 #include "Global.h"
 #include "UITextureView.h"
 
+UITextureView::UITextureView(LView *parent) noexcept : LTextureView(nullptr, parent) {}
+
 UITextureView::UITextureView(UInt32 textureIndex, LView *parent) :
     Louvre::LTextureView(nullptr, parent),
     textureIndex { textureIndex }

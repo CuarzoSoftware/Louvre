@@ -4,10 +4,10 @@
 #include <private/LCompositorPrivate.h>
 #include <LScene.h>
 #include <unistd.h>
-#include <time.h>
 
 #include "Keyboard.h"
 #include "Global.h"
+#include "LLayerRole.h"
 #include "Output.h"
 #include "Topbar.h"
 #include "App.h"
@@ -47,6 +47,27 @@ void Keyboard::keyEvent(const LKeyboardKeyEvent &event)
 
         if (LEFT_META && LEFT_SHIFT)
         {
+            /*********** Change focused layer role exclusive zone pref *********/
+
+            if (isKeyCodePressed(KEY_L))
+            {
+                if (event.keyCode() == KEY_DOWN && seat()->pointer()->focus() && seat()->pointer()->focus()->layerRole())
+                {
+                    auto *layerRole { seat()->pointer()->focus()->layerRole() };
+                    if (layerRole->exclusiveZone().prevZone())
+                        layerRole->exclusiveZone().insertAfter(layerRole->exclusiveZone().prevZone()->prevZone());
+                    return;
+                }
+
+                if (event.keyCode() == KEY_UP && seat()->pointer()->focus() && seat()->pointer()->focus()->layerRole())
+                {
+                    auto *layerRole { seat()->pointer()->focus()->layerRole() };
+                    if (layerRole->exclusiveZone().nextZone())
+                        layerRole->exclusiveZone().insertAfter(layerRole->exclusiveZone().nextZone());
+                    return;
+                }
+            }
+
             switch (event.keyCode())
             {
 
@@ -54,7 +75,7 @@ void Keyboard::keyEvent(const LKeyboardKeyEvent &event)
 
             case KEY_V:
                 output->enableVSync(!output->vSyncEnabled());
-                output->topbar->update();
+                output->topbar.update();
                 break;
 
             /************ Change output mode ***********/
@@ -100,11 +121,6 @@ void Keyboard::keyEvent(const LKeyboardKeyEvent &event)
                 }
                 break;
 
-            /**** Toggle SSD ****/
-
-            case KEY_D:
-                G::enableSSD(!G::SSD());
-                break;
             default:
                 break;
             }
@@ -134,10 +150,7 @@ void Keyboard::focusChanged()
 
     for (Output *output : G::outputs())
     {
-        if (output->topbar)
-        {
-            output->topbar->appName.setTexture(topbarTitleTexture);
-            output->topbar->update();
-        }
+        output->topbar.appName.setTexture(topbarTitleTexture);
+        output->topbar.update();
     }
 }

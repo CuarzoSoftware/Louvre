@@ -85,6 +85,23 @@ public:
     virtual const LPoint &rolePos() const = 0;
 
     /**
+     * @brief The output to which the surface should be constrained.
+     *
+     * When this property is set, the surface should be displayed only on the specified output.\n
+     * Surfaces with the LSessionLockRole or LLayerRole explicitly indicate the output on which
+     * the surface should be displayed. This property is also useful for LToplevelRole surfaces
+     * when they are maximized or in fullscreen mode.
+     *
+     * @note This is a hint, you may choose to ignore it.
+     *
+     * @return The output the surface should be constrained to, or `nullptr` if not constrained to any output.
+     */
+    virtual LOutput *exclusiveOutput() const
+    {
+        return nullptr;
+    }
+
+    /**
      * @brief Role ID.
      *
      * Returns the ID of the role given in the constructor argument. The LSurface class returns this value with the LSurface::roleId() method.

@@ -57,9 +57,9 @@ void Seat::nativeInputEvent(void *event)
                 return;
 
             output->showAllWorkspaces();
-            output->workspaceAnim.stop();
-            output->swipingWorkspace = true;
-            output->workspaceOffset = output->workspacesContainer->nativePos().x();
+            output->workspacesAnimation.stop();
+            output->doingFingerWorkspaceSwipe = true;
+            output->workspacesPosX = output->workspacesContainer.nativePos().x();
 
             for (Output *o : G::outputs())
                 o->workspaces.front()->stealChildren();
@@ -83,20 +83,20 @@ void Seat::nativeInputEvent(void *event)
         if (output->animatedFullscreenToplevel)
             return;
 
-        output->workspaceAnim.stop();
+        output->workspacesAnimation.stop();
         output->showAllWorkspaces();
 
         Float32 offset = fabs(output->currentWorkspace->pos().x());
         Float32 weight = powf(1.f - offset/swipeMargin, 3.f);
 
         // Slow down swipping if there is no workspace in that direction
-        if (output->workspaceOffset > 0.f)
+        if (output->workspacesPosX > 0.f)
             dx *= weight * 0.2f;
-        else if (output->workspaceOffset < - output->workspaces.back()->nativePos().x())
+        else if (output->workspacesPosX < - output->workspaces.back()->nativePos().x())
             dx *= weight * 0.2f;
 
-        output->workspaceOffset += dx;
-        output->workspacesContainer->setPos(output->workspaceOffset, 0);
+        output->workspacesPosX += dx;
+        output->workspacesContainer.setPos(output->workspacesPosX, 0);
 
         for (Output *o : G::outputs())
         {
@@ -116,7 +116,7 @@ void Seat::nativeInputEvent(void *event)
 
         if (libinput_event_gesture_get_finger_count(gev) > 2)
         {
-            output->swipingWorkspace = false;
+            output->doingFingerWorkspaceSwipe = false;
 
             if (output->animatedFullscreenToplevel)
                 return;

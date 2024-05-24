@@ -1,5 +1,6 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LPainterPrivate.h>
+#include <LSurfaceView.h>
 #include <LSceneView.h>
 #include <LUtils.h>
 
@@ -257,6 +258,18 @@ void LSceneView::calcNewDamage(LView *view) noexcept
             view->enteredOutput(o);
         else
             view->leftOutput(o);
+    }
+
+    // TODO add api
+    if (view->type() == LView::Type::Surface)
+    {
+        LSurface *surface { static_cast<LSurfaceView*>(view)->surface() };
+
+        if (surface && surface->role() && surface->role()->exclusiveOutput())
+        {
+            view->enteredOutput(surface->role()->exclusiveOutput());
+            surface->requestNextFrame(false);
+        }
     }
 
     if (!view->isRenderable())

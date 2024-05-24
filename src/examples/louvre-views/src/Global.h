@@ -172,13 +172,15 @@ public:
     struct Textures
     {
         // Louvre label
-        LTexture *defaultTopbarAppName = nullptr;
+        LTexture *defaultTopbarAppName { nullptr };
 
         // Terminal icon
-        LTexture *defaultAppIcon = nullptr;
+        LTexture *defaultAppIcon { nullptr };
 
         // UI texture
         LTexture *atlas;
+
+        LTexture *wallpaper { nullptr };
 
         // UI textures confs
         TextureViewConf UIConf[46];
@@ -237,9 +239,6 @@ public:
     static void arrangeOutputs();
     static class Toplevel *searchFullscreenParent(Surface *parent);
     static void repositionNonVisibleToplevelChildren(Output *target, Surface *toplevel);
-
-    static bool SSD() noexcept;
-    static void enableSSD(bool enabled) noexcept;
 };
 
 #endif // SHARED_H

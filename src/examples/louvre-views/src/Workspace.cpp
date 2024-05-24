@@ -6,9 +6,10 @@
 #include "Topbar.h"
 #include "Surface.h"
 
-Workspace::Workspace(Output *output, Toplevel *toplevel, Workspace *prev) : LLayerView(output->workspacesContainer),
-    output   { output },
-    toplevel { toplevel }
+Workspace::Workspace(Output *output, Toplevel *toplevel, Workspace *prev) :
+    LLayerView(&output->workspacesContainer),
+    output(output),
+    toplevel(toplevel)
 {
     // The first workspace is the desktop
     if (output->workspaces.empty())
@@ -36,11 +37,8 @@ void Workspace::stealChildren()
 {
     if (output->workspaces.front() == this)
     {
-        if (output->wallpaperView)
-        {
-            output->wallpaperView->setParent(&background);
-            output->wallpaperView->enableParentOffset(true);
-        }
+        output->wallpaper.setParent(&background);
+        output->wallpaper.enableParentOffset(true);
 
         LView *surfView;
 
@@ -58,11 +56,8 @@ void Workspace::stealChildren()
             }
         }
 
-        if (output->topbar)
-        {
-            output->topbar->setParent(&overlay);
-            output->topbar->enableParentOffset(true);
-        }
+        output->topbar.setParent(&overlay);
+        output->topbar.enableParentOffset(true);
     }
 }
 
@@ -71,12 +66,8 @@ void Workspace::returnChildren()
     if (output->workspaces.front() == this)
     {
         G::enableClippingChildren(this, false);
-
-        if (output->wallpaperView)
-        {
-            output->wallpaperView->setParent(&G::compositor()->backgroundLayer);
-            output->wallpaperView->enableParentOffset(false);
-        }
+        output->wallpaper.setParent(&G::compositor()->backgroundLayer);
+        output->wallpaper.enableParentOffset(false);
 
         LView *v;
 
@@ -92,11 +83,8 @@ void Workspace::returnChildren()
         for (class Surface *s : surfaces)
             s->raise();
 
-        if (output->topbar)
-        {
-            output->topbar->setParent(&G::compositor()->overlayLayer);
-            output->topbar->enableParentOffset(false);
-        }
+        output->topbar.setParent(&G::compositor()->overlayLayer);
+        output->topbar.enableParentOffset(false);
 
         output->repaint();
     }
@@ -148,7 +136,7 @@ void Workspace::show(bool show)
         return;
 
     if (show)
-        setParent(output->workspacesContainer);
+        setParent(&output->workspacesContainer);
     else
         setParent(nullptr);
 }

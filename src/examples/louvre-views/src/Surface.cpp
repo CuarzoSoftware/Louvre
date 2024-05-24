@@ -25,7 +25,7 @@ Surface::Surface(const void *params) :
 
     firstMapAnim.setOnUpdateCallback([this](LAnimation *anim){
 
-        const Float32 ease { 1.f - pow(1.f - anim->value(), 6.f) };
+        const Float32 ease { 1.f - powf(1.f - anim->value(), 6.f) };
         view.setOpacity(1.f);
         getView()->setOpacity(ease);
 
@@ -307,7 +307,7 @@ void Surface::minimizedChanged()
         // Create a dock item for each output dock
         for (Output *o : G::outputs())
         {
-            DockItem *minView { new DockItem(this, o->dock) };
+            DockItem *minView { new DockItem(this, &o->dock) };
 
             if (cursor()->output() == o)
                 dstDockItem = minView;
@@ -517,7 +517,7 @@ void Surface::preferVSyncChanged()
     if (tl() && tl()->fullscreenOutput && tl()->fullscreenOutput->currentWorkspace == tl()->fullscreenWorkspace)
     {
         tl()->fullscreenOutput->enableVSync(preferVSync());
-        tl()->fullscreenOutput->topbar->update();
+        tl()->fullscreenOutput->topbar.update();
     }
 }
 
@@ -526,23 +526,23 @@ void Surface::onToplevelFirstMap() noexcept
     if (!cursor()->output() ||!toplevel() || !mapped() || minimized())
         return;
 
-    const LPoint outputPosG { cursor()->output()->pos() + LPoint(0, TOPBAR_HEIGHT) };
-    const LSize outputSizeG { cursor()->output()->size() - LSize(0, TOPBAR_HEIGHT) };
+    LOutput *output { cursor()->output() };
+    const LPoint outputPosG { output->pos() + output->availableGeometry().pos() };
     LSize tlSize { toplevel()->windowGeometry().size() };
 
     if (tl()->supportServerSideDecorations())
         tlSize += LSize(0, TOPLEVEL_TOPBAR_HEIGHT);
 
-    setPos(outputPosG + (outputSizeG - tlSize)/2);
+    setPos(outputPosG + (output->availableGeometry().size() - tlSize)/2);
 
     if (pos().x() < outputPosG.x())
         setX(outputPosG.x());
 
-    if (pos().y() < TOPBAR_HEIGHT)
-        setY(TOPBAR_HEIGHT);
+    if (pos().y() < outputPosG.y())
+        setY(outputPosG.y());
 
     if (!tl()->pending().state.check(LToplevelRole::Fullscreen) && tl()->supportServerSideDecorations() &&
-        outputSizeG.h() <= tlSize.h())
+        output->availableGeometry().size().h() <= tlSize.h())
     {
         tl()->setMaximizedRequest();
     }
@@ -562,7 +562,7 @@ void Surface::onToplevelFirstMap() noexcept
         next = static_cast<Surface*>(next->nextSurface());
     }
 
-    cursor()->output()->repaint();
+    output->repaint();
 
     firstMapAnim.setDuration(400 *DEBUG_ANIM_SPEED);
     firstMapAnim.start();

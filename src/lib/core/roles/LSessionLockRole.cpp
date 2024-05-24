@@ -74,7 +74,7 @@ void LSessionLockRole::handleSurfaceCommit(CommitOrigin /*origin*/)
                     if (!role->m_isComplete)
                         return;
 
-                    if (role->output() == output)
+                    if (role->exclusiveOutput() == output)
                     {
                         roleForOutput = true;
                         break;
@@ -90,12 +90,12 @@ void LSessionLockRole::handleSurfaceCommit(CommitOrigin /*origin*/)
         } break;
         case RSessionLock::Locked:
         {
-            if (output() && output()->state() != LOutput::Uninitialized)
+            if (exclusiveOutput() && exclusiveOutput()->state() != LOutput::Uninitialized)
             {
-                output()->imp()->sessionLockRole.reset(this);
-                surface()->sendOutputEnterEvent(output());
+                exclusiveOutput()->imp()->sessionLockRole.reset(this);
+                surface()->sendOutputEnterEvent(exclusiveOutput());
                 surface()->imp()->setMapped(true);
-                output()->repaint();
+                exclusiveOutput()->repaint();
             }
         } break;
         case RSessionLock::Finished:

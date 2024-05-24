@@ -18,6 +18,9 @@ class Louvre::LCompositor
 {
 public:
 
+    // TODO
+    LOutput *mostIntersectedOutput(const LRect &rect, bool initializedOnly = true) const noexcept;
+
     /// Possible compositor states
     enum CompositorState
     {

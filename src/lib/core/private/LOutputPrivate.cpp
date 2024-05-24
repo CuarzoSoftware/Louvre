@@ -510,7 +510,7 @@ void LOutput::LOutputPrivate::updateExclusiveZones() noexcept
         if (zone->size() <= 0)
             continue;
 
-        if (zone->m_layerRole)
+        if (zone->m_onRectChangeCallback)
             prev = zone->m_rect;
 
         switch (zone->edge())
@@ -547,8 +547,8 @@ void LOutput::LOutputPrivate::updateExclusiveZones() noexcept
             break;
         }
 
-        if (zone->m_layerRole && prev != zone->m_rect)
-            zone->m_layerRole->configureRequest();
+        if (zone->m_onRectChangeCallback && prev != zone->m_rect)
+            zone->m_onRectChangeCallback(zone);
     }
 
     availableGeometry.setX(exclusiveEdges.left);
@@ -558,7 +558,7 @@ void LOutput::LOutputPrivate::updateExclusiveZones() noexcept
 
     for (LExclusiveZone *zone : exclusiveZones)
     {
-        if (zone->m_layerRole)
+        if (zone->m_onRectChangeCallback)
             prev = zone->m_rect;
 
         if (zone->edge() == LEdgeNone)
@@ -576,7 +576,7 @@ void LOutput::LOutputPrivate::updateExclusiveZones() noexcept
                 zone->m_rect = LRect(0, rect.size());
         }
 
-        if (zone->m_layerRole && prev != zone->m_rect)
-            zone->m_layerRole->configureRequest();
+        if (zone->m_onRectChangeCallback && prev != zone->m_rect)
+            zone->m_onRectChangeCallback(zone);
     }
 }

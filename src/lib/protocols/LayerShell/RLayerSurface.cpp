@@ -70,8 +70,8 @@ void RLayerSurface::set_size(wl_client */*client*/, wl_resource *resource, UInt3
     if (height > LOUVRE_MAX_SURFACE_SIZE)
         height = LOUVRE_MAX_SURFACE_SIZE;
 
-    res.layerRole()->pendingProps().size.setW(width);
-    res.layerRole()->pendingProps().size.setH(height);
+    res.layerRole()->pendingAtoms().size.setW(width);
+    res.layerRole()->pendingAtoms().size.setH(height);
     res.layerRole()->m_flags.add(LLayerRole::HasPendingSize);
 }
 
@@ -79,24 +79,24 @@ void RLayerSurface::set_anchor(wl_client */*client*/, wl_resource *resource, UIn
 {
     anchor &= LEdgeTop | LEdgeBottom | LEdgeLeft | LEdgeRight;
     auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
-    res.layerRole()->pendingProps().anchor = anchor;
+    res.layerRole()->pendingAtoms().anchor = anchor;
     res.layerRole()->m_flags.add(LLayerRole::HasPendingAnchor);
 }
 
 void RLayerSurface::set_exclusive_zone(wl_client */*client*/, wl_resource *resource, Int32 zone)
 {
     auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
-    res.layerRole()->pendingProps().exclusiveZone = zone;
+    res.layerRole()->pendingAtoms().exclusiveZone = zone;
     res.layerRole()->m_flags.add(LLayerRole::HasPendingExclusiveZone);
 }
 
 void RLayerSurface::set_margin(wl_client */*client*/, wl_resource *resource, Int32 top, Int32 right, Int32 bottom, Int32 left)
 {
     auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
-    res.layerRole()->pendingProps().margin.top = top;
-    res.layerRole()->pendingProps().margin.right = right;
-    res.layerRole()->pendingProps().margin.bottom = bottom;
-    res.layerRole()->pendingProps().margin.left = left;
+    res.layerRole()->pendingAtoms().margin.top = top;
+    res.layerRole()->pendingAtoms().margin.right = right;
+    res.layerRole()->pendingAtoms().margin.bottom = bottom;
+    res.layerRole()->pendingAtoms().margin.left = left;
     res.layerRole()->m_flags.add(LLayerRole::HasPendingMargin);
 }
 
@@ -109,7 +109,7 @@ void RLayerSurface::set_keyboard_interactivity(wl_client */*client*/, wl_resourc
     }
 
     auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
-    res.layerRole()->pendingProps().keyboardInteractivity = (LLayerRole::KeyboardInteractivity)keyboard_interactivity;
+    res.layerRole()->pendingAtoms().keyboardInteractivity = (LLayerRole::KeyboardInteractivity)keyboard_interactivity;
     res.layerRole()->m_flags.add(LLayerRole::HasPendingKeyboardInteractivity);
 }
 
@@ -153,7 +153,7 @@ void RLayerSurface::set_layer(wl_client */*client*/, wl_resource *resource, UInt
     }
 
     auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
-    res.layerRole()->pendingProps().layer = static_cast<LSurfaceLayer>(layer < 2 ? layer : layer + 1);
+    res.layerRole()->pendingAtoms().layer = static_cast<LSurfaceLayer>(layer < 2 ? layer : layer + 1);
     res.layerRole()->m_flags.add(LLayerRole::HasPendingLayer);
 }
 #endif
@@ -168,7 +168,7 @@ void RLayerSurface::set_exclusive_edge(wl_client */*client*/, wl_resource *resou
     }
 
     auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
-    res.layerRole()->pendingProps().exclusiveEdge = (LEdge)edge;
+    res.layerRole()->pendingAtoms().exclusiveEdge = (LEdge)edge;
     res.layerRole()->m_flags.add(LLayerRole::HasPendingExclusiveEdge);
 }
 #endif

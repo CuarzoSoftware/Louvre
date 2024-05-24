@@ -84,17 +84,59 @@ void LExclusiveZone::setOutput(LOutput *output) noexcept
     update();
 }
 
-LExclusiveZone::LExclusiveZone(LEdge edge, Int32 size, LLayerRole *layerRole, LOutput *output) noexcept
+bool LExclusiveZone::insertAfter(LExclusiveZone *zone) const
 {
-    m_layerRole.reset(layerRole);
-    m_output.setOnDestroyCallback([this](auto)
-    {
-        setOutput(nullptr);
-    });
+    if (!output())
+        return false;
 
-    setEdge(edge);
-    setSize(size);
-    setOutput(output);
+    if (zone)
+    {
+        if (zone == this || zone->output() != output())
+            return false;
+
+        if (zone == prevZone())
+            return true;
+
+        output()->imp()->exclusiveZones.erase(m_outputLink);
+
+        if (zone == output()->imp()->exclusiveZones.back())
+        {
+            output()->imp()->exclusiveZones.push_back(const_cast<LExclusiveZone*>(this));
+            m_outputLink = std::prev(output()->imp()->exclusiveZones.end());
+        }
+        else
+            m_outputLink = output()->imp()->exclusiveZones.insert(std::next(zone->m_outputLink), const_cast<LExclusiveZone*>(this));
+
+        output()->imp()->updateExclusiveZones();
+        output()->repaint();
+        return true;
+    }
+    else
+    {
+        if (output()->imp()->exclusiveZones.front() == this)
+            return true;
+
+        output()->imp()->exclusiveZones.erase(m_outputLink);
+        output()->imp()->exclusiveZones.push_front(const_cast<LExclusiveZone*>(this));
+        m_outputLink = output()->imp()->exclusiveZones.begin();
+        output()->imp()->updateExclusiveZones();
+        output()->repaint();
+        return true;
+    }
+}
+
+LExclusiveZone *LExclusiveZone::nextZone() const noexcept
+{
+    if (output() && output()->imp()->exclusiveZones.back() != this)
+        return *std::next(m_outputLink);
+    return nullptr;
+}
+
+LExclusiveZone *LExclusiveZone::prevZone() const noexcept
+{
+    if (output() && output()->imp()->exclusiveZones.front() != this)
+        return *std::prev(m_outputLink);
+    return nullptr;
 }
 
 void LExclusiveZone::update() noexcept

@@ -104,7 +104,7 @@ App::App(const char *appName, const char *appExec, const char *iconPath) :
         texture = G::textures()->defaultAppIcon;
 
     for (Output *output : G::outputs())
-        new DockApp(this, output->dock);
+        new DockApp(this, &output->dock);
 
     G::apps().push_back(this);
 }

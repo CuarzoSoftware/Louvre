@@ -9,6 +9,8 @@ class Louvre::LToplevelResizeSession
 public:
     // TODO: add doc (and update)
 
+    using OnBeforeUpdateCallback = std::function<void(LToplevelResizeSession*)>;
+
     /**
      * @brief Start an interactive toplevel resizing session.
      *
@@ -35,25 +37,48 @@ public:
      */
     bool start(const LEvent &triggeringEvent,
                LToplevelRole::ResizeEdge edge,
-               const LPoint &initDragPoint,
-               const LSize &minSize = LSize(0, 0),
-               const LMargin &constraints = { LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled });
+               const LPoint &initDragPoint);
 
     void updateDragPoint(const LPoint &pos);
 
+    void setConstraints(const LMargin &constraints = {LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled ,LToplevelRole::EdgeDisabled}) noexcept
+    {
+        m_constraints = constraints;
+    }
+
+    const LMargin &constraints() const noexcept
+    {
+        return m_constraints;
+    }
+
+    void setMinSize(const LSize &minSize) noexcept
+    {
+        m_minSize = minSize;
+    }
+
+    const LSize &minSize() const noexcept
+    {
+        return m_minSize;
+    }
+
     const std::vector<LToplevelResizeSession*>::const_iterator stop();
 
-    inline LToplevelRole *toplevel() const
+    void setOnBeforeUpdateCallback(const OnBeforeUpdateCallback &callback) noexcept
+    {
+        m_beforeUpdateCallback = callback;
+    }
+
+    LToplevelRole *toplevel() const noexcept
     {
         return m_toplevel;
     }
 
-    inline const LEvent &triggeringEvent() const
+    const LEvent &triggeringEvent() const noexcept
     {
         return *m_triggeringEvent.get();
     }
 
-    inline bool isActive() const
+    bool isActive() const noexcept
     {
         return m_isActive;
     }
@@ -70,12 +95,13 @@ private:
     LPoint m_initDragPoint;
     LPoint m_currentDragPoint;
     LToplevelRole::ResizeEdge m_edge;
-    LBox m_bounds;
+    LMargin m_constraints {LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled ,LToplevelRole::EdgeDisabled};
     std::unique_ptr<LEvent> m_triggeringEvent;
     UInt32 m_lastSerial { 0 };
     bool m_isActive { false };
     bool m_lastSerialHandled { true };
     LTimer m_ackTimer;
+    OnBeforeUpdateCallback m_beforeUpdateCallback { nullptr };
 };
 
 #endif // LTOPLEVELRESIZESESSION_H

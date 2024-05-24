@@ -30,8 +30,6 @@ void LToplevelRole::startMoveRequest(const LEvent &triggeringEvent)
 
     LOutput *activeOutput { cursor()->output() };
 
-    const LMargin constraints { calculateConstraintsFromOutput(activeOutput) };
-
     if (triggeringEvent.type() == LEvent::Type::Touch)
     {
         if (triggeringEvent.subtype() != LEvent::Subtype::Down)
@@ -51,11 +49,11 @@ void LToplevelRole::startMoveRequest(const LEvent &triggeringEvent)
 
         const LPoint initDragPoint { LTouch::toGlobal(activeOutput, touchPoint->pos()) };
 
-        moveSession().start(triggeringEvent, initDragPoint, constraints);
+        moveSession().start(triggeringEvent, initDragPoint);
     }
     else if (surface()->hasPointerFocus())
     {
-        moveSession().start(triggeringEvent, cursor()->pos(), constraints);
+        moveSession().start(triggeringEvent, cursor()->pos());
     }
 }
 //! [startMoveRequest]
@@ -67,8 +65,6 @@ void LToplevelRole::startResizeRequest(const LEvent &triggeringEvent, ResizeEdge
         return;
 
     LOutput *activeOutput { cursor()->output() };
-    const LSize minSize { 150, 150 };
-    const LMargin constraints { calculateConstraintsFromOutput(activeOutput) };
 
     if (triggeringEvent.type() == LEvent::Type::Touch)
     {
@@ -89,17 +85,17 @@ void LToplevelRole::startResizeRequest(const LEvent &triggeringEvent, ResizeEdge
 
         const LPoint initDragPoint { LTouch::toGlobal(activeOutput, touchPoint->pos()) };
 
-        resizeSession().start(triggeringEvent, edge, initDragPoint, minSize, constraints);
+        resizeSession().start(triggeringEvent, edge, initDragPoint);
     }
     else if (surface()->hasPointerFocus())
-        resizeSession().start(triggeringEvent, edge, cursor()->pos(), minSize, constraints);
+        resizeSession().start(triggeringEvent, edge, cursor()->pos());
 }
 //! [startResizeRequest]
 
 //! [configureRequest]
 void LToplevelRole::configureRequest()
 {
-    // Using (0,0) allows the client to decide the size
+    // Sending (0,0) allows the client to decide the size
     configureSize(0,0);
     configureState(pending().state | Activated);
     configureDecorationMode(ClientSide);
@@ -121,16 +117,14 @@ void LToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
             seat()->keyboard()->setFocus(surface());
     }
 
-    LOutput *activeOutput { cursor()->output() };
-
     if (stateChanges.check(Maximized))
     {
         if (maximized())
         {
-            if (activeOutput)
+            if (exclusiveOutput())
             {
                 surface()->raise();
-                surface()->setPos(activeOutput->pos() + activeOutput->availableGeometry().pos());
+                surface()->setPos(exclusiveOutput()->pos() + exclusiveOutput()->availableGeometry().pos());
                 surface()->setMinimized(false);
             }
             else
@@ -139,17 +133,19 @@ void LToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
                 configureState(pending().state & ~Maximized);
             }
         }
-
-        return;
+        else
+        {
+            surface()->setPos(prevRect().pos());
+        }
     }
 
     if (stateChanges.check(Fullscreen))
     {
         if (fullscreen())
         {
-            if (activeOutput)
+            if (exclusiveOutput())
             {
-                surface()->setPos(activeOutput->pos());
+                surface()->setPos(exclusiveOutput()->pos());
                 surface()->raise();
             }
             else
@@ -158,9 +154,14 @@ void LToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
                 configureState(pending().state & ~Fullscreen);
             }
         }
-
-        return;
+        else
+        {
+            surface()->setPos(prevRect().pos());
+        }
     }
+
+    if (stateChanges.check(Fullscreen | Maximized) && !pending().state.check(Fullscreen | Maximized))
+        setExclusiveOutput(nullptr);
 
 }
 
@@ -188,9 +189,13 @@ void LToplevelRole::preferredDecorationModeChanged()
 //! [setMaximizedRequest]
 void LToplevelRole::setMaximizedRequest()
 {
-    if (!cursor()->output())
+    if (!cursor()->output() || maximized())
         return;
 
+    if (!fullscreen())
+        setPrevRect(LRect(surface()->pos(), windowGeometry().size()));
+
+    setExclusiveOutput(cursor()->output());
     configureSize(cursor()->output()->availableGeometry().size());
     configureState(Activated | Maximized);
 }
@@ -199,18 +204,26 @@ void LToplevelRole::setMaximizedRequest()
 //! [unsetMaximizedRequest]
 void LToplevelRole::unsetMaximizedRequest()
 {
+    if (!maximized())
+        return;
+
     configureState(pending().state &~ Maximized);
+    configureSize(prevRect().size());
 }
 //! [unsetMaximizedRequest]
 
 //! [setFullscreenRequest]
 void LToplevelRole::setFullscreenRequest(LOutput *preferredOutput)
 {
-    const LOutput *output { preferredOutput != nullptr ? preferredOutput : cursor()->output()};
+    LOutput *output { preferredOutput != nullptr ? preferredOutput : cursor()->output()};
 
-    if (!output)
+    if (!output || fullscreen())
         return;
 
+    if (!maximized())
+        setPrevRect(LRect(surface()->pos(), windowGeometry().size()));
+
+    setExclusiveOutput(output);
     configureSize(output->size());
     configureState(Activated | Fullscreen);
 }
@@ -219,7 +232,11 @@ void LToplevelRole::setFullscreenRequest(LOutput *preferredOutput)
 //! [unsetFullscreenRequest]
 void LToplevelRole::unsetFullscreenRequest()
 {
+    if (!fullscreen())
+        return;
+
     configureState(pending().state &~ Fullscreen);
+    configureSize(prevRect().size());
 }
 //! [unsetFullscreenRequest]
 

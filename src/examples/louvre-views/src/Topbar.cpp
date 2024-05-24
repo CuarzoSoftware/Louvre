@@ -11,11 +11,13 @@
 #include "TextRenderer.h"
 
 Topbar::Topbar(Output *output) :
-    LSolidColorView(0.95f, 0.95f, 1.f, 1.f, &G::compositor()->overlayLayer)
+    LSolidColorView(0.95f, 0.95f, 1.f, 1.f, nullptr),
+    output(output)
 {
-    this->output = output;
-    output->topbar = this;
-    exclusiveZone.setOutput(output);
+    exclusiveZone.setOnRectChangeCallback([this](auto)
+    {
+        update();
+    });
 
     enableParentOffset(false);
     enablePointerEvents(true);
@@ -40,13 +42,19 @@ Topbar::Topbar(Output *output) :
     vSyncLabel.setBufferScale(2);
 
     appName.setBufferScale(2);
-    updateOutputInfo();
-    update();
 }
 
-Topbar::~Topbar()
+void Topbar::initialize() noexcept
 {
-    output->topbar = nullptr;
+    logo.setTextureIndex(G::Logo);
+    clock.setTexture(G::compositor()->clockTexture);
+    oversamplingLabel.setTexture(G::compositor()->oversamplingLabelTexture);
+    vSyncLabel.setTexture(G::compositor()->vSyncLabelTexture);
+    appName.setTexture(G::textures()->defaultTopbarAppName);
+    setParent(&G::compositor()->overlayLayer);
+    exclusiveZone.setOutput(output);
+    updateOutputInfo();
+    update();
 }
 
 void Topbar::update()
@@ -93,6 +101,12 @@ void Topbar::updateOutputInfo()
         delete outputInfo.texture();
 
     outputInfo.setTexture(G::font()->regular->renderText(info, 22));
+}
+
+void Topbar::uninitialize() noexcept
+{
+    setParent(nullptr);
+    exclusiveZone.setOutput(nullptr);
 }
 
 void Topbar::pointerEnterEvent(const LPointerEnterEvent &)

@@ -85,6 +85,14 @@ LSessionLockRole *LSurface::sessionLock() const
         return nullptr;
 }
 
+LLayerRole *LSurface::layerRole() const noexcept
+{
+    if (roleId() == LSurface::Role::Layer)
+        return (LLayerRole*)imp()->current.role;
+    else
+        return nullptr;
+}
+
 LDNDIconRole *LSurface::dndIcon() const
 {
     if (roleId() == LSurface::Role::DNDIcon)
@@ -190,6 +198,11 @@ bool LSurface::hasPointerFocus() const
 bool LSurface::hasKeyboardFocus() const
 {
     return seat()->keyboard()->focus() == this;
+}
+
+bool LSurface::hasKeyboardGrab() const noexcept
+{
+    return seat()->keyboard()->grab() == this;
 }
 
 LTexture *LSurface::texture() const
@@ -326,7 +339,7 @@ void LSurface::sendOutputLeaveEvent(LOutput *output)
     if (imp()->stateFlags.check(LSurfacePrivate::Destroyed))
         return;
 
-    if (!output)
+    if (!output || (role() && role()->exclusiveOutput() == output && output->state() == LOutput::Initialized))
         return;
 
     for (std::size_t i = 0; i < imp()->outputs.size(); i++)

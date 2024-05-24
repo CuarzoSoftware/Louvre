@@ -55,11 +55,8 @@ void Compositor::initialized()
             {
                 for (Output *o : G::outputs())
                 {
-                    if (o->topbar)
-                    {
-                        o->topbar->clock.setTexture(newClockTexture);
-                        o->topbar->update();
-                    }
+                    o->topbar.clock.setTexture(newClockTexture);
+                    o->topbar.update();
                 }
 
                 if (G::compositor()->clockTexture)
@@ -96,7 +93,7 @@ void Compositor::initialized()
 void Compositor::uninitialized()
 {
     for (Output *o : G::outputs())
-        o->workspaceAnim.stop();
+        o->workspacesAnimation.stop();
 
     for (Client *c : (std::vector<Client*>&)clients())
         if (c->pid != -1)

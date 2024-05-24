@@ -32,9 +32,11 @@ public:
     LSessionLockRole(const void *params) noexcept;
 
     /**
-     * @brief The output the surface belongs to.
+     * @brief The output the surface is assigned to.
+     *
+     * @warning It may return `nullptr` if the output is unplugged.
      */
-    LOutput *output() const noexcept
+    LOutput *exclusiveOutput() const override
     {
         return m_output;
     }

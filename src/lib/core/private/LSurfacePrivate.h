@@ -53,7 +53,7 @@ LPRIVATE_CLASS(LSurface)
         Mapped                      = static_cast<UInt16>(1) << 9,
         VSync                       = static_cast<UInt16>(1) << 10,
         ChildrenListChanged         = static_cast<UInt16>(1) << 11,
-        ParentCommitNotified        = static_cast<UInt16>(1) << 12
+        ParentCommitNotified        = static_cast<UInt16>(1) << 12,
     };
 
     LBitset<StateFlags> stateFlags

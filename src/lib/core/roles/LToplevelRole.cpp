@@ -21,6 +21,16 @@
 using namespace Louvre;
 using namespace Louvre::Protocols::XdgShell;
 
+void LToplevelRole::setExclusiveOutput(LOutput *output) noexcept
+{
+    imp()->exclusiveOutput.reset(output);
+}
+
+LOutput *LToplevelRole::exclusiveOutput() const
+{
+    return imp()->exclusiveOutput;
+}
+
 LToplevelRole::LToplevelRole(const void *params) noexcept :
     LBaseSurfaceRole(FactoryObjectType,
         ((LToplevelRole::Params*)params)->toplevel,
@@ -31,6 +41,18 @@ LToplevelRole::LToplevelRole(const void *params) noexcept :
     imp()->toplevel = this;
     imp()->moveSession.m_toplevel = this;
     imp()->resizeSession.m_toplevel = this;
+
+    moveSession().setOnBeforeUpdateCallback([this](LToplevelMoveSession *session)
+    {
+        LMargin constraints { calculateConstraintsFromOutput(cursor()->output()) };
+        session->setConstraints(constraints);
+    });
+
+    resizeSession().setOnBeforeUpdateCallback([this](LToplevelResizeSession *session)
+    {
+        LMargin constraints { calculateConstraintsFromOutput(cursor()->output()) };
+        session->setConstraints(constraints);
+    });
 
     if (resource()->version() >= 2)
         imp()->supportedStates.add(TiledLeft | TiledTop | TiledRight | TiledBottom);

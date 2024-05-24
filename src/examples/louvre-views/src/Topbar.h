@@ -15,14 +15,15 @@ class Topbar final : public LSolidColorView
 {
 public:
     Topbar(Output *output);
-    ~Topbar();
 
+    void initialize() noexcept;
     void update();
     void updateOutputInfo();
+    void uninitialize() noexcept;
 
     LExclusiveZone exclusiveZone { LEdgeTop, TOPBAR_HEIGHT };
 
-    Output *output;
+    LWeak<Output> output;
 
     // Louvre logo
     UITextureView logo { G::Logo, this };

@@ -60,6 +60,28 @@ void LCompositor::removeGlobal(LGlobal *global)
     wl_global_remove(global->m_global);
 }
 
+LOutput *LCompositor::mostIntersectedOutput(const LRect &rect, bool initializedOnly) const noexcept
+{
+    LOutput *bestOutput { nullptr };
+    Int32 bestArea { -1 };
+    const auto &outputsVector { initializedOnly ? outputs() : seat()->outputs() };
+    LRect test;
+
+    for (auto *output : outputsVector)
+    {
+        test = rect;
+        test.clip(output->rect());
+
+        if (test.area() > bestArea)
+        {
+            bestOutput = output;
+            bestArea = test.area();
+        }
+    }
+
+    return bestOutput;
+}
+
 LCompositor::LCompositor() noexcept : LPRIVATE_INIT_UNIQUE(LCompositor)
 {
     if (!s_compositor)

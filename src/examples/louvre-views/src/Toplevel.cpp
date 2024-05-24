@@ -32,6 +32,28 @@ Toplevel::Toplevel(const void *params) : LToplevelRole(params),
     capture.setBufferScale(2);
     capture.enableParentOpacity(false);
     capture.enableDstSize(true);
+
+    moveSession().setOnBeforeUpdateCallback([this](LToplevelMoveSession *session)
+    {
+        LMargin constraints { calculateConstraintsFromOutput(cursor()->output()) };
+
+        if (current().decorationMode == ServerSide && constraints.bottom != EdgeDisabled)
+            constraints.bottom -= TOPLEVEL_TOPBAR_HEIGHT;
+
+        session->setConstraints(constraints);
+    });
+
+    resizeSession().setOnBeforeUpdateCallback([this](LToplevelResizeSession *session)
+    {
+        LMargin constraints { calculateConstraintsFromOutput(cursor()->output()) };
+
+        if (current().decorationMode == ServerSide && constraints.bottom != EdgeDisabled)
+            constraints.bottom -= TOPLEVEL_TOPBAR_HEIGHT;
+
+        session->setConstraints(constraints);
+    });
+
+    resizeSession().setMinSize(LSize(150, 150));
 }
 
 Toplevel::~Toplevel()
@@ -71,7 +93,7 @@ void Toplevel::configureRequest()
         surface()->sendOutputEnterEvent(cursor()->output());
 
     configureSize(0, 0);
-    configureDecorationMode(G::SSD() ? ServerSide : ClientSide);
+    configureDecorationMode(ServerSide);
     configureState(pending().state | Activated);
 }
 
@@ -135,49 +157,17 @@ void Toplevel::startMoveRequest(const LEvent &triggeringEvent)
 
         const LPoint initDragPoint { LTouch::toGlobal(activeOutput, touchPoint->pos()) };
 
-        moveSession().start(triggeringEvent, initDragPoint, constraints);
+        moveSession().start(triggeringEvent, initDragPoint);
     }
     else if (surface()->hasPointerFocus())
     {
-        moveSession().start(triggeringEvent, cursor()->pos(), constraints);
+        moveSession().start(triggeringEvent, cursor()->pos());
     }
 }
 
 void Toplevel::startResizeRequest(const LEvent &triggeringEvent, ResizeEdge edge)
 {
-    if (fullscreen())
-        return;
-
-    LOutput *activeOutput { cursor()->output() };
-    const LSize minSize { 150, 150 };
-    LMargin constraints { calculateConstraintsFromOutput(activeOutput) };
-
-    if (current().decorationMode == ServerSide && constraints.bottom != EdgeDisabled)
-        constraints.bottom -= TOPLEVEL_TOPBAR_HEIGHT;
-
-    if (triggeringEvent.type() == LEvent::Type::Touch)
-    {
-        if (triggeringEvent.subtype() != LEvent::Subtype::Down)
-            return;
-
-        if (!activeOutput)
-            return;
-
-        const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(triggeringEvent) };
-        LTouchPoint *touchPoint { seat()->touch()->findTouchPoint(touchDownEvent.id()) };
-
-        if (!touchPoint)
-            return;
-
-        if (touchPoint->surface() != surface())
-            return;
-
-        const LPoint initDragPoint { LTouch::toGlobal(activeOutput, touchPoint->pos()) };
-
-        resizeSession().start(triggeringEvent, edge, initDragPoint, minSize, constraints);
-    }
-    else if (surface()->hasPointerFocus())
-        resizeSession().start(triggeringEvent, edge, cursor()->pos(), minSize, constraints);
+    LToplevelRole::startResizeRequest(triggeringEvent, edge);
 
     if (resizeSession().isActive())
         G::enableDocks(false);
@@ -468,7 +458,7 @@ void Toplevel::unsetFullscreen()
         if (fullscreenWorkspace)
         {
             Workspace *prev = *std::prev(fullscreenWorkspace->outputLink);
-            fullscreenOutput->workspaceAnim.stop();
+            fullscreenOutput->workspacesAnimation.stop();
             fullscreenOutput->animatedFullscreenToplevel = nullptr;
             delete fullscreenWorkspace;
             fullscreenWorkspace = nullptr;

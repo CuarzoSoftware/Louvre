@@ -9,6 +9,8 @@ public:
 
     // TODO: Add doc (and update)
 
+    using OnBeforeUpdateCallback = std::function<void(LToplevelMoveSession*)>;
+
     /**
      * @brief Initiate an interactive toplevel moving session.
      *
@@ -29,25 +31,38 @@ public:
      * @param R Restriction for the right edge.
      * @param B Restriction for the bottom edge.
      */
-    bool start(const LEvent &triggeringEvent,
-               const LPoint &initDragPoint,
-               const LMargin &constraints = {LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled ,LToplevelRole::EdgeDisabled});
+    bool start(const LEvent &triggeringEvent, const LPoint &initDragPoint);
+
+    void setConstraints(const LMargin &constraints = {LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled ,LToplevelRole::EdgeDisabled}) noexcept
+    {
+        m_constraints = constraints;
+    }
+
+    const LMargin &constraints() const noexcept
+    {
+        return m_constraints;
+    }
+
+    void setOnBeforeUpdateCallback(const OnBeforeUpdateCallback &callback) noexcept
+    {
+        m_beforeUpdateCallback = callback;
+    }
 
     void updateDragPoint(const LPoint &pos);
 
     const std::vector<LToplevelMoveSession*>::const_iterator stop();
 
-    inline LToplevelRole *toplevel() const
+    LToplevelRole *toplevel() const noexcept
     {
         return m_toplevel;
     }
 
-    inline const LEvent &triggeringEvent() const
+    const LEvent &triggeringEvent() const noexcept
     {
         return *m_triggeringEvent.get();
     }
 
-    inline bool isActive() const
+    bool isActive() const noexcept
     {
         return m_isActive;
     }
@@ -59,9 +74,11 @@ private:
     LToplevelRole *m_toplevel;
     LPoint m_initPos;
     LPoint m_initDragPoint;
-    LBox m_bounds;
+    LMargin m_constraints {LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled ,LToplevelRole::EdgeDisabled};
     std::unique_ptr<LEvent> m_triggeringEvent;
+    OnBeforeUpdateCallback m_beforeUpdateCallback { nullptr };
     bool m_isActive { false };
+    bool m_inCallback { false };
 };
 
 #endif // LTOPLEVELMOVESESSION_H

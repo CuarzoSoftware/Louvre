@@ -6,20 +6,20 @@
 #include <LRenderBuffer.h>
 #include <LSceneView.h>
 #include <LAnimation.h>
-#include <LGammaTable.h>
+
+#include "Topbar.h"
+#include "Dock.h"
 
 using namespace Louvre;
 
 class Compositor;
-class Dock;
 class Toplevel;
-class Topbar;
 class Workspace;
 
 class Output final : public LOutput
 {
 public:
-    Output(const void *params);
+    Output(const void *params) noexcept;
 
     void initializeGL() override;
     void resizeGL() override;
@@ -28,42 +28,33 @@ public:
     void uninitializeGL() override;
     void setGammaRequest(LClient *client, const LGammaTable *gamma) override;
 
-    void loadWallpaper();
     void setWorkspace(Workspace *ws, UInt32 animMs, Float64 curve = 2.0, Float64 start = 0.0);
     void updateWorkspacesPos();
     void updateFractionalOversampling();
     void showAllWorkspaces();
     void hideAllWorkspacesExceptCurrent();
 
-    // Current workspace
-    Workspace *currentWorkspace = nullptr;
+    void onWorkspacesAnimationUpdate(LAnimation *anim) noexcept;
+    void onWorkspacesAnimationFinish(LAnimation *anim) noexcept;
 
-    // Workspace switch/restore animation
-    LAnimation workspaceAnim;
-    Float64 easingCurve { 2.0 };
-    Float64 animStart { 0.0 };
-    Toplevel *animatedFullscreenToplevel = nullptr;
+    // The main workspace and one for each fullscreen toplevel
+    std::list<Workspace*> workspaces;
+    LAnimation workspacesAnimation { 400,
+            [this](LAnimation *anim){ onWorkspacesAnimationUpdate(anim); },
+            [this](LAnimation *anim){ onWorkspacesAnimationFinish(anim); }};
+    LLayerView workspacesContainer;
+    Float64 workspacesPosX  { 0.0 };
+    LWeak<Workspace> currentWorkspace;
+    Float64 animStartOffset { 0.0 };
+    Float64 animEasingCurve { 2.0 };
+    LWeak<Toplevel> animatedFullscreenToplevel;
+    bool doingFingerWorkspaceSwipe { false };
 
-    // X workspaces offset
-    Float64 workspaceOffset { 0.0 };
+    Topbar topbar { this };
+    Dock dock { this };
 
-    // True if 3 finger swipe
-    bool swipingWorkspace = false;
-
-    // Main workspace and one for each fullscreen toplevel
-    std::list<Workspace*>workspaces;
-
-    // Container to move workspaces
-    LLayerView *workspacesContainer = nullptr;
-
-    // Topbar for this output
-    Topbar *topbar = nullptr;
-
-    // Wallpaper for this output
-    LTextureView *wallpaperView = nullptr;
-
-    // Dock for this output
-    Dock *dock = nullptr;
+    void updateWallpaper() noexcept;
+    LTextureView wallpaper;
 };
 
 #endif // OUTPUT_H

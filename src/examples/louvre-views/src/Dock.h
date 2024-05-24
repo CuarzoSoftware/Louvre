@@ -15,8 +15,9 @@ class Dock final : public LLayerView
 {
 public:
     Dock(Output *output);
-    ~Dock();
 
+    void initialize() noexcept;
+    void uninitialize() noexcept;
     void update();
     void show();
     void hide();
@@ -25,9 +26,9 @@ public:
     LLayerView dockContainer { this };
 
     // Dock textures
-    UITextureView dockLeft   { G::DockL, &dockContainer };
-    UITextureView dockCenter { G::DockC, &dockContainer };
-    UITextureView dockRight  { G::DockR, &dockContainer };
+    UITextureView dockLeft   { &dockContainer };
+    UITextureView dockCenter { &dockContainer };
+    UITextureView dockRight  { &dockContainer };
 
     // Container for apps and minimized windows
     LLayerView appsContainer { &dockContainer };
@@ -39,7 +40,7 @@ public:
     void pointerLeaveEvent(const LPointerLeaveEvent &) override;
 
     // Output of this dock
-    Output *output = nullptr;
+    LWeak<Output> output;
 
     // 0.f = HIDDEN, 1.0f = VISIBLE
     Float32 visiblePercent = 0.f;
@@ -51,7 +52,7 @@ public:
     UInt32 showResistance = 6;
     UInt32 showResistanceCount = 0;
 
-    bool alive = true;
+    bool initialized { false };
 
     bool nativeMapped() const noexcept override;
 };

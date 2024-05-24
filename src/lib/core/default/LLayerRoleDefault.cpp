@@ -1,17 +1,44 @@
 #include <LLayerRole.h>
 #include <LCursor.h>
+#include <LSurface.h>
+#include <LCompositor.h>
+#include <LSeat.h>
+#include <LKeyboard.h>
 
 using namespace Louvre;
 
-void LLayerRole::atomicPropsChanged(LBitset<AtomicPropChanges> changes, const AtomicProps &prevAtomicProps)
+void LLayerRole::atomsChanged(LBitset<AtomsChanges> changes, const Atoms &prevAtoms)
 {
+    L_UNUSED(prevAtoms);
 
+    if (changes.check(AtomsChanges::KeyboardInteractivityChanged))
+    {
+        switch (keyboardInteractivity())
+        {
+        case KeyboardInteractivity::NoInteractivity:
+            if (surface()->hasKeyboardFocus())
+                seat()->keyboard()->setFocus(nullptr);
+            if (surface()->hasKeyboardGrab())
+                seat()->keyboard()->setGrab(nullptr);
+            break;
+        case KeyboardInteractivity::OnDemand:
+            if (surface()->hasKeyboardGrab())
+                seat()->keyboard()->setGrab(nullptr);
+            break;
+        case KeyboardInteractivity::Exclusive:
+            seat()->keyboard()->setGrab(surface());
+            break;
+        }
+    }
+
+    if (exclusiveOutput())
+        exclusiveOutput()->repaint();
 }
 
 void LLayerRole::configureRequest()
 {
-    if (!output())
-        setOutput(cursor()->output());
+    if (!exclusiveOutput())
+        setExclusiveOutput(cursor()->output());
 
     LSize newSize { size() };
 

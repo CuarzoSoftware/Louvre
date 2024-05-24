@@ -77,7 +77,7 @@ void RSessionLock::get_lock_surface(wl_client */*client*/, wl_resource *resource
 
     for (auto *role : res.m_roles)
     {
-        if (role->output() && outputRes.output() && role->output() == outputRes.output())
+        if (role->exclusiveOutput() && outputRes.output() && role->exclusiveOutput() == outputRes.output())
         {
             wl_resource_post_error(resource, EXT_SESSION_LOCK_V1_ERROR_DUPLICATE_OUTPUT, "Given output already has a lock surface.");
             return;
@@ -142,9 +142,9 @@ bool RSessionLock::makeLockRequest()
 
         for (LSessionLockRole *role : roles())
         {
-            role->output()->imp()->sessionLockRole.reset(role);
-            role->output()->repaint();
-            role->surface()->sendOutputEnterEvent(role->output());
+            role->exclusiveOutput()->imp()->sessionLockRole.reset(role);
+            role->exclusiveOutput()->repaint();
+            role->surface()->sendOutputEnterEvent(role->exclusiveOutput());
             role->surface()->imp()->setMapped(true);
             role->surface()->requestNextFrame(false);
         }
