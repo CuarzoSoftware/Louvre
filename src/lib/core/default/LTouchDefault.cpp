@@ -18,6 +18,7 @@
 
 using namespace Louvre;
 
+//! [touchDownEvent]
 void LTouch::touchDownEvent(const LTouchDownEvent &event)
 {
     if (!cursor()->output()) return;
@@ -47,7 +48,9 @@ void LTouch::touchDownEvent(const LTouchDownEvent &event)
         seat()->dismissPopups();
     }
 }
+//! [touchDownEvent]
 
+//! [touchMoveEvent]
 void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
 {
     if (!cursor()->output()) return;
@@ -142,7 +145,9 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
     else
         tp->sendMoveEvent(event);
 }
+//! [touchMoveEvent]
 
+//! [touchUpEvent]
 void LTouch::touchUpEvent(const LTouchUpEvent &event)
 {
     LTouchPoint *tp { findTouchPoint(event.id()) };
@@ -196,13 +201,17 @@ void LTouch::touchUpEvent(const LTouchUpEvent &event)
     // Send the event
     tp->sendUpEvent(event);
 }
+//! [touchUpEvent]
 
+//! [touchFrameEvent]
 void LTouch::touchFrameEvent(const LTouchFrameEvent &event)
 {
-    // Released touch points are destroyed after this event
+    // Released touch points are destroyed after sending this event
     sendFrameEvent(event);
 }
+//! [touchFrameEvent]
 
+//! [touchCancelEvent]
 void LTouch::touchCancelEvent(const LTouchCancelEvent &event)
 {
     LDND &dnd { *seat()->dnd() };
@@ -231,3 +240,4 @@ void LTouch::touchCancelEvent(const LTouchCancelEvent &event)
     // All touch points are destroyed
     sendCancelEvent(event);
 }
+//! [touchCancelEvent]

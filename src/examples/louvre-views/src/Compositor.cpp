@@ -14,14 +14,17 @@
 #include "Seat.h"
 #include "Pointer.h"
 #include "Keyboard.h"
+#include "Touch.h"
 #include "Toplevel.h"
 #include "TextRenderer.h"
 #include "Topbar.h"
 #include "ToplevelView.h"
 #include "Popup.h"
 #include "SessionLockManager.h"
+#include "TestView.h"
 
 #include <LOpenGL.h>
+
 
 void Compositor::initialized()
 {
@@ -88,6 +91,10 @@ void Compositor::initialized()
         compositor()->addOutput(output);
         output->repaint();
     }
+
+#if LOUVRE_VIEWS_TESTING == 1
+    new TestView(&overlayLayer);
+#endif
 }
 
 void Compositor::uninitialized()
@@ -125,6 +132,9 @@ LFactoryObject *Compositor::createObjectRequest(LFactoryObject::Type type, const
 
     if (type == LFactoryObject::Type::LKeyboard)
         return new Keyboard(params);
+
+    if (type == LFactoryObject::Type::LTouch)
+        return new Touch(params);
 
     if (type == LFactoryObject::Type::LSessionLockManager)
         return new SessionLockManager(params);

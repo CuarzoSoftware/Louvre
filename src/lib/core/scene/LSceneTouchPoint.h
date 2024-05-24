@@ -6,6 +6,14 @@
 
 /**
  * @brief Touch point managed within an LScene.
+ *
+ * This class behaves similarly to LTouchPoint but its lifetime is managed by its parent LScene **handleTouchXXX** events.
+ *
+ * @see LTouchPoint for understanding the lifetime of a touch point.
+ *
+ * To access all active touch points of an LScene, see LScene::touchPoints().
+ *
+ * @note For an LView to be capable of receiving touch events, LView::touchEventsEnabled() must be set to true.
  */
 class Louvre::LSceneTouchPoint final : public LObject
 {
@@ -42,9 +50,12 @@ public:
     }
 
     /**
-     * @brief Touched views
+     * @brief Touched views.
      *
-     * Vector of views being touched by this touch point.
+     * A vector of views being touched by this touch point.
+     *
+     * Views with the LView::blockTouchEnabled() property set to `false` allow views behind them to receive touch
+     * events as well. In such cases, the vector contains the views ordered from topmost to bottommost.
      */
     const std::vector<LView*> &views() const noexcept
     {

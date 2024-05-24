@@ -15,7 +15,7 @@ LTouch::LTouch(const void *params) noexcept : LFactoryObject(FactoryObjectType)
     *ptr = this;
 }
 
-LTouch::~LTouch()
+LTouch::~LTouch() noexcept
 {
     while (!touchPoints().empty())
     {
@@ -24,17 +24,17 @@ LTouch::~LTouch()
     }
 }
 
-LSurface *LTouch::surfaceAt(const LPoint &point)
+LSurface *LTouch::surfaceAt(const LPoint &point) noexcept
 {
     return seat()->pointer()->surfaceAt(point);
 }
 
-const std::vector<LTouchPoint*> &LTouch::touchPoints() const
+const std::vector<LTouchPoint*> &LTouch::touchPoints() const noexcept
 {
     return m_touchPoints;
 }
 
-LTouchPoint *LTouch::createOrGetTouchPoint(const LTouchDownEvent &event)
+LTouchPoint *LTouch::createOrGetTouchPoint(const LTouchDownEvent &event) noexcept
 {
     for (LTouchPoint *tp : touchPoints())
         if (tp->id() == event.id())
@@ -43,7 +43,7 @@ LTouchPoint *LTouch::createOrGetTouchPoint(const LTouchDownEvent &event)
     return new LTouchPoint(event);
 }
 
-LTouchPoint *LTouch::findTouchPoint(Int32 id) const
+LTouchPoint *LTouch::findTouchPoint(Int32 id) const noexcept
 {
     for (LTouchPoint *tp : touchPoints())
         if (tp->id() == id)
@@ -52,7 +52,7 @@ LTouchPoint *LTouch::findTouchPoint(Int32 id) const
     return nullptr;
 }
 
-LPointF LTouch::toGlobal(LOutput *output, const LPointF &touchPointPos)
+LPointF LTouch::toGlobal(LOutput *output, const LPointF &touchPointPos) noexcept
 {
     if (!output)
         return touchPointPos;
@@ -97,7 +97,7 @@ LPointF LTouch::toGlobal(LOutput *output, const LPointF &touchPointPos)
     return point + output->pos();
 }
 
-void LTouch::sendFrameEvent(const LTouchFrameEvent &event)
+void LTouch::sendFrameEvent(const LTouchFrameEvent &event) noexcept
 {
     L_UNUSED(event);
 
@@ -118,7 +118,7 @@ void LTouch::sendFrameEvent(const LTouchFrameEvent &event)
     }
 }
 
-void LTouch::sendCancelEvent(const LTouchCancelEvent &event)
+void LTouch::sendCancelEvent(const LTouchCancelEvent &event) noexcept
 {
     L_UNUSED(event);
 

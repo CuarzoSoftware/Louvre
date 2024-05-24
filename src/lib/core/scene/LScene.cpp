@@ -1181,7 +1181,7 @@ void LScene::handleTouchUpEvent(const LTouchUpEvent &event, LBitset<EventOptions
     if (!imp()->currentTouchPoint)
         goto skipViews;
 
-    imp()->currentTouchPoint->m_pressed = true;
+    imp()->currentTouchPoint->m_pressed = false;
     imp()->state.remove(LSS::ChildrenListChanged | LSS::TouchIsBlocked);
 
     for (LView *view : imp()->currentTouchPoint->views())

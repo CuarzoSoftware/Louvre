@@ -19,7 +19,7 @@
  * To gain a comprehensive understanding of touch events, please refer to the documentation of LTouch.
  *
  * @note When sending a touch-down or move event to a surface, ensure that the position is specified in local surface coordinates.
- *       Both LTouchDownEvent and LTouchMoveEvent contain a mutable variable named localPos. Be sure to set its value properly to
+ *       Both LTouchDownEvent and LTouchMoveEvent contain a mutable variable named `localPos`. Be sure to set its value properly to
  *       the local surface coordinate before dispatching these events.
  */
 class Louvre::LTouchPoint final : public LObject
@@ -57,7 +57,7 @@ public:
      * @brief Get the surface currently being touched by this touch point.
      *
      * The surface associated with this touch point is set using the sendDownEvent() method. If no surface is assigned to this touch point,
-     * the method returns `nullptr`.
+     * this method returns `nullptr`.
      *
      * @return A pointer to the LSurface being touched by this touch point, or `nullptr` if no surface is assigned.
      */
@@ -119,7 +119,7 @@ public:
     bool sendDownEvent(const LTouchDownEvent &event, LSurface *surface = nullptr) noexcept;
 
     /**
-     * @brief Notify the client about the movement of the touch point if there is an assigned surface.
+     * @brief Notify the client about the movement of the touch point (if there is a surface assigned).
      *
      * @note The LTouchMoveEvent::localPos mutable variable must be set to represent the position in local surface coordinates.
      *
@@ -129,7 +129,7 @@ public:
     bool sendMoveEvent(const LTouchMoveEvent &event) noexcept;
 
     /**
-     * @brief Notify the client about the touch point being released if there is an assigned surface.
+     * @brief Notify the client about the touch point being released (if there is a surface assigned).
      *
      * If LTouch::sendFrameEvent() is called and the touch point is no longer pressed, it is automatically destroyed.
      *

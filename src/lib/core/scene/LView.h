@@ -242,8 +242,27 @@ public:
         return m_state.check(KeyboardEvents);
     }
 
-    // Disabled by default TODO
+    /**
+     * @brief Toggle touch events.
+     *
+     * Enables or disables the ability of the view to receive touch events.\n
+     * A view can be touched by multiple touch points simultaneously.
+     *
+     * @see LScene::touchPoints() and LSceneTouchPoint::views()
+     *
+     * @note The inputRegion() property affects which part of the view can receive events.
+     *
+     * @param enabled Set to `true` to enable touch events, `false` to disable them.
+     */
     void enableTouchEvents(bool enabled) noexcept;
+
+    /**
+     * @brief Check if touch events are enabled.
+     *
+     * Determines whether the view is currently set to receive touch events.
+     *
+     * @return `true` if touch events are enabled, `false` otherwise.
+     */
     bool touchEventsEnabled() const noexcept
     {
         return m_state.check(TouchEvents);

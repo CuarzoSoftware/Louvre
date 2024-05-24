@@ -12,9 +12,9 @@ public:
 };
 
 /**
- * @brief Weak reference to an LObject pointer
+ * @brief Weak reference to an LObject
  *
- * The LWeak class template provides a mechanism for creating weak pointer references to subclasses of LObject.
+ * The LWeak class template provides a mechanism for creating weak pointer references to subclasses of LObject.\n
  * It is conceptually similar to `std::weak_ptr` but is specifically tailored for LObject subclasses, avoiding
  * the pointer indirection and associated performance overhead of the `std::weak_ptr` thread-safe mechanisms.
  *
@@ -42,7 +42,7 @@ public:
      */
     LWeak(T *object) noexcept
     {
-        static_assert(std::is_base_of<LObject, T>::value, "LWeak template error: Type must be a subclass of LObject.");
+        static_assert(std::is_base_of<LObject, T>::value, "LWeak template error: T must be a subclass of LObject.");
 
         if (object)
             pushBackTo(object);
@@ -91,12 +91,25 @@ public:
         return m_object;
     }
 
-    // TODO
+    /**
+     * @brief Implicit conversion to raw pointer.
+     *
+     * Provides access to the underlying raw pointer through an implicit conversion.
+     *
+     * @return A pointer to the underlying object.
+     */
     operator T*() const noexcept
     {
         return m_object;
     }
 
+    /**
+     * @brief Access underlying object via pointer semantics.
+     *
+     * Allows accessing members of the underlying object using pointer semantics.
+     *
+     * @return Pointer to the underlying object.
+     */
     T* operator->() const noexcept
     {
         return m_object;
@@ -134,7 +147,7 @@ public:
     }
 
     /**
-     * @brief Set the onDestroy callback function, pass `nullptr` to disable it.
+     * @brief Set the onDestroy callback function.
      *
      * @note callback functions are not copied across LWeak instances.
      *

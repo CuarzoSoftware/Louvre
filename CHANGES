@@ -1,7 +1,12 @@
-Louvre (2.0.0-0)
+Louvre (2.0.0-1)
+
+  # Input
+
+  * Touch events are now supported through the LTouch, LTouchPoint, and LSceneTouchPoint classes.
 
   # Security
 
+  * New LWeak class for efficiently managing weak references to LObjects, automatically setting them to nullptr upon object destruction, with an optional destruction callback.
   * Replaced LClient::destroy() with destroyLater() to prevent potential access to freed client resources.
 
 Louvre (1.2.1-1)
