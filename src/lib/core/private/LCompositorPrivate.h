@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <string>
 #include <filesystem>
+#include <set>
 
 using namespace Louvre;
 
@@ -140,8 +141,10 @@ LPRIVATE_CLASS(LCompositor)
     void unitDMAFeedback() noexcept;
 
     std::list<LSurface*> layers[5];
-
     UInt32 surfaceRaiseAllowedCounter { 0 };
+
+    void handleDestroyedClients();
+    std::set<LClient*> destroyedClients;
 };
 
 #endif // LCOMPOSITORPRIVATE_H

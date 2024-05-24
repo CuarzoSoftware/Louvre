@@ -57,7 +57,10 @@ RLayerSurface::RLayerSurface(
 
 RLayerSurface::~RLayerSurface()
 {
+    compositor()->onAnticipatedObjectDestruction(layerRole());
 
+    if (layerRole()->surface())
+        layerRole()->surface()->imp()->setMapped(false);
 }
 
 void RLayerSurface::set_size(wl_client */*client*/, wl_resource *resource, UInt32 width, UInt32 height)

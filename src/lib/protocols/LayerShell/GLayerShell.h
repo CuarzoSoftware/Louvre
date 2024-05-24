@@ -8,7 +8,7 @@ class Louvre::Protocols::LayerShell::GLayerShell final : public LResource
 public:
     static void get_layer_surface(wl_client *client, wl_resource *resource,
                                   UInt32 id, wl_resource *surface, wl_resource *output,
-                                  UInt32 layer, const char *name_space) noexcept;
+                                  UInt32 layer, const char *name_space);
 
 #if LOUVRE_LAYER_SHELL_VERSION >= 3
     static void destroy(wl_client *client, wl_resource *resource) noexcept;

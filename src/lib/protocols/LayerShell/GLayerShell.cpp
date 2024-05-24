@@ -59,7 +59,7 @@ GLayerShell::~GLayerShell() noexcept
 
 /******************** REQUESTS ********************/
 
-void GLayerShell::get_layer_surface(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *surface, wl_resource *output, UInt32 layer, const char *name_space) noexcept
+void GLayerShell::get_layer_surface(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *surface, wl_resource *output, UInt32 layer, const char *name_space)
 {
     auto &surfaceRes { *static_cast<Wayland::RSurface*>(wl_resource_get_user_data(surface)) };
 

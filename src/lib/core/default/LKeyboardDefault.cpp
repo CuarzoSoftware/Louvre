@@ -48,7 +48,7 @@ void LKeyboard::keyEvent(const LKeyboardKeyEvent &event)
         else if (L_CTRL && (sym == XKB_KEY_q || sym == XKB_KEY_Q))
         {
             if (focus())
-                focus()->client()->destroy();
+                focus()->client()->destroyLater();
         }
         else if (L_CTRL && (sym == XKB_KEY_m || sym == XKB_KEY_M))
         {

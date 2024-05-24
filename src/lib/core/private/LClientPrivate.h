@@ -49,6 +49,7 @@ public:
     std::vector<SessionLock::GSessionLockManager*> sessionLockManagerGlobals;
     std::vector<PointerConstraints::GPointerConstraints*> pointerConstraintsGlobals;
     std::vector<LayerShell::GLayerShell*> layerShellGlobals;
+    bool destroyed { false };
 };
 
 #endif // LCLIENTPRIVATE_H

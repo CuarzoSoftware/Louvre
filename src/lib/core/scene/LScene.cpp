@@ -901,7 +901,7 @@ retry:
         else if (L_CTRL && (sym == XKB_KEY_q || sym == XKB_KEY_Q))
         {
             if (keyboard.focus())
-                keyboard.focus()->client()->destroy();
+                keyboard.focus()->client()->destroyLater();
         }
         else if (L_CTRL && (sym == XKB_KEY_m || sym == XKB_KEY_M))
         {

@@ -136,12 +136,12 @@ public:
     /**
      * @brief Terminates the client connection with the compositor.
      *
-     * This method terminates the client's connection with the compositor, which is equivalent to invoking `wl_client_destroy()`.
-     * It effectively closes the connection between the client and the compositor.
+     * This method terminates the client's connection with the compositor, equivalent to invoking `wl_client_destroy()`.\n
+     * For safety reasons, the destruction does not occur immediately but at the end of a main loop iteration.
      *
-     * @note All resources created by the client are automatically destroyed in the reverse order in which they were created.
+     * @note All resources created by the client are automatically destroyed in the reverse order of their creation.
      */
-    void destroy() noexcept;
+    void destroyLater() noexcept;
 
     /**
      * Resources created when the client binds to the [wl_output](https://wayland.app/protocols/wayland#wl_output) global.\n

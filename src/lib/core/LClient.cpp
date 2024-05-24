@@ -2,12 +2,16 @@
 #include <protocols/Wayland/GSeat.h>
 #include <protocols/XdgShell/GXdgWmBase.h>
 #include <private/LClientPrivate.h>
-#include <LCompositor.h>
+#include <private/LCompositorPrivate.h>
 #include <LClient.h>
 
 LClient::LClient(const void *params) noexcept : LFactoryObject(FactoryObjectType), m_imp { std::make_unique<LClientPrivate>(this, ((Params*)params)->client) } {}
 
-LClient::~LClient() {}
+LClient::~LClient()
+{
+    if (imp()->destroyed)
+        compositor()->imp()->destroyedClients.erase(this);
+}
 
 const LEvent *LClient::findEventBySerial(UInt32 serial) const noexcept
 {
@@ -86,9 +90,13 @@ void LClient::flush() noexcept
     wl_client_flush(client());
 }
 
-void LClient::destroy() noexcept
+void LClient::destroyLater() noexcept
 {
-    wl_client_destroy(client());
+    if (imp()->destroyed)
+        return;
+
+    imp()->destroyed = true;
+    compositor()->imp()->destroyedClients.insert(this);
 }
 
 const std::vector<Wayland::GOutput*> &LClient::outputGlobals() const noexcept

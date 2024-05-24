@@ -324,6 +324,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         }
 
         imp()->destroyPendingRenderBuffers(nullptr);
+        imp()->handleDestroyedClients();
     }
 
     if (state() == CompositorState::Uninitializing)

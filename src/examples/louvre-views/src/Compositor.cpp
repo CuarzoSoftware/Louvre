@@ -220,7 +220,7 @@ bool Compositor::checkUpdateOutputUnplug()
 
                     if (tl->outputUnplugConfigureCount > 128)
                     {
-                        tl->surf()->client()->destroy();
+                        tl->surf()->client()->destroyLater();
                         return outputUnplugHandled;
                     }
                     tl->configureState(LToplevelRole::Activated);
