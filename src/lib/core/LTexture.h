@@ -9,281 +9,334 @@
 #include <drm_fourcc.h>
 #include <GL/gl.h>
 
-/**
- * @brief OpenGL texture abstraction
- *
- * The LTexture class is an abstraction of an OpenGL texture.
- * It provides a unified interface for generating and updating textures from buffers in main memory, `wl_drm` buffers, and DMA buffers.
- *
- * @warning The texture internal buffer storage is destroyed and replaced every time any of the setData() variants is used.
- *
- * @see To create a texture from an image file use LOpenGL::loadTexture().
- */
-class Louvre::LTexture final : public LObject
+#define LOUVRE_MAX_DMA_PLANES 4
+
+namespace Louvre
 {
-public:
-
     /**
-     * @brief Texture source enumeration indicating the origin of the texture data.
+     * @brief Structure representing DMA format and modifier.
+     *
+     * The LDMAFormat struct contains information about DMA format and modifier.
+     * It is used to describe the format and memory layout of DMA planes used for texture generation.
+     * Each LDMAFormat instance includes a format value and a modifier value.
      */
-    enum BufferSourceType
+    struct LDMAFormat
     {
-        /// Buffer sourced from main memory
-        CPU = 0,
+        /// The format of the DMA plane.
+        UInt32 format;
 
-        /// Buffer sourced from `wl_drm` buffers
-        WL_DRM = 1,
-
-        /// Buffer sourced from DMA planes
-        DMA = 2,
-
-        /// Indicates the texture is from an LFramebuffer.
-        Framebuffer = 3,
-
-        /// Sourced from a native OpenGL ES 2.0 texture
-        Native = 4
+        /// The modifier value specifying the memory layout.
+        UInt64 modifier;
     };
 
     /**
-     * @brief Creates an empty texture.
+     * @brief Direct Memory Access (DMA) planes.
+     *
+     * Use this struct to import DMA buffers with LTexture.
      */
-    LTexture(bool premultipliedAlpha = false) noexcept;
-
-    LCLASS_NO_COPY(LTexture)
-
-    /**
-     * @brief The LTexture class destructor.
-     */
-    ~LTexture() noexcept;
-
-    /**
-     * @brief Get the equivalent DRM buffer format from a Wayland buffer format.
-     *
-     * DRM formats are listed in [`drm_fourcc.h`](https://github.com/torvalds/linux/blob/master/include/uapi/drm/drm_fourcc.h).
-     *
-     * @param waylandFormat The Wayland buffer format to convert.
-     * @return The equivalent DRM buffer format.
-     */
-    static UInt32 waylandFormatToDRM(UInt32 waylandFormat) noexcept;
-
-    /**
-     * @brief Get the number of bytes (not bits) per pixel of a DRM format.
-     *
-     * @param format The DRM format to get the bytes per pixel for.
-     * @return The number of bytes per pixel.
-     */
-    static UInt32 formatBytesPerPixel(UInt32 format) noexcept;
-
-    /**
-     * @brief Get the number of planes of a DRM format.
-     *
-     * @param format The DRM format.
-     * @return The number of planes of the format.
-     */
-    static UInt32 formatPlanes(UInt32 format) noexcept;
-
-    /**
-     * @brief Set the data of the texture from a buffer in main memory.
-     *
-     * @param size The size of the texture in buffer coordinates.
-     * @param stride The stride of the buffer.
-     * @param format The DRM format of the buffer (defined in [`drm_fourcc.h`](https://github.com/torvalds/linux/blob/master/include/uapi/drm/drm_fourcc.h)).
-     * @param buffer The pointer to the main memory buffer.
-     * @return `true` if the data was successfully set, `false` otherwise.
-     */
-    bool setDataFromMainMemory(const LSize &size, UInt32 stride, UInt32 format, const void *buffer) noexcept;
-
-    /**
-     * @brief Set the data of the texture from a `wl_drm` buffer.
-     *
-     * @param buffer The pointer to the `wl_drm` buffer.
-     * @return `true` if the data was successfully set, `false` otherwise.
-     */
-    bool setDataFromWaylandDRM(wl_resource *buffer) noexcept;
-
-    /**
-     * @brief Set the data of the texture from DMA planes.
-     *
-     * @param planes The pointer to the DMA planes struct.
-     * @return `true` if the data was successfully set, `false` otherwise.
-     */
-    bool setDataFromDMA(const LDMAPlanes &planes) noexcept;
-
-    /**
-     * @brief Update a specific area of the texture with the provided buffer.
-     *
-     * To successfully update the texture, the provided buffer must have the same format as the texture.
-     * If invalid parameters are passed or if the texture cannot be modified, this method returns `false`.
-     *
-     * @param rect The rect within the texture to update, specified in buffer coordinates with the top-left corner as the origin.
-     * @param stride The stride of the main memory buffer.
-     * @param buffer A pointer to the main memory buffer.
-     * @return `true` if the update was successful; otherwise, `false`.
-     */
-    bool updateRect(const LRect &rect, UInt32 stride, const void *buffer) noexcept;
-
-    /**
-     * @brief Creates a copy of the texture.
-     *
-     * @note The resulting texture is independent of the original and must be freed separately.
-     *
-     * @param dst The destination size of the copied texture. Pass (0,0) to use the same size as the original texture.
-     * @param src The rectangular area within the texture to be copied. Pass (0,0,0,0) to copy the entire texture.
-     * @param highQualityScaling Set this parameter to `true` to enable high-quality scaling, which produces better results when resizing to a significantly different size from the original.
-     *
-     * @return A pointer to the copied LTexture object or `nullptr` on failure.
-     */
-    LTexture *copy(const LSize &dst = LSize(), const LRect &src = LRect(), bool highQualityScaling = true) const noexcept;
-
-    /**
-     * @brief Save the texture as a PNG file.
-     *
-     * This method allows you to save the texture as a PNG image file at the specified @p path.
-     *
-     * @param name The file path where the PNG image will be saved.
-     * @return `true` if the save operation is successful, `false` otherwise.
-     */
-    bool save(const std::filesystem::path &name) const noexcept;
-
-    /**
-     * @brief Get the size of the texture in buffer coordinates.
-     *
-     * @return The size of the texture.
-     */
-    const LSize &sizeB() const noexcept
+    struct LDMAPlanes
     {
-        return m_sizeB;
-    }
+        /// Width of the buffer in pixels.
+        UInt32 width;
+
+        /// Height of the buffer in pixels.
+        UInt32 height;
+
+        /// DRM format of the buffer.
+        UInt32 format;
+
+        /// Number of file descriptors.
+        UInt32 num_fds = 0;
+
+        /// Array of file descriptors associated with each DMA plane.
+        Int32 fds[LOUVRE_MAX_DMA_PLANES] = {-1};
+
+        /// Array of strides for each DMA plane.
+        UInt32 strides[LOUVRE_MAX_DMA_PLANES] = {0};
+
+        /// Array of offsets for each DMA plane.
+        UInt32 offsets[LOUVRE_MAX_DMA_PLANES] = {0};
+
+        /// Array of modifiers for each DMA plane.
+        UInt64 modifiers[LOUVRE_MAX_DMA_PLANES] = {0};
+    };
 
     /**
-     * @brief Check if the texture has been initialized.
+     * @brief OpenGL texture abstraction
      *
-     * A texture is considered initialized when content has been assigned to it using any setData() variant.
+     * The LTexture class is an abstraction of an OpenGL texture.
+     * It provides a unified interface for generating and updating textures from buffers in main memory, `wl_drm` buffers, and DMA buffers.
      *
-     * @return `true` if the texture has been initialized, `false` otherwise.
+     * @warning The texture internal buffer storage is destroyed and replaced every time any of the setData() variants is used.
+     *
+     * @see To create a texture from an image file use LOpenGL::loadTexture().
      */
-    bool initialized() const noexcept
+    class LTexture final : public LObject
     {
-        return m_graphicBackendData != nullptr;
-    }
+    public:
 
-    /**
-     * @brief Get the OpenGL texture ID for a specific output.
-     *
-     * If `nullptr` is passed as output, a texture for the main thread is returned.
-     *
-     * @param output The specific output for which to get the texture ID.
-     * @return The OpenGL texture ID or 0 if fails.
-     */
-    GLuint id(LOutput *output) const noexcept;
-
-    /**
-     * @brief Get the OpenGL texture target.
-     *
-     * @return The OpenGL texture target.
-     */
-    GLenum target() const noexcept
-    {
-        if (initialized())
+        /**
+         * @brief Texture source enumeration indicating the origin of the texture data.
+         */
+        enum BufferSourceType
         {
-            if (sourceType() == Framebuffer)
-                return GL_TEXTURE_2D;
+            /// Buffer sourced from main memory
+            CPU = 0,
 
-            else if (sourceType() == Native)
-                return m_nativeTarget;
+            /// Buffer sourced from `wl_drm` buffers
+            WL_DRM = 1,
 
-            return backendTarget();
+            /// Buffer sourced from DMA planes
+            DMA = 2,
+
+            /// Indicates the texture is from an LFramebuffer.
+            Framebuffer = 3,
+
+            /// Sourced from a native OpenGL ES 2.0 texture
+            Native = 4
+        };
+
+        /**
+         * @brief Creates an empty texture.
+         */
+        LTexture(bool premultipliedAlpha = false) noexcept;
+
+        LCLASS_NO_COPY(LTexture)
+
+        /**
+         * @brief The LTexture class destructor.
+         */
+        ~LTexture() noexcept;
+
+        /**
+         * @brief Get the equivalent DRM buffer format from a Wayland buffer format.
+         *
+         * DRM formats are listed in [`drm_fourcc.h`](https://github.com/torvalds/linux/blob/master/include/uapi/drm/drm_fourcc.h).
+         *
+         * @param waylandFormat The Wayland buffer format to convert.
+         * @return The equivalent DRM buffer format.
+         */
+        static UInt32 waylandFormatToDRM(UInt32 waylandFormat) noexcept;
+
+        /**
+         * @brief Get the number of bytes (not bits) per pixel of a DRM format.
+         *
+         * @param format The DRM format to get the bytes per pixel for.
+         * @return The number of bytes per pixel.
+         */
+        static UInt32 formatBytesPerPixel(UInt32 format) noexcept;
+
+        /**
+         * @brief Get the number of planes of a DRM format.
+         *
+         * @param format The DRM format.
+         * @return The number of planes of the format.
+         */
+        static UInt32 formatPlanes(UInt32 format) noexcept;
+
+        /**
+         * @brief Set the data of the texture from a buffer in main memory.
+         *
+         * @param size The size of the texture in buffer coordinates.
+         * @param stride The stride of the buffer.
+         * @param format The DRM format of the buffer (defined in [`drm_fourcc.h`](https://github.com/torvalds/linux/blob/master/include/uapi/drm/drm_fourcc.h)).
+         * @param buffer The pointer to the main memory buffer.
+         * @return `true` if the data was successfully set, `false` otherwise.
+         */
+        bool setDataFromMainMemory(const LSize &size, UInt32 stride, UInt32 format, const void *buffer) noexcept;
+
+        /**
+         * @brief Set the data of the texture from a `wl_drm` buffer.
+         *
+         * @param buffer The pointer to the `wl_drm` buffer.
+         * @return `true` if the data was successfully set, `false` otherwise.
+         */
+        bool setDataFromWaylandDRM(wl_resource *buffer) noexcept;
+
+        /**
+         * @brief Set the data of the texture from DMA planes.
+         *
+         * @param planes The pointer to the DMA planes struct.
+         * @return `true` if the data was successfully set, `false` otherwise.
+         */
+        bool setDataFromDMA(const LDMAPlanes &planes) noexcept;
+
+        /**
+         * @brief Update a specific area of the texture with the provided buffer.
+         *
+         * To successfully update the texture, the provided buffer must have the same format as the texture.
+         * If invalid parameters are passed or if the texture cannot be modified, this method returns `false`.
+         *
+         * @param rect The rect within the texture to update, specified in buffer coordinates with the top-left corner as the origin.
+         * @param stride The stride of the main memory buffer.
+         * @param buffer A pointer to the main memory buffer.
+         * @return `true` if the update was successful; otherwise, `false`.
+         */
+        bool updateRect(const LRect &rect, UInt32 stride, const void *buffer) noexcept;
+
+        /**
+         * @brief Creates a copy of the texture.
+         *
+         * @note The resulting texture is independent of the original and must be freed separately.
+         *
+         * @param dst The destination size of the copied texture. Pass (0,0) to use the same size as the original texture.
+         * @param src The rectangular area within the texture to be copied. Pass (0,0,0,0) to copy the entire texture.
+         * @param highQualityScaling Set this parameter to `true` to enable high-quality scaling, which produces better results when resizing to a significantly different size from the original.
+         *
+         * @return A pointer to the copied LTexture object or `nullptr` on failure.
+         */
+        LTexture *copy(const LSize &dst = LSize(), const LRect &src = LRect(), bool highQualityScaling = true) const noexcept;
+
+        /**
+         * @brief Save the texture as a PNG file.
+         *
+         * This method allows you to save the texture as a PNG image file at the specified @p path.
+         *
+         * @param name The file path where the PNG image will be saved.
+         * @return `true` if the save operation is successful, `false` otherwise.
+         */
+        bool save(const std::filesystem::path &name) const noexcept;
+
+        /**
+         * @brief Get the size of the texture in buffer coordinates.
+         *
+         * @return The size of the texture.
+         */
+        const LSize &sizeB() const noexcept
+        {
+            return m_sizeB;
         }
 
-        return GL_TEXTURE_2D;
-    }
+        /**
+         * @brief Check if the texture has been initialized.
+         *
+         * A texture is considered initialized when content has been assigned to it using any setData() variant.
+         *
+         * @return `true` if the texture has been initialized, `false` otherwise.
+         */
+        bool initialized() const noexcept
+        {
+            return m_graphicBackendData != nullptr;
+        }
 
-    /**
-     * @brief Get the texture source type.
-     *
-     * @return The texture source type as an LTexture::BufferSourceType enum value.
-     */
-    BufferSourceType sourceType() const noexcept
-    {
-        return m_sourceType;
-    }
+        /**
+         * @brief Get the OpenGL texture ID for a specific output.
+         *
+         * If `nullptr` is passed as output, a texture for the main thread is returned.
+         *
+         * @param output The specific output for which to get the texture ID.
+         * @return The OpenGL texture ID or 0 if fails.
+         */
+        GLuint id(LOutput *output) const noexcept;
 
-    /**
-     * @brief Get the DRM format of the texture.
-     *
-     * @see [`drm_fourcc.h`](https://github.com/torvalds/linux/blob/master/include/uapi/drm/drm_fourcc.h) for more information on DRM formats.
-     *
-     * @return The DRM format of the texture.
-     */
-    UInt32 format() const noexcept
-    {
-        return m_format;
-    }
+        /**
+         * @brief Get the OpenGL texture target.
+         *
+         * @return The OpenGL texture target.
+         */
+        GLenum target() const noexcept
+        {
+            if (initialized())
+            {
+                if (sourceType() == Framebuffer)
+                    return GL_TEXTURE_2D;
 
-    /**
-     * @brief Get the serial number of the texture.
-     *
-     * The serial number is incremented each time the texture's backing storage, or its pixel data changes.
-     *
-     * @return The serial number of the texture.
-     */
-    UInt32 serial() const noexcept
-    {
-        return m_serial;
-    }
+                else if (sourceType() == Native)
+                    return m_nativeTarget;
 
-    /**
-     * @brief Indicates whether the RGB components are pre-multiplied by the alpha component.
-     *
-     * This flag is crucial for proper blending of textures within LPainter and LScene.\n
-     * By default, Wayland clients typically use pre-multiplied alpha, but user-defined textures may not adhere to this convention.
-     *
-     * To modify this value, use setPremultipliedAlpha().
-     *
-     * @return `true` if the RGB components are pre-multiplied by the alpha component, `false` otherwise.
-     */
-    bool premultipliedAlpha() const noexcept
-    {
-        return m_premultipliedAlpha;
-    }
+                return backendTarget();
+            }
 
-    /**
-     * @brief Sets a hint indicating whether the RGB components are pre-multiplied by the alpha component.
-     *
-     * This function allows you to modify the pre-multiplied alpha flag.
-     *
-     * @param premultipledAlpha `true` to indicate pre-multiplied alpha, `false` otherwise.
-     */
-    void setPremultipliedAlpha(bool premultipledAlpha) const noexcept
-    {
-        m_premultipliedAlpha = premultipledAlpha;
-    }
+            return GL_TEXTURE_2D;
+        }
 
-    class LTexturePrivate;
+        /**
+         * @brief Get the texture source type.
+         *
+         * @return The texture source type as an LTexture::BufferSourceType enum value.
+         */
+        BufferSourceType sourceType() const noexcept
+        {
+            return m_sourceType;
+        }
 
-private:
-    friend class LCompositor;
-    friend class LRenderBuffer;
-    friend class LGraphicBackend;
-    friend class LDMABuffer;
-    friend class LSurface;
+        /**
+         * @brief Get the DRM format of the texture.
+         *
+         * @see [`drm_fourcc.h`](https://github.com/torvalds/linux/blob/master/include/uapi/drm/drm_fourcc.h) for more information on DRM formats.
+         *
+         * @return The DRM format of the texture.
+         */
+        UInt32 format() const noexcept
+        {
+            return m_format;
+        }
 
-    void *m_graphicBackendData { nullptr };
-    LSize m_sizeB;
-    UInt32 m_format { 0 };
-    BufferSourceType m_sourceType { CPU };
-    UInt32 m_serial { 0 };
+        /**
+         * @brief Get the serial number of the texture.
+         *
+         * The serial number is incremented each time the texture's backing storage, or its pixel data changes.
+         *
+         * @return The serial number of the texture.
+         */
+        UInt32 serial() const noexcept
+        {
+            return m_serial;
+        }
 
-    // Native OpenGL Texture
-    GLenum m_nativeTarget { 0 };
-    LWeak<LOutput> m_nativeOutput;
-    GLuint m_nativeId { 0 };
-    bool m_pendingDelete { false };
-    mutable bool m_premultipliedAlpha;
+        /**
+         * @brief Indicates whether the RGB components are pre-multiplied by the alpha component.
+         *
+         * This flag is crucial for proper blending of textures within LPainter and LScene.\n
+         * By default, Wayland clients typically use pre-multiplied alpha, but user-defined textures may not adhere to this convention.
+         *
+         * To modify this value, use setPremultipliedAlpha().
+         *
+         * @return `true` if the RGB components are pre-multiplied by the alpha component, `false` otherwise.
+         */
+        bool premultipliedAlpha() const noexcept
+        {
+            return m_premultipliedAlpha;
+        }
 
-    GLenum backendTarget() const noexcept;
-    void reset() noexcept;
-    bool setDataB(GLuint textureId, GLenum target, UInt32 format, const LSize &size, LOutput *output) noexcept;
+        /**
+         * @brief Sets a hint indicating whether the RGB components are pre-multiplied by the alpha component.
+         *
+         * This function allows you to modify the pre-multiplied alpha flag.
+         *
+         * @param premultipledAlpha `true` to indicate pre-multiplied alpha, `false` otherwise.
+         */
+        void setPremultipliedAlpha(bool premultipledAlpha) const noexcept
+        {
+            m_premultipliedAlpha = premultipledAlpha;
+        }
+
+        class LTexturePrivate;
+
+    private:
+        friend class LCompositor;
+        friend class LRenderBuffer;
+        friend class LGraphicBackend;
+        friend class LDMABuffer;
+        friend class LSurface;
+
+        void *m_graphicBackendData { nullptr };
+        LSize m_sizeB;
+        UInt32 m_format { 0 };
+        BufferSourceType m_sourceType { CPU };
+        UInt32 m_serial { 0 };
+
+        // Native OpenGL Texture
+        GLenum m_nativeTarget { 0 };
+        LWeak<LOutput> m_nativeOutput;
+        GLuint m_nativeId { 0 };
+        bool m_pendingDelete { false };
+        mutable bool m_premultipliedAlpha;
+
+        GLenum backendTarget() const noexcept;
+        void reset() noexcept;
+        bool setDataB(GLuint textureId, GLenum target, UInt32 format, const LSize &size, LOutput *output) noexcept;
+    };
 };
 
 #endif

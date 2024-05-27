@@ -63,7 +63,7 @@ public:
      * @param point Point in compositor coordinates.
      * @returns Returns the first surface that contains the point or `nullptr` if no surface is found.
      */
-    LSurface *surfaceAt(const LPoint &point) noexcept;
+    LSurface *surfaceAt(const LPoint &point) const noexcept;
 
     /**
      * @brief Vector of currently active touchpoints.

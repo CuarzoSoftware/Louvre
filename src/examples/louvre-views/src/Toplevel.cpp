@@ -35,7 +35,7 @@ Toplevel::Toplevel(const void *params) : LToplevelRole(params),
 
     moveSession().setOnBeforeUpdateCallback([this](LToplevelMoveSession *session)
     {
-        LMargin constraints { calculateConstraintsFromOutput(cursor()->output()) };
+        LMargins constraints { calculateConstraintsFromOutput(cursor()->output()) };
 
         if (current().decorationMode == ServerSide && constraints.bottom != EdgeDisabled)
             constraints.bottom -= TOPLEVEL_TOPBAR_HEIGHT;
@@ -45,7 +45,7 @@ Toplevel::Toplevel(const void *params) : LToplevelRole(params),
 
     resizeSession().setOnBeforeUpdateCallback([this](LToplevelResizeSession *session)
     {
-        LMargin constraints { calculateConstraintsFromOutput(cursor()->output()) };
+        LMargins constraints { calculateConstraintsFromOutput(cursor()->output()) };
 
         if (current().decorationMode == ServerSide && constraints.bottom != EdgeDisabled)
             constraints.bottom -= TOPLEVEL_TOPBAR_HEIGHT;
@@ -133,7 +133,7 @@ void Toplevel::startMoveRequest(const LEvent &triggeringEvent)
 
     LOutput *activeOutput { cursor()->output() };
 
-    LMargin constraints { calculateConstraintsFromOutput(activeOutput) };
+    LMargins constraints { calculateConstraintsFromOutput(activeOutput) };
 
     if (current().decorationMode == ServerSide && constraints.bottom != EdgeDisabled)
         constraints.bottom -= TOPLEVEL_TOPBAR_HEIGHT;

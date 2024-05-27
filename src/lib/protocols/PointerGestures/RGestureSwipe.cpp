@@ -40,7 +40,7 @@ void RGestureSwipe::destroy(wl_client */*client*/, wl_resource *resource) noexce
 
 void RGestureSwipe::begin(const LPointerSwipeBeginEvent &event, Wayland::RSurface *surfaceRes) noexcept
 {
-    auto &clientEvent { client()->imp()->events.pointer.swipeBegin };
+    auto &clientEvent { client()->imp()->eventHistory.pointer.swipeBegin };
 
     if (clientEvent.serial() != event.serial())
         clientEvent = event;
@@ -59,7 +59,7 @@ void RGestureSwipe::update(const LPointerSwipeUpdateEvent &event) noexcept
 
 void RGestureSwipe::end(const LPointerSwipeEndEvent &event) noexcept
 {
-    auto &clientPointerEvents { client()->imp()->events.pointer };
+    auto &clientPointerEvents { client()->imp()->eventHistory.pointer };
 
     if (clientPointerEvents.swipeEnd.serial() != event.serial())
         clientPointerEvents.swipeEnd = event;

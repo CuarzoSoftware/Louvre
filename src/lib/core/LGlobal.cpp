@@ -3,11 +3,6 @@
 
 using namespace Louvre;
 
-void *LGlobal::userData() const noexcept
-{
-    return wl_global_get_user_data(m_global);
-}
-
 const wl_interface *LGlobal::interface() const noexcept
 {
     return wl_global_get_interface(m_global);

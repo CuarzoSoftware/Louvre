@@ -2,6 +2,7 @@
 #define LFRAMEBUFFER_H
 
 #include <LObject.h>
+#include <LTransform.h>
 
 /**
  * @brief Base class for LPainter framebuffers.

@@ -5,7 +5,29 @@
 #include <private/LCompositorPrivate.h>
 #include <LClient.h>
 
-LClient::LClient(const void *params) noexcept : LFactoryObject(FactoryObjectType), m_imp { std::make_unique<LClientPrivate>(this, ((Params*)params)->client) } {}
+LClient::LClient(const void *params) noexcept : LFactoryObject(FactoryObjectType), m_imp { std::make_unique<LClientPrivate>(this, ((Params*)params)->client) }
+{
+    // Set all history events serials to 0
+
+    for (Int32 i = 0; i < 5; i++)
+    {
+        imp()->eventHistory.pointer.button[i].setSerial(0);
+        imp()->eventHistory.keyboard.key[i].setSerial(0);
+    }
+
+    imp()->eventHistory.pointer.enter.setSerial(0);
+    imp()->eventHistory.pointer.leave.setSerial(0);
+    imp()->eventHistory.pointer.holdBegin.setSerial(0);
+    imp()->eventHistory.pointer.holdEnd.setSerial(0);
+    imp()->eventHistory.pointer.pinchBegin.setSerial(0);
+    imp()->eventHistory.pointer.pinchEnd.setSerial(0);
+    imp()->eventHistory.pointer.swipeBegin.setSerial(0);
+    imp()->eventHistory.pointer.swipeEnd.setSerial(0);
+
+    imp()->eventHistory.keyboard.enter.setSerial(0);
+    imp()->eventHistory.keyboard.leave.setSerial(0);
+    imp()->eventHistory.keyboard.modifiers.setSerial(0);
+}
 
 LClient::~LClient()
 {
@@ -13,55 +35,60 @@ LClient::~LClient()
         compositor()->imp()->destroyedClients.erase(this);
 }
 
+void LClient::credentials(pid_t *pid, uid_t *uid, gid_t *gid) const noexcept
+{
+    wl_client_get_credentials(client(), pid, uid, gid);
+}
+
 const LEvent *LClient::findEventBySerial(UInt32 serial) const noexcept
 {
-    if (imp()->events.keyboard.enter.serial() == serial)
-        return &imp()->events.keyboard.enter;
-    else if (imp()->events.keyboard.leave.serial() == serial)
-        return &imp()->events.keyboard.leave;
+    if (imp()->eventHistory.keyboard.enter.serial() == serial)
+        return &imp()->eventHistory.keyboard.enter;
+    else if (imp()->eventHistory.keyboard.leave.serial() == serial)
+        return &imp()->eventHistory.keyboard.leave;
 
     for (UInt8 i = 0; i < 5; i++)
-        if (imp()->events.keyboard.key[i].serial() == serial)
-            return &imp()->events.keyboard.key[i];
+        if (imp()->eventHistory.keyboard.key[i].serial() == serial)
+            return &imp()->eventHistory.keyboard.key[i];
 
-    if (imp()->events.keyboard.modifiers.serial() == serial)
-        return &imp()->events.keyboard.modifiers;
+    if (imp()->eventHistory.keyboard.modifiers.serial() == serial)
+        return &imp()->eventHistory.keyboard.modifiers;
 
-    else if (imp()->events.pointer.enter.serial() == serial)
-        return &imp()->events.pointer.enter;
-    else if (imp()->events.pointer.leave.serial() == serial)
-        return &imp()->events.pointer.leave;
+    else if (imp()->eventHistory.pointer.enter.serial() == serial)
+        return &imp()->eventHistory.pointer.enter;
+    else if (imp()->eventHistory.pointer.leave.serial() == serial)
+        return &imp()->eventHistory.pointer.leave;
 
     for (UInt8 i = 0; i < 5; i++)
-        if (imp()->events.pointer.button[i].serial() == serial)
-            return &imp()->events.pointer.button[i];
+        if (imp()->eventHistory.pointer.button[i].serial() == serial)
+            return &imp()->eventHistory.pointer.button[i];
 
-    if (imp()->events.pointer.swipeBegin.serial() == serial)
-        return &imp()->events.pointer.swipeBegin;
-    else if (imp()->events.pointer.swipeEnd.serial() == serial)
-        return &imp()->events.pointer.swipeEnd;
+    if (imp()->eventHistory.pointer.swipeBegin.serial() == serial)
+        return &imp()->eventHistory.pointer.swipeBegin;
+    else if (imp()->eventHistory.pointer.swipeEnd.serial() == serial)
+        return &imp()->eventHistory.pointer.swipeEnd;
 
-    else if (imp()->events.pointer.pinchBegin.serial() == serial)
-        return &imp()->events.pointer.pinchBegin;
-    else if (imp()->events.pointer.pinchEnd.serial() == serial)
-        return &imp()->events.pointer.pinchEnd;
+    else if (imp()->eventHistory.pointer.pinchBegin.serial() == serial)
+        return &imp()->eventHistory.pointer.pinchBegin;
+    else if (imp()->eventHistory.pointer.pinchEnd.serial() == serial)
+        return &imp()->eventHistory.pointer.pinchEnd;
 
-    else if (imp()->events.pointer.holdBegin.serial() == serial)
-        return &imp()->events.pointer.holdBegin;
-    else if (imp()->events.pointer.holdEnd.serial() == serial)
-        return &imp()->events.pointer.holdEnd;
+    else if (imp()->eventHistory.pointer.holdBegin.serial() == serial)
+        return &imp()->eventHistory.pointer.holdBegin;
+    else if (imp()->eventHistory.pointer.holdEnd.serial() == serial)
+        return &imp()->eventHistory.pointer.holdEnd;
 
-    for (auto it = imp()->events.touch.down.begin(); it != imp()->events.touch.down.end(); it++)
+    for (auto it = imp()->eventHistory.touch.down.begin(); it != imp()->eventHistory.touch.down.end(); it++)
         if (it->serial() == serial)
             return &(*it);
 
-    for (auto it = imp()->events.touch.up.begin(); it != imp()->events.touch.up.end(); it++)
+    for (auto it = imp()->eventHistory.touch.up.begin(); it != imp()->eventHistory.touch.up.end(); it++)
         if (it->serial() == serial)
             return &(*it);
 
     for (auto *seat : seatGlobals())
         if (seat->dataDeviceRes() && seat->dataDeviceRes()->enterSerial() == serial)
-            return &imp()->events.keyboard.enter;
+            return &imp()->eventHistory.keyboard.enter;
 
     return nullptr;
 }
@@ -199,7 +226,7 @@ const std::vector<LayerShell::GLayerShell *> &LClient::layerShellGlobals() const
     return imp()->layerShellGlobals;
 }
 
-const LClient::Events &LClient::events() const noexcept
+const LClient::EventHistory &LClient::eventHistory() const noexcept
 {
-    return imp()->events;
+    return imp()->eventHistory;
 }

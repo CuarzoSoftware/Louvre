@@ -5,6 +5,7 @@
 #include <private/LOutputPrivate.h>
 #include <LOutputMode.h>
 #include <LUtils.h>
+#include <LGlobal.h>
 
 using namespace Protocols::Wayland;
 
@@ -17,7 +18,8 @@ static const struct wl_output_interface imp
 
 void GOutput::bind(wl_client *client, void *output, UInt32 version, UInt32 id) noexcept
 {
-    new GOutput(static_cast<LOutput*>(output), client, version, id);
+    LGlobal *outputGlobal { static_cast<LGlobal*>(output) };
+    new GOutput((LOutput*)(outputGlobal->userData()), client, version, id);
 }
 
 Int32 GOutput::maxVersion() noexcept

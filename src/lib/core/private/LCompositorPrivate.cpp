@@ -162,6 +162,31 @@ bool LCompositor::LCompositorPrivate::initWayland()
     clientConnectedListener.notify = &clientConnectedEvent;
     wl_display_add_client_created_listener(display, &clientConnectedListener);
     LFactory::createObject<LSessionLockManager>(&sessionLockManager);
+    wl_display_set_global_filter(display, [](const wl_client *client, const wl_global *global, void */*data*/) -> bool
+    {
+        LGlobal *lGlobal { nullptr };
+
+        for (LGlobal *g : compositor()->imp()->globals)
+        {
+            if (g->global() == global)
+            {
+                lGlobal = g;
+                break;
+            }
+        }
+
+        // Always accept globals not created with LCompositor::createGlobal(), e.g. SHM, WL_DRM, etc
+        if (!lGlobal)
+            return true;
+
+        LClient *lClient { compositor()->getClientFromNativeResource(client) };
+
+        if (!lClient)
+            return true;
+
+        return compositor()->globalsFilter(lClient, lGlobal);
+    }, nullptr);
+
     return true;
 }
 

@@ -18,9 +18,9 @@
  * @section Roles
  *
  * Surfaces on their own lack functionality. This is where roles come into play, as they establish the guidelines for how the compositor
- * interacts with surfaces, dictating their ordering, positioning, geometry interpretation, and more.\n
+ * interacts with them, dictating their ordering, positioning, geometry interpretation, and more.\n
  *
- * The library currently implements the following roles:
+ * Louvre currently implements the following roles:
  *
  * - LCursorRole (derived from the Wayland protocol)
  * - LDNDIconRole (derived from the Wayland protocol)
@@ -28,9 +28,10 @@
  * - LPopupRole (derived from the XDG Shell protocol)
  * - LToplevelRole (derived from the XDG Shell protocol)
  * - LSessionLockRole (derived from the Session Lock protocol)
+ * - LLayerRole (derived from the Layer Shell protocol)
  *
  * The surface's role can be accessed using the role() method or, if you already know the role in advance or wish to verify whether it matches one of them,
- * through the dedicated functions: cursorRole(), dndIcon(), popup(), toplevel(), and subsurface().\n
+ * through the dedicated functions: cursorRole(), dndIcon(), popup(), toplevel(), subsurface(), etc.\n
  * Typically, once a role is assigned, it remains consistent throughout the surface's entire lifecycle.\n
  * You have the option to monitor changes in the surface's role by utilizing the roleChanged() event.\n
  *
@@ -38,7 +39,7 @@
  *
  * @section Mapping
  *
- * In order to render a surface, several conditions must be met, such as having an assigned role and a non-null buffer.\n
+ * In order to render a surface, several conditions must be met, such as having an assigned role and a non-null buffer().\n
  * To determine if a surface is renderable, you can use the mapped() property.
  * This property is `false` when the client wants to hide it through some rule of its role, or when
  * the necessary conditions for it to be rendered are not met.\n
@@ -63,19 +64,33 @@
  * To avoid the compositor redrawing the entire area of a surface on each frame, clients notify which regions have changed on their
  * buffers, known as damage. You can access this region with damage() or damageB() and be notified when it changes with the damageChanged() event.\n
  *
- * @note The default implementation of LOutput::paintGL() does not take into account the damage of surfaces, and therefore it renders in an inefficient way. If you want to see an example of efficient rendering, check the [louvre-views](md_md__examples.html#views) or [louvre-weston-clone](md_md__examples.html#weston) examples.
+ * @note The default implementation of LOutput::paintGL() does not take into account the damage of surfaces, and therefore it renders in an inefficient way.
+ *       It's recommended to use the LScene and LView system for rendering, which efficiently repaints only what is necessary during each frame.
+ *       If you want to see an example of efficient rendering, check the [louvre-views](#louvre-views-example) or [louvre-weston-clone](#louvre-weston-clone-example) examples.
  *
  * @section Order
  *
- * The library maintains a list to keep track of all the surfaces created by clients, which can be accessed via LCompositor::surfaces().
- * This list adheres to the order of surfaces on the Z-axis as defined by the protocols of their respective roles.
- * However, it is possible to modify the order of surfaces within these hierarchies using the raise() method.
- * Additionally, you can receive notifications when the order changes by implementing the raised() and orderChanged() virtual methods.\n
- * To navigate through the list, you can utilize prevSurface() and nextSurface().
- * Keep in mind that these functions may return `nullptr` if a surface is at the beginning or end of the list.\n
- * Surfaces should be rendered in the order they appear in the list. This means that the first surfaces should be located in the background, while the last ones in the foreground.
+ * Louvre maintains a list to keep track of all surfaces created by clients, which can be accessed via LCompositor::surfaces().\n
+ * This list adheres to the Z-axis order as defined by the protocols of their respective roles.\n
  *
- * @note If you wish to use a custom list, you can leverage the virtual constructor and destructor of LSurface (LCompositor::createSurfaceRequest() and LCompositor::destroySurfaceRequest() respectively) to listen for when clients create or destroy a surface, allowing you to manage your own custom list of surfaces.
+ * Surfaces are always assigned a layer, which is controlled by their role. Both the surfaces list and layers maintain the same order.
+ * Surfaces are assigned to a layer as follows:
+ *
+ * - **Background Layer**: Only LLayerRole surfaces can be in this layer, usually used by clients to display wallpapers.
+ * - **Bottom Layer**: Only LLayerRole surfaces can be in this layer, some clients use it to display top bars.
+ * - **Middle Layer**: Default layer for surfaces with no role, for non-fullscreen LToplevelRole surfaces, and LSessionLockRole surfaces.
+ * - **Top Layer**: For fullscreen LToplevelRole and LLayerRole surfaces.
+ * - **Overlay Layer**: LCursorRole, LDNDIconRole, LPopupRole, and LLayerRole surfaces are displayed in this layer.
+ *
+ * @note LSubsurfaceRole surfaces are always assigned the same layer as their parent surface.
+ *
+ * It is possible to modify the order of surfaces within a layer using the raise() method; this will normally also raise other surfaces such as subsurfaces.\n
+ * You can receive notifications when the order changes by implementing the orderChanged() and layerChanged() virtual methods.\n
+ * Use prevSurface() and nextSurface() to get the surface behind or on top of the current surface. Keep in mind that these functions may return `nullptr` if a surface is at the beginning or end of the list.\n
+ * Surfaces are thought to be rendered in the order they appear in the list. The first surfaces should be located in the background, while the last ones should be in the foreground.
+ *
+ * @note If you want to use a different ordering, you could leverage the LCompositor factory constructor/destructor respectively to listen for
+ *       when clients create or destroy a surface.
  *
  * @section Position
  *
@@ -142,88 +157,31 @@ public:
         Confine
     };
 
-    // TODO
-    LSurfaceLayer layer() const noexcept;
-    virtual void layerChanged();
-
-    /**
-     * @brief ID of the role
-     *
-     * @returns The ID of the surface's role or LSurface::Undefined if it does not have a role.
-     */
-    Role roleId() const;
-
-    /**
-     * @brief Surface role
-     *
-     * @returns A pointer to the surface's role or `nullptr` if it does not have a role.
-     */
-    LBaseSurfaceRole *role() const;
-
-    /**
-     * @brief Cursor role
-     *
-     * @returns A pointer to an instance of LCursorRole or `nullptr` if it has a different role.
-     */
-    LCursorRole *cursorRole() const;
-
-    /**
-     * @brief Drag & Drop icon role
-     *
-     * @returns A pointer to an instance of LDNDIconRole or `nullptr` if it has a different role.
-     */
-    LDNDIconRole *dndIcon() const;
-
-    /**
-     * @brief Toplevel role
-     *
-     * @returns A pointer to an instance of LToplevelRole or `nullptr` if it has a different role.
-     */
-    LToplevelRole *toplevel() const;
-
-    /**
-     * @brief Popup role
-     *
-     * @returns A pointer to an instance of LPopupRole or `nullptr` if it has a different role.
-     */
-    LPopupRole *popup() const;
-
-    /**
-     * @brief Subsurface role
-     *
-     * @returns A pointer to an instance of LSubsurfaceRole or `nullptr` if it has a different role.
-     */
-    LSubsurfaceRole *subsurface() const;
-
-    /**
-     * @brief Session Lock role
-     *
-     * @returns A pointer to an instance of LSessionLockRole or `nullptr` if it has a different role.
-     */
-    LSessionLockRole *sessionLock() const;
-
-    /**
-     * @brief Layer role
-     *
-     * @returns A pointer to an instance of LLayerRole or `nullptr` if it has a different role.
-     */
-    LLayerRole *layerRole() const noexcept;
-
     /**
      * @brief Constructor of the LSurface class.
      *
-     * @param params Internal parameters of the library provided in the virtual constructor LCompositor::createSurfaceRequest().
+     * @param params Internal parameters provided in LCompositor::createObjectRequest().
      */
     LSurface(const void *params) noexcept;
 
     /**
      * @brief Destructor of the LSurface class.
      *
-     * Invoked after LCompositor::destroySurfaceRequest().
+     * Invoked after LCompositor::onAnticipatedObjectDestruction().
      */
     ~LSurface();
 
     LCLASS_NO_COPY(LSurface)
+
+    /**
+     * @brief Retrieves the layer in which this surface currently resides.
+     *
+     * @see LSurfaceLayer
+     * @see layerChanged()
+     *
+     * @return The layer ID of the surface.
+     */
+    LSurfaceLayer layer() const noexcept;
 
     /**
      * @brief Assigns the position.
@@ -571,6 +529,79 @@ public:
     LSurface *nextSurface() const;
 
     /**
+     * @name Roles
+     *
+     * Functionality related to roles.
+     */
+
+    ///@{
+
+    /**
+     * @brief ID of the role
+     *
+     * @returns The ID of the surface's role or LSurface::Undefined if it does not have a role.
+     */
+    Role roleId() const;
+
+    /**
+     * @brief Surface role
+     *
+     * @returns A pointer to the surface's role or `nullptr` if it does not have a role.
+     */
+    LBaseSurfaceRole *role() const;
+
+    /**
+     * @brief Cursor role
+     *
+     * @returns A pointer to an instance of LCursorRole or `nullptr` if it has a different role.
+     */
+    LCursorRole *cursorRole() const;
+
+    /**
+     * @brief Drag & Drop icon role
+     *
+     * @returns A pointer to an instance of LDNDIconRole or `nullptr` if it has a different role.
+     */
+    LDNDIconRole *dndIcon() const;
+
+    /**
+     * @brief Toplevel role
+     *
+     * @returns A pointer to an instance of LToplevelRole or `nullptr` if it has a different role.
+     */
+    LToplevelRole *toplevel() const;
+
+    /**
+     * @brief Popup role
+     *
+     * @returns A pointer to an instance of LPopupRole or `nullptr` if it has a different role.
+     */
+    LPopupRole *popup() const;
+
+    /**
+     * @brief Subsurface role
+     *
+     * @returns A pointer to an instance of LSubsurfaceRole or `nullptr` if it has a different role.
+     */
+    LSubsurfaceRole *subsurface() const;
+
+    /**
+     * @brief Session Lock role
+     *
+     * @returns A pointer to an instance of LSessionLockRole or `nullptr` if it has a different role.
+     */
+    LSessionLockRole *sessionLock() const;
+
+    /**
+     * @brief Layer role
+     *
+     * @returns A pointer to an instance of LLayerRole or `nullptr` if it has a different role.
+     */
+    LLayerRole *layerRole() const noexcept;
+
+    ///@}
+
+    /**
      * @name Pointer Constraints
      *
      * Functionality related to pointer constraints.
@@ -607,7 +638,7 @@ public:
      * Returns the region within the surface where the pointer should be locked
      * or confined if the pointer constraint is enabled.
      *
-     * @return const LRegion& The region where the pointer should be constrained.
+     * @return The region where the pointer should be constrained within the surface.
      * @see LRegion::closestPointFrom()
      */
     const LRegion &pointerConstraintRegion() const noexcept;
@@ -818,6 +849,16 @@ public:
      * @snippet LSurfaceDefault.cpp preferVSyncChanged
      */
     virtual void preferVSyncChanged();
+
+    /**
+     * @brief Notified when the surface is moved into another layer
+     *
+     * This event is triggered when the layer() property changes.
+     *
+     * #### Default Implementation
+     * @snippet LSurfaceDefault.cpp layerChanged
+     */
+    virtual void layerChanged();
 
 /// @}
 

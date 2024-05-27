@@ -135,7 +135,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
 
     std::list<LExclusiveZone*> exclusiveZones;
     LRect availableGeometry;
-    LMargin exclusiveEdges;
+    LMargins exclusiveEdges;
     void updateExclusiveZones() noexcept;
 };
 

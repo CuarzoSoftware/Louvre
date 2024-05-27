@@ -62,7 +62,7 @@ void RKeyboard::keymap(UInt32 format, Int32 fd, UInt32 size) noexcept
 
 void RKeyboard::enter(const LKeyboardEnterEvent &event, RSurface *surfaceRes, wl_array *keys) noexcept
 {
-    auto &clientEvent { client()->imp()->events.keyboard.enter };
+    auto &clientEvent { client()->imp()->eventHistory.keyboard.enter };
 
     if (clientEvent.serial() != event.serial())
         clientEvent = event;
@@ -72,7 +72,7 @@ void RKeyboard::enter(const LKeyboardEnterEvent &event, RSurface *surfaceRes, wl
 
 void RKeyboard::leave(const LKeyboardLeaveEvent &event, RSurface *surfaceRes) noexcept
 {
-    auto &clientEvent { client()->imp()->events.keyboard.leave };
+    auto &clientEvent { client()->imp()->eventHistory.keyboard.leave };
 
     if (clientEvent.serial() != event.serial())
         clientEvent = event;
@@ -82,7 +82,7 @@ void RKeyboard::leave(const LKeyboardLeaveEvent &event, RSurface *surfaceRes) no
 
 void RKeyboard::key(const LKeyboardKeyEvent &event) noexcept
 {
-    auto &clientEvents { client()->imp()->events.keyboard };
+    auto &clientEvents { client()->imp()->eventHistory.keyboard };
 
     if (clientEvents.key[clientEvents.keyIndex].serial() != event.serial())
     {
@@ -99,7 +99,7 @@ void RKeyboard::key(const LKeyboardKeyEvent &event) noexcept
 
 void RKeyboard::modifiers(const LKeyboardModifiersEvent &event) noexcept
 {
-    auto &clientEvent { client()->imp()->events.keyboard.modifiers };
+    auto &clientEvent { client()->imp()->eventHistory.keyboard.modifiers };
 
     if (clientEvent.serial() != event.serial())
         clientEvent = event;

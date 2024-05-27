@@ -218,7 +218,7 @@ public:
     LSessionLockRole *sessionLockRole() const noexcept;
     bool needsFullRepaint() const noexcept;
     const LRect &availableGeometry() const noexcept;
-    const LMargin &exclusiveEdges() const noexcept;
+    const LMargins &exclusiveEdges() const noexcept;
 
     /**
      * @brief Get the current state of the LOutput.

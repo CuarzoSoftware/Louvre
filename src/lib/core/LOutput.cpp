@@ -54,7 +54,7 @@ const LRect &LOutput::availableGeometry() const noexcept
     return imp()->availableGeometry;
 }
 
-const LMargin &LOutput::exclusiveEdges() const noexcept
+const LMargins &LOutput::exclusiveEdges() const noexcept
 {
     return imp()->exclusiveEdges;
 }

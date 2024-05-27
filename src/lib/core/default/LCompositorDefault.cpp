@@ -36,6 +36,7 @@
 #include <LXCursor.h>
 #include <LClient.h>
 #include <LDNDIconRole.h>
+#include <LGlobal.h>
 #include <cstring>
 
 #include <protocols/ScreenCopy/GScreenCopyManager.h>
@@ -82,9 +83,9 @@ bool LCompositor::createGlobalsRequest()
     // Allow clients to request setting the gamma LUT of outputs
     createGlobal<GammaControl::GGammaControlManager>();
 
-    // Allow clients to create DMA buffers
-    if (graphicBackendId() == LGraphicBackendDRM)
-        createGlobal<LinuxDMABuf::GLinuxDMABuf>();
+    // Allow clients to create DMA buffers (The Wayland backend currently only supports EGL)
+    //if (graphicBackendId() == LGraphicBackendDRM)
+        //createGlobal<LinuxDMABuf::GLinuxDMABuf>();
 
     // Provides detailed information of how the surfaces are presented
     createGlobal<PresentationTime::GPresentation>();
@@ -104,6 +105,13 @@ bool LCompositor::createGlobalsRequest()
     return true;
 }
 //! [createGlobalsRequest]
+
+bool LCompositor::globalsFilter(LClient *client, LGlobal *global)
+{
+    L_UNUSED(client)
+    L_UNUSED(global)
+    return true;
+}
 
 //! [initialized]
 void LCompositor::initialized()

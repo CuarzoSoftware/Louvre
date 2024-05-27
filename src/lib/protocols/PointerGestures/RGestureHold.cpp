@@ -43,7 +43,7 @@ void RGestureHold::destroy(wl_client */*client*/, wl_resource *resource) noexcep
 
 void RGestureHold::begin(const LPointerHoldBeginEvent &event, Wayland::RSurface *surfaceRes) noexcept
 {
-    auto &clientEvent { client()->imp()->events.pointer.holdBegin };
+    auto &clientEvent { client()->imp()->eventHistory.pointer.holdBegin };
 
     if (clientEvent.serial() != event.serial())
         clientEvent = event;
@@ -53,7 +53,7 @@ void RGestureHold::begin(const LPointerHoldBeginEvent &event, Wayland::RSurface 
 
 void RGestureHold::end(const LPointerHoldEndEvent &event) noexcept
 {
-    auto &clientPointerEvents { client()->imp()->events.pointer };
+    auto &clientPointerEvents { client()->imp()->eventHistory.pointer };
 
     if (clientPointerEvents.holdEnd.serial() != event.serial())
         clientPointerEvents.holdEnd = event;

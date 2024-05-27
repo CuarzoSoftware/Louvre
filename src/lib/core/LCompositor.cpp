@@ -572,7 +572,7 @@ void LCompositor::flushClients()
     wl_display_flush_clients(LCompositor::display());
 }
 
-LClient *LCompositor::getClientFromNativeResource(wl_client *client)
+LClient *LCompositor::getClientFromNativeResource(const wl_client *client)
 {
     for (LClient *c : clients())
         if (c->client() == client)
@@ -587,6 +587,8 @@ std::thread::id LCompositor::mainThreadId() const
 
 LGlobal *LCompositor::globalCreate(const wl_interface *interface, Int32 version, void *data, wl_global_bind_func_t bind)
 {
-    imp()->globals.emplace_back(new LGlobal(wl_global_create(display(), interface, version, data, bind)));
+    imp()->globals.emplace_back(new LGlobal(wl_global_create(display(), interface, version, nullptr, bind)));
+    wl_global_set_user_data(const_cast<wl_global*>(imp()->globals.back()->global()), imp()->globals.back());
+    imp()->globals.back()->setUserData((UIntPtr)data);
     return imp()->globals.back();
 }

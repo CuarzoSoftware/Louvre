@@ -2,6 +2,7 @@
 #define RSCREENCOPYFRAME_H
 
 #include <LScreenshotRequest.h>
+#include <LTransform.h>
 #include <LResource.h>
 #include <LBitset.h>
 #include <LWeak.h>

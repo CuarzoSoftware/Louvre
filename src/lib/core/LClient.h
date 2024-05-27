@@ -28,8 +28,8 @@
 /**
  * @brief Representation of a Wayland client.
  *
- * The LClient class represents a Wayland client connected to the compositor.
- * It allows managing client connections, accessing its resources created through various Wayland protocols,
+ * The LClient class represents a Wayland client connected to the compositor.\n
+ * It allows managing the client connection, accessing its resources created through various Wayland protocols,
  * handling ping/pong events, and more.
  */
 class Louvre::LClient : public LFactoryObject
@@ -39,63 +39,111 @@ public:
 
     static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LClient;
 
-    struct PointerEvents
+    /**
+     * @brief Pointer event history.
+     */
+    struct PointerHistory
     {
+        /// Sent when a surface acquires pointer focus.
         LPointerEnterEvent enter;
+
+        /// Sent when a surface loses pointer focus.
         LPointerLeaveEvent leave;
+
+        /// Ring buffer of the last 5 pointer button events.
         LPointerButtonEvent button[5];
+
+        /// Current index of the pointer button ring buffer.
         UInt8 buttonIndex { 0 };
 
-        LPointerSwipeBeginEvent swipeBegin;
-        LPointerSwipeEndEvent swipeEnd;
-        LPointerPinchBeginEvent pinchBegin;
-        LPointerPinchEndEvent pinchEnd;
-        LPointerHoldBeginEvent holdBegin;
-        LPointerHoldEndEvent holdEnd;
+        LPointerSwipeBeginEvent swipeBegin; ///< Sent when a pointer swipe begins.
+        LPointerSwipeEndEvent swipeEnd; ///< Sent when a pointer swipe ends.
+        LPointerPinchBeginEvent pinchBegin; ///< Sent when a pointer pinch begins.
+        LPointerPinchEndEvent pinchEnd; ///< Sent when a pointer pinch ends.
+        LPointerHoldBeginEvent holdBegin; ///< Sent when a pointer hold begins.
+        LPointerHoldEndEvent holdEnd; ///< Sent when a pointer hold ends.
     };
 
-    struct KeyboardEvents
+    /**
+     * @brief Keyboard event history.
+     */
+    struct KeyboardHistory
     {
-        LKeyboardEnterEvent enter;
+        LKeyboardEnterEvent enter; ///< Sent when a surface acquires keyboard focus.
+
+        /// Ring buffer of the last 5 keyboard key events.
         LKeyboardKeyEvent key[5];
+
+        /// Current index of the keyboard key ring buffer.
         UInt8 keyIndex { 0 };
-        LKeyboardLeaveEvent leave;
-        LKeyboardModifiersEvent modifiers;
+
+        LKeyboardLeaveEvent leave; ///< Sent when a surface loses keyboard focus.
+        LKeyboardModifiersEvent modifiers; ///< Sent when keyboard modifiers change.
     };
 
-    struct TouchEvents
+    /**
+     * @brief Touch event history.
+     *
+     * A vector is used to store the last down and up events for specific touch points.\n
+     * This is because the number of touch points is variable, but they are always re-used.
+     */
+    struct TouchHistory
     {
-        std::vector<LTouchDownEvent> down;
-        std::vector<LTouchUpEvent> up;
+        std::vector<LTouchDownEvent> down; ///< Vector of the last touch down events.
+        std::vector<LTouchUpEvent> up; ///< Vector of the last touch up events.
     };
 
-    struct Events
+    /**
+     * @brief Structure containing the last events sent to the client.
+     *
+     * This structure only contains event types that have a serial number in
+     * their respective Wayland protocol interface.
+     */
+    struct EventHistory
     {
-        PointerEvents pointer;
-        KeyboardEvents keyboard;
-        TouchEvents touch;
-    };
+        /// Pointer event history.
+        PointerHistory pointer;
 
-    const Events &events() const noexcept;
+        /// Keyboard event history.
+        KeyboardHistory keyboard;
+
+        /// Touch event history.
+        TouchHistory touch;
+    };
 
     /**
      * @brief Constructor of the LClient class.
      *
-     * @param params Internal library parameters passed in the LCompositor::createClientRequest() virtual constructor.
+     * @param params Internal parameters provided in LCompositor::createObjectRequest().
      */
     LClient(const void *params) noexcept;
-
-    /**
-     * @brief Destructor of the LClient class.
-     */
-    ~LClient();
 
     LCLASS_NO_COPY(LClient)
 
     /**
-     * @brief Sends a Ping event to the client for responsiveness detection.
+     * @brief Destructor of the LClient class.
      *
-     * This method sends a Ping event to the client, which is expected to acknowledge it by invoking the `pong()` virtual method.\n
+     * Invoked after LCompositor::onAnticipatedObjectDestruction().
+     */
+    ~LClient();
+
+    /**
+     * @brief Retrieves Unix credentials of the client
+     *
+     * This method allows you to retrieve the process ID (PID), user ID (UID), and group ID (GID) of the client.
+     *
+     * @see [wl_client_get_credentials](https://wayland.freedesktop.org/docs/html/apc.html#Server-structwl__client_1a82a97cb3a66c1c56826a09a7b42453d9)
+     *
+     * @param pid A pointer to store the process ID (PID), or `nullptr` if not needed.
+     * @param uid A pointer to store the user ID (UID), or `nullptr` if not needed.
+     * @param gid A pointer to store the group ID (GID), or `nullptr` if not needed.
+     */
+    void credentials(pid_t *pid, uid_t *uid = nullptr, gid_t *gid = nullptr) const noexcept;
+
+    /**
+     * @brief Sends a ping event to the client.
+     *
+     * This method sends a serial number to the client, which is expected to acknowledge it by invoking the `pong()` virtual method.\n
      * It is primarily used to detect if a client is unresponsive.
      *
      * @note Not all clients may support this mechanism. If the client does not support it, this method returns `false`, and you should not wait for a pong() response.
@@ -109,7 +157,7 @@ public:
     /**
      * @brief Client response to a ping() event.
      *
-     * Reimplement this virtual method if you want to be notified when a client responds to a ping() event.
+     * Override this virtual method if you want to be notified when a client responds to a ping() event.
      *
      * @param serial The same serial number passed in ping().
      *
@@ -128,8 +176,7 @@ public:
     /**
      * @brief Immediately flushes pending events.
      *
-     * Use this method to forcefully and immediately flush any pending Wayland client events.\n
-     * It ensures that all pending events in the client's event queue are processed and handled without delay.
+     * Use this method to forcefully and immediately send any pending messages to the client.
      */
     void flush() noexcept;
 
@@ -137,11 +184,47 @@ public:
      * @brief Terminates the client connection with the compositor.
      *
      * This method terminates the client's connection with the compositor, equivalent to invoking `wl_client_destroy()`.\n
-     * For safety reasons, the destruction does not occur immediately but at the end of a main loop iteration.
+     * For safety reasons, it does not occur immediately but at the end of a main loop iteration.
      *
-     * @note All resources created by the client are automatically destroyed in the reverse order of their creation.
+     * @note All resources created by the client are automatically destroyed in reverse order of creation.
      */
     void destroyLater() noexcept;
+
+    /**
+     * @brief Retrieves the client's event history.
+     *
+     * This method returns a reference to a structure containing the most recent events that the compositor has sent to the client.\n
+     * Initially, all events have a serial number of 0, indicating that the compositor has never sent that specific event type.
+     *
+     * @see findEventBySerial()
+     *
+     * @return A reference to a const EventHistory structure.
+     */
+    const EventHistory &eventHistory() const noexcept;
+
+    /**
+     * @brief Finds an event sent by the compositor matching the given serial number.
+     *
+     * This method searches for an event sent by the compositor with the specified serial number in the client's eventHistory().\n
+     * If a matching event is found, a pointer to that event is returned, otherwise, `nullptr`.
+     *
+     * @note The returned event pointer must not be manually deleted.
+     *
+     * @param serial The serial number to search for.
+     * @return A pointer to the event matching the serial number sent by the compositor, or `nullptr` if not found.
+     */
+    const LEvent *findEventBySerial(UInt32 serial) const noexcept;
+
+    /**
+     * @brief Retrieves the last cursor requested by the client.
+     *
+     * This method returns a reference to the last cursor that the client requested to set.
+     *
+     * @see LPointer::setCursorRequest()
+     *
+     * @return A reference to the last cursor requested by the client.
+     */
+    const LClientCursor &lastCursorRequest() const noexcept;
 
     /**
      * Resources created when the client binds to the [wl_output](https://wayland.app/protocols/wayland#wl_output) global.\n
@@ -285,30 +368,6 @@ public:
      * of the wlroots Layer Shell protocol.
      */
     const std::vector<Protocols::LayerShell::GLayerShell*> &layerShellGlobals() const noexcept;
-
-    /**
-     * @brief Finds an event sent by the compositor matching the given serial number.
-     *
-     * This method searches for an event sent by the compositor with the specified serial number in the client's event history.
-     * If a matching event is found, a pointer to that event is returned, otherwise, `nullptr` is returned.
-     *
-     * @note The returned event pointer should not be manually deallocated.
-     *
-     * @param serial The serial number to search for.
-     * @return A pointer to the event matching the serial number sent by the compositor, or nullptr if not found.
-     */
-    const LEvent *findEventBySerial(UInt32 serial) const noexcept;
-
-    /**
-     * @brief Retrieves the last cursor requested by the client.
-     *
-     * This method returns a reference to the last cursor that the client requested to set.
-     *
-     * @see LPointer::setCursorRequest()
-     *
-     * @return A reference to the last cursor requested by the client.
-     */
-    const LClientCursor &lastCursorRequest() const noexcept;
 
     LPRIVATE_IMP_UNIQUE(LClient)
 };

@@ -86,7 +86,7 @@ void LKeyboard::keyEvent(const LKeyboardKeyEvent &event)
         if (L_CTRL)
             seat()->dnd()->setPreferredAction(LDND::Copy);
 
-        // SHIFT sets the Move as the preferred action in drag & drop session
+        // SHIFT sets Move as the preferred action in drag & drop session
         else if (L_SHIFT)
             seat()->dnd()->setPreferredAction(LDND::Move);
     }

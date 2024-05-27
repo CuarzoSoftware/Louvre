@@ -2,6 +2,7 @@
 #define GOUTPUT_H
 
 #include <LResource.h>
+#include <LTransform.h>
 #include <LWeak.h>
 
 class Louvre::Protocols::Wayland::GOutput final : public LResource

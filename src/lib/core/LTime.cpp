@@ -4,12 +4,8 @@
 using namespace Louvre;
 
 static timespec ts;
-static UInt32 serial;
 
-UInt32 LTime::nextSerial() noexcept
-{
-    return ++serial;
-}
+
 
 UInt32 Louvre::LTime::ms() noexcept
 {

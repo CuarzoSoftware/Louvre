@@ -38,7 +38,7 @@ public:
         LSize size;
         LBitset<LEdge> anchor;
         Int32 exclusiveZone;
-        LMargin margin;
+        LMargins margin;
         KeyboardInteractivity keyboardInteractivity { NoInteractivity };
         LEdge exclusiveEdge { LEdgeNone };
         LSurfaceLayer layer;
@@ -97,7 +97,7 @@ public:
         return atoms().exclusiveZone;
     }
 
-    const LMargin &margin() const noexcept
+    const LMargins &margin() const noexcept
     {
         return atoms().margin;
     }

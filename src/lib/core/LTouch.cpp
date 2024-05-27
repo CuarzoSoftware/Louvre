@@ -24,7 +24,7 @@ LTouch::~LTouch() noexcept
     }
 }
 
-LSurface *LTouch::surfaceAt(const LPoint &point) noexcept
+LSurface *LTouch::surfaceAt(const LPoint &point) const noexcept
 {
     return seat()->pointer()->surfaceAt(point);
 }

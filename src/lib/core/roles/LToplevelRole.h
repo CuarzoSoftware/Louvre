@@ -429,7 +429,7 @@ public:
 
     // TODO: Triggered whenever the current state, window geometry or decoration mode changes
     virtual void configurationChanged(LBitset<ConfigurationChanges> changes);
-    LMargin calculateConstraintsFromOutput(LOutput *output) const noexcept;
+    LMargins calculateConstraintsFromOutput(LOutput *output) const noexcept;
 
     /**
      * @brief Request to maximize

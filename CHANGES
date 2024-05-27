@@ -1,13 +1,96 @@
 Louvre (2.0.0-1)
 
-  # Input
+  # New Protocols
 
-  * Touch events are now supported through the LTouch, LTouchPoint, and LSceneTouchPoint classes.
+  * Session Lock
+  * Wlr Layer Shell
+  * Wlr Screen Copy
+  * Pointer Gestures
+  * Pointer Constraints
+  * Relative Pointer
+  * Touch Events
+  * XDG Output
+
+  # Protocol Updates
+
+  * Update xdg_wm_base global to v6.
+  * Update zwp_linux_dmabuf global to v5.
+
+  # Backends
+
+  * Introduced a new Wayland input and graphic backend for running compositors as nested Wayland clients.
+  * Added support for absolute Libinput pointer events, enabling proper handling of pointer events when running inside QEMU or Virtual Box - Thanks to @milisarge.
+
+  # Rendering
+
+  * Added support for automatic and custom blending modes in LPainter.
+  * Included premultiplied alpha hints to LTexture.
+  * Introduced the LFramebufferWrapper class, enabling the use of LPainter in native OpenGL framebuffers.
+  * Removed deprecated LPainter API.
+
+  # Layout
+
+  * Introduced the concept of surface layers: background, bottom, middle, top, and overlay, simplifying surface ordering management based on their role.
+  * Added the concept of available geometry and exclusive edges to LOutput.
+  * Included the LExclusiveZone class for easy calculation and modification of available geometry for outputs.
+
+  # Roles
+
+  * Detached toplevel move and resize sessions from LPointer, moving them into dedicated classes.
+  * Now multiple move and resize toplevel sessions are allowed at a time.
+  * Move and resize sessions constraints can now be updated dynamically if needed.
+  * Introduced the concept of previous, pending, and current toplevel state for better configuration handling.
+  * Optimized popup position recalculations, preventing unnecessary processing.
+
+  # Cursor
+
+  * Added the new LClientCursor class for easier tracking and management of client cursors.
+  * LPointer::setCursorRequest() now uses LClientCursor instead of a raw LCursorRole and hotspot.
+  * When assigned to LCursor, the cursor texture, hotspot, and visibility automatically adjust based on the underlying LCursorRole state.
+  * The LClient class now stores and provides access to the last cursor set by a client via LClient::lastCursor(). 
+  * LCursor enablement and hardware compositing can be now toggled for specific outputs using LCursor::enable() and LCursor::enableHwCompositing().
+  * Manual cursor drawing is no longer necessary when hardware composition is not supported.
+
+  # Clipboard / Drag & Drop
+
+  * Removed the LDataDevice, LDataSource, and LDataOffer classes; their functionality is now handled internally by Louvre.
+  * Migrated clipboard functionality from LSeat to the new dedicated LClipboard class.
+  * It is now possible to specify which MIME types of the clipboard to make persistent through LClipboard::persistentMimeTypeFilter().
+  * Renamed the LDNDManager class to LDND.
+  * Moved drag & drop enter, move, and leave events from LPointer to LDND.
+  * It is now possible to distinguish whether a DND session is originated from a pointer, keyboard, or touch event using LDND::triggeringEvent().
+
+  # Input Events
+
+  * Redesigned the entire input system, with each input event having its own dedicated class providing detailed information.
+  * Added support for touch events through the LTouch, LTouchPoint, and LSceneTouchPoint classes.
+  * Introduced the LInputDevice class for configuring and accessing basic input device properties.
+  * Requests triggered by user interactions now include the specific event that triggered them.
+  * Included support for pointer constraints.
+  * Enabled support for swipe, pinch, and hold pointer gestures.
+  * LClient now provides eventHistory() and findEventBySerial() for querying the last events sent from the compositor.
 
   # Security
 
-  * New LWeak class for efficiently managing weak references to LObjects, automatically setting them to nullptr upon object destruction, with an optional destruction callback.
-  * Replaced LClient::destroy() with destroyLater() to prevent potential access to freed client resources.
+  * Introduced the LWeak class for efficient management of weak references to LObjects, automatically setting them to nullptr upon object destruction, with an optional destruction callback.
+  * Replaced LClient::destroy() with destroyLater() to prevent immediate client resource destruction and reduce potential access to freed memory.
+  * Added an assert to prevent users from creating factory objects outside their virtual constructors.
+
+  # Protocol Globals
+
+  * Introduced the new LGlobal class for managing protocol globals.
+  * Added proper methods in LCompositor for safely adding and removing protocol globals.
+  * Included globalsFilter() in LCompositor to allow only well-known clients to bind to specific protocols.
+
+  # Factory
+
+  * All classes that provide an interface are now subclasses of LFactoryObject.
+  * Replaced all virtual constructors/destructors in LCompositor with createObjectRequest() and onAnticipatedObjectDestruction().
+
+  # Bug Fixes
+
+  * Corrected incorrect axis scroll values sent to clients using wl_pointer v1.
+  * Addressed synchronization problems related to the presentation time protocol.
 
 Louvre (1.2.1-1)
 

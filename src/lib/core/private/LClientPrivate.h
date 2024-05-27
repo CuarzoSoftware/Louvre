@@ -25,7 +25,7 @@ public:
     ~LClientPrivate() noexcept = default;
 
     wl_client *client;
-    Events events;
+    EventHistory eventHistory;
     LClientCursor lastCursorRequest;
 
     // Globals

@@ -41,12 +41,12 @@ public:
 
     void updateDragPoint(const LPoint &pos);
 
-    void setConstraints(const LMargin &constraints = {LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled ,LToplevelRole::EdgeDisabled}) noexcept
+    void setConstraints(const LMargins &constraints = {LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled ,LToplevelRole::EdgeDisabled}) noexcept
     {
         m_constraints = constraints;
     }
 
-    const LMargin &constraints() const noexcept
+    const LMargins &constraints() const noexcept
     {
         return m_constraints;
     }
@@ -95,7 +95,7 @@ private:
     LPoint m_initDragPoint;
     LPoint m_currentDragPoint;
     LToplevelRole::ResizeEdge m_edge;
-    LMargin m_constraints {LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled ,LToplevelRole::EdgeDisabled};
+    LMargins m_constraints {LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled ,LToplevelRole::EdgeDisabled};
     std::unique_ptr<LEvent> m_triggeringEvent;
     UInt32 m_lastSerial { 0 };
     bool m_isActive { false };

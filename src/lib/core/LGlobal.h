@@ -24,11 +24,6 @@ class Louvre::LGlobal final : public LObject
 public:
 
     /**
-     * @brief Get the user data provided through LCompositor::createGlobal().
-     */
-    void *userData() const noexcept;
-
-    /**
      * @brief Get the interface of the global.
      */
     const wl_interface *interface() const noexcept;
@@ -39,6 +34,17 @@ public:
     const wl_global *global() const noexcept
     {
         return m_global;
+    }
+
+    /**
+     * @brief Check the global type
+     *
+     * @return `true` if the global type is T, `false` otherwise.
+     */
+    template <class T>
+    bool isType() const noexcept
+    {
+        return T::interface() == interface();
     }
 
 private:

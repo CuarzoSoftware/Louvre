@@ -5,6 +5,7 @@
 #include <LBitset.h>
 #include <LRegion.h>
 #include <LFramebuffer.h>
+#include <LColor.h>
 #include <GL/gl.h>
 #include <thread>
 #include <vector>

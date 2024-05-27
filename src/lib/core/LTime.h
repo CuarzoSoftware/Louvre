@@ -2,6 +2,7 @@
 #define LTIME_H
 
 #include <LNamespaces.h>
+#include <limits>
 
 /**
  * @brief Time utilities
@@ -17,7 +18,17 @@ public:
      *
      * This method returns a new positive integer number each time it is called, incrementally.
      */
-    static UInt32 nextSerial() noexcept;
+    static UInt32 nextSerial() noexcept
+    {
+        static UInt32 serial { 1 };
+
+        if (serial == std::numeric_limits<UInt32>::max())
+            serial = 1;
+        else
+            serial++;
+
+        return serial;
+    }
 
     /**
      * @brief Milliseconds

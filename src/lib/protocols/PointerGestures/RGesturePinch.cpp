@@ -44,7 +44,7 @@ void RGesturePinch::destroy(wl_client */*client*/, wl_resource *resource) noexce
 
 void RGesturePinch::begin(const LPointerPinchBeginEvent &event, Wayland::RSurface *surfaceRes) noexcept
 {
-    auto &clientEvent { client()->imp()->events.pointer.pinchBegin };
+    auto &clientEvent { client()->imp()->eventHistory.pointer.pinchBegin };
 
     if (clientEvent.serial() != event.serial())
         clientEvent = event;
@@ -65,7 +65,7 @@ void RGesturePinch::update(const LPointerPinchUpdateEvent &event) noexcept
 
 void RGesturePinch::end(const LPointerPinchEndEvent &event) noexcept
 {
-    auto &clientPointerEvents { client()->imp()->events.pointer };
+    auto &clientPointerEvents { client()->imp()->eventHistory.pointer };
 
     if (clientPointerEvents.pinchEnd.serial() != event.serial())
         clientPointerEvents.pinchEnd = event;

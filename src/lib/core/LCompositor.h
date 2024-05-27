@@ -51,12 +51,17 @@ public:
      */
     LCompositor() noexcept;
 
+    LCLASS_NO_COPY(LCompositor)
+
     /**
      * @brief Destructor of the LCompositor class.
      */
     virtual ~LCompositor();
 
-    LCLASS_NO_COPY(LCompositor)
+    /**
+     * @brief Gets the current Louvre version.
+     */
+    static const LVersion &version();
 
     /**
      * @brief Notifies a successful compositor initialization.
@@ -110,6 +115,8 @@ public:
      */
     virtual bool createGlobalsRequest();
 
+    virtual bool globalsFilter(LClient *client, LGlobal *global);
+
     /**
      * @brief Request to create an object.
      *
@@ -137,11 +144,6 @@ public:
     virtual void onAnticipatedObjectDestruction(LFactoryObject *object);
 
     /**
-     * @brief Gets the current Louvre version.
-     */
-    static const LVersion &version();
-
-    /**
      * @brief Creates and adds a global to the compositor.
      *
      * This method creates and adds a global to the compositor. Globals implemented by Louvre can be found in `<protocols/{protocol}/G{global}.h>`.
@@ -149,7 +151,6 @@ public:
      * Louvre automatically creates all the supported globals during compositor initialization. See LCompositor::createGlobalsRequest().
      *
      * @tparam Global The type of global to create. It should be a subclass of Louvre::LResource.
-     * @param data Optional user data to associate with the global.
      * @return Pointer to the created LGlobal instance, which can be later removed with removeGlobal().
      */
     template<class Global>
@@ -509,7 +510,7 @@ public:
       *
       * @returns The LClient instance for a `wl_client` resource or `nullptr` if not found.
       */
-    LClient *getClientFromNativeResource(wl_client *client);
+    LClient *getClientFromNativeResource(const wl_client *client);
 
     /**
      * @brief Identifier of the main thread.

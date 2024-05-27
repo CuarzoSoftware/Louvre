@@ -5,6 +5,7 @@
 #include <LPoint.h>
 #include <LFramebuffer.h>
 #include <LRect.h>
+#include <LColor.h>
 #include <memory>
 
 /**

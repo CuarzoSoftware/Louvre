@@ -47,7 +47,7 @@ void RTouch::release(wl_client */*client*/, wl_resource *resource) noexcept
 
 void RTouch::down(const LTouchDownEvent &event, RSurface *surfaceRes) noexcept
 {
-    auto &clientEvents { client()->imp()->events.touch.down };
+    auto &clientEvents { client()->imp()->eventHistory.touch.down };
 
     auto it = std::find_if(
         clientEvents.begin(),
@@ -73,7 +73,7 @@ void RTouch::down(const LTouchDownEvent &event, RSurface *surfaceRes) noexcept
 
 void RTouch::up(const LTouchUpEvent &event) noexcept
 {
-    auto &clientEvents { client()->imp()->events.touch.up };
+    auto &clientEvents { client()->imp()->eventHistory.touch.up };
 
     auto it = std::find_if(
         clientEvents.begin(),

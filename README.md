@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Louvre is released under the MIT license." />
   </a>
   <a href="https://github.com/CuarzoSoftware/Louvre">
-    <img src="https://img.shields.io/badge/version-1.2.1-brightgreen" alt="Current Louvre version." />
+    <img src="https://img.shields.io/badge/version-2.0.0-brightgreen" alt="Current Louvre version." />
   </a>
 </p>
 
@@ -30,27 +30,35 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 
 ## ⭐ Features
 
-* Rootful XWayland (rootless mode is not yet supported)
+* Fractional Scaling
+* VSync Control
+* Gamma Correction
+* Screencasting
+* Optional Scene System
 * Multi-GPU Support
 * Multi-Session Support
-* Scene & Views System
 * Single, Double or Triple Buffering
-* Persistent Clipboard (only for string based mime types)
-* Fractional Scaling (since v1.2.0)
-* VSync Control (since v1.2.0)
-* Gamma Correction (since v1.2.0)
+* Persistent Clipboard
+* Rootful XWayland (rootless mode is not yet supported)
 
 ## 🧩 Protocols
 
 * Wayland
 * XDG Shell
 * XDG Decoration
+* XDG Output
 * Presentation Time
 * Linux DMA-Buf
-* Viewporter (since v1.2.0)
-* Fractional Scale (since v1.2.0)
-* Wlr Gamma Control (since v1.2.0)
-* Tearing Control (since v1.2.0)
+* Viewporter
+* Fractional Scale
+* Tearing Control
+* Session Lock
+* Wlr Gamma Control
+* Wlr Layer Shell
+* Wlr Screen Copy
+* Pointer Gestures
+* Pointer Constraints
+* Relative Pointer
 
 ## 🖌️ Rendering
 
@@ -66,18 +74,18 @@ Within Louvre, you have the flexibility to either employ your own OpenGL ES 2.0 
 ## 💬 Client-Compositor Buffer Sharing
 
 * Shared Memory
-* Wayland EGL (DMA and GEM flinks)
+* Wayland EGL
 * Linux DMA-Buf
 
 ## 💻 Graphic Backends
 
 * DRM/KMS (with the SRM lib)
-* X11 (discontinued since version 1.0.0)
+* Wayland
 
 ## 🕹️ Input Backends
 
 * Libinput
-* X11 (discontinued since version 1.0.0)
+* Wayland
 
 ## ⏲️ Performance
 
@@ -120,7 +128,7 @@ Here is a graph illustrating the benchmark results. It displays the average FPS 
 
 <img src="https://lh3.googleusercontent.com/pw/AIL4fc_fcGPw-Yh1zkqxKdfEQucQVXH853Py1YXtTk7jHVACzIaYmYCId07D0hsdJ-FArkERPjJQR2shCc4swA7b1cy9X9EhvFPqLOR_kxV-C1eVQHey2m8=w2400"/>
 
-Most Wayland compositors use a single thread, which drastically slows down their performance when rendering complex scenarios. The reason for this is due to **vertical sync**, where the compositor must wait a few milliseconds before it can swap the framebuffer it just rendered with the one being displayed on screen. This is done in order to synchronize the swapping with the display refresh rate (*vblank*) and avoid the **tearing effect**. When working with a single thread, compositors have "dead times" that prevent them from processing and rendering the content in time for the next frame. That's why they end up skipping a *vblank*, causing their refresh rate to drop in half.
+Most Wayland compositors use a single thread, which drastically slows down their performance when rendering complex scenarios. The reason for this is due to **vertical sync**, where the compositor must wait a few milliseconds before it can swap the framebuffer it just rendered with the one being displayed on screen. This is done in order to synchronize the swapping with the display refresh rate (*vblank*) and avoid the **tearing effect**. When working with a single thread, compositors have "dead times" that prevent them from processing and rendering the content in time for the next frame. That's why they end up skipping a *vblank*, causing their refresh rate to drop in half (or more).
 To avoid this problem, Louvre works with multiple threads. Each output (display) renders its content on its own thread, allowing the compositor to continue processing requests and render to other outputs while one is waiting for a vblank. This prevent Louvre compositors from having "dead times" and therefore allows them to maintain a high refresh rate.
 
 ### CPU Consumption
@@ -137,12 +145,12 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 
 ## 🔨 Upcoming Features
 
-* Touch Events (v2.0.0)
-* Pointer Gestures (v2.0.0)
-* Relative Pointer (v2.0.0)
-* Pointer Constraints (v2.0.0)
-* Session Lock (v2.0.0)
-* Screencasting (probably v2.0.0)
-* Wayland Backend (probably v2.0.0)
-* X11 Backend (someday)
-* Rootless XWayland (someday)
+* Tablet Events
+* Single pixel buffer
+* XDG activation
+* Content type hint
+* Idle notify
+* Cursor shape
+* Virtual keyboard
+* Input methods
+* Rootless XWayland

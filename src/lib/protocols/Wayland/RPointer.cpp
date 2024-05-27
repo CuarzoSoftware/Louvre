@@ -49,7 +49,7 @@ void RPointer::set_cursor(wl_client */*client*/, wl_resource *resource, UInt32 s
     const RPointer &pointerRes { *static_cast<RPointer*>(wl_resource_get_user_data(resource)) };
     const LClient &client { *pointerRes.client() };
 
-    if (client.events().pointer.enter.serial() != serial)
+    if (client.eventHistory().pointer.enter.serial() != serial)
     {
         LLog::warning("[RPointer::RPointerPrivate::set_cursor] Set cursor request without valid pointer enter event serial. Ignoring it.");
         return;
@@ -79,7 +79,7 @@ void RPointer::set_cursor(wl_client */*client*/, wl_resource *resource, UInt32 s
             cursor()->useDefault();
 
         client.imp()->lastCursorRequest.m_role.reset(cursorRole);
-        client.imp()->lastCursorRequest.m_triggeringEvent = client.events().pointer.enter;
+        client.imp()->lastCursorRequest.m_triggeringEvent = client.eventHistory().pointer.enter;
         client.imp()->lastCursorRequest.m_visible = true;
         seat()->pointer()->setCursorRequest(client.imp()->lastCursorRequest);
         return;
@@ -89,7 +89,7 @@ void RPointer::set_cursor(wl_client */*client*/, wl_resource *resource, UInt32 s
         cursor()->useDefault();
 
     client.imp()->lastCursorRequest.m_role.reset();
-    client.imp()->lastCursorRequest.m_triggeringEvent = client.events().pointer.enter;
+    client.imp()->lastCursorRequest.m_triggeringEvent = client.eventHistory().pointer.enter;
     client.imp()->lastCursorRequest.m_visible = false;
     seat()->pointer()->setCursorRequest(client.imp()->lastCursorRequest);
 }
@@ -105,7 +105,7 @@ void RPointer::release(wl_client */*client*/, wl_resource *resource) noexcept
 
 void RPointer::enter(const LPointerEnterEvent &event, RSurface *surfaceRes) noexcept
 {
-    auto &clientEvent { client()->imp()->events.pointer.enter };
+    auto &clientEvent { client()->imp()->eventHistory.pointer.enter };
 
     if (clientEvent.serial() != event.serial())
         clientEvent = event;
@@ -119,7 +119,7 @@ void RPointer::enter(const LPointerEnterEvent &event, RSurface *surfaceRes) noex
 
 void RPointer::leave(const LPointerLeaveEvent &event, RSurface *surfaceRes) noexcept
 {
-    auto &clientEvent { client()->imp()->events.pointer.leave };
+    auto &clientEvent { client()->imp()->eventHistory.pointer.leave };
 
     if (clientEvent.serial() != event.serial())
         clientEvent = event;
@@ -137,7 +137,7 @@ void RPointer::motion(const LPointerMoveEvent &event) noexcept
 
 void RPointer::button(const LPointerButtonEvent &event) noexcept
 {
-    auto &clientEvents { client()->imp()->events.pointer };
+    auto &clientEvents { client()->imp()->eventHistory.pointer };
 
     if (clientEvents.button[clientEvents.buttonIndex].serial() != event.serial())
     {

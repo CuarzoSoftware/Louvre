@@ -6,11 +6,21 @@
 #include <memory>
 
 /**
- * @brief Class for handling drag & drop sessions
+ * @brief Class for handling drag & drop sessions.
  *
- * The LDND class provides control over drag & drop sessions and its unique instance can be accessed with LSeat::dnd().\n
- * It has virtual methods that notify when a client wants to start or cancels a drag & drop session, methods to
- * "drop" or cancel a data offering, and more.
+ * The LDND class provides control over drag & drop sessions, and its unique instance can be accessed via LSeat::dnd().\n
+ * Clients initiate a DND session by triggering startDragRequest(). Within that method, the compositor analyzes
+ * the triggeringEvent(), which could be, for example, a pointer button press on the origin() surface,
+ * and decides whether to accept the request or not. If the request is not accepted, the cancel() method should be called to end the session.
+ *
+ * If the session continues, the compositor notifies clients when the dragged data is over their surfaces
+ * through the setFocus() and sendMoveEvent() methods, and finally notifies them when it's dropped with drop().\n
+ * Clients usually create an LDNDIconRole (icon()) to be displayed behind the cursor or touch point.
+ *
+ * @note Louvre internally acts as middleware to coordinate the data exchange between clients.
+ *
+ * During the session, clients can negotiate different actions such as @ref Move or @ref Copy .\n
+ * The compositor can also set its preferred action with setPreferredAction().
  */
 class Louvre::LDND : public LFactoryObject
 {
@@ -18,31 +28,15 @@ public:
 
     static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LDND;
 
-    // TODO: Add doc
-    void setFocus(LSurface *surface, const LPointF &localPos) noexcept;
-    void sendMoveEvent(const LPointF &localPos, UInt32 ms) noexcept;
-    const LEvent &triggeringEvent() const noexcept;
-
-    /**
-     * @brief Constructor of the LDNDManager class.
-     *
-     * There is a single instance of LDNDManager, which can be accessed from LSeat::dndManager().
-     *
-     * @param params Internal library parameters passed in the LCompositor::createDNDManagerRequest() virtual constructor.
-     */
-    LDND(const void *params) noexcept;
-
-    LCLASS_NO_COPY(LDND)
-
     /**
      * @brief Action flags for drag & drop sessions.
      *
      * Clients who start drag & drop sessions or receive a data offer notify which actions they support.\n
-     * For example, when dragging a file from a file manager window to another, the desired action might be to
+     * For example, when dragging a file from a file manager window into another, the desired action might be to
      * move or copy the file.\n
-     * The library by default performs a match of actions supported by the source and destination client, giving preference
-     * to the first one listed in the enum, except for LDNDManager::NoAction.\n
-     * You can also select a different preferred action using the LDNDManager::setPreferredAction() method as exemplified in the
+     * Louvre by default performs a match of actions supported by the source and destination client, giving preference
+     * to the first one listed in the enum, except for @ref NoAction.\n
+     * The compositor can also notify its preferred action using the setPreferredAction() method as exemplified in the
      * default implementation of LKeyboard::keyEvent().
      */
     enum Action : UInt32
@@ -61,6 +55,15 @@ public:
     };
 
     /**
+     * @brief Constructor of the LDND class.
+     *
+     * @param params Internal parameters provided in LCompositor::createObjectRequest().
+     */
+    LDND(const void *params) noexcept;
+
+    LCLASS_NO_COPY(LDND)
+
+    /**
      * @brief Drag & drop session icon.
      *
      * LDNDIconRole of the surface used as drag & drop icon.
@@ -72,23 +75,56 @@ public:
     LDNDIconRole *icon() const noexcept;
 
     /**
-     * @brief Surface that originates the drag & drop session.
+     * @brief Surface from which the drag & drop session originates.
      *
-     * Surface from which the drag & drop session originates.
-     *
-     * @returns `nullptr` if there is no session going on.
+     * @returns `nullptr` if there is no active session.
      */
     LSurface *origin() const noexcept;
 
     /**
      * @brief Focused surface.
      *
-     * Surface to which the data offer is being presented to.\n
-     * It typically is the surface located under the cursor.
+     * Surface to which the data offer is being presented to.
      *
-     * @returns `nullptr` if there is no session going on or if no surface has focus.
+     * @returns `nullptr` if there is no active session or if no surface has DND focus.
      */
     LSurface *focus() const noexcept;
+
+    /**
+     * @brief Set DND focus.
+     *
+     * Notifies the client that the dragged data is over one of their surfaces.
+     *
+     * @note If there is no active session, this is a no-op.
+     *
+     * @param surface The surface to which the data is being offered, or `nullptr` to remove focus.
+     * @param localPos The local position within the surface where the drag point is located.
+     */
+    void setFocus(LSurface *surface, const LPointF &localPos) noexcept;
+
+    /**
+     * @brief Send a DND move event.
+     *
+     * Notifies the focused surface that the dragged point has moved.\n
+     *
+     * @note If no surface is focused, or there is no active session, this is a no-op.
+     *
+     * @param localPos The local position within the surface where the drag point is located.
+     * @param ms The millisecond timestamp of the move event.
+     */
+    void sendMoveEvent(const LPointF &localPos, UInt32 ms) noexcept;
+
+    /**
+     * @brief Indicates which input event triggered the drag & drop session.
+     *
+     * This should be used, for example, to detect if the dragged element should follow the pointer
+     * or a touch point.
+     *
+     * @note If the event was generated by an event like LKeyboardEnterEvent, the default implementation treats it as a pointer session.
+     *
+     * @return The input event that triggered the drag & drop session.
+     */
+    const LEvent &triggeringEvent() const noexcept;
 
     /**
      * @brief Check if a drag & drop session is currently in progress.
@@ -111,8 +147,6 @@ public:
      * Drop the data offer on the surface with active focus and ends the session.\n
      * The destination client then exchanges the information with the source client, using the specified action.\n
      * If there is no focused surface, the session is cancelled.
-     *
-     * The library invokes this method when the left mouse button is released (check the default implementation of LPointer::pointerButtonEvent()).
      */
     void drop() noexcept;
 
@@ -127,20 +161,19 @@ public:
      * @brief Assigns the preferred action.
      *
      * Assigns the compositor's preferred action for the session.
-     * The library by default assigns the LDNDManager::Move action when holding down the `Shift`
-     * key and the LDNDManager::Copy action when holding down the `Ctrl` key
+     * Louvre by default assigns the @ref Move action when holding down the `Shift`
+     * key and the @ref Copy action when holding down the `Ctrl` key
      * (check the default implementation of LKeyboard::keyEvent()).\n
-     * If the specified action is not supported by the source and destination client calling this method is a no-op.
+     * If the specified action is not supported by the source and destination client, calling this method is a no-op.
      */
     void setPreferredAction(Action action) noexcept;
 
     /**
      * @brief Request to start a drag & drop session
      *
-     * Reimplement this virtual method if you want to be notified when a client wants to start a drag & drop session.\n
-     * This method is invoked only when there is no session in progress.\n
-     * The default implementation validates that the client that originates the request has a surface with keyboard or pointer focus. If
-     * neither condition is met the session is cancelled.
+     * Override this virtual method if you want to be notified when a client wants to start a drag & drop session.\n
+     * This method is invoked only when there is no session in progress, which means only a single session can be active
+     * at a time.
      *
      * #### Default implementation
      * @snippet LDNDManagerDefault.cpp startDragRequest

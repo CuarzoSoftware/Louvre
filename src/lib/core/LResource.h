@@ -4,6 +4,7 @@
 #include <LObject.h>
 
 #define LGLOBAL_INTERFACE \
+    friend class Louvre::LGlobal;\
     friend class Louvre::LCompositor;\
     static void bind(wl_client *client, void *data, UInt32 version, UInt32 id) noexcept;\
     static Int32 maxVersion() noexcept;\

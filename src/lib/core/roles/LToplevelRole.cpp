@@ -44,13 +44,13 @@ LToplevelRole::LToplevelRole(const void *params) noexcept :
 
     moveSession().setOnBeforeUpdateCallback([this](LToplevelMoveSession *session)
     {
-        LMargin constraints { calculateConstraintsFromOutput(cursor()->output()) };
+        LMargins constraints { calculateConstraintsFromOutput(cursor()->output()) };
         session->setConstraints(constraints);
     });
 
     resizeSession().setOnBeforeUpdateCallback([this](LToplevelResizeSession *session)
     {
-        LMargin constraints { calculateConstraintsFromOutput(cursor()->output()) };
+        LMargins constraints { calculateConstraintsFromOutput(cursor()->output()) };
         session->setConstraints(constraints);
     });
 
@@ -523,9 +523,9 @@ void LToplevelRole::LToplevelRolePrivate::setTitle(const char *newTitle)
     toplevel->titleChanged();
 }
 
-LMargin LToplevelRole::calculateConstraintsFromOutput(LOutput *output) const noexcept
+LMargins LToplevelRole::calculateConstraintsFromOutput(LOutput *output) const noexcept
 {
-    LMargin constraints {EdgeDisabled, EdgeDisabled, EdgeDisabled, EdgeDisabled};
+    LMargins constraints {EdgeDisabled, EdgeDisabled, EdgeDisabled, EdgeDisabled};
 
     if (output)
     {
