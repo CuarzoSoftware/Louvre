@@ -8,6 +8,7 @@
 #include <LFramebuffer.h>
 
 #include <thread>
+#include <list>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <EGL/egl.h>
@@ -217,8 +218,46 @@ public:
     // TODO
     LSessionLockRole *sessionLockRole() const noexcept;
     bool needsFullRepaint() const noexcept;
+
+    /**
+     * @brief Retrieves the rect within the output that is not occupied by exclusive zones.
+     *
+     * The available geometry defines the space within an output where, for example,
+     * LToplevelRole surfaces should be constrained to prevent occluding UI elements like a panel.
+     *
+     * The rect is in output-local surface coordinates.
+     *
+     * @see exclusiveZones()
+     *
+     * @return A rect representing the available geometry.
+     */
     const LRect &availableGeometry() const noexcept;
+
+    /**
+     * @brief Gets the sum of the space occupied by exclusive zones for each edge.
+     *
+     * This function provides margins that represent the total area taken up by the exclusive zones
+     * along each edge of the output.
+     *
+     * @see exclusiveZones()
+     * @see availableGeometry()
+     *
+     * @return LMargins object representing the exclusive edges.
+     */
     const LMargins &exclusiveEdges() const noexcept;
+
+    /**
+     * @brief Retrieves all exclusive zones assigned to this output.
+     *
+     * The order of the list determines how zones anchored to the same edge are stacked.
+     * Zones listed first are positioned closer to the output's edge. Additionally,
+     * the order affects their predominance: zones listed later adjust their space to
+     * avoid occluding those listed earlier.
+     *
+     * @return A list of pointers to LExclusiveZone objects.
+     * @see LExclusiveZone::setOutput()
+     */
+    const std::list<LExclusiveZone*> exclusiveZones() const noexcept;
 
     /**
      * @brief Get the current state of the LOutput.

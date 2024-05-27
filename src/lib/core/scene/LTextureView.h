@@ -237,7 +237,7 @@ public:
      */
     void setCustomColor(const LRGBF &color) noexcept
     {
-        if (m_customColor.r == color.r && m_customColor.g == color.g && m_customColor.b == color.b)
+        if (m_customColor == color)
             return;
 
         m_customColor = color;

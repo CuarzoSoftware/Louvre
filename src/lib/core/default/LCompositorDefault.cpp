@@ -84,8 +84,8 @@ bool LCompositor::createGlobalsRequest()
     createGlobal<GammaControl::GGammaControlManager>();
 
     // Allow clients to create DMA buffers (The Wayland backend currently only supports EGL)
-    //if (graphicBackendId() == LGraphicBackendDRM)
-        //createGlobal<LinuxDMABuf::GLinuxDMABuf>();
+    if (graphicBackendId() == LGraphicBackendDRM)
+        createGlobal<LinuxDMABuf::GLinuxDMABuf>();
 
     // Provides detailed information of how the surfaces are presented
     createGlobal<PresentationTime::GPresentation>();

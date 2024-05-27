@@ -278,7 +278,7 @@ namespace Louvre
     };
 
     /**
-     * @brief Margins.
+     * @brief Structure representing left, top, right and bottom margins.
      */
     struct LMargins
     {

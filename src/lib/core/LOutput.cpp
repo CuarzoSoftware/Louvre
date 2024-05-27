@@ -59,6 +59,11 @@ const LMargins &LOutput::exclusiveEdges() const noexcept
     return imp()->exclusiveEdges;
 }
 
+const std::list<LExclusiveZone *> LOutput::exclusiveZones() const noexcept
+{
+    return imp()->exclusiveZones;
+}
+
 bool LOutput::fractionalOversamplingEnabled() const
 {
     return imp()->stateFlags.check(LOutputPrivate::FractionalOversamplingEnabled);

@@ -353,7 +353,6 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     decoBL.insertAfter(children().front());
     decoBR.insertAfter(children().front());   
     clipTop.insertAfter(children().front());
-
     updateGeometry();
 }
 
@@ -711,7 +710,6 @@ void ToplevelView::updateGeometry()
     }
 
     lastFullscreenState = toplevel->fullscreen();
-
 }
 
 bool ToplevelView::nativeMapped() const noexcept

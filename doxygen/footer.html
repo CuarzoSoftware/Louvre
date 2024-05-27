@@ -26,7 +26,8 @@
 
     window.onload = function()
     {
-        toggleLevel(2);
+        if (typeof toggleLevel !== "undefined")
+            toggleLevel(2);
         
         // Get all <a> tags with the "el" class
         var elLinks = document.querySelectorAll('a.el');
