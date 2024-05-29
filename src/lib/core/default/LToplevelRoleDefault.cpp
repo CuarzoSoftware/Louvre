@@ -17,7 +17,7 @@ using namespace Louvre;
 //! [rolePos]
 const LPoint &LToplevelRole::rolePos() const
 {
-    m_rolePos = surface()->pos() - windowGeometry().topLeft();
+    m_rolePos = surface()->pos() - windowGeometry().topLeft() + LPoint(extraMargins().left, extraMargins().top);
     return m_rolePos;
 }
 //! [rolePos]
@@ -135,7 +135,7 @@ void LToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
         }
         else
         {
-            surface()->setPos(prevRect().pos());
+            surface()->setPos(prevRect.pos());
         }
     }
 
@@ -156,7 +156,7 @@ void LToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
         }
         else
         {
-            surface()->setPos(prevRect().pos());
+            surface()->setPos(prevRect.pos());
         }
     }
 
@@ -193,10 +193,11 @@ void LToplevelRole::setMaximizedRequest()
         return;
 
     if (!fullscreen())
-        setPrevRect(LRect(surface()->pos(), windowGeometry().size()));
+        prevRect = LRect(surface()->pos(), windowGeometry().size());
 
     setExclusiveOutput(cursor()->output());
-    configureSize(cursor()->output()->availableGeometry().size());
+    configureSize(cursor()->output()->availableGeometry().size()
+        - LSize(extraMargins().left + extraMargins().right, extraMargins().top + extraMargins().bottom));
     configureState(Activated | Maximized);
 }
 //! [setMaximizedRequest]
@@ -208,7 +209,7 @@ void LToplevelRole::unsetMaximizedRequest()
         return;
 
     configureState(pending().state &~ Maximized);
-    configureSize(prevRect().size());
+    configureSize(prevRect.size());
 }
 //! [unsetMaximizedRequest]
 
@@ -221,7 +222,7 @@ void LToplevelRole::setFullscreenRequest(LOutput *preferredOutput)
         return;
 
     if (!maximized())
-        setPrevRect(LRect(surface()->pos(), windowGeometry().size()));
+        prevRect = LRect(surface()->pos(), windowGeometry().size());
 
     setExclusiveOutput(output);
     configureSize(output->size());
@@ -236,7 +237,7 @@ void LToplevelRole::unsetFullscreenRequest()
         return;
 
     configureState(pending().state &~ Fullscreen);
-    configureSize(prevRect().size());
+    configureSize(prevRect.size());
 }
 //! [unsetFullscreenRequest]
 

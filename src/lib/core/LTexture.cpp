@@ -129,6 +129,11 @@ UInt32 LTexture::formatPlanes(UInt32 format) noexcept
     }
 }
 
+const std::vector<LDMAFormat> &LTexture::supportedDMAFormats() noexcept
+{
+    return *compositor()->imp()->graphicBackend->backendGetDMAFormats();
+}
+
 bool LTexture::setDataFromMainMemory(const LSize &size, UInt32 stride, UInt32 format, const void *buffer) noexcept
 {
     if (m_sourceType == Framebuffer)
@@ -377,6 +382,7 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
             LFramebufferWrapper wrapperFb(framebuffer, dstSize);
             painter->bindFramebuffer(&wrapperFb);
             painter->enableCustomTextureColor(false);
+            painter->enableAutoBlendFunc(true);
             painter->setColorFactor(1.f, 1.f, 1.f, 1.f);
             painter->setAlpha(1.f);
             painter->bindTextureMode({

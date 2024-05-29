@@ -32,17 +32,9 @@ public:
     // TODO
     void setExclusiveOutput(LOutput *output) noexcept;
     virtual LOutput *exclusiveOutput() const override;
-
-    void setPrevRect(const LRect &rect) noexcept
-    {
-        m_prevRect = rect;
-    }
-
-    const LRect &prevRect() const noexcept
-    {
-        return m_prevRect;
-    }
-
+    LRect prevRect;
+    void  setExtraMargins(const LMargins &margins) noexcept;
+    const LMargins &extraMargins() const noexcept;
     /**
      * @brief Edge constraint when resizing a Toplevel
      */
@@ -429,7 +421,7 @@ public:
 
     // TODO: Triggered whenever the current state, window geometry or decoration mode changes
     virtual void configurationChanged(LBitset<ConfigurationChanges> changes);
-    LMargins calculateConstraintsFromOutput(LOutput *output) const noexcept;
+    LMargins calculateConstraintsFromOutput(LOutput *output, bool includeExtraMargins = true) const noexcept;
 
     /**
      * @brief Request to maximize

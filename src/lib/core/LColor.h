@@ -65,7 +65,7 @@ namespace Louvre
     };
 
     /**
-     * @brief Alpha blending function
+     * @brief Color blending function
      *
      * OpenGL blend function. Refer to the documentation
      * of [glBlendFuncSeparate()](https://docs.gl/es2/glBlendFuncSeparate) for more information.

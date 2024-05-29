@@ -8,6 +8,7 @@
 #include "App.h"
 #include "Global.h"
 #include "Surface.h"
+#include "src/Compositor.h"
 
 static int getPpidFromProc(int pid)
 {
@@ -135,7 +136,7 @@ Client::Client(const void *params) : LClient(params),
 
     pingTimer.start(3000);
 
-    wl_client_get_credentials(client(), &pid, NULL, NULL);
+    credentials(&pid, NULL, NULL);
 
     // Compositor pid
     Int32 cpid = getpid();
@@ -167,6 +168,9 @@ Client::~Client()
 {
     if (app)
     {
+        if (app->isWofi)
+            G::compositor()->wofiPID = -1;
+
         // Only destroy App if is not pinned to the dock
         if (app->pinned)
         {
@@ -197,4 +201,22 @@ void Client::createNonPinnedApp()
     app = new App(name, NULL, NULL);
     app->client = this;
     app->pid = pid;
+
+    if (G::compositor()->wofiClient)
+        return;
+
+    Int32 cpid = getpid();
+    Int32 ppid = pid;
+
+    while (ppid != 1 && ppid != cpid)
+    {
+        if (ppid == G::compositor()->wofiPID)
+        {
+            G::compositor()->wofiClient = this;
+            app->isWofi = true;
+            return;
+        }
+
+        ppid = getPpidFromProc(ppid);
+    }
 }

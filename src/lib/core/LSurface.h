@@ -385,7 +385,10 @@ public:
      *
      * @warning It could return `nullptr` if the surface is not currently mapped.
      */
-    wl_buffer *buffer() const;
+    wl_buffer *bufferResource() const;
+
+    // TODO
+    bool hasBuffer() const noexcept;
 
     /**
      * @brief Presence of damage

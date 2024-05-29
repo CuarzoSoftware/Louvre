@@ -201,8 +201,6 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     maximizeButton(&buttonsContainer, this, ToplevelButton::Maximize),
     title(nullptr, &topbarInput)
 {
-    toplevel->decoratedView = this;
-
     enableKeyboardEvents(true);
 
     class Surface *surf = toplevel->surf();
@@ -353,7 +351,6 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     decoBL.insertAfter(children().front());
     decoBR.insertAfter(children().front());   
     clipTop.insertAfter(children().front());
-    updateGeometry();
 }
 
 ToplevelView::~ToplevelView()
@@ -574,7 +571,10 @@ void ToplevelView::updateGeometry()
         }
 
         const Int32 clip { 0 };
-        const LSize tlSize { toplevel->windowGeometry().size().w(), toplevel->windowGeometry().size().h() };
+        const LSize tlSize {
+            toplevel->windowGeometry().size().w() < 120 ? 120 : toplevel->windowGeometry().size().w(),
+            toplevel->windowGeometry().size().h() < 120 ? 120 : toplevel->windowGeometry().size().h()
+        };
 
         setSize(tlSize);
 

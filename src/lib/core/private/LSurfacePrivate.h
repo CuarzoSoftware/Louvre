@@ -67,7 +67,8 @@ LPRIVATE_CLASS(LSurface)
     struct State
     {
         wl_listener onBufferDestroyListener;
-        wl_resource *buffer                 { nullptr };
+        wl_resource *bufferRes              { nullptr };
+        bool hasBuffer                      { false };
         LBaseSurfaceRole *role              { nullptr };
         Int32 bufferScale                   { 1 };
         LTransform transform                { LTransform::Normal };

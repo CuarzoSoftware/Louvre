@@ -18,17 +18,18 @@ void Surface::mappingChanged()
 
             if (toplevel() && cursor()->output())
             {
-                const Int32 barSize { 32 };
-                const LPoint outputPosG { cursor()->output()->pos() + LPoint(0, barSize) };
-                const LSize outputSizeG { cursor()->output()->size() - LSize(0, barSize) };
+                const LRect availGeo {
+                    cursor()->output()->pos() + cursor()->output()->availableGeometry().pos(),
+                    cursor()->output()->availableGeometry().size() };
 
-                setPos(outputPosG + (outputSizeG - toplevel()->windowGeometry().size())/2);
+                setPos(availGeo.pos()
+                       + (availGeo.size() - toplevel()->windowGeometry().size())/2);
 
-                if (pos().x() < outputPosG.x())
-                    setX(outputPosG.x());
+                if (pos().x() < availGeo.x())
+                    setX(availGeo.x());
 
-                if (pos().y() < barSize)
-                    setY(barSize);
+                if (pos().y() < availGeo.y())
+                    setY(availGeo.y());
             }
         }
 

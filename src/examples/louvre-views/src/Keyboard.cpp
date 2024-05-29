@@ -4,6 +4,7 @@
 #include <private/LCompositorPrivate.h>
 #include <LScene.h>
 #include <unistd.h>
+#include <LLauncher.h>
 
 #include "Keyboard.h"
 #include "Global.h"
@@ -66,6 +67,14 @@ void Keyboard::keyEvent(const LKeyboardKeyEvent &event)
                         layerRole->exclusiveZone().insertAfter(layerRole->exclusiveZone().nextZone());
                     return;
                 }
+            }
+
+            /*********** Launch Wofi *********/
+
+            if (isKeyCodePressed(KEY_W) && G::compositor()->wofiPID == -1)
+            {
+                G::compositor()->wofiPID = LLauncher::launch("wofi --show run");
+                return;
             }
 
             switch (event.keyCode())

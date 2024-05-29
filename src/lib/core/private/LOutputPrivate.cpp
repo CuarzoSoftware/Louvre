@@ -551,10 +551,13 @@ void LOutput::LOutputPrivate::updateExclusiveZones() noexcept
             zone->m_onRectChangeCallback(zone);
     }
 
+    prev = availableGeometry;
     availableGeometry.setX(exclusiveEdges.left);
     availableGeometry.setY(exclusiveEdges.top);
     availableGeometry.setW(rect.w() - exclusiveEdges.left - exclusiveEdges.right);
     availableGeometry.setH(rect.h() - exclusiveEdges.top - exclusiveEdges.bottom);
+
+    const bool availableGeometryChanged { availableGeometry != prev };
 
     for (LExclusiveZone *zone : exclusiveZones)
     {
@@ -579,4 +582,7 @@ void LOutput::LOutputPrivate::updateExclusiveZones() noexcept
         if (zone->m_onRectChangeCallback && prev != zone->m_rect)
             zone->m_onRectChangeCallback(zone);
     }
+
+    if (availableGeometryChanged)
+        output->availableGeometryChanged();
 }

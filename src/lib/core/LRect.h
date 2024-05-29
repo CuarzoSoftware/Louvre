@@ -170,44 +170,34 @@ public:
     template<class N>
     constexpr bool clip(const LRectTemplate<N> &rect) noexcept
     {
-        T x0 = x();
-        T x1 = x0 + w();
-        T y0 = y();
-        T y1 = y0 + h();
+        T x1 = x() + w();
+        T y1 = y() + h();
 
         T rx1 = rect.x() + rect.w();
         T ry1 = rect.y() + rect.h();
 
-        // X
-        if(rect.x() > x0)
-            x0 = rect.x();
-        else if(rx1 < x0)
-            x0 = rx1;
+        if (x() < rect.x())
+            setX(rect.x());
 
-        // W
-        if(rect.x() > x1)
-            x1 = rect.x();
-        else if(rx1 < x1)
+        if (x1 > rx1)
             x1 = rx1;
 
-        // Y
-        if(rect.y() > y0)
-            y0 = rect.y();
-        else if(ry1 < y0)
-            y0 = ry1;
+        if (y() < rect.y())
+            setY(rect.y());
 
-        // H
-        if(rect.y() > y1)
-            y1 = rect.y();
-        else if(ry1 < y1)
+        if (y1 > ry1)
             y1 = ry1;
 
-        setX(x0);
-        setY(y0);
-        setW(x1 - x0);
-        setH(y1 - y0);
+        setW(x1 - x());
+        setH(y1 - y());
 
-        return (w() == 0 || h() == 0 );
+        if (w() < 0)
+            setW(0);
+
+        if (h() < 0)
+            setH(0);
+
+        return (w() == 0 || h() == 0);
     }
 
     constexpr LRectTemplate<T> &operator+=(T factor) noexcept

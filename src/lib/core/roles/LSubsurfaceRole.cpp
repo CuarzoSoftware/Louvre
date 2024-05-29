@@ -44,7 +44,7 @@ static void checkMapping(LSurface *surface)
 {
     surface->imp()->setMapped(surface->parent() &&
                                 surface->parent()->mapped() &&
-                                surface->buffer());
+                                surface->hasBuffer());
 }
 
 void LSubsurfaceRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)

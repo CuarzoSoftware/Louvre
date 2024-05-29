@@ -224,6 +224,9 @@ void Dock::pointerEnterEvent(const LPointerEnterEvent &)
 
 void Dock::pointerMoveEvent(const LPointerMoveEvent &)
 {
+    if (!seat()->toplevelMoveSessions().empty() || !seat()->toplevelResizeSessions().empty())
+        return;
+
     if (visiblePercent == 1.f && !G::pointer()->cursorOwner)
     {
         cursor()->useDefault();

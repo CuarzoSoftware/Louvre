@@ -23,35 +23,15 @@
 
 Toplevel::Toplevel(const void *params) : LToplevelRole(params),
     blackFullscreenBackground(0.f, 0.f, 0.f, 1.f),
-    capture(nullptr, &blackFullscreenBackground),
+    captureView(nullptr, &blackFullscreenBackground),
     animView(nullptr, &G::compositor()->overlayLayer)
 {
     blackFullscreenBackground.enableParentOffset(false);
     blackFullscreenBackground.setVisible(false);
 
-    capture.setBufferScale(2);
-    capture.enableParentOpacity(false);
-    capture.enableDstSize(true);
-
-    moveSession().setOnBeforeUpdateCallback([this](LToplevelMoveSession *session)
-    {
-        LMargins constraints { calculateConstraintsFromOutput(cursor()->output()) };
-
-        if (current().decorationMode == ServerSide && constraints.bottom != EdgeDisabled)
-            constraints.bottom -= TOPLEVEL_TOPBAR_HEIGHT;
-
-        session->setConstraints(constraints);
-    });
-
-    resizeSession().setOnBeforeUpdateCallback([this](LToplevelResizeSession *session)
-    {
-        LMargins constraints { calculateConstraintsFromOutput(cursor()->output()) };
-
-        if (current().decorationMode == ServerSide && constraints.bottom != EdgeDisabled)
-            constraints.bottom -= TOPLEVEL_TOPBAR_HEIGHT;
-
-        session->setConstraints(constraints);
-    });
+    captureView.setBufferScale(2);
+    captureView.enableParentOpacity(false);
+    captureView.enableDstSize(true);
 
     resizeSession().setMinSize(LSize(150, 150));
 }
@@ -59,17 +39,7 @@ Toplevel::Toplevel(const void *params) : LToplevelRole(params),
 Toplevel::~Toplevel()
 {
     destructorCalled = true;
-
     unsetFullscreen();
-
-    if (capture.texture())
-        delete capture.texture();
-
-    if (decoratedView)
-    {
-        delete decoratedView;
-        decoratedView = nullptr;
-    }
 }
 
 const LPoint &Toplevel::rolePos() const
@@ -79,7 +49,7 @@ const LPoint &Toplevel::rolePos() const
         m_rolePos = surface()->pos();
 
         if (!fullscreen() && !animScene)
-            m_rolePos += LPoint(0, TOPLEVEL_TOPBAR_HEIGHT);
+            m_rolePos += LPoint(0, extraMargins().top);
     }
     else
         m_rolePos = surface()->pos() - windowGeometry().topLeft();
@@ -126,45 +96,6 @@ void Toplevel::configurationChanged(LBitset<ConfigurationChanges> changes)
     }
 }
 
-void Toplevel::startMoveRequest(const LEvent &triggeringEvent)
-{
-    if (fullscreen())
-        return;
-
-    LOutput *activeOutput { cursor()->output() };
-
-    LMargins constraints { calculateConstraintsFromOutput(activeOutput) };
-
-    if (current().decorationMode == ServerSide && constraints.bottom != EdgeDisabled)
-        constraints.bottom -= TOPLEVEL_TOPBAR_HEIGHT;
-
-    if (triggeringEvent.type() == LEvent::Type::Touch)
-    {
-        if (triggeringEvent.subtype() != LEvent::Subtype::Down)
-            return;
-
-        if (!activeOutput)
-            return;
-
-        const LTouchDownEvent& touchDownEvent { static_cast<const LTouchDownEvent&>(triggeringEvent) };
-        LTouchPoint *touchPoint { seat()->touch()->findTouchPoint(touchDownEvent.id()) };
-
-        if (!touchPoint)
-            return;
-
-        if (touchPoint->surface() != surface())
-            return;
-
-        const LPoint initDragPoint { LTouch::toGlobal(activeOutput, touchPoint->pos()) };
-
-        moveSession().start(triggeringEvent, initDragPoint);
-    }
-    else if (surface()->hasPointerFocus())
-    {
-        moveSession().start(triggeringEvent, cursor()->pos());
-    }
-}
-
 void Toplevel::startResizeRequest(const LEvent &triggeringEvent, ResizeEdge edge)
 {
     LToplevelRole::startResizeRequest(triggeringEvent, edge);
@@ -183,6 +114,8 @@ void Toplevel::setMaximizedRequest()
 
     if (!output)
         return;
+
+    setExclusiveOutput(output);
 
     if (!fullscreen())
         prevRect = LRect(surface()->pos(), windowGeometry().size());
@@ -206,7 +139,7 @@ void Toplevel::setMaximizedRequest()
     dstRect.setPos(output->pos() + output->availableGeometry().pos() + (output->availableGeometry().size() - dstRect.size()) / 2);
 
     if (supportServerSideDecorations())
-        dstRect.setSize(dstRect.size() - LSize(0, TOPLEVEL_TOPBAR_HEIGHT));
+        dstRect.setSize(dstRect.size() - LSize(0, extraMargins().top));
 
     configureSize(dstRect.size());
     configureState(Activated | Maximized);
@@ -226,7 +159,10 @@ void Toplevel::maximizedChanged()
     if (maximized())
         surface()->setPos(dstRect.pos());
     else if (seat()->toplevelResizeSessions().empty() && seat()->toplevelMoveSessions().empty())
+    {
+        setExclusiveOutput(nullptr);
         surface()->setPos(prevRect.pos());
+    }
 
     surface()->raise();
     G::compositor()->updatePointerBeforePaint = true;
@@ -279,11 +215,9 @@ void Toplevel::setFullscreenRequest(LOutput *output)
                              box.x2 - box.x1,
                              box.y2 - box.y1);
 
-    if (capture.texture())
-        delete capture.texture();
-
-    capture.setTexture(surf->renderThumbnail(&captureTransRegion));
-    capture.setPos(- windowGeometry().pos().x(), - windowGeometry().pos().y());
+    captureTexture.reset(surf->renderThumbnail(&captureTransRegion));
+    captureView.setTexture(captureTexture.get());
+    captureView.setPos(- windowGeometry().pos().x(), - windowGeometry().pos().y());
 }
 
 void Toplevel::unsetFullscreenRequest()
@@ -293,9 +227,6 @@ void Toplevel::unsetFullscreenRequest()
         configureState(pending().state);
         return;
     }
-
-    if (capture.texture())
-        delete capture.texture();
 
     LSceneView tmp(fullscreenOutput->sizeB(), fullscreenOutput->scale());
     blackFullscreenBackground.setSize(fullscreenOutput->size());
@@ -309,12 +240,13 @@ void Toplevel::unsetFullscreenRequest()
     surf()->setPos(0, 0);
     tmp.setPos(fullscreenOutput->pos());
     tmp.render();
-    capture.setTexture(tmp.texture()->copy());
-    capture.setBufferScale(tmp.bufferScale());
+    captureTexture.reset(tmp.texture()->copy());
+    captureView.setTexture(captureTexture.get());
+    captureView.setBufferScale(tmp.bufferScale());
     surf()->setPos(prevPos);
     surf()->getView()->enableParentOffset(parentOffsetEnabled);
     G::reparentWithSubsurfaces(surf(), &fullscreenWorkspace->surfaces, true);
-    capture.setVisible(false);
+    captureView.setVisible(false);
     configureSize(prevRect.size());
     configureState(prevStates);
 }
@@ -329,22 +261,19 @@ void Toplevel::fullscreenChanged()
             return;
         }
 
-        if (animScene)
-            delete animScene;
-
-        animScene = new LSceneView(fullscreenOutput->sizeB(), fullscreenOutput->scale());
+        animScene = std::make_unique<LSceneView>(fullscreenOutput->sizeB(), fullscreenOutput->scale());
         quickUnfullscreen = false;
         fullscreenOutput->animatedFullscreenToplevel = this;
         surf()->sendOutputEnterEvent(fullscreenOutput);
 
-        capture.setParent(&G::compositor()->overlayLayer);
-        capture.setDstSize(capture.texture()->sizeB() / capture.bufferScale());
-        capture.setOpacity(1.f);
-        capture.setVisible(true);
-        capture.enableParentOpacity(false);
-        capture.setTranslucentRegion(&captureTransRegion);
+        captureView.setParent(&G::compositor()->overlayLayer);
+        captureView.setDstSize(captureView.texture()->sizeB() / captureView.bufferScale());
+        captureView.setOpacity(1.f);
+        captureView.setVisible(true);
+        captureView.enableParentOpacity(false);
+        captureView.setTranslucentRegion(&captureTransRegion);
 
-        blackFullscreenBackground.setParent(animScene);
+        blackFullscreenBackground.setParent(animScene.get());
         blackFullscreenBackground.setPos(0);
         blackFullscreenBackground.setSize(fullscreenOutput->size());
         blackFullscreenBackground.setOpacity(1.f);
@@ -361,7 +290,7 @@ void Toplevel::fullscreenChanged()
         surf()->view.setCustomTranslucentRegion(&empty);
 
         animView.enableDstSize(true);
-        animView.insertAfter(&capture);
+        animView.insertAfter(&captureView);
         animView.setTranslucentRegion(nullptr);
         animView.setVisible(false);
 
@@ -397,9 +326,9 @@ void Toplevel::decorationModeChanged()
 {
     if (current().decorationMode == ClientSide)
     {
+        setExtraMargins({0, 0, 0, 0});
         LView *prevParent = decoratedView->parent();
-        delete decoratedView;
-        decoratedView = nullptr;
+        decoratedView.reset();
 
         surf()->view.setPrimary(true);
         surf()->view.enableParentClipping(false);
@@ -409,7 +338,9 @@ void Toplevel::decorationModeChanged()
     }
     else
     {
-        decoratedView = new ToplevelView(this);
+        setExtraMargins({0,TOPLEVEL_TOPBAR_HEIGHT, 0, 0});
+        decoratedView = std::make_unique<ToplevelView>(this);
+        decoratedView->updateGeometry();
         decoratedView->setVisible(surf()->view.visible());
         surf()->view.enableParentClipping(true);
         surf()->view.enableCustomPos(true);
@@ -471,22 +402,19 @@ void Toplevel::unsetFullscreen()
     if (decoratedView)
         decoratedView->updateGeometry();
 
-    if (animScene)
-        delete animScene;
-
-    animScene = new LSceneView(fullscreenOutput->sizeB(), fullscreenOutput->scale());
+    animScene = std::make_unique<LSceneView>(fullscreenOutput->sizeB(), fullscreenOutput->scale());
     animScene->setPos(fullscreenOutput->pos());
-    G::reparentWithSubsurfaces(surf(), animScene, true);
+    G::reparentWithSubsurfaces(surf(), animScene.get(), true);
     fullscreenOutput->animatedFullscreenToplevel = this;
 
-    capture.enableDstSize(true);
-    capture.setDstSize(fullscreenOutput->size());
-    capture.setOpacity(1.f);
-    capture.setVisible(true);
-    capture.enableParentOpacity(false);
+    captureView.enableDstSize(true);
+    captureView.setDstSize(fullscreenOutput->size());
+    captureView.setOpacity(1.f);
+    captureView.setVisible(true);
+    captureView.enableParentOpacity(false);
 
     animView.setParent(&G::compositor()->overlayLayer);
-    capture.insertAfter(&animView);
+    captureView.insertAfter(&animView);
 
     animView.setTranslucentRegion(nullptr);
     animView.setOpacity(1.f);

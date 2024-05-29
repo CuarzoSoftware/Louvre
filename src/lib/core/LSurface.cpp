@@ -24,17 +24,17 @@ LSurface::LSurface(const void *params) noexcept : LFactoryObject(FactoryObjectTy
     imp()->current.onBufferDestroyListener.notify = [](wl_listener *listener, void *)
     {
         LSurfacePrivate::State *state { (LSurfacePrivate::State *)listener };
-        state->buffer = nullptr;
+        state->bufferRes = nullptr;
     };
     imp()->pending.onBufferDestroyListener.notify = imp()->current.onBufferDestroyListener.notify;
 }
 
 LSurface::~LSurface()
 {
-    if (imp()->pending.buffer)
+    if (imp()->pending.bufferRes)
         wl_list_remove(&imp()->pending.onBufferDestroyListener.link);
 
-    if (imp()->current.buffer)
+    if (imp()->current.bufferRes)
         wl_list_remove(&imp()->current.onBufferDestroyListener.link);
 
     imp()->lastPointerEventView = nullptr;
@@ -420,9 +420,14 @@ Wayland::RSurface *LSurface::surfaceResource() const
     return imp()->surfaceResource;
 }
 
-wl_buffer *LSurface::buffer() const
+wl_buffer *LSurface::bufferResource() const
 {
-    return (wl_buffer*)imp()->current.buffer;
+    return (wl_buffer*)imp()->current.bufferRes;
+}
+
+bool LSurface::hasBuffer() const noexcept
+{
+    return imp()->current.hasBuffer;
 }
 
 LClient *LSurface::client() const

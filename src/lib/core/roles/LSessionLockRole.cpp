@@ -25,7 +25,7 @@ void LSessionLockRole::handleSurfaceCommit(CommitOrigin /*origin*/)
 {
     auto &sessionLockSurfaceRes { *static_cast<RSessionLockSurface*>(resource()) };
 
-    if (!surface()->buffer() || !sessionLockSurfaceRes.sessionLockRes())
+    if (!surface()->hasBuffer() || !sessionLockSurfaceRes.sessionLockRes())
     {
         wl_resource_post_error(sessionLockSurfaceRes.resource(),
                                EXT_SESSION_LOCK_SURFACE_V1_ERROR_NULL_BUFFER,

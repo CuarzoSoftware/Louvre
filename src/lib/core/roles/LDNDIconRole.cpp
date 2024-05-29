@@ -46,5 +46,5 @@ void LDNDIconRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
     imp()->currentHotspotB = imp()->currentHotspot * surface()->bufferScale();
     hotspotChanged();
 
-    surface()->imp()->setMapped(surface()->buffer() != nullptr);
+    surface()->imp()->setMapped(surface()->hasBuffer());
 }

@@ -12,7 +12,7 @@ using namespace Louvre;
 
 #define LOUVRE_VIEWS_TESTING 0
 
-#define DEBUG_ANIM_SPEED 1.8f
+#define DEBUG_ANIM_SPEED 1.4
 
 #define TOPBAR_HEIGHT 26
 

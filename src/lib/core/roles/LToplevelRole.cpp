@@ -31,6 +31,16 @@ LOutput *LToplevelRole::exclusiveOutput() const
     return imp()->exclusiveOutput;
 }
 
+void LToplevelRole::setExtraMargins(const LMargins &margins) noexcept
+{
+    imp()->extraMargins = margins;
+}
+
+const LMargins &LToplevelRole::extraMargins() const noexcept
+{
+    return imp()->extraMargins;
+}
+
 LToplevelRole::LToplevelRole(const void *params) noexcept :
     LBaseSurfaceRole(FactoryObjectType,
         ((LToplevelRole::Params*)params)->toplevel,
@@ -246,7 +256,7 @@ void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
             xdgSurfaceResource()->m_currentWindowGeometry = LRect(0, surface()->size());
         }
 
-        if (surface()->buffer())
+        if (surface()->hasBuffer())
         {
             wl_resource_post_error(resource()->resource(), XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface already has a buffer attached.");
             return;
@@ -328,7 +338,7 @@ void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
     imp()->applyPendingChanges(changes);
 
     // Request configure
-    if (!surface()->mapped() && !surface()->buffer())
+    if (!surface()->mapped() && !surface()->hasBuffer())
     {
         configureRequest();
 
@@ -339,7 +349,7 @@ void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
     }
 
     // Request unmap
-    if (surface()->mapped() && !surface()->buffer())
+    if (surface()->mapped() && !surface()->hasBuffer())
     {
         surface()->imp()->setMapped(false);
 
@@ -396,7 +406,7 @@ void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
     }
 
     // Request map
-    if (!surface()->mapped() && surface()->buffer())
+    if (!surface()->mapped() && surface()->hasBuffer())
         surface()->imp()->setMapped(true);
 }
 
@@ -523,7 +533,7 @@ void LToplevelRole::LToplevelRolePrivate::setTitle(const char *newTitle)
     toplevel->titleChanged();
 }
 
-LMargins LToplevelRole::calculateConstraintsFromOutput(LOutput *output) const noexcept
+LMargins LToplevelRole::calculateConstraintsFromOutput(LOutput *output,  bool includeExtraMargins) const noexcept
 {
     LMargins constraints {EdgeDisabled, EdgeDisabled, EdgeDisabled, EdgeDisabled};
 
@@ -535,11 +545,22 @@ LMargins LToplevelRole::calculateConstraintsFromOutput(LOutput *output) const no
         if (output->exclusiveEdges().top != 0)
             constraints.top = output->pos().y() + output->exclusiveEdges().top;
 
-        if (output->exclusiveEdges().right != 0)
-            constraints.right = output->pos().x() + output->size().w() - output->exclusiveEdges().right;
+        if (includeExtraMargins)
+        {
+            if (output->exclusiveEdges().right != 0)
+                constraints.right = output->pos().x() + output->size().w() - output->exclusiveEdges().right - extraMargins().right - extraMargins().left;
 
-        if (output->exclusiveEdges().bottom != 0)
-            constraints.bottom = output->pos().y() + output->size().h() - output->exclusiveEdges().bottom;
+            if (output->exclusiveEdges().bottom != 0)
+                constraints.bottom = output->pos().y() + output->size().h() - output->exclusiveEdges().bottom - extraMargins().bottom - extraMargins().top;
+        }
+        else
+        {
+            if (output->exclusiveEdges().right != 0)
+                constraints.right = output->pos().x() + output->size().w() - output->exclusiveEdges().right;
+
+            if (output->exclusiveEdges().bottom != 0)
+                constraints.bottom = output->pos().y() + output->size().h() - output->exclusiveEdges().bottom;
+        }
     }
 
     return constraints;

@@ -758,6 +758,9 @@ public:
      */
     virtual void setGammaRequest(LClient *client, const LGammaTable *gamma);
 
+
+    virtual void availableGeometryChanged();
+
 ///@}
 
     LPRIVATE_IMP_UNIQUE(LOutput)

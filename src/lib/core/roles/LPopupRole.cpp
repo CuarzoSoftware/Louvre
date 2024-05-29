@@ -536,7 +536,7 @@ void LPopupRole::handleSurfaceCommit(CommitOrigin origin)
     }
 
     // Request configure
-    if (!surface()->mapped() && !surface()->buffer())
+    if (!surface()->mapped() && !surface()->hasBuffer())
     {
         imp()->stateFlags.add(LPopupRolePrivate::CanBeConfigured);
         configureRequest();
@@ -547,7 +547,7 @@ void LPopupRole::handleSurfaceCommit(CommitOrigin origin)
     }
 
     // Request unmap
-    if (surface()->mapped() && !surface()->buffer())
+    if (surface()->mapped() && !surface()->hasBuffer())
     {
         surface()->imp()->setMapped(false);
         surface()->imp()->setKeyboardGrabToParent();
@@ -556,7 +556,7 @@ void LPopupRole::handleSurfaceCommit(CommitOrigin origin)
     }
 
     // Request map
-    if (!surface()->mapped() && surface()->buffer() && surface()->parent() && surface()->parent()->mapped())
+    if (!surface()->mapped() && surface()->hasBuffer() && surface()->parent() && surface()->parent()->mapped())
         surface()->imp()->setMapped(true);
 }
 

@@ -155,13 +155,18 @@ void RSurface::attach(wl_client */*client*/, wl_resource *resource, wl_resource 
     if (surfaceRes.surface()->role())
         surfaceRes.surface()->role()->handleSurfaceBufferAttach(buffer, x, y);
 
-    if (surfaceRes.surface()->imp()->pending.buffer)
+    if (surfaceRes.surface()->imp()->pending.bufferRes)
         wl_list_remove(&surfaceRes.surface()->imp()->pending.onBufferDestroyListener.link);
 
-    surfaceRes.surface()->imp()->pending.buffer = buffer;
+    surfaceRes.surface()->imp()->pending.bufferRes = buffer;
 
     if (buffer)
+    {
         wl_resource_add_destroy_listener(buffer, &surfaceRes.surface()->imp()->pending.onBufferDestroyListener);
+        surfaceRes.surface()->imp()->pending.hasBuffer = true;
+    }
+    else
+        surfaceRes.surface()->imp()->pending.hasBuffer = false;
 
 #if LOUVRE_WL_COMPOSITOR_VERSION >= 5
     if (surfaceRes.version() < 5)
@@ -245,22 +250,23 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
 
     if (imp.stateFlags.check(LSurface::LSurfacePrivate::BufferAttached))
     {
-        if (imp.current.buffer)
+        if (imp.current.bufferRes)
         {
             wl_list_remove(&imp.current.onBufferDestroyListener.link);
 
-            if (!wl_shm_buffer_get(imp.current.buffer) && imp.current.buffer != imp.pending.buffer)
+            if (!wl_shm_buffer_get(imp.current.bufferRes) && imp.current.bufferRes != imp.pending.bufferRes)
             {
-                wl_buffer_send_release(imp.current.buffer);
-                wl_client_flush(wl_resource_get_client(imp.current.buffer));
+                wl_buffer_send_release(imp.current.bufferRes);
+                wl_client_flush(wl_resource_get_client(imp.current.bufferRes));
             }
         }
 
-        imp.current.buffer = imp.pending.buffer;
+        imp.current.hasBuffer = imp.pending.hasBuffer;
+        imp.current.bufferRes = imp.pending.bufferRes;
 
-        if (imp.current.buffer)
+        if (imp.current.bufferRes)
         {
-            wl_resource_add_destroy_listener(imp.current.buffer, &imp.current.onBufferDestroyListener);
+            wl_resource_add_destroy_listener(imp.current.bufferRes, &imp.current.onBufferDestroyListener);
             imp.stateFlags.remove(LSurface::LSurfacePrivate::BufferReleased);
         }
 
@@ -281,7 +287,7 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
      *****************************************/
 
     // Turn buffer into OpenGL texture and process damage
-    if (imp.current.buffer)
+    if (imp.current.hasBuffer)
     {
         // Returns false on wl_client destroy
         if (!imp.bufferToTexture())

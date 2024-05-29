@@ -63,6 +63,7 @@ LToplevelResizeSession resizeSession;
 LToplevelMoveSession moveSession;
 
 LWeak<LOutput> exclusiveOutput;
+LMargins extraMargins;
 
 inline void applyPendingChanges(LBitset<ConfigurationChanges> changes)
 {

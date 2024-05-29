@@ -44,10 +44,10 @@ void LLayerRole::configureRequest()
 
     const LBitset<LEdge> edge { exclusiveZone().edge() };
 
-    if (newSize.w() == 0 || edge == 0 || edge.check(LEdgeTop | LEdgeBottom))
+    if (newSize.w() == 0)// || edge == 0 || edge.check(LEdgeTop | LEdgeBottom))
         newSize.setW(exclusiveZone().rect().w());
 
-    if (newSize.h() == 0 || edge == 0 || edge.check(LEdgeLeft | LEdgeRight))
+    if (newSize.h() == 0)// || edge == 0 || edge.check(LEdgeLeft | LEdgeRight))
         newSize.setH(exclusiveZone().rect().h());
 
     configureSize(newSize);

@@ -19,12 +19,11 @@ public:
     ~Toplevel();
 
     // Quick parse handles
-    inline class Surface *surf() const {return (Surface*)surface();}
+    class Surface *surf() const {return (Surface*)surface();}
 
     const LPoint &rolePos() const override;
     void configureRequest() override;
     void configurationChanged(LBitset<ConfigurationChanges> changes) override;
-    void startMoveRequest(const LEvent &triggeringEvent) override;
     void startResizeRequest(const LEvent &triggeringEvent, ResizeEdge edge) override;
     void setMaximizedRequest() override;
     void unsetMaximizedRequest() override;
@@ -43,23 +42,24 @@ public:
     bool destructorCalled { false };
     bool quickUnfullscreen { false };
 
-    ToplevelView *decoratedView { nullptr };
+    std::unique_ptr<ToplevelView> decoratedView;
 
     LSolidColorView blackFullscreenBackground;
 
     // Rendered view for fullscreen animation
-    LTextureView capture;
+    LTextureView captureView;
+    std::unique_ptr<LTexture> captureTexture;
     LRegion captureTransRegion;
 
     // Rects for fullscreen animation
-    LRect prevRect, dstRect, prevBoundingRect;
-    Output *fullscreenOutput { nullptr };
-    Workspace *fullscreenWorkspace { nullptr };
+    LRect dstRect, prevBoundingRect;
+    LWeak<Output> fullscreenOutput;
+    LWeak<Workspace> fullscreenWorkspace;
     UInt32 prevStates { 0 };
     UInt32 outputUnplugConfigureCount { 0 };
 
     LTextureView animView;
-    LSceneView *animScene { nullptr };
+    std::unique_ptr<LSceneView> animScene;
 };
 
 #endif // TOPLEVEL_H

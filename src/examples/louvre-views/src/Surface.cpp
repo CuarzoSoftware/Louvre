@@ -76,13 +76,7 @@ Surface::~Surface()
     firstMapTimer.cancel();
 
     if (toplevel())
-    {
-        if (tl()->decoratedView)
-        {
-            delete tl()->decoratedView;
-            tl()->decoratedView = nullptr;
-        }
-    }
+        tl()->decoratedView.reset();
 
     while (!minimizedViews.empty())
         delete minimizedViews.back();
@@ -113,7 +107,7 @@ Surface *Surface::searchSessionLockParent(Surface *parent)
 LView *Surface::getView() const
 {
     if (tl() && tl()->decoratedView)
-        return tl()->decoratedView;
+        return tl()->decoratedView.get();
 
     return (LView*)&view;
 }
@@ -389,13 +383,9 @@ void Surface::minimizedChanged()
             thumbnailTex = nullptr;
         }
 
-        raise();
-
-        if (toplevel())
-            toplevel()->configureState(toplevel()->pending().state | LToplevelRole::Activated);
-
         getView()->setVisible(true);
         getView()->enablePointerEvents(true);
+        raise();
     }
 }
 
@@ -469,6 +459,12 @@ void Surface::unminimize(DockItem *clickedItem)
         item->enableScaling(true);
     }
 
+    if (toplevel())
+    {
+        toplevel()->configureState(toplevel()->pending().state | LToplevelRole::Activated);
+        requestNextFrame(false);
+    }
+
     minimizeAnim.setOnUpdateCallback(
     [this, clickedItem](LAnimation *anim)
     {
@@ -531,7 +527,7 @@ void Surface::onToplevelFirstMap() noexcept
     LSize tlSize { toplevel()->windowGeometry().size() };
 
     if (tl()->supportServerSideDecorations())
-        tlSize += LSize(0, TOPLEVEL_TOPBAR_HEIGHT);
+        tlSize += LSize(0, tl()->extraMargins().top);
 
     setPos(outputPosG + (output->availableGeometry().size() - tlSize)/2);
 

@@ -21,10 +21,12 @@
 #include "ToplevelView.h"
 #include "Popup.h"
 #include "SessionLockManager.h"
-#include "TestView.h"
 
 #include <LOpenGL.h>
 
+#if LOUVRE_VIEWS_TESTING == 1
+#include "TestView.h"
+#endif
 
 void Compositor::initialized()
 {
@@ -155,6 +157,13 @@ void Compositor::onAnticipatedObjectDestruction(LFactoryObject *object)
         fadeOutSurface(static_cast<LPopupRole*>(object), 50);
         return;
     }
+
+    if (object->factoryObjectType() == LFactoryObject::Type::LToplevelRole)
+    {
+        if (!static_cast<LToplevelRole*>(object)->fullscreen())
+            fadeOutSurface(static_cast<LToplevelRole*>(object), 250);
+        return;
+    }
 }
 
 void Compositor::fadeOutSurface(LBaseSurfaceRole *role, UInt32 ms)
@@ -169,14 +178,26 @@ void Compositor::fadeOutSurface(LBaseSurfaceRole *role, UInt32 ms)
         surf->fadedOut = true;
 
         LTextureView *fadeOutView = new LTextureView(surf->renderThumbnail(), &fullscreenLayer);
-        fadeOutView->setPos(surf->rolePos());
         fadeOutView->enableParentOffset(false);
         fadeOutView->setBufferScale(2);
 
-        LAnimation::oneShot(ms,
-            [fadeOutView](LAnimation *anim)
+        if (surf->tl() && surf->tl()->decoratedView)
+            fadeOutView->setPos(surf->tl()->decoratedView->decoTL.pos());
+        else
+            fadeOutView->setPos(surf->rolePos());
+
+        if (surf->toplevel())
+        {
+            fadeOutView->enableScaling(true);
+            LPoint middle { fadeOutView->pos() + fadeOutView->size()/2 };
+
+            LAnimation::oneShot(ms,
+            [fadeOutView, middle](LAnimation *anim)
             {
-                fadeOutView->setOpacity(1.f - anim->value());
+                Float64 x { 1.0 - pow(1.0 - anim->value(), 3.0) };
+                fadeOutView->setScalingVector(LSizeF(1.0 - x * 0.25));
+                fadeOutView->setPos(middle - fadeOutView->size()/2);
+                fadeOutView->setOpacity(1.0 - x);
                 G::compositor()->repaintAllOutputs();
             },
             [fadeOutView](LAnimation *)
@@ -186,6 +207,23 @@ void Compositor::fadeOutSurface(LBaseSurfaceRole *role, UInt32 ms)
                 delete fadeOutView;
                 G::compositor()->repaintAllOutputs();
             });
+        }
+        else
+        {
+            LAnimation::oneShot(ms,
+                [fadeOutView](LAnimation *anim)
+                {
+                    fadeOutView->setOpacity(1.f - anim->value());
+                    G::compositor()->repaintAllOutputs();
+                },
+                [fadeOutView](LAnimation *)
+                {
+                    fadeOutView->repaint();
+                    delete fadeOutView->texture();
+                    delete fadeOutView;
+                    G::compositor()->repaintAllOutputs();
+                });
+        }
     }
 }
 

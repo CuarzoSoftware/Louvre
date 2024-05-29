@@ -198,209 +198,225 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
         changesToNotify.add(BufferScaleChanged);
     }
 
-    // SHM
-    if (wl_shm_buffer_get(current.buffer))
+    if (current.bufferRes)
     {
-        if (!stateFlags.check(BufferReleased))
+        // SHM
+        if (wl_shm_buffer_get(current.bufferRes))
         {
-            wl_buffer_send_release(current.buffer);
-            stateFlags.add(BufferReleased);
-        }
-
-        if (texture && texture != textureBackup && texture->m_pendingDelete)
-            delete texture;
-
-        texture = textureBackup;
-
-        wl_shm_buffer *shm_buffer = wl_shm_buffer_get(current.buffer);
-        wl_shm_buffer_begin_access(shm_buffer);
-        UChar8 *pixels = (UChar8*)wl_shm_buffer_get_data(shm_buffer);
-        UInt32 format =  LTexture::waylandFormatToDRM(wl_shm_buffer_get_format(shm_buffer));
-        Int32 stride = wl_shm_buffer_get_stride(shm_buffer);
-        widthB = wl_shm_buffer_get_width(shm_buffer);
-        heightB = wl_shm_buffer_get_height(shm_buffer);
-
-        if (!updateDimensions(widthB, heightB))
-            return false;
-
-        if (!texture->initialized() || changesToNotify.check(SizeChanged | SourceRectChanged | BufferSizeChanged | BufferTransformChanged | BufferScaleChanged))
-        {
-            currentDamageB.clear();
-            currentDamageB.addRect(LRect(0, sizeB));
-            currentDamage.clear();
-            currentDamage.addRect(LRect(0, size));
-            texture->setDataFromMainMemory(LSize(widthB, heightB), stride, format, pixels);
-        }
-        else if (!pendingDamageB.empty() || !pendingDamage.empty())
-        {
-            simplifyDamage(pendingDamageB);
-            simplifyDamage(pendingDamage);
-
-            LRegion onlyPending;
-
-            if (stateFlags.check(ViewportIsScaled | ViewportIsCropped))
+            if (!stateFlags.check(BufferReleased))
             {
-                Float32 xInvScale = (Float32(current.bufferScale) * srcRect.w())/Float32(size.w());
-                Float32 yInvScale = (Float32(current.bufferScale) * srcRect.h())/Float32(size.h());
+                wl_buffer_send_release(current.bufferRes);
+                stateFlags.add(BufferReleased);
+            }
 
-                Int32 xOffset = roundf(srcRect.x() * Float32(current.bufferScale)) - 2;
-                Int32 yOffset = roundf(srcRect.y() * Float32(current.bufferScale)) - 2;
+            if (texture && texture != textureBackup && texture->m_pendingDelete)
+                delete texture;
 
-                while (!pendingDamage.empty())
+            texture = textureBackup;
+
+            wl_shm_buffer *shm_buffer = wl_shm_buffer_get(current.bufferRes);
+            wl_shm_buffer_begin_access(shm_buffer);
+            UChar8 *pixels = (UChar8*)wl_shm_buffer_get_data(shm_buffer);
+            UInt32 format =  LTexture::waylandFormatToDRM(wl_shm_buffer_get_format(shm_buffer));
+            Int32 stride = wl_shm_buffer_get_stride(shm_buffer);
+            widthB = wl_shm_buffer_get_width(shm_buffer);
+            heightB = wl_shm_buffer_get_height(shm_buffer);
+
+            if (!updateDimensions(widthB, heightB))
+                return false;
+
+            if (!texture->initialized() || changesToNotify.check(SizeChanged | SourceRectChanged | BufferSizeChanged | BufferTransformChanged | BufferScaleChanged))
+            {
+                currentDamageB.clear();
+                currentDamageB.addRect(LRect(0, sizeB));
+                currentDamage.clear();
+                currentDamage.addRect(LRect(0, size));
+                texture->setDataFromMainMemory(LSize(widthB, heightB), stride, format, pixels);
+            }
+            else if (!pendingDamageB.empty() || !pendingDamage.empty())
+            {
+                simplifyDamage(pendingDamageB);
+                simplifyDamage(pendingDamage);
+
+                LRegion onlyPending;
+
+                if (stateFlags.check(ViewportIsScaled | ViewportIsCropped))
                 {
-                    LRect &r = pendingDamage.back();
-                    onlyPending.addRect((r.x() * xInvScale + xOffset),
-                                        (r.y() * yInvScale + yOffset),
-                                        (r.w() * xInvScale + 4 ),
-                                        (r.h() * yInvScale + 4 ));
-                    pendingDamage.pop_back();
-                }
+                    Float32 xInvScale = (Float32(current.bufferScale) * srcRect.w())/Float32(size.w());
+                    Float32 yInvScale = (Float32(current.bufferScale) * srcRect.h())/Float32(size.h());
 
-                while (!pendingDamageB.empty())
+                    Int32 xOffset = roundf(srcRect.x() * Float32(current.bufferScale)) - 2;
+                    Int32 yOffset = roundf(srcRect.y() * Float32(current.bufferScale)) - 2;
+
+                    while (!pendingDamage.empty())
+                    {
+                        LRect &r = pendingDamage.back();
+                        onlyPending.addRect((r.x() * xInvScale + xOffset),
+                                            (r.y() * yInvScale + yOffset),
+                                            (r.w() * xInvScale + 4 ),
+                                            (r.h() * yInvScale + 4 ));
+                        pendingDamage.pop_back();
+                    }
+
+                    while (!pendingDamageB.empty())
+                    {
+                        LRect &r = pendingDamageB.back();
+                        onlyPending.addRect(
+                            r.x() - 1,
+                            r.y() - 1,
+                            r.w() + 2,
+                            r.h() + 2);
+                        pendingDamageB.pop_back();
+                    }
+
+                    onlyPending.transform(sizeB, current.transform);
+
+                    UInt32 pixelSize = LTexture::formatBytesPerPixel(format);
+
+                    Int32 n;
+                    const LBox *boxes = onlyPending.boxes(&n);
+                    LRect rect;
+                    for (Int32 i = 0; i < n; i++)
+                    {
+                        rect.setX(boxes->x1);
+                        rect.setY(boxes->y1);
+                        rect.setW(boxes->x2 - boxes->x1);
+                        rect.setH(boxes->y2 - boxes->y1);
+                        texture->updateRect(rect,
+                                            stride,
+                                            &pixels[rect.x()*pixelSize + rect.y()*stride]);
+
+                        boxes++;
+                    }
+
+                    onlyPending.transform(sizeB, Louvre::requiredTransform(current.transform, LTransform::Normal));
+                    currentDamageB.addRegion(onlyPending);
+                    currentDamage = currentDamageB;
+                    currentDamage.offset(-xOffset - 2, -yOffset - 2);
+                    currentDamage.multiply(1.f/xInvScale, 1.f/yInvScale);
+                }
+                else
                 {
-                    LRect &r = pendingDamageB.back();
-                    onlyPending.addRect(
-                        r.x() - 1,
-                        r.y() - 1,
-                        r.w() + 2,
-                        r.h() + 2);
-                    pendingDamageB.pop_back();
+                    while (!pendingDamage.empty())
+                    {
+                        LRect &r = pendingDamage.back();
+                        onlyPending.addRect((r.x() - 2)*current.bufferScale,
+                                            (r.y() - 2)*current.bufferScale,
+                                            (r.w() + 4 )*current.bufferScale,
+                                            (r.h() + 4 )*current.bufferScale);
+                        pendingDamage.pop_back();
+                    }
+
+                    while (!pendingDamageB.empty())
+                    {
+                        LRect &r = pendingDamageB.back();
+                        onlyPending.addRect(
+                            r.x() - 2,
+                            r.y() - 2,
+                            r.w() + 4,
+                            r.h() + 4);
+                        pendingDamageB.pop_back();
+                    }
+
+                    onlyPending.clip(LRect(0, sizeB));
+                    currentDamageB.addRegion(onlyPending);
+                    onlyPending.transform(sizeB, current.transform);
+
+                    UInt32 pixelSize = LTexture::formatBytesPerPixel(format);
+
+                    Int32 n;
+                    const LBox *boxes = onlyPending.boxes(&n);
+                    LRect rect;
+                    for (Int32 i = 0; i < n; i++)
+                    {
+                        rect.setX(boxes->x1);
+                        rect.setY(boxes->y1);
+                        rect.setW(boxes->x2 - boxes->x1);
+                        rect.setH(boxes->y2 - boxes->y1);
+                        texture->updateRect(rect,
+                                            stride,
+                                            &pixels[rect.x()*pixelSize + rect.y()*stride]);
+
+                        boxes++;
+                    }
+
+                    LRegion::multiply(&currentDamage, &currentDamageB, 1.f/Float32(current.bufferScale));
                 }
-
-                onlyPending.transform(sizeB, current.transform);
-
-                UInt32 pixelSize = LTexture::formatBytesPerPixel(format);
-
-                Int32 n;
-                const LBox *boxes = onlyPending.boxes(&n);
-                LRect rect;
-                for (Int32 i = 0; i < n; i++)
-                {
-                    rect.setX(boxes->x1);
-                    rect.setY(boxes->y1);
-                    rect.setW(boxes->x2 - boxes->x1);
-                    rect.setH(boxes->y2 - boxes->y1);
-                    texture->updateRect(rect,
-                                        stride,
-                                        &pixels[rect.x()*pixelSize + rect.y()*stride]);
-
-                    boxes++;
-                }
-
-                onlyPending.transform(sizeB, Louvre::requiredTransform(current.transform, LTransform::Normal));
-                currentDamageB.addRegion(onlyPending);
-                currentDamage = currentDamageB;
-                currentDamage.offset(-xOffset - 2, -yOffset - 2);
-                currentDamage.multiply(1.f/xInvScale, 1.f/yInvScale);
             }
             else
             {
-                while (!pendingDamage.empty())
-                {
-                    LRect &r = pendingDamage.back();
-                    onlyPending.addRect((r.x() - 2)*current.bufferScale,
-                                        (r.y() - 2)*current.bufferScale,
-                                        (r.w() + 4 )*current.bufferScale,
-                                        (r.h() + 4 )*current.bufferScale);
-                    pendingDamage.pop_back();
-                }
-
-                while (!pendingDamageB.empty())
-                {
-                    LRect &r = pendingDamageB.back();
-                    onlyPending.addRect(
-                        r.x() - 2,
-                        r.y() - 2,
-                        r.w() + 4,
-                        r.h() + 4);
-                    pendingDamageB.pop_back();
-                }
-
-                onlyPending.clip(LRect(0, sizeB));
-                currentDamageB.addRegion(onlyPending);
-                onlyPending.transform(sizeB, current.transform);
-
-                UInt32 pixelSize = LTexture::formatBytesPerPixel(format);
-
-                Int32 n;
-                const LBox *boxes = onlyPending.boxes(&n);
-                LRect rect;
-                for (Int32 i = 0; i < n; i++)
-                {
-                    rect.setX(boxes->x1);
-                    rect.setY(boxes->y1);
-                    rect.setW(boxes->x2 - boxes->x1);
-                    rect.setH(boxes->y2 - boxes->y1);
-                    texture->updateRect(rect,
-                                        stride,
-                                        &pixels[rect.x()*pixelSize + rect.y()*stride]);
-
-                    boxes++;
-                }
-
-                LRegion::multiply(&currentDamage, &currentDamageB, 1.f/Float32(current.bufferScale));
+                wl_shm_buffer_end_access(shm_buffer);
+                wl_client_flush(wl_resource_get_client(current.bufferRes));
+                return true;
             }
+
+            wl_shm_buffer_end_access(shm_buffer);
+            wl_client_flush(wl_resource_get_client(current.bufferRes));
+        }
+
+        // WL_DRM
+        else if (compositor()->imp()->WL_bind_wayland_display && compositor()->imp()->eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.bufferRes, EGL_TEXTURE_FORMAT, &format))
+        {
+            /* Unlike SHM buffers, the current buffer is released after
+             * a different buffer is commited */
+
+            if (texture && texture != textureBackup && texture->m_pendingDelete)
+                delete texture;
+
+            texture = textureBackup;
+            compositor()->imp()->eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.bufferRes, EGL_WIDTH, &widthB);
+            compositor()->imp()->eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.bufferRes, EGL_HEIGHT, &heightB);
+            if (!updateDimensions(widthB, heightB))
+                return false;
+            updateDamage();
+            texture->setDataFromWaylandDRM(current.bufferRes);
+        }
+
+        // DMA-Buf
+        else if (LDMABuffer::isDMABuffer(current.bufferRes))
+        {
+            /* Unlike SHM buffers, the current buffer is released after
+             * a different buffer is commited */
+
+            LDMABuffer *dmaBuffer = (LDMABuffer*)wl_resource_get_user_data(current.bufferRes);
+            widthB = dmaBuffer->planes()->width;
+            heightB = dmaBuffer->planes()->height;
+
+            if (!updateDimensions(widthB, heightB))
+                return false;
+
+            if (!dmaBuffer->texture())
+            {
+                dmaBuffer->m_texture = new LTexture(true);
+                dmaBuffer->texture()->setDataFromDMA(*dmaBuffer->planes());
+            }
+
+            updateDamage();
+
+            if (texture && texture != textureBackup && texture->m_pendingDelete)
+                delete texture;
+
+            texture = dmaBuffer->texture();
         }
         else
         {
-            wl_shm_buffer_end_access(shm_buffer);
-            wl_client_flush(wl_resource_get_client(current.buffer));
-            return true;
-        }
-
-        wl_shm_buffer_end_access(shm_buffer);
-        wl_client_flush(wl_resource_get_client(current.buffer));
-    }
-
-    // WL_DRM
-    else if (compositor()->imp()->WL_bind_wayland_display && compositor()->imp()->eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.buffer, EGL_TEXTURE_FORMAT, &format))
-    {
-        /* Unlike SHM buffers, the current buffer is released after
-         * a different buffer is commited */
-
-        if (texture && texture != textureBackup && texture->m_pendingDelete)
-            delete texture;
-
-        texture = textureBackup;
-        compositor()->imp()->eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.buffer, EGL_WIDTH, &widthB);
-        compositor()->imp()->eglQueryWaylandBufferWL(LCompositor::eglDisplay(), current.buffer, EGL_HEIGHT, &heightB);
-        if (!updateDimensions(widthB, heightB))
+            LLog::error("[LSurfacePrivate::bufferToTexture] Unknown buffer type. Killing client.");
+            wl_client_destroy(surfaceResource->client()->client());
             return false;
-        updateDamage();
-        texture->setDataFromWaylandDRM(current.buffer);
-    }
-
-    // DMA-Buf
-    else if (LDMABuffer::isDMABuffer(current.buffer))
-    {
-        /* Unlike SHM buffers, the current buffer is released after
-         * a different buffer is commited */
-
-        LDMABuffer *dmaBuffer = (LDMABuffer*)wl_resource_get_user_data(current.buffer);
-        widthB = dmaBuffer->planes()->width;
-        heightB = dmaBuffer->planes()->height;
-
-        if (!updateDimensions(widthB, heightB))
-            return false;
-
-        if (!dmaBuffer->texture())
-        {
-            dmaBuffer->m_texture = new LTexture(true);
-            dmaBuffer->texture()->setDataFromDMA(*dmaBuffer->planes());
         }
-
-        updateDamage();
-
-        if (texture && texture != textureBackup && texture->m_pendingDelete)
-            delete texture;
-
-        texture = dmaBuffer->texture();
     }
     else
     {
-        LLog::error("[LSurfacePrivate::bufferToTexture] Unknown buffer type. Killing client.");
-        wl_client_destroy(surfaceResource->client()->client());
-        return false;
+        if (!texture)
+            texture = textureBackup;
+
+        widthB = texture->sizeB().w();
+        heightB = texture->sizeB().h();
+
+        if (!updateDimensions(widthB, heightB))
+            return false;
+
+        updateDamage();
     }
 
     pendingDamageB.clear();
@@ -531,7 +547,7 @@ bool LSurface::LSurfacePrivate::hasRoleOrPendingRole()
 
 bool LSurface::LSurfacePrivate::hasBufferOrPendingBuffer()
 {
-    return current.buffer != nullptr || pending.buffer != nullptr;
+    return current.hasBuffer || pending.hasBuffer;
 }
 
 void LSurface::LSurfacePrivate::setKeyboardGrabToParent()

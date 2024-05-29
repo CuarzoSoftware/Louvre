@@ -67,6 +67,8 @@ public:
 
     Client *client { nullptr };
 
+    bool isWofi { false };
+
     Int32 pid { -1 };
     std::string name;
     std::string exec;

@@ -347,12 +347,12 @@ void Output::onWorkspacesAnimationUpdate(LAnimation *anim) noexcept
             tl->animView.setDstSize(cSize);
             tl->animView.setOpacity(val);
 
-            tl->capture.setPos(tl->animView.pos());
-            tl->capture.setDstSize(cSize);
+            tl->captureView.setPos(tl->animView.pos());
+            tl->captureView.setDstSize(cSize);
             LRegion transRegion = tl->captureTransRegion;
             LSizeF transRegionScale = LSizeF(cSize) / LSizeF(tl->prevBoundingRect.size());
             transRegion.multiply(transRegionScale.x(), transRegionScale.y());
-            tl->capture.setTranslucentRegion(&transRegion);
+            tl->captureView.setTranslucentRegion(&transRegion);
         }
         else
         {
@@ -365,9 +365,9 @@ void Output::onWorkspacesAnimationUpdate(LAnimation *anim) noexcept
             LSize boxSize = LSize(box.x2 - box.x1, box.y2 - box.y1);
             cSize = (size() * inv) + (boxSize * val);
 
-            tl->capture.setOpacity(inv);
-            tl->capture.setPos(animPos);
-            tl->capture.setDstSize(cSize);
+            tl->captureView.setOpacity(inv);
+            tl->captureView.setPos(animPos);
+            tl->captureView.setDstSize(cSize);
 
             if (tl->decoratedView)
                 tl->surf()->setPos(LPoint() - (LPoint(box.x1, box.y1) - tl->animScene->nativePos()));
@@ -408,17 +408,9 @@ void Output::onWorkspacesAnimationFinish(LAnimation */*anim*/) noexcept
         Toplevel *tl = currentWorkspace->toplevel;
 
         tl->blackFullscreenBackground.setVisible(false);
-
-        if (tl->capture.texture())
-            delete tl->capture.texture();
-
+        tl->captureTexture.reset();
         tl->animView.setTexture(nullptr);
-
-        if (tl->animScene)
-        {
-            delete tl->animScene;
-            tl->animScene = nullptr;
-        }
+        tl->animScene.reset();
 
         if (tl->destructorCalled || tl->quickUnfullscreen)
             goto returnChildren;
@@ -433,17 +425,9 @@ void Output::onWorkspacesAnimationFinish(LAnimation */*anim*/) noexcept
         Toplevel *tl = animatedFullscreenToplevel;
 
         tl->blackFullscreenBackground.setVisible(false);
-
-        if (tl->capture.texture())
-            delete tl->capture.texture();
-
+        tl->captureTexture.reset();
         tl->animView.setTexture(nullptr);
-
-        if (tl->animScene)
-        {
-            delete tl->animScene;
-            tl->animScene = nullptr;
-        }
+        tl->animScene.reset();
 
         if (tl->destructorCalled || tl->quickUnfullscreen)
             goto returnChildren;

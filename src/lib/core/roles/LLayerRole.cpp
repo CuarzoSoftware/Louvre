@@ -12,15 +12,18 @@ LLayerRole::LLayerRole(const void *params) noexcept :
         static_cast<const LLayerRole::Params*>(params)->layerSurfaceRes,
         static_cast<const LLayerRole::Params*>(params)->surface,
         LSurface::Role::Layer),
-    m_namespace(static_cast<const LLayerRole::Params*>(params)->nameSpace)
+    m_scope(static_cast<const LLayerRole::Params*>(params)->nameSpace),
+    m_initOutput(static_cast<const LLayerRole::Params*>(params)->output),
+    m_initLayer(static_cast<const LLayerRole::Params*>(params)->layer)
 {
-    setExclusiveOutput(static_cast<const LLayerRole::Params*>(params)->output);
-    currentAtoms().layer = pendingAtoms().layer = static_cast<const LLayerRole::Params*>(params)->layer;
+    setExclusiveOutput(m_initOutput);
+    currentAtoms().layer = pendingAtoms().layer = m_initLayer;
     surface()->imp()->setLayer(layer());
 
     m_exclusiveZone.setOnRectChangeCallback([this](auto)
     {
-        configureRequest();
+        if (surface()->mapped() && surface()->hasBuffer())
+            configureRequest();
     });
 }
 
@@ -172,9 +175,26 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
     if (m_flags.check(ClosedSent))
         return;
 
+    // Request to unmap
+    if (surface()->mapped() && !surface()->hasBuffer())
+    {
+        surface()->imp()->setMapped(false);
+
+        // Reset conf
+        m_atoms[0] = Atoms();
+        m_atoms[1] = Atoms();
+        m_flags = HasPendingInitialConf;
+        m_exclusiveZone.setSize(0);
+        m_currentAtomsIndex = 0;
+        setExclusiveOutput(m_initOutput);
+        currentAtoms().layer = pendingAtoms().layer = m_initLayer;
+        surface()->imp()->setLayer(m_initLayer);
+        return;
+    }
+
     auto &res { *static_cast<LayerShell::RLayerSurface*>(resource()) };
 
-    if (m_flags.check(Flags::HasPendingInitialConf) && surface()->buffer())
+    if (m_flags.check(Flags::HasPendingInitialConf) && surface()->hasBuffer())
     {
         wl_resource_post_error(res.resource(),
                                ZWLR_LAYER_SHELL_V1_ERROR_ALREADY_CONSTRUCTED,
@@ -277,17 +297,9 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
     if (changesToNotify.check(SizeChanged))
         pendingAtoms().size = currentAtoms().size;
 
-    if (surface()->mapped())
+    if (!surface()->mapped())
     {
-        if (!surface()->buffer())
-        {
-            surface()->imp()->setMapped(false);
-            m_flags.add(Flags::HasPendingInitialConf);
-        }
-    }
-    else
-    {
-        if (surface()->buffer())
+        if (surface()->hasBuffer())
             surface()->imp()->setMapped(true);
         else
         {

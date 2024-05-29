@@ -2,6 +2,7 @@
 #include <LLauncher.h>
 #include <LLog.h>
 #include <cstring>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -42,8 +43,8 @@ static Int32 daemonLoop()
     fds.fd = pipeA[0];
 
     // Read messages from the parent
-    std::string cmd =  "";
-    Char8 c;
+    std::string cmd = "";
+    UChar8 c;
 
     while (true)
     {
@@ -64,12 +65,13 @@ static Int32 daemonLoop()
                 pid_t pid = fork();
 
                 if (pid == 0)
+                {
                     exit(system(cmd.c_str()));
-                else
+                }
+                else if (pid > 0)
                 {
                     // Send the launched app PID to the compositor
-                    cmd = "";
-                    Char8 buffer[16];
+                    Char8 buffer[32];
                     sprintf(buffer, "%d", pid);
                     Char8 *ptr = buffer;
 
@@ -83,9 +85,10 @@ static Int32 daemonLoop()
                         if (w > 0)
                             ptr += w;
                     }
-
-                    goto readChar;
                 }
+
+                cmd = "";
+                break;
             }
             else
             {
@@ -93,7 +96,6 @@ static Int32 daemonLoop()
                 cmd += c;
             }
 
-        readChar:
             n = read(pipeA[0], &c, sizeof(c));
         }
     }
@@ -137,6 +139,7 @@ pid_t LLauncher::startDaemon(const std::string &name)
         LLog::error("[LLauncher::startDaemon] Failed to start daemon. Failed to create daemon fork: %s.", strerror(errno));
         goto closePipeB;
     }
+    // Child
     else if (daemonPID == 0)
     {
         char *display = getenv("LOUVRE_WAYLAND_DISPLAY");
@@ -144,11 +147,31 @@ pid_t LLauncher::startDaemon(const std::string &name)
         if (display)
             setenv("WAYLAND_DISPLAY", display , 1);
 
+        if (setsid() < 0)
+        {
+            LLog::error("[%s] Daemon exited with status %d. Failed to create session.", name.c_str(), 1);
+            exit(1);
+        }
+
+        umask(0);
+
+        Int32 nullFD = open("/dev/null", O_RDWR);
+
+        if (nullFD != -1)
+            dup2(nullFD, STDIN_FILENO);
+        else
+        {
+            LLog::error("[%s] Daemon exited with status %d. Failed to open /dev/null", name.c_str(), 1);
+            exit(1);
+        }
+
         prctl(PR_SET_NAME, name.c_str(), 0, 0, 0);
         Int32 ret = daemonLoop();
+        LLog::debug("[%s] Daemon exited with status %d.", name.c_str(), ret);
+
         close(pipeA[0]);
         close(pipeB[1]);
-        LLog::debug("[%s] Daemon exited with status %d.", name.c_str(), ret);
+        close(nullFD);
 
         if (daemonGID != -1)
             kill(-daemonGID , SIGTERM);
@@ -204,7 +227,7 @@ pid_t LLauncher::launch(const std::string &command)
         while (read(pipeB[0], &c, 1) > 0) {}
 
     ssize_t s;
-    std::string res = "";
+    std::string res = "";    
 
     // Send the command
     while (true)
@@ -226,7 +249,7 @@ pid_t LLauncher::launch(const std::string &command)
     // Get the launched app PID
     while (true)
     {
-        if (poll(&fds, 1, 500) != 1)
+        if (poll(&fds, 1, 1000) != 1)
             return -1;
 
         s = read(pipeB[0], &c, 1);

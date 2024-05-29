@@ -5,7 +5,6 @@
 #include <LExclusiveZone.h>
 #include <LBitset.h>
 #include <LOutput.h>
-#include <list>
 
 class Louvre::LLayerRole : public LBaseSurfaceRole
 {
@@ -44,12 +43,6 @@ public:
         LSurfaceLayer layer;
     };
 
-    struct Configuration
-    {
-        LSize size;
-        UInt32 serial;
-    };
-
     LLayerRole(const void *params) noexcept;
 
     LCLASS_NO_COPY(LLayerRole)
@@ -61,16 +54,6 @@ public:
     virtual void atomsChanged(LBitset<AtomsChanges> changes, const Atoms &prevAtoms);
     void configureSize(const LSize &size) noexcept;
     void configureSize(Int32 width, Int32 height) noexcept;
-
-    const Configuration &currentConf() const noexcept
-    {
-        return m_lastACKConf;
-    }
-
-    const Configuration &pendingConf() const noexcept
-    {
-        return m_pendingConf;
-    }
 
     const Atoms &atoms() const noexcept
     {
@@ -127,9 +110,9 @@ public:
         m_exclusiveZone.setOutput(output);
     }
 
-    const std::string &nameSpace() noexcept
+    const std::string &scope() noexcept
     {
-        return m_namespace;
+        return m_scope;
     }
 
     void close() noexcept;
@@ -169,9 +152,11 @@ private:
     LBitset<Flags> m_flags { HasPendingInitialConf };
     Atoms m_atoms[2];
     UInt8 m_currentAtomsIndex { 0 };
-    Configuration m_pendingConf, m_lastACKConf;
-    std::list<Configuration> m_sentConfs;
-    std::string m_namespace;
+    std::string m_scope;
+
+    // Initial params
+    LWeak<LOutput> m_initOutput;
+    LSurfaceLayer m_initLayer;
 };
 
 #endif // LLAYERROLE_H

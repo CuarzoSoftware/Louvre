@@ -18,6 +18,7 @@
 #include "Global.h"
 #include "Pointer.h"
 #include "Compositor.h"
+#include "src/Client.h"
 
 Pointer::Pointer(const void *params) : LPointer(params)
 {
@@ -28,6 +29,9 @@ Pointer::Pointer(const void *params) : LPointer(params)
 void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)
 {
     G::scene()->handlePointerMoveEvent(event);
+
+    if (!seat()->toplevelMoveSessions().empty())
+        cursor()->repaintOutputs(false);
 
     if (cursorOwner)
         return;
@@ -81,6 +85,9 @@ void Pointer::pointerButtonEvent(const LPointerButtonEvent &event)
     }
 
     G::scene()->handlePointerButtonEvent(event);
+
+    if (G::compositor()->wofiClient && !G::scene()->pointerFocus().empty() && G::scene()->pointerFocus().front()->userData() == WallpaperType)
+        G::compositor()->wofiClient->destroyLater();
 }
 
 void Pointer::pointerScrollEvent(const LPointerScrollEvent &event)

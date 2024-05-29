@@ -476,6 +476,8 @@ void Output::paintGL() noexcept
         {
             delete (*it).texture;
             it = c->destroyedToplevels.erase(it);
+            for (LOutput *o : compositor()->outputs())
+                static_cast<Output*>(o)->lastRect.setX(-1);
         }
         else
         {

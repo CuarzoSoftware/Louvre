@@ -53,7 +53,7 @@ void LCursorRole::handleSurfaceCommit(CommitOrigin origin)
 
     hotspotChanged();
 
-    surface()->imp()->setMapped(surface()->buffer() != nullptr);
+    surface()->imp()->setMapped(surface()->hasBuffer());
 
     if (cursor()->clientCursor() && cursor()->clientCursor()->cursorRole() == this)
     {

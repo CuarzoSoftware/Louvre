@@ -33,7 +33,7 @@ void LOutput::paintGL()
     if (seat()->dnd()->icon())
         seat()->dnd()->icon()->surface()->raise();
 
-    static const auto surfaceShouldBeSkipped = [this, sessionLocked](LSurface *s) -> bool
+    static const auto surfaceShouldBeSkipped = [](LSurface *s, LOutput *output, bool sessionLocked) -> bool
     {
         // An unmapped surface usually indicates it doesn't have a buffer
         if (!s->mapped())
@@ -52,12 +52,12 @@ void LOutput::paintGL()
         }
 
         // Layer or screen lock surfaces should be displayed only on their exclusive output or not at all
-        if ((s->layerRole() && s->layerRole()->exclusiveOutput() != this) ||
-            (s->sessionLock() && s->sessionLock()->exclusiveOutput() != this))
+        if ((s->layerRole() && s->layerRole()->exclusiveOutput() != output) ||
+            (s->sessionLock() && s->sessionLock()->exclusiveOutput() != output))
             return true;
 
         // Other roles with a different exclusive output, e.g. maximized or fullscreen toplevels
-        if (s->role() && s->role()->exclusiveOutput() && s->role()->exclusiveOutput() != this)
+        if (s->role() && s->role()->exclusiveOutput() && s->role()->exclusiveOutput() != output)
             return true;
 
         // If the session is locked only surfaces from the locking client should be displayed
@@ -92,7 +92,7 @@ void LOutput::paintGL()
     // Draw every surface
     for (LSurface *s : compositor()->surfaces())
     {
-        if (surfaceShouldBeSkipped(s))
+        if (surfaceShouldBeSkipped(s, this, sessionLocked))
             continue;
 
         // Current surface rect
@@ -120,7 +120,9 @@ void LOutput::paintGL()
 
         // Clip to available geometry
         if (surfaceShouldBeClippedToAvailableGeometry(s))
-            currentRect.clip(availGeo);
+            // If the intersected area is zero
+            if (currentRect.clip(availGeo))
+                continue;
 
         // Draw the surface
         p->drawRect(currentRect);
@@ -161,3 +163,62 @@ void LOutput::setGammaRequest(LClient *client, const LGammaTable *gamma)
     /* No default implementation */
 }
 //! [setGammaRequest]
+
+void LOutput::availableGeometryChanged()
+{
+    const LRect availGeo { pos() + availableGeometry().pos(), availableGeometry().size() };
+
+    for (LSurface *surface : compositor()->surfaces())
+    {        
+        LToplevelRole *tl { surface->toplevel() };
+
+        if (tl && !tl->fullscreen())
+        {
+            const LSize toplevelExtraSize { tl->extraMargins().left + tl->extraMargins().right, tl->extraMargins().top + tl->extraMargins().bottom };
+            LRect toplevelRect { surface->pos(), tl->windowGeometry().size() + toplevelExtraSize };
+
+            if (compositor()->mostIntersectedOutput(toplevelRect) != this)
+                continue;
+
+            if (tl->maximized())
+            {
+                surface->setPos(availGeo.pos());
+                tl->configureSize(availGeo.size()
+                    - toplevelExtraSize);
+            }
+            else
+            {
+                if (exclusiveEdges().right != 0 && toplevelRect.x() + toplevelRect.w() > availGeo.x() + availGeo.w())
+                    toplevelRect.setX(availGeo.x() + availGeo.w() - toplevelRect.w());
+
+                if (exclusiveEdges().bottom != 0 && toplevelRect.y() + toplevelRect.h() > availGeo.y() + availGeo.h())
+                    toplevelRect.setY(availGeo.y() + availGeo.h() - toplevelRect.h());
+
+                if (exclusiveEdges().left != 0 && toplevelRect.x() < availGeo.x())
+                    toplevelRect.setX(availGeo.x());
+
+                if (exclusiveEdges().top != 0 && toplevelRect.y() < availGeo.y())
+                    toplevelRect.setY(availGeo.y());
+
+                bool needsConfigure { false };
+
+                if (exclusiveEdges().right != 0 && toplevelRect.w() > availGeo.w())
+                {
+                    toplevelRect.setW(availGeo.w());
+                    needsConfigure = true;
+                }
+
+                if (exclusiveEdges().bottom != 0 && toplevelRect.h() > availGeo.h())
+                {
+                    toplevelRect.setH(availGeo.h());
+                    needsConfigure = true;
+                }
+
+                if (needsConfigure)
+                    tl->configureSize(toplevelRect.size() - toplevelExtraSize);
+
+                surface->setPos(toplevelRect.pos());
+            }
+        }
+    }
+}

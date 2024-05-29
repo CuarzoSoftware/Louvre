@@ -14,18 +14,17 @@
 namespace Louvre
 {
     /**
-     * @brief Structure representing DMA format and modifier.
+     * @brief Structure representing a DMA format and modifier.
      *
-     * The LDMAFormat struct contains information about DMA format and modifier.
-     * It is used to describe the format and memory layout of DMA planes used for texture generation.
-     * Each LDMAFormat instance includes a format value and a modifier value.
+     * The LDMAFormat struct contains information about a DMA format and modifier.\n
+     * It is used to describe the format and memory layout of DMA planes used for texture generation.\n
      */
     struct LDMAFormat
     {
-        /// The format of the DMA plane.
+        /// The DRM format of the DMA plane.
         UInt32 format;
 
-        /// The modifier value specifying the memory layout.
+        /// The DRM modifier value specifying the memory layout.
         UInt64 modifier;
     };
 
@@ -64,7 +63,7 @@ namespace Louvre
     /**
      * @brief OpenGL texture abstraction
      *
-     * The LTexture class is an abstraction of an OpenGL texture.
+     * The LTexture class is an abstraction of an OpenGL texture.\n
      * It provides a unified interface for generating and updating textures from buffers in main memory, `wl_drm` buffers, and DMA buffers.
      *
      * @warning The texture internal buffer storage is destroyed and replaced every time any of the setData() variants is used.
@@ -109,7 +108,7 @@ namespace Louvre
         ~LTexture() noexcept;
 
         /**
-         * @brief Get the equivalent DRM buffer format from a Wayland buffer format.
+         * @brief Gets the equivalent DRM buffer format from a Wayland SHM buffer format.
          *
          * DRM formats are listed in [`drm_fourcc.h`](https://github.com/torvalds/linux/blob/master/include/uapi/drm/drm_fourcc.h).
          *
@@ -135,12 +134,17 @@ namespace Louvre
         static UInt32 formatPlanes(UInt32 format) noexcept;
 
         /**
+         * @brief Retrieves the DMA formats supported by the graphics backend.
+         */
+        static const std::vector<LDMAFormat> &supportedDMAFormats() noexcept;
+
+        /**
          * @brief Set the data of the texture from a buffer in main memory.
          *
-         * @param size The size of the texture in buffer coordinates.
-         * @param stride The stride of the buffer.
+         * @param size Width and height of the source buffer.
+         * @param stride The stride of the source buffer.
          * @param format The DRM format of the buffer (defined in [`drm_fourcc.h`](https://github.com/torvalds/linux/blob/master/include/uapi/drm/drm_fourcc.h)).
-         * @param buffer The pointer to the main memory buffer.
+         * @param buffer The pointer to the source main memory buffer.
          * @return `true` if the data was successfully set, `false` otherwise.
          */
         bool setDataFromMainMemory(const LSize &size, UInt32 stride, UInt32 format, const void *buffer) noexcept;
@@ -164,12 +168,12 @@ namespace Louvre
         /**
          * @brief Update a specific area of the texture with the provided buffer.
          *
-         * To successfully update the texture, the provided buffer must have the same format as the texture.
+         * The provided buffer must have the same format as the texture.\n
          * If invalid parameters are passed or if the texture cannot be modified, this method returns `false`.
          *
          * @param rect The rect within the texture to update, specified in buffer coordinates with the top-left corner as the origin.
-         * @param stride The stride of the main memory buffer.
-         * @param buffer A pointer to the main memory buffer.
+         * @param stride The stride of the source main memory buffer.
+         * @param buffer A pointer to the origin of the source main memory buffer.
          * @return `true` if the update was successful; otherwise, `false`.
          */
         bool updateRect(const LRect &rect, UInt32 stride, const void *buffer) noexcept;
@@ -177,10 +181,10 @@ namespace Louvre
         /**
          * @brief Creates a copy of the texture.
          *
-         * @note The resulting texture is independent of the original and must be freed separately.
+         * @note The resulting texture is independent of the original and must be freed manually when no longer used.
          *
          * @param dst The destination size of the copied texture. Pass (0,0) to use the same size as the original texture.
-         * @param src The rectangular area within the texture to be copied. Pass (0,0,0,0) to copy the entire texture.
+         * @param src The rectangular area within the source texture to be copied. Pass (0,0,0,0) to copy the entire texture.
          * @param highQualityScaling Set this parameter to `true` to enable high-quality scaling, which produces better results when resizing to a significantly different size from the original.
          *
          * @return A pointer to the copied LTexture object or `nullptr` on failure.
@@ -190,9 +194,9 @@ namespace Louvre
         /**
          * @brief Save the texture as a PNG file.
          *
-         * This method allows you to save the texture as a PNG image file at the specified @p path.
+         * This method allows you to save the texture as a PNG image file at the specified @p name.
          *
-         * @param name The file path where the PNG image will be saved.
+         * @param name Full path and file name where the PNG image will be saved.
          * @return `true` if the save operation is successful, `false` otherwise.
          */
         bool save(const std::filesystem::path &name) const noexcept;
@@ -210,7 +214,7 @@ namespace Louvre
         /**
          * @brief Check if the texture has been initialized.
          *
-         * A texture is considered initialized when content has been assigned to it using any setData() variant.
+         * A texture is considered initialized when content has been assigned to it using any of the **setDataXXX()** variants.
          *
          * @return `true` if the texture has been initialized, `false` otherwise.
          */

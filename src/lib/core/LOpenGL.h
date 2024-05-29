@@ -12,9 +12,9 @@
 class Louvre::LOpenGL
 {
 public:
-    /// @cond OMIT
     LOpenGL() = delete;
-    /// @endcond
+
+    LCLASS_NO_COPY(LOpenGL)
 
     /**
      * @brief Open a GLSL shader file.

@@ -5,9 +5,12 @@
 
 int main(int, char *[])
 {
-    setenv("LOUVRE_DEBUG", "1", 0);
-    setenv("SRM_DEBUG", "1", 0);
-    setenv("SRM_RENDER_MODE_ITSELF_FB_COUNT", "2", 0);
+    setenv("LOUVRE_DEBUG", "3", 0);
+    setenv("SRM_DEBUG", "3", 0);
+    setenv("SRM_RENDER_MODE_ITSELF_FB_COUNT", "3", 0);
+    setenv("SRM_FORCE_GL_ALLOCATION", "1", 0);
+    setenv("MOZ_ENABLE_WAYLAND", "1", 1);
+    setenv("QT_QPA_PLATFORM", "wayland-egl", 1);
     setenv("LOUVRE_WAYLAND_DISPLAY", "wayland-2", 0);
 
     LLauncher::startDaemon();
@@ -19,6 +22,10 @@ int main(int, char *[])
         LLog::fatal("[louvre-views] Failed to start compositor.");
         return 1;
     }
+
+    // Enable screencasting through xdg-desktop-portal-wlr
+    LLauncher::launch("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=wlroots");
+    LLauncher::launch("systemctl --user restart xdg-desktop-portal");
 
     while (compositor.state() != LCompositor::Uninitialized)
         compositor.processLoop(-1);
