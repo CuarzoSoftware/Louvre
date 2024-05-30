@@ -35,13 +35,13 @@ void Keyboard::keyEvent(const LKeyboardKeyEvent &event)
             if (event.keyCode() == KEY_RIGHT && std::next(output->currentWorkspace->outputLink) != output->workspaces.end())
             {
                 if (!output->animatedFullscreenToplevel)
-                    output->setWorkspace(*std::next(output->currentWorkspace->outputLink), 600.f, 2.3f);
+                    output->setWorkspace(*std::next(output->currentWorkspace->outputLink), 550.f, 2.3f);
                 return;
             }
             else if (event.keyCode() == KEY_LEFT && output->currentWorkspace != output->workspaces.front())
             {
                 if (!output->animatedFullscreenToplevel)
-                    output->setWorkspace(*std::prev(output->currentWorkspace->outputLink), 600.f, 2.3f);
+                    output->setWorkspace(*std::prev(output->currentWorkspace->outputLink), 550.f, 2.3f);
                 return;
             }
         }

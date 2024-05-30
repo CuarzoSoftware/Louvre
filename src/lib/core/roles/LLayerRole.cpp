@@ -12,7 +12,7 @@ LLayerRole::LLayerRole(const void *params) noexcept :
         static_cast<const LLayerRole::Params*>(params)->layerSurfaceRes,
         static_cast<const LLayerRole::Params*>(params)->surface,
         LSurface::Role::Layer),
-    m_scope(static_cast<const LLayerRole::Params*>(params)->nameSpace),
+    m_scope(static_cast<const LLayerRole::Params*>(params)->scope),
     m_initOutput(static_cast<const LLayerRole::Params*>(params)->output),
     m_initLayer(static_cast<const LLayerRole::Params*>(params)->layer)
 {
@@ -32,70 +32,6 @@ LLayerRole::~LLayerRole() noexcept
 
 }
 
-const LPoint &LLayerRole::rolePos() const
-{
-    if (!exclusiveOutput())
-        return m_rolePos;
-
-    if (anchor() == (LEdgeTop | LEdgeLeft))
-    {
-        m_rolePos = exclusiveOutput()->pos() + exclusiveZone().rect().pos();
-    }
-    else if (anchor() == (LEdgeTop | LEdgeRight))
-    {
-        m_rolePos.setX(exclusiveOutput()->pos().x() + exclusiveZone().rect().x() + exclusiveZone().rect().w() - surface()->size().w());
-        m_rolePos.setY(exclusiveOutput()->pos().y() + exclusiveZone().rect().y());
-    }
-    else if (anchor() == (LEdgeBottom | LEdgeRight))
-    {
-        m_rolePos.setX(exclusiveOutput()->pos().x() + exclusiveZone().rect().x() + exclusiveZone().rect().w() - surface()->size().w());
-        m_rolePos.setY(exclusiveOutput()->pos().y() + exclusiveZone().rect().y() + exclusiveZone().rect().h() - surface()->size().h());
-    }
-    else if (anchor() == (LEdgeBottom | LEdgeLeft))
-    {
-        m_rolePos.setX(exclusiveOutput()->pos().x() + exclusiveZone().rect().x());
-        m_rolePos.setY(exclusiveOutput()->pos().y() + exclusiveZone().rect().y() + exclusiveZone().rect().h() - surface()->size().h());
-    }
-    else if (anchor() == LEdgeTop || anchor() == (LEdgeLeft | LEdgeTop | LEdgeRight))
-    {
-        m_rolePos.setX(exclusiveOutput()->pos().x() + exclusiveZone().rect().x() + (exclusiveZone().rect().w() - surface()->size().w()) / 2 );
-        m_rolePos.setY(exclusiveOutput()->pos().y() + exclusiveZone().rect().y());
-    }
-    else if (anchor() == LEdgeBottom || anchor() == (LEdgeLeft | LEdgeBottom | LEdgeRight))
-    {
-        m_rolePos.setX(exclusiveOutput()->pos().x() + exclusiveZone().rect().x() + (exclusiveZone().rect().w() - surface()->size().w()) / 2 );
-        m_rolePos.setY(exclusiveOutput()->pos().y() + exclusiveZone().rect().y() + exclusiveZone().rect().h() - surface()->size().h());
-    }
-    else if (anchor() == LEdgeLeft || anchor() == (LEdgeBottom | LEdgeLeft | LEdgeTop))
-    {
-        m_rolePos.setX(exclusiveOutput()->pos().x() + exclusiveZone().rect().x());
-        m_rolePos.setY(exclusiveOutput()->pos().y() + exclusiveZone().rect().y() + (exclusiveZone().rect().h() - surface()->size().h()) / 2);
-    }
-    else if (anchor() == LEdgeRight || anchor() == (LEdgeBottom | LEdgeRight | LEdgeTop))
-    {
-        m_rolePos.setX(exclusiveOutput()->pos().x() + exclusiveZone().rect().x() + exclusiveZone().rect().w() - surface()->size().w());
-        m_rolePos.setY(exclusiveOutput()->pos().y() + exclusiveZone().rect().y() + (exclusiveZone().rect().h() - surface()->size().h()) / 2);
-    }
-    // Center
-    else
-    {
-        m_rolePos = exclusiveOutput()->pos() + exclusiveZone().rect().pos() + (exclusiveZone().rect().size() - surface()->size()) / 2;
-    }
-
-    // Margin
-
-    if (anchor().check(LEdgeTop))
-        m_rolePos.setY(m_rolePos.y() + margin().top);
-    if (anchor().check(LEdgeBottom))
-        m_rolePos.setY(m_rolePos.y() - margin().bottom);
-    if (anchor().check(LEdgeLeft))
-        m_rolePos.setX(m_rolePos.x() + margin().left);
-    if (anchor().check(LEdgeRight))
-        m_rolePos.setX(m_rolePos.x() - margin().right);
-
-    return m_rolePos;
-}
-
 void LLayerRole::configureSize(const LSize &size) noexcept
 {
     if (m_flags.check(ClosedSent))
@@ -103,6 +39,22 @@ void LLayerRole::configureSize(const LSize &size) noexcept
 
     auto &res { *static_cast<LayerShell::RLayerSurface*>(resource()) };
     res.configure(LTime::nextSerial(), size);
+
+    if (currentAtoms().size.w() == 0)
+    {
+        currentAtoms().size.setW(size.w());
+
+        if (!m_flags.check(HasPendingSize))
+            pendingAtoms().size.setW(size.w());
+    }
+
+    if (currentAtoms().size.h() == 0)
+    {
+        currentAtoms().size.setH(size.h());
+
+        if (!m_flags.check(HasPendingSize))
+            pendingAtoms().size.setH(size.h());
+    }
 }
 
 void LLayerRole::close() noexcept
@@ -175,7 +127,7 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
     if (m_flags.check(ClosedSent))
         return;
 
-    // Request to unmap
+    // Unmap request
     if (surface()->mapped() && !surface()->hasBuffer())
     {
         surface()->imp()->setMapped(false);
@@ -212,7 +164,7 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
             {
                 wl_resource_post_error(res.resource(),
                                        ZWLR_LAYER_SURFACE_V1_ERROR_INVALID_SIZE,
-                                       "width is 0 but anchors do not include left and right");
+                                       "width is 0 but anchors do not include left and right (anchor must be set to opposite edges in the omitted dimensions)");
                 return;
             }
 
@@ -225,7 +177,7 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
             {
                 wl_resource_post_error(res.resource(),
                                        ZWLR_LAYER_SURFACE_V1_ERROR_INVALID_SIZE,
-                                       "height is 0 but anchors do not include top and bottom");
+                                       "height is 0 but anchors do not include top and bottom (anchor must be set to opposite edges in the omitted dimensions)");
                 return;
             }
 
@@ -233,10 +185,10 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
         }
     }
 
-    LBitset<AtomsChanges> changesToNotify = m_flags & (
-        AnchorChanged | ExclusiveEdgeChanged | ExclusiveZoneChanged |
+    LBitset<AtomChanges> changesToNotify = m_flags & (
+        AnchorChanged | ExclusiveEdgeChanged | ExclusiveZoneSizeChanged |
         KeyboardInteractivityChanged | LayerChanged |
-        MarginChanged | SizeChanged);
+        MarginsChanged | SizeChanged);
 
     if (changesToNotify.check(LayerChanged))
         surface()->imp()->setLayer(pendingAtoms().layer);
@@ -246,26 +198,39 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
     m_currentAtomsIndex = 1 - m_currentAtomsIndex;
 
     // Update exclusive zone
-    if (changesToNotify.check(AnchorChanged | ExclusiveEdgeChanged | ExclusiveZoneChanged | MarginChanged))
+    if (changesToNotify.check(AnchorChanged | ExclusiveEdgeChanged | ExclusiveZoneSizeChanged | MarginsChanged))
     {
         const LEdge edge { edgesToSingleEdge() };
         Int32 zoneSize { exclusiveZoneSize() };
+
+        if (zoneSize > 0 && edgeIsCorner(anchor()))
+        {
+            if (exclusiveEdge() == LEdgeNone)
+                zoneSize = 0;
+            else if ((anchor() & exclusiveEdge()) == 0)
+            {
+                wl_resource_post_error(res.resource(),
+                    ZWLR_LAYER_SURFACE_V1_ERROR_INVALID_EXCLUSIVE_EDGE,
+                    "The exclusive edge is invalid given the surface anchors");
+                return;
+            }
+        }
 
         if (zoneSize > 0)
         {
             switch (edge)
             {
             case LEdgeTop:
-                zoneSize += margin().top;
+                zoneSize += margins().top;
                 break;
             case LEdgeLeft:
-                zoneSize += margin().left;
+                zoneSize += margins().left;
                 break;
             case LEdgeRight:
-                zoneSize += margin().right;
+                zoneSize += margins().right;
                 break;
             case LEdgeBottom:
-                zoneSize += margin().bottom;
+                zoneSize += margins().bottom;
                 break;
             case LEdgeNone:
                 break;
@@ -286,14 +251,14 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
         pendingAtoms().anchor = currentAtoms().anchor;
     if (changesToNotify.check(ExclusiveEdgeChanged))
         pendingAtoms().exclusiveEdge = currentAtoms().exclusiveEdge;
-    if (changesToNotify.check(ExclusiveZoneChanged))
-        pendingAtoms().exclusiveZone = currentAtoms().exclusiveZone;
+    if (changesToNotify.check(ExclusiveZoneSizeChanged))
+        pendingAtoms().exclusiveZoneSize = currentAtoms().exclusiveZoneSize;
     if (changesToNotify.check(KeyboardInteractivityChanged))
         pendingAtoms().keyboardInteractivity = currentAtoms().keyboardInteractivity;
     if (changesToNotify.check(LayerChanged))
         pendingAtoms().layer = currentAtoms().layer;
-    if (changesToNotify.check(MarginChanged))
-        pendingAtoms().margin = currentAtoms().margin;
+    if (changesToNotify.check(MarginsChanged))
+        pendingAtoms().margins = currentAtoms().margins;
     if (changesToNotify.check(SizeChanged))
         pendingAtoms().size = currentAtoms().size;
 

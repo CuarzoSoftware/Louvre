@@ -311,7 +311,13 @@ void Output::onWorkspacesAnimationUpdate(LAnimation *anim) noexcept
     for (Workspace *ws : workspaces)
         ws->setVisible(LRect(ws->pos() + pos(), size()).intersects(rect()));
 
-    const Float64 ease { 1.0 - pow(animStartOffset + (1.0 - animStartOffset) * anim->value(), animEasingCurve) };
+    Float64 linear { anim->value() };
+
+    // Early stop
+    if (linear >= 0.85)
+        linear = 1.0;
+
+    Float64 ease { 1.0 - pow(animStartOffset + (1.0 - animStartOffset) * linear, animEasingCurve) };
     workspacesPosX = workspacesPosX * ease + Float64( - currentWorkspace->nativePos().x()) * (1.0 - ease);
     workspacesContainer.setPos(workspacesPosX, 0);
 
@@ -336,7 +342,7 @@ void Output::onWorkspacesAnimationUpdate(LAnimation *anim) noexcept
 
         if (tl->fullscreen())
         {
-            Float32 val = 1.f - pow(1.0 - anim->value(), 4.0);
+            Float32 val = 1.f - pow(1.0 - linear, 4.0);
             Float32 inv = 1.f - val;
             tl->animView.enableSrcRect(false);
             tl->animView.setVisible(true);
@@ -356,7 +362,7 @@ void Output::onWorkspacesAnimationUpdate(LAnimation *anim) noexcept
         }
         else
         {
-            Float32 val = 1.f - pow(1.f - anim->value(), 2.f);
+            Float32 val = 1.f - pow(1.f - linear, 2.f);
             Float32 inv = 1.f - val;
             tl->animScene->setPos(pos());
             LPoint animPos = (pos() * inv) + (tl->prevBoundingRect.pos() * val);
@@ -397,6 +403,9 @@ void Output::onWorkspacesAnimationUpdate(LAnimation *anim) noexcept
         if (tl->decoratedView)
             tl->decoratedView->updateGeometry();
     }
+
+    if (linear == 1.0)
+        anim->stop();
 }
 
 void Output::onWorkspacesAnimationFinish(LAnimation */*anim*/) noexcept

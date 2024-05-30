@@ -6,6 +6,7 @@
 #include <LRegion.h>
 #include <LRect.h>
 #include <LFramebuffer.h>
+#include <LLayout.h>
 #include <list>
 
 /**

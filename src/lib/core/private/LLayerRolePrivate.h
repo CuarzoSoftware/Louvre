@@ -11,7 +11,7 @@ struct LLayerRole::Params
     LSurface *surface;
     LOutput *output;
     LSurfaceLayer layer;
-    const char *nameSpace;
+    const char *scope;
 };
 
 #endif // LLAYERROLEPRIVATE_H

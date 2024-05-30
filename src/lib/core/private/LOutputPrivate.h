@@ -6,6 +6,7 @@
 #include <LOutput.h>
 #include <LBitset.h>
 #include <LGammaTable.h>
+#include <LMargins.h>
 #include <atomic>
 #include <list>
 #include <mutex>

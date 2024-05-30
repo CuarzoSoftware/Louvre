@@ -4,6 +4,7 @@
 #include <LObject.h>
 #include <LWeak.h>
 #include <LRect.h>
+#include <LEdge.h>
 #include <functional>
 #include <list>
 

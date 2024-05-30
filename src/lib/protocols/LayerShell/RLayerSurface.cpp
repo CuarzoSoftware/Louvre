@@ -27,13 +27,12 @@ static const struct zwlr_layer_surface_v1_interface imp
 #endif
 };
 
-RLayerSurface::RLayerSurface(
-    UInt32 id,
-    GLayerShell *layerShellRes,
-    LSurface *surface,
-    LOutput *output,
-    LSurfaceLayer layer,
-    const char *nameSpace) noexcept :
+RLayerSurface::RLayerSurface(UInt32 id,
+                             GLayerShell *layerShellRes,
+                             LSurface *surface,
+                             LOutput *output,
+                             LSurfaceLayer layer,
+                             const char *scope) noexcept :
     LResource(
         layerShellRes->client(),
         &zwlr_layer_surface_v1_interface,
@@ -47,7 +46,7 @@ RLayerSurface::RLayerSurface(
         .surface = surface,
         .output = output,
         .layer = layer,
-        .nameSpace = nameSpace,
+        .scope = scope,
     };
 
     m_layerRole.reset(LFactory::createObject<LLayerRole>(&params));
@@ -89,17 +88,17 @@ void RLayerSurface::set_anchor(wl_client */*client*/, wl_resource *resource, UIn
 void RLayerSurface::set_exclusive_zone(wl_client */*client*/, wl_resource *resource, Int32 zone)
 {
     auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
-    res.layerRole()->pendingAtoms().exclusiveZone = zone;
+    res.layerRole()->pendingAtoms().exclusiveZoneSize = zone;
     res.layerRole()->m_flags.add(LLayerRole::HasPendingExclusiveZone);
 }
 
 void RLayerSurface::set_margin(wl_client */*client*/, wl_resource *resource, Int32 top, Int32 right, Int32 bottom, Int32 left)
 {
     auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
-    res.layerRole()->pendingAtoms().margin.top = top;
-    res.layerRole()->pendingAtoms().margin.right = right;
-    res.layerRole()->pendingAtoms().margin.bottom = bottom;
-    res.layerRole()->pendingAtoms().margin.left = left;
+    res.layerRole()->pendingAtoms().margins.top = top;
+    res.layerRole()->pendingAtoms().margins.right = right;
+    res.layerRole()->pendingAtoms().margins.bottom = bottom;
+    res.layerRole()->pendingAtoms().margins.left = left;
     res.layerRole()->m_flags.add(LLayerRole::HasPendingMargin);
 }
 
@@ -136,10 +135,7 @@ void RLayerSurface::get_popup(wl_client */*client*/, wl_resource *resource, wl_r
     popupSurface.imp()->setPendingParent(res.layerRole()->surface());
 }
 
-void RLayerSurface::ack_configure(wl_client */*client*/, wl_resource *resource, UInt32 serial)
-{
-
-}
+void RLayerSurface::ack_configure(wl_client */*client*/, wl_resource */*resource*/, UInt32 /*serial*/) {}
 
 void RLayerSurface::destroy(wl_client */*client*/, wl_resource *resource)
 {

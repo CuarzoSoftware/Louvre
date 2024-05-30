@@ -1,10 +1,10 @@
 #ifndef LREGION_H
 #define LREGION_H
 
-#include <LNamespaces.h>
 #include <LRect.h>
+#include <LBox.h>
+#include <LTransform.h>
 #include <pixman.h>
-#include <LFramebuffer.h>
 
 /**
  * @brief Collection of non-overlapping rectangles

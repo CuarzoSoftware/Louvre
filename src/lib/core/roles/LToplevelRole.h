@@ -2,6 +2,7 @@
 #define LTOPLEVELROLE_H
 #undef None
 
+#include <LMargins.h>
 #include <LBaseSurfaceRole.h>
 #include <LBitset.h>
 #include <LSize.h>

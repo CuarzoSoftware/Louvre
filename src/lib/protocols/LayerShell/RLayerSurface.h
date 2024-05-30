@@ -2,6 +2,7 @@
 #define RLAYERSURFACE_H
 
 #include <LResource.h>
+#include <LLayout.h>
 #include <LWeak.h>
 #include <memory>
 
@@ -40,7 +41,7 @@ public:
 
 private:
     friend class GLayerShell;
-    RLayerSurface(UInt32 id, GLayerShell *layerShellRes, LSurface *surface, LOutput *output, LSurfaceLayer layer, const char *nameSpace) noexcept;
+    RLayerSurface(UInt32 id, GLayerShell *layerShellRes, LSurface *surface, LOutput *output, LSurfaceLayer layer, const char *scope) noexcept;
     ~RLayerSurface();
     std::unique_ptr<LLayerRole> m_layerRole;
 };

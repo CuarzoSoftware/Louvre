@@ -255,50 +255,8 @@ namespace Louvre
     struct LBlendFunc;
     struct LDMAFormat;
     struct LDMAPlanes;
-
-    /**
-     * @brief Structure representing a 2D box.
-     *
-     * The LBox struct defines a 2D box using four integer coordinates (x1, y1, x2, y2).
-     * It is typically used to represent bounding boxes or rectangular regions in 2D space.
-     */
-    struct LBox
-    {
-        /// The x-coordinate of the top-left corner of the box.
-        Int32 x1;
-
-        /// The y-coordinate of the top-left corner of the box.
-        Int32 y1;
-
-        /// The x-coordinate of the bottom-right corner of the box.
-        Int32 x2;
-
-        /// The y-coordinate of the bottom-right corner of the box.
-        Int32 y2;
-    };
-
-    /**
-     * @brief Structure representing left, top, right and bottom margins.
-     */
-    struct LMargins
-    {
-        Int32 left {0}; ///< The left margin.
-        Int32 top {0}; ///< The top margin.
-        Int32 right {0}; ///< The right margin.
-        Int32 bottom {0}; ///< The bottom margin.
-    };
-
-    /**
-     * @brief Edge flags.
-     */
-    enum LEdge : UInt32
-    {
-        LEdgeNone    = 0, ///< No edge.
-        LEdgeTop     = static_cast<UInt32>(1) << 0, ///< The top edge.
-        LEdgeBottom  = static_cast<UInt32>(1) << 1, ///< The bottom edge.
-        LEdgeLeft    = static_cast<UInt32>(1) << 2, ///< The left edge.
-        LEdgeRight   = static_cast<UInt32>(1) << 3, ///< The right edge.
-    };
+    struct LBox;
+    struct LMargins;
 
     /**
      * @brief ID values for the graphic backends shipped with Louvre.
@@ -345,20 +303,6 @@ namespace Louvre
         UInt32 minor; ///< Minor version.
         UInt32 patch; ///< Patch version.
         UInt32 build; ///< Build number.
-    };
-
-    /**
-     * @brief Surface layers.
-     *
-     * This enum represents possible layers for a surface, indicating its position in the Z-axis stacking order.
-     */
-    enum LSurfaceLayer
-    {
-        LLayerBackground    = 0, ///< Background layer.
-        LLayerBottom        = 1, ///< Bottom layer.
-        LLayerMiddle        = 2, ///< Middle layer.
-        LLayerTop           = 3, ///< Top layer.
-        LLayerOverlay       = 4  ///< Overlay layer.
     };
 
     namespace Protocols
