@@ -41,16 +41,16 @@ void LToplevelMoveSession::updateDragPoint(const LPoint &pos)
 
     LPoint newPos { m_initPos - m_initDragPoint + pos };
 
-    if (m_constraints.right != LToplevelRole::EdgeDisabled && newPos.x() + m_toplevel->windowGeometry().w() > m_constraints.right)
+    if (m_constraints.right != LEdgeDisabled && newPos.x() + m_toplevel->windowGeometry().w() > m_constraints.right)
         newPos.setX(m_constraints.right - m_toplevel->windowGeometry().w());
 
-    if (m_constraints.left != LToplevelRole::EdgeDisabled && newPos.x() < m_constraints.left)
+    if (m_constraints.left != LEdgeDisabled && newPos.x() < m_constraints.left)
         newPos.setX(m_constraints.left);
 
-    if (m_constraints.bottom != LToplevelRole::EdgeDisabled && newPos.y() + m_toplevel->windowGeometry().h() > m_constraints.bottom)
+    if (m_constraints.bottom != LEdgeDisabled && newPos.y() + m_toplevel->windowGeometry().h() > m_constraints.bottom)
         newPos.setY(m_constraints.bottom - m_toplevel->windowGeometry().h());
 
-    if (m_constraints.top != LToplevelRole::EdgeDisabled && newPos.y() < m_constraints.top)
+    if (m_constraints.top != LEdgeDisabled && newPos.y() < m_constraints.top)
         newPos.setY(m_constraints.top);
 
     toplevel()->surface()->setPos(newPos);

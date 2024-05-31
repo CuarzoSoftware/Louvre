@@ -148,7 +148,7 @@ void RXdgToplevel::resize(wl_client */*client*/, wl_resource *resource, wl_resou
     const LEvent *triggererEvent { res.client()->findEventBySerial(serial) };
 
     if (triggererEvent)
-        res.toplevelRole()->startResizeRequest(*triggererEvent, static_cast<LToplevelRole::ResizeEdge>(edges));
+        res.toplevelRole()->startResizeRequest(*triggererEvent, edges);
 }
 
 void RXdgToplevel::set_max_size(wl_client */*client*/, wl_resource *resource, Int32 width, Int32 height)

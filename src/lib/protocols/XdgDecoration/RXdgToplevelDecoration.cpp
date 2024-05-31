@@ -70,6 +70,8 @@ void RXdgToplevelDecoration::set_mode(wl_client */*client*/, wl_resource *resour
         xdgToplevelDecorationRes.toplevelRole()->imp()->preferredDecorationMode = (LToplevelRole::DecorationMode)mode;
         xdgToplevelDecorationRes.toplevelRole()->preferredDecorationModeChanged();
     }
+
+    xdgToplevelDecorationRes.toplevelRole()->configureRequest();
 }
 
 void RXdgToplevelDecoration::unset_mode(wl_client */*client*/, wl_resource *resource)
@@ -87,6 +89,8 @@ void RXdgToplevelDecoration::unset_mode(wl_client */*client*/, wl_resource *reso
        xdgToplevelDecorationRes.toplevelRole()->imp()->preferredDecorationMode = LToplevelRole::NoPreferredMode;
        xdgToplevelDecorationRes.toplevelRole()->preferredDecorationModeChanged();
     }
+
+    xdgToplevelDecorationRes.toplevelRole()->configureRequest();
 }
 
 /******************** EVENTS ********************/

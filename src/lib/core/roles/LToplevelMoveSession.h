@@ -33,7 +33,7 @@ public:
      */
     bool start(const LEvent &triggeringEvent, const LPoint &initDragPoint);
 
-    void setConstraints(const LMargins &constraints = {LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled ,LToplevelRole::EdgeDisabled}) noexcept
+    void setConstraints(const LMargins &constraints = {LEdgeDisabled, LEdgeDisabled, LEdgeDisabled ,LEdgeDisabled}) noexcept
     {
         m_constraints = constraints;
     }
@@ -74,7 +74,7 @@ private:
     LToplevelRole *m_toplevel;
     LPoint m_initPos;
     LPoint m_initDragPoint;
-    LMargins m_constraints {LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled ,LToplevelRole::EdgeDisabled};
+    LMargins m_constraints {LEdgeDisabled, LEdgeDisabled, LEdgeDisabled ,LEdgeDisabled};
     std::unique_ptr<LEvent> m_triggeringEvent;
     OnBeforeUpdateCallback m_beforeUpdateCallback { nullptr };
     bool m_isActive { false };

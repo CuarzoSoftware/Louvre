@@ -19,7 +19,8 @@ Louvre (2.0.0-1)
   # Backends
 
   * Introduced a new Wayland input and graphic backend for running compositors as nested Wayland clients.
-  * Added support for absolute Libinput pointer events, enabling proper handling of pointer events when running inside QEMU or Virtual Box - Thanks to @milisarge.
+  * Added support for absolute Libinput pointer events, enabling proper handling of pointer events when running inside QEMU or Virtual Box, thanks to @milisarge.
+  * Removed unnecessary SRM headers prefix from the DRM backend, thanks to @EBADBEEF.
 
   # Rendering
 
@@ -36,7 +37,8 @@ Louvre (2.0.0-1)
 
   # Roles
 
-  * Detached toplevel move and resize sessions from LPointer, moving them into dedicated classes.
+  * Detached toplevel move and resize sessions from LPointer, moving them into the new LToplevelMoveSession and LToplevelResizeSession classes.
+  * Replaced LToplevelRole::ResizeEdge enum with the new LEdge flags.
   * Now multiple move and resize toplevel sessions are allowed at a time.
   * Move and resize sessions constraints can now be updated dynamically if needed.
   * Introduced the concept of previous, pending, and current toplevel state for better configuration handling.

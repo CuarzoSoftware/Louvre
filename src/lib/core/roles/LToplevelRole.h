@@ -9,6 +9,7 @@
 #include <LRect.h>
 #include <string>
 #include <memory>
+#include <LEdge.h>
 
 /**
  * @brief Toplevel role for surfaces
@@ -36,14 +37,6 @@ public:
     LRect prevRect;
     void  setExtraMargins(const LMargins &margins) noexcept;
     const LMargins &extraMargins() const noexcept;
-    /**
-     * @brief Edge constraint when resizing a Toplevel
-     */
-    enum ResizeEdgeSize : Int32
-    {
-        /// Disables the constraint on the specified edge.
-        EdgeDisabled = std::numeric_limits<Int32>::min()
-    };
 
     /**
      * @brief LToplevelRole class constructor.
@@ -60,39 +53,6 @@ public:
     ~LToplevelRole();
 
     LCLASS_NO_COPY(LToplevelRole)
-
-    /**
-     * @brief Resizing border/corner.
-     */
-    enum ResizeEdge : UInt32
-    {
-        /// No edge
-        NoEdge = 0,
-
-        /// Top edge
-        Top = 1,
-
-        /// Bottom edge
-        Bottom = 2,
-
-        /// Left edge
-        Left = 4,
-
-        /// Top left corner
-        TopLeft = 5,
-
-        /// Bottom left corner
-        BottomLeft = 6,
-
-        /// Right edge
-        Right = 8,
-
-        /// Top right corner
-        TopRight = 9,
-
-        /// Bottom right corner
-        BottomRight = 10
-    };
 
     /**
      * @brief Flags indicating the possible states of a Toplevel.
@@ -266,7 +226,7 @@ public:
      *
      * @returns The toplevel size given the current parameters
      */
-    LSize calculateResizeSize(const LPoint &cursorPosDelta, const LSize &initialSize, ResizeEdge edge);
+    LSize calculateResizeSize(const LPoint &cursorPosDelta, const LSize &initialSize, LBitset<LEdge> edge);
 
     /**
      * @brief Get the application ID associated with the toplevel window.
@@ -405,7 +365,7 @@ public:
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp startResizeRequest
      */
-    virtual void startResizeRequest(const LEvent &triggeringEvent, ResizeEdge edge);
+    virtual void startResizeRequest(const LEvent &triggeringEvent, LBitset<LEdge> edge);
 
     /**
      * @brief Request for configuration

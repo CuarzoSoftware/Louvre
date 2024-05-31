@@ -59,7 +59,7 @@ void LToplevelRole::startMoveRequest(const LEvent &triggeringEvent)
 //! [startMoveRequest]
 
 //! [startResizeRequest]
-void LToplevelRole::startResizeRequest(const LEvent &triggeringEvent, ResizeEdge edge)
+void LToplevelRole::startResizeRequest(const LEvent &triggeringEvent, LBitset<LEdge> edge)
 {
     if (fullscreen())
         return;

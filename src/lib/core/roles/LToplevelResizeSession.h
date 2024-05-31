@@ -36,12 +36,12 @@ public:
      * @param B Restriction of the bottom edge.
      */
     bool start(const LEvent &triggeringEvent,
-               LToplevelRole::ResizeEdge edge,
+               LBitset<LEdge> edge,
                const LPoint &initDragPoint);
 
     void updateDragPoint(const LPoint &pos);
 
-    void setConstraints(const LMargins &constraints = {LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled ,LToplevelRole::EdgeDisabled}) noexcept
+    void setConstraints(const LMargins &constraints = {LEdgeDisabled, LEdgeDisabled, LEdgeDisabled ,LEdgeDisabled}) noexcept
     {
         m_constraints = constraints;
     }
@@ -94,8 +94,8 @@ private:
     LSize m_minSize;
     LPoint m_initDragPoint;
     LPoint m_currentDragPoint;
-    LToplevelRole::ResizeEdge m_edge;
-    LMargins m_constraints {LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled, LToplevelRole::EdgeDisabled ,LToplevelRole::EdgeDisabled};
+    LBitset<LEdge> m_edge;
+    LMargins m_constraints {LEdgeDisabled, LEdgeDisabled, LEdgeDisabled ,LEdgeDisabled};
     std::unique_ptr<LEvent> m_triggeringEvent;
     UInt32 m_lastSerial { 0 };
     bool m_isActive { false };

@@ -450,54 +450,21 @@ const LRect &LToplevelRole::windowGeometry() const
     return xdgSurfaceResource()->windowGeometry();
 }
 
-LSize LToplevelRole::calculateResizeSize(const LPoint &cursorPosDelta, const LSize &initialSize, ResizeEdge edge)
+LSize LToplevelRole::calculateResizeSize(const LPoint &cursorPosDelta, const LSize &initialSize, LBitset<LEdge> edge)
 {
-    LSize newSize = initialSize;
-    switch(edge)
-    {
-        case LToplevelRole::NoEdge:
-        {
+    LSize newSize { initialSize };
 
-        }break;
-        case LToplevelRole::Bottom:
-        {
-            newSize.setH(initialSize.h() - cursorPosDelta.y());
-        }break;
-        case LToplevelRole::Right:
-        {
-            newSize.setW(initialSize.w() - cursorPosDelta.x());
-        }break;
-        case LToplevelRole::BottomRight:
-        {
-            newSize.setH(initialSize.h() - cursorPosDelta.y());
-            newSize.setW(initialSize.w() - cursorPosDelta.x());
-        }break;
-        case LToplevelRole::Top:
-        {
-            newSize.setH(initialSize.h() + cursorPosDelta.y());
-        }break;
-        case LToplevelRole::Left:
-        {
-            newSize.setW(initialSize.w() + cursorPosDelta.x());
-        }break;
-        case LToplevelRole::TopLeft:
-        {
-            newSize.setH(initialSize.h() + cursorPosDelta.y());
-            newSize.setW(initialSize.w() + cursorPosDelta.x());
-        }break;
-        case LToplevelRole::BottomLeft:
-        {
-            newSize.setH(initialSize.h() - cursorPosDelta.y());
-            newSize.setW(initialSize.w() + cursorPosDelta.x());
-        }break;
-        case LToplevelRole::TopRight:
-        {
-            newSize.setH(initialSize.h() + cursorPosDelta.y());
-            newSize.setW(initialSize.w() - cursorPosDelta.x());
-        }break;
-    }
+    if (edge.check(LEdgeTop))
+        newSize.setH(initialSize.h() + cursorPosDelta.y());
+    else if(edge.check(LEdgeBottom))
+        newSize.setH(initialSize.h() - cursorPosDelta.y());
 
-        return newSize;
+    if (edge.check(LEdgeLeft))
+        newSize.setW(initialSize.w() + cursorPosDelta.x());
+    else if(edge.check(LEdgeRight))
+        newSize.setW(initialSize.w() - cursorPosDelta.x());
+
+    return newSize;
 }
 
 static char *trim(char *s)
@@ -535,7 +502,7 @@ void LToplevelRole::LToplevelRolePrivate::setTitle(const char *newTitle)
 
 LMargins LToplevelRole::calculateConstraintsFromOutput(LOutput *output,  bool includeExtraMargins) const noexcept
 {
-    LMargins constraints {EdgeDisabled, EdgeDisabled, EdgeDisabled, EdgeDisabled};
+    LMargins constraints {LEdgeDisabled, LEdgeDisabled, LEdgeDisabled, LEdgeDisabled};
 
     if (output)
     {

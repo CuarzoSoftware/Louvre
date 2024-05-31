@@ -140,7 +140,7 @@ static void onPointerButtonResizeArea(InputRect *rect, void *data, UInt32 button
         toplevel->surface()->raise();
 
         if (data)
-            toplevel->startResizeRequest(LPointerButtonEvent(),(LToplevelRole::ResizeEdge)rect->id);
+            toplevel->startResizeRequest(LPointerButtonEvent(), rect->id);
         else
             toplevel->startMoveRequest(LPointerButtonEvent());
     }
@@ -188,14 +188,14 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     maskBR(G::DecorationMaskBR, &sceneBR),
     topbarInput(this, nullptr),
     buttonsContainer(this, this),
-    resizeT(this, G::cursors().top_side, LToplevelRole::ResizeEdge::Top),
-    resizeB(this, G::cursors().bottom_side, LToplevelRole::ResizeEdge::Bottom),
-    resizeL(this, G::cursors().left_side, LToplevelRole::ResizeEdge::Left),
-    resizeR(this, G::cursors().right_side, LToplevelRole::ResizeEdge::Right),
-    resizeTL(this, G::cursors().top_left_corner, LToplevelRole::ResizeEdge::TopLeft),
-    resizeTR(this, G::cursors().top_right_corner, LToplevelRole::ResizeEdge::TopRight),
-    resizeBL(this, G::cursors().bottom_left_corner, LToplevelRole::ResizeEdge::BottomLeft),
-    resizeBR(this, G::cursors().bottom_right_corner, LToplevelRole::ResizeEdge::BottomRight),
+    resizeT(this, G::cursors().top_side, LEdgeTop),
+    resizeB(this, G::cursors().bottom_side, LEdgeBottom),
+    resizeL(this, G::cursors().left_side, LEdgeLeft),
+    resizeR(this, G::cursors().right_side, LEdgeRight),
+    resizeTL(this, G::cursors().top_left_corner, LEdgeTop | LEdgeLeft),
+    resizeTR(this, G::cursors().top_right_corner, LEdgeTop | LEdgeRight),
+    resizeBL(this, G::cursors().bottom_left_corner, LEdgeBottom | LEdgeLeft),
+    resizeBR(this, G::cursors().bottom_right_corner, LEdgeBottom | LEdgeRight),
     closeButton(&buttonsContainer, this, ToplevelButton::Close),
     minimizeButton(&buttonsContainer, this, ToplevelButton::Minimize),
     maximizeButton(&buttonsContainer, this, ToplevelButton::Maximize),
