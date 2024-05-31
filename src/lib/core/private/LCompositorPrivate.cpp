@@ -681,8 +681,7 @@ void LCompositor::LCompositorPrivate::insertSurfaceAfter(LSurface *prevSurface, 
             surfacesListChanged = true;
         }
 
-        surfaceToInsert->orderChanged();
-        //notifyOrderChangeFromSurface(prevSurface);
+        notifyOrderChangeFromSurface(prevSurface);
     }
 
 #if LOUVRE_ASSERT_CHECKS == 1
