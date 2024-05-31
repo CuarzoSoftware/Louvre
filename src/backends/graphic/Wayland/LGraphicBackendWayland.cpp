@@ -7,7 +7,7 @@
 #include <private/LFactory.h>
 
 #include <LOutputMode.h>
-#include <SRM/SRMFormat.h>
+#include <SRMFormat.h>
 #include <LCursor.h>
 #include <LTime.h>
 #include <LLog.h>

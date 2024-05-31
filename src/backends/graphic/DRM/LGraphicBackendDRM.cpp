@@ -29,14 +29,14 @@
 #include <LTime.h>
 #include <LGammaTable.h>
 
-#include <SRM/SRMCore.h>
-#include <SRM/SRMDevice.h>
-#include <SRM/SRMConnector.h>
-#include <SRM/SRMConnectorMode.h>
-#include <SRM/SRMBuffer.h>
-#include <SRM/SRMListener.h>
-#include <SRM/SRMList.h>
-#include <SRM/SRMFormat.h>
+#include <SRMCore.h>
+#include <SRMDevice.h>
+#include <SRMConnector.h>
+#include <SRMConnectorMode.h>
+#include <SRMBuffer.h>
+#include <SRMListener.h>
+#include <SRMList.h>
+#include <SRMFormat.h>
 
 using namespace Louvre;
 
