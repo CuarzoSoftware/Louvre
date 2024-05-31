@@ -211,6 +211,9 @@ void LView::markAsChangedOrder(bool includeChildren)
     for (auto &pair : m_threadsMap)
         pair.second.changedOrder = true;
 
+    if (scene())
+        damageScene(scene()->mainView(), false);
+
     if (includeChildren)
         for (LView *child : children())
             child->markAsChangedOrder();

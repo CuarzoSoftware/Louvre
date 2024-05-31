@@ -154,7 +154,7 @@ void Compositor::onAnticipatedObjectDestruction(LFactoryObject *object)
 
     if (object->factoryObjectType() == LFactoryObject::Type::LPopupRole)
     {
-        fadeOutSurface(static_cast<LPopupRole*>(object), 50);
+        fadeOutSurface(static_cast<LPopupRole*>(object), 60);
         return;
     }
 

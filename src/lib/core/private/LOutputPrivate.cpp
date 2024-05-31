@@ -51,6 +51,8 @@ void LOutput::LOutputPrivate::backendInitializeGL()
     if (sessionLockRole && sessionLockRole->surface())
         sessionLockRole->surface()->imp()->setMapped(true);
 
+    updateLayerSurfacesMapping();
+
     output->initializeGL();
     compositor()->flushClients();
 }
@@ -358,6 +360,7 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
     removeFromSessionLockPendingRepaint();
     compositor()->flushClients();
     output->imp()->state = LOutput::Uninitialized;
+    updateLayerSurfacesMapping();
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
 
     if (callLock)
@@ -585,4 +588,11 @@ void LOutput::LOutputPrivate::updateExclusiveZones() noexcept
 
     if (availableGeometryChanged)
         output->availableGeometryChanged();
+}
+
+void LOutput::LOutputPrivate::updateLayerSurfacesMapping() noexcept
+{
+    for (LSurface *s : compositor()->surfaces())
+        if (s->layerRole() && s->layerRole()->exclusiveOutput() == output)
+            s->layerRole()->updateMappingState();
 }

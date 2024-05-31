@@ -26,6 +26,27 @@ void Keyboard::keyEvent(const LKeyboardKeyEvent &event)
     bool LEFT_ALT   { isKeyCodePressed(KEY_LEFTALT)   };
     bool LEFT_CTRL  { isKeyCodePressed(KEY_LEFTCTRL)  };
 
+
+    /**** Initialize/Uninitialize all outputs ****/
+
+    if (LEFT_SHIFT && LEFT_META && event.keyCode() == KEY_O && event.state() == LKeyboardKeyEvent::Pressed)
+    {
+        static bool initOutputs { false };
+
+        if (initOutputs)
+        {
+            for (LOutput *o : seat()->outputs())
+                compositor()->removeOutput(o);
+        }
+        else
+        {
+            for (LOutput *o : seat()->outputs())
+                compositor()->addOutput(o);
+        }
+
+        initOutputs = !initOutputs;
+    }
+
     if (output && event.state() == LKeyboardKeyEvent::Pressed)
     {
         /* Switch workspace */

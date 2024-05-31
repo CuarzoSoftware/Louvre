@@ -27,10 +27,7 @@ LLayerRole::LLayerRole(const void *params) noexcept :
     });
 }
 
-LLayerRole::~LLayerRole() noexcept
-{
-
-}
+LLayerRole::~LLayerRole() noexcept {}
 
 void LLayerRole::configureSize(const LSize &size) noexcept
 {
@@ -57,6 +54,15 @@ void LLayerRole::configureSize(const LSize &size) noexcept
     }
 }
 
+void LLayerRole::setExclusiveOutput(LOutput *output) noexcept
+{
+    if (output)
+        surface()->sendOutputEnterEvent(output);
+
+    m_exclusiveZone.setOutput(output);
+    updateMappingState();
+}
+
 void LLayerRole::close() noexcept
 {
     if (m_flags.check(ClosedSent))
@@ -65,8 +71,6 @@ void LLayerRole::close() noexcept
     auto &res { *static_cast<LayerShell::RLayerSurface*>(resource()) };
     m_flags.add(ClosedSent);
     res.closed();
-    m_exclusiveZone.setOutput(nullptr);
-    surface()->imp()->setMapped(false);
 }
 
 LEdge LLayerRole::edgesToSingleEdge() const noexcept
@@ -128,9 +132,10 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
         return;
 
     // Unmap request
-    if (surface()->mapped() && !surface()->hasBuffer())
+    if (m_flags.check(MappedByClient) && !surface()->hasBuffer())
     {
-        surface()->imp()->setMapped(false);
+        m_flags.remove(MappedByClient);
+        updateMappingState();
 
         // Reset conf
         m_atoms[0] = Atoms();
@@ -262,10 +267,13 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
     if (changesToNotify.check(SizeChanged))
         pendingAtoms().size = currentAtoms().size;
 
-    if (!surface()->mapped())
+    if (!m_flags.check(MappedByClient))
     {
         if (surface()->hasBuffer())
-            surface()->imp()->setMapped(true);
+        {
+            m_flags.add(MappedByClient);
+            updateMappingState();
+        }
         else
         {
             m_flags.remove(Flags::HasPendingInitialConf);
@@ -275,4 +283,13 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
 
     if (needsConfigure)
         configureRequest();
+}
+
+void LLayerRole::updateMappingState() noexcept
+{
+    surface()->imp()->setMapped(
+        m_exclusiveZone.output() &&
+        m_exclusiveZone.output()->state() != LOutput::State::Uninitialized &&
+        m_flags.check(MappedByClient) &&
+        surface()->hasBuffer());
 }

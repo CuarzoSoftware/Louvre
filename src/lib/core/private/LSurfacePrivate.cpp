@@ -52,7 +52,22 @@ void LSurface::LSurfacePrivate::setParent(LSurface *parent)
         if (parent->children().empty())
             compositor()->imp()->insertSurfaceAfter(parent, surface, OP::UpdateSurfaces | OP::UpdateLayers);
         else
-            compositor()->imp()->insertSurfaceAfter(parent->children().back(), surface, OP::UpdateSurfaces | OP::UpdateLayers);
+        {
+            bool inserted { false };
+
+            for (auto child = parent->children().rbegin(); child != parent->children().rend(); child++)
+            {
+                if ((*child)->layer() == surface->layer())
+                {
+                    inserted = true;
+                    compositor()->imp()->insertSurfaceAfter(*child, surface, OP::UpdateSurfaces | OP::UpdateLayers);
+                    break;
+                }
+            }
+
+            if (!inserted)
+                compositor()->imp()->insertSurfaceAfter(parent, surface, OP::UpdateSurfaces | OP::UpdateLayers);
+        }
     }
 
     parent->imp()->children.push_back(surface);
@@ -149,7 +164,22 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
             if (surface->children().empty())
                 compositor()->imp()->insertSurfaceAfter(surface, child, OP::UpdateSurfaces | OP::UpdateLayers);
             else
-                compositor()->imp()->insertSurfaceAfter(surface->children().back(), child, OP::UpdateSurfaces | OP::UpdateLayers);
+            {
+                bool inserted { false };
+
+                for (auto c = surface->children().rbegin(); c != surface->children().rend(); child++)
+                {
+                    if ((*c)->layer() == child->layer())
+                    {
+                        inserted = true;
+                        compositor()->imp()->insertSurfaceAfter(*c, child, OP::UpdateSurfaces | OP::UpdateLayers);
+                        break;
+                    }
+                }
+
+                if (!inserted)
+                    compositor()->imp()->insertSurfaceAfter(surface, child, OP::UpdateSurfaces | OP::UpdateLayers);
+            }
         }
 
         children.push_back(child);

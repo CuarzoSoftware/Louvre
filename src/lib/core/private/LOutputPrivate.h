@@ -138,6 +138,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     LRect availableGeometry;
     LMargins exclusiveEdges;
     void updateExclusiveZones() noexcept;
+    void updateLayerSurfacesMapping() noexcept;
 };
 
 #endif // LOUTPUTPRIVATE_H

@@ -145,6 +145,10 @@ LPRIVATE_CLASS(LCompositor)
 
     void handleDestroyedClients();
     std::set<LClient*> destroyedClients;
+
+#if LOUVRE_ASSERT_CHECKS == 1
+    void assertSurfacesOrder();
+#endif
 };
 
 #endif // LCOMPOSITORPRIVATE_H

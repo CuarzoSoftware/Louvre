@@ -3,6 +3,7 @@
 
 #include <protocols/Wayland/wayland.h>
 
+#define LOUVRE_ASSERT_CHECKS 0
 #define LOUVRE_MAX_SURFACE_SIZE 21474836
 #define LOUVRE_MAX_DAMAGE_RECTS 24
 
@@ -65,6 +66,7 @@
 
 #define LCLASS_NO_COPY(class_name) \
     class_name(const class_name&) = delete; \
+    class_name(class_name&&) = delete; \
     class_name &operator=(const class_name&) = delete;
 
 /**

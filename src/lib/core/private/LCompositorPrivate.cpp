@@ -681,9 +681,13 @@ void LCompositor::LCompositorPrivate::insertSurfaceAfter(LSurface *prevSurface, 
             surfacesListChanged = true;
         }
 
-        notifyOrderChangeFromSurface(prevSurface);
+        surfaceToInsert->orderChanged();
+        //notifyOrderChangeFromSurface(prevSurface);
     }
 
+#if LOUVRE_ASSERT_CHECKS == 1
+    assertSurfacesOrder();
+#endif
 }
 
 void LCompositor::LCompositorPrivate::insertSurfaceBefore(LSurface *nextSurface, LSurface *surfaceToInsert, LBitset<InsertOptions> options)
@@ -703,6 +707,10 @@ void LCompositor::LCompositorPrivate::insertSurfaceBefore(LSurface *nextSurface,
         surfacesListChanged = true;
         notifyOrderChangeFromSurface(surfaceToInsert);
     }
+
+#if LOUVRE_ASSERT_CHECKS == 1
+    assertSurfacesOrder();
+#endif
 }
 
 bool LCompositor::LCompositorPrivate::runningAnimations()
@@ -965,3 +973,24 @@ void LCompositor::LCompositorPrivate::handleDestroyedClients()
     while (!destroyedClients.empty())
         wl_client_destroy((*destroyedClients.begin())->client());
 }
+
+#if LOUVRE_ASSERT_CHECKS == 1
+void LCompositor::LCompositorPrivate::assertSurfacesOrder()
+{
+    if (surfaces.empty())
+        return;
+
+    LSurface *surf { surfaces.front() };
+
+    for (int i = 0; i <= LLayerOverlay; i++)
+    {
+        for (LSurface *ls : layers[i])
+        {
+            assert(ls == surf);
+            surf = surf->nextSurface();
+        }
+    }
+
+    LLog::log("assertSurfacesOrder() ok");
+}
+#endif

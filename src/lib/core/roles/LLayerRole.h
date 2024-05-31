@@ -21,9 +21,14 @@
  *
  * @section layer-role-layer Layer
  *
- * Clients can assign LLayerRole surfaces to different layers, specifically the Background, Bottom, Top, or Overlay layers as defined in @ref LSurfaceLayer.
+ * LLayerRole surfaces can be assigned to all layers defined in @ref LSurfaceLayer, except for @ref LLayerMiddle .\n
+ * This assignment affects the Z-order, determining how the compositor renders them. The list of surfaces created by clients,
+ * accessible through LCompositor::surfaces(), reflects the order they should be rendered, from bottom to top.\n
+ * It's also possible to retrieve the list of surfaces for specific layers using LCompositor::layer().
  *
- * @see LSurface::layer() and LSurface::layerChanged().
+ * @note The order of independent layers follows the same sequence as LCompositor::surfaces().
+ *
+ * @see LSurface::layer(), LSurface::layerChanged() and LSurface::orderChanged().
  *
  * @section layer-role-pos Positioning
  *
@@ -31,23 +36,33 @@
  * setExclusiveOutput(). If the client does not specify one, exclusiveOutput() is initially `nullptr`. The default implementation of configureRequest() assigns
  * the current cursor output in such cases.
  *
- * Clients can anchor the surface to one or multiple edges of the output with optional additional margins. To simplify the position calculation,
- * an instance of LExclusiveZone is used, whose LExclusiveZone::rect() property doesn't always represent an exclusive zone.\n
- * For example, if exclusiveZoneSize() is 0, it provides the space where the surface should be placed to prevent occluding other exclusive zones.
+ * Clients can anchor the surface to one or multiple edges of the output, with optional additional margins.\n
+ * Position calculation is simplified by utilizing an instance of LExclusiveZone (exclusiveZone()). The property LExclusiveZone::rect()
+ * specifies a rect within the output where the surface should be positioned, and it does not always denote an exclusive zone.
  *
- * @see The default implementation of rolePos() and LExclusiveZone::rect().
+ * For example, when exclusiveZoneSize() equals 0, LExclusiveZone::rect() contains the available space for placing the surface, preventing occlusion of other exclusive zones.
+ *
+ * @see LExclusiveZone and the default implementation of rolePos().
  *
  * @section layer-role-exclusive-zone Exclusive Zone
  *
  * LLayerRole surfaces can define a size from the edge they are anchored to, to be considered as an exclusive zone, requesting the compositor
- * to prevent occlusion by other surfaces. Since each LLayerRole has its own LExclusiveZone instance, the LOutput::availableGeometry()
- * is automatically updated, which can be used, for example, to properly configure LToplevelRole or other types of surfaces.
+ * to prevent occlusion by other surfaces. Since each LLayerRole has its own LExclusiveZone instance, the surfaces positions and size is
+ * automatically updated as well as the LOutput::availableGeometry() which can be used, for example, to properly configure LToplevelRole or other types of surfaces.
+ *
+ * Exclusive zones have different levels of priority, which are defined by the order of the LOutput::exclusiveZones() list.
+ * The ones first in the list have higher priority, causing lower priority zones to be moved or resized to prevent occlusion.
+ * To modify the order of the list, use LExclusiveZone::insertAfter().
+ *
+ * @note Whenever the LExclusiveZone::rect() changes—due to alterations in other surfaces' exclusive zones,
+ *       the configureRequest() function is triggered. Here, the surface size should be readjusted to avoid obstructing
+ *       other exclusive zones with higher priority.
  *
  * @section layer-role-size Size
  *
  * Upon creation, clients invoke configureRequest(), where they expect the compositor to configure the surface with an appropriate size.\n
  * During the request, the size() property contains the size desired by the client. If one of its components is 0, it means
- * the compositor should determine it.
+ * the compositor should assign it.
  *
  * @see configureRequest().
  */
@@ -216,6 +231,13 @@ public:
      */
     virtual void atomsChanged(LBitset<AtomChanges> changes, const Atoms &prevAtoms);
 
+    /**
+     * @brief Retrieves the current atomic properties.
+     *
+     * The members of this struct can also be accessed using aliases such as size(), anchor(), margins(), etc.
+     *
+     * @return Reference to the current atomic properties.
+     */
     const Atoms &atoms() const noexcept
     {
         return m_atoms[m_currentAtomsIndex];
@@ -237,66 +259,140 @@ public:
     }
 
     /**
-     * @brief Get Anchored Edges
+     * @brief Anchor edges
      *
-     * Returns the flags containing the edges to which the surface is anchored.
-     *
-     * @return The anchored edges.
+     * Flags containing the edges of exclusiveOutput() to which the surface is anchored.
      */
     LBitset<LEdge> anchor() const noexcept
     {
         return atoms().anchor;
     }
 
+    /**
+     * @brief Exclusive Zone.
+     *
+     * Each LLayerRole contains its own LExclusiveZone to simplify its positioning,
+     * as well as the positioning of other LLayerRole surfaces or UI elements using an LExclusiveZone.
+     *
+     * The exclusive zone parameters are automatically updated by LLayerRole, but you can still reassign its output
+     * with setExclusiveOutput() and modify its order/priority with LExclusiveZone::insertAfter().\n
+     * Zones with higher priority (listed at the beginning of LOutput::exclusiveZones()) take precedence,
+     * causing others to adjust their space accordingly.
+     *
+     * @return A const reference to the exclusive zone.
+ */
     const LExclusiveZone &exclusiveZone() const noexcept
     {
         return m_exclusiveZone;
     }
 
+    /**
+     * @brief Size of the exclusive zone.
+     *
+     * - If > 0, this represents the distance from the anchored edge considered exclusive.
+     *   The exclusiveZone() size is automatically updated when this value changes, including
+     *   the respective margin values as specified in the protocol.
+     * - If 0, the exclusiveZone() will move/resize to accommodate other exclusive zones
+     *   but will not affect them.
+     * - If < 0, the exclusiveZone() will neither accommodate other zones nor affect them.
+     */
     Int32 exclusiveZoneSize() const noexcept
     {
         return atoms().exclusiveZoneSize;
     }
 
+    /**
+     * @brief Margins.
+     *
+     * Additional offset from the anchor edges added to the surface position.\n
+     * This is used by clients, for example, to hide or show a dock.
+     */
     const LMargins &margins() const noexcept
     {
         return atoms().margins;
     }
 
+    /**
+     * @brief The current keyboard interactivity mode.
+     *
+     * @see KeyboardInteractivity
+     */
     KeyboardInteractivity keyboardInteractivity() const noexcept
     {
         return atoms().keyboardInteractivity;
     }
 
+    /**
+     * @brief Exclusive edge.
+     *
+     * This is used by clients to disambiguate which edge is considered exclusive
+     * when the surface is anchored to a corner.
+     *
+     * Even if the exclusiveZoneSize() is > 0, if the surface is anchored to an edge
+     * and this property is @ref LEdgeNone, the zone size is treated as 0.
+     */
     LEdge exclusiveEdge() const noexcept
     {
         return atoms().exclusiveEdge;
     }
 
+    /**
+     * @brief Retrieves the layer to which the surface is assigned.
+     *
+     * Whenever this value changes, the LSurface::layer() property is automatically updated,
+     * and the LSurface::layerChanged() event is triggered.
+     */
     LSurfaceLayer layer() const noexcept
     {
         return atoms().layer;
     }
 
+    /**
+     * @brief Retrieves the current output.
+     *
+     * This represents the output the surface is assigned to. It is initially set by the client
+     * at creation time and can be reassigned with setExclusiveOutput().
+     *
+     * If not set initially, it means the client expects the compositor to set it.\n
+     * The default implementation of configureRequest() sets it to the current LCursor::output()
+     * in such cases.
+     *
+     * @return The output the surface is assigned to or `nullptr`.
+     */
     LOutput *exclusiveOutput() const override
     {
         return m_exclusiveZone.output();
     }
 
-    void setExclusiveOutput(LOutput *output) noexcept
-    {
-        m_exclusiveZone.setOutput(output);
-    }
+    /**
+     * @brief Sets the current output.
+     *
+     * LLayerRole surfaces can only be mapped when assigned to an initialized output.\n
+     * If the assigned output is uninitialized, they become unmapped until it is initialized again.
+     *
+     * @param output The output to set as exclusive, or `nullptr` to remove it from all outputs/unmap it.
+     */
+    void setExclusiveOutput(LOutput *output) noexcept;
 
+    /**
+     * @brief Scope.
+     *
+     * The scope is a client-defined string used for client identification,
+     * disambiguating order within the same layer, or other purposes.
+     */
     const std::string &scope() noexcept
     {
         return m_scope;
     }
 
+    /**
+     * @brief Requests the client to close the LLayerRole.
+     */
     void close() noexcept;
 
 private:
     friend class Louvre::Protocols::LayerShell::RLayerSurface;
+    friend class Louvre::LOutput;
 
     enum Flags : UInt32
     {
@@ -310,6 +406,7 @@ private:
         HasPendingInitialConf           = static_cast<UInt32>(1) << 7,
         HasConfToSend                   = static_cast<UInt32>(1) << 8,
         ClosedSent                      = static_cast<UInt32>(1) << 9,
+        MappedByClient                  = static_cast<UInt32>(1) << 10,
     };
 
     Atoms &currentAtoms() noexcept
@@ -325,6 +422,7 @@ private:
     LEdge edgesToSingleEdge() const noexcept;
 
     void handleSurfaceCommit(CommitOrigin origin) noexcept override;
+    void updateMappingState() noexcept;
 
     LExclusiveZone m_exclusiveZone { LEdgeNone, 0 };
     LBitset<Flags> m_flags { HasPendingInitialConf };
