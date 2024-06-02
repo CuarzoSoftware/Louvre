@@ -151,24 +151,11 @@ void Compositor::onAnticipatedObjectDestruction(LFactoryObject *object)
         static_cast<Client*>(object)->destroyed = true;
         return;
     }
-
-    if (object->factoryObjectType() == LFactoryObject::Type::LPopupRole)
-    {
-        fadeOutSurface(static_cast<LPopupRole*>(object), 60);
-        return;
-    }
-
-    if (object->factoryObjectType() == LFactoryObject::Type::LToplevelRole)
-    {
-        if (!static_cast<LToplevelRole*>(object)->fullscreen())
-            fadeOutSurface(static_cast<LToplevelRole*>(object), 250);
-        return;
-    }
 }
 
 void Compositor::fadeOutSurface(LBaseSurfaceRole *role, UInt32 ms)
 {
-    if (role->surface() && role->surface()->mapped())
+    if (role->surface())
     {
         Surface *surf = (Surface*)role->surface();
 
@@ -176,8 +163,9 @@ void Compositor::fadeOutSurface(LBaseSurfaceRole *role, UInt32 ms)
             return;
 
         surf->fadedOut = true;
-
+        surf->view.enableAlwaysMapped(true);
         LTextureView *fadeOutView = new LTextureView(surf->renderThumbnail(), &fullscreenLayer);
+        surf->view.enableAlwaysMapped(false);
         fadeOutView->enableParentOffset(false);
         fadeOutView->setBufferScale(2);
 
@@ -262,7 +250,7 @@ bool Compositor::checkUpdateOutputUnplug()
             {
                 Toplevel *tl = (Toplevel*) s->toplevel();
 
-                if (tl->current().state.check(LToplevelRole::Fullscreen | LToplevelRole::Maximized))
+                if (tl->state().check(LToplevelRole::Fullscreen | LToplevelRole::Maximized))
                 {
                     outputUnplugHandled = false;
 

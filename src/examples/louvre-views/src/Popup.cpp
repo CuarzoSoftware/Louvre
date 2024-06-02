@@ -15,7 +15,7 @@ void Popup::configureRequest()
     else
         setPositionerBounds(cursor()->output() != nullptr ? cursor()->output()->rect() + LRect(0, TOPBAR_HEIGHT, 0, -TOPBAR_HEIGHT) : LRect());
 
-    if (surface()->parent()->toplevel() && surface()->parent()->toplevel()->pending().state.check(LToplevelRole::Maximized | LToplevelRole::Fullscreen))
+    if (surface()->parent()->toplevel() && surface()->parent()->toplevel()->pendingConfiguration().state.check(LToplevelRole::Maximized | LToplevelRole::Fullscreen))
     {
         configure(calculateUnconstrainedRect(&positionerBounds().pos()));
         return;

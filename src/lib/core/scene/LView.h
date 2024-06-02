@@ -1299,6 +1299,7 @@ public:
         CustomPos               = static_cast<UInt64>(1) << 44,
         CustomInputRegion       = static_cast<UInt64>(1) << 45,
         CustomTranslucentRegion = static_cast<UInt64>(1) << 46,
+        AlwaysMapped            = static_cast<UInt64>(1) << 47,
     };
 
     // This is used for detecting changes on a view since the last time it was drawn on a specific output

@@ -453,7 +453,10 @@ void LPopupRole::dismiss()
             }
 
             if ((*s) == surface())
+            {
+                surface()->imp()->setMapped(false);
                 return;
+            }
         }
     }
 }

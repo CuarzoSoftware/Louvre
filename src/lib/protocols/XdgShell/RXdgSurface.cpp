@@ -1,3 +1,4 @@
+#include <protocols/XdgShell/xdg-shell.h>
 #include <protocols/XdgShell/GXdgWmBase.h>
 #include <protocols/XdgShell/RXdgSurface.h>
 #include <protocols/XdgShell/RXdgToplevel.h>
@@ -171,24 +172,28 @@ void RXdgSurface::ack_configure(wl_client */*client*/, wl_resource *resource, UI
     {
         auto &toplevel { *res.surface()->toplevel() };
 
-        while (!toplevel.imp()->sentConfs.empty())
+        while (!toplevel.m_sentConfigurations.empty())
         {
-            if (toplevel.imp()->sentConfs.front().serial == serial)
+            if (toplevel.m_sentConfigurations.front().serial == serial)
             {
-                toplevel.imp()->stateFlags.add(LToplevelRole::LToplevelRolePrivate::HasUncommitedConfiguration);
-                toplevel.imp()->uncommited = toplevel.imp()->sentConfs.front();
+                const bool sizeUnchanged { toplevel.m_lastACKConfiguration.size == toplevel.m_sentConfigurations.front().size };
 
-                if (!toplevel.imp()->xdgDecoration)
-                    toplevel.imp()->uncommited.decorationMode = LToplevelRole::ClientSide;
+                toplevel.m_lastACKConfiguration = toplevel.m_sentConfigurations.front();
+                toplevel.m_sentConfigurations.pop_front();
 
-                toplevel.imp()->sentConfs.pop_front();
+                toplevel.pendingAtoms().serial = toplevel.m_lastACKConfiguration.serial;
+                toplevel.pendingAtoms().bounds = toplevel.m_lastACKConfiguration.bounds;
+                toplevel.pendingAtoms().capabilities = toplevel.m_lastACKConfiguration.capabilities;
+                toplevel.pendingAtoms().decorationMode = toplevel.m_lastACKConfiguration.decorationMode;
+                toplevel.pendingAtoms().state = toplevel.m_lastACKConfiguration.state;
 
-                if (toplevel.imp()->uncommited.size == toplevel.imp()->current.size)
-                    toplevel.imp()->applyPendingChanges(0);
+                if (sizeUnchanged || !res.m_hasPendingWindowGeometry)
+                    toplevel.partialAtomsUpdate();
+
                 return;
             }
 
-            toplevel.imp()->sentConfs.pop_front();
+            toplevel.m_sentConfigurations.pop_front();
         }
 
         wl_resource_post_error(res.resource(), XDG_SURFACE_ERROR_INVALID_SERIAL, "Invalid xdg_surface serial ack.");

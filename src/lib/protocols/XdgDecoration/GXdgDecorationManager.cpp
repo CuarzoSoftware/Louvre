@@ -1,7 +1,8 @@
+#include <protocols/XdgDecoration/RXdgToplevelDecoration.h>
+#include <protocols/XdgShell/RXdgSurface.h>
 #include <protocols/XdgDecoration/xdg-decoration-unstable-v1.h>
 #include <protocols/XdgDecoration/GXdgDecorationManager.h>
 #include <protocols/XdgShell/RXdgToplevel.h>
-#include <private/LToplevelRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LClientPrivate.h>
 #include <LUtils.h>
@@ -59,7 +60,7 @@ void GXdgDecorationManager::get_toplevel_decoration(wl_client */*client*/, wl_re
 {
     auto &xdgToplevelRoleRes { *static_cast<XdgShell::RXdgToplevel*>(wl_resource_get_user_data(toplevel)) };
 
-    if (xdgToplevelRoleRes.toplevelRole()->imp()->xdgDecoration)
+    if (xdgToplevelRoleRes.toplevelRole()->supportServerSideDecorations())
     {
         wl_resource_post_error(resource, ZXDG_TOPLEVEL_DECORATION_V1_ERROR_ALREADY_CONSTRUCTED,
                                "Multiple XDG Toplevel Decorations for a Toplevel not supported.");

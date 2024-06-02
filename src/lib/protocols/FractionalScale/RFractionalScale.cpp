@@ -1,6 +1,7 @@
 #include <protocols/FractionalScale/fractional-scale-v1.h>
 #include <protocols/FractionalScale/RFractionalScale.h>
 #include <protocols/Wayland/RSurface.h>
+#include <private/LSurfacePrivate.h>
 
 using namespace Louvre::Protocols::FractionalScale;
 
@@ -26,6 +27,7 @@ RFractionalScale::RFractionalScale
     m_surfaceRes(surfaceRes)
 {
     surfaceRes->m_fractionalScaleRes.reset(this);
+    surfaceRes->surface()->imp()->sendPreferredScale();
 }
 
 /******************** REQUESTS ********************/

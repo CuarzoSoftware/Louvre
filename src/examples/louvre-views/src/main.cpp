@@ -5,8 +5,8 @@
 
 int main(int, char *[])
 {
-    setenv("LOUVRE_DEBUG", "3", 0);
-    setenv("SRM_DEBUG", "3", 0);
+    setenv("LOUVRE_DEBUG", "1", 0);
+    setenv("SRM_DEBUG", "1", 0);
     setenv("SRM_RENDER_MODE_ITSELF_FB_COUNT", "2", 0);
     setenv("SRM_FORCE_GL_ALLOCATION", "1", 0);
     setenv("MOZ_ENABLE_WAYLAND", "1", 1);

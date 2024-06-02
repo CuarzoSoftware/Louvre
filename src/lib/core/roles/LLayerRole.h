@@ -135,25 +135,25 @@ public:
      */
     struct Atoms
     {
-        /// size()
+        /// LLayerRole::size()
         LSize size;
 
-        /// anchor()
+        /// LLayerRole::anchor()
         LBitset<LEdge> anchor;
 
-        /// exclusiveZoneSize()
+        /// LLayerRole::exclusiveZoneSize()
         Int32 exclusiveZoneSize;
 
-        /// margins()
+        /// LLayerRole::margins()
         LMargins margins;
 
-        /// keyboardInteractivity()
+        /// LLayerRole::keyboardInteractivity()
         KeyboardInteractivity keyboardInteractivity { NoInteractivity };
 
-        /// exclusiveEdge()
+        /// LLayerRole::exclusiveEdge()
         LEdge exclusiveEdge { LEdgeNone };
 
-        /// layer()
+        /// LLayerRole::layer()
         LSurfaceLayer layer;
     };
 

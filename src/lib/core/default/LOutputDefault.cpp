@@ -174,7 +174,7 @@ void LOutput::availableGeometryChanged()
 
         if (tl && !tl->fullscreen())
         {
-            const LSize toplevelExtraSize { tl->extraMargins().left + tl->extraMargins().right, tl->extraMargins().top + tl->extraMargins().bottom };
+            const LSize toplevelExtraSize { tl->extraGeometry().left + tl->extraGeometry().right, tl->extraGeometry().top + tl->extraGeometry().bottom };
             LRect toplevelRect { surface->pos(), tl->windowGeometry().size() + toplevelExtraSize };
 
             if (compositor()->mostIntersectedOutput(toplevelRect) != this)

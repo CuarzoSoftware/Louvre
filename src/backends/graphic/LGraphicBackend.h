@@ -50,6 +50,7 @@ public:
     static Int32                            outputGetCurrentBufferIndex(LOutput *output);
     static UInt32                           outputGetBuffersCount(LOutput *output);
     static LTexture *                       outputGetBuffer(LOutput *output, UInt32 bufferIndex);
+    static void                             outputDestroyBuffers(std::vector<LTexture*> &textures);
 
     /* OUTPUT GAMMA */
     static UInt32                           outputGetGammaSize(LOutput *output);

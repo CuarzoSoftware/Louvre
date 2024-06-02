@@ -1,8 +1,11 @@
 #ifndef LTOPLEVELRESIZESESSION_H
 #define LTOPLEVELRESIZESESSION_H
 
-#include <LToplevelRole.h>
+#include <LEdge.h>
+#include <LMargins.h>
+#include <LPoint.h>
 #include <LTimer.h>
+#include <memory>
 
 class Louvre::LToplevelResizeSession
 {
@@ -83,10 +86,38 @@ public:
         return m_isActive;
     }
 
+    /**
+     * @brief Size during a resizing session
+     *
+     * Utility method to calculate the toplevel size during an interactive resizing session.\n
+     *
+     * @param cursorPosDelta Initial pointer position minus the current one
+     * @param initialSize Initial toplevel position
+     * @param edge Edge or corner used in the resizing
+     *
+     * @returns The toplevel size given the current parameters
+     */
+    static constexpr LSize calculateResizeSize(const LPoint &cursorPosDelta, const LSize &initialSize, LBitset<LEdge> edge) noexcept
+    {
+        LSize newSize { initialSize };
+
+        if (edge.check(LEdgeTop))
+            newSize.setH(initialSize.h() + cursorPosDelta.y());
+        else if(edge.check(LEdgeBottom))
+            newSize.setH(initialSize.h() - cursorPosDelta.y());
+
+        if (edge.check(LEdgeLeft))
+            newSize.setW(initialSize.w() + cursorPosDelta.x());
+        else if(edge.check(LEdgeRight))
+            newSize.setW(initialSize.w() - cursorPosDelta.x());
+
+        return newSize;
+    }
+
 private:
     friend class LToplevelRole;
-    LToplevelResizeSession();
-    ~LToplevelResizeSession();
+    LToplevelResizeSession(LToplevelRole *toplevel) noexcept;
+    ~LToplevelResizeSession() noexcept;
     void handleGeometryChange();
     LToplevelRole *m_toplevel;
     LPoint m_initPos;

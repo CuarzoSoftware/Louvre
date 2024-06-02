@@ -8,7 +8,9 @@
 
 using namespace Louvre;
 
-LToplevelResizeSession::LToplevelResizeSession() : m_triggeringEvent(std::make_unique<LPointerEnterEvent>())
+LToplevelResizeSession::LToplevelResizeSession(LToplevelRole *toplevel) noexcept :
+    m_toplevel(toplevel),
+    m_triggeringEvent(std::make_unique<LPointerEnterEvent>())
 {
     m_ackTimer.setCallback([this](auto)
     {
@@ -16,7 +18,7 @@ LToplevelResizeSession::LToplevelResizeSession() : m_triggeringEvent(std::make_u
     });
 }
 
-LToplevelResizeSession::~LToplevelResizeSession()
+LToplevelResizeSession::~LToplevelResizeSession() noexcept
 {
     if (m_isActive)
         LVectorRemoveOneUnordered(seat()->imp()->resizeSessions, this);
@@ -32,7 +34,7 @@ void LToplevelResizeSession::handleGeometryChange()
         if (m_edge.check(LEdgeLeft))
             m_toplevel->surface()->setX(m_initPos.x() + (m_initSize.w() - m_toplevel->windowGeometry().w()));
 
-        if (!m_isActive && (!m_toplevel->resizing() || m_lastSerial < m_toplevel->current().serial) )
+        if (!m_isActive && (!m_toplevel->resizing() || m_lastSerial < m_toplevel->serial()) )
         {
             m_ackTimer.cancel();
             m_lastSerialHandled = true;
@@ -52,7 +54,7 @@ void LToplevelResizeSession::updateDragPoint(const LPoint &point)
         return;
 
     m_currentDragPoint = point;
-    LSize newSize = { toplevel()->calculateResizeSize(m_initDragPoint - point, m_initSize, m_edge) };
+    LSize newSize = { calculateResizeSize(m_initDragPoint - point, m_initSize, m_edge) };
 
     const LPoint &pos { toplevel()->surface()->pos() };
     const LSize &size { toplevel()->windowGeometry().size() };
@@ -91,7 +93,7 @@ void LToplevelResizeSession::updateDragPoint(const LPoint &point)
 
     toplevel()->configureSize(newSize);
     toplevel()->configureState(LToplevelRole::Activated | LToplevelRole::Resizing);
-    m_lastSerial = m_toplevel->pending().serial;
+    m_lastSerial = m_toplevel->pendingConfiguration().serial;
 }
 
 bool LToplevelResizeSession::start(const LEvent &triggeringEvent, LBitset<LEdge> edge, const LPoint &initDragPoint)
@@ -124,8 +126,8 @@ bool LToplevelResizeSession::start(const LEvent &triggeringEvent, LBitset<LEdge>
 
     m_initPos = m_toplevel->surface()->pos();
 
-    m_toplevel->configureState(m_toplevel->pending().state | LToplevelRole::Activated | LToplevelRole::Resizing);
-    m_lastSerial = m_toplevel->pending().serial;
+    m_toplevel->configureState(m_toplevel->pendingConfiguration().state | LToplevelRole::Activated | LToplevelRole::Resizing);
+    m_lastSerial = m_toplevel->pendingConfiguration().serial;
     seat()->imp()->resizeSessions.push_back(this);
     return true;
 }
@@ -136,8 +138,8 @@ const std::vector<LToplevelResizeSession*>::const_iterator LToplevelResizeSessio
         return seat()->imp()->resizeSessions.begin();
 
     m_isActive = false;
-    toplevel()->configureState(toplevel()->pending().state & ~LToplevelRole::Resizing);
-    m_lastSerialHandled = toplevel()->pending().size == toplevel()->current().size;
+    toplevel()->configureState(toplevel()->pendingConfiguration().state & ~LToplevelRole::Resizing);
+    m_lastSerialHandled = toplevel()->pendingConfiguration().size == toplevel()->m_lastACKConfiguration.size;
 
     if (!m_lastSerialHandled)
         m_ackTimer.start(600);

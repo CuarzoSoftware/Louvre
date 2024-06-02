@@ -1,8 +1,10 @@
+#include <protocols/XdgShell/xdg-shell.h>
 #include <protocols/XdgShell/RXdgToplevel.h>
 #include <protocols/XdgShell/RXdgSurface.h>
 #include <protocols/Wayland/GOutput.h>
 #include <private/LToplevelRolePrivate.h>
 #include <private/LSurfacePrivate.h>
+#include <private/LSeatPrivate.h>
 #include <private/LFactory.h>
 #include <LCompositor.h>
 #include <LClient.h>
@@ -52,6 +54,7 @@ RXdgToplevel::RXdgToplevel
 
     m_toplevelRole.reset(LFactory::createObject<LToplevelRole>(&toplevelRoleParams));
     xdgSurfaceRes->surface()->imp()->setPendingRole(toplevelRole());
+    xdgSurfaceRes->surface()->imp()->applyPendingRole();
 }
 
 RXdgToplevel::~RXdgToplevel()
@@ -102,21 +105,21 @@ void RXdgToplevel::set_parent(wl_client */*client*/, wl_resource *resource, wl_r
 
 void RXdgToplevel::set_title(wl_client */*client*/, wl_resource *resource, const char *title)
 {
-    static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole()->imp()->setTitle(title);
+    static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole()->setTitle(title);
 }
 
 void RXdgToplevel::set_app_id(wl_client */*client*/, wl_resource *resource, const char *app_id)
 {
-    static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole()->imp()->setAppId(app_id);
+    static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole()->setAppId(app_id);
 }
 
 void RXdgToplevel::show_window_menu(wl_client */*client*/, wl_resource *resource, wl_resource */*seat*/, UInt32 serial, Int32 x, Int32 y)
 {
-    auto &res { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource)) };
-    const LEvent *triggeringEvent { res.client()->findEventBySerial(serial) };
+    auto &toplevel { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole() };
+    const LEvent *triggeringEvent { toplevel.client()->findEventBySerial(serial) };
 
-    if (triggeringEvent)
-        res.toplevelRole()->showWindowMenuRequest(*triggeringEvent, x, y);
+    if (triggeringEvent && toplevel.capabilities().check(LToplevelRole::WindowMenuCap))
+        toplevel.showWindowMenuRequest(*triggeringEvent, x, y);
 }
 
 void RXdgToplevel::move(wl_client */*client*/, wl_resource *resource, wl_resource */*seat*/, UInt32 serial)
@@ -155,15 +158,13 @@ void RXdgToplevel::set_max_size(wl_client */*client*/, wl_resource *resource, In
 {
     if (width < 0 || height < 0)
     {
-        // Error enum not defined in protocol
-        wl_resource_post_error(resource, XDG_TOPLEVEL_ERROR_INVALID_RESIZE_EDGE, "Invalid xdg_toplevel max size.");
+        wl_resource_post_error(resource, XDG_TOPLEVEL_ERROR_INVALID_SIZE, "Invalid xdg_toplevel max size.");
         return;
     }
 
-    auto &toplevelPriv { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole()->imp() };
-    toplevelPriv.pendingMaxSize.setW(width);
-    toplevelPriv.pendingMaxSize.setH(height);
-    toplevelPriv.stateFlags.add(LToplevelRole::LToplevelRolePrivate::HasPendingMaxSize);
+    auto &toplevel { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole() };
+    toplevel.pendingAtoms().maxSize.setW(width);
+    toplevel.pendingAtoms().maxSize.setH(height);
 }
 
 void RXdgToplevel::set_min_size(wl_client */*client*/, wl_resource *resource, Int32 width, Int32 height)
@@ -175,108 +176,75 @@ void RXdgToplevel::set_min_size(wl_client */*client*/, wl_resource *resource, In
         return;
     }
 
-    auto &toplevelPriv { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole()->imp() };
-    toplevelPriv.pendingMinSize.setW(width);
-    toplevelPriv.pendingMinSize.setH(height);
-    toplevelPriv.stateFlags.add(LToplevelRole::LToplevelRolePrivate::HasPendingMinSize);
+    auto &toplevel { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole() };
+    toplevel.pendingAtoms().minSize.setW(width);
+    toplevel.pendingAtoms().minSize.setH(height);
 }
 
 void RXdgToplevel::set_maximized(wl_client */*client*/, wl_resource *resource)
 {
-    auto &res { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource)) };
+    auto &toplevel { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole() };
 
-    // Cache until role is applied
-    if (res.toplevelRole()->surface()->imp()->pending.role)
-    {
-        res.toplevelRole()->imp()->prevRoleRequest = LToplevelRole::Maximized;
-        return;
-    }
+    if (toplevel.capabilities().check(LToplevelRole::MaximizeCap))
+        toplevel.setMaximizedRequest();
 
-    res.toplevelRole()->setMaximizedRequest();
-
-    if (!res.toplevelRole()->imp()->stateFlags.check(LToplevelRole::LToplevelRolePrivate::HasConfigurationToSend))
-        res.toplevelRole()->configureState(res.toplevelRole()->pending().state);
+    if (!toplevel.m_flags.check(LToplevelRole::HasSizeOrStateToSend)
+        && (toplevel.capabilities().check(LToplevelRole::MaximizeCap) || toplevel.resource()->version() < 5))
+        toplevel.configureState(toplevel.pendingConfiguration().state);
 }
 
 void RXdgToplevel::unset_maximized(wl_client */*client*/, wl_resource *resource)
 {
-    auto &res { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource)) };
+    auto &toplevel { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole() };
 
-    // Cache until role is applied
-    if (res.toplevelRole()->surface()->imp()->pending.role)
-    {
-        if (res.toplevelRole()->imp()->prevRoleRequest == LToplevelRole::Maximized)
-            res.toplevelRole()->imp()->prevRoleRequest = 0;
+    if (toplevel.capabilities().check(LToplevelRole::MaximizeCap))
+        toplevel.unsetMaximizedRequest();
 
-        return;
-    }
-
-    res.toplevelRole()->unsetMaximizedRequest();
-
-    if (!res.toplevelRole()->imp()->stateFlags.check(LToplevelRole::LToplevelRolePrivate::HasConfigurationToSend))
-        res.toplevelRole()->configureState(res.toplevelRole()->pending().state);
+    if (!toplevel.m_flags.check(LToplevelRole::HasSizeOrStateToSend)
+        && (toplevel.capabilities().check(LToplevelRole::MaximizeCap) || toplevel.resource()->version() < 5))
+        toplevel.configureState(toplevel.pendingConfiguration().state);
 }
 
 void RXdgToplevel::set_fullscreen(wl_client */*client*/, wl_resource *resource, wl_resource *wlOutput)
 {
-    auto &res { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource)) };
-
     LOutput *output { nullptr };
 
     if (wlOutput)
         output = static_cast<Wayland::GOutput*>(wl_resource_get_user_data(wlOutput))->output();
 
-    // Cache until role is applied
-    if (res.toplevelRole()->surface()->imp()->pending.role)
-    {
-        res.toplevelRole()->imp()->prevRoleRequest = LToplevelRole::Fullscreen;
-        res.toplevelRole()->imp()->prevRoleFullscreenRequestOutput = output;
-        return;
-    }
+    auto &toplevel { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole() };
 
-    // TODO: use LWeak
-    res.toplevelRole()->setFullscreenRequest(output);
+    if (toplevel.capabilities().check(LToplevelRole::FullscreenCap))
+        toplevel.setFullscreenRequest(output);
 
-    if (!res.toplevelRole()->imp()->stateFlags.check(LToplevelRole::LToplevelRolePrivate::HasConfigurationToSend))
-        res.toplevelRole()->configureState(res.toplevelRole()->pending().state);
+    if (!toplevel.m_flags.check(LToplevelRole::HasSizeOrStateToSend)
+        && (toplevel.capabilities().check(LToplevelRole::FullscreenCap) || toplevel.resource()->version() < 5))
+        toplevel.configureState(toplevel.pendingConfiguration().state);
 }
 
 void RXdgToplevel::unset_fullscreen(wl_client */*client*/, wl_resource *resource)
-{
-    auto &res { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource)) };
+{    
+    auto &toplevel { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole() };
 
-    // Cache until role is applied
-    if (res.toplevelRole()->surface()->imp()->pending.role)
-    {
-        if (res.toplevelRole()->imp()->prevRoleRequest == LToplevelRole::Fullscreen)
-        {
-            res.toplevelRole()->imp()->prevRoleRequest = 0;
-            res.toplevelRole()->imp()->prevRoleFullscreenRequestOutput = nullptr;
-        }
+    if (toplevel.capabilities().check(LToplevelRole::FullscreenCap))
+        toplevel.unsetFullscreenRequest();
 
-        return;
-    }
-
-    res.toplevelRole()->unsetFullscreenRequest();
-
-    if (!res.toplevelRole()->imp()->stateFlags.check(LToplevelRole::LToplevelRolePrivate::HasConfigurationToSend))
-        res.toplevelRole()->configureState(res.toplevelRole()->pending().state);
+    if (!toplevel.m_flags.check(LToplevelRole::HasSizeOrStateToSend)
+        && (toplevel.capabilities().check(LToplevelRole::FullscreenCap) || toplevel.resource()->version() < 5))
+        toplevel.configureState(toplevel.pendingConfiguration().state);
 }
 
 void RXdgToplevel::set_minimized(wl_client */*client*/, wl_resource *resource)
 {
-    auto &res { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource)) };
+    auto &toplevel { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole() };
 
-    // Ignore if role not yet applied
-    if (res.toplevelRole()->surface()->imp()->pending.role)
-        return;
-
-    res.toplevelRole()->setMinimizedRequest();
+    if (toplevel.capabilities().check(LToplevelRole::MinimizeCap))
+        toplevel.setMinimizedRequest();
 }
 
-void RXdgToplevel::configure(Int32 width, Int32 height, wl_array *states) noexcept
+void RXdgToplevel::configure(const LSize &size, wl_array *states) noexcept
 {
-    xdg_toplevel_send_configure(resource(), width, height, states);
+    xdg_toplevel_send_configure(resource(), size.w(), size.h(), states);
 }
 
 void RXdgToplevel::close() noexcept
@@ -284,17 +252,16 @@ void RXdgToplevel::close() noexcept
     xdg_toplevel_send_close(resource());
 }
 
-bool RXdgToplevel::configureBounds(Int32 width, Int32 height) noexcept
+bool RXdgToplevel::configureBounds(const LSize &bounds) noexcept
 {
 #if LOUVRE_XDG_WM_BASE_VERSION >= 4
     if (version() >= 4)
     {
-        xdg_toplevel_send_configure_bounds(resource(), width, height);
+        xdg_toplevel_send_configure_bounds(resource(), bounds.w(), bounds.h());
         return true;
     }
 #endif
-    L_UNUSED(width);
-    L_UNUSED(height);
+    L_UNUSED(bounds);
     return false;
 }
 

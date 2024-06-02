@@ -162,7 +162,7 @@ void App::dockIconClicked()
                     }
                     else
                     {
-                        surf->toplevel()->configureState(surf->toplevel()->pending().state | LToplevelRole::Activated);
+                        surf->toplevel()->configureState(surf->toplevel()->pendingConfiguration().state | LToplevelRole::Activated);
                         surf->raise();
 
                         if (surf->getView()->parent() != &G::compositor()->surfacesLayer)

@@ -10,7 +10,7 @@ class ToplevelRole final : public LToplevelRole
 public:
     ToplevelRole(const void *params) noexcept;
 
-    void configurationChanged(LBitset<ConfigurationChanges> changes) override;
+    void atomsChanged(LBitset<AtomChanges> changes, const Atoms &prev) override;
     void configureRequest() noexcept override;
     void setMaximizedRequest() noexcept override;
     void setFullscreenRequest(LOutput *output) noexcept override;

@@ -136,7 +136,7 @@ static void onPointerButtonResizeArea(InputRect *rect, void *data, UInt32 button
         seat()->keyboard()->setFocus(toplevel->surface());
 
         if (!toplevel->activated())
-            toplevel->configureState(toplevel->pending().state | LToplevelRole::Activated);
+            toplevel->configureState(toplevel->pendingConfiguration().state | LToplevelRole::Activated);
         toplevel->surface()->raise();
 
         if (data)
@@ -714,7 +714,7 @@ void ToplevelView::updateGeometry()
 
 bool ToplevelView::nativeMapped() const noexcept
 {
-    return toplevel->surface()->mapped();
+    return toplevel->surf()->view.nativeMapped();
 }
 
 const LPoint &ToplevelView::nativePos() const noexcept

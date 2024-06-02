@@ -49,7 +49,7 @@ const LPoint &Toplevel::rolePos() const
         m_rolePos = surface()->pos();
 
         if (!fullscreen() && !animScene)
-            m_rolePos += LPoint(0, extraMargins().top);
+            m_rolePos += LPoint(0, extraGeometry().top);
     }
     else
         m_rolePos = surface()->pos() - windowGeometry().topLeft();
@@ -60,21 +60,25 @@ const LPoint &Toplevel::rolePos() const
 void Toplevel::configureRequest()
 {
     if (cursor()->output())
+    {
         surface()->sendOutputEnterEvent(cursor()->output());
+        configureBounds(cursor()->output()->availableGeometry().size());
+    }
 
     configureSize(0, 0);
     configureDecorationMode(ServerSide);
-    configureState(pending().state | Activated);
+    configureState(pendingConfiguration().state | Activated);
+    configureCapabilities(MinimizeCap | FullscreenCap | MaximizeCap);
 }
 
-void Toplevel::configurationChanged(LBitset<ConfigurationChanges> changes)
+void Toplevel::atomsChanged(LBitset<AtomChanges> changes, const Atoms &prev)
 {
     if (changes.check(DecorationModeChanged))
         decorationModeChanged();
 
     if (changes.check(StateChanged))
     {
-        const LBitset<State> stateChanges { current().state ^ previous().state };
+        const LBitset<State> stateChanges { state() ^ prev.state };
 
         if (stateChanges.check(Activated))
             activatedChanged();
@@ -139,7 +143,7 @@ void Toplevel::setMaximizedRequest()
     dstRect.setPos(output->pos() + output->availableGeometry().pos() + (output->availableGeometry().size() - dstRect.size()) / 2);
 
     if (supportServerSideDecorations())
-        dstRect.setSize(dstRect.size() - LSize(0, extraMargins().top));
+        dstRect.setSize(dstRect.size() - LSize(0, extraGeometry().top));
 
     configureSize(dstRect.size());
     configureState(Activated | Maximized);
@@ -151,7 +155,7 @@ void Toplevel::unsetMaximizedRequest()
         return;
 
     configureSize(prevRect.size());
-    configureState(pending().state & ~Maximized);
+    configureState(pendingConfiguration().state & ~Maximized);
 }
 
 void Toplevel::maximizedChanged()
@@ -197,7 +201,7 @@ void Toplevel::setFullscreenRequest(LOutput *output)
 
     if (dstOutput->animatedFullscreenToplevel)
     {
-        configureState(pending().state);
+        configureState(pendingConfiguration().state);
         return;
     }
 
@@ -205,7 +209,7 @@ void Toplevel::setFullscreenRequest(LOutput *output)
     dstRect = LRect(dstOutput->pos(), dstOutput->size());
 
     fullscreenOutput = dstOutput;
-    prevStates = current().state;
+    prevStates = state();
     configureSize(dstRect.size());
     configureState(Activated | Fullscreen);
 
@@ -224,7 +228,7 @@ void Toplevel::unsetFullscreenRequest()
 {
     if (!fullscreen() || !fullscreenOutput || fullscreenOutput->animatedFullscreenToplevel)
     {
-        configureState(pending().state);
+        configureState(pendingConfiguration().state);
         return;
     }
 
@@ -257,7 +261,7 @@ void Toplevel::fullscreenChanged()
     {
         if (!fullscreenOutput)
         {
-            configureState(pending().state &~ Fullscreen);
+            configureState(pendingConfiguration().state &~ Fullscreen);
             return;
         }
 
@@ -324,9 +328,9 @@ void Toplevel::setMinimizedRequest()
 
 void Toplevel::decorationModeChanged()
 {
-    if (current().decorationMode == ClientSide)
+    if (decorationMode() == ClientSide)
     {
-        setExtraMargins({0, 0, 0, 0});
+        setExtraGeometry({0, 0, 0, 0});
         LView *prevParent = decoratedView->parent();
         decoratedView.reset();
 
@@ -338,7 +342,7 @@ void Toplevel::decorationModeChanged()
     }
     else
     {
-        setExtraMargins({0,TOPLEVEL_TOPBAR_HEIGHT, 0, 0});
+        setExtraGeometry({0,TOPLEVEL_TOPBAR_HEIGHT, 0, 0});
         decoratedView = std::make_unique<ToplevelView>(this);
         decoratedView->updateGeometry();
         decoratedView->setVisible(surf()->view.visible());

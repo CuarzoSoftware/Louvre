@@ -31,7 +31,12 @@ const LRectF &LSurfaceView::srcRect() const
 bool LSurfaceView::nativeMapped() const noexcept
 {
     if (surface())
+    {
+        if (alwaysMappedEnabled())
+            return true;
+
         return surface()->mapped();
+    }
 
     return false;
 }

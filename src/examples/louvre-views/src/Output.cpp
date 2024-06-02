@@ -203,7 +203,7 @@ void Output::updateWorkspacesPos()
             if (ws->toplevel)
             {
                 ws->toplevel->configureSize(size());
-                ws->toplevel->configureState(ws->toplevel->pending().state);
+                ws->toplevel->configureState(ws->toplevel->pendingConfiguration().state);
             }
         }
 
@@ -229,7 +229,7 @@ void Output::updateFractionalOversampling()
 
         for (LSurface *surf : currentWorkspace->toplevel->surf()->children())
         {
-            if (surf->toplevel() && surf->toplevel()->current().decorationMode == LToplevelRole::ServerSide && surf->mapped() && !surf->minimized())
+            if (surf->toplevel() && surf->toplevel()->decorationMode() == LToplevelRole::ServerSide && surf->mapped() && !surf->minimized())
             {
                 fullscreenOrSubsurface = true;
                 goto checkChange;
@@ -426,7 +426,7 @@ void Output::onWorkspacesAnimationFinish(LAnimation */*anim*/) noexcept
 
         seat()->pointer()->setFocus(tl->surface());
         seat()->keyboard()->setFocus(tl->surface());
-        tl->configureState(tl->pending().state | LToplevelRole::Activated);
+        tl->configureState(tl->pendingConfiguration().state | LToplevelRole::Activated);
     }
 
     if (animatedFullscreenToplevel)
@@ -465,7 +465,7 @@ void Output::onWorkspacesAnimationFinish(LAnimation */*anim*/) noexcept
 
 returnChildren:
     for (Output *o : G::outputs())
-        if (!o->doingFingerWorkspaceSwipe)
+        if (!o->doingFingerWorkspaceSwipe && o->currentWorkspace)
             o->currentWorkspace->returnChildren();
 
     updateWorkspacesPos();

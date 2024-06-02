@@ -15,12 +15,12 @@
 
 ToplevelRole::ToplevelRole(const void *params) noexcept : LToplevelRole(params) {}
 
-void ToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
+void ToplevelRole::atomsChanged(LBitset<AtomChanges> changes, const Atoms &prev)
 {
     if (!changes.check(StateChanged))
         return;
 
-    const LBitset<State> stateChanges { current().state ^ previous().state };
+    const LBitset<State> stateChanges { state() ^ prev.state };
     Output *output { static_cast<Output*>(cursor()->output()) };
 
     if (stateChanges.check(Maximized))
@@ -36,7 +36,7 @@ void ToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
             else
             {
                 configureSize(0, 0);
-                configureState(pending().state & ~Maximized);
+                configureState(pendingConfiguration().state & ~Maximized);
             }
         }
     }
@@ -54,7 +54,7 @@ void ToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
             else
             {
                 configureSize(0, 0);
-                configureState(pending().state & ~Fullscreen);
+                configureState(pendingConfiguration().state & ~Fullscreen);
             }
         }
         else if (output)
@@ -71,8 +71,12 @@ void ToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
 void ToplevelRole::configureRequest() noexcept
 {
     configureSize(0, 0);
-    configureState(Activated | pending().state);
+    configureState(Activated | pendingConfiguration().state);
     configureDecorationMode(ClientSide);
+    configureCapabilities(MaximizeCap | MinimizeCap | FullscreenCap);
+
+    if (cursor()->output())
+        configureBounds(cursor()->output()->availableGeometry().size());
 }
 
 void ToplevelRole::setMaximizedRequest() noexcept
@@ -93,7 +97,7 @@ void ToplevelRole::setFullscreenRequest(LOutput *preferredOutput) noexcept
     if (!output)
         output = cursor()->output();
 
-    statesBeforeFullscreen = current().state;
+    statesBeforeFullscreen = state();
     rectBeforeFullscreen = LRect(surface()->pos(), windowGeometry().size());
 
     configureSize(output->size());

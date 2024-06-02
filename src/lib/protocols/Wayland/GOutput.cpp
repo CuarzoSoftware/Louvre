@@ -1,8 +1,11 @@
+#include <protocols/Wayland/RSurface.h>
 #include <protocols/GammaControl/RGammaControl.h>
 #include <protocols/XdgOutput/RXdgOutput.h>
 #include <protocols/Wayland/GOutput.h>
 #include <private/LClientPrivate.h>
 #include <private/LOutputPrivate.h>
+#include <private/LSurfacePrivate.h>
+#include <LCompositor.h>
 #include <LOutputMode.h>
 #include <LUtils.h>
 #include <LGlobal.h>
@@ -98,6 +101,22 @@ void GOutput::sendConfiguration() noexcept
     else
         for (auto *xdgOutput : xdgOutputRes())
             xdgOutput->done();
+
+    for (LSurface *surface : compositor()->surfaces())
+    {
+        if (surface->client() == this->client())
+        {
+            for (LOutput *o : surface->outputs())
+            {
+                if (output() == o)
+                {
+                    surface->surfaceResource()->enter(this);
+                    surface->imp()->sendPreferredScale();
+                    break;
+                }
+            }
+        }
+    }
 }
 
 void GOutput::geometry(Int32 x, Int32 y, Int32 physicalWidth, Int32 physicalHeight,

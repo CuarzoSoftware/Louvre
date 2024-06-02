@@ -1,15 +1,17 @@
 #include <LToplevelMoveSession.h>
-#include <private/LToplevelRolePrivate.h>
-#include <private/LSeatPrivate.h>
 #include <LPointerEnterEvent.h>
-#include <algorithm>
+#include <LCompositor.h>
+#include <private/LSeatPrivate.h>
 #include <LUtils.h>
+#include <algorithm>
 
 using namespace Louvre;
 
-LToplevelMoveSession::LToplevelMoveSession() : m_triggeringEvent(std::make_unique<LPointerEnterEvent>()) {}
+LToplevelMoveSession::LToplevelMoveSession(LToplevelRole *toplevel) noexcept :
+    m_toplevel(toplevel),
+    m_triggeringEvent(std::make_unique<LPointerEnterEvent>()){}
 
-LToplevelMoveSession::~LToplevelMoveSession()
+LToplevelMoveSession::~LToplevelMoveSession() noexcept
 {
     if (m_isActive)
         LVectorRemoveOneUnordered(compositor()->seat()->imp()->moveSessions, this);

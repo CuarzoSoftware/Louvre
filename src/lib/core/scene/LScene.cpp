@@ -259,7 +259,7 @@ void LScene::handlePointerMoveEvent(const LPointerMoveEvent &event, LBitset<Even
             session->toplevel()->surface()->repaintOutputs();
 
             if (session->toplevel()->maximized())
-                session->toplevel()->configureState(session->toplevel()->pending().state &~ LToplevelRole::Maximized);
+                session->toplevel()->configureState(session->toplevel()->pendingConfiguration().state &~ LToplevelRole::Maximized);
         }
     }
 
@@ -410,7 +410,7 @@ retry:
             keyboard.setFocus(seat()->pointer()->focus());
 
         if (pointer.focus()->toplevel() && !pointer.focus()->toplevel()->activated())
-            pointer.focus()->toplevel()->configureState(pointer.focus()->toplevel()->pending().state | LToplevelRole::Activated);
+            pointer.focus()->toplevel()->configureState(pointer.focus()->toplevel()->pendingConfiguration().state | LToplevelRole::Activated);
 
         if (!pointer.focus()->popup())
             seat()->dismissPopups();
@@ -1115,7 +1115,7 @@ skipViews:
                 session->toplevel()->surface()->repaintOutputs();
 
                 if (session->toplevel()->maximized())
-                    session->toplevel()->configureState(session->toplevel()->pending().state &~ LToplevelRole::Maximized);
+                    session->toplevel()->configureState(session->toplevel()->pendingConfiguration().state &~ LToplevelRole::Maximized);
             }
         }
     }
@@ -1141,7 +1141,7 @@ skipViews:
                 session->toplevel()->surface()->repaintOutputs();
 
                 if (session->toplevel()->maximized())
-                    session->toplevel()->configureState(session->toplevel()->pending().state &~ LToplevelRole::Maximized);
+                    session->toplevel()->configureState(session->toplevel()->pendingConfiguration().state &~ LToplevelRole::Maximized);
             }
         }
     }

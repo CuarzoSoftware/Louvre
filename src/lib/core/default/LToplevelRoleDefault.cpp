@@ -17,7 +17,7 @@ using namespace Louvre;
 //! [rolePos]
 const LPoint &LToplevelRole::rolePos() const
 {
-    m_rolePos = surface()->pos() - windowGeometry().topLeft() + LPoint(extraMargins().left, extraMargins().top);
+    m_rolePos = surface()->pos() - windowGeometry().topLeft() + LPoint(extraGeometry().left, extraGeometry().top);
     return m_rolePos;
 }
 //! [rolePos]
@@ -97,25 +97,24 @@ void LToplevelRole::configureRequest()
 {
     // Sending (0,0) allows the client to decide the size
     configureSize(0,0);
-    configureState(pending().state | Activated);
+    configureState(pendingConfiguration().state | Activated);
     configureDecorationMode(ClientSide);
+    configureCapabilities(WindowMenuCap | FullscreenCap | MaximizeCap | FullscreenCap);
+    if (cursor()->output())
+        configureBounds(cursor()->output()->availableGeometry().size());
+    else
+        configureBounds(0, 0);
 }
 //! [configureRequest]
-
-void LToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
+//!
+void LToplevelRole::atomsChanged(LBitset<AtomChanges> changes, const Atoms &prevAtoms)
 {
     surface()->repaintOutputs();
 
     if (!changes.check(StateChanged))
         return;
 
-    const LBitset<State> stateChanges { current().state ^ previous().state };
-
-    if (stateChanges.check(Activated))
-    {
-        if (activated())
-            seat()->keyboard()->setFocus(surface());
-    }
+    const LBitset<State> stateChanges { state() ^ prevAtoms.state };
 
     if (stateChanges.check(Maximized))
     {
@@ -130,7 +129,7 @@ void LToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
             else
             {
                 configureSize(0, 0);
-                configureState(pending().state & ~Maximized);
+                configureState(pendingConfiguration().state & ~Maximized);
             }
         }
         else
@@ -151,7 +150,7 @@ void LToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
             else
             {
                 configureSize(0, 0);
-                configureState(pending().state & ~Fullscreen);
+                configureState(pendingConfiguration().state & ~Fullscreen);
             }
         }
         else
@@ -160,9 +159,8 @@ void LToplevelRole::configurationChanged(LBitset<ConfigurationChanges> changes)
         }
     }
 
-    if (stateChanges.check(Fullscreen | Maximized) && !pending().state.check(Fullscreen | Maximized))
+    if (stateChanges.check(Fullscreen | Maximized) && !pendingConfiguration().state.check(Fullscreen | Maximized))
         setExclusiveOutput(nullptr);
-
 }
 
 //! [titleChanged]
@@ -197,7 +195,7 @@ void LToplevelRole::setMaximizedRequest()
 
     setExclusiveOutput(cursor()->output());
     configureSize(cursor()->output()->availableGeometry().size()
-        - LSize(extraMargins().left + extraMargins().right, extraMargins().top + extraMargins().bottom));
+        - LSize(extraGeometry().left + extraGeometry().right, extraGeometry().top + extraGeometry().bottom));
     configureState(Activated | Maximized);
 }
 //! [setMaximizedRequest]
@@ -208,7 +206,7 @@ void LToplevelRole::unsetMaximizedRequest()
     if (!maximized())
         return;
 
-    configureState(pending().state &~ Maximized);
+    configureState(pendingConfiguration().state &~ Maximized);
     configureSize(prevRect.size());
 }
 //! [unsetMaximizedRequest]
@@ -236,7 +234,7 @@ void LToplevelRole::unsetFullscreenRequest()
     if (!fullscreen())
         return;
 
-    configureState(pending().state &~ Fullscreen);
+    configureState(pendingConfiguration().state &~ Fullscreen);
     configureSize(prevRect.size());
 }
 //! [unsetFullscreenRequest]

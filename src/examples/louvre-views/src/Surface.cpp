@@ -200,11 +200,18 @@ void Surface::mappingChanged()
     }
     else
     {
-        if (seat()->pointer()->focus() == this)
+        if (hasPointerFocus())
             seat()->pointer()->setFocus(nullptr);
 
-        if (toplevel() && toplevel()->fullscreen())
-            toplevel()->configureState(toplevel()->pending().state &~LToplevelRole::Fullscreen);
+        if (tl())
+        {
+            if (!tl()->fullscreen())
+                G::compositor()->fadeOutSurface(role(), 250);
+        }
+        else if (popup())
+        {
+            G::compositor()->fadeOutSurface(role(), 90);
+        }
 
         view.repaint();
     }
@@ -352,7 +359,7 @@ void Surface::minimizedChanged()
         minimizeAnim.start();
 
         if (toplevel())
-            toplevel()->configureState(toplevel()->pending().state &~LToplevelRole::Activated);
+            toplevel()->configureState(toplevel()->pendingConfiguration().state &~LToplevelRole::Activated);
     }
     else
     {
@@ -461,7 +468,7 @@ void Surface::unminimize(DockItem *clickedItem)
 
     if (toplevel())
     {
-        toplevel()->configureState(toplevel()->pending().state | LToplevelRole::Activated);
+        toplevel()->configureState(toplevel()->pendingConfiguration().state | LToplevelRole::Activated);
         requestNextFrame(false);
     }
 
@@ -527,7 +534,7 @@ void Surface::onToplevelFirstMap() noexcept
     LSize tlSize { toplevel()->windowGeometry().size() };
 
     if (tl()->supportServerSideDecorations())
-        tlSize += LSize(0, tl()->extraMargins().top);
+        tlSize += LSize(0, tl()->extraGeometry().top);
 
     setPos(outputPosG + (output->availableGeometry().size() - tlSize)/2);
 
@@ -537,7 +544,7 @@ void Surface::onToplevelFirstMap() noexcept
     if (pos().y() < outputPosG.y())
         setY(outputPosG.y());
 
-    if (!tl()->pending().state.check(LToplevelRole::Fullscreen) && tl()->supportServerSideDecorations() &&
+    if (!tl()->pendingConfiguration().state.check(LToplevelRole::Fullscreen) && tl()->supportServerSideDecorations() &&
         output->availableGeometry().size().h() <= tlSize.h())
     {
         tl()->setMaximizedRequest();

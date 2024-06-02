@@ -66,7 +66,7 @@ struct Output
     SRMConnector *conn;
     LSize physicalSize;
     std::vector<LOutputMode*>modes;
-    LTexture **textures { nullptr };
+    std::vector<LTexture*> textures;
 };
 
 struct OutputMode
@@ -157,7 +157,6 @@ static void initConnector(Backend *bknd, SRMConnector *conn)
         .callback = [=](LOutput *output)
         {
             srmConnectorSetUserData(conn, output);
-            bkndOutput->textures = nullptr;
             bkndOutput->conn = conn;
             bkndOutput->physicalSize.setW(srmConnectorGetmmWidth(conn));
             bkndOutput->physicalSize.setH(srmConnectorGetmmHeight(conn));
@@ -198,6 +197,8 @@ static void uninitConnector(Backend *bknd, SRMConnector *conn)
     LCompositor *compositor = (LCompositor*)srmCoreGetUserData(bknd->core);
 
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+
+    LGraphicBackend::outputDestroyBuffers(bkndOutput->textures);
 
     while (!bkndOutput->modes.empty())
     {
@@ -260,6 +261,8 @@ static void resizeGL(SRMConnector *connector, void *userData)
 {
     SRM_UNUSED(connector);
     LOutput *output = (LOutput*)userData;
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    LGraphicBackend::outputDestroyBuffers(bkndOutput->textures);
     output->imp()->backendResizeGL();
 }
 
@@ -561,24 +564,22 @@ bool LGraphicBackend::outputRepaint(LOutput *output)
 void LGraphicBackend::outputUninitialize(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-    UInt32 texturesCount = srmConnectorGetBuffersCount(bkndOutput->conn);
     srmConnectorUninitialize(bkndOutput->conn);
+    outputDestroyBuffers(bkndOutput->textures);
+}
 
-    if (bkndOutput->textures)
+void LGraphicBackend::outputDestroyBuffers(std::vector<LTexture *> &textures)
+{
+    while (!textures.empty())
     {
-        for (UInt32 i = 0; i < texturesCount; i++)
+        if (textures.back())
         {
-            if (bkndOutput->textures[i])
-            {
-                // Do not destroy connectors native buffer
-                bkndOutput->textures[i]->m_graphicBackendData = nullptr;
-                delete bkndOutput->textures[i];
-                bkndOutput->textures[i] = nullptr;
-            }
+            // Do not destroy connectors native buffer
+            textures.back()->m_graphicBackendData = nullptr;
+            delete textures.back();
         }
 
-        free(bkndOutput->textures);
-        bkndOutput->textures = nullptr;
+        textures.pop_back();
     }
 }
 
@@ -681,8 +682,9 @@ LTexture *LGraphicBackend::outputGetBuffer(LOutput *output, UInt32 bufferIndex)
     if (!buffer || !buffersCount)
         return nullptr;
 
-    if (!bkndOutput->textures)
-        bkndOutput->textures = (LTexture**)calloc(buffersCount, sizeof(LTexture*));
+    if (bkndOutput->textures.empty())
+        for (UInt32 i = 0; i < buffersCount; i++)
+            bkndOutput->textures.push_back(nullptr);
 
     if (bkndOutput->textures[bufferIndex])
         return bkndOutput->textures[bufferIndex];

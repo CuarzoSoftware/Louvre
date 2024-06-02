@@ -1,6 +1,6 @@
 Louvre (2.0.0-1)
 
-  # New Protocols
+  # New Protocols/Globals
 
   * Session Lock
   * Wlr Layer Shell
@@ -8,7 +8,7 @@ Louvre (2.0.0-1)
   * Pointer Gestures
   * Pointer Constraints
   * Relative Pointer
-  * Touch Events
+  * Wayland Touch Events
   * XDG Output
 
   # Protocol Updates
@@ -37,18 +37,28 @@ Louvre (2.0.0-1)
 
   # Roles
 
+  * Introduced the LLayerRole class for wlr_layer_shell surfaces, featuring a default implementation that automatically updates their position and size, as
+    well as the available output geometry.
+  * Introduced the LSessionLockRole for session_lock surfaces, featuring a default implementation that automatically updates their position, size, and mapping
+    state based on the session state.
   * Detached toplevel move and resize sessions from LPointer, moving them into the new LToplevelMoveSession and LToplevelResizeSession classes.
+  * Move and resize sessions constraints can now be updated dynamically as needed.
+  * Now multiple move and resize toplevel sessions are allowed at a time (e.g. pointer and touch at the same time).
   * Replaced LToplevelRole::ResizeEdge enum with the new LEdge flags.
-  * Now multiple move and resize toplevel sessions are allowed at a time.
-  * Move and resize sessions constraints can now be updated dynamically if needed.
-  * Introduced the concept of previous, pending, and current toplevel state for better configuration handling.
+  * Replaced individual LToplevelRole property change events with atomsChanged(), enabling the handling of multiple property changes simultaneously and access
+    to the previous state. This prevents issues that arose from the order in which events were previously triggered.
+  * Added setExtraGeometry() to LToplevelRole to simplify the calculation of position, size, and constraints for toplevels using server-side decorations.
   * Optimized popup position recalculations, preventing unnecessary processing.
+
+  # Screen Casting
+
+  * Added support for screen capture through the wlr_screencopy protocol, which also works with the xdg-desktop-portal-wlr portal.
 
   # Cursor
 
-  * Added the new LClientCursor class for easier tracking and management of client cursors.
-  * LPointer::setCursorRequest() now uses LClientCursor instead of a raw LCursorRole and hotspot.
-  * When assigned to LCursor, the cursor texture, hotspot, and visibility automatically adjust based on the underlying LCursorRole state.
+  * Added new LClientCursor class for easier tracking and management of client cursors. When assigned to LCursor, the texture, hotspot, and visibility
+    automatically adjust based on the underlying LCursorRole state.
+  * LPointer::setCursorRequest() now provides an LClientCursor instead of a raw LCursorRole and hotspot.
   * The LClient class now stores and provides access to the last cursor set by a client via LClient::lastCursor(). 
   * LCursor enablement and hardware compositing can be now toggled for specific outputs using LCursor::enable() and LCursor::enableHwCompositing().
   * Manual cursor drawing is no longer necessary when hardware composition is not supported.
@@ -64,7 +74,7 @@ Louvre (2.0.0-1)
 
   # Input Events
 
-  * Redesigned the entire input system, with each input event having its own dedicated class providing detailed information.
+  * Redesigned the entire input system, with each input event now having its own LEvent subclass providing detailed information.
   * Added support for touch events through the LTouch, LTouchPoint, and LSceneTouchPoint classes.
   * Introduced the LInputDevice class for configuring and accessing basic input device properties.
   * Requests triggered by user interactions now include the specific event that triggered them.
@@ -76,12 +86,12 @@ Louvre (2.0.0-1)
 
   * Introduced the LWeak class for efficient management of weak references to LObjects, automatically setting them to nullptr upon object destruction, with an optional destruction callback.
   * Replaced LClient::destroy() with destroyLater() to prevent immediate client resource destruction and reduce potential access to freed memory.
-  * Added an assert to prevent users from creating factory objects outside their virtual constructors.
+  * Added assert to prevent users from creating factory objects outside their virtual constructors.
 
   # Protocol Globals
 
   * Introduced the new LGlobal class for managing protocol globals.
-  * Added proper methods in LCompositor for safely adding and removing protocol globals.
+  * Added proper methods in LCompositor for safely adding and removing protocol globals (enabling/disabling protocols).
   * Included globalsFilter() in LCompositor to allow only well-known clients to bind to specific protocols.
 
   # Factory

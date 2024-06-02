@@ -1,7 +1,11 @@
 #ifndef LTOPLEVELMOVESESSION_H
 #define LTOPLEVELMOVESESSION_H
 
-#include <LToplevelRole.h>
+#include <LEdge.h>
+#include <LMargins.h>
+#include <LPoint.h>
+#include <functional>
+#include <memory>
 
 class Louvre::LToplevelMoveSession
 {
@@ -69,8 +73,8 @@ public:
 
 private:
     friend class LToplevelRole;
-    LToplevelMoveSession();
-    ~LToplevelMoveSession();
+    LToplevelMoveSession(LToplevelRole *toplevel) noexcept;
+    ~LToplevelMoveSession() noexcept;
     LToplevelRole *m_toplevel;
     LPoint m_initPos;
     LPoint m_initDragPoint;

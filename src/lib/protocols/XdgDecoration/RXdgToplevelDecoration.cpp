@@ -28,14 +28,14 @@ RXdgToplevelDecoration::RXdgToplevelDecoration(
     ),
     m_toplevelRole(toplevelRole)
 {
-    toplevelRole->imp()->xdgDecoration.reset(this);
+    toplevelRole->m_xdgDecorationRes.reset(this);
 }
 
 RXdgToplevelDecoration::~RXdgToplevelDecoration()
 {
-    if (toplevelRole() && toplevelRole()->current().decorationMode == LToplevelRole::ServerSide)
+    if (toplevelRole() && toplevelRole()->decorationMode() == LToplevelRole::ServerSide)
     {
-        toplevelRole()->imp()->preferredDecorationMode = LToplevelRole::ClientSide;
+        toplevelRole()->m_preferredDecorationMode = LToplevelRole::ClientSide;
         toplevelRole()->configureDecorationMode(LToplevelRole::ClientSide);
     }
 }
@@ -67,11 +67,12 @@ void RXdgToplevelDecoration::set_mode(wl_client */*client*/, wl_resource *resour
 
     if (xdgToplevelDecorationRes.toplevelRole()->preferredDecorationMode() != mode)
     {
-        xdgToplevelDecorationRes.toplevelRole()->imp()->preferredDecorationMode = (LToplevelRole::DecorationMode)mode;
+        xdgToplevelDecorationRes.toplevelRole()->m_preferredDecorationMode = (LToplevelRole::DecorationMode)mode;
         xdgToplevelDecorationRes.toplevelRole()->preferredDecorationModeChanged();
     }
 
-    xdgToplevelDecorationRes.toplevelRole()->configureRequest();
+    if (!xdgToplevelDecorationRes.toplevelRole()->m_flags.check(LToplevelRole::HasDecorationModeToSend))
+        xdgToplevelDecorationRes.toplevelRole()->configureDecorationMode(xdgToplevelDecorationRes.toplevelRole()->pendingConfiguration().decorationMode);
 }
 
 void RXdgToplevelDecoration::unset_mode(wl_client */*client*/, wl_resource *resource)
@@ -86,11 +87,12 @@ void RXdgToplevelDecoration::unset_mode(wl_client */*client*/, wl_resource *reso
 
     if (xdgToplevelDecorationRes.toplevelRole()->preferredDecorationMode() != 0)
     {
-       xdgToplevelDecorationRes.toplevelRole()->imp()->preferredDecorationMode = LToplevelRole::NoPreferredMode;
+       xdgToplevelDecorationRes.toplevelRole()->m_preferredDecorationMode = LToplevelRole::NoPreferredMode;
        xdgToplevelDecorationRes.toplevelRole()->preferredDecorationModeChanged();
     }
 
-    xdgToplevelDecorationRes.toplevelRole()->configureRequest();
+    if (!xdgToplevelDecorationRes.toplevelRole()->m_flags.check(LToplevelRole::HasDecorationModeToSend))
+        xdgToplevelDecorationRes.toplevelRole()->configureDecorationMode(xdgToplevelDecorationRes.toplevelRole()->pendingConfiguration().decorationMode);
 }
 
 /******************** EVENTS ********************/

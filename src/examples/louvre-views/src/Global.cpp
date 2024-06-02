@@ -9,6 +9,7 @@
 
 #include "Global.h"
 #include "Compositor.h"
+#include "LLauncher.h"
 #include "Output.h"
 #include "Dock.h"
 #include "TextRenderer.h"
@@ -188,7 +189,7 @@ void G::loadTextures()
 
     _textures.wallpaper = LOpenGL::loadTexture(std::filesystem::path(getenvString("HOME")) / ".config/Louvre/wallpaper.jpg");
 
-    if (!_textures.wallpaper )
+    if (!_textures.wallpaper)
         _textures.wallpaper = G::loadAssetsTexture("wallpaper.png", false);
 
     Float32 bufferScale = 2.f;

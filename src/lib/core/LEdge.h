@@ -11,17 +11,17 @@ namespace Louvre
      */
     enum LEdge : UInt32
     {
-        LEdgeNone           = 0, ///< No edge.
-        LEdgeTop            = static_cast<UInt32>(1) << 0, ///< The top edge.
-        LEdgeBottom         = static_cast<UInt32>(1) << 1, ///< The bottom edge.
-        LEdgeLeft           = static_cast<UInt32>(1) << 2, ///< The left edge.
-        LEdgeRight          = static_cast<UInt32>(1) << 3, ///< The right edge.
+        LEdgeNone   = 0, ///< No edge.
+        LEdgeTop    = static_cast<UInt32>(1) << 0, ///< The top edge.
+        LEdgeBottom = static_cast<UInt32>(1) << 1, ///< The bottom edge.
+        LEdgeLeft   = static_cast<UInt32>(1) << 2, ///< The left edge.
+        LEdgeRight  = static_cast<UInt32>(1) << 3, ///< The right edge.
     };
 
     /**
-     * @brief Disabled edge.
+     * @brief Represents a disabled edge.
      *
-     * Indicates an edge is disabled, for example in LToplevelRole constraints.
+     * This constant indicates that an edge is disabled, for example, in LToplevelRole constraints.
      */
     static inline constexpr Int32 LEdgeDisabled = std::numeric_limits<Int32>::min();
 

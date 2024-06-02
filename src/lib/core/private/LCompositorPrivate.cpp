@@ -847,7 +847,7 @@ void LCompositor::LCompositorPrivate::sendPendingConfigurations()
     for (LSurface *s : surfaces)
     {
         if (s->toplevel())
-            s->toplevel()->imp()->sendConfiguration();
+            s->toplevel()->sendPendingConfiguration();
         else if (s->popup())
             s->popup()->imp()->sendConfiguration();
         else if (s->sessionLock())

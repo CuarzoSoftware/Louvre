@@ -24,12 +24,6 @@
 class Louvre::LSurfaceView : public LView
 {
 public:
-
-    /// @cond OMIT
-    LSurfaceView(const LSurfaceView&) = delete;
-    LSurfaceView& operator= (const LSurfaceView&) = delete;
-    /// @endcond
-
     /**
      * @brief LSurfaceView class constructor.
      *
@@ -37,6 +31,8 @@ public:
      * @param parent Pointer to the parent LView. Default value is nullptr.
      */
     LSurfaceView(LSurface *surface, LView *parent = nullptr) noexcept;
+
+    LCLASS_NO_COPY(LSurfaceView)
 
     /**
      * @brief LSurfaceView class destructor.
@@ -262,6 +258,26 @@ public:
      * @brief Gets the source rect of the surface, equivalent to LSurface::srcRect().
      */
     const LRectF &srcRect() const;
+
+
+    // TODO
+    void enableAlwaysMapped(bool enabled) noexcept
+    {
+        if (enabled == alwaysMappedEnabled())
+            return;
+
+        const bool prev { mapped() };
+
+        m_state.setFlag(AlwaysMapped, enabled);
+
+        if (!repaintCalled() && prev != mapped())
+            repaint();
+    }
+
+    bool alwaysMappedEnabled() const noexcept
+    {
+        return m_state.check(AlwaysMapped);
+    }
 
     virtual bool nativeMapped() const noexcept override;
     virtual const LPoint &nativePos() const noexcept override;
