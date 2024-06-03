@@ -6,10 +6,7 @@
 
 #include <protocols/Wayland/GSeat.h>
 
-#include <string.h>
-#include <stdio.h>
 #include <unistd.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <libudev.h>
 #include <libinput.h>
@@ -60,12 +57,12 @@ LSeat::~LSeat()
         imp()->libseatHandle = nullptr;
     }}
 
-const std::vector<LOutput *> &LSeat::outputs() const
+const std::vector<LOutput *> &LSeat::outputs() const noexcept
 {
     return *compositor()->imp()->graphicBackend->backendGetConnectedOutputs();
 }
 
-const char *LSeat::name() const
+const char *LSeat::name() const noexcept
 {
     if (imp()->libseatHandle)
         return libseat_seat_name(imp()->libseatHandle);
@@ -73,22 +70,22 @@ const char *LSeat::name() const
     return "seat0";
 }
 
-LToplevelRole *LSeat::activeToplevel() const
+LToplevelRole *LSeat::activeToplevel() const noexcept
 {
     return imp()->activeToplevel;
 }
 
-const std::vector<LToplevelResizeSession *> &LSeat::toplevelResizeSessions() const
+const std::vector<LToplevelResizeSession *> &LSeat::toplevelResizeSessions() const noexcept
 {
     return imp()->resizeSessions;
 }
 
-const std::vector<LToplevelMoveSession *> &LSeat::toplevelMoveSessions() const
+const std::vector<LToplevelMoveSession *> &LSeat::toplevelMoveSessions() const noexcept
 {
     return imp()->moveSessions;
 }
 
-void LSeat::dismissPopups()
+void LSeat::dismissPopups() noexcept
 {
     std::list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();
     for (; s!= compositor()->surfaces().rend(); s++)
@@ -98,13 +95,25 @@ void LSeat::dismissPopups()
     }
 }
 
-void LSeat::setTTY(UInt32 tty)
+LPopupRole *LSeat::topmostPopup() const noexcept
+{
+    for (std::list<LSurface*>::const_reverse_iterator it = compositor()->surfaces().crbegin();
+         it != compositor()->surfaces().crend(); it++)
+    {
+        if ((*it)->mapped() && (*it)->popup())
+            return (*it)->popup();
+    }
+
+    return nullptr;
+}
+
+void LSeat::setTTY(UInt32 tty) noexcept
 {
     if (imp()->libseatHandle)
         imp()->ttyNumber = tty;
 }
 
-Int32 LSeat::openDevice(const char *path, Int32 *fd)
+Int32 LSeat::openDevice(const char *path, Int32 *fd) noexcept
 {
     if (!imp()->libseatHandle)
         return -1;
@@ -117,7 +126,7 @@ Int32 LSeat::openDevice(const char *path, Int32 *fd)
     return id;
 }
 
-Int32 LSeat::closeDevice(Int32 id)
+Int32 LSeat::closeDevice(Int32 id) noexcept
 {
     if (!imp()->libseatHandle)
         return -1;
@@ -130,24 +139,12 @@ Int32 LSeat::closeDevice(Int32 id)
     return ret;
 }
 
-libseat *LSeat::libseatHandle() const
+libseat *LSeat::libseatHandle() const noexcept
 {
     return imp()->libseatHandle;
 }
 
-bool LSeat::enabled() const
+bool LSeat::enabled() const noexcept
 {
     return imp()->enabled;
-}
-
-LPopupRole *LSeat::topmostPopup() const
-{
-    for (std::list<LSurface*>::const_reverse_iterator it = compositor()->surfaces().crbegin();
-         it != compositor()->surfaces().crend(); it++)
-    {
-        if ((*it)->mapped() && (*it)->popup())
-            return (*it)->popup();
-    }
-
-    return nullptr;
 }

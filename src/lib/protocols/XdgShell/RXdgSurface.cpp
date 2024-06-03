@@ -187,7 +187,9 @@ void RXdgSurface::ack_configure(wl_client */*client*/, wl_resource *resource, UI
                 toplevel.pendingAtoms().decorationMode = toplevel.m_lastACKConfiguration.decorationMode;
                 toplevel.pendingAtoms().state = toplevel.m_lastACKConfiguration.state;
 
-                if (sizeUnchanged || !res.m_hasPendingWindowGeometry)
+                if (sizeUnchanged && !res.m_hasPendingWindowGeometry)
+                    toplevel.fullAtomsUpdate();
+                else
                     toplevel.partialAtomsUpdate();
 
                 return;

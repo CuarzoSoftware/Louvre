@@ -4,7 +4,6 @@
 #include <LMargins.h>
 #include <LBaseSurfaceRole.h>
 #include <LBitset.h>
-#include <LSize.h>
 #include <LRect.h>
 #include <string>
 #include <LEdge.h>
@@ -32,7 +31,7 @@
  * of the toplevel using different configure methods, such as configureSize(), configureState(), configureBounds(), etc.
  *
  * The configuration is not applied immediately, the compositor must wait for the client to ACK the changes through the atomsChanged() event which is also triggered whenever one
- * or more properties of the atoms() struct change, allowing you to also access previous values as well.
+ * or more properties of the atoms() struct change, allowing to access previous values as well.
  *
  * @note The compositor can configure any parameters at any time, but should always wait for the atomsChanged() event to detect when they are actually applied.
  *
@@ -55,7 +54,7 @@
  * By default, all clients draw their own decorations on the toplevel surface, such as shadows, and the windowGeometry() property indicates which part of the surface
  * are decorations and which are the actual window content.
  *
- * Some clients also support server-side decorations (SSD). To enable SSD, the compositor must send a configureDecorationMode() with the @ref ServerSide value.\n
+ * Some clients also supportServerSideDecorations() (SSD). To enable SSD, the compositor must send a configureDecorationMode() with the @ref ServerSide value.\n
  * When the decorationMode() changes to @ref ServerSide, the client does not draw any decorations, and the windowGeometry() equals the entire surface size.\n
  * If the compositor draws additional elements that are meant to be part of the geometry (such as a title bar), the setExtraGeometry() method can be employed,
  * which allows for proper positioning of the toplevel and constraining it during interactive sessions.
@@ -90,7 +89,14 @@ public:
         /// In interactive resizing
         Resizing    = static_cast<UInt16>(1) << 2,
 
-        /// Activated (its decorations stand out from others)
+        /**
+         * @brief Activated (its decorations stand out from others)
+         *
+         * Only a single toplevel can be activated at a time.\n
+         * This is automatically handled by Louvre.
+         *
+         * @see LSeat::activeToplevel()
+         */
         Activated   = static_cast<UInt16>(1) << 3,
 
         /// Tiled left (since 2)
@@ -215,93 +221,30 @@ public:
     /**
      * @brief Configuration parameters sent to the client.
      *
-     * @see configureState()
-     * @see configureSize()
-     * @see configureBounds()
-     * @see configureCapabilities()
-     * @see configureDecorationMode()
      * @see pendingConfiguration()
+     * @see findConfiguration()
      */
     struct Configuration
     {
-        /// @see LToplevelRole::state()
+        /// @see LToplevelRole::state() and configureState()
         LBitset<State> state;
 
         /// Size of the toplevel without decorations
+        /// @see windowGeometry() and configureSize()
         LSize size;
 
-        /// @see LToplevelRole::bounds()
+        /// @see LToplevelRole::bounds() and configureBounds()
         LSize bounds;
 
-        /// @see LToplevelRole::capabilities()
+        /// @see LToplevelRole::capabilities() and configureCapabilities()
         LBitset<Capabilities> capabilities;
 
-        /// @see LToplevelRole::decorationMode()
+        /// @see LToplevelRole::decorationMode() and configureDecorationMode()
         DecorationMode decorationMode { ClientSide };
 
-        /// @see LToplevelRole::serial()
+        /// @see LToplevelRole::serial() and pendingConfiguration()
         UInt32 serial { 0 };
     };
-
-    /**
-     * @brief Sets the exclusive output hint
-     *
-     * This is an optional hint that can be used to keep a reference of
-     * in which `LOutput` a toplevel is positioned while maximized or in fullscreen mode.
-     *
-     * The default implementation of `LOutput::paintGL()` uses this information to prevent displaying
-     * the given toplevel on other outputs.
-     *
-     * @see exclusiveOutput()
-     *
-     * @param output The given output or `nullptr` to unset.
-     */
-    void setExclusiveOutput(LOutput *output) noexcept;
-
-    /**
-     * @brief Exclusive output hint
-     *
-     * Returns the exclusive output hint set with `setExclusiveOutput()`, or `nullptr` if unset.
-     */
-    virtual LOutput *exclusiveOutput() const override
-    {
-        return m_exclusiveOutput;
-    }
-
-    /**
-     * @brief Sets extra geometry margins.
-     *
-     * This optional method allows you to modify the `extraGeometry()` property, providing additional margins
-     * for each toplevel edge to be considered part of the geometry. For example, when using
-     * server-side decorations, the compositor could draw a custom title bar or borders that
-     * are not part of the client surfaces. This method allows you to define those sizes and avoids the need
-     * to override `rolePos()`, the move and resizing constraints, and other default implementations such as
-     * LOutput::geometryChanged().
-     *
-     * @note This does not affect the `windowGeometry()` property and the functioning of `configureSize()`.
-     *
-     * @see extraGeometry()
-     *
-     * @param margins Left, top, right, bottom margins.
-     */
-    void setExtraGeometry(const LMargins &margins) noexcept
-    {
-        m_extraGeometry = margins;
-    }
-
-    /**
-     * @brief Extra geometry hint.
-     *
-     * Set to (0,0,0,0) by default.
-     *
-     * @see setExtraGeometry()
-     */
-    const LMargins &extraGeometry() const noexcept
-    {
-        return m_extraGeometry;
-    }
-
-    LRect prevRect;
 
     /**
      * @brief Constructor of the LToplevelRole class.
@@ -326,20 +269,6 @@ public:
      * @return A pointer to the configuration if found, otherwise `nullptr`.
      */
     const Configuration *findConfiguration(UInt32 serial) const noexcept;
-
-    /**
-     * @brief Returns the states supported by the toplevel.
-     *
-     * - @ref Activated, @ref Maximized , @ref Fullscreen , and @ref Resizing are always supported.
-     * - If any of the tiled states is supported, all are supported.
-     * - The @ref Suspended state support is independent of other states.
-     *
-     * @return A bitset representing the supported states.
-     */
-    LBitset<State> supportedStates() const noexcept
-    {
-        return m_supportedStates;
-    }
 
     /**
      * @brief Pending configuration.
@@ -430,6 +359,23 @@ public:
         m_pendingConfiguration.decorationMode = mode;
     }
 
+    /**
+     * @brief Notifies the toplevel about the compositor's capabilities.
+     *
+     * Informs the toplevel which @ref Capabilities are supported by the compositor and stores them in pendingConfiguration().\n
+     * For example, if the @ref MaximizeCap is not available, clients should hide
+     * the maximize button in their decorations. Additionally, requests such as setMaximizedRequest()
+     * and unsetMaximizedRequest() will not be triggered.
+     *
+     * The capabilities are not applied immediately, see atomsChanged() and capabilities().
+     *
+     * All capabilities are enabled by default.
+     *
+     * @note Some poorly behaved clients, such as Firefox, always expect the compositor to obey their requests
+     *       and freeze when it does not. In such cases, it is better to leave @ref MaximizeCap and @ref FullscreenCap enabled.
+     *
+     * @param caps The supported @ref Capabilities flags.
+     */
     void configureCapabilities(LBitset<Capabilities> caps) noexcept
     {
         updateSerial();
@@ -437,11 +383,28 @@ public:
         m_pendingConfiguration.capabilities = caps & (WindowMenuCap | MaximizeCap | FullscreenCap | MinimizeCap);
     }
 
+    /**
+     * @brief Asks the client to constrain its size to the specified bounds.
+     *
+     * Requests the client to prevent assigning a size to the toplevel surface
+     * larger than the given bounds, for example, to prevent exceeding the available geometry of an output.
+     *
+     * The bounds are stored in pendingConfiguration() and not applied immediately, see atomsChanged() and bounds().
+     *
+     * @note This is merely a suggestion, clients are free to ignore it.
+     *
+     * @param bounds The suggested maximum size. Setting a component to 0 disables the constraint for that component.
+     */
     void configureBounds(const LSize &bounds) noexcept
     {
         configureBounds(bounds.w(), bounds.h());
     }
 
+    /**
+     * @brief Asks the client to constrain its size to the specified bounds.
+     *
+     * @see configureBounds()
+     */
     void configureBounds(Int32 width, Int32 height) noexcept
     {
         updateSerial();
@@ -450,14 +413,107 @@ public:
         m_pendingConfiguration.bounds.setH(height < 0 ? 0 : height);
     }
 
+    /**
+     * @brief Current atomic properties.
+     *
+     * This struct contains all the current toplevel atomic properties, which are updated
+     * each time atomsChanged() is triggered.
+     *
+     * The current properties can also be accessed via aliases such as windowGeometry(), state(), bounds(), etc.
+     */
     const Atoms &atoms() const noexcept
     {
         return m_atoms[m_currentAtomsIndex];
     }
 
-    LBitset<Capabilities> capabilities() const noexcept
+    /**
+     * @brief Current toplevel state.
+     *
+     * Flags representing the current toplevel @ref State.
+     *
+     * The state flags can also be checked via aliases such as activated(), maximized(), fullscreen(), etc.
+     *
+     * @see configureState().
+     *
+     * @note This is an alias for Atoms::state.
+     */
+    LBitset<State> state() const noexcept
     {
-        return atoms().capabilities;
+        return atoms().state;
+    }
+
+    /**
+     * @brief Returns the states supported by the toplevel.
+     *
+     * - @ref Activated, @ref Maximized , @ref Fullscreen , and @ref Resizing are always supported.
+     * - If any of the tiled states is supported, all are supported.
+     * - The @ref Suspended state support is independent of other states.
+     *
+     * @return A bitset representing the supported states.
+     */
+    LBitset<State> supportedStates() const noexcept
+    {
+        return m_supportedStates;
+    }
+
+    /**
+     * @brief Checks if the toplevel state() includes the @ref Activated flag.
+     *
+     * @return `true` if the flag is present, `false` otherwise.
+     */
+    bool activated() const noexcept
+    {
+        return state().check(Activated);
+    }
+
+    /**
+     * @brief Checks if the toplevel state() includes the @ref Maximized flag.
+     *
+     * @return `true` if the flag is present, `false` otherwise.
+     */
+    bool maximized() const noexcept
+    {
+        return state().check(Maximized);
+    }
+
+    /**
+     * @brief Checks if the toplevel state() includes the @ref Fullscreen flag.
+     *
+     * @return `true` if the flag is present, `false` otherwise.
+     */
+    bool fullscreen() const noexcept
+    {
+        return state().check(Fullscreen);
+    }
+
+    /**
+     * @brief Checks if the toplevel state() includes any of the tiled flags.
+     *
+     * @return `true` if any tiled flag is present, `false` otherwise.
+     */
+    bool tiled() const noexcept
+    {
+        return state().check(TiledLeft | TiledTop | TiledRight | TiledBottom);
+    }
+
+    /**
+     * @brief Checks if the toplevel state() includes the @ref Resizing flag.
+     *
+     * @return `true` if the flag is present, `false` otherwise.
+     */
+    bool resizing() const noexcept
+    {
+        return state().check(Resizing);
+    }
+
+    /**
+     * @brief Checks if the toplevel state() includes the @ref Suspended flag.
+     *
+     * @return `true` if the flag is present, `false` otherwise.
+     */
+    bool suspended() const noexcept
+    {
+        return state().check(Suspended);
     }
 
     /**
@@ -466,90 +522,51 @@ public:
      * <center><img height="300px" src="https://lh3.googleusercontent.com/pw/AIL4fc_le5DeTa6b-yBnChX6YPbkr12gAp38ghVyvsv4SjHCd2L4fTL8agYls0AcGlBeplJyc0FNQCIeb6sR4WbSUyAHM4_LrKLNjhZ0SniRdaSUsjS9IGQ=w2400"></center>
      *
      * The window geometry is a rect within the toplevel's surface that excludes its decorations (typically shadows).
+     *
+     * @note This is an alias for Atoms::windowGeometry.
      */
     const LRect &windowGeometry() const noexcept
     {
         return atoms().windowGeometry;
     }
 
-    LBitset<State> state() const noexcept
+    /**
+     * @brief Sets extra geometry margins.
+     *
+     * This optional method allows you to modify the `extraGeometry()` property, providing additional margins
+     * for each toplevel edge to be considered part of the geometry. For example, when using
+     * server-side decorations, the compositor could draw a custom title bar or borders that
+     * are not part of the client surfaces. This method allows you to define those sizes and avoids the need
+     * to override `rolePos()`, the move and resizing constraints, and other default implementations such as
+     * LOutput::geometryChanged().
+     *
+     * @note This does not affect the `windowGeometry()` property and the functioning of `configureSize()`.
+     *
+     * @see extraGeometry()
+     *
+     * @param margins Left, top, right, bottom margins.
+     */
+    void setExtraGeometry(const LMargins &margins) noexcept
     {
-        return atoms().state;
-    }
-
-    DecorationMode decorationMode() const noexcept
-    {
-        return atoms().decorationMode;
-    }
-
-    bool activated() const noexcept
-    {
-        return state().check(Activated);
-    }
-
-    bool maximized() const noexcept
-    {
-        return state().check(Maximized);
-    }
-
-    bool fullscreen() const noexcept
-    {
-        return state().check(Fullscreen);
-    }
-
-    bool tiled() const noexcept
-    {
-        return state().check(TiledLeft | TiledTop | TiledRight | TiledBottom);
-    }
-
-    bool resizing() const noexcept
-    {
-        return state().check(Resizing);
-    }
-
-    bool suspended() const noexcept
-    {
-        return state().check(Suspended);
-    }
-
-    UInt32 serial() const noexcept
-    {
-        return atoms().serial;
+        m_extraGeometry = margins;
     }
 
     /**
-     * @brief Closes the Toplevel.
+     * @brief Extra geometry margins.
      *
-     * Requests to close the toplevel (equivalent to pressing the close button on the window).
-     */
-    void close() noexcept;
-
-    /**
-     * @brief Get the application ID associated with the toplevel window.
+     * Set to (0,0,0,0) by default.
      *
-     * @return A string containing the application ID (e.g., "org.cuarzosoftware.Desk").
+     * @see setExtraGeometry()
      */
-    const std::string &appId() const noexcept
+    const LMargins &extraGeometry() const noexcept
     {
-        return m_appId;
-    }
-
-    /**
-     * @brief Get the window title of the toplevel.
-     *
-     * @return A string representing the window title.
-     */
-    const std::string &title() const noexcept
-    {
-        return m_title;
+        return m_extraGeometry;
     }
 
     /**
      * @brief Get the minimum size of the toplevel in surface coordinates.
      *
-     * If one of the axis is 0, it means that axis has no expected minimum size.
-     *
-     * @return The minimum size as a Louvre::LSize object.
+     * Components with a value of 0 indicate the limit is disabled.
      */
     const LSize &minSize() const noexcept
     {
@@ -559,9 +576,7 @@ public:
     /**
      * @brief Get the maximum size of the toplevel in surface coordinates.
      *
-     * If one of the axis is 0, it means that axis has no expected maximum size.
-     *
-     * @return The maximum size as a Louvre::LSize object.
+     * Components with a value of 0 indicate the limit is disabled.
      */
     const LSize &maxSize() const noexcept
     {
@@ -576,10 +591,59 @@ public:
     */
     bool sizeInRange(const LSize &size) const noexcept
     {
-        return (minSize().w() <= size.w() || minSize().w() == 0) &&
-               (maxSize().w() >= size.w() || maxSize().w() == 0) &&
-               (minSize().h() <= size.h() || minSize().h() == 0) &&
-               (maxSize().h() >= size.h() || maxSize().h() == 0);
+        return (minSize().w() == 0 || minSize().w() <= size.w()) &&
+               (maxSize().w() == 0 || maxSize().w() >= size.w()) &&
+               (minSize().h() == 0 || minSize().h() <= size.h()) &&
+               (maxSize().h() == 0 || maxSize().h() >= size.h());
+    }
+
+    /**
+     * @brief Constraints during move/resize sessions.
+     *
+     * Returns the left, top, right, and bottom constraints in global-compositor coordinates
+     * during a moveSession() and resizeSession() so that the toplevel stays within the given
+     * LOutput::availableGeometry(). See LToplevelMoveSession::setConstraints() and
+     * LToplevelResizeSession::setConstraints()
+     *
+     * @param includeExtraGeometry If `true`, extraGeometry() is considered.
+     */
+    LMargins calculateConstraintsFromOutput(LOutput *output, bool includeExtraGeometry = true) const noexcept;
+
+    /**
+     * @brief Current bounds.
+     *
+     * Suggested size constraints, notified to the client via configureBounds().
+     *
+     * @note This is an alias for Atoms::bounds.
+     */
+    const LSize &bounds() const noexcept
+    {
+        return atoms().bounds;
+    }
+
+    /**
+     * @brief Current capabilities.
+     *
+     * Flags representing the @ref Capabilities supported by the compositor, as notified to the client via configureCapabilities().
+     *
+     * @note This is an alias for Atoms::capabilities.
+     */
+    LBitset<Capabilities> capabilities() const noexcept
+    {
+        return atoms().capabilities;
+    }
+
+    /**
+     * @brief The current decoration mode.
+     *
+     * @see configureDecorationMode()
+     * @see atomsChanged()
+     *
+     * @note This is an alias for Atoms::decorationMode.
+     */
+    DecorationMode decorationMode() const noexcept
+    {
+        return atoms().decorationMode;
     }
 
     /**
@@ -592,9 +656,71 @@ public:
         return m_preferredDecorationMode;
     }
 
+    /**
+     * @brief Check if the toplevel supports server-side decorations.
+     */
     bool supportServerSideDecorations() const noexcept
     {
         return m_xdgDecorationRes.get() != nullptr;
+    }
+
+    /**
+     * @brief Last configuration serial ACK by the client.
+     *
+     * @see pendingConfiguration().
+     *
+     * @note This is an alias for Atoms::serial.
+     */
+    UInt32 serial() const noexcept
+    {
+        return atoms().serial;
+    }
+
+    /**
+     * @brief Sets the exclusive output hint.
+     *
+     * This is an optional hint that can be used to keep a reference of
+     * in which `LOutput` a toplevel is positioned while maximized or in fullscreen mode.
+     *
+     * The default implementation of `LOutput::paintGL()` uses this information to prevent displaying
+     * the given toplevel on other outputs.
+     *
+     * @see exclusiveOutput()
+     *
+     * @param output The given output or `nullptr` to unset.
+     */
+    void setExclusiveOutput(LOutput *output) noexcept;
+
+    /**
+     * @brief Exclusive output hint.
+     *
+     * Returns the exclusive output hint set with setExclusiveOutput(), or `nullptr` if unset.
+     */
+    virtual LOutput *exclusiveOutput() const override
+    {
+        return m_exclusiveOutput;
+    }
+
+    /**
+     * @brief Utility for handling interactive moving sessions.
+     *
+     * @see startMoveRequest()
+     * @see LSeat::toplevelMoveSessions()
+     */
+    LToplevelMoveSession &moveSession() const noexcept
+    {
+        return m_moveSession;
+    }
+
+    /**
+     * @brief Utility for handling interactive resizing sessions.
+     *
+     * @see startResizeRequest()
+     * @see LSeat::toplevelResizeSessions()
+     */
+    LToplevelResizeSession &resizeSession() const noexcept
+    {
+        return m_resizeSession;
     }
 
     /**
@@ -608,43 +734,46 @@ public:
     Protocols::XdgShell::RXdgSurface *xdgSurfaceResource() const;
 
     /**
-     * @name Interactive toplevel Movement
+     * @brief Get the application ID associated with the toplevel window.
      *
-     * These utility methods simplify the management of interactive toplevel moving sessions.
+     * @see appIdChanged()
      *
-     * @note Using these methods is optional.
-     *
-     * @see LToplevelRole::startMoveRequest()
+     * @return A string containing the application ID (e.g., "org.cuarzosoftware.Desk").
      */
-
-    ///@{
-
-    // TODO
-    LToplevelMoveSession &moveSession() const noexcept
+    const std::string &appId() const noexcept
     {
-        return m_moveSession;
+        return m_appId;
     }
-
-    ///@}
 
     /**
-     * @name Interactive Toplevel Resizing
+     * @brief Get the window title of the toplevel.
      *
-     * These utility methods simplify the management of interactive toplevel resizing sessions.
+     * @see titleChanged()
      *
-     * @note Using these methods is optional.
-     *
-     * @see LToplevelRole::startResizeRequest()
-     * @see LToplevelRole::geometryChanged()
+     * @return A string representing the window title.
      */
-
-    ///@{
-
-    // TODO
-    LToplevelResizeSession &resizeSession() const noexcept
+    const std::string &title() const noexcept
     {
-        return m_resizeSession;
+        return m_title;
     }
+
+    /**
+     * @brief Closes the toplevel.
+     *
+     * Requests the client to close the toplevel (equivalent to pressing the close button on the window).
+     *
+     * @note The client may choose to ignore this request, or show a dialog to ask the user to save their data, etc.
+     */
+    void close() noexcept;
+
+    /**
+     * @brief Auxiliary previous rect.
+     *
+     * This auxiliary rect is used by the default implementation
+     * to save the position and size of the toplevel window before it is maximized
+     * or switched to fullscreen, allowing it to be restored later.
+     */
+    LRect prevRect;
 
     ///@}
 
@@ -653,10 +782,10 @@ public:
     /**
      * @brief Position of the surface according to the role.
      *
-     * Override this virtual method if you wish to define your own logic for positioning the Toplevel.
+     * Override this virtual method if you need to define your own logic for positioning the toplevel.
      *
-     * The default implementation of rolePos() returns the position assigned by the compositor
-     * with LSurface::setPos() minus the (x, y) coords of its window geometry.
+     * The default implementation returns the position set with LSurface::setPos() minus the decoration part
+     * of windowGeometry() and adds the top and left margins of extraGeometry().
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp rolePos
@@ -664,13 +793,40 @@ public:
     virtual const LPoint &rolePos() const override;
 
     /**
-     * @brief Request to start an interactive move session
+     * @brief Configuration request.
      *
-     * Override this virtual method if you wish to be notified when the client wishes to start an interactive move session.
+     * This request is triggered each time the client intends to map the toplevel surface.
      *
-     * @see LPointer::startMovingToplevel()
+     * #### Default Implementation
+     * @snippet LToplevelRoleDefault.cpp configureRequest
+     */
+    virtual void configureRequest();
+
+    /**
+     * @brief Notifies a change in atomic properties.
      *
-     * TODO
+     * This event is triggered each time one or more of the atoms() change.
+     *
+     * @param changes Flags indicating which properties in atoms() have changed.
+     * @param prevAtoms Structure containing the previous values of atoms().
+     *
+     * #### Default Implementation
+     * @snippet LToplevelRoleDefault.cpp atomsChanged
+     */
+    virtual void atomsChanged(LBitset<AtomChanges> changes, const Atoms &prevAtoms);
+
+    /**
+     * @brief Client request to initiate an interactive move session.
+     *
+     * The default implementation utilizes the moveSession() utility to handle
+     * the session, and ignores it if the toplevel is in @ref Fullscreen mode.
+     *
+     * The triggering event helps differentiate whether it is a pointer, touch,
+     * or other type of session.
+     *
+     * @param triggeringEvent The event that triggered the move session.
+     *
+     * @see moveSession()
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp startMoveRequest
@@ -678,15 +834,18 @@ public:
     virtual void startMoveRequest(const LEvent &triggeringEvent);
 
     /**
-     * @brief Request to start an interactive resize session
+     * @brief Client request to initiate an interactive resize session.
      *
-     * Override this virtual method if you want to be notified when the client wants to start an interactive resize session.
+     * The default implementation utilizes the resizeSession() utility to handle
+     * the session, and ignores it if the toplevel is in @ref Fullscreen mode.
      *
-     * @see LPointer::startResizingToplevel()
+     * The triggering event helps differentiate whether it is a pointer, touch,
+     * or other type of session.
      *
-     * @param edge Which edge or corner is being dragged.
+     * @param triggeringEvent The event that triggered the resize session.
+     * @param edge The edge or corner being dragged.
      *
-     * TODO add params
+     * @see resizeSession()
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp startResizeRequest
@@ -694,30 +853,12 @@ public:
     virtual void startResizeRequest(const LEvent &triggeringEvent, LBitset<LEdge> edge);
 
     /**
-     * @brief Request for configuration
+     * @brief Request to maximize.
      *
-     * Override this virtual method if you want to be notified when the client wants the compositor to configure the Toplevel.\n
-     * This request occurs when the toplevel is created and each time it gets remapped after being previously unmapped.
+     * Triggered by the client expecting the compositor to configure the toplevel with the @ref Maximized state. See configureState().
      *
-     * @note If you do not explicitly configure the toplevel, Louvre will internally invoke `configure(pendingState())`.
-     *
-     * #### Default Implementation
-     * @snippet LToplevelRoleDefault.cpp configureRequest
-     */
-    virtual void configureRequest();
-
-    virtual void atomsChanged(LBitset<AtomChanges> changes, const Atoms &prevAtoms);
-
-    LMargins calculateConstraintsFromOutput(LOutput *output, bool includeExtraGeometry = true) const noexcept;
-
-    /**
-     * @brief Request to maximize
-     *
-     * Override this virtual method if you wish to be notified when the client intends to maximize the toplevel.\n
-     * It is recommended to respond to this request with a configure() event, preferably with the Louvre::LToplevelRole::Maximized flag.
-     * If you have no intention of maximizing it, you may choose to ignore the request or configure it according to your preferences.
-     *
-     * @note If you do not explicitly configure the toplevel, Louvre will internally invoke `configure(pendingState())` after this request.
+     * @note This event is only triggered if the @ref MaximizeCap is set. See configureCapabilities().
+     * @note The compositor is free to ignore this request.
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp setMaximizedRequest
@@ -725,13 +866,12 @@ public:
     virtual void setMaximizedRequest();
 
     /**
-     * @brief Request to unmaximize
+     * @brief Request to unmaximize.
      *
-     * Override this virtual method if you wish to be notified when the client intends to unmaximize the toplevel.\n
-     * It is recommended to respond to this request with a configure() event, preferably without the Louvre::LToplevelRole::Maximized flag.
-     * If you have no intention of unmaximizing it, you may choose to ignore the request or configure it according to your preferences.
+     * Triggered by the client expecting the compositor to configure the toplevel without the @ref Maximized state. See configureState().
      *
-     * @note If you do not explicitly configure the toplevel, Louvre will internally invoke `configure(pendingState())` after this request.
+     * @note This event is only triggered if the @ref MaximizeCap is set. See configureCapabilities().
+     * @note The compositor is free to ignore this request.
      *
      * #### Default implementation
      * @snippet LToplevelRoleDefault.cpp unsetMaximizedRequest
@@ -739,15 +879,14 @@ public:
     virtual void unsetMaximizedRequest();
 
     /**
-     * @brief Request to set fullscreen mode
+     * @brief Request to set fullscreen mode.
      *
-     * Override this virtual method if you wish to be notified when the client intends to set the toplevel into fullscreen mode.\n
-     * It is recommended to respond to this request with a configure() event, preferably with the Louvre::LToplevelRole::Fullscreen flag.
-     * If you have no intention of setting it fullscreen, you may choose to ignore the request or configure it according to your preferences.
+     * Triggered by the client expecting the compositor to configure the toplevel with the @ref Fullscreen state. See configureState().
      *
-     * @note If you do not explicitly configure the toplevel, Louvre will internally invoke `configure(pendingState())` after this request.
+     * @note This event is only triggered if the @ref FullscreenCap is set. See configureCapabilities().
+     * @note The compositor is free to ignore this request.
      *
-     * @param destOutput Output on which the client wishes to display the toplevel. If it is `nullptr` the compositor must choose the output.
+     * @param destOutput Output on which the client wishes to display the toplevel. If `nullptr` the compositor must choose the output.
      *
      * #### Default implementation
      * @snippet LToplevelRoleDefault.cpp setFullscreenRequest
@@ -755,13 +894,12 @@ public:
     virtual void setFullscreenRequest(LOutput *destOutput);
 
     /**
-     * @brief Request to unset fullscreen mode
+     * @brief Request to unset fullscreen mode.
      *
-     * Override this virtual method if you wish to be notified when the client intends to unset the toplevel fullscreen mode.\n
-     * It is recommended to respond to this request with a configure() event, preferably without the Louvre::LToplevelRole::Fullscreen flag.
-     * If you have no intention of unsetting the fullscreen mode, you may choose to ignore the request or configure it according to your preferences.
+     * Triggered by the client expecting the compositor to configure the toplevel without the @ref Fullscreen state. See configureState().
      *
-     * @note If you do not explicitly configure the toplevel, Louvre will internally invoke `configure(pendingState())` after this request.
+     * @note This event is only triggered if the @ref FullscreenCap is set. See configureCapabilities().
+     * @note The compositor is free to ignore this request.
      *
      * #### Default implementation
      * @snippet LToplevelRoleDefault.cpp unsetFullscreenRequest
@@ -771,8 +909,9 @@ public:
     /**
      * @brief Minimize request.
      *
-     * Request the compositor to minimize the toplevel window.
+     * Triggered by the client expecting the compositor to minimize the toplevel window.
      *
+     * @note This event is only triggered if the @ref MinimizeCap is set. See configureCapabilities().
      * @note The compositor is free to ignore this request.
      *
      * #### Default implementation
@@ -783,9 +922,10 @@ public:
     /**
      * @brief Show window menu request.
      *
-     * Request the compositor to display a popup menu with options
-     * for minimizing, maximizing or turning the toplevel into fullscreen mode.
+     * Triggered by the client expecting the compositor to display a popup menu with options
+     * for minimizing, maximizing and/or turning the toplevel into fullscreen mode.
      *
+     * @note This event is only triggered if the @ref WindowMenuCap is set. See configureCapabilities().
      * @note The compositor is free to ignore this request.
      *
      * #### Default Implementation
@@ -794,31 +934,31 @@ public:
     virtual void showWindowMenuRequest(const LEvent &triggeringEvent, Int32 x, Int32 y);
 
     /**
-     * @brief Notifies a change of the title string.
+     * @brief Notifies a change in the title string.
      *
      * @see title()
      *
-     * #### Default implementation
+     * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp titleChanged
      */
     virtual void titleChanged();
 
     /**
-     * @brief Notifies a change of the App ID string.
+     * @brief Notifies a change in the App ID string.
      *
      * @see appId()
      *
-     * #### Default implementation
+     * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp appIdChanged
      */
     virtual void appIdChanged();
 
     /**
-     * @brief Notifies a change of the client's preferred decoration mode.
+     * @brief Notifies the client has changed its preferred decoration mode.
      *
      * @see preferredDecorationMode()
      *
-     * #### Default implementation
+     * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp preferredDecorationModeChanged
      */
     virtual void preferredDecorationModeChanged();
@@ -900,6 +1040,10 @@ private:
 
     Configuration m_pendingConfiguration, m_lastACKConfiguration;
     std::list<Configuration> m_sentConfigurations;
+
+    // This is for clients that do maximize or fullscreen requests before the first conf
+    State m_requestedStateBeforeConf { NoState };
+    LWeak<LOutput> m_fullscreenOutputBeforeConf;
 };
 
 #endif // LTOPLEVELROLE_H

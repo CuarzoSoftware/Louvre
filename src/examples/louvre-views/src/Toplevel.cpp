@@ -59,10 +59,18 @@ const LPoint &Toplevel::rolePos() const
 
 void Toplevel::configureRequest()
 {
-    if (cursor()->output())
+    LOutput *output { cursor()->output() };
+
+    if (output)
     {
-        surface()->sendOutputEnterEvent(cursor()->output());
-        configureBounds(cursor()->output()->availableGeometry().size());
+        surface()->sendOutputEnterEvent(output);
+
+        if (supportServerSideDecorations())
+            configureBounds(
+                output->availableGeometry().size().w() - (extraGeometry().left + extraGeometry().right),
+                output->availableGeometry().size().h() - (extraGeometry().top + extraGeometry().bottom));
+        else
+            configureBounds(output->availableGeometry().size());
     }
 
     configureSize(0, 0);
@@ -98,6 +106,8 @@ void Toplevel::atomsChanged(LBitset<AtomChanges> changes, const Atoms &prev)
             decoratedView->updateGeometry();
         }
     }
+
+    surface()->repaintOutputs();
 }
 
 void Toplevel::startResizeRequest(const LEvent &triggeringEvent, LBitset<LEdge> edge)
@@ -265,7 +275,8 @@ void Toplevel::fullscreenChanged()
             return;
         }
 
-        animScene = std::make_unique<LSceneView>(fullscreenOutput->sizeB(), fullscreenOutput->scale());
+        Float32 quality { fullscreenOutput->scale() * 0.75f };
+        animScene = std::make_unique<LSceneView>(fullscreenOutput->size() * quality, quality);
         quickUnfullscreen = false;
         fullscreenOutput->animatedFullscreenToplevel = this;
         surf()->sendOutputEnterEvent(fullscreenOutput);
@@ -331,6 +342,7 @@ void Toplevel::decorationModeChanged()
     if (decorationMode() == ClientSide)
     {
         setExtraGeometry({0, 0, 0, 0});
+        configureSize(pendingConfiguration().size + LSize(0, TOPLEVEL_TOPBAR_HEIGHT));
         LView *prevParent = decoratedView->parent();
         decoratedView.reset();
 
@@ -343,6 +355,7 @@ void Toplevel::decorationModeChanged()
     else
     {
         setExtraGeometry({0,TOPLEVEL_TOPBAR_HEIGHT, 0, 0});
+        configureSize(pendingConfiguration().size - LSize(0, TOPLEVEL_TOPBAR_HEIGHT));
         decoratedView = std::make_unique<ToplevelView>(this);
         decoratedView->updateGeometry();
         decoratedView->setVisible(surf()->view.visible());
@@ -406,7 +419,7 @@ void Toplevel::unsetFullscreen()
     if (decoratedView)
         decoratedView->updateGeometry();
 
-    animScene = std::make_unique<LSceneView>(fullscreenOutput->sizeB(), fullscreenOutput->scale());
+    animScene = std::make_unique<LSceneView>(fullscreenOutput->sizeB() * 0.75, 0.75);//fullscreenOutput->scale());
     animScene->setPos(fullscreenOutput->pos());
     G::reparentWithSubsurfaces(surf(), animScene.get(), true);
     fullscreenOutput->animatedFullscreenToplevel = this;

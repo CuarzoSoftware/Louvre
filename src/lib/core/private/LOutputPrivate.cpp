@@ -280,7 +280,7 @@ void LOutput::LOutputPrivate::backendPaintGL()
 
     compositor()->imp()->currentOutput = output;
 
-    if (seat()->enabled() && output->screenshotRequests().empty())
+    if (seat()->enabled() && !output->screenshotRequests().empty())
         wl_event_loop_dispatch(compositor()->imp()->waylandEventLoop, 0);
 
     damage.clear();

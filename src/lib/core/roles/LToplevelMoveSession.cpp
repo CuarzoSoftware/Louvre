@@ -1,7 +1,8 @@
+#include <private/LSeatPrivate.h>
 #include <LToplevelMoveSession.h>
 #include <LPointerEnterEvent.h>
 #include <LCompositor.h>
-#include <private/LSeatPrivate.h>
+#include <LCursor.h>
 #include <LUtils.h>
 #include <algorithm>
 
@@ -9,7 +10,16 @@ using namespace Louvre;
 
 LToplevelMoveSession::LToplevelMoveSession(LToplevelRole *toplevel) noexcept :
     m_toplevel(toplevel),
-    m_triggeringEvent(std::make_unique<LPointerEnterEvent>()){}
+    m_triggeringEvent(std::make_unique<LPointerEnterEvent>())
+{
+//! [setCallback]
+setOnBeforeUpdateCallback([](LToplevelMoveSession *session)
+{
+    LMargins constraints { session->toplevel()->calculateConstraintsFromOutput(cursor()->output()) };
+    session->setConstraints(constraints);
+});
+//! [setCallback]
+}
 
 LToplevelMoveSession::~LToplevelMoveSession() noexcept
 {

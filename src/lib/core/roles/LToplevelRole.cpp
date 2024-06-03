@@ -1,30 +1,14 @@
 #include <protocols/XdgDecoration/RXdgToplevelDecoration.h>
-#include <protocols/XdgShell/RXdgToplevel.h>
 #include <protocols/XdgShell/RXdgSurface.h>
-#include <private/LToplevelRolePrivate.h>
-#include <private/LSurfacePrivate.h>
-#include <private/LSeatPrivate.h>
+#include <protocols/XdgShell/RXdgToplevel.h>
 #include <protocols/XdgShell/xdg-shell.h>
-#include <LToplevelResizeSession.h>
-#include <LSubsurfaceRole.h>
-#include <LCompositor.h>
-#include <LOutput.h>
-#include <LPoint.h>
+#include <private/LSurfacePrivate.h>
+#include <private/LToplevelRolePrivate.h>
+#include <private/LSeatPrivate.h>
 #include <LCursor.h>
-#include <LPointer.h>
-#include <LKeyboard.h>
-#include <LTime.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::XdgShell;
-
-void LToplevelRole::setExclusiveOutput(LOutput *output) noexcept
-{
-    m_exclusiveOutput.reset(output);
-
-    if (output)
-        surface()->sendOutputEnterEvent(output);
-}
 
 LToplevelRole::LToplevelRole(const void *params) noexcept :
     LBaseSurfaceRole(FactoryObjectType,
@@ -32,18 +16,6 @@ LToplevelRole::LToplevelRole(const void *params) noexcept :
         ((LToplevelRole::Params*)params)->surface,
         LSurface::Role::Toplevel)
 {
-    moveSession().setOnBeforeUpdateCallback([this](LToplevelMoveSession *session)
-    {
-        LMargins constraints { calculateConstraintsFromOutput(cursor()->output()) };
-        session->setConstraints(constraints);
-    });
-
-    resizeSession().setOnBeforeUpdateCallback([this](LToplevelResizeSession *session)
-    {
-        LMargins constraints { calculateConstraintsFromOutput(cursor()->output()) };
-        session->setConstraints(constraints);
-    });
-
     if (resource()->version() >= 2)
         m_supportedStates.add(TiledLeft | TiledTop | TiledRight | TiledBottom);
 
@@ -75,6 +47,14 @@ RXdgSurface *LToplevelRole::xdgSurfaceResource() const
     return xdgToplevelResource()->xdgSurfaceRes();
 }
 
+void LToplevelRole::setExclusiveOutput(LOutput *output) noexcept
+{
+    m_exclusiveOutput.reset(output);
+
+    if (output)
+        surface()->sendOutputEnterEvent(output);
+}
+
 void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
 {
     L_UNUSED(origin);
@@ -93,6 +73,14 @@ void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
 
         m_flags.remove(HasPendingInitialConf);
         configureRequest();
+
+        if (m_requestedStateBeforeConf == Fullscreen)
+            setFullscreenRequest(m_fullscreenOutputBeforeConf);
+        else if (m_requestedStateBeforeConf == Maximized)
+            setMaximizedRequest();
+
+        m_requestedStateBeforeConf = NoState;
+        m_fullscreenOutputBeforeConf.reset();
 
         if (!m_flags.check(HasSizeOrStateToSend))
             configureState(pendingConfiguration().state);
@@ -190,9 +178,10 @@ void LToplevelRole::fullAtomsUpdate()
     if (currentAtoms().windowGeometry != pendingAtoms().windowGeometry)
         changesToNotify.add(WindowGeometryChanged);
 
-    m_currentAtomsIndex = 1 - m_currentAtomsIndex;
+    if (changesToNotify == 0)
+        return;
 
-    //imp()->applyPendingChanges(changes);
+    m_currentAtomsIndex = 1 - m_currentAtomsIndex;
 
     atomsChanged(changesToNotify, pendingAtoms());
 
@@ -441,6 +430,9 @@ void LToplevelRole::reset() noexcept
 
     if (seat()->activeToplevel() == this)
         seat()->imp()->activeToplevel = nullptr;
+
+    m_requestedStateBeforeConf = NoState;
+    m_fullscreenOutputBeforeConf.reset();
 
     m_flags = HasPendingInitialConf;
     surface()->imp()->setLayer(LLayerMiddle);

@@ -3,6 +3,7 @@
 #include <private/LSeatPrivate.h>
 #include <LPointerEnterEvent.h>
 #include <LSurface.h>
+#include <LCursor.h>
 #include <LUtils.h>
 #include <LLog.h>
 
@@ -12,6 +13,14 @@ LToplevelResizeSession::LToplevelResizeSession(LToplevelRole *toplevel) noexcept
     m_toplevel(toplevel),
     m_triggeringEvent(std::make_unique<LPointerEnterEvent>())
 {
+//! [setCallback]
+setOnBeforeUpdateCallback([](LToplevelResizeSession *session)
+{
+    LMargins constraints { session->toplevel()->calculateConstraintsFromOutput(cursor()->output()) };
+    session->setConstraints(constraints);
+});
+//! [setCallback]
+
     m_ackTimer.setCallback([this](auto)
     {
         m_lastSerialHandled = true;

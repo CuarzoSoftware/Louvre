@@ -50,14 +50,13 @@ Louvre (2.0.0-1)
   * Added setExtraGeometry() to LToplevelRole to simplify the calculation of position, size, and constraints for toplevels using server-side decorations.
   * Optimized popup position recalculations, preventing unnecessary processing.
 
-  # Screen Casting
+  # Screencasting
 
-  * Added support for screen capture through the wlr_screencopy protocol, which also works with the xdg-desktop-portal-wlr portal.
+  * Added support for screencasting through the wlr_screencopy protocol, also compatible with the xdg-desktop-portal-wlr portal.
 
   # Cursor
 
-  * Added new LClientCursor class for easier tracking and management of client cursors. When assigned to LCursor, the texture, hotspot, and visibility
-    automatically adjust based on the underlying LCursorRole state.
+  * Added new LClientCursor class for easier tracking and management of client cursors. When assigned to LCursor, the texture, hotspot, and visibility automatically adjust based on the underlying LCursorRole state.
   * LPointer::setCursorRequest() now provides an LClientCursor instead of a raw LCursorRole and hotspot.
   * The LClient class now stores and provides access to the last cursor set by a client via LClient::lastCursor(). 
   * LCursor enablement and hardware compositing can be now toggled for specific outputs using LCursor::enable() and LCursor::enableHwCompositing().
@@ -65,7 +64,7 @@ Louvre (2.0.0-1)
 
   # Clipboard / Drag & Drop
 
-  * Removed the LDataDevice, LDataSource, and LDataOffer classes; their functionality is now handled internally by Louvre.
+  * Removed the LDataDevice, LDataSource, and LDataOffer classes, their functionality is now handled internally by Louvre.
   * Migrated clipboard functionality from LSeat to the new dedicated LClipboard class.
   * It is now possible to specify which MIME types of the clipboard to make persistent through LClipboard::persistentMimeTypeFilter().
   * Renamed the LDNDManager class to LDND.
@@ -79,7 +78,7 @@ Louvre (2.0.0-1)
   * Introduced the LInputDevice class for configuring and accessing basic input device properties.
   * Requests triggered by user interactions now include the specific event that triggered them.
   * Included support for pointer constraints.
-  * Enabled support for swipe, pinch, and hold pointer gestures.
+  * Added support for swipe, pinch, and hold pointer gestures.
   * LClient now provides eventHistory() and findEventBySerial() for querying the last events sent from the compositor.
 
   # Security
@@ -101,7 +100,7 @@ Louvre (2.0.0-1)
 
   # Bug Fixes
 
-  * Corrected incorrect axis scroll values sent to clients using wl_pointer v1.
+  * Fixed incorrect axis scroll values sent to clients using wl_pointer v1.
   * Addressed synchronization problems related to the presentation time protocol.
 
 Louvre (1.2.1-1)

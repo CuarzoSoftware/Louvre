@@ -1,16 +1,11 @@
-#include <protocols/XdgShell/RXdgSurface.h>
-#include <protocols/XdgShell/RXdgToplevel.h>
-#include <LToplevelMoveSession.h>
-#include <LToplevelResizeSession.h>
-#include <LCompositor.h>
-#include <LCursor.h>
-#include <LOutput.h>
-#include <LSeat.h>
+#include <LToplevelRole.h>
+#include <LTouchPoint.h>
 #include <LPointer.h>
 #include <LKeyboard.h>
 #include <LTouch.h>
-#include <LTouchPoint.h>
-#include <LTouchDownEvent.h>
+#include <LSeat.h>
+#include <LOutput.h>
+#include <LCursor.h>
 
 using namespace Louvre;
 
@@ -95,18 +90,24 @@ void LToplevelRole::startResizeRequest(const LEvent &triggeringEvent, LBitset<LE
 //! [configureRequest]
 void LToplevelRole::configureRequest()
 {
-    // Sending (0,0) allows the client to decide the size
+    LOutput *output { cursor()->output() };
+
+    if (output)
+        configureBounds(
+            output->availableGeometry().size()
+            - LSize(extraGeometry().left + extraGeometry().right, extraGeometry().top + extraGeometry().bottom));
+    else
+        configureBounds(0, 0);
+
     configureSize(0,0);
     configureState(pendingConfiguration().state | Activated);
     configureDecorationMode(ClientSide);
     configureCapabilities(WindowMenuCap | FullscreenCap | MaximizeCap | FullscreenCap);
-    if (cursor()->output())
-        configureBounds(cursor()->output()->availableGeometry().size());
-    else
-        configureBounds(0, 0);
 }
 //! [configureRequest]
-//!
+
+
+//! [atomsChanged]
 void LToplevelRole::atomsChanged(LBitset<AtomChanges> changes, const Atoms &prevAtoms)
 {
     surface()->repaintOutputs();
@@ -162,6 +163,7 @@ void LToplevelRole::atomsChanged(LBitset<AtomChanges> changes, const Atoms &prev
     if (stateChanges.check(Fullscreen | Maximized) && !pendingConfiguration().state.check(Fullscreen | Maximized))
         setExclusiveOutput(nullptr);
 }
+//! [atomsChanged]
 
 //! [titleChanged]
 void LToplevelRole::titleChanged()

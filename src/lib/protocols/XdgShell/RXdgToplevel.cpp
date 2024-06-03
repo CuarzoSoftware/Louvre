@@ -126,7 +126,7 @@ void RXdgToplevel::move(wl_client */*client*/, wl_resource *resource, wl_resourc
 {
     auto &res { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource)) };
 
-    if (!res.toplevelRole()->surface()->toplevel())
+    if (!res.toplevelRole()->surface()->mapped())
         return;
 
     const LEvent *triggererEvent { res.client()->findEventBySerial(serial) };
@@ -145,7 +145,7 @@ void RXdgToplevel::resize(wl_client */*client*/, wl_resource *resource, wl_resou
 
     auto &res { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource)) };
 
-    if (!res.toplevelRole()->surface()->toplevel())
+    if (!res.toplevelRole()->surface()->mapped())
         return;
 
     const LEvent *triggererEvent { res.client()->findEventBySerial(serial) };
@@ -185,6 +185,12 @@ void RXdgToplevel::set_maximized(wl_client */*client*/, wl_resource *resource)
 {
     auto &toplevel { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole() };
 
+    if (toplevel.m_flags.check(LToplevelRole::HasPendingInitialConf))
+    {
+        toplevel.m_requestedStateBeforeConf = LToplevelRole::Maximized;
+        return;
+    }
+
     if (toplevel.capabilities().check(LToplevelRole::MaximizeCap))
         toplevel.setMaximizedRequest();
 
@@ -196,6 +202,13 @@ void RXdgToplevel::set_maximized(wl_client */*client*/, wl_resource *resource)
 void RXdgToplevel::unset_maximized(wl_client */*client*/, wl_resource *resource)
 {
     auto &toplevel { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole() };
+
+    if (toplevel.m_flags.check(LToplevelRole::HasPendingInitialConf))
+    {
+        if (toplevel.m_requestedStateBeforeConf == LToplevelRole::Maximized)
+            toplevel.m_requestedStateBeforeConf = LToplevelRole::NoState;
+        return;
+    }
 
     if (toplevel.capabilities().check(LToplevelRole::MaximizeCap))
         toplevel.unsetMaximizedRequest();
@@ -214,6 +227,13 @@ void RXdgToplevel::set_fullscreen(wl_client */*client*/, wl_resource *resource, 
 
     auto &toplevel { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole() };
 
+    if (toplevel.m_flags.check(LToplevelRole::HasPendingInitialConf))
+    {
+        toplevel.m_requestedStateBeforeConf = LToplevelRole::Fullscreen;
+        toplevel.m_fullscreenOutputBeforeConf.reset(output);
+        return;
+    }
+
     if (toplevel.capabilities().check(LToplevelRole::FullscreenCap))
         toplevel.setFullscreenRequest(output);
 
@@ -226,6 +246,16 @@ void RXdgToplevel::unset_fullscreen(wl_client */*client*/, wl_resource *resource
 {    
     auto &toplevel { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole() };
 
+    if (toplevel.m_flags.check(LToplevelRole::HasPendingInitialConf))
+    {
+        if (toplevel.m_requestedStateBeforeConf == LToplevelRole::Fullscreen)
+        {
+            toplevel.m_requestedStateBeforeConf = LToplevelRole::NoState;
+            toplevel.m_fullscreenOutputBeforeConf.reset(nullptr);
+        }
+        return;
+    }
+
     if (toplevel.capabilities().check(LToplevelRole::FullscreenCap))
         toplevel.unsetFullscreenRequest();
 
@@ -237,6 +267,9 @@ void RXdgToplevel::unset_fullscreen(wl_client */*client*/, wl_resource *resource
 void RXdgToplevel::set_minimized(wl_client */*client*/, wl_resource *resource)
 {
     auto &toplevel { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole() };
+
+    if (toplevel.m_flags.check(LToplevelRole::HasPendingInitialConf))
+        return;
 
     if (toplevel.capabilities().check(LToplevelRole::MinimizeCap))
         toplevel.setMinimizedRequest();
