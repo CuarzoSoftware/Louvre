@@ -15,6 +15,7 @@
 #include "Client.h"
 #include "App.h"
 #include "Topbar.h"
+#include "src/Tooltip.h"
 
 Surface::Surface(const void *params) :
     LSurface(params),
@@ -505,6 +506,9 @@ void Surface::unminimize(DockItem *clickedItem)
                 item->dock->dockContainer.setParent(nullptr);
 
         setMinimized(false);
+
+        if (G::tooltip())
+            G::tooltip()->hide();
     });
 
     minimizeAnim.start();

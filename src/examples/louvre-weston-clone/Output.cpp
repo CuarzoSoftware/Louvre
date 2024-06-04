@@ -14,6 +14,8 @@
 #include <LUtils.h>
 #include <unistd.h>
 
+#include "LSessionLockManager.h"
+#include "LSessionLockRole.h"
 #include "TerminalIcon.h"
 #include "Compositor.h"
 #include "Surface.h"

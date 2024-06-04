@@ -11,14 +11,14 @@ void Popup::configureRequest()
     Output *output { (Output*)cursor()->output() };
 
     if (output && output->fullscreenSurface)
-        setPositionerBounds(output != nullptr ? output->rect() : LRect());
+        setBounds(output != nullptr ? output->rect() : LRect());
     else
-        setPositionerBounds(output != nullptr ? LRect(
+        setBounds(output != nullptr ? LRect(
             output->rect().x(),
             output->rect().y() + 32,
             output->rect().w(),
             output->rect().h() - 32
             ) : LRect());
 
-    configure(calculateUnconstrainedRect());
+    configureRect(calculateUnconstrainedRect());
 }

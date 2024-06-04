@@ -60,10 +60,10 @@ void RSubsurface::destroy(wl_client */*client*/, wl_resource *resource)
 
 void RSubsurface::set_position(wl_client */*client*/, wl_resource *resource, Int32 x, Int32 y)
 {
-    auto &subsurfacePriv { *static_cast<RSubsurface*>(wl_resource_get_user_data(resource))->subsurfaceRole()->imp() };
-    subsurfacePriv.pendingLocalPos.setX(x);
-    subsurfacePriv.pendingLocalPos.setY(y);
-    subsurfacePriv.hasPendingLocalPos = true;
+    auto &subsurface { *static_cast<RSubsurface*>(wl_resource_get_user_data(resource))->subsurfaceRole() };
+    subsurface.m_pendingLocalPos.setX(x);
+    subsurface.m_pendingLocalPos.setY(y);
+    subsurface.m_hasPendingLocalPos = true;
 }
 
 void RSubsurface::place_above(wl_client */*client*/, wl_resource *resource, wl_resource *sibling)
@@ -75,7 +75,7 @@ void RSubsurface::place_above(wl_client */*client*/, wl_resource *resource, wl_r
 
     if (siblingIsParent  || (siblingSurface->parent() == subsurfaceRole->surface()->parent() && siblingSurface != subsurfaceRole->surface()))
     {
-        subsurfaceRole->imp()->pendingPlaceAbove.reset(siblingSurface);
+        subsurfaceRole->m_pendingPlaceAbove.reset(siblingSurface);
         return;
     }
 
@@ -89,7 +89,7 @@ void RSubsurface::place_below(wl_client */*client*/, wl_resource *resource, wl_r
 
     if (siblingSurface->parent() == subsurfaceRole->surface()->parent() && siblingSurface != subsurfaceRole->surface())
     {
-        subsurfaceRole->imp()->pendingPlaceBelow.reset(siblingSurface);
+        subsurfaceRole->m_pendingPlaceBelow.reset(siblingSurface);
         return;
     }
 
@@ -122,7 +122,7 @@ void RSubsurface::set_sync(wl_client */*client*/, wl_resource *resource)
 
     if (!subsurfaceRole->isSynced())
     {
-        subsurfaceRole->imp()->isSynced = true;
+        subsurfaceRole->m_isSynced = true;
         subsurfaceRole->syncModeChanged();
         syncSubsurfaces(subsurfaceRole->surface());
     }
@@ -134,12 +134,12 @@ void RSubsurface::set_desync(wl_client */*client*/, wl_resource *resource)
 
     if (subsurfaceRole->isSynced() && !hasSyncParent(subsurfaceRole->surface()))
     {
-        subsurfaceRole->imp()->isSynced = false;
+        subsurfaceRole->m_isSynced = false;
         subsurfaceRole->syncModeChanged();
 
-        if (subsurfaceRole->imp()->hasCache)
+        if (subsurfaceRole->m_hasCache)
         {
-            subsurfaceRole->imp()->hasCache = false;
+            subsurfaceRole->m_hasCache = false;
             RSurface::apply_commit(subsurfaceRole->surface());
         }
     }

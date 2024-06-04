@@ -10,30 +10,14 @@ LSubsurfaceRole::LSubsurfaceRole(const void *params) noexcept :
         FactoryObjectType,
         static_cast<const LSubsurfaceRole::Params*>(params)->subsurface,
         static_cast<const LSubsurfaceRole::Params*>(params)->surface,
-        LSurface::Role::Subsurface),
-    LPRIVATE_INIT_UNIQUE(LSubsurfaceRole)
+        LSurface::Role::Subsurface)
 {}
-
-LSubsurfaceRole::~LSubsurfaceRole()
-{
-    // Required by pimpl
-}
-
-bool LSubsurfaceRole::isSynced() const
-{
-    return imp()->isSynced;
-}
-
-const LPoint &LSubsurfaceRole::localPos() const
-{
-    return imp()->currentLocalPos;
-}
 
 bool LSubsurfaceRole::acceptCommitRequest(LBaseSurfaceRole::CommitOrigin origin)
 {
     if (isSynced())
     {
-        imp()->hasCache = true;
+        m_hasCache = true;
         return origin == LBaseSurfaceRole::CommitOrigin::Parent;
     }
     else
@@ -50,7 +34,7 @@ static void checkMapping(LSurface *surface)
 void LSubsurfaceRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
 {
     L_UNUSED(origin);
-    imp()->hasCache = false;
+    m_hasCache = false;
     checkMapping(surface());
 }
 
@@ -58,18 +42,18 @@ void LSubsurfaceRole::handleParentCommit()
 {
     using OP = LCompositor::LCompositorPrivate::InsertOptions;
 
-    if (imp()->hasPendingLocalPos)
+    if (m_hasPendingLocalPos)
     {
-        imp()->hasPendingLocalPos = false;
-        imp()->currentLocalPos = imp()->pendingLocalPos;
+        m_hasPendingLocalPos = false;
+        m_currentLocalPos = m_pendingLocalPos;
         localPosChanged();
     }
 
-    if (imp()->pendingPlaceAbove)
+    if (m_pendingPlaceAbove)
     {
-        compositor()->imp()->insertSurfaceAfter(imp()->pendingPlaceAbove, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
+        compositor()->imp()->insertSurfaceAfter(m_pendingPlaceAbove, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
 
-        if (imp()->pendingPlaceAbove == surface()->parent())
+        if (m_pendingPlaceAbove == surface()->parent())
         {
             if (surface()->parent()->children().front() != surface())
             {
@@ -77,39 +61,39 @@ void LSubsurfaceRole::handleParentCommit()
                 surface()->parent()->imp()->children.push_front(surface());
                 surface()->imp()->parentLink = surface()->parent()->imp()->children.begin();
                 surface()->parent()->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
-                placedAbove(imp()->pendingPlaceAbove);
+                placedAbove(m_pendingPlaceAbove);
             }
         }
-        else if (*std::next(imp()->pendingPlaceAbove->imp()->parentLink) != surface())
+        else if (*std::next(m_pendingPlaceAbove->imp()->parentLink) != surface())
         {
             surface()->parent()->imp()->children.erase(surface()->imp()->parentLink);
             surface()->imp()->parentLink = surface()->parent()->imp()->children.insert(
-                std::next(imp()->pendingPlaceAbove->imp()->parentLink),
+                std::next(m_pendingPlaceAbove->imp()->parentLink),
                 surface());
             surface()->parent()->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
-            placedAbove(imp()->pendingPlaceAbove);
+            placedAbove(m_pendingPlaceAbove);
         }
 
-        imp()->pendingPlaceAbove.reset();
+        m_pendingPlaceAbove.reset();
     }
 
-    if (imp()->pendingPlaceBelow)
+    if (m_pendingPlaceBelow)
     {
-        if (*std::prev(imp()->pendingPlaceAbove->imp()->parentLink) != surface())
+        if (*std::prev(m_pendingPlaceAbove->imp()->parentLink) != surface())
         {
-            compositor()->imp()->insertSurfaceBefore(imp()->pendingPlaceBelow, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
+            compositor()->imp()->insertSurfaceBefore(m_pendingPlaceBelow, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
             surface()->parent()->imp()->children.erase(surface()->imp()->parentLink);
             surface()->imp()->parentLink = surface()->parent()->imp()->children.insert(
-                imp()->pendingPlaceBelow->imp()->parentLink,
+                m_pendingPlaceBelow->imp()->parentLink,
                 surface());
             surface()->parent()->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
-            placedBelow(imp()->pendingPlaceBelow);
+            placedBelow(m_pendingPlaceBelow);
         }
 
-        imp()->pendingPlaceBelow.reset();
+        m_pendingPlaceBelow.reset();
     }
 
-    if (isSynced() && imp()->hasCache)
+    if (isSynced() && m_hasCache)
         Wayland::RSurface::apply_commit(surface(), LBaseSurfaceRole::CommitOrigin::Parent);
 }
 

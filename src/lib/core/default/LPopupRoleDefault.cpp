@@ -15,19 +15,10 @@
 
 using namespace Louvre;
 
-
 //! [rolePos]
 const LPoint &LPopupRole::rolePos() const
 {
-    if (positioner().reactive())
-    {
-        const LRect rect { calculateUnconstrainedRect() };
-
-        if (rect != current().rect)
-            configure(rect);
-    }
-
-    m_rolePos = surface()->parent()->rolePos() + current().rect.pos() - windowGeometry().topLeft();
+    m_rolePos = surface()->parent()->rolePos() + localPos() - windowGeometry().topLeft();
 
     if (surface()->parent()->toplevel())
         m_rolePos += surface()->parent()->toplevel()->windowGeometry().pos();
@@ -83,14 +74,7 @@ void LPopupRole::grabKeyboardRequest(const LEvent &triggeringEvent)
 void LPopupRole::configureRequest()
 {
     // Ensure the Popup stays within the boundaries of the current output where the cursor is positioned
-    setPositionerBounds(cursor()->output() != nullptr ? cursor()->output()->rect() : LRect(0, 0, 0, 0));
-    configure(calculateUnconstrainedRect());
+    setBounds(cursor()->output() != nullptr ? cursor()->output()->rect() : LRect(0,0,0,0));
+    configureRect(calculateUnconstrainedRect());
 }
 //! [configureRequest]
-
-//! [geometryChanged]
-void LPopupRole::geometryChanged()
-{
-    surface()->repaintOutputs();
-}
-//! [geometryChanged]

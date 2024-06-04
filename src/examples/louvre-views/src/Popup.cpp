@@ -11,15 +11,15 @@ Popup::Popup(const void *params) : LPopupRole(params) {}
 void Popup::configureRequest()
 {    
     if (G::searchFullscreenParent((Surface*)surface()->parent()))
-        setPositionerBounds(cursor()->output() != nullptr ? cursor()->output()->rect() : LRect());
+        setBounds(cursor()->output() != nullptr ? cursor()->output()->rect() : LRect());
     else
-        setPositionerBounds(cursor()->output() != nullptr ? cursor()->output()->rect() + LRect(0, TOPBAR_HEIGHT, 0, -TOPBAR_HEIGHT) : LRect());
+        setBounds(cursor()->output() != nullptr ? cursor()->output()->rect() + LRect(0, TOPBAR_HEIGHT, 0, -TOPBAR_HEIGHT) : LRect());
 
     if (surface()->parent()->toplevel() && surface()->parent()->toplevel()->pendingConfiguration().state.check(LToplevelRole::Maximized | LToplevelRole::Fullscreen))
     {
-        configure(calculateUnconstrainedRect(&positionerBounds().pos()));
+        configureRect(calculateUnconstrainedRect(&bounds().pos()));
         return;
     }
 
-    configure(calculateUnconstrainedRect());
+    configureRect(calculateUnconstrainedRect());
 }

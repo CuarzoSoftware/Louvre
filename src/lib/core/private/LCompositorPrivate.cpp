@@ -849,7 +849,7 @@ void LCompositor::LCompositorPrivate::sendPendingConfigurations()
         if (s->toplevel())
             s->toplevel()->sendPendingConfiguration();
         else if (s->popup())
-            s->popup()->imp()->sendConfiguration();
+            s->popup()->sendPendingConfiguration();
         else if (s->sessionLock())
             s->sessionLock()->sendPendingConfiguration();
     }

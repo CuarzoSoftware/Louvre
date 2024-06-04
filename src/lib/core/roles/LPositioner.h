@@ -1,57 +1,57 @@
 #ifndef LPOSITIONER_H
 #define LPOSITIONER_H
 
-#include <LObject.h>
 #include <LRect.h>
 #include <LBitset.h>
-#include <memory>
 
 /*!
- * @brief Positioning rules for a Popup
+ * @brief Positioning rules for LPopupRole surfaces.
  *
- * The LPositioner class defines the rules by which a Popup should be positioned relative to the anchor point of its parent.\n
+ * The LPositioner class defines the rules by which a popup should be positioned relative to the anchor point of its parent.\n
  * Each LPopupRole has its own LPositioner accessible through LPopupRole::positioner().\n
  *
- * @note Louvre implements the default LPositioner rules in LPopupRole::rolePos(), therefore this section is for educational purposes only.
+ * @section positioner-anchor-rect Anchor Rect
  *
- * @section Anchor-Rect
+ * The anchorRect() defines a sub-rectangle within the parent surface's window geometry.
+ * Within this sub-rectangle, an anchor point is specified, which the popup uses as a reference for positioning itself.
  *
- * The anchor rect (accessible through anchorRect()) is a sub-rect of the window geometry of the Popup's parent surface.\n
- * Within this rect, an anchor point (accessible through anchor()) is defined, which the Popup uses as a reference to position itself.\n
- * The anchor point can be located at the center, corners, or midpoint of the edges of the anchor rect (gray and blue points).\n
- * For example, in the following image, a Popup is positioned using the anchor point LPositioner::AnchorRight and LPositioner::AnchorBottomLeft.\n
+ * The anchor point can be located at the center, the corners, or the midpoints of the edges of the anchor rectangle (indicated by gray and blue points).
+ *
+ * For example, in the following image, a popup is positioned using the anchor points @ref AnchorRight and @ref AnchorBottomLeft.
  *
  * <IMG SRC="https://lh3.googleusercontent.com/dCpt0Kl2MBnwpxf7VUiphJ28Tdrxh-3jmNIG-9GyK9nt_-3vCMuj1vgmYajPnYd9CH51fIBYocCUlBKsdXAGqQnufFxYZ1whQ0T6pIfCO1E6NHJj-ii2phQY-kRdUe2lZAnqF0mvyA=w2400">
  *
- * @section Gravity
+ * @section positioner-gravity Gravity
  *
- * The gravity of the Popup, accessible through gravity(), indicates the direction that the Popup tries to move to.\n
- * You can consider the anchor point as a "nail" and the Popup as a frame composed only of edges. If the gravity is down,
- * the top edge of the Popup will collide with the nail, preventing it from moving further.\n
- * In the following image, a Popup with gravity LPositioner::GravityBottomRight and LPositioner::GravityTopLeft is shown.\n
+* The gravity() of the popup indicates the direction in which it tries to move.
+ *
+ * You can visualize the anchor point as a "nail" and the popup as a frame composed only of edges. If the gravity is down,
+ * the top edge of the popup will collide with the nail, preventing it from moving further.
+ *
+ * In the following image, a popup is shown with gravity set to @ref GravityBottomRight and @ref GravityTopLeft .
  *
  * <IMG SRC="https://lh3.googleusercontent.com/92DINcYGHOAothPGrLctUtN7mCKRpqESPh4vRA8XN--IehoprgWKYn74myk1CsjXMR_IcaLM7kJZWny7rvytDRr-nXzljMA-W0LWtQ4neu-HGxpT8V2P0blWg5zYymbGQ8vja5Rx6w=w2400">
  *
- * @section Constraint-Adjustments
+ * @section positioner-constraint-adjustments Constraint Adjustments
  *
- * You might be wondering why use such complex rules to position Popups? The answer is that they make it easier to reposition them in cases when their position causes them to be constrained (for example, when they are shown outside the visible area of the screen).\n
- * Specific rules to adjust the position of Popups when they are constrained are defined by the client in constraintAdjustment().\n
- * Typically, it first tries to invert the gravity and anchor point on the axes where the constraint occurs (for example, in nested context menus), if the Popup is still constrained, it tries to slide it along the relevant axes,
- * if this still doesn't solve the problem, the Popup is configured to adjust its size and if finally none of these options work, the original position is used.\n
- * For more information on LPositioner rules, you can analyze the implementation of LPopupRole::rolePos() or consult the documentation of the [xdg_shell::positioner](https://wayland.app/protocols/xdg-shell#xdg_positioner) interface.
+ * You might be wondering why such complex rules are used to position popups. The answer is that these rules simplify repositioning
+ * popups when their initial position causes constraints (e.g., when they appear outside the visible area of the screen).
+ *
+ * The specific rules for adjusting the position of popups when they are constrained are defined by the client in constraintAdjustments().
+ * Typically, the process involves the following steps:
+ * 1. Inverting the gravity and anchor point on the axes where the constraint occurs (useful in nested context menus).
+ * 2. Sliding the popup along the relevant axes if it remains constrained.
+ * 3. Adjusting the popup's size if sliding does not resolve the issue.
+ * 4. Reverting to the original position if none of the above options work.
+ *
+ * For more information on LPositioner rules, consult the documentation of the [xdg_shell::positioner](https://wayland.app/protocols/xdg-shell#xdg_positioner) interface.
  */
 class Louvre::LPositioner
 {
 public:
-    /// @cond OMIT
-    LPositioner() noexcept = default;
-    ~LPositioner() noexcept = default;
-    /// @endcond
 
     /*!
      * @brief Anchor point.
-     *
-     * Possible locations of the anchor point within the anchor rect.
      */
     enum Anchor : UInt32
     {
@@ -84,9 +84,9 @@ public:
     };
 
     /*!
-     * @brief Popup gravity.
+     * @brief Gravity.
      *
-     * The direction in which the Popup tries to move.
+     * The direction in which the popup tries to move.
      */
     enum Gravity : UInt32
     {
@@ -121,7 +121,7 @@ public:
     /*!
      * @brief Constraint adjustments.
      *
-     * Rules for handling a constrained Popup.
+     * Rules for handling a constrained popup.
      */
     enum ConstraintAdjustments : UInt32
     {
@@ -150,7 +150,7 @@ public:
     /*!
      * @brief Size in surface coordinates.
      *
-     * Size of the Popup to be positioned (window geometry) in surface coordinates.
+     * Size of the popup to be positioned (window geometry size) in surface coordinates.
      */
     const LSize &size() const
     {
@@ -160,7 +160,7 @@ public:
     /*!
      * @brief Anchor rect in surface coordinates.
      *
-     * Anchor rect relative to the parent's geometry origin in surface coordinates.
+     * Anchor rect relative to the parent window geometry in surface coordinates.
      */
     const LRect &anchorRect() const
     {
@@ -170,7 +170,7 @@ public:
     /*!
      * @brief Additional offset in surface coordinates.
      *
-     * Additional offset in surface coordinates added to the Popup's position calculated by the rules.
+     * Additional offset in surface coordinates added to the final calculated position.
      */
     const LPoint &offset() const noexcept
     {
@@ -180,7 +180,7 @@ public:
     /*!
      * @brief Anchor point.
      *
-     * Point on the anchor rect defined by LPositioner::Anchor enum.
+     * Edge or corner within the anchorRect() the popup is positioned relative to.
      */
     Anchor anchor() const noexcept
     {
@@ -190,7 +190,7 @@ public:
     /*!
      * @brief Popup gravity.
      *
-     * Direction in which the Popup is trying to move, defined in LPositioner::Gravity.
+     * Direction in which the popup is trying to move, defined in LPositioner::Gravity.
      */
     Gravity gravity() const noexcept
     {
@@ -200,33 +200,73 @@ public:
     /*!
      * @brief Constraint adjustment rules.
      *
-     * Flags with the rules to use in case the Popup is constrained, defined in LPositioner::ConstraintAdjustment.
+     * Flags with rules used to unconstrain the popup.
      */
     LBitset<ConstraintAdjustments> constraintAdjustments() const noexcept
     {
         return m_constraintAdjustments;
     }
 
+    /**
+     * @brief Determines if the popup should be reconfigured, for example, when the parent surface moves.
+     *
+     * This method checks whether the popup needs to be reconfigured
+     * in response to changes in the parent surface, such as movement or other configuration changes.
+     *
+     * @return `true` if the popup should be reconfigured, `false` otherwise.
+     */
     bool reactive() const noexcept
     {
         return m_reactive;
     }
 
+    /**
+     * @brief Checks if the popup is being repositioned according to a future parent size.
+     *
+     * The compositor may use parentConfigureSerial() together with parentSize() to determine what
+     * future state the popup should be constrained using during an LPopupRole::configureRequest().
+     *
+     * @see parentConfigureSerial()
+     * @see LPopupRole::configureRequest()
+     *
+     * @return `true` if the popup is being repositioned due to a parent configure change, `false` otherwise.
+     */
     bool hasParentSize() const noexcept
     {
         return m_hasParentSize;
     }
 
+    /**
+     * @brief Parent size.
+     *
+     * @see hasParentSize().
+     */
     const LSize &parentSize() const noexcept
     {
         return m_parentSize;
     }
 
+    /**
+     * @brief Checks if the popup is being repositioned according to a future parent configuration.
+     *
+     * The compositor may use parentConfigureSerial() together with parentSize() to determine what
+     * future state the popup should be constrained using during an LPopupRole::configureRequest().
+     *
+     * @see parentConfigureSerial()
+     * @see LPopupRole::configureRequest()
+     *
+     * @return `true` if the popup is being repositioned according to a future parent configuration, `false` otherwise.
+     */
     bool hasParentConfigureSerial() const noexcept
     {
         return m_hasParentConfigureSerial;
     }
 
+    /**
+     * @brief Parent configuration serial.
+     *
+     * @see hasParentConfigureSerial().
+     */
     UInt32 parentConfigureSerial() const noexcept
     {
         return m_parentConfigureSerial;
@@ -235,6 +275,7 @@ public:
 private:
     friend class LPopupRole;
     friend class Protocols::XdgShell::RXdgPositioner;
+
     LSize m_size;
     LRect m_anchorRect;
     LPoint m_offset;

@@ -10,9 +10,4 @@ struct LCursorRole::Params
     LSurface *surface;
 };
 
-LPRIVATE_CLASS(LCursorRole)
-    LPoint currentHotspot, pendingHotspotOffset;
-    LPoint currentHotspotB;
-};
-
 #endif // LCURSORROLEPRIVATE_H

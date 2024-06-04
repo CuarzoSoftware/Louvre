@@ -188,41 +188,26 @@ static void updateFinalRectPos(Config &config) noexcept
         config.popup->positioner().offset());
 }
 
-const LPopupRole::Configuration &LPopupRole::current() const noexcept
+LBitset<LEdge> LPopupRole::constrainedEdges(const LRect &rect) const noexcept
 {
-    return imp()->current;
-}
+    LBitset<LEdge> edges;
 
-const LPopupRole::Configuration &LPopupRole::pending() const noexcept
-{
-    return imp()->pending;
-}
-
-const LPopupRole::Configuration &LPopupRole::previous() const noexcept
-{
-    return imp()->previous;
-}
-
-LBitset<LPopupRole::ConstrainedEdges> LPopupRole::constrainedEdges(const LRect &rect) const noexcept
-{
-    LBitset<LPopupRole::ConstrainedEdges> edges;
-
-    if (positionerBounds().w() > 0)
+    if (bounds().w() > 0)
     {
-        if (rect.x() < positionerBounds().x())
-            edges.add(ConstrainedL);
+        if (rect.x() < bounds().x())
+            edges.add(LEdgeLeft);
 
-        if (rect.x() + rect.w() > positionerBounds().x() + positionerBounds().w())
-            edges.add(ConstrainedR);
+        if (rect.x() + rect.w() > bounds().x() + bounds().w())
+            edges.add(LEdgeRight);
     }
 
-    if (positionerBounds().h() > 0)
+    if (bounds().h() > 0)
     {
-        if (rect.y() < positionerBounds().y())
-            edges.add(ConstrainedT);
+        if (rect.y() < bounds().y())
+            edges.add(LEdgeTop);
 
-        if (rect.y() + rect.h() > positionerBounds().y() + positionerBounds().h())
-            edges.add(ConstrainedB);
+        if (rect.y() + rect.h() > bounds().y() + bounds().h())
+            edges.add(LEdgeBottom);
     }
 
     return edges;
@@ -257,13 +242,13 @@ LRect LPopupRole::calculateUnconstrainedRect(const LPoint *futureParentPos) cons
 
     updateConfig(conf);
 
-    LBitset<ConstrainedEdges> constrained { constrainedEdges(conf.finalRect) };
+    LBitset<LEdge> constrained { constrainedEdges(conf.finalRect) };
 
     if (constrained == 0)
         goto final;
 
     // Handle X axis
-    if (constrained.check(ConstrainedL | ConstrainedR))
+    if (constrained.check(LEdgeLeft | LEdgeRight))
     {
         if (positioner().constraintAdjustments().check(LPositioner::FlipX))
         {
@@ -274,7 +259,7 @@ LRect LPopupRole::calculateUnconstrainedRect(const LPoint *futureParentPos) cons
 
             if (constrained == 0)
                 goto final;
-            else if (!constrained.check(ConstrainedL | ConstrainedR))
+            else if (!constrained.check(LEdgeLeft | LEdgeRight))
                 goto handleYAxis;
             else
             {
@@ -286,19 +271,19 @@ LRect LPopupRole::calculateUnconstrainedRect(const LPoint *futureParentPos) cons
             }
         }
 
-        if (positioner().constraintAdjustments().check(LPositioner::SlideX) && !constrained.checkAll(ConstrainedL | ConstrainedR))
+        if (positioner().constraintAdjustments().check(LPositioner::SlideX) && !constrained.checkAll(LEdgeLeft | LEdgeRight))
         {
-            if (constrained.check(ConstrainedL))
-                conf.slide.setX(positionerBounds().x() - conf.finalRect.x());
+            if (constrained.check(LEdgeLeft))
+                conf.slide.setX(bounds().x() - conf.finalRect.x());
             else
-                conf.slide.setX(positionerBounds().x() + positionerBounds().w() - conf.finalRect.x() - conf.finalRect.w());
+                conf.slide.setX(bounds().x() + bounds().w() - conf.finalRect.x() - conf.finalRect.w());
 
             updateConfig(conf);
             constrained = constrainedEdges(conf.finalRect);
 
             if (constrained == 0)
                 goto final;
-            else if (!constrained.check(ConstrainedL | ConstrainedR))
+            else if (!constrained.check(LEdgeLeft | LEdgeRight))
                 goto handleYAxis;
             else
             {
@@ -313,11 +298,11 @@ LRect LPopupRole::calculateUnconstrainedRect(const LPoint *futureParentPos) cons
         {
             if (positioner().constraintAdjustments().check(LPositioner::SlideX))
             {
-                conf.finalRect.setW(positionerBounds().w());
-                conf.slide.setX(positionerBounds().x() - conf.finalRect.x());
+                conf.finalRect.setW(bounds().w());
+                conf.slide.setX(bounds().x() - conf.finalRect.x());
             }
-            else if (constrained.check(ConstrainedR))
-                conf.finalRect.setW(positionerBounds().x() + positionerBounds().w() - conf.finalRect.x());
+            else if (constrained.check(LEdgeRight))
+                conf.finalRect.setW(bounds().x() + bounds().w() - conf.finalRect.x());
 
             updateConfig(conf);
         }
@@ -325,7 +310,7 @@ LRect LPopupRole::calculateUnconstrainedRect(const LPoint *futureParentPos) cons
 
     handleYAxis:
 
-    if (constrained.check(ConstrainedT | ConstrainedB))
+    if (constrained.check(LEdgeTop | LEdgeBottom))
     {
         if (positioner().constraintAdjustments().check(LPositioner::FlipY))
         {
@@ -334,7 +319,7 @@ LRect LPopupRole::calculateUnconstrainedRect(const LPoint *futureParentPos) cons
             updateConfig(conf);
             constrained = constrainedEdges(conf.finalRect);
 
-            if (!constrained.check(ConstrainedT | ConstrainedB))
+            if (!constrained.check(LEdgeTop | LEdgeBottom))
                 goto final;
             else
             {
@@ -346,17 +331,17 @@ LRect LPopupRole::calculateUnconstrainedRect(const LPoint *futureParentPos) cons
             }
         }
 
-        if (positioner().constraintAdjustments().check(LPositioner::SlideY) && !constrained.checkAll(ConstrainedT | ConstrainedB))
+        if (positioner().constraintAdjustments().check(LPositioner::SlideY) && !constrained.checkAll(LEdgeTop | LEdgeBottom))
         {
-            if (constrained.check(ConstrainedT))
-                conf.slide.setY(positionerBounds().y() - conf.finalRect.y());
+            if (constrained.check(LEdgeTop))
+                conf.slide.setY(bounds().y() - conf.finalRect.y());
             else // Bottom
-                conf.slide.setY(positionerBounds().y() + positionerBounds().h() - conf.finalRect.y() - conf.finalRect.h());
+                conf.slide.setY(bounds().y() + bounds().h() - conf.finalRect.y() - conf.finalRect.h());
 
             updateConfig(conf);
             constrained = constrainedEdges(conf.finalRect);
 
-            if (!constrained.check(ConstrainedT | ConstrainedB))
+            if (!constrained.check(LEdgeTop | LEdgeBottom))
                 goto final;
             else
             {
@@ -371,11 +356,11 @@ LRect LPopupRole::calculateUnconstrainedRect(const LPoint *futureParentPos) cons
         {
             if (positioner().constraintAdjustments().check(LPositioner::SlideY))
             {
-                conf.finalRect.setH(positionerBounds().h());
-                conf.slide.setY(positionerBounds().y() - conf.finalRect.y());
+                conf.finalRect.setH(bounds().h());
+                conf.slide.setY(bounds().y() - conf.finalRect.y());
             }
-            else if (constrained.check(ConstrainedB))
-                conf.finalRect.setH(positionerBounds().y() + positionerBounds().h() - conf.finalRect.y());
+            else if (constrained.check(LEdgeBottom))
+                conf.finalRect.setH(bounds().y() + bounds().h() - conf.finalRect.y());
 
             updateConfig(conf);
         }
@@ -392,22 +377,31 @@ LPopupRole::LPopupRole(const void *params) noexcept :
         static_cast<const LPopupRole::Params*>(params)->popup,
         static_cast<const LPopupRole::Params*>(params)->surface,
         LSurface::Role::Popup),
-    LPRIVATE_INIT_UNIQUE(LPopupRole)
+    m_positioner(*static_cast<const LPopupRole::Params*>(params)->positioner)
+{}
+
+const LPopupRole::Configuration *LPopupRole::findConfiguration(UInt32 serial) const noexcept
 {
-    imp()->popup = this;
-    imp()->positioner = *static_cast<const LPopupRole::Params*>(params)->positioner;
+    for (auto &conf : m_sentConfs)
+        if (conf.serial == serial)
+            return &conf;
+
+    if (m_pendingConfiguration.serial == serial)
+        return &m_pendingConfiguration;
+    if (m_lastACKConfiguration.serial == serial)
+        return &m_lastACKConfiguration;
+
+    return nullptr;
 }
 
-LPopupRole::~LPopupRole()
+void LPopupRole::atomsChanged(LBitset<AtomChanges> changes, const Atoms &prevAtoms)
 {
-    // Required by pimpl
+    L_UNUSED(changes)
+    L_UNUSED(prevAtoms)
 }
 
-bool LPopupRole::isTopmostPopup() const
+bool LPopupRole::isTopmostPopup() const noexcept
 {
-    if (!surface())
-        return false;
-
     std::list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();
     for (; s!= compositor()->surfaces().rend(); s++)
         if ((*s)->popup() && (*s)->client() == surface()->client())
@@ -416,26 +410,30 @@ bool LPopupRole::isTopmostPopup() const
     return false;
 }
 
-void LPopupRole::configure(const LRect &rect) const
+void LPopupRole::setExclusiveOutput(LOutput *output) noexcept
+{
+    m_exclusiveOutput.reset(output);
+}
+
+void LPopupRole::configureRect(const LRect &rect) const noexcept
 {
     auto &res { *static_cast<XdgShell::RXdgPopup*>(resource()) };
 
     if (!res.xdgSurfaceRes())
         return;
 
-    if (!imp()->stateFlags.check(LPopupRolePrivate::CanBeConfigured))
+    if (!m_flags.check(CanBeConfigured))
         return;
 
-    if (!positioner().reactive())
-        imp()->stateFlags.remove(LPopupRolePrivate::CanBeConfigured);
-
-    if (!imp()->stateFlags.check(LPopupRolePrivate::HasConfigurationToSend))
+    if (!m_flags.check(HasConfigurationToSend))
     {
-        imp()->stateFlags.add(LPopupRolePrivate::HasConfigurationToSend);
-        imp()->pending.serial = LTime::nextSerial();
+        m_flags.add(HasConfigurationToSend);
+        m_pendingConfiguration.serial = LTime::nextSerial();
     }
 
-    imp()->pending.rect = rect;
+    m_pendingConfiguration.rect.setPos(rect.pos());
+    m_pendingConfiguration.rect.setW(rect.w() < 0 ? 0 : rect.w());
+    m_pendingConfiguration.rect.setH(rect.h() < 0 ? 0 : rect.h());
 }
 
 void LPopupRole::dismiss()
@@ -445,35 +443,27 @@ void LPopupRole::dismiss()
     {
         if ((*s)->popup() && ((*s)->isSubchildOf(surface()) || *s == surface() ))
         {
-            if (!imp()->stateFlags.check(LPopupRolePrivate::Dismissed))
+            if (!(*s)->popup()->m_flags.check(Dismissed))
             {
                 XdgShell::RXdgPopup *res = (XdgShell::RXdgPopup*)resource();
                 res->popupDone();
-                imp()->stateFlags.add(LPopupRolePrivate::Dismissed);
+                (*s)->popup()->m_flags.add(Dismissed);
+                (*s)->imp()->setKeyboardGrabToParent();
+                (*s)->imp()->setMapped(false);
             }
 
             if ((*s) == surface())
-            {
-                surface()->imp()->setMapped(false);
                 return;
-            }
         }
     }
-}
-
-const LRect &LPopupRole::windowGeometry() const
-{
-    return xdgSurfaceResource()->windowGeometry();
-}
-
-const LPositioner &LPopupRole::positioner() const
-{
-    return imp()->positioner;
 }
 
 void LPopupRole::handleSurfaceCommit(CommitOrigin origin)
 {
     L_UNUSED(origin);
+
+    if (m_flags.check(Dismissed))
+        return;
 
     if (surface()->imp()->pendingParent)
     {
@@ -496,89 +486,103 @@ void LPopupRole::handleSurfaceCommit(CommitOrigin origin)
         return;
     }
 
-    if (surface()->imp()->pending.role)
+    // Configure request
+    if (m_flags.check(HasPendingInitialConf))
     {
-        if (surface()->imp()->hasBufferOrPendingBuffer())
+        if (surface()->hasBuffer())
         {
-            wl_resource_post_error(surface()->surfaceResource()->resource(),
-                                   XDG_SURFACE_ERROR_UNCONFIGURED_BUFFER,
-                                   "Attaching a buffer to an unconfigured surface");
+            wl_resource_post_error(resource()->resource(), XDG_SURFACE_ERROR_UNCONFIGURED_BUFFER, "Attaching a buffer to an unconfigured surface");
             return;
         }
 
-        if (surface()->imp()->pendingParent)
-            surface()->imp()->pendingParent->imp()->applyPendingChildren();
-
-        surface()->imp()->applyPendingRole();
         surface()->imp()->setLayer(LLayerOverlay);
-        imp()->stateFlags.add(LPopupRolePrivate::CanBeConfigured);
+
+        m_flags.remove(HasPendingInitialConf);
+        m_flags.add(CanBeConfigured);
         configureRequest();
-        if (!imp()->stateFlags.check(LPopupRolePrivate::HasConfigurationToSend))
-            configure(calculateUnconstrainedRect());
-        imp()->current.rect = imp()->pending.rect;
-        return;
-    }
 
-    // Cambios double-buffered
-    if (xdgSurfaceResource()->m_hasPendingWindowGeometry)
-    {
-        xdgSurfaceResource()->m_hasPendingWindowGeometry = false;
-        xdgSurfaceResource()->m_currentWindowGeometry = xdgSurfaceResource()->m_pendingWindowGeometry;
-        geometryChanged();
-    }
-    // Si nunca ha asignado la geometría, usa el tamaño de la superficie
-    else if (!xdgSurfaceResource()->m_windowGeometrySet)
-    {
-        const LRect newGeometry { xdgSurfaceResource()->calculateGeometryWithSubsurfaces() };
+        if (!m_flags.check(HasConfigurationToSend))
+            configureRect(calculateUnconstrainedRect());
 
-        if (newGeometry != xdgSurfaceResource()->m_currentWindowGeometry)
-        {
-            xdgSurfaceResource()->m_currentWindowGeometry = newGeometry;
-            geometryChanged();
-        }
-    }
-
-    // Request configure
-    if (!surface()->mapped() && !surface()->hasBuffer())
-    {
-        imp()->stateFlags.add(LPopupRolePrivate::CanBeConfigured);
-        configureRequest();
-        if (!imp()->stateFlags.check(LPopupRolePrivate::HasConfigurationToSend))
-            configure(calculateUnconstrainedRect());
-        imp()->current.rect = imp()->pending.rect;
         return;
     }
 
     // Request unmap
-    if (surface()->mapped() && !surface()->hasBuffer())
+    if (surface()->mapped() && (!surface()->hasBuffer() || !surface()->parent()))
     {
-        surface()->imp()->setMapped(false);
-        surface()->imp()->setKeyboardGrabToParent();
-        surface()->imp()->setParent(nullptr);
+        dismiss();
         return;
     }
+
+    fullAtomsUpdate();
 
     // Request map
     if (!surface()->mapped() && surface()->hasBuffer() && surface()->parent() && surface()->parent()->mapped())
         surface()->imp()->setMapped(true);
 }
 
-void LPopupRole::setPositionerBounds(const LRect &bounds)
+void LPopupRole::fullAtomsUpdate()
 {
-    imp()->positionerBounds = bounds;
+    if (xdgSurfaceResource()->m_hasPendingWindowGeometry)
+    {
+        xdgSurfaceResource()->m_hasPendingWindowGeometry = false;
+        xdgSurfaceResource()->m_currentWindowGeometry = xdgSurfaceResource()->m_pendingWindowGeometry;
+    }
+    else if (!xdgSurfaceResource()->m_windowGeometrySet)
+    {
+        const LRect newGeometry { xdgSurfaceResource()->calculateGeometryWithSubsurfaces() };
+
+        if (newGeometry != xdgSurfaceResource()->m_currentWindowGeometry)
+            xdgSurfaceResource()->m_currentWindowGeometry = newGeometry;
+    }
+
+    pendingAtoms().localPos = m_lastACKConfiguration.rect.pos();
+    pendingAtoms().serial = m_lastACKConfiguration.serial;
+    pendingAtoms().windowGeometry = xdgSurfaceResource()->m_currentWindowGeometry;
+
+    LBitset<AtomChanges> changesToNotify;
+
+    if (currentAtoms().windowGeometry != pendingAtoms().windowGeometry)
+        changesToNotify.add(WindowGeometryChanged);
+
+    if (currentAtoms().localPos != pendingAtoms().localPos)
+        changesToNotify.add(LocalPosChanged);
+
+    if (currentAtoms().serial != pendingAtoms().serial)
+        changesToNotify.add(SerialChanged);
+
+    if (changesToNotify != 0)
+    {
+        m_currentAtomsIndex = 1 - m_currentAtomsIndex;
+        atomsChanged(0, pendingAtoms());
+        pendingAtoms() = currentAtoms();
+    }
 }
 
-const LRect &LPopupRole::positionerBounds() const
+void LPopupRole::sendPendingConfiguration() noexcept
 {
-    return imp()->positionerBounds;
+    if (!m_flags.check(HasConfigurationToSend))
+        return;
+
+    m_flags.remove(HasConfigurationToSend);
+
+    if (m_flags.check(HasPendingReposition))
+    {
+        m_flags.remove(HasPendingReposition);
+        xdgPopupResource()->repositioned(m_repositionToken);
+    }
+
+    xdgPopupResource()->configure(m_pendingConfiguration.rect);
+    xdgSurfaceResource()->configure(m_pendingConfiguration.serial);
+    m_sentConfs.emplace_back(m_pendingConfiguration);
 }
 
-XdgShell::RXdgPopup *LPopupRole::xdgPopupResource() const
+XdgShell::RXdgPopup *LPopupRole::xdgPopupResource() const noexcept
 {
     return static_cast<XdgShell::RXdgPopup*>(resource());
 }
 
-XdgShell::RXdgSurface *LPopupRole::xdgSurfaceResource() const
+XdgShell::RXdgSurface *LPopupRole::xdgSurfaceResource() const noexcept
 {
     return xdgPopupResource()->xdgSurfaceRes();
 }

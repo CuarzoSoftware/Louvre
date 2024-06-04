@@ -37,22 +37,20 @@ Louvre (2.0.0-1)
 
   # Roles
 
-  * Introduced the LLayerRole class for wlr_layer_shell surfaces, featuring a default implementation that automatically updates their position and size, as
-    well as the available output geometry.
-  * Introduced the LSessionLockRole for session_lock surfaces, featuring a default implementation that automatically updates their position, size, and mapping
-    state based on the session state.
+  * Introduced the LLayerRole class for wlr_layer_shell surfaces, featuring a default implementation that automatically updates their position and size, as well as the available outputs geometry.
+  * Introduced the LSessionLockRole for session_lock surfaces, featuring a default implementation that automatically updates their position, size, and mapping state based on the session state.
   * Detached toplevel move and resize sessions from LPointer, moving them into the new LToplevelMoveSession and LToplevelResizeSession classes.
   * Move and resize sessions constraints can now be updated dynamically as needed.
   * Now multiple move and resize toplevel sessions are allowed at a time (e.g. pointer and touch at the same time).
   * Replaced LToplevelRole::ResizeEdge enum with the new LEdge flags.
-  * Replaced individual LToplevelRole property change events with atomsChanged(), enabling the handling of multiple property changes simultaneously and access
-    to the previous state. This prevents issues that arose from the order in which events were previously triggered.
+  * Replaced individual LToplevelRole and LPopupRole property change events with atomsChanged(), enabling the handling of multiple property changes simultaneously while accessing the previous state. This prevents issues that arose from the order in which events were previously triggered.
   * Added setExtraGeometry() to LToplevelRole to simplify the calculation of position, size, and constraints for toplevels using server-side decorations.
+  * Popups are now immediately unmapped when dismissed.
   * Optimized popup position recalculations, preventing unnecessary processing.
 
   # Screencasting
 
-  * Added support for screencasting through the wlr_screencopy protocol, also compatible with the xdg-desktop-portal-wlr portal.
+  * Added support for screencasting through the wlr_screencopy protocol, also compatible with the xdg-desktop-portal-wlr portal, thanks to @Fox2Code for providing feedback on API design.
 
   # Cursor
 
@@ -68,7 +66,7 @@ Louvre (2.0.0-1)
   * Migrated clipboard functionality from LSeat to the new dedicated LClipboard class.
   * It is now possible to specify which MIME types of the clipboard to make persistent through LClipboard::persistentMimeTypeFilter().
   * Renamed the LDNDManager class to LDND.
-  * Moved drag & drop enter, move, and leave events from LPointer to LDND.
+  * Transferred drag & drop enter, move, and leave events from LPointer to LDND, facilitating support for touch or other forms of DND sessions.
   * It is now possible to distinguish whether a DND session is originated from a pointer, keyboard, or touch event using LDND::triggeringEvent().
 
   # Input Events
@@ -98,9 +96,16 @@ Louvre (2.0.0-1)
   * All classes that provide an interface are now subclasses of LFactoryObject.
   * Replaced all virtual constructors/destructors in LCompositor with createObjectRequest() and onAnticipatedObjectDestruction().
 
+  # Cleaning / Performance
+
+  * Removed unnecessary 'inline' keywords from class member methods, thanks to @Paraworker for the suggestion.
+  * Added 'noexcept' keyword to all class member methods that do not throw exceptions.
+  * Removed unnecessary pimpl pattern from multiple classes, enhancing cache locality and performance.
+
   # Bug Fixes
 
   * Fixed incorrect axis scroll values sent to clients using wl_pointer v1.
+  * Resolved a segmentation fault issue triggered by accessing LOutput buffers following mode changes.
   * Addressed synchronization problems related to the presentation time protocol.
 
 Louvre (1.2.1-1)

@@ -274,7 +274,7 @@ public:
      * @brief Pending configuration.
      *
      * This struct holds the last configuration parameters assigned
-     * with `configureState()`, `configureSize()`, `configureBounds()`, etc.
+     * with configureState(), configureSize(), configureBounds(), etc.
      *
      * The pending configuration parameters are sent to the client once per Louvre
      * main loop iteration only if one of the configure variants was called.
@@ -282,7 +282,7 @@ public:
      * The pending serial is updated at most once per loop iteration if a configure
      * was done.
      *
-     * If the pending configuration serial is equal to `serial()` it means the last
+     * If the pending configuration serial is equal to serial() it means the last
      * configuration was ACK by the client and there is no pending configuration.
      *
      * @see atomsChanged() to detect when the serial and other parameters change.

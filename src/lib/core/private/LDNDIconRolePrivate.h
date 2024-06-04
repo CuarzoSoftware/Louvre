@@ -10,9 +10,4 @@ struct LDNDIconRole::Params
     LSurface *surface;
 };
 
-LPRIVATE_CLASS(LDNDIconRole)
-    LPoint currentHotspot, pendingHotspotOffset;
-    LPoint currentHotspotB;
-};
-
 #endif // LDNDICONROLEPRIVATE_H

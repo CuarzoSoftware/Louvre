@@ -451,7 +451,11 @@ bool LCompositor::addOutput(LOutput *output)
     if (!output->imp()->initialize())
     {
         LLog::error("[LCompositor::addOutput] Failed to initialize output %s.", output->name());
-        removeOutput(output);
+        LVectorRemoveOne(imp()->outputs, output);
+
+        if (imp()->outputs.empty())
+            cursor()->imp()->setOutput(nullptr);
+
         return false;
     }
 

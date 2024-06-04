@@ -17,9 +17,9 @@ bool LSessionLockManager::lockRequest(LClient *client)
 {
     L_UNUSED(client);
 
-    /* Deny all requests by default. */
+    /* Allow all requests by default. */
 
-    return false;
+    return true;
 }
 //! [lockRequest]
 

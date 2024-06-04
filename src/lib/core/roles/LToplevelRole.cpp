@@ -424,7 +424,7 @@ void LToplevelRole::reset() noexcept
     pendingAtoms() = Atoms();
 
     if (pendingAtoms().serial == currentAtoms().serial)
-        pendingAtoms().serial++;
+        pendingAtoms().serial = LTime::nextSerial();
 
     fullAtomsUpdate();
 

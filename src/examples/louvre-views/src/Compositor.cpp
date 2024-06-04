@@ -82,6 +82,9 @@ void Compositor::initialized()
 
     Int32 totalWidth { 0 };
 
+    LLog::debug("LALA");
+
+
     // Initialize and arrange outputs (screens) left to right
     for (LOutput *output : seat()->outputs())
     {
@@ -92,6 +95,14 @@ void Compositor::initialized()
         totalWidth += output->size().w();
         compositor()->addOutput(output);
         output->repaint();
+    }
+
+    LLog::debug("LALA");
+
+    if (outputs().empty())
+    {
+        LLog::fatal("[louvre-views] Failed to initialize outputs. Try launching the compositor from a free TTY or within a Wayland compositor.");
+        finish();
     }
 
 #if LOUVRE_VIEWS_TESTING == 1

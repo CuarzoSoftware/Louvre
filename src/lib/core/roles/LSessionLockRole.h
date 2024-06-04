@@ -6,7 +6,6 @@
 
 /**
  * @brief Surface displayed during a session lock.
- * @ingroup roles
  *
  * LSessionLockRole can be used by clients to display arbitrary graphics while the session is locked.\n
  * When a client requests to lock a session (see LSessionLockManager::lockRequest()), it first creates an LSessionLockRole
@@ -25,11 +24,20 @@ public:
     static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LSessionLockRole;
 
     /**
-     * @brief Constructor.
+     * @brief Constructor of the LSessionLockRole class.
      *
-     * @see LCompositor::createSessionLockRoleRequest()
+     * @param params Internal parameters provided in LCompositor::createObjectRequest().
      */
     LSessionLockRole(const void *params) noexcept;
+
+    LCLASS_NO_COPY(LSessionLockRole)
+
+    /**
+     * @brief Destructor of the LSessionLockRole class.
+     *
+     * Invoked after LCompositor::onAnticipatedObjectDestruction().
+     */
+    ~LSessionLockRole() = default;
 
     /**
      * @brief The output the surface is assigned to.

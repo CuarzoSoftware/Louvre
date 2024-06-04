@@ -56,6 +56,7 @@ RXdgPopup::RXdgPopup
         xdgSurfaceRes->surface()->imp()->setPendingParent(xdgParentSurfaceRes->surface());
 
     xdgSurfaceRes->surface()->imp()->setPendingRole(popupRole());
+    xdgSurfaceRes->surface()->imp()->applyPendingRole();
 }
 
 RXdgPopup::~RXdgPopup()
@@ -91,11 +92,8 @@ void RXdgPopup::grab(wl_client */*client*/, wl_resource *resource, wl_resource *
 {
     auto &res { *static_cast<RXdgPopup*>(wl_resource_get_user_data(resource)) };
 
-    if (!res.popupRole()->surface())
-    {
-        LLog::warning("[RXdgPopup::grab] XDG Popup keyboard grab request without surface. Ignoring it.");
+    if (!res.popupRole()->surface()->mapped() || res.popupRole()->m_flags.check(LPopupRole::Dismissed))
         return;
-    }
 
     const LEvent *triggeringEvent { res.client()->findEventBySerial(serial) };
 
@@ -106,7 +104,6 @@ void RXdgPopup::grab(wl_client */*client*/, wl_resource *resource, wl_resource *
         return;
     }
 
-    // TODO use LWeak
     res.popupRole()->grabKeyboardRequest(*triggeringEvent);
 
     // Check if the user accepted the grab
@@ -119,23 +116,20 @@ void RXdgPopup::reposition(wl_client */*client*/, wl_resource *resource, wl_reso
 {
     RXdgPopup &res { *static_cast<RXdgPopup*>(wl_resource_get_user_data(resource)) };
 
-    if (!res.popupRole()->surface() || !res.popupRole()->surface()->popup())
-    {
-        LLog::warning("[RXdgPopup::grab] XDG Popup keyboard grab request without surface. Ignoring it.");
+    if (!res.popupRole()->surface()->mapped())
         return;
-    }
 
     RXdgPositioner &xdgPositionerRes { *static_cast<RXdgPositioner*>(wl_resource_get_user_data(positioner)) };
 
     if (!xdgPositionerRes.validate())
         return;
 
-    res.popupRole()->imp()->positioner = xdgPositionerRes.m_positioner;
-    res.popupRole()->imp()->repositionToken = token;
-    res.popupRole()->imp()->stateFlags.add(LPopupRole::LPopupRolePrivate::HasPendingReposition | LPopupRole::LPopupRolePrivate::CanBeConfigured);
+    res.popupRole()->m_positioner = xdgPositionerRes.m_positioner;
+    res.popupRole()->m_repositionToken = token;
+    res.popupRole()->m_flags.add(LPopupRole::HasPendingReposition | LPopupRole::CanBeConfigured);
     res.popupRole()->configureRequest();
-    if (!res.popupRole()->imp()->stateFlags.check(LPopupRole::LPopupRolePrivate::HasConfigurationToSend))
-        res.popupRole()->configure(res.popupRole()->calculateUnconstrainedRect());
+    if (!res.popupRole()->m_flags.check(LPopupRole::HasConfigurationToSend))
+        res.popupRole()->configureRect(res.popupRole()->calculateUnconstrainedRect());
 }
 #endif
 

@@ -2,20 +2,20 @@
 #define LCURSORROLE_H
 
 #include <LBaseSurfaceRole.h>
-#include <memory>
 
 /**
- * @brief Cursor role for surfaces
- * @ingroup roles
+ * @brief Cursor role for surfaces.
  *
- * The LCursorRole class is a role for surfaces that allows the compositor to use them as cursors.\n
- * Clients create the role by requesting [set_cursor](https://wayland.app/protocols/wayland#wl_pointer:request:set_cursor)
- * from the [wl_pointer](https://wayland.app/protocols/wayland#wl_pointer) interface of the Wayland protocol.\n
+ * Clients create this role when they want to assign the compositor cursor texture and hotspot.\n
+ * Instead of rendering this surface, the LCursor class should be employed, which displays the cursor
+ * using hardware composition, which is more efficient.
  *
- * @note Louvre automatically invokes the LPointer::setCursorRequest() event when a client with pointer focus wants to assign an LCursorRole as the cursor.
- *       This event is also invoked when the role hotspot changes, so it is not necessary to reimplement this class to handle these changes.
+ * When clients want to assign the cursor, they trigger the LPointer::setCursorRequest(),
+ * providing the cursor in the form of an LClientCursor. That class serves as a wrapper for this role,
+ * and when assigned to LCursor with LCursor::setCursor(), it automatically updates its buffer,
+ * size, hotspot, and visibility.
  *
- * @see LPointer::setCursorRequest().
+ * @see LPointer::setCursorRequest()
  */
 class Louvre::LCursorRole : public LBaseSurfaceRole
 {
@@ -27,14 +27,14 @@ public:
     /**
      * @brief Constructor of the LCursorRole class.
      *
-     * @param params Internal library parameters passed in the LCompositor::createCursorRoleRequest() virtual constructor.
+     * @param params Internal parameters provided in LCompositor::createObjectRequest().
      */
     LCursorRole(const void *params) noexcept;
 
     /**
      * @brief Destructor of the LCursorRole class.
      *
-     * Invoked internally by the library after LCompositor::destroyCursorRoleRequest() is called.
+     * Invoked after LCompositor::onAnticipatedObjectDestruction().
      */
     ~LCursorRole();
 
@@ -43,11 +43,10 @@ public:
     /**
      * @brief Position of the surface given the role.
      *
-     * The cursor position given the role is calculated by subtracting the hotspot from the surface position.\n
+     * The cursor position given the role is calculated by subtracting the hotspot from LSurface::pos().\n
      * This position is generally not used since the cursor is usually rendered using the LCursor class.\n
      * However, it could be useful in cases where you do not want to use the LCursor class.
      *
-     * This method can be reimplemented to change the positioning logic of the surface given the role.
      * #### Default implementation
      * @snippet LCursorRoleDefault.cpp rolePos
      */
@@ -55,8 +54,6 @@ public:
 
     /**
      * @brief Notifies a hotspot change.
-     *
-     * It is recommended to use the LPointer::setCursorRequest() event to listen for hotspot changes instead.
      *
      * #### Default implementation
      * @snippet LCursorRoleDefault.cpp hotspotChanged
@@ -66,17 +63,25 @@ public:
     /**
      * @brief Cursor hotspot in surface coordinates.
      */
-    const LPoint &hotspot() const;
+    const LPoint &hotspot() const noexcept
+    {
+        return m_currentHotspot;
+    }
 
     /**
      * @brief Cursor hotspot in buffer coordinates.
      */
-    const LPoint &hotspotB() const;
+    const LPoint &hotspotB() const noexcept
+    {
+        return m_currentHotspotB;
+    }
 
-    LPRIVATE_IMP_UNIQUE(LCursorRole)
-
+private:
+    friend class Protocols::Wayland::RPointer;
     virtual void handleSurfaceCommit(CommitOrigin origin) override;
     virtual void handleSurfaceOffset(Int32 x, Int32 y) override;
+    LPoint m_currentHotspot, m_pendingHotspotOffset;
+    LPoint m_currentHotspotB;
 };
 
 #endif // LCURSORROLE_H

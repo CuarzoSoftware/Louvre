@@ -2,20 +2,13 @@
 #define LDNDICONROLE_H
 
 #include <LBaseSurfaceRole.h>
-#include <memory>
 
 /**
  * @brief Drag & drop icon role for surfaces
- * @ingroup roles
  *
- * The LDNDIconRole class is a role for surfaces that allows the compositor to use them as icons for drag & drop sessions.\n
- * Clients create the role through the [start_drag](https://wayland.app/protocols/wayland#wl_data_device:request:start_drag)
- * request from the Wayland [wl_data_device](https://wayland.app/protocols/wayland#wl_data_device) protocol interface.\n
- * The LDNDIconRole role used in a drag & drop session can be accessed from LDNDManager::icon().\n
+ * The LDNDIconRole role is used during drag & drop sessions. See LDND::icon().
  *
  * <center><IMG WIDTH="250px" SRC="https://lh3.googleusercontent.com/evKJ2MbTJ42-qFYSP02NPxUULSFpTz3oBSqn6RvR20u_r5wvgJpHF6o-3Zg7aWgNBhrkIsM8iNWiQQHxPjvGml9zDB2wwNwWK0scqTsHpLIbxMqYv60afSruzbWNBCDZaGI_y77eRA=w2400"></center>
- *
- * @see LDNDManager::startDragRequest()
  */
 
 class Louvre::LDNDIconRole : public LBaseSurfaceRole
@@ -29,26 +22,37 @@ public:
     /**
      * @brief Constructor of the LDNDIconRole class.
      *
-     * @param params Internal library parameters passed in the LCompositor::createDNDIconRoleRequest() virtual constructor.
+     * @param params Internal parameters provided in LCompositor::createObjectRequest().
      */
     LDNDIconRole(const void *params) noexcept;
+
+    LCLASS_NO_COPY(LDNDIconRole)
 
     /**
      * @brief Destructor of the LDNDIconRole class.
      *
-     * Invoked internally by the library after LCompositor::destroyDNDIconRoleRequest() is called.
+     * Invoked after LCompositor::onAnticipatedObjectDestruction().
      */
-    virtual ~LDNDIconRole();
+    ~LDNDIconRole();
 
-    /// @cond OMIT
-    LDNDIconRole(const LDNDIconRole&) = delete;
-    LDNDIconRole& operator= (const LDNDIconRole&) = delete;
-    /// @endcond
+    /**
+     * @brief Hotspot of the icon in surface coordinates.
+     */
+    const LPoint &hotspot() const noexcept
+    {
+        return m_currentHotspot;
+    }
+
+    /**
+     * @brief Hotspot of the icon in buffer coordinates.
+     */
+    const LPoint &hotspotB() const noexcept
+    {
+        return m_currentHotspotB;
+    }
 
     /**
      * @brief Notify a hotspot change.
-     *
-     * Reimplement this virtual method if you want to be notified when the icon hotspot changes.
      *
      * #### Default implementation
      * @snippet LDNDIconRoleDefault.cpp hotspotChanged
@@ -58,31 +62,18 @@ public:
     /**
      * @brief Position of the surface given the role.
      *
-     * The position of the icon given the role is calculated by subtracting the hotspot from the surface position.\n
-     *
-     * This method can be reimplemented to change the positioning logic of the surface given the role.
+     * The position of the icon given the role is calculated by subtracting the hotspot from LSurface::pos().
      *
      * #### Default implementation
      * @snippet LDNDIconRoleDefault.cpp rolePos
      */
     virtual const LPoint &rolePos() const override;
 
-    /**
-     * @brief Hotspot of the drag & drop icon in surface coordinates.
-     */
-    const LPoint &hotspot() const;
-
-    /**
-     * @brief Hotspot of the drag & drop icon in buffer coordinates.
-     */
-    const LPoint &hotspotB() const;
-
-    LPRIVATE_IMP_UNIQUE(LDNDIconRole)
-
-    /// @cond OMIT
+private:
     virtual void handleSurfaceOffset(Int32 x, Int32 y) override;
     virtual void handleSurfaceCommit(CommitOrigin origin) override;
-    /// @endcond
+    LPoint m_currentHotspot, m_pendingHotspotOffset;
+    LPoint m_currentHotspotB;
 };
 
 #endif // LDNDICONROLE_H

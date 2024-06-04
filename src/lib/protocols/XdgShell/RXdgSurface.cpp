@@ -204,18 +204,16 @@ void RXdgSurface::ack_configure(wl_client */*client*/, wl_resource *resource, UI
     {
         auto &popup { *res.surface()->popup() };
 
-        while (!popup.imp()->sentConfs.empty())
+        while (!popup.m_sentConfs.empty())
         {
-            if (popup.imp()->sentConfs.front().serial == serial)
+            if (popup.m_sentConfs.front().serial == serial)
             {
-                popup.imp()->previous = popup.imp()->current;
-                popup.imp()->current = popup.imp()->sentConfs.front();
-                popup.imp()->sentConfs.pop_front();
-                popup.configurationChanged();
+                popup.m_lastACKConfiguration = popup.m_sentConfs.front();
+                popup.m_sentConfs.pop_front();
                 return;
             }
 
-            popup.imp()->sentConfs.pop_front();
+            popup.m_sentConfs.pop_front();
         }
 
         wl_resource_post_error(res.resource(), XDG_SURFACE_ERROR_INVALID_SERIAL, "Invalid xdg_surface serial ack.");

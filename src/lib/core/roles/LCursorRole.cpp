@@ -16,8 +16,7 @@ LCursorRole::LCursorRole(const void *params) noexcept :
     LBaseSurfaceRole(FactoryObjectType,
         static_cast<const Params*>(params)->surface->surfaceResource(),
         static_cast<const Params*>(params)->surface,
-        LSurface::Role::Cursor),
-    LPRIVATE_INIT_UNIQUE(LCursorRole)
+        LSurface::Role::Cursor)
 {
     surface()->imp()->stateFlags.remove(LSurface::LSurfacePrivate::ReceiveInput);
 }
@@ -33,23 +32,13 @@ LCursorRole::~LCursorRole()
         surface()->imp()->setMapped(false);
 }
 
-const LPoint &LCursorRole::hotspot() const
-{
-    return imp()->currentHotspot;
-}
-
-const LPoint &LCursorRole::hotspotB() const
-{
-    return imp()->currentHotspotB;
-}
-
 void LCursorRole::handleSurfaceCommit(CommitOrigin origin)
 {
     L_UNUSED(origin);
 
-    imp()->currentHotspot -= imp()->pendingHotspotOffset;
-    imp()->pendingHotspotOffset = 0;
-    imp()->currentHotspotB = imp()->currentHotspot * surface()->bufferScale();
+    m_currentHotspot -= m_pendingHotspotOffset;
+    m_pendingHotspotOffset = 0;
+    m_currentHotspotB = m_currentHotspot * surface()->bufferScale();
 
     hotspotChanged();
 
@@ -64,6 +53,6 @@ void LCursorRole::handleSurfaceCommit(CommitOrigin origin)
 
 void LCursorRole::handleSurfaceOffset(Int32 x, Int32 y)
 {
-    imp()->pendingHotspotOffset.setX(x);
-    imp()->pendingHotspotOffset.setY(y);
+    m_pendingHotspotOffset.setX(x);
+    m_pendingHotspotOffset.setY(y);
 }
