@@ -74,11 +74,6 @@ namespace Louvre
         const LOutputMode *                 (*outputGetCurrentMode)(LOutput *output);
         const std::vector<LOutputMode*> *   (*outputGetModes)(LOutput *output);
         bool                                (*outputSetMode)(LOutput *output, LOutputMode *mode);
-
-        /* MODE PROPS */
-        const LSize *                       (*outputModeGetSize)(LOutputMode *mode);
-        Int32                               (*outputModeGetRefreshRate)(LOutputMode *mode);
-        bool                                (*outputModeIsPreferred)(LOutputMode *mode);
     };
 
     struct LInputBackendInterface

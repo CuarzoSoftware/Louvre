@@ -16,7 +16,7 @@
  * These classes are derived from this base class and their lifetime is managed entirely by LCompositor.\n
  * When LCompositor::createObjectRequest() is triggered, it expects you to return a new instance of
  * a specific LFactoryObject subtype. If `nullptr` is returned, Louvre creates and uses an instance of
- * the default class, otherwise, it uses your subclasses, which can behave differently than the defaults.
+ * the default class.
  *
  * @see Type to see all classes that can be overridden.
  *
@@ -24,7 +24,7 @@
  * event is triggered. This is called well in advance of the actual object's destructor, allowing you to still access many of
  * its related resources.
  *
- * @note The compositor is responsible for destroying the instance, you must not delete it yourself.
+ * @note The compositor is responsible for destroying the object, do not attempt not delete it yourself.
  */
 class Louvre::LFactoryObject : public LObject
 {

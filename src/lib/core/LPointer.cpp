@@ -31,9 +31,12 @@ LPointer::LPointer(const void *params) noexcept : LFactoryObject(FactoryObjectTy
     *ptr = this;
 }
 
-LPointer::~LPointer() {}
+LPointer::~LPointer()
+{
+    /* Required by pimpl */
+}
 
-void LPointer::setFocus(LSurface *surface)
+void LPointer::setFocus(LSurface *surface) noexcept
 {
     if (surface)
         setFocus(surface, cursor()->pos() - surface->rolePos());
@@ -41,7 +44,7 @@ void LPointer::setFocus(LSurface *surface)
         setFocus(nullptr, 0);
 }
 
-void LPointer::setFocus(LSurface *surface, const LPoint &localPos)
+void LPointer::setFocus(LSurface *surface, const LPoint &localPos) noexcept
 {
     if (surface)
     {
@@ -333,47 +336,47 @@ void LPointer::sendHoldEndEvent(const LPointerHoldEndEvent &event)
                 rGestureHold->end(event);
 }
 
-void LPointer::setDraggingSurface(LSurface *surface)
+void LPointer::setDraggingSurface(LSurface *surface) noexcept
 {
     imp()->draggingSurface.reset(surface);
 }
 
-void LPointer::enableNaturalScrollingX(bool enabled)
+LSurface *LPointer::draggingSurface() const noexcept
+{
+    return imp()->draggingSurface;
+}
+
+void LPointer::enableNaturalScrollingX(bool enabled) noexcept
 {
     imp()->state.setFlag(LPointerPrivate::NaturalScrollX, enabled);
 }
 
-void LPointer::enableNaturalScrollingY(bool enabled)
+void LPointer::enableNaturalScrollingY(bool enabled) noexcept
 {
     imp()->state.setFlag(LPointerPrivate::NaturalScrollY, enabled);
 }
 
-bool LPointer::naturalScrollingXEnabled() const
+bool LPointer::naturalScrollingXEnabled() const noexcept
 {
     return imp()->state.check(LPointerPrivate::NaturalScrollX);
 }
 
-bool LPointer::naturalScrollingYEnabled() const
+bool LPointer::naturalScrollingYEnabled() const noexcept
 {
     return imp()->state.check(LPointerPrivate::NaturalScrollY);
 }
 
-const std::vector<LPointerButtonEvent::Button> &LPointer::pressedKeys() const
+const std::vector<LPointerButtonEvent::Button> &LPointer::pressedKeys() const noexcept
 {
     return imp()->pressedButtons;
 }
 
-bool LPointer::isButtonPressed(LPointerButtonEvent::Button button) const
+bool LPointer::isButtonPressed(LPointerButtonEvent::Button button) const noexcept
 {
     for (auto btn : imp()->pressedButtons)
         if (btn == button)
             return true;
     return false;
-}
-
-LSurface *LPointer::draggingSurface() const
-{
-    return imp()->draggingSurface;
 }
 
 LSurface *LPointer::surfaceAt(const LPoint &point)
@@ -394,7 +397,7 @@ LSurface *LPointer::surfaceAt(const LPoint &point)
     return nullptr;
 }
 
-LSurface *LPointer::focus() const
+LSurface *LPointer::focus() const noexcept
 {
     return imp()->focus;
 }

@@ -44,6 +44,7 @@ protected:
     Int32 m_id;
 private:
     friend class LInputBackend;
+    friend class LTouchEvent;
     void notify();
 };
 

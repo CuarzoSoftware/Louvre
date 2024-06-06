@@ -6,10 +6,7 @@
 namespace Louvre
 {
     /**
-     * @brief Enumeration for Framebuffer Transformations
-     *
-     * This enumeration defines different transformations that can be applied to a framebuffer.
-     * These transformations include rotations and flips for adjusting the orientation of the framebuffer.
+     * @brief Transforms
      */
     enum class LTransform : Int32
     {

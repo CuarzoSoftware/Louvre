@@ -18,7 +18,7 @@ public:
      *
      * @param parent The parent view, if any.
      */
-    LLayerView(LView *parent = nullptr) noexcept : LView(LView::Layer, false, parent) {}
+    LLayerView(LView *parent = nullptr) noexcept : LView(LView::LayerType, false, parent) {}
 
     LCLASS_NO_COPY(LLayerView)
 
@@ -86,7 +86,7 @@ public:
     /**
      * @brief Sets the input region of the view.
      *
-     * @param region The input region to be set or `nullptr`.
+     * @param region The input region to be set or `nullptr` to allow the entire view to receive events.
      */
     void setInputRegion(const LRegion *region) noexcept
     {

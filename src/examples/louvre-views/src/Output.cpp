@@ -28,7 +28,7 @@ Output::Output(const void *params) noexcept : LOutput(params)
     workspacesContainer.setPos(0, 0);
 
     wallpaper.enableDstSize(true);
-    wallpaper.enableSrcRect(true);
+    wallpaper.enableSrcRect(compositor()->graphicBackendId() == LGraphicBackendWayland);
     wallpaper.enablePointerEvents(true);
     wallpaper.enableBlockPointer(true);
     wallpaper.setTranslucentRegion(&LRegion::EmptyRegion());
@@ -165,6 +165,7 @@ void Output::uninitializeGL()
     dock.uninitialize();
     topbar.uninitialize();
     wallpaper.setParent(nullptr);
+    scaledWallpaper.reset();
     G::compositor()->scene.handleUninitializeGL(this);
 }
 
@@ -475,25 +476,63 @@ returnChildren:
 
 void Output::updateWallpaper() noexcept
 {
-    if (!G::textures()->wallpaper || size().area() == 0)
-        return;
-
-    wallpaper.setTexture(G::textures()->wallpaper);
     wallpaper.setPos(pos());
     wallpaper.setDstSize(size());
 
-    const LSize &texSize { G::textures()->wallpaper->sizeB() };
+    if (!G::textures()->wallpaper || size().area() == 0)
+        return;
 
-    const Int32 outputScaledHeight { (texSize.w() * size().h())/size().w() };
-
-    if (outputScaledHeight >= G::textures()->wallpaper->sizeB().h())
+    if (compositor()->graphicBackendId() == LGraphicBackendDRM)
     {
-        const Int32 outputScaledWidth { (texSize.h() * size().w())/size().h() };
-        wallpaper.setSrcRect(LRectF((texSize.w() - outputScaledWidth)/2, 0.f, outputScaledWidth, texSize.h()));
+        LSize bufferSize;
+
+        if (is90Transform(transform()))
+        {
+            bufferSize.setW(currentMode()->sizeB().h());
+            bufferSize.setH(currentMode()->sizeB().w());
+        }
+        else
+            bufferSize = currentMode()->sizeB();
+
+        if (scaledWallpaper && scaledWallpaper->sizeB() == bufferSize)
+            return;
+
+        LRect srcB;
+        const Float32 w { Float32(bufferSize.w() * G::textures()->wallpaper->sizeB().h()) / Float32(bufferSize.h()) };
+
+        /* Clip and scale the wallpaper texture */
+
+        if (w >= G::textures()->wallpaper->sizeB().w())
+        {
+            srcB.setX(0);
+            srcB.setW(G::textures()->wallpaper->sizeB().w());
+            srcB.setH((G::textures()->wallpaper->sizeB().w() * bufferSize.h()) / bufferSize.w());
+            srcB.setY((G::textures()->wallpaper->sizeB().h() - srcB.h()) / 2);
+        }
+        else
+        {
+            srcB.setY(0);
+            srcB.setH(G::textures()->wallpaper->sizeB().h());
+            srcB.setW((G::textures()->wallpaper->sizeB().h() * bufferSize.w()) / bufferSize.h());
+            srcB.setX((G::textures()->wallpaper->sizeB().w() - srcB.w()) / 2);
+        }
+        scaledWallpaper.reset(G::textures()->wallpaper->copy(bufferSize, srcB));
+        wallpaper.setTexture(scaledWallpaper.get());
     }
     else
     {
-        wallpaper.setSrcRect(LRectF(0.f, (texSize.h() - outputScaledHeight)/2, texSize.w(), outputScaledHeight));
+        wallpaper.setTexture(G::textures()->wallpaper);
+        const LSize &texSize { wallpaper.texture()->sizeB() };
+
+        const Int32 outputScaledHeight { (texSize.w() * size().h())/size().w() };
+
+        if (outputScaledHeight >= G::textures()->wallpaper->sizeB().h())
+        {
+            const Int32 outputScaledWidth { (texSize.h() * size().w())/size().h() };
+            wallpaper.setSrcRect(LRectF((texSize.w() - outputScaledWidth)/2, 0.f, outputScaledWidth, texSize.h()));
+        }
+        else
+            wallpaper.setSrcRect(LRectF(0.f, (texSize.h() - outputScaledHeight)/2, texSize.w(), outputScaledHeight));
     }
 }
 

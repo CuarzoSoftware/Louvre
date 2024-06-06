@@ -76,11 +76,6 @@ public:
     static const LOutputMode *              outputGetCurrentMode(LOutput *output);
     static const std::vector<LOutputMode*>* outputGetModes(LOutput *output);
     static bool                             outputSetMode(LOutput *output, LOutputMode *mode);
-
-    /* OUTPUT MODE PROPS */
-    static const LSize *                    outputModeGetSize(LOutputMode *mode);
-    static Int32                            outputModeGetRefreshRate(LOutputMode *mode);
-    static bool                             outputModeIsPreferred(LOutputMode *mode);
 };
 
 #endif // LGRAPHICBACKEND

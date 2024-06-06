@@ -212,7 +212,7 @@ void LSceneView::calcNewDamage(LView *view) noexcept
     auto &ctd { *m_currentThreadData };
 
     // Children first
-    if (view->type() == Scene)
+    if (view->type() == SceneType)
     {
         LSceneView &sceneView { static_cast<LSceneView&>(*view) };
 
@@ -260,6 +260,7 @@ void LSceneView::calcNewDamage(LView *view) noexcept
             view->leftOutput(o);
     }
 
+    /*
     // TODO add api
     if (view->type() == LView::Type::Surface)
     {
@@ -271,6 +272,7 @@ void LSceneView::calcNewDamage(LView *view) noexcept
             surface->requestNextFrame(false);
         }
     }
+    */
 
     if (!view->isRenderable())
         return;
@@ -342,7 +344,7 @@ void LSceneView::calcNewDamage(LView *view) noexcept
         cache.damage = *view->damage();
 
         // Scene views already have their damage transposed
-        if (view->type() != Scene)
+        if (view->type() != SceneType)
             cache.damage.offset(cache.rect.pos());
     }
     else
@@ -401,7 +403,7 @@ void LSceneView::calcNewDamage(LView *view) noexcept
         {
             cache.translucent = *view->translucentRegion();
 
-            if (view->type() != Scene)
+            if (view->type() != SceneType)
                 cache.translucent.offset(cache.rect.pos());
         }
         else
@@ -415,7 +417,7 @@ void LSceneView::calcNewDamage(LView *view) noexcept
         {
             cache.opaque = *view->opaqueRegion();
 
-            if (view->type() != Scene)
+            if (view->type() != SceneType)
                 cache.opaque.offset(cache.rect.pos());
         }
         else
@@ -447,7 +449,7 @@ void LSceneView::drawOpaqueDamage(LView *view) noexcept
     auto &ctd { *m_currentThreadData };
 
     // Children first
-    if (view->type() != Scene)
+    if (view->type() != SceneType)
         for (std::list<LView*>::const_reverse_iterator it = view->children().crbegin(); it != view->children().crend(); it++)
             drawOpaqueDamage(*it);
 
@@ -500,7 +502,7 @@ void LSceneView::drawTranslucentDamage(LView *view) noexcept
     view->paintEvent(m_paintParams);
 
 drawChildrenOnly:
-    if (view->type() != Scene)
+    if (view->type() != SceneType)
         for (std::list<LView*>::const_iterator it = view->children().cbegin(); it != view->children().cend(); it++)
             drawTranslucentDamage(*it);
 }

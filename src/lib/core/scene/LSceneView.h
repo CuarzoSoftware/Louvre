@@ -14,14 +14,14 @@
  * An LSceneView is a unique type of view. Instead of rendering its content directly into an LOutput,
  * it possesses its own framebuffer. This capability allows for advanced blending effects, such as applying masks (check LView::setBlendFunc()).
  *
- * Unlike other Views, child views of an LSceneView are always clipped to the boundaries of the LSceneView rectangle.
- * LSceneViews can function as children of other views or LSceneViews (just like any other view), but they can also operate independently.
+ * Unlike other with other views, child views of an LSceneView are always clipped to its boundaries.\n
+ * LSceneViews can function as children of other views or LSceneViews (just like any other view), but they can also be used independently.\n
  * For example, you might create an LSceneView, populate it with arranged views, execute the render() function,
- * and then use that output as a texture for other porpuses.
+ * and then use the output as a texture for other porpuses.
  *
  * The main view of the LScene class (LScene::mainView()) is a unique LSceneView designed to render its content onto one or more LOutputs instead of using its own framebuffer.\n
  *
- * @warning Use LSceneViews judiciously. When nested within another scene, they are rendered twice: first, the scene renders itself to its framebuffer, and then its parent scene renders that to itself as well or into an LOutput framebuffer.
+ * @warning Use LSceneViews judiciously. When nested within another scene, they are rendered twice: first, into to its framebuffer, and then into an LOutput framebuffer or another LSurfaceView parent.
  */
 class Louvre::LSceneView : public LView
 {
@@ -34,7 +34,7 @@ public:
      * @param parent The parent view that will contain this scene view.
      */
     LSceneView(const LSize &sizeB, Float32 bufferScale, LView *parent = nullptr) noexcept :
-        LView(LView::Scene, true, parent),
+        LView(LView::SceneType, true, parent),
         m_fb(new LRenderBuffer(sizeB))
     {
         static_cast<LRenderBuffer*>(m_fb)->setScale(bufferScale);
@@ -256,7 +256,7 @@ private:
     friend class LScene;
     friend class LView;
     LSceneView(LFramebuffer *framebuffer = nullptr, LView *parent = nullptr) noexcept :
-        LView(LView::Scene, true, parent),
+        LView(LView::SceneType, true, parent),
         m_fb(framebuffer)
     {}
 
@@ -324,6 +324,9 @@ private:
                 ctd.oversampling = ctd.o->fractionalOversamplingEnabled();
                 needsDamage = true;
             }
+
+            if (ctd.o->needsFullRepaint())
+                needsDamage = true;
         }
 
         if (needsDamage)

@@ -51,7 +51,7 @@ LSessionLockManager *Louvre::sessionLockManager() noexcept
     return s_compositor->imp()->sessionLockManager;
 }
 
-void LCompositor::removeGlobal(LGlobal *global)
+void LCompositor::removeGlobal(LGlobal *global) noexcept
 {
     if (global->m_removed)
         return;
@@ -107,72 +107,72 @@ LCompositor::LCompositor() noexcept : LPRIVATE_INIT_UNIQUE(LCompositor)
 
 LCompositor::~LCompositor() = default;
 
-const LVersion &LCompositor::version()
+const LVersion &LCompositor::version() noexcept
 {
     return s_compositor->imp()->version;
 }
 
-const std::filesystem::path &LCompositor::defaultBackendsPath() const
+const std::filesystem::path &LCompositor::defaultBackendsPath() const noexcept
 {
     return imp()->defaultBackendsPath;
 }
 
-const std::filesystem::path &LCompositor::defaultAssetsPath() const
+const std::filesystem::path &LCompositor::defaultAssetsPath() const noexcept
 {
     return imp()->defaultAssetsPath;
 }
 
-const std::string &LCompositor::defaultGraphicBackendName() const
+const std::string &LCompositor::defaultGraphicBackendName() const noexcept
 {
     return imp()->defaultGraphicBackendName;
 }
 
-void *LCompositor::graphicBackendContextHandle() const
+void *LCompositor::graphicBackendContextHandle() const noexcept
 {
     return compositor()->imp()->graphicBackend->backendGetContextHandle();
 }
 
-UInt32 LCompositor::graphicBackendId() const
+UInt32 LCompositor::graphicBackendId() const noexcept
 {
     return compositor()->imp()->graphicBackend->backendGetId();
 }
 
-void *LCompositor::inputBackendContextHandle() const
+void *LCompositor::inputBackendContextHandle() const noexcept
 {
     return compositor()->imp()->inputBackend->backendGetContextHandle();
 }
 
-UInt32 LCompositor::inputBackendId() const
+UInt32 LCompositor::inputBackendId() const noexcept
 {
     return compositor()->imp()->inputBackend->backendGetId();
 }
 
-const std::string &LCompositor::defaultInputBackendName() const
+const std::string &LCompositor::defaultInputBackendName() const noexcept
 {
     return imp()->defaultInputBackendName;
 }
 
-bool LCompositor::isGraphicBackendInitialized() const
+bool LCompositor::isGraphicBackendInitialized() const noexcept
 {
     return imp()->isGraphicBackendInitialized;
 }
 
-bool LCompositor::isInputBackendInitialized() const
+bool LCompositor::isInputBackendInitialized() const noexcept
 {
     return imp()->isInputBackendInitialized;
 }
 
-bool LCompositor::loadGraphicBackend(const std::filesystem::path &path)
+bool LCompositor::loadGraphicBackend(const std::filesystem::path &path) noexcept
 {
     return imp()->loadGraphicBackend(path);
 }
 
-bool LCompositor::loadInputBackend(const std::filesystem::path &path)
+bool LCompositor::loadInputBackend(const std::filesystem::path &path) noexcept
 {
     return imp()->loadInputBackend(path);
 }
 
-LCompositor::CompositorState LCompositor::state() const
+LCompositor::CompositorState LCompositor::state() const noexcept
 {
     return imp()->state;
 }
@@ -386,12 +386,12 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
     return 1;
 }
 
-Int32 LCompositor::fd() const
+Int32 LCompositor::fd() const noexcept
 {
     return imp()->epollFd;
 }
 
-void LCompositor::finish()
+void LCompositor::finish() noexcept
 {
     if (state() == CompositorState::Uninitialized)
         return;
@@ -400,7 +400,7 @@ void LCompositor::finish()
     imp()->unlockPoll();
 }
 
-wl_display *LCompositor::display()
+wl_display *LCompositor::display() noexcept
 {
     return compositor()->imp()->display;
 }
@@ -415,12 +415,12 @@ void LCompositor::removeFdListener(wl_event_source *source)
     wl_event_source_remove(source);
 }
 
-LCursor *LCompositor::cursor() const
+LCursor *LCompositor::cursor() const noexcept
 {
     return imp()->cursor;
 }
 
-LSeat *LCompositor::seat() const
+LSeat *LCompositor::seat() const noexcept
 {
     return imp()->seat;
 }
@@ -430,7 +430,7 @@ LSessionLockManager *LCompositor::sessionLockManager() const noexcept
     return imp()->sessionLockManager;
 }
 
-void LCompositor::repaintAllOutputs()
+void LCompositor::repaintAllOutputs() noexcept
 {
     for (LOutput *o : imp()->outputs)
         o->repaint();
@@ -540,7 +540,7 @@ void LCompositor::removeOutput(LOutput *output)
     }
 }
 
-const std::list<LSurface *> &LCompositor::surfaces() const
+const std::list<LSurface *> &LCompositor::surfaces() const noexcept
 {
     return imp()->surfaces;
 }
@@ -550,33 +550,33 @@ const std::list<LSurface *> &LCompositor::layer(LSurfaceLayer layer) const noexc
     return imp()->layers[layer];
 }
 
-const std::vector<LOutput *> &LCompositor::outputs() const
+const std::vector<LOutput *> &LCompositor::outputs() const noexcept
 {
     return imp()->outputs;
 }
 
-const std::vector<LClient *> &LCompositor::clients() const
+const std::vector<LClient *> &LCompositor::clients() const noexcept
 {
     return imp()->clients;
 }
 
-EGLDisplay LCompositor::eglDisplay()
+EGLDisplay LCompositor::eglDisplay() noexcept
 {
     return compositor()->imp()->mainEGLDisplay;
 }
 
-EGLContext LCompositor::eglContext()
+EGLContext LCompositor::eglContext() noexcept
 {
     return compositor()->imp()->mainEGLContext;
 }
 
-void LCompositor::flushClients()
+void LCompositor::flushClients() noexcept
 {
     compositor()->imp()->sendPendingConfigurations();
     wl_display_flush_clients(LCompositor::display());
 }
 
-LClient *LCompositor::getClientFromNativeResource(const wl_client *client)
+LClient *LCompositor::getClientFromNativeResource(const wl_client *client) noexcept
 {
     for (LClient *c : clients())
         if (c->client() == client)
@@ -584,7 +584,7 @@ LClient *LCompositor::getClientFromNativeResource(const wl_client *client)
     return nullptr;
 }
 
-std::thread::id LCompositor::mainThreadId() const
+std::thread::id LCompositor::mainThreadId() const noexcept
 {
     return imp()->threadId;
 }

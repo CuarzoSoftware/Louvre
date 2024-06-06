@@ -72,7 +72,7 @@ void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)
         return;
     }
 
-    if (G::scene()->pointerFocus().front()->type() == LView::Surface)
+    if (G::scene()->pointerFocus().front()->type() == LView::SurfaceType)
         cursor()->setCursor(static_cast<LSurfaceView*>(G::scene()->pointerFocus().back())->surface()->client()->lastCursorRequest());
 }
 

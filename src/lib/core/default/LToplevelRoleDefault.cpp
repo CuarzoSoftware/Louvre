@@ -46,7 +46,9 @@ void LToplevelRole::startMoveRequest(const LEvent &triggeringEvent)
 
         moveSession().start(triggeringEvent, initDragPoint);
     }
-    else if (surface()->hasPointerFocus())
+    else if (seat()->pointer()->focus()
+             && (surface()->hasPointerFocus()
+             || (seat()->pointer()->focus()->subsurface() && seat()->pointer()->focus()->isSubchildOf(surface()))))
     {
         moveSession().start(triggeringEvent, cursor()->pos());
     }
@@ -82,7 +84,9 @@ void LToplevelRole::startResizeRequest(const LEvent &triggeringEvent, LBitset<LE
 
         resizeSession().start(triggeringEvent, edge, initDragPoint);
     }
-    else if (surface()->hasPointerFocus())
+    else if (seat()->pointer()->focus()
+             && (surface()->hasPointerFocus()
+                 || (seat()->pointer()->focus()->subsurface() && seat()->pointer()->focus()->isSubchildOf(surface()))))
         resizeSession().start(triggeringEvent, edge, cursor()->pos());
 }
 //! [startResizeRequest]

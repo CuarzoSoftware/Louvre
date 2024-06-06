@@ -27,7 +27,7 @@ LView *LScene::LScenePrivate::viewAt(LView *view, const LPoint &pos, LView::Type
     if (!view->mapped())
         return nullptr;
 
-    if (type != LView::Undefined && view->type() != type)
+    if (type != LView::UndefinedType && view->type() != type)
         return nullptr;
 
     if (flags != 0 &&

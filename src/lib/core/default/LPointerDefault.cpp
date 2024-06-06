@@ -348,7 +348,10 @@ void LPointer::pointerHoldEndEvent(const LPointerHoldEndEvent &event)
 //! [setCursorRequest]
 void LPointer::setCursorRequest(const LClientCursor &clientCursor)
 {
-    if (seat()->dnd()->dragging())
+    /* During a non-touch drag & drop session, the source client typically updates the cursor to
+     * reflect the DND action (e.g., copy, move, not supported, etc.)
+     */
+    if (seat()->dnd()->dragging() && seat()->dnd()->triggeringEvent().type() != LEvent::Type::Touch)
     {
         if (seat()->dnd()->origin()->client() == clientCursor.client())
             cursor()->setCursor(clientCursor);
@@ -356,6 +359,7 @@ void LPointer::setCursorRequest(const LClientCursor &clientCursor)
         return;
     }
 
+    /* Allow the client to set the cursor only if one of its surfaces has pointer focus */
     if (focus() && focus()->client() == clientCursor.client())
         cursor()->setCursor(clientCursor);
 }

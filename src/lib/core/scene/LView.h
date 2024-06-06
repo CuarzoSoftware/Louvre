@@ -142,22 +142,22 @@ public:
     enum Type : UInt8
     {
         /// Undefined type
-        Undefined,
+        UndefinedType,
 
         /// LLayerView
-        Layer,
+        LayerType,
 
         /// LSurfaceView
-        Surface,
+        SurfaceType,
 
         /// LTextureView
-        Texture,
+        TextureType,
 
         /// LSolidColorView
-        SolidColor,
+        SolidColorType,
 
         /// LSceneView
-        Scene
+        SceneType
     };
 
     /**
@@ -334,7 +334,7 @@ public:
     {
         if (parent())
         {
-            if (parent()->type() == Scene)
+            if (parent()->type() == SceneType)
                 return (LSceneView*)parent();
 
             return parent()->parentSceneView();
@@ -453,7 +453,7 @@ public:
         if (parent())
         {
             if (parentScalingEnabled())
-                m_tmpPoint *= parent()->scalingVector(parent()->type() == Scene);
+                m_tmpPoint *= parent()->scalingVector(parent()->type() == SceneType);
 
             if (parentOffsetEnabled())
                 m_tmpPoint += parent()->pos();
@@ -477,7 +477,7 @@ public:
             m_tmpSize *= scalingVector(true);
 
         if (parent() && parentScalingEnabled())
-            m_tmpSize *= parent()->scalingVector(parent()->type() == Scene);
+            m_tmpSize *= parent()->scalingVector(parent()->type() == SceneType);
 
         return m_tmpSize;
     }
@@ -674,7 +674,7 @@ public:
         m_tmpSizeF = m_scalingVector;
 
         if (parent() && parentScalingEnabled())
-            m_tmpSizeF *= parent()->scalingVector(parent()->type() == Scene);
+            m_tmpSizeF *= parent()->scalingVector(parent()->type() == SceneType);
 
         return m_tmpSizeF;
     }
@@ -743,7 +743,7 @@ public:
      */
     bool mapped() const noexcept
     {
-        if (type() == Scene && !parent())
+        if (type() == SceneType && !parent())
             return visible();
 
         return visible() && nativeMapped() && parent() && parent()->mapped();
@@ -763,7 +763,7 @@ public:
             return m_opacity;
 
         if (parentOpacityEnabled() && parent())
-            return m_opacity * parent()->opacity(parent()->type() == Scene);
+            return m_opacity * parent()->opacity(parent()->type() == SceneType);
 
         return m_opacity;
     }
@@ -854,7 +854,7 @@ public:
     }
 
     /**
-     * @brief Set the alpha blending function for the view.
+     * @brief Set a custom alpha/color blending function for the view.
      *
      * Sets the OpenGL blend function for the view. Refer to the documentation
      * of [glBlendFuncSeparate()](https://docs.gl/es2/glBlendFuncSeparate) for more information.
@@ -871,17 +871,21 @@ public:
         }
     }
 
-    // TODO add doc
+    /**
+     * @brief Custom blending function set with setBlendFunc().
+     * 
+     * @see enableAutoBlendFunc
+     */
     const LBlendFunc &blendFunc() const noexcept
     {
         return m_blendFunc;
     }
 
     /**
-     * @brief Enable or disable automatic blend function adjustment.
+     * @brief Enables or disables the automatic blend function adjustment.
      *
-     * When the automatic blend function is enabled, the blend function dynamically adjusts based on whether rendering occurs
-     * in an output framebuffer or a custom framebuffer (e.g., an LRenderBuffer or LSceneView).
+     * When the automatic blend function is enabled, the blend function dynamically adjusts based on whether the rendered
+     * content is premultiplied alpha or not.
      *
      * By default, automatic blend function adjustment is enabled. When enabled, the blend function set with setBlendFunc() is ignored.
      *
@@ -911,8 +915,7 @@ public:
     /**
      * @brief Set the color factor.
      *
-     * TODO improve
-     * This method allows you to set a color factor that influences the resulting color of every painting operation.
+     * This method allows you to set a color factor that multiplies the color of the view.\n
      * By default, the color factor is (1.0, 1.0, 1.0, 1.0), which has no effect on the colors.
      */
     void setColorFactor(const LRGBAF &colorFactor) noexcept
@@ -931,7 +934,7 @@ public:
     /**
      * @brief Get the color factor.
      *
-     * This method returns the current color factor of the view set with setColorFactor().
+     * This method returns the current color factor of the view set with setColorFactor(). Default is (1.0, 1.0, 1.0, 1.0).
      */
     const LRGBAF &colorFactor() const noexcept
     {

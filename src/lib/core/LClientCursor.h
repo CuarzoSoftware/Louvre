@@ -13,9 +13,9 @@
  * The LClientCursor class encapsulates the parameters requested by the client through LPointer::setCursorRequest().\n
  * You can retrieve the last cursor request for a specific client using LClient::lastCursorRequest().
  *
- * Clients create an LCursorRole for the compositor to use as the cursor. This class holds a reference to it along with the LPointerEnterEvent that triggered the request.\n
+ * Clients create an LCursorRole for the compositor to use as the cursor. This class holds a reference to the role along with the LPointerEnterEvent that triggered the request.\n
  * Additionally, it includes a property indicating whether the client intends to hide the cursor or not.\n
- * This information gets overridden when the client makes another LPointer::setCursorRequest() or when the associated LCursorRole is destroyed.
+ * This information gets overridden when the same client makes another LPointer::setCursorRequest() or when the associated LCursorRole is destroyed.
  *
  * When assigned to an LCursor through LCursor::setCursor(), the LCursor's texture and hotspot automatically change based on the values
  * of the associated LCursorRole. However, the cursor size remains user-defined.\n

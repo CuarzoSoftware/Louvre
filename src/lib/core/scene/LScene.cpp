@@ -203,7 +203,7 @@ void LScene::handlePointerMoveEvent(const LPointerMoveEvent &event, LBitset<Even
     {
         for (LView *view : pointerFocus())
         {
-            if (view->type() == LView::Surface)
+            if (view->type() == LView::SurfaceType)
             {
                 firstSurfaceView = static_cast<LSurfaceView*>(view);
                 break;
@@ -367,9 +367,9 @@ retry:
     if (!pointer.focus())
     {
         LSurface *surface { nullptr };
-        LView *view { viewAt(cursor()->pos(), LView::Undefined, InputFilter::Pointer) };
+        LView *view { viewAt(cursor()->pos(), LView::UndefinedType, InputFilter::Pointer) };
 
-        if (view && view->type() == LView::Surface)
+        if (view && view->type() == LView::SurfaceType)
             surface = static_cast<LSurfaceView*>(view)->surface();
 
         if (surface)
@@ -986,7 +986,7 @@ void LScene::handleTouchDownEvent(const LTouchDownEvent &event, const LPointF &g
 
     for (LView *view : imp()->currentTouchPoint->views())
     {
-        if (view->type() == LView::Surface)
+        if (view->type() == LView::SurfaceType)
         {
             surfaceView = static_cast<LSurfaceView*>(view);
             surfaceView->surface()->imp()->lastTouchEventView.reset(surfaceView);
@@ -1074,11 +1074,11 @@ skipViews:
     // Handle DND session
     LDND &dnd { *seat()->dnd() };
 
-    if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch && dnd.triggeringEvent().subtype() == LEvent::Subtype::Down)
+    if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch)
     {
-        const auto &touchDownEvent { static_cast<const LTouchDownEvent&>(dnd.triggeringEvent()) };
+        const auto &touchEvent { static_cast<const LTouchEvent&>(dnd.triggeringEvent()) };
 
-        if (touchDownEvent.id() == tp->id())
+        if (touchEvent.id() == tp->id())
         {
             if (dnd.icon())
             {
@@ -1086,7 +1086,7 @@ skipViews:
                 dnd.icon()->surface()->repaintOutputs();
             }
 
-            LSurfaceView *surfaceView { static_cast<LSurfaceView*>(viewAt(globalPos, LView::Surface, InputFilter::Pointer | InputFilter::Touch)) };
+            LSurfaceView *surfaceView { static_cast<LSurfaceView*>(viewAt(globalPos, LView::SurfaceType, InputFilter::Pointer | InputFilter::Touch)) };
 
             if (surfaceView)
             {
@@ -1104,11 +1104,11 @@ skipViews:
 
     for (LToplevelResizeSession *session : seat()->toplevelResizeSessions())
     {
-        if (session->triggeringEvent().type() == LEvent::Type::Touch && session->triggeringEvent().subtype() == LEvent::Subtype::Down)
+        if (session->triggeringEvent().type() == LEvent::Type::Touch)
         {
-            const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(session->triggeringEvent()) };
+            const auto &touchEvent { static_cast<const LTouchEvent&>(session->triggeringEvent()) };
 
-            if (touchDownEvent.id() == tp->id())
+            if (touchEvent.id() == tp->id())
             {
                 activeResizing = true;
                 session->updateDragPoint(globalPos);
@@ -1130,11 +1130,11 @@ skipViews:
 
     for (LToplevelMoveSession *session : seat()->toplevelMoveSessions())
     {
-        if (session->triggeringEvent().type() == LEvent::Type::Touch && session->triggeringEvent().subtype() == LEvent::Subtype::Down)
+        if (session->triggeringEvent().type() == LEvent::Type::Touch)
         {
-            const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(session->triggeringEvent()) };
+            const auto &touchEvent { static_cast<const LTouchEvent&>(session->triggeringEvent()) };
 
-            if (touchDownEvent.id() == tp->id())
+            if (touchEvent.id() == tp->id())
             {
                 activeMoving = true;
                 session->updateDragPoint(globalPos);
@@ -1221,22 +1221,22 @@ skipViews:
 
     LDND &dnd { *seat()->dnd() };
 
-    if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch && dnd.triggeringEvent().subtype() == LEvent::Subtype::Down)
+    if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch)
     {
-        const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(dnd.triggeringEvent()) };
+        const auto &touchEvent { static_cast<const LTouchEvent&>(dnd.triggeringEvent()) };
 
-        if (touchDownEvent.id() == tp->id())
+        if (touchEvent.id() == tp->id())
             dnd.drop();
     }
 
     // Stop touch toplevel resizing sessions
     for (auto it = seat()->toplevelResizeSessions().begin(); it != seat()->toplevelResizeSessions().end();)
     {
-        if ((*it)->triggeringEvent().type() == LEvent::Type::Touch && (*it)->triggeringEvent().subtype() == LEvent::Subtype::Down)
+        if ((*it)->triggeringEvent().type() == LEvent::Type::Touch)
         {
-            const LTouchDownEvent &downEvent { static_cast<const LTouchDownEvent&>((*it)->triggeringEvent()) };
+            const auto &touchEvent { static_cast<const LTouchEvent&>((*it)->triggeringEvent()) };
 
-            if (downEvent.id() == tp->id())
+            if (touchEvent.id() == tp->id())
             {
                 it = (*it)->stop();
                 continue;
@@ -1248,11 +1248,11 @@ skipViews:
 
     for (auto it = seat()->toplevelMoveSessions().begin(); it != seat()->toplevelMoveSessions().end();)
     {
-        if ((*it)->triggeringEvent().type() == LEvent::Type::Touch && (*it)->triggeringEvent().subtype() == LEvent::Subtype::Down)
+        if ((*it)->triggeringEvent().type() == LEvent::Type::Touch)
         {
-            const LTouchDownEvent &downEvent { static_cast<const LTouchDownEvent&>((*it)->triggeringEvent()) };
+            const auto &touchEvent { static_cast<const LTouchEvent&>((*it)->triggeringEvent()) };
 
-            if (downEvent.id() == tp->id())
+            if (touchEvent.id() == tp->id())
             {
                 it = (*it)->stop();
                 continue;

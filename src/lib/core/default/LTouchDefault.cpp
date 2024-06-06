@@ -65,11 +65,11 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
     // Handle DND session
     LDND &dnd { *seat()->dnd() };
 
-    if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch && dnd.triggeringEvent().subtype() == LEvent::Subtype::Down)
+    if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch)
     {
-        const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(dnd.triggeringEvent()) };
+        const auto &touchEvent { static_cast<const LTouchEvent&>(dnd.triggeringEvent()) };
 
-        if (touchDownEvent.id() == tp->id())
+        if (touchEvent.id() == tp->id())
         {
             if (dnd.icon())
             {
@@ -95,11 +95,11 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
 
     for (LToplevelResizeSession *session : seat()->toplevelResizeSessions())
     {
-        if (session->triggeringEvent().type() == LEvent::Type::Touch && session->triggeringEvent().subtype() == LEvent::Subtype::Down)
+        if (session->triggeringEvent().type() == LEvent::Type::Touch)
         {
-            const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(session->triggeringEvent()) };
+            const auto &touchEvent { static_cast<const LTouchEvent&>(session->triggeringEvent()) };
 
-            if (touchDownEvent.id() == tp->id())
+            if (touchEvent.id() == tp->id())
             {
                 activeResizing = true;
                 session->updateDragPoint(globalPos);
@@ -118,11 +118,11 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
 
     for (LToplevelMoveSession *session : seat()->toplevelMoveSessions())
     {
-        if (session->triggeringEvent().type() == LEvent::Type::Touch && session->triggeringEvent().subtype() == LEvent::Subtype::Down)
+        if (session->triggeringEvent().type() == LEvent::Type::Touch)
         {
-            const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(session->triggeringEvent()) };
+            const auto &touchEvent { static_cast<const LTouchEvent&>(session->triggeringEvent()) };
 
-            if (touchDownEvent.id() == tp->id())
+            if (touchEvent.id() == tp->id())
             {
                 activeMoving = true;
                 session->updateDragPoint(globalPos);
@@ -157,22 +157,22 @@ void LTouch::touchUpEvent(const LTouchUpEvent &event)
 
     LDND &dnd { *seat()->dnd() };
 
-    if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch && dnd.triggeringEvent().subtype() == LEvent::Subtype::Down)
+    if (dnd.dragging() && dnd.triggeringEvent().type() == LEvent::Type::Touch)
     {
-        const LTouchDownEvent &touchDownEvent { static_cast<const LTouchDownEvent&>(dnd.triggeringEvent()) };
+        const auto &touchEvent { static_cast<const LTouchEvent&>(dnd.triggeringEvent()) };
 
-        if (touchDownEvent.id() == tp->id())
+        if (touchEvent.id() == tp->id())
             dnd.drop();
     }
 
     // Stop touch toplevel resizing sessions
     for (auto it = seat()->toplevelResizeSessions().begin(); it != seat()->toplevelResizeSessions().end();)
     {
-        if ((*it)->triggeringEvent().type() == LEvent::Type::Touch && (*it)->triggeringEvent().subtype() == LEvent::Subtype::Down)
+        if ((*it)->triggeringEvent().type() == LEvent::Type::Touch)
         {
-            const LTouchDownEvent &downEvent { static_cast<const LTouchDownEvent&>((*it)->triggeringEvent()) };
+            const auto &touchEvent { static_cast<const LTouchEvent&>((*it)->triggeringEvent()) };
 
-            if (downEvent.id() == tp->id())
+            if (touchEvent.id() == tp->id())
             {
                 it = (*it)->stop();
                 continue;
@@ -184,11 +184,11 @@ void LTouch::touchUpEvent(const LTouchUpEvent &event)
 
     for (auto it = seat()->toplevelMoveSessions().begin(); it != seat()->toplevelMoveSessions().end();)
     {
-        if ((*it)->triggeringEvent().type() == LEvent::Type::Touch && (*it)->triggeringEvent().subtype() == LEvent::Subtype::Down)
+        if ((*it)->triggeringEvent().type() == LEvent::Type::Touch)
         {
-            const LTouchDownEvent &downEvent { static_cast<const LTouchDownEvent&>((*it)->triggeringEvent()) };
+            const auto &touchEvent { static_cast<const LTouchEvent&>((*it)->triggeringEvent()) };
 
-            if (downEvent.id() == tp->id())
+            if (touchEvent.id() == tp->id())
             {
                 it = (*it)->stop();
                 continue;

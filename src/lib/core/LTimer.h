@@ -42,10 +42,7 @@ public:
      */
     static bool oneShot(UInt32 intervalMs, const Callback &onTimeout) noexcept;
 
-    /// @cond OMIT
-    LTimer(const LTimer&) = delete;
-    LTimer& operator= (const LTimer&) = delete;
-    /// @endcond
+    LCLASS_NO_COPY(LTimer)
 
     /**
      * @brief Set the callback function to be executed when the timer expires.

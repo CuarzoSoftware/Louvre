@@ -101,18 +101,26 @@ void LSurface::LSurfacePrivate::setMapped(bool state)
         surface->mappingChanged();
 
         /* We create a copy of the childrens list
-         * because a child could be removed
+         * because a child could be removed/destroyed
          * when handleParentMappingChange() is called */
 
-        // TODO: improve this
-        std::list<LSurface*> childrenTmp { children };
+        std::list<LWeak<LSurface>> childrenTmp;
 
-        for (LSurface *c : childrenTmp)
+        for (LSurface *s : children)
+            childrenTmp.emplace_back(s);
+
+        while (!childrenTmp.empty())
         {
-            if (c->role())
-                c->role()->handleParentMappingChange();
-            else if (c->imp()->pending.role)
-                c->imp()->pending.role->handleParentMappingChange();
+            if (!childrenTmp.front().get())
+                goto skip;
+
+            if (childrenTmp.front()->role())
+                childrenTmp.front()->role()->handleParentMappingChange();
+            else if (childrenTmp.front()->imp()->pending.role)
+                childrenTmp.front()->imp()->pending.role->handleParentMappingChange();
+
+            skip:
+            childrenTmp.pop_front();
         }
     }
 }
@@ -167,7 +175,7 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
             {
                 bool inserted { false };
 
-                for (auto c = surface->children().rbegin(); c != surface->children().rend(); child++)
+                for (auto c = surface->children().rbegin(); c != surface->children().rend(); c++)
                 {
                     if ((*c)->layer() == child->layer())
                     {
@@ -853,10 +861,10 @@ void LSurface::LSurfacePrivate::setLayer(LSurfaceLayer newLayer)
     layerLink = std::prev(compositor()->imp()->layers[layer].end());
     LSurface *prev { prevSurfaceInLayers() };
 
-    compositor()->imp()->insertSurfaceAfter(prev, surfaceResource->surface(), LCompositor::LCompositorPrivate::UpdateSurfaces);
-
     if (layerChanged)
         surfaceResource->surface()->layerChanged();
+
+    compositor()->imp()->insertSurfaceAfter(prev, surfaceResource->surface(), LCompositor::LCompositorPrivate::UpdateSurfaces);
 
     for (LSurface *child : pendingChildren)
         if (child->subsurface() || child->toplevel() || (child->imp()->pending.role && (child->imp()->pending.role->roleId() == Role::Subsurface || child->imp()->pending.role->roleId() == Role::Toplevel)))

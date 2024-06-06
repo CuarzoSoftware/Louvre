@@ -10,9 +10,6 @@ Louvre (2.0.0-1)
   * Relative Pointer
   * Wayland Touch Events
   * XDG Output
-
-  # Protocol Updates
-
   * Update xdg_wm_base global to v6.
   * Update zwp_linux_dmabuf global to v5.
 
@@ -78,6 +75,7 @@ Louvre (2.0.0-1)
   * Included support for pointer constraints.
   * Added support for swipe, pinch, and hold pointer gestures.
   * LClient now provides eventHistory() and findEventBySerial() for querying the last events sent from the compositor.
+  * Removed the LKeyboard::sendModifiersEvent() method. Modifiers are now automatically sent to focused surfaces whenever they change.
 
   # Security
 
@@ -107,6 +105,13 @@ Louvre (2.0.0-1)
   * Fixed incorrect axis scroll values sent to clients using wl_pointer v1.
   * Resolved a segmentation fault issue triggered by accessing LOutput buffers following mode changes.
   * Addressed synchronization problems related to the presentation time protocol.
+
+  # louvre-views example
+
+  * Added fade-in/out top-level animations.
+  * Added Meta + Shift + L + Up/Down shortcut for modifying the priority of a focused LLayerShell surface.
+  * Added Ctrl + Shift + T to launch Wofi.
+  * Added LLauncher commands at startup to automatically enable the xdg-desktop-portal-wlr portal if installed.
 
 Louvre (1.2.1-1)
 

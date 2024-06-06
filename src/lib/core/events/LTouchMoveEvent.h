@@ -97,6 +97,7 @@ protected:
     LPointF m_pos;
 private:
     friend class LInputBackend;
+    friend class LTouchEvent;
     void notify();
 };
 

@@ -55,6 +55,8 @@ public:
 
     void updateWallpaper() noexcept;
     LTextureView wallpaper;
+    /* Used only with the DRM backend */
+    std::unique_ptr<LTexture> scaledWallpaper;
 };
 
 #endif // OUTPUT_H

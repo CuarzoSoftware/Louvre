@@ -3,7 +3,6 @@
 #include <protocols/ScreenCopy/GScreenCopyManager.h>
 #include <protocols/SessionLock/RSessionLock.h>
 #include <private/LOutputPrivate.h>
-#include <private/LOutputModePrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LPainterPrivate.h>
 #include <private/LCursorPrivate.h>
@@ -12,6 +11,7 @@
 #include <LSessionLockManager.h>
 #include <LSessionLockRole.h>
 #include <LExclusiveZone.h>
+#include <LOutputMode.h>
 #include <LLayerRole.h>
 #include <LSeat.h>
 #include <LGlobal.h>
@@ -273,27 +273,47 @@ void LOutput::LOutputPrivate::backendPaintGL()
         lastSize = rect.size();
     }
 
+    // Send presentation time of the prev frame
     compositor()->imp()->sendPresentationTime();
+
+    // Update active LAnimations
     compositor()->imp()->processAnimations();
+
     stateFlags.remove(PendingRepaint);
     painter->bindFramebuffer(&fb);
-
     compositor()->imp()->currentOutput = output;
 
-    if (seat()->enabled() && output->screenshotRequests().empty())
-        wl_event_loop_dispatch(compositor()->imp()->waylandEventLoop, 0);
-
+    /* Mark the entire output rect as damaged for compositors
+     * that do not track damage.*/
     damage.clear();
     damage.addRect(output->rect());
+
+    /* Add the region the user should repaint if hw cursor
+     * is disabled */
     calculateCursorDamage();
+
+    /* Let the user do their rendering*/
     output->paintGL();
+
+    /* This ensures that all active outputs have been repainted at least once after a client requests to lock the session.
+     * Protocol quote: The locked event must not be sent until a new "locked" frame has been presented on all outputs and no
+     * security sensitive normal/unlocked content is possibly visible. */
     removeFromSessionLockPendingRepaint();
+
+    /* Remove denied or invalid screen copy requests */
     validateScreenshotRequests();
     compositor()->imp()->currentOutput = nullptr;
+
+    /* Turn damage into buffer coords and handle buffer
+     * blitting if oversampling is enabled or there are
+     * screen copy requests*/
     damageToBufferCoords();
     blitFramebuffers();
 
+    /* Ensure clients receive frame callbacks and pending roles configurations on time */
     compositor()->flushClients();
+
+    /* Destroy render buffers created from this thread and marked as destroyed by the user */
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
 
     if (callLock)

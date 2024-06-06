@@ -103,6 +103,7 @@ public:
     inline static Int32 pendingBufferScale { 1 };
     inline static std::vector<LOutput*> dummyOutputs;
     inline static std::vector<LOutputMode *> dummyOutputModes;
+    inline static LOutputMode defaultMode { nullptr, LSize(), 0, true, nullptr};
     inline static Int8 windowInitialized { 0 };
     inline static Int64 lastFrameUsec { 0 };
     inline static bool repaint { false };
@@ -338,11 +339,15 @@ public:
 
     static bool initRenderThread()
     {
+
         LOutput::Params params
         {
             .callback = [](LOutput *output)
             {
-                dummyOutputModes.push_back(new LOutputMode(output));
+                defaultMode.m_output = output;
+                defaultMode.m_refreshRate = refreshRate;
+                defaultMode.m_sizeB = shared.bufferSize;
+                dummyOutputModes.push_back(&defaultMode);
                 output->imp()->updateRect();
             },
             .backendData = nullptr
@@ -376,7 +381,6 @@ public:
         Louvre::compositor()->onAnticipatedObjectDestruction(dummyOutputs.front());
         delete dummyOutputs.front();
         dummyOutputs.clear();
-        delete dummyOutputModes.front();
         dummyOutputModes.clear();
     }
 
@@ -413,6 +417,7 @@ public:
         shared.surfaceSize = pendingSurfaceSize;
         shared.bufferScale = pendingBufferScale;
         shared.bufferSize = shared.surfaceSize * shared.bufferScale;
+        defaultMode.m_sizeB = shared.bufferSize;
         eglWindow = wl_egl_window_create(surface, shared.bufferSize.w(), shared.bufferSize.h());
         eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig,(EGLNativeWindowType) eglWindow, NULL);
         eglMakeCurrent(eglDisplay, eglSurface, eglSurface, windowEGLContext);
@@ -529,6 +534,7 @@ public:
                     shared.surfaceSize = pendingSurfaceSize;
                     shared.bufferScale = pendingBufferScale;
                     shared.bufferSize = shared.surfaceSize * shared.bufferScale;
+                    defaultMode.m_sizeB = shared.bufferSize;
                     output->imp()->updateRect();
                     wl_egl_window_resize(eglWindow,
                                          shared.bufferSize.w(),
@@ -1025,21 +1031,6 @@ public:
         return true;
     }
 
-    static const LSize *outputModeGetSize(LOutputMode */*mode*/)
-    {
-        return &shared.bufferSize;
-    }
-
-    static Int32 outputModeGetRefreshRate(LOutputMode */*mode*/)
-    {
-        return refreshRate;
-    }
-
-    static bool outputModeIsPreferred(LOutputMode */*mode*/)
-    {
-        return true;
-    }
-
     static void registryHandleGlobal(void */*data*/, wl_registry *registry, UInt32 name, const char *interface, UInt32 version)
     {
         if (!compositor && strcmp(interface, wl_compositor_interface.name) == 0)
@@ -1237,11 +1228,6 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.outputGetCurrentMode            = &LGraphicBackend::outputGetCurrentMode;
     API.outputGetModes                  = &LGraphicBackend::outputGetModes;
     API.outputSetMode                   = &LGraphicBackend::outputSetMode;
-
-    /* OUTPUT MODE PROPS */
-    API.outputModeGetSize               = &LGraphicBackend::outputModeGetSize;
-    API.outputModeGetRefreshRate        = &LGraphicBackend::outputModeGetRefreshRate;
-    API.outputModeIsPreferred           = &LGraphicBackend::outputModeIsPreferred;
 
     return &API;
 }

@@ -73,7 +73,6 @@ void RXdgSurface::destroy(wl_client */*client*/, wl_resource *resource)
 
     if (res.surface() && res.surface()->role())
     {
-        // TODO: Update XML and replace by DEFUNC_ROLE_OBJECT error
         wl_resource_post_error(resource, XDG_WM_BASE_ERROR_DEFUNCT_SURFACES, "xdg_surface must be destroyed after its specific role");
         return;
     }

@@ -48,9 +48,9 @@
  * @section Callbacks
  *
  * To ensure that surfaces don't update their content more frequently than the refresh rate of the output (LOutput) they are displayed on,
- * or in scenarios where they are obscured by other surfaces, callbacks are employed.\n
- * Clients generate a callback resource and await the compositor's acknowledgment, signaling an optimal time to render the subsequent surface frame.\n
- * To ACK the callback of a surface, use requestNextFrame().
+ * or in scenarios where they are obscured by other surfaces, callbacks are employed.
+ * Clients generate a callback resource and await the compositor's acknowledgment, signaling an optimal time to render the subsequent surface frame.
+ * To acknowledge the callback of a surface, use requestNextFrame().
  *
  * @warning Calling requestNextFrame() clears the current damage region of the surface.
  *
@@ -74,7 +74,7 @@
  * Louvre maintains a list to keep track of all surfaces created by clients, which can be accessed via LCompositor::surfaces().\n
  * This list adheres to the Z-axis order as defined by the protocols of their respective roles.\n
  *
- * Surfaces are always assigned a layer, which is controlled by their role. Both the surfaces list and layers maintain the same order.
+ * Surfaces are always assigned a layer, which is controlled by their role. Both the surfaces list and layers maintain the same order.\n
  * Surfaces are assigned to a layer as follows:
  *
  * - **Background Layer**: Only LLayerRole surfaces can be in this layer, usually used by clients to display wallpapers.
@@ -83,9 +83,9 @@
  * - **Top Layer**: For fullscreen LToplevelRole and LLayerRole surfaces.
  * - **Overlay Layer**: LCursorRole, LDNDIconRole, LPopupRole, and LLayerRole surfaces are displayed in this layer.
  *
- * @note LSubsurfaceRole surfaces are always assigned the same layer as their parent surface.
+ * @note LSubsurfaceRole and transient LToplevelRole surfaces are always assigned the same layer as their parent surface.
  *
- * It is possible to modify the order of surfaces within a layer using the raise() method; this will normally also raise other surfaces such as subsurfaces.\n
+ * It is possible to modify the order of surfaces within a layer using the raise() method, this will normally also raise other surfaces such as subsurfaces.\n
  * You can receive notifications when the order changes by implementing the orderChanged() and layerChanged() virtual methods.\n
  * Use prevSurface() and nextSurface() to get the surface behind or on top of the current surface. Keep in mind that these functions may return `nullptr` if a surface is at the beginning or end of the list.\n
  * Surfaces are thought to be rendered in the order they appear in the list. The first surfaces should be located in the background, while the last ones should be in the foreground.
@@ -96,10 +96,8 @@
  * @section Position
  *
  * One of the characteristics of Wayland is that clients have very little information and control over how their surfaces are positioned on the screen.\n
- * For this reason, the rules of their roles generally define it based on an offset relative to another surface or a position given by
- * you.\n
- * The library simplifies this by allowing you to assign the position of the surfaces with setPos() and access the position suggested by its role with
- * rolePos().\n
+ * For this reason, the rules of their roles generally define it based on an offset relative to another surface or a position given by you.\n
+ * Louvre simplifies this by allowing you to assign the position of the surfaces with setPos() and access the position suggested by its role withrolePos().\n
  * In some cases, such as in the LPopupRole or LSubsurfaceRole role, the position set with setPos() is not taken into account.\n
  * You can see the positioning rules of each role in detail by viewing the documentation of rolePos() for each one.
  */
@@ -373,7 +371,7 @@ public:
     /**
      * @brief OpenGL texture
      *
-     * Representation of the surface's buffer as an OpenGL texture.\n
+     * Representation of the surface's buffer as an OpenGL texture.
      *
      * @warning It could return `nullptr` if the surface is not currently mapped.
      */
@@ -388,7 +386,15 @@ public:
      */
     wl_buffer *bufferResource() const;
 
-    // TODO
+
+    /**
+     * @brief Indicates if the last attached buffer was NULL.
+     *
+     * @note Even if this method returns `true`, bufferResource() may return `nullptr` if the buffer was destroyed
+     *       before being replaced by another attach and commit.
+     *
+     * @return `true` if the last attached buffer was not NULL, otherwise `false`.
+     */
     bool hasBuffer() const noexcept;
 
     /**

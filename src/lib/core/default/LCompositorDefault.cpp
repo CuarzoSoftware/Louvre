@@ -7,6 +7,7 @@
 #include <protocols/PointerGestures/GPointerGestures.h>
 #include <protocols/SessionLock/GSessionLockManager.h>
 #include <protocols/PresentationTime/GPresentation.h>
+#include <protocols/ScreenCopy/GScreenCopyManager.h>
 #include <protocols/XdgOutput/GXdgOutputManager.h>
 #include <protocols/Wayland/GDataDeviceManager.h>
 #include <protocols/LinuxDMABuf/GLinuxDMABuf.h>
@@ -37,9 +38,6 @@
 #include <LClient.h>
 #include <LDNDIconRole.h>
 #include <LGlobal.h>
-#include <cstring>
-
-#include <protocols/ScreenCopy/GScreenCopyManager.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols;
@@ -99,19 +97,24 @@ bool LCompositor::createGlobalsRequest()
     // Allow clients to clip and scale buffers
     createGlobal<Viewporter::GViewporter>();
 
+    // Allow clients to capture outputs
     createGlobal<ScreenCopy::GScreenCopyManager>();
 
+    // Allow clients to create wlr_layer_shell surfaces
     createGlobal<LayerShell::GLayerShell>();
+
     return true;
 }
 //! [createGlobalsRequest]
 
+//! [globalsFilter]
 bool LCompositor::globalsFilter(LClient *client, LGlobal *global)
 {
     L_UNUSED(client)
     L_UNUSED(global)
     return true;
 }
+//! [globalsFilter]
 
 //! [initialized]
 void LCompositor::initialized()
@@ -150,7 +153,7 @@ void LCompositor::cursorInitialized()
 
     /*
     // Loads the "hand1" cursor
-    LXCursor *handCursor = LXCursor::loadXCursorB("hand1");
+    LXCursor *handCursor = LXCursor::load("hand1");
 
     // Returns nullptr if not found
     if (handCursor)

@@ -2,6 +2,7 @@
 #define LSURFACEVIEW_H
 
 #include <LView.h>
+#include <LWeak.h>
 
 /**
  * @brief View for displaying surfaces.
@@ -259,8 +260,13 @@ public:
      */
     const LRectF &srcRect() const;
 
-
-    // TODO
+    /**
+     * @brief Ignore the LSurface::mapped() state.
+     *
+     * If enabled nativeMapped() will return `true` even if the surface is unmapped as long as it contains a texture.
+     *
+     * Disabled by default.
+     */
     void enableAlwaysMapped(bool enabled) noexcept
     {
         if (enabled == alwaysMappedEnabled())
@@ -274,6 +280,9 @@ public:
             repaint();
     }
 
+    /**
+     * @see enableAlwaysMapped()
+     */
     bool alwaysMappedEnabled() const noexcept
     {
         return m_state.check(AlwaysMapped);

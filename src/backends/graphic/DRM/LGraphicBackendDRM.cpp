@@ -19,7 +19,6 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LSeatPrivate.h>
 #include <private/LOutputPrivate.h>
-#include <private/LOutputModePrivate.h>
 #include <private/LPainterPrivate.h>
 #include <private/LTexturePrivate.h>
 #include <private/LCursorPrivate.h>
@@ -28,6 +27,7 @@
 
 #include <LTime.h>
 #include <LGammaTable.h>
+#include <LOutputMode.h>
 
 #include <SRMCore.h>
 #include <SRMDevice.h>
@@ -67,12 +67,6 @@ struct Output
     LSize physicalSize;
     std::vector<LOutputMode*>modes;
     std::vector<LTexture*> textures;
-};
-
-struct OutputMode
-{
-    SRMConnectorMode *mode;
-    LSize size;
 };
 
 // SRM -> Louvre Subpixel
@@ -164,15 +158,13 @@ static void initConnector(Backend *bknd, SRMConnector *conn)
             SRMListForeach (modeIt, srmConnectorGetModes(conn))
             {
                 SRMConnectorMode *mode = (SRMConnectorMode*)srmListItemGetData(modeIt);
-                LOutputMode *outputMode = new LOutputMode(output);
+                LOutputMode *outputMode = new LOutputMode(
+                    output,
+                    LSize(srmConnectorModeGetWidth(mode), srmConnectorModeGetHeight(mode)),
+                    srmConnectorModeGetRefreshRate(mode) * 1000,
+                    srmConnectorModeIsPreferred(mode),
+                    mode);
                 srmConnectorModeSetUserData(mode, outputMode);
-
-                OutputMode *bkndOutputMode = new OutputMode();
-                bkndOutputMode->mode = mode;
-                bkndOutputMode->size.setW(srmConnectorModeGetWidth(mode));
-                bkndOutputMode->size.setH(srmConnectorModeGetHeight(mode));
-
-                outputMode->imp()->graphicBackendData = bkndOutputMode;
                 bkndOutput->modes.push_back(outputMode);
             }
 
@@ -203,10 +195,8 @@ static void uninitConnector(Backend *bknd, SRMConnector *conn)
     while (!bkndOutput->modes.empty())
     {
         LOutputMode *mode = bkndOutput->modes.back();
-        OutputMode *bkndMode = (OutputMode*)mode->imp()->graphicBackendData;
-        srmConnectorModeSetUserData(bkndMode->mode, NULL);
+        srmConnectorModeSetUserData((SRMConnectorMode*)mode->data(), NULL);
         delete mode;
-        delete bkndMode;
         bkndOutput->modes.pop_back();
     }
 
@@ -847,30 +837,8 @@ const std::vector<LOutputMode *> *LGraphicBackend::outputGetModes(LOutput *outpu
 bool LGraphicBackend::outputSetMode(LOutput *output, LOutputMode *mode)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-    OutputMode *bkndOutputMode = (OutputMode*)mode->imp()->graphicBackendData;
-    return srmConnectorSetMode(bkndOutput->conn, bkndOutputMode->mode);
+    return srmConnectorSetMode(bkndOutput->conn, (SRMConnectorMode*)mode->m_data);
 }
-
-/* OUTPUT MODE PROPS */
-
-const LSize *LGraphicBackend::outputModeGetSize(LOutputMode *mode)
-{
-    OutputMode *bkndOutputMode = (OutputMode*)mode->imp()->graphicBackendData;
-    return &bkndOutputMode->size;
-}
-
-Int32 LGraphicBackend::outputModeGetRefreshRate(LOutputMode *mode)
-{
-    OutputMode *bkndOutputMode = (OutputMode*)mode->imp()->graphicBackendData;
-    return srmConnectorModeGetRefreshRate(bkndOutputMode->mode)*1000;
-}
-
-bool LGraphicBackend::outputModeIsPreferred(LOutputMode *mode)
-{
-    OutputMode *bkndOutputMode = (OutputMode*)mode->imp()->graphicBackendData;
-    return srmConnectorModeIsPreferred(bkndOutputMode->mode);
-}
-
 
 static LGraphicBackendInterface API;
 
@@ -942,11 +910,6 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.outputGetCurrentMode            = &LGraphicBackend::outputGetCurrentMode;
     API.outputGetModes                  = &LGraphicBackend::outputGetModes;
     API.outputSetMode                   = &LGraphicBackend::outputSetMode;
-
-    /* OUTPUT MODE PROPS */
-    API.outputModeGetSize               = &LGraphicBackend::outputModeGetSize;
-    API.outputModeGetRefreshRate        = &LGraphicBackend::outputModeGetRefreshRate;
-    API.outputModeIsPreferred           = &LGraphicBackend::outputModeIsPreferred;
 
     return &API;
 }

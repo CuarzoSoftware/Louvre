@@ -5,7 +5,6 @@
 #include <LOutput.h>
 #include <LUtils.h>
 #include <LLog.h>
-#include <string.h>
 
 using namespace Louvre;
 
@@ -195,7 +194,7 @@ void LView::removeThread(std::thread::id thread)
         m_threadsMap.erase(it);
     }
 
-    if (type() != Scene)
+    if (type() != SceneType)
         return;
 
     LSceneView *sceneView { static_cast<LSceneView*>(this) };

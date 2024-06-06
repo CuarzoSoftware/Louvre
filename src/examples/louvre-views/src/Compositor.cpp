@@ -9,6 +9,7 @@
 #include "Client.h"
 #include "Global.h"
 #include "Compositor.h"
+#include "LLauncher.h"
 #include "Output.h"
 #include "Surface.h"
 #include "Seat.h"
@@ -76,14 +77,10 @@ void Compositor::initialized()
 
     // Start the timer right on to setup the clock texture
     clockMinuteTimer.start(1);
-
     oversamplingLabelTexture = G::font()->semibold->renderText("OVERSAMPLING", 22);
     vSyncLabelTexture = G::font()->semibold->renderText("V-SYNC", 22);
 
     Int32 totalWidth { 0 };
-
-    LLog::debug("LALA");
-
 
     // Initialize and arrange outputs (screens) left to right
     for (LOutput *output : seat()->outputs())
@@ -97,13 +94,12 @@ void Compositor::initialized()
         output->repaint();
     }
 
-    LLog::debug("LALA");
-
     if (outputs().empty())
     {
         LLog::fatal("[louvre-views] Failed to initialize outputs. Try launching the compositor from a free TTY or within a Wayland compositor.");
         finish();
     }
+
 
 #if LOUVRE_VIEWS_TESTING == 1
     new TestView(&overlayLayer);

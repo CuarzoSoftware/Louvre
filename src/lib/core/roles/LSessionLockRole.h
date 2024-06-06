@@ -14,7 +14,7 @@
  * Later, they become unmapped again when the session is unlocked.
  *
  * While the session is locked, only surfaces created by the locking client LSessionLockManager::client() should be rendered and receive input events.\n
- * If the client crashes before unlocking the session (see @ref LSessionLockManager::DeadLocked), the session must remain locked, and a fallback mechanism should
+ * If the client dies before unlocking the session (see @ref LSessionLockManager::DeadLocked), the session must remain locked, and a fallback mechanism should
  * be used to authenticate the user, such as relaunching the locking client.
  */
 class Louvre::LSessionLockRole : public LBaseSurfaceRole

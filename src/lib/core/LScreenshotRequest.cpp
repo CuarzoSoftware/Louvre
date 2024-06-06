@@ -187,6 +187,7 @@ Int8 LScreenshotRequest::copy() noexcept
         resource().damage(damage);
     }
 
-    resource().ready(resource().output()->imp()->presentationTime.time);
+    /* Backend presentation time may not be available, use LTime instead */
+    resource().ready(LTime::ns());
     return 1;
 }

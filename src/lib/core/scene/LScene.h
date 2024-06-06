@@ -73,7 +73,8 @@ class YourCustomOutput : public LOutput
  *
  * ### Input Events
  *
- * Similar to rendering, you can integrate LScene into LPointer, LKeyboard and LTouch for managing input events.\n
+ * Similar to rendering, you can integrate LScene into LPointer, LKeyboard and LTouch for managing input events.
+ *
  * @see EventOptions
  */
 class Louvre::LScene : public LObject
@@ -381,7 +382,7 @@ public:
      *
      * @return A pointer to the LView at the specified position, or `nullptr` if no view is found.
      */
-    LView *viewAt(const LPoint &pos, LView::Type type = LView::Undefined, LBitset<InputFilter> filter = FilterDisabled);
+    LView *viewAt(const LPoint &pos, LView::Type type = LView::UndefinedType, LBitset<InputFilter> filter = FilterDisabled);
 
 LPRIVATE_IMP_UNIQUE(LScene)
 };

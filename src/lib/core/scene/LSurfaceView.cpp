@@ -6,7 +6,7 @@
 
 using namespace Louvre;
 
-LSurfaceView::LSurfaceView(LSurface *surface, LView *parent) noexcept : LView(LView::Surface, true, parent), m_surface(surface)
+LSurfaceView::LSurfaceView(LSurface *surface, LView *parent) noexcept : LView(LView::SurfaceType, true, parent), m_surface(surface)
 {
     setPrimary(true);
     surface->imp()->views.push_back(this);

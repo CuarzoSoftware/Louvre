@@ -2,20 +2,21 @@
 #define LOUTPUTMODE_H
 
 #include <LObject.h>
-#include <memory>
+#include <LSize.h>
+#include <LWeak.h>
 
 /**
  * @brief Output resolution and refresh rate.
  *
  * The LOutputMode class represents a possible configuration in which an LOutput can operate, specifically
  * the refresh rate and resolution.\n
- * Each LOutput has one or more modes which can be accessed from LOutput::modes() and assigned with LOutput::setMode().\n
+ * Each LOutput has one or more modes which can be accessed from LOutput::modes() and assigned with LOutput::setMode().
  */
-class Louvre::LOutputMode : LObject
+class Louvre::LOutputMode final : LObject
 {
 public:
-    LOutputMode(LOutput *output) noexcept;
-    ~LOutputMode();
+    LOutputMode(LOutput *output, const LSize &size, UInt32 refreshRate, bool isPreferred, void *data) noexcept;
+
     LCLASS_NO_COPY(LOutputMode)
 
     /**
@@ -23,14 +24,20 @@ public:
      *
      * This method retrieves the output to which the mode belongs.
      */
-    LOutput *output() const;
+    LOutput *output() const noexcept
+    {
+        return m_output;
+    }
 
     /**
      * @brief Get the resolution of the mode.
      *
      * This method returns the dimensions of the output when using this mode, represented in buffer coordinates.
      */
-    const LSize &sizeB() const;
+    const LSize &sizeB() const noexcept
+    {
+        return m_sizeB;
+    }
 
     /**
      * @brief Get the refresh rate of the mode.
@@ -39,7 +46,10 @@ public:
      *
      * @return The refresh rate of the mode, expressed in Hz * 1000.
      */
-    UInt32 refreshRate() const;
+    UInt32 refreshRate() const noexcept
+    {
+        return m_refreshRate;
+    }
 
     /**
      * @brief Check if this mode is the preferred mode for the output.
@@ -48,9 +58,26 @@ public:
      *
      * @return `true` if this mode is preferred and `false` otherwise.
      */
-    bool isPreferred() const;
+    bool isPreferred() const noexcept
+    {
+        return m_isPreferred;
+    }
 
-    LPRIVATE_IMP_UNIQUE(LOutputMode)
+    /**
+     * @brief Backend data handle.
+     */
+    void *data() const noexcept
+    {
+        return m_data;
+    }
+
+private:
+    friend class LGraphicBackend;
+    LSize m_sizeB;
+    UInt32 m_refreshRate;
+    LWeak<LOutput> m_output;
+    void *m_data { nullptr };
+    bool m_isPreferred;
 };
 
 #endif // LOUTPUTMODE_H

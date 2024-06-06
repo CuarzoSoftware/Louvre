@@ -11,19 +11,13 @@
 class Louvre::LSolidColorView : public LView
 {
 public:
-
-    /// @cond OMIT
-    LSolidColorView(const LSolidColorView&) = delete;
-    LSolidColorView& operator= (const LSolidColorView&) = delete;
-    /// @endcond
-
     /**
      * @brief Construct a solid color view as a child of another view.
      *
      * @param parent The parent view that will contain this solid color view.
      */
     LSolidColorView(LView *parent = nullptr) noexcept :
-        LView(LView::SolidColor, true, parent),
+        LView(LView::SolidColorType, true, parent),
         m_color(0.f, 0.f, 0.f)
     {}
 
@@ -37,7 +31,7 @@ public:
      * @param parent The parent view that will contain this solid color view.
      */
     LSolidColorView(Float32 r = 0.f, Float32 g = 0.f, Float32 b = 0.f, Float32 a = 1.f, LView *parent = nullptr) noexcept :
-        LView(SolidColor, true, parent),
+        LView(SolidColorType, true, parent),
         m_color(r, g, b)
     {
         if (a < 0.f)
@@ -56,7 +50,7 @@ public:
      * @param parent The parent view that will contain this solid color view.
      */
     LSolidColorView(const LRGBF &color, Float32 a = 1.f, LView *parent = nullptr) noexcept :
-        LView(SolidColor, true, parent),
+        LView(SolidColorType, true, parent),
         m_color(color)
     {
         if (a < 0.f)
@@ -66,6 +60,8 @@ public:
 
         m_opacity = a;
     }
+
+    LCLASS_NO_COPY(LSolidColorView)
 
     /**
      * @brief Destructor for the solid color view.
