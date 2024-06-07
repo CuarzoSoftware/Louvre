@@ -123,7 +123,7 @@ LCursor::~LCursor()
         glDeleteFramebuffers(1, &imp()->glFramebuffer);
 }
 
-void LCursor::useDefault()
+void LCursor::useDefault() noexcept
 {
     if (compositor()->state() == LCompositor::Uninitializing)
         return;
@@ -136,7 +136,7 @@ void LCursor::useDefault()
     setTextureB(imp()->defaultTexture, imp()->defaultHotspotB);
 }
 
-void LCursor::replaceDefaultB(const LTexture *texture, const LPointF &hotspot)
+void LCursor::replaceDefaultB(const LTexture *texture, const LPointF &hotspot) noexcept
 {
     if (compositor()->state() == LCompositor::Uninitializing)
         return;
@@ -158,7 +158,7 @@ void LCursor::replaceDefaultB(const LTexture *texture, const LPointF &hotspot)
         useDefault();
 }
 
-void LCursor::setTextureB(const LTexture *texture, const LPointF &hotspot)
+void LCursor::setTextureB(const LTexture *texture, const LPointF &hotspot) noexcept
 {
     imp()->clientCursor.reset();
 
@@ -199,27 +199,47 @@ const LClientCursor *LCursor::clientCursor() const noexcept
     return imp()->clientCursor;
 }
 
-void LCursor::move(Float32 x, Float32 y)
+void LCursor::move(Float32 x, Float32 y) noexcept
 {
-    imp()->setPos(imp()->pos + LPointF(x,y));
+    setPos(m_pos + LPointF(x,y));
 }
 
-void LCursor::move(const LPointF &delta)
+void LCursor::move(const LPointF &delta) noexcept
 {
-    imp()->setPos(imp()->pos + delta);
+    setPos(m_pos + delta);
 }
 
-void Louvre::LCursor::setPos(const LPointF &pos)
+void Louvre::LCursor::setPos(const LPointF &pos) noexcept
 {
-    imp()->setPos(pos);
+    for (LOutput *output : compositor()->outputs())
+        if (output->rect().containsPoint(pos) && output)
+            imp()->setOutput(output);
+
+    if (!cursor()->output())
+        return;
+
+    m_pos = pos;
+
+    LRect area = cursor()->output()->rect();
+    if (m_pos.x() > area.x() + area.w())
+        m_pos.setX(area.x() + area.w());
+    if (m_pos.x() < area.x())
+        m_pos.setX(area.x());
+
+    if (m_pos.y() > area.y() + area.h())
+        m_pos.setY(area.y() + area.h());
+    if (m_pos.y() < area.y())
+        m_pos.setY(area.y());
+
+    imp()->update();
 }
 
-void LCursor::setPos(Float32 x, Float32 y)
+void LCursor::setPos(Float32 x, Float32 y) noexcept
 {
     setPos(LPointF(x, y));
 }
 
-void LCursor::setHotspotB(const LPointF &hotspot)
+void LCursor::setHotspotB(const LPointF &hotspot) noexcept
 {
     if (imp()->hotspotB != hotspot)
     {
@@ -228,7 +248,7 @@ void LCursor::setHotspotB(const LPointF &hotspot)
     }
 }
 
-void LCursor::setSize(const LSizeF &size)
+void LCursor::setSize(const LSizeF &size) noexcept
 {
     if (imp()->size != size)
     {
@@ -238,7 +258,7 @@ void LCursor::setSize(const LSizeF &size)
     }
 }
 
-void LCursor::setVisible(bool state)
+void LCursor::setVisible(bool state) noexcept
 {
     if (state == visible())
         return;
@@ -259,7 +279,7 @@ void LCursor::setVisible(bool state)
     }
 }
 
-void LCursor::repaintOutputs(bool nonHardwareOnly)
+void LCursor::repaintOutputs(bool nonHardwareOnly) noexcept
 {
     for (LOutput *o : intersectedOutputs())
         if (!nonHardwareOnly || !hwCompositingEnabled(o))
@@ -277,12 +297,12 @@ void LCursor::repaintOutputs(bool nonHardwareOnly)
     }
 }
 
-bool LCursor::visible() const
+bool LCursor::visible() const noexcept
 {
     return imp()->isVisible;
 }
 
-bool LCursor::hasHardwareSupport(const LOutput *output) const
+bool LCursor::hasHardwareSupport(const LOutput *output) const noexcept
 {
     if (!imp()->hasFb)
         return false;
@@ -290,58 +310,51 @@ bool LCursor::hasHardwareSupport(const LOutput *output) const
     return compositor()->imp()->graphicBackend->outputHasHardwareCursorSupport((LOutput*)output);
 }
 
-const LPointF &LCursor::pos() const
-{
-    return imp()->pos;
-}
-
-const LPointF &LCursor::hotspotB() const
+const LPointF &LCursor::hotspotB() const noexcept
 {
     return imp()->hotspotB;
 }
 
-LTexture *LCursor::texture() const
+LTexture *LCursor::texture() const noexcept
 {
     return imp()->texture;
 }
 
-LTexture *LCursor::defaultTexture() const
+LTexture *LCursor::defaultTexture() const noexcept
 {
     return imp()->defaultTexture;
 }
 
-const LPointF &LCursor::defaultHotspotB() const
+const LPointF &LCursor::defaultHotspotB() const noexcept
 {
     return imp()->defaultHotspotB;
 }
 
-LTexture *LCursor::defaultLouvreTexture() const
+LTexture *LCursor::defaultLouvreTexture() const noexcept
 {
     return &imp()->louvreTexture;
 }
 
-LOutput *LCursor::output() const
+LOutput *LCursor::output() const noexcept
 {
-    if (imp()->output)
-        return imp()->output;
+    if (m_output)
+        return m_output;
 
     if (!compositor()->outputs().empty())
     {
-        imp()->output = compositor()->outputs().front();
+        m_output = compositor()->outputs().front();
         imp()->textureChanged = true;
     }
-    else
-        imp()->output = nullptr;
 
-    return imp()->output;
+    return m_output;
 }
 
-const std::vector<LOutput *> &LCursor::intersectedOutputs() const
+const std::vector<LOutput *> &LCursor::intersectedOutputs() const noexcept
 {
     return imp()->intersectedOutputs;
 }
 
-const LRect &LCursor::rect() const
+const LRect &LCursor::rect() const noexcept
 {
     return imp()->rect;
 }

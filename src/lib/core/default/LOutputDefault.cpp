@@ -158,12 +158,13 @@ void LOutput::uninitializeGL()
 void LOutput::setGammaRequest(LClient *client, const LGammaTable *gamma)
 {
     L_UNUSED(client)
-    L_UNUSED(gamma)
 
-    /* No default implementation */
+    /* Sets the client gamma table */
+    setGamma(gamma);
 }
 //! [setGammaRequest]
 
+//! [availableGeometryChanged()]
 void LOutput::availableGeometryChanged()
 {
     const LRect availGeo { pos() + availableGeometry().pos(), availableGeometry().size() };
@@ -222,3 +223,4 @@ void LOutput::availableGeometryChanged()
         }
     }
 }
+//! [availableGeometryChanged()]

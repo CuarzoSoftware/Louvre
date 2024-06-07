@@ -531,8 +531,8 @@ void LCompositor::removeOutput(LOutput *output)
 
             LVectorRemoveOneUnordered(cursor()->imp()->intersectedOutputs, output);
 
-            if (cursor()->imp()->output == output)
-                cursor()->imp()->output = nullptr;
+            if (cursor()->m_output == output)
+                cursor()->m_output = nullptr;
 
             cursor()->move(1.f, 1.f);
             return;

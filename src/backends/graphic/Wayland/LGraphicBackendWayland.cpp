@@ -610,12 +610,12 @@ public:
 
     static void backendSuspend()
     {
-        /* TODO */
+        /* No TTY switching so no required */
     }
 
     static void backendResume()
     {
-        /* TODO */
+        /* No TTY switching so no required */
     }
 
     static const std::vector<LOutput*>* backendGetConnectedOutputs()
@@ -842,7 +842,6 @@ public:
     /* OUTPUT */
     static bool outputInitialize(LOutput */*output*/)
     {
-        /* TODO */
         return true;
     }
 
@@ -855,7 +854,7 @@ public:
 
     static void outputUninitialize(LOutput */*output*/)
     {
-        /* TODO */
+        /* TODO: Should the compositor simply quit? */
     }
 
     static bool outputHasBufferDamageSupport(LOutput */*output*/)

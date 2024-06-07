@@ -111,7 +111,7 @@ struct OpenGLExtensions
     bool OES_EGL_image;
 } openGLExtensions;
 
-void updateExtensions();
+void updateExtensions() noexcept;
 
 struct CPUFormats
 {
@@ -121,9 +121,9 @@ struct CPUFormats
     bool XBGR8888 = false;
 } cpuFormats;
 
-void updateCPUFormats();
-void setupProgram();
-void setupProgramScaler();
+void updateCPUFormats() noexcept;
+void setupProgram() noexcept;
+void setupProgramScaler() noexcept;
 
 void shaderSetPremultipliedAlpha(bool premultipliedAlpha) noexcept
 {
@@ -360,7 +360,7 @@ void setViewport(Int32 x, Int32 y, Int32 w, Int32 h) noexcept
     }
 }
 
-void updateBlendingParams()
+void updateBlendingParams() noexcept
 {
     needsBlendFuncUpdate = false;
     shaderSetMode(userState.mode);

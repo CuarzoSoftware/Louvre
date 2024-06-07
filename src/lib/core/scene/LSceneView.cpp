@@ -188,7 +188,7 @@ const LRegion *LSceneView::opaqueRegion() const noexcept
 
 const LRegion *LSceneView::inputRegion() const noexcept
 {
-    // TODO: add custom input region
+    // TODO: add option for custom input regions
     return nullptr;
 }
 

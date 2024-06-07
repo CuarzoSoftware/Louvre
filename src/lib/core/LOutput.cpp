@@ -64,17 +64,17 @@ const std::list<LExclusiveZone *> LOutput::exclusiveZones() const noexcept
     return imp()->exclusiveZones;
 }
 
-bool LOutput::fractionalOversamplingEnabled() const
+bool LOutput::fractionalOversamplingEnabled() const noexcept
 {
     return imp()->stateFlags.check(LOutputPrivate::FractionalOversamplingEnabled);
 }
 
-bool LOutput::usingFractionalScale() const
+bool LOutput::usingFractionalScale() const noexcept
 {
     return imp()->stateFlags.check(LOutputPrivate::UsingFractionalScale);
 }
 
-void LOutput::enableFractionalOversampling(bool enabled)
+void LOutput::enableFractionalOversampling(bool enabled) noexcept
 {
     if (imp()->stateFlags.check(LOutputPrivate::FractionalOversamplingEnabled) != enabled)
     {
@@ -85,47 +85,47 @@ void LOutput::enableFractionalOversampling(bool enabled)
     }
 }
 
-Float32 LOutput::fractionalScale() const
+Float32 LOutput::fractionalScale() const noexcept
 {
     return imp()->fractionalScale;
 }
 
-LOutput::SubPixel LOutput::subPixel() const
+LOutput::SubPixel LOutput::subPixel() const noexcept
 {
     return (LOutput::SubPixel)compositor()->imp()->graphicBackend->outputGetSubPixel((LOutput*)this);
 }
 
-bool LOutput::hasVSyncControlSupport() const
+bool LOutput::hasVSyncControlSupport() const noexcept
 {
     return compositor()->imp()->graphicBackend->outputHasVSyncControlSupport((LOutput*)this);
 }
 
-bool LOutput::vSyncEnabled() const
+bool LOutput::vSyncEnabled() const noexcept
 {
     return compositor()->imp()->graphicBackend->outputIsVSyncEnabled((LOutput*)this);
 }
 
-bool LOutput::enableVSync(bool enabled)
+bool LOutput::enableVSync(bool enabled) noexcept
 {
     return compositor()->imp()->graphicBackend->outputEnableVSync((LOutput*)this, enabled);
 }
 
-Int32 LOutput::refreshRateLimit() const
+Int32 LOutput::refreshRateLimit() const noexcept
 {
     return compositor()->imp()->graphicBackend->outputGetRefreshRateLimit((LOutput*)this);
 }
 
-void LOutput::setRefreshRateLimit(Int32 hz)
+void LOutput::setRefreshRateLimit(Int32 hz) noexcept
 {
     return compositor()->imp()->graphicBackend->outputSetRefreshRateLimit((LOutput*)this, hz);
 }
 
-UInt32 LOutput::gammaSize() const
+UInt32 LOutput::gammaSize() const noexcept
 {
     return compositor()->imp()->graphicBackend->outputGetGammaSize((LOutput*)this);
 }
 
-bool LOutput::setGamma(const LGammaTable *gamma)
+bool LOutput::setGamma(const LGammaTable *gamma) noexcept
 {
     if (gamma)
     {
@@ -153,17 +153,17 @@ bool LOutput::setGamma(const LGammaTable *gamma)
     return compositor()->imp()->graphicBackend->outputSetGamma((LOutput*)this, imp()->gammaTable);
 }
 
-LFramebuffer *LOutput::framebuffer() const
+LFramebuffer *LOutput::framebuffer() const noexcept
 {
     return &imp()->fb;
 }
 
-LTransform LOutput::transform() const
+LTransform LOutput::transform() const noexcept
 {
     return imp()->transform;
 }
 
-void LOutput::setTransform(LTransform transform)
+void LOutput::setTransform(LTransform transform) noexcept
 {
     if (transform == imp()->transform)
         return;
@@ -180,22 +180,22 @@ void LOutput::setTransform(LTransform transform)
     }
 }
 
-const std::vector<LOutputMode *> &LOutput::modes() const
+const std::vector<LOutputMode *> &LOutput::modes() const noexcept
 {
     return *compositor()->imp()->graphicBackend->outputGetModes((LOutput*)this);
 }
 
-const LOutputMode *LOutput::preferredMode() const
+const LOutputMode *LOutput::preferredMode() const noexcept
 {
     return compositor()->imp()->graphicBackend->outputGetPreferredMode((LOutput*)this);
 }
 
-const LOutputMode *LOutput::currentMode() const
+const LOutputMode *LOutput::currentMode() const noexcept
 {
     return compositor()->imp()->graphicBackend->outputGetCurrentMode((LOutput*)this);
 }
 
-void LOutput::setMode(const LOutputMode *mode)
+void LOutput::setMode(const LOutputMode *mode) noexcept
 {
     if (mode == currentMode())
         return;
@@ -224,27 +224,27 @@ void LOutput::setMode(const LOutputMode *mode)
     imp()->callLock.store(true);
 }
 
-Int32 LOutput::currentBuffer() const
+Int32 LOutput::currentBuffer() const noexcept
 {
     return compositor()->imp()->graphicBackend->outputGetCurrentBufferIndex((LOutput*)this);
 }
 
-UInt32 LOutput::buffersCount() const
+UInt32 LOutput::buffersCount() const noexcept
 {
     return compositor()->imp()->graphicBackend->outputGetBuffersCount((LOutput*)this);
 }
 
-LTexture *LOutput::bufferTexture(UInt32 bufferIndex)
+LTexture *LOutput::bufferTexture(UInt32 bufferIndex) noexcept
 {
     return compositor()->imp()->graphicBackend->outputGetBuffer((LOutput*)this, bufferIndex);
 }
 
-bool LOutput::hasBufferDamageSupport() const
+bool LOutput::hasBufferDamageSupport() const noexcept
 {
     return compositor()->imp()->graphicBackend->outputHasBufferDamageSupport((LOutput*)this);
 }
 
-void LOutput::setBufferDamage(const LRegion *damage)
+void LOutput::setBufferDamage(const LRegion *damage) noexcept
 {
     if (!damage)
     {
@@ -261,7 +261,7 @@ const LRegion &LOutput::bufferDamage() const noexcept
     return imp()->damage;
 }
 
-void LOutput::setScale(Float32 scale)
+void LOutput::setScale(Float32 scale) noexcept
 {
     if (scale < 0.25f)
         scale = 0.25f;
@@ -294,36 +294,35 @@ void LOutput::setScale(Float32 scale)
         s->imp()->sendPreferredScale();
 }
 
-Float32 LOutput::scale() const
+Float32 LOutput::scale() const noexcept
 {
     return imp()->scale;
 }
 
-void LOutput::repaint()
+void LOutput::repaint() noexcept
 {
     if (compositor()->imp()->graphicBackend->outputRepaint(this))
         imp()->stateFlags.add(LOutputPrivate::PendingRepaint);
 }
 
-Int32 LOutput::dpi()
+Int32 LOutput::dpi() noexcept
 {
-    float w = imp()->sizeB.w();
-    float h = imp()->sizeB.h();
+    if (physicalSize().area() == 0)
+        return 0;
 
-    float Wi = physicalSize().w();
-    Wi /= 25.4;
-    float Hi = physicalSize().h();
-    Hi /= 25.4;
-
-    return sqrtf(w*w+h*h)/sqrtf(Wi*Wi+Hi*Hi);
+    const Float64 w = imp()->sizeB.w();
+    const Float64 h = imp()->sizeB.h();
+    const Float64 Wi = Float64(physicalSize().w()) / 25.4f;
+    const Float64 Hi = Float64(physicalSize().h()) / 25.4f;
+    return sqrtf(w*w + h*h)/sqrtf(Wi*Wi + Hi*Hi);
 }
 
-const LSize &LOutput::physicalSize() const
+const LSize &LOutput::physicalSize() const noexcept
 {
     return *compositor()->imp()->graphicBackend->outputGetPhysicalSize((LOutput*)this);
 }
 
-const LSize &LOutput::sizeB() const
+const LSize &LOutput::sizeB() const noexcept
 {
     return imp()->sizeB;
 }
@@ -338,57 +337,57 @@ const std::vector<LScreenshotRequest *> &LOutput::screenshotRequests() const noe
     return imp()->screenshotRequests;
 }
 
-const LRect &LOutput::rect() const
+const LRect &LOutput::rect() const noexcept
 {
     return imp()->rect;
 }
 
-const LPoint &LOutput::pos() const
+const LPoint &LOutput::pos() const noexcept
 {
     return imp()->rect.pos();
 }
 
-const LSize &LOutput::size() const
+const LSize &LOutput::size() const noexcept
 {
     return imp()->rect.size();
 }
 
-LOutput::State LOutput::state() const
+LOutput::State LOutput::state() const noexcept
 {
     return imp()->state;
 }
 
-const char *LOutput::name() const
+const char *LOutput::name() const noexcept
 {
     return compositor()->imp()->graphicBackend->outputGetName((LOutput*)this);
 }
 
-const char *LOutput::model() const
+const char *LOutput::model() const noexcept
 {
     return compositor()->imp()->graphicBackend->outputGetModelName((LOutput*)this);
 }
 
-const char *LOutput::manufacturer() const
+const char *LOutput::manufacturer() const noexcept
 {
     return compositor()->imp()->graphicBackend->outputGetManufacturerName((LOutput*)this);
 }
 
-const char *LOutput::description() const
+const char *LOutput::description() const noexcept
 {
     return compositor()->imp()->graphicBackend->outputGetDescription((LOutput*)this);
 }
 
-void LOutput::setPos(const LPoint &pos)
+void LOutput::setPos(const LPoint &pos) noexcept
 {
     imp()->rect.setPos(pos);
 }
 
-LPainter *LOutput::painter() const
+LPainter *LOutput::painter() const noexcept
 {
     return imp()->painter;
 }
 
-const std::thread::id &LOutput::threadId() const
+const std::thread::id &LOutput::threadId() const noexcept
 {
     return imp()->threadId;
 }

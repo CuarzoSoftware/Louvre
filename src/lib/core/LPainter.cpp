@@ -14,7 +14,7 @@
 
 using namespace Louvre;
 
-static void makeExternalShader(std::string &shader)
+static void makeExternalShader(std::string &shader) noexcept
 {
     size_t pos = 0;
     std::string findStr = "sampler2D";
@@ -29,7 +29,7 @@ static void makeExternalShader(std::string &shader)
     }
 }
 
-LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
+LPainter::LPainter() noexcept : LPRIVATE_INIT_UNIQUE(LPainter)
 {
     imp()->painter = this;
 
@@ -70,8 +70,7 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
 
                 return;
             }
-
-            if (mode == 0)
+            else if (mode == 0)
             {
                 v_texcoord.x = (srcRect.x + vertexPosition.z*srcRect.z) / texSize.x;
                 v_texcoord.y = (srcRect.y + srcRect.w - vertexPosition.w*srcRect.w) / texSize.y;
@@ -100,28 +99,29 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
                     gl_FragColor.w = texture2D(tex, v_texcoord).w;
                     if (alpha != 1.0)
                         gl_FragColor.w *= alpha;
-                    return;
-                }
-
-                if (premultipliedAlpha)
-                {
-                    gl_FragColor = texture2D(tex, v_texcoord);
-
-                    if (alpha != 1.0)
-                        gl_FragColor *= alpha;
-
-                    if (colorFactorEnabled)
-                        gl_FragColor.xyz *= color;
                 }
                 else
                 {
-                    gl_FragColor = texture2D(tex, v_texcoord);
+                    if (premultipliedAlpha)
+                    {
+                        gl_FragColor = texture2D(tex, v_texcoord);
 
-                    if (alpha != 1.0)
-                        gl_FragColor.w *= alpha;
+                        if (alpha != 1.0)
+                            gl_FragColor *= alpha;
 
-                    if (colorFactorEnabled)
-                        gl_FragColor.xyz *= color;
+                        if (colorFactorEnabled)
+                            gl_FragColor.xyz *= color;
+                    }
+                    else
+                    {
+                        gl_FragColor = texture2D(tex, v_texcoord);
+
+                        if (alpha != 1.0)
+                            gl_FragColor.w *= alpha;
+
+                        if (colorFactorEnabled)
+                            gl_FragColor.xyz *= color;
+                    }
                 }
             }
 
@@ -300,7 +300,7 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
     imp()->setupProgram();
 
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f);
     glEnable(GL_BLEND);
     glEnable(GL_SCISSOR_TEST);
     glDisable(GL_DEPTH_TEST);
@@ -315,7 +315,7 @@ LPainter::LPainter() : LPRIVATE_INIT_UNIQUE(LPainter)
     imp()->shaderSetAlpha(1.f);
 }
 
-LPainter::~LPainter()
+LPainter::~LPainter() noexcept
 {
     glDeleteProgram(imp()->programObject);
     glDeleteProgram(imp()->programObjectExternal);
@@ -324,7 +324,7 @@ LPainter::~LPainter()
     glDeleteShader(imp()->vertexShader);
 }
 
-void LPainter::LPainterPrivate::setupProgram()
+void LPainter::LPainterPrivate::setupProgram() noexcept
 {
     glBindAttribLocation(currentProgram, 0, "vertexPosition");
 
@@ -350,7 +350,7 @@ void LPainter::LPainterPrivate::setupProgram()
     currentUniforms->has90deg = glGetUniformLocation(currentProgram, "has90deg");
 }
 
-void LPainter::LPainterPrivate::setupProgramScaler()
+void LPainter::LPainterPrivate::setupProgramScaler() noexcept
 {
     glBindAttribLocation(currentProgram, 0, "vertexPosition");
 
@@ -372,14 +372,14 @@ void LPainter::LPainterPrivate::setupProgramScaler()
     currentUniformsScaler->iters = glGetUniformLocation(currentProgram, "iters");
 }
 
-void LPainter::LPainterPrivate::updateExtensions()
+void LPainter::LPainterPrivate::updateExtensions() noexcept
 {
     const char *exts = (const char*)glGetString(GL_EXTENSIONS);
     openGLExtensions.EXT_read_format_bgra = LOpenGL::hasExtension(exts, "GL_EXT_read_format_bgra");
     openGLExtensions.OES_EGL_image = LOpenGL::hasExtension(exts, "GL_OES_EGL_image");
 }
 
-void LPainter::LPainterPrivate::updateCPUFormats()
+void LPainter::LPainterPrivate::updateCPUFormats() noexcept
 {
     for (const LDMAFormat &fmt : *compositor()->imp()->graphicBackend->backendGetDMAFormats())
     {
@@ -406,7 +406,7 @@ void LPainter::LPainterPrivate::updateCPUFormats()
     }
 }
 
-void LPainter::bindTextureMode(const TextureParams &p)
+void LPainter::bindTextureMode(const TextureParams &p) noexcept
 {
     GLenum target = p.texture->target();
     imp()->switchTarget(target);
@@ -683,7 +683,7 @@ void LPainter::bindTextureMode(const TextureParams &p)
     glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
-void LPainter::bindColorMode()
+void LPainter::bindColorMode() noexcept
 {
     if (imp()->userState.mode == LPainterPrivate::ColorMode)
         return;
@@ -692,7 +692,7 @@ void LPainter::bindColorMode()
     imp()->needsBlendFuncUpdate = true;
 }
 
-void LPainter::drawBox(const LBox &box)
+void LPainter::drawBox(const LBox &box) noexcept
 {
     if (imp()->needsBlendFuncUpdate)
         imp()->updateBlendingParams();
@@ -701,7 +701,7 @@ void LPainter::drawBox(const LBox &box)
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void LPainter::drawRect(const LRect &rect)
+void LPainter::drawRect(const LRect &rect) noexcept
 {
     if (imp()->needsBlendFuncUpdate)
         imp()->updateBlendingParams();
@@ -710,7 +710,7 @@ void LPainter::drawRect(const LRect &rect)
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void LPainter::drawRegion(const LRegion &region)
+void LPainter::drawRegion(const LRegion &region) noexcept
 {
     if (imp()->needsBlendFuncUpdate)
         imp()->updateBlendingParams();
@@ -728,7 +728,7 @@ void LPainter::drawRegion(const LRegion &region)
     }
 }
 
-void LPainter::enableCustomTextureColor(bool enabled)
+void LPainter::enableCustomTextureColor(bool enabled) noexcept
 {
     if (imp()->userState.customTextureColor == enabled)
         return;
@@ -737,7 +737,7 @@ void LPainter::enableCustomTextureColor(bool enabled)
     imp()->needsBlendFuncUpdate = true;
 }
 
-bool LPainter::customTextureColorEnabled() const
+bool LPainter::customTextureColorEnabled() const noexcept
 {
     return imp()->userState.customTextureColor;
 }
@@ -756,7 +756,7 @@ void LPainter::enableAutoBlendFunc(bool enabled) const noexcept
     imp()->needsBlendFuncUpdate = true;
 }
 
-void LPainter::setAlpha(Float32 alpha)
+void LPainter::setAlpha(Float32 alpha) noexcept
 {
     if (imp()->userState.alpha == alpha)
         return;
@@ -765,7 +765,7 @@ void LPainter::setAlpha(Float32 alpha)
     imp()->needsBlendFuncUpdate = true;
 }
 
-void LPainter::setColor(const LRGBF &color)
+void LPainter::setColor(const LRGBF &color) noexcept
 {
     if (imp()->userState.color == color)
         return;
@@ -774,7 +774,7 @@ void LPainter::setColor(const LRGBF &color)
     imp()->needsBlendFuncUpdate = true;
 }
 
-void LPainter::bindFramebuffer(LFramebuffer *framebuffer)
+void LPainter::bindFramebuffer(LFramebuffer *framebuffer) noexcept
 {
     if (!framebuffer)
     {
@@ -788,22 +788,22 @@ void LPainter::bindFramebuffer(LFramebuffer *framebuffer)
     imp()->fb = framebuffer;
 }
 
-LFramebuffer *LPainter::boundFramebuffer() const
+LFramebuffer *LPainter::boundFramebuffer() const noexcept
 {
     return imp()->fb;
 }
 
-void LPainter::setViewport(const LRect &rect)
+void LPainter::setViewport(const LRect &rect) noexcept
 {
     imp()->setViewport(rect.x(), rect.y(), rect.w(), rect.h());
 }
 
-void LPainter::setViewport(Int32 x, Int32 y, Int32 w, Int32 h)
+void LPainter::setViewport(Int32 x, Int32 y, Int32 w, Int32 h) noexcept
 {
     imp()->setViewport(x, y, w, h);
 }
 
-void LPainter::setClearColor(Float32 r, Float32 g, Float32 b, Float32 a)
+void LPainter::setClearColor(Float32 r, Float32 g, Float32 b, Float32 a) noexcept
 {
     glClearColor(r,g,b,a);
 }
@@ -831,7 +831,7 @@ void LPainter::setColorFactor(const LRGBAF &factor) noexcept
     imp()->needsBlendFuncUpdate = true;
 }
 
-void LPainter::clearScreen()
+void LPainter::clearScreen() noexcept
 {
     if (!imp()->fb)
         return;
@@ -842,7 +842,7 @@ void LPainter::clearScreen()
     glEnable(GL_BLEND);
 }
 
-void LPainter::bindProgram()
+void LPainter::bindProgram() noexcept
 {
     glUseProgram(imp()->programObject);
 }

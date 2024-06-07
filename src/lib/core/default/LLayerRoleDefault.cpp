@@ -119,6 +119,8 @@ void LLayerRole::configureRequest()
     if (!exclusiveOutput())
         setExclusiveOutput(cursor()->output());
 
+    surface()->sendOutputEnterEvent(exclusiveOutput());
+
     // The client-suggested size.
     LSize newSize { size() };
 

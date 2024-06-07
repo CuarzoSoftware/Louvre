@@ -82,19 +82,19 @@ void LKeyboard::setGrab(LSurface *surface)
     imp()->grab.reset(surface);
 }
 
-LSurface *LKeyboard::grab() const
+LSurface *LKeyboard::grab() const noexcept
 {
     return imp()->grab;
 }
 
-const LKeyboardModifiersEvent::Modifiers &LKeyboard::modifiers() const
+const LKeyboardModifiersEvent::Modifiers &LKeyboard::modifiers() const noexcept
 {
     return imp()->currentModifiersState;
 }
 
-bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layout, const char *variant, const char *options)
+bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layout, const char *variant, const char *options) noexcept
 {
-    const char *METHOD_NAME = "LKeyboard::setKeymap";
+    static constexpr const char *METHOD_NAME = "LKeyboard::setKeymap";
 
     if (imp()->xkbKeymapFd != -1)
     {
@@ -237,22 +237,22 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
     return false;
 }
 
-Int32 LKeyboard::keymapFd() const
+Int32 LKeyboard::keymapFd() const noexcept
 {
     return imp()->xkbKeymapFd;
 }
 
-Int32 LKeyboard::keymapSize() const
+Int32 LKeyboard::keymapSize() const noexcept
 {
     return imp()->xkbKeymapSize;
 }
 
-UInt32 LKeyboard::keymapFormat() const
+UInt32 LKeyboard::keymapFormat() const noexcept
 {
     return imp()->keymapFormat;
 }
 
-LSurface *LKeyboard::focus() const
+LSurface *LKeyboard::focus() const noexcept
 {
     return imp()->focus;
 }
@@ -333,7 +333,7 @@ void LKeyboard::setFocus(LSurface *surface)
     focusChanged();
 }
 
-void LKeyboard::sendKeyEvent(const LKeyboardKeyEvent &event)
+void LKeyboard::sendKeyEvent(const LKeyboardKeyEvent &event) noexcept
 {
     if (!focus())
         return;
@@ -352,7 +352,7 @@ void LKeyboard::sendKeyEvent(const LKeyboardKeyEvent &event)
     }
 }
 
-xkb_keysym_t LKeyboard::keySymbol(UInt32 keyCode)
+xkb_keysym_t LKeyboard::keySymbol(UInt32 keyCode) noexcept
 {
     if (!imp()->xkbKeymapState)
         return keyCode;
@@ -360,12 +360,12 @@ xkb_keysym_t LKeyboard::keySymbol(UInt32 keyCode)
     return xkb_state_key_get_one_sym(imp()->xkbKeymapState, keyCode+8);
 }
 
-xkb_state *LKeyboard::keymapState() const
+xkb_state *LKeyboard::keymapState() const noexcept
 {
     return imp()->xkbKeymapState;
 }
 
-bool LKeyboard::isModActive(const char *name, xkb_state_component type) const
+bool LKeyboard::isModActive(const char *name, xkb_state_component type) const noexcept
 {
     if (!imp()->xkbKeymapState)
         return false;
@@ -376,12 +376,12 @@ bool LKeyboard::isModActive(const char *name, xkb_state_component type) const
                 type) == 1;
 }
 
-const std::vector<UInt32> &LKeyboard::pressedKeys() const
+const std::vector<UInt32> &LKeyboard::pressedKeys() const noexcept
 {
     return imp()->pressedKeys;
 }
 
-bool LKeyboard::isKeyCodePressed(UInt32 keyCode) const
+bool LKeyboard::isKeyCodePressed(UInt32 keyCode) const noexcept
 {
     for (UInt32 key : imp()->pressedKeys)
         if (key == keyCode)
@@ -390,7 +390,7 @@ bool LKeyboard::isKeyCodePressed(UInt32 keyCode) const
     return false;
 }
 
-bool LKeyboard::isKeySymbolPressed(xkb_keysym_t keySymbol) const
+bool LKeyboard::isKeySymbolPressed(xkb_keysym_t keySymbol) const noexcept
 {
     for (UInt32 key : imp()->pressedKeys)
         if (xkb_state_key_get_one_sym(imp()->xkbKeymapState, key + 8) == keySymbol)
@@ -401,17 +401,17 @@ bool LKeyboard::isKeySymbolPressed(xkb_keysym_t keySymbol) const
 
 // Since 4
 
-Int32 LKeyboard::repeatRate() const
+Int32 LKeyboard::repeatRate() const noexcept
 {
     return imp()->repeatRate;
 }
 
-Int32 LKeyboard::repeatDelay() const
+Int32 LKeyboard::repeatDelay() const noexcept
 {
     return imp()->repeatDelay;
 }
 
-void LKeyboard::setRepeatInfo(Int32 rate, Int32 msDelay)
+void LKeyboard::setRepeatInfo(Int32 rate, Int32 msDelay) noexcept
 {
     imp()->repeatRate = rate < 0 ? 0 : rate;
     imp()->repeatDelay = msDelay < 0 ? 0 : msDelay;

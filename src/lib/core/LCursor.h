@@ -3,125 +3,57 @@
 
 #include <LObject.h>
 #include <LPoint.h>
-#include <LTexture.h>
-#include <LRect.h>
+#include <LWeak.h>
+#include <memory>
 
 /**
  * @brief Utility class for rendering cursors.
  *
  * The LCursor class is designed to make cursor rendering easier and take advantage of compositing properties of
- * certain graphic backends to improve performance.\n
+ * certain graphic backends to improve performance.
  *
  * @subsection hw_composition Hardware Composition
  *
  * Some graphic backends, such as DRM, allow for hardware cursor compositing, which can improve performance by reducing the need to repaint
  * an output every time the cursor changes position.\n
- * To check if an output supports hardware cursor compositing, use the hasHardwareSupport() method.\n
- * If hardware compositing is not supported, the cursor needs to be rendered using OpenGL.
- * In that case, the cursor's position (with the hotspot offset included) and size can be accessed using the rect() method, and its current texture with the texture() method.
- *
- * @subsection performance Smoother Hardware Cursor Updates
- *
- * By default, the DRM graphic backend uses the Atomic DRM API, which synchronizes hardware cursor updates with the refresh rate of the outputs.
- * However, this synchronization can result in laggy cursor updates when rendering take a long time.
- * On the other hand, the legacy DRM API supports asynchronous hardware cursor updates, which can provide a smoother cursor experience.
- * To switch to the legacy DRM API, set the **SRM_FORCE_LEGACY_API** environment variable to 1.
- *
- * @warning Please note that using the legacy DRM API may cause issues with certain proprietary Nvidia drivers.
-*/
-class Louvre::LCursor : public LObject
+ * To check if an output supports hardware cursor compositing, use hasHardwareSupport().\n
+ * If hardware compositing is not supported for a specific output, the cursor is rendered by Louvre using OpenGL after a paintGL() event (when needed).
+ * In such cases the damage region provided by damage() has to be repainted.
+ */
+class Louvre::LCursor final : public LObject
 {
 public:
-
-    // TODO
-    bool enabled(LOutput *output) const noexcept;
-    void enable(LOutput *output, bool enable) noexcept;
-
-    // TODO : enable/disable hardware cursor plane
-    void enableHwCompositing(LOutput *output, bool enabled) noexcept;
-
-    // Returns true if hw cursor supported and enabled
-    bool hwCompositingEnabled(LOutput *output) const noexcept;
-
-    const LRegion &damage(LOutput *output) const noexcept;
 
     LCLASS_NO_COPY(LCursor)
 
     /**
-     * @brief Load the default cursor.
+     * @brief Sets the cursor position.
      *
-     * This method sets the cursor's texture and hotspot to the default values
-     * configured using replaceDefaultB().
+     * Sets the cursor position in compositor-global coordinates.
      *
-     * The default texture initially matches defaultLouvreTexture() with a hotspot at (8, 8).
+     * @param pos The new cursor position.
+     *
+     * @note Louvre automatically repositions the cursor if the specified position is not within any output.
      */
-    void useDefault();
+    void setPos(const LPointF &pos) noexcept;
 
     /**
-     * @brief Replace Louvre's default cursor.
+     * @brief Set the cursor position.
      *
-     * This method allows you to replace the Louvre's default cursor, which is set when
-     * useDefault() is called. You can specify a custom texture and hotspot for
-     * the new cursor. To restore Louvre's default cursor, pass `nullptr` as the texture.
-     *
-     * @param texture The new texture to use as the default cursor, or `nullptr` to
-     * restore the default Louvre cursor.
-     *
-     * @param hotspot The hotspot position for the new cursor in buffer coordinates.
-     *
+     * @see setPos()
      */
-    void replaceDefaultB(const LTexture *texture, const LPointF &hotspot);
+    void setPos(Float32 x, Float32 y) noexcept;
 
     /**
-     * @brief Set the cursor texture.
-     *
-     * Assigns the texture and hotspot of the cursor. The texture size does not necessarily define the cursor size, setSize() must be used to assign the cursor size.\n
-     *
-     * @param texture Texture to assign.
-     * @param hotspot Cursor hotspot in buffer coordinates.
+     * @brief Gets the current cursor position in compositor-global coordinates.
      */
-    void setTextureB(const LTexture *texture, const LPointF &hotspot);
-
-    // TODO
-    void setCursor(const LClientCursor &clientCursor) noexcept;
-    const LClientCursor *clientCursor() const noexcept;
+    const LPointF &pos() const noexcept
+    {
+        return m_pos;
+    }
 
     /**
-     * @brief Get the current cursor texture.
-     */
-    LTexture *texture() const;
-
-    /**
-     * @brief Get the default cursor texture.
-     *
-     * This method returns the texture that has been set using replaceDefaultB().
-     * Initially, the default texture is the same as defaultLouvreTexture().
-     *
-     * @return A pointer to the default cursor texture.
-     */
-    LTexture *defaultTexture() const;
-
-    /**
-     * @brief Get the default cursor hotspot.
-     *
-     * This method returns the hotspot that has been set using replaceDefaultB().
-     * Initially, the default hotspot is (8, 8).
-     *
-     * @return A constant reference to the default cursor hotspot.
-     */
-    const LPointF &defaultHotspotB() const;
-
-    /**
-     * @brief Default Louvre's cursor texture.
-     *
-     * <center><IMG SRC="https://lh3.googleusercontent.com/MSUUg3LSS6lYtpyLnKzbECf9eeZeFscmnLGJLRCdADwcjjcVd4xT07AMvQoHUTGptJFzY4tZrQ3IdLKyEbM_O0WyWYk8Pvc-Jf8xZHXoFUkFo2RRYTP8zN_LeOhsvIc6SlsO83TJUw=w2400"></center>
-     *
-     * The default Louvre's cursor is the one shown in the image, with a size of 64x64 pixels and hotspot at (8,8).
-     */
-    LTexture *defaultLouvreTexture() const;
-
-    /**
-     * @brief Move the cursor.
+     * @brief Moves the cursor.
      *
      * Adjusts the cursor position by a delta (dx, dy) in surface coordinates.
      *
@@ -130,80 +62,28 @@ public:
      *
      * @note Louvre automatically repositions the cursor if the new position is not within any output.
      */
-    void move(Float32 dx, Float32 dy);
+    void move(Float32 dx, Float32 dy) noexcept;
 
     /**
-     * @brief Move the cursor.
+     * @brief Moves the cursor.
      *
-     * Adjusts the cursor position by a delta (dx, dy) in surface coordinates.
-     *
-     * @param delta Delta in surface coordinates.
-     *
-     * @note Louvre automatically repositions the cursor if the new position is not within any output.
+     * @see move()
      */
-    void move(const LPointF &delta);
-
-    /**
-     * @brief Set the cursor position.
-     *
-     * Sets the cursor position in surface coordinates.
-     *
-     * @param pos The desired cursor position.
-     *
-     * @note Louvre automatically repositions the cursor if the specified position is not within any output.
-     */
-    void setPos(const LPointF &pos);
-
-    /**
-     * @brief Set the cursor position.
-     *
-     * Sets the cursor position in surface coordinates.
-     *
-     * @param x The desired x cursor position.
-     * @param y The desired y cursor position.
-     *
-     * @note Louvre automatically repositions the cursor if the specified position is not within any output.
-     */
-    void setPos(Float32 x, Float32 y);
-
-    /**
-     * @brief Get the current cursor position.
-     *
-     * Returns the current cursor position.
-     */
-    const LPointF &pos() const;
+    void move(const LPointF &delta) noexcept;
 
     /**
      * @brief Get the cursor rect on the screen.
      *
-     * Returns the cursor rect, which is defined as LRect(pos - hotspot, size), in surface coordinates.
+     * Returns the cursor rect, which is defined as LRect(pos - hotspot, size), in compositor-global coordinates.
      *
-     * Use this rect and texture() to paint the cursor with LPainter when hardware composition is not supported.
+     * You can use this rect and texture() to paint the cursor with LPainter if needed.
      */
-    const LRect &rect() const;
+    const LRect &rect() const noexcept;
 
     /**
-     * @brief Set the cursor hotspot in buffer coordinates.
+     * @brief Sets the cursor size.
      *
-     * The cursor hotspot is defined by coordinates relative to the origin of its buffer (upper left corner) and is used to position it correctly on the screen.
-     * For example, if the texture has a size of (64, 64), and the hotspot is at the center (32, 32), then the cursor's final screen position would be (x - 32, y - 32)
-     * for a cursor at position (x, y).
-     *
-     * @note The hotspot is automatically scaled proportionally to the cursor size.
-     *
-     * @param hotspot The desired hotspot in buffer coordinates.
-     */
-    void setHotspotB(const LPointF &hotspot);
-
-    /**
-     * @brief Get the current cursor hotspot in buffer coordinates.
-     */
-    const LPointF &hotspotB() const;
-
-    /**
-     * @brief Set the cursor size.
-     *
-     * Sets the cursor size using surface coordinates. The texture and hotspot are automatically scaled,
+     * Sets the cursor size in surface coordinates. The texture and hotspot are automatically scaled,
      * with the hotspot maintaining its proportion to the texture buffer size.
      *
      * @note You don't need to set the cursor size every time you change its texture or hotspot, Louvre automatically updates it.
@@ -212,65 +92,221 @@ public:
      *
      * @param size The desired cursor size in surface coordinates.
      */
-    void setSize(const LSizeF &size);
+    void setSize(const LSizeF &size) noexcept;
 
     /**
-     * @brief Change cursor visibility.
+     * @brief Toggles the cursor visibility.
      *
-     * Shows or hides the cursor. If an output does not support hardware composition it is your responsibility to avoid rendering it when it is hidden.\n
-     * You can use the visible() property to know if it is visible.
-     *
-     * @param state `true` makes the cursor visible and `false` hides it.
+     * @param state `true` to set visible, `false` otherwise.
      */
-    void setVisible(bool state);
+    void setVisible(bool state) noexcept;
 
     /**
-     * @brief Indicates whether the cursor is visible.
+     * @brief Checks if the cursor is visible.
      *
-     * @returns `true` if visible and `false` if hidden.
+     * @see setVisible()
      */
-    bool visible() const;
+    bool visible() const noexcept;
 
     /**
-     * @brief Repaint intersected outputs.
+     * @brief Assigns an LClientCursor.
      *
-     * Invokes LOutput::repaint() for each output in the list of intersected outputs.
+     * While an LClientCursor is assigned, the cursor is automatically updated when the client
+     * updates its LCursorRole surface texture, hotspot, and visibility.
      *
-     * @param nonHardwareOnly If true, only repaints outputs that do not support hardware compositing.
+     * If the LClientCursor is destroyed while set, useDefault() is called and the cursor is set to visible.
+     *
+     * @see LPointer::setCursorRequest()
+     * @see LClient::lastCursorRequest()
+     *
+     * @param clientCursor The LClientCursor to assign.
      */
-    void repaintOutputs(bool nonHardwareOnly = true);
+    void setCursor(const LClientCursor &clientCursor) noexcept;
 
     /**
-     * @brief Check for hardware compositing support.
+     * @brief Retrieves the client cursor set with setCursor().
      *
-     * Indicates whether the specified output supports hardware compositing.
+     * @return A pointer to the LClientCursor if set, `nullptr` otherwise.
+     */
+    const LClientCursor *clientCursor() const noexcept;
+
+    /**
+     * @brief Gets the current cursor texture.
+     *
+     * @return A pointer to the current texture, `nullptr` otherwise.
+     */
+    LTexture *texture() const noexcept;
+
+    /**
+     * @brief Sets the cursor texture.
+     *
+     * Assigns the texture and hotspot of the cursor. The texture size does not necessarily define the cursor size, see setSize().
+     *
+     * @param texture Texture to assign.
+     * @param hotspot Cursor hotspot in buffer coordinates.
+     */
+    void setTextureB(const LTexture *texture, const LPointF &hotspot) noexcept;
+
+    /**
+     * @brief Restores the default cursor.
+     *
+     * Sets the cursor's texture and hotspot to the default values
+     * configured using replaceDefaultB().
+     *
+     * The default texture initially matches defaultLouvreTexture() with a hotspot at (8, 8).
+     */
+    void useDefault() noexcept;
+
+    /**
+     * @brief Replaces Louvre's default cursor.
+     *
+     * This method allows you to replace the Louvre's default cursor texture and hotspot, which is set when
+     * useDefault() is called.
+     *
+     * @param texture The new texture to use as the default cursor, or `nullptr` to
+     * restore the default Louvre cursor.
+     *
+     * @param hotspot The hotspot position for the new cursor in buffer coordinates.
+     */
+    void replaceDefaultB(const LTexture *texture, const LPointF &hotspot) noexcept;
+
+    /**
+     * @brief Gets the default cursor texture.
+     *
+     * This method returns the texture that has been set using replaceDefaultB().\n
+     * Initially, the default texture is the same as defaultLouvreTexture().
+     *
+     * @return A pointer to the default cursor texture.
+     */
+    LTexture *defaultTexture() const noexcept;
+
+    /**
+     * @brief Gets the default cursor hotspot.
+     *
+     * The hotspot that has been set using replaceDefaultB().\n
+     * Initially set to (8, 8).
+     */
+    const LPointF &defaultHotspotB() const noexcept;
+
+    /**
+     * @brief Default Louvre's cursor texture.
+     *
+     * <center><IMG SRC="https://lh3.googleusercontent.com/MSUUg3LSS6lYtpyLnKzbECf9eeZeFscmnLGJLRCdADwcjjcVd4xT07AMvQoHUTGptJFzY4tZrQ3IdLKyEbM_O0WyWYk8Pvc-Jf8xZHXoFUkFo2RRYTP8zN_LeOhsvIc6SlsO83TJUw=w2400"></center>
+     *
+     * The default Louvre's cursor has a size of 64x64 pixels and hotspot at (8,8).
+     */
+    LTexture *defaultLouvreTexture() const noexcept;
+
+    /**
+     * @brief Sets the cursor hotspot in buffer coordinates.
+     *
+     * The cursor hotspot is defined by coordinates relative to the origin of its buffer (upper left corner).
+     *
+     * @note The hotspot is automatically scaled proportionally to the cursor size().
+     *
+     * @param hotspot The desired hotspot in buffer coordinates.
+     */
+    void setHotspotB(const LPointF &hotspot) noexcept;
+
+    /**
+     * @brief Gets the current cursor hotspot in buffer coordinates.
+     */
+    const LPointF &hotspotB() const noexcept;
+
+    /**
+     * @brief Enables or disables LCursor for the specified output.
+     *
+     * By default, LCursor is enabled for all outputs.
+     *
+     * @param output The output for which to enable or disable LCursor.
+     * @param enable Set to `true` to enable LCursor, or `false` to disable it.
+     */
+    void enable(LOutput *output, bool enable) noexcept;
+
+    /**
+     * @brief Checks if LCursor is enabled for the specified output.
+     *
+     * @see enable()
+     *
+     * @param output The output to check.
+     * @return `true` if LCursor is enabled for the given output, `false` otherwise.
+     */
+    bool enabled(LOutput *output) const noexcept;
+
+    /**
+     * @brief Checks if a given output supports hardware compositing.
      *
      * @return `true` if hardware compositing is supported and `false` otherwise.
      */
-    bool hasHardwareSupport(const LOutput *output) const;
+    bool hasHardwareSupport(const LOutput *output) const noexcept;
 
     /**
-     * @brief Get the current cursor output.
+     * @brief Toggles hardware compositing for the specified output.
      *
-     * Returns a pointer to the output where the cursor is currently positioned.
+     * When disabled, Louvre will render the cursor using OpenGL after an LOutput::paintGL() event.
      *
-     * @note Louvre guarantees that the cursor is always within an output.
+     * @see damage()
+     *
+     * Hardware compositing is enabled by default if the output supports it, see hasHardwareSupport().
+     *
+     * @param output The output for which to enable or disable hardware compositing.
+     * @param enabled Set to `true` to enable hardware compositing, or `false` to disable it.
      */
-    LOutput *output() const;
+    void enableHwCompositing(LOutput *output, bool enabled) noexcept;
+
+    /**
+     * @brief Checks if hardware compositing is enabled for the specified output.
+     *
+     * @note This method always returns `false` if hasHardwareSupport() for the given output returns `false`.
+     *
+     * @param output The output to check.
+     * @return `true` if hardware compositing is enabled for the given output, `false` otherwise.
+     */
+    bool hwCompositingEnabled(LOutput *output) const noexcept;
+
+    /**
+     * @brief Damaged region in compositor-global coordinates.
+     *
+     * Provides the region that needs to be repainted when hardware compositing isn't supported or is disabled,
+     * allowing Louvre to properly render it after an LOutput::paintGL() event.
+     *
+     * @return The region that needs to be repainted.
+     */
+    const LRegion &damage(LOutput *output) const noexcept;
+
+    /**
+     * @brief Gets the current cursor output.
+     *
+     * Returns the output where the cursor is currently positioned.
+     *
+     * @note This method always returns a valid output unless there are none initialized.
+     */
+    LOutput *output() const noexcept;
 
     /**
      * @brief Vector of intersected outputs.
      *
      * Returns a vector of initialized outputs that intersect with the cursor's rect() property.
      */
-    const std::vector<LOutput*> &intersectedOutputs() const;
+    const std::vector<LOutput*> &intersectedOutputs() const noexcept;
+
+    /**
+     * @brief Repaint intersected outputs.
+     *
+     * Invokes LOutput::repaint() for each output in the vector of intersected outputs.
+     *
+     * @param nonHardwareOnly If `true`, only repaints outputs that do not support hardware compositing.
+     */
+    void repaintOutputs(bool nonHardwareOnly = true) noexcept;
 
     LPRIVATE_IMP_UNIQUE(LCursor)
-
     friend class Louvre::LCompositor;
     friend class Louvre::LOutput;
     LCursor() noexcept;
     ~LCursor();
+
+    LPointF m_pos;
+    mutable LWeak<LOutput> m_output;
 };
 
 #endif // LCURSOR_H

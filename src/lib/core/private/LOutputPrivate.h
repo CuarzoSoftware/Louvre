@@ -22,10 +22,6 @@ struct LOutput::Params
 
 LPRIVATE_CLASS_NO_COPY(LOutput)
 
-    // TODO: Add timestamp to SRM pageflip events and option for toggling vsync
-    std::mutex pageflipMutex {};
-
-    // TODO: Replace with vector
     LWeak<LGlobal> global;
 
     struct PresentationTime
@@ -35,6 +31,8 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
         UInt64 frame;
         UInt32 flags;
     } presentationTime;
+
+    std::mutex pageflipMutex;
 
     enum StateFlags : UInt32
     {
@@ -105,14 +103,12 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     std::thread::id threadId;
     LGammaTable gammaTable {0};
 
-    // TODO
     UInt32 prevCursorSerial;
     LRect prevCursorRect;
     LRegion cursorDamage;
     void calculateCursorDamage() noexcept;
     void drawCursor() noexcept;
 
-    // TODO
     LWeak<LSessionLockRole> sessionLockRole;
     void removeFromSessionLockPendingRepaint() noexcept;
 
