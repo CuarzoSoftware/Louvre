@@ -6,12 +6,14 @@
 /**
  * @brief Base class for Factory objects.
  *
+ * @section Factory
+ *
  * A Wayland compositor usually handles many different tasks such as processing client requests from various protocols,
  * managing input events, rendering, and more.
  *
  * In Louvre, each functionality is managed by a specific class, typically through virtual methods.\n
  * This approach allows Louvre to provide a default way to handle each functionality while also enabling developers
- * to override it when desired. This is known as the factory pattern.
+ * to override it when desired, which is known as the factory pattern.
  *
  * These classes are derived from this base class and their lifetime is managed entirely by LCompositor.\n
  * When LCompositor::createObjectRequest() is triggered, it expects you to return a new instance of

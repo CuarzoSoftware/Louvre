@@ -7,6 +7,8 @@
 /**
  * @brief Input Device
  *
+ * @anchor linputdevice_detailed
+ *
  * This class represents an input device, providing essential information for identification.\n
  * The complete list of available devices can be accessed through LSeat::inputDevices().\n
  * To listen to hot-plugging events, use LSeat::inputDevicePlugged() and LSeat::inputDeviceUnplugged().\n

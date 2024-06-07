@@ -110,7 +110,7 @@ Louvre (2.0.0-1)
 
   * Added fade-in/out top-level animations.
   * Added Meta + Shift + L + Up/Down shortcut for modifying the priority of a focused LLayerShell surface.
-  * Added Ctrl + Shift + T to launch Wofi.
+  * Added Meta + Shift + W to launch Wofi.
   * Added LLauncher commands at startup to automatically enable the xdg-desktop-portal-wlr portal if installed.
 
 Louvre (1.2.1-1)

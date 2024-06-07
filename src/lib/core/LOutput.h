@@ -18,6 +18,8 @@
 /**
  * @brief A display rendering interface.
  *
+ * @anchor loutput_detailed
+ *
  * The LOutput class is responsible for rendering content to a display. It is typically associated with a physical screen, but could also
  * represent a toplevel window within Wayland desktop, depending on the selected graphic backend.
  *
@@ -28,7 +30,7 @@
  * During compositor initialization, the graphic backend creates an LOutput for each available display through LCompositor::createObjectRequest().\n
  * These can be accessed via the LSeat::outputs() vector.
  *
- * After initialization, the number of available outputs can change. These changes are notified through the LSeat::outputPlugged() and LSeat::outputUnplugged() events.
+ * After the compositor has been initialized, the number of available outputs can change. These changes are notified through the LSeat::outputPlugged() and LSeat::outputUnplugged() events.
  *
  * @section Initialization
  *
@@ -167,6 +169,16 @@
  * The compositor-global coordiante space is structured in such a way that you can continue rendering in the same manner
  * as if the screens were in their normal transform state. Therefore, there's no need to worry about rotating or flipping the elements you draw unless you decide not to
  * use LPainter or LScene for rendering.
+ *
+ * @section VSync
+ *
+ * All outputs have VSync enabled by default. Disabling VSync may not always be supported, refer to hasVSyncControlSupport().
+ *
+ * VSync can be toggled using enableVSync(). When VSync is disabled, Louvre limits the frame rate to double the refresh rate of
+ * the currentMode() by default. This setting can be changed with setRefreshRateLimit().
+ *
+ * Clients using the Tearing Protocol can indicate their preference for each individual surface.\n
+ * See LSurface::preferVSync() and LSurface::preferVSyncChanged() for more details.
  */
 class Louvre::LOutput : public LFactoryObject
 {

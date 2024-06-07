@@ -14,7 +14,7 @@ If you have suggestions for protocols/functionality to include in Louvre or idea
 
 ### Share Your Creations
 
-Feel free to showcase your creations in the [⭐ Gallery](https://github.com/CuarzoSoftware/Louvre/discussions/categories/gallery).
+Feel free to showcase your creations in the [⭐ Gallery](https://github.com/CuarzoSoftware/Louvre/blob/gallery/README.md).
 
 ### Hardware
 

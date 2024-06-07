@@ -30,11 +30,11 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 
 ## ⭐ Features
 
-* Fractional Scaling
+* Fractional Scaling (with optional oversampling)
 * VSync Control
 * Gamma Correction
-* Screencasting
-* Optional Scene System
+* Screencasting (compatible with PipeWire via xdg-desktop-portal-wlr)
+* Painter API and Scene System
 * Multi-GPU Support
 * Multi-Session Support
 * Single, Double or Triple Buffering
@@ -79,7 +79,7 @@ Within Louvre, you have the flexibility to either employ your own OpenGL ES 2.0 
 
 ## 💻 Graphic Backends
 
-* DRM/KMS (with the SRM lib)
+* DRM/KMS
 * Wayland
 
 ## 🕹️ Input Backends
@@ -145,12 +145,15 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 
 ## 🔨 Upcoming Features
 
-* Tablet Events
-* Single pixel buffer
-* XDG activation
-* Content type hint
-* Idle notify
-* Cursor shape
-* Virtual keyboard
-* Input methods
+* Direct Buffer Scanout
+* DRM Planes Control
 * Rootless XWayland
+* DRM Lease Protocol
+* Tablet Events Protocol
+* Single Pixel Buffer Protocol
+* XDG activation Protocol
+* Content Type Hint Protocol
+* Idle Notify Protocol
+* Cursor Shape Protocol
+* Virtual Keyboard Protocol
+* Input Methods Protocol

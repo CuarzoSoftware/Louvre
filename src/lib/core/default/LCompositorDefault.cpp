@@ -119,16 +119,18 @@ bool LCompositor::globalsFilter(LClient *client, LGlobal *global)
 //! [initialized]
 void LCompositor::initialized()
 {
-    // Set a keyboard map with "latam" layout
+    // Sets the "latam" keyboard layout
     seat()->keyboard()->setKeymap(nullptr, nullptr, "latam", nullptr);
 
     Int32 totalWidth = 0;
 
-    // Initialize and arrange outputs from left to right
+    // Initializes and arranges outputs from left to right
     for (LOutput *output : seat()->outputs())
     {
-        // Set scale 2 to outputs with DPI >= 200
+        // Sets a scale factor of 2 when DPI >= 200
         output->setScale(output->dpi() >= 200 ? 2.f : 1.f);
+
+        // Change it if any of your displays is rotated/flipped
         output->setTransform(LTransform::Normal);
 
         output->setPos(LPoint(totalWidth, 0));

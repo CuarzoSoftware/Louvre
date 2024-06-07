@@ -15,6 +15,13 @@ executable(
 
 assets = run_command('find', './assets', '-type', 'f', '-name', '*[.png, .list]', check : false).stdout().strip().split('\n')
 
+apps_conf = configuration_data()
+apps_conf.set('ASSETS_PATH', ASSETS_INSTALL_PATH)
+configure_file(input : 'apps.list.in',
+               output : 'apps.list',
+               configuration : apps_conf,
+               install_dir : ASSETS_INSTALL_PATH)
+
 install_data(
     assets,
     install_dir: ASSETS_INSTALL_PATH

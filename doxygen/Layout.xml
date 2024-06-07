@@ -3,28 +3,30 @@
 	<navindex>
 
     <tab type="mainpage" title="🏠 Home" visible="yes" url="@ref MainPage"></tab>
-    
+    <tab type="usergroup" title="🎓 Tutorial" url="@ref tutorial_tmp"></tab>
+    <!--
     <tab type="usergroup" title="🎓 Tutorial">
-      <tab type="usergroup" title="01 - Introduction" url="md_md_tutorial_01.html"></tab>
-      <tab type="usergroup" title="02 - Quick Overview" url="md_md_tutorial_02.html"></tab>
-      <tab type="usergroup" title="03 - Setting Up the Project" url="md_md_tutorial_03.html"></tab>
-      <tab type="usergroup" title="04 - Compositor Initialization" url="md_md_tutorial_04.html"></tab>
-      <tab type="usergroup" title="05 - Rendering with LPainter" url="md_md_tutorial_05.html"></tab>
-      <tab type="usergroup" title="06 - Rendering with LScene and LViews" url="md_md_tutorial_06.html"></tab>
-      <tab type="usergroup" title="07 - Surfaces" url="md_md_tutorial_07.html"></tab>
-      <tab type="usergroup" title="08 - Pointer Events" url="md_md_tutorial_08.html"></tab>
-      <tab type="usergroup" title="09 - Keyboard Events" url="md_md_tutorial_09.html"></tab>
-      <tab type="usergroup" title="10 - Toplevels" url="md_md_tutorial_10.html"></tab>
-      <tab type="usergroup" title="11 - Popups" url="md_md_tutorial_11.html"></tab>
-      <tab type="usergroup" title="12 - Animations" url="md_md_tutorial_12.html"></tab>
-      <tab type="usergroup" title="13 - Cursor" url="md_md_tutorial_13.html"></tab>
-      <tab type="usergroup" title="14 - Clipboard and DND" url="md_md_tutorial_14.html"></tab>
-      <tab type="usergroup" title="15 - Output Hotplugging and Seat" url="md_md_tutorial_15.html"></tab>
-      <tab type="usergroup" title="16 - Gamma Correction" url="md_md_tutorial_16.html"></tab>
-      <tab type="usergroup" title="17 - Fractional Scaling" url="md_md_tutorial_17.html"></tab>
-      <tab type="usergroup" title="18 - Tearing Control" url="md_md_tutorial_18.html"></tab>
+      <tab type="usergroup" title="01 - Introduction" url="@ref tutorial_introduction"></tab>
+      <tab type="usergroup" title="02 - Quick Overview" url="@ref tutorial-overview"></tab>
+      <tab type="usergroup" title="03 - Setting Up the Project" url="@ref tutorial-setup"></tab>
+      <tab type="usergroup" title="04 - Compositor Initialization" url="@ref tutorial-initialization"></tab>
+      <tab type="usergroup" title="05 - Rendering with LPainter" url="@ref tutorial-lpainter"></tab>
+      <tab type="usergroup" title="06 - Rendering with LScene and LViews" url="@ref tutorial-lscene"></tab>
+      <tab type="usergroup" title="07 - Surfaces" url="@ref tutorial-surfaces"></tab>
+      <tab type="usergroup" title="08 - Pointer Events" url="@ref tutorial-pointer"></tab>
+      <tab type="usergroup" title="09 - Keyboard Events" url="@ref tutorial-keyboard"></tab>
+      <tab type="usergroup" title="10 - Toplevels" url="@ref tutorial-toplevels"></tab>
+      <tab type="usergroup" title="11 - Popups" url="@ref tutorial-popups"></tab>
+      <tab type="usergroup" title="12 - Animations" url="@ref tutorial-animations"></tab>
+      <tab type="usergroup" title="13 - Cursor" url="@ref tutorial-cursor"></tab>
+      <tab type="usergroup" title="14 - Clipboard and DND" url="@ref tutorial-dnd"></tab>
+      <tab type="usergroup" title="15 - Output Hotplugging and Seat" url="@ref tutorial-seat"></tab>
+      <tab type="usergroup" title="16 - Gamma Correction" url="@ref tutorial-gamma"></tab>
+      <tab type="usergroup" title="17 - Fractional Scaling" url="@ref tutorial-scaling"></tab>
+      <tab type="usergroup" title="18 - Tearing Control" url="@ref tutorial-tearing"></tab>
     </tab>
-    
+    -->
+
     <tab type="namespaces" visible="no" title="">
     	<tab type="namespacelist" visible="no" title="" intro=""/>
     	<tab type="namespacemembers" visible="no" title="" intro=""/>

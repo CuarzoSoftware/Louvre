@@ -6,6 +6,8 @@
 /**
  * @brief Class for handling touch input events
  *
+ * @anchor ltouch_detailed
+ *
  * The LTouch class facilitates the management of touch input events, allowing you to redirect them to client surfaces.\n
  * Touch events commence with a touch-down event, which can be utilized to create a new touch point using createOrGetTouchPoint().
  * Each touch point is assigned a unique ID obtained from the touch-down event. Invoking createOrGetTouchPoint() with an already

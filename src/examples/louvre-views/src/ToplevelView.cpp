@@ -20,6 +20,8 @@
 #include "TextRenderer.h"
 #include "Workspace.h"
 
+#define TOPBAR_ANIM_MS 250
+
 static void onPointerLeaveResizeArea(InputRect *rect, void *data);
 
 static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &)
@@ -48,12 +50,12 @@ static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &
             if (seat()->keyboard()->grab())
                 return;
 
-            view->fullscreenTopbarAnim.setDuration(256);
+            view->fullscreenTopbarAnim.setDuration(TOPBAR_ANIM_MS);
 
             view->fullscreenTopbarAnim.setOnUpdateCallback(
             [view](LAnimation *anim)
             {
-                view->fullscreenTopbarVisibility = 1.f - powf(1.f - anim->value(), 2.f);
+                view->fullscreenTopbarVisibility = 1.f - powf(1.f - anim->value(), 3.f);
                 view->updateGeometry();
                 G::compositor()->repaintAllOutputs();
             });
@@ -92,12 +94,12 @@ static void onPointerLeaveResizeArea(InputRect *rect, void *data)
     {
         if (view->toplevel->fullscreen() && !view->fullscreenTopbarAnim.running() && view->fullscreenTopbarVisibility == 1.f)
         {
-            view->fullscreenTopbarAnim.setDuration(256);
+            view->fullscreenTopbarAnim.setDuration(TOPBAR_ANIM_MS);
 
             view->fullscreenTopbarAnim.setOnUpdateCallback(
             [view](LAnimation *anim)
             {
-                view->fullscreenTopbarVisibility = powf(1.f - anim->value(), 2.f);
+                view->fullscreenTopbarVisibility = powf(1.f - anim->value(), 3.f);
                 view->updateGeometry();
                 if (view->toplevel->fullscreenOutput)
                     view->toplevel->fullscreenOutput->repaint();
@@ -106,7 +108,7 @@ static void onPointerLeaveResizeArea(InputRect *rect, void *data)
             view->fullscreenTopbarAnim.setOnFinishCallback(
             [view](LAnimation *anim)
             {
-                view->fullscreenTopbarVisibility = 1.f -anim->value();
+                view->fullscreenTopbarVisibility = 1.f - anim->value();
                 view->updateGeometry();
 
                 if (view->topbarInput.pointerIsOver())
@@ -520,7 +522,7 @@ void ToplevelView::updateGeometry()
         clipTop.setSize(size);
         decoT.setDstSize(size.w(), decoT.nativeSize().h());
         decoT.setPos(0, -(decoT.nativeSize().h() + 1) + (TOPLEVEL_TOPBAR_HEIGHT + TOPLEVEL_TOP_CLAMP_OFFSET_Y) * fullscreenTopbarVisibility);
-        buttonsContainer.setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT * (1.f - fullscreenTopbarVisibility));
+        buttonsContainer.setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT * (1.01f - fullscreenTopbarVisibility));
 
         // Set topbar center translucent regions
         LRegion transT;

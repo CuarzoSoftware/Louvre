@@ -171,8 +171,24 @@ void Compositor::fadeOutSurface(LBaseSurfaceRole *role, UInt32 ms)
 
         surf->fadedOut = true;
         surf->view.enableAlwaysMapped(true);
+
+        if (surf->tl() && surf->tl()->decoratedView)
+        {
+            surf->tl()->decoratedView->surfB.enableAlwaysMapped(true);
+            surf->tl()->decoratedView->surfBL.enableAlwaysMapped(true);
+            surf->tl()->decoratedView->surfBR.enableAlwaysMapped(true);
+        }
+
         LTextureView *fadeOutView = new LTextureView(surf->renderThumbnail(), &fullscreenLayer);
         surf->view.enableAlwaysMapped(false);
+
+        if (surf->tl() && surf->tl()->decoratedView)
+        {
+            surf->tl()->decoratedView->surfB.enableAlwaysMapped(false);
+            surf->tl()->decoratedView->surfBL.enableAlwaysMapped(false);
+            surf->tl()->decoratedView->surfBR.enableAlwaysMapped(false);
+        }
+
         fadeOutView->enableParentOffset(false);
         fadeOutView->setBufferScale(2);
 

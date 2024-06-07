@@ -48,8 +48,6 @@ endif
 
 pkg                 = import('pkgconfig')
 wayland_server_dep  = dependency('wayland-server')
-wayland_client_dep  = dependency('wayland-client')
-wayland_egl_dep     = dependency('wayland-egl')
 gl_dep              = dependency('gl')
 egl_dep             = dependency('egl')
 glesv2_dep          = dependency('glesv2')
@@ -158,10 +156,28 @@ pkg.generate(
 
 # -------------- SUBDIRS --------------
 
-subdir('backends/graphic/DRM')
-subdir('backends/input/Libinput')
-subdir('backends/graphic/Wayland')
-subdir('backends/input/Wayland')
+if get_option('backend-drm')
+    subdir('backends/graphic/DRM')
+endif
+
+if get_option('backend-libinput')
+    subdir('backends/input/Libinput')
+endif
+
+if get_option('backend-wayland-graphic') or get_option('backend-wayland-input')
+
+    wayland_client_dep  = dependency('wayland-client')
+    wayland_egl_dep     = dependency('wayland-egl')
+
+    if get_option('backend-wayland-graphic')
+        subdir('backends/graphic/Wayland')
+    endif
+
+    if get_option('backend-wayland-input')
+        subdir('backends/input/Wayland')
+    endif
+
+endif
 
 if get_option('build_examples')
     fontconfig_dep = dependency('fontconfig')

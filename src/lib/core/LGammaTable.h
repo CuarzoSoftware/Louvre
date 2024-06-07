@@ -9,8 +9,12 @@
 /**
  * @brief Gamma correction table for outputs.
  *
+ * @anchor lgammatable_detailed
+ *
  * The LGammaTable class allows to define the gamma correction curves for each RGB component of an LOutput, applicable
  * through the LOutput::setGamma() method.
+ *
+ * @note Clients using the Wlr Gamma Control protocol can also request to set the gamma table of an output via LOutput::setGammaRequest().
  *
  * The curves (red, green and blue) are stored in a single array of type @ref UInt16.
  * The table size (size()) indicates how many @ref UInt16 values each curve contains.

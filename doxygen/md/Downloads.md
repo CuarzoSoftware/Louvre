@@ -24,7 +24,12 @@ Louvre relies on the following libraries:
 * **Pixman** >= 0.40.0
 * **Libseat** >= 0.6.4
 
-The examples also require:
+Wayland also backends require:
+
+* **Wayland Client** >= 1.22.0
+* **Wayland EGL** >= 18.1.0
+
+And the examples also require:
 
 * **Libicu** >= 72.1
 * **FontConfig** >= 2.14.1
@@ -50,8 +55,6 @@ If the [hwinfo](https://github.com/vcrhonek/hwdata) or [libdisplay-info](https:/
 
 To install SRM, follow the instructions provided [here](https://cuarzosoftware.github.io/SRM/md_md__downloads.html).
 
-> Louvre 1.2.0 requires SRM >= 0.5.2
-
 It is also recommended to install [weston-terminal](https://gitlab.freedesktop.org/wayland/weston), which is compatible with Wayland and is used throughout the tutorial and the examples.
 
 ```
@@ -64,7 +67,7 @@ If your distribution is based on Red Hat, all tools and almost all dependencies 
 
 ```
 $ sudo dnf update
-$ sudo dnf install @development-tools make automake gcc gcc-c++ meson libwayland-server wayland-devel libinput-devel libevdev-devel libudev-devel mesa-libEGL-devel libxkbcommon-devel libXcursor-devel pixman-devel libdrm-devel libgbm-devel libseat-devel fontconfig-devel freetype-devel libicu-devel
+$ sudo dnf install @development-tools make automake gcc gcc-c++ meson libwayland-client libwayland-server wayland-devel libinput-devel libevdev-devel libudev-devel mesa-libEGL-devel libxkbcommon-devel libXcursor-devel pixman-devel libdrm-devel libgbm-devel libseat-devel fontconfig-devel freetype-devel libicu-devel
 ```
 
 To install SRM, follow the instructions provided [here](https://cuarzosoftware.github.io/SRM/md_md__downloads.html).

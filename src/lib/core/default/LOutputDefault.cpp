@@ -164,7 +164,7 @@ void LOutput::setGammaRequest(LClient *client, const LGammaTable *gamma)
 }
 //! [setGammaRequest]
 
-//! [availableGeometryChanged()]
+//! [availableGeometryChanged]
 void LOutput::availableGeometryChanged()
 {
     const LRect availGeo { pos() + availableGeometry().pos(), availableGeometry().size() };
@@ -223,4 +223,4 @@ void LOutput::availableGeometryChanged()
         }
     }
 }
-//! [availableGeometryChanged()]
+//! [availableGeometryChanged]
