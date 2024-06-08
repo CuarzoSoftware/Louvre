@@ -10,6 +10,8 @@
 /**
  * @brief Scene
  *
+ * @anchor lscene_detailed
+ *
  * The LScene class is an optional utility that significantly simplifies rendering.\n
  * It encompasses a primary LSceneView which can host multiple children and even nested scenes.\n
  * A single LScene can drive multiple outputs and also manage Wayland input events, while also providing per-view input events.\n

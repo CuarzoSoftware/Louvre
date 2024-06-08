@@ -36,7 +36,7 @@ public:
     static pid_t startDaemon(const std::string &name = "LLauncher");
 
     /**
-     * @brief Get the process ID (PID) of the daemon.
+     * @brief Gets the process ID (PID) of the daemon.
      *
      * @return The PID of the daemon if it is running, or a negative number if the daemon is not running.
      */

@@ -61,17 +61,29 @@ void LSurface::parentChanged()
 //! [mappingChanged]
 void LSurface::mappingChanged()
 {
-    if (mapped())
-        compositor()->repaintAllOutputs();
-    else
-        repaintOutputs();
+    compositor()->repaintAllOutputs();
 
-    if (!cursor()->output())
+    LOutput *activeOutput { cursor()->output() };
+
+    if (!activeOutput)
         return;
 
-    // If the surface is a toplevel, we place it at the center of the screen
+    /* If the surface is a toplevel, we place it at the center of the screen */
     if (mapped() && toplevel())
-        setPos(cursor()->output()->pos() + (cursor()->output()->size() - size()) / 2);
+    {
+        const LSize size {
+            toplevel()->windowGeometry().size()
+            + LSize(toplevel()->extraGeometry().top + toplevel()->extraGeometry().bottom,
+                    toplevel()->extraGeometry().left + toplevel()->extraGeometry().right)
+        };
+
+        const LSize availGeoPos { activeOutput->pos() + activeOutput->availableGeometry().pos() };
+
+        setPos(availGeoPos + (activeOutput->availableGeometry().size() - size) / 2);
+
+        if (pos().y() < availGeoPos.y())
+            setY(availGeoPos.y());
+    }
 }
 //! [mappingChanged]
 

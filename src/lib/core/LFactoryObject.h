@@ -95,7 +95,7 @@ public:
     };
 
     /**
-     * @brief Get the base factory object type.
+     * @brief Gets the base factory object type.
      *
      * Returns the base factory object type associated with this instance.
      *

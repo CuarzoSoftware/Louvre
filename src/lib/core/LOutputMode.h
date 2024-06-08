@@ -20,7 +20,7 @@ public:
     LCLASS_NO_COPY(LOutputMode)
 
     /**
-     * @brief Get the output associated with this mode.
+     * @brief Gets the output associated with this mode.
      *
      * This method retrieves the output to which the mode belongs.
      */
@@ -30,7 +30,7 @@ public:
     }
 
     /**
-     * @brief Get the resolution of the mode.
+     * @brief Gets the resolution of the mode.
      *
      * This method returns the dimensions of the output when using this mode, represented in buffer coordinates.
      */
@@ -40,7 +40,7 @@ public:
     }
 
     /**
-     * @brief Get the refresh rate of the mode.
+     * @brief Gets the refresh rate of the mode.
      *
      * This method returns the refresh rate of the mode in Hertz (Hz) multiplied by 1000.
      *

@@ -41,7 +41,7 @@ public:
     ~LSurfaceView() noexcept;
 
     /**
-     * @brief Get the LSurface associated with the view.
+     * @brief Gets the LSurface associated with the view.
      *
      * @return Pointer to the LSurface associated with the view.
      */
@@ -164,7 +164,7 @@ public:
     }
 
     /**
-     * @brief Get the custom position set for the view.
+     * @brief Gets the custom position set for the view.
      *
      * @return The custom position as an LPoint object.
      */
@@ -194,7 +194,7 @@ public:
     }
 
     /**
-     * @brief Get the custom input region set for the view.
+     * @brief Gets the custom input region set for the view.
      *
      * @return Pointer to the custom input region as an LRegion object.
      */

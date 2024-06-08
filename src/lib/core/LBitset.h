@@ -102,7 +102,7 @@ public:
     }
 
     /**
-     * @brief Get the current set of flags
+     * @brief Gets the current set of flags
      *
      * Retrieves the current set of flags stored in the bitfield.
      *

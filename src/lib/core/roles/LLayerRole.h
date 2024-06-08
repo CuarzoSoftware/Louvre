@@ -11,13 +11,11 @@
 /**
  * @brief Layer role for surfaces.
  *
+ * @anchor llayerrole_detailed
+ *
  * The LLayerRole is used by clients to create various desktop shell components such as a wallpaper, panels, docks, notifications, etc.\n
  * It is part of the [wlr_layer_shell protocol](https://wayland.app/protocols/wlr-layer-shell-unstable-v1).
  * For a comprehensive understanding of each concept, refer to the protocol documentation.
- *
- * @htmlonly
- * <iframe style="width:100%;height:55vw;max-height:512px" src="https://www.youtube.com/embed/lS9wvJtjbYw?si=gDiJWK9zKBi_VTGo" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
- * @endhtmlonly
  *
  * @section layer-role-layer Layer
  *
@@ -177,7 +175,7 @@ public:
      * @brief LLayerRole surface position.
      *
      * The default implementation positions the surface relative to its current exclusiveOutput(),
-     * taking into account its current anchors(), margins(), and the information provided by its exclusiveZone().
+     * taking into account its current anchor(), margins(), and the information provided by its exclusiveZone().
      *
      * #### Default Implementation
      * @snippet LLayerRoleDefault.cpp rolePos

@@ -97,9 +97,12 @@ void LToplevelRole::configureRequest()
     LOutput *output { cursor()->output() };
 
     if (output)
+    {
+        surface()->sendOutputEnterEvent(output);
         configureBounds(
             output->availableGeometry().size()
             - LSize(extraGeometry().left + extraGeometry().right, extraGeometry().top + extraGeometry().bottom));
+    }
     else
         configureBounds(0, 0);
 

@@ -109,7 +109,7 @@ public:
     }
 
     /**
-     * @brief Get the size of the gamma correction table.
+     * @brief Gets the size of the gamma correction table.
      *
      * The size represents the number of @ref UInt16 values used to independently represent each RGB curve.
      *
@@ -132,7 +132,7 @@ public:
     void fill(Float64 gamma, Float64 brightness, Float64 contrast) noexcept;
 
     /**
-     * @brief Get a pointer to the beginning of the red curve in the array.
+     * @brief Gets a pointer to the beginning of the red curve in the array.
      *
      * @return Pointer to the red curve in the array, or `nullptr` if the table size is 0.
      */
@@ -142,7 +142,7 @@ public:
     }
 
     /**
-     * @brief Get a pointer to the beginning of the green curve in the array.
+     * @brief Gets a pointer to the beginning of the green curve in the array.
      *
      * @return Pointer to the green curve in the array, or `nullptr` if the table size is 0.
      */
@@ -152,7 +152,7 @@ public:
     }
 
     /**
-     * @brief Get a pointer to the beginning of the blue curve in the array.
+     * @brief Gets a pointer to the beginning of the blue curve in the array.
      *
      * @return Pointer to the blue curve in the array, or `nullptr` if the table size is 0.
      */

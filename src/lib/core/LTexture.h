@@ -118,7 +118,7 @@ namespace Louvre
         static UInt32 waylandFormatToDRM(UInt32 waylandFormat) noexcept;
 
         /**
-         * @brief Get the number of bytes (not bits) per pixel of a DRM format.
+         * @brief Gets the number of bytes (not bits) per pixel of a DRM format.
          *
          * @param format The DRM format to get the bytes per pixel for.
          * @return The number of bytes per pixel.
@@ -126,7 +126,7 @@ namespace Louvre
         static UInt32 formatBytesPerPixel(UInt32 format) noexcept;
 
         /**
-         * @brief Get the number of planes of a DRM format.
+         * @brief Gets the number of planes of a DRM format.
          *
          * @param format The DRM format.
          * @return The number of planes of the format.
@@ -202,7 +202,7 @@ namespace Louvre
         bool save(const std::filesystem::path &name) const noexcept;
 
         /**
-         * @brief Get the size of the texture in buffer coordinates.
+         * @brief Gets the size of the texture in buffer coordinates.
          *
          * @return The size of the texture.
          */
@@ -224,7 +224,7 @@ namespace Louvre
         }
 
         /**
-         * @brief Get the OpenGL texture ID for a specific output.
+         * @brief Gets the OpenGL texture ID for a specific output.
          *
          * If `nullptr` is passed as output, a texture for the main thread is returned.
          *
@@ -234,7 +234,7 @@ namespace Louvre
         GLuint id(LOutput *output) const noexcept;
 
         /**
-         * @brief Get the OpenGL texture target.
+         * @brief Gets the OpenGL texture target.
          *
          * @return The OpenGL texture target.
          */
@@ -255,7 +255,7 @@ namespace Louvre
         }
 
         /**
-         * @brief Get the texture source type.
+         * @brief Gets the texture source type.
          *
          * @return The texture source type as an LTexture::BufferSourceType enum value.
          */
@@ -265,7 +265,7 @@ namespace Louvre
         }
 
         /**
-         * @brief Get the DRM format of the texture.
+         * @brief Gets the DRM format of the texture.
          *
          * @see [`drm_fourcc.h`](https://github.com/torvalds/linux/blob/master/include/uapi/drm/drm_fourcc.h) for more information on DRM formats.
          *
@@ -277,7 +277,7 @@ namespace Louvre
         }
 
         /**
-         * @brief Get the serial number of the texture.
+         * @brief Gets the serial number of the texture.
          *
          * The serial number is incremented each time the texture's backing storage, or its pixel data changes.
          *

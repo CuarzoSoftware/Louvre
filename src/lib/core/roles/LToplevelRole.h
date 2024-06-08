@@ -17,6 +17,8 @@
 /**
  * @brief Toplevel role for surfaces
  *
+ * @anchor ltoplevelrole_detailed
+ *
  * The toplevel surface role represents typical desktop windows that usually have a title and buttons to close, minimize, and maximize.
  *
  * <center><img height="250px" src="https://lh3.googleusercontent.com/PvNaxLgkjaPryJ8W_P3bDOccQu1m-zNEcI7aH_R8WggzylV5LQZtuzLTUSImThDI8IVsAI9DERF4cwvSqPAEAyjsihHuPCQlZAbvu33iMC2iXvpTswZC3RBNDyKm1YEWDnnKeCn2Qw=w2400"></center>
@@ -564,7 +566,7 @@ public:
     }
 
     /**
-     * @brief Get the minimum size of the toplevel in surface coordinates.
+     * @brief Gets the minimum size of the toplevel in surface coordinates.
      *
      * Components with a value of 0 indicate the limit is disabled.
      */
@@ -574,7 +576,7 @@ public:
     }
 
     /**
-     * @brief Get the maximum size of the toplevel in surface coordinates.
+     * @brief Gets the maximum size of the toplevel in surface coordinates.
      *
      * Components with a value of 0 indicate the limit is disabled.
      */
@@ -647,7 +649,7 @@ public:
     }
 
     /**
-     * @brief Get the preferred decoration mode set by the client.
+     * @brief Gets the preferred decoration mode set by the client.
      *
      * @return The preferred decoration mode value.
      */
@@ -734,7 +736,7 @@ public:
     Protocols::XdgShell::RXdgSurface *xdgSurfaceResource() const;
 
     /**
-     * @brief Get the application ID associated with the toplevel window.
+     * @brief Gets the application ID associated with the toplevel window.
      *
      * @see appIdChanged()
      *
@@ -746,7 +748,7 @@ public:
     }
 
     /**
-     * @brief Get the window title of the toplevel.
+     * @brief Gets the window title of the toplevel.
      *
      * @see titleChanged()
      *

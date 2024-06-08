@@ -2,7 +2,7 @@ Weston Terminal
 weston-terminal
 @ASSETS_PATH@/weston-terminal.png
 Wofi
-wofi --show run --width 512 --height 400
+wofi -f --show run --width 512 --height 400
 @ASSETS_PATH@/wofi.png
 Nautilus
 nautilus

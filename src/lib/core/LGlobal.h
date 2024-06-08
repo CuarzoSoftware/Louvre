@@ -24,12 +24,12 @@ class Louvre::LGlobal final : public LObject
 public:
 
     /**
-     * @brief Get the interface of the global.
+     * @brief Gets the interface of the global.
      */
     const wl_interface *interface() const noexcept;
 
     /**
-     * @brief Get the native global handle.
+     * @brief Gets the native global handle.
      */
     const wl_global *global() const noexcept
     {

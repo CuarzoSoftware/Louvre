@@ -1,4 +1,3 @@
-#include <string.h>
 #include <LOpenGL.h>
 #include <LTexture.h>
 #include <LCursor.h>
@@ -7,7 +6,6 @@
 #include <LLog.h>
 
 #include <unistd.h>
-#include <algorithm>
 
 #include "Global.h"
 #include "App.h"
@@ -85,7 +83,14 @@ App::App(const char *appName, const char *appExec, const char *iconPath) :
         state = Running;
     }
     else
+    {
+        if (name == "Wofi")
+        {
+            isWofi = true;
+            G::compositor()->wofi = this;
+        }
         exec = appExec;
+    }
 
     LTexture *tmp = { nullptr };
 

@@ -13,6 +13,12 @@
 
 Compositor::Compositor() noexcept : LCompositor(){}
 
+void Compositor::initialized()
+{
+    pointerCursor = LXCursor::load("hand2");
+    LCompositor::initialized();
+}
+
 LFactoryObject *Compositor::createObjectRequest(LFactoryObject::Type type, const void *params)
 {
     if (type == LFactoryObject::Type::LSurface)
@@ -34,11 +40,6 @@ LFactoryObject *Compositor::createObjectRequest(LFactoryObject::Type type, const
         return new Pointer(params);
 
     return nullptr;
-}
-
-void Compositor::cursorInitialized()
-{
-    pointerCursor = LXCursor::load("hand2");
 }
 
 void Compositor::onAnticipatedObjectDestruction(LFactoryObject *object)

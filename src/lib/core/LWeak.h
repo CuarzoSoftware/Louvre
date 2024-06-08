@@ -82,7 +82,7 @@ public:
     }
 
     /**
-     * @brief Get a pointer to the LObject or `nullptr` if not set or the object has been destroyed.
+     * @brief Gets a pointer to the LObject or `nullptr` if not set or the object has been destroyed.
      *
      * @return Raw pointer to the referenced LObject.
      */

@@ -3,8 +3,10 @@
 
 #include <LNamespaces.h>
 
-/**
+/** 
  * @brief Request to capture an LOutput frame
+ *
+ * @anchor lscreenshotrequest_detailed
  *
  * Clients using the [Wlr Screencopy](https://wayland.app/protocols/wlr-screencopy-unstable-v1) protocol can request to capture a specific region of an LOutput.
  *
@@ -14,8 +16,8 @@
  *
  * @note All requests are initially denied unless accept(true) is called.
  *
- * Within an paintGL event, the LOutput::screenshotRequests() vector contains the requests made for the current frame being rendered, which
- * can be more than one if multiple clients are requesting a capture.
+ * Within a paintGL event, the LOutput::screenshotRequests() vector contains the requests made for the current frame being rendered, which
+ * can be more than one if multiple clients are requesting to capture it.
  *
  * @note It's recommended to use LCompositor::globalsFilter() to permit only a single well-known client to use this protocol, such as the `xdg-desktop-portal-wlr`.
  */

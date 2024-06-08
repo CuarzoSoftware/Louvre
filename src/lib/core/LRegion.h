@@ -377,7 +377,7 @@ public:
     }
 
     /**
-     * @brief Get the extents of the LRegion.
+     * @brief Gets the extents of the LRegion.
      *
      * This method returns a pointer to an LBox that represents the bounding box of the LRegion.
      * The LBox contains the minimum and maximum coordinates that enclose the LRegion.

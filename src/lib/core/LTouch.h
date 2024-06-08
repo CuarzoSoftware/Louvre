@@ -89,7 +89,7 @@ public:
     LTouchPoint *createOrGetTouchPoint(const LTouchDownEvent &event) noexcept;
 
     /**
-     * @brief Get the touch point that matches the specified id.
+     * @brief Gets the touch point that matches the specified id.
      *
      * This method searches for a touch point with the given id. If found, a pointer to the matching touch point is returned;
      * otherwise, `nullptr` is returned.

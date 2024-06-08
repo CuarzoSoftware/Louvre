@@ -84,7 +84,7 @@ public:
     }
 
     /**
-     * @brief Get the current color of the solid color view.
+     * @brief Gets the current color of the solid color view.
      *
      * @return The current color of the view in RGB format.
      */

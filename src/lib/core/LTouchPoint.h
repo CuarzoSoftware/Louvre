@@ -27,7 +27,7 @@ class Louvre::LTouchPoint final : public LObject
 public:
 
     /**
-     * @brief Get the unique identifier of the touch point.
+     * @brief Gets the unique identifier of the touch point.
      *
      * Each touch point is assigned a unique identifier, ensuring that there are no two touch points with the same ID.
      *
@@ -54,7 +54,7 @@ public:
     }
 
     /**
-     * @brief Get the surface currently being touched by this touch point.
+     * @brief Gets the surface currently being touched by this touch point.
      *
      * The surface associated with this touch point is set using the sendDownEvent() method. If no surface is assigned to this touch point,
      * this method returns `nullptr`.
@@ -91,7 +91,7 @@ public:
     }
 
     /**
-     * @brief Get the position of the touch point assigned by the last touch-down or move event.
+     * @brief Gets the position of the touch point assigned by the last touch-down or move event.
      *
      * The position is represented in a coordinate space ranging from 0 to 1 for both the x and y axes.
      *

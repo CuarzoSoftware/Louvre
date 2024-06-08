@@ -406,7 +406,7 @@ public:
     bool hasDamage() const;
 
     /**
-     * @brief Get an ID that increments with each commit and new damage addition.
+     * @brief Gets an ID that increments with each commit and new damage addition.
      *
      * The ID increments every time the surface is committed and new damage is added.
      *
@@ -612,6 +612,8 @@ public:
     ///@}
 
     /**
+     * @anchor pointer_constraints
+     *
      * @name Pointer Constraints
      *
      * Functionality related to pointer constraints.

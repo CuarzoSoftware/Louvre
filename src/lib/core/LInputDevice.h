@@ -9,25 +9,30 @@
  *
  * @anchor linputdevice_detailed
  *
- * This class represents an input device, providing essential information for identification.\n
- * The complete list of available devices can be accessed through LSeat::inputDevices().\n
- * To listen to hot-plugging events, use LSeat::inputDevicePlugged() and LSeat::inputDeviceUnplugged().\n
+ * This class provides basic information about an input device and a way to access its underlying backend handle
+ * so that it can be configured using backend-specific APIs.
+ *
+ * Use LSeat::inputDevices() to access all available devices, and LSeat::inputDevicePlugged() and LSeat::inputDeviceUnplugged()
+ * to listen for hotplug events.
+ *
  * Each subtype of LInputEvent provides access to the input device that generated it through LInputEvent::device().
  *
- * @note LInputDevice instances are not destroyed when the device is unplugged, but its nativeHandle() returns `nullptr`.
+ * @note LInputDevice instances are not destroyed when the device is unplugged, but its nativeHandle() will return `nullptr`.
  *
  * ### Capabilities
  *
- * Devices are not categorized by type, but by their capabilities. Each device may have more than one, use hasCapability() to check for a specific capability.
+ * Devices are not categorized by type but by their capabilities. Use hasCapability() to check for a specific capability.
  *
  * ### Configuration
  *
- * Louvre does not provide a generic API for configuring input device parameters. Instead, nativeHandle() can be employed to access
- * the data structure used by the input backend. For example, if the LInputBackendLibinput backend is used, the native handle represents
+ * Louvre does not provide a generic API for configuring input devices. Instead, nativeHandle() can be used to access
+ * the data structure used by the current input backend. For example, if the @ref LInputBackendLibinput backend is used, the native handle represents
  * a [libinput_device](https://wayland.freedesktop.org/libinput/doc/latest/api/structlibinput__device.html) struct, which can be configured
  * through the libinput API.
  *
- * @warning nativeHandle() can return `nullptr` in cases where the input backend does not provide a handle or the input device has been unplugged.
+ * Use LCompositor::inputBackendId() to check which input backend is currently loaded.
+ *
+ * @warning nativeHandle() can return `nullptr` if the input backend does not provide a handle or if the input device has been unplugged.
  */
 class Louvre::LInputDevice
 {
@@ -63,7 +68,7 @@ public:
     LCLASS_NO_COPY(LInputDevice)
 
     /**
-     * @brief Checks if the device has a given capability.
+     * @brief Checks if the device has the given capability.
      *
      * @param capability The capability to check.
      * @return `true` if the device has the capability, otherwise `false`.
@@ -74,7 +79,7 @@ public:
     }
 
     /**
-     * @brief Get the name of the input device.
+     * @brief Gets the name of the input device.
      */
     const std::string &name() const noexcept
     {
@@ -82,7 +87,7 @@ public:
     }
 
     /**
-     * @brief Get the product ID of the input device.
+     * @brief Gets the product ID of the input device.
      */
     UInt32 productId() const noexcept
     {
@@ -90,7 +95,7 @@ public:
     }
 
     /**
-     * @brief Get the vendor ID of the input device.
+     * @brief Gets the vendor ID of the input device.
      */
     UInt32 vendorId() const noexcept
     {
@@ -98,10 +103,12 @@ public:
     }
 
     /**
-     * @brief Provides access to the native data structure used by the input backend.
+     * @brief Native data structure used by the current input backend.
      *
-     * If the backend is LInputBackendLibinput, it returns a pointer to a `libinput_device` struct.\n
-     * If the backend is LInputBackendWayland, it returns `nullptr`.
+     * - If the backend is @ref LInputBackendLibinput, it returns a pointer to a `libinput_device` struct.
+     * - If the backend is @ref LInputBackendWayland, it returns `nullptr`.
+     *
+     * @see LCompositor::inputBackendContextHandle().
      *
      * @warning This method can return `nullptr` in cases where the input backend does not provide a handle or the input device has been unplugged.
      *

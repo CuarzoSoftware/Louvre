@@ -261,39 +261,25 @@ namespace Louvre
     struct LMargins;
 
     /**
-     * @brief ID values for the graphic backends shipped with Louvre.
+     * @brief Graphic backend IDs.
      *
-     * These IDs are returned by LSeat::graphicBackendId() to identify
-     * the currently loaded backend.
-     *
-     * The range [0, 1000] is reserved for Louvre graphic backends only. If you wish to create
-     * your custom graphic backends, use an ID out of that range.
-     *
-     * @enum LGraphicBackendID
+     * Use LCompositor::graphicBackendId() to identify the currently loaded backend.
      */
     enum LGraphicBackendID : UInt32
     {
         LGraphicBackendDRM = 0,    ///< ID for the DRM graphic backend.
-        LGraphicBackendX11 = 1,    ///< ID for the X11 graphic backend.
-        LGraphicBackendWayland = 2 ///< ID for the Wayland graphic backend.
+        LGraphicBackendWayland = 1 ///< ID for the Wayland graphic backend.
     };
 
     /**
-     * @brief ID values for the input backends included with Louvre.
+     * @brief Input backend IDs.
      *
-     * These IDs are returned by LSeat::inputBackendId() to identify the currently
-     * loaded input backend.
-     *
-     * The range [0, 1000] is reserved exclusively for Louvre's built-in input backends. If
-     * you intend to create custom input backends, please use an ID outside of this range.
-     *
-     * @enum LInputBackendID
+     * Use LCompositor::inputBackendId() to identify the currently loaded backend.
      */
     enum LInputBackendID : UInt32
     {
         LInputBackendLibinput = 0, ///< ID for the Libinput input backend.
-        LInputBackendX11 = 1,      ///< ID for the X11 input backend.
-        LInputBackendWayland = 2   ///< ID for the Wayland input backend.
+        LInputBackendWayland = 1   ///< ID for the Wayland input backend.
     };
 
     /**

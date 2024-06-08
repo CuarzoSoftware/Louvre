@@ -27,7 +27,7 @@ public:
     static char *openShader(const std::filesystem::path &file);
 
     /**
-     * @brief Get a string representation of an OpenGL error code.
+     * @brief Gets a string representation of an OpenGL error code.
      *
      * This function converts an OpenGL error code obtained from glGetError() into a human-readable string.
      *

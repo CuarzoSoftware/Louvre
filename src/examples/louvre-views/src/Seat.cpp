@@ -136,7 +136,7 @@ void Seat::nativeInputEvent(void *event)
                 targetWorkspace = *std::prev(targetWorkspace->outputLink);
             }
 
-            output->setWorkspace(targetWorkspace, 450, 2.5f, 0.2f + (0.1f * fabs(dx)) / 50.f);
+            output->setWorkspace(targetWorkspace, 450, 1.8f, 0.2f + (0.11f * fabs(dx)) / 50.f);
         }
     }
 }

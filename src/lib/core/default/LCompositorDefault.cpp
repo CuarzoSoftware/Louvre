@@ -148,25 +148,6 @@ void LCompositor::uninitialized()
 }
 //! [uninitialized]
 
-//! [cursorInitialized]
-void LCompositor::cursorInitialized()
-{
-    // Example to load an XCursor
-
-    /*
-    // Loads the "hand1" cursor
-    LXCursor *handCursor = LXCursor::load("hand1");
-
-    // Returns nullptr if not found
-    if (handCursor)
-    {
-        // Set as the cursor texture
-        cursor()->setTextureB(handCursor->texture(), handCursor->hotspotB());
-    }
-    */
-}
-//! [cursorInitialized]
-
 //! [createObjectRequest]
 LFactoryObject *LCompositor::createObjectRequest(LFactoryObject::Type objectType, const void *params)
 {

@@ -34,7 +34,7 @@ public:
     };
 
     /**
-     * @brief Get the scale by which the framebuffer dimensions must be interpreted.
+     * @brief Gets the scale by which the framebuffer dimensions must be interpreted.
      *
      * This method must return the scale factor used to interpret the dimensions of the framebuffer.\n
      * For example, HiDPI pixmaps/displays may have a scale of 2, whereas low DPI pixmaps/displays may have a scale of 1.
@@ -44,7 +44,7 @@ public:
     virtual Float32 scale() const = 0;
 
     /**
-     * @brief Get the size of the framebuffer in buffer coordinates.
+     * @brief Gets the size of the framebuffer in buffer coordinates.
      *
      * This method must return the size of the framebuffer in buffer coordinates.
      *
@@ -53,7 +53,7 @@ public:
     virtual const LSize &sizeB() const = 0;
 
     /**
-     * @brief Get the position and size of the framebuffer in surface coordinates.
+     * @brief Gets the position and size of the framebuffer in surface coordinates.
      *
      * This method must return the position and size of the framebuffer in surface coordinates.
      *
@@ -62,7 +62,7 @@ public:
     virtual const LRect &rect() const = 0;
 
     /**
-     * @brief Get the OpenGL framebuffer ID.
+     * @brief Gets the OpenGL framebuffer ID.
      *
      * This method must return the current OpenGL framebuffer ID associated with the instance.
      *
@@ -71,7 +71,7 @@ public:
     virtual GLuint id() const  = 0;
 
     /**
-     * @brief Get the number of internal framebuffers.
+     * @brief Gets the number of internal framebuffers.
      *
      * This method is used in implementations like LOutputFramebuffer, which may contain more than one
      * internal framebuffer associated with an LFramebuffer, for example, when double or triple buffering is used.
@@ -81,7 +81,7 @@ public:
     virtual Int32 buffersCount() const = 0;
 
     /**
-     * @brief Get the index of the current internal framebuffer
+     * @brief Gets the index of the current internal framebuffer
      *
      * This method must return the index of the current internal framebuffer (where the rendered content will be stored).
      *
@@ -90,7 +90,7 @@ public:
     virtual Int32 currentBufferIndex() const = 0;
 
     /**
-     * @brief Get the OpenGL texture ID of a specific framebuffer index.
+     * @brief Gets the OpenGL texture ID of a specific framebuffer index.
      *
      * This method must return the OpenGL texture ID associated with the specified framebuffer index or 0 if not available.
      *
@@ -110,12 +110,12 @@ public:
     virtual void setFramebufferDamage(const LRegion *damage) = 0;
 
     /**
-     * @brief Get the framebuffer transform.
+     * @brief Gets the framebuffer transform.
      */
     virtual LTransform transform() const = 0;
 
     /**
-     * @brief Get the type of LFramebuffer.
+     * @brief Gets the type of LFramebuffer.
      */
     Type type() const noexcept
     {

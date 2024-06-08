@@ -9,8 +9,9 @@
 /**
  * @brief Clipboard manager.
  *
- * LClipboard lets you manage which clients can set the clipboard
- * and also specify which MIME types to make persistent.
+ * @anchor lclipboard_detailed
+ *
+ * LClipboard lets you manage which clients can set the clipboard and also specify which MIME types to make persistent.
  *
  * Clients can access the clipboard when one of their surfaces acquires keyboard focus.
  */

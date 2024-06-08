@@ -13,10 +13,18 @@ Here are some links to the C++ API documentation to help you navigate it:
 - Compositor [Initialization](@ref Louvre::LCompositor::initialized) and [Uninitialization](@ref Louvre::LCompositor::uninitialized).
 - [Object Factory](@ref Factory).
 - [Rendering Content to Displays.](@ref loutput_detailed)
+- [Scene](@ref lscene_detailed) and [Views](@ref lview_detailed).
 - [Fractional Scaling and Oversampling.](@ref Scaling)
 - [Gamma Correction.](@ref lgammatable_detailed)
 - [Tearing Control.](@ref VSync)
 - [Pointer Events and Gestures.](@ref lpointer_detailed)
+- [Pointer Constraints.](@ref pointer_constraints)
+- [Cursor.](@ref lcursor_detailed)
 - [Keyboard Events.](@ref lkeyboard_detailed)
 - [Touch Events.](@ref ltouch_detailed)
 - [Configuring Input Devices.](@ref linputdevice_detailed)
+- [Screencasting.](@ref lscreenshotrequest_detailed)
+- [Session Lock Manager](@ref lsessionlockmanager_detailed) and [role.](@ref lsessionlockrole_detailed)
+- [Clipboard](@ref lclipboard_detailed) and [Drag & Drop.](@ref ldnd_detailed)
+- [Toplevel](@ref ltoplevelrole_detailed) and [Popup](@ref ldnd_detailed) surfaces.
+- [Wlr Layer Shell](@ref llayerrole_detailed) and [Exclusive Zones.](@ref lexclusivezone_detailed)

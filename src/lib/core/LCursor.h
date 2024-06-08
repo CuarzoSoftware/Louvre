@@ -9,8 +9,14 @@
 /**
  * @brief Utility class for rendering cursors.
  *
+ * @anchor lcursor_detailed
+ *
  * The LCursor class is designed to make cursor rendering easier and take advantage of compositing properties of
  * certain graphic backends to improve performance.
+ *
+ * @see LXCursor, LClientCursor, LCursorRole.
+ *
+ * @note Clients can request to set the cursor through LPointer::setCursorRequest(), see LClientCursor.
  *
  * @subsection hw_composition Hardware Composition
  *
@@ -72,7 +78,7 @@ public:
     void move(const LPointF &delta) noexcept;
 
     /**
-     * @brief Get the cursor rect on the screen.
+     * @brief Gets the cursor rect on the screen.
      *
      * Returns the cursor rect, which is defined as LRect(pos - hotspot, size), in compositor-global coordinates.
      *

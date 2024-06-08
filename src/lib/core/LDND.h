@@ -8,6 +8,8 @@
 /**
  * @brief Class for handling drag & drop sessions.
  *
+ * @anchor ldnd_detailed
+ *
  * The LDND class provides control over drag & drop sessions, and its unique instance can be accessed via LSeat::dnd().\n
  * Clients initiate a DND session by triggering startDragRequest(). Within that method, the compositor analyzes
  * the triggeringEvent(), which could be, for example, a pointer button press on the origin() surface,

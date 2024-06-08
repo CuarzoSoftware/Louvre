@@ -130,7 +130,7 @@ public:
     void setTexture(LTexture *texture) noexcept;
 
     /**
-     * @brief Get the current LTexture used by the LTextureView.
+     * @brief Gets the current LTexture used by the LTextureView.
      *
      * @return A pointer to the current LTexture used by the view.
      */
@@ -247,7 +247,7 @@ public:
     }
 
     /**
-     * @brief Get the current custom color used for texture rendering.
+     * @brief Gets the current custom color used for texture rendering.
      *
      * This method retrieves the current custom color that is being used for the texture rendering process. The custom color
      * replaces the original texture color while keeping the texture's alpha channel intact.

@@ -11,6 +11,8 @@
 /**
  * @brief Exclusive zone within an LOutput
  *
+ * @anchor lexclusivezone_detailed
+ *
  * The LExclusiveZone class allows you to define a specific region relative to an LOutput edge to be considered exclusive.\n
  * It is primarily used by LLayerRole surfaces to prevent other elements from occupying their space, but it can also
  * be utilized by custom compositor UI elements, such as a built-in panel.

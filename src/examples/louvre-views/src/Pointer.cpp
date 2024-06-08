@@ -15,6 +15,7 @@
 #include <LClient.h>
 #include <LDND.h>
 
+#include "App.h"
 #include "Global.h"
 #include "Pointer.h"
 #include "Compositor.h"
@@ -86,8 +87,8 @@ void Pointer::pointerButtonEvent(const LPointerButtonEvent &event)
 
     G::scene()->handlePointerButtonEvent(event);
 
-    if (G::compositor()->wofiClient && !G::scene()->pointerFocus().empty() && G::scene()->pointerFocus().front()->userData() == WallpaperType)
-        G::compositor()->wofiClient->destroyLater();
+    if (G::compositor()->wofi && G::compositor()->wofi->client && G::compositor()->wofi && !G::scene()->pointerFocus().empty() && G::scene()->pointerFocus().front()->userData() == WallpaperType)
+        G::compositor()->wofi->client->destroyLater();
 }
 
 void Pointer::pointerScrollEvent(const LPointerScrollEvent &event)

@@ -28,6 +28,11 @@ static pid_t daemonGID = -1;
 
 static Int32 daemonLoop()
 {
+    const char *shell { getenv("SHELL") };
+
+    if (!shell)
+        return 0;
+
     close(pipeA[1]);
     close(pipeB[0]);
 
@@ -65,9 +70,7 @@ static Int32 daemonLoop()
                 pid_t pid = fork();
 
                 if (pid == 0)
-                {
-                    exit(system(cmd.c_str()));
-                }
+                    execlp(shell, shell, "-c", cmd.c_str());
                 else if (pid > 0)
                 {
                     // Send the launched app PID to the compositor
@@ -246,7 +249,7 @@ pid_t LLauncher::launch(const std::string &command)
         cmd += s;
     }
 
-    // Get the launched app PID
+    // the launched app PID
     while (true)
     {
         if (poll(&fds, 1, 1000) != 1)

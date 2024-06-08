@@ -15,6 +15,8 @@
 /**
  * @brief Base class for LScene views.
  *
+ *  @anchor lview_detailed
+ *
  * The LView class provides a base interface for creating views that can be shown in an LScene.\n
  * This class should be used for creating custom views that are different from those shipped with Louvre.\n
  *
@@ -306,7 +308,7 @@ public:
     }
 
     /**
-     * @brief Get the scene in which this view is currently embedded.
+     * @brief Gets the scene in which this view is currently embedded.
      *
      * @returns A pointer to the scene that contains this view, or `nullptr` if the view is not part of any scene.
      */
@@ -326,7 +328,7 @@ public:
     }
 
     /**
-     * @brief Get the LSceneView in which this view is currently embedded.
+     * @brief Gets the LSceneView in which this view is currently embedded.
      *
      * @returns A pointer to the LSceneView that contains this view, or `nullptr` if the view is not part of any LSceneView.
      */
@@ -343,7 +345,7 @@ public:
     }
 
     /**
-     * @brief Get the identifier for the type of view.
+     * @brief Gets the identifier for the type of view.
      *
      * This method returns a number used to identify the type of view that was passed in the LView constructor.\n
      * For additional information about view types, refer to the LView::Type enumeration.
@@ -373,7 +375,7 @@ public:
     void repaint() const noexcept;
 
     /**
-     * @brief Get the parent of the view.
+     * @brief Gets the parent of the view.
      *
      * @returns A pointer to the parent view, or `nullptr` if the view has no parent.
      */
@@ -397,7 +399,7 @@ public:
     void insertAfter(LView *prev) noexcept;
 
     /**
-     * @brief Get the list of child views.
+     * @brief Gets the list of child views.
      *
      * This method returns a reference to the list of child views of the current view.
      *
@@ -440,7 +442,7 @@ public:
     }
 
     /**
-     * @brief Get the current position of the view with applied transformations.
+     * @brief Gets the current position of the view with applied transformations.
      *
      * This method returns the current position of the view with any applied transformations.
      *
@@ -463,7 +465,7 @@ public:
     }
 
     /**
-     * @brief Get the current size of the view with applied transformations.
+     * @brief Gets the current size of the view with applied transformations.
      *
      * This method returns the current size of the view with any applied transformations.
      *
@@ -520,7 +522,7 @@ public:
     }
 
     /**
-     * @brief Get the current clipping rectangle defined by the clippingRect() property.
+     * @brief Gets the current clipping rectangle defined by the clippingRect() property.
      *
      * This method returns a constant reference to the current clipping rectangle
      * that is being used to clip the view. The clipping rectangle is defined by the
@@ -659,7 +661,7 @@ public:
     }
 
     /**
-     * @brief Get the scaling vector for the view's size.
+     * @brief Gets the scaling vector for the view's size.
      *
      * This method returns the scaling vector for the view's size.
      *
@@ -750,7 +752,7 @@ public:
     }
 
     /**
-     * @brief Get the current view opacity.
+     * @brief Gets the current view opacity.
      *
      * This method returns the current view opacity.
      *
@@ -932,7 +934,7 @@ public:
     }
 
     /**
-     * @brief Get the color factor.
+     * @brief Gets the color factor.
      *
      * This method returns the current color factor of the view set with setColorFactor(). Default is (1.0, 1.0, 1.0, 1.0).
      */
@@ -942,7 +944,7 @@ public:
     }
 
     /**
-     * @brief Get the bounding box of the view and all its mapped children.
+     * @brief Gets the bounding box of the view and all its mapped children.
      *
      * This method returns a box containing the view and all its mapped children, even if the children
      * are outside or clipped by the view's rect.
@@ -995,7 +997,7 @@ public:
     virtual bool nativeMapped() const noexcept = 0;
 
     /**
-     * @brief Get the position of the view without any transformations applied.
+     * @brief Gets the position of the view without any transformations applied.
      *
      * Must return the position of the view in surface coordinates.
      *
@@ -1004,7 +1006,7 @@ public:
     virtual const LPoint &nativePos() const noexcept = 0;
 
     /**
-     * @brief Get the size of the view without any transformations applied.
+     * @brief Gets the size of the view without any transformations applied.
      *
      * Must return the size of the view in surface coordinates.
      *
@@ -1013,7 +1015,7 @@ public:
     virtual const LSize &nativeSize() const noexcept = 0;
 
     /**
-     * @brief Get the scale of the view buffer content.
+     * @brief Gets the scale of the view buffer content.
      *
      * This property is primarily used by views that contain a buffer like for example the LSceneView, LSurfaceView and LTextureView types.
      *
@@ -1040,7 +1042,7 @@ public:
     virtual void leftOutput(LOutput *output) noexcept = 0;
 
     /**
-     * @brief Get a vector of output pointers on which the view is currently visible.
+     * @brief Gets a vector of output pointers on which the view is currently visible.
      *
      * Must return a vector of output pointers where the view is currently visible.
      * Use the enteredOutput() and leftOutput() methods to update the vector.
@@ -1060,7 +1062,7 @@ public:
     virtual void requestNextFrame(LOutput *output) noexcept = 0;
 
     /**
-     * @brief Get the region within the view rect that needs to be repainted.
+     * @brief Gets the region within the view rect that needs to be repainted.
      *
      * The region rects are specified in surface coordinates within the view,
      * without any scaling, clipping, or offset transformations applied.

@@ -21,8 +21,7 @@ using namespace Louvre;
  *
  * Each output in the compositor has its own dock, and the dockApps vector holds app icon views for each dock.
  */
-
-class App : public LObject
+class App final : public LObject
 {
 public:
 

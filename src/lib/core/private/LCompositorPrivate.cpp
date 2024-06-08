@@ -340,7 +340,6 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
     painter = new LPainter();
     cursor = new LCursor();
     initDMAFeedback();
-    compositor()->cursorInitialized();
     return true;
 }
 

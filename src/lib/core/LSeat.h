@@ -54,6 +54,13 @@ public:
     const std::vector<LOutput *> &outputs() const noexcept;
 
     /**
+     * @brief Vector of available input devices.
+     *
+     * @see inputDevicePlugged() and inputDeviceUnplugged().
+     */
+    const std::vector<LInputDevice *> &inputDevices() const noexcept;
+
+    /**
      * @brief The seat name
      *
      * This method returns the name of the seat (E.g. "seat0").

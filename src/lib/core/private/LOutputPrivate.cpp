@@ -258,8 +258,13 @@ void LOutput::LOutputPrivate::backendPaintGL()
     if (callLock)
         compositor()->imp()->lock();
 
-    if (compositor()->imp()->runningAnimations() && seat()->enabled())
+    stateFlags.remove(PendingRepaint);
+
+    if (seat()->enabled() && compositor()->imp()->runningAnimations())
+    {
+        output->repaint();
         compositor()->imp()->unlockPoll();
+    }
 
     if (lastPos != rect.pos())
     {
@@ -279,7 +284,6 @@ void LOutput::LOutputPrivate::backendPaintGL()
     // Update active LAnimations
     compositor()->imp()->processAnimations();
 
-    stateFlags.remove(PendingRepaint);
     painter->bindFramebuffer(&fb);
     compositor()->imp()->currentOutput = output;
 

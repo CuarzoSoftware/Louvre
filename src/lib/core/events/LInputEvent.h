@@ -18,7 +18,7 @@ public:
     void setDevice(LInputDevice *device) noexcept;
 
     /**
-     * @brief Get the input device that originated this event.
+     * @brief Gets the input device that originated this event.
      */
     LInputDevice *device() const noexcept
     {

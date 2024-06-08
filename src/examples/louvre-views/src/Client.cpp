@@ -135,8 +135,27 @@ Client::Client(const void *params) : LClient(params),
     });
 
     pingTimer.start(3000);
-
     credentials(&pid, NULL, NULL);
+
+    if (G::compositor()->wofi)
+    {
+        char name[256];
+        getProcessNameByPid(pid, name, sizeof(name));
+
+        if (strcmp(name, "wofi") == 0)
+        {
+            if (G::compositor()->wofi->client)
+            {
+                destroyLater();
+                return;
+            }
+
+            app = G::compositor()->wofi;
+            G::compositor()->wofi->pid = pid;
+            G::compositor()->wofi->client = this;
+            return;
+        }
+    }
 
     // Compositor pid
     Int32 cpid = getpid();
@@ -147,7 +166,7 @@ Client::Client(const void *params) : LClient(params),
     {
         for (App *app : G::apps())
         {
-            if (app->pid == ppid)
+            if (app->pid == ppid && (!G::compositor()->wofi || G::compositor()->wofi->pid != ppid))
             {
                 if (!app->client)
                 {
@@ -168,9 +187,6 @@ Client::~Client()
 {
     if (app)
     {
-        if (app->isWofi)
-            G::compositor()->wofiPID = -1;
-
         // Only destroy App if is not pinned to the dock
         if (app->pinned)
         {
@@ -192,6 +208,20 @@ void Client::createNonPinnedApp()
     if (app)
         return;
 
+    bool hasToplevel { false };
+
+    for (LSurface *s : compositor()->surfaces())
+    {
+        if (s->client() == this && s->toplevel())
+        {
+            hasToplevel = true;
+            break;
+        }
+    }
+
+    if (!hasToplevel)
+        return;
+
     char name[256];
     getProcessNameByPid(pid, name, sizeof(name));
 
@@ -202,21 +232,9 @@ void Client::createNonPinnedApp()
     app->client = this;
     app->pid = pid;
 
-    if (G::compositor()->wofiClient)
-        return;
-
     Int32 cpid = getpid();
     Int32 ppid = pid;
 
     while (ppid != 1 && ppid != cpid)
-    {
-        if (ppid == G::compositor()->wofiPID)
-        {
-            G::compositor()->wofiClient = this;
-            app->isWofi = true;
-            return;
-        }
-
         ppid = getPpidFromProc(ppid);
-    }
 }

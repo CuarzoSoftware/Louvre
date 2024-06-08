@@ -47,7 +47,7 @@ Louvre (2.0.0-1)
 
   # Screencasting
 
-  * Added support for screencasting through the wlr_screencopy protocol, also compatible with the xdg-desktop-portal-wlr portal, thanks to @Fox2Code for providing feedback on API design.
+  * Added support for screencasting through the wlr_screencopy protocol, also compatible with the xdg-desktop-portal-wlr portal, thanks to @Fox2Code for providing feedback on the API design.
 
   # Cursor
 
@@ -81,7 +81,7 @@ Louvre (2.0.0-1)
 
   * Introduced the LWeak class for efficient management of weak references to LObjects, automatically setting them to nullptr upon object destruction, with an optional destruction callback.
   * Replaced LClient::destroy() with destroyLater() to prevent immediate client resource destruction and reduce potential access to freed memory.
-  * Added assert to prevent users from creating factory objects outside their virtual constructors.
+  * Added assert to prevent users from creating factory objects outside LCompositor::createObjectRequest().
 
   # Protocol Globals
 
@@ -108,7 +108,7 @@ Louvre (2.0.0-1)
 
   # louvre-views example
 
-  * Added fade-in/out top-level animations.
+  * Added fade-in/out toplevel animations.
   * Added Meta + Shift + L + Up/Down shortcut for modifying the priority of a focused LLayerShell surface.
   * Added Meta + Shift + W to launch Wofi.
   * Added LLauncher commands at startup to automatically enable the xdg-desktop-portal-wlr portal if installed.

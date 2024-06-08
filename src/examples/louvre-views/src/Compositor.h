@@ -13,8 +13,9 @@ using namespace Louvre;
 
 class Tooltip;
 class Client;
+class App;
 
-class Compositor : public LCompositor
+class Compositor final : public LCompositor
 {
 public:
     void initialized() override;
@@ -52,9 +53,7 @@ public:
     // Turns black all outputs until an output unplug is finished
     bool outputUnplugHandled = true;
     bool checkUpdateOutputUnplug();
-
-    pid_t wofiPID { -1 };
-    LWeak<Client> wofiClient;
+    LWeak<App> wofi;
 };
 
 #endif // COMPOSITOR_H

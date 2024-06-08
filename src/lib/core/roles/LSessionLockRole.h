@@ -7,15 +7,20 @@
 /**
  * @brief Surface displayed during a session lock.
  *
- * LSessionLockRole can be used by clients to display arbitrary graphics while the session is locked.\n
- * When a client requests to lock a session (see LSessionLockManager::lockRequest()), it first creates an LSessionLockRole
- * for each initialized output, with a size equal to each output's size (the size is then automatically adjusted if the outputs change).\n
- * All surfaces with this role are initially unmapped, they only become mapped if permission to lock the session is granted to the client.
- * Later, they become unmapped again when the session is unlocked.
+ * @anchor lsessionlockrole_detailed
  *
- * While the session is locked, only surfaces created by the locking client LSessionLockManager::client() should be rendered and receive input events.\n
- * If the client dies before unlocking the session (see @ref LSessionLockManager::DeadLocked), the session must remain locked, and a fallback mechanism should
- * be used to authenticate the user, such as relaunching the locking client.
+ * LSessionLockRole is used by session-locking clients to display arbitrary graphics while the session is locked.
+ *
+ * When a client requests to lock a session (see LSessionLockManager::lockRequest()), it first creates an LSessionLockRole
+ * for each initialized output, sized to match each output's dimensions (the size is then automatically adjusted when output dimensions change).
+ *
+ * All surfaces with this role start off unmapped, they only become mapped if permission to lock the session is granted to the client.
+ * Subsequently, they are unmapped again when the session is unlocked.
+ *
+ * @note While the session is locked, only surfaces created by the locking client LSessionLockManager::client() should be rendered and receive input events.
+ *
+ * If the client terminates before unlocking the session (see @ref LSessionLockManager::DeadLocked), the session must remain locked, and a fallback mechanism should
+ * be employed to authenticate the user, such as relaunching the same locking client.
  */
 class Louvre::LSessionLockRole : public LBaseSurfaceRole
 {

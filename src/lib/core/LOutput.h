@@ -95,7 +95,7 @@
  * However, the compositor-global coordinate space uses surface units, which is equal to the buffer size divided by the applied scale factor.\n
  * Therefore, if a scale factor of 2 applied to the screen, its size in surface units would be 1000x500, which is returned by size() and `rect().size()`.
  *
- * @note Use surface units when arranging outputs (pos() and size() or rect()).
+ * @note Use surface units (pos() and size() or rect()) when arranging outputs.
  *
  * Let's look at an example to make these concepts clearer:
  *
@@ -237,14 +237,14 @@ public:
     LCLASS_NO_COPY(LOutput)
 
     /**
-     * @brief Get the current state of the LOutput.
+     * @brief Gets the current state of the LOutput.
      *
      * This method returns the current state of the output.
      */
     State state() const noexcept;
 
     /**
-     * @brief Get access to the associated LPainter.
+     * @brief Gets access to the associated LPainter.
      *
      * This method provides access to the LPainter associated with this output.
      */
@@ -650,7 +650,7 @@ public:
     const LSize &size() const noexcept;
 
     /**
-     * @brief Get the output size in buffer units.
+     * @brief Gets the output size in buffer units.
      *
      * This method returns the size of the output in buffer units, based on its current mode.
      */
@@ -685,7 +685,7 @@ public:
     const std::vector<LScreenshotRequest*> &screenshotRequests() const noexcept;
 
     /**
-     * @brief Get the output name.
+     * @brief Gets the output name.
      *
      * This method retrieves the name of the output provided by the graphic backend, such as "HDMI-A-2."
      *
@@ -694,28 +694,28 @@ public:
     const char *name() const noexcept;
 
     /**
-     * @brief Get the output model name.
+     * @brief Gets the output model name.
      *
      * This method retrieves the model name of the output provided by the graphic backend.
      */
     const char *model() const noexcept;
 
     /**
-     * @brief Get the manufacturer name of the output.
+     * @brief Gets the manufacturer name of the output.
      *
      * This method retrieves the manufacturer name of the output provided by the graphic backend.
      */
     const char *manufacturer() const noexcept;
 
     /**
-     * @brief Get the description of the output.
+     * @brief Gets the description of the output.
      *
      * This method retrieves the description of the output provided by the graphic backend.
      */
     const char *description() const noexcept;
 
     /**
-     * @brief Get the ID of the rendering thread.
+     * @brief Gets the ID of the rendering thread.
      *
      * This method retrieves the ID of the output rendering thread.
      */

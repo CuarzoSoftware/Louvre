@@ -62,6 +62,11 @@ const std::vector<LOutput *> &LSeat::outputs() const noexcept
     return *compositor()->imp()->graphicBackend->backendGetConnectedOutputs();
 }
 
+const std::vector<LInputDevice *> &LSeat::inputDevices() const noexcept
+{
+    return *compositor()->imp()->inputBackend->backendGetDevices();
+}
+
 const char *LSeat::name() const noexcept
 {
     if (imp()->libseatHandle)

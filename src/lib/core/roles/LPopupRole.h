@@ -159,7 +159,7 @@ public:
     }
 
     /**
-     * @brief Get the constraint bounds.
+     * @brief Gets the constraint bounds.
      *
      * This method returns the constraint bounds for positioning the popup which can be set using setBounds().
      */
@@ -219,7 +219,7 @@ public:
     }
 
     /**
-     * @brief Get the positioning rules for the popup.
+     * @brief Gets the positioning rules for the popup.
      */
     const LPositioner &positioner() const
     {

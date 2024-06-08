@@ -48,7 +48,7 @@ public:
     LCLASS_NO_COPY(LXCursor)
 
     /**
-     * @brief Get the cursor's texture.
+     * @brief Gets the cursor's texture.
      */
     const LTexture *texture() const noexcept
     {
@@ -56,7 +56,7 @@ public:
     }
 
     /**
-     * @brief Get the cursor's hotspot in buffer coordinates.
+     * @brief Gets the cursor's hotspot in buffer coordinates.
      */
     const LPoint &hotspotB() const noexcept
     {

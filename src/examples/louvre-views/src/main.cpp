@@ -24,8 +24,7 @@ int main(int, char *[])
     }
 
     // Enable screencasting through xdg-desktop-portal-wlr
-    LLauncher::launch("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=wlroots");
-    LLauncher::launch("systemctl --user restart xdg-desktop-portal");
+    LLauncher::launch("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=wlroots | systemctl --user restart xdg-desktop-portal");
 
     while (compositor.state() != LCompositor::Uninitialized)
         compositor.processLoop(-1);
