@@ -13,7 +13,7 @@
 
 using namespace Louvre::Protocols::Wayland;
 
-class Louvre::LDNDSession : public LObject
+class Louvre::LDNDSession final : public LObject
 {
 public:
     LDNDSession() noexcept
@@ -21,6 +21,7 @@ public:
         source.setOnDestroyCallback([this](auto) { cancel(); });
         origin.setOnDestroyCallback([this](auto) { cancel(); });
         srcDataDevice.setOnDestroyCallback([this](auto) { cancel(); });
+        action = LDND::Move;
     }
 
     void updateActions() noexcept

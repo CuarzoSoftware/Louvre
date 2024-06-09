@@ -160,6 +160,11 @@ public:
     Action preferredAction() const noexcept;
 
     /**
+     * @brief Current action.
+     */
+    Action action() const noexcept;
+
+    /**
      * @brief Assigns the preferred action.
      *
      * Assigns the compositor's preferred action for the session.
@@ -180,7 +185,7 @@ public:
      * #### Default implementation
      * @snippet LDNDManagerDefault.cpp startDragRequest
      */
-    virtual void startDragRequest() noexcept;
+    virtual void startDragRequest();
 
     /**
      * @brief Notifies the cancellation of a session
@@ -191,7 +196,15 @@ public:
      * #### Default implementation
      * @snippet LDNDManagerDefault.cpp cancelled
      */
-    virtual void cancelled() noexcept;
+    virtual void cancelled();
+
+    /**
+     * @brief Triggered after drop()
+     *
+     * #### Default implementation
+     * @snippet LDNDManagerDefault.cpp dropped
+     */
+    virtual void dropped();
 
 private:
     friend class Protocols::Wayland::RDataDevice;

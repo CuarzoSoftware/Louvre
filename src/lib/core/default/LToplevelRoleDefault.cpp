@@ -196,15 +196,26 @@ void LToplevelRole::preferredDecorationModeChanged()
 //! [setMaximizedRequest]
 void LToplevelRole::setMaximizedRequest()
 {
-    if (!cursor()->output() || maximized())
+    LOutput *output { cursor()->output() };
+
+    if (!output || maximized())
         return;
 
     if (!fullscreen())
         prevRect = LRect(surface()->pos(), windowGeometry().size());
 
-    setExclusiveOutput(cursor()->output());
-    configureSize(cursor()->output()->availableGeometry().size()
-        - LSize(extraGeometry().left + extraGeometry().right, extraGeometry().top + extraGeometry().bottom));
+    const LSize extraGeoSize {
+        extraGeometry().left + extraGeometry().right,
+        extraGeometry().top + extraGeometry().bottom };
+
+    if (prevRect.area() == 0)
+    {
+        prevRect.setSize(output->availableGeometry().size() - extraGeoSize);
+        prevRect.setPos(output->pos() + output->availableGeometry().pos());
+    }
+
+    setExclusiveOutput(output);
+    configureSize(output->availableGeometry().size() - extraGeoSize);
     configureState(Activated | Maximized);
 }
 //! [setMaximizedRequest]
@@ -230,6 +241,12 @@ void LToplevelRole::setFullscreenRequest(LOutput *preferredOutput)
 
     if (!maximized())
         prevRect = LRect(surface()->pos(), windowGeometry().size());
+
+    if (prevRect.area() == 0)
+    {
+        prevRect.setSize(output->availableGeometry().size() - LSize(extraGeometry().left + extraGeometry().right, extraGeometry().top + extraGeometry().bottom));
+        prevRect.setPos(output->pos() + output->availableGeometry().pos());
+    }
 
     setExclusiveOutput(output);
     configureSize(output->size());

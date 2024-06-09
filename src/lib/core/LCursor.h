@@ -130,6 +130,11 @@ public:
     void setCursor(const LClientCursor &clientCursor) noexcept;
 
     /**
+     * @brief Assigns an LXCursor.
+     */
+    void setCursor(const LXCursor *xcursor) noexcept;
+
+    /**
      * @brief Retrieves the client cursor set with setCursor().
      *
      * @return A pointer to the LClientCursor if set, `nullptr` otherwise.

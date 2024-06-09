@@ -162,6 +162,7 @@ void LDND::drop() noexcept
     if (!dragging())
         return;
 
+    dropped();
     m_session->dropped = true;
 
     if (icon() && icon()->surface())
@@ -199,6 +200,21 @@ void LDND::drop() noexcept
 LDND::Action LDND::preferredAction() const noexcept
 {
     return static_cast<Action>(m_compositorAction);
+}
+
+LDND::Action LDND::action() const noexcept
+{
+    if (!m_session || !m_session->source)
+        return NoAction;
+
+    if (m_session->action == Copy)
+        return Copy;
+    else if (m_session->action == Move)
+        return Move;
+    else if (m_session->action == Ask)
+        return Ask;
+
+    return NoAction;
 }
 
 void LDND::setPreferredAction(LDND::Action action) noexcept

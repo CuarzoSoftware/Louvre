@@ -73,8 +73,8 @@ void LSurface::mappingChanged()
     {
         const LSize size {
             toplevel()->windowGeometry().size()
-            + LSize(toplevel()->extraGeometry().top + toplevel()->extraGeometry().bottom,
-                    toplevel()->extraGeometry().left + toplevel()->extraGeometry().right)
+            + LSize(toplevel()->extraGeometry().left + toplevel()->extraGeometry().right,
+                    toplevel()->extraGeometry().top + toplevel()->extraGeometry().bottom)
         };
 
         const LSize availGeoPos { activeOutput->pos() + activeOutput->availableGeometry().pos() };

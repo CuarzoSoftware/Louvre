@@ -69,7 +69,7 @@ public:
      * #### Default Implementation
      * @snippet LClipboardDefault.cpp persistentMimeTypeFilter
      */
-    virtual bool persistentMimeTypeFilter(const std::string &mimeType) const ;
+    virtual bool persistentMimeTypeFilter(const std::string &mimeType) const;
 
     /**
      * @brief Access to the current clipboard MIME types.

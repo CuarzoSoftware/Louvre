@@ -4,6 +4,7 @@
 #include <private/LTexturePrivate.h>
 #include <private/LPainterPrivate.h>
 
+#include <LXCursor.h>
 #include <LCursorRole.h>
 #include <LPointer.h>
 #include <LSeat.h>
@@ -192,6 +193,12 @@ void LCursor::setCursor(const LClientCursor &clientCursor) noexcept
         setVisible(clientCursor.visible());
         useDefault();
     }
+}
+
+void LCursor::setCursor(const LXCursor *xcursor) noexcept
+{
+    if (xcursor)
+        setTextureB(xcursor->texture(), xcursor->hotspotB());
 }
 
 const LClientCursor *LCursor::clientCursor() const noexcept

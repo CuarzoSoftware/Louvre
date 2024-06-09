@@ -13,7 +13,7 @@
 using namespace Louvre;
 
 //! [startDragRequest]
-void LDND::startDragRequest() noexcept
+void LDND::startDragRequest()
 {
     if (sessionLockManager()->state() != LSessionLockManager::Unlocked && sessionLockManager()->client() != origin()->client())
     {
@@ -51,9 +51,18 @@ void LDND::startDragRequest() noexcept
 //! [startDragRequest]
 
 //! [cancelled]
-void LDND::cancelled() noexcept
+void LDND::cancelled()
 {
     if (icon())
         icon()->surface()->repaintOutputs();
 }
+
 //! [cancelled]
+
+//! [dropped]
+void LDND::dropped()
+{
+    if (triggeringEvent().type() != LEvent::Type::Touch)
+        cursor()->useDefault();
+}
+//! [dropped]
