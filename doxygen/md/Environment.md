@@ -1,4 +1,4 @@
-# ⚙️ Environment Variables {#EnvironmentPage}
+# ⚙️ Environment Variables {#environment_page}
 
 ## Debugging
 

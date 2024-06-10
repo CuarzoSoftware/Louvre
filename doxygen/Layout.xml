@@ -37,10 +37,10 @@
     </tab>
     
     <tab type="usergroup" visible="yes" title="📖 Classes" url="annotated.html"/>
-    <tab type="usergroup" visible="yes" title="🕹️ Examples" url="@ref ExamplesPage"/>
-    <tab type="usergroup" visible="yes" title="📦 Downloads" url="@ref DownloadsPage"/>
-    <tab type="usergroup" visible="yes" title="⚙️ Environment" url="@ref EnvironmentPage"/>
-    <tab type="usergroup" visible="yes" title="💬 Contact" url="@ref ContactPage"/>
+    <tab type="usergroup" visible="yes" title="🕹️ Examples" url="@ref examples_page"/>
+    <tab type="usergroup" visible="yes" title="📦 Downloads" url="@ref downloads_page"/>
+    <tab type="usergroup" visible="yes" title="⚙️ Environment" url="@ref environment_page"/>
+    <tab type="usergroup" visible="yes" title="💬 Contact" url="@ref contact_page"/>
     
   </navindex>
   
