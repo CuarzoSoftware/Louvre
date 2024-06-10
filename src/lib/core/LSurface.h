@@ -11,6 +11,8 @@
 
 /**
  * @brief A client "window"
+ * 
+ * @anchor lsurface_detailed
  *
  * In the context of Wayland, surfaces can be thought of as analogous to "application windows."
  * Each surface possesses attributes including position, size, buffer, input region, opaque region, damage region, and a designated role.
@@ -58,7 +60,7 @@
  *
  * The library automatically converts the surface's buffer into an object that can be used by the selected renderer.\n
  * Since the library currently only offers OpenGL ES 2.0 renderer, the buffer is converted to an OpenGL texture that can be accessed with texture().\n
- * It is also possible to access the native Wayland resource of the buffer with buffer().
+ * It is also possible to access the native Wayland resource of the buffer with bufferResource().
  *
  * @section Damage
  *
@@ -87,7 +89,8 @@
  *
  * It is possible to modify the order of surfaces within a layer using the raise() method, this will normally also raise other surfaces such as subsurfaces.\n
  * You can receive notifications when the order changes by implementing the orderChanged() and layerChanged() virtual methods.\n
- * Use prevSurface() and nextSurface() to get the surface behind or on top of the current surface. Keep in mind that these functions may return `nullptr` if a surface is at the beginning or end of the list.\n
+ * Use prevSurface() and nextSurface() to get the surface behind or on top of the current surface. Keep in mind that these functions may return `nullptr` if a surface is at the 
+ * beginning or end of the LCompositor::surfaces() list.\n
  * Surfaces are thought to be rendered in the order they appear in the list. The first surfaces should be located in the background, while the last ones should be in the foreground.
  *
  * @note If you want to use a different ordering, you could leverage the LCompositor factory constructor/destructor respectively to listen for
@@ -96,8 +99,8 @@
  * @section Position
  *
  * One of the characteristics of Wayland is that clients have very little information and control over how their surfaces are positioned on the screen.\n
- * For this reason, the rules of their roles generally define it based on an offset relative to another surface or a position given by you.\n
- * Louvre simplifies this by allowing you to assign the position of the surfaces with setPos() and access the position suggested by its role withrolePos().\n
+ * For this reason, the rules of their roles generally define it based on an offset relative to another surface, an output or a position given by you.\n
+ * Louvre simplifies this by allowing you to assign the position of the surfaces with setPos() and access the position suggested by its role with rolePos().\n
  * In some cases, such as in the LPopupRole or LSubsurfaceRole role, the position set with setPos() is not taken into account.\n
  * You can see the positioning rules of each role in detail by viewing the documentation of rolePos() for each one.
  */
@@ -175,6 +178,7 @@ public:
     /**
      * @brief Retrieves the layer in which this surface currently resides.
      *
+     * @see LCompositor::layer()
      * @see LSurfaceLayer
      * @see layerChanged()
      *

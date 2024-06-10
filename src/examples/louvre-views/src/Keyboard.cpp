@@ -55,13 +55,13 @@ void Keyboard::keyEvent(const LKeyboardKeyEvent &event)
             if (event.keyCode() == KEY_RIGHT && std::next(output->currentWorkspace->outputLink) != output->workspaces.end())
             {
                 if (!output->animatedFullscreenToplevel)
-                    output->setWorkspace(*std::next(output->currentWorkspace->outputLink), 450.f, 1.8f, 0.2f);
+                    output->setWorkspace(*std::next(output->currentWorkspace->outputLink), 450.f, 2.3f, 0.2f);
                 return;
             }
             else if (event.keyCode() == KEY_LEFT && output->currentWorkspace != output->workspaces.front())
             {
                 if (!output->animatedFullscreenToplevel)
-                    output->setWorkspace(*std::prev(output->currentWorkspace->outputLink), 450.f, 1.8f, 0.2f);
+                    output->setWorkspace(*std::prev(output->currentWorkspace->outputLink), 450.f, 2.3f, 0.2f);
                 return;
             }
         }
@@ -171,6 +171,8 @@ void Keyboard::focusChanged()
 
         if (client->app && client->app->nameTexture)
             topbarTitleTexture = client->app->nameTexture;
+        else
+            topbarTitleTexture = G::textures()->defaultTopbarAppName;
     }
     else
     {

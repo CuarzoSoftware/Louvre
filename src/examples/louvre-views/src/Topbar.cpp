@@ -11,7 +11,7 @@
 #include "TextRenderer.h"
 
 Topbar::Topbar(Output *output) :
-    LSolidColorView(0.95f, 0.95f, 1.f, 1.f, nullptr),
+    LSolidColorView(1.f, 1.f, 1.f, 0.82f, nullptr),
     output(output)
 {
     exclusiveZone.setOnRectChangeCallback([this](auto)
@@ -55,6 +55,9 @@ void Topbar::initialize() noexcept
     exclusiveZone.setOutput(output);
     updateOutputInfo();
     update();
+
+    for (LView *child : children())
+        child->enableParentOpacity(false);
 }
 
 void Topbar::update()

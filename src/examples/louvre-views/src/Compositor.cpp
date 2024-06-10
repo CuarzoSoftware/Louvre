@@ -29,6 +29,7 @@
 #include "TestView.h"
 #endif
 
+#include <LOutputMode.h>
 void Compositor::initialized()
 {
     // Set black as default background color
@@ -99,7 +100,6 @@ void Compositor::initialized()
         LLog::fatal("[louvre-views] Failed to initialize outputs. Try launching the compositor from a free TTY or within a Wayland compositor.");
         finish();
     }
-
 
 #if LOUVRE_VIEWS_TESTING == 1
     new TestView(&overlayLayer);

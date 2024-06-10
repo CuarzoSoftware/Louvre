@@ -8,7 +8,7 @@ int main(int, char *[])
     setenv("LOUVRE_DEBUG", "1", 0);
     setenv("SRM_DEBUG", "1", 0);
     setenv("SRM_RENDER_MODE_ITSELF_FB_COUNT", "3", 0);
-    setenv("SRM_FORCE_GL_ALLOCATION", "1", 0);
+    setenv("SRM_FORCE_GL_ALLOCATION", "0", 1);
     setenv("MOZ_ENABLE_WAYLAND", "1", 1);
     setenv("QT_QPA_PLATFORM", "wayland-egl", 1);
     setenv("LOUVRE_WAYLAND_DISPLAY", "wayland-2", 0);

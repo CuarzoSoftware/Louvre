@@ -4,7 +4,7 @@ This is a work in progress. In the meantime, you can get started by cloning a ba
 
 https://github.com/CuarzoSoftware/LouvreTemplate
 
-It is well-documented and already implements the scene and views system for efficient rendering.
+It is well-documented and already implements the scene and views system for efficient rendering and basic server-side decorations.
 
 ## Key Concepts
 
@@ -26,5 +26,6 @@ Here are some links to the C++ API documentation to help you navigate it:
 - [Screencasting.](@ref lscreenshotrequest_detailed)
 - [Session Lock Manager](@ref lsessionlockmanager_detailed) and [role.](@ref lsessionlockrole_detailed)
 - [Clipboard](@ref lclipboard_detailed) and [Drag & Drop.](@ref ldnd_detailed)
+- [Surfaces and Roles.](@ref lsurface_detailed)
 - [Toplevel](@ref ltoplevelrole_detailed) and [Popup](@ref ldnd_detailed) surfaces.
 - [Wlr Layer Shell](@ref llayerrole_detailed) and [Exclusive Zones.](@ref lexclusivezone_detailed)
