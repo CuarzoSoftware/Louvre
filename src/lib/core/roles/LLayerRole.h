@@ -140,7 +140,7 @@ public:
         LBitset<LEdge> anchor;
 
         /// LLayerRole::exclusiveZoneSize()
-        Int32 exclusiveZoneSize;
+        Int32 exclusiveZoneSize { 0 };
 
         /// LLayerRole::margins()
         LMargins margins;
@@ -423,7 +423,7 @@ private:
     void updateMappingState() noexcept;
 
     LExclusiveZone m_exclusiveZone { LEdgeNone, 0 };
-    LBitset<Flags> m_flags { HasPendingInitialConf };
+    LBitset<Flags> m_flags { HasPendingInitialConf | HasPendingExclusiveZone };
     Atoms m_atoms[2];
     UInt8 m_currentAtomsIndex { 0 };
     std::string m_scope;

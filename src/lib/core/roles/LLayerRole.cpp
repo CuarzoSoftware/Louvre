@@ -126,6 +126,8 @@ LEdge LLayerRole::edgesToSingleEdge() const noexcept
     }
 }
 
+#include <private/LOutputPrivate.h>
+
 void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
 {
     if (m_flags.check(ClosedSent))
@@ -172,8 +174,6 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
                                        "width is 0 but anchors do not include left and right (anchor must be set to opposite edges in the omitted dimensions)");
                 return;
             }
-
-            needsConfigure = true;
         }
 
         if (pendingAtoms().size.h() == 0)
@@ -185,9 +185,9 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
                                        "height is 0 but anchors do not include top and bottom (anchor must be set to opposite edges in the omitted dimensions)");
                 return;
             }
-
-            needsConfigure = true;
         }
+
+        needsConfigure = true;
     }
 
     LBitset<AtomChanges> changesToNotify = m_flags & (
