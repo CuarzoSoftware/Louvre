@@ -175,6 +175,9 @@ public:
      */
     void setPreferredAction(Action action) noexcept;
 
+    /// @name Virtual Methods
+    /// @{
+
     /**
      * @brief Request to start a drag & drop session
      *
@@ -183,7 +186,7 @@ public:
      * at a time.
      *
      * #### Default implementation
-     * @snippet LDNDManagerDefault.cpp startDragRequest
+     * @snippet LDNDDefault.cpp startDragRequest
      */
     virtual void startDragRequest();
 
@@ -194,7 +197,7 @@ public:
      * The default implementation repaints outputs where the drag & drop icon was visible.
      *
      * #### Default implementation
-     * @snippet LDNDManagerDefault.cpp cancelled
+     * @snippet LDNDDefault.cpp cancelled
      */
     virtual void cancelled();
 
@@ -202,10 +205,11 @@ public:
      * @brief Triggered after drop()
      *
      * #### Default implementation
-     * @snippet LDNDManagerDefault.cpp dropped
+     * @snippet LDNDDefault.cpp dropped
      */
     virtual void dropped();
 
+    /// @}
 private:
     friend class Protocols::Wayland::RDataDevice;
     friend class LDNDSession;
