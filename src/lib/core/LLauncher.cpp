@@ -12,15 +12,15 @@
 using namespace Louvre;
 
 static int pipeA[2] =
-{
-    -1, // Daemon read end
-    -1  // Compositor write end
+    {
+        -1, // Daemon read end
+        -1  // Compositor write end
 };
 
 static int pipeB[2] =
-{
-    -1, // Compositor read end
-    -1  // Daemon write end
+    {
+        -1, // Compositor read end
+        -1  // Daemon write end
 };
 
 static pid_t daemonPID = -1;
@@ -154,10 +154,6 @@ pid_t LLauncher::startDaemon(const std::string &name)
         if (display)
             setenv("WAYLAND_DISPLAY", display , 1);
 
-        /*
-        setsid();
-        umask(0);*/
-
         for (Int32 x = sysconf(_SC_OPEN_MAX); x >= 0; x--)
             if (x != pipeA[0] && x != pipeB[1] && x != STDOUT_FILENO && x != STDERR_FILENO)
                 close(x);
@@ -234,7 +230,7 @@ pid_t LLauncher::launch(const std::string &command)
         while (read(pipeB[0], &c, 1) > 0) {}
 
     ssize_t s;
-    std::string res = "";    
+    std::string res = "";
 
     // Send the command
     while (true)
@@ -281,7 +277,7 @@ pid_t LLauncher::launch(const std::string &command)
 
     return -1;
 
-    stop:
+stop:
     LLog::error("[LLauncher::launch] Command %s failed. Daemon died.", command.c_str());
     stopDaemon();
     return -1;
