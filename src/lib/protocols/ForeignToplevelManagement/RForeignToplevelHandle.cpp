@@ -260,13 +260,11 @@ void RForeignToplevelHandle::unset_fullscreen(wl_client */*client*/, wl_resource
 
 void RForeignToplevelHandle::title(const std::string &title) noexcept
 {
-    m_changed = true;
     zwlr_foreign_toplevel_handle_v1_send_title(resource(), title.c_str());
 }
 
 void RForeignToplevelHandle::appId(const std::string &appId) noexcept
 {
-    m_changed = true;
     zwlr_foreign_toplevel_handle_v1_send_app_id(resource(), appId.c_str());
 }
 
@@ -286,13 +284,11 @@ void RForeignToplevelHandle::outputLeave(LOutput *output) noexcept
 
 void RForeignToplevelHandle::state(wl_array *state) noexcept
 {
-    m_changed = true;
     zwlr_foreign_toplevel_handle_v1_send_state(resource(), state);
 }
 
 void RForeignToplevelHandle::done() noexcept
 {
-    m_changed = false;
     zwlr_foreign_toplevel_handle_v1_send_done(resource());
 }
 
@@ -306,7 +302,6 @@ bool RForeignToplevelHandle::parent(RForeignToplevelHandle *parent) noexcept
 #if LOUVRE_FOREIGN_TOPLEVEL_MANAGER_VERSION >= 3
     if (version() >= 3)
     {
-        m_changed = true;
         zwlr_foreign_toplevel_handle_v1_send_parent(resource(), parent == nullptr ? nullptr : parent->resource());
         return true;
     }

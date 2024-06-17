@@ -140,6 +140,7 @@ void LToplevelRole::handleParentChange()
                     controller->resource().foreignToplevelManagerRes() == parentController->resource().foreignToplevelManagerRes())
                 {
                     controller->resource().parent(&parentController->resource());
+                    controller->resource().done();
                     break;
                 }
             }
@@ -227,8 +228,13 @@ void LToplevelRole::fullAtomsUpdate()
     const LBitset<State> stateChanges { pendingAtoms().state ^ currentAtoms().state };
 
     if (stateChanges.check(Activated | Maximized | Fullscreen))
+    {
         for (auto *controller : foreignControllers())
+        {
             controller->resource().updateState();
+            controller->resource().done();
+        }
+    }
 
     if (changesToNotify.check(MaxSizeChanged))
         pendingAtoms().maxSize = currentAtoms().maxSize;
@@ -315,8 +321,13 @@ void LToplevelRole::partialAtomsUpdate()
     atomsChanged(changesToNotify, pendingAtoms());
 
     if (stateChanges.check(Activated))
+    {
         for (auto *controller : foreignControllers())
+        {
             controller->resource().updateState();
+            controller->resource().done();
+        }
+    }
 
     // Restore real full pending changes
     pendingAtoms() = pendingAtomsBackup;
@@ -324,10 +335,6 @@ void LToplevelRole::partialAtomsUpdate()
 
 void LToplevelRole::sendPendingConfiguration() noexcept
 {
-    for (auto *controller : m_foreignControllers)
-        if (controller->resource().changed())
-            controller->resource().done();
-
     if (!m_flags.check(HasSizeOrStateToSend | HasDecorationModeToSend | HasBoundsToSend | HasCapabilitiesToSend))
         return;
 
@@ -499,7 +506,10 @@ void LToplevelRole::setTitle(const char *title)
         m_title.clear();
 
     for (auto *controller : m_foreignControllers)
+    {
         controller->resource().title(m_title);
+        controller->resource().done();
+    }
 
     titleChanged();
 }
@@ -512,7 +522,10 @@ void LToplevelRole::setAppId(const char *appId)
         m_appId.clear();
 
     for (auto *controller : m_foreignControllers)
+    {
         controller->resource().appId(m_appId);
+        controller->resource().done();
+    }
 
     appIdChanged();
 }

@@ -18,11 +18,6 @@ public:
         return m_controller.get();
     }
 
-    bool changed() const noexcept
-    {
-        return m_changed;
-    }
-
     void updateState() noexcept;
 
     /******************** REQUESTS ********************/
@@ -62,7 +57,6 @@ private:
     LWeak<GForeignToplevelManager> m_foreignToplevelManagerRes;
     LWeak<LToplevelRole> m_toplevelRole;
     std::unique_ptr<LForeignToplevelController> m_controller;
-    bool m_changed { false };
 };
 
 #endif // RFOREIGNTOPLEVELHANDLE_H

@@ -171,8 +171,13 @@ void LSurface::setMinimized(bool state)
         imp()->stateFlags.setFlag(LSurfacePrivate::Minimized, state);
 
         if (toplevel())
+        {
             for (auto *controller : toplevel()->foreignControllers())
+            {
                 controller->resource().updateState();
+                controller->resource().done();
+            }
+        }
 
         minimizedChanged();
 
@@ -341,8 +346,13 @@ void LSurface::sendOutputEnterEvent(LOutput *output)
     imp()->sendPreferredScale();
 
     if (toplevel())
+    {
         for (auto *controller : toplevel()->foreignControllers())
+        {
             controller->resource().outputEnter(output);
+            controller->resource().done();
+        }
+    }
 }
 
 void LSurface::sendOutputLeaveEvent(LOutput *output)
@@ -367,8 +377,13 @@ void LSurface::sendOutputLeaveEvent(LOutput *output)
             imp()->sendPreferredScale();
 
             if (toplevel())
+            {
                 for (auto *controller : toplevel()->foreignControllers())
+                {
                     controller->resource().outputLeave(output);
+                    controller->resource().done();
+                }
+            }
 
             return;
         }

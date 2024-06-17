@@ -70,11 +70,7 @@ static Int32 daemonLoop()
                 pid_t pid = fork();
 
                 if (pid == 0)
-                {
-                    close(STDOUT_FILENO);
-                    close(STDERR_FILENO);
                     execlp(shell, shell, "-c", cmd.c_str());
-                }
                 else if (pid > 0)
                 {
                     // Send the launched app PID to the compositor
