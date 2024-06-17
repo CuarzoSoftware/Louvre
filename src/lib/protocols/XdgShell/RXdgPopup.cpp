@@ -116,8 +116,10 @@ void RXdgPopup::reposition(wl_client */*client*/, wl_resource *resource, wl_reso
 {
     RXdgPopup &res { *static_cast<RXdgPopup*>(wl_resource_get_user_data(resource)) };
 
-    if (!res.popupRole()->surface()->mapped())
-        return;
+    /* TODO Report bug: Some GTK4 apps trigger reposition requests before the popup is mapped */
+
+    /* if (!res.popupRole()->surface()->mapped())
+        return; */
 
     RXdgPositioner &xdgPositionerRes { *static_cast<RXdgPositioner*>(wl_resource_get_user_data(positioner)) };
 

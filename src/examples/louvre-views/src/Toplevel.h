@@ -33,6 +33,7 @@ public:
     void unsetFullscreenRequest() override;
     void fullscreenChanged();
     void setMinimizedRequest() override;
+    void unsetMinimizedRequest() override;
     void preferredDecorationModeChanged() override;
     void decorationModeChanged();
     void titleChanged() override;

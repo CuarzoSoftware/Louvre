@@ -70,7 +70,11 @@ static Int32 daemonLoop()
                 pid_t pid = fork();
 
                 if (pid == 0)
+                {
+                    close(STDOUT_FILENO);
+                    close(STDERR_FILENO);
                     execlp(shell, shell, "-c", cmd.c_str());
+                }
                 else if (pid > 0)
                 {
                     // Send the launched app PID to the compositor
@@ -150,15 +154,15 @@ pid_t LLauncher::startDaemon(const std::string &name)
         if (display)
             setenv("WAYLAND_DISPLAY", display , 1);
 
-        if (setsid() < 0)
-        {
-            LLog::error("[%s] Daemon exited with status %d. Failed to create session.", name.c_str(), 1);
-            exit(1);
-        }
+        /*
+        setsid();
+        umask(0);*/
 
-        umask(0);
+        for (Int32 x = sysconf(_SC_OPEN_MAX); x >= 0; x--)
+            if (x != pipeA[0] && x != pipeB[1] && x != STDOUT_FILENO && x != STDERR_FILENO)
+                close(x);
 
-        Int32 nullFD = open("/dev/null", O_RDWR);
+        Int32 nullFD = open("/dev/null", O_RDONLY);
 
         if (nullFD != -1)
             dup2(nullFD, STDIN_FILENO);

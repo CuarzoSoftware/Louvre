@@ -369,6 +369,13 @@ public:
      */
     const std::vector<Protocols::LayerShell::GLayerShell*> &layerShellGlobals() const noexcept;
 
+    /**
+     * Resources created when the client binds to the
+     * [zwlr_foreign_toplevel_manager_v1](https://wayland.app/protocols/wlr-foreign-toplevel-management-unstable-v1#zwlr_foreign_toplevel_manager_v1) global
+     * of the wlroots Foreign Toplevel Management protocol.
+     */
+    const std::vector<Protocols::ForeignToplevelManagement::GForeignToplevelManager*> &foreignToplevelManagerGlobals() const noexcept;
+
     LPRIVATE_IMP_UNIQUE(LClient)
 };
 

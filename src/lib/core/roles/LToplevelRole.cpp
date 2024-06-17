@@ -1,3 +1,5 @@
+#include <protocols/ForeignToplevelManagement/GForeignToplevelManager.h>
+#include <protocols/ForeignToplevelManagement/RForeignToplevelHandle.h>
 #include <protocols/XdgDecoration/RXdgToplevelDecoration.h>
 #include <protocols/XdgShell/RXdgSurface.h>
 #include <protocols/XdgShell/RXdgToplevel.h>
@@ -5,6 +7,8 @@
 #include <private/LSurfacePrivate.h>
 #include <private/LToplevelRolePrivate.h>
 #include <private/LSeatPrivate.h>
+#include <LForeignToplevelController.h>
+#include <LClient.h>
 #include <LCursor.h>
 
 using namespace Louvre;
@@ -59,7 +63,7 @@ void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
 {
     L_UNUSED(origin);
 
-    if (m_flags.check(closedSent))
+    if (m_flags.check(ClosedSent))
         return;
 
     // Configure request
@@ -108,7 +112,42 @@ void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
 
     // Map request
     if (!surface()->mapped() && surface()->hasBuffer())
+    {
         surface()->imp()->setMapped(true);
+
+        if (m_flags.check(HasPendingFirstMap))
+        {
+            m_flags.remove(HasPendingFirstMap);
+
+            for (LClient *client : compositor()->clients())
+                for (auto *foreignToplevelManager : client->foreignToplevelManagerGlobals())
+                    foreignToplevelManager->toplevel(*this);
+        }
+    }
+}
+
+void LToplevelRole::handleParentChange()
+{
+    LToplevelRole *parent { (surface()->parent() && surface()->parent()->toplevel()) ? surface()->parent()->toplevel() : nullptr };
+
+    if (parent)
+    {
+        for (auto *controller : m_foreignControllers)
+        {
+            for (auto *parentController : parent->m_foreignControllers)
+            {
+                if (controller->resource().foreignToplevelManagerRes() &&
+                    controller->resource().foreignToplevelManagerRes() == parentController->resource().foreignToplevelManagerRes())
+                {
+                    controller->resource().parent(&parentController->resource());
+                    break;
+                }
+            }
+        }
+    }
+    else
+        for (auto *controller : m_foreignControllers)
+            controller->resource().parent(nullptr);
 }
 
 void LToplevelRole::fullAtomsUpdate()
@@ -184,6 +223,12 @@ void LToplevelRole::fullAtomsUpdate()
     m_currentAtomsIndex = 1 - m_currentAtomsIndex;
 
     atomsChanged(changesToNotify, pendingAtoms());
+
+    const LBitset<State> stateChanges { pendingAtoms().state ^ currentAtoms().state };
+
+    if (stateChanges.check(Activated | Maximized | Fullscreen))
+        for (auto *controller : foreignControllers())
+            controller->resource().updateState();
 
     if (changesToNotify.check(MaxSizeChanged))
         pendingAtoms().maxSize = currentAtoms().maxSize;
@@ -269,12 +314,20 @@ void LToplevelRole::partialAtomsUpdate()
 
     atomsChanged(changesToNotify, pendingAtoms());
 
+    if (stateChanges.check(Activated))
+        for (auto *controller : foreignControllers())
+            controller->resource().updateState();
+
     // Restore real full pending changes
     pendingAtoms() = pendingAtomsBackup;
 }
 
 void LToplevelRole::sendPendingConfiguration() noexcept
 {
+    for (auto *controller : m_foreignControllers)
+        if (controller->resource().changed())
+            controller->resource().done();
+
     if (!m_flags.check(HasSizeOrStateToSend | HasDecorationModeToSend | HasBoundsToSend | HasCapabilitiesToSend))
         return;
 
@@ -438,11 +491,37 @@ void LToplevelRole::reset() noexcept
     surface()->imp()->setLayer(LLayerMiddle);
 }
 
+void LToplevelRole::setTitle(const char *title)
+{
+    if (title)
+        m_title = title;
+    else
+        m_title.clear();
+
+    for (auto *controller : m_foreignControllers)
+        controller->resource().title(m_title);
+
+    titleChanged();
+}
+
+void LToplevelRole::setAppId(const char *appId)
+{
+    if (appId)
+        m_appId = appId;
+    else
+        m_appId.clear();
+
+    for (auto *controller : m_foreignControllers)
+        controller->resource().appId(m_appId);
+
+    appIdChanged();
+}
+
 void LToplevelRole::close() noexcept
 {
     auto &res { *static_cast<XdgShell::RXdgToplevel*>(resource()) };
     res.close();
-    m_flags.add(closedSent);
+    m_flags.add(ClosedSent);
 }
 
 LMargins LToplevelRole::calculateConstraintsFromOutput(LOutput *output,  bool includeExtraGeometry) const noexcept

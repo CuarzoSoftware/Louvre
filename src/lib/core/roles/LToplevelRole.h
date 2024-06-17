@@ -964,14 +964,27 @@ public:
      * @snippet LToplevelRoleDefault.cpp preferredDecorationModeChanged
      */
     virtual void preferredDecorationModeChanged();
+
+    virtual void activateRequest();
+    virtual void unsetMinimizedRequest();
+    virtual void closeRequest();
+
+    const std::vector<LForeignToplevelController*> &foreignControllers() const noexcept
+    {
+        return m_foreignControllers;
+    }
+
 /// @}
 
 private:
     friend class LCompositor;
     friend class LToplevelResizeSession;
+    friend class LForeignToplevelController;
     friend class Protocols::XdgShell::RXdgSurface;
     friend class Protocols::XdgShell::RXdgToplevel;
     friend class Protocols::XdgDecoration::RXdgToplevelDecoration;
+    friend class Protocols::ForeignToplevelManagement::RForeignToplevelHandle;
+    friend class Protocols::ForeignToplevelManagement::GForeignToplevelManager;
 
     enum Flags : UInt32
     {
@@ -981,35 +994,20 @@ private:
         HasDecorationModeToSend     = static_cast<UInt32>(1) << 4,
         HasBoundsToSend             = static_cast<UInt32>(1) << 5,
         HasCapabilitiesToSend       = static_cast<UInt32>(1) << 6,
-        closedSent                  = static_cast<UInt32>(1) << 7,
+        ClosedSent                  = static_cast<UInt32>(1) << 7,
+        HasPendingFirstMap          = static_cast<UInt32>(1) << 8
     };
 
     void handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin) override;
+    void handleParentChange() override;
     void sendPendingConfiguration() noexcept;
     void fullAtomsUpdate();
     void partialAtomsUpdate();
     void updateSerial() noexcept;
     void reset() noexcept;
 
-    void setTitle(const char *title)
-    {
-        if (title)
-            m_title = title;
-        else
-            m_title.clear();
-
-        titleChanged();
-    }
-
-    void setAppId(const char *appId)
-    {
-        if (appId)
-            m_appId = appId;
-        else
-            m_appId.clear();
-
-        appIdChanged();
-    }
+    void setTitle(const char *title);
+    void setAppId(const char *appId);
 
     Atoms &currentAtoms() noexcept
     {
@@ -1024,7 +1022,7 @@ private:
     Atoms m_atoms[2];
     UInt8 m_currentAtomsIndex { 0 };
 
-    LBitset<Flags> m_flags { HasPendingInitialConf };
+    LBitset<Flags> m_flags { HasPendingInitialConf | HasPendingFirstMap };
 
     std::string m_appId;
     std::string m_title;
@@ -1046,6 +1044,10 @@ private:
     // This is for clients that do maximize or fullscreen requests before the first conf
     State m_requestedStateBeforeConf { NoState };
     LWeak<LOutput> m_fullscreenOutputBeforeConf;
+
+    /* Foreign toplevel management */
+    std::vector<LForeignToplevelController*> m_foreignControllers;
+    LForeignToplevelController *m_requesterController { nullptr }; // Only set during requests
 };
 
 #endif // LTOPLEVELROLE_H

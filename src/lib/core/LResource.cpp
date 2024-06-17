@@ -4,11 +4,6 @@
 
 using namespace Louvre;
 
-LResource::LResource(wl_resource *resource) noexcept :
-    m_client(compositor()->getClientFromNativeResource(wl_resource_get_client(resource))),
-    m_resource(resource)
-{}
-
 LResource::LResource(wl_client *client,
                      const wl_interface *interface,
                      Int32 version,

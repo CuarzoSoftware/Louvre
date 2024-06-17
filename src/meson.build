@@ -37,7 +37,7 @@ add_project_arguments([
 ], language: 'cpp')
 
 if get_option('buildtype') == 'custom'
-    proj_args = ['-Ofast', '-finline-functions', '-flto', '-funroll-loops', '-ffast-math', '-s', 
+    proj_args = ['-Ofast', '-finline-limit=1000', '-finline-functions', '-flto', '-funroll-loops', '-ffast-math', '-s', 
     '-march=native', '-fno-strict-aliasing', '-fdefer-pop', '-fmerge-constants', '-fthread-jumps',
     '-floop-optimize', '-fcrossjumping', '-fif-conversion', '-fguess-branch-probability']
     add_project_arguments(proj_args, language : 'c')
@@ -102,7 +102,8 @@ globals = [
     'PointerGestures',
     'SessionLock',
     'ScreenCopy',
-    'LayerShell'
+    'LayerShell',
+    'ForeignToplevelManagement'
 ]
 
 foreach g : globals

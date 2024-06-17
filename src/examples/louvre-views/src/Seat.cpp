@@ -18,7 +18,10 @@ Seat::Seat(const void *params) : LSeat(params) {}
 void Seat::enabledChanged()
 {
     if (!enabled())
+    {
+        cursor()->setVisible(false);
         return;
+    }
 
     // Damage all as a there may be missing pageflips
     for (Output *output : G::outputs())

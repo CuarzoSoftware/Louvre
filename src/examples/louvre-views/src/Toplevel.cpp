@@ -337,6 +337,15 @@ void Toplevel::setMinimizedRequest()
     surface()->setMinimized(true);
 }
 
+void Toplevel::unsetMinimizedRequest()
+{
+    if (surf()->minimizedViews.empty())
+        return;
+
+    LPointerButtonEvent event(LPointerButtonEvent::Left, LPointerButtonEvent::Released);
+    surf()->minimizedViews.front()->pointerButtonEvent(event);
+}
+
 void Toplevel::decorationModeChanged()
 {
     if (decorationMode() == ClientSide)
@@ -375,7 +384,9 @@ void Toplevel::activatedChanged()
 
     if (activated())
     {
+        unsetMinimizedRequest();
         seat()->keyboard()->setFocus(surface());
+        surface()->raise();
 
         if (!fullscreen() && !surf()->parent())
         {

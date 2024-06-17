@@ -109,7 +109,7 @@ void LToplevelRole::configureRequest()
     configureSize(0,0);
     configureState(pendingConfiguration().state | Activated);
     configureDecorationMode(ClientSide);
-    configureCapabilities(WindowMenuCap | FullscreenCap | MaximizeCap | FullscreenCap);
+    configureCapabilities(WindowMenuCap | FullscreenCap | MaximizeCap | MinimizeCap);
 }
 //! [configureRequest]
 
@@ -165,6 +165,12 @@ void LToplevelRole::atomsChanged(LBitset<AtomChanges> changes, const Atoms &prev
         {
             surface()->setPos(prevRect.pos());
         }
+    }
+
+    if (stateChanges.check(Activated) && activated())
+    {
+        surface()->setMinimized(false);
+        surface()->raise();
     }
 
     if (stateChanges.check(Fullscreen | Maximized) && !pendingConfiguration().state.check(Fullscreen | Maximized))
@@ -268,6 +274,7 @@ void LToplevelRole::unsetFullscreenRequest()
 //! [setMinimizedRequest]
 void LToplevelRole::setMinimizedRequest()
 {
+    configureState(pendingConfiguration().state & ~Activated);
     surface()->setMinimized(true);
 
     if (surface()->hasPointerFocus())
@@ -280,6 +287,32 @@ void LToplevelRole::setMinimizedRequest()
     resizeSession().stop();
 }
 //! [setMinimizedRequest]
+
+//! [unsetMinimizedRequest]
+void LToplevelRole::unsetMinimizedRequest()
+{
+    /* This request is always triggered by a foreign client */
+    surface()->setMinimized(false);
+}
+//! [unsetMinimizedRequest]
+
+//! [activateRequest]
+void LToplevelRole::activateRequest()
+{
+    /* This request is always triggered by a foreign client */
+
+    configureState(pendingConfiguration().state | Activated);
+}
+//! [activateRequest]
+
+//! [closeRequest]
+void LToplevelRole::closeRequest()
+{
+    /* This request is always triggered by a foreign client */
+
+    close();
+}
+//! [closeRequest]
 
 //! [showWindowMenuRequest]
 void LToplevelRole::showWindowMenuRequest(const LEvent &triggeringEvent, Int32 x, Int32 y)

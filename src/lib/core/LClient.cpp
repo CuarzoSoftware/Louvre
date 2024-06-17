@@ -226,6 +226,11 @@ const std::vector<LayerShell::GLayerShell *> &LClient::layerShellGlobals() const
     return imp()->layerShellGlobals;
 }
 
+const std::vector<ForeignToplevelManagement::GForeignToplevelManager *> &LClient::foreignToplevelManagerGlobals() const noexcept
+{
+    return imp()->foreignToplevelManagerGlobals;
+}
+
 const LClient::EventHistory &LClient::eventHistory() const noexcept
 {
     return imp()->eventHistory;

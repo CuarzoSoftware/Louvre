@@ -48,6 +48,9 @@ public:
         /// Represents the LToplevelRole class.
         LToplevelRole,
 
+        /// Represents the LForeignToplevelController class.
+        LForeignToplevelController,
+
         /// Represents the LPopupRole class.
         LPopupRole,
 

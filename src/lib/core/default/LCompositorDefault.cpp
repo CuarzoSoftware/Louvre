@@ -1,3 +1,4 @@
+#include <protocols/ForeignToplevelManagement/GForeignToplevelManager.h>
 #include <protocols/RelativePointer/GRelativePointerManager.h>
 #include <protocols/FractionalScale/GFractionalScaleManager.h>
 #include <protocols/PointerConstraints/GPointerConstraints.h>
@@ -68,6 +69,9 @@ bool LCompositor::createGlobalsRequest()
 
     // Allow clients to create toplevel and popup roles
     createGlobal<XdgShell::GXdgWmBase>();
+
+    // Allow clients to request modifying the state of foreign toplevels
+    createGlobal<ForeignToplevelManagement::GForeignToplevelManager>();
 
     // Provides additional info about outputs
     createGlobal<XdgOutput::GXdgOutputManager>();

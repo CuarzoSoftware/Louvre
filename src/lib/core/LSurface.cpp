@@ -1,3 +1,4 @@
+#include <protocols/ForeignToplevelManagement/RForeignToplevelHandle.h>
 #include <protocols/PresentationTime/RPresentationFeedback.h>
 #include <protocols/PointerConstraints/RLockedPointer.h>
 #include <protocols/PointerConstraints/RConfinedPointer.h>
@@ -7,6 +8,7 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LTexturePrivate.h>
+#include <LForeignToplevelController.h>
 #include <LTime.h>
 #include <LSeat.h>
 #include <LClient.h>
@@ -167,6 +169,11 @@ void LSurface::setMinimized(bool state)
     if (state != minimized())
     {
         imp()->stateFlags.setFlag(LSurfacePrivate::Minimized, state);
+
+        if (toplevel())
+            for (auto *controller : toplevel()->foreignControllers())
+                controller->resource().updateState();
+
         minimizedChanged();
 
         for (LSurface *child : children())
@@ -332,6 +339,10 @@ void LSurface::sendOutputEnterEvent(LOutput *output)
             surfaceResource()->enter(global);
 
     imp()->sendPreferredScale();
+
+    if (toplevel())
+        for (auto *controller : toplevel()->foreignControllers())
+            controller->resource().outputEnter(output);
 }
 
 void LSurface::sendOutputLeaveEvent(LOutput *output)
@@ -354,6 +365,11 @@ void LSurface::sendOutputLeaveEvent(LOutput *output)
                     surfaceResource()->leave(global);
 
             imp()->sendPreferredScale();
+
+            if (toplevel())
+                for (auto *controller : toplevel()->foreignControllers())
+                    controller->resource().outputLeave(output);
+
             return;
         }
     }

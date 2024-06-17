@@ -66,6 +66,12 @@ void ToplevelRole::atomsChanged(LBitset<AtomChanges> changes, const Atoms &prev)
             output->fullDamage();
         }
     }
+
+    if (stateChanges.check(Activated) && activated())
+    {
+        surface()->setMinimized(false);
+        surface()->raise();
+    }
 }
 
 void ToplevelRole::configureRequest() noexcept

@@ -13,7 +13,7 @@
 /**
  * @brief Wrapper for native **wl_resource** structs
  *
- * This class serves as a wrapper for the **wl_resource** struct from the original Wayland library.
+ * This class serves as a wrapper for the **wl_resource** struct from the original Wayland library.\n
  * Numerous objects expose their LResource objects, allowing you to utilize native Wayland methods if desired.
  *
  * To explore all the globals/resources implemented by Louvre, refer to the ```Louvre/src/lib/protocols``` directory.
@@ -67,15 +67,6 @@ public:
     void destroy();
 
 protected:
-
-    /**
-     * @brief Constructor for LResource using an existing **wl_resource**.
-     *
-     * @note This constructor should be used for already created **wl_resources**. If you need to create a new **wl_resource** use the other constructors instead.
-     *
-     * @param resource Pointer to the wl_resource struct to wrap.
-     */
-    LResource(wl_resource *resource) noexcept;
 
     /**
      * @brief Constructor for LResource using **wl_client** and other parameters.

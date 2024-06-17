@@ -28,6 +28,7 @@
 #define LOUVRE_POINTER_CONSTRAINTS_VERSION 1
 #define LOUVRE_SCREEN_COPY_MANAGER_VERSION 3
 #define LOUVRE_LAYER_SHELL_VERSION 5
+#define LOUVRE_FOREIGN_TOPLEVEL_MANAGER_VERSION 3
 
 #define L_UNUSED(object){(void)object;}
 
@@ -170,6 +171,7 @@ namespace Louvre
 
     class LToplevelResizeSession;
     class LToplevelMoveSession;
+    class LForeignToplevelController;
 
     // Other
     class LDMABuffer;
@@ -426,6 +428,13 @@ namespace Louvre
             class GLayerShell;
 
             class RLayerSurface;
+        }
+
+        namespace ForeignToplevelManagement
+        {
+            class GForeignToplevelManager;
+
+            class RForeignToplevelHandle;
         }
     }
 

@@ -141,8 +141,6 @@ void Surface::parentChanged()
             for (Workspace *ws : tl->fullscreenOutput->workspaces)
                 ws->clipChildren();
         }
-
-        parent()->raise();
     }
 }
 
@@ -256,11 +254,7 @@ void Surface::roleChanged()
         getView()->enableParentOffset(false);
         raise();
     }
-    else if (roleId() == LSurface::Toplevel || roleId() == LSurface::Popup)
-    {
-        sendOutputEnterEvent(cursor()->output());
-    }
-    else if (roleId() == LSurface::SessionLock)
+    else if (roleId() == LSurface::SessionLock || roleId() == LSurface::Popup)
     {
         getView()->setParent(&G::compositor()->overlayLayer);
     }
