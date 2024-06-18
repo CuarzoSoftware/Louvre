@@ -36,7 +36,7 @@ RForeignToplevelHandle::RForeignToplevelHandle
         foreignToplevelManagerRes.version(),
         0,
         &imp
-        ),
+    ),
     m_foreignToplevelManagerRes(&foreignToplevelManagerRes),
     m_toplevelRole(&toplevelRole),
     m_controller(LFactory::createObject<LForeignToplevelController>(this))
@@ -110,7 +110,7 @@ void RForeignToplevelHandle::set_maximized(wl_client */*client*/, wl_resource *r
     auto &res { *static_cast<RForeignToplevelHandle*>(wl_resource_get_user_data(resource)) };
 
     if (!res.m_foreignToplevelManagerRes || res.m_foreignToplevelManagerRes->stopped()
-        || !res.m_toplevelRole || !res.m_toplevelRole->capabilities().check(LToplevelRole::MaximizeCap))
+        || !res.m_toplevelRole || !res.m_toplevelRole->surface()->mapped() || !res.m_toplevelRole->capabilities().check(LToplevelRole::MaximizeCap))
         return;
 
     res.toplevelRole()->m_requesterController = res.controller();
@@ -123,7 +123,7 @@ void RForeignToplevelHandle::unset_maximized(wl_client */*client*/, wl_resource 
     auto &res { *static_cast<RForeignToplevelHandle*>(wl_resource_get_user_data(resource)) };
 
     if (!res.m_foreignToplevelManagerRes || res.m_foreignToplevelManagerRes->stopped()
-        || !res.m_toplevelRole || !res.m_toplevelRole->capabilities().check(LToplevelRole::MaximizeCap))
+        || !res.m_toplevelRole || !res.m_toplevelRole->surface()->mapped() || !res.m_toplevelRole->capabilities().check(LToplevelRole::MaximizeCap))
         return;
 
     res.toplevelRole()->m_requesterController = res.controller();
@@ -136,7 +136,7 @@ void RForeignToplevelHandle::set_minimized(wl_client */*client*/, wl_resource *r
     auto &res { *static_cast<RForeignToplevelHandle*>(wl_resource_get_user_data(resource)) };
 
     if (!res.m_foreignToplevelManagerRes || res.m_foreignToplevelManagerRes->stopped()
-        || !res.m_toplevelRole || !res.m_toplevelRole->capabilities().check(LToplevelRole::MinimizeCap))
+        || !res.m_toplevelRole || !res.m_toplevelRole->surface()->mapped() || !res.m_toplevelRole->capabilities().check(LToplevelRole::MinimizeCap))
         return;
 
     res.toplevelRole()->m_requesterController = res.controller();
@@ -149,7 +149,7 @@ void RForeignToplevelHandle::unset_minimized(wl_client */*client*/, wl_resource 
     auto &res { *static_cast<RForeignToplevelHandle*>(wl_resource_get_user_data(resource)) };
 
     if (!res.m_foreignToplevelManagerRes || res.m_foreignToplevelManagerRes->stopped()
-        || !res.m_toplevelRole || !res.m_toplevelRole->capabilities().check(LToplevelRole::MinimizeCap))
+        || !res.m_toplevelRole || !res.m_toplevelRole->surface()->mapped() || !res.m_toplevelRole->capabilities().check(LToplevelRole::MinimizeCap))
         return;
 
     res.toplevelRole()->m_requesterController = res.controller();
@@ -161,7 +161,7 @@ void RForeignToplevelHandle::activate(wl_client */*client*/, wl_resource *resour
 {
     auto &res { *static_cast<RForeignToplevelHandle*>(wl_resource_get_user_data(resource)) };
 
-    if (!res.m_foreignToplevelManagerRes || res.m_foreignToplevelManagerRes->stopped() || !res.m_toplevelRole)
+    if (!res.m_foreignToplevelManagerRes || res.m_foreignToplevelManagerRes->stopped() || !res.m_toplevelRole || !res.m_toplevelRole->surface()->mapped())
         return;
 
     res.toplevelRole()->m_requesterController = res.controller();
@@ -173,7 +173,7 @@ void RForeignToplevelHandle::close(wl_client */*client*/, wl_resource *resource)
 {
     auto &res { *static_cast<RForeignToplevelHandle*>(wl_resource_get_user_data(resource)) };
 
-    if (!res.m_foreignToplevelManagerRes || res.m_foreignToplevelManagerRes->stopped() || !res.m_toplevelRole)
+    if (!res.m_foreignToplevelManagerRes || res.m_foreignToplevelManagerRes->stopped() || !res.m_toplevelRole || !res.m_toplevelRole->surface()->mapped())
         return;
 
     res.toplevelRole()->m_requesterController = res.controller();
@@ -229,7 +229,7 @@ void RForeignToplevelHandle::set_fullscreen(wl_client */*client*/, wl_resource *
     auto &res { *static_cast<RForeignToplevelHandle*>(wl_resource_get_user_data(resource)) };
 
     if (!res.m_foreignToplevelManagerRes || res.m_foreignToplevelManagerRes->stopped()
-        || !res.m_toplevelRole || !res.m_toplevelRole->capabilities().check(LToplevelRole::FullscreenCap))
+        || !res.m_toplevelRole || !res.m_toplevelRole->surface()->mapped() || !res.m_toplevelRole->capabilities().check(LToplevelRole::FullscreenCap))
         return;
 
     LOutput *dstOutput { nullptr };
@@ -247,7 +247,7 @@ void RForeignToplevelHandle::unset_fullscreen(wl_client */*client*/, wl_resource
     auto &res { *static_cast<RForeignToplevelHandle*>(wl_resource_get_user_data(resource)) };
 
     if (!res.m_foreignToplevelManagerRes || res.m_foreignToplevelManagerRes->stopped()
-        || !res.m_toplevelRole || !res.m_toplevelRole->capabilities().check(LToplevelRole::FullscreenCap))
+        || !res.m_toplevelRole || !res.m_toplevelRole->surface()->mapped() || !res.m_toplevelRole->capabilities().check(LToplevelRole::FullscreenCap))
         return;
 
     res.toplevelRole()->m_requesterController = res.controller();

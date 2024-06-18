@@ -61,7 +61,7 @@ GForeignToplevelManager::~GForeignToplevelManager() noexcept
 
 void GForeignToplevelManager::toplevel(LToplevelRole &toplevelRole)
 {
-    if (m_stopped)
+    if (m_stopped || !toplevelRole.foreignControllerFilter(this))
         return;
 
     new RForeignToplevelHandle(*this, toplevelRole);

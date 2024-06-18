@@ -16,6 +16,7 @@ LToplevelMoveSession::LToplevelMoveSession(LToplevelRole *toplevel) noexcept :
 setOnBeforeUpdateCallback([](LToplevelMoveSession *session)
 {
     LMargins constraints { session->toplevel()->calculateConstraintsFromOutput(cursor()->output()) };
+    constraints.bottom = LEdgeDisabled;
     session->setConstraints(constraints);
 });
 //! [setCallback]

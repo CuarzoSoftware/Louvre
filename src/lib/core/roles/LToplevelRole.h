@@ -45,6 +45,12 @@
  *
  * @note Minimized is not a toplevel @ref State and can be applied immediately.
  *
+ * @section foreign-controller Foreign Toplevel Controllers
+ *
+ * Requests, including those previously mentioned as well as `unsetMinimizedRequest()`, `activateRequest()`, and `closeRequest()`, can be triggered by external clients
+ * through the [Wlr Foreign Toplevel Management](https://wayland.app/protocols/wlr-foreign-toplevel-management-unstable-v1) protocol. For a comprehensive understanding
+ * of this functionality, please refer to the LForeignToplevelController class documentation.
+ *
  * @section toplevel-sessions Interactive Sessions
  *
  * Clients can request to start interactive move and resize sessions through startMoveRequest() and startResizeRequest(). To properly handle such requests,
@@ -769,6 +775,29 @@ public:
     void close() noexcept;
 
     /**
+     * @brief Vector of foreign controllers
+     *
+     * @see The LForeignToplevelController class for more details.
+     */
+    const std::vector<LForeignToplevelController*> &foreignControllers() const noexcept
+    {
+        return m_foreignControllers;
+    }
+
+    /**
+     * @brief LForeignToplevelController triggering a request.
+     *
+     * If this method does not return `nullptr` during a state-changing request, it means
+     * it is being triggered by the specified LForeignToplevelController::client().
+     *
+     * @see LForeignToplevelController class for more details.
+     */
+    LForeignToplevelController *requesterController() const noexcept
+    {
+        return m_requesterController;
+    }
+
+    /**
      * @brief Auxiliary previous rect.
      *
      * This auxiliary rect is used by the default implementation
@@ -855,9 +884,23 @@ public:
     virtual void startResizeRequest(const LEvent &triggeringEvent, LBitset<LEdge> edge);
 
     /**
+     * @brief Request to activate.
+     *
+     * Triggered by a requesterController() expecting the compositor to configure the toplevel with the @ref Activated state.
+     *
+     * @see configureState(), requesterController() and LForeignToplevelController.
+     *
+     * @note The compositor is free to ignore this request.
+     *
+     * #### Default Implementation
+     * @snippet LToplevelRoleDefault.cpp activateRequest
+     */
+    virtual void activateRequest();
+
+    /**
      * @brief Request to maximize.
      *
-     * Triggered by the client expecting the compositor to configure the toplevel with the @ref Maximized state. See configureState().
+     * Triggered by the client or a requesterController() expecting the compositor to configure the toplevel with the @ref Maximized state. See configureState().
      *
      * @note This event is only triggered if the @ref MaximizeCap is set. See configureCapabilities().
      * @note The compositor is free to ignore this request.
@@ -870,7 +913,7 @@ public:
     /**
      * @brief Request to unmaximize.
      *
-     * Triggered by the client expecting the compositor to configure the toplevel without the @ref Maximized state. See configureState().
+     * Triggered by the client or a requesterController() expecting the compositor to configure the toplevel without the @ref Maximized state. See configureState().
      *
      * @note This event is only triggered if the @ref MaximizeCap is set. See configureCapabilities().
      * @note The compositor is free to ignore this request.
@@ -883,7 +926,7 @@ public:
     /**
      * @brief Request to set fullscreen mode.
      *
-     * Triggered by the client expecting the compositor to configure the toplevel with the @ref Fullscreen state. See configureState().
+     * Triggered by the client or a requesterController() expecting the compositor to configure the toplevel with the @ref Fullscreen state. See configureState().
      *
      * @note This event is only triggered if the @ref FullscreenCap is set. See configureCapabilities().
      * @note The compositor is free to ignore this request.
@@ -898,7 +941,7 @@ public:
     /**
      * @brief Request to unset fullscreen mode.
      *
-     * Triggered by the client expecting the compositor to configure the toplevel without the @ref Fullscreen state. See configureState().
+     * Triggered by the client or a requesterController() expecting the compositor to configure the toplevel without the @ref Fullscreen state. See configureState().
      *
      * @note This event is only triggered if the @ref FullscreenCap is set. See configureCapabilities().
      * @note The compositor is free to ignore this request.
@@ -911,7 +954,9 @@ public:
     /**
      * @brief Minimize request.
      *
-     * Triggered by the client expecting the compositor to minimize the toplevel window.
+     * Triggered by the client or a requesterController() expecting the compositor to minimize the toplevel window.
+     *
+     * @see LSurface::setMinimized(), requesterController() and LForeignToplevelController.
      *
      * @note This event is only triggered if the @ref MinimizeCap is set. See configureCapabilities().
      * @note The compositor is free to ignore this request.
@@ -920,6 +965,51 @@ public:
      * @snippet LToplevelRoleDefault.cpp setMinimizedRequest
      */
     virtual void setMinimizedRequest();
+
+    /**
+     * @brief Unminimize request.
+     *
+     * Triggered by a requesterController() expecting the compositor to unminimize the toplevel window.
+     *
+     * @see LSurface::setMinimized(), requesterController() and LForeignToplevelController.
+     *
+     * @note This event is only triggered if the @ref MinimizeCap is set. See configureCapabilities().
+     * @note The compositor is free to ignore this request.
+     *
+     * #### Default implementation
+     * @snippet LToplevelRoleDefault.cpp unsetMinimizedRequest
+     */
+    virtual void unsetMinimizedRequest();
+
+    /**
+     * @brief Close request.
+     *
+     * Triggered by a requesterController() expecting the compositor to close() the toplevel window.
+     *
+     * @see close(), requesterController() and LForeignToplevelController.
+     *
+     * @note The compositor is free to ignore this request.
+     *
+     * #### Default implementation
+     * @snippet LToplevelRoleDefault.cpp closeRequest
+     */
+    virtual void closeRequest();
+
+    /**
+     * @brief Foreign toplevel controller filter
+     *
+     * This method allows you to filter which foreign clients can control this toplevel. See LForeignToplevelController for more details.
+     *
+     * If accepted, a new LForeignToplevelController object will be added to the foreignControllers() vector.
+     *
+     * @param manager The `GForeignToplevelManager` resource requesting to control the toplevel.
+     *
+     * @return `true` to allow the foreign client to control the toplevel, `false` to deny it.
+     *
+     * #### Default implementation
+     * @snippet LToplevelRoleDefault.cpp foreignControllerFilter
+     */
+    virtual bool foreignControllerFilter(Protocols::ForeignToplevelManagement::GForeignToplevelManager *manager);
 
     /**
      * @brief Show window menu request.
@@ -964,15 +1054,6 @@ public:
      * @snippet LToplevelRoleDefault.cpp preferredDecorationModeChanged
      */
     virtual void preferredDecorationModeChanged();
-
-    virtual void activateRequest();
-    virtual void unsetMinimizedRequest();
-    virtual void closeRequest();
-
-    const std::vector<LForeignToplevelController*> &foreignControllers() const noexcept
-    {
-        return m_foreignControllers;
-    }
 
 /// @}
 

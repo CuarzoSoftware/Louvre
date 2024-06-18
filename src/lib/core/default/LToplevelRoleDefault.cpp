@@ -292,6 +292,7 @@ void LToplevelRole::setMinimizedRequest()
 void LToplevelRole::unsetMinimizedRequest()
 {
     /* This request is always triggered by a foreign client */
+
     surface()->setMinimized(false);
 }
 //! [unsetMinimizedRequest]
@@ -313,6 +314,16 @@ void LToplevelRole::closeRequest()
     close();
 }
 //! [closeRequest]
+
+//! [foreignControllerFilter]
+bool LToplevelRole::foreignControllerFilter(Protocols::ForeignToplevelManagement::GForeignToplevelManager *manager)
+{
+    L_UNUSED(manager)
+
+    /* Allow all foreign clients to control the toplevel */
+    return true;
+}
+//! [foreignControllerFilter]
 
 //! [showWindowMenuRequest]
 void LToplevelRole::showWindowMenuRequest(const LEvent &triggeringEvent, Int32 x, Int32 y)

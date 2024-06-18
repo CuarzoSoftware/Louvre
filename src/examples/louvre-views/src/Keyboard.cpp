@@ -1,3 +1,4 @@
+#include <protocols/ForeignToplevelManagement/GForeignToplevelManager.h>
 #include <LSurface.h>
 #include <LCursor.h>
 #include <LCompositor.h>
@@ -148,6 +149,16 @@ void Keyboard::keyEvent(const LKeyboardKeyEvent &event)
                     output->setScale(output->fractionalScale() - 0.25);
                     output->repaint();
                 }
+                break;
+
+            /**** Destroy all current foreign toplevel managers ****/
+
+            /* This only prevents current managers from receiving information about newly
+             * created toplevel windows */
+            case KEY_F:
+                for (LClient *client : compositor()->clients())
+                    while (!client->foreignToplevelManagerGlobals().empty())
+                        client->foreignToplevelManagerGlobals().back()->finished();
                 break;
 
             default:
