@@ -1,3 +1,26 @@
+Louvre (2.1.0-1)
+
+  # New Protocols
+
+  * Wlr Foreign Toplevel Management (Refer to the LForeignToplevelController class for details).
+
+  # API Additions
+
+  * Add activateRequest(), closeRequest() and unsetMinimizedRequest() to the LToplevelRole class.
+
+  # Minor API changes
+
+  * Removed unused constructor overload in the LResource class.
+  * Disabled bottom constraints by default during interactive toplevel move sessions.
+
+  # Bug Fixes
+
+  * Implemented a temporary fix to allow xdg_popups to trigger reposition requests before being mapped (until GTK4 fixes it).
+  * Removed unnecessary checks in LLauncher::startDaemon() that prevented it from starting the daemon on some systems.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Mon, 17 Jun 2024 22:22:05 -0400
+
+
 Louvre (2.0.0-1)
 
   # New Protocols/Globals

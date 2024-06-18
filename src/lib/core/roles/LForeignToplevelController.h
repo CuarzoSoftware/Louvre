@@ -8,6 +8,8 @@
 /**
  * @brief Foreign Toplevel Controller
  *
+ * @anchor lforeigntoplevelcontroller_detailed
+ *
  * Clients using the [Wlr Foreign Toplevel Management](https://wayland.app/protocols/wlr-foreign-toplevel-management-unstable-v1)
  * protocol can receive information about all open toplevel windows within the compositor and request to modify their state,
  * such as activating, minimizing, maximizing them, and more.

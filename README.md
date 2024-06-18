@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Louvre is released under the MIT license." />
   </a>
   <a href="https://github.com/CuarzoSoftware/Louvre">
-    <img src="https://img.shields.io/badge/version-2.0.0-brightgreen" alt="Current Louvre version." />
+    <img src="https://img.shields.io/badge/version-2.1.0-brightgreen" alt="Current Louvre version." />
   </a>
 </p>
 
@@ -56,6 +56,7 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 * Wlr Gamma Control
 * Wlr Layer Shell
 * Wlr Screen Copy
+* Wlr Foreign Toplevel Management
 * Pointer Gestures
 * Pointer Constraints
 * Relative Pointer
