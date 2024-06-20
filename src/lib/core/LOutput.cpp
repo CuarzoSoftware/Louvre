@@ -269,7 +269,6 @@ void LOutput::setScale(Float32 scale) noexcept
     if (imp()->fractionalScale == scale)
         return;
 
-    repaint();
     imp()->scale = ceilf(scale);
     imp()->fractionalScale = scale;
 
@@ -287,11 +286,15 @@ void LOutput::setScale(Float32 scale) noexcept
         imp()->stateFlags.remove(LOutputPrivate::UsingFractionalScale);
 
     imp()->updateRect();
-    imp()->updateGlobals();
-    cursor()->imp()->textureChanged = true;
 
-    for (LSurface *s : compositor()->surfaces())
-        s->imp()->sendPreferredScale();
+    if (!imp()->stateFlags.check(LOutputPrivate::IsBlittingFramebuffers))
+    {
+        imp()->updateGlobals();
+        cursor()->imp()->textureChanged = true;
+        repaint();
+        for (LSurface *s : compositor()->surfaces())
+            s->imp()->sendPreferredScale();
+    }
 }
 
 Float32 LOutput::scale() const noexcept

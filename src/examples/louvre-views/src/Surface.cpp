@@ -147,14 +147,23 @@ void Surface::parentChanged()
 void Surface::mappingChanged()
 {
     if (cursorRole())
+    {
         view.setVisible(false);
+        return;
+    }
 
     if (mapped())
     {
         compositor()->repaintAllOutputs();
 
         if (!firstMap)
+        {
+            view.setVisible(true);
+            getView()->setVisible(true);
+            getView()->setParent(&G::compositor()->surfacesLayer);
+            raise();
             return;
+        }
 
         Client *client { static_cast<Client*>(this->client()) };
 

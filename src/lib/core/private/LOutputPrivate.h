@@ -47,6 +47,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
         ScreenshotsWithCursor               = static_cast<UInt32>(1) << 8,
         ScreenshotsWithoutCursor            = static_cast<UInt32>(1) << 9,
         NeedsFullRepaint                    = static_cast<UInt32>(1) << 10,
+        IsBlittingFramebuffers              = static_cast<UInt32>(1) << 11,
     };
 
     LOutputPrivate(LOutput *output);

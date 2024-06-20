@@ -299,6 +299,8 @@ void LOutput::LOutputPrivate::backendPaintGL()
     /* Let the user do their rendering*/
     output->paintGL();
 
+    stateFlags.add(IsBlittingFramebuffers);
+
     /* This ensures that all active outputs have been repainted at least once after a client requests to lock the session.
      * Protocol quote: The locked event must not be sent until a new "locked" frame has been presented on all outputs and no
      * security sensitive normal/unlocked content is possibly visible. */
@@ -313,6 +315,8 @@ void LOutput::LOutputPrivate::backendPaintGL()
      * screen copy requests*/
     damageToBufferCoords();
     blitFramebuffers();
+
+    stateFlags.remove(IsBlittingFramebuffers);
 
     /* Ensure clients receive frame callbacks and pending roles configurations on time */
     compositor()->flushClients();
@@ -421,7 +425,9 @@ void LOutput::LOutputPrivate::updateRect()
     rect.setSize(sizeB);
     rect.setW(roundf(Float32(rect.w())/scale));
     rect.setH(roundf(Float32(rect.h())/scale));
-    updateExclusiveZones();
+
+    if (!stateFlags.check(IsBlittingFramebuffers))
+        updateExclusiveZones();
 }
 
 void LOutput::LOutputPrivate::updateGlobals()
