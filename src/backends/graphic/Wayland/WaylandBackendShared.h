@@ -4,7 +4,6 @@
 #include <LPoint.h>
 #include <LWeak.h>
 #include <LObject.h>
-#include <cstdio>
 #include <wayland-client.h>
 #include <mutex>
 #include <sys/poll.h>
@@ -61,7 +60,6 @@ struct WaylandBackendShared
             if (cursor.released)
                 return &cursor;
 
-        printf("N_");
         return nullptr;
     }
 

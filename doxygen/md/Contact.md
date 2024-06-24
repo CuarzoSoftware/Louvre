@@ -1,5 +1,9 @@
 # 💬 Contact {#contact_page}
 
+### Instant Messaging
+
+For direct communication, join us on [Matrix: #louvre-wayland](https://matrix.to/#/#louvre-wayland:matrix.org).
+
 ### Bugs
 
 If you encounter any bugs, kindly open an [🐞 issue](https://github.com/CuarzoSoftware/Louvre/issues). Please provide details about the circumstances under which the bugs occur, your hardware specifications, and any available debugging logs.
@@ -19,7 +23,3 @@ Feel free to showcase your creations in the [⭐ Gallery](https://github.com/Cua
 ### Hardware
 
 Sharing details about the hardware specifications and platform where you have successfully used Louvre, along with specifics on what works and what doesn't, can be valuable for newcomers. Please share your experiences in the [💻 Tested Hardware & Platforms](https://github.com/CuarzoSoftware/Louvre/discussions/categories/tested-hardware-platforms) section.
-
-### Email
-
-For direct communication, you can reach me via email at ✉️ <ehopperdietzel@gmail.com>.
