@@ -21,7 +21,6 @@
 using namespace Louvre;
 
 #define BKND_NAME "WAYLAND BACKEND"
-#define CURSOR_SIZE 64 * 64 * 4
 
 struct Texture
 {
@@ -109,12 +108,6 @@ public:
     inline static bool repaint { false };
     inline static bool vSync { true };
 
-    // Cursor
-    inline static wl_shm *shm { nullptr };
-    inline static wl_shm_pool *shmPool { nullptr };
-    inline static Int32 cursorMapFd { -1 };
-    inline static UInt8 *cursorMap { nullptr };
-
     static UInt32 backendGetId()
     {
         return LGraphicBackendWayland;
@@ -133,27 +126,32 @@ public:
 
     static bool initCursor()
     {
-        if (!shm)
+        if (!shared.shm)
             return false;
 
-        cursorMapFd = Louvre::createSHM(CURSOR_SIZE);
+        shared.cursorMapFd = Louvre::createSHM(LOUVRE_WAYLAND_BACKEND_CURSOR_SIZE * LOUVRE_WAYLAND_BACKEND_CURSORS);
 
-        if (cursorMapFd < 0)
+        if (shared.cursorMapFd < 0)
             return false;
 
-        cursorMap = (UInt8*)mmap(NULL, CURSOR_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, cursorMapFd, 0);
+        shared.cursorMap = (UInt8*)mmap(NULL, LOUVRE_WAYLAND_BACKEND_CURSOR_SIZE * LOUVRE_WAYLAND_BACKEND_CURSORS, PROT_READ | PROT_WRITE, MAP_SHARED, shared.cursorMapFd, 0);
 
-        if (cursorMap == MAP_FAILED)
+        if (shared.cursorMap == MAP_FAILED)
         {
-            cursorMap = nullptr;
-            close(cursorMapFd);
+            shared.cursorMap = nullptr;
+            close(shared.cursorMapFd);
             return false;
         }
 
-        shmPool = wl_shm_create_pool(shm, cursorMapFd, CURSOR_SIZE);
-        shared.cursorBuffer = wl_shm_pool_create_buffer(shmPool, 0, 64, 64, 64 * 4, WL_SHM_FORMAT_ARGB8888);
+        shared.shmPool = wl_shm_create_pool(shared.shm, shared.cursorMapFd, LOUVRE_WAYLAND_BACKEND_CURSOR_SIZE * LOUVRE_WAYLAND_BACKEND_CURSORS);
+        shared.cursors.reserve(LOUVRE_WAYLAND_BACKEND_CURSORS);
+
+        for (std::size_t i = 0; i < LOUVRE_WAYLAND_BACKEND_CURSORS; i++)
+            shared.cursors.emplace_back(shared, i);
+
+        shared.currentCursor = shared.getFreeCursor();
         shared.cursorSurface = wl_compositor_create_surface(compositor);
-        wl_surface_attach(shared.cursorSurface, shared.cursorBuffer, 0, 0);
+        wl_surface_attach(shared.cursorSurface, shared.currentCursor->buffer, 0, 0);
         wl_display_roundtrip(display);
         return true;
     }
@@ -166,34 +164,30 @@ public:
             shared.cursorSurface = nullptr;
         }
 
-        if (shared.cursorBuffer)
+        shared.cursors.clear();
+
+        if (shared.shmPool)
         {
-            wl_buffer_destroy(shared.cursorBuffer);
-            shared.cursorBuffer = nullptr;
+            wl_shm_pool_destroy(shared.shmPool);
+            shared.shmPool = nullptr;
         }
 
-        if (shmPool)
+        if (shared.cursorMap)
         {
-            wl_shm_pool_destroy(shmPool);
-            shmPool = nullptr;
+            munmap(shared.cursorMap, LOUVRE_WAYLAND_BACKEND_CURSOR_SIZE * LOUVRE_WAYLAND_BACKEND_CURSORS);
+            shared.cursorMap = nullptr;
         }
 
-        if (cursorMap)
+        if (shared.cursorMapFd >= 0)
         {
-            munmap(cursorMap, CURSOR_SIZE);
-            cursorMap = nullptr;
+            close(shared.cursorMapFd);
+            shared.cursorMapFd = -1;
         }
 
-        if (cursorMapFd >= 0)
+        if (shared.shm)
         {
-            close(cursorMapFd);
-            cursorMapFd = -1;
-        }
-
-        if (shm)
-        {
-            wl_shm_destroy(shm);
-            shm = nullptr;
+            wl_shm_destroy(shared.shm);
+            shared.shm = nullptr;
         }
     }
 
@@ -958,35 +952,36 @@ public:
 
     static bool outputHasHardwareCursorSupport(LOutput */*output*/)
     {
-        return cursorMap != nullptr;
+        return shared.cursorMap != nullptr;
     }
 
     static void outputSetCursorTexture(LOutput */*output*/, UChar8 *buffer)
     {
         shared.mutex.lock();
+
         if (buffer)
         {
-            memcpy(cursorMap, buffer, CURSOR_SIZE);
-            wl_buffer_destroy(shared.cursorBuffer);
-            LSize size { cursor()->rect().size() * shared.bufferScale };
+            shared.currentCursor = shared.getFreeCursor();
 
-            if (size.w() > 64)
-                size.setW(64);
+            if (shared.currentCursor)
+            {
+                memcpy(shared.currentCursor->map, buffer, LOUVRE_WAYLAND_BACKEND_CURSOR_SIZE);
+                LSize size { cursor()->rect().size() * shared.bufferScale };
 
-            if (size.h() > 64)
-                size.setH(64);
+                if (size.w() > 64)
+                    size.setW(64);
 
-            shared.cursorBuffer = wl_shm_pool_create_buffer(shmPool,
-                                                            0,
-                                                            size.w(),
-                                                            size.h(),
-                                                            64 * 4, WL_SHM_FORMAT_ARGB8888);
-            wl_surface_attach(shared.cursorSurface, shared.cursorBuffer, 0, 0);
+                if (size.h() > 64)
+                    size.setH(64);
+
+                wl_surface_attach(shared.cursorSurface, shared.currentCursor->buffer, 0, 0);
+            }
             shared.cursorVisible = true;
             shared.cursorChangedBuffer = true;
         }
         else
         {
+            shared.currentCursor = nullptr;
             shared.cursorVisible = false;
             shared.cursorChangedBuffer = true;
         }
@@ -1046,9 +1041,9 @@ public:
             xdgDecorationManager = (zxdg_decoration_manager_v1*)wl_registry_bind(registry, name, &zxdg_decoration_manager_v1_interface, 1);
         }
 
-        else if (!shm && strcmp(interface, wl_shm_interface.name) == 0)
+        else if (!shared.shm && strcmp(interface, wl_shm_interface.name) == 0)
         {
-            shm = (wl_shm*)wl_registry_bind(registry, name, &wl_shm_interface, 1);
+            shared.shm = (wl_shm*)wl_registry_bind(registry, name, &wl_shm_interface, 1);
         }
 
         else if (version >= 2 && strcmp(interface, wl_output_interface.name) == 0)
