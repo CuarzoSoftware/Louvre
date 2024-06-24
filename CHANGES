@@ -8,6 +8,10 @@ Louvre (2.2.0-1)
 
   * Removed the hardcoded call to LKeyboard::setKeymap() inside the LCompositor::initialized() event, enabling the use of XKB environment variables to override the default keyboard map. Refer to the Environment page for more details.
 
+  # Bug Fixes
+
+  * Fixed bug causing unnecessary repaints on outputs using fractional scaling with oversampling.
+
   # Examples
 
   * Cleaned up louvre-weston-clone example and replaced most raw pointers with smart pointers.
