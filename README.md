@@ -148,15 +148,15 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 
 ## 🔨 Upcoming Features
 
+* Wlr Output Management
+* Content Type Hint Protocol
+* XDG activation Protocol
+* Idle Notify Protocol
+* Cursor Shape Protocol
 * Direct Buffer Scanout
 * DRM Planes Control
 * Rootless XWayland
 * DRM Lease Protocol
 * Tablet Events Protocol
-* Single Pixel Buffer Protocol
-* XDG activation Protocol
-* Content Type Hint Protocol
-* Idle Notify Protocol
-* Cursor Shape Protocol
 * Virtual Keyboard Protocol
 * Input Methods Protocol
