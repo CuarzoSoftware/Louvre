@@ -1,3 +1,20 @@
+Louvre (2.2.0-1)
+
+  # New Protocols
+
+  * Single Pixel Buffer.
+
+  # Environment Variables
+
+  * Removed the hardcoded call to LKeyboard::setKeymap() inside the LCompositor::initialized() event, enabling the use of XKB environment variables to override the default keyboard map. Refer to the Environment page for more details.
+
+  # Examples
+
+  * Cleaned up louvre-weston-clone example and replaced most raw pointers with smart pointers.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Mon, 17 Jun 2024 22:22:05 -0400
+
+
 Louvre (2.1.0-1)
 
   # New Protocols

@@ -376,6 +376,13 @@ public:
      */
     const std::vector<Protocols::ForeignToplevelManagement::GForeignToplevelManager*> &foreignToplevelManagerGlobals() const noexcept;
 
+    /**
+     * Resources created when the client binds to the
+     * [wp_single_pixel_buffer_manager_v1](https://wayland.app/protocols/single-pixel-buffer-v1#wp_single_pixel_buffer_manager_v1) global
+     * of the Single Pixel Buffer protocol.
+     */
+    const std::vector<Protocols::SinglePixelBuffer::GSinglePixelBufferManager*> &singlePixelBufferManagerGlobals() const noexcept;
+
     LPRIVATE_IMP_UNIQUE(LClient)
 };
 

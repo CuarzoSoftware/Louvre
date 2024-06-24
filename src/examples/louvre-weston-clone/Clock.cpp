@@ -13,8 +13,12 @@ Clock::Clock() noexcept
 
     if (loadedFont)
     {
-        clockTimer = wl_event_loop_add_timer(wl_display_get_event_loop(LCompositor::display()), &Clock::timerCallback, this);
-        wl_event_source_timer_update(clockTimer, 1);
+        minuteTimer.setCallback([this](LTimer *timer) {
+            updateClockTexture();
+            timer->start(millisecondsUntilNextMinute() + 1500);
+        });
+
+        minuteTimer.start(1);
         LLog::debug("[louvre-weston-clone] Created clock timer.");
     }
 }
@@ -76,7 +80,7 @@ void Clock::updateClockTexture()
         return;
 
     if (!texture)
-        texture = new LTexture();
+        texture = std::make_unique<LTexture>();
 
     const Int32 fontSize { 2 * (32 - 16) };
     updateClockText();
@@ -96,8 +100,7 @@ void Clock::updateClockTexture()
     {
         LLog::error("Failed to set FT_Face size.");
         FT_Done_Face(face);
-        delete texture;
-        texture = nullptr;
+        texture.reset();
         return;
     }
 
@@ -112,16 +115,14 @@ void Clock::updateClockTexture()
         if (charIndex == 0)
         {
             LLog::error("Failed to get FT_Face char index.");
-            delete texture;
-            texture = nullptr;
+            texture.reset();
             return;
         }
 
         if (FT_Load_Glyph(face, charIndex, FT_LOAD_ADVANCE_ONLY) != 0)
         {
             LLog::error("Failed to load FT_Face advance.");
-            delete texture;
-            texture = nullptr;
+            texture.reset();
             return;
         }
 
@@ -138,8 +139,7 @@ void Clock::updateClockTexture()
     }
     else
     {
-        delete texture;
-        texture = nullptr;
+        texture.reset();
         return;
     }
 
@@ -154,8 +154,7 @@ void Clock::updateClockTexture()
         {
             LLog::error("Failed to get FT_Face char index.");
             free(buffer);
-            delete texture;
-            texture = nullptr;
+            texture.reset();
             return;
         }
 
@@ -163,8 +162,7 @@ void Clock::updateClockTexture()
         {
             LLog::error("Failed to load FT_Face default.");
             free(buffer);
-            delete texture;
-            texture = nullptr;
+            texture.reset();
             return;
         }
 
@@ -194,8 +192,7 @@ void Clock::updateClockTexture()
     if (!texture->setDataFromMainMemory(LSize(bufferWidth, bufferHeight), bufferWidth*4, DRM_FORMAT_ABGR8888, buffer))
     {
         free(buffer);
-        delete texture;
-        texture = nullptr;
+        texture.reset();
         return;
     }
 
@@ -206,14 +203,6 @@ void Clock::updateClockTexture()
         o->redrawClock = true;
         o->repaint();
     }
-}
-
-Int32 Clock::timerCallback(void *data)
-{
-    Clock *clock = (Clock*)data;
-    clock->updateClockTexture();
-    wl_event_source_timer_update(clock->clockTimer, millisecondsUntilNextMinute() + 1500);
-    return 0;
 }
 
 Int32 Clock::millisecondsUntilNextMinute()

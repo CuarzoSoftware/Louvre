@@ -2,6 +2,8 @@
 #define CLOCK_H
 
 #include <LRect.h>
+#include <LTimer.h>
+#include <memory>
 #include <freetype/freetype.h>
 
 using namespace Louvre;
@@ -13,18 +15,14 @@ public:
     bool loadFont(const char *fontName);
     void updateClockText();
     void updateClockTexture();
-    static Int32 timerCallback(void *data);
     static Int32 millisecondsUntilNextMinute();
 
-    LTexture *texture { nullptr };
-    wl_event_source *clockTimer { nullptr };
-    LRect rectC;
-
-    // Font
-    char text[128];
+    std::unique_ptr<LTexture> texture;
     bool loadedFont { false };
     FT_Library ft;
     FT_Face face;
+    LTimer minuteTimer;
+    char text[128];
 };
 
 #endif // CLOCK_H

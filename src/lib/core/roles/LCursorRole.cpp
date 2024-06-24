@@ -19,6 +19,9 @@ LCursorRole::LCursorRole(const void *params) noexcept :
         LSurface::Role::Cursor)
 {
     surface()->imp()->stateFlags.remove(LSurface::LSurfacePrivate::ReceiveInput);
+
+    for (LOutput *output : cursor()->intersectedOutputs())
+        surface()->sendOutputEnterEvent(output);
 }
 
 LCursorRole::~LCursorRole()

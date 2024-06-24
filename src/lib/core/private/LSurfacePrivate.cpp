@@ -1,4 +1,5 @@
 #include <protocols/PresentationTime/RPresentationFeedback.h>
+#include <protocols/SinglePixelBuffer/LSinglePixelBuffer.h>
 #include <protocols/FractionalScale/RFractionalScale.h>
 #include <protocols/LinuxDMABuf/LDMABuffer.h>
 #include <protocols/Wayland/RSurface.h>
@@ -435,6 +436,39 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
                 delete texture;
 
             texture = dmaBuffer->texture();
+        }
+        // Single pixel buffer
+        else if (LSinglePixelBuffer::isSinglePixelBuffer(current.bufferRes))
+        {
+            if (texture && texture != textureBackup && texture->m_pendingDelete)
+                delete texture;
+
+            texture = textureBackup;
+            widthB = heightB = 1;
+
+            if (!updateDimensions(widthB, heightB))
+                return false;
+
+            LSinglePixelBuffer &singlePixelBuffer { *static_cast<LSinglePixelBuffer*>(wl_resource_get_user_data(current.bufferRes)) };
+
+            UInt8 buffer[4]
+            {
+                static_cast<UInt8>(
+                    (static_cast<UInt64>(singlePixelBuffer.pixel().b) * static_cast<UInt64>(255))
+                    /static_cast<UInt64>(std::numeric_limits<UInt32>::max())),
+                static_cast<UInt8>(
+                    (static_cast<UInt64>(singlePixelBuffer.pixel().g) * static_cast<UInt64>(255))
+                    /static_cast<UInt64>(std::numeric_limits<UInt32>::max())),
+                static_cast<UInt8>(
+                    (static_cast<UInt64>(singlePixelBuffer.pixel().r) * static_cast<UInt64>(255))
+                    /static_cast<UInt64>(std::numeric_limits<UInt32>::max())),
+                static_cast<UInt8>(
+                    (static_cast<UInt64>(singlePixelBuffer.pixel().a) * static_cast<UInt64>(255))
+                    /static_cast<UInt64>(std::numeric_limits<UInt32>::max())),
+            };
+
+            texture->setDataFromMainMemory(LSize(1, 1), 4, DRM_FORMAT_ARGB8888, buffer);
+            updateDamage();
         }
         else
         {

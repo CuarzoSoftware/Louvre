@@ -50,6 +50,7 @@ public:
     std::vector<PointerConstraints::GPointerConstraints*> pointerConstraintsGlobals;
     std::vector<LayerShell::GLayerShell*> layerShellGlobals;
     std::vector<ForeignToplevelManagement::GForeignToplevelManager*> foreignToplevelManagerGlobals;
+    std::vector<SinglePixelBuffer::GSinglePixelBufferManager*> singlePixelBufferManagerGlobals;
     bool destroyed { false };
 };
 

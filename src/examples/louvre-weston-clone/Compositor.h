@@ -18,15 +18,17 @@ struct DestroyedToplevel
 class Compositor final : public LCompositor
 {
 public:
-    Compositor() noexcept;
+    using LCompositor::LCompositor;
 
     void initialized() override;
+    void uninitialized() override;
+
     LFactoryObject *createObjectRequest(LFactoryObject::Type type, const void *params) override;
     void onAnticipatedObjectDestruction(LFactoryObject *object) override;
 
-    LXCursor *pointerCursor { nullptr };
-    Clock *clock { nullptr };
-
+    std::unique_ptr<LTexture> terminalIconTexture;
+    std::unique_ptr<LXCursor> pointerCursor;
+    std::unique_ptr<Clock> clock;
     std::list<DestroyedToplevel>destroyedToplevels;
 };
 

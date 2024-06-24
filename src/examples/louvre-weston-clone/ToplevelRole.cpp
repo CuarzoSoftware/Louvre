@@ -13,8 +13,6 @@
 #include "ToplevelRole.h"
 #include "Output.h"
 
-ToplevelRole::ToplevelRole(const void *params) noexcept : LToplevelRole(params) {}
-
 void ToplevelRole::atomsChanged(LBitset<AtomChanges> changes, const Atoms &prev)
 {
     if (!changes.check(StateChanged))

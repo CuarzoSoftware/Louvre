@@ -14,27 +14,19 @@
 #include <LUtils.h>
 #include <unistd.h>
 
-#include "LSessionLockManager.h"
-#include "LSessionLockRole.h"
-#include "TerminalIcon.h"
 #include "Compositor.h"
 #include "Surface.h"
 #include "Output.h"
 
-Output::Output(const void *params) noexcept : LOutput(params){}
-
 void Output::loadWallpaper() noexcept
 {
-    LTexture *background { LOpenGL::loadTexture(std::filesystem::path(getenvString("HOME")) / ".config/Louvre/wallpaper.jpg") };
+    std::unique_ptr<LTexture> background { LOpenGL::loadTexture(std::filesystem::path(getenvString("HOME")) / ".config/Louvre/wallpaper.jpg") };
 
     if (!background)
-        background = LOpenGL::loadTexture(compositor()->defaultAssetsPath() / "wallpaper.png");
+        background.reset(LOpenGL::loadTexture(compositor()->defaultAssetsPath() / "wallpaper.png"));
 
     if (background)
-    {
-        backgroundTexture = background->copy(sizeB());
-        delete background;
-    }
+        backgroundTexture.reset(background->copy(sizeB()));
 }
 
 void Output::fullDamage() noexcept
@@ -42,7 +34,7 @@ void Output::fullDamage() noexcept
     Compositor *c { (Compositor*)compositor() };
 
     if (!c->clock)
-        c->clock = new Clock();
+        c->clock = std::make_unique<Clock>();
     else
         redrawClock = true;
 
@@ -56,15 +48,6 @@ void Output::fullDamage() noexcept
 
 void Output::initializeGL() noexcept
 {
-    terminalIconTexture = new LTexture();
-
-    if (!terminalIconTexture->setDataFromMainMemory(LSize(64,64), 64*4, DRM_FORMAT_ABGR8888, terminalIconPixels()))
-    {
-        LLog::error("Failed to create terminal icon.");
-        delete terminalIconTexture;
-        terminalIconTexture = nullptr;
-    }
-
     loadWallpaper();
     fullDamage();
     repaint();
@@ -93,12 +76,7 @@ void Output::resizeGL() noexcept
 
     if (compositor()->graphicBackendId() == LGraphicBackendDRM)
     {
-        if (backgroundTexture)
-        {
-            delete backgroundTexture;
-            backgroundTexture = nullptr;
-        }
-
+        backgroundTexture.reset();
         loadWallpaper();
     }
 }
@@ -129,9 +107,9 @@ void repaintChildren(LSurface *s)
 void Output::paintGL() noexcept
 {
     LPainter::TextureParams params;
-    Compositor *c { (Compositor*)compositor() };
+    Compositor *c { static_cast<Compositor*>(compositor()) };
     LPainter *p { painter() };
-    list<Surface*> &surfaces { (list<Surface*>&)compositor()->surfaces() };
+    std::list<Surface*> &surfaces { (std::list<Surface*>&)compositor()->surfaces() };
 
     p->setAlpha(1.f);
     p->enableCustomTextureColor(false);
@@ -177,7 +155,7 @@ void Output::paintGL() noexcept
      *********************************************************/
 
     LRegion opaqueTranslatedCSum;
-    for (list<Surface*>::reverse_iterator it = surfaces.rbegin(); it != surfaces.rend(); it++)
+    for (std::list<Surface*>::reverse_iterator it = surfaces.rbegin(); it != surfaces.rend(); it++)
     {
         Surface *s = *it;
 
@@ -323,7 +301,7 @@ void Output::paintGL() noexcept
      ***************** DRAW OPAQUE DAMAGE ******************
      *******************************************************/
 
-    for (list<Surface*>::reverse_iterator it = surfaces.rbegin(); it != surfaces.rend(); it++)
+    for (std::list<Surface*>::reverse_iterator it = surfaces.rbegin(); it != surfaces.rend(); it++)
     {
         Surface *s = *it;
 
@@ -352,7 +330,7 @@ void Output::paintGL() noexcept
 
     if (backgroundTexture)
     {
-        params.texture = backgroundTexture;
+        params.texture = backgroundTexture.get();
         params.dstSize = size();
         params.srcRect = LRectF(0, backgroundTexture->sizeB());
         params.pos = pos();
@@ -380,7 +358,7 @@ void Output::paintGL() noexcept
      ***************** DRAW TRANSLUCENT DAMAGE ******************
      ************************************************************/
 
-    for (list<Surface*>::iterator it = surfaces.begin(); it != surfaces.end(); it++)
+    for (std::list<Surface*>::iterator it = surfaces.begin(); it != surfaces.end(); it++)
     {
         Surface *s = *it;
 
@@ -420,7 +398,7 @@ void Output::paintGL() noexcept
         p->setAlpha(0.9f);
         p->drawRegion(topbarRegion);
 
-        if (terminalIconTexture)
+        if (c->terminalIconTexture)
         {
             LRegion terminalIconRegion;
             terminalIconRegion.addRect(terminalIconRect);
@@ -428,9 +406,9 @@ void Output::paintGL() noexcept
 
             if (!terminalIconRegion.empty())
             {
-                params.texture = terminalIconTexture;
+                params.texture = c->terminalIconTexture.get();
                 params.dstSize = terminalIconRect.size();
-                params.srcRect = LRect(0, terminalIconTexture->sizeB());
+                params.srcRect = LRect(0, c->terminalIconTexture->sizeB());
                 params.pos = terminalIconRect.pos();
                 params.srcTransform = LTransform::Normal;
                 params.srcScale = 1.f;
@@ -442,7 +420,7 @@ void Output::paintGL() noexcept
 
         if (drawClock)
         {
-            params.texture = c->clock->texture;
+            params.texture = c->clock->texture.get();
             params.dstSize = dstClockRect.size();
             params.srcRect = LRect(0, c->clock->texture->sizeB());
             params.pos = dstClockRect.pos();

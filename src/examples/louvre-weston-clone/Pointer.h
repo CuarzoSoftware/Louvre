@@ -8,7 +8,7 @@ using namespace Louvre;
 class Pointer final : public LPointer
 {
 public:
-    Pointer(const void *params) noexcept;
+    using LPointer::LPointer;
     void pointerMoveEvent(const LPointerMoveEvent &event) override;
     void pointerButtonEvent(const LPointerButtonEvent &event) override;
 };

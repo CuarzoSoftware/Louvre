@@ -4,8 +4,6 @@
 #include "Output.h"
 #include "Popup.h"
 
-Popup::Popup(const void *params) noexcept : LPopupRole(params) {}
-
 void Popup::configureRequest()
 {
     Output *output { (Output*)cursor()->output() };

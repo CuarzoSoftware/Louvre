@@ -1,4 +1,5 @@
 #include <protocols/ForeignToplevelManagement/GForeignToplevelManager.h>
+#include <protocols/SinglePixelBuffer/GSinglePixelBufferManager.h>
 #include <protocols/RelativePointer/GRelativePointerManager.h>
 #include <protocols/FractionalScale/GFractionalScaleManager.h>
 #include <protocols/PointerConstraints/GPointerConstraints.h>
@@ -107,6 +108,9 @@ bool LCompositor::createGlobalsRequest()
     // Allow clients to create wlr_layer_shell surfaces
     createGlobal<LayerShell::GLayerShell>();
 
+    // Allow clients to create single pixel buffers (requires Viewporter::GViewporter)
+    createGlobal<SinglePixelBuffer::GSinglePixelBufferManager>();
+
     return true;
 }
 //! [createGlobalsRequest]
@@ -123,9 +127,6 @@ bool LCompositor::globalsFilter(LClient *client, LGlobal *global)
 //! [initialized]
 void LCompositor::initialized()
 {
-    // Sets the "latam" keyboard layout
-    seat()->keyboard()->setKeymap(nullptr, nullptr, "latam", nullptr);
-
     Int32 totalWidth = 0;
 
     // Initializes and arranges outputs from left to right

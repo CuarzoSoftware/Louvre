@@ -5,12 +5,12 @@
 #include <map>
 
 using namespace Louvre;
-using namespace std;
 
 class Surface final : public LSurface
 {
 public:
-    Surface(const void *params) noexcept;
+    using LSurface::LSurface;
+
     void mappingChanged() override;
     void orderChanged() override;
     void minimizedChanged() override;
@@ -32,7 +32,7 @@ public:
         LRect previousRect;
         bool changedOrder { true };
     };
-    map<LOutput*,OutputData>outputsMap;
+    std::map<LOutput*,OutputData>outputsMap;
 
     // Handle to prevent looking in the map each time
     OutputData *currentOutputData;

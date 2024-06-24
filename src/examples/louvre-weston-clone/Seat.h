@@ -8,7 +8,7 @@ using namespace Louvre;
 class Seat final : public LSeat
 {
 public:
-    Seat(const void *params) noexcept;
+    using LSeat::LSeat;
     void enabledChanged() override;
 };
 

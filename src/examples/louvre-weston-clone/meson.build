@@ -5,7 +5,6 @@ executable(
     sources,
     dependencies : [
         louvre_dep,
-        wayland_server_dep,
         gl_dep,
         fontconfig_dep,
         freetype_dep

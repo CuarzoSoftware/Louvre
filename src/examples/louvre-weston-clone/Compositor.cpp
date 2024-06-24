@@ -3,6 +3,7 @@
 #include <LKeyboard.h>
 #include <LOutput.h>
 #include <LOutputMode.h>
+#include <LOpenGL.h>
 
 #include "Output.h"
 #include "Surface.h"
@@ -11,12 +12,18 @@
 #include "Seat.h"
 #include "Popup.h"
 
-Compositor::Compositor() noexcept : LCompositor(){}
-
 void Compositor::initialized()
 {
-    pointerCursor = LXCursor::load("hand2");
+    pointerCursor.reset(LXCursor::load("hand2"));
+    terminalIconTexture.reset(LOpenGL::loadTexture(compositor()->defaultAssetsPath() / "terminal.png"));
     LCompositor::initialized();
+}
+
+void Compositor::uninitialized()
+{
+    pointerCursor.reset();
+    terminalIconTexture.reset();
+    clock.reset();
 }
 
 LFactoryObject *Compositor::createObjectRequest(LFactoryObject::Type type, const void *params)

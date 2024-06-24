@@ -10,14 +10,13 @@ using namespace Louvre;
 class Output final : public LOutput
 {
 public:
-    Output(const void *params) noexcept;
+    using LOutput::LOutput;
 
-    LTexture *backgroundTexture = nullptr;
+    std::unique_ptr<LTexture> backgroundTexture;
     LExclusiveZone topbarExclusiveZone {LEdgeTop, 32, this};
-    LTexture *terminalIconTexture = nullptr;
     LRect terminalIconRect;
-    Float32 terminalIconAlpha = 1.0f;
-    Float32 terminalIconAlphaPrev = 1.0f;
+    Float32 terminalIconAlpha { 1.0f };
+    Float32 terminalIconAlphaPrev { 1.0f };
 
     void loadWallpaper() noexcept;
     void fullDamage()  noexcept;
@@ -40,9 +39,9 @@ public:
     // Almacena recta del cursor (si no es posible composición por hardware)
     LRect cursorRect[2];
 
-    LSurface *fullscreenSurface = nullptr;
-    bool redrawClock = true;
+    LWeak<LSurface> fullscreenSurface;
     LRect dstClockRect;
+    bool redrawClock { true };
 };
 
 #endif // OUTPUT_H

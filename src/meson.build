@@ -103,7 +103,8 @@ globals = [
     'SessionLock',
     'ScreenCopy',
     'LayerShell',
-    'ForeignToplevelManagement'
+    'ForeignToplevelManagement',
+    'SinglePixelBuffer'
 ]
 
 foreach g : globals

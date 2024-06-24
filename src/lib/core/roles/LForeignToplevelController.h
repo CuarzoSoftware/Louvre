@@ -18,7 +18,7 @@
  *
  * This class represents a single toplevel being controlled by a specific client using the protocol and provides information
  * such as the controller client(), the toplevelRole() it is controlling, and the taskbar() and taskbarIconRect() properties, which indicate
- * where the toplevelRole() is being represented (e.g., as a tab, icon, etc.) whithin one of the controller client surfaces.
+ * where the toplevelRole() is being represented (e.g., as a tab, icon, etc.) within one of the controller client surfaces (dock, panel, etc).
  *
  * @note All LForeignToplevelController objects created for a specific toplevel window can be accessed from LToplevelRole::foreignControllers().
  *

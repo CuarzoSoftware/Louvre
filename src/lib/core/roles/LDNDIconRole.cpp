@@ -1,6 +1,7 @@
 #include <private/LDNDIconRolePrivate.h>
 #include <private/LSurfacePrivate.h>
 #include <LSurface.h>
+#include <LCursor.h>
 
 using namespace Louvre;
 
@@ -11,6 +12,9 @@ LDNDIconRole::LDNDIconRole(const void *params) noexcept :
         LSurface::Role::DNDIcon)
 {
     surface()->imp()->stateFlags.remove(LSurface::LSurfacePrivate::ReceiveInput);
+
+    for (LOutput *output : cursor()->intersectedOutputs())
+        surface()->sendOutputEnterEvent(output);
 }
 
 LDNDIconRole::~LDNDIconRole()

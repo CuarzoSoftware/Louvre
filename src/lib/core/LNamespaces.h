@@ -29,6 +29,7 @@
 #define LOUVRE_SCREEN_COPY_MANAGER_VERSION 3
 #define LOUVRE_LAYER_SHELL_VERSION 5
 #define LOUVRE_FOREIGN_TOPLEVEL_MANAGER_VERSION 3
+#define LOUVRE_SINGLE_PIXEL_BUFFER_MANAGER_VERSION 1
 
 #define L_UNUSED(object){(void)object;}
 
@@ -175,6 +176,7 @@ namespace Louvre
 
     // Other
     class LDMABuffer;
+    class LSinglePixelBuffer;
     class LExclusiveZone;
 
     // Utils
@@ -435,6 +437,11 @@ namespace Louvre
             class GForeignToplevelManager;
 
             class RForeignToplevelHandle;
+        }
+
+        namespace SinglePixelBuffer
+        {
+            class GSinglePixelBufferManager;
         }
     }
 

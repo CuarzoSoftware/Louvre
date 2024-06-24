@@ -9,15 +9,11 @@
 #include <LTime.h>
 #include <LCursor.h>
 #include <LLauncher.h>
-#include <cstdio>
-#include <math.h>
 #include <unistd.h>
 
 #include "Pointer.h"
 #include "Compositor.h"
 #include "Output.h"
-
-Pointer::Pointer(const void *params) noexcept : LPointer(params) {}
 
 void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)
 {

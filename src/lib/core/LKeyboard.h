@@ -204,13 +204,11 @@ public:
      * The keyboard map is automatically sent to clients when they connect to the compositor and use the [wl_keyboard](https://wayland.app/protocols/wayland#wl_keyboard) interface
      * of the Wayland protocol. If a client is already connected, Louvre re-sends it the new keyboard map.\n
      *
-     * @note Louvre by default assigns the "latam" layout in LCompositor::initialized().
-     *
-     * @param rules Rules on how to interpret the other arguments. Can be `nullptr`. [More information] (https://xkbcommon.org/doc/current/structxkb__rule__names.html#a0968f4602001f2306febd32c34bd2280).
-     * @param model Keyboard model. Can be `nullptr`. [More information] (https://xkbcommon.org/doc/current/structxkb__rule__names.html#a0968f4602001f2306febd32c34bd2280).
-     * @param layout Keyboard layouts separated by comma (e.g. "latam"). Can be `nullptr`. [More information] (https://xkbcommon.org/doc/current/structxkb__rule__names.html#a0968f4602001f2306febd32c34bd2280).
-     * @param variant Variants of layouts. Can be `nullptr`. [More information] (https://xkbcommon.org/doc/current/structxkb__rule__names.html#a0968f4602001f2306febd32c34bd2280).
-     * @param options Preferences not related to layouts. Can be `nullptr`. [More information] (https://xkbcommon.org/doc/current/structxkb__rule__names.html#a0968f4602001f2306febd32c34bd2280).
+     * @param rules Rules on how to interpret the other arguments. Can be `nullptr`. [More information](https://xkbcommon.org/doc/current/structxkb__rule__names.html#a0968f4602001f2306febd32c34bd2280).
+     * @param model Keyboard model. Can be `nullptr`. [More information](https://xkbcommon.org/doc/current/structxkb__rule__names.html#a0968f4602001f2306febd32c34bd2280).
+     * @param layout Keyboard layouts separated by comma (e.g. "latam"). Can be `nullptr`. [More information](https://xkbcommon.org/doc/current/structxkb__rule__names.html#a0968f4602001f2306febd32c34bd2280).
+     * @param variant Variants of layouts. Can be `nullptr`. [More information](https://xkbcommon.org/doc/current/structxkb__rule__names.html#a0968f4602001f2306febd32c34bd2280).
+     * @param options Preferences not related to layouts. Can be `nullptr`. [More information](https://xkbcommon.org/doc/current/structxkb__rule__names.html#a0968f4602001f2306febd32c34bd2280).
      */
     bool setKeymap(const char *rules = nullptr, const char *model = nullptr, const char *layout = nullptr, const char *variant = nullptr, const char *options = nullptr) noexcept;
 

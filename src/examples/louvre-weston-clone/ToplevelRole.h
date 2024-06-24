@@ -8,7 +8,7 @@ using namespace Louvre;
 class ToplevelRole final : public LToplevelRole
 {
 public:
-    ToplevelRole(const void *params) noexcept;
+    using LToplevelRole::LToplevelRole;
 
     void atomsChanged(LBitset<AtomChanges> changes, const Atoms &prev) override;
     void configureRequest() noexcept override;

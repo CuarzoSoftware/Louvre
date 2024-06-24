@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Louvre is released under the MIT license." />
   </a>
   <a href="https://github.com/CuarzoSoftware/Louvre">
-    <img src="https://img.shields.io/badge/version-2.1.0-brightgreen" alt="Current Louvre version." />
+    <img src="https://img.shields.io/badge/version-2.2.0-brightgreen" alt="Current Louvre version." />
   </a>
 </p>
 
@@ -21,6 +21,7 @@ Louvre is a high-performance C++ library designed for building Wayland composito
 * [🎓 Tutorial](https://cuarzosoftware.github.io/Louvre/tutorial_tmp.html)
 * [🕹️ Examples](https://cuarzosoftware.github.io/Louvre/examples_page.html)
 * [📦 Downloads](https://cuarzosoftware.github.io/Louvre/downloads_page.html)
+* [⚙️ Environment](https://cuarzosoftware.github.io/Louvre/environment_page.html)
 * [💬 Contact](https://cuarzosoftware.github.io/Louvre/contact_page.html)
 * [🌟 Projects Using Louvre](https://github.com/CuarzoSoftware/Louvre/blob/gallery/README.md)
 
@@ -49,6 +50,7 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 * XDG Output
 * Presentation Time
 * Linux DMA-Buf
+* Single Pixel Buffer
 * Viewporter
 * Fractional Scale
 * Tearing Control

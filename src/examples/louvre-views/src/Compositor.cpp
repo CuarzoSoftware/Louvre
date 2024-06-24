@@ -9,7 +9,6 @@
 #include "Client.h"
 #include "Global.h"
 #include "Compositor.h"
-#include "LLauncher.h"
 #include "Output.h"
 #include "Surface.h"
 #include "Seat.h"
@@ -34,9 +33,6 @@ void Compositor::initialized()
 {
     // Set black as default background color
     scene.mainView()->setClearColor({0.f, 0.f, 0.f, 1.f});
-
-    // Change the keyboard map to "latam"
-    seat()->keyboard()->setKeymap(NULL, NULL, "latam", NULL);
 
     G::loadCursors();
     G::loadTextures();
