@@ -12,10 +12,11 @@
 #include "LLauncher.h"
 #include "Output.h"
 #include "Dock.h"
-#include "TextRenderer.h"
 #include "App.h"
 #include "Tooltip.h"
 #include "Surface.h"
+
+#include "../../common/TextRenderer.h"
 
 static G::Cursors xCursors;
 static G::Fonts _fonts;

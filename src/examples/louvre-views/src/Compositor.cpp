@@ -16,11 +16,12 @@
 #include "Keyboard.h"
 #include "Touch.h"
 #include "Toplevel.h"
-#include "TextRenderer.h"
 #include "Topbar.h"
 #include "ToplevelView.h"
 #include "Popup.h"
 #include "SessionLockManager.h"
+
+#include "../../common/TextRenderer.h"
 
 #include <LOpenGL.h>
 

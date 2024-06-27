@@ -8,7 +8,8 @@
 #include "Compositor.h"
 #include "Output.h"
 #include "Pointer.h"
-#include "TextRenderer.h"
+
+#include "../../common/TextRenderer.h"
 
 Topbar::Topbar(Output *output) :
     LSolidColorView(1.f, 1.f, 1.f, 0.82f, nullptr),

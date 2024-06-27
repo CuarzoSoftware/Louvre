@@ -1,8 +1,9 @@
 #include "Tooltip.h"
 #include "Global.h"
 #include "LTexture.h"
-#include "TextRenderer.h"
 #include "Compositor.h"
+
+#include "../../common/TextRenderer.h"
 
 Tooltip::Tooltip() : LLayerView(&G::compositor()->tooltipsLayer)
 {

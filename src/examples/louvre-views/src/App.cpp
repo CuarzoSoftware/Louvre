@@ -15,9 +15,10 @@
 #include "Output.h"
 #include "Dock.h"
 #include "Toplevel.h"
-#include "TextRenderer.h"
 #include "Workspace.h"
 #include "Compositor.h"
+
+#include "../../common/TextRenderer.h"
 
 static inline Float32 easeIn(Float32 t, Float32 exponent)
 {

@@ -17,8 +17,9 @@
 #include "Pointer.h"
 #include "InputRect.h"
 #include "Output.h"
-#include "TextRenderer.h"
 #include "Workspace.h"
+
+#include "../../common/TextRenderer.h"
 
 #define TOPBAR_ANIM_MS 250
 

@@ -3,15 +3,15 @@
 #include <LTouchDownEvent.h>
 #include <LTouchPoint.h>
 #include <LCursor.h>
-#include <Compositor.h>
-#include <Surface.h>
 #include <LOutput.h>
 #include <LSeat.h>
 #include <LPointer.h>
 #include <LTouch.h>
 
+#include "Compositor.h"
 #include "ToplevelRole.h"
 #include "Output.h"
+#include "Surface.h"
 
 void ToplevelRole::atomsChanged(LBitset<AtomChanges> changes, const Atoms &prev)
 {

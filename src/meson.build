@@ -185,10 +185,7 @@ if get_option('build_examples')
     fontconfig_dep = dependency('fontconfig')
     freetype_dep = dependency('freetype2')
     icuuc_dep = cpp.find_library('icuuc')
-
-    subdir('examples/louvre-default')
-    subdir('examples/louvre-weston-clone')
-    subdir('examples/louvre-views')
+    subdir('examples')
 endif
 
 if get_option('build_tests')

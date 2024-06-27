@@ -1,10 +1,10 @@
-#include <Compositor.h>
 #include <LSeat.h>
 #include <LKeyboard.h>
 #include <LOutput.h>
 #include <LOutputMode.h>
 #include <LOpenGL.h>
 
+#include "Compositor.h"
 #include "Output.h"
 #include "Surface.h"
 #include "ToplevelRole.h"
