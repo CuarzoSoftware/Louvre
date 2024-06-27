@@ -18,6 +18,10 @@ using namespace Louvre;
 //! [rolePos]
 const LPoint &LPopupRole::rolePos() const
 {
+    /* Just in case this method is called while the popup is being destroyed */
+    if (!surface()->parent())
+        return m_rolePos;
+
     m_rolePos = surface()->parent()->rolePos() + localPos() - windowGeometry().topLeft();
 
     if (surface()->parent()->toplevel())
