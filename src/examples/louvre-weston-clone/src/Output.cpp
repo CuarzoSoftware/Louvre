@@ -472,9 +472,3 @@ void Output::paintGL() noexcept
     setBufferDamage(&newDamage);
     newDamage.clear();
 }
-
-void Output::setGammaRequest(LClient *client, const LGammaTable *gamma) noexcept
-{
-    L_UNUSED(client)
-    setGamma(gamma);
-}

@@ -24,7 +24,6 @@ public:
     void resizeGL() noexcept override;
     void moveGL() noexcept override;
     void paintGL() noexcept override;
-    void setGammaRequest(LClient *client, const LGammaTable *gamma) noexcept override;
 
     // List of new damage calculated in prev frames
     bool damageListCreated = false;

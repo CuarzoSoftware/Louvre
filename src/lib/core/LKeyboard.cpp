@@ -128,12 +128,7 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
     imp()->xkbKeymap = xkb_keymap_new_from_names(imp()->xkbContext, &imp()->xkbKeymapName, XKB_KEYMAP_COMPILE_NO_FLAGS);
 
     if (!imp()->xkbKeymap)
-    {
-        LLog::error("[%s] Failed to set keymap with names Rules: %s, Model: %s, Layout: %s, Variant: %s, Opetions: %s. Restoring default keymap.",
-                    METHOD_NAME, rules, model, layout, variant, options);
-
         goto fail;
-    }
 
     // Get the keymap string
     keymapString = xkb_keymap_get_as_string(imp()->xkbKeymap, XKB_KEYMAP_FORMAT_TEXT_V1);
@@ -173,11 +168,7 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
     imp()->xkbKeymapState = xkb_state_new(imp()->xkbKeymap);
 
     if (!imp()->xkbKeymapState)
-    {
-        LLog::error("[%s] Failed to get keymap state with names Rules: %s, Model: %s, Layout: %s, Variant: %s, Opetions: %s. Restoring default keymap.",
-                    METHOD_NAME, rules, model, layout, variant, options);
         goto fail;
-    }
 
     imp()->keymapFormat = WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1;
 
@@ -195,12 +186,35 @@ bool LKeyboard::setKeymap(const char *rules, const char *model, const char *layo
 
     fail:
 
+    LLog::error("[%s] Failed to set keymap with names Rules: %s, Model: %s, Layout: %s, Variant: %s, Opetions: %s. Trying XKB_DEFAULT envs or fallback keymap.",
+        METHOD_NAME,
+        rules ? rules : getenv("XKB_DEFAULT_RULES"),
+        model ? model : getenv("XKB_DEFAULT_MODEL"),
+        layout ? layout : getenv("XKB_DEFAULT_LAYOUT"),
+        variant ? variant : getenv("XKB_DEFAULT_VARIANT"),
+        options ? options : getenv("XKB_DEFAULT_OPTIONS"));
+
     if (rules != NULL || model != NULL || layout != NULL || variant != NULL || options != NULL)
     {
         if (setKeymap())
             return false;
         else
-            LLog::error("[%s] Failed to set default keymap. Disabling keymap.", METHOD_NAME);
+            LLog::error("[%s] Failed to set keymap from XKB_DEFAULT envs. Using fallback keymap.", METHOD_NAME);
+    }
+
+    if (getenv("XKB_DEFAULT_RULES") || getenv("XKB_DEFAULT_MODEL") || getenv("XKB_DEFAULT_LAYOUT")
+        || getenv("XKB_DEFAULT_VARIANT") || getenv("XKB_DEFAULT_OPTIONS"))
+    {
+        unsetenv("XKB_DEFAULT_RULES");
+        unsetenv("XKB_DEFAULT_MODEL");
+        unsetenv("XKB_DEFAULT_LAYOUT");
+        unsetenv("XKB_DEFAULT_VARIANT");
+        unsetenv("XKB_DEFAULT_OPTIONS");
+
+        if (setKeymap())
+            return false;
+        else
+            LLog::error("[%s] No keymap could be found. Disabling keymap.", METHOD_NAME);
     }
 
     // Worst case, disables keymap

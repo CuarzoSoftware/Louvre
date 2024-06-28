@@ -38,16 +38,6 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
               &compositor()->imp()->events[LEV_AUX]);
 
     LLog::debug("[LSeatPrivate::seatEnabled] %s enabled.", libseat_seat_name(seat));
-
-    for (LOutput *o : compositor()->outputs())
-        o->setGamma(&o->imp()->gammaTable);
-
-    if (cursor())
-    {
-        cursor()->imp()->textureChanged = true;
-        cursor()->imp()->posChanged = true;
-    }
-
     lseat->enabledChanged();
 }
 

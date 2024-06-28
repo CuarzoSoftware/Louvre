@@ -30,9 +30,6 @@ bool LOutput::LOutputPrivate::initialize()
 
 void LOutput::LOutputPrivate::backendInitializeGL()
 {
-    if (output->gammaSize() != 0)
-        output->setGamma(nullptr);
-
     threadId = std::this_thread::get_id();
 
     painter = new LPainter();
