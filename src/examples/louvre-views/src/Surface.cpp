@@ -227,6 +227,9 @@ void Surface::mappingChanged()
 
 void Surface::orderChanged()
 {
+    if (toplevel() && toplevel()->fullscreen())
+        return;
+
     Surface *prevSurface { static_cast<Surface*>(this->prevSurface()) };
     LView *view { getView() };
 

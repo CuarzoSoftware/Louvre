@@ -20,7 +20,7 @@ public:
     Surface(const void *params);
     ~Surface();
 
-    inline class Toplevel *tl() const {return (class Toplevel*)toplevel();};
+    class Toplevel *tl() const {return (class Toplevel*)toplevel();}
 
     static class Surface *searchSessionLockParent(Surface *parent);
 
