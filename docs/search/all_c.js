@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['name_679',['name',['../class_louvre_1_1_l_output.html#a33256784969e3347f423f72af1727cbd',1,'Louvre::LOutput::name()'],['../class_louvre_1_1_l_input_device.html#a6279acb0a9e990d97a8dcd68c1de8035',1,'Louvre::LInputDevice::name()'],['../class_louvre_1_1_l_seat.html#a33256784969e3347f423f72af1727cbd',1,'Louvre::LSeat::name()']]],
+  ['native_680',['Native',['../class_louvre_1_1_l_texture.html#a971a55528aaf9f112f032b64512075fda9e629293dc98845502e6981802ab0627',1,'Louvre::LTexture']]],
+  ['nativehandle_681',['nativeHandle',['../class_louvre_1_1_l_input_device.html#a0470a2e7eff5a6eff2c326341b807700',1,'Louvre::LInputDevice']]],
+  ['nativeinputevent_682',['nativeInputEvent',['../class_louvre_1_1_l_seat.html#af9695c9b984698446cdb4b8e25b679b5',1,'Louvre::LSeat']]],
+  ['nativemapped_683',['nativeMapped',['../class_louvre_1_1_l_view.html#a0974d4fa5866c5b5428b8322e6587251',1,'Louvre::LView::nativeMapped()'],['../class_louvre_1_1_l_texture_view.html#a4beb52b8bc46d523a3ba7d496e04b563',1,'Louvre::LTextureView::nativeMapped()'],['../class_louvre_1_1_l_surface_view.html#a4beb52b8bc46d523a3ba7d496e04b563',1,'Louvre::LSurfaceView::nativeMapped()'],['../class_louvre_1_1_l_solid_color_view.html#a4beb52b8bc46d523a3ba7d496e04b563',1,'Louvre::LSolidColorView::nativeMapped()'],['../class_louvre_1_1_l_scene_view.html#a4beb52b8bc46d523a3ba7d496e04b563',1,'Louvre::LSceneView::nativeMapped()'],['../class_louvre_1_1_l_layer_view.html#a4beb52b8bc46d523a3ba7d496e04b563',1,'Louvre::LLayerView::nativeMapped() const noexcept override']]],
+  ['nativepos_684',['nativePos',['../class_louvre_1_1_l_layer_view.html#a35f45a0cff189f10510b321602c74305',1,'Louvre::LLayerView::nativePos()'],['../class_louvre_1_1_l_scene_view.html#a35f45a0cff189f10510b321602c74305',1,'Louvre::LSceneView::nativePos()'],['../class_louvre_1_1_l_solid_color_view.html#a35f45a0cff189f10510b321602c74305',1,'Louvre::LSolidColorView::nativePos()'],['../class_louvre_1_1_l_surface_view.html#a35f45a0cff189f10510b321602c74305',1,'Louvre::LSurfaceView::nativePos()'],['../class_louvre_1_1_l_texture_view.html#a35f45a0cff189f10510b321602c74305',1,'Louvre::LTextureView::nativePos()'],['../class_louvre_1_1_l_view.html#aae3086a6457545d895293e88e3c389f8',1,'Louvre::LView::nativePos() const noexcept=0']]],
+  ['nativesize_685',['nativeSize',['../class_louvre_1_1_l_view.html#a043bf8145e2a38f1464283070d0f2aa7',1,'Louvre::LView::nativeSize()'],['../class_louvre_1_1_l_texture_view.html#a0090e74848d76606548b7a20f9c80cd2',1,'Louvre::LTextureView::nativeSize()'],['../class_louvre_1_1_l_surface_view.html#a0090e74848d76606548b7a20f9c80cd2',1,'Louvre::LSurfaceView::nativeSize()'],['../class_louvre_1_1_l_scene_view.html#a0090e74848d76606548b7a20f9c80cd2',1,'Louvre::LSceneView::nativeSize()'],['../class_louvre_1_1_l_layer_view.html#a0090e74848d76606548b7a20f9c80cd2',1,'Louvre::LLayerView::nativeSize()'],['../class_louvre_1_1_l_solid_color_view.html#a0090e74848d76606548b7a20f9c80cd2',1,'Louvre::LSolidColorView::nativeSize()']]],
+  ['naturalscrollingxenabled_686',['naturalScrollingXEnabled',['../class_louvre_1_1_l_pointer.html#a7fb3bb10d6a17ef16538ca69b12e5999',1,'Louvre::LPointer']]],
+  ['naturalscrollingyenabled_687',['naturalScrollingYEnabled',['../class_louvre_1_1_l_pointer.html#a68e7ed5420360cf5793c71c4c6a7715c',1,'Louvre::LPointer']]],
+  ['needsfullrepaint_688',['needsFullRepaint',['../class_louvre_1_1_l_output.html#a3517e43b1493922e7d73304c72f01c71',1,'Louvre::LOutput']]],
+  ['nextserial_689',['nextSerial',['../class_louvre_1_1_l_time.html#a78286d26f8a3b79636d6d595cfcf76cd',1,'Louvre::LTime']]],
+  ['nextsurface_690',['nextSurface',['../class_louvre_1_1_l_surface.html#aa2df3baf64b05fa8b629b3eaefc59c5d',1,'Louvre::LSurface']]],
+  ['nextzone_691',['nextZone',['../class_louvre_1_1_l_exclusive_zone.html#a57e7ea69a8325baadf53a3d87b1370fc',1,'Louvre::LExclusiveZone']]],
+  ['noaction_692',['NoAction',['../class_louvre_1_1_l_d_n_d.html#adb42ff3dbe0d732b5fdec44eea3ea5f2a7a842d20fb3d712906ef0baeedc28aa8',1,'Louvre::LDND']]],
+  ['noadjustment_693',['NoAdjustment',['../class_louvre_1_1_l_positioner.html#a3a4334912d381cef8633909cf3f797d3aa5692cd9efa0988fafff6278b612bee8',1,'Louvre::LPositioner']]],
+  ['noanchor_694',['NoAnchor',['../class_louvre_1_1_l_positioner.html#a41a77f1d0228baaf32ece350496cace2ab0629d7386c8e0d15a6db171157208df',1,'Louvre::LPositioner']]],
+  ['nogravity_695',['NoGravity',['../class_louvre_1_1_l_positioner.html#ac7f94f5451e979a99e645bbde2f91ab1aa1c32047eb9795d2683656899786411d',1,'Louvre::LPositioner']]],
+  ['nointeractivity_696',['NoInteractivity',['../class_louvre_1_1_l_layer_role.html#a6f2796c066294b9901320f5f672bc485a48e584d07fd63c52f9deb0c066e57b1d',1,'Louvre::LLayerRole']]],
+  ['none_697',['None',['../class_louvre_1_1_l_output.html#acf3ae70a3f91b9f2d855904572dcbed8ac9d3e887722f2bc482bcca9d41c512af',1,'Louvre::LOutput']]],
+  ['nopreferredmode_698',['NoPreferredMode',['../class_louvre_1_1_l_toplevel_role.html#a3286489d95bd24bc86dda679a2f8636fafd8e0e9c1a5f7e2b20445b8fc002f42e',1,'Louvre::LToplevelRole']]],
+  ['normal_699',['Normal',['../namespace_louvre.html#a700c2230c9a7c049255f06a9ca53b72ba960b44c579bc2f6818d2daaf9e4c16f0',1,'Louvre']]],
+  ['nostate_700',['NoState',['../class_louvre_1_1_l_toplevel_role.html#af874aae4fd3a2f77be9a6bedebe79048a3e6ae43560d675d2e63a69271844efee',1,'Louvre::LToplevelRole']]],
+  ['notifydestruction_701',['notifyDestruction',['../class_louvre_1_1_l_object.html#af564f691ad42dec99924f2889175f323',1,'Louvre::LObject']]],
+  ['ns_702',['ns',['../class_louvre_1_1_l_time.html#a658418a83414c64708fca0446dcfae54',1,'Louvre::LTime']]],
+  ['num_5ffds_703',['num_fds',['../namespace_louvre.html#a491f207be177bb2c6a9dfc4185408a12',1,'Louvre::LDMAPlanes']]]
+];

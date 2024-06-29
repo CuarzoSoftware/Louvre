@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['g_321',['g',['../struct_louvre_1_1_l_r_g_b_a_f.html#abc142effc5202f1a1351b43b270557b2',1,'Louvre::LRGBAF::g()'],['../struct_louvre_1_1_l_r_g_b_f.html#abc142effc5202f1a1351b43b270557b2',1,'Louvre::LRGBF::g()']]],
+  ['gammacontrolmanagerglobals_322',['gammaControlManagerGlobals',['../class_louvre_1_1_l_client.html#a5a68fbef071f50f9c213b9c72d10be0c',1,'Louvre::LClient']]],
+  ['gammasize_323',['gammaSize',['../class_louvre_1_1_l_output.html#a16a1856622b2e0e1d4f3f81961de6e0c',1,'Louvre::LOutput']]],
+  ['gestures_324',['Gestures',['../class_louvre_1_1_l_input_device.html#af0f474bcb64fa303e7e55f4e743e0abbad709c30e4fec300924894f1edc9fd334',1,'Louvre::LInputDevice']]],
+  ['get_325',['get',['../class_louvre_1_1_l_bitset.html#a40b37082babfae27eb4f880ab1266ed6',1,'Louvre::LBitset::get()'],['../class_louvre_1_1_l_weak.html#a9232b9076df810775a741e074e6a0e3a',1,'Louvre::LWeak::get()']]],
+  ['getclientfromnativeresource_326',['getClientFromNativeResource',['../class_louvre_1_1_l_compositor.html#a07010af8e6d24c860570983c45de2f2d',1,'Louvre::LCompositor']]],
+  ['glerrorstring_327',['glErrorString',['../class_louvre_1_1_l_open_g_l.html#addf991558b6c882a5118acb5b1833b65',1,'Louvre::LOpenGL']]],
+  ['global_328',['global',['../class_louvre_1_1_l_global.html#a46d8ac96231d860c0e04382955e951e2',1,'Louvre::LGlobal']]],
+  ['globalsfilter_329',['globalsFilter',['../class_louvre_1_1_l_compositor.html#afeaeba54bdfa9a2ba5d1fe4fb0ee3483',1,'Louvre::LCompositor']]],
+  ['grab_330',['grab',['../class_louvre_1_1_l_keyboard.html#ab77fdd512635166de78784b4e5f9c717',1,'Louvre::LKeyboard']]],
+  ['grabkeyboardrequest_331',['grabKeyboardRequest',['../class_louvre_1_1_l_popup_role.html#ae7c0dafa9dcc30ed36f8af076dcc8245',1,'Louvre::LPopupRole']]],
+  ['graphicbackendcontexthandle_332',['graphicBackendContextHandle',['../class_louvre_1_1_l_compositor.html#ae7c1fd2329b4c83b284265d9f99fc534',1,'Louvre::LCompositor']]],
+  ['graphicbackendid_333',['graphicBackendId',['../class_louvre_1_1_l_compositor.html#a6c4cceb955e37e290601799f5cad8598',1,'Louvre::LCompositor']]],
+  ['gravity_334',['Gravity',['../class_louvre_1_1_l_positioner.html#ac7f94f5451e979a99e645bbde2f91ab1',1,'Louvre::LPositioner']]],
+  ['gravity_335',['gravity',['../class_louvre_1_1_l_positioner.html#a16ddc878e856fc18ae35d480a495fe9b',1,'Louvre::LPositioner']]],
+  ['gravitybottom_336',['GravityBottom',['../class_louvre_1_1_l_positioner.html#ac7f94f5451e979a99e645bbde2f91ab1a6ac23168bd79134af334c5255c21a139',1,'Louvre::LPositioner']]],
+  ['gravitybottomleft_337',['GravityBottomLeft',['../class_louvre_1_1_l_positioner.html#ac7f94f5451e979a99e645bbde2f91ab1ab56406d063da68f98cec6f134fd17744',1,'Louvre::LPositioner']]],
+  ['gravitybottomright_338',['GravityBottomRight',['../class_louvre_1_1_l_positioner.html#ac7f94f5451e979a99e645bbde2f91ab1a680a227da6ef9f88173e2a876537b3c9',1,'Louvre::LPositioner']]],
+  ['gravityleft_339',['GravityLeft',['../class_louvre_1_1_l_positioner.html#ac7f94f5451e979a99e645bbde2f91ab1acc53b54d8b0b3eea64dea5fa7d4da0fc',1,'Louvre::LPositioner']]],
+  ['gravityright_340',['GravityRight',['../class_louvre_1_1_l_positioner.html#ac7f94f5451e979a99e645bbde2f91ab1ac7eedc75f86235d8f405589871656887',1,'Louvre::LPositioner']]],
+  ['gravitytop_341',['GravityTop',['../class_louvre_1_1_l_positioner.html#ac7f94f5451e979a99e645bbde2f91ab1ab4ca0dbfe4f0a7be12c171e0082bca87',1,'Louvre::LPositioner']]],
+  ['gravitytopleft_342',['GravityTopLeft',['../class_louvre_1_1_l_positioner.html#ac7f94f5451e979a99e645bbde2f91ab1a01a72a5a55c5c95a207754f5d9a1f7fa',1,'Louvre::LPositioner']]],
+  ['gravitytopright_343',['GravityTopRight',['../class_louvre_1_1_l_positioner.html#ac7f94f5451e979a99e645bbde2f91ab1a516725796894953faf64860aa3181802',1,'Louvre::LPositioner']]],
+  ['green_344',['green',['../class_louvre_1_1_l_gamma_table.html#ab14ee9432b653a42ae54ffc622b9c4b9',1,'Louvre::LGammaTable']]],
+  ['group_345',['group',['../class_louvre_1_1_l_keyboard_modifiers_event.html#ab6deca8554b7adbcbe6e5c8ce99bbda8',1,'Louvre::LKeyboardModifiersEvent::Modifiers']]]
+];
