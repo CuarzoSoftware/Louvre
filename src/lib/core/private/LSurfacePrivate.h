@@ -130,24 +130,22 @@ LPRIVATE_CLASS(LSurface)
     // Find the prev surface using layers (returns nullptr if no prev surface)
     LSurface *prevSurfaceInLayers() noexcept;
     void setLayer(LSurfaceLayer layer);
-    void sendPresentationFeedback(LOutput *output);
-    void setBufferScale(Int32 scale);
-    void setPendingParent(LSurface *pendParent);
+    void sendPresentationFeedback(LOutput *output) noexcept;
+    void setPendingParent(LSurface *pendParent) noexcept;
     void setParent(LSurface *parent);
     void removeChild(LSurface *child);
     void setMapped(bool state);
-    void setPendingRole(LBaseSurfaceRole *role);
+    void setPendingRole(LBaseSurfaceRole *role) noexcept;
     void applyPendingRole();
     void applyPendingChildren();
-    bool bufferToTexture();
-    void notifyPosUpdateToChildren(LSurface *surface);
-    void sendPreferredScale();
-    bool isInChildrenOrPendingChildren(LSurface *child);
-    bool hasRoleOrPendingRole();
-    bool hasBufferOrPendingBuffer();
+    bool bufferToTexture() noexcept;
+    void sendPreferredScale() noexcept;
+    bool isInChildrenOrPendingChildren(LSurface *child) noexcept;
+    bool hasRoleOrPendingRole() noexcept;
+    bool hasBufferOrPendingBuffer() noexcept;
     void setKeyboardGrabToParent();
-    void updateDamage();
-    bool updateDimensions(Int32 widthB, Int32 heightB);
+    void updateDamage() noexcept;
+    bool updateDimensions(Int32 widthB, Int32 heightB) noexcept;
     void simplifyDamage(std::vector<LRect> &vec) noexcept;
 };
 

@@ -192,35 +192,35 @@ public:
      *
      * Assigns the position of the surface.
      */
-    void setPos(const LPoint &newPos);
+    void setPos(const LPoint &newPos) noexcept;
 
     /**
      * @brief Assigns the position.
      *
      * Assigns the position of the surface.
      */
-    void setPos(Int32 x, Int32 y);
+    void setPos(Int32 x, Int32 y) noexcept;
 
     /**
      * @brief Assigns the x component of the position.
      *
      * Assigns the x component of the position of the surface.
      */
-    void setX(Int32 x);
+    void setX(Int32 x) noexcept;
 
     /**
      * @brief Assigns the y component of the position.
      *
      * Assigns the y component of the position of the surface.
      */
-    void setY(Int32 y);
+    void setY(Int32 y) noexcept;
 
     /**
      * @brief Position given by the compositor.
      *
      * Position of the surface assigned with setPos(), setX() or setY().
      */
-    const LPoint &pos() const;
+    const LPoint &pos() const noexcept;
 
     /**
     * @brief Role position.
@@ -232,41 +232,41 @@ public:
     /**
      * @brief Surface size in buffer coordinates.
      */
-    const LSize &sizeB() const;
+    const LSize &sizeB() const noexcept;
 
     /**
      * @brief Surface size in surface coordinates.
      */
-    const LSize &size() const;
+    const LSize &size() const noexcept;
 
     /**
      * @brief Input region in surface coordinates.
      *
      * Region of the surface that is capable of receiving input, in surface coordinates.
      */
-    const LRegion &inputRegion() const;
+    const LRegion &inputRegion() const noexcept;
 
     /**
      * @brief Opaque region in surface coordinates.
      */
-    const LRegion &opaqueRegion() const;
+    const LRegion &opaqueRegion() const noexcept;
 
     /**
      * @brief Translucent region in surface coordinates.
      *
      * Translucent region in surface coordinates (inverted opaque region).
      */
-    const LRegion &translucentRegion() const;
+    const LRegion &translucentRegion() const noexcept;
 
     /**
      * @brief Damaged region in surface coordinates.
      */
-    const LRegion &damage() const;
+    const LRegion &damage() const noexcept;
 
     /**
      * @brief Damaged region in buffer coordinates.
      */
-    const LRegion &damageB() const;
+    const LRegion &damageB() const noexcept;
 
     /**
      * @brief Returns the content type that the surface represents.
@@ -292,7 +292,7 @@ public:
      *
      * @param output The output into which the surface has entered.
      */
-    void sendOutputEnterEvent(LOutput *output);
+    void sendOutputEnterEvent(LOutput *output) noexcept;
 
     /**
      * @brief Notify the client when the surface leaves an output
@@ -304,21 +304,21 @@ public:
      *
      * @param output The output from which the surface is no longer visible.
      */
-    void sendOutputLeaveEvent(LOutput *output);
+    void sendOutputLeaveEvent(LOutput *output) noexcept;
 
     /**
      * @brief Surface intersected outputs
      *
      * Vector of output pointers in which the surface is visible, modifiable with the sendOutputEnterEvent() and sendOutputLeaveEvent() methods.
      */
-    const std::vector<LOutput*>&outputs() const;
+    const std::vector<LOutput*>&outputs() const noexcept;
 
     /**
      * @brief Repaints the intersected outputs
      *
      * Invokes the LOutput::repaint() method on all outputs listed in outputs().
      */
-    void repaintOutputs();
+    void repaintOutputs() noexcept;
 
     /**
      * @brief Minimized property
@@ -327,7 +327,7 @@ public:
      *
      * @returns `true` if the surface is minimized and `false` otherwise.
      */
-    bool minimized() const;
+    bool minimized() const noexcept;
 
     /**
      * @brief Sets the minimized property
@@ -341,21 +341,21 @@ public:
      *
      * Indicates whether the surface is able to receive pointer or touch input events.
      */
-    bool receiveInput() const;
+    bool receiveInput() const noexcept;
 
     /**
      * @brief Buffer scale
      *
      * Scale of the surface buffer. You can listen for changes to this property with the bufferScaleChanged() event.
      */
-    Int32 bufferScale() const;
+    Int32 bufferScale() const noexcept;
 
     /**
      * @brief Gets the buffer transform of the surface.
      *
      * @return The buffer transform applied to the surface.
      */
-    LTransform bufferTransform() const;
+    LTransform bufferTransform() const noexcept;
 
     /**
      * @brief Gets the source rect of the surface in surface coordinates.
@@ -363,21 +363,21 @@ public:
      * For clients using the Viewporter protocol, a custom srcRect() detached from the buffer size
      * can be specified. For clients not using the protocol, the source rect covers the entire surface buffer.
      */
-    const LRectF &srcRect() const;
+    const LRectF &srcRect() const noexcept;
 
     /**
      * @brief Check if the surface has pointer focus
      *
      * @return `true` if the surface has pointer focus, `false` otherwise.
      */
-    bool hasPointerFocus() const;
+    bool hasPointerFocus() const noexcept;
 
     /**
      * @brief Check if the surface has keyboard focus
      *
      * @return `true` if the surface has keyboard focus, `false` otherwise.
      */
-    bool hasKeyboardFocus() const;
+    bool hasKeyboardFocus() const noexcept;
 
     /**
      * @brief Check if the surface is grabbing the keyboard
@@ -393,7 +393,7 @@ public:
      *
      * @warning It could return `nullptr` if the surface is not currently mapped.
      */
-    LTexture *texture() const;
+    LTexture *texture() const noexcept;
 
     /**
      * @brief Native [wl_buffer](https://wayland.app/protocols/wayland#wl_buffer) handle
@@ -402,8 +402,7 @@ public:
      *
      * @warning It could return `nullptr` if the surface is not currently mapped.
      */
-    wl_buffer *bufferResource() const;
-
+    wl_buffer *bufferResource() const noexcept;
 
     /**
      * @brief Indicates if the last attached buffer was NULL.
@@ -421,7 +420,7 @@ public:
      * Indicates if the surface has new damage since the last time the requestNextFrame() method was called.\n
      * You can access the damaged region with damage() or damageB().
      */
-    bool hasDamage() const;
+    bool hasDamage() const noexcept;
 
     /**
      * @brief Gets an ID that increments with each commit and new damage addition.
@@ -430,7 +429,7 @@ public:
      *
      * @return The incremental damage ID of the surface.
      */
-    UInt32 damageId() const;
+    UInt32 damageId() const noexcept;
 
     /**
      * @brief ACK the frame callback
@@ -440,14 +439,14 @@ public:
      *
      * @warning This method clears the current damage region of the surface.
      */
-    void requestNextFrame(bool clearDamage = true);
+    void requestNextFrame(bool clearDamage = true) noexcept;
 
     /**
      * @brief Mapped property
      *
      * Indicates if the surface can be rendered.
      */
-    bool mapped() const;
+    bool mapped() const noexcept;
 
     /**
      * @brief Gets the VSync preference of the client for this surface.
@@ -456,45 +455,45 @@ public:
      *
      * @return `true` if VSync is preferred, `false` if tearing is preferred.
     */
-    bool preferVSync();
+    bool preferVSync() noexcept;
 
     /**
      * @brief LSurfaceViews created for this surface.
      */
-    const std::vector<LSurfaceView*> &views() const;
+    const std::vector<LSurfaceView*> &views() const noexcept;
 
     /**
      * @brief Wayland surface resource
      *
      * Returns the resource generated by the [wl_surface](https://wayland.app/protocols/wayland#wl_surface) interface of the Wayland protocol.
      */
-    Protocols::Wayland::RSurface *surfaceResource() const;
+    Protocols::Wayland::RSurface *surfaceResource() const noexcept;
 
     /**
      * @brief Client owner of the surface.
      */
-    LClient *client() const;
+    LClient *client() const noexcept;
 
     /**
      * @brief Parent surface
      *
      * @returns A pointer to the parent surface or `nullptr` if it does not have a parent.
      */
-    LSurface *parent() const;
+    LSurface *parent() const noexcept;
 
     /**
      * @brief Topmost parent of the surface.
      *
      * @returns A pointer to the topmost parent of the surface, or `nullptr` if it does not have a parent.
      */
-    LSurface *topmostParent() const;
+    LSurface *topmostParent() const noexcept;
 
     /**
      * @brief Child surfaces.
      *
      * List of child surfaces.
      */
-    const std::list<LSurface*>&children() const;
+    const std::list<LSurface*>&children() const noexcept;
 
     /**
      * @brief Check if the surface is a subchild of a popup.
@@ -504,7 +503,7 @@ public:
      *
      * @return `true` if the surface is a subchild of a popup surface, `false` otherwise.
      */
-    bool isPopupSubchild() const;
+    bool isPopupSubchild() const noexcept;
 
     /**
      * @brief Check if the surface has a subchild popup.
@@ -514,7 +513,7 @@ public:
      *
      * @return `true` if the surface has a subchild popup, `false` otherwise.
      */
-    bool hasPopupSubchild() const;
+    bool hasPopupSubchild() const noexcept;
 
     /**
      * @brief Check if the surface is a subchild of the specified parent surface.
@@ -524,7 +523,7 @@ public:
      * @param parent A pointer to the potential parent LSurface to check against.
      * @return `true` if the surface is a subchild of the provided parent surface, `false` otherwise.
      */
-    bool isSubchildOf(LSurface *parent) const;
+    bool isSubchildOf(LSurface *parent) const noexcept;
 
     /**
      * @brief Raises the surface within its current layer.
@@ -544,7 +543,7 @@ public:
      *
      * @return A pointer to the previous LSurface or `nullptr` if the current surface is the first in the list.
      */
-    LSurface *prevSurface() const;
+    LSurface *prevSurface() const noexcept;
 
     /**
      * @brief Retrieve the next surface in the compositor surfaces list (LCompositor::surfaces()).
@@ -554,7 +553,7 @@ public:
      *
      * @return A pointer to the next LSurface or `nullptr` if the current surface is the last in the list.
      */
-    LSurface *nextSurface() const;
+    LSurface *nextSurface() const noexcept;
 
     /**
      * @name Roles
@@ -569,56 +568,56 @@ public:
      *
      * @returns The ID of the surface's role or LSurface::Undefined if it does not have a role.
      */
-    Role roleId() const;
+    Role roleId() const noexcept;
 
     /**
      * @brief Surface role
      *
      * @returns A pointer to the surface's role or `nullptr` if it does not have a role.
      */
-    LBaseSurfaceRole *role() const;
+    LBaseSurfaceRole *role() const noexcept;
 
     /**
      * @brief Cursor role
      *
      * @returns A pointer to an instance of LCursorRole or `nullptr` if it has a different role.
      */
-    LCursorRole *cursorRole() const;
+    LCursorRole *cursorRole() const noexcept;
 
     /**
      * @brief Drag & Drop icon role
      *
      * @returns A pointer to an instance of LDNDIconRole or `nullptr` if it has a different role.
      */
-    LDNDIconRole *dndIcon() const;
+    LDNDIconRole *dndIcon() const noexcept;
 
     /**
      * @brief Toplevel role
      *
      * @returns A pointer to an instance of LToplevelRole or `nullptr` if it has a different role.
      */
-    LToplevelRole *toplevel() const;
+    LToplevelRole *toplevel() const noexcept;
 
     /**
      * @brief Popup role
      *
      * @returns A pointer to an instance of LPopupRole or `nullptr` if it has a different role.
      */
-    LPopupRole *popup() const;
+    LPopupRole *popup() const noexcept;
 
     /**
      * @brief Subsurface role
      *
      * @returns A pointer to an instance of LSubsurfaceRole or `nullptr` if it has a different role.
      */
-    LSubsurfaceRole *subsurface() const;
+    LSubsurfaceRole *subsurface() const noexcept;
 
     /**
      * @brief Session Lock role
      *
      * @returns A pointer to an instance of LSessionLockRole or `nullptr` if it has a different role.
      */
-    LSessionLockRole *sessionLock() const;
+    LSessionLockRole *sessionLock() const noexcept;
 
     /**
      * @brief Layer role

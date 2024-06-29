@@ -126,7 +126,7 @@ void LSurface::LSurfacePrivate::setMapped(bool state)
     }
 }
 
-void LSurface::LSurfacePrivate::setPendingRole(LBaseSurfaceRole *role)
+void LSurface::LSurfacePrivate::setPendingRole(LBaseSurfaceRole *role) noexcept
 {
     pending.role = role;
 }
@@ -209,7 +209,7 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
     compositor()->imp()->surfaceRaiseAllowedCounter--;
 }
 
-bool LSurface::LSurfacePrivate::bufferToTexture()
+bool LSurface::LSurfacePrivate::bufferToTexture() noexcept
 {
     // Only for wl_drm case
     GLint format;
@@ -498,7 +498,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture()
     return true;
 }
 
-void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output)
+void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output) noexcept
 {
     if (presentationFeedbackResources.empty())
         return;
@@ -540,7 +540,7 @@ void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output)
     }
 }
 
-void LSurface::LSurfacePrivate::sendPreferredScale()
+void LSurface::LSurfacePrivate::sendPreferredScale() noexcept
 {
     if (outputs.empty())
         return;
@@ -575,7 +575,7 @@ void LSurface::LSurfacePrivate::sendPreferredScale()
         surfaceResource->fractionalScaleRes()->preferredScale(wlFracScale);
 }
 
-void LSurface::LSurfacePrivate::setPendingParent(LSurface *pendParent)
+void LSurface::LSurfacePrivate::setPendingParent(LSurface *pendParent) noexcept
 {
     if (pendingParent)
         pendingParent->imp()->pendingChildren.erase(pendingParentLink);
@@ -589,7 +589,7 @@ void LSurface::LSurfacePrivate::setPendingParent(LSurface *pendParent)
     }
 }
 
-bool LSurface::LSurfacePrivate::isInChildrenOrPendingChildren(LSurface *child)
+bool LSurface::LSurfacePrivate::isInChildrenOrPendingChildren(LSurface *child) noexcept
 {
     if (child == surfaceResource->surface())
         return true;
@@ -612,12 +612,12 @@ bool LSurface::LSurfacePrivate::isInChildrenOrPendingChildren(LSurface *child)
     return false;
 }
 
-bool LSurface::LSurfacePrivate::hasRoleOrPendingRole()
+bool LSurface::LSurfacePrivate::hasRoleOrPendingRole() noexcept
 {
     return current.role != nullptr || pending.role != nullptr;
 }
 
-bool LSurface::LSurfacePrivate::hasBufferOrPendingBuffer()
+bool LSurface::LSurfacePrivate::hasBufferOrPendingBuffer() noexcept
 {
     return current.hasBuffer || pending.hasBuffer;
 }
@@ -642,7 +642,7 @@ void LSurface::LSurfacePrivate::setKeyboardGrabToParent()
     }
 }
 
-void LSurface::LSurfacePrivate::updateDamage()
+void LSurface::LSurfacePrivate::updateDamage() noexcept
 {
     if (!texture->initialized() || changesToNotify.check(SizeChanged | SourceRectChanged | BufferSizeChanged | BufferTransformChanged | BufferScaleChanged))
     {
@@ -719,7 +719,7 @@ void LSurface::LSurfacePrivate::updateDamage()
     }
 }
 
-bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB)
+bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB) noexcept
 {
     const LSize prevSizeB { sizeB };
     const LSize prevSize { size };

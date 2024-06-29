@@ -47,7 +47,7 @@ LSurface::~LSurface()
     delete imp()->textureBackup;
 }
 
-LCursorRole *LSurface::cursorRole() const
+LCursorRole *LSurface::cursorRole() const noexcept
 {
     if (roleId() == LSurface::Role::Cursor)
         return (LCursorRole*)imp()->current.role;
@@ -55,7 +55,7 @@ LCursorRole *LSurface::cursorRole() const
         return nullptr;
 }
 
-LToplevelRole *LSurface::toplevel() const
+LToplevelRole *LSurface::toplevel() const noexcept
 {
     if (roleId() == LSurface::Role::Toplevel)
         return (LToplevelRole*)imp()->current.role;
@@ -63,7 +63,7 @@ LToplevelRole *LSurface::toplevel() const
         return nullptr;
 }
 
-LPopupRole *LSurface::popup() const
+LPopupRole *LSurface::popup() const noexcept
 {
     if (roleId() == LSurface::Role::Popup)
         return (LPopupRole*)imp()->current.role;
@@ -71,7 +71,7 @@ LPopupRole *LSurface::popup() const
         return nullptr;
 }
 
-LSubsurfaceRole *LSurface::subsurface() const
+LSubsurfaceRole *LSurface::subsurface() const noexcept
 {
     if (roleId() == LSurface::Role::Subsurface)
         return (LSubsurfaceRole*)imp()->current.role;
@@ -79,7 +79,7 @@ LSubsurfaceRole *LSurface::subsurface() const
         return nullptr;
 }
 
-LSessionLockRole *LSurface::sessionLock() const
+LSessionLockRole *LSurface::sessionLock() const noexcept
 {
     if (roleId() == LSurface::Role::SessionLock)
         return (LSessionLockRole*)imp()->current.role;
@@ -95,7 +95,7 @@ LLayerRole *LSurface::layerRole() const noexcept
         return nullptr;
 }
 
-LDNDIconRole *LSurface::dndIcon() const
+LDNDIconRole *LSurface::dndIcon() const noexcept
 {
     if (roleId() == LSurface::Role::DNDIcon)
         return (LDNDIconRole*)imp()->current.role;
@@ -103,58 +103,58 @@ LDNDIconRole *LSurface::dndIcon() const
         return nullptr;
 }
 
-LBaseSurfaceRole *LSurface::role() const
+LBaseSurfaceRole *LSurface::role() const noexcept
 {
     return imp()->current.role;
 }
 
-void LSurface::setPos(const LPoint &newPos)
+void LSurface::setPos(const LPoint &newPos) noexcept
 {
     imp()->pos = newPos;
 }
 
-void LSurface::setPos(Int32 x, Int32 y)
+void LSurface::setPos(Int32 x, Int32 y) noexcept
 {
     imp()->pos.setX(x);
     imp()->pos.setY(y);
 }
 
-void LSurface::setX(Int32 x)
+void LSurface::setX(Int32 x) noexcept
 {
     imp()->pos.setX(x);
 }
 
-void LSurface::setY(Int32 y)
+void LSurface::setY(Int32 y) noexcept
 {
     imp()->pos.setY(y);
 }
 
-const LSize &LSurface::sizeB() const
+const LSize &LSurface::sizeB() const noexcept
 {
     return imp()->sizeB;
 }
 
-const LSize &LSurface::size() const
+const LSize &LSurface::size() const noexcept
 {
     return imp()->size;
 }
 
-const LRegion &LSurface::inputRegion() const
+const LRegion &LSurface::inputRegion() const noexcept
 {
     return imp()->currentInputRegion;
 }
 
-const LRegion &LSurface::opaqueRegion() const
+const LRegion &LSurface::opaqueRegion() const noexcept
 {
     return imp()->currentOpaqueRegion;
 }
 
-const LRegion &LSurface::translucentRegion() const
+const LRegion &LSurface::translucentRegion() const noexcept
 {
     return imp()->currentTranslucentRegion;
 }
 
-const LRegion &LSurface::damageB() const
+const LRegion &LSurface::damageB() const noexcept
 {
     return imp()->currentDamageB;
 }
@@ -164,7 +164,7 @@ LContentType LSurface::contentType() const noexcept
     return imp()->current.contentType;
 }
 
-const LRegion &LSurface::damage() const
+const LRegion &LSurface::damage() const noexcept
 {
     return imp()->currentDamage;
 }
@@ -191,28 +191,28 @@ void LSurface::setMinimized(bool state)
     }
 }
 
-void LSurface::repaintOutputs()
+void LSurface::repaintOutputs() noexcept
 {
     for (LOutput *o : outputs())
         o->repaint();
 }
 
-bool LSurface::receiveInput() const
+bool LSurface::receiveInput() const noexcept
 {
     return imp()->stateFlags.check(LSurfacePrivate::ReceiveInput);
 }
 
-Int32 LSurface::bufferScale() const
+Int32 LSurface::bufferScale() const noexcept
 {
     return imp()->current.bufferScale;
 }
 
-bool LSurface::hasPointerFocus() const
+bool LSurface::hasPointerFocus() const noexcept
 {
     return seat()->pointer()->focus() == this;
 }
 
-bool LSurface::hasKeyboardFocus() const
+bool LSurface::hasKeyboardFocus() const noexcept
 {
     return seat()->keyboard()->focus() == this;
 }
@@ -222,32 +222,32 @@ bool LSurface::hasKeyboardGrab() const noexcept
     return seat()->keyboard()->grab() == this;
 }
 
-LTexture *LSurface::texture() const
+LTexture *LSurface::texture() const noexcept
 {
     return imp()->texture;
 }
 
-bool LSurface::hasDamage() const
+bool LSurface::hasDamage() const noexcept
 {
     return imp()->stateFlags.check(LSurfacePrivate::Damaged);
 }
 
-UInt32 LSurface::damageId() const
+UInt32 LSurface::damageId() const noexcept
 {
     return imp()->damageId;
 }
 
-bool LSurface::minimized() const
+bool LSurface::minimized() const noexcept
 {
     return imp()->stateFlags.check(LSurfacePrivate::Minimized);
 }
 
-const LRectF &LSurface::srcRect() const
+const LRectF &LSurface::srcRect() const noexcept
 {
     return imp()->srcRect;
 }
 
-LTransform LSurface::bufferTransform() const
+LTransform LSurface::bufferTransform() const noexcept
 {
     return imp()->current.transform;
 }
@@ -308,7 +308,7 @@ LSurfaceLayer LSurface::layer() const noexcept
     return imp()->layer;
 }
 
-LSurface::Role LSurface::roleId() const
+LSurface::Role LSurface::roleId() const noexcept
 {
     if (role())
         return (LSurface::Role)role()->roleId();
@@ -316,7 +316,7 @@ LSurface::Role LSurface::roleId() const
         return Undefined;
 }
 
-const LPoint &LSurface::pos() const
+const LPoint &LSurface::pos() const noexcept
 {
     return imp()->pos;
 }
@@ -329,7 +329,7 @@ const LPoint &LSurface::rolePos() const
     return imp()->pos;
 }
 
-void LSurface::sendOutputEnterEvent(LOutput *output)
+void LSurface::sendOutputEnterEvent(LOutput *output) noexcept
 {
     if (imp()->stateFlags.check(LSurfacePrivate::Destroyed))
         return;
@@ -360,7 +360,7 @@ void LSurface::sendOutputEnterEvent(LOutput *output)
     }
 }
 
-void LSurface::sendOutputLeaveEvent(LOutput *output)
+void LSurface::sendOutputLeaveEvent(LOutput *output) noexcept
 {
     if (imp()->stateFlags.check(LSurfacePrivate::Destroyed))
         return;
@@ -395,12 +395,12 @@ void LSurface::sendOutputLeaveEvent(LOutput *output)
     }
 }
 
-const std::vector<LOutput *> &LSurface::outputs() const
+const std::vector<LOutput *> &LSurface::outputs() const noexcept
 {
     return imp()->outputs;
 }
 
-void LSurface::requestNextFrame(bool clearDamage)
+void LSurface::requestNextFrame(bool clearDamage) noexcept
 {
     if (imp()->stateFlags.check(LSurfacePrivate::Destroyed))
         return;
@@ -436,27 +436,27 @@ void LSurface::requestNextFrame(bool clearDamage)
     }
 }
 
-bool LSurface::mapped() const
+bool LSurface::mapped() const noexcept
 {
     return imp()->stateFlags.check(LSurfacePrivate::Mapped);
 }
 
-bool LSurface::preferVSync()
+bool LSurface::preferVSync() noexcept
 {
     return imp()->stateFlags.check(LSurfacePrivate::VSync);
 }
 
-const std::vector<LSurfaceView *> &LSurface::views() const
+const std::vector<LSurfaceView *> &LSurface::views() const noexcept
 {
     return imp()->views;
 }
 
-Wayland::RSurface *LSurface::surfaceResource() const
+Wayland::RSurface *LSurface::surfaceResource() const noexcept
 {
     return imp()->surfaceResource;
 }
 
-wl_buffer *LSurface::bufferResource() const
+wl_buffer *LSurface::bufferResource() const noexcept
 {
     return (wl_buffer*)imp()->current.bufferRes;
 }
@@ -466,17 +466,17 @@ bool LSurface::hasBuffer() const noexcept
     return imp()->current.hasBuffer;
 }
 
-LClient *LSurface::client() const
+LClient *LSurface::client() const noexcept
 {
     return surfaceResource()->client();
 }
 
-LSurface *LSurface::parent() const
+LSurface *LSurface::parent() const noexcept
 {
     return imp()->parent;
 }
 
-static LSurface *findTopmostParent(LSurface *surface)
+static LSurface *findTopmostParent(LSurface *surface) noexcept
 {
     if (surface->parent() == nullptr)
         return surface;
@@ -484,7 +484,7 @@ static LSurface *findTopmostParent(LSurface *surface)
     return findTopmostParent(surface->parent());
 }
 
-LSurface *LSurface::topmostParent() const
+LSurface *LSurface::topmostParent() const noexcept
 {
     if (parent() == nullptr)
         return nullptr;
@@ -492,12 +492,12 @@ LSurface *LSurface::topmostParent() const
     return findTopmostParent(parent());
 }
 
-const std::list<LSurface *> &LSurface::children() const
+const std::list<LSurface *> &LSurface::children() const noexcept
 {
     return imp()->children;
 }
 
-static bool isChildOfPopup(const LSurface *surface)
+static bool isChildOfPopup(const LSurface *surface) noexcept
 {
     if (surface->parent())
     {
@@ -509,12 +509,12 @@ static bool isChildOfPopup(const LSurface *surface)
     return false;
 }
 
-bool LSurface::isPopupSubchild() const
+bool LSurface::isPopupSubchild() const noexcept
 {
     return isChildOfPopup(this);
 }
 
-static bool hasPopupChildren(const LSurface *surface)
+static bool hasPopupChildren(const LSurface *surface) noexcept
 {
     for (LSurface *c : surface->children())
     {
@@ -528,12 +528,12 @@ static bool hasPopupChildren(const LSurface *surface)
     return false;
 }
 
-bool LSurface::hasPopupSubchild() const
+bool LSurface::hasPopupSubchild() const noexcept
 {
     return hasPopupChildren(this);
 }
 
-bool LSurface::isSubchildOf(LSurface *parent) const
+bool LSurface::isSubchildOf(LSurface *parent) const noexcept
 {
     if (!parent)
         return false;
@@ -561,7 +561,7 @@ void LSurface::raise()
         imp()->setLayer(layer());
 }
 
-LSurface *LSurface::prevSurface() const
+LSurface *LSurface::prevSurface() const noexcept
 {
     if (imp()->stateFlags.check(LSurfacePrivate::Destroyed) || this == compositor()->surfaces().front())
         return nullptr;
@@ -569,7 +569,7 @@ LSurface *LSurface::prevSurface() const
         return *std::prev(imp()->compositorLink);
 }
 
-LSurface *LSurface::nextSurface() const
+LSurface *LSurface::nextSurface() const noexcept
 {
     if (imp()->stateFlags.check(LSurfacePrivate::Destroyed) || this == compositor()->surfaces().back())
         return nullptr;
