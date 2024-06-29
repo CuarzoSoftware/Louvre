@@ -159,6 +159,11 @@ const LRegion &LSurface::damageB() const
     return imp()->currentDamageB;
 }
 
+LContentType LSurface::contentType() const noexcept
+{
+    return imp()->current.contentType;
+}
+
 const LRegion &LSurface::damage() const
 {
     return imp()->currentDamage;

@@ -340,6 +340,16 @@ const std::vector<LScreenshotRequest *> &LOutput::screenshotRequests() const noe
     return imp()->screenshotRequests;
 }
 
+LContentType LOutput::contentType() const noexcept
+{
+    return compositor()->imp()->graphicBackend->outputGetContentType((LOutput*)this);
+}
+
+void LOutput::setContentType(LContentType type) noexcept
+{
+    compositor()->imp()->graphicBackend->outputSetContentType(this, type);
+}
+
 const LRect &LOutput::rect() const noexcept
 {
     return imp()->rect;

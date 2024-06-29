@@ -30,6 +30,11 @@ public:
         return m_tearingControlRes;
     }
 
+    ContentType::RContentType *contentTypeRes() const noexcept
+    {
+        return m_contentTypeRes;
+    }
+
     /******************** REQUESTS ********************/
 
     static void attach(wl_client *client, wl_resource *resource, wl_resource *buffer, Int32 x, Int32 y);
@@ -74,12 +79,14 @@ private:
     friend class Louvre::Protocols::Viewporter::RViewport;
     friend class Louvre::Protocols::FractionalScale::RFractionalScale;
     friend class Louvre::Protocols::TearingControl::RTearingControl;
+    friend class Louvre::Protocols::ContentType::RContentType;
     RSurface(GCompositor *compositorRes, UInt32 id);
     ~RSurface();
     std::unique_ptr<LSurface> m_surface;
     LWeak<Viewporter::RViewport> m_viewportRes;
     LWeak<FractionalScale::RFractionalScale> m_fractionalScaleRes;
     LWeak<TearingControl::RTearingControl> m_tearingControlRes;
+    LWeak<ContentType::RContentType> m_contentTypeRes;
 };
 
 #endif // RSURFACE_H

@@ -8,6 +8,7 @@
 #include <protocols/GammaControl/GGammaControlManager.h>
 #include <protocols/PointerGestures/GPointerGestures.h>
 #include <protocols/SessionLock/GSessionLockManager.h>
+#include <protocols/ContentType/GContentTypeManager.h>
 #include <protocols/PresentationTime/GPresentation.h>
 #include <protocols/ScreenCopy/GScreenCopyManager.h>
 #include <protocols/XdgOutput/GXdgOutputManager.h>
@@ -110,6 +111,9 @@ bool LCompositor::createGlobalsRequest()
 
     // Allow clients to create single pixel buffers (requires Viewporter::GViewporter)
     createGlobal<SinglePixelBuffer::GSinglePixelBufferManager>();
+
+    // Allows clients to provide a hint about the content type being displayed by surfaces
+    createGlobal<ContentType::GContentTypeManager>();
 
     return true;
 }

@@ -236,6 +236,11 @@ const std::vector<SinglePixelBuffer::GSinglePixelBufferManager *> &LClient::sing
     return imp()->singlePixelBufferManagerGlobals;
 }
 
+const std::vector<ContentType::GContentTypeManager *> &LClient::contentTypeManagerGlobals() const noexcept
+{
+    return imp()->contentTypeManagerGlobals;
+}
+
 const LClient::EventHistory &LClient::eventHistory() const noexcept
 {
     return imp()->eventHistory;

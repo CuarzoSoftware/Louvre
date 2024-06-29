@@ -7,6 +7,7 @@
 #include <LRect.h>
 #include <LFramebuffer.h>
 #include <LLayout.h>
+#include <LContentType.h>
 #include <list>
 
 /**
@@ -266,6 +267,19 @@ public:
      * @brief Damaged region in buffer coordinates.
      */
     const LRegion &damageB() const;
+
+    /**
+     * @brief Returns the content type that the surface represents.
+     *
+     * Clients using the Content Type protocol can indicate the type of content a particular surface is displaying.\n
+     * This information can be used, for example, to adapt the compositor behavior and to optimize the functioning
+     * of hardware displays when assigned to outputs through LOutput::setContentType().
+     *
+     * The default value is LContentTypeNone.
+     *
+     * @see LOutput::setContentType() and LSurface::contentTypeChanged()
+     */
+    LContentType contentType() const noexcept;
 
     /**
      * @brief Notify the client when the surface enters an output
@@ -867,7 +881,17 @@ public:
     virtual void preferVSyncChanged();
 
     /**
-     * @brief Notified when the surface is moved into another layer
+     * @brief Notifies a change of content type
+     *
+     * This event is triggered when the contentType() property changes.
+     *
+     * #### Default Implementation
+     * @snippet LSurfaceDefault.cpp contentTypeChanged
+     */
+    virtual void contentTypeChanged();
+
+    /**
+     * @brief Notified a c
      *
      * This event is triggered when the layer() property changes.
      *

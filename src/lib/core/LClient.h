@@ -228,9 +228,8 @@ public:
 
     /**
      * Resources created when the client binds to the [wl_output](https://wayland.app/protocols/wayland#wl_output) global.\n
-     * The library creates a [wl_output](https://wayland.app/protocols/wayland#wl_output)
-     * global for each output added to the compositor in
-     * order to notify the client the available outputs and their properties.
+     *
+     * @note Louvre internally creates a [wl_output](https://wayland.app/protocols/wayland#wl_output) global for each initialized output.
      */
     const std::vector<Protocols::Wayland::GOutput*>&outputGlobals() const noexcept;
 
@@ -382,6 +381,13 @@ public:
      * of the Single Pixel Buffer protocol.
      */
     const std::vector<Protocols::SinglePixelBuffer::GSinglePixelBufferManager*> &singlePixelBufferManagerGlobals() const noexcept;
+
+    /**
+     * Resources created when the client binds to the
+     * [wp_content_type_manager_v1](https://wayland.app/protocols/content-type-v1#wp_content_type_manager_v1) global
+     * of the Content Type protocol.
+     */
+    const std::vector<Protocols::ContentType::GContentTypeManager*> &contentTypeManagerGlobals() const noexcept;
 
     LPRIVATE_IMP_UNIQUE(LClient)
 };

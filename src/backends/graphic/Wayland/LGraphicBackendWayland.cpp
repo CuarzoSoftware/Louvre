@@ -107,6 +107,7 @@ public:
     inline static Int64 lastFrameUsec { 0 };
     inline static bool repaint { false };
     inline static bool vSync { true };
+    inline static LContentType contentType { LContentTypeNone };
 
     static UInt32 backendGetId()
     {
@@ -1025,6 +1026,16 @@ public:
         return true;
     }
 
+    static LContentType outputGetContentType(LOutput */*output*/)
+    {
+        return contentType;
+    }
+
+    static void outputSetContentType(LOutput */*output*/, LContentType type)
+    {
+        contentType = type;
+    }
+
     static void registryHandleGlobal(void */*data*/, wl_registry *registry, UInt32 name, const char *interface, UInt32 version)
     {
         if (!compositor && strcmp(interface, wl_compositor_interface.name) == 0)
@@ -1150,7 +1161,6 @@ public:
         if (pendingSurfaceSize != shared.surfaceSize)
             outputRepaint(nullptr);
     }
-
 };
 
 extern "C" LGraphicBackendInterface *getAPI()
@@ -1222,6 +1232,10 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.outputGetCurrentMode            = &LGraphicBackend::outputGetCurrentMode;
     API.outputGetModes                  = &LGraphicBackend::outputGetModes;
     API.outputSetMode                   = &LGraphicBackend::outputSetMode;
+
+    /* CONTENT TYPE */
+    API.outputGetContentType            = &LGraphicBackend::outputGetContentType;
+    API.outputSetContentType            = &LGraphicBackend::outputSetContentType;
 
     return &API;
 }

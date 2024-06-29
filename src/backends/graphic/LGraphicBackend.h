@@ -4,6 +4,7 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <LNamespaces.h>
+#include <LContentType.h>
 #include <vector>
 
 class Louvre::LGraphicBackend
@@ -76,6 +77,10 @@ public:
     static const LOutputMode *              outputGetCurrentMode(LOutput *output);
     static const std::vector<LOutputMode*>* outputGetModes(LOutput *output);
     static bool                             outputSetMode(LOutput *output, LOutputMode *mode);
+
+    /* OUTPUT CONTENT TYPE */
+    static LContentType                     outputGetContentType(LOutput *output);
+    static void                             outputSetContentType(LOutput *output, LContentType type);
 };
 
 #endif // LGRAPHICBACKEND

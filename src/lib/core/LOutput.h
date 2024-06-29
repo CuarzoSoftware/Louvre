@@ -6,6 +6,7 @@
 #include <LRect.h>
 #include <LRegion.h>
 #include <LFramebuffer.h>
+#include <LContentType.h>
 
 #include <thread>
 #include <list>
@@ -683,6 +684,28 @@ public:
      * This vector contains all LScreenshotRequest s that should be handled during a paintGL() event.
      */
     const std::vector<LScreenshotRequest*> &screenshotRequests() const noexcept;
+
+    /**
+     * @brief The content type hint set with setContentType().
+     */
+    LContentType contentType() const noexcept;
+
+    /**
+     * @brief Sets the content type hint.
+     *
+     * This hint is used by some hardware displays to properly adapt to the type of content being displayed.\n
+     * For example, if the @ref LContentTypeGame flag is set, a TV connected through an HDMI port may adapt
+     * to reduce latency.
+     *
+     * The default value is @ref LContentTypeNone.
+     *
+     * Clients using the Content Type protocol can also specify the type of content a given LSurface is displaying.
+     *
+     * @see LSurface::contentType() and LSurface::contentTypeChanged().
+     *
+     * @param type The content type hint to be set.
+     */
+    void setContentType(LContentType type) noexcept;
 
     /**
      * @brief Gets the output name.

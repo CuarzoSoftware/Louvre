@@ -2,6 +2,7 @@
 #define LBACKENDPRIVATE_H
 
 #include <LNamespaces.h>
+#include <LContentType.h>
 #include <vector>
 
 namespace Louvre
@@ -74,6 +75,14 @@ namespace Louvre
         const LOutputMode *                 (*outputGetCurrentMode)(LOutput *output);
         const std::vector<LOutputMode*> *   (*outputGetModes)(LOutput *output);
         bool                                (*outputSetMode)(LOutput *output, LOutputMode *mode);
+
+        /* OUTPUT CONTENT TYPE */
+
+        // Must return LContentTypeNone by default
+        LContentType                        (*outputGetContentType)(LOutput *output);
+
+        // The assigned type must always later be the same value returned by outputGetContentType()
+        void                                (*outputSetContentType)(LOutput *output, LContentType type);
     };
 
     struct LInputBackendInterface

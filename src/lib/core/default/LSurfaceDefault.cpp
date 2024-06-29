@@ -163,3 +163,10 @@ void LSurface::preferVSyncChanged()
     /* No default implementation */
 }
 //! [preferVSyncChanged]
+
+//! [contentTypeChanged]
+void LSurface::contentTypeChanged()
+{
+    /* No default implementation */
+}
+//! [contentTypeChanged]

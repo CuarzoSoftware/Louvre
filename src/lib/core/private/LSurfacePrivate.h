@@ -34,7 +34,8 @@ LPRIVATE_CLASS(LSurface)
         SizeChanged                     = static_cast<UInt16>(1) << 7,
         VSyncChanged                    = static_cast<UInt16>(1) << 8,
         PointerConstraintRegionChanged  = static_cast<UInt16>(1) << 9,
-        LockedPointerPosHintChanged     = static_cast<UInt16>(1) << 10
+        LockedPointerPosHintChanged     = static_cast<UInt16>(1) << 10,
+        ContentTypeChanged              = static_cast<UInt16>(1) << 11
     };
 
     LBitset<ChangesToNotify> changesToNotify;
@@ -72,6 +73,7 @@ LPRIVATE_CLASS(LSurface)
         LBaseSurfaceRole *role              { nullptr };
         Int32 bufferScale                   { 1 };
         LTransform transform                { LTransform::Normal };
+        LContentType contentType            { LContentTypeNone };
         LPointF lockedPointerPosHint        { -1.f, -1.f };
     };
 

@@ -386,6 +386,15 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
         imp.stateFlags.setFlag(LSurface::LSurfacePrivate::VSync, preferVSync);
     }
 
+    /**************************************************
+     ***************** CONTENT TYPE *******************
+     **************************************************/
+    if (imp.pending.contentType != imp.current.contentType)
+    {
+        changes.add(Changes::ContentTypeChanged);
+        imp.current.contentType = imp.pending.contentType;
+    }
+
     LWeak<LSurface> ref { surface };
 
     /*******************************************
@@ -400,92 +409,40 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
         return;
 
     if (changes.check(Changes::BufferSizeChanged))
-    {
         surface->bufferSizeChanged();
 
-        if (!ref)
-            return;
-    }
-
     if (changes.check(Changes::SizeChanged))
-    {
         surface->sizeChanged();
 
-        if (!ref)
-            return;
-    }
-
     if (changes.check(Changes::SourceRectChanged))
-    {
         surface->srcRectChanged();
 
-        if (!ref)
-            return;
-    }
-
     if (changes.check(Changes::BufferScaleChanged))
-    {
         surface->bufferScaleChanged();
 
-        if (!ref)
-            return;
-    }
-
     if (changes.check(Changes::BufferTransformChanged))
-    {
         surface->bufferTransformChanged();
 
-        if (!ref)
-            return;
-    }
-
     if (changes.check(Changes::DamageRegionChanged))
-    {
         surface->damageChanged();
 
-        if (!ref)
-            return;
-    }
-
     if (changes.check(Changes::InputRegionChanged))
-    {
         surface->inputRegionChanged();
 
-        if (!ref)
-            return;
-    }
-
     if (changes.check(Changes::PointerConstraintRegionChanged))
-    {
         surface->pointerConstraintRegionChanged();
 
-        if (!ref)
-            return;
-    }
-
     if (changes.check(Changes::LockedPointerPosHintChanged))
-    {
         surface->lockedPointerPosHintChanged();
 
-        if (!ref)
-            return;
-    }
-
     if (changes.check(Changes::OpaqueRegionChanged))
-    {
         surface->opaqueRegionChanged();
 
-        if (!ref)
-            return;
-    }
-
     if (changes.check(Changes::VSyncChanged))
-    {
         surface->preferVSyncChanged();
 
-        if (!ref)
-            return;
-    }
+    if (changes.check(Changes::ContentTypeChanged))
+        surface->contentTypeChanged();
 
     changes.set(Changes::NoChanges);
 }

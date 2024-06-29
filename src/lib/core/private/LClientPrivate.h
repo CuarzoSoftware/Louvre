@@ -51,6 +51,7 @@ public:
     std::vector<LayerShell::GLayerShell*> layerShellGlobals;
     std::vector<ForeignToplevelManagement::GForeignToplevelManager*> foreignToplevelManagerGlobals;
     std::vector<SinglePixelBuffer::GSinglePixelBufferManager*> singlePixelBufferManagerGlobals;
+    std::vector<ContentType::GContentTypeManager*> contentTypeManagerGlobals;
     bool destroyed { false };
 };
 

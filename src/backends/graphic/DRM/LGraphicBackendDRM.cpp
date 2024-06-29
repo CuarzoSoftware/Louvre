@@ -67,6 +67,11 @@ struct Output
     LSize physicalSize;
     std::vector<LOutputMode*>modes;
     std::vector<LTexture*> textures;
+
+#if SRM_VERSION_MAJOR <= 0 && SRM_VERSION_MINOR < 6
+    LContentType fallbackContentType { LContentTypeNone };
+#endif
+
 };
 
 // SRM -> Louvre Subpixel
@@ -840,6 +845,28 @@ bool LGraphicBackend::outputSetMode(LOutput *output, LOutputMode *mode)
     return srmConnectorSetMode(bkndOutput->conn, (SRMConnectorMode*)mode->m_data);
 }
 
+LContentType LGraphicBackend::outputGetContentType(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+
+#if SRM_VERSION_MAJOR <= 0 && SRM_VERSION_MINOR < 6
+    return bkndOutput->fallbackContentType;
+#else
+    return static_cast<LContentType>(srmConnectorGetContentType(bkndOutput->conn) - 1);
+#endif
+}
+
+void LGraphicBackend::outputSetContentType(LOutput *output, LContentType type)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+
+#if SRM_VERSION_MAJOR <= 0 && SRM_VERSION_MINOR < 6
+    bkndOutput->fallbackContentType = type;
+#else
+    return srmConnectorSetContentType(bkndOutput->conn, (SRM_CONNECTOR_CONTENT_TYPE)(type + 1));
+#endif
+}
+
 static LGraphicBackendInterface API;
 
 extern "C" LGraphicBackendInterface *getAPI()
@@ -910,6 +937,10 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.outputGetCurrentMode            = &LGraphicBackend::outputGetCurrentMode;
     API.outputGetModes                  = &LGraphicBackend::outputGetModes;
     API.outputSetMode                   = &LGraphicBackend::outputSetMode;
+
+    /* CONTENT TYPE */
+    API.outputGetContentType            = &LGraphicBackend::outputGetContentType;
+    API.outputSetContentType            = &LGraphicBackend::outputSetContentType;
 
     return &API;
 }

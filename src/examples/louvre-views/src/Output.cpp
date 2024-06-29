@@ -79,9 +79,6 @@ void Output::paintGL()
         return;
     }
 
-    if (needsFullRepaint())
-        G::scene()->mainView()->damageAll(this);
-
     // Check pointer events before painting
     if (G::compositor()->updatePointerBeforePaint)
     {
@@ -90,6 +87,12 @@ void Output::paintGL()
     }
 
     updateFractionalOversampling();
+
+    if (currentWorkspace->toplevel)
+        setContentType(currentWorkspace->toplevel->surface()->contentType());
+    else
+        setContentType(LContentTypeNone);
+
     G::scene()->handlePaintGL(this);
 
     for (auto *screenshotRequest : screenshotRequests())
