@@ -40,7 +40,7 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 * Multi-Session Support
 * Single, Double or Triple Buffering
 * Persistent Clipboard
-* Rootful XWayland (rootless mode is not yet supported)
+* Rootful XWayland (rootless mode is not yet supported, however, interesting projects such as [Wayland Transpositor](https://github.com/wayland-transpositor/wprs), [Wayland Proxy Virtwl](https://github.com/talex5/wayland-proxy-virtwl), and [Xwayland Satellite](https://github.com/Supreeeme/xwayland-satellite) can provide a rootless experience).
 
 ## 🧩 Protocols
 
@@ -55,6 +55,7 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 * Fractional Scale
 * Tearing Control
 * Session Lock
+* Content Type Hint
 * Wlr Gamma Control
 * Wlr Layer Shell
 * Wlr Screen Copy
@@ -127,6 +128,8 @@ Louvre offers excellent performance. A benchmark consisting of rendering numerou
 
 Here is a graph illustrating the benchmark results. It displays the average FPS of each compositor rendering 1 to 50 moving surfaces using double buffering on a HiDPI display.
 
+> The benchmark results have not been updated since 2023 and may not accurately reflect the current performance of the tested compositors.
+
 ### FPS
 
 <img src="https://lh3.googleusercontent.com/pw/AIL4fc_fcGPw-Yh1zkqxKdfEQucQVXH853Py1YXtTk7jHVACzIaYmYCId07D0hsdJ-FArkERPjJQR2shCc4swA7b1cy9X9EhvFPqLOR_kxV-C1eVQHey2m8=w2400"/>
@@ -149,7 +152,6 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 ## 🔨 Upcoming Features
 
 * Wlr Output Management
-* Content Type Hint Protocol
 * XDG activation Protocol
 * Idle Notify Protocol
 * Cursor Shape Protocol

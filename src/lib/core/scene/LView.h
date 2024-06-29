@@ -359,7 +359,7 @@ public:
      *
      * @return `true` if the view is renderable; otherwise, `false`.
      */
-    bool isRenderable() const noexcept { return m_state.check(IsRenderable); };
+    bool isRenderable() const noexcept { return m_state.check(IsRenderable); }
 
     /**
      * @brief Schedules a repaint for all outputs where this view is currently visible.
@@ -374,7 +374,7 @@ public:
      *
      * @returns A pointer to the parent view, or `nullptr` if the view has no parent.
      */
-    LView *parent() const noexcept { return m_parent; };
+    LView *parent() const noexcept { return m_parent; }
 
     /**
      * @brief Sets the new parent for the view and insert it at the end of its children list.
@@ -400,7 +400,7 @@ public:
      *
      * @returns A reference to the list of child views.
      */
-    const std::list<LView*> &children() const noexcept { return m_children; };
+    const std::list<LView*> &children() const noexcept { return m_children; }
 
     /**
      * @brief Toggles the parent position offset.
@@ -875,10 +875,7 @@ public:
      */
     void setColorFactor(const LRGBAF &colorFactor) noexcept
     {
-        if (m_colorFactor.r != colorFactor.r ||
-            m_colorFactor.g != colorFactor.g ||
-            m_colorFactor.b != colorFactor.b ||
-            m_colorFactor.a != colorFactor.a)
+        if (m_colorFactor != colorFactor)
         {
             m_colorFactor = colorFactor;
             repaint();
@@ -1077,133 +1074,133 @@ public:
      *
      * This event is only triggered if pointerEventsEnabled() is set to `true`.
      */
-    virtual void pointerEnterEvent(const LPointerEnterEvent &event) { L_UNUSED(event) };
+    virtual void pointerEnterEvent(const LPointerEnterEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle a pointer move event within the view.
      *
      * This event is only triggered if pointerEnterEvent() was called before, and therefore when hasPointerFocus() returns `true`.
      */
-    virtual void pointerMoveEvent(const LPointerMoveEvent &event) { L_UNUSED(event) };
+    virtual void pointerMoveEvent(const LPointerMoveEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle a pointer leave event within the view.
      *
      * This event is only triggered if pointerEnterEvent() was called before, and therefore when hasPointerFocus() returns `true`.
      */
-    virtual void pointerLeaveEvent(const LPointerLeaveEvent &event) { L_UNUSED(event) };
+    virtual void pointerLeaveEvent(const LPointerLeaveEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle a pointer button event within the view.
      *
      * This event is only triggered if pointerEnterEvent() was called before, and therefore when hasPointerFocus() returns `true`.
      */
-    virtual void pointerButtonEvent(const LPointerButtonEvent &event) { L_UNUSED(event) };
+    virtual void pointerButtonEvent(const LPointerButtonEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle a pointer scroll event within the view.
      *
      * This event is only triggered if pointerEnterEvent() was called before, and therefore when hasPointerFocus() returns `true`.
      */
-    virtual void pointerScrollEvent(const LPointerScrollEvent &event) { L_UNUSED(event) };
+    virtual void pointerScrollEvent(const LPointerScrollEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle a pointer swipe begin event within the view.
      *
      * This event is only triggered if pointerEnterEvent() was called before, and therefore when hasPointerFocus() returns `true`.
      */
-    virtual void pointerSwipeBeginEvent(const LPointerSwipeBeginEvent &event) { L_UNUSED(event) };
+    virtual void pointerSwipeBeginEvent(const LPointerSwipeBeginEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle a pointer swipe update event within the view.
      *
      * This event is only triggered if pointerSwipeBeginEvent() was called before.
      */
-    virtual void pointerSwipeUpdateEvent(const LPointerSwipeUpdateEvent &event) { L_UNUSED(event) };
+    virtual void pointerSwipeUpdateEvent(const LPointerSwipeUpdateEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle a pointer swipe end event within the view.
      *
      * This event is only triggered if pointerSwipeBeginEvent() was called before.
      */
-    virtual void pointerSwipeEndEvent(const LPointerSwipeEndEvent &event) { L_UNUSED(event) };
+    virtual void pointerSwipeEndEvent(const LPointerSwipeEndEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle a pointer pinch begin event within the view.
      *
      * This event is only triggered if pointerEnterEvent() was called before, and therefore when hasPointerFocus() returns `true`.
      */
-    virtual void pointerPinchBeginEvent(const LPointerPinchBeginEvent &event) { L_UNUSED(event) };
+    virtual void pointerPinchBeginEvent(const LPointerPinchBeginEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle a pointer pinch update event within the view.
      *
      * This event is only triggered if pointerPinchBeginEvent() was called before.
      */
-    virtual void pointerPinchUpdateEvent(const LPointerPinchUpdateEvent &event) { L_UNUSED(event) };
+    virtual void pointerPinchUpdateEvent(const LPointerPinchUpdateEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle a pointer pinch end event within the view.
      *
      * This event is only triggered if pointerPinchBeginEvent() was called before.
      */
-    virtual void pointerPinchEndEvent(const LPointerPinchEndEvent &event) { L_UNUSED(event) };
+    virtual void pointerPinchEndEvent(const LPointerPinchEndEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle a pointer hold begin event within the view.
      *
      * This event is only triggered if pointerEnterEvent() was called before, and therefore when hasPointerFocus() returns `true`.
      */
-    virtual void pointerHoldBeginEvent(const LPointerHoldBeginEvent &event) { L_UNUSED(event) };
+    virtual void pointerHoldBeginEvent(const LPointerHoldBeginEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle a pointer hold end event within the view.
      *
      * This event is only triggered if pointerHoldBeginEvent() was called before.
      */
-    virtual void pointerHoldEndEvent(const LPointerHoldEndEvent &event) { L_UNUSED(event) };
+    virtual void pointerHoldEndEvent(const LPointerHoldEndEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle the key event within the view.
      *
      * Keyboard events are triggered only if keyboardEventsEnabled() is set to `true`.
      */
-    virtual void keyEvent(const LKeyboardKeyEvent &event) { L_UNUSED(event) };
+    virtual void keyEvent(const LKeyboardKeyEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle a touch down event within the view.
      *
      * Touch events are triggered only if touchEventsEnabled() is set to `true`.
      */
-    virtual void touchDownEvent(const LTouchDownEvent &event) { L_UNUSED(event) };
+    virtual void touchDownEvent(const LTouchDownEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle a touch move event within the view.
      *
      * This event is only triggered if a touchDownEvent() was emitted before.
      */
-    virtual void touchMoveEvent(const LTouchMoveEvent &event) { L_UNUSED(event) };
+    virtual void touchMoveEvent(const LTouchMoveEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle a touch up event within the view.
      *
      * This event is only triggered if a touchDownEvent() was emitted before.
      */
-    virtual void touchUpEvent(const LTouchUpEvent &event) { L_UNUSED(event) };
+    virtual void touchUpEvent(const LTouchUpEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle a touch frame event within the view.
      *
      * This event is only triggered if a touchDownEvent() was emitted before.
      */
-    virtual void touchFrameEvent(const LTouchFrameEvent &event) { L_UNUSED(event) };
+    virtual void touchFrameEvent(const LTouchFrameEvent &event) { L_UNUSED(event) }
 
     /**
      * @brief Handle a touch cancel event within the view.
      *
      * This event is only triggered if a touchDownEvent() was emitted before.
      */
-    virtual void touchCancelEvent(const LTouchCancelEvent &event) { L_UNUSED(event) };
+    virtual void touchCancelEvent(const LTouchCancelEvent &event) { L_UNUSED(event) }
 
     enum LViewState : UInt64
     {

@@ -6,6 +6,8 @@ https://github.com/CuarzoSoftware/LouvreTemplate
 
 It is well-documented and already implements the scene and views system for efficient rendering and basic server-side decorations.
 
+> The old tutorial can be found [here](https://github.com/CuarzoSoftware/Louvre/tree/main/doxygen/md/tutorial), however, it is outdated, and many concepts and APIs have changed since then.
+
 ## Key Concepts
 
 Here are some links to the C++ API documentation to help you navigate it:
@@ -13,6 +15,7 @@ Here are some links to the C++ API documentation to help you navigate it:
 - Compositor [Initialization](@ref Louvre::LCompositor::initialized) and [Uninitialization](@ref Louvre::LCompositor::uninitialized).
 - [Object Factory](@ref Factory).
 - [Rendering Content to Displays.](@ref loutput_detailed)
+- [Multithreading.](@ref render_multithreading)
 - [Scene](@ref lscene_detailed) and [Views](@ref lview_detailed).
 - [Fractional Scaling and Oversampling.](@ref Scaling)
 - [Gamma Correction.](@ref lgammatable_detailed)

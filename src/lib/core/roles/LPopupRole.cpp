@@ -394,12 +394,6 @@ const LPopupRole::Configuration *LPopupRole::findConfiguration(UInt32 serial) co
     return nullptr;
 }
 
-void LPopupRole::atomsChanged(LBitset<AtomChanges> changes, const Atoms &prevAtoms)
-{
-    L_UNUSED(changes)
-    L_UNUSED(prevAtoms)
-}
-
 bool LPopupRole::isTopmostPopup() const noexcept
 {
     std::list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin();

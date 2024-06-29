@@ -271,11 +271,11 @@ public:
     /**
      * @brief Returns the content type that the surface represents.
      *
-     * Clients using the Content Type protocol can indicate the type of content a particular surface is displaying.\n
+     * Clients using the Content Type Hint protocol can indicate the type of content a particular surface is displaying.\n
      * This information can be used, for example, to adapt the compositor behavior and to optimize the functioning
      * of hardware displays when assigned to outputs through LOutput::setContentType().
      *
-     * The default value is LContentTypeNone.
+     * The default value is @ref LContentTypeNone.
      *
      * @see LOutput::setContentType() and LSurface::contentTypeChanged()
      */

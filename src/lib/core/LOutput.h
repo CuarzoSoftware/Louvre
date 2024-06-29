@@ -50,11 +50,23 @@
  *
  * @section Rendering
  *
- * The rendering thread loop remains blocked until repaint() is called, which unlocks the thread and triggers the paintGL() event.
+ * The rendering thread loop remains blocked until repaint() is called, which unlocks the thread and asynchronously triggers the paintGL() event.
  *
  * All painting operations must occur exclusively within a paintGL() event, as rendering elsewhere will not be visible on the screen.
  *
  * Calling repaint() multiple times will only unlock the thread once. After or during a paintGL() event, repaint() must be called again to unlock the thread once more.
+ *
+ * @section render_multithreading Multithreading
+ *
+ * In Louvre, even if there is a main thread and each initialized LOutput has its own rendering thread, no single block of user code executes in parallel (unless you create custom threads, of course).
+ * For instance, all **xxxGL()** events never overlap with other events or requests being handled in separate threads.
+ *
+ * You may be wondering why the need to use rendering threads then?
+ *
+ * The answer is that calling rendering functions (in this case OpenGL functions) takes almost no time (except for **glFinish()**). Rendering commands are queued
+ * and processed later together with a page flip. For instance, if your monitor has a 60 Hz refresh rate (approximately 16 ms period), a paintGL() call may take
+ * 1 ms to be processed while the presentation on screen could take up to 15 ms (with V-Sync on). However, during those 15 ms, the main thread or other rendering
+ * threads can continue working. This allows Louvre compositors to maintain a constant high refresh rate compared to single-threaded designs.
  *
  * @section Painting
  *
@@ -699,7 +711,7 @@ public:
      *
      * The default value is @ref LContentTypeNone.
      *
-     * Clients using the Content Type protocol can also specify the type of content a given LSurface is displaying.
+     * Clients using the Content Type Hint protocol can also specify the type of content a given LSurface is displaying.
      *
      * @see LSurface::contentType() and LSurface::contentTypeChanged().
      *

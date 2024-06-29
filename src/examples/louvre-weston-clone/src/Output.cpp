@@ -111,6 +111,11 @@ void Output::paintGL() noexcept
     LPainter *p { painter() };
     std::list<Surface*> &surfaces { (std::list<Surface*>&)compositor()->surfaces() };
 
+    if (fullscreenSurface)
+        setContentType(fullscreenSurface->contentType());
+    else
+        setContentType(LContentTypeNone);
+
     p->setAlpha(1.f);
     p->enableCustomTextureColor(false);
 

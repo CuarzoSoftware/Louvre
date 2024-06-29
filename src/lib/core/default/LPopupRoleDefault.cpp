@@ -74,6 +74,14 @@ void LPopupRole::grabKeyboardRequest(const LEvent &triggeringEvent)
 }
 //! [grabKeyboardRequest]
 
+//! [atomsChanged]
+void LPopupRole::atomsChanged(LBitset<AtomChanges> changes, const Atoms &prevAtoms)
+{
+    L_UNUSED(changes)
+    L_UNUSED(prevAtoms)
+}
+//! [atomsChanged]
+
 //! [configureRequest]
 void LPopupRole::configureRequest()
 {

@@ -385,7 +385,7 @@ public:
     /**
      * Resources created when the client binds to the
      * [wp_content_type_manager_v1](https://wayland.app/protocols/content-type-v1#wp_content_type_manager_v1) global
-     * of the Content Type protocol.
+     * of the Content Type Hint protocol.
      */
     const std::vector<Protocols::ContentType::GContentTypeManager*> &contentTypeManagerGlobals() const noexcept;
 

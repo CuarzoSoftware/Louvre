@@ -1,3 +1,31 @@
+Louvre (2.3.0-1)
+
+  # New Protocols
+
+  * Content Type Hint (see LOutput::setContentType() and LSurface::contentType()).
+
+  # Bug Fixes
+
+  * Fixed bug preventing fallback keyboard map from loading when faulty XKB_DEFAULT_* environment variables are set.
+  * Fixed bug in louvre-views where fullscreen toplevel subsurfaces incorrectly appeared on top of the topbar.
+  * Fixed bug in louvre-views causing fullscreen toplevels to move behind the black background when a child popup is mapped.
+
+  # Backends
+
+  * Moved responsibility for restoring gamma and cursor planes during TTY switching to SRM.
+  * Wayland Backend: Added multiple cursor buffers to handle compositors that do not release buffers immediately.
+
+  # Documentation
+
+  * Added link to the old tutorial.
+
+  # Examples
+
+  * Reused the TextRenderer component in louvre-views and louvre-weston-clone.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Sat, 29 Jun 2024 18:14:25 -0400
+
+
 Louvre (2.2.0-1)
 
   # New Protocols
