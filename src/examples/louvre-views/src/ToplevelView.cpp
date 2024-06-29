@@ -27,7 +27,7 @@ static void onPointerLeaveResizeArea(InputRect *rect, void *data);
 
 static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &)
 {
-    ToplevelView *view = (ToplevelView*)rect->parent();
+    ToplevelView *view = (ToplevelView*)rect->LObject::userData();
     Pointer *pointer = (Pointer*)seat()->pointer();
     LXCursor *cursor = (LXCursor*)data;
 
@@ -80,7 +80,7 @@ static void onPointerEnterResizeArea(InputRect *rect, void *data, const LPoint &
 
 static void onPointerLeaveResizeArea(InputRect *rect, void *data)
 {
-    ToplevelView *view = (ToplevelView*)rect->parent();
+    ToplevelView *view = (ToplevelView*)rect->LObject::userData();
     Pointer *pointer = (Pointer*)seat()->pointer();
 
     if (data)
@@ -123,7 +123,7 @@ static void onPointerLeaveResizeArea(InputRect *rect, void *data)
 
 static void onPointerButtonResizeArea(InputRect *rect, void *data, UInt32 button, UInt32 state)
 {
-    ToplevelView *view = (ToplevelView*)rect->parent();
+    ToplevelView *view = (ToplevelView*)rect->LObject::userData();
     Pointer *pointer = (Pointer*)seat()->pointer();
     Toplevel *toplevel = view->toplevel;
 

@@ -419,7 +419,6 @@ void Output::onWorkspacesAnimationFinish(LAnimation */*anim*/) noexcept
     if (currentWorkspace->toplevel)
     {
         Toplevel *tl = currentWorkspace->toplevel;
-
         tl->blackFullscreenBackground.setVisible(false);
         tl->captureTexture.reset();
         tl->animView.setTexture(nullptr);
@@ -447,6 +446,13 @@ void Output::onWorkspacesAnimationFinish(LAnimation */*anim*/) noexcept
 
         if (tl->fullscreen())
         {
+            if (tl->decoratedView)
+            {
+                tl->decoratedView->decoT.setParent(&tl->fullscreenWorkspace->overlay);
+                tl->decoratedView->topbarInput.setParent(&tl->fullscreenWorkspace->overlay);
+                tl->decoratedView->buttonsContainer.setParent(&tl->fullscreenWorkspace->overlay);
+            }
+
             tl->surf()->setPos(pos().x(), 0);
             G::reparentWithSubsurfaces(tl->surf(), &tl->fullscreenWorkspace->surfaces);
             currentWorkspace->clipChildren();

@@ -409,6 +409,13 @@ void Toplevel::unsetFullscreen()
     if (surf())
         surf()->view.enableCustomTranslucentRegion(false);
 
+    if (fullscreenWorkspace && decoratedView)
+    {
+        decoratedView->decoT.insertAfter(&decoratedView->decoTL);
+        decoratedView->topbarInput.insertAfter(&decoratedView->decoT);
+        decoratedView->buttonsContainer.insertAfter(&decoratedView->topbarInput);
+    }
+
     if (!fullscreenOutput)
         return;
 

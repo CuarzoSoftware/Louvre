@@ -5,6 +5,7 @@
 
 InputRect::InputRect(LView *parent, void *userData, UInt32 id) : LLayerView(parent)
 {
+    setUserData((UIntPtr)parent);
     this->id = id;
     this->userData = userData;
     enableBlockPointer(true);
