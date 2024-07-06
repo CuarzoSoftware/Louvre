@@ -158,11 +158,6 @@ pid_t LLauncher::startDaemon(const std::string &name)
 
         if (nullFD != -1)
             dup2(nullFD, STDIN_FILENO);
-        else
-        {
-            LLog::error("[%s] Daemon exited with status %d. Failed to open /dev/null", name.c_str(), 1);
-            exit(1);
-        }
 
         prctl(PR_SET_NAME, name.c_str(), 0, 0, 0);
         Int32 ret = daemonLoop();
@@ -170,7 +165,9 @@ pid_t LLauncher::startDaemon(const std::string &name)
 
         close(pipeA[0]);
         close(pipeB[1]);
-        close(nullFD);
+
+        if (nullFD != 1)
+            close(nullFD);
 
         if (daemonGID != -1)
             kill(-daemonGID , SIGTERM);
