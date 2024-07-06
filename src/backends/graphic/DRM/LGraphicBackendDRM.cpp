@@ -312,7 +312,6 @@ void *LGraphicBackend::backendGetContextHandle()
 
 bool LGraphicBackend::backendInitialize()
 {
-    setenv("SRM_FORCE_LEGACY_API", "1", 0);
     libseatEnabled = compositor()->seat()->imp()->initLibseat();
 
     struct stat stat;
