@@ -1,3 +1,17 @@
+Louvre (2.3.1-1)
+
+  # Bug Fixes
+
+  * Fixed issue preventing apps from launching when LLauncher daemon fails to redirect stdin to /dev/null.
+  * Removed unnecessary override of SRM environment variables that may cause some hardware to function suboptimally.
+
+  # Dependencies
+
+  * Updated SRM dependency to v0.6.1.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Sun, 07 Jul 2024 14:28:24 -0400
+
+
 Louvre (2.3.0-1)
 
   # New Protocols
