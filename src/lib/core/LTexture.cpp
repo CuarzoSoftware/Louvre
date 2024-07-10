@@ -321,7 +321,7 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
         painter->imp()->shaderSetMode(LPainter::LPainterPrivate::LegacyMode);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         textureCopy = new LTexture(premultipliedAlpha());
-        glFlush();
+        glFinish();
         ret = textureCopy->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
         glDeleteFramebuffers(1, &framebuffer);
         glUseProgram(prevProgram);
@@ -359,7 +359,7 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
                                     GL_REPEAT, GL_REPEAT,
                                     GL_LINEAR, GL_LINEAR);
             glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, srcRect.x(), srcRect.y(), srcRect.w(), srcRect.h(), 0);
-            glFlush();
+            glFinish();
             textureCopy = new LTexture(premultipliedAlpha());
             ret = textureCopy->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
             glDeleteFramebuffers(1, &framebuffer);
@@ -396,7 +396,7 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
             glDisable(GL_BLEND);
             painter->drawRect(LRect(0, dstSize));
             glEnable(GL_BLEND);
-            glFlush();
+            glFinish();
             textureCopy = new LTexture(premultipliedAlpha());
             ret = textureCopy->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
             glDeleteFramebuffers(1, &framebuffer);

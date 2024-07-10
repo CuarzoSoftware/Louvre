@@ -5,6 +5,7 @@
 #include <LOpenGL.h>
 #include <LSeat.h>
 #include <LUtils.h>
+#include <LOutputMode.h>
 #include <stdio.h>
 
 #include "Global.h"
@@ -192,6 +193,43 @@ void G::loadTextures()
 
     if (!_textures.wallpaper)
         _textures.wallpaper = G::loadAssetsTexture("wallpaper.png", false);
+
+    if (_textures.wallpaper)
+    {
+        if (compositor()->graphicBackendId() == LGraphicBackendDRM)
+        {
+            LSize bestSize {0, 0};
+
+            for (LOutput *output : seat()->outputs())
+                if (output->currentMode()->sizeB().area() > bestSize.area()
+                    && output->currentMode()->sizeB().area() < _textures.wallpaper->sizeB().area())
+                    bestSize = output->preferredMode()->sizeB();
+
+            if (bestSize.area() != 0)
+            {
+                LRect srcRect = {
+                    0,
+                    0,
+                    (bestSize.w() * _textures.wallpaper->sizeB().h())/bestSize.h(),
+                    _textures.wallpaper->sizeB().h() };
+
+                if (srcRect.w() <= _textures.wallpaper->sizeB().w())
+                {
+                    srcRect.setX((_textures.wallpaper->sizeB().w() - srcRect.w()) / 2);
+                }
+                else
+                {
+                    srcRect.setW(_textures.wallpaper->sizeB().w());
+                    srcRect.setH((bestSize.h() * _textures.wallpaper->sizeB().w())/bestSize.w());
+                    srcRect.setY((_textures.wallpaper->sizeB().h() - srcRect.h()) / 2);
+                }
+
+                LTexture *tmp = _textures.wallpaper;
+                _textures.wallpaper = tmp->copy(bestSize, srcRect);
+                delete tmp;
+            }
+        }
+    }
 
     Float32 bufferScale = 2.f;
     LTexture *texture = _textures.atlas;

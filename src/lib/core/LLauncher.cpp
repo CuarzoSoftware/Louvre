@@ -28,11 +28,6 @@ static pid_t daemonGID = -1;
 
 static Int32 daemonLoop()
 {
-    const char *shell { getenv("SHELL") };
-
-    if (!shell)
-        return 0;
-
     close(pipeA[1]);
     close(pipeB[0]);
 
@@ -70,7 +65,7 @@ static Int32 daemonLoop()
                 pid_t pid = fork();
 
                 if (pid == 0)
-                    execlp(shell, shell, "-c", cmd.c_str());
+                    exit(system(cmd.c_str()));
                 else if (pid > 0)
                 {
                     // Send the launched app PID to the compositor
