@@ -1,3 +1,17 @@
+Louvre (2.3.2-1)
+
+  # Examples
+
+  * Replaced default wallpaper with a bluish-colored one.
+  * louvre-views: Scale-down wallpaper on startup to match the largest available output preferred mode size.
+
+  # Internal Changes
+
+  * Replaced unnecessary execlp() call with system() in LLauncher.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Wed, 10 Jul 2024 18:16:12 -0400
+
+
 Louvre (2.3.1-1)
 
   # Bug Fixes
