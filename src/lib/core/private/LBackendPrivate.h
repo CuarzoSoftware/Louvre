@@ -18,6 +18,7 @@ namespace Louvre
         const std::vector<LOutput*>*        (*backendGetConnectedOutputs)();
         UInt32                              (*backendGetRendererGPUs)();
         const std::vector<LDMAFormat>*      (*backendGetDMAFormats)();
+        const std::vector<LDMAFormat>*      (*backendGetScanoutDMAFormats)();
         EGLDisplay                          (*backendGetAllocatorEGLDisplay)();
         EGLContext                          (*backendGetAllocatorEGLContext)();
         dev_t                               (*backendGetAllocatorDeviceId)();
@@ -83,6 +84,9 @@ namespace Louvre
 
         // The assigned type must always later be the same value returned by outputGetContentType()
         void                                (*outputSetContentType)(LOutput *output, LContentType type);
+
+        /* DIRECT SCANOUT */
+        bool                                (*outputSetScanoutBuffer)(LOutput *output, LTexture *texture);
     };
 
     struct LInputBackendInterface

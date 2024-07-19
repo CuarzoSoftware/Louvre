@@ -135,6 +135,7 @@ LPRIVATE_CLASS(LCompositor)
         UInt32 tableSize;
         dev_t device;
         wl_array formatIndices;
+        wl_array scanoutIndices;
     } dmaFeedback;
 
     void initDMAFeedback() noexcept;

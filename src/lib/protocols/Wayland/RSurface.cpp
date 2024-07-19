@@ -1,3 +1,4 @@
+#include <protocols/SinglePixelBuffer/LSinglePixelBuffer.h>
 #include <protocols/PresentationTime/RPresentationFeedback.h>
 #include <protocols/TearingControl/RTearingControl.h>
 #include <protocols/Wayland/GOutput.h>
@@ -6,6 +7,7 @@
 #include <protocols/Wayland/GCompositor.h>
 #include <protocols/Wayland/RSurface.h>
 #include <private/LSurfacePrivate.h>
+#include <private/LOutputPrivate.h>
 #include <private/LSeatPrivate.h>
 #include <private/LFactory.h>
 #include <LCursorRole.h>
@@ -204,6 +206,18 @@ void RSurface::commit(wl_client */*client*/, wl_resource *resource)
     apply_commit(static_cast<const RSurface*>(wl_resource_get_user_data(resource))->surface());
 }
 
+static bool bufferIsBeingScannedByOutputs(wl_buffer *buffer) noexcept
+{
+    if (!buffer)
+        return false;
+
+    for (LOutput *o : compositor()->outputs())
+        if (o->imp()->scanout[0].buffer == buffer || o->imp()->scanout[1].buffer == buffer)
+            return true;
+
+    return false;
+}
+
 // The origin params indicates who requested the commit for this surface (itself or its parent surface)
 void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin origin)
 {
@@ -254,7 +268,13 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
         {
             wl_list_remove(&imp.current.onBufferDestroyListener.link);
 
-            if (!wl_shm_buffer_get(imp.current.bufferRes) && imp.current.bufferRes != imp.pending.bufferRes)
+            /* Release WL_DRM and DMA buffers only if a seccond buffer has been attached.
+             * Also, if being scanned out, let outputs take care of releasing them.
+             * SHM and Single Pixel buffers are released in LSurface::LSurfacePrivate::bufferToTexture() */
+            if (!bufferIsBeingScannedByOutputs((wl_buffer*)imp.current.bufferRes)
+                && !wl_shm_buffer_get(imp.current.bufferRes)
+                && !LSinglePixelBuffer::isSinglePixelBuffer(imp.current.bufferRes)
+                && imp.current.bufferRes != imp.pending.bufferRes)
             {
                 wl_buffer_send_release(imp.current.bufferRes);
                 wl_client_flush(wl_resource_get_client(imp.current.bufferRes));

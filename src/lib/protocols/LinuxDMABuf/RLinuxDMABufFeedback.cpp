@@ -35,6 +35,15 @@ RLinuxDMABufFeedback::RLinuxDMABufFeedback(
 
         mainDevice(&dev);
         formatTable(feedback.tableFd, feedback.tableSize);
+
+        if (!compositor()->imp()->graphicBackend->backendGetScanoutDMAFormats()->empty())
+        {
+            trancheTargetDevice(&dev);
+            trancheFlags(ZWP_LINUX_DMABUF_FEEDBACK_V1_TRANCHE_FLAGS_SCANOUT);
+            trancheFormats(&feedback.scanoutIndices);
+            trancheDone();
+        }
+
         trancheTargetDevice(&dev);
         trancheFlags(0);
         trancheFormats(&feedback.formatIndices);

@@ -629,6 +629,12 @@ public:
         return &dummyFormats;
     }
 
+    static const std::vector<LDMAFormat> *backendGetScanoutDMAFormats()
+    {
+        static std::vector<LDMAFormat> dummyFormats;
+        return &dummyFormats;
+    }
+
     static EGLDisplay backendGetAllocatorEGLDisplay()
     {
         return eglDisplay;
@@ -1036,6 +1042,11 @@ public:
         contentType = type;
     }
 
+    static bool outputSetScanoutBuffer(LOutput */*output*/, LTexture */*texture*/)
+    {
+        return false;
+    }
+
     static void registryHandleGlobal(void */*data*/, wl_registry *registry, UInt32 name, const char *interface, UInt32 version)
     {
         if (!compositor && strcmp(interface, wl_compositor_interface.name) == 0)
@@ -1175,6 +1186,7 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.backendGetConnectedOutputs      = &LGraphicBackend::backendGetConnectedOutputs;
     API.backendGetRendererGPUs          = &LGraphicBackend::backendGetRendererGPUs;
     API.backendGetDMAFormats            = &LGraphicBackend::backendGetDMAFormats;
+    API.backendGetScanoutDMAFormats     = &LGraphicBackend::backendGetScanoutDMAFormats;
     API.backendGetAllocatorEGLDisplay   = &LGraphicBackend::backendGetAllocatorEGLDisplay;
     API.backendGetAllocatorEGLContext   = &LGraphicBackend::backendGetAllocatorEGLContext;
     API.backendGetAllocatorDeviceId     = &LGraphicBackend::backendGetAllocatorDeviceId;
@@ -1236,6 +1248,9 @@ extern "C" LGraphicBackendInterface *getAPI()
     /* CONTENT TYPE */
     API.outputGetContentType            = &LGraphicBackend::outputGetContentType;
     API.outputSetContentType            = &LGraphicBackend::outputSetContentType;
+
+    /* DIRECT SCANOUT */
+    API.outputSetScanoutBuffer          = &LGraphicBackend::outputSetScanoutBuffer;
 
     return &API;
 }

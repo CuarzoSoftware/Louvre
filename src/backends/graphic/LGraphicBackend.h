@@ -19,6 +19,7 @@ public:
     static const std::vector<LOutput*>*     backendGetConnectedOutputs();
     static UInt32                           backendGetRendererGPUs();
     static const std::vector<LDMAFormat>*   backendGetDMAFormats();
+    static const std::vector<LDMAFormat>*   backendGetScanoutDMAFormats();
     static EGLDisplay                       backendGetAllocatorEGLDisplay();
     static EGLContext                       backendGetAllocatorEGLContext();
     static dev_t                            backendGetAllocatorDeviceId();
@@ -81,6 +82,9 @@ public:
     /* OUTPUT CONTENT TYPE */
     static LContentType                     outputGetContentType(LOutput *output);
     static void                             outputSetContentType(LOutput *output, LContentType type);
+
+    /* DIRECT SCANOUT */
+    static bool                             outputSetScanoutBuffer(LOutput *output, LTexture *texture);
 };
 
 #endif // LGRAPHICBACKEND

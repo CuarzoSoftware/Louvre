@@ -197,6 +197,8 @@ class Louvre::LOutput : public LFactoryObject
 {
 public:
 
+    bool setCustomScanoutBuffer(LTexture *texture) noexcept;
+
     struct Params;
 
     static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LOutput;

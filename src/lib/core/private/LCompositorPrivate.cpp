@@ -933,16 +933,32 @@ retryName:
     }
 
     wl_array_init(&dmaFeedback.formatIndices);
+    wl_array_init(&dmaFeedback.scanoutIndices);
     dmaFeedback.device = graphicBackend->backendGetAllocatorDeviceId();
 
     ptr = map;
     for (const auto &format : *graphicBackend->backendGetDMAFormats())
     {
-        *(UInt16*)wl_array_add(&dmaFeedback.formatIndices, sizeof(UInt16)) = formatIndex;
         memcpy(ptr, &format.format, sizeof(UInt32));
         ptr+=8;
         memcpy(ptr, &format.modifier, sizeof(UInt64));
         ptr+=8;
+
+        bool isScanout { false };
+
+        for (const auto &scanoutFmt : *graphicBackend->backendGetScanoutDMAFormats())
+        {
+            if (scanoutFmt == format)
+            {
+                *(UInt16*)wl_array_add(&dmaFeedback.scanoutIndices, sizeof(UInt16)) = formatIndex;
+                isScanout = true;
+                break;
+            }
+        }
+
+        if (!isScanout)
+            *(UInt16*)wl_array_add(&dmaFeedback.formatIndices, sizeof(UInt16)) = formatIndex;
+
         formatIndex++;
     }
 
@@ -963,6 +979,7 @@ void LCompositor::LCompositorPrivate::unitDMAFeedback() noexcept
         close(dmaFeedback.tableFd);
         dmaFeedback.tableFd = -1;
         wl_array_release(&dmaFeedback.formatIndices);
+        wl_array_release(&dmaFeedback.scanoutIndices);
     }
 }
 

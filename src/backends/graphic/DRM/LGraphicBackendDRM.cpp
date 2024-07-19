@@ -37,6 +37,7 @@
 #include <SRMListener.h>
 #include <SRMList.h>
 #include <SRMFormat.h>
+#include <SRMPlane.h>
 
 using namespace Louvre;
 
@@ -56,6 +57,7 @@ struct Backend
     std::vector<LOutput*>connectedOutputs;
     wl_event_source *monitor;
     std::vector<LDMAFormat>dmaFormats;
+    std::vector<LDMAFormat>scanoutFormats;
     std::list<DEVICE_FD_ID> devices;
     UInt32 rendererGPUs {0};
     dev_t allocatorDeviceId;
@@ -319,6 +321,12 @@ bool LGraphicBackend::backendInitialize()
     compositor()->imp()->graphicBackendData = bknd;
     bknd->core = srmCoreCreate(&srmInterface, compositor());
     SRMVersion *version;
+    SRMDevice *allocatorDevice;
+
+    auto formatInVector = [](const std::vector<LDMAFormat> &vec, const LDMAFormat &fmt) -> bool
+    {
+        return std::find(vec.begin(), vec.end(), fmt) != vec.end();
+    };
 
     if (!bknd->core)
     {
@@ -335,7 +343,9 @@ bool LGraphicBackend::backendInitialize()
         goto fail;
     }
 
-    if (fstat(srmDeviceGetFD(srmCoreGetAllocatorDevice(bknd->core)), &stat) == 0)
+    allocatorDevice = srmCoreGetAllocatorDevice(bknd->core);
+
+    if (fstat(srmDeviceGetFD(allocatorDevice), &stat) == 0)
         bknd->allocatorDeviceId = stat.st_rdev;
     else
     {
@@ -348,6 +358,30 @@ bool LGraphicBackend::backendInitialize()
     {
         SRMFormat *fmt = (SRMFormat*)srmListItemGetData(fmtIt);
         bknd->dmaFormats.emplace_back(fmt->format, fmt->modifier);
+    }
+
+    // Fill scanout DMA formats
+    SRMListForeach (planeIt, srmDeviceGetPlanes(allocatorDevice))
+    {
+        SRMPlane *plane = (SRMPlane*) srmListItemGetData(planeIt);
+
+        if (srmPlaneGetType(plane) != SRM_PLANE_TYPE_PRIMARY)
+            continue;
+
+        SRMListForeach (fmtIt, srmPlaneGetFormats(plane))
+        {
+            SRMFormat *fmt = (SRMFormat*)srmListItemGetData(fmtIt);
+
+            if (!formatInVector(bknd->scanoutFormats, *(LDMAFormat*)fmt) && formatInVector(bknd->dmaFormats, *(LDMAFormat*)fmt))
+                bknd->scanoutFormats.emplace_back(*(LDMAFormat*)fmt);
+
+            UInt32 alphaSubstitute = srmFormatGetAlphaSubstitute(fmt->format);
+
+            if (alphaSubstitute != fmt->format
+                && !formatInVector(bknd->scanoutFormats, {alphaSubstitute, fmt->modifier})
+                && formatInVector(bknd->dmaFormats, {alphaSubstitute, fmt->modifier}))
+                bknd->scanoutFormats.emplace_back(alphaSubstitute, fmt->modifier);
+        }
     }
 
     // Find connected outputs
@@ -433,6 +467,12 @@ const std::vector<LDMAFormat> *LGraphicBackend::backendGetDMAFormats()
 {
     Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
     return &bknd->dmaFormats;
+}
+
+const std::vector<LDMAFormat> *LGraphicBackend::backendGetScanoutDMAFormats()
+{
+    Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
+    return &bknd->scanoutFormats;
 }
 
 EGLDisplay LGraphicBackend::backendGetAllocatorEGLDisplay()
@@ -866,6 +906,30 @@ void LGraphicBackend::outputSetContentType(LOutput *output, LContentType type)
 #endif
 }
 
+/* DIRECT SCANOUT */
+bool LGraphicBackend::outputSetScanoutBuffer(LOutput *output, LTexture *texture)
+{
+#if SRM_VERSION_MAJOR <= 0 && SRM_VERSION_MINOR < 7
+    return false;
+#else
+    SRMBuffer *buffer { nullptr };
+
+    if (texture)
+    {
+        /* Framebuffer and Native types are created by Louvre */
+        if (!texture->m_graphicBackendData || texture->sourceType() > LTexture::DMA)
+            return false;
+
+        buffer = static_cast<SRMBuffer*>(texture->m_graphicBackendData);
+    }
+
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+
+    return srmConnectorSetCustomScanoutBuffer(bkndOutput->conn, buffer);
+#endif
+}
+
+
 static LGraphicBackendInterface API;
 
 extern "C" LGraphicBackendInterface *getAPI()
@@ -879,6 +943,7 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.backendGetConnectedOutputs      = &LGraphicBackend::backendGetConnectedOutputs;
     API.backendGetRendererGPUs          = &LGraphicBackend::backendGetRendererGPUs;
     API.backendGetDMAFormats            = &LGraphicBackend::backendGetDMAFormats;
+    API.backendGetScanoutDMAFormats     = &LGraphicBackend::backendGetScanoutDMAFormats;
     API.backendGetAllocatorEGLDisplay   = &LGraphicBackend::backendGetAllocatorEGLDisplay;
     API.backendGetAllocatorEGLContext   = &LGraphicBackend::backendGetAllocatorEGLContext;
     API.backendGetAllocatorDeviceId     = &LGraphicBackend::backendGetAllocatorDeviceId;
@@ -940,6 +1005,9 @@ extern "C" LGraphicBackendInterface *getAPI()
     /* CONTENT TYPE */
     API.outputGetContentType            = &LGraphicBackend::outputGetContentType;
     API.outputSetContentType            = &LGraphicBackend::outputSetContentType;
+
+    /* DIRECT SCANOUT */
+    API.outputSetScanoutBuffer          = &LGraphicBackend::outputSetScanoutBuffer;
 
     return &API;
 }

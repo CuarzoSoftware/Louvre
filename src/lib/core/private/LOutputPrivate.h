@@ -5,6 +5,7 @@
 #include <LRenderBuffer.h>
 #include <LOutput.h>
 #include <LBitset.h>
+#include <LSurface.h>
 #include <LGammaTable.h>
 #include <LMargins.h>
 #include <atomic>
@@ -48,6 +49,8 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
         ScreenshotsWithoutCursor            = static_cast<UInt32>(1) << 9,
         NeedsFullRepaint                    = static_cast<UInt32>(1) << 10,
         IsBlittingFramebuffers              = static_cast<UInt32>(1) << 11,
+        IsInPaintGL                         = static_cast<UInt32>(1) << 12,
+        HasScanoutBuffer                    = static_cast<UInt32>(1) << 13,
     };
 
     LOutputPrivate(LOutput *output);
@@ -117,6 +120,25 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     void validateScreenshotRequests() noexcept;
     void handleScreenshotRequests(bool withCursor) noexcept;
     UInt8 screenshotCursorTimeout { 0 };
+
+    struct ScanoutBuffer
+    {
+        wl_listener bufferDestroyListener
+        {
+            .link {0},
+            .notify = [](wl_listener *listener, void *)
+            {
+                ScanoutBuffer *scanoutBuffer = (ScanoutBuffer*)listener;
+                scanoutBuffer->buffer = nullptr;
+                scanoutBuffer->surface.reset();
+            }
+        };
+        wl_buffer *buffer { nullptr };
+        LWeak<LSurface> surface;
+    } scanout[2]; // Pending and current
+
+    bool isBufferScannedByOtherOutputs(wl_buffer *buffer) const noexcept;
+    void releaseScanoutBuffer(UInt8 index) noexcept;
 
     // API for the graphic backend
 

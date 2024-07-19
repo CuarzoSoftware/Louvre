@@ -293,9 +293,35 @@ void LOutput::LOutputPrivate::backendPaintGL()
      * is disabled */
     calculateCursorDamage();
 
-    /* Let the user do their rendering*/
-    output->paintGL();
+    const bool needsFullRepaintPrev { stateFlags.check(NeedsFullRepaint) };
 
+    /* If the last frame had a custom scanout buffer and the current
+     * one doesn't, suggest a full repaint */
+    if (stateFlags.check(HasScanoutBuffer))
+    {
+        stateFlags.add(NeedsFullRepaint);
+        stateFlags.remove(HasScanoutBuffer);
+    }
+
+    /* Release prev scanout buffer (1 before the one being scanned out rn) */
+    releaseScanoutBuffer(1);
+
+    /* Move current scanout buffer to 1 */
+    if (scanout[0].buffer)
+    {
+        wl_list_remove(&scanout[0].bufferDestroyListener.link);
+        scanout[1].buffer = scanout[0].buffer;
+        scanout[1].surface = scanout[0].surface;
+        wl_resource_add_destroy_listener((wl_resource*)scanout[1].buffer, &scanout[1].bufferDestroyListener);
+        scanout[0].buffer = nullptr;
+        scanout[0].surface.reset();
+    }
+
+    /* Let users do their rendering*/
+    stateFlags.add(IsInPaintGL);
+    output->paintGL();
+    stateFlags.remove(IsInPaintGL);
+    stateFlags.setFlag(NeedsFullRepaint, needsFullRepaintPrev);
     stateFlags.add(IsBlittingFramebuffers);
 
     /* This ensures that all active outputs have been repainted at least once after a client requests to lock the session.
@@ -383,6 +409,11 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
 
     output->uninitializeGL();
     removeFromSessionLockPendingRepaint();
+
+    /* Just in case there is a pending user buffer release */
+    releaseScanoutBuffer(0);
+    releaseScanoutBuffer(1);
+
     compositor()->flushClients();
     output->imp()->state = LOutput::Uninitialized;
     updateLayerSurfacesMapping();
@@ -622,4 +653,43 @@ void LOutput::LOutputPrivate::updateLayerSurfacesMapping() noexcept
     for (LSurface *s : compositor()->surfaces())
         if (s->layerRole() && s->layerRole()->exclusiveOutput() == output)
             s->layerRole()->updateMappingState();
+}
+
+bool LOutput::LOutputPrivate::isBufferScannedByOtherOutputs(wl_buffer *buffer) const noexcept
+{
+    if (!buffer)
+        return false;
+
+    for (LOutput *o : compositor()->outputs())
+    {
+        if (o == output)
+            continue;
+
+        if (o->imp()->scanout[0].buffer == buffer || o->imp()->scanout[1].buffer == buffer)
+            return true;
+    }
+
+    return false;
+}
+
+void LOutput::LOutputPrivate::releaseScanoutBuffer(UInt8 index) noexcept
+{
+    if (scanout[index].buffer)
+    {
+        wl_list_remove(&scanout[index].bufferDestroyListener.link);
+
+        /* Other output will release it */
+        if (isBufferScannedByOtherOutputs(scanout[index].buffer))
+            goto skipRelease;
+
+        /* The surface will release it */
+        if (scanout[index].surface && scanout[index].surface->bufferResource() == scanout[index].buffer)
+            goto skipRelease;
+
+        wl_buffer_send_release((wl_resource*)scanout[index].buffer);
+    }
+
+skipRelease:
+    scanout[index].buffer = nullptr;
+    scanout[index].surface.reset();
 }

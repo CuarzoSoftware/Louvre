@@ -329,7 +329,7 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
         if (ret)
             return textureCopy;
 
-        LLog::error("[LTexture::copyB] Failed to create texture. Graphical backend error.");
+        LLog::error("[LTexture::copyB] Failed to create texture. Graphics backend error.");
         delete textureCopy;
         return nullptr;
     }

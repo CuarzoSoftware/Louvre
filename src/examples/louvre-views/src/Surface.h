@@ -60,6 +60,7 @@ public:
 
     bool fadedOut = false;
 
+    UInt32 prevDamageId;
     LTimer firstMapTimer { [this](auto) { onToplevelFirstMap(); } };
 };
 

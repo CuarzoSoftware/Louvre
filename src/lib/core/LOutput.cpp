@@ -19,8 +19,50 @@
 #include <LTime.h>
 #include <LLog.h>
 #include <LOutputFramebuffer.h>
+#include <cassert>
 
 using namespace Louvre;
+
+bool LOutput::setCustomScanoutBuffer(LTexture *texture) noexcept
+{
+    assert(imp()->stateFlags.check(LOutputPrivate::IsInPaintGL) && "Calling LOutput::setCustomScanoutBuffer() outside LOutput::paintGL() is not allowed.");
+
+    if (imp()->scanout[0].buffer)
+    {
+        wl_list_remove(&imp()->scanout[0].bufferDestroyListener.link);
+        imp()->scanout[0].buffer = nullptr;
+        imp()->scanout[0].surface.reset();
+    }
+
+    /* Only allow WL_DRM and DMA surface textures.
+     * Scanning out surface textures from SHM buffers would require additional buffering
+     * (extra CPU copies), which would actually be slower than simply rendering them.
+     * User SHM buffers are allowed, though the user must take care of not updating the
+     * pixels data while being scanned. */
+    if (texture && texture->m_surface
+        && texture->sourceType() != LTexture::DMA
+        && texture->sourceType() != LTexture::WL_DRM)
+    {
+        imp()->stateFlags.remove(LOutputPrivate::HasScanoutBuffer);
+        return false;
+    }
+
+    const bool ret { compositor()->imp()->graphicBackend->outputSetScanoutBuffer(this, texture) };
+
+    if (ret && texture && texture->m_surface && texture->m_surface->bufferResource())
+    {
+        texture->m_surface->requestNextFrame(false);
+        texture->m_surface->sendOutputEnterEvent(this);
+        imp()->scanout[0].buffer = texture->m_surface->bufferResource();
+        imp()->scanout[0].surface.reset(texture->m_surface);
+        wl_resource_add_destroy_listener(
+            (wl_resource*)imp()->scanout[0].buffer,
+            &imp()->scanout[0].bufferDestroyListener);
+    }
+
+    imp()->stateFlags.setFlag(LOutputPrivate::HasScanoutBuffer, ret);
+    return ret;
+}
 
 LOutput::LOutput(const void *params) noexcept : LFactoryObject(FactoryObjectType), m_imp(std::make_unique<LOutputPrivate>(this))
 {

@@ -26,6 +26,11 @@ namespace Louvre
 
         /// The DRM modifier value specifying the memory layout.
         UInt64 modifier;
+
+        bool operator==(const LDMAFormat &other) const noexcept
+        {
+            return format == other.format && modifier == other.modifier;
+        }
     };
 
     /**
@@ -323,6 +328,7 @@ namespace Louvre
         friend class LGraphicBackend;
         friend class LDMABuffer;
         friend class LSurface;
+        friend class LOutput;
 
         void *m_graphicBackendData { nullptr };
         LSize m_sizeB;
@@ -337,6 +343,7 @@ namespace Louvre
         bool m_pendingDelete { false };
         mutable bool m_premultipliedAlpha;
 
+        LWeak<LSurface> m_surface;
         GLenum backendTarget() const noexcept;
         void reset() noexcept;
         bool setDataB(GLuint textureId, GLenum target, UInt32 format, const LSize &size, LOutput *output) noexcept;

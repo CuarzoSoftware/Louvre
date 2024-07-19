@@ -93,6 +93,10 @@ void Output::paintGL()
     else
         setContentType(LContentTypeNone);
 
+    /* Do not render when setting custom scanout buffers */
+    if (tryFullscreenScanoutIfNoOverlayContent())
+        return;
+
     G::scene()->handlePaintGL(this);
 
     for (auto *screenshotRequest : screenshotRequests())
@@ -287,6 +291,28 @@ void Output::updateFractionalOversampling()
     }
 }
 
+bool Output::tryFullscreenScanoutIfNoOverlayContent()
+{
+    auto fullscreenSurface { currentWorkspace->toplevel };
+
+    if (!fullscreenSurface
+        || !fullscreenSurface->surface()->mapped()
+        || !screenshotRequests().empty()
+        || doingFingerWorkspaceSwipe
+        || workspacesAnimation.running()
+        || (fullscreenSurface->decoratedView && fullscreenSurface->decoratedView->fullscreenTopbarVisibility != 0.f)
+        || !fullscreenSurface->surface()->children().empty()
+        || dock.visiblePercent != 0.f)
+        return false;
+
+    const bool ret { setCustomScanoutBuffer(fullscreenSurface->surface()->texture()) };
+
+    if (ret)
+        fullscreenSurface->surface()->requestNextFrame(1);
+
+    return ret;
+}
+
 void Output::showAllWorkspaces()
 {
     for (auto *ws : workspaces)
@@ -298,6 +324,23 @@ void Output::hideAllWorkspacesExceptCurrent()
     for (auto *ws : workspaces)
         if (ws != currentWorkspace)
             ws->show(false);
+}
+
+static bool toplevelOrSubsurfacesHaveNewDamage(Surface *surface) noexcept
+{
+    bool damaged { false };
+
+    for (LSurface *child : surface->children())
+        if (child->subsurface())
+            damaged = damaged || toplevelOrSubsurfacesHaveNewDamage((Surface*)child);
+
+    if (surface->damageId() != surface->prevDamageId)
+    {
+        surface->prevDamageId = surface->damageId();
+        return true;
+    }
+
+    return damaged;
 }
 
 void Output::onWorkspacesAnimationUpdate(LAnimation *anim) noexcept
@@ -339,7 +382,7 @@ void Output::onWorkspacesAnimationUpdate(LAnimation *anim) noexcept
             return;
         }
 
-        tl->surface()->requestNextFrame(false);
+        /* tl->surface()->requestNextFrame(false); */
 
         // Current fullscreen size
         LSize cSize;
@@ -350,7 +393,10 @@ void Output::onWorkspacesAnimationUpdate(LAnimation *anim) noexcept
             Float32 inv = 1.f - val;
             tl->animView.enableSrcRect(false);
             tl->animView.setVisible(true);
-            tl->animScene->render();
+
+            if (toplevelOrSubsurfacesHaveNewDamage(tl->surf()))
+                tl->animScene->render();
+
             tl->animView.setTexture(tl->animScene->texture());
             tl->animView.setPos((pos() * val) + (tl->prevBoundingRect.pos() * (inv)));
             cSize = (tl->fullscreenOutput->size() * val) + (tl->prevBoundingRect.size() * (inv));
@@ -384,7 +430,9 @@ void Output::onWorkspacesAnimationUpdate(LAnimation *anim) noexcept
             else
                 tl->surf()->setPos(tl->windowGeometry().pos());
 
-            tl->animScene->render();
+            if (toplevelOrSubsurfacesHaveNewDamage(tl->surf()))
+                tl->animScene->render();
+
             LRegion transReg;
             transReg = *tl->animScene->translucentRegion();
             transReg.offset(LPoint() - tl->animScene->pos());
@@ -467,6 +515,7 @@ void Output::onWorkspacesAnimationFinish(LAnimation */*anim*/) noexcept
             delete tl->fullscreenWorkspace;
             tl->fullscreenWorkspace = nullptr;
         }
+
         animatedFullscreenToplevel = nullptr;
 
         if (tl->decoratedView)
@@ -474,6 +523,7 @@ void Output::onWorkspacesAnimationFinish(LAnimation */*anim*/) noexcept
     }
 
 returnChildren:
+    animatedFullscreenToplevel = nullptr;
     for (Output *o : G::outputs())
         if (!o->doingFingerWorkspaceSwipe && o->currentWorkspace)
             o->currentWorkspace->returnChildren();

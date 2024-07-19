@@ -440,6 +440,12 @@ bool LSurface::LSurfacePrivate::bufferToTexture() noexcept
         // Single pixel buffer
         else if (LSinglePixelBuffer::isSinglePixelBuffer(current.bufferRes))
         {
+            if (!stateFlags.check(BufferReleased))
+            {
+                wl_buffer_send_release(current.bufferRes);
+                stateFlags.add(BufferReleased);
+            }
+
             if (texture && texture != textureBackup && texture->m_pendingDelete)
                 delete texture;
 
@@ -491,6 +497,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture() noexcept
         updateDamage();
     }
 
+    texture->m_surface.reset(surfaceResource->surface());
     pendingDamageB.clear();
     pendingDamage.clear();
     damageId = LTime::nextSerial();
