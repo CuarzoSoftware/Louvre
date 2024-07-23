@@ -18,6 +18,7 @@ public:
     Float32 terminalIconAlpha { 1.0f };
     Float32 terminalIconAlphaPrev { 1.0f };
 
+    bool tryFullscreenScanoutIfNoOverlayContent() noexcept;
     void loadWallpaper() noexcept;
     void fullDamage()  noexcept;
     void initializeGL() noexcept override;

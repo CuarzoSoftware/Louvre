@@ -1,5 +1,6 @@
 #include <LPointerMoveEvent.h>
 #include <LScreenshotRequest.h>
+#include <LSessionLockRole.h>
 #include <LRenderBuffer.h>
 #include <LPainter.h>
 #include <LToplevelRole.h>
@@ -115,6 +116,9 @@ void Output::paintGL() noexcept
         setContentType(fullscreenSurface->contentType());
     else
         setContentType(LContentTypeNone);
+
+    if (tryFullscreenScanoutIfNoOverlayContent())
+        return;
 
     p->setAlpha(1.f);
     p->enableCustomTextureColor(false);
@@ -477,3 +481,29 @@ void Output::paintGL() noexcept
     setBufferDamage(&newDamage);
     newDamage.clear();
 }
+
+bool Output::tryFullscreenScanoutIfNoOverlayContent() noexcept
+{
+    LSurface *fullscreenSurface { nullptr };
+
+    /* Try with a sessionLock surface or fullscreen toplevel */
+    if (sessionLockRole() && sessionLockRole()->surface()->mapped())
+        fullscreenSurface = sessionLockRole()->surface();
+    else if (this->fullscreenSurface && this->fullscreenSurface->mapped())
+        fullscreenSurface = this->fullscreenSurface;
+
+    if (!fullscreenSurface
+        || !static_cast<Compositor*>(compositor())->destroyedToplevels.empty()
+        || (cursor()->visible() && !cursor()->hwCompositingEnabled(this))
+        || !screenshotRequests().empty()
+        || !fullscreenSurface->children().empty())
+        return false;
+
+    const bool ret { setCustomScanoutBuffer(fullscreenSurface->texture()) };
+
+    if (ret)
+        fullscreenSurface->requestNextFrame(true);
+
+    return ret;
+}
+

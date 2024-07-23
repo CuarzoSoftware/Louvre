@@ -378,21 +378,20 @@ void ToplevelView::updateTitle()
         return;
 
     Int32 maxWidth = (toplevel->windowGeometry().w() - 128) * 2;
+    std::string newClippedTitle { G::font()->semibold->clipText(toplevel->title().c_str(), 28, maxWidth, unclippedTitleBufferSize).c_str() };
+
+    if (newClippedTitle == prevClippedTitle)
+        return;
+
+    prevClippedTitle = std::move(newClippedTitle);
 
     if (title.texture())
     {
-        titleWidth = G::font()->semibold->calculateTextureSize(toplevel->title().c_str(), 28).w();
-
-        if (titleWidth != title.texture()->sizeB().w() || titleWidth > maxWidth)
-        {
-            delete title.texture();
-            title.setTexture(G::font()->semibold->renderText(toplevel->title().c_str(), 28, maxWidth));
-        }
+        delete title.texture();
+        title.setTexture(G::font()->semibold->renderText(prevClippedTitle.c_str(), 28, -1));
     }
     else
-    {
-        title.setTexture(G::font()->semibold->renderText(toplevel->title().c_str(), 28, maxWidth));
-    }
+        title.setTexture(G::font()->semibold->renderText(prevClippedTitle.c_str(), 28, -1));
 
     updateGeometry();
 }
@@ -701,8 +700,8 @@ void ToplevelView::updateGeometry()
     {
         Int32 px { (topbarInput.size().w() - title.size().w()) / 2 };
 
-        if (titleWidth > (topbarInput.size().w() - 128) * 2)
-            px = 64;
+        if (unclippedTitleBufferSize.w() > (topbarInput.size().w() - 128) * 2)
+            px = 68;
 
         Int32 h { topbarInput.size().h() - (TOPLEVEL_TOPBAR_HEIGHT + title.size().h()) / 2 };
 

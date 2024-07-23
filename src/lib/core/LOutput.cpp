@@ -32,6 +32,7 @@ bool LOutput::setCustomScanoutBuffer(LTexture *texture) noexcept
         wl_list_remove(&imp()->scanout[0].bufferDestroyListener.link);
         imp()->scanout[0].buffer = nullptr;
         imp()->scanout[0].surface.reset();
+        imp()->customScanoutBuffer.reset();
     }
 
     /* Only allow WL_DRM and DMA surface textures.
@@ -49,15 +50,20 @@ bool LOutput::setCustomScanoutBuffer(LTexture *texture) noexcept
 
     const bool ret { compositor()->imp()->graphicBackend->outputSetScanoutBuffer(this, texture) };
 
-    if (ret && texture && texture->m_surface && texture->m_surface->bufferResource())
+    if (ret && texture)
     {
-        texture->m_surface->requestNextFrame(false);
-        texture->m_surface->sendOutputEnterEvent(this);
-        imp()->scanout[0].buffer = texture->m_surface->bufferResource();
-        imp()->scanout[0].surface.reset(texture->m_surface);
-        wl_resource_add_destroy_listener(
-            (wl_resource*)imp()->scanout[0].buffer,
-            &imp()->scanout[0].bufferDestroyListener);
+        imp()->customScanoutBuffer.reset(texture);
+
+        if (texture->m_surface && texture->m_surface->bufferResource())
+        {
+            texture->m_surface->requestNextFrame(false);
+            texture->m_surface->sendOutputEnterEvent(this);
+            imp()->scanout[0].buffer = texture->m_surface->bufferResource();
+            imp()->scanout[0].surface.reset(texture->m_surface);
+            wl_resource_add_destroy_listener(
+                (wl_resource*)imp()->scanout[0].buffer,
+                &imp()->scanout[0].bufferDestroyListener);
+        }
     }
 
     imp()->stateFlags.setFlag(LOutputPrivate::HasScanoutBuffer, ret);

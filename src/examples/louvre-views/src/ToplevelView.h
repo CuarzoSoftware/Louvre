@@ -55,13 +55,13 @@ public:
         minimizeButton,
         maximizeButton;
 
+    std::string prevClippedTitle;
+    LSize unclippedTitleBufferSize;
     LTextureView title;
-
     UInt32 lastTopbarClickMs { 0 };
     Float32 fullscreenTopbarVisibility { 0.f };
     LAnimation fullscreenTopbarAnim;
 
-    Int32 titleWidth { 0 };
     void updateTitle();
     void updateGeometry();
 

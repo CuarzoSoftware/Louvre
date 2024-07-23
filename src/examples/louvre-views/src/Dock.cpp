@@ -229,7 +229,9 @@ void Dock::pointerMoveEvent(const LPointerMoveEvent &)
 
     if (visiblePercent == 1.f && !G::pointer()->cursorOwner)
     {
+        G::pointer()->cursorOwner = this;
         cursor()->useDefault();
+        cursor()->setVisible(true);
         update();
     }
 
@@ -241,6 +243,9 @@ void Dock::pointerMoveEvent(const LPointerMoveEvent &)
 
 void Dock::pointerLeaveEvent(const LPointerLeaveEvent &)
 {
+    if (G::pointer()->cursorOwner == this)
+        G::pointer()->cursorOwner = nullptr;
+
     G::tooltip()->hide();
     showResistanceCount = 0;
     hide();

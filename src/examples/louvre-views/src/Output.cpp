@@ -16,6 +16,7 @@
 #include "Output.h"
 #include "Compositor.h"
 #include "Dock.h"
+#include "LSessionLockRole.h"
 #include "Topbar.h"
 #include "Workspace.h"
 #include "Toplevel.h"
@@ -291,24 +292,33 @@ void Output::updateFractionalOversampling()
     }
 }
 
-bool Output::tryFullscreenScanoutIfNoOverlayContent()
+bool Output::tryFullscreenScanoutIfNoOverlayContent() noexcept
 {
-    auto fullscreenSurface { currentWorkspace->toplevel };
+    LSurface *fullscreenSurface { nullptr };
+
+    /* Try with a sessionLock surface or fullscreen toplevel */
+    if (sessionLockRole() && sessionLockRole()->surface()->mapped())
+        fullscreenSurface = sessionLockRole()->surface();
+    else if (currentWorkspace->toplevel
+             && currentWorkspace->toplevel->surface()->mapped()
+             && (!currentWorkspace->toplevel->decoratedView
+                 || (currentWorkspace->toplevel->decoratedView
+                     && currentWorkspace->toplevel->decoratedView->fullscreenTopbarVisibility == 0.f)))
+        fullscreenSurface = currentWorkspace->toplevel->surface();
 
     if (!fullscreenSurface
-        || !fullscreenSurface->surface()->mapped()
+        || (cursor()->visible() && !cursor()->hwCompositingEnabled(this))
         || !screenshotRequests().empty()
         || doingFingerWorkspaceSwipe
         || workspacesAnimation.running()
-        || (fullscreenSurface->decoratedView && fullscreenSurface->decoratedView->fullscreenTopbarVisibility != 0.f)
-        || !fullscreenSurface->surface()->children().empty()
+        || !fullscreenSurface->children().empty()
         || dock.visiblePercent != 0.f)
         return false;
 
-    const bool ret { setCustomScanoutBuffer(fullscreenSurface->surface()->texture()) };
+    const bool ret { setCustomScanoutBuffer(fullscreenSurface->texture()) };
 
     if (ret)
-        fullscreenSurface->surface()->requestNextFrame(1);
+        fullscreenSurface->requestNextFrame(true);
 
     return ret;
 }

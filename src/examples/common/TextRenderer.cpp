@@ -66,6 +66,37 @@ TextRenderer::~TextRenderer()
     }
 }
 
+std::string TextRenderer::clipText(const char *text, Int32 fontSize, Int32 maxWidth, LSize &unclippedSize)
+{
+    std::string str { "" };
+
+    if (!text)
+        return str;
+
+    unclippedSize = calculateTextureSize(text, fontSize);
+
+    if (unclippedSize.area() <= 0)
+        return str;
+
+    if (unclippedSize.w() > maxWidth)
+    {
+        Float32 textLen = strlen(text);
+        Int32 newLen =  Float32(maxWidth * textLen) / Float32(unclippedSize.w());
+
+        if (newLen < 1)
+            return str;
+
+        for (Int32 i = 0; i < newLen; i++)
+            str += text[i];
+
+        str += "...";
+    }
+    else
+        str = text;
+
+    return str;
+}
+
 LTexture *TextRenderer::renderText(const char *text, Int32 fontSize, Int32 maxWidth, UChar8 r, UChar8 g, UChar8 b)
 {
     char *clippedText = nullptr;

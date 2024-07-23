@@ -115,12 +115,6 @@ LView *Surface::getView() const
 
 void Surface::parentChanged()
 {
-    if (cursorRole())
-    {
-        getView()->setVisible(false);
-        return;
-    }
-
     if (parent())
     {
         Surface *sessionLockParent { searchSessionLockParent(static_cast<Surface*>(parent())) };
@@ -235,7 +229,7 @@ void Surface::orderChanged()
 
     while (prevSurface != nullptr)
     {
-        if (prevSurface->getView()->parent() == view->parent())
+        if (subsurface() || prevSurface->getView()->parent() == view->parent())
             break;
 
         prevSurface = static_cast<Surface*>(prevSurface->prevSurface());
@@ -243,7 +237,7 @@ void Surface::orderChanged()
 
     if (prevSurface)
     {
-        if (prevSurface->getView()->parent() == getView()->parent())
+        if (subsurface() || prevSurface->getView()->parent() == getView()->parent())
             view->insertAfter(prevSurface->getView());
     }
     else

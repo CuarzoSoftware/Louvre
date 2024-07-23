@@ -321,8 +321,12 @@ void LOutput::LOutputPrivate::backendPaintGL()
     stateFlags.add(IsInPaintGL);
     output->paintGL();
     stateFlags.remove(IsInPaintGL);
+
+    /* Force repaint if there are unreleased buffers */
+    if (scanout[0].buffer || scanout[1].buffer)
+        output->repaint();
+
     stateFlags.setFlag(NeedsFullRepaint, needsFullRepaintPrev);
-    stateFlags.add(IsBlittingFramebuffers);
 
     /* This ensures that all active outputs have been repainted at least once after a client requests to lock the session.
      * Protocol quote: The locked event must not be sent until a new "locked" frame has been presented on all outputs and no
@@ -331,15 +335,19 @@ void LOutput::LOutputPrivate::backendPaintGL()
 
     /* Remove denied or invalid screen copy requests */
     validateScreenshotRequests();
-    compositor()->imp()->currentOutput = nullptr;
 
-    /* Turn damage into buffer coords and handle buffer
-     * blitting if oversampling is enabled or there are
-     * screen copy requests*/
-    damageToBufferCoords();
-    blitFramebuffers();
+    if (!stateFlags.check(HasScanoutBuffer))
+    {
+        compositor()->imp()->currentOutput = nullptr;
 
-    stateFlags.remove(IsBlittingFramebuffers);
+        /* Turn damage into buffer coords and handle buffer
+         * blitting if oversampling is enabled or there are
+         * screen copy requests*/
+        stateFlags.add(IsBlittingFramebuffers);
+        damageToBufferCoords();
+        blitFramebuffers();
+        stateFlags.remove(IsBlittingFramebuffers);
+    }
 
     /* Ensure clients receive frame callbacks and pending roles configurations on time */
     compositor()->flushClients();
@@ -522,7 +530,8 @@ void LOutput::LOutputPrivate::validateScreenshotRequests() noexcept
     stateFlags.remove(ScreenshotsWithCursor | ScreenshotsWithoutCursor);
     for (std::size_t i = 0; i < screenshotRequests.size();)
     {
-        if (!screenshotRequests[i]->resource().accepted() ||
+        if (stateFlags.check(HasScanoutBuffer) || // Deny screenshoots when there is a custom scanout buffer
+            !screenshotRequests[i]->resource().accepted() ||
             !screenshotRequests[i]->resource().m_bufferContainer.buffer ||
             screenshotRequests[i]->resource().m_initOutputModeSize != output->currentMode()->sizeB() ||
             screenshotRequests[i]->resource().m_initOutputSize != output->size() ||
@@ -684,6 +693,10 @@ void LOutput::LOutputPrivate::releaseScanoutBuffer(UInt8 index) noexcept
 
         /* The surface will release it */
         if (scanout[index].surface && scanout[index].surface->bufferResource() == scanout[index].buffer)
+            goto skipRelease;
+
+        /* The output will release it later */
+        if (index == 1 && scanout[0].buffer == scanout[index].buffer)
             goto skipRelease;
 
         wl_buffer_send_release((wl_resource*)scanout[index].buffer);

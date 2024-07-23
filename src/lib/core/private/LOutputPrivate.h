@@ -136,6 +136,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
         wl_buffer *buffer { nullptr };
         LWeak<LSurface> surface;
     } scanout[2]; // Pending and current
+    LWeak<LTexture> customScanoutBuffer;
 
     bool isBufferScannedByOtherOutputs(wl_buffer *buffer) const noexcept;
     void releaseScanoutBuffer(UInt8 index) noexcept;
