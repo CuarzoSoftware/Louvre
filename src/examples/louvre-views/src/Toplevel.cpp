@@ -437,7 +437,7 @@ void Toplevel::unsetFullscreen()
     if (decoratedView)
         decoratedView->updateGeometry();
 
-    animScene = std::make_unique<LSceneView>(fullscreenOutput->sizeB() * 1.0, 1.);//fullscreenOutput->scale());
+    animScene = std::make_unique<LSceneView>(fullscreenOutput->sizeB() * 1.0, 1.0);//fullscreenOutput->scale());
     animScene->setPos(fullscreenOutput->pos());
     G::reparentWithSubsurfaces(surf(), animScene.get(), true);
     fullscreenOutput->animatedFullscreenToplevel = this;

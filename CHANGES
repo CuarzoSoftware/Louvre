@@ -11,6 +11,10 @@ Louvre (2.4.0-1)
   * louvre-views: Prevented unnecessary repainting of offscreen scene views during toplevel fullscreen/unfullscreen animations.
   * louvre-views: Added louvre.desktop file to enable starting louvre-views as a Wayland session.
 
+  # Bug Fixes
+
+  * Properly position the title bar of fullscreen toplevels when the X offset of the output is not 0.
+
   # Internal Changes
 
   * Added scanout tranche to Linux-DMA-Buff.

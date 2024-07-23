@@ -521,8 +521,8 @@ void ToplevelView::updateGeometry()
 
         clipTop.setSize(size);
         decoT.setDstSize(size.w(), decoT.nativeSize().h());
-        decoT.setPos(0, -(decoT.nativeSize().h() + 1) + (TOPLEVEL_TOPBAR_HEIGHT + TOPLEVEL_TOP_CLAMP_OFFSET_Y) * fullscreenTopbarVisibility);
-        buttonsContainer.setPos(TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT * (1.01f - fullscreenTopbarVisibility));
+        decoT.setPos(toplevel->fullscreenOutput->pos().x(), -(decoT.nativeSize().h() + 1) + (TOPLEVEL_TOPBAR_HEIGHT + TOPLEVEL_TOP_CLAMP_OFFSET_Y) * fullscreenTopbarVisibility);
+        buttonsContainer.setPos(toplevel->fullscreenOutput->pos().x() + TOPLEVEL_BUTTON_SPACING, TOPLEVEL_BUTTON_SPACING - TOPLEVEL_TOPBAR_HEIGHT * (1.01f - fullscreenTopbarVisibility));
 
         // Set topbar center translucent regions
         LRegion transT;
@@ -539,7 +539,7 @@ void ToplevelView::updateGeometry()
 
         decoT.setTranslucentRegion(&transT);
 
-        topbarInput.setPos(0, - (TOPLEVEL_TOPBAR_HEIGHT) * (1.f - fullscreenTopbarVisibility));
+        topbarInput.setPos(toplevel->fullscreenOutput->pos().x(), - (TOPLEVEL_TOPBAR_HEIGHT) * (1.f - fullscreenTopbarVisibility));
         topbarInput.setSize(size.w(), TOPLEVEL_TOPBAR_HEIGHT + 1);
     }
     else
