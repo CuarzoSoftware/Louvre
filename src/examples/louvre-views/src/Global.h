@@ -239,7 +239,7 @@ public:
     static void enableClippingChildren(LView *parent, bool enabled);
     static Output *mostIntersectedOuput(LView *view);
     static void reparentWithSubsurfaces(Surface *surf, LView *newParent, bool onlySubsurfaces = true);
-    static void arrangeOutputs();
+    static void arrangeOutputs(Output *caller = nullptr) noexcept;
     static class Toplevel *searchFullscreenParent(Surface *parent);
     static void repositionNonVisibleToplevelChildren(Output *target, Surface *toplevel);
 };

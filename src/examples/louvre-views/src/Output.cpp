@@ -50,7 +50,7 @@ void Output::initializeGL()
 
 void Output::resizeGL()
 {
-    G::arrangeOutputs();
+    G::arrangeOutputs(this);
     updateWorkspacesPos();
     setWorkspace(currentWorkspace, 1);
     topbar.updateOutputInfo();

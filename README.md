@@ -33,6 +33,7 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 ## ⭐ Features
 
 * Fractional Scaling (with optional oversampling)
+* Direct Scanout (primary plane)
 * VSync Control
 * Gamma Correction
 * Screencasting (compatible with PipeWire via xdg-desktop-portal-wlr)
@@ -156,8 +157,7 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 * XDG activation Protocol
 * Idle Notify Protocol
 * Cursor Shape Protocol
-* Direct Buffer Scanout
-* DRM Planes Control
+* DRM Overlay Planes Control
 * Rootless XWayland
 * DRM Lease Protocol
 * Tablet Events Protocol

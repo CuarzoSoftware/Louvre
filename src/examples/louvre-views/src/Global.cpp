@@ -607,7 +607,7 @@ void G::reparentWithSubsurfaces(Surface *surf, LView *newParent, bool onlySubsur
     }
 }
 
-void G::arrangeOutputs()
+void G::arrangeOutputs(Output *caller) noexcept
 {
     Int32 x = 0;
 
@@ -616,6 +616,9 @@ void G::arrangeOutputs()
         o->setPos(LPoint(x, 0));
         x += o->size().w();
         o->repaint();
+
+        if (caller && o != caller)
+            o->moveGL();
     }
 }
 

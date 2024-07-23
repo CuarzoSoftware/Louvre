@@ -2,19 +2,19 @@ Louvre (2.4.0-1)
 
   # API Additions
 
-  * Added LOutput::setCustomScanoutBuffer() allowing direct scanout of fullscreen textures, reducing GPU consumption and latency.
+  * Added LOutput::setCustomScanoutBuffer() for direct scanout of fullscreen textures, reducing GPU consumption and latency.
 
   # Examples
 
   * louvre-views & louvre-weston-clone now use direct scanout for session lock and fullscreen surfaces when possible.
-  * louvre-views: Prevented unnecessary update of SSD toplevels titles during resizing, which caused slowdowns.
-  * louvre-views: Prevented unnecessary repainting of offscreen scene views during toplevel fullscreen/unfullscreen animations.
-  * louvre-views: Added louvre.desktop file to enable starting louvre-views as a Wayland session.
+  * louvre-views: Reduced unnecessary SSD title updates during window resizing to prevent slowdowns.
+  * louvre-views: Minimized repainting of offscreen scene views during fullscreen/unfullscreen animations.
+  * louvre-views: Introduced louvre.desktop file for launching louvre-views as a Wayland session.
 
   # Bug Fixes
 
-  * Properly position the title bar of fullscreen toplevels when the X offset of the output is not 0.
-  * Wayland backend: Disabled custom user cursor sizes when emulating hardware composition due to issues with cursor size perception on the parent compositor.
+  * Corrected title bar positioning for fullscreen windows when the X offset of the parent output exceeds 0.
+  * Addressed issues with cursor size perception in Wayland backend when emulating hardware composition.
 
   # Internal Changes
 
