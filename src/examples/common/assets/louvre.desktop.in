@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=Louvre
+Comment=A macOS look-alike example compositor made with Louvre.
+Exec=@LOUVRE_VIEWS_PATH@
+Type=Application

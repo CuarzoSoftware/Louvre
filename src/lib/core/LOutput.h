@@ -197,8 +197,6 @@ class Louvre::LOutput : public LFactoryObject
 {
 public:
 
-    bool setCustomScanoutBuffer(LTexture *texture) noexcept;
-
     struct Params;
 
     static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LOutput;
@@ -856,6 +854,38 @@ public:
      * @snippet LOutputDefault.cpp availableGeometryChanged
      */
     virtual void availableGeometryChanged();
+
+    /**
+     * @brief Sets a custom scanout buffer for a single frame.
+     *
+     * This method allows you to replace the screen framebuffer during a single frame with a custom one,
+     * such as a fullscreen surface, preventing rendering using OpenGL and thus reducing GPU consumption and latency.
+     *
+     * @warning This method must be called within a paintGL() event and nowhere else.
+     *
+     * The graphic backend will check if the format is supported and if the dimensions match the current output mode.
+     * If that's the case, `true` is returned, and the currentBuffer() index is not updated after this frame.
+     * Also, no painting operations should be performed as they will simply not make it to the screen.
+     *
+     * While a custom buffer is being displayed:
+     * - No other content will be visible, so this method should not be called if there is any overlay content such as a notification, subsurfaces, etc.
+     * - The hardware cursor plane can still be displayed, but if it is disabled or unsupported, calling this method should be avoided.
+     * - All screenshot requests will be forced to be cancelled.
+     *
+     * The custom buffer is displayed during a single frame. To display it again, this method should be called in subsequent frames.
+     *
+     * If not set during a frame, or `nullptr` is passed as texture, the internal output framebuffers are restored, the currentBuffer() index
+     * continues to update as usual and needsFullRepaint() is set to `true` for one frame.
+     *
+     * @note When setting buffers belonging to surfaces, Louvre automatically ensures they aren't updated while being displayed, which would
+     *       cause undesired artifacts to be displayed. When setting your own buffers, you must take care to not update their content while
+     *       being displayed.
+     *       Destroying a buffer while it is being displayed is safe, the graphic backend ensures it remains alive until it is no longer in use.
+     *
+     * @param texture The texture to scan or `nullptr` to restore the internal output framebuffers.
+     * @return `true` if the buffer is going to be displayed, `false` if the internal output framebuffers will be displayed.
+     */
+    bool setCustomScanoutBuffer(LTexture *texture) noexcept;
 
 ///@}
 

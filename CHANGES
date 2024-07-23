@@ -1,3 +1,22 @@
+Louvre (2.4.0-1)
+
+  # API Additions
+
+  * Added LOutput::setCustomScanoutBuffer() allowing direct scanout of fullscreen textures, reducing GPU consumption and latency.
+
+  # Examples
+
+  * louvre-views & louvre-weston-clone now use direct scanout for session lock and fullscreen surfaces when possible.
+  * louvre-views: Prevented unnecessary update of SSD toplevels titles during resizing, which caused slowdowns.
+  * louvre-views: Prevented unnecessary repainting of offscreen scene views during toplevel fullscreen/unfullscreen animations.
+
+  # Internal Changes
+
+  * Added scanout tranche to Linux-DMA-Buff.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Wed, 10 Jul 2024 18:16:12 -0400
+
+
 Louvre (2.3.2-1)
 
   # Examples
