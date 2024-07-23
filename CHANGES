@@ -14,6 +14,7 @@ Louvre (2.4.0-1)
   # Bug Fixes
 
   * Properly position the title bar of fullscreen toplevels when the X offset of the output is not 0.
+  * Wayland backend: Disabled custom user cursor sizes when emulating hardware composition due to issues with cursor size perception on the parent compositor.
 
   # Internal Changes
 

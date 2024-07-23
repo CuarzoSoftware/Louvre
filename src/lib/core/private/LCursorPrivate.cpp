@@ -10,6 +10,11 @@ void LCursor::LCursorPrivate::textureUpdate() noexcept
     if (!textureChanged && !posChanged)
         return;
 
+    const LSizeF sizeBckp { size };
+
+    if (compositor()->graphicBackendId() == LGraphicBackendWayland)
+        size = LSizeF(64.f / cursor()->output()->scale());
+
     const LPointF newHotspotS { (hotspotB*size)/LSizeF(texture->sizeB()) };
     const LPointF newPosS { cursor()->pos() - newHotspotS };
 
@@ -83,6 +88,8 @@ void LCursor::LCursorPrivate::textureUpdate() noexcept
             compositor()->imp()->graphicBackend->outputSetCursorPosition(o, o->scale() * p / ( o->scale() / o->fractionalScale()) );
         }
     }
+
+    size = sizeBckp;
 
     textureChanged = false;
     posChanged = false;
