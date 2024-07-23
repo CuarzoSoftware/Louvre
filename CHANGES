@@ -9,6 +9,7 @@ Louvre (2.4.0-1)
   * louvre-views & louvre-weston-clone now use direct scanout for session lock and fullscreen surfaces when possible.
   * louvre-views: Prevented unnecessary update of SSD toplevels titles during resizing, which caused slowdowns.
   * louvre-views: Prevented unnecessary repainting of offscreen scene views during toplevel fullscreen/unfullscreen animations.
+  * louvre-views: Added louvre.desktop file to enable starting louvre-views as a Wayland session.
 
   # Internal Changes
 
