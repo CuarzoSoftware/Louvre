@@ -1,3 +1,4 @@
+#include <protocols/PresentationTime/presentation-time.h>
 #include <protocols/PresentationTime/RPresentationFeedback.h>
 #include <protocols/SinglePixelBuffer/LSinglePixelBuffer.h>
 #include <protocols/FractionalScale/RFractionalScale.h>
@@ -512,9 +513,14 @@ void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output) noexce
 
     for (std::size_t i = 0; i < presentationFeedbackResources.size();)
     {
+        const UInt32 scanout =
+            surfaceResource->surface() == output->imp()->scanout[0].surface ||
+            surfaceResource->surface() == output->imp()->scanout[1].surface ?
+            WP_PRESENTATION_FEEDBACK_KIND_ZERO_COPY : 0;
+
         auto *feedback { presentationFeedbackResources[i] };
 
-        if (feedback->m_commitId == -2 || (feedback->m_outputSet && !feedback->m_output))
+        if (!scanout && (feedback->m_commitId == -2 || (feedback->m_outputSet && !feedback->m_output)))
         {
             feedback->discarded();
             feedback->m_surface.reset();
@@ -523,7 +529,7 @@ void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output) noexce
             wl_resource_destroy(feedback->resource());
             continue;
         }
-        else if (feedback->m_output == output)
+        else if (scanout || feedback->m_output == output)
         {
             for (Wayland::GOutput *gOutput : surfaceResource->client()->outputGlobals())
                 if (gOutput->output() == output)
@@ -535,7 +541,7 @@ void LSurface::LSurfacePrivate::sendPresentationFeedback(LOutput *output) noexce
                              output->imp()->presentationTime.period,
                              output->imp()->presentationTime.frame >> 32,
                              output->imp()->presentationTime.frame & 0xffffffff,
-                             output->imp()->presentationTime.flags);
+                             output->imp()->presentationTime.flags | scanout);
             feedback->m_surface.reset();
             presentationFeedbackResources[i] = std::move(presentationFeedbackResources.back());
             presentationFeedbackResources.pop_back();

@@ -482,6 +482,18 @@ void Output::paintGL() noexcept
     newDamage.clear();
 }
 
+static bool hasMappedChildren(LSurface *surface)
+{
+    if (!surface)
+        return false;
+
+    for (LSurface *child : surface->children())
+        if (child->mapped())
+            return true;
+
+    return false;
+}
+
 bool Output::tryFullscreenScanoutIfNoOverlayContent() noexcept
 {
     LSurface *fullscreenSurface { nullptr };
@@ -496,7 +508,7 @@ bool Output::tryFullscreenScanoutIfNoOverlayContent() noexcept
         || !static_cast<Compositor*>(compositor())->destroyedToplevels.empty()
         || (cursor()->visible() && !cursor()->hwCompositingEnabled(this))
         || !screenshotRequests().empty()
-        || !fullscreenSurface->children().empty())
+        || hasMappedChildren(fullscreenSurface))
         return false;
 
     const bool ret { setCustomScanoutBuffer(fullscreenSurface->texture()) };

@@ -185,10 +185,33 @@ void Output::setWorkspace(Workspace *ws, UInt32 animMs, Float64 curve, Float64 s
     workspacesAnimation.setDuration(animMs * DEBUG_ANIM_SPEED);
     currentWorkspace = ws;
 
-    if (currentWorkspace->toplevel && currentWorkspace->toplevel->surf())
+    if (ws && currentWorkspace->toplevel && currentWorkspace->toplevel->surf())
+    {
+        seat()->keyboard()->setFocus(currentWorkspace->toplevel->surface());
+        currentWorkspace->toplevel->configureState(currentWorkspace->toplevel->pendingConfiguration().state | LToplevelRole::Activated);
         enableVSync(currentWorkspace->toplevel->surf()->preferVSync());
+    }
     else
+    {
+        bool foundSurface { false };
+
+        for (auto it = compositor()->layer(LSurfaceLayer::LLayerMiddle).rbegin();
+             it != compositor()->layer(LSurfaceLayer::LLayerMiddle).rend(); it++)
+        {
+            if ((*it)->toplevel() && (*it)->mapped())
+            {
+                foundSurface = true;
+                (*it)->toplevel()->configureState((*it)->toplevel()->pendingConfiguration().state | LToplevelRole::Activated);
+                seat()->keyboard()->setFocus((*it));
+                break;
+            }
+        }
+
+        if (!foundSurface)
+            seat()->keyboard()->setFocus(nullptr);
+
         enableVSync(true);
+    }
 
     topbar.update();
 
@@ -292,6 +315,18 @@ void Output::updateFractionalOversampling()
     }
 }
 
+static bool hasMappedChildren(LSurface *surface)
+{
+    if (!surface)
+        return false;
+
+    for (LSurface *child : surface->children())
+        if (child->mapped())
+            return true;
+
+    return false;
+}
+
 bool Output::tryFullscreenScanoutIfNoOverlayContent() noexcept
 {
     LSurface *fullscreenSurface { nullptr };
@@ -302,8 +337,7 @@ bool Output::tryFullscreenScanoutIfNoOverlayContent() noexcept
     else if (currentWorkspace->toplevel
              && currentWorkspace->toplevel->surface()->mapped()
              && (!currentWorkspace->toplevel->decoratedView
-                 || (currentWorkspace->toplevel->decoratedView
-                     && currentWorkspace->toplevel->decoratedView->fullscreenTopbarVisibility == 0.f)))
+                 || currentWorkspace->toplevel->decoratedView->fullscreenTopbarVisibility == 0.f))
         fullscreenSurface = currentWorkspace->toplevel->surface();
 
     if (!fullscreenSurface
@@ -311,8 +345,8 @@ bool Output::tryFullscreenScanoutIfNoOverlayContent() noexcept
         || !screenshotRequests().empty()
         || doingFingerWorkspaceSwipe
         || workspacesAnimation.running()
-        || !fullscreenSurface->children().empty()
-        || dock.visiblePercent != 0.f)
+        || dock.visiblePercent != 0.f
+        || hasMappedChildren(fullscreenSurface))
         return false;
 
     const bool ret { setCustomScanoutBuffer(fullscreenSurface->texture()) };

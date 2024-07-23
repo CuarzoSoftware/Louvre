@@ -336,10 +336,10 @@ void LOutput::LOutputPrivate::backendPaintGL()
     /* Remove denied or invalid screen copy requests */
     validateScreenshotRequests();
 
+    compositor()->imp()->currentOutput = nullptr;
+
     if (!stateFlags.check(HasScanoutBuffer))
     {
-        compositor()->imp()->currentOutput = nullptr;
-
         /* Turn damage into buffer coords and handle buffer
          * blitting if oversampling is enabled or there are
          * screen copy requests*/
