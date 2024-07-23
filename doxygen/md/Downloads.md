@@ -49,9 +49,9 @@ $ sudo apt install build-essential meson libegl-dev mesa-common-dev libgles2-mes
 
 If the [hwinfo](https://github.com/vcrhonek/hwdata) or [libdisplay-info](https://gitlab.freedesktop.org/emersion/libdisplay-info) packages are not available in your distribution, please download and install them manually in the specified order:
 
-1. [hwinfo](https://packages.ubuntu.com/focal/hwdata)
-2. [libdisplay-info0](https://packages.ubuntu.com/lunar/libdisplay-info0)
-3. [libdisplay-info-dev](https://packages.ubuntu.com/lunar/libdisplay-info-dev)
+1. [hwinfo](https://packages.debian.org/buster/hwinfo)
+2. [libdisplay-info1](https://packages.debian.org/sid/libdisplay-info1)
+3. [libdisplay-info-dev](https://packages.debian.org/unstable/libdisplay-info-dev)
 
 To install SRM, follow the instructions provided [here](https://cuarzosoftware.github.io/SRM/md_md__downloads.html).
 
