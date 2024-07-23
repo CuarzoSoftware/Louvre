@@ -340,6 +340,8 @@ static bool toplevelOrSubsurfacesHaveNewDamage(Surface *surface) noexcept
 {
     bool damaged { false };
 
+    surface->requestNextFrame(false);
+
     for (LSurface *child : surface->children())
         if (child->subsurface())
             damaged = damaged || toplevelOrSubsurfacesHaveNewDamage((Surface*)child);
@@ -391,8 +393,6 @@ void Output::onWorkspacesAnimationUpdate(LAnimation *anim) noexcept
             anim->stop();
             return;
         }
-
-        /* tl->surface()->requestNextFrame(false); */
 
         // Current fullscreen size
         LSize cSize;
