@@ -169,7 +169,7 @@ void Surface::mappingChanged()
         }
         else
         {   // If no App then is a non pinned dock App
-            client->createNonPinnedApp();
+            client->createUnpinnedApp();
             seat()->keyboard()->focusChanged();
         }
 

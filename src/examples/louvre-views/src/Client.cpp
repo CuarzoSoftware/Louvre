@@ -10,21 +10,27 @@
 #include "Surface.h"
 #include "src/Compositor.h"
 
-static int getPpidFromProc(int pid)
+static Int32 getPpidFromProc(Int32 pid)
 {
     char filename[128];
     snprintf(filename, sizeof(filename), "/proc/%d/status", pid);
 
-    FILE* file = fopen(filename, "r");
-    if (file == NULL) {
-        perror("Error opening file");
+    FILE *file { fopen(filename, "r") };
+
+    if (file == NULL)
+    {
+        LLog::error("[louvre-views][Client::getPpidFromProc] Error opening %s.",
+            filename);
         return -1;
     }
 
-    int ppid = -1;
+    Int32 ppid { -1 };
     char line[128];
-    while (fgets(line, sizeof(line), file) != NULL) {
-        if (strncmp(line, "PPid:", 5) == 0) {
+
+    while (fgets(line, sizeof(line), file) != NULL)
+    {
+        if (strncmp(line, "PPid:", 5) == 0)
+        {
             sscanf(line + 6, "%d", &ppid);
             break;
         }
@@ -34,32 +40,34 @@ static int getPpidFromProc(int pid)
     return ppid;
 }
 
-int getProcessNameByPid(int pid, char *process_name, size_t buffer_size) {
+static Int32 getProcessNameByPid(Int32 pid, char *processName, size_t bufferSize)
+{
     char pid_path[1024];
     ssize_t len;
 
-    // Construct the path to the /proc/PID/exe symbolic link
     snprintf(pid_path, sizeof(pid_path), "/proc/%d/exe", pid);
 
     // Read the symbolic link to get the process name
-    len = readlink(pid_path, process_name, buffer_size - 1);
-    if (len == -1) {
-        perror("readlink");
-        return -1; // Error occurred
+    len = readlink(pid_path, processName, bufferSize - 1);
+
+    if (len == -1)
+    {
+        LLog::error("[louvre-views][Client::getProcessNameByPid] readlink failed.");
+        return -1;
     }
 
-    process_name[len] = '\0'; // Null-terminate the process name
+    processName[len] = '\0';
 
-    // Extract only the actual process name (strip the path)
-    char *name = strrchr(process_name, '/');
-    if (name != NULL) {
-        name++; // Move past the last '/'
-    } else {
-        name = process_name; // Use the whole name if '/' is not found
-    }
+    // Strip path
+    char *name = strrchr(processName, '/');
 
-    strncpy(process_name, name, buffer_size); // Copy the process name to the provided buffer
-    return 0; // Success
+    if (name != NULL)
+        name++;
+    else
+        name = processName;
+
+    strncpy(processName, name, bufferSize);
+    return 0;
 }
 
 Client::Client(const void *params) : LClient(params),
@@ -101,15 +109,15 @@ Client::Client(const void *params) : LClient(params),
 
     pingTimer.setCallback([this](LTimer *)
     {
-        UInt32 newPing = lastPing + 1;
+        const UInt32 newPingSerial { lastPingSerial + 1 };
 
-        if (ping(newPing))
+        if (ping(newPingSerial))
         {
-            if (seat()->enabled() && lastPing != lastPong)
+            if (seat()->enabled() && lastPingSerial != lastPongSerial)
             {
                 if (unresponsiveCount > 5)
                 {
-                    LLog::warning("[louvre-views] Destroyed unresponsive client %lu.", (UInt64)client());
+                    LLog::warning("[louvre-views] Destroyed unresponsive client PID(%d).", pid);
                     destroyLater();
                     return;
                 }
@@ -128,9 +136,9 @@ Client::Client(const void *params) : LClient(params),
             }
         }
         else
-           lastPong = newPing;
+           lastPongSerial = newPingSerial;
 
-        lastPing = newPing;
+        lastPingSerial = newPingSerial;
         pingTimer.start(3000);
     });
 
@@ -162,7 +170,7 @@ Client::Client(const void *params) : LClient(params),
     Int32 ppid = pid;
 
     // Search the AppDock item that started it (if any)
-    while (ppid != 1 && ppid != cpid)
+    while (ppid > cpid)
     {
         for (App *app : G::apps())
         {
@@ -200,10 +208,10 @@ Client::~Client()
 
 void Client::pong(UInt32 serial) noexcept
 {
-    lastPong = serial;
+    lastPongSerial = serial;
 }
 
-void Client::createNonPinnedApp()
+void Client::createUnpinnedApp()
 {
     if (app)
         return;
@@ -235,6 +243,6 @@ void Client::createNonPinnedApp()
     Int32 cpid = getpid();
     Int32 ppid = pid;
 
-    while (ppid != 1 && ppid != cpid)
+    while (ppid > cpid)
         ppid = getPpidFromProc(ppid);
 }

@@ -15,20 +15,19 @@ public:
     Client(const void *params);
     ~Client();
 
-    // Used to check if the client is alive
     void pong(UInt32 serial) noexcept override;
-
-    void createNonPinnedApp();
+    void createUnpinnedApp();
 
     App *app { nullptr };
     Int32 pid { -1 };
     bool destroyed { false };
 
     LTimer pingTimer;
-    UInt32 lastPing { 0 };
-    UInt32 lastPong { 0 };
-
+    UInt32 lastPingSerial { 0 };
+    UInt32 lastPongSerial { 0 };
     UInt32 unresponsiveCount { 0 };
+
+    // Darken the surfaces
     LAnimation unresponsiveAnim;
 };
 
