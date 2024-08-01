@@ -41,9 +41,12 @@
 
 using namespace Louvre;
 
+#define SRM_VERSION_GREATER_EQUAL_THAN(major, minor, patch) (major < SRM_VERSION_MAJOR || (major == SRM_VERSION_MAJOR && (minor < SRM_VERSION_MINOR || (minor == SRM_VERSION_MINOR && patch <= SRM_VERSION_PATCH))))
+#define SRM_VERSION_LESS_THAN(major, minor, patch) !SRM_VERSION_GREATER_EQUAL_THAN(major, minor, patch)
+
 #define BKND_NAME "DRM BACKEND"
 
-static bool libseatEnabled = false;
+static bool libseatEnabled { false };
 
 struct DEVICE_FD_ID
 {
@@ -70,13 +73,13 @@ struct Output
     std::vector<LOutputMode*>modes;
     std::vector<LTexture*> textures;
 
-#if SRM_VERSION_MAJOR <= 0 && SRM_VERSION_MINOR < 6
+#if SRM_VERSION_LESS_THAN(0,6,0)
     LContentType fallbackContentType { LContentTypeNone };
 #endif
-
 };
 
 // SRM -> Louvre Subpixel
+#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
 static UInt32 subPixelTable[] =
 {
     0,
@@ -87,6 +90,7 @@ static UInt32 subPixelTable[] =
     LOutput::SubPixel::VerticalBGR,
     LOutput::SubPixel::None,
 };
+#endif
 
 static int openRestricted(const char *path, int flags, void *userData)
 {
@@ -268,7 +272,7 @@ static void pageFlipped(SRMConnector *connector, void *userData)
     SRM_UNUSED(connector);
     LOutput *output = (LOutput*)userData;
 
-#if SRM_VERSION_MINOR >= 5
+#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     memcpy(&output->imp()->presentationTime,
            srmConnectorGetPresentationTime(bkndOutput->conn),
@@ -323,10 +327,12 @@ bool LGraphicBackend::backendInitialize()
     SRMVersion *version;
     SRMDevice *allocatorDevice;
 
+#if SRM_VERSION_GREATER_EQUAL_THAN(0,7,0)
     auto formatInVector = [](const std::vector<LDMAFormat> &vec, const LDMAFormat &fmt) -> bool
     {
         return std::find(vec.begin(), vec.end(), fmt) != vec.end();
     };
+#endif
 
     if (!bknd->core)
     {
@@ -360,7 +366,9 @@ bool LGraphicBackend::backendInitialize()
         bknd->dmaFormats.emplace_back(fmt->format, fmt->modifier);
     }
 
-    // Fill scanout DMA formats
+    // Fill scanout DMA formats (requires SRM >= 0.7.0)
+#if SRM_VERSION_GREATER_EQUAL_THAN(0,7,0)
+
     SRMListForeach (planeIt, srmDeviceGetPlanes(allocatorDevice))
     {
         SRMPlane *plane = (SRMPlane*) srmListItemGetData(planeIt);
@@ -383,6 +391,7 @@ bool LGraphicBackend::backendInitialize()
                 bknd->scanoutFormats.emplace_back(alphaSubstitute, fmt->modifier);
         }
     }
+#endif
 
     // Find connected outputs
     SRMListForeach (devIt, srmCoreGetDevices(bknd->core))
@@ -633,7 +642,8 @@ void LGraphicBackend::outputSetBufferDamage(LOutput *output, LRegion &region)
     Int32 n;
     const LBox *boxes = region.boxes(&n);
 
-#if SRM_VERSION_MINOR >= 5
+// Boxes are supported since SRM v0.5.0
+#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     srmConnectorSetBufferDamageBoxes(bkndOutput->conn, (SRMBox*)boxes, n);
 #else
     SRMRect rects[n];
@@ -685,7 +695,7 @@ Int32 LGraphicBackend::outputGetSubPixel(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
-#if SRM_VERSION_MINOR >= 5
+#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     return subPixelTable[(Int32)srmConnectorGetSubPixel(bkndOutput->conn)];
 #else
     return WL_OUTPUT_SUBPIXEL_UNKNOWN;
@@ -738,7 +748,7 @@ UInt32 LGraphicBackend::outputGetGammaSize(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
-#if SRM_VERSION_MINOR >= 5
+#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     return srmConnectorGetGammaSize(bkndOutput->conn);
 #else
     L_UNUSED(bkndOutput);
@@ -750,7 +760,7 @@ bool LGraphicBackend::outputSetGamma(LOutput *output, const LGammaTable &table)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
-#if SRM_VERSION_MINOR >= 5
+#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     if (table.size() != srmConnectorGetGammaSize(bkndOutput->conn))
     {
         LLog::error("[%s] Failed to set gamma to output %s. Invalid size %d != real gamma size %d.",
@@ -772,7 +782,7 @@ bool LGraphicBackend::outputHasVSyncControlSupport(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
-#if SRM_VERSION_MINOR >= 5
+#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     return srmConnectorHasVSyncControlSupport(bkndOutput->conn);
 #else
     return false;
@@ -783,7 +793,7 @@ bool LGraphicBackend::outputIsVSyncEnabled(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
-#if SRM_VERSION_MINOR >= 5
+#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     return srmConnectorIsVSyncEnabled(bkndOutput->conn);
 #else
     return true;
@@ -794,7 +804,7 @@ bool LGraphicBackend::outputEnableVSync(LOutput *output, bool enabled)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
-#if SRM_VERSION_MINOR >= 5
+#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     return srmConnectorEnableVSync(bkndOutput->conn, enabled);
 #else
     return enabled;
@@ -805,7 +815,7 @@ void LGraphicBackend::outputSetRefreshRateLimit(LOutput *output, Int32 hz)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
-#if SRM_VERSION_MINOR >= 5
+#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     srmConnectorSetRefreshRateLimit(bkndOutput->conn, hz);
 #else
     L_UNUSED(bkndOutput)
@@ -816,7 +826,7 @@ Int32 LGraphicBackend::outputGetRefreshRateLimit(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
-#if SRM_VERSION_MINOR >= 5
+#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     return srmConnectorGetRefreshRateLimit(bkndOutput->conn);
 #else
     return 0;
@@ -829,7 +839,7 @@ clockid_t LGraphicBackend::outputGetClock(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
-#if SRM_VERSION_MINOR >= 5
+#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     return srmConnectorGetPresentationClock(bkndOutput->conn);
 #else
     return CLOCK_MONOTONIC;
@@ -888,7 +898,7 @@ LContentType LGraphicBackend::outputGetContentType(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
-#if SRM_VERSION_MAJOR <= 0 && SRM_VERSION_MINOR < 6
+#if SRM_VERSION_LESS_THAN(0,6,0)
     return bkndOutput->fallbackContentType;
 #else
     return static_cast<LContentType>(srmConnectorGetContentType(bkndOutput->conn) - 1);
@@ -899,7 +909,7 @@ void LGraphicBackend::outputSetContentType(LOutput *output, LContentType type)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
-#if SRM_VERSION_MAJOR <= 0 && SRM_VERSION_MINOR < 6
+#if SRM_VERSION_LESS_THAN(0,6,0)
     bkndOutput->fallbackContentType = type;
 #else
     return srmConnectorSetContentType(bkndOutput->conn, (SRM_CONNECTOR_CONTENT_TYPE)(type + 1));
@@ -909,9 +919,7 @@ void LGraphicBackend::outputSetContentType(LOutput *output, LContentType type)
 /* DIRECT SCANOUT */
 bool LGraphicBackend::outputSetScanoutBuffer(LOutput *output, LTexture *texture)
 {
-#if SRM_VERSION_MAJOR <= 0 && SRM_VERSION_MINOR < 7
-    return false;
-#else
+#if SRM_VERSION_GREATER_EQUAL_THAN(0,7,0)
     SRMBuffer *buffer { nullptr };
 
     if (texture)
@@ -926,9 +934,13 @@ bool LGraphicBackend::outputSetScanoutBuffer(LOutput *output, LTexture *texture)
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
     return srmConnectorSetCustomScanoutBuffer(bkndOutput->conn, buffer);
+#else
+    L_UNUSED(output)
+    L_UNUSED(texture)
+    LLog::warning("[%s] Direct scanout requires SRM >= 0.7.0", BKND_NAME);
+    return false;
 #endif
 }
-
 
 static LGraphicBackendInterface API;
 
