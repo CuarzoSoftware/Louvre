@@ -198,7 +198,7 @@ void Output::setWorkspace(Workspace *ws, UInt32 animMs, Float64 curve, Float64 s
         for (auto it = compositor()->layer(LSurfaceLayer::LLayerMiddle).rbegin();
              it != compositor()->layer(LSurfaceLayer::LLayerMiddle).rend(); it++)
         {
-            if ((*it)->toplevel() && (*it)->mapped())
+            if ((*it)->toplevel() && (*it)->mapped() && !(*it)->minimized())
             {
                 foundSurface = true;
                 (*it)->toplevel()->configureState((*it)->toplevel()->pendingConfiguration().state | LToplevelRole::Activated);
