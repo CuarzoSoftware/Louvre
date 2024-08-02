@@ -184,16 +184,14 @@ void Toplevel::maximizedChanged()
 
 void Toplevel::setFullscreenRequest(LOutput *output)
 {
-    Surface *surf = (Surface*)surface();
-
-    if (surf->firstMap)
+    if (surf()->firstMap)
     {
         requestedFullscreenOnFirstMap = true;
         return;
     }
 
     // Already in fullscreen mode
-    if (animScene || fullscreen() || !surf)
+    if (animScene || fullscreen() || !surf())
         return;
 
     Output *dstOutput;
@@ -223,15 +221,26 @@ void Toplevel::setFullscreenRequest(LOutput *output)
     configureSize(dstRect.size());
     configureState(Activated | Fullscreen);
 
-    LBox box = surf->getView()->boundingBox();
+    LBox box = surf()->getView()->boundingBox();
     prevBoundingRect = LRect(box.x1,
                              box.y1,
                              box.x2 - box.x1,
                              box.y2 - box.y1);
 
-    captureTexture.reset(surf->renderThumbnail(&captureTransRegion));
+    captureTexture.reset(surf()->renderThumbnail(&captureTransRegion));
     captureView.setTexture(captureTexture.get());
-    captureView.setPos(- windowGeometry().pos().x(), - windowGeometry().pos().y());
+
+    if (!surf()->children().empty())
+    {
+        captureView.setPos(prevBoundingRect.pos());
+        captureView.setDstSize(prevBoundingRect.size());
+        captureView.setParent(&G::compositor()->overlayLayer);
+        captureView.setOpacity(1.f);
+        captureView.setVisible(true);
+        captureView.setTranslucentRegion(&captureTransRegion);
+        G::reparentWithSubsurfaces(surf(), nullptr, true);
+        surf()->requestNextFrame(false);
+    }
 }
 
 void Toplevel::unsetFullscreenRequest()
@@ -437,7 +446,7 @@ void Toplevel::unsetFullscreen()
     if (decoratedView)
         decoratedView->updateGeometry();
 
-    animScene = std::make_unique<LSceneView>(fullscreenOutput->sizeB() * 1.0, 1.0);//fullscreenOutput->scale());
+    animScene = std::make_unique<LSceneView>(fullscreenOutput->sizeB(), fullscreenOutput->scale());
     animScene->setPos(fullscreenOutput->pos());
     G::reparentWithSubsurfaces(surf(), animScene.get(), true);
     fullscreenOutput->animatedFullscreenToplevel = this;

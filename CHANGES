@@ -1,3 +1,16 @@
+Louvre (2.4.1-1)
+
+  # Bug Fixes & Security
+
+  * DRM Backend: Added missing SRM version checks to prevent symbol resolution issues with older versions, thanks to @Silitonix.
+  * Added missing pointer focus checks in the default pointer button event implementation to securely handle cases where users unset it from indirectly triggered events.
+  * louvre-views: Fixed bug causing occasional unminimizing of toplevel windows when switching to the main workspace of an output.
+  * louvre-views: Fix bug causing compositor to get stuck in an infinite loop when associating Wayland clients with application PIDs, thanks to @panaflexx.
+  * louvre-views: Toplevel windows with subsurfaces are now hidden, and their captures are displayed immediately during fullscreen animations. This change prevents visual glitches caused by clients updating subsurface sizes before acknowledging the toplevel configuration.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Fri, 01 Aug 2024 22:30:46 -0400
+
+
 Louvre (2.4.0-1)
 
   # API Additions

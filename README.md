@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Louvre is released under the MIT license." />
   </a>
   <a href="https://github.com/CuarzoSoftware/Louvre">
-    <img src="https://img.shields.io/badge/version-2.4.0-brightgreen" alt="Current Louvre version." />
+    <img src="https://img.shields.io/badge/version-2.4.1-brightgreen" alt="Current Louvre version." />
   </a>
 </p>
 
@@ -40,7 +40,7 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 * Painter API and Scene System
 * Multi-GPU Support
 * Multi-Session Support
-* Single, Double or Triple Buffering
+* Double and Triple Buffering
 * Persistent Clipboard
 * Rootful XWayland (rootless mode is not yet supported, however, interesting projects such as [Wayland Transpositor](https://github.com/wayland-transpositor/wprs), [Wayland Proxy Virtwl](https://github.com/talex5/wayland-proxy-virtwl), and [Xwayland Satellite](https://github.com/Supreeeme/xwayland-satellite) can provide a rootless experience).
 
@@ -158,8 +158,9 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 * Idle Notify Protocol
 * Cursor Shape Protocol
 * DRM Overlay Planes Control
-* Rootless XWayland
+* DRM Synchronization Object
 * DRM Lease Protocol
+* Rootless XWayland
 * Tablet Events Protocol
 * Virtual Keyboard Protocol
 * Input Methods Protocol

@@ -378,20 +378,22 @@ void ToplevelView::updateTitle()
         return;
 
     Int32 maxWidth = (toplevel->windowGeometry().w() - 128) * 2;
-    std::string newClippedTitle { G::font()->semibold->clipText(toplevel->title().c_str(), 28, maxWidth, unclippedTitleBufferSize).c_str() };
+    std::string newClippedTitle { G::font()->semibold->clipText(toplevel->title().c_str(), 28, maxWidth, unclippedTitleBufferSize) };
 
     if (newClippedTitle == prevClippedTitle)
         return;
 
     prevClippedTitle = std::move(newClippedTitle);
 
-    if (title.texture())
+    LTexture *newTitle { G::font()->semibold->renderText(prevClippedTitle.c_str(), 28, -1) };
+
+    if (newTitle)
     {
-        delete title.texture();
-        title.setTexture(G::font()->semibold->renderText(prevClippedTitle.c_str(), 28, -1));
+        if (title.texture())
+            delete title.texture();
+
+        title.setTexture(newTitle);
     }
-    else
-        title.setTexture(G::font()->semibold->renderText(prevClippedTitle.c_str(), 28, -1));
 
     updateGeometry();
 }

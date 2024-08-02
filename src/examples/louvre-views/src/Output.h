@@ -49,6 +49,7 @@ public:
     Float64 animStartOffset { 0.0 };
     Float64 animEasingCurve { 2.0 };
     LWeak<Toplevel> animatedFullscreenToplevel;
+    bool workspaceAnimationInFirstFrame { true };
     bool doingFingerWorkspaceSwipe { false };
 
     Topbar topbar { this };

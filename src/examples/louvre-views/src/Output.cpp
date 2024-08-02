@@ -218,7 +218,9 @@ void Output::setWorkspace(Workspace *ws, UInt32 animMs, Float64 curve, Float64 s
     for (Output *o : G::outputs())
         o->workspaces.front()->stealChildren();
 
+    workspaceAnimationInFirstFrame = true;
     workspacesAnimation.start();
+    onWorkspacesAnimationUpdate(&workspacesAnimation);
 }
 
 void Output::updateWorkspacesPos()
@@ -433,12 +435,21 @@ void Output::onWorkspacesAnimationUpdate(LAnimation *anim) noexcept
 
         if (tl->fullscreen())
         {
+            /*
+             * Quick Reminder:
+             *
+             * - captureView: Displays a capture of the toplevel and subsurfaces before going fullscreen.
+             * - animScene: Blits the current state of the toplevel and subsurfaces into a texture (can change
+             *              each frame, e.g., if it is a web browser displaying a video).
+             * - animView: Displays the animScene result.
+             */
+
             Float32 val = 1.f - pow(1.0 - linear, 4.0);
             Float32 inv = 1.f - val;
             tl->animView.enableSrcRect(false);
             tl->animView.setVisible(true);
 
-            if (toplevelOrSubsurfacesHaveNewDamage(tl->surf()))
+            if (toplevelOrSubsurfacesHaveNewDamage(tl->surf()) || workspaceAnimationInFirstFrame)
                 tl->animScene->render();
 
             tl->animView.setTexture(tl->animScene->texture());
@@ -474,7 +485,7 @@ void Output::onWorkspacesAnimationUpdate(LAnimation *anim) noexcept
             else
                 tl->surf()->setPos(tl->windowGeometry().pos());
 
-            if (toplevelOrSubsurfacesHaveNewDamage(tl->surf()))
+            if (toplevelOrSubsurfacesHaveNewDamage(tl->surf()) || workspaceAnimationInFirstFrame)
                 tl->animScene->render();
 
             LRegion transReg;
@@ -499,6 +510,8 @@ void Output::onWorkspacesAnimationUpdate(LAnimation *anim) noexcept
         if (tl->decoratedView)
             tl->decoratedView->updateGeometry();
     }
+
+    workspaceAnimationInFirstFrame = false;
 
     if (linear == 1.0)
         anim->stop();
