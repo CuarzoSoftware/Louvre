@@ -179,8 +179,10 @@ void LPointer::pointerButtonEvent(const LPointerButtonEvent &event)
 
     if (activeDND)
     {
-        if (event.state() == LPointerButtonEvent::Released && event.button() == LPointerButtonEvent::Left)
+        if (event.state() == LPointerButtonEvent::Released &&
+            event.button() == LPointerButtonEvent::Left)
             seat()->dnd()->drop();
+
         seat()->keyboard()->setFocus(nullptr);
         setFocus(nullptr);
         setDraggingSurface(nullptr);
@@ -201,7 +203,7 @@ void LPointer::pointerButtonEvent(const LPointerButtonEvent &event)
             setFocus(surface);
             sendButtonEvent(event);
 
-            if (!surface->popup())
+            if (!surface->popup() && !surface->isPopupSubchild())
                 seat()->dismissPopups();
         }
         else
@@ -222,22 +224,28 @@ void LPointer::pointerButtonEvent(const LPointerButtonEvent &event)
     // Left button pressed
     if (event.state() == LPointerButtonEvent::Pressed)
     {
-        // We save the pointer focus surface to continue sending events to it even when the cursor
-        // is outside of it (while the left button is being held down)
+        // Keep a ref to continue sending it events after the cursor
+        // leaves, if the left button remains pressed
         setDraggingSurface(focus());
 
         if (!seat()->keyboard()->focus() || !focus()->isSubchildOf(seat()->keyboard()->focus()))
+        {
             seat()->keyboard()->setFocus(focus());
+
+            // Pointer focus may have changed within LKeyboard::focusChanged()
+            if (!focus())
+                return;
+        }
+
+        sendButtonEvent(event);
 
         if (focus()->toplevel() && !focus()->toplevel()->activated())
             focus()->toplevel()->configureState(focus()->toplevel()->pendingConfiguration().state | LToplevelRole::Activated);
 
-        if (!focus()->popup())
+        if (!focus()->popup() && !focus()->isPopupSubchild())
             seat()->dismissPopups();
 
-        sendButtonEvent(event);
-
-        if (focus() == compositor()->surfaces().back())
+        if (!focus() || focus() == compositor()->surfaces().back())
             return;
 
         if (focus()->parent())

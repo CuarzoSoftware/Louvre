@@ -229,7 +229,7 @@ void Pointer::pointerButtonEvent(const LPointerButtonEvent &event)
             setFocus(surface);
             sendButtonEvent(event);
 
-            if (!surface->popup())
+            if (!surface->popup() && !focus()->isPopupSubchild())
                 seat()->dismissPopups();
         }
         else
@@ -258,22 +258,25 @@ void Pointer::pointerButtonEvent(const LPointerButtonEvent &event)
             return;
         }
 
-        // We save the pointer focus surface to continue sending events to it even when the cursor
-        // is outside of it (while the left button is being held down)
         setDraggingSurface(focus());
 
         if (!seat()->keyboard()->focus() || !focus()->isSubchildOf(seat()->keyboard()->focus()))
+        {
             seat()->keyboard()->setFocus(focus());
+
+            if (!focus())
+                return;
+        }
+
+        sendButtonEvent(event);
 
         if (focus()->toplevel() && !focus()->toplevel()->activated())
             focus()->toplevel()->configureState(focus()->toplevel()->pendingConfiguration().state | LToplevelRole::Activated);
 
-        if (!focus()->popup())
+        if (!focus()->popup() && !focus()->isPopupSubchild())
             seat()->dismissPopups();
 
-        sendButtonEvent(event);
-
-        if (focus() == compositor()->surfaces().back())
+        if (!focus() || focus() == compositor()->surfaces().back())
             return;
 
         if (focus()->parent())

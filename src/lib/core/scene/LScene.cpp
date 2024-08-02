@@ -381,7 +381,7 @@ retry:
             pointer.setFocus(surface, imp()->viewLocalPos(view, cursor()->pos()));
             pointer.sendButtonEvent(event);
 
-            if (!surface->popup())
+            if (!surface->popup() && !surface->isPopupSubchild())
                 seat()->dismissPopups();
         }
         else
@@ -402,22 +402,28 @@ retry:
     // Left button pressed
     if (event.state() == LPointerButtonEvent::Pressed)
     {
-        // We save the pointer focus surface to continue sending events to it even when the cursor
-        // is outside of it (while the left button is being held down)
+        // Keep a ref to continue sending it events after the cursor
+        // leaves, if the left button remains pressed
         pointer.setDraggingSurface(seat()->pointer()->focus());
 
         if (!keyboard.focus() || !pointer.focus()->isSubchildOf(keyboard.focus()))
+        {
             keyboard.setFocus(seat()->pointer()->focus());
+
+            // Pointer focus may have changed within LKeyboard::focusChanged()
+            if (!pointer.focus())
+                return;
+        }
+
+        pointer.sendButtonEvent(event);
 
         if (pointer.focus()->toplevel() && !pointer.focus()->toplevel()->activated())
             pointer.focus()->toplevel()->configureState(pointer.focus()->toplevel()->pendingConfiguration().state | LToplevelRole::Activated);
 
-        if (!pointer.focus()->popup())
+        if (!pointer.focus()->popup() && !pointer.focus()->isPopupSubchild())
             seat()->dismissPopups();
 
-        pointer.sendButtonEvent(event);
-
-        if (pointer.focus() == compositor()->surfaces().back())
+        if (!pointer.focus() || pointer.focus() == compositor()->surfaces().back())
             return;
 
         if (pointer.focus()->parent())
@@ -448,7 +454,6 @@ retry:
                 it++;
         }
 
-        // We stop sending events to the surface on which the left button was being held down
         pointer.setDraggingSurface(nullptr);
 
         if (pointer.focus()->imp()->lastPointerEventView)
