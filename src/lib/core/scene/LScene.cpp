@@ -393,12 +393,6 @@ retry:
         return;
     }
 
-    if (event.button() != LPointerButtonEvent::Left)
-    {
-        pointer.sendButtonEvent(event);
-        return;
-    }
-
     // Left button pressed
     if (event.state() == LPointerButtonEvent::Pressed)
     {
