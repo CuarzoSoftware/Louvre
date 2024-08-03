@@ -154,10 +154,10 @@ static void onPointerButtonResizeArea(InputRect *rect, void *data, UInt32 button
 
         if (now  - view->lastTopbarClickMs < 300)
         {
-            if (view->toplevel->maximized())
-                view->toplevel->unsetMaximizedRequest();
+            if (toplevel->maximized())
+                toplevel->unsetMaximizedRequest();
             else
-                view->toplevel->setMaximizedRequest();
+                toplevel->setMaximizedRequest();
         }
 
         view->lastTopbarClickMs = now;
@@ -352,7 +352,7 @@ ToplevelView::ToplevelView(Toplevel *toplevel) :
     decoL.insertAfter(children().front());
     decoR.insertAfter(children().front());
     decoBL.insertAfter(children().front());
-    decoBR.insertAfter(children().front());   
+    decoBR.insertAfter(children().front());
     clipTop.insertAfter(children().front());
 }
 
