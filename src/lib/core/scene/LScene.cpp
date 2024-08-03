@@ -879,10 +879,12 @@ retry:
 
     const bool sessionLocked { sessionLockManager()->state() != LSessionLockManager::Unlocked };
     LKeyboard &keyboard { *seat()->keyboard() };
-    const bool L_CTRL      { keyboard .isKeyCodePressed(KEY_LEFTCTRL) };
-    const bool L_SHIFT     { keyboard .isKeyCodePressed(KEY_LEFTSHIFT) };
-    const bool mods        { keyboard .isKeyCodePressed(KEY_LEFTALT) && L_CTRL };
-    const xkb_keysym_t sym { keyboard .keySymbol(event.keyCode()) };
+    const bool L_CTRL      { keyboard.isKeyCodePressed(KEY_LEFTCTRL) };
+    const bool R_CTRL      { keyboard.isKeyCodePressed(KEY_RIGHTCTRL) };
+    const bool L_SHIFT     { keyboard.isKeyCodePressed(KEY_LEFTSHIFT) };
+    const bool L_ALT       { keyboard.isKeyCodePressed(KEY_LEFTALT) };
+    const bool mods        { L_ALT || L_SHIFT || L_CTRL || R_CTRL };
+    const xkb_keysym_t sym { keyboard.keySymbol(event.keyCode()) };
 
     if (event.state() == LKeyboardKeyEvent::Released)
     {

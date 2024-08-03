@@ -8,6 +8,17 @@ void LKeyboardKeyEvent::notify()
 {
     LKeyboard::LKeyboardPrivate &keyboard { *seat()->keyboard()->imp() };
 
+    // CTRL + ALT + (F1, F2, ..., F10) : Switch TTY.
+    if (seat()->imp()->libseatHandle
+        && seat()->keyboard()->isKeyCodePressed(KEY_LEFTALT)
+        && keyCode() >= KEY_F1 && keyCode() <= KEY_F10
+        && (seat()->keyboard()->isKeyCodePressed(KEY_LEFTCTRL)
+            || seat()->keyboard()->isKeyCodePressed(KEY_RIGHTCTRL)))
+    {
+        seat()->setTTY(keyCode() - KEY_F1 + 1);
+        return;
+    }
+
     if (keyboard.xkbKeymapState)
     {
         xkb_state_update_key(keyboard.xkbKeymapState,
@@ -44,15 +55,6 @@ void LKeyboardKeyEvent::notify()
         keyboard.pressedKeys.push_back(keyCode());
     else
         LVectorRemoveOneUnordered(keyboard.pressedKeys, keyCode());
-
-
-    // CTRL + ALT + (F1, F2, ..., F10) : Switch TTY.
-    if (seat()->imp()->libseatHandle &&
-        keyCode() >= KEY_F1 && keyCode() <= KEY_F10 &&
-        seat()->keyboard()->isKeyCodePressed(KEY_LEFTCTRL) &&
-        seat()->keyboard()->isKeyCodePressed(KEY_LEFTALT)
-        )
-        seat()->setTTY(keyCode() - KEY_F1 + 1);
 
     if (compositor()->state() == LCompositor::Initialized)
         seat()->keyboard()->keyEvent(*this);
