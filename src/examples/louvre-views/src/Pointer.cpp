@@ -85,14 +85,20 @@ bool Pointer::maybeMoveOrResize(const LPointerButtonEvent &event) {
     if (!seat()->keyboard()->isKeyCodePressed(KEY_LEFTMETA)) return false;
 
     LPointF mpos { cursor()->pos() };
+
+    // XXX: I have the feeling there's a simpler way to find the Toplevel
+    // object, but this works.
     LView *view { G::scene()->viewAt(mpos, LView::UndefinedType, LScene::InputFilter::Pointer) };
     Toplevel *toplevel { nullptr };
-
     if (view && view->type() == LView::SurfaceType) {
         Surface *surface = dynamic_cast<Surface*>( static_cast<LSurfaceView*>(view)->surface() );
-        if (surface) toplevel = surface->tl();
+        while (surface) {
+            if ((toplevel = surface->tl())) break;
+            surface = (Surface*)surface->parent();
+            if (surface && surface->views().size() > 0)
+                view = surface->views()[0];
+        }
     }
-
     if (!toplevel) return false;
 
     // Meta + Left Click to move window
