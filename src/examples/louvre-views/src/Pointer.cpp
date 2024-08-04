@@ -150,7 +150,7 @@ bool Pointer::maybeMoveOrResize(const LPointerButtonEvent &event) {
             anchor = LEdgeBottom | LEdgeRight;
 
         if (anchor) {
-            toplevel->startResizeRequest(LPointerButtonEvent(), anchor);
+            toplevel->startResizeRequest(event, anchor);
         } else {
             toplevel->startMoveRequest(event);
         }
