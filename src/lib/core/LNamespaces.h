@@ -31,6 +31,7 @@
 #define LOUVRE_FOREIGN_TOPLEVEL_MANAGER_VERSION 3
 #define LOUVRE_SINGLE_PIXEL_BUFFER_MANAGER_VERSION 1
 #define LOUVRE_CONTENT_TYPE_MANAGER_VERSION 1
+#define LOUVRE_IDLE_NOTIFIER_VERSION 1
 #define LOUVRE_IDLE_INHIBIT_MANAGER_VERSION 1
 
 #define L_UNUSED(object){(void)object;}
@@ -180,6 +181,7 @@ namespace Louvre
     class LDMABuffer;
     class LSinglePixelBuffer;
     class LExclusiveZone;
+    class LIdleListener;
 
     // Utils
     class LLog;
@@ -451,6 +453,13 @@ namespace Louvre
             class GContentTypeManager;
 
             class RContentType;
+        }
+
+        namespace IdleNotify
+        {
+            class GIdleNotifier;
+
+            class RIdleNotification;
         }
 
         namespace IdleInhibit

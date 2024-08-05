@@ -6,6 +6,7 @@
 #include <private/LCursorPrivate.h>
 #include <protocols/Wayland/GOutput.h>
 
+#include <LIdleListener.h>
 #include <LAnimation.h>
 #include <LNamespaces.h>
 #include <LPopupRole.h>
@@ -263,6 +264,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
                          msTimeout);
 
     imp()->lock();
+    seat()->setIsUserIdleHint(true);
     imp()->sendPresentationTime();
     imp()->processRemovedGlobals();
 
@@ -320,6 +322,10 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
 
     if (seat()->enabled())
     {
+        if (!seat()->isUserIdleHint())
+            for (const auto *idleListener : seat()->idleListeners())
+                idleListener->resetTimer();
+
         if (flush)
         {
             cursor()->imp()->textureUpdate();

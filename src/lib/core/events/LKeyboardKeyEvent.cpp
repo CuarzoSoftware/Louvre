@@ -57,7 +57,10 @@ void LKeyboardKeyEvent::notify()
         LVectorRemoveOneUnordered(keyboard.pressedKeys, keyCode());
 
     if (compositor()->state() == LCompositor::Initialized)
+    {
+        seat()->onEvent(*this);
         seat()->keyboard()->keyEvent(*this);
+    }
 
     keyboard.modifiersChanged = false;
 }

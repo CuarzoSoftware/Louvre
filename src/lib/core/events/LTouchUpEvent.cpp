@@ -8,5 +8,8 @@ using namespace Louvre;
 void LTouchUpEvent::notify()
 {
     if (compositor()->state() == LCompositor::Initialized)
+    {
+        seat()->onEvent(*this);
         seat()->touch()->touchUpEvent(*this);
+    }
 }

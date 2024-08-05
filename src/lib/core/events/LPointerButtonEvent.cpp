@@ -10,6 +10,8 @@ void LPointerButtonEvent::notify()
 {
     if (compositor()->state() == LCompositor::Initialized)
     {
+        seat()->onEvent(*this);
+
         if (state() == Pressed)
             seat()->pointer()->imp()->pressedButtons.push_back(button());
         else

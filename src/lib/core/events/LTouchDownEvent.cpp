@@ -8,5 +8,8 @@ using namespace Louvre;
 void LTouchDownEvent::notify()
 {
     if (compositor()->state() == LCompositor::Initialized)
+    {
+        seat()->onEvent(*this);
         seat()->touch()->touchDownEvent(*this);
+    }
 }

@@ -72,6 +72,21 @@ const std::vector<LSurface *> &LSeat::idleInhibitorSurfaces() const noexcept
     return imp()->idleInhibitors;
 }
 
+const std::vector<const LIdleListener *> &LSeat::idleListeners() const noexcept
+{
+    return imp()->idleListeners;
+}
+
+void LSeat::setIsUserIdleHint(bool isIdle) noexcept
+{
+    imp()->isUserIdleHint = isIdle;
+}
+
+bool LSeat::isUserIdleHint() const noexcept
+{
+    return imp()->isUserIdleHint;
+}
+
 const char *LSeat::name() const noexcept
 {
     if (imp()->libseatHandle)

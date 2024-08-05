@@ -8,5 +8,8 @@ using namespace Louvre;
 void LPointerPinchBeginEvent::notify()
 {
     if (compositor()->state() == LCompositor::Initialized)
+    {
+        seat()->onEvent(*this);
         seat()->pointer()->pointerPinchBeginEvent(*this);
+    }
 }
