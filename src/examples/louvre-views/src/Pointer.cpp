@@ -166,7 +166,7 @@ void Pointer::pointerButtonEvent(const LPointerButtonEvent &event)
         return;
     }
 
-    if (event.button() == LPointerButtonEvent::Left && event.state() == LPointerButtonEvent::Released)
+    if (event.state() == LPointerButtonEvent::Released)
     {
         G::enableDocks(true);
         G::compositor()->updatePointerBeforePaint = true;
