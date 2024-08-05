@@ -456,6 +456,11 @@ Wayland::RSurface *LSurface::surfaceResource() const noexcept
     return imp()->surfaceResource;
 }
 
+std::vector<IdleInhibit::RIdleInhibitor *> LSurface::idleInhibitorResources() const noexcept
+{
+    return imp()->idleInhibitorResources;
+}
+
 wl_buffer *LSurface::bufferResource() const noexcept
 {
     return (wl_buffer*)imp()->current.bufferRes;

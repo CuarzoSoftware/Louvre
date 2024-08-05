@@ -7,7 +7,7 @@
 #define LOUVRE_MAX_SURFACE_SIZE 21474836
 #define LOUVRE_MAX_DAMAGE_RECTS 128
 
-/* Protocols Globals Versions */
+/* Protocol Global Versions */
 #define LOUVRE_FRACTIONAL_SCALE_MANAGER_VERSION 1
 #define LOUVRE_WL_COMPOSITOR_VERSION 6
 #define LOUVRE_WL_DATA_DEVICE_MANAGER_VERSION 3
@@ -31,6 +31,7 @@
 #define LOUVRE_FOREIGN_TOPLEVEL_MANAGER_VERSION 3
 #define LOUVRE_SINGLE_PIXEL_BUFFER_MANAGER_VERSION 1
 #define LOUVRE_CONTENT_TYPE_MANAGER_VERSION 1
+#define LOUVRE_IDLE_INHIBIT_MANAGER_VERSION 1
 
 #define L_UNUSED(object){(void)object;}
 
@@ -450,6 +451,13 @@ namespace Louvre
             class GContentTypeManager;
 
             class RContentType;
+        }
+
+        namespace IdleInhibit
+        {
+            class GIdleInhibitManager;
+
+            class RIdleInhibitor;
         }
     }
 

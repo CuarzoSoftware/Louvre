@@ -24,6 +24,7 @@ LPRIVATE_CLASS(LSeat)
 
     std::vector<LToplevelResizeSession*> resizeSessions;
     std::vector<LToplevelMoveSession*> moveSessions;
+    std::vector<LSurface*> idleInhibitors;
 
     libseat *libseatHandle                  { nullptr };
     libseat_seat_listener listener;

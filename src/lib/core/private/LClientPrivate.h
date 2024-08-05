@@ -52,6 +52,7 @@ public:
     std::vector<ForeignToplevelManagement::GForeignToplevelManager*> foreignToplevelManagerGlobals;
     std::vector<SinglePixelBuffer::GSinglePixelBufferManager*> singlePixelBufferManagerGlobals;
     std::vector<ContentType::GContentTypeManager*> contentTypeManagerGlobals;
+    std::vector<IdleInhibit::GIdleInhibitManager*> idleInhibitManagerGlobals;
     bool destroyed { false };
 };
 

@@ -126,6 +126,7 @@ LPRIVATE_CLASS(LSurface)
     std::vector<LOutput*> outputs;
 
     std::vector<PresentationTime::RPresentationFeedback*> presentationFeedbackResources;
+    std::vector<Protocols::IdleInhibit::RIdleInhibitor*> idleInhibitorResources;
 
     // Find the prev surface using layers (returns nullptr if no prev surface)
     LSurface *prevSurfaceInLayers() noexcept;

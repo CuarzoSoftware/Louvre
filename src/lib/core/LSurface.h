@@ -469,6 +469,9 @@ public:
      */
     Protocols::Wayland::RSurface *surfaceResource() const noexcept;
 
+    // TODO: add doc
+    std::vector<Protocols::IdleInhibit::RIdleInhibitor*> idleInhibitorResources() const noexcept;
+
     /**
      * @brief Client owner of the surface.
      */

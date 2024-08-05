@@ -389,6 +389,13 @@ public:
      */
     const std::vector<Protocols::ContentType::GContentTypeManager*> &contentTypeManagerGlobals() const noexcept;
 
+    /**
+     * Resources created when the client binds to the
+     * [zwp_idle_inhibit_manager_v1](https://wayland.app/protocols/idle-inhibit-unstable-v1#zwp_idle_inhibit_manager_v1) global
+     * of the Idle Inhibit protocol.
+     */
+    const std::vector<Protocols::IdleInhibit::GIdleInhibitManager*> &idleInhibitManagerGlobals() const noexcept;
+
     LPRIVATE_IMP_UNIQUE(LClient)
 };
 

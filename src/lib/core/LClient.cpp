@@ -241,6 +241,11 @@ const std::vector<ContentType::GContentTypeManager *> &LClient::contentTypeManag
     return imp()->contentTypeManagerGlobals;
 }
 
+const std::vector<IdleInhibit::GIdleInhibitManager *> &LClient::idleInhibitManagerGlobals() const noexcept
+{
+    return imp()->idleInhibitManagerGlobals;
+}
+
 const LClient::EventHistory &LClient::eventHistory() const noexcept
 {
     return imp()->eventHistory;

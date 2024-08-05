@@ -9,6 +9,7 @@
 #include <protocols/PointerGestures/GPointerGestures.h>
 #include <protocols/SessionLock/GSessionLockManager.h>
 #include <protocols/ContentType/GContentTypeManager.h>
+#include <protocols/IdleInhibit/GIdleInhibitManager.h>
 #include <protocols/PresentationTime/GPresentation.h>
 #include <protocols/ScreenCopy/GScreenCopyManager.h>
 #include <protocols/XdgOutput/GXdgOutputManager.h>
@@ -114,6 +115,9 @@ bool LCompositor::createGlobalsRequest()
 
     // Allows clients to provide a hint about the content type being displayed by surfaces
     createGlobal<ContentType::GContentTypeManager>();
+
+    // Allows clients to request inhibition of the compositor's idle state
+    createGlobal<IdleInhibit::GIdleInhibitManager>();
 
     return true;
 }
