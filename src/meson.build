@@ -7,7 +7,7 @@ project(
         'warning_level=3',
         'buildtype=release',
         'cpp_std=c++20'
-	]
+    ]
 )
 
 cpp = meson.get_compiler('cpp')
@@ -105,7 +105,8 @@ globals = [
     'LayerShell',
     'ForeignToplevelManagement',
     'SinglePixelBuffer',
-    'ContentType'
+    'ContentType',
+    'IdleInhibit'
 ]
 
 foreach g : globals

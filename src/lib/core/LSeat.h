@@ -61,6 +61,13 @@ public:
     const std::vector<LInputDevice *> &inputDevices() const noexcept;
 
     /**
+     * @brief Idle inhibitor surfaces
+     *
+     * Surfaces requesting to inhibit the compositor idle state while they are mapped and visible.
+     */
+    const std::vector<LSurface *> &idleInhibitorSurfaces() const noexcept;
+
+    /**
      * @brief The seat name
      *
      * This method returns the name of the seat (E.g. "seat0").
@@ -76,7 +83,6 @@ public:
      * @return The currently active LToplevelRole instance or `nullptr` if no toplevel is active.
      */
     LToplevelRole *activeToplevel() const noexcept;
-
 
     /**
      * @brief Active LToplevelRole resize sessions.
@@ -282,6 +288,8 @@ public:
      * @snippet LSeatDefault.cpp inputDeviceUnplugged
      */
     virtual void inputDeviceUnplugged(LInputDevice *device);
+
+    // TODO: Add idle inhibit add/remove events
 
 /// @}
 

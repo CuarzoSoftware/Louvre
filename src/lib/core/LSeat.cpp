@@ -67,6 +67,11 @@ const std::vector<LInputDevice *> &LSeat::inputDevices() const noexcept
     return *compositor()->imp()->inputBackend->backendGetDevices();
 }
 
+const std::vector<LSurface *> &LSeat::idleInhibitorSurfaces() const noexcept
+{
+    return imp()->idleInhibitors;
+}
+
 const char *LSeat::name() const noexcept
 {
     if (imp()->libseatHandle)
