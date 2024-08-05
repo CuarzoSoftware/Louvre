@@ -83,6 +83,8 @@ void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)
 bool Pointer::maybeMoveOrResize(const LPointerButtonEvent &event) {
     if (event.state() != LPointerButtonEvent::Pressed) return false;
     if (!seat()->keyboard()->isKeyCodePressed(KEY_LEFTMETA)) return false;
+    if (!(event.button() == LPointerButtonEvent::Left ||
+          event.button() == LPointerButtonEvent::Right)) return false;
 
     LPointF mpos { cursor()->pos() };
 
@@ -101,73 +103,91 @@ bool Pointer::maybeMoveOrResize(const LPointerButtonEvent &event) {
     }
     if (!toplevel) return false;
 
-    // Meta + Left Click to move window
-    if (event.button() == LPointerButtonEvent::Left) {
-        toplevel->startMoveRequest(event);
-        return true;
-    }
+    LBitset<LEdge> anchor { 0 };
+    LXCursor *cursor { G::cursors().move };
 
     // Meta + Right Click to resize window
     if (event.button() == LPointerButtonEvent::Right) {
         LPointF vpos { view->pos() };
         LSizeF vsz { view->size() };
-        LBitset<LEdge> anchor;
 
         if (mpos.x() >= vpos.x() + 0.0000f * vsz.x() && mpos.x() < vpos.x() + 0.3333f * vsz.x() &&
             mpos.y() >= vpos.y() + 0.0000f * vsz.y() && mpos.y() < vpos.y() + 0.3333f * vsz.y())
+        {
             anchor = LEdgeTop | LEdgeLeft;
-
-        if (mpos.x() >= vpos.x() + 0.3333f * vsz.x() && mpos.x() < vpos.x() + 0.6666f * vsz.x() &&
-            mpos.y() >= vpos.y() + 0.0000f * vsz.y() && mpos.y() < vpos.y() + 0.3333f * vsz.y())
-            anchor = LEdgeTop;
-
-        if (mpos.x() >= vpos.x() + 0.6666f * vsz.x() && mpos.x() < vpos.x() + 1 * vsz.x() &&
-            mpos.y() >= vpos.y() + 0.0000f * vsz.y() && mpos.y() < vpos.y() + 0.3333f * vsz.y())
-            anchor = LEdgeTop | LEdgeRight;
-
-        if (mpos.x() >= vpos.x() + 0.0000f * vsz.x() && mpos.x() < vpos.x() + 0.3333f * vsz.x() &&
-            mpos.y() >= vpos.y() + 0.3333f * vsz.y() && mpos.y() < vpos.y() + 0.6666f * vsz.y())
-            anchor = LEdgeLeft;
-
-        if (mpos.x() >= vpos.x() + 0.3333f * vsz.x() && mpos.x() < vpos.x() + 0.6666f * vsz.x() &&
-            mpos.y() >= vpos.y() + 0.3333f * vsz.y() && mpos.y() < vpos.y() + 0.6666f * vsz.y())
-            anchor = 0;
-
-        if (mpos.x() >= vpos.x() + 0.6666f * vsz.x() && mpos.x() < vpos.x() + 1 * vsz.x() &&
-            mpos.y() >= vpos.y() + 0.3333f * vsz.y() && mpos.y() < vpos.y() + 0.6666f * vsz.y())
-            anchor = LEdgeRight;
-
-        if (mpos.x() >= vpos.x() + 0.0000f * vsz.x() && mpos.x() < vpos.x() + 0.3333f * vsz.x() &&
-            mpos.y() >= vpos.y() + 0.6666f * vsz.y() && mpos.y() < vpos.y() + 1 * vsz.y())
-            anchor = LEdgeBottom | LEdgeLeft;
-
-        if (mpos.x() >= vpos.x() + 0.3333f * vsz.x() && mpos.x() < vpos.x() + 0.6666f * vsz.x() &&
-            mpos.y() >= vpos.y() + 0.6666f * vsz.y() && mpos.y() < vpos.y() + 1 * vsz.y())
-            anchor = LEdgeBottom;
-
-        if (mpos.x() >= vpos.x() + 0.6666f * vsz.x() && mpos.x() < vpos.x() + 1 * vsz.x() &&
-            mpos.y() >= vpos.y() + 0.6666f * vsz.y() && mpos.y() < vpos.y() + 1 * vsz.y())
-            anchor = LEdgeBottom | LEdgeRight;
-
-        if (anchor) {
-            toplevel->startResizeRequest(event, anchor);
-        } else {
-            toplevel->startMoveRequest(event);
+            cursor = G::cursors().top_left_corner;
         }
-        return true;
+        if (mpos.x() >= vpos.x() + 0.3333f * vsz.x() && mpos.x() < vpos.x() + 0.6666f * vsz.x() &&
+            mpos.y() >= vpos.y() + 0.0000f * vsz.y() && mpos.y() < vpos.y() + 0.3333f * vsz.y())
+        {
+            anchor = LEdgeTop;
+            cursor = G::cursors().top_side;
+        }
+        if (mpos.x() >= vpos.x() + 0.6666f * vsz.x() && mpos.x() < vpos.x() + 1 * vsz.x() &&
+            mpos.y() >= vpos.y() + 0.0000f * vsz.y() && mpos.y() < vpos.y() + 0.3333f * vsz.y())
+        {
+            anchor = LEdgeTop | LEdgeRight;
+            cursor = G::cursors().top_right_corner;
+        }
+        if (mpos.x() >= vpos.x() + 0.0000f * vsz.x() && mpos.x() < vpos.x() + 0.3333f * vsz.x() &&
+            mpos.y() >= vpos.y() + 0.3333f * vsz.y() && mpos.y() < vpos.y() + 0.6666f * vsz.y())
+        {
+            anchor = LEdgeLeft;
+            cursor = G::cursors().left_side;
+        }
+        if (mpos.x() >= vpos.x() + 0.6666f * vsz.x() && mpos.x() < vpos.x() + 1 * vsz.x() &&
+            mpos.y() >= vpos.y() + 0.3333f * vsz.y() && mpos.y() < vpos.y() + 0.6666f * vsz.y())
+        {
+            anchor = LEdgeRight;
+            cursor = G::cursors().right_side;
+        }
+        if (mpos.x() >= vpos.x() + 0.0000f * vsz.x() && mpos.x() < vpos.x() + 0.3333f * vsz.x() &&
+            mpos.y() >= vpos.y() + 0.6666f * vsz.y() && mpos.y() < vpos.y() + 1 * vsz.y())
+        {
+            anchor = LEdgeBottom | LEdgeLeft;
+            cursor = G::cursors().bottom_left_corner;
+        }
+        if (mpos.x() >= vpos.x() + 0.3333f * vsz.x() && mpos.x() < vpos.x() + 0.6666f * vsz.x() &&
+            mpos.y() >= vpos.y() + 0.6666f * vsz.y() && mpos.y() < vpos.y() + 1 * vsz.y())
+        {
+            anchor = LEdgeBottom;
+            cursor = G::cursors().bottom_side;
+        }
+        if (mpos.x() >= vpos.x() + 0.6666f * vsz.x() && mpos.x() < vpos.x() + 1 * vsz.x() &&
+            mpos.y() >= vpos.y() + 0.6666f * vsz.y() && mpos.y() < vpos.y() + 1 * vsz.y())
+        {
+            anchor = LEdgeBottom | LEdgeRight;
+            cursor = G::cursors().bottom_right_corner;
+        }
     }
 
-    return false;
+    if (cursor) {
+        G::compositor()->cursor()->setTextureB(cursor->texture(), cursor->hotspotB());
+        this->cursorOwner = view;
+    }
+
+    if (anchor) {
+        toplevel->startResizeRequest(event, anchor);
+    } else {
+        toplevel->startMoveRequest(event);
+    }
+
+    return true;
 }
 
 void Pointer::pointerButtonEvent(const LPointerButtonEvent &event)
 {
     if (maybeMoveOrResize(event)) {
+        this->isDragging = true;
         return;
     }
 
     if (event.state() == LPointerButtonEvent::Released)
     {
+        if (this->isDragging) {
+            this->isDragging = false;
+            G::compositor()->cursor()->useDefault();
+        }
         G::enableDocks(true);
         G::compositor()->updatePointerBeforePaint = true;
     }

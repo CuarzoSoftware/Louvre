@@ -14,7 +14,9 @@ public:
     void pointerScrollEvent(const LPointerScrollEvent &event) override;
     void setCursorRequest(const LClientCursor &clientCursor) override;
     bool maybeMoveOrResize(const LPointerButtonEvent &event);
+
     LView *cursorOwner { nullptr };
+    bool isDragging { false };
 };
 
 #endif // POINTER_H
