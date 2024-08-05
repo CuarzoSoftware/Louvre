@@ -106,6 +106,7 @@ globals = [
     'ForeignToplevelManagement',
     'SinglePixelBuffer',
     'ContentType',
+    'IdleNotify',
     'IdleInhibit'
 ]
 

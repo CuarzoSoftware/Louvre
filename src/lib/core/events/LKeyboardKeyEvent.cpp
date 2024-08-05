@@ -55,7 +55,10 @@ void LKeyboardKeyEvent::notify()
         seat()->setTTY(keyCode() - KEY_F1 + 1);
 
     if (compositor()->state() == LCompositor::Initialized)
+    {
+        seat()->onEvent(*this);
         seat()->keyboard()->keyEvent(*this);
+    }
 
     keyboard.modifiersChanged = false;
 }

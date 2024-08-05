@@ -391,6 +391,13 @@ public:
 
     /**
      * Resources created when the client binds to the
+     * [ext_idle_notifier_v1](https://wayland.app/protocols/ext-idle-notify-v1#ext_idle_notifier_v1) global
+     * of the Idle Notify protocol.
+     */
+    const std::vector<Protocols::IdleNotify::GIdleNotifier*> &idleNotifierGlobals() const noexcept;
+
+    /**
+     * Resources created when the client binds to the
      * [zwp_idle_inhibit_manager_v1](https://wayland.app/protocols/idle-inhibit-unstable-v1#zwp_idle_inhibit_manager_v1) global
      * of the Idle Inhibit protocol.
      */

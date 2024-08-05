@@ -15,6 +15,7 @@
 #include <protocols/XdgOutput/GXdgOutputManager.h>
 #include <protocols/Wayland/GDataDeviceManager.h>
 #include <protocols/LinuxDMABuf/GLinuxDMABuf.h>
+#include <protocols/IdleNotify/GIdleNotifier.h>
 #include <protocols/Viewporter/GViewporter.h>
 #include <protocols/LayerShell/GLayerShell.h>
 #include <protocols/Wayland/GSubcompositor.h>
@@ -115,6 +116,9 @@ bool LCompositor::createGlobalsRequest()
 
     // Allows clients to provide a hint about the content type being displayed by surfaces
     createGlobal<ContentType::GContentTypeManager>();
+
+    // Notifies clients if the user has been idle for a given amount of time
+    createGlobal<IdleNotify::GIdleNotifier>();
 
     // Allows clients to request inhibition of the compositor's idle state
     createGlobal<IdleInhibit::GIdleInhibitManager>();

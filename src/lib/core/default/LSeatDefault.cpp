@@ -1,3 +1,4 @@
+#include <LIdleListener.h>
 #include <LCompositor.h>
 #include <LOutput.h>
 #include <LSeat.h>
@@ -73,3 +74,43 @@ void LSeat::inputDeviceUnplugged(LInputDevice *device)
     L_UNUSED(device);
 }
 //! [inputDeviceUnplugged]
+
+bool LSeat::isIdleStateInhibited() const
+{
+    for (LSurface *surface : idleInhibitorSurfaces())
+        if (surface->mapped() && !surface->outputs().empty())
+            return true;
+
+    return false;
+}
+
+void LSeat::onIdleListenerTimeout(const LIdleListener &listener)
+{
+    if (isIdleStateInhibited())
+        listener.resetTimer();
+
+    /*
+     * If the timer is not reset, the client will assume the user is idle.
+     */
+}
+
+void LSeat::onEvent(const LEvent &event)
+{
+    L_UNUSED(event)
+
+    /*
+     * Resetting all timers each time an event occurs is not CPU-friendly,
+     * as multiple events can be triggered in a single main loop iteration.
+     * Instead, using the option below is more efficient.
+     *
+     * for (const LIdleListener *idleListener : idleListeners())
+     *     idleListener->resetTimer();
+     */
+
+    /*
+     * Setting this flag to false indicates the user wasn't idle during
+     * this main loop iteration. If that's the case, Louvre will reset
+     * all timers only once at the end of the iteration.
+     */
+    setIsUserIdleHint(false);
+}

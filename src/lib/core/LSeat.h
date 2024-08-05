@@ -289,7 +289,15 @@ public:
      */
     virtual void inputDeviceUnplugged(LInputDevice *device);
 
-    // TODO: Add idle inhibit add/remove events
+    // TODO: Add idle inhibit add/remove events and doc
+
+    const std::vector<const LIdleListener*> &idleListeners() const noexcept;
+    virtual bool isIdleStateInhibited() const;
+    virtual void onIdleListenerTimeout(const LIdleListener &listener);
+    virtual void onEvent(const LEvent &event);
+
+    void setIsUserIdleHint(bool isIdle) noexcept;
+    bool isUserIdleHint() const noexcept;
 
 /// @}
 
