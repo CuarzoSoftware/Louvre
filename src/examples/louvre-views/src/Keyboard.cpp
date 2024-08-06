@@ -165,20 +165,19 @@ void Keyboard::keyEvent(const LKeyboardKeyEvent &event)
 
             case KEY_PAGEDOWN:
             {
-                Surface *s = (Surface*)focus();
-                if (s && s->tl()) s->tl()->setMinimizedRequest();
+                if (seat()->activeToplevel())
+                    seat()->activeToplevel()->setMinimizedRequest();
                 return;
             }
 
             case KEY_PAGEUP:
             {
-                Surface *s = (Surface*)focus();
-                if (s && s->tl()) {
-                    if (s->tl()->maximized()) {
-                        s->tl()->unsetMaximizedRequest();
-                    } else {
-                        s->tl()->setMaximizedRequest();
-                    }
+                if (seat()->activeToplevel())
+                {
+                    if (seat()->activeToplevel()->maximized())
+                        seat()->activeToplevel()->unsetMaximizedRequest();
+                    else
+                        seat()->activeToplevel()->setMaximizedRequest();
                 }
                 return;
             }

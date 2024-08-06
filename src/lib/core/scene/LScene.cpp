@@ -393,11 +393,10 @@ retry:
         return;
     }
 
-    // Left button pressed
     if (event.state() == LPointerButtonEvent::Pressed)
     {
         // Keep a ref to continue sending it events after the cursor
-        // leaves, if the left button remains pressed
+        // leaves, if the button remains pressed
         pointer.setDraggingSurface(seat()->pointer()->focus());
 
         if (!keyboard.focus() || !pointer.focus()->isSubchildOf(keyboard.focus()))
@@ -425,7 +424,7 @@ retry:
         else
             pointer.focus()->raise();
     }
-    // Left button released
+    // Button released
     else
     {
         pointer.sendButtonEvent(event);

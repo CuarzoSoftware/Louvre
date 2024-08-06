@@ -2,6 +2,7 @@
 #define POINTER_H
 
 #include <LPointer.h>
+#include <LWeak.h>
 
 using namespace Louvre;
 
@@ -14,9 +15,7 @@ public:
     void pointerScrollEvent(const LPointerScrollEvent &event) override;
     void setCursorRequest(const LClientCursor &clientCursor) override;
     bool maybeMoveOrResize(const LPointerButtonEvent &event);
-
-    LView *cursorOwner { nullptr };
-    bool isDragging { false };
+    LWeak<LView> cursorOwner;
 };
 
 #endif // POINTER_H

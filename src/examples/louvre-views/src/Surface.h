@@ -23,6 +23,7 @@ public:
     class Toplevel *tl() const {return (class Toplevel*)toplevel();}
 
     static class Surface *searchSessionLockParent(Surface *parent);
+    class Toplevel *closestToplevelParent() const noexcept;
 
     LView *getView() const;
 
