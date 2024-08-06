@@ -28,11 +28,14 @@ The dock icons featured in the screenshot were sourced from <a href="https://mac
 * `Ctrl + Alt + [F1,...,F10]` : Switches to another TTY.
 * `Ctrl + Alt + [Left/Right arrow keys]` : Navigates to the left or right workspace. If supported, you can use three or more fingers on your touchpad.
 * `Alt + [mouse over maximize button]` : While hovering the cursor over a server-side decorated toplevel window, press `Alt` to maximize the window instead of setting it to fullscreen mode.
+* `Super + Shift + PageUp`: Toggle maximize.
+* `Super + Shift + PageDown`: Minimize.
 * `Super + Shift + V` : Toggles the current output VSync.
 * `Super + Shift + T` : Changes the current output transform.
 * `Super + Shift + W` : Launches Wofi in run mode.
 * `Super + Shift + [Up/Down arrow keys]` : Increments or decrements the current output scale factor by 0.25.
 * `Super + Shift + L + [Up/Down arrow keys]` : Modifies the priority of a focused LLayerShell surface.
+* `Super + L/R Click` : Starts interactive move/resize for toplevel windows.
 
 ### Wallpaper
 

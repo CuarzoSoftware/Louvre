@@ -14,7 +14,7 @@
  * This means that for screencasting, clients make a new LScreenshotRequest for each paintGL event.\n
  * If a request is accepted within a paintGL event, Louvre later copies the rendered frame to the client's buffer.
  *
- * @note All requests are initially denied unless accept(true) is called.
+ * @note All requests are initially denied unless accept(true) is called and no custom buffer is set for direct scanout (see LOutput::setCustomScanoutBuffer()).
  *
  * Within a paintGL event, the LOutput::screenshotRequests() vector contains the requests made for the current frame being rendered, which
  * can be more than one if multiple clients are requesting to capture it.
