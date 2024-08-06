@@ -164,6 +164,10 @@ bool Pointer::maybeMoveOrResize(const LPointerButtonEvent &event)
     else
         toplevel->startMoveRequest(event);
 
+    toplevel->configureState(toplevel->pendingConfiguration().state | LToplevelRole::Activated);
+    toplevel->surface()->raise();
+    seat()->dismissPopups();
+
     return true;
 }
 
