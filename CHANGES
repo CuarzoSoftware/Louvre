@@ -1,3 +1,29 @@
+Louvre (2.5.0-1)
+
+  # New Protocols
+
+  * Idle Notify (see `LIdleListener` for details).
+  * Idle Inhibit (see `LSeat::idleInhibitorSurfaces()` for details).
+
+  # Packaging
+
+  * Added Fedora package in the downloads section. Credits to @Conan-Kudo.
+
+  # Examples
+
+  * New louvre-views Shortcuts: Credits to @mishoo:
+    * `Super + L/R Click`: Starts interactive move/resize for top-level windows.
+    * `Super + Shift + PageUp`: Toggle maximize.
+    * `Super + Shift + PageDown`: Minimize.
+
+  # Bug Fixes
+
+  * Prevent `weston-terminal` from launching when switching to TTY 1. Credits to @mishoo.
+  * Allow VT switching using the right CTRL key. Credits to @mishoo.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Tue, 06 Aug 2024 13:59:30 -0400
+
+
 Louvre (2.4.1-1)
 
   # Bug Fixes & Security

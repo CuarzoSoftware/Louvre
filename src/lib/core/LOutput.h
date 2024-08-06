@@ -325,13 +325,13 @@ public:
     LFramebuffer *framebuffer() const noexcept;
 
     /**
-     * @brief Gets the framebuffer transformation.
+     * @brief Gets the framebuffer transform.
      *
-     * This method returns the current framebuffer transformation applied with setTransform().
+     * This method returns the current framebuffer transform applied with setTransform().
      *
      * The default value is @ref LTransform::Normal.
      *
-     * @return The framebuffer transformation.
+     * @return The framebuffer transforma.
      */
     LTransform transform() const noexcept;
 
@@ -352,14 +352,14 @@ public:
      *
      * @image html https://lh3.googleusercontent.com/2ousoWwxnVGvFX5bT6ual2G8UUbhUOJ21mK1UQmthPNM-7XfracRlL5GCYBQTzt4Os28eKO_FzC6BS-rasiNngvTMI9lEdET0ItKrI2wK_9IwSDaF-hNGkTMI6gVlL0m4ENDJYbckw
      *
-     * @return The current buffer index. Alternates between [0], [0, 1] or [0, 1, 2] depending on the graphic backend configuration.
+     * @return The current buffer index. Alternates between [0, 1] or [0, 1, 2] depending on the graphic backend configuration.
      */
     Int32 currentBuffer() const noexcept;
 
     /**
      * @brief Returns the count of available buffers.
      *
-     * This method returns the number of buffers used by the output. It can be 1, 2 or 3 depending on the graphic backend configuration.
+     * This method returns the number of buffers used by the output. It can be 2 or 3 depending on the graphic backend configuration.
      */
     UInt32 buffersCount() const noexcept;
 

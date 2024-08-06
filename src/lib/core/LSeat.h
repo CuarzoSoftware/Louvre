@@ -61,16 +61,14 @@ public:
     const std::vector<LInputDevice *> &inputDevices() const noexcept;
 
     /**
-     * @brief Surfaces that inhibit the idle state.
+     * @brief Surfaces requesting to inhibit the idle state.
      *
      * @see LIdleListener for more details.
      */
     const std::vector<LSurface *> &idleInhibitorSurfaces() const noexcept;
 
     /**
-     * @brief List of idle listeners.
-     *
-     * Provides access to idle listeners used by clients to detect when the user has been idle for a specified amount of time.
+     * @brief Listeners used by clients to detect when the user has been idle for a specified amount of time.
      *
      * @see LIdleListener for more details.
      */
@@ -313,7 +311,7 @@ public:
      * The default implementation returns `true` if at least one of the surfaces
      * listed in `idleInhibitorSurfaces()` is mapped and visible on at least one output.
      *
-     * @note Since the method of displaying surfaces is specific to each compositor,
+     * @note Since the way of displaying surfaces is specific to each compositor,
      *       no additional checks are performed to determine if the surface is obscured
      *       by opaque areas. You may override this method to include such checks if needed.
      *

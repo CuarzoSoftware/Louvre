@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Louvre is released under the MIT license." />
   </a>
   <a href="https://github.com/CuarzoSoftware/Louvre">
-    <img src="https://img.shields.io/badge/version-2.4.1-brightgreen" alt="Current Louvre version." />
+    <img src="https://img.shields.io/badge/version-2.5.0-brightgreen" alt="Current Louvre version." />
   </a>
 </p>
 
@@ -57,6 +57,8 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 * Fractional Scale
 * Tearing Control
 * Session Lock
+* Idle Notify
+* Idle Inhibit
 * Content Type Hint
 * Wlr Gamma Control
 * Wlr Layer Shell
@@ -155,7 +157,6 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 
 * Wlr Output Management
 * XDG activation Protocol
-* Idle Notify Protocol
 * Cursor Shape Protocol
 * DRM Overlay Planes Control
 * DRM Synchronization Object

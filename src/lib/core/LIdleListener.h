@@ -6,9 +6,11 @@
 /**
  * @brief Idle state listener
  *
+ * @anchor lidlelistener_detailed
+ *
  * Clients using the [Idle Notify](https://wayland.app/protocols/ext-idle-notify-v1) protocol create an
- * instance of this class to be notified when the user has been idle for a set amount of time. Clients
- * like [swayidle](https://man.archlinux.org/man/swayidle) use this information to trigger screen lockers,
+ * instance of this class to be notified when the user has been idle for a set amount of time. For example,
+ * [swayidle](https://man.archlinux.org/man/swayidle) uses this information to trigger screen lockers,
  * screen savers, etc.
  *
  * @note All idle listeners can be accessed from LSeat::idleListeners().
