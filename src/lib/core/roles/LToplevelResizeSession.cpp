@@ -120,7 +120,6 @@ bool LToplevelResizeSession::start(const LEvent &triggeringEvent, LBitset<LEdge>
 
     m_ackTimer.cancel();
     m_lastSerialHandled = false;
-    m_isActive = true;
     m_triggeringEvent.reset(triggeringEvent.copy());
     m_edge = edge;
     m_initSize = m_toplevel->windowGeometry().size();

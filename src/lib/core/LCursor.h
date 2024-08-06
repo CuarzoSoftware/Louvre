@@ -131,6 +131,8 @@ public:
 
     /**
      * @brief Assigns an LXCursor.
+     *
+     * @note Passing `nullptr` is a no-op.
      */
     void setCursor(const LXCursor *xcursor) noexcept;
 

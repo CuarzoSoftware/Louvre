@@ -149,6 +149,7 @@ public:
         LXCursor *top_side = nullptr;
         LXCursor *right_side = nullptr;
         LXCursor *bottom_side = nullptr;
+        LXCursor *move = nullptr;
     };
 
     struct ToplevelRegions

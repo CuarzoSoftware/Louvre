@@ -163,6 +163,7 @@ void G::loadCursors()
     xCursors.top_side = LXCursor::load("top_side");
     xCursors.right_side = LXCursor::load("right_side");
     xCursors.bottom_side = LXCursor::load("bottom_side");
+    xCursors.move = LXCursor::load("move");
 }
 
 G::Cursors &G::cursors()

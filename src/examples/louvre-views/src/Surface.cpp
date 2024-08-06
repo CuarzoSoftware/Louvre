@@ -105,6 +105,20 @@ Surface *Surface::searchSessionLockParent(Surface *parent)
     return nullptr;
 }
 
+Toplevel *Surface::closestToplevelParent() const noexcept
+{
+    const LSurface *surface { this };
+
+    while (surface->parent())
+    {
+        if (surface->parent()->toplevel())
+            return static_cast<class Toplevel*>(surface->parent()->toplevel());
+        surface = surface->parent();
+    }
+
+    return nullptr;
+}
+
 LView *Surface::getView() const
 {
     if (tl() && tl()->decoratedView)

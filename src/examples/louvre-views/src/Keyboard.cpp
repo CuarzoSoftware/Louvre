@@ -12,6 +12,8 @@
 #include "LLayerRole.h"
 #include "Output.h"
 #include "Topbar.h"
+#include "Surface.h"
+#include "Toplevel.h"
 #include "App.h"
 #include "Client.h"
 #include "Workspace.h"
@@ -160,6 +162,25 @@ void Keyboard::keyEvent(const LKeyboardKeyEvent &event)
                     while (!client->foreignToplevelManagerGlobals().empty())
                         client->foreignToplevelManagerGlobals().back()->finished();
                 break;
+
+            case KEY_PAGEDOWN:
+            {
+                if (seat()->activeToplevel())
+                    seat()->activeToplevel()->setMinimizedRequest();
+                return;
+            }
+
+            case KEY_PAGEUP:
+            {
+                if (seat()->activeToplevel())
+                {
+                    if (seat()->activeToplevel()->maximized())
+                        seat()->activeToplevel()->unsetMaximizedRequest();
+                    else
+                        seat()->activeToplevel()->setMaximizedRequest();
+                }
+                return;
+            }
 
             default:
                 break;

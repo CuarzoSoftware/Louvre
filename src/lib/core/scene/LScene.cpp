@@ -393,17 +393,10 @@ retry:
         return;
     }
 
-    if (event.button() != LPointerButtonEvent::Left)
-    {
-        pointer.sendButtonEvent(event);
-        return;
-    }
-
-    // Left button pressed
     if (event.state() == LPointerButtonEvent::Pressed)
     {
         // Keep a ref to continue sending it events after the cursor
-        // leaves, if the left button remains pressed
+        // leaves, if the button remains pressed
         pointer.setDraggingSurface(seat()->pointer()->focus());
 
         if (!keyboard.focus() || !pointer.focus()->isSubchildOf(keyboard.focus()))
@@ -431,7 +424,7 @@ retry:
         else
             pointer.focus()->raise();
     }
-    // Left button released
+    // Button released
     else
     {
         pointer.sendButtonEvent(event);
@@ -879,10 +872,12 @@ retry:
 
     const bool sessionLocked { sessionLockManager()->state() != LSessionLockManager::Unlocked };
     LKeyboard &keyboard { *seat()->keyboard() };
-    const bool L_CTRL      { keyboard .isKeyCodePressed(KEY_LEFTCTRL) };
-    const bool L_SHIFT     { keyboard .isKeyCodePressed(KEY_LEFTSHIFT) };
-    const bool mods        { keyboard .isKeyCodePressed(KEY_LEFTALT) && L_CTRL };
-    const xkb_keysym_t sym { keyboard .keySymbol(event.keyCode()) };
+    const bool L_CTRL      { keyboard.isKeyCodePressed(KEY_LEFTCTRL) };
+    const bool R_CTRL      { keyboard.isKeyCodePressed(KEY_RIGHTCTRL) };
+    const bool L_SHIFT     { keyboard.isKeyCodePressed(KEY_LEFTSHIFT) };
+    const bool L_ALT       { keyboard.isKeyCodePressed(KEY_LEFTALT) };
+    const bool mods        { L_ALT || L_SHIFT || L_CTRL || R_CTRL };
+    const xkb_keysym_t sym { keyboard.keySymbol(event.keyCode()) };
 
     if (event.state() == LKeyboardKeyEvent::Released)
     {

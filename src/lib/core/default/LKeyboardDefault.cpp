@@ -21,9 +21,11 @@ void LKeyboard::keyEvent(const LKeyboardKeyEvent &event)
 
     sendKeyEvent(event);
 
-    const bool L_CTRL      { isKeyCodePressed(KEY_LEFTCTRL) };
+    const bool L_CTRL      { isKeyCodePressed(KEY_LEFTCTRL)  };
+    const bool R_CTRL      { isKeyCodePressed(KEY_RIGHTCTRL) };
     const bool L_SHIFT     { isKeyCodePressed(KEY_LEFTSHIFT) };
-    const bool mods        { isKeyCodePressed(KEY_LEFTALT) && L_CTRL };
+    const bool L_ALT       { isKeyCodePressed(KEY_LEFTALT)   };
+    const bool mods        { L_ALT || L_SHIFT || L_CTRL || R_CTRL };
     const xkb_keysym_t sym { keySymbol(event.keyCode()) };
 
     if (event.state() == LKeyboardKeyEvent::Released)
