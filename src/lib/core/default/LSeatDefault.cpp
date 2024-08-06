@@ -75,6 +75,7 @@ void LSeat::inputDeviceUnplugged(LInputDevice *device)
 }
 //! [inputDeviceUnplugged]
 
+//! [isIdleStateInhibited]
 bool LSeat::isIdleStateInhibited() const
 {
     for (LSurface *surface : idleInhibitorSurfaces())
@@ -83,17 +84,19 @@ bool LSeat::isIdleStateInhibited() const
 
     return false;
 }
+//! [isIdleStateInhibited]
 
+//! [onIdleListenerTimeout]
 void LSeat::onIdleListenerTimeout(const LIdleListener &listener)
 {
     if (isIdleStateInhibited())
         listener.resetTimer();
 
-    /*
-     * If the timer is not reset, the client will assume the user is idle.
-     */
+    /* If the timer is not reset, the client will assume the user is idle. */
 }
+//! [onIdleListenerTimeout]
 
+//! [onEvent]
 void LSeat::onEvent(const LEvent &event)
 {
     L_UNUSED(event)
@@ -114,3 +117,4 @@ void LSeat::onEvent(const LEvent &event)
      */
     setIsUserIdleHint(false);
 }
+//! [onEvent]
