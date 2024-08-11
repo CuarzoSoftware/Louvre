@@ -173,19 +173,23 @@ bool Pointer::maybeMoveOrResize(const LPointerButtonEvent &event)
 
 void Pointer::pointerButtonEvent(const LPointerButtonEvent &event)
 {
+    if (event.state() == LPointerButtonEvent::Released
+        && (!seat()->toplevelResizeSessions().empty()
+            || !seat()->toplevelMoveSessions().empty()))
+    {
+        if (focus())
+            cursor()->setCursor(focus()->client()->lastCursorRequest());
+        else
+            cursor()->useDefault();
+
+        G::enableDocks(true);
+        G::compositor()->updatePointerBeforePaint = true;
+    }
+
     if (maybeMoveOrResize(event))
         G::scene()->handlePointerButtonEvent(event, 0);
     else
         G::scene()->handlePointerButtonEvent(event);
-
-    if (event.state() == LPointerButtonEvent::Released
-        && seat()->toplevelResizeSessions().empty()
-        && seat()->toplevelMoveSessions().empty())
-    {
-        G::compositor()->cursor()->useDefault();
-        G::enableDocks(true);
-        G::compositor()->updatePointerBeforePaint = true;
-    }
 
     if (G::compositor()->wofi && G::compositor()->wofi->client
         && G::compositor()->wofi && !G::scene()->pointerFocus().empty()
