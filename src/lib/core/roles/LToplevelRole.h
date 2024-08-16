@@ -798,6 +798,18 @@ public:
     }
 
     /**
+     * @brief Vector of foreign handles.
+     *
+     * A vector containing all the handles used by foreign clients to identify this toplevel.
+     *
+     * @see foreignHandleFilter() class for more details.
+     */
+    const std::vector<Protocols::ForeignToplevelList::RForeignToplevelHandle*> foreignHandles() const noexcept
+    {
+        return m_foreignToplevelHandles;
+    }
+
+    /**
      * @brief Auxiliary previous rect.
      *
      * This auxiliary rect is used by the default implementation
@@ -1012,6 +1024,30 @@ public:
     virtual bool foreignControllerFilter(Protocols::ForeignToplevelManagement::GForeignToplevelManager *manager);
 
     /**
+     * @brief Filter for foreign toplevel handle requests
+     *
+     * This method allows you to control which foreign clients can obtain a handle for this toplevel.
+     *
+     * The handle enables clients to identify other clients' toplevels and, in conjunction with other protocols,
+     * perform operations such as selecting which toplevel to capture using protocols like Image Copy Capture.
+     *
+     * If accepted, a new `ForeignToplevelList::RForeignToplevelHandle` object will be added to the foreignHandles() vector.\n
+     * Alternatively, you can disable the protocol for specific clients using LCompositor::globalsFilter().
+     *
+     * @note This interface is related to the Foreign Toplevel List protocol. Do not confuse it with the Wlr Foreign Toplevel Management protocol (foreignControllerFilter()).
+     *
+     * This protocol can be tested with clients like [lswt](https://git.sr.ht/~leon_plickat/lswt).
+     *
+     * @param foreignList The `GForeignToplevelList` resource requesting to get a handle.
+     *
+     * @return `true` to allow the foreign client to obtain a handle for this toplevel, `false` to deny it.
+     *
+     * #### Default implementation
+     * @snippet LToplevelRoleDefault.cpp foreignHandleFilter
+     */
+    virtual bool foreignHandleFilter(Protocols::ForeignToplevelList::GForeignToplevelList *foreignList);
+
+    /**
      * @brief Show window menu request.
      *
      * Triggered by the client expecting the compositor to display a popup menu with options
@@ -1066,6 +1102,7 @@ private:
     friend class Protocols::XdgDecoration::RXdgToplevelDecoration;
     friend class Protocols::ForeignToplevelManagement::RForeignToplevelHandle;
     friend class Protocols::ForeignToplevelManagement::GForeignToplevelManager;
+    friend class Protocols::ForeignToplevelList::RForeignToplevelHandle;
 
     enum Flags : UInt32
     {
@@ -1129,6 +1166,10 @@ private:
     /* Foreign toplevel management */
     std::vector<LForeignToplevelController*> m_foreignControllers;
     LForeignToplevelController *m_requesterController { nullptr }; // Only set during requests
+
+    /* Foreign toplevel list */
+    std::string m_identifier;
+    std::vector<Protocols::ForeignToplevelList::RForeignToplevelHandle*> m_foreignToplevelHandles;
 };
 
 #endif // LTOPLEVELROLE_H

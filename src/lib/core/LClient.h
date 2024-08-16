@@ -377,6 +377,13 @@ public:
 
     /**
      * Resources created when the client binds to the
+     * [ext_foreign_toplevel_list_v1](https://wayland.app/protocols/ext-foreign-toplevel-list-v1#ext_foreign_toplevel_list_v1) global
+     * of the Foreign Toplevel List protocol.
+     */
+    const std::vector<Protocols::ForeignToplevelList::GForeignToplevelList*> &foreignToplevelListGlobals() const noexcept;
+
+    /**
+     * Resources created when the client binds to the
      * [wp_single_pixel_buffer_manager_v1](https://wayland.app/protocols/single-pixel-buffer-v1#wp_single_pixel_buffer_manager_v1) global
      * of the Single Pixel Buffer protocol.
      */

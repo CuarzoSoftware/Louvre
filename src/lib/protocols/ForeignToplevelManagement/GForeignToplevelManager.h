@@ -40,5 +40,4 @@ private:
     ~GForeignToplevelManager() noexcept;
 };
 
-
 #endif // GFOREIGNTOPLEVELMANAGER_H

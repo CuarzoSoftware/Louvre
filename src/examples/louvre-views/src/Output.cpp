@@ -312,7 +312,6 @@ void Output::updateFractionalOversampling()
     if (oversampling != fractionalOversamplingEnabled())
     {
         enableFractionalOversampling(oversampling);
-        G::scene()->mainView()->damageAll(this);
         topbar.update();
     }
 }
@@ -376,14 +375,13 @@ static bool toplevelOrSubsurfacesHaveNewDamage(Surface *surface) noexcept
 {
     bool damaged { false };
 
-    surface->requestNextFrame(false);
-
     for (LSurface *child : surface->children())
         if (child->subsurface())
             damaged = damaged || toplevelOrSubsurfacesHaveNewDamage((Surface*)child);
 
     if (surface->damageId() != surface->prevDamageId)
     {
+        surface->requestNextFrame(false);
         surface->prevDamageId = surface->damageId();
         return true;
     }

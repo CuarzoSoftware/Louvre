@@ -231,6 +231,11 @@ const std::vector<ForeignToplevelManagement::GForeignToplevelManager *> &LClient
     return imp()->foreignToplevelManagerGlobals;
 }
 
+const std::vector<ForeignToplevelList::GForeignToplevelList *> &LClient::foreignToplevelListGlobals() const noexcept
+{
+    return imp()->foreignToplevelListGlobals;
+}
+
 const std::vector<SinglePixelBuffer::GSinglePixelBufferManager *> &LClient::singlePixelBufferManagerGlobals() const noexcept
 {
     return imp()->singlePixelBufferManagerGlobals;

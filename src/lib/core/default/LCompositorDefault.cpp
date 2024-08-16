@@ -1,5 +1,6 @@
 #include <protocols/ForeignToplevelManagement/GForeignToplevelManager.h>
 #include <protocols/SinglePixelBuffer/GSinglePixelBufferManager.h>
+#include <protocols/ForeignToplevelList/GForeignToplevelList.h>
 #include <protocols/RelativePointer/GRelativePointerManager.h>
 #include <protocols/FractionalScale/GFractionalScaleManager.h>
 #include <protocols/PointerConstraints/GPointerConstraints.h>
@@ -50,32 +51,35 @@ using namespace Louvre::Protocols;
 //! [createGlobalsRequest]
 bool LCompositor::createGlobalsRequest()
 {
-    // Allow clients to create surfaces and regions
+    // Allows clients to create surfaces and regions
     createGlobal<Wayland::GCompositor>();
 
-    // Allow clients to receive pointer, keyboard, and touch events
+    // Allows clients to receive pointer, keyboard, and touch events
     createGlobal<Wayland::GSeat>();
 
     // Provides detailed information of pointer movement
     createGlobal<RelativePointer::GRelativePointerManager>();
 
-    // Allow clients to request setting pointer constraints
+    // Allows clients to request setting pointer constraints
     createGlobal<PointerConstraints::GPointerConstraints>();
 
-    // Allow clients to receive swipe, pinch, and hold pointer gestures
+    // Allows clients to receive swipe, pinch, and hold pointer gestures
     createGlobal<PointerGestures::GPointerGestures>();
 
-    // Enable drag & drop and clipboard data sharing between clients
+    // Enables drag & drop and clipboard data sharing between clients
     createGlobal<Wayland::GDataDeviceManager>();
 
-    // Allow clients to create subsurface roles
+    // Allows clients to create subsurface roles
     createGlobal<Wayland::GSubcompositor>();
 
-    // Allow clients to create toplevel and popup roles
+    // Allows clients to create toplevel and popup roles
     createGlobal<XdgShell::GXdgWmBase>();
 
-    // Allow clients to request modifying the state of foreign toplevels
+    // Allows clients to request modifying the state of foreign toplevels
     createGlobal<ForeignToplevelManagement::GForeignToplevelManager>();
+
+    // Allows clients to get handles of foreign toplevels
+    createGlobal<ForeignToplevelList::GForeignToplevelList>();
 
     // Provides additional info about outputs
     createGlobal<XdgOutput::GXdgOutputManager>();
@@ -93,7 +97,7 @@ bool LCompositor::createGlobalsRequest()
     if (!LTexture::supportedDMAFormats().empty())
         createGlobal<LinuxDMABuf::GLinuxDMABuf>();
 
-    // Provides detailed information of how the surfaces are presented
+    // Provides detailed information of how surfaces are presented
     createGlobal<PresentationTime::GPresentation>();
 
     // Allows clients to request locking the user session with arbitrary graphics
@@ -102,16 +106,16 @@ bool LCompositor::createGlobalsRequest()
     // Allows clients to notify their preference of vsync for specific surfaces
     createGlobal<TearingControl::GTearingControlManager>();
 
-    // Allow clients to clip and scale buffers
+    // Allows clients to clip and scale buffers
     createGlobal<Viewporter::GViewporter>();
 
-    // Allow clients to capture outputs
+    // Allows clients to capture outputs
     createGlobal<ScreenCopy::GScreenCopyManager>();
 
-    // Allow clients to create wlr_layer_shell surfaces
+    // Allows clients to create wlr_layer_shell surfaces
     createGlobal<LayerShell::GLayerShell>();
 
-    // Allow clients to create single pixel buffers (requires Viewporter::GViewporter)
+    // Allows clients to create single pixel buffers (requires Viewporter::GViewporter)
     createGlobal<SinglePixelBuffer::GSinglePixelBufferManager>();
 
     // Allows clients to provide a hint about the content type being displayed by surfaces

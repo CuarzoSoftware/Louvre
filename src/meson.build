@@ -49,7 +49,7 @@ endif
 pkg                 = import('pkgconfig')
 wayland_server_dep  = dependency('wayland-server')
 gl_dep              = dependency('gl')
-egl_dep             = dependency('egl')
+egl_dep             = dependency('egl', version : '>=1.5')
 glesv2_dep          = dependency('glesv2')
 udev_dep            = dependency('libudev')
 xcursor_dep         = dependency('xcursor')
@@ -59,7 +59,7 @@ drm_dep             = dependency('libdrm')
 gbm_dep             = dependency('gbm')
 input_dep           = dependency('libinput')
 libseat_dep         = dependency('libseat')
-srm_dep             = dependency('SRM', version : '>=0.7.0')
+srm_dep             = dependency('SRM', version : '>=0.7.1')
 pthread_dep         = cpp.find_library('pthread')
 dl_dep              = cpp.find_library('dl')
 
@@ -104,6 +104,7 @@ globals = [
     'ScreenCopy',
     'LayerShell',
     'ForeignToplevelManagement',
+    'ForeignToplevelList',
     'SinglePixelBuffer',
     'ContentType',
     'IdleNotify',

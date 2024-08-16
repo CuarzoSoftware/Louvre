@@ -1,5 +1,7 @@
 #include <protocols/ForeignToplevelManagement/GForeignToplevelManager.h>
 #include <protocols/ForeignToplevelManagement/RForeignToplevelHandle.h>
+#include <protocols/ForeignToplevelList/RForeignToplevelHandle.h>
+#include <protocols/ForeignToplevelList/GForeignToplevelList.h>
 #include <protocols/XdgDecoration/RXdgToplevelDecoration.h>
 #include <protocols/XdgShell/RXdgSurface.h>
 #include <protocols/XdgShell/RXdgToplevel.h>
@@ -113,6 +115,16 @@ void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
     // Map request
     if (!surface()->mapped() && surface()->hasBuffer())
     {
+        // ID used by the ext-toplevel-list protocol, must be updated each time
+        // the toplevel is re-mapped
+        static UInt64 identifier { 0 };
+        m_identifier = std::to_string(identifier);
+        identifier++;
+
+        for (LClient *client : compositor()->clients())
+            for (auto *foreignToplevelList : client->foreignToplevelListGlobals())
+                foreignToplevelList->toplevel(*this);
+
         surface()->imp()->setMapped(true);
 
         if (m_flags.check(HasPendingFirstMap))
@@ -496,6 +508,9 @@ void LToplevelRole::reset() noexcept
 
     m_flags = HasPendingInitialConf;
     surface()->imp()->setLayer(LLayerMiddle);
+
+    while (!m_foreignToplevelHandles.empty())
+        m_foreignToplevelHandles.back()->closed();
 }
 
 void LToplevelRole::setTitle(const char *title)
@@ -509,6 +524,12 @@ void LToplevelRole::setTitle(const char *title)
     {
         controller->resource().title(m_title);
         controller->resource().done();
+    }
+
+    for (auto *handle : m_foreignToplevelHandles)
+    {
+        handle->title(m_title);
+        handle->done();
     }
 
     titleChanged();
@@ -525,6 +546,12 @@ void LToplevelRole::setAppId(const char *appId)
     {
         controller->resource().appId(m_appId);
         controller->resource().done();
+    }
+
+    for (auto *handle : m_foreignToplevelHandles)
+    {
+        handle->appId(m_appId);
+        handle->done();
     }
 
     appIdChanged();

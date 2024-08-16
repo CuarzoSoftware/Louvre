@@ -325,6 +325,16 @@ bool LToplevelRole::foreignControllerFilter(Protocols::ForeignToplevelManagement
 }
 //! [foreignControllerFilter]
 
+//! [foreignHandleFilter]
+bool LToplevelRole::foreignHandleFilter(Protocols::ForeignToplevelList::GForeignToplevelList *foreignList)
+{
+    L_UNUSED(foreignList)
+
+    /* Allow all clients to get a handle for this toplevel */
+    return true;
+}
+//! [foreignHandleFilter]
+
 //! [showWindowMenuRequest]
 void LToplevelRole::showWindowMenuRequest(const LEvent &triggeringEvent, Int32 x, Int32 y)
 {

@@ -318,6 +318,8 @@ void *LGraphicBackend::backendGetContextHandle()
 
 bool LGraphicBackend::backendInitialize()
 {
+    setenv("SRM_RENDER_MODE_ITSELF_FB_COUNT", "3", 0);
+
     libseatEnabled = compositor()->seat()->imp()->initLibseat();
 
     struct stat stat;

@@ -29,6 +29,7 @@
 #define LOUVRE_SCREEN_COPY_MANAGER_VERSION 3
 #define LOUVRE_LAYER_SHELL_VERSION 5
 #define LOUVRE_FOREIGN_TOPLEVEL_MANAGER_VERSION 3
+#define LOUVRE_FOREIGN_TOPLEVEL_LIST_VERSION 1
 #define LOUVRE_SINGLE_PIXEL_BUFFER_MANAGER_VERSION 1
 #define LOUVRE_CONTENT_TYPE_MANAGER_VERSION 1
 #define LOUVRE_IDLE_NOTIFIER_VERSION 1
@@ -439,6 +440,13 @@ namespace Louvre
         namespace ForeignToplevelManagement
         {
             class GForeignToplevelManager;
+
+            class RForeignToplevelHandle;
+        }
+
+        namespace ForeignToplevelList
+        {
+            class GForeignToplevelList;
 
             class RForeignToplevelHandle;
         }

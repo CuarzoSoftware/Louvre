@@ -1,3 +1,4 @@
+#include <protocols/ForeignToplevelList/RForeignToplevelHandle.h>
 #include <protocols/XdgShell/xdg-shell.h>
 #include <protocols/XdgShell/RXdgToplevel.h>
 #include <protocols/XdgShell/RXdgSurface.h>
@@ -60,6 +61,9 @@ RXdgToplevel::RXdgToplevel
 RXdgToplevel::~RXdgToplevel()
 {
     compositor()->onAnticipatedObjectDestruction(toplevelRole());
+
+    while (!toplevelRole()->m_foreignToplevelHandles.empty())
+        toplevelRole()->m_foreignToplevelHandles.back()->closed();
 
     if (toplevelRole()->surface())
         toplevelRole()->surface()->imp()->setMapped(false);
