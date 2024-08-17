@@ -33,4 +33,5 @@ Here are some links to the C++ API documentation to help you navigate it:
 - [Toplevel](@ref ltoplevelrole_detailed) and [Popup](@ref ldnd_detailed) surfaces.
 - [Wlr Layer Shell](@ref llayerrole_detailed) and [Exclusive Zones.](@ref lexclusivezone_detailed)
 - [Foreign Toplevel Window Management.](@ref lforeigntoplevelcontroller_detailed)
+- [Foreign Toplevel List.](@ref Louvre::LToplevelRole::foreignHandleFilter)
 - [Idle Listeners and Inhibitors.](@ref lidlelistener_detailed)

@@ -810,6 +810,18 @@ public:
     }
 
     /**
+     * @brief ID used by foreign clients to identify the toplevel
+     *
+     * This ID is used by foreign clients using the [Foreign Toplevel List](https://wayland.app/protocols/ext-foreign-toplevel-list-v1#ext_foreign_toplevel_handle_v1:event:identifier) protocol (see `foreignHandleFilter()` for details).
+     * 
+     * The string is initially empty and is updated after the toplevel is mapped or re-mapped.
+     */
+    const std::string &foreignToplevelListIdentifier() const noexcept
+    {
+        return m_identifier;
+    }
+
+    /**
      * @brief Auxiliary previous rect.
      *
      * This auxiliary rect is used by the default implementation
@@ -1034,7 +1046,7 @@ public:
      * If accepted, a new `ForeignToplevelList::RForeignToplevelHandle` object will be added to the foreignHandles() vector.\n
      * Alternatively, you can disable the protocol for specific clients using LCompositor::globalsFilter().
      *
-     * @note This interface is related to the Foreign Toplevel List protocol. Do not confuse it with the Wlr Foreign Toplevel Management protocol (foreignControllerFilter()).
+     * @note This interface is related to the [Foreign Toplevel List](https://wayland.app/protocols/ext-foreign-toplevel-list-v1) protocol. Do not confuse it with the [Wlr Foreign Toplevel Management](https://wayland.app/protocols/wlr-foreign-toplevel-management-unstable-v1) protocol (see foreignControllerFilter()).
      *
      * This protocol can be tested with clients like [lswt](https://git.sr.ht/~leon_plickat/lswt).
      *

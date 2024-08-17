@@ -1,3 +1,21 @@
+Louvre (2.6.0-1)
+
+  # New Protocols
+
+  * Foreign Toplevel List: See LToplevelRole::foreignHandleFilter() for details.
+
+  # Dependencies
+
+  * Updated EGL dependency to version 1.5 or higher.
+  * Updated SRM dependency to version 0.7.1 or higher.
+
+  # Bug Fixes
+
+  * louvre-views: Fixed a cursor flickering issue introduced in the previous release.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Fri, 16 Aug 2024 19:46:37 -0400
+
+
 Louvre (2.5.0-1)
 
   # New Protocols
