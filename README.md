@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Louvre is released under the MIT license." />
   </a>
   <a href="https://github.com/CuarzoSoftware/Louvre">
-    <img src="https://img.shields.io/badge/version-2.6.0-brightgreen" alt="Current Louvre version." />
+    <img src="https://img.shields.io/badge/version-2.7.0-brightgreen" alt="Current Louvre version." />
   </a>
 </p>
 
@@ -47,6 +47,7 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 ## 🧩 Protocols
 
 * Wayland
+* XDG Activation
 * XDG Shell
 * XDG Decoration
 * XDG Output
@@ -157,7 +158,6 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 ## 🔨 Upcoming Features
 
 * Wlr Output Management
-* XDG activation Protocol
 * Cursor Shape Protocol
 * DRM Overlay Planes Control
 * DRM Synchronization Object

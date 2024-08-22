@@ -160,10 +160,15 @@ public:
      * @brief Provides access to the session lock manager.
      *
      * The session lock manager allows you to handle client requests to lock the user session and display arbitrary content.
-     *
-     * @return A pointer to the LSessionLockManager instance.
      */
     LSessionLockManager *sessionLockManager() const noexcept;
+
+    /**
+     * @brief Provides access to the activation token manager.
+     *
+     * The activation token manager allows you to handle client requests to activate surfaces of other clients.
+     */
+    LActivationTokenManager *activationTokenManager() const noexcept;
 
     /**
      * @brief Gets a list of all surfaces created by clients.

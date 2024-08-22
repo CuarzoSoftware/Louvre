@@ -300,7 +300,8 @@ void LToplevelRole::unsetMinimizedRequest()
 //! [activateRequest]
 void LToplevelRole::activateRequest()
 {
-    /* This request is always triggered by a foreign client */
+    /* This request is always triggered by a foreign client or
+     * by the default implementation of LActivationTokenManager::activateSurfaceRequest() */
 
     configureState(pendingConfiguration().state | Activated);
 }

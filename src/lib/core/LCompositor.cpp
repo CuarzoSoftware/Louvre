@@ -52,6 +52,11 @@ LSessionLockManager *Louvre::sessionLockManager() noexcept
     return s_compositor->imp()->sessionLockManager;
 }
 
+LActivationTokenManager *Louvre::activationTokenManager() noexcept
+{
+    return s_compositor->imp()->activationTokenManager;
+}
+
 void LCompositor::removeGlobal(LGlobal *global) noexcept
 {
     if (global->m_removed)
@@ -437,6 +442,11 @@ LSeat *LCompositor::seat() const noexcept
 LSessionLockManager *LCompositor::sessionLockManager() const noexcept
 {
     return imp()->sessionLockManager;
+}
+
+LActivationTokenManager *LCompositor::activationTokenManager() const noexcept
+{
+    return imp()->activationTokenManager;
 }
 
 void LCompositor::repaintAllOutputs() noexcept

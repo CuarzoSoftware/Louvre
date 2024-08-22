@@ -45,11 +45,12 @@
  *
  * @note Minimized is not a toplevel @ref State and can be applied immediately.
  *
- * @section foreign-controller Foreign Toplevel Controllers
+ * @section foreign-controller Foreign Toplevel Controllers and XDG Activation Tokens
  *
  * Requests, including those previously mentioned as well as `unsetMinimizedRequest()`, `activateRequest()`, and `closeRequest()`, can be triggered by external clients
- * through the [Wlr Foreign Toplevel Management](https://wayland.app/protocols/wlr-foreign-toplevel-management-unstable-v1) protocol. For a comprehensive understanding
- * of this functionality, please refer to the LForeignToplevelController class documentation.
+ * through the [Wlr Foreign Toplevel Management](https://wayland.app/protocols/wlr-foreign-toplevel-management-unstable-v1) and
+ * the [XDG Activation](https://wayland.app/protocols/xdg-activation-v1) protocols. For a comprehensive understanding of this functionality, please refer to the
+ * LForeignToplevelController and LActivationTokenManager classes documentation.
  *
  * @section toplevel-sessions Interactive Sessions
  *
@@ -910,7 +911,7 @@ public:
     /**
      * @brief Request to activate.
      *
-     * Triggered by a requesterController() expecting the compositor to configure the toplevel with the @ref Activated state.
+     * Triggered by a an LActivationTokenManager::token() or requesterController() expecting the compositor to configure the toplevel with the @ref Activated state.
      *
      * @see configureState(), requesterController() and LForeignToplevelController.
      *

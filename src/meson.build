@@ -90,6 +90,7 @@ endforeach
 globals = [
     'LinuxDMABuf',
     'Wayland',
+    'XdgActivation',
     'XdgDecoration',
     'XdgShell',
     'XdgOutput',

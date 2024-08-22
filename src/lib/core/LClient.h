@@ -410,6 +410,13 @@ public:
      */
     const std::vector<Protocols::IdleInhibit::GIdleInhibitManager*> &idleInhibitManagerGlobals() const noexcept;
 
+    /**
+     * Resources created when the client binds to the
+     * [xdg_activation_v1](https://wayland.app/protocols/xdg-activation-v1#xdg_activation_v1) global
+     * of the XDG Activation protocol.
+     */
+    const std::vector<Protocols::XdgActivation::GXdgActivation*> &xdgActivationGlobals() const noexcept;
+
     LPRIVATE_IMP_UNIQUE(LClient)
 };
 

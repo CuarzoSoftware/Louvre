@@ -102,18 +102,19 @@ void LSeat::onEvent(const LEvent &event)
     L_UNUSED(event)
 
     /*
-     * Resetting all timers each time an event occurs is not CPU-friendly,
-     * as multiple events can be triggered in a single main loop iteration.
-     * Instead, using the option below is more efficient.
-     *
      * for (const LIdleListener *idleListener : idleListeners())
      *     idleListener->resetTimer();
+     *
+     * Resetting all timers each time an event occurs is not CPU-friendly,
+     * as multiple events can be triggered in a single main loop iteration.
+     * Instead, using the option below (setIsUserIdleHint()) is more efficient.
      */
 
     /*
      * Setting this flag to false indicates the user wasn't idle during
      * this main loop iteration. If that's the case, Louvre will reset
      * all timers only once at the end of the iteration.
+     * The flag is automatically set to true again afterwards.
      */
     setIsUserIdleHint(false);
 }

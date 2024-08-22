@@ -256,6 +256,11 @@ const std::vector<IdleInhibit::GIdleInhibitManager *> &LClient::idleInhibitManag
     return imp()->idleInhibitManagerGlobals;
 }
 
+const std::vector<XdgActivation::GXdgActivation *> &LClient::xdgActivationGlobals() const noexcept
+{
+    return imp()->xdgActivationGlobals;
+}
+
 const LClient::EventHistory &LClient::eventHistory() const noexcept
 {
     return imp()->eventHistory;

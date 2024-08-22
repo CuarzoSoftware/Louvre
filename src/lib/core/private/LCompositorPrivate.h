@@ -43,6 +43,7 @@ LPRIVATE_CLASS(LCompositor)
 #define LEV_WAYLAND 3
         epoll_event events[4]; // [0] Unlock [1] Libseat [2] Aux [3] Wayland
         LSessionLockManager *sessionLockManager { nullptr };
+        LActivationTokenManager *activationTokenManager { nullptr };
     void unitWayland();
 
     bool surfacesListChanged { false };

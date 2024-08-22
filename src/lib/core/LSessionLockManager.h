@@ -34,7 +34,7 @@ public:
      *
      * There is only one instance of LSessionLockManager, which can be accessed from LCompositor::sessionLockManager().
      *
-     * @param params Internal library parameters provided in the virtual LCompositor::createSessionLockManagerRequest() constructor.
+     * @param params Internal parameters provided in LCompositor::createObjectRequest().
      */
     LSessionLockManager(const void *params) noexcept;
 

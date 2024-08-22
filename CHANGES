@@ -1,3 +1,12 @@
+Louvre (2.7.0-1)
+
+  # New Protocols
+
+  * XDG Activation: See LActivationTokenManager and LActivationToken for details.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Thu, 22 Aug 2024 20:00:51 -0400
+
+
 Louvre (2.6.0-1)
 
   # New Protocols

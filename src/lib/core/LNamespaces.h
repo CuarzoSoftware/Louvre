@@ -14,6 +14,7 @@
 #define LOUVRE_WL_SEAT_VERSION 9
 #define LOUVRE_WL_OUTPUT_VERSION 4
 #define LOUVRE_WL_SUBCOMPOSITOR_VERSION 1
+#define LOUVRE_XDG_ACTIVATION_VERSION 1
 #define LOUVRE_XDG_WM_BASE_VERSION 6
 #define LOUVRE_XDG_DECORATION_MANAGER_VERSION 1
 #define LOUVRE_XDG_OUTPUT_MANAGER_VERSION 3
@@ -99,6 +100,8 @@ namespace Louvre
     class LSurface;
     class LTexture;
     class LScreenshotRequest;
+    class LActivationTokenManager;
+    class LActivationToken;
 
     class LPainter;
     class LRenderBuffer;
@@ -324,6 +327,13 @@ namespace Louvre
             class RCallback;
         }
 
+        namespace XdgActivation
+        {
+            class GXdgActivation;
+
+            class RXdgActivationToken;
+        };
+
         namespace XdgShell
         {
             class GXdgWmBase;
@@ -511,10 +521,15 @@ namespace Louvre
      * @brief Gets the compositor's session lock manager.
      *
      * @warning Must be accessed within or after the LCompositor::initialized() event.
-     *
-     * @return A pointer to the LSessionLockManager instance.
      */
     LSessionLockManager *sessionLockManager() noexcept;
+
+    /**
+     * @brief Provides access to the activation token manager.
+     *
+     * @warning Must be accessed within or after the LCompositor::initialized() event.
+     */
+    LActivationTokenManager *activationTokenManager() noexcept;
 };
 
 #endif // LNAMESPACES_H

@@ -77,10 +77,10 @@ public:
     /**
      * @brief Sets a hint about the user's idle state.
      *
-     * Resetting all idle listener timers manually with `LIdleListeners::resetTimer()` each time an event occurs isn't very CPU-friendly,
+     * Resetting all idle listener timers manually with LIdleListeners::resetTimer() each time an event occurs isn't very CPU-friendly,
      * as multiple events can be triggered in a single main loop iteration.
      *
-     * Instead, by using this method (which only updates a boolean variable), we can ask Louvre to update all timers only once at the end of an iteration.
+     * Instead, by using this method (which only updates a boolean variable), we can ask Louvre to update all timers only once at the end of a main loop iteration.
      *
      * @note The value is automatically set to `true` at the start of each iteration.
      *
@@ -358,6 +358,8 @@ public:
      *
      * @param event Opaque handle to the native backend event.
      *              When using the Libinput backend it corresponds to a [libinput_event](https://wayland.freedesktop.org/libinput/doc/latest/api/structlibinput__event.html) struct
+     *
+     * @note Use LCompositor::inputBackendId() to determine which input backend is in use.
      *
      * #### Default implementation
      * @snippet LSeatDefault.cpp nativeInputEvent

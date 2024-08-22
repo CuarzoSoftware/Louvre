@@ -94,7 +94,10 @@ public:
         LDND,
 
         /// Represents the LSessionLockManager class.
-        LSessionLockManager
+        LSessionLockManager,
+
+        /// Represents the LActivationTokenManager class.
+        LActivationTokenManager
     };
 
     /**

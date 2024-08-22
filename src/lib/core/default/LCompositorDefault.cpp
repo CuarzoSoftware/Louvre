@@ -13,6 +13,7 @@
 #include <protocols/IdleInhibit/GIdleInhibitManager.h>
 #include <protocols/PresentationTime/GPresentation.h>
 #include <protocols/ScreenCopy/GScreenCopyManager.h>
+#include <protocols/XdgActivation/GXdgActivation.h>
 #include <protocols/XdgOutput/GXdgOutputManager.h>
 #include <protocols/Wayland/GDataDeviceManager.h>
 #include <protocols/LinuxDMABuf/GLinuxDMABuf.h>
@@ -126,6 +127,9 @@ bool LCompositor::createGlobalsRequest()
 
     // Allows clients to request inhibition of the compositor's idle state
     createGlobal<IdleInhibit::GIdleInhibitManager>();
+
+    // Allows clients to activate other client's surfaces
+    createGlobal<XdgActivation::GXdgActivation>();
 
     return true;
 }

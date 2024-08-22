@@ -55,6 +55,7 @@ public:
     std::vector<ContentType::GContentTypeManager*> contentTypeManagerGlobals;
     std::vector<IdleNotify::GIdleNotifier*> idleNotifierGlobals;
     std::vector<IdleInhibit::GIdleInhibitManager*> idleInhibitManagerGlobals;
+    std::vector<XdgActivation::GXdgActivation*> xdgActivationGlobals;
     bool destroyed { false };
 };
 

@@ -8,6 +8,7 @@
 #include <private/LToplevelRolePrivate.h>
 #include <private/LPopupRolePrivate.h>
 #include <private/LFactory.h>
+#include <LActivationTokenManager.h>
 #include <LSessionLockManager.h>
 #include <LSessionLockRole.h>
 #include <LAnimation.h>
@@ -162,6 +163,7 @@ bool LCompositor::LCompositorPrivate::initWayland()
     clientConnectedListener.notify = &clientConnectedEvent;
     wl_display_add_client_created_listener(display, &clientConnectedListener);
     LFactory::createObject<LSessionLockManager>(&sessionLockManager);
+    LFactory::createObject<LActivationTokenManager>(&activationTokenManager);
     wl_display_set_global_filter(display, [](const wl_client *client, const wl_global *global, void */*data*/) -> bool
     {
         LGlobal *lGlobal { nullptr };
@@ -207,6 +209,13 @@ void LCompositor::LCompositorPrivate::unitWayland()
         }
         wl_display_destroy(display);
         display = nullptr;
+    }
+
+    if (activationTokenManager)
+    {
+        compositor()->onAnticipatedObjectDestruction(activationTokenManager);
+        delete activationTokenManager;
+        activationTokenManager = nullptr;
     }
 
     if (sessionLockManager)
