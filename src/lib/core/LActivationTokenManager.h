@@ -55,7 +55,7 @@ public:
      *
      * Invoked after LCompositor::onAnticipatedObjectDestruction().
      */
-    ~LActivationTokenManager() = default;
+    ~LActivationTokenManager() noexcept;
 
     LCLASS_NO_COPY(LActivationTokenManager)
 
@@ -66,7 +66,7 @@ public:
      *
      * To expire tokens, use LActivationToken::destroy() or the destroyTokensOlderThanMs() method.
      */
-    const std::unordered_map<std::string, LActivationToken> &tokens() const noexcept
+    const std::unordered_map<std::string, LActivationToken*> &tokens() const noexcept
     {
         return m_tokens;
     }
@@ -137,7 +137,7 @@ private:
     friend class Protocols::XdgActivation::GXdgActivation;
     friend class Protocols::XdgActivation::RXdgActivationToken;
     friend class LActivationToken;
-    std::unordered_map<std::string, LActivationToken> m_tokens;
+    std::unordered_map<std::string, LActivationToken*> m_tokens;
     LWeak<LActivationToken> m_token;
 };
 

@@ -120,14 +120,14 @@ void RXdgActivationToken::commit(wl_client */*client*/, wl_resource *resource)
     const LEvent *event { res.client()->findEventBySerial(res.m_serial) };
     auto pair = activationTokenManager()->m_tokens.emplace(
         randomToken(),
-        LActivationToken(
+        new LActivationToken(
             res.client(),
             res.m_surface,
             event ? event->copy() : nullptr,
             std::move(res.m_appId))).first;
 
-    pair->second.m_key = &pair->first;
-    activationTokenManager()->m_token.reset(&pair->second);
+    pair->second->m_key = &pair->first;
+    activationTokenManager()->m_token.reset(pair->second);
     activationTokenManager()->createTokenRequest();
 
     // Request accepted

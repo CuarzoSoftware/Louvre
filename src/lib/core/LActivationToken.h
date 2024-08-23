@@ -18,6 +18,8 @@ class Louvre::LActivationToken final : public LObject
 {
 public:
 
+    LCLASS_NO_COPY(LActivationToken);
+
     /**
      * @brief The client that requested the token creation.
      *
@@ -111,13 +113,10 @@ public:
      *
      * @return An iterator to the next element in LActivationTokenManager::tokens().
      */
-    const std::unordered_map<std::string, LActivationToken>::iterator destroy() const noexcept;
-
-    LActivationToken(const LActivationToken&) = delete;
-    LActivationToken &operator=(const LActivationToken&) = delete;
-    LActivationToken(LActivationToken&&) = default;
+    const std::unordered_map<std::string, LActivationToken*>::iterator destroy() const noexcept;
 
 private:
+    friend class Protocols::XdgActivation::GXdgActivation;
     friend class Protocols::XdgActivation::RXdgActivationToken;
 
     LActivationToken(
@@ -125,6 +124,8 @@ private:
         LSurface *origin,
         LEvent *triggeringEvent,
         std::string &&toActivateAppId) noexcept;
+
+    ~LActivationToken() = default;
 
     LWeak<LClient> m_creator;
     LWeak<LSurface> m_origin;

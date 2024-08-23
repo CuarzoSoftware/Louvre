@@ -72,7 +72,7 @@ void GXdgActivation::activate(wl_client */*client*/, wl_resource */*resource*/, 
         return;
 
     auto *surfaceRes { static_cast<Wayland::RSurface*>(wl_resource_get_user_data(surface)) };
-    activationTokenManager()->m_token.reset(&it->second);
+    activationTokenManager()->m_token.reset(it->second);
     activationTokenManager()->activateSurfaceRequest(surfaceRes->surface());
     activationTokenManager()->m_token.reset();
 }

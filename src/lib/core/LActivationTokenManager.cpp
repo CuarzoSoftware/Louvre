@@ -11,6 +11,12 @@ LActivationTokenManager::LActivationTokenManager(const void *params) noexcept : 
     *ptr = this;
 }
 
+LActivationTokenManager::~LActivationTokenManager() noexcept
+{
+    for (auto it = m_tokens.begin(); it != m_tokens.end();)
+        it = (*it).second->destroy();
+}
+
 void LActivationTokenManager::destroyTokensOlderThanMs(UInt32 ms)
 {
     if (ms == 0)
@@ -21,8 +27,8 @@ void LActivationTokenManager::destroyTokensOlderThanMs(UInt32 ms)
 
     for (auto it = m_tokens.begin(); it != m_tokens.end();)
     {
-        if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - (*it).second.created()).count() > ms)
-            it = m_tokens.erase(it);
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - (*it).second->created()).count() > ms)
+            it = (*it).second->destroy();
         else
             it++;
     }
