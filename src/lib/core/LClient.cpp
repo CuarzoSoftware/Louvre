@@ -221,6 +221,16 @@ const std::vector<ScreenCopy::GScreenCopyManager *> &LClient::screenCopyManagerG
     return imp()->screenCopyManagerGlobals;
 }
 
+const std::vector<ImageCaptureSource::GOutputImageCaptureSourceManager *> &LClient::outputImageCaptureSourceManagerGlobals() const noexcept
+{
+    return imp()->outputImageCaptureSourceManagerGlobals;
+}
+
+const std::vector<ImageCaptureSource::GForeignToplevelImageCaptureSourceManager *> &LClient::foreignToplevelImageCaptureSourceManagerGlobals() const noexcept
+{
+    return imp()->foreignToplevelImageCaptureSourceManagerGlobals;
+}
+
 const std::vector<LayerShell::GLayerShell *> &LClient::layerShellGlobals() const noexcept
 {
     return imp()->layerShellGlobals;

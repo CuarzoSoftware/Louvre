@@ -28,6 +28,8 @@
 #define LOUVRE_SESSION_LOCK_MANAGER_VERSION 1
 #define LOUVRE_POINTER_CONSTRAINTS_VERSION 1
 #define LOUVRE_SCREEN_COPY_MANAGER_VERSION 3
+#define LOUVRE_OUTPUT_IMAGE_CAPTURE_SOURCE_MANAGER 1
+#define LOUVRE_FOREIGN_TOPLEVEL_IMAGE_CAPTURE_SOURCE_MANAGER 1
 #define LOUVRE_LAYER_SHELL_VERSION 5
 #define LOUVRE_FOREIGN_TOPLEVEL_MANAGER_VERSION 3
 #define LOUVRE_FOREIGN_TOPLEVEL_LIST_VERSION 1
@@ -305,6 +307,15 @@ namespace Louvre
         UInt32 build; ///< Build number.
     };
 
+    /**
+     * @brief Image capture source type
+     */
+    enum class LImageCaptureSourceType : UInt32
+    {
+        Output,         ///< LOutput
+        ForeignToplevel ///< LToplevelRole
+    };
+
     namespace Protocols
     {
         namespace Wayland
@@ -431,6 +442,14 @@ namespace Louvre
 
             class RScreenCopyFrame;
         };
+
+        namespace ImageCaptureSource
+        {
+            class GOutputImageCaptureSourceManager;
+            class GForeignToplevelImageCaptureSourceManager;
+
+            class RImageCaptureSource;
+        }
 
         namespace PointerConstraints
         {

@@ -102,6 +102,7 @@ globals = [
     'PointerGestures',
     'SessionLock',
     'ScreenCopy',
+    'ImageCaptureSource',
     'LayerShell',
     'ForeignToplevelManagement',
     'ForeignToplevelList',

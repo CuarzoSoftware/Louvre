@@ -1,3 +1,20 @@
+Louvre (2.8.0-1)
+
+  # New Protocols
+
+  * Image Capture Source.
+
+  # API Changes
+
+  * LActivationToken: The destructor has been made private, and move/copy constructors have been deleted to prevent API misuse.
+
+  # Building
+
+  * Removed an unnecessary flag in meson.build that was generating excessive warnings when using clang.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Sat, 23 Aug 2024 22:15:24 -0400
+
+
 Louvre (2.7.0-1)
 
   # New Protocols

@@ -1,3 +1,5 @@
+#include <protocols/ImageCaptureSource/GForeignToplevelImageCaptureSourceManager.h>
+#include <protocols/ImageCaptureSource/GOutputImageCaptureSourceManager.h>
 #include <protocols/ForeignToplevelManagement/GForeignToplevelManager.h>
 #include <protocols/SinglePixelBuffer/GSinglePixelBufferManager.h>
 #include <protocols/ForeignToplevelList/GForeignToplevelList.h>
@@ -112,6 +114,12 @@ bool LCompositor::createGlobalsRequest()
 
     // Allows clients to capture outputs
     createGlobal<ScreenCopy::GScreenCopyManager>();
+
+    // Allows toplevels to be used as image capture sources
+    createGlobal<ImageCaptureSource::GForeignToplevelImageCaptureSourceManager>();
+
+    // Allows outputs to be used as image capture sources
+    createGlobal<ImageCaptureSource::GOutputImageCaptureSourceManager>();
 
     // Allows clients to create wlr_layer_shell surfaces
     createGlobal<LayerShell::GLayerShell>();

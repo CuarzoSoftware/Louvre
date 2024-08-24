@@ -363,6 +363,20 @@ public:
 
     /**
      * Resources created when the client binds to the
+     * [ext_output_image_capture_source_manager_v1](https://wayland.app/protocols/ext-image-capture-source-v1#ext_output_image_capture_source_manager_v1) global
+     * of the Image Capture Source protocol.
+     */
+    const std::vector<Protocols::ImageCaptureSource::GOutputImageCaptureSourceManager*> &outputImageCaptureSourceManagerGlobals() const noexcept;
+
+    /**
+     * Resources created when the client binds to the
+     * [ext_foreign_toplevel_image_capture_source_manager_v1](https://wayland.app/protocols/ext-image-capture-source-v1#ext_foreign_toplevel_image_capture_source_manager_v1) global
+     * of the Image Capture Source protocol.
+     */
+    const std::vector<Protocols::ImageCaptureSource::GForeignToplevelImageCaptureSourceManager*> &foreignToplevelImageCaptureSourceManagerGlobals() const noexcept;
+
+    /**
+     * Resources created when the client binds to the
      * [zwlr_layer_shell_v1](https://wayland.app/protocols/wlr-layer-shell-unstable-v1#zwlr_layer_shell_v1) global
      * of the wlroots Layer Shell protocol.
      */

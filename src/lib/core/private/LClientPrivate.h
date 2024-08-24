@@ -56,6 +56,8 @@ public:
     std::vector<IdleNotify::GIdleNotifier*> idleNotifierGlobals;
     std::vector<IdleInhibit::GIdleInhibitManager*> idleInhibitManagerGlobals;
     std::vector<XdgActivation::GXdgActivation*> xdgActivationGlobals;
+    std::vector<ImageCaptureSource::GOutputImageCaptureSourceManager*> outputImageCaptureSourceManagerGlobals;
+    std::vector<ImageCaptureSource::GForeignToplevelImageCaptureSourceManager*> foreignToplevelImageCaptureSourceManagerGlobals;
     bool destroyed { false };
 };
 
