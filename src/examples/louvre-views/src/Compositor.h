@@ -27,13 +27,14 @@ public:
 
     // Global scene used to render all outputs
     LScene scene {};
-    LLayerView backgroundLayer { scene.mainView() };
-    LLayerView surfacesLayer { scene.mainView() };
-    LLayerView workspacesLayer { scene.mainView() };
-    LLayerView fullscreenLayer { scene.mainView() };
-    LLayerView overlayLayer { scene.mainView() };
-    LLayerView tooltipsLayer { scene.mainView() };
-    LLayerView cursorLayer { scene.mainView() };
+    LLayerView rootView { scene.mainView() };
+    LLayerView backgroundLayer { &rootView };
+    LLayerView surfacesLayer { &rootView };
+    LLayerView workspacesLayer { &rootView };
+    LLayerView fullscreenLayer { &rootView };
+    LLayerView overlayLayer { &rootView };
+    LLayerView tooltipsLayer { &rootView };
+    LLayerView cursorLayer { &rootView };
 
     // Timer for updating the clock every minute
     LTimer clockMinuteTimer;

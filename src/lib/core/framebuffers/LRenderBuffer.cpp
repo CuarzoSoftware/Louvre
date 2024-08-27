@@ -37,8 +37,8 @@ void LRenderBuffer::setSizeB(const LSize &sizeB) noexcept
     {
         m_texture.m_sizeB = newSize;
 
-        m_rect.setW(roundf(Float32(m_texture.m_sizeB.w()) * m_scale));
-        m_rect.setH(roundf(Float32(m_texture.m_sizeB.h()) * m_scale));
+        m_rect.setW(roundf(Float32(m_texture.m_sizeB.w()) / m_scale));
+        m_rect.setH(roundf(Float32(m_texture.m_sizeB.h()) / m_scale));
 
         for (auto &pair : m_threadsMap)
             compositor()->imp()->addRenderBufferToDestroy(pair.first, pair.second);

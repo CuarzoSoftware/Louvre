@@ -304,6 +304,7 @@ Float32 LOutput::scale() const noexcept
 
 void LOutput::repaint() noexcept
 {
+
     if (compositor()->imp()->graphicBackend->outputRepaint(this))
         imp()->stateFlags.add(LOutputPrivate::PendingRepaint);
 }

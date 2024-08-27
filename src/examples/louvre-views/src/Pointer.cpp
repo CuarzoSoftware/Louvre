@@ -22,7 +22,8 @@
 #include "Surface.h"
 #include "Toplevel.h"
 #include "ToplevelView.h"
-#include "src/Client.h"
+#include "Client.h"
+#include "Output.h"
 
 Pointer::Pointer(const void *params) : LPointer(params)
 {
@@ -36,6 +37,10 @@ void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)
 
     if (!seat()->toplevelMoveSessions().empty())
         cursor()->repaintOutputs(false);
+
+    for (Output *o : (const std::vector<Output*>&)cursor()->intersectedOutputs())
+        if (o->zoom != 1.f)
+            o->repaint();
 
     if (cursorOwner)
         return;
@@ -200,6 +205,15 @@ void Pointer::pointerButtonEvent(const LPointerButtonEvent &event)
 void Pointer::pointerScrollEvent(const LPointerScrollEvent &event)
 {
     G::scene()->handlePointerScrollEvent(event);
+
+    Output *output { static_cast<Output*>(cursor()->output()) };
+
+    if (output &&
+        seat()->keyboard()->isKeyCodePressed(KEY_LEFTMETA) &&
+        seat()->keyboard()->isKeyCodePressed(KEY_LEFTSHIFT))
+    {
+        output->setZoom(output->zoom + event.axes().y() * 0.001f);
+    }
 }
 
 void Pointer::setCursorRequest(const LClientCursor &clientCursor)

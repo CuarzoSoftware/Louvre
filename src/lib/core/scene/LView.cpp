@@ -95,7 +95,7 @@ void LView::enablePointerEvents(bool enabled) noexcept
 
 void LView::repaint() const noexcept
 {
-    if (m_state.check(RepaintCalled))
+    if (m_state.check(RepaintCalled) || !scene() || !scene()->autoRepaintEnabled())
         return;
 
     for (LOutput *o : outputs())

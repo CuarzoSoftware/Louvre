@@ -81,21 +81,7 @@ public:
      *
      * @param output The output for which to apply damage.
      */
-    void damageAll(LOutput *output) noexcept
-    {
-        if (!output)
-            return;
-
-        ThreadData &td { m_sceneThreadsMap[output->threadId()] };
-
-        if (isLScene())
-            td.manuallyAddedDamage.addRect(output->rect());
-        else
-        {
-            td.manuallyAddedDamage.addRect(LRect(pos(), size()));
-            output->repaint();
-        }
-    }
+    void damageAll(LOutput *output) noexcept;
 
     /**
      * @brief Add specific damage areas to the scene view for a specific output.
@@ -103,19 +89,7 @@ public:
      * @param output The output for which to add damage areas.
      * @param damage The damaged regions to be added.
      */
-    void addDamage(LOutput *output, const LRegion &damage) noexcept
-    {
-        if (!output)
-            return;
-
-        ThreadData &td { m_sceneThreadsMap[output->threadId()] };
-
-        if (td.o)
-            td.manuallyAddedDamage.addRegion(damage);
-
-        if (!isLScene())
-            output->repaint();
-    }
+    void addDamage(LOutput *output, const LRegion &damage) noexcept;
 
     /**
      * @brief Render the scene.

@@ -32,6 +32,16 @@ LScene::LScene() : LPRIVATE_INIT_UNIQUE(LScene)
 
 LScene::~LScene() {}
 
+void LScene::enableAutoRepaint(bool enabled) noexcept
+{
+    imp()->state.setFlag(LSS::AutoRepaint, enabled);
+}
+
+bool LScene::autoRepaintEnabled() const noexcept
+{
+    return imp()->state.check(LSS::AutoRepaint);
+}
+
 const std::vector<LView *> &LScene::pointerFocus() const
 {
     return imp()->pointerFocus;

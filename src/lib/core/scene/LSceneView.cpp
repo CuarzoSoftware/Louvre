@@ -2,6 +2,7 @@
 #include <private/LPainterPrivate.h>
 #include <LSurfaceView.h>
 #include <LSceneView.h>
+#include <LScene.h>
 #include <LUtils.h>
 
 using namespace Louvre;
@@ -15,6 +16,38 @@ LSceneView::~LSceneView() noexcept
 
     if (!isLScene())
         delete m_fb;
+}
+
+void LSceneView::damageAll(LOutput *output) noexcept
+{
+    if (!output)
+        return;
+
+    ThreadData &td { m_sceneThreadsMap[output->threadId()] };
+
+    if (isLScene())
+        td.manuallyAddedDamage.addRect(output->rect());
+    else
+    {
+        td.manuallyAddedDamage.addRect(LRect(pos(), size()));
+
+        if (scene() && scene()->autoRepaintEnabled())
+            output->repaint();
+    }
+}
+
+void LSceneView::addDamage(LOutput *output, const LRegion &damage) noexcept
+{
+    if (!output)
+        return;
+
+    ThreadData &td { m_sceneThreadsMap[output->threadId()] };
+
+    if (td.o)
+        td.manuallyAddedDamage.addRegion(damage);
+
+    if (!isLScene() && scene() && scene()->autoRepaintEnabled())
+        output->repaint();
 }
 
 void LSceneView::render(const LRegion *exclude) noexcept

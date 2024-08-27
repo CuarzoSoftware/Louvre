@@ -39,9 +39,10 @@ LPRIVATE_CLASS(LScene)
         HandlingPointerHoldEndEvent         = static_cast<UInt32>(1) << 16,
         HandlingKeyboardKeyEvent            = static_cast<UInt32>(1) << 17,
         HandlingTouchEvent                  = static_cast<UInt32>(1) << 18,
+        AutoRepaint                         = static_cast<UInt32>(1) << 19,
     };
 
-    LBitset<State> state;
+    LBitset<State> state { AutoRepaint };
     std::mutex mutex;
     LSceneView view;
 
