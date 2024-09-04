@@ -57,6 +57,11 @@ LActivationTokenManager *Louvre::activationTokenManager() noexcept
     return s_compositor->imp()->activationTokenManager;
 }
 
+LXWayland *Louvre::xWayland() noexcept
+{
+    return s_compositor->imp()->xWayland;
+}
+
 void LCompositor::removeGlobal(LGlobal *global) noexcept
 {
     if (global->m_removed)

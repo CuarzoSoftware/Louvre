@@ -62,6 +62,9 @@ srm_dep             = dependency('SRM', version : '>=0.7.1')
 pthread_dep         = cpp.find_library('pthread')
 dl_dep              = cpp.find_library('dl')
 
+# XWayland
+xcb_dep             = dependency('xcb')
+
 # -------------- HEADERS --------------
 
 include_paths = [include_directories('./lib/')]
@@ -143,7 +146,8 @@ louvre = library(
         drm_dep,
         gbm_dep,
         libseat_dep,
-        pixman_dep
+        pixman_dep,
+        xcb_dep
     ],
     soversion: VERSION_MAJOR,
     install : true)

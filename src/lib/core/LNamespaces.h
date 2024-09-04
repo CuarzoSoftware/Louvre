@@ -184,6 +184,7 @@ namespace Louvre
     class LForeignToplevelController;
 
     // Other
+    class LXWayland;
     class LDMABuffer;
     class LSinglePixelBuffer;
     class LExclusiveZone;
@@ -549,6 +550,8 @@ namespace Louvre
      * @warning Must be accessed within or after the LCompositor::initialized() event.
      */
     LActivationTokenManager *activationTokenManager() noexcept;
+
+    LXWayland *xWayland() noexcept;
 };
 
 #endif // LNAMESPACES_H

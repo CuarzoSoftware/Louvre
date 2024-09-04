@@ -1,3 +1,4 @@
+#include "LBitset.h"
 #include <LUtils.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -53,4 +54,22 @@ int Louvre::createSHM(std::size_t size)
     }
 
     return fd;
+}
+
+bool Louvre::setCloexec(int fd, bool cloexec) noexcept
+{
+    Int32 flags = fcntl(fd, F_GETFD);
+
+    if (flags == -1)
+        return false;
+
+    if (cloexec)
+        flags = flags | FD_CLOEXEC;
+    else
+        flags = flags & ~FD_CLOEXEC;
+
+    if (fcntl(fd, F_SETFD, flags) == -1)
+        return false;
+
+    return true;
 }

@@ -30,8 +30,12 @@
 #endif
 
 #include <LOutputMode.h>
+#include <LXWayland.h>
+
 void Compositor::initialized()
 {
+    xWayland()->start();
+
     // Set black as default background color
     scene.mainView()->setClearColor({0.f, 0.f, 0.f, 1.f});
     rootView.enableParentOffset(false);

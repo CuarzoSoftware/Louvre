@@ -44,6 +44,7 @@ LPRIVATE_CLASS(LCompositor)
         epoll_event events[4]; // [0] Unlock [1] Libseat [2] Aux [3] Wayland
         LSessionLockManager *sessionLockManager { nullptr };
         LActivationTokenManager *activationTokenManager { nullptr };
+        LXWayland *xWayland { nullptr };
     void unitWayland();
 
     bool surfacesListChanged { false };

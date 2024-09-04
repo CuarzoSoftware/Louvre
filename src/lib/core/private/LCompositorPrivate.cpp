@@ -31,6 +31,8 @@
 
 #include <private/LFactory.h>
 
+#include <LXWayland.h>
+
 void LCompositor::LCompositorPrivate::processRemovedGlobals()
 {
     for (auto it = globals.begin(); it != globals.end();)
@@ -94,9 +96,20 @@ static void clientConnectedEvent(wl_listener *listener, void *data)
     destroyListener->notify = clientDisconnectedEvent;
     wl_client_add_destroy_listener(client, destroyListener);
 
+    LClient *lClient { LFactory::createObject<LClient>(params) };
+
     // Append client to the compositor list
-    compositor()->imp()->clients.push_back(
-        LFactory::createObject<LClient>(params));
+    compositor()->imp()->clients.push_back(lClient);
+
+    /*
+    pid_t pid;
+    lClient->credentials(&pid);
+
+    if (pid == xWayland()->xWaylandPid)
+    {
+        xWayland()->client.reset(lClient);
+        xWayland()->started();
+    }*/
 }
 
 bool LCompositor::LCompositorPrivate::initWayland()
@@ -162,6 +175,7 @@ bool LCompositor::LCompositorPrivate::initWayland()
     // Listen for client connections
     clientConnectedListener.notify = &clientConnectedEvent;
     wl_display_add_client_created_listener(display, &clientConnectedListener);
+    LFactory::createObject<LXWayland>(&xWayland);
     LFactory::createObject<LSessionLockManager>(&sessionLockManager);
     LFactory::createObject<LActivationTokenManager>(&activationTokenManager);
     wl_display_set_global_filter(display, [](const wl_client *client, const wl_global *global, void */*data*/) -> bool
@@ -223,6 +237,13 @@ void LCompositor::LCompositorPrivate::unitWayland()
         compositor()->onAnticipatedObjectDestruction(sessionLockManager);
         delete sessionLockManager;
         sessionLockManager = nullptr;
+    }
+
+    if (xWayland)
+    {
+        compositor()->onAnticipatedObjectDestruction(xWayland);
+        delete xWayland;
+        xWayland = nullptr;
     }
 }
 

@@ -96,6 +96,8 @@ namespace Louvre
     }
 
     int createSHM(std::size_t size);
+
+    bool setCloexec(int fd, bool cloexec) noexcept;
 };
 
 #endif // LUTILS_H
