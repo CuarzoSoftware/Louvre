@@ -23,6 +23,8 @@ void Seat::enabledChanged()
         return;
     }
 
+    configureInputDevices();
+
     // Damage all as a there may be missing pageflips
     for (Output *output : G::outputs())
     {
@@ -191,8 +193,25 @@ void Seat::outputUnplugged(LOutput *output)
 
 void Seat::inputDevicePlugged(LInputDevice *device)
 {
-    if (compositor()->inputBackendId() == LInputBackendLibinput && device->nativeHandle())
-        libinput_device_config_dwt_set_enabled(
-            static_cast<libinput_device*>(device->nativeHandle()),
-            LIBINPUT_CONFIG_DWT_DISABLED);
+    configureInputDevice(device);
+}
+
+void Seat::configureInputDevices() noexcept
+{
+    for (LInputDevice *dev : inputDevices())
+        configureInputDevice(dev);
+}
+
+void Seat::configureInputDevice(LInputDevice *device) noexcept
+{
+    if (compositor()->inputBackendId() != LInputBackendLibinput || !device->nativeHandle())
+        return;
+
+    libinput_device *libinputDev { static_cast<libinput_device*>(device->nativeHandle()) };
+
+    // Disable while typing
+    libinput_device_config_dwt_set_enabled(libinputDev, LIBINPUT_CONFIG_DWT_DISABLED);
+
+    // Tap to click
+    libinput_device_config_tap_set_enabled(libinputDev, LIBINPUT_CONFIG_TAP_ENABLED);
 }

@@ -15,6 +15,9 @@ public:
     void outputUnplugged(LOutput *output) override;
     void inputDevicePlugged(LInputDevice *device) override;
 
+    void configureInputDevices() noexcept;
+    void configureInputDevice(LInputDevice *device) noexcept;
+
     // Last swipe dx
     Float32 dx = 0.f;
     Float32 swipeMargin = 275.f;

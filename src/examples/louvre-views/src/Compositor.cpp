@@ -99,6 +99,8 @@ void Compositor::initialized()
         finish();
     }
 
+    static_cast<Seat*>(seat())->configureInputDevices();
+
 #if LOUVRE_VIEWS_TESTING == 1
     new TestView(&overlayLayer);
 #endif
