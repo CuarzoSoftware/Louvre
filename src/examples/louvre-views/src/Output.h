@@ -67,8 +67,6 @@ public:
     Float32 zoom { 1.f };
     LSceneView zoomScene { LSize(0, 0), 1.f };
     LTextureView zoomView;
-    LTextureView zoomCursor;
-
 };
 
 #endif // OUTPUT_H

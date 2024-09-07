@@ -28,8 +28,6 @@ Output::Output(const void *params) noexcept : LOutput(params)
     zoomScene.enableParentOffset(false);
     zoomView.enableDstSize(true);
     zoomView.setTranslucentRegion(&LRegion::EmptyRegion());
-    zoomCursor.enableParentOffset(false);
-    zoomCursor.enableDstSize(true);
 
     workspacesContainer.enableParentOffset(false);
     workspacesContainer.setPos(0, 0);
@@ -676,10 +674,9 @@ void Output::zoomedDrawBegin() noexcept
     zoomScene.setSizeB(sizeB() * zoom);
     zoomScene.setScale(scale());
 
-    LPointF cursorPos { floorf(cursor()->pos().x()), floorf(cursor()->pos().y()) };
-    LPointF outputRelativeCursorPos { cursorPos - LPointF(pos()) };
-    LPointF outputNormalizedCursorPos { outputRelativeCursorPos / LSizeF(size()) };
-    LPoint newPos { cursorPos - (LSizeF(zoomScene.nativeSize()) * outputNormalizedCursorPos) };
+    const LPointF outputRelativeCursorPos { cursor()->pos() - LPointF(pos()) };
+    const LPointF outputNormalizedCursorPos { outputRelativeCursorPos / LSizeF(size()) };
+    LPoint newPos { cursor()->pos() - (LSizeF(zoomScene.nativeSize()) * outputNormalizedCursorPos) };
 
     /* Prevent capturing stuff outside the output */
 
@@ -697,14 +694,6 @@ void Output::zoomedDrawBegin() noexcept
 
     /* Render views and the cursor manually into the zoom scene */
     G::compositor()->rootView.setParent(&zoomScene);
-    cursor()->enable(this, false);
-    if (cursor()->visible())
-    {
-        zoomCursor.setTexture(cursor()->texture());
-        zoomCursor.setDstSize(cursor()->rect().size());
-        zoomCursor.setPos(cursor()->rect().pos());
-        zoomCursor.setParent(&zoomScene);
-    }
     zoomScene.render();
 
     /* Use an LTextureView to show the result scaled to the output size */
@@ -720,7 +709,6 @@ void Output::zoomedDrawEnd() noexcept
     /* Return everything to its place */
     G::compositor()->rootView.setParent(G::scene()->mainView());
     zoomView.setParent(nullptr);
-    zoomCursor.setParent(nullptr);
     zoomScene.setParent(nullptr);
     G::scene()->enableAutoRepaint(true);
 }

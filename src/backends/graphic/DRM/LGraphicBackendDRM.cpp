@@ -318,13 +318,6 @@ void *LGraphicBackend::backendGetContextHandle()
 
 bool LGraphicBackend::backendInitialize()
 {
-    /* There seem to be issues with the atomic DRM API,
-     * especially when dealing with cursor planes. This could
-     * be due to drivers not handling multithreading properly.
-     * Since Louvre doesn't support overlay planes yet, let's
-     * fall back to using the legacy API by default. */
-    setenv("SRM_FORCE_LEGACY_API", "1", 0);
-
     libseatEnabled = compositor()->seat()->imp()->initLibseat();
 
     struct stat stat;
