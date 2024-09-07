@@ -23,7 +23,7 @@ The dock icons featured in the screenshot were sourced from <a href="https://mac
 ### Keyboard Shortcuts
 
 * `Shift + Ctrl + Esc` : Terminates the compositor.
-* `Shift + Ctrl + 3` : Captures a screenshot and saves it on your desktop.
+* `Shift + Ctrl + 3` : Captures a screenshot and saves it in your desktop.
 * `F1` : Launches weston-terminal.
 * `Ctrl + Alt + [F1,...,F10]` : Switches to another TTY.
 * `Ctrl + Alt + [Left/Right arrow keys]` : Navigates to the left or right workspace. If supported, you can use three or more fingers on your touchpad.
@@ -36,6 +36,7 @@ The dock icons featured in the screenshot were sourced from <a href="https://mac
 * `Super + Shift + [Up/Down arrow keys]` : Increments or decrements the current output scale factor by 0.25.
 * `Super + Shift + L + [Up/Down arrow keys]` : Modifies the priority of a focused LLayerShell surface.
 * `Super + L/R Click` : Starts interactive move/resize for toplevel windows.
+* `Super + Ctrl + Scroll` : Zooms in/out.
 
 ### Wallpaper
 

@@ -18,7 +18,7 @@ class Louvre::LActivationToken final : public LObject
 {
 public:
 
-    LCLASS_NO_COPY(LActivationToken);
+    LCLASS_NO_COPY(LActivationToken)
 
     /**
      * @brief The client that requested the token creation.

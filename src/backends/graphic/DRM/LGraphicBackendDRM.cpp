@@ -11,7 +11,6 @@
 #include <fcntl.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
-#include <gbm.h>
 #include <drm.h>
 #include <drm_fourcc.h>
 

@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Louvre is released under the MIT license." />
   </a>
   <a href="https://github.com/CuarzoSoftware/Louvre">
-    <img src="https://img.shields.io/badge/version-2.8.0-brightgreen" alt="Current Louvre version." />
+    <img src="https://img.shields.io/badge/version-2.9.0-brightgreen" alt="Current Louvre version." />
   </a>
 </p>
 

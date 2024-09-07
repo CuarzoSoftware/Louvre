@@ -46,19 +46,18 @@ endif
 # -------------- DEPENDENCIES --------------
 
 pkg                 = import('pkgconfig')
-wayland_server_dep  = dependency('wayland-server')
-gl_dep              = dependency('gl')
+wayland_server_dep  = dependency('wayland-server', version: '>= 1.20.0')
+gl_dep              = dependency('gl', version: '>= 1.2')
 egl_dep             = dependency('egl', version : '>=1.5')
-glesv2_dep          = dependency('glesv2')
-udev_dep            = dependency('libudev')
-xcursor_dep         = dependency('xcursor')
-xkbcommon_dep       = dependency('xkbcommon')
-pixman_dep          = dependency('pixman-1')
-drm_dep             = dependency('libdrm')
-gbm_dep             = dependency('gbm')
-input_dep           = dependency('libinput')
-libseat_dep         = dependency('libseat')
-srm_dep             = dependency('SRM', version : '>=0.7.1')
+glesv2_dep          = dependency('glesv2', version: '>= 3.2')
+udev_dep            = dependency('libudev', version: '>= 249')
+xcursor_dep         = dependency('xcursor', version: '>= 1.2.0')
+xkbcommon_dep       = dependency('xkbcommon', version: '>= 1.4.0')
+pixman_dep          = dependency('pixman-1', version: '>= 0.40.0')
+drm_dep             = dependency('libdrm', version: '>= 2.4.113')
+input_dep           = dependency('libinput', version: '>= 1.20.0')
+libseat_dep         = dependency('libseat', version: '>= 0.6.4')
+srm_dep             = dependency('SRM', version : '>=0.7.2')
 pthread_dep         = cpp.find_library('pthread')
 dl_dep              = cpp.find_library('dl')
 
@@ -141,7 +140,6 @@ louvre = library(
         pixman_dep,
         dl_dep,
         drm_dep,
-        gbm_dep,
         libseat_dep,
         pixman_dep
     ],
@@ -173,8 +171,8 @@ endif
 
 if get_option('backend-wayland-graphic') or get_option('backend-wayland-input')
 
-    wayland_client_dep  = dependency('wayland-client')
-    wayland_egl_dep     = dependency('wayland-egl')
+    wayland_client_dep  = dependency('wayland-client', version: '>= 1.20.0')
+    wayland_egl_dep     = dependency('wayland-egl', version: '>= 18.1.0')
 
     if get_option('backend-wayland-graphic')
         subdir('backends/graphic/Wayland')
@@ -187,8 +185,8 @@ if get_option('backend-wayland-graphic') or get_option('backend-wayland-input')
 endif
 
 if get_option('build_examples')
-    fontconfig_dep = dependency('fontconfig')
-    freetype_dep = dependency('freetype2')
+    fontconfig_dep = dependency('fontconfig', version: '>= 2.13.1')
+    freetype_dep = dependency('freetype2', version: '>= 24.1.18')
     icuuc_dep = cpp.find_library('icuuc')
     subdir('examples')
 endif

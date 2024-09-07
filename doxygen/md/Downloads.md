@@ -12,29 +12,29 @@ Pre-built binaries are provided for the following distributions. Please be aware
 
 Louvre relies on the following libraries:
 
-* **Wayland Server** >= 1.16
-* **EGL** >= 1.5.0
-* **GLES 2.0** >= 13.0.6
-* **DRM** >= 2.4.85
-* **SRM** >= 0.7.0
-* **GBM** >= 22.2.0
-* **Evdev** >= 1.5.6
-* **Libinput** >= 1.6.3
-* **XCursor** >= 1.1.15
-* **XKB Common** >= 0.7.1
-* **Pixman** >= 0.40.0
-* **Libseat** >= 0.6.4
+* **wayland-server** >= 1.20.0
+* **gl** >= 1.2
+* **egl** >= 1.5
+* **glesv2** >= 3.2
+* **libdrm** >= 2.4.113
+* **srm** >= 0.7.2
+* **libudev** >= 249
+* **libinput** >= 1.20.0
+* **xcursor** >= 1.2.0
+* **xkbcommon** >= 1.4.0
+* **pixman-1** >= 0.40.0
+* **libseat** >= 0.6.4
 
-Wayland also backends require:
+Wayland backends require:
 
-* **Wayland Client** >= 1.22.0
-* **Wayland EGL** >= 18.1.0
+* **wayland-client** >= 1.20.0
+* **wayland-egl** >= 18.1.0
 
-And the examples also require:
+And the examples require:
 
-* **Libicu** >= 72.1
-* **FontConfig** >= 2.14.1
-* **FreeType** >= 2.8.1
+* **iccu** >= 72.1
+* **fontconfig** >= 2.13.1
+* **freetype2** >= 24.1.18
 
 And can easily be built with [Meson](https://mesonbuild.com/).
 
@@ -45,14 +45,8 @@ If your distribution is based on Debian, all tools and almost all dependencies c
 ```
 $ sudo apt update
 $ sudo apt upgrade
-$ sudo apt install build-essential meson libegl-dev mesa-common-dev libgles2-mesa-dev libdrm-dev libgbm-dev libevdev-dev libinput-dev libxcursor-dev libxkbcommon-dev libpixman-1-dev libwayland-dev hwinfo libseat-dev libicu-dev libfontconfig-dev libfreetype-dev
+$ sudo apt install build-essential meson libegl-dev mesa-common-dev libgles2-mesa-dev libdrm-dev libevdev-dev libinput-dev libxcursor-dev libxkbcommon-dev libpixman-1-dev libwayland-dev hwinfo libseat-dev libicu-dev libfontconfig-dev libfreetype-dev
 ```
-
-If the [hwinfo](https://github.com/vcrhonek/hwdata) or [libdisplay-info](https://gitlab.freedesktop.org/emersion/libdisplay-info) packages are not available in your distribution, please download and install them manually in the specified order:
-
-1. [hwinfo](https://packages.debian.org/buster/hwinfo)
-2. [libdisplay-info1](https://packages.debian.org/sid/libdisplay-info1)
-3. [libdisplay-info-dev](https://packages.debian.org/unstable/libdisplay-info-dev)
 
 To install SRM, follow the instructions provided [here](https://cuarzosoftware.github.io/SRM/md_md__downloads.html).
 
@@ -68,7 +62,7 @@ If your distribution is based on Red Hat, all tools and almost all dependencies 
 
 ```
 $ sudo dnf update
-$ sudo dnf install @development-tools make automake gcc gcc-c++ meson libwayland-client libwayland-server wayland-devel libinput-devel libevdev-devel libudev-devel mesa-libEGL-devel libxkbcommon-devel libXcursor-devel pixman-devel libdrm-devel libgbm-devel libseat-devel fontconfig-devel freetype-devel libicu-devel
+$ sudo dnf install @development-tools make automake gcc gcc-c++ meson libwayland-client libwayland-server wayland-devel libinput-devel libevdev-devel libudev-devel mesa-libEGL-devel libxkbcommon-devel libXcursor-devel pixman-devel libdrm-devel libseat-devel fontconfig-devel freetype-devel libicu-devel
 ```
 
 To install SRM, follow the instructions provided [here](https://cuarzosoftware.github.io/SRM/md_md__downloads.html).
