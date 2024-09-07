@@ -431,6 +431,13 @@ public:
      */
     const std::vector<Protocols::XdgActivation::GXdgActivation*> &xdgActivationGlobals() const noexcept;
 
+    /**
+     * Resources created when the client binds to the
+     * [xwayland_shell_v1](https://wayland.app/protocols/xwayland-shell-v1#xwayland_shell_v1) global
+     * of the Xwayland shell protocol.
+     */
+    const std::vector<Protocols::XWaylandShell::GXWaylandShell*> &xWaylandShellGlobals() const noexcept;
+
     LPRIVATE_IMP_UNIQUE(LClient)
 };
 

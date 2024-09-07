@@ -58,6 +58,7 @@ public:
     std::vector<XdgActivation::GXdgActivation*> xdgActivationGlobals;
     std::vector<ImageCaptureSource::GOutputImageCaptureSourceManager*> outputImageCaptureSourceManagerGlobals;
     std::vector<ImageCaptureSource::GForeignToplevelImageCaptureSourceManager*> foreignToplevelImageCaptureSourceManagerGlobals;
+    std::vector<XWaylandShell::GXWaylandShell*> xWaylandShellGlobals;
     bool destroyed { false };
 };
 

@@ -142,7 +142,10 @@ public:
         SessionLock = 6,
 
         /// LLayerRole (since v2.0.0)
-        Layer = 7
+        Layer = 7,
+
+        /// XWindowRole
+        XWindow = 8
     };
 
     /**
@@ -628,6 +631,13 @@ public:
      * @returns A pointer to an instance of LLayerRole or `nullptr` if it has a different role.
      */
     LLayerRole *layerRole() const noexcept;
+
+    /**
+     * @brief XWindow role
+     *
+     * @returns A pointer to an instance of LWindowRole or `nullptr` if it has a different role.
+     */
+    LXWindowRole *xWindowRole() const noexcept;
 
     ///@}
 

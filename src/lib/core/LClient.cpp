@@ -271,6 +271,11 @@ const std::vector<XdgActivation::GXdgActivation *> &LClient::xdgActivationGlobal
     return imp()->xdgActivationGlobals;
 }
 
+const std::vector<XWaylandShell::GXWaylandShell *> &LClient::xWaylandShellGlobals() const noexcept
+{
+    return imp()->xWaylandShellGlobals;
+}
+
 const LClient::EventHistory &LClient::eventHistory() const noexcept
 {
     return imp()->eventHistory;

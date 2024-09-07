@@ -95,6 +95,14 @@ LLayerRole *LSurface::layerRole() const noexcept
         return nullptr;
 }
 
+LXWindowRole *LSurface::xWindowRole() const noexcept
+{
+    if (roleId() == LSurface::Role::XWindow)
+        return (LXWindowRole*)imp()->current.role;
+    else
+        return nullptr;
+}
+
 LDNDIconRole *LSurface::dndIcon() const noexcept
 {
     if (roleId() == LSurface::Role::DNDIcon)

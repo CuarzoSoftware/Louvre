@@ -69,6 +69,9 @@ public:
         /// Represents the LLayerRole class.
         LLayerRole,
 
+        /// Represents the LXWindowRole class.
+        LXWindowRole,
+
         /// Represents the LClient class.
         LClient,
 

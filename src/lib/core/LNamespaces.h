@@ -37,6 +37,7 @@
 #define LOUVRE_CONTENT_TYPE_MANAGER_VERSION 1
 #define LOUVRE_IDLE_NOTIFIER_VERSION 1
 #define LOUVRE_IDLE_INHIBIT_MANAGER_VERSION 1
+#define LOUVRE_XWAYLAND_SHELL_VERSION 1
 
 #define L_UNUSED(object){(void)object;}
 
@@ -120,7 +121,6 @@ namespace Louvre
     class LSceneView;
     class LSceneTouchPoint;
 
-    // Data
     class LDND;
     class LDNDSession;
     class LClipboard;
@@ -133,6 +133,7 @@ namespace Louvre
     class LSubsurfaceRole;
     class LSessionLockRole;
     class LLayerRole;
+    class LXWindowRole;
 
     class LCursor;
     class LClientCursor;
@@ -505,6 +506,12 @@ namespace Louvre
             class GIdleInhibitManager;
 
             class RIdleInhibitor;
+        }
+
+        namespace XWaylandShell
+        {
+            class GXWaylandShell;
+            class RXWaylandSurface;
         }
     }
 
