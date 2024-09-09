@@ -32,6 +32,8 @@ Toplevel::Toplevel(const void *params) : LToplevelRole(params),
     captureView.setBufferScale(2);
     captureView.enableParentOpacity(false);
     captureView.enableDstSize(true);
+    captureView.enablePointerEvents(true);
+    captureView.setInputRegion(nullptr);
 
     resizeSession().setMinSize(LSize(150, 150));
 }

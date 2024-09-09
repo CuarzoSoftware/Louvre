@@ -1,3 +1,26 @@
+Louvre (2.9.0-1)
+
+  # API Additions
+
+  * Added LScene::enableAutoRepaint() option to temporarily prevent child views from triggering output repaints when modified.
+
+  # Examples
+
+  * louvre-views: Added Meta + Ctrl + Scroll gesture for zooming in and out. Thanks to @mishoo for the idea.
+  * louvre-views: Enabled tap-to-click by default. Thanks to @renhiyama for the suggestion.
+
+  # Bug Fixes
+
+  * Corrected the calculation of LRenderBuffer::size() when the scale factor changes.
+
+  # Dependencies
+
+  * Removed GBM dependency.
+  * Specified the minimum required versions for all dependencies.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Sat, 07 Sep 2024 18:39:10 -0400
+
+
 Louvre (2.8.0-1)
 
   # New Protocols

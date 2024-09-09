@@ -12,7 +12,6 @@ GraphicBackendDRM = library(
         egl_dep,
         gl_dep,
         drm_dep,
-        gbm_dep,
         srm_dep
     ],
     install : true,

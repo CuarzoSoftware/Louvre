@@ -28,8 +28,6 @@ Output::Output(const void *params) noexcept : LOutput(params)
     zoomScene.enableParentOffset(false);
     zoomView.enableDstSize(true);
     zoomView.setTranslucentRegion(&LRegion::EmptyRegion());
-    zoomCursor.enableParentOffset(false);
-    zoomCursor.enableDstSize(true);
 
     workspacesContainer.enableParentOffset(false);
     workspacesContainer.setPos(0, 0);
@@ -104,82 +102,17 @@ void Output::paintGL()
     if (tryFullscreenScanoutIfNoOverlayContent())
         return;
 
-    const bool zoomed { zoom < 1.f };
+    const bool zoomed { zoom < 1.f && cursor()->output() == this };
 
     if (zoomed)
-    {
-        /* Set the zone to capture */
-        G::scene()->enableAutoRepaint(false);
-        zoomScene.setParent(G::scene()->mainView());
-        zoomScene.setVisible(true);
-        zoomScene.setSizeB(sizeB() * zoom);
-        zoomScene.setScale(scale());
-
-        LPoint newPos { zoomScene.nativePos() };
-
-        if (zoomChanged)
-            newPos = cursor()->pos() - (zoomCursorRelPos * zoomScene.nativeSize());
-
-        /* Make sure the cursor is captured */
-
-        if (newPos.x() > cursor()->pos().x())
-            newPos.setX(cursor()->pos().x());
-        else if (newPos.x() + zoomScene.nativeSize().w() < cursor()->pos().x())
-            newPos.setX(cursor()->pos().x() - zoomScene.nativeSize().w());
-
-        if (newPos.y() > cursor()->pos().y())
-            newPos.setY(cursor()->pos().y());
-        else if (newPos.y() + zoomScene.nativeSize().h() < cursor()->pos().y())
-            newPos.setY(cursor()->pos().y() - zoomScene.nativeSize().h());
-
-        /* Prevent capturing stuff outside the output */
-
-        if (newPos.x() < pos().x())
-            newPos.setX(pos().x());
-        else if (newPos.x() + zoomScene.nativeSize().w() > pos().x() + size().w())
-            newPos.setX(pos().x() + size().w() - zoomScene.nativeSize().w());
-
-        if (newPos.y() < pos().y())
-            newPos.setY(pos().y());
-        else if (newPos.y() + zoomScene.nativeSize().h() > pos().y() + size().h())
-            newPos.setY(pos().y() + size().h() - zoomScene.nativeSize().h());
-
-        zoomScene.setPos(newPos);
-
-        /* Render views and the cursor manually into the zoom scene */
-        G::compositor()->rootView.setParent(&zoomScene);
-        cursor()->enable(this, false);
-        if (cursor()->visible())
-        {
-            zoomCursor.setTexture(cursor()->texture());
-            zoomCursor.setDstSize(cursor()->rect().size());
-            zoomCursor.setPos(cursor()->rect().pos());
-            zoomCursor.setParent(&zoomScene);
-        }
-        zoomScene.render();
-
-        /* Use an LTextureView to show the result scaled to the output size */
-        zoomView.setDstSize(size());
-        zoomView.setPos(pos());
-        zoomView.setTexture(zoomScene.texture());
-        zoomView.setParent(G::scene()->mainView());
-        zoomScene.setVisible(false);
-    }
+        zoomedDrawBegin();
     else
         cursor()->enable(this, true);
 
     G::scene()->handlePaintGL(this);
 
     if (zoomed)
-    {
-        /* Return everything to its place */
-        G::compositor()->rootView.setParent(G::scene()->mainView());
-        zoomView.setParent(nullptr);
-        zoomCursor.setParent(nullptr);
-        zoomScene.setParent(nullptr);
-        zoomChanged = false;
-        G::scene()->enableAutoRepaint(true);
-    }
+        zoomedDrawEnd();
 
     for (auto *screenshotRequest : screenshotRequests())
         screenshotRequest->accept(true);
@@ -732,6 +665,54 @@ void Output::updateWallpaper() noexcept
     }
 }
 
+void Output::zoomedDrawBegin() noexcept
+{
+    /* Set the zone to capture */
+    G::scene()->enableAutoRepaint(false);
+    zoomScene.setParent(G::scene()->mainView());
+    zoomScene.setVisible(true);
+    zoomScene.setSizeB(sizeB() * zoom);
+    zoomScene.setScale(scale());
+
+    const LPointF outputRelativeCursorPos { cursor()->pos() - LPointF(pos()) };
+    const LPointF outputNormalizedCursorPos { outputRelativeCursorPos / LSizeF(size()) };
+    LPoint newPos { cursor()->pos() - (LSizeF(zoomScene.nativeSize()) * outputNormalizedCursorPos) };
+
+    /* Prevent capturing stuff outside the output */
+
+    if (newPos.x() < pos().x())
+        newPos.setX(pos().x());
+    else if (newPos.x() + zoomScene.nativeSize().w() > pos().x() + size().w())
+        newPos.setX(pos().x() + size().w() - zoomScene.nativeSize().w());
+
+    if (newPos.y() < pos().y())
+        newPos.setY(pos().y());
+    else if (newPos.y() + zoomScene.nativeSize().h() > pos().y() + size().h())
+        newPos.setY(pos().y() + size().h() - zoomScene.nativeSize().h());
+
+    zoomScene.setPos(newPos);
+
+    /* Render views and the cursor manually into the zoom scene */
+    G::compositor()->rootView.setParent(&zoomScene);
+    zoomScene.render();
+
+    /* Use an LTextureView to show the result scaled to the output size */
+    zoomView.setDstSize(size());
+    zoomView.setPos(pos());
+    zoomView.setTexture(zoomScene.texture());
+    zoomView.setParent(G::scene()->mainView());
+    zoomScene.setVisible(false);
+}
+
+void Output::zoomedDrawEnd() noexcept
+{
+    /* Return everything to its place */
+    G::compositor()->rootView.setParent(G::scene()->mainView());
+    zoomView.setParent(nullptr);
+    zoomScene.setParent(nullptr);
+    G::scene()->enableAutoRepaint(true);
+}
+
 void Output::setZoom(Float32 newZoom) noexcept
 {
     const Float32 prevZoom { zoom };
@@ -743,16 +724,7 @@ void Output::setZoom(Float32 newZoom) noexcept
         zoom = 0.25f;
 
     if (prevZoom != zoom)
-    {
-        zoomChanged = true;
-
-        if (prevZoom == 1.f)
-            zoomCursorRelPos = (cursor()->pos() - LPointF(pos()))/ LSizeF(size() * prevZoom);
-        else
-            zoomCursorRelPos = (cursor()->pos() - LPointF(zoomScene.pos()))/ LSizeF(zoomScene.nativeSize());
-
         repaint();
-    }
 }
 
 void Output::setGammaRequest(LClient *client, const LGammaTable *gamma)

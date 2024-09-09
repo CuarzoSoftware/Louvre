@@ -11,7 +11,6 @@
 #include <fcntl.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
-#include <gbm.h>
 #include <drm.h>
 #include <drm_fourcc.h>
 
@@ -318,8 +317,6 @@ void *LGraphicBackend::backendGetContextHandle()
 
 bool LGraphicBackend::backendInitialize()
 {
-    setenv("SRM_RENDER_MODE_ITSELF_FB_COUNT", "3", 0);
-
     libseatEnabled = compositor()->seat()->imp()->initLibseat();
 
     struct stat stat;

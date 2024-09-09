@@ -61,14 +61,12 @@ public:
     std::unique_ptr<LTexture> scaledWallpaper;
 
     // Zoom
+    void zoomedDrawBegin() noexcept;
+    void zoomedDrawEnd() noexcept;
     void setZoom(Float32 zoom) noexcept;
-    bool zoomChanged { false };
     Float32 zoom { 1.f };
-    LPointF zoomCursorRelPos;
     LSceneView zoomScene { LSize(0, 0), 1.f };
     LTextureView zoomView;
-    LTextureView zoomCursor;
-
 };
 
 #endif // OUTPUT_H

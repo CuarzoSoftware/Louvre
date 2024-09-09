@@ -204,16 +204,17 @@ void Pointer::pointerButtonEvent(const LPointerButtonEvent &event)
 
 void Pointer::pointerScrollEvent(const LPointerScrollEvent &event)
 {
-    G::scene()->handlePointerScrollEvent(event);
-
     Output *output { static_cast<Output*>(cursor()->output()) };
 
     if (output &&
         seat()->keyboard()->isKeyCodePressed(KEY_LEFTMETA) &&
-        seat()->keyboard()->isKeyCodePressed(KEY_LEFTSHIFT))
+        seat()->keyboard()->isKeyCodePressed(KEY_LEFTCTRL))
     {
-        output->setZoom(output->zoom + event.axes().y() * 0.001f);
+        output->setZoom(output->zoom + event.axes().y() * 0.005f);
+        return;
     }
+
+    G::scene()->handlePointerScrollEvent(event);
 }
 
 void Pointer::setCursorRequest(const LClientCursor &clientCursor)

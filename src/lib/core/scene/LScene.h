@@ -136,13 +136,12 @@ public:
     /**
      * @brief Enables or disables automatic repainting of child views.
      *
-     * When disabled, repaint() requests from child views will be ignored.
-     * This can be useful when modifying views during an `LOutput::paintGL()` event
+     * When disabled, LOutput::repaint() requests from child views will be ignored.
+     *
+     * This can be useful when modifying views during an LOutput::paintGL() event
      * to prevent the output from immediately scheduling a new repaint.
      *
      * Enabled by default.
-     *
-     * @param enabled If true, automatic repainting is enabled; if false, it is disabled.
      */
     void enableAutoRepaint(bool enabled) noexcept;
 
