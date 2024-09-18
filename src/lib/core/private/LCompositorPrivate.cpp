@@ -8,6 +8,7 @@
 #include <private/LToplevelRolePrivate.h>
 #include <private/LPopupRolePrivate.h>
 #include <private/LFactory.h>
+#include <private/LXWaylandPrivate.h>
 #include <LActivationTokenManager.h>
 #include <LSessionLockManager.h>
 #include <LSessionLockRole.h>

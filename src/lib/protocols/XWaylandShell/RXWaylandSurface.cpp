@@ -1,6 +1,9 @@
+#include "LLog.h"
 #include <protocols/XWaylandShell/xwayland-shell-v1.h>
 #include <protocols/XWaylandShell/RXWaylandSurface.h>
 #include <private/LSurfacePrivate.h>
+#include <private/LXWindowRolePrivate.h>
+#include <private/LFactory.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::XWaylandShell;
@@ -31,17 +34,11 @@ void RXWaylandSurface::set_serial(wl_client */*client*/, wl_resource *resource, 
 {
     auto &res { *static_cast<RXWaylandSurface*>(wl_resource_get_user_data(resource)) };
 
-    UInt64 serial = ;
+    if (res.m_surface)
+        res.m_surface->imp()->xSerial = ((uint64_t)serial_hi << 32) | serial_lo;
 }
 
-void RXdgActivationToken::destroy(wl_client */*client*/, wl_resource *resource)
+void RXWaylandSurface::destroy(wl_client */*client*/, wl_resource *resource)
 {
     wl_resource_destroy(resource);
-}
-
-/******************** EVENTS ********************/
-
-void RXdgActivationToken::done(const std::string &token) noexcept
-{
-    xdg_activation_token_v1_send_done(resource(), token.c_str());
 }

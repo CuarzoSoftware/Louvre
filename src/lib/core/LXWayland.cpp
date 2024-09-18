@@ -1,6 +1,5 @@
 #include <private/LXWaylandPrivate.h>
-#include <iostream>
-#include <ostream>
+#include <LLog.h>
 #include <cassert>
 #include <unistd.h>
 
@@ -15,7 +14,6 @@ LXWayland::LXWayland(const void *params) noexcept :
     assert(*ptr == nullptr && *ptr == xWayland() && "Only a single LXWayland instance can exist.");
     *ptr = this;
     imp()->x = this;
-    imp()->init();
 }
 
 LXWayland::~LXWayland()
@@ -23,56 +21,27 @@ LXWayland::~LXWayland()
 
 }
 
-/*
-static xcb_atom_t GetAtom(LXWayland *x, std::string AtomName)
+const std::unordered_map<UInt32, LXWindowRole *> LXWayland::windows() const noexcept
 {
-    xcb_intern_atom_reply_t *Atom = xcb_intern_atom_reply(x->conn, xcb_intern_atom(x->conn, 0, AtomName.length(), AtomName.c_str()), nullptr);
-    if (!Atom) {
-        std::cerr << "Failed to get Atom: " << AtomName << " [EXIT]" << std::endl;
-    }
-    xcb_atom_t ReturnAtom = Atom->atom;
-    free(Atom);
-    return ReturnAtom;
-}
-*/
-
-bool LXWayland::start()
-{
-    return imp()->start();
+    return imp()->windows;
 }
 
-void LXWayland::started()
+LXWayland::State LXWayland::state() const noexcept
 {
-    /*
-    usleep(500000);
+    return imp()->state;
+}
 
-    // Create a connection
-    conn = xcb_connect(":10", nullptr);
+const std::string &LXWayland::display() const noexcept
+{
+    return imp()->displayName;
+}
 
-    if (xcb_connection_has_error(conn))
-    {
-        std::cerr << "Failed to open the XCB connection!" << std::endl;
-        return;
-    }
+void LXWayland::onStart()
+{
+    LLog::log("Xwayland running on DISPLAY=%s.", display().c_str());
+}
 
-    std::cout << "XCB connection! " << getenv("LOUVRE_WAYLAND_DISPLAY") << std::endl;
-
-    // Create a screen
-    screen = xcb_setup_roots_iterator(xcb_get_setup(conn)).data;
-
-    if (!screen)
-    {
-        std::cerr << "Failed to get the XCB screen!" << std::endl;
-        return;
-    }
-
-    Protocols = GetAtom(this, "WM_PROTOCOLS");
-    DeleteWindow = GetAtom(this, "WM_DELETE_WINDOW");
-    NetWmState = GetAtom(this, "_NET_WM_STATE");
-    NetWmStateFullscreen = GetAtom(this, "_NET_WM_STATE_FULLSCREEN");
-    NetWmWindowTypeDialog = GetAtom(this, "_NET_WM_WINDOW_TYPE_DIALOG");
-    NetWmWindowTypeUtility = GetAtom(this, "_NET_WM_WINDOW_TYPE_UTILITY");
-    NetWmWindowTypeSplash = GetAtom(this, "_NET_WM_WINDOW_TYPE_SPLASH");
-    NetWmWindowType = GetAtom(this, "_NET_WM_WINDOW_TYPE");
-    */
+void LXWayland::start()
+{
+    imp()->init();
 }

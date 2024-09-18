@@ -1,5 +1,6 @@
-#include "LBitset.h"
+#include <LNamespaces.h>
 #include <LUtils.h>
+#include <sstream>
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
@@ -72,4 +73,41 @@ bool Louvre::setCloexec(int fd, bool cloexec) noexcept
         return false;
 
     return true;
+}
+
+std::vector<std::string> Louvre::splitString(const std::string &str, char delimiter) noexcept
+{
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(str);
+    while (std::getline(tokenStream, token, delimiter))
+        tokens.push_back(token);
+    return tokens;
+}
+
+bool Louvre::isExecutable(const std::filesystem::path &path) noexcept
+{
+    return access(path.c_str(), X_OK) == 0;
+}
+
+std::filesystem::path Louvre::whereIsExecutable(const std::string &exeName) noexcept
+{
+    const std::string pathEnv { getenvString("PATH") };
+
+    if (pathEnv.empty())
+        return std::filesystem::path();
+
+    const std::vector<std::string> directories { splitString(pathEnv, ':') };
+
+    std::filesystem::path fullPath;
+
+    for (const auto &dir : directories)
+    {
+        fullPath = std::filesystem::path(dir) / exeName;
+
+        if (isExecutable(fullPath))
+            return fullPath;
+    }
+
+    return std::filesystem::path();
 }

@@ -1,9 +1,10 @@
 #include <protocols/XWaylandShell/xwayland-shell-v1.h>
 #include <protocols/XWaylandShell/GXWaylandShell.h>
-#include <protocols/XWaylandShell/RXWaylandRole.h>
+#include <protocols/XWaylandShell/RXWaylandSurface.h>
 #include <protocols/Wayland/RSurface.h>
 #include <LActivationTokenManager.h>
 #include <private/LClientPrivate.h>
+#include <private/LSurfacePrivate.h>
 #include <LUtils.h>
 
 using namespace Louvre;
@@ -58,6 +59,15 @@ void GXWaylandShell::destroy(wl_client */*client*/, wl_resource *resource) noexc
 
 void GXWaylandShell::get_xwayland_surface(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *surface) noexcept
 {
-    auto *res { static_cast<GXdgActivation*>(wl_resource_get_user_data(resource)) };
-    new RXdgActivationToken(res, id);
+    auto *res { static_cast<GXWaylandShell*>(wl_resource_get_user_data(resource)) };
+    auto *surfaceRes { static_cast<Wayland::RSurface*>(wl_resource_get_user_data(surface)) };
+
+    /* TODO
+    if (surfaceRes->surface()->imp()->hasRoleOrPendingRole())
+    {
+        wl_resource_post_error(resource, XWAYLAND_SHELL_V1_ERROR_ROLE, "Given wl_surface has another role.");
+        return;
+    }*/
+
+    new RXWaylandSurface(res->version(), surfaceRes->surface(), id);
 }

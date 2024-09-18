@@ -1,6 +1,7 @@
 #ifndef LUTILS_H
 #define LUTILS_H
 
+#include <filesystem>
 #include <vector>
 #include <algorithm>
 #include <string>
@@ -95,9 +96,12 @@ namespace Louvre
         return std::string();
     }
 
+    std::vector<std::string> splitString(const std::string& str, char delimiter) noexcept;
     int createSHM(std::size_t size);
-
     bool setCloexec(int fd, bool cloexec) noexcept;
+    bool isExecutable(const std::filesystem::path &path) noexcept;
+    std::filesystem::path whereIsExecutable(const std::string &exeName) noexcept;
+
 };
 
 #endif // LUTILS_H

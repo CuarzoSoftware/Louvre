@@ -3,6 +3,7 @@
 #include <LTimer.h>
 #include <LSeat.h>
 
+#include "LXWindowRole.h"
 #include "Workspace.h"
 #include "Compositor.h"
 #include "Surface.h"
@@ -201,6 +202,15 @@ void Surface::mappingChanged()
 
                 next = next->nextSurface();
             }
+        }
+
+        if (xWindowRole() && cursor()->output())
+        {
+            auto &o { *cursor()->output() };
+
+            xWindowRole()->configure(
+                o.pos() + o.availableGeometry().TL(),
+                o.availableGeometry().size());
         }
 
         if (dndIcon())

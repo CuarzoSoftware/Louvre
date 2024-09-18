@@ -135,6 +135,7 @@ public:
 protected:
     friend class Protocols::Wayland::RSurface;
     friend class Louvre::LSurface;
+    friend class Louvre::LXWindowRole;
 
     /**
      * @brief Variable that stores the surface position given the role.

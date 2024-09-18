@@ -63,6 +63,12 @@ dl_dep              = cpp.find_library('dl')
 
 # XWayland
 xcb_dep             = dependency('xcb')
+xcb_composite_dep   = dependency('xcb-composite')
+xcb_ewmh_dep        = dependency('xcb-ewmh')
+xcb_icccm_dep       = dependency('xcb-icccm')
+xcb_render_dep      = dependency('xcb-render')
+xcb_res_dep         = dependency('xcb-res')
+xcb_xfixes_dep      = dependency('xcb-xfixes')
 
 # -------------- HEADERS --------------
 
@@ -145,7 +151,14 @@ louvre = library(
         drm_dep,
         libseat_dep,
         pixman_dep,
-        xcb_dep
+
+        xcb_dep,
+        xcb_composite_dep,
+        xcb_ewmh_dep,
+        xcb_icccm_dep,
+        xcb_render_dep,
+        xcb_res_dep,
+        xcb_xfixes_dep
     ],
     soversion: VERSION_MAJOR,
     install : true)

@@ -43,6 +43,7 @@ static const struct wl_surface_interface imp =
 #endif
 };
 
+#include <private/LXWaylandPrivate.h>
 RSurface::RSurface
 (
     GCompositor *compositorRes,
@@ -187,9 +188,17 @@ void RSurface::frame(wl_client *client, wl_resource *resource, UInt32 callback)
     new Wayland::RCallback(client, callback, &imp.frameCallbacks);
 }
 
+#include <LXWindowRole.h>
+
 void RSurface::destroy(wl_client */*client*/, wl_resource *resource)
 {
     const auto &surfaceRes { *static_cast<const RSurface*>(wl_resource_get_user_data(resource)) };
+
+    // TODO
+    if (surfaceRes.surface()->xWindowRole())
+    {
+        surfaceRes.surface()->xWindowRole()->setSurface(nullptr);
+    }
 
     if ((surfaceRes.surface()->role() && surfaceRes.surface()->role()->resource() != &surfaceRes)
         || (surfaceRes.surface()->imp()->pending.role && surfaceRes.surface()->imp()->pending.role->resource() != &surfaceRes))
@@ -218,6 +227,11 @@ static bool bufferIsBeingScannedByOutputs(wl_buffer *buffer) noexcept
     return false;
 }
 
+// TODO
+
+#include <LXWayland.h>
+#include <private/LXWindowRolePrivate.h>
+
 // The origin params indicates who requested the commit for this surface (itself or its parent surface)
 void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin origin)
 {
@@ -228,6 +242,19 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     auto &imp { *surface->imp() };
 
     imp.commitId++;
+
+    if (imp.xSerial)
+    {
+        for (const auto &pair : xWayland()->windows())
+        {
+            if (pair.second->imp()->serial == imp.xSerial)
+            {
+                pair.second->setSurface(surface);
+                imp.xSerial = 0;
+                break;
+            }
+        }
+    }
 
     for (auto *presentation : imp.presentationFeedbackResources)
         if (presentation->m_commitId == -1)

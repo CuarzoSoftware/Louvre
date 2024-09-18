@@ -34,8 +34,6 @@
 
 void Compositor::initialized()
 {
-    xWayland()->start();
-
     // Set black as default background color
     scene.mainView()->setClearColor({0.f, 0.f, 0.f, 1.f});
     rootView.enableParentOffset(false);
@@ -108,6 +106,8 @@ void Compositor::initialized()
 #if LOUVRE_VIEWS_TESTING == 1
     new TestView(&overlayLayer);
 #endif
+
+    xWayland()->start();
 }
 
 void Compositor::uninitialized()

@@ -48,6 +48,9 @@
 #include <LDNDIconRole.h>
 #include <LGlobal.h>
 
+// TODO
+#include <protocols/XWaylandShell/GXWaylandShell.h>
+
 using namespace Louvre;
 using namespace Louvre::Protocols;
 
@@ -138,6 +141,8 @@ bool LCompositor::createGlobalsRequest()
 
     // Allows clients to activate other client's surfaces
     createGlobal<XdgActivation::GXdgActivation>();
+
+    createGlobal<XWaylandShell::GXWaylandShell>();
 
     return true;
 }
