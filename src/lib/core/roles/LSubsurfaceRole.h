@@ -49,14 +49,14 @@ public:
      */
     LSubsurfaceRole(const void *params) noexcept;
 
+    LCLASS_NO_COPY(LSubsurfaceRole)
+
     /**
      * @brief Destructor of the LSubsurfaceRole class.
      *
      * Invoked after LCompositor::onAnticipatedObjectDestruction().
      */
-    ~LSubsurfaceRole() = default;
-
-    LCLASS_NO_COPY(LSubsurfaceRole)
+    ~LSubsurfaceRole() { notifyDestruction(); };
 
     /**
      * @brief Current mode.

@@ -19,6 +19,7 @@ LExclusiveZone::LExclusiveZone(LEdge edge, Int32 size, LOutput *output) noexcept
 
 LExclusiveZone::~LExclusiveZone()
 {
+    notifyDestruction();
     setOutput(nullptr);
 }
 

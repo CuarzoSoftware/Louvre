@@ -17,6 +17,8 @@ LTouch::LTouch(const void *params) noexcept : LFactoryObject(FactoryObjectType)
 
 LTouch::~LTouch() noexcept
 {
+    notifyDestruction();
+
     while (!touchPoints().empty())
     {
         delete m_touchPoints.back();

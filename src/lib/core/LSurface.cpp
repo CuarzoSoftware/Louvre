@@ -33,6 +33,8 @@ LSurface::LSurface(const void *params) noexcept : LFactoryObject(FactoryObjectTy
 
 LSurface::~LSurface()
 {
+    notifyDestruction();
+
     if (imp()->pending.bufferRes)
         wl_list_remove(&imp()->pending.onBufferDestroyListener.link);
 

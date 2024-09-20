@@ -12,15 +12,15 @@
 using namespace Louvre;
 
 static int pipeA[2] =
-    {
-        -1, // Daemon read end
-        -1  // Compositor write end
+{
+    -1, // Daemon read end
+    -1  // Compositor write end
 };
 
 static int pipeB[2] =
-    {
-        -1, // Compositor read end
-        -1  // Daemon write end
+{
+    -1, // Compositor read end
+    -1  // Daemon write end
 };
 
 static pid_t daemonPID = -1;

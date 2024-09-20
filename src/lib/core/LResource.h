@@ -108,7 +108,7 @@ protected:
     /**
      * @brief Destructor for LResource.
      */
-    ~LResource() = default;
+    ~LResource() { notifyDestruction(); };
 
 private:
     LClient *m_client;

@@ -30,7 +30,7 @@ LScene::LScene() : LPRIVATE_INIT_UNIQUE(LScene)
     baseView->m_state.add(LVS::IsScene);
 }
 
-LScene::~LScene() {}
+LScene::~LScene() { notifyDestruction(); }
 
 void LScene::enableAutoRepaint(bool enabled) noexcept
 {

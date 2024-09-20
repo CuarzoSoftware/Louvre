@@ -52,7 +52,7 @@ public:
     /**
      * @brief Destructor for the LTextureView.
      */
-    ~LTextureView() noexcept = default;
+    ~LTextureView() noexcept { notifyDestruction(); };
 
     /**
      * @brief Set the position of the LTextureView.

@@ -66,6 +66,13 @@ public:
     LCLASS_NO_COPY(LDND)
 
     /**
+     * @brief Destructor of the LDND class.
+     *
+     * Invoked after LCompositor::onAnticipatedObjectDestruction().
+     */
+    ~LDND() { notifyDestruction(); };
+
+    /**
      * @brief Drag & drop session icon.
      *
      * LDNDIconRole of the surface used as drag & drop icon.

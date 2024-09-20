@@ -141,7 +141,7 @@ public:
 private:
     friend class LTouch;
     LTouchPoint(const LTouchDownEvent &event) noexcept;
-    ~LTouchPoint() noexcept = default;
+    ~LTouchPoint() noexcept { notifyDestruction(); };
     void sendTouchDownEvent(const LTouchDownEvent &event) noexcept;
     void sendTouchFrameEvent() noexcept;
     void sendTouchCancelEvent() noexcept;

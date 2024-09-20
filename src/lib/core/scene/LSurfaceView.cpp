@@ -16,6 +16,8 @@ LSurfaceView::LSurfaceView(LSurface *surface, LView *parent) noexcept : LView(LV
 
 LSurfaceView::~LSurfaceView() noexcept
 {
+    notifyDestruction();
+
     if (surface())
         LVectorRemoveOneUnordered(surface()->imp()->views, this);
 }

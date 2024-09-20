@@ -11,6 +11,8 @@ LTimer::LTimer(const Callback &onTimeout) noexcept : m_onTimeoutCallback(onTimeo
 
 LTimer::~LTimer()
 {
+    notifyDestruction();
+
     if (compositor()->display())
     {
         wl_event_source_timer_update(m_waylandEventSource, 0);

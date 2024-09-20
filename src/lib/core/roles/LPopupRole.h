@@ -86,14 +86,14 @@ public:
      */
     LPopupRole(const void *params) noexcept;
 
+    LCLASS_NO_COPY(LPopupRole)
+
     /**
      * @brief Destructor of the LPopupRole class.
      *
      * Invoked after LCompositor::onAnticipatedObjectDestruction().
      */
-    ~LPopupRole() = default;
-
-    LCLASS_NO_COPY(LPopupRole)
+    ~LPopupRole() { notifyDestruction(); };
 
     /**
      * @brief Find configuration by serial number.

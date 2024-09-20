@@ -17,6 +17,7 @@ LView::LView(UInt32 type, bool renderable, LView *parent) noexcept  : m_type(typ
 
 LView::~LView() noexcept
 {
+    notifyDestruction();
     setParent(nullptr);
 
     while (!children().empty())

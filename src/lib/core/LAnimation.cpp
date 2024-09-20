@@ -15,6 +15,7 @@ LAnimation::LAnimation(UInt32 durationMs, const Callback &onUpdate, const Callba
 
 LAnimation::~LAnimation()
 {
+    notifyDestruction();
     stop();
 
     auto it { std::find(compositor()->imp()->animations.begin(), compositor()->imp()->animations.end(), this) };

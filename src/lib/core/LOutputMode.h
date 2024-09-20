@@ -16,8 +16,8 @@ class Louvre::LOutputMode final : LObject
 {
 public:
     LOutputMode(LOutput *output, const LSize &size, UInt32 refreshRate, bool isPreferred, void *data) noexcept;
-
     LCLASS_NO_COPY(LOutputMode)
+    ~LOutputMode() { notifyDestruction(); };
 
     /**
      * @brief Gets the output associated with this mode.

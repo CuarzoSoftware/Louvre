@@ -42,6 +42,7 @@ public:
 private:
     friend class LOutput;
     LOutputFramebuffer(LOutput *output) noexcept : LFramebuffer(Output), m_output(output) {}
+    ~LOutputFramebuffer() { notifyDestruction(); };
     LOutput *m_output;
 };
 

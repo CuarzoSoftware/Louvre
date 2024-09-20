@@ -27,7 +27,10 @@ LLayerRole::LLayerRole(const void *params) noexcept :
     });
 }
 
-LLayerRole::~LLayerRole() noexcept {}
+LLayerRole::~LLayerRole() noexcept
+{
+    notifyDestruction();
+}
 
 void LLayerRole::configureSize(const LSize &size) noexcept
 {

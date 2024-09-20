@@ -42,7 +42,7 @@ public:
      *
      * Invoked after LCompositor::onAnticipatedObjectDestruction().
      */
-    ~LSessionLockRole() = default;
+    ~LSessionLockRole() { notifyDestruction(); };
 
     /**
      * @brief The output the surface is assigned to.

@@ -39,6 +39,13 @@ public:
     LSessionLockManager(const void *params) noexcept;
 
     /**
+     * @brief Destructor of the LSessionLockManager class.
+     *
+     * Invoked after LCompositor::onAnticipatedObjectDestruction().
+     */
+    ~LSessionLockManager() { notifyDestruction(); };
+
+    /**
      * @brief Gets the client locking the session.
      *
      * @return A pointer to the client locking the session, or `nullptr` if the session is unlocked or the locking client died.
@@ -96,7 +103,6 @@ public:
      */
     virtual void stateChanged();
 
-    /// @cond OMIT
 private:
     friend class Protocols::SessionLock::RSessionLock;
     friend class LSessionLockRole;
@@ -104,7 +110,6 @@ private:
     LWeak<Protocols::SessionLock::RSessionLock> m_sessionLockRes;
     State m_state { Unlocked };
     std::vector<LSessionLockRole*> m_dummy;
-    /// @endcond
 };
 
 #endif // LSESSIONLOCKMANAGER_H

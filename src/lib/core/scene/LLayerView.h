@@ -25,7 +25,7 @@ public:
     /**
      * @brief Destructor for LLayerView.
      */
-    ~LLayerView() noexcept = default;
+    ~LLayerView() noexcept { notifyDestruction(); };
 
     /**
      * @brief Sets the position of the view.

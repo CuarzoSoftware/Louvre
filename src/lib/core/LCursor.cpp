@@ -115,6 +115,8 @@ LCursor::LCursor() noexcept : LPRIVATE_INIT_UNIQUE(LCursor)
 
 LCursor::~LCursor()
 {
+    notifyDestruction();
+
     compositor()->imp()->cursor = nullptr;
 
     if (imp()->glRenderbuffer)

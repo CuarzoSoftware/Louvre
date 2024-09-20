@@ -13,6 +13,8 @@ LBaseSurfaceRole::LBaseSurfaceRole(Type type, LResource *resource, LSurface *sur
 
 LBaseSurfaceRole::~LBaseSurfaceRole()
 {
+    notifyDestruction();
+
     if (surface())
     {
         auto &tmp { *surface() };

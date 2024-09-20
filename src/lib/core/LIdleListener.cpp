@@ -29,5 +29,6 @@ LIdleListener::LIdleListener(RIdleNotification &resource) noexcept : m_resource(
 
 LIdleListener::~LIdleListener() noexcept
 {
+    notifyDestruction();
     LVectorRemoveOneUnordered(seat()->imp()->idleListeners, (const LIdleListener*)this);
 }

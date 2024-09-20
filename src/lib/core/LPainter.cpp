@@ -317,6 +317,7 @@ LPainter::LPainter() noexcept : LPRIVATE_INIT_UNIQUE(LPainter)
 
 LPainter::~LPainter() noexcept
 {
+    notifyDestruction();
     glDeleteProgram(imp()->programObject);
     glDeleteProgram(imp()->programObjectExternal);
     glDeleteShader(imp()->fragmentShaderExternal);

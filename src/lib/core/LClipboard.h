@@ -42,6 +42,7 @@ public:
      */
     ~LClipboard()
     {
+        notifyDestruction();
         clear();
     }
 

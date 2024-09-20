@@ -17,10 +17,7 @@ LSessionLockManager::LSessionLockManager(const void *params) noexcept : LFactory
     m_sessionLockRes.setOnDestroyCallback([this](auto)
     {
         if (m_state == Locked)
-        {
-            m_sessionLockRes.reset();
             stateChanged();
-        }
     });
 }
 

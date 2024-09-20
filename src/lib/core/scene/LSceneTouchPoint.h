@@ -78,7 +78,7 @@ private:
     friend class LScene;
     friend class LView;
     LSceneTouchPoint(LScene *scene, const LTouchDownEvent &event) noexcept;
-    ~LSceneTouchPoint() noexcept = default;
+    ~LSceneTouchPoint() noexcept { notifyDestruction(); };
     std::vector<LSceneTouchPoint*>::iterator destroy() noexcept;
     std::vector<LView*> m_views;
     LScene *m_scene { nullptr };

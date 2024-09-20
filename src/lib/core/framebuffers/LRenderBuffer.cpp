@@ -25,6 +25,8 @@ LRenderBuffer::LRenderBuffer(const LSize &sizeB, bool alpha) noexcept : LFramebu
 
 LRenderBuffer::~LRenderBuffer() noexcept
 {
+    notifyDestruction();
+
     for (auto &pair : m_threadsMap)
         compositor()->imp()->addRenderBufferToDestroy(pair.first, pair.second);
 }

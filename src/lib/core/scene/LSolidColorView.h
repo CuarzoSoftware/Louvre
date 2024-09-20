@@ -66,7 +66,7 @@ public:
     /**
      * @brief Destructor for the solid color view.
      */
-    ~LSolidColorView() noexcept = default;
+    ~LSolidColorView() noexcept { notifyDestruction(); };
 
     /**
      * @brief Set the color of the solid color view.

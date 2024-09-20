@@ -37,7 +37,10 @@ LOutput::LOutput(const void *params) noexcept : LFactoryObject(FactoryObjectType
         p->callback(this);
 }
 
-LOutput::~LOutput() {}
+LOutput::~LOutput()
+{
+    notifyDestruction();
+}
 
 LSessionLockRole *LOutput::sessionLockRole() const noexcept
 {

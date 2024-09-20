@@ -9,6 +9,8 @@ using namespace Louvre;
 
 LSceneView::~LSceneView() noexcept
 {
+    notifyDestruction();
+
     // Need to remove children before LView destructor
     // or compositor crashes when children add damage
     while (!children().empty())

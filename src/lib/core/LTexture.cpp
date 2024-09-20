@@ -23,6 +23,7 @@ LTexture::LTexture(bool premultipliedAlpha) noexcept : m_premultipliedAlpha(prem
 
 LTexture::~LTexture() noexcept
 {
+    notifyDestruction();
     reset();
     LVectorRemoveOneUnordered(compositor()->imp()->textures, this);
 }

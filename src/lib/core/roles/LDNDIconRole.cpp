@@ -19,6 +19,8 @@ LDNDIconRole::LDNDIconRole(const void *params) noexcept :
 
 LDNDIconRole::~LDNDIconRole()
 {
+    notifyDestruction();
+
     if (surface())
         surface()->imp()->setMapped(false);
 }

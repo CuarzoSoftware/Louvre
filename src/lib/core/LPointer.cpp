@@ -33,7 +33,7 @@ LPointer::LPointer(const void *params) noexcept : LFactoryObject(FactoryObjectTy
 
 LPointer::~LPointer()
 {
-    /* Required by pimpl */
+    notifyDestruction();
 }
 
 void LPointer::setFocus(LSurface *surface) noexcept

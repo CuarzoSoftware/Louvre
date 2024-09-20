@@ -125,7 +125,7 @@ private:
         LEvent *triggeringEvent,
         std::string &&toActivateAppId) noexcept;
 
-    ~LActivationToken() = default;
+    ~LActivationToken() { notifyDestruction(); };
 
     LWeak<LClient> m_creator;
     LWeak<LSurface> m_origin;

@@ -15,6 +15,7 @@ LGlobal::LGlobal(wl_global *global) noexcept : m_global(global)
 
 LGlobal::~LGlobal() noexcept
 {
+    notifyDestruction();
     LLog::debug("[LGlobal] %s destroyed.", interface()->name);
     wl_global_destroy(m_global);
 }

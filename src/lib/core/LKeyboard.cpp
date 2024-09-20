@@ -44,6 +44,8 @@ LKeyboard::LKeyboard(const void *params) noexcept : LFactoryObject(FactoryObject
 
 LKeyboard::~LKeyboard()
 {
+    notifyDestruction();
+
     if (imp()->xkbKeymapFd != -1)
     {
         close(imp()->xkbKeymapFd);

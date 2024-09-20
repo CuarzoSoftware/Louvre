@@ -262,14 +262,14 @@ public:
      */
     LToplevelRole(const void *params) noexcept;
 
+    LCLASS_NO_COPY(LToplevelRole)
+
     /**
      * @brief Destructor of the LToplevelRole class.
      *
      * Invoked after LCompositor::onAnticipatedObjectDestruction().
      */
-    ~LToplevelRole() = default;
-
-    LCLASS_NO_COPY(LToplevelRole)
+    ~LToplevelRole() { notifyDestruction(); };
 
     /**
      * @brief Find configuration by serial number.

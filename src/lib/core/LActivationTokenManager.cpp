@@ -13,6 +13,8 @@ LActivationTokenManager::LActivationTokenManager(const void *params) noexcept : 
 
 LActivationTokenManager::~LActivationTokenManager() noexcept
 {
+    notifyDestruction();
+
     for (auto it = m_tokens.begin(); it != m_tokens.end();)
         it = (*it).second->destroy();
 }

@@ -31,6 +31,8 @@ LClient::LClient(const void *params) noexcept : LFactoryObject(FactoryObjectType
 
 LClient::~LClient()
 {
+    notifyDestruction();
+
     if (imp()->destroyed)
         compositor()->imp()->destroyedClients.erase(this);
 }

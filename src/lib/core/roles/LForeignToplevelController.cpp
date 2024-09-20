@@ -18,6 +18,8 @@ LForeignToplevelController::LForeignToplevelController(const void *params) noexc
 
 LForeignToplevelController::~LForeignToplevelController() noexcept
 {
+    notifyDestruction();
+
     if (toplevelRole())
         LVectorRemoveOneUnordered(toplevelRole()->m_foreignControllers, this);
 }

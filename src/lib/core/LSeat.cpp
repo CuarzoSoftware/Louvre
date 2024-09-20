@@ -51,11 +51,14 @@ LSeat::LSeat(const void *params) : LFactoryObject(FactoryObjectType), LPRIVATE_I
 
 LSeat::~LSeat()
 {
+    notifyDestruction();
+
     if (imp()->libseatHandle)
     {
         libseat_close_seat(imp()->libseatHandle);
         imp()->libseatHandle = nullptr;
-    }}
+    }
+}
 
 const std::vector<LOutput *> &LSeat::outputs() const noexcept
 {
