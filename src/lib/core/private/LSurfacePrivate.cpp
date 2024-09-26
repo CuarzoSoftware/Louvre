@@ -480,7 +480,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture() noexcept
         else
         {
             LLog::error("[LSurfacePrivate::bufferToTexture] Unknown buffer type. Killing client.");
-            wl_client_destroy(surfaceResource->client()->client());
+            wl_resource_post_error(surfaceResource->resource(), 0, "Unknown buffer type.");
             return false;
         }
     }
