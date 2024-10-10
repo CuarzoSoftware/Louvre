@@ -101,7 +101,10 @@ RSurface::~RSurface()
 
     // Destroy pending frame callbacks
     while (!lSurface->imp()->frameCallbacks.empty())
+    {
+        lSurface->imp()->frameCallbacks.front()->done(LTime::ms());
         lSurface->imp()->frameCallbacks.front()->destroy();
+    }
 
     // Clear active toplevel focus
     if (seat()->imp()->activeToplevel == lSurface->toplevel())
@@ -252,10 +255,14 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
 
     for (LSurface *s : surface->children())
     {
-        if (s->role() && !s->imp()->stateFlags.check(LSurface::LSurfacePrivate::ParentCommitNotified))
+        if (!s->imp()->stateFlags.check(LSurface::LSurfacePrivate::ParentCommitNotified))
         {
             s->imp()->stateFlags.add(LSurface::LSurfacePrivate::ParentCommitNotified);
-            s->role()->handleParentCommit();
+
+            if (s->role())
+                s->role()->handleParentCommit();
+            else if (s->imp()->pending.role)
+                s->imp()->pending.role->handleParentCommit();
 
             if (imp.stateFlags.check(LSurface::LSurfacePrivate::ChildrenListChanged))
                 goto retryParentCommitNotif;

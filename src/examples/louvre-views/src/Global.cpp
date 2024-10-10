@@ -6,6 +6,7 @@
 #include <LSeat.h>
 #include <LUtils.h>
 #include <LOutputMode.h>
+#include <LClient.h>
 #include <stdio.h>
 
 #include "Global.h"
@@ -25,6 +26,7 @@ static std::vector<App*>_apps;
 static Tooltip *_tooltip;
 static G::Textures _textures;
 static G::ToplevelRegions _toplevelRegions;
+static LWeak<LClient> _shelf;
 
 LScene *G::scene()
 {
@@ -135,6 +137,19 @@ void G::loadApps()
 std::vector<App *> &G::apps()
 {
     return _apps;
+}
+
+void G::setShelf(LClient *client)
+{
+    _shelf.reset(client);
+
+    for (Output *o : outputs())
+        o->dock.setVisible(client == nullptr);
+}
+
+LClient *G::shelf()
+{
+    return _shelf;
 }
 
 void G::createTooltip()

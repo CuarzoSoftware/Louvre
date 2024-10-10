@@ -15,6 +15,7 @@ using namespace Louvre;
 class Compositor;
 class Toplevel;
 class Workspace;
+class LayerRole;
 
 class Output final : public LOutput
 {
@@ -54,6 +55,7 @@ public:
 
     Topbar topbar { this };
     Dock dock { this };
+    LWeak<LayerRole> shelf;
 
     void updateWallpaper() noexcept;
     LTextureView wallpaper;

@@ -465,7 +465,11 @@ public:
         }
     }
 
-    static void keyboardHandleLeave(void *, wl_keyboard*, UInt32 /*serial*/, wl_surface *) {}
+    static void keyboardHandleLeave(void *, wl_keyboard*, UInt32 /*serial*/, wl_surface *)
+    {
+        while (!Louvre::seat()->keyboard()->pressedKeys().empty())
+            keyboardHandleKey(nullptr, nullptr, LTime::nextSerial(), LTime::ms(), Louvre::seat()->keyboard()->pressedKeys().back(), WL_KEYBOARD_KEY_STATE_RELEASED);
+    }
 
     static void keyboardHandleKey(void *, wl_keyboard*, UInt32 serial, UInt32 time, UInt32 key, UInt32 state)
     {

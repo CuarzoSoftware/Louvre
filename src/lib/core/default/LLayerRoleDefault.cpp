@@ -105,6 +105,9 @@ void LLayerRole::atomsChanged(LBitset<AtomChanges> changes, const Atoms &prevAto
         }
     }
 
+    if (changes.check(MarginsChanged))
+        surface()->requestNextFrame(false);
+
     if (exclusiveOutput() && changes.check(
             ExclusiveEdgeChanged | ExclusiveZoneSizeChanged |
             SizeChanged | AnchorChanged | LayerChanged | MarginsChanged))

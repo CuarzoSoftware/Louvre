@@ -265,6 +265,7 @@ void Toplevel::unsetFullscreenRequest()
     surf()->setPos(0, 0);
     tmp.setPos(fullscreenOutput->pos());
     tmp.render();
+    glFinish();
     captureTexture.reset(tmp.texture()->copy());
     captureView.setTexture(captureTexture.get());
     captureView.setBufferScale(tmp.bufferScale());
@@ -406,6 +407,8 @@ void Toplevel::activatedChanged()
             if (o && o->currentWorkspace != o->workspaces.front())
                 o->setWorkspace(o->workspaces.front(), 600.f, 4.f);
         }
+        else if (fullscreenWorkspace && !fullscreenWorkspace->output->workspacesAnimation.running())
+            fullscreenWorkspace->output->setWorkspace(fullscreenWorkspace, 600.f, 4.f);
     }
 }
 

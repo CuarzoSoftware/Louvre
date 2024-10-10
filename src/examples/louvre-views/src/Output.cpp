@@ -22,6 +22,7 @@
 #include "Toplevel.h"
 #include "Surface.h"
 #include "ToplevelView.h"
+#include "LayerRole.h"
 
 Output::Output(const void *params) noexcept : LOutput(params)
 {
@@ -356,13 +357,15 @@ bool Output::tryFullscreenScanoutIfNoOverlayContent() noexcept
         fullscreenSurface = currentWorkspace->toplevel->surface();
 
     if (!fullscreenSurface
+        || fullscreenSurface->bufferTransform() != transform()
         || (cursor()->visible() && !cursor()->hwCompositingEnabled(this))
         || !screenshotRequests().empty()
         || doingFingerWorkspaceSwipe
         || workspacesAnimation.running()
         || dock.visiblePercent != 0.f
         || hasMappedChildren(fullscreenSurface)
-        || zoom != 1.f)
+        || zoom != 1.f
+        || (shelf && shelf->surface()->size().h() + shelf->margins().bottom > 4))
         return false;
 
     const bool ret { setCustomScanoutBuffer(fullscreenSurface->texture()) };

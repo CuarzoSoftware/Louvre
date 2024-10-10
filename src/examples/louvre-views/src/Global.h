@@ -211,6 +211,8 @@ public:
     static void enableDocks(bool enabled);
     static void loadApps();
     static std::vector<App *> &apps();
+    static void setShelf(LClient *client);
+    static LClient *shelf();
 
     // Tooltip
     static void createTooltip();

@@ -5,6 +5,7 @@ executable(
     [sources, common_src],
     dependencies : [
         louvre_dep,
+        glesv2_dep,
         wayland_server_dep,
         input_dep,
         fontconfig_dep,

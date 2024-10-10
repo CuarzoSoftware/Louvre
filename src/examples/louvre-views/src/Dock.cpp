@@ -152,6 +152,14 @@ void Dock::update()
 
 void Dock::show()
 {
+    if (G::shelf())
+    {
+        setParent(nullptr);
+        return;
+    }
+
+    setParent(&G::compositor()->overlayLayer);
+
     if (anim.running() || visiblePercent != 0.f)
         return;
 

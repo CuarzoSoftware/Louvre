@@ -3,6 +3,7 @@
 #include <protocols/SinglePixelBuffer/LSinglePixelBuffer.h>
 #include <protocols/FractionalScale/RFractionalScale.h>
 #include <protocols/LinuxDMABuf/LDMABuffer.h>
+#include <protocols/Wayland/RCallback.h>
 #include <protocols/Wayland/RSurface.h>
 #include <protocols/Wayland/GOutput.h>
 #include <private/LCompositorPrivate.h>
@@ -100,6 +101,16 @@ void LSurface::LSurfacePrivate::setMapped(bool state)
     if (stateFlags.check(Mapped) != state)
     {
         stateFlags.setFlag(Mapped, state);
+
+        if (!state)
+        {
+            while (!frameCallbacks.empty())
+            {
+                frameCallbacks.front()->done(LTime::ms());
+                frameCallbacks.front()->destroy();
+            }
+        }
+
         surface->mappingChanged();
 
         /* We create a copy of the childrens list

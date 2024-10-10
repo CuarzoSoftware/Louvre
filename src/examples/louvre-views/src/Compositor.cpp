@@ -20,6 +20,7 @@
 #include "ToplevelView.h"
 #include "Popup.h"
 #include "SessionLockManager.h"
+#include "LayerRole.h"
 
 #include "../../common/TextRenderer.h"
 
@@ -126,6 +127,9 @@ LFactoryObject *Compositor::createObjectRequest(LFactoryObject::Type type, const
 
     if (type == LFactoryObject::Type::LPopupRole)
         return new Popup(params);
+
+    if (type == LFactoryObject::Type::LLayerRole)
+        return new LayerRole(params);
 
     if (type == LFactoryObject::Type::LClient)
         return new Client(params);

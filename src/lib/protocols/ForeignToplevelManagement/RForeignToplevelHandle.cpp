@@ -99,7 +99,6 @@ void RForeignToplevelHandle::updateState() noexcept
         states[arr.size++] = ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_FULLSCREEN;
 
     arr.size *= sizeof(states[0]);
-    arr.alloc = arr.size;
     state(&arr);
 }
 
