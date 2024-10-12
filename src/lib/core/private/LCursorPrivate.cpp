@@ -118,6 +118,8 @@ void texture2Buffer(LCursor *cursor, const LSizeF &size, LTransform transform) n
     painter->drawRect(LRect(0, size));
     glEnable(GL_BLEND);
 
+    glFinish();
+
     if (painter->imp()->openGLExtensions.EXT_read_format_bgra)
         glReadPixels(0, 0, 64, 64, GL_BGRA_EXT , GL_UNSIGNED_BYTE, cursor->imp()->buffer);
     else

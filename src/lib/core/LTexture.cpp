@@ -326,6 +326,7 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
         ret = textureCopy->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
         glDeleteFramebuffers(1, &framebuffer);
         glUseProgram(prevProgram);
+        glFinish();
 
         if (ret)
             return textureCopy;
@@ -364,6 +365,7 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
             textureCopy = new LTexture(premultipliedAlpha());
             ret = textureCopy->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
             glDeleteFramebuffers(1, &framebuffer);
+            glFinish();
         }
         // Scaled draw to new texture fb
         else
@@ -402,6 +404,7 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
             ret = textureCopy->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
             glDeleteFramebuffers(1, &framebuffer);
             painter->bindFramebuffer(prevFb);
+            glFinish();
         }
     }
 
