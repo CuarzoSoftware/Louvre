@@ -703,6 +703,12 @@ Int32 LGraphicBackend::outputGetSubPixel(LOutput *output)
 
 /* OUTPUT BUFFERING */
 
+UInt32 LGraphicBackend::outputGetFramebufferID(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorGetFramebufferID(bkndOutput->conn);
+}
+
 Int32 LGraphicBackend::outputGetCurrentBufferIndex(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
@@ -984,6 +990,7 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.outputGetSubPixel               = &LGraphicBackend::outputGetSubPixel;
 
     /* OUTPUT BUFFERING */
+    API.outputGetFramebufferID          = &LGraphicBackend::outputGetFramebufferID;
     API.outputGetCurrentBufferIndex     = &LGraphicBackend::outputGetCurrentBufferIndex;
     API.outputGetBuffersCount           = &LGraphicBackend::outputGetBuffersCount;
     API.outputGetBuffer                 = &LGraphicBackend::outputGetBuffer;

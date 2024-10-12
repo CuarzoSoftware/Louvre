@@ -900,6 +900,11 @@ public:
         return WL_OUTPUT_SUBPIXEL_UNKNOWN;
     }
 
+    static UInt32 outputGetFramebufferID(LOutput */*output*/)
+    {
+        return 0;
+    }
+
     static Int32 outputGetCurrentBufferIndex(LOutput */*output*/)
     {
         return 0;
@@ -1216,6 +1221,7 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.outputGetSubPixel               = &LGraphicBackend::outputGetSubPixel;
 
     /* OUTPUT BUFFERING */
+    API.outputGetFramebufferID          = &LGraphicBackend::outputGetFramebufferID;
     API.outputGetCurrentBufferIndex     = &LGraphicBackend::outputGetCurrentBufferIndex;
     API.outputGetBuffersCount           = &LGraphicBackend::outputGetBuffersCount;
     API.outputGetBuffer                 = &LGraphicBackend::outputGetBuffer;

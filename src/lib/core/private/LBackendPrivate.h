@@ -48,6 +48,7 @@ namespace Louvre
         Int32                               (*outputGetSubPixel)(LOutput *output);
 
         /* OUTPUT BUFFERING */
+        UInt32                              (*outputGetFramebufferID)(LOutput *output);
         Int32                               (*outputGetCurrentBufferIndex)(LOutput *output);
         UInt32                              (*outputGetBuffersCount)(LOutput *output);
         LTexture *                          (*outputGetBuffer)(LOutput *output, UInt32 bufferIndex);

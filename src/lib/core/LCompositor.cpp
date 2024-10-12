@@ -99,7 +99,6 @@ LCompositor::LCompositor() noexcept : LPRIVATE_INIT_UNIQUE(LCompositor)
     imp()->glEGLImageTargetRenderbufferStorageOES = (PFNGLEGLIMAGETARGETRENDERBUFFERSTORAGEOESPROC) eglGetProcAddress ("glEGLImageTargetRenderbufferStorageOES");
     imp()->glEGLImageTargetTexture2DOES = (PFNGLEGLIMAGETARGETTEXTURE2DOESPROC) eglGetProcAddress ("glEGLImageTargetTexture2DOES");
 
-
     imp()->defaultAssetsPath = LOUVRE_DEFAULT_ASSETS_PATH;
     imp()->defaultBackendsPath = LOUVRE_DEFAULT_BACKENDS_PATH;
     imp()->defaultGraphicBackendName = LOUVRE_DEFAULT_GRAPHIC_BACKEND;

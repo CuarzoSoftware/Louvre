@@ -1,4 +1,5 @@
 #include <private/LOutputPrivate.h>
+#include <private/LCompositorPrivate.h>
 #include <LOutputFramebuffer.h>
 
 using namespace Louvre;
@@ -23,7 +24,7 @@ GLuint LOutputFramebuffer::id() const noexcept
     if (m_output->usingFractionalScale() && m_output->fractionalOversamplingEnabled())
         return m_output->imp()->fractionalFb.id();
 
-    return 0;
+    return compositor()->imp()->graphicBackend->outputGetFramebufferID(m_output);
 }
 
 Int32 LOutputFramebuffer::buffersCount() const noexcept

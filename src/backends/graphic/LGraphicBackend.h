@@ -49,6 +49,7 @@ public:
     static Int32                            outputGetSubPixel(LOutput *output);
 
     /* OUTPUT BUFFERING */
+    static UInt32                           outputGetFramebufferID(LOutput *output);
     static Int32                            outputGetCurrentBufferIndex(LOutput *output);
     static UInt32                           outputGetBuffersCount(LOutput *output);
     static LTexture *                       outputGetBuffer(LOutput *output, UInt32 bufferIndex);
