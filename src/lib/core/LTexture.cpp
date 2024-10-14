@@ -236,7 +236,7 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
     }
 
     GLuint textureId { id(painter->imp()->output) };
-    LTexture *textureCopy;
+    LTexture *textureCopy { nullptr };
     bool ret = false;
 
     if (highQualityScaling)
@@ -287,6 +287,16 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
         LTexture::LTexturePrivate::setTextureParams(texCopy, GL_TEXTURE_2D, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dstSize.w(), dstSize.h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texCopy, 0);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        {
+            glDeleteTextures(1, &texCopy);
+            glDeleteFramebuffers(1, &framebuffer);
+            glUseProgram(prevProgram);
+            LLog::error("[LTexture::copyB] glCheckFramebufferStatus failed. Skipping highQualityScaling.");
+            goto skipHQ;
+        }
+
         glDisable(GL_BLEND);
         glScissor(0, 0, dstSize.w(), dstSize.h());
         glViewport(0, 0, dstSize.w(), dstSize.h());
@@ -329,9 +339,12 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
         glFinish();
 
         if (ret)
+        {
+            LLog::debug("[LTexture::copyB] New texture copy (highQualityScaling = true).");
             return textureCopy;
+        }
 
-        LLog::error("[LTexture::copyB] Failed to create texture. Graphics backend error.");
+        LLog::error("[LTexture::copyB] Failed to create texture. Graphic backend error.");
         delete textureCopy;
         return nullptr;
     }
@@ -355,6 +368,13 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
             glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0);
 
+            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            {
+                glDeleteFramebuffers(1, &framebuffer);
+                LLog::error("[LTexture::copyB] glCheckFramebufferStatus failed. Skipping glCopyTexImage2D method.");
+                goto skipAll;
+            }
+
             GLuint texCopy;
             glGenTextures(1, &texCopy);
             LTexture::LTexturePrivate::setTextureParams(texCopy, GL_TEXTURE_2D,
@@ -366,6 +386,9 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
             ret = textureCopy->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
             glDeleteFramebuffers(1, &framebuffer);
             glFinish();
+
+            LLog::debug("[LTexture::copyB] New texture copy (glCopyTexImage2 method).");
+
         }
         // Scaled draw to new texture fb
         else
@@ -382,6 +405,14 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dstSize.w(), dstSize.h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texCopy, 0);
 
+            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            {
+                glDeleteTextures(1, &texCopy);
+                glDeleteFramebuffers(1, &framebuffer);
+                LLog::error("[LTexture::copyB] glCheckFramebufferStatus failed. Skipping lowQualityScaling method.");
+                goto skipAll;
+            }
+
             LFramebufferWrapper wrapperFb(framebuffer, dstSize);
             painter->bindFramebuffer(&wrapperFb);
             painter->enableCustomTextureColor(false);
@@ -390,7 +421,7 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
             painter->setAlpha(1.f);
             painter->bindTextureMode({
                 .texture = (LTexture*)this,
-                           .pos = LPoint(0,0),
+                .pos = LPoint(0,0),
                 .srcRect = srcRect,
                 .dstSize = dstSize,
                 .srcTransform = LTransform::Normal,
@@ -405,16 +436,20 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
             glDeleteFramebuffers(1, &framebuffer);
             painter->bindFramebuffer(prevFb);
             glFinish();
+            LLog::debug("[LTexture::copyB] New texture copy (highQualityScaling = false).");
         }
     }
+
+skipAll:
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     if (ret)
         return textureCopy;
 
-    LLog::error("[LTexture::copyB] Failed to create texture. Graphical backend error.");
-    delete textureCopy;
+    LLog::error("[LTexture::copyB] Failed to create texture. Graphica backend error.");
+    if (textureCopy)
+        delete textureCopy;
     return nullptr;
 }
 
