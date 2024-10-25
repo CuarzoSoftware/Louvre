@@ -158,7 +158,7 @@ Int8 LScreenshotRequest::copy() noexcept
         LTexture *outputTexture { resource().output()->bufferTexture(resource().output()->currentBuffer()) };
         LPainter &p { *resource().output()->painter() };
         LFramebuffer *prevFb { p.boundFramebuffer() };
-        glFinish();
+        /* TODO: glFinish();*/
         p.setAlpha(1.f);
         p.setColorFactor(1.f, 1.f, 1.f, 1.f);
         p.bindFramebuffer(&glFb);
@@ -173,7 +173,7 @@ Int8 LScreenshotRequest::copy() noexcept
         });
         glDisable(GL_BLEND);
         p.drawRect(resource().rectB());
-        glFinish();
+        /* TODO: glFinish(); */
         p.bindFramebuffer(prevFb);
         glDeleteFramebuffers(1, &fb);
         glDeleteRenderbuffers(1, &rb);

@@ -332,15 +332,14 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
         painter->imp()->shaderSetMode(LPainter::LPainterPrivate::LegacyMode);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         textureCopy = new LTexture(premultipliedAlpha());
-        glFinish();
         ret = textureCopy->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
         glDeleteFramebuffers(1, &framebuffer);
         glUseProgram(prevProgram);
-        glFinish();
 
         if (ret)
         {
             LLog::debug("[LTexture::copyB] New texture copy (highQualityScaling = true).");
+            glFinish();
             return textureCopy;
         }
 
@@ -381,12 +380,9 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
                                     GL_REPEAT, GL_REPEAT,
                                     GL_LINEAR, GL_LINEAR);
             glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, srcRect.x(), srcRect.y(), srcRect.w(), srcRect.h(), 0);
-            glFinish();
             textureCopy = new LTexture(premultipliedAlpha());
             ret = textureCopy->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
             glDeleteFramebuffers(1, &framebuffer);
-            glFinish();
-
             LLog::debug("[LTexture::copyB] New texture copy (glCopyTexImage2 method).");
 
         }
@@ -430,12 +426,10 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
             glDisable(GL_BLEND);
             painter->drawRect(LRect(0, dstSize));
             glEnable(GL_BLEND);
-            glFinish();
             textureCopy = new LTexture(premultipliedAlpha());
             ret = textureCopy->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
             glDeleteFramebuffers(1, &framebuffer);
             painter->bindFramebuffer(prevFb);
-            glFinish();
             LLog::debug("[LTexture::copyB] New texture copy (highQualityScaling = false).");
         }
     }
@@ -445,7 +439,10 @@ skipAll:
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     if (ret)
+    {
+        glFinish();
         return textureCopy;
+    }
 
     LLog::error("[LTexture::copyB] Failed to create texture. Graphica backend error.");
     if (textureCopy)

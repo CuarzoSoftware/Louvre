@@ -265,7 +265,6 @@ void Toplevel::unsetFullscreenRequest()
     surf()->setPos(0, 0);
     tmp.setPos(fullscreenOutput->pos());
     tmp.render();
-    glFinish();
     captureTexture.reset(tmp.texture()->copy());
     captureView.setTexture(captureTexture.get());
     captureView.setBufferScale(tmp.bufferScale());
