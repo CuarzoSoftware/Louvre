@@ -148,7 +148,8 @@ void LSceneView::render(const LRegion *exclude) noexcept
         ctd.opaqueSum.clip(m_fb->rect());
         ctd.translucentSum = ctd.opaqueSum;
         ctd.translucentSum.inverse(m_fb->rect());
-        glFinish();
+        auto &rb = *static_cast<LRenderBuffer*>(m_fb);
+        rb.setFence();
     }
     else
     {

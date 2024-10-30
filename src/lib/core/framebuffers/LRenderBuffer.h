@@ -22,9 +22,8 @@ public:
      * This constructor creates an LRenderBuffer with the specified size in buffer coordinates.
      *
      * @param sizeB The size of the framebuffer in buffer coordinates.
-     * @param alpha Employ a format with an alpha component.
      */
-    LRenderBuffer(const LSize &sizeB, bool alpha = true) noexcept;
+    LRenderBuffer(const LSize &sizeB) noexcept;
 
     LCLASS_NO_COPY(LRenderBuffer)
 
@@ -52,6 +51,16 @@ public:
      * @return A pointer to the texture associated with the framebuffer.
      */
     LTexture *texture(Int32 index = 0) const noexcept override;
+
+    /**
+     * @brief Sets a fence for synchronization after rendering operations.
+     *
+     * This method should be called after rendering is complete on the renderbuffer.
+     *
+     * It ensures that all rendering commands are finished before the texture is used
+     * elsewhere, preventing potential data inconsistencies or rendering artifacts.
+     */
+    void setFence() noexcept;
 
     /**
      * @brief Set the size of the framebuffer in buffer coordinates.

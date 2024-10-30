@@ -121,6 +121,7 @@ void LOutput::LOutputPrivate::blitFractionalScaleFb(bool cursorOnly) noexcept
     painter->enableAutoBlendFunc(true);
     painter->setAlpha(1.f);
     painter->setColorFactor(1.f, 1.f, 1.f, 1.f);
+    fractionalFb.setFence();
     painter->bindTextureMode({
         .texture = fractionalFb.texture(0),
         .pos = rect.pos(),

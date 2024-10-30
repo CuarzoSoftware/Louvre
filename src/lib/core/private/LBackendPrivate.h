@@ -27,9 +27,11 @@ namespace Louvre
         bool                                (*textureCreateFromCPUBuffer)(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels);
         bool                                (*textureCreateFromWaylandDRM)(LTexture *texture, void *wlBuffer);
         bool                                (*textureCreateFromDMA)(LTexture *texture, const LDMAPlanes *planes);
+        bool                                (*textureCreateFromGL)(LTexture *texture, GLuint id, GLenum target, UInt32 format, const LSize &size, bool transferOwnership);
         bool                                (*textureUpdateRect)(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels);
         UInt32                              (*textureGetID)(LOutput *output, LTexture *texture);
         GLenum                              (*textureGetTarget)(LTexture *texture);
+        void                                (*textureSetFence)(LTexture *texture);
         void                                (*textureDestroy)(LTexture *texture);
 
         /* OUTPUT */

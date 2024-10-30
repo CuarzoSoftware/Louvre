@@ -68,8 +68,16 @@ public:
     {
         mainThreadARGB.setDataFromMainMemory(LSize(2, 2), 2 * 4, DRM_FORMAT_ARGB8888, pixelsARGB);
         mainThreadABGR.setDataFromMainMemory(LSize(2, 2), 2 * 4, DRM_FORMAT_ABGR8888, pixelsABGR);
+
+        mainThreadARGB.updateRect(LRect(0, 0, 2, 2), 2 * 4, pixelsARGB);
+        mainThreadABGR.updateRect(LRect(0, 0, 2, 2), 2 * 4, pixelsABGR);
+
         mainThreadARGBUpdated.setDataFromMainMemory(LSize(2, 2), 2 * 4, DRM_FORMAT_ARGB8888, pixelsARGB);
         mainThreadABGRUpdated.setDataFromMainMemory(LSize(2, 2), 2 * 4, DRM_FORMAT_ABGR8888, pixelsABGR);
+
+        mainThreadARGBUpdated.updateRect(LRect(0, 0, 2, 2), 2 * 4, pixelsARGB);
+        mainThreadABGRUpdated.updateRect(LRect(0, 0, 2, 2), 2 * 4, pixelsABGR);
+
         mainThreadARGBCopy = mainThreadARGB.copy();
         mainThreadABGRCopy = mainThreadABGR.copy();
 
@@ -115,8 +123,16 @@ public:
         painter()->setClearColor(0.f, 0.f, 0.f, 1.f);
         outputThreadARGB.setDataFromMainMemory(LSize(2, 2), 2 * 4, DRM_FORMAT_ARGB8888, pixelsARGB);
         outputThreadABGR.setDataFromMainMemory(LSize(2, 2), 2 * 4, DRM_FORMAT_ABGR8888, pixelsABGR);
+
+        outputThreadARGB.updateRect(LRect(0, 0, 2, 2), 2 * 4, pixelsARGB);
+        outputThreadABGR.updateRect(LRect(0, 0, 2, 2), 2 * 4, pixelsABGR);
+
         outputThreadARGBUpdated.setDataFromMainMemory(LSize(2, 2), 2 * 4, DRM_FORMAT_ARGB8888, pixelsARGB);
         outputThreadABGRUpdated.setDataFromMainMemory(LSize(2, 2), 2 * 4, DRM_FORMAT_ABGR8888, pixelsABGR);
+
+        outputThreadARGBUpdated.updateRect(LRect(0, 0, 2, 2), 2 * 4, pixelsARGB);
+        outputThreadABGRUpdated.updateRect(LRect(0, 0, 2, 2), 2 * 4, pixelsABGR);
+
         outputThreadARGBCopy = outputThreadARGB.copy();
         outputThreadABGRCopy = outputThreadABGR.copy();
     }

@@ -8,16 +8,9 @@
 
 using namespace Louvre;
 
-LRenderBuffer::LRenderBuffer(const LSize &sizeB, bool alpha) noexcept : LFramebuffer(RenderBuffer)
+LRenderBuffer::LRenderBuffer(const LSize &sizeB) noexcept : LFramebuffer(RenderBuffer)
 {
     m_texture.m_sourceType = LTexture::Framebuffer;
-
-    if (alpha)
-        m_texture.m_format = DRM_FORMAT_BGRA8888;
-    else
-        m_texture.m_format = DRM_FORMAT_BGRX8888;
-
-    m_texture.m_graphicBackendData = this;
     m_texture.m_sizeB.setW(1);
     m_texture.m_sizeB.setH(1);
     setSizeB(sizeB);
@@ -56,6 +49,11 @@ LTexture *LRenderBuffer::texture(Int32 index) const noexcept
     return &m_texture;
 }
 
+void LRenderBuffer::setFence() noexcept
+{
+    m_texture.setFence();
+}
+
 void LRenderBuffer::setFramebufferDamage(const LRegion *damage) noexcept
 {
     L_UNUSED(damage);
@@ -90,18 +88,18 @@ GLuint LRenderBuffer::id() const noexcept
         glGenFramebuffers(1, &data.framebufferId);
         glBindFramebuffer(GL_FRAMEBUFFER, data.framebufferId);
 
-        if (!m_texture.m_nativeId)
+        if (!m_texture.initialized())
         {
-            glGenTextures(1, &m_texture.m_nativeId);
-            LTexture::LTexturePrivate::setTextureParams(m_texture.m_nativeId, GL_TEXTURE_2D, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
-
-            if (m_texture.format() == DRM_FORMAT_BGRA8888)
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_texture.sizeB().w(), m_texture.sizeB().h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-            else
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_texture.sizeB().w(), m_texture.sizeB().h(), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+            GLuint tex;
+            glGenTextures(1, &tex);
+            LTexture::LTexturePrivate::setTextureParams(tex, GL_TEXTURE_2D, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_texture.sizeB().w(), m_texture.sizeB().h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+            m_texture.m_sourceType = LTexture::GL;
+            m_texture.setDataFromGL(tex, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, m_texture.sizeB(), true);
+            m_texture.m_sourceType = LTexture::Framebuffer;
         }
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture.m_nativeId, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture.id(nullptr), 0);
     }
 
     return data.framebufferId;

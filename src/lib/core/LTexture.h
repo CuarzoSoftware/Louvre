@@ -97,7 +97,7 @@ namespace Louvre
             Framebuffer = 3,
 
             /// Sourced from a native OpenGL ES 2.0 texture
-            Native = 4
+            GL = 4
         };
 
         /**
@@ -171,6 +171,19 @@ namespace Louvre
         bool setDataFromDMA(const LDMAPlanes &planes) noexcept;
 
         /**
+         * @brief Creates a wrapper around an existing OpenGL texture.
+         *
+         * @param id The OpenGL texture ID.
+         * @param target The OpenGL target for the texture (e.g., GL_TEXTURE_2D).
+         * @param format The format of the texture data (specified as a DRM format).
+         * @param size The dimensions of the texture in pixels.
+         * @param transferOwnership If set to `true`, the texture will be automatically destroyed when the LTexture is destroyed or replaced.
+         *
+         * @return `true` if the texture data was successfully set, `false` otherwise.
+         */
+        bool setDataFromGL(GLuint id, GLenum target, UInt32 format, const LSize &size, bool transferOwnership) noexcept;
+
+        /**
          * @brief Update a specific area of the texture with the provided buffer.
          *
          * The provided buffer must have the same format as the texture.\n
@@ -205,6 +218,14 @@ namespace Louvre
          * @return `true` if the save operation is successful, `false` otherwise.
          */
         bool save(const std::filesystem::path &name) const noexcept;
+
+        /**
+         * @brief Sets a synchronization fence.
+         *
+         * This method should be called after rendering is performed into the texture
+         * or the pixel data is updated via functions not defined within LTexture.
+         */
+        void setFence() noexcept;
 
         /**
          * @brief Gets the size of the texture in buffer coordinates.
@@ -249,9 +270,6 @@ namespace Louvre
             {
                 if (sourceType() == Framebuffer)
                     return GL_TEXTURE_2D;
-
-                else if (sourceType() == Native)
-                    return m_nativeTarget;
 
                 return backendTarget();
             }
@@ -335,18 +353,12 @@ namespace Louvre
         UInt32 m_format { 0 };
         BufferSourceType m_sourceType { CPU };
         UInt32 m_serial { 0 };
-
-        // Native OpenGL Texture
-        GLenum m_nativeTarget { 0 };
-        LWeak<LOutput> m_nativeOutput;
-        GLuint m_nativeId { 0 };
         bool m_pendingDelete { false };
         mutable bool m_premultipliedAlpha;
 
         LWeak<LSurface> m_surface;
         GLenum backendTarget() const noexcept;
         void reset() noexcept;
-        bool setDataB(GLuint textureId, GLenum target, UInt32 format, const LSize &size, LOutput *output) noexcept;
     };
 };
 

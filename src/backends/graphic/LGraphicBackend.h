@@ -28,9 +28,11 @@ public:
     static bool                             textureCreateFromCPUBuffer(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels);
     static bool                             textureCreateFromWaylandDRM(LTexture *texture,void *wlBuffer);
     static bool                             textureCreateFromDMA(LTexture *texture, const LDMAPlanes *planes);
+    static bool                             textureCreateFromGL(LTexture *texture, GLuint id, GLenum target, UInt32 format, const LSize &size, bool transferOwnership);
     static bool                             textureUpdateRect(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels);
     static UInt32                           textureGetID(LOutput *output, LTexture *texture);
     static GLenum                           textureGetTarget(LTexture *texture);
+    static void                             textureSetFence(LTexture *texture);
     static void                             textureDestroy(LTexture *texture);
 
     /* OUTPUT */

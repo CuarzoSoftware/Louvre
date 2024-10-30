@@ -28,11 +28,11 @@
 #include <LGammaTable.h>
 #include <LOutputMode.h>
 
+#include <private/SRMBufferPrivate.h>
 #include <SRMCore.h>
 #include <SRMDevice.h>
 #include <SRMConnector.h>
 #include <SRMConnectorMode.h>
-#include <SRMBuffer.h>
 #include <SRMListener.h>
 #include <SRMList.h>
 #include <SRMFormat.h>
@@ -551,6 +551,24 @@ bool LGraphicBackend::textureCreateFromDMA(LTexture *texture, const LDMAPlanes *
     return false;
 }
 
+bool LGraphicBackend::textureCreateFromGL(LTexture *texture, GLuint id, GLenum target, UInt32 format, const LSize &size, bool transferOwnership)
+{
+    Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
+    SRMBuffer *bkndBuffer = srmBufferCreateGLTextureWrapper(
+        srmCoreGetAllocatorDevice(bknd->core), id, target, format, size.w(), size.h(), transferOwnership);
+
+    if (bkndBuffer)
+    {
+        texture->m_graphicBackendData = bkndBuffer;
+        texture->m_format = srmBufferGetFormat(bkndBuffer);
+        texture->m_sizeB.setW(srmBufferGetWidth(bkndBuffer));
+        texture->m_sizeB.setH(srmBufferGetHeight(bkndBuffer));
+        return true;
+    }
+
+    return false;
+}
+
 bool LGraphicBackend::textureUpdateRect(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels)
 {
     SRMBuffer *bkndBuffer = (SRMBuffer*)texture->m_graphicBackendData;
@@ -579,6 +597,12 @@ GLenum LGraphicBackend::textureGetTarget(LTexture *texture)
 {
     SRMBuffer *bkndBuffer = (SRMBuffer*)texture->m_graphicBackendData;
     return srmBufferGetTextureTarget(bkndBuffer);
+}
+
+void LGraphicBackend::textureSetFence(LTexture *texture)
+{
+    SRMBuffer *bkndBuffer = (SRMBuffer*)texture->m_graphicBackendData;
+    return srmBufferCreateSync(bkndBuffer);
 }
 
 void LGraphicBackend::textureDestroy(LTexture *texture)
@@ -969,9 +993,11 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.textureCreateFromCPUBuffer      = &LGraphicBackend::textureCreateFromCPUBuffer;
     API.textureCreateFromWaylandDRM     = &LGraphicBackend::textureCreateFromWaylandDRM;
     API.textureCreateFromDMA            = &LGraphicBackend::textureCreateFromDMA;
+    API.textureCreateFromGL             = &LGraphicBackend::textureCreateFromGL;
     API.textureUpdateRect               = &LGraphicBackend::textureUpdateRect;
     API.textureGetID                    = &LGraphicBackend::textureGetID;
     API.textureGetTarget                = &LGraphicBackend::textureGetTarget;
+    API.textureSetFence                 = &LGraphicBackend::textureSetFence;
     API.textureDestroy                  = &LGraphicBackend::textureDestroy;
 
     /* OUTPUT */

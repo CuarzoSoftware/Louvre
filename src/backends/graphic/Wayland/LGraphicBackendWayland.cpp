@@ -33,6 +33,7 @@ struct CPUTexture
     Texture texture;
     UInt32 pixelSize;
     const SRMGLFormat *glFmt;
+    bool destroy;
 };
 
 struct DRMTexture
@@ -714,6 +715,7 @@ public:
         cpuTexture->texture.target = GL_TEXTURE_2D;
         cpuTexture->glFmt = glFmt;
         cpuTexture->pixelSize = pixelSize;
+        cpuTexture->destroy = true;
         texture->m_graphicBackendData = cpuTexture;
         return true;
     }
@@ -772,6 +774,31 @@ public:
         return false;
     }
 
+    static bool textureCreateFromGL(LTexture *texture, GLuint id, GLenum target, UInt32 format, const LSize &/*size*/, bool transferOwnership)
+    {
+        const SRMGLFormat *glFmt { srmFormatDRMToGL(format) };
+
+        if (!glFmt)
+            return false;
+
+        UInt32 depth, bpp;
+
+        if (!srmFormatGetDepthBpp(format, &depth, &bpp))
+            return false;
+
+        if (bpp % 8 != 0)
+            return false;
+
+        CPUTexture *cpuTexture { new CPUTexture() };
+        cpuTexture->texture.id = id;
+        cpuTexture->texture.target = target;
+        cpuTexture->glFmt = glFmt;
+        cpuTexture->pixelSize = bpp/8;
+        cpuTexture->destroy = transferOwnership;
+        texture->m_graphicBackendData = cpuTexture;
+        return true;
+    }
+
     static bool textureUpdateRect(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels)
     {
         if (texture->sourceType() != LTexture::CPU)
@@ -815,28 +842,44 @@ public:
         return GL_TEXTURE_2D;
     }
 
+    static void textureSetFence(LTexture */*texture*/)
+    {
+        /* TODO: Use fence */
+        glFlush();
+    }
+
     static void textureDestroy(LTexture *texture)
     {
-        if (texture->sourceType() == LTexture::CPU)
+        switch (texture->sourceType())
         {
-            CPUTexture *cpuTexture = (CPUTexture*)texture->m_graphicBackendData;
-
-            if (cpuTexture)
+        case LTexture::CPU:
+        case LTexture::Framebuffer:
+        case LTexture::GL:
             {
-                glDeleteTextures(1, &cpuTexture->texture.id);
-                delete cpuTexture;
-            }
-        }
-        else if (texture->sourceType() == LTexture::WL_DRM)
-        {
-            DRMTexture *drmTexture = (DRMTexture*)texture->m_graphicBackendData;
+                CPUTexture *cpuTexture = (CPUTexture*)texture->m_graphicBackendData;
 
-            if (drmTexture)
-            {
-                glDeleteTextures(1, &drmTexture->texture.id);
-                eglDestroyImage(LCompositor::eglDisplay(), drmTexture->image);
-                delete drmTexture;
+                if (cpuTexture)
+                {
+                    if (cpuTexture->destroy)
+                        glDeleteTextures(1, &cpuTexture->texture.id);
+                    delete cpuTexture;
+                }
             }
+            break;
+        case LTexture::WL_DRM:
+            {
+                DRMTexture *drmTexture = (DRMTexture*)texture->m_graphicBackendData;
+
+                if (drmTexture)
+                {
+                    glDeleteTextures(1, &drmTexture->texture.id);
+                    eglDestroyImage(LCompositor::eglDisplay(), drmTexture->image);
+                    delete drmTexture;
+                }
+            }
+            break;
+        case LTexture::DMA:
+            break;
         }
     }
 
@@ -1200,9 +1243,11 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.textureCreateFromCPUBuffer      = &LGraphicBackend::textureCreateFromCPUBuffer;
     API.textureCreateFromWaylandDRM     = &LGraphicBackend::textureCreateFromWaylandDRM;
     API.textureCreateFromDMA            = &LGraphicBackend::textureCreateFromDMA;
+    API.textureCreateFromGL             = &LGraphicBackend::textureCreateFromGL;
     API.textureUpdateRect               = &LGraphicBackend::textureUpdateRect;
     API.textureGetID                    = &LGraphicBackend::textureGetID;
     API.textureGetTarget                = &LGraphicBackend::textureGetTarget;
+    API.textureSetFence                 = &LGraphicBackend::textureSetFence;
     API.textureDestroy                  = &LGraphicBackend::textureDestroy;
 
     /* OUTPUT */

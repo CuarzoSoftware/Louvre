@@ -185,9 +185,26 @@ bool LTexture::setDataFromDMA(const LDMAPlanes &planes) noexcept
     return false;
 }
 
+bool LTexture::setDataFromGL(GLuint id, GLenum target, UInt32 format, const LSize &size, bool transferOwnership) noexcept
+{
+    if (m_sourceType == Framebuffer)
+        return false;
+
+    reset();
+
+    if (compositor()->imp()->graphicBackend->textureCreateFromGL(this, id, target, format, size, transferOwnership))
+    {
+        m_sourceType = GL;
+        m_format = format;
+        m_sizeB = size;
+        return true;
+    }
+
+    return false;
+}
+
 bool LTexture::updateRect(const LRect &rect, UInt32 stride, const void *buffer) noexcept
 {
-
     if (initialized() && m_sourceType != Framebuffer)
     {
         m_serial++;
@@ -246,7 +263,10 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
 
         // Check if HQ downscaling is needed
         if (wScaleF <= 2.f && hScaleF <= 2.f)
+        {
+            LLog::debug("[LTexture::copyB] Scale <= 2. Skipping HQ scaling as it's not required.");
             goto skipHQ;
+        }
 
         GLenum textureTarget = target();
         GLuint prevProgram = painter->imp()->currentProgram;
@@ -332,14 +352,14 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
         painter->imp()->shaderSetMode(LPainter::LPainterPrivate::LegacyMode);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         textureCopy = new LTexture(premultipliedAlpha());
-        ret = textureCopy->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
+        ret = textureCopy->setDataFromGL(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, true);
         glDeleteFramebuffers(1, &framebuffer);
         glUseProgram(prevProgram);
 
         if (ret)
         {
             LLog::debug("[LTexture::copyB] New texture copy (highQualityScaling = true).");
-            glFinish();
+            textureCopy->setFence();
             return textureCopy;
         }
 
@@ -381,7 +401,7 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
                                     GL_LINEAR, GL_LINEAR);
             glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, srcRect.x(), srcRect.y(), srcRect.w(), srcRect.h(), 0);
             textureCopy = new LTexture(premultipliedAlpha());
-            ret = textureCopy->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
+            ret = textureCopy->setDataFromGL(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, true);
             glDeleteFramebuffers(1, &framebuffer);
             LLog::debug("[LTexture::copyB] New texture copy (glCopyTexImage2 method).");
 
@@ -427,7 +447,7 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
             painter->drawRect(LRect(0, dstSize));
             glEnable(GL_BLEND);
             textureCopy = new LTexture(premultipliedAlpha());
-            ret = textureCopy->setDataB(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, painter->imp()->output);
+            ret = textureCopy->setDataFromGL(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, true);
             glDeleteFramebuffers(1, &framebuffer);
             painter->bindFramebuffer(prevFb);
             LLog::debug("[LTexture::copyB] New texture copy (highQualityScaling = false).");
@@ -440,7 +460,7 @@ skipAll:
 
     if (ret)
     {
-        glFinish();
+        textureCopy->setFence();
         return textureCopy;
     }
 
@@ -571,17 +591,16 @@ bool LTexture::save(const std::filesystem::path &name) const noexcept
     return false;
 }
 
+void LTexture::setFence() noexcept
+{
+    if (initialized() && (m_sourceType == GL || m_sourceType == Framebuffer))
+        compositor()->imp()->graphicBackend->textureSetFence(this);
+}
+
 GLuint LTexture::id(LOutput *output) const noexcept
 {
     if (initialized())
-    {
-        if (sourceType() == Framebuffer)
-            return m_nativeId;
-        else if (sourceType() == Native)
-            return m_nativeId;
-        else
-            return compositor()->imp()->graphicBackend->textureGetID(output, (LTexture*)this);
-    }
+        return compositor()->imp()->graphicBackend->textureGetID(output, (LTexture*)this);
 
     return 0;
 }
@@ -603,44 +622,9 @@ void LTexture::reset() noexcept
 
     m_serial++;
 
-    if (sourceType() == Framebuffer)
-    {
-        if (m_nativeId)
-        {
-            LLog::debug("[LTexture::reset] Native texture %d deleted.", m_nativeId);
-            glDeleteTextures(1, &m_nativeId);
-            m_nativeId = 0;
-        }
-        return;
-    }
-
-    if (sourceType() == Native)
-    {
-        glDeleteTextures(1, &m_nativeId);
-        m_nativeId = 0;
-        m_graphicBackendData = nullptr;
-        return;
-    }
-
     if (m_graphicBackendData)
     {
         compositor()->imp()->graphicBackend->textureDestroy(this);
         m_graphicBackendData = nullptr;
     }
-}
-
-bool LTexture::setDataB(GLuint textureId, GLenum target, UInt32 format, const LSize &size, LOutput *output) noexcept
-{
-    if (m_sourceType == Framebuffer)
-        return false;
-
-    reset();
-    m_sourceType = Native;
-    m_graphicBackendData = &m_nativeId;
-    m_nativeId = textureId;
-    m_nativeTarget = target;
-    m_nativeOutput.reset(output);
-    m_format = format;
-    m_sizeB = size;
-    return true;
 }
