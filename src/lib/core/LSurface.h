@@ -469,7 +469,9 @@ public:
      */
     Protocols::Wayland::RSurface *surfaceResource() const noexcept;
 
-    // TODO: add doc
+    /**
+     * @brief Idle Inhibitor Resources
+     */
     std::vector<Protocols::IdleInhibit::RIdleInhibitor*> idleInhibitorResources() const noexcept;
 
     /**

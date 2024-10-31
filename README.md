@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Louvre is released under the MIT license." />
   </a>
   <a href="https://github.com/CuarzoSoftware/Louvre">
-    <img src="https://img.shields.io/badge/version-2.9.0-brightgreen" alt="Current Louvre version." />
+    <img src="https://img.shields.io/badge/version-2.10.0-brightgreen" alt="Current Louvre version." />
   </a>
 </p>
 
@@ -158,12 +158,12 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 
 ## 🔨 Upcoming Features
 
+* DRM Synchronization Object
+* Rootless XWayland
 * Wlr Output Management
+* DRM Lease Protocol
 * Cursor Shape Protocol
 * DRM Overlay Planes Control
-* DRM Synchronization Object
-* DRM Lease Protocol
-* Rootless XWayland
 * Tablet Events Protocol
 * Virtual Keyboard Protocol
 * Input Methods Protocol

@@ -4,7 +4,7 @@ option('build_examples',
 
 option('build_tests', 
     type : 'boolean', 
-    value : true)
+    value : false)
 
 option('backend-drm',
 	type: 'boolean',

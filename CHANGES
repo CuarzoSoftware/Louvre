@@ -1,3 +1,35 @@
+Louvre (2.10.0-1)
+
+  # API Additions
+
+  * Added LTexture::setFence() and LRenderBuffer::setFence() to prevent partial updates when used as source textures.
+  * Added LTexture::setDataFromGL() to enable wrapping of already created OpenGL textures.
+
+  # Performance
+
+  * Replaced glFinish() calls with fences, ensuring synchronization without requiring CPU-side waiting.
+
+  # Bug Fixes
+
+  * Fixed issue of black textures appearing on proprietary NVIDIA drivers (and potentially others). Thanks @renhiyama and @kingdomkind for all your help!
+  * Fixed synchronization issues between threads that were causing partial texture updates.
+  * Replaced calls to wl_client_destroy with wl_resource_post_error when an unknown buffer type is committed, which was causing a segmentation fault. Thanks @Ramblurr for reporting it!
+  * Fixed segfault occurring when an idle inhibitor resource was destroyed.
+  * Wayland Backend: Resolved issue where modifier keys were not released when the window lost focus. Thanks @renhiyama for reporting it!
+
+  # Tests
+
+  * Added test to validate support for common texture formats and the synchronization of updates across threads.
+
+  # Dependencies
+
+  * Updated SRM dependency to version >= v0.8.0.
+
+  Special thanks to @renhiyama, @kingdomkind, and @Fox2Code for your invaluable support!
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Wed, 30 Oct 2024 22:10:55 -0300
+
+
 Louvre (2.9.0-1)
 
   # API Additions

@@ -347,6 +347,12 @@ bool LGraphicBackend::backendInitialize()
         srmCoreDestroy(bknd->core);
         goto fail;
     }
+    else if (version->major == 0 && version->minor < 8)
+    {
+        LLog::fatal("[%s] Using SRM v%d.%d.%d but version >= v0.8.0 is required.", BKND_NAME, version->major, version->minor, version->patch);
+        srmCoreDestroy(bknd->core);
+        goto fail;
+    }
 
     allocatorDevice = srmCoreGetAllocatorDevice(bknd->core);
 
