@@ -77,7 +77,7 @@ pushd repo/src
 %{_libdir}/Louvre/
 
 %files examples
-%{buildroot}/usr/local/share/wayland-sessions/louvre.desktop
+%{_usr}/local/share/wayland-sessions/louvre.desktop
 %{_bindir}/louvre-default
 %{_bindir}/louvre-views
 %{_bindir}/louvre-weston-clone
