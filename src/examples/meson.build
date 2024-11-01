@@ -7,7 +7,7 @@ session_conf.set('LOUVRE_VIEWS_PATH', join_paths(get_option('prefix'), get_optio
 configure_file(input : './common/assets/louvre.desktop.in',
                output : 'louvre.desktop',
                configuration : session_conf,
-               install_dir : '/usr/local/share/wayland-sessions')
+               install_dir : join_paths(get_option('prefix'), '/usr/local/share/wayland-sessions'))
 
 # Default dock configuration
 apps_conf = configuration_data()
