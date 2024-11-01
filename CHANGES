@@ -1,3 +1,17 @@
+Louvre (2.10.1-1)
+
+  # Packaging
+
+  * Added official Fedora COPR link to the downloads page.
+
+  # Bug Fixes
+
+  * Wayland Backend: Prevent compositor from exiting when a `wl_output` global is removed.
+  * Wayland Backend: Fixed cursor scaling issue that made it look oversized on low DPI displays.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Wed, 31 Oct 2024 23:10:40 -0300
+
+
 Louvre (2.10.0-1)
 
   # API Additions

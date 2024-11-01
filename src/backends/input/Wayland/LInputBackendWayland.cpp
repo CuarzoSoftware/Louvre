@@ -138,7 +138,7 @@ public:
         if (shared().cursorChangedBuffer && shared().currentCursor)
         {
             wl_surface_damage(shared().cursorSurface, 0, 0, 512, 512);
-            wl_surface_set_buffer_scale(shared().cursorSurface, shared().bufferScale);
+            wl_surface_set_buffer_scale(shared().cursorSurface, 2);
             wl_surface_commit(shared().cursorSurface);
         }
 

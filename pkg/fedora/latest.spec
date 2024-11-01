@@ -1,4 +1,4 @@
-%global basever 2.10.0
+%global basever 2.10.1
 %global origrel 1
 %global somajor 2
 
@@ -91,13 +91,6 @@ pushd repo/src
 
 %changelog
 * Fri Nov 01 2024 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
-- Added LTexture::setFence() and LRenderBuffer::setFence() to prevent partial updates when used as source textures.
-- Added LTexture::setDataFromGL() to enable wrapping of already created OpenGL textures.
-- Replaced glFinish() calls with fences, ensuring synchronization without requiring CPU-side waiting.
-- Fixed issue of black textures appearing on proprietary NVIDIA drivers (and potentially others). Thanks @renhiyama and @kingdomkind for all your help!
-- Fixed synchronization issues between threads that were causing partial texture updates.
-- Replaced calls to wl_client_destroy with wl_resource_post_error when an unknown buffer type is committed, which was causing a segmentation fault. Thanks @Ramblurr for reporting it!
-- Fixed segfault occurring when an idle inhibitor resource was destroyed.
-- Wayland Backend: Resolved issue where modifier keys were not released when the window lost focus. Thanks @renhiyama for reporting it!
-- Added test to validate support for common texture formats and the synchronization of updates across threads.
-- Updated SRM dependency to version >= v0.8.0.
+- Added official Fedora COPR link to the downloads page.
+- Wayland Backend: Prevent compositor from exiting when a `wl_output` global is removed.
+- Wayland Backend: Fixed cursor scaling issue that made it look oversized on low DPI displays.

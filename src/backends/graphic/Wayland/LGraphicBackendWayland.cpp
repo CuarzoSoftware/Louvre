@@ -1021,14 +1021,6 @@ public:
             if (shared.currentCursor)
             {
                 memcpy(shared.currentCursor->map, buffer, LOUVRE_WAYLAND_BACKEND_CURSOR_SIZE);
-                LSize size { cursor()->rect().size() * shared.bufferScale };
-
-                if (size.w() > 64)
-                    size.setW(64);
-
-                if (size.h() > 64)
-                    size.setH(64);
-
                 wl_surface_attach(shared.cursorSurface, shared.currentCursor->buffer, 0, 0);
             }
             shared.cursorVisible = true;
@@ -1053,7 +1045,7 @@ public:
         {
             prevHotspotB = cursor()->hotspotB();
             shared.mutex.lock();
-            shared.cursorHotspot = cursor()->pos() - cursor()->rect().pos();
+            shared.cursorHotspot = ((cursor()->pos() - cursor()->rect().pos()) * shared.bufferScale)/2;
             shared.cursorChangedHotspot = true;
             unlockInputThread();
             shared.mutex.unlock();
@@ -1136,9 +1128,9 @@ public:
             if (waylandOutput->name == name)
             {
                 LVectorRemoveOneUnordered(surfaceOutputs, waylandOutputs[i]);
+                wl_proxy_destroy((wl_proxy*)waylandOutputs[i]);
                 waylandOutputs[i] = waylandOutputs.back();
                 waylandOutputs.pop_back();
-                wl_proxy_destroy((wl_proxy*)waylandOutputs[i]);
                 delete waylandOutput;
                 updateSurfaceScale();
                 return;
@@ -1176,7 +1168,10 @@ public:
         }
 
         if (pendingBufferScale != oldScale)
+        {
+            shared.cursorChangedBuffer = true;
             outputRepaint(nullptr);
+        }
     }
 
     static void outputHandleMode(void *data, wl_output *, UInt32 /*flags*/, Int32 /*width*/, Int32 /*height*/, Int32 refresh)
