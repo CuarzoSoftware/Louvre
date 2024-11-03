@@ -17,12 +17,12 @@ public:
     static void                             backendSuspend();
     static void                             backendResume();
     static const std::vector<LOutput*>*     backendGetConnectedOutputs();
-    static UInt32                           backendGetRendererGPUs();
     static const std::vector<LDMAFormat>*   backendGetDMAFormats();
     static const std::vector<LDMAFormat>*   backendGetScanoutDMAFormats();
     static EGLDisplay                       backendGetAllocatorEGLDisplay();
     static EGLContext                       backendGetAllocatorEGLContext();
-    static dev_t                            backendGetAllocatorDeviceId();
+    static LGPU*                            backendGetAllocatorDevice();
+    static const std::vector<LGPU*> *       backendGetDevices();
 
     /* TEXTURES */
     static bool                             textureCreateFromCPUBuffer(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels);
@@ -49,6 +49,9 @@ public:
     static const char *                     outputGetDescription(LOutput *output);
     static const LSize *                    outputGetPhysicalSize(LOutput *output);
     static Int32                            outputGetSubPixel(LOutput *output);
+    static LGPU *                           outputGetDevice(LOutput *output);
+    static UInt32                           outputGetID(LOutput *output);
+    static bool                             outputIsNonDesktop(LOutput *output);
 
     /* OUTPUT BUFFERING */
     static UInt32                           outputGetFramebufferID(LOutput *output);
@@ -88,6 +91,14 @@ public:
 
     /* DIRECT SCANOUT */
     static bool                             outputSetScanoutBuffer(LOutput *output, LTexture *texture);
+
+    /* DRM LEASE */
+    static int                              backendCreateLease(const std::vector<LOutput*> &outputs);
+    static void                             backendRevokeLease(int fd);
+
+    /* DRM Backend only */
+    static int                              openRestricted(const char *path, int flags, void *userData);
+    static void                             closeRestricted(int fd, void *userData);
 };
 
 #endif // LGRAPHICBACKEND

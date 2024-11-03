@@ -273,6 +273,11 @@ const std::vector<XdgActivation::GXdgActivation *> &LClient::xdgActivationGlobal
     return imp()->xdgActivationGlobals;
 }
 
+const std::vector<DRMLease::GDRMLeaseDevice *> &LClient::drmLeaseDeviceGlobals() const noexcept
+{
+    return imp()->drmLeaseDeviceGlobals;
+}
+
 const LClient::EventHistory &LClient::eventHistory() const noexcept
 {
     return imp()->eventHistory;

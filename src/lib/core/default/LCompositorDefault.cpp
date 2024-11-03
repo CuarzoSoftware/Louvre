@@ -155,19 +155,28 @@ bool LCompositor::globalsFilter(LClient *client, LGlobal *global)
 //! [initialized]
 void LCompositor::initialized()
 {
-    Int32 totalWidth = 0;
+    LPoint outputPos {0, 0};
 
     // Initializes and arranges outputs from left to right
     for (LOutput *output : seat()->outputs())
     {
+        // Probably a VR headset, meant to be leased by clients
+        if (output->isNonDesktop())
+            continue;
+
         // Sets a scale factor of 2 when DPI >= 200
         output->setScale(output->dpi() >= 200 ? 2.f : 1.f);
 
         // Change it if any of your displays is rotated/flipped
         output->setTransform(LTransform::Normal);
 
-        output->setPos(LPoint(totalWidth, 0));
-        totalWidth += output->size().w();
+        // Arrange
+        output->setPos(outputPos);
+
+        // Next output x coord
+        outputPos.setX(outputPos.x() + output->size().w());
+
+        // Initialize
         addOutput(output);
         output->repaint();
     }

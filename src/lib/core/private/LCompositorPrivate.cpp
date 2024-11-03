@@ -1,3 +1,4 @@
+#include <protocols/DRMLease/GDRMLeaseDevice.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 #include <private/LSeatPrivate.h>
@@ -18,6 +19,7 @@
 #include <LOpenGL.h>
 #include <LTouch.h>
 #include <LGlobal.h>
+#include <LGPU.h>
 #include <LTime.h>
 #include <LTimer.h>
 #include <LLog.h>
@@ -348,6 +350,7 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
 
     painter = new LPainter();
     cursor = new LCursor();
+    initDRMLeaseGlobals();
     initDMAFeedback();
     return true;
 }
@@ -458,6 +461,7 @@ void LCompositor::LCompositorPrivate::unitInputBackend(bool closeLib)
 void LCompositor::LCompositorPrivate::unitGraphicBackend(bool closeLib)
 {
     unitDMAFeedback();
+    unitDRMLeaseGlobals();
 
     if (painter)
     {
@@ -943,7 +947,7 @@ retryName:
 
     wl_array_init(&dmaFeedback.formatIndices);
     wl_array_init(&dmaFeedback.scanoutIndices);
-    dmaFeedback.device = graphicBackend->backendGetAllocatorDeviceId();
+    dmaFeedback.device = graphicBackend->backendGetAllocatorDevice()->dev();
 
     ptr = map;
     for (const auto &format : *graphicBackend->backendGetDMAFormats())
@@ -1018,3 +1022,21 @@ void LCompositor::LCompositorPrivate::assertSurfacesOrder()
     LLog::log("assertSurfacesOrder() ok");
 }
 #endif
+
+void LCompositor::LCompositorPrivate::initDRMLeaseGlobals()
+{
+    for (LGPU *gpu : *graphicBackend->backendGetDevices())
+        if (gpu->fd() != -1 && gpu->roFd() != -1)
+            gpu->m_leaseGlobal.reset(compositor()->createGlobal<Protocols::DRMLease::GDRMLeaseDevice>(gpu));
+}
+
+void LCompositor::LCompositorPrivate::unitDRMLeaseGlobals()
+{
+    // Not yet initialized
+    if (!graphicBackend)
+        return;
+
+    for (LGPU *gpu : *graphicBackend->backendGetDevices())
+        if (gpu->m_leaseGlobal)
+            compositor()->removeGlobal(gpu->m_leaseGlobal);
+}

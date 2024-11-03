@@ -250,11 +250,29 @@ public:
     LCLASS_NO_COPY(LOutput)
 
     /**
+     * @brief Retrieves a unique identifier for the output.
+     *
+     * This identifier is guaranteed to be unique for each output.
+     *
+     * When using the DRM backend, it corresponds to the underlying DRM connector ID.
+     */
+    UInt32 id() const noexcept;
+
+    /**
      * @brief Gets the current state of the LOutput.
      *
      * This method returns the current state of the output.
      */
     State state() const noexcept;
+
+    /**
+     * @brief Retrieves the GPU to which this output belongs.
+     *
+     * Each output always belongs to a single GPU.
+     *
+     * @return A pointer to the GPU this output belongs to.
+     */
+    LGPU *gpu() const noexcept;
 
     /**
      * @brief Gets access to the associated LPainter.
@@ -750,6 +768,45 @@ public:
      * @param type The content type hint to be set.
      */
     void setContentType(LContentType type) noexcept;
+
+    /**
+     * @brief Determines if the output is intended for non-desktop usage.
+     *
+     * Outputs like VR headsets set this property to `true` to indicate they are not meant for desktop use.
+     *
+     * @note Such outputs are usually intended to be leased by clients and should not be initialized by default.
+     *
+     * @return `true` if the output is not meant for desktop usage, `false` otherwise.
+     */
+    bool isNonDesktop() const noexcept;
+
+    /**
+     * @brief Advertises the output as leasable.
+     *
+     * When set to `true`, clients using the DRM will be notified and able to request control.
+     *
+     * @note If set as leasable while the output is initialized, it will be uninitialized.\n
+     *       Conversely, if it is initialized after being set as leasable, it will no longer be leasable.
+     *
+     * @return `false` if the graphics backend doesn't support this feature.
+     */
+    bool setLeasable(bool leasable) noexcept;
+
+    /**
+     * @brief Checks if the output is advertised as leasable.
+     *
+     * @see setLeasable()
+     *
+     * @return `true` if leasable, `false` otherwise.
+     */
+    bool leasable() noexcept;
+
+    /**
+     * @brief Returns the client currently controlling the output.
+     *
+     * @return `nullptr` if the output is not being leased.
+     */
+    LClient *lessor() const noexcept;
 
     /**
      * @brief Gets the output name.

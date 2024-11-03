@@ -42,6 +42,11 @@ LOutput::~LOutput()
     notifyDestruction();
 }
 
+UInt32 LOutput::id() const noexcept
+{
+    return compositor()->imp()->graphicBackend->outputGetID((LOutput*)this);
+}
+
 LSessionLockRole *LOutput::sessionLockRole() const noexcept
 {
     return imp()->sessionLockRole;
@@ -354,6 +359,26 @@ void LOutput::setContentType(LContentType type) noexcept
     compositor()->imp()->graphicBackend->outputSetContentType(this, type);
 }
 
+bool LOutput::isNonDesktop() const noexcept
+{
+    return compositor()->imp()->graphicBackend->outputIsNonDesktop((LOutput*)this);
+}
+
+bool LOutput::setLeasable(bool leasable) noexcept
+{
+    return false;
+}
+
+bool LOutput::leasable() noexcept
+{
+    return imp()->leasable;
+}
+
+LClient *LOutput::lessor() const noexcept
+{
+    return imp()->lessor.get();
+}
+
 const LRect &LOutput::rect() const noexcept
 {
     return imp()->rect;
@@ -372,6 +397,11 @@ const LSize &LOutput::size() const noexcept
 LOutput::State LOutput::state() const noexcept
 {
     return imp()->state;
+}
+
+LGPU *LOutput::gpu() const noexcept
+{
+    return compositor()->imp()->graphicBackend->outputGetDevice((LOutput*)this);
 }
 
 const char *LOutput::name() const noexcept

@@ -431,6 +431,13 @@ public:
      */
     const std::vector<Protocols::XdgActivation::GXdgActivation*> &xdgActivationGlobals() const noexcept;
 
+    /**
+     * Resources created when the client binds to the
+     * [wp_drm_lease_device_v1](https://wayland.app/protocols/drm-lease-v1#wp_drm_lease_device_v1) global
+     * of the DRM Lease protocol.
+     */
+    const std::vector<Protocols::DRMLease::GDRMLeaseDevice*> &drmLeaseDeviceGlobals() const noexcept;
+
     LPRIVATE_IMP_UNIQUE(LClient)
 };
 

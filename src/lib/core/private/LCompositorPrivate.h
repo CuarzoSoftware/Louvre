@@ -52,12 +52,12 @@ LPRIVATE_CLASS(LCompositor)
     bool isGraphicBackendInitialized { false };
 
     bool initGraphicBackend();
+        void initDRMLeaseGlobals();
         bool WL_bind_wayland_display { false };
         PFNEGLBINDWAYLANDDISPLAYWL eglBindWaylandDisplayWL { NULL };
         PFNEGLQUERYWAYLANDBUFFERWL eglQueryWaylandBufferWL { NULL };
         PFNGLEGLIMAGETARGETRENDERBUFFERSTORAGEOESPROC glEGLImageTargetRenderbufferStorageOES { NULL };
         PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOES { NULL };
-
         EGLDisplay mainEGLDisplay { EGL_NO_DISPLAY };
         EGLContext mainEGLContext { EGL_NO_CONTEXT };
         LGraphicBackendInterface *graphicBackend { nullptr };
@@ -66,6 +66,7 @@ LPRIVATE_CLASS(LCompositor)
         LCursor *cursor { nullptr };
         LPainter *painter { nullptr };
         LOutput *currentOutput { nullptr };
+        void unitDRMLeaseGlobals();
     void unitGraphicBackend(bool closeLib);
 
     bool initSeat();
@@ -151,6 +152,7 @@ LPRIVATE_CLASS(LCompositor)
 #if LOUVRE_ASSERT_CHECKS == 1
     void assertSurfacesOrder();
 #endif
+
 };
 
 #endif // LCOMPOSITORPRIVATE_H

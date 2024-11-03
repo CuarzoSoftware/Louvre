@@ -60,6 +60,11 @@ LSeat::~LSeat()
     }
 }
 
+const std::vector<LGPU *> &LSeat::gpus() const noexcept
+{
+    return *compositor()->imp()->graphicBackend->backendGetDevices();
+}
+
 const std::vector<LOutput *> &LSeat::outputs() const noexcept
 {
     return *compositor()->imp()->graphicBackend->backendGetConnectedOutputs();

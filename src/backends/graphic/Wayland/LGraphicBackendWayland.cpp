@@ -9,6 +9,7 @@
 #include <LOutputMode.h>
 #include <SRMFormat.h>
 #include <LCursor.h>
+#include <LGPU.h>
 #include <LTime.h>
 #include <LLog.h>
 
@@ -101,6 +102,8 @@ public:
     inline static LSize physicalSize { 0, 0 };
     inline static LSize pendingSurfaceSize { 1024, 512 };
     inline static Int32 pendingBufferScale { 1 };
+    inline static std::vector<LGPU*> devices;
+    inline static LGPU allocator;
     inline static std::vector<LOutput*> dummyOutputs;
     inline static std::vector<LOutputMode *> dummyOutputModes;
     inline static LOutputMode defaultMode { nullptr, LSize(), 0, true, nullptr};
@@ -195,6 +198,7 @@ public:
 
     static bool initWayland()
     {
+        devices.push_back(&allocator);
         display = wl_display_connect(NULL);
 
         if (!display)
@@ -601,6 +605,7 @@ public:
         unitRenderThread();
         unitEGL();
         unitWayland();
+        devices.clear();
         Louvre::compositor()->imp()->graphicBackendData = nullptr;
     }
 
@@ -619,9 +624,9 @@ public:
         return &dummyOutputs;
     }
 
-    static UInt32 backendGetRendererGPUs()
+    static const std::vector<LGPU*>* backendGetDevices()
     {
-        return 1;
+        return &devices;
     }
 
     static const std::vector<LDMAFormat>* backendGetDMAFormats()
@@ -646,9 +651,9 @@ public:
         return eglContext;
     }
 
-    static dev_t backendGetAllocatorDeviceId()
+    static LGPU *backendGetAllocatorDevice()
     {
-        return 0;
+        return &allocator;
     }
 
     static bool textureCreateFromCPUBuffer(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels)
@@ -943,6 +948,22 @@ public:
         return WL_OUTPUT_SUBPIXEL_UNKNOWN;
     }
 
+    static LGPU *outputGetDevice(LOutput */*output*/)
+    {
+        return &allocator;
+    }
+
+    static UInt32 outputGetID(LOutput */*output*/)
+    {
+        return 0;
+    }
+
+    static bool outputIsNonDesktop(LOutput */*output*/)
+    {
+        // TODO: Get from current wl_output.
+        return false;
+    }
+
     static UInt32 outputGetFramebufferID(LOutput */*output*/)
     {
         return 0;
@@ -1087,6 +1108,11 @@ public:
         return false;
     }
 
+    /* DRM LEASE */
+
+    static int backendCreateLease(const std::vector<LOutput*> &/*outputs*/) { return -1; }
+    static void backendRevokeLease(int /*fd*/) {}
+
     static void registryHandleGlobal(void */*data*/, wl_registry *registry, UInt32 name, const char *interface, UInt32 version)
     {
         if (!compositor && strcmp(interface, wl_compositor_interface.name) == 0)
@@ -1227,12 +1253,12 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.backendSuspend                  = &LGraphicBackend::backendSuspend;
     API.backendResume                   = &LGraphicBackend::backendResume;
     API.backendGetConnectedOutputs      = &LGraphicBackend::backendGetConnectedOutputs;
-    API.backendGetRendererGPUs          = &LGraphicBackend::backendGetRendererGPUs;
+    API.backendGetDevices               = &LGraphicBackend::backendGetDevices;
     API.backendGetDMAFormats            = &LGraphicBackend::backendGetDMAFormats;
     API.backendGetScanoutDMAFormats     = &LGraphicBackend::backendGetScanoutDMAFormats;
     API.backendGetAllocatorEGLDisplay   = &LGraphicBackend::backendGetAllocatorEGLDisplay;
     API.backendGetAllocatorEGLContext   = &LGraphicBackend::backendGetAllocatorEGLContext;
-    API.backendGetAllocatorDeviceId     = &LGraphicBackend::backendGetAllocatorDeviceId;
+    API.backendGetAllocatorDevice       = &LGraphicBackend::backendGetAllocatorDevice;
 
     /* TEXTURES */
     API.textureCreateFromCPUBuffer      = &LGraphicBackend::textureCreateFromCPUBuffer;
@@ -1259,6 +1285,9 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.outputGetDescription            = &LGraphicBackend::outputGetDescription;
     API.outputGetPhysicalSize           = &LGraphicBackend::outputGetPhysicalSize;
     API.outputGetSubPixel               = &LGraphicBackend::outputGetSubPixel;
+    API.outputGetDevice                 = &LGraphicBackend::outputGetDevice;
+    API.outputGetID                     = &LGraphicBackend::outputGetID;
+    API.outputIsNonDesktop              = &LGraphicBackend::outputIsNonDesktop;
 
     /* OUTPUT BUFFERING */
     API.outputGetFramebufferID          = &LGraphicBackend::outputGetFramebufferID;
@@ -1298,5 +1327,8 @@ extern "C" LGraphicBackendInterface *getAPI()
     /* DIRECT SCANOUT */
     API.outputSetScanoutBuffer          = &LGraphicBackend::outputSetScanoutBuffer;
 
+    /* DRM LEASE */
+    API.backendCreateLease              = &LGraphicBackend::backendCreateLease;
+    API.backendRevokeLease              = &LGraphicBackend::backendRevokeLease;
     return &API;
 }

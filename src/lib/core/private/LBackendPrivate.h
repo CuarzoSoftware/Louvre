@@ -16,12 +16,12 @@ namespace Louvre
         void                                (*backendSuspend)();
         void                                (*backendResume)();
         const std::vector<LOutput*>*        (*backendGetConnectedOutputs)();
-        UInt32                              (*backendGetRendererGPUs)();
+        const std::vector<LGPU*>*           (*backendGetDevices)();
+        LGPU*                               (*backendGetAllocatorDevice)();
         const std::vector<LDMAFormat>*      (*backendGetDMAFormats)();
         const std::vector<LDMAFormat>*      (*backendGetScanoutDMAFormats)();
         EGLDisplay                          (*backendGetAllocatorEGLDisplay)();
         EGLContext                          (*backendGetAllocatorEGLContext)();
-        dev_t                               (*backendGetAllocatorDeviceId)();
 
         /* TEXTURES */
         bool                                (*textureCreateFromCPUBuffer)(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels);
@@ -48,6 +48,9 @@ namespace Louvre
         const char *                        (*outputGetDescription)(LOutput *output);
         const LSize *                       (*outputGetPhysicalSize)(LOutput *output);
         Int32                               (*outputGetSubPixel)(LOutput *output);
+        LGPU *                              (*outputGetDevice)(LOutput *output);
+        UInt32                              (*outputGetID)(LOutput *output);
+        bool                                (*outputIsNonDesktop)(LOutput *output);
 
         /* OUTPUT BUFFERING */
         UInt32                              (*outputGetFramebufferID)(LOutput *output);
@@ -90,6 +93,10 @@ namespace Louvre
 
         /* DIRECT SCANOUT */
         bool                                (*outputSetScanoutBuffer)(LOutput *output, LTexture *texture);
+
+        /* DRM LEASE */
+        int                                 (*backendCreateLease)(const std::vector<LOutput*> &outputs);
+        void                                (*backendRevokeLease)(int fd);
     };
 
     struct LInputBackendInterface

@@ -85,7 +85,10 @@ void Compositor::initialized()
     // Initialize and arrange outputs (screens) left to right
     for (LOutput *output : seat()->outputs())
     {
-        // Set scale 2 to HiDPI screens
+        // Probably a VR headset, meant to be leased by clients
+        if (output->isNonDesktop())
+            continue;
+
         output->setTransform(LTransform::Normal);
         output->setScale(output->dpi() >= 200 ? 2.f : 1.f);
         output->setPos(LPoint(totalWidth, 0));

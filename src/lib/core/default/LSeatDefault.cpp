@@ -32,6 +32,10 @@ void LSeat::enabledChanged()
 //! [outputPlugged]
 void LSeat::outputPlugged(LOutput *output)
 {
+    // Probably a VR headset, meant to be leased by clients
+    if (output->isNonDesktop())
+        return;
+
     output->setScale(output->dpi() >= 200 ? 2 : 1);
 
     if (compositor()->outputs().empty())

@@ -85,7 +85,7 @@ foreach header_dir : header_dirs
     include_paths += include_directories(header_dir[0])
 endforeach
 
-globals = [
+protocols = [
     'LinuxDMABuf',
     'Wayland',
     'XdgActivation',
@@ -108,17 +108,18 @@ globals = [
     'SinglePixelBuffer',
     'ContentType',
     'IdleNotify',
-    'IdleInhibit'
+    'IdleInhibit',
+    'DRMLease'
 ]
 
-foreach g : globals
-    hs = run_command('find', './lib/protocols/' + g, '-type', 'f', '-name', '*.h', '-maxdepth', '1', check : false).stdout().strip().split('\n')
-    install_headers(hs, install_dir : join_paths(HEADERS_INSTALL_PATH, 'protocols', g))
+foreach p : protocols
+    hs = run_command('find', './lib/protocols/' + p, '-type', 'f', '-name', '*.h', '-maxdepth', '1', check : false).stdout().strip().split('\n')
+    install_headers(hs, install_dir : join_paths(HEADERS_INSTALL_PATH, 'protocols', p))
    
-    hs_p = run_command('find', './lib/protocols/' + g + '/private', '-type', 'f', '-name', '*.h', '-maxdepth', '1', check : false).stdout().strip().split('\n')
+    hs_p = run_command('find', './lib/protocols/' + p + '/private', '-type', 'f', '-name', '*.h', '-maxdepth', '1', check : false).stdout().strip().split('\n')
 
     if hs_p[0] != ''
-    	install_headers(hs_p, install_dir : join_paths(HEADERS_INSTALL_PATH, 'protocols', g, 'private'))
+        install_headers(hs_p, install_dir : join_paths(HEADERS_INSTALL_PATH, 'protocols', p, 'private'))
     endif
 endforeach
 

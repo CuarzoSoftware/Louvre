@@ -7,6 +7,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <cassert>
 
 #include <fcntl.h>
 #include <xf86drm.h>
@@ -24,19 +25,22 @@
 #include <private/LSeatPrivate.h>
 #include <private/LFactory.h>
 
+#include <LGPU.h>
 #include <LTime.h>
 #include <LGammaTable.h>
 #include <LOutputMode.h>
 
 #include <private/SRMBufferPrivate.h>
+#include <private/SRMConnectorPrivate.h>
+#include <private/SRMCrtcPrivate.h>
+#include <private/SRMPlanePrivate.h>
+#include <private/SRMEncoderPrivate.h>
 #include <SRMCore.h>
 #include <SRMDevice.h>
-#include <SRMConnector.h>
 #include <SRMConnectorMode.h>
 #include <SRMListener.h>
 #include <SRMList.h>
 #include <SRMFormat.h>
-#include <SRMPlane.h>
 
 using namespace Louvre;
 
@@ -47,10 +51,49 @@ using namespace Louvre;
 
 static bool libseatEnabled { false };
 
-struct DEVICE_FD_ID
+class DRMLease final : public LObject
 {
+public:
     int fd;
-    int id;
+    UInt32 lessee;
+    LGPU *gpu { nullptr };
+    std::vector<SRMConnector*> connectors;
+    std::vector<SRMCrtc*> crtcs;
+    std::vector<SRMPlane*> planes;
+    std::vector<SRMEncoder*> encoders;
+
+    ~DRMLease()
+    {
+        if (fd >= 0)
+            assert(drmModeRevokeLease(gpu->fd(), lessee) == 0);
+
+        while (!connectors.empty())
+        {
+            connectors.back()->currentCrtc = NULL;
+            connectors.back()->currentPrimaryPlane = NULL;
+            connectors.back()->currentCursorPlane = NULL;
+            connectors.back()->currentEncoder = NULL;
+            connectors.pop_back();
+        }
+
+        while (!crtcs.empty())
+        {
+            crtcs.back()->currentConnector = NULL;
+            crtcs.pop_back();
+        }
+
+        while (!planes.empty())
+        {
+            planes.back()->currentConnector = NULL;
+            planes.pop_back();
+        }
+
+        while (!encoders.empty())
+        {
+            encoders.back()->currentConnector = NULL;
+            encoders.pop_back();
+        }
+    }
 };
 
 struct Backend
@@ -60,9 +103,8 @@ struct Backend
     wl_event_source *monitor;
     std::vector<LDMAFormat>dmaFormats;
     std::vector<LDMAFormat>scanoutFormats;
-    std::list<DEVICE_FD_ID> devices;
-    UInt32 rendererGPUs {0};
-    dev_t allocatorDeviceId;
+    std::vector<LGPU*> devices;
+    LWeak<LGPU> allocator;
 };
 
 struct Output
@@ -71,14 +113,10 @@ struct Output
     LSize physicalSize;
     std::vector<LOutputMode*>modes;
     std::vector<LTexture*> textures;
-
-#if SRM_VERSION_LESS_THAN(0,6,0)
-    LContentType fallbackContentType { LContentTypeNone };
-#endif
+    LWeak<DRMLease> lease;
 };
 
-// SRM -> Louvre Subpixel
-#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
+// SRM -> Louvre Subpixel table
 static UInt32 subPixelTable[] =
 {
     0,
@@ -89,63 +127,93 @@ static UInt32 subPixelTable[] =
     LOutput::SubPixel::VerticalBGR,
     LOutput::SubPixel::None,
 };
-#endif
 
-static int openRestricted(const char *path, int flags, void *userData)
+int LGraphicBackend::openRestricted(const char *path, int flags, void *userData)
 {
     LCompositor *compositor {(LCompositor*)userData};
     Backend *bknd {(Backend*)compositor->imp()->graphicBackendData};
 
+    LGPU *dev = new LGPU;
+    struct stat stat;
+    dev->m_name = path;
+
     if (libseatEnabled)
     {
-        DEVICE_FD_ID dev;
+        dev->m_id = compositor->seat()->openDevice(path, &dev->m_fd);
 
-        dev.id = compositor->seat()->openDevice(path, &dev.fd);
-
-        if (dev.id == -1)
+        if (dev->m_id == -1)
+        {
+            delete dev;
             return -1;
+        }
         else
         {
+            dev->m_roFd = open(path, O_RDONLY | O_CLOEXEC);
             bknd->devices.push_back(dev);
-            return dev.fd;
+
+            if (fstat(dev->fd(), &stat) == 0)
+                dev->m_dev = stat.st_rdev;
+            else
+            {
+                dev->m_dev = -1;
+                LLog::fatal("[%s] Failed to get allocator device ID.", BKND_NAME);
+            }
+
+            return dev->m_fd;
         }
     }
     else
-        return open(path, flags);
+    {
+        dev->m_fd = open(path, flags);
+        dev->m_roFd = open(path, O_RDONLY | O_CLOEXEC);
+        bknd->devices.push_back(dev);
+
+        if (fstat(dev->fd(), &stat) == 0)
+            dev->m_dev = stat.st_rdev;
+        else
+        {
+            dev->m_dev = -1;
+            LLog::fatal("[%s] Failed to get allocator device ID.", BKND_NAME);
+        }
+
+        return dev->m_fd;
+    }
 }
 
-static void closeRestricted(int fd, void *userData)
+void LGraphicBackend::closeRestricted(int fd, void *userData)
 {
     LCompositor *compositor {(LCompositor*)userData};
     Backend *bknd {(Backend*)compositor->imp()->graphicBackendData};
 
-    if (libseatEnabled)
+    std::unique_ptr<LGPU> dev { nullptr };
+
+    for (std::size_t i = 0; i < bknd->devices.size(); i++)
     {
-        DEVICE_FD_ID dev {-1, -1};
-
-        for (std::list<DEVICE_FD_ID>::iterator it = bknd->devices.begin(); it != bknd->devices.end(); it++)
+        if (bknd->devices[i]->fd() == fd)
         {
-            if ((*it).fd == fd)
-            {
-                dev = (*it);
-                bknd->devices.erase(it);
-                break;
-            }
+            dev.reset(bknd->devices[i]);
+            bknd->devices[i] = bknd->devices.back();
+            bknd->devices.pop_back();
+            break;
         }
-
-        if (dev.fd == -1)
-            return;
-
-        compositor->seat()->closeDevice(dev.id);
     }
 
+    if (!dev)
+        goto closeFD;
+
+    close(dev->roFd());
+
+    if (libseatEnabled)
+        compositor->seat()->closeDevice(dev->id());
+
+closeFD:
     close(fd);
 }
 
 static SRMInterface srmInterface =
 {
-    .openRestricted = &openRestricted,
-    .closeRestricted = &closeRestricted
+    .openRestricted = &LGraphicBackend::openRestricted,
+    .closeRestricted = &LGraphicBackend::closeRestricted
 };
 
 static void initConnector(Backend *bknd, SRMConnector *conn)
@@ -270,19 +338,10 @@ static void pageFlipped(SRMConnector *connector, void *userData)
 {
     SRM_UNUSED(connector);
     LOutput *output = (LOutput*)userData;
-
-#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     memcpy(&output->imp()->presentationTime,
            srmConnectorGetPresentationTime(bkndOutput->conn),
            sizeof(output->imp()->presentationTime));
-#else
-    output->imp()->presentationTime.flags = SRM_PRESENTATION_TIME_FLAGS_VSYNC;
-    output->imp()->presentationTime.frame = 0;
-    output->imp()->presentationTime.period = 0;
-    clock_gettime(CLOCK_MONOTONIC, &output->imp()->presentationTime.time);
-#endif
-
     output->imp()->backendPageFlipped();
 }
 
@@ -319,19 +378,16 @@ bool LGraphicBackend::backendInitialize()
 {
     libseatEnabled = compositor()->seat()->imp()->initLibseat();
 
-    struct stat stat;
     Backend *bknd = new Backend();
     compositor()->imp()->graphicBackendData = bknd;
     bknd->core = srmCoreCreate(&srmInterface, compositor());
     SRMVersion *version;
     SRMDevice *allocatorDevice;
 
-#if SRM_VERSION_GREATER_EQUAL_THAN(0,7,0)
     auto formatInVector = [](const std::vector<LDMAFormat> &vec, const LDMAFormat &fmt) -> bool
     {
         return std::find(vec.begin(), vec.end(), fmt) != vec.end();
     };
-#endif
 
     if (!bknd->core)
     {
@@ -341,28 +397,32 @@ bool LGraphicBackend::backendInitialize()
 
     version = srmCoreGetVersion(bknd->core);
 
-    if (version->major == 0 && version->minor == 5 && version->patch == 1)
+    if (version->major == 0 && version->minor < 9)
     {
-        LLog::fatal("[%s] You are currently using SRM v0.5.1, which has serious bugs causing issues with the refresh rate and hardware cursor plane updates. Consider upgrading to v0.5.2 or a later version.", BKND_NAME);
+        LLog::fatal("[%s] Using SRM v%d.%d.%d but version >= v0.9.0 is required.", BKND_NAME, version->major, version->minor, version->patch);
         srmCoreDestroy(bknd->core);
         goto fail;
     }
-    else if (version->major == 0 && version->minor < 8)
+
+    // Link SRMDevice -> LGPU and create lease globals
+    SRMListForeach (devIt, srmCoreGetDevices(bknd->core))
     {
-        LLog::fatal("[%s] Using SRM v%d.%d.%d but version >= v0.8.0 is required.", BKND_NAME, version->major, version->minor, version->patch);
-        srmCoreDestroy(bknd->core);
-        goto fail;
+        SRMDevice *dev = (SRMDevice *)srmListItemGetData(devIt);
+
+        for (auto *gpu : bknd->devices)
+        {
+            if (gpu->fd() == srmDeviceGetFD(dev))
+            {
+                srmDeviceSetUserData(dev, gpu);
+                gpu->m_data = dev;
+                break;
+            }
+        }
     }
 
     allocatorDevice = srmCoreGetAllocatorDevice(bknd->core);
-
-    if (fstat(srmDeviceGetFD(allocatorDevice), &stat) == 0)
-        bknd->allocatorDeviceId = stat.st_rdev;
-    else
-    {
-        bknd->allocatorDeviceId = -1;
-        LLog::fatal("[%s] Failed to get allocator device ID.", BKND_NAME);
-    }
+    bknd->allocator = (LGPU*)srmDeviceGetUserData(allocatorDevice);
+    assert(bknd->allocator != nullptr);
 
     // Fill DMA formats (LDMAFormat = SRMFormat)
     SRMListForeach (fmtIt, srmCoreGetSharedDMATextureFormats(bknd->core))
@@ -372,8 +432,6 @@ bool LGraphicBackend::backendInitialize()
     }
 
     // Fill scanout DMA formats (requires SRM >= 0.7.0)
-#if SRM_VERSION_GREATER_EQUAL_THAN(0,7,0)
-
     SRMListForeach (planeIt, srmDeviceGetPlanes(allocatorDevice))
     {
         SRMPlane *plane = (SRMPlane*) srmListItemGetData(planeIt);
@@ -396,15 +454,11 @@ bool LGraphicBackend::backendInitialize()
                 bknd->scanoutFormats.emplace_back(alphaSubstitute, fmt->modifier);
         }
     }
-#endif
 
     // Find connected outputs
     SRMListForeach (devIt, srmCoreGetDevices(bknd->core))
     {
         SRMDevice *dev = (SRMDevice*)srmListItemGetData(devIt);
-
-        if (srmDeviceIsRenderer(dev))
-            bknd->rendererGPUs++;
 
         SRMListForeach (connIt, srmDeviceGetConnectors(dev))
         {
@@ -471,10 +525,10 @@ const std::vector<LOutput*> *LGraphicBackend::backendGetConnectedOutputs()
     return &bknd->connectedOutputs;
 }
 
-UInt32 LGraphicBackend::backendGetRendererGPUs()
+const std::vector<LGPU*> *LGraphicBackend::backendGetDevices()
 {
     Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
-    return bknd->rendererGPUs;
+    return &bknd->devices;
 }
 
 const std::vector<LDMAFormat> *LGraphicBackend::backendGetDMAFormats()
@@ -501,10 +555,10 @@ EGLContext LGraphicBackend::backendGetAllocatorEGLContext()
     return srmDeviceGetEGLContext(srmCoreGetAllocatorDevice(bknd->core));
 }
 
-dev_t LGraphicBackend::backendGetAllocatorDeviceId()
+LGPU *LGraphicBackend::backendGetAllocatorDevice()
 {
     Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
-    return bknd->allocatorDeviceId;
+    return bknd->allocator;
 }
 
 /* TEXTURES */
@@ -670,22 +724,7 @@ void LGraphicBackend::outputSetBufferDamage(LOutput *output, LRegion &region)
 
     Int32 n;
     const LBox *boxes = region.boxes(&n);
-
-// Boxes are supported since SRM v0.5.0
-#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     srmConnectorSetBufferDamageBoxes(bkndOutput->conn, (SRMBox*)boxes, n);
-#else
-    SRMRect rects[n];
-
-    for (Int32 i = 0; i < n; i++)
-    {
-        rects[i].x = boxes[i].x1;
-        rects[i].y = boxes[i].y1;
-        rects[i].width = boxes[i].x2 - boxes[i].x1;
-        rects[i].height = boxes[i].y2 - boxes[i].y1;
-    }
-    srmConnectorSetBufferDamage(bkndOutput->conn, rects, n);
-#endif
 }
 
 /* OUTPUT PROPS */
@@ -723,12 +762,28 @@ const LSize *LGraphicBackend::outputGetPhysicalSize(LOutput *output)
 Int32 LGraphicBackend::outputGetSubPixel(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-
-#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     return subPixelTable[(Int32)srmConnectorGetSubPixel(bkndOutput->conn)];
-#else
-    return WL_OUTPUT_SUBPIXEL_UNKNOWN;
-#endif
+}
+
+LGPU *LGraphicBackend::outputGetDevice(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    SRMDevice *dev = srmConnectorGetDevice(bkndOutput->conn);
+    LGPU *gpu = (LGPU*)srmDeviceGetUserData(dev);
+    assert(gpu != nullptr);
+    return gpu;
+}
+
+UInt32 LGraphicBackend::outputGetID(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorGetID(bkndOutput->conn);
+}
+
+bool LGraphicBackend::outputIsNonDesktop(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorIsNonDesktop(bkndOutput->conn);
 }
 
 /* OUTPUT BUFFERING */
@@ -849,23 +904,13 @@ bool LGraphicBackend::outputEnableVSync(LOutput *output, bool enabled)
 void LGraphicBackend::outputSetRefreshRateLimit(LOutput *output, Int32 hz)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-
-#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     srmConnectorSetRefreshRateLimit(bkndOutput->conn, hz);
-#else
-    L_UNUSED(bkndOutput)
-#endif
 }
 
 Int32 LGraphicBackend::outputGetRefreshRateLimit(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-
-#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     return srmConnectorGetRefreshRateLimit(bkndOutput->conn);
-#else
-    return 0;
-#endif
 }
 
 /* OUTPUT TIME */
@@ -873,12 +918,7 @@ Int32 LGraphicBackend::outputGetRefreshRateLimit(LOutput *output)
 clockid_t LGraphicBackend::outputGetClock(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-
-#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     return srmConnectorGetPresentationClock(bkndOutput->conn);
-#else
-    return CLOCK_MONOTONIC;
-#endif
 }
 
 /* OUTPUT CURSOR */
@@ -932,29 +972,19 @@ bool LGraphicBackend::outputSetMode(LOutput *output, LOutputMode *mode)
 LContentType LGraphicBackend::outputGetContentType(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-
-#if SRM_VERSION_LESS_THAN(0,6,0)
-    return bkndOutput->fallbackContentType;
-#else
     return static_cast<LContentType>(srmConnectorGetContentType(bkndOutput->conn) - 1);
-#endif
 }
 
 void LGraphicBackend::outputSetContentType(LOutput *output, LContentType type)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-
-#if SRM_VERSION_LESS_THAN(0,6,0)
-    bkndOutput->fallbackContentType = type;
-#else
     return srmConnectorSetContentType(bkndOutput->conn, (SRM_CONNECTOR_CONTENT_TYPE)(type + 1));
-#endif
 }
 
 /* DIRECT SCANOUT */
+
 bool LGraphicBackend::outputSetScanoutBuffer(LOutput *output, LTexture *texture)
 {
-#if SRM_VERSION_GREATER_EQUAL_THAN(0,7,0)
     SRMBuffer *buffer { nullptr };
 
     if (texture)
@@ -969,12 +999,98 @@ bool LGraphicBackend::outputSetScanoutBuffer(LOutput *output, LTexture *texture)
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
     return srmConnectorSetCustomScanoutBuffer(bkndOutput->conn, buffer);
-#else
-    L_UNUSED(output)
-    L_UNUSED(texture)
-    LLog::warning("[%s] Direct scanout requires SRM >= 0.7.0", BKND_NAME);
-    return false;
-#endif
+}
+
+/* DRM LEASE */
+
+int LGraphicBackend::backendCreateLease(const std::vector<LOutput*> &outputs)
+{
+    std::vector<UInt32> resources;
+    std::unique_ptr<DRMLease> lease { new DRMLease };
+    Output *bkndOutput;
+    SRMDevice *dev;
+
+    for (LOutput *output : outputs)
+    {
+        bkndOutput = (Output*)output->imp()->graphicBackendData;
+
+        // Set GPU
+        if (!lease->gpu)
+        {
+            dev = (SRMDevice*)lease->gpu->m_data;
+            lease->gpu = output->gpu();
+
+            // When using the legacy DRM API there is no way to know which cursor and primary plane will a connector use
+            if (!srmDeviceGetClientCapAtomic(dev))
+            {
+                LLog::error("[%s] DRM lease is disabled for the legacy DRM API. Make sure to set SRM_FORCE_LEGACY_API=0.", BKND_NAME);
+                return -1;
+            }
+        }
+
+        // Find and add a free crtc
+        SRMEncoder *encoder;
+        SRMCrtc *crtc;
+        SRMPlane *primaryPlane;
+        SRMPlane *cursorPlane;
+
+        if (!srmConnectorGetBestConfiguration(bkndOutput->conn, &encoder, &crtc, &primaryPlane, &cursorPlane))
+        {
+            LLog::error("[%s] DRM lease: Failed to find a free CRTC for connector %s.", BKND_NAME, output->name());
+            return -1;
+        }
+
+        // Just mark encoder as used
+        lease->encoders.push_back(encoder);
+        encoder->currentConnector = bkndOutput->conn;
+
+        // Add crtc
+        resources.push_back(crtc->id);
+        lease->crtcs.push_back(crtc);
+        crtc->currentConnector = bkndOutput->conn;
+
+        // Add primary plane
+        resources.push_back(primaryPlane->id);
+        lease->planes.push_back(primaryPlane);
+        primaryPlane->currentConnector = bkndOutput->conn;
+
+        // Add connector
+        resources.push_back(output->id());
+        lease->connectors.push_back(bkndOutput->conn);
+        bkndOutput->conn->currentCrtc = crtc;
+        bkndOutput->conn->currentEncoder = encoder;
+        bkndOutput->conn->currentPrimaryPlane = primaryPlane;
+
+        // TODO: Add cursor planes
+
+        // Attach lease to each output
+        bkndOutput->lease.reset(lease.get());
+    }
+
+    lease->fd = drmModeCreateLease(lease->gpu->fd(), resources.data(), resources.size(), O_CLOEXEC, &lease->lessee);
+
+    if (lease->fd < 0)
+    {
+        LLog::error("[%s] drmModeCreateLease failed.", BKND_NAME);
+        return -1;
+    }
+
+    return lease.release()->fd; // Keep pointer alive
+}
+
+void LGraphicBackend::backendRevokeLease(int fd)
+{
+    for (LOutput *output : seat()->outputs())
+    {
+        Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+
+        if (bkndOutput->lease && bkndOutput->lease->fd == fd)
+        {
+            // This also sets to nullptr the lease of other related outputs
+            delete bkndOutput->lease.get();
+            return;
+        }
+    }
 }
 
 static LGraphicBackendInterface API;
@@ -988,12 +1104,12 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.backendSuspend                  = &LGraphicBackend::backendSuspend;
     API.backendResume                   = &LGraphicBackend::backendResume;
     API.backendGetConnectedOutputs      = &LGraphicBackend::backendGetConnectedOutputs;
-    API.backendGetRendererGPUs          = &LGraphicBackend::backendGetRendererGPUs;
+    API.backendGetDevices               = &LGraphicBackend::backendGetDevices;
     API.backendGetDMAFormats            = &LGraphicBackend::backendGetDMAFormats;
     API.backendGetScanoutDMAFormats     = &LGraphicBackend::backendGetScanoutDMAFormats;
     API.backendGetAllocatorEGLDisplay   = &LGraphicBackend::backendGetAllocatorEGLDisplay;
     API.backendGetAllocatorEGLContext   = &LGraphicBackend::backendGetAllocatorEGLContext;
-    API.backendGetAllocatorDeviceId     = &LGraphicBackend::backendGetAllocatorDeviceId;
+    API.backendGetAllocatorDevice       = &LGraphicBackend::backendGetAllocatorDevice;
 
     /* TEXTURES */
     API.textureCreateFromCPUBuffer      = &LGraphicBackend::textureCreateFromCPUBuffer;
@@ -1020,6 +1136,9 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.outputGetDescription            = &LGraphicBackend::outputGetDescription;
     API.outputGetPhysicalSize           = &LGraphicBackend::outputGetPhysicalSize;
     API.outputGetSubPixel               = &LGraphicBackend::outputGetSubPixel;
+    API.outputGetDevice                 = &LGraphicBackend::outputGetDevice;
+    API.outputGetID                     = &LGraphicBackend::outputGetID;
+    API.outputIsNonDesktop              = &LGraphicBackend::outputIsNonDesktop;
 
     /* OUTPUT BUFFERING */
     API.outputGetFramebufferID          = &LGraphicBackend::outputGetFramebufferID;
@@ -1059,5 +1178,8 @@ extern "C" LGraphicBackendInterface *getAPI()
     /* DIRECT SCANOUT */
     API.outputSetScanoutBuffer          = &LGraphicBackend::outputSetScanoutBuffer;
 
+    /* DRM LEASE */
+    API.backendCreateLease              = &LGraphicBackend::backendCreateLease;
+    API.backendRevokeLease              = &LGraphicBackend::backendRevokeLease;
     return &API;
 }

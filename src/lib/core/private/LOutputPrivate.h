@@ -101,6 +101,10 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     void blitFramebuffers() noexcept;
     void blitFractionalScaleFb(bool cursorOnly) noexcept;
 
+    // DRM Lease
+    bool leasable { false };
+    LWeak<LClient> lessor;
+
     // Thread sync stuff
     std::atomic<bool> callLock;
     std::atomic<bool> callLockACK;

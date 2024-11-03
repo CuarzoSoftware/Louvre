@@ -45,6 +45,13 @@ public:
     LCLASS_NO_COPY(LSeat)
 
     /**
+     * @brief Retrieves the available GPUs.
+     *
+     * There is always at least one available GPU (even if virtual), and each output belongs to a single GPU.
+     */
+    const std::vector<LGPU*> &gpus() const noexcept;
+
+    /**
      * @brief Vector of available outputs.
      *
      * This method provides a vector of currently available outputs. The vector includes connected outputs that can be initialized

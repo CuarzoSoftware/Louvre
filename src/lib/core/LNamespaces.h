@@ -37,6 +37,7 @@
 #define LOUVRE_CONTENT_TYPE_MANAGER_VERSION 1
 #define LOUVRE_IDLE_NOTIFIER_VERSION 1
 #define LOUVRE_IDLE_INHIBIT_MANAGER_VERSION 1
+#define LOUVRE_DRM_LEASE_DEVICE_VERSION 1
 
 #define L_UNUSED(object){(void)object;}
 
@@ -143,6 +144,7 @@ namespace Louvre
     class LKeyboard;
     class LTouch;
 
+    class LGPU;
     class LInputDevice;
     class LEvent;
     class LInputEvent;
@@ -504,6 +506,15 @@ namespace Louvre
             class GIdleInhibitManager;
 
             class RIdleInhibitor;
+        }
+
+        namespace DRMLease
+        {
+            class GDRMLeaseDevice;
+
+            class RDRMLeaseConnector;
+            class RDRMLeaseRequest;
+            class RDRMLease;
         }
     }
 
