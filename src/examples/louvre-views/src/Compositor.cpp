@@ -89,7 +89,7 @@ void Compositor::initialized()
         if (output->isNonDesktop())
         {
             output->setLeasable(true);
-            return;
+            continue;
         }
 
         output->setTransform(LTransform::Normal);
