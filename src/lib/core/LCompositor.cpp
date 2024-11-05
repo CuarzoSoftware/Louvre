@@ -1,3 +1,4 @@
+#include <protocols/DRMLease/RDRMLease.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
 #include <private/LSeatPrivate.h>
@@ -460,6 +461,9 @@ bool LCompositor::addOutput(LOutput *output)
     for (LOutput *o : outputs())
         if (o == output)
             return true;
+
+    if (output->lease())
+        output->lease()->finished();
 
     imp()->outputs.push_back(output);
 

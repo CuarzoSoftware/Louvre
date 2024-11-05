@@ -1,8 +1,8 @@
 #include <protocols/DRMLease/drm-lease-v1.h>
 #include <protocols/DRMLease/GDRMLeaseDevice.h>
 #include <protocols/DRMLease/RDRMLeaseConnector.h>
+#include <private/LOutputPrivate.h>
 #include <LUtils.h>
-#include <LOutput.h>
 #include <cassert>
 
 using namespace Louvre::Protocols::DRMLease;
@@ -28,7 +28,9 @@ RDRMLeaseConnector::RDRMLeaseConnector
     m_drmLeaseDeviceRes(drmLeaseDeviceRes),
     m_output(output)
 {
+    wp_drm_lease_device_v1_send_connector(m_drmLeaseDeviceRes->resource(), resource());
     m_drmLeaseDeviceRes->m_connectors.emplace_back(this);
+    m_output->imp()->drmLeaseConnectorRes.emplace_back(this);
     name();
     description();
     connectorId();
@@ -39,6 +41,9 @@ RDRMLeaseConnector::~RDRMLeaseConnector()
 {
     if (m_drmLeaseDeviceRes)
         LVectorRemoveOneUnordered(m_drmLeaseDeviceRes->m_connectors, this);
+
+    if (m_output)
+        LVectorRemoveOneUnordered(m_output->imp()->drmLeaseConnectorRes, this);
 }
 
 /******************** REQUESTS ********************/

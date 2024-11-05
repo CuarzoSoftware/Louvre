@@ -34,7 +34,10 @@ void LSeat::outputPlugged(LOutput *output)
 {
     // Probably a VR headset, meant to be leased by clients
     if (output->isNonDesktop())
+    {
+        output->setLeasable(true);
         return;
+    }
 
     output->setScale(output->dpi() >= 200 ? 2 : 1);
 

@@ -1,11 +1,13 @@
+#include <protocols/DRMLease/RDRMLease.h>
+#include <protocols/DRMLease/RDRMLeaseConnector.h>
 #include <private/LSeatPrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
+#include <private/LCursorPrivate.h>
 #include <LLog.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstring>
-#include <private/LCursorPrivate.h>
 
 void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
 {
@@ -52,6 +54,10 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
 
     if (compositor()->state() != LCompositor::Initialized)
         return;
+
+    for (LOutput *output : lseat->outputs())
+        if (output->lease())
+            output->lease()->finished();
 
     if (compositor()->isInputBackendInitialized())
         compositor()->imp()->inputBackend->backendSuspend();
@@ -138,5 +144,13 @@ void LSeat::LSeatPrivate::backendOutputPlugged(LOutput *output)
 void LSeat::LSeatPrivate::backendOutputUnplugged(LOutput *output)
 {
     if (enabled)
+    {
         seat()->outputUnplugged(output);
+
+        if (output->lease())
+            output->lease()->finished();
+
+        for (auto *drmConnLeaseRes : output->imp()->drmLeaseConnectorRes)
+            drmConnLeaseRes->withdrawn();
+    }
 }

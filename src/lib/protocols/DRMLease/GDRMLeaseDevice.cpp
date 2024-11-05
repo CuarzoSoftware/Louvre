@@ -1,6 +1,7 @@
 #include <protocols/DRMLease/drm-lease-v1.h>
 #include <protocols/DRMLease/GDRMLeaseDevice.h>
 #include <protocols/DRMLease/RDRMLeaseConnector.h>
+#include <protocols/DRMLease/RDRMLeaseRequest.h>
 #include <private/LClientPrivate.h>
 #include <LGlobal.h>
 #include <LUtils.h>
@@ -65,7 +66,7 @@ GDRMLeaseDevice::~GDRMLeaseDevice() noexcept
 
 void GDRMLeaseDevice::drmFd() noexcept
 {
-    if (m_roFDSent || !m_gpu || m_gpu->roFd() != -1)
+    if (m_roFDSent || !m_gpu || m_gpu->roFd() < 0)
         return;
 
     wp_drm_lease_device_v1_send_drm_fd(resource(), m_gpu->roFd());
@@ -97,14 +98,15 @@ void GDRMLeaseDevice::done() noexcept
 
 /******************** REQUESTS ********************/
 
-void GDRMLeaseDevice::create_lease_request(wl_client *client, wl_resource *resource, UInt32 id)
+void GDRMLeaseDevice::create_lease_request(wl_client */*client*/, wl_resource *resource, UInt32 id)
 {
-
+    auto &res { LRES_CAST(GDRMLeaseDevice, resource) };
+    new RDRMLeaseRequest(&res, id);
 }
 
 void GDRMLeaseDevice::release(wl_client */*client*/, wl_resource *resource)
 {
-    auto &res { *static_cast<GDRMLeaseDevice*>(wl_resource_get_user_data(resource)) };
+    auto &res { LRES_CAST(GDRMLeaseDevice, resource) };
     res.released();
     res.destroy();
 }

@@ -774,7 +774,9 @@ public:
      *
      * Outputs like VR headsets set this property to `true` to indicate they are not meant for desktop use.
      *
-     * @note Such outputs are usually intended to be leased by clients and should not be initialized by default.
+     * Such outputs are typically intended to be leased by clients and not used by the compositor.
+     *
+     * The default implementation of LCompositor::initialized() marks outputs with this property as leasable. See setLeasable().
      *
      * @return `true` if the output is not meant for desktop usage, `false` otherwise.
      */
@@ -783,30 +785,33 @@ public:
     /**
      * @brief Advertises the output as leasable.
      *
-     * When set to `true`, clients using the DRM will be notified and able to request control.
+     * When set to `true`, clients using the DRM Lease protocol will be able to trigger leaseRequest().
      *
-     * @note If set as leasable while the output is initialized, it will be uninitialized.\n
-     *       Conversely, if it is initialized after being set as leasable, it will no longer be leasable.
-     *
-     * @return `false` if the graphics backend doesn't support this feature.
+     * @note Setting it to `false` will automatically revoke any existing lease.
      */
-    bool setLeasable(bool leasable) noexcept;
+    void setLeasable(bool leasable) noexcept;
 
     /**
      * @brief Checks if the output is advertised as leasable.
      *
      * @see setLeasable()
      *
-     * @return `true` if leasable, `false` otherwise.
+     * @return `true` if leasable, `false` otherwise. `false` by default.
      */
     bool leasable() noexcept;
 
     /**
-     * @brief Returns the client currently controlling the output.
+     * @brief Current lease created after an accepted leaseRequest().
+     *
+     * `#include <protocols/DRMLease/RDRMLease.h>`
+     *
+     * Use this property to determine which client is leasing the output via `lease()->client()` or to revoke it with `lease()->finished()`.
+     *
+     * Once revoked, this property is set to `nullptr`.
      *
      * @return `nullptr` if the output is not being leased.
      */
-    LClient *lessor() const noexcept;
+    Protocols::DRMLease::RDRMLease* lease() const noexcept;
 
     /**
      * @brief Gets the output name.
@@ -929,6 +934,25 @@ public:
      * @snippet LOutputDefault.cpp setGammaRequest
      */
     virtual void setGammaRequest(LClient *client, const LGammaTable *gamma);
+
+    /**
+     * @brief Handles client requests to lease the output.
+     *
+     * This request is only triggered if the output was previously advertised as leasable with setLeasable().
+     *
+     * Accepting the request does not guarantee that the lease() property will be immediately set.\n
+     * The graphics backend may fail to create it or the client may issue this request for additional outputs before it is created.
+     *
+     * If accepted, any other client will stop leasing it. Additionally, if it is being used by the compositor, it will be uninitialized.
+     *
+     * @return `true` to allow the client, `false` to deny.
+     *
+     * #### Default Implementation
+     * @snippet LOutputDefault.cpp leaseRequest
+     */
+    virtual bool leaseRequest(LClient* client);
+
+    // TODO: add leaseChanged event?
 
     /**
      * @brief Notifies a change in availableGeometry().

@@ -76,7 +76,7 @@ private:
     int m_roFd { -1 };
     std::string m_name;
     LWeak<LGlobal> m_leaseGlobal;
-    void *m_data;
+    void *m_data; // Backend
 };
 
 #endif // LGPU_H

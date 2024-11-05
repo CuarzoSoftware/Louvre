@@ -164,6 +164,14 @@ void LOutput::setGammaRequest(LClient *client, const LGammaTable *gamma)
 }
 //! [setGammaRequest]
 
+//! [leaseRequest]
+bool LOutput::leaseRequest(LClient *client)
+{
+    L_UNUSED(client)
+    return true;
+}
+//! [leaseRequest]
+
 //! [availableGeometryChanged]
 void LOutput::availableGeometryChanged()
 {

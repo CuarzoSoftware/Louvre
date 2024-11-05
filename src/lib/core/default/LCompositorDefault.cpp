@@ -162,7 +162,10 @@ void LCompositor::initialized()
     {
         // Probably a VR headset, meant to be leased by clients
         if (output->isNonDesktop())
+        {
+            output->setLeasable(true);
             continue;
+        }
 
         // Sets a scale factor of 2 when DPI >= 200
         output->setScale(output->dpi() >= 200 ? 2.f : 1.f);

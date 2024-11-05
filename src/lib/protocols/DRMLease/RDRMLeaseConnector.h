@@ -3,11 +3,20 @@
 
 #include <LResource.h>
 #include <LWeak.h>
-#include <string>
 
 class Louvre::Protocols::DRMLease::RDRMLeaseConnector final : public LResource
 {
 public:
+
+    GDRMLeaseDevice *drmLeaseDeviceRes() const noexcept
+    {
+        return m_drmLeaseDeviceRes;
+    }
+
+    LOutput *output() const noexcept
+    {
+        return m_output;
+    }
 
     /******************** REQUESTS ********************/
 
@@ -28,6 +37,5 @@ private:
     LWeak<GDRMLeaseDevice> m_drmLeaseDeviceRes;
     LWeak<LOutput> m_output;
 };
-
 
 #endif // RDRMLEASECONNECTOR_H

@@ -103,7 +103,8 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
 
     // DRM Lease
     bool leasable { false };
-    LWeak<LClient> lessor;
+    LWeak<Protocols::DRMLease::RDRMLease> lease;
+    std::vector<Protocols::DRMLease::RDRMLeaseConnector*> drmLeaseConnectorRes;
 
     // Thread sync stuff
     std::atomic<bool> callLock;

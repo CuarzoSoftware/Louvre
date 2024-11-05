@@ -87,7 +87,10 @@ void Compositor::initialized()
     {
         // Probably a VR headset, meant to be leased by clients
         if (output->isNonDesktop())
-            continue;
+        {
+            output->setLeasable(true);
+            return;
+        }
 
         output->setTransform(LTransform::Normal);
         output->setScale(output->dpi() >= 200 ? 2.f : 1.f);

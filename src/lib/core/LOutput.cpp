@@ -6,6 +6,9 @@
 
 #include <protocols/Wayland/GOutput.h>
 #include <protocols/GammaControl/RGammaControl.h>
+#include <protocols/DRMLease/GDRMLeaseDevice.h>
+#include <protocols/DRMLease/RDRMLeaseConnector.h>
+#include <protocols/DRMLease/RDRMLease.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -19,6 +22,8 @@
 #include <LTime.h>
 #include <LLog.h>
 #include <LOutputFramebuffer.h>
+#include <LClient.h>
+
 
 using namespace Louvre;
 
@@ -312,7 +317,6 @@ Float32 LOutput::scale() const noexcept
 
 void LOutput::repaint() noexcept
 {
-
     if (compositor()->imp()->graphicBackend->outputRepaint(this))
         imp()->stateFlags.add(LOutputPrivate::PendingRepaint);
 }
@@ -364,9 +368,39 @@ bool LOutput::isNonDesktop() const noexcept
     return compositor()->imp()->graphicBackend->outputIsNonDesktop((LOutput*)this);
 }
 
-bool LOutput::setLeasable(bool leasable) noexcept
+void LOutput::setLeasable(bool leasable) noexcept
 {
-    return false;
+    if (leasable == imp()->leasable)
+        return;
+
+    imp()->leasable = leasable;
+
+    if (leasable)
+    {
+        for (LClient *client : compositor()->clients())
+        {
+            for (auto *global : client->drmLeaseDeviceGlobals())
+            {
+                if (global->gpu() == gpu())
+                {
+                    if (global->connector(this))
+                        global->done();
+                    break;
+                }
+            }
+        }
+    }
+    else
+    {
+        if (lease())
+            lease()->finished();
+
+        for (auto *drmLeaseConnRes : imp()->drmLeaseConnectorRes)
+        {
+            drmLeaseConnRes->withdrawn();
+            drmLeaseConnRes->done();
+        }
+    }
 }
 
 bool LOutput::leasable() noexcept
@@ -374,9 +408,9 @@ bool LOutput::leasable() noexcept
     return imp()->leasable;
 }
 
-LClient *LOutput::lessor() const noexcept
+DRMLease::RDRMLease *LOutput::lease() const noexcept
 {
-    return imp()->lessor.get();
+    return imp()->lease;
 }
 
 const LRect &LOutput::rect() const noexcept

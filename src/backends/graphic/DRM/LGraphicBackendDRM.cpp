@@ -65,7 +65,12 @@ public:
     ~DRMLease()
     {
         if (fd >= 0)
-            assert(drmModeRevokeLease(gpu->fd(), lessee) == 0);
+        {
+            // This could fail if not master (TTY switch)
+            // Proper clean up is done in backendResume()
+            if (drmModeRevokeLease(gpu->fd(), lessee) != 0)
+                LLog::error("[%s] drmModeRevokeLease failed. Cleaning up resources once the session is restored.", BKND_NAME);
+        }
 
         while (!connectors.empty())
         {
@@ -350,6 +355,7 @@ static void uninitializeGL(SRMConnector *connector, void *userData)
     SRM_UNUSED(connector);
     LOutput *output = (LOutput*)userData;
     output->imp()->backendUninitializeGL();
+    srmConnectorSetCursor(connector, NULL);
 }
 
 static SRMConnectorInterface connectorInterface =
@@ -516,6 +522,23 @@ void LGraphicBackend::backendSuspend()
 void LGraphicBackend::backendResume()
 {
     Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
+
+    // All leases should have been destroyed on backendSuspend()
+    // but cleanup may have failed if DRM master was lost, let's try now
+    SRMListForeach (devIt, srmCoreGetDevices(bknd->core))
+    {
+        SRMDevice *dev = (SRMDevice*)srmListItemGetData(devIt);
+        drmModeLesseeListRes *lessees { drmModeListLessees(srmDeviceGetFD(dev)) };
+
+        if (!lessees)
+            continue;
+
+        for (UInt32 i = 0; i < lessees->count; i++)
+            drmModeRevokeLease(srmDeviceGetFD(dev), lessees->lessees[i]);
+
+        drmFree(lessees);
+    }
+
     srmCoreResume(bknd->core);
 }
 
@@ -837,20 +860,13 @@ LTexture *LGraphicBackend::outputGetBuffer(LOutput *output, UInt32 bufferIndex)
 UInt32 LGraphicBackend::outputGetGammaSize(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-
-#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     return srmConnectorGetGammaSize(bkndOutput->conn);
-#else
-    L_UNUSED(bkndOutput);
-    return 0;
-#endif
 }
 
 bool LGraphicBackend::outputSetGamma(LOutput *output, const LGammaTable &table)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
-#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     if (table.size() != srmConnectorGetGammaSize(bkndOutput->conn))
     {
         LLog::error("[%s] Failed to set gamma to output %s. Invalid size %d != real gamma size %d.",
@@ -861,44 +877,25 @@ bool LGraphicBackend::outputSetGamma(LOutput *output, const LGammaTable &table)
         return false;
     }
     return srmConnectorSetGamma(bkndOutput->conn, table.red());
-#else
-    L_UNUSED(bkndOutput)
-    return false;
-#endif
 }
 
 /* OUTPUT V-SYNC */
 bool LGraphicBackend::outputHasVSyncControlSupport(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-
-#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     return srmConnectorHasVSyncControlSupport(bkndOutput->conn);
-#else
-    return false;
-#endif
 }
 
 bool LGraphicBackend::outputIsVSyncEnabled(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-
-#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     return srmConnectorIsVSyncEnabled(bkndOutput->conn);
-#else
-    return true;
-#endif
 }
 
 bool LGraphicBackend::outputEnableVSync(LOutput *output, bool enabled)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-
-#if SRM_VERSION_GREATER_EQUAL_THAN(0,5,0)
     return srmConnectorEnableVSync(bkndOutput->conn, enabled);
-#else
-    return enabled;
-#endif
 }
 
 void LGraphicBackend::outputSetRefreshRateLimit(LOutput *output, Int32 hz)
@@ -1017,8 +1014,8 @@ int LGraphicBackend::backendCreateLease(const std::vector<LOutput*> &outputs)
         // Set GPU
         if (!lease->gpu)
         {
-            dev = (SRMDevice*)lease->gpu->m_data;
             lease->gpu = output->gpu();
+            dev = (SRMDevice*)lease->gpu->m_data;
 
             // When using the legacy DRM API there is no way to know which cursor and primary plane will a connector use
             if (!srmDeviceGetClientCapAtomic(dev))

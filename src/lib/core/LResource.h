@@ -8,7 +8,9 @@
     friend class Louvre::LCompositor;\
     static void bind(wl_client *client, void *data, UInt32 version, UInt32 id) noexcept;\
     static Int32 maxVersion() noexcept;\
-    static const wl_interface *interface() noexcept;\
+    static const wl_interface *interface() noexcept;
+
+#define LRES_CAST(type, res) (*static_cast<type*>(wl_resource_get_user_data(res)))
 
 /**
  * @brief Wrapper for native **wl_resource** structs
