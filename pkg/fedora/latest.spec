@@ -1,4 +1,4 @@
-%global basever 2.10.1
+%global basever 2.11.0
 %global origrel 1
 %global somajor 2
 
@@ -90,7 +90,8 @@ pushd repo/src
 %{_libdir}/pkgconfig/Louvre.pc
 
 %changelog
-* Fri Nov 01 2024 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
-- Added official Fedora COPR link to the downloads page.
-- Wayland Backend: Prevent compositor from exiting when a `wl_output` global is removed.
-- Wayland Backend: Fixed cursor scaling issue that made it look oversized on low DPI displays.
+* Thu Nov 07 2024 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
+- DRM Lease (for letting apps take control of displays). Thanks @Fox2Code for spotting typos!
+- Added a more detailed LOutput::description().
+- Added a new Arch AUR (devel branch) to the downloads page. Thanks @kingdomkind!
+- Fixed layer-shell z-index ordering issue. Thanks @renhiyama for reporting it!
