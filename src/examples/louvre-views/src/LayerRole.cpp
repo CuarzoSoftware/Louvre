@@ -9,9 +9,10 @@ LayerRole::LayerRole(const void *params) noexcept :
     isShelf(scope() == "cuarzo-shelf")
 {
     if (isShelf)
+    {
         G::setShelf(client());
-
-    static_cast<Surface*>(surface())->getView()->setParent(&G::compositor()->overlayLayer);
+        static_cast<Surface*>(surface())->getView()->setParent(&G::compositor()->overlayLayer);
+    }
 }
 
 void LayerRole::configureRequest()

@@ -1,3 +1,24 @@
+Louvre (2.11.0-1)
+
+  # New Protocols
+
+  * DRM Lease (for letting apps take control of displays). Thanks @Fox2Code for spotting typos!
+
+  # Internal Changes
+
+  * Added a more detailed LOutput::description().
+
+  # Packaging
+
+  * Added a new Arch AUR (devel branch) to the downloads page. Thanks @kingdomkind!
+
+  # louvre-views
+
+  * Fixed layer-shell z-index ordering issue. Thanks @renhiyama for reporting it!
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Thu, 07 Nov 2024 00:09:11 -0300
+
+
 Louvre (2.10.1-1)
 
   # Packaging

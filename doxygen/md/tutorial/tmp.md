@@ -36,3 +36,4 @@ Here are some links to the C++ API documentation to help you navigate it:
 - [Foreign Toplevel Window Management.](@ref lforeigntoplevelcontroller_detailed)
 - [Foreign Toplevel List.](@ref Louvre::LToplevelRole::foreignHandleFilter)
 - [Idle Listeners and Inhibitors.](@ref lidlelistener_detailed)
+- [DRM Leasing (VR Headsets).](@ref drm_leasing)

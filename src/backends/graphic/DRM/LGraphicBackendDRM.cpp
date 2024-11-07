@@ -35,8 +35,8 @@
 #include <private/SRMCrtcPrivate.h>
 #include <private/SRMPlanePrivate.h>
 #include <private/SRMEncoderPrivate.h>
+#include <private/SRMDevicePrivate.h>
 #include <SRMCore.h>
-#include <SRMDevice.h>
 #include <SRMConnectorMode.h>
 #include <SRMListener.h>
 #include <SRMList.h>
@@ -68,8 +68,10 @@ public:
         {
             // This could fail if not master (TTY switch)
             // Proper clean up is done in backendResume()
-            if (drmModeRevokeLease(gpu->fd(), lessee) != 0)
-                LLog::error("[%s] drmModeRevokeLease failed. Cleaning up resources once the session is restored.", BKND_NAME);
+            int ret = drmModeRevokeLease(gpu->fd(), lessee);
+
+            if (ret != 0)
+                LLog::error("[%s] drmModeRevokeLease failed (%d). Cleaning up resources once the session (DRM master) is restored.", BKND_NAME, ret);
         }
 
         while (!connectors.empty())
@@ -119,6 +121,7 @@ struct Output
     std::vector<LOutputMode*>modes;
     std::vector<LTexture*> textures;
     LWeak<DRMLease> lease;
+    std::string description;
 };
 
 // SRM -> Louvre Subpixel table
@@ -226,7 +229,13 @@ static void initConnector(Backend *bknd, SRMConnector *conn)
     if (srmConnectorGetUserData(conn))
        return;
 
+    std::ostringstream desc;
     Output *bkndOutput = new Output();
+    SRMDevice *device = srmConnectorGetDevice(conn);
+    desc << "[" << device->shortName << "::"<< srmConnectorGetName(conn) << "] "
+         << srmConnectorGetModel(conn) << " - "
+         << srmConnectorGetManufacturer(conn);
+    bkndOutput->description = desc.str();
 
     LOutput::Params params
     {
@@ -534,7 +543,10 @@ void LGraphicBackend::backendResume()
             continue;
 
         for (UInt32 i = 0; i < lessees->count; i++)
+        {
+            LLog::debug("[%s] Removing previously leaked DRM lease (%d).", BKND_NAME, lessees->lessees[i]);
             drmModeRevokeLease(srmDeviceGetFD(dev), lessees->lessees[i]);
+        }
 
         drmFree(lessees);
     }
@@ -772,8 +784,8 @@ const char *LGraphicBackend::outputGetModelName(LOutput *output)
 
 const char *LGraphicBackend::outputGetDescription(LOutput *output)
 {
-    L_UNUSED(output);
-    return "DRM connector";
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return bkndOutput->description.c_str();
 }
 
 const LSize *LGraphicBackend::outputGetPhysicalSize(LOutput *output)
@@ -1072,6 +1084,7 @@ int LGraphicBackend::backendCreateLease(const std::vector<LOutput*> &outputs)
         return -1;
     }
 
+    LLog::debug("[%s] New DRM lease (%d).", BKND_NAME, lease->lessee);
     return lease.release()->fd; // Keep pointer alive
 }
 

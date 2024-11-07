@@ -12,7 +12,6 @@
 #include "LLayerRole.h"
 #include "Output.h"
 #include "Topbar.h"
-#include "Surface.h"
 #include "Toplevel.h"
 #include "App.h"
 #include "Client.h"
@@ -22,31 +21,46 @@ Keyboard::Keyboard(const void *params) : LKeyboard(params) {}
 
 void Keyboard::keyEvent(const LKeyboardKeyEvent &event)
 {
-    Output *output  { (Output*)cursor()->output()     };
+    Output *output  { (Output*)cursor()->output() };
 
-    bool LEFT_META  { isKeyCodePressed(KEY_LEFTMETA)  };
-    bool LEFT_SHIFT { isKeyCodePressed(KEY_LEFTSHIFT) };
-    bool LEFT_ALT   { isKeyCodePressed(KEY_LEFTALT)   };
-    bool LEFT_CTRL  { isKeyCodePressed(KEY_LEFTCTRL)  };
+    const bool LEFT_META  { isKeyCodePressed(KEY_LEFTMETA)  };
+    const bool LEFT_SHIFT { isKeyCodePressed(KEY_LEFTSHIFT) };
+    const bool LEFT_ALT   { isKeyCodePressed(KEY_LEFTALT)   };
+    const bool LEFT_CTRL  { isKeyCodePressed(KEY_LEFTCTRL)  };
 
-    /**** Initialize/Uninitialize all outputs ****/
-
-    if (LEFT_SHIFT && LEFT_META && event.keyCode() == KEY_O && event.state() == LKeyboardKeyEvent::Pressed)
+    if (LEFT_SHIFT && LEFT_META && event.state() == LKeyboardKeyEvent::Pressed)
     {
-        static bool initOutputs { false };
+        /**** Initialize/Uninitialize all outputs ****/
 
-        if (initOutputs)
+        if (event.keyCode() == KEY_O)
         {
-            for (LOutput *o : seat()->outputs())
-                compositor()->removeOutput(o);
-        }
-        else
-        {
-            for (LOutput *o : seat()->outputs())
-                compositor()->addOutput(o);
+            static bool initOutputs { false };
+
+            if (initOutputs)
+            {
+                for (LOutput *o : seat()->outputs())
+                    compositor()->removeOutput(o);
+            }
+            else
+            {
+                for (LOutput *o : seat()->outputs())
+                    compositor()->addOutput(o);
+            }
+
+            initOutputs = !initOutputs;
         }
 
-        initOutputs = !initOutputs;
+        /**** Toggles the leasable() property for all outputs ****/
+
+        else if (event.keyCode() == KEY_L)
+        {
+            static bool leasable { true };
+
+            for (LOutput *o : seat()->outputs())
+                o->setLeasable(leasable);
+
+            leasable = !leasable;
+        }
     }
 
     if (output && event.state() == LKeyboardKeyEvent::Pressed)

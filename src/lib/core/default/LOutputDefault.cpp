@@ -1,3 +1,4 @@
+#include "LLog.h"
 #include <LOutput.h>
 #include <LPainter.h>
 #include <LCompositor.h>
@@ -171,6 +172,13 @@ bool LOutput::leaseRequest(LClient *client)
     return true;
 }
 //! [leaseRequest]
+
+//! [leaseChanged]
+void LOutput::leaseChanged()
+{
+    LLog::debug("[%s] Leased by client: %s.", name(), lease() ? "YES" : "NO");
+}
+//! [leaseChanged]
 
 //! [availableGeometryChanged]
 void LOutput::availableGeometryChanged()

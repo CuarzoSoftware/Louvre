@@ -35,7 +35,7 @@ RXdgOutput::RXdgOutput
         logicalPosition(outputRes->output()->pos());
         logicalSize(outputRes->output()->size());
         name(outputRes->output()->name());
-        description(outputRes->output()->model());
+        description(outputRes->output()->description());
 
         if (version >= 3 && outputRes->version() >= 2)
             outputRes->done();

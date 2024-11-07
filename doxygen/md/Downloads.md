@@ -5,6 +5,7 @@
 Pre-built binaries are provided for the following distributions. Please be aware that their versions may not always match the latest Louvre release.
 
 * **Arch** : [louvre](https://aur.archlinux.org/packages/louvre) - *Thanks to [@TrialnError](https://aur.archlinux.org/account/TrialnError)*.
+* **Arch** : [louvre-devel-git](https://aur.archlinux.org/packages/louvre-devel-git) - *Thanks to [@kingdomkind ](https://github.com/kingdomkind) (devel branch)*.
 * **Fedora** : [cuarzo-louvre](https://copr.fedorainfracloud.org/coprs/ehopperdietzel/cuarzo/) - *By [Eduardo Hopperdietzel](https://github.com/ehopperdietzel) (always up to date)*.
 * **NixOS** : [louvre](https://search.nixos.org/packages?channel=unstable&show=louvre&from=0&size=50&sort=relevance&type=packages&query=louvre) - *Thanks to [Marco Rebhan](https://github.com/2xsaiko)*.
 
@@ -17,7 +18,7 @@ Louvre relies on the following libraries:
 * **egl** >= 1.5
 * **glesv2** >= 3.2
 * **libdrm** >= 2.4.113
-* **srm** >= 0.8.0
+* **srm** >= 0.9.0
 * **libudev** >= 249
 * **libinput** >= 1.20.0
 * **xcursor** >= 1.2.0

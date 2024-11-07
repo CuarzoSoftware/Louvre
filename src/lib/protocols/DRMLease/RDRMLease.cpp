@@ -71,10 +71,21 @@ RDRMLease::RDRMLease
 
     sendFd(fd);
 
+    LWeak<RDRMLease> ref { this };
+
     for (LOutput *output : m_leasedConnectors)
+    {
         output->imp()->lease.reset(this);
 
-    // TODO: Notify the lease was created ?
+        output->imp()->lease.setOnDestroyCallback([output](auto) {
+            output->leaseChanged();
+        });
+
+        output->leaseChanged();
+
+        if (!ref)
+            break; // The user called finished()
+    }
 }
 
 RDRMLease::~RDRMLease()

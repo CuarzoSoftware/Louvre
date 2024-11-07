@@ -30,6 +30,8 @@ The dock icons featured in the screenshot were sourced from <a href="https://mac
 * `Alt + [mouse over maximize button]` : While hovering the cursor over a server-side decorated toplevel window, press `Alt` to maximize the window instead of setting it to fullscreen mode.
 * `Super + Shift + PageUp`: Toggle maximize.
 * `Super + Shift + PageDown`: Minimize.
+* `Super + Shift + O` : Toggles all outputs.
+* `Super + Shift + L` : Toggles the leasable property of all outputs.
 * `Super + Shift + V` : Toggles the current output VSync.
 * `Super + Shift + T` : Changes the current output transform.
 * `Super + Shift + W` : Launches Wofi in run mode.

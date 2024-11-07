@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Louvre is released under the MIT license." />
   </a>
   <a href="https://github.com/CuarzoSoftware/Louvre">
-    <img src="https://img.shields.io/badge/version-2.10.1-brightgreen" alt="Current Louvre version." />
+    <img src="https://img.shields.io/badge/version-2.11.0-brightgreen" alt="Current Louvre version." />
   </a>
 </p>
 
@@ -70,6 +70,7 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 * Pointer Gestures
 * Pointer Constraints
 * Relative Pointer
+* DRM Lease
 
 ## 🖌️ Rendering
 
@@ -158,10 +159,9 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 
 ## 🔨 Upcoming Features
 
+* Wlr Output Management
 * DRM Synchronization Object
 * Rootless XWayland
-* Wlr Output Management
-* DRM Lease Protocol
 * Cursor Shape Protocol
 * DRM Overlay Planes Control
 * Tablet Events Protocol

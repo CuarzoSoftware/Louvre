@@ -261,12 +261,9 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
         Float32 wScaleF = fabs(Float32(srcRect.w()) / Float32(dstSize.w()));
         Float32 hScaleF = fabs(Float32(srcRect.h()) / Float32(dstSize.h()));
 
-        // Check if HQ downscaling is needed
+        // Scale <= 2. Skipping HQ scaling as it's not required
         if (wScaleF <= 2.f && hScaleF <= 2.f)
-        {
-            LLog::debug("[LTexture::copyB] Scale <= 2. Skipping HQ scaling as it's not required.");
             goto skipHQ;
-        }
 
         GLenum textureTarget = target();
         GLuint prevProgram = painter->imp()->currentProgram;
@@ -358,7 +355,7 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
 
         if (ret)
         {
-            LLog::debug("[LTexture::copyB] New texture copy (highQualityScaling = true).");
+            // New texture copy (highQualityScaling = true)
             textureCopy->setFence();
             return textureCopy;
         }
@@ -403,8 +400,6 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
             textureCopy = new LTexture(premultipliedAlpha());
             ret = textureCopy->setDataFromGL(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, true);
             glDeleteFramebuffers(1, &framebuffer);
-            LLog::debug("[LTexture::copyB] New texture copy (glCopyTexImage2 method).");
-
         }
         // Scaled draw to new texture fb
         else
@@ -450,7 +445,7 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
             ret = textureCopy->setDataFromGL(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, true);
             glDeleteFramebuffers(1, &framebuffer);
             painter->bindFramebuffer(prevFb);
-            LLog::debug("[LTexture::copyB] New texture copy (highQualityScaling = false).");
+            // New texture copy (highQualityScaling = false)
         }
     }
 

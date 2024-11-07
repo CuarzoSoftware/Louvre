@@ -960,7 +960,6 @@ public:
 
     static bool outputIsNonDesktop(LOutput */*output*/)
     {
-        // TODO: Get from current wl_output.
         return false;
     }
 

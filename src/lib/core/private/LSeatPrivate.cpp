@@ -4,6 +4,7 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LCursorPrivate.h>
+#include <LClient.h>
 #include <LLog.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -56,8 +57,16 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
         return;
 
     for (LOutput *output : lseat->outputs())
+    {
         if (output->lease())
             output->lease()->finished();
+
+        for (auto *drmConnLeaseRes : output->imp()->drmLeaseConnectorRes)
+        {
+            drmConnLeaseRes->withdrawn();
+            drmConnLeaseRes->done();
+        }
+    }
 
     if (compositor()->isInputBackendInitialized())
         compositor()->imp()->inputBackend->backendSuspend();
@@ -151,6 +160,9 @@ void LSeat::LSeatPrivate::backendOutputUnplugged(LOutput *output)
             output->lease()->finished();
 
         for (auto *drmConnLeaseRes : output->imp()->drmLeaseConnectorRes)
+        {
             drmConnLeaseRes->withdrawn();
+            drmConnLeaseRes->done();
+        }
     }
 }

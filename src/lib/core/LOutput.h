@@ -192,6 +192,24 @@
  *
  * Clients using the Tearing Protocol can indicate their preference for each individual surface.\n
  * See LSurface::preferVSync() and LSurface::preferVSyncChanged() for more details.
+ *
+ * @section drm_leasing DRM Leasing
+ *
+ * [DRM leasing](https://wayland.app/protocols/drm-lease-v1) is a Wayland protocol and backend feature that allows clients to take control of a specific set of displays.\n
+ * It is typically used by VR applications to render directly into VR headsets, skipping the compositor presentation and thereby reducing latency.
+ *
+ * To advertise an output as leasable, use setLeasable(). By default, Louvre disables it for all outputs except for those with isNonDesktop()
+ * set to `true`, which usually indicates a VR headset. See LCompositor::initialized() and LSeat::outputPlugged().
+ *
+ * For each leasable output, clients can issue a leaseRequest() which can be accepted or denied, returning `true` or `false`.\n
+ * Each time the output starts or stops being leased, the lease() property changes, which is notified with leaseChanged().
+ *
+ * The lease() property allows you to see which client is currently leasing an output and also to stop the lease by calling `lease()->finished()`.\n
+ * The lease is also terminated if the compositor initializes the output or if leasable() is set to `false`.
+ *
+ * An output can't be initialized and leased at the same time, enabling one disables the other.
+ *
+ * @note Whenever the user switches to another session and the backend loses DRM master, all active leases are destroyed. Clients must request them again once the session is restored.
  */
 class Louvre::LOutput : public LFactoryObject
 {
@@ -794,7 +812,7 @@ public:
     /**
      * @brief Checks if the output is advertised as leasable.
      *
-     * @see setLeasable()
+     * @see setLeasable() and leaseChanged()
      *
      * @return `true` if leasable, `false` otherwise. `false` by default.
      */
@@ -952,7 +970,15 @@ public:
      */
     virtual bool leaseRequest(LClient* client);
 
-    // TODO: add leaseChanged event?
+    /**
+     * @brief Notifies a change in the lease() property.
+     *
+     * This event is triggered whenever a client starts or stops leasing the output.
+     *
+     * #### Default Implementation
+     * @snippet LOutputDefault.cpp leaseChanged
+     */
+    virtual void leaseChanged();
 
     /**
      * @brief Notifies a change in availableGeometry().
