@@ -2,11 +2,7 @@ Louvre (2.11.0-1)
 
   # New Protocols
 
-  * DRM Lease (for letting apps take control of displays). Thanks @Fox2Code for spotting typos!
-
-  # Internal Changes
-
-  * Added a more detailed LOutput::description().
+  * DRM Lease: For allowing apps to take control of displays. Check the documentation for details. Thanks @Fox2Code for spotting silly mistakes!
 
   # Packaging
 
@@ -15,6 +11,10 @@ Louvre (2.11.0-1)
   # louvre-views
 
   * Fixed layer-shell z-index ordering issue. Thanks @renhiyama for reporting it!
+
+  # API
+
+  * Added LGPU class for accessing a driver/GPU node information.
 
  -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Thu, 07 Nov 2024 00:09:11 -0300
 

@@ -91,7 +91,7 @@ pushd repo/src
 
 %changelog
 * Thu Nov 07 2024 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
-- DRM Lease (for letting apps take control of displays). Thanks @Fox2Code for spotting typos!
-- Added a more detailed LOutput::description().
+- DRM Lease: For allowing apps to take control of displays. Check the documentation for details. Thanks @Fox2Code for spotting silly mistakes!
 - Added a new Arch AUR (devel branch) to the downloads page. Thanks @kingdomkind!
 - Fixed layer-shell z-index ordering issue. Thanks @renhiyama for reporting it!
+- Added LGPU class for accessing a driver/GPU node information.
