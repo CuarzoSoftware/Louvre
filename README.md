@@ -64,6 +64,7 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 * Wlr Gamma Control
 * Wlr Layer Shell
 * Wlr Foreign Toplevel Management
+* Wlr Output Management
 * Wlr Screen Copy
 * Image Capture Source
 * Foreign Toplevel List
@@ -159,9 +160,8 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 
 ## 🔨 Upcoming Features
 
-* Wlr Output Management
-* DRM Synchronization Object
 * Rootless XWayland
+* DRM Synchronization Object
 * Cursor Shape Protocol
 * DRM Overlay Planes Control
 * Tablet Events Protocol
