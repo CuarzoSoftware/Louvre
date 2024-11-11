@@ -71,7 +71,15 @@ void Output::moveGL()
     topbar.update();
     dock.update();
     updateWallpaper();
-    setWorkspace(currentWorkspace, 1);
+
+    if (!workspacesAnimation.running() && currentWorkspace && currentWorkspace->toplevel)
+    {
+        animatedFullscreenToplevel = currentWorkspace->toplevel;
+        onWorkspacesAnimationFinish(&workspacesAnimation);
+    }
+    else
+        setWorkspace(currentWorkspace, 1);
+
     G::compositor()->scene.handleMoveGL(this);
 }
 

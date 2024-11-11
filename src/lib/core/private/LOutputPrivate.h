@@ -115,8 +115,9 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     std::thread::id threadId;
     LGammaTable gammaTable {0};
 
+    UInt32 dirtyCursorFBs;
     UInt32 prevCursorSerial;
-    LRect prevCursorRect;
+    LRect prevCursorRect; // Local
     LRegion cursorDamage;
     void calculateCursorDamage() noexcept;
     void drawCursor() noexcept;

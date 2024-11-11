@@ -42,6 +42,7 @@ void LCursor::enableHwCompositing(LOutput *output, bool enabled) noexcept
     output->imp()->stateFlags.setFlag(LOutput::LOutputPrivate::HwCursorEnabled, enabled);
     imp()->textureChanged = true;
     imp()->update();
+    output->repaint();
 }
 
 bool LCursor::hwCompositingEnabled(LOutput *output) const noexcept

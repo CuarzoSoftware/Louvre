@@ -60,7 +60,7 @@ void LOutput::LOutputPrivate::damageToBufferCoords() noexcept
 
     if (screenshotCursorTimeout > 0 && cursor()->visible() && cursor()->enabled(output))
     {
-        damage.addRect(prevCursorRect);
+        damage.addRect(LRect(prevCursorRect.pos() + output->pos(), prevCursorRect.size()));
         stateFlags.add(CursorNeedsRendering);
     }
 
@@ -136,7 +136,6 @@ void LOutput::LOutputPrivate::blitFractionalScaleFb(bool cursorOnly) noexcept
     if (cursorOnly)
     {
         LRegion cursorDamage { prevCursorRect };
-        cursorDamage.offset(-prevPos.x(), -prevPos.y());
         cursorDamage.transform(prevSize, prevTrasform);
         LRegion tmp; Int32 n;
         const LBox *box { cursorDamage.boxes(&n) };
@@ -489,16 +488,23 @@ void LOutput::LOutputPrivate::calculateCursorDamage() noexcept
     {
         stateFlags.add(CursorNeedsRendering);
         cursorDamage.addRect(cursor()->rect());
+        cursorDamage.addRect(LRect(prevCursorRect.pos() + output->pos(), prevCursorRect.size()));
+        cursorDamage.clip(output->rect());
+        dirtyCursorFBs = output->buffersCount();
     }
 
-    if (stateFlags.check(CursorRenderedInPrevFrame))
+    if (stateFlags.check(CursorRenderedInPrevFrame) && cursor()->hwCompositingEnabled(output))
     {
-        stateFlags.remove(CursorRenderedInPrevFrame);
-        cursorDamage.addRect(prevCursorRect);
+        cursorDamage.addRect(LRect(prevCursorRect.pos() + output->pos(), prevCursorRect.size()));
+        output->repaint();
+
+        if (dirtyCursorFBs > 0)
+            dirtyCursorFBs--;
+        else
+            stateFlags.remove(CursorRenderedInPrevFrame);
     }
 
-    prevCursorRect = cursor()->rect();
-    cursorDamage.clip(output->rect());
+    prevCursorRect = LRect(cursor()->rect().pos() - output->pos(), cursor()->rect().size());
 }
 
 void LOutput::LOutputPrivate::drawCursor() noexcept
