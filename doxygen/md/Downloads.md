@@ -18,7 +18,7 @@ Louvre relies on the following libraries:
 * **egl** >= 1.5
 * **glesv2** >= 3.2
 * **libdrm** >= 2.4.113
-* **srm** >= 0.9.0
+* **srm** >= 0.10.0
 * **libudev** >= 249
 * **libinput** >= 1.20.0
 * **xcursor** >= 1.2.0

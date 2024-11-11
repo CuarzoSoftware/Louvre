@@ -12,6 +12,7 @@ using namespace Louvre;
 //! [configureOutputsRequest]
 bool LSeat::configureOutputsRequest(LClient *client, const std::vector<OutputConfiguration> &configurations)
 {
+    // All requests accepted by default (unsafe) see LCompositor::globalsFilter().
     L_UNUSED(client)
 
     for (const auto &conf : configurations)
@@ -27,6 +28,7 @@ bool LSeat::configureOutputsRequest(LClient *client, const std::vector<OutputCon
             compositor()->removeOutput(&conf.output);
     }
 
+    // Revert changes if the configuration results in zero initialized outputs
     return !compositor()->outputs().empty();
 }
 //! [configureOutputsRequest]

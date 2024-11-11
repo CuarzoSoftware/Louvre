@@ -412,9 +412,9 @@ bool LGraphicBackend::backendInitialize()
 
     version = srmCoreGetVersion(bknd->core);
 
-    if (version->major == 0 && version->minor < 9)
+    if (version->major == 0 && version->minor < 10)
     {
-        LLog::fatal("[%s] Using SRM v%d.%d.%d but version >= v0.9.0 is required.", BKND_NAME, version->major, version->minor, version->patch);
+        LLog::fatal("[%s] Using SRM v%d.%d.%d but version >= v0.10.0 is required.", BKND_NAME, version->major, version->minor, version->patch);
         srmCoreDestroy(bknd->core);
         goto fail;
     }

@@ -1,4 +1,4 @@
-%global basever 2.11.0
+%global basever 2.12.0
 %global origrel 1
 %global somajor 2
 
@@ -90,8 +90,6 @@ pushd repo/src
 %{_libdir}/pkgconfig/Louvre.pc
 
 %changelog
-* Thu Nov 07 2024 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
-- DRM Lease: For allowing apps to take control of displays. Check the documentation for details. Thanks @Fox2Code for spotting silly mistakes!
-- Added a new Arch AUR (devel branch) to the downloads page. Thanks @kingdomkind!
-- Fixed layer-shell z-index ordering issue. Thanks @renhiyama for reporting it!
-- Added LGPU class for accessing a driver/GPU node information.
+* Mon Nov 11 2024 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
+- Wlr Output Management: Allows apps to configure and arrange displays. Check the documentation for details.
+- Updated SRM dependency to >= 0.10.0.

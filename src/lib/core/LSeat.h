@@ -26,16 +26,30 @@ class Louvre::LSeat : public LFactoryObject
 {
 public:
 
-    // TODO: add doc
+    /**
+     * @brief Configuration parameters for an output.
+     *
+     * This structure is used in configureOutputsRequest().
+     */
     struct OutputConfiguration
     {
-        LOutput &output;
-        bool initialized;
-        const LOutputMode &mode;
-        LPoint pos;
-        LTransform transform;
-        Float32 scale;
+        /// The output to be configured.
+        LOutput& output;
 
+        /// Whether to enable or disable the output, see LCompositor::addOutput() and LCompositor::removeOutput().
+        bool initialized;
+
+        /// The desired output mode to be applied, see LOutput::setMode().
+        const LOutputMode& mode;
+
+        /// The desired output position to be applied, see LOutput::setPos().
+        LPoint pos;
+
+        /// The desired output transform to be applied, see LOutput::setTransform().
+        LTransform transform;
+
+        /// The desired scale to be applied, see LOutput::setScale().
+        Float32 scale;
     };
 
     static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LSeat;
@@ -385,8 +399,27 @@ public:
      */
     virtual void nativeInputEvent(void *event);
 
-    // TODO: add doc
-    virtual bool configureOutputsRequest(LClient *client, const std::vector<OutputConfiguration> &configurations);
+    /**
+     * @brief Handles a client request to configure outputs.
+     *
+     * Triggered by clients using the [wlr-output-management protocol](https://wayland.app/protocols/wlr-output-management-unstable-v1), such as `wdisplays`, `wlr-randr`, and `wayland-displays`.
+     *
+     * The `configurations` vector contains all parameters the client intends to configure all available outputs with,
+     * including uninitialized ones (see outputs()).
+     *
+     * The compositor can ignore the provided parameters and configure the outputs differently (e.g., to prevent overlapping).
+     * Returning `true` notifies the client that the configurations were fully or partially applied.
+     * Returning `false` indicates that the configurations failed to apply, and Louvre will revert all output parameters to their previous state.
+     *
+     * @param client The client issuing the request.
+     * @param configurations Parameters to configure each available output.
+     *
+     * @return `true` if the configurations were completely or partially applied, or `false` to revert changes.
+     *
+     * #### Default implementation
+     * @snippet LSeatDefault.cpp configureOutputsRequest
+     */
+    virtual bool configureOutputsRequest(LClient* client, const std::vector<OutputConfiguration>& configurations);
 
 /// @}
 
