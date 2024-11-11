@@ -47,6 +47,7 @@ public:
     static const char *                     outputGetManufacturerName(LOutput *output);
     static const char *                     outputGetModelName(LOutput *output);
     static const char *                     outputGetDescription(LOutput *output);
+    static const char *                     outputGetSerial(LOutput *output);
     static const LSize *                    outputGetPhysicalSize(LOutput *output);
     static Int32                            outputGetSubPixel(LOutput *output);
     static LGPU *                           outputGetDevice(LOutput *output);

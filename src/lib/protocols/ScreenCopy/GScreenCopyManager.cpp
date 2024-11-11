@@ -71,7 +71,7 @@ void GScreenCopyManager::capture_output(wl_client */*client*/, wl_resource *reso
     new RScreenCopyFrame(&res,
                          outputRes->output(),
                          overlayCursor == 1,
-                         LRect(LPoint(), outputRes->output()->size()),
+                         LRect(LPoint(), outputRes->output() ? outputRes->output()->size() : LSize(1)),
                          id,
                          res.version());
 }

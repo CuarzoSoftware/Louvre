@@ -214,6 +214,7 @@ protected:
         LOutput *o { nullptr };
         LBox *boxes { nullptr };
         Int32 n, w, h;
+        LTransform transform;
         bool oversampling = false;
         bool fractionalScale = false;
     };
@@ -301,6 +302,12 @@ private:
 
             if (ctd.o->needsFullRepaint())
                 needsDamage = true;
+
+            if (ctd.transform != ctd.o->transform())
+            {
+                ctd.transform = ctd.o->transform();
+                needsDamage = true;
+            }
         }
 
         if (needsDamage)

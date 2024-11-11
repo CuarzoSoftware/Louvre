@@ -14,6 +14,7 @@ public:
     void nativeInputEvent(void *event) override;
     void outputUnplugged(LOutput *output) override;
     void inputDevicePlugged(LInputDevice *device) override;
+    bool configureOutputsRequest(LClient *client, const std::vector<OutputConfiguration> &confs) override;
 
     void configureInputDevices() noexcept;
     void configureInputDevice(LInputDevice *device) noexcept;

@@ -38,6 +38,7 @@
 #define LOUVRE_IDLE_NOTIFIER_VERSION 1
 #define LOUVRE_IDLE_INHIBIT_MANAGER_VERSION 1
 #define LOUVRE_DRM_LEASE_DEVICE_VERSION 1
+#define LOUVRE_WLR_OUTPUT_MANAGER_VERSION 4
 
 #define L_UNUSED(object){(void)object;}
 
@@ -515,6 +516,16 @@ namespace Louvre
             class RDRMLeaseConnector;
             class RDRMLeaseRequest;
             class RDRMLease;
+        }
+
+        namespace WlrOutputManagement
+        {
+            class GWlrOutputManager;
+
+            class RWlrOutputHead;
+            class RWlrOutputMode;
+            class RWlrOutputConfiguration;
+            class RWlrOutputConfigurationHead;
         }
     }
 

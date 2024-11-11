@@ -438,6 +438,13 @@ public:
      */
     const std::vector<Protocols::DRMLease::GDRMLeaseDevice*> &drmLeaseDeviceGlobals() const noexcept;
 
+    /**
+     * Resources created when the client binds to the
+     * [zwlr_output_manager_v1](https://wayland.app/protocols/wlr-output-management-unstable-v1#zwlr_output_manager_v1) global
+     * of the wlroots Output Management protocol.
+     */
+    const std::vector<Protocols::WlrOutputManagement::GWlrOutputManager*> &wlrOutputManagerGlobals() const noexcept;
+
     LPRIVATE_IMP_UNIQUE(LClient)
 };
 

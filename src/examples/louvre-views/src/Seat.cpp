@@ -196,6 +196,17 @@ void Seat::inputDevicePlugged(LInputDevice *device)
     configureInputDevice(device);
 }
 
+bool Seat::configureOutputsRequest(LClient *client, const std::vector<OutputConfiguration> &confs)
+{
+    if (LSeat::configureOutputsRequest(client, confs))
+    {
+        G::arrangeOutputs();
+        return true;
+    }
+
+    return false;
+}
+
 void Seat::configureInputDevices() noexcept
 {
     for (LInputDevice *dev : inputDevices())

@@ -625,9 +625,12 @@ void G::reparentWithSubsurfaces(Surface *surf, LView *newParent, bool onlySubsur
 
 void G::arrangeOutputs(Output *caller) noexcept
 {
+    std::vector<Output *> vec{ outputs() };
+    std::sort(vec.begin(), vec.end(), [](Output *a, Output *b) { return a->pos().x() < b->pos().x(); });
+
     Int32 x = 0;
 
-    for (Output *o : outputs())
+    for (Output *o : vec)
     {
         o->setPos(LPoint(x, 0));
         x += o->size().w();

@@ -1,3 +1,4 @@
+#include <protocols/WlrOutputManagement/RWlrOutputHead.h>
 #include <protocols/DRMLease/RDRMLease.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
@@ -481,6 +482,9 @@ bool LCompositor::addOutput(LOutput *output)
         return false;
     }
 
+    for (auto *head : output->imp()->wlrOutputHeads)
+        head->enabled(true);
+
     return true;
 }
 
@@ -520,6 +524,9 @@ void LCompositor::removeOutput(LOutput *output)
                 usleep(1000);
 
             output->imp()->callLock.store(true);
+
+            for (auto *head : output->imp()->wlrOutputHeads)
+                head->enabled(false);
 
             for (LSurface *s : surfaces())
                 s->sendOutputLeaveEvent(output);

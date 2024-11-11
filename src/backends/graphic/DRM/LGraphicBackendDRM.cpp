@@ -788,6 +788,12 @@ const char *LGraphicBackend::outputGetDescription(LOutput *output)
     return bkndOutput->description.c_str();
 }
 
+const char *Louvre::LGraphicBackend::outputGetSerial(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorGetSerial(bkndOutput->conn);
+}
+
 const LSize *LGraphicBackend::outputGetPhysicalSize(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
@@ -1144,6 +1150,7 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.outputGetManufacturerName       = &LGraphicBackend::outputGetManufacturerName;
     API.outputGetModelName              = &LGraphicBackend::outputGetModelName;
     API.outputGetDescription            = &LGraphicBackend::outputGetDescription;
+    API.outputGetSerial                 = &LGraphicBackend::outputGetSerial;
     API.outputGetPhysicalSize           = &LGraphicBackend::outputGetPhysicalSize;
     API.outputGetSubPixel               = &LGraphicBackend::outputGetSubPixel;
     API.outputGetDevice                 = &LGraphicBackend::outputGetDevice;

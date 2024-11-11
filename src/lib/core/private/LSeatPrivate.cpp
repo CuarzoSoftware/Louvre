@@ -1,5 +1,7 @@
-#include <protocols/DRMLease/RDRMLease.h>
+#include <protocols/WlrOutputManagement/GWlrOutputManager.h>
+#include <protocols/WlrOutputManagement/RWlrOutputHead.h>
 #include <protocols/DRMLease/RDRMLeaseConnector.h>
+#include <protocols/DRMLease/RDRMLease.h>
 #include <private/LSeatPrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
@@ -147,7 +149,13 @@ bool LSeat::LSeatPrivate::initLibseat()
 void LSeat::LSeatPrivate::backendOutputPlugged(LOutput *output)
 {
     if (enabled)
+    {
         seat()->outputPlugged(output);
+
+        for (LClient *c : compositor()->clients())
+            for (auto *wlrOutputManager : c->wlrOutputManagerGlobals())
+                wlrOutputManager->head(output);
+    }
 }
 
 void LSeat::LSeatPrivate::backendOutputUnplugged(LOutput *output)
@@ -164,5 +172,8 @@ void LSeat::LSeatPrivate::backendOutputUnplugged(LOutput *output)
             drmConnLeaseRes->withdrawn();
             drmConnLeaseRes->done();
         }
+
+        for (auto *head : output->imp()->wlrOutputHeads)
+            head->finished();
     }
 }

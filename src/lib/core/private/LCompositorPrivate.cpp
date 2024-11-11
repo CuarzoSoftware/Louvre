@@ -1,3 +1,4 @@
+#include <protocols/WlrOutputManagement/GWlrOutputManager.h>
 #include <protocols/DRMLease/GDRMLeaseDevice.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LClientPrivate.h>
@@ -865,6 +866,10 @@ void LCompositor::LCompositorPrivate::sendPendingConfigurations()
         else if (s->sessionLock())
             s->sessionLock()->sendPendingConfiguration();
     }
+
+    for (LClient *c : clients)
+        for (auto *g : c->wlrOutputManagerGlobals())
+            g->done();
 }
 
 void LCompositor::LCompositorPrivate::sendPresentationTime()

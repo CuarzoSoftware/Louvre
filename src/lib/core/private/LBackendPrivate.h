@@ -46,6 +46,7 @@ namespace Louvre
         const char *                        (*outputGetManufacturerName)(LOutput *output);
         const char *                        (*outputGetModelName)(LOutput *output);
         const char *                        (*outputGetDescription)(LOutput *output);
+        const char *                        (*outputGetSerial)(LOutput *output);
         const LSize *                       (*outputGetPhysicalSize)(LOutput *output);
         Int32                               (*outputGetSubPixel)(LOutput *output);
         LGPU *                              (*outputGetDevice)(LOutput *output);

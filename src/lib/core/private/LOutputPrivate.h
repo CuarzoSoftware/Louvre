@@ -106,6 +106,9 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     LWeak<Protocols::DRMLease::RDRMLease> lease;
     std::vector<Protocols::DRMLease::RDRMLeaseConnector*> drmLeaseConnectorRes;
 
+    // Wlr Output Management
+    std::vector<Protocols::WlrOutputManagement::RWlrOutputHead*> wlrOutputHeads;
+
     // Thread sync stuff
     std::atomic<bool> callLock;
     std::atomic<bool> callLockACK;

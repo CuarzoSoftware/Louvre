@@ -384,12 +384,12 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
      ************************************/
     if (changes.check(Changes::BufferSizeChanged | Changes::SizeChanged | Changes::OpaqueRegionChanged))
     {
-
+        /*
         if (surface->texture()->format() == DRM_FORMAT_XRGB8888)
         {
             imp.pendingOpaqueRegion.clear();
             imp.pendingOpaqueRegion.addRect(0, 0, surface->size());
-        }
+        }*/
 
         pixman_region32_intersect_rect(&imp.currentOpaqueRegion.m_region,
                                        &imp.pendingOpaqueRegion.m_region,

@@ -278,6 +278,11 @@ const std::vector<DRMLease::GDRMLeaseDevice *> &LClient::drmLeaseDeviceGlobals()
     return imp()->drmLeaseDeviceGlobals;
 }
 
+const std::vector<WlrOutputManagement::GWlrOutputManager *> &LClient::wlrOutputManagerGlobals() const noexcept
+{
+    return imp()->wlrOutputManagerGlobals;
+}
+
 const LClient::EventHistory &LClient::eventHistory() const noexcept
 {
     return imp()->eventHistory;

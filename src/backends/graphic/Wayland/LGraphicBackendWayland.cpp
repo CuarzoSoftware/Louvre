@@ -751,8 +751,13 @@ public:
             else
                 texture->m_format = DRM_FORMAT_YUYV;
 
-            EGLAttrib attribs = EGL_NONE;
-            image = eglCreateImage(LCompositor::eglDisplay(), EGL_NO_CONTEXT, EGL_WAYLAND_BUFFER_WL, wlBuffer, &attribs);
+            const static EGLAttrib attribs[3] {
+                EGL_IMAGE_PRESERVED_KHR,
+                EGL_TRUE,
+                EGL_NONE
+            };
+
+            image = eglCreateImage(LCompositor::eglDisplay(), EGL_NO_CONTEXT, EGL_WAYLAND_BUFFER_WL, wlBuffer, attribs);
 
             glGenTextures(1, &id);
             glBindTexture(target, id);
@@ -935,6 +940,11 @@ public:
     static const char *outputGetDescription(LOutput */*output*/)
     {
         return "Louvre compositor running on a Wayland EGL window";
+    }
+
+    static const char *outputGetSerial(LOutput */*output*/)
+    {
+        return nullptr;
     }
 
     static const LSize *outputGetPhysicalSize(LOutput */*output*/)
@@ -1282,6 +1292,7 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.outputGetManufacturerName       = &LGraphicBackend::outputGetManufacturerName;
     API.outputGetModelName              = &LGraphicBackend::outputGetModelName;
     API.outputGetDescription            = &LGraphicBackend::outputGetDescription;
+    API.outputGetSerial                 = &LGraphicBackend::outputGetSerial;
     API.outputGetPhysicalSize           = &LGraphicBackend::outputGetPhysicalSize;
     API.outputGetSubPixel               = &LGraphicBackend::outputGetSubPixel;
     API.outputGetDevice                 = &LGraphicBackend::outputGetDevice;

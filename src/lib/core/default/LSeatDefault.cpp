@@ -9,6 +9,28 @@
 
 using namespace Louvre;
 
+//! [configureOutputsRequest]
+bool LSeat::configureOutputsRequest(LClient *client, const std::vector<OutputConfiguration> &configurations)
+{
+    L_UNUSED(client)
+
+    for (const auto &conf : configurations)
+    {
+        conf.output.setPos(conf.pos);
+        conf.output.setTransform(conf.transform);
+        conf.output.setScale(conf.scale);
+        conf.output.setMode(&conf.mode);
+
+        if (conf.initialized)
+            compositor()->addOutput(&conf.output);
+        else
+            compositor()->removeOutput(&conf.output);
+    }
+
+    return !compositor()->outputs().empty();
+}
+//! [configureOutputsRequest]
+
 //! [nativeInputEvent]
 void LSeat::nativeInputEvent(void *event)
 {

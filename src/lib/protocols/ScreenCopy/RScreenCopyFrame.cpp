@@ -44,6 +44,14 @@ RScreenCopyFrame::RScreenCopyFrame
     m_frame(*this),
     m_rect(region)
 {
+    if (!output)
+    {
+        buffer(WL_SHM_FORMAT_XRGB8888, LSize(1), 4);
+        bufferDone();
+        failed();
+        return;
+    }
+
     m_stateFlags.setFlag(CompositeCursor, overlayCursor);
 
     m_bufferContainer.onDestroy.notify = [](wl_listener *listener, void *)

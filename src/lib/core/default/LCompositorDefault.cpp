@@ -7,6 +7,7 @@
 #include <protocols/FractionalScale/GFractionalScaleManager.h>
 #include <protocols/PointerConstraints/GPointerConstraints.h>
 #include <protocols/TearingControl/GTearingControlManager.h>
+#include <protocols/WlrOutputManagement/GWlrOutputManager.h>
 #include <protocols/XdgDecoration/GXdgDecorationManager.h>
 #include <protocols/GammaControl/GGammaControlManager.h>
 #include <protocols/PointerGestures/GPointerGestures.h>
@@ -138,6 +139,9 @@ bool LCompositor::createGlobalsRequest()
 
     // Allows clients to activate other client's surfaces
     createGlobal<XdgActivation::GXdgActivation>();
+
+    // Allows clients to arrange/set output properties
+    createGlobal<WlrOutputManagement::GWlrOutputManager>();
 
     return true;
 }

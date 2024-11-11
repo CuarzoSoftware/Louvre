@@ -862,6 +862,15 @@ public:
     const char *description() const noexcept;
 
     /**
+     * @brief Retrieves the serial number of the output.
+     *
+     * The serial number can be used to uniquely identify an output even after reboots.
+     *
+     * @return `nullptr` if the backend doesn't provide it.
+     */
+    const char *serialNumber() const noexcept;
+
+    /**
      * @brief Gets the ID of the rendering thread.
      *
      * This method retrieves the ID of the output rendering thread.

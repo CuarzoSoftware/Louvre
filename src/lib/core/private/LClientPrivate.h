@@ -59,6 +59,7 @@ public:
     std::vector<DRMLease::GDRMLeaseDevice*> drmLeaseDeviceGlobals;
     std::vector<ImageCaptureSource::GOutputImageCaptureSourceManager*> outputImageCaptureSourceManagerGlobals;
     std::vector<ImageCaptureSource::GForeignToplevelImageCaptureSourceManager*> foreignToplevelImageCaptureSourceManagerGlobals;
+    std::vector<WlrOutputManagement::GWlrOutputManager*> wlrOutputManagerGlobals;
     bool destroyed { false };
 };
 

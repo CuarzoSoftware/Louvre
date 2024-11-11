@@ -73,7 +73,10 @@ Int8 LScreenshotRequest::copy() noexcept
                      pixels);
 
         wl_shm_buffer_end_access(shm_buffer);
-        resource().flags(ZWLR_SCREENCOPY_FRAME_V1_FLAGS_Y_INVERT);
+
+        GLint currentFramebuffer { 0 };
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &currentFramebuffer);
+        resource().flags(currentFramebuffer == 0 ? ZWLR_SCREENCOPY_FRAME_V1_FLAGS_Y_INVERT : 0);
     }
     else // DMA buffer
     {

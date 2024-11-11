@@ -26,6 +26,18 @@ class Louvre::LSeat : public LFactoryObject
 {
 public:
 
+    // TODO: add doc
+    struct OutputConfiguration
+    {
+        LOutput &output;
+        bool initialized;
+        const LOutputMode &mode;
+        LPoint pos;
+        LTransform transform;
+        Float32 scale;
+
+    };
+
     static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LSeat;
 
     /**
@@ -372,6 +384,9 @@ public:
      * @snippet LSeatDefault.cpp nativeInputEvent
      */
     virtual void nativeInputEvent(void *event);
+
+    // TODO: add doc
+    virtual bool configureOutputsRequest(LClient *client, const std::vector<OutputConfiguration> &configurations);
 
 /// @}
 

@@ -9,6 +9,8 @@
 #include <protocols/DRMLease/GDRMLeaseDevice.h>
 #include <protocols/DRMLease/RDRMLeaseConnector.h>
 #include <protocols/DRMLease/RDRMLease.h>
+#include <protocols/WlrOutputManagement/RWlrOutputHead.h>
+#include <protocols/WlrOutputManagement/RWlrOutputMode.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -23,7 +25,6 @@
 #include <LLog.h>
 #include <LOutputFramebuffer.h>
 #include <LClient.h>
-
 
 using namespace Louvre;
 
@@ -191,6 +192,9 @@ void LOutput::setTransform(LTransform transform) noexcept
         imp()->updateGlobals();
         cursor()->imp()->textureChanged = true;
     }
+
+    for (auto *head : imp()->wlrOutputHeads)
+        head->transform(transform);
 }
 
 const std::vector<LOutputMode *> &LOutput::modes() const noexcept
@@ -235,6 +239,18 @@ void LOutput::setMode(const LOutputMode *mode) noexcept
     compositor()->imp()->graphicBackend->outputSetMode(this, (LOutputMode*)mode);
     imp()->state = Initialized;
     imp()->callLock.store(true);
+
+    for (auto *head : imp()->wlrOutputHeads)
+    {
+        for (auto *mode : head->modes())
+        {
+            if (mode->mode() == currentMode())
+            {
+                head->currentMode(mode);
+                break;
+            }
+        }
+    }
 }
 
 Int32 LOutput::currentBuffer() const noexcept
@@ -308,6 +324,9 @@ void LOutput::setScale(Float32 scale) noexcept
         for (LSurface *s : compositor()->surfaces())
             s->imp()->sendPreferredScale();
     }
+
+    for (auto *head : imp()->wlrOutputHeads)
+        head->scale(imp()->fractionalScale);
 }
 
 Float32 LOutput::scale() const noexcept
@@ -458,9 +477,17 @@ const char *LOutput::description() const noexcept
     return compositor()->imp()->graphicBackend->outputGetDescription((LOutput*)this);
 }
 
+const char *LOutput::serialNumber() const noexcept
+{
+    return compositor()->imp()->graphicBackend->outputGetSerial((LOutput*)this);
+}
+
 void LOutput::setPos(const LPoint &pos) noexcept
 {
     imp()->rect.setPos(pos);
+
+    for (auto *head : imp()->wlrOutputHeads)
+        head->position(pos);
 }
 
 LPainter *LOutput::painter() const noexcept
