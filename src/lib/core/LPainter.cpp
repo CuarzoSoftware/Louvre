@@ -1,3 +1,4 @@
+#include <cassert>
 #include <private/LPainterPrivate.h>
 #include <private/LCompositorPrivate.h>
 #include <private/LTexturePrivate.h>
@@ -9,11 +10,18 @@
 #include <LLog.h>
 
 #include <GLES2/gl2.h>
+
+#if LOUVRE_USE_SKIA == 1
+#include <include/gpu/gl/GrGLAssembleInterface.h>
+#include <include/core/SkCanvas.h>
+#else
 #include <cstdio>
 #include <string.h>
+#endif
 
 using namespace Louvre;
 
+#if LOUVRE_USE_SKIA == 0
 static void makeExternalShader(std::string &shader) noexcept
 {
     size_t pos = 0;
@@ -28,15 +36,44 @@ static void makeExternalShader(std::string &shader) noexcept
         pos += replaceStr.length();
     }
 }
+#endif
 
 LPainter::LPainter() noexcept : LPRIVATE_INIT_UNIQUE(LPainter)
 {
     imp()->painter = this;
-
     compositor()->imp()->threadsMap[std::this_thread::get_id()].painter = this;
-
     imp()->updateExtensions();
     imp()->updateCPUFormats();
+
+#if LOUVRE_USE_SKIA == 1
+    auto interface = GrGLMakeAssembledInterface(nullptr, (GrGLGetProc)*[](void *, const char *p) -> void * {
+        return (void *)eglGetProcAddress(p);
+    });
+
+    GrContextOptions skContextOptions;
+    skContextOptions.fSuppressPrints = true;
+    skContextOptions.fSkipGLErrorChecks = GrContextOptions::Enable::kYes;
+    skContextOptions.fBufferMapThreshold = 0;
+    skContextOptions.fDisableDistanceFieldPaths = true;
+    skContextOptions.fAllowPathMaskCaching = true;
+    skContextOptions.fDisableGpuYUVConversion = false;
+    skContextOptions.fGlyphCacheTextureMaximumBytes = 2048 * 1024 * 4;
+    skContextOptions.fAvoidStencilBuffers = true;
+    skContextOptions.fUseDrawInsteadOfClear = GrContextOptions::Enable::kYes;
+    skContextOptions.fReduceOpsTaskSplitting = GrContextOptions::Enable::kYes;
+    skContextOptions.fDisableDriverCorrectnessWorkarounds = true;
+    skContextOptions.fRuntimeProgramCacheSize = 1024;
+    skContextOptions.fShaderCacheStrategy = GrContextOptions::ShaderCacheStrategy::kBackendBinary;
+    skContextOptions.fInternalMultisampleCount = 4;
+    skContextOptions.fDisableTessellationPathRenderer = true;
+    skContextOptions.fPreferExternalImagesOverES3 = true;
+    skContextOptions.fReducedShaderVariations = false;
+    skContextOptions.fAllowMSAAOnNewIntel = true;
+    skContextOptions.fAlwaysUseTexStorageWhenAvailable = false;
+    imp()->skContext = GrDirectContext::MakeGL(interface, skContextOptions);
+    assert("[LPainter] Failed to create Skia context." && imp()->skContext != nullptr);
+    imp()->skContext->setResourceCacheLimit(256000);
+#else
 
     // Open the vertex/fragment shaders
     GLchar vShaderStr[] = R"(
@@ -299,32 +336,25 @@ LPainter::LPainter() noexcept : LPRIVATE_INIT_UNIQUE(LPainter)
     imp()->currentUniforms = &imp()->uniforms;
     imp()->setupProgram();
 
-    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f);
-    glEnable(GL_BLEND);
-    glEnable(GL_SCISSOR_TEST);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_LIGHTING);
-    glDisable(GL_DITHER);
-    glDisable(GL_POLYGON_OFFSET_FILL);
-    glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
-    glDisable(GL_SAMPLE_COVERAGE);
-    glDisable(GL_SAMPLE_ALPHA_TO_ONE);
-
-    imp()->shaderSetAlpha(1.f);
+    bindProgram();
+#endif
 }
 
 LPainter::~LPainter() noexcept
 {
     notifyDestruction();
+#if LOUVRE_USE_SKIA == 1
+    // TODO
+#else
     glDeleteProgram(imp()->programObject);
     glDeleteProgram(imp()->programObjectExternal);
     glDeleteShader(imp()->fragmentShaderExternal);
     glDeleteShader(imp()->fragmentShader);
     glDeleteShader(imp()->vertexShader);
+#endif
 }
 
+#if LOUVRE_USE_SKIA == 0
 void LPainter::LPainterPrivate::setupProgram() noexcept
 {
     glBindAttribLocation(currentProgram, 0, "vertexPosition");
@@ -372,6 +402,7 @@ void LPainter::LPainterPrivate::setupProgramScaler() noexcept
     currentUniformsScaler->samplerBounds = glGetUniformLocation(currentProgram, "samplerBounds");
     currentUniformsScaler->iters = glGetUniformLocation(currentProgram, "iters");
 }
+#endif
 
 void LPainter::LPainterPrivate::updateExtensions() noexcept
 {
@@ -409,6 +440,10 @@ void LPainter::LPainterPrivate::updateCPUFormats() noexcept
 
 void LPainter::bindTextureMode(const TextureParams &p) noexcept
 {
+#if LOUVRE_USE_SKIA == 1
+    imp()->userState.mode = LPainterPrivate::TextureMode;
+    imp()->skUpdateTextureParams(p);
+#else
     GLenum target = p.texture->target();
     imp()->switchTarget(target);
 
@@ -682,37 +717,68 @@ void LPainter::bindTextureMode(const TextureParams &p) noexcept
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+#endif
 }
 
 void LPainter::bindColorMode() noexcept
 {
+#if LOUVRE_USE_SKIA == 1
+    imp()->userState.mode = LPainterPrivate::ColorMode;
+    imp()->skUpdateFbMatrix();
+#else
     if (imp()->userState.mode == LPainterPrivate::ColorMode)
         return;
 
     imp()->userState.mode = LPainterPrivate::ColorMode;
     imp()->needsBlendFuncUpdate = true;
+#endif
 }
 
 void LPainter::drawBox(const LBox &box) noexcept
 {
+#if LOUVRE_USE_SKIA == 1
+    SkPath path;
+    path.addRect(box.x1, box.y1, box.x2, box.y2);
+    imp()->skPaintPath(path);
+#else
     if (imp()->needsBlendFuncUpdate)
         imp()->updateBlendingParams();
 
     imp()->setViewport(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+#endif
 }
 
 void LPainter::drawRect(const LRect &rect) noexcept
 {
+#if LOUVRE_USE_SKIA == 1
+    SkPath path;
+    path.addRect(SkRect::MakeXYWH(rect.x(), rect.y(), rect.w(), rect.h()));
+    imp()->skPaintPath(path);
+#else
     if (imp()->needsBlendFuncUpdate)
         imp()->updateBlendingParams();
 
     imp()->setViewport(rect.x(), rect.y(), rect.w(), rect.h());
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+#endif
 }
 
 void LPainter::drawRegion(const LRegion &region) noexcept
 {
+#if LOUVRE_USE_SKIA == 1
+
+    if (region.empty())
+        return;
+
+    Int32 n;
+    const LBox *box { region.boxes(&n) };
+    SkPath path;
+
+    for (Int32 i = 0; i < n; i++)
+        path.addRect(box[i].x1, box[i].y1, box[i].x2, box[i].y2);
+    imp()->skPaintPath(path);
+#else
     if (imp()->needsBlendFuncUpdate)
         imp()->updateBlendingParams();
 
@@ -727,15 +793,20 @@ void LPainter::drawRegion(const LRegion &region) noexcept
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         box++;
     }
+#endif
 }
 
 void LPainter::enableCustomTextureColor(bool enabled) noexcept
 {
+#if LOUVRE_USE_SKIA == 1
+    imp()->userState.customTextureColor = enabled;
+#else
     if (imp()->userState.customTextureColor == enabled)
         return;
 
     imp()->userState.customTextureColor = enabled;
     imp()->needsBlendFuncUpdate = true;
+#endif
 }
 
 bool LPainter::customTextureColorEnabled() const noexcept
@@ -750,33 +821,48 @@ bool LPainter::autoBlendFuncEnabled() const noexcept
 
 void LPainter::enableAutoBlendFunc(bool enabled) const noexcept
 {
+#if LOUVRE_USE_SKIA == 1
+    imp()->userState.autoBlendFunc = enabled;
+#else
     if (imp()->userState.autoBlendFunc == enabled)
         return;
 
     imp()->userState.autoBlendFunc = enabled;
     imp()->needsBlendFuncUpdate = true;
+#endif
 }
 
 void LPainter::setAlpha(Float32 alpha) noexcept
 {
+#if LOUVRE_USE_SKIA == 1
+    imp()->userState.alpha = alpha;
+#else
     if (imp()->userState.alpha == alpha)
         return;
 
     imp()->userState.alpha = alpha;
     imp()->needsBlendFuncUpdate = true;
+#endif
 }
 
 void LPainter::setColor(const LRGBF &color) noexcept
 {
+#if LOUVRE_USE_SKIA == 1
+    imp()->userState.color = color;
+#else
     if (imp()->userState.color == color)
         return;
 
     imp()->userState.color = color;
     imp()->needsBlendFuncUpdate = true;
+#endif
 }
 
 void LPainter::bindFramebuffer(LFramebuffer *framebuffer) noexcept
 {
+#if LOUVRE_USE_SKIA == 1
+    imp()->fb.reset(framebuffer);
+#else
     if (!framebuffer)
     {
         imp()->fbId = 0;
@@ -787,6 +873,7 @@ void LPainter::bindFramebuffer(LFramebuffer *framebuffer) noexcept
     imp()->fbId = framebuffer->id();
     glBindFramebuffer(GL_FRAMEBUFFER, imp()->fbId);
     imp()->fb = framebuffer;
+#endif
 }
 
 LFramebuffer *LPainter::boundFramebuffer() const noexcept
@@ -796,21 +883,42 @@ LFramebuffer *LPainter::boundFramebuffer() const noexcept
 
 void LPainter::setViewport(const LRect &rect) noexcept
 {
+#if LOUVRE_USE_SKIA == 1
+    L_UNUSED(rect)
+#else
     imp()->setViewport(rect.x(), rect.y(), rect.w(), rect.h());
+#endif
 }
 
 void LPainter::setViewport(Int32 x, Int32 y, Int32 w, Int32 h) noexcept
 {
+#if LOUVRE_USE_SKIA == 1
+    L_UNUSED(x)
+    L_UNUSED(y)
+    L_UNUSED(w)
+    L_UNUSED(h)
+#else
     imp()->setViewport(x, y, w, h);
+#endif
 }
 
 void LPainter::setClearColor(Float32 r, Float32 g, Float32 b, Float32 a) noexcept
 {
+#if LOUVRE_USE_SKIA == 1
+    imp()->skClearColor.fR = r;
+    imp()->skClearColor.fG = g;
+    imp()->skClearColor.fB = b;
+    imp()->skClearColor.fA = a;
+#else
     glClearColor(r,g,b,a);
+#endif
 }
 
 void LPainter::setColorFactor(Float32 r, Float32 g, Float32 b, Float32 a) noexcept
 {
+#if LOUVRE_USE_SKIA == 1
+    imp()->userState.colorFactor = {r, g, b, a};
+#else
     if (imp()->userState.colorFactor.r == r &&
         imp()->userState.colorFactor.g == g &&
         imp()->userState.colorFactor.b == b &&
@@ -820,20 +928,32 @@ void LPainter::setColorFactor(Float32 r, Float32 g, Float32 b, Float32 a) noexce
     imp()->userState.colorFactor = {r, g, b, a};
     imp()->shaderSetColorFactorEnabled(r != 1.f || g != 1.f || b != 1.f || a != 1.f);
     imp()->needsBlendFuncUpdate = true;
+#endif
 }
 
 void LPainter::setColorFactor(const LRGBAF &factor) noexcept
 {
+#if LOUVRE_USE_SKIA == 1
+    imp()->userState.colorFactor = factor;
+#else
     if (imp()->userState.colorFactor == factor)
         return;
 
     imp()->userState.colorFactor = factor;
     imp()->shaderSetColorFactorEnabled(factor.r != 1.f || factor.g != 1.f || factor.b != 1.f || factor.a != 1.f);
     imp()->needsBlendFuncUpdate = true;
+#endif
 }
 
 void LPainter::clearScreen() noexcept
 {
+#if LOUVRE_USE_SKIA == 1
+    if (!imp()->fb)
+        return;
+
+    if (auto surf { imp()->fb->skSurface() })
+        surf->getCanvas()->clear(imp()->skClearColor);
+#else
     if (!imp()->fb)
         return;
 
@@ -841,12 +961,116 @@ void LPainter::clearScreen() noexcept
     imp()->setViewport(imp()->fb->rect().x(), imp()->fb->rect().y(), imp()->fb->rect().w(), imp()->fb->rect().h());
     glClear(GL_COLOR_BUFFER_BIT);
     glEnable(GL_BLEND);
+#endif
 }
 
 void LPainter::bindProgram() noexcept
 {
-    glUseProgram(imp()->programObject);
+#if LOUVRE_USE_SKIA == 1
+    //imp()->skContext->resetContext();
+#else
+    eglBindAPI(EGL_OPENGL_ES_API);
+    glUseProgram(imp()->currentProgram);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindAttribLocation(imp()->currentProgram, 0, "vertexPosition");
+    glUseProgram(imp()->currentProgram);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, imp()->square);
+    glEnableVertexAttribArray(0);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f);
+    glEnable(GL_BLEND);
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_SCISSOR_TEST);
+    glDisable(GL_STENCIL_TEST);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_CLAMP);
+    glDisable(GL_FRAMEBUFFER_SRGB);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_LIGHTING);
+    glDisable(GL_DITHER);
+    glDisable(GL_POLYGON_OFFSET_FILL);
+    glDisable(GL_POLYGON_OFFSET_LINE);
+    glDisable(GL_POLYGON_OFFSET_POINT);
+    glDisable(GL_POLYGON_SMOOTH);
+    glDisable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+    glDisable(GL_RASTERIZER_DISCARD);
+    glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+    glDisable(GL_SAMPLE_ALPHA_TO_ONE);
+    glDisable(GL_SAMPLE_COVERAGE);
+    glDisable(GL_SAMPLE_SHADING);
+    glDisable(GL_SAMPLE_MASK);
+    glDisable(GL_PROGRAM_POINT_SIZE);
+    glDisable(GL_POINT_SMOOTH);
+    glDisable(GL_LINE_SMOOTH);
+    glDisable(GL_POLYGON_SMOOTH);
+    glDisable(GL_POLYGON_STIPPLE);
+    glDisable(GL_COLOR_LOGIC_OP);
+    glDisable(GL_INDEX_LOGIC_OP);
+    glDisable(GL_COLOR_TABLE);
+    glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
+    glDisable(GL_MULTISAMPLE);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glCullFace(GL_BACK);
+    glLineWidth(1);
+    glHint(GL_GENERATE_MIPMAP_HINT, GL_FASTEST);
+    glPolygonOffset(0, 0);
+    glDepthFunc(GL_LESS);
+    glDepthRangef(0, 1);
+    glStencilMask(1);
+    glDepthMask(GL_FALSE);
+    glFrontFace(GL_CCW);
+    glBlendColor(0, 0, 0, 0);
+    glBlendEquation(GL_FUNC_ADD);
+
+    glUniform2f(imp()->currentUniforms->texSize,
+        imp()->currentState->texSize.w(),
+        imp()->currentState->texSize.h());
+
+    glUniform4f(imp()->currentUniforms->srcRect,
+        imp()->currentState->srcRect.x(),
+        imp()->currentState->srcRect.y(),
+        imp()->currentState->srcRect.w(),
+        imp()->currentState->srcRect.h());
+
+    glUniform1i(imp()->currentUniforms->activeTexture,
+        imp()->currentState->activeTexture);
+
+    glUniform1i(imp()->currentUniforms->colorFactorEnabled,
+        imp()->currentState->colorFactorEnabled);
+
+    glUniform1f(imp()->currentUniforms->alpha,
+        imp()->currentState->alpha);
+
+    glUniform1i(imp()->currentUniforms->mode,
+        imp()->currentState->mode);
+
+    glUniform3f(imp()->currentUniforms->color,
+        imp()->currentState->color.r,
+        imp()->currentState->color.g,
+        imp()->currentState->color.b);
+
+    glUniform1i(imp()->currentUniforms->texColorEnabled,
+        imp()->currentState->texColorEnabled);
+
+    glUniform1i(imp()->currentUniforms->premultipliedAlpha,
+        imp()->currentState->premultipliedAlpha);
+
+    glUniform1i(imp()->currentUniforms->has90deg,
+        imp()->currentState->has90deg);
+
+    imp()->updateBlendingParams();
+#endif
 }
+
+#if LOUVRE_USE_SKIA == 1
+GrDirectContext *LPainter::skContext() const noexcept
+{
+    return imp()->skContext.get();
+}
+#endif
 
 void LPainter::setBlendFunc(const LBlendFunc &blendFunc) const noexcept
 {

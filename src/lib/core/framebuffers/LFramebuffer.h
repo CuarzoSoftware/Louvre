@@ -4,6 +4,10 @@
 #include <LObject.h>
 #include <LTransform.h>
 
+#if LOUVRE_USE_SKIA == 1
+#include <include/core/SkSurface.h>
+#endif
+
 /**
  * @brief Base class for LPainter framebuffers.
  *
@@ -32,6 +36,14 @@ public:
         /// LFramebufferWrapper
         Wrapper
     };
+
+    /**
+     * @brief Gets the type of LFramebuffer.
+     */
+    Type type() const noexcept
+    {
+        return m_type;
+    }
 
     /**
      * @brief Gets the scale by which the framebuffer dimensions must be interpreted.
@@ -114,13 +126,14 @@ public:
      */
     virtual LTransform transform() const = 0;
 
+#if LOUVRE_USE_SKIA == 1
     /**
-     * @brief Gets the type of LFramebuffer.
+     * @brief Skia surface.
+     *
+     * @returns `nullptr` on failure.
      */
-    Type type() const noexcept
-    {
-        return m_type;
-    }
+    virtual sk_sp<SkSurface> skSurface() const = 0;
+#endif
 
 protected:
     LFramebuffer(Type type) noexcept : m_type(type) {}

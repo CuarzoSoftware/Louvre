@@ -13,6 +13,13 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
+#if LOUVRE_USE_SKIA == 1
+#include <include/gpu/ganesh/SkImageGanesh.h>
+#include <include/gpu/GrBackendSurface.h>
+#include <include/gpu/gl/GrGLTypes.h>
+#include <include/core/SkColorSpace.h>
+#endif
+
 using namespace Louvre;
 using namespace std;
 
@@ -236,12 +243,12 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
     LRect srcRect;
     LSize dstSize;
 
-    if (src == LRect())
+    if (true || src == LRect())
         srcRect = LRectF(0, sizeB());
     else
         srcRect = src;
 
-    if (dst == LSize())
+    if (true || dst == LSize())
         dstSize = sizeB();
     else
         dstSize = dst;
@@ -256,6 +263,8 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
     LTexture *textureCopy { nullptr };
     bool ret = false;
 
+// TODO
+#if LOUVRE_USE_SKIA == 0
     if (highQualityScaling)
     {
         Float32 wScaleF = fabs(Float32(srcRect.w()) / Float32(dstSize.w()));
@@ -363,9 +372,11 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
         LLog::error("[LTexture::copyB] Failed to create texture. Graphic backend error.");
         delete textureCopy;
         return nullptr;
-    }
-
+    }    
     skipHQ:
+#else
+    L_UNUSED(highQualityScaling)
+#endif
 
     {
         GLenum textureTarget = target();
@@ -459,7 +470,7 @@ skipAll:
         return textureCopy;
     }
 
-    LLog::error("[LTexture::copyB] Failed to create texture. Graphica backend error.");
+    LLog::error("[LTexture::copyB] Failed to create texture. Graphical backend error.");
     if (textureCopy)
         delete textureCopy;
     return nullptr;
@@ -623,3 +634,43 @@ void LTexture::reset() noexcept
         m_graphicBackendData = nullptr;
     }
 }
+
+#if LOUVRE_USE_SKIA == 1
+const sk_sp<SkImage> LTexture::skImage() const noexcept
+{
+    LPainter *p { compositor()->imp()->findPainter() };
+
+    if (!p || !p->skContext())
+        return nullptr;
+
+    if (m_skImage && m_skSerial == m_serial)
+        return m_skImage;
+
+    m_skSerial = m_serial;
+    GrGLTextureInfo skTextureInfo;
+    GrBackendTexture skTexture;
+    skTextureInfo.fFormat = GL_BGRA8_EXT;
+    skTextureInfo.fID = id(p->imp()->output);
+    skTextureInfo.fTarget = target();
+
+    skTexture = GrBackendTexture(
+        sizeB().w(),
+        sizeB().h(),
+        GrMipMapped::kNo,
+        skTextureInfo);
+
+    static sk_sp<SkColorSpace> skColorSpace = SkColorSpace::MakeSRGB();
+
+    m_skImage = SkImages::BorrowTextureFrom(
+        p->skContext(),
+        skTexture,
+        GrSurfaceOrigin::kTopLeft_GrSurfaceOrigin,
+        kBGRA_8888_SkColorType,
+        SkAlphaType::kPremul_SkAlphaType,
+        skColorSpace,
+        nullptr,
+        nullptr);
+
+    return m_skImage;
+}
+#endif

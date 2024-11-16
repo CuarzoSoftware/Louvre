@@ -6,6 +6,14 @@
 #include <GLES2/gl2.h>
 #include <LLog.h>
 
+#if LOUVRE_USE_SKIA == 1
+#include <LPainter.h>
+#include <include/gpu/GrBackendSurface.h>
+#include <include/gpu/ganesh/SkSurfaceGanesh.h>
+#include <include/gpu/gl/GrGLTypes.h>
+#include <include/core/SkColorSpace.h>
+#endif
+
 using namespace Louvre;
 
 LRenderBuffer::LRenderBuffer(const LSize &sizeB) noexcept : LFramebuffer(RenderBuffer)
@@ -21,7 +29,12 @@ LRenderBuffer::~LRenderBuffer() noexcept
     notifyDestruction();
 
     for (auto &pair : m_threadsMap)
+    {
+#if LOUVRE_USE_SKIA == 1
+        pair.second.m_skSurface.reset();
+#endif
         compositor()->imp()->addRenderBufferToDestroy(pair.first, pair.second);
+    }
 }
 
 void LRenderBuffer::setSizeB(const LSize &sizeB) noexcept
@@ -36,7 +49,12 @@ void LRenderBuffer::setSizeB(const LSize &sizeB) noexcept
         m_rect.setH(roundf(Float32(m_texture.m_sizeB.h()) / m_scale));
 
         for (auto &pair : m_threadsMap)
+        {
+#if LOUVRE_USE_SKIA == 1
+            pair.second.m_skSurface.reset();
+#endif
             compositor()->imp()->addRenderBufferToDestroy(pair.first, pair.second);
+        }
 
         m_texture.reset();
         m_threadsMap.clear();
@@ -51,6 +69,11 @@ LTexture *LRenderBuffer::texture(Int32 index) const noexcept
 
 void LRenderBuffer::setFence() noexcept
 {
+#if LOUVRE_USE_SKIA == 1
+    auto surf { skSurface() };
+    if (surf)
+        surf->flush();
+#endif
     m_texture.setFence();
 }
 
@@ -102,6 +125,35 @@ GLuint LRenderBuffer::id() const noexcept
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture.id(nullptr), 0);
     }
 
+#if LOUVRE_USE_SKIA == 1
+
+    LPainter *p { compositor()->imp()->findPainter() };
+
+    if (!data.m_skSurface && p && p->skContext())
+    {
+        const GrGLFramebufferInfo fbInfo{
+            .fFBOID = data.framebufferId,
+            .fFormat = GL_RGBA8_OES
+        };
+
+        const GrBackendRenderTarget target(
+            m_texture.sizeB().w(),
+            m_texture.sizeB().h(),
+            0, 0,
+            fbInfo);
+
+        static sk_sp<SkColorSpace> skColorSpace = SkColorSpace::MakeSRGB();
+        static SkSurfaceProps skSurfaceProps(0, kUnknown_SkPixelGeometry);
+
+        data.m_skSurface = SkSurfaces::WrapBackendRenderTarget(
+            p->skContext(),
+            target,
+            GrSurfaceOrigin::kTopLeft_GrSurfaceOrigin,
+            SkColorType::kRGBA_8888_SkColorType,
+            skColorSpace,
+            &skSurfaceProps);
+    }
+#endif
     return data.framebufferId;
 }
 
@@ -114,3 +166,11 @@ Int32 LRenderBuffer::currentBufferIndex() const noexcept
 {
     return 0;
 }
+
+#if LOUVRE_USE_SKIA == 1
+sk_sp<SkSurface> LRenderBuffer::skSurface() const noexcept
+{
+    id();
+    return m_threadsMap[std::this_thread::get_id()].m_skSurface;
+}
+#endif

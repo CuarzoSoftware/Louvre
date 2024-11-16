@@ -151,10 +151,17 @@ public:
     void setFramebufferDamage(const LRegion *damage) noexcept override;
     LTransform transform() const noexcept override;
 
+#if LOUVRE_USE_SKIA == 1
+    sk_sp<SkSurface> skSurface() const noexcept override;
+#endif
+
 private:
     friend class LCompositor;
     struct ThreadData
     {
+#if LOUVRE_USE_SKIA == 1
+        sk_sp<SkSurface> m_skSurface;
+#endif
         GLuint framebufferId = 0;
     };
     mutable LTexture m_texture { true };

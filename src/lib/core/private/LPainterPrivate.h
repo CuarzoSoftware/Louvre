@@ -11,9 +11,249 @@
 #include <GL/gl.h>
 #include <GLES2/gl2.h>
 
+#if LOUVRE_USE_SKIA == 1
+#include <include/gpu/GrDirectContext.h>
+#include <include/core/SkCanvas.h>
+#endif
+
 using namespace Louvre;
 
 LPRIVATE_CLASS(LPainter)
+
+enum ShaderMode : GLint
+{
+    LegacyMode = 0,
+    TextureMode = 1,
+    ColorMode = 2
+};
+
+struct UserState
+{
+    TextureParams textureParams;
+    ShaderMode mode { TextureMode };
+    LWeak<LTexture> texture;
+    LBlendFunc customBlendFunc { GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA };
+    Float32 alpha { 1.f };
+    LRGBF color { 1.f, 1.f, 1.f };
+    LRGBAF colorFactor { 1.f, 1.f, 1.f, 1.f };
+    bool autoBlendFunc { true };
+    bool customTextureColor { false };
+} userState;
+
+LPainter *painter;
+LWeak<LOutput> output;
+LWeak<LFramebuffer> fb;
+
+struct OpenGLExtensions
+{
+    bool EXT_read_format_bgra;
+    bool OES_EGL_image;
+} openGLExtensions;
+
+void updateExtensions() noexcept;
+
+struct CPUFormats
+{
+    bool ARGB8888 = false;
+    bool XRGB8888 = false;
+    bool ABGR8888 = false;
+    bool XBGR8888 = false;
+} cpuFormats;
+
+void updateCPUFormats() noexcept;
+void setupProgram() noexcept;
+void setupProgramScaler() noexcept;
+
+#if LOUVRE_USE_SKIA == 1
+sk_sp<GrDirectContext> skContext;
+sk_sp<SkImage> skImage;
+SkColor4f skClearColor;
+SkMatrix skFbMatrix, skTextureMatrix;
+SkRect skSrcTexRect, skDstTexRect;
+void skUpdateFbMatrix() noexcept
+{
+    // TODO
+    skFbMatrix.setIdentity();
+
+    if (!fb)
+        return;
+
+    skFbMatrix.preTranslate(-fb->rect().x(), -fb->rect().y());
+    skFbMatrix.preScale(fb->scale(), fb->scale());
+    skFbMatrix.preRotate(0);
+}
+void skUpdateTextureParams(const TextureParams &p) noexcept
+{
+    if (!p.texture)
+        return;
+
+    skImage = p.texture->skImage();
+
+    if (!skImage)
+        return;
+
+    skUpdateFbMatrix();
+    userState.textureParams = p;
+    userState.texture.reset(p.texture);
+    const LRectF srcB { p.srcRect * p.srcScale };
+
+    SkMatrix imageMatrix;
+    imageMatrix.setIdentity();
+
+    switch (p.srcTransform)
+    {
+    case LTransform::Normal:
+        skSrcTexRect.setXYWH(
+            srcB.x(),
+            srcB.y(),
+            srcB.w(),
+            srcB.h());
+        skDstTexRect.setXYWH(p.pos.x(), p.pos.y(), p.dstSize.w(), p.dstSize.h());
+        //imageMatrix.preTranslate(p.pos.x(), p.pos.y());
+        imageMatrix.preRotate(0.f);
+        break;
+    case LTransform::Rotated90:
+        skSrcTexRect.setXYWH(
+            srcB.y(),
+            p.texture->sizeB().h() - srcB.x() - srcB.w(),
+            srcB.h(),
+            srcB.w());
+        skDstTexRect.setXYWH(0, 0, p.dstSize.h(), p.dstSize.w());
+        imageMatrix.preTranslate(p.pos.x() + p.dstSize.w(), p.pos.y());
+        imageMatrix.preRotate(90.f);
+        break;
+    case LTransform::Rotated180:
+        skSrcTexRect.setXYWH(
+            p.texture->sizeB().w() - srcB.x() - srcB.w(),
+            p.texture->sizeB().h() - srcB.y() - srcB.h(),
+            srcB.w(),
+            srcB.h());
+        skDstTexRect.setXYWH(0, 0, p.dstSize.w(), p.dstSize.h());
+        imageMatrix.preTranslate(p.pos.x() + p.dstSize.w(), p.pos.y() + p.dstSize.h());
+        imageMatrix.preRotate(180.f);
+        break;
+    case LTransform::Rotated270:
+        skSrcTexRect.setXYWH(
+            srcB.y(),
+            srcB.x(),
+            srcB.h(),
+            srcB.w());
+        skDstTexRect.setXYWH(0, 0, p.dstSize.h(), p.dstSize.w());
+        imageMatrix.preTranslate(p.pos.x(), p.pos.y() + p.dstSize.h());
+        imageMatrix.preRotate(-90.f);
+        break;
+    case LTransform::Flipped:
+        skSrcTexRect.setXYWH(
+            p.texture->sizeB().w() - srcB.x() - srcB.w(),
+            p.texture->sizeB().h() - srcB.y() - srcB.h(),
+            srcB.w(),
+            srcB.h());
+        skDstTexRect.setXYWH(0, 0, p.dstSize.w(), p.dstSize.h());
+        imageMatrix.preTranslate(p.pos.x() + p.dstSize.w(), p.pos.y());
+        imageMatrix.preScale(-1.f, 1.f);
+        break;
+    case LTransform::Flipped90:
+        skSrcTexRect.setXYWH(
+            srcB.y(),
+            srcB.x(),
+            srcB.h(),
+            srcB.w());
+        skDstTexRect.setXYWH(0, 0, p.dstSize.h(), p.dstSize.w());
+        imageMatrix.preTranslate(p.pos.x(), p.pos.y());
+        imageMatrix.preScale(-1.f, 1.f);
+        imageMatrix.preRotate(90.f);
+        break;
+    case LTransform::Flipped180:
+        skSrcTexRect.setXYWH(
+            srcB.x(),
+            p.texture->sizeB().h() - srcB.y() - srcB.h(),
+            srcB.w(),
+            srcB.h());
+        skDstTexRect.setXYWH(0, 0, p.dstSize.w(), p.dstSize.h());
+        imageMatrix.preTranslate(p.pos.x(), p.pos.y() + p.dstSize.h());
+        imageMatrix.preScale(1.f, -1.f);
+        break;
+    case LTransform::Flipped270:
+        skSrcTexRect.setXYWH(
+            srcB.y(),
+            srcB.x(),
+            srcB.h(),
+            srcB.w());
+        skDstTexRect.setXYWH(0, 0, p.dstSize.h(), p.dstSize.w());
+        imageMatrix.preTranslate(p.pos.x() + p.dstSize.w(), p.pos.y() + p.dstSize.h());
+        imageMatrix.preScale(-1.f, 1.f);
+        imageMatrix.preRotate(-90.f);
+        break;
+    default:
+        break;
+    }
+
+    skTextureMatrix = skFbMatrix;
+    skTextureMatrix.preConcat(imageMatrix);
+}
+
+void skPaintPath(const SkPath &path) noexcept
+{
+    if (!fb || userState.mode == LegacyMode)
+        return;
+
+    auto surface { fb->skSurface() };
+
+    if (!surface)
+        return;
+
+    SkCanvas *c { surface->getCanvas() };
+    c->save();
+    c->resetMatrix();
+
+    if (userState.mode == ColorMode)
+    {
+        c->setMatrix(skFbMatrix);
+
+        if (c->quickReject(path))
+        {
+            c->restore();
+            return;
+        }
+
+        c->clipPath(path);
+        SkColor4f color;
+        color.fR = userState.color.r;
+        color.fG = userState.color.g;
+        color.fB = userState.color.b;
+        color.fA = userState.alpha;
+        c->drawColor(color, color.fA >= 1.f ? SkBlendMode::kSrc : SkBlendMode::kSrcOver);
+    }
+    else if (skImage && userState.mode == TextureMode)
+    {
+        SkSamplingOptions skSamplingOptions { SkFilterMode::kLinear, SkMipmapMode::kNone };
+        c->setMatrix(skTextureMatrix);
+
+        if (c->quickReject(path))
+        {
+            c->restore();
+            return;
+        }
+
+        c->clipPath(path);
+
+        SkPaint paint;
+        paint.setDither(false);
+        //paint.setBlendMode(SkBlendMode::kSrc);
+        paint.setAlphaf(userState.alpha);
+        c->drawImageRect(skImage,
+                         skSrcTexRect,
+                         skDstTexRect,
+                         skSamplingOptions,
+                         &paint,
+                         SkCanvas::kFast_SrcRectConstraint);
+    }
+
+    c->restore();
+}
+#else
+GLuint fbId = 0;
+GLenum textureTarget = GL_TEXTURE_2D;
 
 enum ShaderMode : GLint
 {
@@ -52,30 +292,17 @@ struct UniformsScaler
 
 UniformsScaler *currentUniformsScaler;
 
-struct UserState
-{
-    TextureParams textureParams;
-    ShaderMode mode { TextureMode };
-    LWeak<LTexture> texture;
-    LBlendFunc customBlendFunc { GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA };
-    Float32 alpha { 1.f };
-    LRGBF color { 1.f, 1.f, 1.f };
-    LRGBAF colorFactor { 1.f, 1.f, 1.f, 1.f };
-    bool autoBlendFunc { true };
-    bool customTextureColor { false };
-} userState;
-
 LRectF srcRect;
 bool needsBlendFuncUpdate { true };
 
 static inline GLfloat square[]
-{
-    //  VERTEX     FRAGMENT
-   -1.0f,  1.0f,   0.f, 1.f, // TL
-   -1.0f, -1.0f,   0.f, 0.f, // BL
-    1.0f, -1.0f,   1.f, 0.f, // BR
-    1.0f,  1.0f,   1.f, 1.f  // TR
-};
+    {
+        //  VERTEX     FRAGMENT
+        -1.0f,  1.0f,   0.f, 1.f, // TL
+        -1.0f, -1.0f,   0.f, 0.f, // BL
+        1.0f, -1.0f,   1.f, 0.f, // BR
+        1.0f,  1.0f,   1.f, 1.f  // TR
+    };
 
 GLuint vertexShader, fragmentShader, fragmentShaderExternal, fragmentShaderScaler, fragmentShaderScalerExternal;
 
@@ -99,31 +326,6 @@ ShaderState *currentState;
 
 // Program
 GLuint programObject, programObjectExternal, programObjectScaler, programObjectScalerExternal, currentProgram;
-LOutput *output = nullptr;
-LPainter *painter;
-LFramebuffer *fb = nullptr;
-GLuint fbId = 0;
-GLenum textureTarget = GL_TEXTURE_2D;
-
-struct OpenGLExtensions
-{
-    bool EXT_read_format_bgra;
-    bool OES_EGL_image;
-} openGLExtensions;
-
-void updateExtensions() noexcept;
-
-struct CPUFormats
-{
-    bool ARGB8888 = false;
-    bool XRGB8888 = false;
-    bool ABGR8888 = false;
-    bool XBGR8888 = false;
-} cpuFormats;
-
-void updateCPUFormats() noexcept;
-void setupProgram() noexcept;
-void setupProgramScaler() noexcept;
 
 void shaderSetPremultipliedAlpha(bool premultipliedAlpha) noexcept
 {
@@ -488,6 +690,7 @@ void updateBlendingParams() noexcept
         shaderSetAlpha(alpha);
     }
 }
+#endif
 };
 
 #endif // LPAINTERPRIVATE_H

@@ -74,7 +74,8 @@ LCursor::LCursor() noexcept : LPRIVATE_INIT_UNIQUE(LCursor)
 
     imp()->defaultTexture = &imp()->louvreTexture;
     imp()->defaultHotspotB = LPointF(9);
-
+    imp()->hasFb = false;
+    /*
     glGenFramebuffers(1, &imp()->glFramebuffer);
 
     if (imp()->glFramebuffer == 0)
@@ -83,7 +84,6 @@ LCursor::LCursor() noexcept : LPRIVATE_INIT_UNIQUE(LCursor)
         imp()->hasFb = false;
         goto skipGL;
     }
-
     glBindFramebuffer(GL_FRAMEBUFFER, imp()->glFramebuffer);
     glGenRenderbuffers(1, &imp()->glRenderbuffer);
 
@@ -106,8 +106,10 @@ LCursor::LCursor() noexcept : LPRIVATE_INIT_UNIQUE(LCursor)
         glDeleteRenderbuffers(1, &imp()->glRenderbuffer);
         glDeleteFramebuffers(1, &imp()->glFramebuffer);
     }
+*/
 
-    skipGL:
+
+    //skipGL:
 
     setSize(LSize(24));
     useDefault();
@@ -120,11 +122,12 @@ LCursor::~LCursor()
 
     compositor()->imp()->cursor = nullptr;
 
+    /*
     if (imp()->glRenderbuffer)
         glDeleteRenderbuffers(1, &imp()->glRenderbuffer);
 
     if (imp()->glFramebuffer)
-        glDeleteFramebuffers(1, &imp()->glFramebuffer);
+        glDeleteFramebuffers(1, &imp()->glFramebuffer);*/
 }
 
 void LCursor::useDefault() noexcept

@@ -43,7 +43,15 @@ public:
      */
     void setId(GLuint id) noexcept
     {
+#if LOUVRE_USE_SKIA == 1
+        if (id != m_fbId)
+        {
+            m_skSurfaceNeedsUpdate = true;
+            m_fbId = id;
+        }
+#else
         m_fbId = id;
+#endif
     }
 
     /**
@@ -52,9 +60,18 @@ public:
      * @param sizeB The buffer size.
      */
     void setSizeB(const LSize &sizeB) noexcept
-    {
+    {        
+#if LOUVRE_USE_SKIA == 1
+        if (sizeB != m_sizeB)
+        {
+            m_skSurfaceNeedsUpdate = true;
+            m_sizeB = sizeB;
+        }
+        updateDimensions();
+#else
         m_sizeB = sizeB;
         updateDimensions();
+#endif
     }
 
     /**
@@ -86,7 +103,11 @@ public:
     Int32 currentBufferIndex() const noexcept override { return 0; };
     LTexture *texture(Int32) const noexcept override { return nullptr; };
     void setFramebufferDamage(const LRegion *) noexcept override {};
-    virtual LTransform transform() const noexcept override { return LTransform::Normal; };
+    LTransform transform() const noexcept override { return LTransform::Normal; };
+
+#if LOUVRE_USE_SKIA == 1
+    sk_sp<SkSurface> skSurface() const noexcept override;
+#endif
 
 private:
     void updateDimensions() noexcept
@@ -107,6 +128,11 @@ private:
     LSize m_sizeB;
     GLuint m_fbId;
     Float32 m_scale;
+
+#if LOUVRE_USE_SKIA == 1
+    mutable sk_sp<SkSurface> m_skSurface;
+    mutable bool m_skSurfaceNeedsUpdate { true };
+#endif
 };
 
 #endif // LGLFRAMEBUFFER_H

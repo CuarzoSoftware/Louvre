@@ -1,6 +1,7 @@
 #ifndef LNAMESPACES_H
 #define LNAMESPACES_H
 
+#include <LConfiguration.h>
 #include <protocols/Wayland/wayland.h>
 
 #define LOUVRE_ASSERT_CHECKS 0

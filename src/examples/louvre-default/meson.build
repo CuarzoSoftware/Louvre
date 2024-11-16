@@ -2,8 +2,9 @@ sources = run_command('find', '.', '-type', 'f', '-name', '*[.c,.cpp,.h,.hpp]', 
 
 executable(
     'louvre-default',
-    sources : sources,
+    sources : [louvre_extra_files, sources],
     dependencies : [
+        partial_deps,
         louvre_dep,
         gl_dep,
     ],

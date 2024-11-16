@@ -2,7 +2,7 @@ project(
     'Louvre',
     'c','cpp',
     version : run_command('cat', files('../VERSION'), check : false).stdout().strip(),
-    meson_version: '>= 0.56.0',
+    meson_version: '>= 1.4.0',
     default_options: [
         'warning_level=3',
         'buildtype=release',
@@ -22,6 +22,14 @@ VERSION_BUILD = run_command('cat', '../BUILD', check : false).stdout()
 HEADERS_INSTALL_PATH = join_paths(get_option('prefix'), get_option('includedir'), 'Louvre')
 BACKENDS_INSTALL_PATH = join_paths(get_option('prefix'), get_option('libdir'), 'Louvre/backends')
 ASSETS_INSTALL_PATH = join_paths(get_option('prefix'), get_option('datadir'), 'Louvre/assets')
+
+louvre_conf = configuration_data()
+louvre_conf.set('LOUVRE_USE_SKIA', get_option('use_skia').to_int())
+louvre_conf_file = configure_file(input : './lib/core/LConfiguration.h.in',
+               output : 'LConfiguration.h',
+               configuration : louvre_conf,
+               install_dir : HEADERS_INSTALL_PATH)
+louvre_extra_files = [louvre_conf_file]
 
 add_project_arguments([
     '-DLOUVRE_VERSION_MAJOR=@0@'.format(VERSION_MAJOR.to_int()),
@@ -61,9 +69,26 @@ srm_dep             = dependency('SRM', version : '>=0.10.0')
 pthread_dep         = cpp.find_library('pthread')
 dl_dep              = cpp.find_library('dl')
 
+louvre_deps = [
+    wayland_server_dep, egl_dep, glesv2_dep, input_dep, udev_dep,
+    pthread_dep, xcursor_dep, xkbcommon_dep, pixman_dep, dl_dep,
+    drm_dep, libseat_dep, pixman_dep
+]
+
+if get_option('use_skia')
+    skia_dep = dependency('Skia', version : '>=0.38.2')
+    louvre_deps += skia_dep
+endif
+
+partial_deps = []
+
+foreach dep : louvre_deps
+    partial_deps += dep.partial_dependency(includes : true, compile_args : true, links : true)
+endforeach
+
 # -------------- HEADERS --------------
 
-include_paths = [include_directories('./lib/')]
+include_paths = [include_directories('./lib/'), include_directories('.')]
 
 # All headers
 headers = run_command('find', './lib', '-type', 'f', '-name', '*.h', check : false).stdout().strip().split('\n')
@@ -128,28 +153,14 @@ endforeach
 
 louvre = library(
     'Louvre',
-    sources : run_command('find', './lib', '-type', 'f', '-name', '*[.cpp,.c]', check : false).stdout().strip().split('\n'),
+    sources : [louvre_extra_files, run_command('find', './lib', '-type', 'f', '-name', '*[.cpp,.c]', check : false).stdout().strip().split('\n')],
     include_directories : include_paths,
-    dependencies : [
-        wayland_server_dep,
-        egl_dep,
-        glesv2_dep,
-        input_dep,
-        udev_dep,
-        pthread_dep,
-        xcursor_dep,
-        xkbcommon_dep,
-        pixman_dep,
-        dl_dep,
-        drm_dep,
-        libseat_dep,
-        pixman_dep
-    ],
+    dependencies : louvre_deps,
     soversion: VERSION_MAJOR,
     install : true)
 
 louvre_dep = declare_dependency(
-    dependencies: [pixman_dep, wayland_server_dep, drm_dep, xkbcommon_dep],
+    dependencies: [partial_deps, pixman_dep, wayland_server_dep, drm_dep, xkbcommon_dep],
     include_directories : include_paths,
     link_with : louvre)
 

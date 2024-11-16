@@ -17,6 +17,13 @@
 #include <LGlobal.h>
 #include <LTime.h>
 
+#if LOUVRE_USE_SKIA == 1
+#include <include/gpu/GrBackendSurface.h>
+#include <include/gpu/ganesh/SkSurfaceGanesh.h>
+#include <include/gpu/gl/GrGLTypes.h>
+#include <include/core/SkColorSpace.h>
+#endif
+
 using namespace Louvre::Protocols::Wayland;
 
 LOutput::LOutputPrivate::LOutputPrivate(LOutput *output) : fb(output) {}
@@ -116,6 +123,7 @@ void LOutput::LOutputPrivate::blitFractionalScaleFb(bool cursorOnly) noexcept
     const LSize prevSize { rect.size() };
     rect.setPos(LPoint(0));
     updateRect();
+    painter->bindProgram();
     painter->bindFramebuffer(&fb);
     painter->enableCustomTextureColor(false);
     painter->enableAutoBlendFunc(true);
@@ -319,6 +327,10 @@ void LOutput::LOutputPrivate::backendPaintGL()
 
     /* Let users do their rendering*/
     stateFlags.add(IsInPaintGL);
+#if LOUVRE_USE_SKIA == 1
+    updateSkSurface();
+    painter->bindProgram();
+#endif
     output->paintGL();
     stateFlags.remove(IsInPaintGL);
 
@@ -347,6 +359,11 @@ void LOutput::LOutputPrivate::backendPaintGL()
         damageToBufferCoords();
         blitFramebuffers();
         stateFlags.remove(IsBlittingFramebuffers);
+
+#if LOUVRE_USE_SKIA == 1
+        if (skSurface)
+            skSurface->flush();
+#endif
     }
 
     /* Ensure clients receive frame callbacks and pending roles configurations on time */
@@ -713,3 +730,30 @@ skipRelease:
     scanout[index].buffer = nullptr;
     scanout[index].surface.reset();
 }
+
+#if LOUVRE_USE_SKIA == 1
+void LOutput::LOutputPrivate::updateSkSurface() noexcept
+{
+    const GrGLFramebufferInfo fbInfo {
+        .fFBOID = compositor()->imp()->graphicBackend->outputGetFramebufferID(output),
+        .fFormat = GL_RGB8_OES
+    };
+
+    const GrBackendRenderTarget target(
+        output->currentMode()->sizeB().w(),
+        output->currentMode()->sizeB().h(),
+        0, 0,
+        fbInfo);
+
+    static sk_sp<SkColorSpace> skColorSpace = SkColorSpace::MakeSRGB();
+    static SkSurfaceProps skSurfaceProps(0, kUnknown_SkPixelGeometry);
+
+    skSurface = SkSurfaces::WrapBackendRenderTarget(
+        painter->skContext(),
+        target,
+        fbInfo.fFBOID == 0 ? GrSurfaceOrigin::kBottomLeft_GrSurfaceOrigin : GrSurfaceOrigin::kTopLeft_GrSurfaceOrigin,
+        SkColorType::kRGB_888x_SkColorType,
+        skColorSpace,
+        &skSurfaceProps);
+}
+#endif

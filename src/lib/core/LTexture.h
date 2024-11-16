@@ -11,6 +11,10 @@
 
 #define LOUVRE_MAX_DMA_PLANES 4
 
+#if LOUVRE_USE_SKIA == 1
+#include <include/core/SkImage.h>
+#endif
+
 namespace Louvre
 {
     /**
@@ -338,6 +342,9 @@ namespace Louvre
             m_premultipliedAlpha = premultipledAlpha;
         }
 
+#if LOUVRE_USE_SKIA == 1
+        const sk_sp<SkImage> skImage() const noexcept;
+#endif
         class LTexturePrivate;
 
     private:
@@ -359,6 +366,11 @@ namespace Louvre
         LWeak<LSurface> m_surface;
         GLenum backendTarget() const noexcept;
         void reset() noexcept;
+
+#if LOUVRE_USE_SKIA == 1
+        mutable sk_sp<SkImage> m_skImage;
+        mutable UInt32 m_skSerial { 0 };
+#endif
     };
 };
 

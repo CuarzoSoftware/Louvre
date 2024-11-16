@@ -51,3 +51,13 @@ LTransform LOutputFramebuffer::transform() const noexcept
 {
     return m_output->imp()->transform;
 }
+
+#if LOUVRE_USE_SKIA == 1
+sk_sp<SkSurface> LOutputFramebuffer::skSurface() const noexcept
+{
+    if (m_output->usingFractionalScale() && m_output->fractionalOversamplingEnabled())
+        return m_output->imp()->fractionalFb.skSurface();
+
+    return m_output->imp()->skSurface;
+}
+#endif

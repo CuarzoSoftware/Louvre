@@ -168,6 +168,11 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     LMargins exclusiveEdges;
     void updateExclusiveZones() noexcept;
     void updateLayerSurfacesMapping() noexcept;
+
+#if LOUVRE_USE_SKIA == 1
+    sk_sp<SkSurface> skSurface;
+    void updateSkSurface() noexcept;
+#endif
 };
 
 #endif // LOUTPUTPRIVATE_H

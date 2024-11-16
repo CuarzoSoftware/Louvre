@@ -98,8 +98,8 @@ void LCursor::LCursorPrivate::textureUpdate() noexcept
 void texture2Buffer(LCursor *cursor, const LSizeF &size, LTransform transform) noexcept
 {
     LPainter *painter { compositor()->imp()->painter };
-    glBindFramebuffer(GL_FRAMEBUFFER, cursor->imp()->glFramebuffer);
-    cursor->imp()->fb.setId(cursor->imp()->glFramebuffer);
+    //glBindFramebuffer(GL_FRAMEBUFFER, cursor->imp()->glFramebuffer);
+    //cursor->imp()->fb.setId(cursor->imp()->glFramebuffer);
     painter->bindFramebuffer(&cursor->imp()->fb);
     painter->enableCustomTextureColor(false);
     painter->setAlpha(1.f);

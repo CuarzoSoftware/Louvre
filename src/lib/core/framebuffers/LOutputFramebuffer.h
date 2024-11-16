@@ -39,6 +39,10 @@ public:
     void setFramebufferDamage(const LRegion *damage) noexcept override;
     LTransform transform() const noexcept override;
 
+#if LOUVRE_USE_SKIA == 1
+    sk_sp<SkSurface> skSurface() const noexcept override;
+#endif
+
 private:
     friend class LOutput;
     LOutputFramebuffer(LOutput *output) noexcept : LFramebuffer(Output), m_output(output) {}

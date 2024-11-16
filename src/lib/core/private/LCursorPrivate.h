@@ -29,8 +29,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
     LPointF defaultHotspotB;
     LTexture *defaultTexture                            = nullptr;
     LTexture louvreTexture { true };
-    GLuint glFramebuffer, glRenderbuffer;
-    LFramebufferWrapper fb { 0, LSize(64, 64) };
+    LRenderBuffer fb { LSize(64, 64) };
     UChar8 buffer[64*64*4];
 
     void setOutput(LOutput *out) noexcept

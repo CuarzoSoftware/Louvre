@@ -8,6 +8,10 @@
 #include <LColor.h>
 #include <memory>
 
+#if LOUVRE_USE_SKIA == 1
+#include <include/gpu/GrDirectContext.h>
+#endif
+
 /**
  * @brief Basic 2D rendering utility
  *
@@ -272,6 +276,11 @@ public:
      * @note This method should be used if you are working with your own OpenGL programs and want to use the LPainter methods again.
      */
     void bindProgram() noexcept;
+
+#if LOUVRE_USE_SKIA == 1
+    // TODO: Add doc
+    GrDirectContext *skContext() const noexcept;
+#endif
 
     LPRIVATE_IMP_UNIQUE(LPainter)
 

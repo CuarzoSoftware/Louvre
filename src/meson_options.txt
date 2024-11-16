@@ -1,3 +1,7 @@
+option('use_skia',
+    type : 'boolean',
+    value : true)
+
 option('build_examples', 
     type : 'boolean', 
     value : true)
