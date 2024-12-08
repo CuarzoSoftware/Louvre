@@ -34,6 +34,7 @@ void LOutput::LOutputPrivate::backendInitializeGL()
 
     painter = new LPainter();
     painter->imp()->output = output;
+    painter->bindProgram();
     painter->bindFramebuffer(output->framebuffer());
 
     output->imp()->global.reset(compositor()->createGlobal<Protocols::Wayland::GOutput>(output));
@@ -318,9 +319,13 @@ void LOutput::LOutputPrivate::backendPaintGL()
     }
 
     /* Let users do their rendering*/
+    painter->bindProgram();
+    painter->bindFramebuffer(&fb);
     stateFlags.add(IsInPaintGL);
     output->paintGL();
     stateFlags.remove(IsInPaintGL);
+    painter->bindProgram();
+    painter->bindFramebuffer(&fb);
 
     /* Force repaint if there are unreleased buffers */
     if (scanout[0].buffer || scanout[1].buffer)

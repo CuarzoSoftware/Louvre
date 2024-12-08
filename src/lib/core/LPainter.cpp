@@ -845,7 +845,99 @@ void LPainter::clearScreen() noexcept
 
 void LPainter::bindProgram() noexcept
 {
-    glUseProgram(imp()->programObject);
+    eglBindAPI(EGL_OPENGL_ES_API);
+    glUseProgram(imp()->currentProgram);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindAttribLocation(imp()->currentProgram, 0, "vertexPosition");
+    glUseProgram(imp()->currentProgram);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, imp()->square);
+    glEnableVertexAttribArray(0);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f);
+    glEnable(GL_BLEND);
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_SCISSOR_TEST);
+    glDisable(GL_STENCIL_TEST);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_CLAMP);
+    glDisable(GL_FRAMEBUFFER_SRGB);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_LIGHTING);
+    glDisable(GL_DITHER);
+    glDisable(GL_POLYGON_OFFSET_FILL);
+    glDisable(GL_POLYGON_OFFSET_LINE);
+    glDisable(GL_POLYGON_OFFSET_POINT);
+    glDisable(GL_POLYGON_SMOOTH);
+    glDisable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+    glDisable(GL_RASTERIZER_DISCARD);
+    glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+    glDisable(GL_SAMPLE_ALPHA_TO_ONE);
+    glDisable(GL_SAMPLE_COVERAGE);
+    glDisable(GL_SAMPLE_SHADING);
+    glDisable(GL_SAMPLE_MASK);
+    glDisable(GL_PROGRAM_POINT_SIZE);
+    glDisable(GL_POINT_SMOOTH);
+    glDisable(GL_LINE_SMOOTH);
+    glDisable(GL_POLYGON_SMOOTH);
+    glDisable(GL_POLYGON_STIPPLE);
+    glDisable(GL_COLOR_LOGIC_OP);
+    glDisable(GL_INDEX_LOGIC_OP);
+    glDisable(GL_COLOR_TABLE);
+    glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
+    glDisable(GL_MULTISAMPLE);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glCullFace(GL_BACK);
+    glLineWidth(1);
+    glHint(GL_GENERATE_MIPMAP_HINT, GL_FASTEST);
+    glPolygonOffset(0, 0);
+    glDepthFunc(GL_LESS);
+    glDepthRangef(0, 1);
+    glStencilMask(1);
+    glDepthMask(GL_FALSE);
+    glFrontFace(GL_CCW);
+    glBlendColor(0, 0, 0, 0);
+    glBlendEquation(GL_FUNC_ADD);
+
+    glUniform2f(imp()->currentUniforms->texSize,
+                imp()->currentState->texSize.w(),
+                imp()->currentState->texSize.h());
+
+    glUniform4f(imp()->currentUniforms->srcRect,
+                imp()->currentState->srcRect.x(),
+                imp()->currentState->srcRect.y(),
+                imp()->currentState->srcRect.w(),
+                imp()->currentState->srcRect.h());
+
+    glUniform1i(imp()->currentUniforms->activeTexture,
+                imp()->currentState->activeTexture);
+
+    glUniform1i(imp()->currentUniforms->colorFactorEnabled,
+                imp()->currentState->colorFactorEnabled);
+
+    glUniform1f(imp()->currentUniforms->alpha,
+                imp()->currentState->alpha);
+
+    glUniform1i(imp()->currentUniforms->mode,
+                imp()->currentState->mode);
+
+    glUniform3f(imp()->currentUniforms->color,
+                imp()->currentState->color.r,
+                imp()->currentState->color.g,
+                imp()->currentState->color.b);
+
+    glUniform1i(imp()->currentUniforms->texColorEnabled,
+                imp()->currentState->texColorEnabled);
+
+    glUniform1i(imp()->currentUniforms->premultipliedAlpha,
+                imp()->currentState->premultipliedAlpha);
+
+    glUniform1i(imp()->currentUniforms->has90deg,
+                imp()->currentState->has90deg);
+
+    imp()->updateBlendingParams();
 }
 
 void LPainter::setBlendFunc(const LBlendFunc &blendFunc) const noexcept
