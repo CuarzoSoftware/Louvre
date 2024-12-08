@@ -61,6 +61,7 @@ public:
     static UInt32                           outputGetFramebufferID(LOutput *output);
     static Int32                            outputGetCurrentBufferIndex(LOutput *output);
     static UInt32                           outputGetBuffersCount(LOutput *output);
+    static UInt32                           outputGetCurrentBufferAge(LOutput *output);
     static LTexture *                       outputGetBuffer(LOutput *output, UInt32 bufferIndex);
     static void                             outputDestroyBuffers(std::vector<LTexture*> &textures);
 

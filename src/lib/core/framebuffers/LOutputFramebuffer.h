@@ -33,6 +33,7 @@ public:
     const LSize &sizeB() const noexcept override;
     const LRect &rect() const noexcept override;
     GLuint id() const noexcept override;
+    Int32 bufferAge() const noexcept override;
     Int32 buffersCount() const noexcept override;
     Int32 currentBufferIndex() const noexcept override;
     LTexture *texture(Int32 index = 0) const noexcept override;

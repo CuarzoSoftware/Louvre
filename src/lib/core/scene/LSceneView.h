@@ -8,6 +8,8 @@
 #include <LView.h>
 #include <LCursor.h>
 
+#define LSCENE_MAX_AGE 5
+
 /**
  * @brief View for rendering other views
  *
@@ -203,7 +205,8 @@ protected:
     class ThreadData : public LObject
     {
     public:
-        std::list<LRegion*>prevDamageList;
+        LRegion damageRing[LSCENE_MAX_AGE];
+        Int32 damageRingIndex { 0 };
         LRegion newDamage;
         LRegion manuallyAddedDamage;
         LRegion prevExternalExclude;

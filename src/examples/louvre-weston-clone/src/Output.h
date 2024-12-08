@@ -7,6 +7,8 @@
 
 using namespace Louvre;
 
+#define LOUVRE_WESTON_MAX_AGE 5
+
 class Output final : public LOutput
 {
 public:
@@ -27,8 +29,8 @@ public:
     void paintGL() noexcept override;
 
     // List of new damage calculated in prev frames
-    bool damageListCreated = false;
-    std::list<LRegion*>prevDamageList;
+    LRegion damageRing[LOUVRE_WESTON_MAX_AGE];
+    Int32 damageRingIndex { 0 };
 
     // New damage calculated on this frame
     LRegion newDamage;

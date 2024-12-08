@@ -123,15 +123,6 @@ void Output::paintGL() noexcept
     p->setAlpha(1.f);
     p->enableCustomTextureColor(false);
 
-    // Creates an LRegion for each output framebuffer
-    if (!damageListCreated)
-    {
-        for (UInt32 i = 0; i < buffersCount() - 1; i++)
-            prevDamageList.push_back(new LRegion());
-
-        damageListCreated = true;
-    }
-
     // Damage the entire output if rect changed
     if (needsFullRepaint() || lastRect != rect())
     {
@@ -276,21 +267,36 @@ void Output::paintGL() noexcept
 
     glDisable(GL_BLEND);
 
-    // Save new damage for next frame and add old damage to current damage
-    if (buffersCount() > 1)
+    Int32 age = currentBufferAge();
+
+    if (age > LOUVRE_WESTON_MAX_AGE)
+        age = 0;
+
+    if (age == 0)
     {
-        LRegion oldDamage = *prevDamageList.front();
-
-        for (std::list<LRegion*>::iterator it = std::next(prevDamageList.begin()); it != prevDamageList.end(); it++)
-            oldDamage.addRegion(*(*it));
-
-        LRegion *front = prevDamageList.front();
-        prevDamageList.pop_front();
-        prevDamageList.push_back(front);
-
-        *front = newDamage;
-        newDamage.addRegion(oldDamage);
+        newDamage.addRect(rect());
+        damageRing[damageRingIndex] = newDamage;
     }
+    else
+    {
+        damageRing[damageRingIndex] = newDamage;
+
+        for (Int32 i = 1; i < age; i++)
+        {
+            Int32 damageIndex = damageRingIndex - i;
+
+            if (damageIndex < 0)
+                damageIndex = LOUVRE_WESTON_MAX_AGE + damageIndex;
+
+            newDamage.addRegion(damageRing[damageIndex]);
+        }
+    }
+
+    if (damageRingIndex == LOUVRE_WESTON_MAX_AGE - 1)
+        damageRingIndex = 0;
+    else
+        damageRingIndex++;
+
 
     bool drawClock = false;
     if (c->clock && c->clock->texture)

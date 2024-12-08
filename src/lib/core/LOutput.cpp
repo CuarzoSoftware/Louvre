@@ -197,6 +197,14 @@ void LOutput::setTransform(LTransform transform) noexcept
         head->transform(transform);
 }
 
+UInt32 LOutput::currentBufferAge() const noexcept
+{
+    if (needsFullRepaint())
+        return 0;
+
+    return compositor()->imp()->graphicBackend->outputGetCurrentBufferAge((LOutput*)this);
+}
+
 const std::vector<LOutputMode *> &LOutput::modes() const noexcept
 {
     return *compositor()->imp()->graphicBackend->outputGetModes((LOutput*)this);

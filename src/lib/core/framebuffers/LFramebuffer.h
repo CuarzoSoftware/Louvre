@@ -71,6 +71,11 @@ public:
     virtual GLuint id() const  = 0;
 
     /**
+     * @brief Gets the current buffer age.
+     */
+    virtual Int32 bufferAge() const  { return 1; };
+
+    /**
      * @brief Gets the number of internal framebuffers.
      *
      * This method is used in implementations like LOutputFramebuffer, which may contain more than one

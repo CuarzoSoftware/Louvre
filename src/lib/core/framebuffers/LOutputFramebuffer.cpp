@@ -27,6 +27,11 @@ GLuint LOutputFramebuffer::id() const noexcept
     return compositor()->imp()->graphicBackend->outputGetFramebufferID(m_output);
 }
 
+Int32 LOutputFramebuffer::bufferAge() const noexcept
+{
+    return m_output->currentBufferAge();
+}
+
 Int32 LOutputFramebuffer::buffersCount() const noexcept
 {
     return m_output->buffersCount();

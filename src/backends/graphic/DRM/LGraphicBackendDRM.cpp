@@ -865,6 +865,12 @@ UInt32 LGraphicBackend::outputGetBuffersCount(LOutput *output)
     return srmConnectorGetBuffersCount(bkndOutput->conn);
 }
 
+UInt32 LGraphicBackend::outputGetCurrentBufferAge(LOutput *output)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    return srmConnectorGetCurrentBufferAge(bkndOutput->conn);
+}
+
 LTexture *LGraphicBackend::outputGetBuffer(LOutput *output, UInt32 bufferIndex)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
@@ -1182,6 +1188,7 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.outputGetFramebufferID          = &LGraphicBackend::outputGetFramebufferID;
     API.outputGetCurrentBufferIndex     = &LGraphicBackend::outputGetCurrentBufferIndex;
     API.outputGetBuffersCount           = &LGraphicBackend::outputGetBuffersCount;
+    API.outputGetCurrentBufferAge       = &LGraphicBackend::outputGetCurrentBufferAge;
     API.outputGetBuffer                 = &LGraphicBackend::outputGetBuffer;
 
     /* OUTPUT GAMMA */

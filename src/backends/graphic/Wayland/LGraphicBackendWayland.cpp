@@ -8,11 +8,13 @@
 
 #include <LOutputMode.h>
 #include <SRMFormat.h>
+#include <SRMEGL.h>
 #include <LCursor.h>
 #include <LGPU.h>
 #include <LTime.h>
 #include <LLog.h>
 
+#include <EGL/eglext.h>
 #include <sys/mman.h>
 #include <cstring>
 #include <fcntl.h>
@@ -94,6 +96,8 @@ public:
     inline static EGLDisplay eglDisplay { EGL_NO_DISPLAY };
     inline static EGLContext eglContext { EGL_NO_CONTEXT };
     inline static EGLContext windowEGLContext { EGL_NO_CONTEXT };
+    inline static PFNEGLSWAPBUFFERSWITHDAMAGEKHRPROC eglSwapBuffersWithDamageKHR { nullptr };
+    inline static LRegion damage;
     inline static EGLConfig eglConfig { EGL_NO_CONFIG_KHR };
     inline static EGLSurface eglSurface { EGL_NO_SURFACE };
     inline static std::thread renderThread;
@@ -279,6 +283,7 @@ public:
     static bool initEGL()
     {
         EGLint major, minor, n;
+        const char *extensions;
         eglDisplay = eglGetDisplay(display);
 
         if (eglDisplay == EGL_NO_DISPLAY)
@@ -312,6 +317,11 @@ public:
             LLog::fatal("[%s] Failed to get EGL context.", BKND_NAME);
             goto errTerminate;
         }
+
+        extensions = eglQueryString(eglDisplay, EGL_EXTENSIONS);
+
+        if (extensions && srmEGLHasExtension(extensions, "EGL_KHR_swap_buffers_with_damage"))
+            eglSwapBuffersWithDamageKHR = (PFNEGLSWAPBUFFERSWITHDAMAGEKHRPROC)eglGetProcAddress("eglSwapBuffersWithDamageKHR");
 
         return true;
 
@@ -522,7 +532,6 @@ public:
                 eglSwapInterval(eglDisplay, vSync);
 
                 repaint = false;
-                output->imp()->stateFlags.add(LOutput::LOutputPrivate::NeedsFullRepaint);
 
                 if (wl_surface_get_version(surface) >= 3)
                     wl_surface_set_buffer_scale(surface, pendingBufferScale);
@@ -542,9 +551,37 @@ public:
                 }
 
                 output->imp()->backendPaintGL();
-
                 wl_surface_set_opaque_region(surface, opaqueRegion);
-                eglSwapBuffers(eglDisplay, eglSurface);
+
+                if (damage.empty())
+                    wl_surface_commit(surface);
+                else
+                {
+                    if (eglSwapBuffersWithDamageKHR)
+                    {
+                        Int32 n;
+                        const LBox *boxes { damage.boxes(&n) };
+                        GLint *rects = new GLint[n * 4];
+                        GLint *rectsIt = rects;
+                        for (Int32 i = 0; i < n; i++)
+                        {
+                            *rectsIt = boxes[i].x1;
+                            rectsIt++;
+                            *rectsIt = shared.bufferSize.h() - boxes[i].y2;
+                            rectsIt++;
+                            *rectsIt = boxes[i].x2 - boxes[i].x1;
+                            rectsIt++;
+                            *rectsIt = boxes[i].y2 - boxes[i].y1;
+                            rectsIt++;
+                        }
+                        eglSwapBuffersWithDamageKHR(eglDisplay, eglSurface, rects, n);
+                        delete []rects;
+                    }
+                    else
+                        eglSwapBuffers(eglDisplay, eglSurface);
+
+                    damage.clear();
+                }
 
                 if (!vSync && refreshRateLimit >= 0)
                 {
@@ -687,7 +724,6 @@ public:
 
         if (pixels)
         {
-
             glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, stride / pixelSize);
             glTexImage2D(GL_TEXTURE_2D,
                          0,
@@ -946,12 +982,12 @@ public:
 
     static bool outputHasBufferDamageSupport(LOutput */*output*/)
     {
-        return false;
+        return true;
     }
 
-    static void outputSetBufferDamage(LOutput */*output*/, LRegion &/*region*/)
+    static void outputSetBufferDamage(LOutput */*output*/, LRegion &region)
     {
-        /* Disabled */
+        damage = region;
     }
 
     /* OUTPUT PROPS */
@@ -1016,9 +1052,17 @@ public:
         return 0;
     }
 
+    static UInt32 outputGetCurrentBufferAge(LOutput */*output*/)
+    {
+        GLint age;
+        if (eglQuerySurface(eglDisplay, eglSurface, EGL_BUFFER_AGE_KHR, &age) == EGL_TRUE)
+            return age;
+        return 0;
+    }
+
     static UInt32 outputGetBuffersCount(LOutput */*output*/)
     {
-        /* Damage tracking is disabled so we fake 1 */
+        /* Variable, so fake 1 */
         return 1;
     }
 
@@ -1339,6 +1383,7 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.outputGetFramebufferID          = &LGraphicBackend::outputGetFramebufferID;
     API.outputGetCurrentBufferIndex     = &LGraphicBackend::outputGetCurrentBufferIndex;
     API.outputGetBuffersCount           = &LGraphicBackend::outputGetBuffersCount;
+    API.outputGetCurrentBufferAge       = &LGraphicBackend::outputGetCurrentBufferAge;
     API.outputGetBuffer                 = &LGraphicBackend::outputGetBuffer;
 
     /* OUTPUT GAMMA */

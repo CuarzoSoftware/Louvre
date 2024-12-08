@@ -75,9 +75,6 @@ void LSceneView::render(const LRegion *exclude) noexcept
     // If painter was not cached
     if (!ctd.p)
     {
-        for (Int32 i = 0; i < m_fb->buffersCount() - 1; i++)
-            ctd.prevDamageList.push_back(new LRegion());
-
         ctd.p = painter;
         ctd.o = painter->imp()->output;
     }
@@ -112,24 +109,35 @@ void LSceneView::render(const LRegion *exclude) noexcept
     for (std::list<LView*>::const_reverse_iterator it = children().crbegin(); it != children().crend(); it++)
         calcNewDamage(*it);
 
-    // Save new damage for next frame and add old damage to current damage
-    if (m_fb->buffersCount() > 1)
+    Int32 age { m_fb->bufferAge() };
+
+    if (age > LSCENE_MAX_AGE)
+        age = 0;
+
+    if (age == 0)
     {
-        // Sum damage generated in other frames into this region
-
-        // This list contains NUM_FB - 1 regions, so if triple buffering then 2 regions (the prev ones to this current frame)
-        for (std::list<LRegion*>::iterator it = std::next(ctd.prevDamageList.begin()); it != ctd.prevDamageList.end(); it++)
-            (*ctd.prevDamageList.front()).addRegion(*(*it));
-
-        pixman_region32_t tmp = ctd.prevDamageList.front()->m_region;
-        ctd.prevDamageList.front()->m_region = ctd.newDamage.m_region;
-        ctd.newDamage.m_region = tmp;
-        ctd.newDamage.addRegion(*ctd.prevDamageList.front());
-
-        LRegion *front = ctd.prevDamageList.front();
-        ctd.prevDamageList.pop_front();
-        ctd.prevDamageList.push_back(front);
+        ctd.newDamage.addRect(m_fb->rect());
+        ctd.damageRing[ctd.damageRingIndex] = ctd.newDamage;
     }
+    else
+    {
+        ctd.damageRing[ctd.damageRingIndex] = ctd.newDamage;
+
+        for (Int32 i = 1; i < age; i++)
+        {
+            Int32 damageIndex = ctd.damageRingIndex - i;
+
+            if (damageIndex < 0)
+                damageIndex = LSCENE_MAX_AGE + damageIndex;
+
+            ctd.newDamage.addRegion(ctd.damageRing[damageIndex]);
+        }
+    }
+
+    if (ctd.damageRingIndex == LSCENE_MAX_AGE - 1)
+        ctd.damageRingIndex = 0;
+    else
+        ctd.damageRingIndex++;
 
     glDisable(GL_BLEND);
 

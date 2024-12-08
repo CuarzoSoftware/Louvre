@@ -382,6 +382,15 @@ public:
     void setTransform(LTransform transform) noexcept;
 
     /**
+     * @brief Retrieves the age of the current buffer.
+     *
+     * This method returns the age of the buffer as specified in the
+     * [EGL_EXT_buffer_age](https://registry.khronos.org/EGL/extensions/EXT/EGL_EXT_buffer_age.txt)
+     * extension specification.
+     */
+    UInt32 currentBufferAge() const noexcept;
+
+    /**
      * @brief Returns the index of the current buffer.
      *
      * Compositors commonly employ double or triple buffering. This involves rendering to one buffer while displaying another, prventing visual artifacts like tearing.
@@ -389,6 +398,8 @@ public:
      * @image html https://lh3.googleusercontent.com/2ousoWwxnVGvFX5bT6ual2G8UUbhUOJ21mK1UQmthPNM-7XfracRlL5GCYBQTzt4Os28eKO_FzC6BS-rasiNngvTMI9lEdET0ItKrI2wK_9IwSDaF-hNGkTMI6gVlL0m4ENDJYbckw
      *
      * @return The current buffer index. Alternates between [0, 1] or [0, 1, 2] depending on the graphic backend configuration.
+     *
+     * @warning Some backends do not provide this information and will always return 0. For damage tracking, use currentBufferAge() instead.
      */
     Int32 currentBuffer() const noexcept;
 
@@ -396,6 +407,8 @@ public:
      * @brief Returns the count of available buffers.
      *
      * This method returns the number of buffers used by the output. It can be 2 or 3 depending on the graphic backend configuration.
+     *
+     * @warning Some backends do not provide this information and will always return 0. For damage tracking, use currentBufferAge() instead.
      */
     UInt32 buffersCount() const noexcept;
 
