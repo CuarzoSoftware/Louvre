@@ -214,6 +214,29 @@ bool LTexture::updateRect(const LRect &rect, UInt32 stride, const void *buffer) 
     return false;
 }
 
+bool LTexture::writeBegin() noexcept
+{
+    if (initialized() && m_sourceType != Framebuffer)
+        return compositor()->imp()->graphicBackend->textureWriteBegin(this);
+
+    return false;
+}
+
+bool LTexture::writeUpdate(const LRect &rect, UInt32 stride, const void *buffer) noexcept
+{
+    return compositor()->imp()->graphicBackend->textureWriteUpdate(this, stride, rect, buffer);
+}
+
+bool LTexture::writeEnd() noexcept
+{
+    const bool ret = compositor()->imp()->graphicBackend->textureWriteEnd(this);
+
+    if (ret)
+        m_serial++;
+
+    return ret;
+}
+
 LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualityScaling) const noexcept
 {
     if (!initialized())

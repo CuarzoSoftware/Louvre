@@ -670,6 +670,24 @@ bool LGraphicBackend::textureUpdateRect(LTexture *texture, UInt32 stride, const 
     return srmBufferWrite(bkndBuffer, stride, dst.x(), dst.y(), dst.w(), dst.h(), pixels);
 }
 
+bool LGraphicBackend::textureWriteBegin(LTexture *texture)
+{
+    SRMBuffer *bkndBuffer = (SRMBuffer*)texture->m_graphicBackendData;
+    return srmBufferWrite2Begin(bkndBuffer);
+}
+
+bool LGraphicBackend::textureWriteUpdate(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels)
+{
+    SRMBuffer *bkndBuffer = (SRMBuffer*)texture->m_graphicBackendData;
+    return srmBufferWrite2Update(bkndBuffer, stride, dst.x(), dst.y(), dst.w(), dst.h(), pixels);
+}
+
+bool LGraphicBackend::textureWriteEnd(LTexture *texture)
+{
+    SRMBuffer *bkndBuffer = (SRMBuffer*)texture->m_graphicBackendData;
+    return srmBufferWrite2End(bkndBuffer);
+}
+
 UInt32 LGraphicBackend::textureGetID(LOutput *output, LTexture *texture)
 {
     SRMDevice *bkndRendererDevice;
@@ -1133,6 +1151,9 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.textureCreateFromDMA            = &LGraphicBackend::textureCreateFromDMA;
     API.textureCreateFromGL             = &LGraphicBackend::textureCreateFromGL;
     API.textureUpdateRect               = &LGraphicBackend::textureUpdateRect;
+    API.textureWriteBegin               = &LGraphicBackend::textureWriteBegin;
+    API.textureWriteUpdate              = &LGraphicBackend::textureWriteUpdate;
+    API.textureWriteEnd                 = &LGraphicBackend::textureWriteEnd;
     API.textureGetID                    = &LGraphicBackend::textureGetID;
     API.textureGetTarget                = &LGraphicBackend::textureGetTarget;
     API.textureSetFence                 = &LGraphicBackend::textureSetFence;

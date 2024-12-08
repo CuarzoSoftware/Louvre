@@ -322,22 +322,26 @@ bool LSurface::LSurfacePrivate::bufferToTexture() noexcept
 
                     onlyPending.transform(sizeB, current.transform);
 
-                    UInt32 pixelSize = LTexture::formatBytesPerPixel(format);
-
                     Int32 n;
                     const LBox *boxes = onlyPending.boxes(&n);
-                    LRect rect;
-                    for (Int32 i = 0; i < n; i++)
-                    {
-                        rect.setX(boxes->x1);
-                        rect.setY(boxes->y1);
-                        rect.setW(boxes->x2 - boxes->x1);
-                        rect.setH(boxes->y2 - boxes->y1);
-                        texture->updateRect(rect,
-                                            stride,
-                                            &pixels[rect.x()*pixelSize + rect.y()*stride]);
 
-                        boxes++;
+                    if (n > 0 && texture->writeBegin())
+                    {
+                        const UInt32 pixelSize { LTexture::formatBytesPerPixel(format) };
+                        LRect rect;
+                        for (Int32 i = 0; i < n; i++)
+                        {
+                            rect.setX(boxes->x1);
+                            rect.setY(boxes->y1);
+                            rect.setW(boxes->x2 - boxes->x1);
+                            rect.setH(boxes->y2 - boxes->y1);
+                            texture->writeUpdate(rect,
+                                                stride,
+                                                &pixels[rect.x()*pixelSize + rect.y()*stride]);
+
+                            boxes++;
+                        }
+                        texture->writeEnd();
                     }
 
                     onlyPending.transform(sizeB, Louvre::requiredTransform(current.transform, LTransform::Normal));
@@ -373,22 +377,26 @@ bool LSurface::LSurfacePrivate::bufferToTexture() noexcept
                     currentDamageB.addRegion(onlyPending);
                     onlyPending.transform(sizeB, current.transform);
 
-                    UInt32 pixelSize = LTexture::formatBytesPerPixel(format);
-
                     Int32 n;
                     const LBox *boxes = onlyPending.boxes(&n);
-                    LRect rect;
-                    for (Int32 i = 0; i < n; i++)
-                    {
-                        rect.setX(boxes->x1);
-                        rect.setY(boxes->y1);
-                        rect.setW(boxes->x2 - boxes->x1);
-                        rect.setH(boxes->y2 - boxes->y1);
-                        texture->updateRect(rect,
-                                            stride,
-                                            &pixels[rect.x()*pixelSize + rect.y()*stride]);
 
-                        boxes++;
+                    if (n > 0 && texture->writeBegin())
+                    {
+                        const UInt32 pixelSize { LTexture::formatBytesPerPixel(format) };
+                        LRect rect;
+                        for (Int32 i = 0; i < n; i++)
+                        {
+                            rect.setX(boxes->x1);
+                            rect.setY(boxes->y1);
+                            rect.setW(boxes->x2 - boxes->x1);
+                            rect.setH(boxes->y2 - boxes->y1);
+                            texture->writeUpdate(rect,
+                                                stride,
+                                                &pixels[rect.x()*pixelSize + rect.y()*stride]);
+
+                            boxes++;
+                        }
+                        texture->writeEnd();
                     }
 
                     LRegion::multiply(&currentDamage, &currentDamageB, 1.f/Float32(current.bufferScale));

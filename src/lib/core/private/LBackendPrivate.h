@@ -29,6 +29,9 @@ namespace Louvre
         bool                                (*textureCreateFromDMA)(LTexture *texture, const LDMAPlanes *planes);
         bool                                (*textureCreateFromGL)(LTexture *texture, GLuint id, GLenum target, UInt32 format, const LSize &size, bool transferOwnership);
         bool                                (*textureUpdateRect)(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels);
+        bool                                (*textureWriteBegin)(LTexture *texture);
+        bool                                (*textureWriteUpdate)(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels);
+        bool                                (*textureWriteEnd)(LTexture *texture);
         UInt32                              (*textureGetID)(LOutput *output, LTexture *texture);
         GLenum                              (*textureGetTarget)(LTexture *texture);
         void                                (*textureSetFence)(LTexture *texture);

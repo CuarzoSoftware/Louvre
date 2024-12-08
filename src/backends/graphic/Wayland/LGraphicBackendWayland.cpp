@@ -828,7 +828,40 @@ public:
                         cpuTexture->glFmt->glFormat, cpuTexture->glFmt->glType, pixels);
 
         glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-        glFlush();
+        glFinish();
+        return true;
+    }
+
+    static bool textureWriteBegin(LTexture *texture)
+    {
+        if (texture->sourceType() != LTexture::CPU)
+            return false;
+
+        CPUTexture *cpuTexture = (CPUTexture*)texture->m_graphicBackendData;
+
+        if (!cpuTexture)
+            return false;
+
+        return true;
+    }
+
+    static bool textureWriteUpdate(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels)
+    {
+        CPUTexture *cpuTexture = (CPUTexture*)texture->m_graphicBackendData;
+        glBindTexture(GL_TEXTURE_2D, cpuTexture->texture.id);
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, stride / cpuTexture->pixelSize);
+        glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+        glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+
+        glTexSubImage2D(GL_TEXTURE_2D, 0, dst.x(), dst.y(), dst.w(), dst.h(),
+                        cpuTexture->glFmt->glFormat, cpuTexture->glFmt->glType, pixels);
+        return true;
+    }
+
+    static bool textureWriteEnd(LTexture */*texture*/)
+    {
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+        glFinish();
         return true;
     }
 
@@ -1275,6 +1308,9 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.textureCreateFromDMA            = &LGraphicBackend::textureCreateFromDMA;
     API.textureCreateFromGL             = &LGraphicBackend::textureCreateFromGL;
     API.textureUpdateRect               = &LGraphicBackend::textureUpdateRect;
+    API.textureWriteBegin               = &LGraphicBackend::textureWriteBegin;
+    API.textureWriteUpdate              = &LGraphicBackend::textureWriteUpdate;
+    API.textureWriteEnd                 = &LGraphicBackend::textureWriteEnd;
     API.textureGetID                    = &LGraphicBackend::textureGetID;
     API.textureGetTarget                = &LGraphicBackend::textureGetTarget;
     API.textureSetFence                 = &LGraphicBackend::textureSetFence;

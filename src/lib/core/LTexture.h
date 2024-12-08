@@ -197,6 +197,44 @@ namespace Louvre
         bool updateRect(const LRect &rect, UInt32 stride, const void *buffer) noexcept;
 
         /**
+         * @brief Prepares the texture for writing.
+         *
+         * The writeBegin(), writeUpdate() and writeEnd() methods provide the same functionality as updateRect(),
+         * but they allow for multiple writes without requiring immediate internal syncing,
+         * yielding better performance.
+         *
+         * If `true` is returned, calling any method except for writeUpdate()
+         * or writeEnd() could cause a deadlock.
+         *
+         * If `false` is returned, it means it failed, and neither writeUpdate()
+         * nor writeEnd() should be called.
+         *
+         * @return `true` on success, or `false` on failure.
+         */
+        bool writeBegin() noexcept;
+
+        /**
+         * @brief Writes pixel data to the texture.
+         *
+         * This method can only be called if writeBegin() was previously called and returned `true`.
+         * The parameters are the same as those defined in updateRect().
+         *
+         * @return `true` on success, or `false` on failure.
+         */
+        bool writeUpdate(const LRect &rect, UInt32 stride, const void *buffer) noexcept;
+
+        /**
+         * @brief Finalizes the write operation to the texture.
+         *
+         * This method should be called after completing all write operations initiated by writeBegin().
+         * It ensures that any pending writes are completed and the texture is in a consistent state before
+         * using it.
+         *
+         * @return `true` on success, or `false` if writeBegin() wasn't called or failed.
+         */
+        bool writeEnd() noexcept;
+
+        /**
          * @brief Creates a copy of the texture.
          *
          * @note The resulting texture is independent of the original and must be freed manually when no longer used.
