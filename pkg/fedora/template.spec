@@ -7,7 +7,7 @@ Version:        %{basever}%{?origrel:_%{origrel}}
 Release:        1%{?dist}
 Summary:        C++ library for building Wayland compositors
 
-License:        MIT
+License:        LGPLv2.1
 URL:            https://github.com/CuarzoSoftware/Louvre
 
 BuildRequires:  tar

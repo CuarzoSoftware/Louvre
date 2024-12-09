@@ -1,3 +1,30 @@
+Louvre (2.13.0-1)
+
+  # License
+
+  * Updated license to LGPLv2.1.
+
+  # API Additions
+
+  * LTexture::write(Begin/Update/End): An alternative to LTexture::updateRect() that allows multiple texture updates without issuing an immediate internal synchronization.
+  * LOutput::currentBufferAge: Retrieves the age of the current buffer according to the [EGL_EXT_buffer_age](https://registry.khronos.org/EGL/extensions/EXT/EGL_EXT_buffer_age.txt) extension specification.
+
+  # Wayland Backend
+
+  * Added damage tracking support.
+
+  # Internal Changes
+
+  * LPainter::bindProgram() now fully synchronizes all uniforms and GL state, instead of just binding its GL program. This resolves issues encountered when integrating external shaders.  
+  * Replaced LScene index-based damage tracking with buffer age.
+
+  # Dependencies
+
+  * Updated SRM dependency to >= 0.11.0.
+
+ -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com>  Sun, 08 Dec 2024 20:47:47 -0300
+
+
 Louvre (2.12.0-1)
 
   # New Protocols

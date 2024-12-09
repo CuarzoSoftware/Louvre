@@ -1,4 +1,4 @@
-%global basever 2.12.0
+%global basever 2.13.0
 %global origrel 1
 %global somajor 2
 
@@ -7,7 +7,7 @@ Version:        %{basever}%{?origrel:_%{origrel}}
 Release:        1%{?dist}
 Summary:        C++ library for building Wayland compositors
 
-License:        MIT
+License:        LGPLv2.1
 URL:            https://github.com/CuarzoSoftware/Louvre
 
 BuildRequires:  tar
@@ -90,6 +90,11 @@ pushd repo/src
 %{_libdir}/pkgconfig/Louvre.pc
 
 %changelog
-* Mon Nov 11 2024 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
-- Wlr Output Management: Allows apps to configure and arrange displays. Check the documentation for details.
-- Updated SRM dependency to >= 0.10.0.
+* Sun Dec 08 2024 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
+- Updated license to LGPLv2.1.
+- LTexture::write(Begin/Update/End): An alternative to LTexture::updateRect() that allows multiple texture updates without issuing an immediate internal synchronization.
+- LOutput::currentBufferAge: Retrieves the age of the current buffer according to the [EGL_EXT_buffer_age](https://registry.khronos.org/EGL/extensions/EXT/EGL_EXT_buffer_age.txt) extension specification.
+- Added damage tracking support.
+- LPainter::bindProgram() now fully synchronizes all uniforms and GL state, instead of just binding its GL program. This resolves issues encountered when integrating external shaders.  
+- Replaced LScene index-based damage tracking with buffer age.
+- Updated SRM dependency to >= 0.11.0.
