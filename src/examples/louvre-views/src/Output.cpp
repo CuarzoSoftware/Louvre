@@ -743,8 +743,3 @@ void Output::setGammaRequest(LClient *client, const LGammaTable *gamma)
     L_UNUSED(client);
     setGamma(gamma);
 }
-
-bool Output::repaintFilter()
-{
-    return !seat()->keyboard()->isKeyCodePressed(KEY_ENTER);
-}

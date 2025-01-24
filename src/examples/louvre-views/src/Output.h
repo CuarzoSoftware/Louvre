@@ -28,7 +28,6 @@ public:
     void paintGL() override;
     void uninitializeGL() override;
     void setGammaRequest(LClient *client, const LGammaTable *gamma) override;
-    bool repaintFilter() override;
 
     void setWorkspace(Workspace *ws, UInt32 animMs, Float64 curve = 2.0, Float64 start = 0.0);
     void updateWorkspacesPos();
