@@ -689,11 +689,13 @@ public:
      * Calling this method unlocks the output rendering thread, triggering a subsequent paintGL() event.\n
      * Regardless of the number of repaint() calls within the same frame, paintGL() is invoked only once.\n
      * To unlock the rendering thread again, repaint() must be called within or after a paintGL() event.
+     *
+     * @note This method is ignored if repaintFilter() returns `false`.
      */
     void repaint() noexcept;
 
     /**
-     * @brief Indicates that the entire output needs repainting
+     * @brief Indicates that the entire output needs repainting.
      *
      * This hint from the graphic backend suggests that the entire output should be repainted,
      * possibly because it doesn't support damage tracking or for other reasons.
@@ -1015,6 +1017,22 @@ public:
      * @snippet LOutputDefault.cpp availableGeometryChanged
      */
     virtual void availableGeometryChanged();
+
+    /**
+     * @brief Selectively disables repaint calls.
+     *
+     * This method can be used to intercept repaint() calls and keep the last rendered frame.
+     * If `false` is returned, the repaint() call is ignored, preventing paintGL() from being triggered.
+     *
+     * #### Default Implementation
+     *
+     * The default implementation accepts all repaint() calls.
+     *
+     * @snippet LOutputDefault.cpp repaintFilter
+     *
+     * @return `true` if the repaint should proceed, `false` otherwise.
+     */
+    virtual bool repaintFilter();
 
 ///@}
 

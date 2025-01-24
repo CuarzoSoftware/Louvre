@@ -230,8 +230,16 @@ void LOutput::setMode(const LOutputMode *mode) noexcept
         if (o->threadId() == std::this_thread::get_id())
             return;
 
+    imp()->state = ChangingMode;
     imp()->callLockACK.store(false);
     imp()->callLock.store(false);
+
+    if (imp()->stateFlags.check(LOutputPrivate::RepaintLocked))
+    {
+        imp()->stateFlags.remove(LOutputPrivate::RepaintLocked);
+        imp()->repaintFilterMutex.unlock();
+    }
+
     compositor()->imp()->unlock();
 
     Int32 waitLimit = 0;
@@ -243,7 +251,6 @@ void LOutput::setMode(const LOutputMode *mode) noexcept
     }
 
     compositor()->imp()->lock();
-    imp()->state = ChangingMode;
     compositor()->imp()->graphicBackend->outputSetMode(this, (LOutputMode*)mode);
     imp()->state = Initialized;
     imp()->callLock.store(true);
@@ -344,8 +351,8 @@ Float32 LOutput::scale() const noexcept
 
 void LOutput::repaint() noexcept
 {
-    if (compositor()->imp()->graphicBackend->outputRepaint(this))
-        imp()->stateFlags.add(LOutputPrivate::PendingRepaint);
+    imp()->stateFlags.add(LOutputPrivate::PendingRepaint);
+    compositor()->imp()->unlockPoll();
 }
 
 Int32 LOutput::dpi() noexcept

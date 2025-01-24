@@ -29,6 +29,11 @@ LToplevelRole::LToplevelRole(const void *params) noexcept :
         m_supportedStates.add(Suspended);
 }
 
+LToplevelRole::~LToplevelRole()
+{
+    notifyDestruction();
+}
+
 const LToplevelRole::Configuration *LToplevelRole::findConfiguration(UInt32 serial) const noexcept
 {
     for (auto &conf : m_sentConfigurations)

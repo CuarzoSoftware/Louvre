@@ -24,6 +24,15 @@ LOutput::LOutputPrivate::LOutputPrivate(LOutput *output) : fb(output) {}
 // This is called from LCompositor::addOutput()
 bool LOutput::LOutputPrivate::initialize()
 {
+    if (std::this_thread::get_id() != compositor()->mainThreadId())
+        return false;
+
+    if (stateFlags.check(LOutput::LOutputPrivate::RepaintLocked))
+    {
+        stateFlags.remove(LOutputPrivate::RepaintLocked);
+        repaintFilterMutex.unlock();
+    }
+
     output->imp()->state = LOutput::PendingInitialize;
     return compositor()->imp()->graphicBackend->outputInitialize(output);
 }
@@ -254,9 +263,22 @@ void LOutput::LOutputPrivate::backendPaintGL()
         return;
 
     if (callLock)
+    {
         compositor()->imp()->lock();
 
-    stateFlags.remove(PendingRepaint);
+        if (stateFlags.check(RepaintLocked))
+        {
+            compositor()->imp()->unlock();
+            repaintFilterMutex.lock();
+            repaintFilterMutex.unlock();
+            compositor()->imp()->lock();
+            compositor()->imp()->unlockPoll();
+        }
+        else
+            stateFlags.remove(PendingRepaint);
+    }
+    else
+        stateFlags.remove(PendingRepaint);
 
     if (seat()->enabled() && compositor()->imp()->runningAnimations())
     {
@@ -359,6 +381,7 @@ void LOutput::LOutputPrivate::backendPaintGL()
 
     /* Destroy render buffers created from this thread and marked as destroyed by the user */
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
+    compositor()->imp()->handleOutputRepaintRequests();
 
     if (callLock)
         compositor()->imp()->unlock();

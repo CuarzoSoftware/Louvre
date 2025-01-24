@@ -113,6 +113,7 @@ LPRIVATE_CLASS(LCompositor)
 
     bool runningAnimations();
     void processAnimations();
+    void handleOutputRepaintRequests() noexcept;
 
     // Thread specific data
     struct ThreadData

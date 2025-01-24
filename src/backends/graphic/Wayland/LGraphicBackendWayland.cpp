@@ -1054,7 +1054,7 @@ public:
 
     static UInt32 outputGetCurrentBufferAge(LOutput */*output*/)
     {
-        GLint age;
+        GLint age { 0 };
         if (eglQuerySurface(eglDisplay, eglSurface, EGL_BUFFER_AGE_KHR, &age) == EGL_TRUE)
             return age;
         return 0;

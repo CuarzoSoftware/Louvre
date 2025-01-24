@@ -240,3 +240,10 @@ void LOutput::availableGeometryChanged()
     }
 }
 //! [availableGeometryChanged]
+
+//! [repaintFilter]
+bool LOutput::repaintFilter()
+{
+    return true;
+}
+//! [repaintFilter]

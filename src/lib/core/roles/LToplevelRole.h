@@ -269,7 +269,7 @@ public:
      *
      * Invoked after LCompositor::onAnticipatedObjectDestruction().
      */
-    ~LToplevelRole() { notifyDestruction(); };
+    ~LToplevelRole();;
 
     /**
      * @brief Find configuration by serial number.

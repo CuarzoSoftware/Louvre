@@ -1045,3 +1045,52 @@ void LCompositor::LCompositorPrivate::unitDRMLeaseGlobals()
         if (gpu->m_leaseGlobal)
             compositor()->removeGlobal(gpu->m_leaseGlobal);
 }
+
+void LCompositor::LCompositorPrivate::handleOutputRepaintRequests() noexcept
+{
+    bool repaint;
+
+    if (std::this_thread::get_id() != compositor()->mainThreadId())
+    {
+        for (LOutput *o : outputs)
+        {
+            if (!o->imp()->stateFlags.check(LOutput::LOutputPrivate::PendingRepaint) || o->imp()->stateFlags.check(LOutput::LOutputPrivate::RepaintLocked))
+                continue;
+
+            repaint = o->repaintFilter();
+
+            if (repaint)
+                graphicBackend->outputRepaint(o);
+        }
+
+        return;
+    }
+
+
+    for (LOutput *o : outputs)
+    {
+        if (!o->imp()->stateFlags.check(LOutput::LOutputPrivate::PendingRepaint))
+            continue;
+
+        repaint = o->repaintFilter();
+
+        if (repaint)
+        {
+            if (o->imp()->stateFlags.check(LOutput::LOutputPrivate::RepaintLocked))
+            {
+                o->imp()->stateFlags.remove(LOutput::LOutputPrivate::RepaintLocked);
+                o->imp()->repaintFilterMutex.unlock();
+            }
+        }
+        else
+        {
+            if (!o->imp()->stateFlags.check(LOutput::LOutputPrivate::RepaintLocked))
+            {
+                o->imp()->stateFlags.add(LOutput::LOutputPrivate::RepaintLocked);
+                o->imp()->repaintFilterMutex.lock();
+            }
+        }
+
+        graphicBackend->outputRepaint(o);
+    }
+}

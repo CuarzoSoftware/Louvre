@@ -51,6 +51,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
         IsBlittingFramebuffers              = static_cast<UInt32>(1) << 11,
         IsInPaintGL                         = static_cast<UInt32>(1) << 12,
         HasScanoutBuffer                    = static_cast<UInt32>(1) << 13,
+        RepaintLocked                       = static_cast<UInt32>(1) << 14,
     };
 
     LOutputPrivate(LOutput *output);
@@ -113,6 +114,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     std::atomic<bool> callLock;
     std::atomic<bool> callLockACK;
     std::thread::id threadId;
+    std::mutex repaintFilterMutex;
     LGammaTable gammaTable {0};
 
     UInt32 dirtyCursorFBs;
