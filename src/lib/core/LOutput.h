@@ -1019,10 +1019,17 @@ public:
     virtual void availableGeometryChanged();
 
     /**
-     * @brief Selectively disables repaint calls.
+     * @brief Temporarily disables repaint calls for this output.
      *
-     * This method can be used to intercept repaint() calls and keep the last rendered frame.
-     * If `false` is returned, the repaint() call is ignored, preventing paintGL() from being triggered.
+     * An output locks its rendering thread until repaint() is called. However, many objects and implementations
+     * within the compositor may automatically trigger repaints to reflect changes, making it difficult to
+     * prevent unwanted repaints.
+     *
+     * This method intercepts repaint() calls and preserves the last rendered frame. When `false` is returned,
+     * the repaint() calls are ignored, and paintGL() is not triggered.
+     *
+     * @note During initialization, uninitialization, or mode changes, the rendering thread is forcefully
+     *       unlocked and the filter is ignored to prevent deadlocks.
      *
      * #### Default Implementation
      *

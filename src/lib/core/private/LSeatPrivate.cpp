@@ -23,6 +23,15 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
 
     compositor()->imp()->unlock();
 
+    for (LOutput *o : compositor()->outputs())
+    {
+        if (o->imp()->stateFlags.check(LOutput::LOutputPrivate::RepaintLocked))
+        {
+            o->imp()->stateFlags.remove(LOutput::LOutputPrivate::RepaintLocked);
+            o->imp()->repaintFilterMutex.unlock();
+        }
+    }
+
     if (compositor()->isGraphicBackendInitialized())
         compositor()->imp()->graphicBackend->backendResume();
 
@@ -74,6 +83,15 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
         compositor()->imp()->inputBackend->backendSuspend();
 
     compositor()->imp()->unlock();
+
+    for (LOutput *o : compositor()->outputs())
+    {
+        if (o->imp()->stateFlags.check(LOutput::LOutputPrivate::RepaintLocked))
+        {
+            o->imp()->stateFlags.remove(LOutput::LOutputPrivate::RepaintLocked);
+            o->imp()->repaintFilterMutex.unlock();
+        }
+    }
 
     if (compositor()->isGraphicBackendInitialized())
         compositor()->imp()->graphicBackend->backendSuspend();

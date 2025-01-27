@@ -1069,6 +1069,15 @@ void LCompositor::LCompositorPrivate::handleOutputRepaintRequests() noexcept
 
     for (LOutput *o : outputs)
     {
+        if (!seat->enabled())
+        {
+            if (o->imp()->stateFlags.check(LOutput::LOutputPrivate::RepaintLocked))
+            {
+                o->imp()->stateFlags.remove(LOutput::LOutputPrivate::RepaintLocked);
+                o->imp()->repaintFilterMutex.unlock();
+            }
+        }
+
         if (!o->imp()->stateFlags.check(LOutput::LOutputPrivate::PendingRepaint))
             continue;
 

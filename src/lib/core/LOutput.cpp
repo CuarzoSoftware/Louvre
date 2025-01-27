@@ -351,6 +351,7 @@ Float32 LOutput::scale() const noexcept
 
 void LOutput::repaint() noexcept
 {
+    // Check LCompositor::processLoop() -> LCompositorPrivate::handleOutputRepaintRequests()
     imp()->stateFlags.add(LOutputPrivate::PendingRepaint);
     compositor()->imp()->unlockPoll();
 }

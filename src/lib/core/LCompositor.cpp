@@ -236,9 +236,6 @@ bool LCompositor::start()
         goto fail;
     }
 
-    imp()->state = CompositorState::Initialized;
-    initialized();
-
     imp()->events[LEV_UNLOCK].events = EPOLLIN;
     imp()->events[LEV_UNLOCK].data.fd = eventfd(0, EFD_NONBLOCK);
 
@@ -247,6 +244,8 @@ bool LCompositor::start()
               compositor()->imp()->events[LEV_UNLOCK].data.fd,
               &compositor()->imp()->events[LEV_UNLOCK]);
 
+    imp()->state = CompositorState::Initialized;
+    initialized();
     return true;
 
     fail:
@@ -340,8 +339,9 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
 
         imp()->destroyPendingRenderBuffers(nullptr);
         imp()->handleDestroyedClients();
-        imp()->handleOutputRepaintRequests();
     }
+
+    imp()->handleOutputRepaintRequests();
 
     if (state() == CompositorState::Uninitializing)
     {

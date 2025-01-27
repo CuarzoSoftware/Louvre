@@ -266,11 +266,17 @@ void LOutput::LOutputPrivate::backendPaintGL()
     {
         compositor()->imp()->lock();
 
+        // This means LOutput::repaintFilter() returned false
         if (stateFlags.check(RepaintLocked))
         {
+            // Unlock other threads (let the main loop update the RepaintLocked state)
             compositor()->imp()->unlock();
+
+            // Wait until LOutput::repaintFilter() returns true
             repaintFilterMutex.lock();
             repaintFilterMutex.unlock();
+
+            // Continue rendering...
             compositor()->imp()->lock();
             compositor()->imp()->unlockPoll();
         }
@@ -381,6 +387,8 @@ void LOutput::LOutputPrivate::backendPaintGL()
 
     /* Destroy render buffers created from this thread and marked as destroyed by the user */
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
+
+    /* Handle LOutput::repaint() calls from this thread */
     compositor()->imp()->handleOutputRepaintRequests();
 
     if (callLock)

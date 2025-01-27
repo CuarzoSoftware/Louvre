@@ -1,3 +1,12 @@
+Louvre (2.14.0-1)
+
+  # API Additions
+
+  - LOutput::repaintFilter(): Intercepts LOutput::repaint() calls, making it easier to retain the last rendered frame. Special thanks to @LeKinaSa and @jgroboredo for highlighting the need for this feature.
+
+-- Eduardo Hopperdietzel <ehopperdietzel@gmail.com> Mon, 27 Jan 2025 17:47:20 -0300
+
+
 Louvre (2.13.0-1)
 
   # License
