@@ -98,6 +98,7 @@ public:
     inline static EGLContext windowEGLContext { EGL_NO_CONTEXT };
     inline static PFNEGLSWAPBUFFERSWITHDAMAGEKHRPROC eglSwapBuffersWithDamageKHR { nullptr };
     inline static LRegion damage;
+    inline static bool bufferIsLocked { false };
     inline static EGLConfig eglConfig { EGL_NO_CONFIG_KHR };
     inline static EGLSurface eglSurface { EGL_NO_SURFACE };
     inline static std::thread renderThread;
@@ -527,11 +528,16 @@ public:
             else
                 wl_display_cancel_read(display);
 
+        paintGLChangedBufferIsLocked:
+
+            if (bufferIsLocked)
+                repaint = false;
+
             if (output->state() == LOutput::Initialized && repaint)
             {
-                eglSwapInterval(eglDisplay, vSync);
-
                 repaint = false;
+
+                eglSwapInterval(eglDisplay, vSync);
 
                 if (wl_surface_get_version(surface) >= 3)
                     wl_surface_set_buffer_scale(surface, pendingBufferScale);
@@ -551,13 +557,20 @@ public:
                 }
 
                 output->imp()->backendPaintGL();
+
+                if (bufferIsLocked)
+                    goto paintGLChangedBufferIsLocked;
+
                 wl_surface_set_opaque_region(surface, opaqueRegion);
 
-                if (damage.empty())
-                    wl_surface_commit(surface);
-                else
+                if (eglSwapBuffersWithDamageKHR)
                 {
-                    if (eglSwapBuffersWithDamageKHR)
+                    if (damage.empty())
+                    {
+                        constexpr GLint dummyBox[4] { -100, -100, 1, 1 };
+                        eglSwapBuffersWithDamageKHR(eglDisplay, eglSurface, dummyBox, 1);
+                    }
+                    else
                     {
                         Int32 n;
                         const LBox *boxes { damage.boxes(&n) };
@@ -577,11 +590,16 @@ public:
                         eglSwapBuffersWithDamageKHR(eglDisplay, eglSurface, rects, n);
                         delete []rects;
                     }
+                }
+                else
+                {
+                    if (damage.empty())
+                        wl_surface_commit(surface);
                     else
                         eglSwapBuffers(eglDisplay, eglSurface);
-
-                    damage.clear();
                 }
+
+                damage.clear();
 
                 if (!vSync && refreshRateLimit >= 0)
                 {
@@ -605,7 +623,6 @@ public:
                 output->imp()->presentationTime.period = 0;
                 clock_gettime(CLOCK_MONOTONIC, &output->imp()->presentationTime.time);
                 output->imp()->backendPageFlipped();
-
             }
             else if (output->state() == LOutput::PendingInitialize)
                 output->imp()->backendInitializeGL();
@@ -1071,6 +1088,11 @@ public:
         return nullptr;
     }
 
+    static void outputLockCurrentBuffer(LOutput */*output*/, bool locked)
+    {
+        bufferIsLocked = locked;
+    }
+
     static UInt32 outputGetGammaSize(LOutput */*output*/)
     {
         return 0;
@@ -1385,6 +1407,7 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.outputGetBuffersCount           = &LGraphicBackend::outputGetBuffersCount;
     API.outputGetCurrentBufferAge       = &LGraphicBackend::outputGetCurrentBufferAge;
     API.outputGetBuffer                 = &LGraphicBackend::outputGetBuffer;
+    API.outputLockCurrentBuffer         = &LGraphicBackend::outputLockCurrentBuffer;
 
     /* OUTPUT GAMMA */
     API.outputGetGammaSize              = &LGraphicBackend::outputGetGammaSize;

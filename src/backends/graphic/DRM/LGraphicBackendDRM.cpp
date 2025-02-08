@@ -412,9 +412,9 @@ bool LGraphicBackend::backendInitialize()
 
     version = srmCoreGetVersion(bknd->core);
 
-    if (version->major == 0 && version->minor < 11)
+    if (version->major == 0 && version->minor < 12)
     {
-        LLog::fatal("[%s] Using SRM v%d.%d.%d but version >= v0.11.0 is required.", BKND_NAME, version->major, version->minor, version->patch);
+        LLog::fatal("[%s] Using SRM v%d.%d.%d but version >= v0.12.0 is required.", BKND_NAME, version->major, version->minor, version->patch);
         srmCoreDestroy(bknd->core);
         goto fail;
     }
@@ -897,6 +897,12 @@ LTexture *LGraphicBackend::outputGetBuffer(LOutput *output, UInt32 bufferIndex)
     return tex;
 }
 
+void LGraphicBackend::outputLockCurrentBuffer(LOutput *output, bool locked)
+{
+    Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
+    srmConnectorSetCurrentBufferLocked(bkndOutput->conn, locked);
+}
+
 /* OUTPUT GAMMA */
 
 UInt32 LGraphicBackend::outputGetGammaSize(LOutput *output)
@@ -1190,6 +1196,7 @@ extern "C" LGraphicBackendInterface *getAPI()
     API.outputGetBuffersCount           = &LGraphicBackend::outputGetBuffersCount;
     API.outputGetCurrentBufferAge       = &LGraphicBackend::outputGetCurrentBufferAge;
     API.outputGetBuffer                 = &LGraphicBackend::outputGetBuffer;
+    API.outputLockCurrentBuffer         = &LGraphicBackend::outputLockCurrentBuffer;
 
     /* OUTPUT GAMMA */
     API.outputGetGammaSize              = &LGraphicBackend::outputGetGammaSize;

@@ -341,8 +341,6 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         imp()->handleDestroyedClients();
     }
 
-    imp()->handleOutputRepaintRequests();
-
     if (state() == CompositorState::Uninitializing)
     {
         uninitialized();
@@ -491,7 +489,7 @@ bool LCompositor::addOutput(LOutput *output)
 
 void LCompositor::removeOutput(LOutput *output)
 {
-    if (!isGraphicBackendInitialized() || std::this_thread::get_id() != mainThreadId())
+    if (!isGraphicBackendInitialized())
         return;
 
     // Loop to check if output was added (initialized)
@@ -500,20 +498,17 @@ void LCompositor::removeOutput(LOutput *output)
         // Was initialized
         if (o == output)
         {
-            output->imp()->state = LOutput::PendingUninitialize;
+            // Uninitializing outputs from their own thread is not allowed
+            if (output->threadId() == std::this_thread::get_id())
+                return;
+
             output->imp()->callLockACK.store(false);
             output->imp()->callLock.store(false);
-
-            if (o->imp()->stateFlags.check(LOutput::LOutputPrivate::RepaintLocked))
-            {
-                o->imp()->stateFlags.remove(LOutput::LOutputPrivate::RepaintLocked);
-                o->imp()->repaintFilterMutex.unlock();
-            }
-
-            imp()->graphicBackend->outputRepaint(output);
+            output->repaint();
+            output->imp()->state = LOutput::PendingUninitialize;
             imp()->unlock();
 
-            Int32 waitLimit = 0;
+            Int32 waitLimit { 0 };
 
             while (!output->imp()->callLockACK.load() && waitLimit < 1000)
             {

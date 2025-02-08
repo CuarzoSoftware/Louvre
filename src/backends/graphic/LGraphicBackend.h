@@ -64,6 +64,7 @@ public:
     static UInt32                           outputGetCurrentBufferAge(LOutput *output);
     static LTexture *                       outputGetBuffer(LOutput *output, UInt32 bufferIndex);
     static void                             outputDestroyBuffers(std::vector<LTexture*> &textures);
+    static void                             outputLockCurrentBuffer(LOutput *output, bool locked);
 
     /* OUTPUT GAMMA */
     static UInt32                           outputGetGammaSize(LOutput *output);

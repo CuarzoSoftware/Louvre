@@ -57,7 +57,7 @@ pixman_dep          = dependency('pixman-1', version: '>= 0.40.0')
 drm_dep             = dependency('libdrm', version: '>= 2.4.113')
 input_dep           = dependency('libinput', version: '>= 1.20.0')
 libseat_dep         = dependency('libseat', version: '>= 0.6.4')
-srm_dep             = dependency('SRM', version : '>=0.11.0')
+srm_dep             = dependency('SRM', version : '>=0.12.0')
 pthread_dep         = cpp.find_library('pthread')
 dl_dep              = cpp.find_library('dl')
 

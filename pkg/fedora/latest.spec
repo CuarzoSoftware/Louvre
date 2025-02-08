@@ -1,4 +1,4 @@
-%global basever 2.14.0
+%global basever 2.14.1
 %global origrel 1
 %global somajor 2
 
@@ -90,5 +90,7 @@ pushd repo/src
 %{_libdir}/pkgconfig/Louvre.pc
 
 %changelog
-* Mon Jan 27 2025 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
-
+* Sat Feb 08 2025 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
+- Wayland Backend: Fixed occasional flickering when no damage is generated within LOutput::paintGL().
+- LOutput::repaintFilter: Updated internal implementation to reduce CPU consumption and allow cursor plane updates when using the atomic DRM API.
+- Updated SRM dependency to version >= 0.12.0.

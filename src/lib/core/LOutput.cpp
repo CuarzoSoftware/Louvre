@@ -234,12 +234,6 @@ void LOutput::setMode(const LOutputMode *mode) noexcept
     imp()->callLockACK.store(false);
     imp()->callLock.store(false);
 
-    if (imp()->stateFlags.check(LOutputPrivate::RepaintLocked))
-    {
-        imp()->stateFlags.remove(LOutputPrivate::RepaintLocked);
-        imp()->repaintFilterMutex.unlock();
-    }
-
     compositor()->imp()->unlock();
 
     Int32 waitLimit = 0;
@@ -351,9 +345,13 @@ Float32 LOutput::scale() const noexcept
 
 void LOutput::repaint() noexcept
 {
-    // Check LCompositor::processLoop() -> LCompositorPrivate::handleOutputRepaintRequests()
-    imp()->stateFlags.add(LOutputPrivate::PendingRepaint);
-    compositor()->imp()->unlockPoll();
+    if (imp()->stateFlags.check(LOutputPrivate::IsInRepaintFilter))
+        return;
+
+    compositor()->imp()->graphicBackend->outputLockCurrentBuffer(this, !imp()->repaintFilter());
+
+    if (compositor()->imp()->graphicBackend->outputRepaint(this))
+        imp()->stateFlags.add(LOutputPrivate::PendingRepaint);
 }
 
 Int32 LOutput::dpi() noexcept

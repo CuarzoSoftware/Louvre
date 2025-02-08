@@ -62,6 +62,7 @@ namespace Louvre
         UInt32                              (*outputGetBuffersCount)(LOutput *output);
         UInt32                              (*outputGetCurrentBufferAge)(LOutput *output);
         LTexture *                          (*outputGetBuffer)(LOutput *output, UInt32 bufferIndex);
+        void                                (*outputLockCurrentBuffer)(LOutput *output, bool locked);
 
         /* OUTPUT GAMMA */
         UInt32                              (*outputGetGammaSize)(LOutput *output);
