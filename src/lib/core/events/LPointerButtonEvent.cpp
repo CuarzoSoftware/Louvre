@@ -10,6 +10,9 @@ void LPointerButtonEvent::notify()
 {
     if (compositor()->state() == LCompositor::Initialized)
     {
+        if (!seat()->eventFilter(*this))
+            return;
+
         seat()->onEvent(*this);
 
         if (state() == Pressed)

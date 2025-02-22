@@ -150,3 +150,13 @@ void LSeat::onEvent(const LEvent &event)
     setIsUserIdleHint(false);
 }
 //! [onEvent]
+
+//! [eventFilter]
+bool LSeat::eventFilter(LEvent &event)
+{
+    L_UNUSED(event);
+
+    // Allows propagation of all events
+    return true;
+}
+//! [eventFilter]

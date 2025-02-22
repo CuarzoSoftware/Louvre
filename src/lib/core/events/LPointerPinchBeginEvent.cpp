@@ -9,6 +9,8 @@ void LPointerPinchBeginEvent::notify()
 {
     if (compositor()->state() == LCompositor::Initialized)
     {
+        if (!seat()->eventFilter(*this))
+            return;
         seat()->onEvent(*this);
         seat()->pointer()->pointerPinchBeginEvent(*this);
     }

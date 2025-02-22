@@ -421,6 +421,28 @@ public:
      */
     virtual bool configureOutputsRequest(LClient* client, const std::vector<OutputConfiguration>& configurations);
 
+    /**
+     * @brief Intercepts input events from the input backend.
+     *
+     * This virtual method allows you to filter or modify events immediately after they have been
+     * emitted by the input backend and before they are propagated to the rest of the stack.
+     *
+     * It is invoked before onEvent(), specific event handlers in LPointer, LKeyboard, LTouch,
+     * and before the internal XKB state of LKeyboard is updated.
+     *
+     * @note nativeInputEvent() is unaffected by this filter.
+     *
+     * @param event The event to filter or modify.
+     * @return `true` to allow propagation, `false` otherwise.
+     *
+     * #### Default implementation
+     *
+     * The default implementation allows the propagation of all events without modifying them.
+     *
+     * @snippet LSeatDefault.cpp eventFilter
+     */
+    virtual bool eventFilter(LEvent &event);
+
 /// @}
 
     LPRIVATE_IMP_UNIQUE(LSeat)

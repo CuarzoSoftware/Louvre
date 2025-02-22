@@ -6,6 +6,9 @@ using namespace Louvre;
 
 void LKeyboardKeyEvent::notify()
 {
+    if (compositor()->state() == LCompositor::Initialized && !seat()->eventFilter(*this))
+        return;
+
     LKeyboard::LKeyboardPrivate &keyboard { *seat()->keyboard()->imp() };
 
     // CTRL + ALT + (F1, F2, ..., F10) : Switch TTY.

@@ -9,6 +9,9 @@ void LTouchDownEvent::notify()
 {
     if (compositor()->state() == LCompositor::Initialized)
     {
+        if (!seat()->eventFilter(*this))
+            return;
+
         seat()->onEvent(*this);
         seat()->touch()->touchDownEvent(*this);
     }
