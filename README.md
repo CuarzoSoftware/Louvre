@@ -6,9 +6,10 @@
 * [Lawz](https://github.com/aman333nolawz/Lawz) : A little Wayland compositor (Work in Progress).
 * [Louvre Views](https://cuarzosoftware.github.io/Louvre/examples_page.html#louvre-views-example) : Example compositor resembling macOS aesthetics.
 * [Louvre Weston Clone](https://cuarzosoftware.github.io/Louvre/examples_page.html#louvre-weston-clone-example) : Example compositor mimicking Weston.
-* [Milis Linux](https://milislinux.gitlab.io/en/): A Turkish operating system that includes Louvre as one of its available desktop sessions. 
-* [Womp](https://github.com/diego-est/womp) : A glorified Kiosk Wayland compositor.
+* [Milis Linux](https://milislinux.gitlab.io/en/): A Turkish operating system that includes Louvre as one of its available desktop sessions.
 * [Nebula](https://github.com/dheerajshenoy/nebula) : A minimal tiling Wayland compositor (Work in Progress).
+* [Womp](https://github.com/diego-est/womp) : A glorified Kiosk Wayland compositor.
+
 
 ## Add Your Compositor
 
