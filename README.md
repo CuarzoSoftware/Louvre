@@ -8,6 +8,7 @@
 * [Louvre Weston Clone](https://cuarzosoftware.github.io/Louvre/examples_page.html#louvre-weston-clone-example) : Example compositor mimicking Weston.
 * [Milis Linux](https://milislinux.gitlab.io/en/): A Turkish operating system that includes Louvre as one of its available desktop sessions. 
 * [Womp](https://github.com/diego-est/womp) : A glorified Kiosk Wayland compositor.
+* [Nebula](https://github.com/dheerajshenoy/nebula) : A minimal tiling Wayland compositor (Work in Progress).
 
 ## Add Your Compositor
 
