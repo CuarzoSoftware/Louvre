@@ -48,7 +48,7 @@ $ sudo apt upgrade
 $ sudo apt install build-essential meson libegl-dev mesa-common-dev libgles2-mesa-dev libdrm-dev libevdev-dev libinput-dev libxcursor-dev libxkbcommon-dev libpixman-1-dev libwayland-dev hwinfo libseat-dev libicu-dev libfontconfig-dev libfreetype-dev
 ```
 
-To install SRM, follow the instructions provided [here](https://cuarzosoftware.github.io/SRM/md_md__downloads.html).
+To install SRM, follow the instructions provided [here](https://cuarzosoftware.github.io/SRM/downloads_page.html).
 
 It is also recommended to install [weston-terminal](https://gitlab.freedesktop.org/wayland/weston), which is compatible with Wayland and is used throughout the tutorial and the examples.
 
@@ -65,7 +65,7 @@ $ sudo dnf update
 $ sudo dnf install @development-tools make automake gcc gcc-c++ meson libwayland-client libwayland-server wayland-devel libinput-devel libevdev-devel libudev-devel mesa-libEGL-devel libxkbcommon-devel libXcursor-devel pixman-devel libdrm-devel libseat-devel fontconfig-devel freetype-devel libicu-devel
 ```
 
-To install SRM, follow the instructions provided [here](https://cuarzosoftware.github.io/SRM/md_md__downloads.html).
+To install SRM, follow the instructions provided [here](https://cuarzosoftware.github.io/SRM/downloads_page.html).
 
 It is also recommended to install [weston-terminal](https://gitlab.freedesktop.org/wayland/weston) which is compatible with Wayland and is used throughout the tutorial and the examples.
 
@@ -86,4 +86,4 @@ $ meson install
 $ sudo ldconfig
 ```
 
-To ensure that everything is functioning correctly, you can test one of the available [examples](md_md__examples.html).
+To ensure that everything is functioning correctly, you can test one of the available [examples](examples_page.html).
