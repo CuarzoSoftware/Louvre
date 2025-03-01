@@ -1,4 +1,4 @@
-%global basever 2.14.1
+%global basever 2.15.0
 %global origrel 1
 %global somajor 2
 
@@ -90,7 +90,7 @@ pushd repo/src
 %{_libdir}/pkgconfig/Louvre.pc
 
 %changelog
-* Sat Feb 08 2025 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
-- Wayland Backend: Fixed occasional flickering when no damage is generated within LOutput::paintGL().
-- LOutput::repaintFilter: Updated internal implementation to reduce CPU consumption and allow cursor plane updates when using the atomic DRM API.
-- Updated SRM dependency to version >= 0.12.0.
+* Sat Mar 01 2025 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
+- LSeat::eventFilter(): Allows filtering and mutating input events before propagating them to the rest of the stack. Useful for implementing key remapping.
+- LNinePatchView class: View for displaying textures using the nine-patch technique.
+- Fixed broken links.
