@@ -121,6 +121,7 @@ namespace Louvre
     class LSolidColorView;
     class LSceneView;
     class LSceneTouchPoint;
+    class LNinePatchView;
 
     // Data
     class LDND;

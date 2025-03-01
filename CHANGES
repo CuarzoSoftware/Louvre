@@ -1,3 +1,19 @@
+Louvre (2.15.0-1)
+
+  # API Additions
+
+  * LSeat::eventFilter(): Allows filtering and mutating input events before propagating them to the rest of the stack. Useful for implementing key remapping.
+  * LNinePatchView class: View for displaying textures using the nine-patch technique.
+
+  # Documentation
+
+  * Fixed broken links.
+
+  Thanks to @jgroboredo and @LeKinaSa for all the feedback!
+
+-- Eduardo Hopperdietzel <ehopperdietzel@gmail.com> Sat, 01 Mar 2025 10:04:14 -0300
+
+
 Louvre (2.14.1-1)
 
   # Bug Fixes

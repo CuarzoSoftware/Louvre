@@ -25,6 +25,7 @@
  * * LLayerView: This view is used only as a container for other views and is not renderable on its own.
  * * LSurfaceView: This view can be used to display client surfaces.
  * * LTextureView: This view can be used to display textures.
+ * * LNinePatchView: This view can be used to display nine-patch textures.
  * * LSolidColorView: This view can be used to display solid color rectangles.
  * * LSceneView: This view is a scene on its own, and its content is rendered in its own framebuffer.
  *
@@ -162,7 +163,10 @@ public:
         SolidColorType,
 
         /// LSceneView
-        SceneType
+        SceneType,
+
+        /// LNinePatchView
+        NinePatchType
     };
 
     /**

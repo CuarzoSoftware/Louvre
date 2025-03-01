@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/license-LGPLv2.1-blue.svg" alt="Louvre is released under the LGPLv2.1 license." />
   </a>
   <a href="https://github.com/CuarzoSoftware/Louvre">
-    <img src="https://img.shields.io/badge/version-2.14.1-brightgreen" alt="Current Louvre version." />
+    <img src="https://img.shields.io/badge/version-2.15.0-brightgreen" alt="Current Louvre version." />
   </a>
 </p>
 
