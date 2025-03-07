@@ -372,3 +372,10 @@ void LPointer::setCursorRequest(const LClientCursor &clientCursor)
         cursor()->setCursor(clientCursor);
 }
 //! [setCursorRequest]
+
+//! [focusChanged]
+void LPointer::focusChanged()
+{
+    /* No default implementation. */
+}
+//! [focusChanged]

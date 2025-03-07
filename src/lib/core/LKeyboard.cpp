@@ -278,6 +278,8 @@ void LKeyboard::setFocus(LSurface *surface)
     if (imp()->grab)
         return;
 
+    LWeak<LSurface> prev { focus() };
+
     if (surface)
     {
         if (focus() == surface)
@@ -346,7 +348,8 @@ void LKeyboard::setFocus(LSurface *surface)
         imp()->focus.reset();
     }
 
-    focusChanged();
+    if (prev.get() != focus())
+        focusChanged();
 }
 
 void LKeyboard::sendKeyEvent(const LKeyboardKeyEvent &event) noexcept

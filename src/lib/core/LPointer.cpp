@@ -29,6 +29,10 @@ LPointer::LPointer(const void *params) noexcept : LFactoryObject(FactoryObjectTy
     LPointer **ptr { (LPointer**) params };
     assert(*ptr == nullptr && *ptr == seat()->pointer() && "Only a single LPointer instance can exist.");
     *ptr = this;
+
+    imp()->focus.setOnDestroyCallback([this](LSurface*) {
+        focusChanged();
+    });
 }
 
 LPointer::~LPointer()
@@ -46,6 +50,8 @@ void LPointer::setFocus(LSurface *surface) noexcept
 
 void LPointer::setFocus(LSurface *surface, const LPoint &localPos) noexcept
 {
+    LWeak<LSurface> prevFocus { focus() };
+
     if (surface)
     {
         if (focus() == surface)
@@ -90,6 +96,9 @@ void LPointer::setFocus(LSurface *surface, const LPoint &localPos) noexcept
         imp()->sendLeaveEvent(focus());
         imp()->focus.reset();
     }
+
+    if (prevFocus.get() != focus())
+        focusChanged();
 }
 
 void LPointer::sendMoveEvent(const LPointerMoveEvent &event)

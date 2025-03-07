@@ -363,6 +363,20 @@ public:
      */
     virtual void setCursorRequest(const LClientCursor &clientCursor);
 
+    /**
+     * @brief Notifies when the focused surface changes.
+     *
+     * This method is triggered whenever the focus() property changes, either by
+     * calling setFocus() or when the currently focused surface is destroyed.
+     *
+     * @warning Changing the focused surface within this event using setFocus()
+     *          may result in an infinite feedback loop if not managed carefully.
+     *
+     * #### Default Implementation
+     * @snippet LPointerDefault.cpp focusChanged
+     */
+    virtual void focusChanged();
+
 ///@}
 
     LPRIVATE_IMP_UNIQUE(LPointer)
