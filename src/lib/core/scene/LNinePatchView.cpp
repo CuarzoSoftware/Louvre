@@ -246,7 +246,7 @@ LTextureView *LNinePatchView::getSubView(LBitset<LEdge> edge) noexcept
     }
 }
 
-const std::array<LTextureView, 9> &LNinePatchView::subViews() const noexcept
+std::array<LTextureView, 9> &LNinePatchView::subViews() noexcept
 {
     return m_subViews;
 }

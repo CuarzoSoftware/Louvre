@@ -140,7 +140,7 @@ public:
      * If a specific view needs to be retrieved, consider using getSubView() instead.
      * @return A reference to the vector of sub-views.
      */
-    const std::array<LTextureView, 9> &subViews() const noexcept;
+    std::array<LTextureView, 9> &subViews() noexcept;
 
     bool nativeMapped() const noexcept override;
     const LPoint &nativePos() const noexcept override;
