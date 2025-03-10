@@ -1,3 +1,24 @@
+Louvre (2.16.0-1)
+
+  # API Additions
+
+  * LOutput::oversamplingTexture(): Retrieves the intermediate texture used when a fractional scale is applied and oversampling is enabled.
+  * LPointer::focusChanged(): Triggered whenever the currently focused surface changes.
+
+  # Minor API Changes
+
+  * Removed const keywords from LNinePatchView::subViews() to enable modification of subviews.
+  * Removed the center rect from LNinePatchView::minSize() to allow setting smaller sizes.
+
+  # Bug Fixes
+
+  * Prevented unnecessary LKeyboard::focusChanged() calls when no actual change occurred.
+
+  Thanks @LeKinaSa and @jgroboredo for testing it!
+
+-- Eduardo Hopperdietzel <ehopperdietzel@gmail.com> Sun, 09 Mar 2025 21:31:43 -0300
+
+
 Louvre (2.15.0-1)
 
   # API Additions

@@ -361,6 +361,18 @@ public:
     LFramebuffer *framebuffer() const noexcept;
 
     /**
+     * @brief Gets the texture used for oversampling.
+     *
+     * Retrieves the intermediate texture used when a fractional scale is applied
+     * and oversampling is enabled.
+     *
+     * @see usingFractionalScale() and fractionalOversamplingEnabled()
+     *
+     * @return The texture, or `nullptr` if oversampling is disabled.
+     */
+    LTexture *oversamplingTexture() const noexcept;
+
+    /**
      * @brief Gets the framebuffer transform.
      *
      * This method returns the current framebuffer transform applied with setTransform().

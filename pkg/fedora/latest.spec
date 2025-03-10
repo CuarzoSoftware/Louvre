@@ -1,4 +1,4 @@
-%global basever 2.15.0
+%global basever 2.16.0
 %global origrel 1
 %global somajor 2
 
@@ -90,7 +90,9 @@ pushd repo/src
 %{_libdir}/pkgconfig/Louvre.pc
 
 %changelog
-* Sat Mar 01 2025 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
-- LSeat::eventFilter(): Allows filtering and mutating input events before propagating them to the rest of the stack. Useful for implementing key remapping.
-- LNinePatchView class: View for displaying textures using the nine-patch technique.
-- Fixed broken links.
+* Sun Mar 09 2025 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
+- LOutput::oversamplingTexture(): Retrieves the intermediate texture used when a fractional scale is applied and oversampling is enabled.
+- LPointer::focusChanged(): Triggered whenever the currently focused surface changes.
+- Removed const keywords from LNinePatchView::subViews() to enable modification of subviews.
+- Removed the center rect from LNinePatchView::minSize() to allow setting smaller sizes.
+- Prevented unnecessary LKeyboard::focusChanged() calls when no actual change occurred.

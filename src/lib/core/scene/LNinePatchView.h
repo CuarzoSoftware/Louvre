@@ -27,7 +27,10 @@ public:
     /**
      * @brief Creates an empty nine-patch view.
      */
-    LNinePatchView(LView *parent = nullptr) noexcept;
+    LNinePatchView(LView *parent = nullptr) noexcept : LView(NinePatchType, false, parent)
+    {
+        init(nullptr, 1, {0});
+    }
 
     /**
      * @brief Creates a nine-patch view with a specified texture.
@@ -38,7 +41,11 @@ public:
      *               If extended beyond the texture bounds, it will be clipped.
      * @param parent The parent view, or `nullptr` if there is no parent. Defaults to `nullptr`.
      */
-    LNinePatchView(LTexture *texture, Float32 bufferScale, const LRectF &center, LView *parent = nullptr) noexcept;
+    LNinePatchView(LTexture *texture, Float32 bufferScale, const LRectF &center, LView *parent = nullptr) noexcept :
+        LView(NinePatchType, false, parent)
+    {
+        init(texture, bufferScale, center);
+    }
 
     LCLASS_NO_COPY(LNinePatchView)
 
@@ -60,7 +67,10 @@ public:
      *
      * @param pos The position in surface coordinates.
      */
-    void setPos(const LPoint &pos) noexcept;
+    void setPos(const LPoint &pos) noexcept
+    {
+        setPos(pos.x(), pos.y());
+    }
 
     /**
      * @brief Sets the size of the view.
@@ -79,16 +89,22 @@ public:
      *
      * @param size The size in surface coordinates.
      */
-    void setSize(const LSize &size) noexcept;
+    void setSize(const LSize &size) noexcept
+    {
+        setSize(size.w(), size.h());
+    }
 
     /**
      * @brief Returns the minimum size of the view.
      *
-     * The minimum size is equal to the texture's size in surface coordinates (the buffer size divided by the buffer scale).
+     * The minimum size is equal to the texture's size in surface coordinates (the buffer size divided by the buffer scale) minus the center rect size.
      *
      * If no texture is set the minimum size is (0, 0).
      */
-    const LSize &minSize() const noexcept;
+    const LSize &minSize() const noexcept
+    {
+        return m_minSize;
+    }
 
     /**
      * @brief Returns the current nine-patch texture.
@@ -97,7 +113,10 @@ public:
      *
      * @return A pointer to the texture, or `nullptr` if no texture is set.
      */
-    LTexture *texture() const noexcept;
+    LTexture *texture() const noexcept
+    {
+        return m_texture;
+    }
 
     /**
      * @brief Sets the nine-patch texture.
@@ -116,7 +135,10 @@ public:
      *
      * If no texture is set (0, 0, 0, 0) is returned.
      */
-    const LRectF &center() const noexcept;
+    const LRectF &center() const noexcept
+    {
+        return m_center;
+    }
 
     /**
      * @brief Retrieves one of the nine sub texture views.
@@ -140,7 +162,10 @@ public:
      * If a specific view needs to be retrieved, consider using getSubView() instead.
      * @return A reference to the vector of sub-views.
      */
-    std::array<LTextureView, 9> &subViews() noexcept;
+    std::array<LTextureView, 9> &subViews() noexcept
+    {
+        return m_subViews;
+    }
 
     bool nativeMapped() const noexcept override;
     const LPoint &nativePos() const noexcept override;

@@ -5,17 +5,6 @@ using namespace Louvre;
 
 enum Edges { L, T, R, B, TL, TR, BR, BL, C, LAST };
 
-LNinePatchView::LNinePatchView(LView *parent) noexcept : LView(NinePatchType, false, parent)
-{
-    init(nullptr, 1, {0});
-}
-
-LNinePatchView::LNinePatchView(LTexture *texture, Float32 bufferScale, const LRectF &center, LView *parent) noexcept :
-    LView(NinePatchType, false, parent)
-{
-    init(texture, bufferScale, center);
-}
-
 void LNinePatchView::init(LTexture *texture, Float32 bufferScale, const LRectF &center) noexcept
 {
     for (size_t i = 0; i < LAST; i++)
@@ -83,11 +72,6 @@ void LNinePatchView::setPos(Int32 x, Int32 y) noexcept
         repaint();
 }
 
-void LNinePatchView::setPos(const LPoint &pos) noexcept
-{
-    setPos(pos.x(), pos.y());
-}
-
 void LNinePatchView::setSize(Int32 width, Int32 height) noexcept
 {
     if (width < m_minSize.w())
@@ -102,21 +86,6 @@ void LNinePatchView::setSize(Int32 width, Int32 height) noexcept
     m_nativeSize.setW(width);
     m_nativeSize.setH(height);
     updateSubViews();
-}
-
-void LNinePatchView::setSize(const LSize &size) noexcept
-{
-    setSize(size.w(), size.h());
-}
-
-const LSize &LNinePatchView::minSize() const noexcept
-{
-    return m_minSize;
-}
-
-LTexture *LNinePatchView::texture() const noexcept
-{
-    return m_texture;
 }
 
 void LNinePatchView::setTexture(LTexture *texture, Float32 bufferScale, const LRectF &center) noexcept
@@ -213,12 +182,10 @@ void LNinePatchView::setTexture(LTexture *texture, Float32 bufferScale, const LR
         m_minSize.h() - m_center.y() - m_center.h()));
     m_subViews[BL].setDstSize(m_subViews[BL].srcRect().size());
 
-    updateSubViews();
-}
+    m_minSize.setW(std::max(0, m_minSize.w() - Int32(m_center.w())));
+    m_minSize.setH(std::max(0, m_minSize.h() - Int32(m_center.h())));
 
-const LRectF &LNinePatchView::center() const noexcept
-{
-    return m_center;
+    updateSubViews();
 }
 
 LTextureView *LNinePatchView::getSubView(LBitset<LEdge> edge) noexcept
@@ -244,11 +211,6 @@ LTextureView *LNinePatchView::getSubView(LBitset<LEdge> edge) noexcept
     default:
         return &m_subViews[C];
     }
-}
-
-std::array<LTextureView, 9> &LNinePatchView::subViews() noexcept
-{
-    return m_subViews;
 }
 
 bool LNinePatchView::nativeMapped() const noexcept

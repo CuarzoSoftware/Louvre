@@ -172,6 +172,14 @@ LFramebuffer *LOutput::framebuffer() const noexcept
     return &imp()->fb;
 }
 
+LTexture *LOutput::oversamplingTexture() const noexcept
+{
+    if (usingFractionalScale() && fractionalOversamplingEnabled())
+        return imp()->fractionalFb.texture();
+
+    return nullptr;
+}
+
 LTransform LOutput::transform() const noexcept
 {
     return imp()->transform;

@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/license-LGPLv2.1-blue.svg" alt="Louvre is released under the LGPLv2.1 license." />
   </a>
   <a href="https://github.com/CuarzoSoftware/Louvre">
-    <img src="https://img.shields.io/badge/version-2.15.0-brightgreen" alt="Current Louvre version." />
+    <img src="https://img.shields.io/badge/version-2.16.0-brightgreen" alt="Current Louvre version." />
   </a>
 </p>
 
@@ -42,7 +42,7 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 * Multi-Session Support
 * Double and Triple Buffering
 * Persistent Clipboard
-* Rootful XWayland (rootless mode is not yet supported, however, interesting projects such as [Wayland Transpositor](https://github.com/wayland-transpositor/wprs), [Wayland Proxy Virtwl](https://github.com/talex5/wayland-proxy-virtwl), and [Xwayland Satellite](https://github.com/Supreeeme/xwayland-satellite) can provide a rootless experience).
+* Rootful XWayland (rootless mode is not supported, however, interesting projects such as [Wayland Transpositor](https://github.com/wayland-transpositor/wprs), [Wayland Proxy Virtwl](https://github.com/talex5/wayland-proxy-virtwl), and [Xwayland Satellite](https://github.com/Supreeeme/xwayland-satellite) can provide a rootless experience).
 
 ## 🧩 Protocols
 
@@ -160,7 +160,6 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 
 ## 🔨 Upcoming Features
 
-* Rootless XWayland
 * DRM Synchronization Object
 * Cursor Shape Protocol
 * DRM Overlay Planes Control

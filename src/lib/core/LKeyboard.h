@@ -234,8 +234,14 @@ public:
     virtual void keyEvent(const LKeyboardKeyEvent &event);
 
     /**
-     * @brief Notifies that the focused surface has changed.
+     * @brief Notifies when the focused surface changes.
      *
+     * This method is triggered whenever the focus() property changes, either by
+     * calling setFocus() or when the currently focused surface is destroyed.
+     * 
+     * @warning Changing the focused surface within this event using setFocus()
+     *          may result in an infinite feedback loop if not managed carefully.
+     * 
      * #### Default Implementation
      * @snippet LKeyboardDefault.cpp focusChanged
      */

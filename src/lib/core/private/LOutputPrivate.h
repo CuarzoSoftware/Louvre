@@ -135,7 +135,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     {
         wl_listener bufferDestroyListener
         {
-            .link {0},
+            .link { nullptr, nullptr },
             .notify = [](wl_listener *listener, void *)
             {
                 ScanoutBuffer *scanoutBuffer = (ScanoutBuffer*)listener;
