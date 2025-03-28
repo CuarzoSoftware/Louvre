@@ -32,13 +32,13 @@ void LSurface::LSurfacePrivate::setParent(LSurface *parent)
 
     LSurface *surface { surfaceResource->surface() };
 
-    if (parent == nullptr)
-    {
-        this->parent->imp()->removeChild(surface);
-        return;
-    }
+    if (this->parent)
+        this->parent->imp()->children.erase(parentLink);
 
     this->parent = parent;
+
+    if (parent == nullptr)
+        return;
 
     const bool isSubsurfaceOrToplevel {
         surface->subsurface() != nullptr  ||
