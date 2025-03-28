@@ -1,4 +1,4 @@
-%global basever 2.16.0
+%global basever 2.16.1
 %global origrel 1
 %global somajor 2
 
@@ -90,9 +90,6 @@ pushd repo/src
 %{_libdir}/pkgconfig/Louvre.pc
 
 %changelog
-* Sun Mar 09 2025 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
-- LOutput::oversamplingTexture(): Retrieves the intermediate texture used when a fractional scale is applied and oversampling is enabled.
-- LPointer::focusChanged(): Triggered whenever the currently focused surface changes.
-- Removed const keywords from LNinePatchView::subViews() to enable modification of subviews.
-- Removed the center rect from LNinePatchView::minSize() to allow setting smaller sizes.
-- Prevented unnecessary LKeyboard::focusChanged() calls when no actual change occurred.
+* Fri Mar 28 2025 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
+- Resolved infinite loop occurring when one of multiple nested toplevel windows was unmapped.
+- Removed extra semicolon in LToplevelRole.h to prevent compiler warnings. - Thanks @SamuelEnzi!

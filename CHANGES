@@ -1,3 +1,13 @@
+Louvre (2.16.1-1)
+
+  # Bug Fixes
+
+  * Resolved infinite loop occurring when one of multiple nested toplevel windows was unmapped.
+  * Removed extra semicolon in LToplevelRole.h to prevent compiler warnings. - Thanks @SamuelEnzi!
+
+-- Eduardo Hopperdietzel <ehopperdietzel@gmail.com> Fri, 28 Mar 2025 08:05:08 -0300
+
+
 Louvre (2.16.0-1)
 
   # API Additions
