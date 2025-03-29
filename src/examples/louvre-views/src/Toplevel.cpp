@@ -113,7 +113,7 @@ void Toplevel::atomsChanged(LBitset<AtomChanges> changes, const Atoms &prev)
 }
 
 void Toplevel::startResizeRequest(const LEvent &triggeringEvent, LBitset<LEdge> edge)
-{
+{    
     LToplevelRole::startResizeRequest(triggeringEvent, edge);
 
     if (resizeSession().isActive())

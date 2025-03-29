@@ -50,6 +50,18 @@ void LToplevelRole::startMoveRequest(const LEvent &triggeringEvent)
              && (surface()->hasPointerFocus()
              || (seat()->pointer()->focus()->subsurface() && seat()->pointer()->focus()->isSubchildOf(surface()))))
     {
+
+        if (triggeringEvent.type() == LEvent::Type::Pointer)
+        {
+            if (triggeringEvent.subtype() != LEvent::Subtype::Button)
+                return;
+
+            const LPointerButtonEvent &pointerButtonEvent { static_cast<const LPointerButtonEvent&>(triggeringEvent) };
+
+            if (!seat()->pointer()->isButtonPressed(pointerButtonEvent.button()))
+                return;
+        }
+
         moveSession().start(triggeringEvent, cursor()->pos());
     }
 }
@@ -87,7 +99,20 @@ void LToplevelRole::startResizeRequest(const LEvent &triggeringEvent, LBitset<LE
     else if (seat()->pointer()->focus()
              && (surface()->hasPointerFocus()
                  || (seat()->pointer()->focus()->subsurface() && seat()->pointer()->focus()->isSubchildOf(surface()))))
+    {
+        if (triggeringEvent.type() == LEvent::Type::Pointer)
+        {
+            if (triggeringEvent.subtype() != LEvent::Subtype::Button)
+                return;
+
+            const LPointerButtonEvent &pointerButtonEvent { static_cast<const LPointerButtonEvent&>(triggeringEvent) };
+
+            if (!seat()->pointer()->isButtonPressed(pointerButtonEvent.button()))
+                return;
+        }
+
         resizeSession().start(triggeringEvent, edge, cursor()->pos());
+    }
 }
 //! [startResizeRequest]
 
