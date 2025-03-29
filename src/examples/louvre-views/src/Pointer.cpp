@@ -196,6 +196,21 @@ void Pointer::pointerButtonEvent(const LPointerButtonEvent &event)
     else
         G::scene()->handlePointerButtonEvent(event);
 
+    if (pressedButtons().empty())
+    {
+        for (auto it = seat()->toplevelMoveSessions().begin(); it != seat()->toplevelMoveSessions().end();)
+        {
+            if ((*it)->triggeringEvent().type() != LEvent::Type::Touch) it = seat()->toplevelMoveSessions().back()->stop();
+            else it++;
+        }
+
+        for (auto it = seat()->toplevelResizeSessions().begin(); it != seat()->toplevelResizeSessions().end();)
+        {
+            if ((*it)->triggeringEvent().type() != LEvent::Type::Touch) it = seat()->toplevelResizeSessions().back()->stop();
+            else it++;
+        }
+    }
+
     if (G::compositor()->wofi && G::compositor()->wofi->client
         && G::compositor()->wofi && !G::scene()->pointerFocus().empty()
         && G::scene()->pointerFocus().front()->userData() == WallpaperType)

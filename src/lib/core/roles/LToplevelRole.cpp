@@ -70,9 +70,6 @@ void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
 {
     L_UNUSED(origin);
 
-    if (m_flags.check(ClosedSent))
-        return;
-
     // Configure request
     if (m_flags.check(HasPendingInitialConf))
     {

@@ -125,7 +125,7 @@ public:
      *
      * @see isButtonPressed()
      */
-    const std::vector<LPointerButtonEvent::Button> &pressedKeys() const noexcept;
+    const std::vector<LPointerButtonEvent::Button> &pressedButtons() const noexcept;
 
     /**
      * @brief Checks if a button is pressed.

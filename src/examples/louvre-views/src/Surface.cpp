@@ -164,6 +164,9 @@ void Surface::mappingChanged()
     {
         compositor()->repaintAllOutputs();
 
+        if (tl() && tl()->decoratedView)
+            tl()->decoratedView->updateTitle();
+
         if (!firstMap)
         {
             view.setVisible(true);

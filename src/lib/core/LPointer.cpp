@@ -375,7 +375,7 @@ bool LPointer::naturalScrollingYEnabled() const noexcept
     return imp()->state.check(LPointerPrivate::NaturalScrollY);
 }
 
-const std::vector<LPointerButtonEvent::Button> &LPointer::pressedKeys() const noexcept
+const std::vector<LPointerButtonEvent::Button> &LPointer::pressedButtons() const noexcept
 {
     return imp()->pressedButtons;
 }
