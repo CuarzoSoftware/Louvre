@@ -1,3 +1,22 @@
+Louvre (2.16.2-1)
+
+  # Default Implementation Changes
+
+  * LToplevelRole::startMoveRequest() and LToplevelRole::startResizeRequest() now ignore requests triggered by pointer button events if the button isn't currently pressed.
+
+  # Minor API Changes
+
+  * Renamed LPointer::pressedKeys() to pressedButtons().
+
+  # Bug Fixes
+
+  * Removed the assumption that toplevels will be unmapped after sending a close() event.
+  * louvre-views: Fixed a bug causing fullscreen animations to show black on some clients.
+  * louvre-views: Display fadeout animation of toplevels not only during the first unmap.
+
+-- Eduardo Hopperdietzel <ehopperdietzel@gmail.com> Sun, 30 Mar 2025 23:12:31 -0300
+
+
 Louvre (2.16.1-1)
 
   # Bug Fixes

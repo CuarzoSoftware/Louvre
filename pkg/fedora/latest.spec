@@ -1,4 +1,4 @@
-%global basever 2.16.1
+%global basever 2.16.2
 %global origrel 1
 %global somajor 2
 
@@ -90,6 +90,9 @@ pushd repo/src
 %{_libdir}/pkgconfig/Louvre.pc
 
 %changelog
-* Fri Mar 28 2025 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
-- Resolved infinite loop occurring when one of multiple nested toplevel windows was unmapped.
-- Removed extra semicolon in LToplevelRole.h to prevent compiler warnings. - Thanks @SamuelEnzi!
+* Sun Mar 30 2025 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
+- LToplevelRole::startMoveRequest() and LToplevelRole::startResizeRequest() now ignore requests triggered by pointer button events if the button isn't currently pressed.
+- Renamed LPointer::pressedKeys() to pressedButtons().
+- Removed the assumption that toplevels will be unmapped after sending a close() event.
+- louvre-views: Fixed a bug causing fullscreen animations to show black on some clients.
+- louvre-views: Display fadeout animation of toplevels not only during the first unmap.
