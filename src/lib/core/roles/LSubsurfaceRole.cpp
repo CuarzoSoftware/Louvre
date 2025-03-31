@@ -79,7 +79,7 @@ void LSubsurfaceRole::handleParentCommit()
 
     if (m_pendingPlaceBelow)
     {
-        if (*std::prev(m_pendingPlaceAbove->imp()->parentLink) != surface())
+        if (*std::prev(m_pendingPlaceBelow->imp()->parentLink) != surface())
         {
             compositor()->imp()->insertSurfaceBefore(m_pendingPlaceBelow, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
             surface()->parent()->imp()->children.erase(surface()->imp()->parentLink);
