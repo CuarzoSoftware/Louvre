@@ -1125,8 +1125,7 @@ private:
         HasDecorationModeToSend     = static_cast<UInt32>(1) << 4,
         HasBoundsToSend             = static_cast<UInt32>(1) << 5,
         HasCapabilitiesToSend       = static_cast<UInt32>(1) << 6,
-        ClosedSent                  = static_cast<UInt32>(1) << 7,
-        HasPendingFirstMap          = static_cast<UInt32>(1) << 8
+        HasPendingFirstMap          = static_cast<UInt32>(1) << 7
     };
 
     void handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin) override;

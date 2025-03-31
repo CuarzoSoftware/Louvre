@@ -224,5 +224,5 @@ void Seat::configureInputDevice(LInputDevice *device) noexcept
     libinput_device_config_dwt_set_enabled(libinputDev, LIBINPUT_CONFIG_DWT_DISABLED);
 
     // Tap to click
-    libinput_device_config_tap_set_enabled(libinputDev, LIBINPUT_CONFIG_TAP_ENABLED);
+    // libinput_device_config_tap_set_enabled(libinputDev, LIBINPUT_CONFIG_TAP_ENABLED);
 }

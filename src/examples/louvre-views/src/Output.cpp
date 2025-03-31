@@ -473,8 +473,8 @@ void Output::onWorkspacesAnimationUpdate(LAnimation *anim) noexcept
             tl->animView.enableSrcRect(false);
             tl->animView.setVisible(true);
 
-            if (toplevelOrSubsurfacesHaveNewDamage(tl->surf()) || workspaceAnimationInFirstFrame)
-                tl->animScene->render();
+            //if (toplevelOrSubsurfacesHaveNewDamage(tl->surf()) || workspaceAnimationInFirstFrame)
+            tl->animScene->render();
 
             tl->animView.setTexture(tl->animScene->texture());
             tl->animView.setPos((pos() * val) + (tl->prevBoundingRect.pos() * (inv)));

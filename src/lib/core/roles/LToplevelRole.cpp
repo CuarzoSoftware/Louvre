@@ -563,7 +563,6 @@ void LToplevelRole::close() noexcept
 {
     auto &res { *static_cast<XdgShell::RXdgToplevel*>(resource()) };
     res.close();
-    m_flags.add(ClosedSent);
 }
 
 LMargins LToplevelRole::calculateConstraintsFromOutput(LOutput *output,  bool includeExtraGeometry) const noexcept

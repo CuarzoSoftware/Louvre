@@ -162,6 +162,7 @@ void Surface::mappingChanged()
 
     if (mapped())
     {
+        fadedOut = false;
         compositor()->repaintAllOutputs();
 
         if (tl() && tl()->decoratedView)
