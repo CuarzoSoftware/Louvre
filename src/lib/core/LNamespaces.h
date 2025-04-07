@@ -39,6 +39,7 @@
 #define LOUVRE_IDLE_INHIBIT_MANAGER_VERSION 1
 #define LOUVRE_DRM_LEASE_DEVICE_VERSION 1
 #define LOUVRE_WLR_OUTPUT_MANAGER_VERSION 4
+#define LOUVRE_BACKGROUND_BLUR_MANAGER_VERSION 2
 
 #define L_UNUSED(object){(void)object;}
 
@@ -106,6 +107,7 @@ namespace Louvre
     class LScreenshotRequest;
     class LActivationTokenManager;
     class LActivationToken;
+    class LBackgroundBlur;
 
     class LPainter;
     class LRenderBuffer;
@@ -527,6 +529,13 @@ namespace Louvre
             class RWlrOutputMode;
             class RWlrOutputConfiguration;
             class RWlrOutputConfigurationHead;
+        }
+
+        namespace BackgroundBlur
+        {
+            class GBackgroundBlurManager;
+
+            class RBackgroundBlur;
         }
     }
 

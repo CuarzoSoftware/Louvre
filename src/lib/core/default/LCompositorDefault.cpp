@@ -8,6 +8,7 @@
 #include <protocols/PointerConstraints/GPointerConstraints.h>
 #include <protocols/TearingControl/GTearingControlManager.h>
 #include <protocols/WlrOutputManagement/GWlrOutputManager.h>
+#include <protocols/BackgroundBlur/GBackgroundBlurManager.h>
 #include <protocols/XdgDecoration/GXdgDecorationManager.h>
 #include <protocols/GammaControl/GGammaControlManager.h>
 #include <protocols/PointerGestures/GPointerGestures.h>
@@ -142,6 +143,9 @@ bool LCompositor::createGlobalsRequest()
 
     // Allows clients to arrange/set output properties
     createGlobal<WlrOutputManagement::GWlrOutputManager>();
+
+    // Allows clients to set background blur effects for surfaces
+    createGlobal<BackgroundBlur::GBackgroundBlurManager>();
 
     return true;
 }

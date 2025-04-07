@@ -8,13 +8,20 @@
 #include <private/LCompositorPrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LTexturePrivate.h>
+#include <private/LFactory.h>
 #include <LForeignToplevelController.h>
+#include <LBackgroundBlur.h>
 #include <LTime.h>
 #include <LSeat.h>
 #include <LClient.h>
 #include <LKeyboard.h>
 
 using namespace Louvre::Protocols::Wayland;
+
+LBackgroundBlur *LSurface::backgroundBlur() const noexcept
+{
+    return imp()->backgroundBlur;
+}
 
 LSurface::LSurface(const void *params) noexcept : LFactoryObject(FactoryObjectType), LPRIVATE_INIT_UNIQUE(LSurface)
 {
@@ -29,11 +36,14 @@ LSurface::LSurface(const void *params) noexcept : LFactoryObject(FactoryObjectTy
         state->bufferRes = nullptr;
     };
     imp()->pending.onBufferDestroyListener.notify = imp()->current.onBufferDestroyListener.notify;
+    imp()->backgroundBlur = LFactory::createObject<LBackgroundBlur>(this);
 }
 
 LSurface::~LSurface()
 {
     notifyDestruction();
+
+    delete imp()->backgroundBlur.get();
 
     if (imp()->pending.bufferRes)
         wl_list_remove(&imp()->pending.onBufferDestroyListener.link);

@@ -445,6 +445,12 @@ public:
      */
     const std::vector<Protocols::WlrOutputManagement::GWlrOutputManager*> &wlrOutputManagerGlobals() const noexcept;
 
+    /**
+     * Resources created when the client binds to the
+     * background_blur_manager global of the Background Blur protocol.
+     */
+    const std::vector<Protocols::BackgroundBlur::GBackgroundBlurManager*> &backgroundBlurManagerGlobals() const noexcept;
+
     LPRIVATE_IMP_UNIQUE(LClient)
 };
 

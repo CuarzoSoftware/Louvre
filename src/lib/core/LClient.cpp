@@ -283,6 +283,11 @@ const std::vector<WlrOutputManagement::GWlrOutputManager *> &LClient::wlrOutputM
     return imp()->wlrOutputManagerGlobals;
 }
 
+const std::vector<BackgroundBlur::GBackgroundBlurManager *> &LClient::backgroundBlurManagerGlobals() const noexcept
+{
+    return imp()->backgroundBlurManagerGlobals;
+}
+
 const LClient::EventHistory &LClient::eventHistory() const noexcept
 {
     return imp()->eventHistory;

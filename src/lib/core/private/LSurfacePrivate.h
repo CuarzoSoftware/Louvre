@@ -128,6 +128,8 @@ LPRIVATE_CLASS(LSurface)
     std::vector<PresentationTime::RPresentationFeedback*> presentationFeedbackResources;
     std::vector<Protocols::IdleInhibit::RIdleInhibitor*> idleInhibitorResources;
 
+    LWeak<LBackgroundBlur> backgroundBlur;
+
     // Find the prev surface using layers (returns nullptr if no prev surface)
     LSurface *prevSurfaceInLayers() noexcept;
     void setLayer(LSurfaceLayer layer);

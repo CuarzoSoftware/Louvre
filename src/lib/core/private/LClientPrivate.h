@@ -60,6 +60,7 @@ public:
     std::vector<ImageCaptureSource::GOutputImageCaptureSourceManager*> outputImageCaptureSourceManagerGlobals;
     std::vector<ImageCaptureSource::GForeignToplevelImageCaptureSourceManager*> foreignToplevelImageCaptureSourceManagerGlobals;
     std::vector<WlrOutputManagement::GWlrOutputManager*> wlrOutputManagerGlobals;
+    std::vector<BackgroundBlur::GBackgroundBlurManager*> backgroundBlurManagerGlobals;
     bool destroyed { false };
 };
 

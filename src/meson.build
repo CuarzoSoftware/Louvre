@@ -110,7 +110,8 @@ protocols = [
     'IdleNotify',
     'IdleInhibit',
     'DRMLease',
-    'WlrOutputManagement'
+    'WlrOutputManagement',
+    'BackgroundBlur'
 ]
 
 foreach p : protocols

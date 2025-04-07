@@ -12,6 +12,7 @@
 #include <private/LFactory.h>
 #include <LCursorRole.h>
 #include <LDNDIconRole.h>
+#include <LBackgroundBlur.h>
 #include <LLog.h>
 
 using namespace Louvre::Protocols::Wayland;
@@ -95,6 +96,7 @@ RSurface::~RSurface()
 
     // Notify from client
     compositor()->onAnticipatedObjectDestruction(lSurface);
+    compositor()->onAnticipatedObjectDestruction(lSurface->imp()->backgroundBlur.get());
 
     // Unmap
     lSurface->imp()->setMapped(false);
@@ -434,6 +436,8 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
 
     if (!ref)
         return;
+
+    surface->backgroundBlur()->handleCommit();
 
     if (changes.check(Changes::BufferSizeChanged))
         surface->bufferSizeChanged();

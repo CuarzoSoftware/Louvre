@@ -13,6 +13,7 @@
 #include <LActivationTokenManager.h>
 #include <LSessionLockManager.h>
 #include <LSessionLockRole.h>
+#include <LBackgroundBlur.h>
 #include <LAnimation.h>
 #include <LClipboard.h>
 #include <LKeyboard.h>
@@ -859,6 +860,8 @@ void LCompositor::LCompositorPrivate::sendPendingConfigurations()
 {
     for (LSurface *s : surfaces)
     {
+        s->backgroundBlur()->sendPendingConfiguration();
+
         if (s->toplevel())
             s->toplevel()->sendPendingConfiguration();
         else if (s->popup())

@@ -113,6 +113,8 @@ public:
 
     static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LSurface;
 
+    LBackgroundBlur *backgroundBlur() const noexcept;
+
     /**
      * @brief ID of library roles
      *

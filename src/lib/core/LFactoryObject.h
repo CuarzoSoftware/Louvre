@@ -97,7 +97,10 @@ public:
         LSessionLockManager,
 
         /// Represents the LActivationTokenManager class.
-        LActivationTokenManager
+        LActivationTokenManager,
+
+        /// Represents the LBackgroundBlur class.
+        LBackgroundBlur
     };
 
     /**
