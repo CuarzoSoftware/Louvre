@@ -1,5 +1,6 @@
 #include <protocols/BackgroundBlur/background-blur.h>
 #include <protocols/BackgroundBlur/RBackgroundBlur.h>
+#include <protocols/SvgPath/RSvgPath.h>
 #include <protocols/Wayland/RSurface.h>
 #include <protocols/Wayland/RRegion.h>
 #include <LSurface.h>
@@ -19,7 +20,7 @@ RBackgroundBlur::RBackgroundBlur
         Wayland::RSurface *surfaceRes,
         UInt32 id,
         Int32 version
-        ) noexcept
+    ) noexcept
     :LResource
     (
         surfaceRes->client(),
@@ -31,8 +32,12 @@ RBackgroundBlur::RBackgroundBlur
     m_surfaceRes(surfaceRes)
 {
     auto &blur { *surfaceRes->surface()->backgroundBlur() };
-    blur.m_flags.remove(LBackgroundBlur::Destroyed);
     blur.m_backgroundBlurRes.reset(this);
+    blur.m_sentConfigurations.clear();
+
+    if (blur.m_flags.check(LBackgroundBlur::Destroyed))
+        surfaceRes->surface()->backgroundBlur()->reset();
+
     blur.configureRequest();
 
     if (!blur.m_flags.check(LBackgroundBlur::HasStateToSend))
@@ -45,7 +50,10 @@ RBackgroundBlur::RBackgroundBlur
 RBackgroundBlur::~RBackgroundBlur() noexcept
 {
     if (surfaceRes())
-        surfaceRes()->surface()->backgroundBlur()->m_flags.add(LBackgroundBlur::Destroyed);
+    {
+        auto &blur { *surfaceRes()->surface()->backgroundBlur() };
+        blur.m_flags.add(LBackgroundBlur::Destroyed);
+    }
 }
 
 /******************** EVENTS ********************/
@@ -96,9 +104,9 @@ void RBackgroundBlur::ack_configure(wl_client */*client*/, wl_resource *resource
     {
         if (blur.m_sentConfigurations.front().serial == serial)
         {
-            blur.pendingAtoms().serial = blur.m_sentConfigurations.front().serial;
-            blur.pendingAtoms().state = blur.m_sentConfigurations.front().state;
-            blur.pendingAtoms().style = blur.m_sentConfigurations.front().style;
+            blur.pendingProps().serial = blur.m_sentConfigurations.front().serial;
+            blur.pendingProps().state = blur.m_sentConfigurations.front().state;
+            blur.pendingProps().style = blur.m_sentConfigurations.front().style;
             blur.m_sentConfigurations.pop_front();
             return;
         }
@@ -120,22 +128,25 @@ void RBackgroundBlur::set_region(wl_client */*client*/, wl_resource *resource, w
     }
 
     auto &blur { *res.surfaceRes()->surface()->backgroundBlur() };
-    blur.m_flags.add(LBackgroundBlur::AssignedRegion);
+    blur.m_flags.add(LBackgroundBlur::AssignedRegionOrPath);
+    blur.pendingProps().isFullSize = region == nullptr;
+    blur.pendingProps().isSvgPath = false;
+    blur.pendingProps().svgPath.clear();
 
     if (region)
     {
         auto &rRegion { *static_cast<Protocols::Wayland::RRegion*>(wl_resource_get_user_data(region)) };
-        blur.pendingAtoms().region.reset(new LRegion(rRegion.region()));
-        blur.pendingAtoms().path.reset();
+        blur.pendingProps().region = rRegion.region();
+        blur.pendingProps().isEmpty = blur.pendingProps().region.empty();
     }
     else
     {
-        blur.pendingAtoms().region.reset();
-        blur.pendingAtoms().path.reset();
+        blur.pendingProps().region.clear();
+        blur.pendingProps().isEmpty = false;
     }
 }
 
-void RBackgroundBlur::set_path(wl_client */*client*/, wl_resource *resource, const char *svgPath)
+void RBackgroundBlur::set_path(wl_client */*client*/, wl_resource *resource, wl_resource *svgPath)
 {
     auto &res { *static_cast<RBackgroundBlur*>(wl_resource_get_user_data(resource)) };
 
@@ -146,16 +157,37 @@ void RBackgroundBlur::set_path(wl_client */*client*/, wl_resource *resource, con
     }
 
     auto &blur { *res.surfaceRes()->surface()->backgroundBlur() };
-    blur.m_flags.add(LBackgroundBlur::AssignedRegion);
+    blur.m_flags.add(LBackgroundBlur::AssignedRegionOrPath);
+    blur.pendingProps().isFullSize = svgPath == nullptr;
+    blur.pendingProps().region.clear();
 
     if (svgPath)
     {
-        blur.pendingAtoms().path.reset(new std::string(svgPath));
-        blur.pendingAtoms().region.reset();
+        auto &rSvgPath { *static_cast<Protocols::SvgPath::RSvgPath*>(wl_resource_get_user_data(svgPath)) };
+
+        if (!rSvgPath.isComplete())
+        {
+            wl_resource_post_error(resource, BACKGROUND_BLUR_ERROR_INVALID_PATH, "invalid svg path");
+            return;
+        }
+
+        blur.pendingProps().svgPath = rSvgPath.commands();
+
+        if (blur.pendingProps().svgPath.empty())
+        {
+            blur.pendingProps().isSvgPath = false;
+            blur.pendingProps().isEmpty = true;
+        }
+        else
+        {
+            blur.pendingProps().isSvgPath = true;
+            blur.pendingProps().isEmpty = false;
+        }
     }
     else
     {
-        blur.pendingAtoms().region.reset();
-        blur.pendingAtoms().path.reset();
+        blur.pendingProps().svgPath.clear();
+        blur.pendingProps().isEmpty = false;
+        blur.pendingProps().isSvgPath = false;
     }
 }

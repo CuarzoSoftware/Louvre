@@ -97,7 +97,9 @@ void LCursor::LCursorPrivate::textureUpdate() noexcept
 
 void texture2Buffer(LCursor *cursor, const LSizeF &size, LTransform transform) noexcept
 {
+    eglMakeCurrent(compositor()->eglDisplay(), EGL_NO_SURFACE, EGL_NO_SURFACE, compositor()->eglContext());
     LPainter *painter { compositor()->imp()->painter };
+    painter->bindProgram();
     glBindFramebuffer(GL_FRAMEBUFFER, cursor->imp()->glFramebuffer);
     cursor->imp()->fb.setId(cursor->imp()->glFramebuffer);
     painter->bindFramebuffer(&cursor->imp()->fb);

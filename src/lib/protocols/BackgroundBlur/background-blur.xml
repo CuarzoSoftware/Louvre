@@ -25,18 +25,22 @@
 
   <interface name="background_blur_manager" version="2">
     <description summary="background blur manager">
-      This interface allows a compositor to announce support for blurring the backgrounds of surfaces.
+      This interface allows a compositor to announce support for blurring the 
+      backgrounds of surfaces.
       
-      Starting from version 2, clients are permitted to define the blurred region using SVG paths.
+      Starting from version 2, clients are permitted to define the blurred region 
+      using svg_path objects.
     </description>
 
     <enum name="error">
-      <entry name="already_constructed" value="0" summary="the surface already has an associated background blur"/>
+      <entry name="already_constructed" value="0" 
+        summary="the surface already has an associated background blur"/>
     </enum>
 
     <request name="destroy" type="destructor">
       <description summary="destroy the background blur manager object">
-        Destroy the background blur manager. This doesn't destroy objects created with the manager.
+        Destroy the background blur manager. This doesn't destroy objects 
+        created with the manager.
       </description>
     </request>
 
@@ -44,15 +48,20 @@
       <description summary="create a new background blur object">
         Creates a new background blur object for a given surface.
 
-        The surface must not already have an associated background blur, otherwise the already_constructed error is emitted.
+        The surface must not already have an associated background blur, otherwise 
+        the already_constructed error is emitted.
 
-        Immediately after the object is created, the compositor will send a state event, a style event, and finally a configure event.
+        Immediately after the object is created, the compositor will send a state 
+        event, a style event, and finally a configure event.
 
-        Surfaces must acknowledge the configure event and may then define the blur region or path before the next commit.
+        Surfaces must acknowledge the configure event and may then define the blur 
+        region or path before the next commit.
 
         The client may ignore all configure events except for the last one.
 
-        A client can send multiple ack_configure requests before committing, but only the last request sent prior to the commit indicates which configure event the client is responding to.
+        A client can send multiple ack_configure requests before committing, but only 
+        the last request sent prior to the commit indicates which configure event the 
+        client is responding to.
       </description>
             
       <arg name="id" type="new_id" interface="background_blur"/>
@@ -66,14 +75,21 @@
     </description>
 
     <enum name="error">
-      <entry name="destroyed_surface" value="0" summary="surface destroyed before object"/>
-      <entry name="invalid_serial" value="1" summary="invalid ack serial"/>
-      <entry name="invalid_path" value="2" since="2" summary="invalid svg path"/>
+      <entry name="destroyed_surface" 
+        value="0" summary="surface destroyed before object"/>
+      <entry name="invalid_serial" 
+        value="1" summary="invalid ack serial"/>
+      <entry name="out_of_bounds" 
+        value="2" summary="the region or path extends beyond the surface bounds"/>
+      <entry name="invalid_path" 
+        value="3" since="2" summary="invalid svg path"/>
     </enum>
     
     <enum name="state">
-      <entry name="disabled" value="0" summary="the blur effect is disabled"/>
-      <entry name="enabled" value="1" summary="the blur effect is enabled"/>
+      <entry name="disabled" value="0" 
+        summary="the blur effect is not displayed by the compositor"/>
+      <entry name="enabled" value="1" 
+        summary="the blur effect is displayed by the compositor"/>
     </enum>
     
     <enum name="style">
@@ -92,23 +108,31 @@
         Sets the blurred region.
 
         This is a double-buffered operation, refer to wl_surface.commit. 
-        The region is defined in local surface coordinates and may not extend beyond the surface bounds. 
-        The compositor may apply additional clipping at its discretion. 
-        The client should avoid both rendering opaque content within the blurred region and marking the blurred region as opaque.
+        The region is defined in local surface coordinates and must not 
+        extend beyond the surface bounds otherwise the out_of_bounds 
+        error is emitted. 
+        The client should avoid both rendering opaque content within the 
+        blurred region and marking the blurred region as opaque.
 
-        Setting the pending blur region has copy semantics, allowing the wl_region object to be destroyed immediately. 
-        Setting a null region disables the blur effect.
+        Setting the pending blur region has copy semantics, allowing the 
+        wl_region object to be destroyed immediately. 
+        Setting a null region means that the region will always match the 
+        entire surface.
 
-        For the compositor to display the blur effect, it must be configured as enabled, and the client must commit a non-null region or path.
+        For the compositor to display the blur effect, it must be 
+        configured as enabled, and the client must commit a non-empty 
+        region or path.
         
-        The initial value is null.
+        The initial value is an empty region (no blurring).
       </description>
-      <arg name="blur_region" type="object" allow-null="true" interface="wl_region"/>
+      <arg name="blur_region" type="object" allow-null="true" 
+        interface="wl_region"/>
     </request>
     
     <request name="ack_configure">
       <description summary="ack a pending configuration">
-        Acknowledging a serial that has not been sent, or one that has already been acknowledged, triggers the invalid_serial error.
+        Acknowledging a serial that has not been sent, or one that has already 
+        been acknowledged, triggers the invalid_serial error.
       </description>
       
       <arg name="serial" type="uint" summary="serial of the configure event"/>
@@ -117,7 +141,9 @@
     <event name="state">
       <description summary="Indicates whether the blur effect is enabled">
         Specifies whether the blur effect is being applied by the compositor.
-        If the effect is disabled, the surface should no longer make the blurred region transparent.
+
+        If the effect is disabled, the surface should no longer make the 
+        blurred region transparent.
         
         The change must be followed by a configure event to take effect.  
         
@@ -128,8 +154,9 @@
     
     <event name="style">
       <description summary="Indicates the color tone of the blur effect.">
-        The style specifies the color tone of the blur effect. Clients can adapt their content accordingly,  
-        for example, displaying white text if the tone is dark or black text if the tone is light. 
+        The style specifies the color tone of the blur effect so that clients can 
+        adapt their content accordingly, for example, displaying white text if the 
+        tone is dark or black text if the tone is light. 
         
         The change must be followed by a configure event to take effect.
         
@@ -150,19 +177,22 @@
     
     <request name="set_path" since="2">
       <description summary="set the blurred path">
-        Sets the blurred region using an SVG path.
-
-        The string of commands must describe a valid SVG path, as specified here:
-
-        https://svgwg.org/specs/paths/
+        Sets the blurred region using an svg_path object.
 
         This operation has identical semantics to set_region. 
-        The SVG path coordinates must be defined in local surface coordinates. 
-        Using either set_path or set_region invalidates the other.
+        The SVG path coordinates must be defined in local surface coordinates
+        and must not extend beyond the surface bounds. 
+        Setting the pending blur path has copy semantics, allowing the 
+        svg_path object to be destroyed immediately. 
+        Setting a null path means that the region will always match the 
+        entire surface.
+        Using either set_path or set_region replaces the other.
         
-        Setting a non null invalid path triggers the invalid_path error.
+        Setting an unconstructed or invalid path triggers the invalid_path error.
+
+        The initial value is an empty path (no blurring).
       </description>
-      <arg name="commands" type="string" allow-null="true" summary="the SVG path commands"/>
+      <arg name="path" type="object" allow-null="true" interface="svg_path" summary="the SVG path commands"/>
     </request>
     
   </interface>

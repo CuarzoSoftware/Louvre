@@ -451,6 +451,12 @@ public:
      */
     const std::vector<Protocols::BackgroundBlur::GBackgroundBlurManager*> &backgroundBlurManagerGlobals() const noexcept;
 
+    /**
+     * Resources created when the client binds to the
+     * svg_path_manager global of the SVG Path protocol.
+     */
+    const std::vector<Protocols::SvgPath::GSvgPathManager*> &svgPathManagerGlobals() const noexcept;
+
     LPRIVATE_IMP_UNIQUE(LClient)
 };
 

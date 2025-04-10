@@ -288,6 +288,11 @@ const std::vector<BackgroundBlur::GBackgroundBlurManager *> &LClient::background
     return imp()->backgroundBlurManagerGlobals;
 }
 
+const std::vector<SvgPath::GSvgPathManager *> &LClient::svgPathManagerGlobals() const noexcept
+{
+    return imp()->svgPathManagerGlobals;
+}
+
 const LClient::EventHistory &LClient::eventHistory() const noexcept
 {
     return imp()->eventHistory;

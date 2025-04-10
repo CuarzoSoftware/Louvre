@@ -111,6 +111,7 @@ protocols = [
     'IdleInhibit',
     'DRMLease',
     'WlrOutputManagement',
+    'SvgPath',
     'BackgroundBlur'
 ]
 

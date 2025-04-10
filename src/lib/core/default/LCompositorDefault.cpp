@@ -22,6 +22,7 @@
 #include <protocols/Wayland/GDataDeviceManager.h>
 #include <protocols/LinuxDMABuf/GLinuxDMABuf.h>
 #include <protocols/IdleNotify/GIdleNotifier.h>
+#include <protocols/SvgPath/GSvgPathManager.h>
 #include <protocols/Viewporter/GViewporter.h>
 #include <protocols/LayerShell/GLayerShell.h>
 #include <protocols/Wayland/GSubcompositor.h>
@@ -146,6 +147,9 @@ bool LCompositor::createGlobalsRequest()
 
     // Allows clients to set background blur effects for surfaces
     createGlobal<BackgroundBlur::GBackgroundBlurManager>();
+
+    // Allows clients to share SVG paths
+    createGlobal<SvgPath::GSvgPathManager>();
 
     return true;
 }

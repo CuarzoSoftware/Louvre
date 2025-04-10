@@ -38,46 +38,33 @@
 #define WL_PRIVATE
 #endif
 
-extern const struct wl_interface background_blur_interface;
 extern const struct wl_interface svg_path_interface;
-extern const struct wl_interface wl_region_interface;
-extern const struct wl_interface wl_surface_interface;
 
-static const struct wl_interface *background_blur_types[] = {
+static const struct wl_interface *svg_path_types[] = {
 	NULL,
-	&background_blur_interface,
-	&wl_surface_interface,
-	&wl_region_interface,
 	&svg_path_interface,
 };
 
-static const struct wl_message background_blur_manager_requests[] = {
-	{ "destroy", "", background_blur_types + 0 },
-	{ "get_background_blur", "no", background_blur_types + 1 },
+static const struct wl_message svg_path_manager_requests[] = {
+	{ "destroy", "", svg_path_types + 0 },
+	{ "get_svg_path", "n", svg_path_types + 1 },
 };
 
-WL_PRIVATE const struct wl_interface background_blur_manager_interface = {
-	"background_blur_manager", 2,
-	2, background_blur_manager_requests,
+WL_PRIVATE const struct wl_interface svg_path_manager_interface = {
+	"svg_path_manager", 1,
+	2, svg_path_manager_requests,
 	0, NULL,
 };
 
-static const struct wl_message background_blur_requests[] = {
-	{ "destroy", "", background_blur_types + 0 },
-	{ "set_region", "?o", background_blur_types + 3 },
-	{ "ack_configure", "u", background_blur_types + 0 },
-	{ "set_path", "2?o", background_blur_types + 4 },
+static const struct wl_message svg_path_requests[] = {
+	{ "destroy", "", svg_path_types + 0 },
+	{ "concat_commands", "s", svg_path_types + 0 },
+	{ "done", "", svg_path_types + 0 },
 };
 
-static const struct wl_message background_blur_events[] = {
-	{ "state", "u", background_blur_types + 0 },
-	{ "style", "u", background_blur_types + 0 },
-	{ "configure", "u", background_blur_types + 0 },
-};
-
-WL_PRIVATE const struct wl_interface background_blur_interface = {
-	"background_blur", 2,
-	4, background_blur_requests,
-	3, background_blur_events,
+WL_PRIVATE const struct wl_interface svg_path_interface = {
+	"svg_path", 1,
+	3, svg_path_requests,
+	0, NULL,
 };
 

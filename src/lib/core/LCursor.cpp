@@ -63,6 +63,8 @@ const LRegion &LCursor::damage(LOutput *output) const noexcept
 
 LCursor::LCursor() noexcept : LPRIVATE_INIT_UNIQUE(LCursor)
 {
+    eglMakeCurrent(compositor()->eglDisplay(), EGL_NO_SURFACE, EGL_NO_SURFACE, compositor()->eglContext());
+
     compositor()->imp()->cursor = this;
 
     if (!imp()->louvreTexture.setDataFromMainMemory(

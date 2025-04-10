@@ -19,7 +19,7 @@ public:
     static void destroy(wl_client *client, wl_resource *resource);
     static void ack_configure(wl_client *client, wl_resource *resource, UInt32 serial);
     static void set_region(wl_client *client, wl_resource *resource, wl_resource *region);
-    static void set_path(wl_client *client, wl_resource *resource, const char *svgPath);
+    static void set_path(wl_client *client, wl_resource *resource, wl_resource *svgPath);
 private:
     friend class GBackgroundBlurManager;
     RBackgroundBlur(Wayland::RSurface *surfaceRes, UInt32 id, Int32 version) noexcept;

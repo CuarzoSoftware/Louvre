@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="svg_path">
+  <copyright>
+    Copyright © 2025 Cuarzo Software
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+  </copyright>
+
+  <interface name="svg_path_manager" version="1">
+    <description summary="SVG path manager">
+      This interface allows a compositor to announce support for SVG paths.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the SVG path manager object">
+        Destroy the SVG path manager. This doesn't destroy objects created with the manager.
+      </description>
+    </request>
+
+    <request name="get_svg_path">
+      <description summary="create a new SVG path object"></description>
+      <arg name="id" type="new_id" interface="svg_path"/>
+    </request>
+  </interface>
+
+  <interface name="svg_path" version="1">
+    <description summary="SVG path object">
+      The SVG path is described as a string of commands, as outlined here:
+
+      https://svgwg.org/specs/paths/
+
+      After requesting an svg_path object, the client must send zero or multiple 
+      concat_commands if the string exceeds 4096 bytes, which is the default maximum 
+      length supported by libwayland. The compositor concatenates the strings in order 
+      of receipt. 
+
+      Once all commands are sent, the client must issue a done request, at which point 
+      the SVG path is considered complete. Sending a done request without having previously 
+      sent a concat_command is valid and represents an empty path. 
+
+      No requests, except for destroy, are accepted after a done event, otherwise, 
+      the already_constructed error is emitted.
+
+      Sending a destroy request without having sent a done request triggers the incomplete error. 
+      
+      If the final string yield an invalid SVG path, the invalid_commands error is emitted. 
+      
+      The coordinate system of the described path depends on the context in which it is used.
+    </description>
+
+    <enum name="error">
+      <entry name="incomplete" value="0" summary="incomplete svg path"/>
+      <entry name="already_constructed" value="1" summary="done sent twice"/>
+      <entry name="invalid_commands" value="2" summary="the final string doesn't represent a valid svg path"/>
+    </enum>
+    
+    <request name="destroy" type="destructor">
+      <description summary="destroy the vector path object">
+      </description>
+    </request>
+    
+    <request name="concat_commands">
+      <description summary="append SVG path commands">
+        The string size of each request must not exceed the 4096-byte limit.
+      </description>
+      <arg name="commands" type="string"/>
+    </request>
+    
+    <request name="done">
+      <description summary="all commands have been sent">
+        Once this request is sent, the only permissible action is destroy.
+      </description>
+    </request>
+    
+  </interface>
+</protocol>

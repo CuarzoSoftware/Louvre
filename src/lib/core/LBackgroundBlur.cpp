@@ -1,3 +1,4 @@
+#include "protocols/BackgroundBlur/background-blur.h"
 #include <private/LCompositorPrivate.h>
 #include <protocols/BackgroundBlur/RBackgroundBlur.h>
 #include <LBackgroundBlur.h>
@@ -26,12 +27,12 @@ void LBackgroundBlur::configureRequest()
     configureStyle(Light);
 }
 
-void LBackgroundBlur::atomsChanged(LBitset<AtomChanges> /*changes*/, const Atoms &/*prevAtoms*/)
+void LBackgroundBlur::propsChanged(LBitset<PropChanges> /*changes*/, const Props &/*prevProps*/)
 {
 
 }
 
-void LBackgroundBlur::handleCommit() noexcept
+void LBackgroundBlur::handleCommit(bool sizeChanged) noexcept
 {
     if (m_flags.check(Destroyed))
     {
@@ -41,60 +42,73 @@ void LBackgroundBlur::handleCommit() noexcept
     }
     else if (supported())
     {
-        fullAtomsUpdate();
+        fullPropsUpdate(sizeChanged);
     }
 }
 
-void LBackgroundBlur::fullAtomsUpdate()
+void LBackgroundBlur::fullPropsUpdate(bool sizeChanged) noexcept
 {
-    LBitset<AtomChanges> changesToNotify;
+    LBitset<PropChanges> changesToNotify;
 
-    if (m_flags.check(AssignedRegion))
-        changesToNotify.add(RegionChanged);
+    changesToNotify.setFlag(RegionOrPathChanged,
+        pendingProps().isEmpty != currentProps().isEmpty ||
+        pendingProps().isSvgPath != currentProps().isSvgPath ||
+        pendingProps().isFullSize != currentProps().isFullSize);
 
-    if (currentAtoms().serial != pendingAtoms().serial)
+    if (!pendingProps().isEmpty)
+    {
+        if (pendingProps().isFullSize)
+        {
+            if (sizeChanged || pendingProps().isFullSize != currentProps().isFullSize)
+            {
+                pendingProps().region.clear();
+                pendingProps().region.addRect(LRect(LPoint(0, 0), surface()->size()));
+                changesToNotify.add(RegionOrPathChanged);
+            }
+        }
+        else
+        {
+            if (m_flags.check(AssignedRegionOrPath))
+                changesToNotify.add(RegionOrPathChanged);
+
+            if (pendingProps().isSvgPath)
+            {
+                // TODO: Currently it needs to be validated by the user
+            }
+            else if (m_flags.check(AssignedRegionOrPath) || sizeChanged)
+            {
+                const auto &bounds { pendingProps().region.extents() };
+
+                if (bounds.x1 < 0 || bounds.y1 < 0 || bounds.x2 > surface()->size().w() || bounds.y2 > surface()->size().h())
+                {
+                    wl_resource_post_error(backgroundBlurResource()->resource(),
+                                           BACKGROUND_BLUR_ERROR_OUT_OF_BOUNDS,
+                                           "the region or path extends beyond the surface bounds");
+                    return;
+                }
+            }
+        }
+    }
+
+    if (currentProps().serial != pendingProps().serial)
     {
         changesToNotify.add(SerialChanged);
 
-        if (currentAtoms().state != pendingAtoms().state)
+        if (currentProps().state != pendingProps().state)
             changesToNotify.add(StateChanged);
 
-        if (currentAtoms().style != pendingAtoms().style)
+        if (currentProps().style != pendingProps().style)
             changesToNotify.add(StyleChanged);
     }
 
     if (changesToNotify == 0)
         return;
 
-    m_currentAtomsIndex = 1 - m_currentAtomsIndex;
+    m_currentPropsIndex = 1 - m_currentPropsIndex;
 
-    atomsChanged(changesToNotify, pendingAtoms());
-
-    if (m_flags.check(AssignedRegion))
-    {
-        if (currentAtoms().region)
-            pendingAtoms().region.reset(new LRegion(*currentAtoms().region.get()));
-        else
-            pendingAtoms().region.reset();
-
-        if (currentAtoms().path)
-            pendingAtoms().path.reset(new std::string(*currentAtoms().path.get()));
-        else
-            pendingAtoms().path.reset();
-    }
-
-    if (changesToNotify.check(SerialChanged))
-    {
-        pendingAtoms().serial = currentAtoms().serial;
-
-        if (changesToNotify.check(StateChanged))
-            pendingAtoms().state = currentAtoms().state;
-
-        if (changesToNotify.check(StyleChanged))
-            pendingAtoms().style = currentAtoms().style;
-    }
-
-    m_flags.remove(AssignedRegion);
+    propsChanged(changesToNotify, pendingProps());
+    pendingProps() = currentProps();
+    m_flags.remove(AssignedRegionOrPath);
 }
 
 void LBackgroundBlur::sendPendingConfiguration() noexcept
@@ -132,18 +146,10 @@ void LBackgroundBlur::reset() noexcept
     m_pendingConfiguration.serial++;
     m_pendingConfiguration.state = Disabled;
     m_pendingConfiguration.style = Light;
-
-    if (region())
-    {
-        m_flags.set(AssignedRegion);
-        pendingAtoms().region.reset();
-    }
-
-    if (path())
-    {
-        m_flags.set(AssignedRegion);
-        pendingAtoms().path.reset();
-    }
-
-    fullAtomsUpdate();
+    pendingProps().region.clear();
+    pendingProps().svgPath.clear();
+    pendingProps().isSvgPath = false;
+    pendingProps().isEmpty = true;
+    pendingProps().isFullSize = false;
+    fullPropsUpdate(false);
 }

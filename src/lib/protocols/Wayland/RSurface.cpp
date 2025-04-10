@@ -437,8 +437,6 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     if (!ref)
         return;
 
-    surface->backgroundBlur()->handleCommit();
-
     if (changes.check(Changes::BufferSizeChanged))
         surface->bufferSizeChanged();
 
@@ -474,6 +472,8 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
 
     if (changes.check(Changes::ContentTypeChanged))
         surface->contentTypeChanged();
+
+    surface->backgroundBlur()->handleCommit(changes.check(Changes::SizeChanged));
 
     changes.set(Changes::NoChanges);
 }
