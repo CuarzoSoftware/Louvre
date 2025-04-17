@@ -1009,30 +1009,24 @@ void LCompositor::LCompositorPrivate::findBestScreenCopyDMAFormat() noexcept
 
     const std::vector<UInt32> options
     {
-        DRM_FORMAT_NV12,             // High efficiency for screen copy and video
-        DRM_FORMAT_NV21,             // Similar to NV12 but reversed chroma order
-        DRM_FORMAT_NV16,             // Balanced subsampling for efficiency
-        DRM_FORMAT_NV61,             // Variant with reversed chroma order
-        DRM_FORMAT_NV24,             // Non-subsampled, good for quality
-        DRM_FORMAT_NV42,             // Variant with reversed chroma order
-        DRM_FORMAT_YUV420,           // Efficient 4:2:0 subsampling
-        DRM_FORMAT_YVU420,           // Variant with reversed chroma order
-        DRM_FORMAT_YUYV,             // Packed format, good balance
-        DRM_FORMAT_UYVY,             // Similar to YUYV, different layout
-        DRM_FORMAT_RGB565,           // Reduced color depth, efficient
-        DRM_FORMAT_BGR565,           // Variant with blue-green-red order
-        DRM_FORMAT_RGB888,           // High quality, larger file size
-        DRM_FORMAT_BGR888,           // Variant with blue-green-red order
-        DRM_FORMAT_RGBA4444,         // Includes alpha, efficient packing
-        DRM_FORMAT_BGRA4444,         // Variant with blue-green-red order
-        DRM_FORMAT_ARGB1555,         // Includes alpha, balanced color depth
-        DRM_FORMAT_XRGB8888,         // High color depth without alpha
-        DRM_FORMAT_ARGB8888,         // High color depth with alpha
-        DRM_FORMAT_Y410,             // Includes alpha, balanced compression
-        DRM_FORMAT_Y416,             // High-quality subsampling
-        DRM_FORMAT_XRGB16161616F,    // Floating point format, high precision
-        DRM_FORMAT_ARGB16161616F,    // High precision with alpha
-        DRM_FORMAT_AXBXGXRX106106106106 // Maximum precision with padding
+        // Compressed formats (if supported by hardware)
+        DRM_FORMAT_NV12,           // Semi-planar YUV, efficient for video encoding
+        DRM_FORMAT_YUV420,         // Planar YUV, good for video (lower bandwidth)
+
+        // Best: Modern, hardware-accelerated, and/or compressed formats
+        DRM_FORMAT_XRGB8888,      // Most common, widely supported (uncompressed)
+        DRM_FORMAT_ARGB8888,       // Similar to XRGB but with alpha (useful for compositing)
+        DRM_FORMAT_XBGR8888,       // Alternative byte order (BGR), good for some GPUs
+        DRM_FORMAT_ABGR8888,       // BGR with alpha
+
+        // Older/less efficient formats
+        DRM_FORMAT_RGB565,         // 16-bit (lower quality, but lower bandwidth)
+        DRM_FORMAT_RGB888,         // 24-bit packed (no alpha, less common)
+        DRM_FORMAT_BGR888,         // 24-bit packed BGR
+
+        // Worst: Legacy or niche formats
+        DRM_FORMAT_RGBA5551,       // 16-bit with 1-bit alpha
+        DRM_FORMAT_RGBA4444,       // 16-bit with 4-bit alpha
     };
 
     Int64 screenCopyFormat { -1 };
@@ -1047,6 +1041,9 @@ void LCompositor::LCompositorPrivate::findBestScreenCopyDMAFormat() noexcept
                 break;
             }
         }
+
+        if (screenCopyFormat != -1)
+            break;
     }
 
     // Fallback

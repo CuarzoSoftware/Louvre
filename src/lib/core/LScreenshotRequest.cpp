@@ -82,13 +82,14 @@ Int8 LScreenshotRequest::copy() noexcept
     {
         LDMABuffer *dmaBuffer { static_cast<LDMABuffer*>(wl_resource_get_user_data(resource().buffer())) };
         UInt32 i { 0 };
-        EGLAttrib attribs[19];
+        EGLAttrib attribs[50];
         attribs[i++] = EGL_WIDTH;
         attribs[i++] = dmaBuffer->planes()->width;
         attribs[i++] = EGL_HEIGHT;
         attribs[i++] = dmaBuffer->planes()->height;
         attribs[i++] = EGL_LINUX_DRM_FOURCC_EXT;
         attribs[i++] = dmaBuffer->planes()->format;
+
         attribs[i++] = EGL_DMA_BUF_PLANE0_FD_EXT;
         attribs[i++] = dmaBuffer->planes()->fds[0];
         attribs[i++] = EGL_DMA_BUF_PLANE0_OFFSET_EXT;
@@ -99,6 +100,49 @@ Int8 LScreenshotRequest::copy() noexcept
         attribs[i++] = dmaBuffer->planes()->modifiers[0] & 0xFFFFFFFF;
         attribs[i++] = EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT;
         attribs[i++] = dmaBuffer->planes()->modifiers[0] >> 32;
+
+        if (dmaBuffer->planes()->num_fds > 1)
+        {
+            attribs[i++] = EGL_DMA_BUF_PLANE1_FD_EXT;
+            attribs[i++] = dmaBuffer->planes()->fds[1];
+            attribs[i++] = EGL_DMA_BUF_PLANE1_OFFSET_EXT;
+            attribs[i++] = dmaBuffer->planes()->offsets[1];
+            attribs[i++] = EGL_DMA_BUF_PLANE1_PITCH_EXT;
+            attribs[i++] = dmaBuffer->planes()->strides[1];
+            attribs[i++] = EGL_DMA_BUF_PLANE1_MODIFIER_LO_EXT;
+            attribs[i++] = dmaBuffer->planes()->modifiers[1] & 0xFFFFFFFF;
+            attribs[i++] = EGL_DMA_BUF_PLANE1_MODIFIER_HI_EXT;
+            attribs[i++] = dmaBuffer->planes()->modifiers[1] >> 32;
+
+            if (dmaBuffer->planes()->num_fds > 2)
+            {
+                attribs[i++] = EGL_DMA_BUF_PLANE2_FD_EXT;
+                attribs[i++] = dmaBuffer->planes()->fds[2];
+                attribs[i++] = EGL_DMA_BUF_PLANE2_OFFSET_EXT;
+                attribs[i++] = dmaBuffer->planes()->offsets[2];
+                attribs[i++] = EGL_DMA_BUF_PLANE2_PITCH_EXT;
+                attribs[i++] = dmaBuffer->planes()->strides[2];
+                attribs[i++] = EGL_DMA_BUF_PLANE2_MODIFIER_LO_EXT;
+                attribs[i++] = dmaBuffer->planes()->modifiers[2] & 0xFFFFFFFF;
+                attribs[i++] = EGL_DMA_BUF_PLANE2_MODIFIER_HI_EXT;
+                attribs[i++] = dmaBuffer->planes()->modifiers[2] >> 32;
+
+                if (dmaBuffer->planes()->num_fds > 3)
+                {
+                    attribs[i++] = EGL_DMA_BUF_PLANE3_FD_EXT;
+                    attribs[i++] = dmaBuffer->planes()->fds[3];
+                    attribs[i++] = EGL_DMA_BUF_PLANE3_OFFSET_EXT;
+                    attribs[i++] = dmaBuffer->planes()->offsets[3];
+                    attribs[i++] = EGL_DMA_BUF_PLANE3_PITCH_EXT;
+                    attribs[i++] = dmaBuffer->planes()->strides[3];
+                    attribs[i++] = EGL_DMA_BUF_PLANE3_MODIFIER_LO_EXT;
+                    attribs[i++] = dmaBuffer->planes()->modifiers[3] & 0xFFFFFFFF;
+                    attribs[i++] = EGL_DMA_BUF_PLANE3_MODIFIER_HI_EXT;
+                    attribs[i++] = dmaBuffer->planes()->modifiers[3] >> 32;
+                }
+            }
+        }
+
         attribs[i++] = EGL_IMAGE_PRESERVED_KHR;
         attribs[i++] = EGL_TRUE;
         attribs[i++] = EGL_NONE;
