@@ -977,8 +977,8 @@ retryName:
             }
         }
 
-        if (!isScanout)
-            *(UInt16*)wl_array_add(&dmaFeedback.formatIndices, sizeof(UInt16)) = formatIndex;
+        //if (!isScanout)
+        *(UInt16*)wl_array_add(&dmaFeedback.formatIndices, sizeof(UInt16)) = formatIndex;
 
         formatIndex++;
     }
