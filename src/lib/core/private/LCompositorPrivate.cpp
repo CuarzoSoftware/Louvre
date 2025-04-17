@@ -25,6 +25,8 @@
 #include <LTimer.h>
 #include <LLog.h>
 #include <EGL/egl.h>
+#include <xf86drm.h>
+#include <drm_fourcc.h>
 #include <dlfcn.h>
 #include <string.h>
 #include <cassert>
@@ -353,6 +355,7 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
     cursor = new LCursor();
     initDRMLeaseGlobals();
     initDMAFeedback();
+    findBestScreenCopyDMAFormat();
     return true;
 }
 
@@ -997,6 +1000,62 @@ void LCompositor::LCompositorPrivate::unitDMAFeedback() noexcept
         wl_array_release(&dmaFeedback.formatIndices);
         wl_array_release(&dmaFeedback.scanoutIndices);
     }
+}
+
+void LCompositor::LCompositorPrivate::findBestScreenCopyDMAFormat() noexcept
+{
+    if (graphicBackend->backendGetDMAFormats()->empty())
+        return;
+
+    const std::vector<UInt32> options
+    {
+        DRM_FORMAT_NV12,             // High efficiency for screen copy and video
+        DRM_FORMAT_NV21,             // Similar to NV12 but reversed chroma order
+        DRM_FORMAT_NV16,             // Balanced subsampling for efficiency
+        DRM_FORMAT_NV61,             // Variant with reversed chroma order
+        DRM_FORMAT_NV24,             // Non-subsampled, good for quality
+        DRM_FORMAT_NV42,             // Variant with reversed chroma order
+        DRM_FORMAT_YUV420,           // Efficient 4:2:0 subsampling
+        DRM_FORMAT_YVU420,           // Variant with reversed chroma order
+        DRM_FORMAT_YUYV,             // Packed format, good balance
+        DRM_FORMAT_UYVY,             // Similar to YUYV, different layout
+        DRM_FORMAT_RGB565,           // Reduced color depth, efficient
+        DRM_FORMAT_BGR565,           // Variant with blue-green-red order
+        DRM_FORMAT_RGB888,           // High quality, larger file size
+        DRM_FORMAT_BGR888,           // Variant with blue-green-red order
+        DRM_FORMAT_RGBA4444,         // Includes alpha, efficient packing
+        DRM_FORMAT_BGRA4444,         // Variant with blue-green-red order
+        DRM_FORMAT_ARGB1555,         // Includes alpha, balanced color depth
+        DRM_FORMAT_XRGB8888,         // High color depth without alpha
+        DRM_FORMAT_ARGB8888,         // High color depth with alpha
+        DRM_FORMAT_Y410,             // Includes alpha, balanced compression
+        DRM_FORMAT_Y416,             // High-quality subsampling
+        DRM_FORMAT_XRGB16161616F,    // Floating point format, high precision
+        DRM_FORMAT_ARGB16161616F,    // High precision with alpha
+        DRM_FORMAT_AXBXGXRX106106106106 // Maximum precision with padding
+    };
+
+    Int64 screenCopyFormat { -1 };
+
+    for (UInt32 option : options)
+    {
+        for (const auto &fmt : *graphicBackend->backendGetDMAFormats())
+        {
+            if (fmt.format == option)
+            {
+                screenCopyFormat = option;
+                break;
+            }
+        }
+    }
+
+    // Fallback
+    if (screenCopyFormat == -1)
+        screenCopyFormat = graphicBackend->backendGetDMAFormats()->front().format;
+
+    bestScreenCopyDMAFormat = screenCopyFormat;
+    LLog::debug("[LCompositorPrivate:findBestScreenCopyDMAFormat] Selected DMA format for screen capture: %s",
+        drmGetFormatName(bestScreenCopyDMAFormat));
 }
 
 void LCompositor::LCompositorPrivate::handleDestroyedClients()
