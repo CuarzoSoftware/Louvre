@@ -128,10 +128,8 @@ LPRIVATE_CLASS(LCompositor)
 
     void sendPendingConfigurations();
     void sendPresentationTime();
-    void findBestScreenCopyDMAFormat() noexcept;
     bool isInputBackendInitialized { false };
     UInt8 screenshotManagers { 0 };
-    UInt32 bestScreenCopyDMAFormat { 0 };
 
     struct DMAFeedback
     {

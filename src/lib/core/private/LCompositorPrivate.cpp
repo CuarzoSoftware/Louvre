@@ -25,8 +25,6 @@
 #include <LTimer.h>
 #include <LLog.h>
 #include <EGL/egl.h>
-#include <xf86drm.h>
-#include <drm_fourcc.h>
 #include <dlfcn.h>
 #include <string.h>
 #include <cassert>
@@ -355,7 +353,6 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
     cursor = new LCursor();
     initDRMLeaseGlobals();
     initDMAFeedback();
-    findBestScreenCopyDMAFormat();
     return true;
 }
 
@@ -1000,59 +997,6 @@ void LCompositor::LCompositorPrivate::unitDMAFeedback() noexcept
         wl_array_release(&dmaFeedback.formatIndices);
         wl_array_release(&dmaFeedback.scanoutIndices);
     }
-}
-
-void LCompositor::LCompositorPrivate::findBestScreenCopyDMAFormat() noexcept
-{
-    if (graphicBackend->backendGetDMAFormats()->empty())
-        return;
-
-    const std::vector<UInt32> options
-    {
-        // Compressed formats (if supported by hardware)
-        DRM_FORMAT_NV12,           // Semi-planar YUV, efficient for video encoding
-        DRM_FORMAT_YUV420,         // Planar YUV, good for video (lower bandwidth)
-
-        // Best: Modern, hardware-accelerated, and/or compressed formats
-        DRM_FORMAT_XRGB8888,      // Most common, widely supported (uncompressed)
-        DRM_FORMAT_ARGB8888,       // Similar to XRGB but with alpha (useful for compositing)
-        DRM_FORMAT_XBGR8888,       // Alternative byte order (BGR), good for some GPUs
-        DRM_FORMAT_ABGR8888,       // BGR with alpha
-
-        // Older/less efficient formats
-        DRM_FORMAT_RGB565,         // 16-bit (lower quality, but lower bandwidth)
-        DRM_FORMAT_RGB888,         // 24-bit packed (no alpha, less common)
-        DRM_FORMAT_BGR888,         // 24-bit packed BGR
-
-        // Worst: Legacy or niche formats
-        DRM_FORMAT_RGBA5551,       // 16-bit with 1-bit alpha
-        DRM_FORMAT_RGBA4444,       // 16-bit with 4-bit alpha
-    };
-
-    Int64 screenCopyFormat { -1 };
-
-    for (UInt32 option : options)
-    {
-        for (const auto &fmt : *graphicBackend->backendGetDMAFormats())
-        {
-            if (fmt.format == option)
-            {
-                screenCopyFormat = option;
-                break;
-            }
-        }
-
-        if (screenCopyFormat != -1)
-            break;
-    }
-
-    // Fallback
-    if (screenCopyFormat == -1)
-        screenCopyFormat = graphicBackend->backendGetDMAFormats()->front().format;
-
-    bestScreenCopyDMAFormat = screenCopyFormat;
-    LLog::debug("[LCompositorPrivate:findBestScreenCopyDMAFormat] Selected DMA format for screen capture: %s",
-        drmGetFormatName(bestScreenCopyDMAFormat));
 }
 
 void LCompositor::LCompositorPrivate::handleDestroyedClients()
