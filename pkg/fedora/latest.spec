@@ -1,4 +1,4 @@
-%global basever 2.16.2
+%global basever 2.16.3
 %global origrel 1
 %global somajor 2
 
@@ -90,9 +90,6 @@ pushd repo/src
 %{_libdir}/pkgconfig/Louvre.pc
 
 %changelog
-* Sun Mar 30 2025 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
-- LToplevelRole::startMoveRequest() and LToplevelRole::startResizeRequest() now ignore requests triggered by pointer button events if the button isn't currently pressed.
-- Renamed LPointer::pressedKeys() to pressedButtons().
-- Removed the assumption that toplevels will be unmapped after sending a close() event.
-- louvre-views: Fixed a bug causing fullscreen animations to show black on some clients.
-- louvre-views: Display fadeout animation of toplevels not only during the first unmap.
+* Thu Apr 17 2025 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
+- wlr-screencopy: Remove unnecessary check that was preventing the usage of multi-planar buffers.
+- linux-dmabuf: Allow repeated format/modifier pairs across tranches of the same device if they have different flags.
