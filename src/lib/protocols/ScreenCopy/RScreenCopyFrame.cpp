@@ -185,9 +185,7 @@ void RScreenCopyFrame::copyCommon(wl_resource *resource, wl_resource *buffer, bo
             return;
         }
 
-        printf("FMT: %d OFMT: %d, FDS: %d\n", dmaBuffer->planes()->format, res.output()->bufferTexture(0)->format(), dmaBuffer->planes()->num_fds);
-
-        if (dmaBuffer->planes()->num_fds != 1 || res.output()->bufferTexture(0)->format() != dmaBuffer->planes()->format)
+        if (res.output()->bufferTexture(0)->format() != dmaBuffer->planes()->format)
         {
             wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer format.");
             return;

@@ -1,3 +1,15 @@
+Louvre (2.16.3-1)
+
+  # Bug Fixes
+
+  * wlr-screencopy: Remove unnecessary check that was preventing the usage of multi-planar buffers.
+  * linux-dmabuf: Allow repeated format/modifier pairs across tranches of the same device if they have different flags.
+
+  Thanks @LeKinaSa and @jgroboredo for all your help throughout this never-ending journey! 🤣
+
+-- Eduardo Hopperdietzel <ehopperdietzel@gmail.com> Thu, 17 Apr 2025 22:00:58 -0400
+
+
 Louvre (2.16.2-1)
 
   # Default Implementation Changes

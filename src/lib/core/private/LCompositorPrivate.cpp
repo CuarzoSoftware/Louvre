@@ -965,19 +965,21 @@ retryName:
         memcpy(ptr, &format.modifier, sizeof(UInt64));
         ptr+=8;
 
-        bool isScanout { false };
-
         for (const auto &scanoutFmt : *graphicBackend->backendGetScanoutDMAFormats())
         {
             if (scanoutFmt == format)
             {
                 *(UInt16*)wl_array_add(&dmaFeedback.scanoutIndices, sizeof(UInt16)) = formatIndex;
-                isScanout = true;
                 break;
             }
         }
 
+<<<<<<< HEAD
         //if (!isScanout)
+=======
+        // Repeating formats across different tranches of the same device is permitted
+        // if they have different flags
+>>>>>>> main
         *(UInt16*)wl_array_add(&dmaFeedback.formatIndices, sizeof(UInt16)) = formatIndex;
 
         formatIndex++;
