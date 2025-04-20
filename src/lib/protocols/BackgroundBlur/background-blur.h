@@ -58,9 +58,6 @@ struct wl_surface;
  *
  * This interface allows a compositor to announce support for blurring the 
  * backgrounds of surfaces.
- *
- * Starting from version 2, clients are permitted to define the blurred region 
- * using svg_path objects.
  * @section page_iface_background_blur_manager_api API
  * See @ref iface_background_blur_manager.
  */
@@ -69,9 +66,6 @@ struct wl_surface;
  *
  * This interface allows a compositor to announce support for blurring the 
  * backgrounds of surfaces.
- *
- * Starting from version 2, clients are permitted to define the blurred region 
- * using svg_path objects.
  */
 extern const struct wl_interface background_blur_manager_interface;
 #endif
@@ -82,6 +76,21 @@ extern const struct wl_interface background_blur_manager_interface;
  * @section page_iface_background_blur_desc Description
  *
  * Blur effect that is applied to the background of a surface.
+ *
+ * Starting from version 2, clients are permitted to define the blur area
+ * using a round rect.
+ *
+ * Starting from version 3, clients are permitted to define the blur area
+ * using an svg_path object.
+ *
+ * Using either set_region, set_round_rect or set_path replaces the last specified blur area.
+ *
+ * The blur area is always defined in local surface coordinates and must not extend beyond the 
+ * surface bounds otherwise the out_of_bounds error is emitted. 
+ *
+ * The client should avoid both rendering completly opaque content within the blur area while enabled.
+ *
+ * The initial blur area is an empty region (no blur).
  * @section page_iface_background_blur_api API
  * See @ref iface_background_blur.
  */
@@ -89,6 +98,21 @@ extern const struct wl_interface background_blur_manager_interface;
  * @defgroup iface_background_blur The background_blur interface
  *
  * Blur effect that is applied to the background of a surface.
+ *
+ * Starting from version 2, clients are permitted to define the blur area
+ * using a round rect.
+ *
+ * Starting from version 3, clients are permitted to define the blur area
+ * using an svg_path object.
+ *
+ * Using either set_region, set_round_rect or set_path replaces the last specified blur area.
+ *
+ * The blur area is always defined in local surface coordinates and must not extend beyond the 
+ * surface bounds otherwise the out_of_bounds error is emitted. 
+ *
+ * The client should avoid both rendering completly opaque content within the blur area while enabled.
+ *
+ * The initial blur area is an empty region (no blur).
  */
 extern const struct wl_interface background_blur_interface;
 #endif
@@ -97,7 +121,7 @@ extern const struct wl_interface background_blur_interface;
 #define BACKGROUND_BLUR_MANAGER_ERROR_ENUM
 enum background_blur_manager_error {
 	/**
-	 * the surface already has an associated background blur
+	 * the surface already has an associated background blur object
 	 */
 	BACKGROUND_BLUR_MANAGER_ERROR_ALREADY_CONSTRUCTED = 0,
 };
@@ -145,7 +169,8 @@ struct background_blur_manager_interface {
 	 * event.
 	 *
 	 * Surfaces must acknowledge the configure event and may then
-	 * define the blur region or path before the next commit.
+	 * define the blur region, round rect or SVG path before the next
+	 * commit.
 	 *
 	 * The client may ignore all configure events except for the last
 	 * one.
@@ -182,19 +207,28 @@ enum background_blur_error {
 	 */
 	BACKGROUND_BLUR_ERROR_INVALID_SERIAL = 1,
 	/**
-	 * the region or path extends beyond the surface bounds
+	 * the region, round rect or path extends beyond the surface bounds
 	 */
 	BACKGROUND_BLUR_ERROR_OUT_OF_BOUNDS = 2,
 	/**
-	 * invalid svg path
+	 * invalid round rect
 	 * @since 2
 	 */
-	BACKGROUND_BLUR_ERROR_INVALID_PATH = 3,
+	BACKGROUND_BLUR_ERROR_INVALID_ROUND_RECT = 3,
+	/**
+	 * invalid svg path
+	 * @since 3
+	 */
+	BACKGROUND_BLUR_ERROR_INVALID_PATH = 4,
 };
 /**
  * @ingroup iface_background_blur
  */
-#define BACKGROUND_BLUR_ERROR_INVALID_PATH_SINCE_VERSION 2
+#define BACKGROUND_BLUR_ERROR_INVALID_ROUND_RECT_SINCE_VERSION 2
+/**
+ * @ingroup iface_background_blur
+ */
+#define BACKGROUND_BLUR_ERROR_INVALID_PATH_SINCE_VERSION 3
 /**
  * @ingroup iface_background_blur
  * Validate a background_blur error value.
@@ -211,8 +245,10 @@ background_blur_error_is_valid(uint32_t value, uint32_t version) {
 		return version >= 1;
 	case BACKGROUND_BLUR_ERROR_OUT_OF_BOUNDS:
 		return version >= 1;
-	case BACKGROUND_BLUR_ERROR_INVALID_PATH:
+	case BACKGROUND_BLUR_ERROR_INVALID_ROUND_RECT:
 		return version >= 2;
+	case BACKGROUND_BLUR_ERROR_INVALID_PATH:
+		return version >= 3;
 	default:
 		return false;
 	}
@@ -293,31 +329,35 @@ struct background_blur_interface {
 	 *
 	 * Switch back to a mode without background blur at the next
 	 * commit.
+	 *
+	 * Must be destroyed before the surface otherwise the
+	 * destroyed_surface error is triggered.
 	 */
 	void (*destroy)(struct wl_client *client,
 			struct wl_resource *resource);
 	/**
 	 * set the blurred region
 	 *
-	 * Sets the blurred region.
+	 * 
 	 *
 	 * This is a double-buffered operation, refer to wl_surface.commit.
-	 * The region is defined in local surface coordinates and must not
-	 * extend beyond the surface bounds otherwise the out_of_bounds
-	 * error is emitted. The client should avoid both rendering opaque
-	 * content within the blurred region and marking the blurred region
-	 * as opaque.
 	 *
 	 * Setting the pending blur region has copy semantics, allowing the
-	 * wl_region object to be destroyed immediately. Setting a null
-	 * region means that the region will always match the entire
-	 * surface.
+	 * wl_region object to be destroyed immediately.
 	 *
-	 * For the compositor to display the blur effect, it must be
-	 * configured as enabled, and the client must commit a non-empty
-	 * region or path.
+	 * Setting a null region means that the blur area automatically
+	 * adapts to the entire surface dimensions.
 	 *
-	 * The initial value is an empty region (no blurring).
+	 * In order to display the blur effect, the compositor must send an
+	 * enabled state event, a configure event, and the client must ACK
+	 * and commit a null or valid non-empty region, round rect or SVG
+	 * path.
+	 *
+	 * The same applies afterwards, the compositor should keep the
+	 * effect state and style until the client acknowledges and commits
+	 * a new configuration.
+	 *
+	 * The initial blur area is an empty region (no blur).
 	 */
 	void (*set_region)(struct wl_client *client,
 			   struct wl_resource *resource,
@@ -333,24 +373,35 @@ struct background_blur_interface {
 			      struct wl_resource *resource,
 			      uint32_t serial);
 	/**
-	 * set the blurred path
+	 * set the blur area using a round rect
 	 *
-	 * Sets the blurred region using an svg_path object.
+	 * Setting a negative width, height, or radius, or if the sum of
+	 * radii for an edge exceeds the dimensions for that axis, triggers
+	 * the invalid_round_rect error.
+	 * @since 2
+	 */
+	void (*set_round_rect)(struct wl_client *client,
+			       struct wl_resource *resource,
+			       int32_t x,
+			       int32_t y,
+			       int32_t width,
+			       int32_t height,
+			       int32_t radTL,
+			       int32_t radTR,
+			       int32_t radBR,
+			       int32_t radBL);
+	/**
+	 * set the blur area using an svg_path object
 	 *
-	 * This operation has identical semantics to set_region. The SVG
-	 * path coordinates must be defined in local surface coordinates
-	 * and must not extend beyond the surface bounds. Setting the
-	 * pending blur path has copy semantics, allowing the svg_path
-	 * object to be destroyed immediately. Setting a null path means
-	 * that the region will always match the entire surface. Using
-	 * either set_path or set_region replaces the other.
+	 * 
+	 *
+	 * Setting the pending blur path has copy semantics, allowing the
+	 * svg_path object to be destroyed immediately.
 	 *
 	 * Setting an unconstructed or invalid path triggers the
 	 * invalid_path error.
-	 *
-	 * The initial value is an empty path (no blurring).
 	 * @param path the SVG path commands
-	 * @since 2
+	 * @since 3
 	 */
 	void (*set_path)(struct wl_client *client,
 			 struct wl_resource *resource,
@@ -389,7 +440,11 @@ struct background_blur_interface {
 /**
  * @ingroup iface_background_blur
  */
-#define BACKGROUND_BLUR_SET_PATH_SINCE_VERSION 2
+#define BACKGROUND_BLUR_SET_ROUND_RECT_SINCE_VERSION 2
+/**
+ * @ingroup iface_background_blur
+ */
+#define BACKGROUND_BLUR_SET_PATH_SINCE_VERSION 3
 
 /**
  * @ingroup iface_background_blur

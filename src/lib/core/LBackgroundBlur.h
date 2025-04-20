@@ -2,6 +2,7 @@
 #define LBACKGROUNDBLUR_H
 
 #include <LRegion.h>
+#include <LRRect.h>
 #include <LFactoryObject.h>
 #include <LBitset.h>
 #include <LWeak.h>
@@ -25,11 +26,25 @@ public:
         Light
     };
 
+    enum AreaType
+    {
+        Region,
+        RoundRect,
+        SVGPath
+    };
+
+    struct Area
+    {
+        LRegion region;
+        LRRect roundRect;
+        std::string svgPath;
+    };
+
     enum PropChanges : UInt8
     {
         StateChanged          = static_cast<UInt8>(1) << 0,
         StyleChanged          = static_cast<UInt8>(1) << 1,
-        RegionOrPathChanged   = static_cast<UInt8>(1) << 2,
+        AreaChanged           = static_cast<UInt8>(1) << 2,
         SerialChanged         = static_cast<UInt8>(1) << 3,
     };
 
@@ -44,10 +59,9 @@ public:
     {
         State state { Disabled };
         Style style { Light };
-        LRegion region;
-        std::string svgPath;
+        AreaType areaType { Region };
+        Area area { LRegion() };
         UInt32 serial { 0 };
-        bool isSvgPath { false };
         bool isEmpty { true };
         bool isFullSize { false };
     };
@@ -64,13 +78,11 @@ public:
 
     State state() const noexcept { return props().state; };
     Style style() const noexcept { return props().style; };
-    const LRegion &region() const noexcept { return props().region; };
-    const std::string &svgPath() const noexcept { return props().svgPath; };
+    AreaType areaType() const noexcept { return props().areaType; };
+    const Area &area() const noexcept { return props().area; };
     UInt32 serial() const noexcept { return props().serial; };
-    bool isSvgPath() const noexcept { return props().isSvgPath; };
     bool isEmpty() const noexcept { return props().isEmpty; };
     bool isFullSize() const noexcept { return props().isFullSize; };
-
     bool visible() const noexcept { return state() && !isEmpty(); };
 
     void configureState(State state) noexcept
@@ -103,7 +115,7 @@ private:
     {
         HasStateToSend       = static_cast<UInt8>(1) << 0,
         HasStyleToSend       = static_cast<UInt8>(1) << 1,
-        AssignedRegionOrPath = static_cast<UInt8>(1) << 2,
+        AssignedArea         = static_cast<UInt8>(1) << 2,
         Destroyed            = static_cast<UInt8>(1) << 3,
     };
 

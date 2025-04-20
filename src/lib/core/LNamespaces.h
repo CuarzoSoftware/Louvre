@@ -40,7 +40,7 @@
 #define LOUVRE_DRM_LEASE_DEVICE_VERSION 1
 #define LOUVRE_WLR_OUTPUT_MANAGER_VERSION 4
 #define LOUVRE_SVG_PATH_MANAGER_VERSION 1
-#define LOUVRE_BACKGROUND_BLUR_MANAGER_VERSION 2
+#define LOUVRE_BACKGROUND_BLUR_MANAGER_VERSION 3
 
 #define L_UNUSED(object){(void)object;}
 
@@ -267,6 +267,8 @@ namespace Louvre
 
     /// 4D vector of 32 bits floats
     using LRectF = LRectTemplate<Float32>;
+
+    class LRRect;
 
     typedef void* EGLContext;
     typedef void* EGLDisplay;

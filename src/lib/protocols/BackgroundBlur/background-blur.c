@@ -45,6 +45,13 @@ extern const struct wl_interface wl_surface_interface;
 
 static const struct wl_interface *background_blur_types[] = {
 	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
 	&background_blur_interface,
 	&wl_surface_interface,
 	&wl_region_interface,
@@ -53,20 +60,21 @@ static const struct wl_interface *background_blur_types[] = {
 
 static const struct wl_message background_blur_manager_requests[] = {
 	{ "destroy", "", background_blur_types + 0 },
-	{ "get_background_blur", "no", background_blur_types + 1 },
+	{ "get_background_blur", "no", background_blur_types + 8 },
 };
 
 WL_PRIVATE const struct wl_interface background_blur_manager_interface = {
-	"background_blur_manager", 2,
+	"background_blur_manager", 3,
 	2, background_blur_manager_requests,
 	0, NULL,
 };
 
 static const struct wl_message background_blur_requests[] = {
 	{ "destroy", "", background_blur_types + 0 },
-	{ "set_region", "?o", background_blur_types + 3 },
+	{ "set_region", "?o", background_blur_types + 10 },
 	{ "ack_configure", "u", background_blur_types + 0 },
-	{ "set_path", "2?o", background_blur_types + 4 },
+	{ "set_round_rect", "2iiiiiiii", background_blur_types + 0 },
+	{ "set_path", "3o", background_blur_types + 11 },
 };
 
 static const struct wl_message background_blur_events[] = {
@@ -76,8 +84,8 @@ static const struct wl_message background_blur_events[] = {
 };
 
 WL_PRIVATE const struct wl_interface background_blur_interface = {
-	"background_blur", 2,
-	4, background_blur_requests,
+	"background_blur", 3,
+	5, background_blur_requests,
 	3, background_blur_events,
 };
 

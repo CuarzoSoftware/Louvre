@@ -12,6 +12,7 @@ static const struct background_blur_interface imp
     .destroy = &RBackgroundBlur::destroy,
     .set_region = &RBackgroundBlur::set_region,
     .ack_configure = &RBackgroundBlur::ack_configure,
+    .set_round_rect = &RBackgroundBlur::set_round_rect,
     .set_path = &RBackgroundBlur::set_path,
 };
 
@@ -128,20 +129,80 @@ void RBackgroundBlur::set_region(wl_client */*client*/, wl_resource *resource, w
     }
 
     auto &blur { *res.surfaceRes()->surface()->backgroundBlur() };
-    blur.m_flags.add(LBackgroundBlur::AssignedRegionOrPath);
+    blur.m_flags.add(LBackgroundBlur::AssignedArea);
     blur.pendingProps().isFullSize = region == nullptr;
-    blur.pendingProps().isSvgPath = false;
-    blur.pendingProps().svgPath.clear();
+    blur.pendingProps().areaType = LBackgroundBlur::Region;
+    blur.pendingProps().area.svgPath.clear();
+    blur.pendingProps().area.roundRect = LRRect();
 
     if (region)
     {
         auto &rRegion { *static_cast<Protocols::Wayland::RRegion*>(wl_resource_get_user_data(region)) };
-        blur.pendingProps().region = rRegion.region();
-        blur.pendingProps().isEmpty = blur.pendingProps().region.empty();
+        blur.pendingProps().area.region = rRegion.region();
+
+        const LBox &extents { blur.pendingProps().area.region.extents() };
+
+        if (extents.x1 < 0 || extents.y1 < 0)
+        {
+            wl_resource_post_error(resource, BACKGROUND_BLUR_ERROR_OUT_OF_BOUNDS, "the region has negative extents");
+            return;
+        }
+
+        blur.pendingProps().isEmpty = blur.pendingProps().area.region.empty();
     }
     else
     {
-        blur.pendingProps().region.clear();
+        blur.pendingProps().area.region.clear();
+        blur.pendingProps().isEmpty = false;
+    }
+}
+
+void RBackgroundBlur::set_round_rect(wl_client */*client*/, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height, Int32 radTL, Int32 radTR, Int32 radBR, Int32 radBL)
+{
+    if (x < 0 || y < 0)
+    {
+        wl_resource_post_error(resource, BACKGROUND_BLUR_ERROR_OUT_OF_BOUNDS, "the round rect has a negative x or y value");
+        return;
+    }
+
+    auto &res { *static_cast<RBackgroundBlur*>(wl_resource_get_user_data(resource)) };
+
+    if (!res.surfaceRes())
+    {
+        wl_resource_post_error(resource, BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        return;
+    }
+
+    auto &blur { *res.surfaceRes()->surface()->backgroundBlur() };
+    blur.m_flags.add(LBackgroundBlur::AssignedArea);
+    blur.pendingProps().isFullSize = false;
+    blur.pendingProps().area.region.clear();
+    blur.pendingProps().area.svgPath.clear();
+
+    blur.pendingProps().area.roundRect = LRRect({x, y, width, height}, radTL, radTR, radBR, radBL);
+
+    if (!blur.pendingProps().area.roundRect.isValid())
+    {
+        wl_resource_post_error(resource, BACKGROUND_BLUR_ERROR_INVALID_ROUND_RECT, "invalid round rect size or radii");
+        return;
+    }
+
+    if (width == 0 or height == 0)
+    {
+        blur.pendingProps().area.roundRect = LRRect();
+        blur.pendingProps().areaType = LBackgroundBlur::Region;
+        blur.pendingProps().isEmpty = true;
+    }
+    else if (radTL + radTR + radBR + radBL == 0)
+    {
+        blur.pendingProps().area.region.addRect(blur.pendingProps().area.roundRect);
+        blur.pendingProps().area.roundRect = LRRect();
+        blur.pendingProps().areaType = LBackgroundBlur::Region;
+        blur.pendingProps().isEmpty = true;
+    }
+    else
+    {
+        blur.pendingProps().areaType = LBackgroundBlur::RoundRect;
         blur.pendingProps().isEmpty = false;
     }
 }
@@ -157,37 +218,29 @@ void RBackgroundBlur::set_path(wl_client */*client*/, wl_resource *resource, wl_
     }
 
     auto &blur { *res.surfaceRes()->surface()->backgroundBlur() };
-    blur.m_flags.add(LBackgroundBlur::AssignedRegionOrPath);
-    blur.pendingProps().isFullSize = svgPath == nullptr;
-    blur.pendingProps().region.clear();
+    blur.m_flags.add(LBackgroundBlur::AssignedArea);
+    blur.pendingProps().isFullSize = false;
+    blur.pendingProps().area.region.clear();
+    blur.pendingProps().area.roundRect = LRRect();
 
-    if (svgPath)
+    auto &rSvgPath { *static_cast<Protocols::SvgPath::RSvgPath*>(wl_resource_get_user_data(svgPath)) };
+
+    if (!rSvgPath.isComplete())
     {
-        auto &rSvgPath { *static_cast<Protocols::SvgPath::RSvgPath*>(wl_resource_get_user_data(svgPath)) };
+        wl_resource_post_error(resource, BACKGROUND_BLUR_ERROR_INVALID_PATH, "invalid svg path");
+        return;
+    }
 
-        if (!rSvgPath.isComplete())
-        {
-            wl_resource_post_error(resource, BACKGROUND_BLUR_ERROR_INVALID_PATH, "invalid svg path");
-            return;
-        }
+    blur.pendingProps().area.svgPath = rSvgPath.commands();
 
-        blur.pendingProps().svgPath = rSvgPath.commands();
-
-        if (blur.pendingProps().svgPath.empty())
-        {
-            blur.pendingProps().isSvgPath = false;
-            blur.pendingProps().isEmpty = true;
-        }
-        else
-        {
-            blur.pendingProps().isSvgPath = true;
-            blur.pendingProps().isEmpty = false;
-        }
+    if (blur.pendingProps().area.svgPath.empty())
+    {
+        blur.pendingProps().areaType = LBackgroundBlur::Region;
+        blur.pendingProps().isEmpty = true;
     }
     else
     {
-        blur.pendingProps().svgPath.clear();
+        blur.pendingProps().areaType = LBackgroundBlur::SVGPath;
         blur.pendingProps().isEmpty = false;
-        blur.pendingProps().isSvgPath = false;
     }
 }

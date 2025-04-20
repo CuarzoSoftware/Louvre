@@ -50,9 +50,9 @@ void LBackgroundBlur::fullPropsUpdate(bool sizeChanged) noexcept
 {
     LBitset<PropChanges> changesToNotify;
 
-    changesToNotify.setFlag(RegionOrPathChanged,
+    changesToNotify.setFlag(AreaChanged,
         pendingProps().isEmpty != currentProps().isEmpty ||
-        pendingProps().isSvgPath != currentProps().isSvgPath ||
+        pendingProps().areaType != currentProps().areaType ||
         pendingProps().isFullSize != currentProps().isFullSize);
 
     if (!pendingProps().isEmpty)
@@ -61,30 +61,45 @@ void LBackgroundBlur::fullPropsUpdate(bool sizeChanged) noexcept
         {
             if (sizeChanged || pendingProps().isFullSize != currentProps().isFullSize)
             {
-                pendingProps().region.clear();
-                pendingProps().region.addRect(LRect(LPoint(0, 0), surface()->size()));
-                changesToNotify.add(RegionOrPathChanged);
+                pendingProps().area.region.clear();
+                pendingProps().area.region.addRect(LRect(LPoint(0, 0), surface()->size()));
+                changesToNotify.add(AreaChanged);
             }
         }
         else
         {
-            if (m_flags.check(AssignedRegionOrPath))
-                changesToNotify.add(RegionOrPathChanged);
+            if (m_flags.check(AssignedArea))
+                changesToNotify.add(AreaChanged);
 
-            if (pendingProps().isSvgPath)
+            if (pendingProps().areaType == SVGPath)
             {
                 // TODO: Currently it needs to be validated by the user
             }
-            else if (m_flags.check(AssignedRegionOrPath) || sizeChanged)
+            else if (m_flags.check(AssignedArea) || sizeChanged)
             {
-                const auto &bounds { pendingProps().region.extents() };
-
-                if (bounds.x1 < 0 || bounds.y1 < 0 || bounds.x2 > surface()->size().w() || bounds.y2 > surface()->size().h())
+                if (pendingProps().areaType == Region)
                 {
-                    wl_resource_post_error(backgroundBlurResource()->resource(),
-                                           BACKGROUND_BLUR_ERROR_OUT_OF_BOUNDS,
-                                           "the region or path extends beyond the surface bounds");
-                    return;
+                    const LBox &bounds { pendingProps().area.region.extents() };
+
+                    if (bounds.x2 > surface()->size().w() || bounds.y2 > surface()->size().h())
+                    {
+                        wl_resource_post_error(backgroundBlurResource()->resource(),
+                                               BACKGROUND_BLUR_ERROR_OUT_OF_BOUNDS,
+                                               "the region extends beyond the surface bounds");
+                        return;
+                    }
+                }
+                else // Round rect
+                {
+                    const LRRect &rRect { pendingProps().area.roundRect };
+
+                    if (rRect.x() + rRect.w() > surface()->size().w() || rRect.y() + rRect.h() > surface()->size().h())
+                    {
+                        wl_resource_post_error(backgroundBlurResource()->resource(),
+                                               BACKGROUND_BLUR_ERROR_OUT_OF_BOUNDS,
+                                               "the round rect extends beyond the surface bounds");
+                        return;
+                    }
                 }
             }
         }
@@ -108,7 +123,7 @@ void LBackgroundBlur::fullPropsUpdate(bool sizeChanged) noexcept
 
     propsChanged(changesToNotify, pendingProps());
     pendingProps() = currentProps();
-    m_flags.remove(AssignedRegionOrPath);
+    m_flags.remove(AssignedArea);
 }
 
 void LBackgroundBlur::sendPendingConfiguration() noexcept
@@ -146,9 +161,10 @@ void LBackgroundBlur::reset() noexcept
     m_pendingConfiguration.serial++;
     m_pendingConfiguration.state = Disabled;
     m_pendingConfiguration.style = Light;
-    pendingProps().region.clear();
-    pendingProps().svgPath.clear();
-    pendingProps().isSvgPath = false;
+    pendingProps().area.region.clear();
+    pendingProps().area.svgPath.clear();
+    pendingProps().area.roundRect = LRRect();
+    pendingProps().areaType = Region;
     pendingProps().isEmpty = true;
     pendingProps().isFullSize = false;
     fullPropsUpdate(false);

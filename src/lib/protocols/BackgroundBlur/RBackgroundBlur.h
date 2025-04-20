@@ -19,6 +19,9 @@ public:
     static void destroy(wl_client *client, wl_resource *resource);
     static void ack_configure(wl_client *client, wl_resource *resource, UInt32 serial);
     static void set_region(wl_client *client, wl_resource *resource, wl_resource *region);
+    static void set_round_rect(wl_client *client, wl_resource *resource,
+        Int32 x, Int32 y, Int32 width, Int32 height,
+        Int32 radTL, Int32 radTR, Int32 radBR, Int32 radBL);
     static void set_path(wl_client *client, wl_resource *resource, wl_resource *svgPath);
 private:
     friend class GBackgroundBlurManager;

@@ -974,12 +974,8 @@ retryName:
             }
         }
 
-<<<<<<< HEAD
-        //if (!isScanout)
-=======
         // Repeating formats across different tranches of the same device is permitted
         // if they have different flags
->>>>>>> main
         *(UInt16*)wl_array_add(&dmaFeedback.formatIndices, sizeof(UInt16)) = formatIndex;
 
         formatIndex++;
