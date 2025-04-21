@@ -293,6 +293,11 @@ const std::vector<SvgPath::GSvgPathManager *> &LClient::svgPathManagerGlobals() 
     return imp()->svgPathManagerGlobals;
 }
 
+const std::vector<InvisibleRegion::GInvisibleRegionManager *> &LClient::invisibleRegionManagerGlobals() const noexcept
+{
+    return imp()->invisibleRegionManagerGlobals;
+}
+
 const LClient::EventHistory &LClient::eventHistory() const noexcept
 {
     return imp()->eventHistory;

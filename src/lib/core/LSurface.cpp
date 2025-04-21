@@ -166,6 +166,11 @@ const LRegion &LSurface::translucentRegion() const noexcept
     return imp()->currentTranslucentRegion;
 }
 
+const LRegion &LSurface::invisibleRegion() const noexcept
+{
+    return imp()->currentInvisibleRegion;
+}
+
 const LRegion &LSurface::damageB() const noexcept
 {
     return imp()->currentDamageB;

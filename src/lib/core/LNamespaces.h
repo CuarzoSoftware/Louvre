@@ -41,6 +41,7 @@
 #define LOUVRE_WLR_OUTPUT_MANAGER_VERSION 4
 #define LOUVRE_SVG_PATH_MANAGER_VERSION 1
 #define LOUVRE_BACKGROUND_BLUR_MANAGER_VERSION 3
+#define LOUVRE_INVISIBLE_REGION_MANAGER_VERSION 1
 
 #define L_UNUSED(object){(void)object;}
 
@@ -546,6 +547,13 @@ namespace Louvre
             class GSvgPathManager;
 
             class RSvgPath;
+        }
+
+        namespace InvisibleRegion
+        {
+            class GInvisibleRegionManager;
+
+            class RInvisibleRegion;
         }
     }
 

@@ -35,7 +35,8 @@ LPRIVATE_CLASS(LSurface)
         VSyncChanged                    = static_cast<UInt16>(1) << 8,
         PointerConstraintRegionChanged  = static_cast<UInt16>(1) << 9,
         LockedPointerPosHintChanged     = static_cast<UInt16>(1) << 10,
-        ContentTypeChanged              = static_cast<UInt16>(1) << 11
+        ContentTypeChanged              = static_cast<UInt16>(1) << 11,
+        InvisibleRegionChanged          = static_cast<UInt16>(1) << 12,
     };
 
     LBitset<ChangesToNotify> changesToNotify;
@@ -55,6 +56,7 @@ LPRIVATE_CLASS(LSurface)
         VSync                       = static_cast<UInt16>(1) << 10,
         ChildrenListChanged         = static_cast<UInt16>(1) << 11,
         ParentCommitNotified        = static_cast<UInt16>(1) << 12,
+        InfiniteInvisible           = static_cast<UInt16>(1) << 13,
     };
 
     LBitset<StateFlags> stateFlags
@@ -94,10 +96,12 @@ LPRIVATE_CLASS(LSurface)
     LRegion currentTranslucentRegion;
     LRegion currentOpaqueRegion;
     LRegion currentInputRegion;
+    LRegion currentInvisibleRegion;
 
     LRegion pendingInputRegion;
     LRegion pendingOpaqueRegion;
     LRegion pendingTranslucentRegion;
+    LRegion pendingInvisibleRegion;
 
     std::vector<LRect> pendingDamageB;
     std::vector<LRect> pendingDamage;
@@ -129,6 +133,7 @@ LPRIVATE_CLASS(LSurface)
     std::vector<Protocols::IdleInhibit::RIdleInhibitor*> idleInhibitorResources;
 
     LWeak<LBackgroundBlur> backgroundBlur;
+    LWeak<Protocols::InvisibleRegion::RInvisibleRegion> invisibleRegion;
 
     // Find the prev surface using layers (returns nullptr if no prev surface)
     LSurface *prevSurfaceInLayers() noexcept;

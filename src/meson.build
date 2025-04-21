@@ -112,7 +112,8 @@ protocols = [
     'DRMLease',
     'WlrOutputManagement',
     'SvgPath',
-    'BackgroundBlur'
+    'BackgroundBlur',
+    'InvisibleRegion'
 ]
 
 foreach p : protocols

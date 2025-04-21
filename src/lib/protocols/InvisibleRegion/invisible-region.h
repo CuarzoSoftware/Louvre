@@ -175,6 +175,32 @@ struct invisible_region_manager_interface {
  */
 #define INVISIBLE_REGION_MANAGER_GET_INVISIBLE_REGION_SINCE_VERSION 1
 
+#ifndef INVISIBLE_REGION_ERROR_ENUM
+#define INVISIBLE_REGION_ERROR_ENUM
+enum invisible_region_error {
+	/**
+	 * surface destroyed before its invisible_region object
+	 */
+	INVISIBLE_REGION_ERROR_DESTROYED_SURFACE = 0,
+};
+/**
+ * @ingroup iface_invisible_region
+ * Validate a invisible_region error value.
+ *
+ * @return true on success, false on error.
+ * @ref invisible_region_error
+ */
+static inline bool
+invisible_region_error_is_valid(uint32_t value, uint32_t version) {
+	switch (value) {
+	case INVISIBLE_REGION_ERROR_DESTROYED_SURFACE:
+		return version >= 1;
+	default:
+		return false;
+	}
+}
+#endif /* INVISIBLE_REGION_ERROR_ENUM */
+
 /**
  * @ingroup iface_invisible_region
  * @struct invisible_region_interface
@@ -185,6 +211,9 @@ struct invisible_region_interface {
 	 *
 	 * Switch back to a mode with an empty invisible region at the
 	 * next commit.
+	 *
+	 * Must be destroyed before its associated surface otherwise the
+	 * destroyed_surface error will be emitted.
 	 */
 	void (*destroy)(struct wl_client *client,
 			struct wl_resource *resource);

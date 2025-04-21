@@ -15,5 +15,4 @@ private:
     ~GSvgPathManager() noexcept;
 };
 
-
 #endif // GSVGPATHMANAGER_H

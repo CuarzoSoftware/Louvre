@@ -333,7 +333,7 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     {
         if (imp.stateFlags.check(LSurface::LSurfacePrivate::InfiniteInput))
         {
-            if (changes.check(Changes::SizeChanged))
+            if (changes.check(Changes::SizeChanged | Changes::InputRegionChanged))
             {
                 imp.currentInputRegion.clear();
                 imp.currentInputRegion.addRect(0, 0, surface->size());
@@ -379,6 +379,26 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
 
         if (changes.check(Changes::LockedPointerPosHintChanged))
             imp.current.lockedPointerPosHint = imp.pending.lockedPointerPosHint;
+    }
+
+    /****************************************
+     *********** INVISIBLE REGION ***********
+     ****************************************/
+    if (imp.stateFlags.check(LSurface::LSurfacePrivate::InfiniteInvisible))
+    {
+        if (changes.check(Changes::SizeChanged | Changes::InvisibleRegionChanged))
+        {
+            imp.currentInvisibleRegion.clear();
+            imp.currentInvisibleRegion.addRect(0, 0, surface->size());
+            changes.add(Changes::InvisibleRegionChanged);
+        }
+    }
+    else if (changes.check(Changes::SizeChanged | Changes::InvisibleRegionChanged))
+    {
+        pixman_region32_intersect_rect(&imp.currentInvisibleRegion.m_region,
+                                       &imp.pendingInvisibleRegion.m_region,
+                                       0, 0, surface->size().w(), surface->size().h());
+        changes.add(Changes::InvisibleRegionChanged);
     }
 
     /************************************
@@ -467,6 +487,9 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     if (changes.check(Changes::OpaqueRegionChanged))
         surface->opaqueRegionChanged();
 
+    if (changes.check(Changes::InvisibleRegionChanged))
+        surface->invisibleRegionChanged();
+
     if (changes.check(Changes::VSyncChanged))
         surface->preferVSyncChanged();
 
@@ -502,11 +525,15 @@ void RSurface::set_opaque_region(wl_client */*client*/, wl_resource *resource, w
     auto &imp { *static_cast<const RSurface*>(wl_resource_get_user_data(resource))->surface()->imp() };
 
     if (region)
+    {
         imp.pendingOpaqueRegion = static_cast<const RRegion*>(wl_resource_get_user_data(region))->region();
-    else
+        imp.changesToNotify.add(Changes::OpaqueRegionChanged);
+    }
+    else if (!imp.pendingOpaqueRegion.empty())
+    {
         imp.pendingOpaqueRegion.clear();
-
-    imp.changesToNotify.add(Changes::OpaqueRegionChanged);
+        imp.changesToNotify.add(Changes::OpaqueRegionChanged);
+    }
 }
 
 void RSurface::set_input_region(wl_client */*client*/, wl_resource *resource, wl_resource *region)
@@ -517,14 +544,14 @@ void RSurface::set_input_region(wl_client */*client*/, wl_resource *resource, wl
     {
         imp.pendingInputRegion = static_cast<const RRegion*>(wl_resource_get_user_data(region))->region();
         imp.stateFlags.remove(LSurface::LSurfacePrivate::InfiniteInput);
+        imp.changesToNotify.add(Changes::InputRegionChanged);
     }
-    else
+    else if (!imp.stateFlags.check(LSurface::LSurfacePrivate::InfiniteInput))
     {
         imp.pendingInputRegion.clear();
         imp.stateFlags.add(LSurface::LSurfacePrivate::InfiniteInput);
+        imp.changesToNotify.add(Changes::InputRegionChanged);
     }
-
-    imp.changesToNotify.add(Changes::InputRegionChanged);
 }
 
 #if LOUVRE_WL_COMPOSITOR_VERSION >= 2

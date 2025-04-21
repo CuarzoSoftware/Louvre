@@ -3,7 +3,6 @@
 
 #include <LBackgroundBlur.h>
 #include <LResource.h>
-#include <LWeak.h>
 
 class Louvre::Protocols::SvgPath::RSvgPath final : public LResource
 {
@@ -24,6 +23,5 @@ private:
     std::string m_commands;
     bool m_isComplete { false };
 };
-
 
 #endif // RSVGPATH_H

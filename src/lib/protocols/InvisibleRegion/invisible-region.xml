@@ -68,10 +68,18 @@
       If the invisible region intersects the opaque region, the overlapping area is 
       also treated as invisible.
     </description>
+
+    <enum name="error">
+      <entry name="destroyed_surface" value="0" 
+        summary="surface destroyed before its invisible_region object"/>
+    </enum>
     
     <request name="destroy" type="destructor">
       <description summary="destroy the invisible region object">
           Switch back to a mode with an empty invisible region at the next commit.
+
+          Must be destroyed before its associated surface otherwise the
+          destroyed_surface error will be emitted.
       </description>
     </request>
     

@@ -129,6 +129,13 @@ void LSurface::opaqueRegionChanged()
 }
 //! [opaqueRegionChanged]
 
+//! [invisibleRegionChanged]
+void LSurface::invisibleRegionChanged()
+{
+    repaintOutputs();
+}
+//! [invisibleRegionChanged]
+
 //! [inputRegionChanged]
 void LSurface::inputRegionChanged()
 {

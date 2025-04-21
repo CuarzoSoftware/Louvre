@@ -261,6 +261,13 @@ public:
     const LRegion &translucentRegion() const noexcept;
 
     /**
+     * @brief Invisible region in surface coordinates.
+     *
+     * Region within the surface that is 100% transparent.
+     */
+    const LRegion &invisibleRegion() const noexcept;
+
+    /**
      * @brief Damaged region in surface coordinates.
      */
     const LRegion &damage() const noexcept;
@@ -834,6 +841,16 @@ public:
      * @snippet LSurfaceDefault.cpp opaqueRegionChanged
      */
     virtual void opaqueRegionChanged();
+
+    /**
+     * @brief Notifies of a change in the invisible region
+     *
+     * Reimplement this virtual method if you wish to be notified when the surface changes its invisible region.
+     *
+     * #### Default Implementation
+     * @snippet LSurfaceDefault.cpp invisibleRegionChanged
+     */
+    virtual void invisibleRegionChanged();
 
     /**
      * @brief Notifies of a change in the input region

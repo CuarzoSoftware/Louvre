@@ -457,6 +457,12 @@ public:
      */
     const std::vector<Protocols::SvgPath::GSvgPathManager*> &svgPathManagerGlobals() const noexcept;
 
+    /**
+     * Resources created when the client binds to the
+     * invisible_region_manager global of the Invisible Region protocol.
+     */
+    const std::vector<Protocols::InvisibleRegion::GInvisibleRegionManager*> &invisibleRegionManagerGlobals() const noexcept;
+
     LPRIVATE_IMP_UNIQUE(LClient)
 };
 

@@ -62,6 +62,7 @@ public:
     std::vector<WlrOutputManagement::GWlrOutputManager*> wlrOutputManagerGlobals;
     std::vector<BackgroundBlur::GBackgroundBlurManager*> backgroundBlurManagerGlobals;
     std::vector<SvgPath::GSvgPathManager*> svgPathManagerGlobals;
+    std::vector<InvisibleRegion::GInvisibleRegionManager*> invisibleRegionManagerGlobals;
     bool destroyed { false };
 };
 

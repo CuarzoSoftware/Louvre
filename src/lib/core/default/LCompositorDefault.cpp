@@ -5,6 +5,7 @@
 #include <protocols/ForeignToplevelList/GForeignToplevelList.h>
 #include <protocols/RelativePointer/GRelativePointerManager.h>
 #include <protocols/FractionalScale/GFractionalScaleManager.h>
+#include <protocols/InvisibleRegion/GInvisibleRegionManager.h>
 #include <protocols/PointerConstraints/GPointerConstraints.h>
 #include <protocols/TearingControl/GTearingControlManager.h>
 #include <protocols/WlrOutputManagement/GWlrOutputManager.h>
@@ -150,6 +151,9 @@ bool LCompositor::createGlobalsRequest()
 
     // Allows clients to share SVG paths
     createGlobal<SvgPath::GSvgPathManager>();
+
+    // Allows clients to specify invisible regions within their surfaces
+    createGlobal<InvisibleRegion::GInvisibleRegionManager>();
 
     return true;
 }
