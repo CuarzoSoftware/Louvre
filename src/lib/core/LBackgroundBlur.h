@@ -26,26 +26,20 @@ public:
         Light
     };
 
-    enum AreaType
+    enum ClipType
     {
-        Region,
+        NoClip,
         RoundRect,
         SVGPath
-    };
-
-    struct Area
-    {
-        LRegion region;
-        LRRect roundRect;
-        std::string svgPath;
     };
 
     enum PropChanges : UInt8
     {
         StateChanged          = static_cast<UInt8>(1) << 0,
         StyleChanged          = static_cast<UInt8>(1) << 1,
-        AreaChanged           = static_cast<UInt8>(1) << 2,
-        SerialChanged         = static_cast<UInt8>(1) << 3,
+        RegionChanged         = static_cast<UInt8>(1) << 2,
+        ClipChanged           = static_cast<UInt8>(1) << 3,
+        SerialChanged         = static_cast<UInt8>(1) << 4,
     };
 
     struct Configuration
@@ -59,8 +53,10 @@ public:
     {
         State state { Disabled };
         Style style { Light };
-        AreaType areaType { Region };
-        Area area { LRegion() };
+        ClipType clipType { NoClip };
+        LRegion region { LRegion() };
+        LRRect roundRectClip;
+        std::string svgPathClip;
         UInt32 serial { 0 };
         bool isEmpty { true };
         bool isFullSize { false };
@@ -78,8 +74,10 @@ public:
 
     State state() const noexcept { return props().state; };
     Style style() const noexcept { return props().style; };
-    AreaType areaType() const noexcept { return props().areaType; };
-    const Area &area() const noexcept { return props().area; };
+    ClipType clipType() const noexcept { return props().clipType; };
+    const LRegion &region() const noexcept { return props().region; };
+    const LRRect &roundRectClip() const noexcept { return props().roundRectClip; };
+    const std::string &svgPathClip() const noexcept { return props().svgPathClip; };
     UInt32 serial() const noexcept { return props().serial; };
     bool isEmpty() const noexcept { return props().isEmpty; };
     bool isFullSize() const noexcept { return props().isFullSize; };
@@ -115,8 +113,9 @@ private:
     {
         HasStateToSend       = static_cast<UInt8>(1) << 0,
         HasStyleToSend       = static_cast<UInt8>(1) << 1,
-        AssignedArea         = static_cast<UInt8>(1) << 2,
-        Destroyed            = static_cast<UInt8>(1) << 3,
+        RegionModified       = static_cast<UInt8>(1) << 2,
+        ClipModified         = static_cast<UInt8>(1) << 3,
+        Destroyed            = static_cast<UInt8>(1) << 4,
     };
 
     Props &currentProps() noexcept

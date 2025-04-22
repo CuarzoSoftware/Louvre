@@ -895,7 +895,6 @@ void LPainter::bindProgram() noexcept
     glPolygonOffset(0, 0);
     glDepthFunc(GL_LESS);
     glDepthRangef(0, 1);
-    glStencilMask(1);
     glDepthMask(GL_FALSE);
     glFrontFace(GL_CCW);
     glBlendColor(0, 0, 0, 0);

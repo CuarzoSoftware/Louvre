@@ -1,4 +1,3 @@
-#include "protocols/BackgroundBlur/background-blur.h"
 #include <private/LCompositorPrivate.h>
 #include <protocols/BackgroundBlur/RBackgroundBlur.h>
 #include <LBackgroundBlur.h>
@@ -50,9 +49,8 @@ void LBackgroundBlur::fullPropsUpdate(bool sizeChanged) noexcept
 {
     LBitset<PropChanges> changesToNotify;
 
-    changesToNotify.setFlag(AreaChanged,
+    changesToNotify.setFlag(RegionChanged,
         pendingProps().isEmpty != currentProps().isEmpty ||
-        pendingProps().areaType != currentProps().areaType ||
         pendingProps().isFullSize != currentProps().isFullSize);
 
     if (!pendingProps().isEmpty)
@@ -61,49 +59,21 @@ void LBackgroundBlur::fullPropsUpdate(bool sizeChanged) noexcept
         {
             if (sizeChanged || pendingProps().isFullSize != currentProps().isFullSize)
             {
-                pendingProps().area.region.clear();
-                pendingProps().area.region.addRect(LRect(LPoint(0, 0), surface()->size()));
-                changesToNotify.add(AreaChanged);
+                pendingProps().region.clear();
+                pendingProps().region.addRect(LRect(LPoint(0, 0), surface()->size()));
+                changesToNotify.add(RegionChanged);
             }
         }
-        else
+        else if (m_flags.check(RegionModified))
         {
-            if (m_flags.check(AssignedArea))
-                changesToNotify.add(AreaChanged);
-
-            if (pendingProps().areaType == SVGPath)
-            {
-                // TODO: Currently it needs to be validated by the user
-            }
-            else if (m_flags.check(AssignedArea) || sizeChanged)
-            {
-                if (pendingProps().areaType == Region)
-                {
-                    const LBox &bounds { pendingProps().area.region.extents() };
-
-                    if (bounds.x2 > surface()->size().w() || bounds.y2 > surface()->size().h())
-                    {
-                        wl_resource_post_error(backgroundBlurResource()->resource(),
-                                               BACKGROUND_BLUR_ERROR_OUT_OF_BOUNDS,
-                                               "the region extends beyond the surface bounds");
-                        return;
-                    }
-                }
-                else // Round rect
-                {
-                    const LRRect &rRect { pendingProps().area.roundRect };
-
-                    if (rRect.x() + rRect.w() > surface()->size().w() || rRect.y() + rRect.h() > surface()->size().h())
-                    {
-                        wl_resource_post_error(backgroundBlurResource()->resource(),
-                                               BACKGROUND_BLUR_ERROR_OUT_OF_BOUNDS,
-                                               "the round rect extends beyond the surface bounds");
-                        return;
-                    }
-                }
-            }
+            changesToNotify.add(RegionChanged);
+            pendingProps().region.clip(LPoint(0, 0), surface()->size());
         }
     }
+
+    changesToNotify.setFlag(ClipChanged,
+        pendingProps().clipType != currentProps().clipType ||
+        m_flags.check(ClipModified));
 
     if (currentProps().serial != pendingProps().serial)
     {
@@ -123,7 +93,7 @@ void LBackgroundBlur::fullPropsUpdate(bool sizeChanged) noexcept
 
     propsChanged(changesToNotify, pendingProps());
     pendingProps() = currentProps();
-    m_flags.remove(AssignedArea);
+    m_flags.remove(RegionModified | ClipModified);
 }
 
 void LBackgroundBlur::sendPendingConfiguration() noexcept
@@ -161,10 +131,10 @@ void LBackgroundBlur::reset() noexcept
     m_pendingConfiguration.serial++;
     m_pendingConfiguration.state = Disabled;
     m_pendingConfiguration.style = Light;
-    pendingProps().area.region.clear();
-    pendingProps().area.svgPath.clear();
-    pendingProps().area.roundRect = LRRect();
-    pendingProps().areaType = Region;
+    pendingProps().region.clear();
+    pendingProps().svgPathClip.clear();
+    pendingProps().roundRectClip = LRRect();
+    pendingProps().clipType = NoClip;
     pendingProps().isEmpty = true;
     pendingProps().isFullSize = false;
     fullPropsUpdate(false);

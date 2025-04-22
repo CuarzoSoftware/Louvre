@@ -36,15 +36,12 @@
 
     <request name="destroy" type="destructor">
       <description summary="destroy the background blur manager object">
-        Destroy the background blur manager. This doesn't destroy objects 
-        created with the manager.
+        This doesn't destroy objects created with the manager.
       </description>
     </request>
 
     <request name="get_background_blur">
-      <description summary="create a new background blur object">
-        Creates a new background blur object for a given surface.
-
+      <description summary="create a new background blur object for a given surface">
         The surface must not already have an associated background blur, otherwise 
         the already_constructed error is emitted.
 
@@ -52,7 +49,8 @@
         event, a style event, and finally a configure event.
 
         Surfaces must acknowledge the configure event and may then define the blur 
-        region, round rect or SVG path before the next commit.
+        region and optionally a round rect or SVG path for clipping before the next 
+        commit.
 
         The client may ignore all configure events except for the last one.
 
@@ -67,21 +65,32 @@
   </interface>
 
   <interface name="background_blur" version="3">
-    <description summary="background blur object">
-      Blur effect that is applied to the background of a surface.
+    <description summary="blur effect applied to the background of a surface">
+      Starting from version 2, clients are permitted to clip the blur region using a 
+      round rect.
 
-      Starting from version 2, clients are permitted to define the blur area
-      using a round rect.
+      Starting from version 3, clients are permitted to clip the blur region using an 
+      svg_path object.
 
-      Starting from version 3, clients are permitted to define the blur area
-      using an svg_path object.
+      The set_region request is used to define the blur area in local surface coordinates. 
+      Optional clipping can be applied using either set_round_rect_clip or set_svg_path_clip 
+      (setting one replaces the other).
 
-      Using either set_region, set_round_rect or set_path replaces the last specified blur area.
+      The final blur area is the intersection of the surface bounds, the blur region, and 
+      the optional additional clipping.
 
-      The blur area is always defined in local surface coordinates and must not extend beyond the 
-      surface bounds otherwise the out_of_bounds error is emitted. 
-    
-      The client should avoid both rendering completly opaque content within the blur area while enabled.
+      Providing only clipping without a region is the same as having an empty region.
+
+      The client should avoid rendering completely opaque content within the blur area while 
+      enabled and should ideally mark it as invisible using the invisible-region protocol if 
+      the region is 100% transparent.
+
+      In order for the blur to take effect, the compositor must send an enabled state 
+      event, a configure event, and the client must ACK and commit a null or non-empty 
+      region.
+
+      The same applies afterwards, the compositor should keep the effect state and style 
+      until the client acknowledges and commits a new configuration.
 
       The initial blur area is an empty region (no blur).
     </description>
@@ -91,12 +100,10 @@
         value="0" summary="surface destroyed before object"/>
       <entry name="invalid_serial" 
         value="1" summary="invalid ack serial"/>
-      <entry name="out_of_bounds" 
-        value="2" summary="the region, round rect or path extends beyond the surface bounds"/>
       <entry name="invalid_round_rect" 
-        value="3" since="2" summary="invalid round rect"/>
-      <entry name="invalid_path" 
-        value="4" since="3" summary="invalid svg path"/>
+        value="2" since="2" summary="invalid round rect"/>
+      <entry name="invalid_svg_path" 
+        value="3" since="3" summary="invalid svg path"/>
     </enum>
     
     <enum name="state">
@@ -115,30 +122,24 @@
       <description summary="destroy the vector path object">
         Switch back to a mode without background blur at the next commit.
 
-        Must be destroyed before the surface otherwise the destroyed_surface
-        error is triggered.
+        The object must be destroyed before the associated surface otherwise the 
+        destroyed_surface error is emitted.
       </description>
     </request>
     
     <request name="set_region">
       <description summary="set the blurred region">
-
         This is a double-buffered operation, refer to wl_surface.commit. 
 
         Setting the pending blur region has copy semantics, allowing the 
         wl_region object to be destroyed immediately. 
 
+        The region is defined in local surface coordinates and may extend
+        beyond the surface bounds.
+
         Setting a null region means that the blur area automatically adapts 
         to the entire surface dimensions.
 
-        In order to display the blur effect, the compositor must send an 
-        enabled state event, a configure event, and the client must ACK and 
-        commit a null or valid non-empty region, round rect or SVG path.
-
-        The same applies afterwards, the compositor should keep the effect 
-        state and style until the client acknowledges and commits a new
-        configuration.
-        
         The initial blur area is an empty region (no blur).
       </description>
       <arg name="blur_region" type="object" allow-null="true" 
@@ -174,7 +175,7 @@
         adapt their content accordingly, for example, displaying white text if the 
         tone is dark or black text if the tone is light. 
         
-        The change must be followed by a configure event to take effect.
+        Must be followed by a configure event in order to take effect.
         
         The initial value is light.
       </description>
@@ -191,11 +192,28 @@
       <arg name="serial" type="uint" summary="serial of the configure event"/>
     </event>
 
-    <request name="set_round_rect" since="2">
-      <description summary="set the blur area using a round rect">        
+    <request name="clear_clip" since="2">
+      <description summary="clear any previously set clipping">
+        This is a double-buffered operation, refer to wl_surface.commit. 
+ 
+        This doesn't affect the blur region set with set_region.
+
+        If no clipping was set previously, this is a no-op.
+      </description>
+    </request>
+
+    <request name="set_round_rect_clip" since="2">
+      <description summary="clip the blur region using a round rect">
+        This is a double-buffered operation, refer to wl_surface.commit.
+
+        The round rect is defined in local surface coordinates and may extend
+        beyond the surface bounds.
+        
         Setting a negative width, height, or radius, or if the sum of radii for an 
-        edge exceeds the dimensions for that axis, triggers the invalid_round_rect 
-        error.
+        edge exceeds the dimensions for that axis, the invalid_round_rect error
+        is emitted.
+
+        This request replaces any previously set clipping.
       </description>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
@@ -207,15 +225,21 @@
       <arg name="radBL" type="int"/>
     </request>
     
-    <request name="set_path" since="3">
-      <description summary="set the blur area using an svg_path object">
+    <request name="set_svg_path_clip" since="3">
+      <description summary="clip the blur region using an svg_path object">
+        This is a double-buffered operation, refer to wl_surface.commit.
 
-        Setting the pending blur path has copy semantics, allowing the 
+        Setting the svg_path clip has copy semantics, allowing the 
         svg_path object to be destroyed immediately. 
+
+        The SVG path is defined in local surface coordinates and may extend
+        beyond the surface bounds.
         
         Setting an unconstructed or invalid path triggers the invalid_path error.
+
+        This request replaces any previously set clipping.
       </description>
-      <arg name="path" type="object" interface="svg_path" summary="the SVG path commands"/>
+      <arg name="path" type="object" interface="svg_path" summary="the SVG path object"/>
     </request>
     
   </interface>

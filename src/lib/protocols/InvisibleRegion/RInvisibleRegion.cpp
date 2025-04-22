@@ -24,7 +24,7 @@ RInvisibleRegion::RInvisibleRegion
         version,
         id,
         &imp
-        ), m_surfaceRes(surface)
+    ), m_surfaceRes(surface)
 {}
 
 RInvisibleRegion::~RInvisibleRegion() noexcept

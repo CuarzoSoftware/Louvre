@@ -25,6 +25,20 @@ public:
             fRadTR + fRadBR <= h();
     }
 
+    constexpr bool operator==(const LRRect& other) const
+    {
+        return LRect::operator==(other) &&
+            fRadTL == other.fRadTL &&
+            fRadTR == other.fRadTR &&
+            fRadBR == other.fRadBR &&
+            fRadBL == other.fRadBL;
+    }
+
+    constexpr bool operator!=(const LRRect& other) const
+    {
+        return !(operator==(other));
+    }
+
     Int32 fRadTL { 0 };
     Int32 fRadTR { 0 };
     Int32 fRadBR { 0 };

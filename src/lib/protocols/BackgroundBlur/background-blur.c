@@ -73,8 +73,9 @@ static const struct wl_message background_blur_requests[] = {
 	{ "destroy", "", background_blur_types + 0 },
 	{ "set_region", "?o", background_blur_types + 10 },
 	{ "ack_configure", "u", background_blur_types + 0 },
-	{ "set_round_rect", "2iiiiiiii", background_blur_types + 0 },
-	{ "set_path", "3o", background_blur_types + 11 },
+	{ "clear_clip", "2", background_blur_types + 0 },
+	{ "set_round_rect_clip", "2iiiiiiii", background_blur_types + 0 },
+	{ "set_svg_path_clip", "3o", background_blur_types + 11 },
 };
 
 static const struct wl_message background_blur_events[] = {
@@ -85,7 +86,7 @@ static const struct wl_message background_blur_events[] = {
 
 WL_PRIVATE const struct wl_interface background_blur_interface = {
 	"background_blur", 3,
-	5, background_blur_requests,
+	6, background_blur_requests,
 	3, background_blur_events,
 };
 
