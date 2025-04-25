@@ -165,7 +165,7 @@ void LToplevelRole::atomsChanged(LBitset<AtomChanges> changes, const Atoms &prev
                 configureState(pendingConfiguration().state & ~Maximized);
             }
         }
-        else
+        else if (!moveSession().isActive())
         {
             surface()->setPos(prevRect.pos());
         }
