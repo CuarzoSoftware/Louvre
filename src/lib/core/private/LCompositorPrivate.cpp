@@ -149,6 +149,8 @@ bool LCompositor::LCompositorPrivate::initWayland()
 
     // Install Signal Handler
     signalSource = wl_event_loop_add_signal(waylandEventLoop, SIGTERM, signalHandler, nullptr);
+    signalSource = wl_event_loop_add_signal(waylandEventLoop, SIGINT, signalHandler, nullptr);
+    signalSource = wl_event_loop_add_signal(waylandEventLoop, SIGKILL, signalHandler, nullptr);
 
     compositor()->imp()->events[LEV_WAYLAND].events = EPOLLIN | EPOLLOUT;
     compositor()->imp()->events[LEV_WAYLAND].data.fd = wl_event_loop_get_fd(waylandEventLoop);
