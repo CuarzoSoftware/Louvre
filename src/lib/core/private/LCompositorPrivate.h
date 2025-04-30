@@ -149,6 +149,10 @@ LPRIVATE_CLASS(LCompositor)
     void handleDestroyedClients();
     std::set<LClient*> destroyedClients;
 
+    // Signal Handler
+    wl_event_source* signalSource = nullptr;
+    static int signalHandler(int sigNumber, void* data);
+
 #if LOUVRE_ASSERT_CHECKS == 1
     void assertSurfacesOrder();
 #endif

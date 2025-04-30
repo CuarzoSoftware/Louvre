@@ -28,6 +28,7 @@
 #include <dlfcn.h>
 #include <string.h>
 #include <cassert>
+#include <csignal>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -146,6 +147,9 @@ bool LCompositor::LCompositorPrivate::initWayland()
     waylandEventLoop = wl_display_get_event_loop(display);
     auxEventLoop = wl_event_loop_create();
 
+    // Install Signal Handler
+    signalSource = wl_event_loop_add_signal(waylandEventLoop, SIGTERM, signalHandler, nullptr);
+
     compositor()->imp()->events[LEV_WAYLAND].events = EPOLLIN | EPOLLOUT;
     compositor()->imp()->events[LEV_WAYLAND].data.fd = wl_event_loop_get_fd(waylandEventLoop);
 
@@ -201,6 +205,11 @@ void LCompositor::LCompositorPrivate::unitWayland()
     {
         wl_event_loop_destroy(auxEventLoop);
         auxEventLoop = nullptr;
+    }
+
+    if (signalSource)
+    {
+        wl_event_source_remove(signalSource);
     }
 
     if (display)
@@ -1042,4 +1051,14 @@ void LCompositor::LCompositorPrivate::unitDRMLeaseGlobals()
     for (LGPU *gpu : *graphicBackend->backendGetDevices())
         if (gpu->m_leaseGlobal)
             compositor()->removeGlobal(gpu->m_leaseGlobal);
+}
+
+int LCompositor::LCompositorPrivate::signalHandler(int sigNumber, [[maybe_unused]] void* data)
+{
+    LLog::warning("Received signal: %d", sigNumber);
+    if (sigNumber == SIGTERM || sigNumber == SIGINT || sigNumber == SIGKILL)
+    {
+        compositor()->finish();
+    }
+    return 0;
 }
