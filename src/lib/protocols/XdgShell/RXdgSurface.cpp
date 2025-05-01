@@ -175,7 +175,7 @@ void RXdgSurface::ack_configure(wl_client */*client*/, wl_resource *resource, UI
         {
             if (toplevel.m_sentConfigurations.front().serial == serial)
             {
-                const bool sizeUnchanged { false };//toplevel.m_lastACKConfiguration.size == toplevel.m_sentConfigurations.front().size };
+                const bool sizeUnchanged { toplevel.m_lastACKConfiguration.size == toplevel.m_sentConfigurations.front().size };
 
                 toplevel.m_lastACKConfiguration = toplevel.m_sentConfigurations.front();
                 toplevel.m_sentConfigurations.pop_front();
