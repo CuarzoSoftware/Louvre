@@ -1,4 +1,4 @@
-%global basever 2.16.3
+%global basever 2.17.0
 %global origrel 1
 %global somajor 2
 
@@ -90,6 +90,6 @@ pushd repo/src
 %{_libdir}/pkgconfig/Louvre.pc
 
 %changelog
-* Thu Apr 17 2025 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
-- wlr-screencopy: Remove unnecessary check that was preventing the usage of multi-planar buffers.
-- linux-dmabuf: Allow repeated format/modifier pairs across tranches of the same device if they have different flags.
+* Fri May 02 2025 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
+- New API for synchronous handling of POSIX signals. Credits: @jgroboredo and @LeKinaSa
+- Thread-specific data is now managed in a more centralized and clearer way.
