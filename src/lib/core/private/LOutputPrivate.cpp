@@ -31,14 +31,9 @@ bool LOutput::LOutputPrivate::initialize()
 void LOutput::LOutputPrivate::backendInitializeGL()
 {
     threadId = std::this_thread::get_id();
-
-    painter = new LPainter();
-    painter->imp()->output = output;
-    painter->bindProgram();
-    painter->bindFramebuffer(output->framebuffer());
-
+    painter.reset(&compositor()->imp()->initThreadData(output).painter);
+    compositor()->imp()->disablePendingPosixSignals();
     output->imp()->global.reset(compositor()->createGlobal<Protocols::Wayland::GOutput>(output));
-
     output->setScale(output->imp()->fractionalScale);
     lastPos = rect.pos();
     lastSize = rect.size();
@@ -53,6 +48,7 @@ void LOutput::LOutputPrivate::backendInitializeGL()
 
     output->initializeGL();
     compositor()->flushClients();
+    initACK = true;
 }
 
 void LOutput::LOutputPrivate::damageToBufferCoords() noexcept
@@ -256,6 +252,8 @@ void LOutput::LOutputPrivate::backendPaintGL()
     if (callLock)
         compositor()->imp()->lock();
 
+    compositor()->imp()->disablePendingPosixSignals();
+
     if (!repaintFilter())
     {
         compositor()->imp()->graphicBackend->outputLockCurrentBuffer(output, true);
@@ -397,6 +395,8 @@ void LOutput::LOutputPrivate::backendResizeGL()
     if (callLock)
         compositor()->imp()->lock();
 
+    compositor()->imp()->disablePendingPosixSignals();
+
     output->resizeGL();
 
     if (lastPos != rect.pos())
@@ -422,6 +422,8 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
     if (callLock)
        compositor()->imp()->lock();
 
+    compositor()->imp()->disablePendingPosixSignals();
+
     if (sessionLockRole && sessionLockRole->surface())
        sessionLockRole->surface()->imp()->setMapped(false);
 
@@ -442,6 +444,7 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
     output->imp()->state = LOutput::Uninitialized;
     updateLayerSurfacesMapping();
     compositor()->imp()->destroyPendingRenderBuffers(&output->imp()->threadId);
+    compositor()->imp()->unitThreadData();
 
     if (callLock)
         compositor()->imp()->unlock();
