@@ -515,7 +515,7 @@ public:
 
             wl_display_flush(display);
 
-            poll(shared.fd, 2, -1);
+            poll(shared.fd, 2, output->state() == LOutput::PendingInitialize ? 100 : -1);
 
             if (shared.fd[0].revents & POLLIN)
                 eventfd_read(shared.fd[0].fd, &value);
@@ -982,6 +982,7 @@ public:
     /* OUTPUT */
     static bool outputInitialize(LOutput */*output*/)
     {
+        eventfd_write(shared.fd[0].fd, 1);
         return true;
     }
 

@@ -57,7 +57,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     LOutputPrivate(LOutput *output);
 
     // Created before initializeGL() and destroyed after uninitializeGL()
-    LPainter *painter { nullptr };
+    LWeak<LPainter> painter;
 
     // Using bitset instead of a booleans to save some bytes
     LBitset<StateFlags> stateFlags { FractionalOversamplingEnabled | HwCursorEnabled | CursorEnabled };
@@ -111,6 +111,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     std::vector<Protocols::WlrOutputManagement::RWlrOutputHead*> wlrOutputHeads;
 
     // Thread sync stuff
+    bool initACK { false };
     std::atomic<bool> callLock;
     std::atomic<bool> callLockACK;
     std::thread::id threadId;

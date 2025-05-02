@@ -68,6 +68,73 @@ void LCompositor::removeGlobal(LGlobal *global) noexcept
     wl_global_remove(global->m_global);
 }
 
+bool LCompositor::addPosixSignal(int signal) noexcept
+{
+    if (state() == CompositorState::Uninitialized)
+    {
+        LLog::error("[LCompositor::addPosixSignal] Failed to add posix signal %d. Signals must be added after the compositor is initialized.", signal);
+        return false;
+    }
+
+    if (posixSignals().contains(signal))
+    {
+        LLog::error("[LCompositor::addPosixSignal] Failed to add posix signal %d. Already added.", signal);
+        return false;
+    }
+
+    imp()->posixSignalsChanged = true;
+    imp()->posixSignals.emplace(signal);
+
+    for (auto &threadData : imp()->threadsMap)
+    {
+        if (threadData.first != mainThreadId())
+        {
+            threadData.second.posixSignalsToDisable.emplace(signal);
+            threadData.second.output->repaint();
+        }
+    }
+
+    if (std::this_thread::get_id() == mainThreadId())
+        imp()->handlePosixSignalChanges();
+    else
+        imp()->unlockPoll();
+
+    return true;
+}
+
+bool LCompositor::removePosixSignal(int signal) noexcept
+{
+    if (state() == CompositorState::Uninitialized || !posixSignals().contains(signal))
+        return false;
+
+    if (state() == CompositorState::Uninitialized)
+    {
+        LLog::error("[LCompositor::removePosixSignal] Failed to remove posix signal %d. Signals must be removed while the compositor is initialized.", signal);
+        return false;
+    }
+
+    if (!posixSignals().contains(signal))
+    {
+        LLog::error("[LCompositor::removePosixSignal] Attempt to remove unregistered posix signal %d.", signal);
+        return false;
+    }
+
+    imp()->posixSignalsChanged = true;
+    imp()->posixSignals.erase(signal);
+
+    if (std::this_thread::get_id() == mainThreadId())
+        imp()->handlePosixSignalChanges();
+    else
+        imp()->unlockPoll();
+
+    return true;
+}
+
+const std::unordered_set<int> &LCompositor::posixSignals() const noexcept
+{
+    return imp()->posixSignals;
+}
+
 LOutput *LCompositor::mostIntersectedOutput(const LRect &rect, bool initializedOnly) const noexcept
 {
     LOutput *bestOutput { nullptr };
@@ -272,6 +339,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
     seat()->setIsUserIdleHint(true);
     imp()->sendPresentationTime();
     imp()->processRemovedGlobals();
+    imp()->handlePosixSignalChanges();
 
     /* In certain older libseat versions, a POLLIN event may not be generated
      * during session switching. To ensure stability, we always dispatch
@@ -360,6 +428,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
 
         imp()->unitGraphicBackend(true);
         imp()->unitSeat();
+        imp()->unitPosixSignals();
         imp()->unitWayland();
 
         retry:
@@ -470,6 +539,8 @@ bool LCompositor::addOutput(LOutput *output)
     if (imp()->outputs.size() == 1)
         cursor()->imp()->setOutput(output);
 
+    output->imp()->initACK = false;
+
     if (!output->imp()->initialize())
     {
         LLog::error("[LCompositor::addOutput] Failed to initialize output %s.", output->name());
@@ -480,6 +551,9 @@ bool LCompositor::addOutput(LOutput *output)
 
         return false;
     }
+
+    while (!output->imp()->initACK)
+        usleep(10000);
 
     for (auto *head : output->imp()->wlrOutputHeads)
         head->enabled(true);
