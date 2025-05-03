@@ -4,16 +4,18 @@
 #include <private/LBackendPrivate.h>
 #include <LCompositor.h>
 #include <LOutput.h>
+#include <LPainter.h>
 #include <LInputDevice.h>
 #include <LRenderBuffer.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <sys/epoll.h>
-#include <map>
+#include <unordered_map>
 #include <unistd.h>
 #include <string>
 #include <filesystem>
 #include <set>
+#include <unordered_set>
 
 using namespace Louvre;
 
@@ -64,7 +66,7 @@ LPRIVATE_CLASS(LCompositor)
         void *graphicBackendHandle { nullptr };
         void *graphicBackendData { nullptr };
         LCursor *cursor { nullptr };
-        LPainter *painter { nullptr };
+        LWeak<LPainter> painter;
         LOutput *currentOutput { nullptr };
         void unitDRMLeaseGlobals();
     void unitGraphicBackend(bool closeLib);
@@ -117,14 +119,27 @@ LPRIVATE_CLASS(LCompositor)
     // Thread specific data
     struct ThreadData
     {
-        LPainter *painter { nullptr };
+        ThreadData(LOutput *output) noexcept;
+        ~ThreadData();
+        LWeak<LOutput> output;
+        LPainter painter;
         std::vector<LRenderBuffer::ThreadData> renderBuffersToDestroy;
+        std::unordered_set<int> posixSignalsToDisable;
     };
-
-    std::map<std::thread::id, ThreadData> threadsMap;
+    std::unordered_map<std::thread::id, ThreadData> threadsMap;
+    ThreadData &initThreadData(LOutput *output = nullptr) noexcept;
+    void unitThreadData() noexcept;
     void destroyPendingRenderBuffers(std::thread::id *id);
     void addRenderBufferToDestroy(std::thread::id thread, LRenderBuffer::ThreadData &data);
     static LPainter *findPainter();
+
+    // Posix signals
+    std::unordered_set<int> posixSignals;
+    std::unordered_map<int, wl_event_source*> posixSignalSources;
+    bool posixSignalsChanged { false };
+    void disablePendingPosixSignals() noexcept; // Called from rendering threads
+    void handlePosixSignalChanges() noexcept; // Called from the main thread
+    void unitPosixSignals() noexcept;
 
     void sendPendingConfigurations();
     void sendPresentationTime();

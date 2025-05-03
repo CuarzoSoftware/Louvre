@@ -29,12 +29,9 @@ static void makeExternalShader(std::string &shader) noexcept
     }
 }
 
-LPainter::LPainter() noexcept : LPRIVATE_INIT_UNIQUE(LPainter)
+LPainter::LPainter(LOutput *output) noexcept : LPRIVATE_INIT_UNIQUE(LPainter)
 {
     imp()->painter = this;
-
-    compositor()->imp()->threadsMap[std::this_thread::get_id()].painter = this;
-
     imp()->updateExtensions();
     imp()->updateCPUFormats();
 
@@ -313,6 +310,13 @@ LPainter::LPainter() noexcept : LPRIVATE_INIT_UNIQUE(LPainter)
     glDisable(GL_SAMPLE_ALPHA_TO_ONE);
 
     imp()->shaderSetAlpha(1.f);
+
+    if (output)
+    {
+        imp()->output = output;
+        bindProgram();
+        bindFramebuffer(output->framebuffer());
+    }
 }
 
 LPainter::~LPainter() noexcept

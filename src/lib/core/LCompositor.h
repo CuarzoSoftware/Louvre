@@ -6,6 +6,7 @@
 #include <LLayout.h>
 #include <filesystem>
 #include <thread>
+#include <unordered_set>
 #include <vector>
 #include <list>
 
@@ -462,6 +463,54 @@ public:
     void removeGlobal(LGlobal *global) noexcept;
 
     /**
+     * @name Posix Signals
+     */
+
+    ///@{
+
+    /**
+     * @brief Registers a POSIX signal for synchronous handling.
+     *
+     * This method registers POSIX signals for synchronous dispatching by the main event loop,
+     * as explained in [wl_event_loop_add_signal](https://wayland.freedesktop.org/docs/html/apc.html#Server-structwl__event__source_1a1706e2490502a95f24ccb59cbae3e2f8).
+     *
+     * All registered signals can be handled in onPosixSignal().
+     *
+     * Louvre automatically disables the signal in all rendering threads, but this does not apply to user-created threads.
+     *
+     * @note If called from a rendering thread, the signal addition will be scheduled for the next main loop iteration.
+     *
+     * @see removePosixSignal()
+     * @see posixSignals()
+     *
+     * @return `true` if successfully added, `false` if the signal is already registered or
+     *         if attempted while the compositor is uninitialized.
+     */
+    bool addPosixSignal(int signal) noexcept;
+
+    /**
+     * @brief Removes a registered POSIX signal.
+     *
+     * Unregisters and unblocks a previously added POSIX signal, preventing it from being handled by the main event loop.
+     *
+     * @note If called from a rendering thread, the signal removal will be scheduled for the next main loop iteration.
+     *
+     * @note Signals are automatically removed after the compositor is uninitialized.
+     *
+     * @return `true` if the signal was successfully removed, `false` if it was not registered.
+     */
+    bool removePosixSignal(int signal) noexcept;
+
+    /**
+     * @brief Retrieves the set of registered POSIX signals.
+     *
+     * Returns the set of POSIX signals currently registered via addPosixSignal().
+     */
+    const std::unordered_set<int> &posixSignals() const noexcept;
+
+    ///@}
+
+    /**
      * @name Virtual Methods
      */
 
@@ -561,6 +610,16 @@ public:
      * @snippet LCompositorDefault.cpp globalsFilter
      */
     virtual bool globalsFilter(LClient *client, LGlobal *global);
+
+    /**
+     * @brief Handles POSIX signals.
+     *
+     * Centralized function for managing all POSIX signals registered via addPosixSignal().
+     *
+     * @par Default Implementation
+     * @snippet LCompositorDefault.cpp onPosixSignal
+     */
+    virtual void onPosixSignal(int signal);
 
     ///@}
 

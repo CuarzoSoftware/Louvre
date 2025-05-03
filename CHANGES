@@ -1,3 +1,16 @@
+Louvre (2.17.0-1)
+
+  # API Additions
+
+  * New API for synchronous handling of POSIX signals. Credits: @jgroboredo and @LeKinaSa
+
+  # Internal Changes
+
+  * Thread-specific data is now managed in a more centralized and clearer way.
+
+-- Eduardo Hopperdietzel <ehopperdietzel@gmail.com> Fri, 02 May 2025 11:47:18 -0400
+
+
 Louvre (2.16.3-1)
 
   # Bug Fixes

@@ -29,6 +29,7 @@
 #include <dlfcn.h>
 #include <string.h>
 #include <cassert>
+#include <csignal>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -350,7 +351,7 @@ bool LCompositor::LCompositorPrivate::initGraphicBackend()
     if (WL_bind_wayland_display)
         eglBindWaylandDisplayWL(eglDisplay(), display);
 
-    painter = new LPainter();
+    painter.reset(&initThreadData().painter);
     cursor = new LCursor();
     initDRMLeaseGlobals();
     initDMAFeedback();
@@ -464,12 +465,7 @@ void LCompositor::LCompositorPrivate::unitGraphicBackend(bool closeLib)
 {
     unitDMAFeedback();
     unitDRMLeaseGlobals();
-
-    if (painter)
-    {
-        delete painter;
-        painter = nullptr;
-    }
+    unitThreadData();
 
     if (isGraphicBackendInitialized && graphicBackend)
     {
@@ -793,24 +789,31 @@ void LCompositor::LCompositorPrivate::processAnimations()
 
 void LCompositor::LCompositorPrivate::destroyPendingRenderBuffers(std::thread::id *id)
 {
-    std::thread::id threadId = std::this_thread::get_id();
+    std::thread::id threadId { std::this_thread::get_id() };
 
     if (id != nullptr)
         threadId = *id;
 
-    ThreadData &threadData = threadsMap[threadId];
+    auto it { threadsMap.find(threadId) };
 
-    while (!threadData.renderBuffersToDestroy.empty())
+    if (it == threadsMap.end())
+        return;
+
+    while (!it->second.renderBuffersToDestroy.empty())
     {
-        glDeleteFramebuffers(1, &threadData.renderBuffersToDestroy.back().framebufferId);
-        threadData.renderBuffersToDestroy.pop_back();
+        glDeleteFramebuffers(1, &it->second.renderBuffersToDestroy.back().framebufferId);
+        it->second.renderBuffersToDestroy.pop_back();
     }
 }
 
 void LCompositor::LCompositorPrivate::addRenderBufferToDestroy(std::thread::id thread, LRenderBuffer::ThreadData &data)
 {
-    ThreadData &threadData = threadsMap[thread];
-    threadData.renderBuffersToDestroy.push_back(data);
+    auto it { threadsMap.find(thread) };
+
+    if (it == threadsMap.end())
+        return;
+
+    it->second.renderBuffersToDestroy.emplace_back(data);
 }
 
 void LCompositor::LCompositorPrivate::lock()
@@ -836,24 +839,12 @@ void LCompositor::LCompositorPrivate::unlockPoll()
 
 LPainter *LCompositor::LCompositorPrivate::findPainter()
 {
-    LPainter *painter = nullptr;
-    std::thread::id threadId = std::this_thread::get_id();
+    auto it { compositor()->imp()->threadsMap.find(std::this_thread::get_id()) };
 
-    if (threadId == compositor()->mainThreadId())
-        painter = compositor()->imp()->painter;
-    else
-    {
-        for (LOutput *o : compositor()->outputs())
-        {
-            if (o->state() == LOutput::Initialized && o->imp()->threadId == threadId)
-            {
-                painter = o->painter();
-                break;
-            }
-        }
-    }
+    if (it != compositor()->imp()->threadsMap.end())
+        return &it->second.painter;
 
-    return painter;
+    return nullptr;
 }
 
 void LCompositor::LCompositorPrivate::sendPendingConfigurations()
@@ -1045,4 +1036,105 @@ void LCompositor::LCompositorPrivate::unitDRMLeaseGlobals()
     for (LGPU *gpu : *graphicBackend->backendGetDevices())
         if (gpu->m_leaseGlobal)
             compositor()->removeGlobal(gpu->m_leaseGlobal);
+}
+
+LCompositor::LCompositorPrivate::ThreadData &LCompositor::LCompositorPrivate::initThreadData(LOutput *output) noexcept
+{
+    return threadsMap.emplace(std::this_thread::get_id(), output).first->second;
+}
+
+void LCompositor::LCompositorPrivate::unitThreadData() noexcept
+{
+    threadsMap.erase(std::this_thread::get_id());
+}
+
+LCompositor::LCompositorPrivate::ThreadData::ThreadData(LOutput *output) noexcept : output(output), painter(output)
+{
+    LLog::debug("[LCompositorPrivate::ThreadData] Data created for thread %zu.", std::hash<std::thread::id>{}(std::this_thread::get_id()));
+
+    // If not the main thread, disable posix signals right away
+    if (std::this_thread::get_id() != compositor()->mainThreadId())
+        posixSignalsToDisable = compositor()->imp()->posixSignals;
+}
+
+LCompositor::LCompositorPrivate::ThreadData::~ThreadData()
+{
+    LLog::debug("[LCompositorPrivate::ThreadData] Thread %zu data destroyed.", std::hash<std::thread::id>{}(std::this_thread::get_id()));
+}
+
+void LCompositor::LCompositorPrivate::disablePendingPosixSignals() noexcept
+{
+    auto it { threadsMap.find(std::this_thread::get_id()) };
+    if (it == threadsMap.end())
+        return;
+
+    sigset_t sigset;
+
+    while (!it->second.posixSignalsToDisable.empty())
+    {
+        LLog::debug("[LCompositorPrivate::disablePendingPosixSignals] Posix signal %d blocked in thread %zu.",
+            *it->second.posixSignalsToDisable.begin(),
+            std::hash<std::thread::id>{}(std::this_thread::get_id()));
+        sigemptyset(&sigset);
+        sigaddset(&sigset, *it->second.posixSignalsToDisable.begin());
+        pthread_sigmask(SIG_BLOCK, &sigset, nullptr);
+        it->second.posixSignalsToDisable.erase(it->second.posixSignalsToDisable.begin());
+    }
+}
+
+void LCompositor::LCompositorPrivate::unitPosixSignals() noexcept
+{
+    posixSignals.clear();
+    posixSignalsChanged = true;
+    handlePosixSignalChanges();
+}
+
+static int posixSignalHandler(int signal, void *)
+{
+    compositor()->onPosixSignal(signal);
+    return 0;
+}
+
+void LCompositor::LCompositorPrivate::handlePosixSignalChanges() noexcept
+{
+    if (!posixSignalsChanged)
+        return;
+
+    posixSignalsChanged = false;
+
+    auto signalsCopy { posixSignals };
+    sigset_t sigset;
+
+    // Handle destroyed signals
+    for (auto sourceIt = posixSignalSources.begin(); sourceIt != posixSignalSources.end();)
+    {
+        // Still alive, nothing to do
+        if (signalsCopy.contains(sourceIt->first))
+        {
+            // Only keep pending-to-add signals
+            signalsCopy.erase(sourceIt->first);
+            sourceIt++;
+        }
+        else // The user removed it
+        {
+            LLog::debug("[LCompositorPrivate::handlePosixSignalChanges] Event source removed for posix signal %d.", sourceIt->first);
+            wl_event_source_remove(sourceIt->second);
+
+            // libwayland doesn't unblock it automatically when removed
+            sigemptyset(&sigset);
+            sigaddset(&sigset, sourceIt->first);
+            pthread_sigmask(SIG_UNBLOCK, &sigset, nullptr);
+
+            sourceIt = posixSignalSources.erase(sourceIt);
+        }
+    }
+
+
+    // Create added signals
+    while (!signalsCopy.empty())
+    {
+        LLog::debug("[LCompositorPrivate::handlePosixSignalChanges] Event source created for posix signal %d.", *signalsCopy.begin());
+        posixSignalSources[*signalsCopy.begin()] = wl_event_loop_add_signal(waylandEventLoop, *signalsCopy.begin(), &posixSignalHandler, nullptr);
+        signalsCopy.erase(signalsCopy.begin());
+    }
 }

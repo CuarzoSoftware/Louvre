@@ -168,6 +168,13 @@ bool LCompositor::globalsFilter(LClient *client, LGlobal *global)
 }
 //! [globalsFilter]
 
+//! [onPosixSignal]
+void LCompositor::onPosixSignal(int signal)
+{
+    LLog::debug("[LCompositor::onPosixSignal] Signal %d handled.", signal);
+}
+//! [onPosixSignal]
+
 //! [initialized]
 void LCompositor::initialized()
 {

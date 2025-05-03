@@ -54,7 +54,7 @@ void LSceneView::addDamage(LOutput *output, const LRegion &damage) noexcept
 
 void LSceneView::render(const LRegion *exclude) noexcept
 {
-    LPainter *painter { compositor()->imp()->threadsMap[std::this_thread::get_id()].painter };
+    LPainter *painter { compositor()->imp()->findPainter() };
 
     if (!painter)
         return;

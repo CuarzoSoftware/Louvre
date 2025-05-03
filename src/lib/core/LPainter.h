@@ -277,7 +277,7 @@ public:
 
     friend class LCompositor;
     friend class LOutput;
-    LPainter() noexcept;
+    LPainter(LOutput *output = nullptr) noexcept;
     ~LPainter() noexcept;
 };
 
