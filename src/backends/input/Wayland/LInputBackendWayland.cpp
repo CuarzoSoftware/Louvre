@@ -443,9 +443,15 @@ public:
         pointerScrollEvent.setUs(LTime::us());
 
         if (axis == WL_POINTER_AXIS_HORIZONTAL_SCROLL)
+        {
             pointerScrollEvent.setX(val);
+            pointerScrollEvent.setY(0.f);
+        }
         else
+        {
             pointerScrollEvent.setY(val);
+            pointerScrollEvent.setX(0.f);
+        }
 
         pointerScrollEvent.notify();
     }
