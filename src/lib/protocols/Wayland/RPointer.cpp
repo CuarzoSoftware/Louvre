@@ -152,9 +152,9 @@ void RPointer::button(const LPointerButtonEvent &event) noexcept
     wl_pointer_send_button(resource(), event.serial(), event.ms(), event.button(), event.state());
 }
 
-void RPointer::axis(UInt32 time, UInt32 axis, Float24 value) noexcept
+void RPointer::axis(UInt32 time, UInt32 axis, Float32 value) noexcept
 {
-    wl_pointer_send_axis(resource(), time, axis, value);
+    wl_pointer_send_axis(resource(), time, axis, wl_fixed_from_double(value));
 }
 
 bool RPointer::frame() noexcept

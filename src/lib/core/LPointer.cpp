@@ -158,51 +158,58 @@ void LPointer::sendScrollEvent(const LPointerScrollEvent &event)
             // Since 5
             if (rPointer->axisSource(event.source()))
             {
-                Float24 aX, aY, dX ,dY;
+                Float32 aX, aY;
+                Int32 dX, dY;
 
                 if (rPointer->axisRelativeDirection(WL_POINTER_AXIS_HORIZONTAL_SCROLL, naturalX))
                 {
                     rPointer->axisRelativeDirection(WL_POINTER_AXIS_VERTICAL_SCROLL, naturalY);
-                    aX = wl_fixed_from_double(event.axes().x());
-                    aY = wl_fixed_from_double(event.axes().y());
-                    dX = wl_fixed_from_double(event.axes120().x());
-                    dY = wl_fixed_from_double(event.axes120().y());
+                    aX = event.axes().x();
+                    aY = event.axes().y();
+                    dX = event.axes120().x();
+                    dY = event.axes120().y();
                 }
                 // Less than v9
                 else
                 {
                     if (naturalScrollingXEnabled())
                     {
-                        aX = wl_fixed_from_double(-event.axes().x());
-                        dX = wl_fixed_from_double(-event.axes120().x());
+                        aX = -event.axes().x();
+                        dX = -event.axes120().x();
                     }
                     else
                     {
-                        aX = wl_fixed_from_double(event.axes().x());
-                        dX = wl_fixed_from_double(event.axes120().x());
+                        aX = event.axes().x();
+                        dX = event.axes120().x();
                     }
 
                     if (naturalScrollingYEnabled())
                     {
-                        aY = wl_fixed_from_double(-event.axes().y());
-                        dY = wl_fixed_from_double(-event.axes120().y());
+                        aY = -event.axes().y();
+                        dY = -event.axes120().y();
                     }
                     else
                     {
-                        aY = wl_fixed_from_double(event.axes().y());
-                        dY = wl_fixed_from_double(event.axes120().y());
+                        aY = event.axes().y();
+                        dY = event.axes120().y();
                     }
                 }
 
                 if (event.source() == LPointerScrollEvent::Wheel)
                 {
-                    if (!rPointer->axisValue120(WL_POINTER_AXIS_HORIZONTAL_SCROLL, dX))
+                    if (rPointer->version() < 8)
                     {
                         rPointer->axisDiscrete(WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
                         rPointer->axisDiscrete(WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
                     }
                     else
-                        rPointer->axisValue120(WL_POINTER_AXIS_VERTICAL_SCROLL, dY);
+                    {
+                        if (dX != 0)
+                            rPointer->axisValue120(WL_POINTER_AXIS_HORIZONTAL_SCROLL, dX);
+
+                        if (dY != 0)
+                            rPointer->axisValue120(WL_POINTER_AXIS_VERTICAL_SCROLL, dY);
+                    }
                 }
 
                 if (stopX)
@@ -220,8 +227,8 @@ void LPointer::sendScrollEvent(const LPointerScrollEvent &event)
             // Since 1
             else
             {
-                rPointer->axis(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL, wl_fixed_from_double(event.axes().x()));
-                rPointer->axis(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL, wl_fixed_from_double(event.axes().y()));
+                rPointer->axis(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL, event.axes().x());
+                rPointer->axis(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL, event.axes().y());
             }
         }
     }

@@ -48,7 +48,7 @@ public:
     void leave(const LPointerLeaveEvent &event, RSurface *rSurface) noexcept;
     void motion(const LPointerMoveEvent &event) noexcept;
     void button(const LPointerButtonEvent &event) noexcept;
-    void axis(UInt32 time, UInt32 axis, Float24 value) noexcept;
+    void axis(UInt32 time, UInt32 axis, Float32 value) noexcept;
 
     // Since 5
     bool frame() noexcept;
