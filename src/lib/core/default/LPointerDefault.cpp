@@ -228,7 +228,9 @@ void LPointer::pointerButtonEvent(const LPointerButtonEvent &event)
         // leaves, if the left button remains pressed
         setDraggingSurface(focus());
 
-        if (!seat()->keyboard()->focus() || !focus()->isSubchildOf(seat()->keyboard()->focus()))
+        // Most apps close popups when they get keyboard focus,
+        // probably because the parent loses it
+        if (!focus()->popup() && !focus()->isPopupSubchild())
         {
             seat()->keyboard()->setFocus(focus());
 

@@ -260,7 +260,7 @@ void Pointer::pointerButtonEvent(const LPointerButtonEvent &event)
 
         setDraggingSurface(focus());
 
-        if (!seat()->keyboard()->focus() || !focus()->isSubchildOf(seat()->keyboard()->focus()))
+        if (!focus()->popup() && !focus()->isPopupSubchild())
         {
             seat()->keyboard()->setFocus(focus());
 

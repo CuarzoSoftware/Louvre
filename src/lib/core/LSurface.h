@@ -540,9 +540,6 @@ public:
     /**
      * @brief Check if the surface has a subchild popup.
      *
-     * This method checks whether the surface has a subchild popup surface.
-     * It returns `true` if the surface has a popup subchild; otherwise, it returns `false`.
-     *
      * @return `true` if the surface has a subchild popup, `false` otherwise.
      */
     bool hasPopupSubchild() const noexcept;
