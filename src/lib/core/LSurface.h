@@ -113,8 +113,6 @@ public:
 
     static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LSurface;
 
-    LBackgroundBlur *backgroundBlur() const noexcept;
-
     /**
      * @brief ID of library roles
      *
@@ -190,6 +188,14 @@ public:
     LSurfaceLayer layer() const noexcept;
 
     /**
+     * @brief Retrieves the background blur controller associated with the surface.
+     *
+     * @return A pointer to the background blur controller, guaranteed to exist even if
+     *         the client does not support the protocol.
+     */
+    LBackgroundBlur *backgroundBlur() const noexcept;
+
+    /**
      * @brief Assigns the position.
      *
      * Assigns the position of the surface.
@@ -245,11 +251,15 @@ public:
      * @brief Input region in surface coordinates.
      *
      * Region of the surface that is capable of receiving input, in surface coordinates.
+     *
+     * Already clipped by the surface bounds.
      */
     const LRegion &inputRegion() const noexcept;
 
     /**
      * @brief Opaque region in surface coordinates.
+     *
+     * Already clipped by the surface bounds.
      */
     const LRegion &opaqueRegion() const noexcept;
 
@@ -257,6 +267,8 @@ public:
      * @brief Translucent region in surface coordinates.
      *
      * Translucent region in surface coordinates (inverted opaque region).
+     *
+     * Already clipped by the surface bounds.
      */
     const LRegion &translucentRegion() const noexcept;
 
@@ -264,16 +276,22 @@ public:
      * @brief Invisible region in surface coordinates.
      *
      * Region within the surface that is 100% transparent.
+     *
+     * Already clipped by the surface bounds.
      */
     const LRegion &invisibleRegion() const noexcept;
 
     /**
      * @brief Damaged region in surface coordinates.
+     *
+     * Already clipped by the surface bounds.
      */
     const LRegion &damage() const noexcept;
 
     /**
      * @brief Damaged region in buffer coordinates.
+     *
+     * Already clipped by the surface bounds.
      */
     const LRegion &damageB() const noexcept;
 

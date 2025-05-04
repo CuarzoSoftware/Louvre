@@ -37,7 +37,7 @@ public:
      * For example, when dragging a file from a file manager window into another, the desired action might be to
      * move or copy the file.\n
      * Louvre by default performs a match of actions supported by the source and destination client, giving preference
-     * to the first one listed in the enum, except for @ref NoAction.\n
+     * to the first one listed in the enum, except for @ref NoAction .\n
      * The compositor can also notify its preferred action using the setPreferredAction() method as exemplified in the
      * default implementation of LKeyboard::keyEvent().
      */

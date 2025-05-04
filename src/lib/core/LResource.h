@@ -80,7 +80,6 @@ protected:
      * @param version Version of the global interface.
      * @param id ID of the resource; passing 0 automatically generates an increasing ID.
      * @param implementation Pointer to the interface implementation (struct with callback functions to handle client requests).
-     * @param destroy Callback function to handle resource destruction.
      */
     LResource(wl_client *client,
               const wl_interface *interface,

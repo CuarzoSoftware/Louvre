@@ -64,7 +64,7 @@ bool LCompositor::createGlobalsRequest()
     // Allows clients to receive pointer, keyboard, and touch events
     createGlobal<Wayland::GSeat>(
         // Currently the Wayland backend only supports features of version 1
-        inputBackendId() == LInputBackendID::LInputBackendWayland ? 1 : 0);
+        inputBackendId() == LInputBackendWayland ? 1 : 0);
 
     // Provides detailed information of pointer movement
     createGlobal<RelativePointer::GRelativePointerManager>();

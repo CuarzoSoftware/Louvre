@@ -73,7 +73,7 @@ public:
     /**
      * @brief Sets the constraints for each side in compositor-global coordinates.
      *
-     * @param constraints The margins specifying the constraints for each side. Use @ref LEdgeDisable to disable constraints on specific sides.
+     * @param constraints The margins specifying the constraints for each side. Use @ref LEdgeDisabled to disable constraints on specific sides.
      */
     void setConstraints(const LMargins &constraints = {LEdgeDisabled, LEdgeDisabled, LEdgeDisabled ,LEdgeDisabled}) noexcept
     {

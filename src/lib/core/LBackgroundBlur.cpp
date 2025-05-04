@@ -5,30 +5,11 @@
 
 using namespace Louvre;
 
-LBackgroundBlur::LBackgroundBlur(const void *params) noexcept : LFactoryObject(FactoryObjectType), m_surface(*((LSurface*)params))
-{
-
-}
-
-LBackgroundBlur::~LBackgroundBlur() noexcept
-{
-
-}
+LBackgroundBlur::LBackgroundBlur(const void *params) noexcept : LFactoryObject(FactoryObjectType), m_surface(*((LSurface*)params)) {}
 
 Protocols::BackgroundBlur::RBackgroundBlur *LBackgroundBlur::backgroundBlurResource() const noexcept
 {
     return m_backgroundBlurRes;
-}
-
-void LBackgroundBlur::configureRequest()
-{
-    configureState(Enabled);
-    configureStyle(Light);
-}
-
-void LBackgroundBlur::propsChanged(LBitset<PropChanges> /*changes*/, const Props &/*prevProps*/)
-{
-
 }
 
 void LBackgroundBlur::handleCommit(bool sizeChanged) noexcept
