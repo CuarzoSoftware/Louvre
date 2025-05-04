@@ -62,7 +62,9 @@ bool LCompositor::createGlobalsRequest()
     createGlobal<Wayland::GCompositor>();
 
     // Allows clients to receive pointer, keyboard, and touch events
-    createGlobal<Wayland::GSeat>();
+    createGlobal<Wayland::GSeat>(
+        // Currently the Wayland backend only supports features of version 1
+        inputBackendId() == LInputBackendID::LInputBackendWayland ? 1 : 0);
 
     // Provides detailed information of pointer movement
     createGlobal<RelativePointer::GRelativePointerManager>();
@@ -146,14 +148,16 @@ bool LCompositor::createGlobalsRequest()
     // Allows clients to arrange/set output properties
     createGlobal<WlrOutputManagement::GWlrOutputManager>();
 
+    /* Experimental */
+
     // Allows clients to set background blur effects for surfaces
-    createGlobal<BackgroundBlur::GBackgroundBlurManager>();
+    // createGlobal<BackgroundBlur::GBackgroundBlurManager>();
 
     // Allows clients to share SVG paths
-    createGlobal<SvgPath::GSvgPathManager>();
+    // createGlobal<SvgPath::GSvgPathManager>();
 
     // Allows clients to specify invisible regions within their surfaces
-    createGlobal<InvisibleRegion::GInvisibleRegionManager>();
+    // createGlobal<InvisibleRegion::GInvisibleRegionManager>();
 
     return true;
 }
