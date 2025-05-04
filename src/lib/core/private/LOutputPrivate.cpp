@@ -33,7 +33,7 @@ void LOutput::LOutputPrivate::backendInitializeGL()
     threadId = std::this_thread::get_id();
     painter.reset(&compositor()->imp()->initThreadData(output).painter);
     compositor()->imp()->disablePendingPosixSignals();
-    output->imp()->global.reset(compositor()->createGlobal<Protocols::Wayland::GOutput>(output));
+    output->imp()->global.reset(compositor()->createGlobal<Protocols::Wayland::GOutput>(0, output));
     output->setScale(output->imp()->fractionalScale);
     lastPos = rect.pos();
     lastSize = rect.size();

@@ -436,15 +436,18 @@ public:
      * Louvre automatically creates all the supported globals during compositor initialization. See LCompositor::createGlobalsRequest().
      *
      * @tparam Global The type of global to create. It should be a subclass of Louvre::LResource.
+     * @param version The maximum supported interface version, constrained by Louvre’s implemented version.
+     *                If <= 0, Louvre’s highest supported version is used instead.
+     * @param data User data to assign to the `wl_resource`.
      * @return Pointer to the created LGlobal instance, which can be later removed with removeGlobal().
      */
     template<class Global>
-    LGlobal *createGlobal(void *data = nullptr) noexcept
+    LGlobal *createGlobal(Int32 version = 0, void *data = nullptr) noexcept
     {
         static_assert(std::is_base_of_v<Louvre::LResource, Global> == true);
 
         return globalCreate(Global::interface(),
-                            Global::maxVersion(),
+                            version <= 0 ? Global::maxVersion() : std::min(version, Global::maxVersion()),
                             data,
                             &Global::bind);
     }

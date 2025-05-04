@@ -1024,7 +1024,7 @@ void LCompositor::LCompositorPrivate::initDRMLeaseGlobals()
 {
     for (LGPU *gpu : *graphicBackend->backendGetDevices())
         if (gpu->fd() != -1 && gpu->roFd() != -1)
-            gpu->m_leaseGlobal.reset(compositor()->createGlobal<Protocols::DRMLease::GDRMLeaseDevice>(gpu));
+            gpu->m_leaseGlobal.reset(compositor()->createGlobal<Protocols::DRMLease::GDRMLeaseDevice>(0, gpu));
 }
 
 void LCompositor::LCompositorPrivate::unitDRMLeaseGlobals()
