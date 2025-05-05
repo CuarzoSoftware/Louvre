@@ -32,6 +32,8 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
         compositor()->imp()->inputBackend->backendResume();
 
     // Restore Wayland and Aux events
+
+    /*
     epoll_ctl(compositor()->imp()->epollFd,
               EPOLL_CTL_ADD,
               compositor()->imp()->events[LEV_WAYLAND].data.fd,
@@ -40,7 +42,7 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
     epoll_ctl(compositor()->imp()->epollFd,
               EPOLL_CTL_ADD,
               compositor()->imp()->events[LEV_AUX].data.fd,
-              &compositor()->imp()->events[LEV_AUX]);
+              &compositor()->imp()->events[LEV_AUX]);*/
 
     LLog::debug("[LSeatPrivate::seatEnabled] %s enabled.", libseat_seat_name(seat));
     lseat->enabledChanged();
@@ -83,6 +85,7 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
     libseat_disable_seat(seat);
 
     // Disable Wayland and Aux events
+    /*
     epoll_ctl(compositor()->imp()->epollFd,
               EPOLL_CTL_DEL,
               compositor()->imp()->events[LEV_WAYLAND].data.fd,
@@ -91,7 +94,7 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
     epoll_ctl(compositor()->imp()->epollFd,
               EPOLL_CTL_DEL,
               compositor()->imp()->events[LEV_AUX].data.fd,
-              NULL);
+              NULL);*/
 
     LLog::debug("[LSeatPrivate::seatDisabled] %s disabled.", libseat_seat_name(seat));
 

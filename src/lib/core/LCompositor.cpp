@@ -364,7 +364,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         // Backend + User
         if (events[i].data.fd == imp()->events[LEV_AUX].data.fd)
         {
-            if (seat()->enabled())
+            if (true || seat()->enabled())
             {
                 wl_event_loop_dispatch(imp()->auxEventLoop, 0);
                 flush = true;
@@ -373,7 +373,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         // Wayland
         else if (events[i].data.fd == imp()->events[LEV_WAYLAND].data.fd)
         {
-            if (seat()->enabled())
+            if (true || seat()->enabled())
             {
                 wl_event_loop_dispatch(imp()->waylandEventLoop, 0);
                 flush = true;
@@ -393,7 +393,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
         }
     }
 
-    if (seat()->enabled())
+    if (true || seat()->enabled())
     {
         if (!seat()->isUserIdleHint())
             for (const auto *idleListener : seat()->idleListeners())
