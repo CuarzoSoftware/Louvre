@@ -16,14 +16,17 @@
  *
  * When a client wants to apply a blur effect to a surface:
  * 1. The `configureRequest()` is triggered, typically before the surface is mapped.
- * 2. The compositor configures the blur state and style.
+ * 2. The compositor configures the blur state and color hint.
  * 3. The client specifies the region to blur and may optionally apply an additional clipping mask.
  * 4. The client acknowledges and commits the changes, which are notified via `propsChanged()`.
  *
- * The final blur region is determined by the intersection of the surface bounds, the region(), and the clipping mask.
+ * The final blur region is determined by the intersection of the surface bounds, the region(), and the optional clipping mask.
  *
- * The compositor can modify the configuration at any time but should always wait for the client’s acknowledgment
+ * The compositor can modify the state and color hint configuration at any time but should always wait for the client’s acknowledgment
  * before applying the changes.
+ *
+ * Compositors may support different masking capabilities depending on their rendering features. Modify @ref maskingCapabilities to
+ * advertise the supported capabilities to clients.
  *
  * @note The background blur protocol is experimental and thus not enabled by default in `LCompositor::createGlobalsRequest()`.
  */
@@ -31,6 +34,42 @@ class Louvre::LBackgroundBlur : public LFactoryObject
 {
 public:
     static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LBackgroundBlur;
+
+    /**
+     * @brief Flags indicating the masks supported by the compositor.
+     *
+     * These flags are used in @ref maskingCapabilities .
+     */
+    enum MaskingCapabilities : UInt32
+    {
+        /**
+         * @brief No masking capability is supported.
+         */
+        NoMaskCap        = 0U,
+
+        /**
+         * @brief Supports rounded rectangle masking.
+         */
+        RoundRectMaskCap = 1U,
+
+        /**
+         * @brief Supports masking using an SVG path.
+         */
+        SVGPathMaskCap   = 2U
+    };
+
+    /**
+     * @brief Current masking capabilities of the compositor.
+     *
+     * Defines the masking features currently supported by the compositor.
+     * This value should ideally be set during compositor initialization.
+     *
+     * Modifying this value does not affect the masking capabilities
+     * announced to clients that have previously created background blur effects.
+     *
+     * @note This setting applies globally.
+     */
+    static inline LBitset<MaskingCapabilities> maskingCapabilities { NoMaskCap };
 
     /**
      * @brief Enumeration of possible blur states.
@@ -42,22 +81,23 @@ public:
     };
 
     /**
-     * @brief The background blur color tone.
+     * @brief The background blur color hint.
      */
-    enum Style
+    enum ColorHint
     {
+        Unknown, ///< Unknown (default).
         Dark,    ///< Dark.
-        Light    ///< Light (default).
+        Light    ///< Light.
     };
 
     /**
-     * @brief Clip mask types.
+     * @brief Mask types.
      */
-    enum ClipType
+    enum MaskType
     {
-        NoClip,   ///< No clip mask is applied (default).
-        RoundRect,///< A rounded rectangle clip mask is applied.
-        SVGPath   ///< An SVG path is used as the clip mask.
+        NoMask,   ///< No mask is applied (default).
+        RoundRect,///< A rounded rectangle mask is applied.
+        SVGPath   ///< An SVG path is used as the mask.
     };
 
     /**
@@ -68,14 +108,14 @@ public:
         /** Indicates that the state has changed. */
         StateChanged          = static_cast<UInt8>(1) << 0,
 
-        /** Indicates that the style has changed. */
-        StyleChanged          = static_cast<UInt8>(1) << 1,
+        /** Indicates that the color hint has changed. */
+        ColorHintChanged      = static_cast<UInt8>(1) << 1,
 
         /** Indicates that the region has changed. */
         RegionChanged         = static_cast<UInt8>(1) << 2,
 
-        /** Indicates that the clip has changed. */
-        ClipChanged           = static_cast<UInt8>(1) << 3,
+        /** Indicates that the clipping mask has changed. */
+        MaskChanged           = static_cast<UInt8>(1) << 3,
 
         /** Indicates that the serial has changed. */
         SerialChanged         = static_cast<UInt8>(1) << 4,
@@ -86,9 +126,9 @@ public:
      */
     struct Configuration
     {
-        State state { Disabled };    ///< The desired blur state
-        Style style { Light };       ///< The desired blur style
-        UInt32 serial { 0 };         ///< The serial number associated with the configuration
+        State state { Disabled };        ///< The desired blur state
+        ColorHint colorHint { Unknown }; ///< The current blur color hint
+        UInt32 serial { 0 };             ///< The serial number associated with the configuration
     };
 
     /**
@@ -97,11 +137,11 @@ public:
     struct Props
     {
         State state { Disabled };                ///< The current blur state
-        Style style { Light };                   ///< The current blur style
-        ClipType clipType { NoClip };            ///< The clip type
+        ColorHint colorHint { Light };           ///< The current blur color hint
+        MaskType maskType { NoMask };            ///< The mask type
         LRegion region { LRegion() };            ///< The region to be blurred
-        LRRect roundRectClip;                    ///< The rounded rectangle clip (if applicable)
-        std::string svgPathClip;                 ///< The SVG path clip (if applicable)
+        LRRect roundRectMask;                    ///< The rounded rectangle mask (if applicable)
+        std::string svgPathMask;                 ///< The SVG path mask (if applicable)
         UInt32 serial { 0 };                     ///< The serial number associated with the configuration
         bool isEmpty { true };                   ///< Whether the region is empty
         bool isFullSize { false };               ///< Whether the region covers the full surface
@@ -122,7 +162,7 @@ public:
     ~LBackgroundBlur() noexcept = default;
 
     /**
-     * @brief Handle to the `background_blur` Wayland resource wrapper.
+     * @brief Handle to the `lvr_background_blur` resource wrapper.
      *
      * @returns `nullptr` if the protocol is not supported()
      */
@@ -145,7 +185,7 @@ public:
     /**
      * @brief The current properties (acknowledged by the client).
      *
-     * The property values can also be accessed directly via aliases such as state(), style(), clipType(), etc.
+     * The property values can also be accessed directly via aliases such as state(), colorHint(), maskType(), etc.
      */
     const Props &props() const noexcept { return m_props[m_currentPropsIndex]; };
 
@@ -155,14 +195,14 @@ public:
     State state() const noexcept { return props().state; };
 
     /**
-     * @brief The current blur style.
+     * @brief The current blur color hint.
      */
-    Style style() const noexcept { return props().style; };
+    ColorHint colorHint() const noexcept { return props().colorHint; };
 
     /**
-     * @brief The current clip mode.
+     * @brief The current mask type.
      */
-    ClipType clipType() const noexcept { return props().clipType; };
+    MaskType maskType() const noexcept { return props().maskType; };
 
     /**
      * @brief Region in local surface coordinates to be blurred.
@@ -172,30 +212,30 @@ public:
     const LRegion &region() const noexcept { return props().region; };
 
     /**
-     * @brief Returns the current clip as a rounded rectangle, if the clip type is set to @ref RoundRect.
+     * @brief Returns the current rounded rectangle mask, if the mask type is set to @ref RoundRect .
      *
      * The rounded rectangle is guaranteed to be valid, but it may extend beyond the surface bounds.
      *
-     * If the compositor does not support rounded rectangle clips, it should limit the
-     * `GBackgroundBlurManager` global to version 1.
+     * If the compositor does not support rounded rectangle masks, it should remove the @ref RoundRectMaskCap
+     * from @ref maskingCapabilities to prevent clients from using it.
      */
-    const LRRect &roundRectClip() const noexcept { return props().roundRectClip; };
+    const LRRect &roundRectMask() const noexcept { return props().roundRectMask; };
 
     /**
-     * @brief Returns the current clip SVG path, if the clip type is set to @ref SVGPath.
+     * @brief Returns the current SVG path mask, if the mask type is set to @ref SVGPath .
      *
      * Note that the path may extend beyond the surface bounds.
      *
      * @warning Louvre does not validate the SVG commands within the string. It is the
      * responsibility of the caller to ensure the SVG path is valid.
      *
-     * If the compositor does not support SVG paths, it should set the
-     * `GBackgroundBlurManager` global to a version below 3.
+     * If the compositor does not support SVG path masks, it should remove the @ref SVGPathMaskCap
+     * from @ref maskingCapabilities to prevent clients from using it.
      */
-    const std::string &svgPathClip() const noexcept { return props().svgPathClip; };
+    const std::string &svgPathMask() const noexcept { return props().svgPathMask; };
 
     /**
-     * @brief Returns the last acknowledged serial.
+     * @brief Returns the last acknowledged configuration serial.
      */
     UInt32 serial() const noexcept { return props().serial; };
 
@@ -216,7 +256,7 @@ public:
     /**
      * @brief Indicates whether the blur effect should be displayed.
      *
-     * The effect is visible when the client has acknowledged an @ref Enabled state
+     * The effect should be applied when the client has acknowledged an @ref Enabled state
      * and the blur region() is not empty.
      */
     bool visible() const noexcept { return state() && !isEmpty(); };
@@ -243,31 +283,32 @@ public:
     /**
      * @brief Notifies the client of the background color tone.
      *
-     * Clients can use this hint, for example, to set the overlay text color to white when the style is @ref Dark .
+     * Clients can use this hint, for example, to set the overlay text color to white
+     * when the colorHint is @ref Dark, and to black when it is @ref Light.
      *
-     * This is an asynchronous operation. The current style should be maintained
+     * This is an asynchronous operation. The current color hint should be maintained
      * until the client acknowledges the change via propsChanged().
      *
      * The configuration is immediately stored in pendingConfiguration().
      *
      * If blur is not supported() calling this function is a no-op.
      */
-    void configureStyle(Style style) noexcept
+    void configureColorHint(ColorHint hint) noexcept
     {
         if (!supported())
             return;
         updateSerial();
-        m_flags.add(HasStyleToSend);
-        m_pendingConfiguration.style = style;
+        m_flags.add(HasColorHintToSend);
+        m_pendingConfiguration.colorHint = hint;
     }
 
     /**
      * @brief Triggered when the client creates a background blur resource for the surface.
      *
-     * The compositor should respond by configuring both the blur state and style.
+     * The compositor should respond by configuring both the blur state and color hint.
      * If no configuration is explicitly sent, Louvre will automatically apply
      * the current pending configuration values, which default to @ref Disabled for the state
-     * and @ref Light for the style.
+     * and @ref Unknown for the color hint.
      *
      * #### Default implementation
      * @snippet LBackgroundBlurDefault.cpp configureRequest
@@ -281,7 +322,7 @@ public:
      * or when it requests a change.
      *
      * @param changes   A bitset indicating which properties have changed.
-     * @param prevProps The previous state of the properties before the change.
+     * @param prevProps The state of the properties before the change.
      *
      * #### Default implementation
      * @snippet LBackgroundBlurDefault.cpp propsChanged
@@ -300,9 +341,9 @@ private:
     enum Flags : UInt8
     {
         HasStateToSend       = static_cast<UInt8>(1) << 0,
-        HasStyleToSend       = static_cast<UInt8>(1) << 1,
+        HasColorHintToSend   = static_cast<UInt8>(1) << 1,
         RegionModified       = static_cast<UInt8>(1) << 2,
-        ClipModified         = static_cast<UInt8>(1) << 3,
+        MaskModified         = static_cast<UInt8>(1) << 3,
         Destroyed            = static_cast<UInt8>(1) << 4,
     };
 

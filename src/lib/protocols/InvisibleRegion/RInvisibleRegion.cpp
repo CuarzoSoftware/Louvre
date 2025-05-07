@@ -1,11 +1,11 @@
 #include <protocols/InvisibleRegion/RInvisibleRegion.h>
-#include <protocols/InvisibleRegion/invisible-region.h>
+#include <protocols/InvisibleRegion/lvr-invisible-region.h>
 #include <protocols/Wayland/RRegion.h>
 #include <private/LSurfacePrivate.h>
 
 using namespace Louvre::Protocols::InvisibleRegion;
 
-static const struct invisible_region_interface imp
+static const struct lvr_invisible_region_interface imp
 {
     .destroy = &RInvisibleRegion::destroy,
     .set_region = &RInvisibleRegion::set_region,
@@ -20,7 +20,7 @@ RInvisibleRegion::RInvisibleRegion
     :LResource
     (
         surface->client(),
-        &invisible_region_interface,
+        &lvr_invisible_region_interface,
         version,
         id,
         &imp
@@ -32,8 +32,8 @@ RInvisibleRegion::~RInvisibleRegion() noexcept
     if (!surfaceRes())
     {
         wl_resource_post_error(resource(),
-            INVISIBLE_REGION_ERROR_DESTROYED_SURFACE,
-            "surface destroyed before its invisible_region object");
+            LVR_INVISIBLE_REGION_ERROR_DESTROYED_SURFACE,
+            "surface destroyed before its lvr_invisible_region object");
         return;
     }
 
@@ -56,8 +56,8 @@ void RInvisibleRegion::set_region(wl_client */*client*/, wl_resource *resource, 
     if (!res.surfaceRes())
     {
         wl_resource_post_error(resource,
-                               INVISIBLE_REGION_ERROR_DESTROYED_SURFACE,
-                               "surface destroyed before its invisible_region object");
+                               LVR_INVISIBLE_REGION_ERROR_DESTROYED_SURFACE,
+                               "surface destroyed before its lvr_invisible_region object");
         return;
     }
 

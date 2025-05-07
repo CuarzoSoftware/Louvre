@@ -1,11 +1,11 @@
 #include <protocols/SvgPath/GSvgPathManager.h>
 #include <protocols/SvgPath/RSvgPath.h>
-#include <protocols/SvgPath/svg-path.h>
+#include <protocols/SvgPath/lvr-svg-path.h>
 #include <LSurface.h>
 
 using namespace Louvre::Protocols::SvgPath;
 
-static const struct svg_path_interface imp
+static const struct lvr_svg_path_interface imp
 {
     .destroy = &RSvgPath::destroy,
     .concat_commands = &RSvgPath::concat_commands,
@@ -21,7 +21,7 @@ RSvgPath::RSvgPath
     :LResource
     (
         manager->client(),
-        &svg_path_interface,
+        &lvr_svg_path_interface,
         version,
         id,
         &imp
@@ -36,7 +36,7 @@ void RSvgPath::destroy(wl_client */*client*/, wl_resource *resource)
 
     if (!res.isComplete())
     {
-        wl_resource_post_error(resource, SVG_PATH_ERROR_INCOMPLETE, "incomplete svg path");
+        wl_resource_post_error(resource, LVR_SVG_PATH_ERROR_INCOMPLETE, "incomplete svg path");
         return;
     }
 
@@ -50,7 +50,7 @@ void RSvgPath::concat_commands(wl_client */*client*/, wl_resource *resource, con
 
     if (res.isComplete())
     {
-        wl_resource_post_error(resource, SVG_PATH_ERROR_ALREADY_CONSTRUCTED, "done already sent");
+        wl_resource_post_error(resource, LVR_SVG_PATH_ERROR_ALREADY_CONSTRUCTED, "done already sent");
         return;
     }
 
@@ -63,7 +63,8 @@ void RSvgPath::done(wl_client */*client*/, wl_resource *resource)
 
     if (res.isComplete())
     {
-        wl_resource_post_error(resource, SVG_PATH_ERROR_ALREADY_CONSTRUCTED, "done sent twice");
+        wl_resource_post_error(resource, LVR_SVG_PATH_ERROR_ALREADY_CONSTRUCTED,
+                               "a request other than destroy was made after a done request");
         return;
     }
 

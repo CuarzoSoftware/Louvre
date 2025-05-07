@@ -1,13 +1,13 @@
 #include <protocols/InvisibleRegion/GInvisibleRegionManager.h>
 #include <protocols/InvisibleRegion/RInvisibleRegion.h>
-#include <protocols/InvisibleRegion/invisible-region.h>
+#include <protocols/InvisibleRegion/lvr-invisible-region.h>
 #include <private/LSurfacePrivate.h>
 #include <private/LClientPrivate.h>
 #include <LUtils.h>
 
 using namespace Louvre::Protocols::InvisibleRegion;
 
-static const struct invisible_region_manager_interface imp
+static const struct lvr_invisible_region_manager_interface imp
 {
     .destroy = &GInvisibleRegionManager::destroy,
     .get_invisible_region = &GInvisibleRegionManager::get_invisible_region
@@ -25,7 +25,7 @@ Int32 GInvisibleRegionManager::maxVersion() noexcept
 
 const wl_interface *GInvisibleRegionManager::interface() noexcept
 {
-    return &invisible_region_manager_interface;
+    return &lvr_invisible_region_manager_interface;
 }
 
 GInvisibleRegionManager::GInvisibleRegionManager
@@ -65,8 +65,8 @@ void GInvisibleRegionManager::get_invisible_region(wl_client */*client*/, wl_res
     if (surfaceRes->surface()->imp()->invisibleRegion)
     {
         wl_resource_post_error(resource,
-            INVISIBLE_REGION_MANAGER_ERROR_ALREADY_CONSTRUCTED,
-            "the surface already has an associated invisible_region object");
+            LVR_INVISIBLE_REGION_MANAGER_ERROR_ALREADY_CONSTRUCTED,
+            "the surface already has an associated lvr_invisible_region object");
         return;
     }
 

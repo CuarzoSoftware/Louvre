@@ -1,12 +1,12 @@
 #include <protocols/SvgPath/GSvgPathManager.h>
 #include <protocols/SvgPath/RSvgPath.h>
-#include <protocols/SvgPath/svg-path.h>
+#include <protocols/SvgPath/lvr-svg-path.h>
 #include <private/LClientPrivate.h>
 #include <LUtils.h>
 
 using namespace Louvre::Protocols::SvgPath;
 
-static const struct svg_path_manager_interface imp
+static const struct lvr_svg_path_manager_interface imp
 {
     .destroy = &GSvgPathManager::destroy,
     .get_svg_path = &GSvgPathManager::get_svg_path
@@ -24,7 +24,7 @@ Int32 GSvgPathManager::maxVersion() noexcept
 
 const wl_interface *GSvgPathManager::interface() noexcept
 {
-    return &svg_path_manager_interface;
+    return &lvr_svg_path_manager_interface;
 }
 
 GSvgPathManager::GSvgPathManager

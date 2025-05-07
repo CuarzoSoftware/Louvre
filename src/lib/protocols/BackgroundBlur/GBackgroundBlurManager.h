@@ -1,7 +1,9 @@
 #ifndef GBACKGROUNDBLURMANAGER_H
 #define GBACKGROUNDBLURMANAGER_H
 
+#include <LBackgroundBlur.h>
 #include <LResource.h>
+#include <LBitset.h>
 
 class Louvre::Protocols::BackgroundBlur::GBackgroundBlurManager final : public LResource
 {
@@ -13,6 +15,8 @@ private:
     LGLOBAL_INTERFACE
     GBackgroundBlurManager(wl_client *client, Int32 version, UInt32 id) noexcept;
     ~GBackgroundBlurManager() noexcept;
+
+    LBitset<LBackgroundBlur::MaskingCapabilities> m_maskingCapabilities;
 };
 
 #endif // GBACKGROUNDBLURMANAGER_H

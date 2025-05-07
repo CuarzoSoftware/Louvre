@@ -1,4 +1,4 @@
-#include <protocols/BackgroundBlur/background-blur.h>
+#include <protocols/BackgroundBlur/lvr-background-blur.h>
 #include <protocols/BackgroundBlur/GBackgroundBlurManager.h>
 #include <protocols/BackgroundBlur/RBackgroundBlur.h>
 #include <protocols/Wayland/RSurface.h>
@@ -7,10 +7,10 @@
 
 using namespace Louvre::Protocols::BackgroundBlur;
 
-static const struct background_blur_manager_interface imp
+static const struct lvr_background_blur_manager_interface imp
 {
+    .get_background_blur = &GBackgroundBlurManager::get_background_blur,
     .destroy = &GBackgroundBlurManager::destroy,
-    .get_background_blur = &GBackgroundBlurManager::get_background_blur
 };
 
 void GBackgroundBlurManager::bind(wl_client *client, void */*data*/, UInt32 version, UInt32 id) noexcept
@@ -25,7 +25,7 @@ Int32 GBackgroundBlurManager::maxVersion() noexcept
 
 const wl_interface *GBackgroundBlurManager::interface() noexcept
 {
-    return &background_blur_manager_interface;
+    return &lvr_background_blur_manager_interface;
 }
 
 GBackgroundBlurManager::GBackgroundBlurManager
@@ -44,6 +44,8 @@ GBackgroundBlurManager::GBackgroundBlurManager
     )
 {
     this->client()->imp()->backgroundBlurManagerGlobals.emplace_back(this);
+    m_maskingCapabilities = LBackgroundBlur::maskingCapabilities;
+    lvr_background_blur_manager_send_masking_capabilities(resource(), LBackgroundBlur::maskingCapabilities.get());
 }
 
 GBackgroundBlurManager::~GBackgroundBlurManager() noexcept
@@ -60,15 +62,16 @@ void GBackgroundBlurManager::destroy(wl_client */*client*/, wl_resource *resourc
 
 void GBackgroundBlurManager::get_background_blur(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *surface)
 {
+    auto *res { static_cast<GBackgroundBlurManager*>(wl_resource_get_user_data(resource)) };
     auto *surfaceRes { static_cast<Wayland::RSurface*>(wl_resource_get_user_data(surface)) };
 
     if (surfaceRes->contentTypeRes())
     {
         wl_resource_post_error(resource,
-                               BACKGROUND_BLUR_MANAGER_ERROR_ALREADY_CONSTRUCTED,
+                               LVR_BACKGROUND_BLUR_MANAGER_ERROR_ALREADY_CONSTRUCTED,
                                "the surface already has an associated background blur object");
         return;
     }
 
-    new RBackgroundBlur(surfaceRes, id, wl_resource_get_version(resource));
+    new RBackgroundBlur(res->m_maskingCapabilities, surfaceRes, id, wl_resource_get_version(resource));
 }

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<protocol name="svg_path">
+<protocol name="lvr_svg_path">
+
   <copyright>
-    Copyright © 2025 Cuarzo Software
+    Copyright © 2025 Eduardo Hopperdietzel
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
@@ -23,30 +24,46 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="svg_path_manager" version="1">
+  <description summary="vector shapes factory">
+    This protocol provides an efficient way for clients to define complex shapes.
+
+    One common use for these shapes is masking, as seen in the lvr_background_blur 
+    protocol. However, other protocols may apply them for purposes not covered in 
+    this document.
+
+    Shapes are expressed as a string of SVG path commands, a standard and widely 
+    used format. In the future, this approach may be replaced by separate requests 
+    for each type of SVG path command.
+
+    Warning: This protocol is experimental, and backward-incompatible changes may be 
+    made in the future.
+  </description>
+
+  <interface name="lvr_svg_path_manager" version="1">
     <description summary="SVG path manager">
       This interface allows a compositor to announce support for SVG paths.
     </description>
 
     <request name="destroy" type="destructor">
       <description summary="destroy the SVG path manager object">
-        Destroy the SVG path manager. This doesn't destroy objects created with the manager.
+        Destroy the SVG path manager. This doesn't destroy objects created with the 
+        manager.
       </description>
     </request>
 
     <request name="get_svg_path">
       <description summary="create a new SVG path object"></description>
-      <arg name="id" type="new_id" interface="svg_path"/>
+      <arg name="id" type="new_id" interface="lvr_svg_path"/>
     </request>
   </interface>
 
-  <interface name="svg_path" version="1">
+  <interface name="lvr_svg_path" version="1">
     <description summary="SVG path object">
       The SVG path is described as a string of commands, as outlined here:
 
       https://svgwg.org/specs/paths/
 
-      After requesting an svg_path object, the client must send zero or multiple 
+      After requesting a lvr_svg_path object, the client must send zero or multiple 
       concat_commands if the string exceeds 4096 bytes, which is the default maximum 
       length supported by libwayland. The compositor concatenates the strings in order 
       of receipt. 
@@ -67,8 +84,10 @@
 
     <enum name="error">
       <entry name="incomplete" value="0" summary="incomplete svg path"/>
-      <entry name="already_constructed" value="1" summary="done sent twice"/>
-      <entry name="invalid_commands" value="2" summary="the final string doesn't represent a valid svg path"/>
+      <entry name="already_constructed" value="1" 
+        summary="a request other than destroy was made after a done request"/>
+      <entry name="invalid_commands" value="2" 
+        summary="the final string doesn't represent a valid svg path"/>
     </enum>
     
     <request name="destroy" type="destructor">
@@ -90,4 +109,5 @@
     </request>
     
   </interface>
+
 </protocol>

@@ -1,4 +1,4 @@
-#include <protocols/BackgroundBlur/background-blur.h>
+#include <protocols/BackgroundBlur/lvr-background-blur.h>
 #include <protocols/BackgroundBlur/RBackgroundBlur.h>
 #include <protocols/SvgPath/RSvgPath.h>
 #include <protocols/Wayland/RSurface.h>
@@ -7,31 +7,32 @@
 
 using namespace Louvre::Protocols::BackgroundBlur;
 
-static const struct background_blur_interface imp
+static const struct lvr_background_blur_interface imp
 {
     .destroy = &RBackgroundBlur::destroy,
     .set_region = &RBackgroundBlur::set_region,
     .ack_configure = &RBackgroundBlur::ack_configure,
-    .clear_clip = &RBackgroundBlur::clear_clip,
-    .set_round_rect_clip = &RBackgroundBlur::set_round_rect_clip,
-    .set_svg_path_clip = &RBackgroundBlur::set_svg_path_clip,
+    .clear_mask = &RBackgroundBlur::clear_mask,
+    .set_round_rect_mask = &RBackgroundBlur::set_round_rect_mask,
+    .set_svg_path_mask = &RBackgroundBlur::set_svg_path_mask,
 };
 
-RBackgroundBlur::RBackgroundBlur
-    (
-        Wayland::RSurface *surfaceRes,
-        UInt32 id,
-        Int32 version
-    ) noexcept
+RBackgroundBlur::RBackgroundBlur(
+    LBitset<LBackgroundBlur::MaskingCapabilities> maskCaps,
+     Wayland::RSurface *surfaceRes,
+     UInt32 id,
+     Int32 version
+     ) noexcept
     :LResource
     (
         surfaceRes->client(),
-        &background_blur_interface,
+        &lvr_background_blur_interface,
         version,
         id,
         &imp
     ),
-    m_surfaceRes(surfaceRes)
+    m_surfaceRes(surfaceRes),
+    m_maskingCapabilities(maskCaps)
 {
     auto &blur { *surfaceRes->surface()->backgroundBlur() };
     blur.m_backgroundBlurRes.reset(this);
@@ -45,8 +46,8 @@ RBackgroundBlur::RBackgroundBlur
     if (!blur.m_flags.check(LBackgroundBlur::HasStateToSend))
         blur.configureState(blur.pendingConfiguration().state);
 
-    if (!blur.m_flags.check(LBackgroundBlur::HasStyleToSend))
-        blur.configureStyle(blur.pendingConfiguration().style);
+    if (!blur.m_flags.check(LBackgroundBlur::HasColorHintToSend))
+        blur.configureColorHint(blur.pendingConfiguration().colorHint);
 }
 
 RBackgroundBlur::~RBackgroundBlur() noexcept
@@ -62,17 +63,17 @@ RBackgroundBlur::~RBackgroundBlur() noexcept
 
 void RBackgroundBlur::state(LBackgroundBlur::State state) noexcept
 {
-    background_blur_send_state(resource(), state);
+    lvr_background_blur_send_state(resource(), state);
 }
 
-void RBackgroundBlur::style(LBackgroundBlur::Style style) noexcept
+void RBackgroundBlur::colorHint(LBackgroundBlur::ColorHint hint) noexcept
 {
-    background_blur_send_style(resource(), style);
+    lvr_background_blur_send_color_hint(resource(), hint);
 }
 
 void RBackgroundBlur::configure(UInt32 serial) noexcept
 {
-    background_blur_send_configure(resource(), serial);
+    lvr_background_blur_send_configure(resource(), serial);
 }
 
 /******************** REQUESTS ********************/
@@ -83,7 +84,7 @@ void RBackgroundBlur::destroy(wl_client */*client*/, wl_resource *resource)
 
     if (!res.surfaceRes())
     {
-        wl_resource_post_error(resource, BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
         return;
     }
 
@@ -96,7 +97,7 @@ void RBackgroundBlur::ack_configure(wl_client */*client*/, wl_resource *resource
 
     if (!res.surfaceRes())
     {
-        wl_resource_post_error(resource, BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
         return;
     }
 
@@ -108,7 +109,7 @@ void RBackgroundBlur::ack_configure(wl_client */*client*/, wl_resource *resource
         {
             blur.pendingProps().serial = blur.m_sentConfigurations.front().serial;
             blur.pendingProps().state = blur.m_sentConfigurations.front().state;
-            blur.pendingProps().style = blur.m_sentConfigurations.front().style;
+            blur.pendingProps().colorHint = blur.m_sentConfigurations.front().colorHint;
             blur.m_sentConfigurations.pop_front();
             return;
         }
@@ -116,7 +117,7 @@ void RBackgroundBlur::ack_configure(wl_client */*client*/, wl_resource *resource
             blur.m_sentConfigurations.pop_front();
     }
 
-    wl_resource_post_error(resource, BACKGROUND_BLUR_ERROR_INVALID_SERIAL, "invalid configure serial");
+    wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_INVALID_SERIAL, "invalid configure serial");
 }
 
 void RBackgroundBlur::set_region(wl_client */*client*/, wl_resource *resource, wl_resource *region)
@@ -125,7 +126,7 @@ void RBackgroundBlur::set_region(wl_client */*client*/, wl_resource *resource, w
 
     if (!res.surfaceRes())
     {
-        wl_resource_post_error(resource, BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
         return;
     }
 
@@ -148,34 +149,44 @@ void RBackgroundBlur::set_region(wl_client */*client*/, wl_resource *resource, w
     }
 }
 
-void RBackgroundBlur::clear_clip(wl_client */*client*/, wl_resource *resource)
+void RBackgroundBlur::clear_mask(wl_client */*client*/, wl_resource *resource)
 {
     auto &res { *static_cast<RBackgroundBlur*>(wl_resource_get_user_data(resource)) };
 
     if (!res.surfaceRes())
     {
-        wl_resource_post_error(resource, BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
         return;
     }
 
-    auto &blur { *res.surfaceRes()->surface()->backgroundBlur() };
-
-    if (blur.pendingProps().clipType == LBackgroundBlur::NoClip)
+    // Noop
+    if (res.m_maskingCapabilities.get() == 0)
         return;
 
-    blur.pendingProps().clipType = LBackgroundBlur::NoClip;
-    blur.pendingProps().roundRectClip = LRRect();
-    blur.pendingProps().svgPathClip.clear();
-    blur.m_flags.add(LBackgroundBlur::ClipModified);
+    auto &blur { *res.surfaceRes()->surface()->backgroundBlur() };
+
+    if (blur.pendingProps().maskType == LBackgroundBlur::NoMask)
+        return;
+
+    blur.pendingProps().maskType = LBackgroundBlur::NoMask;
+    blur.pendingProps().roundRectMask = LRRect();
+    blur.pendingProps().svgPathMask.clear();
+    blur.m_flags.add(LBackgroundBlur::MaskModified);
 }
 
-void RBackgroundBlur::set_round_rect_clip(wl_client */*client*/, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height, Int32 radTL, Int32 radTR, Int32 radBR, Int32 radBL)
+void RBackgroundBlur::set_round_rect_mask(wl_client */*client*/, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height, Int32 radTL, Int32 radTR, Int32 radBR, Int32 radBL)
 {
     auto &res { *static_cast<RBackgroundBlur*>(wl_resource_get_user_data(resource)) };
 
     if (!res.surfaceRes())
     {
-        wl_resource_post_error(resource, BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        return;
+    }
+
+    if (!res.m_maskingCapabilities.check(LBackgroundBlur::RoundRectMaskCap))
+    {
+        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_UNSUPPORTED_MASK, "the mask is not supported by the compositor");
         return;
     }
 
@@ -185,26 +196,32 @@ void RBackgroundBlur::set_round_rect_clip(wl_client */*client*/, wl_resource *re
 
     if (!newRRect.isValid())
     {
-        wl_resource_post_error(resource, BACKGROUND_BLUR_ERROR_INVALID_ROUND_RECT, "invalid round rect size or radii");
+        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_INVALID_ROUND_RECT, "invalid round rect size or radii");
         return;
     }
 
-    if (blur.pendingProps().clipType == LBackgroundBlur::RoundRect && blur.pendingProps().roundRectClip == newRRect)
+    if (blur.pendingProps().maskType == LBackgroundBlur::RoundRect && blur.pendingProps().roundRectMask == newRRect)
         return;
 
-    blur.pendingProps().svgPathClip.clear();
-    blur.pendingProps().roundRectClip = newRRect;
-    blur.m_flags.add(LBackgroundBlur::ClipModified);
-    blur.pendingProps().clipType = LBackgroundBlur::RoundRect;
+    blur.pendingProps().svgPathMask.clear();
+    blur.pendingProps().roundRectMask = newRRect;
+    blur.m_flags.add(LBackgroundBlur::MaskModified);
+    blur.pendingProps().maskType = LBackgroundBlur::RoundRect;
 }
 
-void RBackgroundBlur::set_svg_path_clip(wl_client */*client*/, wl_resource *resource, wl_resource *svgPath)
+void RBackgroundBlur::set_svg_path_mask(wl_client */*client*/, wl_resource *resource, wl_resource *svgPath)
 {
     auto &res { *static_cast<RBackgroundBlur*>(wl_resource_get_user_data(resource)) };
 
     if (!res.surfaceRes())
     {
-        wl_resource_post_error(resource, BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        return;
+    }
+
+    if (!res.m_maskingCapabilities.check(LBackgroundBlur::SVGPathMaskCap))
+    {
+        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_UNSUPPORTED_MASK, "the mask is not supported by the compositor");
         return;
     }
 
@@ -213,12 +230,12 @@ void RBackgroundBlur::set_svg_path_clip(wl_client */*client*/, wl_resource *reso
 
     if (!rSvgPath.isComplete())
     {
-        wl_resource_post_error(resource, BACKGROUND_BLUR_ERROR_INVALID_SVG_PATH, "incomplete svg path");
+        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_INVALID_SVG_PATH, "incomplete svg path");
         return;
     }
 
-    blur.m_flags.add(LBackgroundBlur::ClipModified);
-    blur.pendingProps().roundRectClip = LRRect();
-    blur.pendingProps().svgPathClip = rSvgPath.commands();
-    blur.pendingProps().clipType = LBackgroundBlur::SVGPath;
+    blur.m_flags.add(LBackgroundBlur::MaskModified);
+    blur.pendingProps().roundRectMask = LRRect();
+    blur.pendingProps().svgPathMask = rSvgPath.commands();
+    blur.pendingProps().maskType = LBackgroundBlur::SVGPath;
 }
