@@ -273,7 +273,7 @@ public:
      */
     void configureState(State state) noexcept
     {
-        if (!supported())
+        if (!supported() || state == m_pendingConfiguration.state)
             return;
         updateSerial();
         m_flags.add(HasStateToSend);
@@ -295,7 +295,7 @@ public:
      */
     void configureColorHint(ColorHint hint) noexcept
     {
-        if (!supported())
+        if (!supported() || hint == m_pendingConfiguration.colorHint)
             return;
         updateSerial();
         m_flags.add(HasColorHintToSend);
