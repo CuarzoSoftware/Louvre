@@ -137,7 +137,7 @@ public:
     struct Props
     {
         State state { Disabled };                ///< The current blur state
-        ColorHint colorHint { Light };           ///< The current blur color hint
+        ColorHint colorHint { Unknown };         ///< The current blur color hint
         MaskType maskType { NoMask };            ///< The mask type
         LRegion region { LRegion() };            ///< The region to be blurred
         LRRect roundRectMask;                    ///< The rounded rectangle mask (if applicable)

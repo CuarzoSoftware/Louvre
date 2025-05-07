@@ -16,6 +16,6 @@ void LBackgroundBlur::configureRequest()
     /* Example
 
     configureState(Enabled);
-    configureStyle(Light); */
+    configureColorHint(Light); */
 }
 //! [configureRequest]
