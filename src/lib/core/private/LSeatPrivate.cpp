@@ -10,7 +10,6 @@
 #include <LLog.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <cstring>
 
 void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
 {
@@ -30,17 +29,6 @@ void LSeat::LSeatPrivate::seatEnabled(libseat *seat, void *data)
 
     if (compositor()->isInputBackendInitialized())
         compositor()->imp()->inputBackend->backendResume();
-
-    // Restore Wayland and Aux events
-    epoll_ctl(compositor()->imp()->epollFd,
-              EPOLL_CTL_ADD,
-              compositor()->imp()->events[LEV_WAYLAND].data.fd,
-              &compositor()->imp()->events[LEV_WAYLAND]);
-
-    epoll_ctl(compositor()->imp()->epollFd,
-              EPOLL_CTL_ADD,
-              compositor()->imp()->events[LEV_AUX].data.fd,
-              &compositor()->imp()->events[LEV_AUX]);
 
     LLog::debug("[LSeatPrivate::seatEnabled] %s enabled.", libseat_seat_name(seat));
     lseat->enabledChanged();
@@ -83,18 +71,7 @@ void LSeat::LSeatPrivate::seatDisabled(libseat *seat, void *data)
     libseat_disable_seat(seat);
 
     // Disable Wayland and Aux events
-    epoll_ctl(compositor()->imp()->epollFd,
-              EPOLL_CTL_DEL,
-              compositor()->imp()->events[LEV_WAYLAND].data.fd,
-              NULL);
-
-    epoll_ctl(compositor()->imp()->epollFd,
-              EPOLL_CTL_DEL,
-              compositor()->imp()->events[LEV_AUX].data.fd,
-              NULL);
-
     LLog::debug("[LSeatPrivate::seatDisabled] %s disabled.", libseat_seat_name(seat));
-
     lseat->enabledChanged();
 }
 
@@ -121,7 +98,7 @@ bool LSeat::LSeatPrivate::initLibseat()
     if (!libseatHandle)
         return false;
 
-    int fd = libseat_get_fd(libseatHandle);
+    const int fd { libseat_get_fd(libseatHandle) };
 
     if (fd == -1)
     {
@@ -130,13 +107,10 @@ bool LSeat::LSeatPrivate::initLibseat()
         return false;
     }
 
-    compositor()->imp()->events[LEV_LIBSEAT].events = EPOLLIN;
-    compositor()->imp()->events[LEV_LIBSEAT].data.fd = fd;
-
-    epoll_ctl(compositor()->imp()->epollFd,
-              EPOLL_CTL_ADD,
-              compositor()->imp()->events[LEV_LIBSEAT].data.fd,
-              &compositor()->imp()->events[LEV_LIBSEAT]);
+    compositor()->imp()->libseatEventSource = compositor()->addFdListener(fd, nullptr, [](int, unsigned int, void *) -> int {
+        seat()->imp()->dispatchSeat();
+        return 0;
+    });
 
     compositor()->imp()->lock();
     dispatchSeat();

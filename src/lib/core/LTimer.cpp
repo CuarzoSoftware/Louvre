@@ -6,7 +6,7 @@
 LTimer::LTimer(const Callback &onTimeout) noexcept : m_onTimeoutCallback(onTimeout)
 {
     if (compositor() && compositor()->display())
-        m_waylandEventSource = wl_event_loop_add_timer(compositor()->imp()->waylandEventLoop, &LTimer::waylandTimeoutCallback, this);
+        m_waylandEventSource = wl_event_loop_add_timer(compositor()->imp()->eventLoop, &LTimer::waylandTimeoutCallback, this);
 }
 
 LTimer::~LTimer()
@@ -93,7 +93,7 @@ bool LTimer::start(UInt32 intervalMs) noexcept
         return false;
 
     if (!m_waylandEventSource)
-        m_waylandEventSource = wl_event_loop_add_timer(compositor()->imp()->waylandEventLoop, &LTimer::waylandTimeoutCallback, this);
+        m_waylandEventSource = wl_event_loop_add_timer(compositor()->imp()->eventLoop, &LTimer::waylandTimeoutCallback, this);
 
     m_interval = intervalMs;
     m_running = true;

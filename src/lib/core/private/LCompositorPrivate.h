@@ -22,7 +22,6 @@ using namespace Louvre;
 LPRIVATE_CLASS(LCompositor)
 
     CompositorState state { CompositorState::Uninitialized };
-    Int32 epollFd;
     LVersion version;
     std::filesystem::path defaultAssetsPath;
     std::filesystem::path defaultBackendsPath;
@@ -35,15 +34,12 @@ LPRIVATE_CLASS(LCompositor)
 
     bool initWayland();
         wl_display *display { nullptr };
-        wl_event_loop *waylandEventLoop { nullptr }; // Wayland events only
-        wl_event_loop *auxEventLoop { nullptr }; // Backends + User events
+        wl_event_loop *eventLoop { nullptr };
+        Int32 eventLoopFd { -1 };
         wl_listener clientConnectedListener;
-        wl_event_source *clientDisconnectedEventSource;
-#define LEV_UNLOCK 0
-#define LEV_LIBSEAT 1
-#define LEV_AUX 2
-#define LEV_WAYLAND 3
-        epoll_event events[4]; // [0] Unlock [1] Libseat [2] Aux [3] Wayland
+        wl_event_source *libseatEventSource { nullptr };
+        wl_event_source *eventFdEventSource { nullptr };
+        Int32 eventFd { -1 };
         LSessionLockManager *sessionLockManager { nullptr };
         LActivationTokenManager *activationTokenManager { nullptr };
     void unitWayland();
