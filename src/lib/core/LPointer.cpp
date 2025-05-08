@@ -199,28 +199,39 @@ void LPointer::sendScrollEvent(const LPointerScrollEvent &event)
                 {
                     if (rPointer->version() < 8)
                     {
+                        rPointer->axis(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
                         rPointer->axisDiscrete(WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
+
+                        rPointer->axis(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
                         rPointer->axisDiscrete(WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
                     }
                     else
                     {
                         if (dX != 0)
+                        {
                             rPointer->axisValue120(WL_POINTER_AXIS_HORIZONTAL_SCROLL, dX);
+                            rPointer->axis(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
+                        }
 
                         if (dY != 0)
+                        {
                             rPointer->axisValue120(WL_POINTER_AXIS_VERTICAL_SCROLL, dY);
+                            rPointer->axis(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
+                        }
                     }
                 }
-
-                if (stopX)
-                    rPointer->axisStop(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL);
                 else
-                    rPointer->axis(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
+                {
+                    if (stopX)
+                        rPointer->axisStop(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL);
+                    else
+                        rPointer->axis(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
 
-                if (stopY)
-                    rPointer->axisStop(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL);
-                else
-                    rPointer->axis(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
+                    if (stopY)
+                        rPointer->axisStop(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL);
+                    else
+                        rPointer->axis(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
+                }
 
                 rPointer->frame();
             }
