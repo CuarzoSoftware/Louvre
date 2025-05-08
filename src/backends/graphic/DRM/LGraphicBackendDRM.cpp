@@ -488,9 +488,12 @@ bool LGraphicBackend::backendInitialize()
     srmCoreAddConnectorPluggedEventListener(bknd->core, &connectorPluggedEventHandler, bknd);
     srmCoreAddConnectorUnpluggedEventListener(bknd->core, &connectorUnpluggedEventHandler, bknd);
 
-    bknd->monitor = LCompositor::addFdListener(srmCoreGetMonitorFD(bknd->core),
-                                            bknd,
-                                            &monitorEventHandler);
+    bknd->monitor = wl_event_loop_add_fd(
+        LCompositor::eventLoop(),
+        srmCoreGetMonitorFD(bknd->core),
+        WL_EVENT_READABLE,
+        &monitorEventHandler,
+        bknd);
 
     compositor()->imp()->graphicBackendData = bknd;
     return true;
@@ -503,7 +506,8 @@ bool LGraphicBackend::backendInitialize()
 void LGraphicBackend::backendUninitialize()
 {
     Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
-    LCompositor::removeFdListener(bknd->monitor);
+    wl_event_source_remove(bknd->monitor);
+    bknd->monitor = nullptr;
 
     // Find connected outputs
     SRMListForeach (devIt, srmCoreGetDevices(bknd->core))

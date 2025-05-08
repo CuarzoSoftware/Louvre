@@ -28,6 +28,7 @@ LPRIVATE_CLASS(LSeat)
     std::vector<const LIdleListener*> idleListeners;
     bool isUserIdleHint                     { false };
 
+    wl_event_source *libseatEventSource     { nullptr };
     libseat *libseatHandle                  { nullptr };
     libseat_seat_listener listener;
     bool enabled                            { false };

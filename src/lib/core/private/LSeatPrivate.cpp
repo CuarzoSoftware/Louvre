@@ -107,10 +107,16 @@ bool LSeat::LSeatPrivate::initLibseat()
         return false;
     }
 
-    compositor()->imp()->libseatEventSource = compositor()->addFdListener(fd, nullptr, [](int, unsigned int, void *) -> int {
-        seat()->imp()->dispatchSeat();
-        return 0;
-    });
+    libseatEventSource = wl_event_loop_add_fd(
+        LCompositor::eventLoop(),
+        fd,
+        WL_EVENT_READABLE,
+        [](int, unsigned int, void *) -> int
+        {
+            seat()->imp()->dispatchSeat();
+            return 0;
+        },
+        nullptr);
 
     compositor()->imp()->lock();
     dispatchSeat();

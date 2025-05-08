@@ -37,7 +37,6 @@ LPRIVATE_CLASS(LCompositor)
         wl_event_loop *eventLoop { nullptr };
         Int32 eventLoopFd { -1 };
         wl_listener clientConnectedListener;
-        wl_event_source *libseatEventSource { nullptr };
         wl_event_source *eventFdEventSource { nullptr };
         Int32 eventFd { -1 };
         LSessionLockManager *sessionLockManager { nullptr };

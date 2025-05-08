@@ -417,6 +417,11 @@ wl_display *LCompositor::display() noexcept
     return compositor()->imp()->display;
 }
 
+wl_event_loop *LCompositor::eventLoop() noexcept
+{
+    return compositor()->imp()->eventLoop;
+}
+
 wl_event_source *LCompositor::addFdListener(int fd, void *userData, int (*callback)(int, unsigned int, void *), UInt32 flags)
 {
     return wl_event_loop_add_fd(compositor()->imp()->eventLoop, fd, flags, callback, userData);

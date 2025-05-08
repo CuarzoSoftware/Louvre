@@ -55,8 +55,8 @@ LSeat::~LSeat()
 
     if (imp()->libseatHandle)
     {
-        compositor()->removeFdListener(compositor()->imp()->libseatEventSource);
-        compositor()->imp()->libseatEventSource = nullptr;
+        wl_event_source_remove(imp()->libseatEventSource);
+        imp()->libseatEventSource = nullptr;
         libseat_close_seat(imp()->libseatHandle);
         imp()->libseatHandle = nullptr;
     }

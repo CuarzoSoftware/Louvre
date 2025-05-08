@@ -150,12 +150,18 @@ bool LCompositor::LCompositorPrivate::initWayland()
 
     // This is used to force unlocking the main loop with imp()->unlockPoll()
     eventFd = eventfd(0, EFD_NONBLOCK);
-    eventFdEventSource = addFdListener(eventFd, nullptr, [](int, unsigned int, void *) -> int {
-        UInt64 value;
-        L_UNUSED(read(compositor()->imp()->eventFd, &value, sizeof(value)))
-        compositor()->imp()->pollUnlocked = false;
-        return 0;
-    });
+
+    eventFdEventSource = wl_event_loop_add_fd(
+        LCompositor::eventLoop(),
+        eventFd,
+        WL_EVENT_READABLE,
+        [](int, unsigned int, void *) -> int {
+            UInt64 value;
+            L_UNUSED(read(compositor()->imp()->eventFd, &value, sizeof(value)))
+            compositor()->imp()->pollUnlocked = false;
+            return 0;
+        },
+        nullptr);
 
     // Listen for client connections
     clientConnectedListener.notify = &clientConnectedEvent;

@@ -111,11 +111,14 @@ public:
     void finish() noexcept;
 
     /**
-     * @brief Gets the native `wl_display` used by the compositor.
-     *
-     * @return The native `wl_display`.
+     * @brief Gets the native `wl_display` created by the compositor.
      */
     static wl_display *display() noexcept;
+
+    /**
+     * @brief Gets the main event loop.
+     */
+    static wl_event_loop *eventLoop() noexcept;
 
     /**
      * @brief Adds a pollable file descriptor listener to the main event loop.
@@ -127,6 +130,7 @@ public:
      *
      * @return The wl_event_source associated with the added file descriptor.
      */
+    [[deprecated("This function will be removed in Louvre v3.0. Use LCompositor::eventLoop() and wl_event_loop_add_fd instead.")]]
     static wl_event_source *addFdListener(int fd, void *userData, int(*callback)(int,unsigned int,void*), UInt32 flags = WL_EVENT_READABLE);
 
     /**
@@ -134,6 +138,7 @@ public:
      *
      * @param source The wl_event_source to remove.
      */
+    [[deprecated("This function will be removed in Louvre v3.0. Use wl_event_source_remove instead.")]]
     static void removeFdListener(wl_event_source *source);
 
     /**

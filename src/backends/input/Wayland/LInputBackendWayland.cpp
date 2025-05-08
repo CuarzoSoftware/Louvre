@@ -176,17 +176,19 @@ public:
 
         shared().fd[2].fd = eventfd(0, O_CLOEXEC | O_NONBLOCK);
 
-        eventfdEventSource = compositor()->addFdListener(
+        eventfdEventSource = wl_event_loop_add_fd(
+            LCompositor::eventLoop(),
             shared().fd[2].fd,
-            nullptr,
-            LInputBackend::processInput,
-            POLLIN);
+            WL_EVENT_READABLE,
+            &LInputBackend::processInput,
+            nullptr);
 
-        waylandEventSource = compositor()->addFdListener(
+        waylandEventSource = wl_event_loop_add_fd(
+            LCompositor::eventLoop(),
             shared().fd[1].fd,
-            nullptr,
-            LInputBackend::processInput,
-            POLLIN);
+            WL_EVENT_READABLE,
+            &LInputBackend::processInput,
+            nullptr);
 
         return true;
     }
@@ -195,14 +197,14 @@ public:
     {
         if (eventfdEventSource)
         {
-            compositor()->removeFdListener(eventfdEventSource);
+            wl_event_source_remove(eventfdEventSource);
             eventfdEventSource = nullptr;
             shared().fd[2].fd = -1;
         }
 
         if (waylandEventSource)
         {
-            compositor()->removeFdListener(waylandEventSource);
+            wl_event_source_remove(waylandEventSource);
             waylandEventSource = nullptr;
         }
 

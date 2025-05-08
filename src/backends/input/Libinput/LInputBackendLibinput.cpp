@@ -551,7 +551,13 @@ public:
             libinput_udev_assign_seat(li, "seat0");
 
         fd = libinput_get_fd(li);
-        eventSource = LCompositor::addFdListener(fd, (LSeat*)seat, &LInputBackend::processInput);
+
+        eventSource = wl_event_loop_add_fd(
+            LCompositor::eventLoop(),
+            fd,
+            WL_EVENT_READABLE,
+            &LInputBackend::processInput,
+            (LSeat*)seat);
         return true;
 
     fail:
@@ -563,7 +569,7 @@ public:
     {
         if (eventSource)
         {
-            LCompositor::removeFdListener(eventSource);
+            wl_event_source_remove(eventSource);
             eventSource = nullptr;
         }
 
