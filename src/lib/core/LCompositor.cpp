@@ -270,9 +270,6 @@ bool LCompositor::start()
     imp()->threadId = std::this_thread::get_id();
     imp()->state = CompositorState::Initializing;
 
-    compositor()->imp()->epollFd = epoll_create1(EPOLL_CLOEXEC);
-    compositor()->imp()->events[LEV_LIBSEAT].data.fd = -1;
-
     if (!imp()->initWayland())
     {
         LLog::fatal("[LCompositor::start] Failed to init Wayland.");
@@ -303,14 +300,6 @@ bool LCompositor::start()
         goto fail;
     }
 
-    imp()->events[LEV_UNLOCK].events = EPOLLIN;
-    imp()->events[LEV_UNLOCK].data.fd = eventfd(0, EFD_NONBLOCK);
-
-    epoll_ctl(compositor()->imp()->epollFd,
-              EPOLL_CTL_ADD,
-              compositor()->imp()->events[LEV_UNLOCK].data.fd,
-              &compositor()->imp()->events[LEV_UNLOCK]);
-
     imp()->state = CompositorState::Initialized;
     initialized();
     return true;
@@ -325,15 +314,13 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
     if (state() == CompositorState::Uninitialized)
         return 0;
 
-    if (!seat()->enabled())
-        msTimeout = 100;
+    pollfd pollfd {
+        .fd = imp()->eventLoopFd,
+        .events = POLLIN,
+        .revents = 0
+    };
 
-    epoll_event events[4];
-
-    Int32 nEvents = epoll_wait(imp()->epollFd,
-                         events,
-                         4,
-                         msTimeout);
+    const int ret { poll(&pollfd, 1, msTimeout) };
 
     imp()->lock();
     seat()->setIsUserIdleHint(true);
@@ -341,73 +328,18 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
     imp()->processRemovedGlobals();
     imp()->handlePosixSignalChanges();
 
-    /* In certain older libseat versions, a POLLIN event may not be generated
-     * during session switching. To ensure stability, we always dispatch
-     * events; otherwise, the compositor might crash when a user is in a different
-     * session and a new DRM connector is plugged in. */
+    if (ret == 1)
+        wl_event_loop_dispatch(imp()->eventLoop, 0);
 
-    seat()->imp()->dispatchSeat();
-
-    /* Some input backends, such as Libinput, require periodic handling of events related to device plugging and unplugging,
-     * even if the session is disabled. Failing to do so may lead to unexpected bugs and result in a compositor crash. */
-
-    if (!seat()->enabled())
-    {
-        imp()->processAnimations();
-        imp()->inputBackend->backendForceUpdate();
-    }
-
-    bool flush { false };
-
-    for (Int32 i = 0; i < nEvents; i++)
-    {
-        // Backend + User
-        if (events[i].data.fd == imp()->events[LEV_AUX].data.fd)
-        {
-            if (true || seat()->enabled())
-            {
-                wl_event_loop_dispatch(imp()->auxEventLoop, 0);
-                flush = true;
-            }
-        }
-        // Wayland
-        else if (events[i].data.fd == imp()->events[LEV_WAYLAND].data.fd)
-        {
-            if (true || seat()->enabled())
-            {
-                wl_event_loop_dispatch(imp()->waylandEventLoop, 0);
-                flush = true;
-            }
-        }
-        // Event fd
-        else if (events[i].data.fd == imp()->events[LEV_UNLOCK].data.fd)
-        {
-            UInt64 eventValue;
-            ssize_t n = read(imp()->events[0].data.fd, &eventValue, sizeof(eventValue));
-            L_UNUSED(n);
-            imp()->pollUnlocked = false;
-        }
-        else if (events[i].data.fd == imp()->events[LEV_LIBSEAT].data.fd)
-        {
-            seat()->imp()->dispatchSeat();
-        }
-    }
-
-    if (true || seat()->enabled())
-    {
+    if (seat()->enabled())
         if (!seat()->isUserIdleHint())
             for (const auto *idleListener : seat()->idleListeners())
                 idleListener->resetTimer();
 
-        if (flush)
-        {
-            cursor()->imp()->textureUpdate();
-            flushClients();
-        }
-
-        imp()->destroyPendingRenderBuffers(nullptr);
-        imp()->handleDestroyedClients();
-    }
+    cursor()->imp()->textureUpdate();
+    flushClients();
+    imp()->destroyPendingRenderBuffers(nullptr);
+    imp()->handleDestroyedClients();
 
     if (state() == CompositorState::Uninitializing)
     {
@@ -447,9 +379,6 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
             delete imp()->oneShotTimers.back();
 
         imp()->state = CompositorState::Uninitialized;
-
-        if (imp()->epollFd != -1)
-            close(imp()->epollFd);
     }
     else
     {
@@ -471,7 +400,7 @@ Int32 LCompositor::processLoop(Int32 msTimeout)
 
 Int32 LCompositor::fd() const noexcept
 {
-    return imp()->epollFd;
+    return imp()->eventLoopFd;
 }
 
 void LCompositor::finish() noexcept
@@ -490,7 +419,7 @@ wl_display *LCompositor::display() noexcept
 
 wl_event_source *LCompositor::addFdListener(int fd, void *userData, int (*callback)(int, unsigned int, void *), UInt32 flags)
 {
-    return wl_event_loop_add_fd(compositor()->imp()->auxEventLoop, fd, flags, callback, userData);
+    return wl_event_loop_add_fd(compositor()->imp()->eventLoop, fd, flags, callback, userData);
 }
 
 void LCompositor::removeFdListener(wl_event_source *source)

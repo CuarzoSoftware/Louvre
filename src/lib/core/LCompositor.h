@@ -125,8 +125,6 @@ public:
      * @param callback The callback function to handle events on the file descriptor.
      * @param flags Flags to specify the type of event to listen for (e.g., WL_EVENT_READABLE).
      *
-     * @note If the compositor is suspended, events are queued and will be dispatched once it is resumed.
-     *
      * @return The wl_event_source associated with the added file descriptor.
      */
     static wl_event_source *addFdListener(int fd, void *userData, int(*callback)(int,unsigned int,void*), UInt32 flags = WL_EVENT_READABLE);

@@ -144,24 +144,17 @@ bool LCompositor::LCompositorPrivate::initWayland()
     }
 
     wl_display_init_shm(display);
-    waylandEventLoop = wl_display_get_event_loop(display);
-    auxEventLoop = wl_event_loop_create();
+    eventLoop = wl_display_get_event_loop(display);
+    eventLoopFd = wl_event_loop_get_fd(eventLoop);
 
-    compositor()->imp()->events[LEV_WAYLAND].events = EPOLLIN | EPOLLOUT;
-    compositor()->imp()->events[LEV_WAYLAND].data.fd = wl_event_loop_get_fd(waylandEventLoop);
-
-    epoll_ctl(compositor()->imp()->epollFd,
-              EPOLL_CTL_ADD,
-              compositor()->imp()->events[LEV_WAYLAND].data.fd,
-              &compositor()->imp()->events[LEV_WAYLAND]);
-
-    compositor()->imp()->events[LEV_AUX].events = EPOLLIN | EPOLLOUT;
-    compositor()->imp()->events[LEV_AUX].data.fd = wl_event_loop_get_fd(auxEventLoop);
-
-    epoll_ctl(compositor()->imp()->epollFd,
-              EPOLL_CTL_ADD,
-              compositor()->imp()->events[LEV_AUX].data.fd,
-              &compositor()->imp()->events[LEV_AUX]);
+    // This is used to force unlocking the main loop with imp()->unlockPoll()
+    eventFd = eventfd(0, EFD_NONBLOCK);
+    eventFdEventSource = addFdListener(eventFd, nullptr, [](int, unsigned int, void *) -> int {
+        UInt64 value;
+        L_UNUSED(read(compositor()->imp()->eventFd, &value, sizeof(value)))
+        compositor()->imp()->pollUnlocked = false;
+        return 0;
+    });
 
     // Listen for client connections
     clientConnectedListener.notify = &clientConnectedEvent;
@@ -198,14 +191,16 @@ bool LCompositor::LCompositorPrivate::initWayland()
 
 void LCompositor::LCompositorPrivate::unitWayland()
 {
-    if (auxEventLoop)
-    {
-        wl_event_loop_destroy(auxEventLoop);
-        auxEventLoop = nullptr;
-    }
-
     if (display)
-    {
+    {        
+        if (eventFdEventSource)
+        {
+            wl_event_source_remove(eventFdEventSource);
+            eventFdEventSource = nullptr;
+            close(eventFd);
+            eventFd = -1;
+        }
+
         while (!globals.empty())
         {
             delete globals.back();
@@ -213,6 +208,8 @@ void LCompositor::LCompositorPrivate::unitWayland()
         }
         wl_display_destroy(display);
         display = nullptr;
+        eventLoop = nullptr; // Destroyed by wl_display_destroy
+        eventLoopFd = -1;
     }
 
     if (activationTokenManager)
@@ -244,9 +241,6 @@ void LCompositor::LCompositorPrivate::unitCompositor()
     }
 
     unitWayland();
-
-    if (epollFd != -1)
-        close(epollFd);
 
     while (!oneShotTimers.empty())
         delete oneShotTimers.back();
@@ -831,9 +825,8 @@ void LCompositor::LCompositorPrivate::unlockPoll()
         return;
 
     pollUnlocked = true;
-    uint64_t event_value = 1;
-    ssize_t n = write(events[0].data.fd, &event_value, sizeof(event_value));
-    L_UNUSED(n);
+    const uint64_t value { 1 };
+    L_UNUSED(write(eventFd, &value, sizeof(value)))
 }
 
 LPainter *LCompositor::LCompositorPrivate::findPainter()
@@ -1131,7 +1124,7 @@ void LCompositor::LCompositorPrivate::handlePosixSignalChanges() noexcept
     while (!signalsCopy.empty())
     {
         LLog::debug("[LCompositorPrivate::handlePosixSignalChanges] Event source created for posix signal %d.", *signalsCopy.begin());
-        posixSignalSources[*signalsCopy.begin()] = wl_event_loop_add_signal(waylandEventLoop, *signalsCopy.begin(), &posixSignalHandler, nullptr);
+        posixSignalSources[*signalsCopy.begin()] = wl_event_loop_add_signal(eventLoop, *signalsCopy.begin(), &posixSignalHandler, nullptr);
         signalsCopy.erase(signalsCopy.begin());
     }
 }
