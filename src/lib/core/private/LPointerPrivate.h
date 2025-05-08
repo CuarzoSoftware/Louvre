@@ -24,8 +24,6 @@ LPRIVATE_CLASS(LPointer)
     LWeak<LSurface> draggingSurface;
     std::vector<LPointerButtonEvent::Button> pressedButtons;
     LBitset<StateFlags> state { NaturalScrollX | NaturalScrollY };
-    Float32 axisXprev;
-    Float32 axisYprev;
 };
 
 #endif // LPOINTERPRIVATE_H

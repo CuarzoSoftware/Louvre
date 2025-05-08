@@ -437,10 +437,18 @@ public:
 
     static void pointerHandleAxis(void *, wl_pointer *, UInt32 time, UInt32 axis, Float24 value)
     {
-        Float32 val = wl_fixed_to_double(value);
+        const Float64 val { wl_fixed_to_double(value) };
+
+        // This would be interpreted as a stop event
+        if (val == 0.f)
+            return;
+
         pointerScrollEvent.setSerial(LTime::nextSerial());
         pointerScrollEvent.setMs(time);
         pointerScrollEvent.setUs(LTime::us());
+
+        pointerScrollEvent.setHasX(axis == WL_POINTER_AXIS_HORIZONTAL_SCROLL);
+        pointerScrollEvent.setHasY(axis == WL_POINTER_AXIS_VERTICAL_SCROLL);
 
         if (axis == WL_POINTER_AXIS_HORIZONTAL_SCROLL)
         {

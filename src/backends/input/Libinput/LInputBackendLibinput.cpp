@@ -199,12 +199,15 @@ public:
                 pointerEvent = libinput_event_get_pointer_event(ev);
                 pointerScrollEvent.setDevice(inputDevice);
 
-                if (libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL))
+                pointerScrollEvent.setHasX(libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL) != 0);
+                pointerScrollEvent.setHasY(libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL) != 0);
+
+                if (pointerScrollEvent.hasX())
                     pointerScrollEvent.setX(libinput_event_pointer_get_scroll_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL));
                 else
                     pointerScrollEvent.setX(0.f);
 
-                if (libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL))
+                if (pointerScrollEvent.hasY())
                     pointerScrollEvent.setY(libinput_event_pointer_get_scroll_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL));
                 else
                     pointerScrollEvent.setY(0.f);
@@ -223,12 +226,15 @@ public:
                 pointerEvent = libinput_event_get_pointer_event(ev);
                 pointerScrollEvent.setDevice(inputDevice);
 
-                if (libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL))
+                pointerScrollEvent.setHasX(libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL) != 0);
+                pointerScrollEvent.setHasY(libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL) != 0);
+
+                if (pointerScrollEvent.hasX())
                     pointerScrollEvent.setX(libinput_event_pointer_get_scroll_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL));
                 else
                     pointerScrollEvent.setX(0.f);
 
-                if (libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL))
+                if (pointerScrollEvent.hasY())
                     pointerScrollEvent.setY(libinput_event_pointer_get_scroll_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL));
                 else
                     pointerScrollEvent.setY(0.f);
@@ -247,7 +253,10 @@ public:
                 pointerEvent = libinput_event_get_pointer_event(ev);
                 pointerScrollEvent.setDevice(inputDevice);
 
-                if (libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL))
+                pointerScrollEvent.setHasX(libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL) != 0);
+                pointerScrollEvent.setHasY(libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL) != 0);
+
+                if (pointerScrollEvent.hasX())
                 {
                     pointerScrollEvent.setX(libinput_event_pointer_get_scroll_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL));
                     pointerScrollEvent.set120X(libinput_event_pointer_get_scroll_value_v120(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL));
@@ -258,7 +267,7 @@ public:
                     pointerScrollEvent.set120X(0.f);
                 }
 
-                if (libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL))
+                if (pointerScrollEvent.hasY())
                 {
                     pointerScrollEvent.setY(libinput_event_pointer_get_scroll_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL));
                     pointerScrollEvent.set120Y(libinput_event_pointer_get_scroll_value_v120(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL));

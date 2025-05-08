@@ -36,19 +36,55 @@ public:
      *
      * @param axes The scroll axes values.
      * @param axes120 The scroll axes values for high-resolution scrolling.
+     * @param hasX Indicates whether the event includes a value for the X axis.
+     * @param hasY Indicates whether the event includes a value for the Y axis.
      * @param source The source of the scroll event.
      * @param serial The serial number of the event.
      * @param ms The millisecond timestamp of the event.
      * @param us The microsecond timestamp of the event.
      * @param device The input device that originated the event.
      */
-    LPointerScrollEvent(const LPointF &axes = LPointF(0.f, 0.f), const LPointF &axes120 = LPointF(0.f, 0.f), Source source = Continuous,
-                               UInt32 serial = LTime::nextSerial(), UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) noexcept :
+    LPointerScrollEvent(const LPointF &axes = LPointF(0.f, 0.f), const LPointF &axes120 = LPointF(0.f, 0.f), bool hasX = true, bool hasY = true, Source source = Continuous,
+            UInt32 serial = LTime::nextSerial(), UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) noexcept :
         LPointerEvent(LEvent::Subtype::Scroll, serial, ms, us, device),
         m_axes(axes),
         m_axes120(axes120),
-        m_source(source)
+        m_source(source),
+        m_hasX(hasX),
+        m_hasY(hasY)
     {}
+
+    /**
+     * @brief Indicates whether the event includes a value for the X axis.
+     */
+    bool hasX() const noexcept
+    {
+        return m_hasX;
+    }
+
+    /**
+     * @brief Sets whether the event includes a value for the X axis.
+     */
+    void setHasX(bool hasX) noexcept
+    {
+        m_hasX = hasX;
+    }
+
+    /**
+     * @brief Indicates whether the event includes a value for the Y axis.
+     */
+    bool hasY() const noexcept
+    {
+        return m_hasY;
+    }
+
+    /**
+     * @brief Sets whether the event includes a value for the Y axis.
+     */
+    void setHasY(bool hasY) noexcept
+    {
+        m_hasY = hasY;
+    }
 
     /**
      * @brief Sets the scroll axes values.
@@ -157,6 +193,8 @@ protected:
     LPointF m_axes;
     LPointF m_axes120;
     Source m_source;
+    bool m_hasX;
+    bool m_hasY;
 private:
     friend class LInputBackend;
     void notify();

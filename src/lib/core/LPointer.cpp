@@ -143,13 +143,13 @@ void LPointer::sendButtonEvent(const LPointerButtonEvent &event)
 
 void LPointer::sendScrollEvent(const LPointerScrollEvent &event)
 {
-    if (!focus())
+    if (!focus() || (!event.hasX() && !event.hasY()))
         return;
 
     const UInt32 naturalX { naturalScrollingXEnabled() ? WL_POINTER_AXIS_RELATIVE_DIRECTION_INVERTED : WL_POINTER_AXIS_RELATIVE_DIRECTION_IDENTICAL };
     const UInt32 naturalY { naturalScrollingYEnabled() ? WL_POINTER_AXIS_RELATIVE_DIRECTION_INVERTED : WL_POINTER_AXIS_RELATIVE_DIRECTION_IDENTICAL };
-    const bool stopX { event.axes().x() == 0.f && imp()->axisXprev != 0.f };
-    const bool stopY { event.axes().y() == 0.f && imp()->axisYprev != 0.f };
+    const bool stopX { event.hasX() && event.axes().x() == 0.f };
+    const bool stopY { event.hasY() && event.axes().y() == 0.f };
 
     for (auto gSeat : focus()->client()->seatGlobals())
     {
@@ -161,15 +161,22 @@ void LPointer::sendScrollEvent(const LPointerScrollEvent &event)
                 Float32 aX, aY;
                 Int32 dX, dY;
 
-                if (rPointer->axisRelativeDirection(WL_POINTER_AXIS_HORIZONTAL_SCROLL, naturalX))
+                if (rPointer->version() >= 9)
                 {
-                    rPointer->axisRelativeDirection(WL_POINTER_AXIS_VERTICAL_SCROLL, naturalY);
-                    aX = event.axes().x();
-                    aY = event.axes().y();
-                    dX = event.axes120().x();
-                    dY = event.axes120().y();
+                    if (event.hasX())
+                    {
+                        rPointer->axisRelativeDirection(WL_POINTER_AXIS_HORIZONTAL_SCROLL, naturalX);
+                        aX = event.axes().x();
+                        dX = event.axes120().x();
+                    }
+
+                    if (event.hasY())
+                    {
+                        rPointer->axisRelativeDirection(WL_POINTER_AXIS_VERTICAL_SCROLL, naturalY);
+                        dY = event.axes120().y();
+                        aY = event.axes().y();
+                    }
                 }
-                // Less than v9
                 else
                 {
                     if (naturalScrollingXEnabled())
@@ -199,23 +206,34 @@ void LPointer::sendScrollEvent(const LPointerScrollEvent &event)
                 {
                     if (rPointer->version() < 8)
                     {
-                        rPointer->axis(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
-                        rPointer->axisDiscrete(WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
+                        if (event.hasX())
+                        {
+                            rPointer->axis(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
+                            rPointer->axisDiscrete(WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
+                        }
 
-                        rPointer->axis(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
-                        rPointer->axisDiscrete(WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
+                        if (event.hasY())
+                        {
+                            rPointer->axis(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
+                            rPointer->axisDiscrete(WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
+                        }
                     }
                     else
                     {
-                        if (dX != 0)
+                        if (event.hasX())
                         {
-                            rPointer->axisValue120(WL_POINTER_AXIS_HORIZONTAL_SCROLL, dX);
+                            if (dX != 0)
+                                rPointer->axisValue120(WL_POINTER_AXIS_HORIZONTAL_SCROLL, dX);
+
                             rPointer->axis(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
+
                         }
 
-                        if (dY != 0)
+                        if (event.hasY())
                         {
-                            rPointer->axisValue120(WL_POINTER_AXIS_VERTICAL_SCROLL, dY);
+                            if (dY != 0)
+                                rPointer->axisValue120(WL_POINTER_AXIS_VERTICAL_SCROLL, dY);
+
                             rPointer->axis(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
                         }
                     }
@@ -224,12 +242,12 @@ void LPointer::sendScrollEvent(const LPointerScrollEvent &event)
                 {
                     if (stopX)
                         rPointer->axisStop(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL);
-                    else
+                    else if (event.hasX())
                         rPointer->axis(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL, aX);
 
                     if (stopY)
                         rPointer->axisStop(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL);
-                    else
+                    else if (event.hasY())
                         rPointer->axis(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL, aY);
                 }
 
@@ -238,14 +256,14 @@ void LPointer::sendScrollEvent(const LPointerScrollEvent &event)
             // Since 1
             else
             {
-                rPointer->axis(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL, event.axes().x());
-                rPointer->axis(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL, event.axes().y());
+                if (event.hasX())
+                    rPointer->axis(event.ms(), WL_POINTER_AXIS_HORIZONTAL_SCROLL, event.axes().x());
+
+                if (event.hasY())
+                    rPointer->axis(event.ms(), WL_POINTER_AXIS_VERTICAL_SCROLL, event.axes().y());
             }
         }
     }
-
-    imp()->axisXprev = event.axes().x();
-    imp()->axisYprev = event.axes().y();
 }
 
 void LPointer::sendSwipeBeginEvent(const LPointerSwipeBeginEvent &event)
