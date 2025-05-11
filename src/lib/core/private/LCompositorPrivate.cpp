@@ -157,7 +157,8 @@ bool LCompositor::LCompositorPrivate::initWayland()
         WL_EVENT_READABLE,
         [](int, unsigned int, void *) -> int {
             UInt64 value;
-            L_UNUSED(read(compositor()->imp()->eventFd, &value, sizeof(value)))
+            auto ret = read(compositor()->imp()->eventFd, &value, sizeof(value));
+            L_UNUSED(ret)
             compositor()->imp()->pollUnlocked = false;
             return 0;
         },
@@ -833,7 +834,8 @@ void LCompositor::LCompositorPrivate::unlockPoll()
 
     pollUnlocked = true;
     const uint64_t value { 1 };
-    L_UNUSED(write(eventFd, &value, sizeof(value)))
+    auto ret = write(eventFd, &value, sizeof(value));
+    L_UNUSED(ret)
 }
 
 LPainter *LCompositor::LCompositorPrivate::findPainter()

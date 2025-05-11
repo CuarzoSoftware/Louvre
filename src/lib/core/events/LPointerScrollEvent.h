@@ -7,6 +7,12 @@
 
 /**
  * @brief Pointer scroll event.
+ *
+ * When processing events triggered by a mouse wheel in the server, the caller must
+ * choose between @ref Wheel and @ref WheelLegacy, and avoid using both.
+ *
+ * However, all events should be dispatched to clients through LPointer::sendScrollEvent().
+ * Louvre internally filters them appropriately based on the `wl_pointer` version used by the client.
  */
 class Louvre::LPointerScrollEvent final : public LPointerEvent
 {
@@ -18,7 +24,7 @@ public:
      */
     enum Source : UInt32
     {
-        /// Mouse wheel (discrete)
+        /// Mouse wheel (120 value)
         Wheel = 0,
 
         /// Trackpad swipe (continuous)
@@ -28,14 +34,17 @@ public:
         Continuous = 2,
 
         /// Side movement of a mouse wheel (since 6)
-        WheelTilt = 3
+        WheelTilt = 3,
+
+        /// Legacy mouse wheel (discrete)
+        WheelLegacy = 1000
     };
 
     /**
      * @brief Constructs an LPointerScrollEvent object.
      *
-     * @param axes The scroll axes values.
-     * @param axes120 The scroll axes values for high-resolution scrolling.
+     * @param axes The scroll axes values (included in all sources).
+     * @param axesDiscrete The scroll axes values for high-resolution scrolling (@ref Wheel source) or th physical mouse wheel clicks (@ref WheelLegacy source).
      * @param hasX Indicates whether the event includes a value for the X axis.
      * @param hasY Indicates whether the event includes a value for the Y axis.
      * @param source The source of the scroll event.
@@ -44,11 +53,11 @@ public:
      * @param us The microsecond timestamp of the event.
      * @param device The input device that originated the event.
      */
-    LPointerScrollEvent(const LPointF &axes = LPointF(0.f, 0.f), const LPointF &axes120 = LPointF(0.f, 0.f), bool hasX = true, bool hasY = true, Source source = Continuous,
+    LPointerScrollEvent(const LPointF &axes = LPointF(0.f, 0.f), const LPointF &axesDiscrete = LPoint(0, 0), bool hasX = true, bool hasY = true, Source source = Continuous,
             UInt32 serial = LTime::nextSerial(), UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) noexcept :
         LPointerEvent(LEvent::Subtype::Scroll, serial, ms, us, device),
         m_axes(axes),
-        m_axes120(axes120),
+        m_axesDiscrete(axesDiscrete),
         m_source(source),
         m_hasX(hasX),
         m_hasY(hasY)
@@ -56,6 +65,8 @@ public:
 
     /**
      * @brief Indicates whether the event includes a value for the X axis.
+     *
+     * @note Applicable to all sources.
      */
     bool hasX() const noexcept
     {
@@ -64,6 +75,8 @@ public:
 
     /**
      * @brief Sets whether the event includes a value for the X axis.
+     *
+     * @note Applicable to all sources.
      */
     void setHasX(bool hasX) noexcept
     {
@@ -72,6 +85,8 @@ public:
 
     /**
      * @brief Indicates whether the event includes a value for the Y axis.
+     *
+     * @note Applicable to all sources.
      */
     bool hasY() const noexcept
     {
@@ -80,6 +95,8 @@ public:
 
     /**
      * @brief Sets whether the event includes a value for the Y axis.
+     *
+     * @note Applicable to all sources.
      */
     void setHasY(bool hasY) noexcept
     {
@@ -88,6 +105,8 @@ public:
 
     /**
      * @brief Sets the scroll axes values.
+     *
+     * @note Applicable to all sources.
      */
     void setAxes(const LPointF &axes) noexcept
     {
@@ -96,6 +115,8 @@ public:
 
     /**
      * @brief Sets the scroll axes values.
+     *
+     * @note Applicable to all sources.
      */
     void setAxes(Float32 x, Float32 y) noexcept
     {
@@ -105,6 +126,8 @@ public:
 
     /**
      * @brief Sets the scroll value along the x-axis.
+     *
+     * @note Applicable to all sources.
      */
     void setX(Float32 x) noexcept
     {
@@ -113,6 +136,8 @@ public:
 
     /**
      * @brief Sets the scroll value along the y-axis.
+     *
+     * @note Applicable to all sources.
      */
     void setY(Float32 y) noexcept
     {
@@ -121,6 +146,8 @@ public:
 
     /**
      * @brief Gets the scroll axes values.
+     *
+     * @note Applicable to all sources.
      */
     const LPointF &axes() const noexcept
     {
@@ -128,49 +155,61 @@ public:
     }
 
     /**
-     * @brief Sets the high-resolution scroll axes values.
-     */
-    void setAxes120(const LPointF &axes) noexcept
-    {
-        m_axes120 = axes;
-    }
-
-    /**
-     * @brief Sets the high-resolution scroll axes values.
-     */
-    void setAxes120(Float32 x, Float32 y) noexcept
-    {
-        m_axes120.setX(x);
-        m_axes120.setY(y);
-    }
-
-    /**
-     * @brief Sets the high-resolution scroll value along the x-axis.
-     */
-    void set120X(Float32 x) noexcept
-    {
-        m_axes120.setX(x);
-    }
-
-    /**
-     * @brief Sets the high-resolution scroll value along the y-axis.
-     */
-    void set120Y(Float32 y) noexcept
-    {
-        m_axes120.setY(y);
-    }
-
-    /**
-     * @brief Gets the high-resolution scroll axes values.
+     * @brief Sets the discrete scroll axes values.
      *
-     * A value that is a fraction of ±120 indicates a wheel movement less than one logical click, a caller should either scroll by
-     * the respective fraction of the normal scroll distance or accumulate that value until a multiple of 120 is reached.
-     *
-     * @note Only for events with a @ref Wheel source.
+     * @see discreteAxes()
      */
-    const LPointF &axes120() const noexcept
+    void setDiscreteAxes(const LPoint &axes) noexcept
     {
-        return m_axes120;
+        m_axesDiscrete = axes;
+    }
+
+    /**
+     * @brief Sets the discrete scroll axes values using individual x and y components.
+     *
+     * @see discreteAxes()
+     */
+    void setDiscreteAxes(Int32 x, Int32 y) noexcept
+    {
+        m_axesDiscrete.setX(x);
+        m_axesDiscrete.setY(y);
+    }
+
+    /**
+     * @brief Sets the discrete scroll value along the x-axis.
+     *
+     * @see discreteAxes()
+     */
+    void setDiscreteX(Int32 x) noexcept
+    {
+        m_axesDiscrete.setX(x);
+    }
+
+    /**
+     * @brief Sets the discrete scroll value along the y-axis.
+     *
+     * @see discreteAxes()
+     */
+    void setDiscreteY(Int32 y) noexcept
+    {
+        m_axesDiscrete.setY(y);
+    }
+
+    /**
+     * @brief Retrieves the discrete scroll axes values.
+     *
+     * - If the source is @ref LegacyWheel, the values represent physical mouse wheel clicks.
+     *
+     * - If the source is @ref Wheel, the property contains high-resolution scroll axis values:
+     *   A value that is a fraction of ±120 indicates a wheel movement smaller than one logical click.
+     *   The caller should either scroll by the respective fraction of the normal scroll distance or
+     *   accumulate the value until it reaches a multiple of 120.
+     *
+     * Ignore this value for other source types.
+     */
+    const LPoint &discreteAxes() const noexcept
+    {
+        return m_axesDiscrete;
     }
 
     /**
@@ -191,7 +230,7 @@ public:
 
 protected:
     LPointF m_axes;
-    LPointF m_axes120;
+    LPoint m_axesDiscrete;
     Source m_source;
     bool m_hasX;
     bool m_hasY;
