@@ -10,6 +10,10 @@
 
 * **WAYLAND_DISPLAY**: If set before launching the compositor, Louvre will attempt to load the Wayland backend.
 
+## Session
+
+* **LOUVRE_ENABLE_LIBSEAT**: Set this to 0 to disable [libseat](https://github.com/kennylevinsen/seatd) and launch the compositor without multi-session support. Disabling it also allows launching from SSH, useful for debugging the DRM backend. Defaults to 1.
+
 ## Backends Configuration
 
   - **LOUVRE_BACKENDS_PATH**: Directory containing Louvre backends. The directory structure must include two subdirectories as follows:
