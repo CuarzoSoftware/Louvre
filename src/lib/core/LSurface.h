@@ -275,7 +275,9 @@ public:
     /**
      * @brief Invisible region in surface coordinates.
      *
-     * Region within the surface that is 100% transparent.
+     * Region within the surface that is completely transparent.
+     * 
+     * @note The invisible region protocol is experimental and thus not enabled by default in `LCompositor::createGlobalsRequest()`.
      *
      * Already clipped by the surface bounds.
      */

@@ -1,5 +1,40 @@
 Louvre (2.17.0-1)
 
+  # New Experimental Protocols
+
+  * lvr-invisible-region: Allows clients to define invisible regions within their surfaces, enabling the compositor to skip rendering invisible pixels. See LSurface::invisibleRegion().
+  * lvr-svg-path: Provides an efficient way for clients to share paths with the compositor for masking or other purposes.
+  * lvr-background-blur: Allows clients to request background blurring for surfaces, with optional clipping masks. See LBackgroundBlur - thanks to @Fox2Code for contributing ideas and @renhiyama for testing and feedback.
+
+  # API Changes
+
+  * New LBackgroundBlur class to handle surface blur effects.
+  * New LRRect class for defining rounded rectangles.
+  * Added LCompositor::eventLoop() for quick access to the main wl_event_loop.
+  * LCompositor::addFdListener() and LCompositor::removeFdListener() are now deprecated, wl_event_loop_add_fd() should be used instead.
+  * Added LPointerScrollEvent::LegacyWheel source type for handling older, deprecated Libinput Wheel events.
+  * LPointerScrollEvent now includes hasX() and hasY() to indicate if values are provided for each axis.
+  * LPointerScrollEvent::axes120() has been replaced by discreteAxes().
+
+  # Internal Changes
+
+  * Removed additional event queues, only the main wl_display event queue is now used.
+
+  # Bug Fixes
+
+  * Event queues are no longer disabled when the session is inactive. This sometimes caused a queue overflow and freeze upon session resumption - thanks @jgroboredo and @LeKinaSa for reporting and testing.
+  * Corrected wrong dispatching of discrete scroll events — thanks @jgroboredo and @LeKinaSa for reporting and testing.
+  * Fixed a bug in the default LPointer::pointerButtonEvent() implementation that prevented transient toplevels from gaining keyboard focus.
+
+  # Dependencies
+
+  * Updated SRM dependency to version 0.12.1, which fixes issues related to hotplugging and screen flashing during session switching.
+
+-- Eduardo Hopperdietzel <ehopperdietzel@gmail.com> Sat, 10 May 2025 21:46:13 -0400
+
+
+Louvre (2.17.0-1)
+
   # API Additions
 
   * New API for synchronous handling of POSIX signals. Credits: @jgroboredo and @LeKinaSa

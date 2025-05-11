@@ -28,7 +28,7 @@
  * Compositors may support different masking capabilities depending on their rendering features. Modify @ref maskingCapabilities to
  * advertise the supported capabilities to clients.
  *
- * @note The background blur protocol is experimental and thus not enabled by default in `LCompositor::createGlobalsRequest()`.
+ * @note The SVG path and background blur protocols are experimental and thus not enabled by default in `LCompositor::createGlobalsRequest()`.
  */
 class Louvre::LBackgroundBlur : public LFactoryObject
 {

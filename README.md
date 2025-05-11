@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/license-LGPLv2.1-blue.svg" alt="Louvre is released under the LGPLv2.1 license." />
   </a>
   <a href="https://github.com/CuarzoSoftware/Louvre">
-    <img src="https://img.shields.io/badge/version-2.17.0-brightgreen" alt="Current Louvre version." />
+    <img src="https://img.shields.io/badge/version-2.18.0-brightgreen" alt="Current Louvre version." />
   </a>
 </p>
 
@@ -38,7 +38,7 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 * Gamma Correction
 * Screencasting (compatible with PipeWire via xdg-desktop-portal-wlr)
 * Painter API and Scene System
-* Multi-GPU Support
+* Hybrid-GPUs Support
 * Multi-Session Support
 * Double and Triple Buffering
 * Persistent Clipboard
@@ -46,36 +46,41 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 
 ## 🧩 Protocols
 
-* Wayland
-* XDG Activation
-* XDG Shell
-* XDG Decoration
-* XDG Output
-* Presentation Time
-* Linux DMA-Buf
-* Single Pixel Buffer
-* Viewporter
-* Fractional Scale
-* Tearing Control
-* Session Lock
-* Idle Notify
-* Idle Inhibit
-* Content Type Hint
-* Wlr Gamma Control
-* Wlr Layer Shell
-* Wlr Foreign Toplevel Management
-* Wlr Output Management
-* Wlr Screen Copy
-* Image Capture Source
-* Foreign Toplevel List
-* Pointer Gestures
-* Pointer Constraints
-* Relative Pointer
-* DRM Lease
+- Content Type Hint  
+- DRM Lease  
+- Foreign Toplevel List  
+- Fractional Scale  
+- Idle Inhibit  
+- Idle Notify  
+- Image Capture Source  
+- Linux DMA-Buf  
+- Lvr Background Blur  
+- Lvr Invisible Region  
+- Lvr SVG Path  
+- Pointer Constraints  
+- Pointer Gestures  
+- Presentation Time  
+- Relative Pointer  
+- Session Lock  
+- Single Pixel Buffer  
+- Tearing Control  
+- Viewporter  
+- Wayland  
+- Wlr Foreign Toplevel Management  
+- Wlr Gamma Control  
+- Wlr Layer Shell  
+- Wlr Output Management  
+- Wlr Screen Copy  
+- XDG Activation  
+- XDG Decoration  
+- XDG Output  
+- XDG Shell  
 
 ## 🖌️ Rendering
 
-Within Louvre, you have the flexibility to either employ your own OpenGL ES 2.0 shaders/programs, use the LPainter class for fundamental 2D rendering, or leverage the LScene and LView system, which manages buffer damage and can also handle input events for you. Additionally, it's possible to combine these three approaches as needed.
+Within Louvre, you have the flexibility to either employ your own OpenGL ES 2.0 shaders/programs, use the LPainter class for basic 2D rendering, or leverage the LScene and LView system, which manages buffer damage and can also handle input events for you. Additionally, it's possible to combine these three approaches as needed.
+
+You may also want to take a look at [Kay](https://github.com/CuarzoSoftware/Kay), a more flexible and powerful rendering library that is still under development.
 
 ## 🔲 Tested Hardware
 
@@ -166,3 +171,4 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 * Tablet Events Protocol
 * Virtual Keyboard Protocol
 * Input Methods Protocol
+* Screen mirroring

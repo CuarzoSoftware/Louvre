@@ -441,10 +441,8 @@ public:
     {
         const Float64 val { wl_fixed_to_double(value) };
 
-        // This would be interpreted as a stop event
-        if (val == 0.f)
-            return;
-
+        pointerScrollEvent.setSource(LPointerScrollEvent::Continuous);
+        pointerScrollEvent.setDiscreteAxes(0, 0);
         pointerScrollEvent.setSerial(LTime::nextSerial());
         pointerScrollEvent.setMs(time);
         pointerScrollEvent.setUs(LTime::us());
