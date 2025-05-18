@@ -8,10 +8,10 @@
 /**
  * @brief Pointer scroll event.
  *
- * When processing events triggered by a mouse wheel in the server, the caller must
- * choose between @ref Wheel and @ref WheelLegacy, and avoid using both.
+ * When handling mouse wheel events on the server, its recommended to choose either
+ * @ref Wheel or @ref WheelLegacy and avoid handling both due to their semantic differences.
  *
- * However, all events should be dispatched to clients through LPointer::sendScrollEvent().
+ * However, all events should still be dispatched to clients through LPointer::sendScrollEvent().
  * Louvre internally filters them appropriately based on the `wl_pointer` version used by the client.
  */
 class Louvre::LPointerScrollEvent final : public LPointerEvent
@@ -24,19 +24,19 @@ public:
      */
     enum Source : UInt32
     {
-        /// Mouse wheel (120 value)
+        /// [Mouse wheel (120 value)](https://wayland.freedesktop.org/libinput/doc/latest/api/group__event__pointer.html#ga31d3c555e912f021d3880d1cd7eb8a49)
         Wheel = 0,
 
-        /// Trackpad swipe (continuous)
+        /// [Finger (continuous)](https://wayland.freedesktop.org/libinput/doc/latest/api/group__event__pointer.html#ga64ae33acadd4daf2144b906878f64882)
         Finger = 1,
 
-        /// Continuous movement (with unspecified source)
+        /// [Continuous movement (with unspecified source)](https://wayland.freedesktop.org/libinput/doc/latest/api/group__event__pointer.html#ga64ae33acadd4daf2144b906878f64882)
         Continuous = 2,
 
-        /// Side movement of a mouse wheel (since 6)
+        /// [Side movement of a mouse wheel](https://wayland.freedesktop.org/libinput/doc/latest/api/group__device.html#gga76c012d8f6d7656fb795dc7bdf9d6551a60e7f4a41ceda06fe3eba2d512dc8ec9)
         WheelTilt = 3,
 
-        /// Legacy mouse wheel (discrete)
+        /// [Legacy mouse wheel (discrete)](https://wayland.freedesktop.org/libinput/doc/latest/api/group__event__pointer.html#ga38d12fc6884c9943e261febdb2384b98)
         WheelLegacy = 1000
     };
 
@@ -198,7 +198,7 @@ public:
     /**
      * @brief Retrieves the discrete scroll axes values.
      *
-     * - If the source is @ref LegacyWheel, the values represent physical mouse wheel clicks.
+     * - If the source is @ref WheelLegacy, the values represent physical mouse wheel clicks.
      *
      * - If the source is @ref Wheel, the property contains high-resolution scroll axis values:
      *   A value that is a fraction of ±120 indicates a wheel movement smaller than one logical click.
