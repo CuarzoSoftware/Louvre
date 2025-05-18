@@ -73,11 +73,13 @@ RXdgPopup::~RXdgPopup()
                     xdgSurfaceRes()->resource(),
                     XDG_WM_BASE_ERROR_NOT_THE_TOPMOST_POPUP,
                     "The client tried to map or destroy a non-topmost popup.");
+                return;
             }
         }
 
         popupRole()->surface()->imp()->setKeyboardGrabToParent();
         popupRole()->surface()->imp()->setMapped(false);
+        popupRole()->surface()->imp()->setParent(nullptr);
     }
 }
 
