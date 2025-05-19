@@ -27,8 +27,8 @@
 
 Pointer::Pointer(const void *params) : LPointer(params)
 {
-    enableNaturalScrollingX(false);
-    enableNaturalScrollingY(false);
+    enableNaturalScrollingX(true);
+    enableNaturalScrollingY(true);
 }
 
 void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)

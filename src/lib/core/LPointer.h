@@ -137,7 +137,7 @@ public:
     /**
      * @brief Toggles natural scrolling for the X axis.
      *
-     * @note This affects the way scroll events are sent to clients via sendPointerScrollEvent(),
+     * @note This affects the way scroll events are sent to clients via sendScrollEvent(),
      *       but not the events received from the input backend through pointerScrollEvent().
      *
      * Disabled by default. See naturalScrollingXEnabled().
@@ -149,7 +149,7 @@ public:
     /**
      * @brief Toggles natural scrolling for the Y axis.
      *
-     * @note This affects the way scroll events are sent to clients via sendPointerScrollEvent(),
+     * @note This affects the way scroll events are sent to clients via sendScrollEvent(),
      *       but not the events received from the input backend through pointerScrollEvent().
      *
      * Disabled by default. See naturalScrollingYEnabled().
