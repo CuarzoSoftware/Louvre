@@ -1,8 +1,8 @@
 # 📦 Downloads {#downloads_page}
 
-## Pre-built Binaries
+## Packages
 
-Pre-built binaries are provided for the following distributions. Please be aware that their versions may not always match the latest Louvre release.
+Pre-built binaries and packages are provided for the following distributions. Please be aware that their versions may not always match the latest Louvre release.
 
 * **Arch** : [louvre](https://aur.archlinux.org/packages/louvre) - *Thanks to [@TrialnError](https://aur.archlinux.org/account/TrialnError)*.
 * **Fedora** : [cuarzo-louvre](https://copr.fedorainfracloud.org/coprs/cuarzo/software/) - *By [Cuarzo Software](https://github.com/CuarzoSoftware) (always up to date)*.
