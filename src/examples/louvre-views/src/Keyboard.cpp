@@ -1,3 +1,4 @@
+#include <libinput.h>
 #include <protocols/ForeignToplevelManagement/GForeignToplevelManager.h>
 #include <LSurface.h>
 #include <LCursor.h>
@@ -60,6 +61,30 @@ void Keyboard::keyEvent(const LKeyboardKeyEvent &event)
                 o->setLeasable(leasable);
 
             leasable = !leasable;
+        }
+
+        /**** Toggles natural scrolling  ****/
+
+        else if (event.keyCode() == KEY_N)
+        {
+            if (compositor()->inputBackendId() == LInputBackendID::LInputBackendLibinput)
+            {
+                libinput_device *ldev;
+
+                for (LInputDevice *dev : seat()->inputDevices())
+                {
+                    if (!dev->nativeHandle())
+                        continue;
+
+                    ldev = static_cast<libinput_device*>(dev->nativeHandle());
+
+                    if (libinput_device_config_scroll_has_natural_scroll(ldev) == 0)
+                        continue;
+
+                    libinput_device_config_scroll_set_natural_scroll_enabled(ldev,
+                        libinput_device_config_scroll_get_natural_scroll_enabled(ldev) == 0 ? 1 : 0);
+                }
+            }
         }
     }
 

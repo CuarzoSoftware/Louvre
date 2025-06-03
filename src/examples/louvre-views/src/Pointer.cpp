@@ -25,11 +25,7 @@
 #include "Client.h"
 #include "Output.h"
 
-Pointer::Pointer(const void *params) : LPointer(params)
-{
-    enableNaturalScrollingX(true);
-    enableNaturalScrollingY(true);
-}
+Pointer::Pointer(const void *params) : LPointer(params) {}
 
 void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)
 {

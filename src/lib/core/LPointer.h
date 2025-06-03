@@ -135,44 +135,6 @@ public:
     bool isButtonPressed(LPointerButtonEvent::Button button) const noexcept;
 
     /**
-     * @brief Toggles natural scrolling for the X axis.
-     *
-     * @note This affects the way scroll events are sent to clients via sendScrollEvent(),
-     *       but not the events received from the input backend through pointerScrollEvent().
-     *
-     * Disabled by default. See naturalScrollingXEnabled().
-     *
-     * @param enabled Set to `true` to enable natural scrolling, or `false` to disable it.
-     */
-    void enableNaturalScrollingX(bool enabled) noexcept;
-
-    /**
-     * @brief Toggles natural scrolling for the Y axis.
-     *
-     * @note This affects the way scroll events are sent to clients via sendScrollEvent(),
-     *       but not the events received from the input backend through pointerScrollEvent().
-     *
-     * Disabled by default. See naturalScrollingYEnabled().
-     *
-     * @param enabled Set to `true` to enable natural scrolling, or `false` to disable it.
-     */
-    void enableNaturalScrollingY(bool enabled) noexcept;
-
-    /**
-     * @brief Checks if natural scrolling is enabled for the X axis.
-     *
-     * @see enableNaturalScrollingX().
-     */
-    bool naturalScrollingXEnabled() const noexcept;
-
-    /**
-     * @brief Checks if natural scrolling is enabled for the Y axis.
-     *
-     * @see enableNaturalScrollingY().
-     */
-    bool naturalScrollingYEnabled() const noexcept;
-
-    /**
      * @name Client Events
      *
      * These methods allow you to send pointer events to clients.
