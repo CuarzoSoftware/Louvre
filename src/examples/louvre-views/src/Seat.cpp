@@ -223,6 +223,12 @@ void Seat::configureInputDevice(LInputDevice *device) noexcept
     // Disable while typing
     libinput_device_config_dwt_set_enabled(libinputDev, LIBINPUT_CONFIG_DWT_DISABLED);
 
+    // Disable touchpad click areas
+    libinput_device_config_click_set_method(libinputDev, LIBINPUT_CONFIG_CLICK_METHOD_CLICKFINGER);
+
+    // Enable natural scrolling
+    libinput_device_config_scroll_set_natural_scroll_enabled(libinputDev, 1);
+
     // Tap to click
     // libinput_device_config_tap_set_enabled(libinputDev, LIBINPUT_CONFIG_TAP_ENABLED);
 }
