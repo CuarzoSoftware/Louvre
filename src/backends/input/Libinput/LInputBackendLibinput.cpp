@@ -201,6 +201,8 @@ public:
                 pointerScrollEvent.setDevice(inputDevice);
                 pointerScrollEvent.setHasX(libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL) != 0);
                 pointerScrollEvent.setHasY(libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL) != 0);
+                pointerScrollEvent.setRelativeDirectionX(libinput_device_config_scroll_get_natural_scroll_enabled(dev) == 0 ? LPointerScrollEvent::Identical : LPointerScrollEvent::Inverted);
+                pointerScrollEvent.setRelativeDirectionY(pointerScrollEvent.relativeDirectionX());
                 pointerScrollEvent.setMs(libinput_event_pointer_get_time(pointerEvent));
                 pointerScrollEvent.setUs(libinput_event_pointer_get_time_usec(pointerEvent));
                 pointerScrollEvent.setSerial(LTime::nextSerial());
@@ -256,6 +258,8 @@ public:
                 pointerScrollEvent.setDevice(inputDevice);
                 pointerScrollEvent.setHasX(libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL) != 0);
                 pointerScrollEvent.setHasY(libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL) != 0);
+                pointerScrollEvent.setRelativeDirectionX(libinput_device_config_scroll_get_natural_scroll_enabled(dev) == 0 ? LPointerScrollEvent::Identical : LPointerScrollEvent::Inverted);
+                pointerScrollEvent.setRelativeDirectionY(pointerScrollEvent.relativeDirectionX());
 
                 if (pointerScrollEvent.hasX())
                     pointerScrollEvent.setX(libinput_event_pointer_get_scroll_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL));
@@ -279,9 +283,10 @@ public:
                 inputDevice = (LInputDevice*)libinput_device_get_user_data(dev);
                 pointerEvent = libinput_event_get_pointer_event(ev);
                 pointerScrollEvent.setDevice(inputDevice);
-
                 pointerScrollEvent.setHasX(libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL) != 0);
                 pointerScrollEvent.setHasY(libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL) != 0);
+                pointerScrollEvent.setRelativeDirectionX(libinput_device_config_scroll_get_natural_scroll_enabled(dev) == 0 ? LPointerScrollEvent::Identical : LPointerScrollEvent::Inverted);
+                pointerScrollEvent.setRelativeDirectionY(pointerScrollEvent.relativeDirectionX());
 
                 if (pointerScrollEvent.hasX())
                     pointerScrollEvent.setX(libinput_event_pointer_get_scroll_value(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL));
@@ -305,9 +310,10 @@ public:
                 inputDevice = (LInputDevice*)libinput_device_get_user_data(dev);
                 pointerEvent = libinput_event_get_pointer_event(ev);
                 pointerScrollEvent.setDevice(inputDevice);
-
                 pointerScrollEvent.setHasX(libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL) != 0);
                 pointerScrollEvent.setHasY(libinput_event_pointer_has_axis(pointerEvent, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL) != 0);
+                pointerScrollEvent.setRelativeDirectionX(libinput_device_config_scroll_get_natural_scroll_enabled(dev) == 0 ? LPointerScrollEvent::Identical : LPointerScrollEvent::Inverted);
+                pointerScrollEvent.setRelativeDirectionY(pointerScrollEvent.relativeDirectionX());
 
                 if (pointerScrollEvent.hasX())
                 {

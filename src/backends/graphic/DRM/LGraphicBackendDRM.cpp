@@ -707,13 +707,13 @@ UInt32 LGraphicBackend::textureGetID(LOutput *output, LTexture *texture)
         bkndRendererDevice = srmCoreGetAllocatorDevice(bknd->core);
     }
 
-    return srmBufferGetTextureID(bkndRendererDevice, (SRMBuffer*)texture->m_graphicBackendData);
+    return srmBufferGetTexture(bkndRendererDevice, (SRMBuffer*)texture->m_graphicBackendData).id;
 }
 
 GLenum LGraphicBackend::textureGetTarget(LTexture *texture)
 {
     SRMBuffer *bkndBuffer = (SRMBuffer*)texture->m_graphicBackendData;
-    return srmBufferGetTextureTarget(bkndBuffer);
+    return srmBufferGetTexture(nullptr, bkndBuffer).target;
 }
 
 void LGraphicBackend::textureSetFence(LTexture *texture)

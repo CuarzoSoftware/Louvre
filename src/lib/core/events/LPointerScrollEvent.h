@@ -41,26 +41,43 @@ public:
     };
 
     /**
+     * @brief Relative directional information of the entity causing the axis motion.
+     */
+    enum RelativeDirection : UInt8
+    {
+        /// The scroll direction matches the physical movement (e.g., fingers move down, scroll moves down).
+        Identical = static_cast<UInt8>(0),
+
+        /// The scroll direction is reversed due to natural scrolling (e.g., fingers move down, scroll moves up).
+        Inverted = static_cast<UInt8>(1)
+    };
+
+    /**
      * @brief Constructs an LPointerScrollEvent object.
      *
      * @param axes The scroll axes values (included in all sources).
      * @param axesDiscrete The scroll axes values for high-resolution scrolling (@ref Wheel source) or th physical mouse wheel clicks (@ref WheelLegacy source).
      * @param hasX Indicates whether the event includes a value for the X axis.
      * @param hasY Indicates whether the event includes a value for the Y axis.
+     * @param relativeDirectionX The X axis relative direction.
+     * @param relativeDirectionY The Y axis relative direction.
      * @param source The source of the scroll event.
      * @param serial The serial number of the event.
      * @param ms The millisecond timestamp of the event.
      * @param us The microsecond timestamp of the event.
      * @param device The input device that originated the event.
      */
-    LPointerScrollEvent(const LPointF &axes = LPointF(0.f, 0.f), const LPointF &axesDiscrete = LPoint(0, 0), bool hasX = true, bool hasY = true, Source source = Continuous,
+    LPointerScrollEvent(const LPointF &axes = LPointF(0.f, 0.f), const LPointF &axesDiscrete = LPoint(0, 0), bool hasX = true, bool hasY = true,
+            RelativeDirection relativeDirectionX = Identical, RelativeDirection relativeDirectionY = Identical, Source source = Continuous,
             UInt32 serial = LTime::nextSerial(), UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) noexcept :
         LPointerEvent(LEvent::Subtype::Scroll, serial, ms, us, device),
+        m_hasX(hasX),
+        m_hasY(hasY),
+        m_relativeDirectionX(relativeDirectionX),
+        m_relativeDirectionY(relativeDirectionY),
         m_axes(axes),
         m_axesDiscrete(axesDiscrete),
-        m_source(source),
-        m_hasX(hasX),
-        m_hasY(hasY)
+        m_source(source)
     {}
 
     /**
@@ -213,6 +230,38 @@ public:
     }
 
     /**
+     * @brief Gets the relative scroll direction along the X axis.
+     */
+    RelativeDirection relativeDirectionX() const noexcept
+    {
+        return m_relativeDirectionX;
+    }
+
+    /**
+     * @brief Gets the relative scroll direction along the Y axis.
+     */
+    RelativeDirection relativeDirectionY() const noexcept
+    {
+        return m_relativeDirectionY;
+    }
+
+    /**
+     * @brief Sets the relative scroll direction along the X axis.
+     */
+    void setRelativeDirectionX(RelativeDirection direction) noexcept
+    {
+        m_relativeDirectionX = direction;
+    }
+
+    /**
+     * @brief Sets the relative scroll direction along the Y axis.
+     */
+    void setRelativeDirectionY(RelativeDirection direction) noexcept
+    {
+        m_relativeDirectionY = direction;
+    }
+
+    /**
      * @brief Sets the source of the scroll event.
      */
     void setSource(Source source) noexcept
@@ -229,11 +278,13 @@ public:
     }
 
 protected:
+    bool m_hasX;
+    bool m_hasY;
+    RelativeDirection m_relativeDirectionX;
+    RelativeDirection m_relativeDirectionY;
     LPointF m_axes;
     LPoint m_axesDiscrete;
     Source m_source;
-    bool m_hasX;
-    bool m_hasY;
 private:
     friend class LInputBackend;
     void notify();
