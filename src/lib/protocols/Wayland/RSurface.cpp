@@ -155,7 +155,7 @@ void RSurface::handleOffset(LSurface *surface, Int32 x, Int32 y)
 
 void RSurface::attach(wl_client */*client*/, wl_resource *resource, wl_resource *buffer, Int32 x, Int32 y)
 {
-    const auto &surfaceRes { *static_cast<const RSurface*>(wl_resource_get_user_data(resource)) };
+    auto &surfaceRes { *static_cast<RSurface*>(wl_resource_get_user_data(resource)) };
 
     surfaceRes.surface()->imp()->stateFlags.add(LSurface::LSurfacePrivate::BufferAttached);
 
@@ -180,7 +180,7 @@ void RSurface::attach(wl_client */*client*/, wl_resource *resource, wl_resource 
         handleOffset(surfaceRes.surface(), x, y);
     else
         if (x != 0 || y != 0)
-            wl_resource_post_error(resource, WL_SURFACE_ERROR_INVALID_OFFSET, "Buffer offset is invalid. Check wl_surface::offset (v5).");
+            surfaceRes.postError(WL_SURFACE_ERROR_INVALID_OFFSET, "Buffer offset is invalid. Check wl_surface::offset (v5).");
 #else
     handleOffset(surfaceRes.surface(), x, y);
 #endif
@@ -194,12 +194,12 @@ void RSurface::frame(wl_client *client, wl_resource *resource, UInt32 callback)
 
 void RSurface::destroy(wl_client */*client*/, wl_resource *resource)
 {
-    const auto &surfaceRes { *static_cast<const RSurface*>(wl_resource_get_user_data(resource)) };
+    auto &surfaceRes { *static_cast<RSurface*>(wl_resource_get_user_data(resource)) };
 
     if ((surfaceRes.surface()->role() && surfaceRes.surface()->role()->resource() != &surfaceRes)
         || (surfaceRes.surface()->imp()->pending.role && surfaceRes.surface()->imp()->pending.role->resource() != &surfaceRes))
     {
-        wl_resource_post_error(resource, 0, "Surface destroyed before role.");
+        surfaceRes.postError(WL_SURFACE_ERROR_DEFUNCT_ROLE_OBJECT, "Surface destroyed before role.");
         return;
     }
 
@@ -557,13 +557,14 @@ void RSurface::set_input_region(wl_client */*client*/, wl_resource *resource, wl
 #if LOUVRE_WL_COMPOSITOR_VERSION >= 2
 void RSurface::set_buffer_transform(wl_client */*client*/, wl_resource *resource, Int32 transform)
 {
+    auto &res { *static_cast<RSurface*>(wl_resource_get_user_data(resource)) };
     if (transform < 0 || transform > 7)
     {
-        wl_resource_post_error(resource, WL_SURFACE_ERROR_INVALID_TRANSFORM, "Invalid framebuffer transform %d.", transform);
+        res.postError(WL_SURFACE_ERROR_INVALID_TRANSFORM, "Invalid framebuffer transform %d.", transform);
         return;
     }
 
-    auto &imp { *static_cast<const RSurface*>(wl_resource_get_user_data(resource))->surface()->imp() };
+    auto &imp { *res.surface()->imp() };
     imp.pending.transform = static_cast<LTransform>(transform);
 }
 #endif
@@ -571,13 +572,15 @@ void RSurface::set_buffer_transform(wl_client */*client*/, wl_resource *resource
 #if LOUVRE_WL_COMPOSITOR_VERSION >= 3
 void RSurface::set_buffer_scale(wl_client */*client*/, wl_resource *resource, Int32 scale)
 {
+    auto &res { *static_cast<RSurface*>(wl_resource_get_user_data(resource)) };
+
     if (scale <= 0)
     {
-        wl_resource_post_error(resource, WL_SURFACE_ERROR_INVALID_SCALE, "Buffer scale must be >= 1.");
+        res.postError(WL_SURFACE_ERROR_INVALID_SCALE, "Buffer scale must be >= 1.");
         return;
     }
 
-    auto &imp { *static_cast<const RSurface*>(wl_resource_get_user_data(resource))->surface()->imp() };
+    auto &imp { *res.surface()->imp() };
     imp.pending.bufferScale = scale;
 }
 #endif

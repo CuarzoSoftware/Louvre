@@ -34,8 +34,8 @@ bool RLinuxBufferParams::createCommon(Int32 width, Int32 height, UInt32 format, 
 {
     if (!dmaPlanes())
     {
-        wl_resource_post_error(resource(), ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_ALREADY_USED,
-                               "The dmabuf_batch object has already been used to create a wl_buffer.");
+        postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_ALREADY_USED,
+                "The dmabuf_batch object has already been used to create a wl_buffer.");
         return false;
     }
 
@@ -48,8 +48,7 @@ bool RLinuxBufferParams::createCommon(Int32 width, Int32 height, UInt32 format, 
 
     if (width <= 0 || height <= 0)
     {
-        wl_resource_post_error(resource(), ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_DIMENSIONS,
-                               "Invalid wl_buffer size.");
+        postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_DIMENSIONS, "Invalid wl_buffer size.");
         return false;
     }
 
@@ -76,14 +75,14 @@ void RLinuxBufferParams::add(wl_client */*client*/,
 
     if (!res->dmaPlanes())
     {
-        wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_ALREADY_USED,
+        res->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_ALREADY_USED,
                                "The dmabuf_batch object has already been used to create a wl_buffer.");
         return;
     }
 
     if (plane_idx >= LOUVRE_MAX_DMA_PLANES)
     {
-        wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_IDX,
+        res->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_IDX,
                                "Invalid DMA plane index. Max number of planes is %d.",
                                LOUVRE_MAX_DMA_PLANES);
         return;
@@ -91,7 +90,7 @@ void RLinuxBufferParams::add(wl_client */*client*/,
 
     if (plane_idx >= LOUVRE_MAX_DMA_PLANES)
     {
-        wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_IDX,
+        res->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_IDX,
                                "Invalid DMA plane index. Max number of planes is %d.",
                                LOUVRE_MAX_DMA_PLANES);
         return;

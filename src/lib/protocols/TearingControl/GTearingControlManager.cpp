@@ -59,9 +59,9 @@ void GTearingControlManager::get_tearing_control(wl_client */*client*/, wl_resou
 
     if (surfaceRes->tearingControlRes())
     {
-        wl_resource_post_error(resource,
-                               WP_TEARING_CONTROL_MANAGER_V1_ERROR_TEARING_CONTROL_EXISTS,
-                               "The surface already has a tearing object associated");
+        surfaceRes->postError(
+            WP_TEARING_CONTROL_MANAGER_V1_ERROR_TEARING_CONTROL_EXISTS,
+            "The surface already has a tearing object associated");
         return;
     }
 

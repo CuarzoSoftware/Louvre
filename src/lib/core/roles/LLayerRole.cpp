@@ -158,9 +158,9 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
 
     if (m_flags.check(Flags::HasPendingInitialConf) && surface()->hasBuffer())
     {
-        wl_resource_post_error(res.resource(),
-                               ZWLR_LAYER_SHELL_V1_ERROR_ALREADY_CONSTRUCTED,
-                               "wl_surface has a buffer attached or committed");
+        res.postError(
+            ZWLR_LAYER_SHELL_V1_ERROR_ALREADY_CONSTRUCTED,
+            "wl_surface has a buffer attached or committed");
         return;
     }
 
@@ -172,9 +172,9 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
         {
             if (pendingAtoms().anchor.checkAll(LEdgeLeft | LEdgeRight) == 0)
             {
-                wl_resource_post_error(res.resource(),
-                                       ZWLR_LAYER_SURFACE_V1_ERROR_INVALID_SIZE,
-                                       "width is 0 but anchors do not include left and right (anchor must be set to opposite edges in the omitted dimensions)");
+                res.postError(
+                    ZWLR_LAYER_SURFACE_V1_ERROR_INVALID_SIZE,
+                    "width is 0 but anchors do not include left and right (anchor must be set to opposite edges in the omitted dimensions)");
                 return;
             }
         }
@@ -183,9 +183,9 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
         {
             if (pendingAtoms().anchor.checkAll(LEdgeTop | LEdgeBottom) == 0)
             {
-                wl_resource_post_error(res.resource(),
-                                       ZWLR_LAYER_SURFACE_V1_ERROR_INVALID_SIZE,
-                                       "height is 0 but anchors do not include top and bottom (anchor must be set to opposite edges in the omitted dimensions)");
+                res.postError(
+                    ZWLR_LAYER_SURFACE_V1_ERROR_INVALID_SIZE,
+                    "height is 0 but anchors do not include top and bottom (anchor must be set to opposite edges in the omitted dimensions)");
                 return;
             }
         }
@@ -217,7 +217,7 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
                 zoneSize = 0;
             else if ((anchor() & exclusiveEdge()) == 0)
             {
-                wl_resource_post_error(res.resource(),
+                res.postError(
                     ZWLR_LAYER_SURFACE_V1_ERROR_INVALID_EXCLUSIVE_EDGE,
                     "The exclusive edge is invalid given the surface anchors");
                 return;

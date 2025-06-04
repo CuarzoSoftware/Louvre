@@ -64,7 +64,7 @@ void GInvisibleRegionManager::get_invisible_region(wl_client */*client*/, wl_res
 
     if (surfaceRes->surface()->imp()->invisibleRegion)
     {
-        wl_resource_post_error(resource,
+        surfaceRes->postError(
             LVR_INVISIBLE_REGION_MANAGER_ERROR_ALREADY_CONSTRUCTED,
             "the surface already has an associated lvr_invisible_region object");
         return;

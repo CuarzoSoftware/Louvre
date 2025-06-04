@@ -48,7 +48,7 @@ void RXdgToplevelDecoration::destroy(wl_client */*client*/, wl_resource *resourc
 
     if (!xdgToplevelDecorationRes.toplevelRole())
     {
-        wl_resource_post_error(resource, ZXDG_TOPLEVEL_DECORATION_V1_ERROR_ORPHANED, "Toplevel destroyed before decoration.");
+        xdgToplevelDecorationRes.postError(ZXDG_TOPLEVEL_DECORATION_V1_ERROR_ORPHANED, "Toplevel destroyed before decoration.");
         return;
     }
 
@@ -61,7 +61,7 @@ void RXdgToplevelDecoration::set_mode(wl_client */*client*/, wl_resource *resour
 
     if (!xdgToplevelDecorationRes.toplevelRole())
     {
-        wl_resource_post_error(resource, ZXDG_TOPLEVEL_DECORATION_V1_ERROR_ORPHANED, "Toplevel destroyed before decoration.");
+        xdgToplevelDecorationRes.postError(ZXDG_TOPLEVEL_DECORATION_V1_ERROR_ORPHANED, "Toplevel destroyed before decoration.");
         return;
     }
 
@@ -81,7 +81,7 @@ void RXdgToplevelDecoration::unset_mode(wl_client */*client*/, wl_resource *reso
 
     if (!xdgToplevelDecorationRes.toplevelRole())
     {
-        wl_resource_post_error(resource, ZXDG_TOPLEVEL_DECORATION_V1_ERROR_ORPHANED, "Toplevel destroyed before decoration.");
+        xdgToplevelDecorationRes.postError(ZXDG_TOPLEVEL_DECORATION_V1_ERROR_ORPHANED, "Toplevel destroyed before decoration.");
         return;
     }
 

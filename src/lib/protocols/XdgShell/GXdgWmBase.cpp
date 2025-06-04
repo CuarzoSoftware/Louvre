@@ -62,7 +62,7 @@ void GXdgWmBase::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 
     if (res.m_xdgSurfacesCount != 0)
     {
-        wl_resource_post_error(resource, XDG_WM_BASE_ERROR_DEFUNCT_SURFACES, "xdg_wm_base was destroyed before children.");
+        res.postError(XDG_WM_BASE_ERROR_DEFUNCT_SURFACES, "xdg_wm_base was destroyed before children.");
         return;
     }
 
@@ -77,10 +77,11 @@ void GXdgWmBase::create_positioner(wl_client */*client*/, wl_resource *resource,
 void GXdgWmBase::get_xdg_surface(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *surface) noexcept
 {
     auto &surfaceRes { *static_cast<Wayland::RSurface*>(wl_resource_get_user_data(surface)) };
+    auto &res { *static_cast<GXdgWmBase*>(wl_resource_get_user_data(resource)) };
 
     if (surfaceRes.surface()->imp()->hasRoleOrPendingRole())
     {
-        wl_resource_post_error(resource, XDG_WM_BASE_ERROR_ROLE, "Given wl_surface has another role.");
+        res.postError(XDG_WM_BASE_ERROR_ROLE, "Given wl_surface has another role.");
         return;
     }
 

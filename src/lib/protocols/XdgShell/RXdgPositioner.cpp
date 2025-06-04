@@ -44,25 +44,27 @@ bool RXdgPositioner::validate()
 {
     if (positioner().size().w() <= 0 || positioner().size().h() <= 0)
     {
-        wl_resource_post_error(resource(),
-                               XDG_POSITIONER_ERROR_INVALID_INPUT,
-                               "xdg_positioner.set_size requested with non-positive dimensions");
+        postError(
+            XDG_POSITIONER_ERROR_INVALID_INPUT,
+            "xdg_positioner.set_size requested with non-positive dimensions ({}, {})",
+            positioner().size().w(), positioner().size().h());
         return false;
     }
 
     if (positioner().anchorRect().w() <= 0 || positioner().anchorRect().h() <= 0)
     {
-        wl_resource_post_error(resource(),
-                               XDG_POSITIONER_ERROR_INVALID_INPUT,
-                               "xdg_positioner.set_anchor_rect requested with non-positive dimensions");
+        postError(
+            XDG_POSITIONER_ERROR_INVALID_INPUT,
+            "xdg_positioner.set_anchor_rect requested with non-positive dimensions ({}, {})",
+            positioner().anchorRect().w(), positioner().anchorRect().h());
         return false;
     }
 
     if (positioner().gravity() > 8)
     {
-        wl_resource_post_error(resource(),
-                               XDG_POSITIONER_ERROR_INVALID_INPUT,
-                               "xdg_positioner.set_anchor_rect requested with non-positive dimensions");
+        postError(
+            XDG_POSITIONER_ERROR_INVALID_INPUT,
+            "Invalid gravity.");
         return false;
     }
 

@@ -46,7 +46,7 @@ RPointer::~RPointer() noexcept
 
 void RPointer::set_cursor(wl_client */*client*/, wl_resource *resource, UInt32 serial, wl_resource *wlSurface, Int32 hotspot_x, Int32 hotspot_y)
 {
-    const RPointer &pointerRes { *static_cast<RPointer*>(wl_resource_get_user_data(resource)) };
+    RPointer &pointerRes { *static_cast<RPointer*>(wl_resource_get_user_data(resource)) };
     const LClient &client { *pointerRes.client() };
 
     if (client.eventHistory().pointer.enter.serial() != serial)
@@ -62,7 +62,7 @@ void RPointer::set_cursor(wl_client */*client*/, wl_resource *resource, UInt32 s
 
         if (surface.imp()->pending.role || (surface.roleId() != LSurface::Role::Undefined && surface.roleId() != LSurface::Role::Cursor))
         {
-            wl_resource_post_error(resource, WL_POINTER_ERROR_ROLE, "Given wl_surface has another role.");
+            pointerRes.postError(WL_POINTER_ERROR_ROLE, "Given wl_surface has another role.");
             return;
         }
 

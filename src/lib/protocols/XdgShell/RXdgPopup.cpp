@@ -69,8 +69,7 @@ RXdgPopup::~RXdgPopup()
         {
             if (child->popup() && child->mapped())
             {
-                wl_resource_post_error(
-                    xdgSurfaceRes()->resource(),
+                xdgSurfaceRes()->postError(
                     XDG_WM_BASE_ERROR_NOT_THE_TOPMOST_POPUP,
                     "The client tried to map or destroy a non-topmost popup.");
                 return;

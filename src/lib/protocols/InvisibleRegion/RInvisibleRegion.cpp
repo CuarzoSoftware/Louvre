@@ -31,7 +31,7 @@ RInvisibleRegion::~RInvisibleRegion() noexcept
 {
     if (!surfaceRes())
     {
-        wl_resource_post_error(resource(),
+        postError(
             LVR_INVISIBLE_REGION_ERROR_DESTROYED_SURFACE,
             "surface destroyed before its lvr_invisible_region object");
         return;
@@ -55,9 +55,9 @@ void RInvisibleRegion::set_region(wl_client */*client*/, wl_resource *resource, 
 
     if (!res.surfaceRes())
     {
-        wl_resource_post_error(resource,
-                               LVR_INVISIBLE_REGION_ERROR_DESTROYED_SURFACE,
-                               "surface destroyed before its lvr_invisible_region object");
+        res.postError(
+            LVR_INVISIBLE_REGION_ERROR_DESTROYED_SURFACE,
+            "surface destroyed before its lvr_invisible_region object");
         return;
     }
 

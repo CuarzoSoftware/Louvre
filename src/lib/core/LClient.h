@@ -24,6 +24,7 @@
 #include <LTouchUpEvent.h>
 #include <LTouchFrameEvent.h>
 #include <LTouchCancelEvent.h>
+#include <format>
 
 /**
  * @brief Representation of a Wayland client.
@@ -189,6 +190,35 @@ public:
      * @note All resources created by the client are automatically destroyed in reverse order of creation.
      */
     void destroyLater() noexcept;
+
+    /**
+     * @brief Immediately terminates the client connection with the compositor.
+     *
+     * This method forcefully destroys the client and all its associated resources **without deferral**.
+     * Before proceeding, it checks if destruction has already been initiated, preventing duplicate calls.
+     *
+     * @warning This operation is potentially unsafe. Immediate termination can lead to unexpected behavior
+     *          if objects are still in use. Prefer using `destroyLater()` to ensure a clean and predictable shutdown.
+     */
+    void destroy();
+
+    /**
+     * @brief A safe wrapper for wl_resource_post_error.
+     *
+     * This method ensures that `wl_resource_post_error` is not called more than once for the same client.
+     *
+     * @param resource The Wayland resource associated with the error.
+     * @param code The error code to be sent to the client.
+     * @param message The format string for the error message.
+     * @param args Additional arguments to format the message.
+     *
+     * @warning Calling this method **immediately destroys** the client and all its resources. See destroyLater()
+     */
+    template <typename... Args>
+    void postError(wl_resource *resource, UInt32 code, std::format_string<Args...> message, Args&&... args)
+    {
+        postErrorPrivate(resource, code, std::format(message, args...));
+    }
 
     /**
      * @brief Retrieves the client's event history.
@@ -464,6 +494,7 @@ public:
     const std::vector<Protocols::InvisibleRegion::GInvisibleRegionManager*> &invisibleRegionManagerGlobals() const noexcept;
 
     LPRIVATE_IMP_UNIQUE(LClient)
+    void postErrorPrivate(wl_resource *resource, UInt32 code, const std::string &message);
 };
 
 #endif // LCLIENT_H

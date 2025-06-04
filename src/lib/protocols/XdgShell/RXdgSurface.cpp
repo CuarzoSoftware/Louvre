@@ -73,7 +73,7 @@ void RXdgSurface::destroy(wl_client */*client*/, wl_resource *resource)
 
     if (res.surface() && res.surface()->role())
     {
-        wl_resource_post_error(resource, XDG_WM_BASE_ERROR_DEFUNCT_SURFACES, "xdg_surface must be destroyed after its specific role");
+        res.postError(XDG_WM_BASE_ERROR_DEFUNCT_SURFACES, "xdg_surface must be destroyed after its specific role");
         return;
     }
 
@@ -86,13 +86,13 @@ void RXdgSurface::get_toplevel(wl_client */*client*/, wl_resource *resource, UIn
 
     if (!res->surface() || res->surface()->imp()->hasBufferOrPendingBuffer())
     {
-        wl_resource_post_error(resource, XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface already has a buffer attached.");
+        res->postError(XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface already has a buffer attached.");
         return;
     }
 
     if (res->surface()->imp()->hasRoleOrPendingRole())
     {
-        wl_resource_post_error(resource, XDG_WM_BASE_ERROR_ROLE, "Given wl_surface has another role.");
+        res->postError(XDG_WM_BASE_ERROR_ROLE, "Given wl_surface has another role.");
         return;
     }
 
@@ -110,13 +110,13 @@ void RXdgSurface::get_popup(wl_client */*client*/, wl_resource *resource, UInt32
 
     if (res->surface()->imp()->hasBufferOrPendingBuffer())
     {
-        wl_resource_post_error(resource, XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface already has a buffer attached.");
+        res->postError(XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface already has a buffer attached.");
         return;
     }
 
     if (res->surface()->imp()->hasRoleOrPendingRole())
     {
-        wl_resource_post_error(resource, XDG_WM_BASE_ERROR_ROLE, "Given wl_surface has another role.");
+        res->postError(XDG_WM_BASE_ERROR_ROLE, "Given wl_surface has another role.");
         return;
     }
 
@@ -124,9 +124,9 @@ void RXdgSurface::get_popup(wl_client */*client*/, wl_resource *resource, UInt32
 
     if (xdgParentSurfaceRes && res->surface()->imp()->isInChildrenOrPendingChildren(xdgParentSurfaceRes->surface()))
     {
-        wl_resource_post_error(positioner,
-                               XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT,
-                               "Parent can not be child or equal to surface.");
+        xdgPositionerRes->postError(
+            XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT,
+            "Parent can not be child or equal to surface.");
         return;
     }
 
@@ -139,13 +139,13 @@ void RXdgSurface::set_window_geometry(wl_client */*client*/, wl_resource *resour
 
     if (!res.xdgPopupRes() && !res.xdgToplevelRes())
     {
-        wl_resource_post_error(resource, XDG_SURFACE_ERROR_NOT_CONSTRUCTED, "Can not set window geometry with no role.");
+        res.postError(XDG_SURFACE_ERROR_NOT_CONSTRUCTED, "Can not set window geometry with no role.");
         return;
     }
 
     if (width <= 0 || height <= 0)
     {
-        wl_resource_post_error(resource, XDG_SURFACE_ERROR_INVALID_SIZE, "Invalid window geometry size.");
+        res.postError(XDG_SURFACE_ERROR_INVALID_SIZE, "Invalid window geometry size.");
         return;
     }
 
@@ -163,7 +163,7 @@ void RXdgSurface::ack_configure(wl_client */*client*/, wl_resource *resource, UI
 
     if (!res.surface() || (!res.xdgPopupRes() && !res.xdgToplevelRes()))
     {
-        wl_resource_post_error(resource, XDG_SURFACE_ERROR_NOT_CONSTRUCTED, "Can not ack xdg_surface with no role.");
+        res.postError(XDG_SURFACE_ERROR_NOT_CONSTRUCTED, "Can not ack xdg_surface with no role.");
         return;
     }
 
@@ -197,7 +197,7 @@ void RXdgSurface::ack_configure(wl_client */*client*/, wl_resource *resource, UI
             toplevel.m_sentConfigurations.pop_front();
         }
 
-        wl_resource_post_error(res.resource(), XDG_SURFACE_ERROR_INVALID_SERIAL, "Invalid xdg_surface serial ack.");
+        res.postError(XDG_SURFACE_ERROR_INVALID_SERIAL, "Invalid xdg_surface serial ack.");
     }
     else if (res.surface()->roleId() == LSurface::Role::Popup)
     {
@@ -215,10 +215,10 @@ void RXdgSurface::ack_configure(wl_client */*client*/, wl_resource *resource, UI
             popup.m_sentConfs.pop_front();
         }
 
-        wl_resource_post_error(res.resource(), XDG_SURFACE_ERROR_INVALID_SERIAL, "Invalid xdg_surface serial ack.");
+        res.postError(XDG_SURFACE_ERROR_INVALID_SERIAL, "Invalid xdg_surface serial ack.");
     }
     else
-        wl_resource_post_error(res.resource(), XDG_SURFACE_ERROR_NOT_CONSTRUCTED, "wl_surface does not have a role yet.");
+        res.postError(XDG_SURFACE_ERROR_NOT_CONSTRUCTED, "wl_surface does not have a role yet.");
 }
 
 /******************** EVENTS ********************/

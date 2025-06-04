@@ -1,6 +1,6 @@
+#include <private/LClientPrivate.h>
 #include <LResource.h>
 #include <LCompositor.h>
-#include <LClient.h>
 
 using namespace Louvre;
 
@@ -29,6 +29,15 @@ LResource::LResource(LClient *client, const wl_interface *interface, Int32 versi
         LResource *resource = (LResource*)wl_resource_get_user_data(res);
         delete resource;
     });
+}
+
+void LResource::postErrorPrivate(UInt32 code, const std::string &message)
+{
+    if (client()->imp()->destroyed)
+        return;
+
+    client()->imp()->destroyed = true;
+    wl_resource_post_error(resource(), code, "%s", message.c_str());
 }
 
 Int32 LResource::version() const noexcept

@@ -499,7 +499,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture() noexcept
         else
         {
             LLog::error("[LSurfacePrivate::bufferToTexture] Unknown buffer type. Killing client.");
-            wl_resource_post_error(surfaceResource->resource(), 0, "Unknown buffer type.");
+            surfaceResource->postError(0, "Unknown buffer type.");
             return false;
         }
     }
@@ -787,18 +787,18 @@ bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB) no
 
             if (srcRect.x() < 0.f || srcRect.y() < 0.f || srcRect.w() <= 0.f || srcRect.h() <= 0.f)
             {
-                wl_resource_post_error(surfaceResource->viewportRes()->resource(),
-                                       WP_VIEWPORT_ERROR_BAD_VALUE,
-                                       "Invalid source rect (%f, %f, %f, %f).",
-                                       srcRect.x(), srcRect.y(), srcRect.w(), srcRect.h());
+                surfaceResource->viewportRes()->postError(
+                   WP_VIEWPORT_ERROR_BAD_VALUE,
+                   "Invalid source rect ({}, {}, {}, {}).",
+                   srcRect.x(), srcRect.y(), srcRect.w(), srcRect.h());
                 return false;
             }
 
             if (roundf((srcRect.x() + srcRect.w()) * Float32(current.bufferScale)) > sizeB.w() || roundf((srcRect.y() + srcRect.h()) * Float32(current.bufferScale)) > sizeB.h())
             {
-                wl_resource_post_error(surfaceResource->viewportRes()->resource(),
-                                       WP_VIEWPORT_ERROR_OUT_OF_BUFFER,
-                                       "Source rectangle extends outside of the content area rect.");
+                surfaceResource->viewportRes()->postError(
+                    WP_VIEWPORT_ERROR_OUT_OF_BUFFER,
+                    "Source rectangle extends outside of the content area rect.");
                 return false;
             }
 
@@ -822,10 +822,10 @@ bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB) no
 
             if (size.w() <= 0 || size.h() <= 0)
             {
-                wl_resource_post_error(surfaceResource->viewportRes()->resource(),
-                                       WP_VIEWPORT_ERROR_BAD_VALUE,
-                                       "Invalid destination size (%d, %d).",
-                                       size.w(), size.h());
+                surfaceResource->viewportRes()->postError(
+                    WP_VIEWPORT_ERROR_BAD_VALUE,
+                    "Invalid destination size ({}, {}).",
+                    size.w(), size.h());
                 return false;
             }
 
@@ -839,9 +839,9 @@ bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB) no
             {
                 if (fmod(srcRect.w(), 1.f) != 0.f || fmod(srcRect.h(), 1.f) != 0.f)
                 {
-                    wl_resource_post_error(surfaceResource->viewportRes()->resource(),
-                                           WP_VIEWPORT_ERROR_BAD_SIZE,
-                                           "Destination size is not integer");
+                    surfaceResource->viewportRes()->postError(
+                        WP_VIEWPORT_ERROR_BAD_SIZE,
+                        "Destination size is not integer");
                     return false;
                 }
 

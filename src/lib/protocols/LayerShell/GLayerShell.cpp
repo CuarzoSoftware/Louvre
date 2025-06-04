@@ -65,19 +65,19 @@ void GLayerShell::get_layer_surface(wl_client */*client*/, wl_resource *resource
 
     if (layer > 3)
     {
-        wl_resource_post_error(resource, ZWLR_LAYER_SHELL_V1_ERROR_INVALID_LAYER, "Invalid layer value.");
+        surfaceRes.postError(ZWLR_LAYER_SHELL_V1_ERROR_INVALID_LAYER, "Invalid layer value.");
         return;
     }
 
     if (surfaceRes.surface()->imp()->hasRoleOrPendingRole())
     {
-        wl_resource_post_error(resource, ZWLR_LAYER_SHELL_V1_ERROR_ROLE, "Given wl_surface has another role.");
+        surfaceRes.postError(ZWLR_LAYER_SHELL_V1_ERROR_ROLE, "Given wl_surface has another role.");
         return;
     }
 
     if (surfaceRes.surface()->imp()->hasBufferOrPendingBuffer())
     {
-        wl_resource_post_error(resource, ZWLR_LAYER_SHELL_V1_ERROR_ALREADY_CONSTRUCTED, "wl_surface has a buffer attached or committed.");
+        surfaceRes.postError(ZWLR_LAYER_SHELL_V1_ERROR_ALREADY_CONSTRUCTED, "wl_surface has a buffer attached or committed.");
         return;
     }
 

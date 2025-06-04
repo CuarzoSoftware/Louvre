@@ -84,7 +84,7 @@ void RBackgroundBlur::destroy(wl_client */*client*/, wl_resource *resource)
 
     if (!res.surfaceRes())
     {
-        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        res.postError(LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
         return;
     }
 
@@ -97,7 +97,7 @@ void RBackgroundBlur::ack_configure(wl_client */*client*/, wl_resource *resource
 
     if (!res.surfaceRes())
     {
-        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        res.postError(LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
         return;
     }
 
@@ -117,7 +117,7 @@ void RBackgroundBlur::ack_configure(wl_client */*client*/, wl_resource *resource
             blur.m_sentConfigurations.pop_front();
     }
 
-    wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_INVALID_SERIAL, "invalid configure serial");
+    res.postError(LVR_BACKGROUND_BLUR_ERROR_INVALID_SERIAL, "invalid configure serial");
 }
 
 void RBackgroundBlur::set_region(wl_client */*client*/, wl_resource *resource, wl_resource *region)
@@ -126,7 +126,7 @@ void RBackgroundBlur::set_region(wl_client */*client*/, wl_resource *resource, w
 
     if (!res.surfaceRes())
     {
-        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        res.postError(LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
         return;
     }
 
@@ -155,7 +155,7 @@ void RBackgroundBlur::clear_mask(wl_client */*client*/, wl_resource *resource)
 
     if (!res.surfaceRes())
     {
-        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        res.postError(LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
         return;
     }
 
@@ -180,13 +180,13 @@ void RBackgroundBlur::set_round_rect_mask(wl_client */*client*/, wl_resource *re
 
     if (!res.surfaceRes())
     {
-        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        res.postError(LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
         return;
     }
 
     if (!res.m_maskingCapabilities.check(LBackgroundBlur::RoundRectMaskCap))
     {
-        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_UNSUPPORTED_MASK, "the mask is not supported by the compositor");
+        res.postError(LVR_BACKGROUND_BLUR_ERROR_UNSUPPORTED_MASK, "the mask is not supported by the compositor");
         return;
     }
 
@@ -196,7 +196,7 @@ void RBackgroundBlur::set_round_rect_mask(wl_client */*client*/, wl_resource *re
 
     if (!newRRect.isValid())
     {
-        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_INVALID_ROUND_RECT, "invalid round rect size or radii");
+        res.postError(LVR_BACKGROUND_BLUR_ERROR_INVALID_ROUND_RECT, "invalid round rect size or radii");
         return;
     }
 
@@ -215,13 +215,13 @@ void RBackgroundBlur::set_svg_path_mask(wl_client */*client*/, wl_resource *reso
 
     if (!res.surfaceRes())
     {
-        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        res.postError(LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
         return;
     }
 
     if (!res.m_maskingCapabilities.check(LBackgroundBlur::SVGPathMaskCap))
     {
-        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_UNSUPPORTED_MASK, "the mask is not supported by the compositor");
+        res.postError(LVR_BACKGROUND_BLUR_ERROR_UNSUPPORTED_MASK, "the mask is not supported by the compositor");
         return;
     }
 
@@ -230,7 +230,7 @@ void RBackgroundBlur::set_svg_path_mask(wl_client */*client*/, wl_resource *reso
 
     if (!rSvgPath.isComplete())
     {
-        wl_resource_post_error(resource, LVR_BACKGROUND_BLUR_ERROR_INVALID_SVG_PATH, "incomplete svg path");
+        res.postError(LVR_BACKGROUND_BLUR_ERROR_INVALID_SVG_PATH, "incomplete svg path");
         return;
     }
 

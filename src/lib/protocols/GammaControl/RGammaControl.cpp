@@ -103,9 +103,9 @@ void RGammaControl::set_gamma(wl_client */*client*/, wl_resource *resource, Int3
     }
     else if (n != bytesToRead)
     {
-        wl_resource_post_error(res->resource(),
-                               ZWLR_GAMMA_CONTROL_V1_ERROR_INVALID_GAMMA,
-                               "Invalid gamma size");
+        res->postError(
+            ZWLR_GAMMA_CONTROL_V1_ERROR_INVALID_GAMMA,
+            "Invalid gamma size");
         return;
     }
 

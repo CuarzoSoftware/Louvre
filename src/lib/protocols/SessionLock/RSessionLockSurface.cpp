@@ -74,7 +74,7 @@ void RSessionLockSurface::ack_configure(wl_client */*client*/, wl_resource *reso
             res.sessionLockRole()->m_sentConfs.pop();
     }
 
-    wl_resource_post_error(resource, EXT_SESSION_LOCK_SURFACE_V1_ERROR_INVALID_SERIAL, "Serial provided in ack_configure is invalid.");
+    res.postError(EXT_SESSION_LOCK_SURFACE_V1_ERROR_INVALID_SERIAL, "Serial provided in ack_configure is invalid.");
 }
 
 void RSessionLockSurface::configure(UInt32 serial, UInt32 width, UInt32 height) noexcept

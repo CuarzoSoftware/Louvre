@@ -27,9 +27,9 @@ void LSessionLockRole::handleSurfaceCommit(CommitOrigin /*origin*/)
 
     if (!surface()->hasBuffer() || !sessionLockSurfaceRes.sessionLockRes())
     {
-        wl_resource_post_error(sessionLockSurfaceRes.resource(),
-                               EXT_SESSION_LOCK_SURFACE_V1_ERROR_NULL_BUFFER,
-                               "Surface committed with a null buffer.");
+        sessionLockSurfaceRes.postError(
+            EXT_SESSION_LOCK_SURFACE_V1_ERROR_NULL_BUFFER,
+            "Surface committed with a null buffer.");
         return;
     }
 
@@ -37,17 +37,17 @@ void LSessionLockRole::handleSurfaceCommit(CommitOrigin /*origin*/)
 
     if (m_currentSize.w() == -1)
     {
-        wl_resource_post_error(sessionLockSurfaceRes.resource(),
-                               EXT_SESSION_LOCK_SURFACE_V1_ERROR_COMMIT_BEFORE_FIRST_ACK,
-                               "Surface committed before first ack_configure request.");
+        sessionLockSurfaceRes.postError(
+            EXT_SESSION_LOCK_SURFACE_V1_ERROR_COMMIT_BEFORE_FIRST_ACK,
+            "Surface committed before first ack_configure request.");
         return;
     }
 
     if (m_currentSize != surface()->size())
     {
-        wl_resource_post_error(sessionLockSurfaceRes.resource(),
-                               EXT_SESSION_LOCK_SURFACE_V1_ERROR_DIMENSIONS_MISMATCH,
-                               "Failed to match ack'd width/height.");
+        sessionLockSurfaceRes.postError(
+            EXT_SESSION_LOCK_SURFACE_V1_ERROR_DIMENSIONS_MISMATCH,
+            "Failed to match ack'd width/height.");
         return;
     }
 

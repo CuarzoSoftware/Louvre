@@ -70,6 +70,8 @@ RXdgToplevel::~RXdgToplevel()
 
     if (seat()->activeToplevel() == toplevelRole())
         seat()->imp()->activeToplevel = nullptr;
+
+    m_toplevelRole.reset();
 }
 
 void RXdgToplevel::destroy(wl_client */*client*/, wl_resource *resource)
@@ -99,7 +101,7 @@ void RXdgToplevel::set_parent(wl_client */*client*/, wl_resource *resource, wl_r
 
         if (res.toplevelRole()->surface()->imp()->isInChildrenOrPendingChildren(parentRes->toplevelRole()->surface()))
         {
-            wl_resource_post_error(resource, 0, "Invalid xdg_toplevel parent.");
+            res.postError(XDG_TOPLEVEL_ERROR_INVALID_PARENT, "Invalid xdg_toplevel parent.");
             return;
         }
 
@@ -141,13 +143,15 @@ void RXdgToplevel::move(wl_client */*client*/, wl_resource *resource, wl_resourc
 
 void RXdgToplevel::resize(wl_client */*client*/, wl_resource *resource, wl_resource */*seat*/, UInt32 serial, UInt32 edges)
 {
+    auto &res { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource)) };
+
     if (edges > 10)
     {
-        wl_resource_post_error(resource, XDG_TOPLEVEL_ERROR_INVALID_RESIZE_EDGE, "provided value is not a valid variant of the resize_edge enum.");
+        res.postError(
+            XDG_TOPLEVEL_ERROR_INVALID_RESIZE_EDGE,
+            "Provided value is not a valid variant of the resize_edge enum.");
         return;
     }
-
-    auto &res { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource)) };
 
     if (!res.toplevelRole()->surface()->mapped())
         return;
@@ -160,29 +164,30 @@ void RXdgToplevel::resize(wl_client */*client*/, wl_resource *resource, wl_resou
 
 void RXdgToplevel::set_max_size(wl_client */*client*/, wl_resource *resource, Int32 width, Int32 height)
 {
+    auto &res { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource)) };
+
     if (width < 0 || height < 0)
     {
-        wl_resource_post_error(resource, XDG_TOPLEVEL_ERROR_INVALID_SIZE, "Invalid xdg_toplevel max size.");
+        res.postError(XDG_TOPLEVEL_ERROR_INVALID_SIZE, "Invalid xdg_toplevel max size ({}, {}).", width, height);
         return;
     }
 
-    auto &toplevel { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole() };
-    toplevel.pendingAtoms().maxSize.setW(width);
-    toplevel.pendingAtoms().maxSize.setH(height);
+    res.toplevelRole()->pendingAtoms().maxSize.setW(width);
+    res.toplevelRole()->pendingAtoms().maxSize.setH(height);
 }
 
 void RXdgToplevel::set_min_size(wl_client */*client*/, wl_resource *resource, Int32 width, Int32 height)
 {
+    auto &res { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource)) };
+
     if (width < 0 || height < 0)
     {
-        // Error enum not defined in protocol
-        wl_resource_post_error(resource, XDG_TOPLEVEL_ERROR_INVALID_RESIZE_EDGE, "Invalid xdg_toplevel min size.");
+        res.postError(XDG_TOPLEVEL_ERROR_INVALID_SIZE, "Invalid xdg_toplevel min size ({}, {}).", width, height);
         return;
     }
 
-    auto &toplevel { *static_cast<RXdgToplevel*>(wl_resource_get_user_data(resource))->toplevelRole() };
-    toplevel.pendingAtoms().minSize.setW(width);
-    toplevel.pendingAtoms().minSize.setH(height);
+    res.toplevelRole()->pendingAtoms().minSize.setW(width);
+    res.toplevelRole()->pendingAtoms().minSize.setH(height);
 }
 
 void RXdgToplevel::set_maximized(wl_client */*client*/, wl_resource *resource)

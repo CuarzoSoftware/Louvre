@@ -58,25 +58,24 @@ void GSubcompositor::destroy(wl_client */*client*/, wl_resource *resource) noexc
 
 void GSubcompositor::get_subsurface(wl_client */*client*/, wl_resource *resource, UInt32 id, wl_resource *surface, wl_resource *parent) noexcept
 {
+    auto &surfaceRes { *static_cast<RSurface*>(wl_resource_get_user_data(surface)) };
+    auto &parentRes { *static_cast<RSurface*>(wl_resource_get_user_data(parent)) };
+
     if (surface == parent)
     {
-        wl_resource_post_error(resource, WL_SUBCOMPOSITOR_ERROR_BAD_PARENT, "Invalid wl_subsurface parent.");
+        parentRes.postError(WL_SUBCOMPOSITOR_ERROR_BAD_PARENT, "Invalid wl_subsurface parent.");
         return;
     }
-
-    auto &surfaceRes { *static_cast<RSurface*>(wl_resource_get_user_data(surface)) };
 
     if (surfaceRes.surface()->imp()->hasRoleOrPendingRole())
     {
-        wl_resource_post_error(resource, WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE, "Given wl_surface already has another role.");
+        parentRes.postError(WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE, "Given wl_surface already has another role.");
         return;
     }
 
-    auto &parentRes { *static_cast<RSurface*>(wl_resource_get_user_data(parent)) };
-
     if (surfaceRes.surface()->imp()->isInChildrenOrPendingChildren(parentRes.surface()))
     {
-        wl_resource_post_error(resource, WL_SUBCOMPOSITOR_ERROR_BAD_PARENT, "Parent can not be child of surface.");
+        parentRes.postError(WL_SUBCOMPOSITOR_ERROR_BAD_PARENT, "Parent can not be child of surface.");
         return;
     }
 

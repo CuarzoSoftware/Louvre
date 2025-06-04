@@ -33,7 +33,7 @@ LClient::~LClient()
 {
     notifyDestruction();
 
-    if (imp()->destroyed)
+    if (imp()->pendingDestroyLater)
         compositor()->imp()->destroyedClients.erase(this);
 }
 
@@ -100,6 +100,15 @@ const LClientCursor &LClient::lastCursorRequest() const noexcept
     return imp()->lastCursorRequest;
 }
 
+void LClient::postErrorPrivate(wl_resource *resource, UInt32 code, const std::string &message)
+{
+    if (imp()->destroyed)
+        return;
+
+    imp()->destroyed = true;
+    wl_resource_post_error(resource, code, "%s", message.c_str());
+}
+
 bool LClient::ping(UInt32 serial) const noexcept
 {
     if (imp()->xdgWmBaseGlobals.empty())
@@ -121,11 +130,20 @@ void LClient::flush() noexcept
 
 void LClient::destroyLater() noexcept
 {
+    if (imp()->pendingDestroyLater)
+        return;
+
+    imp()->pendingDestroyLater = true;
+    compositor()->imp()->destroyedClients.insert(this);
+}
+
+void LClient::destroy()
+{
     if (imp()->destroyed)
         return;
 
     imp()->destroyed = true;
-    compositor()->imp()->destroyedClients.insert(this);
+    wl_client_destroy(client());
 }
 
 const std::vector<Wayland::GOutput*> &LClient::outputGlobals() const noexcept

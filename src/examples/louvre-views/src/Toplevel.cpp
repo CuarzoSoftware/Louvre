@@ -2,6 +2,7 @@
 #include <LCursor.h>
 #include <LSurface.h>
 #include <LLog.h>
+#include <cassert>
 #include <unistd.h>
 #include <LSeat.h>
 #include <LTouchDownEvent.h>
@@ -40,6 +41,7 @@ Toplevel::Toplevel(const void *params) : LToplevelRole(params),
 
 Toplevel::~Toplevel()
 {
+    assert(surface() != nullptr);
     destructorCalled = true;
     unsetFullscreen();
 }

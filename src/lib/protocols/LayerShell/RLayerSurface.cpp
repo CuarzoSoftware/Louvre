@@ -1,3 +1,4 @@
+#include <protocols/XdgShell/xdg-shell.h>
 #include <protocols/LayerShell/wlr-layer-shell-unstable-v1.h>
 #include <protocols/LayerShell/GLayerShell.h>
 #include <protocols/LayerShell/RLayerSurface.h>
@@ -104,13 +105,14 @@ void RLayerSurface::set_margin(wl_client */*client*/, wl_resource *resource, Int
 
 void RLayerSurface::set_keyboard_interactivity(wl_client */*client*/, wl_resource *resource, UInt32 keyboard_interactivity)
 {
+    auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
+
     if (keyboard_interactivity > 2)
     {
-        wl_resource_post_error(resource, ZWLR_LAYER_SURFACE_V1_ERROR_INVALID_KEYBOARD_INTERACTIVITY, "Invalid keyboard interactivity value.");
+        res.postError(ZWLR_LAYER_SURFACE_V1_ERROR_INVALID_KEYBOARD_INTERACTIVITY, "Invalid keyboard interactivity value.");
         return;
     }
 
-    auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
     res.layerRole()->pendingAtoms().keyboardInteractivity = (LLayerRole::KeyboardInteractivity)keyboard_interactivity;
     res.layerRole()->m_flags.add(LLayerRole::HasPendingKeyboardInteractivity);
 }
@@ -122,13 +124,13 @@ void RLayerSurface::get_popup(wl_client */*client*/, wl_resource *resource, wl_r
 
     if (popupSurface.imp()->parent || popupSurface.imp()->pendingParent)
     {
-        wl_resource_post_error(resource, 0, "Popup already has a parent.");
+        res.postError(XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT, "Popup already has a parent.");
         return;
     }
 
     if (popupSurface.imp()->isInChildrenOrPendingChildren(res.layerRole()->surface()))
     {
-        wl_resource_post_error(resource, 0, "Popup can not have a child surface as parent.");
+        res.postError(XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT, "Popup can not have a child surface as parent.");
         return;
     }
 
@@ -145,13 +147,14 @@ void RLayerSurface::destroy(wl_client */*client*/, wl_resource *resource)
 #if LOUVRE_LAYER_SHELL_VERSION >= 2
 void RLayerSurface::set_layer(wl_client */*client*/, wl_resource *resource, UInt32 layer)
 {
+    auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
+
     if (layer > 3)
     {
-        wl_resource_post_error(resource, ZWLR_LAYER_SHELL_V1_ERROR_INVALID_LAYER, "Invalid layer value.");
+        res.postError(ZWLR_LAYER_SHELL_V1_ERROR_INVALID_LAYER, "Invalid layer value.");
         return;
     }
 
-    auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
     res.layerRole()->pendingAtoms().layer = static_cast<LSurfaceLayer>(layer < 2 ? layer : layer + 1);
     res.layerRole()->m_flags.add(LLayerRole::HasPendingLayer);
 }
@@ -160,13 +163,14 @@ void RLayerSurface::set_layer(wl_client */*client*/, wl_resource *resource, UInt
 #if LOUVRE_LAYER_SHELL_VERSION >= 5
 void RLayerSurface::set_exclusive_edge(wl_client */*client*/, wl_resource *resource, UInt32 edge)
 {
+    auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
+
     if (!(edge == 0 || edge == 1 || edge == 2 || edge == 4 || edge == 8))
     {
-        wl_resource_post_error(resource, ZWLR_LAYER_SURFACE_V1_ERROR_INVALID_EXCLUSIVE_EDGE, "Invalid exclusive edge.");
+        res.postError(ZWLR_LAYER_SURFACE_V1_ERROR_INVALID_EXCLUSIVE_EDGE, "Invalid exclusive edge.");
         return;
     }
 
-    auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
     res.layerRole()->pendingAtoms().exclusiveEdge = (LEdge)edge;
     res.layerRole()->m_flags.add(LLayerRole::HasPendingExclusiveEdge);
 }

@@ -50,7 +50,7 @@ void RSessionLock::destroy(wl_client */*client*/, wl_resource *resource)
 
     if (res.reply() == RSessionLock::Locked)
     {
-        wl_resource_post_error(resource, EXT_SESSION_LOCK_V1_ERROR_INVALID_DESTROY, "Attempted to destroy session lock while locked.");
+        res.postError(EXT_SESSION_LOCK_V1_ERROR_INVALID_DESTROY, "Attempted to destroy session lock while locked.");
         return;
     }
 
@@ -65,13 +65,13 @@ void RSessionLock::get_lock_surface(wl_client */*client*/, wl_resource *resource
 
     if (surfaceRes.surface()->imp()->hasRoleOrPendingRole())
     {
-        wl_resource_post_error(resource, EXT_SESSION_LOCK_V1_ERROR_ROLE, "Given wl_surface already has a role.");
+        res.postError(EXT_SESSION_LOCK_V1_ERROR_ROLE, "Given wl_surface already has a role.");
         return;
     }
 
     if (surfaceRes.surface()->imp()->hasBufferOrPendingBuffer())
     {
-        wl_resource_post_error(resource, EXT_SESSION_LOCK_V1_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface has a buffer attached or committed.");
+        res.postError(EXT_SESSION_LOCK_V1_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface has a buffer attached or committed.");
         return;
     }
 
@@ -79,7 +79,7 @@ void RSessionLock::get_lock_surface(wl_client */*client*/, wl_resource *resource
     {
         if (role->exclusiveOutput() && outputRes.output() && role->exclusiveOutput() == outputRes.output())
         {
-            wl_resource_post_error(resource, EXT_SESSION_LOCK_V1_ERROR_DUPLICATE_OUTPUT, "Given output already has a lock surface.");
+            res.postError(EXT_SESSION_LOCK_V1_ERROR_DUPLICATE_OUTPUT, "Given output already has a lock surface.");
             return;
         }
     }
@@ -93,7 +93,7 @@ void RSessionLock::unlock_and_destroy(wl_client */*client*/, wl_resource *resour
 
     if (!res.m_lockedOnce)
     {
-        wl_resource_post_error(resource, EXT_SESSION_LOCK_V1_ERROR_INVALID_UNLOCK, "Unlock requested but locked event was never sent.");
+        res.postError(EXT_SESSION_LOCK_V1_ERROR_INVALID_UNLOCK, "Unlock requested but locked event was never sent.");
         return;
     }
 

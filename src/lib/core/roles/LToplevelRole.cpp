@@ -75,7 +75,7 @@ void LToplevelRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
     {
         if (surface()->hasBuffer())
         {
-            wl_resource_post_error(resource()->resource(), XDG_SURFACE_ERROR_UNCONFIGURED_BUFFER, "Attaching a buffer to an unconfigured surface");
+            resource()->postError(XDG_SURFACE_ERROR_UNCONFIGURED_BUFFER, "Attaching a buffer to an unconfigured surface");
             return;
         }
 

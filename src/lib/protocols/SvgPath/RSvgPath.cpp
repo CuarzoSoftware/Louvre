@@ -36,7 +36,7 @@ void RSvgPath::destroy(wl_client */*client*/, wl_resource *resource)
 
     if (!res.isComplete())
     {
-        wl_resource_post_error(resource, LVR_SVG_PATH_ERROR_INCOMPLETE, "incomplete svg path");
+        res.postError(LVR_SVG_PATH_ERROR_INCOMPLETE, "incomplete svg path");
         return;
     }
 
@@ -50,7 +50,7 @@ void RSvgPath::concat_commands(wl_client */*client*/, wl_resource *resource, con
 
     if (res.isComplete())
     {
-        wl_resource_post_error(resource, LVR_SVG_PATH_ERROR_ALREADY_CONSTRUCTED, "done already sent");
+        res.postError(LVR_SVG_PATH_ERROR_ALREADY_CONSTRUCTED, "done already sent");
         return;
     }
 
@@ -63,8 +63,8 @@ void RSvgPath::done(wl_client */*client*/, wl_resource *resource)
 
     if (res.isComplete())
     {
-        wl_resource_post_error(resource, LVR_SVG_PATH_ERROR_ALREADY_CONSTRUCTED,
-                               "a request other than destroy was made after a done request");
+        res.postError(LVR_SVG_PATH_ERROR_ALREADY_CONSTRUCTED,
+            "a request other than destroy was made after a done request");
         return;
     }
 

@@ -997,7 +997,7 @@ void LCompositor::LCompositorPrivate::unitDMAFeedback() noexcept
 void LCompositor::LCompositorPrivate::handleDestroyedClients()
 {
     while (!destroyedClients.empty())
-        wl_client_destroy((*destroyedClients.begin())->client());
+        (*destroyedClients.begin())->destroy();
 }
 
 #if LOUVRE_ASSERT_CHECKS == 1

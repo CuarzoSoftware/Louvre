@@ -41,7 +41,7 @@ void RXdgActivationToken::set_serial(wl_client */*client*/, wl_resource *resourc
 
     if (res.m_commited)
     {
-        wl_resource_post_error(res.resource(), XDG_ACTIVATION_TOKEN_V1_ERROR_ALREADY_USED, "Duplicated commit.");
+        res.postError(XDG_ACTIVATION_TOKEN_V1_ERROR_ALREADY_USED, "Duplicated commit.");
         return;
     }
 
@@ -54,7 +54,7 @@ void RXdgActivationToken::set_app_id(wl_client */*client*/, wl_resource *resourc
 
     if (res.m_commited)
     {
-        wl_resource_post_error(res.resource(), XDG_ACTIVATION_TOKEN_V1_ERROR_ALREADY_USED, "Duplicated commit.");
+        res.postError(XDG_ACTIVATION_TOKEN_V1_ERROR_ALREADY_USED, "Duplicated commit.");
         return;
     }
 
@@ -67,7 +67,7 @@ void RXdgActivationToken::set_surface(wl_client */*client*/, wl_resource *resour
 
     if (res.m_commited)
     {
-        wl_resource_post_error(res.resource(), XDG_ACTIVATION_TOKEN_V1_ERROR_ALREADY_USED, "Duplicated commit.");
+        res.postError(XDG_ACTIVATION_TOKEN_V1_ERROR_ALREADY_USED, "Duplicated commit.");
         return;
     }
 
@@ -111,7 +111,7 @@ void RXdgActivationToken::commit(wl_client */*client*/, wl_resource *resource)
 
     if (res.m_commited)
     {
-        wl_resource_post_error(res.resource(), XDG_ACTIVATION_TOKEN_V1_ERROR_ALREADY_USED, "Duplicated commit.");
+        res.postError(XDG_ACTIVATION_TOKEN_V1_ERROR_ALREADY_USED, "Duplicated commit.");
         return;
     }
 

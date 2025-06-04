@@ -68,6 +68,7 @@ void RSubsurface::set_position(wl_client */*client*/, wl_resource *resource, Int
 
 void RSubsurface::place_above(wl_client */*client*/, wl_resource *resource, wl_resource *sibling)
 {
+    auto &res { *static_cast<RSubsurface*>(wl_resource_get_user_data(resource)) };
     LSubsurfaceRole *subsurfaceRole { static_cast<RSubsurface*>(wl_resource_get_user_data(resource))->subsurfaceRole() };
     LSurface *siblingSurface { static_cast<RSurface*>(wl_resource_get_user_data(sibling))->surface() };
 
@@ -79,11 +80,12 @@ void RSubsurface::place_above(wl_client */*client*/, wl_resource *resource, wl_r
         return;
     }
 
-    wl_resource_post_error(resource, WL_SUBSURFACE_ERROR_BAD_SURFACE, "Subsurface is not sibling or parent.");
+    res.postError(WL_SUBSURFACE_ERROR_BAD_SURFACE, "Subsurface is not sibling or parent.");
 }
 
 void RSubsurface::place_below(wl_client */*client*/, wl_resource *resource, wl_resource *sibling)
 {
+    auto &res { *static_cast<RSubsurface*>(wl_resource_get_user_data(resource)) };
     LSubsurfaceRole *subsurfaceRole { static_cast<RSubsurface*>(wl_resource_get_user_data(resource))->subsurfaceRole() };
     LSurface *siblingSurface { static_cast<RSurface*>(wl_resource_get_user_data(sibling))->surface() };
 
@@ -93,7 +95,7 @@ void RSubsurface::place_below(wl_client */*client*/, wl_resource *resource, wl_r
         return;
     }
 
-    wl_resource_post_error(resource, WL_SUBSURFACE_ERROR_BAD_SURFACE, "Subsurface is not sibling.");
+    res.postError(WL_SUBSURFACE_ERROR_BAD_SURFACE, "Subsurface is not sibling.");
 }
 
 static bool hasSyncParent(LSurface *surface)

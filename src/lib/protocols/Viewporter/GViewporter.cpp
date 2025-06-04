@@ -59,7 +59,7 @@ void GViewporter::get_viewport(wl_client */*client*/, wl_resource *resource, UIn
 
     if (surfaceRes->viewportRes())
     {
-        wl_resource_post_error(resource, WP_VIEWPORTER_ERROR_VIEWPORT_EXISTS, "The surface already has a viewport object associated.");
+        surfaceRes->postError(WP_VIEWPORTER_ERROR_VIEWPORT_EXISTS, "The surface already has a viewport object associated.");
         return;
     }
 

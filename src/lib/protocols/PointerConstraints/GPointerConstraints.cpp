@@ -66,14 +66,14 @@ void GPointerConstraints::lock_pointer(wl_client */*client*/, wl_resource *resou
 
     if (surfaceRes.surface()->imp()->lockedPointerRes || surfaceRes.surface()->imp()->confinedPointerRes)
     {
-        wl_resource_post_error(resource, ZWP_POINTER_CONSTRAINTS_V1_ERROR_ALREADY_CONSTRAINED,
+        surfaceRes.postError(ZWP_POINTER_CONSTRAINTS_V1_ERROR_ALREADY_CONSTRAINED,
                                "Pointer constraint already requested on that surface.");
         return;
     }
 
     if (lifetime != ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT && lifetime != ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT)
     {
-        wl_resource_post_error(resource, -1, "Invalid lifetime value.");
+        surfaceRes.postError(0, "Invalid lifetime value.");
         return;
     }
 
@@ -91,14 +91,14 @@ void GPointerConstraints::confine_pointer(wl_client */*client*/, wl_resource *re
 
     if (surfaceRes.surface()->imp()->lockedPointerRes || surfaceRes.surface()->imp()->confinedPointerRes)
     {
-        wl_resource_post_error(resource, ZWP_POINTER_CONSTRAINTS_V1_ERROR_ALREADY_CONSTRAINED,
+        surfaceRes.postError(ZWP_POINTER_CONSTRAINTS_V1_ERROR_ALREADY_CONSTRAINED,
                                "Pointer constraint already requested on that surface.");
         return;
     }
 
     if (lifetime != ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT && lifetime != ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT)
     {
-        wl_resource_post_error(resource, -1, "Invalid lifetime value.");
+        surfaceRes.postError(0, "Invalid lifetime value.");
         return;
     }
 

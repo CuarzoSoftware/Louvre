@@ -67,9 +67,9 @@ void GBackgroundBlurManager::get_background_blur(wl_client */*client*/, wl_resou
 
     if (surfaceRes->contentTypeRes())
     {
-        wl_resource_post_error(resource,
-                               LVR_BACKGROUND_BLUR_MANAGER_ERROR_ALREADY_CONSTRUCTED,
-                               "the surface already has an associated background blur object");
+        res->postError(
+            LVR_BACKGROUND_BLUR_MANAGER_ERROR_ALREADY_CONSTRUCTED,
+            "the surface already has an associated background blur object");
         return;
     }
 

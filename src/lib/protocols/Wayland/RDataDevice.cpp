@@ -102,8 +102,9 @@ void RDataDevice::start_drag(wl_client */*client*/,
 {
     const LEvent *triggeringEvent;
     LDNDSession *session = new LDNDSession();
+    auto *res { static_cast<RDataDevice*>(wl_resource_get_user_data(resource)) };
     session->origin.reset(static_cast<RSurface*>(wl_resource_get_user_data(origin))->surface());
-    session->srcDataDevice.reset(static_cast<RDataDevice*>(wl_resource_get_user_data(resource)));
+    session->srcDataDevice.reset(res);
 
     if (source)
     {
@@ -111,7 +112,7 @@ void RDataDevice::start_drag(wl_client */*client*/,
 
         if (session->source->usage() != RDataSource::Undefined)
         {
-            wl_resource_post_error(resource, WL_DATA_DEVICE_ERROR_USED_SOURCE, "Source already used.");
+            res->postError(WL_DATA_DEVICE_ERROR_USED_SOURCE, "Source already used.");
             goto fail;
         }
 
@@ -139,7 +140,7 @@ void RDataDevice::start_drag(wl_client */*client*/,
 
         if (iconSurface->imp()->pending.role || (iconSurface->roleId() != LSurface::Role::Undefined && iconSurface->roleId() != LSurface::Role::DNDIcon))
         {
-            wl_resource_post_error(resource, WL_DATA_DEVICE_ERROR_ROLE, "Given wl_surface has another role.");
+            res->postError(WL_DATA_DEVICE_ERROR_ROLE, "Given wl_surface has another role.");
             goto fail;
         }
 
@@ -201,7 +202,7 @@ void RDataDevice::set_selection(wl_client *client, wl_resource *resource, wl_res
 
         if (rDataSource->usage() != RDataSource::Undefined)
         {
-            wl_resource_post_error(rDataSource->resource(), WL_DATA_DEVICE_ERROR_USED_SOURCE, "Source already used.");
+            rDataSource->postError(WL_DATA_DEVICE_ERROR_USED_SOURCE, "Source already used.");
             return;
         }
 

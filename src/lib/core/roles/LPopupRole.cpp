@@ -463,9 +463,9 @@ void LPopupRole::handleSurfaceCommit(CommitOrigin origin)
     {
         if (surface()->imp()->isInChildrenOrPendingChildren(surface()->imp()->pendingParent))
         {
-            wl_resource_post_error(xdgSurfaceResource()->resource(),
-                                   XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT,
-                                   "Parent can not be child or equal to surface.");
+            xdgSurfaceResource()->postError(
+                XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT,
+                "Parent can not be child or equal to surface.");
             return;
         }
 
@@ -474,9 +474,9 @@ void LPopupRole::handleSurfaceCommit(CommitOrigin origin)
 
     if (!surface()->parent())
     {
-        wl_resource_post_error(xdgSurfaceResource()->resource(),
-                               XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT,
-                               "Popup has no parent.");
+        xdgSurfaceResource()->postError(
+            XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT,
+            "Popup has no parent.");
         return;
     }
 
@@ -485,7 +485,7 @@ void LPopupRole::handleSurfaceCommit(CommitOrigin origin)
     {
         if (surface()->hasBuffer())
         {
-            wl_resource_post_error(resource()->resource(), XDG_SURFACE_ERROR_UNCONFIGURED_BUFFER, "Attaching a buffer to an unconfigured surface");
+            resource()->postError(XDG_SURFACE_ERROR_UNCONFIGURED_BUFFER, "Attaching a buffer to an unconfigured surface");
             return;
         }
 

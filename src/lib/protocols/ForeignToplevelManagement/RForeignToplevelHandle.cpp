@@ -189,7 +189,7 @@ void RForeignToplevelHandle::set_rectangle(wl_client */*client*/, wl_resource *r
 
     if (width < 0 || height < 0)
     {
-        wl_resource_post_error(resource, ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_ERROR_INVALID_RECTANGLE, "The provided rectangle is invalid.");
+        res.postError(ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_ERROR_INVALID_RECTANGLE, "The provided rectangle is invalid.");
         return;
     }
 

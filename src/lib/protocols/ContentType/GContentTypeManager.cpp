@@ -64,9 +64,9 @@ void GContentTypeManager::get_surface_content_type(wl_client */*client*/, wl_res
 
     if (surfaceRes->contentTypeRes())
     {
-        wl_resource_post_error(resource,
-                               WP_CONTENT_TYPE_MANAGER_V1_ERROR_ALREADY_CONSTRUCTED,
-                               "wl_surface already has a content type object.");
+        surfaceRes->postError(
+            WP_CONTENT_TYPE_MANAGER_V1_ERROR_ALREADY_CONSTRUCTED,
+            "wl_surface already has a content type object.");
         return;
     }
 

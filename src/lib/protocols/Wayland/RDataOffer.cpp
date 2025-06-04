@@ -65,7 +65,7 @@ void RDataOffer::finish(wl_client */*client*/, wl_resource *resource) noexcept
 
     if (dataOfferRes.usage() != RDataSource::DND)
     {
-        wl_resource_post_error(resource, WL_DATA_OFFER_ERROR_INVALID_FINISH, "Data offer not used for DND.");
+        dataOfferRes.postError(WL_DATA_OFFER_ERROR_INVALID_FINISH, "Data offer not used for DND.");
         return;
     }
 
@@ -160,7 +160,7 @@ void RDataOffer::set_actions(wl_client */*client*/, wl_resource *resource, UInt3
 
     if (dataOfferRes.usage() != RDataSource::DND)
     {
-        wl_resource_post_error(resource, -1, "Data offer not being used for DND.");
+        dataOfferRes.postError(0, "Data offer not being used for DND.");
         return;
     }
 
@@ -171,7 +171,7 @@ void RDataOffer::set_actions(wl_client */*client*/, wl_resource *resource, UInt3
 
     if (preferred_action != LDND::NoAction && preferred_action != LDND::Copy && preferred_action != LDND::Move && preferred_action != LDND::Ask)
     {
-        wl_resource_post_error(resource, WL_DATA_OFFER_ERROR_INVALID_ACTION, "Invalid preferred_action.");
+        dataOfferRes.postError(WL_DATA_OFFER_ERROR_INVALID_ACTION, "Invalid preferred_action.");
         return;
     }
 

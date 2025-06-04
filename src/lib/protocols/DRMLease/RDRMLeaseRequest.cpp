@@ -46,7 +46,7 @@ void RDRMLeaseRequest::request_connector(wl_client */*client*/, wl_resource *res
 
     if (output->gpu() != res.gpu())
     {
-        wl_resource_post_error(resource, WP_DRM_LEASE_REQUEST_V1_ERROR_WRONG_DEVICE, "Requested a connector from a different lease device.");
+        res.postError(WP_DRM_LEASE_REQUEST_V1_ERROR_WRONG_DEVICE, "Requested a connector from a different lease device.");
         return;
     }
 
@@ -54,7 +54,7 @@ void RDRMLeaseRequest::request_connector(wl_client */*client*/, wl_resource *res
     {
         if (conn.get() == output)
         {
-            wl_resource_post_error(resource, WP_DRM_LEASE_REQUEST_V1_ERROR_DUPLICATE_CONNECTOR, "Requested a connector twice.");
+            res.postError(WP_DRM_LEASE_REQUEST_V1_ERROR_DUPLICATE_CONNECTOR, "Requested a connector twice.");
             return;
         }
     }
@@ -69,7 +69,7 @@ void RDRMLeaseRequest::submit(wl_client */*client*/, wl_resource *resource, UInt
 
     if (!res.m_addedConnector)
     {
-        wl_resource_post_error(resource, WP_DRM_LEASE_REQUEST_V1_ERROR_EMPTY_LEASE, "Requested a lease without requesting a connector.");
+        res.postError(WP_DRM_LEASE_REQUEST_V1_ERROR_EMPTY_LEASE, "Requested a lease without requesting a connector.");
         return;
     }
 

@@ -139,7 +139,7 @@ void RScreenCopyFrame::copyCommon(wl_resource *resource, wl_resource *buffer, bo
 
     if (res.alreadyUsed())
     {
-        wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_ALREADY_USED, "The object has already been used to copy a wl_buffer.");
+        res.postError(ZWLR_SCREENCOPY_FRAME_V1_ERROR_ALREADY_USED, "The object has already been used to copy a wl_buffer.");
         return;
     }
 
@@ -153,19 +153,19 @@ void RScreenCopyFrame::copyCommon(wl_resource *resource, wl_resource *buffer, bo
         if ((res.output()->painter()->imp()->openGLExtensions.EXT_read_format_bgra && wl_shm_buffer_get_format(shmBuffer) != WL_SHM_FORMAT_XRGB8888) ||
             (!res.output()->painter()->imp()->openGLExtensions.EXT_read_format_bgra && wl_shm_buffer_get_format(shmBuffer) != WL_SHM_FORMAT_XBGR8888))
         {
-            wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer format.");
+            res.postError(ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer format.");
             return;
         }
 
         if (res.m_stride != wl_shm_buffer_get_stride(shmBuffer))
         {
-            wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer stride.");
+            res.postError(ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer stride.");
             return;
         }
 
         if (res.rectB().w() != wl_shm_buffer_get_width(shmBuffer) || res.rectB().h() != wl_shm_buffer_get_height(shmBuffer))
         {
-            wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer size.");
+            res.postError(ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer size.");
             return;
         }
     }
@@ -175,31 +175,31 @@ void RScreenCopyFrame::copyCommon(wl_resource *resource, wl_resource *buffer, bo
 
         if (!res.output()->bufferTexture(0))
         {
-            wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Linux DMA buffers are not supported.");
+            res.postError(ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Linux DMA buffers are not supported.");
             return;
         }
 
         if (dmaBuffer->texture())
         {
-            wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Buffer already used by surfaces.");
+            res.postError(ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Buffer already used by surfaces.");
             return;
         }
 
         if (res.output()->bufferTexture(0)->format() != dmaBuffer->planes()->format)
         {
-            wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer format.");
+            res.postError(ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer format.");
             return;
         }
 
         if (static_cast<Int32>(dmaBuffer->planes()->width) != res.rectB().w() || static_cast<Int32>(dmaBuffer->planes()->height) != res.rectB().h())
         {
-            wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer size.");
+            res.postError(ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer size.");
             return;
         }
     }
     else
     {
-        wl_resource_post_error(resource, ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer type.");
+        res.postError(ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer type.");
         return;
     }
 

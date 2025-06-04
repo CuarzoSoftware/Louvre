@@ -53,8 +53,8 @@ private:
     RXdgToplevel(RXdgSurface *xdgSurfaceRes, UInt32 id);
     ~RXdgToplevel();
 
-    std::unique_ptr<LToplevelRole> m_toplevelRole;
     LWeak<RXdgSurface> m_xdgSurfaceRes;
+    std::unique_ptr<LToplevelRole> m_toplevelRole;
 };
 
 #endif // RXDGTOPLEVEL_H

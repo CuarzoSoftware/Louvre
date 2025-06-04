@@ -2,6 +2,8 @@
 #define LRESOURCE_H
 
 #include <LObject.h>
+#include <format>
+#include <string>
 
 #define LGLOBAL_INTERFACE \
     friend class Louvre::LGlobal;\
@@ -68,6 +70,23 @@ public:
      */
     void destroy();
 
+    /**
+     * @brief A safe wrapper for wl_resource_post_error.
+     *
+     * This method ensures that `wl_resource_post_error` is not called more than once for the same client.
+     *
+     * @param code The error code to be sent to the client.
+     * @param message The format string for the error message.
+     * @param args Additional arguments to format the message.
+     *
+     * @warning Calling this method **immediately destroys** the client and all its resources. See destroyLater()
+     */
+    template<typename... Args>
+    void postError(UInt32 code, std::format_string<Args...> message, Args&&... args)
+    {
+        postErrorPrivate(code, std::format(message, std::forward<Args>(args)...));
+    }
+
 protected:
 
     /**
@@ -112,6 +131,7 @@ protected:
     ~LResource() { notifyDestruction(); };
 
 private:
+    void postErrorPrivate(UInt32 code, const std::string &message);
     LClient *m_client;
     wl_resource *m_resource;
 };

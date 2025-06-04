@@ -53,7 +53,7 @@ bool RWlrOutputConfiguration::checkAlreadyConfigured(LOutput *output) noexcept
     {
         if (m_disabled[i].get() == output)
         {
-            wl_resource_post_error(resource(), ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_CONFIGURED_HEAD, "Head already configured.");
+            postError(ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_CONFIGURED_HEAD, "Head already configured.");
             return true;
         }
     }
@@ -63,7 +63,7 @@ bool RWlrOutputConfiguration::checkAlreadyConfigured(LOutput *output) noexcept
     {
         if (m_enabled[i]->output() == output)
         {
-            wl_resource_post_error(resource(), ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_CONFIGURED_HEAD, "Head already configured.");
+            postError(ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_CONFIGURED_HEAD, "Head already configured.");
             return true;
         }
     }
@@ -98,7 +98,7 @@ void RWlrOutputConfiguration::enable_head(wl_client */*client*/, wl_resource *re
 
     if (res.m_replied)
     {
-        wl_resource_post_error(resource, ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_USED, "Configuration already used.");
+        res.postError(ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_USED, "Configuration already used.");
         return;
     }
 
@@ -118,7 +118,7 @@ void RWlrOutputConfiguration::disable_head(wl_client */*client*/, wl_resource *r
 
     if (res.m_replied)
     {
-        wl_resource_post_error(resource, ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_USED, "Configuration already used.");
+        res.postError(ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_USED, "Configuration already used.");
         return;
     }
 
@@ -141,7 +141,7 @@ void RWlrOutputConfiguration::apply(wl_client */*client*/, wl_resource *resource
 
     if (res.m_replied)
     {
-        wl_resource_post_error(resource, ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_USED, "Configuration already used.");
+        res.postError(ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_USED, "Configuration already used.");
         return;
     }
 
@@ -205,7 +205,7 @@ void RWlrOutputConfiguration::test(wl_client */*client*/, wl_resource *resource)
 
     if (res.m_replied)
     {
-        wl_resource_post_error(resource, ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_USED, "Configuration already used.");
+        res.postError(ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_USED, "Configuration already used.");
         return;
     }
 

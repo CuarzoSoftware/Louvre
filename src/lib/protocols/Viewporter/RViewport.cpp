@@ -44,7 +44,7 @@ void RViewport::set_source(wl_client */*client*/, wl_resource *resource, Float24
 
     if (!res.surfaceRes())
     {
-        wl_resource_post_error(resource, WP_VIEWPORT_ERROR_NO_SURFACE, "The wl_surface was destroyed.");
+        res.postError(WP_VIEWPORT_ERROR_NO_SURFACE, "The wl_surface was destroyed.");
         return;
     }
 
@@ -60,7 +60,7 @@ void RViewport::set_destination(wl_client */*client*/, wl_resource *resource, In
 
     if (!res.surfaceRes())
     {
-        wl_resource_post_error(resource, WP_VIEWPORT_ERROR_NO_SURFACE, "The wl_surface was destroyed.");
+        res.postError(WP_VIEWPORT_ERROR_NO_SURFACE, "The wl_surface was destroyed.");
         return;
     }
 

@@ -89,7 +89,7 @@ void RDataSource::set_actions(wl_client */*client*/, wl_resource *resource, UInt
 
     if (dataSourceRes.usage() == RDataSource::Clipboard)
     {
-        wl_resource_post_error(resource, WL_DATA_SOURCE_ERROR_INVALID_SOURCE, "Source usage is not DND.");
+        dataSourceRes.postError(WL_DATA_SOURCE_ERROR_INVALID_SOURCE, "Source usage is not DND.");
         return;
     }
 

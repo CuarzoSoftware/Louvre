@@ -62,14 +62,14 @@ void GXdgDecorationManager::get_toplevel_decoration(wl_client */*client*/, wl_re
 
     if (xdgToplevelRoleRes.toplevelRole()->supportServerSideDecorations())
     {
-        wl_resource_post_error(resource, ZXDG_TOPLEVEL_DECORATION_V1_ERROR_ALREADY_CONSTRUCTED,
+        xdgToplevelRoleRes.postError(ZXDG_TOPLEVEL_DECORATION_V1_ERROR_ALREADY_CONSTRUCTED,
                                "Multiple XDG Toplevel Decorations for a Toplevel not supported.");
         return;
     }
 
     if (xdgToplevelRoleRes.xdgSurfaceRes()->surface()->imp()->hasBufferOrPendingBuffer())
     {
-        wl_resource_post_error(resource, ZXDG_TOPLEVEL_DECORATION_V1_ERROR_UNCONFIGURED_BUFFER,
+        xdgToplevelRoleRes.postError(ZXDG_TOPLEVEL_DECORATION_V1_ERROR_UNCONFIGURED_BUFFER,
                                "Given Toplevel already has a buffer attached.");
         return;
     }

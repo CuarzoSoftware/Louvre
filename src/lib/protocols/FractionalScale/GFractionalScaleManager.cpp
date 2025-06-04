@@ -64,9 +64,9 @@ void GFractionalScaleManager::get_fractional_scale(wl_client */*client*/, wl_res
 
     if (surfaceRes->fractionalScaleRes())
     {
-        wl_resource_post_error(resource,
-                               WP_FRACTIONAL_SCALE_MANAGER_V1_ERROR_FRACTIONAL_SCALE_EXISTS,
-                               "The surface already has a fractional_scale object associated.");
+        surfaceRes->postError(
+            WP_FRACTIONAL_SCALE_MANAGER_V1_ERROR_FRACTIONAL_SCALE_EXISTS,
+            "The surface already has a fractional_scale object associated.");
         return;
     }
 
