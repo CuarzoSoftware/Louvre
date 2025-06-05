@@ -37,18 +37,17 @@ RSubsurface::RSubsurface
     LSubsurfaceRole::Params subsurfaceRoleParams { this, surface };
     m_subsurfaceRole.reset(LFactory::createObject<LSubsurfaceRole>(&subsurfaceRoleParams));
 
-    // Based on wl_subsurface doc, parent should be applied when parent commits
+    // According to the wl_subsurface spec, the parent should be applied when parent commits
     surface->imp()->setPendingParent(parent);
-    surface->imp()->setPendingRole(m_subsurfaceRole.get());
-    surface->imp()->applyPendingRole();
+    surface->imp()->notifyRoleChange();
 }
 
 RSubsurface::~RSubsurface()
 {
     compositor()->onAnticipatedObjectDestruction(m_subsurfaceRole.get());
-
-    if (subsurfaceRole()->surface())
-        subsurfaceRole()->surface()->imp()->setMapped(false);
+    subsurfaceRole()->surface()->imp()->setMapped(false);
+    subsurfaceRole()->surface()->imp()->setRole(nullptr);
+    subsurfaceRole()->surface()->imp()->notifyRoleChange();
 }
 
 /******************** REQUESTS ********************/

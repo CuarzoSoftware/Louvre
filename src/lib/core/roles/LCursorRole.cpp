@@ -26,13 +26,10 @@ LCursorRole::LCursorRole(const void *params) noexcept :
 
 LCursorRole::~LCursorRole()
 {
-    notifyDestruction();
+    validateDestructor();
 
     if (cursor()->clientCursor() && cursor()->clientCursor()->cursorRole() == this)
         cursor()->useDefault();
-
-    if (surface())
-        surface()->imp()->setMapped(false);
 }
 
 void LCursorRole::handleSurfaceCommit(CommitOrigin origin)

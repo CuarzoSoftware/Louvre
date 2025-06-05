@@ -55,8 +55,12 @@ public:
      * @brief Destructor of the LSubsurfaceRole class.
      *
      * Invoked after LCompositor::onAnticipatedObjectDestruction().
+     *
+     * @warning The `surface()` handle always remains valid during the destructor call.
+     *          However, `LSurface::role()` returns `nullptr` because `LSurface::roleChanged()`
+     *          is notified beforehand and requires the role to be valid.
      */
-    ~LSubsurfaceRole() { notifyDestruction(); };
+    ~LSubsurfaceRole();
 
     /**
      * @brief Current mode.

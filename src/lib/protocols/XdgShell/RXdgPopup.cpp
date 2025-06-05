@@ -55,31 +55,33 @@ RXdgPopup::RXdgPopup
     if (xdgParentSurfaceRes)
         xdgSurfaceRes->surface()->imp()->setPendingParent(xdgParentSurfaceRes->surface());
 
-    xdgSurfaceRes->surface()->imp()->setPendingRole(popupRole());
-    xdgSurfaceRes->surface()->imp()->applyPendingRole();
+    xdgSurfaceRes->surface()->imp()->notifyRoleChange();
 }
 
 RXdgPopup::~RXdgPopup()
 {
     compositor()->onAnticipatedObjectDestruction(popupRole());
 
-    if (popupRole()->surface())
+    for (LSurface *child : popupRole()->surface()->children())
     {
-        for (LSurface *child : popupRole()->surface()->children())
+        if (child->popup() && child->mapped())
         {
-            if (child->popup() && child->mapped())
-            {
-                xdgSurfaceRes()->postError(
-                    XDG_WM_BASE_ERROR_NOT_THE_TOPMOST_POPUP,
-                    "The client tried to map or destroy a non-topmost popup.");
-                return;
-            }
-        }
+            popupRole()->surface()->imp()->setMapped(false);
+            popupRole()->surface()->imp()->setRole(nullptr);
+            popupRole()->surface()->imp()->notifyRoleChange();
 
-        popupRole()->surface()->imp()->setKeyboardGrabToParent();
-        popupRole()->surface()->imp()->setMapped(false);
-        popupRole()->surface()->imp()->setParent(nullptr);
+            xdgSurfaceRes()->postError(
+                XDG_WM_BASE_ERROR_NOT_THE_TOPMOST_POPUP,
+                "The client tried to map or destroy a non-topmost popup.");
+            return;
+        }
     }
+
+    popupRole()->surface()->imp()->setKeyboardGrabToParent();
+    popupRole()->surface()->imp()->setMapped(false);
+    popupRole()->surface()->imp()->setParent(nullptr);
+    popupRole()->surface()->imp()->setRole(nullptr);
+    popupRole()->surface()->imp()->notifyRoleChange();
 }
 
 /******************** REQUESTS ********************/

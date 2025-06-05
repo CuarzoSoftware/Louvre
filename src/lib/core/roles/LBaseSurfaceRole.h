@@ -68,6 +68,10 @@ public:
 
     /**
      * @brief The LBaseSurfaceRole class destructor.
+     *
+     * @warning The `surface()` handle always remains valid during the destructor call.
+     *          However, `LSurface::role()` returns `nullptr` because `LSurface::roleChanged()`
+     *          is notified beforehand and requires the role to be valid.
      */
     ~LBaseSurfaceRole();
 
@@ -195,10 +199,12 @@ protected:
      */
     virtual void handleParentChange();
 
+    void validateDestructor() noexcept;
 private:
     LWeak<LSurface> m_surface;
     LWeak<LResource> m_resource;
     UInt32 m_roleId;
+    bool m_destructorValidated { false };
 };
 
 #endif // LBASESURFACEROLE_H

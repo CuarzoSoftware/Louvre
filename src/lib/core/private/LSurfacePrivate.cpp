@@ -11,10 +11,13 @@
 #include <private/LTexturePrivate.h>
 #include <private/LOutputPrivate.h>
 #include <private/LKeyboardPrivate.h>
+#include <LDNDIconRole.h>
+#include <LCursorRole.h>
 #include <LOutputMode.h>
 #include <LClient.h>
 #include <LTime.h>
 #include <LLog.h>
+#include <cassert>
 
 void LSurface::LSurfacePrivate::setParent(LSurface *parent)
 {
@@ -41,9 +44,8 @@ void LSurface::LSurfacePrivate::setParent(LSurface *parent)
         return;
 
     const bool isSubsurfaceOrToplevel {
-        surface->subsurface() != nullptr  ||
-        surface->toplevel() != nullptr ||
-        (pending.role && (pending.role->roleId() == LSurface::Role::Subsurface || pending.role->roleId() == LSurface::Role::Toplevel))};
+        surface->subsurface() != nullptr || surface->toplevel() != nullptr
+    };
 
     using OP = LCompositor::LCompositorPrivate::InsertOptions;
 
@@ -129,8 +131,6 @@ void LSurface::LSurfacePrivate::setMapped(bool state)
 
             if (childrenTmp.front()->role())
                 childrenTmp.front()->role()->handleParentMappingChange();
-            else if (childrenTmp.front()->imp()->pending.role)
-                childrenTmp.front()->imp()->pending.role->handleParentMappingChange();
 
             skip:
             childrenTmp.pop_front();
@@ -138,17 +138,24 @@ void LSurface::LSurfacePrivate::setMapped(bool state)
     }
 }
 
-void LSurface::LSurfacePrivate::setPendingRole(LBaseSurfaceRole *role) noexcept
+void LSurface::LSurfacePrivate::setRole(LBaseSurfaceRole *role) noexcept
 {
-    pending.role = role;
-}
+    assert(role != this->role && "Setting the same role twice");
+    assert(!stateFlags.check(UnnotifiedRoleChange) && "Setting new role without notifying previous change");
+    stateFlags.add(UnnotifiedRoleChange);
 
-void LSurface::LSurfacePrivate::applyPendingRole()
-{
-    LSurface *surface = surfaceResource->surface();
-    current.role = pending.role;
-    pending.role = nullptr;
-    surface->roleChanged();
+    prevRole = this->role;
+
+    if (role)
+    {
+        assert(this->role == nullptr && "The previous role was not unset");
+        this->role = role;
+    }
+    else
+    {
+        assert(this->role != nullptr && "The was no previous role");
+        this->role = nullptr;
+    }
 }
 
 void LSurface::LSurfacePrivate::applyPendingChildren()
@@ -174,8 +181,7 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
 
         const bool isSubsurfaceOrToplevel {
             child->subsurface() != nullptr  ||
-            child->toplevel() != nullptr ||
-            (child->imp()->pending.role && (child->imp()->pending.role->roleId() == LSurface::Role::Subsurface || child->imp()->pending.role->roleId() == LSurface::Role::Toplevel))};
+            child->toplevel() != nullptr };
 
         if (isSubsurfaceOrToplevel)
         {
@@ -212,8 +218,6 @@ void LSurface::LSurfacePrivate::applyPendingChildren()
 
         if (child->role())
             child->role()->handleParentChange();
-        else if (child->imp()->pending.role)
-            child->imp()->pending.role->handleParentChange();
     }
 
     compositor()->imp()->surfaceRaiseAllowedCounter++;
@@ -644,11 +648,6 @@ bool LSurface::LSurfacePrivate::isInChildrenOrPendingChildren(LSurface *child) n
     return false;
 }
 
-bool LSurface::LSurfacePrivate::hasRoleOrPendingRole() noexcept
-{
-    return current.role != nullptr || pending.role != nullptr;
-}
-
 bool LSurface::LSurfacePrivate::hasBufferOrPendingBuffer() noexcept
 {
     return current.hasBuffer || pending.hasBuffer;
@@ -933,11 +932,11 @@ void LSurface::LSurfacePrivate::setLayer(LSurfaceLayer newLayer)
     compositor()->imp()->insertSurfaceAfter(prev, surfaceResource->surface(), LCompositor::LCompositorPrivate::UpdateSurfaces);
 
     for (LSurface *child : pendingChildren)
-        if (child->subsurface() || child->toplevel() || (child->imp()->pending.role && (child->imp()->pending.role->roleId() == Role::Subsurface || child->imp()->pending.role->roleId() == Role::Toplevel)))
+        if (child->subsurface() || child->toplevel())
             child->imp()->setLayer(layer);
 
     for (LSurface *child : children)
-        if (child->subsurface() || child->toplevel() || (child->imp()->pending.role && (child->imp()->pending.role->roleId() == Role::Subsurface || child->imp()->pending.role->roleId() == Role::Toplevel)))
+        if (child->subsurface() || child->toplevel())
             child->imp()->setLayer(layer);
 }
 
@@ -960,4 +959,35 @@ LSurface *LSurface::LSurfacePrivate::prevSurfaceInLayers() noexcept
     }
 
     return nullptr;
+}
+
+void LSurface::LSurfacePrivate::notifyRoleChange()
+{
+    assert(stateFlags.check(UnnotifiedRoleChange) && "There is no role change to notify");
+    assert(!surfaceResource->surface()->mapped() && "The surface can't be mapped while roleChanged() is called");
+    assert(prevRole != role && "The new and previous role are the same");
+
+    stateFlags.remove(UnnotifiedRoleChange);
+    surfaceResource->surface()->roleChanged(prevRole.get());
+}
+
+void LSurface::LSurfacePrivate::destroyCursorOrDNDRole()
+{
+    auto *surface { surfaceResource->surface() };
+    if (surface->dndIcon())
+    {
+        compositor()->onAnticipatedObjectDestruction(surface->dndIcon());
+        surface->imp()->setMapped(false);
+        surface->imp()->setRole(nullptr);
+        surface->imp()->notifyRoleChange();
+        delete surface->dndIcon();
+    }
+    else if (surface->cursorRole())
+    {
+        compositor()->onAnticipatedObjectDestruction(surface->cursorRole());
+        surface->imp()->setMapped(false);
+        surface->imp()->setRole(nullptr);
+        surface->imp()->notifyRoleChange();
+        delete surface->cursorRole();
+    }
 }

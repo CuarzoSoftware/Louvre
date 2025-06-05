@@ -766,14 +766,22 @@ public:
     virtual void damageChanged();
 
     /**
-     * @brief Notifies a change of role
+     * @brief Notifies a change in role.
      *
-     * Reimplement this virtual method if you want to be notified when the surface changes its role.
+     * Indicates that the current `role()` has changed. Initially, the role is `nullptr`.
      *
-     * #### Default implementation
+     * The role always transitions either from `nullptr` to a valid role or from a role back to `nullptr`,
+     * but never directly from one role (`roleA`) to another (`roleB`).
+     *
+     * During the execution of this method, the surface is always **unmapped**.
+     *
+     * @param prevRole Handle to the previous role, or `nullptr` if no role was assigned.
+     * The current role is always obtained via `role()`.
+     *
+     * #### Default Implementation
      * @snippet LSurfaceDefault.cpp roleChanged
      */
-    virtual void roleChanged();
+    virtual void roleChanged(LBaseSurfaceRole *prevRole);
 
     /**
      * @brief Notifies a change of parent
@@ -786,9 +794,15 @@ public:
     virtual void parentChanged();
 
     /**
-     * @brief Notifies a change in the mapping state
+     * @brief Notifies of a change in the mapped() property.
      *
-     * Reimplement this virtual method if you want to be notified when the surface changes its mapping state.
+     * A surface is always initially unmapped. It becomes mapped when the client
+     * assigns it a role, attaches a valid buffer (texture), and requests it to be presented.
+     * If any of these conditions are not met, mapped() returns false.
+     *
+     * A surface is always unmapped before its role() is changed.
+     *
+     * @see mapped()
      *
      * #### Default implementation
      * @snippet LSurfaceDefault.cpp mappingChanged

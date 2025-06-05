@@ -37,8 +37,7 @@ RSessionLockSurface::RSessionLockSurface(RSessionLock *sessionLockRes, LSurface 
 
     m_sessionLockRole.reset(LFactory::createObject<LSessionLockRole>(&params));
     sessionLockRes->m_roles.push_back(sessionLockRole());
-    surface->imp()->setPendingRole(sessionLockRole());
-    surface->imp()->applyPendingRole();
+    surface->imp()->notifyRoleChange();
     sessionLockRole()->configure(output->size());
 }
 
@@ -46,11 +45,12 @@ RSessionLockSurface::~RSessionLockSurface()
 {
     compositor()->onAnticipatedObjectDestruction(sessionLockRole());
 
-    if (sessionLockRole()->surface())
-        sessionLockRole()->surface()->imp()->setMapped(false);
-
     if (sessionLockRes())
         LVectorRemoveOneUnordered(sessionLockRes()->m_roles, sessionLockRole());
+
+    sessionLockRole()->surface()->imp()->setMapped(false);
+    sessionLockRole()->surface()->imp()->setRole(nullptr);
+    sessionLockRole()->surface()->imp()->notifyRoleChange();
 }
 
 void RSessionLockSurface::destroy(wl_client */*client*/, wl_resource *resource)

@@ -13,6 +13,12 @@ LSubsurfaceRole::LSubsurfaceRole(const void *params) noexcept :
         LSurface::Role::Subsurface)
 {}
 
+LSubsurfaceRole::~LSubsurfaceRole()
+{
+    validateDestructor();
+    notifyDestruction();
+}
+
 bool LSubsurfaceRole::acceptCommitRequest(LBaseSurfaceRole::CommitOrigin origin)
 {
     if (isSynced())

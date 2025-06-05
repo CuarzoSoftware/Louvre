@@ -19,10 +19,8 @@ LDNDIconRole::LDNDIconRole(const void *params) noexcept :
 
 LDNDIconRole::~LDNDIconRole()
 {
+    validateDestructor();
     notifyDestruction();
-
-    if (surface())
-        surface()->imp()->setMapped(false);
 }
 
 void LDNDIconRole::handleSurfaceOffset(Int32 x, Int32 y)
@@ -33,11 +31,9 @@ void LDNDIconRole::handleSurfaceOffset(Int32 x, Int32 y)
 void LDNDIconRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
 {
     L_UNUSED(origin);
-
     m_currentHotspot -= m_pendingHotspotOffset;
     m_pendingHotspotOffset = LPoint();
     m_currentHotspotB = m_currentHotspot * surface()->bufferScale();
     hotspotChanged();
-
     surface()->imp()->setMapped(surface()->hasBuffer());
 }

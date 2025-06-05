@@ -168,6 +168,10 @@ public:
      * @brief Destructor of the LLayerRole class.
      *
      * Invoked after LCompositor::onAnticipatedObjectDestruction().
+     *
+     * @warning The `surface()` handle always remains valid during the destructor call.
+     *          However, `LSurface::role()` returns `nullptr` because `LSurface::roleChanged()`
+     *          is notified beforehand and requires the role to be valid.
      */
     ~LLayerRole() noexcept;
 

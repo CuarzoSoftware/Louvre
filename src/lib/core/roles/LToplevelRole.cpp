@@ -31,6 +31,7 @@ LToplevelRole::LToplevelRole(const void *params) noexcept :
 
 LToplevelRole::~LToplevelRole()
 {
+    validateDestructor();
     notifyDestruction();
 }
 

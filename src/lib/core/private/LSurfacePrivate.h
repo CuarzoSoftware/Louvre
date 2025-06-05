@@ -57,6 +57,7 @@ LPRIVATE_CLASS(LSurface)
         ChildrenListChanged         = static_cast<UInt16>(1) << 11,
         ParentCommitNotified        = static_cast<UInt16>(1) << 12,
         InfiniteInvisible           = static_cast<UInt16>(1) << 13,
+        UnnotifiedRoleChange        = static_cast<UInt16>(1) << 14,
     };
 
     LBitset<StateFlags> stateFlags
@@ -72,13 +73,13 @@ LPRIVATE_CLASS(LSurface)
         wl_listener onBufferDestroyListener;
         wl_resource *bufferRes              { nullptr };
         bool hasBuffer                      { false };
-        LBaseSurfaceRole *role              { nullptr };
         Int32 bufferScale                   { 1 };
         LTransform transform                { LTransform::Normal };
         LContentType contentType            { LContentTypeNone };
         LPointF lockedPointerPosHint        { -1.f, -1.f };
     };
 
+    LWeak<LBaseSurfaceRole> role, prevRole;
     std::unique_ptr<LRegion> pendingPointerConstraintRegion;
     LRegion pointerConstraintRegion;
 
@@ -143,18 +144,18 @@ LPRIVATE_CLASS(LSurface)
     void setParent(LSurface *parent);
     void removeChild(LSurface *child);
     void setMapped(bool state);
-    void setPendingRole(LBaseSurfaceRole *role) noexcept;
-    void applyPendingRole();
+    void setRole(LBaseSurfaceRole *role) noexcept;
+    void notifyRoleChange();
     void applyPendingChildren();
     bool bufferToTexture() noexcept;
     void sendPreferredScale() noexcept;
     bool isInChildrenOrPendingChildren(LSurface *child) noexcept;
-    bool hasRoleOrPendingRole() noexcept;
     bool hasBufferOrPendingBuffer() noexcept;
     void setKeyboardGrabToParent();
     void updateDamage() noexcept;
     bool updateDimensions(Int32 widthB, Int32 heightB) noexcept;
     void simplifyDamage(std::vector<LRect> &vec) noexcept;
+    void destroyCursorOrDNDRole();
 };
 
 #endif // LSURFACEPRIVATE_H

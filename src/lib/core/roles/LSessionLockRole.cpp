@@ -21,6 +21,12 @@ LSessionLockRole::LSessionLockRole(const void *params) noexcept :
     m_output(static_cast<const Params*>(params)->output)
 {}
 
+LSessionLockRole::~LSessionLockRole()
+{
+    validateDestructor();
+    notifyDestruction();
+}
+
 void LSessionLockRole::handleSurfaceCommit(CommitOrigin /*origin*/)
 {
     auto &sessionLockSurfaceRes { *static_cast<RSessionLockSurface*>(resource()) };

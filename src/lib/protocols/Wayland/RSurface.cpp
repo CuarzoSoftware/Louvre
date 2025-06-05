@@ -92,6 +92,7 @@ RSurface::~RSurface()
 {
     LSurface *lSurface { this->surface() };
 
+    lSurface->imp()->destroyCursorOrDNDRole();
     lSurface->imp()->setKeyboardGrabToParent();
 
     // Notify from client
@@ -106,21 +107,6 @@ RSurface::~RSurface()
     {
         lSurface->imp()->frameCallbacks.front()->done(LTime::ms());
         lSurface->imp()->frameCallbacks.front()->destroy();
-    }
-
-    // Clear active toplevel focus
-    if (seat()->imp()->activeToplevel == lSurface->toplevel())
-        seat()->imp()->activeToplevel = nullptr;
-
-    if (lSurface->dndIcon())
-    {
-        compositor()->onAnticipatedObjectDestruction(lSurface->dndIcon());
-        delete lSurface->dndIcon();
-    }
-    else if (lSurface->cursorRole())
-    {
-        compositor()->onAnticipatedObjectDestruction(lSurface->cursorRole());
-        delete lSurface->cursorRole();
     }
 
     while(!lSurface->children().empty())
@@ -196,8 +182,9 @@ void RSurface::destroy(wl_client */*client*/, wl_resource *resource)
 {
     auto &surfaceRes { *static_cast<RSurface*>(wl_resource_get_user_data(resource)) };
 
-    if ((surfaceRes.surface()->role() && surfaceRes.surface()->role()->resource() != &surfaceRes)
-        || (surfaceRes.surface()->imp()->pending.role && surfaceRes.surface()->imp()->pending.role->resource() != &surfaceRes))
+    surfaceRes.surface()->imp()->destroyCursorOrDNDRole();
+
+    if (surfaceRes.surface()->imp()->role)
     {
         surfaceRes.postError(WL_SURFACE_ERROR_DEFUNCT_ROLE_OBJECT, "Surface destroyed before role.");
         return;
@@ -263,8 +250,6 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
 
             if (s->role())
                 s->role()->handleParentCommit();
-            else if (s->imp()->pending.role)
-                s->imp()->pending.role->handleParentCommit();
 
             if (imp.stateFlags.check(LSurface::LSurfacePrivate::ChildrenListChanged))
                 goto retryParentCommitNotif;
@@ -451,8 +436,6 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
      *******************************************/
     if (surface->role())
         surface->role()->handleSurfaceCommit(origin);
-    else if (imp.pending.role)
-        imp.pending.role->handleSurfaceCommit(origin);
 
     if (!ref)
         return;

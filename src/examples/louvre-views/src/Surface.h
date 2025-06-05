@@ -30,7 +30,7 @@ public:
     void parentChanged() override;
     void mappingChanged() override;
     void orderChanged() override;
-    void roleChanged() override;
+    void roleChanged(LBaseSurfaceRole *prevRole) override;
     void bufferSizeChanged() override;
     void minimizedChanged() override;
     void damageChanged() override;

@@ -1,6 +1,7 @@
 #include <private/LSurfacePrivate.h>
 #include <LBaseSurfaceRole.h>
 #include <LCompositor.h>
+#include <cassert>
 
 using namespace Louvre;
 
@@ -9,20 +10,14 @@ LBaseSurfaceRole::LBaseSurfaceRole(Type type, LResource *resource, LSurface *sur
     m_surface(surface),
     m_resource(resource),
     m_roleId(roleId)
-{}
+{
+    surface->imp()->setRole(this);
+}
 
 LBaseSurfaceRole::~LBaseSurfaceRole()
 {
+    assert(m_destructorValidated && "Missing validateDestructor() call in role destructor");
     notifyDestruction();
-
-    if (surface())
-    {
-        auto &tmp { *surface() };
-        m_surface.reset();
-        tmp.imp()->setPendingRole(nullptr);
-        tmp.imp()->applyPendingRole();
-        tmp.imp()->setMapped(false);
-    }   
 }
 
 LClient *LBaseSurfaceRole::client() const noexcept
@@ -73,4 +68,12 @@ void LBaseSurfaceRole::handleParentMappingChange()
 void LBaseSurfaceRole::handleParentChange()
 {
     /* No default implementation */
+}
+
+void LBaseSurfaceRole::validateDestructor() noexcept
+{
+    assert(surface() != nullptr && "The surface() reference must remain valid until the user role destructor is called.");
+    assert(surface()->role() == nullptr && "The surface() should not have any role assigned (roleChanged() should be called before the role destructor).");
+    assert(!surface()->mapped() && "The surface() should not be mapped here and in the Louvre specific role destructor.");
+    m_destructorValidated = true;
 }

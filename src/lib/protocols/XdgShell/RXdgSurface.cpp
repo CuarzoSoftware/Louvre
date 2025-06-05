@@ -90,7 +90,7 @@ void RXdgSurface::get_toplevel(wl_client */*client*/, wl_resource *resource, UIn
         return;
     }
 
-    if (res->surface()->imp()->hasRoleOrPendingRole())
+    if (res->surface()->role())
     {
         res->postError(XDG_WM_BASE_ERROR_ROLE, "Given wl_surface has another role.");
         return;
@@ -114,7 +114,7 @@ void RXdgSurface::get_popup(wl_client */*client*/, wl_resource *resource, UInt32
         return;
     }
 
-    if (res->surface()->imp()->hasRoleOrPendingRole())
+    if (res->surface()->role())
     {
         res->postError(XDG_WM_BASE_ERROR_ROLE, "Given wl_surface has another role.");
         return;

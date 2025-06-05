@@ -20,7 +20,7 @@ LPRIVATE_CLASS(LSeat)
 
     Int32 ttyNumber                         { -1 };
 
-    LToplevelRole *activeToplevel           { nullptr };
+    LWeak<LToplevelRole> activeToplevel;
 
     std::vector<LToplevelResizeSession*> resizeSessions;
     std::vector<LToplevelMoveSession*> moveSessions;

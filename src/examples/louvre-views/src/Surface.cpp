@@ -262,7 +262,7 @@ void Surface::orderChanged()
         view->insertAfter(nullptr);
 }
 
-void Surface::roleChanged()
+void Surface::roleChanged(LBaseSurfaceRole *)
 {
     if (roleId() == LSurface::Cursor)
     {

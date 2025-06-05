@@ -138,19 +138,21 @@ void RDataDevice::start_drag(wl_client */*client*/,
     {
         LSurface *iconSurface { static_cast<RSurface*>(wl_resource_get_user_data(icon))->surface() };
 
-        if (iconSurface->imp()->pending.role || (iconSurface->roleId() != LSurface::Role::Undefined && iconSurface->roleId() != LSurface::Role::DNDIcon))
+        if (!iconSurface->dndIcon())
         {
-            res->postError(WL_DATA_DEVICE_ERROR_ROLE, "Given wl_surface has another role.");
-            goto fail;
-        }
+            if (iconSurface->role())
+            {
+                res->postError(WL_DATA_DEVICE_ERROR_ROLE, "Given wl_surface has another role.");
+                goto fail;
+            }
 
-        LDNDIconRole::Params dndIconRoleParams;
-        dndIconRoleParams.surface = iconSurface;
-        iconSurface->imp()->setLayer(LLayerOverlay);
-        iconSurface->imp()->setPendingRole(LFactory::createObject<LDNDIconRole>(&dndIconRoleParams));
-        iconSurface->imp()->applyPendingRole();
-        iconSurface->imp()->stateFlags.add(LSurface::LSurfacePrivate::Mapped);
-        session->icon.reset(iconSurface->dndIcon());
+            LDNDIconRole::Params dndIconRoleParams;
+            dndIconRoleParams.surface = iconSurface;
+            iconSurface->imp()->setLayer(LLayerOverlay);
+            LFactory::createObject<LDNDIconRole>(&dndIconRoleParams);
+            iconSurface->imp()->notifyRoleChange();
+            session->icon.reset(iconSurface->dndIcon());
+        }
     }
 
     // Check if DND action was set

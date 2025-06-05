@@ -41,8 +41,12 @@ public:
      * @brief Destructor of the LSessionLockRole class.
      *
      * Invoked after LCompositor::onAnticipatedObjectDestruction().
+     *
+     * @warning The `surface()` handle always remains valid during the destructor call.
+     *          However, `LSurface::role()` returns `nullptr` because `LSurface::roleChanged()`
+     *          is notified beforehand and requires the role to be valid.
      */
-    ~LSessionLockRole() { notifyDestruction(); };
+    ~LSessionLockRole();
 
     /**
      * @brief The output the surface is assigned to.

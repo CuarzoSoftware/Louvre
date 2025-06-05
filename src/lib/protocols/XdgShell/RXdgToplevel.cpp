@@ -54,8 +54,7 @@ RXdgToplevel::RXdgToplevel
     };
 
     m_toplevelRole.reset(LFactory::createObject<LToplevelRole>(&toplevelRoleParams));
-    xdgSurfaceRes->surface()->imp()->setPendingRole(toplevelRole());
-    xdgSurfaceRes->surface()->imp()->applyPendingRole();
+    xdgSurfaceRes->surface()->imp()->notifyRoleChange();
 }
 
 RXdgToplevel::~RXdgToplevel()
@@ -65,12 +64,9 @@ RXdgToplevel::~RXdgToplevel()
     while (!toplevelRole()->m_foreignToplevelHandles.empty())
         toplevelRole()->m_foreignToplevelHandles.back()->closed();
 
-    if (toplevelRole()->surface())
-        toplevelRole()->surface()->imp()->setMapped(false);
-
-    if (seat()->activeToplevel() == toplevelRole())
-        seat()->imp()->activeToplevel = nullptr;
-
+    toplevelRole()->surface()->imp()->setMapped(false);
+    toplevelRole()->surface()->imp()->setRole(nullptr);
+    toplevelRole()->surface()->imp()->notifyRoleChange();
     m_toplevelRole.reset();
 }
 

@@ -62,7 +62,7 @@ LSurface::~LSurface()
 LCursorRole *LSurface::cursorRole() const noexcept
 {
     if (roleId() == LSurface::Role::Cursor)
-        return (LCursorRole*)imp()->current.role;
+        return (LCursorRole*)imp()->role.get();
     else
         return nullptr;
 }
@@ -70,7 +70,7 @@ LCursorRole *LSurface::cursorRole() const noexcept
 LToplevelRole *LSurface::toplevel() const noexcept
 {
     if (roleId() == LSurface::Role::Toplevel)
-        return (LToplevelRole*)imp()->current.role;
+        return (LToplevelRole*)imp()->role.get();
     else
         return nullptr;
 }
@@ -78,7 +78,7 @@ LToplevelRole *LSurface::toplevel() const noexcept
 LPopupRole *LSurface::popup() const noexcept
 {
     if (roleId() == LSurface::Role::Popup)
-        return (LPopupRole*)imp()->current.role;
+        return (LPopupRole*)imp()->role.get();
     else
         return nullptr;
 }
@@ -86,7 +86,7 @@ LPopupRole *LSurface::popup() const noexcept
 LSubsurfaceRole *LSurface::subsurface() const noexcept
 {
     if (roleId() == LSurface::Role::Subsurface)
-        return (LSubsurfaceRole*)imp()->current.role;
+        return (LSubsurfaceRole*)imp()->role.get();
     else
         return nullptr;
 }
@@ -94,7 +94,7 @@ LSubsurfaceRole *LSurface::subsurface() const noexcept
 LSessionLockRole *LSurface::sessionLock() const noexcept
 {
     if (roleId() == LSurface::Role::SessionLock)
-        return (LSessionLockRole*)imp()->current.role;
+        return (LSessionLockRole*)imp()->role.get();
     else
         return nullptr;
 }
@@ -102,7 +102,7 @@ LSessionLockRole *LSurface::sessionLock() const noexcept
 LLayerRole *LSurface::layerRole() const noexcept
 {
     if (roleId() == LSurface::Role::Layer)
-        return (LLayerRole*)imp()->current.role;
+        return (LLayerRole*)imp()->role.get();
     else
         return nullptr;
 }
@@ -110,14 +110,14 @@ LLayerRole *LSurface::layerRole() const noexcept
 LDNDIconRole *LSurface::dndIcon() const noexcept
 {
     if (roleId() == LSurface::Role::DNDIcon)
-        return (LDNDIconRole*)imp()->current.role;
+        return (LDNDIconRole*)imp()->role.get();
     else
         return nullptr;
 }
 
 LBaseSurfaceRole *LSurface::role() const noexcept
 {
-    return imp()->current.role;
+    return imp()->role;
 }
 
 void LSurface::setPos(const LPoint &newPos) noexcept
@@ -577,7 +577,7 @@ void LSurface::raise()
     if (compositor()->imp()->surfaceRaiseAllowedCounter > 0 || imp()->stateFlags.check(LSurfacePrivate::Destroyed))
         return;
 
-    if (parent() && (subsurface() || toplevel() || (imp()->pending.role && (imp()->pending.role->roleId() == Role::Subsurface || imp()->pending.role->roleId() == Role::Toplevel))))
+    if (parent() && (subsurface() || toplevel()))
         parent()->raise();
     else
         imp()->setLayer(layer());

@@ -59,21 +59,31 @@ void RPointer::set_cursor(wl_client */*client*/, wl_resource *resource, UInt32 s
     {
         const RSurface *surfaceRes { static_cast<RSurface*>(wl_resource_get_user_data(wlSurface)) };
         LSurface &surface { *surfaceRes->surface() };
+        LCursorRole *cursorRole { surface.cursorRole() };
+        bool hadRole { true };
 
-        if (surface.imp()->pending.role || (surface.roleId() != LSurface::Role::Undefined && surface.roleId() != LSurface::Role::Cursor))
+        if (!cursorRole)
         {
-            pointerRes.postError(WL_POINTER_ERROR_ROLE, "Given wl_surface has another role.");
-            return;
+            if (surface.role())
+            {
+                pointerRes.postError(WL_POINTER_ERROR_ROLE, "Given wl_surface has another role.");
+                return;
+            }
+
+            LCursorRole::Params cursorRoleParams { &surface };
+            cursorRole = LFactory::createObject<LCursorRole>(&cursorRoleParams);
+            hadRole = false;
         }
 
-        LCursorRole::Params cursorRoleParams { &surface };
-        LCursorRole *cursorRole { LFactory::createObject<LCursorRole>(&cursorRoleParams) };
         cursorRole->m_currentHotspot.setX(hotspot_x);
         cursorRole->m_currentHotspot.setY(hotspot_y);
         cursorRole->m_currentHotspotB = cursorRole->m_currentHotspot * surface.bufferScale();
-        surface.imp()->setLayer(LLayerOverlay);
-        surface.imp()->setPendingRole(cursorRole);
-        surface.imp()->applyPendingRole();
+
+        if (!hadRole)
+        {
+            surface.imp()->setLayer(LLayerOverlay);
+            surface.imp()->notifyRoleChange();
+        }
 
         if (&client.imp()->lastCursorRequest == cursor()->clientCursor())
             cursor()->useDefault();

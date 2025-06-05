@@ -45,8 +45,9 @@ void LSurface::damageChanged()
 //! [damageChanged]
 
 //! [roleChanged]
-void LSurface::roleChanged()
+void LSurface::roleChanged(LBaseSurfaceRole *prevRole)
 {
+    L_UNUSED(prevRole)
     repaintOutputs();
 }
 //! [roleChanged]

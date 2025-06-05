@@ -380,6 +380,12 @@ LPopupRole::LPopupRole(const void *params) noexcept :
     m_positioner(*static_cast<const LPopupRole::Params*>(params)->positioner)
 {}
 
+LPopupRole::~LPopupRole()
+{
+    validateDestructor();
+    notifyDestruction();
+}
+
 const LPopupRole::Configuration *LPopupRole::findConfiguration(UInt32 serial) const noexcept
 {
     for (auto &conf : m_sentConfs)

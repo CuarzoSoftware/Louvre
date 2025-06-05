@@ -29,6 +29,7 @@ LLayerRole::LLayerRole(const void *params) noexcept :
 
 LLayerRole::~LLayerRole() noexcept
 {
+    validateDestructor();
     notifyDestruction();
 }
 

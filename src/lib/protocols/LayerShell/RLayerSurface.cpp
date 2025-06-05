@@ -51,16 +51,15 @@ RLayerSurface::RLayerSurface(UInt32 id,
     };
 
     m_layerRole.reset(LFactory::createObject<LLayerRole>(&params));
-    surface->imp()->setPendingRole(m_layerRole.get());
-    surface->imp()->applyPendingRole();
+    surface->imp()->notifyRoleChange();
 }
 
 RLayerSurface::~RLayerSurface()
 {
     compositor()->onAnticipatedObjectDestruction(layerRole());
-
-    if (layerRole()->surface())
-        layerRole()->surface()->imp()->setMapped(false);
+    layerRole()->surface()->imp()->setMapped(false);
+    layerRole()->surface()->imp()->setRole(nullptr);
+    layerRole()->surface()->imp()->notifyRoleChange();
 }
 
 void RLayerSurface::set_size(wl_client */*client*/, wl_resource *resource, UInt32 width, UInt32 height)
