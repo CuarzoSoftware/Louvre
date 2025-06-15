@@ -580,7 +580,7 @@ Louvre (2.0.0-1)
 
   # Security
 
-  * Introduced the LWeak class for efficient management of weak references to LObjects, automatically setting them to nullptr upon object destruction, with an optional destruction callback.
+  * Introduced the CZWeak class for efficient management of weak references to LObjects, automatically setting them to nullptr upon object destruction, with an optional destruction callback.
   * Replaced LClient::destroy() with destroyLater() to prevent immediate client resource destruction and reduce potential access to freed memory.
   * Added assert to prevent users from creating factory objects outside LCompositor::createObjectRequest().
 
@@ -647,7 +647,7 @@ Louvre (1.2.0-1)
   * LOutput now supports custom gamma correction curves through LOutput::setGamma() and the new LGammaTable class.
   * LPainter has new methods for rendering texture regions with higher precision and applied transforms.
   * LTextureView now supports custom source rects and transforms.
-  * Introduced LBitset class to reduce memory usage for storing binary conditions.
+  * Introduced CZBitset class to reduce memory usage for storing binary conditions.
   * Introduced isKeySymbolPressed() to LKeyboard, allowing querying the state of key symbols instead of raw key codes.
 
   # Minor API Changes

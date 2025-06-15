@@ -1,4 +1,3 @@
-
 <img style="position:relative;margin:0px;padding:0;top:40px" src="https://i.imgur.com/cCT9KwN.png" width="104"/>
 <h1 style="margin-top:0px;padding-top:0px">Louvre</h1>
 
@@ -7,7 +6,7 @@
     <img src="https://img.shields.io/badge/license-LGPLv2.1-blue.svg" alt="Louvre is released under the LGPLv2.1 license." />
   </a>
   <a href="https://github.com/CuarzoSoftware/Louvre">
-    <img src="https://img.shields.io/badge/version-2.18.1-brightgreen" alt="Current Louvre version." />
+    <img src="https://img.shields.io/badge/version-3.0.0-brightgreen" alt="Current Louvre version." />
   </a>
 </p>
 
@@ -17,14 +16,14 @@ Louvre is a high-performance C++ library designed for building Wayland composito
 
 ## Links
 
-* [📖 C++ API Documentation](https://cuarzosoftware.github.io/Louvre/annotated.html)
-* [🎓 Tutorial](https://cuarzosoftware.github.io/Louvre/tutorial_tmp.html)
-* [🕹️ Examples](https://cuarzosoftware.github.io/Louvre/examples_page.html)
-* [📦 Downloads](https://cuarzosoftware.github.io/Louvre/downloads_page.html)
-* [⚙️ Environment](https://cuarzosoftware.github.io/Louvre/environment_page.html)
-* [💬 Contact](https://cuarzosoftware.github.io/Louvre/contact_page.html)
-* [🌟 Projects Using Louvre](https://github.com/CuarzoSoftware/Louvre/blob/gallery/README.md)
-* [🎞️ Watch Video Demo](https://youtu.be/k-DuNyF1XDg?si=qvxwRTe_OIUMDudi)
+- [📖 C++ API Documentation](https://cuarzosoftware.github.io/Louvre/annotated.html)
+- [🎓 Tutorial](https://cuarzosoftware.github.io/Louvre/tutorial_tmp.html)
+- [🕹️ Examples](https://cuarzosoftware.github.io/Louvre/examples_page.html)
+- [📦 Downloads](https://cuarzosoftware.github.io/Louvre/downloads_page.html)
+- [⚙️ Environment](https://cuarzosoftware.github.io/Louvre/environment_page.html)
+- [💬 Contact](https://cuarzosoftware.github.io/Louvre/contact_page.html)
+- [🌟 Projects Using Louvre](https://github.com/CuarzoSoftware/Louvre/blob/gallery/README.md)
+- [🎞️ Watch Video Demo](https://youtu.be/k-DuNyF1XDg?si=qvxwRTe_OIUMDudi)
 
 Creating a Wayland compositor can be a daunting undertaking, often spanning months or even years of dedication. This challenging task involves mastering Linux input and graphic APIs, managing graphic buffers, and meticulously implementing numerous Wayland protocols and their respective interfaces.
 
@@ -32,49 +31,49 @@ Fortunately, Louvre simplifies this intricate process by handling all the comple
 
 ## ⭐ Features
 
-* Fractional Scaling (with optional oversampling)
-* Direct Scanout (primary plane)
-* VSync Control
-* Gamma Correction
-* Screencasting (compatible with PipeWire via xdg-desktop-portal-wlr)
-* Painter API and Scene System
-* Hybrid-GPUs Support
-* Multi-Session Support
-* Double and Triple Buffering
-* Persistent Clipboard
-* Rootful XWayland (rootless mode is not supported, however, interesting projects such as [Wayland Transpositor](https://github.com/wayland-transpositor/wprs), [Wayland Proxy Virtwl](https://github.com/talex5/wayland-proxy-virtwl), and [Xwayland Satellite](https://github.com/Supreeeme/xwayland-satellite) can provide a rootless experience).
+- Fractional Scaling (with optional oversampling)
+- Direct Scanout (primary plane)
+- VSync Control
+- Gamma Correction
+- Screencasting (compatible with PipeWire via xdg-desktop-portal-wlr)
+- Painter API and Scene System
+- Hybrid-GPUs Support
+- Multi-Session Support
+- Double and Triple Buffering
+- Persistent Clipboard
+- Rootful XWayland (rootless mode is not supported, however, interesting projects such as [Wayland Transpositor](https://github.com/wayland-transpositor/wprs), [Wayland Proxy Virtwl](https://github.com/talex5/wayland-proxy-virtwl), and [Xwayland Satellite](https://github.com/Supreeeme/xwayland-satellite) can provide a rootless experience).
 
 ## 🧩 Protocols
 
-- Content Type Hint  
-- DRM Lease  
-- Foreign Toplevel List  
-- Fractional Scale  
-- Idle Inhibit  
-- Idle Notify  
-- Image Capture Source  
-- Linux DMA-Buf  
-- Lvr Background Blur  
-- Lvr Invisible Region  
-- Lvr SVG Path  
-- Pointer Constraints  
-- Pointer Gestures  
-- Presentation Time  
-- Relative Pointer  
-- Session Lock  
-- Single Pixel Buffer  
-- Tearing Control  
-- Viewporter  
-- Wayland  
-- Wlr Foreign Toplevel Management  
-- Wlr Gamma Control  
-- Wlr Layer Shell  
-- Wlr Output Management  
-- Wlr Screen Copy  
-- XDG Activation  
-- XDG Decoration  
-- XDG Output  
-- XDG Shell  
+- Content Type Hint
+- DRM Lease
+- Foreign Toplevel List
+- Fractional Scale
+- Idle Inhibit
+- Idle Notify
+- Image Capture Source
+- Linux DMA-Buf
+- Lvr Background Blur
+- Lvr Invisible Region
+- Lvr SVG Path
+- Pointer Constraints
+- Pointer Gestures
+- Presentation Time
+- Relative Pointer
+- Session Lock
+- Single Pixel Buffer
+- Tearing Control
+- Viewporter
+- Wayland
+- Wlr Foreign Toplevel Management
+- Wlr Gamma Control
+- Wlr Layer Shell
+- Wlr Output Management
+- Wlr Screen Copy
+- XDG Activation
+- XDG Decoration
+- XDG Output
+- XDG Shell
 
 ## 🖌️ Rendering
 
@@ -84,26 +83,26 @@ You may also want to take a look at [Kay](https://github.com/CuarzoSoftware/Kay)
 
 ## 🔲 Tested Hardware
 
-* Intel (i915 driver)
-* AMD (amdgpu driver)
-* Nvidia (proprietary and nouveau drivers)
-* Mali (lima driver)
+- Intel (i915 driver)
+- AMD (amdgpu driver)
+- Nvidia (proprietary and nouveau drivers)
+- Mali (lima driver)
 
 ## 💬 Client-Compositor Buffer Sharing
 
-* Shared Memory
-* Wayland EGL
-* Linux DMA-Buf
+- Shared Memory
+- Wayland EGL
+- Linux DMA-Buf
 
 ## 💻 Graphic Backends
 
-* DRM/KMS
-* Wayland
+- DRM/KMS
+- Wayland
 
 ## 🕹️ Input Backends
 
-* Libinput
-* Wayland
+- Libinput
+- Wayland
 
 ## ⏲️ Performance
 
@@ -148,7 +147,7 @@ Here is a graph illustrating the benchmark results. It displays the average FPS 
 
 <img src="https://lh3.googleusercontent.com/pw/AIL4fc_fcGPw-Yh1zkqxKdfEQucQVXH853Py1YXtTk7jHVACzIaYmYCId07D0hsdJ-FArkERPjJQR2shCc4swA7b1cy9X9EhvFPqLOR_kxV-C1eVQHey2m8=w2400"/>
 
-Most Wayland compositors use a single thread, which drastically slows down their performance when rendering complex scenarios. The reason for this is due to **vertical sync**, where the compositor must wait a few milliseconds before it can swap the framebuffer it just rendered with the one being displayed on screen. This is done in order to synchronize the swapping with the display refresh rate (*vblank*) and avoid the **tearing effect**. When working with a single thread, compositors have "dead times" that prevent them from processing and rendering the content in time for the next frame. That's why they end up skipping a *vblank*, causing their refresh rate to drop in half (or more).
+Most Wayland compositors use a single thread, which drastically slows down their performance when rendering complex scenarios. The reason for this is due to **vertical sync**, where the compositor must wait a few milliseconds before it can swap the framebuffer it just rendered with the one being displayed on screen. This is done in order to synchronize the swapping with the display refresh rate (_vblank_) and avoid the **tearing effect**. When working with a single thread, compositors have "dead times" that prevent them from processing and rendering the content in time for the next frame. That's why they end up skipping a _vblank_, causing their refresh rate to drop in half (or more).
 To avoid this problem, Louvre works with multiple threads. Each output (display) renders its content on its own thread, allowing the compositor to continue processing requests and render to other outputs while one is waiting for a vblank. This prevent Louvre compositors from having "dead times" and therefore allows them to maintain a high refresh rate.
 
 ### CPU Consumption
@@ -165,10 +164,10 @@ Similarly as with CPU consumption, we can observe that Louvre uses fewer GPU res
 
 ## 🔨 Upcoming Features
 
-* DRM Synchronization Object
-* Cursor Shape Protocol
-* DRM Overlay Planes Control
-* Tablet Events Protocol
-* Virtual Keyboard Protocol
-* Input Methods Protocol
-* Screen mirroring
+- DRM Synchronization Object
+- Cursor Shape Protocol
+- DRM Overlay Planes Control
+- Tablet Events Protocol
+- Virtual Keyboard Protocol
+- Input Methods Protocol
+- Screen mirroring

@@ -16,14 +16,14 @@
 #include <drm_fourcc.h>
 
 #include <LGraphicBackend.h>
-#include <private/LCompositorPrivate.h>
-#include <private/LSeatPrivate.h>
-#include <private/LOutputPrivate.h>
-#include <private/LPainterPrivate.h>
-#include <private/LTexturePrivate.h>
-#include <private/LCursorPrivate.h>
-#include <private/LSeatPrivate.h>
-#include <private/LFactory.h>
+#include <CZ/Louvre/Private/LCompositorPrivate.h>
+#include <CZ/Louvre/Private/LSeatPrivate.h>
+#include <CZ/Louvre/Private/LOutputPrivate.h>
+#include <CZ/Louvre/Private/LPainterPrivate.h>
+#include <CZ/Louvre/Private/LTexturePrivate.h>
+#include <CZ/Louvre/Private/LCursorPrivate.h>
+#include <CZ/Louvre/Private/LSeatPrivate.h>
+#include <CZ/Louvre/Private/LFactory.h>
 
 #include <LGPU.h>
 #include <LTime.h>
@@ -111,7 +111,7 @@ struct Backend
     std::vector<LDMAFormat>dmaFormats;
     std::vector<LDMAFormat>scanoutFormats;
     std::vector<LGPU*> devices;
-    LWeak<LGPU> allocator;
+    CZWeak<LGPU> allocator;
 };
 
 struct Output
@@ -120,7 +120,7 @@ struct Output
     LSize physicalSize;
     std::vector<LOutputMode*>modes;
     std::vector<LTexture*> textures;
-    LWeak<DRMLease> lease;
+    CZWeak<DRMLease> lease;
     std::string description;
 };
 
@@ -978,7 +978,7 @@ bool LGraphicBackend::outputHasHardwareCursorSupport(LOutput *output)
     return srmConnectorHasHardwareCursor(bkndOutput->conn);
 }
 
-void LGraphicBackend::outputSetCursorTexture(LOutput *output, UChar8 *buffer)
+void LGraphicBackend::outputSetCursorTexture(LOutput *output, UInt8 *buffer)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     srmConnectorSetCursor(bkndOutput->conn, buffer);

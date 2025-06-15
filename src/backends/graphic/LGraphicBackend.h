@@ -82,7 +82,7 @@ public:
 
     /* OUTPUT CURSOR */
     static bool                             outputHasHardwareCursorSupport(LOutput *output);
-    static void                             outputSetCursorTexture(LOutput *output, UChar8 *buffer);
+    static void                             outputSetCursorTexture(LOutput *output, UInt8 *buffer);
     static void                             outputSetCursorPosition(LOutput *output, const LPoint &position);
 
     /* OUTPUT MODES */

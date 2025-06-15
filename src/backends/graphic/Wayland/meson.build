@@ -4,8 +4,8 @@ GraphicBackendDRM = library(
     name_suffix : 'so',
     sources : [
         'LGraphicBackendWayland.cpp',
-        '../../../lib/protocols/XdgShell/xdg-shell.c',
-        '../../../lib/protocols/XdgDecoration/xdg-decoration-unstable-v1.c'
+        '../../../CZ/Louvre/Protocols/XdgShell/xdg-shell.c',
+        '../../../CZ/Louvre/Protocols/XdgDecoration/xdg-decoration-unstable-v1.c'
     ],
     include_directories : include_paths + [include_directories('./..')],
     dependencies : [

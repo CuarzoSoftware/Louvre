@@ -1,6 +1,6 @@
-#include <private/LCompositorPrivate.h>
-#include <private/LSeatPrivate.h>
-#include <private/LKeyboardPrivate.h>
+#include <CZ/Louvre/Private/LCompositorPrivate.h>
+#include <CZ/Louvre/Private/LSeatPrivate.h>
+#include <CZ/Louvre/Private/LKeyboardPrivate.h>
 #include <LInputDevice.h>
 #include <LPointerMoveEvent.h>
 #include <LPointerButtonEvent.h>

@@ -2,7 +2,7 @@
 #define WAYLANDBACKENDSHARED_H
 
 #include <LPoint.h>
-#include <LWeak.h>
+#include <CZ/CZWeak.h>
 #include <LObject.h>
 #include <wayland-client.h>
 #include <mutex>
@@ -57,14 +57,14 @@ struct WaylandBackendShared
     SHMCursor *getFreeCursor() noexcept
     {
         for (auto &cursor : cursors)
-            if (cursor.released)
-                return &cursor;
+            if (cursor->released)
+                return cursor.get();
 
         return nullptr;
     }
 
-    std::vector<SHMCursor> cursors;
-    LWeak<SHMCursor> currentCursor;
+    std::vector<std::unique_ptr<SHMCursor>> cursors;
+    CZWeak<SHMCursor> currentCursor;
     wl_surface *cursorSurface { nullptr };
     bool cursorChangedHotspot { false };
     bool cursorChangedBuffer { false };

@@ -2,9 +2,10 @@
 #include <xdg-shell-client.h>
 #include <wayland-client.h>
 #include <wayland-egl.h>
-#include <private/LCompositorPrivate.h>
-#include <private/LOutputPrivate.h>
-#include <private/LFactory.h>
+#include <CZ/Louvre/Private/LCompositorPrivate.h>
+#include <CZ/Louvre/Private/LOutputPrivate.h>
+#include <CZ/Louvre/Private/LFactory.h>
+#include <CZ/Louvre/LUtils.h>
 
 #include <LOutputMode.h>
 #include <SRMFormat.h>
@@ -157,7 +158,7 @@ public:
         shared.cursors.reserve(LOUVRE_WAYLAND_BACKEND_CURSORS);
 
         for (std::size_t i = 0; i < LOUVRE_WAYLAND_BACKEND_CURSORS; i++)
-            shared.cursors.emplace_back(shared, i);
+            shared.cursors.emplace_back(std::make_unique<WaylandBackendShared::SHMCursor>(shared, i));
 
         shared.currentCursor = shared.getFreeCursor();
         shared.cursorSurface = wl_compositor_create_surface(compositor);
@@ -1140,7 +1141,7 @@ public:
         return shared.cursorMap != nullptr;
     }
 
-    static void outputSetCursorTexture(LOutput */*output*/, UChar8 *buffer)
+    static void outputSetCursorTexture(LOutput */*output*/, UInt8 *buffer)
     {
         shared.mutex.lock();
 
