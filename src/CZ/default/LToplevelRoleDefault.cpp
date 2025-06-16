@@ -10,10 +10,9 @@
 using namespace Louvre;
 
 //! [rolePos]
-const LPoint &LToplevelRole::rolePos() const
+SkIPoint LToplevelRole::rolePos() const
 {
-    m_rolePos = surface()->pos() - windowGeometry().topLeft() + LPoint(extraGeometry().left, extraGeometry().top);
-    return m_rolePos;
+    return surface()->pos() - windowGeometry().topLeft() + SkIPoint(extraGeometry().left, extraGeometry().top);
 }
 //! [rolePos]
 
@@ -42,9 +41,8 @@ void LToplevelRole::startMoveRequest(const LEvent &triggeringEvent)
         if (touchPoint->surface() != surface())
             return;
 
-        const LPoint initDragPoint { LTouch::toGlobal(activeOutput, touchPoint->pos()) };
-
-        moveSession().start(triggeringEvent, initDragPoint);
+        const SkPoint initDragPoint { LTouch::toGlobal(activeOutput, touchPoint->pos()) };
+        moveSession().start(triggeringEvent, SkIPoint::Make(initDragPoint.x(), initDragPoint.y()));
     }
     else if (seat()->pointer()->focus()
              && (surface()->hasPointerFocus()
@@ -62,7 +60,7 @@ void LToplevelRole::startMoveRequest(const LEvent &triggeringEvent)
                 return;
         }
 
-        moveSession().start(triggeringEvent, cursor()->pos());
+        moveSession().start(triggeringEvent, SkIPoint(cursor()->pos().x(), cursor()->pos().y()));
     }
 }
 //! [startMoveRequest]
@@ -92,9 +90,9 @@ void LToplevelRole::startResizeRequest(const LEvent &triggeringEvent, CZBitset<L
         if (touchPoint->surface() != surface())
             return;
 
-        const LPoint initDragPoint { LTouch::toGlobal(activeOutput, touchPoint->pos()) };
+        const SkPoint initDragPoint { LTouch::toGlobal(activeOutput, touchPoint->pos()) };
 
-        resizeSession().start(triggeringEvent, edge, initDragPoint);
+        resizeSession().start(triggeringEvent, edge, SkIPoint(initDragPoint.x(), initDragPoint.y()));
     }
     else if (seat()->pointer()->focus()
              && (surface()->hasPointerFocus()
@@ -111,7 +109,7 @@ void LToplevelRole::startResizeRequest(const LEvent &triggeringEvent, CZBitset<L
                 return;
         }
 
-        resizeSession().start(triggeringEvent, edge, cursor()->pos());
+        resizeSession().start(triggeringEvent, edge, SkIPoint(cursor()->pos().x(), cursor()->pos().y()));
     }
 }
 //! [startResizeRequest]
@@ -125,8 +123,9 @@ void LToplevelRole::configureRequest()
     {
         surface()->sendOutputEnterEvent(output);
         configureBounds(
-            output->availableGeometry().size()
-            - LSize(extraGeometry().left + extraGeometry().right, extraGeometry().top + extraGeometry().bottom));
+            SkISize(
+                output->availableGeometry().width() - extraGeometry().left - extraGeometry().right,
+                output->availableGeometry().height() - extraGeometry().top - extraGeometry().bottom));
     }
     else
         configureBounds(0, 0);
@@ -156,7 +155,7 @@ void LToplevelRole::atomsChanged(CZBitset<AtomChanges> changes, const Atoms &pre
             if (exclusiveOutput())
             {
                 surface()->raise();
-                surface()->setPos(exclusiveOutput()->pos() + exclusiveOutput()->availableGeometry().pos());
+                surface()->setPos(exclusiveOutput()->pos() + exclusiveOutput()->availableGeometry().topLeft());
                 surface()->setMinimized(false);
             }
             else
@@ -167,7 +166,7 @@ void LToplevelRole::atomsChanged(CZBitset<AtomChanges> changes, const Atoms &pre
         }
         else if (!moveSession().isActive())
         {
-            surface()->setPos(prevRect.pos());
+            surface()->setPos(prevRect.topLeft());
         }
     }
 
@@ -187,9 +186,7 @@ void LToplevelRole::atomsChanged(CZBitset<AtomChanges> changes, const Atoms &pre
             }
         }
         else
-        {
-            surface()->setPos(prevRect.pos());
-        }
+            surface()->setPos(prevRect.topLeft());
     }
 
     if (stateChanges.has(Activated) && activated())
@@ -233,20 +230,25 @@ void LToplevelRole::setMaximizedRequest()
         return;
 
     if (!fullscreen())
-        prevRect = LRect(surface()->pos(), windowGeometry().size());
+        prevRect = SkIRect::MakePtSize(surface()->pos(), windowGeometry().size());
 
-    const LSize extraGeoSize {
+    const SkISize extraGeoSize {
         extraGeometry().left + extraGeometry().right,
         extraGeometry().top + extraGeometry().bottom };
 
-    if (prevRect.area() == 0)
+    if (prevRect.width() == 0 || prevRect.height() == 0)
     {
-        prevRect.setSize(output->availableGeometry().size() - extraGeoSize);
-        prevRect.setPos(output->pos() + output->availableGeometry().pos());
+        prevRect.setXYWH(
+            output->pos().x() + output->availableGeometry().x(),
+            output->pos().y() + output->availableGeometry().y(),
+            output->availableGeometry().width() - extraGeoSize.width(),
+            output->availableGeometry().height() - extraGeoSize.height());
     }
 
     setExclusiveOutput(output);
-    configureSize(output->availableGeometry().size() - extraGeoSize);
+    configureSize(
+        output->availableGeometry().width() - extraGeoSize.width(),
+        output->availableGeometry().height() - extraGeoSize.height());
     configureState(Activated | Maximized);
 }
 //! [setMaximizedRequest]
@@ -271,12 +273,15 @@ void LToplevelRole::setFullscreenRequest(LOutput *preferredOutput)
         return;
 
     if (!maximized())
-        prevRect = LRect(surface()->pos(), windowGeometry().size());
+        prevRect = SkIRect::MakePtSize(surface()->pos(), windowGeometry().size());
 
-    if (prevRect.area() == 0)
+    if (prevRect.width() == 0 || prevRect.height() == 0)
     {
-        prevRect.setSize(output->availableGeometry().size() - LSize(extraGeometry().left + extraGeometry().right, extraGeometry().top + extraGeometry().bottom));
-        prevRect.setPos(output->pos() + output->availableGeometry().pos());
+        prevRect.setXYWH(
+            output->pos().x() + output->availableGeometry().x(),
+            output->pos().y() + output->availableGeometry().y(),
+            output->availableGeometry().width() - extraGeometry().left - extraGeometry().right,
+            output->availableGeometry().height() - extraGeometry().top - extraGeometry().bottom);
     }
 
     setExclusiveOutput(output);

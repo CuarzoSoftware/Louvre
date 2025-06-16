@@ -140,9 +140,9 @@ void RXdgPopup::reposition(wl_client */*client*/, wl_resource *resource, wl_reso
 
 /******************** EVENTS ********************/
 
-void RXdgPopup::configure(const LRect &rect) noexcept
+void RXdgPopup::configure(const SkIRect &rect) noexcept
 {
-    xdg_popup_send_configure(resource(), rect.x(), rect.y(), rect.w(), rect.h());
+    xdg_popup_send_configure(resource(), rect.x(), rect.y(), rect.width(), rect.height());
 }
 
 void RXdgPopup::popupDone() noexcept

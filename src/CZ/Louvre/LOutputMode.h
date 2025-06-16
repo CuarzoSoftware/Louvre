@@ -2,7 +2,7 @@
 #define LOUTPUTMODE_H
 
 #include <LObject.h>
-#include <LSize.h>
+#include <CZ/skia/core/SkSize.h>
 #include <CZ/CZWeak.h>
 
 /**
@@ -15,7 +15,7 @@
 class Louvre::LOutputMode final : LObject
 {
 public:
-    LOutputMode(LOutput *output, const LSize &size, UInt32 refreshRate, bool isPreferred, void *data) noexcept;
+    LOutputMode(LOutput *output, const SkISize &size, UInt32 refreshRate, bool isPreferred, void *data) noexcept;
     LCLASS_NO_COPY(LOutputMode)
     ~LOutputMode() { notifyDestruction(); };
 
@@ -34,7 +34,7 @@ public:
      *
      * This method returns the dimensions of the output when using this mode, represented in buffer coordinates.
      */
-    const LSize &sizeB() const noexcept
+    const SkISize &sizeB() const noexcept
     {
         return m_sizeB;
     }
@@ -73,7 +73,7 @@ public:
 
 private:
     friend class LGraphicBackend;
-    LSize m_sizeB;
+    SkISize m_sizeB;
     UInt32 m_refreshRate;
     CZWeak<LOutput> m_output;
     void *m_data { nullptr };

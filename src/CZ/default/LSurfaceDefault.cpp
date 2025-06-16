@@ -72,15 +72,16 @@ void LSurface::mappingChanged()
     /* If the surface is a toplevel, we place it at the center of the screen */
     if (mapped() && toplevel())
     {
-        const LSize size {
-            toplevel()->windowGeometry().size()
-            + LSize(toplevel()->extraGeometry().left + toplevel()->extraGeometry().right,
-                    toplevel()->extraGeometry().top + toplevel()->extraGeometry().bottom)
+        const SkISize size {
+            toplevel()->windowGeometry().width() + toplevel()->extraGeometry().left + toplevel()->extraGeometry().right,
+            toplevel()->windowGeometry().height() + toplevel()->extraGeometry().top + toplevel()->extraGeometry().bottom
         };
 
-        const LSize availGeoPos { activeOutput->pos() + activeOutput->availableGeometry().pos() };
+        const SkIPoint availGeoPos { activeOutput->pos() + activeOutput->availableGeometry().topLeft() };
 
-        setPos(availGeoPos + (activeOutput->availableGeometry().size() - size) / 2);
+        setPos(
+            availGeoPos.x() + (activeOutput->availableGeometry().width() - size.width()) / 2,
+            availGeoPos.y() + (activeOutput->availableGeometry().height() - size.height()) / 2);
 
         if (pos().y() < availGeoPos.y())
             setY(availGeoPos.y());

@@ -653,7 +653,7 @@ Louvre (1.2.0-1)
   # Minor API Changes
 
   * Replaced most of the non-order-dependent lists with vectors to minimize cache misses.
-  * LOutput setBufferDamage() now takes LRegion * as an argument instead of LRegion &.
+  * LOutput setBufferDamage() now takes SkRegion * as an argument instead of SkRegion &.
   * Updated all virtual constructor parameters in LCompositor to const void *.
   * Removed the create() method in LAnimation and LTimer, replaced with class constructors for stack allocation.
   * Replaced LView's paintRect() event with paintEvent().

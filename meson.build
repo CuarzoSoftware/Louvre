@@ -140,7 +140,7 @@ louvre = library(
     install : true)
 
 louvre_dep = declare_dependency(
-    dependencies: [cz_core_dep, pixman_dep, wayland_server_dep, drm_dep, xkbcommon_dep],
+    dependencies: [cz_core_dep, cz_skia_dep, pixman_dep, wayland_server_dep, drm_dep, xkbcommon_dep],
     include_directories : include_paths,
     link_with : louvre)
 

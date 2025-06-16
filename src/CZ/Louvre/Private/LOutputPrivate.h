@@ -72,7 +72,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     LOutputFramebuffer fb;
 
     // Framebuffer for fractional scaling with oversampling
-    LRenderBuffer fractionalFb { LSize(64, 64) };
+    LRenderBuffer fractionalFb { SkISize(64, 64) };
 
     // The wp_fractional_v1 scale set with setScale() returned with fractionalScale()
     Float32 fractionalScale { 1.f };
@@ -81,23 +81,23 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     Float32 scale { 1.f };
 
     // Transform set with LOutput::setTransform()
-    LTransform transform { LTransform::Normal };
+    CZTransform transform { CZTransform::Normal };
 
     // Rect in surface coordinates
-    LRect rect;
+    SkIRect rect;
 
     /* Size in buffer coorinates, width and height are swapped if transform has 90° rotation.
      * It also differs from the current mode size when using a fractional scale */
-    LSize sizeB;
+    SkISize sizeB;
 
     // Checked witin backend...GL() methods below, trigger resizeGL() and moveGL() when != to rect
-    LPoint lastPos;
-    LSize lastSize;
+    SkIPoint lastPos;
+    SkISize lastSize;
 
     /* Damage set with LOutput::setBufferDamage(), used in fractional scaling with oversampling or when
      * the graphic backend uses DUMB buffers or CPU copy. */
     UInt64 frame { 0 };
-    LRegion damage;
+    SkRegion damage;
     void damageToBufferCoords() noexcept;
     void blitFramebuffers() noexcept;
     void blitFractionalScaleFb(bool cursorOnly) noexcept;
@@ -119,8 +119,8 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
 
     UInt32 dirtyCursorFBs;
     UInt32 prevCursorSerial;
-    LRect prevCursorRect; // Local
-    LRegion cursorDamage;
+    SkIRect prevCursorRect; // Local
+    SkRegion cursorDamage;
     void calculateCursorDamage() noexcept;
     void drawCursor() noexcept;
 
@@ -166,7 +166,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     void updateGlobals();
 
     std::list<LExclusiveZone*> exclusiveZones;
-    LRect availableGeometry;
+    SkIRect availableGeometry;
     LMargins exclusiveEdges;
     void updateExclusiveZones() noexcept;
     void updateLayerSurfacesMapping() noexcept;

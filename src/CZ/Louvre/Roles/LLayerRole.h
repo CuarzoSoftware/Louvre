@@ -134,7 +134,7 @@ public:
     struct Atoms
     {
         /// LLayerRole::size()
-        LSize size;
+        SkISize size;
 
         /// LLayerRole::anchor()
         CZBitset<LEdge> anchor;
@@ -184,7 +184,7 @@ public:
      * #### Default Implementation
      * @snippet LLayerRoleDefault.cpp rolePos
      */
-    virtual const LPoint &rolePos() const override;
+    virtual SkIPoint rolePos() const override;
 
     /**
      * @brief Request to configure the surface size.
@@ -216,7 +216,7 @@ public:
      *
      * @param size The size of the surface in coordinates.
      */
-    void configureSize(const LSize &size) noexcept;
+    void configureSize(const SkISize &size) noexcept;
 
     /**
      * @brief Notify property changes
@@ -255,7 +255,7 @@ public:
      *
      * @return The surface size hint.
      */
-    const LSize &size() const noexcept
+    const SkISize &size() const noexcept
     {
         return atoms().size;
     }
@@ -426,6 +426,7 @@ private:
     void handleSurfaceCommit(CommitOrigin origin) noexcept override;
     void updateMappingState() noexcept;
 
+    mutable SkIPoint m_rolePos { 0, 0 };
     LExclusiveZone m_exclusiveZone { LEdgeNone, 0 };
     CZBitset<Flags> m_flags { HasPendingInitialConf | HasPendingExclusiveZone };
     Atoms m_atoms[2];

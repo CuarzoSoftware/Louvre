@@ -1,7 +1,8 @@
 #ifndef WAYLANDBACKENDSHARED_H
 #define WAYLANDBACKENDSHARED_H
 
-#include <LPoint.h>
+#include <CZ/skia/core/SkPoint.h>
+#include <CZ/skia/core/SkSize.h>
 #include <CZ/CZWeak.h>
 #include <LObject.h>
 #include <wayland-client.h>
@@ -18,8 +19,8 @@ struct WaylandBackendShared
 {
     std::mutex mutex;
     pollfd fd[3]; // Graphic eventfd, Wayland fd, Input eventfd
-    LSize surfaceSize { 1024, 512 };
-    LSize bufferSize { 1024, 512 };
+    SkISize surfaceSize { 1024, 512 };
+    SkISize bufferSize { 1024, 512 };
     Int32 bufferScale { 1 };
 
     // Cursor
@@ -69,7 +70,7 @@ struct WaylandBackendShared
     bool cursorChangedHotspot { false };
     bool cursorChangedBuffer { false };
     bool cursorVisible { false };
-    LPoint cursorHotspot;
+    SkIPoint cursorHotspot;
 };
 
 #endif // WAYLANDBACKENDSHARED_H

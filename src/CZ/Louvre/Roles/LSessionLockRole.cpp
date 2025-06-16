@@ -41,7 +41,7 @@ void LSessionLockRole::handleSurfaceCommit(CommitOrigin /*origin*/)
 
     auto &sessionLockRes { *sessionLockSurfaceRes.sessionLockRes() };
 
-    if (m_currentSize.w() == -1)
+    if (m_currentSize.width() == -1)
     {
         sessionLockSurfaceRes.postError(
             EXT_SESSION_LOCK_SURFACE_V1_ERROR_COMMIT_BEFORE_FIRST_ACK,
@@ -109,15 +109,15 @@ void LSessionLockRole::handleSurfaceCommit(CommitOrigin /*origin*/)
     };
 }
 
-void LSessionLockRole::configure(const LSize &size) noexcept
+void LSessionLockRole::configure(const SkISize &size) noexcept
 {
     m_pendingSize = size;
 
-    if (m_pendingSize.w() < 0)
-        m_pendingSize.setW(0);
+    if (m_pendingSize.width() < 0)
+        m_pendingSize.fWidth = 0;
 
-    if (m_pendingSize.h() < 0)
-        m_pendingSize.setH(0);
+    if (m_pendingSize.height() < 0)
+        m_pendingSize.fHeight = 0;
 
     if (!m_hasPendingConf)
     {
@@ -135,7 +135,7 @@ void LSessionLockRole::sendPendingConfiguration() noexcept
     m_sentConfs.emplace(m_pendingSize, m_pendingSerial);
     static_cast<Protocols::SessionLock::RSessionLockSurface*>(resource())->configure(
         m_pendingSerial,
-        m_pendingSize.w(),
-        m_pendingSize.h());
+        m_pendingSize.width(),
+        m_pendingSize.height());
 }
 

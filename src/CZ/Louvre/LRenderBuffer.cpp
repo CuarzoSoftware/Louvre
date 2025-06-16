@@ -8,11 +8,11 @@
 
 using namespace Louvre;
 
-LRenderBuffer::LRenderBuffer(const LSize &sizeB) noexcept : LFramebuffer(RenderBuffer)
+LRenderBuffer::LRenderBuffer(const SkISize &sizeB) noexcept : LFramebuffer(RenderBuffer)
 {
     m_texture.m_sourceType = LTexture::Framebuffer;
-    m_texture.m_sizeB.setW(1);
-    m_texture.m_sizeB.setH(1);
+    m_texture.m_sizeB.fWidth = 1;
+    m_texture.m_sizeB.fHeight = 1;
     setSizeB(sizeB);
 }
 
@@ -24,16 +24,19 @@ LRenderBuffer::~LRenderBuffer() noexcept
         compositor()->imp()->addRenderBufferToDestroy(pair.first, pair.second);
 }
 
-void LRenderBuffer::setSizeB(const LSize &sizeB) noexcept
+void LRenderBuffer::setSizeB(const SkISize &sizeB) noexcept
 {
-    const LSize newSize {sizeB.w() <= 0 ? 1 : sizeB.w(), sizeB.h() <= 0 ? 1 : sizeB.h()};
+    const SkISize newSize {sizeB.width() <= 0 ? 1 : sizeB.width(), sizeB.height() <= 0 ? 1 : sizeB.height()};
 
     if (m_texture.sizeB() != newSize)
     {
         m_texture.m_sizeB = newSize;
 
-        m_rect.setW(roundf(Float32(m_texture.m_sizeB.w()) / m_scale));
-        m_rect.setH(roundf(Float32(m_texture.m_sizeB.h()) / m_scale));
+        m_rect.setXYWH(
+            m_rect.x(),
+            m_rect.y(),
+            SkScalarRoundToInt(Float32(m_texture.m_sizeB.width()) / m_scale),
+            SkScalarRoundToInt(Float32(m_texture.m_sizeB.height()) / m_scale));
 
         for (auto &pair : m_threadsMap)
             compositor()->imp()->addRenderBufferToDestroy(pair.first, pair.second);
@@ -54,14 +57,14 @@ void LRenderBuffer::setFence() noexcept
     m_texture.setFence();
 }
 
-void LRenderBuffer::setFramebufferDamage(const LRegion *damage) noexcept
+void LRenderBuffer::setFramebufferDamage(const SkRegion *damage) noexcept
 {
     L_UNUSED(damage);
 }
 
-LTransform LRenderBuffer::transform() const noexcept
+CZTransform LRenderBuffer::transform() const noexcept
 {
-    return LTransform::Normal;
+    return CZTransform::Normal;
 }
 
 Float32 LRenderBuffer::scale() const noexcept
@@ -69,12 +72,12 @@ Float32 LRenderBuffer::scale() const noexcept
     return m_scale;
 }
 
-const LSize &LRenderBuffer::sizeB() const noexcept
+SkISize LRenderBuffer::sizeB() const noexcept
 {
     return m_texture.sizeB();
 }
 
-const LRect &LRenderBuffer::rect() const noexcept
+const SkIRect &LRenderBuffer::rect() const noexcept
 {
     return m_rect;
 }
@@ -93,7 +96,7 @@ GLuint LRenderBuffer::id() const noexcept
             GLuint tex;
             glGenTextures(1, &tex);
             LTexture::LTexturePrivate::setTextureParams(tex, GL_TEXTURE_2D, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_texture.sizeB().w(), m_texture.sizeB().h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_texture.sizeB().width(), m_texture.sizeB().height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
             m_texture.m_sourceType = LTexture::GL;
             m_texture.setDataFromGL(tex, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, m_texture.sizeB(), true);
             m_texture.m_sourceType = LTexture::Framebuffer;

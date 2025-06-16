@@ -43,12 +43,15 @@ LPointer::~LPointer()
 void LPointer::setFocus(LSurface *surface) noexcept
 {
     if (surface)
-        setFocus(surface, cursor()->pos() - surface->rolePos());
+        setFocus(surface,
+            SkIPoint::Make(
+                cursor()->pos().x() - surface->rolePos().x(),
+                cursor()->pos().y() - surface->rolePos().y()));
     else
-        setFocus(nullptr, 0);
+        setFocus(nullptr, SkIPoint(0, 0));
 }
 
-void LPointer::setFocus(LSurface *surface, const LPoint &localPos) noexcept
+void LPointer::setFocus(LSurface *surface, const SkIPoint &localPos) noexcept
 {
     CZWeak<LSurface> prevFocus { focus() };
 
@@ -69,7 +72,7 @@ void LPointer::setFocus(LSurface *surface, const LPoint &localPos) noexcept
         imp()->sendLeaveEvent(focus());
 
         LPointerEnterEvent enterEvent;
-        enterEvent.localPos = localPos;
+        enterEvent.localPos.set(localPos.x(), localPos.y());
         imp()->focus.reset();
 
         for (auto gSeat : surface->client()->seatGlobals())
@@ -392,15 +395,17 @@ bool LPointer::isButtonPressed(LPointerButtonEvent::Button button) const noexcep
     return false;
 }
 
-LSurface *LPointer::surfaceAt(const LPoint &point)
+LSurface *LPointer::surfaceAt(const SkIPoint &point)
 {
     retry:
     compositor()->imp()->surfacesListChanged = false;
 
+    SkIPoint p;
     for (std::list<LSurface*>::const_reverse_iterator s = compositor()->surfaces().rbegin(); s != compositor()->surfaces().rend(); s++)
         if ((*s)->mapped() && !(*s)->minimized())
         {
-            if ((*s)->inputRegion().containsPoint(point - (*s)->rolePos()))
+            p = point - (*s)->rolePos();
+            if ((*s)->inputRegion().contains(p.x(), p.y()))
                 return *s;
 
             if (compositor()->imp()->surfacesListChanged)

@@ -42,10 +42,7 @@ void RRegion::add(wl_client */*client*/, wl_resource *resource, Int32 x, Int32 y
         return;
 
     auto &regionRes { *static_cast<RRegion*>(wl_resource_get_user_data(resource)) };
-
-    pixman_region32_union_rect(&regionRes.m_region.m_region,
-                               &regionRes.m_region.m_region,
-                               x, y, width, height);
+    regionRes.m_region.op(SkIRect::MakeXYWH(x, y, width, height), SkRegion::Op::kUnion_Op);
 }
 
 void RRegion::subtract(wl_client */*client*/, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height) noexcept
@@ -61,8 +58,5 @@ void RRegion::subtract(wl_client */*client*/, wl_resource *resource, Int32 x, In
         return;
 
     auto &regionRes { *static_cast<RRegion*>(wl_resource_get_user_data(resource)) };
-
-    pixman_region32_union_rect(&regionRes.m_subtract.m_region,
-                               &regionRes.m_subtract.m_region,
-                               x, y, width, height);
+    regionRes.m_subtract.op(SkIRect::MakeXYWH(x, y, width, height), SkRegion::Op::kUnion_Op);
 }

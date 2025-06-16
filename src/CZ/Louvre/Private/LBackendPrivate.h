@@ -1,6 +1,7 @@
 #ifndef LBACKENDPRIVATE_H
 #define LBACKENDPRIVATE_H
 
+#include <CZ/skia/core/SkRegion.h>
 #include <LNamespaces.h>
 #include <LContentType.h>
 #include <vector>
@@ -24,13 +25,13 @@ namespace Louvre
         EGLContext                          (*backendGetAllocatorEGLContext)();
 
         /* TEXTURES */
-        bool                                (*textureCreateFromCPUBuffer)(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels);
+        bool                                (*textureCreateFromCPUBuffer)(LTexture *texture, SkISize size, UInt32 stride, UInt32 format, const void *pixels);
         bool                                (*textureCreateFromWaylandDRM)(LTexture *texture, void *wlBuffer);
         bool                                (*textureCreateFromDMA)(LTexture *texture, const LDMAPlanes *planes);
-        bool                                (*textureCreateFromGL)(LTexture *texture, GLuint id, GLenum target, UInt32 format, const LSize &size, bool transferOwnership);
-        bool                                (*textureUpdateRect)(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels);
+        bool                                (*textureCreateFromGL)(LTexture *texture, GLuint id, GLenum target, UInt32 format, SkISize size, bool transferOwnership);
+        bool                                (*textureUpdateRect)(LTexture *texture, UInt32 stride, const SkIRect &dst, const void *pixels);
         bool                                (*textureWriteBegin)(LTexture *texture);
-        bool                                (*textureWriteUpdate)(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels);
+        bool                                (*textureWriteUpdate)(LTexture *texture, UInt32 stride, const SkIRect &dst, const void *pixels);
         bool                                (*textureWriteEnd)(LTexture *texture);
         UInt32                              (*textureGetID)(LOutput *output, LTexture *texture);
         GLenum                              (*textureGetTarget)(LTexture *texture);
@@ -42,7 +43,7 @@ namespace Louvre
         bool                                (*outputRepaint)(LOutput *output);
         void                                (*outputUninitialize)(LOutput *output);
         bool                                (*outputHasBufferDamageSupport)(LOutput *output);
-        void                                (*outputSetBufferDamage)(LOutput *output, LRegion &region);
+        void                                (*outputSetBufferDamage)(LOutput *output, SkRegion &region);
 
         /* OUTPUT PROPS */
         const char *                        (*outputGetName)(LOutput *output);
@@ -50,7 +51,7 @@ namespace Louvre
         const char *                        (*outputGetModelName)(LOutput *output);
         const char *                        (*outputGetDescription)(LOutput *output);
         const char *                        (*outputGetSerial)(LOutput *output);
-        const LSize *                       (*outputGetPhysicalSize)(LOutput *output);
+        SkISize                             (*outputGetPhysicalSize)(LOutput *output);
         Int32                               (*outputGetSubPixel)(LOutput *output);
         LGPU *                              (*outputGetDevice)(LOutput *output);
         UInt32                              (*outputGetID)(LOutput *output);
@@ -81,7 +82,7 @@ namespace Louvre
         /* OUTPUT CURSOR */
         bool                                (*outputHasHardwareCursorSupport)(LOutput *output);
         void                                (*outputSetCursorTexture)(LOutput *output, UInt8 *buffer);
-        void                                (*outputSetCursorPosition)(LOutput *output, const LPoint &position);
+        void                                (*outputSetCursorPosition)(LOutput *output, SkIPoint position);
 
         /* OUTPUT MODES */
         const LOutputMode *                 (*outputGetPreferredMode)(LOutput *output);

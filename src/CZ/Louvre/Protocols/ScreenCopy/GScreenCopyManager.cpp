@@ -71,7 +71,7 @@ void GScreenCopyManager::capture_output(wl_client */*client*/, wl_resource *reso
     new RScreenCopyFrame(&res,
                          outputRes->output(),
                          overlayCursor == 1,
-                         LRect(LPoint(), outputRes->output() ? outputRes->output()->size() : LSize(1)),
+                         SkIRect::MakeSize(outputRes->output() ? outputRes->output()->size() : SkISize(1, 1)),
                          id,
                          res.version());
 }
@@ -84,7 +84,7 @@ void GScreenCopyManager::capture_output_region(wl_client */*client*/, wl_resourc
     new RScreenCopyFrame(&res,
                          outputRes->output(),
                          overlayCursor == 1,
-                         LRect(x, y, width, height),
+                         SkIRect::MakeXYWH(x, y, width, height),
                          id,
                          res.version());
 }

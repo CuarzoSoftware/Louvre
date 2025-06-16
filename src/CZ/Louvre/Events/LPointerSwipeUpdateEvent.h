@@ -2,7 +2,7 @@
 #define LPOINTERSWIPEUPDATEEVENT_H
 
 #include <LPointerEvent.h>
-#include <LPoint.h>
+#include <CZ/skia/core/SkPoint.h>
 #include <LTime.h>
 
 /**
@@ -22,7 +22,7 @@ public:
      * @param us The microsecond timestamp of the event.
      * @param device The input device that originated the event.
      */
-    LPointerSwipeUpdateEvent(UInt32 fingers = 0, const LPointF &delta = LPointF(0.f, 0.f), const LPointF &deltaUnaccelerated = LPointF(0.f, 0.f),
+    LPointerSwipeUpdateEvent(UInt32 fingers = 0, const SkPoint &delta = SkPoint(0.f, 0.f), const SkPoint &deltaUnaccelerated = SkPoint(0.f, 0.f),
                                     UInt32 serial = LTime::nextSerial(), UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) noexcept :
         LPointerEvent(LEvent::Subtype::SwipeUpdate, serial, ms, us, device),
         m_fingers(fingers),
@@ -49,7 +49,7 @@ public:
     /**
      * @brief Sets the change in position of the swipe gesture.
      */
-    void setDelta(const LPointF &delta) noexcept
+    void setDelta(const SkPoint &delta) noexcept
     {
         m_delta = delta;
     }
@@ -59,7 +59,7 @@ public:
      */
     void setDx(Float32 dx) noexcept
     {
-        m_delta.setX(dx);
+        m_delta.fX = dx;
     }
 
     /**
@@ -67,13 +67,13 @@ public:
      */
     void setDy(Float32 dy) noexcept
     {
-        m_delta.setY(dy);
+        m_delta.fY = dy;
     }
 
     /**
      * @brief Gets the change in position of the swipe gesture.
      */
-    const LPointF &delta() const noexcept
+    SkPoint delta() const noexcept
     {
         return m_delta;
     }
@@ -81,7 +81,7 @@ public:
     /**
      * @brief Sets the unaccelerated change in position of the swipe gesture.
      */
-    void setDeltaUnaccelerated(const LPointF &deltaUnaccelerated) noexcept
+    void setDeltaUnaccelerated(const SkPoint &deltaUnaccelerated) noexcept
     {
         m_deltaUnaccelerated = deltaUnaccelerated;
     }
@@ -91,7 +91,7 @@ public:
      */
     void setDxUnaccelerated(Float32 dx) noexcept
     {
-        m_deltaUnaccelerated.setX(dx);
+        m_deltaUnaccelerated.fX = dx;
     }
 
     /**
@@ -99,21 +99,21 @@ public:
      */
     void setDyUnaccelerated(Float32 dy) noexcept
     {
-        m_deltaUnaccelerated.setY(dy);
+        m_deltaUnaccelerated.fY = dy;
     }
 
     /**
      * @brief Gets the unaccelerated change in position of the swipe gesture.
      */
-    const LPointF &deltaUnaccelerated() const noexcept
+    SkPoint deltaUnaccelerated() const noexcept
     {
         return m_deltaUnaccelerated;
     }
 
 protected:
     UInt32 m_fingers;
-    LPointF m_delta;
-    LPointF m_deltaUnaccelerated;
+    SkPoint m_delta;
+    SkPoint m_deltaUnaccelerated;
 private:
     friend class LInputBackend;
     void notify();

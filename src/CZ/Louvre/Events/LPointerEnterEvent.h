@@ -2,7 +2,7 @@
 #define LPOINTERENTEREVENT_H
 
 #include <LPointerEvent.h>
-#include <LPoint.h>
+#include <CZ/skia/core/SkPoint.h>
 #include <LTime.h>
 
 /**
@@ -27,7 +27,7 @@ public:
     /**
      * @brief The surface or view local position where the pointer entered in surface coordinates.
      */
-    mutable LPointF localPos;
+    mutable SkPoint localPos;
 };
 
 #endif // LPOINTERENTEREVENT_H

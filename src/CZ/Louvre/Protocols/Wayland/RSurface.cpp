@@ -311,6 +311,8 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
         }
     }
 
+    const SkIRect surfaceSizeRect { SkIRect::MakeSize(surface->size()) };
+
     /************************************
      *********** INPUT REGION ***********
      ************************************/
@@ -320,16 +322,13 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
         {
             if (changes.has(Changes::SizeChanged | Changes::InputRegionChanged))
             {
-                imp.currentInputRegion.clear();
-                imp.currentInputRegion.addRect(0, 0, surface->size());
+                imp.currentInputRegion.setRect(surfaceSizeRect);
                 changes.add(Changes::InputRegionChanged);
             }
         }
         else if (changes.has(Changes::SizeChanged | Changes::InputRegionChanged))
         {
-            pixman_region32_intersect_rect(&imp.currentInputRegion.m_region,
-                                           &imp.pendingInputRegion.m_region,
-                                           0, 0, surface->size().w(), surface->size().h());
+            imp.currentInputRegion.op(surfaceSizeRect, imp.pendingInputRegion, SkRegion::Op::kIntersect_Op);
             changes.add(Changes::InputRegionChanged);
         }
     }
@@ -338,9 +337,9 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
         /******************************************
          *********** CLEAR INPUT REGION ***********
          ******************************************/
-        imp.currentInputRegion.clear();
+        imp.currentInputRegion.setEmpty();
         imp.pendingPointerConstraintRegion.reset();
-        imp.pointerConstraintRegion.clear();
+        imp.pointerConstraintRegion.setEmpty();
     }
 
     /******************************************
@@ -352,10 +351,7 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
         if (changes.has(Changes::PointerConstraintRegionChanged | Changes::InputRegionChanged))
         {
             if (imp.pendingPointerConstraintRegion)
-            {
-                imp.pointerConstraintRegion = *imp.pendingPointerConstraintRegion;
-                imp.pointerConstraintRegion.intersectRegion(imp.currentInputRegion);
-            }
+                imp.pointerConstraintRegion.op(*imp.pendingPointerConstraintRegion, imp.currentInputRegion, SkRegion::Op::kIntersect_Op);
             else
                 imp.pointerConstraintRegion = imp.currentInputRegion;
 
@@ -373,16 +369,13 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
     {
         if (changes.has(Changes::SizeChanged | Changes::InvisibleRegionChanged))
         {
-            imp.currentInvisibleRegion.clear();
-            imp.currentInvisibleRegion.addRect(0, 0, surface->size());
+            imp.currentInvisibleRegion.setRect(surfaceSizeRect);
             changes.add(Changes::InvisibleRegionChanged);
         }
     }
     else if (changes.has(Changes::SizeChanged | Changes::InvisibleRegionChanged))
     {
-        pixman_region32_intersect_rect(&imp.currentInvisibleRegion.m_region,
-                                       &imp.pendingInvisibleRegion.m_region,
-                                       0, 0, surface->size().w(), surface->size().h());
+        imp.currentInvisibleRegion.op(surfaceSizeRect, imp.pendingInvisibleRegion, SkRegion::Op::kIntersect_Op);
         changes.add(Changes::InvisibleRegionChanged);
     }
 
@@ -391,22 +384,19 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
      ************************************/
     if (changes.has(Changes::BufferSizeChanged | Changes::SizeChanged | Changes::OpaqueRegionChanged))
     {
-        /*
+        /* TODO: Use RMTexture format alpha info
         if (surface->texture()->format() == DRM_FORMAT_XRGB8888)
         {
             imp.pendingOpaqueRegion.clear();
             imp.pendingOpaqueRegion.addRect(0, 0, surface->size());
         }*/
 
-        pixman_region32_intersect_rect(&imp.currentOpaqueRegion.m_region,
-                                       &imp.pendingOpaqueRegion.m_region,
-                                       0, 0, surface->size().w(), surface->size().h());
+        imp.currentOpaqueRegion.op(imp.pendingOpaqueRegion, surfaceSizeRect, SkRegion::Op::kIntersect_Op);
 
         /*****************************************
          ********** TRANSLUCENT REGION ***********
          *****************************************/
-        pixman_box32_t box {0, 0, surface->size().w(), surface->size().h()};
-        pixman_region32_inverse(&imp.currentTranslucentRegion.m_region, &imp.currentOpaqueRegion.m_region, &box);
+        imp.currentTranslucentRegion.op(surfaceSizeRect, imp.currentOpaqueRegion, SkRegion::Op::kReverseDifference_Op);
     }
 
     /*******************************************
@@ -512,9 +502,9 @@ void RSurface::set_opaque_region(wl_client */*client*/, wl_resource *resource, w
         imp.pendingOpaqueRegion = static_cast<const RRegion*>(wl_resource_get_user_data(region))->region();
         imp.changesToNotify.add(Changes::OpaqueRegionChanged);
     }
-    else if (!imp.pendingOpaqueRegion.empty())
+    else if (!imp.pendingOpaqueRegion.isEmpty())
     {
-        imp.pendingOpaqueRegion.clear();
+        imp.pendingOpaqueRegion.setEmpty();
         imp.changesToNotify.add(Changes::OpaqueRegionChanged);
     }
 }
@@ -531,7 +521,7 @@ void RSurface::set_input_region(wl_client */*client*/, wl_resource *resource, wl
     }
     else if (!imp.stateFlags.has(LSurface::LSurfacePrivate::InfiniteInput))
     {
-        imp.pendingInputRegion.clear();
+        imp.pendingInputRegion.setEmpty();
         imp.stateFlags.add(LSurface::LSurfacePrivate::InfiniteInput);
         imp.changesToNotify.add(Changes::InputRegionChanged);
     }
@@ -548,7 +538,7 @@ void RSurface::set_buffer_transform(wl_client */*client*/, wl_resource *resource
     }
 
     auto &imp { *res.surface()->imp() };
-    imp.pending.transform = static_cast<LTransform>(transform);
+    imp.pending.transform = static_cast<CZTransform>(transform);
 }
 #endif
 
@@ -623,7 +613,7 @@ bool RSurface::preferredBufferScale(Int32 scale) noexcept
     return false;
 }
 
-bool RSurface::preferredBufferTransform(LTransform transform) noexcept
+bool RSurface::preferredBufferTransform(CZTransform transform) noexcept
 {
 #if LOUVRE_WL_COMPOSITOR_VERSION >= 6
     if (version() >= 6)

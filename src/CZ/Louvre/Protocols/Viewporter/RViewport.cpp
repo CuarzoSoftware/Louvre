@@ -48,10 +48,11 @@ void RViewport::set_source(wl_client */*client*/, wl_resource *resource, Float24
         return;
     }
 
-    res.m_srcRect.setX(wl_fixed_to_double(x));
-    res.m_srcRect.setY(wl_fixed_to_double(y));
-    res.m_srcRect.setW(wl_fixed_to_double(width));
-    res.m_srcRect.setH(wl_fixed_to_double(height));
+    res.m_srcRect.setXYWH(
+        wl_fixed_to_double(x),
+        wl_fixed_to_double(y),
+        wl_fixed_to_double(width),
+        wl_fixed_to_double(height));
 }
 
 void RViewport::set_destination(wl_client */*client*/, wl_resource *resource, Int32 width, Int32 height) noexcept
@@ -64,6 +65,6 @@ void RViewport::set_destination(wl_client */*client*/, wl_resource *resource, In
         return;
     }
 
-    res.m_dstSize.setW(width);
-    res.m_dstSize.setH(height);
+    res.m_dstSize.fWidth = width;
+    res.m_dstSize.fHeight = height;
 }

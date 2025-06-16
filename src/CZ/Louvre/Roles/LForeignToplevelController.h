@@ -2,7 +2,7 @@
 #define LFOREIGNTOPLEVELCONTROLLER_H
 
 #include <LFactoryObject.h>
-#include <LRect.h>
+#include <CZ/skia/core/SkRect.h>
 #include <CZ/CZWeak.h>
 
 /**
@@ -115,7 +115,7 @@ public:
      *
      * @warning This value is meaningless if taskbar() is `nullptr`.
      */
-    const LRect &taskbarIconRect() const noexcept
+    const SkIRect &taskbarIconRect() const noexcept
     {
         return m_taskbarIconRect;
     }
@@ -131,7 +131,7 @@ public:
 private:
     friend class Protocols::ForeignToplevelManagement::RForeignToplevelHandle;
     Protocols::ForeignToplevelManagement::RForeignToplevelHandle &m_resource;
-    LRect m_taskbarIconRect;
+    SkIRect m_taskbarIconRect;
     CZWeak<LSurface> m_taskbar;
 };
 

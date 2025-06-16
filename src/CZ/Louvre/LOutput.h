@@ -2,9 +2,9 @@
 #define LOUTPUT_H
 
 #include <LFactoryObject.h>
-#include <LSize.h>
-#include <LRect.h>
-#include <LRegion.h>
+#include <CZ/skia/core/SkSize.h>
+#include <CZ/skia/core/SkRect.h>
+#include <CZ/skia/core/SkRegion.h>
 #include <LFramebuffer.h>
 #include <LContentType.h>
 
@@ -172,7 +172,7 @@
  *
  * <center><IMG SRC="https://lh3.googleusercontent.com/pw/ABLVV85bV4h-OcbW1DozgUCQp4PbMoWOd2E2MNRQveEhw5r2p_mjnVRLbziTJ-egMu9D0eSIbMyLNmXECbupfa1gmQZMAidIS1pT5ahbeoL6hcsa6O3QlYc=w2400"></center>
  *
- * Given that you rotated the screen 90° clockwise, it is necessary to apply a transform that rotates the screen 90° counter-clockwise (@ref LTransform::Rotated90).
+ * Given that you rotated the screen 90° clockwise, it is necessary to apply a transform that rotates the screen 90° counter-clockwise (@ref CZTransform::Rotated90).
  * If you apply this to the pink screen, then you would see the following:
  *
  * <center><IMG SRC="https://lh3.googleusercontent.com/pw/ABLVV84Tm3VGwuNHqbAumAVrzZVgBtKSOo24y8PDk5Y47hIlLmO7uSzIMLeE0f9y-5DOQh1nOI9-qz48c_fnlgkM3CILC-GFB2qttGaE671Xke_jcF6DlVY=w2400"></center>
@@ -336,7 +336,7 @@ public:
      *
      * @return A rect representing the available geometry.
      */
-    const LRect &availableGeometry() const noexcept;
+    const SkIRect &availableGeometry() const noexcept;
 
     /**
      * @brief Gets the sum of the space occupied by exclusive zones for each edge.
@@ -377,11 +377,11 @@ public:
      *
      * This method returns the current framebuffer transform applied with setTransform().
      *
-     * The default value is @ref LTransform::Normal.
+     * The default value is @ref CZTransform::Normal.
      *
      * @return The framebuffer transforma.
      */
-    LTransform transform() const noexcept;
+    CZTransform transform() const noexcept;
 
     /**
      * @brief Sets the framebuffer transform.
@@ -391,7 +391,7 @@ public:
      *
      * @param transform The framebuffer transformation to apply.
      */
-    void setTransform(LTransform transform) noexcept;
+    void setTransform(CZTransform transform) noexcept;
 
     /**
      * @brief Retrieves the age of the current buffer.
@@ -462,7 +462,7 @@ public:
      * @param damage The damaged region of the output in compositor-global coordinates.
      *               Providing an empty region indicates no damage, while passing `nullptr` implies the entire output is damaged.
      */
-    void setBufferDamage(const LRegion *damage) noexcept;
+    void setBufferDamage(const SkRegion *damage) noexcept;
 
     /**
      * @brief Retrieves the damage region set by setBufferDamage().
@@ -472,7 +472,7 @@ public:
      *
      * @return The damage region in compositor-global coordiantes.
      */
-    const LRegion &bufferDamage() const noexcept;
+    const SkRegion &bufferDamage() const noexcept;
 
     /**
      * @brief Gets the layout of RGB subpixels for a single pixel on a display.
@@ -729,7 +729,7 @@ public:
      *
      * This method provides the position and size of the output in compositor-global coordinates (pos(), size()).
      */
-    const LRect &rect() const noexcept;
+    const SkIRect &rect() const noexcept;
 
     /**
      * @brief Gets the output position.
@@ -737,7 +737,7 @@ public:
      * This method retrieves the position of the output in compositor-global coordinates assigned with setPos().\n
      * It is equivalent to the position given by the rect().
      */
-    const LPoint &pos() const noexcept;
+    SkIPoint pos() const noexcept;
 
     /**
      * @brief Set the position of the output.
@@ -747,7 +747,7 @@ public:
      *
      * @param pos The new position of the output in compositor-global coordinates.
      */
-    void setPos(const LPoint &pos) noexcept;
+    void setPos(SkIPoint pos) noexcept;
 
     /**
      * @brief Gets the output size in surface units.
@@ -755,14 +755,14 @@ public:
      * This method provides the size of the output in surface units, based on its current mode and scale factor.\n
      * It is equivalent to the size given by the rect().
      */
-    const LSize &size() const noexcept;
+    SkISize size() const noexcept;
 
     /**
      * @brief Gets the output size in buffer units.
      *
      * This method returns the size of the output in buffer units, based on its current mode.
      */
-    const LSize &sizeB() const noexcept;
+    SkISize sizeB() const noexcept;
 
     /**
      * @brief Retrieves the real destination buffer size.
@@ -774,7 +774,7 @@ public:
      *
      * @note This method is only useful if you are not using LPainter or LScene for rendering.
      */
-    const LSize &realBufferSize() const noexcept;
+    SkISize realBufferSize() const noexcept;
 
     /**
      * @brief Gets the physical dimensions of the output.
@@ -783,7 +783,7 @@ public:
      *
      * @note In some cases, such as when the compositor is running inside a virtual machine, the physical size may be (0,0).
      */
-    const LSize &physicalSize() const noexcept;
+    SkISize physicalSize() const noexcept;
 
     /**
      * @brief Screen capture requests

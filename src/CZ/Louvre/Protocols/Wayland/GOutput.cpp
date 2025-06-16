@@ -68,8 +68,8 @@ void GOutput::sendConfiguration() noexcept
     geometry(
         output()->pos().x(),
         output()->pos().y(),
-        output()->physicalSize().w(),
-        output()->physicalSize().h(),
+        output()->physicalSize().width(),
+        output()->physicalSize().height(),
         output()->subPixel(),
         output()->manufacturer(),
         output()->model(),
@@ -77,8 +77,8 @@ void GOutput::sendConfiguration() noexcept
 
     mode(
         WL_OUTPUT_MODE_CURRENT,
-        output()->currentMode()->sizeB().w(),
-        output()->currentMode()->sizeB().h(),
+        output()->currentMode()->sizeB().width(),
+        output()->currentMode()->sizeB().height(),
         output()->currentMode()->refreshRate());
 
     for (auto *xdgOutput : xdgOutputRes())
@@ -120,7 +120,7 @@ void GOutput::sendConfiguration() noexcept
 }
 
 void GOutput::geometry(Int32 x, Int32 y, Int32 physicalWidth, Int32 physicalHeight,
-                       Int32 subpixel, const char *make, const char *model, LTransform transform) noexcept
+                       Int32 subpixel, const char *make, const char *model, CZTransform transform) noexcept
 {
     wl_output_send_geometry(
         resource(),

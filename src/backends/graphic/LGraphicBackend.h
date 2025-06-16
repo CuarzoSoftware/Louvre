@@ -25,13 +25,13 @@ public:
     static const std::vector<LGPU*> *       backendGetDevices();
 
     /* TEXTURES */
-    static bool                             textureCreateFromCPUBuffer(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels);
+    static bool                             textureCreateFromCPUBuffer(LTexture *texture, SkISize size, UInt32 stride, UInt32 format, const void *pixels);
     static bool                             textureCreateFromWaylandDRM(LTexture *texture,void *wlBuffer);
     static bool                             textureCreateFromDMA(LTexture *texture, const LDMAPlanes *planes);
-    static bool                             textureCreateFromGL(LTexture *texture, GLuint id, GLenum target, UInt32 format, const LSize &size, bool transferOwnership);
-    static bool                             textureUpdateRect(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels);
+    static bool                             textureCreateFromGL(LTexture *texture, GLuint id, GLenum target, UInt32 format, SkISize size, bool transferOwnership);
+    static bool                             textureUpdateRect(LTexture *texture, UInt32 stride, const SkIRect &dst, const void *pixels);
     static bool                             textureWriteBegin(LTexture *texture);
-    static bool                             textureWriteUpdate(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels);
+    static bool                             textureWriteUpdate(LTexture *texture, UInt32 stride, const SkIRect &dst, const void *pixels);
     static bool                             textureWriteEnd(LTexture *texture);
     static UInt32                           textureGetID(LOutput *output, LTexture *texture);
     static GLenum                           textureGetTarget(LTexture *texture);
@@ -43,7 +43,7 @@ public:
     static bool                             outputRepaint(LOutput *output);
     static void                             outputUninitialize(LOutput *output);
     static bool                             outputHasBufferDamageSupport(LOutput *output);
-    static void                             outputSetBufferDamage(LOutput *output, LRegion &region);
+    static void                             outputSetBufferDamage(LOutput *output, SkRegion &region);
 
     /* OUTPUT PROPS */
     static const char *                     outputGetName(LOutput *output);
@@ -51,7 +51,7 @@ public:
     static const char *                     outputGetModelName(LOutput *output);
     static const char *                     outputGetDescription(LOutput *output);
     static const char *                     outputGetSerial(LOutput *output);
-    static const LSize *                    outputGetPhysicalSize(LOutput *output);
+    static SkISize                          outputGetPhysicalSize(LOutput *output);
     static Int32                            outputGetSubPixel(LOutput *output);
     static LGPU *                           outputGetDevice(LOutput *output);
     static UInt32                           outputGetID(LOutput *output);
@@ -83,7 +83,7 @@ public:
     /* OUTPUT CURSOR */
     static bool                             outputHasHardwareCursorSupport(LOutput *output);
     static void                             outputSetCursorTexture(LOutput *output, UInt8 *buffer);
-    static void                             outputSetCursorPosition(LOutput *output, const LPoint &position);
+    static void                             outputSetCursorPosition(LOutput *output, SkIPoint position);
 
     /* OUTPUT MODES */
     static const LOutputMode *              outputGetPreferredMode(LOutput *output);

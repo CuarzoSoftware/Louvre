@@ -60,8 +60,8 @@ void RSubsurface::destroy(wl_client */*client*/, wl_resource *resource)
 void RSubsurface::set_position(wl_client */*client*/, wl_resource *resource, Int32 x, Int32 y)
 {
     auto &subsurface { *static_cast<RSubsurface*>(wl_resource_get_user_data(resource))->subsurfaceRole() };
-    subsurface.m_pendingLocalPos.setX(x);
-    subsurface.m_pendingLocalPos.setY(y);
+    subsurface.m_pendingLocalPos.fX = x;
+    subsurface.m_pendingLocalPos.fY = y;
     subsurface.m_hasPendingLocalPos = true;
 }
 

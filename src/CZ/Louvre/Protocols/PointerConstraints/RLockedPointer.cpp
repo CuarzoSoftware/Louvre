@@ -32,18 +32,20 @@ RLockedPointer::RLockedPointer(GPointerConstraints *pointerConstraintsRes,
     m_surface(surface),
     m_lifetime(lifetime)
 {
-    surface->imp()->lockedPointerRes.reset(this);
+    auto &imp { *m_surface->imp() };
+    imp.lockedPointerRes.reset(this);
 
     if (regionRes)
     {
-        m_surface->imp()->pendingPointerConstraintRegion = std::make_unique<LRegion>(regionRes->region());
-        m_surface->imp()->pointerConstraintRegion = regionRes->region();
-        m_surface->imp()->pointerConstraintRegion.intersectRegion(
-            m_surface->imp()->currentInputRegion);
+        imp.pendingPointerConstraintRegion = std::make_unique<SkRegion>(regionRes->region());
+        imp.pointerConstraintRegion.op(
+            regionRes->region(),
+            imp.currentInputRegion,
+            SkRegion::kIntersect_Op);
     }
     else
     {
-        m_surface->imp()->pointerConstraintRegion = m_surface->imp()->currentInputRegion;
+        imp.pointerConstraintRegion = imp.currentInputRegion;
     }
 
     surface->pointerConstraintModeChanged();
@@ -53,12 +55,12 @@ RLockedPointer::~RLockedPointer()
 {
     if (surface())
     {
-        surface()->imp()->lockedPointerRes.reset();
-        surface()->imp()->pointerConstraintRegion.clear();
-        surface()->imp()->pendingPointerConstraintRegion.reset();
-        surface()->imp()->pending.lockedPointerPosHint = LPoint(-1, -1);
-        surface()->imp()->current.lockedPointerPosHint = LPoint(-1, -1);
-        surface()->imp()->changesToNotify.remove(LSurface::LSurfacePrivate::PointerConstraintRegionChanged |
+        auto &imp { *surface()->imp() };
+        imp.lockedPointerRes.reset();
+        imp.pointerConstraintRegion.setEmpty();
+        imp.pendingPointerConstraintRegion.reset();
+        imp.current.lockedPointerPosHint = imp.pending.lockedPointerPosHint = SkPoint::Make(-1.f, -1.f);
+        imp.changesToNotify.remove(LSurface::LSurfacePrivate::PointerConstraintRegionChanged |
                                                  LSurface::LSurfacePrivate::LockedPointerPosHintChanged);
         surface()->pointerConstraintModeChanged();
     }
@@ -75,9 +77,10 @@ void RLockedPointer::set_cursor_position_hint(wl_client */*client*/, wl_resource
 
     if (res.surface())
     {
-        res.surface()->imp()->pending.lockedPointerPosHint.setX(wl_fixed_to_double(x));
-        res.surface()->imp()->pending.lockedPointerPosHint.setY(wl_fixed_to_double(y));
-        res.surface()->imp()->changesToNotify.add(LSurface::LSurfacePrivate::LockedPointerPosHintChanged);
+        auto &imp { *res.surface()->imp() };
+        imp.pending.lockedPointerPosHint.fX = wl_fixed_to_double(x);
+        imp.pending.lockedPointerPosHint.fY = wl_fixed_to_double(y);
+        imp.changesToNotify.add(LSurface::LSurfacePrivate::LockedPointerPosHintChanged);
     }
 }
 
@@ -87,15 +90,17 @@ void RLockedPointer::set_region(wl_client */*client*/, wl_resource *resource, wl
 
     if (res.surface())
     {
+        auto &imp { *res.surface()->imp() };
+
         if (region)
         {
             auto *regionRes { static_cast<Wayland::RRegion*>(wl_resource_get_user_data(region)) };
-            res.surface()->imp()->pendingPointerConstraintRegion = std::make_unique<LRegion>(regionRes->region());
+            imp.pendingPointerConstraintRegion = std::make_unique<SkRegion>(regionRes->region());
         }
         else
-            res.surface()->imp()->pendingPointerConstraintRegion.reset();
+            imp.pendingPointerConstraintRegion.reset();
 
-        res.surface()->imp()->changesToNotify.add(LSurface::LSurfacePrivate::LockedPointerPosHintChanged);
+        imp.changesToNotify.add(LSurface::LSurfacePrivate::LockedPointerPosHintChanged);
     }
 }
 
@@ -120,13 +125,14 @@ void RLockedPointer::unlocked()
     {
         if (surface())
         {
-            surface()->imp()->lockedPointerRes.reset();
-            surface()->imp()->pointerConstraintRegion.clear();
-            surface()->imp()->pendingPointerConstraintRegion.reset();
-            surface()->imp()->pending.lockedPointerPosHint = LPoint(-1, -1);
-            surface()->imp()->current.lockedPointerPosHint = LPoint(-1, -1);
-            surface()->imp()->changesToNotify.remove(LSurface::LSurfacePrivate::PointerConstraintRegionChanged |
-                                                     LSurface::LSurfacePrivate::LockedPointerPosHintChanged);
+            auto &imp { *surface()->imp() };
+            imp.lockedPointerRes.reset();
+            imp.pointerConstraintRegion.setEmpty();
+            imp.pendingPointerConstraintRegion.reset();
+            imp.current.lockedPointerPosHint = imp.pending.lockedPointerPosHint = SkPoint::Make(-1, -1);
+            imp.changesToNotify.remove(
+                LSurface::LSurfacePrivate::PointerConstraintRegionChanged |
+                LSurface::LSurfacePrivate::LockedPointerPosHintChanged);
             surface()->pointerConstraintModeChanged();
             m_surface.reset();
         }

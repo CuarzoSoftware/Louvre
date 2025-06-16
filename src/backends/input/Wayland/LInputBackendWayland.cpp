@@ -376,45 +376,45 @@ public:
 
     static void pointerHandleMotion(void *, wl_pointer *, UInt32 time, Float24 x, Float24 y)
     {
-        LPointF pos { (Float32)wl_fixed_to_double(x), (Float32)wl_fixed_to_double(y) };
+        SkPoint pos { (Float32)wl_fixed_to_double(x), (Float32)wl_fixed_to_double(y) };
 
         if (cursor()->output())
         {
             Float32 tmp;
-            const LSizeF sizeF { shared().surfaceSize };
+            const SkSize sizeF { SkSize::Make(shared().surfaceSize.width(), shared().surfaceSize.height()) };
             switch (cursor()->output()->transform())
             {
-            case LTransform::Normal:
+            case CZTransform::Normal:
                 break;
-            case LTransform::Rotated90:
+            case CZTransform::Rotated90:
                 tmp = pos.y();
-                pos.setY(pos.x());
-                pos.setX(sizeF.h() - tmp);
+                pos.fY = pos.x();
+                pos.fX = sizeF.height() - tmp;
                 break;
-            case LTransform::Rotated180:
-                pos.setY(sizeF.h() - pos.y());
-                pos.setX(sizeF.w() - pos.x());
+            case CZTransform::Rotated180:
+                pos.fY = sizeF.height() - pos.y();
+                pos.fX = sizeF.width() - pos.x();
                 break;
-            case LTransform::Rotated270:
+            case CZTransform::Rotated270:
                 tmp = pos.y();
-                pos.setY(sizeF.w() - pos.x());
-                pos.setX(tmp);
+                pos.fY = sizeF.width() - pos.x();
+                pos.fX = tmp;
                 break;
-            case LTransform::Flipped:
-                pos.setX(sizeF.w() - pos.x());
+            case CZTransform::Flipped:
+                pos.fX = sizeF.width() - pos.x();
                 break;
-            case LTransform::Flipped90:
+            case CZTransform::Flipped90:
                 tmp = pos.y();
-                pos.setY(pos.x());
-                pos.setX(tmp);
+                pos.fY = pos.x();
+                pos.fX = tmp;
                 break;
-            case LTransform::Flipped180:
-                pos.setY(sizeF.h() - pos.y());
+            case CZTransform::Flipped180:
+                pos.fY = sizeF.height() - pos.y();
                 break;
-            case LTransform::Flipped270:
+            case CZTransform::Flipped270:
                 tmp = pos.y();
-                pos.setY(sizeF.w() - pos.x());
-                pos.setX(sizeF.h() - tmp);
+                pos.fY = sizeF.width() - pos.x();
+                pos.fX = sizeF.height() - tmp;
                 break;
             }
         }
@@ -495,34 +495,34 @@ public:
         keyboardKeyEvent.notify();
     }
 
-    static LPointF normalizedTouchPoint(Float24 x, Float24 y)
+    static SkPoint normalizedTouchPoint(Float24 x, Float24 y)
     {
-        LPointF point((Float32)wl_fixed_to_double(x), (Float32) wl_fixed_to_double(y));
+        SkPoint point((Float32)wl_fixed_to_double(x), (Float32) wl_fixed_to_double(y));
 
         if (point.x() < 0.f)
-            point.setX(0.f);
+            point.fX = 0.f;
 
         if (point.y() < 0.f)
-            point.setY(0.f);
+            point.fY = 0.f;
 
-        if (point.x() > shared().surfaceSize.w())
-            point.setX(shared().surfaceSize.w());
+        if (point.x() > shared().surfaceSize.width())
+            point.fX = shared().surfaceSize.width();
 
-        if (point.y() > shared().surfaceSize.h())
-            point.setY(shared().surfaceSize.h());
+        if (point.y() > shared().surfaceSize.height())
+            point.fY = shared().surfaceSize.height();
 
-        if (shared().surfaceSize.w() != 0)
-            point.setX(point.x()/Float64(shared().surfaceSize.w()));
+        if (shared().surfaceSize.width() != 0)
+            point.fX = point.x()/Float64(shared().surfaceSize.width());
 
-        if (shared().surfaceSize.h() != 0)
-            point.setY(point.y()/Float64(shared().surfaceSize.h()));
+        if (shared().surfaceSize.height() != 0)
+            point.fY = point.y()/Float64(shared().surfaceSize.height());
 
         return point;
     }
 
     static void touchHandleDown(void *, wl_touch *, UInt32 serial, UInt32 time, wl_surface*, Int32 id, Float24 x, Float24 y)
     {
-        const LPointF normalizedPoint { normalizedTouchPoint(x, y) };
+        const SkPoint normalizedPoint { normalizedTouchPoint(x, y) };
         touchDownEvent.setId(id);
         touchDownEvent.setSerial(serial);
         touchDownEvent.setMs(time);
@@ -543,7 +543,7 @@ public:
 
     static void touchHandleMotion(void *, wl_touch *, UInt32 time, Int32 id, Float24 x, Float24 y)
     {
-        const LPointF normalizedPoint { normalizedTouchPoint(x, y) };
+        const SkPoint normalizedPoint { normalizedTouchPoint(x, y) };
         touchMoveEvent.setId(id);
         touchMoveEvent.setSerial(LTime::nextSerial());
         touchMoveEvent.setMs(time);

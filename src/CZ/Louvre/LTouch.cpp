@@ -26,7 +26,7 @@ LTouch::~LTouch() noexcept
     }
 }
 
-LSurface *LTouch::surfaceAt(const LPoint &point) const noexcept
+LSurface *LTouch::surfaceAt(const SkIPoint &point) const noexcept
 {
     return seat()->pointer()->surfaceAt(point);
 }
@@ -54,49 +54,52 @@ LTouchPoint *LTouch::findTouchPoint(Int32 id) const noexcept
     return nullptr;
 }
 
-LPointF LTouch::toGlobal(LOutput *output, const LPointF &touchPointPos) noexcept
+SkPoint LTouch::toGlobal(LOutput *output, const SkPoint &touchPointPos) noexcept
 {
     if (!output)
         return touchPointPos;
 
-    LPointF point;
+    SkPoint point { 0.f, 0.f };
 
     switch (output->transform())
     {
-    case LTransform::Normal:
-        point = output->size() * touchPointPos;
+    case CZTransform::Normal:
+        point.fX = output->size().fWidth * touchPointPos.fX;
+        point.fY = output->size().fHeight * touchPointPos.fY;
         break;
-    case LTransform::Rotated270:
-        point.setX(output->size().w() * touchPointPos.y());
-        point.setY(output->size().h() * (1.f - touchPointPos.x()));
+    case CZTransform::Rotated270:
+        point.fX =output->size().width() * touchPointPos.y();
+        point.fY =output->size().height() * (1.f - touchPointPos.x());
         break;
-    case LTransform::Rotated90:
-        point.setX(output->size().w() * (1.f - touchPointPos.y()));
-        point.setY(output->size().h() * touchPointPos.x());
+    case CZTransform::Rotated90:
+        point.fX =output->size().width() * (1.f - touchPointPos.y());
+        point.fY =output->size().height() * touchPointPos.x();
         break;
-    case LTransform::Rotated180:
-        point.setX(output->size().w() * (1.f - touchPointPos.x()));
-        point.setY(output->size().h() * (1.f - touchPointPos.y()));
+    case CZTransform::Rotated180:
+        point.fX =output->size().width() * (1.f - touchPointPos.x());
+        point.fY =output->size().height() * (1.f - touchPointPos.y());
         break;
-    case LTransform::Flipped180:
-        point.setX(output->size().w() * touchPointPos.x());
-        point.setY(output->size().h() * (1.f - touchPointPos.y()));
+    case CZTransform::Flipped180:
+        point.fX =output->size().width() * touchPointPos.x();
+        point.fY =output->size().height() * (1.f - touchPointPos.y());
         break;
-    case LTransform::Flipped:
-        point.setX(output->size().w() * (1.f - touchPointPos.x()));
-        point.setY(output->size().h() * touchPointPos.y());
+    case CZTransform::Flipped:
+        point.fX =output->size().width() * (1.f - touchPointPos.x());
+        point.fY =output->size().height() * touchPointPos.y();
         break;
-    case LTransform::Flipped270:
-        point.setX(output->size().w() * (1.f - touchPointPos.y()));
-        point.setY(output->size().h() * (1.f - touchPointPos.x()));
+    case CZTransform::Flipped270:
+        point.fX =output->size().width() * (1.f - touchPointPos.y());
+        point.fY =output->size().height() * (1.f - touchPointPos.x());
         break;
-    case LTransform::Flipped90:
-        point.setX(output->size().w() * touchPointPos.y());
-        point.setY(output->size().h() * touchPointPos.x());
+    case CZTransform::Flipped90:
+        point.fX =output->size().width() * touchPointPos.y();
+        point.fY =output->size().height() * touchPointPos.x();
         break;
     }
 
-    return point + output->pos();
+    return SkPoint::Make(
+        point.x() + output->pos().x(),
+        point.y() + output->pos().y());
 }
 
 void LTouch::sendFrameEvent(const LTouchFrameEvent &event) noexcept

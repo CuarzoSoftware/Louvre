@@ -2,7 +2,7 @@
 #define LCURSOR_H
 
 #include <LObject.h>
-#include <LPoint.h>
+#include <CZ/skia/core/SkPoint.h>
 #include <CZ/CZWeak.h>
 #include <memory>
 
@@ -41,7 +41,7 @@ public:
      *
      * @note Louvre automatically repositions the cursor if the specified position is not within any output.
      */
-    void setPos(const LPointF &pos) noexcept;
+    void setPos(const SkPoint &pos) noexcept;
 
     /**
      * @brief Set the cursor position.
@@ -53,7 +53,7 @@ public:
     /**
      * @brief Gets the current cursor position in compositor-global coordinates.
      */
-    const LPointF &pos() const noexcept
+    const SkPoint &pos() const noexcept
     {
         return m_pos;
     }
@@ -75,16 +75,16 @@ public:
      *
      * @see move()
      */
-    void move(const LPointF &delta) noexcept;
+    void move(const SkPoint &delta) noexcept;
 
     /**
      * @brief Gets the cursor rect on the screen.
      *
-     * Returns the cursor rect, which is defined as LRect(pos - hotspot, size), in compositor-global coordinates.
+     * Returns the cursor rect, which is defined as SkIRect(pos - hotspot, size), in compositor-global coordinates.
      *
      * You can use this rect and texture() to paint the cursor with LPainter if needed.
      */
-    const LRect &rect() const noexcept;
+    const SkIRect &rect() const noexcept;
 
     /**
      * @brief Sets the cursor size.
@@ -98,7 +98,7 @@ public:
      *
      * @param size The desired cursor size in surface coordinates.
      */
-    void setSize(const LSizeF &size) noexcept;
+    void setSize(SkSize size) noexcept;
 
     /**
      * @brief Toggles the cursor visibility.
@@ -158,7 +158,7 @@ public:
      * @param texture Texture to assign.
      * @param hotspot Cursor hotspot in buffer coordinates.
      */
-    void setTextureB(const LTexture *texture, const LPointF &hotspot) noexcept;
+    void setTextureB(const LTexture *texture, const SkPoint &hotspot) noexcept;
 
     /**
      * @brief Restores the default cursor.
@@ -181,7 +181,7 @@ public:
      *
      * @param hotspot The hotspot position for the new cursor in buffer coordinates.
      */
-    void replaceDefaultB(const LTexture *texture, const LPointF &hotspot) noexcept;
+    void replaceDefaultB(const LTexture *texture, const SkPoint &hotspot) noexcept;
 
     /**
      * @brief Gets the default cursor texture.
@@ -199,7 +199,7 @@ public:
      * The hotspot that has been set using replaceDefaultB().\n
      * Initially set to (8, 8).
      */
-    const LPointF &defaultHotspotB() const noexcept;
+    const SkPoint &defaultHotspotB() const noexcept;
 
     /**
      * @brief Default Louvre's cursor texture.
@@ -219,12 +219,12 @@ public:
      *
      * @param hotspot The desired hotspot in buffer coordinates.
      */
-    void setHotspotB(const LPointF &hotspot) noexcept;
+    void setHotspotB(const SkPoint &hotspot) noexcept;
 
     /**
      * @brief Gets the current cursor hotspot in buffer coordinates.
      */
-    const LPointF &hotspotB() const noexcept;
+    const SkPoint &hotspotB() const noexcept;
 
     /**
      * @brief Enables or disables LCursor for the specified output.
@@ -285,7 +285,7 @@ public:
      *
      * @return The region that needs to be repainted.
      */
-    const LRegion &damage(LOutput *output) const noexcept;
+    const SkRegion &damage(LOutput *output) const noexcept;
 
     /**
      * @brief Gets the current cursor output.
@@ -318,7 +318,7 @@ public:
     LCursor() noexcept;
     ~LCursor();
 
-    LPointF m_pos;
+    SkPoint m_pos;
     mutable CZWeak<LOutput> m_output;
 };
 

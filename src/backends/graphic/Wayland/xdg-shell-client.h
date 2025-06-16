@@ -1680,7 +1680,7 @@ xdg_toplevel_destroy(struct xdg_toplevel *xdg_toplevel)
  * Set the "parent" of this surface. This surface should be stacked
  * above the parent surface and all other ancestor surfaces.
  *
- * Parent surfaces should be set on dialogs, toolboxes, or other
+ * Parent surfaces should be set on dialogs, tooSkIRectes, or other
  * "auxiliary" surfaces, so that the parent is raised when the dialog
  * is raised.
  *

@@ -54,7 +54,7 @@ public:
      * #### Default implementation
      * @snippet LCursorRoleDefault.cpp rolePos
      */
-    virtual const LPoint &rolePos() const override;
+    virtual SkIPoint rolePos() const override;
 
     /**
      * @brief Notifies a hotspot change.
@@ -67,7 +67,7 @@ public:
     /**
      * @brief Cursor hotspot in surface coordinates.
      */
-    const LPoint &hotspot() const noexcept
+    const SkIPoint &hotspot() const noexcept
     {
         return m_currentHotspot;
     }
@@ -75,7 +75,7 @@ public:
     /**
      * @brief Cursor hotspot in buffer coordinates.
      */
-    const LPoint &hotspotB() const noexcept
+    const SkIPoint &hotspotB() const noexcept
     {
         return m_currentHotspotB;
     }
@@ -84,8 +84,8 @@ private:
     friend class Protocols::Wayland::RPointer;
     virtual void handleSurfaceCommit(CommitOrigin origin) override;
     virtual void handleSurfaceOffset(Int32 x, Int32 y) override;
-    LPoint m_currentHotspot, m_pendingHotspotOffset;
-    LPoint m_currentHotspotB;
+    SkIPoint m_currentHotspot, m_pendingHotspotOffset;
+    SkIPoint m_currentHotspotB;
 };
 
 #endif // LCURSORROLE_H

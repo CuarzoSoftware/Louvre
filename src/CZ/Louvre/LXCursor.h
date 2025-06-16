@@ -58,7 +58,7 @@ public:
     /**
      * @brief Gets the cursor's hotspot in buffer coordinates.
      */
-    const LPoint &hotspotB() const noexcept
+    const SkIPoint &hotspotB() const noexcept
     {
         return m_hotspotB;
     }
@@ -66,7 +66,7 @@ public:
 private:
     LXCursor() noexcept = default;
     LTexture m_texture { true };
-    LPoint m_hotspotB;
+    SkIPoint m_hotspotB;
 };
 
 #endif // LX11CURSOR_H

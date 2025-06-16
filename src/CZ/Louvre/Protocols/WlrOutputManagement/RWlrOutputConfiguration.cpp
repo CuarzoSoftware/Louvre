@@ -6,7 +6,7 @@
 #include <LCompositor.h>
 #include <LOutput.h>
 #include <LUtils.h>
-#include <LSize.h>
+#include <CZ/skia/core/SkSize.h>
 #include <LSeat.h>
 
 using namespace Louvre;

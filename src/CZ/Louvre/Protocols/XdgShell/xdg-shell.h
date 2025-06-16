@@ -1293,7 +1293,7 @@ struct xdg_toplevel_interface {
 	 * stacked above the parent surface and all other ancestor
 	 * surfaces.
 	 *
-	 * Parent surfaces should be set on dialogs, toolboxes, or other
+	 * Parent surfaces should be set on dialogs, tooSkIRectes, or other
 	 * "auxiliary" surfaces, so that the parent is raised when the
 	 * dialog is raised.
 	 *

@@ -39,11 +39,11 @@ public:
     /******************** EVENTS ********************/
 
     // Since 1
-    void configure(const LSize &size, wl_array *states) noexcept;
+    void configure(const SkISize &size, wl_array *states) noexcept;
     void close() noexcept;
 
     // Since 4
-    bool configureBounds(const LSize &bounds) noexcept;
+    bool configureBounds(const SkISize &bounds) noexcept;
 
     // Since 5
     bool wmCapabilities(wl_array *capabilities) noexcept;

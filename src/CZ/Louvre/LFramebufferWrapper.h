@@ -2,7 +2,7 @@
 #define LGLFRAMEBUFFER_H
 
 #include <LFramebuffer.h>
-#include <LRect.h>
+#include <CZ/skia/core/SkRect.h>
 
 /**
  * @brief Wrapper for a native OpenGL framebuffer.
@@ -24,15 +24,13 @@ public:
      * @param pos The position of the framebuffer in the global compositor-coordinates space.
      * @param scale The scaling factor of the framebuffer (default is 1.0).
      */
-    LFramebufferWrapper(GLuint id,
-                   const LSize &sizeB,
-                   const LPoint &pos = LPoint(0,0),
+    LFramebufferWrapper(GLuint id, SkISize sizeB, SkIPoint pos = SkIPoint(0,0),
                         Float32 scale = 1.f) noexcept : LFramebuffer(Wrapper),
         m_sizeB(sizeB),
         m_fbId(id),
         m_scale(scale)
     {
-        m_rect.setPos(pos);
+        m_rect.offsetTo(pos.x(), pos.y());
         updateDimensions();
     }
 
@@ -51,7 +49,7 @@ public:
      *
      * @param sizeB The buffer size.
      */
-    void setSizeB(const LSize &sizeB) noexcept
+    void setSizeB(const SkISize &sizeB) noexcept
     {
         m_sizeB = sizeB;
         updateDimensions();
@@ -73,38 +71,41 @@ public:
      *
      * @param pos The position.
      */
-    void setPos(const LPoint &pos) noexcept
+    void setPos(SkIPoint pos) noexcept
     {
-        m_rect.setPos(pos);
+        m_rect.offsetTo(pos.x(), pos.y());
     }
 
     Float32 scale() const noexcept override { return m_scale; };
-    const LSize &sizeB() const noexcept override { return m_sizeB; };
-    const LRect &rect() const noexcept override {  return m_rect; };
+    SkISize sizeB() const noexcept override { return m_sizeB; };
+    const SkIRect &rect() const noexcept override {  return m_rect; };
     GLuint id() const noexcept override { return m_fbId; };
     Int32 buffersCount() const noexcept override { return 1; };
     Int32 currentBufferIndex() const noexcept override { return 0; };
     LTexture *texture(Int32) const noexcept override { return nullptr; };
-    void setFramebufferDamage(const LRegion *) noexcept override {};
-    virtual LTransform transform() const noexcept override { return LTransform::Normal; };
+    void setFramebufferDamage(const SkRegion *) noexcept override {};
+    virtual CZTransform transform() const noexcept override { return CZTransform::Normal; };
 
 private:
     void updateDimensions() noexcept
     {
-        if (m_sizeB.w() < 0)
-            m_sizeB.setW(0);
+        if (m_sizeB.width() < 0)
+            m_sizeB.fWidth = 0;
 
-        if (m_sizeB.h() < 0)
-            m_sizeB.setH(0);
+        if (m_sizeB.height() < 0)
+            m_sizeB.fHeight = 0;
 
         if (m_scale < 0.25f)
             m_scale = 0.25f;
 
-        m_rect.setW(Float32(m_sizeB.w())/m_scale);
-        m_rect.setH(Float32(m_sizeB.h())/m_scale);
+        m_rect.setXYWH(
+            m_rect.x(),
+            m_rect.y(),
+            Float32(m_sizeB.width())/m_scale,
+            Float32(m_sizeB.height())/m_scale);
     }
-    LRect m_rect;
-    LSize m_sizeB;
+    SkIRect m_rect;
+    SkISize m_sizeB;
     GLuint m_fbId;
     Float32 m_scale;
 };

@@ -34,7 +34,7 @@ public:
      *
      * Coordinates are in surface coordinates relative to the output's position.
      */
-    const LRect &rect() const noexcept;
+    const SkIRect &rect() const noexcept;
 
     /**
      * @brief Respond to the screenshot request.

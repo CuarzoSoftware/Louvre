@@ -136,13 +136,13 @@ void RBackgroundBlur::set_region(wl_client */*client*/, wl_resource *resource, w
     {
         auto &rRegion { *static_cast<Protocols::Wayland::RRegion*>(wl_resource_get_user_data(region)) };
         blur.pendingProps().region = rRegion.region();
-        blur.pendingProps().isEmpty = blur.pendingProps().region.empty();
+        blur.pendingProps().isEmpty = blur.pendingProps().region.isEmpty();
         blur.pendingProps().isFullSize = false;
         blur.m_flags.add(LBackgroundBlur::RegionModified);
     }
     else if (!blur.pendingProps().isFullSize)
     {
-        blur.pendingProps().region.clear();
+        blur.pendingProps().region.setEmpty();
         blur.pendingProps().isEmpty = false;
         blur.pendingProps().isFullSize = true;
         blur.m_flags.add(LBackgroundBlur::RegionModified);

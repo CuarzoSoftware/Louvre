@@ -37,7 +37,7 @@ RInvisibleRegion::~RInvisibleRegion() noexcept
         return;
     }
 
-    surfaceRes()->surface()->imp()->pendingInvisibleRegion.clear();
+    surfaceRes()->surface()->imp()->pendingInvisibleRegion.setEmpty();
     surfaceRes()->surface()->imp()->stateFlags.remove(LSurface::LSurfacePrivate::InfiniteInvisible);
     surfaceRes()->surface()->imp()->changesToNotify.add(LSurface::LSurfacePrivate::InvisibleRegionChanged);
 }

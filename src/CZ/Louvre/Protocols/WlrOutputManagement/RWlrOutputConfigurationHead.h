@@ -1,10 +1,10 @@
 #ifndef RWLROUTPUTCONFIGURATIONHEAD_H
 #define RWLROUTPUTCONFIGURATIONHEAD_H
 
-#include <LTransform.h>
+#include <CZ/CZTransform.h>
 #include <LResource.h>
 #include <CZ/CZWeak.h>
-#include <LPoint.h>
+#include <CZ/skia/core/SkPoint.h>
 #include <CZ/CZBitset.h>
 
 class Louvre::Protocols::WlrOutputManagement::RWlrOutputConfigurationHead final : public LResource
@@ -45,8 +45,8 @@ private:
     CZWeak<RWlrOutputConfiguration> m_wlrOutputConfiguration;
     CZWeak<LOutput> m_output;
     CZWeak<const LOutputMode> m_mode;
-    LPoint m_pos;
-    LTransform m_transform;
+    SkIPoint m_pos;
+    CZTransform m_transform;
     Float32 m_scale;
     bool m_vrr;
 };

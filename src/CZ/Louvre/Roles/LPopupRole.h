@@ -4,7 +4,7 @@
 #include <LBaseSurfaceRole.h>
 #include <LPositioner.h>
 #include <LEdge.h>
-#include <LRect.h>
+#include <CZ/skia/core/SkRect.h>
 #include <list>
 
 /**
@@ -53,7 +53,7 @@ public:
     struct Configuration
     {
         /// Local position and size. See localPos() and windowGeometry().
-        LRect rect;
+        SkIRect rect;
 
         /// @see LPopupRole::serial() and pendingConfiguration()
         UInt32 serial;
@@ -70,10 +70,10 @@ public:
     struct Atoms
     {
         /// LPopupRole::windowGeometry()
-        LRect windowGeometry;
+        SkIRect windowGeometry;
 
         /// LPopupRole::localPos()
-        LPoint localPos;
+        SkIPoint localPos;
 
         /// LPopupRole::serial()
         UInt32 serial;
@@ -136,7 +136,7 @@ public:
      *
      * @see calculateUnconstrainedRect().
      */
-    void configureRect(const LRect &rect) const noexcept;
+    void configureRect(const SkIRect &rect) const noexcept;
 
     /**
      * @brief Calculates the size and parent-local position the popup should be configured to in order to be unconstrained.
@@ -148,7 +148,7 @@ public:
      *
      * @return The calculated rect representing the unconstrained size and position.
      */
-    LRect calculateUnconstrainedRect(const LPoint *futureParentPos = nullptr) const noexcept;
+    SkIRect calculateUnconstrainedRect(const SkIPoint *futureParentPos = nullptr) const noexcept;
 
     /**
      * @brief Set the positioning bounds constraints for the popup.
@@ -157,7 +157,7 @@ public:
      *
      * @param bounds The constraint rect in compositor-global coordinates. Providing a rect with zero area deactivates the constraint.
      */
-    void setBounds(const LRect &bounds) noexcept
+    void setBounds(const SkIRect &bounds) noexcept
     {
         m_bounds = bounds;
     }
@@ -167,7 +167,7 @@ public:
      *
      * This method returns the constraint bounds for positioning the popup which can be set using setBounds().
      */
-    const LRect &bounds() const noexcept
+    const SkIRect &bounds() const noexcept
     {
         return m_bounds;
     }
@@ -178,7 +178,7 @@ public:
      * @param rect The bounds in compositor-global coordinates.
      * @return A bitset indicating the constrained edges.
      */
-    CZBitset<LEdge> constrainedEdges(const LRect &rect) const noexcept;
+    CZBitset<LEdge> constrainedEdges(const SkIRect &rect) const noexcept;
 
     /**
      * @brief Current atomic properties.
@@ -202,7 +202,7 @@ public:
      *
      * @note This is an alias for Atoms::windowGeometry.
      */
-    const LRect &windowGeometry() const noexcept
+    const SkIRect &windowGeometry() const noexcept
     {
         return atoms().windowGeometry;
     }
@@ -217,7 +217,7 @@ public:
      *
      * @note This is an alias for Atoms::localPos.
      */
-    const LPoint &localPos() const noexcept
+    const SkIPoint &localPos() const noexcept
     {
         return atoms().localPos;
     }
@@ -291,7 +291,7 @@ public:
      * #### Default Implementation
      * @snippet LPopupRoleDefault.cpp rolePos
      */
-    virtual const LPoint &rolePos() const override;
+    virtual SkIPoint rolePos() const override;
 
     /**
      * @brief Handles client requests for configuring the popup.
@@ -368,7 +368,7 @@ private:
     mutable CZBitset<Flags> m_flags { HasPendingInitialConf };
     mutable Configuration m_pendingConfiguration, m_lastACKConfiguration;
     std::list<Configuration> m_sentConfs;
-    LRect m_bounds;
+    SkIRect m_bounds;
     LPositioner m_positioner;
     UInt32 m_repositionToken;
     CZWeak<LOutput> m_exclusiveOutput;

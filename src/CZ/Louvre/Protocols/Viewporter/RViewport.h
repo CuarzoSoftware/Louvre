@@ -2,7 +2,7 @@
 #define RVIEWPORT_H
 
 #include <LResource.h>
-#include <LRect.h>
+#include <CZ/skia/core/SkRect.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::Viewporter::RViewport final : public LResource
@@ -13,12 +13,12 @@ public:
         return m_surfaceRes;
     }
 
-    const LSize &dstSize() const noexcept
+    const SkISize &dstSize() const noexcept
     {
         return m_dstSize;
 
     }
-    const LRectF &srcRect() const noexcept
+    const SkRect &srcRect() const noexcept
     {
         return m_srcRect;
     }
@@ -33,8 +33,8 @@ private:
     friend class Louvre::Protocols::Viewporter::GViewporter;
     RViewport(Wayland::RSurface *surfaceRes, Int32 version, UInt32 id) noexcept;
     ~RViewport() noexcept = default;
-    LSize m_dstSize { -1, -1 };
-    LRectF m_srcRect { -1, -1, -1, -1 };
+    SkISize m_dstSize { -1, -1 };
+    SkRect m_srcRect { -1, -1, -1, -1 };
     CZWeak<Wayland::RSurface> m_surfaceRes;
 };
 

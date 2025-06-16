@@ -1,7 +1,7 @@
 #ifndef RWLROUTPUTHEAD_H
 #define RWLROUTPUTHEAD_H
 
-#include <LTransform.h>
+#include <CZ/CZTransform.h>
 #include <LResource.h>
 #include <CZ/CZWeak.h>
 
@@ -31,12 +31,12 @@ public:
 
     void name(const char *name) noexcept;
     void description(const char *description) noexcept;
-    void physicalSize(const LSize &size) noexcept;
+    void physicalSize(const SkISize &size) noexcept;
     RWlrOutputMode *mode(LOutputMode *mode) noexcept;
     void enabled(bool enabled) noexcept;
     void currentMode(RWlrOutputMode *mode) noexcept;
-    void position(const LPoint &pos) noexcept;
-    void transform(LTransform transform) noexcept;
+    void position(const SkIPoint &pos) noexcept;
+    void transform(CZTransform transform) noexcept;
     void scale(Float32 scale) noexcept;
     void finished() noexcept;
 

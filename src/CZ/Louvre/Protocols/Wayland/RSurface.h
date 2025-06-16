@@ -3,7 +3,7 @@
 
 #include <LBaseSurfaceRole.h>
 #include <LResource.h>
-#include <LTransform.h>
+#include <CZ/CZTransform.h>
 #include <memory>
 
 class Louvre::Protocols::Wayland::RSurface final : public LResource
@@ -72,7 +72,7 @@ public:
 
     // Since 6
     bool preferredBufferScale(Int32 scale) noexcept;
-    bool preferredBufferTransform(LTransform transform) noexcept;
+    bool preferredBufferTransform(CZTransform transform) noexcept;
 
 private:
     friend class Louvre::Protocols::Wayland::GCompositor;

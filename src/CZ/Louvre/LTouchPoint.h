@@ -97,7 +97,7 @@ public:
      *
      * @return A constant reference to the position of the touch point.
      */
-    const LPointF &pos() const noexcept
+    const SkPoint &pos() const noexcept
     {
         return m_pos;
     }
@@ -150,7 +150,7 @@ private:
     LTouchDownEvent m_lastDownEvent;
     LTouchMoveEvent m_lastMoveEvent;
     LTouchUpEvent m_lastUpEvent;
-    LPointF m_pos;
+    SkPoint m_pos;
     bool m_pressed { true };
 };
 

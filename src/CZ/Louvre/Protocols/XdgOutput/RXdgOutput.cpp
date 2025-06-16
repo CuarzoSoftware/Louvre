@@ -2,7 +2,7 @@
 #include <CZ/Louvre/Protocols/XdgOutput/RXdgOutput.h>
 #include <CZ/Louvre/Protocols/Wayland/GOutput.h>
 #include <LOutput.h>
-#include <LPoint.h>
+#include <CZ/skia/core/SkPoint.h>
 #include <LUtils.h>
 
 using namespace Louvre::Protocols::XdgOutput;
@@ -60,14 +60,14 @@ void RXdgOutput::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 
 /******************** EVENTS ********************/
 
-void RXdgOutput::logicalPosition(const LPoint &pos) noexcept
+void RXdgOutput::logicalPosition(const SkIPoint &pos) noexcept
 {
     zxdg_output_v1_send_logical_position(resource(), pos.x(), pos.y());
 }
 
-void RXdgOutput::logicalSize(const LSize &size) noexcept
+void RXdgOutput::logicalSize(const SkISize &size) noexcept
 {
-    zxdg_output_v1_send_logical_size(resource(), size.x(), size.y());
+    zxdg_output_v1_send_logical_size(resource(), size.width(), size.height());
 }
 
 void RXdgOutput::done() noexcept

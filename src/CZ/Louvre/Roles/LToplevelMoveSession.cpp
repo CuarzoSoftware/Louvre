@@ -28,7 +28,7 @@ LToplevelMoveSession::~LToplevelMoveSession() noexcept
         LVectorRemoveOneUnordered(compositor()->seat()->imp()->moveSessions, this);
 }
 
-bool LToplevelMoveSession::start(const LEvent &triggeringEvent, const LPoint &initDragPoint)
+bool LToplevelMoveSession::start(const LEvent &triggeringEvent, const SkIPoint &initDragPoint)
 {
     if (m_isActive)
         return false;
@@ -41,7 +41,7 @@ bool LToplevelMoveSession::start(const LEvent &triggeringEvent, const LPoint &in
     return true;
 }
 
-void LToplevelMoveSession::updateDragPoint(const LPoint &pos)
+void LToplevelMoveSession::updateDragPoint(const SkIPoint &pos)
 {
     if (!m_isActive)
         return;
@@ -52,19 +52,19 @@ void LToplevelMoveSession::updateDragPoint(const LPoint &pos)
     if (!m_isActive)
         return;
 
-    LPoint newPos { m_initPos - m_initDragPoint + pos };
+    SkIPoint newPos { m_initPos - m_initDragPoint + pos };
 
-    if (m_constraints.right != LEdgeDisabled && newPos.x() + m_toplevel->windowGeometry().w() > m_constraints.right)
-        newPos.setX(m_constraints.right - m_toplevel->windowGeometry().w());
+    if (m_constraints.right != LEdgeDisabled && newPos.x() + m_toplevel->windowGeometry().width() > m_constraints.right)
+        newPos.fX = m_constraints.right - m_toplevel->windowGeometry().width();
 
     if (m_constraints.left != LEdgeDisabled && newPos.x() < m_constraints.left)
-        newPos.setX(m_constraints.left);
+        newPos.fX = m_constraints.left;
 
-    if (m_constraints.bottom != LEdgeDisabled && newPos.y() + m_toplevel->windowGeometry().h() > m_constraints.bottom)
-        newPos.setY(m_constraints.bottom - m_toplevel->windowGeometry().h());
+    if (m_constraints.bottom != LEdgeDisabled && newPos.y() + m_toplevel->windowGeometry().height() > m_constraints.bottom)
+        newPos.fY = m_constraints.bottom - m_toplevel->windowGeometry().height();
 
     if (m_constraints.top != LEdgeDisabled && newPos.y() < m_constraints.top)
-        newPos.setY(m_constraints.top);
+        newPos.fY = m_constraints.top;
 
     toplevel()->surface()->setPos(newPos);
 }

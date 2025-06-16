@@ -2,7 +2,11 @@
 #define LFRAMEBUFFER_H
 
 #include <LObject.h>
-#include <LTransform.h>
+#include <CZ/CZTransform.h>
+
+class SkISize;
+class SkIRect;
+class SkRegion;
 
 /**
  * @brief Base class for LPainter framebuffers.
@@ -50,7 +54,7 @@ public:
      *
      * @returns The size of the framebuffer in buffer coordinates.
      */
-    virtual const LSize &sizeB() const = 0;
+    virtual SkISize sizeB() const = 0;
 
     /**
      * @brief Gets the position and size of the framebuffer in surface coordinates.
@@ -59,7 +63,7 @@ public:
      *
      * @returns The rect representing the position and size of the framebuffer in surface coordinates.
      */
-    virtual const LRect &rect() const = 0;
+    virtual const SkIRect &rect() const = 0;
 
     /**
      * @brief Gets the OpenGL framebuffer ID.
@@ -110,14 +114,14 @@ public:
      * This method sets the region in surface coordinates that indicates the parts of the framebuffer
      * that have changed since the last painting was performed.
      *
-     * @param damage A pointer to the LRegion object representing the changed region.
+     * @param damage A pointer to the SkRegion object representing the changed region.
      */
-    virtual void setFramebufferDamage(const LRegion *damage) = 0;
+    virtual void setFramebufferDamage(const SkRegion *damage) = 0;
 
     /**
      * @brief Gets the framebuffer transform.
      */
-    virtual LTransform transform() const = 0;
+    virtual CZTransform transform() const = 0;
 
     /**
      * @brief Gets the type of LFramebuffer.

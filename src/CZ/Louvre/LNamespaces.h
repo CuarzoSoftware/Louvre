@@ -104,7 +104,6 @@ namespace Louvre
     class LOutputMode;
     class LOpenGL;
     class LPositioner;
-    class LRegion;
     class LResource;
     class LSessionLockManager;
     class LSurface;
@@ -196,32 +195,12 @@ namespace Louvre
     class LTimer;
     class LLauncher;
     class LGammaTable;
-    template <class T> class LPointTemplate;
-    template <class T> class LRectTemplate;
 
     /// @brief 24 bits Wayland float
     typedef wl_fixed_t      Float24;
 
     /// @brief Unsigned integer capable of holding a pointer
     typedef uintptr_t       UIntPtr;
-
-    /// 2D vector of 32 bits integers
-    using LPoint = LPointTemplate<Int32>;
-
-    /// 2D vector of 32 bits integers
-    using LSize = LPoint;
-
-    /// 2D vector of 32 bits floats
-    using LPointF = LPointTemplate<Float32>;
-
-    /// 2D vector of 32 bits floats
-    using LSizeF = LPointF;
-
-    /// 4D vector of 32 bits integers
-    using LRect = LRectTemplate<Int32>;
-
-    /// 4D vector of 32 bits floats
-    using LRectF = LRectTemplate<Float32>;
 
     class LRRect;
 
@@ -235,7 +214,6 @@ namespace Louvre
     struct LBlendFunc;
     struct LDMAFormat;
     struct LDMAPlanes;
-    struct LBox;
     struct LMargins;
 
     /**

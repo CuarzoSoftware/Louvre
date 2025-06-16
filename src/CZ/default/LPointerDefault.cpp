@@ -1,3 +1,4 @@
+#include <CZ/Utils/CZRegionUtils.h>
 #include <LLog.h>
 #include <LPointer.h>
 #include <LSeat.h>
@@ -31,12 +32,12 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
 
     if (focus())
     {
-        LPointF fpos { focus()->rolePos() };
+        SkPoint fpos { SkPoint(focus()->rolePos().x(), focus()->rolePos().y()) };
 
         // Attempt to enable the pointer constraint mode if the cursor is within the constrained region.
         if (focus()->pointerConstraintMode() != LSurface::PointerConstraintMode::Free)
         {
-            if (focus()->pointerConstraintRegion().containsPoint(cursor()->pos() - fpos))
+            if (focus()->pointerConstraintRegion().contains(cursor()->pos().x() - fpos.x(), cursor()->pos().y() - fpos.y()))
                 focus()->enablePointerConstraint(true);
         }
 
@@ -50,8 +51,8 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
                 {
                     cursor()->move(-event.delta().x(), -event.delta().y());
 
-                    const LPointF closestPoint {
-                        focus()->pointerConstraintRegion().closestPointFrom(cursor()->pos() - fpos)
+                    const SkPoint closestPoint {
+                        CZRegionUtils::ClosestPointFrom(focus()->pointerConstraintRegion(), cursor()->pos() - fpos)
                     };
 
                     cursor()->setPos(fpos + closestPoint);
@@ -59,8 +60,8 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
             }
             else /* Confined */
             {
-                const LPointF closestPoint {
-                    focus()->pointerConstraintRegion().closestPointFrom(cursor()->pos() - fpos)
+                const SkPoint closestPoint {
+                    CZRegionUtils::ClosestPointFrom(focus()->pointerConstraintRegion(), cursor()->pos() - fpos)
                 };
 
                 cursor()->setPos(fpos + closestPoint);
@@ -97,7 +98,7 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
         if (session->triggeringEvent().type() != LEvent::Type::Touch)
         {
             activeResizing = true;
-            session->updateDragPoint(cursor()->pos());
+            session->updateDragPoint(SkIPoint(cursor()->pos().x(), cursor()->pos().y()));
         }
     }
 
@@ -111,7 +112,7 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
         if (session->triggeringEvent().type() != LEvent::Type::Touch)
         {
             activeMoving = true;
-            session->updateDragPoint(cursor()->pos());
+            session->updateDragPoint(SkIPoint(cursor()->pos().x(), cursor()->pos().y()));
             session->toplevel()->surface()->repaintOutputs();
 
             if (session->toplevel()->maximized())
@@ -125,7 +126,7 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
     // If a surface had the left pointer button held down
     if (draggingSurface())
     {
-        event.localPos = cursor()->pos() - draggingSurface()->rolePos();
+        event.localPos = cursor()->pos() - SkPoint(draggingSurface()->rolePos().x(), draggingSurface()->rolePos().y());
         sendMoveEvent(event);
         return;
     }
@@ -138,7 +139,7 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
         if (sessionLocked && surface->client() != sessionLockManager()->client())
             return;
 
-        event.localPos = cursor()->pos() - surface->rolePos();
+        event.localPos = cursor()->pos() - SkPoint(surface->rolePos().x(), surface->rolePos().y());
 
         if (activeDND)
         {
@@ -160,7 +161,7 @@ void LPointer::pointerMoveEvent(const LPointerMoveEvent &event)
     else
     {
         if (activeDND)
-            seat()->dnd()->setFocus(nullptr, LPointF());
+            seat()->dnd()->setFocus(nullptr, SkPoint());
         else
         {
             setFocus(nullptr);
@@ -281,7 +282,10 @@ void LPointer::pointerButtonEvent(const LPointerButtonEvent &event)
         // We stop sending events to the surface on which the left button was being held down
         setDraggingSurface(nullptr);
 
-        if (!focus()->pointerConstraintEnabled() && !focus()->inputRegion().containsPoint(cursor()->pos() - focus()->rolePos()))
+        if (!focus()->pointerConstraintEnabled() &&
+            !focus()->inputRegion().contains(
+                cursor()->pos().x() - focus()->rolePos().x(),
+                cursor()->pos().y() - focus()->rolePos().y()))
         {
             setFocus(nullptr);
             cursor()->useDefault();

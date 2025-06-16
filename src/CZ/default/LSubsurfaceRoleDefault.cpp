@@ -5,7 +5,7 @@
 using namespace Louvre;
 
 //! [rolePos]
-const LPoint &LSubsurfaceRole::rolePos() const
+SkIPoint LSubsurfaceRole::rolePos() const
 {
     if (surface()->parent())
         m_rolePos = localPos() + surface()->parent()->rolePos();

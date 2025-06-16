@@ -9,12 +9,12 @@ Float32 LOutputFramebuffer::scale() const noexcept
     return m_output->imp()->scale;
 }
 
-const LSize &LOutputFramebuffer::sizeB() const noexcept
+SkISize LOutputFramebuffer::sizeB() const noexcept
 {
     return m_output->imp()->sizeB;
 }
 
-const LRect &LOutputFramebuffer::rect() const noexcept
+const SkIRect &LOutputFramebuffer::rect() const noexcept
 {
     return m_output->imp()->rect;
 }
@@ -47,12 +47,12 @@ LTexture *LOutputFramebuffer::texture(Int32 index) const noexcept
     return m_output->bufferTexture(index);
 }
 
-void LOutputFramebuffer::setFramebufferDamage(const LRegion *damage) noexcept
+void LOutputFramebuffer::setFramebufferDamage(const SkRegion *damage) noexcept
 {
     m_output->setBufferDamage(damage);
 }
 
-LTransform LOutputFramebuffer::transform() const noexcept
+CZTransform LOutputFramebuffer::transform() const noexcept
 {
     return m_output->imp()->transform;
 }

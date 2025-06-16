@@ -2,7 +2,7 @@
 #define LPOINTERPINCHUPDATEEVENT_H
 
 #include <LPointerEvent.h>
-#include <LPoint.h>
+#include <CZ/skia/core/SkPoint.h>
 #include <LTime.h>
 
 /**
@@ -24,7 +24,7 @@ public:
      * @param us The microsecond timestamp of the event.
      * @param device The input device that originated the event.
      */
-    LPointerPinchUpdateEvent(UInt32 fingers = 0, const LPointF &delta = LPointF(0.f, 0.f), const LPointF &deltaUnaccelerated = LPointF(0.f, 0.f),
+    LPointerPinchUpdateEvent(UInt32 fingers = 0, const SkPoint &delta = SkPoint(0.f, 0.f), const SkPoint &deltaUnaccelerated = SkPoint(0.f, 0.f),
                                     Float32 scale = 1.f, Float32 rotation = 0.f,
                                     UInt32 serial = LTime::nextSerial(), UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) noexcept :
         LPointerEvent(LEvent::Subtype::PinchUpdate, serial, ms, us, device),
@@ -54,7 +54,7 @@ public:
     /**
      * @brief Sets the movement delta of the pinch gesture.
      */
-    void setDelta(const LPointF &delta) noexcept
+    void setDelta(const SkPoint &delta) noexcept
     {
         m_delta = delta;
     }
@@ -64,7 +64,7 @@ public:
      */
     void setDx(Float32 dx) noexcept
     {
-        m_delta.setX(dx);
+        m_delta.fX = dx;
     }
 
     /**
@@ -72,13 +72,13 @@ public:
      */
     void setDy(Float32 dy) noexcept
     {
-        m_delta.setY(dy);
+        m_delta.fY = dy;
     }
 
     /**
      * @brief Gets the movement delta of the pinch gesture.
      */
-    const LPointF &delta() const noexcept
+    SkPoint delta() const noexcept
     {
         return m_delta;
     }
@@ -86,7 +86,7 @@ public:
     /**
      * @brief Sets the unaccelerated movement delta of the pinch gesture.
      */
-    void setDeltaUnaccelerated(const LPointF &deltaUnaccelerated) noexcept
+    void setDeltaUnaccelerated(const SkPoint &deltaUnaccelerated) noexcept
     {
         m_deltaUnaccelerated = deltaUnaccelerated;
     }
@@ -96,7 +96,7 @@ public:
      */
     void setDxUnaccelerated(Float32 dx) noexcept
     {
-        m_deltaUnaccelerated.setX(dx);
+        m_deltaUnaccelerated.fX = dx;
     }
 
     /**
@@ -104,13 +104,13 @@ public:
      */
     void setDyUnaccelerated(Float32 dy) noexcept
     {
-        m_deltaUnaccelerated.setY(dy);
+        m_deltaUnaccelerated.fY = dy;
     }
 
     /**
      * @brief Gets the unaccelerated movement delta of the pinch gesture.
      */
-    const LPointF &deltaUnaccelerated() const noexcept
+    SkPoint deltaUnaccelerated() const noexcept
     {
         return m_deltaUnaccelerated;
     }
@@ -156,8 +156,8 @@ public:
 
 protected:
     UInt32 m_fingers;
-    LPointF m_delta;
-    LPointF m_deltaUnaccelerated;
+    SkPoint m_delta;
+    SkPoint m_deltaUnaccelerated;
     Float32 m_scale;
     Float32 m_rotation;
 private:

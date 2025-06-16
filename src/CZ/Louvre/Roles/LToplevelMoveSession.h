@@ -3,7 +3,7 @@
 
 #include <LEdge.h>
 #include <LMargins.h>
-#include <LPoint.h>
+#include <CZ/skia/core/SkPoint.h>
 #include <functional>
 #include <memory>
 
@@ -49,14 +49,14 @@ public:
      *
      * @returns `true` if the session successfully started, `false` if the toplevel is already in a session.
      */
-    bool start(const LEvent &triggeringEvent, const LPoint &initDragPoint);
+    bool start(const LEvent &triggeringEvent, const SkIPoint &initDragPoint);
 
     /**
      * @brief Updates the drag point, causing the toplevel to move.
      *
      * @param pos The new position of the pointer or touch point.
      */
-    void updateDragPoint(const LPoint &pos);
+    void updateDragPoint(const SkIPoint &pos);
 
     /**
      * @brief Stops the move session.
@@ -129,8 +129,8 @@ private:
     LToplevelMoveSession(LToplevelRole *toplevel) noexcept;
     ~LToplevelMoveSession() noexcept;
     LToplevelRole *m_toplevel;
-    LPoint m_initPos;
-    LPoint m_initDragPoint;
+    SkIPoint m_initPos;
+    SkIPoint m_initDragPoint;
     LMargins m_constraints {LEdgeDisabled, LEdgeDisabled, LEdgeDisabled ,LEdgeDisabled};
     std::unique_ptr<LEvent> m_triggeringEvent;
     OnBeforeUpdateCallback m_beforeUpdateCallback { nullptr };

@@ -30,7 +30,7 @@ public:
     /******************** EVENTS ********************/
 
     // Since 1
-    void configure(const LRect &rect) noexcept;
+    void configure(const SkIRect &rect) noexcept;
     void popupDone() noexcept;
 
     // Since 3

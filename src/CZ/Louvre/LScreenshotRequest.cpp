@@ -21,7 +21,7 @@ LClient *LScreenshotRequest::client() const noexcept
     return resource().client();
 }
 
-const LRect &LScreenshotRequest::rect() const noexcept
+const SkIRect &LScreenshotRequest::rect() const noexcept
 {
     return resource().rect();
 }
@@ -33,17 +33,17 @@ void LScreenshotRequest::accept(bool accept) noexcept
 
 Int8 LScreenshotRequest::copy() noexcept
 {
-    LRegion damage;
+    SkRegion damage;
 
     if (wl_shm_buffer_get(resource().buffer()))
     {
         if (resource().screenCopyManagerRes())
         {
             auto &outputDamage { resource().screenCopyManagerRes()->damage[resource().output()] };
-            outputDamage.damage.clip(resource().rectB());
+            outputDamage.damage.op(resource().rectB(), SkRegion::Op::kIntersect_Op);
 
             // No damage, wait...
-            if (resource().waitForDamage() && outputDamage.damage.empty())
+            if (resource().waitForDamage() && outputDamage.damage.isEmpty())
                 return 0;
 
             damage = std::move(outputDamage.damage);
@@ -51,23 +51,23 @@ Int8 LScreenshotRequest::copy() noexcept
         else
         {
             // No damage tracking
-            damage.addRect(resource().rectB());
+            damage.setRect(resource().rectB());
         }
 
         wl_shm_buffer *shm_buffer = wl_shm_buffer_get(resource().buffer());
         wl_shm_buffer_begin_access(shm_buffer);
         UInt8 *pixels { static_cast<UInt8*>(wl_shm_buffer_get_data(shm_buffer)) };
         const GLenum format { static_cast<GLenum>(resource().output()->painter()->imp()->openGLExtensions.EXT_read_format_bgra ? GL_BGRA : GL_RGBA) };
-        const Int32 screenH { resource().output()->currentMode()->sizeB().h() };
+        const Int32 screenH { resource().output()->currentMode()->sizeB().height() };
         glPixelStorei(GL_PACK_ALIGNMENT, 4);
         glPixelStorei(GL_PACK_ROW_LENGTH, wl_shm_buffer_get_width(shm_buffer));
         glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
         glPixelStorei(GL_PACK_SKIP_ROWS, 0);
 
         glReadPixels(resource().rectB().x(),
-                     screenH - (resource().rectB().y() + resource().rectB().h()),
-                     resource().rectB().w(),
-                     resource().rectB().h(),
+                     screenH - (resource().rectB().y() + resource().rectB().height()),
+                     resource().rectB().width(),
+                     resource().rectB().height(),
                      format,
                      GL_UNSIGNED_BYTE,
                      pixels);
@@ -178,10 +178,10 @@ Int8 LScreenshotRequest::copy() noexcept
         if (resource().screenCopyManagerRes())
         {
             auto &outputDamage { resource().screenCopyManagerRes()->damage[resource().output()] };
-            outputDamage.damage.clip(resource().rectB());
+            outputDamage.damage.op(resource().rectB(), SkRegion::Op::kIntersect_Op);
 
             // No damage, wait...
-            if (resource().waitForDamage() && outputDamage.damage.empty())
+            if (resource().waitForDamage() && outputDamage.damage.isEmpty())
             {
                 glDeleteFramebuffers(1, &fb);
                 glDeleteRenderbuffers(1, &rb);
@@ -194,13 +194,13 @@ Int8 LScreenshotRequest::copy() noexcept
         else
         {
             // No damage tracking
-            damage.addRect(resource().rectB());
+            damage.op(resource().rectB(), SkRegion::kUnion_Op);
         }
 
         LFramebufferWrapper glFb(
             fb,
-            LSize((Int32)dmaBuffer->planes()->width, (Int32)dmaBuffer->planes()->height),
-            resource().rectB().pos());
+            SkISize((Int32)dmaBuffer->planes()->width, (Int32)dmaBuffer->planes()->height),
+            resource().rectB().topLeft());
 
         LTexture *outputTexture { resource().output()->bufferTexture(resource().output()->currentBuffer()) };
         LPainter &p { *resource().output()->painter() };
@@ -212,10 +212,10 @@ Int8 LScreenshotRequest::copy() noexcept
         p.enableCustomTextureColor(false);
         p.bindTextureMode({
             .texture = outputTexture,
-            .pos = LPoint(0, 0),
-            .srcRect = LRectF(0, outputTexture->sizeB()),
+            .pos = SkIPoint(0, 0),
+            .srcRect = SkRect::MakeWH(outputTexture->sizeB().width(), outputTexture->sizeB().height()),
             .dstSize = glFb.rect().size(),
-            .srcTransform = LTransform::Normal,
+            .srcTransform = CZTransform::Normal,
             .srcScale = 1.f,
         });
         glDisable(GL_BLEND);
@@ -230,7 +230,7 @@ Int8 LScreenshotRequest::copy() noexcept
 
     if (resource().waitForDamage())
     {
-        damage.offset(-resource().rectB().x(), -resource().rectB().y());
+        damage.translate(-resource().rectB().x(), -resource().rectB().y());
         resource().damage(damage);
     }
 

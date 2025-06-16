@@ -4,7 +4,7 @@
 #include <LMargins.h>
 #include <LBaseSurfaceRole.h>
 #include <CZ/CZBitset.h>
-#include <LRect.h>
+#include <CZ/skia/core/SkRect.h>
 #include <string>
 #include <LEdge.h>
 #include <LTime.h>
@@ -206,16 +206,16 @@ public:
         CZBitset<State> state;
 
         /// LToplevelRole::windowGeometry()
-        LRect windowGeometry;
+        SkIRect windowGeometry;
 
         /// LToplevelRole::minSize()
-        LSize minSize;
+        SkISize minSize;
 
         /// LToplevelRole::maxSize()
-        LSize maxSize;
+        SkISize maxSize;
 
         /// LToplevelRole::bounds()
-        LSize bounds;
+        SkISize bounds;
 
         /// LToplevelRole::capabilities()
         CZBitset<Capabilities> capabilities { WindowMenuCap | MaximizeCap | FullscreenCap | MinimizeCap };
@@ -240,10 +240,10 @@ public:
 
         /// Size of the toplevel without decorations
         /// @see windowGeometry() and configureSize()
-        LSize size;
+        SkISize size;
 
         /// @see LToplevelRole::bounds() and configureBounds()
-        LSize bounds;
+        SkISize bounds;
 
         /// @see LToplevelRole::capabilities() and configureCapabilities()
         CZBitset<Capabilities> capabilities;
@@ -331,9 +331,9 @@ public:
      * @param size The size is in surface coordinates and does not include decorations.\n
      *             If either width or height is 0, the client is free to pick its own size.
      */
-    void configureSize(const LSize &size) noexcept
+    void configureSize(const SkISize &size) noexcept
     {
-        configureSize(size.w(), size.h());
+        configureSize(size.width(), size.height());
     }
 
     /**
@@ -345,8 +345,8 @@ public:
     {
         updateSerial();
         m_flags.add(HasSizeOrStateToSend);
-        m_pendingConfiguration.size.setW(width < 0 ? 0 : width);
-        m_pendingConfiguration.size.setH(height < 0 ? 0 : height);
+        m_pendingConfiguration.size.fWidth = width < 0 ? 0 : width;
+        m_pendingConfiguration.size.fHeight = height < 0 ? 0 : height;
     }
 
     /**
@@ -408,9 +408,9 @@ public:
      *
      * @param bounds The suggested maximum size. Setting a component to 0 disables the constraint for that component.
      */
-    void configureBounds(const LSize &bounds) noexcept
+    void configureBounds(const SkISize &bounds) noexcept
     {
-        configureBounds(bounds.w(), bounds.h());
+        configureBounds(bounds.width(), bounds.height());
     }
 
     /**
@@ -422,8 +422,8 @@ public:
     {
         updateSerial();
         m_flags.add(HasBoundsToSend);
-        m_pendingConfiguration.bounds.setW(width < 0 ? 0 : width);
-        m_pendingConfiguration.bounds.setH(height < 0 ? 0 : height);
+        m_pendingConfiguration.bounds.fWidth = width < 0 ? 0 : width;
+        m_pendingConfiguration.bounds.fHeight = height < 0 ? 0 : height;
     }
 
     /**
@@ -538,7 +538,7 @@ public:
      *
      * @note This is an alias for Atoms::windowGeometry.
      */
-    const LRect &windowGeometry() const noexcept
+    const SkIRect &windowGeometry() const noexcept
     {
         return atoms().windowGeometry;
     }
@@ -581,7 +581,7 @@ public:
      *
      * Components with a value of 0 indicate the limit is disabled.
      */
-    const LSize &minSize() const noexcept
+    const SkISize &minSize() const noexcept
     {
         return atoms().minSize;
     }
@@ -591,7 +591,7 @@ public:
      *
      * Components with a value of 0 indicate the limit is disabled.
      */
-    const LSize &maxSize() const noexcept
+    const SkISize &maxSize() const noexcept
     {
         return atoms().maxSize;
     }
@@ -602,12 +602,12 @@ public:
      * @param size The size to be checked.
      * @return `true` if the size is within the specified range, `false` otherwise.
     */
-    bool sizeInRange(const LSize &size) const noexcept
+    bool sizeInRange(const SkISize &size) const noexcept
     {
-        return (minSize().w() == 0 || minSize().w() <= size.w()) &&
-               (maxSize().w() == 0 || maxSize().w() >= size.w()) &&
-               (minSize().h() == 0 || minSize().h() <= size.h()) &&
-               (maxSize().h() == 0 || maxSize().h() >= size.h());
+        return (minSize().width() == 0 || minSize().width() <= size.width()) &&
+               (maxSize().width() == 0 || maxSize().width() >= size.width()) &&
+               (minSize().height() == 0 || minSize().height() <= size.height()) &&
+               (maxSize().height() == 0 || maxSize().height() >= size.height());
     }
 
     /**
@@ -629,7 +629,7 @@ public:
      *
      * @note This is an alias for Atoms::bounds.
      */
-    const LSize &bounds() const noexcept
+    const SkISize &bounds() const noexcept
     {
         return atoms().bounds;
     }
@@ -833,7 +833,7 @@ public:
      * to save the position and size of the toplevel window before it is maximized
      * or switched to fullscreen, allowing it to be restored later.
      */
-    LRect prevRect;
+    SkIRect prevRect;
 
     ///@}
 
@@ -850,7 +850,7 @@ public:
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp rolePos
      */
-    virtual const LPoint &rolePos() const override;
+    virtual SkIPoint rolePos() const override;
 
     /**
      * @brief Configuration request.

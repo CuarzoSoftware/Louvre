@@ -5,6 +5,7 @@
 #include <CZ/Louvre/Protocols/Wayland/GOutput.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
 #include <CZ/Louvre/Private/LPainterPrivate.h>
+#include <CZ/Utils/CZRegionUtils.h>
 #include <LOutputMode.h>
 #include <LUtils.h>
 
@@ -27,7 +28,7 @@ RScreenCopyFrame::RScreenCopyFrame
         GScreenCopyManager *screenCopyManagerRes,
         LOutput *output,
         bool overlayCursor,
-        const LRect &region,
+        const SkIRect &region,
         UInt32 id,
         Int32 version
     ) noexcept
@@ -46,7 +47,7 @@ RScreenCopyFrame::RScreenCopyFrame
 {
     if (!output)
     {
-        buffer(WL_SHM_FORMAT_XRGB8888, LSize(1), 4);
+        buffer(WL_SHM_FORMAT_XRGB8888, SkISize(1, 1), 4);
         bufferDone();
         failed();
         return;
@@ -68,34 +69,30 @@ RScreenCopyFrame::RScreenCopyFrame
 
     if (damage.firstFrame)
     {
-        damage.damage.addRect(0, m_initOutputModeSize);
+        damage.damage.op(SkIRect::MakeSize(m_initOutputModeSize), SkRegion::Op::kUnion_Op);
         damage.firstFrame = false;
     }
 
-    LSizeF scale;
+    SkSize scale;
 
-    if (Louvre::is90Transform(output->transform()))
+    if (CZ::Is90Transform(output->transform()))
     {
-        scale.setW(Float32(m_initOutputModeSize.w())/Float32(m_initOutputSize.h()));
-        scale.setH(Float32(m_initOutputModeSize.h())/Float32(m_initOutputSize.w()));
+        scale.fWidth = Float32(m_initOutputModeSize.width())/Float32(m_initOutputSize.height());
+        scale.fHeight = Float32(m_initOutputModeSize.height())/Float32(m_initOutputSize.width());
     }
     else
     {
-        scale.setW(Float32(m_initOutputModeSize.w())/Float32(m_initOutputSize.w()));
-        scale.setH(Float32(m_initOutputModeSize.h())/Float32(m_initOutputSize.h()));
+        scale.fWidth = Float32(m_initOutputModeSize.width())/Float32(m_initOutputSize.width());
+        scale.fHeight = Float32(m_initOutputModeSize.height())/Float32(m_initOutputSize.height());
     }
 
-    LRegion bufferRegion(m_rect);
-    bufferRegion.transform(m_initOutputSize, output->transform());
-    bufferRegion.multiply(scale.x(), scale.y());
+    SkRegion bufferRegion(m_rect);
+    CZRegionUtils::ApplyTransform(bufferRegion, m_initOutputSize, output->transform());
+    CZRegionUtils::Scale(bufferRegion, scale.width(), scale.height());
+    bufferRegion.op(SkIRect::MakeSize(m_initOutputModeSize), SkRegion::Op::kIntersect_Op);
 
-    bufferRegion.clip(0, m_initOutputModeSize);
-    const LBox &extents { bufferRegion.extents() };
-    m_rectB.setX(extents.x1);
-    m_rectB.setY(extents.y1);
-    m_rectB.setW(extents.x2 - extents.x1);
-    m_rectB.setH(extents.y2 - extents.y1);
-    m_stride = m_rectB.w() * 4;
+    m_rectB = bufferRegion.getBounds();
+    m_stride = m_rectB.width() * 4;
 
     if (output->painter()->imp()->openGLExtensions.EXT_read_format_bgra)
     {
@@ -163,7 +160,7 @@ void RScreenCopyFrame::copyCommon(wl_resource *resource, wl_resource *buffer, bo
             return;
         }
 
-        if (res.rectB().w() != wl_shm_buffer_get_width(shmBuffer) || res.rectB().h() != wl_shm_buffer_get_height(shmBuffer))
+        if (res.rectB().width() != wl_shm_buffer_get_width(shmBuffer) || res.rectB().height() != wl_shm_buffer_get_height(shmBuffer))
         {
             res.postError(ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer size.");
             return;
@@ -191,7 +188,7 @@ void RScreenCopyFrame::copyCommon(wl_resource *resource, wl_resource *buffer, bo
             return;
         }
 
-        if (static_cast<Int32>(dmaBuffer->planes()->width) != res.rectB().w() || static_cast<Int32>(dmaBuffer->planes()->height) != res.rectB().h())
+        if (static_cast<Int32>(dmaBuffer->planes()->width) != res.rectB().width() || static_cast<Int32>(dmaBuffer->planes()->height) != res.rectB().height())
         {
             res.postError(ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER, "Invalid buffer size.");
             return;
@@ -229,9 +226,9 @@ void RScreenCopyFrame::copy_with_damage(wl_client */*client*/, wl_resource *reso
 
 /******************** EVENTS ********************/
 
-void RScreenCopyFrame::buffer(UInt32 shmFormat, const LSize &size, UInt32 stride) noexcept
+void RScreenCopyFrame::buffer(UInt32 shmFormat, const SkISize &size, UInt32 stride) noexcept
 {
-    zwlr_screencopy_frame_v1_send_buffer(resource(), shmFormat, size.w(), size.h(), stride);
+    zwlr_screencopy_frame_v1_send_buffer(resource(), shmFormat, size.width(), size.height(), stride);
 }
 
 void RScreenCopyFrame::flags(UInt32 flags) noexcept
@@ -252,12 +249,12 @@ void RScreenCopyFrame::failed() noexcept
     zwlr_screencopy_frame_v1_send_failed(resource());
 }
 
-bool RScreenCopyFrame::damage(const LRect &rect) noexcept
+bool RScreenCopyFrame::damage(const SkIRect &rect) noexcept
 {
 #if LOUVRE_SCREEN_COPY_MANAGER_VERSION >= 2
     if (version() >= 2)
     {
-        zwlr_screencopy_frame_v1_send_damage(resource(), rect.x(), rect.y(), rect.w(), rect.h());
+        zwlr_screencopy_frame_v1_send_damage(resource(), rect.x(), rect.y(), rect.width(), rect.height());
         return true;
     }
 #else
@@ -266,25 +263,24 @@ bool RScreenCopyFrame::damage(const LRect &rect) noexcept
     return false;
 }
 
-bool RScreenCopyFrame::damage(const LRegion &region) noexcept
+bool RScreenCopyFrame::damage(const SkRegion &region) noexcept
 {
 #if LOUVRE_SCREEN_COPY_MANAGER_VERSION >= 2
     if (version() >= 2)
     {
-        Int32 n;
-        const LBox *box { region.boxes(&n) };
+        SkRegion::Iterator it(region);
 
-        while (n > 0)
+        while (!it.done())
         {
             zwlr_screencopy_frame_v1_send_damage(
                 resource(),
-                box->x1,
-                box->y1,
-                box->x2 - box->x1,
-                box->y2 - box->y1);
-            box++;
-            n--;
+                it.rect().x(),
+                it.rect().y(),
+                it.rect().width(),
+                it.rect().height());
+            it.next();
         }
+
         return true;
     }
 #else
@@ -293,12 +289,12 @@ bool RScreenCopyFrame::damage(const LRegion &region) noexcept
     return false;
 }
 
-bool RScreenCopyFrame::linuxDMABuf(UInt32 format, const LSize &size) noexcept
+bool RScreenCopyFrame::linuxDMABuf(UInt32 format, const SkISize &size) noexcept
 {
 #if LOUVRE_SCREEN_COPY_MANAGER_VERSION >= 3
     if (version() >= 3)
     {
-        zwlr_screencopy_frame_v1_send_linux_dmabuf(resource(), format, size.w(), size.h());
+        zwlr_screencopy_frame_v1_send_linux_dmabuf(resource(), format, size.width(), size.height());
         return true;
     }
 #else

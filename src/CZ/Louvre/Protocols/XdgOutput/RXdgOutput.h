@@ -16,8 +16,8 @@ public:
     /******************** EVENTS ********************/
 
     // Since 1
-    void logicalPosition(const LPoint &pos) noexcept;
-    void logicalSize(const LSize &size) noexcept;
+    void logicalPosition(const SkIPoint &pos) noexcept;
+    void logicalSize(const SkISize &size) noexcept;
     void done() noexcept;
 
     // Since 2

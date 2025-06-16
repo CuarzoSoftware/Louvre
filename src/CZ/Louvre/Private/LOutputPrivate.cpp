@@ -8,6 +8,7 @@
 #include <CZ/Louvre/Private/LCursorPrivate.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
+#include <CZ/Utils/CZRegionUtils.h>
 #include <LSessionLockManager.h>
 #include <LSessionLockRole.h>
 #include <LExclusiveZone.h>
@@ -35,7 +36,7 @@ void LOutput::LOutputPrivate::backendInitializeGL()
     compositor()->imp()->disablePendingPosixSignals();
     output->imp()->global.reset(compositor()->createGlobal<Protocols::Wayland::GOutput>(0, output));
     output->setScale(output->imp()->fractionalScale);
-    lastPos = rect.pos();
+    lastPos = rect.topLeft();
     lastSize = rect.size();
     cursor()->imp()->textureChanged = true;
     cursor()->imp()->update();
@@ -57,30 +58,37 @@ void LOutput::LOutputPrivate::damageToBufferCoords() noexcept
 
     if (screenshotCursorTimeout > 0 && cursor()->visible() && cursor()->enabled(output))
     {
-        damage.addRect(LRect(prevCursorRect.pos() + output->pos(), prevCursorRect.size()));
+        damage.op(
+            SkIRect::MakePtSize(prevCursorRect.topLeft() + output->pos(), prevCursorRect.size()),
+            SkRegion::kUnion_Op);
         stateFlags.add(CursorNeedsRendering);
     }
 
-    if (!damage.empty() &&
+    if (!damage.isEmpty() &&
         (stateFlags.hasAll(UsingFractionalScale | FractionalOversamplingEnabled) ||
          output->hasBufferDamageSupport() ||
          compositor()->imp()->screenshotManagers > 0 ||
          stateFlags.has(ScreenshotsWithCursor | ScreenshotsWithoutCursor)))
     {
-        damage.offset(-rect.pos().x(), -rect.pos().y());
-        damage.transform(rect.size(), transform);
+        damage.translate(-rect.x(), -rect.y());
+        CZRegionUtils::ApplyTransform(damage, rect.size(), transform);
 
-        LRegion tmp; Int32 n;
-        const LBox *box { damage.boxes(&n) };
-        while (n > 0)
+        SkRegion tmp;
+        SkRegion::Iterator it(damage);
+
+        while (!it.done())
         {
-            tmp.addRect(floorf(Float32(box->x1) * fractionalScale) - 2, floorf(Float32(box->y1) * fractionalScale) - 2,
-                        ceilf(Float32(box->x2 - box->x1) * fractionalScale) + 4, ceilf(Float32(box->y2 - box->y1) * fractionalScale) + 4);
-            n--; box++;
+            tmp.op(
+                SkIRect::MakeXYWH(
+                SkScalarFloorToInt(Float32(it.rect().x()) * fractionalScale) - 2,
+                SkScalarFloorToInt(Float32(it.rect().y()) * fractionalScale) - 2,
+                SkScalarCeilToInt(Float32(it.rect().width()) * fractionalScale) + 4,
+                SkScalarCeilToInt(Float32(it.rect().height()) * fractionalScale) + 4),
+                SkRegion::kUnion_Op);
+            it.next();
         }
 
-        damage = std::move(tmp);
-        damage.clip(LRect(0, output->currentMode()->sizeB()));
+        damage.op(SkIRect::MakeSize(output->currentMode()->sizeB()), std::move(tmp), SkRegion::kIntersect_Op);
 
         if (output->hasBufferDamageSupport())
             compositor()->imp()->graphicBackend->outputSetBufferDamage(output, damage);
@@ -94,7 +102,7 @@ void LOutput::LOutputPrivate::damageToBufferCoords() noexcept
                     auto &outputDamage { screenCpyManager->damage[output] };
 
                     if (!outputDamage.firstFrame)
-                        outputDamage.damage.addRegion(damage);
+                        outputDamage.damage.op(damage, SkRegion::kUnion_Op);
                 }
             }
         }
@@ -104,14 +112,14 @@ void LOutput::LOutputPrivate::damageToBufferCoords() noexcept
 void LOutput::LOutputPrivate::blitFractionalScaleFb(bool cursorOnly) noexcept
 {
     stateFlags.remove(UsingFractionalScale);
-    const LTransform prevTrasform { transform };
-    transform = LTransform::Normal;
+    const CZTransform prevTrasform { transform };
+    transform = CZTransform::Normal;
     const Float32 prevScale { scale };
     const Float32 prevFracScale { fractionalScale };
     scale = 1.f;
-    const LPoint prevPos { rect.pos() };
-    const LSize prevSize { rect.size() };
-    rect.setPos(LPoint(0));
+    const SkIPoint prevPos { rect.topLeft() };
+    const SkISize prevSize { rect.size() };
+    rect.offsetTo(0, 0);
     updateRect();
     painter->bindFramebuffer(&fb);
     painter->enableCustomTextureColor(false);
@@ -121,10 +129,10 @@ void LOutput::LOutputPrivate::blitFractionalScaleFb(bool cursorOnly) noexcept
     fractionalFb.setFence();
     painter->bindTextureMode({
         .texture = fractionalFb.texture(0),
-        .pos = rect.pos(),
-        .srcRect = LRect(0, fractionalFb.sizeB()),
+        .pos = rect.topLeft(),
+        .srcRect = SkRect::MakeWH(fractionalFb.sizeB().width(), fractionalFb.sizeB().height()),
         .dstSize = rect.size(),
-        .srcTransform = LTransform::Normal,
+        .srcTransform = CZTransform::Normal,
         .srcScale = 1.f
     });
 
@@ -132,19 +140,28 @@ void LOutput::LOutputPrivate::blitFractionalScaleFb(bool cursorOnly) noexcept
 
     if (cursorOnly)
     {
-        LRegion cursorDamage { prevCursorRect };
-        cursorDamage.transform(prevSize, prevTrasform);
-        LRegion tmp; Int32 n;
-        const LBox *box { cursorDamage.boxes(&n) };
-        while (n > 0)
+        SkRegion cursorDamage { prevCursorRect };
+        CZRegionUtils::ApplyTransform(cursorDamage, prevSize, prevTrasform);
+        SkRegion tmp;
+
+        SkRegion::Iterator it(cursorDamage);
+
+        while (!it.done())
         {
-            tmp.addRect(floorf(Float32(box->x1) * prevFracScale) - 2, floorf(Float32(box->y1) * prevFracScale) - 2,
-                        ceilf(Float32(box->x2 - box->x1) * prevFracScale) + 4, ceilf(Float32(box->y2 - box->y1) * prevFracScale) + 4);
-            n--; box++;
+            tmp.op(
+                SkIRect::MakeXYWH(
+                    SkScalarFloorToInt(Float32(it.rect().x()) * prevFracScale) - 2,
+                    SkScalarFloorToInt(Float32(it.rect().y()) * prevFracScale) - 2,
+                    SkScalarCeilToInt(Float32(it.rect().width()) * prevFracScale) + 4,
+                    SkScalarCeilToInt(Float32(it.rect().height()) * prevFracScale) + 4),
+                SkRegion::kUnion_Op);
+            it.next();
         }
 
-        cursorDamage = std::move(tmp);
-        cursorDamage.clip(LRect(0, output->currentMode()->sizeB()));
+        cursorDamage.op(
+            SkIRect::MakeSize(output->currentMode()->sizeB()),
+            std::move(tmp),
+            SkRegion::kIntersect_Op);
 
         painter->drawRegion(cursorDamage);
     }
@@ -154,7 +171,7 @@ void LOutput::LOutputPrivate::blitFractionalScaleFb(bool cursorOnly) noexcept
     stateFlags.add(UsingFractionalScale);
     transform = prevTrasform;
     scale = prevScale;
-    rect.setPos(prevPos);
+    rect.offsetTo(prevPos.x(), prevPos.y());
     updateRect();
 }
 
@@ -272,10 +289,10 @@ void LOutput::LOutputPrivate::backendPaintGL()
         compositor()->imp()->unlockPoll();
     }
 
-    if (lastPos != rect.pos())
+    if (lastPos != rect.topLeft())
     {
         output->moveGL();
-        lastPos = rect.pos();
+        lastPos = rect.topLeft();
     }
 
     if (lastSize != rect.size())
@@ -295,8 +312,7 @@ void LOutput::LOutputPrivate::backendPaintGL()
 
     /* Mark the entire output rect as damaged for compositors
      * that do not track damage.*/
-    damage.clear();
-    damage.addRect(output->rect());
+    damage.setRect(output->rect());
 
     /* Add the region the user should repaint if hw cursor
      * is disabled */
@@ -399,10 +415,10 @@ void LOutput::LOutputPrivate::backendResizeGL()
 
     output->resizeGL();
 
-    if (lastPos != rect.pos())
+    if (lastPos != rect.topLeft())
     {
         output->moveGL();
-        lastPos = rect.pos();
+        lastPos = rect.topLeft();
     }
 
     if (callLock)
@@ -463,23 +479,24 @@ void LOutput::LOutputPrivate::updateRect()
     if (stateFlags.has(UsingFractionalScale))
     {
         sizeB = compositor()->imp()->graphicBackend->outputGetCurrentMode(output)->sizeB();
-        sizeB.setW(roundf(Float32(sizeB.w()) * scale / fractionalScale));
-        sizeB.setH(roundf(Float32(sizeB.h()) * scale / fractionalScale));
+        sizeB.fWidth = SkScalarRoundToInt(Float32(sizeB.width()) * scale / fractionalScale);
+        sizeB.fHeight = SkScalarRoundToInt(Float32(sizeB.height()) * scale / fractionalScale);
     }
     else
         sizeB = compositor()->imp()->graphicBackend->outputGetCurrentMode(output)->sizeB();
 
     // Swap width with height
-    if (Louvre::is90Transform(transform))
+    if (CZ::Is90Transform(transform))
     {
-        Int32 tmpW = sizeB.w();
-        sizeB.setW(sizeB.h());
-        sizeB.setH(tmpW);
+        const Int32 tmpW { sizeB.width() };
+        sizeB.fWidth = sizeB.height();
+        sizeB.fHeight = tmpW;
     }
 
-    rect.setSize(sizeB);
-    rect.setW(roundf(Float32(rect.w())/scale));
-    rect.setH(roundf(Float32(rect.h())/scale));
+    rect.setXYWH(
+        rect.x(), rect.y(),
+        roundf(Float32(sizeB.width())/scale),
+        roundf(Float32(sizeB.height())/scale));
 
     if (!stateFlags.has(IsBlittingFramebuffers))
         updateExclusiveZones();
@@ -501,20 +518,20 @@ void LOutput::LOutputPrivate::updateGlobals()
 
 void LOutput::LOutputPrivate::calculateCursorDamage() noexcept
 {
-    cursorDamage.clear();
+    cursorDamage.setEmpty();
 
     if (cursor()->enabled(output) && !cursor()->hwCompositingEnabled(output) && cursor()->visible())
     {
         stateFlags.add(CursorNeedsRendering);
-        cursorDamage.addRect(cursor()->rect());
-        cursorDamage.addRect(LRect(prevCursorRect.pos() + output->pos(), prevCursorRect.size()));
-        cursorDamage.clip(output->rect());
+        cursorDamage.op(cursor()->rect(), SkRegion::Op::kUnion_Op);
+        cursorDamage.op(SkIRect::MakePtSize(prevCursorRect.topLeft() + output->pos(), prevCursorRect.size()), SkRegion::kUnion_Op);
+        cursorDamage.op(output->rect(), SkRegion::kIntersect_Op);
         dirtyCursorFBs = output->buffersCount();
     }
 
     if (stateFlags.has(CursorRenderedInPrevFrame) && cursor()->hwCompositingEnabled(output))
     {
-        cursorDamage.addRect(LRect(prevCursorRect.pos() + output->pos(), prevCursorRect.size()));
+        cursorDamage.op(SkIRect::MakePtSize(prevCursorRect.topLeft() + output->pos(), prevCursorRect.size()), SkRegion::kUnion_Op);
         output->repaint();
 
         if (dirtyCursorFBs > 0)
@@ -523,7 +540,7 @@ void LOutput::LOutputPrivate::calculateCursorDamage() noexcept
             stateFlags.remove(CursorRenderedInPrevFrame);
     }
 
-    prevCursorRect = LRect(cursor()->rect().pos() - output->pos(), cursor()->rect().size());
+    prevCursorRect = SkIRect::MakePtSize(cursor()->rect().topLeft() - output->pos(), cursor()->rect().size());
 }
 
 void LOutput::LOutputPrivate::drawCursor() noexcept
@@ -541,10 +558,12 @@ void LOutput::LOutputPrivate::drawCursor() noexcept
         painter->bindTextureMode(
         {
             .texture = cursor()->texture(),
-            .pos = cursor()->rect().pos(),
-            .srcRect = LRect(0, cursor()->texture()->sizeB()),
+            .pos = cursor()->rect().topLeft(),
+            .srcRect = SkRect::MakeWH(
+                 cursor()->texture()->sizeB().width(),
+                 cursor()->texture()->sizeB().height()),
             .dstSize = cursor()->rect().size(),
-            .srcTransform = LTransform::Normal,
+            .srcTransform = CZTransform::Normal,
             .srcScale = 1.f
         });
         painter->drawRect(cursor()->rect());
@@ -599,7 +618,7 @@ void LOutput::LOutputPrivate::updateExclusiveZones() noexcept
 {
     exclusiveEdges = {0, 0, 0, 0};
 
-    LRect prev;
+    SkIRect prev;
 
     for (LExclusiveZone *zone : exclusiveZones)
     {
@@ -614,32 +633,32 @@ void LOutput::LOutputPrivate::updateExclusiveZones() noexcept
         case LEdgeNone:
             break;
         case LEdgeLeft:
-            zone->m_rect.setX(exclusiveEdges.left);
-            zone->m_rect.setY(exclusiveEdges.top);
-            zone->m_rect.setW(zone->size());
-            zone->m_rect.setH(rect.h() - exclusiveEdges.top - exclusiveEdges.bottom);
+            zone->m_rect.fLeft = exclusiveEdges.left;
+            zone->m_rect.fTop = exclusiveEdges.top;
+            zone->m_rect.fRight = zone->m_rect.fLeft + zone->size();
+            zone->m_rect.fBottom = rect.height() - exclusiveEdges.bottom;
             exclusiveEdges.left += zone->size();
             break;
         case LEdgeTop:
-            zone->m_rect.setX(exclusiveEdges.left);
-            zone->m_rect.setY(exclusiveEdges.top);
-            zone->m_rect.setH(zone->size());
-            zone->m_rect.setW(rect.w() - exclusiveEdges.left - exclusiveEdges.right);
+            zone->m_rect.fLeft = exclusiveEdges.left;
+            zone->m_rect.fTop = exclusiveEdges.top;
+            zone->m_rect.fBottom = zone->m_rect.fTop + zone->size();
+            zone->m_rect.fRight = rect.width() - exclusiveEdges.right;
             exclusiveEdges.top += zone->size();
             break;
         case LEdgeRight:
-            zone->m_rect.setY(exclusiveEdges.top);
-            zone->m_rect.setH(rect.h() - exclusiveEdges.top - exclusiveEdges.bottom);
-            zone->m_rect.setW(zone->size());
+            zone->m_rect.fTop = exclusiveEdges.top;
+            zone->m_rect.fBottom = rect.height() - exclusiveEdges.bottom;
             exclusiveEdges.right += zone->size();
-            zone->m_rect.setX(rect.w() - exclusiveEdges.right);
+            zone->m_rect.fLeft = rect.width() - exclusiveEdges.right;
+            zone->m_rect.fRight = zone->m_rect.fLeft + zone->size();
             break;
         case LEdgeBottom:
-            zone->m_rect.setX(exclusiveEdges.left);
-            zone->m_rect.setW(rect.w() - exclusiveEdges.left - exclusiveEdges.right);
-            zone->m_rect.setH(zone->size());
+            zone->m_rect.fLeft = exclusiveEdges.left;
+            zone->m_rect.fRight = rect.width() - exclusiveEdges.right;
             exclusiveEdges.bottom += zone->size();
-            zone->m_rect.setY(rect.h() - exclusiveEdges.bottom);
+            zone->m_rect.fTop = rect.height() - exclusiveEdges.bottom;
+            zone->m_rect.fBottom = zone->m_rect.fTop + zone->size();
             break;
         }
 
@@ -648,10 +667,10 @@ void LOutput::LOutputPrivate::updateExclusiveZones() noexcept
     }
 
     prev = availableGeometry;
-    availableGeometry.setX(exclusiveEdges.left);
-    availableGeometry.setY(exclusiveEdges.top);
-    availableGeometry.setW(rect.w() - exclusiveEdges.left - exclusiveEdges.right);
-    availableGeometry.setH(rect.h() - exclusiveEdges.top - exclusiveEdges.bottom);
+    availableGeometry.fLeft = exclusiveEdges.left;
+    availableGeometry.fTop = exclusiveEdges.top;
+    availableGeometry.fRight = rect.width() - exclusiveEdges.right;
+    availableGeometry.fBottom = rect.height() - exclusiveEdges.bottom;
 
     const bool availableGeometryChanged { availableGeometry != prev };
 
@@ -665,14 +684,18 @@ void LOutput::LOutputPrivate::updateExclusiveZones() noexcept
             if (zone->size() >= 0)
                 zone->m_rect = availableGeometry;
             else
-                zone->m_rect = LRect(0, rect.size());
+                zone->m_rect.setSize(rect.size());
         }
         else
         {
             if (zone->size() == 0)
                 zone->m_rect = availableGeometry;
             else if ( zone->size() < 0)
-                zone->m_rect = LRect(0, rect.size());
+                zone->m_rect.setXYWH(
+                    zone->m_rect.x(),
+                    zone->m_rect.y(),
+                    rect.width(),
+                    rect.height());
         }
 
         if (zone->m_onRectChangeCallback && prev != zone->m_rect)

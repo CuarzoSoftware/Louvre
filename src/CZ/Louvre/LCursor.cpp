@@ -4,11 +4,12 @@
 #include <CZ/Louvre/Private/LTexturePrivate.h>
 #include <CZ/Louvre/Private/LPainterPrivate.h>
 
+#include <CZ/Utils/CZRegionUtils.h>
 #include <LXCursor.h>
 #include <LCursorRole.h>
 #include <LPointer.h>
 #include <LSeat.h>
-#include <LRect.h>
+#include <CZ/skia/core/SkRect.h>
 #include <LPainter.h>
 #include <LLog.h>
 
@@ -53,10 +54,10 @@ bool LCursor::hwCompositingEnabled(LOutput *output) const noexcept
     return hasHardwareSupport(output) && output->imp()->stateFlags.has(LOutput::LOutputPrivate::HwCursorEnabled);
 }
 
-const LRegion &LCursor::damage(LOutput *output) const noexcept
+const SkRegion &LCursor::damage(LOutput *output) const noexcept
 {
     if (!output)
-        return LRegion::EmptyRegion();
+        return CZRegionUtils::Empty();
 
     return output->imp()->cursorDamage;
 }
@@ -68,14 +69,14 @@ LCursor::LCursor() noexcept : LPRIVATE_INIT_UNIQUE(LCursor)
     compositor()->imp()->cursor = this;
 
     if (!imp()->louvreTexture.setDataFromMainMemory(
-            LSize(LOUVRE_DEFAULT_CURSOR_WIDTH, LOUVRE_DEFAULT_CURSOR_HEIGHT),
+            SkISize(LOUVRE_DEFAULT_CURSOR_WIDTH, LOUVRE_DEFAULT_CURSOR_HEIGHT),
             LOUVRE_DEFAULT_CURSOR_STRIDE,
             DRM_FORMAT_ARGB8888,
             louvre_default_cursor_data()))
         LLog::warning("[LCursor::LCursor] Failed to create default cursor texture.");
 
     imp()->defaultTexture = &imp()->louvreTexture;
-    imp()->defaultHotspotB = LPointF(9);
+    imp()->defaultHotspotB = SkPoint(9);
 
     glGenFramebuffers(1, &imp()->glFramebuffer);
 
@@ -111,7 +112,7 @@ LCursor::LCursor() noexcept : LPRIVATE_INIT_UNIQUE(LCursor)
 
     skipGL:
 
-    setSize(LSize(24));
+    setSize(SkSize(24, 24));
     useDefault();
     setVisible(true);
 }
@@ -142,7 +143,7 @@ void LCursor::useDefault() noexcept
     setTextureB(imp()->defaultTexture, imp()->defaultHotspotB);
 }
 
-void LCursor::replaceDefaultB(const LTexture *texture, const LPointF &hotspot) noexcept
+void LCursor::replaceDefaultB(const LTexture *texture, const SkPoint &hotspot) noexcept
 {
     if (compositor()->state() == LCompositor::Uninitializing)
         return;
@@ -152,7 +153,7 @@ void LCursor::replaceDefaultB(const LTexture *texture, const LPointF &hotspot) n
     if (!texture)
     {
         imp()->defaultTexture = &imp()->louvreTexture;
-        imp()->defaultHotspotB = LPointF(9);
+        imp()->defaultHotspotB = SkPoint(9);
     }
     else
     {
@@ -164,7 +165,7 @@ void LCursor::replaceDefaultB(const LTexture *texture, const LPointF &hotspot) n
         useDefault();
 }
 
-void LCursor::setTextureB(const LTexture *texture, const LPointF &hotspot) noexcept
+void LCursor::setTextureB(const LTexture *texture, const SkPoint &hotspot) noexcept
 {
     imp()->clientCursor.reset();
 
@@ -189,7 +190,8 @@ void LCursor::setCursor(const LClientCursor &clientCursor) noexcept
 {
     if (clientCursor.cursorRole())
     {
-        setTextureB(clientCursor.cursorRole()->surface()->texture(), clientCursor.cursorRole()->hotspotB());
+        setTextureB(clientCursor.cursorRole()->surface()->texture(),
+                    SkPoint::Make(clientCursor.cursorRole()->hotspotB().x(), clientCursor.cursorRole()->hotspotB().y()));
         imp()->clientCursor.reset(&clientCursor);
         setVisible(clientCursor.visible());
     }
@@ -203,7 +205,8 @@ void LCursor::setCursor(const LClientCursor &clientCursor) noexcept
 void LCursor::setCursor(const LXCursor *xcursor) noexcept
 {
     if (xcursor)
-        setTextureB(xcursor->texture(), xcursor->hotspotB());
+        setTextureB(xcursor->texture(),
+                    SkPoint::Make(xcursor->hotspotB().x(), xcursor->hotspotB().y()));
 }
 
 const LClientCursor *LCursor::clientCursor() const noexcept
@@ -213,18 +216,18 @@ const LClientCursor *LCursor::clientCursor() const noexcept
 
 void LCursor::move(Float32 x, Float32 y) noexcept
 {
-    setPos(m_pos + LPointF(x,y));
+    setPos(m_pos + SkPoint(x,y));
 }
 
-void LCursor::move(const LPointF &delta) noexcept
+void LCursor::move(const SkPoint &delta) noexcept
 {
     setPos(m_pos + delta);
 }
 
-void Louvre::LCursor::setPos(const LPointF &pos) noexcept
+void Louvre::LCursor::setPos(const SkPoint &pos) noexcept
 {
     for (LOutput *output : compositor()->outputs())
-        if (output->rect().containsPoint(pos) && output)
+        if (output->rect().contains(pos.x(), pos.y()) && output)
             imp()->setOutput(output);
 
     if (!cursor()->output())
@@ -232,26 +235,26 @@ void Louvre::LCursor::setPos(const LPointF &pos) noexcept
 
     m_pos = pos;
 
-    LRect area = cursor()->output()->rect();
-    if (m_pos.x() > area.x() + area.w())
-        m_pos.setX(area.x() + area.w());
+    SkIRect area = cursor()->output()->rect();
+    if (m_pos.x() > area.x() + area.width())
+        m_pos.fX = area.x() + area.width();
     if (m_pos.x() < area.x())
-        m_pos.setX(area.x());
+        m_pos.fX = area.x();
 
-    if (m_pos.y() > area.y() + area.h())
-        m_pos.setY(area.y() + area.h());
+    if (m_pos.y() > area.y() + area.height())
+        m_pos.fY = area.y() + area.height();
     if (m_pos.y() < area.y())
-        m_pos.setY(area.y());
+        m_pos.fY = area.y();
 
     imp()->update();
 }
 
 void LCursor::setPos(Float32 x, Float32 y) noexcept
 {
-    setPos(LPointF(x, y));
+    setPos(SkPoint(x, y));
 }
 
-void LCursor::setHotspotB(const LPointF &hotspot) noexcept
+void LCursor::setHotspotB(const SkPoint &hotspot) noexcept
 {
     if (imp()->hotspotB != hotspot)
     {
@@ -260,7 +263,7 @@ void LCursor::setHotspotB(const LPointF &hotspot) noexcept
     }
 }
 
-void LCursor::setSize(const LSizeF &size) noexcept
+void LCursor::setSize(SkSize size) noexcept
 {
     if (imp()->size != size)
     {
@@ -322,7 +325,7 @@ bool LCursor::hasHardwareSupport(const LOutput *output) const noexcept
     return compositor()->imp()->graphicBackend->outputHasHardwareCursorSupport((LOutput*)output);
 }
 
-const LPointF &LCursor::hotspotB() const noexcept
+const SkPoint &LCursor::hotspotB() const noexcept
 {
     return imp()->hotspotB;
 }
@@ -337,7 +340,7 @@ LTexture *LCursor::defaultTexture() const noexcept
     return imp()->defaultTexture;
 }
 
-const LPointF &LCursor::defaultHotspotB() const noexcept
+const SkPoint &LCursor::defaultHotspotB() const noexcept
 {
     return imp()->defaultHotspotB;
 }
@@ -366,7 +369,7 @@ const std::vector<LOutput *> &LCursor::intersectedOutputs() const noexcept
     return imp()->intersectedOutputs;
 }
 
-const LRect &LCursor::rect() const noexcept
+const SkIRect &LCursor::rect() const noexcept
 {
     return imp()->rect;
 }

@@ -38,10 +38,10 @@ void LToplevelResizeSession::handleGeometryChange()
     if (!m_lastSerialHandled)
     {
         if (m_edge.has(LEdgeTop))
-            m_toplevel->surface()->setY(m_initPos.y() + (m_initSize.h() - m_toplevel->windowGeometry().h()));
+            m_toplevel->surface()->setY(m_initPos.y() + (m_initSize.height() - m_toplevel->windowGeometry().height()));
 
         if (m_edge.has(LEdgeLeft))
-            m_toplevel->surface()->setX(m_initPos.x() + (m_initSize.w() - m_toplevel->windowGeometry().w()));
+            m_toplevel->surface()->setX(m_initPos.x() + (m_initSize.width() - m_toplevel->windowGeometry().width()));
 
         if (!m_isActive && (!m_toplevel->resizing() || m_lastSerial < m_toplevel->serial()) )
         {
@@ -51,7 +51,7 @@ void LToplevelResizeSession::handleGeometryChange()
     }
 }
 
-void LToplevelResizeSession::updateDragPoint(const LPoint &point)
+void LToplevelResizeSession::updateDragPoint(const SkIPoint &point)
 {
     if (!m_isActive)
         return;
@@ -63,49 +63,49 @@ void LToplevelResizeSession::updateDragPoint(const LPoint &point)
         return;
 
     m_currentDragPoint = point;
-    LSize newSize = { calculateResizeSize(m_initDragPoint - point, m_initSize, m_edge) };
+    SkISize newSize = { calculateResizeSize(m_initDragPoint - point, m_initSize, m_edge) };
 
-    const LPoint &pos { toplevel()->surface()->pos() };
-    const LSize &size { toplevel()->windowGeometry().size() };
+    const SkIPoint &pos { toplevel()->surface()->pos() };
+    const SkISize &size { toplevel()->windowGeometry().size() };
 
     // Top
     if (m_constraints.top != LEdgeDisabled && m_edge.has(LEdgeTop))
     {
-        if (pos.y() - (newSize.y() - size.y()) < m_constraints.top)
-            newSize.setH(pos.y() + size.h() - m_constraints.top);
+        if (pos.y() - (newSize.height() - size.height()) < m_constraints.top)
+            newSize.fHeight = pos.y() + size.height() - m_constraints.top;
     }
     // Bottom
     else if (m_constraints.bottom != LEdgeDisabled && m_edge.has(LEdgeBottom))
     {
-        if (pos.y() + newSize.h() > m_constraints.bottom)
-            newSize.setH(m_constraints.bottom - pos.y());
+        if (pos.y() + newSize.height() > m_constraints.bottom)
+            newSize.fHeight = m_constraints.bottom - pos.y();
     }
 
     // Left
     if (m_constraints.left != LEdgeDisabled && m_edge.has(LEdgeLeft))
     {
-        if (pos.x() - (newSize.x() - size.x()) < m_constraints.left)
-            newSize.setW(pos.x() + size.w() - m_constraints.left);
+        if (pos.x() - (newSize.width() - size.width()) < m_constraints.left)
+            newSize.fWidth = pos.x() + size.width() - m_constraints.left;
     }
     // Right
     else if (m_constraints.right != LEdgeDisabled && m_edge.has(LEdgeRight))
     {
-        if (pos.x() + newSize.w() > m_constraints.right)
-            newSize.setW(m_constraints.right - pos.x());
+        if (pos.x() + newSize.width() > m_constraints.right)
+            newSize.fWidth = m_constraints.right - pos.x();
     }
 
-    if (newSize.w() < m_minSize.w())
-        newSize.setW(m_minSize.w());
+    if (newSize.width() < m_minSize.width())
+        newSize.fWidth = m_minSize.width();
 
-    if (newSize.h() < m_minSize.h())
-        newSize.setH(m_minSize.h());
+    if (newSize.height() < m_minSize.height())
+        newSize.fHeight = m_minSize.height();
 
     toplevel()->configureSize(newSize);
     toplevel()->configureState(LToplevelRole::Activated | LToplevelRole::Resizing);
     m_lastSerial = m_toplevel->pendingConfiguration().serial;
 }
 
-bool LToplevelResizeSession::start(const LEvent &triggeringEvent, CZBitset<LEdge> edge, const LPoint &initDragPoint)
+bool LToplevelResizeSession::start(const LEvent &triggeringEvent, CZBitset<LEdge> edge, const SkIPoint &initDragPoint)
 {
     if (m_isActive)
         return false;

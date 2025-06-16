@@ -40,15 +40,16 @@ void LBackgroundBlur::fullPropsUpdate(bool sizeChanged) noexcept
         {
             if (sizeChanged || pendingProps().isFullSize != currentProps().isFullSize)
             {
-                pendingProps().region.clear();
-                pendingProps().region.addRect(LRect(LPoint(0, 0), surface()->size()));
+                pendingProps().region.setRect(
+                    SkIRect::MakeSize(surface()->size()));
+
                 changesToNotify.add(RegionChanged);
             }
         }
         else if (m_flags.has(RegionModified))
         {
             changesToNotify.add(RegionChanged);
-            pendingProps().region.clip(LPoint(0, 0), surface()->size());
+            pendingProps().region.op(SkIRect::MakeSize(surface()->size()), SkRegion::kIntersect_Op);
         }
     }
 
@@ -112,7 +113,7 @@ void LBackgroundBlur::reset() noexcept
     m_pendingConfiguration.serial++;
     m_pendingConfiguration.state = Disabled;
     m_pendingConfiguration.colorHint = Unknown;
-    pendingProps().region.clear();
+    pendingProps().region.setEmpty();
     pendingProps().svgPathMask.clear();
     pendingProps().roundRectMask = LRRect();
     pendingProps().maskType = NoMask;

@@ -3,7 +3,7 @@
 
 #include <GL/gl.h>
 #include <LTexture.h>
-#include <LSize.h>
+#include <CZ/skia/core/SkSize.h>
 
 using namespace Louvre;
 
@@ -19,13 +19,13 @@ public:
         glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilter);
     }
 
-    inline static void readPixels(const LRect &src, const LPoint &dstOffset, Int32 dstWidth, GLenum format, GLenum type, UInt8 *buffer) noexcept
+    inline static void readPixels(const SkIRect &src, const SkIPoint &dstOffset, Int32 dstWidth, GLenum format, GLenum type, UInt8 *buffer) noexcept
     {
         glPixelStorei(GL_PACK_ALIGNMENT, 4);
         glPixelStorei(GL_PACK_ROW_LENGTH, dstWidth);
         glPixelStorei(GL_PACK_SKIP_PIXELS, dstOffset.x());
         glPixelStorei(GL_PACK_SKIP_ROWS, dstOffset.y());
-        glReadPixels(src.x(), src.y(), src.w(), src.h(), format, type, buffer);
+        glReadPixels(src.x(), src.y(), src.width(), src.height(), format, type, buffer);
         glPixelStorei(GL_PACK_ROW_LENGTH, 0);
         glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
         glPixelStorei(GL_PACK_SKIP_ROWS, 0);

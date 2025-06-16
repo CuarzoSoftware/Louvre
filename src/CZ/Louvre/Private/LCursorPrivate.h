@@ -11,13 +11,13 @@
 
 using namespace Louvre;
 
-void texture2Buffer(LCursor *cursor, const LSizeF &size, LTransform transform) noexcept;
+void texture2Buffer(LCursor *cursor, const SkSize &size, CZTransform transform) noexcept;
 
 LPRIVATE_CLASS_NO_COPY(LCursor)
     LCursorPrivate();
-    LRect rect;
-    LPointF hotspotB;
-    LSizeF size;
+    SkIRect rect;
+    SkPoint hotspotB;
+    SkSize size;
     bool isVisible                                      = true;
     bool textureChanged                                 = false;
     bool posChanged                                     = false;
@@ -26,11 +26,11 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
     CZWeak<const LClientCursor> clientCursor;
     std::vector<LOutput*>intersectedOutputs;   
     LTexture *texture                                   = nullptr;
-    LPointF defaultHotspotB;
+    SkPoint defaultHotspotB;
     LTexture *defaultTexture                            = nullptr;
     LTexture louvreTexture { true };
     GLuint glFramebuffer, glRenderbuffer;
-    LFramebufferWrapper fb { 0, LSize(64, 64) };
+    LFramebufferWrapper fb { 0, SkISize(64, 64) };
     UInt8 buffer[64*64*4];
 
     void setOutput(LOutput *out) noexcept

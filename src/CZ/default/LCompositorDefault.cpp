@@ -180,7 +180,7 @@ void LCompositor::onPosixSignal(int signal)
 //! [initialized]
 void LCompositor::initialized()
 {
-    LPoint outputPos {0, 0};
+    SkIPoint outputPos {0, 0};
 
     // Initializes and arranges outputs from left to right
     for (LOutput *output : seat()->outputs())
@@ -196,13 +196,13 @@ void LCompositor::initialized()
         output->setScale(output->dpi() >= 200 ? 2.f : 1.f);
 
         // Change it if any of your displays is rotated/flipped
-        output->setTransform(LTransform::Normal);
+        output->setTransform(CZTransform::Normal);
 
         // Arrange
         output->setPos(outputPos);
 
         // Next output x coord
-        outputPos.setX(outputPos.x() + output->size().w());
+        outputPos.fX = outputPos.x() + output->size().width();
 
         // Initialize
         addOutput(output);

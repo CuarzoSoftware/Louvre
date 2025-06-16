@@ -77,7 +77,7 @@ public:
     *
     * The offset relative to the top-left corner of the parent surface in surface coordinates.
     */
-    const LPoint &localPos() const noexcept
+    const SkIPoint &localPos() const noexcept
     {
         return m_currentLocalPos;
     }
@@ -94,7 +94,7 @@ public:
      * ### Default implementation
      * @snippet LSubsurfaceRoleDefault.cpp rolePos
      */
-    virtual const LPoint &rolePos() const override;
+    virtual SkIPoint rolePos() const override;
 
     /**
      * @brief Change of offset.
@@ -141,7 +141,8 @@ private:
     void handleParentChange() override;
     void handleParentMappingChange() override;
 
-    LPoint m_currentLocalPos, m_pendingLocalPos;
+    mutable SkIPoint m_rolePos { 0, 0 };
+    SkIPoint m_currentLocalPos, m_pendingLocalPos;
 
     bool m_isSynced { true };
     bool m_hasCache { true };

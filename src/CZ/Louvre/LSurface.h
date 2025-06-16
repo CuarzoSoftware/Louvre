@@ -3,8 +3,8 @@
 
 #include <LFactoryObject.h>
 #include <LTexture.h>
-#include <LRegion.h>
-#include <LRect.h>
+#include <CZ/skia/core/SkRegion.h>
+#include <CZ/skia/core/SkRect.h>
 #include <LFramebuffer.h>
 #include <LLayout.h>
 #include <LContentType.h>
@@ -200,7 +200,8 @@ public:
      *
      * Assigns the position of the surface.
      */
-    void setPos(const LPoint &newPos) noexcept;
+    void setPos(SkIPoint newPos) noexcept;
+    void setPos(SkPoint newPos) noexcept { setPos(newPos.x(), newPos.y()); };
 
     /**
      * @brief Assigns the position.
@@ -228,24 +229,24 @@ public:
      *
      * Position of the surface assigned with setPos(), setX() or setY().
      */
-    const LPoint &pos() const noexcept;
+    SkIPoint pos() const noexcept;
 
     /**
     * @brief Role position.
     *
     * Role position in surface coordinates. If the surface has no role, the same value as pos() is returned.
     */
-    const LPoint &rolePos() const;
+    SkIPoint rolePos() const;
 
     /**
      * @brief Surface size in buffer coordinates.
      */
-    const LSize &sizeB() const noexcept;
+    SkISize sizeB() const noexcept;
 
     /**
      * @brief Surface size in surface coordinates.
      */
-    const LSize &size() const noexcept;
+    SkISize size() const noexcept;
 
     /**
      * @brief Input region in surface coordinates.
@@ -254,14 +255,14 @@ public:
      *
      * Already clipped by the surface bounds.
      */
-    const LRegion &inputRegion() const noexcept;
+    const SkRegion &inputRegion() const noexcept;
 
     /**
      * @brief Opaque region in surface coordinates.
      *
      * Already clipped by the surface bounds.
      */
-    const LRegion &opaqueRegion() const noexcept;
+    const SkRegion &opaqueRegion() const noexcept;
 
     /**
      * @brief Translucent region in surface coordinates.
@@ -270,7 +271,7 @@ public:
      *
      * Already clipped by the surface bounds.
      */
-    const LRegion &translucentRegion() const noexcept;
+    const SkRegion &translucentRegion() const noexcept;
 
     /**
      * @brief Invisible region in surface coordinates.
@@ -281,21 +282,21 @@ public:
      *
      * Already clipped by the surface bounds.
      */
-    const LRegion &invisibleRegion() const noexcept;
+    const SkRegion &invisibleRegion() const noexcept;
 
     /**
      * @brief Damaged region in surface coordinates.
      *
      * Already clipped by the surface bounds.
      */
-    const LRegion &damage() const noexcept;
+    const SkRegion &damage() const noexcept;
 
     /**
      * @brief Damaged region in buffer coordinates.
      *
      * Already clipped by the surface bounds.
      */
-    const LRegion &damageB() const noexcept;
+    const SkRegion &damageB() const noexcept;
 
     /**
      * @brief Returns the content type that the surface represents.
@@ -384,7 +385,7 @@ public:
      *
      * @return The buffer transform applied to the surface.
      */
-    LTransform bufferTransform() const noexcept;
+    CZTransform bufferTransform() const noexcept;
 
     /**
      * @brief Gets the source rect of the surface in surface coordinates.
@@ -392,7 +393,7 @@ public:
      * For clients using the Viewporter protocol, a custom srcRect() detached from the buffer size
      * can be specified. For clients not using the protocol, the source rect covers the entire surface buffer.
      */
-    const LRectF &srcRect() const noexcept;
+    const SkRect &srcRect() const noexcept;
 
     /**
      * @brief Check if the surface has pointer focus
@@ -694,9 +695,9 @@ public:
      * or confined if the pointer constraint is enabled.
      *
      * @return The region where the pointer should be constrained within the surface.
-     * @see LRegion::closestPointFrom()
+     * @see SkRegion::closestPointFrom()
      */
-    const LRegion &pointerConstraintRegion() const noexcept;
+    const SkRegion &pointerConstraintRegion() const noexcept;
 
     /**
      * @brief Notifies a change in pointerConstraintRegion().
@@ -735,7 +736,7 @@ public:
      * If pointerConstraintMode() is not @ref Lock or the client has never set this property,
      * it returns `(-1.f, -1.f)`.
      */
-    const LPointF &lockedPointerPosHint() const noexcept;
+    const SkPoint &lockedPointerPosHint() const noexcept;
 
     /**
      * @brief Notifies a change in lockedPointerPosHint().

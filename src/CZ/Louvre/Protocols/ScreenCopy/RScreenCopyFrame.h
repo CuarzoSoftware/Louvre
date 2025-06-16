@@ -2,11 +2,11 @@
 #define RSCREENCOPYFRAME_H
 
 #include <LScreenshotRequest.h>
-#include <LTransform.h>
+#include <CZ/CZTransform.h>
 #include <LResource.h>
 #include <CZ/CZBitset.h>
 #include <CZ/CZWeak.h>
-#include <LRect.h>
+#include <CZ/skia/core/SkRect.h>
 
 class Louvre::Protocols::ScreenCopy::RScreenCopyFrame final : public LResource
 {
@@ -21,8 +21,8 @@ public:
 
     GScreenCopyManager *screenCopyManagerRes() const noexcept { return m_screenCopyManagerRes; }
     LOutput *output()       const noexcept { return m_output; }
-    const LRect &rect()     const noexcept { return m_rect; };
-    const LRect &rectB()    const noexcept { return m_rectB; };
+    const SkIRect &rect()     const noexcept { return m_rect; };
+    const SkIRect &rectB()    const noexcept { return m_rectB; };
     bool compositeCursor()  const noexcept { return m_stateFlags.has(CompositeCursor); };
     bool alreadyUsed()      const noexcept { return m_stateFlags.has(AlreadyUsed); };
     bool waitForDamage()    const noexcept { return m_stateFlags.has(WaitForDamage); };
@@ -40,24 +40,24 @@ public:
     /******************** EVENTS ********************/
 
     // Since 1
-    void buffer(UInt32 shmFormat, const LSize &size, UInt32 stride) noexcept;
+    void buffer(UInt32 shmFormat, const SkISize &size, UInt32 stride) noexcept;
     void flags(UInt32 flags) noexcept;
     void ready(const timespec &time) noexcept;
     void failed() noexcept;
 
     // Since 2
-    bool damage(const LRect &rect) noexcept;
-    bool damage(const LRegion &region) noexcept;
+    bool damage(const SkIRect &rect) noexcept;
+    bool damage(const SkRegion &region) noexcept;
 
     // Since 3
-    bool linuxDMABuf(UInt32 format, const LSize &size) noexcept;
+    bool linuxDMABuf(UInt32 format, const SkISize &size) noexcept;
     bool bufferDone() noexcept;
 
 private:
     friend class GScreenCopyManager;
     friend class Louvre::LOutput;
     friend class Louvre::LScreenshotRequest;
-    RScreenCopyFrame(GScreenCopyManager *screenCopyManagerRes, LOutput *output, bool overlayCursor, const LRect &region, UInt32 id, Int32 version) noexcept;
+    RScreenCopyFrame(GScreenCopyManager *screenCopyManagerRes, LOutput *output, bool overlayCursor, const SkIRect &region, UInt32 id, Int32 version) noexcept;
     ~RScreenCopyFrame() noexcept;
     static void copyCommon(wl_resource *resource, wl_resource *buffer, bool waitForDamage) noexcept;
     CZWeak<LOutput> m_output;
@@ -70,10 +70,10 @@ private:
     } m_bufferContainer;
 
     LScreenshotRequest m_frame;
-    LRect m_rect, m_rectB;
-    LSize m_initOutputModeSize;
-    LSize m_initOutputSize;
-    LTransform m_initOutputTransform;
+    SkIRect m_rect, m_rectB;
+    SkISize m_initOutputModeSize;
+    SkISize m_initOutputSize;
+    CZTransform m_initOutputTransform;
     Int32 m_stride;
     CZBitset<StateFlags> m_stateFlags;
 };

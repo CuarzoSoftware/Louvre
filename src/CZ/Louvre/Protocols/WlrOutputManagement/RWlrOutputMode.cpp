@@ -3,7 +3,7 @@
 #include <CZ/Louvre/Protocols/WlrOutputManagement/RWlrOutputMode.h>
 #include <LOutputMode.h>
 #include <LUtils.h>
-#include <LSize.h>
+#include <CZ/skia/core/SkSize.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::WlrOutputManagement;
@@ -52,12 +52,12 @@ void RWlrOutputMode::release(wl_client */*client*/, wl_resource *resource)
 
 /******************** EVENTS ********************/
 
-void RWlrOutputMode::size(const LSize &size) noexcept
+void RWlrOutputMode::size(const SkISize &size) noexcept
 {
     if (m_wlrOutputHead)
         m_wlrOutputHead->markAsPendingDone();
 
-    zwlr_output_mode_v1_send_size(resource(), size.w(), size.h());
+    zwlr_output_mode_v1_send_size(resource(), size.width(), size.height());
 }
 
 void RWlrOutputMode::refresh(Int32 refresh) noexcept

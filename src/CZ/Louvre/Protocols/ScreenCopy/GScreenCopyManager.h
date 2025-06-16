@@ -2,7 +2,7 @@
 #define GSCREENCOPYMANAGER_H
 
 #include <LResource.h>
-#include <LRegion.h>
+#include <CZ/skia/core/SkRegion.h>
 #include <map>
 
 class Louvre::Protocols::ScreenCopy::GScreenCopyManager final : public LResource
@@ -15,7 +15,7 @@ public:
 
     struct OutputDamage
     {
-        LRegion damage;
+        SkRegion damage;
         bool firstFrame { true };
     };
 

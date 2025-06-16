@@ -1,6 +1,7 @@
 #ifndef LTOUCH_H
 #define LTOUCH_H
 
+#include <CZ/skia/core/SkPoint.h>
 #include <LFactoryObject.h>
 
 /**
@@ -65,7 +66,8 @@ public:
      * @param point Point in compositor coordinates.
      * @returns Returns the first surface that contains the point or `nullptr` if no surface is found.
      */
-    LSurface *surfaceAt(const LPoint &point) const noexcept;
+    LSurface *surfaceAt(const SkIPoint &point) const noexcept;
+    LSurface *surfaceAt(Int32 x, Int32 y) const noexcept { return surfaceAt(SkIPoint(x, y)); };
 
     /**
      * @brief Vector of currently active touchpoints.
@@ -108,7 +110,7 @@ public:
      *
      * @return The transformed global position of the touch point, or the same position if output is `nullptr`.
      */
-    static LPointF toGlobal(LOutput *output, const LPointF &touchPointPos) noexcept;
+    static SkPoint toGlobal(LOutput *output, const SkPoint &touchPointPos) noexcept;
 
     /**
      * @brief Send a frame event to all clients with surfaces assigned to touch points.

@@ -168,8 +168,8 @@ void RXdgToplevel::set_max_size(wl_client */*client*/, wl_resource *resource, In
         return;
     }
 
-    res.toplevelRole()->pendingAtoms().maxSize.setW(width);
-    res.toplevelRole()->pendingAtoms().maxSize.setH(height);
+    res.toplevelRole()->pendingAtoms().maxSize.fWidth = width;
+    res.toplevelRole()->pendingAtoms().maxSize.fHeight = height;
 }
 
 void RXdgToplevel::set_min_size(wl_client */*client*/, wl_resource *resource, Int32 width, Int32 height)
@@ -182,8 +182,8 @@ void RXdgToplevel::set_min_size(wl_client */*client*/, wl_resource *resource, In
         return;
     }
 
-    res.toplevelRole()->pendingAtoms().minSize.setW(width);
-    res.toplevelRole()->pendingAtoms().minSize.setH(height);
+    res.toplevelRole()->pendingAtoms().minSize.fWidth = width;
+    res.toplevelRole()->pendingAtoms().minSize.fHeight = height;
 }
 
 void RXdgToplevel::set_maximized(wl_client */*client*/, wl_resource *resource)
@@ -280,9 +280,9 @@ void RXdgToplevel::set_minimized(wl_client */*client*/, wl_resource *resource)
         toplevel.setMinimizedRequest();
 }
 
-void RXdgToplevel::configure(const LSize &size, wl_array *states) noexcept
+void RXdgToplevel::configure(const SkISize &size, wl_array *states) noexcept
 {
-    xdg_toplevel_send_configure(resource(), size.w(), size.h(), states);
+    xdg_toplevel_send_configure(resource(), size.width(), size.height(), states);
 }
 
 void RXdgToplevel::close() noexcept
@@ -290,12 +290,12 @@ void RXdgToplevel::close() noexcept
     xdg_toplevel_send_close(resource());
 }
 
-bool RXdgToplevel::configureBounds(const LSize &bounds) noexcept
+bool RXdgToplevel::configureBounds(const SkISize &bounds) noexcept
 {
 #if LOUVRE_XDG_WM_BASE_VERSION >= 4
     if (version() >= 4)
     {
-        xdg_toplevel_send_configure_bounds(resource(), bounds.w(), bounds.h());
+        xdg_toplevel_send_configure_bounds(resource(), bounds.width(), bounds.height());
         return true;
     }
 #endif

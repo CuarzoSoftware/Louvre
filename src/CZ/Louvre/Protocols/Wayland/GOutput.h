@@ -2,7 +2,7 @@
 #define GOUTPUT_H
 
 #include <LResource.h>
-#include <LTransform.h>
+#include <CZ/CZTransform.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::Wayland::GOutput final : public LResource
@@ -24,7 +24,7 @@ public:
     void sendConfiguration() noexcept;
 
     // Since 1
-    void geometry(Int32 x, Int32 y, Int32 physicalWidth, Int32 physicalHeight, Int32 subpixel, const char *make, const char *model, LTransform transform) noexcept;
+    void geometry(Int32 x, Int32 y, Int32 physicalWidth, Int32 physicalHeight, Int32 subpixel, const char *make, const char *model, CZTransform transform) noexcept;
     void mode(UInt32 flags, Int32 width, Int32 height, Int32 refresh) noexcept;
 
     // Since 2

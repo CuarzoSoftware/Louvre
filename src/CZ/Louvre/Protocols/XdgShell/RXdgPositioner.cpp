@@ -42,21 +42,21 @@ RXdgPositioner::RXdgPositioner
 
 bool RXdgPositioner::validate()
 {
-    if (positioner().size().w() <= 0 || positioner().size().h() <= 0)
+    if (positioner().size().width() <= 0 || positioner().size().height() <= 0)
     {
         postError(
             XDG_POSITIONER_ERROR_INVALID_INPUT,
             "xdg_positioner.set_size requested with non-positive dimensions ({}, {})",
-            positioner().size().w(), positioner().size().h());
+            positioner().size().width(), positioner().size().height());
         return false;
     }
 
-    if (positioner().anchorRect().w() <= 0 || positioner().anchorRect().h() <= 0)
+    if (positioner().anchorRect().width() <= 0 || positioner().anchorRect().height() <= 0)
     {
         postError(
             XDG_POSITIONER_ERROR_INVALID_INPUT,
             "xdg_positioner.set_anchor_rect requested with non-positive dimensions ({}, {})",
-            positioner().anchorRect().w(), positioner().anchorRect().h());
+            positioner().anchorRect().width(), positioner().anchorRect().height());
         return false;
     }
 
@@ -81,17 +81,14 @@ void RXdgPositioner::destroy(wl_client */*client*/, wl_resource *resource) noexc
 void RXdgPositioner::set_size(wl_client */*client*/, wl_resource *resource, Int32 width, Int32 height) noexcept
 {
     auto &positioner { static_cast<RXdgPositioner*>(wl_resource_get_user_data(resource))->m_positioner };
-    positioner.m_size.setW(width);
-    positioner.m_size.setH(height);
+    positioner.m_size.fWidth = width;
+    positioner.m_size.fHeight = height;
 }
 
 void RXdgPositioner::set_anchor_rect(wl_client */*client*/, wl_resource *resource, Int32 x, Int32 y, Int32 width, Int32 height) noexcept
 {
     auto &positioner { static_cast<RXdgPositioner*>(wl_resource_get_user_data(resource))->m_positioner };
-    positioner.m_anchorRect.setX(x);
-    positioner.m_anchorRect.setY(y);
-    positioner.m_anchorRect.setW(width);
-    positioner.m_anchorRect.setH(height);
+    positioner.m_anchorRect.setXYWH(x, y, width, height);
 }
 
 void RXdgPositioner::set_anchor(wl_client */*client*/, wl_resource *resource, UInt32 anchor) noexcept
@@ -115,8 +112,8 @@ void RXdgPositioner::set_constraint_adjustment(wl_client */*client*/, wl_resourc
 void RXdgPositioner::set_offset(wl_client */*client*/, wl_resource *resource, Int32 x, Int32 y) noexcept
 {
     auto &positioner { static_cast<RXdgPositioner*>(wl_resource_get_user_data(resource))->m_positioner };
-    positioner.m_offset.setX(x);
-    positioner.m_offset.setY(y);
+    positioner.m_offset.fX = x;
+    positioner.m_offset.fY = y;
 }
 
 #if LOUVRE_XDG_WM_BASE_VERSION >= 3
@@ -133,14 +130,14 @@ void RXdgPositioner::set_parent_size(wl_client */*client*/, wl_resource *resourc
     positioner.m_hasParentSize = true;
 
     if (parent_width < 0)
-        positioner.m_parentSize.setW(0);
+        positioner.m_parentSize.fWidth = 0;
     else
-        positioner.m_parentSize.setW(parent_width);
+        positioner.m_parentSize.fWidth = parent_width;
 
     if (parent_height < 0)
-        positioner.m_parentSize.setH(0);
+        positioner.m_parentSize.fHeight = 0;
     else
-        positioner.m_parentSize.setH(parent_height);
+        positioner.m_parentSize.fHeight = parent_height;
 }
 
 void RXdgPositioner::set_parent_configure(wl_client */*client*/, wl_resource *resource, UInt32 serial)

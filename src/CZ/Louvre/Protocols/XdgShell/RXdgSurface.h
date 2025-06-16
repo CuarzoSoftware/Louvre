@@ -3,7 +3,7 @@
 
 #include <LResource.h>
 #include <CZ/CZWeak.h>
-#include <LRect.h>
+#include <CZ/skia/core/SkRect.h>
 
 class Louvre::Protocols::XdgShell::RXdgSurface final : public LResource
 {
@@ -28,12 +28,12 @@ public:
         return m_xdgPopupRes;
     }
 
-    const LRect &windowGeometry() const noexcept
+    const SkIRect &windowGeometry() const noexcept
     {
         return m_currentWindowGeometry;
     }
 
-    LRect calculateGeometryWithSubsurfaces() noexcept;
+    SkIRect calculateGeometryWithSubsurfaces() noexcept;
 
     /******************** REQUESTS ********************/
 
@@ -61,8 +61,8 @@ private:
     CZWeak<LSurface> m_surface;
     CZWeak<RXdgPopup> m_xdgPopupRes;
     CZWeak<RXdgToplevel> m_xdgToplevelRes;
-    LRect m_currentWindowGeometry;
-    LRect m_pendingWindowGeometry;
+    SkIRect m_currentWindowGeometry;
+    SkIRect m_pendingWindowGeometry;
     bool m_windowGeometrySet { false };
     bool m_hasPendingWindowGeometry { false };
 };

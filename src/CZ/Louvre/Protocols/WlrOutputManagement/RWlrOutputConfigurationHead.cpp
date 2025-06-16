@@ -6,7 +6,7 @@
 #include <LOutputMode.h>
 #include <LOutput.h>
 #include <LUtils.h>
-#include <LSize.h>
+#include <CZ/skia/core/SkSize.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::WlrOutputManagement;
@@ -109,7 +109,7 @@ void RWlrOutputConfigurationHead::set_custom_mode(wl_client */*client*/, wl_reso
 
     for (LOutputMode *m : res.m_output->modes())
     {
-        Int64 score = (std::abs(m->sizeB().w() - width) + std::abs(m->sizeB().h() - height)) * 100000;
+        Int64 score = (std::abs(m->sizeB().width() - width) + std::abs(m->sizeB().height() - height)) * 100000;
 
         if (refresh <= 0)
             score -= m->refreshRate();
@@ -146,8 +146,8 @@ void RWlrOutputConfigurationHead::set_position(wl_client */*client*/, wl_resourc
 
     if (!res.m_output) return; // Maybe unplugged, will be cancelled later...
 
-    res.m_pos.setX(x);
-    res.m_pos.setY(y);
+    res.m_pos.fX = x;
+    res.m_pos.fY = y;
 }
 
 void RWlrOutputConfigurationHead::set_scale(wl_client */*client*/, wl_resource *resource, Float24 scale)
@@ -193,7 +193,7 @@ void RWlrOutputConfigurationHead::set_transform(wl_client */*client*/, wl_resour
         return;
     }
 
-    res.m_transform = (LTransform)transform;
+    res.m_transform = (CZTransform)transform;
 }
 
 #if LOUVRE_WLR_OUTPUT_MANAGER_VERSION >= 4

@@ -98,21 +98,21 @@ public:
     inline static EGLContext eglContext { EGL_NO_CONTEXT };
     inline static EGLContext windowEGLContext { EGL_NO_CONTEXT };
     inline static PFNEGLSWAPBUFFERSWITHDAMAGEKHRPROC eglSwapBuffersWithDamageKHR { nullptr };
-    inline static LRegion damage;
+    inline static SkRegion damage;
     inline static bool bufferIsLocked { false };
     inline static EGLConfig eglConfig { EGL_NO_CONFIG_KHR };
     inline static EGLSurface eglSurface { EGL_NO_SURFACE };
     inline static std::thread renderThread;
     inline static UInt32 refreshRate { 60000 };
     inline static Int32 refreshRateLimit { 0 };
-    inline static LSize physicalSize { 0, 0 };
-    inline static LSize pendingSurfaceSize { 1024, 512 };
+    inline static SkISize physicalSize { 0, 0 };
+    inline static SkISize pendingSurfaceSize { 1024, 512 };
     inline static Int32 pendingBufferScale { 1 };
     inline static std::vector<LGPU*> devices;
     inline static LGPU allocator;
     inline static std::vector<LOutput*> dummyOutputs;
     inline static std::vector<LOutputMode *> dummyOutputModes;
-    inline static LOutputMode defaultMode { nullptr, LSize(), 0, true, nullptr};
+    inline static LOutputMode defaultMode { nullptr, SkISize(0, 0), 0, true, nullptr};
     inline static Int8 windowInitialized { 0 };
     inline static Int64 lastFrameUsec { 0 };
     inline static bool repaint { false };
@@ -428,9 +428,11 @@ public:
 
         shared.surfaceSize = pendingSurfaceSize;
         shared.bufferScale = pendingBufferScale;
-        shared.bufferSize = shared.surfaceSize * shared.bufferScale;
+        shared.bufferSize.set(
+            shared.surfaceSize.width() * shared.bufferScale,
+            shared.surfaceSize.height() * shared.bufferScale);
         defaultMode.m_sizeB = shared.bufferSize;
-        eglWindow = wl_egl_window_create(surface, shared.bufferSize.w(), shared.bufferSize.h());
+        eglWindow = wl_egl_window_create(surface, shared.bufferSize.width(), shared.bufferSize.height());
         eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig,(EGLNativeWindowType) eglWindow, NULL);
         eglMakeCurrent(eglDisplay, eglSurface, eglSurface, windowEGLContext);
         wl_display_roundtrip(display);
@@ -549,12 +551,14 @@ public:
                 {
                     shared.surfaceSize = pendingSurfaceSize;
                     shared.bufferScale = pendingBufferScale;
-                    shared.bufferSize = shared.surfaceSize * shared.bufferScale;
+                    shared.bufferSize.set(
+                        shared.surfaceSize.width() * shared.bufferScale,
+                        shared.surfaceSize.height() * shared.bufferScale);
                     defaultMode.m_sizeB = shared.bufferSize;
                     output->imp()->updateRect();
                     wl_egl_window_resize(eglWindow,
-                                         shared.bufferSize.w(),
-                                         shared.bufferSize.h(), 0, 0);
+                                         shared.bufferSize.width(),
+                                         shared.bufferSize.height(), 0, 0);
                 }
 
                 output->imp()->backendPaintGL();
@@ -566,27 +570,28 @@ public:
 
                 if (eglSwapBuffersWithDamageKHR)
                 {
-                    if (damage.empty())
+                    if (damage.isEmpty())
                     {
                         constexpr GLint dummyBox[4] { -100, -100, 1, 1 };
                         eglSwapBuffersWithDamageKHR(eglDisplay, eglSurface, dummyBox, 1);
                     }
                     else
                     {
-                        Int32 n;
-                        const LBox *boxes { damage.boxes(&n) };
+                        Int32 n { damage.computeRegionComplexity() };
                         GLint *rects = new GLint[n * 4];
                         GLint *rectsIt = rects;
-                        for (Int32 i = 0; i < n; i++)
+                        SkRegion::Iterator it(damage);
+                        while (!it.done())
                         {
-                            *rectsIt = boxes[i].x1;
+                            *rectsIt = it.rect().x();
                             rectsIt++;
-                            *rectsIt = shared.bufferSize.h() - boxes[i].y2;
+                            *rectsIt = shared.bufferSize.height() - it.rect().bottom();
                             rectsIt++;
-                            *rectsIt = boxes[i].x2 - boxes[i].x1;
+                            *rectsIt = it.rect().width();
                             rectsIt++;
-                            *rectsIt = boxes[i].y2 - boxes[i].y1;
+                            *rectsIt = it.rect().height();
                             rectsIt++;
+                            it.next();
                         }
                         eglSwapBuffersWithDamageKHR(eglDisplay, eglSurface, rects, n);
                         delete []rects;
@@ -594,13 +599,13 @@ public:
                 }
                 else
                 {
-                    if (damage.empty())
+                    if (damage.isEmpty())
                         wl_surface_commit(surface);
                     else
                         eglSwapBuffers(eglDisplay, eglSurface);
                 }
 
-                damage.clear();
+                damage.setEmpty();
 
                 if (!vSync && refreshRateLimit >= 0)
                 {
@@ -711,7 +716,7 @@ public:
         return &allocator;
     }
 
-    static bool textureCreateFromCPUBuffer(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels)
+    static bool textureCreateFromCPUBuffer(LTexture *texture, SkISize size, UInt32 stride, UInt32 format, const void *pixels)
     {
         const SRMGLFormat *glFmt { srmFormatDRMToGL(format) };
 
@@ -746,8 +751,8 @@ public:
             glTexImage2D(GL_TEXTURE_2D,
                          0,
                          glFmt->glInternalFormat,
-                         size.w(),
-                         size.h(),
+                         size.width(),
+                         size.height(),
                          0,
                          glFmt->glFormat,
                          glFmt->glType,
@@ -759,8 +764,8 @@ public:
             glTexImage2D(GL_TEXTURE_2D,
                          0,
                          glFmt->glInternalFormat,
-                         size.w(),
-                         size.h(),
+                         size.width(),
+                         size.height(),
                          0,
                          glFmt->glFormat,
                          glFmt->glType,
@@ -790,8 +795,8 @@ public:
         {
             Louvre::compositor()->imp()->eglQueryWaylandBufferWL(LCompositor::eglDisplay(), (wl_resource*)wlBuffer, EGL_WIDTH, &width);
             Louvre::compositor()->imp()->eglQueryWaylandBufferWL(LCompositor::eglDisplay(), (wl_resource*)wlBuffer, EGL_HEIGHT, &height);
-            texture->m_sizeB.setW(width);
-            texture->m_sizeB.setH(height);
+            texture->m_sizeB.fWidth = width;
+            texture->m_sizeB.fHeight = height;
 
             if (format == EGL_TEXTURE_RGB)
                 texture->m_format = DRM_FORMAT_XRGB8888;
@@ -838,7 +843,7 @@ public:
         return false;
     }
 
-    static bool textureCreateFromGL(LTexture *texture, GLuint id, GLenum target, UInt32 format, const LSize &/*size*/, bool transferOwnership)
+    static bool textureCreateFromGL(LTexture *texture, GLuint id, GLenum target, UInt32 format, SkISize /*size*/, bool transferOwnership)
     {
         const SRMGLFormat *glFmt { srmFormatDRMToGL(format) };
 
@@ -863,7 +868,7 @@ public:
         return true;
     }
 
-    static bool textureUpdateRect(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels)
+    static bool textureUpdateRect(LTexture *texture, UInt32 stride, const SkIRect &dst, const void *pixels)
     {
         if (texture->sourceType() != LTexture::CPU)
             return false;
@@ -878,7 +883,7 @@ public:
         glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
         glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
 
-        glTexSubImage2D(GL_TEXTURE_2D, 0, dst.x(), dst.y(), dst.w(), dst.h(),
+        glTexSubImage2D(GL_TEXTURE_2D, 0, dst.x(), dst.y(), dst.width(), dst.height(),
                         cpuTexture->glFmt->glFormat, cpuTexture->glFmt->glType, pixels);
 
         glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
@@ -899,7 +904,7 @@ public:
         return true;
     }
 
-    static bool textureWriteUpdate(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels)
+    static bool textureWriteUpdate(LTexture *texture, UInt32 stride, const SkIRect &dst, const void *pixels)
     {
         CPUTexture *cpuTexture = (CPUTexture*)texture->m_graphicBackendData;
         glBindTexture(GL_TEXTURE_2D, cpuTexture->texture.id);
@@ -907,7 +912,7 @@ public:
         glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
         glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
 
-        glTexSubImage2D(GL_TEXTURE_2D, 0, dst.x(), dst.y(), dst.w(), dst.h(),
+        glTexSubImage2D(GL_TEXTURE_2D, 0, dst.x(), dst.y(), dst.width(), dst.height(),
                         cpuTexture->glFmt->glFormat, cpuTexture->glFmt->glType, pixels);
         return true;
     }
@@ -1004,7 +1009,7 @@ public:
         return true;
     }
 
-    static void outputSetBufferDamage(LOutput */*output*/, LRegion &region)
+    static void outputSetBufferDamage(LOutput */*output*/, SkRegion &region)
     {
         damage = region;
     }
@@ -1035,9 +1040,9 @@ public:
         return nullptr;
     }
 
-    static const LSize *outputGetPhysicalSize(LOutput */*output*/)
+    static SkISize outputGetPhysicalSize(LOutput */*output*/)
     {
-        return &physicalSize;
+        return physicalSize;
     }
 
     static Int32 outputGetSubPixel(LOutput */*output*/)
@@ -1168,15 +1173,17 @@ public:
         shared.mutex.unlock();
     }
 
-    static void outputSetCursorPosition(LOutput */*output*/, const LPoint &/*position*/)
+    static void outputSetCursorPosition(LOutput */*output*/, SkIPoint /*position*/)
     {
-        static LPointF prevHotspotB;
+        static SkPoint prevHotspotB;
 
         if (prevHotspotB != cursor()->hotspotB())
         {
             prevHotspotB = cursor()->hotspotB();
             shared.mutex.lock();
-            shared.cursorHotspot = ((cursor()->pos() - cursor()->rect().pos()) * shared.bufferScale)/2;
+            shared.cursorHotspot.set(
+                ((cursor()->pos().x() - cursor()->rect().x()) * shared.bufferScale)/2,
+                ((cursor()->pos().y() - cursor()->rect().y()) * shared.bufferScale)/2);
             shared.cursorChangedHotspot = true;
             unlockInputThread();
             shared.mutex.unlock();
@@ -1343,10 +1350,10 @@ public:
     static void xdgToplevelHandleConfigure(void*, xdg_toplevel*, Int32 w, Int32 h, wl_array*)
     {
         if (w > 0)
-            pendingSurfaceSize.setW(w);
+            pendingSurfaceSize.fWidth = w;
 
         if (h > 0)
-            pendingSurfaceSize.setH(h);
+            pendingSurfaceSize.fHeight = h;
 
         if (pendingSurfaceSize != shared.surfaceSize)
             outputRepaint(nullptr);

@@ -4,10 +4,9 @@
 using namespace Louvre;
 
 //! [rolePos]
-const LPoint &LDNDIconRole::rolePos() const
+SkIPoint LDNDIconRole::rolePos() const
 {
-    m_rolePos = surface()->pos() - hotspot();
-    return m_rolePos;
+    return surface()->pos() - hotspot();
 }
 //! [rolePos]
 

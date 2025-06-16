@@ -66,9 +66,9 @@ void LSeat::outputPlugged(LOutput *output)
     output->setScale(output->dpi() >= 200 ? 2 : 1);
 
     if (compositor()->outputs().empty())
-        output->setPos(0);
+        output->setPos(SkIPoint(0, 0));
     else
-        output->setPos(compositor()->outputs().back()->pos() + LPoint(compositor()->outputs().back()->size().w(), 0));
+        output->setPos(compositor()->outputs().back()->pos() + SkIPoint(compositor()->outputs().back()->size().width(), 0));
 
     compositor()->addOutput(output);
     compositor()->repaintAllOutputs();
@@ -84,8 +84,8 @@ void LSeat::outputUnplugged(LOutput *output)
 
     for (LOutput *o : compositor()->outputs())
     {
-        o->setPos(LPoint(totalWidth, 0));
-        totalWidth += o->size().w();
+        o->setPos(SkIPoint(totalWidth, 0));
+        totalWidth += o->size().width();
     }
 
     compositor()->repaintAllOutputs();

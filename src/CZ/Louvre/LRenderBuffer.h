@@ -23,7 +23,7 @@ public:
      *
      * @param sizeB The size of the framebuffer in buffer coordinates.
      */
-    LRenderBuffer(const LSize &sizeB) noexcept;
+    LRenderBuffer(const SkISize &sizeB) noexcept;
 
     LCLASS_NO_COPY(LRenderBuffer)
 
@@ -69,7 +69,7 @@ public:
      *
      * @param sizeB The new size of the framebuffer in buffer coordinates.
      */
-    void setSizeB(const LSize &sizeB) noexcept;
+    void setSizeB(const SkISize &sizeB) noexcept;
 
     /**
      * @brief Retrieve the size of the framebuffer in buffer coordinates.
@@ -78,7 +78,7 @@ public:
      *
      * @return The size of the framebuffer.
      */
-    const LSize &sizeB() const noexcept override;
+    SkISize sizeB() const noexcept override;
 
     /**
      * @brief Retrieve the size of the framebuffer.
@@ -87,7 +87,7 @@ public:
      *
      * @return The size of the framebuffer.
      */
-    const LSize &size() const noexcept
+    SkISize size() const noexcept
     {
         return m_rect.size();
     }
@@ -99,9 +99,9 @@ public:
      *
      * @param pos The new position of the framebuffer.
      */
-    void setPos(const LPoint &pos) noexcept
+    void setPos(const SkIPoint &pos) noexcept
     {
-        m_rect.setPos(pos);
+        m_rect.offsetTo(pos.x(), pos.y());
     }
 
     /**
@@ -111,9 +111,9 @@ public:
      *
      * @return The position of the framebuffer.
      */
-    const LPoint &pos() const noexcept
+    SkIPoint pos() const noexcept
     {
-        return m_rect.pos();
+        return m_rect.topLeft();
     }
 
     /**
@@ -123,7 +123,7 @@ public:
      *
      * @return The position and size of the framebuffer in surface coordinates.
      */
-    const LRect &rect() const noexcept override;
+    const SkIRect &rect() const noexcept override;
 
     /**
      * @brief Set the buffer scale to properly scale the rendered content.
@@ -139,8 +139,10 @@ public:
 
         if (m_scale != scale)
         {
-            m_rect.setW(roundf(Float32(m_texture.sizeB().w())/scale));
-            m_rect.setH(roundf(Float32(m_texture.sizeB().h())/scale));
+            m_rect.setWH(
+                roundf(Float32(m_texture.sizeB().width())/scale),
+                roundf(Float32(m_texture.sizeB().height())/scale)
+            );
             m_scale = scale;
         }
     }
@@ -148,8 +150,8 @@ public:
     Float32 scale() const noexcept override;
     Int32 buffersCount() const noexcept override;
     Int32 currentBufferIndex() const noexcept override;
-    void setFramebufferDamage(const LRegion *damage) noexcept override;
-    LTransform transform() const noexcept override;
+    void setFramebufferDamage(const SkRegion *damage) noexcept override;
+    CZTransform transform() const noexcept override;
 
 private:
     friend class LCompositor;
@@ -158,7 +160,7 @@ private:
         GLuint framebufferId = 0;
     };
     mutable LTexture m_texture { true };
-    LRect m_rect;
+    SkIRect m_rect;
     Float32 m_scale { 1.f };
     mutable std::unordered_map<std::thread::id, ThreadData> m_threadsMap;
 };

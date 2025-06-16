@@ -145,5 +145,5 @@ void LExclusiveZone::update() noexcept
     if (output())
         output()->imp()->updateExclusiveZones();
     else
-        m_rect = LRect();
+        m_rect.setEmpty();
 }

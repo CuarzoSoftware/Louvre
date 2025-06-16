@@ -37,8 +37,10 @@ void LCursorRole::handleSurfaceCommit(CommitOrigin origin)
     L_UNUSED(origin);
 
     m_currentHotspot -= m_pendingHotspotOffset;
-    m_pendingHotspotOffset = 0;
-    m_currentHotspotB = m_currentHotspot * surface()->bufferScale();
+    m_pendingHotspotOffset.set(0, 0);
+    m_currentHotspotB.set(
+        m_currentHotspot.x() * surface()->bufferScale(),
+        m_currentHotspot.y() * surface()->bufferScale());
 
     hotspotChanged();
 
@@ -53,6 +55,5 @@ void LCursorRole::handleSurfaceCommit(CommitOrigin origin)
 
 void LCursorRole::handleSurfaceOffset(Int32 x, Int32 y)
 {
-    m_pendingHotspotOffset.setX(x);
-    m_pendingHotspotOffset.setY(y);
+    m_pendingHotspotOffset.set(x, y);
 }

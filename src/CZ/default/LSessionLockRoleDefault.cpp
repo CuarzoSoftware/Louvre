@@ -5,7 +5,7 @@
 using namespace Louvre;
 
 //! [rolePos]
-const LPoint &LSessionLockRole::rolePos() const
+SkIPoint LSessionLockRole::rolePos() const
 {
     if (exclusiveOutput())
         return exclusiveOutput()->pos();

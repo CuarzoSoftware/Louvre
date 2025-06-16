@@ -11,20 +11,20 @@
 #include <LPointer.h>
 #include <LKeyboard.h>
 #include <LTime.h>
-#include <LRect.h>
+#include <CZ/skia/core/SkRect.h>
 
 using namespace Louvre;
 
 struct Config
 {
     const LPopupRole *popup;
-    LRect finalRect;
-    LPoint parentPos;
+    SkIRect finalRect;
+    SkIPoint parentPos;
     LPositioner::Gravity gravity;
     LPositioner::Anchor anchor;
-    LPoint anchorOrigin;
-    LPoint popupOrigin;
-    LPoint slide;
+    SkIPoint anchorOrigin;
+    SkIPoint popupOrigin;
+    SkIPoint slide;
 };
 
 static void invertAnchor(LPositioner::Anchor &anchor, bool x, bool y) noexcept
@@ -101,38 +101,40 @@ static void updateAnchorOrigin(Config &config) noexcept
 {
     switch(config.anchor) {
     case LPositioner::Anchor::NoAnchor:
-        config.anchorOrigin = config.popup->positioner().anchorRect().size()/2;
+        config.anchorOrigin.fX = config.popup->positioner().anchorRect().width()/2;
+        config.anchorOrigin.fY = config.popup->positioner().anchorRect().height()/2;
         break;
     case LPositioner::AnchorTop:
-        config.anchorOrigin.setX(config.popup->positioner().anchorRect().w()/2);
-        config.anchorOrigin.setY(0);
+        config.anchorOrigin.fX = config.popup->positioner().anchorRect().width()/2;
+        config.anchorOrigin.fY = 0;
         break;
     case LPositioner::AnchorBottom:
-        config.anchorOrigin.setX(config.popup->positioner().anchorRect().w()/2);
-        config.anchorOrigin.setY(config.popup->positioner().anchorRect().h());
+        config.anchorOrigin.fX = config.popup->positioner().anchorRect().width()/2;
+        config.anchorOrigin.fY = config.popup->positioner().anchorRect().height();
         break;
     case LPositioner::AnchorLeft:
-        config.anchorOrigin.setX(0);
-        config.anchorOrigin.setY(config.popup->positioner().anchorRect().h()/2);
+        config.anchorOrigin.fX = 0;
+        config.anchorOrigin.fY = config.popup->positioner().anchorRect().height()/2;
         break;
     case LPositioner::AnchorRight:
-        config.anchorOrigin.setX(config.popup->positioner().anchorRect().w());
-        config.anchorOrigin.setY(config.popup->positioner().anchorRect().h()/2);
+        config.anchorOrigin.fX = config.popup->positioner().anchorRect().width();
+        config.anchorOrigin.fY = config.popup->positioner().anchorRect().height()/2;
         break;
     case LPositioner::AnchorTopLeft:
-        config.anchorOrigin.setX(0);
-        config.anchorOrigin.setY(0);
+        config.anchorOrigin.fX = 0;
+        config.anchorOrigin.fY = 0;
         break;
     case LPositioner::AnchorBottomLeft:
-        config.anchorOrigin.setX(0);
-        config.anchorOrigin.setY(config.popup->positioner().anchorRect().h());
+        config.anchorOrigin.fX = 0;
+        config.anchorOrigin.fY = config.popup->positioner().anchorRect().height();
         break;
     case LPositioner::AnchorTopRight:
-        config.anchorOrigin.setX(config.popup->positioner().anchorRect().w());
-        config.anchorOrigin.setY(0);
+        config.anchorOrigin.fX = config.popup->positioner().anchorRect().width();
+        config.anchorOrigin.fY = 0;
         break;
     case LPositioner::AnchorBottomRight:
-        config.anchorOrigin = config.popup->positioner().anchorRect().size();
+        config.anchorOrigin.fX = config.popup->positioner().anchorRect().width();
+        config.anchorOrigin.fY = config.popup->positioner().anchorRect().height();
         break;
     }
 }
@@ -141,72 +143,76 @@ static void updatePopupOrigin(Config &config) noexcept
 {
     switch(config.gravity) {
     case LPositioner::Gravity::NoGravity:
-        config.popupOrigin = config.finalRect.size()/2;
+        config.popupOrigin.fX = config.finalRect.width()/2;
+        config.popupOrigin.fY = config.finalRect.height()/2;
         break;
     case LPositioner::GravityTop:
-        config.popupOrigin.setX(config.finalRect.w()/2);
-        config.popupOrigin.setY(config.finalRect.h());
+        config.popupOrigin.fX = config.finalRect.width()/2;
+        config.popupOrigin.fY = config.finalRect.height();
         break;
     case LPositioner::GravityBottom:
-        config.popupOrigin.setX(config.finalRect.w()/2);
-        config.popupOrigin.setY(0);
+        config.popupOrigin.fX = config.finalRect.width()/2;
+        config.popupOrigin.fY = 0;
         break;
     case LPositioner::GravityLeft:
-        config.popupOrigin.setX(config.finalRect.w());
-        config.popupOrigin.setY(config.finalRect.h()/2);
+        config.popupOrigin.fX = config.finalRect.width();
+        config.popupOrigin.fY = config.finalRect.height()/2;
         break;
     case LPositioner::GravityRight:
-        config.popupOrigin.setX(0);
-        config.popupOrigin.setY(config.finalRect.h()/2);
+        config.popupOrigin.fX = 0;
+        config.popupOrigin.fY = config.finalRect.height()/2;
         break;
     case LPositioner::GravityTopLeft:
-        config.popupOrigin = config.finalRect.size();
+        config.popupOrigin.fX = config.finalRect.width();
+        config.popupOrigin.fY = config.finalRect.height();
         break;
     case LPositioner::GravityBottomLeft:
-        config.popupOrigin.setX(config.finalRect.w());
-        config.popupOrigin.setY(0);
+        config.popupOrigin.fX = config.finalRect.width();
+        config.popupOrigin.fY = 0;
         break;
     case LPositioner::GravityTopRight:
-        config.popupOrigin.setX(0);
-        config.popupOrigin.setY(config.finalRect.h());
+        config.popupOrigin.fX = 0;
+        config.popupOrigin.fY = config.finalRect.height();
         break;
     case LPositioner::GravityBottomRight:
-        config.popupOrigin.setX(0);
-        config.popupOrigin.setY(0);
+        config.popupOrigin.fX = 0;
+        config.popupOrigin.fY = 0;
         break;
     }
 }
 
-static void updateFinalRectPos(Config &config) noexcept
+static void updatefinalRectPos(Config &config) noexcept
 {
-    config.finalRect.setPos(
+    const SkIPoint finalPos =
         config.parentPos +
         config.anchorOrigin -
         config.popupOrigin +
         config.slide +
-        config.popup->positioner().anchorRect().pos() +
-        config.popup->positioner().offset());
+        config.popup->positioner().anchorRect().topLeft() +
+        config.popup->positioner().offset();
+
+    config.finalRect.offsetTo(finalPos.x(), finalPos.y());
 }
 
-CZBitset<LEdge> LPopupRole::constrainedEdges(const LRect &rect) const noexcept
+CZBitset<LEdge> LPopupRole::constrainedEdges(const SkIRect &rect) const noexcept
 {
     CZBitset<LEdge> edges;
 
-    if (bounds().w() > 0)
+    if (bounds().width() > 0)
     {
         if (rect.x() < bounds().x())
             edges.add(LEdgeLeft);
 
-        if (rect.x() + rect.w() > bounds().x() + bounds().w())
+        if (rect.x() + rect.width() > bounds().x() + bounds().width())
             edges.add(LEdgeRight);
     }
 
-    if (bounds().h() > 0)
+    if (bounds().height() > 0)
     {
         if (rect.y() < bounds().y())
             edges.add(LEdgeTop);
 
-        if (rect.y() + rect.h() > bounds().y() + bounds().h())
+        if (rect.y() + rect.height() > bounds().y() + bounds().height())
             edges.add(LEdgeBottom);
     }
 
@@ -217,16 +223,20 @@ static void updateConfig(Config &conf) noexcept
 {
     updateAnchorOrigin(conf);
     updatePopupOrigin(conf);
-    updateFinalRectPos(conf);
+    updatefinalRectPos(conf);
 }
 
-LRect LPopupRole::calculateUnconstrainedRect(const LPoint *futureParentPos) const noexcept
+SkIRect LPopupRole::calculateUnconstrainedRect(const SkIPoint *futureParentPos) const noexcept
 {
     Config conf;
     conf.popup = this;
     conf.anchor = positioner().anchor();
     conf.gravity = positioner().gravity();
-    conf.finalRect.setSize(positioner().size());
+    conf.finalRect.setXYWH(
+        conf.finalRect.x(),
+        conf.finalRect.y(),
+        positioner().size().width(),
+        positioner().size().height());
 
     if (futureParentPos)
         conf.parentPos = *futureParentPos;
@@ -274,9 +284,9 @@ LRect LPopupRole::calculateUnconstrainedRect(const LPoint *futureParentPos) cons
         if (positioner().constraintAdjustments().has(LPositioner::SlideX) && !constrained.hasAll(LEdgeLeft | LEdgeRight))
         {
             if (constrained.has(LEdgeLeft))
-                conf.slide.setX(bounds().x() - conf.finalRect.x());
+                conf.slide.fX = bounds().x() - conf.finalRect.x();
             else
-                conf.slide.setX(bounds().x() + bounds().w() - conf.finalRect.x() - conf.finalRect.w());
+                conf.slide.fX = bounds().x() + bounds().width() - conf.finalRect.x() - conf.finalRect.width();
 
             updateConfig(conf);
             constrained = constrainedEdges(conf.finalRect);
@@ -288,7 +298,7 @@ LRect LPopupRole::calculateUnconstrainedRect(const LPoint *futureParentPos) cons
             else
             {
                 // Revert
-                conf.slide.setX(0);
+                conf.slide.fX = 0;
                 updateConfig(conf);
                 constrained = constrainedEdges(conf.finalRect);
             }
@@ -298,11 +308,13 @@ LRect LPopupRole::calculateUnconstrainedRect(const LPoint *futureParentPos) cons
         {
             if (positioner().constraintAdjustments().has(LPositioner::SlideX))
             {
-                conf.finalRect.setW(bounds().w());
-                conf.slide.setX(bounds().x() - conf.finalRect.x());
+                conf.finalRect.fRight = conf.finalRect.fLeft + bounds().width();
+                conf.slide.fX = bounds().x() - conf.finalRect.x();
             }
             else if (constrained.has(LEdgeRight))
-                conf.finalRect.setW(bounds().x() + bounds().w() - conf.finalRect.x());
+            {
+                conf.finalRect.fRight = bounds().x() + bounds().width();
+            }
 
             updateConfig(conf);
         }
@@ -334,9 +346,9 @@ LRect LPopupRole::calculateUnconstrainedRect(const LPoint *futureParentPos) cons
         if (positioner().constraintAdjustments().has(LPositioner::SlideY) && !constrained.hasAll(LEdgeTop | LEdgeBottom))
         {
             if (constrained.has(LEdgeTop))
-                conf.slide.setY(bounds().y() - conf.finalRect.y());
+                conf.slide.fY = bounds().y() - conf.finalRect.y();
             else // Bottom
-                conf.slide.setY(bounds().y() + bounds().h() - conf.finalRect.y() - conf.finalRect.h());
+                conf.slide.fY = bounds().y() + bounds().height() - conf.finalRect.y() - conf.finalRect.height();
 
             updateConfig(conf);
             constrained = constrainedEdges(conf.finalRect);
@@ -346,7 +358,7 @@ LRect LPopupRole::calculateUnconstrainedRect(const LPoint *futureParentPos) cons
             else
             {
                 // Revert
-                conf.slide.setY(0);
+                conf.slide.fY = 0;
                 updateConfig(conf);
                 constrained = constrainedEdges(conf.finalRect);
             }
@@ -356,11 +368,11 @@ LRect LPopupRole::calculateUnconstrainedRect(const LPoint *futureParentPos) cons
         {
             if (positioner().constraintAdjustments().has(LPositioner::SlideY))
             {
-                conf.finalRect.setH(bounds().h());
-                conf.slide.setY(bounds().y() - conf.finalRect.y());
+                conf.finalRect.fBottom = conf.finalRect.fTop + bounds().height();
+                conf.slide.fY = bounds().y() - conf.finalRect.y();
             }
             else if (constrained.has(LEdgeBottom))
-                conf.finalRect.setH(bounds().y() + bounds().h() - conf.finalRect.y());
+                conf.finalRect.fBottom = bounds().y() + bounds().height();
 
             updateConfig(conf);
         }
@@ -368,7 +380,7 @@ LRect LPopupRole::calculateUnconstrainedRect(const LPoint *futureParentPos) cons
 
 
     final:
-    conf.finalRect.setPos(conf.finalRect.pos() - conf.parentPos);
+    conf.finalRect.offset(-conf.parentPos);
     return conf.finalRect;
 }
 
@@ -415,7 +427,7 @@ void LPopupRole::setExclusiveOutput(LOutput *output) noexcept
     m_exclusiveOutput.reset(output);
 }
 
-void LPopupRole::configureRect(const LRect &rect) const noexcept
+void LPopupRole::configureRect(const SkIRect &rect) const noexcept
 {
     auto &res { *static_cast<XdgShell::RXdgPopup*>(resource()) };
 
@@ -431,9 +443,11 @@ void LPopupRole::configureRect(const LRect &rect) const noexcept
         m_pendingConfiguration.serial = LTime::nextSerial();
     }
 
-    m_pendingConfiguration.rect.setPos(rect.pos());
-    m_pendingConfiguration.rect.setW(rect.w() < 0 ? 0 : rect.w());
-    m_pendingConfiguration.rect.setH(rect.h() < 0 ? 0 : rect.h());
+    m_pendingConfiguration.rect.setXYWH(
+        rect.x(),
+        rect.y(),
+        rect.width() < 0 ? 0 : rect.width(),
+        rect.height() < 0 ? 0 : rect.height());
 }
 
 void LPopupRole::dismiss()
@@ -530,13 +544,13 @@ void LPopupRole::fullAtomsUpdate()
     }
     else if (!xdgSurfaceResource()->m_windowGeometrySet)
     {
-        const LRect newGeometry { xdgSurfaceResource()->calculateGeometryWithSubsurfaces() };
+        const SkIRect newGeometry { xdgSurfaceResource()->calculateGeometryWithSubsurfaces() };
 
         if (newGeometry != xdgSurfaceResource()->m_currentWindowGeometry)
             xdgSurfaceResource()->m_currentWindowGeometry = newGeometry;
     }
 
-    pendingAtoms().localPos = m_lastACKConfiguration.rect.pos();
+    pendingAtoms().localPos = m_lastACKConfiguration.rect.topLeft();
     pendingAtoms().serial = m_lastACKConfiguration.serial;
     pendingAtoms().windowGeometry = xdgSurfaceResource()->m_currentWindowGeometry;
 

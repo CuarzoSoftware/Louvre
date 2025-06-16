@@ -18,7 +18,7 @@
 #include <unistd.h>
 
 #include <LToplevelRole.h>
-#include <LRegion.h>
+#include <CZ/skia/core/SkRegion.h>
 #include <LSeat.h>
 #include <LOutputMode.h>
 #include <LTime.h>
@@ -31,8 +31,7 @@ using namespace Louvre;
 LOutput::LOutput(const void *params) noexcept : LFactoryObject(FactoryObjectType), m_imp(std::make_unique<LOutputPrivate>(this))
 {
     imp()->output = this;
-    imp()->rect.setX(0);
-    imp()->rect.setY(0);
+    imp()->rect.offsetTo(0, 0);
     imp()->callLock.store(true);
 
     Params *p = (Params*)params;
@@ -63,7 +62,7 @@ bool LOutput::needsFullRepaint() const noexcept
     return imp()->stateFlags.has(LOutput::LOutputPrivate::NeedsFullRepaint);
 }
 
-const LRect &LOutput::availableGeometry() const noexcept
+const SkIRect &LOutput::availableGeometry() const noexcept
 {
     return imp()->availableGeometry;
 }
@@ -180,17 +179,17 @@ LTexture *LOutput::oversamplingTexture() const noexcept
     return nullptr;
 }
 
-LTransform LOutput::transform() const noexcept
+CZTransform LOutput::transform() const noexcept
 {
     return imp()->transform;
 }
 
-void LOutput::setTransform(LTransform transform) noexcept
+void LOutput::setTransform(CZTransform transform) noexcept
 {
     if (transform == imp()->transform)
         return;
 
-    LSize prevSizeB = imp()->sizeB;
+    SkISize prevSizeB = imp()->sizeB;
     imp()->transform = transform;
     imp()->updateRect();
 
@@ -290,19 +289,18 @@ bool LOutput::hasBufferDamageSupport() const noexcept
     return compositor()->imp()->graphicBackend->outputHasBufferDamageSupport((LOutput*)this);
 }
 
-void LOutput::setBufferDamage(const LRegion *damage) noexcept
+void LOutput::setBufferDamage(const SkRegion *damage) noexcept
 {
     if (!damage)
     {
-        imp()->damage.clear();
-        imp()->damage.addRect(rect());
+        imp()->damage.setRect(rect());
         return;
     }
 
     imp()->damage = *damage;
 }
 
-const LRegion &LOutput::bufferDamage() const noexcept
+const SkRegion &LOutput::bufferDamage() const noexcept
 {
     return imp()->damage;
 }
@@ -321,11 +319,12 @@ void LOutput::setScale(Float32 scale) noexcept
     if (fmod(imp()->fractionalScale, 1.f) != 0.f)
     {
         imp()->stateFlags.add(LOutputPrivate::UsingFractionalScale);
-        LSize fbSize = currentMode()->sizeB();
-        fbSize = LSize(roundf(Float32(fbSize.w()) * imp()->scale / imp()->fractionalScale),
-                             roundf(Float32(fbSize.h()) * imp()->scale / imp()->fractionalScale));
-        fbSize.setW(fbSize.w() + fbSize.w() % (Int32)imp()->scale);
-        fbSize.setH(fbSize.h() + fbSize.h() % (Int32)imp()->scale);
+        SkISize fbSize = currentMode()->sizeB();
+        fbSize = SkISize(
+            SkScalarRoundToInt(Float32(fbSize.width()) * imp()->scale / imp()->fractionalScale),
+            SkScalarRoundToInt(Float32(fbSize.height()) * imp()->scale / imp()->fractionalScale));
+        fbSize.fWidth = fbSize.width() + fbSize.width() % (Int32)imp()->scale;
+        fbSize.fHeight = fbSize.height() + fbSize.height() % (Int32)imp()->scale;
         imp()->fractionalFb.setSizeB(fbSize);
     }
     else
@@ -367,24 +366,24 @@ Int32 LOutput::dpi() noexcept
     if (physicalSize().area() == 0)
         return 0;
 
-    const Float64 w = imp()->sizeB.w();
-    const Float64 h = imp()->sizeB.h();
-    const Float64 Wi = Float64(physicalSize().w()) / 25.4f;
-    const Float64 Hi = Float64(physicalSize().h()) / 25.4f;
+    const Float64 w = imp()->sizeB.width();
+    const Float64 h = imp()->sizeB.height();
+    const Float64 Wi = Float64(physicalSize().width()) / 25.4f;
+    const Float64 Hi = Float64(physicalSize().height()) / 25.4f;
     return sqrtf(w*w + h*h)/sqrtf(Wi*Wi + Hi*Hi);
 }
 
-const LSize &LOutput::physicalSize() const noexcept
+SkISize LOutput::physicalSize() const noexcept
 {
-    return *compositor()->imp()->graphicBackend->outputGetPhysicalSize((LOutput*)this);
+    return compositor()->imp()->graphicBackend->outputGetPhysicalSize((LOutput*)this);
 }
 
-const LSize &LOutput::sizeB() const noexcept
+SkISize LOutput::sizeB() const noexcept
 {
     return imp()->sizeB;
 }
 
-const LSize &LOutput::realBufferSize() const noexcept
+SkISize LOutput::realBufferSize() const noexcept
 {
     return usingFractionalScale() ? imp()->fractionalFb.sizeB() : currentMode()->sizeB();
 }
@@ -454,17 +453,17 @@ DRMLease::RDRMLease *LOutput::lease() const noexcept
     return imp()->lease;
 }
 
-const LRect &LOutput::rect() const noexcept
+const SkIRect &LOutput::rect() const noexcept
 {
     return imp()->rect;
 }
 
-const LPoint &LOutput::pos() const noexcept
+SkIPoint LOutput::pos() const noexcept
 {
-    return imp()->rect.pos();
+    return imp()->rect.topLeft();
 }
 
-const LSize &LOutput::size() const noexcept
+SkISize LOutput::size() const noexcept
 {
     return imp()->rect.size();
 }
@@ -504,9 +503,9 @@ const char *LOutput::serialNumber() const noexcept
     return compositor()->imp()->graphicBackend->outputGetSerial((LOutput*)this);
 }
 
-void LOutput::setPos(const LPoint &pos) noexcept
+void LOutput::setPos(SkIPoint pos) noexcept
 {
-    imp()->rect.setPos(pos);
+    imp()->rect.offsetTo(pos.x(), pos.y());
 
     for (auto *head : imp()->wlrOutputHeads)
         head->position(pos);

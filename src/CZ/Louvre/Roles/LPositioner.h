@@ -1,7 +1,7 @@
 #ifndef LPOSITIONER_H
 #define LPOSITIONER_H
 
-#include <LRect.h>
+#include <CZ/skia/core/SkRect.h>
 #include <CZ/CZBitset.h>
 
 /*!
@@ -152,7 +152,7 @@ public:
      *
      * Size of the popup to be positioned (window geometry size) in surface coordinates.
      */
-    const LSize &size() const
+    const SkISize &size() const
     {
         return m_size;
     }
@@ -162,7 +162,7 @@ public:
      *
      * Anchor rect relative to the parent window geometry in surface coordinates.
      */
-    const LRect &anchorRect() const
+    const SkIRect &anchorRect() const
     {
         return m_anchorRect;
     }
@@ -172,7 +172,7 @@ public:
      *
      * Additional offset in surface coordinates added to the final calculated position.
      */
-    const LPoint &offset() const noexcept
+    const SkIPoint &offset() const noexcept
     {
         return m_offset;
     }
@@ -241,7 +241,7 @@ public:
      *
      * @see hasParentSize().
      */
-    const LSize &parentSize() const noexcept
+    const SkISize &parentSize() const noexcept
     {
         return m_parentSize;
     }
@@ -276,16 +276,16 @@ private:
     friend class LPopupRole;
     friend class Protocols::XdgShell::RXdgPositioner;
 
-    LSize m_size;
-    LRect m_anchorRect;
-    LPoint m_offset;
+    SkISize m_size;
+    SkIRect m_anchorRect;
+    SkIPoint m_offset;
 
     Anchor m_anchor { Anchor::NoAnchor };
     Gravity m_gravity { Gravity::NoGravity };
     CZBitset<ConstraintAdjustments> m_constraintAdjustments { ConstraintAdjustments::NoAdjustment };
 
     // Since 3
-    LSize m_parentSize;
+    SkISize m_parentSize;
     UInt32 m_parentConfigureSerial;
     bool m_reactive { false };
     bool m_hasParentSize { false };

@@ -2,17 +2,17 @@
 #define RREGION_H
 
 #include <LResource.h>
-#include <LRegion.h>
+#include <CZ/skia/core/SkRegion.h>
 
 class Louvre::Protocols::Wayland::RRegion final : public LResource
 {
 public:
-    const LRegion &region() const noexcept
+    const SkRegion &region() const noexcept
     {
-        if (!m_subtract.empty())
+        if (!m_subtract.isEmpty())
         {
-            pixman_region32_subtract(&m_region.m_region, &m_region.m_region, &m_subtract.m_region);
-            m_subtract.clear();
+            m_region.op(m_subtract, SkRegion::kDifference_Op);
+            m_subtract.setEmpty();
         }
 
         return m_region;
@@ -28,8 +28,8 @@ private:
     friend class Louvre::Protocols::Wayland::GCompositor;
     RRegion(GCompositor *compositorRes, UInt32 id) noexcept;
     ~RRegion() noexcept = default;
-    mutable LRegion m_region;
-    mutable LRegion m_subtract;
+    mutable SkRegion m_region;
+    mutable SkRegion m_subtract;
 };
 
 #endif // RREGION_H

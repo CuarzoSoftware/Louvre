@@ -117,7 +117,7 @@ struct Backend
 struct Output
 {
     SRMConnector *conn;
-    LSize physicalSize;
+    SkISize physicalSize;
     std::vector<LOutputMode*>modes;
     std::vector<LTexture*> textures;
     CZWeak<DRMLease> lease;
@@ -244,15 +244,15 @@ static void initConnector(Backend *bknd, SRMConnector *conn)
         {
             srmConnectorSetUserData(conn, output);
             bkndOutput->conn = conn;
-            bkndOutput->physicalSize.setW(srmConnectorGetmmWidth(conn));
-            bkndOutput->physicalSize.setH(srmConnectorGetmmHeight(conn));
+            bkndOutput->physicalSize.fWidth = srmConnectorGetmmWidth(conn);
+            bkndOutput->physicalSize.fHeight = srmConnectorGetmmHeight(conn);
 
             SRMListForeach (modeIt, srmConnectorGetModes(conn))
             {
                 SRMConnectorMode *mode = (SRMConnectorMode*)srmListItemGetData(modeIt);
                 LOutputMode *outputMode = new LOutputMode(
                     output,
-                    LSize(srmConnectorModeGetWidth(mode), srmConnectorModeGetHeight(mode)),
+                    SkISize(srmConnectorModeGetWidth(mode), srmConnectorModeGetHeight(mode)),
                     srmConnectorModeGetRefreshRate(mode) * 1000,
                     srmConnectorModeIsPreferred(mode),
                     mode);
@@ -602,10 +602,10 @@ LGPU *LGraphicBackend::backendGetAllocatorDevice()
 
 /* TEXTURES */
 
-bool LGraphicBackend::textureCreateFromCPUBuffer(LTexture *texture, const LSize &size, UInt32 stride, UInt32 format, const void *pixels)
+bool LGraphicBackend::textureCreateFromCPUBuffer(LTexture *texture, SkISize size, UInt32 stride, UInt32 format, const void *pixels)
 {
     Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
-    SRMBuffer *bkndBuffer = srmBufferCreateFromCPU(bknd->core, NULL, size.w(), size.h(), stride, pixels, format);
+    SRMBuffer *bkndBuffer = srmBufferCreateFromCPU(bknd->core, NULL, size.width(), size.height(), stride, pixels, format);
 
     if (bkndBuffer)
     {
@@ -625,8 +625,8 @@ bool LGraphicBackend::textureCreateFromWaylandDRM(LTexture *texture, void *wlBuf
     {
         texture->m_graphicBackendData = bkndBuffer;
         texture->m_format = srmBufferGetFormat(bkndBuffer);
-        texture->m_sizeB.setW(srmBufferGetWidth(bkndBuffer));
-        texture->m_sizeB.setH(srmBufferGetHeight(bkndBuffer));
+        texture->m_sizeB.fWidth = srmBufferGetWidth(bkndBuffer);
+        texture->m_sizeB.fHeight = srmBufferGetHeight(bkndBuffer);
         return true;
     }
 
@@ -642,36 +642,36 @@ bool LGraphicBackend::textureCreateFromDMA(LTexture *texture, const LDMAPlanes *
     {
         texture->m_graphicBackendData = bkndBuffer;
         texture->m_format = srmBufferGetFormat(bkndBuffer);
-        texture->m_sizeB.setW(srmBufferGetWidth(bkndBuffer));
-        texture->m_sizeB.setH(srmBufferGetHeight(bkndBuffer));
+        texture->m_sizeB.fWidth = srmBufferGetWidth(bkndBuffer);
+        texture->m_sizeB.fHeight = srmBufferGetHeight(bkndBuffer);
         return true;
     }
 
     return false;
 }
 
-bool LGraphicBackend::textureCreateFromGL(LTexture *texture, GLuint id, GLenum target, UInt32 format, const LSize &size, bool transferOwnership)
+bool LGraphicBackend::textureCreateFromGL(LTexture *texture, GLuint id, GLenum target, UInt32 format, SkISize size, bool transferOwnership)
 {
     Backend *bknd = (Backend*)compositor()->imp()->graphicBackendData;
     SRMBuffer *bkndBuffer = srmBufferCreateGLTextureWrapper(
-        srmCoreGetAllocatorDevice(bknd->core), id, target, format, size.w(), size.h(), transferOwnership);
+        srmCoreGetAllocatorDevice(bknd->core), id, target, format, size.width(), size.height(), transferOwnership);
 
     if (bkndBuffer)
     {
         texture->m_graphicBackendData = bkndBuffer;
         texture->m_format = srmBufferGetFormat(bkndBuffer);
-        texture->m_sizeB.setW(srmBufferGetWidth(bkndBuffer));
-        texture->m_sizeB.setH(srmBufferGetHeight(bkndBuffer));
+        texture->m_sizeB.fWidth = srmBufferGetWidth(bkndBuffer);
+        texture->m_sizeB.fHeight = srmBufferGetHeight(bkndBuffer);
         return true;
     }
 
     return false;
 }
 
-bool LGraphicBackend::textureUpdateRect(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels)
+bool LGraphicBackend::textureUpdateRect(LTexture *texture, UInt32 stride, const SkIRect &dst, const void *pixels)
 {
     SRMBuffer *bkndBuffer = (SRMBuffer*)texture->m_graphicBackendData;
-    return srmBufferWrite(bkndBuffer, stride, dst.x(), dst.y(), dst.w(), dst.h(), pixels);
+    return srmBufferWrite(bkndBuffer, stride, dst.x(), dst.y(), dst.width(), dst.height(), pixels);
 }
 
 bool LGraphicBackend::textureWriteBegin(LTexture *texture)
@@ -680,10 +680,10 @@ bool LGraphicBackend::textureWriteBegin(LTexture *texture)
     return srmBufferWrite2Begin(bkndBuffer);
 }
 
-bool LGraphicBackend::textureWriteUpdate(LTexture *texture, UInt32 stride, const LRect &dst, const void *pixels)
+bool LGraphicBackend::textureWriteUpdate(LTexture *texture, UInt32 stride, const SkIRect &dst, const void *pixels)
 {
     SRMBuffer *bkndBuffer = (SRMBuffer*)texture->m_graphicBackendData;
-    return srmBufferWrite2Update(bkndBuffer, stride, dst.x(), dst.y(), dst.w(), dst.h(), pixels);
+    return srmBufferWrite2Update(bkndBuffer, stride, dst.x(), dst.y(), dst.width(), dst.height(), pixels);
 }
 
 bool LGraphicBackend::textureWriteEnd(LTexture *texture)
@@ -772,16 +772,27 @@ bool LGraphicBackend::outputHasBufferDamageSupport(LOutput *output)
     return srmConnectorHasBufferDamageSupport(bkndOutput->conn);
 }
 
-void LGraphicBackend::outputSetBufferDamage(LOutput *output, LRegion &region)
+void LGraphicBackend::outputSetBufferDamage(LOutput *output, SkRegion &region)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
 
     if (!srmConnectorHasBufferDamageSupport(bkndOutput->conn) || srmConnectorGetState(bkndOutput->conn) != SRM_CONNECTOR_STATE_INITIALIZED)
         return;
 
-    Int32 n;
-    const LBox *boxes = region.boxes(&n);
-    srmConnectorSetBufferDamageBoxes(bkndOutput->conn, (SRMBox*)boxes, n);
+    // TODO: Make SRM use SkRegion
+
+    const Int32 n { region.computeRegionComplexity() };
+    std::vector<SRMBox> boxes;
+    boxes.reserve(n);
+
+    SkRegion::Iterator it(region);
+    while (!it.done())
+    {
+        boxes.emplace_back((const SRMBox&)it.rect());
+        it.next();
+    }
+
+    srmConnectorSetBufferDamageBoxes(bkndOutput->conn, boxes.data(), n);
 }
 
 /* OUTPUT PROPS */
@@ -816,10 +827,10 @@ const char *Louvre::LGraphicBackend::outputGetSerial(LOutput *output)
     return srmConnectorGetSerial(bkndOutput->conn);
 }
 
-const LSize *LGraphicBackend::outputGetPhysicalSize(LOutput *output)
+SkISize LGraphicBackend::outputGetPhysicalSize(LOutput *output)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
-    return &bkndOutput->physicalSize;
+    return bkndOutput->physicalSize;
 }
 
 Int32 LGraphicBackend::outputGetSubPixel(LOutput *output)
@@ -895,8 +906,8 @@ LTexture *LGraphicBackend::outputGetBuffer(LOutput *output, UInt32 bufferIndex)
     LTexture *tex = new LTexture(true);
     tex->m_graphicBackendData = buffer;
     tex->m_format = srmBufferGetFormat(buffer);
-    tex->m_sizeB.setW(srmBufferGetWidth(buffer));
-    tex->m_sizeB.setH(srmBufferGetHeight(buffer));
+    tex->m_sizeB.fWidth = srmBufferGetWidth(buffer);
+    tex->m_sizeB.fHeight = srmBufferGetHeight(buffer);
     bkndOutput->textures[bufferIndex] = tex;
     return tex;
 }
@@ -984,7 +995,7 @@ void LGraphicBackend::outputSetCursorTexture(LOutput *output, UInt8 *buffer)
     srmConnectorSetCursor(bkndOutput->conn, buffer);
 }
 
-void LGraphicBackend::outputSetCursorPosition(LOutput *output, const LPoint &position)
+void LGraphicBackend::outputSetCursorPosition(LOutput *output, SkIPoint position)
 {
     Output *bkndOutput = (Output*)output->imp()->graphicBackendData;
     srmConnectorSetCursorPos(bkndOutput->conn, position.x(), position.y());

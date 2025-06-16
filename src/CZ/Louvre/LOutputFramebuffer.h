@@ -30,15 +30,15 @@ public:
     }
 
     Float32 scale() const noexcept override;
-    const LSize &sizeB() const noexcept override;
-    const LRect &rect() const noexcept override;
+    SkISize sizeB() const noexcept override;
+    const SkIRect &rect() const noexcept override;
     GLuint id() const noexcept override;
     Int32 bufferAge() const noexcept override;
     Int32 buffersCount() const noexcept override;
     Int32 currentBufferIndex() const noexcept override;
     LTexture *texture(Int32 index = 0) const noexcept override;
-    void setFramebufferDamage(const LRegion *damage) noexcept override;
-    LTransform transform() const noexcept override;
+    void setFramebufferDamage(const SkRegion *damage) noexcept override;
+    CZTransform transform() const noexcept override;
 
 private:
     friend class LOutput;

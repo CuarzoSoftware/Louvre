@@ -5,7 +5,7 @@
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 #include <CZ/Louvre/Private/LCursorPrivate.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
-#include <LRect.h>
+#include <CZ/skia/core/SkRect.h>
 #include <LLog.h>
 
 #include <GLES2/gl2.h>
@@ -134,7 +134,7 @@ const std::vector<LDMAFormat> &LTexture::supportedDMAFormats() noexcept
     return *compositor()->imp()->graphicBackend->backendGetDMAFormats();
 }
 
-bool LTexture::setDataFromMainMemory(const LSize &size, UInt32 stride, UInt32 format, const void *buffer) noexcept
+bool LTexture::setDataFromMainMemory(const SkISize &size, UInt32 stride, UInt32 format, const void *buffer) noexcept
 {
     if (m_sourceType == Framebuffer)
         return false;
@@ -184,7 +184,7 @@ bool LTexture::setDataFromDMA(const LDMAPlanes &planes) noexcept
     return false;
 }
 
-bool LTexture::setDataFromGL(GLuint id, GLenum target, UInt32 format, const LSize &size, bool transferOwnership) noexcept
+bool LTexture::setDataFromGL(GLuint id, GLenum target, UInt32 format, const SkISize &size, bool transferOwnership) noexcept
 {
     if (m_sourceType == Framebuffer)
         return false;
@@ -202,7 +202,7 @@ bool LTexture::setDataFromGL(GLuint id, GLenum target, UInt32 format, const LSiz
     return false;
 }
 
-bool LTexture::updateRect(const LRect &rect, UInt32 stride, const void *buffer) noexcept
+bool LTexture::updateRect(const SkIRect &rect, UInt32 stride, const void *buffer) noexcept
 {
     if (initialized() && m_sourceType != Framebuffer)
     {
@@ -221,7 +221,7 @@ bool LTexture::writeBegin() noexcept
     return false;
 }
 
-bool LTexture::writeUpdate(const LRect &rect, UInt32 stride, const void *buffer) noexcept
+bool LTexture::writeUpdate(const SkIRect &rect, UInt32 stride, const void *buffer) noexcept
 {
     return compositor()->imp()->graphicBackend->textureWriteUpdate(this, stride, rect, buffer);
 }
@@ -236,12 +236,12 @@ bool LTexture::writeEnd() noexcept
     return ret;
 }
 
-LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualityScaling) const noexcept
+LTexture *LTexture::copy(const SkISize &dst, const SkIRect &src, bool highQualityScaling) const noexcept
 {
     if (!initialized())
         return nullptr;
 
-    if (dst.w() < 0 || dst.h() < 0)
+    if (dst.width() < 0 || dst.height() < 0)
     {
         LLog::error("[LTexture::copyB] Failed to copy texture. Invalid destination size.");
         return nullptr;
@@ -255,20 +255,20 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
         return nullptr;
     }
 
-    LRect srcRect;
-    LSize dstSize;
+    SkIRect srcRect;
+    SkISize dstSize;
 
-    if (src == LRect())
-        srcRect = LRectF(0, sizeB());
+    if (src.isEmpty())
+        srcRect = SkIRect::MakeSize(sizeB());
     else
         srcRect = src;
 
-    if (dst == LSize())
+    if (dst.isZero())
         dstSize = sizeB();
     else
         dstSize = dst;
 
-    if (srcRect.w() == 0 || srcRect.h() == 0 || dstSize.w() == 0 || dstSize.h() == 0)
+    if (srcRect.width() == 0 || srcRect.height() == 0 || dstSize.width() == 0 || dstSize.height() == 0)
     {
         LLog::error("[LTexture::copyB] Failed to copy texture. Invalid size.");
         return nullptr;
@@ -280,8 +280,8 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
 
     if (highQualityScaling)
     {
-        Float32 wScaleF = fabs(Float32(srcRect.w()) / Float32(dstSize.w()));
-        Float32 hScaleF = fabs(Float32(srcRect.h()) / Float32(dstSize.h()));
+        Float32 wScaleF = fabs(Float32(srcRect.width()) / Float32(dstSize.width()));
+        Float32 hScaleF = fabs(Float32(srcRect.height()) / Float32(dstSize.height()));
 
         // Scale <= 2. Skipping HQ scaling as it's not required
         if (wScaleF <= 2.f && hScaleF <= 2.f)
@@ -315,8 +315,8 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
         if (hScale > limit)
             hScale = limit;
 
-        Float32 pixSizeW = wScaleF / Float32(sizeB().w() * wScale);
-        Float32 pixSizeH = hScaleF / Float32(sizeB().h() * hScale);
+        Float32 pixSizeW = wScaleF / Float32(sizeB().width() * wScale);
+        Float32 pixSizeH = hScaleF / Float32(sizeB().height() * hScale);
 
         GLuint framebuffer;
         glGenFramebuffers(1, &framebuffer);
@@ -324,7 +324,7 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
         GLuint texCopy;
         glGenTextures(1, &texCopy);
         LTexture::LTexturePrivate::setTextureParams(texCopy, GL_TEXTURE_2D, GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dstSize.w(), dstSize.h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dstSize.width(), dstSize.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texCopy, 0);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -337,18 +337,18 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
         }
 
         glDisable(GL_BLEND);
-        glScissor(0, 0, dstSize.w(), dstSize.h());
-        glViewport(0, 0, dstSize.w(), dstSize.h());
+        glScissor(0, 0, dstSize.width(), dstSize.height());
+        glViewport(0, 0, dstSize.width(), dstSize.height());
         glActiveTexture(GL_TEXTURE0);
         glUniform1i(painter->imp()->currentUniformsScaler->activeTexture, 0);
-        glUniform2f(painter->imp()->currentUniformsScaler->texSize, sizeB().w(), sizeB().h());
-        glUniform4f(painter->imp()->currentUniformsScaler->srcRect, srcRect.x(), srcRect.y() + srcRect.h(), srcRect.w(), -srcRect.h());
+        glUniform2f(painter->imp()->currentUniformsScaler->texSize, sizeB().width(), sizeB().height());
+        glUniform4f(painter->imp()->currentUniformsScaler->srcRect, srcRect.x(), srcRect.y() + srcRect.height(), srcRect.width(), -srcRect.height());
 
         Float32 tmp;
-        Float32 x1 = (Float32(srcRect.x()) + 0.f * Float32(srcRect.w())) / Float32(sizeB().w());
-        Float32 y1 = (Float32(srcRect.y() + srcRect.h()) + Float32(-srcRect.h()) - 0.f * Float32(-srcRect.h())) / Float32(sizeB().h());
-        Float32 x2 = (Float32(srcRect.x()) + 1.f * Float32(srcRect.w())) / Float32(sizeB().w());
-        Float32 y2 = (Float32(srcRect.y() + srcRect.h()) + Float32(-srcRect.h()) - 1.f * Float32(-srcRect.h())) / Float32(sizeB().h());
+        Float32 x1 = (Float32(srcRect.x()) + 0.f * Float32(srcRect.width())) / Float32(sizeB().width());
+        Float32 y1 = (Float32(srcRect.y() + srcRect.height()) + Float32(-srcRect.height()) - 0.f * Float32(-srcRect.height())) / Float32(sizeB().height());
+        Float32 x2 = (Float32(srcRect.x()) + 1.f * Float32(srcRect.width())) / Float32(sizeB().width());
+        Float32 y2 = (Float32(srcRect.y() + srcRect.height()) + Float32(-srcRect.height()) - 1.f * Float32(-srcRect.height())) / Float32(sizeB().height());
 
         if (x1 > x2)
         {
@@ -394,12 +394,12 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
 
         // Direct copy glCopyTexImage2D()
         if (textureTarget == GL_TEXTURE_2D &&
-            dstSize.w() == srcRect.w() &&
-            dstSize.h() == srcRect.h() &&
+            dstSize.width() == srcRect.width() &&
+            dstSize.height() == srcRect.height() &&
             srcRect.x() >= 0 &&
-            srcRect.x() + srcRect.w() <= sizeB().w() &&
+            srcRect.x() + srcRect.width() <= sizeB().width() &&
             srcRect.y() >= 0 &&
-            srcRect.y() + srcRect.h() <= sizeB().h())
+            srcRect.y() + srcRect.height() <= sizeB().height())
         {
             GLuint framebuffer;
             glGenFramebuffers(1, &framebuffer);
@@ -418,7 +418,7 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
             LTexture::LTexturePrivate::setTextureParams(texCopy, GL_TEXTURE_2D,
                                     GL_REPEAT, GL_REPEAT,
                                     GL_LINEAR, GL_LINEAR);
-            glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, srcRect.x(), srcRect.y(), srcRect.w(), srcRect.h(), 0);
+            glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, srcRect.x(), srcRect.y(), srcRect.width(), srcRect.height(), 0);
             textureCopy = new LTexture(premultipliedAlpha());
             ret = textureCopy->setDataFromGL(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, true);
             glDeleteFramebuffers(1, &framebuffer);
@@ -435,7 +435,7 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
             LTexture::LTexturePrivate::setTextureParams(texCopy, GL_TEXTURE_2D,
                                     GL_REPEAT, GL_REPEAT,
                                     GL_LINEAR, GL_LINEAR);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dstSize.w(), dstSize.h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dstSize.width(), dstSize.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texCopy, 0);
 
             if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -454,14 +454,14 @@ LTexture *LTexture::copy(const LSize &dst, const LRect &src, bool highQualitySca
             painter->setAlpha(1.f);
             painter->bindTextureMode({
                 .texture = (LTexture*)this,
-                .pos = LPoint(0,0),
-                .srcRect = srcRect,
+                .pos = SkIPoint(0,0),
+                .srcRect = SkRect::Make(srcRect),
                 .dstSize = dstSize,
-                .srcTransform = LTransform::Normal,
+                .srcTransform = CZTransform::Normal,
                 .srcScale = 1.f
             });
             glDisable(GL_BLEND);
-            painter->drawRect(LRect(0, dstSize));
+            painter->drawRect(SkIRect::MakeSize(dstSize));
             glEnable(GL_BLEND);
             textureCopy = new LTexture(premultipliedAlpha());
             ret = textureCopy->setDataFromGL(texCopy, GL_TEXTURE_2D, DRM_FORMAT_ABGR8888, dstSize, true);
@@ -544,9 +544,9 @@ bool LTexture::save(const std::filesystem::path &name) const noexcept
             goto draw;
         }
 
-        buffer = (UInt8 *)malloc(sizeB().w()*sizeB().h()*4);
-        LTexture::LTexturePrivate::readPixels(LRect(0, sizeB()),
-                          0, sizeB().w(),
+        buffer = (UInt8 *)malloc(sizeB().width()*sizeB().height()*4);
+        LTexture::LTexturePrivate::readPixels(SkIRect::MakeSize(sizeB()),
+                          SkIPoint(0, 0), sizeB().width(),
                           GL_RGBA,
                           GL_UNSIGNED_BYTE, buffer);
         glDeleteFramebuffers(1, &framebuffer);
@@ -568,18 +568,18 @@ bool LTexture::save(const std::filesystem::path &name) const noexcept
         painter->bindTextureMode(
         {
             .texture = (LTexture*)this,
-            .pos = LPoint(0, 0),
-            .srcRect = LRect(0, sizeB()),
+            .pos = SkIPoint(0, 0),
+            .srcRect = SkRect::MakeWH(sizeB().width(), sizeB().height()),
             .dstSize = sizeB(),
-            .srcTransform = LTransform::Normal,
+            .srcTransform = CZTransform::Normal,
             .srcScale = 1.f
         });
         glDisable(GL_BLEND);
-        painter->drawRect(LRect(0, sizeB()));
+        painter->drawRect(SkIRect::MakeSize(sizeB()));
         glEnable(GL_BLEND);
-        buffer = (UInt8 *)malloc(sizeB().w()*sizeB().h()*4);
-        LTexture::LTexturePrivate::readPixels(LRect(0, sizeB()),
-                          0, sizeB().w(),
+        buffer = (UInt8 *)malloc(sizeB().width()*sizeB().height()*4);
+        LTexture::LTexturePrivate::readPixels(SkIRect::MakeSize(sizeB()),
+                        SkIPoint(0, 0), sizeB().width(),
                           GL_RGBA,
                           GL_UNSIGNED_BYTE, buffer);
 
@@ -589,7 +589,7 @@ bool LTexture::save(const std::filesystem::path &name) const noexcept
     save:
 
     {
-        const Int32 ret { stbi_write_png(name.c_str(), sizeB().w(), sizeB().h(), 4, buffer, sizeB().w() * 4) };
+        const Int32 ret { stbi_write_png(name.c_str(), sizeB().width(), sizeB().height(), 4, buffer, sizeB().width() * 4) };
         free(buffer);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -632,7 +632,7 @@ void LTexture::reset() noexcept
     if (cursor())
     {
         if (this == cursor()->imp()->defaultTexture)
-            compositor()->cursor()->replaceDefaultB(nullptr, 0);
+            compositor()->cursor()->replaceDefaultB(nullptr, SkPoint(0, 0));
         if (this == cursor()->texture())
             cursor()->imp()->texture = cursor()->imp()->defaultTexture;
     }

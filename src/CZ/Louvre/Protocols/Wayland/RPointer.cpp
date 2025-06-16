@@ -75,9 +75,11 @@ void RPointer::set_cursor(wl_client */*client*/, wl_resource *resource, UInt32 s
             hadRole = false;
         }
 
-        cursorRole->m_currentHotspot.setX(hotspot_x);
-        cursorRole->m_currentHotspot.setY(hotspot_y);
-        cursorRole->m_currentHotspotB = cursorRole->m_currentHotspot * surface.bufferScale();
+        cursorRole->m_currentHotspot.fX = hotspot_x;
+        cursorRole->m_currentHotspot.fY = hotspot_y;
+        cursorRole->m_currentHotspotB.set(
+            cursorRole->m_currentHotspot.x() * surface.bufferScale(),
+            cursorRole->m_currentHotspot.y() * surface.bufferScale());
 
         if (!hadRole)
         {

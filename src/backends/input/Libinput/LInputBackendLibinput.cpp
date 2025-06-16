@@ -175,10 +175,10 @@ public:
                 if (cursor() && cursor()->output())
                 {
                     dx = Float32(cursor()->output()->pos().x()) +
-                                 libinput_event_pointer_get_absolute_x_transformed(pointerEvent, cursor()->output()->size().w()) -
+                                 libinput_event_pointer_get_absolute_x_transformed(pointerEvent, cursor()->output()->size().width()) -
                                  cursor()->pos().x();
                     dy = Float32(cursor()->output()->pos().y()) +
-                                 libinput_event_pointer_get_absolute_y_transformed(pointerEvent, cursor()->output()->size().h()) -
+                                 libinput_event_pointer_get_absolute_y_transformed(pointerEvent, cursor()->output()->size().height()) -
                                  cursor()->pos().y();
                 }
                 else

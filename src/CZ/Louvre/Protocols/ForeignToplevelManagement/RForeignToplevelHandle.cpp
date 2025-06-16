@@ -195,7 +195,7 @@ void RForeignToplevelHandle::set_rectangle(wl_client */*client*/, wl_resource *r
 
     if (width == 0 && height == 0)
     {
-        res.controller()->m_taskbarIconRect = LRect();
+        res.controller()->m_taskbarIconRect.setEmpty();
 
         if (res.controller()->taskbar())
         {
@@ -207,7 +207,7 @@ void RForeignToplevelHandle::set_rectangle(wl_client */*client*/, wl_resource *r
     }
 
     LSurface *lsurface { static_cast<Protocols::Wayland::RSurface*>(wl_resource_get_user_data(surface))->surface() };
-    const LRect newRect { x, y, width, height };
+    const SkIRect newRect { x, y, width, height };
 
     if (res.controller()->m_taskbarIconRect != newRect || lsurface != res.controller()->taskbar())
     {

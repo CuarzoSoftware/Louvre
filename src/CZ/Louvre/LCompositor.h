@@ -274,7 +274,7 @@ public:
      * @param initializedOnly If `true`, only considers initialized outputs. Default is `true`.
      * @return A pointer to the most intersected LOutput, or `nullptr` if no output is found.
      */
-    LOutput *mostIntersectedOutput(const LRect &rect, bool initializedOnly = true) const noexcept;
+    LOutput *mostIntersectedOutput(const SkIRect &rect, bool initializedOnly = true) const noexcept;
 
     /**
      * @brief Identifier of the main thread.

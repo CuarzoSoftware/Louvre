@@ -581,18 +581,18 @@ LMargins LToplevelRole::calculateConstraintsFromOutput(LOutput *output,  bool in
         if (includeExtraGeometry)
         {
             if (output->exclusiveEdges().right != 0)
-                constraints.right = output->pos().x() + output->size().w() - output->exclusiveEdges().right - extraGeometry().right - extraGeometry().left;
+                constraints.right = output->pos().x() + output->size().width() - output->exclusiveEdges().right - extraGeometry().right - extraGeometry().left;
 
             if (output->exclusiveEdges().bottom != 0)
-                constraints.bottom = output->pos().y() + output->size().h() - output->exclusiveEdges().bottom - extraGeometry().bottom - extraGeometry().top;
+                constraints.bottom = output->pos().y() + output->size().height() - output->exclusiveEdges().bottom - extraGeometry().bottom - extraGeometry().top;
         }
         else
         {
             if (output->exclusiveEdges().right != 0)
-                constraints.right = output->pos().x() + output->size().w() - output->exclusiveEdges().right;
+                constraints.right = output->pos().x() + output->size().width() - output->exclusiveEdges().right;
 
             if (output->exclusiveEdges().bottom != 0)
-                constraints.bottom = output->pos().y() + output->size().h() - output->exclusiveEdges().bottom;
+                constraints.bottom = output->pos().y() + output->size().height() - output->exclusiveEdges().bottom;
         }
     }
 

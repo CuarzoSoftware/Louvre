@@ -1,9 +1,10 @@
 #ifndef LTOPLEVELRESIZESESSION_H
 #define LTOPLEVELRESIZESESSION_H
 
+#include <CZ/skia/core/SkSize.h>
+#include <CZ/skia/core/SkPoint.h>
 #include <LEdge.h>
 #include <LMargins.h>
-#include <LPoint.h>
 #include <LTimer.h>
 #include <memory>
 
@@ -52,14 +53,14 @@ public:
      */
     bool start(const LEvent &triggeringEvent,
                CZBitset<LEdge> edge,
-               const LPoint &initDragPoint);
+               const SkIPoint &initDragPoint);
 
     /**
      * @brief Updates the drag point, causing the toplevel to move and/or resize.
      *
      * @param pos The new position of the pointer or touch point.
      */
-    void updateDragPoint(const LPoint &pos);
+    void updateDragPoint(const SkIPoint &pos);
 
     /**
      * @brief Stops the resizing session.
@@ -93,7 +94,7 @@ public:
      *
      * @param minSize The minimum size that the toplevel window can be resized to.
      */
-    void setMinSize(const LSize &minSize) noexcept
+    void setMinSize(const SkISize &minSize) noexcept
     {
         m_minSize = minSize;
     }
@@ -101,7 +102,7 @@ public:
     /**
      * @brief Retrieves the minimum size set with setMinSize().
      */
-    const LSize &minSize() const noexcept
+    const SkISize &minSize() const noexcept
     {
         return m_minSize;
     }
@@ -150,28 +151,28 @@ private:
     LToplevelResizeSession(LToplevelRole *toplevel) noexcept;
     ~LToplevelResizeSession() noexcept;
     void handleGeometryChange();
-    static constexpr LSize calculateResizeSize(const LPoint &cursorPosDelta, const LSize &initialSize, CZBitset<LEdge> edge) noexcept
+    static constexpr SkISize calculateResizeSize(const SkIPoint &cursorPosDelta, const SkISize &initialSize, CZBitset<LEdge> edge) noexcept
     {
-        LSize newSize { initialSize };
+        SkISize newSize { initialSize };
 
         if (edge.has(LEdgeTop))
-            newSize.setH(initialSize.h() + cursorPosDelta.y());
+            newSize.fHeight = initialSize.height() + cursorPosDelta.y();
         else if(edge.has(LEdgeBottom))
-            newSize.setH(initialSize.h() - cursorPosDelta.y());
+            newSize.fHeight = initialSize.height() - cursorPosDelta.y();
 
         if (edge.has(LEdgeLeft))
-            newSize.setW(initialSize.w() + cursorPosDelta.x());
+            newSize.fWidth = initialSize.width() + cursorPosDelta.x();
         else if(edge.has(LEdgeRight))
-            newSize.setW(initialSize.w() - cursorPosDelta.x());
+            newSize.fWidth = initialSize.width() - cursorPosDelta.x();
 
         return newSize;
     }
     LToplevelRole *m_toplevel;
-    LPoint m_initPos;
-    LSize m_initSize;
-    LSize m_minSize;
-    LPoint m_initDragPoint;
-    LPoint m_currentDragPoint;
+    SkIPoint m_initPos;
+    SkISize m_initSize;
+    SkISize m_minSize;
+    SkIPoint m_initDragPoint;
+    SkIPoint m_currentDragPoint;
     CZBitset<LEdge> m_edge;
     LMargins m_constraints {LEdgeDisabled, LEdgeDisabled, LEdgeDisabled ,LEdgeDisabled};
     std::unique_ptr<LEvent> m_triggeringEvent;

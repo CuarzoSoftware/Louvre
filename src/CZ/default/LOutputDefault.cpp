@@ -1,4 +1,4 @@
-#include "LLog.h"
+#include <LLog.h>
 #include <LOutput.h>
 #include <LPainter.h>
 #include <LCompositor.h>
@@ -25,9 +25,9 @@ void LOutput::initializeGL()
 void LOutput::paintGL()
 {
     const bool sessionLocked { sessionLockManager()->state() != LSessionLockManager::Unlocked };
-    const LRect availGeo { pos() + availableGeometry().pos(), availableGeometry().size() };
+    const SkIRect availGeo { SkIRect::MakePtSize(pos() + availableGeometry().topLeft(), availableGeometry().size()) };
     LPainter::TextureParams params;
-    LRect currentRect;
+    SkIRect currentRect;
     LPainter *p { painter() };
     p->clearScreen();
 
@@ -97,13 +97,12 @@ void LOutput::paintGL()
             continue;
 
         // Current surface rect
-        currentRect.setPos(s->rolePos());
-        currentRect.setSize(s->size());
+        currentRect = SkIRect::MakePtSize(s->rolePos(), s->size());
 
         // Calc which outputs intersect the surface
         for (LOutput *o : compositor()->outputs())
         {
-            if (o->rect().intersects(currentRect))
+            if (SkIRect::Intersects(o->rect(), currentRect))
                 s->sendOutputEnterEvent(o);
             else
                 s->sendOutputLeaveEvent(o);
@@ -114,7 +113,7 @@ void LOutput::paintGL()
         params.srcScale = s->bufferScale();
         params.srcTransform = s->bufferTransform();
         params.texture = s->texture();
-        params.pos = currentRect.pos();
+        params.pos = currentRect.topLeft();
 
         // Bind the surface texture
         p->bindTextureMode(params);
@@ -122,7 +121,7 @@ void LOutput::paintGL()
         // Clip to available geometry
         if (surfaceShouldBeClippedToAvailableGeometry(s))
             // If the intersected area is zero
-            if (currentRect.clip(availGeo))
+            if (!currentRect.intersect(availGeo))
                 continue;
 
         // Draw the surface
@@ -183,7 +182,7 @@ void LOutput::leaseChanged()
 //! [availableGeometryChanged]
 void LOutput::availableGeometryChanged()
 {
-    const LRect availGeo { pos() + availableGeometry().pos(), availableGeometry().size() };
+    const SkIRect availGeo { SkIRect::MakePtSize(pos() + availableGeometry().topLeft(), availableGeometry().size()) };
 
     for (LSurface *surface : compositor()->surfaces())
     {        
@@ -191,50 +190,65 @@ void LOutput::availableGeometryChanged()
 
         if (tl && !tl->fullscreen())
         {
-            const LSize toplevelExtraSize { tl->extraGeometry().left + tl->extraGeometry().right, tl->extraGeometry().top + tl->extraGeometry().bottom };
-            LRect toplevelRect { surface->pos(), tl->windowGeometry().size() + toplevelExtraSize };
+            const SkISize toplevelExtraSize { tl->extraGeometry().left + tl->extraGeometry().right, tl->extraGeometry().top + tl->extraGeometry().bottom };
+            SkIRect toplevelRect {
+                SkIRect::MakePtSize(
+                    surface->pos(),
+                    SkISize(
+                        tl->windowGeometry().width() + toplevelExtraSize.width(),
+                        tl->windowGeometry().height() + toplevelExtraSize.height()))
+            };
 
             if (compositor()->mostIntersectedOutput(toplevelRect) != this)
                 continue;
 
             if (tl->maximized())
             {
-                surface->setPos(availGeo.pos());
-                tl->configureSize(availGeo.size()
-                    - toplevelExtraSize);
+                surface->setPos(availGeo.topLeft());
+                tl->configureSize(
+                    SkISize(
+                        availGeo.width() - toplevelExtraSize.width(),
+                        availGeo.height() - toplevelExtraSize.height()));
             }
             else
             {
-                if (exclusiveEdges().right != 0 && toplevelRect.x() + toplevelRect.w() > availGeo.x() + availGeo.w())
-                    toplevelRect.setX(availGeo.x() + availGeo.w() - toplevelRect.w());
+                if (exclusiveEdges().right != 0 && toplevelRect.x() + toplevelRect.width() > availGeo.x() + availGeo.width())
+                    toplevelRect.offsetTo(
+                        availGeo.x() + availGeo.width() - toplevelRect.width(),
+                        toplevelRect.y());
 
-                if (exclusiveEdges().bottom != 0 && toplevelRect.y() + toplevelRect.h() > availGeo.y() + availGeo.h())
-                    toplevelRect.setY(availGeo.y() + availGeo.h() - toplevelRect.h());
+                if (exclusiveEdges().bottom != 0 && toplevelRect.y() + toplevelRect.height() > availGeo.y() + availGeo.height())
+                    toplevelRect.offsetTo(
+                        toplevelRect.x(),
+                        availGeo.y() + availGeo.height() - toplevelRect.height());
 
                 if (exclusiveEdges().left != 0 && toplevelRect.x() < availGeo.x())
-                    toplevelRect.setX(availGeo.x());
+                    toplevelRect.offsetTo(availGeo.x(), toplevelRect.y());
 
                 if (exclusiveEdges().top != 0 && toplevelRect.y() < availGeo.y())
-                    toplevelRect.setY(availGeo.y());
+                    toplevelRect.offsetTo(toplevelRect.x(), availGeo.y());
 
                 bool needsConfigure { false };
 
-                if (exclusiveEdges().right != 0 && toplevelRect.w() > availGeo.w())
+                if (exclusiveEdges().right != 0 && toplevelRect.width() > availGeo.width())
                 {
-                    toplevelRect.setW(availGeo.w());
+                    toplevelRect.fRight = toplevelRect.fLeft + availGeo.width();
                     needsConfigure = true;
                 }
 
-                if (exclusiveEdges().bottom != 0 && toplevelRect.h() > availGeo.h())
+                if (exclusiveEdges().bottom != 0 && toplevelRect.height() > availGeo.height())
                 {
-                    toplevelRect.setH(availGeo.h());
+                    toplevelRect.fBottom = toplevelRect.fTop + availGeo.height();
                     needsConfigure = true;
                 }
 
                 if (needsConfigure)
-                    tl->configureSize(toplevelRect.size() - toplevelExtraSize);
+                    tl->configureSize(
+                        SkISize(
+                            toplevelRect.width() - toplevelExtraSize.width(),
+                            toplevelRect.height() - toplevelExtraSize.height()));
 
-                surface->setPos(toplevelRect.pos());
+                surface->setPos(toplevelRect.topLeft());
             }
         }
     }

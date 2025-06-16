@@ -1,14 +1,15 @@
 #ifndef LRRECT_H
 #define LRRECT_H
 
-#include <LRect.h>
+#include <CZ/Louvre/LNamespaces.h>
+#include <CZ/skia/core/SkRect.h>
 
 /**
  * @brief A rectangle with rounded corners.
  *
- * This class extends LRect by adding support for rounded corners.
+ * This class extends SkIRect by adding support for rounded corners.
  */
-class Louvre::LRRect : public LRect
+class Louvre::LRRect : public SkIRect
 {
 public:
     /**
@@ -20,8 +21,8 @@ public:
      * @param radBR Radius of the bottom-right corner.
      * @param radBL Radius of the bottom-left corner.
      */
-    LRRect(const LRect &rect = { 0 }, Int32 radTL = 0, Int32 radTR = 0, Int32 radBR = 0, Int32 radBL = 0) noexcept
-        : LRect(rect), fRadTL(radTL), fRadTR(radTR), fRadBR(radBR), fRadBL(radBL)
+    LRRect(const SkIRect &rect = SkIRect::MakeEmpty(), Int32 radTL = 0, Int32 radTR = 0, Int32 radBR = 0, Int32 radBL = 0) noexcept
+        : SkIRect(rect), fRadTL(radTL), fRadTR(radTR), fRadBR(radBR), fRadBL(radBL)
     {}
 
     /**
@@ -36,16 +37,16 @@ public:
     bool isValid() const noexcept
     {
         return
-            w() >= 0 &&
-            h() >= 0 &&
+            width() >= 0 &&
+            height() >= 0 &&
             fRadTL >= 0 &&
             fRadTR >= 0 &&
             fRadBR >= 0 &&
             fRadBL >= 0 &&
-            fRadTL + fRadTR <= w() &&
-            fRadBL + fRadBR <= w() &&
-            fRadTL + fRadBL <= h() &&
-            fRadTR + fRadBR <= h();
+            fRadTL + fRadTR <= width() &&
+            fRadBL + fRadBR <= width() &&
+            fRadTL + fRadBL <= height() &&
+            fRadTR + fRadBR <= height();
     }
 
     /**
@@ -54,9 +55,9 @@ public:
      * @param other The rectangle to compare with.
      * @return `true` if all properties match, `false` otherwise.
      */
-    constexpr bool operator==(const LRRect& other) const
+    bool operator==(const LRRect& other) const
     {
-        return LRect::operator==(other) &&
+        return static_cast<const SkIRect&>(*this)==(other) &&
             fRadTL == other.fRadTL &&
             fRadTR == other.fRadTR &&
             fRadBR == other.fRadBR &&
@@ -69,7 +70,7 @@ public:
      * @param other The rectangle to compare with.
      * @return `true` if any property differs, `false` otherwise.
      */
-    constexpr bool operator!=(const LRRect& other) const
+    bool operator!=(const LRRect& other) const
     {
         return !(operator==(other));
     }

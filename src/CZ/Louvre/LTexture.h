@@ -2,7 +2,7 @@
 #define LTEXTURE_H
 
 #include <LObject.h>
-#include <LRect.h>
+#include <CZ/skia/core/SkRect.h>
 #include <CZ/CZWeak.h>
 
 #include <filesystem>
@@ -152,7 +152,7 @@ namespace Louvre
          * @param buffer The pointer to the source main memory buffer.
          * @return `true` if the data was successfully set, `false` otherwise.
          */
-        bool setDataFromMainMemory(const LSize &size, UInt32 stride, UInt32 format, const void *buffer) noexcept;
+        bool setDataFromMainMemory(const SkISize &size, UInt32 stride, UInt32 format, const void *buffer) noexcept;
 
         /**
          * @brief Set the data of the texture from a `wl_drm` buffer.
@@ -181,7 +181,7 @@ namespace Louvre
          *
          * @return `true` if the texture data was successfully set, `false` otherwise.
          */
-        bool setDataFromGL(GLuint id, GLenum target, UInt32 format, const LSize &size, bool transferOwnership) noexcept;
+        bool setDataFromGL(GLuint id, GLenum target, UInt32 format, const SkISize &size, bool transferOwnership) noexcept;
 
         /**
          * @brief Update a specific area of the texture with the provided buffer.
@@ -194,7 +194,7 @@ namespace Louvre
          * @param buffer A pointer to the origin of the source main memory buffer.
          * @return `true` if the update was successful; otherwise, `false`.
          */
-        bool updateRect(const LRect &rect, UInt32 stride, const void *buffer) noexcept;
+        bool updateRect(const SkIRect &rect, UInt32 stride, const void *buffer) noexcept;
 
         /**
          * @brief Prepares the texture for writing.
@@ -221,7 +221,7 @@ namespace Louvre
          *
          * @return `true` on success, or `false` on failure.
          */
-        bool writeUpdate(const LRect &rect, UInt32 stride, const void *buffer) noexcept;
+        bool writeUpdate(const SkIRect &rect, UInt32 stride, const void *buffer) noexcept;
 
         /**
          * @brief Finalizes the write operation to the texture.
@@ -245,7 +245,7 @@ namespace Louvre
          *
          * @return A pointer to the copied LTexture object or `nullptr` on failure.
          */
-        LTexture *copy(const LSize &dst = LSize(), const LRect &src = LRect(), bool highQualityScaling = true) const noexcept;
+        LTexture *copy(const SkISize &dst = SkISize::MakeEmpty(), const SkIRect &src = SkIRect::MakeEmpty(), bool highQualityScaling = true) const noexcept;
 
         /**
          * @brief Save the texture as a PNG file.
@@ -270,7 +270,7 @@ namespace Louvre
          *
          * @return The size of the texture.
          */
-        const LSize &sizeB() const noexcept
+        const SkISize &sizeB() const noexcept
         {
             return m_sizeB;
         }
@@ -387,7 +387,7 @@ namespace Louvre
         friend class LOutput;
 
         void *m_graphicBackendData { nullptr };
-        LSize m_sizeB;
+        SkISize m_sizeB;
         UInt32 m_format { 0 };
         BufferSourceType m_sourceType { CPU };
         UInt32 m_serial { 0 };

@@ -118,58 +118,58 @@ LBaseSurfaceRole *LSurface::role() const noexcept
     return imp()->role;
 }
 
-void LSurface::setPos(const LPoint &newPos) noexcept
+void LSurface::setPos(SkIPoint newPos) noexcept
 {
     imp()->pos = newPos;
 }
 
 void LSurface::setPos(Int32 x, Int32 y) noexcept
 {
-    imp()->pos.setX(x);
-    imp()->pos.setY(y);
+    imp()->pos.fX = x;
+    imp()->pos.fY = y;
 }
 
 void LSurface::setX(Int32 x) noexcept
 {
-    imp()->pos.setX(x);
+    imp()->pos.fX = x;
 }
 
 void LSurface::setY(Int32 y) noexcept
 {
-    imp()->pos.setY(y);
+    imp()->pos.fY = y;
 }
 
-const LSize &LSurface::sizeB() const noexcept
+SkISize LSurface::sizeB() const noexcept
 {
     return imp()->sizeB;
 }
 
-const LSize &LSurface::size() const noexcept
+SkISize LSurface::size() const noexcept
 {
     return imp()->size;
 }
 
-const LRegion &LSurface::inputRegion() const noexcept
+const SkRegion &LSurface::inputRegion() const noexcept
 {
     return imp()->currentInputRegion;
 }
 
-const LRegion &LSurface::opaqueRegion() const noexcept
+const SkRegion &LSurface::opaqueRegion() const noexcept
 {
     return imp()->currentOpaqueRegion;
 }
 
-const LRegion &LSurface::translucentRegion() const noexcept
+const SkRegion &LSurface::translucentRegion() const noexcept
 {
     return imp()->currentTranslucentRegion;
 }
 
-const LRegion &LSurface::invisibleRegion() const noexcept
+const SkRegion &LSurface::invisibleRegion() const noexcept
 {
     return imp()->currentInvisibleRegion;
 }
 
-const LRegion &LSurface::damageB() const noexcept
+const SkRegion &LSurface::damageB() const noexcept
 {
     return imp()->currentDamageB;
 }
@@ -179,7 +179,7 @@ LContentType LSurface::contentType() const noexcept
     return imp()->current.contentType;
 }
 
-const LRegion &LSurface::damage() const noexcept
+const SkRegion &LSurface::damage() const noexcept
 {
     return imp()->currentDamage;
 }
@@ -257,12 +257,12 @@ bool LSurface::minimized() const noexcept
     return imp()->stateFlags.has(LSurfacePrivate::Minimized);
 }
 
-const LRectF &LSurface::srcRect() const noexcept
+const SkRect &LSurface::srcRect() const noexcept
 {
     return imp()->srcRect;
 }
 
-LTransform LSurface::bufferTransform() const noexcept
+CZTransform LSurface::bufferTransform() const noexcept
 {
     return imp()->current.transform;
 }
@@ -277,7 +277,7 @@ LSurface::PointerConstraintMode LSurface::pointerConstraintMode() const noexcept
     return PointerConstraintMode::Free;
 }
 
-const LRegion &LSurface::pointerConstraintRegion() const noexcept
+const SkRegion &LSurface::pointerConstraintRegion() const noexcept
 {
     return imp()->pointerConstraintRegion;
 }
@@ -313,7 +313,7 @@ bool LSurface::pointerConstraintEnabled() const noexcept
     return false;
 }
 
-const LPointF &LSurface::lockedPointerPosHint() const noexcept
+const SkPoint &LSurface::lockedPointerPosHint() const noexcept
 {
     return imp()->current.lockedPointerPosHint;
 }
@@ -331,12 +331,12 @@ LSurface::Role LSurface::roleId() const noexcept
         return Undefined;
 }
 
-const LPoint &LSurface::pos() const noexcept
+SkIPoint LSurface::pos() const noexcept
 {
     return imp()->pos;
 }
 
-const LPoint &LSurface::rolePos() const
+SkIPoint LSurface::rolePos() const
 {
     if (role())
         return role()->rolePos();
@@ -436,8 +436,8 @@ void LSurface::requestNextFrame(bool clearDamage) noexcept
 
     if (clearDamage)
     {
-        imp()->currentDamageB.clear();
-        imp()->currentDamage.clear();
+        imp()->currentDamageB.setEmpty();
+        imp()->currentDamage.setEmpty();
         imp()->stateFlags.remove(LSurfacePrivate::Damaged);
     }
 

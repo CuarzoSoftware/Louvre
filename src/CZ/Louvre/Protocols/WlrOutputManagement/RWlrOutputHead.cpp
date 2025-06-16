@@ -4,7 +4,7 @@
 #include <CZ/Louvre/Protocols/WlrOutputManagement/RWlrOutputMode.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
 #include <LUtils.h>
-#include <LSize.h>
+#include <CZ/skia/core/SkSize.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::WlrOutputManagement;
@@ -105,10 +105,10 @@ void RWlrOutputHead::description(const char *description) noexcept
     zwlr_output_head_v1_send_description(resource(), description);
 }
 
-void RWlrOutputHead::physicalSize(const LSize &size) noexcept
+void RWlrOutputHead::physicalSize(const SkISize &size) noexcept
 {
     markAsPendingDone();
-    zwlr_output_head_v1_send_physical_size(resource(), size.w(), size.h());
+    zwlr_output_head_v1_send_physical_size(resource(), size.width(), size.height());
 }
 
 RWlrOutputMode *RWlrOutputHead::mode(LOutputMode *mode) noexcept
@@ -132,13 +132,13 @@ void RWlrOutputHead::currentMode(RWlrOutputMode *mode) noexcept
     zwlr_output_head_v1_send_current_mode(resource(), mode->resource());
 }
 
-void RWlrOutputHead::position(const LPoint &pos) noexcept
+void RWlrOutputHead::position(const SkIPoint &pos) noexcept
 {
     markAsPendingDone();
     zwlr_output_head_v1_send_position(resource(), pos.x(), pos.y());
 }
 
-void RWlrOutputHead::transform(LTransform transform) noexcept
+void RWlrOutputHead::transform(CZTransform transform) noexcept
 {
     markAsPendingDone();
     zwlr_output_head_v1_send_transform(resource(), (Int32)transform);

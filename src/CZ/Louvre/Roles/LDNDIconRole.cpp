@@ -25,15 +25,17 @@ LDNDIconRole::~LDNDIconRole()
 
 void LDNDIconRole::handleSurfaceOffset(Int32 x, Int32 y)
 {
-    m_pendingHotspotOffset = LPoint(x,y);
+    m_pendingHotspotOffset.set(x, y);
 }
 
 void LDNDIconRole::handleSurfaceCommit(LBaseSurfaceRole::CommitOrigin origin)
 {
     L_UNUSED(origin);
     m_currentHotspot -= m_pendingHotspotOffset;
-    m_pendingHotspotOffset = LPoint();
-    m_currentHotspotB = m_currentHotspot * surface()->bufferScale();
+    m_pendingHotspotOffset.set(0, 0);
+    m_currentHotspotB.set(
+        m_currentHotspot.x() * surface()->bufferScale(),
+        m_currentHotspot.y() * surface()->bufferScale());
     hotspotChanged();
     surface()->imp()->setMapped(surface()->hasBuffer());
 }

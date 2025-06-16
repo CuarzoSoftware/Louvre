@@ -1,7 +1,7 @@
 #ifndef LBACKGROUNDBLUR_H
 #define LBACKGROUNDBLUR_H
 
-#include <LRegion.h>
+#include <CZ/skia/core/SkRegion.h>
 #include <LRRect.h>
 #include <LFactoryObject.h>
 #include <CZ/CZBitset.h>
@@ -139,7 +139,7 @@ public:
         State state { Disabled };                ///< The current blur state
         ColorHint colorHint { Unknown };         ///< The current blur color hint
         MaskType maskType { NoMask };            ///< The mask type
-        LRegion region { LRegion() };            ///< The region to be blurred
+        SkRegion region { SkRegion() };            ///< The region to be blurred
         LRRect roundRectMask;                    ///< The rounded rectangle mask (if applicable)
         std::string svgPathMask;                 ///< The SVG path mask (if applicable)
         UInt32 serial { 0 };                     ///< The serial number associated with the configuration
@@ -209,7 +209,7 @@ public:
      *
      * It is guaranteed that the region does not extend beyond the surface bounds.
      */
-    const LRegion &region() const noexcept { return props().region; };
+    const SkRegion &region() const noexcept { return props().region; };
 
     /**
      * @brief Returns the current rounded rectangle mask, if the mask type is set to @ref RoundRect .

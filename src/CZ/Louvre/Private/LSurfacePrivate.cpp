@@ -11,6 +11,7 @@
 #include <CZ/Louvre/Private/LTexturePrivate.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
 #include <CZ/Louvre/Private/LKeyboardPrivate.h>
+#include <CZ/Utils/CZRegionUtils.h>
 #include <LDNDIconRole.h>
 #include <LCursorRole.h>
 #include <LOutputMode.h>
@@ -282,128 +283,112 @@ bool LSurface::LSurfacePrivate::bufferToTexture() noexcept
 
             if (!texture->initialized() || changesToNotify.has(SizeChanged | SourceRectChanged | BufferSizeChanged | BufferTransformChanged | BufferScaleChanged))
             {
-                currentDamageB.clear();
-                currentDamageB.addRect(LRect(0, sizeB));
-                currentDamage.clear();
-                currentDamage.addRect(LRect(0, size));
-                texture->setDataFromMainMemory(LSize(widthB, heightB), stride, format, pixels);
+                currentDamageB.setRect(SkIRect::MakeSize(sizeB));
+                currentDamage.setRect(SkIRect::MakeSize(size));
+                texture->setDataFromMainMemory(SkISize(widthB, heightB), stride, format, pixels);
             }
             else if (!pendingDamageB.empty() || !pendingDamage.empty())
             {
                 simplifyDamage(pendingDamageB);
                 simplifyDamage(pendingDamage);
 
-                LRegion onlyPending;
+                SkRegion onlyPending;
 
                 if (stateFlags.has(ViewportIsScaled | ViewportIsCropped))
                 {
-                    Float32 xInvScale = (Float32(current.bufferScale) * srcRect.w())/Float32(size.w());
-                    Float32 yInvScale = (Float32(current.bufferScale) * srcRect.h())/Float32(size.h());
+                    Float32 xInvScale = (Float32(current.bufferScale) * srcRect.width())/Float32(size.width());
+                    Float32 yInvScale = (Float32(current.bufferScale) * srcRect.height())/Float32(size.height());
 
                     Int32 xOffset = roundf(srcRect.x() * Float32(current.bufferScale)) - 2;
                     Int32 yOffset = roundf(srcRect.y() * Float32(current.bufferScale)) - 2;
 
                     while (!pendingDamage.empty())
                     {
-                        LRect &r = pendingDamage.back();
-                        onlyPending.addRect((r.x() * xInvScale + xOffset),
-                                            (r.y() * yInvScale + yOffset),
-                                            (r.w() * xInvScale + 4 ),
-                                            (r.h() * yInvScale + 4 ));
+                        SkIRect &r = pendingDamage.back();
+                        onlyPending.op(SkIRect::MakeXYWH(
+                            (r.x() * xInvScale + xOffset),
+                            (r.y() * yInvScale + yOffset),
+                            (r.width() * xInvScale + 4 ),
+                            (r.height() * yInvScale + 4 )),
+                            SkRegion::Op::kUnion_Op);
                         pendingDamage.pop_back();
                     }
 
                     while (!pendingDamageB.empty())
                     {
-                        LRect &r = pendingDamageB.back();
-                        onlyPending.addRect(
-                            r.x() - 1,
-                            r.y() - 1,
-                            r.w() + 2,
-                            r.h() + 2);
+                        SkIRect &r = pendingDamageB.back();
+                        onlyPending.op(r.makeOutset(1, 1), SkRegion::Op::kUnion_Op);
                         pendingDamageB.pop_back();
                     }
 
-                    onlyPending.transform(sizeB, current.transform);
+                    CZRegionUtils::ApplyTransform(onlyPending, sizeB, current.transform);
 
-                    Int32 n;
-                    const LBox *boxes = onlyPending.boxes(&n);
-
-                    if (n > 0 && texture->writeBegin())
+                    if (!onlyPending.isEmpty() && texture->writeBegin())
                     {
                         const UInt32 pixelSize { LTexture::formatBytesPerPixel(format) };
-                        LRect rect;
-                        for (Int32 i = 0; i < n; i++)
-                        {
-                            rect.setX(boxes->x1);
-                            rect.setY(boxes->y1);
-                            rect.setW(boxes->x2 - boxes->x1);
-                            rect.setH(boxes->y2 - boxes->y1);
-                            texture->writeUpdate(rect,
-                                                stride,
-                                                &pixels[rect.x()*pixelSize + rect.y()*stride]);
 
-                            boxes++;
+                        SkRegion::Iterator it(onlyPending);
+
+                        while (!it.done())
+                        {
+                            texture->writeUpdate(it.rect(),
+                                                 stride,
+                                                 &pixels[it.rect().x()*pixelSize + it.rect().y()*stride]);
+                            it.next();
                         }
+
                         texture->writeEnd();
                     }
 
-                    onlyPending.transform(sizeB, Louvre::requiredTransform(current.transform, LTransform::Normal));
-                    currentDamageB.addRegion(onlyPending);
+                    CZRegionUtils::ApplyTransform(onlyPending, sizeB, CZ::RequiredTransform(current.transform, CZTransform::Normal));
+                    currentDamageB.op(onlyPending, SkRegion::Op::kUnion_Op);
                     currentDamage = currentDamageB;
-                    currentDamage.offset(-xOffset - 2, -yOffset - 2);
-                    currentDamage.multiply(1.f/xInvScale, 1.f/yInvScale);
+                    currentDamage.translate(-xOffset - 2, -yOffset - 2);
+                    CZRegionUtils::Scale(currentDamage, 1.f/xInvScale, 1.f/yInvScale);
                 }
                 else
                 {
                     while (!pendingDamage.empty())
                     {
-                        LRect &r = pendingDamage.back();
-                        onlyPending.addRect((r.x() - 2)*current.bufferScale,
-                                            (r.y() - 2)*current.bufferScale,
-                                            (r.w() + 4 )*current.bufferScale,
-                                            (r.h() + 4 )*current.bufferScale);
+                        SkIRect &r = pendingDamage.back();
+                        onlyPending.op(
+                            SkIRect::MakeXYWH(
+                                (r.x() - 2)*current.bufferScale,
+                                (r.y() - 2)*current.bufferScale,
+                                (r.width() + 4 )*current.bufferScale,
+                                (r.height() + 4 )*current.bufferScale),
+                            SkRegion::Op::kUnion_Op);
                         pendingDamage.pop_back();
                     }
 
                     while (!pendingDamageB.empty())
                     {
-                        LRect &r = pendingDamageB.back();
-                        onlyPending.addRect(
-                            r.x() - 2,
-                            r.y() - 2,
-                            r.w() + 4,
-                            r.h() + 4);
+                        SkIRect &r = pendingDamageB.back();
+                        onlyPending.op(r.makeOutset(2, 2), SkRegion::Op::kUnion_Op);
                         pendingDamageB.pop_back();
                     }
 
-                    onlyPending.clip(LRect(0, sizeB));
-                    currentDamageB.addRegion(onlyPending);
-                    onlyPending.transform(sizeB, current.transform);
+                    onlyPending.op(SkIRect::MakeSize(sizeB), SkRegion::kIntersect_Op);
+                    currentDamageB.op(onlyPending, SkRegion::kUnion_Op);
+                    CZRegionUtils::ApplyTransform(onlyPending, sizeB, current.transform);
 
-                    Int32 n;
-                    const LBox *boxes = onlyPending.boxes(&n);
-
-                    if (n > 0 && texture->writeBegin())
+                    if (!onlyPending.isEmpty() && texture->writeBegin())
                     {
                         const UInt32 pixelSize { LTexture::formatBytesPerPixel(format) };
-                        LRect rect;
-                        for (Int32 i = 0; i < n; i++)
-                        {
-                            rect.setX(boxes->x1);
-                            rect.setY(boxes->y1);
-                            rect.setW(boxes->x2 - boxes->x1);
-                            rect.setH(boxes->y2 - boxes->y1);
-                            texture->writeUpdate(rect,
-                                                stride,
-                                                &pixels[rect.x()*pixelSize + rect.y()*stride]);
+                        SkRegion::Iterator it(onlyPending);
 
-                            boxes++;
+                        while (!it.done())
+                        {
+                            texture->writeUpdate(it.rect(),
+                                                 stride,
+                                                 &pixels[it.rect().x()*pixelSize + it.rect().y()*stride]);
+                            it.next();
                         }
+
                         texture->writeEnd();
                     }
 
-                    LRegion::multiply(&currentDamage, &currentDamageB, 1.f/Float32(current.bufferScale));
+                    CZRegionUtils::Scale(currentDamageB, currentDamage, 1.f/Float32(current.bufferScale));
                 }
             }
             else
@@ -497,7 +482,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture() noexcept
                     /static_cast<UInt64>(std::numeric_limits<UInt32>::max())),
             };
 
-            texture->setDataFromMainMemory(LSize(1, 1), 4, DRM_FORMAT_ARGB8888, buffer);
+            texture->setDataFromMainMemory(SkISize(1, 1), 4, DRM_FORMAT_ARGB8888, buffer);
             updateDamage();
         }
         else
@@ -512,8 +497,8 @@ bool LSurface::LSurfacePrivate::bufferToTexture() noexcept
         if (!texture)
             texture = textureBackup;
 
-        widthB = texture->sizeB().w();
-        heightB = texture->sizeB().h();
+        widthB = texture->sizeB().width();
+        heightB = texture->sizeB().height();
 
         if (!updateDimensions(widthB, heightB))
             return false;
@@ -583,7 +568,7 @@ void LSurface::LSurfacePrivate::sendPreferredScale() noexcept
 
     Int32 wlScale { 0 };
     Float32 wlFracScale { 0.f };
-    LTransform transform { LTransform::Normal };
+    CZTransform transform { CZTransform::Normal };
 
     for (LOutput *o : outputs)
     {
@@ -677,10 +662,8 @@ void LSurface::LSurfacePrivate::updateDamage() noexcept
 {
     if (!texture->initialized() || changesToNotify.has(SizeChanged | SourceRectChanged | BufferSizeChanged | BufferTransformChanged | BufferScaleChanged))
     {
-        currentDamageB.clear();
-        currentDamageB.addRect(LRect(0, sizeB));
-        currentDamage.clear();
-        currentDamage.addRect(LRect(0, size));
+        currentDamageB.setRect(SkIRect::MakeSize(sizeB));
+        currentDamage.setRect(SkIRect::MakeSize(size));
     }
     else if (!pendingDamageB.empty() || !pendingDamage.empty())
     {
@@ -689,82 +672,80 @@ void LSurface::LSurfacePrivate::updateDamage() noexcept
 
         if (stateFlags.has(ViewportIsScaled | ViewportIsCropped))
         {
-            Float32 xInvScale = (Float32(current.bufferScale) * srcRect.w())/Float32(size.w());
-            Float32 yInvScale = (Float32(current.bufferScale) * srcRect.h())/Float32(size.h());
+            Float32 xInvScale = (Float32(current.bufferScale) * srcRect.width())/Float32(size.width());
+            Float32 yInvScale = (Float32(current.bufferScale) * srcRect.height())/Float32(size.height());
 
             Int32 xOffset = roundf(srcRect.x() * Float32(current.bufferScale)) - 2;
             Int32 yOffset = roundf(srcRect.y() * Float32(current.bufferScale)) - 2;
 
             while (!pendingDamage.empty())
             {
-                LRect &r = pendingDamage.back();
-                currentDamageB.addRect((r.x() * xInvScale + xOffset),
-                                       (r.y() * yInvScale + yOffset),
-                                       (r.w() * xInvScale + 4 ),
-                                       (r.h() * yInvScale + 4 ));
+                SkIRect &r = pendingDamage.back();
+                currentDamageB.op(
+                    SkIRect::MakeXYWH(
+                        (r.x() * xInvScale + xOffset),
+                        (r.y() * yInvScale + yOffset),
+                        (r.width() * xInvScale + 4 ),
+                        (r.height() * yInvScale + 4 )),
+                    SkRegion::Op::kUnion_Op);
                 pendingDamage.pop_back();
             }
 
             while (!pendingDamageB.empty())
             {
-                LRect &r = pendingDamageB.back();
-                currentDamageB.addRect(
-                    r.x() - 1,
-                    r.y() - 1,
-                    r.w() + 2,
-                    r.h() + 2);
+                SkIRect &r = pendingDamageB.back();
+                currentDamageB.op(r.makeOutset(1, 1), SkRegion::Op::kUnion_Op);
                 pendingDamageB.pop_back();
             }
 
-            currentDamageB.clip(LRect(0, sizeB));
+            currentDamageB.op(SkIRect::MakeSize(sizeB), SkRegion::Op::kIntersect_Op);
             currentDamage = currentDamageB;
-            currentDamage.offset(-xOffset - 2, -yOffset - 2);
-            currentDamage.multiply(1.f/xInvScale, 1.f/yInvScale);
+            currentDamage.translate(-xOffset - 2, -yOffset - 2);
+            CZRegionUtils::Scale(currentDamage, 1.f/xInvScale, 1.f/yInvScale);
         }
         else
         {
             while (!pendingDamage.empty())
             {
-                LRect &r = pendingDamage.back();
-                currentDamageB.addRect((r.x() - 1 )*current.bufferScale,
-                                       (r.y() - 1 )*current.bufferScale,
-                                       (r.w() + 2 )*current.bufferScale,
-                                       (r.h() + 2 )*current.bufferScale);
+                SkIRect &r = pendingDamage.back();
+                currentDamageB.op(
+                    SkIRect::MakeXYWH(
+                        (r.x() - 1 )*current.bufferScale,
+                        (r.y() - 1 )*current.bufferScale,
+                        (r.width() + 2 )*current.bufferScale,
+                        (r.height() + 2 )*current.bufferScale),
+                    SkRegion::Op::kUnion_Op);
                 pendingDamage.pop_back();
             }
 
             while (!pendingDamageB.empty())
             {
-                LRect &r = pendingDamageB.back();
-                currentDamageB.addRect(
-                    r.x() - 1,
-                    r.y() - 1,
-                    r.w() + 2,
-                    r.h() + 2);
+                SkIRect &r = pendingDamageB.back();
+                currentDamageB.op(r.makeOutset(1, 1), SkRegion::Op::kUnion_Op);
                 pendingDamageB.pop_back();
             }
 
-            currentDamageB.clip(LRect(0, sizeB));
-            LRegion::multiply(&currentDamage, &currentDamageB, 1.f/Float32(current.bufferScale));
+            currentDamageB.op(SkIRect::MakeSize(sizeB), SkRegion::Op::kIntersect_Op);
+            CZRegionUtils::Scale(currentDamageB, currentDamage, 1.f/Float32(current.bufferScale));
         }
     }
 }
 
 bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB) noexcept
 {
-    const LSize prevSizeB { sizeB };
-    const LSize prevSize { size };
-    const LRectF prevSrcRect { srcRect };
+    const SkISize prevSizeB { sizeB };
+    const SkISize prevSize { size };
+    const SkRect prevSrcRect { srcRect };
 
-    if (Louvre::is90Transform(current.transform))
+    if (CZ::Is90Transform(current.transform))
     {
-        sizeB.setW(heightB);
-        sizeB.setH(widthB);
+        sizeB.fWidth = heightB;
+        sizeB.fHeight = widthB;
     }
     else
     {
-        sizeB.setW(widthB);
-        sizeB.setH(heightB);
+        sizeB.fWidth = widthB;
+        sizeB.fHeight = heightB;
     }
 
     if (prevSizeB != sizeB)
@@ -777,23 +758,23 @@ bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB) no
         // Using the viewport source rect
         if (surfaceResource->viewportRes()->srcRect().x() != -1.f ||
             surfaceResource->viewportRes()->srcRect().y() != -1.f ||
-            surfaceResource->viewportRes()->srcRect().w() != -1.f ||
-            surfaceResource->viewportRes()->srcRect().h() != -1.f)
+            surfaceResource->viewportRes()->srcRect().width() != -1.f ||
+            surfaceResource->viewportRes()->srcRect().height() != -1.f)
         {
             usingViewportSrc = true;
 
             srcRect = surfaceResource->viewportRes()->srcRect();
 
-            if (srcRect.x() < 0.f || srcRect.y() < 0.f || srcRect.w() <= 0.f || srcRect.h() <= 0.f)
+            if (srcRect.x() < 0.f || srcRect.y() < 0.f || srcRect.width() <= 0.f || srcRect.height() <= 0.f)
             {
                 surfaceResource->viewportRes()->postError(
                    WP_VIEWPORT_ERROR_BAD_VALUE,
                    "Invalid source rect ({}, {}, {}, {}).",
-                   srcRect.x(), srcRect.y(), srcRect.w(), srcRect.h());
+                   srcRect.x(), srcRect.y(), srcRect.width(), srcRect.height());
                 return false;
             }
 
-            if (roundf((srcRect.x() + srcRect.w()) * Float32(current.bufferScale)) > sizeB.w() || roundf((srcRect.y() + srcRect.h()) * Float32(current.bufferScale)) > sizeB.h())
+            if (roundf((srcRect.x() + srcRect.width()) * Float32(current.bufferScale)) > sizeB.width() || roundf((srcRect.y() + srcRect.height()) * Float32(current.bufferScale)) > sizeB.height())
             {
                 surfaceResource->viewportRes()->postError(
                     WP_VIEWPORT_ERROR_OUT_OF_BUFFER,
@@ -807,24 +788,23 @@ bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB) no
         // Using the entire buffer as source
         else
         {
-            srcRect.setX(0.f);
-            srcRect.setY(0.f);
-            srcRect.setW(Float32(sizeB.w()) / Float32(current.bufferScale));
-            srcRect.setH(Float32(sizeB.h()) / Float32(current.bufferScale));
+            srcRect.setWH(
+                Float32(sizeB.width()) / Float32(current.bufferScale),
+                Float32(sizeB.height()) / Float32(current.bufferScale));
             stateFlags.remove(ViewportIsCropped);
         }
 
         // Using the viewport destination size
-        if (surfaceResource->viewportRes()->dstSize().w() != -1 || surfaceResource->viewportRes()->dstSize().h() != -1)
+        if (surfaceResource->viewportRes()->dstSize().width() != -1 || surfaceResource->viewportRes()->dstSize().height() != -1)
         {
             size = surfaceResource->viewportRes()->dstSize();
 
-            if (size.w() <= 0 || size.h() <= 0)
+            if (size.width() <= 0 || size.height() <= 0)
             {
                 surfaceResource->viewportRes()->postError(
                     WP_VIEWPORT_ERROR_BAD_VALUE,
                     "Invalid destination size ({}, {}).",
-                    size.w(), size.h());
+                    size.width(), size.height());
                 return false;
             }
 
@@ -836,7 +816,7 @@ bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB) no
         {
             if (usingViewportSrc)
             {
-                if (fmod(srcRect.w(), 1.f) != 0.f || fmod(srcRect.h(), 1.f) != 0.f)
+                if (fmod(srcRect.width(), 1.f) != 0.f || fmod(srcRect.height(), 1.f) != 0.f)
                 {
                     surfaceResource->viewportRes()->postError(
                         WP_VIEWPORT_ERROR_BAD_SIZE,
@@ -844,14 +824,14 @@ bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB) no
                     return false;
                 }
 
-                size.setW(srcRect.w());
-                size.setH(srcRect.h());
+                size.fWidth = srcRect.width();
+                size.fHeight = srcRect.height();
                 stateFlags.add(ViewportIsScaled);
             }
             else
             {
-                size.setW(roundf(srcRect.w()));
-                size.setH(roundf(srcRect.h()));
+                size.fWidth = SkScalarRoundToInt(srcRect.width());
+                size.fHeight = SkScalarRoundToInt(srcRect.height());
                 stateFlags.remove(ViewportIsScaled);
             }
         }
@@ -860,12 +840,11 @@ bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB) no
     // Normal case, surface has no viewport
     else
     {
-        srcRect.setX(0.f);
-        srcRect.setY(0.f);
-        srcRect.setW(Float32(sizeB.w()) / Float32(current.bufferScale));
-        srcRect.setH(Float32(sizeB.h()) / Float32(current.bufferScale));
-        size.setW(roundf(srcRect.w()));
-        size.setH(roundf(srcRect.h()));
+        srcRect.setWH(
+            Float32(sizeB.width()) / Float32(current.bufferScale),
+            Float32(sizeB.height()) / Float32(current.bufferScale));
+        size.fWidth = SkScalarRoundToInt(srcRect.width());
+        size.fHeight = SkScalarRoundToInt(srcRect.height());
         stateFlags.remove(ViewportIsCropped);
         stateFlags.remove(ViewportIsScaled);
     }
@@ -879,40 +858,40 @@ bool LSurface::LSurfacePrivate::updateDimensions(Int32 widthB, Int32 heightB) no
     return true;
 }
 
-void LSurface::LSurfacePrivate::simplifyDamage(std::vector<LRect> &vec) noexcept
+void LSurface::LSurfacePrivate::simplifyDamage(std::vector<SkIRect> &vec) noexcept
 {
     if (vec.size() >= LOUVRE_MAX_DAMAGE_RECTS)
     {
-        LBox extents;
+        SkIRect extents;
         Int32 x2, y2;
-        extents.x1 = vec.back().x();
-        extents.y1 = vec.back().y();
-        extents.x2 = extents.x1 + vec.back().w();
-        extents.y2 = extents.y1 + vec.back().h();
+        extents.fLeft = vec.back().x();
+        extents.fTop = vec.back().y();
+        extents.fRight = extents.fLeft + vec.back().width();
+        extents.fBottom = extents.fTop + vec.back().height();
         vec.pop_back();
 
         while (!vec.empty())
         {
-            if (vec.back().x() < extents.x1)
-                extents.x1 = vec.back().x();
+            if (vec.back().x() < extents.fLeft)
+                extents.fLeft = vec.back().x();
 
-            if (vec.back().y() < extents.y1)
-                extents.y1 = vec.back().y();
+            if (vec.back().y() < extents.fTop)
+                extents.fTop = vec.back().y();
 
-            x2 = vec.back().x() + vec.back().w();
+            x2 = vec.back().x() + vec.back().width();
 
-            if (x2 > extents.x2)
-                extents.x2 = x2;
+            if (x2 > extents.fRight)
+                extents.fRight = x2;
 
-            y2 = vec.back().y() + vec.back().h();
+            y2 = vec.back().y() + vec.back().height();
 
-            if (y2 > extents.y2)
-                extents.y2 = y2;
+            if (y2 > extents.fBottom)
+                extents.fBottom = y2;
 
             vec.pop_back();
         }
 
-        vec.emplace_back(extents.x1, extents.y1, extents.x2 - extents.x1, extents.y2 - extents.y1);
+        vec.emplace_back(extents.fLeft, extents.fTop, extents.fRight - extents.fLeft, extents.fBottom - extents.fTop);
     }
 }
 

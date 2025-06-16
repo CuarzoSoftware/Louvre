@@ -67,7 +67,7 @@ public:
      * @param us The microsecond timestamp of the event.
      * @param device The input device that originated the event.
      */
-    LPointerScrollEvent(const LPointF &axes = LPointF(0.f, 0.f), const LPointF &axesDiscrete = LPoint(0, 0), bool hasX = true, bool hasY = true,
+    LPointerScrollEvent(SkPoint axes = SkPoint(0.f, 0.f), SkIPoint axesDiscrete = SkIPoint(0, 0), bool hasX = true, bool hasY = true,
             RelativeDirection relativeDirectionX = Identical, RelativeDirection relativeDirectionY = Identical, Source source = Continuous,
             UInt32 serial = LTime::nextSerial(), UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) noexcept :
         LPointerEvent(LEvent::Subtype::Scroll, serial, ms, us, device),
@@ -125,7 +125,7 @@ public:
      *
      * @note Applicable to all sources.
      */
-    void setAxes(const LPointF &axes) noexcept
+    void setAxes(SkPoint axes) noexcept
     {
         m_axes = axes;
     }
@@ -137,8 +137,8 @@ public:
      */
     void setAxes(Float32 x, Float32 y) noexcept
     {
-        m_axes.setX(x);
-        m_axes.setY(y);
+        m_axes.fX = x;
+        m_axes.fY = y;
     }
 
     /**
@@ -148,7 +148,7 @@ public:
      */
     void setX(Float32 x) noexcept
     {
-        m_axes.setX(x);
+        m_axes.fX = x;
     }
 
     /**
@@ -158,7 +158,7 @@ public:
      */
     void setY(Float32 y) noexcept
     {
-        m_axes.setY(y);
+        m_axes.fY = y;
     }
 
     /**
@@ -166,7 +166,7 @@ public:
      *
      * @note Applicable to all sources.
      */
-    const LPointF &axes() const noexcept
+    SkPoint axes() const noexcept
     {
         return m_axes;
     }
@@ -176,7 +176,7 @@ public:
      *
      * @see discreteAxes()
      */
-    void setDiscreteAxes(const LPoint &axes) noexcept
+    void setDiscreteAxes(SkIPoint axes) noexcept
     {
         m_axesDiscrete = axes;
     }
@@ -188,8 +188,8 @@ public:
      */
     void setDiscreteAxes(Int32 x, Int32 y) noexcept
     {
-        m_axesDiscrete.setX(x);
-        m_axesDiscrete.setY(y);
+        m_axesDiscrete.fX = x;
+        m_axesDiscrete.fY = y;
     }
 
     /**
@@ -199,7 +199,7 @@ public:
      */
     void setDiscreteX(Int32 x) noexcept
     {
-        m_axesDiscrete.setX(x);
+        m_axesDiscrete.fX = x;
     }
 
     /**
@@ -209,7 +209,7 @@ public:
      */
     void setDiscreteY(Int32 y) noexcept
     {
-        m_axesDiscrete.setY(y);
+        m_axesDiscrete.fY = y;
     }
 
     /**
@@ -224,7 +224,7 @@ public:
      *
      * Ignore this value for other source types.
      */
-    const LPoint &discreteAxes() const noexcept
+    SkIPoint discreteAxes() const noexcept
     {
         return m_axesDiscrete;
     }
@@ -282,8 +282,8 @@ protected:
     bool m_hasY;
     RelativeDirection m_relativeDirectionX;
     RelativeDirection m_relativeDirectionY;
-    LPointF m_axes;
-    LPoint m_axesDiscrete;
+    SkPoint m_axes;
+    SkIPoint m_axesDiscrete;
     Source m_source;
 private:
     friend class LInputBackend;

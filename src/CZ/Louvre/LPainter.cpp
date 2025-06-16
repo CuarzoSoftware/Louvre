@@ -3,7 +3,7 @@
 #include <CZ/Louvre/Private/LTexturePrivate.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
 
-#include <LRect.h>
+#include <CZ/skia/core/SkRect.h>
 #include <LOutput.h>
 #include <LOpenGL.h>
 #include <LLog.h>
@@ -454,75 +454,75 @@ void LPainter::bindTextureMode(const TextureParams &p) noexcept
         fbScale = imp()->fb->scale();
     }
 
-    LPoint pos = p.pos - imp()->fb->rect().pos();
+    SkIPoint pos = p.pos - imp()->fb->rect().topLeft();
     Float32 srcDstX, srcDstY;
     Float32 srcW, srcH;
     Float32 srcDstW, srcDstH;
     Float32 srcFbX1, srcFbY1, srcFbX2, srcFbY2;
     Float32 srcFbW, srcFbH;
-    Float32 srcRectW = p.srcRect.w() <= 0.f ? 0.001f : p.srcRect.w();
-    Float32 srcRectH = p.srcRect.h() <= 0.f ? 0.001f : p.srcRect.h();
+    Float32 srcRectW = p.srcRect.width() <= 0.f ? 0.001f : p.srcRect.width();
+    Float32 srcRectH = p.srcRect.height() <= 0.f ? 0.001f : p.srcRect.height();
 
     bool xFlip = false;
     bool yFlip = false;
 
-    LTransform invTrans = Louvre::requiredTransform(p.srcTransform, imp()->fb->transform());
-    bool rotate = Louvre::is90Transform(invTrans);
+    CZTransform invTrans = CZ::RequiredTransform(p.srcTransform, imp()->fb->transform());
+    bool rotate = CZ::Is90Transform(invTrans);
 
-    if (Louvre::is90Transform(p.srcTransform))
+    if (CZ::Is90Transform(p.srcTransform))
     {
-        srcH = Float32(p.texture->sizeB().w()) / p.srcScale;
-        srcW = Float32(p.texture->sizeB().h()) / p.srcScale;
+        srcH = Float32(p.texture->sizeB().width()) / p.srcScale;
+        srcW = Float32(p.texture->sizeB().height()) / p.srcScale;
         yFlip = !yFlip;
         xFlip = !xFlip;
     }
     else
     {
-        srcW = (Float32(p.texture->sizeB().w()) / p.srcScale);
-        srcH = (Float32(p.texture->sizeB().h()) / p.srcScale);
+        srcW = (Float32(p.texture->sizeB().width()) / p.srcScale);
+        srcH = (Float32(p.texture->sizeB().height()) / p.srcScale);
     }
 
-    srcDstW = (Float32(p.dstSize.w()) * srcW) / srcRectW;
-    srcDstX = (Float32(p.dstSize.w()) * p.srcRect.x()) / srcRectW;
-    srcDstH = (Float32(p.dstSize.h()) * srcH) / srcRectH;
-    srcDstY = (Float32(p.dstSize.h()) * p.srcRect.y()) / srcRectH;
+    srcDstW = (Float32(p.dstSize.width()) * srcW) / srcRectW;
+    srcDstX = (Float32(p.dstSize.width()) * p.srcRect.x()) / srcRectW;
+    srcDstH = (Float32(p.dstSize.height()) * srcH) / srcRectH;
+    srcDstY = (Float32(p.dstSize.height()) * p.srcRect.y()) / srcRectH;
 
     switch (invTrans)
     {
-    case LTransform::Normal:
+    case CZTransform::Normal:
         break;
-    case LTransform::Rotated90:
+    case CZTransform::Rotated90:
         xFlip = !xFlip;
         break;
-    case LTransform::Rotated180:
-        xFlip = !xFlip;
-        yFlip = !yFlip;
-        break;
-    case LTransform::Rotated270:
-        yFlip = !yFlip;
-        break;
-    case LTransform::Flipped:
-        xFlip = !xFlip;
-        break;
-    case LTransform::Flipped90:
+    case CZTransform::Rotated180:
         xFlip = !xFlip;
         yFlip = !yFlip;
         break;
-    case LTransform::Flipped180:
+    case CZTransform::Rotated270:
         yFlip = !yFlip;
         break;
-    case LTransform::Flipped270:
+    case CZTransform::Flipped:
+        xFlip = !xFlip;
+        break;
+    case CZTransform::Flipped90:
+        xFlip = !xFlip;
+        yFlip = !yFlip;
+        break;
+    case CZTransform::Flipped180:
+        yFlip = !yFlip;
+        break;
+    case CZTransform::Flipped270:
         break;
     default:
         return;
     }
 
-    Float32 screenH = Float32(imp()->fb->rect().h());
-    Float32 screenW = Float32(imp()->fb->rect().w());
+    Float32 screenH = Float32(imp()->fb->rect().height());
+    Float32 screenW = Float32(imp()->fb->rect().width());
 
     switch (imp()->fb->transform())
     {
-    case LTransform::Normal:
+    case CZTransform::Normal:
         srcFbX1 = pos.x() - srcDstX;
         srcFbX2 = srcFbX1 + srcDstW;
 
@@ -537,7 +537,7 @@ void LPainter::bindTextureMode(const TextureParams &p) noexcept
             srcFbY2 = srcFbY1 + srcDstH;
         }
         break;
-    case LTransform::Rotated90:
+    case CZTransform::Rotated90:
         srcFbX2 = pos.y() - srcDstY;
         srcFbX1 = srcFbX2 + srcDstH;
 
@@ -553,7 +553,7 @@ void LPainter::bindTextureMode(const TextureParams &p) noexcept
             yFlip = !yFlip;
         }
         break;
-    case LTransform::Rotated180:
+    case CZTransform::Rotated180:
         srcFbX2 = screenW - pos.x() + srcDstX;
         srcFbX1 = srcFbX2 - srcDstW;
 
@@ -568,7 +568,7 @@ void LPainter::bindTextureMode(const TextureParams &p) noexcept
             srcFbY1 = srcFbY2 - srcDstH;
         }
         break;
-    case LTransform::Rotated270:
+    case CZTransform::Rotated270:
         srcFbX1 = screenH - pos.y() + srcDstY;
         srcFbX2 = srcFbX1 - srcDstH;
 
@@ -584,7 +584,7 @@ void LPainter::bindTextureMode(const TextureParams &p) noexcept
             yFlip = !yFlip;
         }
         break;
-    case LTransform::Flipped:
+    case CZTransform::Flipped:
         srcFbX2 = screenW - pos.x() + srcDstX;
         srcFbX1 = srcFbX2 - srcDstW;
 
@@ -599,7 +599,7 @@ void LPainter::bindTextureMode(const TextureParams &p) noexcept
             srcFbY2 = srcFbY1 + srcDstH;
         }
         break;
-    case LTransform::Flipped90:
+    case CZTransform::Flipped90:
         srcFbX2 = pos.y() - srcDstY;
         srcFbX1 = srcFbX2 + srcDstH;
 
@@ -615,7 +615,7 @@ void LPainter::bindTextureMode(const TextureParams &p) noexcept
             yFlip = !yFlip;
         }
         break;
-    case LTransform::Flipped180:
+    case CZTransform::Flipped180:
         if (imp()->fbId == 0)
         {
             srcFbX1 = pos.x() - srcDstX;
@@ -631,7 +631,7 @@ void LPainter::bindTextureMode(const TextureParams &p) noexcept
             srcFbX2 = pos.x() - srcDstX + srcDstW;
         }
         break;
-    case LTransform::Flipped270:
+    case CZTransform::Flipped270:
         srcFbX1 = screenH - pos.y() + srcDstY;
         srcFbX2 = srcFbX1 - srcDstH;
 
@@ -673,11 +673,7 @@ void LPainter::bindTextureMode(const TextureParams &p) noexcept
     srcFbW = srcFbX2 * fbScale - srcFbX1;
     srcFbH = srcFbY2 * fbScale - srcFbY1;
 
-    imp()->srcRect.setX(srcFbX1);
-    imp()->srcRect.setY(srcFbY1);
-    imp()->srcRect.setW(srcFbW);
-    imp()->srcRect.setH(srcFbH);
-
+    imp()->srcRect.setXYWH(srcFbX1, srcFbY1, srcFbW, srcFbH);
     glActiveTexture(GL_TEXTURE0);
     imp()->shaderSetMode(LPainterPrivate::TextureMode);
     imp()->shaderSetActiveTexture(0);
@@ -697,39 +693,39 @@ void LPainter::bindColorMode() noexcept
     imp()->needsBlendFuncUpdate = true;
 }
 
-void LPainter::drawBox(const LBox &box) noexcept
+void LPainter::drawBox(const SkIRect &box) noexcept
 {
     if (imp()->needsBlendFuncUpdate)
         imp()->updateBlendingParams();
 
-    imp()->setViewport(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+    imp()->setViewport(box.fLeft, box.fTop, box.fRight - box.fLeft, box.fBottom - box.fTop);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void LPainter::drawRect(const LRect &rect) noexcept
+void LPainter::drawRect(const SkIRect &rect) noexcept
 {
     if (imp()->needsBlendFuncUpdate)
         imp()->updateBlendingParams();
 
-    imp()->setViewport(rect.x(), rect.y(), rect.w(), rect.h());
+    imp()->setViewport(rect.x(), rect.y(), rect.width(), rect.height());
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void LPainter::drawRegion(const LRegion &region) noexcept
+void LPainter::drawRegion(const SkRegion &region) noexcept
 {
     if (imp()->needsBlendFuncUpdate)
         imp()->updateBlendingParams();
 
-    Int32 n;
-    const LBox *box = region.boxes(&n);
-    for (Int32 i = 0; i < n; i++)
+    SkRegion::Iterator it(region);
+
+    while (!it.done())
     {
-        imp()->setViewport(box->x1,
-                           box->y1,
-                           box->x2 - box->x1,
-                           box->y2 - box->y1);
+        imp()->setViewport(it.rect().x(),
+                           it.rect().y(),
+                           it.rect().width(),
+                           it.rect().height());
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-        box++;
+        it.next();
     }
 }
 
@@ -798,9 +794,9 @@ LFramebuffer *LPainter::boundFramebuffer() const noexcept
     return imp()->fb;
 }
 
-void LPainter::setViewport(const LRect &rect) noexcept
+void LPainter::setViewport(const SkIRect &rect) noexcept
 {
-    imp()->setViewport(rect.x(), rect.y(), rect.w(), rect.h());
+    imp()->setViewport(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
 void LPainter::setViewport(Int32 x, Int32 y, Int32 w, Int32 h) noexcept
@@ -842,7 +838,7 @@ void LPainter::clearScreen() noexcept
         return;
 
     glDisable(GL_BLEND);
-    imp()->setViewport(imp()->fb->rect().x(), imp()->fb->rect().y(), imp()->fb->rect().w(), imp()->fb->rect().h());
+    imp()->setViewport(imp()->fb->rect().x(), imp()->fb->rect().y(), imp()->fb->rect().width(), imp()->fb->rect().height());
     glClear(GL_COLOR_BUFFER_BIT);
     glEnable(GL_BLEND);
 }
@@ -905,14 +901,14 @@ void LPainter::bindProgram() noexcept
     glBlendEquation(GL_FUNC_ADD);
 
     glUniform2f(imp()->currentUniforms->texSize,
-                imp()->currentState->texSize.w(),
-                imp()->currentState->texSize.h());
+                imp()->currentState->texSize.width(),
+                imp()->currentState->texSize.height());
 
     glUniform4f(imp()->currentUniforms->srcRect,
                 imp()->currentState->srcRect.x(),
                 imp()->currentState->srcRect.y(),
-                imp()->currentState->srcRect.w(),
-                imp()->currentState->srcRect.h());
+                imp()->currentState->srcRect.width(),
+                imp()->currentState->srcRect.height());
 
     glUniform1i(imp()->currentUniforms->activeTexture,
                 imp()->currentState->activeTexture);

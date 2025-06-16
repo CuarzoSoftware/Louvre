@@ -19,7 +19,7 @@ public:
 
     /******************** EVENTS ********************/
 
-    void size(const LSize &size) noexcept;
+    void size(const SkISize &size) noexcept;
     void refresh(Int32 refresh) noexcept;
     void preferred() noexcept;
     void finished() noexcept;

@@ -43,10 +43,10 @@ public:
         const LOutputMode& mode;
 
         /// The desired output position to be applied, see LOutput::setPos().
-        LPoint pos;
+        SkIPoint pos;
 
         /// The desired output transform to be applied, see LOutput::setTransform().
-        LTransform transform;
+        CZTransform transform;
 
         /// The desired scale to be applied, see LOutput::setScale().
         Float32 scale;

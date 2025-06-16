@@ -134,22 +134,27 @@ const std::unordered_set<int> &LCompositor::posixSignals() const noexcept
     return imp()->posixSignals;
 }
 
-LOutput *LCompositor::mostIntersectedOutput(const LRect &rect, bool initializedOnly) const noexcept
+LOutput *LCompositor::mostIntersectedOutput(const SkIRect &rect, bool initializedOnly) const noexcept
 {
     LOutput *bestOutput { nullptr };
     Int32 bestArea { -1 };
+    Int32 area;
     const auto &outputsVector { initializedOnly ? outputs() : seat()->outputs() };
-    LRect test;
+    SkIRect test;
 
     for (auto *output : outputsVector)
     {
         test = rect;
-        test.clip(output->rect());
 
-        if (test.area() > bestArea)
+        if (test.intersect(output->rect()))
+            area = test.width() * test.height();
+        else
+            area = 0;
+
+        if (area > bestArea)
         {
             bestOutput = output;
-            bestArea = test.area();
+            bestArea = area;
         }
     }
 

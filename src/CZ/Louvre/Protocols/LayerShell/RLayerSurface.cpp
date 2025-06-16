@@ -72,8 +72,8 @@ void RLayerSurface::set_size(wl_client */*client*/, wl_resource *resource, UInt3
     if (height > LOUVRE_MAX_SURFACE_SIZE)
         height = LOUVRE_MAX_SURFACE_SIZE;
 
-    res.layerRole()->pendingAtoms().size.setW(width);
-    res.layerRole()->pendingAtoms().size.setH(height);
+    res.layerRole()->pendingAtoms().size.fWidth = width;
+    res.layerRole()->pendingAtoms().size.fHeight = height;
     res.layerRole()->m_flags.add(LLayerRole::HasPendingSize);
 }
 
@@ -175,9 +175,9 @@ void RLayerSurface::set_exclusive_edge(wl_client */*client*/, wl_resource *resou
 }
 #endif
 
-void RLayerSurface::configure(UInt32 serial, const LSize &size) noexcept
+void RLayerSurface::configure(UInt32 serial, const SkISize &size) noexcept
 {
-    zwlr_layer_surface_v1_send_configure(resource(), serial, size.w(), size.h());
+    zwlr_layer_surface_v1_send_configure(resource(), serial, size.width(), size.height());
 }
 
 void RLayerSurface::closed() noexcept

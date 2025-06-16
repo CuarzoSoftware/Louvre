@@ -2,9 +2,9 @@
 #define LPAINTER_H
 
 #include <LObject.h>
-#include <LPoint.h>
+#include <CZ/skia/core/SkPoint.h>
 #include <LFramebuffer.h>
-#include <LRect.h>
+#include <CZ/skia/core/SkRect.h>
 #include <LColor.h>
 #include <memory>
 
@@ -49,28 +49,28 @@ public:
         /**
          * @brief Position of the texture (destination rect) in compositor-global coordinates.
          */
-        LPoint pos;
+        SkIPoint pos;
 
         /**
          * @brief Subrect of the texture to be mapped in surface units.
          *
          * Coordinates should be specified in the space generated after applying the scale factor and transformation to the texture buffer.
          */
-        LRectF srcRect;
+        SkRect srcRect;
 
         /**
          * @brief Destination size of the source rect in surface units.
          */
-        LSize dstSize;
+        SkISize dstSize;
 
         /**
          * @brief Transform already applied to the texture.
          *
          * For example, if the texture is rotated 90 degrees counterclockwise and you want to display it in a normal orientation,
-         * use LTransform::Rotated90 and LPainter will apply the inverse transform (LTransform::Rotated270).\n
-         * If you don't want to apply any transform use LTransform::Normal.
+         * use CZTransform::Rotated90 and LPainter will apply the inverse transform (CZTransform::Rotated270).\n
+         * If you don't want to apply any transform use CZTransform::Normal.
          */
-        LTransform srcTransform { LTransform::Normal };
+        CZTransform srcTransform { CZTransform::Normal };
 
         /**
          * @brief Scale factor of the texture.
@@ -101,21 +101,21 @@ public:
      *
      * @param box The box to be drawn in compositor-global coordinates.
      */
-    void drawBox(const LBox &box) noexcept;
+    void drawBox(const SkIRect &box) noexcept;
 
     /**
      * @brief Draws a texture or color rect on the screen based on the current rendering mode.
      *
      * @param rect The rect to be drawn in compositor-global coordinates.
      */
-    void drawRect(const LRect &rect) noexcept;
+    void drawRect(const SkIRect &rect) noexcept;
 
     /**
      * @brief Draws a texture or color region on the screen based on the current rendering mode.
      *
      * @param region The region to be drawn in compositor-global coordinates.
      */
-    void drawRegion(const LRegion &region) noexcept;
+    void drawRegion(const SkRegion &region) noexcept;
 
     /**
      * @brief Enables or disables a custom texture color.
@@ -237,7 +237,7 @@ public:
      *
      * @note Do not use this method unless you are working with your own shaders/programs.
      */
-    void setViewport(const LRect &rect) noexcept;
+    void setViewport(const SkIRect &rect) noexcept;
 
     /**
      * @brief Sets the viewport.

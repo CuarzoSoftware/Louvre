@@ -3,7 +3,7 @@
 
 #include <LFactoryObject.h>
 #include <CZ/CZWeak.h>
-#include <LPoint.h>
+#include <CZ/skia/core/SkPoint.h>
 
  /**
   * @brief Base class for surface roles.
@@ -86,7 +86,7 @@ public:
      *
      * See the default implementation of this method in the roles offered by the library for more information.
      */
-    virtual const LPoint &rolePos() const = 0;
+    virtual SkIPoint rolePos() const = 0;
 
     /**
      * @brief The output to which the surface should be constrained.
@@ -139,13 +139,7 @@ public:
 protected:
     friend class Protocols::Wayland::RSurface;
     friend class Louvre::LSurface;
-
-    /**
-     * @brief Variable that stores the surface position given the role.
-     *
-     * Variable to store the position of the surface according to its role. It must be assigned and returned in the implementation of the LBaseSurfaceRole::rolePos() method.
-     */
-    mutable LPoint m_rolePos;
+    mutable SkIPoint m_rolePos { 0, 0 };
 
     /**
      * @brief Asks if the surface commit should be processed.

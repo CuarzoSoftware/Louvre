@@ -7,7 +7,7 @@
 #include <CZ/Louvre/Private/LOutputPrivate.h>
 #include <LOutputFramebuffer.h>
 #include <LPainter.h>
-#include <LRect.h>
+#include <CZ/skia/core/SkRect.h>
 #include <GL/gl.h>
 #include <GLES2/gl2.h>
 
@@ -65,7 +65,7 @@ struct UserState
     bool customTextureColor { false };
 } userState;
 
-LRectF srcRect;
+SkRect srcRect;
 bool needsBlendFuncUpdate { true };
 
 static inline GLfloat square[]
@@ -81,8 +81,8 @@ GLuint vertexShader, fragmentShader, fragmentShaderExternal, fragmentShaderScale
 
 struct ShaderState
 {
-    LSizeF texSize;
-    LRectF srcRect;
+    SkSize texSize;
+    SkRect srcRect;
     GLuint activeTexture;
     ShaderMode mode;
     LRGBF color;
@@ -134,21 +134,21 @@ void shaderSetPremultipliedAlpha(bool premultipliedAlpha) noexcept
     }
 }
 
-void shaderSetTexSize(const LSizeF &size) noexcept
+void shaderSetTexSize(const SkSize &size) noexcept
 {
     if (currentState->texSize != size)
     {
         currentState->texSize = size;
-        glUniform2f(currentUniforms->texSize, size.w(), size.h());
+        glUniform2f(currentUniforms->texSize, size.width(), size.height());
     }
 }
 
-void shaderSetSrcRect(const LRectF &rect) noexcept
+void shaderSetSrcRect(const SkRect &rect) noexcept
 {
     if (currentState->srcRect != rect)
     {
         currentState->srcRect = rect;
-        glUniform4f(currentUniforms->srcRect, rect.x(), rect.y(), rect.w(), rect.h());
+        glUniform4f(currentUniforms->srcRect, rect.x(), rect.y(), rect.width(), rect.height());
     }
 }
 
@@ -259,50 +259,50 @@ void setViewport(Int32 x, Int32 y, Int32 w, Int32 h) noexcept
     x -= fb->rect().x();
     y -= fb->rect().y();
 
-    if (fb->transform() == LTransform::Normal)
+    if (fb->transform() == CZTransform::Normal)
     {
     }
-    else if (fb->transform() == LTransform::Rotated270)
+    else if (fb->transform() == CZTransform::Rotated270)
     {
         Float32 tmp = x;
-        x = fb->rect().h() - y - h;
+        x = fb->rect().height() - y - h;
         y = tmp;
         tmp = w;
         w = h;
         h = tmp;
     }
-    else if (fb->transform() == LTransform::Rotated180)
+    else if (fb->transform() == CZTransform::Rotated180)
     {
-        x = fb->rect().w() - x - w;
-        y = fb->rect().h() - y - h;
+        x = fb->rect().width() - x - w;
+        y = fb->rect().height() - y - h;
     }
-    else if (fb->transform() == LTransform::Rotated90)
+    else if (fb->transform() == CZTransform::Rotated90)
     {
         Float32 tmp = x;
         x = y;
-        y = fb->rect().w() - tmp - w;
+        y = fb->rect().width() - tmp - w;
         tmp = w;
         w = h;
         h = tmp;
     }
-    else if (fb->transform() == LTransform::Flipped)
+    else if (fb->transform() == CZTransform::Flipped)
     {
-        x = fb->rect().w() - x - w;
+        x = fb->rect().width() - x - w;
     }
-    else if (fb->transform() == LTransform::Flipped270)
+    else if (fb->transform() == CZTransform::Flipped270)
     {
         Float32 tmp = x;
-        x = fb->rect().h() - y - h;
-        y = fb->rect().w() - tmp - w;
+        x = fb->rect().height() - y - h;
+        y = fb->rect().width() - tmp - w;
         tmp = w;
         w = h;
         h = tmp;
     }
-    else if (fb->transform() == LTransform::Flipped180)
+    else if (fb->transform() == CZTransform::Flipped180)
     {
-        y = fb->rect().h() - y - h;
+        y = fb->rect().height() - y - h;
     }
-    else if (fb->transform() == LTransform::Flipped90)
+    else if (fb->transform() == CZTransform::Flipped90)
     {
         Float32 tmp = x;
         x = y;
@@ -314,10 +314,10 @@ void setViewport(Int32 x, Int32 y, Int32 w, Int32 h) noexcept
 
     if (fbId == 0)
     {
-        if (Louvre::is90Transform(fb->transform()))
-            y = fb->rect().w() - y - h;
+        if (CZ::Is90Transform(fb->transform()))
+            y = fb->rect().width() - y - h;
         else
-            y = fb->rect().h() - y - h;
+            y = fb->rect().height() - y - h;
     }
 
     Float32 fbScale;
@@ -352,11 +352,11 @@ void setViewport(Int32 x, Int32 y, Int32 w, Int32 h) noexcept
 
     if (currentState->mode == TextureMode)
     {
-        shaderSetSrcRect(LRectF(
-            (Float32(x) - srcRect.x()) / srcRect.w(),
-            (Float32(y2) - srcRect.y()) / srcRect.h(),
-            (Float32(x2) - srcRect.x()) / srcRect.w(),
-            (Float32(y) - srcRect.y()) / srcRect.h()));
+        shaderSetSrcRect(SkRect::MakeXYWH(
+            (Float32(x) - srcRect.x()) / srcRect.width(),
+            (Float32(y2) - srcRect.y()) / srcRect.height(),
+            (Float32(x2) - srcRect.x()) / srcRect.width(),
+            (Float32(y) - srcRect.y()) / srcRect.height()));
     }
 }
 

@@ -48,23 +48,18 @@ RXdgSurface::~RXdgSurface() noexcept
 
 /******************** REQUESTS ********************/
 
-LRect RXdgSurface::calculateGeometryWithSubsurfaces() noexcept
+SkIRect RXdgSurface::calculateGeometryWithSubsurfaces() noexcept
 {
     if (!surface())
-        return LRect(0,0,1,1);
+        return SkIRect::MakeWH(1, 1);
 
-    LRegion region { LRect(0, 0, surface()->size().w(), surface()->size().h()) };
+    SkRegion region { SkIRect::MakeWH(surface()->size().width(), surface()->size().height()) };
 
     for (LSurface *child : surface()->children())
         if (child->subsurface() && child->mapped())
-            region.addRect(child->subsurface()->localPos(), child->size());
+            region.op(SkIRect::MakePtSize(child->subsurface()->localPos(), child->size()), SkRegion::Op::kUnion_Op);
 
-    return LRect(
-        region.extents().x1,
-        region.extents().y1,
-        region.extents().x2 - region.extents().x1,
-        region.extents().y2 - region.extents().y1
-    );
+    return region.getBounds();
 }
 
 void RXdgSurface::destroy(wl_client */*client*/, wl_resource *resource)
@@ -149,10 +144,7 @@ void RXdgSurface::set_window_geometry(wl_client */*client*/, wl_resource *resour
         return;
     }
 
-    res.m_pendingWindowGeometry.setX(x);
-    res.m_pendingWindowGeometry.setY(y);
-    res.m_pendingWindowGeometry.setW(width);
-    res.m_pendingWindowGeometry.setH(height);
+    res.m_pendingWindowGeometry.setXYWH(x, y, width, height);
     res.m_windowGeometrySet = true;
     res.m_hasPendingWindowGeometry = true;
 }

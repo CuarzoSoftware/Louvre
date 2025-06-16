@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <GL/gl.h>
 #include <GLES2/gl2.h>
-#include <LRect.h>
+#include <CZ/skia/core/SkRect.h>
 #include <LTexture.h>
 #include <LOutput.h>
 #include <LLog.h>
@@ -132,7 +132,7 @@ LTexture *LOpenGL::loadTexture(const std::filesystem::path &file)
 
     LTexture *texture { new LTexture() };
 
-    if (!texture->setDataFromMainMemory(LSize(width, height), width * 4, DRM_FORMAT_ABGR8888, image))
+    if (!texture->setDataFromMainMemory(SkISize::Make(width, height), width * 4, DRM_FORMAT_ABGR8888, image))
     {
         UInt8 pix { 0 };
 
@@ -143,7 +143,7 @@ LTexture *LOpenGL::loadTexture(const std::filesystem::path &file)
             image[i] = pix;
         }
 
-        texture->setDataFromMainMemory(LSize(width, height), width * 4, DRM_FORMAT_ARGB8888, image);
+        texture->setDataFromMainMemory(SkISize::Make(width, height), width * 4, DRM_FORMAT_ARGB8888, image);
     }
 
     free(image);

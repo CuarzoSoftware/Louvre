@@ -3,6 +3,7 @@
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Protocols/LayerShell/RLayerSurface.h>
+#include <CZ/Louvre/Private/LOutputPrivate.h>
 #include <LTime.h>
 
 using namespace Louvre;
@@ -33,7 +34,7 @@ LLayerRole::~LLayerRole() noexcept
     notifyDestruction();
 }
 
-void LLayerRole::configureSize(const LSize &size) noexcept
+void LLayerRole::configureSize(const SkISize &size) noexcept
 {
     if (m_flags.has(ClosedSent))
         return;
@@ -41,20 +42,20 @@ void LLayerRole::configureSize(const LSize &size) noexcept
     auto &res { *static_cast<LayerShell::RLayerSurface*>(resource()) };
     res.configure(LTime::nextSerial(), size);
 
-    if (currentAtoms().size.w() == 0)
+    if (currentAtoms().size.width() == 0)
     {
-        currentAtoms().size.setW(size.w());
+        currentAtoms().size.fWidth = size.width();
 
         if (!m_flags.has(HasPendingSize))
-            pendingAtoms().size.setW(size.w());
+            pendingAtoms().size.fWidth = size.width();
     }
 
-    if (currentAtoms().size.h() == 0)
+    if (currentAtoms().size.height() == 0)
     {
-        currentAtoms().size.setH(size.h());
+        currentAtoms().size.fHeight = size.height();
 
         if (!m_flags.has(HasPendingSize))
-            pendingAtoms().size.setH(size.h());
+            pendingAtoms().size.fHeight = size.height();
     }
 }
 
@@ -130,8 +131,6 @@ LEdge LLayerRole::edgesToSingleEdge() const noexcept
     }
 }
 
-#include <CZ/Louvre/Private/LOutputPrivate.h>
-
 void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
 {
     if (m_flags.has(ClosedSent))
@@ -169,7 +168,7 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
 
     if (m_flags.has(Flags::HasPendingSize))
     {
-        if (pendingAtoms().size.w() == 0)
+        if (pendingAtoms().size.width() == 0)
         {
             if (pendingAtoms().anchor.hasAll(LEdgeLeft | LEdgeRight) == 0)
             {
@@ -180,7 +179,7 @@ void LLayerRole::handleSurfaceCommit(CommitOrigin /*origin*/) noexcept
             }
         }
 
-        if (pendingAtoms().size.h() == 0)
+        if (pendingAtoms().size.height() == 0)
         {
             if (pendingAtoms().anchor.hasAll(LEdgeTop | LEdgeBottom) == 0)
             {

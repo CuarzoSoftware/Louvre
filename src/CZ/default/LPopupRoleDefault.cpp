@@ -16,7 +16,7 @@
 using namespace Louvre;
 
 //! [rolePos]
-const LPoint &LPopupRole::rolePos() const
+SkIPoint LPopupRole::rolePos() const
 {
     /* Just in case this method is called while the popup is being destroyed */
     if (!surface()->parent())
@@ -25,9 +25,9 @@ const LPoint &LPopupRole::rolePos() const
     m_rolePos = surface()->parent()->rolePos() + localPos() - windowGeometry().topLeft();
 
     if (surface()->parent()->toplevel())
-        m_rolePos += surface()->parent()->toplevel()->windowGeometry().pos();
+        m_rolePos += surface()->parent()->toplevel()->windowGeometry().topLeft();
     else if (surface()->parent()->popup())
-        m_rolePos += surface()->parent()->popup()->windowGeometry().pos();
+        m_rolePos += surface()->parent()->popup()->windowGeometry().topLeft();
 
     return m_rolePos;
 }
@@ -86,7 +86,7 @@ void LPopupRole::atomsChanged(CZBitset<AtomChanges> changes, const Atoms &prevAt
 void LPopupRole::configureRequest()
 {
     // Ensure the Popup stays within the boundaries of the current output where the cursor is positioned
-    setBounds(cursor()->output() != nullptr ? cursor()->output()->rect() : LRect(0,0,0,0));
+    setBounds(cursor()->output() != nullptr ? cursor()->output()->rect() : SkIRect::MakeEmpty());
     configureRect(calculateUnconstrainedRect());
 }
 //! [configureRequest]

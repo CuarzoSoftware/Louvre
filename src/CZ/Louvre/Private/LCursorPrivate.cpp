@@ -10,20 +10,22 @@ void LCursor::LCursorPrivate::textureUpdate() noexcept
     if (!textureChanged && !posChanged)
         return;
 
-    const LSizeF sizeBckp { size };
+    const SkSize sizeBckp { size };
 
     if (compositor()->graphicBackendId() == LGraphicBackendWayland)
-        size = LSizeF(64.f / cursor()->output()->scale());
+        size = SkSize(64.f / cursor()->output()->scale());
 
-    const LPointF newHotspotS { (hotspotB*size)/LSizeF(texture->sizeB()) };
-    const LPointF newPosS { cursor()->pos() - newHotspotS };
+    const SkPoint newHotspotS {
+        (hotspotB.x() * size.width())/SkScalar(texture->sizeB().width()),
+        (hotspotB.y() * size.height())/SkScalar(texture->sizeB().height())
+    };
 
-    rect.setPos(newPosS);
-    rect.setSize(size);
+    const SkPoint newPosS { cursor()->pos() - newHotspotS };
+    rect.setXYWH(newPosS.x(), newPosS.y(), size.width(), size.height());
 
     for (LOutput *o : compositor()->outputs())
     {
-        if (isVisible && o->rect().intersects(rect))
+        if (isVisible && SkIRect::Intersects(o->rect(), rect))
         {
             const bool found { std::find(intersectedOutputs.begin(), intersectedOutputs.end(), o) != intersectedOutputs.end() };
 
@@ -34,7 +36,10 @@ void LCursor::LCursorPrivate::textureUpdate() noexcept
             {
                 if (cursor()->enabled(o) && cursor()->hwCompositingEnabled(o))
                 {
-                    texture2Buffer(cursor(), size * o->fractionalScale(), o->transform());
+                    texture2Buffer(cursor(),
+                                   SkSize(size.width() * o->fractionalScale(),
+                                          size.height() * o->fractionalScale()),
+                                   o->transform());
                     compositor()->imp()->graphicBackend->outputSetCursorTexture(o, buffer);
                 }
                 else
@@ -49,43 +54,47 @@ void LCursor::LCursorPrivate::textureUpdate() noexcept
 
         if (cursor()->enabled(o) && cursor()->hasHardwareSupport(o))
         {
-            LPointF p { newPosS - LPointF(o->pos()) };
+            SkPoint p { newPosS - SkPoint::Make(o->pos().x(), o->pos().y()) };
 
-            if (o->transform() == LTransform::Flipped)
-                p.setX(o->rect().w() - p.x() - size.w());
-            else if (o->transform() == LTransform::Rotated270)
+            if (o->transform() == CZTransform::Flipped)
+                p.fX = o->rect().width() - p.x() - size.width();
+            else if (o->transform() == CZTransform::Rotated270)
             {
                 const Float32 tmp { p.x() };
-                p.setX(o->rect().h() - p.y() - size.h());
-                p.setY(tmp);
+                p.fX = o->rect().height() - p.y() - size.height();
+                p.fY = tmp;
             }
-            else if (o->transform() == LTransform::Rotated180)
+            else if (o->transform() == CZTransform::Rotated180)
             {
-                p.setX(o->rect().w() - p.x() - size.w());
-                p.setY(o->rect().h() - p.y() - size.h());
+                p.fX = o->rect().width() - p.x() - size.width();
+                p.fY = o->rect().height() - p.y() - size.height();
             }
-            else if (o->transform() == LTransform::Rotated90)
-            {
-                const Float32 tmp { p.x() };
-                p.setX(p.y());
-                p.setY(o->rect().w() - tmp - size.h());
-            }
-            else if (o->transform() == LTransform::Flipped270)
+            else if (o->transform() == CZTransform::Rotated90)
             {
                 const Float32 tmp { p.x() };
-                p.setX(o->rect().h() - p.y() - size.h());
-                p.setY(o->rect().w() - tmp - size.w());
+                p.fX = p.y();
+                p.fY = o->rect().width() - tmp - size.height();
             }
-            else if (o->transform() == LTransform::Flipped180)
-                p.setY(o->rect().h() - p.y() - size.y());
-            else if (o->transform() == LTransform::Flipped90)
+            else if (o->transform() == CZTransform::Flipped270)
             {
                 const Float32 tmp { p.x() };
-                p.setX(p.y());
-                p.setY(tmp);
+                p.fX = o->rect().height() - p.y() - size.height();
+                p.fY = o->rect().width() - tmp - size.width();
+            }
+            else if (o->transform() == CZTransform::Flipped180)
+                p.fY = o->rect().height() - p.y() - size.height();
+            else if (o->transform() == CZTransform::Flipped90)
+            {
+                const Float32 tmp { p.x() };
+                p.fX = p.y();
+                p.fY = tmp;
             }
 
-            compositor()->imp()->graphicBackend->outputSetCursorPosition(o, o->scale() * p / ( o->scale() / o->fractionalScale()) );
+            compositor()->imp()->graphicBackend->outputSetCursorPosition(
+                o,
+                SkIPoint::Make(
+                    p.x() * o->fractionalScale(),
+                    p.y() * o->fractionalScale()));
         }
     }
 
@@ -95,7 +104,7 @@ void LCursor::LCursorPrivate::textureUpdate() noexcept
     posChanged = false;
 }
 
-void texture2Buffer(LCursor *cursor, const LSizeF &size, LTransform transform) noexcept
+void texture2Buffer(LCursor *cursor, const SkSize &size, CZTransform transform) noexcept
 {
     eglMakeCurrent(compositor()->eglDisplay(), EGL_NO_SURFACE, EGL_NO_SURFACE, compositor()->eglContext());
     LPainter *painter { compositor()->imp()->painter };
@@ -110,14 +119,14 @@ void texture2Buffer(LCursor *cursor, const LSizeF &size, LTransform transform) n
     painter->clearScreen();
     painter->bindTextureMode({
         .texture = cursor->texture(),
-        .pos = LPoint(0, 0),
-        .srcRect = LRect(0, 0, cursor->texture()->sizeB().w(), cursor->texture()->sizeB().h()),
-        .dstSize = size,
-        .srcTransform = Louvre::requiredTransform(transform, LTransform::Normal),
+        .pos = SkIPoint(0, 0),
+        .srcRect = SkRect::MakeWH(cursor->texture()->sizeB().width(), cursor->texture()->sizeB().height()),
+        .dstSize = SkISize(size.width(), size.height()),
+        .srcTransform = CZ::RequiredTransform(transform, CZTransform::Normal),
         .srcScale = 1.f,
     });
     glDisable(GL_BLEND);
-    painter->drawRect(LRect(0, size));
+    painter->drawRect(SkIRect::MakeWH(size.width(), size.height()));
     glEnable(GL_BLEND);
 
     glFinish(); // TODO: Replace with sync

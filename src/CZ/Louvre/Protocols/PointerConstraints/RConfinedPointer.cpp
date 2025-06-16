@@ -36,10 +36,11 @@ RConfinedPointer::RConfinedPointer(
 
     if (regionRes)
     {
-        m_surface->imp()->pendingPointerConstraintRegion = std::make_unique<LRegion>(regionRes->region());
-        m_surface->imp()->pointerConstraintRegion = regionRes->region();
-        m_surface->imp()->pointerConstraintRegion.intersectRegion(
-            m_surface->imp()->currentInputRegion);
+        m_surface->imp()->pendingPointerConstraintRegion = std::make_unique<SkRegion>(regionRes->region());
+        m_surface->imp()->pointerConstraintRegion.op(
+            regionRes->region(),
+            m_surface->imp()->currentInputRegion,
+            SkRegion::kIntersect_Op);
     }
     else
     {
@@ -54,7 +55,7 @@ RConfinedPointer::~RConfinedPointer()
     if (surface())
     {
         surface()->imp()->confinedPointerRes.reset();
-        surface()->imp()->pointerConstraintRegion.clear();
+        surface()->imp()->pointerConstraintRegion.setEmpty();
         surface()->imp()->pendingPointerConstraintRegion.reset();
         surface()->imp()->changesToNotify.remove(LSurface::LSurfacePrivate::PointerConstraintRegionChanged);
         surface()->pointerConstraintModeChanged();
@@ -77,7 +78,7 @@ void RConfinedPointer::set_region(wl_client */*client*/, wl_resource *resource, 
         if (region)
         {
             auto *regionRes { static_cast<Wayland::RRegion*>(wl_resource_get_user_data(region)) };
-            res.surface()->imp()->pendingPointerConstraintRegion = std::make_unique<LRegion>(regionRes->region());
+            res.surface()->imp()->pendingPointerConstraintRegion = std::make_unique<SkRegion>(regionRes->region());
         }
         else
             res.surface()->imp()->pendingPointerConstraintRegion.reset();
@@ -110,7 +111,7 @@ void RConfinedPointer::unconfined()
         if (surface())
         {
             surface()->imp()->confinedPointerRes.reset();
-            surface()->imp()->pointerConstraintRegion.clear();
+            surface()->imp()->pointerConstraintRegion.setEmpty();
             surface()->imp()->pendingPointerConstraintRegion.reset();
             surface()->imp()->changesToNotify.remove(LSurface::LSurfacePrivate::PointerConstraintRegionChanged);
             surface()->pointerConstraintModeChanged();

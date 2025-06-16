@@ -36,7 +36,7 @@ public:
     /******************** EVENTS ********************/
 
     // Since 1
-    void configure(UInt32 serial, const LSize &size) noexcept;
+    void configure(UInt32 serial, const SkISize &size) noexcept;
     void closed() noexcept;
 
 private:

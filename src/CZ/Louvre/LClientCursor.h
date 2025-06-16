@@ -2,7 +2,7 @@
 #define LCLIENTCURSOR_H
 
 #include <LObject.h>
-#include <LPoint.h>
+#include <CZ/skia/core/SkPoint.h>
 #include <LCursorRole.h>
 #include <LPointerEnterEvent.h>
 #include <LSurface.h>

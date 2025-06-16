@@ -73,39 +73,39 @@ LPRIVATE_CLASS(LSurface)
         wl_resource *bufferRes              { nullptr };
         bool hasBuffer                      { false };
         Int32 bufferScale                   { 1 };
-        LTransform transform                { LTransform::Normal };
+        CZTransform transform                { CZTransform::Normal };
         LContentType contentType            { LContentTypeNone };
-        LPointF lockedPointerPosHint        { -1.f, -1.f };
+        SkPoint lockedPointerPosHint        { -1.f, -1.f };
     };
 
     CZWeak<LBaseSurfaceRole> role, prevRole;
-    std::unique_ptr<LRegion> pendingPointerConstraintRegion;
-    LRegion pointerConstraintRegion;
+    std::unique_ptr<SkRegion> pendingPointerConstraintRegion;
+    SkRegion pointerConstraintRegion;
 
     State current, pending;
 
     CZWeak<Protocols::PointerConstraints::RLockedPointer> lockedPointerRes;
     CZWeak<Protocols::PointerConstraints::RConfinedPointer> confinedPointerRes;
 
-    LRectF srcRect                          { 0, 0, 1, 1 };
-    LSize size                              { 1, 1 };
-    LSize sizeB                             { 1, 1 };
-    LPoint pos;
+    SkRect srcRect                          { 0, 0, 1, 1 };
+    SkISize size                              { 1, 1 };
+    SkISize sizeB                             { 1, 1 };
+    SkIPoint pos;
     LTexture *texture                       { nullptr };
-    LRegion currentDamage;
-    LRegion currentTranslucentRegion;
-    LRegion currentOpaqueRegion;
-    LRegion currentInputRegion;
-    LRegion currentInvisibleRegion;
+    SkRegion currentDamage;
+    SkRegion currentTranslucentRegion;
+    SkRegion currentOpaqueRegion;
+    SkRegion currentInputRegion;
+    SkRegion currentInvisibleRegion;
 
-    LRegion pendingInputRegion;
-    LRegion pendingOpaqueRegion;
-    LRegion pendingTranslucentRegion;
-    LRegion pendingInvisibleRegion;
+    SkRegion pendingInputRegion;
+    SkRegion pendingOpaqueRegion;
+    SkRegion pendingTranslucentRegion;
+    SkRegion pendingInvisibleRegion;
 
-    std::vector<LRect> pendingDamageB;
-    std::vector<LRect> pendingDamage;
-    LRegion currentDamageB;
+    std::vector<SkIRect> pendingDamageB;
+    std::vector<SkIRect> pendingDamage;
+    SkRegion currentDamageB;
 
     Wayland::RSurface *surfaceResource      { nullptr };
 
@@ -123,7 +123,7 @@ LPRIVATE_CLASS(LSurface)
     std::list<LSurface*>::iterator layerLink;
     LSurfaceLayer layer { LLayerMiddle };
     Int32 lastSentPreferredBufferScale      { -1 };
-    LTransform lastSentPreferredTransform { LTransform::Normal };
+    CZTransform lastSentPreferredTransform { CZTransform::Normal };
     std::vector<LOutput*> outputs;
 
     std::vector<PresentationTime::RPresentationFeedback*> presentationFeedbackResources;
@@ -150,7 +150,7 @@ LPRIVATE_CLASS(LSurface)
     void setKeyboardGrabToParent();
     void updateDamage() noexcept;
     bool updateDimensions(Int32 widthB, Int32 heightB) noexcept;
-    void simplifyDamage(std::vector<LRect> &vec) noexcept;
+    void simplifyDamage(std::vector<SkIRect> &vec) noexcept;
     void destroyCursorOrDNDRole();
 };
 

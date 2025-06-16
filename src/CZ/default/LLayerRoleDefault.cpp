@@ -8,7 +8,7 @@
 using namespace Louvre;
 
 //! [rolePos]
-const LPoint &LLayerRole::rolePos() const
+SkIPoint LLayerRole::rolePos() const
 {
     // If no output has been assigned, use the user-defined position.
     if (!exclusiveOutput())
@@ -16,65 +16,69 @@ const LPoint &LLayerRole::rolePos() const
 
     if (anchor() == (LEdgeTop | LEdgeLeft))
     {
-        m_rolePos = exclusiveOutput()->pos() + exclusiveZone().rect().pos();
+        m_rolePos = exclusiveOutput()->pos() + exclusiveZone().rect().topLeft();
     }
     else if (anchor() == (LEdgeTop | LEdgeRight))
     {
-        m_rolePos.setX(exclusiveOutput()->pos().x() + exclusiveZone().rect().x()
-                       + exclusiveZone().rect().w() - surface()->size().w());
-        m_rolePos.setY(exclusiveOutput()->pos().y() + exclusiveZone().rect().y());
+        m_rolePos.fX = exclusiveOutput()->pos().x() + exclusiveZone().rect().x()
+                       + exclusiveZone().rect().width() - surface()->size().width();
+        m_rolePos.fY = exclusiveOutput()->pos().y() + exclusiveZone().rect().y();
     }
     else if (anchor() == (LEdgeBottom | LEdgeRight))
     {
-        m_rolePos.setX(exclusiveOutput()->pos().x() + exclusiveZone().rect().x()
-                       + exclusiveZone().rect().w() - surface()->size().w());
-        m_rolePos.setY(exclusiveOutput()->pos().y() + exclusiveZone().rect().y()
-                       + exclusiveZone().rect().h() - surface()->size().h());
+        m_rolePos.fX = exclusiveOutput()->pos().x() + exclusiveZone().rect().x()
+                       + exclusiveZone().rect().width() - surface()->size().width();
+        m_rolePos.fY = exclusiveOutput()->pos().y() + exclusiveZone().rect().y()
+                       + exclusiveZone().rect().height() - surface()->size().height();
     }
     else if (anchor() == (LEdgeBottom | LEdgeLeft))
     {
-        m_rolePos.setX(exclusiveOutput()->pos().x() + exclusiveZone().rect().x());
-        m_rolePos.setY(exclusiveOutput()->pos().y() + exclusiveZone().rect().y()
-                       + exclusiveZone().rect().h() - surface()->size().h());
+        m_rolePos.fX = exclusiveOutput()->pos().x() + exclusiveZone().rect().x();
+        m_rolePos.fY = exclusiveOutput()->pos().y() + exclusiveZone().rect().y()
+                       + exclusiveZone().rect().height() - surface()->size().height();
     }
     else if (anchor() == LEdgeTop || anchor() == (LEdgeLeft | LEdgeTop | LEdgeRight))
     {
-        m_rolePos.setX(exclusiveOutput()->pos().x() + exclusiveZone().rect().x()
-                       + (exclusiveZone().rect().w() - surface()->size().w()) / 2 );
-        m_rolePos.setY(exclusiveOutput()->pos().y() + exclusiveZone().rect().y());
+        m_rolePos.fX = exclusiveOutput()->pos().x() + exclusiveZone().rect().x()
+                       + (exclusiveZone().rect().width() - surface()->size().width()) / 2;
+        m_rolePos.fY = exclusiveOutput()->pos().y() + exclusiveZone().rect().y();
     }
     else if (anchor() == LEdgeBottom || anchor() == (LEdgeLeft | LEdgeBottom | LEdgeRight))
     {
-        m_rolePos.setX(exclusiveOutput()->pos().x() + exclusiveZone().rect().x()
-                       + (exclusiveZone().rect().w() - surface()->size().w()) / 2 );
-        m_rolePos.setY(exclusiveOutput()->pos().y() + exclusiveZone().rect().y()
-                       + exclusiveZone().rect().h() - surface()->size().h());
+        m_rolePos.fX = exclusiveOutput()->pos().x() + exclusiveZone().rect().x()
+                       + (exclusiveZone().rect().width() - surface()->size().width()) / 2;
+        m_rolePos.fY = exclusiveOutput()->pos().y() + exclusiveZone().rect().y()
+                       + exclusiveZone().rect().height() - surface()->size().height();
     }
     else if (anchor() == LEdgeLeft || anchor() == (LEdgeBottom | LEdgeLeft | LEdgeTop))
     {
-        m_rolePos.setX(exclusiveOutput()->pos().x() + exclusiveZone().rect().x());
-        m_rolePos.setY(exclusiveOutput()->pos().y() + exclusiveZone().rect().y()
-                       + (exclusiveZone().rect().h() - surface()->size().h()) / 2);
+        m_rolePos.fX = exclusiveOutput()->pos().x() + exclusiveZone().rect().x();
+        m_rolePos.fY = exclusiveOutput()->pos().y() + exclusiveZone().rect().y()
+                       + (exclusiveZone().rect().height() - surface()->size().height()) / 2;
     }
     else if (anchor() == LEdgeRight || anchor() == (LEdgeBottom | LEdgeRight | LEdgeTop))
     {
-        m_rolePos.setX(exclusiveOutput()->pos().x() + exclusiveZone().rect().x()
-                       + exclusiveZone().rect().w() - surface()->size().w());
-        m_rolePos.setY(exclusiveOutput()->pos().y() + exclusiveZone().rect().y()
-                       + (exclusiveZone().rect().h() - surface()->size().h()) / 2);
+        m_rolePos.fX = exclusiveOutput()->pos().x() + exclusiveZone().rect().x()
+                       + exclusiveZone().rect().width() - surface()->size().width();
+        m_rolePos.fY = exclusiveOutput()->pos().y() + exclusiveZone().rect().y()
+                       + (exclusiveZone().rect().height() - surface()->size().height()) / 2;
     }
     else
-        m_rolePos = exclusiveOutput()->pos() + exclusiveZone().rect().pos() + (exclusiveZone().rect().size() - surface()->size()) / 2;
+        m_rolePos = exclusiveOutput()->pos() +
+                    exclusiveZone().rect().topLeft() +
+                    SkIPoint::Make(
+                        (exclusiveZone().rect().size().width() - surface()->size().width()) / 2,
+                        (exclusiveZone().rect().size().height() - surface()->size().height()) / 2);
 
     // Add extra margins.
     if (anchor().has(LEdgeTop))
-        m_rolePos.setY(m_rolePos.y() + margins().top);
+        m_rolePos.fY = m_rolePos.y() + margins().top;
     if (anchor().has(LEdgeBottom))
-        m_rolePos.setY(m_rolePos.y() - margins().bottom);
+        m_rolePos.fY = m_rolePos.y() - margins().bottom;
     if (anchor().has(LEdgeLeft))
-        m_rolePos.setX(m_rolePos.x() + margins().left);
+        m_rolePos.fX = m_rolePos.x() + margins().left;
     if (anchor().has(LEdgeRight))
-        m_rolePos.setX(m_rolePos.x() - margins().right);
+        m_rolePos.fX = m_rolePos.x() - margins().right;
 
     return m_rolePos;
 }
@@ -125,7 +129,7 @@ void LLayerRole::configureRequest()
     surface()->sendOutputEnterEvent(exclusiveOutput());
 
     // The client-suggested size.
-    LSize newSize { size() };
+    SkISize newSize { size() };
 
     /*
      * LExclusiveZone calculates the single edge the surface is anchored to.
@@ -140,11 +144,11 @@ void LLayerRole::configureRequest()
      * The client can choose a different size if desired. For more details see the LExclusiveZone doc.
      */
 
-    if (newSize.w() == 0 || edge == 0 || anchor().hasAll(LEdgeLeft | LEdgeRight))
-        newSize.setW(exclusiveZone().rect().w());
+    if (newSize.width() == 0 || edge == 0 || anchor().hasAll(LEdgeLeft | LEdgeRight))
+        newSize.fWidth = exclusiveZone().rect().width();
 
-    if (newSize.h() == 0 || edge == 0 || anchor().hasAll(LEdgeTop | LEdgeBottom))
-        newSize.setH(exclusiveZone().rect().h());
+    if (newSize.height() == 0 || edge == 0 || anchor().hasAll(LEdgeTop | LEdgeBottom))
+        newSize.fHeight = exclusiveZone().rect().height();
 
     configureSize(newSize);
 }

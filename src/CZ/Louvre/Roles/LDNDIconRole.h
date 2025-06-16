@@ -42,7 +42,7 @@ public:
     /**
      * @brief Hotspot of the icon in surface coordinates.
      */
-    const LPoint &hotspot() const noexcept
+    const SkIPoint &hotspot() const noexcept
     {
         return m_currentHotspot;
     }
@@ -50,7 +50,7 @@ public:
     /**
      * @brief Hotspot of the icon in buffer coordinates.
      */
-    const LPoint &hotspotB() const noexcept
+    const SkIPoint &hotspotB() const noexcept
     {
         return m_currentHotspotB;
     }
@@ -71,13 +71,13 @@ public:
      * #### Default implementation
      * @snippet LDNDIconRoleDefault.cpp rolePos
      */
-    virtual const LPoint &rolePos() const override;
+    virtual SkIPoint rolePos() const override;
 
 private:
     virtual void handleSurfaceOffset(Int32 x, Int32 y) override;
     virtual void handleSurfaceCommit(CommitOrigin origin) override;
-    LPoint m_currentHotspot, m_pendingHotspotOffset;
-    LPoint m_currentHotspotB;
+    SkIPoint m_currentHotspot, m_pendingHotspotOffset;
+    SkIPoint m_currentHotspotB;
 };
 
 #endif // LDNDICONROLE_H

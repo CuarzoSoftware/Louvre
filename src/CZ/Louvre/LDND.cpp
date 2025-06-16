@@ -25,7 +25,7 @@ LDND::LDND(const void *params) noexcept : LFactoryObject(FactoryObjectType)
     *ptr = this;
 }
 
-void LDND::setFocus(LSurface *surface, const LPointF &localPos) noexcept
+void LDND::setFocus(LSurface *surface, const SkPoint &localPos) noexcept
 {
     if (!m_session)
         return;
@@ -99,7 +99,7 @@ void LDND::setFocus(LSurface *surface, const LPointF &localPos) noexcept
     }
 }
 
-void LDND::sendMoveEvent(const LPointF &localPos, UInt32 ms) noexcept
+void LDND::sendMoveEvent(const SkPoint &localPos, UInt32 ms) noexcept
 {
     if (!focus() || !m_session || !m_session->dstDataDevice)
         return;

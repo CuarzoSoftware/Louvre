@@ -3,7 +3,7 @@
 
 #include <LObject.h>
 #include <CZ/CZWeak.h>
-#include <LRect.h>
+#include <CZ/skia/core/SkRect.h>
 #include <LEdge.h>
 #include <functional>
 #include <list>
@@ -169,7 +169,7 @@ public:
      *
      * @return The rect representing the position and size of the exclusive zone.
      */
-    const LRect &rect() const noexcept
+    const SkIRect &rect() const noexcept
     {
         return m_rect;
     }
@@ -202,7 +202,7 @@ private:
     CZWeak<LOutput> m_output;
     LEdge m_edge;
     Int32 m_size;
-    LRect m_rect;
+    SkIRect m_rect;
     mutable std::list<LExclusiveZone*>::iterator m_outputLink;
     OnRectChangeCallback m_onRectChangeCallback { nullptr };
 };

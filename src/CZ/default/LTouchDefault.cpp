@@ -26,15 +26,16 @@ void LTouch::touchDownEvent(const LTouchDownEvent &event)
     const bool sessionLocked { sessionLockManager()->state() != LSessionLockManager::Unlocked };
 
     LTouchPoint *tp { createOrGetTouchPoint(event) };
-    const LPointF globalPos { toGlobal(cursor()->output(), event.pos()) };
-    LSurface *surface { surfaceAt(globalPos) };
+    const SkPoint globalPos { toGlobal(cursor()->output(), event.pos()) };
+    LSurface *surface { surfaceAt(globalPos.x(), globalPos.y()) };
 
     if (surface)
     {
         if (sessionLocked && surface->client() != sessionLockManager()->client())
             return;
 
-        event.localPos = globalPos - surface->rolePos();
+        event.localPos.fX = globalPos.x() - surface->rolePos().x();
+        event.localPos.fY = globalPos.y() - surface->rolePos().y();
 
         if (!seat()->keyboard()->focus() || !surface->isSubchildOf(seat()->keyboard()->focus()))
             seat()->keyboard()->setFocus(surface);
@@ -60,7 +61,7 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
     if (!tp)
         return;
 
-    const LPointF globalPos { toGlobal(cursor()->output(), event.pos()) };
+    const SkPoint globalPos { toGlobal(cursor()->output(), event.pos()) };
 
     // Handle DND session
     LDND &dnd { *seat()->dnd() };
@@ -77,17 +78,17 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
                 dnd.icon()->surface()->repaintOutputs();
             }
 
-            LSurface *surface { surfaceAt(globalPos) };
+            LSurface *surface { surfaceAt(globalPos.x(), globalPos.y()) };
 
             if (surface)
             {
                 if (dnd.focus() == surface)
-                    dnd.sendMoveEvent(globalPos - surface->rolePos(), event.ms());
+                    dnd.sendMoveEvent(globalPos - SkPoint(surface->rolePos().x(), surface->rolePos().y()), event.ms());
                 else
-                    dnd.setFocus(surface, globalPos - surface->rolePos());
+                    dnd.setFocus(surface, globalPos - SkPoint(surface->rolePos().x(), surface->rolePos().y()));
             }
             else
-                dnd.setFocus(nullptr, LPoint());
+                dnd.setFocus(nullptr, SkPoint());
         }
     }
 
@@ -102,7 +103,7 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
             if (touchEvent.id() == tp->id())
             {
                 activeResizing = true;
-                session->updateDragPoint(globalPos);
+                session->updateDragPoint(SkIPoint(globalPos.x(), globalPos.y()));
                 session->toplevel()->surface()->repaintOutputs();
 
                 if (session->toplevel()->maximized())
@@ -125,7 +126,7 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
             if (touchEvent.id() == tp->id())
             {
                 activeMoving = true;
-                session->updateDragPoint(globalPos);
+                session->updateDragPoint(SkIPoint(globalPos.x(), globalPos.y()));
                 session->toplevel()->surface()->repaintOutputs();
 
                 if (session->toplevel()->maximized())
@@ -139,7 +140,7 @@ void LTouch::touchMoveEvent(const LTouchMoveEvent &event)
 
     if (tp->surface())
     {
-        event.localPos = globalPos - tp->surface()->rolePos();
+        event.localPos = globalPos - SkPoint(tp->surface()->rolePos().x(), tp->surface()->rolePos().y());
         tp->sendMoveEvent(event);
     }
     else
