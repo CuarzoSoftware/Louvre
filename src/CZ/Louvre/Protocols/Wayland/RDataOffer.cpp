@@ -3,6 +3,9 @@
 #include <CZ/Louvre/Protocols/Wayland/GSeat.h>
 #include <CZ/Louvre/LClient.h>
 #include <CZ/Louvre/LDNDSession.h>
+#include <sys/poll.h>
+#include <sys/sendfile.h>
+#include <fcntl.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::Wayland;
@@ -101,50 +104,54 @@ void RDataOffer::receive(wl_client */*client*/, wl_resource *resource, const cha
                 }
                 else if (mimeType.tmp)
                 {
+                    // Set fd to non-blocking
+                    int fdFlags { fcntl(fd, F_GETFL, 0) };
+                    if (fdFlags == -1) goto skip;
+                    if (fcntl(fd, F_SETFL, fdFlags | O_NONBLOCK) == -1) goto skip;
+
+                    const int tmpFd { fileno(mimeType.tmp) };
+                    fflush(mimeType.tmp);
                     fseek(mimeType.tmp, 0L, SEEK_END);
-
-                    Int64 total { ftell(mimeType.tmp) };
-
-                    // If pointer is at the beggining means the source client has not written any data
-                    if (total == 0)
-                        break;
-
+                    const long end { ftell(mimeType.tmp) };
                     rewind(mimeType.tmp);
 
-                    Int64 written = 0, readN = 0, toRead = 0, offset = 0;
-                    UInt8 buffer[1024];
+                    if (end <= 0)
+                        break;
 
-                    while (total > 0)
+                    off64_t total = end;
+                    off64_t offset { 0 };
+                    ssize_t sent;
+
+                    // Just in case errno = EINTR forever
+                    UInt32 retryCount { 0 };
+                    pollfd pfd = { .fd = fd, .events = POLLOUT };
+
+                    while (retryCount < 50 && offset < total)
                     {
-                        if (total < 1024)
-                            toRead = total;
-                        else
-                            toRead = 1024;
-
-                        readN = fread(buffer, sizeof(UInt8), toRead, mimeType.tmp);
-
-                        if (readN != toRead)
+                        if (poll(&pfd, 1, 500) <= 0)
                             break;
 
-                        offset = 0;
+                        sent = sendfile(fd, tmpFd, &offset, total - offset);
+                        if (sent < 0)
+                        {
+                            // Interrupted, try again
+                            if (errno == EINTR)
+                            {
+                                retryCount++;
+                                continue;
+                            }
 
-                    retryWrite:
-                        written = write(fd, &buffer[offset], readN);
-
-                        if (written > 0)
-                            offset += written;
-                        else if (written == -1)
                             break;
-                        else if (written == 0)
-                            goto retryWrite;
+                        }
 
-                        if (offset != readN)
-                            goto retryWrite;
-
-                        total -= readN;
+                        if (sent == 0)
+                            break;
                     }
-                }
 
+                    // Restore original blocking mode
+                    fcntl(fd, F_SETFL, fdFlags);
+                }
+                skip:
                 break;
             }
         }
