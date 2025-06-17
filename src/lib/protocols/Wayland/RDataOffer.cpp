@@ -3,6 +3,7 @@
 #include <protocols/Wayland/GSeat.h>
 #include <LClient.h>
 #include <LDNDSession.h>
+#include <sys/sendfile.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::Wayland;
@@ -101,47 +102,39 @@ void RDataOffer::receive(wl_client */*client*/, wl_resource *resource, const cha
                 }
                 else if (mimeType.tmp)
                 {
+                    const int tmpFd { fileno(mimeType.tmp) };
+                    fflush(mimeType.tmp);
                     fseek(mimeType.tmp, 0L, SEEK_END);
-
-                    Int64 total { ftell(mimeType.tmp) };
-
-                    // If pointer is at the beggining means the source client has not written any data
-                    if (total == 0)
-                        break;
-
+                    const long end { ftell(mimeType.tmp) };
                     rewind(mimeType.tmp);
 
-                    Int64 written = 0, readN = 0, toRead = 0, offset = 0;
-                    UChar8 buffer[1024];
+                    if (end <= 0)
+                        break;
 
-                    while (total > 0)
+                    off64_t total = end;
+                    off64_t offset { 0 };
+                    ssize_t sent;
+
+                    // Just in case errno = EINTR forever
+                    UInt32 retryCount { 0 };
+
+                    while (retryCount < 50 && offset < total)
                     {
-                        if (total < 1024)
-                            toRead = total;
-                        else
-                            toRead = 1024;
+                        sent = sendfile(fd, tmpFd, &offset, total - offset);
+                        if (sent < 0)
+                        {
+                            // Interrupted, try again
+                            if (errno == EINTR)
+                            {
+                                retryCount++;
+                                continue;
+                            }
 
-                        readN = fread(buffer, sizeof(UChar8), toRead, mimeType.tmp);
-
-                        if (readN != toRead)
                             break;
+                        }
 
-                        offset = 0;
-
-                    retryWrite:
-                        written = write(fd, &buffer[offset], readN);
-
-                        if (written > 0)
-                            offset += written;
-                        else if (written == -1)
+                        if (sent == 0)
                             break;
-                        else if (written == 0)
-                            goto retryWrite;
-
-                        if (offset != readN)
-                            goto retryWrite;
-
-                        total -= readN;
                     }
                 }
 
