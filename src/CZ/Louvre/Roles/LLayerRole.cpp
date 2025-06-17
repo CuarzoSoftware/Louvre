@@ -4,7 +4,7 @@
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Protocols/LayerShell/RLayerSurface.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
-#include <LTime.h>
+#include <CZ/Louvre/LTime.h>
 
 using namespace Louvre;
 

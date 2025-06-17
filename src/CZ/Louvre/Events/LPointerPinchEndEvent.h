@@ -1,8 +1,8 @@
 #ifndef LPOINTERPINCHENDEVENT_H
 #define LPOINTERPINCHENDEVENT_H
 
-#include <LPointerEvent.h>
-#include <LTime.h>
+#include <CZ/Louvre/Events/LPointerEvent.h>
+#include <CZ/Louvre/LTime.h>
 
 /**
  * @brief Pointer pinch end gesture event.

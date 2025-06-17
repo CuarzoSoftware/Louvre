@@ -1,8 +1,8 @@
 #ifndef LPOINTERPINCHBEGINEVENT_H
 #define LPOINTERPINCHBEGINEVENT_H
 
-#include <LPointerEvent.h>
-#include <LTime.h>
+#include <CZ/Louvre/Events/LPointerEvent.h>
+#include <CZ/Louvre/LTime.h>
 
 /**
  * @brief Pointer pinch begin gesture event.

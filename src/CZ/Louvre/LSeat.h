@@ -1,9 +1,9 @@
 #ifndef LSEAT_H
 #define LSEAT_H
 
-#include <LFactoryObject.h>
-#include <LToplevelRole.h>
-#include <LSurface.h>
+#include <CZ/Louvre/LFactoryObject.h>
+#include <CZ/Louvre/Roles/LToplevelRole.h>
+#include <CZ/Louvre/LSurface.h>
 
 struct libseat;
 

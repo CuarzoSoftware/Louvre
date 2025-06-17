@@ -1,8 +1,8 @@
 #ifndef GBACKGROUNDBLURMANAGER_H
 #define GBACKGROUNDBLURMANAGER_H
 
-#include <LBackgroundBlur.h>
-#include <LResource.h>
+#include <CZ/Louvre/LBackgroundBlur.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZBitset.h>
 
 class Louvre::Protocols::BackgroundBlur::GBackgroundBlurManager final : public LResource

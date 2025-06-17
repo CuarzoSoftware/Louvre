@@ -1,7 +1,7 @@
 #ifndef GSCREENCOPYMANAGER_H
 #define GSCREENCOPYMANAGER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/skia/core/SkRegion.h>
 #include <map>
 

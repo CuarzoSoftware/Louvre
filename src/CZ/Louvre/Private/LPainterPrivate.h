@@ -5,8 +5,8 @@
 
 #include <CZ/Louvre/Private/LTexturePrivate.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
-#include <LOutputFramebuffer.h>
-#include <LPainter.h>
+#include <CZ/Louvre/LOutputFramebuffer.h>
+#include <CZ/Louvre/LPainter.h>
 #include <CZ/skia/core/SkRect.h>
 #include <GL/gl.h>
 #include <GLES2/gl2.h>
@@ -65,7 +65,7 @@ struct UserState
     bool customTextureColor { false };
 } userState;
 
-SkRect srcRect;
+SkRect srcRect { 0.f, 0.f, 0.f, 0.f };
 bool needsBlendFuncUpdate { true };
 
 static inline GLfloat square[]
@@ -81,8 +81,8 @@ GLuint vertexShader, fragmentShader, fragmentShaderExternal, fragmentShaderScale
 
 struct ShaderState
 {
-    SkSize texSize;
-    SkRect srcRect;
+    SkSize texSize { 0.f, 0.f };
+    SkRect srcRect { 0.f, 0.f, 0.f, 0.f };
     GLuint activeTexture;
     ShaderMode mode;
     LRGBF color;

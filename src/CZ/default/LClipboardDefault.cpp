@@ -1,10 +1,10 @@
-#include <LClipboard.h>
-#include <LEvent.h>
-#include <LSeat.h>
-#include <LPointer.h>
-#include <LKeyboard.h>
-#include <LTouch.h>
-#include <LTouchPoint.h>
+#include <CZ/Louvre/LClipboard.h>
+#include <CZ/Louvre/Events/LEvent.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LPointer.h>
+#include <CZ/Louvre/LKeyboard.h>
+#include <CZ/Louvre/LTouch.h>
+#include <CZ/Louvre/LTouchPoint.h>
 
 using namespace Louvre;
 

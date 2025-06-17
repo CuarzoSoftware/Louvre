@@ -1,6 +1,7 @@
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LResource.h>
-#include <LCompositor.h>
+#include <CZ/Louvre/LResource.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LLog.h>
 
 using namespace Louvre;
 
@@ -37,6 +38,7 @@ void LResource::postErrorPrivate(UInt32 code, const std::string &message)
         return;
 
     client()->imp()->destroyed = true;
+    LLog::error("%s", message.c_str());
     wl_resource_post_error(resource(), code, "%s", message.c_str());
 }
 

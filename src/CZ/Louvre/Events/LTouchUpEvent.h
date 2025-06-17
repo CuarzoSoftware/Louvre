@@ -1,8 +1,8 @@
 #ifndef LTOUCHUPEVENT_H
 #define LTOUCHUPEVENT_H
 
-#include <LTouchEvent.h>
-#include <LTime.h>
+#include <CZ/Louvre/Events/LTouchEvent.h>
+#include <CZ/Louvre/LTime.h>
 
 /**
  * @brief Touch up event.

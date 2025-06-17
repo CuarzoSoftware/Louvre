@@ -1,9 +1,9 @@
 #ifndef LPOINTERMOVEEVENT_H
 #define LPOINTERMOVEEVENT_H
 
-#include <LPointerEvent.h>
+#include <CZ/Louvre/Events/LPointerEvent.h>
 #include <CZ/skia/core/SkPoint.h>
-#include <LTime.h>
+#include <CZ/Louvre/LTime.h>
 
 /**
  * @brief Pointer movement event.
@@ -21,7 +21,7 @@ public:
      * @param us The microsecond timestamp of the event.
      * @param device The input device that originated the event.
      */
-    LPointerMoveEvent(const SkPoint &delta = SkPoint(0.f, 0.f), const SkPoint &deltaUnaccelerated = SkPoint(0.f, 0.f),
+    LPointerMoveEvent(SkPoint delta = SkPoint(0.f, 0.f), SkPoint deltaUnaccelerated = SkPoint(0.f, 0.f),
                              UInt32 serial = LTime::nextSerial(), UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) noexcept :
         LPointerEvent(LEvent::Subtype::Move, serial, ms, us, device),
         m_delta(delta),
@@ -31,7 +31,7 @@ public:
     /**
      * @brief Sets the movement delta of the pointer.
      */
-    void setDelta(const SkPoint &delta) noexcept
+    void setDelta(SkPoint delta) noexcept
     {
         m_delta = delta;
     }
@@ -55,7 +55,7 @@ public:
     /**
      * @brief Gets the movement delta of the pointer.
      */
-    const SkPoint &delta() const noexcept
+    SkPoint delta() const noexcept
     {
         return m_delta;
     }
@@ -63,7 +63,7 @@ public:
     /**
      * @brief Sets the unaccelerated movement delta of the pointer.
      */
-    void setDeltaUnaccelerated(const SkPoint &deltaUnaccelerated) noexcept
+    void setDeltaUnaccelerated(SkPoint deltaUnaccelerated) noexcept
     {
         m_deltaUnaccelerated = deltaUnaccelerated;
     }
@@ -87,7 +87,7 @@ public:
     /**
      * @brief Gets the unaccelerated movement delta of the pointer.
      */
-    const SkPoint &deltaUnaccelerated() const noexcept
+    SkPoint deltaUnaccelerated() const noexcept
     {
         return m_deltaUnaccelerated;
     }

@@ -1,7 +1,7 @@
 #ifndef LCURSORROLE_H
 #define LCURSORROLE_H
 
-#include <LBaseSurfaceRole.h>
+#include <CZ/Louvre/Roles/LBaseSurfaceRole.h>
 
 /**
  * @brief Cursor role for surfaces.
@@ -67,7 +67,7 @@ public:
     /**
      * @brief Cursor hotspot in surface coordinates.
      */
-    const SkIPoint &hotspot() const noexcept
+    SkIPoint hotspot() const noexcept
     {
         return m_currentHotspot;
     }
@@ -75,7 +75,7 @@ public:
     /**
      * @brief Cursor hotspot in buffer coordinates.
      */
-    const SkIPoint &hotspotB() const noexcept
+    SkIPoint hotspotB() const noexcept
     {
         return m_currentHotspotB;
     }

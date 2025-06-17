@@ -1,7 +1,7 @@
 #ifndef LOPENGL_H
 #define LOPENGL_H
 
-#include <LNamespaces.h>
+#include <CZ/Louvre/LNamespaces.h>
 #include <filesystem>
 
 /**

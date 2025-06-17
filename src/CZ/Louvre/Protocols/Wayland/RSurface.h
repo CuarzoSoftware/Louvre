@@ -1,8 +1,8 @@
 #ifndef RSURFACE_H
 #define RSURFACE_H
 
-#include <LBaseSurfaceRole.h>
-#include <LResource.h>
+#include <CZ/Louvre/Roles/LBaseSurfaceRole.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZTransform.h>
 #include <memory>
 

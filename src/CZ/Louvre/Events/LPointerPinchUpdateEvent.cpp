@@ -1,7 +1,7 @@
-#include <LPointerPinchUpdateEvent.h>
-#include <LCompositor.h>
-#include <LSeat.h>
-#include <LPointer.h>
+#include <CZ/Louvre/Events/LPointerPinchUpdateEvent.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LPointer.h>
 
 using namespace Louvre;
 

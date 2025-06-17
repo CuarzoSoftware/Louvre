@@ -1,7 +1,7 @@
 #ifndef LSUBSURFACEROLEPRIVATE_H
 #define LSUBSURFACEROLEPRIVATE_H
 
-#include <LSubsurfaceRole.h>
+#include <CZ/Louvre/Roles/LSubsurfaceRole.h>
 
 using namespace Louvre;
 

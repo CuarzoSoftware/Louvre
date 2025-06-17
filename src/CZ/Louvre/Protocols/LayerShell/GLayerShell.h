@@ -1,7 +1,7 @@
 #ifndef GLAYERSHELL_H
 #define GLAYERSHELL_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::LayerShell::GLayerShell final : public LResource
 {

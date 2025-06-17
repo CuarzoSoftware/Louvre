@@ -1,4 +1,4 @@
-#include <LLog.h>
+#include <CZ/Louvre/LLog.h>
 #include <sys/epoll.h>
 
 #include <string.h>
@@ -15,7 +15,7 @@
 #include <drm.h>
 #include <drm_fourcc.h>
 
-#include <LGraphicBackend.h>
+#include "../LGraphicBackend.h"
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 #include <CZ/Louvre/Private/LSeatPrivate.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
@@ -25,10 +25,10 @@
 #include <CZ/Louvre/Private/LSeatPrivate.h>
 #include <CZ/Louvre/Private/LFactory.h>
 
-#include <LGPU.h>
-#include <LTime.h>
-#include <LGammaTable.h>
-#include <LOutputMode.h>
+#include <CZ/Louvre/LGPU.h>
+#include <CZ/Louvre/LTime.h>
+#include <CZ/Louvre/LGammaTable.h>
+#include <CZ/Louvre/LOutputMode.h>
 
 #include <private/SRMBufferPrivate.h>
 #include <private/SRMConnectorPrivate.h>

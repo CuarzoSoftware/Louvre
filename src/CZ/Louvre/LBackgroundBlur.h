@@ -2,8 +2,8 @@
 #define LBACKGROUNDBLUR_H
 
 #include <CZ/skia/core/SkRegion.h>
-#include <LRRect.h>
-#include <LFactoryObject.h>
+#include <CZ/Louvre/LRRect.h>
+#include <CZ/Louvre/LFactoryObject.h>
 #include <CZ/CZBitset.h>
 #include <CZ/CZWeak.h>
 #include <list>

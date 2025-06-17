@@ -1,9 +1,9 @@
 #ifndef LPOINTERPINCHUPDATEEVENT_H
 #define LPOINTERPINCHUPDATEEVENT_H
 
-#include <LPointerEvent.h>
+#include <CZ/Louvre/Events/LPointerEvent.h>
 #include <CZ/skia/core/SkPoint.h>
-#include <LTime.h>
+#include <CZ/Louvre/LTime.h>
 
 /**
  * @brief Pointer pinch update gesture event.
@@ -24,7 +24,7 @@ public:
      * @param us The microsecond timestamp of the event.
      * @param device The input device that originated the event.
      */
-    LPointerPinchUpdateEvent(UInt32 fingers = 0, const SkPoint &delta = SkPoint(0.f, 0.f), const SkPoint &deltaUnaccelerated = SkPoint(0.f, 0.f),
+    LPointerPinchUpdateEvent(UInt32 fingers = 0, SkPoint delta = SkPoint(0.f, 0.f), SkPoint deltaUnaccelerated = SkPoint(0.f, 0.f),
                                     Float32 scale = 1.f, Float32 rotation = 0.f,
                                     UInt32 serial = LTime::nextSerial(), UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) noexcept :
         LPointerEvent(LEvent::Subtype::PinchUpdate, serial, ms, us, device),
@@ -54,7 +54,7 @@ public:
     /**
      * @brief Sets the movement delta of the pinch gesture.
      */
-    void setDelta(const SkPoint &delta) noexcept
+    void setDelta(SkPoint delta) noexcept
     {
         m_delta = delta;
     }
@@ -86,7 +86,7 @@ public:
     /**
      * @brief Sets the unaccelerated movement delta of the pinch gesture.
      */
-    void setDeltaUnaccelerated(const SkPoint &deltaUnaccelerated) noexcept
+    void setDeltaUnaccelerated(SkPoint deltaUnaccelerated) noexcept
     {
         m_deltaUnaccelerated = deltaUnaccelerated;
     }

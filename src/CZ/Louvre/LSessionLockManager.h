@@ -1,7 +1,7 @@
 #ifndef LSESSIONLOCKMANAGER_H
 #define LSESSIONLOCKMANAGER_H
 
-#include <LFactoryObject.h>
+#include <CZ/Louvre/LFactoryObject.h>
 #include <CZ/CZWeak.h>
 
 /**

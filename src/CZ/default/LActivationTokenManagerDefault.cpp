@@ -1,10 +1,10 @@
-#include <LActivationTokenManager.h>
-#include <LSessionLockManager.h>
-#include <LSeat.h>
-#include <LPointer.h>
-#include <LKeyboard.h>
-#include <LTouch.h>
-#include <LTouchPoint.h>
+#include <CZ/Louvre/LActivationTokenManager.h>
+#include <CZ/Louvre/LSessionLockManager.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LPointer.h>
+#include <CZ/Louvre/LKeyboard.h>
+#include <CZ/Louvre/LTouch.h>
+#include <CZ/Louvre/LTouchPoint.h>
 #include <algorithm>
 
 using namespace Louvre;

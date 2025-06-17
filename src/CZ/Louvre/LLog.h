@@ -1,7 +1,7 @@
 #ifndef LLOG_H
 #define LLOG_H
 
-#include <LNamespaces.h>
+#include <CZ/Louvre/LNamespaces.h>
 
 #if DOXYGEN
 #define FORMAT_CHECK

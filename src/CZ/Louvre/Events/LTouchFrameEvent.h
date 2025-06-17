@@ -1,8 +1,8 @@
 #ifndef LTOUCHFRAMEEVENT_H
 #define LTOUCHFRAMEEVENT_H
 
-#include <LTouchEvent.h>
-#include <LTime.h>
+#include <CZ/Louvre/Events/LTouchEvent.h>
+#include <CZ/Louvre/LTime.h>
 
 /**
  * @brief Represents a touch frame event.

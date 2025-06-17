@@ -1,6 +1,6 @@
 #include <CZ/Louvre/Private/LKeyboardPrivate.h>
-#include <LKeyboardKeyEvent.h>
-#include <LUtils.h>
+#include <CZ/Louvre/Events/LKeyboardKeyEvent.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre;
 

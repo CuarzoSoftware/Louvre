@@ -1,7 +1,7 @@
 #ifndef GXDGWMBASE_H
 #define GXDGWMBASE_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::XdgShell::GXdgWmBase final : public LResource
 {

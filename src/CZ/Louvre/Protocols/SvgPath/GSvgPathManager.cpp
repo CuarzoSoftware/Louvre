@@ -2,7 +2,7 @@
 #include <CZ/Louvre/Protocols/SvgPath/RSvgPath.h>
 #include <CZ/Louvre/Protocols/SvgPath/lvr-svg-path.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::SvgPath;
 

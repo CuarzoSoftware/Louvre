@@ -1,5 +1,5 @@
-#include <LCursorRole.h>
-#include <LSurface.h>
+#include <CZ/Louvre/Roles/LCursorRole.h>
+#include <CZ/Louvre/LSurface.h>
 
 using namespace Louvre;
 

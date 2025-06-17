@@ -1,8 +1,8 @@
 #ifndef LPOINTERPRIVATE_H
 #define LPOINTERPRIVATE_H
 
-#include <LSurface.h>
-#include <LPointer.h>
+#include <CZ/Louvre/LSurface.h>
+#include <CZ/Louvre/LPointer.h>
 #include <CZ/CZBitset.h>
 
 using namespace Louvre;

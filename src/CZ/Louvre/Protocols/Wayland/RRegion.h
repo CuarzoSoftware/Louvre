@@ -1,7 +1,7 @@
 #ifndef RREGION_H
 #define RREGION_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/skia/core/SkRegion.h>
 
 class Louvre::Protocols::Wayland::RRegion final : public LResource

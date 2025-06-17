@@ -4,7 +4,7 @@
 #include <CZ/Louvre/Protocols/XdgShell/RXdgSurface.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::XdgShell;
 

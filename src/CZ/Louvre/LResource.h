@@ -1,7 +1,7 @@
 #ifndef LRESOURCE_H
 #define LRESOURCE_H
 
-#include <LObject.h>
+#include <CZ/Louvre/LObject.h>
 #include <format>
 #include <string>
 

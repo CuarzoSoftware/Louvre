@@ -1,5 +1,5 @@
-#include <LGlobal.h>
-#include <LLog.h>
+#include <CZ/Louvre/LGlobal.h>
+#include <CZ/Louvre/LLog.h>
 
 using namespace Louvre;
 

@@ -4,7 +4,7 @@
 #include <CZ/skia/core/SkPoint.h>
 #include <CZ/skia/core/SkSize.h>
 #include <CZ/CZWeak.h>
-#include <LObject.h>
+#include <CZ/Louvre/LObject.h>
 #include <wayland-client.h>
 #include <mutex>
 #include <sys/poll.h>

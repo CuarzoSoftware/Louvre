@@ -1,13 +1,13 @@
 #include <CZ/Louvre/Protocols/Wayland/RTouch.h>
 #include <CZ/Louvre/Protocols/Wayland/GSeat.h>
-#include <LCompositor.h>
-#include <LTouchMoveEvent.h>
-#include <LTouchDownEvent.h>
-#include <LTouchPoint.h>
-#include <LTouchUpEvent.h>
-#include <LTouch.h>
-#include <LClient.h>
-#include <LSeat.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/Events/LTouchMoveEvent.h>
+#include <CZ/Louvre/Events/LTouchDownEvent.h>
+#include <CZ/Louvre/LTouchPoint.h>
+#include <CZ/Louvre/Events/LTouchUpEvent.h>
+#include <CZ/Louvre/LTouch.h>
+#include <CZ/Louvre/LClient.h>
+#include <CZ/Louvre/LSeat.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::Wayland;

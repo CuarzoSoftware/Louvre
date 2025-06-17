@@ -1,13 +1,13 @@
 #ifndef LOUTPUTPRIVATE_H
 #define LOUTPUTPRIVATE_H
 
-#include <LOutputFramebuffer.h>
-#include <LRenderBuffer.h>
-#include <LOutput.h>
+#include <CZ/Louvre/LOutputFramebuffer.h>
+#include <CZ/Louvre/LRenderBuffer.h>
+#include <CZ/Louvre/LOutput.h>
 #include <CZ/CZBitset.h>
-#include <LSurface.h>
-#include <LGammaTable.h>
-#include <LMargins.h>
+#include <CZ/Louvre/LSurface.h>
+#include <CZ/Louvre/LGammaTable.h>
+#include <CZ/Louvre/LMargins.h>
 #include <atomic>
 #include <list>
 #include <mutex>
@@ -84,15 +84,15 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     CZTransform transform { CZTransform::Normal };
 
     // Rect in surface coordinates
-    SkIRect rect;
+    SkIRect rect { 0, 0, 0, 0 };
 
     /* Size in buffer coorinates, width and height are swapped if transform has 90° rotation.
      * It also differs from the current mode size when using a fractional scale */
-    SkISize sizeB;
+    SkISize sizeB { 0, 0 };
 
     // Checked witin backend...GL() methods below, trigger resizeGL() and moveGL() when != to rect
-    SkIPoint lastPos;
-    SkISize lastSize;
+    SkIPoint lastPos { 0, 0 };
+    SkISize lastSize { 0, 0 };
 
     /* Damage set with LOutput::setBufferDamage(), used in fractional scaling with oversampling or when
      * the graphic backend uses DUMB buffers or CPU copy. */
@@ -119,7 +119,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
 
     UInt32 dirtyCursorFBs;
     UInt32 prevCursorSerial;
-    SkIRect prevCursorRect; // Local
+    SkIRect prevCursorRect { 0, 0, 0, 0 }; // Local
     SkRegion cursorDamage;
     void calculateCursorDamage() noexcept;
     void drawCursor() noexcept;
@@ -166,7 +166,7 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     void updateGlobals();
 
     std::list<LExclusiveZone*> exclusiveZones;
-    SkIRect availableGeometry;
+    SkIRect availableGeometry { 0, 0, 0, 0 };
     LMargins exclusiveEdges;
     void updateExclusiveZones() noexcept;
     void updateLayerSurfacesMapping() noexcept;

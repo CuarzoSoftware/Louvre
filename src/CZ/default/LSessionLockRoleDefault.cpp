@@ -1,6 +1,6 @@
-#include <LSessionLockRole.h>
-#include <LOutput.h>
-#include <LSurface.h>
+#include <CZ/Louvre/Roles/LSessionLockRole.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LSurface.h>
 
 using namespace Louvre;
 

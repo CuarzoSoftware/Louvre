@@ -1,7 +1,7 @@
 #ifndef RXDGOUTPUT_H
 #define RXDGOUTPUT_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::XdgOutput::RXdgOutput final : public LResource
@@ -16,7 +16,7 @@ public:
     /******************** EVENTS ********************/
 
     // Since 1
-    void logicalPosition(const SkIPoint &pos) noexcept;
+    void logicalPosition(SkIPoint pos) noexcept;
     void logicalSize(const SkISize &size) noexcept;
     void done() noexcept;
 

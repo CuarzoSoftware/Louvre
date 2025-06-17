@@ -7,7 +7,7 @@
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LToplevelRolePrivate.h>
 #include <CZ/Louvre/Private/LPopupRolePrivate.h>
-#include <LSubsurfaceRole.h>
+#include <CZ/Louvre/Roles/LSubsurfaceRole.h>
 
 using namespace Louvre::Protocols::XdgShell;
 

@@ -1,8 +1,8 @@
 #ifndef LINPUTDEVICE_H
 #define LINPUTDEVICE_H
 
-#include <LSeat.h>
-#include <LObject.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LObject.h>
 
 /**
  * @brief Input Device

@@ -1,7 +1,7 @@
 #ifndef RIMAGECAPTURESOURCE_H
 #define RIMAGECAPTURESOURCE_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::ImageCaptureSource::RImageCaptureSource final : public LResource

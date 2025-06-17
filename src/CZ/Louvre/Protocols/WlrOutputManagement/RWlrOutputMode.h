@@ -1,7 +1,7 @@
 #ifndef RWLROUTPUTMODE_H
 #define RWLROUTPUTMODE_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::WlrOutputManagement::RWlrOutputMode final : public LResource

@@ -1,7 +1,7 @@
 #ifndef LGLOBAL_H
 #define LGLOBAL_H
 
-#include <LObject.h>
+#include <CZ/Louvre/LObject.h>
 
 /**
  * @brief A Wayland protocol global.

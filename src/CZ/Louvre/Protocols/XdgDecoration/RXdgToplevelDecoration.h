@@ -1,7 +1,7 @@
 #ifndef RXDGTOPLEVELDECORATION_H
 #define RXDGTOPLEVELDECORATION_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::XdgDecoration::RXdgToplevelDecoration final : public LResource

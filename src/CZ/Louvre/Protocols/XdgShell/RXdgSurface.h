@@ -1,7 +1,7 @@
 #ifndef RXDGSURFACE_H
 #define RXDGSURFACE_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 #include <CZ/skia/core/SkRect.h>
 
@@ -61,8 +61,8 @@ private:
     CZWeak<LSurface> m_surface;
     CZWeak<RXdgPopup> m_xdgPopupRes;
     CZWeak<RXdgToplevel> m_xdgToplevelRes;
-    SkIRect m_currentWindowGeometry;
-    SkIRect m_pendingWindowGeometry;
+    SkIRect m_currentWindowGeometry { 0, 0, 0, 0 };
+    SkIRect m_pendingWindowGeometry { 0, 0, 0, 0 };
     bool m_windowGeometrySet { false };
     bool m_hasPendingWindowGeometry { false };
 };

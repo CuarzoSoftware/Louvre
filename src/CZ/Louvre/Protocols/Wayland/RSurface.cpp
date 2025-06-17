@@ -10,10 +10,10 @@
 #include <CZ/Louvre/Private/LOutputPrivate.h>
 #include <CZ/Louvre/Private/LSeatPrivate.h>
 #include <CZ/Louvre/Private/LFactory.h>
-#include <LCursorRole.h>
-#include <LDNDIconRole.h>
-#include <LBackgroundBlur.h>
-#include <LLog.h>
+#include <CZ/Louvre/Roles/LCursorRole.h>
+#include <CZ/Louvre/Roles/LDNDIconRole.h>
+#include <CZ/Louvre/LBackgroundBlur.h>
+#include <CZ/Louvre/LLog.h>
 
 using namespace Louvre::Protocols::Wayland;
 
@@ -489,7 +489,7 @@ void RSurface::damage(wl_client */*client*/, wl_resource *resource, Int32 x, Int
     if (height <= 0)
         return;
 
-    imp.pendingDamage.emplace_back(x, y, width, height);
+    imp.pendingDamage.emplace_back(SkIRect::MakeXYWH(x, y, width, height));
     imp.changesToNotify.add(Changes::DamageRegionChanged);
 }
 
@@ -574,7 +574,7 @@ void RSurface::damage_buffer(wl_client */*client*/, wl_resource *resource, Int32
         return;
 
     auto &imp { *static_cast<const RSurface*>(wl_resource_get_user_data(resource))->surface()->imp() };
-    imp.pendingDamageB.emplace_back(x, y, width, height);
+    imp.pendingDamageB.emplace_back(SkIRect::MakeXYWH(x, y, width, height));
     imp.changesToNotify.add(Changes::DamageRegionChanged);
 }
 #endif

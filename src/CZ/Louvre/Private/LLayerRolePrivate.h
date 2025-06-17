@@ -1,7 +1,7 @@
 #ifndef LLAYERROLEPRIVATE_H
 #define LLAYERROLEPRIVATE_H
 
-#include <LLayerRole.h>
+#include <CZ/Louvre/Roles/LLayerRole.h>
 
 using namespace Louvre;
 

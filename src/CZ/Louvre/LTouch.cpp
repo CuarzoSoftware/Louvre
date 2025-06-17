@@ -1,8 +1,8 @@
-#include <LTouchPoint.h>
-#include <LTouch.h>
-#include <LSeat.h>
-#include <LPointer.h>
-#include <LOutput.h>
+#include <CZ/Louvre/LTouchPoint.h>
+#include <CZ/Louvre/LTouch.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LPointer.h>
+#include <CZ/Louvre/LOutput.h>
 #include <cassert>
 
 using namespace Louvre;
@@ -26,7 +26,7 @@ LTouch::~LTouch() noexcept
     }
 }
 
-LSurface *LTouch::surfaceAt(const SkIPoint &point) const noexcept
+LSurface *LTouch::surfaceAt(SkIPoint point) const noexcept
 {
     return seat()->pointer()->surfaceAt(point);
 }
@@ -54,7 +54,7 @@ LTouchPoint *LTouch::findTouchPoint(Int32 id) const noexcept
     return nullptr;
 }
 
-SkPoint LTouch::toGlobal(LOutput *output, const SkPoint &touchPointPos) noexcept
+SkPoint LTouch::toGlobal(LOutput *output, SkPoint touchPointPos) noexcept
 {
     if (!output)
         return touchPointPos;

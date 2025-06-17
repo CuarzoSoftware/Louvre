@@ -6,7 +6,7 @@
 #include <CZ/Louvre/Private/LCursorPrivate.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
 #include <CZ/skia/core/SkRect.h>
-#include <LLog.h>
+#include <CZ/Louvre/LLog.h>
 
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>

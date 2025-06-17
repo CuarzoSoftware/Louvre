@@ -1,7 +1,7 @@
 #ifndef LCOLOR_H
 #define LCOLOR_H
 
-#include <LNamespaces.h>
+#include <CZ/Louvre/LNamespaces.h>
 
 namespace Louvre
 {

@@ -4,13 +4,13 @@
 #include <CZ/Louvre/Private/LPopupRolePrivate.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LPointerPrivate.h>
-#include <LPositioner.h>
-#include <LCompositor.h>
-#include <LOutput.h>
-#include <LSeat.h>
-#include <LPointer.h>
-#include <LKeyboard.h>
-#include <LTime.h>
+#include <CZ/Louvre/Roles/LPositioner.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LPointer.h>
+#include <CZ/Louvre/LKeyboard.h>
+#include <CZ/Louvre/LTime.h>
 #include <CZ/skia/core/SkRect.h>
 
 using namespace Louvre;
@@ -18,13 +18,13 @@ using namespace Louvre;
 struct Config
 {
     const LPopupRole *popup;
-    SkIRect finalRect;
-    SkIPoint parentPos;
+    SkIRect finalRect { SkIRect::MakeEmpty() };
+    SkIPoint parentPos { SkIPoint::Make(0, 0) };
     LPositioner::Gravity gravity;
     LPositioner::Anchor anchor;
-    SkIPoint anchorOrigin;
-    SkIPoint popupOrigin;
-    SkIPoint slide;
+    SkIPoint anchorOrigin { SkIPoint::Make(0, 0) };
+    SkIPoint popupOrigin { SkIPoint::Make(0, 0) };
+    SkIPoint slide { SkIPoint::Make(0, 0) };
 };
 
 static void invertAnchor(LPositioner::Anchor &anchor, bool x, bool y) noexcept
@@ -203,7 +203,7 @@ CZBitset<LEdge> LPopupRole::constrainedEdges(const SkIRect &rect) const noexcept
         if (rect.x() < bounds().x())
             edges.add(LEdgeLeft);
 
-        if (rect.x() + rect.width() > bounds().x() + bounds().width())
+        if (rect.right() > bounds().right())
             edges.add(LEdgeRight);
     }
 
@@ -212,7 +212,7 @@ CZBitset<LEdge> LPopupRole::constrainedEdges(const SkIRect &rect) const noexcept
         if (rect.y() < bounds().y())
             edges.add(LEdgeTop);
 
-        if (rect.y() + rect.height() > bounds().y() + bounds().height())
+        if (rect.bottom() > bounds().bottom())
             edges.add(LEdgeBottom);
     }
 
@@ -232,11 +232,7 @@ SkIRect LPopupRole::calculateUnconstrainedRect(const SkIPoint *futureParentPos) 
     conf.popup = this;
     conf.anchor = positioner().anchor();
     conf.gravity = positioner().gravity();
-    conf.finalRect.setXYWH(
-        conf.finalRect.x(),
-        conf.finalRect.y(),
-        positioner().size().width(),
-        positioner().size().height());
+    conf.finalRect.setSize(positioner().size());
 
     if (futureParentPos)
         conf.parentPos = *futureParentPos;
@@ -286,7 +282,7 @@ SkIRect LPopupRole::calculateUnconstrainedRect(const SkIPoint *futureParentPos) 
             if (constrained.has(LEdgeLeft))
                 conf.slide.fX = bounds().x() - conf.finalRect.x();
             else
-                conf.slide.fX = bounds().x() + bounds().width() - conf.finalRect.x() - conf.finalRect.width();
+                conf.slide.fX = bounds().right() - conf.finalRect.right();
 
             updateConfig(conf);
             constrained = constrainedEdges(conf.finalRect);
@@ -313,7 +309,7 @@ SkIRect LPopupRole::calculateUnconstrainedRect(const SkIPoint *futureParentPos) 
             }
             else if (constrained.has(LEdgeRight))
             {
-                conf.finalRect.fRight = bounds().x() + bounds().width();
+                conf.finalRect.fRight = bounds().right();
             }
 
             updateConfig(conf);
@@ -348,7 +344,7 @@ SkIRect LPopupRole::calculateUnconstrainedRect(const SkIPoint *futureParentPos) 
             if (constrained.has(LEdgeTop))
                 conf.slide.fY = bounds().y() - conf.finalRect.y();
             else // Bottom
-                conf.slide.fY = bounds().y() + bounds().height() - conf.finalRect.y() - conf.finalRect.height();
+                conf.slide.fY = bounds().bottom() - conf.finalRect.bottom();
 
             updateConfig(conf);
             constrained = constrainedEdges(conf.finalRect);
@@ -372,7 +368,9 @@ SkIRect LPopupRole::calculateUnconstrainedRect(const SkIPoint *futureParentPos) 
                 conf.slide.fY = bounds().y() - conf.finalRect.y();
             }
             else if (constrained.has(LEdgeBottom))
-                conf.finalRect.fBottom = bounds().y() + bounds().height();
+            {
+                conf.finalRect.fBottom = bounds().bottom();
+            }
 
             updateConfig(conf);
         }

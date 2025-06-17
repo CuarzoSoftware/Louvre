@@ -1,8 +1,8 @@
 #ifndef LCLIENTPRIVATE_H
 #define LCLIENTPRIVATE_H
 
-#include <LClient.h>
-#include <LClientCursor.h>
+#include <CZ/Louvre/LClient.h>
+#include <CZ/Louvre/LClientCursor.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols;

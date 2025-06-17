@@ -2,7 +2,7 @@
 #define LGAMMATABLE_H
 
 #include <CZ/Louvre/Protocols/GammaControl/RGammaControl.h>
-#include <LNamespaces.h>
+#include <CZ/Louvre/LNamespaces.h>
 #include <string.h>
 #include <CZ/CZWeak.h>
 

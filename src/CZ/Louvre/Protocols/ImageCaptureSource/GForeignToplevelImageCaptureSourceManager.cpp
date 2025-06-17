@@ -2,7 +2,7 @@
 #include <CZ/Louvre/Protocols/ImageCaptureSource/ext-image-capture-source-v1.h>
 #include <CZ/Louvre/Protocols/ImageCaptureSource/RImageCaptureSource.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::ImageCaptureSource;
 using namespace Louvre;

@@ -1,6 +1,6 @@
 #include <CZ/Louvre/Protocols/Wayland/RDataSource.h>
-#include <LClipboard.h>
-#include <LSeat.h>
+#include <CZ/Louvre/LClipboard.h>
+#include <CZ/Louvre/LSeat.h>
 #include <cassert>
 
 using namespace Louvre;

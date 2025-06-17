@@ -1,9 +1,9 @@
 #include <CZ/Louvre/Private/LSeatPrivate.h>
-#include <LToplevelMoveSession.h>
-#include <LPointerEnterEvent.h>
-#include <LCompositor.h>
-#include <LCursor.h>
-#include <LUtils.h>
+#include <CZ/Louvre/Roles/LToplevelMoveSession.h>
+#include <CZ/Louvre/Events/LPointerEnterEvent.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/LUtils.h>
 #include <algorithm>
 
 using namespace Louvre;
@@ -28,7 +28,7 @@ LToplevelMoveSession::~LToplevelMoveSession() noexcept
         LVectorRemoveOneUnordered(compositor()->seat()->imp()->moveSessions, this);
 }
 
-bool LToplevelMoveSession::start(const LEvent &triggeringEvent, const SkIPoint &initDragPoint)
+bool LToplevelMoveSession::start(const LEvent &triggeringEvent, SkIPoint initDragPoint)
 {
     if (m_isActive)
         return false;
@@ -41,7 +41,7 @@ bool LToplevelMoveSession::start(const LEvent &triggeringEvent, const SkIPoint &
     return true;
 }
 
-void LToplevelMoveSession::updateDragPoint(const SkIPoint &pos)
+void LToplevelMoveSession::updateDragPoint(SkIPoint pos)
 {
     if (!m_isActive)
         return;

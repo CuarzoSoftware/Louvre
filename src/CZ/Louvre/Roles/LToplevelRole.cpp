@@ -9,9 +9,9 @@
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LToplevelRolePrivate.h>
 #include <CZ/Louvre/Private/LSeatPrivate.h>
-#include <LForeignToplevelController.h>
-#include <LClient.h>
-#include <LCursor.h>
+#include <CZ/Louvre/Roles/LForeignToplevelController.h>
+#include <CZ/Louvre/LClient.h>
+#include <CZ/Louvre/LCursor.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::XdgShell;

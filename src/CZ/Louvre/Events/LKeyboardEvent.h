@@ -1,7 +1,7 @@
 #ifndef LKEYBOARDEVENT_H
 #define LKEYBOARDEVENT_H
 
-#include <LInputEvent.h>
+#include <CZ/Louvre/Events/LInputEvent.h>
 
 /**
  * @brief Base class for keyboard events.

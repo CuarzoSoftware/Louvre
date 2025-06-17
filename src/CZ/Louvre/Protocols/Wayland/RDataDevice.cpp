@@ -7,12 +7,12 @@
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LFactory.h>
-#include <LKeyboard.h>
-#include <LClipboard.h>
-#include <LDNDSession.h>
-#include <LDND.h>
-#include <LClient.h>
-#include <LLog.h>
+#include <CZ/Louvre/LKeyboard.h>
+#include <CZ/Louvre/LClipboard.h>
+#include <CZ/Louvre/LDNDSession.h>
+#include <CZ/Louvre/LDND.h>
+#include <CZ/Louvre/LClient.h>
+#include <CZ/Louvre/LLog.h>
 
 using namespace Louvre::Protocols::Wayland;
 

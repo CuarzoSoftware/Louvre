@@ -1,8 +1,8 @@
 #ifndef RPOINTER_H
 #define RPOINTER_H
 
-#include <LResource.h>
-#include <LPointer.h>
+#include <CZ/Louvre/LResource.h>
+#include <CZ/Louvre/LPointer.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::Wayland::RPointer final : public LResource

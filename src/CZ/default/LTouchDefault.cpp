@@ -1,20 +1,20 @@
-#include <LSessionLockManager.h>
-#include <LTouchDownEvent.h>
-#include <LTouchMoveEvent.h>
-#include <LTouchUpEvent.h>
-#include <LTouchFrameEvent.h>
-#include <LTouchCancelEvent.h>
-#include <LToplevelResizeSession.h>
-#include <LToplevelMoveSession.h>
-#include <LTouchPoint.h>
-#include <LTouch.h>
-#include <LKeyboard.h>
-#include <LDNDIconRole.h>
-#include <LDND.h>
-#include <LCursor.h>
-#include <LOutput.h>
-#include <LSurface.h>
-#include <LSeat.h>
+#include <CZ/Louvre/LSessionLockManager.h>
+#include <CZ/Louvre/Events/LTouchDownEvent.h>
+#include <CZ/Louvre/Events/LTouchMoveEvent.h>
+#include <CZ/Louvre/Events/LTouchUpEvent.h>
+#include <CZ/Louvre/Events/LTouchFrameEvent.h>
+#include <CZ/Louvre/Events/LTouchCancelEvent.h>
+#include <CZ/Louvre/Roles/LToplevelResizeSession.h>
+#include <CZ/Louvre/Roles/LToplevelMoveSession.h>
+#include <CZ/Louvre/LTouchPoint.h>
+#include <CZ/Louvre/LTouch.h>
+#include <CZ/Louvre/LKeyboard.h>
+#include <CZ/Louvre/Roles/LDNDIconRole.h>
+#include <CZ/Louvre/LDND.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LSurface.h>
+#include <CZ/Louvre/LSeat.h>
 
 using namespace Louvre;
 

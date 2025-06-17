@@ -1,7 +1,7 @@
 #ifndef LTEXTURE_H
 #define LTEXTURE_H
 
-#include <LObject.h>
+#include <CZ/Louvre/LObject.h>
 #include <CZ/skia/core/SkRect.h>
 #include <CZ/CZWeak.h>
 

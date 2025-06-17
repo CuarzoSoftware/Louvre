@@ -2,7 +2,7 @@
 #define LSESSIONLOCKROLE_H
 
 #include <CZ/skia/core/SkSize.h>
-#include <LBaseSurfaceRole.h>
+#include <CZ/Louvre/Roles/LBaseSurfaceRole.h>
 #include <queue>
 
 /**

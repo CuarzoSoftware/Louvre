@@ -1,10 +1,10 @@
 #ifndef LTOUCHPOINT_H
 #define LTOUCHPOINT_H
 
-#include <LTouchDownEvent.h>
-#include <LTouchMoveEvent.h>
-#include <LTouchUpEvent.h>
-#include <LObject.h>
+#include <CZ/Louvre/Events/LTouchDownEvent.h>
+#include <CZ/Louvre/Events/LTouchMoveEvent.h>
+#include <CZ/Louvre/Events/LTouchUpEvent.h>
+#include <CZ/Louvre/LObject.h>
 #include <CZ/CZWeak.h>
 
 /**
@@ -97,7 +97,7 @@ public:
      *
      * @return A constant reference to the position of the touch point.
      */
-    const SkPoint &pos() const noexcept
+    SkPoint pos() const noexcept
     {
         return m_pos;
     }

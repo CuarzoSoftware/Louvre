@@ -1,7 +1,7 @@
 #ifndef LGLFRAMEBUFFER_H
 #define LGLFRAMEBUFFER_H
 
-#include <LFramebuffer.h>
+#include <CZ/Louvre/LFramebuffer.h>
 #include <CZ/skia/core/SkRect.h>
 
 /**
@@ -104,8 +104,8 @@ private:
             Float32(m_sizeB.width())/m_scale,
             Float32(m_sizeB.height())/m_scale);
     }
-    SkIRect m_rect;
-    SkISize m_sizeB;
+    SkIRect m_rect { 0, 0, 0, 0 };
+    SkISize m_sizeB { 0, 0 };
     GLuint m_fbId;
     Float32 m_scale;
 };

@@ -1,7 +1,7 @@
 #ifndef GPOINTERCONSTRAINTS_H
 #define GPOINTERCONSTRAINTS_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::PointerConstraints::GPointerConstraints final : public LResource
 {

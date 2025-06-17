@@ -1,8 +1,8 @@
 #ifndef RLAYERSURFACE_H
 #define RLAYERSURFACE_H
 
-#include <LResource.h>
-#include <LLayout.h>
+#include <CZ/Louvre/LResource.h>
+#include <CZ/Louvre/LLayout.h>
 #include <CZ/CZWeak.h>
 #include <memory>
 

@@ -1,7 +1,7 @@
 #ifndef LPOINTEREVENT_H
 #define LPOINTEREVENT_H
 
-#include <LInputEvent.h>
+#include <CZ/Louvre/Events/LInputEvent.h>
 
 /**
  * @brief Base class for pointer events.

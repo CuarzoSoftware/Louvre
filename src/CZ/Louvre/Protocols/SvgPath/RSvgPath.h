@@ -1,8 +1,8 @@
 #ifndef RSVGPATH_H
 #define RSVGPATH_H
 
-#include <LBackgroundBlur.h>
-#include <LResource.h>
+#include <CZ/Louvre/LBackgroundBlur.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::SvgPath::RSvgPath final : public LResource
 {

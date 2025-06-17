@@ -1,7 +1,7 @@
 #ifndef RLINUXDMABUFFEEDBACK_H
 #define RLINUXDMABUFFEEDBACK_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::LinuxDMABuf::RLinuxDMABufFeedback final : public LResource
 {

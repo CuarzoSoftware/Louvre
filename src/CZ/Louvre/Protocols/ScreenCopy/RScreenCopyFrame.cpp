@@ -6,8 +6,8 @@
 #include <CZ/Louvre/Private/LOutputPrivate.h>
 #include <CZ/Louvre/Private/LPainterPrivate.h>
 #include <CZ/Utils/CZRegionUtils.h>
-#include <LOutputMode.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LOutputMode.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::ScreenCopy;
 

@@ -2,7 +2,7 @@
 #include <CZ/Louvre/Protocols/GammaControl/GGammaControlManager.h>
 #include <CZ/Louvre/Protocols/GammaControl/RGammaControl.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::GammaControl;
 

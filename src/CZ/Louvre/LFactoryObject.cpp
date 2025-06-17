@@ -1,5 +1,5 @@
 #include <CZ/Louvre/Private/LFactory.h>
-#include <LFactoryObject.h>
+#include <CZ/Louvre/LFactoryObject.h>
 #include <cassert>
 
 using namespace Louvre;

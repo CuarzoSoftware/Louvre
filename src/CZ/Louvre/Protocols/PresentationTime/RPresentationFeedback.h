@@ -1,7 +1,7 @@
 #ifndef RPRESENTATIONFEEDBACK_H
 #define RPRESENTATIONFEEDBACK_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::PresentationTime::RPresentationFeedback final : public LResource

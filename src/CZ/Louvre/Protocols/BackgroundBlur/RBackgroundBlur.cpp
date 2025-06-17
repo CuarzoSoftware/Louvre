@@ -3,7 +3,7 @@
 #include <CZ/Louvre/Protocols/SvgPath/RSvgPath.h>
 #include <CZ/Louvre/Protocols/Wayland/RSurface.h>
 #include <CZ/Louvre/Protocols/Wayland/RRegion.h>
-#include <LSurface.h>
+#include <CZ/Louvre/LSurface.h>
 
 using namespace Louvre::Protocols::BackgroundBlur;
 
@@ -192,7 +192,7 @@ void RBackgroundBlur::set_round_rect_mask(wl_client */*client*/, wl_resource *re
 
     auto &blur { *res.surfaceRes()->surface()->backgroundBlur() };
 
-    const LRRect newRRect { {x, y, width, height}, radTL, radTR, radBR, radBL };
+    const LRRect newRRect { SkIRect::MakeXYWH(x, y, width, height), radTL, radTR, radBR, radBL };
 
     if (!newRRect.isValid())
     {

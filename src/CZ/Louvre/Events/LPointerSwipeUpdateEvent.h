@@ -1,9 +1,9 @@
 #ifndef LPOINTERSWIPEUPDATEEVENT_H
 #define LPOINTERSWIPEUPDATEEVENT_H
 
-#include <LPointerEvent.h>
+#include <CZ/Louvre/Events/LPointerEvent.h>
 #include <CZ/skia/core/SkPoint.h>
-#include <LTime.h>
+#include <CZ/Louvre/LTime.h>
 
 /**
  * @brief Pointer swipe update gesture event.
@@ -22,7 +22,7 @@ public:
      * @param us The microsecond timestamp of the event.
      * @param device The input device that originated the event.
      */
-    LPointerSwipeUpdateEvent(UInt32 fingers = 0, const SkPoint &delta = SkPoint(0.f, 0.f), const SkPoint &deltaUnaccelerated = SkPoint(0.f, 0.f),
+    LPointerSwipeUpdateEvent(UInt32 fingers = 0, SkPoint delta = SkPoint(0.f, 0.f), SkPoint deltaUnaccelerated = SkPoint(0.f, 0.f),
                                     UInt32 serial = LTime::nextSerial(), UInt32 ms = LTime::ms(), UInt64 us = LTime::us(), LInputDevice *device = nullptr) noexcept :
         LPointerEvent(LEvent::Subtype::SwipeUpdate, serial, ms, us, device),
         m_fingers(fingers),
@@ -49,7 +49,7 @@ public:
     /**
      * @brief Sets the change in position of the swipe gesture.
      */
-    void setDelta(const SkPoint &delta) noexcept
+    void setDelta(SkPoint delta) noexcept
     {
         m_delta = delta;
     }
@@ -81,7 +81,7 @@ public:
     /**
      * @brief Sets the unaccelerated change in position of the swipe gesture.
      */
-    void setDeltaUnaccelerated(const SkPoint &deltaUnaccelerated) noexcept
+    void setDeltaUnaccelerated(SkPoint deltaUnaccelerated) noexcept
     {
         m_deltaUnaccelerated = deltaUnaccelerated;
     }

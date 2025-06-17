@@ -2,7 +2,7 @@
 #include <CZ/Louvre/Protocols/RelativePointer/GRelativePointerManager.h>
 #include <CZ/Louvre/Protocols/RelativePointer/RRelativePointer.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::RelativePointer;
 

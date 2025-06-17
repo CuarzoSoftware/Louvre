@@ -1,9 +1,9 @@
 #ifndef GDRMLEASEDEVICE_H
 #define GDRMLEASEDEVICE_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
-#include <LGPU.h>
+#include <CZ/Louvre/LGPU.h>
 
 class Louvre::Protocols::DRMLease::GDRMLeaseDevice final : public LResource
 {

@@ -1,7 +1,7 @@
 #ifndef LPOPUPROLEPRIVATE_H
 #define LPOPUPROLEPRIVATE_H
 
-#include <LPopupRole.h>
+#include <CZ/Louvre/Roles/LPopupRole.h>
 
 using namespace Louvre;
 

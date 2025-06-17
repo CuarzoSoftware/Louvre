@@ -1,7 +1,7 @@
 #ifndef RGESTURESWIPE_H
 #define RGESTURESWIPE_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::PointerGestures::RGestureSwipe final : public LResource

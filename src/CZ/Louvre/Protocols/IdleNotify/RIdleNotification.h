@@ -1,9 +1,9 @@
 #ifndef RIDLENOTIFICATION_H
 #define RIDLENOTIFICATION_H
 
-#include <LIdleListener.h>
-#include <LResource.h>
-#include <LTimer.h>
+#include <CZ/Louvre/LIdleListener.h>
+#include <CZ/Louvre/LResource.h>
+#include <CZ/Louvre/LTimer.h>
 
 class Louvre::Protocols::IdleNotify::RIdleNotification final : public LResource
 {

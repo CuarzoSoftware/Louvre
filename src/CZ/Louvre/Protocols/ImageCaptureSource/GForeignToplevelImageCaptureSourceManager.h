@@ -1,7 +1,7 @@
 #ifndef GFOREIGNTOPLEVELIMAGECAPTURESOURCEMANAGER_H
 #define GFOREIGNTOPLEVELIMAGECAPTURESOURCEMANAGER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::ImageCaptureSource::GForeignToplevelImageCaptureSourceManager final : public LResource
 {

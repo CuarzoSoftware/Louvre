@@ -1,8 +1,8 @@
 #ifndef LPOINTERHOLDENDEVENT_H
 #define LPOINTERHOLDENDEVENT_H
 
-#include <LPointerEvent.h>
-#include <LTime.h>
+#include <CZ/Louvre/Events/LPointerEvent.h>
+#include <CZ/Louvre/LTime.h>
 
 /**
  * @brief Pointer hold end gesture event.

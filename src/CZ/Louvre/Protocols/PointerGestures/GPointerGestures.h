@@ -1,7 +1,7 @@
 #ifndef GPOINTERGESTURES_H
 #define GPOINTERGESTURES_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::PointerGestures::GPointerGestures final : public LResource
 {

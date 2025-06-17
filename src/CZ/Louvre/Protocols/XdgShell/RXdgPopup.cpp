@@ -6,10 +6,10 @@
 #include <CZ/Louvre/Private/LPopupRolePrivate.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LFactory.h>
-#include <LKeyboard.h>
-#include <LCompositor.h>
-#include <LClient.h>
-#include <LLog.h>
+#include <CZ/Louvre/LKeyboard.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LClient.h>
+#include <CZ/Louvre/LLog.h>
 
 using namespace Louvre::Protocols::XdgShell;
 

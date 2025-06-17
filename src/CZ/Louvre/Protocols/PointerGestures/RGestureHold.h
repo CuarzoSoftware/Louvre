@@ -1,7 +1,7 @@
 #ifndef RGESTUREHOLD_H
 #define RGESTUREHOLD_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::PointerGestures::RGestureHold final : public LResource

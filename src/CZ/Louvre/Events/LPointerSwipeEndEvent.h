@@ -1,8 +1,8 @@
 #ifndef LPOINTERSWIPEENDEVENT_H
 #define LPOINTERSWIPEENDEVENT_H
 
-#include <LPointerEvent.h>
-#include <LTime.h>
+#include <CZ/Louvre/Events/LPointerEvent.h>
+#include <CZ/Louvre/LTime.h>
 
 /**
  * @brief Pointer swipe end gesture event.

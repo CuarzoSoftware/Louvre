@@ -2,8 +2,8 @@
 #include <CZ/Louvre/Protocols/GammaControl/RGammaControl.h>
 #include <CZ/Louvre/Protocols/Wayland/GOutput.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
-#include <LCompositor.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LUtils.h>
 #include <fcntl.h>
 
 using namespace Louvre::Protocols::GammaControl;

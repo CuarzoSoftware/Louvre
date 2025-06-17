@@ -1,7 +1,7 @@
-#include <LTouchEvent.h>
-#include <LTouchDownEvent.h>
-#include <LTouchMoveEvent.h>
-#include <LTouchUpEvent.h>
+#include <CZ/Louvre/Events/LTouchEvent.h>
+#include <CZ/Louvre/Events/LTouchDownEvent.h>
+#include <CZ/Louvre/Events/LTouchMoveEvent.h>
+#include <CZ/Louvre/Events/LTouchUpEvent.h>
 
 using namespace Louvre;
 

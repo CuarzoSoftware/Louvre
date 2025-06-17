@@ -6,8 +6,8 @@
 #include <CZ/Louvre/Protocols/Wayland/RSurface.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
-#include <LSessionLockManager.h>
-#include <LSessionLockRole.h>
+#include <CZ/Louvre/LSessionLockManager.h>
+#include <CZ/Louvre/Roles/LSessionLockRole.h>
 
 using namespace Louvre::Protocols::SessionLock;
 

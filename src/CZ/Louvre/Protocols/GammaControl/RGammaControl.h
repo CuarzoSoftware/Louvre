@@ -1,7 +1,7 @@
 #ifndef RGAMMACONTROL_H
 #define RGAMMACONTROL_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::GammaControl::RGammaControl final : public LResource

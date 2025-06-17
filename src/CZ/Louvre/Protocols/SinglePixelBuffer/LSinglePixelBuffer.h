@@ -1,7 +1,7 @@
 #ifndef LSINGLEPIXELBUFFER_H
 #define LSINGLEPIXELBUFFER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::LSinglePixelBuffer final : public LResource
 {

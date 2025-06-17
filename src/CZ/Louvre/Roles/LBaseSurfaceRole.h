@@ -1,7 +1,7 @@
 #ifndef LBASESURFACEROLE_H
 #define LBASESURFACEROLE_H
 
-#include <LFactoryObject.h>
+#include <CZ/Louvre/LFactoryObject.h>
 #include <CZ/CZWeak.h>
 #include <CZ/skia/core/SkPoint.h>
 
@@ -139,7 +139,6 @@ public:
 protected:
     friend class Protocols::Wayland::RSurface;
     friend class Louvre::LSurface;
-    mutable SkIPoint m_rolePos { 0, 0 };
 
     /**
      * @brief Asks if the surface commit should be processed.

@@ -3,10 +3,10 @@
 
 /// @cond OMIT
 
-#include <LDND.h>
-#include <LSeat.h>
-#include <LSurface.h>
-#include <LDNDIconRole.h>
+#include <CZ/Louvre/LDND.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LSurface.h>
+#include <CZ/Louvre/Roles/LDNDIconRole.h>
 #include <CZ/Louvre/Protocols/Wayland/RDataOffer.h>
 #include <CZ/Louvre/Protocols/Wayland/RDataSource.h>
 #include <CZ/Louvre/Protocols/Wayland/RDataDevice.h>

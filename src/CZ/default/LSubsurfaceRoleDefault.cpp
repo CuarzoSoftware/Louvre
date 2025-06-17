@@ -1,6 +1,6 @@
-#include <LSubsurfaceRole.h>
-#include <LSurface.h>
-#include <LCompositor.h>
+#include <CZ/Louvre/Roles/LSubsurfaceRole.h>
+#include <CZ/Louvre/LSurface.h>
+#include <CZ/Louvre/LCompositor.h>
 
 using namespace Louvre;
 

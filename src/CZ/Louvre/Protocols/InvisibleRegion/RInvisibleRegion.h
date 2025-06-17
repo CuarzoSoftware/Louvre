@@ -1,7 +1,7 @@
 #ifndef RINVISIBLEREGION_H
 #define RINVISIBLEREGION_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::InvisibleRegion::RInvisibleRegion final : public LResource

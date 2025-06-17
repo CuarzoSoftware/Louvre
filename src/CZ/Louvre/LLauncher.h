@@ -1,7 +1,7 @@
 #ifndef LLAUNCHER_H
 #define LLAUNCHER_H
 
-#include <LNamespaces.h>
+#include <CZ/Louvre/LNamespaces.h>
 #include <string>
 
 /**

@@ -1,7 +1,7 @@
 #ifndef LCURSOR_H
 #define LCURSOR_H
 
-#include <LObject.h>
+#include <CZ/Louvre/LObject.h>
 #include <CZ/skia/core/SkPoint.h>
 #include <CZ/CZWeak.h>
 #include <memory>
@@ -41,7 +41,7 @@ public:
      *
      * @note Louvre automatically repositions the cursor if the specified position is not within any output.
      */
-    void setPos(const SkPoint &pos) noexcept;
+    void setPos(SkPoint pos) noexcept;
 
     /**
      * @brief Set the cursor position.
@@ -53,7 +53,7 @@ public:
     /**
      * @brief Gets the current cursor position in compositor-global coordinates.
      */
-    const SkPoint &pos() const noexcept
+    SkPoint pos() const noexcept
     {
         return m_pos;
     }
@@ -75,7 +75,7 @@ public:
      *
      * @see move()
      */
-    void move(const SkPoint &delta) noexcept;
+    void move(SkPoint delta) noexcept;
 
     /**
      * @brief Gets the cursor rect on the screen.
@@ -158,7 +158,7 @@ public:
      * @param texture Texture to assign.
      * @param hotspot Cursor hotspot in buffer coordinates.
      */
-    void setTextureB(const LTexture *texture, const SkPoint &hotspot) noexcept;
+    void setTextureB(const LTexture *texture, SkPoint hotspot) noexcept;
 
     /**
      * @brief Restores the default cursor.
@@ -181,7 +181,7 @@ public:
      *
      * @param hotspot The hotspot position for the new cursor in buffer coordinates.
      */
-    void replaceDefaultB(const LTexture *texture, const SkPoint &hotspot) noexcept;
+    void replaceDefaultB(const LTexture *texture, SkPoint hotspot) noexcept;
 
     /**
      * @brief Gets the default cursor texture.
@@ -199,7 +199,7 @@ public:
      * The hotspot that has been set using replaceDefaultB().\n
      * Initially set to (8, 8).
      */
-    const SkPoint &defaultHotspotB() const noexcept;
+    SkPoint defaultHotspotB() const noexcept;
 
     /**
      * @brief Default Louvre's cursor texture.
@@ -219,12 +219,12 @@ public:
      *
      * @param hotspot The desired hotspot in buffer coordinates.
      */
-    void setHotspotB(const SkPoint &hotspot) noexcept;
+    void setHotspotB(SkPoint hotspot) noexcept;
 
     /**
      * @brief Gets the current cursor hotspot in buffer coordinates.
      */
-    const SkPoint &hotspotB() const noexcept;
+    SkPoint hotspotB() const noexcept;
 
     /**
      * @brief Enables or disables LCursor for the specified output.

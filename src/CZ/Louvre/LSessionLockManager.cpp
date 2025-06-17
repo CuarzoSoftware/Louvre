@@ -1,8 +1,8 @@
 #include <CZ/Louvre/Protocols/SessionLock/RSessionLock.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
-#include <LSessionLockManager.h>
-#include <LSessionLockRole.h>
+#include <CZ/Louvre/LSessionLockManager.h>
+#include <CZ/Louvre/Roles/LSessionLockRole.h>
 #include <cassert>
 
 using namespace Louvre;

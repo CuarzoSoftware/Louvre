@@ -1,9 +1,9 @@
 #ifndef LTOUCHMOVEEVENT_H
 #define LTOUCHMOVEEVENT_H
 
-#include <LTouchEvent.h>
+#include <CZ/Louvre/Events/LTouchEvent.h>
 #include <CZ/skia/core/SkPoint.h>
-#include <LTime.h>
+#include <CZ/Louvre/LTime.h>
 
 /**
  * @brief Touch move event.
@@ -66,7 +66,7 @@ public:
      *
      * @note The position is typically normalized to the range [0, 1] for both axes.
      */
-    const SkPoint &pos() const noexcept
+    SkPoint pos() const noexcept
     {
         return m_pos;
     }

@@ -1,7 +1,7 @@
 #ifndef LX11CURSOR_H
 #define LX11CURSOR_H
 
-#include <LTexture.h>
+#include <CZ/Louvre/LTexture.h>
 
 /**
  * @brief An XCursor icon.
@@ -58,7 +58,7 @@ public:
     /**
      * @brief Gets the cursor's hotspot in buffer coordinates.
      */
-    const SkIPoint &hotspotB() const noexcept
+    SkIPoint hotspotB() const noexcept
     {
         return m_hotspotB;
     }

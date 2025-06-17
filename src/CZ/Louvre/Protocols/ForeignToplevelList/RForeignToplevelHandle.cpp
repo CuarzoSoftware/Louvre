@@ -2,7 +2,7 @@
 #include <CZ/Louvre/Protocols/ForeignToplevelList/GForeignToplevelList.h>
 #include <CZ/Louvre/Protocols/ForeignToplevelList/ext-foreign-toplevel-list-v1.h>
 #include <CZ/Louvre/LUtils.h>
-#include <LToplevelRole.h>
+#include <CZ/Louvre/Roles/LToplevelRole.h>
 
 using namespace Louvre::Protocols::ForeignToplevelList;
 

@@ -8,20 +8,20 @@
 #include <CZ/Louvre/Private/LCursorPrivate.h>
 #include <CZ/Louvre/Protocols/Wayland/GOutput.h>
 
-#include <LIdleListener.h>
-#include <LAnimation.h>
-#include <LNamespaces.h>
-#include <LPopupRole.h>
-#include <LToplevelRole.h>
-#include <LCursor.h>
-#include <LSubsurfaceRole.h>
-#include <LPointer.h>
-#include <LKeyboard.h>
-#include <LDND.h>
-#include <LGlobal.h>
-#include <LLog.h>
-#include <LTime.h>
-#include <LTimer.h>
+#include <CZ/Louvre/LIdleListener.h>
+#include <CZ/Louvre/LAnimation.h>
+#include <CZ/Louvre/LNamespaces.h>
+#include <CZ/Louvre/Roles/LPopupRole.h>
+#include <CZ/Louvre/Roles/LToplevelRole.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/Roles/LSubsurfaceRole.h>
+#include <CZ/Louvre/LPointer.h>
+#include <CZ/Louvre/LKeyboard.h>
+#include <CZ/Louvre/LDND.h>
+#include <CZ/Louvre/LGlobal.h>
+#include <CZ/Louvre/LLog.h>
+#include <CZ/Louvre/LTime.h>
+#include <CZ/Louvre/LTimer.h>
 
 #include <sys/eventfd.h>
 #include <poll.h>

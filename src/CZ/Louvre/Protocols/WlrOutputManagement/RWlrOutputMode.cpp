@@ -1,8 +1,8 @@
 #include <CZ/Louvre/Protocols/WlrOutputManagement/wlr-output-management-unstable-v1.h>
 #include <CZ/Louvre/Protocols/WlrOutputManagement/RWlrOutputHead.h>
 #include <CZ/Louvre/Protocols/WlrOutputManagement/RWlrOutputMode.h>
-#include <LOutputMode.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LOutputMode.h>
+#include <CZ/Louvre/LUtils.h>
 #include <CZ/skia/core/SkSize.h>
 
 using namespace Louvre;

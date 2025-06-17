@@ -1,8 +1,8 @@
 #ifndef LKEYBOARDLEAVEEVENT_H
 #define LKEYBOARDLEAVEEVENT_H
 
-#include <LKeyboardEvent.h>
-#include <LTime.h>
+#include <CZ/Louvre/Events/LKeyboardEvent.h>
+#include <CZ/Louvre/LTime.h>
 
 /**
  * @brief Event generated when a surface or view loses keyboard focus.

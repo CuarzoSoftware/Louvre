@@ -172,7 +172,7 @@ public:
      *
      * Additional offset in surface coordinates added to the final calculated position.
      */
-    const SkIPoint &offset() const noexcept
+    SkIPoint offset() const noexcept
     {
         return m_offset;
     }
@@ -276,16 +276,16 @@ private:
     friend class LPopupRole;
     friend class Protocols::XdgShell::RXdgPositioner;
 
-    SkISize m_size;
-    SkIRect m_anchorRect;
-    SkIPoint m_offset;
+    SkISize m_size { 0, 0 };
+    SkIRect m_anchorRect { 0, 0, 0, 0 };
+    SkIPoint m_offset { 0, 0 };
 
     Anchor m_anchor { Anchor::NoAnchor };
     Gravity m_gravity { Gravity::NoGravity };
     CZBitset<ConstraintAdjustments> m_constraintAdjustments { ConstraintAdjustments::NoAdjustment };
 
     // Since 3
-    SkISize m_parentSize;
+    SkISize m_parentSize { 0, 0 };
     UInt32 m_parentConfigureSerial;
     bool m_reactive { false };
     bool m_hasParentSize { false };

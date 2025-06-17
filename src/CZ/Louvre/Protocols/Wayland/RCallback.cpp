@@ -1,5 +1,5 @@
 #include <CZ/Louvre/Protocols/Wayland/RCallback.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::Wayland;
 

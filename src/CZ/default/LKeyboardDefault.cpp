@@ -1,15 +1,15 @@
-#include <LSessionLockManager.h>
-#include <LSessionLockRole.h>
-#include <LKeyboardKeyEvent.h>
-#include <LKeyboard.h>
-#include <LCompositor.h>
-#include <LSeat.h>
-#include <LDND.h>
-#include <LClient.h>
-#include <LCursor.h>
-#include <LOutput.h>
-#include <LLauncher.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LSessionLockManager.h>
+#include <CZ/Louvre/Roles/LSessionLockRole.h>
+#include <CZ/Louvre/Events/LKeyboardKeyEvent.h>
+#include <CZ/Louvre/LKeyboard.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LDND.h>
+#include <CZ/Louvre/LClient.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LLauncher.h>
+#include <CZ/Louvre/LUtils.h>
 #include <unistd.h>
 
 using namespace Louvre;

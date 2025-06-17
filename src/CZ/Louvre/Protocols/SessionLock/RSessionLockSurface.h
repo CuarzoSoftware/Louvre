@@ -1,7 +1,7 @@
 #ifndef RSESSIONLOCKSURFACE_H
 #define RSESSIONLOCKSURFACE_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 #include <memory>
 

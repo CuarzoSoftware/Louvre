@@ -1,5 +1,5 @@
-#include <LXCursor.h>
-#include <LLog.h>
+#include <CZ/Louvre/LXCursor.h>
+#include <CZ/Louvre/LLog.h>
 #include <X11/Xcursor/Xcursor.h>
 
 using namespace Louvre;

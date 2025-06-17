@@ -1,7 +1,7 @@
 #ifndef RXDGTOPLEVEL_H
 #define RXDGTOPLEVEL_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 #include <memory>
 

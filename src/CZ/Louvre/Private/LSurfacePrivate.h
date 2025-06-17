@@ -5,7 +5,7 @@
 #include <CZ/Louvre/Protocols/Viewporter/RViewport.h>
 #include <CZ/Louvre/Protocols/Wayland/RSurface.h>
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
-#include <LSurface.h>
+#include <CZ/Louvre/LSurface.h>
 #include <CZ/CZBitset.h>
 #include <vector>
 
@@ -87,11 +87,11 @@ LPRIVATE_CLASS(LSurface)
     CZWeak<Protocols::PointerConstraints::RLockedPointer> lockedPointerRes;
     CZWeak<Protocols::PointerConstraints::RConfinedPointer> confinedPointerRes;
 
-    SkRect srcRect                          { 0, 0, 1, 1 };
+    SkRect srcRect                            { 0, 0, 1, 1 };
     SkISize size                              { 1, 1 };
     SkISize sizeB                             { 1, 1 };
-    SkIPoint pos;
-    LTexture *texture                       { nullptr };
+    SkIPoint pos                              { 0, 0 };
+    LTexture *texture                         { nullptr };
     SkRegion currentDamage;
     SkRegion currentTranslucentRegion;
     SkRegion currentOpaqueRegion;

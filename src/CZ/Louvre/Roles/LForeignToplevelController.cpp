@@ -1,7 +1,7 @@
 #include <CZ/Louvre/Protocols/ForeignToplevelManagement/RForeignToplevelHandle.h>
-#include <LForeignToplevelController.h>
-#include <LToplevelRole.h>
-#include <LUtils.h>
+#include <CZ/Louvre/Roles/LForeignToplevelController.h>
+#include <CZ/Louvre/Roles/LToplevelRole.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::ForeignToplevelManagement;

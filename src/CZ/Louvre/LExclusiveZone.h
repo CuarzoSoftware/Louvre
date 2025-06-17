@@ -1,10 +1,10 @@
 #ifndef LEXCLUSIVEZONE_H
 #define LEXCLUSIVEZONE_H
 
-#include <LObject.h>
+#include <CZ/Louvre/LObject.h>
 #include <CZ/CZWeak.h>
 #include <CZ/skia/core/SkRect.h>
-#include <LEdge.h>
+#include <CZ/Louvre/LEdge.h>
 #include <functional>
 #include <list>
 
@@ -201,8 +201,8 @@ private:
     void update() noexcept;
     CZWeak<LOutput> m_output;
     LEdge m_edge;
-    Int32 m_size;
-    SkIRect m_rect;
+    Int32 m_size { 0 };
+    SkIRect m_rect { 0, 0, 0, 0 };
     mutable std::list<LExclusiveZone*>::iterator m_outputLink;
     OnRectChangeCallback m_onRectChangeCallback { nullptr };
 };

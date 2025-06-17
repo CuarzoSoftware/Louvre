@@ -1,8 +1,8 @@
 #ifndef RXDGPOSITIONER_H
 #define RXDGPOSITIONER_H
 
-#include <LResource.h>
-#include <LPositioner.h>
+#include <CZ/Louvre/LResource.h>
+#include <CZ/Louvre/Roles/LPositioner.h>
 
 class Louvre::Protocols::XdgShell::RXdgPositioner final : public LResource
 {

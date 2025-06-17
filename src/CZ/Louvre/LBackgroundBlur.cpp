@@ -1,7 +1,7 @@
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 #include <CZ/Louvre/Protocols/BackgroundBlur/RBackgroundBlur.h>
-#include <LBackgroundBlur.h>
-#include <LTime.h>
+#include <CZ/Louvre/LBackgroundBlur.h>
+#include <CZ/Louvre/LTime.h>
 
 using namespace Louvre;
 

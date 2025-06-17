@@ -1,7 +1,7 @@
-#include <LPointerScrollEvent.h>
-#include <LCompositor.h>
-#include <LPointer.h>
-#include <LSeat.h>
+#include <CZ/Louvre/Events/LPointerScrollEvent.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LPointer.h>
+#include <CZ/Louvre/LSeat.h>
 
 using namespace Louvre;
 

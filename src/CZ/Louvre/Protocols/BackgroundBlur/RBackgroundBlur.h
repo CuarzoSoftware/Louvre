@@ -1,8 +1,8 @@
 #ifndef RBACKGROUNDBLUR_H
 #define RBACKGROUNDBLUR_H
 
-#include <LBackgroundBlur.h>
-#include <LResource.h>
+#include <CZ/Louvre/LBackgroundBlur.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::BackgroundBlur::RBackgroundBlur final : public LResource

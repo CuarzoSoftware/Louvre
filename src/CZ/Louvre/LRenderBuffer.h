@@ -1,8 +1,8 @@
 #ifndef LRENDERBUFFER_H
 #define LRENDERBUFFER_H
 
-#include <LTexture.h>
-#include <LFramebuffer.h>
+#include <CZ/Louvre/LTexture.h>
+#include <CZ/Louvre/LFramebuffer.h>
 #include <thread>
 
 /**
@@ -99,7 +99,7 @@ public:
      *
      * @param pos The new position of the framebuffer.
      */
-    void setPos(const SkIPoint &pos) noexcept
+    void setPos(SkIPoint pos) noexcept
     {
         m_rect.offsetTo(pos.x(), pos.y());
     }
@@ -160,7 +160,7 @@ private:
         GLuint framebufferId = 0;
     };
     mutable LTexture m_texture { true };
-    SkIRect m_rect;
+    SkIRect m_rect { 0, 0, 0, 0 };
     Float32 m_scale { 1.f };
     mutable std::unordered_map<std::thread::id, ThreadData> m_threadsMap;
 };

@@ -1,5 +1,5 @@
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
-#include <LInputEvent.h>
+#include <CZ/Louvre/Events/LInputEvent.h>
 
 using namespace Louvre;
 

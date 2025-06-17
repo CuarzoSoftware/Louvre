@@ -1,8 +1,8 @@
 #ifndef LDMABUFFER_H
 #define LDMABUFFER_H
 
-#include <LResource.h>
-#include <LTexture.h>
+#include <CZ/Louvre/LResource.h>
+#include <CZ/Louvre/LTexture.h>
 
 using namespace Louvre::Protocols::LinuxDMABuf;
 

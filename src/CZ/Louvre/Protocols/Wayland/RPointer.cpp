@@ -4,9 +4,9 @@
 #include <CZ/Louvre/Private/LClientPrivate.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LFactory.h>
-#include <LCursor.h>
-#include <LLog.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/LLog.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::Wayland;
 

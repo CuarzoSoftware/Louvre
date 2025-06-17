@@ -1,6 +1,6 @@
 #include <CZ/Louvre/Private/LOutputPrivate.h>
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
-#include <LOutputFramebuffer.h>
+#include <CZ/Louvre/LOutputFramebuffer.h>
 
 using namespace Louvre;
 

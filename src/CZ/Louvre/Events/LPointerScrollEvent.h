@@ -1,9 +1,9 @@
 #ifndef LPOINTERAXISEVENT_H
 #define LPOINTERAXISEVENT_H
 
-#include <LPointerEvent.h>
-#include <LPointer.h>
-#include <LTime.h>
+#include <CZ/Louvre/Events/LPointerEvent.h>
+#include <CZ/Louvre/LPointer.h>
+#include <CZ/Louvre/LTime.h>
 
 /**
  * @brief Pointer scroll event.

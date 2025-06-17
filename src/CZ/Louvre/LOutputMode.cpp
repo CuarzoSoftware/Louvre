@@ -1,5 +1,5 @@
-#include <LOutput.h>
-#include <LOutputMode.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LOutputMode.h>
 
 using namespace Louvre;
 

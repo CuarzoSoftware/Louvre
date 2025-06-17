@@ -1,16 +1,16 @@
 #ifndef LTOPLEVELROLE_H
 #define LTOPLEVELROLE_H
 
-#include <LMargins.h>
-#include <LBaseSurfaceRole.h>
+#include <CZ/Louvre/LMargins.h>
+#include <CZ/Louvre/Roles/LBaseSurfaceRole.h>
 #include <CZ/CZBitset.h>
 #include <CZ/skia/core/SkRect.h>
 #include <string>
-#include <LEdge.h>
-#include <LTime.h>
+#include <CZ/Louvre/LEdge.h>
+#include <CZ/Louvre/LTime.h>
 
-#include <LToplevelMoveSession.h>
-#include <LToplevelResizeSession.h>
+#include <CZ/Louvre/Roles/LToplevelMoveSession.h>
+#include <CZ/Louvre/Roles/LToplevelResizeSession.h>
 
 #include <list>
 
@@ -833,7 +833,7 @@ public:
      * to save the position and size of the toplevel window before it is maximized
      * or switched to fullscreen, allowing it to be restored later.
      */
-    SkIRect prevRect;
+    SkIRect prevRect { 0, 0, 0, 0 };
 
     ///@}
 

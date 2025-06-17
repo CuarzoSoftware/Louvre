@@ -3,8 +3,8 @@
 
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 #include <CZ/Louvre/Private/LSeatPrivate.h>
-#include <LKeyboard.h>
-#include <LKeyboardModifiersEvent.h>
+#include <CZ/Louvre/LKeyboard.h>
+#include <CZ/Louvre/Events/LKeyboardModifiersEvent.h>
 #include <vector>
 
 using namespace Louvre;

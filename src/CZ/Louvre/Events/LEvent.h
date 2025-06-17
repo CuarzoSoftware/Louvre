@@ -1,7 +1,7 @@
 #ifndef LEVENT_H
 #define LEVENT_H
 
-#include <LNamespaces.h>
+#include <CZ/Louvre/LNamespaces.h>
 
 /**
  * @brief Base class for events.

@@ -1,8 +1,8 @@
 #include <CZ/Louvre/Protocols/Wayland/RDataOffer.h>
 #include <CZ/Louvre/Protocols/Wayland/RDataDevice.h>
 #include <CZ/Louvre/Protocols/Wayland/GSeat.h>
-#include <LClient.h>
-#include <LDNDSession.h>
+#include <CZ/Louvre/LClient.h>
+#include <CZ/Louvre/LDNDSession.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::Wayland;

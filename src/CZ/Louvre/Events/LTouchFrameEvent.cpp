@@ -1,7 +1,7 @@
-#include <LTouchFrameEvent.h>
-#include <LCompositor.h>
-#include <LSeat.h>
-#include <LTouch.h>
+#include <CZ/Louvre/Events/LTouchFrameEvent.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LTouch.h>
 
 using namespace Louvre;
 

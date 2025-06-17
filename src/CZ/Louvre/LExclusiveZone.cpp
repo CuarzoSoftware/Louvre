@@ -1,6 +1,6 @@
 #include <CZ/Louvre/Private/LOutputPrivate.h>
-#include <LLayerRole.h>
-#include <LExclusiveZone.h>
+#include <CZ/Louvre/Roles/LLayerRole.h>
+#include <CZ/Louvre/LExclusiveZone.h>
 #include <cassert>
 
 using namespace Louvre;

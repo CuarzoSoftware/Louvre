@@ -11,12 +11,12 @@
 #include <CZ/Louvre/Private/LSeatPrivate.h>
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
-#include <LCursor.h>
-#include <LOutput.h>
-#include <LPopupRole.h>
-#include <LTime.h>
-#include <LKeyboard.h>
-#include <LDND.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/Roles/LPopupRole.h>
+#include <CZ/Louvre/LTime.h>
+#include <CZ/Louvre/LKeyboard.h>
+#include <CZ/Louvre/LDND.h>
 #include <cassert>
 
 using namespace Louvre;
@@ -51,7 +51,7 @@ void LPointer::setFocus(LSurface *surface) noexcept
         setFocus(nullptr, SkIPoint(0, 0));
 }
 
-void LPointer::setFocus(LSurface *surface, const SkIPoint &localPos) noexcept
+void LPointer::setFocus(LSurface *surface, SkIPoint localPos) noexcept
 {
     CZWeak<LSurface> prevFocus { focus() };
 
@@ -395,7 +395,7 @@ bool LPointer::isButtonPressed(LPointerButtonEvent::Button button) const noexcep
     return false;
 }
 
-LSurface *LPointer::surfaceAt(const SkIPoint &point)
+LSurface *LPointer::surfaceAt(SkIPoint point)
 {
     retry:
     compositor()->imp()->surfacesListChanged = false;

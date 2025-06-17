@@ -1,24 +1,24 @@
 #include <CZ/Utils/CZRegionUtils.h>
-#include <LLog.h>
-#include <LPointer.h>
-#include <LSeat.h>
-#include <LCompositor.h>
-#include <LCursor.h>
-#include <LOutput.h>
-#include <LClient.h>
-#include <LPopupRole.h>
-#include <LTime.h>
-#include <LKeyboard.h>
-#include <LDND.h>
-#include <LDNDIconRole.h>
-#include <LCursorRole.h>
-#include <LPointerMoveEvent.h>
-#include <LPointerButtonEvent.h>
-#include <LToplevelMoveSession.h>
-#include <LToplevelResizeSession.h>
-#include <LClientCursor.h>
-#include <LSessionLockManager.h>
-#include <LSessionLockRole.h>
+#include <CZ/Louvre/LLog.h>
+#include <CZ/Louvre/LPointer.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LClient.h>
+#include <CZ/Louvre/Roles/LPopupRole.h>
+#include <CZ/Louvre/LTime.h>
+#include <CZ/Louvre/LKeyboard.h>
+#include <CZ/Louvre/LDND.h>
+#include <CZ/Louvre/Roles/LDNDIconRole.h>
+#include <CZ/Louvre/Roles/LCursorRole.h>
+#include <CZ/Louvre/Events/LPointerMoveEvent.h>
+#include <CZ/Louvre/Events/LPointerButtonEvent.h>
+#include <CZ/Louvre/Roles/LToplevelMoveSession.h>
+#include <CZ/Louvre/Roles/LToplevelResizeSession.h>
+#include <CZ/Louvre/LClientCursor.h>
+#include <CZ/Louvre/LSessionLockManager.h>
+#include <CZ/Louvre/Roles/LSessionLockRole.h>
 
 using namespace Louvre;
 

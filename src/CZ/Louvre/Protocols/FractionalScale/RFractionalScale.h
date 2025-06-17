@@ -1,7 +1,7 @@
 #ifndef RFRACTIONALSCALE_H
 #define RFRACTIONALSCALE_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::FractionalScale::RFractionalScale final : public LResource

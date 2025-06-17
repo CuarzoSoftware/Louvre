@@ -2,7 +2,7 @@
 #include <CZ/Louvre/Protocols/SessionLock/GSessionLockManager.h>
 #include <CZ/Louvre/Protocols/SessionLock/RSessionLock.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::SessionLock;
 

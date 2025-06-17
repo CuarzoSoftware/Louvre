@@ -3,7 +3,7 @@
 #include <CZ/Louvre/Protocols/PresentationTime/GPresentation.h>
 #include <CZ/Louvre/Protocols/Wayland/GOutput.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::PresentationTime;
 

@@ -3,10 +3,10 @@
 #include <CZ/Louvre/Protocols/PointerGestures/RGestureSwipe.h>
 #include <CZ/Louvre/Protocols/Wayland/RSurface.h>
 #include <CZ/Louvre/Protocols/Wayland/RPointer.h>
-#include <LPointerSwipeUpdateEvent.h>
+#include <CZ/Louvre/Events/LPointerSwipeUpdateEvent.h>
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::PointerGestures;
 

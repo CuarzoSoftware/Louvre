@@ -1,7 +1,7 @@
 #ifndef LTIME_H
 #define LTIME_H
 
-#include <LNamespaces.h>
+#include <CZ/Louvre/LNamespaces.h>
 #include <limits>
 
 /**

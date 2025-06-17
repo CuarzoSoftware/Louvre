@@ -1,7 +1,7 @@
 #ifndef LFRAMEBUFFER_H
 #define LFRAMEBUFFER_H
 
-#include <LObject.h>
+#include <CZ/Louvre/LObject.h>
 #include <CZ/CZTransform.h>
 
 class SkISize;

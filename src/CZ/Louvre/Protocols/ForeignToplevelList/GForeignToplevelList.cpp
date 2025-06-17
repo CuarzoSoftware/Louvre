@@ -2,9 +2,9 @@
 #include <CZ/Louvre/Protocols/ForeignToplevelList/RForeignToplevelHandle.h>
 #include <CZ/Louvre/Protocols/ForeignToplevelList/GForeignToplevelList.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LToplevelRole.h>
-#include <LCompositor.h>
-#include <LUtils.h>
+#include <CZ/Louvre/Roles/LToplevelRole.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::ForeignToplevelList;

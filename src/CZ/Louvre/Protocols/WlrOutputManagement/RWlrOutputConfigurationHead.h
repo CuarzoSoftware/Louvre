@@ -2,7 +2,7 @@
 #define RWLROUTPUTCONFIGURATIONHEAD_H
 
 #include <CZ/CZTransform.h>
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 #include <CZ/skia/core/SkPoint.h>
 #include <CZ/CZBitset.h>

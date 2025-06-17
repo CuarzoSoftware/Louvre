@@ -2,8 +2,8 @@
 #define LBACKENDPRIVATE_H
 
 #include <CZ/skia/core/SkRegion.h>
-#include <LNamespaces.h>
-#include <LContentType.h>
+#include <CZ/Louvre/LNamespaces.h>
+#include <CZ/Louvre/LContentType.h>
 #include <vector>
 
 namespace Louvre

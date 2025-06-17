@@ -1,7 +1,7 @@
 #ifndef GCOMPOSITOR_H
 #define GCOMPOSITOR_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::Wayland::GCompositor final : public LResource
 {

@@ -3,11 +3,11 @@
 #include <CZ/Louvre/Protocols/WlrOutputManagement/RWlrOutputConfiguration.h>
 #include <CZ/Louvre/Protocols/WlrOutputManagement/GWlrOutputManager.h>
 #include <CZ/Louvre/Protocols/WlrOutputManagement/RWlrOutputHead.h>
-#include <LCompositor.h>
-#include <LOutput.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LUtils.h>
 #include <CZ/skia/core/SkSize.h>
-#include <LSeat.h>
+#include <CZ/Louvre/LSeat.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::WlrOutputManagement;

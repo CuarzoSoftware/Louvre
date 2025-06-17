@@ -1,7 +1,7 @@
 #ifndef LGPU_H
 #define LGPU_H
 
-#include <LGlobal.h>
+#include <CZ/Louvre/LGlobal.h>
 #include <CZ/CZWeak.h>
 #include <string>
 

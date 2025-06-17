@@ -1,11 +1,11 @@
 #ifndef LCLIENTCURSOR_H
 #define LCLIENTCURSOR_H
 
-#include <LObject.h>
+#include <CZ/Louvre/LObject.h>
 #include <CZ/skia/core/SkPoint.h>
-#include <LCursorRole.h>
-#include <LPointerEnterEvent.h>
-#include <LSurface.h>
+#include <CZ/Louvre/Roles/LCursorRole.h>
+#include <CZ/Louvre/Events/LPointerEnterEvent.h>
+#include <CZ/Louvre/LSurface.h>
 
 /**
  * @brief Encapsulates parameters used in a set cursor request.

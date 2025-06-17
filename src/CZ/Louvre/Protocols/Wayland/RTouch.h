@@ -1,7 +1,7 @@
 #ifndef RTOUCH_H
 #define RTOUCH_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::Wayland::RTouch final : public LResource

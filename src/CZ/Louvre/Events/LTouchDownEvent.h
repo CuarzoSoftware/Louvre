@@ -1,9 +1,9 @@
 #ifndef LTOUCHDOWNEVENT_H
 #define LTOUCHDOWNEVENT_H
 
-#include <LTouchEvent.h>
+#include <CZ/Louvre/Events/LTouchEvent.h>
 #include <CZ/skia/core/SkPoint.h>
-#include <LTime.h>
+#include <CZ/Louvre/LTime.h>
 
 /**
  * @brief Touch down event.
@@ -31,7 +31,7 @@ public:
     /**
      * @brief Sets the position of the touch point.
      */
-    void setPos(const SkPoint &pos) noexcept
+    void setPos(SkPoint pos) noexcept
     {
         m_pos = pos;
     }

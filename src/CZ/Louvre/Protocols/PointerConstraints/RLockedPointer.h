@@ -1,7 +1,7 @@
 #ifndef RLOCKEDPOINTER_H
 #define RLOCKEDPOINTER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::PointerConstraints::RLockedPointer final : public LResource

@@ -2,7 +2,7 @@
 #include <CZ/Louvre/Protocols/Wayland/RSubsurface.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::Wayland;
 

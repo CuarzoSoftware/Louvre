@@ -1,8 +1,8 @@
 #ifndef LPOINTER_H
 #define LPOINTER_H
 
-#include <LPointerButtonEvent.h>
-#include <LFactoryObject.h>
+#include <CZ/Louvre/Events/LPointerButtonEvent.h>
+#include <CZ/Louvre/LFactoryObject.h>
 #include <CZ/skia/core/SkPoint.h>
 #include <linux/input-event-codes.h>
 #include <memory>
@@ -66,8 +66,8 @@ public:
      * @param surface Surface to which the pointer focus will be assigned, or `nullptr` to remove focus from all surfaces.
      * @param localPos Local position within the surface where the pointer enters.
      */
-    void setFocus(LSurface *surface, const SkIPoint &localPos) noexcept;
-    void setFocus(LSurface *surface, const SkPoint &localPos) noexcept { setFocus(surface, SkIPoint(localPos.x(), localPos.y())); };
+    void setFocus(LSurface *surface, SkIPoint localPos) noexcept;
+    void setFocus(LSurface *surface, SkPoint localPos) noexcept { setFocus(surface, SkIPoint(localPos.x(), localPos.y())); };
 
     /**
      * @brief Sets the pointer focus.
@@ -119,8 +119,8 @@ public:
      * @param point Point in compositor-global coordinates.
      * @returns Returns the first surface that contains the point or `nullptr` if no surface is found.
      */
-    LSurface *surfaceAt(const SkIPoint &point);
-    LSurface *surfaceAt(const SkPoint &point) { return surfaceAt(point.x(), point.y()); };
+    LSurface *surfaceAt(SkIPoint point);
+    LSurface *surfaceAt(SkPoint point) { return surfaceAt(point.x(), point.y()); };
     LSurface *surfaceAt(Int32 x, Int32 y) { return surfaceAt(SkIPoint(x, y)); }
 
     /**

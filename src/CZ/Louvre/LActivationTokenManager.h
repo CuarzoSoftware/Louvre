@@ -1,8 +1,8 @@
 #ifndef LACTIVATIONTOKENMANAGER_H
 #define LACTIVATIONTOKENMANAGER_H
 
-#include <LFactoryObject.h>
-#include <LActivationToken.h>
+#include <CZ/Louvre/LFactoryObject.h>
+#include <CZ/Louvre/LActivationToken.h>
 
 /**
  * @brief Activation Token Manager

@@ -1,7 +1,7 @@
 #include <CZ/Louvre/Protocols/LinuxDMABuf/RLinuxBufferParams.h>
 #include <CZ/Louvre/Protocols/LinuxDMABuf/LDMABuffer.h>
-#include <LCompositor.h>
-#include <LSurface.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LSurface.h>
 
 using namespace Louvre::Protocols::Wayland;
 using namespace Louvre;

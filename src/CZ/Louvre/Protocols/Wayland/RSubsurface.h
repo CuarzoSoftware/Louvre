@@ -1,7 +1,7 @@
 #ifndef SUBSURFACE_H
 #define SUBSURFACE_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <memory>
 
 class Louvre::Protocols::Wayland::RSubsurface final : public LResource

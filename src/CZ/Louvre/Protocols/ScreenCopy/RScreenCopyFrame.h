@@ -1,9 +1,9 @@
 #ifndef RSCREENCOPYFRAME_H
 #define RSCREENCOPYFRAME_H
 
-#include <LScreenshotRequest.h>
+#include <CZ/Louvre/LScreenshotRequest.h>
 #include <CZ/CZTransform.h>
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZBitset.h>
 #include <CZ/CZWeak.h>
 #include <CZ/skia/core/SkRect.h>
@@ -70,9 +70,9 @@ private:
     } m_bufferContainer;
 
     LScreenshotRequest m_frame;
-    SkIRect m_rect, m_rectB;
-    SkISize m_initOutputModeSize;
-    SkISize m_initOutputSize;
+    SkIRect m_rect { 0, 0, 0, 0 }, m_rectB { 0, 0, 0, 0 };
+    SkISize m_initOutputModeSize { 0, 0 };
+    SkISize m_initOutputSize { 0, 0 };
     CZTransform m_initOutputTransform;
     Int32 m_stride;
     CZBitset<StateFlags> m_stateFlags;

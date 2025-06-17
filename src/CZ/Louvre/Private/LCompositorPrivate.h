@@ -2,11 +2,11 @@
 #define LCOMPOSITORPRIVATE_H
 
 #include <CZ/Louvre/Private/LBackendPrivate.h>
-#include <LCompositor.h>
-#include <LOutput.h>
-#include <LPainter.h>
-#include <LInputDevice.h>
-#include <LRenderBuffer.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LPainter.h>
+#include <CZ/Louvre/LInputDevice.h>
+#include <CZ/Louvre/LRenderBuffer.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <sys/epoll.h>

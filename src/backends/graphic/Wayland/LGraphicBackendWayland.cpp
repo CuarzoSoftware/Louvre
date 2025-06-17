@@ -7,13 +7,13 @@
 #include <CZ/Louvre/Private/LFactory.h>
 #include <CZ/Louvre/LUtils.h>
 
-#include <LOutputMode.h>
+#include <CZ/Louvre/LOutputMode.h>
 #include <SRMFormat.h>
 #include <SRMEGL.h>
-#include <LCursor.h>
-#include <LGPU.h>
-#include <LTime.h>
-#include <LLog.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/LGPU.h>
+#include <CZ/Louvre/LTime.h>
+#include <CZ/Louvre/LLog.h>
 
 #include <EGL/eglext.h>
 #include <sys/mman.h>
@@ -1175,7 +1175,7 @@ public:
 
     static void outputSetCursorPosition(LOutput */*output*/, SkIPoint /*position*/)
     {
-        static SkPoint prevHotspotB;
+        static SkPoint prevHotspotB { 0.f, 0.f };
 
         if (prevHotspotB != cursor()->hotspotB())
         {

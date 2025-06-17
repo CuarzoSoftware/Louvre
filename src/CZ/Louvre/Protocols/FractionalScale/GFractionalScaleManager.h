@@ -1,7 +1,7 @@
 #ifndef GFRACTIONALSCALEMANAGER_H
 #define GFRACTIONALSCALEMANAGER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::FractionalScale::GFractionalScaleManager final : public LResource
 {

@@ -1,9 +1,9 @@
 #ifndef LCOMPOSITOR_H
 #define LCOMPOSITOR_H
 
-#include <LNamespaces.h>
-#include <LFactoryObject.h>
-#include <LLayout.h>
+#include <CZ/Louvre/LNamespaces.h>
+#include <CZ/Louvre/LFactoryObject.h>
+#include <CZ/Louvre/LLayout.h>
 #include <filesystem>
 #include <thread>
 #include <unordered_set>

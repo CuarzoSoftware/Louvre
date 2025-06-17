@@ -1,7 +1,7 @@
 #ifndef GFOREIGNTOPLEVELMANAGER_H
 #define GFOREIGNTOPLEVELMANAGER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::ForeignToplevelManagement::GForeignToplevelManager final : public LResource
 {

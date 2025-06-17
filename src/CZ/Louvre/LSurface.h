@@ -1,13 +1,13 @@
 #ifndef LSURFACE_H
 #define LSURFACE_H
 
-#include <LFactoryObject.h>
-#include <LTexture.h>
+#include <CZ/Louvre/LFactoryObject.h>
+#include <CZ/Louvre/LTexture.h>
 #include <CZ/skia/core/SkRegion.h>
 #include <CZ/skia/core/SkRect.h>
-#include <LFramebuffer.h>
-#include <LLayout.h>
-#include <LContentType.h>
+#include <CZ/Louvre/LFramebuffer.h>
+#include <CZ/Louvre/LLayout.h>
+#include <CZ/Louvre/LContentType.h>
 #include <list>
 
 /**
@@ -736,7 +736,7 @@ public:
      * If pointerConstraintMode() is not @ref Lock or the client has never set this property,
      * it returns `(-1.f, -1.f)`.
      */
-    const SkPoint &lockedPointerPosHint() const noexcept;
+    SkPoint lockedPointerPosHint() const noexcept;
 
     /**
      * @brief Notifies a change in lockedPointerPosHint().

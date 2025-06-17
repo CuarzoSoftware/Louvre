@@ -1,7 +1,7 @@
 #ifndef RKEYBOARD_H
 #define RKEYBOARD_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::Wayland::RKeyboard final : public LResource

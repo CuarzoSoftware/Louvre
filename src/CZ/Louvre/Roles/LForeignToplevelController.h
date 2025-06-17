@@ -1,7 +1,7 @@
 #ifndef LFOREIGNTOPLEVELCONTROLLER_H
 #define LFOREIGNTOPLEVELCONTROLLER_H
 
-#include <LFactoryObject.h>
+#include <CZ/Louvre/LFactoryObject.h>
 #include <CZ/skia/core/SkRect.h>
 #include <CZ/CZWeak.h>
 
@@ -131,7 +131,7 @@ public:
 private:
     friend class Protocols::ForeignToplevelManagement::RForeignToplevelHandle;
     Protocols::ForeignToplevelManagement::RForeignToplevelHandle &m_resource;
-    SkIRect m_taskbarIconRect;
+    SkIRect m_taskbarIconRect { 0, 0, 0, 0 };
     CZWeak<LSurface> m_taskbar;
 };
 

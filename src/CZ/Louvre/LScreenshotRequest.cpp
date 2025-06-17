@@ -6,10 +6,10 @@
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 #include <CZ/Louvre/Private/LPainterPrivate.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
-#include <LFramebufferWrapper.h>
-#include <LOutputMode.h>
-#include <LUtils.h>
-#include <LTime.h>
+#include <CZ/Louvre/LFramebufferWrapper.h>
+#include <CZ/Louvre/LOutputMode.h>
+#include <CZ/Louvre/LUtils.h>
+#include <CZ/Louvre/LTime.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 

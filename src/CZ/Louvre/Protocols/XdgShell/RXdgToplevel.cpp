@@ -7,8 +7,8 @@
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LSeatPrivate.h>
 #include <CZ/Louvre/Private/LFactory.h>
-#include <LCompositor.h>
-#include <LClient.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LClient.h>
 
 using namespace Louvre::Protocols::XdgShell;
 

@@ -1,7 +1,7 @@
 #ifndef GIDLENOTIFIER_H
 #define GIDLENOTIFIER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::IdleNotify::GIdleNotifier final : public LResource
 {

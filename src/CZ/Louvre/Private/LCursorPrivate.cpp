@@ -13,7 +13,7 @@ void LCursor::LCursorPrivate::textureUpdate() noexcept
     const SkSize sizeBckp { size };
 
     if (compositor()->graphicBackendId() == LGraphicBackendWayland)
-        size = SkSize(64.f / cursor()->output()->scale());
+        size.set(64.f / cursor()->output()->scale(), 64.f / cursor()->output()->scale());
 
     const SkPoint newHotspotS {
         (hotspotB.x() * size.width())/SkScalar(texture->sizeB().width()),

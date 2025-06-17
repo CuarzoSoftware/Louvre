@@ -1,9 +1,9 @@
 #ifndef LPOPUPROLE_H
 #define LPOPUPROLE_H
 
-#include <LBaseSurfaceRole.h>
-#include <LPositioner.h>
-#include <LEdge.h>
+#include <CZ/Louvre/Roles/LBaseSurfaceRole.h>
+#include <CZ/Louvre/Roles/LPositioner.h>
+#include <CZ/Louvre/LEdge.h>
 #include <CZ/skia/core/SkRect.h>
 #include <list>
 
@@ -53,7 +53,7 @@ public:
     struct Configuration
     {
         /// Local position and size. See localPos() and windowGeometry().
-        SkIRect rect;
+        SkIRect rect { 0, 0, 0, 0 };
 
         /// @see LPopupRole::serial() and pendingConfiguration()
         UInt32 serial;
@@ -70,10 +70,10 @@ public:
     struct Atoms
     {
         /// LPopupRole::windowGeometry()
-        SkIRect windowGeometry;
+        SkIRect windowGeometry { 0, 0, 0, 0 };
 
         /// LPopupRole::localPos()
-        SkIPoint localPos;
+        SkIPoint localPos { 0, 0 };
 
         /// LPopupRole::serial()
         UInt32 serial;
@@ -217,7 +217,7 @@ public:
      *
      * @note This is an alias for Atoms::localPos.
      */
-    const SkIPoint &localPos() const noexcept
+    SkIPoint localPos() const noexcept
     {
         return atoms().localPos;
     }
@@ -291,6 +291,7 @@ public:
      * #### Default Implementation
      * @snippet LPopupRoleDefault.cpp rolePos
      */
+    SkIPoint extracted() const;
     virtual SkIPoint rolePos() const override;
 
     /**
@@ -335,6 +336,9 @@ public:
 
     ///@}
 
+protected:
+    mutable SkIPoint m_rolePos { 0, 0 };
+
 private:
     friend class LCompositor;
     friend class Protocols::XdgShell::RXdgPopup;
@@ -368,7 +372,7 @@ private:
     mutable CZBitset<Flags> m_flags { HasPendingInitialConf };
     mutable Configuration m_pendingConfiguration, m_lastACKConfiguration;
     std::list<Configuration> m_sentConfs;
-    SkIRect m_bounds;
+    SkIRect m_bounds { 0, 0, 0, 0 };
     LPositioner m_positioner;
     UInt32 m_repositionToken;
     CZWeak<LOutput> m_exclusiveOutput;

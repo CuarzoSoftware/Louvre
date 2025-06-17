@@ -1,8 +1,8 @@
 #ifndef LSEATPRIVATE_H
 #define LSEATPRIVATE_H
 
-#include <LSeat.h>
-#include <LDND.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LDND.h>
 
 #ifdef  __cplusplus
 extern "C" {

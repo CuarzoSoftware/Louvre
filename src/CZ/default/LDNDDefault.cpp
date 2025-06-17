@@ -1,14 +1,14 @@
-#include <LDND.h>
-#include <LSeat.h>
-#include <LPointer.h>
-#include <LCompositor.h>
-#include <LDNDIconRole.h>
-#include <LPointerButtonEvent.h>
-#include <LCursor.h>
-#include <LTouch.h>
-#include <LTouchDownEvent.h>
-#include <LTouchPoint.h>
-#include <LSessionLockManager.h>
+#include <CZ/Louvre/LDND.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LPointer.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/Roles/LDNDIconRole.h>
+#include <CZ/Louvre/Events/LPointerButtonEvent.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/LTouch.h>
+#include <CZ/Louvre/Events/LTouchDownEvent.h>
+#include <CZ/Louvre/LTouchPoint.h>
+#include <CZ/Louvre/LSessionLockManager.h>
 
 using namespace Louvre;
 

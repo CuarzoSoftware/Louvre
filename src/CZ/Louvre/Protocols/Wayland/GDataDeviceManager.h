@@ -1,7 +1,7 @@
 #ifndef GDATADEVICEMANAGER_H
 #define GDATADEVICEMANAGER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::Wayland::GDataDeviceManager final : public LResource
 {

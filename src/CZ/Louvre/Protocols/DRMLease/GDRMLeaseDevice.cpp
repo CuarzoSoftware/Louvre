@@ -3,10 +3,10 @@
 #include <CZ/Louvre/Protocols/DRMLease/RDRMLeaseConnector.h>
 #include <CZ/Louvre/Protocols/DRMLease/RDRMLeaseRequest.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LGlobal.h>
-#include <LUtils.h>
-#include <LSeat.h>
-#include <LOutput.h>
+#include <CZ/Louvre/LGlobal.h>
+#include <CZ/Louvre/LUtils.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LOutput.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::DRMLease;

@@ -1,7 +1,7 @@
 #ifndef GPRESENTATION_H
 #define GPRESENTATION_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::PresentationTime::GPresentation final : public LResource
 {

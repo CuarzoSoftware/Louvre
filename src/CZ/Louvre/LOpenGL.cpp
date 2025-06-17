@@ -1,14 +1,14 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <CZ/Louvre/Other/stb_image.h>
-#include <LOpenGL.h>
+#include <CZ/Louvre/LOpenGL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <GL/gl.h>
 #include <GLES2/gl2.h>
 #include <CZ/skia/core/SkRect.h>
-#include <LTexture.h>
-#include <LOutput.h>
-#include <LLog.h>
+#include <CZ/Louvre/LTexture.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LLog.h>
 #include <string.h>
 
 using namespace Louvre;

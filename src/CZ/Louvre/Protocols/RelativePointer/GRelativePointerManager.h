@@ -1,7 +1,7 @@
 #ifndef GRELATIVEPOINTERMANAGER_H
 #define GRELATIVEPOINTERMANAGER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::RelativePointer::GRelativePointerManager final : public LResource
 {

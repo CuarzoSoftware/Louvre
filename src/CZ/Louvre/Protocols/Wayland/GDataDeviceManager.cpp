@@ -3,9 +3,9 @@
 #include <CZ/Louvre/Protocols/Wayland/RDataSource.h>
 #include <CZ/Louvre/Protocols/Wayland/GSeat.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LCompositor.h>
-#include <LUtils.h>
-#include <LLog.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LUtils.h>
+#include <CZ/Louvre/LLog.h>
 
 using namespace Louvre::Protocols::Wayland;
 

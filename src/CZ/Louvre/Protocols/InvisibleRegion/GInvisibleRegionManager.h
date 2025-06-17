@@ -1,7 +1,7 @@
 #ifndef GINVISIBLEREGIONMANAGER_H
 #define GINVISIBLEREGIONMANAGER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::InvisibleRegion::GInvisibleRegionManager final : public LResource
 {

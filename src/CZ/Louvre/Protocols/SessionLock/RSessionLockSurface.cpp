@@ -4,10 +4,10 @@
 #include <CZ/Louvre/Protocols/SessionLock/RSessionLock.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LFactory.h>
-#include <LSessionLockRole.h>
-#include <LCompositor.h>
-#include <LOutput.h>
-#include <LUtils.h>
+#include <CZ/Louvre/Roles/LSessionLockRole.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::SessionLock;
 

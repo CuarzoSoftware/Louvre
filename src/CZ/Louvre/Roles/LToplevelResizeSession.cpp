@@ -1,11 +1,11 @@
-#include <LToplevelResizeSession.h>
+#include <CZ/Louvre/Roles/LToplevelResizeSession.h>
 #include <CZ/Louvre/Private/LToplevelRolePrivate.h>
 #include <CZ/Louvre/Private/LSeatPrivate.h>
-#include <LPointerEnterEvent.h>
-#include <LSurface.h>
-#include <LCursor.h>
-#include <LUtils.h>
-#include <LLog.h>
+#include <CZ/Louvre/Events/LPointerEnterEvent.h>
+#include <CZ/Louvre/LSurface.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/LUtils.h>
+#include <CZ/Louvre/LLog.h>
 
 using namespace Louvre;
 
@@ -51,7 +51,7 @@ void LToplevelResizeSession::handleGeometryChange()
     }
 }
 
-void LToplevelResizeSession::updateDragPoint(const SkIPoint &point)
+void LToplevelResizeSession::updateDragPoint(SkIPoint point)
 {
     if (!m_isActive)
         return;
@@ -65,7 +65,7 @@ void LToplevelResizeSession::updateDragPoint(const SkIPoint &point)
     m_currentDragPoint = point;
     SkISize newSize = { calculateResizeSize(m_initDragPoint - point, m_initSize, m_edge) };
 
-    const SkIPoint &pos { toplevel()->surface()->pos() };
+    SkIPoint pos { toplevel()->surface()->pos() };
     const SkISize &size { toplevel()->windowGeometry().size() };
 
     // Top
@@ -105,7 +105,7 @@ void LToplevelResizeSession::updateDragPoint(const SkIPoint &point)
     m_lastSerial = m_toplevel->pendingConfiguration().serial;
 }
 
-bool LToplevelResizeSession::start(const LEvent &triggeringEvent, CZBitset<LEdge> edge, const SkIPoint &initDragPoint)
+bool LToplevelResizeSession::start(const LEvent &triggeringEvent, CZBitset<LEdge> edge, SkIPoint initDragPoint)
 {
     if (m_isActive)
         return false;

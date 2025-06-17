@@ -1,7 +1,7 @@
 #ifndef GLINUXDMABUF_H
 #define GLINUXDMABUF_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::LinuxDMABuf::GLinuxDMABuf final : public LResource
 {

@@ -4,10 +4,10 @@
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 #include <CZ/Louvre/Private/LPainterPrivate.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
-#include <LFramebufferWrapper.h>
-#include <LClientCursor.h>
-#include <LCursor.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LFramebufferWrapper.h>
+#include <CZ/Louvre/LClientCursor.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre;
 
@@ -15,9 +15,9 @@ void texture2Buffer(LCursor *cursor, const SkSize &size, CZTransform transform) 
 
 LPRIVATE_CLASS_NO_COPY(LCursor)
     LCursorPrivate();
-    SkIRect rect;
-    SkPoint hotspotB;
-    SkSize size;
+    SkIRect rect { 0, 0, 0, 0 };
+    SkPoint hotspotB { 0.f, 0.f };
+    SkSize size { 0.f, 0.f };
     bool isVisible                                      = true;
     bool textureChanged                                 = false;
     bool posChanged                                     = false;
@@ -26,7 +26,7 @@ LPRIVATE_CLASS_NO_COPY(LCursor)
     CZWeak<const LClientCursor> clientCursor;
     std::vector<LOutput*>intersectedOutputs;   
     LTexture *texture                                   = nullptr;
-    SkPoint defaultHotspotB;
+    SkPoint defaultHotspotB { 0.f, 0.f };
     LTexture *defaultTexture                            = nullptr;
     LTexture louvreTexture { true };
     GLuint glFramebuffer, glRenderbuffer;

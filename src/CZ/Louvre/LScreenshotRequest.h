@@ -1,7 +1,7 @@
 #ifndef LSCREENSHOTREQUEST_H
 #define LSCREENSHOTREQUEST_H
 
-#include <LNamespaces.h>
+#include <CZ/Louvre/LNamespaces.h>
 
 /** 
  * @brief Request to capture an LOutput frame

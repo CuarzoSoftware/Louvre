@@ -1,7 +1,7 @@
 #ifndef RXDGPOPUP_H
 #define RXDGPOPUP_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 #include <memory>
 

@@ -1,7 +1,7 @@
 #ifndef RCALLBACK_H
 #define RCALLBACK_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::Wayland::RCallback final : public LResource
 {

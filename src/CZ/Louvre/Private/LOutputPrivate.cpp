@@ -9,14 +9,14 @@
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
 #include <CZ/Utils/CZRegionUtils.h>
-#include <LSessionLockManager.h>
-#include <LSessionLockRole.h>
-#include <LExclusiveZone.h>
-#include <LOutputMode.h>
-#include <LLayerRole.h>
-#include <LSeat.h>
-#include <LGlobal.h>
-#include <LTime.h>
+#include <CZ/Louvre/LSessionLockManager.h>
+#include <CZ/Louvre/Roles/LSessionLockRole.h>
+#include <CZ/Louvre/LExclusiveZone.h>
+#include <CZ/Louvre/LOutputMode.h>
+#include <CZ/Louvre/Roles/LLayerRole.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LGlobal.h>
+#include <CZ/Louvre/LTime.h>
 
 using namespace Louvre::Protocols::Wayland;
 
@@ -617,8 +617,7 @@ void LOutput::LOutputPrivate::removeFromSessionLockPendingRepaint() noexcept
 void LOutput::LOutputPrivate::updateExclusiveZones() noexcept
 {
     exclusiveEdges = {0, 0, 0, 0};
-
-    SkIRect prev;
+    SkIRect prev { 0, 0, 0, 0 };
 
     for (LExclusiveZone *zone : exclusiveZones)
     {

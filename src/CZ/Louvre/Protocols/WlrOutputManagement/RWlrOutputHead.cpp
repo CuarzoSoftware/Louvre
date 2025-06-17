@@ -3,7 +3,7 @@
 #include <CZ/Louvre/Protocols/WlrOutputManagement/RWlrOutputHead.h>
 #include <CZ/Louvre/Protocols/WlrOutputManagement/RWlrOutputMode.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 #include <CZ/skia/core/SkSize.h>
 
 using namespace Louvre;
@@ -132,7 +132,7 @@ void RWlrOutputHead::currentMode(RWlrOutputMode *mode) noexcept
     zwlr_output_head_v1_send_current_mode(resource(), mode->resource());
 }
 
-void RWlrOutputHead::position(const SkIPoint &pos) noexcept
+void RWlrOutputHead::position(SkIPoint pos) noexcept
 {
     markAsPendingDone();
     zwlr_output_head_v1_send_position(resource(), pos.x(), pos.y());

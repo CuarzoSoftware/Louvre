@@ -1,7 +1,7 @@
 #ifndef LFACTORYOBJECT_H
 #define LFACTORYOBJECT_H
 
-#include <LObject.h>
+#include <CZ/Louvre/LObject.h>
 
 /**
  * @brief Base class for Factory objects.

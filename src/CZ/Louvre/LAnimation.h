@@ -1,7 +1,7 @@
 #ifndef LANIMATION_H
 #define LANIMATION_H
 
-#include <LObject.h>
+#include <CZ/Louvre/LObject.h>
 #include <chrono>
 #include <functional>
 

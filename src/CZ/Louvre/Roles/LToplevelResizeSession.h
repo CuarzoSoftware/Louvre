@@ -3,9 +3,9 @@
 
 #include <CZ/skia/core/SkSize.h>
 #include <CZ/skia/core/SkPoint.h>
-#include <LEdge.h>
-#include <LMargins.h>
-#include <LTimer.h>
+#include <CZ/Louvre/LEdge.h>
+#include <CZ/Louvre/LMargins.h>
+#include <CZ/Louvre/LTimer.h>
 #include <memory>
 
 /**
@@ -53,14 +53,14 @@ public:
      */
     bool start(const LEvent &triggeringEvent,
                CZBitset<LEdge> edge,
-               const SkIPoint &initDragPoint);
+               SkIPoint initDragPoint);
 
     /**
      * @brief Updates the drag point, causing the toplevel to move and/or resize.
      *
      * @param pos The new position of the pointer or touch point.
      */
-    void updateDragPoint(const SkIPoint &pos);
+    void updateDragPoint(SkIPoint pos);
 
     /**
      * @brief Stops the resizing session.
@@ -151,7 +151,7 @@ private:
     LToplevelResizeSession(LToplevelRole *toplevel) noexcept;
     ~LToplevelResizeSession() noexcept;
     void handleGeometryChange();
-    static constexpr SkISize calculateResizeSize(const SkIPoint &cursorPosDelta, const SkISize &initialSize, CZBitset<LEdge> edge) noexcept
+    static constexpr SkISize calculateResizeSize(SkIPoint cursorPosDelta, const SkISize &initialSize, CZBitset<LEdge> edge) noexcept
     {
         SkISize newSize { initialSize };
 

@@ -3,7 +3,7 @@
 #include <CZ/Louvre/Protocols/XdgShell/GXdgWmBase.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
-#include <LClient.h>
+#include <CZ/Louvre/LClient.h>
 
 LClient::LClient(const void *params) noexcept : LFactoryObject(FactoryObjectType), m_imp { std::make_unique<LClientPrivate>(this, ((Params*)params)->client) }
 {

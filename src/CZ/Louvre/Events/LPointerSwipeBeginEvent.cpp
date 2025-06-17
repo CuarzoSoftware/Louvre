@@ -1,7 +1,7 @@
-#include <LPointerSwipeBeginEvent.h>
-#include <LCompositor.h>
-#include <LSeat.h>
-#include <LPointer.h>
+#include <CZ/Louvre/Events/LPointerSwipeBeginEvent.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LPointer.h>
 
 using namespace Louvre;
 

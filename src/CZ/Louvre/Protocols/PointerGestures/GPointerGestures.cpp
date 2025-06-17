@@ -4,7 +4,7 @@
 #include <CZ/Louvre/Protocols/PointerGestures/RGesturePinch.h>
 #include <CZ/Louvre/Protocols/PointerGestures/RGestureHold.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::PointerGestures;
 

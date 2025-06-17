@@ -2,9 +2,9 @@
 #include <CZ/Louvre/Protocols/XdgActivation/xdg-activation-v1.h>
 #include <CZ/Louvre/Protocols/XdgActivation/GXdgActivation.h>
 #include <CZ/Louvre/Protocols/Wayland/RSurface.h>
-#include <LActivationTokenManager.h>
+#include <CZ/Louvre/LActivationTokenManager.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::XdgActivation;

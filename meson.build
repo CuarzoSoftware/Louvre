@@ -149,7 +149,9 @@ pkg.generate(
     name: 'cz-louvre',
     description: 'C++ library for building Wayland compositors',
     version: meson.project_version(),
+    libraries: [cz_core_dep],
     subdirs: ['CZ/Louvre'],
+    requires: ['cz-core'],
     filebase: 'cz-louvre')
 
 # -------------- SUBDIRS --------------

@@ -1,7 +1,7 @@
 #ifndef GSESSIONLOCKMANAGER_H
 #define GSESSIONLOCKMANAGER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::SessionLock::GSessionLockManager final : public LResource
 {

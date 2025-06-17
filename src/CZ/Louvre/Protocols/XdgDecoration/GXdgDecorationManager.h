@@ -1,7 +1,7 @@
 #ifndef GXDGDECORATIONMANAGER_H
 #define GXDGDECORATIONMANAGER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::XdgDecoration::GXdgDecorationManager final : public LResource
 {

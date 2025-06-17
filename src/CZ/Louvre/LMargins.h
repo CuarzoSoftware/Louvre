@@ -1,7 +1,7 @@
 #ifndef LMARGINS_H
 #define LMARGINS_H
 
-#include <LNamespaces.h>
+#include <CZ/Louvre/LNamespaces.h>
 
 namespace Louvre
 {

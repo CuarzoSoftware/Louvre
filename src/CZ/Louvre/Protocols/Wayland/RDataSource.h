@@ -1,8 +1,8 @@
 #ifndef RDATASOURCE_H
 #define RDATASOURCE_H
 
-#include <LClipboard.h>
-#include <LResource.h>
+#include <CZ/Louvre/LClipboard.h>
+#include <CZ/Louvre/LResource.h>
 #include <memory>
 #include <stdio.h>
 

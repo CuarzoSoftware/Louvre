@@ -1,7 +1,7 @@
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
-#include <LTimer.h>
-#include <LUtils.h>
-#include <LLog.h>
+#include <CZ/Louvre/LTimer.h>
+#include <CZ/Louvre/LUtils.h>
+#include <CZ/Louvre/LLog.h>
 
 LTimer::LTimer(const Callback &onTimeout) noexcept : m_onTimeoutCallback(onTimeout)
 {

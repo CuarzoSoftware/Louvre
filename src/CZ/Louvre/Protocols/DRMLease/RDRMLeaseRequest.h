@@ -1,9 +1,9 @@
 #ifndef RDRMLEASEREQUEST_H
 #define RDRMLEASEREQUEST_H
 
-#include <LResource.h>
-#include <LOutput.h>
-#include <LGPU.h>
+#include <CZ/Louvre/LResource.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LGPU.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::DRMLease::RDRMLeaseRequest final : public LResource

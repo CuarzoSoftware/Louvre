@@ -1,7 +1,7 @@
 #ifndef RXDGACTIVATIONTOKEN_H
 #define RXDGACTIVATIONTOKEN_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <string>
 #include <CZ/CZWeak.h>
 

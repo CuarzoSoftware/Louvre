@@ -1,12 +1,12 @@
 #ifndef LOUTPUT_H
 #define LOUTPUT_H
 
-#include <LFactoryObject.h>
+#include <CZ/Louvre/LFactoryObject.h>
 #include <CZ/skia/core/SkSize.h>
 #include <CZ/skia/core/SkRect.h>
 #include <CZ/skia/core/SkRegion.h>
-#include <LFramebuffer.h>
-#include <LContentType.h>
+#include <CZ/Louvre/LFramebuffer.h>
+#include <CZ/Louvre/LContentType.h>
 
 #include <thread>
 #include <list>

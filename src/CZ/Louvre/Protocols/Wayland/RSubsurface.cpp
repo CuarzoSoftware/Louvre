@@ -4,7 +4,7 @@
 #include <CZ/Louvre/Private/LSubsurfaceRolePrivate.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LFactory.h>
-#include <LCompositor.h>
+#include <CZ/Louvre/LCompositor.h>
 
 using namespace Louvre::Protocols::Wayland;
 

@@ -1,7 +1,7 @@
 #ifndef LDNDICONROLE_H
 #define LDNDICONROLE_H
 
-#include <LBaseSurfaceRole.h>
+#include <CZ/Louvre/Roles/LBaseSurfaceRole.h>
 
 /**
  * @brief Drag & drop icon role for surfaces
@@ -42,7 +42,7 @@ public:
     /**
      * @brief Hotspot of the icon in surface coordinates.
      */
-    const SkIPoint &hotspot() const noexcept
+    SkIPoint hotspot() const noexcept
     {
         return m_currentHotspot;
     }
@@ -50,7 +50,7 @@ public:
     /**
      * @brief Hotspot of the icon in buffer coordinates.
      */
-    const SkIPoint &hotspotB() const noexcept
+    SkIPoint hotspotB() const noexcept
     {
         return m_currentHotspotB;
     }

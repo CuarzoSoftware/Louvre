@@ -9,12 +9,12 @@
 #include <CZ/Louvre/Private/LOutputPrivate.h>
 #include <CZ/Louvre/Private/LTexturePrivate.h>
 #include <CZ/Louvre/Private/LFactory.h>
-#include <LForeignToplevelController.h>
-#include <LBackgroundBlur.h>
-#include <LTime.h>
-#include <LSeat.h>
-#include <LClient.h>
-#include <LKeyboard.h>
+#include <CZ/Louvre/Roles/LForeignToplevelController.h>
+#include <CZ/Louvre/LBackgroundBlur.h>
+#include <CZ/Louvre/LTime.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LClient.h>
+#include <CZ/Louvre/LKeyboard.h>
 
 using namespace Louvre::Protocols::Wayland;
 
@@ -313,7 +313,7 @@ bool LSurface::pointerConstraintEnabled() const noexcept
     return false;
 }
 
-const SkPoint &LSurface::lockedPointerPosHint() const noexcept
+SkPoint LSurface::lockedPointerPosHint() const noexcept
 {
     return imp()->current.lockedPointerPosHint;
 }

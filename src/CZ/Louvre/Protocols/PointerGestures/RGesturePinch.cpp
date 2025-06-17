@@ -5,8 +5,8 @@
 #include <CZ/Louvre/Protocols/Wayland/RPointer.h>
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LPointerPinchUpdateEvent.h>
-#include <LUtils.h>
+#include <CZ/Louvre/Events/LPointerPinchUpdateEvent.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::PointerGestures;
 

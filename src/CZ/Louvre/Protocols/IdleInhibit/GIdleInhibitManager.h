@@ -1,7 +1,7 @@
 #ifndef GIDLEINHIBITMANAGER_H
 #define GIDLEINHIBITMANAGER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::IdleInhibit::GIdleInhibitManager final : public LResource
 {

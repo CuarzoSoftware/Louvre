@@ -1,9 +1,9 @@
 #ifndef LACTIVATIONTOKEN_H
 #define LACTIVATIONTOKEN_H
 
-#include <LObject.h>
+#include <CZ/Louvre/LObject.h>
 #include <CZ/CZWeak.h>
-#include <LEvent.h>
+#include <CZ/Louvre/Events/LEvent.h>
 #include <memory>
 #include <chrono>
 

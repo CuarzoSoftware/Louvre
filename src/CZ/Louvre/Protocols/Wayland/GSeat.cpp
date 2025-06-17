@@ -3,9 +3,9 @@
 #include <CZ/Louvre/Protocols/Wayland/RKeyboard.h>
 #include <CZ/Louvre/Protocols/Wayland/GSeat.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LCompositor.h>
-#include <LSeat.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::Wayland;
 

@@ -1,9 +1,9 @@
 #include <CZ/Louvre/Protocols/XdgOutput/xdg-output-unstable-v1.h>
 #include <CZ/Louvre/Protocols/XdgOutput/RXdgOutput.h>
 #include <CZ/Louvre/Protocols/Wayland/GOutput.h>
-#include <LOutput.h>
+#include <CZ/Louvre/LOutput.h>
 #include <CZ/skia/core/SkPoint.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::XdgOutput;
 
@@ -60,7 +60,7 @@ void RXdgOutput::destroy(wl_client */*client*/, wl_resource *resource) noexcept
 
 /******************** EVENTS ********************/
 
-void RXdgOutput::logicalPosition(const SkIPoint &pos) noexcept
+void RXdgOutput::logicalPosition(SkIPoint pos) noexcept
 {
     zxdg_output_v1_send_logical_position(resource(), pos.x(), pos.y());
 }

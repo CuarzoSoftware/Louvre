@@ -4,7 +4,7 @@
 #include <CZ/Louvre/Protocols/Wayland/RSurface.h>
 #include <CZ/Louvre/Protocols/Wayland/GOutput.h>
 #include <CZ/Louvre/Private/LFactory.h>
-#include <LClient.h>
+#include <CZ/Louvre/LClient.h>
 
 using namespace Louvre::Protocols::ForeignToplevelManagement;
 

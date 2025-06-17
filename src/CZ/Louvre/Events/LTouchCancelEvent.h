@@ -1,8 +1,8 @@
 #ifndef LTOUCHCANCELEVENT_H
 #define LTOUCHCANCELEVENT_H
 
-#include <LTouchEvent.h>
-#include <LTime.h>
+#include <CZ/Louvre/Events/LTouchEvent.h>
+#include <CZ/Louvre/LTime.h>
 
 /**
  * @brief Touch cancel event.

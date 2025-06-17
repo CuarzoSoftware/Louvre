@@ -1,11 +1,11 @@
-#include <LOutput.h>
-#include <LSurface.h>
-#include <LToplevelRole.h>
-#include <LSeat.h>
-#include <LPointer.h>
-#include <LCompositor.h>
-#include <LCursor.h>
-#include <LLog.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LSurface.h>
+#include <CZ/Louvre/Roles/LToplevelRole.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LPointer.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/LLog.h>
 
 using namespace Louvre;
 

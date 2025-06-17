@@ -1,7 +1,7 @@
 #ifndef RVIEWPORT_H
 #define RVIEWPORT_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/skia/core/SkRect.h>
 #include <CZ/CZWeak.h>
 
@@ -34,7 +34,7 @@ private:
     RViewport(Wayland::RSurface *surfaceRes, Int32 version, UInt32 id) noexcept;
     ~RViewport() noexcept = default;
     SkISize m_dstSize { -1, -1 };
-    SkRect m_srcRect { -1, -1, -1, -1 };
+    SkRect m_srcRect { SkRect::MakeXYWH(-1, -1, -1, -1) };
     CZWeak<Wayland::RSurface> m_surfaceRes;
 };
 

@@ -1,10 +1,10 @@
 #include <CZ/Louvre/Private/LTexturePrivate.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
-#include <LRenderBuffer.h>
-#include <LCompositor.h>
+#include <CZ/Louvre/LRenderBuffer.h>
+#include <CZ/Louvre/LCompositor.h>
 #include <GLES2/gl2.h>
-#include <LLog.h>
+#include <CZ/Louvre/LLog.h>
 
 using namespace Louvre;
 

@@ -1,9 +1,9 @@
 #ifndef LPOINTERBUTTONEVENT_H
 #define LPOINTERBUTTONEVENT_H
 
-#include <LPointerEvent.h>
+#include <CZ/Louvre/Events/LPointerEvent.h>
 #include <linux/input-event-codes.h>
-#include <LTime.h>
+#include <CZ/Louvre/LTime.h>
 
 /**
  * @brief Pointer button event.

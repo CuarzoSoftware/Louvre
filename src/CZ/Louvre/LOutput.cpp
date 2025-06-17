@@ -17,14 +17,14 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <LToplevelRole.h>
+#include <CZ/Louvre/Roles/LToplevelRole.h>
 #include <CZ/skia/core/SkRegion.h>
-#include <LSeat.h>
-#include <LOutputMode.h>
-#include <LTime.h>
-#include <LLog.h>
-#include <LOutputFramebuffer.h>
-#include <LClient.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LOutputMode.h>
+#include <CZ/Louvre/LTime.h>
+#include <CZ/Louvre/LLog.h>
+#include <CZ/Louvre/LOutputFramebuffer.h>
+#include <CZ/Louvre/LClient.h>
 
 using namespace Louvre;
 

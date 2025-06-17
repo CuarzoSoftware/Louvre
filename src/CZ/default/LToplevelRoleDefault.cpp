@@ -1,11 +1,11 @@
-#include <LToplevelRole.h>
-#include <LTouchPoint.h>
-#include <LPointer.h>
-#include <LKeyboard.h>
-#include <LTouch.h>
-#include <LSeat.h>
-#include <LOutput.h>
-#include <LCursor.h>
+#include <CZ/Louvre/Roles/LToplevelRole.h>
+#include <CZ/Louvre/LTouchPoint.h>
+#include <CZ/Louvre/LPointer.h>
+#include <CZ/Louvre/LKeyboard.h>
+#include <CZ/Louvre/LTouch.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LCursor.h>
 
 using namespace Louvre;
 

@@ -1,7 +1,7 @@
 #ifndef RIDLEINHIBITOR_H
 #define RIDLEINHIBITOR_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::IdleInhibit::RIdleInhibitor final : public LResource

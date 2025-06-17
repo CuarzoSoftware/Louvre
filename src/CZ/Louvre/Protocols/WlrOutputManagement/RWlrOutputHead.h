@@ -2,7 +2,7 @@
 #define RWLROUTPUTHEAD_H
 
 #include <CZ/CZTransform.h>
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::WlrOutputManagement::RWlrOutputHead final : public LResource
@@ -35,7 +35,7 @@ public:
     RWlrOutputMode *mode(LOutputMode *mode) noexcept;
     void enabled(bool enabled) noexcept;
     void currentMode(RWlrOutputMode *mode) noexcept;
-    void position(const SkIPoint &pos) noexcept;
+    void position(SkIPoint pos) noexcept;
     void transform(CZTransform transform) noexcept;
     void scale(Float32 scale) noexcept;
     void finished() noexcept;

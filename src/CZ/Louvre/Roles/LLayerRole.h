@@ -1,12 +1,12 @@
 #ifndef LLAYERROLE_H
 #define LLAYERROLE_H
 
-#include <LBaseSurfaceRole.h>
-#include <LExclusiveZone.h>
+#include <CZ/Louvre/Roles/LBaseSurfaceRole.h>
+#include <CZ/Louvre/LExclusiveZone.h>
 #include <CZ/CZBitset.h>
-#include <LOutput.h>
-#include <LMargins.h>
-#include <LLayout.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LMargins.h>
+#include <CZ/Louvre/LLayout.h>
 
 /**
  * @brief Layer role for surfaces.

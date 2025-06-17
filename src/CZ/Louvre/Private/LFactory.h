@@ -1,12 +1,12 @@
 #ifndef LFACTORY_H
 #define LFACTORY_H
 
-#include <LSeat.h>
-#include <LPointer.h>
-#include <LKeyboard.h>
-#include <LTouch.h>
-#include <LClipboard.h>
-#include <LCompositor.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LPointer.h>
+#include <CZ/Louvre/LKeyboard.h>
+#include <CZ/Louvre/LTouch.h>
+#include <CZ/Louvre/LClipboard.h>
+#include <CZ/Louvre/LCompositor.h>
 
 namespace Louvre
 {

@@ -2,13 +2,13 @@
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LPointerPrivate.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LDND.h>
-#include <LCursorRole.h>
-#include <LClientCursor.h>
-#include <LSurface.h>
-#include <LCompositor.h>
-#include <LCursor.h>
-#include <LSeat.h>
+#include <CZ/Louvre/LDND.h>
+#include <CZ/Louvre/Roles/LCursorRole.h>
+#include <CZ/Louvre/LClientCursor.h>
+#include <CZ/Louvre/LSurface.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/LSeat.h>
 
 using namespace Louvre;
 

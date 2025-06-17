@@ -1,8 +1,8 @@
 #ifndef LKEYBOARDKEYEVENT_H
 #define LKEYBOARDKEYEVENT_H
 
-#include <LKeyboardEvent.h>
-#include <LTime.h>
+#include <CZ/Louvre/Events/LKeyboardEvent.h>
+#include <CZ/Louvre/LTime.h>
 
 /**
  * @brief Keyboard key event.

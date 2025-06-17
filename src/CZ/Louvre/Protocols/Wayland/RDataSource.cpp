@@ -2,9 +2,9 @@
 #include <CZ/Louvre/Protocols/Wayland/RDataDevice.h>
 #include <CZ/Louvre/Protocols/Wayland/RDataOffer.h>
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
-#include <LDNDSession.h>
-#include <LClipboard.h>
-#include <LSeat.h>
+#include <CZ/Louvre/LDNDSession.h>
+#include <CZ/Louvre/LClipboard.h>
+#include <CZ/Louvre/LSeat.h>
 
 using namespace Louvre::Protocols::Wayland;
 

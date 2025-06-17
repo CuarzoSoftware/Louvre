@@ -5,10 +5,10 @@
 #include <CZ/Louvre/Private/LClientPrivate.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
-#include <LCompositor.h>
-#include <LOutputMode.h>
-#include <LUtils.h>
-#include <LGlobal.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LOutputMode.h>
+#include <CZ/Louvre/LUtils.h>
+#include <CZ/Louvre/LGlobal.h>
 
 using namespace Protocols::Wayland;
 

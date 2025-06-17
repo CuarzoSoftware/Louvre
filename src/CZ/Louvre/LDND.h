@@ -1,8 +1,8 @@
 #ifndef LDNDMANAGER_H
 #define LDNDMANAGER_H
 
-#include <LPointerButtonEvent.h>
-#include <LFactoryObject.h>
+#include <CZ/Louvre/Events/LPointerButtonEvent.h>
+#include <CZ/Louvre/LFactoryObject.h>
 #include <memory>
 
 /**
@@ -109,7 +109,7 @@ public:
      * @param surface The surface to which the data is being offered, or `nullptr` to remove focus.
      * @param localPos The local position within the surface where the drag point is located.
      */
-    void setFocus(LSurface *surface, const SkPoint &localPos) noexcept;
+    void setFocus(LSurface *surface, SkPoint localPos) noexcept;
 
     /**
      * @brief Send a DND move event.
@@ -121,7 +121,7 @@ public:
      * @param localPos The local position within the surface where the drag point is located.
      * @param ms The millisecond timestamp of the move event.
      */
-    void sendMoveEvent(const SkPoint &localPos, UInt32 ms) noexcept;
+    void sendMoveEvent(SkPoint localPos, UInt32 ms) noexcept;
 
     /**
      * @brief Indicates which input event triggered the drag & drop session.

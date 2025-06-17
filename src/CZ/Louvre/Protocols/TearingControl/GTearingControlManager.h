@@ -1,7 +1,7 @@
 #ifndef GTEARINGCONTROLMANAGER_H
 #define GTEARINGCONTROLMANAGER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::TearingControl::GTearingControlManager final : public LResource
 {

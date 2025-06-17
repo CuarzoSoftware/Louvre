@@ -1,8 +1,8 @@
-#include <LCompositor.h>
-#include <LLauncher.h>
-#include <LLog.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LLauncher.h>
+#include <CZ/Louvre/LLog.h>
 #include <unistd.h>
-#include <LObject.h>
+#include <CZ/Louvre/LObject.h>
 
 using namespace Louvre;
 

@@ -1,7 +1,7 @@
 #ifndef RLINUXBUFFERPARAMS_H
 #define RLINUXBUFFERPARAMS_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <memory>
 
 class Louvre::Protocols::LinuxDMABuf::RLinuxBufferParams final : public LResource

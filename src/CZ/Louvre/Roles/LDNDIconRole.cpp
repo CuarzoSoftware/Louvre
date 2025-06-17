@@ -1,7 +1,7 @@
 #include <CZ/Louvre/Private/LDNDIconRolePrivate.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
-#include <LSurface.h>
-#include <LCursor.h>
+#include <CZ/Louvre/LSurface.h>
+#include <CZ/Louvre/LCursor.h>
 
 using namespace Louvre;
 

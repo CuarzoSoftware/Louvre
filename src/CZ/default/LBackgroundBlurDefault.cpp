@@ -1,4 +1,4 @@
-#include <LBackgroundBlur.h>
+#include <CZ/Louvre/LBackgroundBlur.h>
 
 using namespace Louvre;
 

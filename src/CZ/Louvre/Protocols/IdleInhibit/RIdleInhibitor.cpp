@@ -2,7 +2,7 @@
 #include <CZ/Louvre/Protocols/IdleInhibit/RIdleInhibitor.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LSeatPrivate.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::IdleInhibit;
 

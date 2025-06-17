@@ -2,8 +2,8 @@
 #include <CZ/Louvre/Protocols/Wayland/RSurface.h>
 #include <CZ/Louvre/Protocols/Wayland/RRegion.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LCompositor.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::Wayland;
 

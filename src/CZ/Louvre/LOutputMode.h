@@ -1,7 +1,7 @@
 #ifndef LOUTPUTMODE_H
 #define LOUTPUTMODE_H
 
-#include <LObject.h>
+#include <CZ/Louvre/LObject.h>
 #include <CZ/skia/core/SkSize.h>
 #include <CZ/CZWeak.h>
 

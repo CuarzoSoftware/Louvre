@@ -6,8 +6,8 @@
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
 #include <CZ/Louvre/Private/LCursorPrivate.h>
-#include <LClient.h>
-#include <LLog.h>
+#include <CZ/Louvre/LClient.h>
+#include <CZ/Louvre/LLog.h>
 #include <unistd.h>
 #include <fcntl.h>
 

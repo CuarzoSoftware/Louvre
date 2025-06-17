@@ -1,7 +1,7 @@
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
-#include <LAnimation.h>
+#include <CZ/Louvre/LAnimation.h>
 #include <algorithm>
-#include <LTime.h>
+#include <CZ/Louvre/LTime.h>
 
 using namespace Louvre;
 

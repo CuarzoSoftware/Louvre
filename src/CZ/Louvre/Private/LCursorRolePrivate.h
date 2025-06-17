@@ -1,7 +1,7 @@
 #ifndef LCURSORROLEPRIVATE_H
 #define LCURSORROLEPRIVATE_H
 
-#include <LCursorRole.h>
+#include <CZ/Louvre/Roles/LCursorRole.h>
 
 using namespace Louvre;
 

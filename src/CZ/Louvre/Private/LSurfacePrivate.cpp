@@ -12,12 +12,12 @@
 #include <CZ/Louvre/Private/LOutputPrivate.h>
 #include <CZ/Louvre/Private/LKeyboardPrivate.h>
 #include <CZ/Utils/CZRegionUtils.h>
-#include <LDNDIconRole.h>
-#include <LCursorRole.h>
-#include <LOutputMode.h>
-#include <LClient.h>
-#include <LTime.h>
-#include <LLog.h>
+#include <CZ/Louvre/Roles/LDNDIconRole.h>
+#include <CZ/Louvre/Roles/LCursorRole.h>
+#include <CZ/Louvre/LOutputMode.h>
+#include <CZ/Louvre/LClient.h>
+#include <CZ/Louvre/LTime.h>
+#include <CZ/Louvre/LLog.h>
 #include <cassert>
 
 void LSurface::LSurfacePrivate::setParent(LSurface *parent)
@@ -305,19 +305,19 @@ bool LSurface::LSurfacePrivate::bufferToTexture() noexcept
                     while (!pendingDamage.empty())
                     {
                         SkIRect &r = pendingDamage.back();
-                        onlyPending.op(SkIRect::MakeXYWH(
-                            (r.x() * xInvScale + xOffset),
-                            (r.y() * yInvScale + yOffset),
-                            (r.width() * xInvScale + 4 ),
-                            (r.height() * yInvScale + 4 )),
+                        onlyPending.op(
+                            SkIRect::MakeXYWH(
+                                (r.x() * xInvScale + xOffset),
+                                (r.y() * yInvScale + yOffset),
+                                (r.width() * xInvScale + 4 ),
+                                (r.height() * yInvScale + 4 )),
                             SkRegion::Op::kUnion_Op);
                         pendingDamage.pop_back();
                     }
 
                     while (!pendingDamageB.empty())
                     {
-                        SkIRect &r = pendingDamageB.back();
-                        onlyPending.op(r.makeOutset(1, 1), SkRegion::Op::kUnion_Op);
+                        onlyPending.op(pendingDamageB.back().makeOutset(1, 1), SkRegion::Op::kUnion_Op);
                         pendingDamageB.pop_back();
                     }
 
@@ -363,8 +363,7 @@ bool LSurface::LSurfacePrivate::bufferToTexture() noexcept
 
                     while (!pendingDamageB.empty())
                     {
-                        SkIRect &r = pendingDamageB.back();
-                        onlyPending.op(r.makeOutset(2, 2), SkRegion::Op::kUnion_Op);
+                        onlyPending.op(pendingDamageB.back().makeOutset(2, 2), SkRegion::Op::kUnion_Op);
                         pendingDamageB.pop_back();
                     }
 
@@ -862,36 +861,27 @@ void LSurface::LSurfacePrivate::simplifyDamage(std::vector<SkIRect> &vec) noexce
 {
     if (vec.size() >= LOUVRE_MAX_DAMAGE_RECTS)
     {
-        SkIRect extents;
-        Int32 x2, y2;
-        extents.fLeft = vec.back().x();
-        extents.fTop = vec.back().y();
-        extents.fRight = extents.fLeft + vec.back().width();
-        extents.fBottom = extents.fTop + vec.back().height();
+        SkIRect extents { vec.back() };
         vec.pop_back();
 
         while (!vec.empty())
         {
-            if (vec.back().x() < extents.fLeft)
-                extents.fLeft = vec.back().x();
+            if (vec.back().fLeft < extents.fLeft)
+                extents.fLeft = vec.back().fLeft;
 
-            if (vec.back().y() < extents.fTop)
-                extents.fTop = vec.back().y();
+            if (vec.back().fTop < extents.fTop)
+                extents.fTop = vec.back().fTop;
 
-            x2 = vec.back().x() + vec.back().width();
+            if (vec.back().fRight > extents.fRight)
+                extents.fRight = vec.back().fRight;
 
-            if (x2 > extents.fRight)
-                extents.fRight = x2;
-
-            y2 = vec.back().y() + vec.back().height();
-
-            if (y2 > extents.fBottom)
-                extents.fBottom = y2;
+            if (vec.back().fBottom > extents.fBottom)
+                extents.fBottom = vec.back().fBottom;
 
             vec.pop_back();
         }
 
-        vec.emplace_back(extents.fLeft, extents.fTop, extents.fRight - extents.fLeft, extents.fBottom - extents.fTop);
+        vec.emplace_back(extents);
     }
 }
 

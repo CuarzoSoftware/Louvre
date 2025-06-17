@@ -3,7 +3,7 @@
 #include <CZ/Louvre/Protocols/FractionalScale/RFractionalScale.h>
 #include <CZ/Louvre/Protocols/Wayland/RSurface.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::FractionalScale;
 

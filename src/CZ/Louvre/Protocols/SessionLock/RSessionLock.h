@@ -1,8 +1,8 @@
 #ifndef RSESSIONLOCK_H
 #define RSESSIONLOCK_H
 
-#include <LResource.h>
-#include <LTimer.h>
+#include <CZ/Louvre/LResource.h>
+#include <CZ/Louvre/LTimer.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::SessionLock::RSessionLock final : public LResource

@@ -1,16 +1,16 @@
-#include <LLog.h>
-#include <LOutput.h>
-#include <LPainter.h>
-#include <LCompositor.h>
-#include <LSurface.h>
-#include <LSeat.h>
-#include <LDND.h>
-#include <LDNDIconRole.h>
-#include <LCursor.h>
-#include <LPointer.h>
-#include <LSessionLockManager.h>
-#include <LSessionLockRole.h>
-#include <LLayerRole.h>
+#include <CZ/Louvre/LLog.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LPainter.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LSurface.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LDND.h>
+#include <CZ/Louvre/Roles/LDNDIconRole.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/LPointer.h>
+#include <CZ/Louvre/LSessionLockManager.h>
+#include <CZ/Louvre/Roles/LSessionLockRole.h>
+#include <CZ/Louvre/Roles/LLayerRole.h>
 
 using namespace Louvre;
 
@@ -27,7 +27,7 @@ void LOutput::paintGL()
     const bool sessionLocked { sessionLockManager()->state() != LSessionLockManager::Unlocked };
     const SkIRect availGeo { SkIRect::MakePtSize(pos() + availableGeometry().topLeft(), availableGeometry().size()) };
     LPainter::TextureParams params;
-    SkIRect currentRect;
+    SkIRect currentRect { 0, 0, 0, 0 };
     LPainter *p { painter() };
     p->clearScreen();
 

@@ -2,7 +2,7 @@
 #include <CZ/Louvre/Protocols/SinglePixelBuffer/GSinglePixelBufferManager.h>
 #include <CZ/Louvre/Protocols/SinglePixelBuffer/LSinglePixelBuffer.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::SinglePixelBuffer;
 using namespace Louvre;

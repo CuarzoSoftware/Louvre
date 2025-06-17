@@ -4,8 +4,8 @@
 #include <CZ/Louvre/Protocols/Wayland/GOutput.h>
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LOutput.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::ScreenCopy;
 

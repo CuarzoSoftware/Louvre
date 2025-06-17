@@ -1,11 +1,11 @@
-#include <LIdleListener.h>
-#include <LCompositor.h>
-#include <LOutput.h>
-#include <LSeat.h>
-#include <LPointer.h>
-#include <LKeyboard.h>
-#include <LCursor.h>
-#include <LLog.h>
+#include <CZ/Louvre/LIdleListener.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LPointer.h>
+#include <CZ/Louvre/LKeyboard.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/LLog.h>
 
 using namespace Louvre;
 

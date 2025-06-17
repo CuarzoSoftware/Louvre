@@ -1,7 +1,7 @@
 #ifndef GOUTPUTIMAGECAPTURESOURCEMANAGER_H
 #define GOUTPUTIMAGECAPTURESOURCEMANAGER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::ImageCaptureSource::GOutputImageCaptureSourceManager final : public LResource
 {

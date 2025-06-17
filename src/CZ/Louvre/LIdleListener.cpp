@@ -1,7 +1,7 @@
 #include <CZ/Louvre/Protocols/IdleNotify/RIdleNotification.h>
 #include <CZ/Louvre/Private/LSeatPrivate.h>
-#include <LIdleListener.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LIdleListener.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::IdleNotify;

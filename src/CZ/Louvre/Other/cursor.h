@@ -1,4 +1,4 @@
-#include <LNamespaces.h>
+#include <CZ/Louvre/LNamespaces.h>
 
 #define LOUVRE_DEFAULT_CURSOR_WIDTH 64
 #define LOUVRE_DEFAULT_CURSOR_HEIGHT 64

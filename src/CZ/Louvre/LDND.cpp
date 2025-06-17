@@ -5,13 +5,13 @@
 #include <CZ/Louvre/Protocols/Wayland/RDataOffer.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
-#include <LDNDIconRole.h>
-#include <LDNDSession.h>
-#include <LClient.h>
-#include <LSeat.h>
-#include <LPointer.h>
-#include <LDND.h>
-#include <LTimer.h>
+#include <CZ/Louvre/Roles/LDNDIconRole.h>
+#include <CZ/Louvre/LDNDSession.h>
+#include <CZ/Louvre/LClient.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LPointer.h>
+#include <CZ/Louvre/LDND.h>
+#include <CZ/Louvre/LTimer.h>
 #include <cassert>
 
 using namespace Louvre;
@@ -25,7 +25,7 @@ LDND::LDND(const void *params) noexcept : LFactoryObject(FactoryObjectType)
     *ptr = this;
 }
 
-void LDND::setFocus(LSurface *surface, const SkPoint &localPos) noexcept
+void LDND::setFocus(LSurface *surface, SkPoint localPos) noexcept
 {
     if (!m_session)
         return;
@@ -99,7 +99,7 @@ void LDND::setFocus(LSurface *surface, const SkPoint &localPos) noexcept
     }
 }
 
-void LDND::sendMoveEvent(const SkPoint &localPos, UInt32 ms) noexcept
+void LDND::sendMoveEvent(SkPoint localPos, UInt32 ms) noexcept
 {
     if (!focus() || !m_session || !m_session->dstDataDevice)
         return;

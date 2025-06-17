@@ -1,9 +1,9 @@
 #ifndef LPOINTERLEAVEEVENT_H
 #define LPOINTERLEAVEEVENT_H
 
-#include <LPointerEvent.h>
+#include <CZ/Louvre/Events/LPointerEvent.h>
 #include <CZ/skia/core/SkPoint.h>
-#include <LTime.h>
+#include <CZ/Louvre/LTime.h>
 
 /**
  * @brief Event generated when a surface or view loses pointer focus.

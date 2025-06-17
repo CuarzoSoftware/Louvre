@@ -1,11 +1,11 @@
 #ifndef LPAINTER_H
 #define LPAINTER_H
 
-#include <LObject.h>
+#include <CZ/Louvre/LObject.h>
 #include <CZ/skia/core/SkPoint.h>
-#include <LFramebuffer.h>
+#include <CZ/Louvre/LFramebuffer.h>
 #include <CZ/skia/core/SkRect.h>
-#include <LColor.h>
+#include <CZ/Louvre/LColor.h>
 #include <memory>
 
 /**
@@ -44,24 +44,24 @@ public:
         /**
          * @brief Texture to be drawn.
          */
-        LTexture *texture;
+        LTexture *texture { nullptr };
 
         /**
          * @brief Position of the texture (destination rect) in compositor-global coordinates.
          */
-        SkIPoint pos;
+        SkIPoint pos { 0, 0 };
 
         /**
          * @brief Subrect of the texture to be mapped in surface units.
          *
          * Coordinates should be specified in the space generated after applying the scale factor and transformation to the texture buffer.
          */
-        SkRect srcRect;
+        SkRect srcRect { 0.f, 0.f, 0.f, 0.f };
 
         /**
          * @brief Destination size of the source rect in surface units.
          */
-        SkISize dstSize;
+        SkISize dstSize { 0, 0 };
 
         /**
          * @brief Transform already applied to the texture.

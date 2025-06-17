@@ -1,7 +1,7 @@
 #ifndef LSUBSURFACEROLE_H
 #define LSUBSURFACEROLE_H
 
-#include <LBaseSurfaceRole.h>
+#include <CZ/Louvre/Roles/LBaseSurfaceRole.h>
 
 /**
  * @brief Subsurface role for surfaces
@@ -77,7 +77,7 @@ public:
     *
     * The offset relative to the top-left corner of the parent surface in surface coordinates.
     */
-    const SkIPoint &localPos() const noexcept
+    SkIPoint localPos() const noexcept
     {
         return m_currentLocalPos;
     }

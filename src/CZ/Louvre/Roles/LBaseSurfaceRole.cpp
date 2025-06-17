@@ -1,6 +1,6 @@
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
-#include <LBaseSurfaceRole.h>
-#include <LCompositor.h>
+#include <CZ/Louvre/Roles/LBaseSurfaceRole.h>
+#include <CZ/Louvre/LCompositor.h>
 #include <cassert>
 
 using namespace Louvre;

@@ -4,9 +4,9 @@
 #include <CZ/Louvre/Private/LOutputPrivate.h>
 
 #include <CZ/skia/core/SkRect.h>
-#include <LOutput.h>
-#include <LOpenGL.h>
-#include <LLog.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/LOpenGL.h>
+#include <CZ/Louvre/LLog.h>
 
 #include <GLES2/gl2.h>
 #include <cstdio>

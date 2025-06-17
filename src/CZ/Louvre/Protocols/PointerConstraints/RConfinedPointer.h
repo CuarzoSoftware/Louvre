@@ -1,7 +1,7 @@
 #ifndef RCONFINEDPOINTER_H
 #define RCONFINEDPOINTER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::PointerConstraints::RConfinedPointer final : public LResource

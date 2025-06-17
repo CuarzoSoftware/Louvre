@@ -1,8 +1,8 @@
 #ifndef LTOPLEVELMOVESESSION_H
 #define LTOPLEVELMOVESESSION_H
 
-#include <LEdge.h>
-#include <LMargins.h>
+#include <CZ/Louvre/LEdge.h>
+#include <CZ/Louvre/LMargins.h>
 #include <CZ/skia/core/SkPoint.h>
 #include <functional>
 #include <memory>
@@ -49,14 +49,14 @@ public:
      *
      * @returns `true` if the session successfully started, `false` if the toplevel is already in a session.
      */
-    bool start(const LEvent &triggeringEvent, const SkIPoint &initDragPoint);
+    bool start(const LEvent &triggeringEvent, SkIPoint initDragPoint);
 
     /**
      * @brief Updates the drag point, causing the toplevel to move.
      *
      * @param pos The new position of the pointer or touch point.
      */
-    void updateDragPoint(const SkIPoint &pos);
+    void updateDragPoint(SkIPoint pos);
 
     /**
      * @brief Stops the move session.

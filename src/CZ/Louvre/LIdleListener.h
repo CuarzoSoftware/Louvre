@@ -1,7 +1,7 @@
 #ifndef LIDLELISTENER_H
 #define LIDLELISTENER_H
 
-#include <LObject.h>
+#include <CZ/Louvre/LObject.h>
 
 /**
  * @brief Idle state listener

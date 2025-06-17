@@ -1,17 +1,17 @@
 #include <CZ/Louvre/Protocols/Wayland/GSeat.h>
 #include <CZ/Louvre/Private/LPopupRolePrivate.h>
 #include <CZ/Louvre/Private/LSurfacePrivate.h>
-#include <LSessionLockManager.h>
-#include <LTouchDownEvent.h>
-#include <LTouchPoint.h>
-#include <LTouch.h>
-#include <LPositioner.h>
-#include <LSeat.h>
-#include <LKeyboard.h>
-#include <LCompositor.h>
-#include <LPointer.h>
-#include <LCursor.h>
-#include <LOutput.h>
+#include <CZ/Louvre/LSessionLockManager.h>
+#include <CZ/Louvre/Events/LTouchDownEvent.h>
+#include <CZ/Louvre/LTouchPoint.h>
+#include <CZ/Louvre/LTouch.h>
+#include <CZ/Louvre/Roles/LPositioner.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LKeyboard.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LPointer.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/LOutput.h>
 
 using namespace Louvre;
 

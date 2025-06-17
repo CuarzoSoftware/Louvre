@@ -1,6 +1,6 @@
-#include <LCompositor.h>
-#include <LLauncher.h>
-#include <LLog.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LLauncher.h>
+#include <CZ/Louvre/LLog.h>
 #include <cstring>
 #include <sys/stat.h>
 #include <unistd.h>

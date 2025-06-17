@@ -3,8 +3,8 @@
 #include <CZ/Louvre/Protocols/DRMLease/RDRMLeaseRequest.h>
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
-#include <LUtils.h>
-#include <LOutput.h>
+#include <CZ/Louvre/LUtils.h>
+#include <CZ/Louvre/LOutput.h>
 
 using namespace Louvre::Protocols::DRMLease;
 

@@ -1,7 +1,7 @@
 #include <CZ/Louvre/Protocols/SvgPath/GSvgPathManager.h>
 #include <CZ/Louvre/Protocols/SvgPath/RSvgPath.h>
 #include <CZ/Louvre/Protocols/SvgPath/lvr-svg-path.h>
-#include <LSurface.h>
+#include <CZ/Louvre/LSurface.h>
 
 using namespace Louvre::Protocols::SvgPath;
 

@@ -4,8 +4,8 @@
 #include <CZ/Louvre/Protocols/Wayland/RSurface.h>
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
-#include <LSeat.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::PresentationTime;
 

@@ -1,7 +1,7 @@
 #include <CZ/Louvre/Protocols/XdgShell/xdg-shell.h>
 #include <CZ/Louvre/Protocols/XdgShell/RXdgPositioner.h>
 #include <CZ/Louvre/Protocols/XdgShell/GXdgWmBase.h>
-#include <LPositioner.h>
+#include <CZ/Louvre/Roles/LPositioner.h>
 
 using namespace Louvre::Protocols::XdgShell;
 

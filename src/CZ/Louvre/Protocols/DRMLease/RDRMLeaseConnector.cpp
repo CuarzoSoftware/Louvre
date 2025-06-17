@@ -2,7 +2,7 @@
 #include <CZ/Louvre/Protocols/DRMLease/GDRMLeaseDevice.h>
 #include <CZ/Louvre/Protocols/DRMLease/RDRMLeaseConnector.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
-#include <LUtils.h>
+#include <CZ/Louvre/LUtils.h>
 #include <cassert>
 
 using namespace Louvre::Protocols::DRMLease;

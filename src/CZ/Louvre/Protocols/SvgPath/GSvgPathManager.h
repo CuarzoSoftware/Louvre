@@ -1,7 +1,7 @@
 #ifndef GSVGPATHMANAGER_H
 #define GSVGPATHMANAGER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::SvgPath::GSvgPathManager final : public LResource
 {

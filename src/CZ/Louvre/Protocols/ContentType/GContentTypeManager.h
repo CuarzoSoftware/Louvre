@@ -1,7 +1,7 @@
 #ifndef GCONTENTTYPEMANAGER_H
 #define GCONTENTTYPEMANAGER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::ContentType::GContentTypeManager final : public LResource
 {

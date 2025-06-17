@@ -1,7 +1,7 @@
 #ifndef GOUTPUT_H
 #define GOUTPUT_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZTransform.h>
 #include <CZ/CZWeak.h>
 

@@ -1,7 +1,7 @@
 #ifndef LTOPLEVELROLEPRIVATE_H
 #define LTOPLEVELROLEPRIVATE_H
 
-#include <LToplevelRole.h>
+#include <CZ/Louvre/Roles/LToplevelRole.h>
 
 using namespace Louvre;
 

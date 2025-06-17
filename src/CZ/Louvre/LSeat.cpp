@@ -21,14 +21,14 @@
 #include <sys/eventfd.h>
 #include <cassert>
 
-#include <LCursor.h>
-#include <LToplevelRole.h>
-#include <LSurface.h>
-#include <LTime.h>
-#include <LOutput.h>
-#include <LPopupRole.h>
-#include <LClient.h>
-#include <LLog.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/Roles/LToplevelRole.h>
+#include <CZ/Louvre/LSurface.h>
+#include <CZ/Louvre/LTime.h>
+#include <CZ/Louvre/LOutput.h>
+#include <CZ/Louvre/Roles/LPopupRole.h>
+#include <CZ/Louvre/LClient.h>
+#include <CZ/Louvre/LLog.h>
 
 #include <CZ/Louvre/Private/LFactory.h>
 

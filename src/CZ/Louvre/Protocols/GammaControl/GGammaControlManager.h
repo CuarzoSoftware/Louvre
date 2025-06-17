@@ -1,7 +1,7 @@
 #ifndef GGAMMACONTROLMANAGER_H
 #define GGAMMACONTROLMANAGER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::GammaControl::GGammaControlManager final : public LResource
 {

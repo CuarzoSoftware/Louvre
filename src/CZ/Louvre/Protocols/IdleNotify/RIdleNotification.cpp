@@ -1,6 +1,6 @@
 #include <CZ/Louvre/Protocols/IdleNotify/ext-idle-notify-v1.h>
 #include <CZ/Louvre/Protocols/IdleNotify/RIdleNotification.h>
-#include <LSeat.h>
+#include <CZ/Louvre/LSeat.h>
 
 using namespace Louvre::Protocols::IdleNotify;
 

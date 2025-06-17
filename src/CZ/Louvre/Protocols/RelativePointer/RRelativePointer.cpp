@@ -1,8 +1,8 @@
 #include <CZ/Louvre/Protocols/RelativePointer/relative-pointer-unstable-v1.h>
 #include <CZ/Louvre/Protocols/RelativePointer/RRelativePointer.h>
 #include <CZ/Louvre/Protocols/Wayland/RPointer.h>
-#include <LPointerMoveEvent.h>
-#include <LUtils.h>
+#include <CZ/Louvre/Events/LPointerMoveEvent.h>
+#include <CZ/Louvre/LUtils.h>
 
 using namespace Louvre::Protocols::RelativePointer;
 

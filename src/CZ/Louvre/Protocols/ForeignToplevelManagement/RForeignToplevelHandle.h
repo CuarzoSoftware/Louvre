@@ -1,8 +1,8 @@
 #ifndef RFOREIGNTOPLEVELHANDLE_H
 #define RFOREIGNTOPLEVELHANDLE_H
 
-#include <LForeignToplevelController.h>
-#include <LResource.h>
+#include <CZ/Louvre/Roles/LForeignToplevelController.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 #include <string>
 #include <memory>

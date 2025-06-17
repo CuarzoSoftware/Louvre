@@ -3,8 +3,8 @@
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-#include <LNamespaces.h>
-#include <LContentType.h>
+#include <CZ/Louvre/LNamespaces.h>
+#include <CZ/Louvre/LContentType.h>
 #include <vector>
 
 class Louvre::LGraphicBackend

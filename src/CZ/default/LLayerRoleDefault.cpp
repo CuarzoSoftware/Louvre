@@ -1,9 +1,9 @@
-#include <LLayerRole.h>
-#include <LCursor.h>
-#include <LSurface.h>
-#include <LCompositor.h>
-#include <LSeat.h>
-#include <LKeyboard.h>
+#include <CZ/Louvre/Roles/LLayerRole.h>
+#include <CZ/Louvre/LCursor.h>
+#include <CZ/Louvre/LSurface.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LSeat.h>
+#include <CZ/Louvre/LKeyboard.h>
 
 using namespace Louvre;
 

@@ -1,7 +1,7 @@
 #ifndef RGESTUREPINCH_H
 #define RGESTUREPINCH_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::PointerGestures::RGesturePinch final : public LResource

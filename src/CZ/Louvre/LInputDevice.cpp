@@ -1,5 +1,5 @@
-#include <LInputDevice.h>
-#include <LCompositor.h>
+#include <CZ/Louvre/LInputDevice.h>
+#include <CZ/Louvre/LCompositor.h>
 
 using namespace Louvre;
 

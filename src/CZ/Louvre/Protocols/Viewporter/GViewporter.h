@@ -1,7 +1,7 @@
 #ifndef GVIEWPORTER_H
 #define GVIEWPORTER_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 
 class Louvre::Protocols::Viewporter::GViewporter final : public LResource
 {

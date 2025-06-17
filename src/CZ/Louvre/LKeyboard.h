@@ -1,8 +1,8 @@
 #ifndef LKEYBOARD_H
 #define LKEYBOARD_H
 
-#include <LFactoryObject.h>
-#include <LKeyboardModifiersEvent.h>
+#include <CZ/Louvre/LFactoryObject.h>
+#include <CZ/Louvre/Events/LKeyboardModifiersEvent.h>
 #include <xkbcommon/xkbcommon.h>
 #include <linux/input-event-codes.h>
 #include <memory>

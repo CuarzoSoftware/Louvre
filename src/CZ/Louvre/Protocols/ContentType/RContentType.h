@@ -1,7 +1,7 @@
 #ifndef RCONTENTTYPE_H
 #define RCONTENTTYPE_H
 
-#include <LResource.h>
+#include <CZ/Louvre/LResource.h>
 #include <CZ/CZWeak.h>
 
 class Louvre::Protocols::ContentType::RContentType final : public LResource
