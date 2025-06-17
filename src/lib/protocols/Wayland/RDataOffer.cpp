@@ -3,7 +3,9 @@
 #include <protocols/Wayland/GSeat.h>
 #include <LClient.h>
 #include <LDNDSession.h>
+#include <sys/poll.h>
 #include <sys/sendfile.h>
+#include <fcntl.h>
 
 using namespace Louvre;
 using namespace Louvre::Protocols::Wayland;
@@ -102,6 +104,11 @@ void RDataOffer::receive(wl_client */*client*/, wl_resource *resource, const cha
                 }
                 else if (mimeType.tmp)
                 {
+                    // Set fd to non-blocking
+                    int fdFlags { fcntl(fd, F_GETFL, 0) };
+                    if (fdFlags == -1) goto skip;
+                    if (fcntl(fd, F_SETFL, fdFlags | O_NONBLOCK) == -1) goto skip;
+
                     const int tmpFd { fileno(mimeType.tmp) };
                     fflush(mimeType.tmp);
                     fseek(mimeType.tmp, 0L, SEEK_END);
@@ -117,9 +124,13 @@ void RDataOffer::receive(wl_client */*client*/, wl_resource *resource, const cha
 
                     // Just in case errno = EINTR forever
                     UInt32 retryCount { 0 };
+                    pollfd pfd = { .fd = fd, .events = POLLOUT };
 
                     while (retryCount < 50 && offset < total)
                     {
+                        if (poll(&pfd, 1, 500) <= 0)
+                            break;
+
                         sent = sendfile(fd, tmpFd, &offset, total - offset);
                         if (sent < 0)
                         {
@@ -136,8 +147,11 @@ void RDataOffer::receive(wl_client */*client*/, wl_resource *resource, const cha
                         if (sent == 0)
                             break;
                     }
-                }
 
+                    // Restore original blocking mode
+                    fcntl(fd, F_SETFL, fdFlags);
+                }
+                skip:
                 break;
             }
         }
