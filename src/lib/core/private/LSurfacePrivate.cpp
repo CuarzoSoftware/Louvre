@@ -976,18 +976,20 @@ void LSurface::LSurfacePrivate::destroyCursorOrDNDRole()
     auto *surface { surfaceResource->surface() };
     if (surface->dndIcon())
     {
-        compositor()->onAnticipatedObjectDestruction(surface->dndIcon());
+        auto *role { surface->dndIcon() };
+        compositor()->onAnticipatedObjectDestruction(role);
         surface->imp()->setMapped(false);
         surface->imp()->setRole(nullptr);
         surface->imp()->notifyRoleChange();
-        delete surface->dndIcon();
+        delete role;
     }
     else if (surface->cursorRole())
     {
-        compositor()->onAnticipatedObjectDestruction(surface->cursorRole());
+        auto *role { surface->cursorRole() };
+        compositor()->onAnticipatedObjectDestruction(role);
         surface->imp()->setMapped(false);
         surface->imp()->setRole(nullptr);
         surface->imp()->notifyRoleChange();
-        delete surface->cursorRole();
+        delete role;
     }
 }
