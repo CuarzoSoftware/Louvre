@@ -63,7 +63,7 @@ void RSessionLock::get_lock_surface(wl_client */*client*/, wl_resource *resource
     auto &surfaceRes { *static_cast<Wayland::RSurface*>(wl_resource_get_user_data(surface)) };
     auto &outputRes { *static_cast<Wayland::GOutput*>(wl_resource_get_user_data(output)) };
 
-    if (surfaceRes.surface()->role())
+    if (!surfaceRes.surface()->imp()->canHostRole())
     {
         res.postError(EXT_SESSION_LOCK_V1_ERROR_ROLE, "Given wl_surface already has a role.");
         return;

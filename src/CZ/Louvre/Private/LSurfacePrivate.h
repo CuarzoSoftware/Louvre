@@ -81,6 +81,7 @@ LPRIVATE_CLASS(LSurface)
     CZWeak<LBaseSurfaceRole> role, prevRole;
     std::unique_ptr<SkRegion> pendingPointerConstraintRegion;
     SkRegion pointerConstraintRegion;
+    CZWeak<Protocols::XdgShell::RXdgSurface> xdgSurface;
 
     State current, pending;
 
@@ -152,6 +153,7 @@ LPRIVATE_CLASS(LSurface)
     bool updateDimensions(Int32 widthB, Int32 heightB) noexcept;
     void simplifyDamage(std::vector<SkIRect> &vec) noexcept;
     void destroyCursorOrDNDRole();
+    bool canHostRole() const noexcept;
 };
 
 #endif // LSURFACEPRIVATE_H

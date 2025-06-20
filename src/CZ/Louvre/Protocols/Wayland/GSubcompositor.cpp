@@ -67,7 +67,7 @@ void GSubcompositor::get_subsurface(wl_client */*client*/, wl_resource *resource
         return;
     }
 
-    if (surfaceRes.surface()->role())
+    if (!surfaceRes.surface()->imp()->canHostRole())
     {
         parentRes.postError(WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE, "Given wl_surface already has another role.");
         return;

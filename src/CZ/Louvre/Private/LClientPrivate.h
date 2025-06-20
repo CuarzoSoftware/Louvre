@@ -27,6 +27,7 @@ public:
     wl_client *client;
     EventHistory eventHistory;
     LClientCursor lastCursorRequest;
+    std::list<LResource*> resources;
 
     // Globals
     std::vector<Wayland::GSeat*> seatGlobals;

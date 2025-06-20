@@ -79,9 +79,9 @@ void GXdgWmBase::get_xdg_surface(wl_client */*client*/, wl_resource *resource, U
     auto &surfaceRes { *static_cast<Wayland::RSurface*>(wl_resource_get_user_data(surface)) };
     auto &res { *static_cast<GXdgWmBase*>(wl_resource_get_user_data(resource)) };
 
-    if (surfaceRes.surface()->role())
+    if (!surfaceRes.surface()->imp()->canHostRole())
     {
-        res.postError(XDG_WM_BASE_ERROR_ROLE, "Given wl_surface has another role.");
+        res.postError(XDG_WM_BASE_ERROR_ROLE, "Given wl_surface has another role or xdg_surface assigned.");
         return;
     }
 
