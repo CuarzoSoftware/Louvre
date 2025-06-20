@@ -1,3 +1,4 @@
+#include <cassert>
 #include <protocols/SinglePixelBuffer/LSinglePixelBuffer.h>
 #include <protocols/PresentationTime/RPresentationFeedback.h>
 #include <protocols/TearingControl/RTearingControl.h>
@@ -91,8 +92,10 @@ RSurface::RSurface
 RSurface::~RSurface()
 {
     LSurface *lSurface { this->surface() };
-
     lSurface->imp()->destroyCursorOrDNDRole();
+
+    assert(lSurface->imp()->canHostRole());
+
     lSurface->imp()->setKeyboardGrabToParent();
 
     // Notify from client
@@ -184,7 +187,7 @@ void RSurface::destroy(wl_client */*client*/, wl_resource *resource)
 
     surfaceRes.surface()->imp()->destroyCursorOrDNDRole();
 
-    if (surfaceRes.surface()->imp()->role)
+    if (!surfaceRes.surface()->imp()->canHostRole())
     {
         surfaceRes.postError(WL_SURFACE_ERROR_DEFUNCT_ROLE_OBJECT, "Surface destroyed before role.");
         return;

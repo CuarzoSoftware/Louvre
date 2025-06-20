@@ -993,3 +993,8 @@ void LSurface::LSurfacePrivate::destroyCursorOrDNDRole()
         delete role;
     }
 }
+
+bool LSurface::LSurfacePrivate::canHostRole() const noexcept
+{
+    return role == nullptr && xdgSurface == nullptr;
+}

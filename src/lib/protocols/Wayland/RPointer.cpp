@@ -64,7 +64,7 @@ void RPointer::set_cursor(wl_client */*client*/, wl_resource *resource, UInt32 s
 
         if (!cursorRole)
         {
-            if (surface.role())
+            if (!surface.imp()->canHostRole())
             {
                 pointerRes.postError(WL_POINTER_ERROR_ROLE, "Given wl_surface has another role.");
                 return;

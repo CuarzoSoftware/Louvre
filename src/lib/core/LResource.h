@@ -3,6 +3,7 @@
 
 #include <LObject.h>
 #include <format>
+#include <list>
 #include <string>
 
 #define LGLOBAL_INTERFACE \
@@ -128,12 +129,13 @@ protected:
     /**
      * @brief Destructor for LResource.
      */
-    ~LResource() { notifyDestruction(); };
+    ~LResource();
 
 private:
     void postErrorPrivate(UInt32 code, const std::string &message);
     LClient *m_client;
     wl_resource *m_resource;
+    std::list<LResource*>::iterator m_clientLink;
 };
 
 #endif // LRESOURCE_H

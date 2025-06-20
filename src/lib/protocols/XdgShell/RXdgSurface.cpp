@@ -37,6 +37,7 @@ RXdgSurface::RXdgSurface
     m_xdgWmBaseRes(xdgWmBaseRes),
     m_surface(surface)
 {
+    surface->imp()->xdgSurface.reset(this);
     m_xdgWmBaseRes->m_xdgSurfacesCount++;
 }
 
@@ -71,7 +72,7 @@ void RXdgSurface::destroy(wl_client */*client*/, wl_resource *resource)
 {
     auto &res { *static_cast<RXdgSurface*>(wl_resource_get_user_data(resource)) };
 
-    if (res.surface() && res.surface()->role())
+    if (res.surface()->role())
     {
         res.postError(XDG_WM_BASE_ERROR_DEFUNCT_SURFACES, "xdg_surface must be destroyed after its specific role");
         return;
@@ -84,7 +85,7 @@ void RXdgSurface::get_toplevel(wl_client */*client*/, wl_resource *resource, UIn
 {
     auto *res { static_cast<RXdgSurface*>(wl_resource_get_user_data(resource)) };
 
-    if (!res->surface() || res->surface()->imp()->hasBufferOrPendingBuffer())
+    if (res->surface()->imp()->hasBufferOrPendingBuffer())
     {
         res->postError(XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED, "Given wl_surface already has a buffer attached.");
         return;
@@ -161,7 +162,7 @@ void RXdgSurface::ack_configure(wl_client */*client*/, wl_resource *resource, UI
 {
     auto &res { *static_cast<RXdgSurface*>(wl_resource_get_user_data(resource)) };
 
-    if (!res.surface() || (!res.xdgPopupRes() && !res.xdgToplevelRes()))
+    if (!res.xdgPopupRes() && !res.xdgToplevelRes())
     {
         res.postError(XDG_SURFACE_ERROR_NOT_CONSTRUCTED, "Can not ack xdg_surface with no role.");
         return;

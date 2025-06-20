@@ -69,7 +69,7 @@ void GLayerShell::get_layer_surface(wl_client */*client*/, wl_resource *resource
         return;
     }
 
-    if (surfaceRes.surface()->role())
+    if (!surfaceRes.surface()->imp()->canHostRole())
     {
         surfaceRes.postError(ZWLR_LAYER_SHELL_V1_ERROR_ROLE, "Given wl_surface has another role.");
         return;

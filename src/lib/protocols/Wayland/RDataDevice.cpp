@@ -140,7 +140,7 @@ void RDataDevice::start_drag(wl_client */*client*/,
 
         if (!iconSurface->dndIcon())
         {
-            if (iconSurface->role())
+            if (!iconSurface->imp()->canHostRole())
             {
                 res->postError(WL_DATA_DEVICE_ERROR_ROLE, "Given wl_surface has another role.");
                 goto fail;
