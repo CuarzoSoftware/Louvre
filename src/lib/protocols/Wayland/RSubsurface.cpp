@@ -34,11 +34,12 @@ RSubsurface::RSubsurface
         &imp
     )
 {
+    surface->imp()->stateFlags.add(LSurface::LSurfacePrivate::AboveParent);
     LSubsurfaceRole::Params subsurfaceRoleParams { this, surface };
     m_subsurfaceRole.reset(LFactory::createObject<LSubsurfaceRole>(&subsurfaceRoleParams));
 
     // According to the wl_subsurface spec, the parent should be applied when parent commits
-    surface->imp()->setPendingParent(parent);
+    surface->imp()->setParent(parent);
     surface->imp()->notifyRoleChange();
 }
 

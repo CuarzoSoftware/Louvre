@@ -123,7 +123,7 @@ void RXdgSurface::get_popup(wl_client */*client*/, wl_resource *resource, UInt32
 
     auto *xdgParentSurfaceRes { parent == nullptr ? nullptr : static_cast<RXdgSurface*>(wl_resource_get_user_data(parent)) };
 
-    if (xdgParentSurfaceRes && res->surface()->imp()->isInChildrenOrPendingChildren(xdgParentSurfaceRes->surface()))
+    if (xdgParentSurfaceRes && res->surface()->imp()->isInChildren(xdgParentSurfaceRes->surface()))
     {
         xdgPositionerRes->postError(
             XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT,

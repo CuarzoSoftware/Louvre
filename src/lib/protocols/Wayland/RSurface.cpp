@@ -115,12 +115,6 @@ RSurface::~RSurface()
     while(!lSurface->children().empty())
         lSurface->imp()->removeChild(lSurface->imp()->children.back());
 
-    while(!lSurface->imp()->pendingChildren.empty())
-    {
-        lSurface->imp()->pendingChildren.back()->imp()->pendingParent = nullptr;
-        lSurface->imp()->pendingChildren.pop_back();
-    }
-
     // Clear parent and pending parent
     lSurface->imp()->setParent(nullptr);
 
@@ -229,11 +223,6 @@ void RSurface::apply_commit(LSurface *surface, LBaseSurfaceRole::CommitOrigin or
             presentation->m_commitId = imp.commitId;
 
     auto &changes { imp.changesToNotify };
-
-    /**************************************
-     *********** PENDING CHILDREN *********
-     **************************************/
-    imp.applyPendingChildren();
 
     /********************************************
      *********** NOTIFY PARENT COMMIT ***********

@@ -121,19 +121,19 @@ void RLayerSurface::get_popup(wl_client */*client*/, wl_resource *resource, wl_r
     auto &popupSurface { *static_cast<XdgShell::RXdgPopup*>(wl_resource_get_user_data(popup))->xdgSurfaceRes()->surface() };
     auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
 
-    if (popupSurface.imp()->parent || popupSurface.imp()->pendingParent)
+    if (popupSurface.imp()->parent)
     {
         res.postError(XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT, "Popup already has a parent.");
         return;
     }
 
-    if (popupSurface.imp()->isInChildrenOrPendingChildren(res.layerRole()->surface()))
+    if (popupSurface.imp()->isInChildren(res.layerRole()->surface()))
     {
         res.postError(XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT, "Popup can not have a child surface as parent.");
         return;
     }
 
-    popupSurface.imp()->setPendingParent(res.layerRole()->surface());
+    popupSurface.imp()->setParent(res.layerRole()->surface());
 }
 
 void RLayerSurface::ack_configure(wl_client */*client*/, wl_resource */*resource*/, UInt32 /*serial*/) {}

@@ -95,7 +95,7 @@ void RXdgToplevel::set_parent(wl_client */*client*/, wl_resource *resource, wl_r
             return;
         }
 
-        if (res.toplevelRole()->surface()->imp()->isInChildrenOrPendingChildren(parentRes->toplevelRole()->surface()))
+        if (res.toplevelRole()->surface()->imp()->isInChildren(parentRes->toplevelRole()->surface()))
         {
             res.postError(XDG_TOPLEVEL_ERROR_INVALID_PARENT, "Invalid xdg_toplevel parent.");
             return;

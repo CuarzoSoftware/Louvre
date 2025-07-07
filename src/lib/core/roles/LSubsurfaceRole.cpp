@@ -110,7 +110,7 @@ void LSubsurfaceRole::handleParentCommit()
                     {
                         compositor()->imp()->insertSurfaceAfter(m_pendingPlace, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
                         parent->imp()->children.erase(surface()->imp()->parentLink);
-                        surface()->imp()->parentLink = parent->imp()->children.insert(std::next(lastBelowParent->imp()->pendingParentLink), surface());
+                        surface()->imp()->parentLink = parent->imp()->children.insert(std::next(lastBelowParent->imp()->parentLink), surface());
                         parent->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
                         surface()->imp()->stateFlags.add(LSurface::LSurfacePrivate::AboveParent);
                         placedAbove(m_pendingPlace);

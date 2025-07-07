@@ -209,8 +209,6 @@ void LToplevelRole::fullAtomsUpdate()
 
                 if (surface()->parent())
                     defaultLayer = surface()->parent()->layer();
-                else if (surface()->imp()->pendingParent)
-                    defaultLayer = surface()->imp()->pendingParent->layer();
 
                 surface()->imp()->setLayer(pendingAtoms().state.check(Fullscreen) ? LLayerTop : defaultLayer);
             }

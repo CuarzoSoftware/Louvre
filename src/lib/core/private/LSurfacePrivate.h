@@ -117,12 +117,9 @@ LPRIVATE_CLASS(LSurface)
 
     LTexture *textureBackup;
     LSurface *parent                        { nullptr };
-    LSurface *pendingParent                 { nullptr };
     std::vector<LSurfaceView*> views;
     std::list<LSurface*> children;
-    std::list<LSurface*> pendingChildren;
     std::list<LSurface*>::iterator parentLink;
-    std::list<LSurface*>::iterator pendingParentLink;
     std::vector<Wayland::RCallback*>frameCallbacks;
     UInt32 damageId;
     UInt32 commitId { 0 };
@@ -143,16 +140,14 @@ LPRIVATE_CLASS(LSurface)
     LSurface *prevSurfaceInLayers() noexcept;
     void setLayer(LSurfaceLayer layer);
     void sendPresentationFeedback(LOutput *output) noexcept;
-    void setPendingParent(LSurface *pendParent) noexcept;
     void setParent(LSurface *parent);
     void removeChild(LSurface *child);
     void setMapped(bool state);
     void setRole(LBaseSurfaceRole *role) noexcept;
     void notifyRoleChange();
-    void applyPendingChildren();
     bool bufferToTexture() noexcept;
     void sendPreferredScale() noexcept;
-    bool isInChildrenOrPendingChildren(LSurface *child) noexcept;
+    bool isInChildren(LSurface *child) noexcept;
     bool hasBufferOrPendingBuffer() noexcept;
     void setKeyboardGrabToParent();
     void updateDamage() noexcept;

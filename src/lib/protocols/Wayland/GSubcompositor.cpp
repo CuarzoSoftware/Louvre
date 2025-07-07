@@ -73,7 +73,7 @@ void GSubcompositor::get_subsurface(wl_client */*client*/, wl_resource *resource
         return;
     }
 
-    if (surfaceRes.surface()->imp()->isInChildrenOrPendingChildren(parentRes.surface()))
+    if (surfaceRes.surface()->imp()->isInChildren(parentRes.surface()))
     {
         parentRes.postError(WL_SUBCOMPOSITOR_ERROR_BAD_PARENT, "Parent can not be child of surface.");
         return;

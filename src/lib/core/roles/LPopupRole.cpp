@@ -465,19 +465,6 @@ void LPopupRole::handleSurfaceCommit(CommitOrigin origin)
     if (m_flags.check(Dismissed))
         return;
 
-    if (surface()->imp()->pendingParent)
-    {
-        if (surface()->imp()->isInChildrenOrPendingChildren(surface()->imp()->pendingParent))
-        {
-            xdgSurfaceResource()->postError(
-                XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT,
-                "Parent can not be child or equal to surface.");
-            return;
-        }
-
-        surface()->imp()->pendingParent->imp()->applyPendingChildren();
-    }
-
     if (!surface()->parent())
     {
         xdgSurfaceResource()->postError(
