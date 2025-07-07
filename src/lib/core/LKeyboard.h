@@ -209,6 +209,8 @@ public:
      * @param layout Keyboard layouts separated by comma (e.g. "latam"). Can be `nullptr`. [More information](https://xkbcommon.org/doc/current/structxkb__rule__names.html#a0968f4602001f2306febd32c34bd2280).
      * @param variant Variants of layouts. Can be `nullptr`. [More information](https://xkbcommon.org/doc/current/structxkb__rule__names.html#a0968f4602001f2306febd32c34bd2280).
      * @param options Preferences not related to layouts. Can be `nullptr`. [More information](https://xkbcommon.org/doc/current/structxkb__rule__names.html#a0968f4602001f2306febd32c34bd2280).
+     *
+     * @returns `true` if the provided keyboard map is successfully applied and `false` otherwise.
      */
     bool setKeymap(const char *rules = nullptr, const char *model = nullptr, const char *layout = nullptr, const char *variant = nullptr, const char *options = nullptr) noexcept;
 
