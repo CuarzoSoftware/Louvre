@@ -918,8 +918,15 @@ void LSurface::LSurfacePrivate::simplifyDamage(std::vector<LRect> &vec) noexcept
 
 void LSurface::LSurfacePrivate::setLayer(LSurfaceLayer newLayer)
 {
-    const bool layerChanged { layer != newLayer };
+    for (LSurface *child : pendingChildren)
+        if (!child->imp()->stateFlags.check(AboveParent) && (child->subsurface() || child->toplevel()))
+            child->imp()->setLayer(newLayer);
 
+    for (LSurface *child : children)
+        if (!child->imp()->stateFlags.check(AboveParent) && (child->subsurface() || child->toplevel()))
+            child->imp()->setLayer(newLayer);
+
+    const bool layerChanged { layer != newLayer };
     compositor()->imp()->layers[layer].erase(layerLink);
     layer = newLayer;
     compositor()->imp()->layers[layer].emplace_back(surfaceResource->surface());
@@ -932,11 +939,11 @@ void LSurface::LSurfacePrivate::setLayer(LSurfaceLayer newLayer)
     compositor()->imp()->insertSurfaceAfter(prev, surfaceResource->surface(), LCompositor::LCompositorPrivate::UpdateSurfaces);
 
     for (LSurface *child : pendingChildren)
-        if (child->subsurface() || child->toplevel())
+        if (child->imp()->stateFlags.check(AboveParent) && (child->subsurface() || child->toplevel()))
             child->imp()->setLayer(layer);
 
     for (LSurface *child : children)
-        if (child->subsurface() || child->toplevel())
+        if (child->imp()->stateFlags.check(AboveParent) && (child->subsurface() || child->toplevel()))
             child->imp()->setLayer(layer);
 }
 

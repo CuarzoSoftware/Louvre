@@ -55,49 +55,149 @@ void LSubsurfaceRole::handleParentCommit()
         localPosChanged();
     }
 
-    if (m_pendingPlaceAbove)
+    if (m_pendingPlace)
     {
-        compositor()->imp()->insertSurfaceAfter(m_pendingPlaceAbove, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
+        LSurface *parent { surface()->parent() };
 
-        if (m_pendingPlaceAbove == surface()->parent())
+        if (m_pendingPlaceAbove)
         {
-            if (surface()->parent()->children().front() != surface())
+            if (m_pendingPlace == parent)
             {
-                surface()->parent()->imp()->children.erase(surface()->imp()->parentLink);
-                surface()->parent()->imp()->children.push_front(surface());
-                surface()->imp()->parentLink = surface()->parent()->imp()->children.begin();
-                surface()->parent()->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
-                placedAbove(m_pendingPlaceAbove);
+                LSurface *lastBelowParent { nullptr }; // The surface below the parent, closest to the parent
+
+                for (auto it = parent->imp()->children.rbegin(); it != parent->imp()->children.rend(); it++)
+                {
+                    if (!(*it)->imp()->stateFlags.check(LSurface::LSurfacePrivate::AboveParent))
+                    {
+                        lastBelowParent = *it;
+                        break;
+                    }
+                }
+
+                if (!lastBelowParent)
+                {
+                    if (parent->children().front() != surface())
+                    {
+                        compositor()->imp()->insertSurfaceAfter(m_pendingPlace, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
+                        parent->imp()->children.erase(surface()->imp()->parentLink);
+                        parent->imp()->children.push_front(surface());
+                        surface()->imp()->parentLink = parent->imp()->children.begin();
+                        parent->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
+                        surface()->imp()->stateFlags.add(LSurface::LSurfacePrivate::AboveParent);
+                        placedAbove(m_pendingPlace);
+                    }
+                }
+                else
+                {
+                    if (lastBelowParent == surface())
+                    {
+                        compositor()->imp()->insertSurfaceAfter(m_pendingPlace, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
+                        parent->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
+                        surface()->imp()->stateFlags.add(LSurface::LSurfacePrivate::AboveParent);
+                        placedAbove(m_pendingPlace);
+                    }
+                    else if (lastBelowParent == parent->imp()->children.back())
+                    {
+                        compositor()->imp()->insertSurfaceAfter(m_pendingPlace, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
+                        parent->imp()->children.erase(surface()->imp()->parentLink);
+                        parent->imp()->children.push_back(surface());
+                        surface()->imp()->parentLink = std::prev(parent->imp()->children.end());
+                        parent->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
+                        surface()->imp()->stateFlags.add(LSurface::LSurfacePrivate::AboveParent);
+                        placedAbove(m_pendingPlace);
+                    }
+                    else
+                    {
+                        compositor()->imp()->insertSurfaceAfter(m_pendingPlace, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
+                        parent->imp()->children.erase(surface()->imp()->parentLink);
+                        surface()->imp()->parentLink = parent->imp()->children.insert(std::next(lastBelowParent->imp()->pendingParentLink), surface());
+                        parent->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
+                        surface()->imp()->stateFlags.add(LSurface::LSurfacePrivate::AboveParent);
+                        placedAbove(m_pendingPlace);
+                    }
+                }
+            }
+            else
+            {
+                auto next { std::next(m_pendingPlace->imp()->parentLink) };
+
+                if (next == parent->imp()->children.end())
+                {
+                    compositor()->imp()->insertSurfaceAfter(m_pendingPlace, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
+                    parent->imp()->children.erase(surface()->imp()->parentLink);
+                    parent->imp()->children.emplace_back(surface());
+                    surface()->imp()->parentLink = std::prev(parent->imp()->children.end());
+                    parent->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
+                    surface()->imp()->stateFlags.setFlag(LSurface::LSurfacePrivate::AboveParent, m_pendingPlace->imp()->stateFlags.check(LSurface::LSurfacePrivate::AboveParent));
+                    placedAbove(m_pendingPlace);
+                }
+                else if (*next != surface()) // Otherwise its already above the sibling
+                {
+                    compositor()->imp()->insertSurfaceAfter(m_pendingPlace, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
+                    parent->imp()->children.erase(surface()->imp()->parentLink);
+                    surface()->imp()->parentLink = parent->imp()->children.insert(
+                        next,
+                        surface());
+                    parent->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
+                    surface()->imp()->stateFlags.setFlag(LSurface::LSurfacePrivate::AboveParent, m_pendingPlace->imp()->stateFlags.check(LSurface::LSurfacePrivate::AboveParent));
+                    placedAbove(m_pendingPlace);
+                }
+            }
+
+        }
+        else // Place below
+        {
+            if (m_pendingPlace == parent)
+            {
+                LSurface *lastBelowParent { nullptr }; // The surface below the parent, closest to the parent
+
+                for (auto it = parent->imp()->children.rbegin(); it != parent->imp()->children.rend(); it++)
+                {
+                    if (!(*it)->imp()->stateFlags.check(LSurface::LSurfacePrivate::AboveParent))
+                    {
+                        lastBelowParent = *it;
+                        break;
+                    }
+                }
+
+                if (lastBelowParent == nullptr)
+                {
+                    compositor()->imp()->insertSurfaceBefore(m_pendingPlace, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
+                    parent->imp()->children.erase(surface()->imp()->parentLink);
+                    parent->imp()->children.push_front(surface());
+                    surface()->imp()->parentLink = parent->imp()->children.begin();
+                    parent->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
+                    surface()->imp()->stateFlags.remove(LSurface::LSurfacePrivate::AboveParent);
+                    placedBelow(m_pendingPlace);
+                }
+                else if (lastBelowParent != surface())
+                {
+                    compositor()->imp()->insertSurfaceBefore(m_pendingPlace, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
+                    parent->imp()->children.erase(surface()->imp()->parentLink);
+
+                    surface()->imp()->parentLink = parent->imp()->children.insert(
+                        m_pendingPlace->imp()->parentLink,
+                        surface());
+                    parent->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
+                    surface()->imp()->stateFlags.remove(LSurface::LSurfacePrivate::AboveParent);
+                    placedBelow(m_pendingPlace);
+                }
+            }
+            else if (parent->imp()->children.front() == m_pendingPlace || *std::prev(m_pendingPlace->imp()->parentLink) != surface())
+            {
+                compositor()->imp()->insertSurfaceBefore(m_pendingPlace, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
+                parent->imp()->children.erase(surface()->imp()->parentLink);
+                surface()->imp()->parentLink = parent->imp()->children.insert(
+                    m_pendingPlace->imp()->parentLink,
+                    surface());
+                parent->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
+                surface()->imp()->stateFlags.setFlag(LSurface::LSurfacePrivate::AboveParent, m_pendingPlace->imp()->stateFlags.check(LSurface::LSurfacePrivate::AboveParent));
+                placedBelow(m_pendingPlace);
             }
         }
-        else if (*std::next(m_pendingPlaceAbove->imp()->parentLink) != surface())
-        {
-            surface()->parent()->imp()->children.erase(surface()->imp()->parentLink);
-            surface()->imp()->parentLink = surface()->parent()->imp()->children.insert(
-                std::next(m_pendingPlaceAbove->imp()->parentLink),
-                surface());
-            surface()->parent()->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
-            placedAbove(m_pendingPlaceAbove);
-        }
-
-        m_pendingPlaceAbove.reset();
     }
 
-    if (m_pendingPlaceBelow)
-    {
-        if (*std::prev(m_pendingPlaceBelow->imp()->parentLink) != surface())
-        {
-            compositor()->imp()->insertSurfaceBefore(m_pendingPlaceBelow, surface(), OP::UpdateSurfaces | OP::UpdateLayers);
-            surface()->parent()->imp()->children.erase(surface()->imp()->parentLink);
-            surface()->imp()->parentLink = surface()->parent()->imp()->children.insert(
-                m_pendingPlaceBelow->imp()->parentLink,
-                surface());
-            surface()->parent()->imp()->stateFlags.add(LSurface::LSurfacePrivate::ChildrenListChanged);
-            placedBelow(m_pendingPlaceBelow);
-        }
-
-        m_pendingPlaceBelow.reset();
-    }
+    m_pendingPlace.reset();
 
     if (isSynced() && m_hasCache)
         Wayland::RSurface::apply_commit(surface(), LBaseSurfaceRole::CommitOrigin::Parent);

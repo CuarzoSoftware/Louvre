@@ -75,7 +75,8 @@ void RSubsurface::place_above(wl_client */*client*/, wl_resource *resource, wl_r
 
     if (siblingIsParent  || (siblingSurface->parent() == subsurfaceRole->surface()->parent() && siblingSurface != subsurfaceRole->surface()))
     {
-        subsurfaceRole->m_pendingPlaceAbove.reset(siblingSurface);
+        subsurfaceRole->m_pendingPlace.reset(siblingSurface);
+        subsurfaceRole->m_pendingPlaceAbove = true;
         return;
     }
 
@@ -88,9 +89,12 @@ void RSubsurface::place_below(wl_client */*client*/, wl_resource *resource, wl_r
     LSubsurfaceRole *subsurfaceRole { static_cast<RSubsurface*>(wl_resource_get_user_data(resource))->subsurfaceRole() };
     LSurface *siblingSurface { static_cast<RSurface*>(wl_resource_get_user_data(sibling))->surface() };
 
-    if (siblingSurface->parent() == subsurfaceRole->surface()->parent() && siblingSurface != subsurfaceRole->surface())
+    const bool siblingIsParent { subsurfaceRole->surface()->parent() && subsurfaceRole->surface()->parent() == siblingSurface };
+
+    if (siblingIsParent  || (siblingSurface->parent() == subsurfaceRole->surface()->parent() && siblingSurface != subsurfaceRole->surface()))
     {
-        subsurfaceRole->m_pendingPlaceBelow.reset(siblingSurface);
+        subsurfaceRole->m_pendingPlace.reset(siblingSurface);
+        subsurfaceRole->m_pendingPlaceAbove = false;
         return;
     }
 

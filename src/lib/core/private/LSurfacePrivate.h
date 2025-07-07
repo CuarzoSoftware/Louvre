@@ -58,6 +58,7 @@ LPRIVATE_CLASS(LSurface)
         ParentCommitNotified        = static_cast<UInt16>(1) << 12,
         InfiniteInvisible           = static_cast<UInt16>(1) << 13,
         UnnotifiedRoleChange        = static_cast<UInt16>(1) << 14,
+        AboveParent                 = static_cast<UInt16>(1) << 15,
     };
 
     LBitset<StateFlags> stateFlags
@@ -65,7 +66,8 @@ LPRIVATE_CLASS(LSurface)
         ReceiveInput |
         InfiniteInput |
         BufferReleased |
-        VSync
+        VSync |
+        AboveParent
     };
 
     struct State

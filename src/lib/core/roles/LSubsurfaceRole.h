@@ -147,8 +147,8 @@ private:
     bool m_hasCache { true };
     bool m_hasPendingLocalPos { true };
 
-    LWeak<LSurface> m_pendingPlaceAbove;
-    LWeak<LSurface> m_pendingPlaceBelow;
+    LWeak<LSurface> m_pendingPlace;
+    bool m_pendingPlaceAbove;
 };
 
 #endif // LSUBSURFACEROLE_H
