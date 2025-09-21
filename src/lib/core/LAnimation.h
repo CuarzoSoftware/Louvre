@@ -120,6 +120,521 @@ public:
         return m_value;
     }
 
+
+  Float64 value(Float64 begin = 0.0, Float64 end = 1.0) const noexcept {
+    Float64 t = value();
+    Float64 c = end - begin;
+    return c * t + begin;
+  }
+
+  Float64 inQuad(Float64 begin = 0.0, Float64 end = 1.0) const noexcept {
+    Float64 t = value();
+    Float64 c = end - begin;
+    return c * t * t + begin;
+  }
+
+  Float64 outQuad(Float64 begin = 0.0, Float64 end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value();
+    return -c * t * (t - 2) + begin;
+  }
+
+  Float64 inOutQuad(Float64 begin = 0.0, Float64 end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, 2.0);
+    if (t < 1)
+      return c / 2 * t * t + begin;
+    else
+      return -c / 2 * ((t - 1) * (t - 3) - 1) + begin;
+  }
+
+  Float64 outInQuad(Float64 begin = 0.0, Float64 end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, duration());
+    Float64 d = duration();
+
+    if (t < d / 2.0) {
+      t = t * 2 / d;
+      return -(c / 2.0) * t * (t - 2) + begin;
+    } else {
+      t = (t * 2 - d) / d;
+      return (c / 2.0) * t * t + begin + c / 2.0;
+    }
+  }
+
+  Float64 inCubic(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value();
+    return c * t * t * t + begin;
+  }
+
+  Float64 outCubic(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value() - 1.0;
+    return c * (t * t * t + 1.0) + begin;
+  }
+
+  Float64 inOutCubic(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, 2.0);
+    if (t < 1.0) {
+      return c / 2.0 * t * t * t + begin;
+    } else {
+      t = t - 2.0;
+      return c / 2.0 * (t * t * t + 2.0) + begin;
+    }
+  }
+
+  Float64 outInCubic(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, duration());
+    Float64 d = duration();
+    if (t < d / 2.0) {
+      t = t * 2.0 / d - 1.0;
+      return c / 2.0 * (t * t * t + 1.0) + begin;
+    } else {
+      t = (t * 2.0 - d) / d;
+      return c / 2.0 * t * t * t + begin + c / 2.0;
+    }
+  }
+
+  Float64 inQuart(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value();
+    return c * std::pow(t, 4) + begin;
+  }
+
+  Float64 outQuart(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value() - 1.0;
+    return -c * (std::pow(t, 4) - 1.0) + begin;
+  }
+
+  Float64 inOutQuart(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, 2.0);
+    if (t < 1.0) {
+      return c / 2.0 * std::pow(t, 4) + begin;
+    } else {
+      t = t - 2.0;
+      return -c / 2.0 * (std::pow(t, 4) - 2.0) + begin;
+    }
+  }
+
+  Float64 outInQuart(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, duration());
+    Float64 d = duration();
+    if (t < d / 2.0) {
+      t = t * 2.0 / d - 1.0;
+      return -c / 2.0 * (std::pow(t, 4) - 1.0) + begin;
+    } else {
+      t = (t * 2.0 - d) / d;
+      return c / 2.0 * std::pow(t, 4) + begin + c / 2.0;
+    }
+  }
+
+  Float64 inQuint(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value();
+    return c * std::pow(t, 5) + begin;
+  }
+
+  Float64 outQuint(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value() - 1.0;
+    return c * (std::pow(t, 5) + 1.0) + begin;
+  }
+
+  Float64 inOutQuint(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, 2.0);
+    if (t < 1.0) {
+      return c / 2.0 * std::pow(t, 5) + begin;
+    } else {
+      t = t - 2.0;
+      return c / 2.0 * (std::pow(t, 5) + 2.0) + begin;
+    }
+  }
+
+  Float64 outInQuint(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, duration());
+    Float64 d = duration();
+    if (t < d / 2.0) {
+      t = t * 2.0 / d - 1.0;
+      return c / 2.0 * (std::pow(t, 5) + 1.0) + begin;
+    } else {
+      t = (t * 2.0 - d) / d;
+      return c / 2.0 * std::pow(t, 5) + begin + c / 2.0;
+    }
+  }
+
+  Float64 inSine(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value();
+    return -c * std::cos(t * (M_PI / 2.0)) + c + begin;
+  }
+
+  Float64 outSine(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value();
+    return c * std::sin(t * (M_PI / 2.0)) + begin;
+  }
+
+  Float64 inOutSine(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value();
+    return -c / 2.0 * (std::cos(M_PI * t) - 1.0) + begin;
+  }
+
+  Float64 outInSine(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, duration());
+    Float64 d = duration();
+    if (t < d / 2.0) {
+      t = t * 2.0 / d;
+      return c / 2.0 * std::sin(t * (M_PI / 2.0)) + begin;
+    } else {
+      t = (t * 2.0 - d) / d;
+      return -c / 2.0 * std::cos(t * (M_PI / 2.0)) + c / 2.0 + begin + c / 2.0;
+    }
+  }
+
+  Float64 inExpo(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value();
+    if (t == 0.0) return begin;
+    return c * std::pow(2.0, 10.0 * (t - 1.0)) + begin - c * 0.001;
+  }
+
+  Float64 outExpo(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value();
+    if (t == 1.0) return begin + c;
+    return c * 1.001 * (1.0 - std::pow(2.0, -10.0 * t)) + begin;
+  }
+
+  Float64 inOutExpo(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, 2.0);
+    if (t == 0.0) return begin;
+    if (t == 2.0) return begin + c;
+    if (t < 1.0) {
+      return c / 2.0 * std::pow(2.0, 10.0 * (t - 1.0)) + begin - c * 0.0005;
+    } else {
+      t = t - 1.0;
+      return c / 2.0 * 1.0005 * (2.0 - std::pow(2.0, -10.0 * t)) + begin;
+    }
+  }
+
+  Float64 outInExpo(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, duration());
+    Float64 d = duration();
+    if (t < d / 2.0) {
+      t = t * 2.0 / d;
+      if (t == 1.0) return begin + c / 2.0;
+      return c / 2.0 * 1.001 * (1.0 - std::pow(2.0, -10.0 * t)) + begin;
+    } else {
+      t = (t * 2.0 - d) / d;
+      if (t == 0.0) return begin + c / 2.0;
+      return c / 2.0 * std::pow(2.0, 10.0 * (t - 1.0)) + begin + c / 2.0 -
+             c / 2.0 * 0.001;
+    }
+  }
+
+  Float64 inCirc(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value();
+    return -c * (std::sqrt(1.0 - t * t) - 1.0) + begin;
+  }
+
+  Float64 outCirc(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value() - 1.0;
+    return c * std::sqrt(1.0 - t * t) + begin;
+  }
+
+  Float64 inOutCirc(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, 2.0);
+    if (t < 1.0) {
+      return -c / 2.0 * (std::sqrt(1.0 - t * t) - 1.0) + begin;
+    } else {
+      t = t - 2.0;
+      return c / 2.0 * (std::sqrt(1.0 - t * t) + 1.0) + begin;
+    }
+  }
+
+  Float64 outInCirc(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, duration());
+    Float64 d = duration();
+    if (t < d / 2.0) {
+      t = t * 2.0 / d - 1.0;
+      return c / 2.0 * std::sqrt(1.0 - t * t) + begin;
+    } else {
+      t = (t * 2.0 - d) / d;
+      return -c / 2.0 * (std::sqrt(1.0 - t * t) - 1.0) + begin + c / 2.0;
+    }
+  }
+
+  Float64 inElastic(double begin = 0.0, double end = 1.0, double a = 0.0,
+                    double p = 0.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value();
+    if (t == 0.0) return begin;
+    if (t == 1.0) return begin + c;
+    if (p == 0.0) p = duration() * 0.3;
+    Float64 s;
+    if (a == 0.0 || a < std::abs(c)) {
+      a = c;
+      s = p / 4.0;
+    } else {
+      s = p / (2.0 * M_PI) * std::asin(c / a);
+    }
+    t = t - 1.0;
+    return -(a * std::pow(2.0, 10.0 * t) *
+             std::sin((t * duration() - s) * (2.0 * M_PI) / p)) +
+           begin;
+  }
+
+  Float64 outElastic(double begin = 0.0, double end = 1.0, double a = 0.0,
+                     double p = 0.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value();
+    if (t == 0.0) return begin;
+    if (t == 1.0) return begin + c;
+    if (p == 0.0) p = duration() * 0.3;
+    Float64 s;
+    if (a == 0.0 || a < std::abs(c)) {
+      a = c;
+      s = p / 4.0;
+    } else {
+      s = p / (2.0 * M_PI) * std::asin(c / a);
+    }
+    return a * std::pow(2.0, -10.0 * t) *
+               std::sin((t * duration() - s) * (2.0 * M_PI) / p) +
+           c + begin;
+  }
+
+  Float64 inOutElastic(double begin = 0.0, double end = 1.0, double a = 0.0,
+                       Float64 p = 0.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, 2.0);
+    if (t == 0.0) return begin;
+    if (t == 2.0) return begin + c;
+    if (p == 0.0) p = duration() * 0.3 * 1.5;
+    if (a == 0.0) a = 0.0;
+    Float64 s;
+    if (a == 0.0 || a < std::abs(c)) {
+      a = c;
+      s = p / 4.0;
+    } else {
+      s = p / (2.0 * M_PI) * std::asin(c / a);
+    }
+    if (t < 1.0) {
+      t = t - 1.0;
+      return -0.5 * (a * std::pow(2.0, 10.0 * t) *
+                     std::sin((t * duration() - s) * (2.0 * M_PI) / p)) +
+             begin;
+    } else {
+      t = t - 1.0;
+      return a * std::pow(2.0, -10.0 * t) *
+                 std::sin((t * duration() - s) * (2.0 * M_PI) / p) * 0.5 +
+             c + begin;
+    }
+  }
+
+  Float64 outInElastic(double begin = 0.0, double end = 1.0, double a = 0.0,
+                       Float64 p = 0.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, duration());
+    Float64 d = duration();
+    if (t < d / 2.0) {
+      t = t * 2.0 / d;
+      if (t == 0.0) return begin;
+      if (t == 1.0) return begin + c / 2.0;
+      if (p == 0.0) p = d * 0.3;
+      Float64 s;
+      if (a == 0.0 || a < std::abs(c / 2.0)) {
+        a = c / 2.0;
+        s = p / 4.0;
+      } else {
+        s = p / (2.0 * M_PI) * std::asin(c / 2.0 / a);
+      }
+      return a * std::pow(2.0, -10.0 * t) *
+                 std::sin((t * d - s) * (2.0 * M_PI) / p) +
+             c / 2.0 + begin;
+    } else {
+      t = (t * 2.0 - d) / d;
+      if (t == 0.0) return begin + c / 2.0;
+      if (t == 1.0) return begin + c;
+      if (p == 0.0) p = d * 0.3;
+      Float64 s;
+      if (a == 0.0 || a < std::abs(c / 2.0)) {
+        a = c / 2.0;
+        s = p / 4.0;
+      } else {
+        s = p / (2.0 * M_PI) * std::asin(c / 2.0 / a);
+      }
+      t = t - 1.0;
+      return -(a * std::pow(2.0, 10.0 * t) *
+               std::sin((t * d - s) * (2.0 * M_PI) / p)) +
+             begin + c / 2.0;
+    }
+  }
+
+  Float64 inBack(double begin = 0.0, double end = 1.0,
+                 double s = 1.70158) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value();
+    return c * t * t * ((s + 1.0) * t - s) + begin;
+  }
+
+  Float64 outBack(double begin = 0.0, double end = 1.0,
+                  double s = 1.70158) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value() - 1.0;
+    return c * (t * t * ((s + 1.0) * t + s) + 1.0) + begin;
+  }
+
+  Float64 inOutBack(double begin = 0.0, double end = 1.0,
+                    double s = 1.70158) const noexcept {
+    Float64 c = end - begin;
+    s = s * 1.525;
+    Float64 t = value(0.0, 2.0);
+    if (t < 1.0) {
+      return c / 2.0 * (t * t * ((s + 1.0) * t - s)) + begin;
+    } else {
+      t = t - 2.0;
+      return c / 2.0 * (t * t * ((s + 1.0) * t + s) + 2.0) + begin;
+    }
+  }
+
+  Float64 outInBack(double begin = 0.0, double end = 1.0,
+                    double s = 1.70158) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, duration());
+    Float64 d = duration();
+    if (t < d / 2.0) {
+      t = t * 2.0 / d - 1.0;
+      return c / 2.0 * (t * t * ((s + 1.0) * t + s) + 1.0) + begin;
+    } else {
+      t = (t * 2.0 - d) / d;
+      return c / 2.0 * t * t * ((s + 1.0) * t - s) + begin + c / 2.0;
+    }
+  }
+
+  Float64 outBounce(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value();
+    if (t < 1.0 / 2.75) {
+      return c * (7.5625 * t * t) + begin;
+    } else if (t < 2.0 / 2.75) {
+      t = t - (1.5 / 2.75);
+      return c * (7.5625 * t * t + 0.75) + begin;
+    } else if (t < 2.5 / 2.75) {
+      t = t - (2.25 / 2.75);
+      return c * (7.5625 * t * t + 0.9375) + begin;
+    } else {
+      t = t - (2.625 / 2.75);
+      return c * (7.5625 * t * t + 0.984375) + begin;
+    }
+  }
+
+  Float64 inBounce(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value();
+    t = 1.0 - t;
+    if (t < 1.0 / 2.75) {
+      return c - (c * (7.5625 * t * t)) + begin;
+    } else if (t < 2.0 / 2.75) {
+      t = t - (1.5 / 2.75);
+      return c - (c * (7.5625 * t * t + 0.75)) + begin;
+    } else if (t < 2.5 / 2.75) {
+      t = t - (2.25 / 2.75);
+      return c - (c * (7.5625 * t * t + 0.9375)) + begin;
+    } else {
+      t = t - (2.625 / 2.75);
+      return c - (c * (7.5625 * t * t + 0.984375)) + begin;
+    }
+  }
+
+  Float64 inOutBounce(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, duration());
+    Float64 d = duration();
+    if (t < d / 2.0) {
+      t = t * 2.0 / d;
+      t = 1.0 - t;
+      if (t < 1.0 / 2.75) {
+        return c / 2.0 * (1.0 - (7.5625 * t * t)) + begin;
+      } else if (t < 2.0 / 2.75) {
+        t = t - (1.5 / 2.75);
+        return c / 2.0 * (1.0 - (7.5625 * t * t + 0.75)) + begin;
+      } else if (t < 2.5 / 2.75) {
+        t = t - (2.25 / 2.75);
+        return c / 2.0 * (1.0 - (7.5625 * t * t + 0.9375)) + begin;
+      } else {
+        t = t - (2.625 / 2.75);
+        return c / 2.0 * (1.0 - (7.5625 * t * t + 0.984375)) + begin;
+      }
+    } else {
+      t = (t * 2.0 - d) / d;
+      if (t < 1.0 / 2.75) {
+        return c / 2.0 * (7.5625 * t * t) + begin + c / 2.0;
+      } else if (t < 2.0 / 2.75) {
+        t = t - (1.5 / 2.75);
+        return c / 2.0 * (7.5625 * t * t + 0.75) + begin + c / 2.0;
+      } else if (t < 2.5 / 2.75) {
+        t = t - (2.25 / 2.75);
+        return c / 2.0 * (7.5625 * t * t + 0.9375) + begin + c / 2.0;
+      } else {
+        t = t - (2.625 / 2.75);
+        return c / 2.0 * (7.5625 * t * t + 0.984375) + begin + c / 2.0;
+      }
+    }
+  }
+  Float64 outInBounce(double begin = 0.0, double end = 1.0) const noexcept {
+    Float64 c = end - begin;
+    Float64 t = value(0.0, duration());
+    Float64 d = duration();
+    if (t < d / 2.0) {
+      t = t * 2.0 / d;
+      if (t < 1.0 / 2.75) {
+        return c / 2.0 * (7.5625 * t * t) + begin;
+      } else if (t < 2.0 / 2.75) {
+        t = t - (1.5 / 2.75);
+        return c / 2.0 * (7.5625 * t * t + 0.75) + begin;
+      } else if (t < 2.5 / 2.75) {
+        t = t - (2.25 / 2.75);
+        return c / 2.0 * (7.5625 * t * t + 0.9375) + begin;
+      } else {
+        t = t - (2.625 / 2.75);
+        return c / 2.0 * (7.5625 * t * t + 0.984375) + begin;
+      }
+    } else {
+      t = (t * 2.0 - d) / d;
+      t = 1.0 - t;
+      if (t < 1.0 / 2.75) {
+        return c / 2.0 - (c / 2.0 * (7.5625 * t * t)) + begin + c / 2.0;
+      } else if (t < 2.0 / 2.75) {
+        t = t - (1.5 / 2.75);
+        return c / 2.0 - (c / 2.0 * (7.5625 * t * t + 0.75)) + begin + c / 2.0;
+      } else if (t < 2.5 / 2.75) {
+        t = t - (2.25 / 2.75);
+        return c / 2.0 - (c / 2.0 * (7.5625 * t * t + 0.9375)) + begin +
+               c / 2.0;
+      } else {
+        t = t - (2.625 / 2.75);
+        return c / 2.0 - (c / 2.0 * (7.5625 * t * t + 0.984375)) + begin +
+               c / 2.0;
+      }
+    }
+  }
+
     /**
      * @brief Starts the animation.
      *
